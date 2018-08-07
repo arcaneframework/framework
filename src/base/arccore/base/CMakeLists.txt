@@ -7,12 +7,16 @@ set(SOURCES
   ArrayRange.h
   ArrayView.h
   ArrayView.cc
+  CStringUtils.h
+  CStringUtils.cc
   BaseTypes.h
   BasicTranscoder.h
   BasicTranscoder.cc
   BaseTypes.h
   CoreArray.h
   Iterator.h
+  StringImpl.h
+  StringImpl.cc
 )
 
 message(STATUS "BinaryDir= ${Arccore_BINARY_DIR}")
