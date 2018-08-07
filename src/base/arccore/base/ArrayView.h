@@ -737,6 +737,62 @@ operator<<(std::ostream& o, ArrayView<T> val)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
+ * de taille à un tableau.
+ * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
+ * une exception de type ArgumentException.
+ */
+extern "C++" ARCCORE_BASE_EXPORT Integer
+arccoreCheckArraySize(unsigned long long size);
+
+/*!
+ * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
+ * de taille à un tableau.
+ * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
+ * une exception de type ArgumentException.
+ */
+extern "C++" ARCCORE_BASE_EXPORT Integer
+arccoreCheckArraySize(long long size);
+
+/*!
+ * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
+ * de taille à un tableau.
+ * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
+ * une exception de type ArgumentException.
+ */
+extern "C++" ARCCORE_BASE_EXPORT Integer
+arccoreCheckArraySize(unsigned long size);
+
+/*!
+ * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
+ * de taille à un tableau.
+ * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
+ * une exception de type ArgumentException.
+ */
+extern "C++" ARCCORE_BASE_EXPORT Integer
+arccoreCheckArraySize(long size);
+
+/*!
+ * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
+ * de taille à un tableau.
+ * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
+ * une exception de type ArgumentException.
+ */
+extern "C++" ARCCORE_BASE_EXPORT Integer
+arccoreCheckArraySize(unsigned int size);
+
+/*!
+ * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
+ * de taille à un tableau.
+ * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
+ * une exception de type ArgumentException.
+ */
+extern "C++" ARCCORE_BASE_EXPORT Integer
+arccoreCheckArraySize(int size);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // End namespace Arccore
 

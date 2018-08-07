@@ -4,6 +4,22 @@
 message(STATUS "Including arccore/CMakeLists.txt")
 
 # ----------------------------------------------------------------------------
+
+if (NOT ARCCORE_EXPORT_TARGET)
+  set(ARCCORE_EXPORT_TARGET ArccorTargets)
+endif()
+
+# ----------------------------------------------------------------------------
+
+if (NOT ARCCON_ROOT)
+  message(FATAL_ERROR "Variable 'ARCCON_ROOT' is not set")
+endif()
+if (NOT ARCCON_EXPORT_TARGET)
+  set(ARCCON_EXPORT_TARGET ${ARCCORE_EXPOR_TARGET})
+endif()
+include(${ARCCON_ROOT}/Arccon.cmake)
+
+# ----------------------------------------------------------------------------
 # Fonctions utilitaires diverses
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/Functions.cmake)
 
@@ -23,9 +39,5 @@ set(Arccore_BINARY_DIR ${CMAKE_BINARY_DIR}/arccore)
 
 message(STATUS "Arccore_SOURCE_DIR=${Arccore_SOURCE_DIR}")
 message(STATUS "Arccore_BINARY_DIR=${Arccore_BINARY_DIR}")
-
-if (NOT ARCCORE_EXPORT_TARGET)
-  set(ARCCORE_EXPORT_TARGET ArccorTargets)
-endif()
 
 add_subdirectory(src/base/arccore/base)

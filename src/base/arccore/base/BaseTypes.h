@@ -44,6 +44,7 @@ typedef float Single;
 
 template<typename T> class ConstArrayView;
 template<typename T> class ArrayView;
+template<class DataType> class CoreArray;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
