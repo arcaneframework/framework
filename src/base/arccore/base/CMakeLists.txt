@@ -3,6 +3,7 @@ find_package(Glib REQUIRED)
 set(SOURCES
   ArccoreGlobal.h
   ArccoreGlobal.cc
+  APReal.h
   ArrayIterator.h
   ArrayRange.h
   ArrayView.h
@@ -15,6 +16,10 @@ set(SOURCES
   BaseTypes.h
   CoreArray.h
   Iterator.h
+  String.h
+  String.cc
+  StringBuilder.h
+  StringBuilder.cc
   StringImpl.h
   StringImpl.cc
 )

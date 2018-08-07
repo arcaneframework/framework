@@ -47,6 +47,9 @@ template<typename T> class ArrayView;
 template<class DataType> class CoreArray;
 
 class StringImpl;
+class String;
+class StringBuilder;
+class StringFormatterArg;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
