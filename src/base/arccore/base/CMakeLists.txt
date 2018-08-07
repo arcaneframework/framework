@@ -1,6 +1,11 @@
 set(SOURCES
   ArccoreGlobal.h
   ArccoreGlobal.cc
+  ArrayIterator.h
+  ArrayRange.h
+  ArrayView.h
+  BaseTypes.h
+  Iterator.h
 )
 
 message(STATUS "BinaryDir= ${Arccore_BINARY_DIR}")

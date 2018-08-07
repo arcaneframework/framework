@@ -460,6 +460,44 @@ arccoreCheckAt(Int64 i,Int64 max_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*
+ * Macros utilisées pour le débug.
+ */
+#ifdef ARCCORE_DEBUG_ASSERT
+extern "C++" ARCCORE_BASE_EXPORT void _doAssert(const char*,const char*,const char*,size_t);
+template<typename T> inline T*
+_checkPointer(T* t,const char* file,const char* func,size_t line)
+{
+  if (!t){
+    _doAssert("ARCCORE_ASSERT",file,func,line);
+    arccorePrintf("Bad Pointer");
+  }
+  return t;
+}
+#  ifdef __GNUG__
+#    define ARCCORE_D_WHERE(a)  Arccore::_doAssert(a,__FILE__,__PRETTY_FUNCTION__,__LINE__)
+#    define ARCCORE_DCHECK_POINTER(a) Arccore::_checkPointer((a),__FILE__,__PRETTY_FUNCTION__,__LINE__);
+#  else
+#    define ARCCORE_D_WHERE(a)  Arccore::_doAssert(a,__FILE__,"(NoInfo)",__LINE__)
+#    define ARCCORE_DCHECK_POINTER(a) Arccore::_checkPointer((a),__FILE__,"(NoInfo"),__LINE__);
+#  endif
+#  define ARCCORE_CHECK_PTR(a) \
+   {if (!(a)){Arccore::arccorePrintf("Null value");ARCCORE_D_WHERE("ARCCORE_ASSERT");}}
+
+#  define ARCCORE_ASSERT(a,b) \
+  {if (!(a)){ Arccore::arccorePrintf("Assertion '%s' fails:",#a); Arccore::arccorePrintf b; ARCCORE_D_WHERE("ARCCORE_ASSERT");}}
+#  define ARCCORE_WARNING(a) \
+   { Arccore::arccorePrintf a; ARCCORE_D_WHERE("ARCCORE_WARNING"); }
+#else
+#  define ARCCORE_CHECK_PTR(a)
+#  define ARCCORE_ASSERT(a,b)
+#  define ARCCORE_WARNING(a)
+#  define ARCCORE_DCHECK_POINTER(a) (a);
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arccore
 
 /*---------------------------------------------------------------------------*/
