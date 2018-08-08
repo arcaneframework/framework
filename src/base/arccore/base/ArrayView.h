@@ -11,6 +11,7 @@
 #include "arccore/base/ArrayRange.h"
 
 #include <iosfwd>
+#include <cstddef>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -104,7 +105,7 @@ class ArrayView
   //! Type indexant le tableau
   typedef Integer size_type;
   //! Type d'une distance entre itérateur éléments du tableau
-  typedef ptrdiff_t difference_type;
+  typedef std::ptrdiff_t difference_type;
 
   //! Type d'un itérateur sur tout le tableau
   typedef IterT< ArrayView<T> > iter;
@@ -459,7 +460,7 @@ class ConstArrayView
   //! Type indexant le tableau
   typedef Integer size_type;
   //! Type d'une distance entre itérateur éléments du tableau
-  typedef ptrdiff_t difference_type;
+  typedef std::ptrdiff_t difference_type;
 
   //! Type d'un itérateur constant sur tout le tableau
   typedef ConstIterT< ConstArrayView<T> > const_iter;

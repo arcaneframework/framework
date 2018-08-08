@@ -47,6 +47,8 @@ arccore_add_library(arccore_base
 )
 
 target_link_libraries(arccore_base PRIVATE arccon::Glib)
+# TODO: utiliser des features plus précises si on souhaite compiler avec de vieux compilateurs
+target_compile_features(arccore_base PUBLIC cxx_std_11)
 target_compile_definitions(arccore_base PRIVATE ARCCORE_COMPONENT_arccore_base)
 target_include_directories(arccore_base PUBLIC $<BUILD_INTERFACE:${Arccore_SOURCE_DIR}/src/base> $<INSTALL_INTERFACE:include>)
 target_include_directories(arccore_base PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>)
