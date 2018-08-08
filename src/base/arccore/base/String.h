@@ -411,11 +411,6 @@ class StringFormatterArgToString
   static void toString(const U& v,String& s)
   {
     std::ostringstream ostr;
-#if ARCCORE_NEED_IMPLEMENTATION
-    ostr.precision(FloatInfo<Real>::maxDigit());
-#else
-    ostr.precision(16);
-#endif
     ostr << v;
     s = ostr.str();
   }
@@ -435,14 +430,7 @@ class StringFormatterArg
   }
   StringFormatterArg(Real avalue)
   {
-    std::ostringstream ostr;
-#if ARCCORE_NEED_IMPLEMENTATION
-    ostr.precision(FloatInfo<Real>::maxDigit());
-#else
-    ostr.precision(16);
-#endif
-    ostr << avalue;
-    m_str_value = ostr.str();
+    _formatReal(avalue);
   }
   StringFormatterArg(const String& s)
   : m_str_value(s)
@@ -452,6 +440,8 @@ class StringFormatterArg
   const String& value() const { return m_str_value; }
  private:
   String m_str_value;
+ private:
+  void _formatReal(Real avalue);
 };
 
 /*---------------------------------------------------------------------------*/

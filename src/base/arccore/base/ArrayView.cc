@@ -6,18 +6,14 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/ArrayView.h"
+#include "arccore/base/ArgumentException.h"
+#include "arccore/base/TraceInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arccore
 {
-
-#if ARCCORE_NEED_IMPLEMENTATION
-#else
-#undef ARCCORE_THROW
-#define ARCCORE_THROW(exception_class,...) throw std::exception()
-#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

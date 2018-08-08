@@ -9,6 +9,7 @@
 #include "arccore/base/TraceInfo.h"
 #include "arccore/base/PlatformUtils.h"
 #include "arccore/base/String.h"
+#include "arccore/base/IndexOutOfRangeException.h"
 
 #include <iostream>
 #include <cstring>
@@ -72,11 +73,7 @@ extern "C++" ARCCORE_BASE_EXPORT void
 arccoreRangeError(Int32 i,Int32 max_size)
 {
   arccoreDebugPause("arccoreRangeError");
-#if ARCCORE_NEED_IMPLEMENTATION
   throw IndexOutOfRangeException(A_FUNCINFO,String(),i,0,max_size);
-#else
-  throw std::exception();
-#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -86,13 +83,8 @@ extern "C++" ARCCORE_BASE_EXPORT void
 arccoreRangeError(Int64 i,Int64 max_size)
 {
   arccoreDebugPause("arccoreRangeError");
-#if ARCCORE_NEED_IMPLEMENTATION
   throw IndexOutOfRangeException(A_FUNCINFO,String(),i,0,max_size);
-#else
-  throw std::exception();
-#endif
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

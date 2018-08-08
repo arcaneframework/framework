@@ -10,9 +10,12 @@
 #include "arccore/base/StringBuilder.h"
 #include "arccore/base/CStringUtils.h"
 #include "arccore/base/APReal.h"
+#include "arccore/base/TraceInfo.h"
+#include "arccore/base/FatalErrorException.h"
 
 #include <iostream>
 #include <cstring>
+#include <limits>
 
 #define A_FASTLOCK(ptr)
 
@@ -572,6 +575,15 @@ hashCode() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void StringFormatterArg::
+_formatReal(Real avalue)
+  {
+    std::ostringstream ostr;
+    ostr.precision(std::numeric_limits<Real>::max_digits10);
+    ostr << avalue;
+    m_str_value = ostr.str();
+  }
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -589,11 +601,7 @@ class StringFormatter
       Integer z = m_current_arg;
       ++m_current_arg;
       if (z>=100){
-#if ARCCORE_NEED_IMPLEMENTATION
         throw FatalErrorException(A_FUNCINFO,"Too many args");
-#else
-        throw std::exception();
-#endif
       }
       else if (z>=10){
         nb_z = 2;

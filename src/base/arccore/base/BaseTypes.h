@@ -58,6 +58,10 @@ class StackFrame;
 class FixedStackFrameArray;
 class IStackTraceService;
 
+class ArgumentException;
+class IndexOutOfRangeException;
+class FatalErrorException;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 				

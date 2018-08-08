@@ -8,6 +8,8 @@ set(SOURCES
   ArrayRange.h
   ArrayView.h
   ArrayView.cc
+  ArgumentException.cc
+  ArgumentException.h
   CStringUtils.h
   CStringUtils.cc
   BaseTypes.h
@@ -17,7 +19,11 @@ set(SOURCES
   CoreArray.h
   Exception.h
   Exception.cc
+  FatalErrorException.cc
+  FatalErrorException.h
   Iterator.h
+  IndexOutOfRangeException.cc
+  IndexOutOfRangeException.h
   IStackTraceService.h
   PlatformUtils.h
   PlatformUtils.cc
