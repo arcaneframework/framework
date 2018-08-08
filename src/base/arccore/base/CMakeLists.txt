@@ -15,13 +15,18 @@ set(SOURCES
   BasicTranscoder.cc
   BaseTypes.h
   CoreArray.h
+  Exception.h
+  Exception.cc
   Iterator.h
+  StackTrace.h
+  StackTrace.cc
   String.h
   String.cc
   StringBuilder.h
   StringBuilder.cc
   StringImpl.h
   StringImpl.cc
+  TraceInfo.h
 )
 
 message(STATUS "BinaryDir= ${Arccore_BINARY_DIR}")

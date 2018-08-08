@@ -51,6 +51,12 @@ class String;
 class StringBuilder;
 class StringFormatterArg;
 
+class TraceInfo;
+class StackTrace;
+class Exception;
+class StackFrame;
+class FixedStackFrameArray;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 				

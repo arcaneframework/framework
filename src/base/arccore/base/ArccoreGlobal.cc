@@ -6,8 +6,10 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/ArccoreGlobal.h"
+#include "arccore/base/TraceInfo.h"
 
 #include <iostream>
+#include <cstring>
 
 #ifndef ARCCORE_OS_WIN32
 #include <unistd.h>
@@ -90,6 +92,57 @@ arccoreRangeError(Int64 i,Int64 max_size)
 #else
   throw std::exception();
 #endif
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// Cette fonction peut être appelée souvent et certaines fois
+// dans des conditions d'exceptions. Pour cette raison, il ne
+// faut pas qu'elle fasse d'allocations.
+namespace
+{
+void _printFuncName(std::ostream& o,const char* name)
+{
+  const char* par_pos = std::strchr(name,'(');
+  if (!par_pos){
+    o << name;
+    return;
+  }
+
+  // Recherche quelque chose du type namespace::class_name::func_name
+  // et essaye de ne conserver que class_name::func_name
+  ptrdiff_t len = par_pos - name;
+  ptrdiff_t last_scope = 0;
+  ptrdiff_t last_scope2 = 0;
+  for( ptrdiff_t i=0; i<len; ++i ){
+    if (name[i]==':' && name[i+1]==':'){
+      last_scope2 = last_scope;
+      last_scope = i;
+    }
+  }
+  if (last_scope2!=0)
+    last_scope2+=2;
+  ptrdiff_t true_pos = last_scope2;
+  ptrdiff_t true_len = len - true_pos;
+  o.write(&name[true_pos],true_len);
+  o << "()";
+}
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCCORE_BASE_EXPORT std::ostream&
+operator<<(std::ostream& o,const TraceInfo& t)
+{
+  if (t.printSignature())
+    o << t.name() << ":" << t.line(); 
+  else{
+    _printFuncName(o,t.name());
+  }
+  return o;
 }
 
 /*---------------------------------------------------------------------------*/
