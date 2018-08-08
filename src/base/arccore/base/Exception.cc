@@ -6,11 +6,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/Exception.h"
-#if ARCCORE_NEED_IMPLEMENTATION
 #include "arccore/base/IStackTraceService.h"
-#include "arccore/base/ISymbolizerService.h"
 #include "arccore/base/PlatformUtils.h"
-#endif
 #include "arccore/base/TraceInfo.h"
 
 #include <iostream>
@@ -40,19 +37,15 @@ Exception(const String& aname,const String& awhere)
 {
   ++m_nb_pending_exception;
   _setStackTrace();
-#if ARCCORE_NEED_IMPLEMENTATION
-
 #if defined(ARCCORE_DEBUG_EXCEPTION)
   explain(cerr);
   cerr << "** Exception: Debug mode activated. Execution paused.\n";
   cerr << "** Exception: To find the location of the exception, start the debugger\n";
-  cerr << "** Exception: using process number " << platform::getProcessId() << '\n';
-  cerr << "** Exception: on host " << String(platform::getHostName()) << ".\n";
+  cerr << "** Exception: using process number " << Platform::getProcessId() << '\n';
+  cerr << "** Exception: on host " << String(Platform::getHostName()) << ".\n";
 #ifndef ARCCORE_OS_WIN32
   ::pause();
 #endif
-#endif
-
 #endif
 }
 
@@ -68,7 +61,6 @@ Exception(const String& aname,const String& awhere,const String& amessage)
 {
   ++m_nb_pending_exception;
   _setStackTrace();
-#if ARCCORE_NEED_IMPLEMENTATION
 
 #if defined(ARCCORE_DEBUG_EXCEPTION)
   explain(cerr);
@@ -79,8 +71,6 @@ Exception(const String& aname,const String& awhere,const String& amessage)
 #ifndef ARCCORE_OS_WIN32
   ::pause();
 #endif
-#endif
-
 #endif
 }
 
@@ -181,8 +171,6 @@ Exception(const Exception& from)
 , m_is_collective(from.m_is_collective)
 {
   ++m_nb_pending_exception;
-#if ARCCORE_NEED_IMPLEMENTATION
-
 #if defined(ARCCORE_DEBUG_EXCEPTION)
   explain(cerr);
   cerr << "** Exception: Debug mode activated. Execution paused.\n";
@@ -192,8 +180,6 @@ Exception(const Exception& from)
 #ifndef ARCCORE_OS_WIN32
   ::pause();
 #endif
-#endif
-
 #endif
 }
 
@@ -212,14 +198,12 @@ Exception::
 void Exception::
 _setStackTrace()
 {
-#if ARCCORE_NEED_IMPLEMENTATION
-  IStackTraceService* stack_service = platform::getStackTraceService();
+  IStackTraceService* stack_service = Platform::getStackTraceService();
   // Evite les appels trop recursifs qui peuvent se produire si on lève des
   // exceptions dans l'appel à stackTrace().
-  if (stack_service && m_nb_pending_exception.value()<=2){
+  if (stack_service && m_nb_pending_exception.load()<=2){
     m_stack_trace = stack_service->stackTrace();
   }
-#endif
 }
 
 /*---------------------------------------------------------------------------*/

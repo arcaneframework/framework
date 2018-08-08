@@ -18,6 +18,9 @@ set(SOURCES
   Exception.h
   Exception.cc
   Iterator.h
+  IStackTraceService.h
+  PlatformUtils.h
+  PlatformUtils.cc
   StackTrace.h
   StackTrace.cc
   String.h

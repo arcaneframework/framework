@@ -7,9 +7,12 @@
 
 #include "arccore/base/ArccoreGlobal.h"
 #include "arccore/base/TraceInfo.h"
+#include "arccore/base/PlatformUtils.h"
+#include "arccore/base/String.h"
 
 #include <iostream>
 #include <cstring>
+#include <sstream>
 
 #ifndef ARCCORE_OS_WIN32
 #include <unistd.h>
@@ -51,18 +54,14 @@ extern "C++" ARCCORE_BASE_EXPORT void
 arccoreDebugPause(const char* msg)
 {
   if (global_pause_on_error){
-#if ARCCORE_NEED_IMPLEMENTATION
-    OStringStream ostr;
-    String host_name(platform::getHostName());
-    ostr() << "** FATAL: Debug mode activated. Execution paused\n"
-           << "** FATAL: message:" << msg << "\n"
-           << "** FATAL: To find the location of the error, start\n"
-           << "** FATAL: start the debugger using the process number\n"
-           << "** FATAL: (pid=" << platform::getProcessId() << ",host=" << host_name << ").\n";
-    cerr << ostr.str();
-#else
-    std::cerr << "arccoreDebugPause Not Yet Implemented";
-#endif
+    std::ostringstream ostr;
+    String host_name(Platform::getHostName());
+    ostr << "** FATAL: Debug mode activated. Execution paused\n"
+         << "** FATAL: message:" << msg << "\n"
+         << "** FATAL: To find the location of the error, start\n"
+         << "** FATAL: start the debugger using the process number\n"
+         << "** FATAL: (pid=" << Platform::getProcessId() << ",host=" << host_name << ").\n";
+    std::cerr << ostr.str();
 #ifndef ARCANE_OS_WIN32
     ::pause();
 #endif

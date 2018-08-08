@@ -56,6 +56,7 @@ class StackTrace;
 class Exception;
 class StackFrame;
 class FixedStackFrameArray;
+class IStackTraceService;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
