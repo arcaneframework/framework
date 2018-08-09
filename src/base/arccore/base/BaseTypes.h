@@ -61,6 +61,8 @@ class IStackTraceService;
 class ArgumentException;
 class IndexOutOfRangeException;
 class FatalErrorException;
+class NotSupportedException;
+class NotImplementedException;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -83,6 +85,8 @@ typedef ArrayView<Integer> IntegerArrayView;
 typedef ArrayView<Real> RealArrayView;
 //! Equivalent C d'un tableau à une dimension de booléens
 typedef ArrayView<bool> BoolArrayView;
+//! Equivalent C d'un tableau à une dimension d'entiers
+typedef ArrayView<Integer> IntegerArrayView;
 
 //! Equivalent C d'un tableau à une dimension de pointeurs
 typedef ConstArrayView<Pointer> PointerConstArrayView;
@@ -102,6 +106,8 @@ typedef ConstArrayView<Integer> IntegerConstArrayView;
 typedef ConstArrayView<Real> RealConstArrayView;
 //! Equivalent C d'un tableau à une dimension de booléens
 typedef ConstArrayView<bool> BoolConstArrayView;
+//! Equivalent C d'un tableau à une dimension d'entiers
+typedef ConstArrayView<Integer> IntegerConstArrayView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -25,6 +25,10 @@ set(SOURCES
   IndexOutOfRangeException.cc
   IndexOutOfRangeException.h
   IStackTraceService.h
+  NotSupportedException.h
+  NotSupportedException.cc
+  NotImplementedException.h
+  NotImplementedException.cc
   PlatformUtils.h
   PlatformUtils.cc
   StackTrace.h

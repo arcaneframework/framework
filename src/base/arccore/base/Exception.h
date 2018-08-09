@@ -10,6 +10,9 @@
 
 #include "arccore/base/String.h"
 #include "arccore/base/StackTrace.h"
+// On n'a pas explicitement besoin de ce .h mais il est plus simple
+// de l'avoir pour pouvoir facilement lancer des exceptions avec les traces
+#include "arccore/base/TraceInfo.h"
 
 #include <exception>
 #include <atomic>
@@ -19,11 +22,6 @@
 
 namespace Arccore
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class TraceInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
