@@ -8,6 +8,9 @@ set(SOURCES
   ArrayRange.h
   ArrayView.h
   ArrayView.cc
+  Array2View.h
+  Array3View.h
+  Array4View.h
   ArgumentException.cc
   ArgumentException.h
   CStringUtils.h

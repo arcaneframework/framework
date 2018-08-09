@@ -1,13 +1,20 @@
 /*---------------------------------------------------------------------------*/
 /* ArrayView.cc                                                (C) 2000-2018 */
 /*                                                                           */
-/* Déclarations générales de Arccore.                                         */
+/* Déclarations générales de Arccore.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/ArrayView.h"
 #include "arccore/base/ArgumentException.h"
 #include "arccore/base/TraceInfo.h"
+
+// On n'utilise pas directement ces fichiers mais on les inclus pour tester
+// la compilation. Lorsque les tests seront en place on pourra supprmer
+// ces inclusions
+#include "arccore/base/Array2View.h"
+#include "arccore/base/Array3View.h"
+#include "arccore/base/Array4View.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

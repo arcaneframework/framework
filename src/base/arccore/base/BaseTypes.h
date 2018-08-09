@@ -44,6 +44,12 @@ typedef float Single;
 
 template<typename T> class ConstArrayView;
 template<typename T> class ArrayView;
+template<typename T> class ConstArray2View;
+template<typename T> class Array2View;
+template<typename T> class ConstArray3View;
+template<typename T> class Array3View;
+template<typename T> class ConstArray4View;
+template<typename T> class Array4View;
 template<class DataType> class CoreArray;
 
 class StringImpl;
