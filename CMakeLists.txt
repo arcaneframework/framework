@@ -41,3 +41,4 @@ message(STATUS "Arccore_SOURCE_DIR=${Arccore_SOURCE_DIR}")
 message(STATUS "Arccore_BINARY_DIR=${Arccore_BINARY_DIR}")
 
 add_subdirectory(src/base/arccore/base)
+add_subdirectory(src/collections/arccore/collections)
