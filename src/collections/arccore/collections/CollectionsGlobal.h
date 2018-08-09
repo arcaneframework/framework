@@ -37,6 +37,9 @@ template<typename DataType> class Array;
 template<typename DataType> class AbstractArray;
 template<typename DataType> class UniqueArray;
 template<typename DataType> class SharedArray;
+template<typename DataType> class Array2;
+template<typename DataType> class UniqueArray2;
+template<typename DataType> class SharedArray2;
 }
 
 /*---------------------------------------------------------------------------*/

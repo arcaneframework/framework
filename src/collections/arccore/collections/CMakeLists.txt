@@ -3,6 +3,8 @@ find_package(Glib REQUIRED)
 set(SOURCES
   Array.h
   Array.cc
+  Array2.h
+  Array2.cc
   CollectionsGlobal.h
   IMemoryAllocator.h
   MemoryAllocator.cc
