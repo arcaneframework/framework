@@ -8,6 +8,7 @@ set(SOURCES
   GlibThreadImplementation.cc
   Mutex.h
   Mutex.cc
+  NullThreadImplementation.h
 )
 
 arccore_add_library(arccore_concurrency

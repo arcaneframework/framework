@@ -30,6 +30,8 @@ class IThreadImplementation;
 class Mutex;
 class GlobalMutex;
 class IThreadBarrier;
+class NullThreadImplementation;
+class NullThreadBarrier;
 
 //! Classe opaque encapsulant l'implementation des threads
 class ThreadImpl;
