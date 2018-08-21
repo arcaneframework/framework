@@ -20,6 +20,13 @@ endif()
 include(${ARCCON_ROOT}/Arccon.cmake)
 
 # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
+if(CMAKE_BUILD_TYPE STREQUAL Debug)
+  set(ARCCORE_DEBUG YES)
+endif()
+
+# ----------------------------------------------------------------------------
 # Fonctions utilitaires diverses
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/Functions.cmake)
 

@@ -369,6 +369,13 @@ bool arccoreIsDebug();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+//! Encapsulation de la fonction C printf
+extern "C++" ARCCORE_BASE_EXPORT void
+arccorePrintf(const char*,...);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Passe en mode pause ou lance une erreur fatale.
  *
@@ -452,7 +459,7 @@ arccoreCheckAt(Int64 i,Int64 max_size)
 }
 
 #ifdef ARCCORE_CHECK
-#define ARCCORE_CHECK_AT(a,b) ::Arccore::arcaneCheckAt((a),(b))
+#define ARCCORE_CHECK_AT(a,b) ::Arccore::arccoreCheckAt((a),(b))
 #else
 #define ARCCORE_CHECK_AT(a,b)
 #endif
@@ -464,9 +471,9 @@ arccoreCheckAt(Int64 i,Int64 max_size)
  * Macros utilisées pour le débug.
  */
 #ifdef ARCCORE_DEBUG_ASSERT
-extern "C++" ARCCORE_BASE_EXPORT void _doAssert(const char*,const char*,const char*,size_t);
+extern "C++" ARCCORE_BASE_EXPORT void _doAssert(const char*,const char*,const char*,int);
 template<typename T> inline T*
-_checkPointer(T* t,const char* file,const char* func,size_t line)
+_checkPointer(T* t,const char* file,const char* func,int line)
 {
   if (!t){
     _doAssert("ARCCORE_ASSERT",file,func,line);
