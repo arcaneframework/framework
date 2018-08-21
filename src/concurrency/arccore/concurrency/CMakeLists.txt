@@ -5,6 +5,7 @@ set(SOURCES
   ConcurrencyGlobal.cc
   IThreadImplementation.h
   IThreadBarrier.h
+  GlibThreadImplementation.cc
   Mutex.h
   Mutex.cc
 )
@@ -15,6 +16,7 @@ arccore_add_library(arccore_concurrency
   FILES ${SOURCES}
 )
 
+target_link_libraries(arccore_concurrency PRIVATE arcconpkg_Glib)
 target_compile_definitions(arccore_concurrency PRIVATE ARCCORE_COMPONENT_arccore_concurrency)
 target_include_directories(arccore_concurrency PUBLIC $<BUILD_INTERFACE:${Arccore_SOURCE_DIR}/src/concurrency> $<INSTALL_INTERFACE:include>)
 install(TARGETS arccore_concurrency EXPORT ${ARCCORE_EXPORT_TARGET} DESTINATION lib)

@@ -1,5 +1,3 @@
-find_package(Glib REQUIRED)
-
 set(SOURCES
   Array.h
   Array.cc
