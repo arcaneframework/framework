@@ -70,6 +70,18 @@ class FatalErrorException;
 class NotSupportedException;
 class NotImplementedException;
 
+class IFunctor;
+template<typename ArgType>
+class IFunctorWithArgumentT;
+template<typename ReturnType,typename Arg1,typename Arg2>
+class IFunctorWithArgAndReturn2;
+template<typename T>
+class FunctorT;
+template<typename ClassType,typename ArgType>
+class FunctorWithArgumentT;
+template<typename ArgType>
+class StdFunctorWithArgumentT;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 				

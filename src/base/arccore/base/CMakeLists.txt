@@ -43,6 +43,10 @@ set(SOURCES
   StringImpl.h
   StringImpl.cc
   TraceInfo.h
+
+  IFunctor.h
+  Functor.h
+  Functor.cc
 )
 
 message(STATUS "BinaryDir= ${Arccore_BINARY_DIR}")
