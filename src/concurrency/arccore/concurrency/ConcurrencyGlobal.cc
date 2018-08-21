@@ -7,6 +7,8 @@
 
 #include "arccore/concurrency/ConcurrencyGlobal.h"
 
+#include "arccore/concurrency/NullThreadImplementation.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -15,7 +17,8 @@ namespace Arccore
 
 namespace Concurrency
 {
-IThreadImplementation* global_thread_implementation_service = nullptr;
+NullThreadImplementation global_null_thread_implementation;
+IThreadImplementation* global_thread_implementation = &global_null_thread_implementation;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -24,7 +27,7 @@ IThreadImplementation* global_thread_implementation_service = nullptr;
 extern "C++" ARCCORE_CONCURRENCY_EXPORT IThreadImplementation* Concurrency::
 getThreadImplementation()
 {
-  return global_thread_implementation_service;
+  return global_thread_implementation;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -33,8 +36,8 @@ getThreadImplementation()
 extern "C++" ARCCORE_CONCURRENCY_EXPORT IThreadImplementation* Concurrency::
 setThreadImplementation(IThreadImplementation* service)
 {
-  IThreadImplementation* old_service = global_thread_implementation_service;
-  global_thread_implementation_service = service;
+  IThreadImplementation* old_service = global_thread_implementation;
+  global_thread_implementation = service;
   return old_service;
 }
 
