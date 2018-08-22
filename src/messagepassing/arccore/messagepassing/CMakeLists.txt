@@ -3,6 +3,9 @@ set(SOURCES
   MessagePassingGlobal.cc
   Request.h
   Request.cc
+  IStat.h
+  Stat.h
+  Stat.cc
 )
 
 arccore_add_library(arccore_messagepassing
