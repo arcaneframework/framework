@@ -4,6 +4,8 @@ set(SOURCES
   TraceGlobal.h
   TraceGlobal.cc
   Trace.h
+  TraceAccessor.h
+  TraceAccessor.cc
   TraceClassConfig.h
   TraceMessage.h
   TraceMessage.cc
