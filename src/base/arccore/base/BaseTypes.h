@@ -69,6 +69,7 @@ class IndexOutOfRangeException;
 class FatalErrorException;
 class NotSupportedException;
 class NotImplementedException;
+class TimeoutException;
 
 class IFunctor;
 template<typename ArgType>

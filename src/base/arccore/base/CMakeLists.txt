@@ -43,6 +43,8 @@ set(SOURCES
   StringImpl.h
   StringImpl.cc
   TraceInfo.h
+  TimeoutException.h
+  TimeoutException.cc
 
   IFunctor.h
   Functor.h
