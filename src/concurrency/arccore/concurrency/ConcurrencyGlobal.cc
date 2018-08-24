@@ -8,6 +8,7 @@
 #include "arccore/concurrency/ConcurrencyGlobal.h"
 
 #include "arccore/concurrency/NullThreadImplementation.h"
+#include "arccore/concurrency/SpinLock.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

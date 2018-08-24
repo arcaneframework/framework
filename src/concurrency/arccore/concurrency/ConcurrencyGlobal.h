@@ -28,6 +28,7 @@ namespace Arccore
 {
 class IThreadImplementation;
 class Mutex;
+class SpinLock;
 class GlobalMutex;
 class IThreadBarrier;
 class NullThreadImplementation;

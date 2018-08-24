@@ -9,6 +9,7 @@ set(SOURCES
   Mutex.h
   Mutex.cc
   NullThreadImplementation.h
+  SpinLock.h
 )
 
 arccore_add_library(arccore_concurrency
