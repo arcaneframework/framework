@@ -10,6 +10,8 @@ set(SOURCES
   MpiAdapter.h
   MpiAdapter.cc
   MpiLock.h
+  MpiDatatype.h
+  MpiDatatype.cc
 )
 
 arccore_add_library(arccore_messagepassingmpi

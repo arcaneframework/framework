@@ -57,6 +57,10 @@ namespace Mpi
 {
 class MpiAdapter;
 class MpiLock;
+class IMpiReduceOperator;
+class MpiDatatype;
+template<typename DataType>
+class StdMpiReduceOperator;
 }
 
 }

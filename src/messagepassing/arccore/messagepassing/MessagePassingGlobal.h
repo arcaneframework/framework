@@ -26,7 +26,6 @@
 
 namespace Arccore
 {
-
 namespace MessagePassing
 {
 //! Numéro correspondant à un rang nul
@@ -39,24 +38,24 @@ class IStat;
  * \brief Types des réductions supportées.
  */
 enum eReduceType
-  {
-    ReduceMin, //!< Minimum des valeurs
-    ReduceMax, //!< Maximum des valeurs
-    ReduceSum  //!< Somme des valeurs
-  };
+{
+  ReduceMin, //!< Minimum des valeurs
+  ReduceMax, //!< Maximum des valeurs
+  ReduceSum  //!< Somme des valeurs
+};
 
 /*!
  * \brief Type d'attente.
  */
 enum eWaitType
-  {
-    WaitAll, //! Attend que tous les messages de la liste soient traités
-    WaitSome,//! Attend que au moins un message de la liste soit traité
-    WaitSomeNonBlocking //! Traite uniquement les messages qui peuvent l'être sans attendre.
-  };
-}
+{
+  WaitAll, //! Attend que tous les messages de la liste soient traités
+  WaitSome,//! Attend que au moins un message de la liste soit traité
+  WaitSomeNonBlocking //! Traite uniquement les messages qui peuvent l'être sans attendre.
+};
 
-}
+} // End namespace MessagePassing
+} // End namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
