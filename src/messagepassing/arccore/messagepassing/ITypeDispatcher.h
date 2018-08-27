@@ -44,18 +44,9 @@ class ITypeDispatcher
                                 Int32ConstArrayView send_index,ArrayView<Type> recv_buf,
                                 Int32ConstArrayView recv_count,Int32ConstArrayView recv_index) =0;
   virtual Request send(ConstArrayView<Type> send_buffer,Int32 rank,bool is_blocked) =0;
-  virtual Request recv(ArrayView<Type> recv_buffer,Int32 rank,bool is_blocked) =0;
+  virtual Request receive(ArrayView<Type> recv_buffer,Int32 rank,bool is_blocked) =0;
   virtual Type allReduce(eReduceType op,Type send_buf) =0;
   virtual void allReduce(eReduceType op,ArrayView<Type> send_buf) =0;
-  virtual void computeMinMaxSum(Type val,Type& min_val,Type& max_val,Type& sum_val,
-                                Int32& min_rank,
-                                Int32& max_rank) =0;
-  virtual void computeMinMaxSum(ConstArrayView<Type> values,
-                                ArrayView<Type> min_values,
-                                ArrayView<Type> max_values,
-                                ArrayView<Type> sum_values,
-                                ArrayView<Int32> min_ranks,
-                                ArrayView<Int32> max_ranks) =0;
 };
 
 /*---------------------------------------------------------------------------*/
