@@ -34,7 +34,9 @@ static const Int32 A_NULL_RANK = static_cast<Int32>(-1);
 class Request;
 class IStat;
 class IMessagePassingMng;
+class MessagePassingMng;
 class IDispatchers;
+class Dispatchers;
 template<class DataType>
 class ITypeDispatcher;
 

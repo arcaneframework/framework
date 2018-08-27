@@ -9,6 +9,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/messagepassing/MessagePassingGlobal.h"
+#include "arccore/base/BaseTypes.h"
+#include "arccore/collections/CollectionsGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -53,8 +55,7 @@ template<typename Type> Request mpReceive(IMessagePassingMng* pm,ArrayView<type>
 template<typename Type> void mpAllToAll(IMessagePassingMng* pm,ConstArrayView<type> send_buf,ArrayView<type> recv_buf,Integer count) ;\
 template<typename Type> void mpAllToAllVariable(IMessagePassingMng* pm,ConstArrayView<type> send_buf,Int32ConstArrayView send_count,\
                                                 Int32ConstArrayView send_index,ArrayView<type> recv_buf, \
-                                                Int32ConstArrayView recv_count,Int32ConstArrayView recv_index);
-
+                                                Int32ConstArrayView recv_count,Int32ConstArrayView recv_index)
 
 ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(char);
 ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(signed char);

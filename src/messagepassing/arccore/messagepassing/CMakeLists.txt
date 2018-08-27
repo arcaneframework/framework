@@ -1,12 +1,16 @@
 set(SOURCES
   MessagePassingGlobal.h
   MessagePassingGlobal.cc
+  Dispatchers.h
+  Dispatchers.cc
   Request.h
   Request.cc
   IStat.h
   IDispatchers.h
   ITypeDispatcher.h
   IMessagePassingMng.h
+  MessagePassingMng.h
+  MessagePassingMng.cc
   Stat.h
   Stat.cc
 )

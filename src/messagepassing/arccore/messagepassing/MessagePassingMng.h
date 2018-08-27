@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------*/
-/* MessagePassingGlobal.h                                      (C) 2000-2018 */
+/* MessagePassingMng.h                                         (C) 2000-2018 */
 /*                                                                           */
-/* DÃ©finitions globales de la composante 'MessagPpassing' de 'Arccore'.      */
+/* Gestionnaire des échanges de messages.                                    */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCCORE_MESSAGEPASSING_MESSAGEPASSINGMNG_H
+#define ARCCORE_MESSAGEPASSING_MESSAGEPASSINGMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/messagepassing/MessagePassingGlobal.h"
-#include "arccore/messagepassing/ITypeDispatcher.h"
-#include "arccore/messagepassing/Dispatchers.h"
 #include "arccore/messagepassing/IMessagePassingMng.h"
 
 /*---------------------------------------------------------------------------*/
@@ -15,15 +15,38 @@
 
 namespace Arccore
 {
-
-namespace Messagepassing
+namespace MessagePassing
 {
-}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Interface du gestionnaire des échanges de messages.
+ */
+class ARCCORE_MESSAGEPASSING_EXPORT MessagePassingMng
+: public IMessagePassingMng
+{
+ public:
+
+  MessagePassingMng(IDispatchers* d);
+  ~MessagePassingMng() override;
+
+ public:
+
+  IDispatchers* dispatchers() override;
+
+ private:
+
+  IDispatchers* m_dispatchers;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+} // End namespace MessagePassing
 } // End namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#endif  
