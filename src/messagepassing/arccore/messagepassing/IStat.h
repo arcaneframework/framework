@@ -24,7 +24,7 @@ namespace MessagePassing
 {
 
 //! Une statistique
-class OneStat
+class ARCCORE_MESSAGEPASSING_EXPORT OneStat
 {
  public:
   OneStat(const String& name)

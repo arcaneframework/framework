@@ -33,6 +33,10 @@ static const Int32 A_NULL_RANK = static_cast<Int32>(-1);
 
 class Request;
 class IStat;
+class IMessagePassingMng;
+class IDispatchers;
+template<class DataType>
+class ITypeDispatcher;
 
 /*!
  * \brief Types des réductions supportées.

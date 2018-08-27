@@ -6,6 +6,9 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/messagepassing/MessagePassingGlobal.h"
+#include "arccore/messagepassing/ITypeDispatcher.h"
+#include "arccore/messagepassing/IDispatchers.h"
+#include "arccore/messagepassing/IMessagePassingMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
