@@ -21,8 +21,10 @@ namespace MessagePassing
 /*---------------------------------------------------------------------------*/
 
 MessagePassingMng::
-MessagePassingMng(IDispatchers* d)
-: m_dispatchers(d)
+MessagePassingMng(Int32 comm_rank,Int32 comm_size,IDispatchers* d)
+: m_comm_rank(comm_rank)
+, m_comm_size(comm_size)
+, m_dispatchers(d)
 {
 }
 

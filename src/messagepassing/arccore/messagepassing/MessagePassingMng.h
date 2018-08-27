@@ -28,15 +28,19 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessagePassingMng
 {
  public:
 
-  MessagePassingMng(IDispatchers* d);
+  MessagePassingMng(Int32 comm_rank,Int32 comm_size,IDispatchers* d);
   ~MessagePassingMng() override;
 
  public:
 
+  Int32 commRank() const override { return m_comm_rank; }
+  Int32 commSize() const override { return m_comm_size; }
   IDispatchers* dispatchers() override;
 
  private:
 
+  Int32 m_comm_rank;
+  Int32 m_comm_size;
   IDispatchers* m_dispatchers;
 };
 

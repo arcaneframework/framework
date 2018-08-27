@@ -11,6 +11,7 @@ set(SOURCES
   IMessagePassingMng.h
   MessagePassingMng.h
   MessagePassingMng.cc
+  Messages.h
   Stat.h
   Stat.cc
 )
