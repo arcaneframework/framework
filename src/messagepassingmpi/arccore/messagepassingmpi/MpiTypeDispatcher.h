@@ -32,6 +32,7 @@ class MpiTypeDispatcher
   MpiTypeDispatcher(IMessagePassingMng* parallel_mng,MpiAdapter* adapter,MpiDatatype* datatype);
   ~MpiTypeDispatcher();
  public:
+  void finalize() override {}
   void broadcast(ArrayView<Type> send_buf,Int32 rank) override;
   void allGather(ConstArrayView<Type> send_buf,ArrayView<Type> recv_buf) override;
   void allGatherVariable(ConstArrayView<Type> send_buf,Array<Type>& recv_buf) override;
@@ -48,7 +49,9 @@ class MpiTypeDispatcher
   void allReduce(eReduceType op,ArrayView<Type> send_buf) override;
  public:
   MpiDatatype* datatype() const { return m_datatype; }
- protected:
+  IMessagePassingMng* messagePassingMng() const { return m_parallel_mng; }
+  MpiAdapter* adapter() const { return m_adapter; }
+ private:
   IMessagePassingMng* m_parallel_mng;
   MpiAdapter* m_adapter;
   MpiDatatype* m_datatype;
