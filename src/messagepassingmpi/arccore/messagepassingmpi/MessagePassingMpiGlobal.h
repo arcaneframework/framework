@@ -62,6 +62,61 @@ class MpiDatatype;
 class MpiMessagePassingMng;
 template<typename DataType>
 class StdMpiReduceOperator;
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace MpiBuiltIn
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline MPI_Datatype
+datatype(char)
+{ return MPI_CHAR; }
+inline MPI_Datatype
+datatype(unsigned char)
+{ return MPI_CHAR; }
+inline MPI_Datatype
+datatype(signed char)
+{ return MPI_CHAR; }
+inline MPI_Datatype
+datatype(short)
+{ return MPI_SHORT; }
+inline MPI_Datatype
+datatype(int)
+{ return MPI_INT; }
+inline MPI_Datatype
+datatype(float)
+{ return MPI_FLOAT; }
+inline MPI_Datatype
+datatype(double)
+{ return MPI_DOUBLE; }
+inline MPI_Datatype
+datatype(long double)
+{ return MPI_LONG_DOUBLE; }
+inline MPI_Datatype
+datatype(long int)
+{ return MPI_LONG; }
+inline MPI_Datatype
+datatype(unsigned short)
+{ return MPI_UNSIGNED_SHORT; }
+inline MPI_Datatype
+datatype(unsigned int)
+{ return MPI_UNSIGNED; }
+inline MPI_Datatype
+datatype(unsigned long)
+{ return MPI_UNSIGNED_LONG; }
+inline MPI_Datatype
+datatype(long long)
+{ return MPI_LONG_LONG; }
+inline MPI_Datatype
+datatype(unsigned long long)
+{ return MPI_LONG_LONG; }
+}
+
 }
 
 }
