@@ -15,6 +15,8 @@ set(SOURCES
   MpiTypeDispatcher.h
   MpiTypeDispatcherImpl.h
   MpiTypeDispatcher.cc
+  MpiMessagePassingMng.cc
+  MpiMessagePassingMng.h
 )
 
 arccore_add_library(arccore_messagepassingmpi
