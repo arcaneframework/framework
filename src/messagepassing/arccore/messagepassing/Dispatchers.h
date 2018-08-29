@@ -65,6 +65,9 @@ class ARCCORE_MESSAGEPASSING_EXPORT Dispatchers
   void setDispatcher(ITypeDispatcher<double>* x) { m_double = x; }
   void setDispatcher(ITypeDispatcher<long double>* x) { m_long_double = x; }
 
+  //! Indique si lors de la destruction on appelle l'opérateur delete sur les instances (faux par défaut)
+  void setDeleteDispatchers(bool v) { m_is_delete_dispatchers = v; }
+
  private:
 
   ITypeDispatcher<char>* m_char;
@@ -81,6 +84,8 @@ class ARCCORE_MESSAGEPASSING_EXPORT Dispatchers
   ITypeDispatcher<float>* m_float;
   ITypeDispatcher<double>* m_double;
   ITypeDispatcher<long double>* m_long_double;
+
+  bool m_is_delete_dispatchers;
 };
 
 /*---------------------------------------------------------------------------*/
