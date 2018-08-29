@@ -12,15 +12,9 @@ set(SOURCES
   SpinLock.h
 )
 
-arccore_add_library(arccore_concurrency
-  INPUT_PATH ${Arccore_SOURCE_DIR}/src/concurrency
-  RELATIVE_PATH arccore/concurrency
+arccore_add_component_library(concurrency
   FILES ${SOURCES}
 )
 
 target_link_libraries(arccore_concurrency PRIVATE arcconpkg_Glib)
-target_compile_definitions(arccore_concurrency PRIVATE ARCCORE_COMPONENT_arccore_concurrency)
-target_include_directories(arccore_concurrency PUBLIC $<BUILD_INTERFACE:${Arccore_SOURCE_DIR}/src/concurrency> $<INSTALL_INTERFACE:include>)
-install(TARGETS arccore_concurrency EXPORT ${ARCCORE_EXPORT_TARGET} DESTINATION lib)
-
 target_link_libraries(arccore_concurrency PUBLIC arccore_base)
