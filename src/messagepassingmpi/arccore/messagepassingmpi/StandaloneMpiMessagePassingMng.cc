@@ -39,6 +39,7 @@ class StandaloneMpiMessagePassingMng::Impl
     m_adapter = new MpiAdapter(m_trace_mng, m_stat, mpi_comm, mpi_lock);
 
     m_dispatchers = new Dispatchers();
+    m_dispatchers->setDeleteDispatchers(true);
   }
 
   ~Impl()
