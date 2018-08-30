@@ -43,7 +43,6 @@ MpiTypeDispatcher(IMessagePassingMng* parallel_mng,MpiAdapter* adapter,MpiDataty
 template<class Type> MpiTypeDispatcher<Type>::
 ~MpiTypeDispatcher()
 {
-  delete m_datatype;
   m_datatype = nullptr;
 }
 
