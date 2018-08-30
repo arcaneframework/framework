@@ -6,7 +6,7 @@ message(STATUS "Including arccore/CMakeLists.txt")
 # ----------------------------------------------------------------------------
 
 if (NOT ARCCORE_EXPORT_TARGET)
-  set(ARCCORE_EXPORT_TARGET ArccorTargets)
+  set(ARCCORE_EXPORT_TARGET ArccoreTargets)
 endif()
 
 # ----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ if (NOT ARCCON_ROOT)
   message(FATAL_ERROR "Variable 'ARCCON_ROOT' is not set")
 endif()
 if (NOT ARCCON_EXPORT_TARGET)
-  set(ARCCON_EXPORT_TARGET ${ARCCORE_EXPOR_TARGET})
+  set(ARCCON_EXPORT_TARGET ${ARCCORE_EXPORT_TARGET})
 endif()
 include(${ARCCON_ROOT}/Arccon.cmake)
 
