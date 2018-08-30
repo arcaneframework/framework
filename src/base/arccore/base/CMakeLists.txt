@@ -55,6 +55,8 @@ arccore_add_component_library(base
   FILES ${SOURCES}
 )
 
+target_link_libraries(arccore_base PUBLIC $<BUILD_INTERFACE:arccore_build_compile_flags>)
+
 target_link_libraries(arccore_base PRIVATE arcconpkg_Glib)
 
 target_compile_features(arccore_base PUBLIC cxx_lambdas cxx_auto_type cxx_nullptr cxx_rvalue_references)

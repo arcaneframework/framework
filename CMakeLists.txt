@@ -27,6 +27,24 @@ if(CMAKE_BUILD_TYPE STREQUAL Debug)
 endif()
 
 # ----------------------------------------------------------------------------
+# Définit une cible fictive 'arccore_build_compile_flags' et qui contient les
+# options de compilation internes aux cibles de Arccore. Ce sont par exemple
+# les avertissements de compilation ou les options sur la visibilité des symboles.
+
+add_library(arccore_build_compile_flags INTERFACE)
+install(TARGETS arccore_build_compile_flags EXPORT ${ARCCORE_EXPORT_TARGET})
+
+# ----------------------------------------------------------------------------
+# Les symboles des bibliothèques ne sont pas visibles sauf si demandé
+# explicitement
+
+target_compile_options(arccore_build_compile_flags INTERFACE -fvisibility-inlines-hidden -fvisibility=hidden)
+
+# ----------------------------------------------------------------------------
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/CheckCompileFlags.cmake)
+
+# ----------------------------------------------------------------------------
 # Fonctions utilitaires diverses
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/Functions.cmake)
 
