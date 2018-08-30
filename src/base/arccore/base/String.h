@@ -420,7 +420,7 @@ class StringFormatterArgToString
  * \internal
  * \brief Classe utilisée pour formatter une chaîne de caractères.
  */
-class StringFormatterArg
+class ARCCORE_BASE_EXPORT StringFormatterArg
 {
  public:
   template<typename U>

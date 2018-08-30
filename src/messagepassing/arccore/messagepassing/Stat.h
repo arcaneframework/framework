@@ -29,7 +29,7 @@ namespace MessagePassing
 /*!
  * \brief Statistiques sur le parallélisme.
  */
-class Stat
+class ARCCORE_MESSAGEPASSING_EXPORT Stat
 : public IStat
 {
  public:

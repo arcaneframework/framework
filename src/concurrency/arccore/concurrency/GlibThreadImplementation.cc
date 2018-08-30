@@ -124,7 +124,7 @@ class GlibThreadBarrier
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C" IThreadBarrier*
+extern "C" ARCCORE_CONCURRENCY_EXPORT IThreadBarrier*
 createGlibThreadBarrier()
 {
   return new GlibThreadBarrier();
