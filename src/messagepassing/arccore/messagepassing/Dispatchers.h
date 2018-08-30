@@ -71,8 +71,8 @@ class ARCCORE_MESSAGEPASSING_EXPORT Dispatchers
  private:
 
   ITypeDispatcher<char>* m_char;
-  ITypeDispatcher<signed char>* m_signed_char;
   ITypeDispatcher<unsigned char>* m_unsigned_char;
+  ITypeDispatcher<signed char>* m_signed_char;
   ITypeDispatcher<short>* m_short;
   ITypeDispatcher<unsigned short>* m_unsigned_short;
   ITypeDispatcher<int>* m_int;
