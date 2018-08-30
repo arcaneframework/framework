@@ -56,8 +56,8 @@ arccore_add_component_library(base
 )
 
 target_link_libraries(arccore_base PRIVATE arcconpkg_Glib)
-# TODO: utiliser des features plus précises si on souhaite compiler avec de vieux compilateurs
-target_compile_features(arccore_base PUBLIC cxx_std_11)
+
+target_compile_features(arccore_base PUBLIC cxx_lambdas cxx_auto_type cxx_nullptr cxx_rvalue_references)
 
 # Nécessaire pour pouvoir inclure 'arccore_config.h'
 target_include_directories(arccore_base PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>)
