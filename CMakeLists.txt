@@ -65,7 +65,22 @@ set(Arccore_BINARY_DIR ${CMAKE_BINARY_DIR}/arccore)
 message(STATUS "Arccore_SOURCE_DIR=${Arccore_SOURCE_DIR}")
 message(STATUS "Arccore_BINARY_DIR=${Arccore_BINARY_DIR}")
 
+# Par défaut on exécute les tests sauf si cela est explicitement pas demandé.
+if (NOT DEFINED ARCCORE_WANT_TEST)
+  set(ARCCORE_WANT_TEST TRUE)
+endif()
+
+if (ARCCORE_WANT_TEST)
+  find_package(GTest)
+  if (GTEST_FOUND)
+    include(GoogleTest)
+  endif()
+endif()
+
 add_subdirectory(src/base/arccore/base)
+if (ARCCORE_WANT_TEST AND GTEST_FOUND)
+  add_subdirectory(src/base/tests)
+endif()
 add_subdirectory(src/collections/arccore/collections)
 add_subdirectory(src/concurrency/arccore/concurrency)
 add_subdirectory(src/trace/arccore/trace)
