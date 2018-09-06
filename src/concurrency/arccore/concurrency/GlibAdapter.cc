@@ -80,6 +80,8 @@ GlibMutex::Lock::~Lock() { m_mutex->unlock(); }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+static GPrivate null_gprivate = G_PRIVATE_INIT(nullptr);
+
 /*!
  * \internal
  * \brief GPrivate de la glib.
@@ -91,6 +93,7 @@ class GlibPrivate::Impl
   : m_private(nullptr)
   {
 #ifdef ARCCORE_GLIB_HAS_NEW_THREAD
+    m_private_instance = null_gprivate;
     m_private = &m_private_instance;
 #endif
   }
