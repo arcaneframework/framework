@@ -9,6 +9,14 @@
 
 #include <glib.h>
 
+// A partir de 2.32, 'glib' utilise un nouveau mécanisme pour gérer
+// tout ce qui concerne le multi-threading. En particulier, toutes les
+// fonctions de création/destruction changent.
+
+// A terme, ces fonctionnalités seront disponibles dans la norme C++
+// et lorsqu'on pourra utiliser des compilateurs récents elles ne devraient
+// plus être utilisées.
+
 #if GLIB_CHECK_VERSION(2,32,0)
 #define ARCCORE_GLIB_HAS_NEW_THREAD
 #endif
