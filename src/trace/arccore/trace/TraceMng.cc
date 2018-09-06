@@ -18,6 +18,8 @@
 
 #include "arccore/concurrency/Mutex.h"
 
+#include "arccore/concurrency/ThreadPrivate.h"
+
 #include <sstream>
 #include <fstream>
 #include <limits>
@@ -38,99 +40,6 @@ class TraceTimer
 {
  public:
   double getTime() { return 0.0; }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-// TODO: Gérer les nouvelles versions de la glib qui déprécient g_mutex_new().
-class GLibMutex
-{
- public:
-  class Lock
-  {
-   public:
-    Lock(GLibMutex& x) : m_mutex(x.m_mutex) { g_mutex_lock(m_mutex); }
-    ~Lock() { g_mutex_unlock(m_mutex); }
-    Lock() = delete;
-    Lock(const Lock&) = delete;
-    void operator=(const Lock&) = delete;
-   private:
-    GMutex* m_mutex;
-  };
- public:
-  GLibMutex() : m_mutex(nullptr)
-  {
-    m_mutex = g_mutex_new();
-  }
-  ~GLibMutex()
-  {
-    g_mutex_free(m_mutex);
-  }
- private:
-  GMutex* m_mutex;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Classe permettant une instance d'un type par thread.
- *
- * Avant d'être utilisée, cette classe doit être initialisée
- * via appel à init().
- *
- * Cette classe ne possède qu'une seule méthode item()
- * permettant de récupérer une instance d'un type \a T par
- * thread. Au premier appel de item() pour un thread donné,
- * une instance de \a T est construite.
- * Le type \a T doit avoir un constructeur par défaut
- * et doit avoir une méthode \a build().
- * \threadsafeclass
- */
-template<typename T>
-class ThreadStorage2
-{
- public:
-  ThreadStorage2()
-  : m_key(0), m_no_thread_value(0)
-  {
-  }
-
-  ~ThreadStorage2()
-  {
-    delete m_no_thread_value;
-    for( T* item : m_allocated_items )
-      delete item;
-  }
-
-  void init(GPrivate* key)
-  {
-    m_key = key;
-  }
-
- public:
-  //! Instance spécifique au thread courant.
-  T* item()
-  {
-    gpointer ptr = g_private_get(m_key);
-    if (ptr){
-      return (T*)ptr;
-    }
-    T* new_ptr = nullptr;
-    {
-      GLibMutex::Lock x(m_mutex);
-      new_ptr = new T();
-      new_ptr->build();
-      m_allocated_items.push_back(new_ptr);
-    }
-    g_private_set(m_key,new_ptr);
-    return new_ptr;
-  }
- private:
-  GPrivate* m_key;
-  GLibMutex m_mutex;
-  T* m_no_thread_value;
-  std::vector<T*> m_allocated_items;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -362,7 +271,7 @@ class TraceMng
   typedef std::set<ITraceMessageListener*> ListenerList;
   typedef std::vector<TraceClass> TraceClassStack;
 
-  static GPrivate* m_string_list_key;
+  static ThreadPrivateStorage m_string_list_key;
 
   bool m_is_master;
   bool m_want_trace_function;
@@ -370,7 +279,7 @@ class TraceMng
   Int32 m_verbosity_level;
   Int32 m_current_class_verbosity_level;
   Int32 m_current_class_flags;
-  ThreadStorage2<TraceStream> m_strs;
+  ThreadPrivate<TraceStream> m_strs;
   ListenerList* m_listeners;
   bool m_is_activated;
   std::map<String,TraceClassConfig*> m_trace_class_config_map;
@@ -435,7 +344,7 @@ class TraceMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-GPrivate* TraceMng::m_string_list_key = nullptr;
+ThreadPrivateStorage TraceMng::m_string_list_key;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -457,6 +366,7 @@ TraceMng()
 , m_verbosity_level(TraceMessage::DEFAULT_LEVEL)
 , m_current_class_verbosity_level(TraceMessage::DEFAULT_LEVEL)
 , m_current_class_flags(Trace::PF_Default)
+, m_strs(&m_string_list_key)
 , m_listeners(nullptr)
 , m_is_activated(true)
 , m_default_trace_class("Internal",&m_default_trace_class_config)
@@ -475,11 +385,9 @@ TraceMng()
   // la classe Application et il y a nécessairement qu'un seul
   // thread qui fasse cet appel. Il n'y a donc pas besoin
   // de protéger la création de cette clé privée.
-  if (!m_string_list_key){
-    //TODO gerer destructeur
-    m_string_list_key = g_private_new(0);
-  }
-  m_strs.init(m_string_list_key);
+  // A noter qu'à partir de la GLib 2.32, il n'y a plus besoin de créer
+  // explicitement la partie privée.
+  m_string_list_key.initialize();
 
 #if OLD
   {

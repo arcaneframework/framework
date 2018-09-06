@@ -6,10 +6,14 @@ set(SOURCES
   IThreadImplementation.h
   IThreadBarrier.h
   GlibThreadImplementation.cc
+  GlibAdapter.h
+  GlibAdapter.cc
   Mutex.h
   Mutex.cc
   NullThreadImplementation.h
   SpinLock.h
+  ThreadPrivate.h
+  ThreadPrivate.cc
 )
 
 arccore_add_component_library(concurrency
