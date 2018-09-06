@@ -24,17 +24,10 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \ingroup Collection
- * \brief Tableau simple pour Arccore.
+ * \internal
+ * \brief Tableau interne pour Arccore.
  *
- * Actuellement, ce tableau utilise 'UniqueArray' comme conteneur mais le but
- * est par la suite d'utiliser std::vector.
- *
- * UniqueArray et std::vector ont la même sémantique sauf pour la méthode
- * resize() sur les types de base. Dans le cas de std::vector, si resize() les
- * éléments du tableau compris entre l'ancienne et la nouvelle taille sont
- * initialisés avec le constructeur par défaut (valeurs nulles) alors qu'ils
- * sont inchangés avec UniqueArray.
+ * Cette classe est privée et ne doit être utilisé que par les classes de Arccore.
  */
 template<class DataType>
 class CoreArray
@@ -97,7 +90,7 @@ class CoreArray
   }
 
   //! Retourne la taille du tableau
-  inline Integer size() const { return m_p.size(); }
+  inline Integer size() const { return arccoreCheckArraySize(m_p.size()); }
 
   //! Retourne un iterateur sur le premier élément du tableau
   inline iterator begin() { return m_p.begin(); }
