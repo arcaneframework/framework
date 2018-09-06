@@ -11,6 +11,7 @@
 #include "arccore/concurrency/GlibThreadImplementation.h"
 #include "arccore/concurrency/IThreadBarrier.h"
 #include "arccore/concurrency/Mutex.h"
+#include "arccore/concurrency/GlibAdapter.h"
 
 #include <new>
 #include <glib.h>
@@ -23,41 +24,6 @@ namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class GlibMutexImpl
-{
-  // Ne pas utiliser les Glib pour l'instant car
-  // ca ne marche pas (probablement un probleme de cast chez moi)
- public:
-  GlibMutexImpl()
-  {
-    m_mutex = g_mutex_new();
-    //m_lock = new tbb::mutex::scoped_lock(m_mutex);
-    //pthread_mutex_init(&m_mutex,0);
-  }
-  ~GlibMutexImpl()
-  {
-    g_mutex_free(m_mutex);
-    //delete m_lock;
-    //pthread_mutex_destroy(&m_mutex);
-  }
- public:
-  void lock()
-  {
-    g_mutex_lock(m_mutex);
-    //pthread_mutex_lock(&m_mutex);
-    //m_lock.acquire(m_mutex);
-  }
-  void unlock()
-  {
-    //m_lock.release();
-    //pthread_mutex_unlock(&m_mutex);
-    g_mutex_unlock(m_mutex);
-  }
-  GMutex* m_mutex;
-  /*tbb::mutex m_mutex;
-    tbb::mutex::scoped_lock m_lock;*/
-};
 
 static void* _GlibStartFunc(void* f)
 {
@@ -84,39 +50,39 @@ class GlibThreadBarrier
   {
     m_nb_thread = nb_thread;
     m_current_reached = 0;
-    m_wait_mutex = g_mutex_new();
-    m_wait = g_cond_new();
+    m_wait_mutex = new GlibMutex();
+    m_wait = new GlibCond();
   }
 
   virtual void destroy()
   {
     m_nb_thread = 0;
     m_current_reached = 0;
-    g_mutex_free(m_wait_mutex);
-    g_cond_free(m_wait);
+    delete m_wait_mutex;
+    delete m_wait;
     delete this;
   }
 
   virtual bool wait()
   {
     bool is_last = false;
-    g_mutex_lock(m_wait_mutex);
+    m_wait_mutex->lock();
     ++m_current_reached;
     //cout << "ADD BARRIER N=" << m_current_reached << '\n';
     if (m_current_reached==m_nb_thread){
       m_current_reached = 0;
       is_last = true;
       //cout << "BROADCAST BARRIER N=" << m_current_reached << '\n';
-      g_cond_broadcast(m_wait);
+      m_wait->broadcast();
     }
     else
-      g_cond_wait(m_wait,m_wait_mutex);
-    g_mutex_unlock(m_wait_mutex);
+      m_wait->wait(m_wait_mutex);
+    m_wait_mutex->unlock();
     return is_last;
   }
  private:
-  GMutex* m_wait_mutex;
-  GCond* m_wait;
+  GlibMutex* m_wait_mutex;
+  GlibCond* m_wait;
   Integer m_nb_thread;
   Integer m_current_reached;
 };
@@ -184,8 +150,6 @@ void GlibThreadImplementation::
 destroyThread(ThreadImpl* t)
 {
   ARCCORE_UNUSED(t);
-  //GThread* tt = reinterpret_cast<GThread*>(t);
-  //g_thread_destroy(tt);
 }
 
 void GlibThreadImplementation::
@@ -222,29 +186,29 @@ unlockSpinLock(Int64* spin_lock_addr,Int64* scoped_spin_lock_addr)
 MutexImpl* GlibThreadImplementation::
 createMutex()
 {
-  GMutex* m = g_mutex_new();
+  GlibMutex* m = new GlibMutex();
   return reinterpret_cast<MutexImpl*>(m);
 }
 
 void GlibThreadImplementation::
 destroyMutex(MutexImpl* mutex)
 {
-  GMutex* tm = reinterpret_cast<GMutex*>(mutex);
-  g_mutex_free(tm);
+  GlibMutex* m = reinterpret_cast<GlibMutex*>(mutex);
+  delete m;
 }
 
 void GlibThreadImplementation::
 lockMutex(MutexImpl* mutex)
 {
-  GMutex* tm = reinterpret_cast<GMutex*>(mutex);
-  g_mutex_lock(tm);
+  GlibMutex* m = reinterpret_cast<GlibMutex*>(mutex);
+  m->lock();
 }
 
 void GlibThreadImplementation::
 unlockMutex(MutexImpl* mutex)
 {
-  GMutex* tm = reinterpret_cast<GMutex*>(mutex);
-  g_mutex_unlock(tm);
+  GlibMutex* m = reinterpret_cast<GlibMutex*>(mutex);
+  m->unlock();
 }
 
 Int64 GlibThreadImplementation::

@@ -16,6 +16,8 @@
 namespace Arccore
 {
 
+class GlibCond;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -24,6 +26,7 @@ namespace Arccore
  */
 class ARCCORE_CONCURRENCY_EXPORT GlibMutex
 {
+  friend class GlibCond;
  public:
   class Impl;
  public:
@@ -64,6 +67,25 @@ class ARCCORE_CONCURRENCY_EXPORT GlibPrivate
   void create();
   void setValue(void* value);
   void* getValue();
+ private:
+  Impl* m_p;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Encapsule un GCond de la glib.
+ */
+class ARCCORE_CONCURRENCY_EXPORT GlibCond
+{
+ public:
+  class Impl;
+ public:
+  GlibCond();
+  ~GlibCond();
+  void broadcast();
+  void wait(GlibMutex* mutex);
  private:
   Impl* m_p;
 };

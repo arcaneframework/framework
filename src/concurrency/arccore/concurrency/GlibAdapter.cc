@@ -141,6 +141,47 @@ void* GlibPrivate::getValue() { return m_p->getValue(); }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class GlibCond::Impl
+{
+ public:
+  Impl() : m_cond(nullptr)
+  {
+#ifdef ARCCORE_GLIB_HAS_NEW_THREAD
+    m_cond = &m_cond_instance;
+    g_cond_init(m_cond);
+#else
+    m_cond = g_cond_new();
+#endif
+  }
+  ~Impl()
+  {
+#ifdef ARCCORE_GLIB_HAS_NEW_THREAD
+    g_cond_clear(m_cond);
+#else
+    g_cond_free(m_cond);
+#endif
+  }
+ public:
+  void broadcast() { g_cond_broadcast(m_cond); }
+  void wait(GlibMutex::Impl* mutex) { g_cond_wait(m_cond,mutex->value()); }
+ private:
+#ifdef ARCCORE_GLIB_HAS_NEW_THREAD
+  GCond m_cond_instance;
+#endif
+  GCond* m_cond;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+GlibCond::GlibCond() : m_p(new GlibCond::Impl()){}
+GlibCond::~GlibCond() { delete m_p; }
+void GlibCond::broadcast() { m_p->broadcast(); }
+void GlibCond::wait(GlibMutex* mutex) { m_p->wait(mutex->m_p); }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arccore
 
 /*---------------------------------------------------------------------------*/
