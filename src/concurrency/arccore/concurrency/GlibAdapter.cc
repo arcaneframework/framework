@@ -88,7 +88,9 @@ GlibMutex::Lock::~Lock() { m_mutex->unlock(); }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+#ifdef ARCCORE_GLIB_HAS_NEW_THREAD
 static GPrivate null_gprivate = G_PRIVATE_INIT(nullptr);
+#endif
 
 /*!
  * \internal
