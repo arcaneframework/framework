@@ -1,4 +1,4 @@
-# ----------------------------------------------------------------------------
+﻿# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
 message(STATUS "Including arccore/CMakeLists.txt")
@@ -65,6 +65,10 @@ set(Arccore_BINARY_DIR ${CMAKE_BINARY_DIR}/arccore)
 message(STATUS "Arccore_SOURCE_DIR=${Arccore_SOURCE_DIR}")
 message(STATUS "Arccore_BINARY_DIR=${Arccore_BINARY_DIR}")
 
+# ----------------------------------------------------------------------------
+# Ajoute support des tests. Il faut le faire avant d'ajouter les componsants
+# car ces derniers en ont besoin.
+
 # Par défaut on exécute les tests sauf si cela est explicitement pas demandé.
 if (NOT DEFINED ARCCORE_WANT_TEST)
   set(ARCCORE_WANT_TEST TRUE)
@@ -77,12 +81,20 @@ if (ARCCORE_WANT_TEST)
   endif()
 endif()
 
-add_subdirectory(src/base/arccore/base)
-if (ARCCORE_WANT_TEST AND GTEST_FOUND)
-  add_subdirectory(src/base/tests)
-endif()
-add_subdirectory(src/collections/arccore/collections)
-add_subdirectory(src/concurrency/arccore/concurrency)
-add_subdirectory(src/trace/arccore/trace)
-add_subdirectory(src/message_passing/arccore/message_passing)
-add_subdirectory(src/message_passing_mpi/arccore/message_passing_mpi)
+# ----------------------------------------------------------------------------
+
+arccore_add_component_directory(base)
+arccore_add_component_directory(collections)
+arccore_add_component_directory(concurrency)
+arccore_add_component_directory(trace)
+arccore_add_component_directory(message_passing)
+arccore_add_component_directory(message_passing_mpi)
+
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:

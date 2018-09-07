@@ -1,4 +1,4 @@
-# ----------------------------------------------------------------------------
+﻿# ----------------------------------------------------------------------------
 # Fonction pour créér une bibliothèque avec des sources.
 #
 # Par exemple:
@@ -60,6 +60,7 @@ endfunction()
 # Cette fonction va enregistrer une cible 'arccore_${component_name}'
 # Par convention, chaque fichier spécifié dans FILES doit se trouver dans le
 # répertoire ${Arccore_SOURCE_DIR}/src/${component_name}.
+#
 function(arccore_add_component_library component_name)
   set(options)
   set(oneValueArgs)
@@ -86,3 +87,37 @@ function(arccore_add_component_library component_name)
     )
 endfunction()
 
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Fonction pour ajoute un répertoire contenant un composant 'Arccore'.
+#
+# arccore_add_component_directory(component_name)
+#
+# Cette fonction va regarder si un répertoire 'src/${X}/arccore/${X} existe
+# (avec ${X} valant ${component_name} et si c'est le cas, l'ajouter au
+# projet.
+# Si un répertoire 'src/${X}/tests' existe, il est aussi ajouter pour les
+# tests si ces derniers sont demandés.
+#
+function(arccore_add_component_directory name)
+  set(_BASE_DIR src/${name})
+  set(_COMPONENT_DIR ${_BASE_DIR}/arccore/${name})
+  set(_TEST_DIR ${_BASE_DIR}/tests)
+  message(STATUS "Check component '${name}' in directory '${_COMPONENT_DIR}'")
+  if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/${_COMPONENT_DIR})
+    message(STATUS "Adding component '${name}' in directory '${_COMPONENT_DIR}'")
+    add_subdirectory(${_COMPONENT_DIR})
+    if (ARCCORE_WANT_TEST AND GTEST_FOUND)
+      if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/${_TEST_DIR})
+        add_subdirectory(${_TEST_DIR})
+      endif()
+    endif()
+  endif()
+endfunction()
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:
