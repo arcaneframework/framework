@@ -5,15 +5,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/messagepassingmpi/MpiAdapter.h"
-#include "arccore/messagepassingmpi/MpiLock.h"
+#include "arccore/message_passing_mpi/MpiAdapter.h"
+#include "arccore/message_passing_mpi/MpiLock.h"
 
 #include "arccore/trace/ITraceMng.h"
 
 #include "arccore/collections/Array.h"
 
-#include "arccore/messagepassing/Request.h"
-#include "arccore/messagepassing/IStat.h"
+#include "arccore/message_passing/Request.h"
+#include "arccore/message_passing/IStat.h"
 
 #include "arccore/base/IStackTraceService.h"
 #include "arccore/base/TimeoutException.h"

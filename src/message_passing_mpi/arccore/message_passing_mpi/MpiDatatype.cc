@@ -9,7 +9,7 @@
 #include "arccore/base/String.h"
 #include "arccore/base/FatalErrorException.h"
 
-#include "arccore/messagepassingmpi/MpiDatatype.h"
+#include "arccore/message_passing_mpi/MpiDatatype.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

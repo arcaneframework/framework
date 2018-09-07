@@ -5,12 +5,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/messagepassingmpi/StandaloneMpiMessagePassingMng.h"
-#include "arccore/messagepassingmpi/MpiAdapter.h"
-#include "arccore/messagepassingmpi/MpiDatatype.h"
-#include "arccore/messagepassingmpi/MpiTypeDispatcher.h"
-#include "arccore/messagepassing/Dispatchers.h"
-#include "arccore/messagepassing/Stat.h"
+#include "arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h"
+#include "arccore/message_passing_mpi/MpiAdapter.h"
+#include "arccore/message_passing_mpi/MpiDatatype.h"
+#include "arccore/message_passing_mpi/MpiTypeDispatcher.h"
+#include "arccore/message_passing/Dispatchers.h"
+#include "arccore/message_passing/Stat.h"
 #include "arccore/trace/ITraceMng.h"
 
 /*---------------------------------------------------------------------------*/

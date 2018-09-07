@@ -8,13 +8,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/messagepassingmpi/MpiTypeDispatcher.h"
-#include "arccore/messagepassingmpi/MpiDatatype.h"
-#include "arccore/messagepassingmpi/MpiAdapter.h"
-#include "arccore/messagepassingmpi/MpiLock.h"
+#include "arccore/message_passing_mpi/MpiTypeDispatcher.h"
+#include "arccore/message_passing_mpi/MpiDatatype.h"
+#include "arccore/message_passing_mpi/MpiAdapter.h"
+#include "arccore/message_passing_mpi/MpiLock.h"
 
-#include "arccore/messagepassing/Messages.h"
-#include "arccore/messagepassing/Request.h"
+#include "arccore/message_passing/Messages.h"
+#include "arccore/message_passing/Request.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

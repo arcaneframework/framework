@@ -21,8 +21,8 @@ set(SOURCES
   StandaloneMpiMessagePassingMng.h
 )
 
-arccore_add_component_library(messagepassingmpi
+arccore_add_component_library(message_passing_mpi
   FILES ${SOURCES})
 
-target_link_libraries(arccore_messagepassingmpi PUBLIC arccore_trace arccore_messagepassing arccore_collections arccore_concurrency)
-target_link_libraries(arccore_messagepassingmpi PUBLIC arcconpkg_MPI)
+target_link_libraries(arccore_message_passing_mpi PUBLIC arccore_trace arccore_message_passing arccore_collections arccore_concurrency)
+target_link_libraries(arccore_message_passing_mpi PUBLIC arcconpkg_MPI)

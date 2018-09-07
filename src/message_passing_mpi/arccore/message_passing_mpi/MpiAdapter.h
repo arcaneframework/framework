@@ -10,7 +10,7 @@
 
 #include "arccore/trace/TraceAccessor.h"
 
-#include "arccore/messagepassingmpi/MessagePassingMpiGlobal.h"
+#include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
 
 #include "arccore/collections/CollectionsGlobal.h"
 

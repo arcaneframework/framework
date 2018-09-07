@@ -8,7 +8,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/messagepassingmpi/MessagePassingMpiGlobal.h"
+#include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
 
 // TODO: a supprimer
 #include "arccore/base/FatalErrorException.h"

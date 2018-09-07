@@ -8,7 +8,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/messagepassing/MessagePassingGlobal.h"
+#include "arccore/message_passing/MessagePassingGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,7 +36,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#if defined(ARCCORE_COMPONENT_arccore_messagepassingmpi)
+#if defined(ARCCORE_COMPONENT_arccore_message_passing_mpi)
 #define ARCCORE_MESSAGEPASSINGMPI_EXPORT ARCCORE_EXPORT
 #define ARCCORE_MESSAGEPASSINGMPI_EXTERN_TPL
 #else

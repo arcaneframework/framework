@@ -11,7 +11,7 @@
 #include "arccore/concurrency/SpinLock.h"
 #include "arccore/concurrency/Mutex.h"
 
-#include "arccore/messagepassingmpi/MessagePassingMpiGlobal.h"
+#include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

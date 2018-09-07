@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/messagepassingmpi/MessagePassingMpiGlobal.h"
-#include "arccore/messagepassing/MessagePassingMng.h"
+#include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
+#include "arccore/message_passing/MessagePassingMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

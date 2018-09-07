@@ -5,8 +5,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/messagepassing/Dispatchers.h"
-#include "arccore/messagepassing/ITypeDispatcher.h"
+#include "arccore/message_passing/Dispatchers.h"
+#include "arccore/message_passing/ITypeDispatcher.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

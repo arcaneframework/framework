@@ -8,7 +8,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/messagepassing/IStat.h"
+#include "arccore/message_passing/IStat.h"
 
 #include "arccore/base/String.h"
 

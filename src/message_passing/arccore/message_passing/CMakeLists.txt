@@ -16,8 +16,8 @@ set(SOURCES
   Stat.cc
 )
 
-arccore_add_component_library(messagepassing
+arccore_add_component_library(message_passing
   FILES ${SOURCES}
 )
 
-target_link_libraries(arccore_messagepassing PUBLIC arccore_collections arccore_base)
+target_link_libraries(arccore_message_passing PUBLIC arccore_collections arccore_base)

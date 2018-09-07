@@ -13,7 +13,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#if defined(ARCCORE_COMPONENT_arccore_messagepassing)
+#if defined(ARCCORE_COMPONENT_arccore_message_passing)
 #define ARCCORE_MESSAGEPASSING_EXPORT ARCCORE_EXPORT
 #define ARCCORE_MESSAGEPASSING_EXTERN_TPL
 #else

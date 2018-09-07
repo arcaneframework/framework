@@ -5,10 +5,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/messagepassing/MessagePassingGlobal.h"
-#include "arccore/messagepassing/ITypeDispatcher.h"
-#include "arccore/messagepassing/Dispatchers.h"
-#include "arccore/messagepassing/IMessagePassingMng.h"
+#include "arccore/message_passing/MessagePassingGlobal.h"
+#include "arccore/message_passing/ITypeDispatcher.h"
+#include "arccore/message_passing/Dispatchers.h"
+#include "arccore/message_passing/IMessagePassingMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

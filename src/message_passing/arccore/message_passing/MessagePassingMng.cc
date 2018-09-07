@@ -5,8 +5,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/messagepassing/MessagePassingGlobal.h"
-#include "arccore/messagepassing/MessagePassingMng.h"
+#include "arccore/message_passing/MessagePassingGlobal.h"
+#include "arccore/message_passing/MessagePassingMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -8,10 +8,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/messagepassing/IMessagePassingMng.h"
-#include "arccore/messagepassing/IDispatchers.h"
-#include "arccore/messagepassing/ITypeDispatcher.h"
-#include "arccore/messagepassing/Request.h"
+#include "arccore/message_passing/IMessagePassingMng.h"
+#include "arccore/message_passing/IDispatchers.h"
+#include "arccore/message_passing/ITypeDispatcher.h"
+#include "arccore/message_passing/Request.h"
 #include "arccore/base/ArrayView.h"
 #include "arccore/collections/Array.h"
 

@@ -5,7 +5,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/messagepassing/Request.h"
+#include "arccore/message_passing/Request.h"
 
 #include <iostream>
 
