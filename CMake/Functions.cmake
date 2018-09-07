@@ -79,5 +79,10 @@ function(arccore_add_component_library component_name)
   if (ARCCORE_EXPORT_TARGET)
     install(TARGETS ${_LIB_NAME} EXPORT ${ARCCORE_EXPORT_TARGET} DESTINATION lib)
   endif()
+
+  # Génère les bibliothèques dans le répertoire 'lib' du projet.
+  set_target_properties(${_LIB_NAME} PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY ${Arccore_BINARY_DIR}/lib
+    )
 endfunction()
 
