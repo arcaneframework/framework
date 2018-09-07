@@ -56,6 +56,7 @@ class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateStorage
  */
 class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateBase
 {
+ public:
   class ICreateFunctor
   {
    public:
