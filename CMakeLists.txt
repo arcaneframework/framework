@@ -5,6 +5,10 @@ message(STATUS "Including arccore/CMakeLists.txt")
 
 # ----------------------------------------------------------------------------
 
+project(Arccore VERSION 1.0 LANGUAGES CXX)
+
+# ----------------------------------------------------------------------------
+
 if (NOT ARCCORE_EXPORT_TARGET)
   set(ARCCORE_EXPORT_TARGET ArccoreTargets)
 endif()
@@ -59,8 +63,8 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/arccore_config.h DESTINATION include/a
 
 # ----------------------------------------------------------------------------
 
-set(Arccore_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(Arccore_BINARY_DIR ${CMAKE_BINARY_DIR}/arccore)
+#set(Arccore_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+#set(Arccore_BINARY_DIR ${CMAKE_BINARY_DIR}/arccore)
 
 message(STATUS "Arccore_SOURCE_DIR=${Arccore_SOURCE_DIR}")
 message(STATUS "Arccore_BINARY_DIR=${Arccore_BINARY_DIR}")
