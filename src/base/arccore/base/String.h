@@ -171,6 +171,9 @@ class ARCCORE_BASE_EXPORT String
   //! Calcule une valeur de hashage cette la chaîne de caractère
   Int32 hashCode() const;
 
+  //! Écrit la chaîne au format UTF-8 sur le flot \a o
+  void writeBytes(std::ostream& o) const;
+
  public:
 
   String operator+(const char* str) const;

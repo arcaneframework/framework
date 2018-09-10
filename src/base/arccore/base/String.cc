@@ -1038,20 +1038,32 @@ operator+(const char* a,const String& b)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace
+{
+bool global_write_utf8 = false;
+}
 std::ostream&
 operator<<(std::ostream& o,const String& str)
 {
   // A utiliser plus tard lorsque l'encodage par défaut sera UTF8
-#if 0
-  ByteConstArrayView v = str.utf8();
+  if (global_write_utf8)
+    str.writeBytes(o);
+  else
+    o << str.localstr();
+
+  return o;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void String::
+writeBytes(std::ostream& o) const
+{
+  ByteConstArrayView v = this->utf8();
   Integer vlen = v.size();
   if (vlen>0)
-    o.write((const char*)v.begin(),vlen-1);
-#else
-  o << str.localstr();
-#endif
-  
-  return o;
+    o.write((const char*)v.data(),vlen-1);
 }
 
 /*---------------------------------------------------------------------------*/
