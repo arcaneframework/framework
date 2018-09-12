@@ -415,7 +415,7 @@ class AbstractArray
 #endif
  protected:
   TrueImpl* m_p;
- public:
+ private:
   T* m_baseptr;
  protected:
   //! Réserve le mémoire pour \a new_capacity éléments
