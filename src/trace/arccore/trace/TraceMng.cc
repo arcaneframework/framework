@@ -65,7 +65,7 @@ class TraceStream
 
     for( Integer i=0; i<NB_STREAM; ++i ){
       m_str_count[i] = 0;
-      m_str_list[i]->precision(std::numeric_limits<Real>::max_digits10);
+      m_str_list[i]->precision(std::numeric_limits<Real>::digits10);
     }
   }
  public:

@@ -579,7 +579,7 @@ void StringFormatterArg::
 _formatReal(Real avalue)
   {
     std::ostringstream ostr;
-    ostr.precision(std::numeric_limits<Real>::max_digits10);
+    ostr.precision(std::numeric_limits<Real>::digits10);
     ostr << avalue;
     m_str_value = ostr.str();
   }
