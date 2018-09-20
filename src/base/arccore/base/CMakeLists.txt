@@ -11,6 +11,7 @@ set(SOURCES
   Array2View.h
   Array3View.h
   Array4View.h
+  LargeArrayView.h
   ArgumentException.cc
   ArgumentException.h
   CStringUtils.h

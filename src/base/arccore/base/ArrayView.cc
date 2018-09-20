@@ -15,6 +15,7 @@
 #include "arccore/base/Array2View.h"
 #include "arccore/base/Array3View.h"
 #include "arccore/base/Array4View.h"
+#include "arccore/base/LargeArrayView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
