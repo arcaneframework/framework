@@ -139,17 +139,17 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayImplBase
   static ARCCORE_ALIGNAS(64) ArrayImplBase shared_null_instance;
  public:
   //! Nombre de références sur cet objet.
-  Integer nb_ref;
+  Int64 nb_ref;
   //! Nombre d'éléments alloués
-  Integer capacity;
+  Int64 capacity;
   //! Nombre d'éléments du tableau (pour les tableaux 1D)
-  Integer size;
+  Int64 size;
   //! Taille de la première dimension (pour les tableaux 2D)
-  Integer dim1_size;
+  Int64 dim1_size;
   //! Taille de la deuxième dimension (pour les tableaux 2D)
-  Integer dim2_size;
+  Int64 dim2_size;
   //! Tableau des dimensions pour les tableaux multiples
-  Int32* mutli_dims_size;
+  Int64* mutli_dims_size;
   //! Allocateur mémoire
   IMemoryAllocator* allocator;
 
@@ -157,7 +157,8 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayImplBase
 #ifdef ARCCORE_64BIT
 #error "Padding for ArrayImplBase not implemented for 64 bit"
 #else
-  Int32 padding[6];
+  //Int32 padding[6];
+  Int64 padding1;
 #endif
 
   static ArrayImplBase* allocate(Integer sizeof_true_impl,Integer nb,

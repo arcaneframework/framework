@@ -458,6 +458,16 @@ arccoreCheckAt(Int64 i,Int64 max_size)
     arccoreRangeError(i,max_size);
 }
 
+/*!
+ * \brief Vérifie un éventuel débordement de tableau.
+ */
+static inline void
+arccoreCheckAt(Int32 i,Int64 max_size)
+{
+  if (i<0 || i>=max_size)
+    arccoreRangeError((Int64)i,max_size);
+}
+
 #ifdef ARCCORE_CHECK
 #define ARCCORE_CHECK_AT(a,b) ::Arccore::arccoreCheckAt((a),(b))
 #else
