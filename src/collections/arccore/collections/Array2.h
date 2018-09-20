@@ -102,12 +102,12 @@ class Array2
   ArrayView<DataType> operator[](Integer i)
     {
       ARCCORE_CHECK_AT(i,m_p->dim1_size);
-      return ArrayView<DataType>(m_p->dim2_size,m_p->ptr + (m_p->dim2_size*i));
+      return ArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_p->dim2_size),m_p->ptr + (m_p->dim2_size*i));
     }
   ConstArrayView<DataType> operator[](Integer i) const
     {
       ARCCORE_CHECK_AT(i,m_p->dim1_size);
-      return ConstArrayView<DataType>(m_p->dim2_size,m_p->ptr + (m_p->dim2_size*i));
+      return ConstArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_p->dim2_size),m_p->ptr + (m_p->dim2_size*i));
     }
   DataType item(Integer i,Integer j)
   {
@@ -175,12 +175,12 @@ class Array2
   //! Vue du tableau sous forme de tableau 1D
   ArrayView<DataType> viewAsArray()
   {
-    return ArrayView<DataType>(m_p->size,m_p->ptr);
+    return ArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_p->size),m_p->ptr);
   }
   //! Vue du tableau sous forme de tableau 1D
   ConstArrayView<DataType> viewAsArray() const
   {
-    return ConstArrayView<DataType>(m_p->size,m_p->ptr);
+    return ConstArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_p->size),m_p->ptr);
   }
  public:
   operator Array2View<DataType>()
@@ -193,15 +193,15 @@ class Array2
   }
   Array2View<DataType> view()
   {
-    return Array2View<DataType>(m_p->ptr,m_p->dim1_size,m_p->dim2_size);
+    return Array2View<DataType>(m_p->ptr,ARCCORE_CAST_SMALL_SIZE(m_p->dim1_size),ARCCORE_CAST_SMALL_SIZE(m_p->dim2_size));
   }
   ConstArray2View<DataType> constView() const
   {
-    return ConstArray2View<DataType>(m_p->ptr,m_p->dim1_size,m_p->dim2_size);
+    return ConstArray2View<DataType>(m_p->ptr,ARCCORE_CAST_SMALL_SIZE(m_p->dim1_size),ARCCORE_CAST_SMALL_SIZE(m_p->dim2_size));
   }
  public:
-  Integer dim2Size() const { return m_p->dim2_size; }
-  Integer dim1Size() const { return m_p->dim1_size; }
+  Integer dim2Size() const { return ARCCORE_CAST_SMALL_SIZE(m_p->dim2_size); }
+  Integer dim1Size() const { return ARCCORE_CAST_SMALL_SIZE(m_p->dim1_size); }
   void add(const DataType& value)
     {
       Base::_addRange(value,m_p->dim2_size);
@@ -229,12 +229,12 @@ class Array2
   {
     _resize(new_size1,new_size2,IB_NoInit);
   }
-  Integer totalNbElement() const { return m_p->dim1_size*m_p->dim2_size; }
+  Integer totalNbElement() const { return ARCCORE_CAST_SMALL_SIZE(m_p->dim1_size*m_p->dim2_size); }
  protected:
   //! Redimensionne uniquement la première dimension en laissant la deuxième à l'identique
-  void _resize(Integer new_size,InitBehaviour rb)
+  void _resize(Int64 new_size,InitBehaviour rb)
   {
-    Integer old_size = m_p->dim1_size;
+    Int64 old_size = m_p->dim1_size;
     if (new_size==old_size)
       return;
     _resize2(new_size,m_p->dim2_size,rb);
@@ -242,7 +242,7 @@ class Array2
     _arccoreCheckSharedNull();
   }
   //! Réalloue les deux dimensions
-  void _resize(Integer new_size1,Integer new_size2,InitBehaviour rb)
+  void _resize(Int64 new_size1,Int64 new_size2,InitBehaviour rb)
     {
       if (new_size2==m_p->dim2_size){
         _resize(new_size1,rb);
@@ -261,43 +261,43 @@ class Array2
       else
         throw NotImplementedException("Array2::resize","already sized");
     }
-  void _resizeFromEmpty(Integer new_size1,Integer new_size2,InitBehaviour rb)
+  void _resizeFromEmpty(Int64 new_size1,Int64 new_size2,InitBehaviour rb)
     {
       _resize2(new_size1,new_size2,rb);
       m_p->dim1_size = new_size1;
       m_p->dim2_size = new_size2;
       _arccoreCheckSharedNull();
     }
-  void _resizeSameDim1ReduceDim2(Integer new_size2,InitBehaviour rb)
+  void _resizeSameDim1ReduceDim2(Int64 new_size2,InitBehaviour rb)
     {
       ARCCORE_ASSERT((new_size2<m_p->dim2_size),("Bad Size"));
-      Integer n = m_p->dim1_size;
-      Integer n2 = m_p->dim2_size;
-      for( Integer i=0; i<n; ++i ){
-        for( Integer j=0; j<new_size2; ++j )
+      Int64 n = m_p->dim1_size;
+      Int64 n2 = m_p->dim2_size;
+      for( Int64 i=0; i<n; ++i ){
+        for( Int64 j=0; j<new_size2; ++j )
           m_p->ptr[(i*new_size2)+j] = m_p->ptr[(i*n2)+j];
       }
       _resize2(n,new_size2,rb);
       m_p->dim2_size = new_size2;
       _arccoreCheckSharedNull();
     }
-  void _resizeSameDim1IncreaseDim2(Integer new_size2,InitBehaviour rb)
+  void _resizeSameDim1IncreaseDim2(Int64 new_size2,InitBehaviour rb)
     {
       ARCCORE_ASSERT((new_size2>m_p->dim2_size),("Bad Size"));
-      Integer n = m_p->dim1_size;
-      Integer n2 = m_p->dim2_size;
+      Int64 n = m_p->dim1_size;
+      Int64 n2 = m_p->dim2_size;
       _resize2(n,new_size2,rb);
       // Recopie en partant de la fin pour éviter tout écrasement
-      for( Integer i=(n-1); i>=0; --i ){
-        for( Integer j=(n2-1); j>=0; --j )
+      for( Int64 i=(n-1); i>=0; --i ){
+        for( Int64 j=(n2-1); j>=0; --j )
           m_p->ptr[(i*new_size2)+j] = m_p->ptr[(i*n2)+j];
       }
       m_p->dim2_size = new_size2;
       _arccoreCheckSharedNull();
     }
-  void _resize2(Integer d1,Integer d2,InitBehaviour rb)
+  void _resize2(Int64 d1,Int64 d2,InitBehaviour rb)
   {
-    Integer new_size = d1*d2;
+    Int64 new_size = d1*d2;
     // Si la nouvelle taille est nulle, il faut tout de meme faire une allocation
     // pour stocker les valeurs dim1_size et dim2_size (sinon, elle seraient
     // dans TrueImpl::shared_null

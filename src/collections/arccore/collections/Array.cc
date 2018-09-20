@@ -58,10 +58,10 @@ class BadAllocException
 /*---------------------------------------------------------------------------*/
 
 ArrayImplBase* DefaultArrayAllocator::
-allocate(Integer sizeof_true_impl,Integer new_capacity,
-         Integer sizeof_true_type,ArrayImplBase* init)
+allocate(Int64 sizeof_true_impl,Int64 new_capacity,
+         Int64 sizeof_true_type,ArrayImplBase* init)
 {
-  Integer elem_size = sizeof_true_impl + (new_capacity - 1) * sizeof_true_type;
+  Int64 elem_size = sizeof_true_impl + (new_capacity - 1) * sizeof_true_type;
   /*std::cout << " ALLOCATE: elemsize=" << elem_size
             << " typesize=" << sizeofTypedData
             << " size=" << size << " datasize=" << sizeofT << '\n';*/
@@ -73,7 +73,7 @@ allocate(Integer sizeof_true_impl,Integer new_capacity,
          << " sizeof_true_type=" << sizeof_true_type << '\n';
     throw BadAllocException(ostr.str());
   }
-  Integer s = (new_capacity>init->capacity) ? init->capacity : new_capacity;
+  Int64 s = (new_capacity>init->capacity) ? init->capacity : new_capacity;
   ::memcpy(p, init,sizeof_true_impl + (s - 1) * sizeof_true_type);
   return p;
 }
@@ -91,10 +91,10 @@ deallocate(ArrayImplBase* ptr)
 /*---------------------------------------------------------------------------*/
 
 ArrayImplBase* DefaultArrayAllocator::
-reallocate(Integer sizeof_true_impl,Integer new_capacity,
-           Integer sizeof_true_type,ArrayImplBase* ptr)
+reallocate(Int64 sizeof_true_impl,Int64 new_capacity,
+           Int64 sizeof_true_type,ArrayImplBase* ptr)
 {
-  Integer elem_size = sizeof_true_impl + (new_capacity - 1) * sizeof_true_type;
+  Int64 elem_size = sizeof_true_impl + (new_capacity - 1) * sizeof_true_type;
   //Integer elem_size = sizeofTypedData + (size - 1) * sizeofT;
   std::cout << " REALLOCATE: elemsize=" << elem_size
             << " typesize=" << sizeof_true_type
@@ -115,10 +115,10 @@ reallocate(Integer sizeof_true_impl,Integer new_capacity,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer DefaultArrayAllocator::
-computeCapacity(Integer current,Integer wanted)
+Int64 DefaultArrayAllocator::
+computeCapacity(Int64 current,Int64 wanted)
 {
-  Integer capacity = current;
+  Int64 capacity = current;
   //std::cout << " REALLOC: want=" << wanted_size << " current_capacity=" << capacity << '\n';
   while (wanted>capacity)
     capacity = (capacity==0) ? 4 : (capacity + 1 + capacity / 2);
@@ -133,8 +133,8 @@ computeCapacity(Integer current,Integer wanted)
 /*---------------------------------------------------------------------------*/
 
 ArrayImplBase* ArrayImplBase::
-allocate(Integer sizeof_true_impl,Integer new_capacity,
-         Integer sizeof_true_type,ArrayImplBase* init)
+allocate(Int64 sizeof_true_impl,Int64 new_capacity,
+         Int64 sizeof_true_type,ArrayImplBase* init)
 {
   return allocate(sizeof_true_impl,new_capacity,sizeof_true_type,init,nullptr);
 }
@@ -143,8 +143,8 @@ allocate(Integer sizeof_true_impl,Integer new_capacity,
 /*---------------------------------------------------------------------------*/
 
 ArrayImplBase* ArrayImplBase::
-allocate(Integer sizeof_true_impl,Integer new_capacity,
-         Integer sizeof_true_type,ArrayImplBase* init,IMemoryAllocator* allocator)
+allocate(Int64 sizeof_true_impl,Int64 new_capacity,
+         Int64 sizeof_true_type,ArrayImplBase* init,IMemoryAllocator* allocator)
 {
   if (!allocator)
     allocator = init->allocator;
@@ -170,7 +170,7 @@ allocate(Integer sizeof_true_impl,Integer new_capacity,
 
   *p = *init;
 
-  p->capacity = (Integer)s_new_capacity;
+  p->capacity = (Int64)s_new_capacity;
   return p;
 }
 
@@ -178,7 +178,7 @@ allocate(Integer sizeof_true_impl,Integer new_capacity,
 /*---------------------------------------------------------------------------*/
 
 ArrayImplBase* ArrayImplBase::
-reallocate(Integer sizeof_true_impl,Integer new_capacity,Integer sizeof_true_type,
+reallocate(Int64 sizeof_true_impl,Int64 new_capacity,Int64 sizeof_true_type,
            ArrayImplBase* current)
 {
   IMemoryAllocator* allocator = current->allocator;
@@ -222,7 +222,7 @@ reallocate(Integer sizeof_true_impl,Integer new_capacity,Integer sizeof_true_typ
          << " old_ptr=" << current << '\n';
     throw BadAllocException(ostr.str());
   }
-  p->capacity = (Integer)s_new_capacity;
+  p->capacity = (Int64)s_new_capacity;
   return p;
 }
 
@@ -239,8 +239,8 @@ deallocate(ArrayImplBase* current)
 /*---------------------------------------------------------------------------*/
 
 void ArrayImplBase::
-overlapError(const void* begin1,Integer size1,
-             const void* begin2,Integer size2)
+overlapError(const void* begin1,Int64 size1,
+             const void* begin2,Int64 size2)
 {
   ARCCORE_UNUSED(begin1);
   ARCCORE_UNUSED(begin2);

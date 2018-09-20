@@ -57,8 +57,8 @@ class ARCCORE_COLLECTIONS_EXPORT IArrayAllocator
    * La valeur retournée n'est jamais nul.
    * \a new_capacity doit être strictement positif.
    */
-  virtual ArrayImplBase* allocate(Integer sizeof_true_impl,Integer new_capacity,
-                                  Integer sizeof_true_type,ArrayImplBase* init) = 0;
+  virtual ArrayImplBase* allocate(Int64 sizeof_true_impl,Int64 new_capacity,
+                                  Int64 sizeof_true_type,ArrayImplBase* init) = 0;
 
   /*! \brief Libère la mémoire.
    *
@@ -70,10 +70,10 @@ class ARCCORE_COLLECTIONS_EXPORT IArrayAllocator
    * \brief Réalloue de la mémoire pour \a new_capacity éléments.
    *
    */
-  virtual ArrayImplBase* reallocate(Integer sizeof_true_impl,Integer new_capacity,
-                                    Integer sizeof_true_type,ArrayImplBase* ptr) =0;
+  virtual ArrayImplBase* reallocate(Int64 sizeof_true_impl,Int64 new_capacity,
+                                    Int64 sizeof_true_type,ArrayImplBase* ptr) =0;
 
-  virtual Integer computeCapacity(Integer current,Integer wanted) =0;
+  virtual Int64 computeCapacity(Int64 current,Int64 wanted) =0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -93,15 +93,15 @@ class ARCCORE_COLLECTIONS_EXPORT DefaultArrayAllocator
 
  public:
   
-  virtual ArrayImplBase* allocate(Integer sizeof_true_impl,Integer new_capacity,
-                                  Integer sizeof_true_type,ArrayImplBase* init);
+  virtual ArrayImplBase* allocate(Int64 sizeof_true_impl,Int64 new_capacity,
+                                  Int64 sizeof_true_type,ArrayImplBase* init);
 
   virtual void deallocate(ArrayImplBase* ptr);
 
-  virtual ArrayImplBase* reallocate(Integer sizeof_true_impl,Integer new_capacity,
-                                    Integer sizeof_true_type,ArrayImplBase* current);
+  virtual ArrayImplBase* reallocate(Int64 sizeof_true_impl,Int64 new_capacity,
+                                    Int64 sizeof_true_type,ArrayImplBase* current);
 
-  virtual Integer computeCapacity(Integer current,Integer wanted);
+  virtual Int64 computeCapacity(Int64 current,Int64 wanted);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -161,16 +161,16 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayImplBase
   Int64 padding1;
 #endif
 
-  static ArrayImplBase* allocate(Integer sizeof_true_impl,Integer nb,
-                                 Integer sizeof_true_type,ArrayImplBase* init);
-  static ArrayImplBase* allocate(Integer sizeof_true_impl,Integer nb,
-                                 Integer sizeof_true_type,ArrayImplBase* init,
+  static ArrayImplBase* allocate(Int64 sizeof_true_impl,Int64 nb,
+                                 Int64 sizeof_true_type,ArrayImplBase* init);
+  static ArrayImplBase* allocate(Int64 sizeof_true_impl,Int64 nb,
+                                 Int64 sizeof_true_type,ArrayImplBase* init,
                                  IMemoryAllocator* allocator);
-  static ArrayImplBase* reallocate(Integer sizeof_true_impl,Integer nb,
-                                   Integer sizeof_true_type,ArrayImplBase* current);
+  static ArrayImplBase* reallocate(Int64 sizeof_true_impl,Int64 nb,
+                                   Int64 sizeof_true_type,ArrayImplBase* current);
   static void deallocate(ArrayImplBase* current);
-  static void overlapError(const void* begin1,Integer size1,
-                           const void* begin2,Integer size2);
+  static void overlapError(const void* begin1,Int64 size1,
+                           const void* begin2,Int64 size2);
 
   static void checkSharedNull()
   {
@@ -314,7 +314,7 @@ class AbstractArray
    * Si \a n'est pas nul, la mémoire est allouée pour
    * contenir \a acapacity éléments (mais le tableau reste vide).
    */
-  AbstractArray(IMemoryAllocator* a,Integer acapacity)
+  AbstractArray(IMemoryAllocator* a,Int64 acapacity)
   : m_p(_sharedNull()), m_baseptr(m_p->ptr)
   {
     // Si un allocateur spécifique est utilisé et qu'il n'est pas
@@ -322,7 +322,7 @@ class AbstractArray
     // pouvoir conserver l'instance de l'allocateur. Par défaut
     // on utilise une taille de 1 élément.
     if (a && a!=m_p->allocator){
-      Integer c = (acapacity>1) ? acapacity : 1;
+      Int64 c = (acapacity>1) ? acapacity : 1;
       _directFirstAllocateWithAllocator(c,a);
     }
   }
@@ -332,7 +332,7 @@ class AbstractArray
   {
     rhs._reset();
   }
-  AbstractArray(Integer asize,const T* values)
+  AbstractArray(Int64 asize,const T* values)
   : m_p(_sharedNull()), m_baseptr(m_p->ptr)
   {
     if (asize!=0){
@@ -344,7 +344,7 @@ class AbstractArray
   AbstractArray(const ConstArrayView<T>& view)
   : m_p(_sharedNull()), m_baseptr(m_p->ptr)
   {
-    Integer asize = view.size();
+    Int64 asize = view.size();
     if (asize!=0){
       _internalAllocate(asize);
       _createRange(0,asize,view.unguardedBasePointer());
@@ -379,22 +379,22 @@ class AbstractArray
  public:
   operator ConstArrayView<T>() const
   {
-    return ConstArrayView<T>(size(),m_p->ptr);
+    return ConstArrayView<T>(ARCCORE_CAST_SMALL_SIZE(size()),m_p->ptr);
   }
  public:
   //! Nombre d'éléments du vecteur
-  Integer size() const { return m_p->size; }
+  Integer size() const { return ARCCORE_CAST_SMALL_SIZE(m_p->size); }
   //! Nombre d'éléments du vecteur
-  Integer length() const { return m_p->size; }
+  Integer length() const { return ARCCORE_CAST_SMALL_SIZE(m_p->size); }
   //! Capacité (nombre d'éléments alloués) du vecteur
-  Integer capacity() const { return m_p->capacity; }
+  Integer capacity() const { return ARCCORE_CAST_SMALL_SIZE(m_p->capacity); }
   //! Capacité (nombre d'éléments alloués) du vecteur
   bool empty() const { return m_p->size==0; }
   //! Vrai si le tableau contient l'élément de valeur \a v
   bool contains(ConstReferenceType v) const
   {
     const T* ptr = m_p->ptr;
-    for( Integer i=0, n=m_p->size; i<n; ++i ){
+    for( Int64 i=0, n=m_p->size; i<n; ++i ){
       if (ptr[i]==v)
         return true;
     }
@@ -407,20 +407,13 @@ class AbstractArray
     ARCCORE_CHECK_AT(i,m_p->size);
     return m_p->ptr[i];
   }
- public:
-#if 0
-  const_iterator begin() const
-  { return m_p->ptr; }
-  const_iterator end() const
-  { return m_p->ptr+m_p->m_size; }
-#endif
  protected:
   TrueImpl* m_p;
  private:
   T* m_baseptr;
  protected:
   //! Réserve le mémoire pour \a new_capacity éléments
-  void _reserve(Integer new_capacity)
+  void _reserve(Int64 new_capacity)
   {
     if (new_capacity<=m_p->capacity)
       return;
@@ -431,7 +424,7 @@ class AbstractArray
    *
    * Si la nouvelle capacité est inférieure à l'ancienne, rien ne se passe.
    */
-  virtual void _internalRealloc(Integer new_capacity,bool compute_capacity)
+  virtual void _internalRealloc(Int64 new_capacity,bool compute_capacity)
   {
     if (m_p==TrueImpl::shared_null){
       if (new_capacity!=0)
@@ -439,7 +432,7 @@ class AbstractArray
       return;
     }
 
-    Integer acapacity = new_capacity;
+    Int64 acapacity = new_capacity;
     if (compute_capacity){
       acapacity = m_p->capacity;
       //std::cout << " REALLOC: want=" << wanted_size << " current_capacity=" << capacity << '\n';
@@ -454,10 +447,10 @@ class AbstractArray
   }
 
   //! Réallocation pour un type POD
-  virtual void _internalReallocate(Integer new_capacity,TrueType)
+  virtual void _internalReallocate(Int64 new_capacity,TrueType)
   {
     TrueImpl* old_p = m_p;
-    Integer old_capacity = m_p->capacity;
+    Int64 old_capacity = m_p->capacity;
     _directReAllocate(new_capacity);
     bool update = (new_capacity < old_capacity) || (m_p != old_p);
     if (update){
@@ -466,13 +459,13 @@ class AbstractArray
   }
 
   //! Réallocation pour un type complexe (non POD)
-  virtual void _internalReallocate(Integer new_capacity,FalseType)
+  virtual void _internalReallocate(Int64 new_capacity,FalseType)
   {
     TrueImpl* old_p = m_p;
-    Integer old_size = m_p->size;
+    Int64 old_size = m_p->size;
     _directAllocate(new_capacity);
     if (m_p!=old_p){
-      for( Integer i=0; i<old_size; ++i ){
+      for( Int64 i=0; i<old_size; ++i ){
         new (m_p->ptr+i) T(old_p->ptr[i]);
         old_p->ptr[i].~T();
       }
@@ -487,14 +480,14 @@ class AbstractArray
     if (m_p!=TrueImpl::shared_null)
       ArrayImplBase::deallocate(m_p);
   }
-  virtual void _internalAllocate(Integer new_capacity)
+  virtual void _internalAllocate(Int64 new_capacity)
   {
     _directAllocate(new_capacity);
     m_p->nb_ref = _getNbRef();
     _updateReferences();
   }
  private:
-  virtual void _directFirstAllocateWithAllocator(Integer new_capacity,IMemoryAllocator* a)
+  virtual void _directFirstAllocateWithAllocator(Int64 new_capacity,IMemoryAllocator* a)
   {
     //TODO: vérifier m_p vaut shared_null
     _setMP(static_cast<TrueImpl*>(ArrayImplBase::allocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p,a)));
@@ -503,11 +496,11 @@ class AbstractArray
     m_p->size = 0;
     _updateReferences();
   }
-  virtual void _directAllocate(Integer new_capacity)
+  virtual void _directAllocate(Int64 new_capacity)
   {
     _setMP(static_cast<TrueImpl*>(ArrayImplBase::allocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p)));
   }
-  virtual void _directReAllocate(Integer new_capacity)
+  virtual void _directReAllocate(Int64 new_capacity)
   {
     _setMP(static_cast<TrueImpl*>(ArrayImplBase::reallocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p)));
   }
@@ -527,12 +520,12 @@ class AbstractArray
     return 1;
   }
   //! Ajoute \a n élément de valeur \a val à la fin du tableau
-  void _addRange(ConstReferenceType val,Integer n)
+  void _addRange(ConstReferenceType val,Int64 n)
   {
-    Integer s = m_p->size;
+    Int64 s = m_p->size;
     if ((s+n) > m_p->capacity)
       _internalRealloc(s+n,true);
-    for( Integer i=0; i<n; ++i )
+    for( Int64 i=0; i<n; ++i )
       new (m_p->ptr + s + i) T(val);
     m_p->size += n;
   }
@@ -540,9 +533,9 @@ class AbstractArray
   //! Ajoute \a n élément de valeur \a val à la fin du tableau
   void _addRange(ConstArrayView<T> val)
   {
-    Integer n = val.size();
+    Int64 n = val.size();
     const T* ptr = val.data();
-    Integer s = m_p->size;
+    Int64 s = m_p->size;
     if ((s+n) > m_p->capacity)
       _internalRealloc(s+n,true);
     _createRange(s,s+n,ptr);
@@ -561,55 +554,55 @@ class AbstractArray
   {
     _destroyRange(0,m_p->size,IsPODType());
   }
-  void _destroyRange(Integer,Integer,TrueType)
+  void _destroyRange(Int64,Int64,TrueType)
   {
     // Rien à faire pour un type POD.
   }
-  void _destroyRange(Integer abegin,Integer aend,FalseType)
+  void _destroyRange(Int64 abegin,Int64 aend,FalseType)
   {
-    for( Integer i=abegin; i<aend; ++i )
+    for( Int64 i=abegin; i<aend; ++i )
       m_p->ptr[i].~T();
   }
-  void _createRangeDefault(Integer,Integer,TrueType)
+  void _createRangeDefault(Int64,Int64,TrueType)
   {
   }
-  void _createRangeDefault(Integer abegin,Integer aend,FalseType)
+  void _createRangeDefault(Int64 abegin,Int64 aend,FalseType)
   {
-    for( Integer i=abegin; i<aend; ++i )
+    for( Int64 i=abegin; i<aend; ++i )
       new (m_p->ptr+i) T();
   }
-  void _createRange(Integer abegin,Integer aend,ConstReferenceType value,TrueType)
+  void _createRange(Int64 abegin,Int64 aend,ConstReferenceType value,TrueType)
   {
-    for( Integer i=abegin; i<aend; ++i )
+    for( Int64 i=abegin; i<aend; ++i )
       m_p->ptr[i] = value;
   }
-  void _createRange(Integer abegin,Integer aend,ConstReferenceType value,FalseType)
+  void _createRange(Int64 abegin,Int64 aend,ConstReferenceType value,FalseType)
   {
-    for( Integer i=abegin; i<aend; ++i )
+    for( Int64 i=abegin; i<aend; ++i )
       new (m_p->ptr+i) T(value);
   }
-  void _createRange(Integer abegin,Integer aend,const T* values)
+  void _createRange(Int64 abegin,Int64 aend,const T* values)
   {
-    for( Integer i=abegin; i<aend; ++i ){
+    for( Int64 i=abegin; i<aend; ++i ){
       new (m_p->ptr+i) T(*values);
       ++values;
     }
   }
   void _fill(ConstReferenceType value)
   {
-    for( Integer i=0, n=size(); i<n; ++i )
+    for( Int64 i=0, n=size(); i<n; ++i )
       m_p->ptr[i] = value;
   }
   void _clone(const ThatClassType& orig_array)
   {
-    Integer that_size = orig_array.size();
+    Int64 that_size = orig_array.size();
     _internalAllocate(that_size);
     m_p->size = that_size;
     m_p->dim1_size = orig_array.m_p->dim1_size;
     m_p->dim2_size = orig_array.m_p->dim2_size;
     _createRange(0,that_size,orig_array.m_p->ptr);
   }
-  void _resize(Integer s)
+  void _resize(Int64 s)
   {
     if (s>m_p->size) {
       this->_internalRealloc(s,false);
@@ -625,7 +618,7 @@ class AbstractArray
     this->_destroyRange(0,m_p->size,IsPODType());
     m_p->size = 0;
   }
-  void _resize(Integer s,ConstReferenceType value)
+  void _resize(Int64 s,ConstReferenceType value)
   {
     if (s>m_p->size){
       this->_internalRealloc(s,false);
@@ -642,7 +635,7 @@ class AbstractArray
   }
   void _copy(const T* rhs_begin,FalseType)
   {
-    for( Integer i=0, is=m_p->size; i<is; ++i )
+    for( Int64 i=0, is=m_p->size; i<is; ++i )
       m_p->ptr[i] = rhs_begin[i];
   }
   void _copy(const T* rhs_begin)
@@ -652,7 +645,7 @@ class AbstractArray
   void _copyView(ConstArrayView<T> rhs)
   {
     const T* rhs_begin = rhs.data();
-    Integer rhs_size = rhs.size();
+    Int64 rhs_size = rhs.size();
     T* abegin = m_p->ptr;
     // Vérifie que \a rhs n'est pas un élément à l'intérieur de ce tableau
     if (abegin>=rhs_begin && abegin<(rhs_begin+rhs_size))
@@ -817,7 +810,7 @@ class Array
   //! Constructeur avec liste d'initialisation.
   Array(std::initializer_list<T> alist,BuildDeprecated) : AbstractArray<T>()
   {
-    Integer nsize = arccoreCheckArraySize(alist.size());
+    Int64 nsize = arccoreCheckArraySize(alist.size());
     this->_reserve(nsize);
     for( auto x : alist )
       this->add(x);
@@ -901,7 +894,7 @@ class Array
   {
     const Integer result_size = indexes.size();
 #ifdef ARCCORE_CHECK
-    const Integer my_size = m_p->size;
+    const Int64 my_size = m_p->size;
 #endif
     for( Integer i=0; i<result_size; ++i) {
       Int32 index = indexes[i];
@@ -957,9 +950,9 @@ class Array
    */
   void remove(Integer index)
   {
-    Integer s = m_p->size;
+    Int64 s = m_p->size;
     ARCCORE_CHECK_AT(index,s);
-    for( Integer i=index; i<(s-1); ++i )
+    for( Int64 i=index; i<(s-1); ++i )
       m_p->ptr[i] = m_p->ptr[i+1];
     --m_p->size;
     m_p->ptr[m_p->size].~T();
