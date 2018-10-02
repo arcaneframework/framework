@@ -145,6 +145,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   bool m_is_trace;
   std::set<MPI_Request> m_allocated_requests;
   bool m_request_error_is_fatal;
+  bool m_is_report_error_in_request;
   //! Requête vide. Voir MpiAdapter.cc pour plus d'infos.
   MPI_Request m_empty_request;
   int m_recv_buffer_for_empty_request[1];

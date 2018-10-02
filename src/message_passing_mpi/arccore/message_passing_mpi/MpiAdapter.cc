@@ -48,10 +48,13 @@ MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,MpiLock* mpi_lock)
 , m_nb_reduce(0)
 , m_is_trace(false)
 , m_request_error_is_fatal(false)
+, m_is_report_error_in_request(true)
 , m_empty_request(MPI_REQUEST_NULL)
 {
   if (Platform::getEnvironmentVariable("ARCCORE_TRACE_MPI")=="TRUE")
     m_is_trace = true;
+  if (Platform::getEnvironmentVariable("ARCCORE_NOREPORT_ERROR_MPIREQUEST")=="TRUE")
+    m_is_report_error_in_request = false;
 
   ::MPI_Comm_rank(m_communicator,&m_comm_rank);
   ::MPI_Comm_size(m_communicator,&m_comm_size);
@@ -836,8 +839,10 @@ waitAllRequests(ArrayView<Request> requests,
   // Il ne faut pas utiliser mpi_request[i] car il est modifié par Mpi
   // mpi_request[i] == MPI_REQUEST_NULL
   for( Integer i=0; i<size; ++i ) {
-    _removeRequest((MPI_Request)(requests[i]));
-    requests[i].reset();
+    if (requests[i].isValid()){
+      _removeRequest((MPI_Request)(requests[i]));
+      requests[i].reset();
+    }
   }
 
   if (m_is_trace)
@@ -920,8 +925,10 @@ waitSomeRequests(ArrayView<Request> requests,ArrayView<bool> indexes,
               << " status=" << mpi_status[z].MPI_SOURCE
               << " status_index=" << mpi_status[index].MPI_SOURCE;
       indexes[index] = true;
-      _removeRequest(static_cast<MPI_Request>(requests[index]));
-      requests[index].reset();
+      if (requests[index].isValid()){
+        _removeRequest(static_cast<MPI_Request>(requests[index]));
+        requests[index].reset();
+      }
     }
   }
 
@@ -939,6 +946,7 @@ freeRequest(Request& request)
   if (!request.isValid()){
     warning() << "MpiAdapter::freeRequest() null request r=" << (MPI_Request)request;
     _checkFatalInRequest();
+    return;
   }
   {
     MpiLock::Section mls(m_mpi_lock);
@@ -956,10 +964,9 @@ freeRequest(Request& request)
 bool MpiAdapter::
 testRequest(Request& request)
 {
-  if (!request.isValid()){
-    error() << "MpiAdapter::testRequest() null request r=" << (MPI_Request)request;
+  // Il est autorisé par MPI de faire un test avec une requête nulle.
+  if (!request.isValid())
     return true;
-  }
 
   MPI_Request mr = (MPI_Request)request;
   int is_finished = 0;
@@ -969,7 +976,7 @@ testRequest(Request& request)
 
     if (mr!=m_empty_request){
       // Il faut d'abord recuperer l'emplacement de la requete car si elle
-      // est finie, elle sera automatiquement liberee par MPI lors du test.
+      // est finie, elle sera automatiquement libérée par MPI lors du test.
       std::set<MPI_Request>::iterator ireq = m_allocated_requests.find(mr);
       if (ireq==m_allocated_requests.end()){
         error() << "MpiAdapter::testRequest() request not referenced "
@@ -999,8 +1006,10 @@ void MpiAdapter::
 _addRequest(MPI_Request request)
 {
   if (request==MPI_REQUEST_NULL){
-    error() << "MpiAdapter::_addRequest() trying to add null request";
-    _checkFatalInRequest();
+    if (m_is_report_error_in_request || m_request_error_is_fatal){
+      error() << "MpiAdapter::_addRequest() trying to add null request";
+      _checkFatalInRequest();
+    }
     return;
   }
   if (request==m_empty_request)
@@ -1008,9 +1017,11 @@ _addRequest(MPI_Request request)
   //info() << "MPI_ADAPTER:ADD REQUEST " << request;
   std::set<MPI_Request>::const_iterator i = m_allocated_requests.find(request);
   if (i!=m_allocated_requests.end()){
-    error() << "MpiAdapter::_addRequest() request already referenced "
-            << " id=" << request;
-    _checkFatalInRequest();
+    if (m_is_report_error_in_request || m_request_error_is_fatal){
+      error() << "MpiAdapter::_addRequest() request already referenced "
+              << " id=" << request;
+      _checkFatalInRequest();
+    }
     return;
   }
   m_allocated_requests.insert(request);
@@ -1026,17 +1037,21 @@ _removeRequest(MPI_Request request)
 {
   //info() << "MPI_ADAPTER:REMOVE REQUEST " << request;
   if (request==MPI_REQUEST_NULL){
-    error() << "MpiAdapter::_removeRequest() null request (" << MPI_REQUEST_NULL << ")";
-    _checkFatalInRequest();
+    if (m_is_report_error_in_request || m_request_error_is_fatal){
+      error() << "MpiAdapter::_removeRequest() null request (" << MPI_REQUEST_NULL << ")";
+      _checkFatalInRequest();
+    }
     return;
   }
   if (request==m_empty_request)
     return;
   std::set<MPI_Request>::iterator i = m_allocated_requests.find(request);
   if (i==m_allocated_requests.end()){
-    error() << "MpiAdapter::_removeRequest() request not referenced "
-            << " id=" << request;
-    _checkFatalInRequest();
+    if (m_is_report_error_in_request || m_request_error_is_fatal){
+      error() << "MpiAdapter::_removeRequest() request not referenced "
+              << " id=" << request;
+      _checkFatalInRequest();
+    }
   }
   else
     m_allocated_requests.erase(i);
@@ -1060,7 +1075,7 @@ void MpiAdapter::
 _checkFatalInRequest()
 {
   if (m_request_error_is_fatal)
-    throw FatalErrorException(A_FUNCINFO,"Error in requests management");
+    ARCCORE_FATAL("Error in requests management");
 }
 
 /*---------------------------------------------------------------------------*/
