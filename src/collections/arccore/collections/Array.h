@@ -152,14 +152,8 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayImplBase
   Int64* mutli_dims_size;
   //! Allocateur mémoire
   IMemoryAllocator* allocator;
-
-  // TODO: gerer le padding pour le 64 bit.
-#ifdef ARCCORE_64BIT
-#error "Padding for ArrayImplBase not implemented for 64 bit"
-#else
-  //Int32 padding[6];
+  //! Padding pour que la structure ait une taille de 64 octets.
   Int64 padding1;
-#endif
 
   static ArrayImplBase* allocate(Int64 sizeof_true_impl,Int64 nb,
                                  Int64 sizeof_true_type,ArrayImplBase* init);
@@ -292,7 +286,7 @@ class AbstractArray
   //! Type référence constante d'un élément du tableau
   typedef ConstReferenceType const_reference;
   //! Type indexant le tableau
-  typedef Integer size_type;
+  typedef Int64 size_type;
   //! Type d'une distance entre itérateur éléments du tableau
   typedef ptrdiff_t difference_type;
 
@@ -742,28 +736,19 @@ class Array
  public:
 
   typedef AbstractArray<T> BaseClassType;
-  typedef typename BaseClassType::ConstReferenceType ConstReferenceType;
+  using typename BaseClassType::ConstReferenceType;
 
  public:
 	
-  //! Type des éléments du tableau
-  typedef typename BaseClassType::value_type value_type;
-  //! Type de l'itérateur sur un élément du tableau
-  typedef typename BaseClassType::iterator iterator;
-  //! Type de l'itérateur constant sur un élément du tableau
-  typedef typename BaseClassType::const_iterator const_iterator;
-  //! Type pointeur d'un élément du tableau
-  typedef typename BaseClassType::pointer pointer;
-  //! Type pointeur constant d'un élément du tableau
-  typedef typename BaseClassType::const_pointer const_pointer;
-  //! Type référence d'un élément du tableau
-  typedef typename BaseClassType::reference reference;
-  //! Type référence constante d'un élément du tableau
-  typedef typename BaseClassType::const_reference const_reference;
-  //! Type indexant le tableau
-  typedef typename BaseClassType::size_type size_type;
-  //! Type d'une distance entre itérateur éléments du tableau
-  typedef typename BaseClassType::difference_type difference_type;
+  using typename BaseClassType::value_type;
+  using typename BaseClassType::iterator;
+  using typename BaseClassType::const_iterator;
+  using typename BaseClassType::pointer;
+  using typename BaseClassType::const_pointer;
+  using typename BaseClassType::reference;
+  using typename BaseClassType::const_reference;
+  using typename BaseClassType::size_type;
+  using typename BaseClassType::difference_type;
 #ifndef ARCCORE_AVOID_DEPRECATED_ARRAY_CONSTRUCTOR
  public:
 #else
@@ -1167,7 +1152,7 @@ class SharedArray
 
   typedef SharedArray<T> ThatClassType;
   typedef AbstractArray<T> BaseClassType;
-  typedef typename BaseClassType::ConstReferenceType ConstReferenceType;
+  using typename BaseClassType::ConstReferenceType;
 
  public:
 
@@ -1349,7 +1334,7 @@ class UniqueArray
  public:
 
   typedef AbstractArray<T> BaseClassType;
-  typedef typename BaseClassType::ConstReferenceType ConstReferenceType;
+  using typename BaseClassType::ConstReferenceType;
 
  public:
 
