@@ -444,6 +444,15 @@ class ConstLargeArrayView
  public:
 
   /*!
+   * \brief Vue constante sur cette vue.
+   */
+  ConstArrayView<T> smallView() const
+  {
+    Integer s = arccoreCheckArraySize(m_size);
+    return ConstArrayView<T>(s,m_ptr);
+  }
+
+  /*!
    * \brief Sous-vue (constante) à partir de l'élément \a abegin et
    contenant \a asize éléments.
    *

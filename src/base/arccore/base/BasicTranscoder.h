@@ -43,7 +43,7 @@ class ARCCORE_BASE_EXPORT BasicTranscoder
   static void transcodeFromUtf16ToUtf8(ConstLargeArrayView<UChar> utf16,CoreArray<Byte>& utf8);
   static void transcodeFromUtf8ToUtf16(ConstLargeArrayView<Byte> utf8,CoreArray<UChar>& utf16);
 
-  static Integer stringLen(const UChar* ustr);
+  static Int64 stringLen(const UChar* ustr);
 
   static void replaceWS(CoreArray<Byte>& ustr);
   static void collapseWS(CoreArray<Byte>& ustr);

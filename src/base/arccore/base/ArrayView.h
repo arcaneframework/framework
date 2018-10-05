@@ -795,6 +795,18 @@ arccoreCheckArraySize(int size);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*!
+ * \brief Vérifie que \a size peut être converti dans un 'Int64' pour servir
+ * de taille à un tableau.
+ * Si possible, retourne \a size convertie en un 'Int64'. Sinon, lance
+ * une exception de type ArgumentException.
+ */
+extern "C++" ARCCORE_BASE_EXPORT Int64
+arccoreCheckInt64ArraySize(size_t size);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arccore
 
 /*---------------------------------------------------------------------------*/

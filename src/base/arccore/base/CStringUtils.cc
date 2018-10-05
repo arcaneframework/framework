@@ -57,8 +57,17 @@ len(const char* s)
   return len;
 }
 
+//! Retourne la longueur de la chaîne \a s
+Int64 CStringUtils::
+largeLength(const char* s)
+{
+  if (!s)
+    return 0;
+  return std::strlen(s);
+}
+
 char* CStringUtils::
-copyn(char* to,const char* from,Integer n)
+copyn(char* to,const char* from,Int64 n)
 {
   return ::strncpy(to,from,n);
 }

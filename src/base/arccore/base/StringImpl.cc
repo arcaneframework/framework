@@ -81,7 +81,7 @@ StringImpl(const char* str)
 /*---------------------------------------------------------------------------*/
 
 StringImpl::
-StringImpl(const char* str,Integer len)
+StringImpl(const char* str,Int64 len)
 : m_nb_ref(0)
 , m_flags(eValidLocal)
 , m_local_str(str,len)
@@ -117,7 +117,7 @@ StringImpl(const StringImpl& str)
 /*---------------------------------------------------------------------------*/
 
 StringImpl::
-StringImpl(ByteConstArrayView bytes)
+StringImpl(ConstLargeArrayView<Byte> bytes)
 : m_nb_ref(0)
 , m_flags(eValidUtf8)
 , m_utf8_array(bytes)
@@ -148,6 +148,9 @@ addReference()
   ++m_nb_ref;
   _checkReference();
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void StringImpl::
 removeReference()
@@ -185,12 +188,21 @@ utf16()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstArrayView<Byte> StringImpl::
-utf8()
+ConstLargeArrayView<Byte> StringImpl::
+largeUtf8()
 {
   _checkReference();
   _createUtf8();
-  return m_utf8_array.view().smallView();
+  return m_utf8_array.view();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ConstArrayView<Byte> StringImpl::
+utf8()
+{
+  return largeUtf8().smallView();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -209,7 +221,7 @@ isEqual(StringImpl* str)
     return v;
   }
   _createUtf8();
-  ByteConstArrayView ref_array = str->utf8();
+  ConstLargeArrayView<Byte> ref_array = str->largeUtf8();
   bool v = CStringUtils::isEqual((const char*)ref_array.data(),(const char*)m_utf8_array.data());
 #if 0
   cerr << "** COMPARE = UTF8 ";
@@ -240,7 +252,7 @@ isLessThan(StringImpl* str)
   }
   _createUtf8();
   if (m_flags & eValidUtf8){
-    ByteConstArrayView ref_array = str->utf8();
+    ConstLargeArrayView<Byte> ref_array = str->largeUtf8();
     bool v = CStringUtils::isLess((const char*)m_utf8_array.data(),(const char*)ref_array.data());
 #if 0
     cerr << "** COMPARE < UTF8 ";
@@ -328,7 +340,7 @@ append(StringImpl* str)
     return this;
   }
   _createUtf8();
-  ByteConstArrayView ref_str = str->utf8();
+  ConstLargeArrayView<Byte> ref_str = str->largeUtf8();
   _appendUtf8(ref_str);
   return this;
 }
@@ -349,7 +361,7 @@ append(const char* str)
   _createUtf8();
 
   CoreArray<Byte> buf;
-  Integer len = CStringUtils::len(str);
+  Int64 len = CStringUtils::largeLength(str);
   BasicTranscoder::transcodeFromISO88591ToUtf8(str,len,buf);
   _appendUtf8(buf);
   return this;
@@ -434,10 +446,10 @@ toLower()
 /*---------------------------------------------------------------------------*/
 
 StringImpl* StringImpl::
-substring(StringImpl* str,Integer pos,Integer len)
+substring(StringImpl* str,Int64 pos,Int64 len)
 {
   StringImpl* s = new StringImpl();
-  BasicTranscoder::substring(s->m_utf8_array,str->utf8(),pos,len);
+  BasicTranscoder::substring(s->m_utf8_array,str->largeUtf8(),pos,len);
   s->m_flags |= eValidUtf8;
   return s;
 }
@@ -476,7 +488,7 @@ _createUtf8()
     return;
 
   if (m_flags & eValidLocal){
-    Integer len = arccoreCheckArraySize(m_local_str.length());
+    Int64 len = arccoreCheckInt64ArraySize(m_local_str.length());
     BasicTranscoder::transcodeFromISO88591ToUtf8(m_local_str.c_str(),len,m_utf8_array);
     m_flags |= eValidUtf8;
     return;
@@ -522,7 +534,7 @@ void StringImpl::
 _setUtf16(const UChar* src)
 {
   ARCCORE_CHECK_PTR(src);
-  Integer len = BasicTranscoder::stringLen(src);
+  Int64 len = BasicTranscoder::stringLen(src);
   m_utf16_array.resize(len+1);
   ::memcpy(m_utf16_array.data(),src,sizeof(UChar)*len);
   m_utf16_array[len] = 0;

@@ -338,7 +338,7 @@ transcodeFromUtf16ToISO88591(ConstLargeArrayView<UChar> utf16,std::string& s)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer BasicTranscoder::
+Int64 BasicTranscoder::
 stringLen(const UChar* ustr)
 {
   if (!ustr || ustr[0] == 0)
@@ -346,7 +346,7 @@ stringLen(const UChar* ustr)
   const UChar* u = ustr + 1;
   while ((*u)!=0)
     ++u;
-  return (Integer)(u - ustr);
+  return arccoreCheckInt64ArraySize((std::size_t)(u - ustr));
 }
 
 /*---------------------------------------------------------------------------*/
