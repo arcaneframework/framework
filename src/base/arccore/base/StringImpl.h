@@ -90,9 +90,9 @@ class ARCCORE_BASE_EXPORT StringImpl
   void _invalidateUtf8();
   void _setArray();
   void _setStrFromArray(Integer ulen);
-  void _printStrUtf16(std::ostream& o,UCharConstArrayView str);
-  void _printStrUtf8(std::ostream& o,ByteConstArrayView str);
-  void _appendUtf8(ByteConstArrayView ref_str);
+  void _printStrUtf16(std::ostream& o,ConstLargeArrayView<UChar> str);
+  void _printStrUtf8(std::ostream& o,ConstLargeArrayView<Byte> str);
+  void _appendUtf8(ConstLargeArrayView<Byte> ref_str);
 };
 
 /*---------------------------------------------------------------------------*/

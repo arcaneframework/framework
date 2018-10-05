@@ -8,7 +8,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/base/ArrayView.h"
+#include "arccore/base/LargeArrayView.h"
 
 #include <vector>
 
@@ -51,7 +51,7 @@ class CoreArray
   //! Type référence constante d'un élément du tableau
   typedef const value_type& const_reference;
   //! Type indexant le tableau
-  typedef Integer size_type;
+  typedef Int64 size_type;
   //! Type d'une distance entre itérateur éléments du tableau
   typedef ptrdiff_t difference_type;
 
@@ -62,15 +62,17 @@ class CoreArray
   //! Construit un tableau vide.
   CoreArray(ConstArrayView<DataType> v)
   : m_p(v.range().begin(),v.range().end()) {}
+  CoreArray(ConstLargeArrayView<DataType> v)
+  : m_p(v.range().begin(),v.range().end()) {}
  public:
 
   //! Conversion vers un ConstArrayView
-  operator ConstArrayView<DataType>() const
+  operator ConstLargeArrayView<DataType>() const
   {
     return CoreArray::_constView(m_p);
   }
   //! Conversion vers un ArrayView
-  operator ArrayView<DataType>()
+  operator LargeArrayView<DataType>()
   {
     return CoreArray::_view(m_p);
   }
@@ -78,19 +80,19 @@ class CoreArray
  public:
 
   //! i-ème élément du tableau.
-  inline DataType& operator[](Integer i)
+  inline DataType& operator[](Int64 i)
   {
     return m_p[i];
   }
 
   //! i-ème élément du tableau.
-  inline const DataType& operator[](Integer i) const
+  inline const DataType& operator[](Int64 i) const
   {
     return m_p[i];
   }
 
   //! Retourne la taille du tableau
-  inline Integer size() const { return arccoreCheckArraySize(m_p.size()); }
+  inline Int64 size() const { return arccoreCheckArraySize(m_p.size()); }
 
   //! Retourne un iterateur sur le premier élément du tableau
   inline iterator begin() { return m_p.begin(); }
@@ -102,13 +104,13 @@ class CoreArray
   inline const_iterator end() const { return m_p.end(); }
 
   //! Vue constante
-  ConstArrayView<DataType> constView() const
+  ConstLargeArrayView<DataType> constView() const
   {
     return CoreArray::_constView(m_p);
   }
 
   //! Vue modifiable
-  ArrayView<DataType> view()
+  LargeArrayView<DataType> view()
   {
     return CoreArray::_view(m_p);
   }
@@ -119,11 +121,11 @@ class CoreArray
     return m_p.empty();
   }
 
-  void resize(Integer new_size)
+  void resize(Int64 new_size)
   {
     m_p.resize(new_size);
   }
-  void reserve(Integer new_size)
+  void reserve(Int64 new_size)
   {
     m_p.reserve(new_size);
   }
@@ -152,12 +154,22 @@ class CoreArray
     return _data(m_p);
   }
  private:
-  static ConstArrayView<DataType> _constView(const std::vector<DataType>& c)
+  static ConstLargeArrayView<DataType> _constView(const std::vector<DataType>& c)
+  {
+    Int64 s = arccoreCheckArraySize(c.size());
+    return ConstLargeArrayView<DataType>(s,c.data());
+  }
+  static ConstArrayView<DataType> _constSmallView(const std::vector<DataType>& c)
   {
     Integer s = arccoreCheckArraySize(c.size());
     return ConstArrayView<DataType>(s,c.data());
   }
-  static ArrayView<DataType> _view(std::vector<DataType>& c)
+  static LargeArrayView<DataType> _view(std::vector<DataType>& c)
+  {
+    Int64 s = arccoreCheckArraySize(c.size());
+    return LargeArrayView<DataType>(s,c.data());
+  }
+  static ArrayView<DataType> _smallView(std::vector<DataType>& c)
   {
     Integer s = arccoreCheckArraySize(c.size());
     return ArrayView<DataType>(s,c.data());

@@ -35,13 +35,13 @@ class ARCCORE_BASE_EXPORT BasicTranscoder
  public:
 
   static void transcodeFromISO88591ToUtf16(const std::string& s,CoreArray<UChar>& utf16);
-  static void transcodeFromUtf16ToISO88591(UCharConstArrayView utf16,std::string& s);
+  static void transcodeFromUtf16ToISO88591(ConstLargeArrayView<UChar> utf16,std::string& s);
 
-  static void transcodeFromISO88591ToUtf8(const char* str,Integer len,CoreArray<Byte>& utf8);
-  static void transcodeFromUtf8ToISO88591(ByteConstArrayView utf8,std::string& s);
+  static void transcodeFromISO88591ToUtf8(const char* str,Int64 len,CoreArray<Byte>& utf8);
+  static void transcodeFromUtf8ToISO88591(ConstLargeArrayView<Byte> utf8,std::string& s);
 
-  static void transcodeFromUtf16ToUtf8(UCharConstArrayView utf16,CoreArray<Byte>& utf8);
-  static void transcodeFromUtf8ToUtf16(ByteConstArrayView utf8,CoreArray<UChar>& utf16);
+  static void transcodeFromUtf16ToUtf8(ConstLargeArrayView<UChar> utf16,CoreArray<Byte>& utf8);
+  static void transcodeFromUtf8ToUtf16(ConstLargeArrayView<Byte> utf8,CoreArray<UChar>& utf16);
 
   static Integer stringLen(const UChar* ustr);
 
@@ -51,7 +51,7 @@ class ARCCORE_BASE_EXPORT BasicTranscoder
   static void upperCase(CoreArray<Byte>& utf8);
   static void lowerCase(CoreArray<Byte>& utf8);
 
-  static void substring(CoreArray<Byte>& utf8,ByteConstArrayView rhs,Integer pos,Integer len);
+  static void substring(CoreArray<Byte>& utf8,ConstLargeArrayView<Byte> rhs,Int64 pos,Int64 len);
 };
 
 /*---------------------------------------------------------------------------*/

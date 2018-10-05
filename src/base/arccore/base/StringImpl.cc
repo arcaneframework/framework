@@ -179,7 +179,7 @@ utf16()
 {
   _checkReference();
   _createUtf16();
-  return m_utf16_array;
+  return m_utf16_array.view().smallView();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -190,7 +190,7 @@ utf8()
 {
   _checkReference();
   _createUtf8();
-  return m_utf8_array;
+  return m_utf8_array.view().smallView();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -359,11 +359,11 @@ append(const char* str)
 /*---------------------------------------------------------------------------*/
 
 void StringImpl::
-_appendUtf8(ByteConstArrayView ref_str)
+_appendUtf8(ConstLargeArrayView<Byte> ref_str)
 {
-  Integer ref_size = ref_str.size();
-  Integer utf8_size = m_utf8_array.size();
-  Integer current_size = utf8_size - 1;
+  Int64 ref_size = ref_str.size();
+  Int64 utf8_size = m_utf8_array.size();
+  Int64 current_size = utf8_size - 1;
 
   ARCCORE_ASSERT((ref_size>0),("Bad ref_size"));
   ARCCORE_ASSERT((utf8_size>0),("Bad utf8_size"));
@@ -562,12 +562,12 @@ _invalidateUtf8()
 /*---------------------------------------------------------------------------*/
 
 void StringImpl::
-_printStrUtf16(std::ostream& o,UCharConstArrayView str)
+_printStrUtf16(std::ostream& o,ConstLargeArrayView<UChar> str)
 {
-  Integer buf_size = str.size();
+  Int64 buf_size = str.size();
   o << "(bufsize=" << buf_size
     << " begin=" << str.data() << " - ";
-  for( Integer i=0; i<buf_size; ++i )
+  for( Int64 i=0; i<buf_size; ++i )
     o << (int)str[i] << ' ';
   o << ")";
 }
@@ -576,9 +576,9 @@ _printStrUtf16(std::ostream& o,UCharConstArrayView str)
 /*---------------------------------------------------------------------------*/
 
 void StringImpl::
-_printStrUtf8(std::ostream& o,ByteConstArrayView str)
+_printStrUtf8(std::ostream& o,ConstLargeArrayView<Byte> str)
 {
-  Integer buf_size = str.size();
+  Int64 buf_size = str.size();
   o << "(bufsize=" << buf_size
     << " - "
     << (const char*)str.data()

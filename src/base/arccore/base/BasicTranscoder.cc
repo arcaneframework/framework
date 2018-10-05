@@ -99,12 +99,14 @@ ucs4_to_utf8(Int32 wc,CoreArray<Byte>& utf8)
  * \param wc [out] valeur ucs4 du caractère.
  * \return le nombre de caractères utf8 lus.
  */
-static Integer
-utf8_to_ucs4(ByteConstArrayView uchar,Integer index,Int32& wc)
+namespace
+{
+Int64
+utf8_to_ucs4(ConstLargeArrayView<Byte> uchar,Int64 index,Int32& wc)
 {
   const Byte* s = uchar.data()+index;
   unsigned char c = s[0];
-  Integer n = uchar.size() - index;
+  Int64 n = uchar.size() - index;
   if (c < 0x80) {
     wc = c;
     return 1;
@@ -181,6 +183,7 @@ utf8_to_ucs4(ByteConstArrayView uchar,Integer index,Int32& wc)
   }
   return _invalidChar(wc);
 }
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -196,8 +199,10 @@ utf8_to_ucs4(ByteConstArrayView uchar,Integer index,Int32& wc)
  * \param wc [out] valeur ucs4 du caractère.
  * \return le nombre de caractères utf16 lus.
  */
-static Integer
-utf16_to_ucs4(UCharConstArrayView uchar,Integer index,Int32& wc)
+namespace
+{
+Int64
+utf16_to_ucs4(ConstLargeArrayView<UChar> uchar,Int64 index,Int32& wc)
 {
   wc = uchar[index];
   if (wc>=0xd800 && wc<0xdc00){
@@ -221,6 +226,7 @@ utf16_to_ucs4(UCharConstArrayView uchar,Integer index,Int32& wc)
     return 1;
   }
   return 1;
+}
 }
 
 /*---------------------------------------------------------------------------*/
@@ -289,10 +295,10 @@ transcodeFromISO88591ToUtf16(const std::string& s,CoreArray<UChar>& utf16)
  * mettre dans \a s.
  */
 void BasicTranscoder::
-transcodeFromUtf16ToISO88591(UCharConstArrayView utf16,std::string& s)
+transcodeFromUtf16ToISO88591(ConstLargeArrayView<UChar> utf16,std::string& s)
 {
   const UChar* ustr = utf16.data();
-  Integer len = utf16.size();
+  Int64 len = utf16.size();
 
   s.clear();
 
@@ -348,9 +354,8 @@ stringLen(const UChar* ustr)
 
 //! Traduit depuis ISO-8859-1 vers UTF8
 void BasicTranscoder::
-transcodeFromISO88591ToUtf8(const char* str,Integer len,CoreArray<Byte>& utf8)
+transcodeFromISO88591ToUtf8(const char* str,Int64 len,CoreArray<Byte>& utf8)
 {
-
   if (len<0)
     throw std::exception();
   for( Integer i=0; i<len; ++i ){
@@ -372,12 +377,12 @@ transcodeFromISO88591ToUtf8(const char* str,Integer len,CoreArray<Byte>& utf8)
 /*---------------------------------------------------------------------------*/
 
 void BasicTranscoder::
-transcodeFromUtf8ToISO88591(ByteConstArrayView utf8,std::string& s)
+transcodeFromUtf8ToISO88591(ConstLargeArrayView<Byte> utf8,std::string& s)
 {
   // Caractère utilisé si la conversion échoue.
   const char fallback_char = '?';
   const Byte* ustr = utf8.data();
-  Integer len = utf8.size();
+  Int64 len = utf8.size();
   if (len==0){
     std::cerr << "empty 'utf8' array\n";
     s = "";
@@ -417,9 +422,9 @@ transcodeFromUtf8ToISO88591(ByteConstArrayView utf8,std::string& s)
 
 //! Traduit depuis UTF16 vers UTF8
 void BasicTranscoder::
-transcodeFromUtf16ToUtf8(UCharConstArrayView utf16,CoreArray<Byte>& utf8)
+transcodeFromUtf16ToUtf8(ConstLargeArrayView<UChar> utf16,CoreArray<Byte>& utf8)
 {
-  for( int i=0, is=utf16.size(); i<is; ){
+  for( Int64 i=0, n=utf16.size(); i<n; ){
     Int32 wc;
     i += utf16_to_ucs4(utf16,i,wc);
     ucs4_to_utf8(wc,utf8);
@@ -430,9 +435,9 @@ transcodeFromUtf16ToUtf8(UCharConstArrayView utf16,CoreArray<Byte>& utf8)
 /*---------------------------------------------------------------------------*/
 
 void BasicTranscoder::
-transcodeFromUtf8ToUtf16(ByteConstArrayView utf8,CoreArray<UChar>& utf16)
+transcodeFromUtf8ToUtf16(ConstLargeArrayView<Byte> utf8,CoreArray<UChar>& utf16)
 {
-  for( int i=0, is=utf8.size(); i<is; ){
+  for( Int64 i=0, n=utf8.size(); i<n; ){
     Int32 wc;
     i += utf8_to_ucs4(utf8,i,wc);
     ucs4_to_utf16(wc,utf16);
@@ -446,9 +451,9 @@ void BasicTranscoder::
 replaceWS(CoreArray<Byte>& out_utf8)
 {
   CoreArray<Byte> copy_utf8(out_utf8);
-  ByteConstArrayView utf8(copy_utf8.view());
+  ConstLargeArrayView<Byte> utf8(copy_utf8.view());
   out_utf8.clear();
-  for( int i=0, is=utf8.size(); i<is; ){
+  for( Int64 i=0, n=utf8.size(); i<n; ){
     Int32 wc;
     i += utf8_to_ucs4(utf8,i,wc);
     if (g_unichar_isspace(wc))
@@ -465,10 +470,10 @@ void BasicTranscoder::
 collapseWS(CoreArray<Byte>& out_utf8)
 {
   CoreArray<Byte> copy_utf8(out_utf8);
-  ByteConstArrayView utf8(copy_utf8.view());
+  ConstLargeArrayView<Byte> utf8(copy_utf8.view());
   out_utf8.clear();
-  Integer i = 0;
-  Integer n = utf8.size();
+  Int64 i = 0;
+  Int64 n = utf8.size();
   // Si la chaîne est vide, retourne une chaîne vide.
   if (n==1){
     out_utf8.add('\0');
@@ -510,9 +515,9 @@ void BasicTranscoder::
 upperCase(CoreArray<Byte>& out_utf8)
 {
   CoreArray<Byte> copy_utf8(out_utf8);
-  ByteConstArrayView utf8(copy_utf8.view());
+  ConstLargeArrayView<Byte> utf8(copy_utf8.view());
   out_utf8.clear();
-  for( int i=0, is=utf8.size(); i<is; ){
+  for( Int64 i=0, n=utf8.size(); i<n; ){
     Int32 wc;
     i += utf8_to_ucs4(utf8,i,wc);
     Int32 upper_wc = g_unichar_toupper(wc);
@@ -527,9 +532,9 @@ void BasicTranscoder::
 lowerCase(CoreArray<Byte>& out_utf8)
 {
   CoreArray<Byte> copy_utf8(out_utf8);
-  ByteConstArrayView utf8(copy_utf8.view());
+  ConstLargeArrayView<Byte> utf8(copy_utf8.view());
   out_utf8.clear();
-  for( int i=0, is=utf8.size(); i<is; ){
+  for( Int64 i=0, n=utf8.size(); i<n; ){
     Int32 wc;
     i += utf8_to_ucs4(utf8,i,wc);
     Int32 upper_wc = g_unichar_tolower(wc);
@@ -541,11 +546,11 @@ lowerCase(CoreArray<Byte>& out_utf8)
 /*---------------------------------------------------------------------------*/
 
 void BasicTranscoder::
-substring(CoreArray<Byte>& out_utf8,ByteConstArrayView utf8,Integer pos,Integer len)
+substring(CoreArray<Byte>& out_utf8,ConstLargeArrayView<Byte> utf8,Int64 pos,Int64 len)
 {
   // Copie les \a len caractères unicodes de \a utf8 à partir de la position \a pos
-  int current_pos = 0;
-  for( int i=0, is=utf8.size(); i<is; ){
+  Int64 current_pos = 0;
+  for( Int64 i=0, n=utf8.size(); i<n; ){
     Int32 wc;
     i += utf8_to_ucs4(utf8,i,wc);
     if (current_pos>=pos && current_pos<(pos+len)){

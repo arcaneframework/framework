@@ -200,9 +200,19 @@ class LargeArrayView
   /*!
    * \brief Vue constante sur cette vue.
    */
-  ConstArrayView<T> constView() const
+  ArrayView<T> smallView() const
   {
-    return ConstArrayView<T>(m_size,m_ptr);
+    Integer s = arccoreCheckArraySize(m_size);
+    return ArrayView<T>(s,m_ptr);
+  }
+
+  /*!
+   * \brief Vue constante sur cette vue.
+   */
+  ConstArrayView<T> constSmallView() const
+  {
+    Integer s = arccoreCheckArraySize(m_size);
+    return ConstArrayView<T>(s,m_ptr);
   }
 
   /*!
@@ -218,21 +228,6 @@ class LargeArrayView
       return ArrayView<T>();
     asize = _min(asize,m_size-abegin);
     return ArrayView<T>(asize,m_ptr+abegin);
-  }
-
-  /*!
-   * \brief Sous-vue constante à partir de
-   * l'élément \a abegin et contenant \a asize éléments.
-   *
-   * Si \a (\a abegin+ \a asize) est supérieur à la taille du tableau,
-   * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
-   */
-  ConstArrayView<T> subConstView(Int64 abegin,Int64 asize) const
-  {
-    if (abegin>=m_size)
-      return ConstArrayView<T>();
-    asize = _min(asize,m_size-abegin);
-    return ConstArrayView<T>(asize,m_ptr+abegin);
   }
 
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
