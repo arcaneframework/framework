@@ -359,35 +359,6 @@ public:
   }
 };
 
-static void
-_testArraySwap(bool use_own_swap)
-{
-  std::cout << "** TestArraySwap is_own=" << use_own_swap << "\n";
-
-  UniqueArray<IntSubClass> c1(7);
-  IntSubClass* x1 = c1.unguardedBasePointer();
-  std::cout << "** C1_this = " << &c1 << "\n";
-  std::cout << "** C1_BASE = " << x1 << "\n";
-  UniqueArray<IntSubClass> c2(3);
-  IntSubClass* x2 = c2.unguardedBasePointer();
-  std::cout << "** C2_this = " << &c2 << "\n";
-  std::cout << "** C2_BASE = " << x2 << "\n";
-
-  if (use_own_swap){
-    swap(c1,c2);
-  }
-  else
-    std::swap(c1,c2);
-
-  IntSubClass* after_x1 = c1.unguardedBasePointer();
-  IntSubClass* after_x2 = c2.unguardedBasePointer();
-  std::cout << "** C1_BASE_AFTER = " << after_x1 << " size=" << c1.size() << "\n";
-  std::cout << "** C2_BASE_AFTER = " << after_x2 << " size=" << c2.size() << "\n";
-
-  ARCCORE_UT_CHECK((x1==after_x2),"Bad value after swap [1]");
-  ARCCORE_UT_CHECK((x2==after_x1),"Bad value after swap [2]");
-}
-
 void
 _testArrayNewInternal()
 {
@@ -488,10 +459,6 @@ _testArrayNewInternal()
       c.add(i+3);
     c.resize(24);
     c.reserve(70);
-  }
-  {
-    _testArraySwap(false);
-    _testArraySwap(true);
   }
   {
     SharedArray<IntSubClass> c2;
