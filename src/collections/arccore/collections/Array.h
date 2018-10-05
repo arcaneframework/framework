@@ -9,6 +9,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/ArrayView.h"
+#include "arccore/base/LargeArrayView.h"
 #include "arccore/collections/IMemoryAllocator.h"
 
 #include <memory>
@@ -93,15 +94,15 @@ class ARCCORE_COLLECTIONS_EXPORT DefaultArrayAllocator
 
  public:
   
-  virtual ArrayImplBase* allocate(Int64 sizeof_true_impl,Int64 new_capacity,
-                                  Int64 sizeof_true_type,ArrayImplBase* init);
+  ArrayImplBase* allocate(Int64 sizeof_true_impl,Int64 new_capacity,
+                          Int64 sizeof_true_type,ArrayImplBase* init) override;
 
-  virtual void deallocate(ArrayImplBase* ptr);
+  void deallocate(ArrayImplBase* ptr) override;
 
-  virtual ArrayImplBase* reallocate(Int64 sizeof_true_impl,Int64 new_capacity,
-                                    Int64 sizeof_true_type,ArrayImplBase* current);
+  ArrayImplBase* reallocate(Int64 sizeof_true_impl,Int64 new_capacity,
+                            Int64 sizeof_true_type,ArrayImplBase* current) override;
 
-  virtual Int64 computeCapacity(Int64 current,Int64 wanted);
+  Int64 computeCapacity(Int64 current,Int64 wanted) override;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -335,20 +336,29 @@ class AbstractArray
       m_p->size = asize;
     }
   }
+  AbstractArray(const ConstLargeArrayView<T>& view)
+  : m_p(_sharedNull()), m_baseptr(m_p->ptr)
+  {
+    Int64 asize = view.size();
+    if (asize!=0){
+      _internalAllocate(asize);
+      _createRange(0,asize,view.data());
+      m_p->size = asize;
+    }
+  }
   AbstractArray(const ConstArrayView<T>& view)
   : m_p(_sharedNull()), m_baseptr(m_p->ptr)
   {
     Int64 asize = view.size();
     if (asize!=0){
       _internalAllocate(asize);
-      _createRange(0,asize,view.unguardedBasePointer());
+      _createRange(0,asize,view.data());
       m_p->size = asize;
     }
   }
 
   virtual ~AbstractArray()
   {
-    //_removeReference();
     --m_p->nb_ref;
     _checkFreeMemory();
   }
@@ -375,6 +385,10 @@ class AbstractArray
   {
     return ConstArrayView<T>(ARCCORE_CAST_SMALL_SIZE(size()),m_p->ptr);
   }
+  operator ConstLargeArrayView<T>() const
+  {
+    return ConstLargeArrayView<T>(size(),m_p->ptr);
+  }
  public:
   //! Nombre d'éléments du vecteur
   Integer size() const { return ARCCORE_CAST_SMALL_SIZE(m_p->size); }
@@ -382,6 +396,12 @@ class AbstractArray
   Integer length() const { return ARCCORE_CAST_SMALL_SIZE(m_p->size); }
   //! Capacité (nombre d'éléments alloués) du vecteur
   Integer capacity() const { return ARCCORE_CAST_SMALL_SIZE(m_p->capacity); }
+  //! Nombre d'éléments du vecteur (en 64 bits)
+  Int64 largeSize() const { return m_p->size; }
+  //! Nombre d'éléments du vecteur (en 64 bits)
+  Int64 largeLength() const { return m_p->size; }
+  //! Capacité (nombre d'éléments alloués) du vecteur (en 64 bits)
+  Int64 largeCapacity() const { return m_p->capacity; }
   //! Capacité (nombre d'éléments alloués) du vecteur
   bool empty() const { return m_p->size==0; }
   //! Vrai si le tableau contient l'élément de valeur \a v
@@ -396,7 +416,7 @@ class AbstractArray
   }
  public:
   //! Elément d'indice \a i
-  ConstReferenceType operator[](Integer i) const
+  ConstReferenceType operator[](Int64 i) const
   {
     ARCCORE_CHECK_AT(i,m_p->size);
     return m_p->ptr[i];
@@ -525,7 +545,7 @@ class AbstractArray
   }
 
   //! Ajoute \a n élément de valeur \a val à la fin du tableau
-  void _addRange(ConstArrayView<T> val)
+  void _addRange(ConstLargeArrayView<T> val)
   {
     Int64 n = val.size();
     const T* ptr = val.data();
@@ -636,7 +656,7 @@ class AbstractArray
   {
     _copy(rhs_begin,IsPODType());
   }
-  void _copyView(ConstArrayView<T> rhs)
+  void _copyView(ConstLargeArrayView<T> rhs)
   {
     const T* rhs_begin = rhs.data();
     Int64 rhs_size = rhs.size();
@@ -646,6 +666,10 @@ class AbstractArray
       ArrayImplBase::overlapError(abegin,m_p->size,rhs_begin,rhs_size);
     _resize(rhs_size);
     _copy(rhs_begin);
+  }
+  void _copyView(ConstArrayView<T> rhs)
+  {
+    this->_copyView(ConstLargeArrayView<T>(rhs));
   }
 
   /*!
@@ -756,7 +780,7 @@ class Array
 #endif
   ARCCORE_DEPRECATED_2018 Array() : AbstractArray<T>() {}
   //! Créé un tableau vide avec un allocateur spécifique.
-  ARCCORE_DEPRECATED_2018 Array(Integer asize,ConstReferenceType value) : AbstractArray<T>()
+  ARCCORE_DEPRECATED_2018 Array(Int64 asize,ConstReferenceType value) : AbstractArray<T>()
   {
     this->_resize(asize,value);
   }
@@ -768,11 +792,20 @@ class Array
     for( auto x : alist )
       this->add(x);
   }
-  ARCCORE_DEPRECATED_2018 explicit Array(Integer asize) : AbstractArray<T>()
+  ARCCORE_DEPRECATED_2018 explicit Array(Int64 asize) : AbstractArray<T>()
   {
     this->_resize(asize);
   }
-  ARCCORE_DEPRECATED_2018 Array(const ConstArrayView<T>& aview) : AbstractArray<T>(aview)
+  ARCCORE_DEPRECATED_2018 Array(const ConstArrayView<T>& aview) : AbstractArray<T>(ConstLargeArrayView<T>(aview))
+  {
+  }
+  ARCCORE_DEPRECATED_2018 Array(const ConstLargeArrayView<T>& aview) : AbstractArray<T>(aview)
+  {
+  }
+  ARCCORE_DEPRECATED_2018 Array(const ArrayView<T>& aview) : AbstractArray<T>(ConstLargeArrayView<T>(aview))
+  {
+  }
+  ARCCORE_DEPRECATED_2018 Array(const LargeArrayView<T>& aview) : AbstractArray<T>(aview)
   {
   }
   /*!
@@ -781,14 +814,14 @@ class Array
    * Si ArrayTraits<T>::IsPODType vaut TrueType, les éléments ne sont pas
    * initialisés. Sinon, c'est le constructeur par défaut de T qui est utilisé.
    */
-  ARCCORE_DEPRECATED_2018 Array(IMemoryAllocator* allocator,Integer asize)
+  ARCCORE_DEPRECATED_2018 Array(IMemoryAllocator* allocator,Int64 asize)
   : AbstractArray<T>(allocator,asize)
   {
     this->_resize(asize);
   }
  protected:
   Array(BuildDeprecated) : AbstractArray<T>() {}
-  Array(Integer asize,ConstReferenceType value,BuildDeprecated) : AbstractArray<T>()
+  Array(Int64 asize,ConstReferenceType value,BuildDeprecated) : AbstractArray<T>()
   {
     this->_resize(asize,value);
   }
@@ -800,11 +833,14 @@ class Array
     for( auto x : alist )
       this->add(x);
   }
-  Array(Integer asize,BuildDeprecated) : AbstractArray<T>()
+  Array(Int64 asize,BuildDeprecated) : AbstractArray<T>()
   {
     this->_resize(asize);
   }
   Array(const ConstArrayView<T>& aview,BuildDeprecated) : AbstractArray<T>(aview)
+  {
+  }
+  Array(const ConstLargeArrayView<T>& aview,BuildDeprecated) : AbstractArray<T>(aview)
   {
   }
   /*!
@@ -813,7 +849,7 @@ class Array
    * Si ArrayTraits<T>::IsPODType vaut TrueType, les éléments ne sont pas
    * initialisés. Sinon, c'est le constructeur par défaut de T qui est utilisé.
    */
-  Array(IMemoryAllocator* allocator,Integer asize,BuildDeprecated)
+  Array(IMemoryAllocator* allocator,Int64 asize,BuildDeprecated)
   : AbstractArray<T>(allocator,asize)
   {
     this->_resize(asize);
@@ -838,10 +874,23 @@ class Array
   {
     return ArrayView<T>(this->size(),m_p->ptr);
   }
+  operator ConstLargeArrayView<T>() const
+  {
+    return ConstLargeArrayView<T>(this->size(),m_p->ptr);
+  }
+  operator LargeArrayView<T>()
+  {
+    return LargeArrayView<T>(this->size(),m_p->ptr);
+  }
   //! Vue constante sur ce tableau
   ConstArrayView<T> constView() const
   {
     return ConstArrayView<T>(this->size(),m_p->ptr);
+  }
+  //! Vue constante sur ce tableau
+  ConstLargeArrayView<T> constLargeView() const
+  {
+    return ConstLargeArrayView<T>(this->size(),m_p->ptr);
   }
   /*!
    * \brief Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments.
@@ -858,6 +907,11 @@ class Array
   {
     return ArrayView<T>(this->size(),m_p->ptr);
   }
+  //! Vue mutable sur ce tableau
+  LargeArrayView<T> largeView() const
+  {
+    return LargeArrayView<T>(this->size(),m_p->ptr);
+  }
   /*!
    * \brief Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments.
    *
@@ -868,7 +922,6 @@ class Array
   {
     return view().subView(abegin,asize);
   }
-
   /*!
    * \brief Extrait un sous-tableau à à partir d'une liste d'index.
    *
@@ -898,7 +951,7 @@ class Array
     ++m_p->size;
   }
   //! Ajoute \a n élément de valeur \a val à la fin du tableau
-  void addRange(ConstReferenceType val,Integer n)
+  void addRange(ConstReferenceType val,Int64 n)
   {
     this->_addRange(val,n);
   }
@@ -907,23 +960,43 @@ class Array
   {
     this->_addRange(val);
   }
+  //! Ajoute \a n élément de valeur \a val à la fin du tableau
+  void addRange(ConstLargeArrayView<T> val)
+  {
+    this->_addRange(val);
+  }
+  //! Ajoute \a n élément de valeur \a val à la fin du tableau
+  void addRange(ArrayView<T> val)
+  {
+    this->_addRange(val);
+  }
+  //! Ajoute \a n élément de valeur \a val à la fin du tableau
+  void addRange(LargeArrayView<T> val)
+  {
+    this->_addRange(val);
+  }
+  //! Ajoute \a n élément de valeur \a val à la fin du tableau
+  void addRange(const Array<T>& val)
+  {
+    this->_addRange(val.constLargeView());
+  }
   /*!
    * \brief Change le nombre d'élément du tableau à \a s.
    * Si le nouveau tableau est plus grand que l'ancien, les nouveaux
    * éléments ne sont pas initialisés s'il s'agit d'un type POD.
    */
-  void resize(Integer s) { this->_resize(s); }
+  void resize(Int64 s) { this->_resize(s); }
   /*!
    * \brief Change le nombre d'élément du tableau à \a s.
    * Si le nouveau tableau est plus grand que l'ancien, les nouveaux
    * éléments sont initialisé avec la valeur \a fill_value.
    */
-  void resize(Integer s,ConstReferenceType fill_value)
+  void resize(Int64 s,ConstReferenceType fill_value)
   {
     this->_resize(s,fill_value);
   }
   //! Réserve le mémoire pour \a new_capacity éléments
-  void reserve(Integer new_capacity)
+  void reserve(Int64 new_capacity)
   {
     this->_reserve(new_capacity);
   }
@@ -933,7 +1006,7 @@ class Array
    * Tous les éléments de ce tableau après celui supprimé sont
    * décalés.
    */
-  void remove(Integer index)
+  void remove(Int64 index)
   {
     Int64 s = m_p->size;
     ARCCORE_CHECK_AT(index,s);
@@ -952,29 +1025,29 @@ class Array
     m_p->ptr[m_p->size].~T();
   }
   //! Elément d'indice \a i. Vérifie toujours les débordements
-  ConstReferenceType at(Integer i) const
+  ConstReferenceType at(Int64 i) const
   {
     arccoreCheckAt(i,m_p->size);
     return m_p->ptr[i];
   }
   //! Positionne l'élément d'indice \a i. Vérifie toujours les débordements
-  void setAt(Integer i,ConstReferenceType value)
+  void setAt(Int64 i,ConstReferenceType value)
   {
     arccoreCheckAt(i,m_p->size);
     m_p->ptr[i] = value;
   }
   //! Elément d'indice \a i
-  ConstReferenceType item(Integer i) const { return m_p->ptr[i]; }
+  ConstReferenceType item(Int64 i) const { return m_p->ptr[i]; }
   //! Elément d'indice \a i
-  void setItem(Integer i,ConstReferenceType v) { m_p->ptr[i] = v; }
+  void setItem(Int64 i,ConstReferenceType v) { m_p->ptr[i] = v; }
   //! Elément d'indice \a i
-  ConstReferenceType operator[](Integer i) const
+  ConstReferenceType operator[](Int64 i) const
   {
     ARCCORE_CHECK_AT(i,m_p->size);
     return m_p->ptr[i];
   }
   //! Elément d'indice \a i
-  T& operator[](Integer i)
+  T& operator[](Int64 i)
   {
     ARCCORE_CHECK_AT(i,m_p->size);
     return m_p->ptr[i];
@@ -1027,7 +1100,7 @@ class Array
    *
    * L'instance est redimensionnée pour que this->size()==rhs.size().
    */  
-  void copy(ConstArrayView<T> rhs)
+  void copy(ConstLargeArrayView<T> rhs)
   {
     this->_copyView(rhs);
   }
@@ -1035,15 +1108,15 @@ class Array
   //! Clone le tableau
   Array<T> clone() const
   {
-    return Array<T>(this->constView());
+    return Array<T>(this->constLargeView());
   }
 
   //! \internal Accès à la racine du tableau hors toute protection
   const T* unguardedBasePointer() const
-    { return m_p->ptr; }
+  { return m_p->ptr; }
   //! \internal Accès à la racine du tableau hors toute protection
   T* unguardedBasePointer()
-    { return m_p->ptr; }
+  { return m_p->ptr; }
 
   //! Accès à la racine du tableau hors toute protection
   const T* data() const
@@ -1160,19 +1233,46 @@ class SharedArray
   //! Créé un tableau vide
   SharedArray() : Array<T>(BD_NoWarning), m_next(nullptr), m_prev(nullptr) {}
   //! Créé un tableau de \a size éléments contenant la valeur \a value.
-  SharedArray(Integer asize,ConstReferenceType value)
+  SharedArray(Int64 asize,ConstReferenceType value)
   : Array<T>(BD_NoWarning), m_next(nullptr), m_prev(nullptr)
   {
     this->_resize(asize,value);
   }
   //! Créé un tableau de \a size éléments contenant la valeur par défaut du type T()
-  explicit SharedArray(Integer asize)
+  explicit SharedArray(Int64 asize)
   : Array<T>(BD_NoWarning), m_next(nullptr), m_prev(nullptr)
   {
     this->_resize(asize);
   }
+  //! Créé un tableau de \a size éléments contenant la valeur par défaut du type T()
+  explicit SharedArray(Int32 asize)
+  : Array<T>(BD_NoWarning), m_next(nullptr), m_prev(nullptr)
+  {
+    this->_resize(asize);
+  }
+  //! Créé un tableau de \a size éléments contenant la valeur par défaut du type T()
+  explicit SharedArray(size_t asize)
+  : Array<T>(BD_NoWarning), m_next(nullptr), m_prev(nullptr)
+  {
+    this->_resize((Int64)asize);
+  }
   //! Créé un tableau en recopiant les valeurs de la value \a view.
   SharedArray(const ConstArrayView<T>& aview)
+  : Array<T>(aview,BD_NoWarning), m_next(nullptr), m_prev(nullptr)
+  {
+  }
+  //! Créé un tableau en recopiant les valeurs de la value \a view.
+  SharedArray(const ConstLargeArrayView<T>& aview)
+  : Array<T>(aview,BD_NoWarning), m_next(nullptr), m_prev(nullptr)
+  {
+  }
+  //! Créé un tableau en recopiant les valeurs de la value \a view.
+  SharedArray(const ArrayView<T>& aview)
+  : Array<T>(ConstLargeArrayView<T>(aview),BD_NoWarning), m_next(nullptr), m_prev(nullptr)
+  {
+  }
+  //! Créé un tableau en recopiant les valeurs de la value \a view.
+  SharedArray(const LargeArrayView<T>& aview)
   : Array<T>(aview,BD_NoWarning), m_next(nullptr), m_prev(nullptr)
   {
   }
@@ -1196,7 +1296,22 @@ class SharedArray
   //! Copie les valeurs de \a rhs dans cette instance.
   inline void operator=(const UniqueArray<T>& rhs);
   //! Copie les valeurs de la vue \a rhs dans cette instance.
+  void operator=(const ConstLargeArrayView<T>& rhs)
+  {
+    this->copy(rhs);
+  }
+  //! Copie les valeurs de la vue \a rhs dans cette instance.
+  void operator=(const LargeArrayView<T>& rhs)
+  {
+    this->copy(rhs);
+  }
+  //! Copie les valeurs de la vue \a rhs dans cette instance.
   void operator=(const ConstArrayView<T>& rhs)
+  {
+    this->copy(rhs);
+  }
+  //! Copie les valeurs de la vue \a rhs dans cette instance.
+  void operator=(const ArrayView<T>& rhs)
   {
     this->copy(rhs);
   }
@@ -1210,7 +1325,7 @@ class SharedArray
   //! Clone le tableau
   SharedArray<T> clone() const
   {
-    return SharedArray<T>(this->constView());
+    return SharedArray<T>(this->constLargeView());
   }
  protected:
   void _initReference(const ThatClassType& rhs)
@@ -1342,17 +1457,39 @@ class UniqueArray
   //! Créé un tableau vide
   UniqueArray() : Array<T>(BD_NoWarning) {}
   //! Créé un tableau de \a size éléments contenant la valeur \a value.
-  UniqueArray(Integer req_size,ConstReferenceType value) : Array<T>(BD_NoWarning)
+  UniqueArray(Int64 req_size,ConstReferenceType value) : Array<T>(BD_NoWarning)
   {
     this->_resize(req_size,value);
   }
   //! Créé un tableau de \a asize éléments contenant la valeur par défaut du type T()
-  explicit UniqueArray(Integer asize) : Array<T>(BD_NoWarning)
+  explicit UniqueArray(Int64 asize) : Array<T>(BD_NoWarning)
   {
     this->_resize(asize);
   }
+  //! Créé un tableau de \a asize éléments contenant la valeur par défaut du type T()
+  explicit UniqueArray(Int32 asize) : Array<T>(BD_NoWarning)
+  {
+    this->_resize(asize);
+  }
+  //! Créé un tableau de \a asize éléments contenant la valeur par défaut du type T()
+  explicit UniqueArray(size_t asize) : Array<T>(BD_NoWarning)
+  {
+    this->_resize((Int64)asize);
+  }
   //! Créé un tableau en recopiant les valeurs de la value \a aview.
-  UniqueArray(const ConstArrayView<T>& aview) : Array<T>(aview,BD_NoWarning)
+  UniqueArray(const ConstArrayView<T>& aview) : Array<T>(ConstLargeArrayView<T>(aview),BD_NoWarning)
+  {
+  }
+  //! Créé un tableau en recopiant les valeurs de la value \a aview.
+  UniqueArray(const ConstLargeArrayView<T>& aview) : Array<T>(aview,BD_NoWarning)
+  {
+  }
+  //! Créé un tableau en recopiant les valeurs de la value \a aview.
+  UniqueArray(const ArrayView<T>& aview) : Array<T>(ConstLargeArrayView<T>(aview),BD_NoWarning)
+  {
+  }
+  //! Créé un tableau en recopiant les valeurs de la value \a aview.
+  UniqueArray(const LargeArrayView<T>& aview) : Array<T>(aview,BD_NoWarning)
   {
   }
   UniqueArray(std::initializer_list<T> alist) : Array<T>(alist,BD_NoWarning)
@@ -1381,22 +1518,22 @@ class UniqueArray
    * Si ArrayTraits<T>::IsPODType vaut TrueType, les éléments ne sont pas
    * initialisés. Sinon, c'est le constructeur par défaut de T qui est utilisé.
    */
-  UniqueArray(IMemoryAllocator* allocator,Integer asize)
+  UniqueArray(IMemoryAllocator* allocator,Int64 asize)
   : Array<T>(allocator,asize,BD_NoWarning) { }
   //! Copie les valeurs de \a rhs dans cette instance.
   void operator=(const Array<T>& rhs)
   {
-    this->copy(rhs.constView());
+    this->copy(rhs.constLargeView());
   }
   //! Copie les valeurs de \a rhs dans cette instance.
   void operator=(const SharedArray<T>& rhs)
   {
-    this->copy(rhs.constView());
+    this->copy(rhs.constLargeView());
   }
   //! Copie les valeurs de \a rhs dans cette instance.
   void operator=(const UniqueArray<T>& rhs)
   {
-    this->copy(rhs.constView());
+    this->copy(rhs.constLargeView());
   }
   //! Opérateur de recopie par déplacement. \a rhs est invalidé après cet appel.
   void operator=(UniqueArray<T>&& rhs) ARCCORE_NOEXCEPT
@@ -1405,6 +1542,11 @@ class UniqueArray
   }
   //! Copie les valeurs de la vue \a rhs dans cette instance.
   void operator=(ConstArrayView<T> rhs)
+  {
+    this->copy(rhs);
+  }
+  //! Copie les valeurs de la vue \a rhs dans cette instance.
+  void operator=(ConstLargeArrayView<T> rhs)
   {
     this->copy(rhs);
   }

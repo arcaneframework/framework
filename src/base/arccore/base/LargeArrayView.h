@@ -227,7 +227,7 @@ class LargeArrayView
    * Si \a (\a abegin+ \a asize) est supérieur à la taille du tableau,
    * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
    */
-  ConstArrayView<T> subConstView(Integer abegin,Integer asize) const
+  ConstArrayView<T> subConstView(Int64 abegin,Int64 asize) const
   {
     if (abegin>=m_size)
       return ConstArrayView<T>();
@@ -260,7 +260,7 @@ class LargeArrayView
     const T* copy_begin = copy_array.unguardedBasePointer();
     T* to_ptr = m_ptr;
     Int64 n = copy_array.size();
-    for( Integer i=0; i<n; ++i )
+    for( Int64 i=0; i<n; ++i )
       to_ptr[i] = copy_begin[i];
   }
 
@@ -319,7 +319,7 @@ class LargeArrayView
    * C'est à la classe dérivée de vérifier la cohérence entre le pointeur
    * alloué et la dimension donnée.
    */
-  inline void _setArray(T* v,Integer s){ m_ptr = v; m_size = s; }
+  inline void _setArray(T* v,Int64 s){ m_ptr = v; m_size = s; }
 
   /*!
    * \brief Modifie le pointeur du début du tableau.
@@ -344,7 +344,7 @@ class LargeArrayView
 
  private:
 
-  static Int64 _min(Integer a,Int64 b)
+  static Int64 _min(Int64 a,Int64 b)
   {
     return ( (a<b) ? a : b );
   }
@@ -394,6 +394,16 @@ class ConstLargeArrayView
    */
   ConstLargeArrayView(const LargeArrayView<T>& from)
   : m_ptr(from.data()), m_size(from.size()) { }
+  /*! \brief Constructeur par copie.
+   * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
+   */
+  ConstLargeArrayView(const ConstArrayView<T>& from)
+  : m_ptr(from.data()), m_size(from.size()) { }
+  /*! \brief Constructeur par copie.
+   * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
+   */
+  ConstLargeArrayView(const ArrayView<T>& from)
+  : m_ptr(from.data()), m_size(from.size()) { }
 
   /*!
    * \brief Opérateur de recopie.
@@ -410,6 +420,26 @@ class ConstLargeArrayView
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
   const ConstLargeArrayView<T>& operator=(const LargeArrayView<T>& from)
+  {
+    m_ptr  = from.data();
+    m_size = from.size();
+    return (*this);
+  }
+
+  /*! \brief Opérateur de recopie.
+   * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
+   */
+  const ConstLargeArrayView<T>& operator=(const ConstArrayView<T>& from)
+  {
+    m_ptr  = from.data();
+    m_size = from.size();
+    return (*this);
+  }
+
+  /*! \brief Opérateur de recopie.
+   * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
+   */
+  const ConstLargeArrayView<T>& operator=(const ArrayView<T>& from)
   {
     m_ptr  = from.data();
     m_size = from.size();
