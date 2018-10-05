@@ -96,8 +96,8 @@ endfunction()
 # Cette fonction va regarder si un répertoire 'src/${X}/arccore/${X} existe
 # (avec ${X} valant ${component_name} et si c'est le cas, l'ajouter au
 # projet.
-# Si un répertoire 'src/${X}/tests' existe, il est aussi ajouter pour les
-# tests si ces derniers sont demandés.
+# Si un répertoire 'src/${X}/tests' existe, il est aussi ajouté pour les
+# tests si ces derniers sont demandés et que google-test est disponible
 #
 function(arccore_add_component_directory name)
   set(_BASE_DIR src/${name})
