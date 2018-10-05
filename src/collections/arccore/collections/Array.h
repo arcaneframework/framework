@@ -1541,12 +1541,22 @@ class UniqueArray
     this->_move(rhs);
   }
   //! Copie les valeurs de la vue \a rhs dans cette instance.
-  void operator=(ConstArrayView<T> rhs)
+  void operator=(const ArrayView<T>& rhs)
   {
     this->copy(rhs);
   }
   //! Copie les valeurs de la vue \a rhs dans cette instance.
-  void operator=(ConstLargeArrayView<T> rhs)
+  void operator=(const LargeArrayView<T>& rhs)
+  {
+    this->copy(rhs);
+  }
+  //! Copie les valeurs de la vue \a rhs dans cette instance.
+  void operator=(const ConstArrayView<T>& rhs)
+  {
+    this->copy(rhs);
+  }
+  //! Copie les valeurs de la vue \a rhs dans cette instance.
+  void operator=(const ConstLargeArrayView<T>& rhs)
   {
     this->copy(rhs);
   }
