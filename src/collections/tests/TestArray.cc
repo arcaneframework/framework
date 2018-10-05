@@ -344,3 +344,87 @@ TEST(Array, Misc)
 {
   _testArrayNewInternal();
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace
+{
+void
+_Add(Array<Real>& v,Integer new_size)
+{
+  v.resize(new_size);
+}
+}
+
+TEST(Array, Misc2)
+{
+  using namespace Arccore;
+  {
+    UniqueArray<Real> v;
+    v.resize(3);
+    v.add(4.3);
+    for( Integer i=0, is=v.size(); i<is; ++i ){
+      std::cout << " Value: " << v[i] << '\n';
+    }
+    v.printInfos(std::cout);
+  }
+  {
+    UniqueArray<Real> v;
+    v.add(4.3);
+    v.add(5.3);
+    v.add(4.6);
+    v.printInfos(std::cout);
+    v.add(14.3);
+    v.add(25.3);
+    v.add(34.6);
+    v.printInfos(std::cout);
+    v.resize(4);
+    v.printInfos(std::cout);
+    v.add(12.2);
+    v.add(2.4);
+    v.add(3.4);
+    v.add(3.6);
+    v.printInfos(std::cout);
+    for( Integer i=0, is=v.size(); i<is; ++i ){
+      std::cout << " Value: " << v[i] << '\n';
+    }
+  }
+  {
+    UniqueArray<Real> v;
+    v.reserve(5);
+    for( int i=0; i<10; ++i )
+      v.add((Real)i);
+    for( Integer i=0, is=v.size(); i<is; ++i ){
+      std::cout << " Value: " << v[i] << '\n';
+    }
+  }
+  {
+    UniqueArray<Real> v;
+    v.reserve(175);
+    for( int i=0; i<27500; ++i ){
+      Real z = (Real)i;
+      v.add(z*z);
+    }
+    for( int i=0; i<5000; ++i ){
+      v.remove(i*2);
+    }
+    v.reserve(150);
+    for( int i=0; i<27500; ++i ){
+      Real z = (Real)i;
+      v.add(z*z);
+    }
+    std::cout << " ValueSize= " << v.size() << " values=" << v << '\n';
+  }
+  for( Integer i=0; i<100; ++i ){
+    UniqueArray<Real> v;
+    _Add(v,500000);
+    _Add(v,1000000);
+    _Add(v,0);
+    _Add(v,100000);
+    _Add(v,0);
+    _Add(v,0);
+    _Add(v,230000);
+    std::cout << " Size: " << v.size() << '\n';
+  }
+}
