@@ -28,8 +28,8 @@ TEST(Array3View,Misc)
         Int32 val1 = v[x][y][z];
         Int32 val2 = v.item(x,y,z);
         std::cout  << " V=" << val1 << " x=" << x << " y=" << y << " z=" << z << '\n';
-        ASSERT_TRUE(val1!=val2) << "Difference values v1=" << val1 << " v2=" << val2;
-        ASSERT_TRUE(val1!=global_index) << "Bad value v1=" << val1 << " expected=" << global_index;
+        ASSERT_TRUE(val1==val2) << "Difference values v1=" << val1 << " v2=" << val2;
+        ASSERT_TRUE(val1==global_index) << "Bad value v1=" << val1 << " expected=" << global_index;
       }
     }
   }
@@ -59,8 +59,8 @@ TEST(Array4View,Misc)
           Int32 val1 = v[x][y][z][a];
           Int32 val2 = v.item(x,y,z,a);
           std::cout << " V=" << val1 << " x=" << x << " y=" << y << " z=" << z << " a=" << a << '\n';
-          ASSERT_TRUE(val1!=val2) << "Difference values v1=" << val1 << " v2=" << val2;
-          ASSERT_TRUE(val1!=global_index) << "Bad value v1=" << val1 << " expected=" << global_index;
+          ASSERT_TRUE(val1==val2) << "Difference values v1=" << val1 << " v2=" << val2;
+          ASSERT_TRUE(val1==global_index) << "Bad value v1=" << val1 << " expected=" << global_index;
         }
       }
     }
