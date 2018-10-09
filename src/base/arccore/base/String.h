@@ -118,6 +118,16 @@ class ARCCORE_BASE_EXPORT String
   ByteConstArrayView utf8() const;
 
   /*!
+   * \brief Retourne la conversion de l'instance dans l'encodage UTF-8.
+   *
+   * L'instance retournée ne contient pas de zéro terminal.
+   *
+   * \warning L'instance reste propriétaire de la valeur retournée et cette valeur
+   * est invalidée par toute modification de cette instance.
+   */
+  ConstLargeArrayView<Byte> bytes() const;
+
+  /*!
    * \brief Retourne la conversion de l'instance dans l'encodage local.
    *
    * La conversion n'est pas garanti si certaines valeurs unicode n'existent

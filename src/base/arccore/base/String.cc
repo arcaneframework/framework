@@ -202,6 +202,27 @@ utf8() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ConstLargeArrayView<Byte> String::
+bytes() const
+{
+  A_FASTLOCK(this);
+  if (!m_p) {
+    if (m_const_ptr) {
+      _checkClone();
+    }
+  }
+  if (m_p) {
+    auto x = m_p->largeUtf8();
+    Int64 vlen = x.size();
+    if (vlen>0)
+      return x.subView(0,vlen-1);
+  }
+  return ByteConstArrayView();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 bool String::
 null() const
 {
@@ -1060,10 +1081,9 @@ operator<<(std::ostream& o,const String& str)
 void String::
 writeBytes(std::ostream& o) const
 {
-  ByteConstArrayView v = this->utf8();
-  Integer vlen = v.size();
-  if (vlen>0)
-    o.write((const char*)v.data(),vlen-1);
+  ConstLargeArrayView<Byte> v = this->bytes();
+  Int64 vlen = v.size();
+  o.write((const char*)v.data(),vlen);
 }
 
 /*---------------------------------------------------------------------------*/

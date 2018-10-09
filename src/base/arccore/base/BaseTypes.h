@@ -51,6 +51,8 @@ template<typename T> class Array3View;
 template<typename T> class ConstArray4View;
 template<typename T> class Array4View;
 template<class DataType> class CoreArray;
+template<typename T> class LargeArrayView;
+template<typename T> class ConstLargeArrayView;
 
 class StringImpl;
 class String;
@@ -85,7 +87,7 @@ class StdFunctorWithArgumentT;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-				
+
 //! Equivalent C d'un tableau à une dimension de pointeurs
 typedef ArrayView<Pointer> PointerArrayView;
 //! Equivalent C d'un tableau à une dimension de caractères
