@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/* Exception.h                                                 (C) 2000-2014 */
+/* Exception.h                                                 (C) 2000-2018 */
 /*                                                                           */
 /* Classe de base d'une exception.                                           */
 /*---------------------------------------------------------------------------*/
@@ -96,7 +96,7 @@ class ARCCORE_BASE_EXPORT Exception
   //! Constructeur par copie.
   Exception(const Exception&);
   //! Libère les ressources
-  virtual ~Exception() ARCCORE_NOEXCEPT;
+  ~Exception() ARCCORE_NOEXCEPT override;
 
  public:
  
@@ -125,6 +125,15 @@ class ARCCORE_BASE_EXPORT Exception
 
   static void staticInit();
 
+  //! Message de l'exception
+  const String& message() const { return m_message; }
+
+  //! Localisation de l'exception
+  const String& where() const { return m_where; }
+
+  //! Nom de l'exception
+  const String& name() const { return m_name; }
+
  protected:
   
   /*! \brief Explique la cause de l'exception dans le flot \a o.
@@ -136,27 +145,9 @@ class ARCCORE_BASE_EXPORT Exception
 
   //! Positionne le message de l'exception
   void setMessage(const String& msg)
-    {
-      m_message = msg;
-    }
-
-  //! Message de l'exception
-  const String& message() const
-    {
-      return m_message;
-    }
-
-  //! Localisation de l'exception
-  const String& where() const
-    {
-      return m_where;
-    }
-
-  //! Nom de l'exception
-  const String& name() const
-    {
-      return m_name;
-    }
+  {
+    m_message = msg;
+  }
 
  private:
 
