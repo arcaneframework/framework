@@ -51,7 +51,7 @@ String(const UCharConstArrayView& ustr)
 /*---------------------------------------------------------------------------*/
 
 String::
-String(const ByteConstArrayView& ustr)
+String(const ConstLargeArrayView<Byte>& ustr)
 : m_p(new StringImpl(ustr))
 , m_const_ptr(0)
 {
@@ -559,7 +559,7 @@ isLess(const String& b) const
 /*---------------------------------------------------------------------------*/
 
 String String::
-fromUtf8(ByteConstArrayView bytes)
+fromUtf8(ConstLargeArrayView<Byte> bytes)
 {
   return String(new StringImpl(bytes));
 }

@@ -53,7 +53,7 @@ class ARCCORE_BASE_EXPORT String
  public:
 
   //! Crée une chaîne nulle
-  String() : m_p(0), m_const_ptr(0) {}
+  String() : m_p(nullptr), m_const_ptr(nullptr) {}
   /*!
    * \brief Créé une chaîne à partir de \a str dans l'encodage local.
    *
@@ -62,7 +62,7 @@ class ARCCORE_BASE_EXPORT String
    * Si la chaîne passée en argument peut être désallouée,
    * il faut utiliser le constructeur avec allocation.
    */   
-  String(const char* str) : m_p(0), m_const_ptr(str) {}
+  String(const char* str) : m_p(nullptr), m_const_ptr(str) {}
   //! Créé une chaîne à partir de \a str dans l'encodage local
   String(char* str);
   //! Créé une chaîne à partir de \a str dans l'encodage local
@@ -74,7 +74,7 @@ class ARCCORE_BASE_EXPORT String
   //! Créé une chaîne à partir de \a str dans l'encodage Utf16
   String(const UCharConstArrayView& ustr);
   //! Créé une chaîne à partir de \a str dans l'encodage Utf8
-  String(const ByteConstArrayView& ustr);
+  String(const ConstLargeArrayView<Byte>& ustr);
   //! Créé une chaîne à partir de \a str dans l'encodage local
   explicit String(StringImpl* impl);
   //! Créé une chaîne à partir de \a str
@@ -89,7 +89,7 @@ class ARCCORE_BASE_EXPORT String
 
  public:
 
-  static String fromUtf8(ByteConstArrayView bytes);
+  static String fromUtf8(ConstLargeArrayView<Byte> bytes);
 
  public:
 
