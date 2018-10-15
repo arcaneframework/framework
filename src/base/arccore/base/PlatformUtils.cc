@@ -64,6 +64,8 @@
 #  define ARCCORE_GLIBC_FENV
 #endif
 
+#include <glib.h>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -690,6 +692,26 @@ bool _getHasColorTerminal()
 extern "C++" ARCCORE_BASE_EXPORT void Platform::
 platformInitialize()
 {
+  // Initialise la glib.
+
+#if GLIB_CHECK_VERSION(2,32,0)
+  // A partir de 2.32.0, il ne faut rien faire pour initialiser les threads avec la glib.
+#else
+  // g_thread_init ne doit etre appelé qu'une seule fois.
+  // Si on est appelé depuis le runtime mono, l'init a déjà été
+  // faite. Il vaut mieux utiliser la fonction g_thread_get_initialized
+  // pour savoir si les threads ont déjà été initialisés mais
+  // cette version n'existe que à partir de la glib 2.20
+  // Pour info, sur RHEL6, la version est 2.28 et sur RHEL7 c'est 2.54
+#if GLIB_CHECK_VERSION(2,20,0)
+    if (!g_thread_get_initialized())
+      g_thread_init(0);
+#else
+    if (!g_thread_supported())
+      g_thread_init(0);
+#endif
+#endif
+
   // Pour l'instant, la seule initialisation spécifique dépend
   // des processeurs i386. Elle consiste à changer la valeur par
   // défaut des flags de la FPU pour générer une exception
