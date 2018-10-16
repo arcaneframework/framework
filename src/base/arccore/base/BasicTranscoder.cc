@@ -346,7 +346,7 @@ stringLen(const UChar* ustr)
   const UChar* u = ustr + 1;
   while ((*u)!=0)
     ++u;
-  return arccoreCheckInt64ArraySize((std::size_t)(u - ustr));
+  return arccoreCheckLargeArraySize((std::size_t)(u - ustr));
 }
 
 /*---------------------------------------------------------------------------*/

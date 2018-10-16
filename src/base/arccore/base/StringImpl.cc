@@ -488,7 +488,7 @@ _createUtf8()
     return;
 
   if (m_flags & eValidLocal){
-    Int64 len = arccoreCheckInt64ArraySize(m_local_str.length());
+    Int64 len = arccoreCheckLargeArraySize(m_local_str.length());
     BasicTranscoder::transcodeFromISO88591ToUtf8(m_local_str.c_str(),len,m_utf8_array);
     m_flags |= eValidUtf8;
     return;

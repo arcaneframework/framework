@@ -81,7 +81,7 @@ arccoreCheckArraySize(int size)
 }
 
 extern "C++" ARCCORE_BASE_EXPORT Int64
-arccoreCheckInt64ArraySize(size_t size)
+arccoreCheckLargeArraySize(size_t size)
 {
   if (size>=ARCCORE_INT64_MAX)
     ARCCORE_THROW(ArgumentException,"value '{0}' too big to fit in Int64",size);
