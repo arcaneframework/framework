@@ -23,6 +23,8 @@
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/TraceInfo.h"
 
+#include <cstdint>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,6 +34,19 @@ namespace MessagePassing
 {
 namespace Mpi
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace
+{
+int _checkSize(Int64 i64_size)
+{
+  if (i64_size>INT32_MAX)
+    ARCCORE_FATAL("Can not convert '{0}' to type integer",i64_size);
+  return (int)i64_size;
+}
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -107,6 +122,15 @@ destroy()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+int MpiAdapter::
+toMPISize(Int64 count)
+{
+  return _checkSize(count);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void MpiAdapter::
 _trace(const char* function)
 {
@@ -123,9 +147,9 @@ _trace(const char* function)
 /*---------------------------------------------------------------------------*/
 
 int MpiAdapter::
-broadcast(void* buf,Integer nb_elem,Integer root,MPI_Datatype datatype)
+broadcast(void* buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype)
 {
-  int _nb_elem = static_cast<int>(nb_elem);
+  int _nb_elem = _checkSize(nb_elem);
   _trace(" MPI_Bcast");
   double begin_time = MPI_Wtime();
   int r = MPI_Bcast(buf,_nb_elem,datatype,root,m_communicator);
@@ -140,12 +164,12 @@ broadcast(void* buf,Integer nb_elem,Integer root,MPI_Datatype datatype)
 /*---------------------------------------------------------------------------*/
 
 Request MpiAdapter::
-nonBlockingBroadcast(void* buf,Integer nb_elem,Integer root,MPI_Datatype datatype)
+nonBlockingBroadcast(void* buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype)
 {
   MPI_Request mpi_request = MPI_REQUEST_NULL;
   int ret = -1;
 #ifdef ARCANE_MPI_HAS_NONBLOCKINGCOLLECTIVE
-  int _nb_elem = static_cast<int>(nb_elem);
+  int _nb_elem = _checkSize(nb_elem);
   _trace(" MPI_Bcast");
   double begin_time = MPI_Wtime();
   ret = MPI_Ibcast(buf,_nb_elem,datatype,root,m_communicator,&mpi_request);
@@ -165,10 +189,10 @@ nonBlockingBroadcast(void* buf,Integer nb_elem,Integer root,MPI_Datatype datatyp
 
 int MpiAdapter::
 gather(const void* send_buf,void* recv_buf,
-       Integer nb_elem,Integer root,MPI_Datatype datatype)
+       Int64 nb_elem,Int32 root,MPI_Datatype datatype)
 {
   void* _sbuf = const_cast<void*>(send_buf);
-  int _nb_elem = static_cast<int>(nb_elem);
+  int _nb_elem = _checkSize(nb_elem);
   int _root = static_cast<int>(root);
   _trace("MPI_Gather");
   double begin_time = MPI_Wtime();
@@ -187,13 +211,13 @@ gather(const void* send_buf,void* recv_buf,
 
 Request MpiAdapter::
 nonBlockingGather(const void* send_buf,void* recv_buf,
-                  Integer nb_elem,Integer root,MPI_Datatype datatype)
+                  Int64 nb_elem,Int32 root,MPI_Datatype datatype)
 {
   MPI_Request mpi_request = MPI_REQUEST_NULL;
   int ret = -1;
 #ifdef ARCANE_MPI_HAS_NONBLOCKINGCOLLECTIVE
   void* _sbuf = const_cast<void*>(send_buf);
-  int _nb_elem = static_cast<int>(nb_elem);
+  int _nb_elem = _checkSize(nb_elem);
   int _root = static_cast<int>(root);
   _trace("MPI_Igather");
   double begin_time = MPI_Wtime();
@@ -215,10 +239,10 @@ nonBlockingGather(const void* send_buf,void* recv_buf,
 
 int MpiAdapter::
 allGather(const void* send_buf,void* recv_buf,
-           Integer nb_elem,MPI_Datatype datatype)
+          Int64 nb_elem,MPI_Datatype datatype)
 {
   void* _sbuf = const_cast<void*>(send_buf);
-  int _nb_elem = static_cast<int>(nb_elem);
+  int _nb_elem = _checkSize(nb_elem);
   _trace("MPI_Allgather");
   double begin_time = MPI_Wtime();
   int r = MPI_Allgather(_sbuf,_nb_elem,datatype,recv_buf,_nb_elem,datatype,
@@ -235,13 +259,13 @@ allGather(const void* send_buf,void* recv_buf,
 
 Request MpiAdapter::
 nonBlockingAllGather(const void* send_buf,void* recv_buf,
-                     Integer nb_elem,MPI_Datatype datatype)
+                     Int64 nb_elem,MPI_Datatype datatype)
 {
   MPI_Request mpi_request = MPI_REQUEST_NULL;
   int ret = -1;
 #ifdef ARCANE_MPI_HAS_NONBLOCKINGCOLLECTIVE
   void* _sbuf = const_cast<void*>(send_buf);
-  int _nb_elem = static_cast<int>(nb_elem);
+  int _nb_elem = _checkSize(nb_elem);
   _trace("MPI_Iallgather");
   double begin_time = MPI_Wtime();
   ret = MPI_Iallgather(_sbuf,_nb_elem,datatype,recv_buf,_nb_elem,datatype,
@@ -262,10 +286,10 @@ nonBlockingAllGather(const void* send_buf,void* recv_buf,
 
 int MpiAdapter::
 gatherVariable(const void* send_buf,void* recv_buf,int* recv_counts,
-               int* recv_indexes,Integer nb_elem,Integer root,MPI_Datatype datatype)
+               int* recv_indexes,Int64 nb_elem,Int32 root,MPI_Datatype datatype)
 {
   void* _sbuf = const_cast<void*>(send_buf);
-  int _nb_elem = static_cast<int>(nb_elem);
+  int _nb_elem = _checkSize(nb_elem);
   int _root = static_cast<int>(root);
   _trace(" MPI_Gatherv");
   double begin_time = MPI_Wtime();
@@ -284,10 +308,10 @@ gatherVariable(const void* send_buf,void* recv_buf,int* recv_counts,
 
 int MpiAdapter::
 allGatherVariable(const void* send_buf,void* recv_buf,int* recv_counts,
-                  int* recv_indexes,Integer nb_elem,MPI_Datatype datatype)
+                  int* recv_indexes,Int64 nb_elem,MPI_Datatype datatype)
 {
   void* _sbuf    = const_cast<void*>(send_buf);
-  int   _nb_elem = static_cast<int>(nb_elem);
+  int   _nb_elem = _checkSize(nb_elem);
   _trace("MPI_Allgatherv");
   //info() << " ALLGATHERV N=" << _nb_elem;
   //for( int i=0; i<m_comm_size; ++i )
@@ -309,12 +333,12 @@ allGatherVariable(const void* send_buf,void* recv_buf,int* recv_counts,
 
 int MpiAdapter::
 scatterVariable(const void* send_buf,const int* send_count,const int* send_indexes,
-                void* recv_buf,Integer nb_elem,Integer root,MPI_Datatype datatype)
+                void* recv_buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype)
 {
   void* _sbuf = const_cast<void*>(send_buf);
   int* _send_count = const_cast<int*>(send_count);
   int* _send_indexes = const_cast<int*>(send_indexes);
-  int _nb_elem = static_cast<int>(nb_elem);
+  int _nb_elem = _checkSize(nb_elem);
 
   _trace("MPI_Scatterv");
   double begin_time = MPI_Wtime();
@@ -334,7 +358,7 @@ int MpiAdapter::
 allToAll(const void* send_buf,void* recv_buf,Integer count,MPI_Datatype datatype)
 {
   void* _sbuf = const_cast<void*>(send_buf);
-  int icount = static_cast<int>(count);
+  int icount = _checkSize(count);
   _trace("MPI_Alltoall");
   double begin_time = MPI_Wtime();
   int r = MPI_Alltoall(_sbuf,icount,datatype,recv_buf,icount,datatype,m_communicator);
@@ -355,7 +379,7 @@ nonBlockingAllToAll(const void* send_buf,void* recv_buf,Integer count,MPI_Dataty
   int ret = -1;
 #ifdef ARCANE_MPI_HAS_NONBLOCKINGCOLLECTIVE
   void* _sbuf = const_cast<void*>(send_buf);
-  int icount = static_cast<int>(count);
+  int icount = _checkSize(count);
   _trace("MPI_IAlltoall");
   double begin_time = MPI_Wtime();
   ret = MPI_Ialltoall(_sbuf,icount,datatype,recv_buf,icount,datatype,m_communicator,&mpi_request);
@@ -451,10 +475,10 @@ nonBlockingBarrier()
 /*---------------------------------------------------------------------------*/
 
 int MpiAdapter::
-allReduce(const void* send_buf,void* recv_buf,Integer n,MPI_Datatype datatype,MPI_Op op)
+allReduce(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatype datatype,MPI_Op op)
 {
   void* _sbuf = const_cast<void*>(send_buf);
-  int _n = static_cast<int>(n);
+  int _n = _checkSize(count);
   double begin_time = MPI_Wtime();
   _trace("MPI_Allreduce");
   int ret = 0;
@@ -468,7 +492,7 @@ allReduce(const void* send_buf,void* recv_buf,Integer n,MPI_Datatype datatype,MP
     ostr << "MPI_Allreduce"
          << " send_buf=" << send_buf
          << " recv_buf=" << recv_buf
-         << " n=" << n
+         << " n=" << count
          << " datatype=" << datatype
          << " op=" << op
          << " NB=" << m_nb_all_reduce;
@@ -476,7 +500,7 @@ allReduce(const void* send_buf,void* recv_buf,Integer n,MPI_Datatype datatype,MP
     throw;
   }
   double end_time = MPI_Wtime();
-  m_stat->add("Reduce",end_time-begin_time,n);
+  m_stat->add("Reduce",end_time-begin_time,count);
   return ret;
 }
 
@@ -484,13 +508,13 @@ allReduce(const void* send_buf,void* recv_buf,Integer n,MPI_Datatype datatype,MP
 /*---------------------------------------------------------------------------*/
 
 Request MpiAdapter::
-nonBlockingAllReduce(const void* send_buf,void* recv_buf,Integer n,MPI_Datatype datatype,MPI_Op op)
+nonBlockingAllReduce(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatype datatype,MPI_Op op)
 {
   MPI_Request mpi_request = MPI_REQUEST_NULL;
   int ret = -1;
 #ifdef ARCANE_MPI_HAS_NONBLOCKINGCOLLECTIVE
   void* _sbuf = const_cast<void*>(send_buf);
-  int _n = static_cast<int>(n);
+  int _n = _checkSize(count);
   double begin_time = MPI_Wtime();
   _trace("MPI_IAllreduce");
   ret = MPI_Iallreduce(_sbuf,recv_buf,_n,datatype,op,m_communicator,&mpi_request);
@@ -498,7 +522,7 @@ nonBlockingAllReduce(const void* send_buf,void* recv_buf,Integer n,MPI_Datatype 
   m_stat->add("IReduce",end_time-begin_time,n);
   _addRequest(mpi_request);
 #else
-  ret = allReduce(send_buf,recv_buf,n,datatype,op);
+  ret = allReduce(send_buf,recv_buf,count,datatype,op);
 #endif
   return Request(ret,mpi_request);
 }
@@ -507,10 +531,10 @@ nonBlockingAllReduce(const void* send_buf,void* recv_buf,Integer n,MPI_Datatype 
 /*---------------------------------------------------------------------------*/
 
 int MpiAdapter::
-reduce(const void* send_buf,void* recv_buf,Integer n,MPI_Datatype datatype,MPI_Op op,Integer root)
+reduce(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatype datatype,MPI_Op op,Integer root)
 {
   void* _sbuf = const_cast<void*>(send_buf);
-  int _n = static_cast<int>(n);
+  int _n = _checkSize(count);
   int _root = static_cast<int>(root);
   double begin_time = MPI_Wtime();
   _trace("MPI_reduce");
@@ -525,7 +549,7 @@ reduce(const void* send_buf,void* recv_buf,Integer n,MPI_Datatype datatype,MPI_O
     ostr << "MPI_reduce"
          << " send_buf=" << send_buf
          << " recv_buf=" << recv_buf
-         << " n=" << n
+         << " n=" << count
          << " datatype=" << datatype
          << " op=" << op
          << " root=" << root
@@ -543,15 +567,15 @@ reduce(const void* send_buf,void* recv_buf,Integer n,MPI_Datatype datatype,MPI_O
 /*---------------------------------------------------------------------------*/
 
 int MpiAdapter::
-scan(const void* send_buf,void* recv_buf,Integer n,MPI_Datatype datatype,MPI_Op op)
+scan(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatype datatype,MPI_Op op)
 {
   void* _sbuf = const_cast<void*>(send_buf);
-  int _n = static_cast<int>(n);
+  int _n = _checkSize(count);
   double begin_time = MPI_Wtime();
   _trace("MPI_Scan");
   int ret = MPI_Scan(_sbuf,recv_buf,_n,datatype,op,m_communicator);
   double end_time = MPI_Wtime();
-  m_stat->add("Scan",end_time-begin_time,0);
+  m_stat->add("Scan",end_time-begin_time,count);
   return ret;
 }
 
@@ -559,18 +583,20 @@ scan(const void* send_buf,void* recv_buf,Integer n,MPI_Datatype datatype,MPI_Op 
 /*---------------------------------------------------------------------------*/
 
 int MpiAdapter::
-directSendRecv(const void* send_buffer,Integer send_buffer_size,
-               void* recv_buffer,Integer recv_buffer_size,
-               Integer proc,Integer elem_size,MPI_Datatype data_type
+directSendRecv(const void* send_buffer,Int64 send_buffer_size,
+               void* recv_buffer,Int64 recv_buffer_size,
+               Int32 proc,Int64 elem_size,MPI_Datatype data_type
                )
 {
   void* v_send_buffer = const_cast<void*>(send_buffer);
   MPI_Status mpi_status;
   double begin_time = MPI_Wtime();
   _trace("MPI_Sendrecv");
-  int ret = MPI_Sendrecv(v_send_buffer,send_buffer_size,
+  int sbuf_size = _checkSize(send_buffer_size);
+  int rbuf_size = _checkSize(recv_buffer_size);
+  int ret = MPI_Sendrecv(v_send_buffer,sbuf_size,
                          data_type,proc,99,
-                         recv_buffer,recv_buffer_size,
+                         recv_buffer,rbuf_size,
                          data_type,proc,99,
                          m_communicator,&mpi_status);
   double end_time = MPI_Wtime();
@@ -588,8 +614,8 @@ directSendRecv(const void* send_buffer,Integer send_buffer_size,
 /*---------------------------------------------------------------------------*/
 
 Request MpiAdapter::
-directSend(const void* send_buffer,Integer send_buffer_size,
-           Integer proc,Integer elem_size,MPI_Datatype data_type,
+directSend(const void* send_buffer,Int64 send_buffer_size,
+           Int32 proc,Int64 elem_size,MPI_Datatype data_type,
            int mpi_tag,bool is_blocked
            )
 {
@@ -616,7 +642,8 @@ directSend(const void* send_buffer,Integer send_buffer_size,
       {
         MpiLock::Section mls(m_mpi_lock);
         begin_time = MPI_Wtime();
-        ret = MPI_Isend(v_send_buffer,send_buffer_size,
+        int sbuf_size = _checkSize(send_buffer_size);
+        ret = MPI_Isend(v_send_buffer,sbuf_size,
                         data_type,proc,mpi_tag,m_communicator,&mpi_request);
       }
       int is_finished = 0;
@@ -634,7 +661,8 @@ directSend(const void* send_buffer,Integer send_buffer_size,
     else{
       MpiLock::Section mls(m_mpi_lock);
       begin_time = MPI_Wtime();
-      ret = MPI_Send(v_send_buffer,send_buffer_size,
+      int sbuf_size = _checkSize(send_buffer_size);
+      ret = MPI_Send(v_send_buffer,sbuf_size,
                      data_type,proc,mpi_tag,m_communicator);
       end_time = MPI_Wtime();
     }
@@ -643,7 +671,8 @@ directSend(const void* send_buffer,Integer send_buffer_size,
     {
       MpiLock::Section mls(m_mpi_lock);
       begin_time = MPI_Wtime();
-      ret = MPI_Isend(v_send_buffer,send_buffer_size,
+      int sbuf_size = _checkSize(send_buffer_size);
+      ret = MPI_Isend(v_send_buffer,sbuf_size,
                       data_type,proc,mpi_tag,m_communicator,&mpi_request);
       if (m_is_trace)
         info() << " ISend ret=" << ret << " proc=" << proc << " request=" << mpi_request;
@@ -667,8 +696,8 @@ directSend(const void* send_buffer,Integer send_buffer_size,
 /*---------------------------------------------------------------------------*/
 
 Request MpiAdapter::
-directSendPack(const void* send_buffer,Integer send_buffer_size,
-               Integer proc,int mpi_tag,bool is_blocked
+directSendPack(const void* send_buffer,Int64 send_buffer_size,
+               Int32 proc,int mpi_tag,bool is_blocked
             )
 {
   return directSend(send_buffer,send_buffer_size,proc,1,MPI_PACKED,mpi_tag,is_blocked);
@@ -678,8 +707,8 @@ directSendPack(const void* send_buffer,Integer send_buffer_size,
 /*---------------------------------------------------------------------------*/
 
 Request MpiAdapter::
-directRecv(void* recv_buffer,Integer recv_buffer_size,
-           Integer proc,Integer elem_size,MPI_Datatype data_type,
+directRecv(void* recv_buffer,Int64 recv_buffer_size,
+           Int32 proc,Int64 elem_size,MPI_Datatype data_type,
            int mpi_tag,bool is_blocked
            )
 {
@@ -713,7 +742,8 @@ directRecv(void* recv_buffer,Integer recv_buffer_size,
       {
         MpiLock::Section mls(m_mpi_lock);
         begin_time = MPI_Wtime();
-        ret = MPI_Irecv(recv_buffer,recv_buffer_size,
+        int rbuf_size = _checkSize(recv_buffer_size);
+        ret = MPI_Irecv(recv_buffer,rbuf_size,
                         data_type,i_proc,mpi_tag,
                         m_communicator,&mpi_request);
       }
@@ -732,7 +762,8 @@ directRecv(void* recv_buffer,Integer recv_buffer_size,
     else{
       MpiLock::Section mls(m_mpi_lock);
       begin_time = MPI_Wtime();
-      ret = MPI_Recv(recv_buffer,recv_buffer_size,
+      int rbuf_size = _checkSize(recv_buffer_size);
+      ret = MPI_Recv(recv_buffer,rbuf_size,
                      data_type,i_proc,mpi_tag,
                      m_communicator,&mpi_status);
       end_time = MPI_Wtime();
@@ -742,7 +773,8 @@ directRecv(void* recv_buffer,Integer recv_buffer_size,
     {
       MpiLock::Section mls(m_mpi_lock);
       begin_time = MPI_Wtime();
-      ret = MPI_Irecv(recv_buffer,recv_buffer_size,
+      int rbuf_size = _checkSize(recv_buffer_size);
+      ret = MPI_Irecv(recv_buffer,rbuf_size,
                       data_type,i_proc,mpi_tag,
                       m_communicator,&mpi_request);
       end_time = MPI_Wtime();
@@ -789,8 +821,8 @@ probeRecvPack(UniqueArray<Byte>& recv_buffer,Integer proc)
 /*---------------------------------------------------------------------------*/
 
 Request MpiAdapter::
-directRecvPack(void* recv_buffer,Integer recv_buffer_size,
-               Integer proc,int mpi_tag,bool is_blocking)
+directRecvPack(void* recv_buffer,Int64 recv_buffer_size,
+               Int32 proc,int mpi_tag,bool is_blocking)
 {
   return directRecv(recv_buffer,recv_buffer_size,proc,1,MPI_PACKED,mpi_tag,is_blocking);
 }

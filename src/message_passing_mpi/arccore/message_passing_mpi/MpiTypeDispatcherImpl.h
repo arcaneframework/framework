@@ -151,12 +151,12 @@ scatterVariable(ConstLargeArrayView<Type> send_buf,LargeArrayView<Type> recv_buf
 {
   MPI_Datatype type = m_datatype->datatype();
 
-  Integer comm_size = static_cast<Integer>(m_adapter->commSize());
+  Int32 comm_size = m_adapter->commSize();
   UniqueArray<int> recv_counts(comm_size);
   UniqueArray<int> recv_indexes(comm_size);
 
-  Integer nb_elem = recv_buf.size();
-  int my_buf_count = static_cast<int>(nb_elem);
+  Int64 nb_elem = recv_buf.size();
+  int my_buf_count = m_adapter->toMPISize(nb_elem);
   ConstLargeArrayView<int> count_r(1,&my_buf_count);
 
   // Récupère le nombre d'éléments de chaque processeur
@@ -246,7 +246,7 @@ template<class Type> void MpiTypeDispatcher<Type>::
 allReduce(eReduceType op,LargeArrayView<Type> send_buf)
 {
   MPI_Datatype type = m_datatype->datatype();
-  Integer s = send_buf.size();
+  Int64 s = send_buf.size();
   UniqueArray<Type> recv_buf(s);
   MPI_Op operation = m_datatype->reduceOperator(op);
   {

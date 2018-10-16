@@ -62,46 +62,46 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 
  public:
 
-  int broadcast(void* buf,Integer nb_elem,Integer root,MPI_Datatype datatype);
+  int broadcast(void* buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype);
   int allGather(const void* send_buf,void* recv_buf,
-                Integer nb_elem,MPI_Datatype datatype);
+                Int64 nb_elem,MPI_Datatype datatype);
   int gather(const void* send_buf,void* recv_buf,
-             Integer nb_elem,Integer root,MPI_Datatype datatype);
+             Int64 nb_elem,Int32 root,MPI_Datatype datatype);
   int allGatherVariable(const void* send_buf,void* recv_buf,int* recv_counts,
-                        int* recv_indexes,Integer nb_elem,MPI_Datatype datatype);
+                        int* recv_indexes,Int64 nb_elem,MPI_Datatype datatype);
   int gatherVariable(const void* send_buf,void* recv_buf,int* recv_counts,
-                     int* recv_indexes,Integer nb_elem,Integer root,MPI_Datatype datatype);
+                     int* recv_indexes,Int64 nb_elem,Int32 root,MPI_Datatype datatype);
   int scatterVariable(const void* send_buf,const int* send_count,const int* send_indexes,
-                      void* recv_buf,Integer nb_elem,Integer root,MPI_Datatype datatype);
-  int allToAll(const void* send_buf,void* recv_buf,Integer count,MPI_Datatype datatype);
+                      void* recv_buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype);
+  int allToAll(const void* send_buf,void* recv_buf,Int32 count,MPI_Datatype datatype);
   int allToAllVariable(const void* send_buf,const int* send_counts,
                        const int* send_indexes,void* recv_buf,const int* recv_counts,
                        const int* recv_indexes,MPI_Datatype datatype);
-  int reduce(const void* send_buf,void* recv_buf,Integer n,MPI_Datatype datatype,MPI_Op op,Integer root);
-  int allReduce(const void* send_buf,void* recv_buf,Integer n,MPI_Datatype datatype,MPI_Op op);
-  int scan(const void* send_buf,void* recv_buf,Integer n,MPI_Datatype datatype,MPI_Op op);
-  int directSendRecv(const void* send_buffer,Integer send_buffer_size,
-                     void* recv_buffer,Integer recv_buffer_size,
-                     Integer proc,Integer elem_size,MPI_Datatype data_type
+  int reduce(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatype datatype,MPI_Op op,Int32 root);
+  int allReduce(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatype datatype,MPI_Op op);
+  int scan(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatype datatype,MPI_Op op);
+  int directSendRecv(const void* send_buffer,Int64 send_buffer_size,
+                     void* recv_buffer,Int64 recv_buffer_size,
+                     Int32 proc,Int64 elem_size,MPI_Datatype data_type
                      );
 
-  Request directSend(const void* send_buffer,Integer send_buffer_size,
-                     Integer proc,Integer elem_size,MPI_Datatype data_type,
+  Request directSend(const void* send_buffer,Int64 send_buffer_size,
+                     Int32 proc,Int64 elem_size,MPI_Datatype data_type,
                      int mpi_tag,bool is_blocked
                      );
   
-  Request directRecv(void* recv_buffer,Integer recv_buffer_size,
-                     Integer proc,Integer elem_size,MPI_Datatype data_type,
+  Request directRecv(void* recv_buffer,Int64 recv_buffer_size,
+                     Int32 proc,Int64 elem_size,MPI_Datatype data_type,
                      int mpi_tag,bool is_blocked
                      );
 
-  Request directSendPack(const void* send_buffer,Integer send_buffer_size,
-                         Integer proc,int mpi_tag,bool is_blocked);
+  Request directSendPack(const void* send_buffer,Int64 send_buffer_size,
+                         Int32 proc,int mpi_tag,bool is_blocked);
 
-  void  probeRecvPack(UniqueArray<Byte>& recv_buffer,Integer proc);
+  void  probeRecvPack(UniqueArray<Byte>& recv_buffer,Int32 proc);
 
-  Request directRecvPack(void* recv_buffer,Integer recv_buffer_size,
-                         Integer proc,int mpi_tag,bool is_blocking);
+  Request directRecvPack(void* recv_buffer,Int64 recv_buffer_size,
+                         Int32 proc,int mpi_tag,bool is_blocking);
 
   void waitAllRequests(ArrayView<Request> requests,
                        ArrayView<bool> indexes,
@@ -121,17 +121,19 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 
   MpiLock* mpiLock() const { return m_mpi_lock; }
 
-  Request nonBlockingBroadcast(void* buf,Integer nb_elem,Integer root,MPI_Datatype datatype);
-  Request nonBlockingAllGather(const void* send_buf,void* recv_buf,Integer nb_elem,MPI_Datatype datatype);
-  Request nonBlockingGather(const void* send_buf,void* recv_buf,Integer nb_elem,Integer root,MPI_Datatype datatype);
+  Request nonBlockingBroadcast(void* buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype);
+  Request nonBlockingAllGather(const void* send_buf,void* recv_buf,Int64 nb_elem,MPI_Datatype datatype);
+  Request nonBlockingGather(const void* send_buf,void* recv_buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype);
 
-  Request nonBlockingAllToAll(const void* send_buf,void* recv_buf,Integer count,MPI_Datatype datatype);
-  Request nonBlockingAllReduce(const void* send_buf,void* recv_buf,Integer n,MPI_Datatype datatype,MPI_Op op);
+  Request nonBlockingAllToAll(const void* send_buf,void* recv_buf,Int32 count,MPI_Datatype datatype);
+  Request nonBlockingAllReduce(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatype datatype,MPI_Op op);
   Request nonBlockingAllToAllVariable(const void* send_buf,const int* send_counts,
                                       const int* send_indexes,void* recv_buf,const int* recv_counts,
                                       const int* recv_indexes,MPI_Datatype datatype);
 
   Request nonBlockingBarrier();
+
+  int toMPISize(Int64 count);
 
  private:
 
