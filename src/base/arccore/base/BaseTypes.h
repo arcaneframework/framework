@@ -133,6 +133,51 @@ typedef ConstArrayView<Integer> IntegerConstArrayView;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Equivalent C d'un tableau à une dimension de pointeurs
+typedef LargeArrayView<Pointer> PointerLargeArrayView;
+//! Equivalent C d'un tableau à une dimension de caractères
+typedef LargeArrayView<Byte> ByteLargeArrayView;
+//! Equivalent C d'un tableau à une dimension de caractères unicode
+typedef LargeArrayView<UChar> UCharLargeArrayView;
+//! Equivalent C d'un tableau à une dimension d'entiers 64 bits
+typedef LargeArrayView<Int64> Int64LargeArrayView;
+//! Equivalent C d'un tableau à une dimension d'entiers 32 bits
+typedef LargeArrayView<Int32> Int32LargeArrayView;
+//! Equivalent C d'un tableau à une dimension d'entiers 16 bits
+typedef LargeArrayView<Int16> Int16LargeArrayView;
+//! Equivalent C d'un tableau à une dimension d'entiers
+typedef LargeArrayView<Integer> IntegerLargeArrayView;
+//! Equivalent C d'un tableau à une dimension de réels
+typedef LargeArrayView<Real> RealLargeArrayView;
+//! Equivalent C d'un tableau à une dimension de booléens
+typedef LargeArrayView<bool> BoolLargeArrayView;
+//! Equivalent C d'un tableau à une dimension d'entiers
+typedef LargeArrayView<Integer> IntegerLargeArrayView;
+
+//! Equivalent C d'un tableau à une dimension de pointeurs
+typedef ConstLargeArrayView<Pointer> PointerConstLargeArrayView;
+//! Equivalent C d'un tableau à une dimension de caractères
+typedef ConstLargeArrayView<Byte> ByteConstLargeArrayView;
+//! Equivalent C d'un tableau à une dimension de caractères unicode
+typedef ConstLargeArrayView<UChar> UCharConstLargeArrayView;
+//! Equivalent C d'un tableau à une dimension d'entiers 64 bits
+typedef ConstLargeArrayView<Int64> Int64ConstLargeArrayView;
+//! Equivalent C d'un tableau à une dimension d'entiers 32 bits
+typedef ConstLargeArrayView<Int32> Int32ConstLargeArrayView;
+//! Equivalent C d'un tableau à une dimension d'entiers 16 bits
+typedef ConstLargeArrayView<Int16> Int16ConstLargeArrayView;
+//! Equivalent C d'un tableau à une dimension d'entiers
+typedef ConstLargeArrayView<Integer> IntegerConstLargeArrayView;
+//! Equivalent C d'un tableau à une dimension de réels
+typedef ConstLargeArrayView<Real> RealConstLargeArrayView;
+//! Equivalent C d'un tableau à une dimension de booléens
+typedef ConstLargeArrayView<bool> BoolConstLargeArrayView;
+//! Equivalent C d'un tableau à une dimension d'entiers
+typedef ConstLargeArrayView<Integer> IntegerConstLargeArrayView;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arccore
 
 /*---------------------------------------------------------------------------*/
