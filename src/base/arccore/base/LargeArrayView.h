@@ -227,7 +227,7 @@ class LargeArrayView
     if (abegin>=m_size)
       return ArrayView<T>();
     asize = _min(asize,m_size-abegin);
-    return ArrayView<T>(asize,m_ptr+abegin);
+    return LargeArrayView<T>(asize,m_ptr+abegin);
   }
 
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
