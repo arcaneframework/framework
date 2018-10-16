@@ -50,7 +50,7 @@ template<class Type> MpiTypeDispatcher<Type>::
 /*---------------------------------------------------------------------------*/
 
 template<class Type> void MpiTypeDispatcher<Type>::
-broadcast(ArrayView<Type> send_buf,Int32 rank)
+broadcast(LargeArrayView<Type> send_buf,Int32 rank)
 {
   MPI_Datatype type = m_datatype->datatype();
   m_adapter->broadcast(send_buf.data(),send_buf.size(),rank,type);
@@ -60,7 +60,7 @@ broadcast(ArrayView<Type> send_buf,Int32 rank)
 /*---------------------------------------------------------------------------*/
 
 template<class Type> void MpiTypeDispatcher<Type>::
-allGather(ConstArrayView<Type> send_buf,ArrayView<Type> recv_buf)
+allGather(ConstLargeArrayView<Type> send_buf,LargeArrayView<Type> recv_buf)
 {
   MPI_Datatype type = m_datatype->datatype();
   m_adapter->allGather(send_buf.data(),recv_buf.data(),send_buf.size(),type);
@@ -70,7 +70,7 @@ allGather(ConstArrayView<Type> send_buf,ArrayView<Type> recv_buf)
 /*---------------------------------------------------------------------------*/
 
 template<class Type> void MpiTypeDispatcher<Type>::
-gather(ConstArrayView<Type> send_buf,ArrayView<Type> recv_buf,Int32 rank)
+gather(ConstLargeArrayView<Type> send_buf,LargeArrayView<Type> recv_buf,Int32 rank)
 {
   MPI_Datatype type = m_datatype->datatype();
   m_adapter->gather(send_buf.data(),recv_buf.data(),send_buf.size(),rank,type);
@@ -80,7 +80,7 @@ gather(ConstArrayView<Type> send_buf,ArrayView<Type> recv_buf,Int32 rank)
 /*---------------------------------------------------------------------------*/
 
 template<class Type> void MpiTypeDispatcher<Type>::
-allGatherVariable(ConstArrayView<Type> send_buf,Array<Type>& recv_buf)
+allGatherVariable(ConstLargeArrayView<Type> send_buf,Array<Type>& recv_buf)
 {
   _gatherVariable2(send_buf,recv_buf,-1);
 }
@@ -89,7 +89,7 @@ allGatherVariable(ConstArrayView<Type> send_buf,Array<Type>& recv_buf)
 /*---------------------------------------------------------------------------*/
 
 template<class Type> void MpiTypeDispatcher<Type>::
-gatherVariable(ConstArrayView<Type> send_buf,Array<Type>& recv_buf,Int32 rank)
+gatherVariable(ConstLargeArrayView<Type> send_buf,Array<Type>& recv_buf,Int32 rank)
 {
   _gatherVariable2(send_buf,recv_buf,rank);
 }
@@ -98,7 +98,7 @@ gatherVariable(ConstArrayView<Type> send_buf,Array<Type>& recv_buf,Int32 rank)
 /*---------------------------------------------------------------------------*/
 
 template<class Type> void MpiTypeDispatcher<Type>::
-_gatherVariable2(ConstArrayView<Type> send_buf,Array<Type>& recv_buf,Int32 rank)
+_gatherVariable2(ConstLargeArrayView<Type> send_buf,Array<Type>& recv_buf,Int32 rank)
 {
   MPI_Datatype type = m_datatype->datatype();
 
@@ -106,9 +106,9 @@ _gatherVariable2(ConstArrayView<Type> send_buf,Array<Type>& recv_buf,Int32 rank)
   UniqueArray<int> send_counts(comm_size);
   UniqueArray<int> send_indexes(comm_size);
 
-  Integer nb_elem = send_buf.size();
+  Int64 nb_elem = send_buf.size();
   int my_buf_count = (int)nb_elem;
-  ConstArrayView<int> count_r(1,&my_buf_count);
+  ConstLargeArrayView<int> count_r(1,&my_buf_count);
 
   // Récupère le nombre d'éléments de chaque processeur
   if (rank!=(-1))
@@ -129,7 +129,7 @@ _gatherVariable2(ConstArrayView<Type> send_buf,Array<Type>& recv_buf,Int32 rank)
     if (i64_total_elem>max_size){
       ARCCORE_FATAL("Invalid size '{0}'",i64_total_elem);
     }
-    Integer total_elem = (Integer)(i64_total_elem);
+    Int64 total_elem = i64_total_elem;
     recv_buf.resize(total_elem);
   }
 
@@ -147,7 +147,7 @@ _gatherVariable2(ConstArrayView<Type> send_buf,Array<Type>& recv_buf,Int32 rank)
 /*---------------------------------------------------------------------------*/
 
 template<class Type> void MpiTypeDispatcher<Type>::
-scatterVariable(ConstArrayView<Type> send_buf,ArrayView<Type> recv_buf,Int32 root)
+scatterVariable(ConstLargeArrayView<Type> send_buf,LargeArrayView<Type> recv_buf,Int32 root)
 {
   MPI_Datatype type = m_datatype->datatype();
 
@@ -157,7 +157,7 @@ scatterVariable(ConstArrayView<Type> send_buf,ArrayView<Type> recv_buf,Int32 roo
 
   Integer nb_elem = recv_buf.size();
   int my_buf_count = static_cast<int>(nb_elem);
-  ConstArrayView<int> count_r(1,&my_buf_count);
+  ConstLargeArrayView<int> count_r(1,&my_buf_count);
 
   // Récupère le nombre d'éléments de chaque processeur
   mpAllGather(m_parallel_mng,count_r,recv_counts);
@@ -177,7 +177,7 @@ scatterVariable(ConstArrayView<Type> send_buf,ArrayView<Type> recv_buf,Int32 roo
 /*---------------------------------------------------------------------------*/
 
 template<class Type> void MpiTypeDispatcher<Type>::
-allToAll(ConstArrayView<Type> send_buf,ArrayView<Type> recv_buf,Integer count)
+allToAll(ConstLargeArrayView<Type> send_buf,LargeArrayView<Type> recv_buf,Int32 count)
 {
   MPI_Datatype type = m_datatype->datatype();
   m_adapter->allToAll(send_buf.data(),recv_buf.data(),count,type);
@@ -187,10 +187,10 @@ allToAll(ConstArrayView<Type> send_buf,ArrayView<Type> recv_buf,Integer count)
 /*---------------------------------------------------------------------------*/
 
 template<class Type> void MpiTypeDispatcher<Type>::
-allToAllVariable(ConstArrayView<Type> send_buf,
+allToAllVariable(ConstLargeArrayView<Type> send_buf,
                  Int32ConstArrayView send_count,
                  Int32ConstArrayView send_index,
-                 ArrayView<Type> recv_buf,
+                 LargeArrayView<Type> recv_buf,
                  Int32ConstArrayView recv_count,
                  Int32ConstArrayView recv_index
                  )
@@ -207,7 +207,7 @@ allToAllVariable(ConstArrayView<Type> send_buf,
 /*---------------------------------------------------------------------------*/
 
 template<class Type> Request MpiTypeDispatcher<Type>::
-send(ConstArrayView<Type> send_buffer,Int32 rank,bool is_blocked)
+send(ConstLargeArrayView<Type> send_buffer,Int32 rank,bool is_blocked)
 {
   MPI_Datatype type = m_datatype->datatype();
   return m_adapter->directSend(send_buffer.data(),send_buffer.size(),
@@ -218,7 +218,7 @@ send(ConstArrayView<Type> send_buffer,Int32 rank,bool is_blocked)
 /*---------------------------------------------------------------------------*/
 
 template<class Type> Request MpiTypeDispatcher<Type>::
-receive(ArrayView<Type> recv_buffer,Int32 rank,bool is_blocked)
+receive(LargeArrayView<Type> recv_buffer,Int32 rank,bool is_blocked)
 {
   MPI_Datatype type = m_datatype->datatype();
   MpiLock::Section mls(m_adapter->mpiLock());
@@ -243,7 +243,7 @@ allReduce(eReduceType op,Type send_buf)
 /*---------------------------------------------------------------------------*/
 
 template<class Type> void MpiTypeDispatcher<Type>::
-allReduce(eReduceType op,ArrayView<Type> send_buf)
+allReduce(eReduceType op,LargeArrayView<Type> send_buf)
 {
   MPI_Datatype type = m_datatype->datatype();
   Integer s = send_buf.size();
