@@ -252,7 +252,7 @@ class LargeArrayView
   inline void copy(const U& copy_array)
   {
     ARCCORE_ASSERT( (copy_array.size()<=m_size), ("Bad size %d %d",copy_array.size(),m_size) );
-    const T* copy_begin = copy_array.unguardedBasePointer();
+    const T* copy_begin = copy_array.data();
     T* to_ptr = m_ptr;
     Int64 n = copy_array.size();
     for( Int64 i=0; i<n; ++i )
