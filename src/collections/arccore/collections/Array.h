@@ -876,11 +876,11 @@ class Array
   }
   operator ConstSpan<T>() const
   {
-    return ConstSpan<T>(this->size(),m_p->ptr);
+    return ConstSpan<T>(m_p->ptr,this->size());
   }
   operator Span<T>()
   {
-    return Span<T>(this->size(),m_p->ptr);
+    return Span<T>(m_p->ptr,this->size());
   }
   //! Vue constante sur ce tableau
   ConstArrayView<T> constView() const
@@ -890,7 +890,7 @@ class Array
   //! Vue constante sur ce tableau
   ConstSpan<T> constLargeView() const
   {
-    return ConstSpan<T>(this->size(),m_p->ptr);
+    return ConstSpan<T>(m_p->ptr,this->size());
   }
   /*!
    * \brief Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments.
@@ -910,7 +910,7 @@ class Array
   //! Vue mutable sur ce tableau
   Span<T> largeView() const
   {
-    return Span<T>(this->size(),m_p->ptr);
+    return Span<T>(m_p->ptr,this->size());
   }
   /*!
    * \brief Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments.

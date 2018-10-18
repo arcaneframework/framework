@@ -157,7 +157,7 @@ class CoreArray
   static ConstSpan<DataType> _constView(const std::vector<DataType>& c)
   {
     Int64 s = arccoreCheckArraySize(c.size());
-    return ConstSpan<DataType>(s,c.data());
+    return ConstSpan<DataType>(c.data(),s);
   }
   static ConstArrayView<DataType> _constSmallView(const std::vector<DataType>& c)
   {
@@ -167,7 +167,7 @@ class CoreArray
   static Span<DataType> _view(std::vector<DataType>& c)
   {
     Int64 s = arccoreCheckArraySize(c.size());
-    return Span<DataType>(s,c.data());
+    return Span<DataType>(c.data(),s);
   }
   static ArrayView<DataType> _smallView(std::vector<DataType>& c)
   {

@@ -108,7 +108,7 @@ _gatherVariable2(ConstSpan<Type> send_buf,Array<Type>& recv_buf,Int32 rank)
 
   Int64 nb_elem = send_buf.size();
   int my_buf_count = (int)nb_elem;
-  ConstSpan<int> count_r(1,&my_buf_count);
+  ConstSpan<int> count_r(&my_buf_count,1);
 
   // Récupère le nombre d'éléments de chaque processeur
   if (rank!=(-1))
@@ -157,7 +157,7 @@ scatterVariable(ConstSpan<Type> send_buf,Span<Type> recv_buf,Int32 root)
 
   Int64 nb_elem = recv_buf.size();
   int my_buf_count = m_adapter->toMPISize(nb_elem);
-  ConstSpan<int> count_r(1,&my_buf_count);
+  ConstSpan<int> count_r(&my_buf_count,1);
 
   // Récupère le nombre d'éléments de chaque processeur
   mpAllGather(m_parallel_mng,count_r,recv_counts);

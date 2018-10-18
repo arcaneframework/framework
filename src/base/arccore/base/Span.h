@@ -70,7 +70,7 @@ class Span
   : m_ptr(from.m_ptr), m_size(from.m_size) {}
   //! Construit une vue sur une zone mémoire commencant par \a ptr et
   // contenant \a asize éléments.
-  Span(Int64 asize,T* ptr)
+  Span(T* ptr,Int64 asize)
   : m_ptr(ptr), m_size(asize) {}
   //! Opérateur de recopie
   Span<T>& operator=(const Span<T>& from)
@@ -227,7 +227,7 @@ class Span
     if (abegin>=m_size)
       return Span<T>();
     asize = _min(asize,m_size-abegin);
-    return Span<T>(asize,m_ptr+abegin);
+    return Span<T>(m_ptr+abegin,asize);
   }
 
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
@@ -239,7 +239,7 @@ class Span
     // Pour le dernier interval, prend les elements restants
     if ((index+1)==nb_interval)
       isize = n - ibegin;
-    return Span<T>(isize,m_ptr+ibegin);
+    return Span<T>(m_ptr+ibegin,isize);
   }
 
   /*!\brief Recopie le tableau \a copy_array dans l'instance.
@@ -377,7 +377,7 @@ class ConstSpan
   //! Construit un tableau vide.
   ConstSpan() : m_ptr(nullptr), m_size(0) {}
   //! Construit un tableau avec \a s élément
-  ConstSpan(Int64 s,const T* ptr)
+  ConstSpan(const T* ptr,Int64 s)
   : m_ptr(ptr), m_size(s) {}
   /*! \brief Constructeur par copie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
@@ -464,7 +464,7 @@ class ConstSpan
     if (abegin>=m_size)
       return ConstSpan<T>();
     asize = _min(asize,m_size-abegin);
-    return ConstSpan<T>(asize,m_ptr+abegin);
+    return ConstSpan<T>(m_ptr+abegin,asize);
   }
 
   /*!
