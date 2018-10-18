@@ -134,46 +134,46 @@ typedef ConstArrayView<Integer> IntegerConstArrayView;
 /*---------------------------------------------------------------------------*/
 
 //! Equivalent C d'un tableau à une dimension de pointeurs
-typedef Span<Pointer> PointerLargeArrayView;
+typedef Span<Pointer> PointerSpan;
 //! Equivalent C d'un tableau à une dimension de caractères
-typedef Span<Byte> ByteLargeArrayView;
+typedef Span<Byte> ByteSpan;
 //! Equivalent C d'un tableau à une dimension de caractères unicode
-typedef Span<UChar> UCharLargeArrayView;
+typedef Span<UChar> UCharSpan;
 //! Equivalent C d'un tableau à une dimension d'entiers 64 bits
-typedef Span<Int64> Int64LargeArrayView;
+typedef Span<Int64> Int64Span;
 //! Equivalent C d'un tableau à une dimension d'entiers 32 bits
-typedef Span<Int32> Int32LargeArrayView;
+typedef Span<Int32> Int32Span;
 //! Equivalent C d'un tableau à une dimension d'entiers 16 bits
-typedef Span<Int16> Int16LargeArrayView;
+typedef Span<Int16> Int16Span;
 //! Equivalent C d'un tableau à une dimension d'entiers
-typedef Span<Integer> IntegerLargeArrayView;
+typedef Span<Integer> IntegerSpan;
 //! Equivalent C d'un tableau à une dimension de réels
-typedef Span<Real> RealLargeArrayView;
+typedef Span<Real> RealSpan;
 //! Equivalent C d'un tableau à une dimension de booléens
-typedef Span<bool> BoolLargeArrayView;
+typedef Span<bool> BoolSpan;
 //! Equivalent C d'un tableau à une dimension d'entiers
-typedef Span<Integer> IntegerLargeArrayView;
+typedef Span<Integer> IntegerSpan;
 
 //! Equivalent C d'un tableau à une dimension de pointeurs
-typedef ConstSpan<Pointer> PointerConstLargeArrayView;
+typedef ConstSpan<Pointer> PointerConstSpan;
 //! Equivalent C d'un tableau à une dimension de caractères
-typedef ConstSpan<Byte> ByteConstLargeArrayView;
+typedef ConstSpan<Byte> ByteConstSpan;
 //! Equivalent C d'un tableau à une dimension de caractères unicode
-typedef ConstSpan<UChar> UCharConstLargeArrayView;
+typedef ConstSpan<UChar> UCharConstSpan;
 //! Equivalent C d'un tableau à une dimension d'entiers 64 bits
-typedef ConstSpan<Int64> Int64ConstLargeArrayView;
+typedef ConstSpan<Int64> Int64ConstSpan;
 //! Equivalent C d'un tableau à une dimension d'entiers 32 bits
-typedef ConstSpan<Int32> Int32ConstLargeArrayView;
+typedef ConstSpan<Int32> Int32ConstSpan;
 //! Equivalent C d'un tableau à une dimension d'entiers 16 bits
-typedef ConstSpan<Int16> Int16ConstLargeArrayView;
+typedef ConstSpan<Int16> Int16ConstSpan;
 //! Equivalent C d'un tableau à une dimension d'entiers
-typedef ConstSpan<Integer> IntegerConstLargeArrayView;
+typedef ConstSpan<Integer> IntegerConstSpan;
 //! Equivalent C d'un tableau à une dimension de réels
-typedef ConstSpan<Real> RealConstLargeArrayView;
+typedef ConstSpan<Real> RealConstSpan;
 //! Equivalent C d'un tableau à une dimension de booléens
-typedef ConstSpan<bool> BoolConstLargeArrayView;
+typedef ConstSpan<bool> BoolConstSpan;
 //! Equivalent C d'un tableau à une dimension d'entiers
-typedef ConstSpan<Integer> IntegerConstLargeArrayView;
+typedef ConstSpan<Integer> IntegerConstSpan;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
