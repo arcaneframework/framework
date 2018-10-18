@@ -88,6 +88,7 @@ template<class T>
 class ArrayView
 {
   friend class Span<T>;
+  friend class Span<const T>;
  public:
 
   //! Type des éléments du tableau
@@ -449,6 +450,7 @@ class ArrayView
 template<class T>
 class ConstArrayView
 {
+  friend class Span<const T>;
  public:
 
   //! Type des éléments du tableau

@@ -74,7 +74,9 @@ class ARCCORE_BASE_EXPORT String
   //! Créé une chaîne à partir de \a str dans l'encodage Utf16
   String(const UCharConstArrayView& ustr);
   //! Créé une chaîne à partir de \a str dans l'encodage Utf8
-  String(const ConstSpan<Byte>& ustr);
+  String(const Span<const Byte>& ustr);
+  //! Créé une chaîne à partir de \a str dans l'encodage Utf8
+  //String(const Span<Byte>& ustr);
   //! Créé une chaîne à partir de \a str dans l'encodage local
   explicit String(StringImpl* impl);
   //! Créé une chaîne à partir de \a str
@@ -89,7 +91,7 @@ class ARCCORE_BASE_EXPORT String
 
  public:
 
-  static String fromUtf8(ConstSpan<Byte> bytes);
+  static String fromUtf8(Span<const Byte> bytes);
 
  public:
 
@@ -125,7 +127,7 @@ class ARCCORE_BASE_EXPORT String
    * \warning L'instance reste propriétaire de la valeur retournée et cette valeur
    * est invalidée par toute modification de cette instance.
    */
-  ConstSpan<Byte> bytes() const;
+  Span<const Byte> bytes() const;
 
   /*!
    * \brief Retourne la conversion de l'instance dans l'encodage local.

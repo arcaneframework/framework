@@ -10,75 +10,83 @@
 
 #include "arccore/base/ArrayView.h"
 
+#include <type_traits>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arccore
 {
+namespace detail
+{
+// Pour indiquer que Span<T>::view() retourne un ArrayView
+// et Span<const T>::view() retourn un ConstArrayView.
+template<typename T>
+class ViewTypeT
+{
+ public:
+  using view_type = ArrayView<T>;
+};
+template<typename T>
+class ViewTypeT<const T>
+{
+ public:
+  using view_type = ConstArrayView<T>;
+};
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup Collection
- * \brief Vue modifiable d'un tableau d'un type \a T.
+ * \brief Vue d'un tableau d'éléments de type \a T.
  *
- Cette classe template permet d'accéder et d'utiliser un tableau d'éléments du
+ * La vue est non modifiable si l'argument template est de type 'const T'.
+ Cette classe permet d'accéder et d'utiliser un tableau d'éléments du
  type \a T de la même manière qu'un tableau C standard. Elle est similaire à
  ArrayView à ceci près que le nombre d'éléments est stocké sur un 'Int64' et
- peut donc dépasser 2Go.
+ peut donc dépasser 2Go. Elle est concue pour être similaire à la classe
+ std::span du C++20.
 */
-template<class T>
+template<typename T>
 class Span
 {
- public:
-
-  //! Type des éléments du tableau
-  typedef T value_type;
-  //! Type pointeur d'un élément du tableau
-  typedef value_type* pointer;
-  //! Type pointeur constant d'un élément du tableau
-  typedef const value_type* const_pointer;
-  //! Type de l'itérateur sur un élément du tableau
-  typedef ArrayIterator<pointer> iterator;
-  //! Type de l'itérateur constant sur un élément du tableau
-  typedef ArrayIterator<const_pointer> const_iterator;
-  //! Type référence d'un élément du tableau
-  typedef value_type& reference;
-  //! Type référence constante d'un élément du tableau
-  typedef const value_type& const_reference;
-  //! Type indexant le tableau
-  typedef Int64 size_type;
-  //! Type d'une distance entre itérateur éléments du tableau
-  typedef std::ptrdiff_t difference_type;
-
-  //! Type d'un itérateur sur tout le tableau
-  typedef IterT< ArrayView<T> > iter;
-  //! Type d'un itérateur constant sur tout le tableau
-  typedef ConstIterT< ArrayView<T> > const_iter;
+  // Pour le cas où on ne supporte pas le C++14.
+  template< bool B, class XX = void >
+  using Span_enable_if_t = typename std::enable_if<B,XX>::type;
 
  public:
 
+  using ElementType = T;
+  using element_type = ElementType;
+  using value_type = typename std::remove_cv<ElementType>::type;
+  using index_type = Int64;
+  using difference_type = Int64;
+  using pointer = ElementType*;
+  using const_pointer = typename std::add_const<ElementType*>::type;
+  using reference = ElementType&;
+  using iterator = pointer;
+  using const_iterator = const ElementType*;
+  using reverse_iterator = std::reverse_iterator<iterator>;
+  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+  using view_type = typename detail::ViewTypeT<ElementType>::view_type;
 
  public:
 
   //! Construit une vue vide.
   Span() : m_ptr(nullptr), m_size(0) {}
   //! Constructeur de recopie depuis une autre vue
-  Span(const ArrayView<T>& from)
-  : m_ptr(from.m_ptr), m_size(from.m_size) {}
-  Span(const Span<T>& from)
-  : m_ptr(from.m_ptr), m_size(from.m_size) {}
+  Span(const ArrayView<value_type>& from)
+  : m_ptr(from.m_ptr), m_size(from.size()) {}
+  template<typename X,typename = Span_enable_if_t<std::is_same<X,value_type>::value> >
+  Span(const ConstArrayView<X>& from)
+  : m_ptr(from.data()), m_size(from.size()) {}
+  Span(const Span<typename std::remove_cv<ElementType>::type>& from)
+  : m_ptr(from.data()), m_size(from.size()) {}
   //! Construit une vue sur une zone mémoire commencant par \a ptr et
   // contenant \a asize éléments.
   Span(T* ptr,Int64 asize)
   : m_ptr(ptr), m_size(asize) {}
-  //! Opérateur de recopie
-  Span<T>& operator=(const Span<T>& from)
-  {
-    m_ptr = from.m_ptr;
-    m_size = from.m_size;
-    return *this;
-  }
 
  public:
 
@@ -200,10 +208,10 @@ class Span
   /*!
    * \brief Vue constante sur cette vue.
    */
-  ArrayView<T> smallView() const
+  view_type smallView() const
   {
     Integer s = arccoreCheckArraySize(m_size);
-    return ArrayView<T>(s,m_ptr);
+    return view_type(s,m_ptr);
   }
 
   /*!
@@ -347,243 +355,9 @@ class Span
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \ingroup Collection 
- * \brief Vue constante d'un tableau de type \a T.
- *
- * Cette classe fonctionne de la même manière que LargeArrayView à la seule
- * différence qu'il n'est pas possible de modifier les éléments du tableau.
- */
-template<class T>
-class ConstSpan
-{
- public:
-
-  //! Type des éléments du tableau
-  typedef T value_type;
-  //! Type pointeur constant d'un élément du tableau
-  typedef const value_type* const_pointer;
-  //! Type de l'itérateur constant sur un élément du tableau
-  typedef ArrayIterator<const_pointer> const_iterator;
-  //! Type référence constante d'un élément du tableau
-  typedef const value_type& const_reference;
-  //! Type indexant le tableau
-  typedef Int64 size_type;
-  //! Type d'une distance entre itérateur éléments du tableau
-  typedef std::ptrdiff_t difference_type;
-
- public:
-
-  //! Construit un tableau vide.
-  ConstSpan() : m_ptr(nullptr), m_size(0) {}
-  //! Construit un tableau avec \a s élément
-  ConstSpan(const T* ptr,Int64 s)
-  : m_ptr(ptr), m_size(s) {}
-  /*! \brief Constructeur par copie.
-   * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
-   */
-  ConstSpan(const ConstSpan<T>& from)
-  : m_ptr(from.m_ptr), m_size(from.m_size) {}
-  /*! \brief Constructeur par copie.
-   * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
-   */
-  ConstSpan(const Span<T>& from)
-  : m_ptr(from.data()), m_size(from.size()) { }
-  /*! \brief Constructeur par copie.
-   * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
-   */
-  ConstSpan(const ConstArrayView<T>& from)
-  : m_ptr(from.data()), m_size(from.size()) { }
-  /*! \brief Constructeur par copie.
-   * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
-   */
-  ConstSpan(const ArrayView<T>& from)
-  : m_ptr(from.data()), m_size(from.size()) { }
-
-  /*!
-   * \brief Opérateur de recopie.
-   * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
-   */
-  ConstSpan<T>& operator=(const ConstSpan<T>& from)
-  {
-    m_ptr=from.m_ptr;
-    m_size=from.m_size;
-    return *this;
-  }
-
-  /*! \brief Opérateur de recopie.
-   * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
-   */
-  ConstSpan<T>& operator=(const Span<T>& from)
-  {
-    m_ptr  = from.data();
-    m_size = from.size();
-    return (*this);
-  }
-
-  /*! \brief Opérateur de recopie.
-   * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
-   */
-  ConstSpan<T>& operator=(const ConstArrayView<T>& from)
-  {
-    m_ptr  = from.data();
-    m_size = from.size();
-    return (*this);
-  }
-
-  /*! \brief Opérateur de recopie.
-   * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
-   */
-  ConstSpan<T>& operator=(const ArrayView<T>& from)
-  {
-    m_ptr  = from.data();
-    m_size = from.size();
-    return (*this);
-  }
-
- public:
-
-  /*!
-   * \brief Vue constante sur cette vue.
-   */
-  ConstArrayView<T> smallView() const
-  {
-    Integer s = arccoreCheckArraySize(m_size);
-    return ConstArrayView<T>(s,m_ptr);
-  }
-
-  /*!
-   * \brief Sous-vue (constante) à partir de l'élément \a abegin et
-   contenant \a asize éléments.
-   *
-   * Si \a (abegin+asize) est supérieur à la taille du tableau,
-   * la vue est tronqué à cette taille, retournant éventuellement une vue vide.
-   */
-  ConstSpan<T> subView(Int64 abegin,Int64 asize) const
-  {
-    if (abegin>=m_size)
-      return ConstSpan<T>();
-    asize = _min(asize,m_size-abegin);
-    return ConstSpan<T>(m_ptr+abegin,asize);
-  }
-
-  /*!
-   * \brief Sous-vue (constante) à partir de l'élément \a abegin et
-   * contenant \a asize éléments.
-   *
-   * Si \a (abegin+asize) est supérieur à la taille du tableau,
-   * la vue est tronqué à cette taille, retournant éventuellement une vue vide.
-   */
-  ConstSpan<T> subConstView(Int64 abegin,Int64 asize) const
-  {
-    return subView(abegin,asize);
-  }
-
-  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
-  ArrayView<T> subViewInterval(Int64 index,Int64 nb_interval)
-  {
-    Int64 n = m_size;
-    Int64 isize = n / nb_interval;
-    Int64 ibegin = index * isize;
-    // Pour le dernier interval, prend les elements restants
-    if ((index+1)==nb_interval)
-      isize = n - ibegin;
-    ARCCORE_CHECK_AT(ibegin+isize,n);
-    return ConstSpan<T>(isize,m_ptr+ibegin);
-  }
-
-  //! Addresse du index-ème élément
-  inline const T* ptrAt(Int64 index) const
-  {
-    ARCCORE_CHECK_AT(index,m_size);
-    return m_ptr+index;
-  }
-
-  /*!
-   * \brief i-ème élément du tableau.
-   *
-   * En mode \a check, vérifie les débordements.
-   */
-  const T& operator[](Int64 i) const
-  {
-    ARCCORE_CHECK_AT(i,m_size);
-    return m_ptr[i];
-  }
-
-  /*!
-   * \brief i-ème élément du tableau.
-   *
-   * En mode \a check, vérifie les débordements.
-   */
-  inline const T& item(Int64 i) const
-  {
-    ARCCORE_CHECK_AT(i,m_size);
-    return m_ptr[i];
-  }
-
-  //! Nombre d'éléments du tableau
-  inline Int64 size() const { return m_size; }
-  //! Nombre d'éléments du tableau
-  inline Int64 length() const { return m_size; }
-  //! Itérateur sur le premier élément du tableau.
-  const_iterator begin() const { return const_iterator(m_ptr); }
-  //! Itérateur sur le premier élément après la fin du tableau.
-  const_iterator end() const { return const_iterator(m_ptr+m_size); }
-  //! \a true si le tableau est vide (size()==0)
-  inline bool empty() const { return m_size==0; }
-  //! \a true si le tableau contient l'élément de valeur \a v
-  bool contains(const T& v) const
-  {
-    for( Int64 i=0; i<m_size; ++i ){
-      if (m_ptr[i]==v)
-        return true;
-    }
-    return false;
-  }
-  void setArray(const ConstArrayView<T>& v)
-  {
-    m_ptr = v.m_ptr;
-    m_size = v.m_size;
-  }
-  void setArray(const ConstSpan<T>& v)
-  {
-    m_ptr = v.m_ptr;
-    m_size = v.m_size;
-  }
-
-  /*!
-   * \brief Pointeur sur la mémoire allouée.
-   *
-   * \warning Les accès via le pointeur retourné ne pourront pas être
-   * pas vérifiés par Arcane à la différence des accès via
-   * operator[](): aucune vérification de dépassement n'est possible,
-   * même en mode vérification.
-   */
-  const T* data() const  { return m_ptr; }
-  //! Intervalle d'itération du premier au dernièr élément.
-  ArrayRange<const_pointer> range() const
-  {
-    return ArrayRange<const_pointer>(m_ptr,m_ptr+m_size);
-  }
-
- private:
-
-  const T* m_ptr; //!< Pointeur sur le début du tableau
-  Int64 m_size; //!< Nombre d'éléments 
-
- private:
-
-  static Int64 _min(Int64 a,Int64 b)
-  {
-    return ( (a<b) ? a : b );
-  }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 template<typename T> inline bool
-operator==(ConstSpan<T> rhs, ConstSpan<T> lhs)
+operator==(Span<const T> rhs, Span<const T> lhs)
 {
   if (rhs.size()!=lhs.size())
     return false;
@@ -598,7 +372,7 @@ operator==(ConstSpan<T> rhs, ConstSpan<T> lhs)
 }
 
 template<typename T> inline bool
-operator!=(ConstSpan<T> rhs, ConstSpan<T> lhs)
+operator!=(Span<const T> rhs, Span<const T> lhs)
 {
   return !(rhs==lhs);
 }
@@ -630,11 +404,11 @@ operator!=(Span<T> rhs, Span<T> lhs)
  * éléments sont affichés.
  */
 template<typename T> inline void
-dumpArray(std::ostream& o,ConstSpan<T> val,int max_print)
+dumpArray(std::ostream& o,Span<const T> val,int max_print)
 {
   Int64 n = val.size();
   if (max_print>0 && n>max_print){
-    // N'affiche que les (max_print/2) premiers et les (max_print/2) dernièrs
+    // N'affiche que les (max_print/2) premiers et les (max_print/2) derniers
     // sinon si le tableau est très grand cela peut générer des
     // sorties listings énormes.
     Int64 z = (max_print/2);
@@ -659,7 +433,7 @@ dumpArray(std::ostream& o,ConstSpan<T> val,int max_print)
 /*---------------------------------------------------------------------------*/
 
 template<typename T> inline std::ostream&
-operator<<(std::ostream& o, ConstSpan<T> val)
+operator<<(std::ostream& o, Span<const T> val)
 {
   dumpArray(o,val,500);
   return o;

@@ -52,7 +52,6 @@ template<typename T> class ConstArray4View;
 template<typename T> class Array4View;
 template<class DataType> class CoreArray;
 template<typename T> class Span;
-template<typename T> class ConstSpan;
 
 class StringImpl;
 class String;
@@ -155,25 +154,25 @@ typedef Span<bool> BoolSpan;
 typedef Span<Integer> IntegerSpan;
 
 //! Equivalent C d'un tableau à une dimension de pointeurs
-typedef ConstSpan<Pointer> PointerConstSpan;
+typedef Span<const Pointer> PointerConstSpan;
 //! Equivalent C d'un tableau à une dimension de caractères
-typedef ConstSpan<Byte> ByteConstSpan;
+typedef Span<const Byte> ByteConstSpan;
 //! Equivalent C d'un tableau à une dimension de caractères unicode
-typedef ConstSpan<UChar> UCharConstSpan;
+typedef Span<const UChar> UCharConstSpan;
 //! Equivalent C d'un tableau à une dimension d'entiers 64 bits
-typedef ConstSpan<Int64> Int64ConstSpan;
+typedef Span<const Int64> Int64ConstSpan;
 //! Equivalent C d'un tableau à une dimension d'entiers 32 bits
-typedef ConstSpan<Int32> Int32ConstSpan;
+typedef Span<const Int32> Int32ConstSpan;
 //! Equivalent C d'un tableau à une dimension d'entiers 16 bits
-typedef ConstSpan<Int16> Int16ConstSpan;
+typedef Span<const Int16> Int16ConstSpan;
 //! Equivalent C d'un tableau à une dimension d'entiers
-typedef ConstSpan<Integer> IntegerConstSpan;
+typedef Span<const Integer> IntegerConstSpan;
 //! Equivalent C d'un tableau à une dimension de réels
-typedef ConstSpan<Real> RealConstSpan;
+typedef Span<const Real> RealConstSpan;
 //! Equivalent C d'un tableau à une dimension de booléens
-typedef ConstSpan<bool> BoolConstSpan;
+typedef Span<const bool> BoolConstSpan;
 //! Equivalent C d'un tableau à une dimension d'entiers
-typedef ConstSpan<Integer> IntegerConstSpan;
+typedef Span<const Integer> IntegerConstSpan;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
