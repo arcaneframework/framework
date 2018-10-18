@@ -78,10 +78,14 @@ class Span
   //! Constructeur de recopie depuis une autre vue
   Span(const ArrayView<value_type>& from)
   : m_ptr(from.m_ptr), m_size(from.size()) {}
+  // Constructeur à partir d'un ConstArrayView. Cela n'est autorisé que
+  // si T est const.
   template<typename X,typename = Span_enable_if_t<std::is_same<X,value_type>::value> >
   Span(const ConstArrayView<X>& from)
   : m_ptr(from.data()), m_size(from.size()) {}
-  Span(const Span<typename std::remove_cv<ElementType>::type>& from)
+  // Pour un Span<const T>, on a le droit de construire depuis un Span<T>
+  template<typename X,typename = Span_enable_if_t<std::is_same<X,value_type>::value> >
+  Span(const Span<X>& from)
   : m_ptr(from.data()), m_size(from.size()) {}
   //! Construit une vue sur une zone mémoire commencant par \a ptr et
   // contenant \a asize éléments.
