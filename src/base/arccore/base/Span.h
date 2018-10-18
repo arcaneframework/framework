@@ -355,7 +355,7 @@ class Span
  * différence qu'il n'est pas possible de modifier les éléments du tableau.
  */
 template<class T>
-class ConstLargeArrayView
+class ConstSpan
 {
  public:
 
@@ -375,36 +375,36 @@ class ConstLargeArrayView
  public:
 
   //! Construit un tableau vide.
-  ConstLargeArrayView() : m_ptr(nullptr), m_size(0) {}
+  ConstSpan() : m_ptr(nullptr), m_size(0) {}
   //! Construit un tableau avec \a s élément
-  ConstLargeArrayView(Int64 s,const T* ptr)
+  ConstSpan(Int64 s,const T* ptr)
   : m_ptr(ptr), m_size(s) {}
   /*! \brief Constructeur par copie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
-  ConstLargeArrayView(const ConstLargeArrayView<T>& from)
+  ConstSpan(const ConstSpan<T>& from)
   : m_ptr(from.m_ptr), m_size(from.m_size) {}
   /*! \brief Constructeur par copie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
-  ConstLargeArrayView(const Span<T>& from)
+  ConstSpan(const Span<T>& from)
   : m_ptr(from.data()), m_size(from.size()) { }
   /*! \brief Constructeur par copie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
-  ConstLargeArrayView(const ConstArrayView<T>& from)
+  ConstSpan(const ConstArrayView<T>& from)
   : m_ptr(from.data()), m_size(from.size()) { }
   /*! \brief Constructeur par copie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
-  ConstLargeArrayView(const ArrayView<T>& from)
+  ConstSpan(const ArrayView<T>& from)
   : m_ptr(from.data()), m_size(from.size()) { }
 
   /*!
    * \brief Opérateur de recopie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
-  const ConstLargeArrayView<T>& operator=(const ConstLargeArrayView<T>& from)
+  const ConstSpan<T>& operator=(const ConstSpan<T>& from)
   {
     m_ptr=from.m_ptr;
     m_size=from.m_size;
@@ -414,7 +414,7 @@ class ConstLargeArrayView
   /*! \brief Opérateur de recopie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
-  const ConstLargeArrayView<T>& operator=(const Span<T>& from)
+  const ConstSpan<T>& operator=(const Span<T>& from)
   {
     m_ptr  = from.data();
     m_size = from.size();
@@ -424,7 +424,7 @@ class ConstLargeArrayView
   /*! \brief Opérateur de recopie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
-  const ConstLargeArrayView<T>& operator=(const ConstArrayView<T>& from)
+  const ConstSpan<T>& operator=(const ConstArrayView<T>& from)
   {
     m_ptr  = from.data();
     m_size = from.size();
@@ -434,7 +434,7 @@ class ConstLargeArrayView
   /*! \brief Opérateur de recopie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
-  const ConstLargeArrayView<T>& operator=(const ArrayView<T>& from)
+  const ConstSpan<T>& operator=(const ArrayView<T>& from)
   {
     m_ptr  = from.data();
     m_size = from.size();
@@ -459,12 +459,12 @@ class ConstLargeArrayView
    * Si \a (abegin+asize) est supérieur à la taille du tableau,
    * la vue est tronqué à cette taille, retournant éventuellement une vue vide.
    */
-  ConstLargeArrayView<T> subView(Int64 abegin,Int64 asize) const
+  ConstSpan<T> subView(Int64 abegin,Int64 asize) const
   {
     if (abegin>=m_size)
-      return ConstLargeArrayView<T>();
+      return ConstSpan<T>();
     asize = _min(asize,m_size-abegin);
-    return ConstLargeArrayView<T>(asize,m_ptr+abegin);
+    return ConstSpan<T>(asize,m_ptr+abegin);
   }
 
   /*!
@@ -474,7 +474,7 @@ class ConstLargeArrayView
    * Si \a (abegin+asize) est supérieur à la taille du tableau,
    * la vue est tronqué à cette taille, retournant éventuellement une vue vide.
    */
-  ConstLargeArrayView<T> subConstView(Int64 abegin,Int64 asize) const
+  ConstSpan<T> subConstView(Int64 abegin,Int64 asize) const
   {
     return subView(abegin,asize);
   }
@@ -489,7 +489,7 @@ class ConstLargeArrayView
     if ((index+1)==nb_interval)
       isize = n - ibegin;
     ARCCORE_CHECK_AT(ibegin+isize,n);
-    return ConstLargeArrayView<T>(isize,m_ptr+ibegin);
+    return ConstSpan<T>(isize,m_ptr+ibegin);
   }
 
   //! Addresse du index-ème élément
@@ -545,7 +545,7 @@ class ConstLargeArrayView
     m_ptr = v.m_ptr;
     m_size = v.m_size;
   }
-  void setArray(const ConstLargeArrayView<T>& v)
+  void setArray(const ConstSpan<T>& v)
   {
     m_ptr = v.m_ptr;
     m_size = v.m_size;
@@ -583,7 +583,7 @@ class ConstLargeArrayView
 /*---------------------------------------------------------------------------*/
 
 template<typename T> inline bool
-operator==(ConstLargeArrayView<T> rhs, ConstLargeArrayView<T> lhs)
+operator==(ConstSpan<T> rhs, ConstSpan<T> lhs)
 {
   if (rhs.size()!=lhs.size())
     return false;
@@ -598,7 +598,7 @@ operator==(ConstLargeArrayView<T> rhs, ConstLargeArrayView<T> lhs)
 }
 
 template<typename T> inline bool
-operator!=(ConstLargeArrayView<T> rhs, ConstLargeArrayView<T> lhs)
+operator!=(ConstSpan<T> rhs, ConstSpan<T> lhs)
 {
   return !(rhs==lhs);
 }
@@ -630,7 +630,7 @@ operator!=(Span<T> rhs, Span<T> lhs)
  * éléments sont affichés.
  */
 template<typename T> inline void
-dumpArray(std::ostream& o,ConstLargeArrayView<T> val,int max_print)
+dumpArray(std::ostream& o,ConstSpan<T> val,int max_print)
 {
   Int64 n = val.size();
   if (max_print>0 && n>max_print){
@@ -659,7 +659,7 @@ dumpArray(std::ostream& o,ConstLargeArrayView<T> val,int max_print)
 /*---------------------------------------------------------------------------*/
 
 template<typename T> inline std::ostream&
-operator<<(std::ostream& o, ConstLargeArrayView<T> val)
+operator<<(std::ostream& o, ConstSpan<T> val)
 {
   dumpArray(o,val,500);
   return o;

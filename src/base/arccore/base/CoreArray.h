@@ -62,12 +62,12 @@ class CoreArray
   //! Construit un tableau vide.
   CoreArray(ConstArrayView<DataType> v)
   : m_p(v.range().begin(),v.range().end()) {}
-  CoreArray(ConstLargeArrayView<DataType> v)
+  CoreArray(ConstSpan<DataType> v)
   : m_p(v.range().begin(),v.range().end()) {}
  public:
 
   //! Conversion vers un ConstArrayView
-  operator ConstLargeArrayView<DataType>() const
+  operator ConstSpan<DataType>() const
   {
     return CoreArray::_constView(m_p);
   }
@@ -104,7 +104,7 @@ class CoreArray
   inline const_iterator end() const { return m_p.end(); }
 
   //! Vue constante
-  ConstLargeArrayView<DataType> constView() const
+  ConstSpan<DataType> constView() const
   {
     return CoreArray::_constView(m_p);
   }
@@ -154,10 +154,10 @@ class CoreArray
     return _data(m_p);
   }
  private:
-  static ConstLargeArrayView<DataType> _constView(const std::vector<DataType>& c)
+  static ConstSpan<DataType> _constView(const std::vector<DataType>& c)
   {
     Int64 s = arccoreCheckArraySize(c.size());
-    return ConstLargeArrayView<DataType>(s,c.data());
+    return ConstSpan<DataType>(s,c.data());
   }
   static ConstArrayView<DataType> _constSmallView(const std::vector<DataType>& c)
   {

@@ -33,7 +33,7 @@ class ARCCORE_BASE_EXPORT StringImpl
   StringImpl(const char* str,Int64 len);
   StringImpl(const UChar* str);
   StringImpl(const StringImpl& str);
-  StringImpl(ConstLargeArrayView<Byte> bytes);
+  StringImpl(ConstSpan<Byte> bytes);
  private:
   StringImpl();
  public:
@@ -42,7 +42,7 @@ class ARCCORE_BASE_EXPORT StringImpl
   UCharConstArrayView utf16();
   //TODO: rendre obsolète
   ByteConstArrayView utf8();
-  ConstLargeArrayView<Byte> largeUtf8();
+  ConstSpan<Byte> largeUtf8();
   bool isEqual(StringImpl* str);
   bool isLessThan(StringImpl* str);
   bool isEqual(const char* str);
@@ -93,9 +93,9 @@ class ARCCORE_BASE_EXPORT StringImpl
   void _invalidateUtf8();
   void _setArray();
   void _setStrFromArray(Int64 ulen);
-  void _printStrUtf16(std::ostream& o,ConstLargeArrayView<UChar> str);
-  void _printStrUtf8(std::ostream& o,ConstLargeArrayView<Byte> str);
-  void _appendUtf8(ConstLargeArrayView<Byte> ref_str);
+  void _printStrUtf16(std::ostream& o,ConstSpan<UChar> str);
+  void _printStrUtf8(std::ostream& o,ConstSpan<Byte> str);
+  void _appendUtf8(ConstSpan<Byte> ref_str);
 };
 
 /*---------------------------------------------------------------------------*/

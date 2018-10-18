@@ -51,7 +51,7 @@ String(const UCharConstArrayView& ustr)
 /*---------------------------------------------------------------------------*/
 
 String::
-String(const ConstLargeArrayView<Byte>& ustr)
+String(const ConstSpan<Byte>& ustr)
 : m_p(new StringImpl(ustr))
 , m_const_ptr(0)
 {
@@ -202,7 +202,7 @@ utf8() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstLargeArrayView<Byte> String::
+ConstSpan<Byte> String::
 bytes() const
 {
   A_FASTLOCK(this);
@@ -559,7 +559,7 @@ isLess(const String& b) const
 /*---------------------------------------------------------------------------*/
 
 String String::
-fromUtf8(ConstLargeArrayView<Byte> bytes)
+fromUtf8(ConstSpan<Byte> bytes)
 {
   return String(new StringImpl(bytes));
 }
@@ -1081,7 +1081,7 @@ operator<<(std::ostream& o,const String& str)
 void String::
 writeBytes(std::ostream& o) const
 {
-  ConstLargeArrayView<Byte> v = this->bytes();
+  ConstSpan<Byte> v = this->bytes();
   Int64 vlen = v.size();
   o.write((const char*)v.data(),vlen);
 }

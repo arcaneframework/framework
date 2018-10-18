@@ -336,7 +336,7 @@ class AbstractArray
       m_p->size = asize;
     }
   }
-  AbstractArray(const ConstLargeArrayView<T>& view)
+  AbstractArray(const ConstSpan<T>& view)
   : m_p(_sharedNull()), m_baseptr(m_p->ptr)
   {
     Int64 asize = view.size();
@@ -385,9 +385,9 @@ class AbstractArray
   {
     return ConstArrayView<T>(ARCCORE_CAST_SMALL_SIZE(size()),m_p->ptr);
   }
-  operator ConstLargeArrayView<T>() const
+  operator ConstSpan<T>() const
   {
-    return ConstLargeArrayView<T>(size(),m_p->ptr);
+    return ConstSpan<T>(size(),m_p->ptr);
   }
  public:
   //! Nombre d'éléments du vecteur
@@ -545,7 +545,7 @@ class AbstractArray
   }
 
   //! Ajoute \a n élément de valeur \a val à la fin du tableau
-  void _addRange(ConstLargeArrayView<T> val)
+  void _addRange(ConstSpan<T> val)
   {
     Int64 n = val.size();
     const T* ptr = val.data();
@@ -656,7 +656,7 @@ class AbstractArray
   {
     _copy(rhs_begin,IsPODType());
   }
-  void _copyView(ConstLargeArrayView<T> rhs)
+  void _copyView(ConstSpan<T> rhs)
   {
     const T* rhs_begin = rhs.data();
     Int64 rhs_size = rhs.size();
@@ -669,7 +669,7 @@ class AbstractArray
   }
   void _copyView(ConstArrayView<T> rhs)
   {
-    this->_copyView(ConstLargeArrayView<T>(rhs));
+    this->_copyView(ConstSpan<T>(rhs));
   }
 
   /*!
@@ -796,13 +796,13 @@ class Array
   {
     this->_resize(asize);
   }
-  ARCCORE_DEPRECATED_2018 Array(const ConstArrayView<T>& aview) : AbstractArray<T>(ConstLargeArrayView<T>(aview))
+  ARCCORE_DEPRECATED_2018 Array(const ConstArrayView<T>& aview) : AbstractArray<T>(ConstSpan<T>(aview))
   {
   }
-  ARCCORE_DEPRECATED_2018 Array(const ConstLargeArrayView<T>& aview) : AbstractArray<T>(aview)
+  ARCCORE_DEPRECATED_2018 Array(const ConstSpan<T>& aview) : AbstractArray<T>(aview)
   {
   }
-  ARCCORE_DEPRECATED_2018 Array(const ArrayView<T>& aview) : AbstractArray<T>(ConstLargeArrayView<T>(aview))
+  ARCCORE_DEPRECATED_2018 Array(const ArrayView<T>& aview) : AbstractArray<T>(ConstSpan<T>(aview))
   {
   }
   ARCCORE_DEPRECATED_2018 Array(const Span<T>& aview) : AbstractArray<T>(aview)
@@ -840,7 +840,7 @@ class Array
   Array(const ConstArrayView<T>& aview,BuildDeprecated) : AbstractArray<T>(aview)
   {
   }
-  Array(const ConstLargeArrayView<T>& aview,BuildDeprecated) : AbstractArray<T>(aview)
+  Array(const ConstSpan<T>& aview,BuildDeprecated) : AbstractArray<T>(aview)
   {
   }
   /*!
@@ -874,9 +874,9 @@ class Array
   {
     return ArrayView<T>(this->size(),m_p->ptr);
   }
-  operator ConstLargeArrayView<T>() const
+  operator ConstSpan<T>() const
   {
-    return ConstLargeArrayView<T>(this->size(),m_p->ptr);
+    return ConstSpan<T>(this->size(),m_p->ptr);
   }
   operator Span<T>()
   {
@@ -888,9 +888,9 @@ class Array
     return ConstArrayView<T>(this->size(),m_p->ptr);
   }
   //! Vue constante sur ce tableau
-  ConstLargeArrayView<T> constLargeView() const
+  ConstSpan<T> constLargeView() const
   {
-    return ConstLargeArrayView<T>(this->size(),m_p->ptr);
+    return ConstSpan<T>(this->size(),m_p->ptr);
   }
   /*!
    * \brief Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments.
@@ -961,7 +961,7 @@ class Array
     this->_addRange(val);
   }
   //! Ajoute \a n élément de valeur \a val à la fin du tableau
-  void addRange(ConstLargeArrayView<T> val)
+  void addRange(ConstSpan<T> val)
   {
     this->_addRange(val);
   }
@@ -1100,7 +1100,7 @@ class Array
    *
    * L'instance est redimensionnée pour que this->size()==rhs.size().
    */  
-  void copy(ConstLargeArrayView<T> rhs)
+  void copy(ConstSpan<T> rhs)
   {
     this->_copyView(rhs);
   }
@@ -1262,13 +1262,13 @@ class SharedArray
   {
   }
   //! Créé un tableau en recopiant les valeurs de la value \a view.
-  SharedArray(const ConstLargeArrayView<T>& aview)
+  SharedArray(const ConstSpan<T>& aview)
   : Array<T>(aview,BD_NoWarning), m_next(nullptr), m_prev(nullptr)
   {
   }
   //! Créé un tableau en recopiant les valeurs de la value \a view.
   SharedArray(const ArrayView<T>& aview)
-  : Array<T>(ConstLargeArrayView<T>(aview),BD_NoWarning), m_next(nullptr), m_prev(nullptr)
+  : Array<T>(ConstSpan<T>(aview),BD_NoWarning), m_next(nullptr), m_prev(nullptr)
   {
   }
   //! Créé un tableau en recopiant les valeurs de la value \a view.
@@ -1296,7 +1296,7 @@ class SharedArray
   //! Copie les valeurs de \a rhs dans cette instance.
   inline void operator=(const UniqueArray<T>& rhs);
   //! Copie les valeurs de la vue \a rhs dans cette instance.
-  void operator=(const ConstLargeArrayView<T>& rhs)
+  void operator=(const ConstSpan<T>& rhs)
   {
     this->copy(rhs);
   }
@@ -1477,15 +1477,15 @@ class UniqueArray
     this->_resize((Int64)asize);
   }
   //! Créé un tableau en recopiant les valeurs de la value \a aview.
-  UniqueArray(const ConstArrayView<T>& aview) : Array<T>(ConstLargeArrayView<T>(aview),BD_NoWarning)
+  UniqueArray(const ConstArrayView<T>& aview) : Array<T>(ConstSpan<T>(aview),BD_NoWarning)
   {
   }
   //! Créé un tableau en recopiant les valeurs de la value \a aview.
-  UniqueArray(const ConstLargeArrayView<T>& aview) : Array<T>(aview,BD_NoWarning)
+  UniqueArray(const ConstSpan<T>& aview) : Array<T>(aview,BD_NoWarning)
   {
   }
   //! Créé un tableau en recopiant les valeurs de la value \a aview.
-  UniqueArray(const ArrayView<T>& aview) : Array<T>(ConstLargeArrayView<T>(aview),BD_NoWarning)
+  UniqueArray(const ArrayView<T>& aview) : Array<T>(ConstSpan<T>(aview),BD_NoWarning)
   {
   }
   //! Créé un tableau en recopiant les valeurs de la value \a aview.
@@ -1556,7 +1556,7 @@ class UniqueArray
     this->copy(rhs);
   }
   //! Copie les valeurs de la vue \a rhs dans cette instance.
-  void operator=(const ConstLargeArrayView<T>& rhs)
+  void operator=(const ConstSpan<T>& rhs)
   {
     this->copy(rhs);
   }

@@ -52,7 +52,7 @@ template<typename T> class ConstArray4View;
 template<typename T> class Array4View;
 template<class DataType> class CoreArray;
 template<typename T> class Span;
-template<typename T> class ConstLargeArrayView;
+template<typename T> class ConstSpan;
 
 class StringImpl;
 class String;
@@ -155,25 +155,25 @@ typedef Span<bool> BoolLargeArrayView;
 typedef Span<Integer> IntegerLargeArrayView;
 
 //! Equivalent C d'un tableau à une dimension de pointeurs
-typedef ConstLargeArrayView<Pointer> PointerConstLargeArrayView;
+typedef ConstSpan<Pointer> PointerConstLargeArrayView;
 //! Equivalent C d'un tableau à une dimension de caractères
-typedef ConstLargeArrayView<Byte> ByteConstLargeArrayView;
+typedef ConstSpan<Byte> ByteConstLargeArrayView;
 //! Equivalent C d'un tableau à une dimension de caractères unicode
-typedef ConstLargeArrayView<UChar> UCharConstLargeArrayView;
+typedef ConstSpan<UChar> UCharConstLargeArrayView;
 //! Equivalent C d'un tableau à une dimension d'entiers 64 bits
-typedef ConstLargeArrayView<Int64> Int64ConstLargeArrayView;
+typedef ConstSpan<Int64> Int64ConstLargeArrayView;
 //! Equivalent C d'un tableau à une dimension d'entiers 32 bits
-typedef ConstLargeArrayView<Int32> Int32ConstLargeArrayView;
+typedef ConstSpan<Int32> Int32ConstLargeArrayView;
 //! Equivalent C d'un tableau à une dimension d'entiers 16 bits
-typedef ConstLargeArrayView<Int16> Int16ConstLargeArrayView;
+typedef ConstSpan<Int16> Int16ConstLargeArrayView;
 //! Equivalent C d'un tableau à une dimension d'entiers
-typedef ConstLargeArrayView<Integer> IntegerConstLargeArrayView;
+typedef ConstSpan<Integer> IntegerConstLargeArrayView;
 //! Equivalent C d'un tableau à une dimension de réels
-typedef ConstLargeArrayView<Real> RealConstLargeArrayView;
+typedef ConstSpan<Real> RealConstLargeArrayView;
 //! Equivalent C d'un tableau à une dimension de booléens
-typedef ConstLargeArrayView<bool> BoolConstLargeArrayView;
+typedef ConstSpan<bool> BoolConstLargeArrayView;
 //! Equivalent C d'un tableau à une dimension d'entiers
-typedef ConstLargeArrayView<Integer> IntegerConstLargeArrayView;
+typedef ConstSpan<Integer> IntegerConstLargeArrayView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

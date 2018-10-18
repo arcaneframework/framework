@@ -102,7 +102,7 @@ ucs4_to_utf8(Int32 wc,CoreArray<Byte>& utf8)
 namespace
 {
 Int64
-utf8_to_ucs4(ConstLargeArrayView<Byte> uchar,Int64 index,Int32& wc)
+utf8_to_ucs4(ConstSpan<Byte> uchar,Int64 index,Int32& wc)
 {
   const Byte* s = uchar.data()+index;
   unsigned char c = s[0];
@@ -202,7 +202,7 @@ utf8_to_ucs4(ConstLargeArrayView<Byte> uchar,Int64 index,Int32& wc)
 namespace
 {
 Int64
-utf16_to_ucs4(ConstLargeArrayView<UChar> uchar,Int64 index,Int32& wc)
+utf16_to_ucs4(ConstSpan<UChar> uchar,Int64 index,Int32& wc)
 {
   wc = uchar[index];
   if (wc>=0xd800 && wc<0xdc00){
@@ -295,7 +295,7 @@ transcodeFromISO88591ToUtf16(const std::string& s,CoreArray<UChar>& utf16)
  * mettre dans \a s.
  */
 void BasicTranscoder::
-transcodeFromUtf16ToISO88591(ConstLargeArrayView<UChar> utf16,std::string& s)
+transcodeFromUtf16ToISO88591(ConstSpan<UChar> utf16,std::string& s)
 {
   const UChar* ustr = utf16.data();
   Int64 len = utf16.size();
@@ -377,7 +377,7 @@ transcodeFromISO88591ToUtf8(const char* str,Int64 len,CoreArray<Byte>& utf8)
 /*---------------------------------------------------------------------------*/
 
 void BasicTranscoder::
-transcodeFromUtf8ToISO88591(ConstLargeArrayView<Byte> utf8,std::string& s)
+transcodeFromUtf8ToISO88591(ConstSpan<Byte> utf8,std::string& s)
 {
   // Caractère utilisé si la conversion échoue.
   const char fallback_char = '?';
@@ -422,7 +422,7 @@ transcodeFromUtf8ToISO88591(ConstLargeArrayView<Byte> utf8,std::string& s)
 
 //! Traduit depuis UTF16 vers UTF8
 void BasicTranscoder::
-transcodeFromUtf16ToUtf8(ConstLargeArrayView<UChar> utf16,CoreArray<Byte>& utf8)
+transcodeFromUtf16ToUtf8(ConstSpan<UChar> utf16,CoreArray<Byte>& utf8)
 {
   for( Int64 i=0, n=utf16.size(); i<n; ){
     Int32 wc;
@@ -435,7 +435,7 @@ transcodeFromUtf16ToUtf8(ConstLargeArrayView<UChar> utf16,CoreArray<Byte>& utf8)
 /*---------------------------------------------------------------------------*/
 
 void BasicTranscoder::
-transcodeFromUtf8ToUtf16(ConstLargeArrayView<Byte> utf8,CoreArray<UChar>& utf16)
+transcodeFromUtf8ToUtf16(ConstSpan<Byte> utf8,CoreArray<UChar>& utf16)
 {
   for( Int64 i=0, n=utf8.size(); i<n; ){
     Int32 wc;
@@ -451,7 +451,7 @@ void BasicTranscoder::
 replaceWS(CoreArray<Byte>& out_utf8)
 {
   CoreArray<Byte> copy_utf8(out_utf8);
-  ConstLargeArrayView<Byte> utf8(copy_utf8.view());
+  ConstSpan<Byte> utf8(copy_utf8.view());
   out_utf8.clear();
   for( Int64 i=0, n=utf8.size(); i<n; ){
     Int32 wc;
@@ -470,7 +470,7 @@ void BasicTranscoder::
 collapseWS(CoreArray<Byte>& out_utf8)
 {
   CoreArray<Byte> copy_utf8(out_utf8);
-  ConstLargeArrayView<Byte> utf8(copy_utf8.view());
+  ConstSpan<Byte> utf8(copy_utf8.view());
   out_utf8.clear();
   Int64 i = 0;
   Int64 n = utf8.size();
@@ -515,7 +515,7 @@ void BasicTranscoder::
 upperCase(CoreArray<Byte>& out_utf8)
 {
   CoreArray<Byte> copy_utf8(out_utf8);
-  ConstLargeArrayView<Byte> utf8(copy_utf8.view());
+  ConstSpan<Byte> utf8(copy_utf8.view());
   out_utf8.clear();
   for( Int64 i=0, n=utf8.size(); i<n; ){
     Int32 wc;
@@ -532,7 +532,7 @@ void BasicTranscoder::
 lowerCase(CoreArray<Byte>& out_utf8)
 {
   CoreArray<Byte> copy_utf8(out_utf8);
-  ConstLargeArrayView<Byte> utf8(copy_utf8.view());
+  ConstSpan<Byte> utf8(copy_utf8.view());
   out_utf8.clear();
   for( Int64 i=0, n=utf8.size(); i<n; ){
     Int32 wc;
@@ -546,7 +546,7 @@ lowerCase(CoreArray<Byte>& out_utf8)
 /*---------------------------------------------------------------------------*/
 
 void BasicTranscoder::
-substring(CoreArray<Byte>& out_utf8,ConstLargeArrayView<Byte> utf8,Int64 pos,Int64 len)
+substring(CoreArray<Byte>& out_utf8,ConstSpan<Byte> utf8,Int64 pos,Int64 len)
 {
   // Copie les \a len caractères unicodes de \a utf8 à partir de la position \a pos
   Int64 current_pos = 0;

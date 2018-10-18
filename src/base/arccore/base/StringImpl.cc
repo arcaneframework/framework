@@ -117,7 +117,7 @@ StringImpl(const StringImpl& str)
 /*---------------------------------------------------------------------------*/
 
 StringImpl::
-StringImpl(ConstLargeArrayView<Byte> bytes)
+StringImpl(ConstSpan<Byte> bytes)
 : m_nb_ref(0)
 , m_flags(eValidUtf8)
 , m_utf8_array(bytes)
@@ -188,7 +188,7 @@ utf16()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstLargeArrayView<Byte> StringImpl::
+ConstSpan<Byte> StringImpl::
 largeUtf8()
 {
   _checkReference();
@@ -221,7 +221,7 @@ isEqual(StringImpl* str)
     return v;
   }
   _createUtf8();
-  ConstLargeArrayView<Byte> ref_array = str->largeUtf8();
+  ConstSpan<Byte> ref_array = str->largeUtf8();
   bool v = CStringUtils::isEqual((const char*)ref_array.data(),(const char*)m_utf8_array.data());
 #if 0
   cerr << "** COMPARE = UTF8 ";
@@ -252,7 +252,7 @@ isLessThan(StringImpl* str)
   }
   _createUtf8();
   if (m_flags & eValidUtf8){
-    ConstLargeArrayView<Byte> ref_array = str->largeUtf8();
+    ConstSpan<Byte> ref_array = str->largeUtf8();
     bool v = CStringUtils::isLess((const char*)m_utf8_array.data(),(const char*)ref_array.data());
 #if 0
     cerr << "** COMPARE < UTF8 ";
@@ -340,7 +340,7 @@ append(StringImpl* str)
     return this;
   }
   _createUtf8();
-  ConstLargeArrayView<Byte> ref_str = str->largeUtf8();
+  ConstSpan<Byte> ref_str = str->largeUtf8();
   _appendUtf8(ref_str);
   return this;
 }
@@ -371,7 +371,7 @@ append(const char* str)
 /*---------------------------------------------------------------------------*/
 
 void StringImpl::
-_appendUtf8(ConstLargeArrayView<Byte> ref_str)
+_appendUtf8(ConstSpan<Byte> ref_str)
 {
   Int64 ref_size = ref_str.size();
   Int64 utf8_size = m_utf8_array.size();
@@ -574,7 +574,7 @@ _invalidateUtf8()
 /*---------------------------------------------------------------------------*/
 
 void StringImpl::
-_printStrUtf16(std::ostream& o,ConstLargeArrayView<UChar> str)
+_printStrUtf16(std::ostream& o,ConstSpan<UChar> str)
 {
   Int64 buf_size = str.size();
   o << "(bufsize=" << buf_size
@@ -588,7 +588,7 @@ _printStrUtf16(std::ostream& o,ConstLargeArrayView<UChar> str)
 /*---------------------------------------------------------------------------*/
 
 void StringImpl::
-_printStrUtf8(std::ostream& o,ConstLargeArrayView<Byte> str)
+_printStrUtf8(std::ostream& o,ConstSpan<Byte> str)
 {
   Int64 buf_size = str.size();
   o << "(bufsize=" << buf_size

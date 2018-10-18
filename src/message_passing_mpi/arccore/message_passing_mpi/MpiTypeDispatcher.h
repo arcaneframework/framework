@@ -34,16 +34,16 @@ class MpiTypeDispatcher
  public:
   void finalize() override {}
   void broadcast(Span<Type> send_buf,Int32 rank) override;
-  void allGather(ConstLargeArrayView<Type> send_buf,Span<Type> recv_buf) override;
-  void allGatherVariable(ConstLargeArrayView<Type> send_buf,Array<Type>& recv_buf) override;
-  void gather(ConstLargeArrayView<Type> send_buf,Span<Type> recv_buf,Int32 rank) override;
-  void gatherVariable(ConstLargeArrayView<Type> send_buf,Array<Type>& recv_buf,Int32 rank) override;
-  void scatterVariable(ConstLargeArrayView<Type> send_buf,Span<Type> recv_buf,Int32 root) override;
-  void allToAll(ConstLargeArrayView<Type> send_buf,Span<Type> recv_buf,Int32 count) override;
-  void allToAllVariable(ConstLargeArrayView<Type> send_buf,Int32ConstArrayView send_count,
+  void allGather(ConstSpan<Type> send_buf,Span<Type> recv_buf) override;
+  void allGatherVariable(ConstSpan<Type> send_buf,Array<Type>& recv_buf) override;
+  void gather(ConstSpan<Type> send_buf,Span<Type> recv_buf,Int32 rank) override;
+  void gatherVariable(ConstSpan<Type> send_buf,Array<Type>& recv_buf,Int32 rank) override;
+  void scatterVariable(ConstSpan<Type> send_buf,Span<Type> recv_buf,Int32 root) override;
+  void allToAll(ConstSpan<Type> send_buf,Span<Type> recv_buf,Int32 count) override;
+  void allToAllVariable(ConstSpan<Type> send_buf,Int32ConstArrayView send_count,
                         Int32ConstArrayView send_index,Span<Type> recv_buf,
                         Int32ConstArrayView recv_count,Int32ConstArrayView recv_index) override;
-  Request send(ConstLargeArrayView<Type> send_buffer,Int32 rank,bool is_blocked) override;
+  Request send(ConstSpan<Type> send_buffer,Int32 rank,bool is_blocked) override;
   Request receive(Span<Type> recv_buffer,Int32 rank,bool is_blocked) override;
   Type allReduce(eReduceType op,Type send_buf) override;
   void allReduce(eReduceType op,Span<Type> send_buf) override;
@@ -56,7 +56,7 @@ class MpiTypeDispatcher
   MpiAdapter* m_adapter;
   MpiDatatype* m_datatype;
  private:
-  void _gatherVariable2(ConstLargeArrayView<Type> send_buf,Array<Type>& recv_buf,Integer rank);
+  void _gatherVariable2(ConstSpan<Type> send_buf,Array<Type>& recv_buf,Integer rank);
 };
 
 /*---------------------------------------------------------------------------*/
