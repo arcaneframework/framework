@@ -33,20 +33,20 @@ class MpiTypeDispatcher
   ~MpiTypeDispatcher();
  public:
   void finalize() override {}
-  void broadcast(LargeArrayView<Type> send_buf,Int32 rank) override;
-  void allGather(ConstLargeArrayView<Type> send_buf,LargeArrayView<Type> recv_buf) override;
+  void broadcast(Span<Type> send_buf,Int32 rank) override;
+  void allGather(ConstLargeArrayView<Type> send_buf,Span<Type> recv_buf) override;
   void allGatherVariable(ConstLargeArrayView<Type> send_buf,Array<Type>& recv_buf) override;
-  void gather(ConstLargeArrayView<Type> send_buf,LargeArrayView<Type> recv_buf,Int32 rank) override;
+  void gather(ConstLargeArrayView<Type> send_buf,Span<Type> recv_buf,Int32 rank) override;
   void gatherVariable(ConstLargeArrayView<Type> send_buf,Array<Type>& recv_buf,Int32 rank) override;
-  void scatterVariable(ConstLargeArrayView<Type> send_buf,LargeArrayView<Type> recv_buf,Int32 root) override;
-  void allToAll(ConstLargeArrayView<Type> send_buf,LargeArrayView<Type> recv_buf,Int32 count) override;
+  void scatterVariable(ConstLargeArrayView<Type> send_buf,Span<Type> recv_buf,Int32 root) override;
+  void allToAll(ConstLargeArrayView<Type> send_buf,Span<Type> recv_buf,Int32 count) override;
   void allToAllVariable(ConstLargeArrayView<Type> send_buf,Int32ConstArrayView send_count,
-                        Int32ConstArrayView send_index,LargeArrayView<Type> recv_buf,
+                        Int32ConstArrayView send_index,Span<Type> recv_buf,
                         Int32ConstArrayView recv_count,Int32ConstArrayView recv_index) override;
   Request send(ConstLargeArrayView<Type> send_buffer,Int32 rank,bool is_blocked) override;
-  Request receive(LargeArrayView<Type> recv_buffer,Int32 rank,bool is_blocked) override;
+  Request receive(Span<Type> recv_buffer,Int32 rank,bool is_blocked) override;
   Type allReduce(eReduceType op,Type send_buf) override;
-  void allReduce(eReduceType op,LargeArrayView<Type> send_buf) override;
+  void allReduce(eReduceType op,Span<Type> send_buf) override;
  public:
   MpiDatatype* datatype() const { return m_datatype; }
   IMessagePassingMng* messagePassingMng() const { return m_parallel_mng; }

@@ -25,7 +25,7 @@ namespace Arccore
 template<typename T> class ConstArrayView;
 template<typename T> class ConstIterT;
 template<typename T> class IterT;
-template<typename T> class LargeArrayView;
+template<typename T> class Span;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -87,7 +87,7 @@ template<typename T> class LargeArrayView;
 template<class T>
 class ArrayView
 {
-  friend class LargeArrayView<T>;
+  friend class Span<T>;
  public:
 
   //! Type des éléments du tableau

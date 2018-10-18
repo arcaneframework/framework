@@ -33,20 +33,20 @@ class ITypeDispatcher
   virtual ~ITypeDispatcher() {}
   virtual void finalize() =0;
  public:
-  virtual void broadcast(LargeArrayView<Type> send_buf,Int32 rank) =0;
-  virtual void allGather(ConstLargeArrayView<Type> send_buf,LargeArrayView<Type> recv_buf) =0;
+  virtual void broadcast(Span<Type> send_buf,Int32 rank) =0;
+  virtual void allGather(ConstLargeArrayView<Type> send_buf,Span<Type> recv_buf) =0;
   virtual void allGatherVariable(ConstLargeArrayView<Type> send_buf,Array<Type>& recv_buf) =0;
-  virtual void gather(ConstLargeArrayView<Type> send_buf,LargeArrayView<Type> recv_buf,Int32 rank) =0;
+  virtual void gather(ConstLargeArrayView<Type> send_buf,Span<Type> recv_buf,Int32 rank) =0;
   virtual void gatherVariable(ConstLargeArrayView<Type> send_buf,Array<Type>& recv_buf,Int32 rank) =0;
-  virtual void scatterVariable(ConstLargeArrayView<Type> send_buf,LargeArrayView<Type> recv_buf,Int32 root) =0;
-  virtual void allToAll(ConstLargeArrayView<Type> send_buf,LargeArrayView<Type> recv_buf,Int32 count) =0;
+  virtual void scatterVariable(ConstLargeArrayView<Type> send_buf,Span<Type> recv_buf,Int32 root) =0;
+  virtual void allToAll(ConstLargeArrayView<Type> send_buf,Span<Type> recv_buf,Int32 count) =0;
   virtual void allToAllVariable(ConstLargeArrayView<Type> send_buf,ConstArrayView<Int32> send_count,
-                                ConstArrayView<Int32> send_index,LargeArrayView<Type> recv_buf,
+                                ConstArrayView<Int32> send_index,Span<Type> recv_buf,
                                 ConstArrayView<Int32> recv_count,ConstArrayView<Int32> recv_index) =0;
   virtual Request send(ConstLargeArrayView<Type> send_buffer,Int32 rank,bool is_blocked) =0;
-  virtual Request receive(LargeArrayView<Type> recv_buffer,Int32 rank,bool is_blocked) =0;
+  virtual Request receive(Span<Type> recv_buffer,Int32 rank,bool is_blocked) =0;
   virtual Type allReduce(eReduceType op,Type send_buf) =0;
-  virtual void allReduce(eReduceType op,LargeArrayView<Type> send_buf) =0;
+  virtual void allReduce(eReduceType op,Span<Type> send_buf) =0;
 };
 
 /*---------------------------------------------------------------------------*/

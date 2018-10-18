@@ -9,7 +9,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/ArrayView.h"
-#include "arccore/base/LargeArrayView.h"
+#include "arccore/base/Span.h"
 #include "arccore/collections/IMemoryAllocator.h"
 
 #include <memory>
@@ -805,7 +805,7 @@ class Array
   ARCCORE_DEPRECATED_2018 Array(const ArrayView<T>& aview) : AbstractArray<T>(ConstLargeArrayView<T>(aview))
   {
   }
-  ARCCORE_DEPRECATED_2018 Array(const LargeArrayView<T>& aview) : AbstractArray<T>(aview)
+  ARCCORE_DEPRECATED_2018 Array(const Span<T>& aview) : AbstractArray<T>(aview)
   {
   }
   /*!
@@ -878,9 +878,9 @@ class Array
   {
     return ConstLargeArrayView<T>(this->size(),m_p->ptr);
   }
-  operator LargeArrayView<T>()
+  operator Span<T>()
   {
-    return LargeArrayView<T>(this->size(),m_p->ptr);
+    return Span<T>(this->size(),m_p->ptr);
   }
   //! Vue constante sur ce tableau
   ConstArrayView<T> constView() const
@@ -908,9 +908,9 @@ class Array
     return ArrayView<T>(this->size(),m_p->ptr);
   }
   //! Vue mutable sur ce tableau
-  LargeArrayView<T> largeView() const
+  Span<T> largeView() const
   {
-    return LargeArrayView<T>(this->size(),m_p->ptr);
+    return Span<T>(this->size(),m_p->ptr);
   }
   /*!
    * \brief Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments.
@@ -971,7 +971,7 @@ class Array
     this->_addRange(val);
   }
   //! Ajoute \a n élément de valeur \a val à la fin du tableau
-  void addRange(LargeArrayView<T> val)
+  void addRange(Span<T> val)
   {
     this->_addRange(val);
   }
@@ -1272,7 +1272,7 @@ class SharedArray
   {
   }
   //! Créé un tableau en recopiant les valeurs de la value \a view.
-  SharedArray(const LargeArrayView<T>& aview)
+  SharedArray(const Span<T>& aview)
   : Array<T>(aview,BD_NoWarning), m_next(nullptr), m_prev(nullptr)
   {
   }
@@ -1301,7 +1301,7 @@ class SharedArray
     this->copy(rhs);
   }
   //! Copie les valeurs de la vue \a rhs dans cette instance.
-  void operator=(const LargeArrayView<T>& rhs)
+  void operator=(const Span<T>& rhs)
   {
     this->copy(rhs);
   }
@@ -1489,7 +1489,7 @@ class UniqueArray
   {
   }
   //! Créé un tableau en recopiant les valeurs de la value \a aview.
-  UniqueArray(const LargeArrayView<T>& aview) : Array<T>(aview,BD_NoWarning)
+  UniqueArray(const Span<T>& aview) : Array<T>(aview,BD_NoWarning)
   {
   }
   UniqueArray(std::initializer_list<T> alist) : Array<T>(alist,BD_NoWarning)
@@ -1546,7 +1546,7 @@ class UniqueArray
     this->copy(rhs);
   }
   //! Copie les valeurs de la vue \a rhs dans cette instance.
-  void operator=(const LargeArrayView<T>& rhs)
+  void operator=(const Span<T>& rhs)
   {
     this->copy(rhs);
   }

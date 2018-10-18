@@ -8,7 +8,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/base/LargeArrayView.h"
+#include "arccore/base/Span.h"
 
 #include <vector>
 
@@ -72,7 +72,7 @@ class CoreArray
     return CoreArray::_constView(m_p);
   }
   //! Conversion vers un ArrayView
-  operator LargeArrayView<DataType>()
+  operator Span<DataType>()
   {
     return CoreArray::_view(m_p);
   }
@@ -110,7 +110,7 @@ class CoreArray
   }
 
   //! Vue modifiable
-  LargeArrayView<DataType> view()
+  Span<DataType> view()
   {
     return CoreArray::_view(m_p);
   }
@@ -164,10 +164,10 @@ class CoreArray
     Integer s = arccoreCheckArraySize(c.size());
     return ConstArrayView<DataType>(s,c.data());
   }
-  static LargeArrayView<DataType> _view(std::vector<DataType>& c)
+  static Span<DataType> _view(std::vector<DataType>& c)
   {
     Int64 s = arccoreCheckArraySize(c.size());
-    return LargeArrayView<DataType>(s,c.data());
+    return Span<DataType>(s,c.data());
   }
   static ArrayView<DataType> _smallView(std::vector<DataType>& c)
   {

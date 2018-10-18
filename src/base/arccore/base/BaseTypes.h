@@ -51,7 +51,7 @@ template<typename T> class Array3View;
 template<typename T> class ConstArray4View;
 template<typename T> class Array4View;
 template<class DataType> class CoreArray;
-template<typename T> class LargeArrayView;
+template<typename T> class Span;
 template<typename T> class ConstLargeArrayView;
 
 class StringImpl;
@@ -134,25 +134,25 @@ typedef ConstArrayView<Integer> IntegerConstArrayView;
 /*---------------------------------------------------------------------------*/
 
 //! Equivalent C d'un tableau à une dimension de pointeurs
-typedef LargeArrayView<Pointer> PointerLargeArrayView;
+typedef Span<Pointer> PointerLargeArrayView;
 //! Equivalent C d'un tableau à une dimension de caractères
-typedef LargeArrayView<Byte> ByteLargeArrayView;
+typedef Span<Byte> ByteLargeArrayView;
 //! Equivalent C d'un tableau à une dimension de caractères unicode
-typedef LargeArrayView<UChar> UCharLargeArrayView;
+typedef Span<UChar> UCharLargeArrayView;
 //! Equivalent C d'un tableau à une dimension d'entiers 64 bits
-typedef LargeArrayView<Int64> Int64LargeArrayView;
+typedef Span<Int64> Int64LargeArrayView;
 //! Equivalent C d'un tableau à une dimension d'entiers 32 bits
-typedef LargeArrayView<Int32> Int32LargeArrayView;
+typedef Span<Int32> Int32LargeArrayView;
 //! Equivalent C d'un tableau à une dimension d'entiers 16 bits
-typedef LargeArrayView<Int16> Int16LargeArrayView;
+typedef Span<Int16> Int16LargeArrayView;
 //! Equivalent C d'un tableau à une dimension d'entiers
-typedef LargeArrayView<Integer> IntegerLargeArrayView;
+typedef Span<Integer> IntegerLargeArrayView;
 //! Equivalent C d'un tableau à une dimension de réels
-typedef LargeArrayView<Real> RealLargeArrayView;
+typedef Span<Real> RealLargeArrayView;
 //! Equivalent C d'un tableau à une dimension de booléens
-typedef LargeArrayView<bool> BoolLargeArrayView;
+typedef Span<bool> BoolLargeArrayView;
 //! Equivalent C d'un tableau à une dimension d'entiers
-typedef LargeArrayView<Integer> IntegerLargeArrayView;
+typedef Span<Integer> IntegerLargeArrayView;
 
 //! Equivalent C d'un tableau à une dimension de pointeurs
 typedef ConstLargeArrayView<Pointer> PointerConstLargeArrayView;

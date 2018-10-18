@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/* LargeArrayView.h                                            (C) 2000-2018 */
+/* Span.h                                            (C) 2000-2018 */
 /*                                                                           */
 /* Types définissant les vues de tableaux C dont la taille est un Int64.     */
 /*---------------------------------------------------------------------------*/
@@ -28,7 +28,7 @@ namespace Arccore
  peut donc dépasser 2Go.
 */
 template<class T>
-class LargeArrayView
+class Span
 {
  public:
 
@@ -62,18 +62,18 @@ class LargeArrayView
  public:
 
   //! Construit une vue vide.
-  LargeArrayView() : m_ptr(nullptr), m_size(0) {}
+  Span() : m_ptr(nullptr), m_size(0) {}
   //! Constructeur de recopie depuis une autre vue
-  LargeArrayView(const ArrayView<T>& from)
+  Span(const ArrayView<T>& from)
   : m_ptr(from.m_ptr), m_size(from.m_size) {}
-  LargeArrayView(const LargeArrayView<T>& from)
+  Span(const Span<T>& from)
   : m_ptr(from.m_ptr), m_size(from.m_size) {}
   //! Construit une vue sur une zone mémoire commencant par \a ptr et
   // contenant \a asize éléments.
-  LargeArrayView(Int64 asize,T* ptr)
+  Span(Int64 asize,T* ptr)
   : m_ptr(ptr), m_size(asize) {}
   //! Opérateur de recopie
-  const LargeArrayView<T>& operator=(const LargeArrayView<T>& from)
+  const Span<T>& operator=(const Span<T>& from)
   {
     m_ptr = from.m_ptr;
     m_size = from.m_size;
@@ -222,16 +222,16 @@ class LargeArrayView
    * Si \a (\a abegin+ \a asize) est supérieur à la taille du tableau,
    * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
    */
-  LargeArrayView<T> subView(Int64 abegin,Int64 asize)
+  Span<T> subView(Int64 abegin,Int64 asize)
   {
     if (abegin>=m_size)
       return ArrayView<T>();
     asize = _min(asize,m_size-abegin);
-    return LargeArrayView<T>(asize,m_ptr+abegin);
+    return Span<T>(asize,m_ptr+abegin);
   }
 
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
-  LargeArrayView<T> subViewInterval(Int64 index,Int64 nb_interval)
+  Span<T> subViewInterval(Int64 index,Int64 nb_interval)
   {
     Int64 n = m_size;
     Int64 isize = n / nb_interval;
@@ -239,7 +239,7 @@ class LargeArrayView
     // Pour le dernier interval, prend les elements restants
     if ((index+1)==nb_interval)
       isize = n - ibegin;
-    return LargeArrayView<T>(isize,m_ptr+ibegin);
+    return Span<T>(isize,m_ptr+ibegin);
   }
 
   /*!\brief Recopie le tableau \a copy_array dans l'instance.
@@ -278,7 +278,7 @@ class LargeArrayView
     m_ptr = v.m_ptr;
     m_size = v.m_size;
   }
-  void setArray(const LargeArrayView<T>& v)
+  void setArray(const Span<T>& v)
   {
     m_ptr = v.m_ptr;
     m_size = v.m_size;
@@ -387,7 +387,7 @@ class ConstLargeArrayView
   /*! \brief Constructeur par copie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
-  ConstLargeArrayView(const LargeArrayView<T>& from)
+  ConstLargeArrayView(const Span<T>& from)
   : m_ptr(from.data()), m_size(from.size()) { }
   /*! \brief Constructeur par copie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
@@ -414,7 +414,7 @@ class ConstLargeArrayView
   /*! \brief Opérateur de recopie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
-  const ConstLargeArrayView<T>& operator=(const LargeArrayView<T>& from)
+  const ConstLargeArrayView<T>& operator=(const Span<T>& from)
   {
     m_ptr  = from.data();
     m_size = from.size();
@@ -607,13 +607,13 @@ operator!=(ConstLargeArrayView<T> rhs, ConstLargeArrayView<T> lhs)
 /*---------------------------------------------------------------------------*/
 
 template<typename T> inline bool
-operator==(LargeArrayView<T> rhs, LargeArrayView<T> lhs)
+operator==(Span<T> rhs, Span<T> lhs)
 {
   return operator==(rhs.constView(),lhs.constView());
 }
 
 template<typename T> inline bool
-operator!=(LargeArrayView<T> rhs, LargeArrayView<T> lhs)
+operator!=(Span<T> rhs, Span<T> lhs)
 {
   return !(rhs==lhs);
 }
@@ -669,7 +669,7 @@ operator<<(std::ostream& o, ConstLargeArrayView<T> val)
 /*---------------------------------------------------------------------------*/
 
 template<typename T> inline std::ostream&
-operator<<(std::ostream& o, LargeArrayView<T> val)
+operator<<(std::ostream& o, Span<T> val)
 {
   o << val.constView();
   return o;

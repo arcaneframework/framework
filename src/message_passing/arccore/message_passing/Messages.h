@@ -26,33 +26,33 @@ namespace MessagePassing
 /*---------------------------------------------------------------------------*/
 
 #define ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(type) \
-  inline void mpAllGather(IMessagePassingMng* pm,ConstLargeArrayView<type> send_buf,LargeArrayView<type> recv_buf) \
+  inline void mpAllGather(IMessagePassingMng* pm,ConstLargeArrayView<type> send_buf,Span<type> recv_buf) \
   { type* x = nullptr; pm->dispatchers()->dispatcher(x)->allGather(send_buf,recv_buf); } \
-  inline void mpGather(IMessagePassingMng* pm,ConstLargeArrayView<type> send_buf,LargeArrayView<type> recv_buf,Int32 rank) \
+  inline void mpGather(IMessagePassingMng* pm,ConstLargeArrayView<type> send_buf,Span<type> recv_buf,Int32 rank) \
   { type* x = nullptr; pm->dispatchers()->dispatcher(x)->gather(send_buf,recv_buf,rank); } \
   inline void mpAllGatherVariable(IMessagePassingMng* pm,ConstLargeArrayView<type> send_buf,Array<type>& recv_buf) \
   { type* x = nullptr; pm->dispatchers()->dispatcher(x)->allGatherVariable(send_buf,recv_buf); } \
   inline void mpGatherVariable(IMessagePassingMng* pm,ConstLargeArrayView<type> send_buf,Array<type>& recv_buf,Int32 rank)\
   { type* x = nullptr; pm->dispatchers()->dispatcher(x)->gatherVariable(send_buf,recv_buf,rank); } \
-  inline void mpScatterVariable(IMessagePassingMng* pm,ConstLargeArrayView<type> send_buf,LargeArrayView<type> recv_buf,Int32 root); \
+  inline void mpScatterVariable(IMessagePassingMng* pm,ConstLargeArrayView<type> send_buf,Span<type> recv_buf,Int32 root); \
   inline type mpAllReduce(IMessagePassingMng* pm,eReduceType rt,type v) \
   { type* x = nullptr; return pm->dispatchers()->dispatcher(x)->allReduce(rt,v); }\
-  inline void mpAllReduce(IMessagePassingMng* pm,eReduceType rt,LargeArrayView<type> v) \
+  inline void mpAllReduce(IMessagePassingMng* pm,eReduceType rt,Span<type> v) \
   { type* x = nullptr; pm->dispatchers()->dispatcher(x)->allReduce(rt,v); }\
-  inline void mpBroadcast(IMessagePassingMng* pm,LargeArrayView<type> send_buf,Int32 rank) \
+  inline void mpBroadcast(IMessagePassingMng* pm,Span<type> send_buf,Int32 rank) \
   { type* x = nullptr; pm->dispatchers()->dispatcher(x)->broadcast(send_buf,rank); } \
   inline void mpSend(IMessagePassingMng* pm,ConstLargeArrayView<type> values,Int32 rank) \
   { type* x = nullptr; pm->dispatchers()->dispatcher(x)->send(values,rank,true); } \
-  inline void mpReceive(IMessagePassingMng* pm,LargeArrayView<type> values,Int32 rank) \
+  inline void mpReceive(IMessagePassingMng* pm,Span<type> values,Int32 rank) \
   { type* x = nullptr; pm->dispatchers()->dispatcher(x)->receive(values,rank,true); } \
   inline Request mpSend(IMessagePassingMng* pm,ConstLargeArrayView<type> values,Int32 rank,bool is_blocked) \
   { type* x = nullptr; return pm->dispatchers()->dispatcher(x)->send(values,rank,is_blocked); } \
-  inline Request mpReceive(IMessagePassingMng* pm,LargeArrayView<type> values,Int32 rank,bool is_blocked)\
+  inline Request mpReceive(IMessagePassingMng* pm,Span<type> values,Int32 rank,bool is_blocked)\
   { type* x = nullptr; return pm->dispatchers()->dispatcher(x)->receive(values,rank,is_blocked); } \
-  inline void mpAllToAll(IMessagePassingMng* pm,ConstLargeArrayView<type> send_buf,LargeArrayView<type> recv_buf,Int32 count) \
+  inline void mpAllToAll(IMessagePassingMng* pm,ConstLargeArrayView<type> send_buf,Span<type> recv_buf,Int32 count) \
   { type* x = nullptr; return pm->dispatchers()->dispatcher(x)->allToAll(send_buf,recv_buf,count); } \
   inline void mpAllToAllVariable(IMessagePassingMng* pm,ConstLargeArrayView<type> send_buf,ConstArrayView<Int32> send_count, \
-                                 ConstArrayView<Int32> send_index,LargeArrayView<type> recv_buf, \
+                                 ConstArrayView<Int32> send_index,Span<type> recv_buf, \
                                  ConstArrayView<Int32> recv_count,ConstArrayView<Int32> recv_index) \
   { type* x = nullptr;\
     auto d = pm->dispatchers()->dispatcher(x);\
