@@ -230,7 +230,7 @@ class Span
    * Si \a (\a abegin+ \a asize) est supérieur à la taille du tableau,
    * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
    */
-  Span<T> subView(Int64 abegin,Int64 asize)
+  Span<T> subspan(Int64 abegin,Int64 asize) const
   {
     if (abegin>=m_size)
       return Span<T>();
@@ -238,8 +238,20 @@ class Span
     return Span<T>(m_ptr+abegin,asize);
   }
 
+  /*!
+   * \brief Sous-vue à partir de l'élément \a abegin
+   * et contenant \a asize éléments.
+   *
+   * Si \a (\a abegin+ \a asize) est supérieur à la taille du tableau,
+   * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
+   */
+  Span<T> subView(Int64 abegin,Int64 asize) const
+  {
+    return subspan(abegin,asize);
+  }
+
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
-  Span<T> subViewInterval(Int64 index,Int64 nb_interval)
+  Span<T> subViewInterval(Int64 index,Int64 nb_interval) const
   {
     Int64 n = m_size;
     Int64 isize = n / nb_interval;
