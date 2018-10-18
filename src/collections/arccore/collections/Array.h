@@ -888,7 +888,7 @@ class Array
     return ConstArrayView<T>(this->size(),m_p->ptr);
   }
   //! Vue constante sur ce tableau
-  Span<const T> constLargeView() const
+  Span<const T> constSpan() const
   {
     return Span<const T>(m_p->ptr,this->size());
   }
@@ -907,8 +907,13 @@ class Array
   {
     return ArrayView<T>(this->size(),m_p->ptr);
   }
+  //! Vue immutable sur ce tableau
+  Span<const T> span() const
+  {
+    return Span<const T>(m_p->ptr,this->size());
+  }
   //! Vue mutable sur ce tableau
-  Span<T> largeView() const
+  Span<T> span()
   {
     return Span<T>(m_p->ptr,this->size());
   }
@@ -978,7 +983,7 @@ class Array
   //! Ajoute \a n élément de valeur \a val à la fin du tableau
   void addRange(const Array<T>& val)
   {
-    this->_addRange(val.constLargeView());
+    this->_addRange(val.constSpan());
   }
   /*!
    * \brief Change le nombre d'élément du tableau à \a s.
@@ -1108,7 +1113,7 @@ class Array
   //! Clone le tableau
   Array<T> clone() const
   {
-    return Array<T>(this->constLargeView());
+    return Array<T>(this->constSpan());
   }
 
   //! \internal Accès à la racine du tableau hors toute protection
@@ -1325,7 +1330,7 @@ class SharedArray
   //! Clone le tableau
   SharedArray<T> clone() const
   {
-    return SharedArray<T>(this->constLargeView());
+    return SharedArray<T>(this->constSpan());
   }
  protected:
   void _initReference(const ThatClassType& rhs)
@@ -1335,7 +1340,7 @@ class SharedArray
     ++m_p->nb_ref;
   }
   //! Mise à jour des références
-  void _updateReferences() override final
+  void _updateReferences() final
   {
     for( ThatClassType* i = m_prev; i; i = i->m_prev )
       i->_setMP(m_p);
@@ -1343,7 +1348,7 @@ class SharedArray
       i->_setMP(m_p);
   }
   //! Mise à jour des références
-  Integer _getNbRef() override final
+  Integer _getNbRef() final
   {
     Integer nb_ref = 1;
     for( ThatClassType* i = m_prev; i; i = i->m_prev )
@@ -1523,17 +1528,17 @@ class UniqueArray
   //! Copie les valeurs de \a rhs dans cette instance.
   void operator=(const Array<T>& rhs)
   {
-    this->copy(rhs.constLargeView());
+    this->copy(rhs.constSpan());
   }
   //! Copie les valeurs de \a rhs dans cette instance.
   void operator=(const SharedArray<T>& rhs)
   {
-    this->copy(rhs.constLargeView());
+    this->copy(rhs.constSpan());
   }
   //! Copie les valeurs de \a rhs dans cette instance.
   void operator=(const UniqueArray<T>& rhs)
   {
-    this->copy(rhs.constLargeView());
+    this->copy(rhs.constSpan());
   }
   //! Opérateur de recopie par déplacement. \a rhs est invalidé après cet appel.
   void operator=(UniqueArray<T>&& rhs) ARCCORE_NOEXCEPT
