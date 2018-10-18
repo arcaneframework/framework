@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/* Span.h                                            (C) 2000-2018 */
+/* Span.h                                                      (C) 2000-2018 */
 /*                                                                           */
 /* Types définissant les vues de tableaux C dont la taille est un Int64.     */
 /*---------------------------------------------------------------------------*/
@@ -73,7 +73,7 @@ class Span
   Span(Int64 asize,T* ptr)
   : m_ptr(ptr), m_size(asize) {}
   //! Opérateur de recopie
-  const Span<T>& operator=(const Span<T>& from)
+  Span<T>& operator=(const Span<T>& from)
   {
     m_ptr = from.m_ptr;
     m_size = from.m_size;
@@ -225,7 +225,7 @@ class Span
   Span<T> subView(Int64 abegin,Int64 asize)
   {
     if (abegin>=m_size)
-      return ArrayView<T>();
+      return Span<T>();
     asize = _min(asize,m_size-abegin);
     return Span<T>(asize,m_ptr+abegin);
   }
@@ -404,7 +404,7 @@ class ConstSpan
    * \brief Opérateur de recopie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
-  const ConstSpan<T>& operator=(const ConstSpan<T>& from)
+  ConstSpan<T>& operator=(const ConstSpan<T>& from)
   {
     m_ptr=from.m_ptr;
     m_size=from.m_size;
@@ -414,7 +414,7 @@ class ConstSpan
   /*! \brief Opérateur de recopie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
-  const ConstSpan<T>& operator=(const Span<T>& from)
+  ConstSpan<T>& operator=(const Span<T>& from)
   {
     m_ptr  = from.data();
     m_size = from.size();
@@ -424,7 +424,7 @@ class ConstSpan
   /*! \brief Opérateur de recopie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
-  const ConstSpan<T>& operator=(const ConstArrayView<T>& from)
+  ConstSpan<T>& operator=(const ConstArrayView<T>& from)
   {
     m_ptr  = from.data();
     m_size = from.size();
@@ -434,7 +434,7 @@ class ConstSpan
   /*! \brief Opérateur de recopie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
-  const ConstSpan<T>& operator=(const ArrayView<T>& from)
+  ConstSpan<T>& operator=(const ArrayView<T>& from)
   {
     m_ptr  = from.data();
     m_size = from.size();
