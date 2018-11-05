@@ -231,6 +231,10 @@ struct FalseType {};
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#ifdef __GNUG__
+#  define ARCCORE_DEPRECATED __attribute__ ((deprecated))
+#endif
+
 #ifdef _MSC_VER
 #  if _MSC_VER >= 1300
 #    define ARCCORE_DEPRECATED __declspec(deprecated)
