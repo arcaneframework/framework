@@ -221,10 +221,10 @@ class Span
   /*!
    * \brief Vue constante sur cette vue.
    */
-  ConstArrayView<T> constSmallView() const
+  ConstArrayView<value_type> constSmallView() const
   {
     Integer s = arccoreCheckArraySize(m_size);
-    return ConstArrayView<T>(s,m_ptr);
+    return ConstArrayView<value_type>(s,m_ptr);
   }
 
   /*!
