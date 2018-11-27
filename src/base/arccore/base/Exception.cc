@@ -199,9 +199,7 @@ void Exception::
 _setStackTrace()
 {
   IStackTraceService* stack_service = Platform::getStackTraceService();
-  // Evite les appels trop recursifs qui peuvent se produire si on lève des
-  // exceptions dans l'appel à stackTrace().
-  if (stack_service && m_nb_pending_exception.load()<=2){
+  if (stack_service){
     m_stack_trace = stack_service->stackTrace();
   }
 }
