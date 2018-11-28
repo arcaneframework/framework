@@ -383,15 +383,25 @@ arccorePrintf(const char*,...);
 /*!
  * \brief Passe en mode pause ou lance une erreur fatale.
  *
- * Si le code est compilé en mode \a debug (ARCCORE_DEBUG est définie) ou
- * en mode \a check (ARCCORE_CHECK est définie), met le programme en pause
+ * Si arccoreSetPauseOnError() est appelé avec l'argument \a true,
+ * met le programme en pause
  * pour éventuellement connecter un débugger dessus.
  *
- * En mode normal, lance une exception FatalErrorException avec le message
+ * Sinon, lance une exception FatalErrorException avec le message
  * \a msg comme argument.
  */
 extern "C++" ARCCORE_BASE_EXPORT void
 arccoreDebugPause(const char* msg);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Indique si on l'appel à arccoreDebugPause() effectue une pause.
+ *
+ * \sa arccoreDebugPause()
+ */
+extern "C++" ARCCORE_BASE_EXPORT void
+arccoreSetPauseOnError(bool v);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
