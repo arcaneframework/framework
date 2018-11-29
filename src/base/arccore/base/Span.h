@@ -212,7 +212,7 @@ class Span
   /*!
    * \brief Vue constante sur cette vue.
    */
-  view_type smallView() const
+  view_type smallView()
   {
     Integer s = arccoreCheckArraySize(m_size);
     return view_type(s,m_ptr);

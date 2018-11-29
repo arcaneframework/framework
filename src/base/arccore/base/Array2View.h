@@ -80,6 +80,10 @@ class Array2View
    */
   inline DataType* unguardedBasePointer()
   { return m_ptr; }
+  /*!
+   * \brief Pointeur sur la mémoire allouée.
+   */
+  inline DataType* data() { return m_ptr; }
  private:
   DataType* m_ptr;
   Integer m_dim1_size;
@@ -129,6 +133,10 @@ class ConstArray2View
    */
   inline const DataType* unguardedBasePointer() const
   { return m_ptr; }
+  /*!
+   * \brief Pointeur sur la mémoire allouée.
+   */
+  inline const DataType* data() const { return m_ptr; }
  private:
   const DataType* m_ptr;
   Integer m_dim1_size;

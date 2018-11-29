@@ -12,6 +12,7 @@ set(SOURCES
   Array3View.h
   Array4View.h
   Span.h
+  Span2.h
   ArgumentException.cc
   ArgumentException.h
   CStringUtils.h

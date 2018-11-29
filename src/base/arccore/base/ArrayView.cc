@@ -16,6 +16,7 @@
 #include "arccore/base/Array3View.h"
 #include "arccore/base/Array4View.h"
 #include "arccore/base/Span.h"
+#include "arccore/base/Span2.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
