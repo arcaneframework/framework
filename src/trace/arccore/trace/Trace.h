@@ -1,3 +1,4 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* Trace.h                                                     (C) 2000-2017 */
 /*                                                                           */
@@ -19,14 +20,14 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Namespace contenant les types liés aux traces.
+ * \brief Namespace contenant les types liÃ©s aux traces.
  */
 namespace Trace
 {
-  //! Niveau de verbosité par défaut.
+  //! Niveau de verbositÃ© par dÃ©faut.
   static const int DEFAULT_VERBOSITY_LEVEL = 3;
 
-  //! Niveau de verbosité non spécifié.
+  //! Niveau de verbositÃ© non spÃ©cifiÃ©.
   static const int UNSPECIFIED_VERBOSITY_LEVEL = -2;
 
   //! Flot sur lequel on envoie les messages.
@@ -46,20 +47,20 @@ namespace Trace
   //! Niveau de debug des traces
   enum eDebugLevel
   {
-    None = 0, //! Pas de d'informations de débug
+    None = 0, //! Pas de d'informations de dÃ©bug
     Lowest = 1, //!< Niveau le plus faible
     Low = 2, //!< Niveau faible
-    Medium = 3, //!< Niveau moyen (défaut)
-    High = 4, //!< Niveau élevé
-    Highest = 5 //!< Niveau le plus élevé
+    Medium = 3, //!< Niveau moyen (dÃ©faut)
+    High = 4, //!< Niveau Ã©levÃ©
+    Highest = 5 //!< Niveau le plus Ã©levÃ©
   };
 
-  //! Paramêtres d'affichage.
+  //! ParamÃªtres d'affichage.
   enum ePrintFlags
   {
     PF_Default = 0,
     PF_NoClassName = 1 << 1, //!< Affichage ou non de la classe de message.
-    PF_ElapsedTime = 1 << 2, //!< Affichage du temps écoulé
+    PF_ElapsedTime = 1 << 2, //!< Affichage du temps Ã©coulÃ©
   };
 
   /*!
@@ -70,13 +71,13 @@ namespace Trace
   class ARCCORE_TRACE_EXPORT Width
   {
    public:
-    //! Formatte le flot sur une longueur de \a v caractères.
+    //! Formatte le flot sur une longueur de \a v caractÃ¨res.
     Width(Integer v) : m_width(v) {}
    public:
     Integer m_width; //!< Longueur du formattage.
   };
   /*!
-   * \brief Formattage des réels avec une précision donnée.
+   * \brief Formattage des rÃ©els avec une prÃ©cision donnÃ©e.
    *
    * \sa TraceMessage, ITraceMng
    */
@@ -93,7 +94,7 @@ namespace Trace
     : m_precision(n), m_value(value), m_scientific(scientific) {}
    public:
     Integer m_precision; //!< Nombre de chiffres significatifs.
-    Real m_value; //!< Valeur à sortir
+    Real m_value; //!< Valeur Ã  sortir
     bool m_scientific; //! True si sortie en mode scientifique
   };
 
@@ -106,7 +107,7 @@ namespace Trace
   {
    public:
     // Liste des couleurs.
-    // NOTE: tout changement ici doit être reporté dans TraceMng.cc
+    // NOTE: tout changement ici doit Ãªtre reportÃ© dans TraceMng.cc
     enum { Black = 0,
            DarkRed, DarkGreen, DarkYellow, DarkBlue, DarkMagenta, DarkCyan, DarkGrey,
            Red, Green, Yellow, Blue, Magenta, Cyan, Grey };
@@ -148,7 +149,7 @@ namespace Trace
    public:
     //! Positionne la classe \a name pour le gestionnaire \a msg
     Setter(ITraceMng* msg,const String& name);
-    //! Libère l'instance et remet l'ancienne classe de message dans \a m_msg
+    //! LibÃ¨re l'instance et remet l'ancienne classe de message dans \a m_msg
     ~Setter();
    public:
    private:

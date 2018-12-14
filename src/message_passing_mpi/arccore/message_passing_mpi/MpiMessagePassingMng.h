@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* MpiMessagePassingMng.h                                      (C) 2000-2018 */
 /*                                                                           */
-/* Implémentation MPI du gestionnaire des échanges de messages.              */
+/* ImplÃ©mentation MPI du gestionnaire des Ã©changes de messages.              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSINGMPI_MPIMESSAGEPASSINGMNG_H
 #define ARCCORE_MESSAGEPASSINGMPI_MPIMESSAGEPASSINGMNG_H
@@ -25,7 +26,7 @@ namespace Mpi
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Implémentation MPI du gestionnaire des échanges de messages.
+ * \brief ImplÃ©mentation MPI du gestionnaire des Ã©changes de messages.
  */
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMessagePassingMng
 : public MessagePassingMng

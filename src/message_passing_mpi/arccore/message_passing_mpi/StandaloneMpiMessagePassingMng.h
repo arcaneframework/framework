@@ -1,3 +1,4 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* StandaloneMpiMessagePassingMng.h                            (C) 2000-2018 */
 /*                                                                           */
@@ -26,7 +27,7 @@ namespace Mpi
 /*!
  * \brief Version autonome de MpiMessagePassingMng.
  *
- * La création se fait via la méthode statique create().
+ * La crÃ©ation se fait via la mÃ©thode statique create().
  */
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT StandaloneMpiMessagePassingMng
 : public MpiMessagePassingMng
@@ -43,7 +44,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT StandaloneMpiMessagePassingMng
 
  public:
 
-  //! Créé un gestionnaire associé au communicateur \a comm.
+  //! CrÃ©Ã© un gestionnaire associÃ© au communicateur \a comm.
   static MpiMessagePassingMng* create(MPI_Comm comm);
 
  private:

@@ -1,7 +1,8 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* ThreadPrivate.cc                                            (C) 2000-2018 */
 /*                                                                           */
-/* Classe permettant de conserver une valeur sp�cifique par thread.          */
+/* Classe permettant de conserver une valeur spécifique par thread.          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

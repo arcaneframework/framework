@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* ArccoreGlobal.cc                                            (C) 2000-2018 */
 /*                                                                           */
-/* Déclarations générales de Arccore.                                        */
+/* DÃ©clarations gÃ©nÃ©rales de Arccore.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -28,7 +29,7 @@
  *
  * \brief Espace de nom de %Arccore
  *
- * Toutes les classes et types utilisés dans \b Arccore sont dans ce
+ * Toutes les classes et types utilisÃ©s dans \b Arccore sont dans ce
  * namespace.
  */
 /*---------------------------------------------------------------------------*/
@@ -91,7 +92,7 @@ arccoreRangeError(Int64 i,Int64 max_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Cette fonction peut être appelée souvent et certaines fois
+// Cette fonction peut Ãªtre appelÃ©e souvent et certaines fois
 // dans des conditions d'exceptions. Pour cette raison, il ne
 // faut pas qu'elle fasse d'allocations.
 namespace
@@ -144,9 +145,9 @@ operator<<(std::ostream& o,const TraceInfo& t)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/// Fonction appelée lorsqu'une assertion échoue.
+/// Fonction appelÃ©e lorsqu'une assertion Ã©choue.
 typedef void (*fDoAssert)(const char*,const char*,const char*,size_t);
-/// Fonction appelée pour indiquer s'il faut afficher l'information de débug
+/// Fonction appelÃ©e pour indiquer s'il faut afficher l'information de dÃ©bug
 typedef bool (*fCheckDebug)(unsigned int);
 
 static fDoAssert g_do_assert_func = 0;
@@ -155,7 +156,7 @@ static fCheckDebug  g_check_debug_func = 0;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * Affichage d'une assertion ayant échouée.
+ * Affichage d'une assertion ayant Ã©chouÃ©e.
  */
 extern "C++" ARCCORE_BASE_EXPORT void
 _doAssert(const char* text,const char* file,const char* func,int line)
@@ -175,7 +176,7 @@ _doAssert(const char* text,const char* file,const char* func,int line)
 extern "C++" ARCCORE_BASE_EXPORT void
 arccorePrintf(const char* format,...)
 {
-  // \n écrit en meme temps pour éviter des écritures intermédiares parasites
+  // \n Ã©crit en meme temps pour Ã©viter des Ã©critures intermÃ©diares parasites
   char buffer[4096];
   va_list ap;
   va_start(ap,format);

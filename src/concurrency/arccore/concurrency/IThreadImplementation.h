@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* IThreadImplementation.h                                     (C) 2000-2009 */
 /*                                                                           */
-/* Interface d'un service implémentant le support des threads.               */
+/* Interface d'un service implÃ©mentant le support des threads.               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_CONCURRENCY_ITHREADIMPLEMENTATION_H
 #define ARCCORE_CONCURRENCY_ITHREADIMPLEMENTATION_H
@@ -20,7 +21,7 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Interface d'un service implémentant le support des threads.
+ * \brief Interface d'un service implÃ©mentant le support des threads.
  */
 class ARCCORE_CONCURRENCY_EXPORT IThreadImplementation
 {

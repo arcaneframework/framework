@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* Iterator.h                                                  (C) 2000-2018 */
 /*                                                                           */
-/* Iterateurs (obsolète).                                                    */
+/* Iterateurs (obsolÃ¨te).                                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_ITERATOR_H
 #define ARCCORE_BASE_ITERATOR_H
@@ -20,10 +21,10 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Interval d'itération.
+ * \brief Interval d'itÃ©ration.
  * \ingroup Collection
- Cette classe gère un interval d'itération avec un début et une fin. Il
- permet de construire simplement un couple d'itérateur pour itérer
+ Cette classe gÃ¨re un interval d'itÃ©ration avec un dÃ©but et une fin. Il
+ permet de construire simplement un couple d'itÃ©rateur pour itÃ©rer
  sur tout le container.
 */
 template<class IT,class R,class P,class V>
@@ -44,18 +45,18 @@ class IteratorBase
 	
  private:
 
-  IT m_begin; //!< Itérateur sur l'élément courant
-  IT m_end;   //!< Itérateur sur la fin du container.
+  IT m_begin; //!< ItÃ©rateur sur l'Ã©lÃ©ment courant
+  IT m_end;   //!< ItÃ©rateur sur la fin du container.
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief interval d'itérateurs
+ * \brief interval d'itÃ©rateurs
  * \ingroup Collection
- Cette classe gère un couple d'itérateurs autorisant la modification des
- éléments du container.
+ Cette classe gÃ¨re un couple d'itÃ©rateurs autorisant la modification des
+ Ã©lÃ©ments du container.
  */
 template<class T>
 class IterT
@@ -78,11 +79,11 @@ class IterT
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief interval d'itérateurs constant
+ * \brief interval d'itÃ©rateurs constant
  * \ingroup Collection
  *
- Cette classe gère un couple d'itérateurs qui n'autorisent pas la
- modification des éléments du container.
+ Cette classe gÃ¨re un couple d'itÃ©rateurs qui n'autorisent pas la
+ modification des Ã©lÃ©ments du container.
  */
 template<class T>
 class ConstIterT

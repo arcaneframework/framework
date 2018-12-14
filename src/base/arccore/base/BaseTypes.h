@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* BaseTypes.h                                                 (C) 2000-2018 */
 /*                                                                           */
-/* Définition des types de la composante 'base' de Arccore.                  */
+/* DÃ©finition des types de la composante 'base' de Arccore.                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_BASETYPES_H
 #define ARCCORE_BASE_BASETYPES_H
@@ -22,7 +23,7 @@ namespace Arccore
 /*!
  * \file BaseTypes.h
  *
- * \brief Déclarations des types de la composante 'base' de %Arccore.
+ * \brief DÃ©clarations des types de la composante 'base' de %Arccore.
  */
 
 template<typename T> class IterT;
@@ -35,11 +36,11 @@ template<typename T> class ConstIterT;
 typedef unsigned char Byte;
 //! Type d'un octet
 typedef signed char SByte;
-//! Type d'un caractère unicode
+//! Type d'un caractÃ¨re unicode
 typedef unsigned short UChar;
-//! Type d'un Int16 non signé
+//! Type d'un Int16 non signÃ©
 typedef unsigned short UInt16;
-//! Type d'un réel simple précision
+//! Type d'un rÃ©el simple prÃ©cision
 typedef float Single;
 
 template<typename T> class ConstArrayView;
@@ -87,91 +88,91 @@ class StdFunctorWithArgumentT;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Equivalent C d'un tableau à une dimension de pointeurs
+//! Equivalent C d'un tableau Ã  une dimension de pointeurs
 typedef ArrayView<Pointer> PointerArrayView;
-//! Equivalent C d'un tableau à une dimension de caractères
+//! Equivalent C d'un tableau Ã  une dimension de caractÃ¨res
 typedef ArrayView<Byte> ByteArrayView;
-//! Equivalent C d'un tableau à une dimension de caractères unicode
+//! Equivalent C d'un tableau Ã  une dimension de caractÃ¨res unicode
 typedef ArrayView<UChar> UCharArrayView;
-//! Equivalent C d'un tableau à une dimension d'entiers 64 bits
+//! Equivalent C d'un tableau Ã  une dimension d'entiers 64 bits
 typedef ArrayView<Int64> Int64ArrayView;
-//! Equivalent C d'un tableau à une dimension d'entiers 32 bits
+//! Equivalent C d'un tableau Ã  une dimension d'entiers 32 bits
 typedef ArrayView<Int32> Int32ArrayView;
-//! Equivalent C d'un tableau à une dimension d'entiers 16 bits
+//! Equivalent C d'un tableau Ã  une dimension d'entiers 16 bits
 typedef ArrayView<Int16> Int16ArrayView;
-//! Equivalent C d'un tableau à une dimension d'entiers
+//! Equivalent C d'un tableau Ã  une dimension d'entiers
 typedef ArrayView<Integer> IntegerArrayView;
-//! Equivalent C d'un tableau à une dimension de réels
+//! Equivalent C d'un tableau Ã  une dimension de rÃ©els
 typedef ArrayView<Real> RealArrayView;
-//! Equivalent C d'un tableau à une dimension de booléens
+//! Equivalent C d'un tableau Ã  une dimension de boolÃ©ens
 typedef ArrayView<bool> BoolArrayView;
-//! Equivalent C d'un tableau à une dimension d'entiers
+//! Equivalent C d'un tableau Ã  une dimension d'entiers
 typedef ArrayView<Integer> IntegerArrayView;
 
-//! Equivalent C d'un tableau à une dimension de pointeurs
+//! Equivalent C d'un tableau Ã  une dimension de pointeurs
 typedef ConstArrayView<Pointer> PointerConstArrayView;
-//! Equivalent C d'un tableau à une dimension de caractères
+//! Equivalent C d'un tableau Ã  une dimension de caractÃ¨res
 typedef ConstArrayView<Byte> ByteConstArrayView;
-//! Equivalent C d'un tableau à une dimension de caractères unicode
+//! Equivalent C d'un tableau Ã  une dimension de caractÃ¨res unicode
 typedef ConstArrayView<UChar> UCharConstArrayView;
-//! Equivalent C d'un tableau à une dimension d'entiers 64 bits
+//! Equivalent C d'un tableau Ã  une dimension d'entiers 64 bits
 typedef ConstArrayView<Int64> Int64ConstArrayView;
-//! Equivalent C d'un tableau à une dimension d'entiers 32 bits
+//! Equivalent C d'un tableau Ã  une dimension d'entiers 32 bits
 typedef ConstArrayView<Int32> Int32ConstArrayView;
-//! Equivalent C d'un tableau à une dimension d'entiers 16 bits
+//! Equivalent C d'un tableau Ã  une dimension d'entiers 16 bits
 typedef ConstArrayView<Int16> Int16ConstArrayView;
-//! Equivalent C d'un tableau à une dimension d'entiers
+//! Equivalent C d'un tableau Ã  une dimension d'entiers
 typedef ConstArrayView<Integer> IntegerConstArrayView;
-//! Equivalent C d'un tableau à une dimension de réels
+//! Equivalent C d'un tableau Ã  une dimension de rÃ©els
 typedef ConstArrayView<Real> RealConstArrayView;
-//! Equivalent C d'un tableau à une dimension de booléens
+//! Equivalent C d'un tableau Ã  une dimension de boolÃ©ens
 typedef ConstArrayView<bool> BoolConstArrayView;
-//! Equivalent C d'un tableau à une dimension d'entiers
+//! Equivalent C d'un tableau Ã  une dimension d'entiers
 typedef ConstArrayView<Integer> IntegerConstArrayView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Equivalent C d'un tableau à une dimension de pointeurs
+//! Equivalent C d'un tableau Ã  une dimension de pointeurs
 typedef Span<Pointer> PointerSpan;
-//! Equivalent C d'un tableau à une dimension de caractères
+//! Equivalent C d'un tableau Ã  une dimension de caractÃ¨res
 typedef Span<Byte> ByteSpan;
-//! Equivalent C d'un tableau à une dimension de caractères unicode
+//! Equivalent C d'un tableau Ã  une dimension de caractÃ¨res unicode
 typedef Span<UChar> UCharSpan;
-//! Equivalent C d'un tableau à une dimension d'entiers 64 bits
+//! Equivalent C d'un tableau Ã  une dimension d'entiers 64 bits
 typedef Span<Int64> Int64Span;
-//! Equivalent C d'un tableau à une dimension d'entiers 32 bits
+//! Equivalent C d'un tableau Ã  une dimension d'entiers 32 bits
 typedef Span<Int32> Int32Span;
-//! Equivalent C d'un tableau à une dimension d'entiers 16 bits
+//! Equivalent C d'un tableau Ã  une dimension d'entiers 16 bits
 typedef Span<Int16> Int16Span;
-//! Equivalent C d'un tableau à une dimension d'entiers
+//! Equivalent C d'un tableau Ã  une dimension d'entiers
 typedef Span<Integer> IntegerSpan;
-//! Equivalent C d'un tableau à une dimension de réels
+//! Equivalent C d'un tableau Ã  une dimension de rÃ©els
 typedef Span<Real> RealSpan;
-//! Equivalent C d'un tableau à une dimension de booléens
+//! Equivalent C d'un tableau Ã  une dimension de boolÃ©ens
 typedef Span<bool> BoolSpan;
-//! Equivalent C d'un tableau à une dimension d'entiers
+//! Equivalent C d'un tableau Ã  une dimension d'entiers
 typedef Span<Integer> IntegerSpan;
 
-//! Equivalent C d'un tableau à une dimension de pointeurs
+//! Equivalent C d'un tableau Ã  une dimension de pointeurs
 typedef Span<const Pointer> PointerConstSpan;
-//! Equivalent C d'un tableau à une dimension de caractères
+//! Equivalent C d'un tableau Ã  une dimension de caractÃ¨res
 typedef Span<const Byte> ByteConstSpan;
-//! Equivalent C d'un tableau à une dimension de caractères unicode
+//! Equivalent C d'un tableau Ã  une dimension de caractÃ¨res unicode
 typedef Span<const UChar> UCharConstSpan;
-//! Equivalent C d'un tableau à une dimension d'entiers 64 bits
+//! Equivalent C d'un tableau Ã  une dimension d'entiers 64 bits
 typedef Span<const Int64> Int64ConstSpan;
-//! Equivalent C d'un tableau à une dimension d'entiers 32 bits
+//! Equivalent C d'un tableau Ã  une dimension d'entiers 32 bits
 typedef Span<const Int32> Int32ConstSpan;
-//! Equivalent C d'un tableau à une dimension d'entiers 16 bits
+//! Equivalent C d'un tableau Ã  une dimension d'entiers 16 bits
 typedef Span<const Int16> Int16ConstSpan;
-//! Equivalent C d'un tableau à une dimension d'entiers
+//! Equivalent C d'un tableau Ã  une dimension d'entiers
 typedef Span<const Integer> IntegerConstSpan;
-//! Equivalent C d'un tableau à une dimension de réels
+//! Equivalent C d'un tableau Ã  une dimension de rÃ©els
 typedef Span<const Real> RealConstSpan;
-//! Equivalent C d'un tableau à une dimension de booléens
+//! Equivalent C d'un tableau Ã  une dimension de boolÃ©ens
 typedef Span<const bool> BoolConstSpan;
-//! Equivalent C d'un tableau à une dimension d'entiers
+//! Equivalent C d'un tableau Ã  une dimension d'entiers
 typedef Span<const Integer> IntegerConstSpan;
 
 /*---------------------------------------------------------------------------*/

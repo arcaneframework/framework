@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* APReal.h                                                    (C) 2000-2018 */
 /*                                                                           */
-/* Réel en précision arbitraire.                                             */
+/* RÃ©el en prÃ©cision arbitraire.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_APREAL_H
 #define ARCCORE_BASE_APREAL_H
@@ -23,12 +24,12 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Emulation d'un réel en précision arbitraire.
+ * \brief Emulation d'un rÃ©el en prÃ©cision arbitraire.
  *
- * Si on souhaite une précision arbitraire, il faut utiliser la bibliothèque
- * 'apfloat'. Cette classe définit un type pour le cas où cette bibliothèque
- * n'est pas disponible mais n'assure pas une précision arbitraire.
- * apfloat Cette classe émule la clas
+ * Si on souhaite une prÃ©cision arbitraire, il faut utiliser la bibliothÃ¨que
+ * 'apfloat'. Cette classe dÃ©finit un type pour le cas oÃ¹ cette bibliothÃ¨que
+ * n'est pas disponible mais n'assure pas une prÃ©cision arbitraire.
+ * apfloat Cette classe Ã©mule la clas
  */
 #ifndef ARCCORE_REAL_USE_APFLOAT
 

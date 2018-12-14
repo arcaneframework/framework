@@ -1,3 +1,4 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* NullThreadImplementation.h                                  (C) 2000-2018 */
 /*                                                                           */
@@ -20,7 +21,7 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Implémentation d'une barrière en mono-thread.
+ * \brief ImplÃ©mentation d'une barriÃ¨re en mono-thread.
  */
 class ARCCORE_CONCURRENCY_EXPORT NullThreadBarrier
 : public IThreadBarrier
@@ -33,7 +34,7 @@ class ARCCORE_CONCURRENCY_EXPORT NullThreadBarrier
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Implémentation des threads en mode mono-thread.
+ * \brief ImplÃ©mentation des threads en mode mono-thread.
  */
 class ARCCORE_CONCURRENCY_EXPORT NullThreadImplementation
 : public IThreadImplementation

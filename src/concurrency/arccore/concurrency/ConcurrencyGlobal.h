@@ -1,7 +1,8 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* ConcurrencyGlobal.h                                         (C) 2000-2018 */
 /*                                                                           */
-/* D�finitions globales de la composante 'Concurrency' de 'Arccore'.         */
+/* Définitions globales de la composante 'Concurrency' de 'Arccore'.         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_CONCURRENCY_CONCURRENCYGLOBAL_H
 #define ARCCORE_CONCURRENCY_CONCURRENCYGLOBAL_H

@@ -1,3 +1,4 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* TraceMessage.h                                              (C) 2000-2018 */
 /*                                                                           */
@@ -23,10 +24,10 @@ namespace Arccore
 /*!
  * \brief Gestion d'un message.
  *
- Cette classe se gère comme un flot de sortie standard (ostream&) et
- permet d'envoyer un message du type spécifié par #eTraceMessageClass.
+ Cette classe se gÃ¨re comme un flot de sortie standard (ostream&) et
+ permet d'envoyer un message du type spÃ©cifiÃ© par #eTraceMessageClass.
  
- \warning Les instances de cette classe sont normalement créées par
+ \warning Les instances de cette classe sont normalement crÃ©Ã©es par
  un gestionnaire de message ITraceMng.
 */
 class ARCCORE_TRACE_EXPORT TraceMessage
@@ -47,7 +48,7 @@ class ARCCORE_TRACE_EXPORT TraceMessage
   int level() const { return m_level; }
   int color() const { return m_color; }
  private:
-  std::ostream* m_stream; //!< Flot sur lequel le message est envoyé
+  std::ostream* m_stream; //!< Flot sur lequel le message est envoyÃ©
   ITraceMng* m_parent; //!< Gestionnaire de message parent
   Trace::eMessageType m_type; //!< Type de message
   int m_level; //!< Niveau du message

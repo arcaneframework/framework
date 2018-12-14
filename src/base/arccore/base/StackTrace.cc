@@ -1,3 +1,4 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* StackTrace.cc                                               (C) 2000-2018 */
 /*                                                                           */
@@ -16,7 +17,7 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Opérateur d'écriture d'une StackTrace
+//! OpÃ©rateur d'Ã©criture d'une StackTrace
 std::ostream& operator<<(std::ostream& o,const StackTrace& s)
 {
   o << s.toString();

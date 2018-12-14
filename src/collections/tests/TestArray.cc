@@ -1,3 +1,4 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 #include <gtest/gtest.h>
 
 #include "arccore/collections/Array.h"
@@ -279,7 +280,7 @@ _testArrayNewInternal()
   {
     UniqueArray<Int32> values1 = { 2, 5 };
     UniqueArray<Int32> values2 = { 4, 9, 7 };
-    // Copie les valeurs de values2 à la fin de values1.
+    // Copie les valeurs de values2 Ã  la fin de values1.
     std::copy(std::begin(values2),std::end(values2),std::back_inserter(values1));
     std::cout << "** VALUES1 = " << values1 << "\n";
     ARCCORE_UT_CHECK((values1.size()==5),"BI: Bad size");

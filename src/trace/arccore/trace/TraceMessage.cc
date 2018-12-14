@@ -1,3 +1,4 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* TraceMessage.cc                                             (C) 2000-2018 */
 /*                                                                           */
@@ -69,9 +70,9 @@ operator=(const TraceMessage& from)
 /*---------------------------------------------------------------------------*/
 // NOTE: ce destructeur peut envoyer une exception si le message est
 // de type Fatal ou ParallelFatal. Avec le C++11, il faut le signaler
-// explicitement sinon le code se termine via un appel à std::terminate().
-// A noter qu'avec gcc 4.7 et avant, même avec l'option std=c++11 il n'est
-// pas nécessaire de spécifier le noexcept.
+// explicitement sinon le code se termine via un appel Ã  std::terminate().
+// A noter qu'avec gcc 4.7 et avant, mÃªme avec l'option std=c++11 il n'est
+// pas nÃ©cessaire de spÃ©cifier le noexcept.
 TraceMessage::
 ~TraceMessage() ARCCORE_NOEXCEPT_FALSE
 {

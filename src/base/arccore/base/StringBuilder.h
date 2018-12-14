@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* StringBuilder.h                                             (C) 2000-2018 */
 /*                                                                           */
-/* Constructeur de chaîne de caractère unicode.                              */
+/* Constructeur de chaÃ®ne de caractÃ¨re unicode.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_STRINGBUILDER_H
 #define ARCCORE_BASE_STRINGBUILDER_H
@@ -30,10 +31,10 @@ class StringFormatterArg;
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup Core
- * \brief Constructeur de chaîne de caractère unicode.
+ * \brief Constructeur de chaÃ®ne de caractÃ¨re unicode.
  *
- * Permet de construire de manière efficace une chaîne de caractère
- * par concaténation.
+ * Permet de construire de maniÃ¨re efficace une chaÃ®ne de caractÃ¨re
+ * par concatÃ©nation.
  *
  * \not_thread_safe
  */
@@ -43,23 +44,23 @@ class ARCCORE_BASE_EXPORT StringBuilder
 
  public:
 
-  //! Crée une chaîne nulle
+  //! CrÃ©e une chaÃ®ne nulle
   StringBuilder() : m_p(0), m_const_ptr(0) {}
-  //! Créé une chaîne à partir de \a str dans l'encodage local
+  //! CrÃ©Ã© une chaÃ®ne Ã  partir de \a str dans l'encodage local
   StringBuilder(const char* str);
-  //! Créé une chaîne à partir de \a str dans l'encodage local
+  //! CrÃ©Ã© une chaÃ®ne Ã  partir de \a str dans l'encodage local
   StringBuilder(const char* str,Integer len);
-  //! Créé une chaîne à partir de \a str dans l'encodage local
+  //! CrÃ©Ã© une chaÃ®ne Ã  partir de \a str dans l'encodage local
   StringBuilder(const std::string& str);
-  //! Créé une chaîne à partir de \a str dans l'encodage Utf16
+  //! CrÃ©Ã© une chaÃ®ne Ã  partir de \a str dans l'encodage Utf16
   StringBuilder(const UCharConstArrayView& ustr);
-  //! Créé une chaîne à partir de \a str dans l'encodage Utf8
+  //! CrÃ©Ã© une chaÃ®ne Ã  partir de \a str dans l'encodage Utf8
   StringBuilder(const ByteConstArrayView& ustr);
-  //! Créé une chaîne à partir de \a str_builder
+  //! CrÃ©Ã© une chaÃ®ne Ã  partir de \a str_builder
   StringBuilder(const StringBuilder& str_builder);
-  //! Créé une chaîne à partir de \a str dans l'encodage local
+  //! CrÃ©Ã© une chaÃ®ne Ã  partir de \a str dans l'encodage local
   explicit StringBuilder(StringImpl* impl);
-  //! Créé une chaîne à partir de \a str
+  //! CrÃ©Ã© une chaÃ®ne Ã  partir de \a str
   StringBuilder(const String& str);
 
   //! Copie \a str dans cette instance.
@@ -69,19 +70,19 @@ class ARCCORE_BASE_EXPORT StringBuilder
   //! Copie \a str dans cette instance.
   const StringBuilder& operator=(const StringBuilder& str);
 
-  ~StringBuilder(); //!< Libère les ressources.
+  ~StringBuilder(); //!< LibÃ¨re les ressources.
 
  public:
 
  public:
 
   /*!
-   * \brief Retourne la chaîne de caractères construite.
+   * \brief Retourne la chaÃ®ne de caractÃ¨res construite.
    */
   operator String() const;
 
   /*!
-   * \brief Retourne la chaîne de caractères construite.
+   * \brief Retourne la chaÃ®ne de caractÃ¨res construite.
    */
   String toString() const;
 
@@ -92,21 +93,21 @@ class ARCCORE_BASE_EXPORT StringBuilder
   //! Ajoute \a str.
   StringBuilder& append(const String& str);
 
-  //! Clone cette chaîne.
+  //! Clone cette chaÃ®ne.
   StringBuilder clone() const;
 
-  /*! \brief Effectue une normalisation des caractères espaces.
-   * Tous les caractères espaces sont remplacés par des blancs espaces #x20,
-   * à savoir #xD (Carriage Return), #xA (Line Feed) et #x9 (Tabulation).
-   * Cela correspond à l'attribut xs:replace de XMLSchema 1.0
+  /*! \brief Effectue une normalisation des caractÃ¨res espaces.
+   * Tous les caractÃ¨res espaces sont remplacÃ©s par des blancs espaces #x20,
+   * Ã  savoir #xD (Carriage Return), #xA (Line Feed) et #x9 (Tabulation).
+   * Cela correspond Ã  l'attribut xs:replace de XMLSchema 1.0
    */
   StringBuilder& replaceWhiteSpace();
 
-  /*! \brief Effectue une normalisation des caractères espaces.
-   * Le comportement est identique à replaceWhiteSpace() avec en plus:
-   * - remplacement de tous les blancs consécutifs par un seul.
-   * - suppression des blancs en début et fin de chaîne.
-   * Cela correspond à l'attribut xs:collapse de XMLSchema 1.0
+  /*! \brief Effectue une normalisation des caractÃ¨res espaces.
+   * Le comportement est identique Ã  replaceWhiteSpace() avec en plus:
+   * - remplacement de tous les blancs consÃ©cutifs par un seul.
+   * - suppression des blancs en dÃ©but et fin de chaÃ®ne.
+   * Cela correspond Ã  l'attribut xs:collapse de XMLSchema 1.0
    */
   StringBuilder& collapseWhiteSpace();
 
@@ -133,13 +134,13 @@ class ARCCORE_BASE_EXPORT StringBuilder
   /*!
    * \brief Affiche les infos internes de la classe.
    *
-   * Cette méthode n'est utile que pour débugger %Arccore
+   * Cette mÃ©thode n'est utile que pour dÃ©bugger %Arccore
    */
   void internalDump(std::ostream& ostr) const;
 
  private:
 
-  mutable StringImpl* m_p; //!< Implémentation de la classe
+  mutable StringImpl* m_p; //!< ImplÃ©mentation de la classe
   mutable const char* m_const_ptr;
 
   void _checkClone() const;
@@ -148,7 +149,7 @@ class ARCCORE_BASE_EXPORT StringBuilder
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Opérateur d'écriture d'une StringBuilder
+//! OpÃ©rateur d'Ã©criture d'une StringBuilder
 ARCCORE_BASE_EXPORT std::ostream& operator<<(std::ostream& o,const StringBuilder&);
 
 /*---------------------------------------------------------------------------*/

@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* NotImplementedException.cc                                  (C) 2000-2018 */
 /*                                                                           */
-/* Exception lorsqu'une fonction n'est pas implémentée.                      */
+/* Exception lorsqu'une fonction n'est pas implÃ©mentÃ©e.                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

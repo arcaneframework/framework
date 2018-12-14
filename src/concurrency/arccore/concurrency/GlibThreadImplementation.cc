@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* GlibThreadImplementation.cc                                 (C) 2000-2018 */
 /*                                                                           */
-/* Implémentation des threads utilisant la glib.                             */
+/* ImplÃ©mentation des threads utilisant la glib.                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -102,7 +103,7 @@ inline void _atomicSet(volatile gint* v,int value)
 {
   g_atomic_int_set(v,value);
 }
-//! Retourne true si on acquiere le lock (*v passe de 0 à 1)
+//! Retourne true si on acquiere le lock (*v passe de 0 Ã  1)
 inline bool _tryLock(volatile gint* v)
 {
   return g_atomic_int_compare_and_exchange(v,0,1)==1;

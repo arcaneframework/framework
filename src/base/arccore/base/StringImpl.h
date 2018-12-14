@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* StringImpl.h                                                (C) 2000-2018 */
 /*                                                                           */
-/* Implémentation d'une chaîne de caractère de unicode.                      */
+/* ImplÃ©mentation d'une chaÃ®ne de caractÃ¨re de unicode.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_STRINGIMPL_H
 #define ARCCORE_BASE_STRINGIMPL_H
@@ -24,7 +25,7 @@ namespace Arccore
 /*!
  * \internal
  *
- * \brief Implémentation de la classe String.
+ * \brief ImplÃ©mentation de la classe String.
  */
 class ARCCORE_BASE_EXPORT StringImpl
 {
@@ -38,9 +39,9 @@ class ARCCORE_BASE_EXPORT StringImpl
   StringImpl();
  public:
   const std::string& local();
-  //TODO: rendre obsolète
+  //TODO: rendre obsolÃ¨te
   UCharConstArrayView utf16();
-  //TODO: rendre obsolète
+  //TODO: rendre obsolÃ¨te
   ByteConstArrayView utf8();
   Span<const Byte> largeUtf8();
   bool isEqual(StringImpl* str);

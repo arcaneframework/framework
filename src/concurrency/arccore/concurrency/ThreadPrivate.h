@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* ThreadPrivate.h                                             (C) 2000-2018 */
 /*                                                                           */
-/* Classe permettant de conserver une valeur spécifique par thread.          */
+/* Classe permettant de conserver une valeur spÃ©cifique par thread.          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_CONCURRENCY_THREADPRIVATE_H
 #define ARCCORE_CONCURRENCY_THREADPRIVATE_H
@@ -23,10 +24,10 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Conteneur pour les valeurs privées par thread.
+ * \brief Conteneur pour les valeurs privÃ©es par thread.
  *
- * Il faut appeler initialize() avant d'utiliser les méthodes setValue()/getValue().
- * Cette méthode initialize() peut être appelée plusieurs fois.
+ * Il faut appeler initialize() avant d'utiliser les mÃ©thodes setValue()/getValue().
+ * Cette mÃ©thode initialize() peut Ãªtre appelÃ©e plusieurs fois.
  */
 class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateStorage
 {
@@ -35,11 +36,11 @@ class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateStorage
   ~ThreadPrivateStorage();
  public:
   /*!
-   * \brief Initialise la clé contenant les valeurs par thread.
-   * Cette méthode peut être appelée plusieurs fois et ne fait rien si
-   * la clé a déjà été initialisée.
+   * \brief Initialise la clÃ© contenant les valeurs par thread.
+   * Cette mÃ©thode peut Ãªtre appelÃ©e plusieurs fois et ne fait rien si
+   * la clÃ© a dÃ©jÃ  Ã©tÃ© initialisÃ©e.
    *
-   * \warning Cette méthode n'est pas thread-safe. L'utilisateur doit donc
+   * \warning Cette mÃ©thode n'est pas thread-safe. L'utilisateur doit donc
    * faire attention lors du premier appel.
    */
   void initialize();
@@ -75,14 +76,14 @@ class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateBase
 
  public:
   /*!
-   * \brief Récupère l'instance spécifique au thread courant.
+   * \brief RÃ©cupÃ¨re l'instance spÃ©cifique au thread courant.
    *
-   * Si cette dernière n'existe pas encore, elle est créé via
-   * le functor passé en argument du constructeur.
+   * Si cette derniÃ¨re n'existe pas encore, elle est crÃ©Ã© via
+   * le functor passÃ© en argument du constructeur.
    *
-   * \warning Cette méthode ne doit pas être appelée tant que
-   * la clé associée (ThreadPrivateStorage) n'a pas été initialisée
-   * par l'apple à ThreadPrivateStorage::initialize().
+   * \warning Cette mÃ©thode ne doit pas Ãªtre appelÃ©e tant que
+   * la clÃ© associÃ©e (ThreadPrivateStorage) n'a pas Ã©tÃ© initialisÃ©e
+   * par l'apple Ã  ThreadPrivateStorage::initialize().
    */
   void* item();
  private:
@@ -97,15 +98,15 @@ class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateBase
  * \brief Classe permettant une instance d'un type par thread.
  *
  * Il faut passer en argument du constructeur le conteneur permettant
- * de conserver les valeurs. Ce conteneur doit avoir été initialisé
+ * de conserver les valeurs. Ce conteneur doit avoir Ã©tÃ© initialisÃ©
  * via ThreadPrivateStorage::initialize() avant d'utiliser cette classe.
  *
- * Cette classe ne possède qu'une seule méthode item()
- * permettant de récupérer une instance d'un type \a T par
- * thread. Au premier appel de item() pour un thread donné,
+ * Cette classe ne possÃ¨de qu'une seule mÃ©thode item()
+ * permettant de rÃ©cupÃ©rer une instance d'un type \a T par
+ * thread. Au premier appel de item() pour un thread donnÃ©,
  * une instance de \a T est construite.
- * Le type \a T doit avoir un constructeur par défaut
- * et doit avoir une méthode \a build().
+ * Le type \a T doit avoir un constructeur par dÃ©faut
+ * et doit avoir une mÃ©thode \a build().
  * \threadsafeclass
  */
 template<typename T>
@@ -125,7 +126,7 @@ class ThreadPrivate
   }
 
  public:
-  //! Instance spécifique au thread courant.
+  //! Instance spÃ©cifique au thread courant.
   T* item()
   {
     return (T*)(m_storage.item());

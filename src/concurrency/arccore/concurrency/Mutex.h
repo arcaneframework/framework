@@ -1,3 +1,4 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* Mutex.h                                                     (C) 2000-2018 */
 /*                                                                           */
@@ -75,7 +76,7 @@ class ARCCORE_CONCURRENCY_EXPORT Mutex
   void unlock();
  private:
   MutexImpl* m_p;
-  //! Implémentation utilisée pour ce mutex.
+  //! ImplÃ©mentation utilisÃ©e pour ce mutex.
   IThreadImplementation* m_thread_impl;
 };
 
@@ -104,7 +105,7 @@ class ARCCORE_CONCURRENCY_EXPORT GlobalMutex
   GlobalMutex(){}
   ~GlobalMutex() {}
  public:
-  //! Initialise le mutex global. Interne a Arccore. Doit être alloué par new
+  //! Initialise le mutex global. Interne a Arccore. Doit Ãªtre allouÃ© par new
   static void init(MutexImpl* p);
   static void lock();
   static void unlock();

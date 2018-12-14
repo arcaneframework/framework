@@ -1,3 +1,4 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* Array3View.h                                                (C) 2000-2018 */
 /*                                                                           */
@@ -22,15 +23,15 @@ namespace Arccore
  * \ingroup Collection
  * \brief Vue pour un tableau 3D.
  *
- * Une vue 3D peut être créée à partir d'un tableau classique (Array)
+ * Une vue 3D peut Ãªtre crÃ©Ã©e Ã  partir d'un tableau classique (Array)
  * comme suit:
  \code
  UniqueArray<Int32> a(5*7*9);
  Array3View<Int32> view(a.unguardedBasePointer(),5,7,9);
  view[3][4][5] = 2;
- view.setItem(4,5,6, 1); // Met la valeur 1 a l'élément view[4][5][6].
+ view.setItem(4,5,6, 1); // Met la valeur 1 a l'Ã©lÃ©ment view[4][5][6].
  \endcode
- Pour des raisons de performance, il est préférable d'accéder aux éléments
+ Pour des raisons de performance, il est prÃ©fÃ©rable d'accÃ©der aux Ã©lÃ©ments
  via operator()()
  */
 template<class DataType>
@@ -85,7 +86,7 @@ class Array3View
   }
  public:
   /*!
-   * \brief Pointeur sur la mémoire allouée.
+   * \brief Pointeur sur la mÃ©moire allouÃ©e.
    */
   inline DataType* unguardedBasePointer()
   { return m_ptr; }
@@ -136,7 +137,7 @@ class ConstArray3View
   }
  public:
   /*!
-   * \brief Pointeur sur la mémoire allouée.
+   * \brief Pointeur sur la mÃ©moire allouÃ©e.
    */
   inline const DataType* unguardedBasePointer() const
   { return m_ptr; }

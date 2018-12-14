@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* Array.cc                                                    (C) 2000-2018 */
 /*                                                                           */
-/* Vecteur de données 1D.                                                    */
+/* Vecteur de donnÃ©es 1D.                                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -47,11 +48,11 @@ class BadAllocException
 
 /*
  * TODO: pour les allocations, faire en sorte que le
- * début du tableau soit aligné sur 16 octets dans tous les cas.
- * Attention dans ce cas a bien traiter les problèmes avec realloc().
+ * dÃ©but du tableau soit alignÃ© sur 16 octets dans tous les cas.
+ * Attention dans ce cas a bien traiter les problÃ¨mes avec realloc().
  * TODO: pour les grosses allocations qui correspondantes la
- * plupart du temps à des variables, ajouter un random sur le début
- * du tableau pour éviter les conflits de bancs mémoire ou de cache
+ * plupart du temps Ã  des variables, ajouter un random sur le dÃ©but
+ * du tableau pour Ã©viter les conflits de bancs mÃ©moire ou de cache
  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -190,8 +191,8 @@ reallocate(Int64 sizeof_true_impl,Int64 new_capacity,Int64 sizeof_true_type,
   ArrayImplBase* p = 0;
   {
     const bool use_realloc = allocator->hasRealloc();
-    // Lorsqu'on voudra implémenter un realloc avec alignement, il faut passer
-    // par use_realloc = false car sous Linux il n'existe pas de méthode realloc
+    // Lorsqu'on voudra implÃ©menter un realloc avec alignement, il faut passer
+    // par use_realloc = false car sous Linux il n'existe pas de mÃ©thode realloc
     // garantissant l'alignmenent (alors que sous Win32 si :) ).
     // use_realloc = false;
     if (use_realloc){

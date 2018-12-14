@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* IThreadBarrier.h                                            (C) 2000-2018 */
 /*                                                                           */
-/* Interface d'une barrière avec les threads.                                */
+/* Interface d'une barriÃ¨re avec les threads.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_CONCURRENCY_ITHREADBARRIER_H
 #define ARCCORE_CONCURRENCY_ITHREADBARRIER_H
@@ -19,16 +20,16 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Interface d'une barrière entre threads.
+ * \brief Interface d'une barriÃ¨re entre threads.
  *
- * Une fois créée (via IThreadImplementation::createBarrier()),
- * la barrière doit être initialisée
+ * Une fois crÃ©Ã©e (via IThreadImplementation::createBarrier()),
+ * la barriÃ¨re doit Ãªtre initialisÃ©e
  * via init() pour \a n threads. Ensuite, chaque thread doit
- * appeler la méthode wait() pour attendre que tous les
- * autres thread arrivent à ce même point.
- * La barrière peut être utilisée plusieurs fois.
- * Pour détruire la barrière, il faut appeler destroy(). Cela libère aussi
- * l'instance qui ne doit ensuite plus être utilisée.
+ * appeler la mÃ©thode wait() pour attendre que tous les
+ * autres thread arrivent Ã  ce mÃªme point.
+ * La barriÃ¨re peut Ãªtre utilisÃ©e plusieurs fois.
+ * Pour dÃ©truire la barriÃ¨re, il faut appeler destroy(). Cela libÃ¨re aussi
+ * l'instance qui ne doit ensuite plus Ãªtre utilisÃ©e.
  */
 class ARCCORE_CONCURRENCY_EXPORT IThreadBarrier
 {
@@ -38,16 +39,16 @@ class ARCCORE_CONCURRENCY_EXPORT IThreadBarrier
 
  public:
 
-  //! Initialise la barrière pour \a nb_thread.
+  //! Initialise la barriÃ¨re pour \a nb_thread.
   virtual void init(Integer nb_thread) =0;
 
-  //! Détruit la barrière.
+  //! DÃ©truit la barriÃ¨re.
   virtual void destroy() =0;
 
   /*!
-   * \brief Bloque et attend que tous les threads appellent cette méthode.
+   * \brief Bloque et attend que tous les threads appellent cette mÃ©thode.
    *
-   * \retval true si on est le dernier thread qui appelle cette méthode.
+   * \retval true si on est le dernier thread qui appelle cette mÃ©thode.
    * \retval false sinon.
    */
   virtual bool wait() =0;

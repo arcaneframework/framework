@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* CStringUtils.h                                              (C) 2000-2018 */
 /*                                                                           */
-/* Fonctions utilitaires sur les chaînes de caractères.                      */
+/* Fonctions utilitaires sur les chaÃ®nes de caractÃ¨res.                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_CSTRINGUTILS_H
@@ -20,23 +21,23 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fonctions utilitaires sur les chaînes de caractères.
+ * \brief Fonctions utilitaires sur les chaÃ®nes de caractÃ¨res.
  */
 namespace CStringUtils
 {
   //! Retourne \e true si \a s1 et \a s2 sont identiques, \e false sinon
   ARCCORE_BASE_EXPORT bool isEqual(const char* s1,const char* s2);
 
-  //! Retourne \e true si \a s1 est inférieur (ordre alphabétique) à \a s2 , \e false sinon
+  //! Retourne \e true si \a s1 est infÃ©rieur (ordre alphabÃ©tique) Ã  \a s2 , \e false sinon
   ARCCORE_BASE_EXPORT bool isLess(const char* s1,const char* s2);
 
-  //! Retourne la longueur de la chaîne \a s (sur 32 bits)
+  //! Retourne la longueur de la chaÃ®ne \a s (sur 32 bits)
   ARCCORE_BASE_EXPORT Integer len(const char* s);
 
-  //! Retourne la longueur de la chaîne \a s
+  //! Retourne la longueur de la chaÃ®ne \a s
   ARCCORE_BASE_EXPORT Int64 largeLength(const char* s);
 
-  // Copie les \a n premiers caractères de \a from dans \a to. \retval
+  // Copie les \a n premiers caractÃ¨res de \a from dans \a to. \retval
   ARCCORE_BASE_EXPORT char* copyn(char* to,const char* from,Int64 n);
 
   //! Copie \a from dans \a to

@@ -1,7 +1,8 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* MpiAdapter.cc                                               (C) 2000-2018 */
 /*                                                                           */
-/* Gestionnaire de parall�lisme utilisant MPI.                               */
+/* Gestionnaire de parallélisme utilisant MPI.                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

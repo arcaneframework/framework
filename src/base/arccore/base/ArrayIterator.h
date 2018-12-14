@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* ArrayIterator.h                                             (C) 2000-2018 */
 /*                                                                           */
-/* Itérateur sur les Array, ArrayView, ConstArrayView, ...                   */
+/* ItÃ©rateur sur les Array, ArrayView, ConstArrayView, ...                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_ARRAYITERATOR_H
 #define ARCCORE_BASE_ARRAYITERATOR_H
@@ -21,9 +22,9 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Itérateur sur les classes tableau de Arccore.
+ * \brief ItÃ©rateur sur les classes tableau de Arccore.
  *
- * Cet itérateur est utilisé pour les classes Array, ArrayView et ConstArrayView.
+ * Cet itÃ©rateur est utilisÃ© pour les classes Array, ArrayView et ConstArrayView.
  *
  * Il est du type std::random_access_iterator_tag.
  */

@@ -1,3 +1,4 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* TraceMng.cc                                                 (C) 2000-2018 */
 /*                                                                           */
@@ -35,7 +36,7 @@
 namespace Arccore
 {
 
-// TODO réimplémenter cette classe
+// TODO rÃ©implÃ©menter cette classe
 class TraceTimer
 {
  public:
@@ -87,7 +88,7 @@ class TraceStream
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Implémentation du gestionnaire de traces.
+ * \brief ImplÃ©mentation du gestionnaire de traces.
  */
 class TraceMng
 : public ITraceMng
@@ -313,7 +314,7 @@ class TraceMng
   }
   bool _sendToProxy2(const TraceMessage* msg,ConstArrayView<char> str);
 
-  //NOTE: cette méthode doit être appelée avec le verrou \a m_trace_mutex positionné.
+  //NOTE: cette mÃ©thode doit Ãªtre appelÃ©e avec le verrou \a m_trace_mutex positionnÃ©.
   const TraceClassConfig* _msgClassConfig(const String& s) const
   {
     auto ci = m_trace_class_config_map.find(s);
@@ -381,12 +382,12 @@ TraceMng()
 , m_is_log_disabled(false)
 , m_has_color(false)
 {
-  // La première instance de cette classe est créée via
-  // la classe Application et il y a nécessairement qu'un seul
+  // La premiÃ¨re instance de cette classe est crÃ©Ã©e via
+  // la classe Application et il y a nÃ©cessairement qu'un seul
   // thread qui fasse cet appel. Il n'y a donc pas besoin
-  // de protéger la création de cette clé privée.
-  // A noter qu'à partir de la GLib 2.32, il n'y a plus besoin de créer
-  // explicitement la partie privée.
+  // de protÃ©ger la crÃ©ation de cette clÃ© privÃ©e.
+  // A noter qu'Ã  partir de la GLib 2.32, il n'y a plus besoin de crÃ©er
+  // explicitement la partie privÃ©e.
   m_string_list_key.initialize();
 
 #if OLD
@@ -592,7 +593,7 @@ _writeTimeString(std::ostream& out)
   unsigned long t = static_cast<unsigned long>(m_trace_timer.getTime());
   const unsigned long hour = t/3600; t -= hour*3600;
   const unsigned long min  = t/60;   t -= min*60;
-  // TODO utiliser une méthode portable.
+  // TODO utiliser une mÃ©thode portable.
 #ifdef ARCCORE_OS_WIN32
   _snprintf(trace_timer_buffer,256,"%04lu:%02lu:%02lu",hour,min,t);
 #else
@@ -694,13 +695,13 @@ _writeColor(std::ostream& output,ConstArrayView<char> input,int color, bool do_f
 {
   if (color>Trace::Color::LAST_COLOR || color<0)
     color = 0;
-  // Pour être sur que les message sont écrits en une seule fois,
+  // Pour Ãªtre sur que les message sont Ã©crits en une seule fois,
   // il ne faut faire qu'un seul write.
   if (color!=0){
     Mutex::ScopedLock sl(m_trace_mutex);
     output << "\33[" << color_fmt[color] << "m";
     Integer len = input.size();
-    // Le message se termine toujours par un '\n'. On écrit la fin de la couleur
+    // Le message se termine toujours par un '\n'. On Ã©crit la fin de la couleur
     // avant de '\n'
     if (len>0)
       --len;
@@ -842,7 +843,7 @@ _writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array)
   std::ostream& def_out = (m_redirect_stream) ? (*m_redirect_stream) : std::cout;
   std::ostream& def_err = (m_redirect_stream) ? (*m_redirect_stream) : std::cerr;
 
-  // Regarde si le niveau de verbosité souhaité est suffisant pour afficher
+  // Regarde si le niveau de verbositÃ© souhaitÃ© est suffisant pour afficher
   // le message.
   Int32 verbosity_level = m_current_class_verbosity_level;
   if (verbosity_level==Trace::UNSPECIFIED_VERBOSITY_LEVEL)
@@ -851,7 +852,7 @@ _writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array)
 
   Trace::eMessageType id = msg->type();
   int color = msg->color();
-  // TODO Rendre paramétrable.
+  // TODO Rendre paramÃ©trable.
   const bool write_stack_trace_for_error = false;
   // Pas de couleur si on redirige les sorties
   if (m_redirect_stream || !m_has_color)
@@ -1028,8 +1029,8 @@ setClassConfig(const String& name,const TraceClassConfig& config)
       *tcc = config;
     }
   }
-  // Si la config qui est modifiée correspond à celle en cours il faut la
-  // mettre à jour.
+  // Si la config qui est modifiÃ©e correspond Ã  celle en cours il faut la
+  // mettre Ã  jour.
   _updateCurrentClassConfig();
 }
 
@@ -1050,8 +1051,8 @@ void TraceMng::
 removeAllClassConfig()
 {
   Mutex::ScopedLock sl(m_trace_mutex);
-  // Comme tous les TraceClassConfig vont être détruit, il ne faut plus les
-  // référencer dans les TraceClass.
+  // Comme tous les TraceClassConfig vont Ãªtre dÃ©truit, il ne faut plus les
+  // rÃ©fÃ©rencer dans les TraceClass.
   for( auto i : m_trace_class_stack )
     i.m_info = &m_default_trace_class_config;
   m_current_msg_class.m_info = &m_default_trace_class_config;
@@ -1098,7 +1099,7 @@ setVerbosityLevel(Int32 level)
 void TraceMng::
 resetThreadStatus()
 {
-  // Détruit et reconstruit le mutex.
+  // DÃ©truit et reconstruit le mutex.
   m_trace_mutex->~Mutex();
   new (m_trace_mutex) Mutex();
 }

@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* StringImpl.cc                                               (C) 2000-2018 */
 /*                                                                           */
-/* Implémentation d'une chaîne de caractère unicode.                         */
+/* ImplÃ©mentation d'une chaÃ®ne de caractÃ¨re unicode.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -122,7 +123,7 @@ StringImpl(Span<const Byte> bytes)
 , m_flags(eValidUtf8)
 , m_utf8_array(bytes)
 {
-  // \a m_utf8_array doit toujours avoir un zéro terminal.
+  // \a m_utf8_array doit toujours avoir un zÃ©ro terminal.
   if (m_utf8_array.empty())
     m_utf8_array.add('\0');
   else if (m_utf8_array.back()!='\0')
@@ -313,11 +314,11 @@ empty()
   _checkReference();
   if (m_flags & eValidUtf8) {
     ARCCORE_ASSERT((!m_utf8_array.empty()),("Not 0 terminated utf16 encoding"));
-    return m_utf8_array.size()<=1; // Décompte le 0 terminal
+    return m_utf8_array.size()<=1; // DÃ©compte le 0 terminal
   }
   if (m_flags & eValidUtf16) {
     ARCCORE_ASSERT((!m_utf16_array.empty()),("Not 0 terminated utf16 encoding"));
-    return m_utf16_array.size()<=1; // Décompte le 0 terminal
+    return m_utf16_array.size()<=1; // DÃ©compte le 0 terminal
   }
   if (m_flags & eValidLocal)
     return m_local_str.empty();

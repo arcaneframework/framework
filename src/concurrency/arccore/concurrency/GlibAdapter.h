@@ -1,7 +1,8 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* GlibAdapter.h                                               (C) 2000-2018 */
 /*                                                                           */
-/* Classes utilitaires pour s'adapter aux diff�rentes versions de la 'glib'. */
+/* Classes utilitaires pour s'adapter aux différentes versions de la 'glib'. */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_CONCURRENCY_GLIBADAPTER_H
 #define ARCCORE_CONCURRENCY_GLIBADAPTER_H

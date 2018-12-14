@@ -1,3 +1,4 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* IFunctor.h                                                  (C) 2000-2018 */
 /*                                                                           */
@@ -26,12 +27,12 @@ class ARCCORE_BASE_EXPORT IFunctor
 {
  public:
 	
-  //! Libère les ressources
+  //! LibÃ¨re les ressources
   virtual ~IFunctor(){}
 
  public:
 
-  //! Exécute la méthode associé
+  //! ExÃ©cute la mÃ©thode associÃ©
   virtual void executeFunctor() =0;
 };
 
@@ -45,7 +46,7 @@ class IFunctorWithArgumentT
 {
  public:
 	
-  //! Libère les ressources
+  //! LibÃ¨re les ressources
   virtual ~IFunctorWithArgumentT() {}
 
  protected:
@@ -56,7 +57,7 @@ class IFunctorWithArgumentT
 
  public:
 
-  //! Exécute la méthode associé
+  //! ExÃ©cute la mÃ©thode associÃ©
   virtual void executeFunctor(ArgType arg) =0;
 };
 

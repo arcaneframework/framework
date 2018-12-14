@@ -1,3 +1,4 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* Dispatchers.h                                               (C) 2000-2018 */
 /*                                                                           */
@@ -65,7 +66,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT Dispatchers
   void setDispatcher(ITypeDispatcher<double>* x) { m_double = x; }
   void setDispatcher(ITypeDispatcher<long double>* x) { m_long_double = x; }
 
-  //! Indique si lors de la destruction on appelle l'opérateur delete sur les instances (faux par défaut)
+  //! Indique si lors de la destruction on appelle l'opÃ©rateur delete sur les instances (faux par dÃ©faut)
   void setDeleteDispatchers(bool v) { m_is_delete_dispatchers = v; }
 
  private:

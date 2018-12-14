@@ -1,7 +1,8 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* Messages.h                                                  (C) 2000-2018 */
 /*                                                                           */
-/* Interface du gestionnaire des �changes de messages.                       */
+/* Interface du gestionnaire des échanges de messages.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_MESSAGES_H
 #define ARCCORE_MESSAGEPASSING_MESSAGES_H

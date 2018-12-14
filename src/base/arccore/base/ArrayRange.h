@@ -1,3 +1,4 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* ArrayRange.h                                                (C) 2000-2018 */
 /*                                                                           */
@@ -21,8 +22,8 @@ namespace Arccore
 /*!
  * \brief Intervalle sur les classes tableau de %Arccore.
  *
- * Cette classe est utilisée pour adapter les classes tableaux aux
- * itérateurs de la STL. Elle fournir les méthodes telles que begin()/end().
+ * Cette classe est utilisÃ©e pour adapter les classes tableaux aux
+ * itÃ©rateurs de la STL. Elle fournir les mÃ©thodes telles que begin()/end().
  */
 template<typename T>
 class ArrayRange
@@ -38,34 +39,34 @@ class ArrayRange
   typedef typename _TraitsType::reference reference;
   typedef typename _TraitsType::pointer pointer;
   typedef const value_type* const_pointer;
-  //! Type de l'itérateur sur un élément du tableau
+  //! Type de l'itÃ©rateur sur un Ã©lÃ©ment du tableau
   typedef ArrayIterator<pointer> iterator;
-  //! Type de l'itérateur constant sur un élément du tableau
+  //! Type de l'itÃ©rateur constant sur un Ã©lÃ©ment du tableau
   typedef ArrayIterator<const_pointer> const_iterator;
 
  public:
 
   //! Construit un interval vide.
   ArrayRange() ARCCORE_NOEXCEPT : m_begin(nullptr), m_end(nullptr) { }
-  //! Construit un interval allant de \a abegin à \a aend.
+  //! Construit un interval allant de \a abegin Ã  \a aend.
   ArrayRange(pointer abegin,pointer aend) ARCCORE_NOEXCEPT : m_begin(abegin), m_end(aend) { }
 
  public:
 
-  //! Retourne un iterateur sur le premier élément du tableau
+  //! Retourne un iterateur sur le premier Ã©lÃ©ment du tableau
   iterator begin() { return iterator(m_begin); }
-  //! Retourne un iterateur sur le premier élément après la fin du tableau
+  //! Retourne un iterateur sur le premier Ã©lÃ©ment aprÃ¨s la fin du tableau
   iterator end() { return iterator(m_end); }
-  //! Retourne un iterateur constant sur le premier élément du tableau
+  //! Retourne un iterateur constant sur le premier Ã©lÃ©ment du tableau
   const_iterator begin() const { return const_iterator(m_begin); }
-  //! Retourne un iterateur constant sur le premier élément après la fin du tableau
+  //! Retourne un iterateur constant sur le premier Ã©lÃ©ment aprÃ¨s la fin du tableau
   const_iterator end() const { return const_iterator(m_end); }
 
   //! Pointeur sur le tableau sous-jacent.
   value_type* data() { return m_begin; }
   //! Pointeur constant sur le tableau sous-jacent.
   const value_type* data() const { return m_begin; }
-  //! Nombre d'éléments dans le tableau
+  //! Nombre d'Ã©lÃ©ments dans le tableau
   Integer size() const { return (m_end-m_begin); }
   //! Indique si le tableau est vide.
   bool empty() const { return m_end==m_begin; }

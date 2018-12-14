@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* MpiMessagePassingMng.cc                                     (C) 2000-2018 */
 /*                                                                           */
-/* Implémentation MPI du gestionnaire des échanges de messages.              */
+/* ImplÃ©mentation MPI du gestionnaire des Ã©changes de messages.              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

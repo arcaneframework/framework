@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* MemoryAllocator.cc                                          (C) 2000-2016 */
 /*                                                                           */
-/* Allocateurs mémoires.                                                     */
+/* Allocateurs mÃ©moires.                                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -97,7 +98,7 @@ CacheLineAllocator(AlignedMemoryAllocator::cacheLineAlignment());
 /*---------------------------------------------------------------------------*/
 /*!
  * NOTE: Normalement les fonctions _mm_alloc() et _mm_free() permettent
- * d'allouer de la mémoire alignée. Il faudrait vérifier si elles sont
+ * d'allouer de la mÃ©moire alignÃ©e. Il faudrait vÃ©rifier si elles sont
  * disponibles partout.
  */
 /*---------------------------------------------------------------------------*/
@@ -173,17 +174,17 @@ adjustCapacity(size_t wanted_capacity,size_t element_size)
 {
   if (element_size==0)
     return wanted_capacity;
-  // Si \a element_size est plus petit que \a m_alignment, considère que
-  // la mémoire allouée doit être un multiple de l'alignement.
-  // (On pourrait être plus restrictif suivant les types mais ce n'est en
-  // général pas utile).
+  // Si \a element_size est plus petit que \a m_alignment, considÃ¨re que
+  // la mÃ©moire allouÃ©e doit Ãªtre un multiple de l'alignement.
+  // (On pourrait Ãªtre plus restrictif suivant les types mais ce n'est en
+  // gÃ©nÃ©ral pas utile).
   size_t block_size = m_alignment / element_size;
   if (block_size<=1)
     return wanted_capacity;
 
-  // Si l'alignement n'est pas un multiple de la taille d'un élément,
-  // cela signifie que l'élément ne sera pas utilisé pour la vectorisation.
-  // Il n'est donc pas nécessaire dans ce cas de modifier la capacité.
+  // Si l'alignement n'est pas un multiple de la taille d'un Ã©lÃ©ment,
+  // cela signifie que l'Ã©lÃ©ment ne sera pas utilisÃ© pour la vectorisation.
+  // Il n'est donc pas nÃ©cessaire dans ce cas de modifier la capacitÃ©.
   size_t nb_element = m_alignment % element_size;
   if (nb_element!=0)
     return wanted_capacity;
@@ -193,7 +194,7 @@ adjustCapacity(size_t wanted_capacity,size_t element_size)
               << " element_size=" << element_size
               << " block_size=" << block_size << '\n';
 
-  // Ajoute à la capacité ce qu'il faut pour que le module soit 0.
+  // Ajoute Ã  la capacitÃ© ce qu'il faut pour que le module soit 0.
   size_t modulo = wanted_capacity % block_size;
   if (modulo!=0)
     wanted_capacity += (block_size-modulo);

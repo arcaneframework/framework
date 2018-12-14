@@ -1,3 +1,4 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* StackTrace.h                                                (C) 2000-2018 */
 /*                                                                           */
@@ -21,8 +22,8 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Conserve les adresses correspondantes à une pile d'appel.
- * Cette classe est interne et ne dois pas être utilisée en dehors d'Arccore.
+ * \brief Conserve les adresses correspondantes Ã  une pile d'appel.
+ * Cette classe est interne et ne dois pas Ãªtre utilisÃ©e en dehors d'Arccore.
  * \todo ajouter support pour windows.
  */
 class StackFrame
@@ -53,8 +54,8 @@ class FixedStackFrameArray
     return ConstArrayView<StackFrame>(m_nb_frame,m_addresses);
   }
   /*!
-   * \brief Ajoute \a frame à la liste des frames. Si nbFrame() est supérieur
-   * ou égal à MAX_FRAME, aucune opération n'est effectuée.
+   * \brief Ajoute \a frame Ã  la liste des frames. Si nbFrame() est supÃ©rieur
+   * ou Ã©gal Ã  MAX_FRAME, aucune opÃ©ration n'est effectuÃ©e.
    */
   void addFrame(const StackFrame& frame)
   {
@@ -88,7 +89,7 @@ class ARCCORE_BASE_EXPORT StackTrace
 
  public:
 
-  //! Chaîne de caractères indiquant la pile d'appel.
+  //! ChaÃ®ne de caractÃ¨res indiquant la pile d'appel.
   const String& toString() const { return m_stack_trace_string; }
 
   //! Pile d'appel sous forme d'adresses.
@@ -103,7 +104,7 @@ class ARCCORE_BASE_EXPORT StackTrace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Opérateur d'écriture d'une StackTrace
+//! OpÃ©rateur d'Ã©criture d'une StackTrace
 ARCCORE_BASE_EXPORT std::ostream& operator<<(std::ostream& o,const StackTrace&);
 
 /*---------------------------------------------------------------------------*/

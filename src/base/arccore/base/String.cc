@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* String.cc                                                   (C) 2000-2018 */
 /*                                                                           */
-/* Chaîne de caractères unicode.                                             */
+/* ChaÃ®ne de caractÃ¨res unicode.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -533,14 +534,14 @@ isLess(const String& b) const
         return false;
       return !(b.m_p->isLessThan(m_const_ptr));
     }
-    // b est la chaîne nulle mais pas moi.
+    // b est la chaÃ®ne nulle mais pas moi.
     return false;
   }
 
   if (b.m_const_ptr){
     if (m_p)
       return m_p->isLessThan(b.m_const_ptr);
-    // Je suis la chaîne nulle mais pas b.
+    // Je suis la chaÃ®ne nulle mais pas b.
     return true;    
   }
 
@@ -656,7 +657,7 @@ class StringFormatter
             std::string str2(local_str+i+1+nb_z);
             m_format = String(str1) + ostr + str2;
             // Il faut quitter tout de suite car str n'est plus valide
-            // puisque m_format a changé.
+            // puisque m_format a changÃ©.
             break;
           }
         }
@@ -948,7 +949,7 @@ startsWith(const String& s) const
   Integer v_size = v.size();
   if (ref_size>v_size)
     return false;
-  // Le dernier caractère de \a ref est le '\0' terminal qu'il ne faut pas prendre
+  // Le dernier caractÃ¨re de \a ref est le '\0' terminal qu'il ne faut pas prendre
   // en compte
   return memcmp(v.data(),ref.data(),ref_size-1)==0;
 }
@@ -1066,7 +1067,7 @@ bool global_write_utf8 = false;
 std::ostream&
 operator<<(std::ostream& o,const String& str)
 {
-  // A utiliser plus tard lorsque l'encodage par défaut sera UTF8
+  // A utiliser plus tard lorsque l'encodage par dÃ©faut sera UTF8
   if (global_write_utf8)
     str.writeBytes(o);
   else

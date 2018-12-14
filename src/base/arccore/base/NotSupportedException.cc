@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* NotSupportedException.cc                                    (C) 2000-2018 */
 /*                                                                           */
-/* Exception lorsqu'une opération n'est pas supportée.                       */
+/* Exception lorsqu'une opÃ©ration n'est pas supportÃ©e.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -68,7 +69,7 @@ NotSupportedException(const NotSupportedException& ex) ARCCORE_NOEXCEPT
 void NotSupportedException::
 explain(std::ostream& m) const
 {
-  m << "L'opération demandée n'est pas supportée.\n";
+  m << "L'opÃ©ration demandÃ©e n'est pas supportÃ©e.\n";
 
   if (!m_message.null())
     m << "Message: " << m_message << '\n';

@@ -1,3 +1,4 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* Array.h                                                     (C) 2000-2018 */
 /*                                                                           */
@@ -16,7 +17,7 @@
 #include <initializer_list>
 #include <cstring>
 
-// Définir cette macro si on souhaite empêcher la construction de Array.
+// DÃ©finir cette macro si on souhaite empÃªcher la construction de Array.
 // #define ARCCORE_AVOID_DEPRECATED_ARRAY_CONSTRUCTOR
 
 /*---------------------------------------------------------------------------*/
@@ -36,39 +37,39 @@ class ArrayImplBase;
  * \internal
  *
  * \brief Interface d'un allocateur pour un vecteur.
- * \deprecated Cette classe n'est plus utilisée.
+ * \deprecated Cette classe n'est plus utilisÃ©e.
  */
 class ARCCORE_COLLECTIONS_EXPORT IArrayAllocator
 {
  public:
 
   /*!
-   * \brief Détruit l'allocateur.
+   * \brief DÃ©truit l'allocateur.
    * 
-   * Les objets alloués par l'allocateur doivent tous avoir été désalloués.
+   * Les objets allouÃ©s par l'allocateur doivent tous avoir Ã©tÃ© dÃ©sallouÃ©s.
    */
   virtual ~IArrayAllocator() {}
 
  public:
   
-  /*! \brief Alloue de la mémoire pour \a new_capacity objets.
+  /*! \brief Alloue de la mÃ©moire pour \a new_capacity objets.
    *
-   * En cas de succès, retourne le pointeur sur le premier élément alloué.
-   * En cas d'échec, une exception est levée (std::bad_alloc).
-   * La valeur retournée n'est jamais nul.
-   * \a new_capacity doit être strictement positif.
+   * En cas de succÃ¨s, retourne le pointeur sur le premier Ã©lÃ©ment allouÃ©.
+   * En cas d'Ã©chec, une exception est levÃ©e (std::bad_alloc).
+   * La valeur retournÃ©e n'est jamais nul.
+   * \a new_capacity doit Ãªtre strictement positif.
    */
   virtual ArrayImplBase* allocate(Int64 sizeof_true_impl,Int64 new_capacity,
                                   Int64 sizeof_true_type,ArrayImplBase* init) = 0;
 
-  /*! \brief Libère la mémoire.
+  /*! \brief LibÃ¨re la mÃ©moire.
    *
-   * Libère la mémoire dont le premier élément est donnée par \a ptr.
+   * LibÃ¨re la mÃ©moire dont le premier Ã©lÃ©ment est donnÃ©e par \a ptr.
    */
   virtual void deallocate(ArrayImplBase* ptr) =0;
 
   /*!
-   * \brief Réalloue de la mémoire pour \a new_capacity éléments.
+   * \brief RÃ©alloue de la mÃ©moire pour \a new_capacity Ã©lÃ©ments.
    *
    */
   virtual ArrayImplBase* reallocate(Int64 sizeof_true_impl,Int64 new_capacity,
@@ -83,7 +84,7 @@ class ARCCORE_COLLECTIONS_EXPORT IArrayAllocator
  * \internal
  *
  * \brief Interface d'un allocateur pour un vecteur.
- * \deprecated Cette classe n'est plus utilisée.
+ * \deprecated Cette classe n'est plus utilisÃ©e.
  */
 class ARCCORE_COLLECTIONS_EXPORT DefaultArrayAllocator
 : public IArrayAllocator
@@ -110,14 +111,14 @@ class ARCCORE_COLLECTIONS_EXPORT DefaultArrayAllocator
 /*!
  * \internal
  *
- * \brief Classe de base implémentant un vecteur.
+ * \brief Classe de base implÃ©mentant un vecteur.
  *
- * Cette classe sert d'implémentation pour tous les types tableaux
+ * Cette classe sert d'implÃ©mentation pour tous les types tableaux
  * de Arccore, qu'ils soient 1D (Array),  2D simple (Array2)
  * ou 2D multiples (MultiArray2).
  *
  * \note Pour garantir l'alignement pour la vectorisation, cette structure
- * (et ArrayImplT) doit avoir une taille identique (sizeof) à celle spécifiée dans
+ * (et ArrayImplT) doit avoir une taille identique (sizeof) Ã  celle spÃ©cifiÃ©e dans
  * AlignedMemoryAllocator pour le simd et le cache.
  */  
 class ARCCORE_COLLECTIONS_EXPORT ArrayImplBase
@@ -129,29 +130,29 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayImplBase
  {}
 
   // GG: note: normalement ce destructeur est inutile et on pourrait utiliser
-  // le destructeur généré par le compilateur. Cependant, si on le supprime
-  // les tests SIMD en AVX en optimisé avec gcc 4.9.3 plantent.
-  // Il faudrait vérifier s'il s'agit d'un bug du compilateur ou d'un
-  // problème dans Arccore.
+  // le destructeur gÃ©nÃ©rÃ© par le compilateur. Cependant, si on le supprime
+  // les tests SIMD en AVX en optimisÃ© avec gcc 4.9.3 plantent.
+  // Il faudrait vÃ©rifier s'il s'agit d'un bug du compilateur ou d'un
+  // problÃ¨me dans Arccore.
   ~ArrayImplBase() {}
  public:
   static ArrayImplBase* shared_null;
  private:
   static ARCCORE_ALIGNAS(64) ArrayImplBase shared_null_instance;
  public:
-  //! Nombre de références sur cet objet.
+  //! Nombre de rÃ©fÃ©rences sur cet objet.
   Int64 nb_ref;
-  //! Nombre d'éléments alloués
+  //! Nombre d'Ã©lÃ©ments allouÃ©s
   Int64 capacity;
-  //! Nombre d'éléments du tableau (pour les tableaux 1D)
+  //! Nombre d'Ã©lÃ©ments du tableau (pour les tableaux 1D)
   Int64 size;
-  //! Taille de la première dimension (pour les tableaux 2D)
+  //! Taille de la premiÃ¨re dimension (pour les tableaux 2D)
   Int64 dim1_size;
-  //! Taille de la deuxième dimension (pour les tableaux 2D)
+  //! Taille de la deuxiÃ¨me dimension (pour les tableaux 2D)
   Int64 dim2_size;
   //! Tableau des dimensions pour les tableaux multiples
   Int64* mutli_dims_size;
-  //! Allocateur mémoire
+  //! Allocateur mÃ©moire
   IMemoryAllocator* allocator;
   //! Padding pour que la structure ait une taille de 64 octets.
   Int64 padding1;
@@ -182,7 +183,7 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayImplBase
 /*!
  * \internal
  *
- * \brief Implémentation d'un vecteur d'un type T.
+ * \brief ImplÃ©mentation d'un vecteur d'un type T.
  */  
 template <typename T>
 class ArrayImplT
@@ -198,7 +199,7 @@ class ArrayImplT
 /*!
  * \internal
  *
- * \brief Caractéristiques pour un tableau
+ * \brief CaractÃ©ristiques pour un tableau
  */
 template<typename T>
 class ArrayTraits
@@ -257,7 +258,7 @@ ARCCORE_DEFINE_ARRAY_PODTYPE(long double);
  * \ingroup Collection
  * \brief Classe abstraite de base d'un vecteur.
  *
- * Cette classe ne peut pas être utilisée directement. Pour utiliser un
+ * Cette classe ne peut pas Ãªtre utilisÃ©e directement. Pour utiliser un
  * vecteur, choisissez la classe SharedArray ou UniqueArray.
  */
 template<typename T>
@@ -272,23 +273,23 @@ class AbstractArray
 
  public:
 	
-  //! Type des éléments du tableau
+  //! Type des Ã©lÃ©ments du tableau
   typedef T value_type;
-  //! Type pointeur d'un élément du tableau
+  //! Type pointeur d'un Ã©lÃ©ment du tableau
   typedef value_type* pointer;
-  //! Type pointeur constant d'un élément du tableau
+  //! Type pointeur constant d'un Ã©lÃ©ment du tableau
   typedef const value_type* const_pointer;
-  //! Type de l'itérateur sur un élément du tableau
+  //! Type de l'itÃ©rateur sur un Ã©lÃ©ment du tableau
   typedef pointer iterator;
-  //! Type de l'itérateur constant sur un élément du tableau
+  //! Type de l'itÃ©rateur constant sur un Ã©lÃ©ment du tableau
   typedef const_pointer const_iterator;
-  //! Type référence d'un élément du tableau
+  //! Type rÃ©fÃ©rence d'un Ã©lÃ©ment du tableau
   typedef value_type& reference;
-  //! Type référence constante d'un élément du tableau
+  //! Type rÃ©fÃ©rence constante d'un Ã©lÃ©ment du tableau
   typedef ConstReferenceType const_reference;
   //! Type indexant le tableau
   typedef Int64 size_type;
-  //! Type d'une distance entre itérateur éléments du tableau
+  //! Type d'une distance entre itÃ©rateur Ã©lÃ©ments du tableau
   typedef ptrdiff_t difference_type;
 
  private:
@@ -299,29 +300,29 @@ class AbstractArray
   }
  protected:
 
-  //! Construit un vecteur vide avec l'allocateur par défaut
+  //! Construit un vecteur vide avec l'allocateur par dÃ©faut
   AbstractArray()
   : m_p(_sharedNull()), m_baseptr(m_p->ptr)
   {
   }
   /*!
-   * \brief Construit un vecteur vide avec un allocateur spécifique \a a.
-   * Si \a n'est pas nul, la mémoire est allouée pour
-   * contenir \a acapacity éléments (mais le tableau reste vide).
+   * \brief Construit un vecteur vide avec un allocateur spÃ©cifique \a a.
+   * Si \a n'est pas nul, la mÃ©moire est allouÃ©e pour
+   * contenir \a acapacity Ã©lÃ©ments (mais le tableau reste vide).
    */
   AbstractArray(IMemoryAllocator* a,Int64 acapacity)
   : m_p(_sharedNull()), m_baseptr(m_p->ptr)
   {
-    // Si un allocateur spécifique est utilisé et qu'il n'est pas
-    // celui par défaut, il faut toujours allouer un objet pour
-    // pouvoir conserver l'instance de l'allocateur. Par défaut
-    // on utilise une taille de 1 élément.
+    // Si un allocateur spÃ©cifique est utilisÃ© et qu'il n'est pas
+    // celui par dÃ©faut, il faut toujours allouer un objet pour
+    // pouvoir conserver l'instance de l'allocateur. Par dÃ©faut
+    // on utilise une taille de 1 Ã©lÃ©ment.
     if (a && a!=m_p->allocator){
       Int64 c = (acapacity>1) ? acapacity : 1;
       _directFirstAllocateWithAllocator(c,a);
     }
   }
-  //! Constructeur par déplacement. Ne doit être utilisé que par UniqueArray
+  //! Constructeur par dÃ©placement. Ne doit Ãªtre utilisÃ© que par UniqueArray
   AbstractArray(ThatClassType&& rhs) ARCCORE_NOEXCEPT
   : m_p(rhs.m_p), m_baseptr(m_p->ptr)
   {
@@ -363,14 +364,14 @@ class AbstractArray
     _checkFreeMemory();
   }
  public:
-  //! Libère la mémoire utilisée par le tableau.
+  //! LibÃ¨re la mÃ©moire utilisÃ©e par le tableau.
   void dispose()
   {
     _destroy();
     IMemoryAllocator* a = m_p->allocator;
     _internalDeallocate();
     _setMP(_sharedNull());
-    // Si on a un allocateur spécifique, il faut allouer un
+    // Si on a un allocateur spÃ©cifique, il faut allouer un
     // bloc pour conserver cette information.
     if (a != m_p->allocator)
       _directFirstAllocateWithAllocator(1,a);
@@ -390,21 +391,21 @@ class AbstractArray
     return Span<const T>(m_p->ptr,size());
   }
  public:
-  //! Nombre d'éléments du vecteur
+  //! Nombre d'Ã©lÃ©ments du vecteur
   Integer size() const { return ARCCORE_CAST_SMALL_SIZE(m_p->size); }
-  //! Nombre d'éléments du vecteur
+  //! Nombre d'Ã©lÃ©ments du vecteur
   Integer length() const { return ARCCORE_CAST_SMALL_SIZE(m_p->size); }
-  //! Capacité (nombre d'éléments alloués) du vecteur
+  //! CapacitÃ© (nombre d'Ã©lÃ©ments allouÃ©s) du vecteur
   Integer capacity() const { return ARCCORE_CAST_SMALL_SIZE(m_p->capacity); }
-  //! Nombre d'éléments du vecteur (en 64 bits)
+  //! Nombre d'Ã©lÃ©ments du vecteur (en 64 bits)
   Int64 largeSize() const { return m_p->size; }
-  //! Nombre d'éléments du vecteur (en 64 bits)
+  //! Nombre d'Ã©lÃ©ments du vecteur (en 64 bits)
   Int64 largeLength() const { return m_p->size; }
-  //! Capacité (nombre d'éléments alloués) du vecteur (en 64 bits)
+  //! CapacitÃ© (nombre d'Ã©lÃ©ments allouÃ©s) du vecteur (en 64 bits)
   Int64 largeCapacity() const { return m_p->capacity; }
-  //! Capacité (nombre d'éléments alloués) du vecteur
+  //! CapacitÃ© (nombre d'Ã©lÃ©ments allouÃ©s) du vecteur
   bool empty() const { return m_p->size==0; }
-  //! Vrai si le tableau contient l'élément de valeur \a v
+  //! Vrai si le tableau contient l'Ã©lÃ©ment de valeur \a v
   bool contains(ConstReferenceType v) const
   {
     const T* ptr = m_p->ptr;
@@ -415,7 +416,7 @@ class AbstractArray
     return false;
   }
  public:
-  //! Elément d'indice \a i
+  //! ElÃ©ment d'indice \a i
   ConstReferenceType operator[](Int64 i) const
   {
     ARCCORE_CHECK_AT(i,m_p->size);
@@ -426,7 +427,7 @@ class AbstractArray
  private:
   T* m_baseptr;
  protected:
-  //! Réserve le mémoire pour \a new_capacity éléments
+  //! RÃ©serve le mÃ©moire pour \a new_capacity Ã©lÃ©ments
   void _reserve(Int64 new_capacity)
   {
     if (new_capacity<=m_p->capacity)
@@ -434,9 +435,9 @@ class AbstractArray
     _internalRealloc(new_capacity,false);
   }
   /*!
-   * \brief Réalloue le tableau pour une nouvelle capacité égale à \a new_capacity.
+   * \brief RÃ©alloue le tableau pour une nouvelle capacitÃ© Ã©gale Ã  \a new_capacity.
    *
-   * Si la nouvelle capacité est inférieure à l'ancienne, rien ne se passe.
+   * Si la nouvelle capacitÃ© est infÃ©rieure Ã  l'ancienne, rien ne se passe.
    */
   virtual void _internalRealloc(Int64 new_capacity,bool compute_capacity)
   {
@@ -454,13 +455,13 @@ class AbstractArray
         acapacity = (acapacity==0) ? 4 : (acapacity + 1 + acapacity / 2);
       //std::cout << " REALLOC: want=" << wanted_size << " new_capacity=" << capacity << '\n';
     }
-    // Si la nouvelle capacité est inférieure à la courante,ne fait rien.
+    // Si la nouvelle capacitÃ© est infÃ©rieure Ã  la courante,ne fait rien.
     if (acapacity<m_p->capacity)
       return;
     _internalReallocate(acapacity,IsPODType());
   }
 
-  //! Réallocation pour un type POD
+  //! RÃ©allocation pour un type POD
   virtual void _internalReallocate(Int64 new_capacity,TrueType)
   {
     TrueImpl* old_p = m_p;
@@ -472,7 +473,7 @@ class AbstractArray
     }
   }
 
-  //! Réallocation pour un type complexe (non POD)
+  //! RÃ©allocation pour un type complexe (non POD)
   virtual void _internalReallocate(Int64 new_capacity,FalseType)
   {
     TrueImpl* old_p = m_p;
@@ -488,7 +489,7 @@ class AbstractArray
       _updateReferences();
     }
   }
-  // Libère la mémoire
+  // LibÃ¨re la mÃ©moire
   virtual void _internalDeallocate()
   {
     if (m_p!=TrueImpl::shared_null)
@@ -503,7 +504,7 @@ class AbstractArray
  private:
   virtual void _directFirstAllocateWithAllocator(Int64 new_capacity,IMemoryAllocator* a)
   {
-    //TODO: vérifier m_p vaut shared_null
+    //TODO: vÃ©rifier m_p vaut shared_null
     _setMP(static_cast<TrueImpl*>(ArrayImplBase::allocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p,a)));
     m_p->allocator = a;
     m_p->nb_ref = _getNbRef();
@@ -524,16 +525,16 @@ class AbstractArray
     o << " Infos: size=" << m_p->size << " capacity=" << m_p->capacity << '\n';
   }
  protected:
-  //! Mise à jour des références
+  //! Mise Ã  jour des rÃ©fÃ©rences
   virtual void _updateReferences()
   {
   }
-  //! Mise à jour des références
+  //! Mise Ã  jour des rÃ©fÃ©rences
   virtual Integer _getNbRef()
   {
     return 1;
   }
-  //! Ajoute \a n élément de valeur \a val à la fin du tableau
+  //! Ajoute \a n Ã©lÃ©ment de valeur \a val Ã  la fin du tableau
   void _addRange(ConstReferenceType val,Int64 n)
   {
     Int64 s = m_p->size;
@@ -544,7 +545,7 @@ class AbstractArray
     m_p->size += n;
   }
 
-  //! Ajoute \a n élément de valeur \a val à la fin du tableau
+  //! Ajoute \a n Ã©lÃ©ment de valeur \a val Ã  la fin du tableau
   void _addRange(Span<const T> val)
   {
     Int64 n = val.size();
@@ -556,7 +557,7 @@ class AbstractArray
     m_p->size += n;
   }
 
-  //! Détruit l'instance si plus personne ne la référence
+  //! DÃ©truit l'instance si plus personne ne la rÃ©fÃ©rence
   void _checkFreeMemory()
   {
     if (m_p->nb_ref==0){
@@ -570,7 +571,7 @@ class AbstractArray
   }
   void _destroyRange(Int64,Int64,TrueType)
   {
-    // Rien à faire pour un type POD.
+    // Rien Ã  faire pour un type POD.
   }
   void _destroyRange(Int64 abegin,Int64 aend,FalseType)
   {
@@ -661,7 +662,7 @@ class AbstractArray
     const T* rhs_begin = rhs.data();
     Int64 rhs_size = rhs.size();
     T* abegin = m_p->ptr;
-    // Vérifie que \a rhs n'est pas un élément à l'intérieur de ce tableau
+    // VÃ©rifie que \a rhs n'est pas un Ã©lÃ©ment Ã  l'intÃ©rieur de ce tableau
     if (abegin>=rhs_begin && abegin<(rhs_begin+rhs_size))
       ArrayImplBase::overlapError(abegin,m_p->size,rhs_begin,rhs_size);
     _resize(rhs_size);
@@ -673,23 +674,23 @@ class AbstractArray
   }
 
   /*!
-   * \brief Implémente l'opérateur d'assignement par déplacement.
+   * \brief ImplÃ©mente l'opÃ©rateur d'assignement par dÃ©placement.
    *
    * Cet appel n'est valide que pour les tableaux de type UniqueArray
-   * qui n'ont qu'une seule référence. Les infos de \a rhs sont directement
-   * copiés cette l'instance. En retour, \a rhs contient le tableau vide.
+   * qui n'ont qu'une seule rÃ©fÃ©rence. Les infos de \a rhs sont directement
+   * copiÃ©s cette l'instance. En retour, \a rhs contient le tableau vide.
    */
   void _move(ThatClassType& rhs) ARCCORE_NOEXCEPT
   {
     if (&rhs==this)
       return;
 
-    // Comme il n'y a qu'une seule référence sur le tableau actuel, on peut
-    // directement libérer la mémoire.
+    // Comme il n'y a qu'une seule rÃ©fÃ©rence sur le tableau actuel, on peut
+    // directement libÃ©rer la mÃ©moire.
     _destroy();
     _internalDeallocate();
 
-    // Recopie bit à bit.
+    // Recopie bit Ã  bit.
     _setMP(rhs.m_p);
 
     // Indique que \a rhs est vide.
@@ -697,11 +698,11 @@ class AbstractArray
   }
 
   /*!
-   * \brief Échange les valeurs de l'instance avec celles de \a rhs.
+   * \brief Ã‰change les valeurs de l'instance avec celles de \a rhs.
    *
    * Cet appel n'est valide que pour les tableaux de type UniqueArray
-   * et l'échange se fait uniquement par l'échange des pointeurs. L'opération
-   * est donc de complexité constante.
+   * et l'Ã©change se fait uniquement par l'Ã©change des pointeurs. L'opÃ©ration
+   * est donc de complexitÃ© constante.
    */
   void _swap(ThatClassType& rhs) ARCCORE_NOEXCEPT
   {
@@ -711,8 +712,8 @@ class AbstractArray
 
  private:
   /*!
-   * \brief Réinitialise le tableau à un tableau vide.
-   * \warning Cette méthode n'est valide que pour les UniqueArray et pas
+   * \brief RÃ©initialise le tableau Ã  un tableau vide.
+   * \warning Cette mÃ©thode n'est valide que pour les UniqueArray et pas
    * les SharedArray.
    */
   void _reset()
@@ -733,13 +734,13 @@ class AbstractArray
 /*!
  * \ingroup Collection
  *
- * \brief Classe de base des vecteurs 1D de données.
+ * \brief Classe de base des vecteurs 1D de donnÃ©es.
  *
- * Cette classe manipule un vecteur (tableau) 1D de données.
+ * Cette classe manipule un vecteur (tableau) 1D de donnÃ©es.
  *
- * Les instances de cette classe ne sont pas copiables ni affectable. Pour créer un
- * tableau copiable, il faut utiliser SharedArray (pour une sémantique par
- * référence) ou UniqueArray (pour une sémantique par valeur comme la STL).
+ * Les instances de cette classe ne sont pas copiables ni affectable. Pour crÃ©er un
+ * tableau copiable, il faut utiliser SharedArray (pour une sÃ©mantique par
+ * rÃ©fÃ©rence) ou UniqueArray (pour une sÃ©mantique par valeur comme la STL).
  */
 template<typename T>
 class Array
@@ -779,7 +780,7 @@ class Array
  protected:
 #endif
   ARCCORE_DEPRECATED_2018 Array() : AbstractArray<T>() {}
-  //! Créé un tableau vide avec un allocateur spécifique.
+  //! CrÃ©Ã© un tableau vide avec un allocateur spÃ©cifique.
   ARCCORE_DEPRECATED_2018 Array(Int64 asize,ConstReferenceType value) : AbstractArray<T>()
   {
     this->_resize(asize,value);
@@ -809,10 +810,10 @@ class Array
   {
   }
   /*!
-   * \brief Créé un tableau de \a asize éléments avec un allocateur spécifique.
+   * \brief CrÃ©Ã© un tableau de \a asize Ã©lÃ©ments avec un allocateur spÃ©cifique.
    *
-   * Si ArrayTraits<T>::IsPODType vaut TrueType, les éléments ne sont pas
-   * initialisés. Sinon, c'est le constructeur par défaut de T qui est utilisé.
+   * Si ArrayTraits<T>::IsPODType vaut TrueType, les Ã©lÃ©ments ne sont pas
+   * initialisÃ©s. Sinon, c'est le constructeur par dÃ©faut de T qui est utilisÃ©.
    */
   ARCCORE_DEPRECATED_2018 Array(IMemoryAllocator* allocator,Int64 asize)
   : AbstractArray<T>(allocator,asize)
@@ -844,10 +845,10 @@ class Array
   {
   }
   /*!
-   * \brief Créé un tableau de \a asize éléments avec un allocateur spécifique.
+   * \brief CrÃ©Ã© un tableau de \a asize Ã©lÃ©ments avec un allocateur spÃ©cifique.
    *
-   * Si ArrayTraits<T>::IsPODType vaut TrueType, les éléments ne sont pas
-   * initialisés. Sinon, c'est le constructeur par défaut de T qui est utilisé.
+   * Si ArrayTraits<T>::IsPODType vaut TrueType, les Ã©lÃ©ments ne sont pas
+   * initialisÃ©s. Sinon, c'est le constructeur par dÃ©faut de T qui est utilisÃ©.
    */
   Array(IMemoryAllocator* allocator,Int64 asize,BuildDeprecated)
   : AbstractArray<T>(allocator,asize)
@@ -855,7 +856,7 @@ class Array
     this->_resize(asize);
   }
  protected:
-  //! Constructeur par déplacement (uniquement pour UniqueArray)
+  //! Constructeur par dÃ©placement (uniquement pour UniqueArray)
   Array(Array<T>&& rhs) ARCCORE_NOEXCEPT : AbstractArray<T>(std::move(rhs)) {}
  private:
   Array(const Array<T>& rhs);
@@ -893,10 +894,10 @@ class Array
     return Span<const T>(m_p->ptr,this->size());
   }
   /*!
-   * \brief Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments.
+   * \brief Sous-vue Ã  partir de l'Ã©lÃ©ment \a abegin et contenant \a asize Ã©lÃ©ments.
    *
-   * Si \a (\a abegin + \a asize) est supérieur à la taille du tableau,
-   * la vue est tronqué à cette taille, retournant éventuellement une vue vide.
+   * Si \a (\a abegin + \a asize) est supÃ©rieur Ã  la taille du tableau,
+   * la vue est tronquÃ© Ã  cette taille, retournant Ã©ventuellement une vue vide.
    */
   ConstArrayView<T> subConstView(Integer abegin,Integer asize) const
   {
@@ -918,20 +919,20 @@ class Array
     return Span<T>(m_p->ptr,this->size());
   }
   /*!
-   * \brief Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments.
+   * \brief Sous-vue Ã  partir de l'Ã©lÃ©ment \a abegin et contenant \a asize Ã©lÃ©ments.
    *
-   * Si \a (\a abegin + \a asize) est supérieur à la taille du tableau,
-   * la vue est tronqué à cette taille, retournant éventuellement une vue vide.
+   * Si \a (\a abegin + \a asize) est supÃ©rieur Ã  la taille du tableau,
+   * la vue est tronquÃ© Ã  cette taille, retournant Ã©ventuellement une vue vide.
    */
   ArrayView<T> subView(Integer abegin,Integer asize)
   {
     return view().subView(abegin,asize);
   }
   /*!
-   * \brief Extrait un sous-tableau à à partir d'une liste d'index.
+   * \brief Extrait un sous-tableau Ã  Ã  partir d'une liste d'index.
    *
-   * Le résultat est stocké dans \a result dont la taille doit être au moins
-   * égale à celle de \a indexes.
+   * Le rÃ©sultat est stockÃ© dans \a result dont la taille doit Ãªtre au moins
+   * Ã©gale Ã  celle de \a indexes.
    */
   void sample(ConstArrayView<Integer> indexes,ArrayView<T> result) const
   {
@@ -947,7 +948,7 @@ class Array
   }
 
  public:
-  //! Ajoute l'élément \a val à la fin du tableau
+  //! Ajoute l'Ã©lÃ©ment \a val Ã  la fin du tableau
   void add(ConstReferenceType val)
   {
     if (m_p->size >= m_p->capacity)
@@ -955,61 +956,61 @@ class Array
     new (m_p->ptr + m_p->size) T(val);
     ++m_p->size;
   }
-  //! Ajoute \a n élément de valeur \a val à la fin du tableau
+  //! Ajoute \a n Ã©lÃ©ment de valeur \a val Ã  la fin du tableau
   void addRange(ConstReferenceType val,Int64 n)
   {
     this->_addRange(val,n);
   }
-  //! Ajoute \a n élément de valeur \a val à la fin du tableau
+  //! Ajoute \a n Ã©lÃ©ment de valeur \a val Ã  la fin du tableau
   void addRange(ConstArrayView<T> val)
   {
     this->_addRange(val);
   }
-  //! Ajoute \a n élément de valeur \a val à la fin du tableau
+  //! Ajoute \a n Ã©lÃ©ment de valeur \a val Ã  la fin du tableau
   void addRange(Span<const T> val)
   {
     this->_addRange(val);
   }
-  //! Ajoute \a n élément de valeur \a val à la fin du tableau
+  //! Ajoute \a n Ã©lÃ©ment de valeur \a val Ã  la fin du tableau
   void addRange(ArrayView<T> val)
   {
     this->_addRange(val);
   }
-  //! Ajoute \a n élément de valeur \a val à la fin du tableau
+  //! Ajoute \a n Ã©lÃ©ment de valeur \a val Ã  la fin du tableau
   void addRange(Span<T> val)
   {
     this->_addRange(val);
   }
-  //! Ajoute \a n élément de valeur \a val à la fin du tableau
+  //! Ajoute \a n Ã©lÃ©ment de valeur \a val Ã  la fin du tableau
   void addRange(const Array<T>& val)
   {
     this->_addRange(val.constSpan());
   }
   /*!
-   * \brief Change le nombre d'élément du tableau à \a s.
+   * \brief Change le nombre d'Ã©lÃ©ment du tableau Ã  \a s.
    * Si le nouveau tableau est plus grand que l'ancien, les nouveaux
-   * éléments ne sont pas initialisés s'il s'agit d'un type POD.
+   * Ã©lÃ©ments ne sont pas initialisÃ©s s'il s'agit d'un type POD.
    */
   void resize(Int64 s) { this->_resize(s); }
   /*!
-   * \brief Change le nombre d'élément du tableau à \a s.
+   * \brief Change le nombre d'Ã©lÃ©ment du tableau Ã  \a s.
    * Si le nouveau tableau est plus grand que l'ancien, les nouveaux
-   * éléments sont initialisé avec la valeur \a fill_value.
+   * Ã©lÃ©ments sont initialisÃ© avec la valeur \a fill_value.
    */
   void resize(Int64 s,ConstReferenceType fill_value)
   {
     this->_resize(s,fill_value);
   }
-  //! Réserve le mémoire pour \a new_capacity éléments
+  //! RÃ©serve le mÃ©moire pour \a new_capacity Ã©lÃ©ments
   void reserve(Int64 new_capacity)
   {
     this->_reserve(new_capacity);
   }
   /*!
-   * \brief Supprime l'entité ayant l'indice \a index.
+   * \brief Supprime l'entitÃ© ayant l'indice \a index.
    *
-   * Tous les éléments de ce tableau après celui supprimé sont
-   * décalés.
+   * Tous les Ã©lÃ©ments de ce tableau aprÃ¨s celui supprimÃ© sont
+   * dÃ©calÃ©s.
    */
   void remove(Int64 index)
   {
@@ -1021,7 +1022,7 @@ class Array
     m_p->ptr[m_p->size].~T();
   }
   /*!
-   * \brief Supprime la dernière entité du tableau.
+   * \brief Supprime la derniÃ¨re entitÃ© du tableau.
    */
   void popBack()
   {
@@ -1029,66 +1030,66 @@ class Array
     --m_p->size;
     m_p->ptr[m_p->size].~T();
   }
-  //! Elément d'indice \a i. Vérifie toujours les débordements
+  //! ElÃ©ment d'indice \a i. VÃ©rifie toujours les dÃ©bordements
   ConstReferenceType at(Int64 i) const
   {
     arccoreCheckAt(i,m_p->size);
     return m_p->ptr[i];
   }
-  //! Positionne l'élément d'indice \a i. Vérifie toujours les débordements
+  //! Positionne l'Ã©lÃ©ment d'indice \a i. VÃ©rifie toujours les dÃ©bordements
   void setAt(Int64 i,ConstReferenceType value)
   {
     arccoreCheckAt(i,m_p->size);
     m_p->ptr[i] = value;
   }
-  //! Elément d'indice \a i
+  //! ElÃ©ment d'indice \a i
   ConstReferenceType item(Int64 i) const { return m_p->ptr[i]; }
-  //! Elément d'indice \a i
+  //! ElÃ©ment d'indice \a i
   void setItem(Int64 i,ConstReferenceType v) { m_p->ptr[i] = v; }
-  //! Elément d'indice \a i
+  //! ElÃ©ment d'indice \a i
   ConstReferenceType operator[](Int64 i) const
   {
     ARCCORE_CHECK_AT(i,m_p->size);
     return m_p->ptr[i];
   }
-  //! Elément d'indice \a i
+  //! ElÃ©ment d'indice \a i
   T& operator[](Int64 i)
   {
     ARCCORE_CHECK_AT(i,m_p->size);
     return m_p->ptr[i];
   }
-  //! Dernier élément du tableau
-  /*! Le tableau ne doit pas être vide */
+  //! Dernier Ã©lÃ©ment du tableau
+  /*! Le tableau ne doit pas Ãªtre vide */
   T& back()
   {
     ARCCORE_CHECK_AT(m_p->size-1,m_p->size);
     return m_p->ptr[m_p->size-1];
   }
-  //! Dernier élément du tableau (const)
-  /*! Le tableau ne doit pas être vide */
+  //! Dernier Ã©lÃ©ment du tableau (const)
+  /*! Le tableau ne doit pas Ãªtre vide */
   ConstReferenceType back() const
   {
     ARCCORE_CHECK_AT(m_p->size-1,m_p->size);
     return m_p->ptr[m_p->size-1];
   }
 
-  //! Premier élément du tableau
-  /*! Le tableau ne doit pas être vide */
+  //! Premier Ã©lÃ©ment du tableau
+  /*! Le tableau ne doit pas Ãªtre vide */
   T& front()
   {
     ARCCORE_CHECK_AT(0,m_p->size);
     return m_p->ptr[0];
   }
 
-  //! Premier élément du tableau (const)
-  /*! Le tableau ne doit pas être vide */
+  //! Premier Ã©lÃ©ment du tableau (const)
+  /*! Le tableau ne doit pas Ãªtre vide */
   ConstReferenceType front() const
   {
     ARCCORE_CHECK_AT(0,m_p->size);
     return m_p->ptr[0];
   }
 
-  //! Supprime les éléments du tableau
+  //! Supprime les Ã©lÃ©ments du tableau
   void clear()
   {
     this->_clear();
@@ -1103,7 +1104,7 @@ class Array
   /*!
    * \brief Copie les valeurs de \a rhs dans l'instance.
    *
-   * L'instance est redimensionnée pour que this->size()==rhs.size().
+   * L'instance est redimensionnÃ©e pour que this->size()==rhs.size().
    */  
   void copy(Span<const T> rhs)
   {
@@ -1116,63 +1117,63 @@ class Array
     return Array<T>(this->constSpan());
   }
 
-  //! \internal Accès à la racine du tableau hors toute protection
+  //! \internal AccÃ¨s Ã  la racine du tableau hors toute protection
   const T* unguardedBasePointer() const
   { return m_p->ptr; }
-  //! \internal Accès à la racine du tableau hors toute protection
+  //! \internal AccÃ¨s Ã  la racine du tableau hors toute protection
   T* unguardedBasePointer()
   { return m_p->ptr; }
 
-  //! Accès à la racine du tableau hors toute protection
+  //! AccÃ¨s Ã  la racine du tableau hors toute protection
   const T* data() const
   { return m_p->ptr; }
-  //! \internal Accès à la racine du tableau hors toute protection
+  //! \internal AccÃ¨s Ã  la racine du tableau hors toute protection
   T* data()
   { return m_p->ptr; }
 
  public:
 
   /*!
-   * \brief Itérateur sur le premier élément du tableau.
-   * \deprecated Utiliser range().begin(), std::begin() ou data() à la place.
+   * \brief ItÃ©rateur sur le premier Ã©lÃ©ment du tableau.
+   * \deprecated Utiliser range().begin(), std::begin() ou data() Ã  la place.
    */
   ARCCORE_DEPRECATED_2018 iterator begin()
   { return iterator(m_p->ptr); }
   /*!
-   * \brief Itérateur constant sur le premier élément du tableau.
-   * \deprecated Utiliser range().begin(), std::begin() ou data() à la place.
+   * \brief ItÃ©rateur constant sur le premier Ã©lÃ©ment du tableau.
+   * \deprecated Utiliser range().begin(), std::begin() ou data() Ã  la place.
    */
   ARCCORE_DEPRECATED_2018 const_iterator begin() const
   { return const_iterator(m_p->ptr); }
   /*!
-   * \brief Itérateur sur le premier élément après la fin du tableau.
-   * \deprecated Utiliser range().end() à la place.
+   * \brief ItÃ©rateur sur le premier Ã©lÃ©ment aprÃ¨s la fin du tableau.
+   * \deprecated Utiliser range().end() Ã  la place.
    */
   ARCCORE_DEPRECATED_2018 iterator end()
   { return iterator(m_p->ptr+m_p->size); }
   /*!
-   * \brief Itérateur constant sur le premier élément après la fin du tableau.
-   * \deprecated Utiliser range().end() à la place.
+   * \brief ItÃ©rateur constant sur le premier Ã©lÃ©ment aprÃ¨s la fin du tableau.
+   * \deprecated Utiliser range().end() Ã  la place.
    */
   ARCCORE_DEPRECATED_2018 const_iterator end() const
   { return const_iterator(m_p->ptr+m_p->size); }
 
  public:
 
-  //! Intervalle d'itération du premier au dernièr élément.
+  //! Intervalle d'itÃ©ration du premier au derniÃ¨r Ã©lÃ©ment.
   ArrayRange<pointer> range()
   {
     return ArrayRange<pointer>(m_p->ptr,m_p->ptr+m_p->size);
   }
-  //! Intervalle d'itération du premier au dernièr élément.
+  //! Intervalle d'itÃ©ration du premier au derniÃ¨r Ã©lÃ©ment.
   ArrayRange<const_pointer> range() const
   {
     return ArrayRange<const_pointer>(m_p->ptr,m_p->ptr+m_p->size);
   }
  public:
 
-  //@{ Méthodes pour compatibilité avec la STL.
-  //! Ajoute l'élément \a val à la fin du tableau
+  //@{ MÃ©thodes pour compatibilitÃ© avec la STL.
+  //! Ajoute l'Ã©lÃ©ment \a val Ã  la fin du tableau
   void push_back(ConstReferenceType val)
   {
     this->add(val);
@@ -1189,31 +1190,31 @@ private:
 /*!
  * \ingroup Collection
  *
- * \brief Vecteur 1D de données avec sémantique par référence.
+ * \brief Vecteur 1D de donnÃ©es avec sÃ©mantique par rÃ©fÃ©rence.
  *
- * Pour avoir un vecteur qui utilise une sémantique par valeur (à la std::vector),
+ * Pour avoir un vecteur qui utilise une sÃ©mantique par valeur (Ã  la std::vector),
  * il faut utiliser la classe UniqueArray.
  *
- * La sémantique par référence fonctionne comme suit:
+ * La sÃ©mantique par rÃ©fÃ©rence fonctionne comme suit:
  *
  * \code
  * SharedArray<int> a1(5);
  * SharedArray<int> a2;
- * a2 = a1; // a2 et a1 font référence à la même zone mémoire.
+ * a2 = a1; // a2 et a1 font rÃ©fÃ©rence Ã  la mÃªme zone mÃ©moire.
  * a1[3] = 1;
  * a2[3] = 2;
  * std::cout << a1[3]; // affiche '2'
  * \endcode
  *
- * Dans l'exemple précédent, \a a1 et \a a2 font référence à la même zone
- * mémoire et donc \a a2[3] aura la même valeur que \a a1[3] (soit la valeur \a 2),
+ * Dans l'exemple prÃ©cÃ©dent, \a a1 et \a a2 font rÃ©fÃ©rence Ã  la mÃªme zone
+ * mÃ©moire et donc \a a2[3] aura la mÃªme valeur que \a a1[3] (soit la valeur \a 2),
  *
- * Un tableau partagée est désalloué lorsqu'il n'existe plus
- * de référence sur ce tableau.
+ * Un tableau partagÃ©e est dÃ©sallouÃ© lorsqu'il n'existe plus
+ * de rÃ©fÃ©rence sur ce tableau.
  *
- * \warning les opérations de référencement/déréférencement (les opérateurs
+ * \warning les opÃ©rations de rÃ©fÃ©rencement/dÃ©rÃ©fÃ©rencement (les opÃ©rateurs
  * d'affection, de recopie et les destructeurs) ne sont pas thread-safe. Par
- * conséquent ce type de tableau doit être utilisé avec précaution dans
+ * consÃ©quent ce type de tableau doit Ãªtre utilisÃ© avec prÃ©caution dans
  * le cas d'un environnement multi-thread.
  *
  */
@@ -1235,48 +1236,48 @@ class SharedArray
  public:
 
  public:
-  //! Créé un tableau vide
+  //! CrÃ©Ã© un tableau vide
   SharedArray() : Array<T>(BD_NoWarning), m_next(nullptr), m_prev(nullptr) {}
-  //! Créé un tableau de \a size éléments contenant la valeur \a value.
+  //! CrÃ©Ã© un tableau de \a size Ã©lÃ©ments contenant la valeur \a value.
   SharedArray(Int64 asize,ConstReferenceType value)
   : Array<T>(BD_NoWarning), m_next(nullptr), m_prev(nullptr)
   {
     this->_resize(asize,value);
   }
-  //! Créé un tableau de \a size éléments contenant la valeur par défaut du type T()
+  //! CrÃ©Ã© un tableau de \a size Ã©lÃ©ments contenant la valeur par dÃ©faut du type T()
   explicit SharedArray(Int64 asize)
   : Array<T>(BD_NoWarning), m_next(nullptr), m_prev(nullptr)
   {
     this->_resize(asize);
   }
-  //! Créé un tableau de \a size éléments contenant la valeur par défaut du type T()
+  //! CrÃ©Ã© un tableau de \a size Ã©lÃ©ments contenant la valeur par dÃ©faut du type T()
   explicit SharedArray(Int32 asize)
   : Array<T>(BD_NoWarning), m_next(nullptr), m_prev(nullptr)
   {
     this->_resize(asize);
   }
-  //! Créé un tableau de \a size éléments contenant la valeur par défaut du type T()
+  //! CrÃ©Ã© un tableau de \a size Ã©lÃ©ments contenant la valeur par dÃ©faut du type T()
   explicit SharedArray(size_t asize)
   : Array<T>(BD_NoWarning), m_next(nullptr), m_prev(nullptr)
   {
     this->_resize((Int64)asize);
   }
-  //! Créé un tableau en recopiant les valeurs de la value \a view.
+  //! CrÃ©Ã© un tableau en recopiant les valeurs de la value \a view.
   SharedArray(const ConstArrayView<T>& aview)
   : Array<T>(aview,BD_NoWarning), m_next(nullptr), m_prev(nullptr)
   {
   }
-  //! Créé un tableau en recopiant les valeurs de la value \a view.
+  //! CrÃ©Ã© un tableau en recopiant les valeurs de la value \a view.
   SharedArray(const Span<const T>& aview)
   : Array<T>(aview,BD_NoWarning), m_next(nullptr), m_prev(nullptr)
   {
   }
-  //! Créé un tableau en recopiant les valeurs de la value \a view.
+  //! CrÃ©Ã© un tableau en recopiant les valeurs de la value \a view.
   SharedArray(const ArrayView<T>& aview)
   : Array<T>(Span<const T>(aview),BD_NoWarning), m_next(nullptr), m_prev(nullptr)
   {
   }
-  //! Créé un tableau en recopiant les valeurs de la value \a view.
+  //! CrÃ©Ã© un tableau en recopiant les valeurs de la value \a view.
   SharedArray(const Span<T>& aview)
   : Array<T>(aview,BD_NoWarning), m_next(nullptr), m_prev(nullptr)
   {
@@ -1285,15 +1286,15 @@ class SharedArray
   : Array<T>(alist,BD_NoWarning), m_next(nullptr), m_prev(nullptr)
   {
   }
-  //! Créé un tableau faisant référence à \a rhs.
+  //! CrÃ©Ã© un tableau faisant rÃ©fÃ©rence Ã  \a rhs.
   SharedArray(const SharedArray<T>& rhs)
   : Array<T>(BD_NoWarning), m_next(nullptr), m_prev(nullptr)
   {
     _initReference(rhs);
   }
-  //! Créé un tableau en recopiant les valeurs \a rhs.
+  //! CrÃ©Ã© un tableau en recopiant les valeurs \a rhs.
   inline SharedArray(const UniqueArray<T>& rhs);
-  //! Change la référence de cette instance pour qu'elle soit celle de \a rhs.
+  //! Change la rÃ©fÃ©rence de cette instance pour qu'elle soit celle de \a rhs.
   void operator=(const SharedArray<T>& rhs)
   {
     this->_operatorEqual(rhs);
@@ -1320,7 +1321,7 @@ class SharedArray
   {
     this->copy(rhs);
   }
-  //! Détruit le tableau
+  //! DÃ©truit le tableau
   ~SharedArray() override
   {
     _removeReference();
@@ -1339,7 +1340,7 @@ class SharedArray
     _addReference(&rhs);
     ++m_p->nb_ref;
   }
-  //! Mise à jour des références
+  //! Mise Ã  jour des rÃ©fÃ©rences
   void _updateReferences() final
   {
     for( ThatClassType* i = m_prev; i; i = i->m_prev )
@@ -1347,7 +1348,7 @@ class SharedArray
     for( ThatClassType* i = m_next; i; i = i->m_next )
       i->_setMP(m_p);
   }
-  //! Mise à jour des références
+  //! Mise Ã  jour des rÃ©fÃ©rences
   Integer _getNbRef() final
   {
     Integer nb_ref = 1;
@@ -1358,8 +1359,8 @@ class SharedArray
     return nb_ref;
   }
   /*!
-   * \brief Insère cette instance dans la liste chaînée.
-   * L'instance est insérée à la position de \a new_ref.
+   * \brief InsÃ¨re cette instance dans la liste chaÃ®nÃ©e.
+   * L'instance est insÃ©rÃ©e Ã  la position de \a new_ref.
    * \pre m_prev==0
    * \pre m_next==0;
    */
@@ -1373,7 +1374,7 @@ class SharedArray
     if (prev)
       prev->m_next = this;
   }
-  //! Supprime cette instance de la liste chaînée des références
+  //! Supprime cette instance de la liste chaÃ®nÃ©e des rÃ©fÃ©rences
   void _removeReference()
   {
     if (m_prev)
@@ -1381,7 +1382,7 @@ class SharedArray
     if (m_next)
       m_next->m_prev = m_prev;
   }
-  //! Détruit l'instance si plus personne ne la référence
+  //! DÃ©truit l'instance si plus personne ne la rÃ©fÃ©rence
   void _checkFreeMemory()
   {
     if (m_p->nb_ref==0){
@@ -1401,8 +1402,8 @@ class SharedArray
     }
   }
  private:
-  ThatClassType* m_next; //!< Référence suivante dans la liste chaînée
-  ThatClassType* m_prev; //!< Référence précédente dans la liste chaînée
+  ThatClassType* m_next; //!< RÃ©fÃ©rence suivante dans la liste chaÃ®nÃ©e
+  ThatClassType* m_prev; //!< RÃ©fÃ©rence prÃ©cÃ©dente dans la liste chaÃ®nÃ©e
  private:
   //! Interdit
   void operator=(const Array<T>& rhs);
@@ -1413,12 +1414,12 @@ class SharedArray
 /*!
  * \ingroup Collection
  *
- * \brief Vecteur 1D de données avec sémantique par valeur (style STL).
+ * \brief Vecteur 1D de donnÃ©es avec sÃ©mantique par valeur (style STL).
  *
- * Cette classe gère un tableau de valeur de la même manière que la
+ * Cette classe gÃ¨re un tableau de valeur de la mÃªme maniÃ¨re que la
  * classe stl::vector de la STL.
 
- * La sémantique par valeur fonctionne comme suit:
+ * La sÃ©mantique par valeur fonctionne comme suit:
  *
  * \code
  * UniqueArray<int> a1(5);
@@ -1429,17 +1430,17 @@ class SharedArray
  * std::cout << a1[3]; // affiche '1'
  * \endcode
  *
- * Il est possible de spécifier un allocateur mémoire spécifique via
+ * Il est possible de spÃ©cifier un allocateur mÃ©moire spÃ©cifique via
  * le constructeur UniqueArray(IMemoryAllocator*). Dans ce cas, l'allocateur
- * spécifié en argument doit rester valide tant que cette instance
- * est utilisée.
+ * spÃ©cifiÃ© en argument doit rester valide tant que cette instance
+ * est utilisÃ©e.
  *
- * \warning L'allocateur est transféré à l'instance de destination lors d'un
+ * \warning L'allocateur est transfÃ©rÃ© Ã  l'instance de destination lors d'un
  * appel au constructeur (UniqueArray(UniqueArray&&) ou assignement
- * (UniqueArray::operator=(UniqueArray&&) par déplacement ainsi que lors
- * de l'appel à UniqueArray::swap(). Si ces appels sont envisagés, il
- * faut garantir que l'allocateur restera valide même après transfert. Si
- * on ne peut pas garantir cela, il est préférable d'utiliser la
+ * (UniqueArray::operator=(UniqueArray&&) par dÃ©placement ainsi que lors
+ * de l'appel Ã  UniqueArray::swap(). Si ces appels sont envisagÃ©s, il
+ * faut garantir que l'allocateur restera valide mÃªme aprÃ¨s transfert. Si
+ * on ne peut pas garantir cela, il est prÃ©fÃ©rable d'utiliser la
  * classe Array qui ne permet pas un tel transfert.
  */
 template<typename T>
@@ -1459,69 +1460,69 @@ class UniqueArray
  public:
 
  public:
-  //! Créé un tableau vide
+  //! CrÃ©Ã© un tableau vide
   UniqueArray() : Array<T>(BD_NoWarning) {}
-  //! Créé un tableau de \a size éléments contenant la valeur \a value.
+  //! CrÃ©Ã© un tableau de \a size Ã©lÃ©ments contenant la valeur \a value.
   UniqueArray(Int64 req_size,ConstReferenceType value) : Array<T>(BD_NoWarning)
   {
     this->_resize(req_size,value);
   }
-  //! Créé un tableau de \a asize éléments contenant la valeur par défaut du type T()
+  //! CrÃ©Ã© un tableau de \a asize Ã©lÃ©ments contenant la valeur par dÃ©faut du type T()
   explicit UniqueArray(Int64 asize) : Array<T>(BD_NoWarning)
   {
     this->_resize(asize);
   }
-  //! Créé un tableau de \a asize éléments contenant la valeur par défaut du type T()
+  //! CrÃ©Ã© un tableau de \a asize Ã©lÃ©ments contenant la valeur par dÃ©faut du type T()
   explicit UniqueArray(Int32 asize) : Array<T>(BD_NoWarning)
   {
     this->_resize(asize);
   }
-  //! Créé un tableau de \a asize éléments contenant la valeur par défaut du type T()
+  //! CrÃ©Ã© un tableau de \a asize Ã©lÃ©ments contenant la valeur par dÃ©faut du type T()
   explicit UniqueArray(size_t asize) : Array<T>(BD_NoWarning)
   {
     this->_resize((Int64)asize);
   }
-  //! Créé un tableau en recopiant les valeurs de la value \a aview.
+  //! CrÃ©Ã© un tableau en recopiant les valeurs de la value \a aview.
   UniqueArray(const ConstArrayView<T>& aview) : Array<T>(Span<const T>(aview),BD_NoWarning)
   {
   }
-  //! Créé un tableau en recopiant les valeurs de la value \a aview.
+  //! CrÃ©Ã© un tableau en recopiant les valeurs de la value \a aview.
   UniqueArray(const Span<const T>& aview) : Array<T>(aview,BD_NoWarning)
   {
   }
-  //! Créé un tableau en recopiant les valeurs de la value \a aview.
+  //! CrÃ©Ã© un tableau en recopiant les valeurs de la value \a aview.
   UniqueArray(const ArrayView<T>& aview) : Array<T>(Span<const T>(aview),BD_NoWarning)
   {
   }
-  //! Créé un tableau en recopiant les valeurs de la value \a aview.
+  //! CrÃ©Ã© un tableau en recopiant les valeurs de la value \a aview.
   UniqueArray(const Span<T>& aview) : Array<T>(aview,BD_NoWarning)
   {
   }
   UniqueArray(std::initializer_list<T> alist) : Array<T>(alist,BD_NoWarning)
   {
   }
-  //! Créé un tableau en recopiant les valeurs \a rhs.
+  //! CrÃ©Ã© un tableau en recopiant les valeurs \a rhs.
   UniqueArray(const Array<T>& rhs) : Array<T>(rhs.constView(),BD_NoWarning)
   {
   }
-  //! Créé un tableau en recopiant les valeurs \a rhs.
+  //! CrÃ©Ã© un tableau en recopiant les valeurs \a rhs.
   UniqueArray(const UniqueArray<T>& rhs) : Array<T>(rhs.constView(),BD_NoWarning)
   {
   }
-  //! Créé un tableau en recopiant les valeurs \a rhs.
+  //! CrÃ©Ã© un tableau en recopiant les valeurs \a rhs.
   UniqueArray(const SharedArray<T>& rhs) : Array<T>(rhs.constView(),BD_NoWarning)
   {
   }
-  //! Constructeur par déplacement. \a rhs est invalidé après cet appel
+  //! Constructeur par dÃ©placement. \a rhs est invalidÃ© aprÃ¨s cet appel
   UniqueArray(UniqueArray<T>&& rhs) ARCCORE_NOEXCEPT : Array<T>(std::move(rhs)) {}
-  //! Créé un tableau vide avec un allocateur spécifique \a allocator
+  //! CrÃ©Ã© un tableau vide avec un allocateur spÃ©cifique \a allocator
   explicit UniqueArray(IMemoryAllocator* allocator) : Array<T>(allocator,0,BD_NoWarning) {}
   /*!
-   * \brief Créé un tableau de \a asize éléments avec un
-   * allocateur spécifique \a allocator.
+   * \brief CrÃ©Ã© un tableau de \a asize Ã©lÃ©ments avec un
+   * allocateur spÃ©cifique \a allocator.
    *
-   * Si ArrayTraits<T>::IsPODType vaut TrueType, les éléments ne sont pas
-   * initialisés. Sinon, c'est le constructeur par défaut de T qui est utilisé.
+   * Si ArrayTraits<T>::IsPODType vaut TrueType, les Ã©lÃ©ments ne sont pas
+   * initialisÃ©s. Sinon, c'est le constructeur par dÃ©faut de T qui est utilisÃ©.
    */
   UniqueArray(IMemoryAllocator* allocator,Int64 asize)
   : Array<T>(allocator,asize,BD_NoWarning) { }
@@ -1540,7 +1541,7 @@ class UniqueArray
   {
     this->copy(rhs.constSpan());
   }
-  //! Opérateur de recopie par déplacement. \a rhs est invalidé après cet appel.
+  //! OpÃ©rateur de recopie par dÃ©placement. \a rhs est invalidÃ© aprÃ¨s cet appel.
   void operator=(UniqueArray<T>&& rhs) ARCCORE_NOEXCEPT
   {
     this->_move(rhs);
@@ -1565,15 +1566,15 @@ class UniqueArray
   {
     this->copy(rhs);
   }
-  //! Détruit l'instance.
+  //! DÃ©truit l'instance.
   ~UniqueArray() override
   {
   }
  public:
   /*!
-   * \brief Échange les valeurs de l'instance avec celles de \a rhs.
+   * \brief Ã‰change les valeurs de l'instance avec celles de \a rhs.
    *
-   * L'échange se fait en temps constant et sans réallocation.
+   * L'Ã©change se fait en temps constant et sans rÃ©allocation.
    */
   void swap(UniqueArray<T>& rhs)
   {
@@ -1584,9 +1585,9 @@ class UniqueArray
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Échange les valeurs de \a v1 et \a v2.
+ * \brief Ã‰change les valeurs de \a v1 et \a v2.
  *
- * L'échange se fait en temps constant et sans réallocation.
+ * L'Ã©change se fait en temps constant et sans rÃ©allocation.
  */
 template<typename T> inline void
 swap(UniqueArray<T>& v1,UniqueArray<T>& v2)

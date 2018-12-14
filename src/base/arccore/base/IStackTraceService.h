@@ -1,3 +1,4 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* IStackTraceService.h                                        (C) 2000-2018 */
 /*                                                                           */
@@ -26,7 +27,7 @@ class ARCCORE_BASE_EXPORT IStackTraceService
 {
  public:
 
-  virtual ~IStackTraceService() {} //<! Libère les ressources
+  virtual ~IStackTraceService() {} //<! LibÃ¨re les ressources
 
  public:
 
@@ -34,19 +35,19 @@ class ARCCORE_BASE_EXPORT IStackTraceService
 
  public:
 
-  /*! \brief Chaîne de caractère indiquant la pile d'appel.
+  /*! \brief ChaÃ®ne de caractÃ¨re indiquant la pile d'appel.
    *
-   * \a first_function indique le numéro dans la pile de la première fonction
-   * affichée dans la trace.
+   * \a first_function indique le numÃ©ro dans la pile de la premiÃ¨re fonction
+   * affichÃ©e dans la trace.
    */
   virtual StackTrace stackTrace(int first_function=0) =0;
 
   /*!
    * \brief Nom d'une fonction dans la pile d'appel.
    *
-   * \a function_index indique la position de la fonction à retourner dans la
+   * \a function_index indique la position de la fonction Ã  retourner dans la
    * pile d'appel. Par exemple, 0 indique la fonction courante, 1 celle
-   * d'avant (donc celle qui appelle cette méthode).
+   * d'avant (donc celle qui appelle cette mÃ©thode).
    */
   virtual StackTrace stackTraceFunction(int function_index) =0;
 };

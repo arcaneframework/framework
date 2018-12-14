@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* MpiAdapter.h                                                (C) 2000-2018 */
 /*                                                                           */
-/* Implémentation des messages avec MPI.                                     */
+/* ImplÃ©mentation des messages avec MPI.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSINGMPI_MPIADAPTER_H
 #define ARCCORE_MESSAGEPASSINGMPI_MPIADAPTER_H
@@ -34,8 +35,8 @@ namespace Mpi
  * \internal
  * \brief Adapteur pour MPI.
  * \warning en hybride MPI/Thread, une instance de cette classe
- * est partagée entre tous les threads d'un processus MPI et donc
- * toutes les méthodes de cette classe doivent être thread-safe.
+ * est partagÃ©e entre tous les threads d'un processus MPI et donc
+ * toutes les mÃ©thodes de cette classe doivent Ãªtre thread-safe.
  * \todo rendre thread-safe les statistiques
  * \todo rendre thread-safe le m_allocated_request
  */
@@ -57,7 +58,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 
  public:
 
-  //! Détruit l'instance. Elle ne doit plus être utilisée par la suite.
+  //! DÃ©truit l'instance. Elle ne doit plus Ãªtre utilisÃ©e par la suite.
   void destroy();
 
  public:
@@ -148,7 +149,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   std::set<MPI_Request> m_allocated_requests;
   bool m_request_error_is_fatal;
   bool m_is_report_error_in_request;
-  //! Requête vide. Voir MpiAdapter.cc pour plus d'infos.
+  //! RequÃªte vide. Voir MpiAdapter.cc pour plus d'infos.
   MPI_Request m_empty_request;
   int m_recv_buffer_for_empty_request[1];
 

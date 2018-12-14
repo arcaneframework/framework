@@ -1,7 +1,8 @@
+Ôªø// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* PlatformUtils.h                                             (C) 2000-2018 */
 /*                                                                           */
-/* Fonctions utilitaires dÈpendant de la plateforme.                         */
+/* Fonctions utilitaires d√©pendant de la plateforme.                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_PLATFORMUTILS_H
 #define ARCCORE_BASE_PLATFORMUTILS_H
@@ -27,26 +28,26 @@ class IStackTraceService;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
-  \brief Espace de nom pour les fonctions dÈpendant de la plateforme.
+  \brief Espace de nom pour les fonctions d√©pendant de la plateforme.
  
-  Cet espace de nom contient toutes les fonctions dÈpendant de la plateforme.
+  Cet espace de nom contient toutes les fonctions d√©pendant de la plateforme.
 */
 namespace Platform
 {
 
 /*!
- * \brief Initialisations spÈcifiques ‡ une platforme.
+ * \brief Initialisations sp√©cifiques √† une platforme.
  *
- Cette routine est appelÈ lors de l'initialisation de l'architecture.
- Elle permet d'effectuer certains traitements qui dÈpendent de la
+ Cette routine est appel√© lors de l'initialisation de l'architecture.
+ Elle permet d'effectuer certains traitements qui d√©pendent de la
  plateforme
  */
 extern "C++" ARCCORE_BASE_EXPORT void platformInitialize();
 
 /*!
- * \brief Routines de fin de programme spÈcifiques ‡ une platforme.
+ * \brief Routines de fin de programme sp√©cifiques √† une platforme.
  *
- Cette routine est appelÈ juste avant de quitter le programme.
+ Cette routine est appel√© juste avant de quitter le programme.
  */
 extern "C++" ARCCORE_BASE_EXPORT void platformTerminate();
 
@@ -55,7 +56,7 @@ extern "C++" ARCCORE_BASE_EXPORT void platformTerminate();
 /*!
  * \brief Date courante.
  *
- * La chaÓne est retournÈe sous la forme jour/mois/annÈe.
+ * La cha√Æne est retourn√©e sous la forme jour/mois/ann√©e.
  */
 extern "C++" ARCCORE_BASE_EXPORT String
 getCurrentDate();
@@ -65,7 +66,7 @@ getCurrentDate();
 /*!
  * \brief Date courante.
  *
- * Retourne la date courante, exprimÈe en secondes ÈcoulÈes
+ * Retourne la date courante, exprim√©e en secondes √©coul√©es
  * depuis le 1er janvier 1970.
  */
 extern "C++" ARCCORE_BASE_EXPORT long
@@ -77,7 +78,7 @@ getCurrentTime();
 /*!
  * \brief Date et l'heure courante sous la forme ISO 8601.
  *
- * La chaÓne est retournÈe sous la forme AAAA-MM-JJTHH:MM:SS.
+ * La cha√Æne est retourn√©e sous la forme AAAA-MM-JJTHH:MM:SS.
  */
 extern "C++" ARCCORE_BASE_EXPORT String
 getCurrentDateTime();
@@ -89,13 +90,13 @@ extern "C++" ARCCORE_BASE_EXPORT String
 getHostName();
 
 /*!
- * \brief Chemin du rÈpertoire courant.
+ * \brief Chemin du r√©pertoire courant.
  */
 extern "C++" ARCCORE_BASE_EXPORT String
 getCurrentDirectory();
 
 /*!
- * \brief NumÈro du processus.
+ * \brief Num√©ro du processus.
  */
 extern "C++" ARCCORE_BASE_EXPORT int
 getProcessId();
@@ -107,10 +108,10 @@ extern "C++" ARCCORE_BASE_EXPORT String
 getUserName();
 
 /*!
- * \brief RÈpertoire contenant les documents utilisateurs.
+ * \brief R√©pertoire contenant les documents utilisateurs.
  *
- * Cela correspond ‡ la variable d'environnement HOME sur Unix,
- * ou le rÈpertoire 'Mes documents' sous Win32.
+ * Cela correspond √† la variable d'environnement HOME sur Unix,
+ * ou le r√©pertoire 'Mes documents' sous Win32.
  */
 extern "C++" ARCCORE_BASE_EXPORT String
 getHomeDirectory();
@@ -125,32 +126,32 @@ getFileLength(const String& filename);
 /*!
  * \brief Variable d'environnement du nom \a name.
  *
- * Si aucune variable de nom \a name n'est dÈfinie,
- * la chaÓne nulle est retournÈe.
+ * Si aucune variable de nom \a name n'est d√©finie,
+ * la cha√Æne nulle est retourn√©e.
  */
 extern "C++" ARCCORE_BASE_EXPORT String
 getEnvironmentVariable(const String& name);
 
 /*!
- * \brief CrÈÈ un rÈpertoire.
+ * \brief Cr√©√© un r√©pertoire.
  *
- * CrÈÈ le rÈpertoire de nom \a dir_name. Si nÈcessaire, crÈÈ les
- * rÈpertoires parents nÈcessaires.
+ * Cr√©√© le r√©pertoire de nom \a dir_name. Si n√©cessaire, cr√©√© les
+ * r√©pertoires parents n√©cessaires.
  *
- * \retval true en cas d'Èchec,
- * \retval false en cas de succËs ou si le rÈpertoire existe dÈj‡.
+ * \retval true en cas d'√©chec,
+ * \retval false en cas de succ√®s ou si le r√©pertoire existe d√©j√†.
  */
 extern "C++" ARCCORE_BASE_EXPORT bool
 recursiveCreateDirectory(const String& dir_name);
 
 /*!
- * \brief CrÈÈ le rÈpertoire.
+ * \brief Cr√©√© le r√©pertoire.
  *
- * CrÈÈ un rÈpertoire de nom \a dir_name. Cette fonction suppose
- * que le rÈpertoire parent existe dÈj‡.
+ * Cr√©√© un r√©pertoire de nom \a dir_name. Cette fonction suppose
+ * que le r√©pertoire parent existe d√©j√†.
  *
- * \retval true en cas d'Èchec,
- * \retval false en cas de succËs ou si le rÈpertoire existe dÈj‡.
+ * \retval true en cas d'√©chec,
+ * \retval false en cas de succ√®s ou si le r√©pertoire existe d√©j√†.
  */
 extern "C++" ARCCORE_BASE_EXPORT bool
 createDirectory(const String& dir_name);
@@ -158,14 +159,14 @@ createDirectory(const String& dir_name);
 /*!
  * \brief Supprime le fichier \a file_name.
  *
- * \retval true en cas d'Èchec,
- * \retval false en cas de succËs ou si le fichier n'existe pas.
+ * \retval true en cas d'√©chec,
+ * \retval false en cas de succ√®s ou si le fichier n'existe pas.
  */
 extern "C++" ARCCORE_BASE_EXPORT bool
 removeFile(const String& file_name);
 
 /*!
- * \brief VÈrifie que le fichier \a file_name est accessible et lisible.
+ * \brief V√©rifie que le fichier \a file_name est accessible et lisible.
  *
  * \retval true si le fichier est lisible,
   * \retval false sinon.
@@ -174,46 +175,46 @@ extern "C++" ARCCORE_BASE_EXPORT bool
 isFileReadable(const String& file_name);
 
 /*!
- * \brief Retourne le nom du rÈpertoire d'un fichier.
+ * \brief Retourne le nom du r√©pertoire d'un fichier.
  *
- * Retourne le nom du rÈpertoire dans lequel se trouve le fichier
+ * Retourne le nom du r√©pertoire dans lequel se trouve le fichier
  * de nom \a file_name.
  * Par exemple, si \a file_name vaut \c "/tmp/toto.cc", retourne "/tmp".
- * Si le fichier ne contient pas de rÈpertoires, retourne \c ".".
+ * Si le fichier ne contient pas de r√©pertoires, retourne \c ".".
  */
 extern "C++" ARCCORE_BASE_EXPORT String
 getFileDirName(const String& file_name);
 
 /*!
- * \brief Copie de zone mÈmoire
+ * \brief Copie de zone m√©moire
  *
- * Copie \a len octets de l'adresse \a from ‡ l'adresse \a to.
+ * Copie \a len octets de l'adresse \a from √† l'adresse \a to.
  */
 extern "C++" ARCCORE_BASE_EXPORT void
 stdMemcpy(void* to,const void* from,::size_t len);
 
 /*!
- * \brief MÈmoire utilisÈe em octets
+ * \brief M√©moire utilis√©e em octets
  *
- * \return la mÈmoire utilisÈe ou un nombre nÈgatif si inconnu
+ * \return la m√©moire utilis√©e ou un nombre n√©gatif si inconnu
  */
 extern "C++" ARCCORE_BASE_EXPORT double
 getMemoryUsed();
 
 /*!
- * \brief Temps CPU utilisÈ en microsecondes.
+ * \brief Temps CPU utilis√© en microsecondes.
  *
- * L'origine du temps CPU est pris lors de l'appel ‡ platformInitialize().
+ * L'origine du temps CPU est pris lors de l'appel √† platformInitialize().
  *
- * \return le temps CPU utilisÈ en microsecondes.
+ * \return le temps CPU utilis√© en microsecondes.
  */
 extern "C++" ARCCORE_BASE_EXPORT Int64
 getCPUTime();
 
 /*!
- * \brief Temps Real utilisÈ en secondes.
+ * \brief Temps Real utilis√© en secondes.
  *
- * \return le temps utilisÈ en seconde.
+ * \return le temps utilis√© en seconde.
  */
 extern "C++" ARCCORE_BASE_EXPORT Real
 getRealTime();
@@ -221,7 +222,7 @@ getRealTime();
 /*!
  * \brief Retourne un temps sous forme des heures, minutes et secondes.
  *
- * Converti \a t, exprimÈ en seconde, sous la forme AhBmCs
+ * Converti \a t, exprim√© en seconde, sous la forme AhBmCs
  * avec A les heures, B les minutes et C les secondes.
  * Par exemple, 3732 devient 1h2m12s.
  */
@@ -229,7 +230,7 @@ extern "C++" ARCCORE_BASE_EXPORT String
 timeToHourMinuteSecond(Real t);
 
 /*!
- * \brief Retourne \a true si \a v est dÈnormalisÈ (flottant invalide).
+ * \brief Retourne \a true si \a v est d√©normalis√© (flottant invalide).
  *  
  * Si la plate-forme ne supporte pas cette notion, retourne toujours \a false.
  */
@@ -237,35 +238,35 @@ extern "C++" ARCCORE_BASE_EXPORT bool
 isDenormalized(Real v);
 
 /*!
- * \brief Service utilisÈ pour obtenir la pile d'appel.
+ * \brief Service utilis√© pour obtenir la pile d'appel.
  *
  * Peut retourner nul si aucun service n'est disponible.
  */
 extern "C++" ARCCORE_BASE_EXPORT IStackTraceService*
 getStackTraceService();
 
-/*! \brief Positionne le service utilisÈ pour obtenir la pile d'appel.
+/*! \brief Positionne le service utilis√© pour obtenir la pile d'appel.
   
-  Retourne l'ancien service utilisÈ.
+  Retourne l'ancien service utilis√©.
 */
 extern "C++" ARCCORE_BASE_EXPORT IStackTraceService*
 setStackTraceService(IStackTraceService* service);
 
 /*!
- * \brief Retourne une chaÓne de caractere contenant la pile d'appel.
+ * \brief Retourne une cha√Æne de caractere contenant la pile d'appel.
  *
- * Si aucun service de gestion de pile d'appel n'est prÈsent
- * (getStackTraceService()==0), la chaÓne retournÈe est nulle.
+ * Si aucun service de gestion de pile d'appel n'est pr√©sent
+ * (getStackTraceService()==0), la cha√Æne retourn√©e est nulle.
  */
 extern "C++" ARCCORE_BASE_EXPORT String
 getStackTrace();
 
 /*
- * \brief Copie une chaÓne de caractËre avec vÈrification de dÈbordement.
+ * \brief Copie une cha√Æne de caract√®re avec v√©rification de d√©bordement.
  *
- * \param input chaÓne ‡ copier.
- * \param output pointeur o˘ sera recopiÈ la chaÓne.
- * \param output_len mÈmoire allouÈe pour \a output.
+ * \param input cha√Æne √† copier.
+ * \param output pointeur o√π sera recopi√© la cha√Æne.
+ * \param output_len m√©moire allou√©e pour \a output.
  */
 extern "C++" ARCCORE_BASE_EXPORT void
 safeStringCopy(char* output,Integer output_len,const char* input);
@@ -277,33 +278,33 @@ extern "C++" ARCCORE_BASE_EXPORT void
 sleep(Integer nb_second);
 
 /*!
- * \brief Active ou dÈsactive les exceptions lors d'un calcul flottant.
- * Cette opÈration n'est pas supportÈe sur toutes les plateformes. Dans
- * le cas o˘ elle n'est pas supportÈe, rien ne se passe.
+ * \brief Active ou d√©sactive les exceptions lors d'un calcul flottant.
+ * Cette op√©ration n'est pas support√©e sur toutes les plateformes. Dans
+ * le cas o√π elle n'est pas support√©e, rien ne se passe.
  */
 extern "C++" ARCCORE_BASE_EXPORT void
 enableFloatingException(bool active);
 
-//! Indique si les exceptions flottantes du processeur sont activÈes.
+//! Indique si les exceptions flottantes du processeur sont activ√©es.
 extern "C++" ARCCORE_BASE_EXPORT bool
 isFloatingExceptionEnabled();
 
 /*!
- * \brief LËve une exception flottante.
+ * \brief L√®ve une exception flottante.
  *
- * Cette mÈthode ne fait rien si hasFloatingExceptionSupport()==false.
- * En gÈnÈral sous Linux, cela se traduit par l'envoie d'un signal
- * de type SIGFPE. Par dÈfaut %Arccore rÈcupËre ce signal et
- * lËve une exception de type 'ArithmeticException'.
+ * Cette m√©thode ne fait rien si hasFloatingExceptionSupport()==false.
+ * En g√©n√©ral sous Linux, cela se traduit par l'envoie d'un signal
+ * de type SIGFPE. Par d√©faut %Arccore r√©cup√®re ce signal et
+ * l√®ve une exception de type 'ArithmeticException'.
  */
 extern "C++" ARCCORE_BASE_EXPORT void
 raiseFloatingException();
 
 /*!
- * \brief Indique si l'implÈmentation permet de modifier
- * l'Ètat d'activation des exceptions flottantes.
+ * \brief Indique si l'impl√©mentation permet de modifier
+ * l'√©tat d'activation des exceptions flottantes.
  *
- * Si cette mÈthode retourne \a false, alors les mÈthodes
+ * Si cette m√©thode retourne \a false, alors les m√©thodes
  * enableFloatingException() et isFloatingExceptionEnabled()
  * sont sans effet.
  */
@@ -325,8 +326,8 @@ getConsoleHasColor();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief ChaÓne de caractËre permettant d'identifier le compilateur
- * utilisÈ pour compiler %Arccore.
+ * \brief Cha√Æne de caract√®re permettant d'identifier le compilateur
+ * utilis√© pour compiler %Arccore.
  */
 extern "C++" ARCCORE_BASE_EXPORT String
 getCompilerId();

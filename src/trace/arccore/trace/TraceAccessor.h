@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* TraceAccessor.h                                             (C) 2000-2018 */
 /*                                                                           */
-/* Accès aux traces.                                                         */
+/* AccÃ¨s aux traces.                                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_TRACE_TRACEACCESSOR_H
 #define ARCCORE_TRACE_TRACEACCESSOR_H
@@ -25,7 +26,7 @@ class TraceMessage;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe d'accès aux traces.
+ * \brief Classe d'accÃ¨s aux traces.
  * \ingroup Core
  */
 class ARCCORE_TRACE_EXPORT TraceAccessor
@@ -35,7 +36,7 @@ class ARCCORE_TRACE_EXPORT TraceAccessor
   // Construit un accesseur via le gestionnaire de trace \a m.
   explicit TraceAccessor(ITraceMng* m);
   TraceAccessor(const TraceAccessor& rhs) = default;
-  virtual ~TraceAccessor(); //!< Libère les ressources
+  virtual ~TraceAccessor(); //!< LibÃ¨re les ressources
 
  public:
 
@@ -45,41 +46,41 @@ class ARCCORE_TRACE_EXPORT TraceAccessor
   //! Flot pour un message d'information
   TraceMessage info() const;
 
-  /*! \brief Flot pour un message d'information en parallèle.
+  /*! \brief Flot pour un message d'information en parallÃ¨le.
    *
-   * A la difference de info(), tous les processeurs écrivent ce
+   * A la difference de info(), tous les processeurs Ã©crivent ce
    * message sur la sortie standard.
    */
   TraceMessage pinfo() const;
 
-  //! Flot pour un message d'information d'une catégorie donnée
+  //! Flot pour un message d'information d'une catÃ©gorie donnÃ©e
   TraceMessage info(char category) const;
 
-  //! Flot pour un message d'information parallèle d'une catégorie donnée
+  //! Flot pour un message d'information parallÃ¨le d'une catÃ©gorie donnÃ©e
   TraceMessage pinfo(char category) const;
 
   /*!
    * \brief Flot pour un message d'information.
    *
-   * Si \a v est \a false, le message ne sera pas affiché.
+   * Si \a v est \a false, le message ne sera pas affichÃ©.
    */
   TraceMessage info(bool v) const;
 
   //! Flot pour un message d'avertissement
   TraceMessage warning() const;
 
-  /*! Flot pour un message d'avertissement parallèle
+  /*! Flot pour un message d'avertissement parallÃ¨le
    *
-   * A la difference de warning(), seul le processeur maître écrit ce message.
+   * A la difference de warning(), seul le processeur maÃ®tre Ã©crit ce message.
    */
   TraceMessage pwarning() const;
 
   //! Flot pour un message d'erreur
   TraceMessage error() const;
 
-  /*! Flot pour un message d'erreur parallèle
+  /*! Flot pour un message d'erreur parallÃ¨le
    *
-   * A la difference de error(), seul le processeur maître écrit ce message.
+   * A la difference de error(), seul le processeur maÃ®tre Ã©crit ce message.
    */
   TraceMessage perror() const;
 
@@ -89,13 +90,13 @@ class ARCCORE_TRACE_EXPORT TraceAccessor
   //! Flot pour un message de log
   TraceMessage plog() const;
 
-  //! Flot pour un message de log précédé de la date
+  //! Flot pour un message de log prÃ©cÃ©dÃ© de la date
   TraceMessage logdate() const;
 
   //! Flot pour un message d'erreur fatale
   TraceMessage fatal() const;
 
-  //! Flot pour un message d'erreur fatale en parallèle
+  //! Flot pour un message d'erreur fatale en parallÃ¨le
   TraceMessage pfatal() const;
 
 #ifdef ARCCORE_DEBUG
@@ -110,16 +111,16 @@ class ARCCORE_TRACE_EXPORT TraceAccessor
   //! Niveau debug du fichier de configuration
   Trace::eDebugLevel configDbgLevel() const;
 
-  //! Flot pour un message d'information d'un niveau donné
+  //! Flot pour un message d'information d'un niveau donnÃ©
   TraceMessage info(Int32 verbose_level) const;
 
-  //! Flot pour un message d'information avec le niveau d'information local à cette instance.
+  //! Flot pour un message d'information avec le niveau d'information local Ã  cette instance.
   TraceMessage linfo() const
   {
     return info(m_local_verbose_level);
   }
 
-  //! Flot pour un message d'information avec le niveau d'information local à cette instance.
+  //! Flot pour un message d'information avec le niveau d'information local Ã  cette instance.
   TraceMessage linfo(Int32 relative_level) const
   {
     return info(m_local_verbose_level+relative_level);

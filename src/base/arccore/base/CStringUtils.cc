@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* CStringUtils.cc                                             (C) 2000-2018 */
 /*                                                                           */
-/* Fonctions utilitaires sur les chaînes de caractères.                      */
+/* Fonctions utilitaires sur les chaÃ®nes de caractÃ¨res.                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -34,7 +35,7 @@ isEqual(const char* s1,const char* s2)
   return false;
 }
 
-//! Retourne \e true si \a s1 est inférieur (ordre alphabétique) à \a s2 , \e false sinon
+//! Retourne \e true si \a s1 est infÃ©rieur (ordre alphabÃ©tique) Ã  \a s2 , \e false sinon
 bool CStringUtils::
 isLess(const char* s1,const char* s2)
 {
@@ -45,7 +46,7 @@ isLess(const char* s1,const char* s2)
   return (std::strcmp(s1,s2) < 0);
 }
 
-//! Retourne la longueur de la chaîne \a s
+//! Retourne la longueur de la chaÃ®ne \a s
 Integer CStringUtils::
 len(const char* s)
 {
@@ -57,7 +58,7 @@ len(const char* s)
   return len;
 }
 
-//! Retourne la longueur de la chaîne \a s
+//! Retourne la longueur de la chaÃ®ne \a s
 Int64 CStringUtils::
 largeLength(const char* s)
 {

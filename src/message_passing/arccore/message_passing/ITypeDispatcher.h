@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* ITypeDispatcher.h                                           (C) 2000-2018 */
 /*                                                                           */
-/* Gestion des messages pour un type de données.                             */
+/* Gestion des messages pour un type de donnÃ©es.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_ITYPEDISPATCHER_H
 #define ARCCORE_MESSAGEPASSING_ITYPEDISPATCHER_H
@@ -24,7 +25,7 @@ namespace MessagePassing
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Gestion des messages parallèles pour le type \a Type.
+ * \brief Gestion des messages parallÃ¨les pour le type \a Type.
  */
 template<class Type>
 class ITypeDispatcher

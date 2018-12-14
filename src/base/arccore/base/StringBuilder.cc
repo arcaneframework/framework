@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* StringBuilder.cc                                            (C) 2000-2018 */
 /*                                                                           */
-/* Constructeur de chaîne de caractère unicode.                              */
+/* Constructeur de chaÃ®ne de caractÃ¨re unicode.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

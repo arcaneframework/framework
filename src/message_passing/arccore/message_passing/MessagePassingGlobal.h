@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* MessagePassingGlobal.h                                      (C) 2000-2018 */
 /*                                                                           */
-/* Définitions globales de la composante 'MessagePassing' de 'Arccore'.      */
+/* DÃ©finitions globales de la composante 'MessagePassing' de 'Arccore'.      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_MESSAGEPASSINGGLOBAL_H
 #define ARCCORE_MESSAGEPASSING_MESSAGEPASSINGGLOBAL_H
@@ -28,7 +29,7 @@ namespace Arccore
 {
 namespace MessagePassing
 {
-//! Numéro correspondant à un rang nul
+//! NumÃ©ro correspondant Ã  un rang nul
 static const Int32 A_NULL_RANK = static_cast<Int32>(-1);
 
 class Request;
@@ -41,7 +42,7 @@ template<class DataType>
 class ITypeDispatcher;
 
 /*!
- * \brief Types des réductions supportées.
+ * \brief Types des rÃ©ductions supportÃ©es.
  */
 enum eReduceType
 {
@@ -55,9 +56,9 @@ enum eReduceType
  */
 enum eWaitType
 {
-  WaitAll, //! Attend que tous les messages de la liste soient traités
-  WaitSome,//! Attend que au moins un message de la liste soit traité
-  WaitSomeNonBlocking //! Traite uniquement les messages qui peuvent l'être sans attendre.
+  WaitAll, //! Attend que tous les messages de la liste soient traitÃ©s
+  WaitSome,//! Attend que au moins un message de la liste soit traitÃ©
+  WaitSomeNonBlocking //! Traite uniquement les messages qui peuvent l'Ãªtre sans attendre.
 };
 
 } // End namespace MessagePassing

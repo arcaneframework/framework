@@ -1,3 +1,4 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* MpiLock.h                                                   (C) 2000-2018 */
 /*                                                                           */
@@ -28,7 +29,7 @@ namespace Mpi
 /*!
  * \brief Verrou pour les appels MPI.
  *
- * Ce verrou sert en multi-threading pour s�rialiser les appels
+ * Ce verrou sert en multi-threading pour sérialiser les appels
  * MPI en mode MPI_THREAD_SERIALIZED de MPI_Init_thread.
  */
 class MpiLock

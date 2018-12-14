@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* NotImplementedException.h                                   (C) 2000-2018 */
 /*                                                                           */
-/* Exception lorsqu'une fonction n'est pas implémentée.                      */
+/* Exception lorsqu'une fonction n'est pas implÃ©mentÃ©e.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_NOTIMPLEMENTEDEXCEPTION_H
 #define ARCCORE_BASE_NOTIMPLEMENTEDEXCEPTION_H
@@ -20,7 +21,7 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Exception lorsqu'une fonction n'est pas implémentée.
+ * \brief Exception lorsqu'une fonction n'est pas implÃ©mentÃ©e.
  */
 class ARCCORE_BASE_EXPORT NotImplementedException
 : public Exception

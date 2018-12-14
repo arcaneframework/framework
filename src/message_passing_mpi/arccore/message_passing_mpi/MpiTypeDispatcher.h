@@ -1,7 +1,8 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* MpiTypeDispatcher.h                                         (C) 2000-2018 */
 /*                                                                           */
-/* Gestion des messages pour un type de donn�es.                             */
+/* Gestion des messages pour un type de données.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSINGMPI_MPITYPEDISPATCHER_H
 #define ARCCORE_MESSAGEPASSINGMPI_MPITYPEDISPATCHER_H

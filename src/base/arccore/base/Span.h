@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* Span.h                                                      (C) 2000-2018 */
 /*                                                                           */
-/* Types définissant les vues de tableaux C dont la taille est un Int64.     */
+/* Types dÃ©finissant les vues de tableaux C dont la taille est un Int64.     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_LARGEARRAYVIEW_H
 #define ARCCORE_BASE_LARGEARRAYVIEW_H
@@ -39,19 +40,19 @@ class ViewTypeT<const T>
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup Collection
- * \brief Vue d'un tableau d'éléments de type \a T.
+ * \brief Vue d'un tableau d'Ã©lÃ©ments de type \a T.
  *
  * La vue est non modifiable si l'argument template est de type 'const T'.
- Cette classe permet d'accéder et d'utiliser un tableau d'éléments du
- type \a T de la même manière qu'un tableau C standard. Elle est similaire à
- ArrayView à ceci près que le nombre d'éléments est stocké sur un 'Int64' et
- peut donc dépasser 2Go. Elle est concue pour être similaire à la classe
+ Cette classe permet d'accÃ©der et d'utiliser un tableau d'Ã©lÃ©ments du
+ type \a T de la mÃªme maniÃ¨re qu'un tableau C standard. Elle est similaire Ã 
+ ArrayView Ã  ceci prÃ¨s que le nombre d'Ã©lÃ©ments est stockÃ© sur un 'Int64' et
+ peut donc dÃ©passer 2Go. Elle est concue pour Ãªtre similaire Ã  la classe
  std::span du C++20.
 */
 template<typename T>
 class Span
 {
-  // Pour le cas où on ne supporte pas le C++14.
+  // Pour le cas oÃ¹ on ne supporte pas le C++14.
   template< bool B, class XX = void >
   using Span_enable_if_t = typename std::enable_if<B,XX>::type;
 
@@ -78,7 +79,7 @@ class Span
   //! Constructeur de recopie depuis une autre vue
   Span(const ArrayView<value_type>& from)
   : m_ptr(from.m_ptr), m_size(from.size()) {}
-  // Constructeur à partir d'un ConstArrayView. Cela n'est autorisé que
+  // Constructeur Ã  partir d'un ConstArrayView. Cela n'est autorisÃ© que
   // si T est const.
   template<typename X,typename = Span_enable_if_t<std::is_same<X,value_type>::value> >
   Span(const ConstArrayView<X>& from)
@@ -87,17 +88,17 @@ class Span
   template<typename X,typename = Span_enable_if_t<std::is_same<X,value_type>::value> >
   Span(const Span<X>& from)
   : m_ptr(from.data()), m_size(from.size()) {}
-  //! Construit une vue sur une zone mémoire commencant par \a ptr et
-  // contenant \a asize éléments.
+  //! Construit une vue sur une zone mÃ©moire commencant par \a ptr et
+  // contenant \a asize Ã©lÃ©ments.
   Span(T* ptr,Int64 asize)
   : m_ptr(ptr), m_size(asize) {}
 
  public:
 
   /*!
-   * \brief i-ème élément du tableau.
+   * \brief i-Ã¨me Ã©lÃ©ment du tableau.
    *
-   * En mode \a check, vérifie les débordements.
+   * En mode \a check, vÃ©rifie les dÃ©bordements.
    */
   inline T& operator[](Int64 i)
   {
@@ -106,9 +107,9 @@ class Span
   }
 
   /*!
-   * \brief i-ème élément du tableau.
+   * \brief i-Ã¨me Ã©lÃ©ment du tableau.
    *
-   * En mode \a check, vérifie les débordements.
+   * En mode \a check, vÃ©rifie les dÃ©bordements.
    */
   inline const T& operator[](Int64 i) const
   {
@@ -117,9 +118,9 @@ class Span
   }
 
   /*!
-   * \brief i-ème élément du tableau.
+   * \brief i-Ã¨me Ã©lÃ©ment du tableau.
    *
-   * En mode \a check, vérifie les débordements.
+   * En mode \a check, vÃ©rifie les dÃ©bordements.
    */
   inline const T& item(Int64 i) const
   {
@@ -128,9 +129,9 @@ class Span
   }
 
   /*!
-   * \brief Positionne le i-ème élément du tableau.
+   * \brief Positionne le i-Ã¨me Ã©lÃ©ment du tableau.
    *
-   * En mode \a check, vérifie les débordements.
+   * En mode \a check, vÃ©rifie les dÃ©bordements.
    */
   inline void setItem(Int64 i,const T& v)
   {
@@ -140,62 +141,62 @@ class Span
 
   //! Retourne la taille du tableau
   inline Int64 size() const { return m_size; }
-  //! Nombre d'éléments du tableau
+  //! Nombre d'Ã©lÃ©ments du tableau
   inline Int64 length() const { return m_size; }
 
   /*!
-   * \brief Itérateur sur le premier élément du tableau.
+   * \brief ItÃ©rateur sur le premier Ã©lÃ©ment du tableau.
    */
   iterator begin() { return iterator(m_ptr); }
   /*!
-   * \brief Itérateur sur le premier élément après la fin du tableau.
+   * \brief ItÃ©rateur sur le premier Ã©lÃ©ment aprÃ¨s la fin du tableau.
    */
   iterator end() { return iterator(m_ptr+m_size); }
   /*!
-   * \brief Itérateur constant sur le premier élément du tableau.
+   * \brief ItÃ©rateur constant sur le premier Ã©lÃ©ment du tableau.
    */
   const_iterator begin() const { return iterator(m_ptr); }
   /*!
-   * \brief Itérateur constant sur le premier élément après la fin du tableau.
+   * \brief ItÃ©rateur constant sur le premier Ã©lÃ©ment aprÃ¨s la fin du tableau.
    */
   const_iterator end() const { return iterator(m_ptr+m_size); }
 
  public:
 
-  //! Intervalle d'itération du premier au dernièr élément.
+  //! Intervalle d'itÃ©ration du premier au derniÃ¨r Ã©lÃ©ment.
   ArrayRange<pointer> range()
   {
     return ArrayRange<pointer>(m_ptr,m_ptr+m_size);
   }
-  //! Intervalle d'itération du premier au dernièr élément.
+  //! Intervalle d'itÃ©ration du premier au derniÃ¨r Ã©lÃ©ment.
   ArrayRange<const_pointer> range() const
   {
     return ArrayRange<const_pointer>(m_ptr,m_ptr+m_size);
   }
 
  public:
-  //! Addresse du index-ème élément
+  //! Addresse du index-Ã¨me Ã©lÃ©ment
   inline T* ptrAt(Int64 index)
   {
     ARCCORE_CHECK_AT(index,m_size);
     return m_ptr+index;
   }
 
-  //! Addresse du index-ème élément
+  //! Addresse du index-Ã¨me Ã©lÃ©ment
   inline const T* ptrAt(Int64 index) const
   {
     ARCCORE_CHECK_AT(index,m_size);
     return m_ptr+index;
   }
 
-  // Elément d'indice \a i. Vérifie toujours les débordements
+  // ElÃ©ment d'indice \a i. VÃ©rifie toujours les dÃ©bordements
   const T& at(Int64 i) const
   {
     arccoreCheckAt(i,m_size);
     return m_ptr[i];
   }
 
-  // Positionne l'élément d'indice \a i. Vérifie toujours les débordements
+  // Positionne l'Ã©lÃ©ment d'indice \a i. VÃ©rifie toujours les dÃ©bordements
   void setAt(Int64 i,const T& value)
   {
     arccoreCheckAt(i,m_size);
@@ -228,11 +229,11 @@ class Span
   }
 
   /*!
-   * \brief Sous-vue à partir de l'élément \a abegin
-   * et contenant \a asize éléments.
+   * \brief Sous-vue Ã  partir de l'Ã©lÃ©ment \a abegin
+   * et contenant \a asize Ã©lÃ©ments.
    *
-   * Si \a (\a abegin+ \a asize) est supérieur à la taille du tableau,
-   * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
+   * Si \a (\a abegin+ \a asize) est supÃ©rieur Ã  la taille du tableau,
+   * la vue est tronquÃ©e Ã  cette taille, retournant Ã©ventuellement une vue vide.
    */
   Span<T> subspan(Int64 abegin,Int64 asize) const
   {
@@ -243,18 +244,18 @@ class Span
   }
 
   /*!
-   * \brief Sous-vue à partir de l'élément \a abegin
-   * et contenant \a asize éléments.
+   * \brief Sous-vue Ã  partir de l'Ã©lÃ©ment \a abegin
+   * et contenant \a asize Ã©lÃ©ments.
    *
-   * Si \a (\a abegin+ \a asize) est supérieur à la taille du tableau,
-   * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
+   * Si \a (\a abegin+ \a asize) est supÃ©rieur Ã  la taille du tableau,
+   * la vue est tronquÃ©e Ã  cette taille, retournant Ã©ventuellement une vue vide.
    */
   Span<T> subView(Int64 abegin,Int64 asize) const
   {
     return subspan(abegin,asize);
   }
 
-  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  //! Sous-vue correspondant Ã  l'interval \a index sur \a nb_interval
   Span<T> subViewInterval(Int64 index,Int64 nb_interval) const
   {
     Int64 n = m_size;
@@ -267,10 +268,10 @@ class Span
   }
 
   /*!\brief Recopie le tableau \a copy_array dans l'instance.
-   * Comme aucune allocation mémoire n'est effectuée, le
-   * nombre d'éléments de \a copy_array doit être inférieur ou égal au
-   * nombre d'éléments courant. S'il est inférieur, les éléments du
-   * tableau courant situés à la fin du tableau sont inchangés
+   * Comme aucune allocation mÃ©moire n'est effectuÃ©e, le
+   * nombre d'Ã©lÃ©ments de \a copy_array doit Ãªtre infÃ©rieur ou Ã©gal au
+   * nombre d'Ã©lÃ©ments courant. S'il est infÃ©rieur, les Ã©lÃ©ments du
+   * tableau courant situÃ©s Ã  la fin du tableau sont inchangÃ©s
    */
   template<class U>
   inline void copy(const U& copy_array)
@@ -285,7 +286,7 @@ class Span
 
   //! Retourne \a true si le tableau est vide (dimension nulle)
   bool empty() const { return m_size==0; }
-  //! \a true si le tableau contient l'élément de valeur \a v
+  //! \a true si le tableau contient l'Ã©lÃ©ment de valeur \a v
   bool contains(const T& v) const
   {
     for( Int64 i=0; i<m_size; ++i ){
@@ -309,23 +310,23 @@ class Span
   }
 
   /*!
-   * \brief Pointeur sur le début de la vue.
+   * \brief Pointeur sur le dÃ©but de la vue.
    *
-   * \warning Les accès via le pointeur retourné ne pourront pas être
-   * pas vérifiés par Arcane à la différence des accès via
-   * operator[](): aucune vérification de dépassement n'est possible,
-   * même en mode vérification.
+   * \warning Les accÃ¨s via le pointeur retournÃ© ne pourront pas Ãªtre
+   * pas vÃ©rifiÃ©s par Arcane Ã  la diffÃ©rence des accÃ¨s via
+   * operator[](): aucune vÃ©rification de dÃ©passement n'est possible,
+   * mÃªme en mode vÃ©rification.
    */
   const_pointer data() const
   { return m_ptr; }
 
   /*!
-   * \brief Pointeur constant sur le début de la vue.
+   * \brief Pointeur constant sur le dÃ©but de la vue.
    *
-   * \warning Les accès via le pointeur retourné ne pourront pas être
-   * pas vérifiés par Arcane à la différence des accès via
-   * operator[](): aucune vérification de dépassement n'est possible,
-   * même en mode vérification.
+   * \warning Les accÃ¨s via le pointeur retournÃ© ne pourront pas Ãªtre
+   * pas vÃ©rifiÃ©s par Arcane Ã  la diffÃ©rence des accÃ¨s via
+   * operator[](): aucune vÃ©rification de dÃ©passement n'est possible,
+   * mÃªme en mode vÃ©rification.
    */
   pointer data()
   { return m_ptr; }
@@ -335,31 +336,31 @@ class Span
   /*!
    * \brief Modifie le pointeur et la taille du tableau.
    *
-   * C'est à la classe dérivée de vérifier la cohérence entre le pointeur
-   * alloué et la dimension donnée.
+   * C'est Ã  la classe dÃ©rivÃ©e de vÃ©rifier la cohÃ©rence entre le pointeur
+   * allouÃ© et la dimension donnÃ©e.
    */
   inline void _setArray(T* v,Int64 s){ m_ptr = v; m_size = s; }
 
   /*!
-   * \brief Modifie le pointeur du début du tableau.
+   * \brief Modifie le pointeur du dÃ©but du tableau.
    *
-   * C'est à la classe dérivée de vérifier la cohérence entre le pointeur
-   * alloué et la dimension donnée.
+   * C'est Ã  la classe dÃ©rivÃ©e de vÃ©rifier la cohÃ©rence entre le pointeur
+   * allouÃ© et la dimension donnÃ©e.
    */
   inline void _setPtr(T* v) { m_ptr = v; }
 
   /*!
    * \brief Modifie la taille du tableau.
    *
-   * C'est à la classe dérivée de vérifier la cohérence entre le pointeur
-   * alloué et la dimension donnée.
+   * C'est Ã  la classe dÃ©rivÃ©e de vÃ©rifier la cohÃ©rence entre le pointeur
+   * allouÃ© et la dimension donnÃ©e.
    */
   inline void _setSize(Int64 s) { m_size = s; }
 
  private:
 
   T* m_ptr;  //!< Pointeur sur le tableau
-  Int64 m_size; //!< Nombre d'éléments du tableau
+  Int64 m_size; //!< Nombre d'Ã©lÃ©ments du tableau
 
  private:
 
@@ -415,9 +416,9 @@ operator!=(Span<T> rhs, Span<T> lhs)
  * \brief Affiche sur le flot \a o les valeurs du tableau \a val.
  *
  * Si \a max_print est positif, alors au plus \a max_print valeurs
- * sont affichées. Si la taille du tableau est supérieure à
+ * sont affichÃ©es. Si la taille du tableau est supÃ©rieure Ã 
  * \a max_print, alors les (max_print/2) premiers et derniers
- * éléments sont affichés.
+ * Ã©lÃ©ments sont affichÃ©s.
  */
 template<typename T> inline void
 dumpArray(std::ostream& o,Span<const T> val,int max_print)
@@ -425,8 +426,8 @@ dumpArray(std::ostream& o,Span<const T> val,int max_print)
   Int64 n = val.size();
   if (max_print>0 && n>max_print){
     // N'affiche que les (max_print/2) premiers et les (max_print/2) derniers
-    // sinon si le tableau est très grand cela peut générer des
-    // sorties listings énormes.
+    // sinon si le tableau est trÃ¨s grand cela peut gÃ©nÃ©rer des
+    // sorties listings Ã©normes.
     Int64 z = (max_print/2);
     Int64 z2 = n - z;
     o << "[0]=\"" << val[0] << '"';

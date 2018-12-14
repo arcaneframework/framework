@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* PlatformUtils.cc                                            (C) 2000-2017 */
 /*                                                                           */
-/* Fonctions utilitaires dépendant de la plateforme.                         */
+/* Fonctions utilitaires dÃ©pendant de la plateforme.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -54,11 +55,11 @@
 #include <unistd.h>
 #endif
 
-// Support pour gérer les exceptions flottantes:
-// - sous Linux avec la GlibC, cela se fait via les méthodes
+// Support pour gÃ©rer les exceptions flottantes:
+// - sous Linux avec la GlibC, cela se fait via les mÃ©thodes
 // feenableexcept(), fedisableexcept() et fegetexcept()
-// - sous Win32, cela se fait via la méthode _controlfp() mais pour
-// l'instant ce n'est pas utilisé dans Arccore.
+// - sous Win32, cela se fait via la mÃ©thode _controlfp() mais pour
+// l'instant ce n'est pas utilisÃ© dans Arccore.
 #if defined(ARCCORE_OS_LINUX) && defined(__USE_GNU)
 #  include <fenv.h>
 #  define ARCCORE_GLIBC_FENV
@@ -153,7 +154,7 @@ getHostName()
 extern "C++" ARCCORE_BASE_EXPORT String Platform::
 getUserName()
 {
-  // Récupère le nom de l'utilisateur
+  // RÃ©cupÃ¨re le nom de l'utilisateur
   String user_name = "noname";
 #ifdef ARCCORE_OS_WIN32
   char buf[1024];
@@ -260,7 +261,7 @@ isDirectoryExist(const String& dir_name,bool& can_create)
   if (stat_val==0){
     if (dirstat.st_mode & S_IFDIR)
       return true;
-    // Le fichier existe mais n'est pas un répertoire
+    // Le fichier existe mais n'est pas un rÃ©pertoire
     can_create = false;
     return false;
   }
@@ -316,7 +317,7 @@ createDirectory(const String& dir_name)
   if (stat_val==0){
     if (dirstat.st_mode & S_IFDIR)
       return false;
-    // Le fichier existe mais n'est pas un répertoire
+    // Le fichier existe mais n'est pas un rÃ©pertoire
     return true;
   }
 #ifdef ARCCORE_OS_WIN32
@@ -387,7 +388,7 @@ stdMemcpy(void* to,const void* from,::size_t len)
 extern "C++" ARCCORE_BASE_EXPORT bool Platform::
 isDenormalized(Real /*v*/)
 {
-  //TODO: à implémenter
+  //TODO: Ã  implÃ©menter
   return false;
 }
 
@@ -651,8 +652,8 @@ extern "C++" ARCCORE_BASE_EXPORT void Platform::
 raiseFloatingException()
 {
 #ifdef ARCCORE_GLIBC_FENV
-  // Note: cette méthode n'a besoin que de fenv.h et devrait être portable
-  // même sans la GLIBC.
+  // Note: cette mÃ©thode n'a besoin que de fenv.h et devrait Ãªtre portable
+  // mÃªme sans la GLIBC.
   ::feraiseexcept(FloatExceptFlags);
 #endif
 }
@@ -697,11 +698,11 @@ platformInitialize()
 #if GLIB_CHECK_VERSION(2,32,0)
   // A partir de 2.32.0, il ne faut rien faire pour initialiser les threads avec la glib.
 #else
-  // g_thread_init ne doit etre appelé qu'une seule fois.
-  // Si on est appelé depuis le runtime mono, l'init a déjà été
+  // g_thread_init ne doit etre appelÃ© qu'une seule fois.
+  // Si on est appelÃ© depuis le runtime mono, l'init a dÃ©jÃ  Ã©tÃ©
   // faite. Il vaut mieux utiliser la fonction g_thread_get_initialized
-  // pour savoir si les threads ont déjà été initialisés mais
-  // cette version n'existe que à partir de la glib 2.20
+  // pour savoir si les threads ont dÃ©jÃ  Ã©tÃ© initialisÃ©s mais
+  // cette version n'existe que Ã  partir de la glib 2.20
   // Pour info, sur RHEL6, la version est 2.28 et sur RHEL7 c'est 2.54
 #if GLIB_CHECK_VERSION(2,20,0)
     if (!g_thread_get_initialized())
@@ -712,10 +713,10 @@ platformInitialize()
 #endif
 #endif
 
-  // Pour l'instant, la seule initialisation spécifique dépend
-  // des processeurs i386. Elle consiste à changer la valeur par
-  // défaut des flags de la FPU pour générer une exception
-  // lors d'une erreur arithmétique (comme les divisions par zéro).
+  // Pour l'instant, la seule initialisation spÃ©cifique dÃ©pend
+  // des processeurs i386. Elle consiste Ã  changer la valeur par
+  // dÃ©faut des flags de la FPU pour gÃ©nÃ©rer une exception
+  // lors d'une erreur arithmÃ©tique (comme les divisions par zÃ©ro).
   enableFloatingException(true);
   getCPUTime();
 

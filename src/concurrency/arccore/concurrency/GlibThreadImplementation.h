@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* GlibThreadImplementation.h                                  (C) 2000-2018 */
 /*                                                                           */
-/* Implémentation de ITreadImplementation avec la 'Glib'.                    */
+/* ImplÃ©mentation de ITreadImplementation avec la 'Glib'.                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_CONCURRENCY_GLIBTHREADIMPLEMENTATION_H
 #define ARCCORE_CONCURRENCY_GLIBTHREADIMPLEMENTATION_H
@@ -19,7 +20,7 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Implémentation de ITreadImplementation avec la 'Glib'.
+ * \brief ImplÃ©mentation de ITreadImplementation avec la 'Glib'.
  */
 class ARCCORE_CONCURRENCY_EXPORT GlibThreadImplementation
 : public IThreadImplementation

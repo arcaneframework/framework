@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* NotSupportedException.h                                     (C) 2000-2016 */
 /*                                                                           */
-/* Exception lorsqu'une opération n'est pas supportée.                       */
+/* Exception lorsqu'une opÃ©ration n'est pas supportÃ©e.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_NOTSUPPORTEDEXCEPTION_H
 #define ARCCORE_BASE_NOTSUPPORTEDEXCEPTION_H
@@ -20,7 +21,7 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Exception lorsqu'une opération n'est pas supportée.
+ * \brief Exception lorsqu'une opÃ©ration n'est pas supportÃ©e.
  */
 class ARCCORE_BASE_EXPORT NotSupportedException
 : public Exception

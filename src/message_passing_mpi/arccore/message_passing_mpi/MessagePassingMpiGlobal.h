@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* MessagePassingMpiGlobal.h                                   (C) 2000-2018 */
 /*                                                                           */
-/* Définitions globales de la composante 'MessagePassingMpi' de 'Arccore'.   */
+/* DÃ©finitions globales de la composante 'MessagePassingMpi' de 'Arccore'.   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSINGMPI_MESSAGEPASSINGMPIGLOBAL_H
 #define ARCCORE_MESSAGEPASSINGMPI_MESSAGEPASSINGMPIGLOBAL_H
@@ -14,7 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 // Ces deux macros permettent de s'assurer qu'on ne compile avec le support
-// de MpiC++ qui est obsolète
+// de MpiC++ qui est obsolÃ¨te
 #ifndef MPICH_SKIP_MPICXX
 #define MPICH_SKIP_MPICXX
 #endif
@@ -24,7 +25,7 @@
 #include <mpi.h>
 #if defined(ARCCORE_OS_WIN32)
 // La version de mpi est celle de microsoft. Le proto de MPI_Op doit
-// avoir la déclaration __stdcall.
+// avoir la dÃ©claration __stdcall.
 // TODO: verifier avec d'autres MPI sous Windows.
 #define ARCCORE_MPIOP_CALL __stdcall
 #endif

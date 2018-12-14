@@ -1,3 +1,4 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* TraceClassConfig.h                                          (C) 2000-2018 */
 /*                                                                           */
@@ -19,7 +20,7 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Configuration associée à une classe de trace.
+ * \brief Configuration associÃ©e Ã  une classe de trace.
  */
 class TraceClassConfig
 {

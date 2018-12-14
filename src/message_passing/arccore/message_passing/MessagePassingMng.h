@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* MessagePassingMng.h                                         (C) 2000-2018 */
 /*                                                                           */
-/* Gestionnaire des échanges de messages.                                    */
+/* Gestionnaire des Ã©changes de messages.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_MESSAGEPASSINGMNG_H
 #define ARCCORE_MESSAGEPASSING_MESSAGEPASSINGMNG_H
@@ -21,7 +22,7 @@ namespace MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Interface du gestionnaire des échanges de messages.
+ * \brief Interface du gestionnaire des Ã©changes de messages.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT MessagePassingMng
 : public IMessagePassingMng

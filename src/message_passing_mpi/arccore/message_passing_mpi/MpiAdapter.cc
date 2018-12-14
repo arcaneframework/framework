@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* MpiAdapter.cc                                               (C) 2000-2018 */
 /*                                                                           */
-/* Gestionnaire de parallélisme utilisant MPI.                               */
+/* Gestionnaire de parallÃ©lisme utilisant MPI.                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -75,14 +76,14 @@ MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,MpiLock* mpi_lock)
   ::MPI_Comm_size(m_communicator,&m_comm_size);
 
   /*!
-   * Ce type de requête est utilisé par openmpi à partir de
+   * Ce type de requÃªte est utilisÃ© par openmpi Ã  partir de
    * la version 1.8 (il faut voir pour la 1.6, sachant que la 1.4 et 1.5
-   * ne l'ont pas). Cette requête fonctionne un peu comme MPI_REQUEST_NULL
-   * et il est possible qu'elle soit retournée plusieurs fois. Il ne faut
-   * donc pas mettre cette requête dans m_allocated_requests.
-   * On ne peut pas accéder directement à l'adresse de cette requête vide
-   * mais l'implémentation 1.8 de openmpi retourne cette requête lorsqu'on
-   * appelle un IRecv avec une source MPI_PROC_NULL. On récupère donc la valeur
+   * ne l'ont pas). Cette requÃªte fonctionne un peu comme MPI_REQUEST_NULL
+   * et il est possible qu'elle soit retournÃ©e plusieurs fois. Il ne faut
+   * donc pas mettre cette requÃªte dans m_allocated_requests.
+   * On ne peut pas accÃ©der directement Ã  l'adresse de cette requÃªte vide
+   * mais l'implÃ©mentation 1.8 de openmpi retourne cette requÃªte lorsqu'on
+   * appelle un IRecv avec une source MPI_PROC_NULL. On rÃ©cupÃ¨re donc la valeur
    * comme cela.
    */
   MPI_Irecv(m_recv_buffer_for_empty_request,1,MPI_INT,MPI_PROC_NULL,50505,m_communicator,&m_empty_request);
@@ -103,7 +104,7 @@ void MpiAdapter::
 destroy()
 {
   // On ne peut pas faire ce test dans le destructeur car il peut
-  // potentiellement lancé une exception et cela ne doit pas être fait
+  // potentiellement lancÃ© une exception et cela ne doit pas Ãªtre fait
   // dans un destructeur.
   size_t nb_request = m_allocated_requests.size();
   if (nb_request!=0){
@@ -868,7 +869,7 @@ waitAllRequests(ArrayView<Request> requests,
     double end_time = MPI_Wtime();
     diff_time = end_time - begin_time;
   }
-  // Il ne faut pas utiliser mpi_request[i] car il est modifié par Mpi
+  // Il ne faut pas utiliser mpi_request[i] car il est modifiÃ© par Mpi
   // mpi_request[i] == MPI_REQUEST_NULL
   for( Integer i=0; i<size; ++i ) {
     if (requests[i].isValid()){
@@ -899,7 +900,7 @@ waitSomeRequests(ArrayView<Request> requests,ArrayView<bool> indexes,
   int nb_completed_request = 0;
   for( Integer i=0; i<size; ++i ){
     // Sauve la requete pour la desallouer dans m_allocated_requests,
-    // car sa valeur ne sera plus valide après appel à MPI_Wait*
+    // car sa valeur ne sera plus valide aprÃ¨s appel Ã  MPI_Wait*
     saved_mpi_request[i] = static_cast<MPI_Request>(requests[i]);
     //info() << " REQUEST_WAIT I=" << i << " M=" << size
     //<< " R=" << mpi_request[i];
@@ -928,7 +929,7 @@ waitSomeRequests(ArrayView<Request> requests,ArrayView<bool> indexes,
         MPI_Waitsome(size,saved_mpi_request.data(),&nb_completed_request,
                      completed_requests.data(),mpi_status.data());
       }
-      // Il ne faut pas utiliser mpi_request[i] car il est modifié par Mpi
+      // Il ne faut pas utiliser mpi_request[i] car il est modifiÃ© par Mpi
       // mpi_request[i] == MPI_REQUEST_NULL
       if (nb_completed_request == MPI_UNDEFINED) // Si aucune requete n'etait valide.
       	nb_completed_request = 0;
@@ -996,7 +997,7 @@ freeRequest(Request& request)
 bool MpiAdapter::
 testRequest(Request& request)
 {
-  // Il est autorisé par MPI de faire un test avec une requête nulle.
+  // Il est autorisÃ© par MPI de faire un test avec une requÃªte nulle.
   if (!request.isValid())
     return true;
 
@@ -1008,7 +1009,7 @@ testRequest(Request& request)
 
     if (mr!=m_empty_request){
       // Il faut d'abord recuperer l'emplacement de la requete car si elle
-      // est finie, elle sera automatiquement libérée par MPI lors du test.
+      // est finie, elle sera automatiquement libÃ©rÃ©e par MPI lors du test.
       std::set<MPI_Request>::iterator ireq = m_allocated_requests.find(mr);
       if (ireq==m_allocated_requests.end()){
         error() << "MpiAdapter::testRequest() request not referenced "

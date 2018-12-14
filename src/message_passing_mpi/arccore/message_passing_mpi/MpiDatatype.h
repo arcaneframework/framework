@@ -1,3 +1,4 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* MpiDatatype.h                                               (C) 2000-2018 */
 /*                                                                           */
@@ -26,7 +27,7 @@ namespace Mpi
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Opérateurs de réduction pour les types complexes (Real2, Real3, Real2x2 et Real3x3)
+//! OpÃ©rateurs de rÃ©duction pour les types complexes (Real2, Real3, Real2x2 et Real3x3)
 class IMpiReduceOperator
 {
  public:
@@ -36,7 +37,7 @@ class IMpiReduceOperator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Opérateur de réduction interne MPI (MPI_MAX, MPI_MIN, MPI_SUM)
+//! OpÃ©rateur de rÃ©duction interne MPI (MPI_MAX, MPI_MIN, MPI_SUM)
 class BuiltInMpiReduceOperator
 : public IMpiReduceOperator
 {
@@ -47,7 +48,7 @@ class BuiltInMpiReduceOperator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Opérateurs de réduction pour les types classiques
+//! OpÃ©rateurs de rÃ©duction pour les types classiques
 template<typename RealType>
 class StdMpiReduceOperator
 : public IMpiReduceOperator

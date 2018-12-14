@@ -1,3 +1,4 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* Exception.h                                                 (C) 2000-2018 */
 /*                                                                           */
@@ -29,13 +30,13 @@ namespace Arccore
  * \brief Classe de base d'une exception.
  *
  * \ingroup Core
- Les exceptions sont gérées par le mécanisme <tt>try</tt> et <tt>catch</tt>
- du C++. Toutes les exceptions lancées dans le code <strong>doivent</strong>
- dériver de cette classe.
+ Les exceptions sont gÃ©rÃ©es par le mÃ©canisme <tt>try</tt> et <tt>catch</tt>
+ du C++. Toutes les exceptions lancÃ©es dans le code <strong>doivent</strong>
+ dÃ©river de cette classe.
 
- Une exception peut-être collective. Cela signifie qu'elle sera lancée
+ Une exception peut-Ãªtre collective. Cela signifie qu'elle sera lancÃ©e
  par tous les processeurs. Il est possible dans ce cas de n'afficher qu'une
- seule fois le message et éventuellement d'arrêter proprement l'exécution.
+ seule fois le message et Ã©ventuellement d'arrÃªter proprement l'exÃ©cution.
  */
 class ARCCORE_BASE_EXPORT Exception
 : public std::exception
@@ -45,7 +46,7 @@ class ARCCORE_BASE_EXPORT Exception
   /*!
    * \internal
    *
-   * Cette méthode est privée pour interdire d'affecter une exception.
+   * Cette mÃ©thode est privÃ©e pour interdire d'affecter une exception.
    */
   const Exception& operator=(const Exception&); //PURE
 
@@ -53,49 +54,49 @@ class ARCCORE_BASE_EXPORT Exception
 
   /*!
    * Construit une exception de nom \a name et
-   * envoyée depuis la fonction \a where.
+   * envoyÃ©e depuis la fonction \a where.
    */
   Exception(const String& name,const String& where);
   /*!
    * Construit une exception de nom \a name et
-   * envoyée depuis la fonction \a where.
+   * envoyÃ©e depuis la fonction \a where.
    */
   Exception(const String& name,const TraceInfo& where);
   /*!
    * Construit une exception de nom \a name,
-   * envoyée depuis la fonction \a where et avec le message \a message.
+   * envoyÃ©e depuis la fonction \a where et avec le message \a message.
    */
   Exception(const String& name,const String& where,const String& message);
   /*!
    * Construit une exception de nom \a name,
-   * envoyée depuis la fonction \a where et avec le message \a message.
+   * envoyÃ©e depuis la fonction \a where et avec le message \a message.
    */
   Exception(const String& name,const TraceInfo& trace,const String& message);
   /*!
    * Construit une exception de nom \a name et
-   * envoyée depuis la fonction \a where.
+   * envoyÃ©e depuis la fonction \a where.
    */
   Exception(const String& name,const String& where,const StackTrace& stack_trace);
   /*!
    * Construit une exception de nom \a name et
-   * envoyée depuis la fonction \a where.
+   * envoyÃ©e depuis la fonction \a where.
    */
   Exception(const String& name,const TraceInfo& where,const StackTrace& stack_trace);
   /*!
    * Construit une exception de nom \a name,
-   * envoyée depuis la fonction \a where et avec le message \a message.
+   * envoyÃ©e depuis la fonction \a where et avec le message \a message.
    */
   Exception(const String& name,const String& where,
             const String& message,const StackTrace& stack_trace);
   /*!
    * Construit une exception de nom \a name,
-   * envoyée depuis la fonction \a where et avec le message \a message.
+   * envoyÃ©e depuis la fonction \a where et avec le message \a message.
    */
   Exception(const String& name,const TraceInfo& trace,
             const String& message,const StackTrace& stack_trace);
   //! Constructeur par copie.
   Exception(const Exception&);
-  //! Libère les ressources
+  //! LibÃ¨re les ressources
   ~Exception() ARCCORE_NOEXCEPT override;
 
  public:
@@ -105,19 +106,19 @@ class ARCCORE_BASE_EXPORT Exception
   //! Vrai s'il s'agit d'une erreur collective (concerne tous les processeurs)
   bool isCollective() const { return m_is_collective; }
 
-  //! Positionne l'état collective de l'expression
+  //! Positionne l'Ã©tat collective de l'expression
   void setCollective(bool v) { m_is_collective = v; }
 
-  //! Positionne les infos supplémentaires
+  //! Positionne les infos supplÃ©mentaires
   void setAdditionalInfo(const String& v) { m_additional_info = v; }
 
-  //! Retourne les infos supplémentaires
+  //! Retourne les infos supplÃ©mentaires
   const String& additionalInfo() const { return m_additional_info; }
 
-  //! Pile d'appel au moment de l'exception (nécessite un service de stacktrace)
+  //! Pile d'appel au moment de l'exception (nÃ©cessite un service de stacktrace)
   const StackTrace& stackTrace() const { return m_stack_trace; }
 
-  //! Pile d'appel au moment de l'exception (nécessite un service de stacktrace)
+  //! Pile d'appel au moment de l'exception (nÃ©cessite un service de stacktrace)
   const String& stackTraceString() const { return m_stack_trace.toString(); }
 
   //! Indique si des exceptions sont en cours
@@ -138,7 +139,7 @@ class ARCCORE_BASE_EXPORT Exception
   
   /*! \brief Explique la cause de l'exception dans le flot \a o.
    *
-   * Cette méthode permet d'ajouter des informations supplémentaires
+   * Cette mÃ©thode permet d'ajouter des informations supplÃ©mentaires
    * au message d'exception.
    */
   virtual void explain(std::ostream& o) const;

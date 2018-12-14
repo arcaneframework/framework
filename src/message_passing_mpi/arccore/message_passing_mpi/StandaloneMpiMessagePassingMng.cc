@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* StandaloneMpiMessagePassingMng.cc                           (C) 2000-2018 */
 /*                                                                           */
-/* Implémentation MPI du gestionnaire des échanges de messages.              */
+/* ImplÃ©mentation MPI du gestionnaire des Ã©changes de messages.              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -85,7 +86,7 @@ namespace{
 template<typename DataType> void
 _createAndSetDispatcher(Dispatchers* dispatchers,IMessagePassingMng* mpm,MpiAdapter* adapter)
 {
-  // TODO: gérer la destruction de ces objets.
+  // TODO: gÃ©rer la destruction de ces objets.
   MPI_Datatype mpi_dt = MpiBuiltIn::datatype(DataType());
   auto dt = new MpiDatatype(mpi_dt);
   dispatchers->setDispatcher(new MpiTypeDispatcher<DataType>(mpm,adapter,dt));

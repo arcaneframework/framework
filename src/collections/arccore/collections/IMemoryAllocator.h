@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* IMemoryAllocator.h                                          (C) 2000-2018 */
 /*                                                                           */
-/* Interface d'un allocateur mémoire.                                        */
+/* Interface d'un allocateur mÃ©moire.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COLLECTIONS_IMEMORYALLOCATOR_H
 #define ARCCORE_COLLECTIONS_IMEMORYALLOCATOR_H
@@ -19,9 +20,9 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Interface d'un allocateur pour la mémoire.
+ * \brief Interface d'un allocateur pour la mÃ©moire.
  *
- * Cette classe définit une interface pour l'allocation mémoire utilisée
+ * Cette classe dÃ©finit une interface pour l'allocation mÃ©moire utilisÃ©e
  * par les classes tableaux de Arccore (Array, UniqueArray).
  *
  * Une instance de cette classe doit rester valide tant qu'il existe
@@ -32,65 +33,65 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator
  public:
 
   /*!
-   * \brief Détruit l'allocateur.
+   * \brief DÃ©truit l'allocateur.
    *
-   * Les objets alloués par l'allocateur doivent tous avoir été désalloués.
+   * Les objets allouÃ©s par l'allocateur doivent tous avoir Ã©tÃ© dÃ©sallouÃ©s.
    */
   virtual ~IMemoryAllocator() {}
 
  public:
 
   /*!
-   * \brief Indique si l'allocateur supporte la sémantique de realloc.
+   * \brief Indique si l'allocateur supporte la sÃ©mantique de realloc.
    *
-   * Les allocateurs par défaut du C (malloc/realloc/free) supportent
-   * évidemment le realloc mais ce n'est pas forcément le cas
-   * des allocateurs spécifiques avec alignement mémoire (comme
+   * Les allocateurs par dÃ©faut du C (malloc/realloc/free) supportent
+   * Ã©videmment le realloc mais ce n'est pas forcÃ©ment le cas
+   * des allocateurs spÃ©cifiques avec alignement mÃ©moire (comme
    * par exemple posix_memalign).
    */
   virtual bool hasRealloc() const =0;
 
   /*!
-   * \brief Alloue de la mémoire pour \a new_size octets et retourne le pointeur.
+   * \brief Alloue de la mÃ©moire pour \a new_size octets et retourne le pointeur.
    *
-   * La sémantique est équivalent à malloc():
-   * - \a new_size peut valoir zéro et dans ce cas le pointeur retourné
-   * est soit nul, soit une valeur spécifique
-   * - le pointeur retourné peut être nul si la mémoire n'a pas pu être allouée.
+   * La sÃ©mantique est Ã©quivalent Ã  malloc():
+   * - \a new_size peut valoir zÃ©ro et dans ce cas le pointeur retournÃ©
+   * est soit nul, soit une valeur spÃ©cifique
+   * - le pointeur retournÃ© peut Ãªtre nul si la mÃ©moire n'a pas pu Ãªtre allouÃ©e.
    */
   virtual void* allocate(size_t new_size) =0;
 
   /*!
-   * \brief Réalloue de la mémoire pour \a new_size octets et retourne le pointeur.
+   * \brief RÃ©alloue de la mÃ©moire pour \a new_size octets et retourne le pointeur.
    *
-   * Le pointeur \a current_ptr doit avoir été alloué via l'appel à
+   * Le pointeur \a current_ptr doit avoir Ã©tÃ© allouÃ© via l'appel Ã 
    * allocate() ou reallocate() de cette instance.
    *
-   * La sémantique de cette méthode est équivalente à realloc():
-   * - \a current_ptr peut-être nul auquel cas cet appel est équivalent
-   * à allocate().
-   * - le pointeur retourné peut être nul si la mémoire n'a pas pu être allouée.
+   * La sÃ©mantique de cette mÃ©thode est Ã©quivalente Ã  realloc():
+   * - \a current_ptr peut-Ãªtre nul auquel cas cet appel est Ã©quivalent
+   * Ã  allocate().
+   * - le pointeur retournÃ© peut Ãªtre nul si la mÃ©moire n'a pas pu Ãªtre allouÃ©e.
    */
   virtual void* reallocate(void* current_ptr,size_t new_size) =0;
 
   /*!
-   * \brief Libère la mémoire dont l'adresse de base est \a ptr.
+   * \brief LibÃ¨re la mÃ©moire dont l'adresse de base est \a ptr.
    *
-   * Le pointeur \a ptr doit avoir été alloué via l'appel à
+   * Le pointeur \a ptr doit avoir Ã©tÃ© allouÃ© via l'appel Ã 
    * allocate() ou reallocate() de cette instance.
    *
-   * La sémantique de cette méthode équivalente à free() et donc \a ptr
-   * peut être nul auquel cas aucune opération n'est effectuée.
+   * La sÃ©mantique de cette mÃ©thode Ã©quivalente Ã  free() et donc \a ptr
+   * peut Ãªtre nul auquel cas aucune opÃ©ration n'est effectuÃ©e.
    */
   virtual void deallocate(void* ptr) =0;
 
   /*!
-   * \brief Ajuste la capacité suivant la taille d'élément.
+   * \brief Ajuste la capacitÃ© suivant la taille d'Ã©lÃ©ment.
    *
-   * Cette méthode est utilisée pour éventuellement modifié le nombre
-   * d'éléments alloués suivant leur taille. Cela permet par exemple
-   * pour les allocateurs alignés de garantir que le nombre d'éléments
-   * alloués est un multiple de cet alignement.
+   * Cette mÃ©thode est utilisÃ©e pour Ã©ventuellement modifiÃ© le nombre
+   * d'Ã©lÃ©ments allouÃ©s suivant leur taille. Cela permet par exemple
+   * pour les allocateurs alignÃ©s de garantir que le nombre d'Ã©lÃ©ments
+   * allouÃ©s est un multiple de cet alignement.
    * 
    */
   virtual size_t adjustCapacity(size_t wanted_capacity,size_t element_size) =0;
@@ -99,9 +100,9 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Allocateur mémoire via malloc/realloc/free.
+ * \brief Allocateur mÃ©moire via malloc/realloc/free.
  *
- * TODO: marquer les méthodes comme 'final'.
+ * TODO: marquer les mÃ©thodes comme 'final'.
  */
 class ARCCORE_COLLECTIONS_EXPORT DefaultMemoryAllocator
 : public IMemoryAllocator
@@ -124,12 +125,12 @@ class ARCCORE_COLLECTIONS_EXPORT DefaultMemoryAllocator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Allocateur mémoire avec alignement mémoire spécifique.
+ * \brief Allocateur mÃ©moire avec alignement mÃ©moire spÃ©cifique.
  *
- * Cette classe s'utilise via les deux méthodes publiques Simd()
+ * Cette classe s'utilise via les deux mÃ©thodes publiques Simd()
  * et CacheLine() qui retournent repectivement un allocateur avec
- * un alignement adéquat pour autoriser la vectorisation et un allocateur
- * aligné sur une ligne de cache.
+ * un alignement adÃ©quat pour autoriser la vectorisation et un allocateur
+ * alignÃ© sur une ligne de cache.
  */
 class ARCCORE_COLLECTIONS_EXPORT AlignedMemoryAllocator
 : public IMemoryAllocator
@@ -142,17 +143,17 @@ class ARCCORE_COLLECTIONS_EXPORT AlignedMemoryAllocator
  public:
 
   // TODO: essayer de trouver les bonnes valeurs en fonction de la cible.
-  // 64 est OK pour toutes les architectures x64 à la fois pour le SIMD
+  // 64 est OK pour toutes les architectures x64 Ã  la fois pour le SIMD
   // et la ligne de cache.
 
   // IMPORTANT: Si on change la valeur ici, il faut changer la taille de
   // l'alignement de ArrayImplBase.
 
-  // TODO Pour l'instant seul un alignement sur 64 est autorisé. Pour
-  // autoriser d'autres valeurs, il faut modifier l'implémentation dans
+  // TODO Pour l'instant seul un alignement sur 64 est autorisÃ©. Pour
+  // autoriser d'autres valeurs, il faut modifier l'implÃ©mentation dans
   // ArrayImplBase.
 
-  // TODO marquer les méthodes comme 'final'.
+  // TODO marquer les mÃ©thodes comme 'final'.
 
   //! Alignement pour les structures utilisant la vectorisation
   static ARCCORE_CONSTEXPR Integer simdAlignment() { return 64; }
@@ -200,9 +201,9 @@ class ARCCORE_COLLECTIONS_EXPORT AlignedMemoryAllocator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Allocateur mémoire via malloc/realloc/free avec impression listing.
+ * \brief Allocateur mÃ©moire via malloc/realloc/free avec impression listing.
  *
- * Cet allocateur est principalement utilisé à des fins de debugging.
+ * Cet allocateur est principalement utilisÃ© Ã  des fins de debugging.
  * La sortie des informations se fait sur std::cout.
  */
 class ARCCORE_COLLECTIONS_EXPORT PrintableMemoryAllocator

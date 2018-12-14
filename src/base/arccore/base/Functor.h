@@ -1,7 +1,8 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* Functor.h                                                   (C) 2000-2018 */
 /*                                                                           */
-/* Classes utilitaires pour gérer des fonctors.                              */
+/* Classes utilitaires pour gÃ©rer des fonctors.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_FUNCTOR_H
 #define ARCCORE_BASE_FUNCTOR_H
@@ -22,7 +23,7 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Functor associé à une méthode d'une classe \a T.
+ * \brief Functor associÃ© Ã  une mÃ©thode d'une classe \a T.
  */
 template<typename T>
 class FunctorT
@@ -30,7 +31,7 @@ class FunctorT
 {
  public:
 	
-  typedef void (T::*FuncPtr)(); //!< Type du pointeur sur la méthode
+  typedef void (T::*FuncPtr)(); //!< Type du pointeur sur la mÃ©thode
 
  public:
 	
@@ -42,22 +43,22 @@ class FunctorT
 
  protected:
 
-  //! Exécute la méthode associé
+  //! ExÃ©cute la mÃ©thode associÃ©
   void executeFunctor() override
   {
     (m_object->*m_function)();
   }
 
  private:
-  FuncPtr m_function; //!< Pointeur vers la méthode associée.
-  T* m_object; //!< Objet associé.
+  FuncPtr m_function; //!< Pointeur vers la mÃ©thode associÃ©e.
+  T* m_object; //!< Objet associÃ©.
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Functor associé à une méthode d'une classe \a T.
+ * \brief Functor associÃ© Ã  une mÃ©thode d'une classe \a T.
  */
 template<typename ClassType,typename ArgType>
 class FunctorWithArgumentT
@@ -65,7 +66,7 @@ class FunctorWithArgumentT
 {
  public:
 	
-  typedef void (ClassType::*FuncPtr)(ArgType); //!< Type du pointeur sur la méthode
+  typedef void (ClassType::*FuncPtr)(ArgType); //!< Type du pointeur sur la mÃ©thode
 
  public:
 	
@@ -75,7 +76,7 @@ class FunctorWithArgumentT
 
  protected:
 
-  //! Exécute la méthode associé
+  //! ExÃ©cute la mÃ©thode associÃ©
   void executeFunctor(ArgType arg)
   {
     (m_object->*m_function)(arg);
@@ -83,8 +84,8 @@ class FunctorWithArgumentT
   
  private:
 
-  ClassType* m_object; //!< Objet associé.
-  FuncPtr m_function; //!< Pointeur vers la méthode associée.
+  ClassType* m_object; //!< Objet associÃ©.
+  FuncPtr m_function; //!< Pointeur vers la mÃ©thode associÃ©e.
 };
 
 
@@ -92,7 +93,7 @@ class FunctorWithArgumentT
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Functor générique utilisant la classe std::function.
+ * \brief Functor gÃ©nÃ©rique utilisant la classe std::function.
  */
 template<typename ArgType>
 class StdFunctorWithArgumentT
@@ -108,7 +109,7 @@ class StdFunctorWithArgumentT
 
  protected:
 
-  //! Exécute la méthode associé
+  //! ExÃ©cute la mÃ©thode associÃ©
   void executeFunctor(ArgType arg)
   {
     m_function(arg);

@@ -1,3 +1,4 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* Array2.h                                                    (C) 2000-2018 */
 /*                                                                           */
@@ -24,11 +25,11 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup Collection
- * \brief Classe représentant un tableau 2D classique.
+ * \brief Classe reprÃ©sentant un tableau 2D classique.
  *
- * Les instances de cette classe ne sont ni copiables ni affectable. Pour créer un
- * tableau copiable, il faut utiliser SharedArray2 (pour une sémantique par
- * référence) ou UniqueArray2 (pour une sémantique par valeur comme la STL).
+ * Les instances de cette classe ne sont ni copiables ni affectable. Pour crÃ©er un
+ * tableau copiable, il faut utiliser SharedArray2 (pour une sÃ©mantique par
+ * rÃ©fÃ©rence) ou UniqueArray2 (pour une sÃ©mantique par valeur comme la STL).
  */
 template<typename DataType>
 class Array2
@@ -61,7 +62,7 @@ class Array2
  protected:
 #endif
   Array2() : AbstractArray<DataType>() {}
-  //! Créé un tableau de \a size1 * \a size2 éléments.
+  //! CrÃ©Ã© un tableau de \a size1 * \a size2 Ã©lÃ©ments.
   Array2(Int64 size1,Int64 size2)
   : AbstractArray<DataType>() 
   {
@@ -76,12 +77,12 @@ class Array2
     this->copy(rhs);
   }
  public:
-  //! Créé un tableau vide avec un allocateur spécifique \a allocator
+  //! CrÃ©Ã© un tableau vide avec un allocateur spÃ©cifique \a allocator
   explicit Array2(IMemoryAllocator* allocator)
   : AbstractArray<DataType>(allocator,0) {}
   /*!
-   * \brief Créé un tableau de \a size1 * \a size2 éléments avec
-   * un allocateur spécifique \a allocator.
+   * \brief CrÃ©Ã© un tableau de \a size1 * \a size2 Ã©lÃ©ments avec
+   * un allocateur spÃ©cifique \a allocator.
    */
   Array2(IMemoryAllocator* allocator,Int64 size1,Int64 size2)
   : AbstractArray<DataType>(allocator,size1*size2)
@@ -99,7 +100,7 @@ class Array2
 
  protected:
 
-  //! Constructeur par déplacement. Uniquement valide pour UniqueArray2.
+  //! Constructeur par dÃ©placement. Uniquement valide pour UniqueArray2.
   Array2(Array2<DataType>&& rhs) : AbstractArray<DataType>(std::move(rhs)) {}
 
  public:
@@ -127,13 +128,13 @@ class Array2
     ARCCORE_CHECK_AT(j,m_p->dim2_size);
     m_p->ptr[ (m_p->dim2_size*i) + j ] = v;
   }
-  //! Elément d'indice \a i. Vérifie toujours les débordements
+  //! ElÃ©ment d'indice \a i. VÃ©rifie toujours les dÃ©bordements
   ConstArrayView<DataType> at(Int64 i) const
   {
     arccoreCheckAt(i,m_p->dim1_size);
     return this->operator[](i);
   }
-  //! Elément d'indice \a i. Vérifie toujours les débordements
+  //! ElÃ©ment d'indice \a i. VÃ©rifie toujours les dÃ©bordements
   ArrayView<DataType> at(Int64 i)
   {
     arccoreCheckAt(i,m_p->dim1_size);
@@ -172,13 +173,13 @@ class Array2
     m_p->dim2_size = rhs.dim2Size();
     _arccoreCheckSharedNull();
   }
-  //! Capacité (nombre d'éléments alloués) du tableau
+  //! CapacitÃ© (nombre d'Ã©lÃ©ments allouÃ©s) du tableau
   Integer capacity() const { return Base::capacity(); }
 
-  //! Capacité (nombre d'éléments alloués) du tableau
+  //! CapacitÃ© (nombre d'Ã©lÃ©ments allouÃ©s) du tableau
   Int64 largeCapacity() const { return Base::largeCapacity(); }
 
-  //! Réserve de la mémoire pour \a new_capacity éléments
+  //! RÃ©serve de la mÃ©moire pour \a new_capacity Ã©lÃ©ments
   void reserve(Int64 new_capacity) { Base::_reserve(new_capacity); }
 
   //! Vue du tableau sous forme de tableau 1D
@@ -246,22 +247,22 @@ class Array2
     _arccoreCheckSharedNull();
   }
 
-  //! Redimensionne uniquement la première dimension en laissant la deuxième à l'identique
+  //! Redimensionne uniquement la premiÃ¨re dimension en laissant la deuxiÃ¨me Ã  l'identique
   void resize(Int64 new_size)
   {
     _resize(new_size,IB_InitWithDefault);
   }
-  //! Redimensionne uniquement la première dimension en laissant la deuxième à l'identique
+  //! Redimensionne uniquement la premiÃ¨re dimension en laissant la deuxiÃ¨me Ã  l'identique
   void resizeNoInit(Int64 new_size)
   {
     _resize(new_size,IB_NoInit);
   }
-  //! Réalloue les deux dimensions
+  //! RÃ©alloue les deux dimensions
   void resize(Int64 new_size1,Int64 new_size2)
   {
     _resize(new_size1,new_size2,IB_InitWithDefault);
   }
-  //! Réalloue les deux dimensions
+  //! RÃ©alloue les deux dimensions
   void resizeNoInit(Int64 new_size1,Int64 new_size2)
   {
     _resize(new_size1,new_size2,IB_NoInit);
@@ -269,7 +270,7 @@ class Array2
   Integer totalNbElement() const { return ARCCORE_CAST_SMALL_SIZE(m_p->dim1_size*m_p->dim2_size); }
   Int64 largeTotalNbElement() const { return m_p->dim1_size*m_p->dim2_size; }
  protected:
-  //! Redimensionne uniquement la première dimension en laissant la deuxième à l'identique
+  //! Redimensionne uniquement la premiÃ¨re dimension en laissant la deuxiÃ¨me Ã  l'identique
   void _resize(Int64 new_size,InitBehaviour rb)
   {
     Int64 old_size = m_p->dim1_size;
@@ -279,7 +280,7 @@ class Array2
     m_p->dim1_size = new_size;
     _arccoreCheckSharedNull();
   }
-  //! Réalloue les deux dimensions
+  //! RÃ©alloue les deux dimensions
   void _resize(Int64 new_size1,Int64 new_size2,InitBehaviour rb)
   {
     if (new_size2==m_p->dim2_size){
@@ -325,7 +326,7 @@ class Array2
     Int64 n = m_p->dim1_size;
     Int64 n2 = m_p->dim2_size;
     _resize2(n,new_size2,rb);
-    // Recopie en partant de la fin pour éviter tout écrasement
+    // Recopie en partant de la fin pour Ã©viter tout Ã©crasement
     for( Int64 i=(n-1); i>=0; --i ){
       for( Int64 j=(n2-1); j>=0; --j )
         m_p->ptr[(i*new_size2)+j] = m_p->ptr[(i*n2)+j];
@@ -370,7 +371,7 @@ class Array2
 /*!
  * \ingroup Collection
  *
- * \brief Vecteur de données 2D partagées avec sémantique par référence.
+ * \brief Vecteur de donnÃ©es 2D partagÃ©es avec sÃ©mantique par rÃ©fÃ©rence.
  *
  * \code
  * SharedArray2<int> a1(5,7);
@@ -380,13 +381,13 @@ class Array2
  * a2[1][2] = 2;
  * \endcode
  *
- * Dans l'exemple précédent, \a a1 et \a a2 font référence à la même zone
- * mémoire et donc a1[3][6] aura la même valeur que a2[1][2].
+ * Dans l'exemple prÃ©cÃ©dent, \a a1 et \a a2 font rÃ©fÃ©rence Ã  la mÃªme zone
+ * mÃ©moire et donc a1[3][6] aura la mÃªme valeur que a2[1][2].
  *
- * Pour avoir un vecteur qui recopie les éléments lors de l'affectation,
+ * Pour avoir un vecteur qui recopie les Ã©lÃ©ments lors de l'affectation,
  * il faut utiliser la classe UniqueArray2.
  *
- * Pour plus d'informations, se reporter à SharedArray.
+ * Pour plus d'informations, se reporter Ã  SharedArray.
  */
 template<typename T>
 class SharedArray2
@@ -405,33 +406,33 @@ class SharedArray2
  public:
 
  public:
-  //! Créé un tableau vide
+  //! CrÃ©Ã© un tableau vide
   SharedArray2() : Array2<T>(), m_next(nullptr), m_prev(nullptr) {}
-  //! Créé un tableau de \a size1 * \a size2 éléments.
+  //! CrÃ©Ã© un tableau de \a size1 * \a size2 Ã©lÃ©ments.
   SharedArray2(Int64 size1,Int64 size2)
   : Array2<T>(), m_next(nullptr), m_prev(nullptr)
   {
     this->resize(size1,size2);
   }
-  //! Créé un tableau en recopiant les valeurs de la value \a view.
+  //! CrÃ©Ã© un tableau en recopiant les valeurs de la value \a view.
   SharedArray2(const ConstArray2View<T>& view)
   : Array2<T>(view), m_next(nullptr), m_prev(nullptr)
   {
   }
-  //! Créé un tableau en recopiant les valeurs de la value \a view.
+  //! CrÃ©Ã© un tableau en recopiant les valeurs de la value \a view.
   SharedArray2(const Span2<const T>& view)
   : Array2<T>(view), m_next(nullptr), m_prev(nullptr)
   {
   }
-  //! Créé un tableau faisant référence à \a rhs.
+  //! CrÃ©Ã© un tableau faisant rÃ©fÃ©rence Ã  \a rhs.
   SharedArray2(const SharedArray2<T>& rhs)
   : Array2<T>(), m_next(nullptr), m_prev(nullptr)
   {
     _initReference(rhs);
   }
-  //! Créé un tableau en recopiant les valeurs \a rhs.
+  //! CrÃ©Ã© un tableau en recopiant les valeurs \a rhs.
   inline SharedArray2(const UniqueArray2<T>& rhs);
-  //! Change la référence de cette instance pour qu'elle soit celle de \a rhs.
+  //! Change la rÃ©fÃ©rence de cette instance pour qu'elle soit celle de \a rhs.
   void operator=(const SharedArray2<T>& rhs)
   {
     this->_operatorEqual(rhs);
@@ -443,7 +444,7 @@ class SharedArray2
   {
     this->copy(rhs);
   }
-  //! Détruit l'instance
+  //! DÃ©truit l'instance
   ~SharedArray2() override
   {
     _removeReference();
@@ -463,7 +464,7 @@ class SharedArray2
     _addReference(&rhs);
     ++m_p->nb_ref;
   }
-  //! Mise à jour des références
+  //! Mise Ã  jour des rÃ©fÃ©rences
   void _updateReferences() override final
   {
     for( ThatClassType* i = m_prev; i; i = i->m_prev )
@@ -471,7 +472,7 @@ class SharedArray2
     for( ThatClassType* i = m_next; i; i = i->m_next )
       i->_setMP(m_p);
   }
-  //! Mise à jour des références
+  //! Mise Ã  jour des rÃ©fÃ©rences
   Integer _getNbRef() override final
   {
     Integer nb_ref = 1;
@@ -482,8 +483,8 @@ class SharedArray2
     return nb_ref;
   }
   /*!
-   * \brief Insère cette instance dans la liste chaînée.
-   * L'instance est insérée à la position de \a new_ref.
+   * \brief InsÃ¨re cette instance dans la liste chaÃ®nÃ©e.
+   * L'instance est insÃ©rÃ©e Ã  la position de \a new_ref.
    * \pre m_prev==0
    * \pre m_next==0;
    */
@@ -497,7 +498,7 @@ class SharedArray2
     if (prev)
       prev->m_next = this;
   }
-  //! Supprime cette instance de la liste chaînée des références
+  //! Supprime cette instance de la liste chaÃ®nÃ©e des rÃ©fÃ©rences
   void _removeReference()
   {
     if (m_prev)
@@ -505,7 +506,7 @@ class SharedArray2
     if (m_next)
       m_next->m_prev = m_prev;
   }
-  //! Détruit l'instance si plus personne ne la référence
+  //! DÃ©truit l'instance si plus personne ne la rÃ©fÃ©rence
   void _checkFreeMemory()
   {
     if (m_p->nb_ref==0){
@@ -525,8 +526,8 @@ class SharedArray2
     }
   }
  private:
-  ThatClassType* m_next; //!< Référence suivante dans la liste chaînée
-  ThatClassType* m_prev; //!< Référence précédente dans la liste chaînée
+  ThatClassType* m_next; //!< RÃ©fÃ©rence suivante dans la liste chaÃ®nÃ©e
+  ThatClassType* m_prev; //!< RÃ©fÃ©rence prÃ©cÃ©dente dans la liste chaÃ®nÃ©e
  private:
   //! Interdit
   void operator=(const Array2<T>& rhs);
@@ -537,7 +538,7 @@ class SharedArray2
 /*!
  * \ingroup Collection
  *
- * \brief Vecteur de données 2D avec sémantique par valeur (style STL).
+ * \brief Vecteur de donnÃ©es 2D avec sÃ©mantique par valeur (style STL).
  *
  * Cette classe est le pendant de UniqueArray pour les tableaux 2D.
  */
@@ -553,33 +554,33 @@ class UniqueArray2
  public:
 
  public:
-  //! Créé un tableau vide
+  //! CrÃ©Ã© un tableau vide
   UniqueArray2() : Array2<T>() {}
-  //! Créé un tableau de \a size1 * \a size2 éléments.
+  //! CrÃ©Ã© un tableau de \a size1 * \a size2 Ã©lÃ©ments.
   explicit UniqueArray2(Int64 size1,Int64 size2) : Array2<T>()
   {
     this->resize(size1,size2);
   }
-  //! Créé un tableau en recopiant les valeurs de la value \a view.
+  //! CrÃ©Ã© un tableau en recopiant les valeurs de la value \a view.
   UniqueArray2(const Span2<const T>& view) : Array2<T>(view) {}
-  //! Créé un tableau en recopiant les valeurs de la value \a view.
+  //! CrÃ©Ã© un tableau en recopiant les valeurs de la value \a view.
   UniqueArray2(const ConstArray2View<T>& view) : Array2<T>(view) {}
-  //! Créé un tableau en recopiant les valeurs \a rhs.
+  //! CrÃ©Ã© un tableau en recopiant les valeurs \a rhs.
   UniqueArray2(const Array2<T>& rhs) : Array2<T>(rhs.constSpan()) {}
-  //! Créé un tableau en recopiant les valeurs \a rhs.
+  //! CrÃ©Ã© un tableau en recopiant les valeurs \a rhs.
   UniqueArray2(const UniqueArray2<T>& rhs) : Array2<T>(rhs.constSpan()) {}
-  //! Créé un tableau en recopiant les valeurs \a rhs.
+  //! CrÃ©Ã© un tableau en recopiant les valeurs \a rhs.
   UniqueArray2(const SharedArray2<T>& rhs) : Array2<T>(rhs.constSpan()) {}
-  //! Créé un tableau vide avec un allocateur spécifique \a allocator
+  //! CrÃ©Ã© un tableau vide avec un allocateur spÃ©cifique \a allocator
   explicit UniqueArray2(IMemoryAllocator* allocator)
   : Array2<T>(allocator) {}
   /*!
-   * \brief Créé un tableau de \a size1 * \a size2 éléments avec
-   * un allocateur spécifique \a allocator.
+   * \brief CrÃ©Ã© un tableau de \a size1 * \a size2 Ã©lÃ©ments avec
+   * un allocateur spÃ©cifique \a allocator.
    */
   UniqueArray2(IMemoryAllocator* allocator,Int64 size1,Int64 size2)
   : Array2<T>(allocator,size1,size2) { }
-  //! Constructeur par déplacement. \a rhs est invalidé après cet appel
+  //! Constructeur par dÃ©placement. \a rhs est invalidÃ© aprÃ¨s cet appel
   UniqueArray2(UniqueArray2<T>&& rhs) ARCCORE_NOEXCEPT : Array2<T>(std::move(rhs)) {}
   //! Copie les valeurs de \a rhs dans cette instance.
   void operator=(const Array2<T>& rhs)
@@ -606,20 +607,20 @@ class UniqueArray2
   {
     this->copy(rhs);
   }
-  //! Opérateur de recopie par déplacement. \a rhs est invalidé après cet appel.
+  //! OpÃ©rateur de recopie par dÃ©placement. \a rhs est invalidÃ© aprÃ¨s cet appel.
   void operator=(UniqueArray2<T>&& rhs) ARCCORE_NOEXCEPT
   {
     this->_move(rhs);
   }
-  //! Détruit le tableau
+  //! DÃ©truit le tableau
   ~UniqueArray2() override
   {
   }
  public:
   /*!
-   * \brief Échange les valeurs de l'instance avec celles de \a rhs.
+   * \brief Ã‰change les valeurs de l'instance avec celles de \a rhs.
    *
-   * L'échange se fait en temps constant et sans réallocation.
+   * L'Ã©change se fait en temps constant et sans rÃ©allocation.
    */
   void swap(UniqueArray2<T>& rhs) ARCCORE_NOEXCEPT
   {
@@ -630,9 +631,9 @@ class UniqueArray2
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Échange les valeurs de \a v1 et \a v2.
+ * \brief Ã‰change les valeurs de \a v1 et \a v2.
  *
- * L'échange se fait en temps constant et sans réallocation.
+ * L'Ã©change se fait en temps constant et sans rÃ©allocation.
  */
 template<typename T> inline void
 swap(UniqueArray2<T>& v1,UniqueArray2<T>& v2)

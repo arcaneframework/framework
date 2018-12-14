@@ -1,3 +1,4 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* ITraceMng.h                                                 (C) 2000-2017 */
 /*                                                                           */
@@ -23,11 +24,11 @@ namespace Arccore
 /*!
  * \brief Arguments de ITraceMessageListener::visitMessage().
  *
- * \a buffer() contient la chaîne de caractère à afficher.
- * \a buffer() se termine toujours par un zéro terminal.
+ * \a buffer() contient la chaÃ®ne de caractÃ¨re Ã  afficher.
+ * \a buffer() se termine toujours par un zÃ©ro terminal.
  *
  * Une instance de cette classe est un objet temporaire qui ne doit
- * pas être conservé au delà de l'appel ITraceMessageListener::visitMessage().
+ * pas Ãªtre conservÃ© au delÃ  de l'appel ITraceMessageListener::visitMessage().
  */
 class TraceMessageListenerArgs
 {
@@ -41,7 +42,7 @@ class TraceMessageListenerArgs
     return m_message;
   }
 
-  //! Chaîne de caractères du message.
+  //! ChaÃ®ne de caractÃ¨res du message.
   ConstArrayView<char> buffer() const
   {
     return m_buffer;
@@ -61,15 +62,15 @@ class ITraceMessageListener
  public:
   virtual ~ITraceMessageListener() {}
   /*!
-   * \brief Réception du message \a msg contenant la châine \a str.
+   * \brief RÃ©ception du message \a msg contenant la chÃ¢ine \a str.
    *
-   * Si le retour est \a true, le message n'est pas utilisé par le ITraceMng.
+   * Si le retour est \a true, le message n'est pas utilisÃ© par le ITraceMng.
    *
-   * L'instance a le droit d'appeler ITraceMng::writeDirect() pour écrire
-   * directement des messages pendant l'appel à cette méthode.
+   * L'instance a le droit d'appeler ITraceMng::writeDirect() pour Ã©crire
+   * directement des messages pendant l'appel Ã  cette mÃ©thode.
    *
-   * \warning Attention, cette fonction doit être thread-safe car elle peut être
-   * appelée simultanément par plusieurs threads.
+   * \warning Attention, cette fonction doit Ãªtre thread-safe car elle peut Ãªtre
+   * appelÃ©e simultanÃ©ment par plusieurs threads.
    */
   virtual bool visitMessage(const TraceMessageListenerArgs& args) =0;
 };
@@ -80,10 +81,10 @@ class ITraceMessageListener
  * \ingroup Core
  * \brief Interface du gestionnaire de traces.
  *
- Une instance de cette classe gère les flots de traces.
- Pour envoyer un message, il suffit d'appeler la méthode corrrespondante
+ Une instance de cette classe gÃ¨re les flots de traces.
+ Pour envoyer un message, il suffit d'appeler la mÃ©thode corrrespondante
  (info() pour un message d'information, error() pour une erreur, ...)
- pour récupérer un flot et d'utiliser l'opérateur << sur ce flot pour
+ pour rÃ©cupÃ©rer un flot et d'utiliser l'opÃ©rateur << sur ce flot pour
  transmettre un message.
  
  Par exemple:
@@ -94,24 +95,24 @@ class ITraceMessageListener
  tr->error() << "Erreur sur le processeur " << proc_id;
  \endcode
 
- Le message est envoyé lors de la destruction du flot. Dans les
- exemples précédents, les flots sont temporairement créés (par la méthode info())
- et détruits dès que l'opérateur << a été appliqué dessus.
+ Le message est envoyÃ© lors de la destruction du flot. Dans les
+ exemples prÃ©cÃ©dents, les flots sont temporairement crÃ©Ã©s (par la mÃ©thode info())
+ et dÃ©truits dÃ¨s que l'opÃ©rateur << a Ã©tÃ© appliquÃ© dessus.
 
- \warning Il faut absolument appeler la méthode finishInitialize() avant
- d'utiliser les appels aux méthodes pushTraceClass() et popTraceClass().
+ \warning Il faut absolument appeler la mÃ©thode finishInitialize() avant
+ d'utiliser les appels aux mÃ©thodes pushTraceClass() et popTraceClass().
  
  Si on souhaite envoyer un message en plusieurs fois, il faut stocker
- le flot retourné:
+ le flot retournÃ©:
 
  \code
  TraceMessage info = m_trace_mng->info();
- info() << "Début de l'information.\n"
+ info() << "DÃ©but de l'information.\n"
  info() << "Fin de l'information.";
  \endcode
 
  Il est possible d'utiliser des formatteurs simples sur les messages (via la classe #TraceMessage)
- ou des formatteurs standards des iostream en appliquant l'opérateur operator()
+ ou des formatteurs standards des iostream en appliquant l'opÃ©rateur operator()
  de TraceMessage.
  */
 class ARCCORE_TRACE_EXPORT ITraceMng
@@ -121,43 +122,43 @@ class ARCCORE_TRACE_EXPORT ITraceMng
  public:
   //! Flot pour un message d'erreur
   virtual TraceMessage error() =0;
-  //! Flot pour un message d'erreur parallèle
+  //! Flot pour un message d'erreur parallÃ¨le
   virtual TraceMessage perror() =0;
   //! Flot pour un message d'erreur fatale
   virtual TraceMessage fatal() =0;
-  //! Flot pour un message d'erreur fatale parallèle
+  //! Flot pour un message d'erreur fatale parallÃ¨le
   virtual TraceMessage pfatal() =0;
   //! Flot pour un message d'avertissement
   virtual TraceMessage warning() =0;
-  //! Flot pour un message d'avertissement parallèle
+  //! Flot pour un message d'avertissement parallÃ¨le
   virtual TraceMessage pwarning() =0;
   //! Flot pour un message d'information
   virtual TraceMessage info() =0;
-  //! Flot pour un message d'information parallèle
+  //! Flot pour un message d'information parallÃ¨le
   virtual TraceMessage pinfo() =0;
-  //! Flot pour un message d'information d'une catégorie donnée
+  //! Flot pour un message d'information d'une catÃ©gorie donnÃ©e
   virtual TraceMessage info(char category) =0;
-  //! Flot pour un message d'information d'un niveau donné
+  //! Flot pour un message d'information d'un niveau donnÃ©
   virtual TraceMessage info(Int32 level) =0;
-  //! Flot pour un message d'information parallèle d'une catégorie donnée
+  //! Flot pour un message d'information parallÃ¨le d'une catÃ©gorie donnÃ©e
   virtual TraceMessage pinfo(char category) =0;
   //! Flot pour un message d'information conditionnel.
   virtual TraceMessage info(bool) =0;
   //! Flot pour un message de log.
   virtual TraceMessage log() =0;
-  //! Flot pour un message de log parallèle.
+  //! Flot pour un message de log parallÃ¨le.
   virtual TraceMessage plog() =0;
-  //! Flot pour un message de log précédé de l'heure.
+  //! Flot pour un message de log prÃ©cÃ©dÃ© de l'heure.
   virtual TraceMessage logdate() =0;
   //! Flot pour un message de debug.
   virtual TraceMessageDbg debug(Trace::eDebugLevel =Trace::Medium) =0;
-  //! Flot pour un message non utilisé
+  //! Flot pour un message non utilisÃ©
   virtual TraceMessage devNull() =0;
 
   /*!
-   * \brief Modifie l'état d'activation des messages d'info.
+   * \brief Modifie l'Ã©tat d'activation des messages d'info.
    *
-   * \return l'ancien état d'activation.
+   * \return l'ancien Ã©tat d'activation.
    */
   virtual bool setActivated(bool v) =0;
 
@@ -165,13 +166,13 @@ class ARCCORE_TRACE_EXPORT ITraceMng
   virtual void finishInitialize() =0;
 
   /*!
-   * \brief Ajoute la classe \a s à la pile des classes de messages actifs.
+   * \brief Ajoute la classe \a s Ã  la pile des classes de messages actifs.
    * \threadsafe
    */
   virtual void pushTraceClass(const String& name) =0;
 	
   /*!
-   * \brief Supprime la dernière classe de message de la pile.
+   * \brief Supprime la derniÃ¨re classe de message de la pile.
    * \threadsafe
    */
   virtual void popTraceClass() =0;
@@ -188,10 +189,10 @@ class ARCCORE_TRACE_EXPORT ITraceMng
  public:
 
   /*!
-   * \brief Ajoute l'observateur \a v à ce gestionnaire de message.
+   * \brief Ajoute l'observateur \a v Ã  ce gestionnaire de message.
    *
-   * L'appelant reste propriétaire de \a v et doit l'enlever
-   * via removeListener() avant de le détruire.
+   * L'appelant reste propriÃ©taire de \a v et doit l'enlever
+   * via removeListener() avant de le dÃ©truire.
    */
   virtual void addListener(ITraceMessageListener* v) =0;
 
@@ -201,9 +202,9 @@ class ARCCORE_TRACE_EXPORT ITraceMng
   /*!
    * \brief Positionne l'identifiant du gestionnnaire.
    *
-   * Si non nul, l'identifiant est affiché en cas d'erreur pour
+   * Si non nul, l'identifiant est affichÃ© en cas d'erreur pour
    * identifier l'instance qui affiche le message. L'identifiant
-   * peut être quelconque. Par défaut, il s'agit du rang du processus et
+   * peut Ãªtre quelconque. Par dÃ©faut, il s'agit du rang du processus et
    * du nom de la machine.
    */
   virtual void setTraceId(const String& id) =0;
@@ -212,37 +213,37 @@ class ARCCORE_TRACE_EXPORT ITraceMng
   virtual const String& traceId() const =0;
 
   /*!
-   * \brief Positionne le nom du fichier d'erreur à \a file_name.
+   * \brief Positionne le nom du fichier d'erreur Ã  \a file_name.
    *
-   * Si un fichier d'erreur est déjà ouvert, il est refermé et un nouveau
-   * avec ce nouveau nom de fichier sera créé lors de la prochaine erreur.
+   * Si un fichier d'erreur est dÃ©jÃ  ouvert, il est refermÃ© et un nouveau
+   * avec ce nouveau nom de fichier sera crÃ©Ã© lors de la prochaine erreur.
    *
-   * Si \a file_name est la chaîne nulle, aucun fichier d'erreur n'est utilisé.
+   * Si \a file_name est la chaÃ®ne nulle, aucun fichier d'erreur n'est utilisÃ©.
    */
   virtual void setErrorFileName(const String& file_name) =0;
 
   /*!
-   * \brief Positionne le nom du fichier de log à \a file_name.
+   * \brief Positionne le nom du fichier de log Ã  \a file_name.
    *
-   * Si un fichier de log est déjà ouvert, il est refermé et un nouveau
-   * avec ce nouveau nom de fichier sera créé lors du prochaine log.
+   * Si un fichier de log est dÃ©jÃ  ouvert, il est refermÃ© et un nouveau
+   * avec ce nouveau nom de fichier sera crÃ©Ã© lors du prochaine log.
    *
-   * Si \a file_name est la chaîne nulle, aucun fichier de log n'est utilisé.
+   * Si \a file_name est la chaÃ®ne nulle, aucun fichier de log n'est utilisÃ©.
    */
   virtual void setLogFileName(const String& file_name) =0;
 
  public:
 
-  //! Signale un début d'écriture du message \a message
+  //! Signale un dÃ©but d'Ã©criture du message \a message
   virtual void beginTrace(const TraceMessage* message) =0;
 
-  //! Signale une fin d'écriture du message \a message
+  //! Signale une fin d'Ã©criture du message \a message
   virtual void endTrace(const TraceMessage* message) =0;
 
   /*!
    * \brief Envoie directement un message de type \a type.
-   * \a type doit correspondre à Trace::eMessageType.
-   * Cette méthode ne doit être utilisée que par le wrapping .NET.
+   * \a type doit correspondre Ã  Trace::eMessageType.
+   * Cette mÃ©thode ne doit Ãªtre utilisÃ©e que par le wrapping .NET.
    */
   virtual void putTrace(const String& message,int type) =0;
 
@@ -251,7 +252,7 @@ class ARCCORE_TRACE_EXPORT ITraceMng
   //! Positionne la configuration pour la classe de message \a name
   virtual void setClassConfig(const String& name,const TraceClassConfig& config) =0;
 
-  //! Configuration associées à la classe de message \a name
+  //! Configuration associÃ©es Ã  la classe de message \a name
   virtual TraceClassConfig classConfig(const String& name) const =0;
 
   virtual void setMaster(bool is_master) =0;
@@ -259,46 +260,46 @@ class ARCCORE_TRACE_EXPORT ITraceMng
   virtual bool isMaster() const =0;
 
   /*!
-   * Positionne le niveau de verbosité des sorties.
-   * Les messages de niveau supérieur à ce niveau ne sont pas sortis.
-   * Le niveau utilisé est celui donné en argument de info(Int32).
-   * Le niveau par défaut est celui donné par TraceMessage::DEFAULT_LEVEL.
+   * Positionne le niveau de verbositÃ© des sorties.
+   * Les messages de niveau supÃ©rieur Ã  ce niveau ne sont pas sortis.
+   * Le niveau utilisÃ© est celui donnÃ© en argument de info(Int32).
+   * Le niveau par dÃ©faut est celui donnÃ© par TraceMessage::DEFAULT_LEVEL.
    */
   virtual void setVerbosityLevel(Int32 level) =0;
 
-  //! Niveau de verbosité des messages
+  //! Niveau de verbositÃ© des messages
   virtual Int32 verbosityLevel() const =0;
 
   /*!
    * \internal
-   * Indique que le gestionnaire de thread à changé et qu'il faut
-   * redéclarer les structures gérant le multi-threading.
-   * Interne à Arccore, ne pas utiliser.
+   * Indique que le gestionnaire de thread Ã  changÃ© et qu'il faut
+   * redÃ©clarer les structures gÃ©rant le multi-threading.
+   * Interne Ã  Arccore, ne pas utiliser.
    */
   virtual void resetThreadStatus() =0;
 
   /*!
-   * \brief Écrit directement un message.
+   * \brief Ã‰crit directement un message.
    *
-   * Ecrit directement le message \a msg contenant la chaîne \a buf_array.
-   * Le message n'est pas analysé par l'instance et est toujours écrit
-   * sans aucun formattage spécifique. Cette opération ne doit en principe
-   * être utilisée que par un ITraceMessageListener. Pour les autres cas,
+   * Ecrit directement le message \a msg contenant la chaÃ®ne \a buf_array.
+   * Le message n'est pas analysÃ© par l'instance et est toujours Ã©crit
+   * sans aucun formattage spÃ©cifique. Cette opÃ©ration ne doit en principe
+   * Ãªtre utilisÃ©e que par un ITraceMessageListener. Pour les autres cas,
    * il faut utiliser les traces standards.
    */
   virtual void writeDirect(const TraceMessage* msg,const String& str) =0;
 
-  //! Supprime toutes les classes de configuration positionnées via setClassConfig().
+  //! Supprime toutes les classes de configuration positionnÃ©es via setClassConfig().
   virtual void removeAllClassConfig() =0;
 
   /*!
-   * \biref Applique le fonctor \a functor sur l'ensemble des TraceClassConfig enregistrés.
+   * \biref Applique le fonctor \a functor sur l'ensemble des TraceClassConfig enregistrÃ©s.
    *
    * Le premier argument de la paire est le nom de classe de configuration et
-   * le deuxième sa valeur telle que retournée par classConfig().
+   * le deuxiÃ¨me sa valeur telle que retournÃ©e par classConfig().
    *
    * Il est permis de modifier le TraceClassConfig en cours de visite via
-   * un appel à setClassConfig().
+   * un appel Ã  setClassConfig().
    */
   virtual void visitClassConfigs(IFunctorWithArgumentT<std::pair<String,TraceClassConfig>>* functor) =0;
 };

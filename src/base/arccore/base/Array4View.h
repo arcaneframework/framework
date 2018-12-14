@@ -1,3 +1,4 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* Array4View.h                                                (C) 2000-2018 */
 /*                                                                           */
@@ -22,8 +23,8 @@ namespace Arccore
  * \ingroup Collection
  * \brief Vue pour un tableau 4D.
  *
- * Cette classe permet d'obtenir une vue 4D à partir d'une zone contigue
- * en mémoire, comme par exemple celle obtenue via la classe Array.
+ * Cette classe permet d'obtenir une vue 4D Ã  partir d'une zone contigue
+ * en mÃ©moire, comme par exemple celle obtenue via la classe Array.
  *
  * La vue peut s'utiliser comme un tableau C classique, par exemple:
  * \code
@@ -31,8 +32,8 @@ namespace Arccore
  * a[0][1][2][3] = 5.0;
  * \endcode
  *
- * Il est néammoins préférable d'utiliser directement les méthodes
- * item() ou setItem() pour accéder en lecture ou écriture à un élément
+ * Il est nÃ©ammoins prÃ©fÃ©rable d'utiliser directement les mÃ©thodes
+ * item() ou setItem() pour accÃ©der en lecture ou Ã©criture Ã  un Ã©lÃ©ment
  * du tableau.
  */
 template<class DataType>
@@ -54,15 +55,15 @@ class Array4View
   {
   }
  public:
-  //! Valeur de la première dimension
+  //! Valeur de la premiÃ¨re dimension
   Integer dim1Size() const { return m_dim1_size; }
-  //! Valeur de la deuxième dimension
+  //! Valeur de la deuxiÃ¨me dimension
   Integer dim2Size() const { return m_dim2_size; }
-  //! Valeur de la troisième dimension
+  //! Valeur de la troisiÃ¨me dimension
   Integer dim3Size() const { return m_dim3_size; }
-  //! Valeur de la quatrième dimension
+  //! Valeur de la quatriÃ¨me dimension
   Integer dim4Size() const { return m_dim4_size; }
-  //! Nombre total d'éléments du tableau
+  //! Nombre total d'Ã©lÃ©ments du tableau
   Integer totalNbElement() const { return m_dim1_size*m_dim234_size; }
  public:
   Array3View<DataType> operator[](Integer i)
@@ -75,7 +76,7 @@ class Array4View
     ARCCORE_CHECK_AT(i,m_dim1_size);
     return ConstArray3View<DataType>(m_ptr + (m_dim234_size*i),m_dim2_size,m_dim3_size,m_dim4_size);
   }
-  //! Valeur pour l'élément \a i,j,k,l
+  //! Valeur pour l'Ã©lÃ©ment \a i,j,k,l
   DataType item(Integer i,Integer j,Integer k,Integer l) const
   {
     ARCCORE_CHECK_AT(i,m_dim1_size);
@@ -84,7 +85,7 @@ class Array4View
     ARCCORE_CHECK_AT(l,m_dim4_size);
     return m_ptr[(m_dim234_size*i) + m_dim34_size*j + m_dim4_size*k + l];
   }
-  //! Positionne la valeur pour l'élément \a i,j,k,l
+  //! Positionne la valeur pour l'Ã©lÃ©ment \a i,j,k,l
   void setItem(Integer i,Integer j,Integer k,Integer l,const DataType& value)
   {
     ARCCORE_CHECK_AT(i,m_dim1_size);
@@ -95,7 +96,7 @@ class Array4View
   }
  public:
   /*!
-   * \brief Pointeur sur le premier élément du tableau.
+   * \brief Pointeur sur le premier Ã©lÃ©ment du tableau.
    */
   inline DataType* unguardedBasePointer()
   { return m_ptr; }
@@ -153,7 +154,7 @@ class ConstArray4View
   }
  public:
   /*!
-   * \brief Pointeur sur la mémoire allouée.
+   * \brief Pointeur sur la mÃ©moire allouÃ©e.
    */
   inline const DataType* unguardedBasePointer()
   { return m_ptr; }
