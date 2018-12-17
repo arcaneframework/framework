@@ -109,9 +109,6 @@ destroy()
   size_t nb_request = m_allocated_requests.size();
   if (nb_request!=0){
     warning() << " Pending mpi requests size=" << nb_request;
-    for( std::set<MPI_Request>::const_iterator i = m_allocated_requests.begin();
-         i!=m_allocated_requests.end(); ++i ){
-    }
     _checkFatalInRequest();
   }
   delete this;
@@ -601,8 +598,8 @@ directSendRecv(const void* send_buffer,Int64 send_buffer_size,
                          data_type,proc,99,
                          m_communicator,&mpi_status);
   double end_time = MPI_Wtime();
-  size_t send_size = send_buffer_size * elem_size;
-  size_t recv_size = recv_buffer_size * elem_size;
+  Int64 send_size = send_buffer_size * elem_size;
+  Int64 recv_size = recv_buffer_size * elem_size;
   double sr_time   = (end_time-begin_time);
 
   //debug(Trace::High) << "MPI SendRecv: send " << send_size << " recv "
@@ -625,7 +622,7 @@ directSend(const void* send_buffer,Int64 send_buffer_size,
 
   double begin_time = 0.0;
   double end_time = 0.0;
-  size_t send_size = send_buffer_size * elem_size;
+  Int64 send_size = send_buffer_size * elem_size;
   int ret = 0;
   if (m_is_trace)
     info() << "MPI_TRACE: MPI Send: send before"
@@ -725,7 +722,7 @@ directRecv(void* recv_buffer,Int64 recv_buffer_size,
   else
     i_proc = static_cast<int>(proc);
 
-  size_t recv_size = recv_buffer_size * elem_size;
+  Int64 recv_size = recv_buffer_size * elem_size;
   if (m_is_trace){
     info() << "MPI_TRACE: MPI Recv: recv before "
            << " size=" << recv_size
@@ -811,7 +808,7 @@ probeRecvPack(UniqueArray<Byte>& recv_buffer,Integer proc)
   MPI_Recv(recv_buffer.data(),recv_buffer_size,MPI_PACKED,proc,101,m_communicator,&status);
 
   double end_time = MPI_Wtime();
-  size_t recv_size = recv_buffer_size;
+  Int64 recv_size = recv_buffer_size;
   double sr_time   = (end_time-begin_time);
   debug(Trace::High) << "MPI probeRecvPack " << recv_size
                      << " time " << sr_time;
@@ -984,7 +981,7 @@ freeRequest(Request& request)
   {
     MpiLock::Section mls(m_mpi_lock);
 
-    MPI_Request mr = (MPI_Request)request;
+    auto mr = (MPI_Request)request;
     _removeRequest(mr);
     MPI_Request_free(&mr);
   }
@@ -1001,7 +998,7 @@ testRequest(Request& request)
   if (!request.isValid())
     return true;
 
-  MPI_Request mr = (MPI_Request)request;
+  auto mr = (MPI_Request)request;
   int is_finished = 0;
 
   {
@@ -1010,7 +1007,7 @@ testRequest(Request& request)
     if (mr!=m_empty_request){
       // Il faut d'abord recuperer l'emplacement de la requete car si elle
       // est finie, elle sera automatiquement libérée par MPI lors du test.
-      std::set<MPI_Request>::iterator ireq = m_allocated_requests.find(mr);
+      auto ireq = m_allocated_requests.find(mr);
       if (ireq==m_allocated_requests.end()){
         error() << "MpiAdapter::testRequest() request not referenced "
                 << " id=" << mr;
@@ -1048,7 +1045,7 @@ _addRequest(MPI_Request request)
   if (request==m_empty_request)
     return;
   //info() << "MPI_ADAPTER:ADD REQUEST " << request;
-  std::set<MPI_Request>::const_iterator i = m_allocated_requests.find(request);
+  auto i = m_allocated_requests.find(request);
   if (i!=m_allocated_requests.end()){
     if (m_is_report_error_in_request || m_request_error_is_fatal){
       error() << "MpiAdapter::_addRequest() request already referenced "
@@ -1078,7 +1075,7 @@ _removeRequest(MPI_Request request)
   }
   if (request==m_empty_request)
     return;
-  std::set<MPI_Request>::iterator i = m_allocated_requests.find(request);
+  auto i = m_allocated_requests.find(request);
   if (i==m_allocated_requests.end()){
     if (m_is_report_error_in_request || m_request_error_is_fatal){
       error() << "MpiAdapter::_removeRequest() request not referenced "

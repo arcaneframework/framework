@@ -27,7 +27,7 @@ namespace Mpi
 class StandaloneMpiMessagePassingMng::Impl
 {
  public:
-  Impl(MPI_Comm mpi_comm)
+  explicit Impl(MPI_Comm mpi_comm)
   : m_trace_mng(nullptr), m_stat(nullptr), m_dispatchers(nullptr),
     m_adapter(nullptr), m_comm_rank(-1), m_comm_size(-1)
   {
