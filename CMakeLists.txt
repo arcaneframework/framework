@@ -42,8 +42,9 @@ install(TARGETS arccore_build_compile_flags EXPORT ${ARCCORE_EXPORT_TARGET})
 # Les symboles des bibliothèques ne sont pas visibles sauf si demandé
 # explicitement
 
-target_compile_options(arccore_build_compile_flags INTERFACE -fvisibility-inlines-hidden -fvisibility=hidden)
-
+if (CMAKE_COMPILER_IS_GNUCXX)
+  target_compile_options(arccore_build_compile_flags INTERFACE -fvisibility-inlines-hidden -fvisibility=hidden)
+endif()
 # ----------------------------------------------------------------------------
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/CheckCompileFlags.cmake)
