@@ -66,7 +66,7 @@ arccoreDebugPause(const char* msg)
          << "** FATAL: start the debugger using the process number\n"
          << "** FATAL: (pid=" << Platform::getProcessId() << ",host=" << host_name << ").\n";
     std::cerr << ostr.str();
-#ifndef ARCANE_OS_WIN32
+#ifndef ARCCORE_OS_WIN32
     ::pause();
 #endif
   }
