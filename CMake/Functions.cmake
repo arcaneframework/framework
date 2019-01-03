@@ -83,7 +83,7 @@ function(arccore_add_component_library component_name)
 
   # Génère les bibliothèques dans le répertoire 'lib' du projet.
   set_target_properties(${_LIB_NAME} PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY ${Arccore_BINARY_DIR}/lib
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     )
 endfunction()
 
