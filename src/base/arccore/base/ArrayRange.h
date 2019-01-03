@@ -62,15 +62,6 @@ class ArrayRange
   //! Retourne un iterateur constant sur le premier élément après la fin du tableau
   const_iterator end() const { return const_iterator(m_end); }
 
-  //! Pointeur sur le tableau sous-jacent.
-  value_type* data() { return m_begin; }
-  //! Pointeur constant sur le tableau sous-jacent.
-  const value_type* data() const { return m_begin; }
-  //! Nombre d'éléments dans le tableau
-  Integer size() const { return (m_end-m_begin); }
-  //! Indique si le tableau est vide.
-  bool empty() const { return m_end==m_begin; }
-
  private:
 
   T m_begin;

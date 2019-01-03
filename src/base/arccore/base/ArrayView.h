@@ -99,9 +99,9 @@ class ArrayView
   //! Type pointeur constant d'un élément du tableau
   typedef const value_type* const_pointer;
   //! Type de l'itérateur sur un élément du tableau
-  typedef value_type* iterator;
+  typedef ArrayIterator<pointer> iterator;
   //! Type de l'itérateur constant sur un élément du tableau
-  typedef const value_type* const_iterator;
+  typedef ArrayIterator<const_pointer> const_iterator;
   //! Type référence d'un élément du tableau
   typedef value_type& reference;
   //! Type référence constante d'un élément du tableau
@@ -188,22 +188,22 @@ class ArrayView
    * \brief Itérateur sur le premier élément du tableau.
    * \deprecated Utiliser range().begin(), std::begin() ou data() à la place.
    */
-  ARCCORE_DEPRECATED_2018 iterator begin() { return iterator(m_ptr); }
+  iterator begin() { return iterator(m_ptr); }
   /*!
    * \brief Itérateur sur le premier élément après la fin du tableau.
    * \deprecated Utiliser range().end() à la place.
    */
-  ARCCORE_DEPRECATED_2018 iterator end() { return iterator(m_ptr+m_size); }
+  iterator end() { return iterator(m_ptr+m_size); }
   /*!
    * \brief Itérateur constant sur le premier élément du tableau.
    * \deprecated Utiliser range().begin(), std::begin() ou data() à la place.
    */
-  ARCCORE_DEPRECATED_2018 const_iterator begin() const { return iterator(m_ptr); }
+  const_iterator begin() const { return const_iterator(m_ptr); }
   /*!
    * \brief Itérateur constant sur le premier élément après la fin du tableau.
    * \deprecated Utiliser range().end() à la place.
    */
-  ARCCORE_DEPRECATED_2018 const_iterator end() const { return iterator(m_ptr+m_size); }
+  const_iterator end() const { return const_iterator(m_ptr+m_size); }
 
  public:
 
@@ -486,26 +486,24 @@ class ConstArrayView
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
   ConstArrayView(const ArrayView<T>& from)
-  : m_size(from.size()), m_ptr(from.data())
-    {
-    }
+  : m_size(from.size()), m_ptr(from.data()) { }
 
   /*!
    * \brief Opérateur de recopie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
   const ConstArrayView<T>& operator=(const ConstArrayView<T>& from)
-    { m_size=from.m_size; m_ptr=from.m_ptr; return *this; }
+  { m_size=from.m_size; m_ptr=from.m_ptr; return *this; }
 
   /*! \brief Opérateur de recopie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
   const ConstArrayView<T>& operator=(const ArrayView<T>& from)
-    {
-      m_size = from.size();
-      m_ptr  = from.data();
-      return (*this);
-    }
+  {
+    m_size = from.size();
+    m_ptr  = from.data();
+    return (*this);
+  }
 
  public:
 
@@ -813,35 +811,6 @@ arccoreCheckLargeArraySize(size_t size);
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Arccore
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace std
-{
-template< class T > inline typename Arccore::ArrayRange<typename Arccore::ArrayView<T>::pointer>::iterator
-begin( Arccore::ArrayView<T>& c )
-{
-  return c.range().begin();
-}
-template< class T > inline typename Arccore::ArrayRange<typename Arccore::ArrayView<T>::pointer>::iterator
-end( Arccore::ArrayView<T>& c )
-{
-  return c.range().end();
-}
-
-template< class T > inline typename Arccore::ArrayRange<typename Arccore::ArrayView<T>::const_pointer>::const_iterator
-begin( const Arccore::ConstArrayView<T>& c )
-{
-  return c.range().begin();
-}
-template< class T > inline typename Arccore::ArrayRange<typename Arccore::ArrayView<T>::const_pointer>::const_iterator
-end( const Arccore::ConstArrayView<T>& c )
-{
-  return c.range().end();
-}
-}
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

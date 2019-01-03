@@ -66,8 +66,8 @@ class Span
   using pointer = ElementType*;
   using const_pointer = typename std::add_const<ElementType*>::type;
   using reference = ElementType&;
-  using iterator = pointer;
-  using const_iterator = const ElementType*;
+  using iterator = ArrayIterator<pointer>;
+  using const_iterator = ArrayIterator<const_pointer>;
   using reverse_iterator = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
   using view_type = typename detail::ViewTypeT<ElementType>::view_type;
