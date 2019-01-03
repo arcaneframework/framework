@@ -414,7 +414,7 @@ arccoreSetPauseOnError(bool v);
  * méthode String::format().
  */
 #define ARCCORE_THROW(exception_class,...)                           \
-  throw exception_class (A_FUNCINFO,String::format(__VA_ARGS__))
+  throw exception_class (A_FUNCINFO,Arccore::String::format(__VA_ARGS__))
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -425,7 +425,7 @@ arccoreSetPauseOnError(bool v);
  * d'erreur via la méthode String::format().
  */
 #define ARCCORE_FATAL(...)\
-  throw Arccore::FatalErrorException(A_FUNCINFO,String::format(__VA_ARGS__))
+  throw Arccore::FatalErrorException(A_FUNCINFO,Arccore::String::format(__VA_ARGS__))
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
