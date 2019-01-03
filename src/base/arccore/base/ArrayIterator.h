@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* ArrayIterator.h                                             (C) 2000-2018 */
+/* ArrayIterator.h                                             (C) 2000-2019 */
 /*                                                                           */
 /* Itérateur sur les Array, ArrayView, ConstArrayView, ...                   */
 /*---------------------------------------------------------------------------*/
@@ -31,6 +31,11 @@ namespace Arccore
 template<typename _Iterator>
 class ArrayIterator
 {
+ private:
+  // Pour le cas où on ne supporte pas le C++14.
+  template< bool B, class XX = void >
+  using Iterator_enable_if_t = typename std::enable_if<B,XX>::type;
+
  protected:
   _Iterator m_ptr;
 
@@ -43,6 +48,7 @@ class ArrayIterator
   typedef typename _TraitsType::difference_type difference_type;
   typedef typename _TraitsType::reference reference;
   typedef typename _TraitsType::pointer pointer;
+ public:
 
   ArrayIterator() ARCCORE_NOEXCEPT : m_ptr(_Iterator()) { }
 
@@ -50,8 +56,9 @@ class ArrayIterator
     : m_ptr(__i) { }
 
   // Allow iterator to const_iterator conversion
-  //ArrayIterator(const ArrayIterator<value_type*>& iter) ARCCORE_NOEXCEPT
-  //: m_ptr(iter.base()) { }
+  template<typename X,typename = Iterator_enable_if_t<std::is_same<X,value_type*>::value> >
+  ArrayIterator(const ArrayIterator<X>& iter) ARCCORE_NOEXCEPT
+  : m_ptr(iter.base()) { }
 
   // Forward iterator requirements
   reference operator*() const ARCCORE_NOEXCEPT { return *m_ptr; }

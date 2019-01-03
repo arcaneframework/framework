@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* Array.h                                                     (C) 2000-2018 */
+/* Array.h                                                     (C) 2000-2019 */
 /*                                                                           */
 /* Tableau 1D.                                                               */
 /*---------------------------------------------------------------------------*/
@@ -280,9 +280,9 @@ class AbstractArray
   //! Type pointeur constant d'un élément du tableau
   typedef const value_type* const_pointer;
   //! Type de l'itérateur sur un élément du tableau
-  typedef pointer iterator;
+  typedef ArrayIterator<pointer> iterator;
   //! Type de l'itérateur constant sur un élément du tableau
-  typedef const_pointer const_iterator;
+  typedef ArrayIterator<const_pointer> const_iterator;
   //! Type référence d'un élément du tableau
   typedef value_type& reference;
   //! Type référence constante d'un élément du tableau
@@ -1133,30 +1133,17 @@ class Array
 
  public:
 
-  /*!
-   * \brief Itérateur sur le premier élément du tableau.
-   * \deprecated Utiliser range().begin(), std::begin() ou data() à la place.
-   */
-  ARCCORE_DEPRECATED_2018 iterator begin()
-  { return iterator(m_p->ptr); }
-  /*!
-   * \brief Itérateur constant sur le premier élément du tableau.
-   * \deprecated Utiliser range().begin(), std::begin() ou data() à la place.
-   */
-  ARCCORE_DEPRECATED_2018 const_iterator begin() const
-  { return const_iterator(m_p->ptr); }
-  /*!
-   * \brief Itérateur sur le premier élément après la fin du tableau.
-   * \deprecated Utiliser range().end() à la place.
-   */
-  ARCCORE_DEPRECATED_2018 iterator end()
-  { return iterator(m_p->ptr+m_p->size); }
-  /*!
-   * \brief Itérateur constant sur le premier élément après la fin du tableau.
-   * \deprecated Utiliser range().end() à la place.
-   */
-  ARCCORE_DEPRECATED_2018 const_iterator end() const
-  { return const_iterator(m_p->ptr+m_p->size); }
+  //! Itérateur sur le premier élément du tableau.
+  iterator begin() { return iterator(m_p->ptr); }
+
+  //! Itérateur constant sur le premier élément du tableau.
+  const_iterator begin() const { return const_iterator(m_p->ptr); }
+
+  //! Itérateur sur le premier élément après la fin du tableau.
+  iterator end() { return iterator(m_p->ptr+m_p->size); }
+
+  //! Itérateur constant sur le premier élément après la fin du tableau.
+  const_iterator end() const { return const_iterator(m_p->ptr+m_p->size); }
 
  public:
 
@@ -1644,23 +1631,6 @@ operator!=(const AbstractArray<T>& rhs, const AbstractArray<T>& lhs)
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Arccore
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace std
-{
-template< class T > inline typename Arccore::ArrayRange<typename Arccore::Array<T>::pointer>::iterator
-begin( Arccore::Array<T>& c )
-{
-  return c.range().begin();
-}
-template< class T > inline typename Arccore::ArrayRange<typename Arccore::Array<T>::pointer>::iterator
-end( Arccore::Array<T>& c )
-{
-  return c.range().end();
-}
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

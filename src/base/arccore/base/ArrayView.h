@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* ArrayView.h                                                 (C) 2000-2018 */
+/* ArrayView.h                                                 (C) 2000-2019 */
 /*                                                                           */
 /* Types définissant les vues de tableaux C.                                 */
 /*---------------------------------------------------------------------------*/
@@ -65,22 +65,20 @@ template<typename T> class Span;
 
  Il est aussi possible d'accéder aux éléments du tableau par des
  itérateurs de la même manière qu'avec les containers de la STL.
- Dans ce, il faut utiliser la méthode range() qui possède les
- méthodes classiques pour récupérer des itérateurs (begin()/end()).
 
  L'exemple suivant créé un itérateur \e i sur le tableau \e a et itère
  sur tout le tableau (méthode i()) et affiche les éléments:
 
  \code
- * for( Real v : a.range() )
+ * for( Real v : a )
  *   cout << v;
  \endcode
 
  L'exemple suivant fait la somme des 3 premiers éléments du tableau:
 
  \code
- * Real sum = 0.;
- * for( Real v : a.subView(0,3).range() )
+ * Real sum = 0.0;
+ * for( Real v : a.subView(0,3) )
  *   sum += v;
  \endcode
 
@@ -184,25 +182,13 @@ class ArrayView
   //! Nombre d'éléments du tableau
   inline Integer length() const { return m_size; }
 
-  /*!
-   * \brief Itérateur sur le premier élément du tableau.
-   * \deprecated Utiliser range().begin(), std::begin() ou data() à la place.
-   */
+  //! Itérateur sur le premier élément du tableau.
   iterator begin() { return iterator(m_ptr); }
-  /*!
-   * \brief Itérateur sur le premier élément après la fin du tableau.
-   * \deprecated Utiliser range().end() à la place.
-   */
+  //! Itérateur sur le premier élément après la fin du tableau.
   iterator end() { return iterator(m_ptr+m_size); }
-  /*!
-   * \brief Itérateur constant sur le premier élément du tableau.
-   * \deprecated Utiliser range().begin(), std::begin() ou data() à la place.
-   */
+  //! Itérateur constant sur le premier élément du tableau.
   const_iterator begin() const { return const_iterator(m_ptr); }
-  /*!
-   * \brief Itérateur constant sur le premier élément après la fin du tableau.
-   * \deprecated Utiliser range().end() à la place.
-   */
+  //! Itérateur constant sur le premier élément après la fin du tableau.
   const_iterator end() const { return const_iterator(m_ptr+m_size); }
 
  public:
@@ -459,7 +445,7 @@ class ConstArrayView
   //! Type pointeur constant d'un élément du tableau
   typedef const value_type* const_pointer;
   //! Type de l'itérateur constant sur un élément du tableau
-  typedef const value_type* const_iterator;
+  typedef ArrayIterator<const_pointer> const_iterator;
   //! Type référence constante d'un élément du tableau
   typedef const value_type& const_reference;
   //! Type indexant le tableau
@@ -580,16 +566,10 @@ class ConstArrayView
   inline Integer size() const { return m_size; }
   //! Nombre d'éléments du tableau
   inline Integer length() const { return m_size; }
-  /*!
-   * \brief Itérateur sur le premier élément du tableau.
-   * \deprecated Utiliser range().begin(), std::begin() ou data() à la place.
-   */
-  ARCCORE_DEPRECATED_2018 const_iterator begin() const { return const_iterator(m_ptr); }
-  /*!
-   * \brief Itérateur sur le premier élément après la fin du tableau.
-   * \deprecated Utiliser range().end() à la place.
-   */
-  ARCCORE_DEPRECATED_2018 const_iterator end() const { return const_iterator(m_ptr+m_size); }
+  //! Itérateur sur le premier élément du tableau.
+  const_iterator begin() const { return const_iterator(m_ptr); }
+  //! Itérateur sur le premier élément après la fin du tableau.
+  const_iterator end() const { return const_iterator(m_ptr+m_size); }
   //! \a true si le tableau est vide (size()==0)
   inline bool empty() const { return m_size==0; }
   //! \a true si le tableau contient l'élément de valeur \a v

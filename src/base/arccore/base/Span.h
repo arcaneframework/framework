@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* Span.h                                                      (C) 2000-2018 */
+/* Span.h                                                      (C) 2000-2019 */
 /*                                                                           */
 /* Types définissant les vues de tableaux C dont la taille est un Int64.     */
 /*---------------------------------------------------------------------------*/

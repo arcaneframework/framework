@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* ArrayRange.h                                                (C) 2000-2018 */
+/* ArrayRange.h                                                (C) 2000-2019 */
 /*                                                                           */
 /* Intervalle sur les Array, ArrayView, ConstArrayView, ...                  */
 /*---------------------------------------------------------------------------*/
@@ -23,7 +23,7 @@ namespace Arccore
  * \brief Intervalle sur les classes tableau de %Arccore.
  *
  * Cette classe est utilisée pour adapter les classes tableaux aux
- * itérateurs de la STL. Elle fournir les méthodes telles que begin()/end().
+ * itérateurs de la STL. Elle fourniy les méthodes telles que begin()/end().
  */
 template<typename T>
 class ArrayRange
@@ -61,6 +61,13 @@ class ArrayRange
   const_iterator begin() const { return const_iterator(m_begin); }
   //! Retourne un iterateur constant sur le premier élément après la fin du tableau
   const_iterator end() const { return const_iterator(m_end); }
+
+  //! Pointeur sur le tableau sous-jacent.
+  value_type* data() { return m_begin; }
+  //! Pointeur constant sur le tableau sous-jacent.
+  const value_type* data() const { return m_begin; }
+  //! Indique si le tableau est vide.
+  bool empty() const { return m_end==m_begin; }
 
  private:
 
