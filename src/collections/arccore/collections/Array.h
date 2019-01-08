@@ -18,7 +18,7 @@
 #include <cstring>
 
 // Définir cette macro si on souhaite empêcher la construction de Array.
-// #define ARCCORE_AVOID_DEPRECATED_ARRAY_CONSTRUCTOR
+#define ARCCORE_AVOID_DEPRECATED_ARRAY_CONSTRUCTOR
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
