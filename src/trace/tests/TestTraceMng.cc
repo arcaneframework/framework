@@ -6,6 +6,8 @@
 #include "arccore/trace/ITraceMng.h"
 #include "arccore/trace/TraceAccessor.h"
 
+#include <memory>
+
 using namespace Arccore;
 
 TEST(TraceMng, FatalMessage)
