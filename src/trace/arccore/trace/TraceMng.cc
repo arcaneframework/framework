@@ -337,7 +337,8 @@ class TraceMng
   void _writeStackTrace(std::ostream* output);
   void _endTrace(const TraceMessage* msg);
   void _putFunctionName(std::ostream& out);
-  void _writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array);
+  void _writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array,
+                    ConstArrayView<char> orig_message);
   void _putTraceId(std::ostream& out);
   void _updateCurrentClassConfig();
 };
@@ -831,14 +832,15 @@ _endTrace(const TraceMessage* msg)
   if (_sendToProxy2(msg,buf_array))
     return;
 
-  _writeDirect(msg,buf_array);
+  _writeDirect(msg,buf_array,msg_str);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void TraceMng::
-_writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array)
+_writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array,
+             ConstArrayView<char> orig_message)
 {
   std::ostream& def_out = (m_redirect_stream) ? (*m_redirect_stream) : std::cout;
   std::ostream& def_err = (m_redirect_stream) ? (*m_redirect_stream) : std::cerr;
@@ -903,7 +905,8 @@ _writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array)
         _write(std::cerr,buf_array);
     }
     {
-      FatalErrorException ex("TraceMng::endTrace()");
+      String s1(orig_message.data(),orig_message.size());
+      FatalErrorException ex("TraceMng::endTrace()",s1);
       if (id==Trace::Fatal)
         throw ex;
       if (id==Trace::ParallelFatal){
@@ -927,7 +930,7 @@ void TraceMng::
 writeDirect(const TraceMessage* msg,const String& str)
 {
   ConstArrayView<char> buf_array(str.len()+1,str.localstr());
-  _writeDirect(msg,buf_array);
+  _writeDirect(msg,buf_array,buf_array);
 }
 
 /*---------------------------------------------------------------------------*/
