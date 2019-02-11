@@ -58,38 +58,53 @@ class ITraceStream
   virtual void addReference() =0;
   virtual void removeReference() =0;
   virtual std::ostream* stream() =0;
+  virtual void flush() =0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fichier de traces.
+ * \brief Fichier ou flux de traces.
  */
 class FileTraceStream
 : public ITraceStream
 {
  public:
   FileTraceStream(const String& filename)
-  : m_nb_ref(0), m_stream(nullptr)
+  : m_nb_ref(0), m_stream(nullptr), m_need_destroy(true)
   {
     m_stream = new std::ofstream(filename.localstr());
   }
+  FileTraceStream(std::ostream* stream,bool need_destroy)
+  : m_nb_ref(0), m_stream(stream), m_need_destroy(need_destroy)
+  {
+  }
   ~FileTraceStream()
   {
-    delete m_stream;
+    if (m_need_destroy)
+      delete m_stream;
   }
  public:
   void addReference() override { ++m_nb_ref; }
   void removeReference() override
   {
+    // Décrémente et retourne la valeur d'avant.
+    // Si elle vaut 1, cela signifie qu'on n'a plus de références
+    // sur l'objet et qu'il faut le détruire.
     Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
-    if (v==0)
+    if (v==1)
       delete this;
   }
   std::ostream* stream() override { return m_stream; }
+  void flush() override
+  {
+    if (m_stream)
+      m_stream->flush();
+  }
  private:
   std::atomic<Int32> m_nb_ref;
   std::ostream* m_stream;
+  bool m_need_destroy;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -244,7 +259,10 @@ class TraceMng
 
   void flush() override;
 
-  void setRedirectStream(std::ostream* ro) override { m_redirect_stream = ro; }
+  void setRedirectStream(std::ostream* ro) override
+  {
+    m_redirect_stream = new FileTraceStream(ro,false);
+  }
 
   Trace::eDebugLevel configDbgLevel() const override { return _configDbgLevel(); }
 
@@ -374,7 +392,7 @@ class TraceMng
   TraceClassConfig m_default_trace_class_config;
   TraceClass m_default_trace_class;
   TraceClass m_current_msg_class;
-  std::ostream* m_redirect_stream;
+  ReferenceCounter<ITraceStream> m_redirect_stream;
   Integer m_nb_flush;
   String m_error_file_name;
   String m_log_file_name;
@@ -912,8 +930,9 @@ void TraceMng::
 _writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array,
              ConstArrayView<char> orig_message)
 {
-  std::ostream& def_out = (m_redirect_stream) ? (*m_redirect_stream) : std::cout;
-  std::ostream& def_err = (m_redirect_stream) ? (*m_redirect_stream) : std::cerr;
+  std::ostream* redirect_stream = (m_redirect_stream) ? m_redirect_stream->stream() : nullptr;
+  std::ostream& def_out = (redirect_stream) ? (*redirect_stream) : std::cout;
+  std::ostream& def_err = (redirect_stream) ? (*redirect_stream) : std::cerr;
 
   // Regarde si le niveau de verbosité souhaité est suffisant pour afficher
   // le message.
