@@ -102,103 +102,137 @@ class TraceMng
 
  public:
 	
-  virtual TraceMessage operator()()
-    { return TraceMessage(_getStream(Trace::Normal),this,Trace::Normal); }
-  virtual TraceMessage info()
-    { return (_isCurrentClassActivated()) ? _info() : _devNull(); }
-  virtual TraceMessage info(char /*category*/)
-    { return (_isCurrentClassActivated()) ? _info() : _devNull(); }
-  virtual TraceMessage info(Int32 verbose_level)
-    { return (_isCurrentClassActivated()) ? _info(verbose_level) : _devNull(); }
-  virtual TraceMessage pinfo()
-    { return (_isCurrentClassParallelActivated()) ? _info() : _devNull(); }
-  virtual TraceMessage pinfo(char /*category*/)
-    { return (_isCurrentClassParallelActivated()) ? _info() : _devNull(); }
-  virtual TraceMessage info(bool is_ok)
-    { return (is_ok) ? _info() : _devNull(); }
-  virtual TraceMessage warning()
-    { return TraceMessage(_getStream(Trace::Warning),this,Trace::Warning); }
-  virtual TraceMessage pwarning()
-    { return m_is_master ? warning() : _devNull(); }
-  virtual TraceMessage error()
-    { return TraceMessage(_getStream(Trace::Error),this,Trace::Error); }
-  virtual TraceMessage perror()
-    { return m_is_master ? error() : _devNull(); }
-  virtual TraceMessage log()
-    { return (_isCurrentClassActivated()) ? _log(false) : _devNull(); }
-  virtual TraceMessage plog()
-    { return (_isCurrentClassParallelActivated()) ? _log(false) : _devNull(); }
-  virtual TraceMessage logdate()
-    { return (_isCurrentClassActivated()) ? _log(true) : _devNull(); }
-  virtual TraceMessage fatal()
-    { return TraceMessage(_getStream(Trace::Fatal),this,Trace::Fatal); }
-  virtual TraceMessage pfatal()
-    { return TraceMessage(_getStream(Trace::ParallelFatal),this,Trace::ParallelFatal); }
-  virtual TraceMessage devNull()
-    { return _devNull(); }
-  virtual TraceMessageDbg debug(Trace::eDebugLevel dbg_lvl)
-    { return (dbg_lvl<=_configDbgLevel()) ? _dbg() : _dbgDevNull(); }
-  virtual void endTrace(const TraceMessage* msg);
-  virtual void beginTrace(const TraceMessage* msg);
-  virtual void putTrace(const String& message,int type);
-	
-  virtual void addListener(ITraceMessageListener* v);
-  virtual void removeListener(ITraceMessageListener* v);
-
-  virtual bool setActivated(bool v)
-    { bool old = m_is_activated; m_is_activated = v; return old; }
-
-  virtual void finishInitialize();
-
-  virtual void pushTraceClass(const String& s);
-  virtual void popTraceClass();
-
-  virtual void flush();
-
-  virtual void setRedirectStream(std::ostream* ro)
-  { m_redirect_stream = ro; }
-
-  virtual Trace::eDebugLevel configDbgLevel() const
-  { return _configDbgLevel(); }
-
-  virtual void setErrorFileName(const String& file_name);
-  virtual void setLogFileName(const String& file_name);
-
-  virtual void setClassConfig(const String& name,const TraceClassConfig& config);
-  virtual TraceClassConfig classConfig(const String& name) const;
-  virtual void removeAllClassConfig();
-
-  virtual void setMaster(bool is_master);
-
-  virtual bool isMaster() const
-  { return m_is_master; }
-
-  virtual void setVerbosityLevel(Int32 level);
-  virtual Int32 verbosityLevel() const
+  TraceMessage operator()()
   {
-    return m_verbosity_level;
+    return TraceMessage(_getStream(Trace::Normal),this,Trace::Normal);
+  }
+  TraceMessage info() override
+  {
+    return (_isCurrentClassActivated()) ? _info() : _devNull();
+  }
+  TraceMessage info(char /*category*/) override
+  {
+    return (_isCurrentClassActivated()) ? _info() : _devNull();
+  }
+  TraceMessage info(Int32 verbose_level) override
+  {
+    return (_isCurrentClassActivated()) ? _info(verbose_level) : _devNull();
+  }
+  TraceMessage pinfo() override
+  {
+    return (_isCurrentClassParallelActivated()) ? _info() : _devNull();
+  }
+  TraceMessage pinfo(char /*category*/)
+  {
+    return (_isCurrentClassParallelActivated()) ? _info() : _devNull();
+  }
+  TraceMessage info(bool is_ok) override
+  {
+    return (is_ok) ? _info() : _devNull();
+  }
+  TraceMessage warning() override
+  {
+    return TraceMessage(_getStream(Trace::Warning),this,Trace::Warning);
+  }
+  TraceMessage pwarning() override
+  {
+    return m_is_master ? warning() : _devNull();
+  }
+  TraceMessage error() override
+  {
+    return TraceMessage(_getStream(Trace::Error),this,Trace::Error);
+  }
+  TraceMessage perror() override
+  {
+    return m_is_master ? error() : _devNull();
+  }
+  TraceMessage log() override
+  {
+    return (_isCurrentClassActivated()) ? _log(false) : _devNull();
+  }
+  TraceMessage plog() override
+  {
+    return (_isCurrentClassParallelActivated()) ? _log(false) : _devNull();
+  }
+  TraceMessage logdate() override
+  {
+    return (_isCurrentClassActivated()) ? _log(true) : _devNull();
+  }
+  TraceMessage fatal() override
+  {
+    return TraceMessage(_getStream(Trace::Fatal),this,Trace::Fatal);
+  }
+  TraceMessage pfatal() override
+  {
+    return TraceMessage(_getStream(Trace::ParallelFatal),this,Trace::ParallelFatal);
+  }
+  TraceMessage devNull() override
+  {
+    return _devNull();
+  }
+  TraceMessageDbg debug(Trace::eDebugLevel dbg_lvl) override
+  {
+    return (dbg_lvl<=_configDbgLevel()) ? _dbg() : _dbgDevNull();
+  }
+  void endTrace(const TraceMessage* msg) override;
+  void beginTrace(const TraceMessage* msg) override;
+  void putTrace(const String& message,int type) override;
+	
+  void addListener(ITraceMessageListener* v) override;
+  void removeListener(ITraceMessageListener* v) override;
+
+  bool setActivated(bool v) override
+  {
+    bool old = m_is_activated;
+    m_is_activated = v;
+    return old;
   }
 
-  virtual void resetThreadStatus();
+  void finishInitialize() override;
 
-  virtual void writeDirect(const TraceMessage* msg,const String& str);
+  void pushTraceClass(const String& s) override;
+  void popTraceClass() override;
 
-  virtual void setTraceId(const String& id) { m_trace_id = id; }
-  virtual const String& traceId() const { return m_trace_id; }
+  void flush() override;
 
-  virtual void visitClassConfigs(IFunctorWithArgumentT<std::pair<String,TraceClassConfig>>* functor);
+  void setRedirectStream(std::ostream* ro) override { m_redirect_stream = ro; }
+
+  Trace::eDebugLevel configDbgLevel() const override { return _configDbgLevel(); }
+
+  void setErrorFileName(const String& file_name) override;
+  void setLogFileName(const String& file_name) override;
+
+  void setClassConfig(const String& name,const TraceClassConfig& config) override;
+  TraceClassConfig classConfig(const String& name) const override;
+  void removeAllClassConfig() override;
+
+  void setMaster(bool is_master) override;
+
+  bool isMaster() const override { return m_is_master; }
+
+  void setVerbosityLevel(Int32 level) override;
+  Int32 verbosityLevel() const override { return m_verbosity_level; }
+
+  void resetThreadStatus() override;
+
+  void writeDirect(const TraceMessage* msg,const String& str) override;
+
+  void setTraceId(const String& id) override { m_trace_id = id; }
+  const String& traceId() const override { return m_trace_id; }
+
+  void visitClassConfigs(IFunctorWithArgumentT<std::pair<String,TraceClassConfig>>* functor) override;
 
  protected:
 	
   TraceMessage _log(bool print_date)
-    {
-      if (print_date){
-        TraceMessage msg(_getStream(Trace::Log),this,Trace::Log);
-        _putDate(msg.file());
-        return msg;
-      }
-      return TraceMessage(_getStream(Trace::Log),this,Trace::Log);
+  {
+    if (print_date){
+      TraceMessage msg(_getStream(Trace::Log),this,Trace::Log);
+      _putDate(msg.file());
+      return msg;
     }
+    return TraceMessage(_getStream(Trace::Log),this,Trace::Log);
+  }
   TraceMessage _info()
   {
     return TraceMessage(_getStream(Trace::Info),this,Trace::Info);
@@ -208,17 +242,21 @@ class TraceMng
     return TraceMessage(_getStream(Trace::Info),this,Trace::Info,verbose_level);
   }
   TraceMessage _devNull()
-    { return TraceMessage(_getStream(Trace::Null),this,Trace::Null); }
+  {
+    return TraceMessage(_getStream(Trace::Null),this,Trace::Null);
+  }
 #ifdef ARCCORE_DEBUG
   TraceMessageDbg _dbg()
-    { return TraceMessage(_getStream(Trace::Debug),this,Trace::Debug); }
+  {
+    return TraceMessage(_getStream(Trace::Debug),this,Trace::Debug);
+  }
   TraceMessageDbg _dbgDevNull()
-    { return TraceMessage(_getStream(Trace::Null),this,Trace::Null); }
+  {
+    return TraceMessage(_getStream(Trace::Null),this,Trace::Null);
+  }
 #else
-  TraceMessageDbg _dbg()
-    { return TraceMessageDbg(); }
-  TraceMessageDbg _dbgDevNull()
-    { return TraceMessageDbg(); }
+  TraceMessageDbg _dbg() { return TraceMessageDbg(); }
+  TraceMessageDbg _dbgDevNull() { return TraceMessageDbg(); }
 #endif
 
   bool _isCurrentClassActivated() const
