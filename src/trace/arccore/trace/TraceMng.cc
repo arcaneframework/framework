@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* TraceMng.cc                                                 (C) 2000-2018 */
+/* TraceMng.cc                                                 (C) 2000-2019 */
 /*                                                                           */
 /* Gestionnaire des traces.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,7 @@
 #include "arccore/base/IStackTraceService.h"
 #include "arccore/base/String.h"
 #include "arccore/base/PlatformUtils.h"
+#include "arccore/base/ReferenceCounter.h"
 
 #include "arccore/concurrency/Mutex.h"
 
@@ -27,6 +28,7 @@
 #include <set>
 #include <map>
 #include <vector>
+#include <memory>
 
 #include <glib.h>
 
@@ -45,8 +47,55 @@ class TraceTimer
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Flux pour une trace.
+ */
+class ITraceStream
+{
+ public:
+  virtual ~ITraceStream(){}
+ public:
+  virtual void addReference() =0;
+  virtual void removeReference() =0;
+  virtual std::ostream* stream() =0;
+};
 
-class TraceStream
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Fichier de traces.
+ */
+class FileTraceStream
+: public ITraceStream
+{
+ public:
+  FileTraceStream(const String& filename)
+  : m_nb_ref(0), m_stream(nullptr)
+  {
+    m_stream = new std::ofstream(filename.localstr());
+  }
+  ~FileTraceStream()
+  {
+    delete m_stream;
+  }
+ public:
+  void addReference() override { ++m_nb_ref; }
+  void removeReference() override
+  {
+    Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
+    if (v==0)
+      delete this;
+  }
+  std::ostream* stream() override { return m_stream; }
+ private:
+  std::atomic<Int32> m_nb_ref;
+  std::ostream* m_stream;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class TraceMngStreamList
 {
  public:
   // A mettre en correspondance avec Trace::Trace::eMessageType
@@ -207,7 +256,6 @@ class TraceMng
   void removeAllClassConfig() override;
 
   void setMaster(bool is_master) override;
-
   bool isMaster() const override { return m_is_master; }
 
   void setVerbosityLevel(Int32 level) override;
@@ -318,7 +366,7 @@ class TraceMng
   Int32 m_verbosity_level;
   Int32 m_current_class_verbosity_level;
   Int32 m_current_class_flags;
-  ThreadPrivate<TraceStream> m_strs;
+  ThreadPrivate<TraceMngStreamList> m_strs;
   ListenerList* m_listeners;
   bool m_is_activated;
   std::map<String,TraceClassConfig*> m_trace_class_config_map;
@@ -331,8 +379,8 @@ class TraceMng
   String m_error_file_name;
   String m_log_file_name;
   String m_trace_id;
-  std::ofstream* m_error_file;
-  std::ofstream* m_log_file;
+  ReferenceCounter<ITraceStream> m_error_file;
+  ReferenceCounter<ITraceStream> m_log_file;
   Mutex* m_trace_mutex;
   bool m_is_error_disabled;
   bool m_is_log_disabled;
@@ -361,8 +409,7 @@ class TraceMng
     }
     return &m_default_trace_class_config;
   }
-  const String& _currentTraceClassName() const
-    { return m_current_msg_class.m_name; }
+  const String& _currentTraceClassName() const { return m_current_msg_class.m_name; }
   void _checkFlush();
   void _putStream(std::ostream& ostr,ConstArrayView<char> buffer);
   void _putTraceMessage(std::ostream& ostr,Trace::eMessageType id,ConstArrayView<char>);
@@ -414,8 +461,6 @@ TraceMng()
 , m_redirect_stream(nullptr)
 , m_nb_flush(0)
 , m_error_file_name("errors")
-, m_error_file(nullptr)
-, m_log_file(nullptr)
 , m_trace_mutex(new Mutex())
 , m_is_error_disabled(false)
 , m_is_log_disabled(false)
@@ -454,12 +499,6 @@ TraceMng::
 {
   for( auto i : m_trace_class_config_map )
     delete i.second;
-  if (m_error_file)
-    m_error_file->close();
-  if (m_log_file)
-    m_log_file->close();
-  delete m_error_file;
-  delete m_log_file;
   delete m_listeners;
   delete m_trace_mutex;
 }
@@ -486,11 +525,12 @@ _sendToProxy2(const TraceMessage* msg,ConstArrayView<char> buf)
 std::ostream* TraceMng::
 _errorFile()
 {
+  Mutex::ScopedLock sl(m_trace_mutex);
   if (m_is_error_disabled)
-    return 0;
-  if (!m_error_file)
-    m_error_file = new std::ofstream(m_error_file_name.localstr());
-  return m_error_file;
+    return nullptr;
+  if (m_error_file.isNull())
+    m_error_file = new FileTraceStream(m_error_file_name);
+  return m_error_file->stream();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -499,16 +539,12 @@ _errorFile()
 std::ostream* TraceMng::
 _logFile()
 {
+  Mutex::ScopedLock sl(m_trace_mutex);
   if (m_is_log_disabled)
-    return 0;
-  if (!m_log_file){
-    if (m_log_file_name.null()){
-      m_is_log_disabled = true;
-      return 0;
-    }
-    m_log_file = new std::ofstream(m_log_file_name.localstr());
-  }
-  return m_log_file;
+    return nullptr;
+  if (m_log_file.isNull())
+    m_log_file = new FileTraceStream(m_log_file_name);
+  return m_log_file->stream();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -531,12 +567,10 @@ setErrorFileName(const String& file_name)
   if (m_error_file_name==file_name)
     return;
   m_error_file_name = file_name;
-  if (m_error_file){
-    m_error_file->close();
-    delete m_error_file;
-    m_error_file = 0;
-  }
-  m_is_error_disabled = m_log_file_name.null();
+  m_error_file = nullptr;
+  m_is_error_disabled = m_error_file_name.null();
+  if (!m_is_error_disabled)
+    m_error_file = new FileTraceStream(file_name);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -548,12 +582,10 @@ setLogFileName(const String& file_name)
   if (m_log_file_name==file_name)
     return;
   m_log_file_name = file_name;
-  if (m_log_file){
-    m_log_file->close();
-    delete m_log_file;
-    m_log_file = 0;
-  }
   m_is_log_disabled = m_log_file_name.null();
+  m_log_file = nullptr;
+  if (!m_is_log_disabled)
+    m_log_file = new FileTraceStream(file_name);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -850,7 +882,7 @@ void TraceMng::
 _endTrace(const TraceMessage* msg)
 {
   Trace::eMessageType id = msg->type();
-  TraceStream* ts = m_strs.item();
+  TraceMngStreamList* ts = m_strs.item();
   const std::string& str = ts->m_str_list[id]->str();
   Integer str_len = arccoreCheckArraySize(str.length());
   ConstArrayView<char> c_array(str_len,str.c_str());
@@ -885,10 +917,11 @@ _writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array,
 
   // Regarde si le niveau de verbosité souhaité est suffisant pour afficher
   // le message.
+  Int32 message_level = msg->level();
   Int32 verbosity_level = m_current_class_verbosity_level;
   if (verbosity_level==Trace::UNSPECIFIED_VERBOSITY_LEVEL)
     verbosity_level = m_verbosity_level;
-  bool is_printed = msg->level() <= verbosity_level;
+  bool is_printed = (message_level <= verbosity_level);
 
   Trace::eMessageType id = msg->type();
   int color = msg->color();
