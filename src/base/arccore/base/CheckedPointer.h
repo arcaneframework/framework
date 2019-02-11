@@ -77,7 +77,8 @@ class CheckedPointer
   explicit CheckedPointer(T* t) : m_value(t) {}
 
   virtual ~CheckedPointer() {}
-
+ public:
+  explicit operator bool() const { return get()!=nullptr; }
  public:
   
   //! Retourne l'objet référé par l'instance
