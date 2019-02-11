@@ -92,6 +92,18 @@ arccoreRangeError(Int64 i,Int64 max_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+extern "C++" ARCCORE_BASE_EXPORT void
+arccoreNullPointerError()
+{
+  std::cerr << "** FATAL: null pointer.\n";
+  std::cerr << "** FATAL: Trying to dereference a null pointer.\n";
+  arccoreDebugPause("arcaneNullPointerPtr");
+  throw FatalErrorException(A_FUNCINFO,"null pointer");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 // Cette fonction peut être appelée souvent et certaines fois
 // dans des conditions d'exceptions. Pour cette raison, il ne
 // faut pas qu'elle fasse d'allocations.

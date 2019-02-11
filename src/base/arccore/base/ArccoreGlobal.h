@@ -430,6 +430,18 @@ arccoreSetPauseOnError(bool v);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Signalue l'utilisation d'un pointeur nul.
+ *
+ * Signale une tentative d'utilisation d'un pointeur nul.
+ * Affiche un message, appelle arcaneDebugPause() et lance une exception
+ * de type FatalErrorException.
+ */
+extern "C++" ARCCORE_BASE_EXPORT void
+arccoreNullPointerError ARCCORE_NORETURN ();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Signale une erreur de débordement.
  *
  * Signale un débordement de tableau. Affiche un message et appelle

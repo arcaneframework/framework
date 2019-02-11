@@ -11,10 +11,9 @@ set(SOURCES
   Array2View.h
   Array3View.h
   Array4View.h
-  Span.h
-  Span2.h
   ArgumentException.cc
   ArgumentException.h
+  CheckedPointer.h
   CStringUtils.h
   CStringUtils.cc
   BaseTypes.h
@@ -36,6 +35,9 @@ set(SOURCES
   NotImplementedException.cc
   PlatformUtils.h
   PlatformUtils.cc
+  ReferenceCounter.h
+  Span.h
+  Span2.h
   StackTrace.h
   StackTrace.cc
   String.h
