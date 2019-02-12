@@ -57,8 +57,8 @@ class ITraceStream
  public:
   virtual void addReference() =0;
   virtual void removeReference() =0;
+  //! Peut retourner nul.
   virtual std::ostream* stream() =0;
-  virtual void flush() =0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -96,11 +96,6 @@ class FileTraceStream
       delete this;
   }
   std::ostream* stream() override { return m_stream; }
-  void flush() override
-  {
-    if (m_stream)
-      m_stream->flush();
-  }
  private:
   std::atomic<Int32> m_nb_ref;
   std::ostream* m_stream;
@@ -261,7 +256,7 @@ class TraceMng
 
   void setRedirectStream(std::ostream* ro) override
   {
-    m_redirect_stream = new FileTraceStream(ro,false);
+    m_listing_stream = new FileTraceStream(ro,false);
   }
 
   Trace::eDebugLevel configDbgLevel() const override { return _configDbgLevel(); }
@@ -392,7 +387,7 @@ class TraceMng
   TraceClassConfig m_default_trace_class_config;
   TraceClass m_default_trace_class;
   TraceClass m_current_msg_class;
-  ReferenceCounter<ITraceStream> m_redirect_stream;
+  ReferenceCounter<ITraceStream> m_listing_stream;
   Integer m_nb_flush;
   String m_error_file_name;
   String m_log_file_name;
@@ -432,8 +427,8 @@ class TraceMng
   void _putStream(std::ostream& ostr,ConstArrayView<char> buffer);
   void _putTraceMessage(std::ostream& ostr,Trace::eMessageType id,ConstArrayView<char>);
   void _putDate(std::ostream& ostr);
-  std::ostream* _errorFile();
-  std::ostream* _logFile();
+  std::ostream* _errorStream();
+  std::ostream* _logStream();
   void _write(std::ostream& output,ConstArrayView<char> input,bool do_flush=false);
   void _writeColor(std::ostream& output,ConstArrayView<char> input,int color,bool do_flush);
   void _write(std::ostream* output,ConstArrayView<char> input,bool do_flush=false);
@@ -444,6 +439,7 @@ class TraceMng
                     ConstArrayView<char> orig_message);
   void _putTraceId(std::ostream& out);
   void _updateCurrentClassConfig();
+  void _flushStream(ITraceStream* stream);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -476,7 +472,7 @@ TraceMng()
 , m_is_activated(true)
 , m_default_trace_class("Internal",&m_default_trace_class_config)
 , m_current_msg_class(m_default_trace_class)
-, m_redirect_stream(nullptr)
+, m_listing_stream(nullptr)
 , m_nb_flush(0)
 , m_error_file_name("errors")
 , m_trace_mutex(new Mutex())
@@ -541,7 +537,7 @@ _sendToProxy2(const TraceMessage* msg,ConstArrayView<char> buf)
 /*---------------------------------------------------------------------------*/
 
 std::ostream* TraceMng::
-_errorFile()
+_errorStream()
 {
   Mutex::ScopedLock sl(m_trace_mutex);
   if (m_is_error_disabled)
@@ -555,7 +551,7 @@ _errorFile()
 /*---------------------------------------------------------------------------*/
 
 std::ostream* TraceMng::
-_logFile()
+_logStream()
 {
   Mutex::ScopedLock sl(m_trace_mutex);
   if (m_is_log_disabled)
@@ -572,8 +568,7 @@ void TraceMng::
 flush()
 {
   std::cout.flush();
-  if (m_redirect_stream)
-    m_redirect_stream->flush();
+  _flushStream(m_listing_stream.get());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -627,14 +622,26 @@ _putDate(std::ostream& ostr)
 /*---------------------------------------------------------------------------*/
 
 void TraceMng::
+_flushStream(ITraceStream* stream)
+{
+  if (!stream)
+    return;
+  auto f = stream->stream();
+  if (f)
+    f->flush();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void TraceMng::
 _checkFlush()
 {
   std::cout.flush();
   ++m_nb_flush;
   if ( (m_nb_flush % 50) == 0 ){
     m_nb_flush = 0;
-    if (m_redirect_stream)
-      m_redirect_stream->flush();
+    _flushStream(m_listing_stream.get());
     std::cout.flush();
   }
   std::cout.flush();
@@ -930,9 +937,9 @@ void TraceMng::
 _writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array,
              ConstArrayView<char> orig_message)
 {
-  std::ostream* redirect_stream = (m_redirect_stream) ? m_redirect_stream->stream() : nullptr;
-  std::ostream& def_out = (redirect_stream) ? (*redirect_stream) : std::cout;
-  std::ostream& def_err = (redirect_stream) ? (*redirect_stream) : std::cerr;
+  std::ostream* listing_stream = (m_listing_stream) ? m_listing_stream->stream() : nullptr;
+  std::ostream& def_out = (listing_stream) ? (*listing_stream) : std::cout;
+  std::ostream& def_err = (listing_stream) ? (*listing_stream) : std::cerr;
 
   // Regarde si le niveau de verbosité souhaité est suffisant pour afficher
   // le message.
@@ -947,7 +954,7 @@ _writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array,
   // TODO Rendre paramétrable.
   const bool write_stack_trace_for_error = false;
   // Pas de couleur si on redirige les sorties
-  if (m_redirect_stream || !m_has_color)
+  if (m_listing_stream || !m_has_color)
     color = 0;
   switch(id){
   case Trace::Normal:
@@ -961,36 +968,34 @@ _writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array,
     }
     break;
   case Trace::Log:
-    _write(_logFile(),buf_array);
+    _write(_logStream(),buf_array);
     _checkFlush();
     break;
   case Trace::Warning:
-    _writeColor(def_out,buf_array,color!=0 ? color : Trace::Color::DarkYellow,true);
-    _write(_errorFile(),buf_array,true);
-    if (write_stack_trace_for_error)
-      _writeStackTrace(&def_out);
-    _write(_logFile(),buf_array,true);
-    _writeStackTrace(_logFile());
-    if (&def_err!=&std::cerr)
-      _write(std::cerr,buf_array);
-    break;
   case Trace::Error:
-    _writeColor(def_out,buf_array,color!=0 ? color : Trace::Color::DarkRed,true);
-    _write(_errorFile(),buf_array,true);
-    if (write_stack_trace_for_error)
-      _writeStackTrace(&def_out);
-    _write(_logFile(),buf_array,true);
-    _writeStackTrace(_logFile());
-    if (&def_err!=&std::cerr)
-      _write(std::cerr,buf_array);
+    {
+      auto error_stream = _errorStream();
+      auto log_stream = _logStream();
+      auto tc_color = (id==Trace::Warning) ? Trace::Color::DarkYellow : Trace::Color::DarkRed;
+      _writeColor(def_out,buf_array,color!=0 ? color : tc_color,true);
+      _write(error_stream,buf_array,true);
+      if (write_stack_trace_for_error)
+        _writeStackTrace(&def_out);
+      _write(log_stream,buf_array,true);
+      _writeStackTrace(log_stream);
+      if (&def_err!=&std::cerr)
+        _write(std::cerr,buf_array);
+    }
     break;
   case Trace::Fatal:
   case Trace::ParallelFatal:
     if (m_is_master || id==Trace::Fatal){
+      auto error_stream = _errorStream();
+      auto log_stream = _logStream();
       _writeColor(def_out,buf_array,Trace::Color::Red,true);
-      _write(_errorFile(),buf_array,true);
-      _write(_logFile(),buf_array,true);
-      _writeStackTrace(_logFile());
+      _write(error_stream,buf_array,true);
+      _write(log_stream,buf_array,true);
+      _writeStackTrace(log_stream);
       if (&def_err!=&std::cerr)
         _write(std::cerr,buf_array);
     }
