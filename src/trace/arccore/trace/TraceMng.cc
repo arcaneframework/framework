@@ -242,12 +242,13 @@ class TraceMng
   void addListener(ITraceMessageListener* v) override;
   void removeListener(ITraceMessageListener* v) override;
 
-  bool setActivated(bool v) override
+  bool setInfoActivated(bool v) override
   {
-    bool old = m_is_activated;
-    m_is_activated = v;
+    bool old = m_is_info_activated;
+    m_is_info_activated = v;
     return old;
   }
+  bool isInfoActivated() const override { return m_is_info_activated; }
 
   void finishInitialize() override;
 
@@ -391,7 +392,7 @@ class TraceMng
   Int32 m_current_class_flags;
   ThreadPrivate<TraceMngStreamList> m_strs;
   ListenerList* m_listeners;
-  bool m_is_activated;
+  bool m_is_info_activated;
   std::map<String,TraceClassConfig*> m_trace_class_config_map;
   TraceClassStack m_trace_class_stack;
   TraceClassConfig m_default_trace_class_config;
@@ -481,7 +482,7 @@ TraceMng()
 , m_current_class_flags(Trace::PF_Default)
 , m_strs(&m_string_list_key)
 , m_listeners(nullptr)
-, m_is_activated(true)
+, m_is_info_activated(true)
 , m_default_trace_class("Internal",&m_default_trace_class_config)
 , m_current_msg_class(m_default_trace_class)
 , m_listing_stream(nullptr)

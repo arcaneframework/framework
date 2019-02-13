@@ -184,7 +184,9 @@ class ARCCORE_TRACE_EXPORT ITraceMng
    *
    * \return l'ancien état d'activation.
    */
-  virtual bool setActivated(bool v) =0;
+  virtual bool setInfoActivated(bool v) =0;
+  //! Indique si les sorties des messages d'informations sont activées.
+  virtual bool isInfoActivated() const =0;
 
   //! Termine l'initialisation
   virtual void finishInitialize() =0;
