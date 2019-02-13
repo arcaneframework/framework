@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* ITraceMng.h                                                 (C) 2000-2017 */
+/* ITraceMng.h                                                 (C) 2000-2019 */
 /*                                                                           */
 /* Gestionnaire des traces.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -30,7 +30,7 @@ namespace Arccore
  * Une instance de cette classe est un objet temporaire qui ne doit
  * pas être conservé au delà de l'appel ITraceMessageListener::visitMessage().
  */
-class TraceMessageListenerArgs
+class ARCCORE_TRACE_EXPORT TraceMessageListenerArgs
 {
  public:
   TraceMessageListenerArgs(const TraceMessage* msg,ConstArrayView<char> buf)
@@ -57,7 +57,7 @@ class TraceMessageListenerArgs
 /*!
  * \brief Interface d'un visiteur pour les messages de trace.
  */
-class ITraceMessageListener
+class ARCCORE_TRACE_EXPORT ITraceMessageListener
 {
  public:
   virtual ~ITraceMessageListener() {}
@@ -83,7 +83,7 @@ class ITraceMessageListener
  * Cette instance utilise un compteur de référence et peut être manipulée
  * via une instance de ReferenceCounter.
  */
-class ITraceStream
+class ARCCORE_TRACE_EXPORT ITraceStream
 {
  public:
   virtual ~ITraceStream(){}
