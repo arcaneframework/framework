@@ -78,7 +78,6 @@ class ITraceMessageListener
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \ingroup Core
  * \brief Interface du gestionnaire de traces.
  *
  Une instance de cette classe gère les flots de traces.
@@ -111,7 +110,8 @@ class ITraceMessageListener
  info() << "Fin de l'information.";
  \endcode
 
- Il est possible d'utiliser des formatteurs simples sur les messages (via la classe #TraceMessage)
+ Il est possible d'utiliser des formatteurs simples sur les messages
+ (via la classe #TraceMessage)
  ou des formatteurs standards des iostream en appliquant l'opérateur operator()
  de TraceMessage.
  */
@@ -242,6 +242,7 @@ class ARCCORE_TRACE_EXPORT ITraceMng
 
   /*!
    * \brief Envoie directement un message de type \a type.
+   *
    * \a type doit correspondre à Trace::eMessageType.
    * Cette méthode ne doit être utilisée que par le wrapping .NET.
    */
@@ -255,12 +256,22 @@ class ARCCORE_TRACE_EXPORT ITraceMng
   //! Configuration associées à la classe de message \a name
   virtual TraceClassConfig classConfig(const String& name) const =0;
 
+  /*!
+   * \brief Positionne l'état 'maitre' de l'instance.
+   *
+   * Les instances qui ont cet attribut à \a true affichent
+   * les messages sur les std::cout ainsi que les messages
+   * perror() et pwarning(). Il est donc préférable qu'il n'y ait
+   * qu'une seule instance de ITraceMng maître.
+   */
   virtual void setMaster(bool is_master) =0;
 
+  // Indique si l'instance est maître.
   virtual bool isMaster() const =0;
 
   /*!
-   * Positionne le niveau de verbosité des sorties.
+   * \brief Positionne le niveau de verbosité des sorties.
+   *
    * Les messages de niveau supérieur à ce niveau ne sont pas sortis.
    * Le niveau utilisé est celui donné en argument de info(Int32).
    * Le niveau par défaut est celui donné par TraceMessage::DEFAULT_LEVEL.
@@ -269,6 +280,18 @@ class ARCCORE_TRACE_EXPORT ITraceMng
 
   //! Niveau de verbosité des messages
   virtual Int32 verbosityLevel() const =0;
+
+  /*!
+   * \brief Positionne le niveau de verbosité des sorties sur std::cout
+   *
+   * Cette propriété n'est utilisée que si isMaster() est vrai et
+   * qu'on a redirigé les sorties listings. Sinon, c'est la propriété
+   * verbosityLevel() qui est utilisée.
+   */
+  virtual void setStandardOutputVerbosityLevel(Int32 level) =0;
+
+  //! Niveau de verbosité des messages sur std::cout
+  virtual Int32 standardOutputVerbosityLevel() const =0;
 
   /*!
    * \internal

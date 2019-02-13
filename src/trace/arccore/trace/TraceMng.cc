@@ -274,6 +274,9 @@ class TraceMng
   void setVerbosityLevel(Int32 level) override;
   Int32 verbosityLevel() const override { return m_verbosity_level; }
 
+  void setStandardOutputVerbosityLevel(Int32 level) override;
+  Int32 standardOutputVerbosityLevel() const override { return m_stdout_verbosity_level; }
+
   void resetThreadStatus() override;
 
   void writeDirect(const TraceMessage* msg,const String& str) override;
@@ -377,6 +380,7 @@ class TraceMng
   bool m_want_trace_function;
   bool m_want_trace_timer;
   Int32 m_verbosity_level;
+  Int32 m_stdout_verbosity_level;
   Int32 m_current_class_verbosity_level;
   Int32 m_current_class_flags;
   ThreadPrivate<TraceMngStreamList> m_strs;
@@ -431,8 +435,9 @@ class TraceMng
   std::ostream* _logStream();
   void _write(std::ostream& output,ConstArrayView<char> input,bool do_flush=false);
   void _writeColor(std::ostream& output,ConstArrayView<char> input,int color,bool do_flush);
+  void _writeListing(ConstArrayView<char> input,int level,int color,bool do_flush);
   void _write(std::ostream* output,ConstArrayView<char> input,bool do_flush=false);
-  void _writeStackTrace(std::ostream* output);
+  void _writeStackTrace(std::ostream* output,const String& stack_trace);
   void _endTrace(const TraceMessage* msg);
   void _putFunctionName(std::ostream& out);
   void _writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array,
@@ -465,6 +470,7 @@ TraceMng()
 , m_want_trace_function(false)
 , m_want_trace_timer(false)
 , m_verbosity_level(TraceMessage::DEFAULT_LEVEL)
+, m_stdout_verbosity_level(TraceMessage::DEFAULT_LEVEL)
 , m_current_class_verbosity_level(TraceMessage::DEFAULT_LEVEL)
 , m_current_class_flags(Trace::PF_Default)
 , m_strs(&m_string_list_key)
@@ -813,12 +819,54 @@ _writeColor(std::ostream& output,ConstArrayView<char> input,int color, bool do_f
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Écrit le listing.
+ *
+ * Le listing peut sortir à la fois sur std::cout et dans un
+ * ITraceStream si *m_listing_stream* est non nul. Le niveau de verbosité
+ * peut être différent dans les deux cas.
+ */
+void TraceMng::
+_writeListing(ConstArrayView<char> input,Int32 level,int color,bool do_flush)
+{
+  std::ostream* listing_stream = (m_listing_stream) ? m_listing_stream->stream() : nullptr;
+  if (!m_has_color)
+    color = 0;
+
+  // Regarde si le niveau de verbosité souhaité est suffisant pour afficher
+  // le message.
+  Int32 message_level = level;
+
+  // Sortie ITraceStream.
+  if (listing_stream){
+    Int32 verbosity_level = m_current_class_verbosity_level;
+    if (verbosity_level==Trace::UNSPECIFIED_VERBOSITY_LEVEL)
+      verbosity_level = m_verbosity_level;
+    // Pas de couleur si on redirige les sorties
+    int listing_color = 0;
+    bool is_printed = (message_level <= m_verbosity_level);
+    if (is_printed)
+      _writeColor(*listing_stream,input,listing_color,do_flush);
+  }
+
+  // Sortie std::cout
+  if (m_is_master){
+    Int32 verbosity_level = m_current_class_verbosity_level;
+    if (verbosity_level==Trace::UNSPECIFIED_VERBOSITY_LEVEL)
+      verbosity_level = (listing_stream) ? m_stdout_verbosity_level : m_verbosity_level;
+    bool is_printed = (message_level <= verbosity_level);
+    if (is_printed)
+      _writeColor(std::cout,input,color,do_flush);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void TraceMng::
 _write(std::ostream& output,ConstArrayView<char> input,bool do_flush)
 {
   output.write((char*)input.data(),input.size());
-  //output << '\n';
   if (do_flush)
     output.flush();
 }
@@ -941,31 +989,19 @@ _writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array,
   std::ostream& def_out = (listing_stream) ? (*listing_stream) : std::cout;
   std::ostream& def_err = (listing_stream) ? (*listing_stream) : std::cerr;
 
-  // Regarde si le niveau de verbosité souhaité est suffisant pour afficher
-  // le message.
-  Int32 message_level = msg->level();
-  Int32 verbosity_level = m_current_class_verbosity_level;
-  if (verbosity_level==Trace::UNSPECIFIED_VERBOSITY_LEVEL)
-    verbosity_level = m_verbosity_level;
-  bool is_printed = (message_level <= verbosity_level);
-
+  Int32 print_level = -1;
   Trace::eMessageType id = msg->type();
   int color = msg->color();
   // TODO Rendre paramétrable.
   const bool write_stack_trace_for_error = false;
-  // Pas de couleur si on redirige les sorties
-  if (m_listing_stream || !m_has_color)
-    color = 0;
   switch(id){
   case Trace::Normal:
-    _writeColor(def_out,buf_array,color,false);
+    _writeListing(buf_array,print_level,color,false);
     _checkFlush();
     break;
   case Trace::Info:
-    if (is_printed){
-      _writeColor(def_out,buf_array,color,false);
-      _checkFlush();
-    }
+    _writeListing(buf_array,msg->level(),color,false);
+    _checkFlush();
     break;
   case Trace::Log:
     _write(_logStream(),buf_array);
@@ -977,12 +1013,13 @@ _writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array,
       auto error_stream = _errorStream();
       auto log_stream = _logStream();
       auto tc_color = (id==Trace::Warning) ? Trace::Color::DarkYellow : Trace::Color::DarkRed;
-      _writeColor(def_out,buf_array,color!=0 ? color : tc_color,true);
+      _writeListing(buf_array,print_level,tc_color,true);
       _write(error_stream,buf_array,true);
+      String stack_trace = Platform::getStackTrace();
       if (write_stack_trace_for_error)
-        _writeStackTrace(&def_out);
+        _writeStackTrace(&def_out,stack_trace);
       _write(log_stream,buf_array,true);
-      _writeStackTrace(log_stream);
+      _writeStackTrace(log_stream,stack_trace);
       if (&def_err!=&std::cerr)
         _write(std::cerr,buf_array);
     }
@@ -992,10 +1029,11 @@ _writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array,
     if (m_is_master || id==Trace::Fatal){
       auto error_stream = _errorStream();
       auto log_stream = _logStream();
-      _writeColor(def_out,buf_array,Trace::Color::Red,true);
+      _writeListing(buf_array,print_level,Trace::Color::Red,true);
       _write(error_stream,buf_array,true);
       _write(log_stream,buf_array,true);
-      _writeStackTrace(log_stream);
+      String stack_trace = Platform::getStackTrace();
+      _writeStackTrace(log_stream,stack_trace);
       if (&def_err!=&std::cerr)
         _write(std::cerr,buf_array);
     }
@@ -1011,7 +1049,7 @@ _writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array,
     }
     break;
   case Trace::Debug:
-    _writeColor(def_out,buf_array,color,true);
+    _writeListing(buf_array,print_level,color,true);
     break;
   case Trace::Null:
     break;
@@ -1032,14 +1070,12 @@ writeDirect(const TraceMessage* msg,const String& str)
 /*---------------------------------------------------------------------------*/
 
 void TraceMng::
-_writeStackTrace(std::ostream* output)
+_writeStackTrace(std::ostream* output,const String& stack_trace)
 {
   if (!output)
     return;
-  IStackTraceService* stack_service = Platform::getStackTraceService();
-  if (stack_service){
-    StackTrace stack_trace = stack_service->stackTrace();
-    (*output) << "Stack\n" << stack_trace.toString() << "\n";
+  if (!stack_trace.null()){
+    (*output) << "Stack\n" << stack_trace << "\n";
     output->flush();
   }
 }
@@ -1189,6 +1225,15 @@ void TraceMng::
 setVerbosityLevel(Int32 level)
 {
   m_verbosity_level = level;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void TraceMng::
+setStandardOutputVerbosityLevel(Int32 level)
+{
+  m_stdout_verbosity_level = level;
 }
 
 /*---------------------------------------------------------------------------*/
