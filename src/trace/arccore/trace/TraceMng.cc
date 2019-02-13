@@ -48,22 +48,6 @@ class TraceTimer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Flux pour une trace.
- */
-class ITraceStream
-{
- public:
-  virtual ~ITraceStream(){}
- public:
-  virtual void addReference() =0;
-  virtual void removeReference() =0;
-  //! Peut retourner nul.
-  virtual std::ostream* stream() =0;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
  * \brief Fichier ou flux de traces.
  */
 class FileTraceStream
@@ -101,6 +85,24 @@ class FileTraceStream
   std::ostream* m_stream;
   bool m_need_destroy;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ITraceStream* ITraceStream::
+createFileStream(const String& filename)
+{
+  return new FileTraceStream(filename);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ITraceStream* ITraceStream::
+createStream(std::ostream* stream,bool need_destroy)
+{
+  return new FileTraceStream(stream,need_destroy);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -257,6 +259,10 @@ class TraceMng
   void setRedirectStream(std::ostream* ro) override
   {
     m_listing_stream = new FileTraceStream(ro,false);
+  }
+  void setRedirectStream(ITraceStream* stream) override
+  {
+    m_listing_stream = stream;
   }
 
   Trace::eDebugLevel configDbgLevel() const override { return _configDbgLevel(); }

@@ -27,6 +27,7 @@
 
 namespace Arccore
 {
+class ITraceStream;
 class ITraceMng;
 class TraceMessageClass; 
 class TraceClassConfig;

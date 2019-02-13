@@ -78,6 +78,30 @@ class ITraceMessageListener
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Flux pour une trace.
+ *
+ * Cette instance utilise un compteur de référence et peut être manipulée
+ * via une instance de ReferenceCounter.
+ */
+class ITraceStream
+{
+ public:
+  virtual ~ITraceStream(){}
+ public:
+  //! Ajoute une référence.
+  virtual void addReference() =0;
+  //! Supprime une référence.
+  virtual void removeReference() =0;
+  //! Flux standard associé. Peut retourner nul.
+  virtual std::ostream* stream() =0;
+ public:
+  static ITraceStream* createFileStream(const String& filename);
+  static ITraceStream* createStream(std::ostream* stream,bool need_destroy);
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Interface du gestionnaire de traces.
  *
  Une instance de cette classe gère les flots de traces.
@@ -180,8 +204,14 @@ class ARCCORE_TRACE_EXPORT ITraceMng
   //! Flush tous les flots.
   virtual void flush() =0;
 
+  /*!
+   * \brief Redirige tous les messages sur le flot \a o.
+   * \deprecated Utiliser la surcharge setRedirectStream(ITraceStream*).
+   */
+  ARCCORE_DEPRECATED_2018 virtual void setRedirectStream(std::ostream* o) =0;
+
   //! Redirige tous les messages sur le flot \a o
-  virtual void setRedirectStream(std::ostream* o) =0;
+  virtual void setRedirectStream(ITraceStream* o) =0;
 
   //! Retourne le niveau dbg du fichier de configuration
   virtual Trace::eDebugLevel configDbgLevel() const =0;
