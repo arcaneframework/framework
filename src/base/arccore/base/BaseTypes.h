@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* BaseTypes.h                                                 (C) 2000-2018 */
+/* BaseTypes.h                                                 (C) 2000-2019 */
 /*                                                                           */
 /* Définition des types de la composante 'base' de Arccore.                  */
 /*---------------------------------------------------------------------------*/
@@ -65,6 +65,10 @@ class Exception;
 class StackFrame;
 class FixedStackFrameArray;
 class IStackTraceService;
+template<typename T>
+class CheckedPointer;
+template<typename T>
+class ReferenceCounter;
 
 class ArgumentException;
 class IndexOutOfRangeException;

@@ -159,7 +159,18 @@ class TraceMng
  public:
 
   TraceMng();
+ protected:
   virtual ~TraceMng();
+
+ public:
+
+  void addReference() override { ++m_nb_ref; }
+  void removeReference() override
+  {
+    Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
+    if (v==1)
+      delete this;
+  }
 
  public:
 	
@@ -409,6 +420,7 @@ class TraceMng
   bool m_is_error_disabled;
   bool m_is_log_disabled;
   bool m_has_color;
+  std::atomic<Int32> m_nb_ref;
 
   TraceTimer m_trace_timer;
   void _writeTimeString(std::ostream& out);
@@ -492,6 +504,7 @@ TraceMng()
 , m_is_error_disabled(false)
 , m_is_log_disabled(false)
 , m_has_color(false)
+, m_nb_ref(0)
 {
   // La première instance de cette classe est créée via
   // la classe Application et il y a nécessairement qu'un seul

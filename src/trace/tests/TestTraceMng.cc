@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 
 #include "arccore/base/String.h"
+#include "arccore/base/ReferenceCounter.h"
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/trace/ITraceMng.h"
 #include "arccore/trace/TraceAccessor.h"
@@ -12,7 +13,7 @@ using namespace Arccore;
 
 TEST(TraceMng, FatalMessage)
 {
-  std::unique_ptr<ITraceMng> tm(arccoreCreateDefaultTraceMng());
+  ReferenceCounter<ITraceMng> tm(arccoreCreateDefaultTraceMng());
   TraceAccessor tr(tm.get());
   // Vérfie que FatalErrorException a bien le bon message.
   String message = "TestFatalError in utils";

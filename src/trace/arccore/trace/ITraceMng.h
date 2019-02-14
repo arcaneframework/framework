@@ -138,11 +138,19 @@ class ARCCORE_TRACE_EXPORT ITraceStream
  (via la classe #TraceMessage)
  ou des formatteurs standards des iostream en appliquant l'opérateur operator()
  de TraceMessage.
+
+ Les instances de cette classe sont gérées par compteur de référence. Il
+ est préférable de conserver les instances dans un ReferenceCounter.
  */
 class ARCCORE_TRACE_EXPORT ITraceMng
 {
- public:
+ protected:
   virtual ~ITraceMng(){}
+ public:
+  //! Ajoute une référence sur cette instance.
+  virtual void addReference() =0;
+  //! Supprime une référence et détruit l'instance s'il n'y a plus de référence dessus.
+  virtual void removeReference() =0;
  public:
   //! Flot pour un message d'erreur
   virtual TraceMessage error() =0;

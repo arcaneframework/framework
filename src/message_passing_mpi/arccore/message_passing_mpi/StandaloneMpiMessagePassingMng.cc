@@ -13,6 +13,7 @@
 #include "arccore/message_passing/Dispatchers.h"
 #include "arccore/message_passing/Stat.h"
 #include "arccore/trace/ITraceMng.h"
+#include "arccore/base/ReferenceCounter.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,7 +38,7 @@ class StandaloneMpiMessagePassingMng::Impl
 
     m_stat = new Stat();
     MpiLock *mpi_lock = nullptr;
-    m_adapter = new MpiAdapter(m_trace_mng, m_stat, mpi_comm, mpi_lock);
+    m_adapter = new MpiAdapter(m_trace_mng.get(), m_stat, mpi_comm, mpi_lock);
 
     m_dispatchers = new Dispatchers();
     m_dispatchers->setDeleteDispatchers(true);
@@ -47,7 +48,6 @@ class StandaloneMpiMessagePassingMng::Impl
   {
     m_adapter->destroy();
     delete m_stat;
-    delete m_trace_mng;
   }
 
   MpiMessagePassingMng::BuildInfo buildInfo() const
@@ -55,7 +55,7 @@ class StandaloneMpiMessagePassingMng::Impl
     return MpiMessagePassingMng::BuildInfo(m_comm_rank,m_comm_size,m_dispatchers);
   }
  public:
-  ITraceMng* m_trace_mng;
+  ReferenceCounter<ITraceMng> m_trace_mng;
   IStat* m_stat;
   Dispatchers* m_dispatchers;
   MpiAdapter* m_adapter;
