@@ -187,6 +187,8 @@ class ARCCORE_TRACE_EXPORT ITraceMng
   //! Flot pour un message non utilisé
   virtual TraceMessage devNull() =0;
 
+  //! \deprecated Utiliser setInfoActivated() à la place
+  ARCCORE_DEPRECATED_2018 virtual bool setActivated(bool v) { return setInfoActivated(v); }
   /*!
    * \brief Modifie l'état d'activation des messages d'info.
    *
