@@ -244,6 +244,7 @@ struct FalseType {};
 
 #define ARCCORE_DEPRECATED_2017 ARCCORE_DEPRECATED
 #define ARCCORE_DEPRECATED_2018 ARCCORE_DEPRECATED
+#define ARCCORE_DEPRECATED_2019(reason) [[deprecated(reason)]]
 
 // Définir cette macro si on souhaite supprimer de la compilation les
 // méthodes et types obsolètes.
