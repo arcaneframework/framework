@@ -1,7 +1,11 @@
-﻿# ----------------------------------------------------------------------------
+﻿cmake_minimum_required(VERSION 3.11)
+# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-message(STATUS "Including arccore/CMakeLists.txt")
+# For support of VERSION
+cmake_policy(SET CMP0048 NEW)
+# Check libraries with FOO_ROOT
+cmake_policy(SET CMP0074 NEW)
 
 # ----------------------------------------------------------------------------
 
@@ -15,13 +19,20 @@ endif()
 
 # ----------------------------------------------------------------------------
 
-if (NOT ARCCON_ROOT)
-  message(FATAL_ERROR "Variable 'ARCCON_ROOT' is not set")
-endif()
-if (NOT ARCCON_EXPORT_TARGET)
-  set(ARCCON_EXPORT_TARGET ${ARCCORE_EXPORT_TARGET})
-endif()
-include(${ARCCON_ROOT}/Arccon.cmake)
+
+# Use Arccon functions and macros
+find_package(Arccon REQUIRED)
+list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
+include(${ARCCON_CMAKE_COMMANDS})
+include(LoadBuildSystem)
+
+# if (NOT ARCCON_ROOT)
+#   message(FATAL_ERROR "Variable 'ARCCON_ROOT' is not set")
+# endif()
+# if (NOT ARCCON_EXPORT_TARGET)
+#   set(ARCCON_EXPORT_TARGET ${ARCCORE_EXPORT_TARGET})
+# endif()
+# include(${ARCCON_ROOT}/Arccon.cmake)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
