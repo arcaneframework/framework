@@ -51,6 +51,12 @@ add_library(arccore_build_compile_flags INTERFACE)
 install(TARGETS arccore_build_compile_flags EXPORT ${ARCCORE_EXPORT_TARGET})
 
 # ----------------------------------------------------------------------------
+# Create an interface library 'arccore_full' that groups all Arccore components.
+add_library(arccore_full INTERFACE)
+install(TARGETS arccore_full EXPORT ${ARCCORE_EXPORT_TARGET})
+# FIXME: whether or not arccore_build_compile_flags has to be added to arccore_full.
+
+# ----------------------------------------------------------------------------
 # Les symboles des bibliothèques ne sont pas visibles sauf si demandé
 # explicitement
 
