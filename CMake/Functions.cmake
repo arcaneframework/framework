@@ -13,6 +13,12 @@
 # répertoire ${INPUT_PATH}/${RELATIVE_PATH}. FILES peut contenir
 # des sous-répertoires.
 
+# Introduce variables:
+# * CMAKE_INSTALL_LIBDIR
+# * CMAKE_INSTALL_BINDIR
+# * CMAKE_INSTALL_INCLUDEDIR
+include(GNUInstallDirs)
+
 function(arccore_add_library target)
   set(options        )
   set(oneValueArgs   INPUT_PATH RELATIVE_PATH)
@@ -33,7 +39,7 @@ function(arccore_add_library target)
     if (_OUT_HEADER)
       #list(APPEND _INSTALL_FILES ${_FILE})
       get_filename_component(_HEADER_RELATIVE_PATH ${isource} DIRECTORY)
-      install(FILES ${_FILE} DESTINATION include/${rel_path}/${_HEADER_RELATIVE_PATH})
+      install(FILES ${_FILE} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${rel_path}/${_HEADER_RELATIVE_PATH})
     endif()
     list(APPEND _FILES ${_FILE})
   endforeach()
@@ -76,9 +82,11 @@ function(arccore_add_component_library component_name)
           )
 
   target_compile_definitions(${_LIB_NAME} PRIVATE ARCCORE_COMPONENT_${_LIB_NAME})
-  target_include_directories(${_LIB_NAME} PUBLIC $<BUILD_INTERFACE:${Arccore_SOURCE_DIR}/src/${component_name}> $<INSTALL_INTERFACE:include>)
+  target_include_directories(${_LIB_NAME} PUBLIC $<BUILD_INTERFACE:${Arccore_SOURCE_DIR}/src/${component_name}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
   if (ARCCORE_EXPORT_TARGET)
-    install(TARGETS ${_LIB_NAME} EXPORT ${ARCCORE_EXPORT_TARGET} DESTINATION lib)
+    install(TARGETS ${_LIB_NAME} EXPORT ${ARCCORE_EXPORT_TARGET}
+      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
   endif()
 
   # Génère les bibliothèques dans le répertoire 'lib' du projet.

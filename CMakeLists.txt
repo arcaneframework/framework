@@ -16,6 +16,7 @@ project(Arccore VERSION 1.0 LANGUAGES CXX)
 if (NOT ARCCORE_EXPORT_TARGET)
   set(ARCCORE_EXPORT_TARGET ArccoreTargets)
 endif()
+include(GNUInstallDirs)
 
 # ----------------------------------------------------------------------------
 
@@ -98,6 +99,21 @@ if (ARCCORE_WANT_TEST)
 endif()
 
 # ----------------------------------------------------------------------------
+# Configure installation layout.
+# Layout. This works for all platforms:
+#   * <prefix>/lib*/cmake/<PROJECT-NAME>
+#   * <prefix>/lib*/
+#   * <prefix>/include/
+set(config_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+
+set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
+
+# Configuration
+set(version_config "${generated_dir}/${PROJECT_NAME}ConfigVersion.cmake")
+set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
+set(namespace "${Arccore}::")
+
+# ----------------------------------------------------------------------------
 
 arccore_add_component_directory(base)
 arccore_add_component_directory(collections)
@@ -107,6 +123,36 @@ arccore_add_component_directory(message_passing)
 arccore_add_component_directory(message_passing_mpi)
 
 # ----------------------------------------------------------------------------
+
+# Include module with fuction 'write_basic_package_version_file'
+include(CMakePackageConfigHelpers)
+
+# Configure '<PROJECT-NAME>ConfigVersion.cmake'
+# Use:
+#   * PROJECT_VERSION
+write_basic_package_version_file(
+    "${version_config}" COMPATIBILITY SameMajorVersion
+)
+
+# Configure '<PROJECT-NAME>Config.cmake'
+# Use variables:
+#   * TARGETS_EXPORT_NAME
+#   * PROJECT_NAME
+configure_package_config_file(
+    "CMake/ArccoreConfig.cmake.in"
+    "${project_config}"
+    INSTALL_DESTINATION "${config_install_dir}"
+)
+
+install(
+    FILES "${project_config}" "${version_config}"
+    DESTINATION "${config_install_dir}"
+)
+
+install(EXPORT ${ARCCORE_EXPORT_TARGET}
+        DESTINATION ${config_install_dir})
+ 
+
 
 # ----------------------------------------------------------------------------
 # Local Variables:
