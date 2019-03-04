@@ -9,7 +9,7 @@ message(STATUS "Including arccore/CMakeLists.txt")
 
 file(READ "version" ARCCORE_VERSION_STR_FULL)
 string(REPLACE "_dev" "" ARCCORE_VERSION ${ARCCORE_VERSION_STR_FULL})
-message(STATUS "ArcaneVersion = ${ARCCORE_VERSION}")
+message(STATUS "ArccoreVersion = ${ARCCORE_VERSION}")
 
 project(Arccore VERSION ${ARCCORE_VERSION} LANGUAGES CXX)
 
