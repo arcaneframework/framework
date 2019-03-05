@@ -1,4 +1,7 @@
-﻿# ----------------------------------------------------------------------------
+﻿# Il faut au minimun cmake 3.11.0
+cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
+
+# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
 message(STATUS "Including arccore/CMakeLists.txt")
@@ -32,6 +35,11 @@ if (NOT ARCCON_EXPORT_TARGET)
   set(ARCCON_EXPORT_TARGET ${ARCCORE_EXPORT_TARGET})
 endif()
 include(${ARCCON_ROOT}/Arccon.cmake)
+
+# ----------------------------------------------------------------------------
+# Indique que si une variable <PackageName>_ROOT est définie, considère
+# qu'il s'agit du chemin de base du package <PackageName>.
+cmake_policy(SET CMP0074 NEW)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
