@@ -388,7 +388,7 @@ class AbstractArray
   }
   operator Span<const T>() const
   {
-    return Span<const T>(m_p->ptr,size());
+    return Span<const T>(m_p->ptr,m_p->size);
   }
  public:
   //! Nombre d'éléments du vecteur
@@ -869,29 +869,32 @@ class Array
  public:
   operator ConstArrayView<T>() const
   {
-    return ConstArrayView<T>(this->size(),m_p->ptr);
+    Integer s = arccoreCheckArraySize(m_p->size);
+    return ConstArrayView<T>(s,m_p->ptr);
   }
   operator ArrayView<T>()
   {
-    return ArrayView<T>(this->size(),m_p->ptr);
+    Integer s = arccoreCheckArraySize(m_p->size);
+    return ArrayView<T>(s,m_p->ptr);
   }
   operator Span<const T>() const
   {
-    return Span<const T>(m_p->ptr,this->size());
+    return Span<const T>(m_p->ptr,m_p->size);
   }
   operator Span<T>()
   {
-    return Span<T>(m_p->ptr,this->size());
+    return Span<T>(m_p->ptr,m_p->size);
   }
   //! Vue constante sur ce tableau
   ConstArrayView<T> constView() const
   {
-    return ConstArrayView<T>(this->size(),m_p->ptr);
+    Integer s = arccoreCheckArraySize(m_p->size);
+    return ConstArrayView<T>(s,m_p->ptr);
   }
   //! Vue constante sur ce tableau
   Span<const T> constSpan() const
   {
-    return Span<const T>(m_p->ptr,this->size());
+    return Span<const T>(m_p->ptr,m_p->size);
   }
   /*!
    * \brief Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments.
@@ -906,17 +909,18 @@ class Array
   //! Vue mutable sur ce tableau
   ArrayView<T> view() const
   {
-    return ArrayView<T>(this->size(),m_p->ptr);
+    Integer s = arccoreCheckArraySize(m_p->size);
+    return ArrayView<T>(s,m_p->ptr);
   }
   //! Vue immutable sur ce tableau
   Span<const T> span() const
   {
-    return Span<const T>(m_p->ptr,this->size());
+    return Span<const T>(m_p->ptr,m_p->size);
   }
   //! Vue mutable sur ce tableau
   Span<T> span()
   {
-    return Span<T>(m_p->ptr,this->size());
+    return Span<T>(m_p->ptr,m_p->size);
   }
   /*!
    * \brief Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments.
