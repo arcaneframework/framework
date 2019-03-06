@@ -194,7 +194,7 @@ class TraceMng
   {
     return (_isCurrentClassParallelActivated()) ? _info() : _devNull();
   }
-  TraceMessage pinfo(char /*category*/)
+  TraceMessage pinfo(char /*category*/) override
   {
     return (_isCurrentClassParallelActivated()) ? _info() : _devNull();
   }
@@ -1007,7 +1007,6 @@ _writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array,
 {
   std::ostream* listing_stream = (m_listing_stream) ? m_listing_stream->stream() : nullptr;
   std::ostream& def_out = (listing_stream) ? (*listing_stream) : std::cout;
-  std::ostream& def_err = (listing_stream) ? (*listing_stream) : std::cerr;
 
   Int32 print_level = -1;
   Trace::eMessageType id = msg->type();
@@ -1040,7 +1039,7 @@ _writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array,
         _writeStackTrace(&def_out,stack_trace);
       _write(log_stream,buf_array,true);
       _writeStackTrace(log_stream,stack_trace);
-      if (&def_err!=&std::cerr)
+      if (error_stream!=&std::cerr)
         _write(std::cerr,buf_array);
     }
     break;
@@ -1054,7 +1053,7 @@ _writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array,
       _write(log_stream,buf_array,true);
       String stack_trace = Platform::getStackTrace();
       _writeStackTrace(log_stream,stack_trace);
-      if (&def_err!=&std::cerr)
+      if (error_stream!=&std::cerr)
         _write(std::cerr,buf_array);
     }
     {
