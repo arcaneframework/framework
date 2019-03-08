@@ -139,13 +139,23 @@ StringImpl()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-std::string_view StringImpl::
-toStdStringView()
+Span<const Byte> StringImpl::
+bytes()
 {
   Span<const Byte> x = largeUtf8();
   Int64 size = x.size();
-  ARCCORE_ASSERT((size>0),("Null size during conversion to std::string_view"));
-  return std::string_view(reinterpret_cast<const char*>(x.data()),size-1);
+  ARCCORE_ASSERT((size>0),("Null size in StringImpl::bytes()"));
+  return Span<const Byte>(x.data(),size-1);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+std::string_view StringImpl::
+toStdStringView()
+{
+  Span<const Byte> x = bytes();
+  return std::string_view(reinterpret_cast<const char*>(x.data()),x.size());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -154,10 +164,7 @@ toStdStringView()
 StringView StringImpl::
 view()
 {
-  Span<const Byte> x = largeUtf8();
-  Int64 size = x.size();
-  ARCCORE_ASSERT((size>0),("Null size during conversion to StringView"));
-  return StringView(Span<const Byte>(x.data(),size-1));
+  return StringView(bytes());
 }
 
 /*---------------------------------------------------------------------------*/

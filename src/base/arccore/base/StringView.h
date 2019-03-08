@@ -28,11 +28,15 @@ namespace Arccore
 /*!
  * \brief Vue sur une chaîne de caractères UTF-8.
  *
- * Cette classe est similaire à std::string_view dans le sens où elle ne
+ * Cette classe est similaire à std::string_view du C++17 dans le sens où elle ne
  * conserve qu'un pointeur sur une donnée mémoire gérée par une autre classe.
- * Les instances de cette classe ne doivent donc pas être conservées.
+ * Les instances de cette classe ne doivent donc pas être conservées. La
+ * différence principale se situe au niveau de l'encodage qui est obligatoirement
+ * UTF-8 avec cette classe.
  *
- * L'encodage utilisé est toujours UTF-8.
+ * \note Comme la classe std::string_view, le tableau \a bytes() ne contient
+ * pas nécessairement de zéro terminal. Cela signifie entre autre qu'il ne faut
+ * donc pas utiliser cette classe pour passer des paramètres à des fonctions C.
  */
 class ARCCORE_BASE_EXPORT StringView
 {
@@ -83,7 +87,7 @@ class ARCCORE_BASE_EXPORT StringView
   /*!
    * \brief Retourne la conversion de l'instance dans l'encodage UTF-8.
    *
-   * L'instance retournée ne contient pas de zéro terminal.
+   * \warning L'instance retournée ne contient pas de zéro terminal.
    *
    * \warning L'instance reste propriétaire de la valeur retournée et cette valeur
    * est invalidée par toute modification de cette instance.

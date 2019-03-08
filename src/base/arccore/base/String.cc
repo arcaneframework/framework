@@ -224,10 +224,7 @@ bytes() const
     }
   }
   if (m_p) {
-    auto x = m_p->largeUtf8();
-    Int64 vlen = x.size();
-    if (vlen>0)
-      return x.subView(0,vlen-1);
+    return m_p->bytes();
   }
   return Span<const Byte>();
 }

@@ -53,9 +53,12 @@ class ARCCORE_BASE_EXPORT StringImpl
  public:
   //TODO: rendre obsolète
   UCharConstArrayView utf16();
-  //TODO: rendre obsolète
+  ARCCORE_DEPRECATED_2019("Use StringImpl::largeUtf8() instead")
   ByteConstArrayView utf8();
+  //! Vue sur l'encodage UTF-8 *AVEC* zéro terminal
   Span<const Byte> largeUtf8();
+  //! idem largeUtf8() mais *SANS* le zéro terminal
+  Span<const Byte> bytes();
   bool isEqual(StringImpl* str);
   bool isLessThan(StringImpl* str);
   bool isEqual(const char* str);
