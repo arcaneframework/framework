@@ -20,6 +20,8 @@
 namespace Arccore
 {
 
+class StringView;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -59,6 +61,7 @@ class ARCCORE_BASE_EXPORT StringImpl
   bool isEqual(const char* str);
   bool isLessThan(const char* str);
   std::string_view toStdStringView();
+  StringView view();
  public:
   void addReference();
   void removeReference();

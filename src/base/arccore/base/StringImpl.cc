@@ -9,6 +9,7 @@
 #include "arccore/base/StringImpl.h"
 #include "arccore/base/BasicTranscoder.h"
 #include "arccore/base/CStringUtils.h"
+#include "arccore/base/StringView.h"
 
 #include <cstring>
 
@@ -87,7 +88,7 @@ StringImpl(std::string_view str)
 , m_flags(0)
 {
   auto b = reinterpret_cast<const Byte*>(str.data());
-  _initFromSpan({b,str.size()});
+  _initFromSpan(Span<const Byte>(b,str.size()));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -145,6 +146,18 @@ toStdStringView()
   Int64 size = x.size();
   ARCCORE_ASSERT((size>0),("Null size during conversion to std::string_view"));
   return std::string_view(reinterpret_cast<const char*>(x.data()),size-1);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+StringView StringImpl::
+view()
+{
+  Span<const Byte> x = largeUtf8();
+  Int64 size = x.size();
+  ARCCORE_ASSERT((size>0),("Null size during conversion to StringView"));
+  return StringView(Span<const Byte>(x.data(),size-1));
 }
 
 /*---------------------------------------------------------------------------*/

@@ -27,6 +27,7 @@ namespace Arccore
 class StringFormatterArg;
 class StringBuilder;
 class StringImpl;
+class StringView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -102,6 +103,19 @@ class ARCCORE_BASE_EXPORT String
 
  public:
 
+  /*!
+   * \brief Retourne une vue sur la chaîne actuelle.
+   *
+   * L'encodage utilisé est UTF-8.
+   *
+   * \warning L'instance reste propriétaire de la valeur retournée et cette valeur
+   * est invalidée par toute modification de cette instance. La vue
+   * retournée ne doit pas être conservée.
+   */
+  operator StringView() const;
+
+ public:
+
   static String fromUtf8(Span<const Byte> bytes);
 
  public:
@@ -151,7 +165,7 @@ class ARCCORE_BASE_EXPORT String
  public:
 
   /*!
-   * \brief Retourne une vue sur la chaîne actuelle.
+   * \brief Retourne une vue de la STL sur la chaîne actuelle.
    *
    * L'encodage utilisé est UTF-8.
    *
@@ -160,6 +174,17 @@ class ARCCORE_BASE_EXPORT String
    * retournée ne doit pas être conservée.
    */
   std::string_view toStdStringView() const;
+
+  /*!
+   * \brief Retourne une vue sur la chaîne actuelle.
+   *
+   * L'encodage utilisé est UTF-8.
+   *
+   * \warning L'instance reste propriétaire de la valeur retournée et cette valeur
+   * est invalidée par toute modification de cette instance. La vue
+   * retournée ne doit pas être conservée.
+   */
+  StringView view() const;
 
  public:
 

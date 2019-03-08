@@ -3,6 +3,7 @@
 
 #include "arccore/base/String.h"
 #include "arccore/base/TraceInfo.h"
+#include "arccore/base/StringView.h"
 
 #include <vector>
 
@@ -103,8 +104,8 @@ TEST(String, StdStringView)
   String s3 = ref1;
   s3 = s3 + ref2;
   std::cout << "S1 '" << s1 << "'_SIZE=" << s1.length() << '\n';
-  std::cout << "S2 '" << s1 << "'_SIZE=" << s2.length() << '\n';
-  std::cout << "S3 '" << s1 << "'_SIZE=" << s3.length() << '\n';
+  std::cout << "S2 '" << s2 << "'_SIZE=" << s2.length() << '\n';
+  std::cout << "S3 '" << s3 << "'_SIZE=" << s3.length() << '\n';
   std::string_view vempty = sempty.toStdStringView();
   ASSERT_EQ((Int64)vempty.size(),0) << "vempty.size()==0";
   std::string_view vnull = snull.toStdStringView();

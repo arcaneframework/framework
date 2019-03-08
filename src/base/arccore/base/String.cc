@@ -13,6 +13,7 @@
 #include "arccore/base/APReal.h"
 #include "arccore/base/TraceInfo.h"
 #include "arccore/base/FatalErrorException.h"
+#include "arccore/base/StringView.h"
 
 #include <iostream>
 #include <cstring>
@@ -286,6 +287,27 @@ toStdStringView() const
   if (m_p)
     return m_p->toStdStringView();
   return std::string_view();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+StringView String::
+view() const
+{
+  if (m_const_ptr)
+    return StringView(std::string_view(m_const_ptr));
+  if (m_p)
+    return m_p->view();
+  return StringView();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String::operator StringView() const
+{
+  return view();
 }
 
 /*---------------------------------------------------------------------------*/
