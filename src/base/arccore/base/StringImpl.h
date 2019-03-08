@@ -59,7 +59,7 @@ class ARCCORE_BASE_EXPORT StringImpl
   bool isLessThan(StringImpl* str);
   bool isEqual(const char* str);
   bool isLessThan(const char* str);
-  std::string_view toStringView();
+  std::string_view toStdStringView();
  public:
   void addReference();
   void removeReference();

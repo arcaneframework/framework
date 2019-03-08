@@ -151,7 +151,7 @@ StringImpl()
 /*---------------------------------------------------------------------------*/
 
 std::string_view StringImpl::
-toStringView()
+toStdStringView()
 {
   Span<const Byte> x = largeUtf8();
   Int64 size = x.size();

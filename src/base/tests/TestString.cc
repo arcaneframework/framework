@@ -105,22 +105,22 @@ TEST(String, StdStringView)
   std::cout << "S1 '" << s1 << "'_SIZE=" << s1.len() << '\n';
   std::cout << "S2 '" << s1 << "'_SIZE=" << s2.len() << '\n';
   std::cout << "S3 '" << s1 << "'_SIZE=" << s3.len() << '\n';
-  std::string_view vempty = sempty.toStringView();
+  std::string_view vempty = sempty.toStdStringView();
   ASSERT_EQ((Int64)vempty.size(),0) << "vempty.size()==0";
-  std::string_view vnull = snull.toStringView();
+  std::string_view vnull = snull.toStdStringView();
   ASSERT_EQ((Int64)vnull.size(),0) << "vnull.size()==0";
-  std::string_view v1 = s1.toStringView();
+  std::string_view v1 = s1.toStdStringView();
   ASSERT_EQ(v1,ref1) << "v1==ref1";
-  std::string_view v2 = s2.toStringView();
+  std::string_view v2 = s2.toStdStringView();
   ASSERT_EQ(v2,ref2) << "v2==ref2";
-  std::string_view v3 = s3.toStringView();
+  std::string_view v3 = s3.toStdStringView();
   ASSERT_EQ(v3,std_ref3) << "v3==ref3";
 
   String s4 = s3 + snull;
-  std::string_view v4 = s4.toStringView();
+  std::string_view v4 = s4.toStdStringView();
   ASSERT_EQ(v4,v3) << "v4==v3";
 
   String s5 = s3 + sempty;
-  std::string_view v5 = s5.toStringView();
+  std::string_view v5 = s5.toStdStringView();
   ASSERT_EQ(v5,v4) << "v5==v4";
 }

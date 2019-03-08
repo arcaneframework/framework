@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* String.cc                                                   (C) 2000-2018 */
+/* String.cc                                                   (C) 2000-2019 */
 /*                                                                           */
 /* Chaîne de caractères unicode.                                             */
 /*---------------------------------------------------------------------------*/
@@ -168,7 +168,7 @@ localstr() const
     return m_const_ptr;
   A_FASTLOCK(this);
   if (m_p)
-    return m_p->toStringView().data();
+    return m_p->toStdStringView().data();
   return "";
 }
 
@@ -251,24 +251,20 @@ empty() const
 Integer String::
 len() const
 {
-  size_t slen = 0;
-  if (m_const_ptr)
-    slen = std::strlen(m_const_ptr);
-  if (m_p)
-    slen = m_p->toStringView().size();
-  return arccoreCheckArraySize(slen);
+  auto x = this->toStdStringView();
+  return arccoreCheckArraySize(x.size());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 std::string_view String::
-toStringView() const
+toStdStringView() const
 {
   if (m_const_ptr)
     return std::string_view(m_const_ptr,std::strlen(m_const_ptr));
   if (m_p)
-    return m_p->toStringView();
+    return m_p->toStdStringView();
   return std::string_view();
 }
 

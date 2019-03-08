@@ -153,7 +153,7 @@ class ARCCORE_BASE_EXPORT String
    * est invalidée par toute modification de cette instance. La vue
    * retournée ne doit pas être conservée.
    */
-  std::string_view toStringView() const;
+  std::string_view toStdStringView() const;
 
  public:
 
