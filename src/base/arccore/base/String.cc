@@ -31,7 +31,18 @@ namespace Arccore
 
 String::
 String(const std::string& str)
-: m_p(new StringImpl(str.c_str(),arccoreCheckArraySize(str.size())))
+: m_p(new StringImpl(str.c_str(),str.size()))
+, m_const_ptr(0)
+{
+  m_p->addReference();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String::
+String(std::string_view str)
+: m_p(new StringImpl(str.data(),str.size()))
 , m_const_ptr(0)
 {
   m_p->addReference();
@@ -253,6 +264,16 @@ len() const
 {
   auto x = this->toStdStringView();
   return arccoreCheckArraySize(x.size());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 String::
+length() const
+{
+  auto x = this->toStdStringView();
+  return x.size();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -970,16 +991,16 @@ startsWith(const String& s) const
 /*---------------------------------------------------------------------------*/
 
 String String::
-substring(Integer pos) const
+substring(Int64 pos) const
 {
-  return substring(pos,len()-pos);
+  return substring(pos,length()-pos);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 String String::
-substring(Integer pos,Integer len) const
+substring(Int64 pos,Int64 len) const
 {
   if (pos<0)
     pos = 0;

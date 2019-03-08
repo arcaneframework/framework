@@ -102,9 +102,9 @@ TEST(String, StdStringView)
   String s2 = ref2;
   String s3 = ref1;
   s3 = s3 + ref2;
-  std::cout << "S1 '" << s1 << "'_SIZE=" << s1.len() << '\n';
-  std::cout << "S2 '" << s1 << "'_SIZE=" << s2.len() << '\n';
-  std::cout << "S3 '" << s1 << "'_SIZE=" << s3.len() << '\n';
+  std::cout << "S1 '" << s1 << "'_SIZE=" << s1.length() << '\n';
+  std::cout << "S2 '" << s1 << "'_SIZE=" << s2.length() << '\n';
+  std::cout << "S3 '" << s1 << "'_SIZE=" << s3.length() << '\n';
   std::string_view vempty = sempty.toStdStringView();
   ASSERT_EQ((Int64)vempty.size(),0) << "vempty.size()==0";
   std::string_view vnull = snull.toStdStringView();

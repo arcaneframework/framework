@@ -67,15 +67,19 @@ class ARCCORE_BASE_EXPORT String
    * \warning Attention, la chaine est supposée constante sa validité
    * infinie (i.e il s'agit d'une chaîne constante à la compilation.
    * Si la chaîne passée en argument peut être désallouée,
-   * il faut utiliser le constructeur avec allocation.
+   * il faut utiliser String(std::string_view) à la place.
    */   
   String(const char* str) : m_p(nullptr), m_const_ptr(str) {}
   //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
   String(char* str);
   //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
+  ARCCORE_DEPRECATED_2019("Use String::String(std::string_view) instead")
   String(const char* str,bool do_alloc);
   //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
+  ARCCORE_DEPRECATED_2019("Use String::String(std::string_view) instead")
   String(const char* str,Integer len);
+  //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
+  String(std::string_view str);
   //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
   String(const std::string& str);
   //! Créé une chaîne à partir de \a str dans l'encodage UTF-16
@@ -191,9 +195,13 @@ class ARCCORE_BASE_EXPORT String
   //! Retourne \a true si la chaîne est nulle.
   bool null() const;
 
-  //! Retourne la longueur de la chaîne.
+  //! Retourne la longueur de la chaîne en 32 bits.
+  ARCCORE_DEPRECATED_2019("Use method String::length() instead")
   Integer len() const;
   
+  //! Retourne la longueur de la chaîne.
+  Int64 length() const;
+
   //! Vrai si la chaîne est vide (nulle ou "")
   bool empty() const;
 
@@ -302,10 +310,10 @@ class ARCCORE_BASE_EXPORT String
   bool endsWith(const String& s) const;
 
   //! Sous-chaîne commençant à la position \a pos
-  String substring(Integer pos) const;
+  String substring(Int64 pos) const;
 
   //! Sous-chaîne commençant à la position \a pos et de longueur \a len
-  String substring(Integer pos,Integer len) const;
+  String substring(Int64 pos,Int64 len) const;
 
   static String join(String delim,ConstArrayView<String> strs);
 
@@ -314,10 +322,11 @@ class ARCCORE_BASE_EXPORT String
   split(StringContainer& str_array,char c) const
   {
     const String& str = *this;
+    //TODO: passer par String::bytes().
     const char* str_str = str.localstr();
-    Integer offset = 0;
-    Integer len = str.len();
-    for( Integer i=0; i<len; ++i ){
+    Int64 offset = 0;
+    Int64 len = str.length();
+    for( Int64 i=0; i<len; ++i ){
       // GG: remet temporairement l'ancienne sémantique (équivalente à strtok())
       // et supprime la modif IFPEN car cela cause trop d'incompatibilités avec
       // le code existant. A noter que l'implémentation de l'ancienne sémantique
@@ -329,12 +338,12 @@ class ARCCORE_BASE_EXPORT String
       // Avec ':X:Y', on retourne {':X','Y'} au lieu de {'X','Y'}
       //if (str_str[i]==c){
       if (str_str[i]==c && i!=offset){
-        str_array.push_back(String(str_str+offset,i-offset));
+        str_array.push_back(std::string_view(str_str+offset,i-offset));
         offset = i+1;
       }
     }
     if (len!=offset)
-      str_array.push_back(String(str_str+offset,len-offset));
+      str_array.push_back(std::string_view(str_str+offset,len-offset));
   }
 
  public:
