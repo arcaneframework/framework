@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* String.h                                                    (C) 2000-2018 */
+/* String.h                                                    (C) 2000-2019 */
 /*                                                                           */
 /* Chaîne de caractère unicode.                                              */
 /*---------------------------------------------------------------------------*/
@@ -18,9 +18,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 namespace Arccore
 {
 
@@ -34,15 +31,23 @@ class StringImpl;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \ingroup Core
- * \brief Chaine de caractères unicode.
+ * \brief Chaîne de caractères unicode.
  *
- * Utilise un compteur de référence avec sémantique indentique à QString.
- * A terme la class 'String' doit être immutable pour éviter des
- * problèmes en multi-thread.
- * Pour construire par morceaux une chaine de caractère, il faut
- * utiliser la classe 'StringBuilder'.
- * \warning Il ne doit pas y avoir de variables globales de cette classe
+ * Cette classe permet de gérer une chaîne de caractères soit avec l'encodage
+ * UTF-8 soit avec l'encodage UTF-16. A noter que l'encodage UTF-16 est
+ * obsolète et sera supprimé dans une version ultérieure lorsque le C++20
+ * sera disponible.
+ *
+ * Toutes les méthodes utilisant des `const char*` en arguments supposent
+ * que l'encodage utilisé est en UTF-8.
+ *
+ * Les instances de cette classe sont immutables.
+ *
+ * A la différence de std::string, il n'est pas possible actuellement de
+ * conserver des caractères nuls à l'intérieur d'une \a String.
+ *
+ * Pour des raisons de performance, pour construire par morceaux une chaîne
+ * de caractères, il est préférable d'utiliser la classe 'StringBuilder'.
  */
 class ARCCORE_BASE_EXPORT String
 {
@@ -57,7 +62,7 @@ class ARCCORE_BASE_EXPORT String
   //! Crée une chaîne nulle
   String() : m_p(nullptr), m_const_ptr(nullptr) {}
   /*!
-   * \brief Créé une chaîne à partir de \a str dans l'encodage local.
+   * \brief Créé une chaîne à partir de \a str dans l'encodage UTF-8
    *
    * \warning Attention, la chaine est supposée constante sa validité
    * infinie (i.e il s'agit d'une chaîne constante à la compilation.
@@ -65,28 +70,28 @@ class ARCCORE_BASE_EXPORT String
    * il faut utiliser le constructeur avec allocation.
    */   
   String(const char* str) : m_p(nullptr), m_const_ptr(str) {}
-  //! Créé une chaîne à partir de \a str dans l'encodage local
+  //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
   String(char* str);
-  //! Créé une chaîne à partir de \a str dans l'encodage local
+  //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
   String(const char* str,bool do_alloc);
-  //! Créé une chaîne à partir de \a str dans l'encodage local
+  //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
   String(const char* str,Integer len);
-  //! Créé une chaîne à partir de \a str dans l'encodage local
+  //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
   String(const std::string& str);
-  //! Créé une chaîne à partir de \a str dans l'encodage Utf16
+  //! Créé une chaîne à partir de \a str dans l'encodage UTF-16
   String(const UCharConstArrayView& ustr);
-  //! Créé une chaîne à partir de \a str dans l'encodage Utf8
+  //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
   String(const Span<const Byte>& ustr);
-  //! Créé une chaîne à partir de \a str dans l'encodage Utf8
+  //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
   //String(const Span<Byte>& ustr);
-  //! Créé une chaîne à partir de \a str dans l'encodage local
+  //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
   explicit String(StringImpl* impl);
   //! Créé une chaîne à partir de \a str
   String(const String& str);
 
   //! Copie \a str dans cette instance.
   const String& operator=(const String& str);
-  //! Copie \a str dans cette instance.
+  //! Copie \a str codé en UTF-8 dans cette instance.
   const String& operator=(const char* str);
 
   ~String(); //!< Libère les ressources.
@@ -132,10 +137,7 @@ class ARCCORE_BASE_EXPORT String
   Span<const Byte> bytes() const;
 
   /*!
-   * \brief Retourne la conversion de l'instance dans l'encodage local.
-   *
-   * La conversion n'est pas garanti si certaines valeurs unicode n'existent
-   * pas dans l'encodage local.
+   * \brief Retourne la conversion de l'instance dans l'encodage UTF-8
    *
    * \warning L'instance reste propriétaire de la valeur retournée et cette valeur
    * est invalidée par toute modification de cette instance.
