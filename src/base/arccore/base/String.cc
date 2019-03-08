@@ -88,7 +88,7 @@ String(StringImpl* impl)
 
 String::
 String(const char* str,Integer len)
-: m_p(new StringImpl(std::string_view(str)))
+: m_p(new StringImpl(std::string_view(str,len)))
 , m_const_ptr(nullptr)
 {
   m_p->addReference();
