@@ -31,8 +31,8 @@ namespace Arccore
 
 String::
 String(const std::string& str)
-: m_p(new StringImpl(str.c_str(),str.size()))
-, m_const_ptr(0)
+: m_p(new StringImpl(str))
+, m_const_ptr(nullptr)
 {
   m_p->addReference();
 }
@@ -42,8 +42,8 @@ String(const std::string& str)
 
 String::
 String(std::string_view str)
-: m_p(new StringImpl(str.data(),str.size()))
-, m_const_ptr(0)
+: m_p(new StringImpl(str))
+, m_const_ptr(nullptr)
 {
   m_p->addReference();
 }
@@ -54,7 +54,7 @@ String(std::string_view str)
 String::
 String(const UCharConstArrayView& ustr)
 : m_p(new StringImpl(ustr.data()))
-, m_const_ptr(0)
+, m_const_ptr(nullptr)
 {
   m_p->addReference();
 }
@@ -65,7 +65,7 @@ String(const UCharConstArrayView& ustr)
 String::
 String(const Span<const Byte>& ustr)
 : m_p(new StringImpl(ustr))
-, m_const_ptr(0)
+, m_const_ptr(nullptr)
 {
   m_p->addReference();
 }
@@ -76,7 +76,7 @@ String(const Span<const Byte>& ustr)
 String::
 String(StringImpl* impl)
 : m_p(impl)
-, m_const_ptr(0)
+, m_const_ptr(nullptr)
 {
   if (m_p)
     m_p->addReference();
@@ -87,8 +87,8 @@ String(StringImpl* impl)
 
 String::
 String(const char* str,Integer len)
-: m_p(new StringImpl(str,len))
-, m_const_ptr(0)
+: m_p(new StringImpl(std::string_view(str)))
+, m_const_ptr(nullptr)
 {
   m_p->addReference();
 }
@@ -99,7 +99,7 @@ String(const char* str,Integer len)
 String::
 String(char* str)
 : m_p(new StringImpl(str))
-, m_const_ptr(0)
+, m_const_ptr(nullptr)
 {
   m_p->addReference();
 }
@@ -109,15 +109,14 @@ String(char* str)
 
 String::
 String(const char* str,bool do_alloc)
-: m_p(0)
-, m_const_ptr(0)
+: m_p(nullptr)
+, m_const_ptr(nullptr)
 {
   if (do_alloc){
     m_p = new StringImpl(str);
     m_p->addReference();
   }
   else{
-    m_p = 0;
     m_const_ptr = str;
   }
 }

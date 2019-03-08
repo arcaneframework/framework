@@ -21,7 +21,7 @@ namespace Arccore
 
 StringBuilder::
 StringBuilder(const std::string& str)
-: m_p(new StringImpl(str.c_str(),arccoreCheckArraySize(str.size())))
+: m_p(new StringImpl(str))
 , m_const_ptr(0)
 {
   m_p->addReference();
@@ -66,7 +66,7 @@ StringBuilder(StringImpl* impl)
 
 StringBuilder::
 StringBuilder(const char* str,Integer len)
-: m_p(new StringImpl(str,len))
+: m_p(new StringImpl(std::string_view(str,len)))
 , m_const_ptr(0)
 {
   m_p->addReference();

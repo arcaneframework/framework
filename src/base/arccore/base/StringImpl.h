@@ -42,8 +42,7 @@ namespace Arccore
 class ARCCORE_BASE_EXPORT StringImpl
 {
  public:
-  StringImpl(const char* str);
-  StringImpl(const char* str,Int64 len);
+  StringImpl(std::string_view str);
   StringImpl(const UChar* str);
   StringImpl(const StringImpl& str);
   StringImpl(Span<const Byte> bytes);

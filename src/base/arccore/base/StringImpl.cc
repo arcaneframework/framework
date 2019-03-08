@@ -82,24 +82,12 @@ _initFromSpan(Span<const Byte> bytes)
 /*---------------------------------------------------------------------------*/
 
 StringImpl::
-StringImpl(const char* str)
+StringImpl(std::string_view str)
 : m_nb_ref(0)
 , m_flags(0)
 {
-  auto b = reinterpret_cast<const Byte*>(str);
-  Int64 len = 0;
-  if (b)
-    len = std::strlen(str);
-  _initFromSpan({b,len});
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-StringImpl::
-StringImpl(const char* str,Int64 len)
-: StringImpl(Span<const Byte>(reinterpret_cast<const Byte*>(str),len))
-{
+  auto b = reinterpret_cast<const Byte*>(str.data());
+  _initFromSpan({b,str.size()});
 }
 
 /*---------------------------------------------------------------------------*/
