@@ -977,10 +977,10 @@ contains(const String& arg1) const
 bool String::
 endsWith(const String& s) const
 {
-  ByteConstArrayView v = utf8();
-  ByteConstArrayView ref = s.utf8();
-  Integer ref_size = ref.size();
-  Integer v_size = v.size();
+  Span<const Byte> v = bytes();
+  Span<const Byte> ref = s.bytes();
+  Int64 ref_size = ref.size();
+  Int64 v_size = v.size();
   if (ref_size>v_size)
     return false;
   const Byte* v_begin = &v[v_size-ref_size];
@@ -993,15 +993,13 @@ endsWith(const String& s) const
 bool String::
 startsWith(const String& s) const
 {
-  ByteConstArrayView v = utf8();
-  ByteConstArrayView ref = s.utf8();
-  Integer ref_size = ref.size();
-  Integer v_size = v.size();
+  Span<const Byte> v = bytes();
+  Span<const Byte> ref = s.bytes();
+  Int64 ref_size = ref.size();
+  Int64 v_size = v.size();
   if (ref_size>v_size)
     return false;
-  // Le dernier caractère de \a ref est le '\0' terminal qu'il ne faut pas prendre
-  // en compte
-  return memcmp(v.data(),ref.data(),ref_size-1)==0;
+  return memcmp(v.data(),ref.data(),ref_size)==0;
 }
 
 /*---------------------------------------------------------------------------*/
