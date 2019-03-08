@@ -259,13 +259,30 @@ len() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+std::string_view String::
+toStringView() const
+{
+  if (m_const_ptr)
+    return std::string_view(m_const_ptr,std::strlen(m_const_ptr));
+  if (m_p){
+    auto x = m_p->largeUtf8();
+    Int64 vlen = x.size();
+    if (vlen>0)
+      return std::string_view(reinterpret_cast<const char*>(x.data()),vlen-1);
+  }
+  return std::string_view();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void String::
 _checkClone() const
 {
   if (m_const_ptr || !m_p){
     m_p = new StringImpl(m_const_ptr);
     m_p->addReference();
-    m_const_ptr = 0;
+    m_const_ptr = nullptr;
     return;
   }
   if (m_p->nbReference()!=1){

@@ -88,3 +88,35 @@ TEST(String, Misc)
     ASSERT_EQ(k0_list[6],String("Tete"));
   }
 }
+
+TEST(String, StdStringView)
+{
+#if 0
+  const char* ref1 = "S1éà";
+  const char* ref2 = "ù*aXZáé";
+  // Ref3 = Ref1 + Ref2
+  const char* ref3 = "S1éàù*aXZáé";
+#endif
+  const char* ref1 = "S1ea";
+  const char* ref2 = "u*aXZae";
+  // Ref3 = Ref1 + Ref2
+  const char* ref3 = "S1eau*aXZae";
+
+  std::string std_ref3 { ref3 };
+  String snull;
+  String sempty { "" };
+  String s1 = ref1;
+  String s2 = ref2;
+  String s3 = ref1;
+  s3 = s3 + ref2;
+  std::string_view vempty = sempty.toStringView();
+  ASSERT_EQ((Int64)vempty.size(),0) << "vempty.size()==0";
+  std::string_view vnull = snull.toStringView();
+  ASSERT_EQ((Int64)vnull.size(),0) << "vnull.size()==0";
+  std::string_view v1 = s1.toStringView();
+  ASSERT_EQ(v1,ref1) << "v1==ref1";
+  std::string_view v2 = s2.toStringView();
+  ASSERT_EQ(v2,ref2) << "v2==ref2";
+  std::string_view v3 = s3.toStringView();
+  ASSERT_EQ(v3,std_ref3) << "v3==ref3";
+}

@@ -13,6 +13,7 @@
 
 #include <string>
 #include <sstream>
+#include <string_view>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -140,6 +141,19 @@ class ARCCORE_BASE_EXPORT String
    * est invalidée par toute modification de cette instance.
    */
   const char* localstr() const;
+
+ public:
+
+  /*!
+   * \brief Retourne une vue sur la chaîne actuelle.
+   *
+   * L'encodage utilisé est UTF-8.
+   *
+   * \warning L'instance reste propriétaire de la valeur retournée et cette valeur
+   * est invalidée par toute modification de cette instance. La vue
+   * retournée ne doit pas être conservée.
+   */
+  std::string_view toStringView() const;
 
  public:
 
