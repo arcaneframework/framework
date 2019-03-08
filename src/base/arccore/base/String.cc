@@ -168,7 +168,7 @@ localstr() const
     return m_const_ptr;
   A_FASTLOCK(this);
   if (m_p)
-    return m_p->local().c_str();
+    return m_p->toStringView().data();
   return "";
 }
 
@@ -251,9 +251,12 @@ empty() const
 Integer String::
 len() const
 {
+  size_t slen = 0;
   if (m_const_ptr)
-    return CStringUtils::len(m_const_ptr);
-  return arccoreCheckArraySize(m_p->local().length());
+    slen = std::strlen(m_const_ptr);
+  if (m_p)
+    slen = m_p->toStringView().size();
+  return arccoreCheckArraySize(slen);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -264,12 +267,8 @@ toStringView() const
 {
   if (m_const_ptr)
     return std::string_view(m_const_ptr,std::strlen(m_const_ptr));
-  if (m_p){
-    auto x = m_p->largeUtf8();
-    Int64 vlen = x.size();
-    if (vlen>0)
-      return std::string_view(reinterpret_cast<const char*>(x.data()),vlen-1);
-  }
+  if (m_p)
+    return m_p->toStringView();
   return std::string_view();
 }
 

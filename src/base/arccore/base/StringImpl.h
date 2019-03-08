@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* StringImpl.h                                                (C) 2000-2018 */
+/* StringImpl.h                                                (C) 2000-2019 */
 /*                                                                           */
 /* Implémentation d'une chaîne de caractère de unicode.                      */
 /*---------------------------------------------------------------------------*/
@@ -26,6 +26,18 @@ namespace Arccore
  * \internal
  *
  * \brief Implémentation de la classe String.
+ *
+ * \warning Cette classe est interne à %Arcane et ne doit pas êre utilisée
+ * en dehors de %Arcane.
+ *
+ * Actuellement l'implémentation supporte deux encodages simultanés: UTF-8 et UTF-16.
+ * L'encodage UTF-16 est obsolète et sera supprimé fin 2019.
+ *
+ * Dans les méthodes prenant en argument des 'const char*', l'encodage est
+ * supposé être en UTF-8.
+ *
+ * Lorsque le C++20 sera disponible, cette classe ne sera qu'une encapsulation
+ * de std::u8string.
  */
 class ARCCORE_BASE_EXPORT StringImpl
 {
@@ -38,7 +50,6 @@ class ARCCORE_BASE_EXPORT StringImpl
  private:
   StringImpl();
  public:
-  const std::string& local();
   //TODO: rendre obsolète
   UCharConstArrayView utf16();
   //TODO: rendre obsolète
@@ -48,6 +59,7 @@ class ARCCORE_BASE_EXPORT StringImpl
   bool isLessThan(StringImpl* str);
   bool isEqual(const char* str);
   bool isLessThan(const char* str);
+  std::string_view toStringView();
  public:
   void addReference();
   void removeReference();
@@ -67,19 +79,16 @@ class ARCCORE_BASE_EXPORT StringImpl
  public:
   bool null() { return false; }
   bool empty();
-  bool hasLocal() const { return (m_flags & eValidLocal); }
   bool hasUtf8() const { return (m_flags & eValidUtf8); }
   bool hasUtf16() const { return (m_flags & eValidUtf16); }
  private:
   enum
   {
     eValidUtf16 = 1 << 0,
-    eValidUtf8 = 1 << 1,
-    eValidLocal = 1 << 2
+    eValidUtf8 = 1 << 1
   };
   std::atomic<Int32> m_nb_ref;
   int m_flags;
-  std::string m_local_str;
   CoreArray<UChar> m_utf16_array;
   CoreArray<Byte> m_utf8_array;
 
@@ -87,9 +96,7 @@ class ARCCORE_BASE_EXPORT StringImpl
   void _createUtf16();
   void _setUtf8(const Byte* src);
   void _createUtf8();
-  void _createLocal();
   inline void _checkReference();
-  void _invalidateLocal();
   void _invalidateUtf16();
   void _invalidateUtf8();
   void _setArray();
@@ -97,6 +104,7 @@ class ARCCORE_BASE_EXPORT StringImpl
   void _printStrUtf16(std::ostream& o,Span<const UChar> str);
   void _printStrUtf8(std::ostream& o,Span<const Byte> str);
   void _appendUtf8(Span<const Byte> ref_str);
+  inline void _initFromSpan(Span<const Byte> bytes);
 };
 
 /*---------------------------------------------------------------------------*/
