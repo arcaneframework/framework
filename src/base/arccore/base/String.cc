@@ -488,19 +488,19 @@ fromNumber(double v,Integer nb_digit_after_point)
   Int64 after_digit = p % mulp;
   Int64 before_digit = p / mulp;
   StringBuilder s(String::fromNumber(before_digit) + ".");
-    {
-      Integer nb_zero = 0;
-      Int64 mv = mulp / 10;
-      for( Integer i=0; i<(nb_digit_after_point-1); ++i ){
-        if (after_digit>=mv){
-          break;
-        }
-        ++nb_zero;
-        mv /= 10;
+  {
+    Integer nb_zero = 0;
+    Int64 mv = mulp / 10;
+    for( Integer i=0; i<(nb_digit_after_point-1); ++i ){
+      if (after_digit>=mv){
+        break;
       }
-      for( Integer i=0; i<nb_zero; ++i )
-        s += "0";
+      ++nb_zero;
+      mv /= 10;
     }
+    for( Integer i=0; i<nb_zero; ++i )
+      s += "0";
+  }
   s += String::fromNumber(after_digit);
   return s;
 }
@@ -650,12 +650,12 @@ hashCode() const
 
 void StringFormatterArg::
 _formatReal(Real avalue)
-  {
-    std::ostringstream ostr;
-    ostr.precision(std::numeric_limits<Real>::digits10);
-    ostr << avalue;
-    m_str_value = ostr.str();
-  }
+{
+  std::ostringstream ostr;
+  ostr.precision(std::numeric_limits<Real>::digits10);
+  ostr << avalue;
+  m_str_value = ostr.str();
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -667,53 +667,52 @@ class StringFormatter
   : m_format(format), m_current_arg(0) {}
  public:
   void addArg(const String& ostr)
-    {
-      //cout << "** ADD ARG " << m_current_arg << " <" << ostr << ">\n";
-      char buf[20];
-      Integer nb_z = 0;
-      Integer z = m_current_arg;
-      ++m_current_arg;
-      if (z>=100){
-        throw FatalErrorException(A_FUNCINFO,"Too many args");
-      }
-      else if (z>=10){
-        nb_z = 2;
-        buf[0] = (char)('0' + (z / 10));
-        buf[1] = (char)('0' + (z % 10));
-      }
-      else{
-        nb_z = 1;
-        buf[0] = (char)('0' + z);
-      }
-      buf[nb_z] = '}';
-      ++nb_z;
-      buf[nb_z] = '\0';
+  {
+    char buf[20];
+    Integer nb_z = 0;
+    Integer z = m_current_arg;
+    ++m_current_arg;
+    if (z>=100){
+      ARCCORE_FATAL("Too many args (maximum is 100)");
+    }
+    else if (z>=10){
+      nb_z = 2;
+      buf[0] = (char)('0' + (z / 10));
+      buf[1] = (char)('0' + (z % 10));
+    }
+    else{
+      nb_z = 1;
+      buf[0] = (char)('0' + z);
+    }
+    buf[nb_z] = '}';
+    ++nb_z;
+    buf[nb_z] = '\0';
 
-      std::string str = m_format.localstr();
-      const char* local_str = str.c_str();
-      // TODO: ne pas utiliser de String mais un StringBuilder pour format
-      const Integer slen = arccoreCheckArraySize(str.length());
-      for( Integer i=0; i<slen; ++i ){
-        if (local_str[i]=='{'){
-          if (i+nb_z>=slen)
-            break;
-          bool is_ok = true;
-          for( Integer j=0; j<nb_z; ++j )
-            if (local_str[i+1+j]!=buf[j]){
-              is_ok = false;
-              break;
-            }
-          if (is_ok){
-            std::string str1(local_str,local_str+i);
-            std::string str2(local_str+i+1+nb_z);
-            m_format = String(str1) + ostr + str2;
-            // Il faut quitter tout de suite car str n'est plus valide
-            // puisque m_format a changé.
+    std::string str = m_format.localstr();
+    const char* local_str = str.c_str();
+    // TODO: ne pas utiliser de String mais un StringBuilder pour format
+    const Integer slen = arccoreCheckArraySize(str.length());
+    for( Integer i=0; i<slen; ++i ){
+      if (local_str[i]=='{'){
+        if (i+nb_z>=slen)
+          break;
+        bool is_ok = true;
+        for( Integer j=0; j<nb_z; ++j )
+          if (local_str[i+1+j]!=buf[j]){
+            is_ok = false;
             break;
           }
+        if (is_ok){
+          std::string str1(local_str,local_str+i);
+          std::string str2(local_str+i+1+nb_z);
+          m_format = String(str1) + ostr + str2;
+          // Il faut quitter tout de suite car str n'est plus valide
+          // puisque m_format a changé.
+          break;
         }
       }
     }
+  }
  public:
   const String& value() const { return m_format; }
  public:
@@ -1072,7 +1071,7 @@ operator==(const String& a,const String& b)
   }
 
   // Je suis la chaine nulle
-  return b.m_p==0;
+  return b.m_p==nullptr;
 }
 
 extern "C++" bool
