@@ -34,6 +34,7 @@ String::
 String(const std::string& str)
 : m_p(new StringImpl(str))
 , m_const_ptr(nullptr)
+, m_const_ptr_size(-1)
 {
   m_p->addReference();
 }
@@ -45,6 +46,7 @@ String::
 String(std::string_view str)
 : m_p(new StringImpl(str))
 , m_const_ptr(nullptr)
+, m_const_ptr_size(-1)
 {
   m_p->addReference();
 }
@@ -56,6 +58,7 @@ String::
 String(const UCharConstArrayView& ustr)
 : m_p(new StringImpl(ustr.data()))
 , m_const_ptr(nullptr)
+, m_const_ptr_size(-1)
 {
   m_p->addReference();
 }
@@ -67,6 +70,7 @@ String::
 String(const Span<const Byte>& ustr)
 : m_p(new StringImpl(ustr))
 , m_const_ptr(nullptr)
+, m_const_ptr_size(-1)
 {
   m_p->addReference();
 }
@@ -78,6 +82,7 @@ String::
 String(StringImpl* impl)
 : m_p(impl)
 , m_const_ptr(nullptr)
+, m_const_ptr_size(-1)
 {
   if (m_p)
     m_p->addReference();
@@ -101,6 +106,7 @@ String::
 String(char* str)
 : m_p(new StringImpl(str))
 , m_const_ptr(nullptr)
+, m_const_ptr_size(-1)
 {
   m_p->addReference();
 }
@@ -112,6 +118,7 @@ String::
 String(const char* str,bool do_alloc)
 : m_p(nullptr)
 , m_const_ptr(nullptr)
+, m_const_ptr_size(-1)
 {
   if (do_alloc){
     m_p = new StringImpl(str);
@@ -119,6 +126,8 @@ String(const char* str,bool do_alloc)
   }
   else{
     m_const_ptr = str;
+    if (m_const_ptr)
+      m_const_ptr_size = std::strlen(str);
   }
 }
 
@@ -129,6 +138,7 @@ String::
 String(const String& str)
 : m_p(str.m_p)
 , m_const_ptr(str.m_const_ptr)
+, m_const_ptr_size(str.m_const_ptr_size)
 {
   if (m_p)
     m_p->addReference();
@@ -156,16 +166,21 @@ operator=(const String& str)
     m_p->removeReference();
   m_p = str.m_p;
   m_const_ptr = str.m_const_ptr;
+  m_const_ptr_size = str.m_const_ptr_size;
   return (*this);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 const String& String::
 operator=(const char* str)
 {
   if (m_p)
     m_p->removeReference();
-  m_p = 0;
+  m_p = nullptr;
   m_const_ptr = str;
+  m_const_ptr_size = std::strlen(str);
   return (*this);
 }
 
@@ -279,8 +294,14 @@ length() const
 std::string_view String::
 toStdStringView() const
 {
-  if (m_const_ptr)
-    return std::string_view(m_const_ptr,std::strlen(m_const_ptr));
+  if (m_const_ptr){
+#ifdef ARCANE_CHECK
+    Int64 xlen = std::strlen(m_const_ptr);
+    if (xlen!=m_const_ptr_size)
+      ARCCORE_FATAL("Bad length (computed={0} stored={1})",xlen,m_const_ptr_size);
+#endif
+    return std::string_view(m_const_ptr,m_const_ptr_size);
+  }
   if (m_p)
     return m_p->toStdStringView();
   return std::string_view();
@@ -314,6 +335,7 @@ void String::
 _checkClone() const
 {
   if (m_const_ptr || !m_p){
+    // TODO: ajouter size
     m_p = new StringImpl(m_const_ptr);
     m_p->addReference();
     m_const_ptr = nullptr;

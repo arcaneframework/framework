@@ -81,7 +81,8 @@ class ARCCORE_BASE_EXPORT String
    * Si la chaîne passée en argument peut être désallouée,
    * il faut utiliser String(std::string_view) à la place.
    */   
-  String(const char* str) : m_p(nullptr), m_const_ptr(str) {}
+  String(const char* str)
+  : m_p(nullptr), m_const_ptr(str), m_const_ptr_size(std::string_view(str).size()) {}
   //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
   String(char* str);
   //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
@@ -399,6 +400,7 @@ class ARCCORE_BASE_EXPORT String
 
   mutable StringImpl* m_p; //!< Implémentation de la classe
   mutable const char* m_const_ptr;
+  Int64 m_const_ptr_size; //!< Longueur de la chaîne si constante (-1 sinon)
 
   void _checkClone() const;
   bool isLess(const String& s) const;
