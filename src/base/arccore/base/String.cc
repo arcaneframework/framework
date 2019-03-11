@@ -179,6 +179,8 @@ operator=(const char* str)
   if (m_p)
     m_p->removeReference();
   m_p = nullptr;
+  // TODO: mettre le code suivant inline pour que le compilateur puisse
+  // avoir à la compilation la longeur de \a str.
   m_const_ptr = str;
   m_const_ptr_size = std::strlen(str);
   return (*this);
@@ -300,7 +302,7 @@ toStdStringView() const
     if (xlen!=m_const_ptr_size)
       ARCCORE_FATAL("Bad length (computed={0} stored={1})",xlen,m_const_ptr_size);
 #endif
-    return std::string_view(m_const_ptr,m_const_ptr_size);
+    return _viewFromConstChar();
   }
   if (m_p)
     return m_p->toStdStringView();
@@ -314,7 +316,7 @@ StringView String::
 view() const
 {
   if (m_const_ptr)
-    return StringView(std::string_view(m_const_ptr));
+    return StringView(_viewFromConstChar());
   if (m_p)
     return m_p->view();
   return StringView();
@@ -335,10 +337,13 @@ void String::
 _checkClone() const
 {
   if (m_const_ptr || !m_p){
-    // TODO: ajouter size
-    m_p = new StringImpl(m_const_ptr);
+    std::string_view sview;
+    if (m_const_ptr)
+      sview = _viewFromConstChar();
+    m_p = new StringImpl(sview);
     m_p->addReference();
     m_const_ptr = nullptr;
+    m_const_ptr_size = -1;
     return;
   }
   if (m_p->nbReference()!=1){
@@ -369,8 +374,9 @@ _append(const String& str)
   if (str.null())
     return *this;
   _checkClone();
-  if (str.m_const_ptr)
-    m_p = m_p->append(str.m_const_ptr);
+  if (str.m_const_ptr){
+    m_p = m_p->append(str._viewFromConstChar());
+  }
   else
     m_p = m_p->append(str.m_p);
   return *this;

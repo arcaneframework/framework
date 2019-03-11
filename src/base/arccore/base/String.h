@@ -400,11 +400,16 @@ class ARCCORE_BASE_EXPORT String
 
   mutable StringImpl* m_p; //!< Implémentation de la classe
   mutable const char* m_const_ptr;
-  Int64 m_const_ptr_size; //!< Longueur de la chaîne si constante (-1 sinon)
+  mutable Int64 m_const_ptr_size; //!< Longueur de la chaîne si constante (-1 sinon)
 
   void _checkClone() const;
   bool isLess(const String& s) const;
   String& _append(const String& str);
+  // A n'appeler que si 'm_const_ptr' est non nul sinon m_const_ptr_size vaut (-1)
+  std::string_view _viewFromConstChar() const
+  {
+    return std::string_view(m_const_ptr,m_const_ptr_size);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
