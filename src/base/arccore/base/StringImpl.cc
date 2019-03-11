@@ -232,12 +232,6 @@ isEqual(StringImpl* str)
   _createUtf8();
   Span<const Byte> ref_array = str->largeUtf8();
   bool v = CStringUtils::isEqual((const char*)ref_array.data(),(const char*)m_utf8_array.data());
-#if 0
-  cerr << "** COMPARE = UTF8 ";
-  _printStrUtf8(cerr,ref_array);
-  _printStrUtf8(cerr,m_utf8_array);
-  cerr << " => " << v << '\n';
-#endif
   return v;
 }
 
@@ -252,12 +246,6 @@ isLessThan(StringImpl* str)
   if (m_flags & eValidUtf8){
     Span<const Byte> ref_array = str->largeUtf8();
     bool v = CStringUtils::isLess((const char*)m_utf8_array.data(),(const char*)ref_array.data());
-#if 0
-    cerr << "** COMPARE < UTF8 ";
-    _printStrUtf8(cerr,ref_array);
-    _printStrUtf8(cerr,m_utf8_array);
-    cerr << " => " << v << '\n';
-#endif
     return v;
   }
   ARCCORE_ASSERT((0),("InternalError in StringImpl::isEqual()"));
@@ -268,31 +256,22 @@ isLessThan(StringImpl* str)
 /*---------------------------------------------------------------------------*/
 
 bool StringImpl::
-isEqual(const char* str)
+isEqual(StringView str)
 {
   _checkReference();
   _createUtf8();
-  // TODO: faire une version optimisée sans avoir à calculer la longueur
-  // de \a str
-  //Span<const Byte> ustr{reinterpret_cast<const Byte*>(str),std::strlen(str)};
-  //bool v = CStringUtils::isEqual(m_local_str.c_str(),str);
-  //bool v = (m_utf8_array == ustr);
-  bool v = (std::strcmp(reinterpret_cast<const char*>(m_utf8_array.data()),str)==0);
-  //std::cout << "COMPARE '" << str << "' '" << (const char*)m_utf8_array.data() << " V=" << v << "\n";
-  //cerr << "** COMPARE LOCAL STR =" << str << "><" << m_local_str << "> => " << v << "\n";
-  return v;
+  return str.toStdStringView() == toStdStringView();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 bool StringImpl::
-isLessThan(const char* str)
+isLessThan(StringView str)
 {
   _checkReference();
   _createUtf8();
-  return (std::strcmp(reinterpret_cast<const char*>(m_utf8_array.data()),str)<0);
-  //return m_local_str < str;
+  return toStdStringView() < str.toStdStringView();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -343,16 +322,16 @@ append(StringImpl* str)
 /*---------------------------------------------------------------------------*/
 
 StringImpl* StringImpl::
-append(const char* str)
+append(StringView str)
 {
-  if (!str)
+  Span<const Byte> str_bytes = str.bytes();
+  if (!str_bytes.data())
     return this;
 
   _checkReference();
   _createUtf8();
 
-  Int64 len = std::strlen(str);
-  _appendUtf8(Span<const Byte>(reinterpret_cast<const Byte*>(str),len+1));
+  _appendUtf8(Span<const Byte>(str_bytes.data(),str_bytes.size() + 1));;
   return this;
 }
 

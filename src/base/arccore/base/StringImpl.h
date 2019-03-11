@@ -35,9 +35,6 @@ class StringView;
  * Actuellement l'implémentation supporte deux encodages simultanés: UTF-8 et UTF-16.
  * L'encodage UTF-16 est obsolète et sera supprimé fin 2019.
  *
- * Dans les méthodes prenant en argument des 'const char*', l'encodage est
- * supposé être en UTF-8.
- *
  * Lorsque le C++20 sera disponible, cette classe ne sera qu'une encapsulation
  * de std::u8string.
  */
@@ -61,8 +58,8 @@ class ARCCORE_BASE_EXPORT StringImpl
   Span<const Byte> bytes();
   bool isEqual(StringImpl* str);
   bool isLessThan(StringImpl* str);
-  bool isEqual(const char* str);
-  bool isLessThan(const char* str);
+  bool isEqual(StringView str);
+  bool isLessThan(StringView str);
   std::string_view toStdStringView();
   StringView view();
  public:
@@ -74,7 +71,7 @@ class ARCCORE_BASE_EXPORT StringImpl
  public:
   StringImpl* clone();
   StringImpl* append(StringImpl* str);
-  StringImpl* append(const char* str);
+  StringImpl* append(StringView str);
   StringImpl* replaceWhiteSpace();
   StringImpl* collapseWhiteSpace();
   StringImpl* toUpper();

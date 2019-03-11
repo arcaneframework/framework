@@ -9,6 +9,7 @@
 #include "arccore/base/StringBuilder.h"
 #include "arccore/base/StringImpl.h"
 #include "arccore/base/String.h"
+#include "arccore/base/StringView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -234,8 +235,10 @@ append(const String& str)
   if (str.null())
     return *this;
   _checkClone();
-  if (str.m_const_ptr)
-    m_p = m_p->append(str.m_const_ptr);
+  if (str.m_const_ptr){
+    StringView sv{std::string_view(str.m_const_ptr,str.m_const_ptr_size)};
+    m_p = m_p->append(sv);
+  }
   else
     m_p = m_p->append(str.m_p);
   return *this;
