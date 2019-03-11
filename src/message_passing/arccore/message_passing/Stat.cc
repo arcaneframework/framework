@@ -8,6 +8,8 @@
 
 #include "arccore/message_passing/Stat.h"
 
+#include <algorithm>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -49,6 +51,7 @@ Stat()
 Stat::
 ~Stat()
 {
+  // TODO(FL): A enlever quand on aura supprimer m_list (gestion du DEPRECATED)
   for( auto i : m_list ){
     OneStat* os = i.second;
     delete os;
@@ -64,8 +67,11 @@ add(const String& name,double elapsed_time,Int64 msg_size)
 {
   if (!m_is_enabled)
     return;
+  // TODO(FL): A enlever quand on aura supprimer m_list (gestion du DEPRECATED)
   OneStat* os = _find(name);
   os->addMessage(msg_size,elapsed_time);
+
+  m_data.mergeData(OneStat(name, msg_size, elapsed_time));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -74,10 +80,59 @@ add(const String& name,double elapsed_time,Int64 msg_size)
 void Stat::
 print(std::ostream& o)
 {
+  // TODO(FL): A enlever quand on aura supprimer m_list (gestion du DEPRECATED)
   for( auto i : m_list ){
     OneStat* os = i.second;
     os->print(o);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Stat::
+resetCurrentStat()
+{
+  // TODO(FL): A enlever quand on aura supprimer m_list (gestion du DEPRECATED)
+  for (auto& i : m_list)
+    i.second->resetCurrentStat();
+
+  m_data.resetCurrentStat();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void StatData::
+mergeData(OneStat one_stat)
+{
+  auto pos(std::find_if(m_stat_col.begin(), m_stat_col.end(),
+                        [&one_stat](const OneStat& os){return (one_stat.name() == os.name());}));
+  if (pos == m_stat_col.end())
+    m_stat_col.emplace_back(one_stat);
+  else
+    pos->addMessage(one_stat.totalSize(), one_stat.totalTime());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void StatData::
+mergeAllData(const StatData& all_stat)
+{
+  for (const auto& stat : all_stat.m_stat_col)
+    mergeData(stat);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// Surcharge temporaire avant de gerer le DEPRECATED OneStatMap
+void StatData::
+mergeAllData(const OneStatMap& all_stat)
+{
+  for (const auto& stat : all_stat)
+    mergeData(*(stat.second));
 }
 
 /*---------------------------------------------------------------------------*/

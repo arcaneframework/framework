@@ -1,4 +1,6 @@
-﻿cmake_minimum_required(VERSION 3.11)
+﻿﻿# Il faut au minimun cmake 3.11.0
+cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
+
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
@@ -8,8 +10,18 @@ cmake_policy(SET CMP0048 NEW)
 cmake_policy(SET CMP0074 NEW)
 
 # ----------------------------------------------------------------------------
+# Récupère numéro de version de Arcane à partir du fichier 'version' et
+# génère un fichier 'arcane_version.h' contenant ces informations.
 
-project(Arccore VERSION 1.0 LANGUAGES CXX)
+file(READ "version" ARCCORE_VERSION_STR_FULL)
+string(REPLACE "_dev" "" ARCCORE_VERSION ${ARCCORE_VERSION_STR_FULL})
+message(STATUS "ArccoreVersion = ${ARCCORE_VERSION}")
+
+project(Arccore VERSION ${ARCCORE_VERSION} LANGUAGES CXX)
+
+math(EXPR ARCCORE_VERSION_NUMERIC "((10000 * ${Arccore_VERSION_MAJOR}) + 100 * ${Arccore_VERSION_MINOR}) + ${Arccore_VERSION_PATCH}")
+configure_file(arccore_version.h.in ${CMAKE_BINARY_DIR}/arccore_version.h @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/arccore_version.h DESTINATION include)
 
 # ----------------------------------------------------------------------------
 
@@ -34,6 +46,11 @@ include(LoadBuildSystem)
 #   set(ARCCON_EXPORT_TARGET ${ARCCORE_EXPORT_TARGET})
 # endif()
 # include(${ARCCON_ROOT}/Arccon.cmake)
+
+# ----------------------------------------------------------------------------
+# Indique que si une variable <PackageName>_ROOT est définie, considère
+# qu'il s'agit du chemin de base du package <PackageName>.
+cmake_policy(SET CMP0074 NEW)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
