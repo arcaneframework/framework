@@ -967,8 +967,14 @@ plural(const Integer n, const String & str, const String & str2, const bool with
 bool String::
 contains(const String& arg1) const
 {
-  //TODO a ecrire sans utiliser strstr
-  return std::strstr((const char*)utf8().data(),(const char*)arg1.utf8().data())!=0;
+  // Considère que la chaîne nulle est incluse dans toute chaîne
+  if (arg1.null())
+    return true;
+  if (null())
+    return false;
+  std::string_view a = this->toStdStringView();
+  std::string_view b = arg1.toStdStringView();
+  return a.find(b) != std::string_view::npos;
 }
 
 /*---------------------------------------------------------------------------*/

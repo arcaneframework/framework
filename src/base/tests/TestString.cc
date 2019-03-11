@@ -71,6 +71,22 @@ TEST(String, Misc)
   ASSERT_EQ(gempty2,expected_gempty2);
 
   {
+    String knull;
+    String kempty { gempty };
+    String k1 { "titi" };
+    String k2 { "ti" };
+    String k3 { "to" };
+    ASSERT_TRUE(knull.contains(gnull)) << "Bad null contains null";
+    ASSERT_FALSE(knull.contains(gempty)) << "Bad null contains empty";
+    ASSERT_TRUE(kempty.contains(gnull)) << "Bad empty contains null";
+    ASSERT_TRUE(kempty.contains(gempty)) << "Bad empty contains null";
+    ASSERT_TRUE(k1.contains(gnull)) << "Bad null contains null";
+    ASSERT_TRUE(k1.contains(gempty)) << "Bad contains empty";
+    ASSERT_TRUE(k1.contains(k2)) << "Bad k1 contains k2";
+    ASSERT_FALSE(k2.contains(k1)) << "Bad k2 contains k1";
+    ASSERT_FALSE(k1.contains(k3)) << "Bad k1 contains k3";
+  }
+  {
     String k0 = ":Toto::Titi:::Tata::::Tutu:Tete:";
     //String k0 = ":Toto:Titi";
     //String k0 = ":Toto::Titi";

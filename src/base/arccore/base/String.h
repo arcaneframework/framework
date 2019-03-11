@@ -44,8 +44,19 @@ class StringView;
  *
  * Les instances de cette classe sont immutables.
  *
- * A la différence de std::string, il n'est pas possible actuellement de
- * conserver des caractères nuls à l'intérieur d'une \a String.
+ * Cette classe est similaire à std::string mais avec les différences
+ * suivantes:
+ * - la classe \a String utilise l'encodage UTF-8 alors que pour std::string
+ *   l'encodage est indéfini.
+ * - contrairement à std::string, il n'est pas possible actuellement de
+ *   conserver des caractères nuls à l'intérieur d'une \a String.
+ * - pour String, il y a une distinction entre la chaîne nulle et la chaîne vide.
+ *   Le constructeur String::String() créé une chaîne nulle alors que
+ *   String::String("") créé une chaîne vide. Si la chaîne est nulle,
+ *   les appels à view() ou toStdStringView() retourne une chaîne vide.
+ *
+ * Lorsque le C++20 sera disponible, la classe \a String correspondra
+ * au type std::optional<std::u8string>.
  *
  * Pour des raisons de performance, pour construire par morceaux une chaîne
  * de caractères, il est préférable d'utiliser la classe 'StringBuilder'.
@@ -147,7 +158,8 @@ class ARCCORE_BASE_EXPORT String
   /*!
    * \brief Retourne la conversion de l'instance dans l'encodage UTF-8.
    *
-   * L'instance retournée ne contient pas de zéro terminal.
+   * \a bytes().size() correspond à la longueur de la chaîne de caractères mais
+   * la vue retournée contient toujours un '\0' terminal.
    *
    * \warning L'instance reste propriétaire de la valeur retournée et cette valeur
    * est invalidée par toute modification de cette instance.
@@ -155,7 +167,11 @@ class ARCCORE_BASE_EXPORT String
   Span<const Byte> bytes() const;
 
   /*!
-   * \brief Retourne la conversion de l'instance dans l'encodage UTF-8
+   * \brief Retourne la conversion de l'instance dans l'encodage UTF-8.
+   *
+   * Si null() est vrai, retourne la chaîne vide. Sinon, cette méthode est équivalent
+   * à appeler bytes().data(). Il y a toujours un '\0' terminal à la fin de la
+   * chaîne retournée.
    *
    * \warning L'instance reste propriétaire de la valeur retournée et cette valeur
    * est invalidée par toute modification de cette instance.
