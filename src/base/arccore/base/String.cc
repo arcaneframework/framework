@@ -194,7 +194,6 @@ localstr() const
 {
   if (m_const_ptr)
     return m_const_ptr;
-  A_FASTLOCK(this);
   if (m_p)
     return m_p->toStdStringView().data();
   return "";
@@ -214,17 +213,16 @@ utf16() const
   return ConstArrayView<UChar>();
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 ByteConstArrayView String::
 utf8() const
 {
-  A_FASTLOCK(this);
-  if (!m_p){
-    if (m_const_ptr){
-      _checkClone();
-    }
-  }
   if (m_p)
     return m_p->utf8();
+  if (m_const_ptr)
+    return ByteConstArrayView(m_const_ptr_size+1,reinterpret_cast<const Byte*>(m_const_ptr));
   return ByteConstArrayView();
 }
 
@@ -234,15 +232,10 @@ utf8() const
 Span<const Byte> String::
 bytes() const
 {
-  A_FASTLOCK(this);
-  if (!m_p) {
-    if (m_const_ptr) {
-      _checkClone();
-    }
-  }
-  if (m_p) {
+  if (m_p)
     return m_p->bytes();
-  }
+  if (m_const_ptr)
+    return Span<const Byte>(reinterpret_cast<const Byte*>(m_const_ptr),m_const_ptr_size);
   return Span<const Byte>();
 }
 
@@ -665,8 +658,7 @@ internalDump(std::ostream& ostr) const
 Int32 String::
 hashCode() const
 {
-  _checkClone();
-  Span<const Byte> s = m_p->bytes();
+  Span<const Byte> s = bytes();
   Int32 h = 0;
   Int64 n = s.size();
   for( Int64 i=0; i<n; ++i ){
