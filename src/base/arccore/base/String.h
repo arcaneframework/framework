@@ -107,7 +107,7 @@ class ARCCORE_BASE_EXPORT String
   String(const String& str);
 
   //! Copie \a str dans cette instance.
-  const String& operator=(const String& str);
+  String& operator=(const String& str);
   /*!
    * \brief Référence \a str codé en UTF-8 dans cette instance.
    *
@@ -116,7 +116,7 @@ class ARCCORE_BASE_EXPORT String
    * Si la chaîne passée en argument peut être désallouée,
    * il faut utiliser String::operator=(std::string_view) à la place.
    */
-  const String& operator=(const char* str)
+  String& operator=(const char* str)
   {
     m_const_ptr = str;
     m_const_ptr_size = std::string_view(str).size();
@@ -124,9 +124,9 @@ class ARCCORE_BASE_EXPORT String
     return (*this);
   }
   //! Copie \a str codé en UTF-8 dans cette instance.
-  const String& operator=(std::string_view str);
+  String& operator=(std::string_view str);
   //! Copie \a str codé en UTF-8 dans cette instance.
-  const String& operator=(const std::string& str);
+  String& operator=(const std::string& str);
 
   ~String(); //!< Libère les ressources.
 

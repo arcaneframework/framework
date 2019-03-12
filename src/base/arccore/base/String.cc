@@ -95,6 +95,7 @@ String::
 String(const char* str,Integer len)
 : m_p(new StringImpl(std::string_view(str,len)))
 , m_const_ptr(nullptr)
+, m_const_ptr_size(-1)
 {
   m_p->addReference();
 }
@@ -157,7 +158,7 @@ String::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-const String& String::
+String& String::
 operator=(const String& str)
 {
   if (str.m_p)
@@ -173,7 +174,7 @@ operator=(const String& str)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-const String& String::
+String& String::
 operator=(std::string_view str)
 {
   String new_s(str);
@@ -183,7 +184,7 @@ operator=(std::string_view str)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-const String& String::
+String& String::
 operator=(const std::string& str)
 {
   String new_s(str);
