@@ -238,9 +238,12 @@ ByteConstArrayView String::
 utf8() const
 {
   if (m_p)
-    return m_p->utf8();
-  if (m_const_ptr)
-    return ByteConstArrayView(m_const_ptr_size+1,reinterpret_cast<const Byte*>(m_const_ptr));
+    return m_p->largeUtf8().smallView();
+  if (m_const_ptr){
+    Int64 ts = m_const_ptr_size+1;
+    Int32 s = arccoreCheckArraySize(ts);
+    return ByteConstArrayView(s,reinterpret_cast<const Byte*>(m_const_ptr));
+  }
   return ByteConstArrayView();
 }
 

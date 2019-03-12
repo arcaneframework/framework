@@ -2,7 +2,7 @@
 /*---------------------------------------------------------------------------*/
 /* StringImpl.h                                                (C) 2000-2019 */
 /*                                                                           */
-/* Implémentation d'une chaîne de caractère de unicode.                      */
+/* Implémentation d'une chaîne de caractère UTf-8 ou UTF-16.                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_STRINGIMPL_H
 #define ARCCORE_BASE_STRINGIMPL_H
@@ -48,10 +48,8 @@ class ARCCORE_BASE_EXPORT StringImpl
  private:
   StringImpl();
  public:
-  //TODO: rendre obsolète
+  //TODO: rendre obsolète.
   UCharConstArrayView utf16();
-  ARCCORE_DEPRECATED_2019("Use StringImpl::largeUtf8() instead")
-  ByteConstArrayView utf8();
   //! Vue sur l'encodage UTF-8 *AVEC* zéro terminal
   Span<const Byte> largeUtf8();
   //! idem largeUtf8() mais *SANS* le zéro terminal
