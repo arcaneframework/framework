@@ -108,8 +108,25 @@ class ARCCORE_BASE_EXPORT String
 
   //! Copie \a str dans cette instance.
   const String& operator=(const String& str);
+  /*!
+   * \brief Référence \a str codé en UTF-8 dans cette instance.
+   *
+   * \warning Attention, la chaine est supposée constante sa validité
+   * infinie (i.e il s'agit d'une chaîne constante à la compilation.
+   * Si la chaîne passée en argument peut être désallouée,
+   * il faut utiliser String::operator=(std::string_view) à la place.
+   */
+  const String& operator=(const char* str)
+  {
+    m_const_ptr = str;
+    m_const_ptr_size = std::string_view(str).size();
+    _removeReference();
+    return (*this);
+  }
   //! Copie \a str codé en UTF-8 dans cette instance.
-  const String& operator=(const char* str);
+  const String& operator=(std::string_view str);
+  //! Copie \a str codé en UTF-8 dans cette instance.
+  const String& operator=(const std::string& str);
 
   ~String(); //!< Libère les ressources.
 
@@ -247,7 +264,7 @@ class ARCCORE_BASE_EXPORT String
   //! Vrai si la chaîne est vide (nulle ou "")
   bool empty() const;
 
-  //! Calcule une valeur de hashage cette la chaîne de caractère
+  //! Calcule une valeur de hashage pour cette chaîne de caractères
   Int32 hashCode() const;
 
   //! Écrit la chaîne au format UTF-8 sur le flot \a o
@@ -410,6 +427,7 @@ class ARCCORE_BASE_EXPORT String
   {
     return std::string_view(m_const_ptr,m_const_ptr_size);
   }
+  void _removeReference();
 };
 
 /*---------------------------------------------------------------------------*/

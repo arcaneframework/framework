@@ -174,16 +174,31 @@ operator=(const String& str)
 /*---------------------------------------------------------------------------*/
 
 const String& String::
-operator=(const char* str)
+operator=(std::string_view str)
+{
+  String new_s(str);
+  return this->operator=(new_s);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+const String& String::
+operator=(const std::string& str)
+{
+  String new_s(str);
+  return this->operator=(new_s);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void String::
+_removeReference()
 {
   if (m_p)
     m_p->removeReference();
   m_p = nullptr;
-  // TODO: mettre le code suivant inline pour que le compilateur puisse
-  // avoir à la compilation la longeur de \a str.
-  m_const_ptr = str;
-  m_const_ptr_size = std::strlen(str);
-  return (*this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -198,6 +213,9 @@ localstr() const
     return m_p->toStdStringView().data();
   return "";
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 ConstArrayView<UChar> String::
 utf16() const
@@ -435,6 +453,9 @@ operator+(const char* str) const
   // TODO: utiliser la longueur.
   return s2._append(str);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 String String::
 operator+(const String& str) const
