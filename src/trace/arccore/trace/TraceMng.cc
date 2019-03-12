@@ -1057,7 +1057,7 @@ _writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array,
         _write(std::cerr,buf_array);
     }
     {
-      String s1(orig_message.data(),orig_message.size());
+      String s1(std::string_view(orig_message.data(),orig_message.size()));
       FatalErrorException ex("TraceMng::endTrace()",s1);
       if (id==Trace::Fatal)
         throw ex;

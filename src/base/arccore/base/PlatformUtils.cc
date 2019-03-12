@@ -96,7 +96,7 @@ getCurrentDate()
   now_tm = ::localtime(&now_time);
 
   ::strftime(str,max_len,"%m/%d/%Y %X",now_tm);
-  return String(str,true);
+  return std::string_view(str);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -125,7 +125,7 @@ getCurrentDateTime()
 
   // Formattage ISO 8601
   ::strftime(str,max_len,"%Y-%m-%dT%H:%M:%S",now_tm);
-  return String(str,true);
+  return std::string_view(str);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -145,7 +145,7 @@ getHostName()
   if (::gethostname(buf,sizeof(buf)-1)!=0)
     host_name = "Unknown";
 #endif
-  return String(host_name,true);
+  return std::string_view(host_name);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -167,7 +167,7 @@ getUserName()
 #else
   struct passwd* pwd = ::getpwuid(::getuid());
   if (pwd)
-    user_name = String(pwd->pw_name,true);
+    user_name = String(std::string_view(pwd->pw_name));
 #endif
   return user_name;
 }
@@ -209,7 +209,7 @@ getCurrentDirectory()
 {
   char buf[4096];
   ::getcwd(buf,4095);
-  return String(buf,true);
+  return std::string_view(buf);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -282,13 +282,13 @@ recursiveCreateDirectory(const String& dir_name)
     return false;
   if (!can_create)
     return true;
-  Integer pos = 0;
+  Int64 pos = 0;
   const char* dir_name_str = dir_name.localstr();
-  for( Integer i=0, is=dir_name.len(); i<is; ++i )
+  for( Int64 i=0, is=dir_name.length(); i<is; ++i )
     if (dir_name_str[i]=='/')
       pos = i;
   if (pos!=0){
-    String parent_dir(dir_name_str,pos);
+    String parent_dir(std::string_view(dir_name_str,pos));
     bool is_bad = recursiveCreateDirectory(parent_dir);
     if (is_bad)
       return true;
@@ -336,16 +336,16 @@ createDirectory(const String& dir_name)
 extern "C++" ARCCORE_BASE_EXPORT String Platform::
 getFileDirName(const String& file_name)
 {
-  Integer pos = 0;
+  Int64 pos = 0;
   const char* file_name_str = file_name.localstr();
-  for( Integer i=0, is=file_name.len(); i<is; ++i )
+  for( Int64 i=0, is=file_name.length(); i<is; ++i )
     if (file_name_str[i]=='/')
       pos = i;
 
   if (pos==0)
     return String(".");
 
-  return String(file_name_str,pos);
+  return std::string_view(file_name_str,pos);
 }
 
 /*---------------------------------------------------------------------------*/
