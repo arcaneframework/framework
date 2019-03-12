@@ -439,6 +439,7 @@ String String::
 operator+(const char* str) const
 {
   String s2(*this);
+  // TODO: utiliser la longueur.
   return s2._append(str);
 }
 
@@ -632,7 +633,7 @@ isLess(const String& b) const
   }
 
   // Je suis la chaine nulle
-  return b.m_p==0;
+  return b.m_p==nullptr;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -665,9 +666,10 @@ Int32 String::
 hashCode() const
 {
   _checkClone();
-  ByteConstArrayView s = m_p->utf8();
+  Span<const Byte> s = m_p->bytes();
   Int32 h = 0;
-  for( Integer i=0, is = s.size(); i<is; ++i ){
+  Int64 n = s.size();
+  for( Int64 i=0; i<n; ++i ){
     h = (h << 5) - h + s[i];
   }
   return h;
