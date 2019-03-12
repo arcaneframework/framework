@@ -140,4 +140,23 @@ TEST(String, StdStringView)
   String s5 = s3 + sempty;
   std::string_view v5 = s5.toStdStringView();
   ASSERT_EQ(v5,v4) << "v5==v4";
+
+  String s6 = s2;
+  const char* t1 = "testà1";
+  const char* t2 = "testé2";
+  std::string st1 = t1;
+  std::string_view st1v = st1;
+  std::string st1_2 = st1 + t2;
+  s6 = t1;
+  ASSERT_EQ(s6.toStdStringView(),st1v) << "s6==st1";
+
+  String s7 = s3;
+  s7 = st1_2;
+  ASSERT_EQ(s7,st1_2) << "s7==st1_2";
+  String s8 = s6 + t2;
+  ASSERT_EQ(s8,st1_2) << "s8==st1_2";
+  String s9 = s7 + snull;
+  ASSERT_EQ(s9,st1_2) << "s9==st1_2";
+  String s10 = s7 + sempty;
+  ASSERT_EQ(s10,st1_2) << "s10==st1_2";
 }

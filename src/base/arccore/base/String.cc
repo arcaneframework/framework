@@ -447,10 +447,23 @@ lower() const
 /*---------------------------------------------------------------------------*/
 
 String String::
-operator+(const char* str) const
+operator+(std::string_view str) const
 {
+  if (str.empty())
+    return (*this);
   String s2(*this);
-  // TODO: utiliser la longueur.
+  return s2._append(str);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String String::
+operator+(const std::string& str) const
+{
+  if (str.empty())
+    return (*this);
+  String s2(*this);
   return s2._append(str);
 }
 

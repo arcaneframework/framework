@@ -272,7 +272,18 @@ class ARCCORE_BASE_EXPORT String
 
  public:
 
-  String operator+(const char* str) const;
+  //! Retourne la concaténation de cette chaîne avec la chaîne \a str encodée en UTF-8
+  String operator+(const char* str) const
+  {
+    if (!str)
+      return (*this);
+    return operator+(std::string_view(str));
+  }
+  //! Retourne la concaténation de cette chaîne avec la chaîne \a str encodée en UTF-8
+  String operator+(std::string_view str) const;
+  //! Retourne la concaténation de cette chaîne avec la chaîne \a str encodée en UTF-8
+  String operator+(const std::string& str) const;
+  //! Retourne la concaténation de cette chaîne avec la chaîne \a str.
   String operator+(const String& str) const;
   String operator+(unsigned long v) const;
   String operator+(unsigned int v) const;
