@@ -1,5 +1,4 @@
-﻿﻿# Il faut au minimun cmake 3.11.0
-cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
+﻿cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -8,6 +7,8 @@ cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
 cmake_policy(SET CMP0048 NEW)
 # Check libraries with FOO_ROOT
 cmake_policy(SET CMP0074 NEW)
+# target_link_libraries from different libraries
+cmake_policy(SET CMP0079 NEW)
 
 # ----------------------------------------------------------------------------
 # Récupère numéro de version de Arcane à partir du fichier 'version' et
