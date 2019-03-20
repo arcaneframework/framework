@@ -193,11 +193,11 @@ class TraceMng
   }
   TraceMessage pinfo() override
   {
-    return (_isCurrentClassParallelActivated()) ? _info() : _devNull();
+    return (_isCurrentClassParallelActivated()) ? _info(0) : _devNull();
   }
   TraceMessage pinfo(char /*category*/) override
   {
-    return (_isCurrentClassParallelActivated()) ? _info() : _devNull();
+    return (_isCurrentClassParallelActivated()) ? _info(0) : _devNull();
   }
   TraceMessage info(bool is_ok) override
   {
@@ -884,7 +884,7 @@ _writeListing(Span<const Byte> input,Int32 level,int color,bool do_flush)
   }
 
   // Sortie std::cout
-  if (m_is_master){
+  if (m_is_master || !listing_stream){
     Int32 verbosity_level = m_current_class_verbosity_level;
     if (verbosity_level==Trace::UNSPECIFIED_VERBOSITY_LEVEL)
       verbosity_level = (listing_stream) ? m_stdout_verbosity_level : m_verbosity_level;
