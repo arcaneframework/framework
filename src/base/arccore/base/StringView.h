@@ -56,9 +56,10 @@ class ARCCORE_BASE_EXPORT StringView
   : m_v(reinterpret_cast<const Byte*>(str.data()),str.size()){}
   //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
   StringView(Span<const Byte> str) : m_v(str){}
-
+  //! Opérateur de recopie
+  StringView(const StringView& str) = default;
   //! Copie la vue \a str dans cette instance.
-  constexpr StringView& operator=(const StringView& str) = default;
+  StringView& operator=(const StringView& str) = default;
   //! Créé une vue à partir de \a str codé en UTF-8
   const StringView& operator=(const char* str)
   {
