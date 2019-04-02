@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* MessagePassingMpiGlobal.h                                   (C) 2000-2018 */
+/* MessagePassingMpiGlobal.h                                   (C) 2000-2019 */
 /*                                                                           */
 /* Définitions globales de la composante 'MessagePassingMpi' de 'Arccore'.   */
 /*---------------------------------------------------------------------------*/
@@ -23,6 +23,14 @@
 #define OMPI_SKIP_MPICXX
 #endif
 #include <mpi.h>
+
+// Vérifie la version de MPI minimale. Normalement, on ne devrait pas avoir
+// de problèmes car cela est vérifié lors de la configuration mais on ne
+// sait jamais.
+#if MPI_VERSION < 3 || (MPI_VERSION==3 && MPI_SUBVERSION<1)
+#error "MPI_VERSION 3.1 is required. Please disable MPI".
+#endif
+
 #if defined(ARCCORE_OS_WIN32)
 // La version de mpi est celle de microsoft. Le proto de MPI_Op doit
 // avoir la déclaration __stdcall.

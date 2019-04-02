@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* MpiAdapter.cc                                               (C) 2000-2018 */
+/* MpiAdapter.cc                                               (C) 2000-2019 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant MPI.                               */
 /*---------------------------------------------------------------------------*/
@@ -166,7 +166,6 @@ nonBlockingBroadcast(void* buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype)
 {
   MPI_Request mpi_request = MPI_REQUEST_NULL;
   int ret = -1;
-#ifdef ARCANE_MPI_HAS_NONBLOCKINGCOLLECTIVE
   int _nb_elem = _checkSize(nb_elem);
   _trace(" MPI_Bcast");
   double begin_time = MPI_Wtime();
@@ -176,9 +175,6 @@ nonBlockingBroadcast(void* buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype)
   //TODO determiner la taille des messages
   m_stat->add("IBroadcast",sr_time,0);
   _addRequest(mpi_request);
-#else
-  ret = broadcast(buf,nb_elem,root,datatype);
-#endif
   return Request(ret,mpi_request);
 }
 
@@ -213,7 +209,6 @@ nonBlockingGather(const void* send_buf,void* recv_buf,
 {
   MPI_Request mpi_request = MPI_REQUEST_NULL;
   int ret = -1;
-#ifdef ARCANE_MPI_HAS_NONBLOCKINGCOLLECTIVE
   void* _sbuf = const_cast<void*>(send_buf);
   int _nb_elem = _checkSize(nb_elem);
   int _root = static_cast<int>(root);
@@ -226,9 +221,6 @@ nonBlockingGather(const void* send_buf,void* recv_buf,
   //TODO determiner la taille des messages
   m_stat->add("IGather",sr_time,0);
   _addRequest(mpi_request);
-#else
-  ret = gather(send_buf,recv_buf,nb_elem,root,datatype);
-#endif
   return Request(ret,mpi_request);
 }
 
@@ -261,7 +253,6 @@ nonBlockingAllGather(const void* send_buf,void* recv_buf,
 {
   MPI_Request mpi_request = MPI_REQUEST_NULL;
   int ret = -1;
-#ifdef ARCANE_MPI_HAS_NONBLOCKINGCOLLECTIVE
   void* _sbuf = const_cast<void*>(send_buf);
   int _nb_elem = _checkSize(nb_elem);
   _trace("MPI_Iallgather");
@@ -273,9 +264,6 @@ nonBlockingAllGather(const void* send_buf,void* recv_buf,
   //TODO determiner la taille des messages
   m_stat->add("IAllGather",sr_time,0);
   _addRequest(mpi_request);
-#else
-  ret = allGather(send_buf,recv_buf,nb_elem,datatype);
-#endif
   return Request(ret,mpi_request);
 }
 
@@ -375,7 +363,6 @@ nonBlockingAllToAll(const void* send_buf,void* recv_buf,Integer count,MPI_Dataty
 {
   MPI_Request mpi_request = MPI_REQUEST_NULL;
   int ret = -1;
-#ifdef ARCANE_MPI_HAS_NONBLOCKINGCOLLECTIVE
   void* _sbuf = const_cast<void*>(send_buf);
   int icount = _checkSize(count);
   _trace("MPI_IAlltoall");
@@ -386,9 +373,6 @@ nonBlockingAllToAll(const void* send_buf,void* recv_buf,Integer count,MPI_Dataty
   //TODO determiner la taille des messages
   m_stat->add("IAllToAll",sr_time,0);
   _addRequest(mpi_request);
-#else
-  ret = allToAll(send_buf,recv_buf,count,datatype);
-#endif
   return Request(ret,mpi_request);
 }
 
@@ -428,7 +412,6 @@ nonBlockingAllToAllVariable(const void* send_buf,const int* send_counts,
 {
   MPI_Request mpi_request = MPI_REQUEST_NULL;
   int ret = -1;
-#ifdef ARCANE_MPI_HAS_NONBLOCKINGCOLLECTIVE
   void* _sbuf = const_cast<void*>(send_buf);
   int* _send_counts = const_cast<int*>(send_counts);
   int* _send_indexes = const_cast<int*>(send_indexes);
@@ -445,10 +428,6 @@ nonBlockingAllToAllVariable(const void* send_buf,const int* send_counts,
   //TODO determiner la taille des messages
   m_stat->add("IAllToAll",sr_time,0);
   _addRequest(mpi_request);
-#else
-  ret = allToAllVariable(send_buf,send_counts,send_indexes,recv_buf,recv_counts,
-                         recv_indexes,datatype);
-#endif
   return Request(ret,mpi_request);
 }
 
@@ -460,12 +439,8 @@ nonBlockingBarrier()
 {
   MPI_Request mpi_request = MPI_REQUEST_NULL;
   int ret = -1;
-#ifdef ARCANE_MPI_HAS_NONBLOCKINGCOLLECTIVE
   ret = MPI_Ibarrier(m_communicator,&mpi_request);
   _addRequest(mpi_request);
-#else
-  MPI_Barrier(m_communicator);
-#endif
   return Request(ret,mpi_request);
 }
 
@@ -510,18 +485,14 @@ nonBlockingAllReduce(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatyp
 {
   MPI_Request mpi_request = MPI_REQUEST_NULL;
   int ret = -1;
-#ifdef ARCANE_MPI_HAS_NONBLOCKINGCOLLECTIVE
   void* _sbuf = const_cast<void*>(send_buf);
   int _n = _checkSize(count);
   double begin_time = MPI_Wtime();
   _trace("MPI_IAllreduce");
   ret = MPI_Iallreduce(_sbuf,recv_buf,_n,datatype,op,m_communicator,&mpi_request);
   double end_time = MPI_Wtime();
-  m_stat->add("IReduce",end_time-begin_time,n);
+  m_stat->add("IReduce",end_time-begin_time,_n);
   _addRequest(mpi_request);
-#else
-  ret = allReduce(send_buf,recv_buf,count,datatype,op);
-#endif
   return Request(ret,mpi_request);
 }
 
