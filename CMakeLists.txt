@@ -39,7 +39,9 @@ include(${ARCCON_ROOT}/Arccon.cmake)
 # ----------------------------------------------------------------------------
 # Indique que si une variable <PackageName>_ROOT est définie, considère
 # qu'il s'agit du chemin de base du package <PackageName>.
-cmake_policy(SET CMP0074 NEW)
+if (POLICY CMP0074)
+  cmake_policy(SET CMP0074 NEW)
+endif()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
