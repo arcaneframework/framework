@@ -292,6 +292,9 @@ class AbstractArray
   //! Type d'une distance entre itérateur éléments du tableau
   typedef ptrdiff_t difference_type;
 
+  typedef std::reverse_iterator<iterator> reverse_iterator;
+  typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+
  private:
 
   static TrueImpl* _sharedNull()
@@ -768,6 +771,8 @@ class Array
   using typename BaseClassType::value_type;
   using typename BaseClassType::iterator;
   using typename BaseClassType::const_iterator;
+  using typename BaseClassType::reverse_iterator;
+  using typename BaseClassType::const_reverse_iterator;
   using typename BaseClassType::pointer;
   using typename BaseClassType::const_pointer;
   using typename BaseClassType::reference;
@@ -1146,16 +1151,16 @@ class Array
   const_iterator end() const { return const_iterator(m_p->ptr+m_p->size); }
 
   //! Itérateur inverse sur le premier élément du tableau.
-  std::reverse_iterator<iterator> rbegin() { return std::make_reverse_iterator(end()); }
+  reverse_iterator rbegin() { return std::make_reverse_iterator(end()); }
 
   //! Itérateur inverse sur le premier élément du tableau.
-  std::reverse_iterator<const_iterator> rbegin() const { return std::make_reverse_iterator(end()); }
+  const_reverse_iterator rbegin() const { return std::make_reverse_iterator(end()); }
 
   //! Itérateur inverse sur le premier élément après la fin du tableau.
-  std::reverse_iterator<iterator> rend() { return std::make_reverse_iterator(begin()); }
+  reverse_iterator rend() { return std::make_reverse_iterator(begin()); }
 
   //! Itérateur inverse sur le premier élément après la fin du tableau.
-  std::reverse_iterator<const_iterator> rend() const { return std::make_reverse_iterator(begin()); }
+  const_reverse_iterator rend() const { return std::make_reverse_iterator(begin()); }
 
  public:
 
