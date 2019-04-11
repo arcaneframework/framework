@@ -334,6 +334,24 @@ _testArrayNewInternal()
     for( auto i : values.constView().range()) {
       std::cout << i << '\n';
     }
+
+    {
+      auto r1 = std::make_reverse_iterator(values.end());
+      auto r2 = std::make_reverse_iterator(values.begin());
+      for( ; r1!=r2; ++ r1 ){
+        std::cout << "RVALUE = " << *r1 << '\n';
+      }
+    }
+    {
+      auto r1 = values.rbegin();
+      ASSERT_EQ((*r1),7);
+      ++r1;
+      ASSERT_EQ((*r1),9);
+      ++r1;
+      ASSERT_EQ((*r1),4);
+      ++r1;
+      ASSERT_TRUE((r1==values.rend()));
+    }
   }
 }
 }

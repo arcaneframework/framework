@@ -1122,18 +1122,14 @@ class Array
   }
 
   //! \internal Accès à la racine du tableau hors toute protection
-  const T* unguardedBasePointer() const
-  { return m_p->ptr; }
+  const T* unguardedBasePointer() const { return m_p->ptr; }
   //! \internal Accès à la racine du tableau hors toute protection
-  T* unguardedBasePointer()
-  { return m_p->ptr; }
+  T* unguardedBasePointer() { return m_p->ptr; }
 
   //! Accès à la racine du tableau hors toute protection
-  const T* data() const
-  { return m_p->ptr; }
+  const T* data() const { return m_p->ptr; }
   //! \internal Accès à la racine du tableau hors toute protection
-  T* data()
-  { return m_p->ptr; }
+  T* data() { return m_p->ptr; }
 
  public:
 
@@ -1148,6 +1144,18 @@ class Array
 
   //! Itérateur constant sur le premier élément après la fin du tableau.
   const_iterator end() const { return const_iterator(m_p->ptr+m_p->size); }
+
+  //! Itérateur inverse sur le premier élément du tableau.
+  std::reverse_iterator<iterator> rbegin() { return std::make_reverse_iterator(end()); }
+
+  //! Itérateur inverse sur le premier élément du tableau.
+  std::reverse_iterator<const_iterator> rbegin() const { return std::make_reverse_iterator(end()); }
+
+  //! Itérateur inverse sur le premier élément après la fin du tableau.
+  std::reverse_iterator<iterator> rend() { return std::make_reverse_iterator(begin()); }
+
+  //! Itérateur inverse sur le premier élément après la fin du tableau.
+  std::reverse_iterator<const_iterator> rend() const { return std::make_reverse_iterator(begin()); }
 
  public:
 
