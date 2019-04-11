@@ -11,6 +11,8 @@
 
 #include "arccore/base/ArccoreGlobal.h"
 
+#include <cstddef>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -140,7 +142,7 @@ typedef ConstArrayView<Integer> IntegerConstArrayView;
 //! Equivalent C d'un tableau à une dimension de pointeurs
 typedef Span<Pointer> PointerSpan;
 //! Equivalent C d'un tableau à une dimension de caractères
-typedef Span<Byte> ByteSpan;
+typedef Span<std::byte> ByteSpan;
 //! Equivalent C d'un tableau à une dimension de caractères unicode
 typedef Span<UChar> UCharSpan;
 //! Equivalent C d'un tableau à une dimension d'entiers 64 bits
@@ -161,7 +163,7 @@ typedef Span<Integer> IntegerSpan;
 //! Equivalent C d'un tableau à une dimension de pointeurs
 typedef Span<const Pointer> PointerConstSpan;
 //! Equivalent C d'un tableau à une dimension de caractères
-typedef Span<const Byte> ByteConstSpan;
+typedef Span<const std::byte> ByteConstSpan;
 //! Equivalent C d'un tableau à une dimension de caractères unicode
 typedef Span<const UChar> UCharConstSpan;
 //! Equivalent C d'un tableau à une dimension d'entiers 64 bits
