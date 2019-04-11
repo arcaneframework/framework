@@ -64,11 +64,11 @@ class ArrayIterator
   reference operator*() const ARCCORE_NOEXCEPT { return *m_ptr; }
   pointer operator->() const ARCCORE_NOEXCEPT { return m_ptr; }
   ArrayIterator& operator++() ARCCORE_NOEXCEPT { ++m_ptr; return *this; }
-  ArrayIterator operator++(int) ARCCORE_NOEXCEPT { return ArrayIterator(m_ptr++); }
+  const ArrayIterator operator++(int) ARCCORE_NOEXCEPT { return ArrayIterator(m_ptr++); }
 
   // Bidirectional iterator requirements
   ArrayIterator& operator--() ARCCORE_NOEXCEPT { --m_ptr; return *this; }
-  ArrayIterator operator--(int) ARCCORE_NOEXCEPT { return ArrayIterator(m_ptr--); }
+  const ArrayIterator operator--(int) ARCCORE_NOEXCEPT { return ArrayIterator(m_ptr--); }
 
   // Random access iterator requirements
   reference operator[](difference_type n) const ARCCORE_NOEXCEPT { return m_ptr[n]; }

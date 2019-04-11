@@ -190,6 +190,14 @@ class ArrayView
   const_iterator begin() const { return const_iterator(m_ptr); }
   //! Itérateur constant sur le premier élément après la fin du tableau.
   const_iterator end() const { return const_iterator(m_ptr+m_size); }
+  //! Itérateur inverse sur le premier élément du tableau.
+  std::reverse_iterator<iterator> rbegin() { return std::make_reverse_iterator(end()); }
+  //! Itérateur inverse sur le premier élément du tableau.
+  std::reverse_iterator<const_iterator> rbegin() const { return std::make_reverse_iterator(end()); }
+  //! Itérateur inverse sur le premier élément après la fin du tableau.
+  std::reverse_iterator<iterator> rend() { return std::make_reverse_iterator(begin()); }
+  //! Itérateur inverse sur le premier élément après la fin du tableau.
+  std::reverse_iterator<const_iterator> rend() const { return std::make_reverse_iterator(begin()); }
 
  public:
 
@@ -570,6 +578,10 @@ class ConstArrayView
   const_iterator begin() const { return const_iterator(m_ptr); }
   //! Itérateur sur le premier élément après la fin du tableau.
   const_iterator end() const { return const_iterator(m_ptr+m_size); }
+  //! Itérateur inverse sur le premier élément du tableau.
+  std::reverse_iterator<const_iterator> rbegin() const { return std::make_reverse_iterator(end()); }
+  //! Itérateur inverse sur le premier élément après la fin du tableau.
+  std::reverse_iterator<const_iterator> rend() const { return std::make_reverse_iterator(begin()); }
   //! \a true si le tableau est vide (size()==0)
   inline bool empty() const { return m_size==0; }
   //! \a true si le tableau contient l'élément de valeur \a v
