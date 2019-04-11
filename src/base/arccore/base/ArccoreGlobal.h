@@ -9,6 +9,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include <cstdint>
+
 #include "arccore/arccore_config.h"
 
 #ifdef ARCANE_VALID_TARGET
@@ -125,12 +127,11 @@ namespace Arccore
  * Ces types sont définis lors de la configuration dans le fichier
  * 'arccore_config.h'.
  */
-
-typedef ARCCORE_TYPE_INT16 Int16;
-typedef ARCCORE_TYPE_INT32 Int32;
-typedef unsigned ARCCORE_TYPE_INT32 UInt32;
-typedef ARCCORE_TYPE_INT64 Int64;
-typedef unsigned ARCCORE_TYPE_INT64 UInt64;
+typedef std::int16_t Int16;
+typedef std::int32_t Int32;
+typedef std::int64_t Int64;
+typedef std::uint32_t UInt32;
+typedef std::uint64_t UInt64;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
