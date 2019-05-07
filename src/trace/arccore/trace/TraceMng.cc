@@ -17,6 +17,7 @@
 #include "arccore/base/String.h"
 #include "arccore/base/PlatformUtils.h"
 #include "arccore/base/ReferenceCounter.h"
+#include "arccore/base/Span.h"
 
 #include "arccore/concurrency/Mutex.h"
 
@@ -192,11 +193,11 @@ class TraceMng
   }
   TraceMessage pinfo() override
   {
-    return (_isCurrentClassParallelActivated()) ? _info() : _devNull();
+    return (_isCurrentClassParallelActivated()) ? _info(0) : _devNull();
   }
-  TraceMessage pinfo(char /*category*/)
+  TraceMessage pinfo(char /*category*/) override
   {
-    return (_isCurrentClassParallelActivated()) ? _info() : _devNull();
+    return (_isCurrentClassParallelActivated()) ? _info(0) : _devNull();
   }
   TraceMessage info(bool is_ok) override
   {
@@ -434,7 +435,7 @@ class TraceMng
     ostr->str(std::string());
     return ostr;
   }
-  bool _sendToProxy2(const TraceMessage* msg,ConstArrayView<char> str);
+  bool _sendToProxy2(const TraceMessage* msg,Span<const Byte> str);
 
   //NOTE: cette méthode doit être appelée avec le verrou \a m_trace_mutex positionné.
   const TraceClassConfig* _msgClassConfig(const String& s) const
@@ -447,23 +448,24 @@ class TraceMng
   }
   const String& _currentTraceClassName() const { return m_current_msg_class.m_name; }
   void _checkFlush();
-  void _putStream(std::ostream& ostr,ConstArrayView<char> buffer);
-  void _putTraceMessage(std::ostream& ostr,Trace::eMessageType id,ConstArrayView<char>);
+  void _putStream(std::ostream& ostr,Span<const Byte> buffer);
+  void _putTraceMessage(std::ostream& ostr,Trace::eMessageType id,Span<const Byte>);
   void _putDate(std::ostream& ostr);
   std::ostream* _errorStream();
   std::ostream* _logStream();
-  void _write(std::ostream& output,ConstArrayView<char> input,bool do_flush=false);
-  void _writeColor(std::ostream& output,ConstArrayView<char> input,int color,bool do_flush);
-  void _writeListing(ConstArrayView<char> input,int level,int color,bool do_flush);
-  void _write(std::ostream* output,ConstArrayView<char> input,bool do_flush=false);
+  void _write(std::ostream& output,Span<const Byte> input,bool do_flush=false);
+  void _writeColor(std::ostream& output,Span<const Byte> input,int color,bool do_flush);
+  void _writeListing(Span<const Byte> input,int level,int color,bool do_flush);
+  void _write(std::ostream* output,Span<const Byte> input,bool do_flush=false);
   void _writeStackTrace(std::ostream* output,const String& stack_trace);
   void _endTrace(const TraceMessage* msg);
   void _putFunctionName(std::ostream& out);
-  void _writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array,
-                    ConstArrayView<char> orig_message);
+  void _writeDirect(const TraceMessage* msg,Span<const Byte> buf_array,
+                    Span<const Byte> orig_message);
   void _putTraceId(std::ostream& out);
   void _updateCurrentClassConfig();
   void _flushStream(ITraceStream* stream);
+  void _writeSpan(std::ostream& o,Span<const Byte> text);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -547,10 +549,13 @@ TraceMng::
 /*---------------------------------------------------------------------------*/
 
 bool TraceMng::
-_sendToProxy2(const TraceMessage* msg,ConstArrayView<char> buf)
+_sendToProxy2(const TraceMessage* msg,Span<const Byte> buf)
 {
   if (m_listeners){
-    TraceMessageListenerArgs args(msg,buf);
+    // TODO: changer le prototype pour utiliser Span
+    const char* buf_data = reinterpret_cast<const char*>(buf.data());
+    ConstArrayView<char> cbuf(arccoreCheckArraySize(buf.size()),buf_data);
+    TraceMessageListenerArgs args(msg,cbuf);
     for( auto itml : (*m_listeners) ){
       if (itml->visitMessage(args))
         return true;
@@ -677,6 +682,15 @@ _checkFlush()
 /*---------------------------------------------------------------------------*/
 
 void TraceMng::
+_writeSpan(std::ostream& o,Span<const Byte> text)
+{
+  o.write(reinterpret_cast<const char*>(text.data()),text.size());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void TraceMng::
 _putFunctionName(std::ostream& out)
 {
   if (!m_want_trace_function)
@@ -728,7 +742,7 @@ _writeTimeString(std::ostream& out)
 /*---------------------------------------------------------------------------*/
 
 void TraceMng::
-_putTraceMessage(std::ostream& out,Trace::eMessageType id,ConstArrayView<char> msg_str)
+_putTraceMessage(std::ostream& out,Trace::eMessageType id,Span<const Byte> msg_str)
 {
   if (m_want_trace_timer || (m_current_class_flags & Trace::PF_ElapsedTime)){
     _writeTimeString(out);
@@ -813,7 +827,7 @@ const char* color_fmt[] =
   };
 
 void TraceMng::
-_writeColor(std::ostream& output,ConstArrayView<char> input,int color, bool do_flush)
+_writeColor(std::ostream& output,Span<const Byte> input,int color, bool do_flush)
 {
   if (color>Trace::Color::LAST_COLOR || color<0)
     color = 0;
@@ -822,16 +836,16 @@ _writeColor(std::ostream& output,ConstArrayView<char> input,int color, bool do_f
   if (color!=0){
     Mutex::ScopedLock sl(m_trace_mutex);
     output << "\33[" << color_fmt[color] << "m";
-    Integer len = input.size();
+    Int64 len = input.size();
     // Le message se termine toujours par un '\n'. On écrit la fin de la couleur
     // avant de '\n'
     if (len>0)
       --len;
-    output.write((char*)input.data(),len);
+    _writeSpan(output,input.subspan(0,len));
     output << "\33[0m\n";
   }
   else
-    output.write((char*)input.data(),input.size());
+    _writeSpan(output,input);
 
   if (do_flush)
     output.flush();
@@ -847,7 +861,7 @@ _writeColor(std::ostream& output,ConstArrayView<char> input,int color, bool do_f
  * peut être différent dans les deux cas.
  */
 void TraceMng::
-_writeListing(ConstArrayView<char> input,Int32 level,int color,bool do_flush)
+_writeListing(Span<const Byte> input,Int32 level,int color,bool do_flush)
 {
   std::ostream* listing_stream = (m_listing_stream) ? m_listing_stream->stream() : nullptr;
   if (!m_has_color)
@@ -870,7 +884,7 @@ _writeListing(ConstArrayView<char> input,Int32 level,int color,bool do_flush)
   }
 
   // Sortie std::cout
-  if (m_is_master){
+  if (m_is_master || !listing_stream){
     Int32 verbosity_level = m_current_class_verbosity_level;
     if (verbosity_level==Trace::UNSPECIFIED_VERBOSITY_LEVEL)
       verbosity_level = (listing_stream) ? m_stdout_verbosity_level : m_verbosity_level;
@@ -884,9 +898,9 @@ _writeListing(ConstArrayView<char> input,Int32 level,int color,bool do_flush)
 /*---------------------------------------------------------------------------*/
 
 void TraceMng::
-_write(std::ostream& output,ConstArrayView<char> input,bool do_flush)
+_write(std::ostream& output,Span<const Byte> input,bool do_flush)
 {
-  output.write((char*)input.data(),input.size());
+  _writeSpan(output,input);
   if (do_flush)
     output.flush();
 }
@@ -895,7 +909,7 @@ _write(std::ostream& output,ConstArrayView<char> input,bool do_flush)
 /*---------------------------------------------------------------------------*/
 
 void TraceMng::
-_write(std::ostream* output,ConstArrayView<char> input,bool do_flush)
+_write(std::ostream* output,Span<const Byte> input,bool do_flush)
 {
   if (!output)
     return;
@@ -977,10 +991,9 @@ _endTrace(const TraceMessage* msg)
   Trace::eMessageType id = msg->type();
   TraceMngStreamList* ts = m_strs.item();
   const std::string& str = ts->m_str_list[id]->str();
-  Integer str_len = arccoreCheckArraySize(str.length());
-  ConstArrayView<char> c_array(str_len,str.c_str());
-  std::vector<char> msg_str_copy(c_array.range().begin(),c_array.range().end());
-  ConstArrayView<char> msg_str(arccoreCheckArraySize(msg_str_copy.size()),msg_str_copy.data());
+  const Byte* str_data = reinterpret_cast<const Byte*>(str.data());
+  std::vector<Byte> msg_str_copy(str_data,str_data+str.length());
+  Span<const Byte> msg_str(msg_str_copy.data(),msg_str_copy.size());
 
   ts->m_str_list[id]->str(std::string());
   if (msg_str.empty())
@@ -989,8 +1002,8 @@ _endTrace(const TraceMessage* msg)
   ts->m_tmp_buf.str(std::string());
   _putTraceMessage(ts->m_tmp_buf,id,msg_str);
   const std::string& tmp_buf_str = ts->m_tmp_buf.str();
-  Integer tmp_buf_len = arccoreCheckArraySize(tmp_buf_str.length());
-  ConstArrayView<char> buf_array(tmp_buf_len,tmp_buf_str.c_str());
+  const Byte* tmp_buf_str_data = reinterpret_cast<const Byte*>(tmp_buf_str.data());
+  Span<const Byte> buf_array(tmp_buf_str_data,tmp_buf_str.length());
 
   if (_sendToProxy2(msg,buf_array))
     return;
@@ -1002,12 +1015,11 @@ _endTrace(const TraceMessage* msg)
 /*---------------------------------------------------------------------------*/
 
 void TraceMng::
-_writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array,
-             ConstArrayView<char> orig_message)
+_writeDirect(const TraceMessage* msg,Span<const Byte> buf_array,
+             Span<const Byte> orig_message)
 {
   std::ostream* listing_stream = (m_listing_stream) ? m_listing_stream->stream() : nullptr;
   std::ostream& def_out = (listing_stream) ? (*listing_stream) : std::cout;
-  std::ostream& def_err = (listing_stream) ? (*listing_stream) : std::cerr;
 
   Int32 print_level = -1;
   Trace::eMessageType id = msg->type();
@@ -1040,7 +1052,7 @@ _writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array,
         _writeStackTrace(&def_out,stack_trace);
       _write(log_stream,buf_array,true);
       _writeStackTrace(log_stream,stack_trace);
-      if (&def_err!=&std::cerr)
+      if (error_stream!=&std::cerr)
         _write(std::cerr,buf_array);
     }
     break;
@@ -1054,11 +1066,11 @@ _writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array,
       _write(log_stream,buf_array,true);
       String stack_trace = Platform::getStackTrace();
       _writeStackTrace(log_stream,stack_trace);
-      if (&def_err!=&std::cerr)
+      if (error_stream!=&std::cerr)
         _write(std::cerr,buf_array);
     }
     {
-      String s1(orig_message.data(),orig_message.size());
+      String s1(orig_message);
       FatalErrorException ex("TraceMng::endTrace()",s1);
       if (id==Trace::Fatal)
         throw ex;
@@ -1082,7 +1094,7 @@ _writeDirect(const TraceMessage* msg,ConstArrayView<char> buf_array,
 void TraceMng::
 writeDirect(const TraceMessage* msg,const String& str)
 {
-  ConstArrayView<char> buf_array(str.len()+1,str.localstr());
+  Span<const Byte> buf_array(str.bytes());
   _writeDirect(msg,buf_array,buf_array);
 }
 
@@ -1104,10 +1116,10 @@ _writeStackTrace(std::ostream* output,const String& stack_trace)
 /*---------------------------------------------------------------------------*/
 
 void TraceMng::
-_putStream(std::ostream& ostr,ConstArrayView<char> buffer)
+_putStream(std::ostream& ostr,Span<const Byte> buffer)
 {
   _putFunctionName(ostr);
-  ostr.write(buffer.data(),buffer.size());
+  _writeSpan(ostr,buffer);
 }
 
 /*---------------------------------------------------------------------------*/

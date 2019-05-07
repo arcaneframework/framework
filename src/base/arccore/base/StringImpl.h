@@ -1,8 +1,8 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* StringImpl.h                                                (C) 2000-2018 */
+/* StringImpl.h                                                (C) 2000-2019 */
 /*                                                                           */
-/* Implémentation d'une chaîne de caractère de unicode.                      */
+/* Implémentation d'une chaîne de caractère UTf-8 ou UTF-16.                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_STRINGIMPL_H
 #define ARCCORE_BASE_STRINGIMPL_H
@@ -20,34 +20,46 @@
 namespace Arccore
 {
 
+class StringView;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
  *
  * \brief Implémentation de la classe String.
+ *
+ * \warning Cette classe est interne à %Arcane et ne doit pas êre utilisée
+ * en dehors de %Arcane.
+ *
+ * Actuellement l'implémentation supporte deux encodages simultanés: UTF-8 et UTF-16.
+ * L'encodage UTF-16 est obsolète et sera supprimé fin 2019.
+ *
+ * Lorsque le C++20 sera disponible, cette classe ne sera qu'une encapsulation
+ * de std::u8string.
  */
 class ARCCORE_BASE_EXPORT StringImpl
 {
  public:
-  StringImpl(const char* str);
-  StringImpl(const char* str,Int64 len);
+  StringImpl(std::string_view str);
   StringImpl(const UChar* str);
   StringImpl(const StringImpl& str);
   StringImpl(Span<const Byte> bytes);
  private:
   StringImpl();
  public:
-  const std::string& local();
-  //TODO: rendre obsolète
+  //TODO: rendre obsolète.
   UCharConstArrayView utf16();
-  //TODO: rendre obsolète
-  ByteConstArrayView utf8();
+  //! Vue sur l'encodage UTF-8 *AVEC* zéro terminal
   Span<const Byte> largeUtf8();
+  //! idem largeUtf8() mais *SANS* le zéro terminal
+  Span<const Byte> bytes();
   bool isEqual(StringImpl* str);
   bool isLessThan(StringImpl* str);
-  bool isEqual(const char* str);
-  bool isLessThan(const char* str);
+  bool isEqual(StringView str);
+  bool isLessThan(StringView str);
+  std::string_view toStdStringView();
+  StringView view();
  public:
   void addReference();
   void removeReference();
@@ -57,7 +69,7 @@ class ARCCORE_BASE_EXPORT StringImpl
  public:
   StringImpl* clone();
   StringImpl* append(StringImpl* str);
-  StringImpl* append(const char* str);
+  StringImpl* append(StringView str);
   StringImpl* replaceWhiteSpace();
   StringImpl* collapseWhiteSpace();
   StringImpl* toUpper();
@@ -67,19 +79,16 @@ class ARCCORE_BASE_EXPORT StringImpl
  public:
   bool null() { return false; }
   bool empty();
-  bool hasLocal() const { return (m_flags & eValidLocal); }
   bool hasUtf8() const { return (m_flags & eValidUtf8); }
   bool hasUtf16() const { return (m_flags & eValidUtf16); }
  private:
   enum
   {
     eValidUtf16 = 1 << 0,
-    eValidUtf8 = 1 << 1,
-    eValidLocal = 1 << 2
+    eValidUtf8 = 1 << 1
   };
   std::atomic<Int32> m_nb_ref;
   int m_flags;
-  std::string m_local_str;
   CoreArray<UChar> m_utf16_array;
   CoreArray<Byte> m_utf8_array;
 
@@ -87,9 +96,7 @@ class ARCCORE_BASE_EXPORT StringImpl
   void _createUtf16();
   void _setUtf8(const Byte* src);
   void _createUtf8();
-  void _createLocal();
   inline void _checkReference();
-  void _invalidateLocal();
   void _invalidateUtf16();
   void _invalidateUtf8();
   void _setArray();
@@ -97,6 +104,7 @@ class ARCCORE_BASE_EXPORT StringImpl
   void _printStrUtf16(std::ostream& o,Span<const UChar> str);
   void _printStrUtf8(std::ostream& o,Span<const Byte> str);
   void _appendUtf8(Span<const Byte> ref_str);
+  inline void _initFromSpan(Span<const Byte> bytes);
 };
 
 /*---------------------------------------------------------------------------*/

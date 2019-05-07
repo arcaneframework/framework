@@ -9,6 +9,7 @@
 #include "arccore/base/StringBuilder.h"
 #include "arccore/base/StringImpl.h"
 #include "arccore/base/String.h"
+#include "arccore/base/StringView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -21,7 +22,7 @@ namespace Arccore
 
 StringBuilder::
 StringBuilder(const std::string& str)
-: m_p(new StringImpl(str.c_str(),arccoreCheckArraySize(str.size())))
+: m_p(new StringImpl(str))
 , m_const_ptr(0)
 {
   m_p->addReference();
@@ -66,7 +67,7 @@ StringBuilder(StringImpl* impl)
 
 StringBuilder::
 StringBuilder(const char* str,Integer len)
-: m_p(new StringImpl(str,len))
+: m_p(new StringImpl(std::string_view(str,len)))
 , m_const_ptr(0)
 {
   m_p->addReference();
@@ -213,7 +214,7 @@ toString() const
 {
   if (m_p)
     return String(m_p->clone());
-  return String(m_const_ptr,true);
+  return String(std::string_view(m_const_ptr));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -234,8 +235,10 @@ append(const String& str)
   if (str.null())
     return *this;
   _checkClone();
-  if (str.m_const_ptr)
-    m_p = m_p->append(str.m_const_ptr);
+  if (str.m_const_ptr){
+    StringView sv{std::string_view(str.m_const_ptr,str.m_const_ptr_size)};
+    m_p = m_p->append(sv);
+  }
   else
     m_p = m_p->append(str.m_p);
   return *this;

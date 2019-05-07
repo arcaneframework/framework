@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* String.cc                                                   (C) 2000-2018 */
+/* String.cc                                                   (C) 2000-2019 */
 /*                                                                           */
 /* Chaîne de caractères unicode.                                             */
 /*---------------------------------------------------------------------------*/
@@ -13,6 +13,7 @@
 #include "arccore/base/APReal.h"
 #include "arccore/base/TraceInfo.h"
 #include "arccore/base/FatalErrorException.h"
+#include "arccore/base/StringView.h"
 
 #include <iostream>
 #include <cstring>
@@ -31,8 +32,21 @@ namespace Arccore
 
 String::
 String(const std::string& str)
-: m_p(new StringImpl(str.c_str(),arccoreCheckArraySize(str.size())))
-, m_const_ptr(0)
+: m_p(new StringImpl(str))
+, m_const_ptr(nullptr)
+, m_const_ptr_size(-1)
+{
+  m_p->addReference();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String::
+String(std::string_view str)
+: m_p(new StringImpl(str))
+, m_const_ptr(nullptr)
+, m_const_ptr_size(-1)
 {
   m_p->addReference();
 }
@@ -43,7 +57,8 @@ String(const std::string& str)
 String::
 String(const UCharConstArrayView& ustr)
 : m_p(new StringImpl(ustr.data()))
-, m_const_ptr(0)
+, m_const_ptr(nullptr)
+, m_const_ptr_size(-1)
 {
   m_p->addReference();
 }
@@ -54,7 +69,8 @@ String(const UCharConstArrayView& ustr)
 String::
 String(const Span<const Byte>& ustr)
 : m_p(new StringImpl(ustr))
-, m_const_ptr(0)
+, m_const_ptr(nullptr)
+, m_const_ptr_size(-1)
 {
   m_p->addReference();
 }
@@ -65,7 +81,8 @@ String(const Span<const Byte>& ustr)
 String::
 String(StringImpl* impl)
 : m_p(impl)
-, m_const_ptr(0)
+, m_const_ptr(nullptr)
+, m_const_ptr_size(-1)
 {
   if (m_p)
     m_p->addReference();
@@ -76,8 +93,9 @@ String(StringImpl* impl)
 
 String::
 String(const char* str,Integer len)
-: m_p(new StringImpl(str,len))
-, m_const_ptr(0)
+: m_p(new StringImpl(std::string_view(str,len)))
+, m_const_ptr(nullptr)
+, m_const_ptr_size(-1)
 {
   m_p->addReference();
 }
@@ -88,7 +106,8 @@ String(const char* str,Integer len)
 String::
 String(char* str)
 : m_p(new StringImpl(str))
-, m_const_ptr(0)
+, m_const_ptr(nullptr)
+, m_const_ptr_size(-1)
 {
   m_p->addReference();
 }
@@ -98,16 +117,18 @@ String(char* str)
 
 String::
 String(const char* str,bool do_alloc)
-: m_p(0)
-, m_const_ptr(0)
+: m_p(nullptr)
+, m_const_ptr(nullptr)
+, m_const_ptr_size(-1)
 {
   if (do_alloc){
     m_p = new StringImpl(str);
     m_p->addReference();
   }
   else{
-    m_p = 0;
     m_const_ptr = str;
+    if (m_const_ptr)
+      m_const_ptr_size = std::strlen(str);
   }
 }
 
@@ -118,6 +139,7 @@ String::
 String(const String& str)
 : m_p(str.m_p)
 , m_const_ptr(str.m_const_ptr)
+, m_const_ptr_size(str.m_const_ptr_size)
 {
   if (m_p)
     m_p->addReference();
@@ -136,7 +158,7 @@ String::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-const String& String::
+String& String::
 operator=(const String& str)
 {
   if (str.m_p)
@@ -145,17 +167,39 @@ operator=(const String& str)
     m_p->removeReference();
   m_p = str.m_p;
   m_const_ptr = str.m_const_ptr;
+  m_const_ptr_size = str.m_const_ptr_size;
   return (*this);
 }
 
-const String& String::
-operator=(const char* str)
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String& String::
+operator=(std::string_view str)
+{
+  String new_s(str);
+  return this->operator=(new_s);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String& String::
+operator=(const std::string& str)
+{
+  String new_s(str);
+  return this->operator=(new_s);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void String::
+_removeReference()
 {
   if (m_p)
     m_p->removeReference();
-  m_p = 0;
-  m_const_ptr = str;
-  return (*this);
+  m_p = nullptr;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -166,11 +210,13 @@ localstr() const
 {
   if (m_const_ptr)
     return m_const_ptr;
-  A_FASTLOCK(this);
   if (m_p)
-    return m_p->local().c_str();
+    return m_p->toStdStringView().data();
   return "";
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 ConstArrayView<UChar> String::
 utf16() const
@@ -186,17 +232,19 @@ utf16() const
   return ConstArrayView<UChar>();
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 ByteConstArrayView String::
 utf8() const
 {
-  A_FASTLOCK(this);
-  if (!m_p){
-    if (m_const_ptr){
-      _checkClone();
-    }
-  }
   if (m_p)
-    return m_p->utf8();
+    return m_p->largeUtf8().smallView();
+  if (m_const_ptr){
+    Int64 ts = m_const_ptr_size+1;
+    Int32 s = arccoreCheckArraySize(ts);
+    return ByteConstArrayView(s,reinterpret_cast<const Byte*>(m_const_ptr));
+  }
   return ByteConstArrayView();
 }
 
@@ -206,18 +254,10 @@ utf8() const
 Span<const Byte> String::
 bytes() const
 {
-  A_FASTLOCK(this);
-  if (!m_p) {
-    if (m_const_ptr) {
-      _checkClone();
-    }
-  }
-  if (m_p) {
-    auto x = m_p->largeUtf8();
-    Int64 vlen = x.size();
-    if (vlen>0)
-      return x.subView(0,vlen-1);
-  }
+  if (m_p)
+    return m_p->bytes();
+  if (m_const_ptr)
+    return Span<const Byte>(reinterpret_cast<const Byte*>(m_const_ptr),m_const_ptr_size);
   return Span<const Byte>();
 }
 
@@ -251,9 +291,58 @@ empty() const
 Integer String::
 len() const
 {
+  auto x = this->toStdStringView();
+  return arccoreCheckArraySize(x.size());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 String::
+length() const
+{
+  auto x = this->toStdStringView();
+  return x.size();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+std::string_view String::
+toStdStringView() const
+{
+  if (m_const_ptr){
+#ifdef ARCANE_CHECK
+    Int64 xlen = std::strlen(m_const_ptr);
+    if (xlen!=m_const_ptr_size)
+      ARCCORE_FATAL("Bad length (computed={0} stored={1})",xlen,m_const_ptr_size);
+#endif
+    return _viewFromConstChar();
+  }
+  if (m_p)
+    return m_p->toStdStringView();
+  return std::string_view();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+StringView String::
+view() const
+{
   if (m_const_ptr)
-    return CStringUtils::len(m_const_ptr);
-  return arccoreCheckArraySize(m_p->local().length());
+    return StringView(_viewFromConstChar());
+  if (m_p)
+    return m_p->view();
+  return StringView();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String::operator StringView() const
+{
+  return view();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -263,9 +352,13 @@ void String::
 _checkClone() const
 {
   if (m_const_ptr || !m_p){
-    m_p = new StringImpl(m_const_ptr);
+    std::string_view sview;
+    if (m_const_ptr)
+      sview = _viewFromConstChar();
+    m_p = new StringImpl(sview);
     m_p->addReference();
-    m_const_ptr = 0;
+    m_const_ptr = nullptr;
+    m_const_ptr_size = -1;
     return;
   }
   if (m_p->nbReference()!=1){
@@ -296,8 +389,9 @@ _append(const String& str)
   if (str.null())
     return *this;
   _checkClone();
-  if (str.m_const_ptr)
-    m_p = m_p->append(str.m_const_ptr);
+  if (str.m_const_ptr){
+    m_p = m_p->append(str._viewFromConstChar());
+  }
   else
     m_p = m_p->append(str.m_p);
   return *this;
@@ -357,11 +451,28 @@ lower() const
 /*---------------------------------------------------------------------------*/
 
 String String::
-operator+(const char* str) const
+operator+(std::string_view str) const
 {
+  if (str.empty())
+    return (*this);
   String s2(*this);
   return s2._append(str);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String String::
+operator+(const std::string& str) const
+{
+  if (str.empty())
+    return (*this);
+  String s2(*this);
+  return s2._append(str);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 String String::
 operator+(const String& str) const
@@ -437,19 +548,19 @@ fromNumber(double v,Integer nb_digit_after_point)
   Int64 after_digit = p % mulp;
   Int64 before_digit = p / mulp;
   StringBuilder s(String::fromNumber(before_digit) + ".");
-    {
-      Integer nb_zero = 0;
-      Int64 mv = mulp / 10;
-      for( Integer i=0; i<(nb_digit_after_point-1); ++i ){
-        if (after_digit>=mv){
-          break;
-        }
-        ++nb_zero;
-        mv /= 10;
+  {
+    Integer nb_zero = 0;
+    Int64 mv = mulp / 10;
+    for( Integer i=0; i<(nb_digit_after_point-1); ++i ){
+      if (after_digit>=mv){
+        break;
       }
-      for( Integer i=0; i<nb_zero; ++i )
-        s += "0";
+      ++nb_zero;
+      mv /= 10;
     }
+    for( Integer i=0; i<nb_zero; ++i )
+      s += "0";
+  }
   s += String::fromNumber(after_digit);
   return s;
 }
@@ -553,7 +664,7 @@ isLess(const String& b) const
   }
 
   // Je suis la chaine nulle
-  return b.m_p==0;
+  return b.m_p==nullptr;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -585,10 +696,10 @@ internalDump(std::ostream& ostr) const
 Int32 String::
 hashCode() const
 {
-  _checkClone();
-  ByteConstArrayView s = m_p->utf8();
+  Span<const Byte> s = bytes();
   Int32 h = 0;
-  for( Integer i=0, is = s.size(); i<is; ++i ){
+  Int64 n = s.size();
+  for( Int64 i=0; i<n; ++i ){
     h = (h << 5) - h + s[i];
   }
   return h;
@@ -599,12 +710,12 @@ hashCode() const
 
 void StringFormatterArg::
 _formatReal(Real avalue)
-  {
-    std::ostringstream ostr;
-    ostr.precision(std::numeric_limits<Real>::digits10);
-    ostr << avalue;
-    m_str_value = ostr.str();
-  }
+{
+  std::ostringstream ostr;
+  ostr.precision(std::numeric_limits<Real>::digits10);
+  ostr << avalue;
+  m_str_value = ostr.str();
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -616,53 +727,52 @@ class StringFormatter
   : m_format(format), m_current_arg(0) {}
  public:
   void addArg(const String& ostr)
-    {
-      //cout << "** ADD ARG " << m_current_arg << " <" << ostr << ">\n";
-      char buf[20];
-      Integer nb_z = 0;
-      Integer z = m_current_arg;
-      ++m_current_arg;
-      if (z>=100){
-        throw FatalErrorException(A_FUNCINFO,"Too many args");
-      }
-      else if (z>=10){
-        nb_z = 2;
-        buf[0] = (char)('0' + (z / 10));
-        buf[1] = (char)('0' + (z % 10));
-      }
-      else{
-        nb_z = 1;
-        buf[0] = (char)('0' + z);
-      }
-      buf[nb_z] = '}';
-      ++nb_z;
-      buf[nb_z] = '\0';
+  {
+    char buf[20];
+    Integer nb_z = 0;
+    Integer z = m_current_arg;
+    ++m_current_arg;
+    if (z>=100){
+      ARCCORE_FATAL("Too many args (maximum is 100)");
+    }
+    else if (z>=10){
+      nb_z = 2;
+      buf[0] = (char)('0' + (z / 10));
+      buf[1] = (char)('0' + (z % 10));
+    }
+    else{
+      nb_z = 1;
+      buf[0] = (char)('0' + z);
+    }
+    buf[nb_z] = '}';
+    ++nb_z;
+    buf[nb_z] = '\0';
 
-      std::string str = m_format.localstr();
-      const char* local_str = str.c_str();
-      // TODO: ne pas utiliser de String mais un StringBuilder pour format
-      const Integer slen = arccoreCheckArraySize(str.length());
-      for( Integer i=0; i<slen; ++i ){
-        if (local_str[i]=='{'){
-          if (i+nb_z>=slen)
-            break;
-          bool is_ok = true;
-          for( Integer j=0; j<nb_z; ++j )
-            if (local_str[i+1+j]!=buf[j]){
-              is_ok = false;
-              break;
-            }
-          if (is_ok){
-            std::string str1(local_str,local_str+i);
-            std::string str2(local_str+i+1+nb_z);
-            m_format = String(str1) + ostr + str2;
-            // Il faut quitter tout de suite car str n'est plus valide
-            // puisque m_format a changé.
+    std::string str = m_format.localstr();
+    const char* local_str = str.c_str();
+    // TODO: ne pas utiliser de String mais un StringBuilder pour format
+    const Integer slen = arccoreCheckArraySize(str.length());
+    for( Integer i=0; i<slen; ++i ){
+      if (local_str[i]=='{'){
+        if (i+nb_z>=slen)
+          break;
+        bool is_ok = true;
+        for( Integer j=0; j<nb_z; ++j )
+          if (local_str[i+1+j]!=buf[j]){
+            is_ok = false;
             break;
           }
+        if (is_ok){
+          std::string str1(local_str,local_str+i);
+          std::string str2(local_str+i+1+nb_z);
+          m_format = String(str1) + ostr + str2;
+          // Il faut quitter tout de suite car str n'est plus valide
+          // puisque m_format a changé.
+          break;
         }
       }
     }
+  }
  public:
   const String& value() const { return m_format; }
  public:
@@ -917,8 +1027,14 @@ plural(const Integer n, const String & str, const String & str2, const bool with
 bool String::
 contains(const String& arg1) const
 {
-  //TODO a ecrire sans utiliser strstr
-  return std::strstr((const char*)utf8().data(),(const char*)arg1.utf8().data())!=0;
+  // Considère que la chaîne nulle est incluse dans toute chaîne
+  if (arg1.null())
+    return true;
+  if (null())
+    return false;
+  std::string_view a = this->toStdStringView();
+  std::string_view b = arg1.toStdStringView();
+  return a.find(b) != std::string_view::npos;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -927,10 +1043,10 @@ contains(const String& arg1) const
 bool String::
 endsWith(const String& s) const
 {
-  ByteConstArrayView v = utf8();
-  ByteConstArrayView ref = s.utf8();
-  Integer ref_size = ref.size();
-  Integer v_size = v.size();
+  Span<const Byte> v = bytes();
+  Span<const Byte> ref = s.bytes();
+  Int64 ref_size = ref.size();
+  Int64 v_size = v.size();
   if (ref_size>v_size)
     return false;
   const Byte* v_begin = &v[v_size-ref_size];
@@ -943,31 +1059,29 @@ endsWith(const String& s) const
 bool String::
 startsWith(const String& s) const
 {
-  ByteConstArrayView v = utf8();
-  ByteConstArrayView ref = s.utf8();
-  Integer ref_size = ref.size();
-  Integer v_size = v.size();
+  Span<const Byte> v = bytes();
+  Span<const Byte> ref = s.bytes();
+  Int64 ref_size = ref.size();
+  Int64 v_size = v.size();
   if (ref_size>v_size)
     return false;
-  // Le dernier caractère de \a ref est le '\0' terminal qu'il ne faut pas prendre
-  // en compte
-  return memcmp(v.data(),ref.data(),ref_size-1)==0;
+  return memcmp(v.data(),ref.data(),ref_size)==0;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 String String::
-substring(Integer pos) const
+substring(Int64 pos) const
 {
-  return substring(pos,len()-pos);
+  return substring(pos,length()-pos);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 String String::
-substring(Integer pos,Integer len) const
+substring(Int64 pos,Int64 len) const
 {
   if (pos<0)
     pos = 0;
@@ -1021,7 +1135,7 @@ operator==(const String& a,const String& b)
   }
 
   // Je suis la chaine nulle
-  return b.m_p==0;
+  return b.m_p==nullptr;
 }
 
 extern "C++" bool

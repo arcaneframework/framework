@@ -3,6 +3,7 @@
 
 #include "arccore/base/String.h"
 #include "arccore/base/TraceInfo.h"
+#include "arccore/base/StringView.h"
 
 #include <vector>
 
@@ -70,6 +71,22 @@ TEST(String, Misc)
   ASSERT_EQ(gempty2,expected_gempty2);
 
   {
+    String knull;
+    String kempty { gempty };
+    String k1 { "titi" };
+    String k2 { "ti" };
+    String k3 { "to" };
+    ASSERT_TRUE(knull.contains(gnull)) << "Bad null contains null";
+    ASSERT_FALSE(knull.contains(gempty)) << "Bad null contains empty";
+    ASSERT_TRUE(kempty.contains(gnull)) << "Bad empty contains null";
+    ASSERT_TRUE(kempty.contains(gempty)) << "Bad empty contains null";
+    ASSERT_TRUE(k1.contains(gnull)) << "Bad null contains null";
+    ASSERT_TRUE(k1.contains(gempty)) << "Bad contains empty";
+    ASSERT_TRUE(k1.contains(k2)) << "Bad k1 contains k2";
+    ASSERT_FALSE(k2.contains(k1)) << "Bad k2 contains k1";
+    ASSERT_FALSE(k1.contains(k3)) << "Bad k1 contains k3";
+  }
+  {
     String k0 = ":Toto::Titi:::Tata::::Tutu:Tete:";
     //String k0 = ":Toto:Titi";
     //String k0 = ":Toto::Titi";
@@ -87,4 +104,59 @@ TEST(String, Misc)
     ASSERT_EQ(k0_list[5],String(":Tutu"));
     ASSERT_EQ(k0_list[6],String("Tete"));
   }
+}
+
+TEST(String, StdStringView)
+{
+  const char* ref1 = "S1éà";
+  const char* ref2 = "ù*aXZáé";
+  // Ref3 = Ref1 + Ref2
+  const char* ref3 = "S1éàù*aXZáé";
+  std::string std_ref3 { ref3 };
+  String snull;
+  String sempty { "" };
+  String s1 = ref1;
+  String s2 = ref2;
+  String s3 = ref1;
+  s3 = s3 + ref2;
+  std::cout << "S1 '" << s1 << "'_SIZE=" << s1.length() << '\n';
+  std::cout << "S2 '" << s2 << "'_SIZE=" << s2.length() << '\n';
+  std::cout << "S3 '" << s3 << "'_SIZE=" << s3.length() << '\n';
+  std::string_view vempty = sempty.toStdStringView();
+  ASSERT_EQ((Int64)vempty.size(),0) << "vempty.size()==0";
+  std::string_view vnull = snull.toStdStringView();
+  ASSERT_EQ((Int64)vnull.size(),0) << "vnull.size()==0";
+  std::string_view v1 = s1.toStdStringView();
+  ASSERT_EQ(v1,ref1) << "v1==ref1";
+  std::string_view v2 = s2.toStdStringView();
+  ASSERT_EQ(v2,ref2) << "v2==ref2";
+  std::string_view v3 = s3.toStdStringView();
+  ASSERT_EQ(v3,std_ref3) << "v3==ref3";
+
+  String s4 = s3 + snull;
+  std::string_view v4 = s4.toStdStringView();
+  ASSERT_EQ(v4,v3) << "v4==v3";
+
+  String s5 = s3 + sempty;
+  std::string_view v5 = s5.toStdStringView();
+  ASSERT_EQ(v5,v4) << "v5==v4";
+
+  String s6 = s2;
+  const char* t1 = "testà1";
+  const char* t2 = "testé2";
+  std::string st1 = t1;
+  std::string_view st1v = st1;
+  std::string st1_2 = st1 + t2;
+  s6 = t1;
+  ASSERT_EQ(s6.toStdStringView(),st1v) << "s6==st1";
+
+  String s7 = s3;
+  s7 = st1_2;
+  ASSERT_EQ(s7,st1_2) << "s7==st1_2";
+  String s8 = s6 + t2;
+  ASSERT_EQ(s8,st1_2) << "s8==st1_2";
+  String s9 = s7 + snull;
+  ASSERT_EQ(s9,st1_2) << "s9==st1_2";
+  String s10 = s7 + sempty;
+  ASSERT_EQ(s10,st1_2) << "s10==st1_2";
 }

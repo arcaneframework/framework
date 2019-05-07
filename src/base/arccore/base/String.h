@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* String.h                                                    (C) 2000-2018 */
+/* String.h                                                    (C) 2000-2019 */
 /*                                                                           */
 /* Chaîne de caractère unicode.                                              */
 /*---------------------------------------------------------------------------*/
@@ -13,9 +13,7 @@
 
 #include <string>
 #include <sstream>
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+#include <string_view>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -29,19 +27,39 @@ namespace Arccore
 class StringFormatterArg;
 class StringBuilder;
 class StringImpl;
+class StringView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \ingroup Core
- * \brief Chaine de caractères unicode.
+ * \brief Chaîne de caractères unicode.
  *
- * Utilise un compteur de référence avec sémantique indentique à QString.
- * A terme la class 'String' doit être immutable pour éviter des
- * problèmes en multi-thread.
- * Pour construire par morceaux une chaine de caractère, il faut
- * utiliser la classe 'StringBuilder'.
- * \warning Il ne doit pas y avoir de variables globales de cette classe
+ * Cette classe permet de gérer une chaîne de caractères soit avec l'encodage
+ * UTF-8 soit avec l'encodage UTF-16. A noter que l'encodage UTF-16 est
+ * obsolète et sera supprimé dans une version ultérieure lorsque le C++20
+ * sera disponible.
+ *
+ * Toutes les méthodes utilisant des `const char*` en arguments supposent
+ * que l'encodage utilisé est en UTF-8.
+ *
+ * Les instances de cette classe sont immutables.
+ *
+ * Cette classe est similaire à std::string mais avec les différences
+ * suivantes:
+ * - la classe \a String utilise l'encodage UTF-8 alors que pour std::string
+ *   l'encodage est indéfini.
+ * - contrairement à std::string, il n'est pas possible actuellement de
+ *   conserver des caractères nuls à l'intérieur d'une \a String.
+ * - pour String, il y a une distinction entre la chaîne nulle et la chaîne vide.
+ *   Le constructeur String::String() créé une chaîne nulle alors que
+ *   String::String("") créé une chaîne vide. Si la chaîne est nulle,
+ *   les appels à view() ou toStdStringView() retourne une chaîne vide.
+ *
+ * Lorsque le C++20 sera disponible, la classe \a String correspondra
+ * au type std::optional<std::u8string>.
+ *
+ * Pour des raisons de performance, pour construire par morceaux une chaîne
+ * de caractères, il est préférable d'utiliser la classe 'StringBuilder'.
  */
 class ARCCORE_BASE_EXPORT String
 {
@@ -56,39 +74,74 @@ class ARCCORE_BASE_EXPORT String
   //! Crée une chaîne nulle
   String() : m_p(nullptr), m_const_ptr(nullptr) {}
   /*!
-   * \brief Créé une chaîne à partir de \a str dans l'encodage local.
+   * \brief Créé une chaîne à partir de \a str dans l'encodage UTF-8
    *
    * \warning Attention, la chaine est supposée constante sa validité
    * infinie (i.e il s'agit d'une chaîne constante à la compilation.
    * Si la chaîne passée en argument peut être désallouée,
-   * il faut utiliser le constructeur avec allocation.
+   * il faut utiliser String(std::string_view) à la place.
    */   
-  String(const char* str) : m_p(nullptr), m_const_ptr(str) {}
-  //! Créé une chaîne à partir de \a str dans l'encodage local
+  String(const char* str)
+  : m_p(nullptr), m_const_ptr(str), m_const_ptr_size(std::string_view(str).size()) {}
+  //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
   String(char* str);
-  //! Créé une chaîne à partir de \a str dans l'encodage local
+  //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
+  ARCCORE_DEPRECATED_2019("Use String::String(std::string_view) instead")
   String(const char* str,bool do_alloc);
-  //! Créé une chaîne à partir de \a str dans l'encodage local
+  //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
+  ARCCORE_DEPRECATED_2019("Use String::String(std::string_view) instead")
   String(const char* str,Integer len);
-  //! Créé une chaîne à partir de \a str dans l'encodage local
+  //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
+  String(std::string_view str);
+  //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
   String(const std::string& str);
-  //! Créé une chaîne à partir de \a str dans l'encodage Utf16
+  //! Créé une chaîne à partir de \a str dans l'encodage UTF-16
   String(const UCharConstArrayView& ustr);
-  //! Créé une chaîne à partir de \a str dans l'encodage Utf8
+  //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
   String(const Span<const Byte>& ustr);
-  //! Créé une chaîne à partir de \a str dans l'encodage Utf8
+  //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
   //String(const Span<Byte>& ustr);
-  //! Créé une chaîne à partir de \a str dans l'encodage local
+  //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
   explicit String(StringImpl* impl);
   //! Créé une chaîne à partir de \a str
   String(const String& str);
 
   //! Copie \a str dans cette instance.
-  const String& operator=(const String& str);
-  //! Copie \a str dans cette instance.
-  const String& operator=(const char* str);
+  String& operator=(const String& str);
+  /*!
+   * \brief Référence \a str codé en UTF-8 dans cette instance.
+   *
+   * \warning Attention, la chaine est supposée constante sa validité
+   * infinie (i.e il s'agit d'une chaîne constante à la compilation.
+   * Si la chaîne passée en argument peut être désallouée,
+   * il faut utiliser String::operator=(std::string_view) à la place.
+   */
+  String& operator=(const char* str)
+  {
+    m_const_ptr = str;
+    m_const_ptr_size = std::string_view(str).size();
+    _removeReference();
+    return (*this);
+  }
+  //! Copie \a str codé en UTF-8 dans cette instance.
+  String& operator=(std::string_view str);
+  //! Copie \a str codé en UTF-8 dans cette instance.
+  String& operator=(const std::string& str);
 
   ~String(); //!< Libère les ressources.
+
+ public:
+
+  /*!
+   * \brief Retourne une vue sur la chaîne actuelle.
+   *
+   * L'encodage utilisé est UTF-8.
+   *
+   * \warning L'instance reste propriétaire de la valeur retournée et cette valeur
+   * est invalidée par toute modification de cette instance. La vue
+   * retournée ne doit pas être conservée.
+   */
+  operator StringView() const;
 
  public:
 
@@ -123,7 +176,8 @@ class ARCCORE_BASE_EXPORT String
   /*!
    * \brief Retourne la conversion de l'instance dans l'encodage UTF-8.
    *
-   * L'instance retournée ne contient pas de zéro terminal.
+   * \a bytes().size() correspond à la longueur de la chaîne de caractères mais
+   * la vue retournée contient toujours un '\0' terminal.
    *
    * \warning L'instance reste propriétaire de la valeur retournée et cette valeur
    * est invalidée par toute modification de cette instance.
@@ -131,15 +185,40 @@ class ARCCORE_BASE_EXPORT String
   Span<const Byte> bytes() const;
 
   /*!
-   * \brief Retourne la conversion de l'instance dans l'encodage local.
+   * \brief Retourne la conversion de l'instance dans l'encodage UTF-8.
    *
-   * La conversion n'est pas garanti si certaines valeurs unicode n'existent
-   * pas dans l'encodage local.
+   * Si null() est vrai, retourne la chaîne vide. Sinon, cette méthode est équivalent
+   * à appeler bytes().data(). Il y a toujours un '\0' terminal à la fin de la
+   * chaîne retournée.
    *
    * \warning L'instance reste propriétaire de la valeur retournée et cette valeur
    * est invalidée par toute modification de cette instance.
    */
   const char* localstr() const;
+
+ public:
+
+  /*!
+   * \brief Retourne une vue de la STL sur la chaîne actuelle.
+   *
+   * L'encodage utilisé est UTF-8.
+   *
+   * \warning L'instance reste propriétaire de la valeur retournée et cette valeur
+   * est invalidée par toute modification de cette instance. La vue
+   * retournée ne doit pas être conservée.
+   */
+  std::string_view toStdStringView() const;
+
+  /*!
+   * \brief Retourne une vue sur la chaîne actuelle.
+   *
+   * L'encodage utilisé est UTF-8.
+   *
+   * \warning L'instance reste propriétaire de la valeur retournée et cette valeur
+   * est invalidée par toute modification de cette instance. La vue
+   * retournée ne doit pas être conservée.
+   */
+  StringView view() const;
 
  public:
 
@@ -175,13 +254,17 @@ class ARCCORE_BASE_EXPORT String
   //! Retourne \a true si la chaîne est nulle.
   bool null() const;
 
-  //! Retourne la longueur de la chaîne.
+  //! Retourne la longueur de la chaîne en 32 bits.
+  ARCCORE_DEPRECATED_2019("Use method String::length() instead")
   Integer len() const;
   
+  //! Retourne la longueur de la chaîne.
+  Int64 length() const;
+
   //! Vrai si la chaîne est vide (nulle ou "")
   bool empty() const;
 
-  //! Calcule une valeur de hashage cette la chaîne de caractère
+  //! Calcule une valeur de hashage pour cette chaîne de caractères
   Int32 hashCode() const;
 
   //! Écrit la chaîne au format UTF-8 sur le flot \a o
@@ -189,7 +272,18 @@ class ARCCORE_BASE_EXPORT String
 
  public:
 
-  String operator+(const char* str) const;
+  //! Retourne la concaténation de cette chaîne avec la chaîne \a str encodée en UTF-8
+  String operator+(const char* str) const
+  {
+    if (!str)
+      return (*this);
+    return operator+(std::string_view(str));
+  }
+  //! Retourne la concaténation de cette chaîne avec la chaîne \a str encodée en UTF-8
+  String operator+(std::string_view str) const;
+  //! Retourne la concaténation de cette chaîne avec la chaîne \a str encodée en UTF-8
+  String operator+(const std::string& str) const;
+  //! Retourne la concaténation de cette chaîne avec la chaîne \a str.
   String operator+(const String& str) const;
   String operator+(unsigned long v) const;
   String operator+(unsigned int v) const;
@@ -286,10 +380,10 @@ class ARCCORE_BASE_EXPORT String
   bool endsWith(const String& s) const;
 
   //! Sous-chaîne commençant à la position \a pos
-  String substring(Integer pos) const;
+  String substring(Int64 pos) const;
 
   //! Sous-chaîne commençant à la position \a pos et de longueur \a len
-  String substring(Integer pos,Integer len) const;
+  String substring(Int64 pos,Int64 len) const;
 
   static String join(String delim,ConstArrayView<String> strs);
 
@@ -298,10 +392,11 @@ class ARCCORE_BASE_EXPORT String
   split(StringContainer& str_array,char c) const
   {
     const String& str = *this;
+    //TODO: passer par String::bytes().
     const char* str_str = str.localstr();
-    Integer offset = 0;
-    Integer len = str.len();
-    for( Integer i=0; i<len; ++i ){
+    Int64 offset = 0;
+    Int64 len = str.length();
+    for( Int64 i=0; i<len; ++i ){
       // GG: remet temporairement l'ancienne sémantique (équivalente à strtok())
       // et supprime la modif IFPEN car cela cause trop d'incompatibilités avec
       // le code existant. A noter que l'implémentation de l'ancienne sémantique
@@ -313,12 +408,12 @@ class ARCCORE_BASE_EXPORT String
       // Avec ':X:Y', on retourne {':X','Y'} au lieu de {'X','Y'}
       //if (str_str[i]==c){
       if (str_str[i]==c && i!=offset){
-        str_array.push_back(String(str_str+offset,i-offset));
+        str_array.push_back(std::string_view(str_str+offset,i-offset));
         offset = i+1;
       }
     }
     if (len!=offset)
-      str_array.push_back(String(str_str+offset,len-offset));
+      str_array.push_back(std::string_view(str_str+offset,len-offset));
   }
 
  public:
@@ -333,10 +428,17 @@ class ARCCORE_BASE_EXPORT String
 
   mutable StringImpl* m_p; //!< Implémentation de la classe
   mutable const char* m_const_ptr;
+  mutable Int64 m_const_ptr_size; //!< Longueur de la chaîne si constante (-1 sinon)
 
   void _checkClone() const;
   bool isLess(const String& s) const;
   String& _append(const String& str);
+  // A n'appeler que si 'm_const_ptr' est non nul sinon m_const_ptr_size vaut (-1)
+  std::string_view _viewFromConstChar() const
+  {
+    return std::string_view(m_const_ptr,m_const_ptr_size);
+  }
+  void _removeReference();
 };
 
 /*---------------------------------------------------------------------------*/

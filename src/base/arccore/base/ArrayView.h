@@ -206,14 +206,14 @@ class ArrayView
 
  public:
   //! Addresse du index-ème élément
-  inline T* ptrAt(Integer index)
+  T* ptrAt(Integer index)
   {
     ARCCORE_CHECK_AT(index,m_size);
     return m_ptr+index;
   }
 
   //! Addresse du index-ème élément
-  inline const T* ptrAt(Integer index) const
+  const T* ptrAt(Integer index) const
   {
     ARCCORE_CHECK_AT(index,m_size);
     return m_ptr+index;
@@ -234,7 +234,7 @@ class ArrayView
   }
 
   //! Remplit le tableau avec la valeur \a o
-  inline void fill(T o)
+  void fill(T o)
   {
     for( Integer i=0, n=m_size; i<n; ++i )
       m_ptr[i] = o;
@@ -290,7 +290,9 @@ class ArrayView
     return ArrayView<T>(isize,m_ptr+ibegin);
   }
 
-  /*!\brief Recopie le tableau \a copy_array dans l'instance.
+  /*!
+   * \brief Recopie le tableau \a copy_array dans l'instance.
+   *
    * Comme aucune allocation mémoire n'est effectuée, le
    * nombre d'éléments de \a copy_array doit être inférieur ou égal au
    * nombre d'éléments courant. S'il est inférieur, les éléments du
@@ -299,10 +301,12 @@ class ArrayView
   template<class U>
   inline void copy(const U& copy_array)
   {
-    ARCCORE_ASSERT( (copy_array.size()<=m_size), ("Bad size %d %d",copy_array.size(),m_size) );
+    auto copy_size = copy_array.size();
     const T* copy_begin = copy_array.data();
     T* to_ptr = m_ptr;
-    Integer n = copy_array.size();
+    Integer n = m_size;
+    if (copy_size<m_size)
+      n = (Integer)copy_size;
     for( Integer i=0; i<n; ++i )
       to_ptr[i] = copy_begin[i];
   }
@@ -335,8 +339,7 @@ class ArrayView
    * operator[](): aucune vérification de dépassement n'est possible,
    * même en mode vérification.
    */
-  inline T* unguardedBasePointer()
-  { return m_ptr; }
+  T* unguardedBasePointer() { return m_ptr; }
 
   /*!
    * \brief Pointeur constant sur le début de la vue.
@@ -346,8 +349,7 @@ class ArrayView
    * operator[](): aucune vérification de dépassement n'est possible,
    * même en mode vérification.
    */
-  inline const T* unguardedBasePointer() const
-  { return m_ptr; }
+  const T* unguardedBasePointer() const { return m_ptr; }
 
   /*!
    * \brief Pointeur sur le début de la vue.
@@ -357,8 +359,7 @@ class ArrayView
    * operator[](): aucune vérification de dépassement n'est possible,
    * même en mode vérification.
    */
-  const T* data() const
-  { return m_ptr; }
+  const T* data() const { return m_ptr; }
 
   /*!
    * \brief Pointeur constant sur le début de la vue.
@@ -368,8 +369,7 @@ class ArrayView
    * operator[](): aucune vérification de dépassement n'est possible,
    * même en mode vérification.
    */
-  T* data()
-  { return m_ptr; }
+  T* data() { return m_ptr; }
 
  protected:
 
@@ -379,14 +379,14 @@ class ArrayView
    * Cette méthode est identique à unguardedBasePointer() (i.e: il faudra
    * penser à la supprimer)
    */
-  inline T* _ptr() { return m_ptr; }
+  T* _ptr() { return m_ptr; }
   /*!
    * \brief Retourne un pointeur sur le tableau
    *
    * Cette méthode est identique à unguardedBasePointer() (i.e: il faudra
    * penser à la supprimer)
    */
-  inline const T* _ptr() const { return m_ptr; }
+  const T* _ptr() const { return m_ptr; }
   
   /*!
    * \brief Modifie le pointeur et la taille du tableau.
@@ -394,7 +394,7 @@ class ArrayView
    * C'est à la classe dérivée de vérifier la cohérence entre le pointeur
    * alloué et la dimension donnée.
    */
-  inline void _setArray(T* v,Integer s){ m_ptr = v; m_size = s; }
+  void _setArray(T* v,Integer s){ m_ptr = v; m_size = s; }
 
   /*!
    * \brief Modifie le pointeur du début du tableau.
@@ -402,7 +402,7 @@ class ArrayView
    * C'est à la classe dérivée de vérifier la cohérence entre le pointeur
    * alloué et la dimension donnée.
    */
-  inline void _setPtr(T* v) { m_ptr = v; }
+  void _setPtr(T* v) { m_ptr = v; }
 
   /*!
    * \brief Modifie la taille du tableau.
@@ -410,7 +410,7 @@ class ArrayView
    * C'est à la classe dérivée de vérifier la cohérence entre le pointeur
    * alloué et la dimension donnée.
    */
-  inline void _setSize(Integer s) { m_size = s; }
+  void _setSize(Integer s) { m_size = s; }
 
  private:
 

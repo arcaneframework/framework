@@ -61,6 +61,22 @@ if(CMAKE_BUILD_TYPE STREQUAL Debug)
 endif()
 
 # ----------------------------------------------------------------------------
+# Arccore nécessite un support complet du C++17. Malheureusement, mettre
+# cxx_std_17 via target_compile_features() ne suffit pas pour savoir
+# si le compilateur supporte toute la norme et certaines fonctionnalités de la
+# norme n'ont pas de compile-features dans CMake.
+# Par exemple, c'est le cas de la classe std::string_view. Pour GCC, cette
+# classe n'existe que dans les versions 7+ mais pourtant CMake considère que
+# GCC 6 supporte 'cxx_std_17'. Il n'y a donc pas d'autres solutions que
+# de tester la version du compilateur
+
+if (CMAKE_COMPILER_IS_GNUCXX)
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "7.0.0")
+    message(FATAL_ERROR "You version of GCC (${CMAKE_CXX_COMPILER_VERSION}) is too old. Version 7+ is required")
+  endif()
+endif()
+
+# ----------------------------------------------------------------------------
 # Définit une cible fictive 'arccore_build_compile_flags' et qui contient les
 # options de compilation internes aux cibles de Arccore. Ce sont par exemple
 # les avertissements de compilation ou les options sur la visibilité des symboles.

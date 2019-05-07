@@ -1,4 +1,4 @@
-find_package(Glib REQUIRED)
+﻿find_package(Glib REQUIRED)
 
 set(SOURCES
   ArccoreGlobal.h
@@ -46,6 +46,8 @@ set(SOURCES
   StringBuilder.cc
   StringImpl.h
   StringImpl.cc
+  StringView.h
+  StringView.cc
   TraceInfo.h
   TimeoutException.h
   TimeoutException.cc
@@ -63,7 +65,14 @@ target_link_libraries(arccore_base PUBLIC $<BUILD_INTERFACE:arccore_build_compil
 
 target_link_libraries(arccore_base PRIVATE arcconpkg_Glib)
 
-target_compile_features(arccore_base PUBLIC cxx_lambdas cxx_auto_type cxx_nullptr cxx_rvalue_references)
+target_compile_features(arccore_base PUBLIC cxx_std_17)
 
 # Nécessaire pour pouvoir inclure 'arccore_config.h'
 target_include_directories(arccore_base PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>)
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:
