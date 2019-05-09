@@ -49,8 +49,8 @@ class ARCCORE_BASE_EXPORT StringView
 
   //! Crée une vue sur une chaîne vide
   StringView() {}
-  //! Créé une vue à partir de \a str codé en UTF-8
-  StringView(const char* str) : StringView(std::string_view(str)){}
+  //! Créé une vue à partir de \a str codé en UTF-8. \a str peut être nul.
+  StringView(const char* str) : StringView(str ? std::string_view(str) : std::string_view()){}
   //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
   StringView(std::string_view str)
   : m_v(reinterpret_cast<const Byte*>(str.data()),str.size()){}
@@ -63,7 +63,7 @@ class ARCCORE_BASE_EXPORT StringView
   //! Créé une vue à partir de \a str codé en UTF-8
   const StringView& operator=(const char* str)
   {
-    operator=(std::string_view(str));
+    operator=(str ? std::string_view(str) : std::string_view());
     return (*this);
   }
   //! Créé une vue à partir de \a str codé en UTF-8

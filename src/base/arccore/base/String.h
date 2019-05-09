@@ -82,7 +82,11 @@ class ARCCORE_BASE_EXPORT String
    * il faut utiliser String(std::string_view) à la place.
    */   
   String(const char* str)
-  : m_p(nullptr), m_const_ptr(str), m_const_ptr_size(std::string_view(str).size()) {}
+  : m_p(nullptr), m_const_ptr(str), m_const_ptr_size(0)
+  {
+    if (str)
+      m_const_ptr_size = std::string_view(str).size();
+  }
   //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
   String(char* str);
   //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
@@ -119,7 +123,9 @@ class ARCCORE_BASE_EXPORT String
   String& operator=(const char* str)
   {
     m_const_ptr = str;
-    m_const_ptr_size = std::string_view(str).size();
+    m_const_ptr_size = 0;
+    if (m_const_ptr)
+      m_const_ptr_size = std::string_view(str).size();
     _removeReference();
     return (*this);
   }
