@@ -9,11 +9,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/base/BaseTypes.h"
+#include "arccore/base/StringView.h"
 
 #include <string>
 #include <sstream>
-#include <string_view>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -90,13 +89,15 @@ class ARCCORE_BASE_EXPORT String
   //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
   String(char* str);
   //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
-  ARCCORE_DEPRECATED_2019("Use String::String(std::string_view) instead")
+  ARCCORE_DEPRECATED_2019("Use String::String(StringView) instead")
   String(const char* str,bool do_alloc);
   //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
-  ARCCORE_DEPRECATED_2019("Use String::String(std::string_view) instead")
+  ARCCORE_DEPRECATED_2019("Use String::String(StringView) instead")
   String(const char* str,Integer len);
   //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
   String(std::string_view str);
+  //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
+  String(StringView str);
   //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
   String(const std::string& str);
   //! Créé une chaîne à partir de \a str dans l'encodage UTF-16
@@ -112,6 +113,8 @@ class ARCCORE_BASE_EXPORT String
 
   //! Copie \a str dans cette instance.
   String& operator=(const String& str);
+  //! Copie \a str dans cette instance.
+  String& operator=(StringView str);
   /*!
    * \brief Référence \a str codé en UTF-8 dans cette instance.
    *

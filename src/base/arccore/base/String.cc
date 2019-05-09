@@ -55,6 +55,18 @@ String(std::string_view str)
 /*---------------------------------------------------------------------------*/
 
 String::
+String(StringView str)
+: m_p(new StringImpl(str.toStdStringView()))
+, m_const_ptr(nullptr)
+, m_const_ptr_size(-1)
+{
+  m_p->addReference();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String::
 String(const UCharConstArrayView& ustr)
 : m_p(new StringImpl(ustr.data()))
 , m_const_ptr(nullptr)
@@ -169,6 +181,16 @@ operator=(const String& str)
   m_const_ptr = str.m_const_ptr;
   m_const_ptr_size = str.m_const_ptr_size;
   return (*this);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String& String::
+operator=(StringView str)
+{
+  String new_s(str);
+  return this->operator=(new_s);
 }
 
 /*---------------------------------------------------------------------------*/
