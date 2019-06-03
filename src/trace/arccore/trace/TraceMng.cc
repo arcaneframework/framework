@@ -21,8 +21,6 @@
 
 #include "arccore/concurrency/Mutex.h"
 
-#include "arccore/concurrency/ThreadPrivate.h"
-
 #include <sstream>
 #include <fstream>
 #include <limits>
@@ -107,7 +105,14 @@ createStream(std::ostream* stream,bool need_destroy)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Gère une liste de flux par thread.
+ *
+ * Il ne doit y avoir qu'une seule instance de cette classe par thread.
+ *
+ * Cette classe permet de garantir que les affichages listing par thread
+ * se font correctement.
+ */
 class TraceMngStreamList
 {
  public:
@@ -145,6 +150,36 @@ class TraceMngStreamList
   Integer m_str_count[NB_STREAM];
   std::ostringstream m_tmp_buf;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Conteneur pour gérer les instances de TraceMngStreamList.
+ */
+class TraceMngStreamListStorage
+{
+ public:
+  TraceMngStreamListStorage() : m_str_list(nullptr){}
+  ~TraceMngStreamListStorage()
+  {
+    delete m_str_list;
+  }
+  TraceMngStreamList* item()
+  {
+    if (!m_str_list){
+      m_str_list = new TraceMngStreamList();
+      m_str_list->build();
+    }
+    return m_str_list;
+  }
+ private:
+  TraceMngStreamList* m_str_list;
+};
+
+namespace
+{
+thread_local TraceMngStreamListStorage global_stream_list_storage;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -393,8 +428,6 @@ class TraceMng
   typedef std::set<ITraceMessageListener*> ListenerList;
   typedef std::vector<TraceClass> TraceClassStack;
 
-  static ThreadPrivateStorage m_string_list_key;
-
   bool m_is_master;
   bool m_want_trace_function;
   bool m_want_trace_timer;
@@ -402,7 +435,6 @@ class TraceMng
   Int32 m_stdout_verbosity_level;
   Int32 m_current_class_verbosity_level;
   Int32 m_current_class_flags;
-  ThreadPrivate<TraceMngStreamList> m_strs;
   ListenerList* m_listeners;
   bool m_is_info_activated;
   std::map<String,TraceClassConfig*> m_trace_class_config_map;
@@ -428,10 +460,15 @@ class TraceMng
 
  private:
 
+  TraceMngStreamList* _getStreamList() const
+  {
+    return global_stream_list_storage.item();
+    //return m_strs.item();
+  }
   std::ostream* _getStream(Trace::eMessageType id)
   {
     int iid = static_cast<int>(id);
-    std::ostringstream* ostr = m_strs.item()->m_str_list[iid];
+    std::ostringstream* ostr = _getStreamList()->m_str_list[iid];
     ostr->str(std::string());
     return ostr;
   }
@@ -471,11 +508,6 @@ class TraceMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ThreadPrivateStorage TraceMng::m_string_list_key;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 extern "C++" ARCCORE_TRACE_EXPORT
 ITraceMng* arccoreCreateDefaultTraceMng()
 {
@@ -494,7 +526,6 @@ TraceMng()
 , m_stdout_verbosity_level(TraceMessage::DEFAULT_LEVEL)
 , m_current_class_verbosity_level(TraceMessage::DEFAULT_LEVEL)
 , m_current_class_flags(Trace::PF_Default)
-, m_strs(&m_string_list_key)
 , m_listeners(nullptr)
 , m_is_info_activated(true)
 , m_default_trace_class("Internal",&m_default_trace_class_config)
@@ -508,13 +539,6 @@ TraceMng()
 , m_has_color(false)
 , m_nb_ref(0)
 {
-  // La première instance de cette classe est créée via
-  // la classe Application et il y a nécessairement qu'un seul
-  // thread qui fasse cet appel. Il n'y a donc pas besoin
-  // de protéger la création de cette clé privée.
-  // A noter qu'à partir de la GLib 2.32, il n'y a plus besoin de créer
-  // explicitement la partie privée.
-  m_string_list_key.initialize();
 
 #if OLD
   {
@@ -927,7 +951,7 @@ beginTrace(const TraceMessage* msg)
     return;
   if (id<Trace::Normal || id>Trace::Null)
     return;
-  ++m_strs.item()->m_str_count[id];
+  ++(_getStreamList()->m_str_count[id]);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -941,7 +965,7 @@ endTrace(const TraceMessage* msg)
     return;
   if (id<Trace::Normal || id>Trace::Null)
     return;
-  Integer n = --m_strs.item()->m_str_count[id];
+  Integer n = --(_getStreamList()->m_str_count[id]);
   if (n==0){
     _endTrace(msg);
   }
@@ -989,7 +1013,7 @@ void TraceMng::
 _endTrace(const TraceMessage* msg)
 {
   Trace::eMessageType id = msg->type();
-  TraceMngStreamList* ts = m_strs.item();
+  TraceMngStreamList* ts = _getStreamList();
   const std::string& str = ts->m_str_list[id]->str();
   const Byte* str_data = reinterpret_cast<const Byte*>(str.data());
   std::vector<Byte> msg_str_copy(str_data,str_data+str.length());
