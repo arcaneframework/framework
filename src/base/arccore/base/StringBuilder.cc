@@ -217,9 +217,7 @@ toString() const
 {
   if (m_p)
     return String(m_p->clone());
-  if (m_const_ptr)
-    return String(std::string_view(m_const_ptr));
-  return String();
+  return String(StringView(m_const_ptr));
 }
 
 /*---------------------------------------------------------------------------*/
