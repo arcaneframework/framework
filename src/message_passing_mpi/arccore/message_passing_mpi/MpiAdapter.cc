@@ -490,7 +490,6 @@ nonBlockingAllReduce(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatyp
   double end_time = MPI_Wtime();
   m_stat->add("IReduce",end_time-begin_time,_n);
   _addRequest(mpi_request);
-  allReduce(send_buf,recv_buf,count,datatype,op);
   return Request(ret,mpi_request);
 }
 
