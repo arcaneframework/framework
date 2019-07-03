@@ -5,8 +5,11 @@ if(NOT MPI_FOUND)
 endif()
 
 set(SOURCES
+  IMpiProfiling.h
   MessagePassingMpiGlobal.h
   MessagePassingMpiGlobal.cc
+  MessagePassingMpiEnum.h
+  MessagePassingMpiEnum.cc
   MpiAdapter.h
   MpiAdapter.cc
   MpiLock.h
@@ -17,6 +20,7 @@ set(SOURCES
   MpiTypeDispatcher.cc
   MpiMessagePassingMng.cc
   MpiMessagePassingMng.h
+  NoMpiProfiling.h
   StandaloneMpiMessagePassingMng.cc
   StandaloneMpiMessagePassingMng.h
 )
