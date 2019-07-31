@@ -58,19 +58,19 @@ class Span
 
  public:
 
-  using ElementType = T;
-  using element_type = ElementType;
-  using value_type = typename std::remove_cv<ElementType>::type;
-  using index_type = Int64;
-  using difference_type = Int64;
-  using pointer = ElementType*;
-  using const_pointer = typename std::add_const<ElementType*>::type;
-  using reference = ElementType&;
-  using iterator = ArrayIterator<pointer>;
-  using const_iterator = ArrayIterator<const_pointer>;
-  using reverse_iterator = std::reverse_iterator<iterator>;
-  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-  using view_type = typename detail::ViewTypeT<ElementType>::view_type;
+  typedef T ElementType;
+  typedef ElementType element_type;
+  typedef typename std::remove_cv<ElementType>::type value_type;
+  typedef Int64 index_type;
+  typedef Int64 difference_type;
+  typedef ElementType* pointer;
+  typedef typename std::add_const<ElementType*>::type const_pointer;
+  typedef ElementType& reference;
+  typedef ArrayIterator<pointer> iterator;
+  typedef ArrayIterator<const_pointer> const_iterator;
+  typedef typename detail::ViewTypeT<ElementType>::view_type view_type;
+  typedef std::reverse_iterator<iterator> reverse_iterator;
+  typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
  public:
 
@@ -160,6 +160,14 @@ class Span
    * \brief Itérateur constant sur le premier élément après la fin du tableau.
    */
   const_iterator end() const { return iterator(m_ptr+m_size); }
+  //! Itérateur inverse sur le premier élément du tableau.
+  reverse_iterator rbegin() { return std::make_reverse_iterator(end()); }
+  //! Itérateur inverse sur le premier élément du tableau.
+  const_reverse_iterator rbegin() const { return std::make_reverse_iterator(end()); }
+  //! Itérateur inverse sur le premier élément après la fin du tableau.
+  reverse_iterator rend() { return std::make_reverse_iterator(begin()); }
+  //! Itérateur inverse sur le premier élément après la fin du tableau.
+  const_reverse_iterator rend() const { return std::make_reverse_iterator(begin()); }
 
  public:
 

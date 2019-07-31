@@ -182,9 +182,12 @@ void StringBuilder::
 _checkClone() const
 {
   if (m_const_ptr || !m_p){
-    m_p = new StringImpl(m_const_ptr);
+    std::string_view sv;
+    if (m_const_ptr)
+      sv = std::string_view(m_const_ptr);
+    m_p = new StringImpl(sv);
     m_p->addReference();
-    m_const_ptr = 0;
+    m_const_ptr = nullptr;
     return;
   }
   if (m_p->nbReference()!=1){
@@ -214,7 +217,7 @@ toString() const
 {
   if (m_p)
     return String(m_p->clone());
-  return String(std::string_view(m_const_ptr));
+  return String(StringView(m_const_ptr));
 }
 
 /*---------------------------------------------------------------------------*/

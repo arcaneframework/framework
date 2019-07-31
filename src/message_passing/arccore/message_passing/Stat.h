@@ -35,7 +35,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT StatData
 {
   //! DEPRECATED
   using OneStatMap = std::map<String,OneStat*>;
-  //! Collection de statisques
+  //! Collection de statistiques
   using StatCollection = std::list<OneStat>;
  public:
   StatData() = default;
