@@ -40,19 +40,6 @@ list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
 include(${ARCCON_CMAKE_COMMANDS})
 include(LoadBuildSystem)
 
-# if (NOT ARCCON_ROOT)
-#   message(FATAL_ERROR "Variable 'ARCCON_ROOT' is not set")
-# endif()
-# if (NOT ARCCON_EXPORT_TARGET)
-#   set(ARCCON_EXPORT_TARGET ${ARCCORE_EXPORT_TARGET})
-# endif()
-# include(${ARCCON_ROOT}/Arccon.cmake)
-
-# ----------------------------------------------------------------------------
-# Indique que si une variable <PackageName>_ROOT est définie, considère
-# qu'il s'agit du chemin de base du package <PackageName>.
-cmake_policy(SET CMP0074 NEW)
-
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
