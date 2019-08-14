@@ -1,19 +1,20 @@
 
 // #include "neo/neo.h" // unique file for itinerant developping
 
+#include <algorithm>
+#include <array>
 #include <iostream>
+#include <list>
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
-#include <map>
-#include <array>
-#include <list>
-#include <memory>
 
 /*-------------------------
  * sdc - (C)-2019 -
  * NEtwork Oriented kernel
  * POC version 0.0
- * true version could be derived 
+ * true version could be derived
  * from ItemFamilyNetwork
  *--------------------------
  */
@@ -113,7 +114,10 @@ public:
     }
     
     void beginUpdate() { std::cout << "begin mesh update" << std::endl;}
-    void endUpdate() { std::cout << "end mesh update" << std::endl;}
+    void endUpdate() {
+      std::cout << "end mesh update" << std::endl;
+      std::for_each(m_algos.begin(),m_algos.end(),[](auto& algo){(*algo.get())();});
+    }
       
     
     std::string m_name;
@@ -198,12 +202,14 @@ mesh.beginUpdate();
 // create nodes 
 mesh.addAlgorithm(neo::OutProperty{neo::ItemKind::IK_Node,"node_lids"},
   [&node_uids](neo::OutProperty& node_lids_property){
+  std::cout << "Algorithm: create nodes" << std::endl;
   //node_lids_property.append(node_uids);//todo
   });
 
 // register node uids
 mesh.addAlgorithm(neo::InProperty{neo::ItemKind::IK_Node,"node_lids"},neo::OutProperty{neo::ItemKind::IK_Node,"node_uids"},
   [&node_uids](neo::InProperty const& node_lids_property, neo::OutProperty& node_uids_property){
+    std::cout << "Algorithm: register node uids" << std::endl;
    //auto& added_lids = node_lids_property.lastAppended();//todo
    //node_uids_property.appendAt(added_lids,node_uids);//steal node uids memory//todo
       });// need to add a property check for existing uid
@@ -211,6 +217,7 @@ mesh.addAlgorithm(neo::InProperty{neo::ItemKind::IK_Node,"node_lids"},neo::OutPr
 // register node coords
 mesh.addAlgorithm(neo::InProperty{neo::ItemKind::IK_Node,"node_lids"},neo::OutProperty{neo::ItemKind::IK_Node,"node_coords"},
   [&node_coords](neo::InProperty const& node_lids_property, neo::OutProperty & node_coords_property){
+    std::cout << "Algorithm: register node coords" << std::endl;
     //auto& added_lids = node_lids_property.lastAppended();// todo
     // node_coords_property.appendAt(added_lids, node_coords);// steal node_coords memory//todo
   });
