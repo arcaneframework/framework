@@ -27,8 +27,8 @@ namespace neo{
   
   class Property{
     public: 
-    //Property() = default;
-    //explicit Property(std::string const& name) : m_name(name){}
+    Property (Property const&) = delete;
+    Property& operator= (Property const&) = delete;
     std::string m_name;
     };
    
@@ -37,9 +37,6 @@ namespace neo{
   template <typename DataType, typename IndexType=int>
   class PropertyT  : public Property {
     public:
-//    explicit PropertyT(std::string const& name) : Property{name}{}; // todo with a more recent compiler, could be possible to avoid to explicitly write constructors
-//    explicit PropertyT(std::string && name) : Property{std::move(name)}{}; //
-    
     std::vector<DataType> m_data;
     };
     
@@ -47,13 +44,12 @@ namespace neo{
   class Family {
   public:
     template<typename T, typename IndexType =int>
-    void addProperty(std::string name){
-      //m_properties[name] = PropertyT<T,IndexType>{Property{},name,std::vector<T>(0)}; // move to gcc >6.3
-      m_properties[name] = PropertyT<T,IndexType>{name};
+    void addProperty(std::string const& name){
+//      m_properties[name] = PropertyT<T,IndexType>{name}; // nonsense
       std::cout << "Add property " << name << " in Family " << m_name<< std::endl;
       };
     std::string m_name;
-    std::map<std::string,Property> m_properties;
+//    std::map<std::string,Property> m_properties;
   };
   
   struct InProperty{
@@ -83,8 +79,7 @@ namespace neo{
     OutProperty m_out_property;
     Algorithm m_algo;
     void operator() () override {
-      m_algo(m_in_property,m_out_property);// static test for algo signature ?
-      // ou algo(out_property) si in_property est empty if constexpr ??
+      m_algo(m_in_property,m_out_property);
     }
   };
 
