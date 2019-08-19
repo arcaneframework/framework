@@ -47,9 +47,6 @@ namespace neo{
     std::string m_name;
     };
 
-   
-   
-   // laisse t on le template ou met on direct le variant. logiquement on nest pas template...
   template <typename DataType, typename IndexType=int>
   class PropertyT : public PropertyBase  {
     public:
