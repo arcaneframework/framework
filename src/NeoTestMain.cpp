@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <variant>
 
 /*-------------------------
  * sdc - (C)-2019 -
@@ -26,27 +27,45 @@ namespace neo{
   };
   
   
-  class Property{
-    public: 
-    Property (Property const&) = delete;
-    Property& operator= (Property const&) = delete;
+  
+  namespace utils {
+    using Int64 = long int;
+    using Int32 = int;
+    struct Real3 { double x,y,z;};
+  }// end namespace utils
+  
+  struct ItemLocalId {};
+  struct ItemUniqueId {};
+  
+  using DataType = std::variant<utils::Int32, utils::Int64, utils::Real3>;// ajouter des types dans la def de famille si necessaire
+  using DataIndex = std::variant<int,ItemUniqueId>;
+  
+  
+  
+  class PropertyBase{
+    public:
+    PropertyBase (PropertyBase const&) = delete;
+    PropertyBase& operator= (PropertyBase const&) = delete;
     std::string m_name;
     };
 
    
    
+   // laisse t on le template ou met on direct le variant. logiquement on nest pas template...
   template <typename DataType, typename IndexType=int>
-  class PropertyT  : public Property {
+  class PropertyT : public PropertyBase  {// heritage non necessaire
     public:
     std::vector<DataType> m_data;
     };
+
+  using Property = std::variant<PropertyT<utils::Int32>, PropertyT<utils::Real3>,PropertyT<ItemUniqueId>,PropertyT<ItemLocalId,ItemUniqueId>>;
     
 
   class Family {
   public:
     template<typename T, typename IndexType =int>
     void addProperty(std::string const& name){
-//      m_properties[name] = PropertyT<T,IndexType>{name}; // nonsense
+      m_properties[name] = PropertyT<T,IndexType>{name};
       std::cout << "Add property " << name << " in Family " << m_name<< std::endl;
       };
     ItemKind m_ik;
@@ -74,15 +93,20 @@ namespace neo{
     std::string m_name = "empty_property";
     
     };
-    
+  
+  //template <typename DataType, typename DataIndex=int> // sans doute inutile, on devrait se poser la question du type (et meme on n'en a pas besoin) dans lalgo. on auranautomatiquement le bon type
   struct OutProperty{
-    ItemKind m_ik = ItemKind::IK_None;
+
+//    auto& operator() () {
+//      return family.getProperty(m_name);
+//    }
+    Family& m_family;
     std::string m_name;
     
     }; // faut-il 2 types ?
 
   struct IAlgorithm {
-    virtual void operator() () =0;
+    virtual void operator() () = 0;
     };
 
 
@@ -145,23 +169,15 @@ public:
     std::list<std::unique_ptr<IAlgorithm>> m_algos;
   };
   
-  struct ItemLocalId {};
-  struct ItemUniqueId {};
   
   // special case of local ids property
   template <>
-  class PropertyT<ItemLocalId,ItemUniqueId> : public Property{
+  class PropertyT<ItemLocalId,ItemUniqueId> : public PropertyBase {
     public:
-    explicit PropertyT(std::string const& name) : Property{name}{}; // with a more recent compiler, could be possible to avoid to explicitly write constructor
+    explicit PropertyT(std::string const& name) : PropertyBase{name}{}; // with a more recent compiler, could be possible to avoid to explicitly write constructor
   };
   
   using ItemLidsProperty = PropertyT<ItemLocalId,ItemUniqueId>;
-  
-  namespace utils {
-    using Int64 = long int;
-    using Int32 = int;
-    struct Real3 { double x,y,z;};
-  }// end namespace utils
  
 } // end namespace Neo
 
@@ -224,14 +240,14 @@ std::vector<neo::utils::Int64> cell_uids{0};
 mesh.beginUpdate();
 
 // create nodes 
-mesh.addAlgorithm(neo::OutProperty{neo::ItemKind::IK_Node,"node_lids"},
-  [&node_uids](neo::OutProperty& node_lids_property){
+mesh.addAlgorithm(neo::OutProperty{node_family,"node_lids"},
+  [&node_uids](neo::OutProperty & node_lids_property){
   std::cout << "Algorithm: create nodes" << std::endl;
   //node_lids_property.append(node_uids);//todo
   });
 
 // register node uids
-mesh.addAlgorithm(neo::InProperty{neo::ItemKind::IK_Node,"node_lids"},neo::OutProperty{neo::ItemKind::IK_Node,"node_uids"},
+mesh.addAlgorithm(neo::InProperty{neo::ItemKind::IK_Node,"node_lids"},neo::OutProperty{node_family,"node_uids"},
   [&node_uids](neo::InProperty const& node_lids_property, neo::OutProperty& node_uids_property){
     std::cout << "Algorithm: register node uids" << std::endl;
    //auto& added_lids = node_lids_property.lastAppended();//todo
@@ -239,7 +255,7 @@ mesh.addAlgorithm(neo::InProperty{neo::ItemKind::IK_Node,"node_lids"},neo::OutPr
       });// need to add a property check for existing uid
 
 // register node coords
-mesh.addAlgorithm(neo::InProperty{neo::ItemKind::IK_Node,"node_lids"},neo::OutProperty{neo::ItemKind::IK_Node,"node_coords"},
+mesh.addAlgorithm(neo::InProperty{neo::ItemKind::IK_Node,"node_lids"},neo::OutProperty{node_family,"node_coords"},
   [&node_coords](neo::InProperty const& node_lids_property, neo::OutProperty & node_coords_property){
     std::cout << "Algorithm: register node coords" << std::endl;
     //auto& added_lids = node_lids_property.lastAppended();// todo
@@ -275,7 +291,7 @@ prepare_mesh(mesh);
 
 mesh.beginUpdate();
 
-mesh.addAlgorithm(neo::InProperty{neo::ItemKind::IK_Node,"node_lids"},neo::OutProperty{neo::ItemKind::IK_Node,"node_coords"},
+mesh.addAlgorithm(neo::InProperty{neo::ItemKind::IK_Node,"node_lids"},neo::OutProperty{node_family,"node_coords"},
   [&node_coords,&node_uids](neo::InProperty const& node_lids_property, neo::OutProperty & node_coords_property){
     //auto& lids = node_lids_property[node_uids];//todo
     //node_coords_property.appendAt(lids, node_coords);// steal node_coords memory//todo
