@@ -32,7 +32,7 @@ namespace neo{
     Property& operator= (Property const&) = delete;
     std::string m_name;
     };
-   
+
    
    
   template <typename DataType, typename IndexType=int>
@@ -49,8 +49,24 @@ namespace neo{
 //      m_properties[name] = PropertyT<T,IndexType>{name}; // nonsense
       std::cout << "Add property " << name << " in Family " << m_name<< std::endl;
       };
+    ItemKind m_ik;
     std::string m_name;
-//    std::map<std::string,Property> m_properties;
+    std::map<std::string, Property> m_properties;
+  };
+
+  class FamilyMap {
+  public:
+    Family& operator() (ItemKind const & ik,std::string const& name)
+    {
+      return m_families[std::make_pair(ik,name)];
+    }
+    Family& push_back(ItemKind const & ik,std::string const& name)
+    {
+      m_families[std::make_pair(ik,name)] = Family{ik,name};
+    }
+  private:
+    std::map<std::pair<ItemKind,std::string>, Family> m_families;
+
   };
   
   struct InProperty{
@@ -80,28 +96,32 @@ namespace neo{
     OutProperty m_out_property;
     Algorithm m_algo;
     void operator() () override {
-      m_algo(m_in_property,m_out_property);
+//      m_algo(m_in_property,m_out_property);
     }
   };
 
   template <typename Algorithm>
   struct NoDepsAlgoHandler : public IAlgorithm {
-    NoDepsAlgoHandler(OutProperty&& out_prop, Algorithm&& algo) : m_out_property(std::move(out_prop)), m_algo(std::forward<Algorithm>(algo)){}
+    NoDepsAlgoHandler(OutProperty&& out_prop, Algorithm&& algo)
+      : m_out_property(std::move(out_prop))
+      , m_algo(std::forward<Algorithm>(algo)){}
     OutProperty m_out_property;
     Algorithm m_algo;
     void operator() () override {
-      m_algo(m_out_property);
+//      m_algo(m_out_property());
     }
   };
     
   class Mesh {
 public:
-    Family& addFamily(ItemKind ik, std::string&& name){
-      std::cout << "Add Family " << name << " in mesh " << m_name << std::endl;
-      m_families.push_back(Family{std::move(name)}); //todo if name+kind exists: what we do ?
-      return m_families.back();
-      
-}
+    Family& addFamily(ItemKind ik, std::string&& name) {
+    std::cout << "Add Family " << name << " in mesh " << m_name << std::endl;
+    return m_families.push_back(ik, name);
+  }
+
+    Family& getFamily(ItemKind ik, std::string&& name){ return m_families.operator()(ik,name);}
+
+
     template <typename Algorithm>
     void addAlgorithm(InProperty&& in_property, OutProperty&& out_property, Algorithm&& algo){
       //?? ajout dans le graphe. recuperer les prop...à partir nom et kind…
@@ -121,7 +141,7 @@ public:
       
     
     std::string m_name;
-    std::vector<Family> m_families;// todo map ?(search for families) ? quelle cle ? il faut ik + nom
+    FamilyMap m_families;
     std::list<std::unique_ptr<IAlgorithm>> m_algos;
   };
   
@@ -169,17 +189,19 @@ void test_lids_property()
 void prepare_mesh(neo::Mesh& mesh){
 
 // Adding node family and properties
-auto node_family = mesh.addFamily(neo::ItemKind::IK_Node,"NodeFamily");
-node_family.addProperty<neo::utils::Real3>(std::string("node_coord"));
-node_family.addProperty<neo::ItemLocalId,neo::ItemUniqueId>("node_lids");
-node_family.addProperty<neo::ItemUniqueId>("node_uids");
-node_family.addProperty<neo::utils::Int32>("node_con");
+auto& node_family = mesh.getFamily(neo::ItemKind::IK_Node,"NodeFamily");
+std::cout << "Find family " << node_family.m_name << std::endl;
+//node_family.addProperty<neo::utils::Real3>(std::string("node_coord"));
+//node_family.addProperty<neo::ItemLocalId,neo::ItemUniqueId>("node_lids");
+//node_family.addProperty<neo::ItemUniqueId>("node_uids");
+//node_family.addProperty<neo::utils::Int32>("node_con");
 
 // Adding cell family and properties
-auto cell_family = mesh.addFamily(neo::ItemKind::IK_Cell,"CellFamily");
-cell_family.addProperty<neo::ItemLocalId>("cell_lids");
-cell_family.addProperty<neo::ItemUniqueId>("cell_uids");
-cell_family.addProperty<neo::utils::Int32>("node_con");
+auto& cell_family = mesh.getFamily(neo::ItemKind::IK_Cell,"CellFamily");
+std::cout << "Find family " << cell_family.m_name << std::endl;
+//cell_family.addProperty<neo::ItemLocalId>("cell_lids");
+//cell_family.addProperty<neo::ItemUniqueId>("cell_uids");
+//cell_family.addProperty<neo::utils::Int32>("node_con");
 }
  
 void base_mesh_creation_test() {
@@ -187,6 +209,8 @@ void base_mesh_creation_test() {
 
 // creating mesh
 auto mesh = neo::Mesh{"my_neo_mesh"};
+auto& node_family = mesh.addFamily(neo::ItemKind::IK_Node,"NodeFamily");
+auto& cell_family = mesh.addFamily(neo::ItemKind::IK_Cell,"CellFamily");
 
 prepare_mesh(mesh);
 // return;
@@ -243,6 +267,9 @@ std::array<neo::utils::Real3,3> node_coords = {r,r,r};// don't get why I can't w
 
 // creating mesh
 auto mesh = neo::Mesh{"my_neo_mesh"};
+auto& node_family = mesh.addFamily(neo::ItemKind::IK_Node,"NodeFamily");
+auto& cell_family = mesh.addFamily(neo::ItemKind::IK_Cell,"CellFamily");
+
 
 prepare_mesh(mesh);
 
