@@ -44,8 +44,6 @@ namespace neo{
   
   class PropertyBase{
     public:
-    PropertyBase (PropertyBase const&) = delete;
-    PropertyBase& operator= (PropertyBase const&) = delete;
     std::string m_name;
     };
 
@@ -53,13 +51,12 @@ namespace neo{
    
    // laisse t on le template ou met on direct le variant. logiquement on nest pas template...
   template <typename DataType, typename IndexType=int>
-  class PropertyT : public PropertyBase  {// heritage non necessaire
+  class PropertyT : public PropertyBase  {
     public:
     std::vector<DataType> m_data;
     };
 
   using Property = std::variant<PropertyT<utils::Int32>, PropertyT<utils::Real3>,PropertyT<ItemUniqueId>,PropertyT<ItemLocalId,ItemUniqueId>>;
-    
 
   class Family {
   public:
@@ -207,17 +204,17 @@ void prepare_mesh(neo::Mesh& mesh){
 // Adding node family and properties
 auto& node_family = mesh.getFamily(neo::ItemKind::IK_Node,"NodeFamily");
 std::cout << "Find family " << node_family.m_name << std::endl;
-//node_family.addProperty<neo::utils::Real3>(std::string("node_coord"));
-//node_family.addProperty<neo::ItemLocalId,neo::ItemUniqueId>("node_lids");
-//node_family.addProperty<neo::ItemUniqueId>("node_uids");
-//node_family.addProperty<neo::utils::Int32>("node_con");
+node_family.addProperty<neo::utils::Real3>(std::string("node_coord"));
+node_family.addProperty<neo::ItemLocalId,neo::ItemUniqueId>("node_lids");
+node_family.addProperty<neo::ItemUniqueId>("node_uids");
+node_family.addProperty<neo::utils::Int32>("node_con");
 
 // Adding cell family and properties
 auto& cell_family = mesh.getFamily(neo::ItemKind::IK_Cell,"CellFamily");
 std::cout << "Find family " << cell_family.m_name << std::endl;
-//cell_family.addProperty<neo::ItemLocalId>("cell_lids");
-//cell_family.addProperty<neo::ItemUniqueId>("cell_uids");
-//cell_family.addProperty<neo::utils::Int32>("node_con");
+cell_family.addProperty<neo::ItemLocalId,neo::ItemUniqueId>("cell_lids");
+cell_family.addProperty<neo::ItemUniqueId>("cell_uids");
+cell_family.addProperty<neo::utils::Int32>("cell_con");
 }
  
 void base_mesh_creation_test() {
