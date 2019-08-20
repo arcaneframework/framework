@@ -75,7 +75,7 @@ namespace neo{
     }
     Family& push_back(ItemKind const & ik,std::string const& name)
     {
-      m_families[std::make_pair(ik,name)] = Family{ik,name};
+      return m_families[std::make_pair(ik,name)] = Family{ik,name};
     }
   private:
     std::map<std::pair<ItemKind,std::string>, Family> m_families;
@@ -165,11 +165,11 @@ public:
   
   
   // special case of local ids property
-  template <>
-  class PropertyT<ItemLocalId,ItemUniqueId> : public PropertyBase {
-    public:
-    explicit PropertyT(std::string const& name) : PropertyBase{name}{}; // with a more recent compiler, could be possible to avoid to explicitly write constructor
-  };
+//  template <>
+//  class PropertyT<ItemLocalId,ItemUniqueId> : public PropertyBase {
+//    public:
+//    explicit PropertyT(std::string const& name) : PropertyBase{name}{}; // with a more recent compiler, could be possible to avoid to explicitly write constructor
+//  };
   
   using ItemLidsProperty = PropertyT<ItemLocalId,ItemUniqueId>;
  
@@ -206,6 +206,9 @@ node_family.addProperty<neo::ItemLocalId,neo::ItemUniqueId>("node_lids");
 node_family.addProperty<neo::ItemUniqueId>("node_uids");
 node_family.addProperty<neo::utils::Int32>("node_con");
 
+// Test adds
+auto& property = node_family.getProperty("node_lids");
+
 // Adding cell family and properties
 auto& cell_family = mesh.getFamily(neo::ItemKind::IK_Cell,"CellFamily");
 std::cout << "Find family " << cell_family.m_name << std::endl;
@@ -235,7 +238,7 @@ mesh.beginUpdate();
 
 // create nodes 
 mesh.addAlgorithm(neo::OutProperty{node_family,"node_lids"},
-  [&node_uids](neo::OutProperty & node_lids_property){
+  [&node_uids](neo::PropertyT<neo::ItemLocalId,neo::ItemUniqueId> & node_lids_property){
   std::cout << "Algorithm: create nodes" << std::endl;
   //node_lids_property.append(node_uids);//todo
   });
