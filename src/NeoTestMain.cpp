@@ -55,6 +55,24 @@ namespace neo{
 
   using Property = std::variant<PropertyT<utils::Int32>, PropertyT<utils::Real3>,PropertyT<ItemUniqueId>,PropertyT<ItemLocalId,ItemUniqueId>>;
 
+  template <typename Algorithm>
+  struct PropertyVisitor : public Algorithm {
+    using Algorithm::operator();
+    template <typename T>
+    void operator() (T&& arg) {}
+  };
+
+  struct PropVisit{
+    template <typename T>
+    void operator() (T&& arg) {std::cout << " visiting property" << std::endl;}
+    void operator() (PropertyT<int,int>& arg) {std::cout << " visiting PropertyT" << std::endl;}
+    void operator() (PropertyT<utils::Real3,int>& arg) {std::cout << " visiting PropertyT<Real3>" << std::endl;}
+    void operator() (PropertyT<ItemLocalId,ItemUniqueId>& arg) {std::cout << " visiting ItemLidsProperty" << std::endl;}
+  };
+
+  // template deduction guide
+  template <typename Algorithm> PropertyVisitor(Algorithm) -> PropertyVisitor<Algorithm>;
+
   class Family {
   public:
     template<typename T, typename IndexType =int>
@@ -62,6 +80,10 @@ namespace neo{
       m_properties[name] = PropertyT<T,IndexType>{name};
       std::cout << "Add property " << name << " in Family " << m_name<< std::endl;
       };
+    Property& getProperty(const std::string& name) {
+      return m_properties[name];
+    }
+
     ItemKind m_ik;
     std::string m_name;
     std::map<std::string, Property> m_properties;
@@ -88,12 +110,12 @@ namespace neo{
     
     };
   
-  //template <typename DataType, typename DataIndex=int> // sans doute inutile, on devrait se poser la question du type (et meme on n'en a pas besoin) dans lalgo. on auranautomatiquement le bon type
+//  template <typename DataType, typename DataIndex=int> // sans doute inutile, on devrait se poser la question du type (et meme on n'en a pas besoin) dans lalgo. on auranautomatiquement le bon type
   struct OutProperty{
 
-//    auto& operator() () {
-//      return family.getProperty(m_name);
-//    }
+    auto& operator() () {
+      return m_family.getProperty(m_name);
+    }
     Family& m_family;
     std::string m_name;
     
@@ -126,7 +148,12 @@ namespace neo{
     OutProperty m_out_property;
     Algorithm m_algo;
     void operator() () override {
-//      m_algo(m_out_property());
+//      std::visit(PropertyVisitor{m_algo},m_out_property());
+      auto a = PropertyT<int,int>{"test_prop"};
+      std::cout << "Prop name " << m_out_property.m_name << std::endl;
+      std::cout << "Prop Family name " << m_out_property.m_family.m_name << std::endl;
+      auto & prop = m_out_property.m_family.getProperty(m_out_property.m_name);
+      std::visit(PropVisit{},m_out_property());
     }
   };
     
