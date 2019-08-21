@@ -105,8 +105,12 @@ namespace neo{
   };
   
   struct InProperty{
-    ItemKind m_ik = ItemKind::IK_None;
-    std::string m_name = "empty_property";
+
+    auto& operator() () {
+      return m_family.getProperty(m_name);
+    }
+    Family& m_family;
+    std::string m_name;
     
     };
   
@@ -266,7 +270,7 @@ mesh.addAlgorithm(neo::OutProperty{node_family,"node_lids"},
   });
 
 // register node uids
-mesh.addAlgorithm(neo::InProperty{neo::ItemKind::IK_Node,"node_lids"},neo::OutProperty{node_family,"node_uids"},
+mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node_family,"node_uids"},
   [&node_uids](neo::InProperty const& node_lids_property, neo::OutProperty& node_uids_property){
     std::cout << "Algorithm: register node uids" << std::endl;
    //auto& added_lids = node_lids_property.lastAppended();//todo
@@ -274,7 +278,7 @@ mesh.addAlgorithm(neo::InProperty{neo::ItemKind::IK_Node,"node_lids"},neo::OutPr
       });// need to add a property check for existing uid
 
 // register node coords
-mesh.addAlgorithm(neo::InProperty{neo::ItemKind::IK_Node,"node_lids"},neo::OutProperty{node_family,"node_coords"},
+mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node_family,"node_coords"},
   [&node_coords](neo::InProperty const& node_lids_property, neo::OutProperty & node_coords_property){
     std::cout << "Algorithm: register node coords" << std::endl;
     //auto& added_lids = node_lids_property.lastAppended();// todo
@@ -310,7 +314,7 @@ prepare_mesh(mesh);
 
 mesh.beginUpdate();
 
-mesh.addAlgorithm(neo::InProperty{neo::ItemKind::IK_Node,"node_lids"},neo::OutProperty{node_family,"node_coords"},
+mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node_family,"node_coords"},
   [&node_coords,&node_uids](neo::InProperty const& node_lids_property, neo::OutProperty & node_coords_property){
     //auto& lids = node_lids_property[node_uids];//todo
     //node_coords_property.appendAt(lids, node_coords);// steal node_coords memory//todo
