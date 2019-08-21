@@ -55,23 +55,23 @@ namespace neo{
 
   using Property = std::variant<PropertyT<utils::Int32>, PropertyT<utils::Real3>,PropertyT<ItemUniqueId>,PropertyT<ItemLocalId,ItemUniqueId>>;
 
-  template <typename Algorithm>
-  struct PropertyVisitor : public Algorithm {
-    using Algorithm::operator();
-    template <typename T>
-    void operator() (T&& arg) {}
-  };
+  namespace tye {
+    template <typename... T> struct VisitorOverload : public T... {
+      using T::operator()...;
+    };
 
-  struct PropVisit{
-    template <typename T>
-    void operator() (T&& arg) {std::cout << " visiting property" << std::endl;}
-    void operator() (PropertyT<int,int>& arg) {std::cout << " visiting PropertyT" << std::endl;}
-    void operator() (PropertyT<utils::Real3,int>& arg) {std::cout << " visiting PropertyT<Real3>" << std::endl;}
-    void operator() (PropertyT<ItemLocalId,ItemUniqueId>& arg) {std::cout << " visiting ItemLidsProperty" << std::endl;}
-  };
+    template <typename Func, typename Variant>
+    void apply(Func &func, Variant &arg) {
+      auto default_func = [](auto arg) {
+        std::cout << "Wrong Property Type" << std::endl;
+      }; // todo: prevent this behavior (statically ?)
+      std::visit(VisitorOverload{default_func, func}, arg);
+    }
+    // template deduction guides
+    template <typename...T> VisitorOverload(T...) -> VisitorOverload<T...>;
 
-  // template deduction guide
-  template <typename Algorithm> PropertyVisitor(Algorithm) -> PropertyVisitor<Algorithm>;
+  }// todo move in TypeEngine (proposal change namespace to tye..)
+
 
   class Family {
   public:
@@ -148,12 +148,7 @@ namespace neo{
     OutProperty m_out_property;
     Algorithm m_algo;
     void operator() () override {
-//      std::visit(PropertyVisitor{m_algo},m_out_property());
-      auto a = PropertyT<int,int>{"test_prop"};
-      std::cout << "Prop name " << m_out_property.m_name << std::endl;
-      std::cout << "Prop Family name " << m_out_property.m_family.m_name << std::endl;
-      auto & prop = m_out_property.m_family.getProperty(m_out_property.m_name);
-      std::visit(PropVisit{},m_out_property());
+      tye::apply(m_algo,m_out_property());
     }
   };
     
