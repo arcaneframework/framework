@@ -67,7 +67,18 @@ namespace neo{
       }; // todo: prevent this behavior (statically ?)
       std::visit(VisitorOverload{default_func, func}, arg);
     }
-    // template deduction guides
+
+  template <typename Func, typename Variant>
+  void apply(Func &func, Variant& arg1, Variant& arg2) {
+    std::visit([&arg2, &func](auto& concrete_arg1) {
+      std::visit([&concrete_arg1, &func](auto& concrete_arg2){
+        auto functor = VisitorOverload{[](const auto& arg1, const auto& arg2) {std::cout << "Wrong one." << std::endl;},func}; // todo: prevent this behavior (statically ?)
+        functor(concrete_arg1,concrete_arg2);// arg1 & arg2 are variants, concrete_arg* are concrete arguments
+      },arg2);
+    },arg1);
+  }
+
+// template deduction guides
     template <typename...T> VisitorOverload(T...) -> VisitorOverload<T...>;
 
   }// todo move in TypeEngine (proposal change namespace to tye..)
@@ -140,7 +151,7 @@ namespace neo{
     OutProperty m_out_property;
     Algorithm m_algo;
     void operator() () override {
-//      m_algo(m_in_property,m_out_property);
+      tye::apply(m_algo,m_in_property(),m_out_property());
     }
   };
 
@@ -227,7 +238,7 @@ void prepare_mesh(neo::Mesh& mesh){
 // Adding node family and properties
 auto& node_family = mesh.getFamily(neo::ItemKind::IK_Node,"NodeFamily");
 std::cout << "Find family " << node_family.m_name << std::endl;
-node_family.addProperty<neo::utils::Real3>(std::string("node_coord"));
+node_family.addProperty<neo::utils::Real3>(std::string("node_coords"));
 node_family.addProperty<neo::ItemLocalId,neo::ItemUniqueId>("node_lids");
 node_family.addProperty<neo::ItemUniqueId>("node_uids");
 node_family.addProperty<neo::utils::Int32>("node_con");
@@ -271,7 +282,7 @@ mesh.addAlgorithm(neo::OutProperty{node_family,"node_lids"},
 
 // register node uids
 mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node_family,"node_uids"},
-  [&node_uids](neo::InProperty const& node_lids_property, neo::OutProperty& node_uids_property){
+  [&node_uids](neo::PropertyT<neo::ItemLocalId,neo::ItemUniqueId> const& node_lids_property, neo::PropertyT<neo::ItemUniqueId>& node_uids_property){
     std::cout << "Algorithm: register node uids" << std::endl;
    //auto& added_lids = node_lids_property.lastAppended();//todo
    //node_uids_property.appendAt(added_lids,node_uids);//steal node uids memory//todo
@@ -279,12 +290,12 @@ mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node
 
 // register node coords
 mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node_family,"node_coords"},
-  [&node_coords](neo::InProperty const& node_lids_property, neo::OutProperty & node_coords_property){
+  [&node_coords](neo::PropertyT<neo::ItemLocalId,neo::ItemUniqueId> const& node_lids_property, neo::PropertyT<neo::utils::Real3> & node_coords_property){
     std::cout << "Algorithm: register node coords" << std::endl;
     //auto& added_lids = node_lids_property.lastAppended();// todo
     // node_coords_property.appendAt(added_lids, node_coords);// steal node_coords memory//todo
   });
-  
+//
 // Add cells and connectivity
 //mesh.addAlgorithm(neo::OutProperty{neo::ItemKind::IK_Cell,"cell_lids"},
 //  [&cell_uids](neo::ItemLidsProperty& lids_property) {
@@ -315,7 +326,8 @@ prepare_mesh(mesh);
 mesh.beginUpdate();
 
 mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node_family,"node_coords"},
-  [&node_coords,&node_uids](neo::InProperty const& node_lids_property, neo::OutProperty & node_coords_property){
+  [&node_coords,&node_uids](neo::PropertyT<neo::ItemLocalId,neo::ItemUniqueId> const& node_lids_property, neo::PropertyT<neo::utils::Real3> & node_coords_property){
+    std::cout << "Algorithm: register node coords" << std::endl;
     //auto& lids = node_lids_property[node_uids];//todo
     //node_coords_property.appendAt(lids, node_coords);// steal node_coords memory//todo
   });
@@ -334,7 +346,7 @@ int main() {
 
 base_mesh_creation_test();
 
-//partial_mesh_modif_test();
+partial_mesh_modif_test();
 
 return 0;
 }
