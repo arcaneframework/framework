@@ -53,7 +53,7 @@ class FileTraceStream
 : public ITraceStream
 {
  public:
-  FileTraceStream(const String& filename)
+  explicit FileTraceStream(const String& filename)
   : m_nb_ref(0), m_stream(nullptr), m_need_destroy(true)
   {
     m_stream = new std::ofstream(filename.localstr());
@@ -62,7 +62,7 @@ class FileTraceStream
   : m_nb_ref(0), m_stream(stream), m_need_destroy(need_destroy)
   {
   }
-  ~FileTraceStream()
+  ~FileTraceStream() override
   {
     if (m_need_destroy)
       delete m_stream;
@@ -118,8 +118,7 @@ class TraceMngStreamList
  public:
   // A mettre en correspondance avec Trace::Trace::eMessageType
   static const Integer NB_STREAM = 9;
- public:
-  void build()
+  TraceMngStreamList()
   {
     m_str_list[Trace::Normal] = &m_str_std;
     m_str_list[Trace::Info] = &m_str_info;
@@ -159,7 +158,7 @@ class TraceMngStreamList
 class TraceMngStreamListStorage
 {
  public:
-  TraceMngStreamListStorage() : m_str_list(nullptr){}
+  TraceMngStreamListStorage() ARCCORE_NOEXCEPT : m_str_list(nullptr){}
   ~TraceMngStreamListStorage()
   {
     delete m_str_list;
@@ -168,7 +167,6 @@ class TraceMngStreamListStorage
   {
     if (!m_str_list){
       m_str_list = new TraceMngStreamList();
-      m_str_list->build();
     }
     return m_str_list;
   }
@@ -196,7 +194,7 @@ class TraceMng
 
   TraceMng();
  protected:
-  virtual ~TraceMng();
+  ~TraceMng() override;
 
  public:
 
@@ -299,7 +297,7 @@ class TraceMng
 
   void finishInitialize() override;
 
-  void pushTraceClass(const String& s) override;
+  void pushTraceClass(const String& name) override;
   void popTraceClass() override;
 
   void flush() override;
@@ -463,7 +461,6 @@ class TraceMng
   TraceMngStreamList* _getStreamList() const
   {
     return global_stream_list_storage.item();
-    //return m_strs.item();
   }
   std::ostream* _getStream(Trace::eMessageType id)
   {
@@ -503,6 +500,7 @@ class TraceMng
   void _updateCurrentClassConfig();
   void _flushStream(ITraceStream* stream);
   void _writeSpan(std::ostream& o,Span<const Byte> text);
+  FileTraceStream* _createFileStream(StringView file_name);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -629,6 +627,22 @@ flush()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+FileTraceStream* TraceMng::
+_createFileStream(Arccore::StringView file_name)
+{
+  auto x = new FileTraceStream(file_name);
+  std::ostream* ostr = x->stream();
+  if (!ostr || ostr->bad()) {
+    // Ne pas utiliser 'warning()' ou 'error()' car cette méthode peut être
+    // appelée lors du positionnement des logs ou des erreurs.
+    info() << "WARNING: Can not open file '" << file_name << "' for writing";
+  }
+  return x;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void TraceMng::
 setErrorFileName(const String& file_name)
 {
@@ -638,7 +652,7 @@ setErrorFileName(const String& file_name)
   m_error_file = nullptr;
   m_is_error_disabled = m_error_file_name.null();
   if (!m_is_error_disabled)
-    m_error_file = new FileTraceStream(file_name);
+    m_error_file = _createFileStream(file_name);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -653,7 +667,7 @@ setLogFileName(const String& file_name)
   m_is_log_disabled = m_log_file_name.null();
   m_log_file = nullptr;
   if (!m_is_log_disabled)
-    m_log_file = new FileTraceStream(file_name);
+    m_log_file = _createFileStream(file_name);
 }
 
 /*---------------------------------------------------------------------------*/
