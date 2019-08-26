@@ -8,8 +8,8 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
 #include <variant>
+#include <vector>
 
 /*-------------------------
  * sdc - (C)-2019 -
@@ -202,11 +202,41 @@ public:
   
   
   // special case of local ids property
-//  template <>
-//  class PropertyT<ItemLocalId,ItemUniqueId> : public PropertyBase {
-//    public:
-//    explicit PropertyT(std::string const& name) : PropertyBase{name}{}; // with a more recent compiler, could be possible to avoid to explicitly write constructor
-//  };
+  template <>
+  class PropertyT<ItemLocalId,ItemUniqueId> : public PropertyBase {
+    public:
+    explicit PropertyT(std::string const& name) : PropertyBase{name}{};
+
+    void append(const std::vector<neo::utils::Int64>& uids) {
+      std::size_t counter = 0;
+      if (uids.size() >= m_empty_lids.size()) {
+        for (auto empty_lid : m_empty_lids) {
+          m_uid2lid[uids[counter++]] = empty_lid;
+        }
+        for (auto uid = uids.begin() + counter; uid != uids.end(); ++uid) { // todo use span
+          m_uid2lid[*uid] = m_last_id++;
+        }
+        m_empty_lids.clear();
+      }
+      else {// empty_lids.size > uids.size
+       for(auto uid : uids) {
+         m_uid2lid[uid] = m_empty_lids.back();
+         m_empty_lids.pop_back();
+       }
+      }
+    }
+
+    void debugPrint() const {
+      for (auto uid : m_uid2lid){
+        std::cout << " uid to lid  " << uid.first << " : " << uid.second;
+      }
+      std::cout << std::endl;
+    }
+  private:
+    std::vector<neo::utils::Int32> m_empty_lids;
+    std::map<neo::utils::Int64, neo::utils::Int32 > m_uid2lid; // todo at least unordered_map
+    std::size_t m_last_id = 0;
+  };
   
   using ItemLidsProperty = PropertyT<ItemLocalId,ItemUniqueId>;
  
@@ -277,7 +307,8 @@ mesh.beginUpdate();
 mesh.addAlgorithm(neo::OutProperty{node_family,"node_lids"},
   [&node_uids](neo::PropertyT<neo::ItemLocalId,neo::ItemUniqueId> & node_lids_property){
   std::cout << "Algorithm: create nodes" << std::endl;
-  //node_lids_property.append(node_uids);//todo
+  node_lids_property.append(node_uids);
+  node_lids_property.debugPrint();
   });
 
 // register node uids
