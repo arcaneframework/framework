@@ -3,7 +3,9 @@
 
 #include <algorithm>
 #include <array>
+#include <cassert>
 #include <iostream>
+#include <iterator>
 #include <list>
 #include <map>
 #include <memory>
@@ -39,8 +41,32 @@ namespace neo{
   
   using DataType = std::variant<utils::Int32, utils::Int64, utils::Real3>;// ajouter des types dans la def de famille si necessaire
   using DataIndex = std::variant<int,ItemUniqueId>;
-  
-  
+
+struct ItemIndexes {
+  std::vector<std::size_t> m_non_contiguous_indexes;
+  std::size_t m_contiguous_indexes_begin =0;
+  std::size_t m_nb_contiguous_indexes = 0;
+  std::size_t size()  const {return m_non_contiguous_indexes.size()+m_nb_contiguous_indexes;}
+  std::size_t operator() (std::size_t index) { return  0;} // todo
+};
+struct ItemIterator: public std::iterator<std::input_iterator_tag,std::size_t,std::size_t, std::size_t*, std::size_t >{
+    explicit ItemIterator(ItemIndexes item_indexes, std::size_t index) : m_index(index), m_item_indexes(item_indexes){}
+    ItemIterator& operator++() {return *this;}
+    ItemIterator operator++(int) {auto retval = *this; ++(*this); return retval;}
+    std::size_t operator*() {return m_item_indexes(m_index);}
+    bool operator==(const ItemIterator& item_iterator) {return m_index == item_iterator.m_index;}
+    bool operator!=(const ItemIterator& item_iterator) {return !(*this == item_iterator);}
+    std::size_t m_index;
+    ItemIndexes m_item_indexes;
+  };
+struct ItemRange {
+    bool isContiguous() const {return true;};
+    ItemIterator begin() const {return ItemIterator{m_indexes,0};}
+    ItemIterator end() const {return ItemIterator{m_indexes,m_indexes.size()+1};} // todo : consider reverse range : constructeur (ItemIndexes, traversal_order=forward) enum à faire
+    std::size_t size() const { return m_indexes.size();}
+    ItemIndexes m_indexes;
+
+  };
   
   class PropertyBase{
     public:
@@ -50,6 +76,22 @@ namespace neo{
   template <typename DataType, typename IndexType=int>
   class PropertyT : public PropertyBase  {
     public:
+
+    void append(const ItemRange& item_range, const std::vector<DataType>& values) {
+      assert(item_range.size() == values.size());
+      std::size_t counter{0};
+      for (auto item : item_range) {
+        m_data[item] = values[counter++];
+      }
+    }
+
+    bool isInitializableFrom(const ItemRange& item_range) {return item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty() ;}
+
+    void init(const ItemRange& item_range, std::vector<DataType> values){
+      // data must be empty
+      assert(item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty()); // todo comprehensive test (message for user)
+      m_data = std::move(values);
+    }
     std::vector<DataType> m_data;
     };
 
@@ -199,15 +241,14 @@ public:
     FamilyMap m_families;
     std::list<std::unique_ptr<IAlgorithm>> m_algos;
   };
-  
-  
+
   // special case of local ids property
   template <>
   class PropertyT<ItemLocalId,ItemUniqueId> : public PropertyBase {
     public:
     explicit PropertyT(std::string const& name) : PropertyBase{name}{};
 
-    void append(const std::vector<neo::utils::Int64>& uids) {
+    ItemRange append(const std::vector<neo::utils::Int64>& uids) {
       std::size_t counter = 0;
       if (uids.size() >= m_empty_lids.size()) {
         for (auto empty_lid : m_empty_lids) {
@@ -224,6 +265,7 @@ public:
          m_empty_lids.pop_back();
        }
       }
+      return ItemRange{};
     }
 
     void debugPrint() const {
@@ -303,21 +345,23 @@ std::vector<neo::utils::Int64> cell_uids{0};
 // add algos: 
 mesh.beginUpdate();
 
-// create nodes 
+// create nodes
+auto added_nodes = neo::ItemRange{};
 mesh.addAlgorithm(neo::OutProperty{node_family,"node_lids"},
-  [&node_uids](neo::PropertyT<neo::ItemLocalId,neo::ItemUniqueId> & node_lids_property){
+  [&node_uids,&added_nodes](neo::PropertyT<neo::ItemLocalId,neo::ItemUniqueId> & node_lids_property){
   std::cout << "Algorithm: create nodes" << std::endl;
-  node_lids_property.append(node_uids);
+  added_nodes = node_lids_property.append(node_uids);
   node_lids_property.debugPrint();
   });
 
 // register node uids
 mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node_family,"node_uids"},
-  [&node_uids](neo::PropertyT<neo::ItemLocalId,neo::ItemUniqueId> const& node_lids_property, neo::PropertyT<neo::ItemUniqueId>& node_uids_property){
+  [&node_uids,&added_nodes](neo::PropertyT<neo::ItemLocalId,neo::ItemUniqueId> const& node_lids_property, neo::PropertyT<neo::utils::Int64>& node_uids_property){
     std::cout << "Algorithm: register node uids" << std::endl;
-   //auto& added_lids = node_lids_property.lastAppended();//todo
-   //node_uids_property.appendAt(added_lids,node_uids);//steal node uids memory//todo
-      });// need to add a property check for existing uid
+//   node_uids_property.appendAt(added_nodes,node_uids);//steal node uids memory// Append means there are already values init not
+  if (node_uids_property.isInitializableFrom(added_nodes))  node_uids_property.init(added_nodes,std::move(node_uids)); // init can steal the imput values
+  else node_uids_property.append(added_nodes, node_uids);
+    });// need to add a property check for existing uid
 
 // register node coords
 mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node_family,"node_coords"},
