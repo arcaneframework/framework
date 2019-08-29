@@ -47,12 +47,20 @@ struct ItemIndexes {
   std::size_t m_contiguous_indexes_begin =0;
   std::size_t m_nb_contiguous_indexes = 0;
   std::size_t size()  const {return m_non_contiguous_indexes.size()+m_nb_contiguous_indexes;}
-  std::size_t operator() (std::size_t index) { return  0;} // todo
+  int operator() (int index) {
+    if (index > size()) return  size()+1;
+    if (index < 0) return -1;
+    auto item_lid = 0;
+    index > m_non_contiguous_indexes.size() ?
+        item_lid = m_contiguous_indexes_begin + (index - m_non_contiguous_indexes.size()) : // work on fluency
+        item_lid = m_non_contiguous_indexes[index];
+    return item_lid;
+  }
 };
-struct ItemIterator: public std::iterator<std::input_iterator_tag,std::size_t,std::size_t, std::size_t*, std::size_t >{
+struct ItemIterator: public std::iterator<std::input_iterator_tag,std::size_t,std::size_t, std::size_t*, std::size_t >{ // std::iterator is deprecated
     explicit ItemIterator(ItemIndexes item_indexes, std::size_t index) : m_index(index), m_item_indexes(item_indexes){}
-    ItemIterator& operator++() {return *this;}
-    ItemIterator operator++(int) {auto retval = *this; ++(*this); return retval;}
+    ItemIterator& operator++() {++m_index;return *this;} // todo (handle traversal order...)
+    ItemIterator operator++(int) {auto retval = *this; ++(*this); return retval;} // todo (handle traversal order...)
     std::size_t operator*() {return m_item_indexes(m_index);}
     bool operator==(const ItemIterator& item_iterator) {return m_index == item_iterator.m_index;}
     bool operator!=(const ItemIterator& item_iterator) {return !(*this == item_iterator);}
@@ -250,22 +258,29 @@ public:
 
     ItemRange append(const std::vector<neo::utils::Int64>& uids) {
       std::size_t counter = 0;
+      ItemIndexes item_indexes{};
+      auto& non_contiguous_lids = item_indexes.m_non_contiguous_indexes;
+      non_contiguous_lids.reserve(m_empty_lids.size());
       if (uids.size() >= m_empty_lids.size()) {
         for (auto empty_lid : m_empty_lids) {
           m_uid2lid[uids[counter++]] = empty_lid;
+          non_contiguous_lids.push_back(empty_lid);
         }
+        item_indexes.m_contiguous_indexes_begin = m_last_id +1;
         for (auto uid = uids.begin() + counter; uid != uids.end(); ++uid) { // todo use span
-          m_uid2lid[*uid] = m_last_id++;
+          m_uid2lid[*uid] = ++m_last_id;
         }
+        item_indexes.m_nb_contiguous_indexes = m_last_id - item_indexes.m_contiguous_indexes_begin +1 ;
         m_empty_lids.clear();
       }
       else {// empty_lids.size > uids.size
        for(auto uid : uids) {
          m_uid2lid[uid] = m_empty_lids.back();
+         non_contiguous_lids.push_back(m_empty_lids.back());
          m_empty_lids.pop_back();
        }
       }
-      return ItemRange{};
+      return ItemRange{item_indexes};
     }
 
     void debugPrint() const {
@@ -277,7 +292,7 @@ public:
   private:
     std::vector<neo::utils::Int32> m_empty_lids;
     std::map<neo::utils::Int64, neo::utils::Int32 > m_uid2lid; // todo at least unordered_map
-    std::size_t m_last_id = 0;
+    int m_last_id = -1;
   };
   
   using ItemLidsProperty = PropertyT<ItemLocalId,ItemUniqueId>;
