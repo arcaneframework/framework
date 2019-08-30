@@ -51,7 +51,7 @@ struct ItemIndexes {
     if (index > size()) return  size()+1;
     if (index < 0) return -1;
     auto item_lid = 0;
-    index > m_non_contiguous_indexes.size() ?
+    (index > m_non_contiguous_indexes.size()  || m_non_contiguous_indexes.size()==0) ?
         item_lid = m_first_contiguous_index + (index - m_non_contiguous_indexes.size()) : // work on fluency
         item_lid = m_non_contiguous_indexes[index];
     return item_lid;
@@ -118,7 +118,7 @@ struct ItemRange {
     std::vector<DataType> m_data;
     };
 
-  using Property = std::variant<PropertyT<utils::Int32>, PropertyT<utils::Real3>,PropertyT<ItemUniqueId>,PropertyT<ItemLocalId,ItemUniqueId>>;
+  using Property = std::variant<PropertyT<utils::Int32>, PropertyT<utils::Real3>,PropertyT<utils::Int64>,PropertyT<ItemLocalId,ItemUniqueId>>;
 
   namespace tye {
     template <typename... T> struct VisitorOverload : public T... {
@@ -342,7 +342,7 @@ auto& node_family = mesh.getFamily(neo::ItemKind::IK_Node,"NodeFamily");
 std::cout << "Find family " << node_family.m_name << std::endl;
 node_family.addProperty<neo::utils::Real3>(std::string("node_coords"));
 node_family.addProperty<neo::ItemLocalId,neo::ItemUniqueId>("node_lids");
-node_family.addProperty<neo::ItemUniqueId>("node_uids");
+node_family.addProperty<neo::utils::Int64>("node_uids");
 node_family.addProperty<neo::utils::Int32>("node_con");
 
 // Test adds
@@ -352,7 +352,7 @@ auto& property = node_family.getProperty("node_lids");
 auto& cell_family = mesh.getFamily(neo::ItemKind::IK_Cell,"CellFamily");
 std::cout << "Find family " << cell_family.m_name << std::endl;
 cell_family.addProperty<neo::ItemLocalId,neo::ItemUniqueId>("cell_lids");
-cell_family.addProperty<neo::ItemUniqueId>("cell_uids");
+cell_family.addProperty<neo::utils::Int64>("cell_uids");
 cell_family.addProperty<neo::utils::Int32>("cell_con");
 }
  
