@@ -44,7 +44,7 @@ namespace neo{
 
 struct ItemIndexes {
   std::vector<std::size_t> m_non_contiguous_indexes;
-  std::size_t m_contiguous_indexes_begin =0;
+  std::size_t m_first_contiguous_index =0;
   std::size_t m_nb_contiguous_indexes = 0;
   std::size_t size()  const {return m_non_contiguous_indexes.size()+m_nb_contiguous_indexes;}
   int operator() (int index) {
@@ -52,7 +52,7 @@ struct ItemIndexes {
     if (index < 0) return -1;
     auto item_lid = 0;
     index > m_non_contiguous_indexes.size() ?
-        item_lid = m_contiguous_indexes_begin + (index - m_non_contiguous_indexes.size()) : // work on fluency
+        item_lid = m_first_contiguous_index + (index - m_non_contiguous_indexes.size()) : // work on fluency
         item_lid = m_non_contiguous_indexes[index];
     return item_lid;
   }
@@ -75,7 +75,22 @@ struct ItemRange {
     ItemIndexes m_indexes;
 
   };
-  
+
+  std::ostream &operator<<(std::ostream &os, const ItemRange &item_range){
+    os << "Item Range : lids ";
+    for (auto lid : item_range.m_indexes.m_non_contiguous_indexes) {
+      os << lid;
+      os << " ";
+    }
+    auto last_contiguous_index = item_range.m_indexes.m_first_contiguous_index + item_range.m_indexes.m_nb_contiguous_indexes;
+    for (auto i = item_range.m_indexes.m_first_contiguous_index; i < last_contiguous_index; ++i) {
+      os << i;
+      os << " ";
+    }
+    os << std::endl;
+    return os;
+  }
+
   class PropertyBase{
     public:
     std::string m_name;
@@ -266,11 +281,11 @@ public:
           m_uid2lid[uids[counter++]] = empty_lid;
           non_contiguous_lids.push_back(empty_lid);
         }
-        item_indexes.m_contiguous_indexes_begin = m_last_id +1;
+        item_indexes.m_first_contiguous_index = m_last_id +1;
         for (auto uid = uids.begin() + counter; uid != uids.end(); ++uid) { // todo use span
           m_uid2lid[*uid] = ++m_last_id;
         }
-        item_indexes.m_nb_contiguous_indexes = m_last_id - item_indexes.m_contiguous_indexes_begin +1 ;
+        item_indexes.m_nb_contiguous_indexes = m_last_id - item_indexes.m_first_contiguous_index +1 ;
         m_empty_lids.clear();
       }
       else {// empty_lids.size > uids.size
@@ -280,7 +295,7 @@ public:
          m_empty_lids.pop_back();
        }
       }
-      return ItemRange{item_indexes};
+      return ItemRange{std::move(item_indexes)};
     }
 
     void debugPrint() const {
@@ -367,6 +382,7 @@ mesh.addAlgorithm(neo::OutProperty{node_family,"node_lids"},
   std::cout << "Algorithm: create nodes" << std::endl;
   added_nodes = node_lids_property.append(node_uids);
   node_lids_property.debugPrint();
+  std::cout << "Inserted item range : " << added_nodes;
   });
 
 // register node uids
