@@ -48,11 +48,11 @@ struct ItemIndexes {
   std::size_t m_nb_contiguous_indexes = 0;
   std::size_t size()  const {return m_non_contiguous_indexes.size()+m_nb_contiguous_indexes;}
   int operator() (int index) {
-    if (index > size()) return  size()+1;
+    if (index >= size()) return  size();
     if (index < 0) return -1;
     auto item_lid = 0;
-    (index > m_non_contiguous_indexes.size()  || m_non_contiguous_indexes.size()==0) ?
-        item_lid = m_first_contiguous_index + (index - m_non_contiguous_indexes.size()) : // work on fluency
+    (index >= m_non_contiguous_indexes.size() || m_non_contiguous_indexes.size()==0) ?
+        item_lid = m_first_contiguous_index + (index  - m_non_contiguous_indexes.size()) : // work on fluency
         item_lid = m_non_contiguous_indexes[index];
     return item_lid;
   }
@@ -70,7 +70,7 @@ struct ItemIterator: public std::iterator<std::input_iterator_tag,std::size_t,st
 struct ItemRange {
     bool isContiguous() const {return true;};
     ItemIterator begin() const {return ItemIterator{m_indexes,0};}
-    ItemIterator end() const {return ItemIterator{m_indexes,m_indexes.size()+1};} // todo : consider reverse range : constructeur (ItemIndexes, traversal_order=forward) enum à faire
+    ItemIterator end() const {return ItemIterator{m_indexes,m_indexes.size()};} // todo : consider reverse range : constructeur (ItemIndexes, traversal_order=forward) enum à faire
     std::size_t size() const { return m_indexes.size();}
     ItemIndexes m_indexes;
 
@@ -314,15 +314,36 @@ public:
  
 } // end namespace Neo
 
-
-
 /*-------------------------
  * Neo library first test
  * sdc (C)-2019
  *
  *-------------------------
  */
- 
+
+void test_item_range(){
+  // Test with only contiguous indexes
+  std::cout << "== Testing contiguous item range from 0 with 5 items =="<< std::endl;
+  auto ir = neo::ItemRange{neo::ItemIndexes{{},0,5}};
+  for (auto item : ir) {
+    std::cout << "item lid " << item << std::endl;
+  }
+  // Test with only non contiguous indexes
+  std::cout << "== Testing non contiguous item range {3,5,7} =="<< std::endl;
+  ir = neo::ItemRange{neo::ItemIndexes{{3,5,7}}};
+  for (auto item : ir) {
+    std::cout << "item lid " << item << std::endl;
+  }
+  // Test range mixing contiguous and non contiguous indexes
+  std::cout << "== Testing non contiguous item range {3,5,7} + 8 to 11 =="<< std::endl;
+  ir = neo::ItemRange{neo::ItemIndexes{{3,5,7},8,4}};
+  for (auto item : ir) {
+    std::cout << "item lid " << item << std::endl;
+  }
+
+  // todo test out of bound and reverse range
+}
+
 void test_property_graph()
 {
   std::cout << "Test Property Graph" << std::endl;
@@ -450,9 +471,11 @@ int main() {
   std::cout << "* Test framework Neo thoughts " << std::endl;
   std::cout << "*------------------------------------*" << std::endl;
 
-base_mesh_creation_test();
+  test_item_range();
 
-partial_mesh_modif_test();
+  base_mesh_creation_test();
 
-return 0;
+  partial_mesh_modif_test();
+
+  return 0;
 }
