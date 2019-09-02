@@ -1,11 +1,13 @@
 find_package(MPI)
+
 if(NOT MPI_FOUND)
   message(STATUS "Disabling 'MessagePassingMpi' component because 'MPI' is not available")
   return()
 endif()
+
 # On a besoin du support de MPI 3.1
-if (MPI_C_VERSION VERSION_LESS "3.1")
-  message(STATUS "Disabling 'MessagePassingMpi' component because MPI Version (${MPI_VERSION}) is too old. Version 3.1 is required")
+if (MPI_CXX_VERSION VERSION_LESS "3.1")
+  message(STATUS "Disabling 'MessagePassingMpi' component because MPI Version (${MPI_CXX_VERSION}) is too old. Version 3.1 is required")
   return()
 endif()
 
