@@ -48,7 +48,7 @@ struct ItemIndexes {
   std::size_t m_nb_contiguous_indexes = 0;
   std::size_t size()  const {return m_non_contiguous_indexes.size()+m_nb_contiguous_indexes;}
   int operator() (int index) {
-    if (index >= size()) return  size();
+    if (index >= int(size())) return  size();
     if (index < 0) return -1;
     auto item_lid = 0;
     (index >= m_non_contiguous_indexes.size() || m_non_contiguous_indexes.size()==0) ?
@@ -61,7 +61,7 @@ struct ItemIterator: public std::iterator<std::input_iterator_tag,std::size_t,st
     explicit ItemIterator(ItemIndexes item_indexes, std::size_t index) : m_index(index), m_item_indexes(item_indexes){}
     ItemIterator& operator++() {++m_index;return *this;} // todo (handle traversal order...)
     ItemIterator operator++(int) {auto retval = *this; ++(*this); return retval;} // todo (handle traversal order...)
-    std::size_t operator*() {return m_item_indexes(m_index);}
+    int operator*() {return m_item_indexes(m_index);}
     bool operator==(const ItemIterator& item_iterator) {return m_index == item_iterator.m_index;}
     bool operator!=(const ItemIterator& item_iterator) {return !(*this == item_iterator);}
     std::size_t m_index;
@@ -340,6 +340,10 @@ void test_item_range(){
   for (auto item : ir) {
     std::cout << "item lid " << item << std::endl;
   }
+  // Internal test for out of bound
+  std::cout << "Get out of bound values (index > size) " << ir.m_indexes(100) << std::endl;
+  std::cout << "Get out of bound values (index < 0) " << ir.m_indexes(-100) << std::endl;
+
 
   // todo test out of bound and reverse range
 }
