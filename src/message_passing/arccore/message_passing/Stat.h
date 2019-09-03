@@ -98,7 +98,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT Stat
   void print(std::ostream& o);
 
   ARCCORE_DEPRECATED_2019("Please use getData() method instead")
-  const OneStatMap& stats() const { return m_list; }
+  const OneStatMap& stats() const override { return m_list; }
 
   const StatData& getData() const { return m_data; }
 

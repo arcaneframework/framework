@@ -452,7 +452,6 @@ allReduce(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatype datatype,
   int _n = _checkSize(count);
   double begin_time = MPI_Wtime();
   _trace(MpiInfo(eMpiName::Allreduce).name().localstr());
-  int ret = 0;
   try{
     ++m_nb_all_reduce;
     m_mpi_prof->allReduce(_sbuf, recv_buf, _n, datatype, op, m_communicator);
@@ -504,7 +503,6 @@ reduce(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatype datatype,MPI
   int _root = static_cast<int>(root);
   double begin_time = MPI_Wtime();
   _trace(MpiInfo(eMpiName::Reduce).name().localstr());
-  int ret = 0;
   try{
     ++m_nb_reduce;
     m_mpi_prof->reduce(_sbuf, recv_buf, _n, datatype, op, _root, m_communicator);
