@@ -186,10 +186,6 @@ typedef Int32 Integer;
 typedef Int32 Integer;
 #endif
 
-//! Type représentant un booléen
-typedef bool Bool;
-
-
 /*!
  * \def ARCCORE_INTEGER_MAX
  * \brief Macro indiquant la valeur maximal que peut prendre le type #Integer
