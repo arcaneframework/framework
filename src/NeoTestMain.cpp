@@ -47,7 +47,7 @@ struct ItemIndexes {
   std::size_t m_first_contiguous_index =0;
   std::size_t m_nb_contiguous_indexes = 0;
   std::size_t size()  const {return m_non_contiguous_indexes.size()+m_nb_contiguous_indexes;}
-  int operator() (int index) {
+  int operator() (int index) const{
     if (index >= int(size())) return  size();
     if (index < 0) return -1;
     auto item_lid = 0;
@@ -57,20 +57,25 @@ struct ItemIndexes {
     return item_lid;
   }
 };
-struct ItemIterator: public std::iterator<std::input_iterator_tag,std::size_t,std::size_t, std::size_t*, std::size_t >{ // std::iterator is deprecated
-    explicit ItemIterator(ItemIndexes item_indexes, std::size_t index) : m_index(index), m_item_indexes(item_indexes){}
+struct ItemIterator {
+    using iterator_category = std::input_iterator_tag;
+    using value_type = int;
+    using difference_type = int;
+    using pointer = int*;
+    using reference = int;
+    explicit ItemIterator(ItemIndexes item_indexes, int index) : m_index(index), m_item_indexes(item_indexes){}
     ItemIterator& operator++() {++m_index;return *this;} // todo (handle traversal order...)
     ItemIterator operator++(int) {auto retval = *this; ++(*this); return retval;} // todo (handle traversal order...)
-    int operator*() {return m_item_indexes(m_index);}
+    int operator*() const {return m_item_indexes(m_index);}
     bool operator==(const ItemIterator& item_iterator) {return m_index == item_iterator.m_index;}
     bool operator!=(const ItemIterator& item_iterator) {return !(*this == item_iterator);}
-    std::size_t m_index;
+    int m_index;
     ItemIndexes m_item_indexes;
   };
 struct ItemRange {
     bool isContiguous() const {return true;};
     ItemIterator begin() const {return ItemIterator{m_indexes,0};}
-    ItemIterator end() const {return ItemIterator{m_indexes,m_indexes.size()};} // todo : consider reverse range : constructeur (ItemIndexes, traversal_order=forward) enum à faire
+    ItemIterator end() const {return ItemIterator{m_indexes,int(m_indexes.size())};} // todo : consider reverse range : constructeur (ItemIndexes, traversal_order=forward) enum à faire
     std::size_t size() const { return m_indexes.size();}
     ItemIndexes m_indexes;
 
@@ -345,7 +350,7 @@ void test_item_range(){
   std::cout << "Get out of bound values (index < 0) " << ir.m_indexes(-100) << std::endl;
 
 
-  // todo test out of bound and reverse range
+  // todo test out reverse range
 }
 
 void test_property_graph()
