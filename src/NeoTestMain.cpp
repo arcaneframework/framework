@@ -459,10 +459,11 @@ mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node
 
 // register node coords
 mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node_family,"node_coords"},
-  [&node_coords](neo::PropertyT<neo::ItemLocalId,neo::ItemUniqueId> const& node_lids_property, neo::PropertyT<neo::utils::Real3> & node_coords_property){
+  [&node_coords,&added_nodes](neo::PropertyT<neo::ItemLocalId,neo::ItemUniqueId> const& node_lids_property, neo::PropertyT<neo::utils::Real3> & node_coords_property){
     std::cout << "Algorithm: register node coords" << std::endl;
-    //auto& added_lids = node_lids_property.lastAppended();// todo
-    // node_coords_property.appendAt(added_lids, node_coords);// steal node_coords memory//todo
+    if (node_coords_property.isInitializableFrom(added_nodes))  node_coords_property.init(added_nodes,std::move(node_coords)); // init can steal the imput values
+    else node_coords_property.append(added_nodes, node_coords);
+    node_coords_property.debugPrint();
   });
 //
 // Add cells and connectivity
