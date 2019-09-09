@@ -35,6 +35,11 @@ namespace neo{
     using Int32 = int;
     struct Real3 { double x,y,z;};
   }// end namespace utils
+
+  std::ostream& operator<<(std::ostream& oss, const neo::utils::Real3& real3){
+    oss << "{" << real3.x  << ","  << real3.y << "," << real3.z << "}";
+    return oss;
+  }
   
   struct ItemLocalId {};
   struct ItemUniqueId {};
