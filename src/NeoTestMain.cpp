@@ -121,6 +121,13 @@ struct ItemRange {
       m_data = std::move(values);
     }
 
+    void debugPrint() const {
+      std::cout << "= Print property " << m_name << " =" << std::endl;
+      for (auto &val : m_data) {
+        std::cout << "\"" << val << "\" ";
+      }
+      std::cout << std::endl;
+    }
     std::vector<DataType> m_data;
     };
 
@@ -311,6 +318,7 @@ public:
     }
 
     void debugPrint() const {
+      std::cout << "= Print property " << m_name << " =" << std::endl;
       for (auto uid : m_uid2lid){
         std::cout << " uid to lid  " << uid.first << " : " << uid.second;
       }
