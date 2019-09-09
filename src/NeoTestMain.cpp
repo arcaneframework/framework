@@ -120,6 +120,7 @@ struct ItemRange {
       assert(item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty()); // todo comprehensive test (message for user)
       m_data = std::move(values);
     }
+
     std::vector<DataType> m_data;
     };
 
@@ -180,6 +181,12 @@ struct ItemRange {
     {
       return m_families[std::make_pair(ik,name)] = Family{ik,name};
     }
+
+    auto begin() noexcept {return m_families.begin();}
+    auto begin() const noexcept {return m_families.begin();}
+    auto end() noexcept { return m_families.end();}
+    auto end() const noexcept {return m_families.end();}
+
   private:
     std::map<std::pair<ItemKind,std::string>, Family> m_families;
 
@@ -309,10 +316,12 @@ public:
       }
       std::cout << std::endl;
     }
+
   private:
     std::vector<neo::utils::Int32> m_empty_lids;
     std::map<neo::utils::Int64, neo::utils::Int32 > m_uid2lid; // todo at least unordered_map
     int m_last_id = -1;
+
   };
   
   using ItemLidsProperty = PropertyT<ItemLocalId,ItemUniqueId>;
@@ -365,6 +374,17 @@ void test_lids_property()
   
 }
 
+void property_test(const neo::Mesh& mesh){
+  std::cout << "== Print Mesh " << mesh.m_name << " Properties =="<< std::endl;
+  for (const auto& [kind_name_pair,family] : mesh.m_families) {
+    std::cout << "= In family " << kind_name_pair.second << " =" << std::endl;
+    for (const auto& [prop_name,property] : family.m_properties){
+      std::cout << prop_name << std::endl;
+    }
+  }
+  std::cout << "== End Print Mesh " << mesh.m_name << " Properties =="<< std::endl;
+}
+
 void prepare_mesh(neo::Mesh& mesh){
 
 // Adding node family and properties
@@ -397,7 +417,7 @@ auto& cell_family = mesh.addFamily(neo::ItemKind::IK_Cell,"CellFamily");
 prepare_mesh(mesh);
 // return;
 
-// given data to create mesh
+// given data to create mesh. After mesh creation data is no longer available
 std::vector<neo::utils::Int64> node_uids{0,1,2};
 std::vector<neo::utils::Real3> node_coords{{0,0,0}, {0,1,0}, {0,0,1}};
 std::vector<neo::utils::Int64> cell_uids{0};
@@ -440,6 +460,9 @@ mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node
 
 // launch algos
 mesh.endUpdate();
+
+// test properties
+property_test(mesh);
 }
 
 
