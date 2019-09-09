@@ -433,7 +433,7 @@ prepare_mesh(mesh);
 // given data to create mesh. After mesh creation data is no longer available
 std::vector<neo::utils::Int64> node_uids{0,1,2};
 std::vector<neo::utils::Real3> node_coords{{0,0,0}, {0,1,0}, {0,0,1}};
-std::vector<neo::utils::Int64> cell_uids{0};
+std::vector<neo::utils::Int64> cell_uids{0,2,7,9};
 
 // add algos: 
 mesh.beginUpdate();
@@ -467,10 +467,25 @@ mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node
   });
 //
 // Add cells and connectivity
-//mesh.addAlgorithm(neo::OutProperty{neo::ItemKind::IK_Cell,"cell_lids"},
-//  [&cell_uids](neo::ItemLidsProperty& lids_property) {
-//    //lids_property.append(cell_uids);//todo
-//  });
+
+// create cells
+auto added_cells = neo::ItemRange{};
+mesh.addAlgorithm(neo::OutProperty{cell_family,"cell_lids"},
+  [&cell_uids,&added_cells](neo::ItemLidsProperty& cell_lids_property) {
+    std::cout << "Algorithm: create cells" << std::endl;
+    added_cells = cell_lids_property.append(cell_uids);
+    cell_lids_property.debugPrint();
+    std::cout << "Inserted item range : " << added_cells;
+  });
+
+// register cell uids
+mesh.addAlgorithm(neo::InProperty{cell_family,"cell_lids"},neo::OutProperty{cell_family,"cell_uids"},
+    [&cell_uids,&added_cells](neo::ItemLidsProperty const& cell_lids_property, neo::PropertyT<neo::utils::Int64>& cell_uids_property){
+      std::cout << "Algorithm: register cell uids" << std::endl;
+      if (cell_uids_property.isInitializableFrom(added_cells))  cell_uids_property.init(added_cells,std::move(cell_uids)); // init can steal the input values
+      else cell_uids_property.append(added_cells, cell_uids);
+      cell_uids_property.debugPrint();
+    });
 
 // launch algos
 mesh.endUpdate();
