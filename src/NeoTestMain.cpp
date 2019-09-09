@@ -452,7 +452,7 @@ mesh.addAlgorithm(neo::OutProperty{node_family,"node_lids"},
 mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node_family,"node_uids"},
   [&node_uids,&added_nodes](neo::PropertyT<neo::ItemLocalId,neo::ItemUniqueId> const& node_lids_property, neo::PropertyT<neo::utils::Int64>& node_uids_property){
     std::cout << "Algorithm: register node uids" << std::endl;
-  if (node_uids_property.isInitializableFrom(added_nodes))  node_uids_property.init(added_nodes,std::move(node_uids)); // init can steal the imput values
+  if (node_uids_property.isInitializableFrom(added_nodes))  node_uids_property.init(added_nodes,std::move(node_uids)); // init can steal the input values
   else node_uids_property.append(added_nodes, node_uids);
   node_uids_property.debugPrint();
     });// need to add a property check for existing uid
@@ -461,7 +461,7 @@ mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node
 mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node_family,"node_coords"},
   [&node_coords,&added_nodes](neo::PropertyT<neo::ItemLocalId,neo::ItemUniqueId> const& node_lids_property, neo::PropertyT<neo::utils::Real3> & node_coords_property){
     std::cout << "Algorithm: register node coords" << std::endl;
-    if (node_coords_property.isInitializableFrom(added_nodes))  node_coords_property.init(added_nodes,std::move(node_coords)); // init can steal the imput values
+    if (node_coords_property.isInitializableFrom(added_nodes))  node_coords_property.init(added_nodes,std::move(node_coords)); // init can steal the input values
     else node_coords_property.append(added_nodes, node_coords);
     node_coords_property.debugPrint();
   });
