@@ -263,7 +263,7 @@ class ArrayView
    * \brief Sous-vue à partir de l'élément \a abegin
    * et contenant \a asize éléments.
    *
-   * Si \a (\a abegin+ \a asize) est supérieur à la taille du tableau,
+   * Si (\a abegin+ \a asize) est supérieur à la taille du tableau,
    * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
    */
   ArrayView<T> subView(Integer abegin,Integer asize)
@@ -276,9 +276,9 @@ class ArrayView
 
   /*!
    * \brief Sous-vue constante à partir de
-   * l'élément \a abegin et contenant \a asize éléments.
+   * l'élément `abegin` et contenant `asize` éléments.
    *
-   * Si \a (\a abegin+ \a asize) est supérieur à la taille du tableau,
+   * Si (\a abegin+ \a asize) est supérieur à la taille du tableau,
    * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
    */
   ConstArrayView<T> subConstView(Integer abegin,Integer asize) const
@@ -510,7 +510,7 @@ class ConstArrayView
    * \brief Sous-vue (constante) à partir de l'élément \a abegin et
    contenant \a asize éléments.
    *
-   * Si \a (abegin+asize) est supérieur à la taille du tableau,
+   * Si `(abegin+asize)` est supérieur à la taille du tableau,
    * la vue est tronqué à cette taille, retournant éventuellement une vue vide.
    */
   ConstArrayView<T> subView(Integer abegin,Integer asize) const
@@ -525,7 +525,7 @@ class ConstArrayView
    * \brief Sous-vue (constante) à partir de l'élément \a abegin et
    * contenant \a asize éléments.
    *
-   * Si \a (abegin+asize) est supérieur à la taille du tableau,
+   * Si `(abegin+asize)` est supérieur à la taille du tableau,
    * la vue est tronqué à cette taille, retournant éventuellement une vue vide.
    */
   ConstArrayView<T> subConstView(Integer abegin,Integer asize) const
@@ -567,7 +567,7 @@ class ConstArrayView
   /*!
    * \brief i-ème élément du tableau.
    *
-   * En mode \a check, vérifie les débordements.
+   * En mode `check`, vérifie les débordements.
    */
   inline const T& item(Integer i) const
   {
