@@ -118,6 +118,35 @@ public:
       c.add(SubClass(6));
       ARCCORE_UT_CHECK((c.size()==6),"Bad size");
       ARCCORE_UT_CHECK((c[5]==6),"Bad value [5]");
+      c.shrink();
+      ASSERT_EQ(c.size(),c.capacity()) << "Bad capacity (test 1)";
+      c.resize(12);
+      c.shrink();
+      ASSERT_EQ(c.size(),c.capacity()) << "Bad capacity (test 2)";
+    }
+    {
+      Container c;
+      c.shrink();
+      ASSERT_EQ(c.capacity(),0) << "Bad capacity (test 3)";
+    }
+    {
+      Container c;
+      Integer nb = 20;
+      for( Integer i=0; i<nb; ++i )
+        c.add(SubClass(i));
+      c.reserve(nb*2);
+      ASSERT_EQ(c.capacity(),(nb*2)) << "Bad capacity (test 4)";
+      c.shrink();
+      ASSERT_EQ(c.capacity(),c.size()) << "Bad capacity (test 5)";
+    }
+    {
+      UniqueArray<Container> uc;
+      Integer nb = 1000000;
+      uc.resize(1000);
+      for( Container& c : uc ){
+        c.reserve(nb);
+        c.shrink_to_fit();
+      }
     }
     {
       Container c;
@@ -333,6 +362,24 @@ _testArrayNewInternal()
     }
     for( auto i : values.constView().range()) {
       std::cout << i << '\n';
+    }
+
+    {
+      auto r1 = std::make_reverse_iterator(values.end());
+      auto r2 = std::make_reverse_iterator(values.begin());
+      for( ; r1!=r2; ++ r1 ){
+        std::cout << "RVALUE = " << *r1 << '\n';
+      }
+    }
+    {
+      auto r1 = values.rbegin();
+      ASSERT_EQ((*r1),7);
+      ++r1;
+      ASSERT_EQ((*r1),9);
+      ++r1;
+      ASSERT_EQ((*r1),4);
+      ++r1;
+      ASSERT_TRUE((r1==values.rend()));
     }
   }
 }

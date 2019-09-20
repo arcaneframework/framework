@@ -1,6 +1,7 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 #include <gtest/gtest.h>
 
+#include "arccore/base/Span.h"
 #include "arccore/base/ArrayView.h"
 #include "arccore/base/Array3View.h"
 #include "arccore/base/Array4View.h"
@@ -66,6 +67,55 @@ TEST(Array4View,Misc)
       }
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace
+{
+template<typename T> void
+_testIterator(T values)
+{
+  {
+    auto r1 = std::make_reverse_iterator(values.end());
+    auto r2 = std::make_reverse_iterator(values.begin());
+    for( ; r1!=r2; ++ r1 ){
+      std::cout << "RVALUE = " << *r1 << '\n';
+    }
+  }
+  {
+    auto r1 = values.rbegin();
+    ASSERT_EQ((*r1),7);
+    ++r1;
+    ASSERT_EQ((*r1),9);
+    ++r1;
+    ASSERT_EQ((*r1),4);
+    ++r1;
+    ASSERT_TRUE((r1==values.rend()));
+  }
+}
+
+}
+
+TEST(ArrayView,Iterator)
+{
+  using namespace Arccore;
+
+  std::vector<Arccore::Int32> vector_values = { 4, 9, 7 };
+  Integer vec_size = arccoreCheckArraySize(vector_values.size());
+
+  ArrayView<Int32> values1(vec_size,vector_values.data());
+  _testIterator(values1);
+
+  ConstArrayView<Int32> values2(vec_size,vector_values.data());
+  _testIterator(values2);
+
+  Span<Int32> values3(vector_values.data(),vector_values.size());
+  _testIterator(values3);
+
+  Span<const Int32> values4(vector_values.data(),vector_values.size());
+  _testIterator(values4);
 }
 
 /*---------------------------------------------------------------------------*/
