@@ -1,10 +1,14 @@
-﻿# Il faut au minimun cmake 3.11.0
-cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
+﻿cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-message(STATUS "Including arccore/CMakeLists.txt")
+# For support of VERSION
+cmake_policy(SET CMP0048 NEW)
+# Check libraries with FOO_ROOT
+cmake_policy(SET CMP0074 NEW)
+# target_link_libraries from different libraries
+cmake_policy(SET CMP0079 NEW)
 
 # ----------------------------------------------------------------------------
 # Récupère numéro de version de Arcane à partir du fichier 'version' et
@@ -25,16 +29,10 @@ install(FILES ${CMAKE_BINARY_DIR}/arccore_version.h DESTINATION include)
 if (NOT ARCCORE_EXPORT_TARGET)
   set(ARCCORE_EXPORT_TARGET ArccoreTargets)
 endif()
+include(GNUInstallDirs)
 
 # ----------------------------------------------------------------------------
 
-if (NOT ARCCON_ROOT)
-  message(FATAL_ERROR "Variable 'ARCCON_ROOT' is not set")
-endif()
-if (NOT ARCCON_EXPORT_TARGET)
-  set(ARCCON_EXPORT_TARGET ${ARCCORE_EXPORT_TARGET})
-endif()
-include(${ARCCON_ROOT}/Arccon.cmake)
 
 # ----------------------------------------------------------------------------
 # Indique que si une variable <PackageName>_ROOT est définie, considère
@@ -42,6 +40,12 @@ include(${ARCCON_ROOT}/Arccon.cmake)
 if (POLICY CMP0074)
   cmake_policy(SET CMP0074 NEW)
 endif()
+
+# Use Arccon functions and macros
+find_package(Arccon REQUIRED)
+list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
+include(${ARCCON_CMAKE_COMMANDS})
+include(LoadBuildSystem)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -73,6 +77,12 @@ endif()
 
 add_library(arccore_build_compile_flags INTERFACE)
 install(TARGETS arccore_build_compile_flags EXPORT ${ARCCORE_EXPORT_TARGET})
+
+# ----------------------------------------------------------------------------
+# Create an interface library 'arccore_full' that groups all Arccore components.
+add_library(arccore_full INTERFACE)
+install(TARGETS arccore_full EXPORT ${ARCCORE_EXPORT_TARGET})
+# FIXME: whether or not arccore_build_compile_flags has to be added to arccore_full.
 
 # ----------------------------------------------------------------------------
 # Les symboles des bibliothèques ne sont pas visibles sauf si demandé
@@ -123,6 +133,21 @@ if (ARCCORE_WANT_TEST)
 endif()
 
 # ----------------------------------------------------------------------------
+# Configure installation layout.
+# Layout. This works for all platforms:
+#   * <prefix>/lib*/cmake/<PROJECT-NAME>
+#   * <prefix>/lib*/
+#   * <prefix>/include/
+set(config_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+
+set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
+
+# Configuration
+set(version_config "${generated_dir}/${PROJECT_NAME}ConfigVersion.cmake")
+set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
+set(namespace "${Arccore}::")
+
+# ----------------------------------------------------------------------------
 
 arccore_add_component_directory(base)
 arccore_add_component_directory(collections)
@@ -132,6 +157,36 @@ arccore_add_component_directory(message_passing)
 arccore_add_component_directory(message_passing_mpi)
 
 # ----------------------------------------------------------------------------
+
+# Include module with fuction 'write_basic_package_version_file'
+include(CMakePackageConfigHelpers)
+
+# Configure '<PROJECT-NAME>ConfigVersion.cmake'
+# Use:
+#   * PROJECT_VERSION
+write_basic_package_version_file(
+    "${version_config}" COMPATIBILITY SameMajorVersion
+)
+
+# Configure '<PROJECT-NAME>Config.cmake'
+# Use variables:
+#   * TARGETS_EXPORT_NAME
+#   * PROJECT_NAME
+configure_package_config_file(
+    "CMake/ArccoreConfig.cmake.in"
+    "${project_config}"
+    INSTALL_DESTINATION "${config_install_dir}"
+)
+
+install(
+    FILES "${project_config}" "${version_config}"
+    DESTINATION "${config_install_dir}"
+)
+
+install(EXPORT ${ARCCORE_EXPORT_TARGET}
+        DESTINATION ${config_install_dir})
+ 
+
 
 # ----------------------------------------------------------------------------
 # Local Variables:

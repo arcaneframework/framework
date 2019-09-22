@@ -54,6 +54,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMessagePassingMng
 
  public:
 
+  const MPI_Comm* getMPIComm() const {
+    return &m_communicator;
+  }
  private:
 
   MPI_Comm m_communicator;
