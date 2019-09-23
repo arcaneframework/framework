@@ -6,6 +6,7 @@ set(SOURCES
   IThreadImplementation.h
   IThreadBarrier.h
   GlibThreadImplementation.cc
+  GlibThreadImplementation.h
   GlibAdapter.h
   GlibAdapter.cc
   Mutex.h
