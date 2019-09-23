@@ -26,6 +26,12 @@ install(FILES ${CMAKE_BINARY_DIR}/arccore_version.h DESTINATION include)
 
 # ----------------------------------------------------------------------------
 
+if (NOT BUILD_SHARED_LIBS)
+  message(FATAL_ERROR "Arccore has to be compiled with BUILD_SHARED_LIBS=TRUE. Static linking does not work.")
+endif()
+
+# ----------------------------------------------------------------------------
+
 if (NOT ARCCORE_EXPORT_TARGET)
   set(ARCCORE_EXPORT_TARGET ArccoreTargets)
 endif()
