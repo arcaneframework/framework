@@ -50,7 +50,8 @@ static constexpr utils::Int32 NULL_ITEM_LID = -1;
   
   struct ItemLocalId {};
   struct ItemUniqueId {};
-  
+
+  // todo: check if used ??
   using DataType = std::variant<utils::Int32, utils::Int64, utils::Real3>;// ajouter des types dans la def de famille si necessaire
   using DataIndex = std::variant<int,ItemUniqueId>;
 
