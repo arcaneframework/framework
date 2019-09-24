@@ -9,6 +9,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <numeric>
 #include <string>
 #include <variant>
 #include <vector>
@@ -144,7 +145,51 @@ struct ItemRange {
     std::vector<DataType> m_data;
     };
 
-  using Property = std::variant<PropertyT<utils::Int32>, PropertyT<utils::Real3>,PropertyT<utils::Int64>,PropertyT<ItemLocalId,ItemUniqueId>>;
+  template <typename DataType>
+  class ArrayProperty : public PropertyBase {
+  public:
+    void resize(std::vector<std::size_t> sizes){ // only 2 moves if a rvalue is passed. One copy + one move if lvalue
+      m_offsets = std::move(sizes);
+    }
+    bool isInitializableFrom(const ItemRange& item_range){return item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty() ;}
+    void init(const ItemRange& item_range, std::vector<DataType> values){
+      assert(isInitializableFrom(item_range));
+      m_data = std::move(values);
+    }
+    void append(const ItemRange& item_range, const std::vector<DataType>& values){
+      // todo some check on value size (combining offsets, values and item_range sizes)
+      auto global_index = 0;
+      for (auto item : item_range) {
+        for (auto connected_item_index = 0;
+             connected_item_index < m_offsets[item]; ++connected_item_index) {
+          (*this)[item][connected_item_index] = values[global_index++];
+        }
+      }
+    }
+
+    utils::ArrayView<DataType> operator[](const utils::Int32 item) {
+      return utils::ArrayView<DataType>{m_offsets[item],&m_data[_getItemIndexInData(item)]};
+    };
+
+    void debugPrint() const {
+      std::cout << "= Print array property " << m_name << " =" << std::endl;
+      for (auto &val : m_data) {
+        std::cout << "\"" << val << "\" ";
+      }
+      std::cout << std::endl;
+    }
+
+    utils::Int32 _getItemIndexInData(const utils::Int32 item){
+      std::accumulate(m_offsets.begin(),m_offsets.begin()+item,0);
+    }
+
+//  private:
+    std::vector<DataType> m_data;
+    std::vector<std::size_t> m_offsets;
+
+  };
+
+  using Property = std::variant<PropertyT<utils::Int32>, PropertyT<utils::Real3>,PropertyT<utils::Int64>,PropertyT<ItemLocalId,ItemUniqueId>, ArrayProperty<utils::Int32>>;
 
   namespace tye {
     template <typename... T> struct VisitorOverload : public T... {
@@ -169,6 +214,18 @@ struct ItemRange {
     },arg1);
   }
 
+  template <typename Func, typename Variant>
+  void apply(Func& func, Variant& arg1, Variant& arg2, Variant& arg3) {
+    std::visit([&arg2, &arg3, &func](auto& concrete_arg1) {
+      std::visit([&concrete_arg1, &arg3, &func](auto &concrete_arg2) {
+          std::visit([&concrete_arg1, &concrete_arg2, &func](auto &concrete_arg3) {
+                auto functor = VisitorOverload{[](const auto &arg1, const auto &arg2, const auto &arg3) {std::cout << "Wrong one." << std::endl;},func}; // todo: prevent this behavior (statically ?)
+                functor(concrete_arg1, concrete_arg2,concrete_arg3); // arg1 & arg2 are variants, concrete_arg* are concrete arguments
+              }, arg3);
+        }, arg2);
+    }, arg1);
+  }
+
 // template deduction guides
     template <typename...T> VisitorOverload(T...) -> VisitorOverload<T...>;
 
@@ -184,6 +241,12 @@ struct ItemRange {
       };
     Property& getProperty(const std::string& name) {
       return m_properties[name];
+    }
+
+    template <typename T>
+    void addArrayProperty(std::string const& name){
+      m_properties[name] = ArrayProperty<T>{name};
+      std::cout << "Add array property " << name << " in Family " << m_name<< std::endl;
     }
 
     ItemKind m_ik;
@@ -253,6 +316,22 @@ struct ItemRange {
   };
 
   template <typename Algorithm>
+  struct DualInAlgoHandler : public IAlgorithm {
+    DualInAlgoHandler(InProperty&& in_prop1, InProperty&& in_prop2, OutProperty&& out_prop, Algorithm&& algo)
+        : m_in_property1(std::move(in_prop1))
+        , m_in_property2(std::move(in_prop2))
+        , m_out_property(std::move(out_prop))
+        , m_algo(std::forward<Algorithm>(algo)){}
+    InProperty m_in_property1;
+    InProperty m_in_property2;
+    OutProperty m_out_property;
+    Algorithm m_algo;
+    void operator() () override {
+      tye::apply(m_algo,m_in_property1(),m_in_property2(),m_out_property());
+    }
+  };
+
+  template <typename Algorithm>
   struct NoDepsAlgoHandler : public IAlgorithm {
     NoDepsAlgoHandler(OutProperty&& out_prop, Algorithm&& algo)
       : m_out_property(std::move(out_prop))
@@ -283,6 +362,17 @@ public:
     template <typename Algorithm>
     void addAlgorithm(OutProperty&& out_property, Algorithm&& algo) {
       m_algos.push_back(std::make_unique<NoDepsAlgoHandler<decltype(algo)>>(std::move(out_property),std::forward<Algorithm>(algo)));
+    }
+
+    template <typename Algorithm>
+    void addAlgorithm(InProperty&& in_property1, InProperty&& in_property2, OutProperty&& out_property, Algorithm&& algo){
+      //?? ajout dans le graphe. recuperer les prop...à partir nom et kind…
+      // mock the graph : play the action in the given order...
+      m_algos.push_back(std::make_unique<DualInAlgoHandler<decltype(algo)>>(
+          std::move(in_property1),
+          std::move(in_property2),
+          std::move(out_property),
+          std::forward<Algorithm>(algo)));
     }
     
     void beginUpdate() { std::cout << "begin mesh update" << std::endl;}
@@ -336,6 +426,21 @@ public:
         std::cout << " uid to lid  " << uid.first << " : " << uid.second;
       }
       std::cout << std::endl;
+    }
+
+    utils::Int32 _getLidFromUid(utils::Int64 const uid) const {
+      auto iterator = m_uid2lid.find(uid);
+      if (iterator == m_uid2lid.end()) return utils::NULL_ITEM_LID;
+      else return iterator->second;
+
+    }
+    void _getLidsFromUids(std::vector<utils::Int32>& lids, std::vector<utils::Int64> const& uids) const {
+      std::transform(uids.begin(),uids.end(),std::back_inserter(lids),[this](auto const& uid){return this->_getLidFromUid(uid);});
+    }
+    std::vector<utils::Int32> operator[](std::vector<utils::Int64> const& uids) const {
+      std::vector<utils::Int32> lids(uids.size());
+      _getLidsFromUids(lids,uids);
+      return lids;
     }
 
   private:
@@ -414,7 +519,8 @@ std::cout << "Find family " << node_family.m_name << std::endl;
 node_family.addProperty<neo::utils::Real3>(std::string("node_coords"));
 node_family.addProperty<neo::ItemLocalId,neo::ItemUniqueId>("node_lids");
 node_family.addProperty<neo::utils::Int64>("node_uids");
-node_family.addProperty<neo::utils::Int32>("node_con");
+node_family.addArrayProperty<neo::utils::Int32>("node2cells");
+
 
 // Test adds
 auto& property = node_family.getProperty("node_lids");
@@ -494,6 +600,22 @@ mesh.addAlgorithm(neo::InProperty{cell_family,"cell_lids"},neo::OutProperty{cell
       else cell_uids_property.append(added_cells, cell_uids);
       cell_uids_property.debugPrint();
     });
+
+// register connectivity
+std::vector<neo::utils::Int64> connected_cell_uids{0,0,0};
+std::vector<std::size_t> node_con_offsets{1,1,1};
+mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},
+                  neo::InProperty{cell_family,"cell_lids"},
+                  neo::OutProperty{node_family,"node2cells"},
+    [&connected_cell_uids, &node_con_offsets,& added_nodes]
+    (neo::ItemLidsProperty const& cell_lids_property, neo::ItemLidsProperty const& node_lids_property, neo::ArrayProperty<neo::utils::Int32> & node2cells){
+      std::cout << "Algorithm: register node-cell connectivity" << std::endl;
+      node2cells.resize(std::move(node_con_offsets));
+      auto connected_cell_lids = cell_lids_property[connected_cell_uids];
+      if (node2cells.isInitializableFrom(added_nodes)) node2cells.init(added_nodes,std::move(connected_cell_lids));
+      else node2cells.append(added_nodes,connected_cell_lids);
+      node2cells.debugPrint();
+});
 
 // launch algos
 mesh.endUpdate();
