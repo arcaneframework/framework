@@ -34,6 +34,13 @@ namespace neo{
     using Int64 = long int;
     using Int32 = int;
     struct Real3 { double x,y,z;};
+    template <typename T>
+    struct ArrayView {
+      T& operator[](int const i) {assert(i<m_size); return *(m_ptr+i);}
+      std::size_t m_size;
+      T* m_ptr;
+    };
+static constexpr utils::Int32 NULL_ITEM_LID = -1;
   }// end namespace utils
 
   std::ostream& operator<<(std::ostream& oss, const neo::utils::Real3& real3){
