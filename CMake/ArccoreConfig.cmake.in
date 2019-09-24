@@ -2,7 +2,7 @@ set(Arccore_VERSION @Arccore_VERSION@)
 
 @PACKAGE_INIT@
 
-include(${PACKAGE_PREFIX_DIR}/@config_install_dir@/ArccoreTargets.cmake)
+include(${PACKAGE_PREFIX_DIR}/@config_install_dir@/@ARCCORE_EXPORT_TARGET@.cmake)
 
 get_target_property(_AFULL arccore_full INTERFACE_LINK_LIBRARIES)
 

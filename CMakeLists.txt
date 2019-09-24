@@ -171,7 +171,7 @@ include(CMakePackageConfigHelpers)
 # Use:
 #   * PROJECT_VERSION
 write_basic_package_version_file(
-    "${version_config}" COMPATIBILITY SameMajorVersion
+  "${version_config}" COMPATIBILITY SameMajorVersion
 )
 
 # Configure '<PROJECT-NAME>Config.cmake'
@@ -179,21 +179,22 @@ write_basic_package_version_file(
 #   * TARGETS_EXPORT_NAME
 #   * PROJECT_NAME
 configure_package_config_file(
-    "CMake/ArccoreConfig.cmake.in"
-    "${project_config}"
-    INSTALL_DESTINATION "${config_install_dir}"
-)
+  "CMake/ArccoreConfig.cmake.in"
+  "${project_config}"
+  INSTALL_DESTINATION "${config_install_dir}"
+  )
 
-install(
-    FILES "${project_config}" "${version_config}"
-    DESTINATION "${config_install_dir}"
+set(Arccore_project_config "${project_config}" CACHE FILEPATH "Arccore project config" FORCE)
+get_filename_component(Arccore_config_build_dir "${project_config}" DIRECTORY CACHE)
+set(Arccore_config_install_dir "${config_install_dir}" CACHE STRING "Arccore config install dir" FORCE)
+
+install(FILES "${project_config}" "${version_config}"
+  DESTINATION "${config_install_dir}"
 )
 
 install(EXPORT ${ARCCORE_EXPORT_TARGET}
-        DESTINATION ${config_install_dir})
+  DESTINATION ${config_install_dir})
  
-
-
 # ----------------------------------------------------------------------------
 # Local Variables:
 # tab-width: 2
