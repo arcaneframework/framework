@@ -602,15 +602,16 @@ mesh.addAlgorithm(neo::InProperty{cell_family,"cell_lids"},neo::OutProperty{cell
     });
 
 // register connectivity
+// node to cell
 std::vector<neo::utils::Int64> connected_cell_uids{0,0,2,2,7,9};
-std::vector<std::size_t> node_con_offsets{1,2,3};
+std::vector<std::size_t> nb_cell_per_node{1,2,3};
 mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},
                   neo::InProperty{cell_family,"cell_lids"},
                   neo::OutProperty{node_family,"node2cells"},
-    [&connected_cell_uids, &node_con_offsets,& added_nodes]
+    [&connected_cell_uids, &nb_cell_per_node,& added_nodes]
     (neo::ItemLidsProperty const& node_lids_property, neo::ItemLidsProperty const& cell_lids_property, neo::ArrayProperty<neo::utils::Int32> & node2cells){
       std::cout << "Algorithm: register node-cell connectivity" << std::endl;
-      node2cells.resize(std::move(node_con_offsets));
+      node2cells.resize(std::move(nb_cell_per_node));
       auto connected_cell_lids = cell_lids_property[connected_cell_uids];
       if (node2cells.isInitializableFrom(added_nodes)) node2cells.init(added_nodes,std::move(connected_cell_lids));
       else node2cells.append(added_nodes,connected_cell_lids);
