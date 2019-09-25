@@ -438,7 +438,7 @@ public:
       std::transform(uids.begin(),uids.end(),std::back_inserter(lids),[this](auto const& uid){return this->_getLidFromUid(uid);});
     }
     std::vector<utils::Int32> operator[](std::vector<utils::Int64> const& uids) const {
-      std::vector<utils::Int32> lids(uids.size());
+      std::vector<utils::Int32> lids;
       _getLidsFromUids(lids,uids);
       return lids;
     }
@@ -602,13 +602,13 @@ mesh.addAlgorithm(neo::InProperty{cell_family,"cell_lids"},neo::OutProperty{cell
     });
 
 // register connectivity
-std::vector<neo::utils::Int64> connected_cell_uids{0,0,0};
-std::vector<std::size_t> node_con_offsets{1,1,1};
+std::vector<neo::utils::Int64> connected_cell_uids{0,0,2,2,7,9};
+std::vector<std::size_t> node_con_offsets{1,2,3};
 mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},
                   neo::InProperty{cell_family,"cell_lids"},
                   neo::OutProperty{node_family,"node2cells"},
     [&connected_cell_uids, &node_con_offsets,& added_nodes]
-    (neo::ItemLidsProperty const& cell_lids_property, neo::ItemLidsProperty const& node_lids_property, neo::ArrayProperty<neo::utils::Int32> & node2cells){
+    (neo::ItemLidsProperty const& node_lids_property, neo::ItemLidsProperty const& cell_lids_property, neo::ArrayProperty<neo::utils::Int32> & node2cells){
       std::cout << "Algorithm: register node-cell connectivity" << std::endl;
       node2cells.resize(std::move(node_con_offsets));
       auto connected_cell_lids = cell_lids_property[connected_cell_uids];
