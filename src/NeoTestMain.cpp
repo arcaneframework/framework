@@ -163,8 +163,12 @@ struct ItemRange {
       assert(isInitializableFrom(item_range));
       m_data = std::move(values);
     }
-    void append(const ItemRange& item_range, const std::vector<DataType>& values){
+    void append(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<std::size_t> const& nb_connected_item_per_item){
       // todo some check on value size (combining offsets, values and item_range sizes)
+      // todo if range is contiguous and follow directly the current range (how to know ?) : pack directly the two arrays (?)
+      // add offsets for new items
+      std::copy(nb_connected_item_per_item.begin(),nb_connected_item_per_item.end(),std::back_inserter(m_offsets));
+      std::cout << "offset size " << m_offsets.size() << std::endl;
       auto global_index = 0;
       for (auto item : item_range) {
         for (auto connected_item_index = 0;
@@ -618,10 +622,14 @@ mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},
     [&connected_cell_uids, &nb_cell_per_node,& added_nodes]
     (neo::ItemLidsProperty const& node_lids_property, neo::ItemLidsProperty const& cell_lids_property, neo::ArrayProperty<neo::utils::Int32> & node2cells){
       std::cout << "Algorithm: register node-cell connectivity" << std::endl;
-      node2cells.resize(std::move(nb_cell_per_node));
       auto connected_cell_lids = cell_lids_property[connected_cell_uids];
-      if (node2cells.isInitializableFrom(added_nodes)) node2cells.init(added_nodes,std::move(connected_cell_lids));
-      else node2cells.append(added_nodes,connected_cell_lids);
+      if (node2cells.isInitializableFrom(added_nodes)) {
+        node2cells.resize(std::move(nb_cell_per_node));
+        node2cells.init(added_nodes,std::move(connected_cell_lids));
+      }
+      else {
+        node2cells.append(added_nodes,connected_cell_lids, nb_cell_per_node);
+      }
       node2cells.debugPrint();
 });
 
@@ -634,10 +642,12 @@ mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},
                   [&connected_node_uids, &nb_node_per_cell,& added_cells]
                           (neo::ItemLidsProperty const& node_lids_property, neo::ItemLidsProperty const& cell_lids_property, neo::ArrayProperty<neo::utils::Int32> & cells2nodes){
                     std::cout << "Algorithm: register cell-node connectivity" << std::endl;
-                    cells2nodes.resize(std::move(nb_node_per_cell));
                     auto connected_node_lids = node_lids_property[connected_node_uids];
-                    if (cells2nodes.isInitializableFrom(added_cells)) cells2nodes.init(added_cells,std::move(connected_node_lids));
-                    else cells2nodes.append(added_cells,connected_node_lids);
+                    if (cells2nodes.isInitializableFrom(added_cells)) {
+                      cells2nodes.resize(std::move(nb_node_per_cell));
+                      cells2nodes.init(added_cells,std::move(connected_node_lids));
+                    }
+                    else cells2nodes.append(added_cells,connected_node_lids, nb_node_per_cell);
                     cells2nodes.debugPrint();
                   });
 
@@ -663,7 +673,23 @@ mesh.addAlgorithm(neo::InProperty{cell_family,"cell_lids"},neo::OutProperty{cell
                     cell_uids_property.debugPrint();
                   });
 
-
+// add connectivity to new cells
+std::vector<neo::utils::Int64> new_cell_connected_node_uids{0,1,2,1,2,0};// on ne connecte volontairement pas toutes les mailles pour vérifier initialisation ok sur la famille
+std::vector<std::size_t> nb_node_per_new_cell{0,3,2,1};
+mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},
+                  neo::InProperty{cell_family,"cell_lids"},
+                  neo::OutProperty{cell_family,"cell2nodes"},
+                  [&new_cell_connected_node_uids, &nb_node_per_new_cell,& new_cell_added]
+                          (neo::ItemLidsProperty const& node_lids_property, neo::ItemLidsProperty const& cell_lids_property, neo::ArrayProperty<neo::utils::Int32> & cells2nodes){
+                    std::cout << "Algorithm: register new cell-node connectivity" << std::endl;
+                    auto connected_node_lids = node_lids_property[new_cell_connected_node_uids];
+                    if (cells2nodes.isInitializableFrom(new_cell_added)) {
+                      cells2nodes.resize(std::move(nb_node_per_new_cell));
+                      cells2nodes.init(new_cell_added,std::move(connected_node_lids));
+                    }
+                    else cells2nodes.append(new_cell_added,connected_node_lids,nb_node_per_new_cell);
+                    cells2nodes.debugPrint();
+                  });
 
 
 // launch algos
