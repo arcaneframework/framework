@@ -531,6 +531,7 @@ std::cout << "Find family " << cell_family.m_name << std::endl;
 cell_family.addProperty<neo::ItemLocalId,neo::ItemUniqueId>("cell_lids");
 cell_family.addProperty<neo::utils::Int64>("cell_uids");
 cell_family.addProperty<neo::utils::Int32>("cell_con");
+cell_family.addArrayProperty<neo::utils::Int32>("cell2nodes");
 }
  
 void base_mesh_creation_test() {
@@ -617,6 +618,22 @@ mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},
       else node2cells.append(added_nodes,connected_cell_lids);
       node2cells.debugPrint();
 });
+
+// cell to node
+std::vector<neo::utils::Int64> connected_node_uids{0,1,2,1,2,0,2,1,0};// on ne connecte volontairement pas toutes les mailles pour vérifier initialisation ok sur la famille
+std::vector<std::size_t> nb_node_per_cell{3,0,3,3};
+mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},
+                  neo::InProperty{cell_family,"cell_lids"},
+                  neo::OutProperty{cell_family,"cell2nodes"},
+                  [&connected_node_uids, &nb_node_per_cell,& added_cells]
+                          (neo::ItemLidsProperty const& node_lids_property, neo::ItemLidsProperty const& cell_lids_property, neo::ArrayProperty<neo::utils::Int32> & cells2nodes){
+                    std::cout << "Algorithm: register cell-node connectivity" << std::endl;
+                    cells2nodes.resize(std::move(nb_node_per_cell));
+                    auto connected_node_lids = node_lids_property[connected_node_uids];
+                    if (cells2nodes.isInitializableFrom(added_cells)) cells2nodes.init(added_cells,std::move(connected_node_lids));
+                    else cells2nodes.append(added_cells,connected_node_lids);
+                    cells2nodes.debugPrint();
+                  });
 
 // launch algos
 mesh.endUpdate();
