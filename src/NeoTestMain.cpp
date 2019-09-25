@@ -92,7 +92,6 @@ struct ItemRange {
     ItemIterator end() const {return ItemIterator{m_indexes,int(m_indexes.size())};} // todo : consider reverse range : constructeur (ItemIndexes, traversal_order=forward) enum à faire
     std::size_t size() const { return m_indexes.size();}
     ItemIndexes m_indexes;
-
   };
 
   std::ostream &operator<<(std::ostream &os, const ItemRange &item_range){
@@ -110,6 +109,12 @@ struct ItemRange {
     return os;
   }
 
+  namespace utils {
+    Int32 maxItem(ItemRange const& item_range){
+      return *std::max_element(item_range.begin(), item_range.end());
+    }
+  }
+
   class PropertyBase{
     public:
     std::string m_name;
@@ -121,6 +126,8 @@ struct ItemRange {
 
     void append(const ItemRange& item_range, const std::vector<DataType>& values) {
       assert(item_range.size() == values.size());
+      auto max_item = utils::maxItem(item_range);
+      if (max_item > m_data.size()) m_data.resize(max_item);
       std::size_t counter{0};
       for (auto item : item_range) {
         m_data[item] = values[counter++];
@@ -530,7 +537,6 @@ auto& cell_family = mesh.getFamily(neo::ItemKind::IK_Cell,"CellFamily");
 std::cout << "Find family " << cell_family.m_name << std::endl;
 cell_family.addProperty<neo::ItemLocalId,neo::ItemUniqueId>("cell_lids");
 cell_family.addProperty<neo::utils::Int64>("cell_uids");
-cell_family.addProperty<neo::utils::Int32>("cell_con");
 cell_family.addArrayProperty<neo::utils::Int32>("cell2nodes");
 }
  
@@ -634,6 +640,31 @@ mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},
                     else cells2nodes.append(added_cells,connected_node_lids);
                     cells2nodes.debugPrint();
                   });
+
+// try to modify an existing property
+// add new cells
+std::vector<neo::utils::Int64> new_cell_uids{10,11,12}; // elles seront toutes rouges
+auto new_cell_added =neo::ItemRange{};
+mesh.addAlgorithm(neo::OutProperty{cell_family,"cell_lids"},
+                [&new_cell_uids,&new_cell_added](neo::ItemLidsProperty& cell_lids_property) {
+                  std::cout << "Algorithm: add new cells" << std::endl;
+                  new_cell_added = cell_lids_property.append(new_cell_uids);
+                  cell_lids_property.debugPrint();
+                  std::cout << "Inserted item range : " << new_cell_added;
+                });
+
+// register new cell uids
+mesh.addAlgorithm(neo::InProperty{cell_family,"cell_lids"},neo::OutProperty{cell_family,"cell_uids"},
+                  [&new_cell_uids,&new_cell_added](neo::ItemLidsProperty const& cell_lids_property, neo::PropertyT<neo::utils::Int64>& cell_uids_property){
+                    std::cout << "Algorithm: register new cell uids" << std::endl;
+                    // must append and not initialize
+                    if (cell_uids_property.isInitializableFrom(new_cell_added))  cell_uids_property.init(new_cell_added,std::move(new_cell_uids)); // init can steal the input values
+                    else cell_uids_property.append(new_cell_added, new_cell_uids);
+                    cell_uids_property.debugPrint();
+                  });
+
+
+
 
 // launch algos
 mesh.endUpdate();
