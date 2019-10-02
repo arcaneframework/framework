@@ -59,9 +59,9 @@ static constexpr utils::Int32 NULL_ITEM_LID = -1;
   using DataIndex = std::variant<int,ItemUniqueId>;
 
 struct ItemIndexes {
-  std::vector<std::size_t> m_non_contiguous_indexes;
-  std::size_t m_first_contiguous_index =0;
+  std::size_t m_first_contiguous_index = 0;
   std::size_t m_nb_contiguous_indexes = 0;
+  std::vector<std::size_t> m_non_contiguous_indexes = {};
   std::size_t size()  const {return m_non_contiguous_indexes.size()+m_nb_contiguous_indexes;}
   int operator() (int index) const{
     if (index >= int(size())) return  size();
@@ -89,7 +89,7 @@ struct ItemIterator {
     ItemIndexes m_item_indexes;
   };
 struct ItemRange {
-    bool isContiguous() const {return true;};
+    bool isContiguous() const {return true;}; // todo implement !!
     ItemIterator begin() const {return ItemIterator{m_indexes,0};}
     ItemIterator end() const {return ItemIterator{m_indexes,int(m_indexes.size())};} // todo : consider reverse range : constructeur (ItemIndexes, traversal_order=forward) enum à faire
     std::size_t size() const { return m_indexes.size();}
@@ -477,19 +477,19 @@ public:
 void test_item_range(){
   // Test with only contiguous indexes
   std::cout << "== Testing contiguous item range from 0 with 5 items =="<< std::endl;
-  auto ir = neo::ItemRange{neo::ItemIndexes{{},0,5}};
+  auto ir = neo::ItemRange{0,5};
   for (auto item : ir) {
     std::cout << "item lid " << item << std::endl;
   }
   // Test with only non contiguous indexes
   std::cout << "== Testing non contiguous item range {3,5,7} =="<< std::endl;
-  ir = neo::ItemRange{neo::ItemIndexes{{3,5,7}}};
+  ir = neo::ItemRange{0,0,{3,5,7}};
   for (auto item : ir) {
     std::cout << "item lid " << item << std::endl;
   }
   // Test range mixing contiguous and non contiguous indexes
   std::cout << "== Testing non contiguous item range {3,5,7} + 8 to 11 =="<< std::endl;
-  ir = neo::ItemRange{neo::ItemIndexes{{3,5,7},8,4}};
+  ir = neo::ItemRange{neo::ItemIndexes{8,4,{3,5,7}}};
   for (auto item : ir) {
     std::cout << "item lid " << item << std::endl;
   }
