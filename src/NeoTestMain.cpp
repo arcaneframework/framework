@@ -166,23 +166,49 @@ struct ItemRange {
       m_data = std::move(values);
     }
     void append(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<std::size_t> const& nb_connected_item_per_item){
-      // todo some check on value size (combining offsets, values and item_range sizes)
+      if (item_range.size()==0) return;
+      std::cout << "Append in ArrayProperty" << std::endl;
+      assert(item_range.size()==nb_connected_item_per_item.size());
+      assert(values.size()==std::accumulate(nb_connected_item_per_item.begin(),nb_connected_item_per_item.end(),0));
       // todo if range is contiguous and follow directly the current range (how to know ?) : pack directly the two arrays (?)
-      // add offsets for new items
-      std::copy(nb_connected_item_per_item.begin(),nb_connected_item_per_item.end(),std::back_inserter(m_offsets));
-      std::cout << "offset size " << m_offsets.size() << std::endl;
-      auto global_index = 0;
+      // Compute new offsets
+      std::vector<std::size_t> new_offsets(m_offsets);
+      if (utils::maxItem(item_range) >= new_offsets.size()) new_offsets.resize(utils::maxItem(item_range)+1);// todo ajouter ArrayProperty::resize(maxlid)
+      auto index = 0;
       for (auto item : item_range) {
-        for (auto connected_item_index = 0;
-             connected_item_index < m_offsets[item]; ++connected_item_index) {
-          (*this)[item][connected_item_index] = values[global_index++];
+        new_offsets[item] = nb_connected_item_per_item[index++];
+      }
+      // Compute new values
+      auto new_data_size = std::accumulate(new_offsets.begin(), new_offsets.end(),0);
+      std::vector<DataType> new_data(new_data_size);
+      // copy new_values
+      auto global_index = 0;
+      std::vector<bool> marked_items(new_offsets.size(),false);
+      for (auto item : item_range) {
+        marked_items[item] = true;
+        auto item_index = _getItemIndexInData(item, new_offsets);
+        for (auto connected_item_index = item_index; connected_item_index < item_index + new_offsets[item]; ++connected_item_index) {
+          new_data[connected_item_index] = values[global_index++];
         }
       }
+      // copy old values
+      ItemRange old_values_range{0,m_offsets.size()};
+      for (auto item : old_values_range) {
+        if (!marked_items[item]) {
+          auto connected_items = (*this)[item];
+          auto connected_item_index = _getItemIndexInData(item,new_offsets);
+          for (auto connected_item : connected_items){
+            new_data[connected_item_index++] = connected_item;
+          }
+        }
+      }
+      m_offsets = std::move(new_offsets);
+      m_data    = std::move(new_data);
     }
 
     utils::ArrayView<DataType> operator[](const utils::Int32 item) {
       return utils::ArrayView<DataType>{m_offsets[item],&m_data[_getItemIndexInData(item)]};
-    };
+    }
 
     void debugPrint() const {
       std::cout << "= Print array property " << m_name << " =" << std::endl;
@@ -195,6 +221,11 @@ struct ItemRange {
     utils::Int32 _getItemIndexInData(const utils::Int32 item){
       std::accumulate(m_offsets.begin(),m_offsets.begin()+item,0);
     }
+
+    utils::Int32 _getItemIndexInData(const utils::Int32 item, const std::vector<std::size_t>& offsets){
+      std::accumulate(offsets.begin(),offsets.begin()+item,0);
+    }
+
 
 //  private:
     std::vector<DataType> m_data;
@@ -676,8 +707,8 @@ mesh.addAlgorithm(neo::InProperty{cell_family,"cell_lids"},neo::OutProperty{cell
                   });
 
 // add connectivity to new cells
-std::vector<neo::utils::Int64> new_cell_connected_node_uids{0,1,2,1,2,0};// on ne connecte volontairement pas toutes les mailles pour vérifier initialisation ok sur la famille
-std::vector<std::size_t> nb_node_per_new_cell{0,3,2,1};
+std::vector<neo::utils::Int64> new_cell_connected_node_uids{0,1,2,1,2};// on ne connecte volontairement pas toutes les mailles pour vérifier initialisation ok sur la famille
+std::vector<std::size_t> nb_node_per_new_cell{0,3,2};
 mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},
                   neo::InProperty{cell_family,"cell_lids"},
                   neo::OutProperty{cell_family,"cell2nodes"},
