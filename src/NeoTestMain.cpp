@@ -38,6 +38,8 @@ namespace neo{
     template <typename T>
     struct ArrayView {
       T& operator[](int const i) {assert(i<m_size); return *(m_ptr+i);}
+      T* begin() {return m_ptr;}
+      T* end()   {return m_ptr+m_size;}
       std::size_t m_size;
       T* m_ptr;
     };
