@@ -173,13 +173,13 @@ struct ItemRange {
       assert(isInitializableFrom(item_range));
       m_data = std::move(values);
     }
-    void append(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<std::size_t> const& nb_connected_item_per_item){
+    void append(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<std::size_t> const& nb_values_per_item){
       if (item_range.size()==0) return;
       // todo: see how to handle new element add or remove impact on property (size/values)
-      assert(item_range.size()==nb_connected_item_per_item.size());
-      assert(values.size()==std::accumulate(nb_connected_item_per_item.begin(),nb_connected_item_per_item.end(),0));
-      if (utils::minItem(item_range) >= m_offsets.size()) _appendByBackInsertion(item_range,values,nb_connected_item_per_item); // only new items
-      else _appendByReconstruction(item_range,values,nb_connected_item_per_item); // includes existing items
+      assert(item_range.size()==nb_values_per_item.size());
+      assert(values.size()==std::accumulate(nb_values_per_item.begin(),nb_values_per_item.end(),0));
+      if (utils::minItem(item_range) >= m_offsets.size()) _appendByBackInsertion(item_range,values,nb_values_per_item); // only new items
+      else _appendByReconstruction(item_range,values,nb_values_per_item); // includes existing items
     }
 
     void _appendByReconstruction(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<std::size_t> const& nb_connected_item_per_item){
