@@ -59,9 +59,9 @@ static constexpr utils::Int32 NULL_ITEM_LID = -1;
   using DataIndex = std::variant<int,ItemUniqueId>;
 
 struct ItemIndexes {
+  std::vector<std::size_t> m_non_contiguous_indexes = {};
   std::size_t m_first_contiguous_index = 0;
   std::size_t m_nb_contiguous_indexes = 0;
-  std::vector<std::size_t> m_non_contiguous_indexes = {};
   std::size_t size()  const {return m_non_contiguous_indexes.size()+m_nb_contiguous_indexes;}
   int operator() (int index) const{
     if (index >= int(size())) return  size();
@@ -92,7 +92,7 @@ struct ItemRange {
     bool isContiguous() const {return m_indexes.m_non_contiguous_indexes.empty();};
     ItemIterator begin() const {return ItemIterator{m_indexes,0};}
     ItemIterator end() const {return ItemIterator{m_indexes,int(m_indexes.size())};} // todo : consider reverse range : constructeur (ItemIndexes, traversal_order=forward) enum à faire
-    std::size_t size() const { return m_indexes.size();}
+    std::size_t size() const {return m_indexes.size();}
     bool isEmpty() const  {return size() == 0;}
     ItemIndexes m_indexes;
   };
@@ -205,7 +205,7 @@ struct ItemRange {
         }
       }
       // copy old values
-      ItemRange old_values_range{0,m_offsets.size()};
+      ItemRange old_values_range{ItemIndexes{{},0,m_offsets.size()}};
       for (auto item : old_values_range) {
         if (!marked_items[item]) {
           auto connected_items = (*this)[item];
@@ -548,19 +548,19 @@ public:
 void test_item_range(){
   // Test with only contiguous indexes
   std::cout << "== Testing contiguous item range from 0 with 5 items =="<< std::endl;
-  auto ir = neo::ItemRange{0,5};
+  auto ir = neo::ItemRange{neo::ItemIndexes{{},0,5}};
   for (auto item : ir) {
     std::cout << "item lid " << item << std::endl;
   }
   // Test with only non contiguous indexes
   std::cout << "== Testing non contiguous item range {3,5,7} =="<< std::endl;
-  ir = neo::ItemRange{0,0,{3,5,7}};
+  ir = neo::ItemRange{neo::ItemIndexes{{3,5,7},0,0}};
   for (auto item : ir) {
     std::cout << "item lid " << item << std::endl;
   }
   // Test range mixing contiguous and non contiguous indexes
   std::cout << "== Testing non contiguous item range {3,5,7} + 8 to 11 =="<< std::endl;
-  ir = neo::ItemRange{neo::ItemIndexes{8,4,{3,5,7}}};
+  ir = neo::ItemRange{neo::ItemIndexes{{3,5,7},8,4}};
   for (auto item : ir) {
     std::cout << "item lid " << item << std::endl;
   }
@@ -576,27 +576,27 @@ void test_array_property()
 {
   auto array_property = neo::ArrayProperty<neo::utils::Int32>{"test_array_property"};
   // add elements: 5 items with one value
-  neo::ItemRange item_range{0,5};
+  neo::ItemRange item_range{neo::ItemIndexes{{},0,5}};
   std::vector<neo::utils::Int32> values{0,1,2,3,4};
   array_property.resize({1,1,1,1,1});
   array_property.init(item_range,values);
   array_property.debugPrint();
   // Add 3 items
   std::vector<std::size_t> nb_element_per_item{0,3,1};
-  item_range = {0,0,{5,6,7}};
+  item_range = {neo::ItemIndexes{{5,6,7}}};
   std::vector<neo::utils::Int32> values_added{6,6,6,7};
   array_property.append(item_range, values_added, nb_element_per_item);
   array_property.debugPrint(); // expected result: "0" "1" "2" "3" "4" "6" "6" "6" "7" (check with test framework)
   // Add three more items
-  item_range = {8,3};
+  item_range = {neo::ItemIndexes{{},8,3}};
   std::for_each(values_added.begin(), values_added.end(), [](auto &elt) {return elt += 2;});
   array_property.append(item_range, values_added, nb_element_per_item);
   array_property.debugPrint(); // expected result: "0" "1" "2" "3" "4" "6" "6" "6" "7" "8" "8" "8" "9"
   // Add items and modify existing item
-  item_range = {11,1,{0,8,5}};
+  item_range = {neo::ItemIndexes{{0,8,5},11,1}};
   nb_element_per_item = {3,3,2,1};
   values_added = {10,10,10,11,11,11,12,12,13};
-  array_property.append(item_range, values_added, nb_element_per_item); // expected result:
+  array_property.append(item_range, values_added, nb_element_per_item); // expected result: "10" "10" "10" "1" "2" "3" "4" "12" "12" "6" "6" "6" "7" "11" "11" "11" "8" "8" "8" "9" "13"
   array_property.debugPrint();
 }
 
