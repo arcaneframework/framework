@@ -89,10 +89,11 @@ struct ItemIterator {
     ItemIndexes m_item_indexes;
   };
 struct ItemRange {
-    bool isContiguous() const {return true;}; // todo implement !!
+    bool isContiguous() const {return m_indexes.m_non_contiguous_indexes.empty();};
     ItemIterator begin() const {return ItemIterator{m_indexes,0};}
     ItemIterator end() const {return ItemIterator{m_indexes,int(m_indexes.size())};} // todo : consider reverse range : constructeur (ItemIndexes, traversal_order=forward) enum à faire
     std::size_t size() const { return m_indexes.size();}
+    bool isEmpty() const  {return size() == 0;}
     ItemIndexes m_indexes;
   };
 
@@ -112,8 +113,15 @@ struct ItemRange {
   }
 
   namespace utils {
-    Int32 maxItem(ItemRange const& item_range){
+    Int32 maxItem(ItemRange const &item_range) {
+      if (item_range.isEmpty())
+        return utils::NULL_ITEM_LID;
       return *std::max_element(item_range.begin(), item_range.end());
+    }
+    Int32 minItem(ItemRange const &item_range) {
+      if (item_range.isEmpty())
+        return utils::NULL_ITEM_LID;
+      return *std::min_element(item_range.begin(), item_range.end());
     }
   }
 
@@ -772,7 +780,7 @@ int main() {
 
   test_item_range();
 
-  base_mesh_creation_test();
+  test_array_property();
 
   partial_mesh_modif_test();
 
