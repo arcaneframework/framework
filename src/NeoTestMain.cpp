@@ -220,14 +220,15 @@ struct ItemRange {
     }
 
     void _appendByBackInsertion(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<std::size_t> const& nb_connected_item_per_item){
-      std::cout << "Append in ArrayProperty by back insertion" << std::endl;
       if (item_range.isContiguous()) {
+        std::cout << "Append in ArrayProperty by back insertion, contiguous range" << std::endl;
         std::copy(nb_connected_item_per_item.begin(),
                   nb_connected_item_per_item.end(),
                   std::back_inserter(m_offsets));
         std::copy(values.begin(), values.end(), std::back_inserter(m_data));
       }
       else {
+        std::cout << "Append in ArrayProperty by back insertion, non contiguous range" << std::endl;
         m_offsets.resize(utils::maxItem(item_range) + 1);
         auto index = 0;
         for (auto item : item_range) m_offsets[item] = nb_connected_item_per_item[index++];
@@ -582,9 +583,20 @@ void test_array_property()
   array_property.debugPrint();
   // Add 3 items
   std::vector<std::size_t> nb_element_per_item{0,3,1};
-  neo::ItemRange item_range_added{0,0,{5,6,7}};
+  item_range = {0,0,{5,6,7}};
   std::vector<neo::utils::Int32> values_added{6,6,6,7};
-  array_property.append(item_range_added, values_added, nb_element_per_item);
+  array_property.append(item_range, values_added, nb_element_per_item);
+  array_property.debugPrint(); // expected result: "0" "1" "2" "3" "4" "6" "6" "6" "7" (check with test framework)
+  // Add three more items
+  item_range = {8,3};
+  std::for_each(values_added.begin(), values_added.end(), [](auto &elt) {return elt += 2;});
+  array_property.append(item_range, values_added, nb_element_per_item);
+  array_property.debugPrint(); // expected result: "0" "1" "2" "3" "4" "6" "6" "6" "7" "8" "8" "8" "9"
+  // Add items and modify existing item
+  item_range = {11,1,{0,8,5}};
+  nb_element_per_item = {3,3,2,1};
+  values_added = {10,10,10,11,11,11,12,12,13};
+  array_property.append(item_range, values_added, nb_element_per_item); // expected result:
   array_property.debugPrint();
 }
 
