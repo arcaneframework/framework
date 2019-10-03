@@ -175,10 +175,15 @@ struct ItemRange {
     }
     void append(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<std::size_t> const& nb_connected_item_per_item){
       if (item_range.size()==0) return;
-      std::cout << "Append in ArrayProperty" << std::endl;
+      // todo: see how to handle new element add or remove impact on property (size/values)
       assert(item_range.size()==nb_connected_item_per_item.size());
       assert(values.size()==std::accumulate(nb_connected_item_per_item.begin(),nb_connected_item_per_item.end(),0));
-      // todo if range is contiguous and follow directly the current range (how to know ?) : pack directly the two arrays (?)
+      if (utils::minItem(item_range) >= m_offsets.size()) _appendByBackInsertion(item_range,values,nb_connected_item_per_item); // only new items
+      else _appendByReconstruction(item_range,values,nb_connected_item_per_item); // includes existing items
+    }
+
+    void _appendByReconstruction(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<std::size_t> const& nb_connected_item_per_item){
+      std::cout << "Append in ArrayProperty by reconstruction" << std::endl;
       // Compute new offsets
       std::vector<std::size_t> new_offsets(m_offsets);
       if (utils::maxItem(item_range) >= new_offsets.size()) new_offsets.resize(utils::maxItem(item_range)+1);// todo ajouter ArrayProperty::resize(maxlid)
@@ -214,6 +219,31 @@ struct ItemRange {
       m_data    = std::move(new_data);
     }
 
+    void _appendByBackInsertion(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<std::size_t> const& nb_connected_item_per_item){
+      std::cout << "Append in ArrayProperty by back insertion" << std::endl;
+      if (item_range.isContiguous()) {
+        std::copy(nb_connected_item_per_item.begin(),
+                  nb_connected_item_per_item.end(),
+                  std::back_inserter(m_offsets));
+        std::copy(values.begin(), values.end(), std::back_inserter(m_data));
+      }
+      else {
+        m_offsets.resize(utils::maxItem(item_range) + 1);
+        auto index = 0;
+        for (auto item : item_range) m_offsets[item] = nb_connected_item_per_item[index++];
+        m_data.resize(m_data.size()+values.size(),DataType());
+        index = 0;
+        for (auto item : item_range) {
+          std::cout << "item is " << item<< std::endl;
+          auto connected_items = (*this)[item];
+          std::cout << " item " << item << " index in data " << _getItemIndexInData(item) << std::endl;
+          for (auto& connected_item : connected_items) {
+            connected_item = values[index++];
+          }
+        }
+      }
+    }
+
     utils::ArrayView<DataType> operator[](const utils::Int32 item) {
       return utils::ArrayView<DataType>{m_offsets[item],&m_data[_getItemIndexInData(item)]};
     }
@@ -226,6 +256,7 @@ struct ItemRange {
       std::cout << std::endl;
     }
 
+    // todo should be computed only when m_offsets is updated, at least implement an array version
     utils::Int32 _getItemIndexInData(const utils::Int32 item){
       std::accumulate(m_offsets.begin(),m_offsets.begin()+item,0);
     }
@@ -538,6 +569,23 @@ void test_item_range(){
 
 
   // todo test out reverse range
+}
+
+void test_array_property()
+{
+  auto array_property = neo::ArrayProperty<neo::utils::Int32>{"test_array_property"};
+  // add elements: 5 items with one value
+  neo::ItemRange item_range{0,5};
+  std::vector<neo::utils::Int32> values{0,1,2,3,4};
+  array_property.resize({1,1,1,1,1});
+  array_property.init(item_range,values);
+  array_property.debugPrint();
+  // Add 3 items
+  std::vector<std::size_t> nb_element_per_item{0,3,1};
+  neo::ItemRange item_range_added{0,0,{5,6,7}};
+  std::vector<neo::utils::Int32> values_added{6,6,6,7};
+  array_property.append(item_range_added, values_added, nb_element_per_item);
+  array_property.debugPrint();
 }
 
 void test_property_graph()
