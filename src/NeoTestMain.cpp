@@ -477,7 +477,7 @@ public:
     public:
     explicit PropertyT(std::string const& name) : PropertyBase{name}{};
 
-    ItemRange append(const std::vector<neo::utils::Int64>& uids) {
+    ItemRange append(std::vector<neo::utils::Int64> const& uids) {
       std::size_t counter = 0;
       ItemIndexes item_indexes{};
       auto& non_contiguous_lids = item_indexes.m_non_contiguous_indexes;
@@ -500,6 +500,24 @@ public:
          non_contiguous_lids.push_back(m_empty_lids.back());
          m_empty_lids.pop_back();
        }
+      }
+      return ItemRange{std::move(item_indexes)};
+    }
+
+    ItemRange remove(std::vector<utils::Int64> const& uids){
+      ItemIndexes item_indexes{};
+      item_indexes.m_non_contiguous_indexes.resize(uids.size());
+      auto empty_lids_size = m_empty_lids.size();
+      m_empty_lids.resize( empty_lids_size + uids.size());
+      auto counter = 0;
+      auto empty_lids_index = empty_lids_size;
+      for (auto uid : uids) {
+        // remove from map (set NULL_ITEM_LID)
+        // add in range and in empty_lids
+        auto& lid = m_uid2lid.at(uid); // checks bound. To see whether costly
+        m_empty_lids[empty_lids_index++] = lid;
+        item_indexes.m_non_contiguous_indexes[counter++] = lid;
+        lid = utils::NULL_ITEM_LID;
       }
       return ItemRange{std::move(item_indexes)};
     }
@@ -790,6 +808,17 @@ mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},
                     }
                     else cells2nodes.append(new_cell_added,connected_node_lids,nb_node_per_new_cell);
                     cells2nodes.debugPrint();
+                  });
+
+// remove nodes
+std::vector<neo::utils::Int64> removed_node_uids{1,2};
+auto removed_nodes = neo::ItemRange{};
+mesh.addAlgorithm(neo::OutProperty{node_family,"node_lids"},
+                  [&removed_node_uids,&removed_nodes](neo::ItemLidsProperty& node_lids_property){
+                    std::cout << "Algorithm: remove nodes" << std::endl;
+                    removed_nodes = node_lids_property.remove(removed_node_uids);
+                    node_lids_property.debugPrint();
+                    std::cout << "removed item range : " << removed_nodes;
                   });
 
 
