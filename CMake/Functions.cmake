@@ -85,8 +85,8 @@ function(arccore_add_component_library component_name)
   target_include_directories(${_LIB_NAME} PUBLIC $<BUILD_INTERFACE:${Arccore_SOURCE_DIR}/src/${component_name}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
   if (ARCCORE_EXPORT_TARGET)
     install(TARGETS ${_LIB_NAME} EXPORT ${ARCCORE_EXPORT_TARGET}
-      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+      LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+      ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
     target_link_libraries(arccore_full INTERFACE ${_LIB_NAME})
   endif()
 
