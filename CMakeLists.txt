@@ -5,11 +5,14 @@
 
 # For support of VERSION
 cmake_policy(SET CMP0048 NEW)
-# Check libraries with FOO_ROOT
-cmake_policy(SET CMP0074 NEW)
-# target_link_libraries from different libraries
-cmake_policy(SET CMP0079 NEW)
-
+# Check libraries with FOO_ROOT (CMake 3.12)
+if(POLICY CMP0074)
+  cmake_policy(SET CMP0074 NEW)
+endif()
+# target_link_libraries from different libraries (CMake 3.13)
+if(POLICY CMP0079)
+  cmake_policy(SET CMP0079 NEW)
+endif()
 # ----------------------------------------------------------------------------
 # Récupère numéro de version de Arcane à partir du fichier 'version' et
 # génère un fichier 'arcane_version.h' contenant ces informations.
