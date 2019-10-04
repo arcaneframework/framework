@@ -137,7 +137,7 @@ struct ItemRange {
     void append(const ItemRange& item_range, const std::vector<DataType>& values) {
       assert(item_range.size() == values.size());
       auto max_item = utils::maxItem(item_range);
-      if (max_item > m_data.size()) m_data.resize(max_item);
+      if (max_item > m_data.size()) m_data.resize(max_item+1);
       std::size_t counter{0};
       for (auto item : item_range) {
         m_data[item] = values[counter++];
