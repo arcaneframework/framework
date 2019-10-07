@@ -273,7 +273,7 @@ struct ItemRange {
 
   };
 
-  using Property = std::variant<PropertyT<utils::Int32>, PropertyT<utils::Real3>,PropertyT<utils::Int64>,PropertyT<ItemLocalId,ItemUniqueId>, ArrayProperty<utils::Int32>>;
+  using Property = std::variant<PropertyT<utils::Int32>, PropertyT<utils::Real3>,PropertyT<utils::Int64>,PropertyT<ItemLocalId,ItemUniqueId>, ArrayProperty<utils::Int32>, PropertyT<bool>>;
 
   namespace tye {
     template <typename... T> struct VisitorOverload : public T... {
@@ -426,6 +426,20 @@ struct ItemRange {
       tye::apply(m_algo,m_out_property());
     }
   };
+
+  template <typename Algorithm>
+  struct NoDepsDualOutAlgoHandler : public IAlgorithm {
+    NoDepsDualOutAlgoHandler(OutProperty&& out_prop1, OutProperty&& out_prop2, Algorithm&& algo)
+        : m_out_property1(std::move(out_prop1))
+        , m_out_property2(std::move(out_prop2))
+        , m_algo(std::forward<Algorithm>(algo)){}
+    OutProperty m_out_property1;
+    OutProperty m_out_property2;
+    Algorithm m_algo;
+    void operator() () override {
+      tye::apply(m_algo,m_out_property1(),m_out_property2());
+    }
+  };
     
   class Mesh {
 public:
@@ -457,6 +471,11 @@ public:
           std::move(in_property2),
           std::move(out_property),
           std::forward<Algorithm>(algo)));
+    }
+
+    template <typename Algorithm>
+    void addAlgorithm(OutProperty&& out_property1, OutProperty&& out_property2, Algorithm&& algo) {
+      m_algos.push_back(std::make_unique<NoDepsDualOutAlgoHandler<decltype(algo)>>(std::move(out_property1),std::move(out_property2),std::forward<Algorithm>(algo)));
     }
     
     void beginUpdate() { std::cout << "begin mesh update" << std::endl;}
@@ -520,6 +539,7 @@ public:
         lid = utils::NULL_ITEM_LID;
       }
       return ItemRange{std::move(item_indexes)};
+      // todo handle last_id ??
     }
 
     void debugPrint() const {
@@ -650,7 +670,7 @@ node_family.addProperty<neo::utils::Real3>(std::string("node_coords"));
 node_family.addProperty<neo::ItemLocalId,neo::ItemUniqueId>("node_lids");
 node_family.addProperty<neo::utils::Int64>("node_uids");
 node_family.addArrayProperty<neo::utils::Int32>("node2cells");
-
+node_family.addProperty<bool>("internal_end_of_remove_tag"); // not a user-defined property
 
 // Test adds
 auto& property = node_family.getProperty("node_lids");
@@ -813,8 +833,8 @@ mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},
 // remove nodes
 std::vector<neo::utils::Int64> removed_node_uids{1,2};
 auto removed_nodes = neo::ItemRange{};
-mesh.addAlgorithm(neo::OutProperty{node_family,"node_lids"},
-                  [&removed_node_uids,&removed_nodes](neo::ItemLidsProperty& node_lids_property){
+mesh.addAlgorithm(neo::OutProperty{node_family,"node_lids"}, neo::OutProperty{node_family,"internal_end_of_remove_tag"},
+                  [&removed_node_uids,&removed_nodes, &node_family](neo::ItemLidsProperty& node_lids_property, neo::PropertyT<bool> & internal_end_of_remove_tag){
                     std::cout << "Algorithm: remove nodes" << std::endl;
                     removed_nodes = node_lids_property.remove(removed_node_uids);
                     node_lids_property.debugPrint();
