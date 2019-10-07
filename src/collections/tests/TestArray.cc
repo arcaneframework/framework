@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 
 #include "arccore/collections/Array.h"
+#include "arccore/collections/Array2.h"
 
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/Iterator.h"
@@ -135,9 +136,14 @@ public:
       for( Integer i=0; i<nb; ++i )
         c.add(SubClass(i));
       c.reserve(nb*2);
-      ASSERT_EQ(c.capacity(),(nb*2)) << "Bad capacity (test 4)";
+      Int64 current_capacity = c.capacity();
+      ASSERT_EQ(current_capacity,(nb*2)) << "Bad capacity (test 4)";
+      c.shrink(c.capacity()+5);
+      ASSERT_EQ(c.capacity(),current_capacity) << "Bad capacity (test 5)";
+      c.shrink(32);
+      ASSERT_EQ(c.capacity(),32) << "Bad capacity (test 6)";
       c.shrink();
-      ASSERT_EQ(c.capacity(),c.size()) << "Bad capacity (test 5)";
+      ASSERT_EQ(c.capacity(),c.size()) << "Bad capacity (test 7)";
     }
     {
       UniqueArray<Container> uc;
@@ -474,5 +480,24 @@ TEST(Array, Misc2)
     _Add(v,0);
     _Add(v,230000);
     std::cout << " Size: " << v.size() << '\n';
+  }
+}
+
+TEST(Array2, Misc)
+{
+  using namespace Arccore;
+
+  {
+    UniqueArray2<Int32> c;
+    c.resize(3,5);
+    Integer nb = 15;
+    c.reserve(nb*2);
+    Int64 current_capacity = c.capacity();
+    ASSERT_EQ(current_capacity,(nb*2)) << "Bad capacity (test 1)";
+    c.shrink(32);
+    ASSERT_EQ(c.capacity(),current_capacity) << "Bad capacity (test 2)";
+    c.shrink();
+    c.shrink_to_fit();
+    ASSERT_EQ(c.capacity(),c.totalNbElement()) << "Bad capacity (test 3)";
   }
 }

@@ -713,12 +713,19 @@ class AbstractArray
     std::swap(m_baseptr,rhs.m_baseptr);
   }
 
-  // Réalloue la mémoire au plus juste.
   void _shrink()
+  {
+    _shrink(size());
+  }
+
+  // Réalloue la mémoire pour avoir une capacité proche de \a new_capacity
+  void _shrink(Int64 new_capacity)
   {
     if (m_p==TrueImpl::shared_null)
       return;
-    Int64 new_capacity = this->size();
+    // On n'augmente pas la capacité avec cette méthode
+    if (new_capacity>this->capacity())
+      return;
     if (new_capacity<4)
       new_capacity = 4;
     _internalReallocate(new_capacity,IsPODType());
@@ -1038,6 +1045,15 @@ class Array
   {
     this->_shrink();
   }
+
+  /*!
+   * \brief Réalloue la mémoire avoir une capacité proche de \a new_capacity.
+   */
+  void shrink(Int64 new_capacity)
+  {
+    this->_shrink(new_capacity);
+  }
+
   /*!
    * \brief Réalloue pour libérer la mémoire non utilisée.
    *
@@ -1047,6 +1063,7 @@ class Array
   {
     this->_shrink();
   }
+
   /*!
    * \brief Supprime l'entité ayant l'indice \a index.
    *

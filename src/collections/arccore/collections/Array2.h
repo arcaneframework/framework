@@ -89,9 +89,7 @@ class Array2
   {
     resize(size1,size2);
   }
-  ~Array2()
-  {
-  }
+  ~Array2() = default;
  private:
   //! Interdit
   void operator=(const Array2<DataType>& rhs);
@@ -181,6 +179,15 @@ class Array2
 
   //! Réserve de la mémoire pour \a new_capacity éléments
   void reserve(Int64 new_capacity) { Base::_reserve(new_capacity); }
+
+  // Réalloue la mémoire au plus juste.
+  void shrink() { Base::_shrink(); }
+
+  //! Réalloue la mémoire avoir une capacité proche de \a new_capacity.
+  void shrink(Int64 new_capacity) { Base::_shrink(new_capacity); }
+
+  // Réalloue la mémoire au plus juste.
+  void shrink_to_fit() { Base::_shrink(); }
 
   //! Vue du tableau sous forme de tableau 1D
   ArrayView<DataType> viewAsArray()
@@ -583,39 +590,43 @@ class UniqueArray2
   //! Constructeur par déplacement. \a rhs est invalidé après cet appel
   UniqueArray2(UniqueArray2<T>&& rhs) ARCCORE_NOEXCEPT : Array2<T>(std::move(rhs)) {}
   //! Copie les valeurs de \a rhs dans cette instance.
-  void operator=(const Array2<T>& rhs)
+  UniqueArray2& operator=(const Array2<T>& rhs)
   {
     this->copy(rhs.constSpan());
+    return (*this);
   }
   //! Copie les valeurs de \a rhs dans cette instance.
-  void operator=(const SharedArray2<T>& rhs)
+  UniqueArray2& operator=(const SharedArray2<T>& rhs)
   {
     this->copy(rhs.constSpan());
+    return (*this);
   }
   //! Copie les valeurs de \a rhs dans cette instance.
-  void operator=(const UniqueArray2<T>& rhs)
+  UniqueArray2& operator=(const UniqueArray2<T>& rhs)
   {
     this->copy(rhs.constSpan());
+    return (*this);
   }
   //! Copie les valeurs de la vue \a rhs dans cette instance.
-  void operator=(ConstArray2View<T> rhs)
+  UniqueArray2& operator=(ConstArray2View<T> rhs)
   {
     this->copy(rhs);
+    return (*this);
   }
   //! Copie les valeurs de la vue \a rhs dans cette instance.
-  void operator=(const Span2<const T>& rhs)
+  UniqueArray2& operator=(const Span2<const T>& rhs)
   {
     this->copy(rhs);
+    return (*this);
   }
   //! Opérateur de recopie par déplacement. \a rhs est invalidé après cet appel.
-  void operator=(UniqueArray2<T>&& rhs) ARCCORE_NOEXCEPT
+  UniqueArray2& operator=(UniqueArray2<T>&& rhs) ARCCORE_NOEXCEPT
   {
     this->_move(rhs);
+    return (*this);
   }
   //! Détruit le tableau
-  ~UniqueArray2() override
-  {
-  }
+  ~UniqueArray2() override = default;
  public:
   /*!
    * \brief Échange les valeurs de l'instance avec celles de \a rhs.
