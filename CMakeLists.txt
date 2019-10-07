@@ -42,14 +42,6 @@ include(GNUInstallDirs)
 
 # ----------------------------------------------------------------------------
 
-
-# ----------------------------------------------------------------------------
-# Indique que si une variable <PackageName>_ROOT est définie, considère
-# qu'il s'agit du chemin de base du package <PackageName>.
-if (POLICY CMP0074)
-  cmake_policy(SET CMP0074 NEW)
-endif()
-
 # Use Arccon functions and macros
 find_package(Arccon REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
@@ -190,6 +182,7 @@ configure_package_config_file(
 set(Arccore_project_config "${project_config}" CACHE FILEPATH "Arccore project config" FORCE)
 get_filename_component(Arccore_config_build_dir "${project_config}" DIRECTORY CACHE)
 set(Arccore_config_install_dir "${config_install_dir}" CACHE STRING "Arccore config install dir" FORCE)
+set(Arccore_VERSION "${Arccore_VERSION}" CACHE STRING "Arccore version" FORCE)
 
 install(FILES "${project_config}" "${version_config}"
   DESTINATION "${config_install_dir}"
