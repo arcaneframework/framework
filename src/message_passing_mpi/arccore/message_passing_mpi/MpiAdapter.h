@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* MpiAdapter.h                                                (C) 2000-2018 */
+/* MpiAdapter.h                                                (C) 2000-2019 */
 /*                                                                           */
 /* Implémentation des messages avec MPI.                                     */
 /*---------------------------------------------------------------------------*/
@@ -12,11 +12,8 @@
 #include "arccore/trace/TraceAccessor.h"
 
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
-
 #include "arccore/message_passing_mpi/MessagePassingMpiEnum.h"
-
 #include "arccore/message_passing_mpi/IMpiProfiling.h"
-
 #include "arccore/collections/CollectionsGlobal.h"
 
 #include "arccore/base/BaseTypes.h"
@@ -26,11 +23,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
-{
-namespace MessagePassing
-{
-namespace Mpi
+namespace Arccore::MessagePassing::Mpi
 {
 
 /*---------------------------------------------------------------------------*/
@@ -48,13 +41,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 : public TraceAccessor
 {
  public:
-  
-  //typedef Parallel::Request Request;
-  //typedef Parallel::eReduceType eReduceType;
 
- public:
-
-  MpiAdapter(ITraceMng* msg,IStat* stat,MPI_Comm comm,MpiLock* mpi_lock, IMpiProfiling* mpi_prof = nullptr);
+  MpiAdapter(ITraceMng* msg,IStat* stat,MPI_Comm comm,MpiLock* mpi_lock,
+             IMpiProfiling* mpi_prof = nullptr);
 
  protected:
 
@@ -113,7 +102,10 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
                         ArrayView<bool> indexes,
                         ArrayView<MPI_Status> mpi_status,bool is_non_blocking);
 
+  //! Rang de cette instance dans le communicateur
   int commRank() const { return m_comm_rank; }
+
+  //! Nombre de rangs dans le communicateur
   int commSize() const { return m_comm_size; }
 
   void freeRequest(Request& request);
@@ -137,6 +129,22 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 
   int toMPISize(Int64 count);
 
+ public:
+
+  //! Indique si les erreurs dans la liste des requêtes sont fatales
+  void setRequestErrorAreFatal(bool v) { m_request_error_is_fatal = v; }
+  bool isRequestErrorAreFatal() const { return m_request_error_is_fatal; }
+
+  //! Indique si on affiche des messages pour les erreurs dans les requêtes.
+  void setPrintRequestError(bool v) { m_is_report_error_in_request = v; }
+  bool isPrintRequestError() const { return m_is_report_error_in_request; }
+
+  //! Indique si on affiche des messages pour chaque appel MPI.
+  void setTraceMPIMessage(bool v) { m_is_trace = v; }
+  bool isTraceMPIMessage() const { return m_is_trace; }
+
+ public:
+
   void setMpiProfiling(IMpiProfiling* mpi_profiling);
 	IMpiProfiling* getMpiProfiling();
 
@@ -148,9 +156,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   MPI_Comm m_communicator; //!< Communicateur MPI
   int m_comm_rank;
   int m_comm_size;
-  Int64 m_nb_all_reduce;
-  Int64 m_nb_reduce;
-  bool m_is_trace;
+  Int64 m_nb_all_reduce = 0;
+  Int64 m_nb_reduce = 0;
+  bool m_is_trace = false;
   std::set<MPI_Request> m_allocated_requests;
   bool m_request_error_is_fatal;
   bool m_is_report_error_in_request;
@@ -169,9 +177,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Mpi
-} // End namespace MessagePassing
-} // End namespace Arccore
+} // End namespace Arccore::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

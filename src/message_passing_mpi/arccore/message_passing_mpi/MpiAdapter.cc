@@ -62,9 +62,6 @@ MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,MpiLock* mpi_lock, IMpiPro
 , m_communicator(comm)
 , m_comm_rank(0)
 , m_comm_size(0)
-, m_nb_all_reduce(0)
-, m_nb_reduce(0)
-, m_is_trace(false)
 , m_request_error_is_fatal(false)
 , m_is_report_error_in_request(true)
 , m_empty_request(MPI_REQUEST_NULL)
@@ -92,7 +89,8 @@ MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,MpiLock* mpi_lock, IMpiPro
    * appelle un IRecv avec une source MPI_PROC_NULL. On récupère donc la valeur
    * comme cela.
    */
-  m_mpi_prof->iRecv(m_recv_buffer_for_empty_request, 1, MPI_INT, MPI_PROC_NULL, 50505, m_communicator, &m_empty_request);
+  m_mpi_prof->iRecv(m_recv_buffer_for_empty_request, 1, MPI_INT, MPI_PROC_NULL,
+                    50505, m_communicator, &m_empty_request);
 }
 
 /*---------------------------------------------------------------------------*/
