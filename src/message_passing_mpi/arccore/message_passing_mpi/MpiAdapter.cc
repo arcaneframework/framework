@@ -157,6 +157,13 @@ broadcast(void* buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype)
   int _nb_elem = _checkSize(nb_elem);
   _trace(MpiInfo(eMpiName::Bcast).name().localstr());
   double begin_time = MPI_Wtime();
+  if (m_is_trace)
+    info() << "MPI_TRACE: MPI broadcast: before"
+           << " buf=" << buf
+           << " nb_elem=" << nb_elem
+           << " root=" << root
+           << " datatype=" << datatype;
+
   m_mpi_prof->broadcast(buf, _nb_elem, datatype, root, m_communicator);
   double end_time = MPI_Wtime();
   double sr_time   = (end_time-begin_time);
