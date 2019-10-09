@@ -472,7 +472,7 @@ operator<<(std::ostream& o, Span<const T> val)
 template<typename T> inline std::ostream&
 operator<<(std::ostream& o, Span<T> val)
 {
-  o << val.constView();
+  o << Span<const T>(val);
   return o;
 }
 
