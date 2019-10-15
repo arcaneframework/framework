@@ -357,7 +357,7 @@ private:
 
 };
 
-  using Property = std::variant<PropertyT<utils::Int32>, PropertyT<utils::Real3>,PropertyT<utils::Int64>,ItemLidsProperty, ArrayProperty<utils::Int32>, PropertyT<utils::Int32 >>;
+  using Property = std::variant<PropertyT<utils::Int32>, PropertyT<utils::Real3>,PropertyT<utils::Int64>,ItemLidsProperty, ArrayProperty<utils::Int32>>;
 
   namespace tye {
     template <typename... T> struct VisitorOverload : public T... {
@@ -913,7 +913,9 @@ int main() {
 
   test_array_property();
 
-  partial_mesh_modif_test();
+  base_mesh_creation_test();
+//
+//  partial_mesh_modif_test();
 
   return 0;
 }
