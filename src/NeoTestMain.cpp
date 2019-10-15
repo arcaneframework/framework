@@ -711,7 +711,7 @@ mesh.beginUpdate();
 
 // create nodes
 auto added_nodes = neo::ItemRange{};
-mesh.addAlgorithm(neo::OutProperty{node_family,"node_lids"},
+mesh.addAlgorithm(neo::OutProperty{node_family,node_family.lidPropName()},
   [&node_uids,&added_nodes](neo::ItemLidsProperty & node_lids_property){
   std::cout << "Algorithm: create nodes" << std::endl;
   added_nodes = node_lids_property.append(node_uids);
@@ -720,7 +720,7 @@ mesh.addAlgorithm(neo::OutProperty{node_family,"node_lids"},
   });
 
 // register node uids
-mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node_family,"node_uids"},
+mesh.addAlgorithm(neo::InProperty{node_family,node_family.lidPropName()},neo::OutProperty{node_family,"node_uids"},
   [&node_uids,&added_nodes](neo::ItemLidsProperty const& node_lids_property, neo::PropertyT<neo::utils::Int64>& node_uids_property){
     std::cout << "Algorithm: register node uids" << std::endl;
   if (node_uids_property.isInitializableFrom(added_nodes))  node_uids_property.init(added_nodes,std::move(node_uids)); // init can steal the input values
@@ -729,7 +729,7 @@ mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node
     });// need to add a property check for existing uid
 
 // register node coords
-mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node_family,"node_coords"},
+mesh.addAlgorithm(neo::InProperty{node_family,node_family.lidPropName()},neo::OutProperty{node_family,"node_coords"},
   [&node_coords,&added_nodes](neo::ItemLidsProperty const& node_lids_property, neo::PropertyT<neo::utils::Real3> & node_coords_property){
     std::cout << "Algorithm: register node coords" << std::endl;
     if (node_coords_property.isInitializableFrom(added_nodes))  node_coords_property.init(added_nodes,std::move(node_coords)); // init can steal the input values
@@ -741,7 +741,7 @@ mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node
 
 // create cells
 auto added_cells = neo::ItemRange{};
-mesh.addAlgorithm(neo::OutProperty{cell_family,"cell_lids"},
+mesh.addAlgorithm(neo::OutProperty{cell_family,cell_family.lidPropName()},
   [&cell_uids,&added_cells](neo::ItemLidsProperty& cell_lids_property) {
     std::cout << "Algorithm: create cells" << std::endl;
     added_cells = cell_lids_property.append(cell_uids);
@@ -750,7 +750,7 @@ mesh.addAlgorithm(neo::OutProperty{cell_family,"cell_lids"},
   });
 
 // register cell uids
-mesh.addAlgorithm(neo::InProperty{cell_family,"cell_lids"},neo::OutProperty{cell_family,"cell_uids"},
+mesh.addAlgorithm(neo::InProperty{cell_family,cell_family.lidPropName()},neo::OutProperty{cell_family,"cell_uids"},
     [&cell_uids,&added_cells](neo::ItemLidsProperty const& cell_lids_property, neo::PropertyT<neo::utils::Int64>& cell_uids_property){
       std::cout << "Algorithm: register cell uids" << std::endl;
       if (cell_uids_property.isInitializableFrom(added_cells))  cell_uids_property.init(added_cells,std::move(cell_uids)); // init can steal the input values
@@ -762,8 +762,8 @@ mesh.addAlgorithm(neo::InProperty{cell_family,"cell_lids"},neo::OutProperty{cell
 // node to cell
 std::vector<neo::utils::Int64> connected_cell_uids{0,0,2,2,7,9};
 std::vector<std::size_t> nb_cell_per_node{1,2,3};
-mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},
-                  neo::InProperty{cell_family,"cell_lids"},
+mesh.addAlgorithm(neo::InProperty{node_family,node_family.lidPropName()},
+                  neo::InProperty{cell_family,cell_family.lidPropName()},
                   neo::OutProperty{node_family,"node2cells"},
     [&connected_cell_uids, &nb_cell_per_node,& added_nodes]
     (neo::ItemLidsProperty const& node_lids_property, neo::ItemLidsProperty const& cell_lids_property, neo::ArrayProperty<neo::utils::Int32> & node2cells){
@@ -782,8 +782,8 @@ mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},
 // cell to node
 std::vector<neo::utils::Int64> connected_node_uids{0,1,2,1,2,0,2,1,0};// on ne connecte volontairement pas toutes les mailles pour vérifier initialisation ok sur la famille
 std::vector<std::size_t> nb_node_per_cell{3,0,3,3};
-mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},
-                  neo::InProperty{cell_family,"cell_lids"},
+mesh.addAlgorithm(neo::InProperty{node_family,node_family.lidPropName()},
+                  neo::InProperty{cell_family,cell_family.lidPropName()},
                   neo::OutProperty{cell_family,"cell2nodes"},
                   [&connected_node_uids, &nb_node_per_cell,& added_cells]
                           (neo::ItemLidsProperty const& node_lids_property, neo::ItemLidsProperty const& cell_lids_property, neo::ArrayProperty<neo::utils::Int32> & cells2nodes){
@@ -801,7 +801,7 @@ mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},
 // add new cells
 std::vector<neo::utils::Int64> new_cell_uids{10,11,12}; // elles seront toutes rouges
 auto new_cell_added =neo::ItemRange{};
-mesh.addAlgorithm(neo::OutProperty{cell_family,"cell_lids"},
+mesh.addAlgorithm(neo::OutProperty{cell_family,cell_family.lidPropName()},
                 [&new_cell_uids,&new_cell_added](neo::ItemLidsProperty& cell_lids_property) {
                   std::cout << "Algorithm: add new cells" << std::endl;
                   new_cell_added = cell_lids_property.append(new_cell_uids);
@@ -810,7 +810,7 @@ mesh.addAlgorithm(neo::OutProperty{cell_family,"cell_lids"},
                 });
 
 // register new cell uids
-mesh.addAlgorithm(neo::InProperty{cell_family,"cell_lids"},neo::OutProperty{cell_family,"cell_uids"},
+mesh.addAlgorithm(neo::InProperty{cell_family,cell_family.lidPropName()},neo::OutProperty{cell_family,"cell_uids"},
                   [&new_cell_uids,&new_cell_added](neo::ItemLidsProperty const& cell_lids_property, neo::PropertyT<neo::utils::Int64>& cell_uids_property){
                     std::cout << "Algorithm: register new cell uids" << std::endl;
                     // must append and not initialize
@@ -822,8 +822,8 @@ mesh.addAlgorithm(neo::InProperty{cell_family,"cell_lids"},neo::OutProperty{cell
 // add connectivity to new cells
 std::vector<neo::utils::Int64> new_cell_connected_node_uids{0,1,2,1,2};// on ne connecte volontairement pas toutes les mailles pour vérifier initialisation ok sur la famille
 std::vector<std::size_t> nb_node_per_new_cell{0,3,2};
-mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},
-                  neo::InProperty{cell_family,"cell_lids"},
+mesh.addAlgorithm(neo::InProperty{node_family,node_family.lidPropName()},
+                  neo::InProperty{cell_family,cell_family.lidPropName()},
                   neo::OutProperty{cell_family,"cell2nodes"},
                   [&new_cell_connected_node_uids, &nb_node_per_new_cell,& new_cell_added]
                           (neo::ItemLidsProperty const& node_lids_property, neo::ItemLidsProperty const& cell_lids_property, neo::ArrayProperty<neo::utils::Int32> & cells2nodes){
@@ -840,7 +840,7 @@ mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},
 // remove nodes
 std::vector<neo::utils::Int64> removed_node_uids{1,2};
 auto removed_nodes = neo::ItemRange{};
-mesh.addAlgorithm(neo::OutProperty{node_family,"node_lids"}, neo::OutProperty{node_family,"internal_end_of_remove_tag"},
+mesh.addAlgorithm(neo::OutProperty{node_family,node_family.lidPropName()}, neo::OutProperty{node_family,"internal_end_of_remove_tag"},
                   [&removed_node_uids,&removed_nodes, &node_family](neo::ItemLidsProperty& node_lids_property, neo::PropertyT<bool> & internal_end_of_remove_tag){
                     std::cout << "Algorithm: remove nodes" << std::endl;
                     removed_nodes = node_lids_property.remove(removed_node_uids);
@@ -875,7 +875,7 @@ prepare_mesh(mesh);
 
 mesh.beginUpdate();
 
-mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node_family,"node_coords"},
+mesh.addAlgorithm(neo::InProperty{node_family,node_family.lidPropName()},neo::OutProperty{node_family,"node_coords"},
   [&node_coords,&node_uids](neo::ItemLidsProperty const& node_lids_property, neo::PropertyT<neo::utils::Real3> & node_coords_property){
     std::cout << "Algorithm: register node coords" << std::endl;
     //auto& lids = node_lids_property[node_uids];//todo
