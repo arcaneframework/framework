@@ -152,6 +152,9 @@ struct ItemRange {
       m_data = std::move(values);
     }
 
+    DataType & operator[] (neo::utils::Int32 item) { return m_data[item]; }
+    DataType const& operator[] (neo::utils::Int32 item) const { return m_data[item]; }
+
     void debugPrint() const {
       std::cout << "= Print property " << m_name << " =" << std::endl;
       for (auto &val : m_data) {
@@ -354,7 +357,7 @@ private:
 
 };
 
-  using Property = std::variant<PropertyT<utils::Int32>, PropertyT<utils::Real3>,PropertyT<utils::Int64>,ItemLidsProperty, ArrayProperty<utils::Int32>, PropertyT<bool>>;
+  using Property = std::variant<PropertyT<utils::Int32>, PropertyT<utils::Real3>,PropertyT<utils::Int64>,ItemLidsProperty, ArrayProperty<utils::Int32>, PropertyT<utils::Int32 >>;
 
   namespace tye {
     template <typename... T> struct VisitorOverload : public T... {
@@ -423,6 +426,11 @@ private:
 
     std::string const&  lidPropName()
     { return m_prop_lid_name;}
+
+    std::size_t size() {
+      throw;
+      return 0;
+    }
 
     ItemKind m_ik;
     std::string m_name;
@@ -678,7 +686,7 @@ std::cout << "Find family " << node_family.m_name << std::endl;
 node_family.addProperty<neo::utils::Real3>(std::string("node_coords"));
 node_family.addProperty<neo::utils::Int64>("node_uids");
 node_family.addArrayProperty<neo::utils::Int32>("node2cells");
-node_family.addProperty<bool>("internal_end_of_remove_tag"); // not a user-defined property
+node_family.addProperty<neo::utils::Int32>("internal_end_of_remove_tag"); // not a user-defined property // todo use byte ?
 
 // Test adds
 auto& property = node_family.getProperty("node_lids");
@@ -841,11 +849,18 @@ mesh.addAlgorithm(neo::InProperty{node_family,node_family.lidPropName()},
 std::vector<neo::utils::Int64> removed_node_uids{1,2};
 auto removed_nodes = neo::ItemRange{};
 mesh.addAlgorithm(neo::OutProperty{node_family,node_family.lidPropName()}, neo::OutProperty{node_family,"internal_end_of_remove_tag"},
-                  [&removed_node_uids,&removed_nodes, &node_family](neo::ItemLidsProperty& node_lids_property, neo::PropertyT<bool> & internal_end_of_remove_tag){
+                  [&removed_node_uids,&removed_nodes, &node_family](neo::ItemLidsProperty& node_lids_property, neo::PropertyT<neo::utils::Int32 > & internal_end_of_remove_tag){
                     std::cout << "Algorithm: remove nodes" << std::endl;
                     removed_nodes = node_lids_property.remove(removed_node_uids);
                     node_lids_property.debugPrint();
                     std::cout << "removed item range : " << removed_nodes;
+                    // Store removed items in internal_end_of_remove_tag
+                    auto nb_nodes = node_family.size();
+                    neo::ItemRange node_range {neo::ItemIndexes{{},0,nb_nodes}};
+                    internal_end_of_remove_tag.init(node_range,std::vector<neo::utils::Int32>(nb_nodes,0));
+                    for (auto removed_item : removed_nodes) {
+                      internal_end_of_remove_tag[removed_item] = 1;
+                    }
                   });
 
 
