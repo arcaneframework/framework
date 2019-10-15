@@ -130,7 +130,7 @@ struct ItemRange {
     std::string m_name;
     };
 
-  template <typename DataType, typename IndexType=int>
+  template <typename DataType>
   class PropertyT : public PropertyBase  {
     public:
 
@@ -273,7 +273,88 @@ struct ItemRange {
 
   };
 
-  using Property = std::variant<PropertyT<utils::Int32>, PropertyT<utils::Real3>,PropertyT<utils::Int64>,PropertyT<ItemLocalId,ItemUniqueId>, ArrayProperty<utils::Int32>, PropertyT<bool>>;
+// special case of local ids property
+class ItemLidsProperty : public PropertyBase {
+public:
+  explicit ItemLidsProperty(std::string const& name) : PropertyBase{name}{};
+
+  ItemRange append(std::vector<neo::utils::Int64> const& uids) {
+    std::size_t counter = 0;
+    ItemIndexes item_indexes{};
+    auto& non_contiguous_lids = item_indexes.m_non_contiguous_indexes;
+    non_contiguous_lids.reserve(m_empty_lids.size());
+    if (uids.size() >= m_empty_lids.size()) {
+      for (auto empty_lid : m_empty_lids) {
+        m_uid2lid[uids[counter++]] = empty_lid;
+        non_contiguous_lids.push_back(empty_lid);
+      }
+      item_indexes.m_first_contiguous_index = m_last_id +1;
+      for (auto uid = uids.begin() + counter; uid != uids.end(); ++uid) { // todo use span
+        m_uid2lid[*uid] = ++m_last_id;
+      }
+      item_indexes.m_nb_contiguous_indexes = m_last_id - item_indexes.m_first_contiguous_index +1 ;
+      m_empty_lids.clear();
+    }
+    else {// empty_lids.size > uids.size
+      for(auto uid : uids) {
+        m_uid2lid[uid] = m_empty_lids.back();
+        non_contiguous_lids.push_back(m_empty_lids.back());
+        m_empty_lids.pop_back();
+      }
+    }
+    return ItemRange{std::move(item_indexes)};
+  }
+
+  ItemRange remove(std::vector<utils::Int64> const& uids){
+    ItemIndexes item_indexes{};
+    item_indexes.m_non_contiguous_indexes.resize(uids.size());
+    auto empty_lids_size = m_empty_lids.size();
+    m_empty_lids.resize( empty_lids_size + uids.size());
+    auto counter = 0;
+    auto empty_lids_index = empty_lids_size;
+    for (auto uid : uids) {
+      // remove from map (set NULL_ITEM_LID)
+      // add in range and in empty_lids
+      auto& lid = m_uid2lid.at(uid); // checks bound. To see whether costly
+      m_empty_lids[empty_lids_index++] = lid;
+      item_indexes.m_non_contiguous_indexes[counter++] = lid;
+      lid = utils::NULL_ITEM_LID;
+    }
+    return ItemRange{std::move(item_indexes)};
+    // todo handle last_id ??
+  }
+
+  void debugPrint() const {
+    std::cout << "= Print property " << m_name << " =" << std::endl;
+    for (auto uid : m_uid2lid){
+      std::cout << " uid to lid  " << uid.first << " : " << uid.second;
+    }
+    std::cout << std::endl;
+  }
+
+  utils::Int32 _getLidFromUid(utils::Int64 const uid) const {
+    auto iterator = m_uid2lid.find(uid);
+    if (iterator == m_uid2lid.end()) return utils::NULL_ITEM_LID;
+    else return iterator->second;
+
+  }
+  void _getLidsFromUids(std::vector<utils::Int32>& lids, std::vector<utils::Int64> const& uids) const {
+    std::transform(uids.begin(),uids.end(),std::back_inserter(lids),[this](auto const& uid){return this->_getLidFromUid(uid);});
+  }
+  std::vector<utils::Int32> operator[](std::vector<utils::Int64> const& uids) const {
+    std::vector<utils::Int32> lids;
+    _getLidsFromUids(lids,uids);
+    return lids;
+  }
+
+private:
+  std::vector<neo::utils::Int32> m_empty_lids;
+  std::map<neo::utils::Int64, neo::utils::Int32 > m_uid2lid; // todo at least unordered_map
+  int m_last_id = -1;
+
+};
+
+  using Property = std::variant<PropertyT<utils::Int32>, PropertyT<utils::Real3>,PropertyT<utils::Int64>,ItemLidsProperty, ArrayProperty<utils::Int32>, PropertyT<bool>>;
 
   namespace tye {
     template <typename... T> struct VisitorOverload : public T... {
@@ -318,11 +399,18 @@ struct ItemRange {
 
   class Family {
   public:
-    template<typename T, typename IndexType =int>
+
+    Family(ItemKind ik, std::string name) : m_ik(ik), m_name(std::move(name)), m_prop_lid_name(m_name) {
+      m_prop_lid_name.append("_lids");
+      m_properties[lidPropName()] = ItemLidsProperty{lidPropName()};
+    }
+
+    template<typename T>
     void addProperty(std::string const& name){
-      m_properties[name] = PropertyT<T,IndexType>{name};
+      m_properties[name] = PropertyT<T>{name};
       std::cout << "Add property " << name << " in Family " << m_name<< std::endl;
       };
+
     Property& getProperty(const std::string& name) {
       return m_properties[name];
     }
@@ -333,8 +421,13 @@ struct ItemRange {
       std::cout << "Add array property " << name << " in Family " << m_name<< std::endl;
     }
 
+    std::string const&  lidPropName()
+    { return m_prop_lid_name;}
+
     ItemKind m_ik;
     std::string m_name;
+    std::string m_prop_lid_name;
+//    ItemLidsProperty* m_lid_property; // todo try to avoid raw ptr
     std::map<std::string, Property> m_properties;
   };
 
@@ -342,11 +435,11 @@ struct ItemRange {
   public:
     Family& operator() (ItemKind const & ik,std::string const& name)
     {
-      return m_families[std::make_pair(ik,name)];
+      return m_families.find(std::make_pair(ik,name))->second;
     }
     Family& push_back(ItemKind const & ik,std::string const& name)
     {
-      return m_families[std::make_pair(ik,name)] = Family{ik,name};
+      return m_families.emplace(std::make_pair(ik, name), Family(ik,name)).first->second;
     }
 
     auto begin() noexcept {return m_families.begin();}
@@ -490,90 +583,6 @@ public:
     std::list<std::unique_ptr<IAlgorithm>> m_algos;
   };
 
-  // special case of local ids property
-  template <>
-  class PropertyT<ItemLocalId,ItemUniqueId> : public PropertyBase {
-    public:
-    explicit PropertyT(std::string const& name) : PropertyBase{name}{};
-
-    ItemRange append(std::vector<neo::utils::Int64> const& uids) {
-      std::size_t counter = 0;
-      ItemIndexes item_indexes{};
-      auto& non_contiguous_lids = item_indexes.m_non_contiguous_indexes;
-      non_contiguous_lids.reserve(m_empty_lids.size());
-      if (uids.size() >= m_empty_lids.size()) {
-        for (auto empty_lid : m_empty_lids) {
-          m_uid2lid[uids[counter++]] = empty_lid;
-          non_contiguous_lids.push_back(empty_lid);
-        }
-        item_indexes.m_first_contiguous_index = m_last_id +1;
-        for (auto uid = uids.begin() + counter; uid != uids.end(); ++uid) { // todo use span
-          m_uid2lid[*uid] = ++m_last_id;
-        }
-        item_indexes.m_nb_contiguous_indexes = m_last_id - item_indexes.m_first_contiguous_index +1 ;
-        m_empty_lids.clear();
-      }
-      else {// empty_lids.size > uids.size
-       for(auto uid : uids) {
-         m_uid2lid[uid] = m_empty_lids.back();
-         non_contiguous_lids.push_back(m_empty_lids.back());
-         m_empty_lids.pop_back();
-       }
-      }
-      return ItemRange{std::move(item_indexes)};
-    }
-
-    ItemRange remove(std::vector<utils::Int64> const& uids){
-      ItemIndexes item_indexes{};
-      item_indexes.m_non_contiguous_indexes.resize(uids.size());
-      auto empty_lids_size = m_empty_lids.size();
-      m_empty_lids.resize( empty_lids_size + uids.size());
-      auto counter = 0;
-      auto empty_lids_index = empty_lids_size;
-      for (auto uid : uids) {
-        // remove from map (set NULL_ITEM_LID)
-        // add in range and in empty_lids
-        auto& lid = m_uid2lid.at(uid); // checks bound. To see whether costly
-        m_empty_lids[empty_lids_index++] = lid;
-        item_indexes.m_non_contiguous_indexes[counter++] = lid;
-        lid = utils::NULL_ITEM_LID;
-      }
-      return ItemRange{std::move(item_indexes)};
-      // todo handle last_id ??
-    }
-
-    void debugPrint() const {
-      std::cout << "= Print property " << m_name << " =" << std::endl;
-      for (auto uid : m_uid2lid){
-        std::cout << " uid to lid  " << uid.first << " : " << uid.second;
-      }
-      std::cout << std::endl;
-    }
-
-    utils::Int32 _getLidFromUid(utils::Int64 const uid) const {
-      auto iterator = m_uid2lid.find(uid);
-      if (iterator == m_uid2lid.end()) return utils::NULL_ITEM_LID;
-      else return iterator->second;
-
-    }
-    void _getLidsFromUids(std::vector<utils::Int32>& lids, std::vector<utils::Int64> const& uids) const {
-      std::transform(uids.begin(),uids.end(),std::back_inserter(lids),[this](auto const& uid){return this->_getLidFromUid(uid);});
-    }
-    std::vector<utils::Int32> operator[](std::vector<utils::Int64> const& uids) const {
-      std::vector<utils::Int32> lids;
-      _getLidsFromUids(lids,uids);
-      return lids;
-    }
-
-  private:
-    std::vector<neo::utils::Int32> m_empty_lids;
-    std::map<neo::utils::Int64, neo::utils::Int32 > m_uid2lid; // todo at least unordered_map
-    int m_last_id = -1;
-
-  };
-  
-  using ItemLidsProperty = PropertyT<ItemLocalId,ItemUniqueId>;
- 
 } // end namespace Neo
 
 /*-------------------------
@@ -667,7 +676,6 @@ void prepare_mesh(neo::Mesh& mesh){
 auto& node_family = mesh.getFamily(neo::ItemKind::IK_Node,"NodeFamily");
 std::cout << "Find family " << node_family.m_name << std::endl;
 node_family.addProperty<neo::utils::Real3>(std::string("node_coords"));
-node_family.addProperty<neo::ItemLocalId,neo::ItemUniqueId>("node_lids");
 node_family.addProperty<neo::utils::Int64>("node_uids");
 node_family.addArrayProperty<neo::utils::Int32>("node2cells");
 node_family.addProperty<bool>("internal_end_of_remove_tag"); // not a user-defined property
@@ -678,7 +686,6 @@ auto& property = node_family.getProperty("node_lids");
 // Adding cell family and properties
 auto& cell_family = mesh.getFamily(neo::ItemKind::IK_Cell,"CellFamily");
 std::cout << "Find family " << cell_family.m_name << std::endl;
-cell_family.addProperty<neo::ItemLocalId,neo::ItemUniqueId>("cell_lids");
 cell_family.addProperty<neo::utils::Int64>("cell_uids");
 cell_family.addArrayProperty<neo::utils::Int32>("cell2nodes");
 }
@@ -705,7 +712,7 @@ mesh.beginUpdate();
 // create nodes
 auto added_nodes = neo::ItemRange{};
 mesh.addAlgorithm(neo::OutProperty{node_family,"node_lids"},
-  [&node_uids,&added_nodes](neo::PropertyT<neo::ItemLocalId,neo::ItemUniqueId> & node_lids_property){
+  [&node_uids,&added_nodes](neo::ItemLidsProperty & node_lids_property){
   std::cout << "Algorithm: create nodes" << std::endl;
   added_nodes = node_lids_property.append(node_uids);
   node_lids_property.debugPrint();
@@ -714,7 +721,7 @@ mesh.addAlgorithm(neo::OutProperty{node_family,"node_lids"},
 
 // register node uids
 mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node_family,"node_uids"},
-  [&node_uids,&added_nodes](neo::PropertyT<neo::ItemLocalId,neo::ItemUniqueId> const& node_lids_property, neo::PropertyT<neo::utils::Int64>& node_uids_property){
+  [&node_uids,&added_nodes](neo::ItemLidsProperty const& node_lids_property, neo::PropertyT<neo::utils::Int64>& node_uids_property){
     std::cout << "Algorithm: register node uids" << std::endl;
   if (node_uids_property.isInitializableFrom(added_nodes))  node_uids_property.init(added_nodes,std::move(node_uids)); // init can steal the input values
   else node_uids_property.append(added_nodes, node_uids);
@@ -723,7 +730,7 @@ mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node
 
 // register node coords
 mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node_family,"node_coords"},
-  [&node_coords,&added_nodes](neo::PropertyT<neo::ItemLocalId,neo::ItemUniqueId> const& node_lids_property, neo::PropertyT<neo::utils::Real3> & node_coords_property){
+  [&node_coords,&added_nodes](neo::ItemLidsProperty const& node_lids_property, neo::PropertyT<neo::utils::Real3> & node_coords_property){
     std::cout << "Algorithm: register node coords" << std::endl;
     if (node_coords_property.isInitializableFrom(added_nodes))  node_coords_property.init(added_nodes,std::move(node_coords)); // init can steal the input values
     else node_coords_property.append(added_nodes, node_coords);
@@ -869,7 +876,7 @@ prepare_mesh(mesh);
 mesh.beginUpdate();
 
 mesh.addAlgorithm(neo::InProperty{node_family,"node_lids"},neo::OutProperty{node_family,"node_coords"},
-  [&node_coords,&node_uids](neo::PropertyT<neo::ItemLocalId,neo::ItemUniqueId> const& node_lids_property, neo::PropertyT<neo::utils::Real3> & node_coords_property){
+  [&node_coords,&node_uids](neo::ItemLidsProperty const& node_lids_property, neo::PropertyT<neo::utils::Real3> & node_coords_property){
     std::cout << "Algorithm: register node coords" << std::endl;
     //auto& lids = node_lids_property[node_uids];//todo
     //node_coords_property.appendAt(lids, node_coords);// steal node_coords memory//todo
