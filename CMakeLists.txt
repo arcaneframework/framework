@@ -110,14 +110,6 @@ configure_file(${CMAKE_CURRENT_LIST_DIR}/arccore_config.h.in ${CMAKE_BINARY_DIR}
 install(FILES ${CMAKE_BINARY_DIR}/arccore/arccore_config.h DESTINATION include/arccore)
 
 # ----------------------------------------------------------------------------
-
-#set(Arccore_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-#set(Arccore_BINARY_DIR ${CMAKE_BINARY_DIR}/arccore)
-
-message(STATUS "Arccore_SOURCE_DIR=${Arccore_SOURCE_DIR}")
-message(STATUS "Arccore_BINARY_DIR=${Arccore_BINARY_DIR}")
-
-# ----------------------------------------------------------------------------
 # Ajoute support des tests. Il faut le faire avant d'ajouter les componsants
 # car ces derniers en ont besoin.
 
