@@ -1090,8 +1090,9 @@ _writeDirect(const TraceMessage* msg,Span<const Byte> buf_array,
         _writeStackTrace(&def_out,stack_trace);
       _write(log_stream,buf_array,true);
       _writeStackTrace(log_stream,stack_trace);
-      if (error_stream!=&std::cerr)
+      if (listing_stream){
         _write(std::cerr,buf_array);
+      }
     }
     break;
   case Trace::Fatal:
@@ -1104,7 +1105,7 @@ _writeDirect(const TraceMessage* msg,Span<const Byte> buf_array,
       _write(log_stream,buf_array,true);
       String stack_trace = Platform::getStackTrace();
       _writeStackTrace(log_stream,stack_trace);
-      if (error_stream!=&std::cerr)
+      if (listing_stream)
         _write(std::cerr,buf_array);
     }
     {
