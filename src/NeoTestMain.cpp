@@ -14,6 +14,8 @@
 #include <variant>
 #include <vector>
 
+#include "gtest/gtest.h"
+
 /*-------------------------
  * sdc - (C)-2019 -
  * NEtwork Oriented kernel
@@ -600,7 +602,7 @@ public:
  *-------------------------
  */
 
-void test_item_range(){
+TEST(NeoTestItemRange,test_item_range){
   // Test with only contiguous indexes
   std::cout << "== Testing contiguous item range from 0 with 5 items =="<< std::endl;
   auto ir = neo::ItemRange{neo::ItemIndexes{{},0,5}};
@@ -627,7 +629,7 @@ void test_item_range(){
   // todo test out reverse range
 }
 
-void test_array_property()
+TEST(NeoTestArrayProperty,test_array_property)
 {
   auto array_property = neo::ArrayProperty<neo::utils::Int32>{"test_array_property"};
   // add elements: 5 items with one value
@@ -655,19 +657,19 @@ void test_array_property()
   array_property.debugPrint();
 }
 
-void test_property_graph()
+TEST(NeoTestPropertyGraph,test_property_graph)
 {
   std::cout << "Test Property Graph" << std::endl;
   // to be done when the graph impl will be available
 }
  
-void test_lids_property()
+TEST(NeoTestLidsProperty,test_lids_property)
 {
   std::cout << "Test lids Property" << std::endl;
   
 }
 
-void property_test(const neo::Mesh& mesh){
+void mesh_property_test(const neo::Mesh& mesh){
   std::cout << "== Print Mesh " << mesh.m_name << " Properties =="<< std::endl;
   for (const auto& [kind_name_pair,family] : mesh.m_families) {
     std::cout << "= In family " << kind_name_pair.second << " =" << std::endl;
@@ -698,7 +700,11 @@ cell_family.addProperty<neo::utils::Int64>("cell_uids");
 cell_family.addArrayProperty<neo::utils::Int32>("cell2nodes");
 }
  
-void base_mesh_creation_test() {
+TEST(NeoTestBaseMeshCreation,base_mesh_creation_test) {
+
+  std::cout << "*------------------------------------*"<< std::endl;
+  std::cout << "* Test framework Neo thoughts " << std::endl;
+  std::cout << "*------------------------------------*" << std::endl;
 
 
 // creating mesh
@@ -868,11 +874,11 @@ mesh.addAlgorithm(neo::OutProperty{node_family,node_family.lidPropName()}, neo::
 mesh.endUpdate();
 
 // test properties
-property_test(mesh);
+mesh_property_test(mesh);
 }
 
 
-void partial_mesh_modif_test() {
+TEST(NeoTestPartialMeshModification,partial_mesh_modif_test) {
   
 // modify node coords
 // input data
@@ -899,23 +905,4 @@ mesh.addAlgorithm(neo::InProperty{node_family,node_family.lidPropName()},neo::Ou
 
 mesh.endUpdate();
   
-}
-
-// prepare a second partial scenario
- 
-int main() {
-  
-  std::cout << "*------------------------------------*"<< std::endl;
-  std::cout << "* Test framework Neo thoughts " << std::endl;
-  std::cout << "*------------------------------------*" << std::endl;
-
-  test_item_range();
-
-  test_array_property();
-
-  base_mesh_creation_test();
-//
-//  partial_mesh_modif_test();
-
-  return 0;
 }
