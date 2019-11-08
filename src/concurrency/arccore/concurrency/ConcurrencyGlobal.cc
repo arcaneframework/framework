@@ -6,6 +6,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arccore/base/ReferenceCounter.h"
 #include "arccore/concurrency/ConcurrencyGlobal.h"
 
 #include "arccore/concurrency/NullThreadImplementation.h"
@@ -20,7 +21,7 @@ namespace Arccore
 namespace Concurrency
 {
 NullThreadImplementation global_null_thread_implementation;
-IThreadImplementation* global_thread_implementation = &global_null_thread_implementation;
+ReferenceCounter<IThreadImplementation> global_thread_implementation{&global_null_thread_implementation};
 }
 
 /*---------------------------------------------------------------------------*/
@@ -29,7 +30,7 @@ IThreadImplementation* global_thread_implementation = &global_null_thread_implem
 extern "C++" ARCCORE_CONCURRENCY_EXPORT IThreadImplementation* Concurrency::
 getThreadImplementation()
 {
-  return global_thread_implementation;
+  return global_thread_implementation.get();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -38,8 +39,10 @@ getThreadImplementation()
 extern "C++" ARCCORE_CONCURRENCY_EXPORT IThreadImplementation* Concurrency::
 setThreadImplementation(IThreadImplementation* service)
 {
-  IThreadImplementation* old_service = global_thread_implementation;
+  IThreadImplementation* old_service = global_thread_implementation.get();
   global_thread_implementation = service;
+  if (!service)
+    service = &global_null_thread_implementation;
   return old_service;
 }
 

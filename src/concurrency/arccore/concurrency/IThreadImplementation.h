@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* IThreadImplementation.h                                     (C) 2000-2009 */
+/* IThreadImplementation.h                                     (C) 2000-2019 */
 /*                                                                           */
 /* Interface d'un service implémentant le support des threads.               */
 /*---------------------------------------------------------------------------*/
@@ -22,11 +22,18 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Interface d'un service implémentant le support des threads.
+ *
+ * Ce service utilise un compteur de référence et doit être détruit
+ * s'il n'y a plus de références dessus. Il ne doit donc en général pas
+ * être détruit explicitement.
  */
 class ARCCORE_CONCURRENCY_EXPORT IThreadImplementation
 {
+ protected:
+  virtual ~IThreadImplementation() = default;
  public:
-  virtual ~IThreadImplementation(){}
+  virtual void addReference() =0;
+  virtual void removeReference() =0;
  public:
   virtual void initialize() =0;
  public:

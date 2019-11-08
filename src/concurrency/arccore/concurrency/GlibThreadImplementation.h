@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* GlibThreadImplementation.h                                  (C) 2000-2018 */
+/* GlibThreadImplementation.h                                  (C) 2000-2019 */
 /*                                                                           */
 /* Implémentation de ITreadImplementation avec la 'Glib'.                    */
 /*---------------------------------------------------------------------------*/
@@ -10,6 +10,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/concurrency/IThreadImplementation.h"
+#include <atomic>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,6 +29,14 @@ class ARCCORE_CONCURRENCY_EXPORT GlibThreadImplementation
  public:
   GlibThreadImplementation();
   ~GlibThreadImplementation() override;
+ public:
+  void addReference() override { ++m_nb_ref; }
+  void removeReference() override
+  {
+    Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
+    if (v==1)
+      delete this;
+  }
  public:
   void initialize() override;
  public:
@@ -49,6 +58,7 @@ class ARCCORE_CONCURRENCY_EXPORT GlibThreadImplementation
   IThreadBarrier* createBarrier() override;
  private:
   MutexImpl* m_global_mutex_impl;
+  std::atomic<int> m_nb_ref = 0;
 };
 
 /*---------------------------------------------------------------------------*/

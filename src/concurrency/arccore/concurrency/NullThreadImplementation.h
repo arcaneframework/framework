@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* NullThreadImplementation.h                                  (C) 2000-2018 */
+/* NullThreadImplementation.h                                  (C) 2000-2019 */
 /*                                                                           */
 /* Gestionnaire de thread en mode mono-thread.                               */
 /*---------------------------------------------------------------------------*/
@@ -42,6 +42,8 @@ class ARCCORE_CONCURRENCY_EXPORT NullThreadImplementation
  public:
   virtual void initialize(){}
  public:
+  virtual void addReference() {}
+  virtual void removeReference() {}
   virtual ThreadImpl* createThread(IFunctor*) { return nullptr; }
   virtual void joinThread(ThreadImpl*) {}
   virtual void destroyThread(ThreadImpl*) {}

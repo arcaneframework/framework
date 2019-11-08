@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* Mutex.h                                                     (C) 2000-2018 */
+/* Mutex.h                                                     (C) 2000-2019 */
 /*                                                                           */
 /* Mutex pour le multi-threading.                                            */
 /*---------------------------------------------------------------------------*/
@@ -10,6 +10,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/concurrency/ConcurrencyGlobal.h"
+#include "arccore/base/ReferenceCounter.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -77,7 +78,7 @@ class ARCCORE_CONCURRENCY_EXPORT Mutex
  private:
   MutexImpl* m_p;
   //! Implémentation utilisée pour ce mutex.
-  IThreadImplementation* m_thread_impl;
+  ReferenceCounter<IThreadImplementation> m_thread_impl;
 };
 
 /*---------------------------------------------------------------------------*/
