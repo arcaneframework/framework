@@ -18,7 +18,7 @@
 namespace Arccore
 {
 
-namespace Concurrency
+namespace
 {
 NullThreadImplementation global_null_thread_implementation;
 ReferenceCounter<IThreadImplementation> global_thread_implementation{&global_null_thread_implementation};
@@ -42,7 +42,7 @@ setThreadImplementation(IThreadImplementation* service)
   IThreadImplementation* old_service = global_thread_implementation.get();
   global_thread_implementation = service;
   if (!service)
-    service = &global_null_thread_implementation;
+    global_thread_implementation = &global_null_thread_implementation;
   return old_service;
 }
 
