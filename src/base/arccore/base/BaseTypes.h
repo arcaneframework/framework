@@ -71,6 +71,8 @@ template<typename T>
 class CheckedPointer;
 template<typename T>
 class ReferenceCounter;
+template<typename T>
+class Ref;
 
 class ArgumentException;
 class IndexOutOfRangeException;

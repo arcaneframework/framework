@@ -23,6 +23,8 @@ set(SOURCES
   CoreArray.h
   Exception.h
   Exception.cc
+  ExternalRef.h
+  ExternalRef.cc
   FatalErrorException.cc
   FatalErrorException.h
   Iterator.h
@@ -36,6 +38,8 @@ set(SOURCES
   PlatformUtils.h
   PlatformUtils.cc
   ReferenceCounter.h
+  Ref.h
+  Ref.cc
   Span.h
   Span2.h
   StackTrace.h
