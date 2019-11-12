@@ -20,7 +20,6 @@ endif()
 file(READ "version" ARCCORE_VERSION_STR_FULL)
 string(REPLACE "_dev" "" ARCCORE_VERSION ${ARCCORE_VERSION_STR_FULL})
 message(STATUS "ArccoreVersion = ${ARCCORE_VERSION}")
-
 project(Arccore VERSION ${ARCCORE_VERSION} LANGUAGES CXX)
 
 math(EXPR ARCCORE_VERSION_NUMERIC "((10000 * ${Arccore_VERSION_MAJOR}) + 100 * ${Arccore_VERSION_MINOR}) + ${Arccore_VERSION_PATCH}")
@@ -54,6 +53,13 @@ include(LoadBuildSystem)
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
   set(ARCCORE_DEBUG YES)
 endif()
+
+# ----------------------------------------------------------------------------
+# Il ne faut surtout pas inclure le répertoire courante automatiquement
+# car cela pose des problèmes avec certains fichiers tels que 'String.h' qui
+# peut être inclus à la place de 'string.h' sous windows par exemple.
+
+set(CMAKE_INCLUDE_CURRENT_DIR FALSE)
 
 # ----------------------------------------------------------------------------
 # Arccore nécessite un support complet du C++17. Malheureusement, mettre
