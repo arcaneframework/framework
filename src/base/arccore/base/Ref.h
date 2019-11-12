@@ -22,6 +22,26 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Structure servant à tagger les interfaces/classes qui utilisent
+ * un compteur de référence interne.
+ *
+ * Ce tag s'utilise via un typedef comme suit:
+ *
+ * \code
+ * class MyClass
+ * {
+ *   public:
+ *    typedef ReferenceCounterTag ReferenceCounterTagType;
+ *   public:
+ *    void addReference();
+ *    void removeReference();
+ * };
+ */
+struct ReferenceCounterTag {};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Classe de base d'une référence à un service.
  */
 class ARCCORE_BASE_EXPORT RefBase
@@ -37,16 +57,8 @@ class ARCCORE_BASE_EXPORT RefBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename InstanceType>
-class RefTraits
+namespace Internal
 {
- public:
-  typedef std::shared_ptr<InstanceType> ImplType;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 template<typename InstanceType>
 class ReferenceCounterWrapper
 {
@@ -64,6 +76,32 @@ class ReferenceCounterWrapper
  private:
   Arccore::ReferenceCounter<InstanceType> m_instance;
 };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Caractéristiques pour gérer les compteurs de référence.
+ *
+ * Par défaut, on utilise comme implémentation la classe std::shared_ptr.
+ */
+template<typename InstanceType,class T = void>
+struct RefTraits
+{
+  typedef std::shared_ptr<InstanceType> ImplType;
+};
+
+/*!
+ * \brief Spécialisation de la classe gérant un compteur de référence
+ * si la classe utilise le tag 'ReferenceCounterTag'.
+ *
+ * Dans ce cas, on utilise 'ReferenceCounter' comme implémentation.
+ */
+template<typename InstanceType>
+struct RefTraits<InstanceType,std::enable_if_t<std::is_same_v<typename InstanceType::ReferenceCounterTagType,ReferenceCounterTag>>>
+{
+  typedef Internal::ReferenceCounterWrapper<InstanceType> ImplType;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -77,6 +115,14 @@ class ReferenceCounterWrapper
  * référencée est détruite. La manière de détruire l'instance associée
  * est spécifié lors de la création de la première référence via l'appel
  * à une des méthodes create() ou createWithHandle().
+ *
+ * Il existe deux implémentation possibles pour compter les références.
+ * Par défaut, on utilise 'std::shared_ptr'. Il est aussi possible
+ * d'utiliser un compteur de référence interne à la classe ce qui
+ * permet d'être compatible avec la classe ReferenceCounter et aussi de
+ * pouvoir récupérer une référence à partir de l'instance elle même. Cette
+ * deuxième implémentation est accessible si le type \a InstanceType
+ * définit un type ReferenceCounterTagType valant ReferenceCounterTag.
  */
 template<typename InstanceType>
 class Ref
@@ -146,12 +192,18 @@ class Ref
   }
 
  public:
-
+  //! Instance associée ou `nullptr` si aucune
   InstanceType* get() const { return m_instance.get(); }
+  //! Indique si le compteur référence une instance non nulle.
   bool isNull() const { return m_instance.get()==nullptr; }
   InstanceType* operator->() const { return m_instance.get(); }
+  //! Positionne l'instance au pointeur nul.
   void reset() { m_instance.reset(); }
-  //! \internal
+  /*!
+   * \internal
+   * \brief Libère le pointeur du compteur de référence sans le détruire.
+   * Cette méthode n'est accessible que pour les références utisant std::shared_ptr.
+   */
   InstanceType* _release()
   {
     // Relâche l'instance. Pour cela, on indique au destructeur

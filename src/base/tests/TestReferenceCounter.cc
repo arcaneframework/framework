@@ -20,11 +20,11 @@ struct StatInfo
   bool checkValid(int nb_call)
   {
     if (nb_add!=nb_call){
-      std::cout << "Bad nb_add";
+      std::cout << "Bad nb_add n=" << nb_add << " expected=" << nb_call << "\n";
       return false;
     }
     if (nb_remove!=nb_call){
-      std::cout << "Bad nb_remove";
+      std::cout << "Bad nb_remove n=" << nb_remove << " expected=" << nb_call << "\n";
       return false;
     }
     return is_destroyed;
@@ -32,8 +32,12 @@ struct StatInfo
 };
 }
 
+struct tag_ref_value {};
+
 class Simple1
 {
+ public:
+  typedef ReferenceCounterTag ReferenceCounterTagType;
  public:
   Simple1(StatInfo* stat_info) : m_nb_ref(0), m_stat_info(stat_info){}
   ~Simple1(){ m_stat_info->is_destroyed = true; }
@@ -57,16 +61,15 @@ class Simple1
   Int32 m_nb_ref;
   StatInfo* m_stat_info;
 };
-
-namespace Arccore
-{
-template<>
-class RefTraits<Simple1>
+// Test sans compteur de référence (avec std::shared_ptr).
+class Simple2
 {
  public:
-  typedef ReferenceCounterWrapper<Simple1> ImplType;
+  Simple2(StatInfo* stat_info) : m_stat_info(stat_info){}
+  ~Simple2(){ m_stat_info->is_destroyed = true; }
+ private:
+  StatInfo* m_stat_info;
 };
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -100,6 +103,9 @@ TEST(ReferenceCounter, Misc)
   }
 }
 
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 // Teste si le compteur de référence détruit bien l'instance.
 TEST(ReferenceCounter, Ref)
 {
@@ -108,5 +114,10 @@ TEST(ReferenceCounter, Ref)
     StatInfo stat_info;
     _doTest1(makeRef(new Simple1(&stat_info)));
     ASSERT_TRUE(stat_info.checkValid(4)) << "Bad destroy2";
+  }
+  {
+    StatInfo stat_info;
+    _doTest1(makeRef(new Simple2(&stat_info)));
+    ASSERT_TRUE(stat_info.checkValid(0)) << "Bad destroy3";
   }
 }

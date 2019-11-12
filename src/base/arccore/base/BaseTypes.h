@@ -60,6 +60,7 @@ class StringImpl;
 class String;
 class StringBuilder;
 class StringFormatterArg;
+class ReferenceCounterTag;
 
 class TraceInfo;
 class StackTrace;
