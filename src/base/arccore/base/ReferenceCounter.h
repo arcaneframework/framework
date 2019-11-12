@@ -69,7 +69,7 @@ class ReferenceCounter
   }
 
   //! Destructeur. Décrément le compteur de référence de l'objet pointé
-  ~ReferenceCounter() override { _removeRef(); }
+  ~ReferenceCounter() { _removeRef(); }
 
  private:
 	
