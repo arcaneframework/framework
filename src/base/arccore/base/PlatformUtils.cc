@@ -336,10 +336,25 @@ createDirectory(const String& dir_name)
 extern "C++" ARCCORE_BASE_EXPORT String Platform::
 getFileDirName(const String& file_name)
 {
-  Int64 pos = 0;
+  // Sous windows, regarde s'il y a des '/'. Dans ce cas on prend ce caractère comme
+  // séparateur. Sinon, on prend '\\'.
+  char separator = '/';
   const char* file_name_str = file_name.localstr();
-  for( Int64 i=0, is=file_name.length(); i<is; ++i )
-    if (file_name_str[i]=='/')
+#if defined(ARCCORE_OS_WIN32)
+  {
+    bool has_slash = false;
+    for( Int64 i=0, n=file_name.length(); i<n; ++i )
+      if (file_name_str[i]=='/'){
+        has_slash = true;
+        break;
+      }
+    if (!has_slash)
+      separator = '\\';
+  }
+#endif
+  Int64 pos = 0;
+  for( Int64 i=0, n=file_name.length(); i<n; ++i )
+    if (file_name_str[i]==separator)
       pos = i;
 
   if (pos==0)
