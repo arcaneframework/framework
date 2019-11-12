@@ -86,7 +86,9 @@ class ARCCORE_TRACE_EXPORT ITraceMessageListener
 class ARCCORE_TRACE_EXPORT ITraceStream
 {
  public:
-  virtual ~ITraceStream(){}
+  typedef ReferenceCounterTag ReferenceCounterTagType;
+ public:
+  virtual ~ITraceStream() = default;
  public:
   //! Ajoute une référence.
   virtual void addReference() =0;
@@ -144,8 +146,10 @@ class ARCCORE_TRACE_EXPORT ITraceStream
  */
 class ARCCORE_TRACE_EXPORT ITraceMng
 {
+ public:
+  typedef ReferenceCounterTag ReferenceCounterTagType;
  protected:
-  virtual ~ITraceMng(){}
+  virtual ~ITraceMng() = default;
  public:
   //! Ajoute une référence sur cette instance.
   virtual void addReference() =0;

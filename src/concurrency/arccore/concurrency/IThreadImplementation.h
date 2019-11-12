@@ -29,6 +29,8 @@ namespace Arccore
  */
 class ARCCORE_CONCURRENCY_EXPORT IThreadImplementation
 {
+ public:
+  typedef ReferenceCounterTag ReferenceCounterTagType;
  protected:
   virtual ~IThreadImplementation() = default;
  public:
