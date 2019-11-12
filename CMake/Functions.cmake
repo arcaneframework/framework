@@ -86,6 +86,7 @@ function(arccore_add_component_library component_name)
   if (ARCCORE_EXPORT_TARGET)
     install(TARGETS ${_LIB_NAME} EXPORT ${ARCCORE_EXPORT_TARGET}
       LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+      RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
       ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
     target_link_libraries(arccore_full INTERFACE ${_LIB_NAME})
   endif()
@@ -93,6 +94,7 @@ function(arccore_add_component_library component_name)
   # Génère les bibliothèques dans le répertoire 'lib' du projet.
   set_target_properties(${_LIB_NAME} PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     )
 endfunction()
 
