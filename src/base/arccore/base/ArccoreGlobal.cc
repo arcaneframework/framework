@@ -12,6 +12,7 @@
 #include "arccore/base/String.h"
 #include "arccore/base/IndexOutOfRangeException.h"
 #include "arccore/base/FatalErrorException.h"
+#include "arccore/base/Ref.h"
 
 #include <iostream>
 #include <cstring>

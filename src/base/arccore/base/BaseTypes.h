@@ -60,7 +60,7 @@ class StringImpl;
 class String;
 class StringBuilder;
 class StringFormatterArg;
-class ReferenceCounterTag;
+struct ReferenceCounterTag;
 
 class TraceInfo;
 class StackTrace;

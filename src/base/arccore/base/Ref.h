@@ -47,7 +47,7 @@ struct ReferenceCounterTag {};
 class ARCCORE_BASE_EXPORT RefBase
 {
  protected:
-  class DeleterBase
+  class ARCCORE_BASE_EXPORT DeleterBase
   {
    protected:
     bool _destroyHandle(void* instance,Internal::ExternalRef& handle);
