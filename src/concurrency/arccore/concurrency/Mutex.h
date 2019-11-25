@@ -10,6 +10,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/concurrency/ConcurrencyGlobal.h"
+#include "arccore/concurrency/IThreadImplementation.h"
 #include "arccore/base/ReferenceCounter.h"
 
 /*---------------------------------------------------------------------------*/
