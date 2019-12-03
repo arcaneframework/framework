@@ -36,6 +36,7 @@ namespace Arccore
  *    void addReference();
  *    void removeReference();
  * };
+ * \endcode
  */
 struct ReferenceCounterTag {};
 
