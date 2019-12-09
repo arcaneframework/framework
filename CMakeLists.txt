@@ -45,9 +45,7 @@ include(GNUInstallDirs)
 find_package(Arccon REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
 include(${ARCCON_CMAKE_COMMANDS})
-# GG: Dec 2019. Ne charge pas le build-system de Arccon car cela empêche sous Win32
-# de trouver correctement MPI (il faudrait regarder pourquoi)
-#include(LoadBuildSystem)
+include(LoadBuildSystem)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
