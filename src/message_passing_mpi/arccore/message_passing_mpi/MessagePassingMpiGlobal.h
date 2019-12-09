@@ -27,8 +27,10 @@
 // Vérifie la version de MPI minimale. Normalement, on ne devrait pas avoir
 // de problèmes car cela est vérifié lors de la configuration mais on ne
 // sait jamais.
+#if !defined(ARCCORE_OS_WIN32)
 #if MPI_VERSION < 3 || (MPI_VERSION==3 && MPI_SUBVERSION<1)
 #error "MPI_VERSION 3.1 is required. Please disable MPI".
+#endif
 #endif
 
 #if defined(ARCCORE_OS_WIN32)

@@ -6,9 +6,11 @@ if(NOT MPI_FOUND)
 endif()
 
 # On a besoin du support de MPI 3.1
-if (MPI_CXX_VERSION VERSION_LESS "3.1")
-  message(STATUS "Disabling 'MessagePassingMpi' component because MPI Version (${MPI_CXX_VERSION}) is too old. Version 3.1 is required")
-  return()
+if (NOT WIN32)
+  if (MPI_CXX_VERSION VERSION_LESS "3.1")
+    message(STATUS "Disabling 'MessagePassingMpi' component because MPI Version (${MPI_CXX_VERSION}) is too old. Version 3.1 is required")
+    return()
+  endif()
 endif()
 
 set(SOURCES
