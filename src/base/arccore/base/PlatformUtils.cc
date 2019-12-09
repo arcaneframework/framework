@@ -779,6 +779,12 @@ getCompilerId()
   compiler_name = "GCC";
   version_major = __GNUC__;
   version_minor = __GNUC_MINOR__;
+#else
+#ifdef _MSC_VER
+  compiler_name = "MSVC";
+  version_major = _MSC_VER / 100;
+  version_minor = _MSC_VER % 100;
+#endif // _MSC_VER
 #endif // __GNUC__
 #endif // __INTEL_COMPILER
 #endif // __clang__
