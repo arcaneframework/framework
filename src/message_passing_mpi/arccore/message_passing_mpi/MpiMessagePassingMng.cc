@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* MpiMessagePassingMng.cc                                     (C) 2000-2018 */
+/* MpiMessagePassingMng.cc                                     (C) 2000-2020 */
 /*                                                                           */
 /* Implémentation MPI du gestionnaire des échanges de messages.              */
 /*---------------------------------------------------------------------------*/
@@ -11,11 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
-{
-namespace MessagePassing
-{
-namespace Mpi
+namespace Arccore::MessagePassing::Mpi
 {
 
 /*---------------------------------------------------------------------------*/
@@ -24,6 +20,7 @@ namespace Mpi
 MpiMessagePassingMng::
 MpiMessagePassingMng(const BuildInfo& bi)
 : MessagePassingMng(bi.commRank(),bi.commSize(),bi.dispatchers())
+, m_communicator(bi.communicator())
 {
 }
 
@@ -38,9 +35,7 @@ MpiMessagePassingMng::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Mpi
-} // End namespace MessagePassing
-} // End namespace Arccore
+} // End namespace Arccore::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

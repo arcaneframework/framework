@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* StandaloneMpiMessagePassingMng.cc                           (C) 2000-2018 */
+/* StandaloneMpiMessagePassingMng.cc                           (C) 2000-2020 */
 /*                                                                           */
 /* Implémentation MPI du gestionnaire des échanges de messages.              */
 /*---------------------------------------------------------------------------*/
@@ -18,11 +18,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
-{
-namespace MessagePassing
-{
-namespace Mpi
+namespace Arccore::MessagePassing::Mpi
 {
 
 class StandaloneMpiMessagePassingMng::Impl
@@ -30,7 +26,7 @@ class StandaloneMpiMessagePassingMng::Impl
  public:
   explicit Impl(MPI_Comm mpi_comm)
   : m_trace_mng(nullptr), m_stat(nullptr), m_dispatchers(nullptr),
-    m_adapter(nullptr), m_comm_rank(-1), m_comm_size(-1)
+    m_adapter(nullptr), m_comm_rank(-1), m_comm_size(-1), m_communicator(mpi_comm)
   {
     m_trace_mng = Arccore::arccoreCreateDefaultTraceMng();
     ::MPI_Comm_rank(mpi_comm, &m_comm_rank);
@@ -52,7 +48,7 @@ class StandaloneMpiMessagePassingMng::Impl
 
   MpiMessagePassingMng::BuildInfo buildInfo() const
   {
-    return MpiMessagePassingMng::BuildInfo(m_comm_rank,m_comm_size,m_dispatchers);
+    return MpiMessagePassingMng::BuildInfo(m_comm_rank,m_comm_size,m_dispatchers,m_communicator);
   }
  public:
   ReferenceCounter<ITraceMng> m_trace_mng;
@@ -61,6 +57,7 @@ class StandaloneMpiMessagePassingMng::Impl
   MpiAdapter* m_adapter;
   int m_comm_rank;
   int m_comm_size;
+  MPI_Comm m_communicator;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -125,9 +122,7 @@ create(MPI_Comm mpi_comm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Mpi
-} // End namespace MessagePassing
-} // End namespace Arccore
+} // End namespace Arccore::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
