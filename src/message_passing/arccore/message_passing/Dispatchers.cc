@@ -37,6 +37,7 @@ Dispatchers()
 , m_float(nullptr)
 , m_double(nullptr)
 , m_long_double(nullptr)
+, m_control(nullptr)
 , m_is_delete_dispatchers(false)
 {
 }
@@ -62,6 +63,7 @@ Dispatchers::
     delete m_float;
     delete m_double;
     delete m_long_double;
+    delete m_control;
   }
 }
 

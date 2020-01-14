@@ -783,8 +783,32 @@ directRecvPack(void* recv_buffer,Int64 recv_buffer_size,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// FIXME: Implement direct method with MPI_STATUS_IGNORE
 void MpiAdapter::
-waitAllRequests(ArrayView<Request> requests,
+waitAllRequests(ArrayView<Request> requests) {
+  UniqueArray<bool> indexes(requests.size());
+  UniqueArray<MPI_Status> mpi_status(requests.size());
+  return waitAllRequestsMPI(requests, indexes, mpi_status);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// FIXME: Implement direct method with MPI_STATUS_IGNORE
+void MpiAdapter::
+waitSomeRequests(ArrayView<Request> requests,
+                      ArrayView<bool> indexes,
+                      bool is_non_blocking) {
+  UniqueArray<MPI_Status> mpi_status(requests.size());
+  return waitSomeRequestsMPI(requests, indexes, mpi_status, is_non_blocking);
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MpiAdapter::
+waitAllRequestsMPI(ArrayView<Request> requests,
                 ArrayView<bool> indexes,
                 ArrayView<MPI_Status> mpi_status)
 {
@@ -839,7 +863,7 @@ waitAllRequests(ArrayView<Request> requests,
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
-waitSomeRequests(ArrayView<Request> requests,ArrayView<bool> indexes,
+waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
                  ArrayView<MPI_Status> mpi_status,bool is_non_blocking)
 {
   Integer size = requests.size();
