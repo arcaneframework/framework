@@ -108,17 +108,17 @@ namespace MessagePassing
     mpWaitAll(pm, ArrayView<Request>(1, &request));
   }
 
-inline void mpWaitSome(IMessagePassingMng* pm, ArrayView<Request> requests, ArrayView<bool> indexes)
-{
-  auto d = pm->dispatchers()->controlDispatcher();
-  d->waitSomeRequests(requests, indexes, false);
-}
+  inline void mpWaitSome(IMessagePassingMng* pm, ArrayView<Request> requests, ArrayView<bool> indexes)
+  {
+    auto d = pm->dispatchers()->controlDispatcher();
+    d->waitSomeRequests(requests, indexes, false);
+  }
 
-inline void mpTestSome(IMessagePassingMng* pm, ArrayView<Request> requests, ArrayView<bool> indexes)
-{
-  auto d = pm->dispatchers()->controlDispatcher();
-  d->waitSomeRequests(requests, indexes, false);
-}
+  inline void mpTestSome(IMessagePassingMng* pm, ArrayView<Request> requests, ArrayView<bool> indexes)
+  {
+    auto d = pm->dispatchers()->controlDispatcher();
+    d->waitSomeRequests(requests, indexes, false);
+  }
 
   inline void mpWait(IMessagePassingMng* pm, ArrayView<Request> requests, ArrayView<bool> indexes, eWaitType w_type)
   {
@@ -134,6 +134,12 @@ inline void mpTestSome(IMessagePassingMng* pm, ArrayView<Request> requests, Arra
       mpTestSome(pm, requests, indexes);
       break;
     }
+  }
+
+  inline IMessagePassingMng* mpSplit(IMessagePassingMng* pm, bool keep)
+  {
+    auto d = pm->dispatchers()->controlDispatcher();
+    return d->commSplit(keep);
   }
 
   /*---------------------------------------------------------------------------*/

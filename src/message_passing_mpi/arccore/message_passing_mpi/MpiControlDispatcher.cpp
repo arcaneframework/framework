@@ -3,7 +3,9 @@
 //
 
 #include "MpiControlDispatcher.h"
+
 #include "MpiAdapter.h"
+#include "MpiMessagePassingMng.h"
 
 
 namespace Arccore::MessagePassing::Mpi
@@ -24,6 +26,11 @@ void MpiControlDispatcher::waitSomeRequests(ArrayView<Request> requests,
                                             bool is_non_blocking)
 {
   m_adapter->waitSomeRequests(requests, indexes, is_non_blocking);
+}
+
+IMessagePassingMng* MpiControlDispatcher::commSplit(bool keep)
+{
+  return m_adapter->commSplit(keep);
 }
 
 } // namespace Arccore::MessagePassing::Mpi

@@ -22,6 +22,8 @@ class MpiControlDispatcher : public IControlDispatcher
 
   void waitSomeRequests(ArrayView<Request> requests, ArrayView<bool> indexes, bool is_non_blocking) override;
 
+  IMessagePassingMng* commSplit(bool keep) override;
+
  private:
   IMessagePassingMng* m_parallel_mng;
   MpiAdapter* m_adapter;

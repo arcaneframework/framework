@@ -114,6 +114,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   //! Nombre de rangs dans le communicateur
   int commSize() const { return m_comm_size; }
 
+  MpiMessagePassingMng* commSplit(bool keep);
+
   void freeRequest(Request& request);
   bool testRequest(Request& request);
 

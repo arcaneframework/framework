@@ -35,6 +35,8 @@ namespace MessagePassing
     virtual void waitAllRequests(ArrayView<Request> requests) = 0;
 
     virtual void waitSomeRequests(ArrayView<Request> requests, ArrayView<bool> indexes, bool is_non_blocking) = 0;
+
+    virtual IMessagePassingMng* commSplit(bool keep) = 0;
   };
 
   /*---------------------------------------------------------------------------*/
