@@ -6,14 +6,17 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h"
-#include "arccore/message_passing_mpi/MpiAdapter.h"
-#include "arccore/message_passing_mpi/MpiDatatype.h"
-#include "arccore/message_passing_mpi/MpiTypeDispatcher.h"
-#include "arccore/message_passing/Dispatchers.h"
-#include "arccore/message_passing/Stat.h"
-#include "arccore/trace/ITraceMng.h"
-#include "arccore/base/ReferenceCounter.h"
+#include "StandaloneMpiMessagePassingMng.h"
+
+#include <arccore/message_passing/Dispatchers.h>
+#include <arccore/message_passing/Stat.h>
+#include <arccore/trace/ITraceMng.h>
+#include <arccore/base/ReferenceCounter.h>
+
+#include "MpiAdapter.h"
+#include "MpiDatatype.h"
+#include "MpiTypeDispatcher.h"
+#include "MpiControlDispatcher.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -115,6 +118,8 @@ create(MPI_Comm mpi_comm)
   _createAndSetDispatcher<float>(dsp,mpm,adapter);
   _createAndSetDispatcher<double>(dsp,mpm,adapter);
   _createAndSetDispatcher<long double>(dsp,mpm,adapter);
+
+  dsp->setDispatcher(new MpiControlDispatcher(mpm,adapter));
 
   return mpm;
 }
