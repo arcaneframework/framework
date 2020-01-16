@@ -672,7 +672,13 @@ commSplit(bool keep) {
     MPI_Comm new_comm;
 
     MPI_Comm_split(m_communicator, (keep) ? 1 : MPI_UNDEFINED, commRank(), &new_comm);
-    return StandaloneMpiMessagePassingMng::create(new_comm);
+    if (keep) {
+      // Failed if new_comm is MPI_COMM_NULL
+      return StandaloneMpiMessagePassingMng::create(new_comm, true);
+    }
+    else {
+      return nullptr;
+    }
 }
 
 /*---------------------------------------------------------------------------*/
