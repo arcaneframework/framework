@@ -945,14 +945,28 @@ mesh.addAlgorithm(neo::OutProperty{node_family,node_family.lidPropName()}, neo::
                     node_lids_property.debugPrint();
                     std::cout << "removed item range : " << removed_nodes;
                     // Store removed items in internal_end_of_remove_tag
-                    auto nb_nodes = node_family.size();
-                    neo::ItemRange node_range {neo::ItemIndexes{{},0,nb_nodes}};
-                    internal_end_of_remove_tag.init(node_range,std::vector<neo::utils::Int32>(nb_nodes,0));
+                    internal_end_of_remove_tag.init(node_family.all(),0);
                     for (auto removed_item : removed_nodes) {
                       internal_end_of_remove_tag[removed_item] = 1;
                     }
                   });
 
+// handle node removal in connectivity with node family = target family
+mesh.addAlgorithm(neo::InProperty{node_family,"internal_end_of_remove_tag"}, neo::OutProperty{cell_family,"cell2nodes"},
+                  [&cell_family](neo::PropertyT<neo::utils::Int32> const& internal_end_of_remove_tag, neo::ArrayProperty<neo::utils::Int32> & cells2nodes){
+//                    std::transform()
+//                    neo::ItemRange node_range {neo::ItemIndexes{{},0,node_family.size()}};
+                    for (auto cell : cell_family.all()) {
+                      auto connected_nodes = cells2nodes[cell];
+                      for (auto& connected_node : connected_nodes){
+                        if (connected_node != neo::utils::NULL_ITEM_LID && internal_end_of_remove_tag[connected_node] == 1) {
+                          std::cout << "modify node : "<< connected_node << std::endl;
+                          connected_node = neo::utils::NULL_ITEM_LID;
+
+                        }
+                      }
+                    }
+                  });
 
 // launch algos
 mesh.endUpdate();
