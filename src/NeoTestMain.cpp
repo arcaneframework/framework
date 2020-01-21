@@ -329,6 +329,55 @@ public:
     // todo handle last_id ??
   }
 
+  ItemRange values(){
+    // TODO...; + il faut mettre en cache (dans la famille ?). ? de la mise à jour (la Propriété peut dire si la range est à jour)
+    // 2 stratégies : on crée l'étendue continue avant ou après les non contigus...
+    // (on estime que l'on décime les id les plus élevés ou les plus faibles), avoir le choix (avec un paramètre par défaut)
+    ItemIndexes item_indexes{};
+    if (m_empty_lids.empty()) { // range contiguous
+      item_indexes = ItemIndexes{{},0,(std::size_t)(m_last_id+1)};
+    }
+    else { // mix a contiguous range and non contiguous elements. Choose the larger contiguous range
+      auto max_empty_lid = *std::max_element(m_empty_lids.begin(),m_empty_lids.end());
+      auto min_empty_lid = *std::min_element(m_empty_lids.begin(),m_empty_lids.end());
+      auto left_contiguous_range_size = min_empty_lid;
+      auto right_contiguous_range_size = m_last_id-max_empty_lid;
+      auto choose_left_contiguous_range = (left_contiguous_range_size > right_contiguous_range_size) ? true : false;
+      if (choose_left_contiguous_range) {
+        item_indexes.m_first_contiguous_index = 0;
+        item_indexes.m_nb_contiguous_indexes = left_contiguous_range_size;
+        // build non contiguous
+        auto empty_lids_sorted = m_empty_lids;
+        std::sort(empty_lids_sorted.begin(), empty_lids_sorted.end());
+        auto empty_lid_index = 0;
+        auto non_contiguous_lid_index = 0;
+        auto& non_contiguous_lids = item_indexes.m_non_contiguous_indexes;
+        non_contiguous_lids.reserve(left_contiguous_range_size+m_empty_lids.size());
+        for (auto lid = item_indexes.m_nb_contiguous_indexes;
+             lid < m_last_id + 1; ++lid) {
+          if (lid != empty_lids_sorted[empty_lid_index]) non_contiguous_lids[non_contiguous_lid_index++] = lid;
+          else ++empty_lid_index;
+        }
+      } else {
+        item_indexes.m_first_contiguous_index = max_empty_lid +1;
+        item_indexes.m_nb_contiguous_indexes = right_contiguous_range_size;
+        // build non contiguous
+        auto empty_lids_sorted = m_empty_lids;
+        std::sort(empty_lids_sorted.begin(), empty_lids_sorted.end());
+        auto empty_lid_index = 0;
+        auto non_contiguous_lid_index = 0;
+        auto& non_contiguous_lids = item_indexes.m_non_contiguous_indexes;
+        non_contiguous_lids.reserve(right_contiguous_range_size+m_empty_lids.size());
+        for (auto lid = 0;
+             lid < max_empty_lid +1; ++lid) {
+          if (lid != empty_lids_sorted[empty_lid_index]) non_contiguous_lids[non_contiguous_lid_index++] = lid;
+          else ++empty_lid_index;
+        }
+      }
+    }
+    return ItemRange{std::move(item_indexes)};
+  }
+
   void debugPrint() const {
     std::cout << "= Print property " << m_name << " =" << std::endl;
     for (auto uid : m_uid2lid){
@@ -434,11 +483,24 @@ private:
       return 0;
     }
 
+    ItemRange& all() {
+      auto& lid_prop = _lidProp();
+//      if (m_all.isEmpty() || lid_prop.hasChanged()) // todo hasChanged ??? possible ? voir le cycle de modif des propriétés
+      m_all = lid_prop.values();
+      return m_all;
+    }
+
+    ItemLidsProperty& _lidProp() {
+      auto prop_iterator = m_properties.find(m_prop_lid_name);
+      return std::get<ItemLidsProperty>(prop_iterator->second);
+    }
+
     ItemKind m_ik;
     std::string m_name;
     std::string m_prop_lid_name;
 //    ItemLidsProperty* m_lid_property; // todo try to avoid raw ptr
     std::map<std::string, Property> m_properties;
+    ItemRange m_all;
   };
 
   class FamilyMap {
@@ -666,7 +728,19 @@ TEST(NeoTestPropertyGraph,test_property_graph)
 TEST(NeoTestLidsProperty,test_lids_property)
 {
   std::cout << "Test lids Property" << std::endl;
-  
+  auto lid_prop = neo::ItemLidsProperty{"test_property"};
+  std::vector<neo::utils::Int64 > uids {1,2,3,4,5};
+  lid_prop.append(uids);
+  lid_prop.debugPrint();
+  for (auto item : lid_prop.values()) {
+    std::cout << "Item range, lid " << item << std::endl;
+  }
+  uids = {1,3,5};
+  lid_prop.remove(uids);
+  std::cout << "new range size " << lid_prop.values().size();
+  for (auto item : lid_prop.values()) {
+    std::cout << "Item range, lid " << item << std::endl;
+  }
 }
 
 void mesh_property_test(const neo::Mesh& mesh){
