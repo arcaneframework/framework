@@ -136,6 +136,22 @@ struct ItemRange {
   class PropertyT : public PropertyBase  {
     public:
 
+    void init(const ItemRange& item_range, const DataType& value){
+      if (isInitializableFrom(item_range))
+        init(item_range, std::vector<DataType>(item_range.size(), value));
+      else
+        append(item_range,std::vector<DataType>(item_range.size(), value));
+    }
+
+    bool isInitializableFrom(const ItemRange& item_range) {return item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty() ;}
+
+    // The difference between init and append is done to handle values copy or move
+    void init(const ItemRange& item_range, std::vector<DataType> values){
+      // data must be empty
+      assert(item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty()); // todo comprehensive test (message for user)
+      m_data = std::move(values);
+    }
+
     void append(const ItemRange& item_range, const std::vector<DataType>& values) {
       assert(item_range.size() == values.size());
       auto max_item = utils::maxItem(item_range);
@@ -146,13 +162,7 @@ struct ItemRange {
       }
     }
 
-    bool isInitializableFrom(const ItemRange& item_range) {return item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty() ;}
 
-    void init(const ItemRange& item_range, std::vector<DataType> values){
-      // data must be empty
-      assert(item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty()); // todo comprehensive test (message for user)
-      m_data = std::move(values);
-    }
 
     DataType & operator[] (neo::utils::Int32 item) { return m_data[item]; }
     DataType const& operator[] (neo::utils::Int32 item) const { return m_data[item]; }
