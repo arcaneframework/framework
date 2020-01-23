@@ -18,38 +18,39 @@ namespace Arccore
 {
 namespace MessagePassing
 {
+  class IControlDispatcher;
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+  /*!
  * \brief Interface du conteneur des dispatchers.
  */
-class ARCCORE_MESSAGEPASSING_EXPORT IDispatchers
-{
- public:
+  class ARCCORE_MESSAGEPASSING_EXPORT IDispatchers
+  {
+   public:
+    virtual ~IDispatchers() {}
 
-  virtual ~IDispatchers(){}
+   public:
+    virtual ITypeDispatcher<char>* dispatcher(char*) = 0;
+    virtual ITypeDispatcher<signed char>* dispatcher(signed char*) = 0;
+    virtual ITypeDispatcher<unsigned char>* dispatcher(unsigned char*) = 0;
+    virtual ITypeDispatcher<short>* dispatcher(short*) = 0;
+    virtual ITypeDispatcher<unsigned short>* dispatcher(unsigned short*) = 0;
+    virtual ITypeDispatcher<int>* dispatcher(int*) = 0;
+    virtual ITypeDispatcher<unsigned int>* dispatcher(unsigned int*) = 0;
+    virtual ITypeDispatcher<long>* dispatcher(long*) = 0;
+    virtual ITypeDispatcher<unsigned long>* dispatcher(unsigned long*) = 0;
+    virtual ITypeDispatcher<long long>* dispatcher(long long*) = 0;
+    virtual ITypeDispatcher<unsigned long long>* dispatcher(unsigned long long*) = 0;
+    virtual ITypeDispatcher<float>* dispatcher(float*) = 0;
+    virtual ITypeDispatcher<double>* dispatcher(double*) = 0;
+    virtual ITypeDispatcher<long double>* dispatcher(long double*) = 0;
 
- public:
+    virtual IControlDispatcher* controlDispatcher() = 0;
+  };
 
-  virtual ITypeDispatcher<char>* dispatcher(char*) =0;
-  virtual ITypeDispatcher<signed char>* dispatcher(signed char*) =0;
-  virtual ITypeDispatcher<unsigned char>* dispatcher(unsigned char*) =0;
-  virtual ITypeDispatcher<short>* dispatcher(short*) =0;
-  virtual ITypeDispatcher<unsigned short>* dispatcher(unsigned short*) =0;
-  virtual ITypeDispatcher<int>* dispatcher(int*) =0;
-  virtual ITypeDispatcher<unsigned int>* dispatcher(unsigned int*) =0;
-  virtual ITypeDispatcher<long>* dispatcher(long*) =0;
-  virtual ITypeDispatcher<unsigned long>* dispatcher(unsigned long*) =0;
-  virtual ITypeDispatcher<long long>* dispatcher(long long*) =0;
-  virtual ITypeDispatcher<unsigned long long>* dispatcher(unsigned long long*) =0;
-  virtual ITypeDispatcher<float>* dispatcher(float*) =0;
-  virtual ITypeDispatcher<double>* dispatcher(double*) =0;
-  virtual ITypeDispatcher<long double>* dispatcher(long double*) =0;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
 } // End namespace MessagePassing
 } // End namespace Arccore
@@ -57,4 +58,4 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDispatchers
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

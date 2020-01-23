@@ -6,26 +6,29 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing_mpi/MpiAdapter.h"
-#include "arccore/message_passing_mpi/MpiLock.h"
-#include "arccore/message_passing_mpi/NoMpiProfiling.h"
-
-#include "arccore/trace/ITraceMng.h"
-
-#include "arccore/collections/Array.h"
-
-#include "arccore/message_passing/Request.h"
-#include "arccore/message_passing/IStat.h"
-
-#include "arccore/base/IStackTraceService.h"
-#include "arccore/base/TimeoutException.h"
-#include "arccore/base/String.h"
-#include "arccore/base/NotImplementedException.h"
-#include "arccore/base/PlatformUtils.h"
-#include "arccore/base/FatalErrorException.h"
-#include "arccore/base/TraceInfo.h"
+#include "MpiAdapter.h"
 
 #include <cstdint>
+
+#include <arccore/trace/ITraceMng.h>
+
+#include <arccore/collections/Array.h>
+
+#include <arccore/message_passing/Request.h>
+#include <arccore/message_passing/IStat.h>
+
+#include <arccore/base/IStackTraceService.h>
+#include <arccore/base/TimeoutException.h>
+#include <arccore/base/String.h>
+#include <arccore/base/NotImplementedException.h>
+#include <arccore/base/PlatformUtils.h>
+#include <arccore/base/FatalErrorException.h>
+#include <arccore/base/TraceInfo.h>
+
+#include "MpiLock.h"
+#include "NoMpiProfiling.h"
+#include "StandaloneMpiMessagePassingMng.h"
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -663,6 +666,21 @@ directSendPack(const void* send_buffer,Int64 send_buffer_size,
   return directSend(send_buffer,send_buffer_size,proc,1,MPI_PACKED,mpi_tag,is_blocked);
 }
 
+
+MpiMessagePassingMng* MpiAdapter::
+commSplit(bool keep) {
+    MPI_Comm new_comm;
+
+    MPI_Comm_split(m_communicator, (keep) ? 1 : MPI_UNDEFINED, commRank(), &new_comm);
+    if (keep) {
+      // Failed if new_comm is MPI_COMM_NULL
+      return StandaloneMpiMessagePassingMng::create(new_comm, true);
+    }
+    else {
+      return nullptr;
+    }
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -783,8 +801,32 @@ directRecvPack(void* recv_buffer,Int64 recv_buffer_size,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// FIXME: Implement direct method with MPI_STATUS_IGNORE
 void MpiAdapter::
-waitAllRequests(ArrayView<Request> requests,
+waitAllRequests(ArrayView<Request> requests) {
+  UniqueArray<bool> indexes(requests.size());
+  UniqueArray<MPI_Status> mpi_status(requests.size());
+  return waitAllRequestsMPI(requests, indexes, mpi_status);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// FIXME: Implement direct method with MPI_STATUS_IGNORE
+void MpiAdapter::
+waitSomeRequests(ArrayView<Request> requests,
+                      ArrayView<bool> indexes,
+                      bool is_non_blocking) {
+  UniqueArray<MPI_Status> mpi_status(requests.size());
+  return waitSomeRequestsMPI(requests, indexes, mpi_status, is_non_blocking);
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MpiAdapter::
+waitAllRequestsMPI(ArrayView<Request> requests,
                 ArrayView<bool> indexes,
                 ArrayView<MPI_Status> mpi_status)
 {
@@ -839,7 +881,7 @@ waitAllRequests(ArrayView<Request> requests,
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
-waitSomeRequests(ArrayView<Request> requests,ArrayView<bool> indexes,
+waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
                  ArrayView<MPI_Status> mpi_status,bool is_non_blocking)
 {
   Integer size = requests.size();

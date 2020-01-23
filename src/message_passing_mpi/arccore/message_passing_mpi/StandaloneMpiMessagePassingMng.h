@@ -45,7 +45,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT StandaloneMpiMessagePassingMng
  public:
 
   //! Créé un gestionnaire associé au communicateur \a comm.
-  static MpiMessagePassingMng* create(MPI_Comm comm);
+  static MpiMessagePassingMng* create(MPI_Comm comm, bool clean_comm=false);
 
  private:
 
