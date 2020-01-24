@@ -29,10 +29,10 @@
  *--------------------------
  */
 
-namespace neo{
+namespace Neo {
 
 enum class ItemKind {
-  IK_Node, IK_Edge, IKFace, IK_Cell, IK_Dof, IK_None
+  IK_Node, IK_Edge, IK_Face, IK_Cell, IK_Dof, IK_None
 };
 
 
@@ -52,7 +52,8 @@ struct ArrayView {
 static constexpr utils::Int32 NULL_ITEM_LID = -1;
 }// end namespace utils
 
-std::ostream& operator<<(std::ostream& oss, const neo::utils::Real3& real3){
+inline
+std::ostream& operator<<(std::ostream& oss, const Neo::utils::Real3& real3){
   oss << "{" << real3.x  << ","  << real3.y << "," << real3.z << "}";
   return oss;
 }
@@ -103,6 +104,7 @@ struct ItemRange {
   ItemIndexes m_indexes;
 };
 
+inline
 std::ostream &operator<<(std::ostream &os, const ItemRange &item_range){
   os << "Item Range : lids ";
   for (auto lid : item_range.m_indexes.m_non_contiguous_indexes) {
@@ -119,11 +121,14 @@ std::ostream &operator<<(std::ostream &os, const ItemRange &item_range){
 }
 
 namespace utils {
+inline
 Int32 maxItem(ItemRange const &item_range) {
   if (item_range.isEmpty())
     return utils::NULL_ITEM_LID;
   return *std::max_element(item_range.begin(), item_range.end());
 }
+
+inline
 Int32 minItem(ItemRange const &item_range) {
   if (item_range.isEmpty())
     return utils::NULL_ITEM_LID;
@@ -168,8 +173,8 @@ public:
 
 
 
-  DataType & operator[] (neo::utils::Int32 item) { return m_data[item]; }
-  DataType const& operator[] (neo::utils::Int32 item) const { return m_data[item]; }
+  DataType & operator[] (Neo::utils::Int32 item) { return m_data[item]; }
+  DataType const& operator[] (Neo::utils::Int32 item) const { return m_data[item]; }
 
   void debugPrint() const {
     std::cout << "= Print property " << m_name << " =" << std::endl;
@@ -297,7 +302,7 @@ class ItemLidsProperty : public PropertyBase {
 public:
   explicit ItemLidsProperty(std::string const& name) : PropertyBase{name}{};
 
-  ItemRange append(std::vector<neo::utils::Int64> const& uids) {
+  ItemRange append(std::vector<Neo::utils::Int64> const& uids) {
     std::size_t counter = 0;
     ItemIndexes item_indexes{};
     auto& non_contiguous_lids = item_indexes.m_non_contiguous_indexes;
@@ -416,8 +421,8 @@ public:
   }
 
 private:
-  std::vector<neo::utils::Int32> m_empty_lids;
-  std::map<neo::utils::Int64, neo::utils::Int32 > m_uid2lid; // todo at least unordered_map
+  std::vector<Neo::utils::Int32> m_empty_lids;
+  std::map<Neo::utils::Int64, Neo::utils::Int32 > m_uid2lid; // todo at least unordered_map
   int m_last_id = -1;
 
 };
