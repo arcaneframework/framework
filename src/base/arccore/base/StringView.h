@@ -101,6 +101,9 @@ class ARCCORE_BASE_EXPORT StringView
   //! Longueur en octet de la chaîne de caractères.
   Int64 size() const { return m_v.size(); }
 
+  //! Vrai si la chaîne est nulle ou vide.
+  bool empty() const { return size()==0; }
+
  public:
 
   /*!
