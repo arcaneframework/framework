@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* ArccoreGlobal.h                                             (C) 2000-2018 */
+/* ArccoreGlobal.h                                             (C) 2000-2020 */
 /*                                                                           */
 /* Déclarations générales de Arccore.                                        */
 /*---------------------------------------------------------------------------*/
@@ -242,6 +242,7 @@ struct FalseType {};
 #define ARCCORE_DEPRECATED_2017 ARCCORE_DEPRECATED
 #define ARCCORE_DEPRECATED_2018 ARCCORE_DEPRECATED
 #define ARCCORE_DEPRECATED_2019(reason) [[deprecated(reason)]]
+#define ARCCORE_DEPRECATED_2020(reason) [[deprecated(reason)]]
 
 // Définir cette macro si on souhaite supprimer de la compilation les
 // méthodes et types obsolètes.
