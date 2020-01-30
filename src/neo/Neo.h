@@ -625,6 +625,22 @@ struct NoDepsDualOutAlgoHandler : public IAlgorithm {
   }
 };
 
+class Mesh;
+
+class ValidMeshState{
+  ValidMeshState() {}
+  friend class Mesh;
+};
+
+
+struct AddedItemRange{
+
+  ItemRange &get(ValidMeshState const &valid_mesh_state){
+    return new_items;
+  }
+  ItemRange new_items;
+};
+
 class Mesh {
 public:
   Family& addFamily(ItemKind ik, std::string&& name) {
@@ -663,9 +679,10 @@ public:
   }
 
   void beginUpdate() { std::cout << "begin mesh update" << std::endl;}
-  void endUpdate() {
+  ValidMeshState endUpdate() {
     std::cout << "end mesh update" << std::endl;
     std::for_each(m_algos.begin(),m_algos.end(),[](auto& algo){(*algo.get())();});
+    return ValidMeshState{};
   }
 
 
