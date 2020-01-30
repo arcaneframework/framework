@@ -92,7 +92,7 @@ void mesh_property_test(const Neo::Mesh& mesh){
   std::cout << "== Print Mesh " << mesh.m_name << " Properties =="<< std::endl;
   for (const auto& [kind_name_pair,family] : mesh.m_families) {
     std::cout << "= In family " << kind_name_pair.second << " =" << std::endl;
-    for (const auto& [prop_name,property] : family.m_properties){
+    for (const auto& [prop_name,property] : family->m_properties){
       std::cout << prop_name << std::endl;
     }
   }

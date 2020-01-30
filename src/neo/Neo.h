@@ -526,11 +526,11 @@ class FamilyMap {
 public:
   Family& operator() (ItemKind const & ik,std::string const& name)
   {
-    return m_families.find(std::make_pair(ik,name))->second;
+    return *(m_families.find(std::make_pair(ik,name))->second.get());
   }
   Family& push_back(ItemKind const & ik,std::string const& name)
   {
-    return m_families.emplace(std::make_pair(ik, name), Family(ik,name)).first->second;
+    return *(m_families.emplace(std::make_pair(ik, name), std::make_unique<Family>(Family(ik,name))).first->second.get());
   }
 
   auto begin() noexcept {return m_families.begin();}
@@ -539,7 +539,7 @@ public:
   auto end() const noexcept {return m_families.end();}
 
 private:
-  std::map<std::pair<ItemKind,std::string>, Family> m_families;
+  std::map<std::pair<ItemKind,std::string>, std::unique_ptr<Family>> m_families;
 
 };
 
