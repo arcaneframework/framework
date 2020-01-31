@@ -108,10 +108,7 @@ void setNodeCoords(Neo::Mesh& mesh, Neo::Family& node_family, Neo::AddedItemRang
       });
 }
 
-
-TEST(EvolutiveMeshTest,AddCells)
-{
-  auto mesh = Neo::Mesh{"evolutive_neo_mesh"};
+void addCells(Neo::Mesh &mesh){
   auto& cell_family = addCellFamily(mesh,"CellFamily");
   auto& node_family = addNodeFamily(mesh,"NodeFamily");
   auto& face_family = addFaceFamily(mesh,"FaceFamily");
@@ -151,5 +148,11 @@ TEST(EvolutiveMeshTest,AddCells)
   std::cout << "Added cells range after endUpdate: " << new_cells;
   std::cout << "Added nodes range after endUpdate: " << new_nodes;
   std::cout << "Added faces range after endUpdate: " << new_faces;
+}
+
+TEST(EvolutiveMeshTest,AddCells)
+{
+  auto mesh = Neo::Mesh{"evolutive_neo_mesh"};
+  addCells(mesh);
 }
 
