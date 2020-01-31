@@ -480,8 +480,8 @@ public:
 
   template<typename T>
   void addProperty(std::string const& name){
-    m_properties[name] = PropertyT<T>{name};
-    std::cout << "Add property " << name << " in Family " << m_name<< std::endl;
+    auto [iter,is_inserted] = m_properties.insert(std::make_pair(name,PropertyT<T>{name}));
+    if (is_inserted) std::cout << "Add property " << name << " in Family " << m_name<< std::endl;
   };
 
   Property& getProperty(const std::string& name) {
