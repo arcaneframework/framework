@@ -22,7 +22,6 @@ auto& addCellFamily(Neo::Mesh& mesh,std::string family_name){
 auto& addNodeFamily(Neo::Mesh& mesh,std::string family_name){
   auto& node_family = mesh.addFamily(Neo::ItemKind::IK_Node,std::move(family_name));
   node_family.addProperty<Neo::utils::Int64>(family_name+"_uids");
-  node_family.addProperty<Neo::utils::Real3>(std::string("node_coords"));
   return node_family;
 }
 
@@ -93,6 +92,23 @@ void addConnectivity(Neo::Mesh &mesh, Neo::Family &source_family,
       });
 }
 
+// todo : define 2 signatures to indicate eventual memory stealing...?
+void setNodeCoords(Neo::Mesh& mesh, Neo::Family& node_family, Neo::AddedItemRange& added_node_range, std::vector<Neo::utils::Real3>& node_coords){
+  node_family.addProperty<Neo::utils::Real3>(std::string("node_coords"));
+  auto& added_nodes = added_node_range.new_items;
+  mesh.addAlgorithm(
+      Neo::InProperty{node_family,node_family.lidPropName()},
+      Neo::OutProperty{node_family,"node_coords"},
+      [&node_coords,&added_nodes](Neo::ItemLidsProperty const& node_lids_property,
+                                  Neo::PropertyT<Neo::utils::Real3> & node_coords_property){
+        std::cout << "Algorithm: register node coords" << std::endl;
+        if (node_coords_property.isInitializableFrom(added_nodes))  node_coords_property.init(added_nodes,std::move(node_coords)); // init can steal the input values
+        else node_coords_property.append(added_nodes, node_coords);
+        node_coords_property.debugPrint();
+      });
+}
+
+
 TEST(EvolutiveMeshTest,AddCells)
 {
   auto mesh = Neo::Mesh{"evolutive_neo_mesh"};
@@ -123,6 +139,7 @@ TEST(EvolutiveMeshTest,AddCells)
   addItems(mesh, cell_family, cell_uids, added_cells);
   addItems(mesh, node_family, node_uids, added_nodes);
   addItems(mesh, face_family, face_uids, added_faces);
+  setNodeCoords(mesh, node_family, added_nodes, node_coords);
   auto nb_node_per_cell = 4;
   addConnectivity(mesh, cell_family, added_cells, node_family, nb_node_per_cell, cell_nodes);
   auto nb_node_per_face = 2;
