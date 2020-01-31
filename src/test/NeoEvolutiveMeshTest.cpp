@@ -60,7 +60,38 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
       });// need to add a property check for existing uid
 }
 
-
+// todo same interface with nb_connected_item_per_item as an array
+void addConnectivity(Neo::Mesh &mesh, Neo::Family &source_family,
+                     Neo::AddedItemRange &source_items,
+                     Neo::Family& target_family,
+                     int nb_connected_item_per_item,
+                     std::vector<Neo::utils::Int64>& connected_item_uids)
+{
+  // add connectivity property if doesn't exist
+  source_family.addArrayProperty<Neo::utils::Int32>(
+      source_family.m_name + "to" + target_family.m_name + "_connectivity");
+  mesh.addAlgorithm(
+      Neo::InProperty{source_family,source_family.lidPropName()},
+      Neo::InProperty{target_family,target_family.lidPropName()},
+      Neo::OutProperty{source_family,source_family.m_name + "to" + target_family.m_name + "_connectivity"},
+      [&connected_item_uids, &nb_connected_item_per_item,& source_items, &source_family, &target_family]
+          (Neo::ItemLidsProperty const& source_family_lids_property,
+           Neo::ItemLidsProperty const& target_family_lids_property,
+           Neo::ArrayProperty<Neo::utils::Int32> & source2target){
+        std::cout << "Algorithm: register connectivity between " <<
+          source_family.m_name << "  and  " << target_family.m_name << std::endl;
+        auto connected_item_lids = target_family_lids_property[connected_item_uids];
+        std::vector<std::size_t > nb_connected_item_per_item_array(source_items.new_items.size(),nb_connected_item_per_item);
+        if (source2target.isInitializableFrom(source_items.new_items)) {
+          source2target.resize(std::move(nb_connected_item_per_item_array));
+          source2target.init(source_items.new_items,std::move(connected_item_lids));
+        }
+        else {
+          source2target.append(source_items.new_items,connected_item_lids, nb_connected_item_per_item_array);
+        }
+        source2target.debugPrint();
+      });
+}
 
 TEST(EvolutiveMeshTest,AddCells)
 {
@@ -90,6 +121,8 @@ TEST(EvolutiveMeshTest,AddCells)
   addItems(mesh, cell_family, cell_uids, added_cells);
   addItems(mesh, node_family, node_uids, added_nodes);
   addItems(mesh, face_family, face_uids, added_faces);
+  auto nb_node_per_cell = 4;
+  addConnectivity(mesh, cell_family, added_cells, node_family, nb_node_per_cell, cell_nodes);
   auto valid_mesh_state = mesh.endUpdate();// retourner un objet qui dévérouille la range
   auto& new_cells = added_cells.get(valid_mesh_state);
   auto& new_nodes = added_nodes.get(valid_mesh_state);
