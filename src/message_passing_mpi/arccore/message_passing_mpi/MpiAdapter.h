@@ -94,11 +94,17 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   Request directRecvPack(void* recv_buffer,Int64 recv_buffer_size,
                          Int32 proc,int mpi_tag,bool is_blocking);
 
-  void waitAllRequests(ArrayView<Request> requests,
+  void waitAllRequests(ArrayView<Request> requests);
+
+  void waitAllRequestsMPI(ArrayView<Request> requests,
                        ArrayView<bool> indexes,
                        ArrayView<MPI_Status> mpi_status);
 
   void waitSomeRequests(ArrayView<Request> requests,
+                        ArrayView<bool> indexes,
+                        bool is_non_blocking);
+
+  void waitSomeRequestsMPI(ArrayView<Request> requests,
                         ArrayView<bool> indexes,
                         ArrayView<MPI_Status> mpi_status,bool is_non_blocking);
 
@@ -107,6 +113,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 
   //! Nombre de rangs dans le communicateur
   int commSize() const { return m_comm_size; }
+
+  MpiMessagePassingMng* commSplit(bool keep);
 
   void freeRequest(Request& request);
   bool testRequest(Request& request);

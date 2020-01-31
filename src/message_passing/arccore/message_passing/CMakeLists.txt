@@ -8,6 +8,7 @@ set(SOURCES
   IStat.h
   IDispatchers.h
   ITypeDispatcher.h
+  IControlDispatcher.h
   IMessagePassingMng.h
   MessagePassingMng.h
   MessagePassingMng.cc

@@ -6,14 +6,17 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h"
-#include "arccore/message_passing_mpi/MpiAdapter.h"
-#include "arccore/message_passing_mpi/MpiDatatype.h"
-#include "arccore/message_passing_mpi/MpiTypeDispatcher.h"
-#include "arccore/message_passing/Dispatchers.h"
-#include "arccore/message_passing/Stat.h"
-#include "arccore/trace/ITraceMng.h"
-#include "arccore/base/ReferenceCounter.h"
+#include "StandaloneMpiMessagePassingMng.h"
+
+#include <arccore/message_passing/Dispatchers.h>
+#include <arccore/message_passing/Stat.h>
+#include <arccore/trace/ITraceMng.h>
+#include <arccore/base/ReferenceCounter.h>
+
+#include "MpiAdapter.h"
+#include "MpiDatatype.h"
+#include "MpiTypeDispatcher.h"
+#include "MpiControlDispatcher.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -24,7 +27,7 @@ namespace Arccore::MessagePassing::Mpi
 class StandaloneMpiMessagePassingMng::Impl
 {
  public:
-  explicit Impl(MPI_Comm mpi_comm)
+  explicit Impl(MPI_Comm mpi_comm, bool clean_comm=false)
   : m_trace_mng(nullptr), m_stat(nullptr), m_dispatchers(nullptr),
     m_adapter(nullptr), m_comm_rank(-1), m_comm_size(-1), m_communicator(mpi_comm)
   {
@@ -44,6 +47,9 @@ class StandaloneMpiMessagePassingMng::Impl
   {
     m_adapter->destroy();
     delete m_stat;
+    if (m_clean_comm) {
+      MPI_Comm_free(&m_communicator);
+    }
   }
 
   MpiMessagePassingMng::BuildInfo buildInfo() const
@@ -58,6 +64,7 @@ class StandaloneMpiMessagePassingMng::Impl
   int m_comm_rank;
   int m_comm_size;
   MPI_Comm m_communicator;
+  bool m_clean_comm;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -94,9 +101,9 @@ _createAndSetDispatcher(Dispatchers* dispatchers,IMessagePassingMng* mpm,MpiAdap
 /*---------------------------------------------------------------------------*/
 
 MpiMessagePassingMng* StandaloneMpiMessagePassingMng::
-create(MPI_Comm mpi_comm)
+create(MPI_Comm mpi_comm, bool clean_comm)
 {
-  Impl* p = new Impl(mpi_comm);
+  Impl* p = new Impl(mpi_comm, clean_comm);
   auto mpm = new StandaloneMpiMessagePassingMng(p);
   auto adapter = p->m_adapter;
   auto dsp = p->m_dispatchers;
@@ -115,6 +122,8 @@ create(MPI_Comm mpi_comm)
   _createAndSetDispatcher<float>(dsp,mpm,adapter);
   _createAndSetDispatcher<double>(dsp,mpm,adapter);
   _createAndSetDispatcher<long double>(dsp,mpm,adapter);
+
+  dsp->setDispatcher(new MpiControlDispatcher(mpm,adapter));
 
   return mpm;
 }
