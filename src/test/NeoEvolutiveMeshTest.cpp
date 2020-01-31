@@ -113,6 +113,8 @@ TEST(EvolutiveMeshTest,AddCells)
                                             3,4,10,9,
                                             4,5,11,10};
 
+  std::vector<Neo::utils::Int64> face_nodes{6,7,8,9,9,10,10,11,1,7,2,8,0,1,2,3,3,4,4,5};
+
   mesh.beginUpdate();
   auto added_cells = Neo::AddedItemRange{};
   auto added_nodes = Neo::AddedItemRange{};
@@ -123,6 +125,8 @@ TEST(EvolutiveMeshTest,AddCells)
   addItems(mesh, face_family, face_uids, added_faces);
   auto nb_node_per_cell = 4;
   addConnectivity(mesh, cell_family, added_cells, node_family, nb_node_per_cell, cell_nodes);
+  auto nb_node_per_face = 2;
+  addConnectivity(mesh, face_family, added_faces, node_family, nb_node_per_face, face_nodes);
   auto valid_mesh_state = mesh.endUpdate();// retourner un objet qui dévérouille la range
   auto& new_cells = added_cells.get(valid_mesh_state);
   auto& new_nodes = added_nodes.get(valid_mesh_state);
