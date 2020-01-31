@@ -8,6 +8,7 @@
 
 #include "arccore/message_passing/Dispatchers.h"
 #include "arccore/message_passing/ITypeDispatcher.h"
+#include "arccore/message_passing/IControlDispatcher.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
