@@ -37,42 +37,7 @@ find_package(Boost COMPONENTS program_options REQUIRED)
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-add_library(alien_hypre
-        src/hypre_vector.cpp
-        src/hypre_matrix.cpp
-        src/internal/hypre_internal.cpp
-        src/internal/hypre_internal_linear_algebra.cpp
-        src/internal/hypre_internal_linear_solver.cpp
-        src/converters/hypre_to_simplecsr_vector.cpp
-        src/converters/simplecsr_to_hypre_vector.cpp
-        src/converters/simplecsr_to_hypre_matrix.cpp
-        src/hypre_backend.h)
-
-target_link_libraries(alien_hypre PUBLIC
-        arccore_trace
-        arccore_collections
-        arccore_base
-        arccore_message_passing_mpi
-        Alien::ALIEN
-        arcconpkg_Hypre)
-
-target_include_directories(alien_hypre PUBLIC
-        $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/public
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/src
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/ALIEN/hypre>)
-
-# ----------------------------------------------------------------------------
-# ----------------------------------------------------------------------------
-
-include(GenerateExportHeader)
-
-generate_export_header(alien_hypre
-        EXPORT_FILE_NAME ALIEN/hypre/export.h)
-
-# ----------------------------------------------------------------------------
-# ----------------------------------------------------------------------------
+add_subdirectory(src)
 
 enable_testing()
 
