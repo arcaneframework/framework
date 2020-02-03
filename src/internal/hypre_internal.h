@@ -11,14 +11,9 @@
 #include <HYPRE_parcsr_ls.h>
 #include <HYPRE_parcsr_mv.h>
 
-//! Internal struct for Hypre implementation
-/*! Separate data from header;
- *  can be only included by HypreLinearSystem and HypreLinearSolver
- */
-
 #include <ALIEN/Utils/Precomp.h>
 
-namespace Alien::Internal {
+namespace Alien::Hypre::Internal {
 
   class MatrixInternal {
   public:

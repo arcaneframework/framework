@@ -55,8 +55,6 @@ namespace Alien::Hypre {
   bool
   InternalLinearSolver::solve(
           const Matrix &A, const Vector &b, Vector &x) {
-    using namespace Alien;
-    using namespace Alien::Internal;
 
     const HYPRE_IJMatrix &ij_matrix = A.internal()->internal();
     const HYPRE_IJVector &bij_vector = b.internal()->internal();

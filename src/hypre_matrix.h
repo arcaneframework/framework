@@ -2,7 +2,7 @@
 
 #include <ALIEN/Core/Impl/IMatrixImpl.h>
 
-namespace Alien::Internal {
+namespace Alien::Hypre::Internal {
   class MatrixInternal;
 }
 

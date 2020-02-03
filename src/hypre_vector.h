@@ -3,11 +3,13 @@
 #include <ALIEN/Core/Impl/IVectorImpl.h>
 #include <ALIEN/Distribution/VectorDistribution.h>
 
-namespace Alien::Internal {
+namespace Alien::Hypre::Internal {
   class VectorInternal;
 }
 
 namespace Alien::Hypre {
+
+  class VectorInternal;
 
   class Vector : public IVectorImpl {
   public:

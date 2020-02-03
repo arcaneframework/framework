@@ -1,6 +1,6 @@
 #include "hypre_internal.h"
 
-namespace Alien::Internal {
+namespace Alien::Hypre::Internal {
 
   MatrixInternal::~MatrixInternal() {
     if (m_internal)
