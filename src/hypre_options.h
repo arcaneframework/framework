@@ -46,23 +46,38 @@ namespace Alien::Hypre {
 
     Arccore::Integer numIterationsMax_ = 0;
     Arccore::Integer numIterationsMax() const { return numIterationsMax_; }
-    Options& numIterationsMax(Arccore::Integer n) { numIterationsMax_ = n; }
+    Options& numIterationsMax(Arccore::Integer n) {
+      numIterationsMax_ = n;
+      return *this;
+    }
 
     Arccore::Real stopCriteriaValue_ = 0.;
     Arccore::Real stopCriteriaValue() const { return stopCriteriaValue_; }
-    Options& stopCriteriaValue(Arccore::Real n) { stopCriteriaValue_ = n; }
+    Options& stopCriteriaValue(Arccore::Real n) {
+      stopCriteriaValue_ = n;
+      return *this;
+    }
 
     bool verbose_ = false;
     bool verbose() const { return verbose_; }
-    void verbose(bool n) { verbose_ = n; }
+    Options& verbose(bool n) {
+      verbose_ = n;
+      return *this;
+    }
 
     Alien::Hypre::OptionTypes::eSolver solver_ = Alien::Hypre::OptionTypes::BiCGStab;
     Alien::Hypre::OptionTypes::eSolver solver() const { return solver_; }
-    Options& solver(Alien::Hypre::OptionTypes::eSolver n) { solver_ = n; }
+    Options& solver(Alien::Hypre::OptionTypes::eSolver n) {
+      solver_ = n;
+      return *this;
+    }
 
     Alien::Hypre::OptionTypes::ePreconditioner preconditioner_ = Alien::Hypre::OptionTypes::EuclidPC;
     Alien::Hypre::OptionTypes::ePreconditioner preconditioner() const { return preconditioner_; }
-    Options& preconditioner(Alien::Hypre::OptionTypes::ePreconditioner n) { preconditioner_ = n; }
+    Options& preconditioner(Alien::Hypre::OptionTypes::ePreconditioner n) {
+      preconditioner_ = n;
+      return *this;
+    }
   };
 
   class OptionsUtils

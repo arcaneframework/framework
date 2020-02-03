@@ -13,66 +13,68 @@ namespace Alien {
     class VectorInternal;
   }
 
-  namespace Hypre {
+}
 
-    class Vector : public IVectorImpl {
-    public:
 
-      friend class ::SimpleCSR_to_Hypre_VectorConverter;
+namespace Alien::Hypre {
 
-      typedef Internal::VectorInternal VectorInternal;
+  class Vector : public IVectorImpl {
+  public:
 
-    public:
+    friend class ::SimpleCSR_to_Hypre_VectorConverter;
 
-      Vector(const MultiVectorImpl *multi_impl);
+    typedef Internal::VectorInternal VectorInternal;
 
-      virtual ~Vector();
+  public:
 
-    public:
-      void init(const VectorDistribution &dist, const bool need_allocate);
+    Vector(const MultiVectorImpl *multi_impl);
 
-      void allocate();
+    virtual ~Vector();
 
-      void free() {}
+  public:
+    void init(const VectorDistribution &dist, const bool need_allocate);
 
-      void clear() {}
+    void allocate();
 
-    private:
-      bool setValues(const int nrow,
-                     const double *values);
+    void free() {}
 
-      bool setValues(const int nrow,
-                     const int *rows,
-                     const double *values);
+    void clear() {}
 
-    public:
-      bool getValues(const int nrow,
-                     const int *rows,
-                     double *values) const;
+  private:
+    bool setValues(const int nrow,
+                   const double *values);
 
-      bool getValues(const int nrow,
-                     double *values) const;
+    bool setValues(const int nrow,
+                   const int *rows,
+                   const double *values);
 
-    public:
+  public:
+    bool getValues(const int nrow,
+                   const int *rows,
+                   double *values) const;
 
-      // Méthodes restreintes à usage interne de l'implémentation HYPRE
-      VectorInternal *internal() { return m_internal; }
+    bool getValues(const int nrow,
+                   double *values) const;
 
-      const VectorInternal *internal() const { return m_internal; }
+  public:
 
-      // These functions should be removed when the relevant Converters will be implemented
-      void update(const Vector &v);
+    // Méthodes restreintes à usage interne de l'implémentation HYPRE
+    VectorInternal *internal() { return m_internal; }
 
-    private:
+    const VectorInternal *internal() const { return m_internal; }
 
-      bool assemble();
+    // These functions should be removed when the relevant Converters will be implemented
+    void update(const Vector &v);
 
-    private:
-      VectorInternal *m_internal;
-      Arccore::Integer m_block_size;
-      Arccore::Integer m_offset;
-      Arccore::UniqueArray <Arccore::Integer> m_rows;
-    };
-  }
+  private:
+
+    bool assemble();
+
+  private:
+    VectorInternal *m_internal;
+    Arccore::Integer m_block_size;
+    Arccore::Integer m_offset;
+    Arccore::UniqueArray<Arccore::Integer> m_rows;
+  };
 
 }
