@@ -108,10 +108,14 @@ void setNodeCoords(Neo::Mesh& mesh, Neo::Family& node_family, Neo::AddedItemRang
       });
 }
 
+static const std::string cell_family_name {"CellFamily"};
+static const std::string face_family_name {"FaceFamily"};
+static const std::string node_family_name {"NodeFamily"};
+
 void addCells(Neo::Mesh &mesh){
-  auto& cell_family = addCellFamily(mesh,"CellFamily");
-  auto& node_family = addNodeFamily(mesh,"NodeFamily");
-  auto& face_family = addFaceFamily(mesh,"FaceFamily");
+  auto& cell_family = addCellFamily(mesh,cell_family_name);
+  auto& node_family = addNodeFamily(mesh,face_family_name);
+  auto& face_family = addFaceFamily(mesh,node_family_name);
   std::vector<Neo::utils::Int64> node_uids{0,1,2,3,4,5,6,7,8,9,10,11};
   std::vector<Neo::utils::Int64> cell_uids{0,1,2,3};
   std::vector<Neo::utils::Int64> face_uids{0,1,2,3,4,5,6,7,8,9};
@@ -132,7 +136,6 @@ void addCells(Neo::Mesh &mesh){
   auto added_cells = Neo::AddedItemRange{};
   auto added_nodes = Neo::AddedItemRange{};
   auto added_faces = Neo::AddedItemRange{};
-  // demander au maillage de la créer
   addItems(mesh, cell_family, cell_uids, added_cells);
   addItems(mesh, node_family, node_uids, added_nodes);
   addItems(mesh, face_family, face_uids, added_faces);
