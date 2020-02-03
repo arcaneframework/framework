@@ -7,10 +7,6 @@
 #include <ALIEN/Core/Backend/IInternalLinearSolverT.h>
 #include <ALIEN/Utils/Trace/ObjectWithTrace.h>
 
-namespace Alien {
-  class SolverStater;
-}
-
 namespace Alien::Hypre {
 
   class IOptions;
@@ -34,11 +30,9 @@ namespace Alien::Hypre {
 
     virtual void init();
 
-    void updateParallelMng(Arccore::MessagePassing::IMessagePassingMng *pm);
+    void updateParallelMng(Arccore::MessagePassing::IMessagePassingMng *pm) {}
 
-    void end();
-
-    Arccore::String getBackEndName() const { return "hypre"; }
+    void end() {}
 
     bool solve(const Matrix &A, const Vector &b, Vector &x);
 
@@ -56,13 +50,11 @@ namespace Alien::Hypre {
     Status m_status;
 
     Arccore::Real m_init_time;
-    Arccore::Real m_total_build_time;
     Arccore::Real m_total_solve_time;
     Arccore::Integer m_solve_num;
     Arccore::Integer m_total_iter_num;
 
     SolverStat m_stat;
-    SolverStater m_stater;
     Arccore::MessagePassing::IMessagePassingMng *m_parallel_mng;
     IOptions *m_options;
 

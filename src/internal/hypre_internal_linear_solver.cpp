@@ -42,16 +42,6 @@ namespace Alien::Hypre {
   }
 
   void
-  InternalLinearSolver::
-  updateParallelMng(Arccore::MessagePassing::IMessagePassingMng *pm ALIEN_UNUSED_PARAM) {
-    ;
-  }
-
-  void InternalLinearSolver::end() {
-    ;
-  }
-
-  void
   InternalLinearSolver::checkError(const Arccore::String &msg, int ierr, int skipError) const {
     if (ierr != 0 and (ierr & ~skipError) != 0) {
       char hypre_error_msg[256];
@@ -73,11 +63,6 @@ namespace Alien::Hypre {
     HYPRE_IJVector &xij_vector = x.internal()->internal();
 
     // Macro "pratique" en attendant de trouver mieux
-#ifdef VALUESTRING
-#error Already defined macro VALUESTRING
-#endif
-#define VALUESTRING(option) ((option).enumValues()->nameOfValue((option)(),""))
-
     boost::timer tsolve;
 
     int output_level = m_options->verbose() ? 1 : 0;
@@ -278,8 +263,6 @@ namespace Alien::Hypre {
     m_total_iter_num += m_status.iteration_count;
     m_total_solve_time += tsolve.elapsed();
     return m_status.succeeded;
-
-#undef VALUESTRING
   }
 
   const Alien::SolverStatus &
