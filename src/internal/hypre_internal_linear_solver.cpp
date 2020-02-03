@@ -69,9 +69,9 @@ namespace Alien::Hypre {
     HYPRE_Solver preconditioner = nullptr;
 
     // acces aux fonctions du preconditionneur
-    HYPRE_PtrToParSolverFcn precond_solve_function = NULL;
-    HYPRE_PtrToParSolverFcn precond_setup_function = NULL;
-    int (*precond_destroy_function)(HYPRE_Solver) = NULL;
+    HYPRE_PtrToParSolverFcn precond_solve_function = nullptr;
+    HYPRE_PtrToParSolverFcn precond_setup_function = nullptr;
+    int (*precond_destroy_function)(HYPRE_Solver) = nullptr;
 
     MPI_Comm comm = MPI_COMM_WORLD;
     auto *mpi_comm_mng = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng *>(A.getParallelMng());
@@ -82,7 +82,7 @@ namespace Alien::Hypre {
     switch (m_options->preconditioner()) {
       case OptionTypes::NoPC:
         precond_name = "none";
-        // precond_destroy_function = NULL;
+        // precond_destroy_function = nullptr;
         break;
       case OptionTypes::DiagPC:
         precond_name = "diag";
@@ -119,16 +119,16 @@ namespace Alien::Hypre {
     }
 
     // acces aux fonctions du solveur
-    //int (*solver_set_logging_function)(HYPRE_Solver,int) = NULL;
-    int (*solver_set_print_level_function)(HYPRE_Solver, int) = NULL;
-    int (*solver_set_tol_function)(HYPRE_Solver, double) = NULL;
+    //int (*solver_set_logging_function)(HYPRE_Solver,int) = nullptr;
+    int (*solver_set_print_level_function)(HYPRE_Solver, int) = nullptr;
+    int (*solver_set_tol_function)(HYPRE_Solver, double) = nullptr;
     int (*solver_set_precond_function)(HYPRE_Solver, HYPRE_PtrToParSolverFcn, HYPRE_PtrToParSolverFcn,
-                                       HYPRE_Solver) = NULL;
-    int (*solver_setup_function)(HYPRE_Solver, HYPRE_ParCSRMatrix, HYPRE_ParVector, HYPRE_ParVector) = NULL;
-    int (*solver_solve_function)(HYPRE_Solver, HYPRE_ParCSRMatrix, HYPRE_ParVector, HYPRE_ParVector) = NULL;
-    int (*solver_get_num_iterations_function)(HYPRE_Solver, int *) = NULL;
-    int (*solver_get_final_relative_residual_function)(HYPRE_Solver, double *) = NULL;
-    int (*solver_destroy_function)(HYPRE_Solver) = NULL;
+                                       HYPRE_Solver) = nullptr;
+    int (*solver_setup_function)(HYPRE_Solver, HYPRE_ParCSRMatrix, HYPRE_ParVector, HYPRE_ParVector) = nullptr;
+    int (*solver_solve_function)(HYPRE_Solver, HYPRE_ParCSRMatrix, HYPRE_ParVector, HYPRE_ParVector) = nullptr;
+    int (*solver_get_num_iterations_function)(HYPRE_Solver, int *) = nullptr;
+    int (*solver_get_final_relative_residual_function)(HYPRE_Solver, double *) = nullptr;
+    int (*solver_destroy_function)(HYPRE_Solver) = nullptr;
 
     int max_it = m_options->numIterationsMax();
     double rtol = m_options->stopCriteriaValue();
@@ -144,7 +144,7 @@ namespace Alien::Hypre {
         //solver_set_logging_function = HYPRE_BoomerAMGSetLogging;
         solver_set_print_level_function = HYPRE_BoomerAMGSetPrintLevel;
         solver_set_tol_function = HYPRE_BoomerAMGSetTol;
-        // solver_set_precond_function = NULL;
+        // solver_set_precond_function = nullptr;
         solver_setup_function = HYPRE_BoomerAMGSetup;
         solver_solve_function = HYPRE_BoomerAMGSolve;
         solver_get_num_iterations_function = HYPRE_BoomerAMGGetNumIterations;
@@ -204,7 +204,7 @@ namespace Alien::Hypre {
         //solver_set_logging_function = HYPRE_ParCSRHybridSetLogging;
         solver_set_print_level_function = HYPRE_ParCSRHybridSetPrintLevel;
         solver_set_tol_function = HYPRE_ParCSRHybridSetTol;
-        solver_set_precond_function = NULL; // HYPRE_ParCSRHybridSetPrecond; // SegFault si utilise un préconditionneur !
+        solver_set_precond_function = nullptr; // HYPRE_ParCSRHybridSetPrecond; // SegFault si utilise un préconditionneur !
         solver_setup_function = HYPRE_ParCSRHybridSetup;
         solver_solve_function = HYPRE_ParCSRHybridSolve;
         solver_get_num_iterations_function = HYPRE_ParCSRHybridGetNumIterations;

@@ -54,14 +54,14 @@ namespace Alien::Hypre {
 
   bool
   Vector::setValues(const int nrow, const int *rows, const double *values) {
-    if (m_internal == NULL)
+    if (m_internal == nullptr)
       return false;
     return m_internal->setValues(nrow, rows, values);
   }
 
   bool
   Vector::setValues(const int nrow, const double *values) {
-    if (m_internal == NULL)
+    if (m_internal == nullptr)
       return false;
 
     return m_internal->setValues(nrow, m_rows.data(), values);
@@ -69,21 +69,21 @@ namespace Alien::Hypre {
 
   bool
   Vector::getValues(const int nrow, const int *rows, double *values) const {
-    if (m_internal == NULL)
+    if (m_internal == nullptr)
       return false;
     return m_internal->getValues(nrow, rows, values);
   }
 
   bool
   Vector::getValues(const int nrow, double *values) const {
-    if (m_internal == NULL)
+    if (m_internal == nullptr)
       return false;
     return m_internal->getValues(nrow, m_rows.data(), values);
   }
 
   bool
   Vector::assemble() {
-    if (m_internal == NULL)
+    if (m_internal == nullptr)
       return false;
     return m_internal->assemble();
   }
