@@ -648,7 +648,7 @@ public:
     return m_families.push_back(ik, name);
   }
 
-  Family& getFamily(ItemKind ik, std::string&& name){ return m_families.operator()(ik,name);}
+  Family& getFamily(ItemKind ik, std::string const& name){ return m_families.operator()(ik,name);}
 
 
   template <typename Algorithm>
