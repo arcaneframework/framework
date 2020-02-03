@@ -3,25 +3,14 @@
 #include <ALIEN/Core/Impl/IVectorImpl.h>
 #include <ALIEN/Distribution/VectorDistribution.h>
 
-class SimpleCSR_to_Hypre_VectorConverter;
-
-namespace Alien {
-
-  class Block;
-
-  namespace Internal {
-    class VectorInternal;
-  }
-
+namespace Alien::Internal {
+  class VectorInternal;
 }
-
 
 namespace Alien::Hypre {
 
   class Vector : public IVectorImpl {
   public:
-
-    friend class ::SimpleCSR_to_Hypre_VectorConverter;
 
     typedef Internal::VectorInternal VectorInternal;
 
@@ -40,7 +29,7 @@ namespace Alien::Hypre {
 
     void clear() {}
 
-  private:
+  public:
     bool setValues(const int nrow,
                    const double *values);
 
