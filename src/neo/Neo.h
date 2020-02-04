@@ -526,7 +526,9 @@ class FamilyMap {
 public:
   Family& operator() (ItemKind const & ik,std::string const& name)
   {
-    return *(m_families.find(std::make_pair(ik,name))->second.get());
+    auto found_family = m_families.find(std::make_pair(ik,name));
+    assert(("Cannot find Family ",found_family!= m_families.end()));
+    return *(found_family->second.get());
   }
   Family& push_back(ItemKind const & ik,std::string const& name)
   {
@@ -682,6 +684,7 @@ public:
   ValidMeshState endUpdate() {
     std::cout << "end mesh update" << std::endl;
     std::for_each(m_algos.begin(),m_algos.end(),[](auto& algo){(*algo.get())();});
+    m_algos.clear();
     return ValidMeshState{};
   }
 
