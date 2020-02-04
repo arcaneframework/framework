@@ -162,7 +162,8 @@ public:
   }
 
   void append(const ItemRange& item_range, const std::vector<DataType>& values) {
-    assert(item_range.size() == values.size());
+    if (item_range.size()==0) return;
+    assert(("item_range and values sizes differ",item_range.size() == values.size()));
     auto max_item = utils::maxItem(item_range);
     if (max_item > m_data.size()) m_data.resize(max_item+1);
     std::size_t counter{0};
