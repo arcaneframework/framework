@@ -108,14 +108,28 @@ void setNodeCoords(Neo::Mesh& mesh, Neo::Family& node_family, Neo::AddedItemRang
       });
 }
 
+void moveNodes(Neo::Mesh& mesh, Neo::Family& node_family, std::vector<Neo::utils::Int64>& node_uids, std::vector<Neo::utils::Real3>& node_coords){
+  mesh.addAlgorithm(
+      Neo::InProperty{node_family,node_family.lidPropName()},
+      Neo::OutProperty{node_family,"node_coords"},
+      [&node_uids,&node_coords](Neo::ItemLidsProperty const& node_lids_property,
+                                  Neo::PropertyT<Neo::utils::Real3> & node_coords_property){
+        std::cout << "Algorithm: change node coords" << std::endl;
+        // get range from uids and append
+        auto moved_node_range = Neo::ItemRange{Neo::ItemIndexes::getIndexes(node_lids_property[node_uids])};
+        node_coords_property.append(moved_node_range, node_coords);
+        node_coords_property.debugPrint();
+      });
+}
+
 static const std::string cell_family_name {"CellFamily"};
 static const std::string face_family_name {"FaceFamily"};
 static const std::string node_family_name {"NodeFamily"};
 
 void addCells(Neo::Mesh &mesh){
   auto& cell_family = addCellFamily(mesh,cell_family_name);
-  auto& node_family = addNodeFamily(mesh,face_family_name);
-  auto& face_family = addFaceFamily(mesh,node_family_name);
+  auto& node_family = addNodeFamily(mesh,node_family_name);
+  auto& face_family = addFaceFamily(mesh,face_family_name);
   std::vector<Neo::utils::Int64> node_uids{0,1,2,3,4,5,6,7,8,9,10,11};
   std::vector<Neo::utils::Int64> cell_uids{0,1,2,3};
   std::vector<Neo::utils::Int64> face_uids{0,1,2,3,4,5,6,7,8,9};
@@ -159,3 +173,17 @@ TEST(EvolutiveMeshTest,AddCells)
   addCells(mesh);
 }
 
+TEST(EvolutiveMeshTest,MoveNodes){
+
+  std::cout << "Move node test " << std::endl;
+  auto mesh = Neo::Mesh{"evolutive_neo_mesh"};
+  addCells(mesh);
+  std::vector<Neo::utils::Int64> node_uids{6,7,8,9,10,11};
+  std::vector<Neo::utils::Real3> node_coords{{0,0,-1},{0,1.5,-1},{0,1.5,-1},
+                                             {0,2.7,-1},{0,3.85,-1},{0,5,-1}};
+  mesh.beginUpdate();
+  moveNodes(mesh, mesh.getFamily(Neo::ItemKind::IK_Node, node_family_name),node_uids, node_coords);
+  mesh.endUpdate();
+
+
+}
