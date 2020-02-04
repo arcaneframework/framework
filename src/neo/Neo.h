@@ -79,6 +79,12 @@ struct ItemIndexes {
         item_lid = m_non_contiguous_indexes[index];
     return item_lid;
   }
+
+  static std::vector<std::size_t> getIndexes(std::vector<Neo::utils::Int32> const& item_lids){
+    std::vector<std::size_t> indexes{};
+    std::copy_if(item_lids.begin(),item_lids.end(),std::back_inserter(indexes),[](auto const& lid) { return lid != utils::NULL_ITEM_LID; });
+    return indexes;
+  }
 };
 struct ItemIterator {
   using iterator_category = std::input_iterator_tag;
