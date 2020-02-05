@@ -9,13 +9,13 @@
 
 namespace Alien::Hypre {
 
-  class ALIEN_HYPRE_EXPORT HypreInternalLinearAlgebra
+  class ALIEN_HYPRE_EXPORT InternalLinearAlgebra
           : public IInternalLinearAlgebra<Matrix, Vector> {
   public:
 
-    HypreInternalLinearAlgebra() {}
+    InternalLinearAlgebra() {}
 
-    virtual ~HypreInternalLinearAlgebra() {}
+    virtual ~InternalLinearAlgebra() {}
 
   public:
 

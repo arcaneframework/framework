@@ -33,80 +33,74 @@ namespace Alien {
     }
   }
 
-  template
-  class ALIEN_HYPRE_EXPORT LinearAlgebra<BackEnd::tag::hypre>;
-
-  IInternalLinearAlgebra<Hypre::Matrix, Hypre::Vector> *
-  HypreInternalLinearAlgebraFactory() {
-    return new Hypre::HypreInternalLinearAlgebra();
-  }
+  template class ALIEN_HYPRE_EXPORT LinearAlgebra<BackEnd::tag::hypre>;
 
   namespace Hypre {
 
     Arccore::Real
-    HypreInternalLinearAlgebra::norm0(const Vector &vx ALIEN_UNUSED_PARAM) const {
+    InternalLinearAlgebra::norm0(const Vector &vx ALIEN_UNUSED_PARAM) const {
       Arccore::Real result = 0;
       throw Arccore::NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::norm0 not implemented");
     }
 
     Arccore::Real
-    HypreInternalLinearAlgebra::norm1(const Vector &vx ALIEN_UNUSED_PARAM) const {
+    InternalLinearAlgebra::norm1(const Vector &vx ALIEN_UNUSED_PARAM) const {
       Arccore::Real result = 0;
       throw Arccore::NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::norm1 not implemented");
     }
 
     Arccore::Real
-    HypreInternalLinearAlgebra::norm2(const Vector &vx) const {
+    InternalLinearAlgebra::norm2(const Vector &vx) const {
       return std::sqrt(dot(vx, vx));
     }
 
     void
-    HypreInternalLinearAlgebra::mult(
+    InternalLinearAlgebra::mult(
             const Matrix &ma, const Vector &vx, Vector &vr) const {
       HYPRE_ParCSRMatrixMatvec(1.0, hypre_implem(ma), hypre_implem(vx), 0.0, hypre_implem(vr));
     }
 
     void
-    HypreInternalLinearAlgebra::axpy(
+    InternalLinearAlgebra::axpy(
             const Arccore::Real &alpha ALIEN_UNUSED_PARAM, const Vector &vx ALIEN_UNUSED_PARAM, Vector &vr
             ALIEN_UNUSED_PARAM) const {
       HYPRE_ParVectorAxpy(alpha,  hypre_implem(vx), hypre_implem(vr));
     }
 
     void
-    HypreInternalLinearAlgebra::copy(const Vector &vx, Vector &vr) const {
+    InternalLinearAlgebra::copy(const Vector &vx, Vector &vr) const {
       HYPRE_ParVectorCopy(hypre_implem(vx), hypre_implem(vr));
     }
 
     Arccore::Real
-    HypreInternalLinearAlgebra::dot(const Vector &vx, const Vector &vy) const {
+    InternalLinearAlgebra::dot(const Vector &vx, const Vector &vy) const {
       double dot_prod = 0;
       HYPRE_ParVectorInnerProd(hypre_implem(vx), hypre_implem(vy), &dot_prod);
       return static_cast<Arccore::Real>(dot_prod);
     }
 
     void
-    HypreInternalLinearAlgebra::diagonal(Matrix const &m ALIEN_UNUSED_PARAM, Vector &v
+    InternalLinearAlgebra::diagonal(Matrix const &m ALIEN_UNUSED_PARAM, Vector &v
                                          ALIEN_UNUSED_PARAM) const {
       throw Arccore::NotImplementedException(
               A_FUNCINFO, "HypreLinearAlgebra::diagonal not implemented");
     }
 
     void
-    HypreInternalLinearAlgebra::reciprocal(Vector &v ALIEN_UNUSED_PARAM) const {
+    InternalLinearAlgebra::reciprocal(Vector &v ALIEN_UNUSED_PARAM) const {
       throw Arccore::NotImplementedException(
               A_FUNCINFO, "HypreLinearAlgebra::reciprocal not implemented");
     }
 
     void
-    HypreInternalLinearAlgebra::aypx(
+    InternalLinearAlgebra::aypx(
             const double &alpha ALIEN_UNUSED_PARAM, Vector &y ALIEN_UNUSED_PARAM, const Vector &x
             ALIEN_UNUSED_PARAM) const {
       throw Arccore::NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::aypx not implemented");
     }
 
     void
-    HypreInternalLinearAlgebra::pointwiseMult(
+    InternalLinearAlgebra::pointwiseMult(
             const Vector &x ALIEN_UNUSED_PARAM, const Vector &y ALIEN_UNUSED_PARAM, Vector &w
             ALIEN_UNUSED_PARAM) const {
       throw Arccore::NotImplementedException(
@@ -114,8 +108,13 @@ namespace Alien {
     }
 
     void
-    HypreInternalLinearAlgebra::scal(const Arccore::Real &alpha, Vector &x) const {
+    InternalLinearAlgebra::scal(const Arccore::Real &alpha, Vector &x) const {
       HYPRE_ParVectorScale(static_cast<double>(alpha), hypre_implem(x));
+    }
+
+    IInternalLinearAlgebra<Hypre::Matrix, Hypre::Vector> *
+    InternalLinearAlgebraFactory() {
+      return new Hypre::InternalLinearAlgebra();
     }
   }
 }

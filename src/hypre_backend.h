@@ -2,14 +2,13 @@
 
 #include <ALIEN/Core/Backend/BackEnd.h>
 
-namespace Arccore::MessagePassing {
-  class IMessagePassingMng;
-}
-
 namespace Alien {
 
   template<class Matrix, class Vector>
   class IInternalLinearSolver;
+
+  template<class Matrix, class Vector>
+  class IInternalLinearAlgebra;
 }
 
 namespace Alien::Hypre {
@@ -21,15 +20,11 @@ namespace Alien::Hypre {
 
   extern IInternalLinearSolver<Matrix, Vector> *InternalLinearSolverFactory(const Options& options);
   extern IInternalLinearSolver<Matrix, Vector> *InternalLinearSolverFactory();
+
+  extern IInternalLinearAlgebra<Matrix, Vector> *InternalLinearAlgebraFactory();
 }
 
 namespace Alien {
-
-  template<class Matrix, class Vector>
-  class IInternalLinearAlgebra;
-
-  extern IInternalLinearAlgebra<Hypre::Matrix, Hypre::Vector> *
-  HypreInternalLinearAlgebraFactory();
 
   namespace BackEnd {
     namespace tag {
@@ -40,23 +35,28 @@ namespace Alien {
 
   template<>
   struct AlgebraTraits<BackEnd::tag::hypre> {
-    typedef Hypre::Matrix matrix_type;
-    typedef Hypre::Vector vector_type;
-    typedef Hypre::Options options_type;
-    typedef IInternalLinearAlgebra<matrix_type, vector_type> algebra_type;
-    typedef IInternalLinearSolver<matrix_type, vector_type> solver_type;
 
-    static algebra_type *algebra_factory(Arccore::MessagePassing::IMessagePassingMng *p_mng = nullptr) {
-      return HypreInternalLinearAlgebraFactory();
+    // types
+    using matrix_type = Hypre::Matrix;
+    using vector_type = Hypre::Vector;
+    using options_type = Hypre::Options;
+    using algebra_type = IInternalLinearAlgebra<matrix_type, vector_type>;
+    using solver_type = IInternalLinearSolver<matrix_type, vector_type>;
+
+    // factory to build algebra
+    static auto *algebra_factory() {
+      return Hypre::InternalLinearAlgebraFactory();
     }
 
-    static solver_type *solver_factory(const options_type& options) {
+    // factories to build solver
+    static auto *solver_factory(const options_type& options) {
       return Hypre::InternalLinearSolverFactory(options);
     }
 
-    static solver_type *solver_factory() {
+    static auto *solver_factory() {
       return Hypre::InternalLinearSolverFactory();
     }
+
     static BackEndId name() { return "hypre"; }
   };
 
