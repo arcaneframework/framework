@@ -8,10 +8,20 @@ namespace Arccore::MessagePassing {
   class IMessagePassingMng;
 }
 
+namespace Alien {
+
+  template<class Matrix, class Vector>
+  class IInternalLinearSolver;
+}
+
 namespace Alien::Hypre {
   class Matrix;
+
   class Vector;
-  class IOptions;
+
+  class Options;
+
+  extern IInternalLinearSolver<Matrix, Vector> *InternalLinearSolverFactory(const Options& options);
 }
 
 namespace Alien {
@@ -19,14 +29,8 @@ namespace Alien {
   template<class Matrix, class Vector>
   class IInternalLinearAlgebra;
 
-  template<class Matrix, class Vector>
-  class IInternalLinearSolver;
-
   extern IInternalLinearAlgebra<Hypre::Matrix, Hypre::Vector> *
   HypreInternalLinearAlgebraFactory();
-
-  extern IInternalLinearSolver<Hypre::Matrix, Hypre::Vector> *
-  HypreInternalLinearSolverFactory(Arccore::MessagePassing::IMessagePassingMng *p_mng, Hypre::IOptions *options);
 
   namespace BackEnd {
     namespace tag {
@@ -39,7 +43,7 @@ namespace Alien {
   struct AlgebraTraits<BackEnd::tag::hypre> {
     typedef Hypre::Matrix matrix_type;
     typedef Hypre::Vector vector_type;
-    typedef Hypre::IOptions options_type;
+    typedef Hypre::Options options_type;
     typedef IInternalLinearAlgebra<matrix_type, vector_type> algebra_type;
     typedef IInternalLinearSolver<matrix_type, vector_type> solver_type;
 
@@ -47,8 +51,8 @@ namespace Alien {
       return HypreInternalLinearAlgebraFactory();
     }
 
-    static solver_type *solver_factory(Arccore::MessagePassing::IMessagePassingMng *p_mng, options_type *options) {
-      return HypreInternalLinearSolverFactory(p_mng, options);
+    static solver_type *solver_factory(const options_type& options) {
+      return Hypre::InternalLinearSolverFactory(options);
     }
 
     static BackEndId name() { return "hypre"; }

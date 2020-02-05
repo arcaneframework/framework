@@ -30,13 +30,8 @@ namespace Alien {
 
 namespace Alien::Hypre {
 
-  InternalLinearSolver::InternalLinearSolver(Arccore::MessagePassing::IMessagePassingMng *pm,
-                                             IOptions *options)
-          : m_parallel_mng(pm), m_options(options) {
-  }
-
-  void
-  InternalLinearSolver::init() {
+  InternalLinearSolver::InternalLinearSolver(const Options& options)
+          : m_options(options) {
     boost::timer tinit;
     m_init_time += tinit.elapsed();
   }
@@ -63,7 +58,7 @@ namespace Alien::Hypre {
     // Macro "pratique" en attendant de trouver mieux
     boost::timer tsolve;
 
-    int output_level = m_options->verbose() ? 1 : 0;
+    int output_level = m_options.verbose() ? 1 : 0;
 
     HYPRE_Solver solver = nullptr;
     HYPRE_Solver preconditioner = nullptr;
@@ -79,7 +74,7 @@ namespace Alien::Hypre {
       comm = *(mpi_comm_mng->getMPIComm());
 
     std::string precond_name = "undefined";
-    switch (m_options->preconditioner()) {
+    switch (m_options.preconditioner()) {
       case OptionTypes::NoPC:
         precond_name = "none";
         // precond_destroy_function = nullptr;
@@ -130,11 +125,11 @@ namespace Alien::Hypre {
     int (*solver_get_final_relative_residual_function)(HYPRE_Solver, double *) = nullptr;
     int (*solver_destroy_function)(HYPRE_Solver) = nullptr;
 
-    int max_it = m_options->numIterationsMax();
-    double rtol = m_options->stopCriteriaValue();
+    int max_it = m_options.numIterationsMax();
+    double rtol = m_options.stopCriteriaValue();
 
     std::string solver_name = "undefined";
-    switch (m_options->solver()) {
+    switch (m_options.solver()) {
       case OptionTypes::AMG:
         solver_name = "amg";
         checkError("Hypre AMG solver", HYPRE_BoomerAMGCreate(&solver));
@@ -268,18 +263,9 @@ namespace Alien::Hypre {
     return m_status;
   }
 
-  std::shared_ptr<ILinearAlgebra>
-  InternalLinearSolver::algebra() const {
-    return std::shared_ptr<ILinearAlgebra>();
-  }
-
-}
-
-namespace Alien {
-
-  IInternalLinearSolver<Hypre::Matrix, Hypre::Vector> *
-  HypreInternalLinearSolverFactory(Arccore::MessagePassing::IMessagePassingMng *p_mng, Hypre::IOptions *options) {
-    return new Hypre::InternalLinearSolver(p_mng, options);
+  IInternalLinearSolver<Matrix, Vector> *
+  InternalLinearSolverFactory(const Options& options) {
+    return new InternalLinearSolver(options);
   }
 
 }

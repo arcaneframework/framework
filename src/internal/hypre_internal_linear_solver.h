@@ -7,9 +7,9 @@
 #include <ALIEN/Core/Backend/IInternalLinearSolverT.h>
 #include <ALIEN/Utils/Trace/ObjectWithTrace.h>
 
-namespace Alien::Hypre {
+#include "hypre_options.h"
 
-  class IOptions;
+namespace Alien::Hypre {
 
   class Matrix;
 
@@ -21,24 +21,18 @@ namespace Alien::Hypre {
 
     typedef SolverStatus Status;
 
-    InternalLinearSolver(Arccore::MessagePassing::IMessagePassingMng *pm = nullptr,
-                         IOptions *options = nullptr);
+    InternalLinearSolver(const Options& options);
 
     virtual ~InternalLinearSolver() {}
 
   public:
 
-    virtual void init();
-
+    // Nothing to do
     void updateParallelMng(Arccore::MessagePassing::IMessagePassingMng *pm) {}
-
-    void end() {}
 
     bool solve(const Matrix &A, const Vector &b, Vector &x);
 
     bool hasParallelSupport() const { return true; }
-
-    std::shared_ptr<ILinearAlgebra> algebra() const;
 
     //! Etat du solveur
     const Status &getStatus() const;
@@ -55,8 +49,7 @@ namespace Alien::Hypre {
     Arccore::Integer m_total_iter_num;
 
     SolverStat m_stat;
-    Arccore::MessagePassing::IMessagePassingMng *m_parallel_mng;
-    IOptions *m_options;
+    Options m_options;
 
   private:
 

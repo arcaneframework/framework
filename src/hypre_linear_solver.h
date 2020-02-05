@@ -2,6 +2,7 @@
 
 #include "hypre_backend.h"
 
+#include <ALIEN/Core/Backend/IInternalLinearSolverT.h>
 #include <ALIEN/Core/Backend/LinearSolver.h>
 
 namespace Alien::Hypre {

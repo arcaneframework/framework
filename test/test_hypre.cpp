@@ -72,9 +72,8 @@ int test() {
           .preconditioner(Alien::Hypre::OptionTypes::AMGPC)
           .solver(Alien::Hypre::OptionTypes::GMRES);
 
-  auto solver = Alien::Hypre::LinearSolver (pm, &options);
+  auto solver = Alien::Hypre::LinearSolver (options);
 
-  solver.init();
   solver.solve(A,b,x);
 
   tm->info() << "* r = Ax - b";

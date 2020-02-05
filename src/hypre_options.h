@@ -24,23 +24,7 @@ namespace Alien::Hypre {
     };
   };
 
-  class IOptions {
-  public:
-
-    virtual ~IOptions() {}
-
-    virtual Arccore::Integer numIterationsMax() const = 0;
-
-    virtual Arccore::Real stopCriteriaValue() const = 0;
-
-    virtual bool verbose() const = 0;
-
-    virtual OptionTypes::eSolver solver() const = 0;
-
-    virtual OptionTypes::ePreconditioner preconditioner() const = 0;
-  };
-
-  struct Options : public IOptions {
+  struct Options {
 
     virtual ~Options() {}
 
