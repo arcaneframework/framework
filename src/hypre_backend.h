@@ -2,8 +2,6 @@
 
 #include <ALIEN/Core/Backend/BackEnd.h>
 
-class IOptionsHypreSolver;
-
 namespace Arccore::MessagePassing {
   class IMessagePassingMng;
 }
@@ -22,6 +20,7 @@ namespace Alien::Hypre {
   class Options;
 
   extern IInternalLinearSolver<Matrix, Vector> *InternalLinearSolverFactory(const Options& options);
+  extern IInternalLinearSolver<Matrix, Vector> *InternalLinearSolverFactory();
 }
 
 namespace Alien {
@@ -55,6 +54,9 @@ namespace Alien {
       return Hypre::InternalLinearSolverFactory(options);
     }
 
+    static solver_type *solver_factory() {
+      return Hypre::InternalLinearSolverFactory();
+    }
     static BackEndId name() { return "hypre"; }
   };
 

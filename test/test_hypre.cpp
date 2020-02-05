@@ -66,13 +66,15 @@ int test() {
 
   tm->info() << "* x = A^-1 b";
 
-  auto options = Alien::Hypre::Options()
-          .numIterationsMax(100)
-          .stopCriteriaValue(1e-10)
-          .preconditioner(Alien::Hypre::OptionTypes::AMGPC)
-          .solver(Alien::Hypre::OptionTypes::GMRES);
+//  auto options = Alien::Hypre::Options()
+//          .numIterationsMax(100)
+//          .stopCriteriaValue(1e-10)
+//          .preconditioner(Alien::Hypre::OptionTypes::AMGPC)
+//          .solver(Alien::Hypre::OptionTypes::GMRES);
+//
+//  auto solver = Alien::Hypre::LinearSolver (options);
 
-  auto solver = Alien::Hypre::LinearSolver (options);
+  auto solver = Alien::Hypre::LinearSolver ();
 
   solver.solve(A,b,x);
 

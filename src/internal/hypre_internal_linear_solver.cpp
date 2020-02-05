@@ -30,6 +30,11 @@ namespace Alien {
 
 namespace Alien::Hypre {
 
+  InternalLinearSolver::InternalLinearSolver() {
+    boost::timer tinit;
+    m_init_time += tinit.elapsed();
+  }
+
   InternalLinearSolver::InternalLinearSolver(const Options& options)
           : m_options(options) {
     boost::timer tinit;
@@ -266,6 +271,11 @@ namespace Alien::Hypre {
   IInternalLinearSolver<Matrix, Vector> *
   InternalLinearSolverFactory(const Options& options) {
     return new InternalLinearSolver(options);
+  }
+
+  IInternalLinearSolver<Matrix, Vector> *
+  InternalLinearSolverFactory() {
+    return new InternalLinearSolver();
   }
 
 }

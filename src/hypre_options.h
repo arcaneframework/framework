@@ -26,16 +26,14 @@ namespace Alien::Hypre {
 
   struct Options {
 
-    virtual ~Options() {}
-
-    Arccore::Integer numIterationsMax_ = 0;
+    Arccore::Integer numIterationsMax_ = 100;
     Arccore::Integer numIterationsMax() const { return numIterationsMax_; }
     Options& numIterationsMax(Arccore::Integer n) {
       numIterationsMax_ = n;
       return *this;
     }
 
-    Arccore::Real stopCriteriaValue_ = 0.;
+    Arccore::Real stopCriteriaValue_ = 1.e-10;
     Arccore::Real stopCriteriaValue() const { return stopCriteriaValue_; }
     Options& stopCriteriaValue(Arccore::Real n) {
       stopCriteriaValue_ = n;
@@ -49,14 +47,14 @@ namespace Alien::Hypre {
       return *this;
     }
 
-    Alien::Hypre::OptionTypes::eSolver solver_ = Alien::Hypre::OptionTypes::BiCGStab;
+    Alien::Hypre::OptionTypes::eSolver solver_ = Alien::Hypre::OptionTypes::GMRES;
     Alien::Hypre::OptionTypes::eSolver solver() const { return solver_; }
     Options& solver(Alien::Hypre::OptionTypes::eSolver n) {
       solver_ = n;
       return *this;
     }
 
-    Alien::Hypre::OptionTypes::ePreconditioner preconditioner_ = Alien::Hypre::OptionTypes::EuclidPC;
+    Alien::Hypre::OptionTypes::ePreconditioner preconditioner_ = Alien::Hypre::OptionTypes::AMGPC;
     Alien::Hypre::OptionTypes::ePreconditioner preconditioner() const { return preconditioner_; }
     Options& preconditioner(Alien::Hypre::OptionTypes::ePreconditioner n) {
       preconditioner_ = n;

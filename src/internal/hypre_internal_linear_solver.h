@@ -21,6 +21,8 @@ namespace Alien::Hypre {
 
     typedef SolverStatus Status;
 
+    InternalLinearSolver();
+
     InternalLinearSolver(const Options& options);
 
     virtual ~InternalLinearSolver() {}
