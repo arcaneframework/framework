@@ -90,6 +90,27 @@ void addConnectivity(Neo::Mesh &mesh, Neo::Family &source_family,
         }
         source2target.debugPrint();
       });
+
+  // handle target item removal in connectivity : todo plug graph in Neo otherwise this won't work
+  std::string removed_item_property_name = "removed_items"+source_family.m_name;
+  source_family.addProperty<Neo::utils::Int32>(removed_item_property_name);
+  mesh.addAlgorithm(
+      Neo::InProperty{source_family,removed_item_property_name},
+      Neo::OutProperty{source_family,connectivity_name},
+      [&source_family,&target_family](
+          Neo::PropertyT<Neo::utils::Int32> const& source_family_removed_items,
+          Neo::ArrayProperty<Neo::utils::Int32> &connectivity){
+        std::cout << "Algorithm update connectivity after remove " << connectivity.m_name << std::endl;
+        for (auto item : source_family.all()) {
+          auto connected_items = connectivity[item];
+          for (auto& connected_item : connected_items){
+            if (connected_item != Neo::utils::NULL_ITEM_LID && source_family_removed_items[connected_item] == 1) {
+              std::cout << "modify connected item : "<< connected_item << target_family.m_name << std::endl;
+              connected_item = Neo::utils::NULL_ITEM_LID;
+            }
+          }
+        }
+      });
 }
 
 void addConnectivity(Neo::Mesh &mesh, Neo::Family &source_family,
@@ -130,6 +151,40 @@ void moveNodes(Neo::Mesh& mesh, Neo::Family& node_family, std::vector<Neo::utils
         auto moved_node_range = Neo::ItemRange{Neo::ItemIndexes::getIndexes(node_lids_property[node_uids])};
         node_coords_property.append(moved_node_range, node_coords);
         node_coords_property.debugPrint();
+      });
+}
+
+void removeItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int64> const& removed_item_uids){
+  const std::string removed_item_property_name{"removed_"+family.m_name+"_items"};
+  // Add an algo to clear removed_items property at the beginning of a mesh update
+  // This algo will be executed before remove : todo plug graph in Neo otherwise this won't work
+  const std::string ok_to_start_remove_property_name = "ok_to_start_remove_property";
+  family.addProperty<Neo::utils::Int32>(ok_to_start_remove_property_name);
+  mesh.addAlgorithm(
+      Neo::OutProperty{family,removed_item_property_name},
+      Neo::OutProperty{family,ok_to_start_remove_property_name},
+      [&family](Neo::PropertyT<Neo::utils::Int32>& removed_item_property,
+                Neo::PropertyT<Neo::utils::Int32>& ok_to_start_remove_property){
+        std::cout << "Algorithm : clear remove item property for family " << family.m_name<< std::endl;
+        removed_item_property.init(family.all(), 0);
+        ok_to_start_remove_property.init(family.all(), 1);
+      });
+  // Remove item algo
+  mesh.addAlgorithm(
+      Neo::OutProperty{family,family.lidPropName()},
+      Neo::OutProperty{family,removed_item_property_name},
+      [&removed_item_uids, &family](
+          Neo::ItemLidsProperty& item_lids_property,
+          Neo::PropertyT<Neo::utils::Int32 > & removed_item_property){
+        std::cout << "Algorithm: remove items in " << family.m_name << std::endl;
+        auto removed_items = item_lids_property.remove(removed_item_uids);
+        item_lids_property.debugPrint();
+        std::cout << "removed item range : " << removed_items;
+        // Store removed items in internal_end_of_remove_tag
+        removed_item_property.init(family.all(),0);
+        for (auto removed_item : removed_items) {
+          removed_item_property[removed_item] = 1;
+        }
       });
 }
 
@@ -195,4 +250,22 @@ TEST(EvolutiveMeshTest,MoveNodes)
   mesh.beginUpdate();
   moveNodes(mesh, mesh.getFamily(Neo::ItemKind::IK_Node, node_family_name),node_uids, node_coords);
   mesh.endUpdate();
+}
+
+TEST(EvolutiveMeshTest,RemoveCells)
+{
+  std::cout << "Remove cells test " << std::endl;
+  auto mesh = Neo::Mesh{"evolutive_neo_mesh"};
+  addCells(mesh);
+  // add a connectivity to cell
+  std::vector<Neo::utils::Int64> node_to_cell{0,0,1,1,2,3,0,0,1,2,2,3};
+  auto &cell_family = mesh.getFamily(Neo::ItemKind::IK_Cell, cell_family_name);
+  auto &node_family = mesh.getFamily(Neo::ItemKind::IK_Node, node_family_name);
+  addConnectivity(mesh,node_family,node_family.all(),cell_family,1, node_to_cell);
+  // Remove cell 0, 1 and 2
+  std::vector<Neo::utils::Int64> removed_cells{0,1,2};
+  removeItems(mesh,mesh.getFamily(Neo::ItemKind::IK_Cell, cell_family_name),removed_cells);
+  mesh.beginUpdate();
+  mesh.endUpdate();
+
 }
