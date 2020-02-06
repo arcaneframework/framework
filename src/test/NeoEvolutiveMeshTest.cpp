@@ -108,7 +108,7 @@ void setNodeCoords(Neo::Mesh& mesh, Neo::Family& node_family, Neo::AddedItemRang
       });
 }
 
-void moveNodes(Neo::Mesh& mesh, Neo::Family& node_family, std::vector<Neo::utils::Int64>& node_uids, std::vector<Neo::utils::Real3>& node_coords){
+void moveNodes(Neo::Mesh& mesh, Neo::Family& node_family, std::vector<Neo::utils::Int64>const& node_uids, std::vector<Neo::utils::Real3>& node_coords){
   mesh.addAlgorithm(
       Neo::InProperty{node_family,node_family.lidPropName()},
       Neo::OutProperty{node_family,"node_coords"},
@@ -173,8 +173,8 @@ TEST(EvolutiveMeshTest,AddCells)
   addCells(mesh);
 }
 
-TEST(EvolutiveMeshTest,MoveNodes){
-
+TEST(EvolutiveMeshTest,MoveNodes)
+{
   std::cout << "Move node test " << std::endl;
   auto mesh = Neo::Mesh{"evolutive_neo_mesh"};
   addCells(mesh);
@@ -184,6 +184,4 @@ TEST(EvolutiveMeshTest,MoveNodes){
   mesh.beginUpdate();
   moveNodes(mesh, mesh.getFamily(Neo::ItemKind::IK_Node, node_family_name),node_uids, node_coords);
   mesh.endUpdate();
-
-
 }
