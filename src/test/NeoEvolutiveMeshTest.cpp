@@ -61,14 +61,14 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
 
 // todo same interface with nb_connected_item_per_item as an array
 void addConnectivity(Neo::Mesh &mesh, Neo::Family &source_family,
-                     Neo::AddedItemRange &source_items,
+                     Neo::ItemRange &source_items,
                      Neo::Family& target_family,
                      int nb_connected_item_per_item,
                      std::vector<Neo::utils::Int64>& connected_item_uids)
 {
   // add connectivity property if doesn't exist
-  source_family.addArrayProperty<Neo::utils::Int32>(
-      source_family.m_name + "to" + target_family.m_name + "_connectivity");
+  std::string connectivity_name = source_family.m_name + "to" + target_family.m_name + "_connectivity";
+  source_family.addArrayProperty<Neo::utils::Int32>(connectivity_name);
   mesh.addAlgorithm(
       Neo::InProperty{source_family,source_family.lidPropName()},
       Neo::InProperty{target_family,target_family.lidPropName()},
@@ -80,17 +80,28 @@ void addConnectivity(Neo::Mesh &mesh, Neo::Family &source_family,
         std::cout << "Algorithm: register connectivity between " <<
           source_family.m_name << "  and  " << target_family.m_name << std::endl;
         auto connected_item_lids = target_family_lids_property[connected_item_uids];
-        std::vector<std::size_t > nb_connected_item_per_item_array(source_items.new_items.size(),nb_connected_item_per_item);
-        if (source2target.isInitializableFrom(source_items.new_items)) {
+        std::vector<std::size_t > nb_connected_item_per_item_array(source_items.size(),nb_connected_item_per_item);
+        if (source2target.isInitializableFrom(source_items)) {
           source2target.resize(std::move(nb_connected_item_per_item_array));
-          source2target.init(source_items.new_items,std::move(connected_item_lids));
+          source2target.init(source_items,std::move(connected_item_lids));
         }
         else {
-          source2target.append(source_items.new_items,connected_item_lids, nb_connected_item_per_item_array);
+          source2target.append(source_items,connected_item_lids, nb_connected_item_per_item_array);
         }
         source2target.debugPrint();
       });
 }
+
+void addConnectivity(Neo::Mesh &mesh, Neo::Family &source_family,
+                     Neo::AddedItemRange &source_items,
+                     Neo::Family& target_family,
+                     int nb_connected_item_per_item,
+                     std::vector<Neo::utils::Int64>& connected_item_uids)
+{
+  addConnectivity(mesh, source_family, source_items.new_items, target_family,
+                  nb_connected_item_per_item, connected_item_uids);
+}
+
 
 // todo : define 2 signatures to indicate eventual memory stealing...?
 void setNodeCoords(Neo::Mesh& mesh, Neo::Family& node_family, Neo::AddedItemRange& added_node_range, std::vector<Neo::utils::Real3>& node_coords){
