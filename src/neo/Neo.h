@@ -497,8 +497,8 @@ public:
 
   template <typename T>
   void addArrayProperty(std::string const& name){
-    m_properties[name] = ArrayProperty<T>{name};
-    std::cout << "Add array property " << name << " in Family " << m_name<< std::endl;
+    auto [iter, is_inserted] = m_properties.insert(std::make_pair(name, ArrayProperty<T>{name}));
+    if (is_inserted) std::cout << "Add array property " << name << " in Family " << m_name<< std::endl;
   }
 
   std::string const&  lidPropName()
