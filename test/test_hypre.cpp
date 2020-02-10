@@ -2,7 +2,7 @@
 #include "hypre_linear_solver.h"
 #include "hypre_linear_algebra.h"
 
-#include <ALIEN/Alien-IFPEN.h>
+#include <ALIEN/Alien-RefSemantic.h>
 
 #include <arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h>
 

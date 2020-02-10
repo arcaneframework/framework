@@ -26,6 +26,9 @@ set(BUILD_SHARED_LIBS True)
 # ----------------------------------------------------------------------------
 
 find_package(Arccon REQUIRED)
+list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
+include(${ARCCON_CMAKE_COMMANDS})
+
 find_package(Arccore REQUIRED)
 find_package(ALIEN REQUIRED)
 find_package(Hypre REQUIRED)
