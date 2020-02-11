@@ -4,6 +4,7 @@
 #include "hypre_matrix.h"
 #include "hypre_internal.h"
 #include "hypre_options.h"
+#include "hypre_linear_algebra.h"
 
 #include <memory>
 
@@ -16,7 +17,6 @@
 
 #include <ALIEN/Expression/Solver/ILinearSolver.h>
 #include <ALIEN/Expression/Solver/ILinearAlgebra.h>
-#include <ALIEN/Data/Space.h>
 
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 
@@ -268,6 +268,12 @@ namespace Alien::Hypre {
     return m_status;
   }
 
+
+  std::shared_ptr<ILinearAlgebra>
+  InternalLinearSolver::algebra() const {
+      return std::make_shared<LinearAlgebra>();
+  }
+
   IInternalLinearSolver<Matrix, Vector> *
   InternalLinearSolverFactory(const Options& options) {
     return new InternalLinearSolver(options);
@@ -277,5 +283,4 @@ namespace Alien::Hypre {
   InternalLinearSolverFactory() {
     return new InternalLinearSolver();
   }
-
 }

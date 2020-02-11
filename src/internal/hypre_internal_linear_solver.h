@@ -41,6 +41,8 @@ namespace Alien::Hypre {
 
     const SolverStat &getSolverStat() const { return m_stat; }
 
+    std::shared_ptr<ILinearAlgebra> algebra() const;
+
   private:
 
     Status m_status;
