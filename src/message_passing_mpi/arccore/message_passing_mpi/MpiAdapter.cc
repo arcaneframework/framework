@@ -440,6 +440,16 @@ nonBlockingAllToAllVariable(const void* send_buf,const int* send_counts,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void MpiAdapter::
+barrier()
+{
+  // TODO ajouter trace correspondante pour le profiling.
+  MPI_Barrier(m_communicator);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Request MpiAdapter::
 nonBlockingBarrier()
 {

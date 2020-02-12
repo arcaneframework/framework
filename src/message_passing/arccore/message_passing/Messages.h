@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* Messages.h                                                  (C) 2000-2018 */
+/* Messages.h                                                  (C) 2000-2020 */
 /*                                                                           */
 /* Interface du gestionnaire des échanges de messages.                       */
 /*---------------------------------------------------------------------------*/
@@ -12,19 +12,18 @@
 #include "arccore/message_passing/IMessagePassingMng.h"
 #include "arccore/message_passing/IDispatchers.h"
 #include "arccore/message_passing/ITypeDispatcher.h"
-#include <arccore/message_passing/IControlDispatcher.h>
+#include "arccore/message_passing/IControlDispatcher.h"
 #include "arccore/message_passing/Request.h"
 #include "arccore/collections/Array.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arccore::MessagePassing
 {
-namespace MessagePassing
-{
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #define ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(type)                                                               \
   inline void mpAllGather(IMessagePassingMng* pm, Span<const type> send_buf, Span<type> recv_buf)                     \
@@ -97,76 +96,110 @@ namespace MessagePassing
     d->allToAllVariable(send_buf, send_count, send_index, recv_buf, recv_count, recv_index);                          \
   }
 
-  inline void mpWaitAll(IMessagePassingMng* pm, ArrayView<Request> requests)
-  {
-    auto d = pm->dispatchers()->controlDispatcher();
-    d->waitAllRequests(requests);
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline void
+mpWaitAll(IMessagePassingMng* pm, ArrayView<Request> requests)
+{
+  auto d = pm->dispatchers()->controlDispatcher();
+  d->waitAllRequests(requests);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline void
+mpWait(IMessagePassingMng* pm, Request request)
+{
+  mpWaitAll(pm, ArrayView<Request>(1, &request));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline void
+mpWaitSome(IMessagePassingMng* pm, ArrayView<Request> requests, ArrayView<bool> indexes)
+{
+  auto d = pm->dispatchers()->controlDispatcher();
+  d->waitSomeRequests(requests, indexes, false);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline void
+mpTestSome(IMessagePassingMng* pm, ArrayView<Request> requests, ArrayView<bool> indexes)
+{
+  auto d = pm->dispatchers()->controlDispatcher();
+  d->waitSomeRequests(requests, indexes, false);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline void
+mpWait(IMessagePassingMng* pm, ArrayView<Request> requests,
+       ArrayView<bool> indexes, eWaitType w_type)
+{
+  switch (w_type) {
+  case WaitAll:
+    mpWaitAll(pm, requests);
+    indexes.fill(true);
+    break;
+  case WaitSome:
+    mpWaitSome(pm, requests, indexes);
+    break;
+  case WaitSomeNonBlocking:
+    mpTestSome(pm, requests, indexes);
+    break;
   }
+}
 
-  inline void mpWait(IMessagePassingMng* pm, Request request)
-  {
-    mpWaitAll(pm, ArrayView<Request>(1, &request));
-  }
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-  inline void mpWaitSome(IMessagePassingMng* pm, ArrayView<Request> requests, ArrayView<bool> indexes)
-  {
-    auto d = pm->dispatchers()->controlDispatcher();
-    d->waitSomeRequests(requests, indexes, false);
-  }
+inline IMessagePassingMng*
+mpSplit(IMessagePassingMng* pm, bool keep)
+{
+  auto d = pm->dispatchers()->controlDispatcher();
+  return d->commSplit(keep);
+}
 
-  inline void mpTestSome(IMessagePassingMng* pm, ArrayView<Request> requests, ArrayView<bool> indexes)
-  {
-    auto d = pm->dispatchers()->controlDispatcher();
-    d->waitSomeRequests(requests, indexes, false);
-  }
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-  inline void mpWait(IMessagePassingMng* pm, ArrayView<Request> requests, ArrayView<bool> indexes, eWaitType w_type)
-  {
-    switch (w_type) {
-    case WaitAll:
-      mpWaitAll(pm, requests);
-      indexes.fill(true);
-      break;
-    case WaitSome:
-      mpWaitSome(pm, requests, indexes);
-      break;
-    case WaitSomeNonBlocking:
-      mpTestSome(pm, requests, indexes);
-      break;
-    }
-  }
+inline void
+mpBarrier(IMessagePassingMng* pm)
+{
+  auto d = pm->dispatchers()->controlDispatcher();
+  d->barrier();
+}
 
-  inline IMessagePassingMng* mpSplit(IMessagePassingMng* pm, bool keep)
-  {
-    auto d = pm->dispatchers()->controlDispatcher();
-    return d->commSplit(keep);
-  }
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
+ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(char)
+ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(signed char)
+ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(unsigned char)
 
-  ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(char)
-  ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(signed char)
-  ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(unsigned char)
+ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(short)
+ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(unsigned short)
+ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(int)
+ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(unsigned int)
+ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(long)
+ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(unsigned long)
+ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(long long)
+ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(unsigned long long)
 
-  ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(short)
-  ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(unsigned short)
-  ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(int)
-  ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(unsigned int)
-  ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(long)
-  ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(unsigned long)
-  ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(long long)
-  ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(unsigned long long)
+ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(float)
+ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(double)
+ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(long double)
 
-  ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(float)
-  ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(double)
-  ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(long double)
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
-
-} // End namespace MessagePassing
-} // End namespace Arccore
+} // End namespace Arccore::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

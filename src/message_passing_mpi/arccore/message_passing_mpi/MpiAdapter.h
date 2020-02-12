@@ -134,6 +134,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
                                       const int* recv_indexes,MPI_Datatype datatype);
 
   Request nonBlockingBarrier();
+  void barrier();
 
   int toMPISize(Int64 count);
 
