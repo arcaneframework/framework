@@ -17,7 +17,7 @@ int test() {
   auto size = 100;
 
   tm->info() << "Example Alien :";
-  tm->info() << "Use of scalar builder (IFPEN API) for Laplacian problem";
+  tm->info() << "Use of scalar builder (RefSemantic API) for Laplacian problem";
   tm->info() << " => solving linear system Ax = b";
   tm->info() << " * problem size = " << size;
   tm->info() << " ";
