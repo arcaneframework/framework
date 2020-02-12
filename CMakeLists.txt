@@ -37,7 +37,6 @@ endif()
 if (NOT ARCCORE_EXPORT_TARGET)
   set(ARCCORE_EXPORT_TARGET ArccoreTargets)
 endif()
-include(GNUInstallDirs)
 
 # ----------------------------------------------------------------------------
 
@@ -46,6 +45,7 @@ find_package(Arccon REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
 include(${ARCCON_CMAKE_COMMANDS})
 include(LoadBuildSystem)
+include(ArcconSetInstallDirs)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
