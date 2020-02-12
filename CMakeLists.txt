@@ -30,7 +30,14 @@ list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
 include(${ARCCON_CMAKE_COMMANDS})
 
 find_package(Arccore REQUIRED)
-find_package(ALIEN REQUIRED)
+
+# mode plugin ? ALIEN should be defined by parent project
+# (and could not be found because not yet installed)
+# otherwise we need to find ALIEN
+if(NOT TARGET ALIEN)
+  find_package(ALIEN REQUIRED)
+endif()
+
 find_package(Hypre REQUIRED)
 find_package(MPI REQUIRED)
 find_package(HDF5 REQUIRED)
