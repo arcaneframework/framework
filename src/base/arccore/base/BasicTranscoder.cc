@@ -76,11 +76,11 @@ ucs4_to_utf8(Int32 wc,CoreArray<Byte>& utf8)
     return;
   }
   switch (count) { /* note: code falls through cases! */
-  case 6: r[5] = 0x80 | (wc & 0x3f); wc = wc >> 6; wc |= 0x4000000;
-  case 5: r[4] = 0x80 | (wc & 0x3f); wc = wc >> 6; wc |= 0x200000;
-  case 4: r[3] = 0x80 | (wc & 0x3f); wc = wc >> 6; wc |= 0x10000;
-  case 3: r[2] = 0x80 | (wc & 0x3f); wc = wc >> 6; wc |= 0x800;
-  case 2: r[1] = 0x80 | (wc & 0x3f); wc = wc >> 6; wc |= 0xc0;
+  case 6: r[5] = 0x80 | (wc & 0x3f); wc = wc >> 6; wc |= 0x4000000; [[fallthrough]];
+  case 5: r[4] = 0x80 | (wc & 0x3f); wc = wc >> 6; wc |= 0x200000; [[fallthrough]];
+  case 4: r[3] = 0x80 | (wc & 0x3f); wc = wc >> 6; wc |= 0x10000; [[fallthrough]];
+  case 3: r[2] = 0x80 | (wc & 0x3f); wc = wc >> 6; wc |= 0x800; [[fallthrough]];
+  case 2: r[1] = 0x80 | (wc & 0x3f); wc = wc >> 6; wc |= 0xc0; [[fallthrough]];
   case 1: r[0] = wc;
   }
   for( int i=0; i<count; ++i )
