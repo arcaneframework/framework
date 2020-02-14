@@ -45,7 +45,7 @@ convert(const IVectorImpl * sourceImpl, IVectorImpl * targetImpl) const
     cout() << "Converting IFPVector: " << &v << " to SimpleCSRVector " << &v2;
     });
 
-  Arccore::ArrayView<Arccore::Real> values = v2.getValuesView();
+  Arccore::ArrayView<Arccore::Real> values = v2.values();
 
   v.getValues(values.size(), v2.getDataPtr());
 }
