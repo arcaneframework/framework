@@ -92,7 +92,7 @@ if (Trilinos_FOUND AND NOT TARGET trilinos)
 
         list(APPEND TRILINOS_LIBRARIES ${Trilinos_${comp}_LIBRARY})
 
-        message(status "Trilinos pack ${comp} lib : ${Trilinos_${comp}_LIBRARY}")
+        #message("Trilinos pack ${comp} lib : ${Trilinos_${comp}_LIBRARY}")
 
         add_library(trilinos_${comp} UNKNOWN IMPORTED)
 
