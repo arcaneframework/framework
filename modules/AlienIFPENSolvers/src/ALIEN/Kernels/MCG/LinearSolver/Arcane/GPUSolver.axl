@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<service name="GPUSolver" version="1.0">
+
+  <description>Service de solveur GPU</description>
+  <interface name="Alien::ILinearSolver" inherited="false"/>
+
+  <options>
+    <simple name="output" type="integer" default="0">
+      <description>output level</description>
+    </simple>
+    <simple name="unit-test" type="bool" default="false">
+      <description>test unitaire</description>
+    </simple>
+    <simple name="test-id" type="integer" default="-1">
+      <description>export iter</description>
+    </simple>
+    <simple name="matrix-file-name" type="string" default="TestMatrix.txt">
+      <description>matrix file name</description>
+    </simple>
+    <simple name="export-iter" type="integer" default="-1">
+      <description>export iter</description>
+    </simple>
+    <simple name="export-opt" type="bool" default="false">
+      <description>export option</description>
+    </simple>
+    <simple name="import-opt" type="bool" default="false">
+      <description>import option</description>
+    </simple>
+    <!--simple name="parameter" type="string" minOccurs="0" maxOccurs="unbounded">
+      <description>parameter</description>
+    <simple-->
+    <simple name="poly-factor" type="real" default="0.">
+      <description>unit diag options</description>
+    </simple>
+    <simple name="poly-order" type="integer" default="3">
+      <description>unit diag options</description>
+    </simple>
+    <simple name="bssor-num-iter" type="integer" default="3">
+      <description>Block SSOR Num iter</description>
+    </simple>
+    <simple name="bssor-relax-factor" type="real" default="0.">
+      <description>Block SSOR relax Factor</description>
+    </simple>
+    <simple name="colorilu0-dir" type="string" default="+Z">
+      <description>ILU(0) coloring preferential direction</description>
+    </simple>
+    <simple name="colorilu0-algo" type="string" default="greeddir">
+      <description>ILU(0) coloring algorithm</description>
+    </simple>
+    <simple name="use-unit-diag" type="bool" default="true">
+      <description>unit diag options</description>
+    </simple>
+    <simple name="keep-diag-opt" type="bool" default="true">
+      <description>unit diag options</description>
+    </simple>
+    <simple name="reorder-opt" type="bool" default="true">
+      <description>reorder option</description>
+    </simple>
+    <simple name="interface-opt" type="integer" default="0">
+      <description>interface option</description>
+    </simple>
+    <simple name="relax-solver" type="integer" default="0">
+      <description>relax solver option</description>
+    </simple>
+    <simple name="cpr-solver" type="integer" default="0">
+      <description>cpr solver option</description>
+    </simple>
+    <simple name="amg-algo" type="string" default="PMIS">
+        <description>AMG algorithm option, AGGREGATION or PMIS </description>
+    </simple>
+    <simple name="normalize-opt" type="integer" default="3">
+      <description>default number corresponds to without normalization in MCGSolver</description>
+    </simple>
+    <simple name="max-iteration-num" type="integer" default="1000">
+      <description>Maximal number of iterations</description>
+    </simple>
+    <simple name="stop-criteria-value" type="real" default="1e-6">
+      <description>Expected accuracy</description>
+    </simple>
+    <enumeration name="kernel" type="GPUOptionTypes::eKernelType" default="GPU">
+      <description>Kernel type</description>
+      <enumvalue name="GPU" genvalue="GPUOptionTypes::GPUKernel">
+        <description>GPU kernel</description>
+      </enumvalue>
+      <enumvalue name="CPU" genvalue="GPUOptionTypes::CPUKernel">
+        <description>CPU kernel</description>
+      </enumvalue>
+      <enumvalue name="CPUCBLAS" genvalue="GPUOptionTypes::CPUCBLASKernel">
+        <description>CPU BLAS kernel (usualy mkl) with block CSR spmv</description>
+      </enumvalue>
+      <enumvalue name="CPUSSE2" genvalue="GPUOptionTypes::CPUSSE2Kernel">
+        <description>CPU SSE2 kernel with block CSR spmv </description>
+      </enumvalue>
+      <enumvalue name="CPUAVX" genvalue="GPUOptionTypes::CPUAVXKernel">
+        <description>CPU AVX kernel with block CSR spmv</description>
+      </enumvalue> 
+      <enumvalue name="GPUCUBLASEll" genvalue="GPUOptionTypes::GPUCUBLASEllSpmvKernel">
+        <description>GPU CUBLAS kernel with CUSPARSE Ellpack spmv</description>
+      </enumvalue>       
+      <enumvalue name="GPUCUBLASBSR" genvalue="GPUOptionTypes::GPUCUBLASBSRSpmvKernel">
+        <description>GPU CUBLAS kernel with CUSPARSE BSR spmv</description>
+      </enumvalue>
+      <enumvalue name="GPUCUBLASIFPENV2" genvalue="GPUOptionTypes::GPUCUBLASIFPENV2SpmvKernel">
+        <description>GPU CUBLAS kernel with IFPENV2 spmv</description>
+      </enumvalue>
+      <enumvalue name="GPUCUBLASIFPENV3" genvalue="GPUOptionTypes::GPUCUBLASIFPENV3SpmvKernel">
+        <description>GPU CUBLAS kernel with IFPENV3 spmv</description>
+      </enumvalue>
+      <enumvalue name="GPUCUBLASHybrid" genvalue="GPUOptionTypes::GPUCUBLASHybridSpmvKernel">
+        <description>GPU CUBLAS kernel with hybrid spmv (cpu pthread + CUSPARSE Ellpack)</description>
+      </enumvalue>
+      <enumvalue name="MCKernel" genvalue="GPUOptionTypes::MCKernel">
+        <description>MC kernel </description>
+      </enumvalue>
+    </enumeration>
+    <enumeration name="solver" type="GPUOptionTypes::eSolver" default="BiCGStab">
+      <description>Solveur type</description>
+      <enumvalue name="BiCGStab" genvalue="GPUOptionTypes::BiCGStab">
+        <description>BiCGStab Solver</description>
+      </enumvalue>
+      <enumvalue name="Gmres" genvalue="GPUOptionTypes::Gmres">
+        <description>Gmres Solver</description>
+      </enumvalue>     
+    </enumeration>
+    <enumeration name="preconditioner" type="GPUOptionTypes::ePreconditioner" default="None">
+      <description>type def preconditionnement</description>
+      <enumvalue name="None" genvalue="GPUOptionTypes::NonePC">
+        <description>Id preconditioner</description>
+      </enumvalue>
+      <enumvalue name="Diag" genvalue="GPUOptionTypes::DiagPC">
+        <description>Diagonal preconditioner</description>
+      </enumvalue>
+      <enumvalue name="ILU0" genvalue="GPUOptionTypes::ILU0PC">
+        <description>0th order ILU preconditioner (only for CPU kernels)</description>
+      </enumvalue>
+      <enumvalue name="ColorBlockILU0" genvalue="GPUOptionTypes::ColorBlockILU0PC">
+        <description>0th order ILU preconditioner with matrix reordering (coloring) </description>
+      </enumvalue>
+      <enumvalue name="Poly" genvalue="GPUOptionTypes::PolyPC">
+        <description>0th order ILU preconditioner</description>
+      </enumvalue>
+      <enumvalue name="PolyNK" genvalue="GPUOptionTypes::PolyNKPC">
+        <description>0th order ILU preconditioner</description>
+      </enumvalue>
+      <enumvalue name="BSSOR" genvalue="GPUOptionTypes::BSSORPC">
+        <description>Block SSOR preconditioner</description>
+      </enumvalue>
+      <enumvalue name="CprNK" genvalue="GPUOptionTypes::CprPC">
+        <description>Cpr preconditioner</description>
+      </enumvalue>
+    </enumeration>
+    <simple name="sp-prec" type="bool" default="false">
+      <description>simple precision preconditioner flag</description>
+    </simple>
+    <simple name="verbose" type="bool" default="false">
+      <description>Verbosity flag</description>
+    </simple>
+    <simple name="use-thread" type="bool" default="false">
+      <description>use multithreaded solver</description>
+    </simple>
+    <simple name="num-thread" type="integer" default="1">
+      <description>number of thread for multithreaded solver</description>
+    </simple>
+    <simple name="dump-mat-file-name" type="string" default="">
+      <description>File name for matrix dump</description>
+    </simple>
+  </options>
+</service>

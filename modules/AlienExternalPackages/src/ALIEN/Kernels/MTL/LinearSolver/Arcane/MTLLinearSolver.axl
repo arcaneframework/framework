@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<service name="MTLLinearSolver" version="1.0">
+
+  <description>Service de solveur MTL</description>
+  <!--<interface name="::ILinearSolver" />-->
+  <interface name="Alien::ILinearSolver" inherited="false"/>
+
+  <options>
+    <simple name="max-iteration-num" type="integer" default="1000">
+      <description>Maximal number of iterations</description>
+    </simple>
+    <simple name="stop-criteria-value" type="real" default="1e-6">
+      <description>Expected accuracy</description>
+    </simple>
+    <enumeration name="solver" type="MTLOptionTypes::eSolver" default="BiCGStab">
+      <description>Solveur type</description>
+      <enumvalue name="GMRES" genvalue="MTLOptionTypes::GMRES">
+        <description>GMRES Solver</description>
+      </enumvalue>
+      <enumvalue name="BiCGStab" genvalue="MTLOptionTypes::BiCGStab">
+        <description>BiCGStab Solver</description>
+      </enumvalue>
+      <enumvalue name="CG" genvalue="MTLOptionTypes::CG">
+        <description>Conjugate gradient solver</description>
+      </enumvalue>
+      <enumvalue name="QR" genvalue="MTLOptionTypes::QR">
+        <description>QR Solver</description>
+      </enumvalue>
+      <enumvalue name="LU" genvalue="MTLOptionTypes::LU">
+        <description>QR Solver</description>
+      </enumvalue>
+    </enumeration>
+    <enumeration name="preconditioner" type="MTLOptionTypes::ePreconditioner" default="ILU0">
+      <description>type def preconditionnement</description>
+      <enumvalue name="None" genvalue="MTLOptionTypes::NonePC">
+        <description>Id preconditioner</description>
+      </enumvalue>
+      <enumvalue name="Diag" genvalue="MTLOptionTypes::DiagPC">
+        <description>Diagonal preconditioner</description>
+      </enumvalue>
+      <enumvalue name="ILU0" genvalue="MTLOptionTypes::ILU0PC">
+        <description>0th order ILU preconditioner</description>
+      </enumvalue>
+      <enumvalue name="ILUT" genvalue="MTLOptionTypes::ILUTPC">
+        <description>Thresholded ILU preconditioner</description>
+      </enumvalue>
+      <enumvalue name="SSOR" genvalue="MTLOptionTypes::SSORPC">
+        <description>SSOR preconditioner</description>
+      </enumvalue>
+    </enumeration>
+    <simple name="verbose" type="bool" default="false">
+      <description>Verbosity flag</description>
+    </simple>
+    
+    <simple name="output-level" type="integer" default="0">
+      <description>Output level</description>
+    </simple>
+    
+  </options>
+</service>

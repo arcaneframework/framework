@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{589C7840-07AA-4647-AB82-294C24CF9C15}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <NoStandardLibraries>false</NoStandardLibraries>
+    <AssemblyName>axldoc</AssemblyName>
+    <RootNamespace>axldoc</RootNamespace>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>False</Optimize>
+    <OutputPath>bin</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>True</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Arcane.Axl\CodeInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Arcane.Axl\DoxygenDocumentationFile.cs" />
+    <Compile Include="Arcane.Axl\DoxygenDocumentationGenerator.cs" />
+    <Compile Include="Arcane.Axl\DoxygenDocumentationUtils.cs" />
+    <Compile Include="Arcane.Axl\DoxygenDocumentationVisitor.cs" />
+    <Compile Include="Arcane.Axl\MainAXLDOC.cs" />
+    <Compile Include="Arcane.Axl\DoxygenExampleFile.cs" />
+    <Compile Include="Arcane.Axl\DoxygenExampleVisitor.cs" />
+    <Compile Include="Arcane.Axl\DoxygenOptionIndexVisitor.cs" />
+    <Compile Include="Arcane.Axl\Utils.cs" />
+    <Compile Include="Arcane.Axl\FinalAxlGenerator.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Arcane.Axl.csproj">
+      <Project>{76B51885-D1BB-4C67-AD32-DCF21970BDB8}</Project>
+      <Name>Arcane.Axl</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ProjectExtensions>
+    <VisualStudio AllowExistingFolder="true" />
+  </ProjectExtensions>
+</Project>
