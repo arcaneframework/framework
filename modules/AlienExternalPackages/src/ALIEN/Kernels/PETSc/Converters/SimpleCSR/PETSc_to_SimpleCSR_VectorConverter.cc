@@ -44,7 +44,7 @@ PETSc_to_SimpleCSR_VectorConverter::convert(
     cout() << "Converting PETScVector: " << &v << " to SimpleCSRVector " << &v2;
   });
 
-  Arccore::ArrayView<Arccore::Real> values = v2.getValuesView();
+  Arccore::ArrayView<Arccore::Real> values = v2.values();
   v.getValues(values.size(), values.unguardedBasePointer());
 }
 
