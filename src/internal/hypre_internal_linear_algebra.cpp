@@ -39,13 +39,11 @@ namespace Alien {
 
     Arccore::Real
     InternalLinearAlgebra::norm0(const Vector &vx ALIEN_UNUSED_PARAM) const {
-      Arccore::Real result = 0;
       throw Arccore::NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::norm0 not implemented");
     }
 
     Arccore::Real
     InternalLinearAlgebra::norm1(const Vector &vx ALIEN_UNUSED_PARAM) const {
-      Arccore::Real result = 0;
       throw Arccore::NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::norm1 not implemented");
     }
 

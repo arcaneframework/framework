@@ -29,7 +29,7 @@ Hypre_to_SimpleCSR_VectorConverter::convert(
   alien_debug([&] {
     cout() << "Converting Hypre::Vector: " << &v << " to Alien::SimpleCSRVector " << &v2;
   });
-  auto values = v2.getValuesView();
+  auto values = v2.values();
   v.getValues(values.size(), values.unguardedBasePointer());
 }
 
