@@ -1,30 +1,25 @@
 #include "hypre_internal_linear_solver.h"
-#include "hypre_backend.h"
-#include "hypre_vector.h"
 #include "hypre_matrix.h"
-#include "hypre_internal.h"
-#include "hypre_options.h"
-#include "hypre_linear_algebra.h"
-
-#include <memory>
+#include "hypre_vector.h"
 
 #include <boost/timer.hpp>
 
+#include <ALIEN/hypre/backend.h>
+#include <ALIEN/hypre/options.h>
 #include <ALIEN/hypre/export.h>
-
 #include <ALIEN/Expression/Solver/SolverStats/SolverStater.h>
 #include <ALIEN/Core/Backend/LinearSolverT.h>
 
-#include <ALIEN/Expression/Solver/ILinearSolver.h>
-#include <ALIEN/Expression/Solver/ILinearAlgebra.h>
-
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
+
+#include <HYPRE_parcsr_ls.h>
+#include <HYPRE_parcsr_mv.h>
 
 namespace Alien {
 
-  // Compile HypreLinearSolver.
-  template
-  class ALIEN_HYPRE_EXPORT LinearSolver<BackEnd::tag::hypre>;
+    // Compile HypreLinearSolver.
+    template
+    class ALIEN_HYPRE_EXPORT LinearSolver<BackEnd::tag::hypre>;
 
 }
 
@@ -43,38 +38,35 @@ namespace Alien::Hypre {
 
   void
   InternalLinearSolver::checkError(const Arccore::String &msg, int ierr, int skipError) const {
-    if (ierr != 0 and (ierr & ~skipError) != 0) {
-      char hypre_error_msg[256];
-      HYPRE_DescribeError(ierr, hypre_error_msg);
-      alien_fatal([&] {
-        cout() << msg << " failed : " << hypre_error_msg << "[code=" << ierr << "]";
-      });
-    }
+      if (ierr != 0 and (ierr & ~skipError) != 0) {
+          char hypre_error_msg[256];
+          HYPRE_DescribeError(ierr, hypre_error_msg);
+          alien_fatal([&] {
+              cout() << msg << " failed : " << hypre_error_msg << "[code=" << ierr << "]";
+          });
+      }
   }
 
-  bool
-  InternalLinearSolver::solve(
-          const Matrix &A, const Vector &b, Vector &x) {
+    bool InternalLinearSolver::solve(const Matrix &A, const Vector &b, Vector &x) {
+        auto ij_matrix = A.internal();
+        auto bij_vector = b.internal();
+        auto xij_vector = x.internal();
 
-    const HYPRE_IJMatrix &ij_matrix = A.internal()->internal();
-    const HYPRE_IJVector &bij_vector = b.internal()->internal();
-    HYPRE_IJVector &xij_vector = x.internal()->internal();
+        // Macro "pratique" en attendant de trouver mieux
+        boost::timer tsolve;
 
-    // Macro "pratique" en attendant de trouver mieux
-    boost::timer tsolve;
+        int output_level = m_options.verbose() ? 1 : 0;
 
-    int output_level = m_options.verbose() ? 1 : 0;
+        HYPRE_Solver solver = nullptr;
+        HYPRE_Solver preconditioner = nullptr;
 
-    HYPRE_Solver solver = nullptr;
-    HYPRE_Solver preconditioner = nullptr;
-
-    // acces aux fonctions du preconditionneur
+        // acces aux fonctions du preconditionneur
     HYPRE_PtrToParSolverFcn precond_solve_function = nullptr;
     HYPRE_PtrToParSolverFcn precond_setup_function = nullptr;
     int (*precond_destroy_function)(HYPRE_Solver) = nullptr;
 
-    MPI_Comm comm = MPI_COMM_WORLD;
-    auto *mpi_comm_mng = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng *>(A.getParallelMng());
+        MPI_Comm comm = MPI_COMM_WORLD;
+        auto *mpi_comm_mng = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng *>(A.distribution().parallelMng());
     if (mpi_comm_mng)
       comm = *(mpi_comm_mng->getMPIComm());
 

@@ -1,22 +1,18 @@
 #pragma once
 
-#include <memory>
-
-#include <ALIEN/Utils/Precomp.h>
+#include <ALIEN/hypre/backend.h>
+#include <ALIEN/hypre/options.h>
 #include <ALIEN/Expression/Solver/SolverStats/SolverStater.h>
-#include <ALIEN/Core/Backend/IInternalLinearSolverT.h>
 #include <ALIEN/Utils/Trace/ObjectWithTrace.h>
-
-#include "hypre_options.h"
 
 namespace Alien::Hypre {
 
-  class Matrix;
+    class Matrix;
 
-  class Vector;
+    class Vector;
 
-  class InternalLinearSolver
-          : public IInternalLinearSolver<Matrix, Vector>, public ObjectWithTrace {
+    class InternalLinearSolver
+            : public IInternalLinearSolver<Matrix, Vector>, public ObjectWithTrace {
   public:
 
     typedef SolverStatus Status;

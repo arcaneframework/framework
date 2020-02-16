@@ -1,6 +1,6 @@
-#include "hypre_backend.h"
 #include "hypre_vector.h"
 
+#include <ALIEN/hypre/backend.h>
 #include <ALIEN/Core/Backend/IVectorConverter.h>
 #include <ALIEN/Core/Backend/VectorConverterRegisterer.h>
 #include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRVector.h>
@@ -23,14 +23,15 @@ public:
 void
 Hypre_to_SimpleCSR_VectorConverter::convert(
         const Alien::IVectorImpl *sourceImpl, Alien::IVectorImpl *targetImpl) const {
-  const auto &v = cast<Alien::Hypre::Vector>(sourceImpl, sourceBackend());
-  auto &v2 = cast<Alien::SimpleCSRVector<Arccore::Real> >(targetImpl, targetBackend());
+    const auto &v = cast<Alien::Hypre::Vector>(sourceImpl, sourceBackend());
+    auto &v2 = cast<Alien::SimpleCSRVector<Arccore::Real> >(targetImpl, targetBackend());
 
-  alien_debug([&] {
-    cout() << "Converting Hypre::Vector: " << &v << " to Alien::SimpleCSRVector " << &v2;
-  });
-  auto values = v2.values();
-  v.getValues(values.size(), values.unguardedBasePointer());
+    alien_debug([&] {
+        cout() << "Converting Hypre::Vector: " << &v << " to Alien::SimpleCSRVector " << &v2;
+    });
+    auto values = v2.values();
+
+    v.getValues(values);
 }
 
 REGISTER_VECTOR_CONVERTER(Hypre_to_SimpleCSR_VectorConverter);

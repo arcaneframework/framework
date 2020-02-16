@@ -2,63 +2,35 @@
 
 #include <ALIEN/Core/Impl/IMatrixImpl.h>
 
-namespace Alien::Hypre::Internal {
-  class MatrixInternal;
-}
+#include <HYPRE_IJ_mv.h>
 
 namespace Alien::Hypre {
 
-  class Matrix
-          : public IMatrixImpl {
-  public:
+    class Matrix : public IMatrixImpl {
+    public:
 
-    typedef Internal::MatrixInternal MatrixInternal;
+        Matrix(const MultiMatrixImpl *multi_impl);
 
-  public:
+        virtual ~Matrix();
 
-    Matrix(const MultiMatrixImpl *multi_impl);
+    public:
 
-    virtual ~Matrix();
+        void setProfile(int ilower, int iupper,
+                        int jlower, int jupper,
+                        Arccore::ConstArrayView<int> row_sizes);
 
-  public:
+        void setRowValues(int rows,
+                          Arccore::ConstArrayView<int> cols,
+                          Arccore::ConstArrayView<double> values);
 
-    void clear() {}
+        void assemble();
 
-  public:
+        HYPRE_IJMatrix internal() const { return m_hypre; }
 
-    bool initMatrix(const int ilower, const int iupper,
-                    const int jlower, const int jupper,
-                    const Arccore::ConstArrayView<Arccore::Integer> &lineSizes);
+    private:
 
-    // FIXME use Arccore::ArrayView
-    bool addMatrixValues(const int nrow, const int *rows,
-                         const int *ncols, const int *cols,
-                         const Arccore::Real *values);
-
-    // FIXME use Arccore::ArrayView
-    bool setMatrixValues(const int nrow, const int *rows,
-                         const int *ncols, const int *cols,
-                         const Arccore::Real *values);
-
-    bool assemble();
-
-  public:
-
-    MatrixInternal *internal() { return m_internal; }
-
-    const MatrixInternal *internal() const { return m_internal; }
-
-    Arccore::MessagePassing::IMessagePassingMng *getParallelMng() const { return m_pm; }
-
-  private:
-
-    Arccore::Integer ijk(Arccore::Integer i, Arccore::Integer j, Arccore::Integer k, Arccore::Integer block_size,
-                         Arccore::Integer unknowns_num) const {
-      return k * block_size + i * unknowns_num + j;
-    }
-
-    MatrixInternal *m_internal;
-    Arccore::MessagePassing::IMessagePassingMng *m_pm;
-  };
+        HYPRE_IJMatrix m_hypre;
+        MPI_Comm m_comm;
+    };
 
 }

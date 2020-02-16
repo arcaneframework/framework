@@ -1,9 +1,7 @@
 #pragma once
 
-#include "hypre_backend.h"
-
+#include <ALIEN/hypre/backend.h>
 #include <ALIEN/hypre/export.h>
-
 #include <ALIEN/Utils/Precomp.h>
 #include <ALIEN/Core/Backend/IInternalLinearAlgebraT.h>
 

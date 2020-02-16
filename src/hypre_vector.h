@@ -1,71 +1,40 @@
 #pragma once
 
 #include <ALIEN/Core/Impl/IVectorImpl.h>
-#include <ALIEN/Distribution/VectorDistribution.h>
 
-namespace Alien::Hypre::Internal {
-  class VectorInternal;
-}
+#include <HYPRE_IJ_mv.h>
 
 namespace Alien::Hypre {
 
-  class VectorInternal;
+    class VectorInternal;
 
-  class Vector : public IVectorImpl {
-  public:
+    class Vector : public IVectorImpl {
+    public:
 
-    typedef Internal::VectorInternal VectorInternal;
+        Vector(const MultiVectorImpl *multi_impl);
 
-  public:
+        virtual ~Vector();
 
-    Vector(const MultiVectorImpl *multi_impl);
+    public:
 
-    virtual ~Vector();
+        void setProfile(int ilower, int iupper);
 
-  public:
-    void init(const VectorDistribution &dist, const bool need_allocate);
+        void setValues(Arccore::ConstArrayView<double> values);
 
-    void allocate();
+        void getValues(Arccore::ArrayView<double> values) const;
 
-    void free() {}
+        void assemble();
 
-    void clear() {}
+        HYPRE_IJVector internal() { return m_hypre; }
 
-  public:
-    bool setValues(const int nrow,
-                   const double *values);
+        HYPRE_IJVector internal() const { return m_hypre; }
 
-    bool setValues(const int nrow,
-                   const int *rows,
-                   const double *values);
+    private:
 
-  public:
-    bool getValues(const int nrow,
-                   const int *rows,
-                   double *values) const;
+        HYPRE_IJVector m_hypre;
+        MPI_Comm m_comm;
 
-    bool getValues(const int nrow,
-                   double *values) const;
-
-  public:
-
-    // Méthodes restreintes à usage interne de l'implémentation HYPRE
-    VectorInternal *internal() { return m_internal; }
-
-    const VectorInternal *internal() const { return m_internal; }
-
-    // These functions should be removed when the relevant Converters will be implemented
-    void update(const Vector &v);
-
-  private:
-
-    bool assemble();
-
-  private:
-    VectorInternal *m_internal;
-    Arccore::Integer m_block_size;
-    Arccore::Integer m_offset;
-    Arccore::UniqueArray<Arccore::Integer> m_rows;
-  };
+        Arccore::UniqueArray<Arccore::Integer> m_rows;
+    };
 
 }

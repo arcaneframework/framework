@@ -1,36 +1,31 @@
 #include "hypre_internal_linear_algebra.h"
 #include "hypre_matrix.h"
 #include "hypre_vector.h"
-#include "hypre_internal.h"
-
-#include <cmath>
-
-#include <arccore/base/NotImplementedException.h>
-#include <arccore/base/TraceInfo.h>
-
-#include <HYPRE_parcsr_mv.h>
-#include <_hypre_parcsr_mv.h>
-#include <HYPRE_IJ_mv.h>
 
 #include <ALIEN/Core/Backend/LinearAlgebraT.h>
 #include <ALIEN/Data/Space.h>
 
+#include <arccore/base/NotImplementedException.h>
+#include <arccore/base/TraceInfo.h>
+
+#include <_hypre_parcsr_mv.h>
+
+#include <cmath>
+
 namespace Alien {
 
-  namespace {
-    HYPRE_ParVector
-    hypre_implem(const Hypre::Vector &v) {
-      HYPRE_ParVector res;
-      HYPRE_IJVectorGetObject(v.internal()->internal(), reinterpret_cast<void **>(&res));
-      return res;
-    }
+    namespace {
+        HYPRE_ParVector hypre_implem(const Hypre::Vector &v) {
+            HYPRE_ParVector res;
+            HYPRE_IJVectorGetObject(v.internal(), reinterpret_cast<void **>(&res));
+            return res;
+        }
 
-    HYPRE_ParCSRMatrix
-    hypre_implem(const Hypre::Matrix &m) {
-      HYPRE_ParCSRMatrix res;
-      HYPRE_IJMatrixGetObject(m.internal()->internal(), reinterpret_cast<void **>(&res));
-      return res;
-    }
+        HYPRE_ParCSRMatrix hypre_implem(const Hypre::Matrix &m) {
+            HYPRE_ParCSRMatrix res;
+            HYPRE_IJMatrixGetObject(m.internal(), reinterpret_cast<void **>(&res));
+            return res;
+        }
   }
 
   template class ALIEN_HYPRE_EXPORT LinearAlgebra<BackEnd::tag::hypre>;
@@ -52,11 +47,10 @@ namespace Alien {
       return std::sqrt(dot(vx, vx));
     }
 
-    void
-    InternalLinearAlgebra::mult(
-            const Matrix &ma, const Vector &vx, Vector &vr) const {
-      HYPRE_ParCSRMatrixMatvec(1.0, hypre_implem(ma), hypre_implem(vx), 0.0, hypre_implem(vr));
-    }
+      void
+      InternalLinearAlgebra::mult(const Matrix &ma, const Vector &vx, Vector &vr) const {
+          HYPRE_ParCSRMatrixMatvec(1.0, hypre_implem(ma), hypre_implem(vx), 0.0, hypre_implem(vr));
+      }
 
     void
     InternalLinearAlgebra::axpy(

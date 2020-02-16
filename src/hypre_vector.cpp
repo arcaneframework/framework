@@ -1,98 +1,77 @@
 #include "hypre_vector.h"
-#include "internal/hypre_internal.h"
-#include "hypre_backend.h"
 
-#include <mpi.h>
+#include <ALIEN/hypre/backend.h>
+#include <ALIEN/Utils/MPIComm.h>
 
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 
+#include <HYPRE.h>
+
 namespace Alien::Hypre {
 
-  Vector::Vector(const MultiVectorImpl *multi_impl)
-          : IVectorImpl(multi_impl, AlgebraTraits<BackEnd::tag::hypre>::name())
-          , m_internal(nullptr)
-          , m_block_size(1)
-          , m_offset(0) {}
+    Vector::Vector(const MultiVectorImpl *multi_impl)
+            : IVectorImpl(multi_impl, AlgebraTraits<BackEnd::tag::hypre>::name()), m_hypre(nullptr) {
+        auto block_size = 1;
+        const auto *block = this->block();
+        if (block)
+            block_size *= block->size();
+        else if (this->vblock())
+            throw Arccore::FatalErrorException(A_FUNCINFO, "Not implemented yet");
 
-  Vector::
-  ~Vector() {
-    delete m_internal;
-  }
+        const auto localOffset = distribution().offset();
+        const auto localSize = distribution().localSize();
+        const auto ilower = localOffset * block_size;
+        const auto iupper = ilower + localSize * block_size - 1;
 
-  void
-  Vector::init(const VectorDistribution &dist, const bool need_allocate) {
-    const Block *block = this->block();
-    if (this->block())
-      m_block_size *= block->size();
-    else if (this->vblock())
-      throw Arccore::FatalErrorException(A_FUNCINFO, "Not implemented yet");
-    else
-      m_block_size = 1;
-    m_offset = dist.offset();
-    if (need_allocate)
-      allocate();
-  }
+        setProfile(ilower, iupper);
+    }
 
-  void
-  Vector::allocate() {
-    delete m_internal;
-    const VectorDistribution &dist = this->distribution();
-    auto *pm = dist.parallelMng();
-    MPI_Comm comm = MPI_COMM_WORLD;
-    auto *mpi_comm_mng = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng *>(pm);
-    if (mpi_comm_mng)
-      comm = *(mpi_comm_mng->getMPIComm());
+    Vector::~Vector() {
+        if (m_hypre)
+            HYPRE_IJVectorDestroy(m_hypre);
+    }
 
-    m_internal = new VectorInternal(comm);
-    int ilower = dist.offset() * m_block_size;
-    int iupper = ilower + dist.localSize() * m_block_size - 1;
-    m_internal->init(ilower, iupper);
-    m_rows.resize(dist.localSize() * m_block_size);
-    for (int i = 0; i < dist.localSize() * m_block_size; ++i)
-      m_rows[i] = ilower + i;
-  }
+    void Vector::setProfile(int ilower, int iupper) {
+        if (m_hypre)
+            HYPRE_IJVectorDestroy(m_hypre);
 
-  bool
-  Vector::setValues(const int nrow, const int *rows, const double *values) {
-    if (m_internal == nullptr)
-      return false;
-    return m_internal->setValues(nrow, rows, values);
-  }
+        m_comm = Alien::MPIComm(distribution());
 
-  bool
-  Vector::setValues(const int nrow, const double *values) {
-    if (m_internal == nullptr)
-      return false;
+        // -- B Vector --
+        auto ierr = HYPRE_IJVectorCreate(m_comm, ilower, iupper, &m_hypre);
+        ierr |= HYPRE_IJVectorSetObjectType(m_hypre, HYPRE_PARCSR);
+        ierr |= HYPRE_IJVectorInitialize(m_hypre);
 
-    return m_internal->setValues(m_rows.size(), m_rows.data(), values);
-    //return m_internal->setValues(nrow, m_rows.data(), values);
-  }
+        if (ierr) {
+            throw Arccore::FatalErrorException(A_FUNCINFO, "Hypre Initialisation failed");
+        }
 
-  bool
-  Vector::getValues(const int nrow, const int *rows, double *values) const {
-    if (m_internal == nullptr)
-      return false;
-    return m_internal->getValues(nrow, rows, values);
-  }
+        m_rows.resize(iupper - ilower + 1);
+        for (int i = 0; i < m_rows.size(); ++i)
+            m_rows[i] = ilower + i;
+    }
 
-  bool
-  Vector::getValues(const int nrow, double *values) const {
-    if (m_internal == nullptr)
-      return false;
-    return m_internal->getValues(m_rows.size(), m_rows.data(), values);
-    //return m_internal->getValues(nrow, m_rows.data(), values);
-  }
+    void Vector::setValues(Arccore::ConstArrayView<double> values) {
+        auto ierr = HYPRE_IJVectorSetValues(m_hypre, m_rows.size(), m_rows.data(), values.data());
 
-  bool
-  Vector::assemble() {
-    if (m_internal == nullptr)
-      return false;
-    return m_internal->assemble();
-  }
+        if (ierr) {
+            throw Arccore::FatalErrorException(A_FUNCINFO, "Hypre set values failed");
+        }
+    }
 
-  void
-  Vector::update(const Vector &v) {
-    ALIEN_ASSERT((this == &v), ("Unexpected error"));
-  }
+    void Vector::getValues(Arccore::ArrayView<double> values) const {
+        auto ierr = HYPRE_IJVectorGetValues(m_hypre, m_rows.size(), m_rows.data(), values.data());
 
+        if (ierr) {
+            throw Arccore::FatalErrorException(A_FUNCINFO, "Hypre get values failed");
+        }
+    }
+
+    void Vector::assemble() {
+        auto ierr = HYPRE_IJVectorAssemble(m_hypre);
+
+        if (ierr) {
+            throw Arccore::FatalErrorException(A_FUNCINFO, "Hypre assembling failed");
+        }
+    }
 }
