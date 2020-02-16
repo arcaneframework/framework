@@ -1,8 +1,5 @@
-#include "hypre_internal_linear_solver.h"
 #include "hypre_matrix.h"
 #include "hypre_vector.h"
-
-#include <boost/timer.hpp>
 
 #include <ALIEN/hypre/backend.h>
 #include <ALIEN/hypre/options.h>
@@ -15,6 +12,8 @@
 #include <HYPRE_parcsr_ls.h>
 #include <HYPRE_parcsr_mv.h>
 
+#include <boost/timer.hpp>
+
 namespace Alien {
 
     // Compile HypreLinearSolver.
@@ -25,15 +24,60 @@ namespace Alien {
 
 namespace Alien::Hypre {
 
-  InternalLinearSolver::InternalLinearSolver() {
-    boost::timer tinit;
-    m_init_time += tinit.elapsed();
-  }
+    class InternalLinearSolver
+            : public IInternalLinearSolver<Matrix, Vector>, public ObjectWithTrace {
+    public:
 
-  InternalLinearSolver::InternalLinearSolver(const Options& options)
-          : m_options(options) {
-    boost::timer tinit;
-    m_init_time += tinit.elapsed();
+        typedef SolverStatus Status;
+
+        InternalLinearSolver();
+
+        InternalLinearSolver(const Options &options);
+
+        virtual ~InternalLinearSolver() {}
+
+    public:
+
+        // Nothing to do
+        void updateParallelMng(Arccore::MessagePassing::IMessagePassingMng *pm) {}
+
+        bool solve(const Matrix &A, const Vector &b, Vector &x);
+
+        bool hasParallelSupport() const { return true; }
+
+        //! Etat du solveur
+        const Status &getStatus() const;
+
+        const SolverStat &getSolverStat() const { return m_stat; }
+
+        std::shared_ptr<ILinearAlgebra> algebra() const;
+
+    private:
+
+        Status m_status;
+
+        Arccore::Real m_init_time;
+        Arccore::Real m_total_solve_time;
+        Arccore::Integer m_solve_num;
+        Arccore::Integer m_total_iter_num;
+
+        SolverStat m_stat;
+        Options m_options;
+
+    private:
+
+        void checkError(const Arccore::String &msg, int ierr, int skipError = 0) const;
+    };
+
+    InternalLinearSolver::InternalLinearSolver() {
+        boost::timer tinit;
+        m_init_time += tinit.elapsed();
+    }
+
+    InternalLinearSolver::InternalLinearSolver(const Options &options)
+            : m_options(options) {
+        boost::timer tinit;
+        m_init_time += tinit.elapsed();
   }
 
   void

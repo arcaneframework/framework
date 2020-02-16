@@ -1,8 +1,8 @@
 add_library(alien_hypre
         hypre_vector.cpp
         hypre_matrix.cpp
-        internal/hypre_internal_linear_algebra.cpp
-        internal/hypre_internal_linear_solver.cpp
+        hypre_linear_algebra.cpp
+        hypre_linear_solver.cpp
         converters/hypre_to_simplecsr_vector.cpp
         converters/simplecsr_to_hypre_vector.cpp
         converters/simplecsr_to_hypre_matrix.cpp
