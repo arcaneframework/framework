@@ -99,10 +99,15 @@ if(PLUGIN_DIR)
     foreach(plugin ${plugins})
         logStatus("** plugin detected : ${plugin}")
         add_subdirectory(${PLUGIN_DIR}/${plugin} ${plugin})
-    endforeach()
-else()
+    endforeach ()
+else ()
     logStatus("no plugin detected")
-endif()
+endif ()
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
+add_subdirectory(modules/AlienOpensourcePlugins)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------

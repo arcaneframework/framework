@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<service name="OSHypreSolver" version="1.0" type="caseoption">
+
+    <description>Service de solveur Hypre Opensource</description>
+    <interface name="Alien::ILinearSolver"/>
+
+    <options>
+        <simple name="num-iterations-max" type="integer">
+            <description>Maximal number of iterations</description>
+        </simple>
+        <simple name="stop-criteria-value" type="real">
+            <description>Requested accuracy</description>
+        </simple>
+        <enumeration name="solver" type="Alien::Hypre::OptionTypes::eSolver">
+            <description>Solver type</description>
+            <enumvalue name="AMG" genvalue="Alien::Hypre::OptionTypes::AMG">
+                <description>Algebraic Multigrid Method</description>
+            </enumvalue>
+            <enumvalue name="CG" genvalue="Alien::Hypre::OptionTypes::CG">
+                <description>Conjugate Gradient Method</description>
+            </enumvalue>
+            <enumvalue name="GMRES" genvalue="Alien::Hypre::OptionTypes::GMRES">
+                <description>GMRES Solver</description>
+            </enumvalue>
+            <enumvalue name="BiCGStab" genvalue="Alien::Hypre::OptionTypes::BiCGStab">
+                <description>BiCGStab Solver</description>
+            </enumvalue>
+            <enumvalue name="Hybrid" genvalue="Alien::Hypre::OptionTypes::Hybrid">
+                <description>Hybrid solver combining CG and multigrid solver (for nonsymmetric system GMRES must be
+                    used: not implemented)
+                </description>
+            </enumvalue>
+        </enumeration>
+        <enumeration name="preconditioner" type="Alien::Hypre::OptionTypes::ePreconditioner">
+            <description>Preconditioner type</description>
+            <enumvalue name="None" genvalue="Alien::Hypre::OptionTypes::NoPC">
+                <description>No preconditioner</description>
+            </enumvalue>
+            <enumvalue name="Diag" genvalue="Alien::Hypre::OptionTypes::DiagPC">
+                <description>Diagonal preconditioner</description>
+            </enumvalue>
+            <enumvalue name="AMG" genvalue="Alien::Hypre::OptionTypes::AMGPC">
+                <description>Algebraic Multi Grid preconditioner</description>
+            </enumvalue>
+            <enumvalue name="ParaSails" genvalue="Alien::Hypre::OptionTypes::ParaSailsPC">
+                <description>SPAI preconditioner</description>
+            </enumvalue>
+            <enumvalue name="Euclid" genvalue="Alien::Hypre::OptionTypes::EuclidPC">
+                <description>Parallel ILU preconditioner</description>
+            </enumvalue>
+        </enumeration>
+        <simple name="verbose" type="bool" default="false">
+            <description>Verbosity flag</description>
+        </simple>
+    </options>
+</service>
