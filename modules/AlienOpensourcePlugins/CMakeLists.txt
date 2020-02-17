@@ -1,4 +1,4 @@
-if (NOT TARGET arcane_core AND NOT alien_hypre)
+if (NOT TARGET arcane_core OR NOT TARGET alien_hypre)
     return()
 endif ()
 

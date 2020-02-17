@@ -62,12 +62,29 @@ loadPackage(NAME Trilinos)
 # ----------------------------------------------------------------------------
 
 # arccon fix
-add_library(hypre ALIAS arcconpkg_Hypre)
-add_library(mpi ALIAS arcconpkg_MPI)
-add_library(petsc ALIAS arcconpkg_PETSc)
-add_library(superlu ALIAS arcconpkg_SuperLU)
-add_library(mtl ALIAS arcconpkg_MTL4)
-add_library(tbb ALIAS arcconpkg_TBB)
+if (TARGET arcconpkg_Hypre)
+  add_library(hypre ALIAS arcconpkg_Hypre)
+endif()
+
+if (TARGET arcconpkg_MPI)
+  add_library(mpi ALIAS arcconpkg_MPI)
+endif()
+
+if (TARGET arcconpkg_PETSc)
+  add_library(petsc ALIAS arcconpkg_PETSc)
+endif()
+
+if (TARGET arcconpkg_SuperLU)
+  add_library(superlu ALIAS arcconpkg_SuperLU)
+endif()
+
+if (TARGET arcconpkg_MTL4)
+  add_library(mtl ALIAS arcconpkg_MTL4)
+endif()
+
+if (TARGET arcconpkg_TBB)
+  add_library(tbb ALIAS arcconpkg_TBB)
+endif()
 
 # load package can't deal with this...
 find_package(Boost COMPONENTS program_options system REQUIRED)
