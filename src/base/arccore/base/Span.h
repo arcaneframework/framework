@@ -458,6 +458,59 @@ dumpArray(std::ostream& o,Span<const T> val,int max_print)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Extrait un sous-tableau à à partir d'une liste d'index.
+ *
+ * Remplit \a result avec les valeurs du tableau \a values correspondantes
+ * aux indices \a indexes.
+ *
+ * \pre results.size() >= indexes.size();
+ */
+template<typename DataType,typename IntegerType> inline void
+_sampleSpan(Span<const DataType> values,Span<const IntegerType> indexes,Span<DataType> result)
+{
+  const Int64 result_size = indexes.size();
+  const Int64 my_size = values.size();
+  const DataType* ptr = values.data();
+  for( Int64 i=0; i<result_size; ++i) {
+    IntegerType index = indexes[i];
+    ARCCORE_CHECK_AT(index,my_size);
+    result[i] = ptr[index];
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Extrait un sous-tableau à à partir d'une liste d'index.
+ *
+ * Remplit \a result avec les valeurs du tableau \a values correspondantes
+ * aux indices \a indexes.
+ *
+ * \pre results.size() >= indexes.size();
+ */
+template<typename DataType> inline void
+sampleSpan(Span<const DataType> values,Span<const Int64> indexes,Span<DataType> result)
+{
+  _sampleSpan(values,indexes,result);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Extrait un sous-tableau à à partir d'une liste d'index.
+ *
+ * Le résultat est stocké dans \a result dont la taille doit être au moins
+ * égale à celle de \a indexes.
+ */
+template<typename DataType> inline void
+sampleSpan(Span<const DataType> values,Span<const Int32> indexes,Span<DataType> result)
+{
+  _sampleSpan(values,indexes,result);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 template<typename T> inline std::ostream&
 operator<<(std::ostream& o, Span<const T> val)
