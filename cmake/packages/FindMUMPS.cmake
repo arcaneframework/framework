@@ -30,7 +30,7 @@ if(NOT MUMPS_FOUND)
     find_library(DMUMPS_LIBRARY
       NAMES dmumps
       HINTS ${MUMPS_ROOT} 
-		  PATH_SUFFIXES lib
+      PATH_SUFFIXES lib
       ${_MUMPS_SEARCH_OPTS}
       )
     mark_as_advanced(DMUMPS_LIBRARY)
@@ -111,7 +111,7 @@ if(NOT MUMPS_FOUND)
     find_library(GFORTRAN_LIBRARY
       NAMES libgfortran.so
       HINTS $ENV{GFORTRAN_ROOT} 
-		  PATH_SUFFIXES lib
+      PATH_SUFFIXES lib64
       ${_MUMPS_SEARCH_OPTS})
     
   else()
@@ -159,17 +159,19 @@ set(MUMPS_COMMON_FIND_QUIETLY ON)
 set(MUMPS_PORD_FIND_QUIETLY ON)
 
 find_package_handle_standard_args(MUMPS
-	DEFAULT_MSG 
-	MUMPS_INCLUDE_DIR 
-	DMUMPS_LIBRARY)
+                                  DEFAULT_MSG 
+                                  MUMPS_INCLUDE_DIR 
+                                  DMUMPS_LIBRARY)
+                                  
 find_package_handle_standard_args(MUMPS_COMMON
-	DEFAULT_MSG 
-	MUMPS_INCLUDE_DIR 
-	MUMPS_COMMON_LIBRARY)
+                                  DEFAULT_MSG 
+                                  MUMPS_INCLUDE_DIR 
+                                  MUMPS_COMMON_LIBRARY)
+                                  
 find_package_handle_standard_args(MUMPS_PORD
-	DEFAULT_MSG 
-	MUMPS_INCLUDE_DIR 
-	MUMPS_PORD_LIBRARY)
+                                  DEFAULT_MSG 
+                                  MUMPS_INCLUDE_DIR 
+                                  MUMPS_PORD_LIBRARY)
 
 if(MUMPS_FOUND AND NOT TARGET mumps)
    
@@ -177,7 +179,7 @@ if(MUMPS_FOUND AND NOT TARGET mumps)
   
   set(MUMPS_LIBRARIES ${MUMPS_LIBRARY} ${MUMPS_COMMON_LIBRARY} ${MUMPS_PORD})
    
-  add_library(mumps INTERFACE IMPORTED)
+   add_library(mumps INTERFACE IMPORTED)
    
   add_library(dmumps UNKNOWN IMPORTED)
   set_target_properties(dmumps PROPERTIES 
@@ -257,6 +259,7 @@ if(MUMPS_FOUND AND NOT TARGET mumps)
   set_target_properties(scalapack PROPERTIES
                         IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
                         IMPORTED_LOCATION "${SCALAPACK_LIBRARY}")
+    
   set_property(TARGET mumps APPEND PROPERTY
                INTERFACE_LINK_LIBRARIES "scalapack")
   #if(TARGET mkl)
@@ -266,9 +269,11 @@ if(MUMPS_FOUND AND NOT TARGET mumps)
                
   add_library(gfortran UNKNOWN IMPORTED)
   set_target_properties(gfortran PROPERTIES
-    IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-    IMPORTED_LOCATION "${GFORTRAN_LIBRARY}")
+                        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                        IMPORTED_LOCATION "${GFORTRAN_LIBRARY}")
+    
   set_property(TARGET mumps APPEND PROPERTY
-    INTERFACE_LINK_LIBRARIES "gfortran")
+               INTERFACE_LINK_LIBRARIES "gfortran")
+  
     
 endif()
