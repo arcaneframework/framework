@@ -92,8 +92,24 @@ if(NOT MUMPS_FOUND)
     mark_as_advanced(ESMUMPS_LIBRARY)
     message(status "ESMUMPS LIBRARY : ${ESMUMPS_LIBRARY}")
     
+    find_library(PTESMUMPS_LIBRARY
+                 NAMES ptesmumps
+                 HINTS $ENV{SCOTCH_ROOT} 
+                 PATH_SUFFIXES lib
+                 ${_MUMPS_SEARCH_OPTS}
+                )
+    mark_as_advanced(PTESMUMPS_LIBRARY)
+    message(status "PTESMUMPS LIBRARY : ${PTESMUMPS_LIBRARY}")
+    
+    
+    find_library(SCALAPACK_LIBRARY
+                 NAMES scalapack
+                 HINTS $ENV{MUMPS_ROOT} 
+                 PATH_SUFFIXES lib
+                 ${_MUMPS_SEARCH_OPTS})
+      
     find_library(GFORTRAN_LIBRARY
-      NAMES gfortran
+      NAMES libgfortran.so
       HINTS $ENV{GFORTRAN_ROOT} 
 		  PATH_SUFFIXES lib
       ${_MUMPS_SEARCH_OPTS})
@@ -161,85 +177,97 @@ if(MUMPS_FOUND AND NOT TARGET mumps)
   
   set(MUMPS_LIBRARIES ${MUMPS_LIBRARY} ${MUMPS_COMMON_LIBRARY} ${MUMPS_PORD})
    
-   add_library(mumps INTERFACE IMPORTED)
+  add_library(mumps INTERFACE IMPORTED)
    
-   add_library(dmumps UNKNOWN IMPORTED)
-   set_target_properties(dmumps PROPERTIES 
-     INTERFACE_INCLUDE_DIRECTORIES "${MUMPS_INCLUDE_DIRS}")
-   set_target_properties(dmumps PROPERTIES
-    IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-    IMPORTED_LOCATION "${DMUMPS_LIBRARY}")
+  add_library(dmumps UNKNOWN IMPORTED)
+  set_target_properties(dmumps PROPERTIES 
+                         INTERFACE_INCLUDE_DIRECTORIES "${MUMPS_INCLUDE_DIRS}")
+  set_target_properties(dmumps PROPERTIES
+                         IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                         IMPORTED_LOCATION "${DMUMPS_LIBRARY}")
   set_property(TARGET mumps APPEND PROPERTY
-    INTERFACE_LINK_LIBRARIES "dmumps")
+               INTERFACE_LINK_LIBRARIES "dmumps")
     
     
-   add_library(cmumps UNKNOWN IMPORTED)
-   set_target_properties(cmumps PROPERTIES 
-     INTERFACE_INCLUDE_DIRECTORIES "${MUMPS_INCLUDE_DIRS}")
-   set_target_properties(cmumps PROPERTIES
-    IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-    IMPORTED_LOCATION "${CMUMPS_LIBRARY}")
-   set_property(TARGET mumps APPEND PROPERTY
-    INTERFACE_LINK_LIBRARIES "cmumps")
-    
-    
-   add_library(smumps UNKNOWN IMPORTED)
-   set_target_properties(smumps PROPERTIES 
-     INTERFACE_INCLUDE_DIRECTORIES "${MUMPS_INCLUDE_DIRS}")
-   set_target_properties(smumps PROPERTIES
-    IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-    IMPORTED_LOCATION "${SMUMPS_LIBRARY}") 
+  add_library(cmumps UNKNOWN IMPORTED)
+  set_target_properties(cmumps PROPERTIES 
+                        INTERFACE_INCLUDE_DIRECTORIES "${MUMPS_INCLUDE_DIRS}")
+  set_target_properties(cmumps PROPERTIES
+                        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                        IMPORTED_LOCATION "${CMUMPS_LIBRARY}")
   set_property(TARGET mumps APPEND PROPERTY
-    INTERFACE_LINK_LIBRARIES "smumps")
+               INTERFACE_LINK_LIBRARIES "cmumps")
     
     
-   add_library(zmumps UNKNOWN IMPORTED)
-   set_target_properties(zmumps PROPERTIES 
-     INTERFACE_INCLUDE_DIRECTORIES "${MUMPS_INCLUDE_DIRS}")
-   set_target_properties(zmumps PROPERTIES
-    IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-    IMPORTED_LOCATION "${ZMUMPS_LIBRARY}")
+  add_library(smumps UNKNOWN IMPORTED)
+  set_target_properties(smumps PROPERTIES 
+                        INTERFACE_INCLUDE_DIRECTORIES "${MUMPS_INCLUDE_DIRS}")
+  set_target_properties(smumps PROPERTIES
+                        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                        IMPORTED_LOCATION "${SMUMPS_LIBRARY}") 
   set_property(TARGET mumps APPEND PROPERTY
-    INTERFACE_LINK_LIBRARIES "zmumps")
+               INTERFACE_LINK_LIBRARIES "smumps")
+  
+  
+  add_library(zmumps UNKNOWN IMPORTED)
+  set_target_properties(zmumps PROPERTIES 
+                        INTERFACE_INCLUDE_DIRECTORIES "${MUMPS_INCLUDE_DIRS}")
+  set_target_properties(zmumps PROPERTIES
+                        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                        IMPORTED_LOCATION "${ZMUMPS_LIBRARY}")
+  set_property(TARGET mumps APPEND PROPERTY
+               INTERFACE_LINK_LIBRARIES "zmumps")
     
   add_library(mumps_common UNKNOWN IMPORTED)
-	  
   set_target_properties(mumps_common PROPERTIES 
-	  INTERFACE_INCLUDE_DIRECTORIES "${MUMPS_INCLUDE_DIRS}")
-     
-	set_target_properties(mumps_common PROPERTIES
-    IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-    IMPORTED_LOCATION "${MUMPS_COMMON_LIBRARY}")
-    
+                        INTERFACE_INCLUDE_DIRECTORIES "${MUMPS_INCLUDE_DIRS}")
+  set_target_properties(mumps_common PROPERTIES
+                        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                        IMPORTED_LOCATION "${MUMPS_COMMON_LIBRARY}")
   set_property(TARGET mumps APPEND PROPERTY
-    INTERFACE_LINK_LIBRARIES "mumps_common")
+               INTERFACE_LINK_LIBRARIES "mumps_common")
     
   add_library(pord UNKNOWN IMPORTED)
-	  
+  
   set_target_properties(pord PROPERTIES 
-	  INTERFACE_INCLUDE_DIRECTORIES "${MUMPS_INCLUDE_DIRS}")
+                        INTERFACE_INCLUDE_DIRECTORIES "${MUMPS_INCLUDE_DIRS}")
      
-	set_target_properties(pord PROPERTIES
-    IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-    IMPORTED_LOCATION "${MUMPS_PORD_LIBRARY}")
-    
+  set_target_properties(pord PROPERTIES
+                        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                        IMPORTED_LOCATION "${MUMPS_PORD_LIBRARY}")
   set_property(TARGET mumps APPEND PROPERTY
-    INTERFACE_LINK_LIBRARIES "pord")
+               INTERFACE_LINK_LIBRARIES "pord")
     
     
-   add_library(esmumps UNKNOWN IMPORTED)
-   set_target_properties(esmumps PROPERTIES
-    IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-    IMPORTED_LOCATION "${ESMUMPS_LIBRARY}") 
+  add_library(esmumps UNKNOWN IMPORTED)
+  set_target_properties(esmumps PROPERTIES
+                        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                        IMPORTED_LOCATION "${ESMUMPS_LIBRARY}") 
   set_property(TARGET mumps APPEND PROPERTY
-    INTERFACE_LINK_LIBRARIES "esmumps")
+               INTERFACE_LINK_LIBRARIES "esmumps")
     
+  add_library(ptesmumps UNKNOWN IMPORTED)
+  set_target_properties(ptesmumps PROPERTIES
+                        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                        IMPORTED_LOCATION "${PTESMUMPS_LIBRARY}") 
+  set_property(TARGET mumps APPEND PROPERTY
+               INTERFACE_LINK_LIBRARIES "ptesmumps")
+
+  add_library(scalapack UNKNOWN IMPORTED)
+  set_target_properties(scalapack PROPERTIES
+                        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                        IMPORTED_LOCATION "${SCALAPACK_LIBRARY}")
+  set_property(TARGET mumps APPEND PROPERTY
+               INTERFACE_LINK_LIBRARIES "scalapack")
+  #if(TARGET mkl)
+  #  set_property(TARGET mumps APPEND PROPERTY
+  #               INTERFACE_LINK_LIBRARIES "mkl")
+  #endif()
+               
   add_library(gfortran UNKNOWN IMPORTED)
-     
-	set_target_properties(gfortran PROPERTIES
+  set_target_properties(gfortran PROPERTIES
     IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
     IMPORTED_LOCATION "${GFORTRAN_LIBRARY}")
-    
   set_property(TARGET mumps APPEND PROPERTY
     INTERFACE_LINK_LIBRARIES "gfortran")
     

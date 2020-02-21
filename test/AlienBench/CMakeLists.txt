@@ -35,6 +35,10 @@ if (TARGET trilinos)
     linkLibraries(alien_bench.exe ALIEN-Trilinos)
 endif ()
 
+if (TARGET hpddm)
+    linkLibraries(alien_bench.exe ALIEN-HPDDM)
+endif ()
+
 commit(alien_bench.exe)
 
 install(

@@ -124,6 +124,9 @@
 // IFPSolver
 #cmakedefine ALIEN_USE_IFPSOLVER
 
+// HPDDM
+#cmakedefine ALIEN_USE_HPDDM
+
 #ifndef ALIEN_USE_ARCANE
 #include "ALIEN/ServiceOptions.h"
 #endif

@@ -57,6 +57,9 @@ loadPackage(NAME Eigen3)
 loadPackage(NAME Spectra)
 loadPackage(NAME HTSSolver)
 loadPackage(NAME Trilinos)
+loadPackage(NAME MUMPS)
+loadPackage(NAME Arpack)
+loadPackage(NAME HPDDM)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
