@@ -470,7 +470,7 @@ template<typename DataType,typename IntegerType> inline void
 _sampleSpan(Span<const DataType> values,Span<const IntegerType> indexes,Span<DataType> result)
 {
   const Int64 result_size = indexes.size();
-  const Int64 my_size = values.size();
+  [[maybe_unused]] const Int64 my_size = values.size();
   const DataType* ptr = values.data();
   for( Int64 i=0; i<result_size; ++i) {
     IntegerType index = indexes[i];

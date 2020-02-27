@@ -964,9 +964,7 @@ class Array
   void sample(ConstArrayView<Integer> indexes,ArrayView<T> result) const
   {
     const Integer result_size = indexes.size();
-#ifdef ARCCORE_CHECK
-    const Int64 my_size = m_p->size;
-#endif
+    [[maybe_unused]] const Int64 my_size = m_p->size;
     for( Integer i=0; i<result_size; ++i) {
       Int32 index = indexes[i];
       ARCCORE_CHECK_AT(index,my_size);
