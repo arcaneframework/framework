@@ -96,15 +96,15 @@ class Span2
   //! Nombre total d'éléments.
   Int64 totalNbElement() const { return m_dim1_size*m_dim2_size; }
  public:
-  ArrayView<ElementType> operator[](Int64 i)
+  Span<ElementType> operator[](Int64 i)
   {
     ARCCORE_CHECK_AT(i,m_dim1_size);
-    return ArrayView<ElementType>(m_dim2_size,m_ptr + (m_dim2_size*i));
+    return Span<ElementType>(m_ptr + (m_dim2_size*i),m_dim2_size);
   }
-  ConstArrayView<ElementType> operator[](Int64 i) const
+  Span<const ElementType> operator[](Int64 i) const
   {
     ARCCORE_CHECK_AT(i,m_dim1_size);
-    return ConstArrayView<ElementType>(m_dim2_size,m_ptr + (m_dim2_size*i));
+    return Span<const ElementType>(m_ptr + (m_dim2_size*i),m_dim2_size);
   }
   //! Valeur de l'élément [\a i][\a j]
   ElementType item(Int64 i,Int64 j) const
