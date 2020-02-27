@@ -38,8 +38,6 @@ endif()
 
 find_package(Hypre REQUIRED)
 find_package(MPI REQUIRED)
-find_package(HDF5 REQUIRED)
-find_package(LibXml2 REQUIRED)
 find_package(Boost COMPONENTS program_options REQUIRED)
 
 # ----------------------------------------------------------------------------
