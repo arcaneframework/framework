@@ -3,7 +3,6 @@
 #include <ALIEN/hypre/backend.h>
 #include <ALIEN/Core/Impl/MultiMatrixImpl.h>
 #include <ALIEN/Data/ISpace.h>
-#include <ALIEN/Utils/MPIComm.h>
 
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 

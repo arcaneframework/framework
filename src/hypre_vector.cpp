@@ -1,7 +1,6 @@
 #include "hypre_vector.h"
 
 #include <ALIEN/hypre/backend.h>
-#include <ALIEN/Utils/MPIComm.h>
 
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 
