@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* TraceAccessor.cc                                            (C) 2000-2018 */
+/* TraceAccessor.cc                                            (C) 2000-2020 */
 /*                                                                           */
 /* Accès aux traces.                                                         */
 /*---------------------------------------------------------------------------*/
@@ -141,7 +141,7 @@ log() const
 TraceMessage TraceAccessor::
 plog() const
 {
-  return m_trace->log();
+  return m_trace->plog();
 }
 
 /*---------------------------------------------------------------------------*/
