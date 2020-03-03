@@ -158,7 +158,7 @@ public:
       append(item_range,std::vector<DataType>(item_range.size(), value));
   }
 
-  bool isInitializableFrom(const ItemRange& item_range) {return item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty() ;}
+  bool isInitializableFrom(const ItemRange& item_range) const {return item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty() ;}
 
   // The difference between init and append is done to handle values copy or move
   void init(const ItemRange& item_range, std::vector<DataType> values){
@@ -177,8 +177,6 @@ public:
       m_data[item] = values[counter++];
     }
   }
-
-
 
   DataType & operator[] (Neo::utils::Int32 item) { return m_data[item]; }
   DataType const& operator[] (Neo::utils::Int32 item) const { return m_data[item]; }
@@ -504,9 +502,8 @@ public:
   std::string const&  lidPropName()
   { return m_prop_lid_name;}
 
-  std::size_t size() {
-    throw;
-    return 0;
+  std::size_t nbElements() const {
+    return _lidProp().size();
   }
 
   ItemRange& all() {
@@ -521,6 +518,11 @@ public:
     return std::get<ItemLidsProperty>(prop_iterator->second);
   }
 
+  ItemLidsProperty const& _lidProp() const {
+    auto prop_iterator = m_properties.find(m_prop_lid_name);
+    return std::get<ItemLidsProperty>(prop_iterator->second);
+  }
+
   ItemKind m_ik;
   std::string m_name;
   std::string m_prop_lid_name;
@@ -531,7 +533,7 @@ public:
 
 class FamilyMap {
 public:
-  Family& operator() (ItemKind const & ik,std::string const& name)
+  Family& operator()(ItemKind const & ik,std::string const& name) const
   {
     auto found_family = m_families.find(std::make_pair(ik,name));
     assert(("Cannot find Family ",found_family!= m_families.end()));
@@ -657,7 +659,7 @@ public:
     return m_families.push_back(ik, name);
   }
 
-  Family& getFamily(ItemKind ik, std::string const& name){ return m_families.operator()(ik,name);}
+  Family& getFamily(ItemKind ik, std::string const& name) const { return m_families.operator()(ik,name);}
 
 
   template <typename Algorithm>
