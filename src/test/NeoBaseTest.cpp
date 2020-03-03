@@ -35,6 +35,22 @@ TEST(NeoTestItemRange,test_item_range){
   // todo test out reverse range
 }
 
+TEST(NeoTestProperty,test_property)
+ {
+  Neo::PropertyT<Neo::utils::Int32> property{"name"};
+  std::vector<Neo::utils::Int32> values {1,2,3};
+  Neo::ItemRange item_range{Neo::ItemIndexes{{},0,3}};
+  if (property.isInitializableFrom(item_range)) {
+    property.init(item_range,values);
+  }
+   EXPECT_EQ(values.size(),property.size());
+   std::vector<Neo::utils::Int32> new_values {4,5,6};
+   Neo::ItemRange new_item_range{Neo::ItemIndexes{{},3,3}};
+   property.append(new_item_range, new_values);
+   property.debugPrint();
+   EXPECT_EQ(values.size()+new_values.size(),property.size());
+}
+
 TEST(NeoTestArrayProperty,test_array_property)
 {
   auto array_property =
@@ -45,23 +61,27 @@ TEST(NeoTestArrayProperty,test_array_property)
   array_property.resize({1,1,1,1,1});
   array_property.init(item_range,values);
   array_property.debugPrint();
+  EXPECT_EQ(values.size(),array_property.size());
   // Add 3 items
   std::vector<std::size_t> nb_element_per_item{0,3,1};
   item_range = {Neo::ItemIndexes{{5,6,7}}};
   std::vector<Neo::utils::Int32> values_added{6,6,6,7};
   array_property.append(item_range, values_added, nb_element_per_item);
   array_property.debugPrint(); // expected result: "0" "1" "2" "3" "4" "6" "6" "6" "7" (check with test framework)
+  EXPECT_EQ(values.size()+values_added.size(),array_property.size());
   // Add three more items
   item_range = {Neo::ItemIndexes{{},8,3}};
   std::for_each(values_added.begin(), values_added.end(), [](auto &elt) {return elt += 2;});
   array_property.append(item_range, values_added, nb_element_per_item);
   array_property.debugPrint(); // expected result: "0" "1" "2" "3" "4" "6" "6" "6" "7" "8" "8" "8" "9"
+  EXPECT_EQ(values.size()+2*values_added.size(),array_property.size());
   // Add items and modify existing item
   item_range = {Neo::ItemIndexes{{0,8,5},11,1}};
   nb_element_per_item = {3,3,2,1};
   values_added = {10,10,10,11,11,11,12,12,13};
   array_property.append(item_range, values_added, nb_element_per_item); // expected result: "10" "10" "10" "1" "2" "3" "4" "12" "12" "6" "6" "6" "7" "11" "11" "11" "8" "8" "8" "9" "13"
   array_property.debugPrint();
+  EXPECT_EQ(21,array_property.size());
 }
 
 TEST(NeoTestPropertyGraph,test_property_graph)
@@ -80,12 +100,14 @@ TEST(NeoTestLidsProperty,test_lids_property)
   for (auto item : lid_prop.values()) {
     std::cout << "Item range, lid " << item << std::endl;
   }
+  EXPECT_EQ(lid_prop.size(),5);
   uids = {1,3,5};
   lid_prop.remove(uids);
   std::cout << "new range size " << lid_prop.values().size();
   for (auto item : lid_prop.values()) {
     std::cout << "Item range, lid " << item << std::endl;
   }
+  EXPECT_EQ(lid_prop.size(),2);
 }
 
 void mesh_property_test(const Neo::Mesh& mesh){
