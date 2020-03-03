@@ -189,6 +189,11 @@ public:
     }
     std::cout << std::endl;
   }
+
+  Neo::utils::ArrayView<DataType> values() {return Neo::utils::ArrayView<DataType>{m_data.size(), m_data.data()};}
+
+  std::size_t size() const {return m_data.size();}
+
   std::vector<DataType> m_data;
 };
 

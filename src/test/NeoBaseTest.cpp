@@ -49,6 +49,11 @@ TEST(NeoTestProperty,test_property)
    property.append(new_item_range, new_values);
    property.debugPrint();
    EXPECT_EQ(values.size()+new_values.size(),property.size());
+   auto property_values = property.values();
+   for (auto i =0; i < values.size(); ++i){
+     EXPECT_EQ(property_values[i],values[i]);
+   }
+
 }
 
 TEST(NeoTestArrayProperty,test_array_property)
