@@ -12,6 +12,14 @@
 
 #include "neo/Neo.h"
 #include "gtest/gtest.h"
+#ifdef  HAS_XDMF
+#include "XdmfDomain.hpp"
+#include "XdmfInformation.hpp"
+#include "XdmfUnstructuredGrid.hpp"
+#include "XdmfSystemUtils.hpp"
+#include "XdmfHDF5Writer.hpp"
+#include "XdmfWriter.hpp"
+#endif
 
 namespace StaticMesh {
 
@@ -216,3 +224,49 @@ TEST(PolyhedralTest,CreateMesh1)
   auto mesh = Neo::Mesh{"PolyhedralMesh"};
   PolyhedralMeshTest::addCells(mesh);
 }
+
+
+#ifdef HAS_XDMF
+TEST(PolyhedralTest,CreateXdmfMesh)
+{
+  auto mesh = Neo::Mesh{"PolyhedralMesh"};
+  PolyhedralMeshTest::addCells(mesh);
+  // Needed ?
+  auto domain = XdmfDomain::New();
+  auto domain_info = XdmfInformation::New("Domain", " For polyhedral data from Neo");
+  domain->insert(domain_info);
+  // Needed ?
+  auto xdmf_grid = XdmfUnstructuredGrid::New();
+  auto xdmf_geom = XdmfGeometry::New();
+  xdmf_geom->setType(XdmfGeometryType::XYZ());
+  auto node_coords = StaticMesh::getNodeCoords(mesh,mesh.getFamily(Neo::ItemKind::IK_Node,StaticMesh::node_family_name));
+  xdmf_geom->insert(0,(double*)node_coords.begin(),node_coords.size()*3,1,1);
+  xdmf_grid->setGeometry(xdmf_geom);
+  auto xdmf_topo = XdmfTopology::New();
+  xdmf_topo->setType(XdmfTopologyType::Polyhedron());
+  std::vector<int> cell_data;
+  auto& cell_family = mesh.getFamily(Neo::ItemKind::IK_Cell,StaticMesh::cell_family_name);
+  auto& face_family = mesh.getFamily(Neo::ItemKind::IK_Face,StaticMesh::face_family_name);
+  cell_data.reserve(cell_family.nbElements()*4); // 4 faces by cell approx
+  auto& cell_to_faces = StaticMesh::faces(mesh,cell_family);
+  auto& face_to_nodes = StaticMesh::nodes(mesh, face_family);
+  for (auto cell : cell_family.all()) {
+    auto cell_faces = cell_to_faces[cell];
+    cell_data.push_back(cell_faces.size());
+    for (auto face : cell_faces) {
+      auto face_nodes = face_to_nodes[face];
+      cell_data.insert(cell_data.end(),face_nodes.begin(),face_nodes.end());
+    }
+  }
+  // Check cell 0 has 8 faces (Octahedron case)
+  EXPECT_EQ(8,cell_to_faces[0].size());
+  xdmf_topo->insert(0, cell_data.data(),cell_data.size(), 1, 1);
+  xdmf_grid->setTopology(xdmf_topo);
+  domain->insert(xdmf_grid);
+//  auto heavydata_writer = XdmfHDF5Writer::New("test_output.h5");
+//  auto writer = XdmfWriter::New("test_output.xmf", heavydata_writer);
+  auto writer = XdmfWriter::New("test_output.xmf");
+//  domain->accept(heavydata_writer);
+  domain->accept(writer);
+}
+#endif

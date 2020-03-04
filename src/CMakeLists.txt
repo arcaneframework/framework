@@ -16,10 +16,12 @@ add_executable(Neo.tests
 
 target_link_libraries(Neo.tests GTest::GTest GTest::Main)
 
-if(${Xdmf_FOUND})
+if(Xdmf_FOUND)
     target_link_libraries(Neo.tests ${XDMF_LIBNAME} ${XDMF_Xdmf_LIB_DEPENDS})
+    target_compile_definitions(Neo.tests PRIVATE HAS_XDMF=1)
+#    target_include_directories(Neo.tests PUBLIC ${XDMF_LIBXML2_INCLUDE_DIR})
     message("-- XMDF Found")
-endif(${Xdmf_FOUND})
+endif(Xdmf_FOUND)
 
 gtest_discover_tests(Neo.tests)
 
