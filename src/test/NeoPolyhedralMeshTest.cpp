@@ -176,10 +176,12 @@ namespace PolyhedralMeshTest {
         {-1, -1, 0}, {-1, 1, 0}, {1, 1, 0}, {1, -1, 0}, {0, 0, 1}, {0, 0, -1}};
 
     std::vector<Neo::utils::Int64> cell_nodes{0, 1, 2, 3, 4, 5};
+    std::vector<Neo::utils::Int64> cell_faces{0, 1, 2, 3, 4, 5, 6, 7};
 
     std::vector<Neo::utils::Int64> face_nodes{3, 0, 1, 4, 3, 0, 1, 5, 3, 1, 2,
                                               4, 3, 1, 2, 5, 3, 2, 3, 4, 3, 2,
                                               3, 5, 3, 3, 0, 4, 3, 3, 0, 5};
+
 
     mesh.beginUpdate();
     auto added_cells = Neo::AddedItemRange{};
@@ -195,8 +197,10 @@ namespace PolyhedralMeshTest {
     auto nb_node_per_face = 4;
     StaticMesh::addConnectivity(mesh, face_family, added_faces, node_family,
                                 nb_node_per_face, face_nodes);
-    auto valid_mesh_state =
-        mesh.endUpdate(); // retourner un objet qui dévérouille la range
+    auto nb_face_per_cell = 8;
+    StaticMesh::addConnectivity(mesh, cell_family, added_cells, face_family,
+                                nb_face_per_cell, cell_faces);
+    auto valid_mesh_state = mesh.endUpdate();
     auto &new_cells = added_cells.get(valid_mesh_state);
     auto &new_nodes = added_nodes.get(valid_mesh_state);
     auto &new_faces = added_faces.get(valid_mesh_state);
