@@ -51,6 +51,17 @@ struct ArrayView {
   std::size_t m_size;
   T* m_ptr;
 };
+
+template <typename T>
+struct ConstArrayView {
+  const T& operator[](int const i) const {assert(i<m_size); return *(m_ptr+i);}
+  const T* begin() const {return m_ptr;}
+  const T* end() const  {return m_ptr+m_size;}
+  std::size_t size() const {return m_size;}
+  std::size_t m_size;
+  const T* m_ptr;
+};
+
 static constexpr utils::Int32 NULL_ITEM_LID = -1;
 }// end namespace utils
 
@@ -285,6 +296,10 @@ public:
     return utils::ArrayView<DataType>{m_offsets[item],&m_data[_getItemIndexInData(item)]};
   }
 
+  utils::ConstArrayView<DataType> operator[](const utils::Int32 item) const {
+    return utils::ConstArrayView<DataType>{m_offsets[item],&m_data[_getItemIndexInData(item)]};
+  }
+
   void debugPrint() const {
     std::cout << "= Print array property " << m_name << " =" << std::endl;
     for (auto &val : m_data) {
@@ -294,11 +309,11 @@ public:
   }
 
   // todo should be computed only when m_offsets is updated, at least implement an array version
-  utils::Int32 _getItemIndexInData(const utils::Int32 item){
+  utils::Int32 _getItemIndexInData(const utils::Int32 item) const{
     std::accumulate(m_offsets.begin(),m_offsets.begin()+item,0);
   }
 
-  utils::Int32 _getItemIndexInData(const utils::Int32 item, const std::vector<std::size_t>& offsets){
+  utils::Int32 _getItemIndexInData(const utils::Int32 item, const std::vector<std::size_t>& offsets) const{
     std::accumulate(offsets.begin(),offsets.begin()+item,0);
   }
 
