@@ -85,7 +85,7 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
         });
   }
 
-  Neo::ArrayProperty<Neo::utils::Int32>
+  Neo::ArrayProperty<Neo::utils::Int32> const &
   getConnectivity(Neo::Mesh const &mesh, Neo::Family const& source_family,
                   Neo::Family const &target_family)
   {
@@ -127,15 +127,16 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
                     nb_connected_item_per_item, connected_item_uids);
   }
 
-  Neo::utils::ArrayView<int> faces(Neo::Mesh const& mesh, Neo::Family const& source_family, int const item_index) // todo source family const
+  Neo::ArrayProperty<Neo::utils::Int32> const& faces(Neo::Mesh const& mesh, Neo::Family const& source_family)
   {
     auto &face_family = mesh.getFamily(Neo::ItemKind::IK_Face, face_family_name);
-    //debug
-    std::cout << "Face connectivity name" << getConnectivity(mesh, source_family, face_family).m_name << std::endl;
-    std::cout << "Face connectivity size" << getConnectivity(mesh, source_family, face_family).size() << std::endl;
-    getConnectivity(mesh, source_family, face_family).debugPrint();
-    //debug
-    return getConnectivity(mesh, source_family, face_family)[item_index];
+    return getConnectivity(mesh, source_family, face_family);
+  }
+
+  Neo::ArrayProperty<Neo::utils::Int32> const& nodes(Neo::Mesh const& mesh, Neo::Family const& source_family)
+  {
+    auto& node_family = mesh.getFamily(Neo::ItemKind::IK_Node,node_family_name);
+    return getConnectivity(mesh, source_family, node_family);
   }
 }
 
