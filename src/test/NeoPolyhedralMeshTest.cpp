@@ -15,6 +15,10 @@
 
 namespace StaticMesh {
 
+static const std::string cell_family_name{"CellFamily"};
+static const std::string face_family_name{"FaceFamily"};
+static const std::string node_family_name{"NodeFamily"};
+
 void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int64>& uids, Neo::AddedItemRange& added_item_range)
 {
   auto& added_items = added_item_range.new_items;
@@ -80,6 +84,16 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
           source2target.debugPrint();
         });
   }
+
+  Neo::ArrayProperty<Neo::utils::Int32>
+  getConnectivity(Neo::Mesh const &mesh, Neo::Family const& source_family,
+                  Neo::Family const &target_family)
+  {
+    return source_family.getConcreteProperty <
+           Neo::ArrayProperty<Neo::utils::Int32>>(source_family.m_name + "to" +
+                                                 target_family.m_name+"_connectivity");
+  }
+
   // todo : define 2 signatures to indicate eventual memory stealing...?
   void setNodeCoords(Neo::Mesh& mesh, Neo::Family& node_family, Neo::AddedItemRange& added_node_range, std::vector<Neo::utils::Real3>& node_coords){
     node_family.addProperty<Neo::utils::Real3>(std::string("node_coords"));
@@ -95,6 +109,14 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
           node_coords_property.debugPrint();
         });
   }
+
+  // todo define also a const method
+  Neo::utils::ArrayView<Neo::utils::Real3> getNodeCoords(Neo::Mesh const& mesh, Neo::Family& node_family)
+  {
+    auto& node_coords = node_family.getConcreteProperty<Neo::PropertyT<Neo::utils::Real3>>("node_coords");
+    return node_coords.values(); //
+  }
+
   void addConnectivity(Neo::Mesh &mesh, Neo::Family &source_family,
                        Neo::AddedItemRange &source_items,
                        Neo::Family& target_family,
@@ -103,6 +125,17 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
   {
     addConnectivity(mesh, source_family, source_items.new_items, target_family,
                     nb_connected_item_per_item, connected_item_uids);
+  }
+
+  Neo::utils::ArrayView<int> faces(Neo::Mesh const& mesh, Neo::Family const& source_family, int const item_index) // todo source family const
+  {
+    auto &face_family = mesh.getFamily(Neo::ItemKind::IK_Face, face_family_name);
+    //debug
+    std::cout << "Face connectivity name" << getConnectivity(mesh, source_family, face_family).m_name << std::endl;
+    std::cout << "Face connectivity size" << getConnectivity(mesh, source_family, face_family).size() << std::endl;
+    getConnectivity(mesh, source_family, face_family).debugPrint();
+    //debug
+    return getConnectivity(mesh, source_family, face_family)[item_index];
   }
 }
 
@@ -129,14 +162,12 @@ namespace PolyhedralMeshTest {
     return face_family;
   }
 
-  static const std::string cell_family_name{"CellFamily"};
-  static const std::string face_family_name{"FaceFamily"};
-  static const std::string node_family_name{"NodeFamily"};
+
 
   void addCells(Neo::Mesh &mesh) {
-    auto &cell_family = addCellFamily(mesh, cell_family_name);
-    auto &node_family = addNodeFamily(mesh, node_family_name);
-    auto &face_family = addFaceFamily(mesh, face_family_name);
+    auto &cell_family = addCellFamily(mesh, StaticMesh::cell_family_name);
+    auto &node_family = addNodeFamily(mesh, StaticMesh::node_family_name);
+    auto &face_family = addFaceFamily(mesh, StaticMesh::face_family_name);
     std::vector<Neo::utils::Int64> node_uids{0, 1, 2, 3, 4, 5};
     std::vector<Neo::utils::Int64> cell_uids{0};
     std::vector<Neo::utils::Int64> face_uids{0, 1, 2, 3, 4, 5, 6, 7};
