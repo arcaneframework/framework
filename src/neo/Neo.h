@@ -17,6 +17,7 @@
 #include <string>
 #include <variant>
 #include <vector>
+#include <stdexcept>
 
 #include "gtest/gtest.h"
 
@@ -504,7 +505,25 @@ public:
   };
 
   Property& getProperty(const std::string& name) {
-    return m_properties[name];
+    auto found_property = m_properties.find(name);
+    if (found_property == m_properties.end()) throw std::invalid_argument("Cannot find Property "+name);
+    return found_property->second;
+  }
+
+  Property const& getProperty(const std::string& name) const {
+    auto found_property = m_properties.find(name);
+    if (found_property == m_properties.end()) throw std::invalid_argument("Cannot find Property "+name);
+    return found_property->second;
+  }
+
+  template <typename PropertyType>
+  PropertyType& getConcreteProperty(const std::string& name) {
+    return std::get<PropertyType>(getProperty(name));
+  }
+
+  template <typename PropertyType>
+  PropertyType const& getConcreteProperty(const std::string& name) const {
+    return std::get<PropertyType>(getProperty(name));
   }
 
   template <typename T>
@@ -543,6 +562,13 @@ public:
 //    ItemLidsProperty* m_lid_property; // todo try to avoid raw ptr
   std::map<std::string, Property> m_properties;
   ItemRange m_all;
+
+private :
+  Property& _getProperty(const std::string& name) {
+    auto found_property = m_properties.find(name);
+    if (found_property == m_properties.end()) throw std::invalid_argument("Cannot find Property "+name);
+    return found_property->second;
+  }
 };
 
 class FamilyMap {

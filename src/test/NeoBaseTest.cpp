@@ -115,6 +115,28 @@ TEST(NeoTestLidsProperty,test_lids_property)
   EXPECT_EQ(lid_prop.size(),2);
 }
 
+TEST(NeoTestFamily,test_family)
+{
+  Neo::Family family(Neo::ItemKind::IK_Dof,"MyFamily");
+  EXPECT_EQ(family.lidPropName(),family._lidProp().m_name);
+  family._lidProp().append({0,1,2}); // internal
+  EXPECT_EQ(3,family.nbElements());
+  std::string scalar_prop_name("MyScalarProperty");
+  std::string array_prop_name("MyArrayProperty");
+  family.addProperty<Neo::utils::Int32>(scalar_prop_name);
+  family.addArrayProperty<Neo::utils::Int32>(array_prop_name);
+  EXPECT_NO_THROW(family.getProperty(scalar_prop_name));
+  EXPECT_NO_THROW(family.getProperty(array_prop_name));
+  EXPECT_THROW(family.getProperty("UnexistingProperty"),std::invalid_argument);
+  EXPECT_EQ(scalar_prop_name,family.getConcreteProperty<Neo::PropertyT<Neo::utils::Int32>>(scalar_prop_name).m_name);
+  EXPECT_EQ(array_prop_name,family.getConcreteProperty<Neo::ArrayProperty<Neo::utils::Int32>>(array_prop_name).m_name);
+  EXPECT_EQ(3,family.all().size());
+  auto i = 0;
+  for (auto item : family.all() ) {
+    EXPECT_EQ(i++,item);
+  }
+}
+
 void mesh_property_test(const Neo::Mesh& mesh){
   std::cout << "== Print Mesh " << mesh.m_name << " Properties =="<< std::endl;
   for (const auto& [kind_name_pair,family] : mesh.m_families) {
