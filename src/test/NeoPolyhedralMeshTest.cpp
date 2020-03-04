@@ -62,7 +62,7 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
         Neo::OutProperty{source_family, source_family.m_name + "to" +
                                             target_family.m_name +
                                             "_connectivity"},
-        [&connected_item_uids, &nb_connected_item_per_item, &source_items,
+        [&connected_item_uids, nb_connected_item_per_item, &source_items,
          &source_family, &target_family](
             Neo::ItemLidsProperty const &source_family_lids_property,
             Neo::ItemLidsProperty const &target_family_lids_property,
