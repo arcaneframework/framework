@@ -29,7 +29,8 @@ namespace Alien::Hypre {
         if (m_hypre)
             HYPRE_IJMatrixDestroy(m_hypre);
 
-        m_comm = Alien::MPIComm(distribution());
+        auto* pm = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng *>(distribution().parallelMng());
+        m_comm = pm?(*pm->getMPIComm()):MPI_COMM_WORLD;
 
         auto ierr = HYPRE_IJMatrixCreate(m_comm, ilower, iupper, jlower, jupper, &m_hypre);
         ierr |= HYPRE_IJMatrixSetObjectType(m_hypre, HYPRE_PARCSR);

@@ -34,7 +34,8 @@ namespace Alien::Hypre {
         if (m_hypre)
             HYPRE_IJVectorDestroy(m_hypre);
 
-        m_comm = Alien::MPIComm(distribution());
+        auto* pm = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng *>(distribution().parallelMng());
+        m_comm = pm?(*pm->getMPIComm()):MPI_COMM_WORLD;
 
         // -- B Vector --
         auto ierr = HYPRE_IJVectorCreate(m_comm, ilower, iupper, &m_hypre);
