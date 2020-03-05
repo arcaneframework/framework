@@ -13,7 +13,7 @@ target_link_libraries(alien_hypre PUBLIC
         arccore_collections
         arccore_base
         arccore_message_passing_mpi
-        ALIEN
+        alien_core
         arcconpkg_Hypre
         )
 

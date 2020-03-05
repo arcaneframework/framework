@@ -32,7 +32,7 @@ find_package(Arccore REQUIRED)
 # mode plugin ? ALIEN should be defined by parent project
 # (and could not be found because not yet installed)
 # otherwise we need to find ALIEN
-if(NOT TARGET ALIEN)
+if(NOT TARGET alien_core)
   find_package(ALIEN REQUIRED)
 endif()
 
