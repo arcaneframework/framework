@@ -2,7 +2,7 @@ add_executable(test_hypre test_hypre.cpp)
 
 target_link_libraries(test_hypre PUBLIC
         alien_hypre
-        ALIEN-RefSemantic)
+        alien_semantic_ref)
 
 #include(LoadAlienTest)
 #
