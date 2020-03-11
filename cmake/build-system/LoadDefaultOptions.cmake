@@ -122,6 +122,13 @@ if(NOT WIN32)
       appendCompileOption(FLAG mavx2 mfma CONFIGURATION RELEASE)
     endif()
   endif()
+  
+   # KNL optimization
+  createOption(COMMANDLINE EnableKNL
+               NAME        ENABLE_KNL
+               MESSAGE     "activate knl optim options" 
+               DEFAULT     OFF)
+               
    # AVX512 optimization
   createOption(COMMANDLINE AVX512
                NAME        USE_AVX512
@@ -130,18 +137,18 @@ if(NOT WIN32)
 
   if(USE_AVX512 AND NOT WIN32)
     if(${CMAKE_C_COMPILER_ID} STREQUAL GNU)
-      IF(ENABLE_MIC)
+      IF(ENABLE_KNL)
         appendCompileOption(FLAG march=knl mavx512f mavx512pf mavx512er mavx512cd mfma CONFIGURATION RELEASE)
       else()
         appendCompileOption(FLAG mavx512f mavx512cd mavx512dq mavx512bw mavx512vl mfma CONFIGURATION RELEASE)
       endif()
     endif()
     if(${CMAKE_C_COMPILER_ID} STREQUAL "Intel")
-      IF(ENABLE_MIC)
+      IF(ENABLE_KNL)
         appendCompileOption(FLAG xMIC-AVX512 fma CONFIGURATION RELEASE)
       else()
-        #appendCompileOption(FLAG xCORE-AVX512 fma CONFIGURATION RELEASE)
-        appendCompileOption(FLAG march=skylake  march=core-avx2 CONFIGURATION RELEASE)
+        appendCompileOption(FLAG xCORE-AVX512 fma CONFIGURATION RELEASE)
+        #appendCompileOption(FLAG march=skylake  march=core-avx2 CONFIGURATION RELEASE)
       endif()
     endif()
   endif()
