@@ -25,6 +25,7 @@ struct TrilinosOptionTypes
       Chebyshev,
       ILUK,
       ILUT,
+      FILU,
       Schwarz,
       MLPC,
       MueLuPC,

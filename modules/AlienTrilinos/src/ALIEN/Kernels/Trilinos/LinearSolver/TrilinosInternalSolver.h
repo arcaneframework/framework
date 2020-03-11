@@ -183,6 +183,16 @@ public :
           m_precond_parameters->set( "fact: relax value",        options->ilut()[0]->relaxValue() );
         }
         break ;
+      case TrilinosOptionTypes::FILU:
+        m_precond_parameters->set ("Ifpack2::Preconditioner", m_precond_name);
+        if(options->filu().size()>0)
+        {
+          m_precond_parameters->set("level",options->filu()[0]->level()) ;
+          m_precond_parameters->set("damping factor",options->filu()[0]->dampingFactor()) ;
+          m_precond_parameters->set("triangular solve iterations",options->filu()[0]->solverNbIterations()) ;
+          m_precond_parameters->set("sweeps",options->filu()[0]->factorNbIterations()) ;
+        }
+        break ;
       case TrilinosOptionTypes::Schwarz:
         //m_precond_parameters->set ("Ifpack2::Preconditioner", m_precond_name);
         if(options->schwarz().size()>0)

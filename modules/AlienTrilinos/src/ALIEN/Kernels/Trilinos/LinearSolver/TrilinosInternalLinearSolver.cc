@@ -56,6 +56,7 @@ const std::string TrilinosOptionTypes::preconditioner_type[NumOfPrecond] = {
     "CHEBYSHEV",
     "RILUK",
     "ILUT",
+    "FAST_ILU",
     "SCHWARZ",
     "ML",
     "MueLu",

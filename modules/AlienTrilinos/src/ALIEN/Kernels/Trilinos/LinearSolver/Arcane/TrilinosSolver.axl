@@ -62,6 +62,25 @@
           <description></description>
         </simple>
     </complex>
+    <complex name="filu" type="FILUOptType" minOccurs="0" maxOccurs="1">
+      <description> FAST_ILU options</description>
+        <simple name="level" type="integer" default="0">
+          <description>fixed point ilu number of factorization iterations</description>
+        </simple>
+        
+        <simple name="damping-factor" type="real" default="0.0">
+          <description></description>
+        </simple>
+        
+        <simple name="solver-nb-iterations" type="integer" default="1">
+          <description></description>
+        </simple>
+        
+        <simple name="factor-nb-iterations" type="integer" default="1">
+          <description></description>
+        </simple>
+        
+    </complex>
     
     <complex name="relaxation" type="RelaxationOptType" minOccurs="0" maxOccurs="1">
       <description> Relaxation options</description>
