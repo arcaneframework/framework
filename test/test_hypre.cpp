@@ -1,5 +1,5 @@
-#include <ALIEN/hypre/backend.h>
-#include <ALIEN/Alien-RefSemantic.h>
+#include <Alien/hypre/backend.h>
+#include <Alien/Alien-RefSemantic.h>
 
 #include <arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h>
 

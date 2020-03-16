@@ -1,9 +1,9 @@
 #include "hypre_matrix.h"
 #include "hypre_vector.h"
 
-#include <ALIEN/hypre/backend.h>
-#include <ALIEN/hypre/export.h>
-#include <ALIEN/Core/Backend/LinearAlgebraT.h>
+#include <Alien/hypre/backend.h>
+#include <Alien/hypre/export.h>
+#include <Alien/Core/Backend/LinearAlgebraT.h>
 
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 #include <arccore/base/NotImplementedException.h>

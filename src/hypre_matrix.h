@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ALIEN/Core/Impl/IMatrixImpl.h>
+#include <Alien/Core/Impl/IMatrixImpl.h>
 
 #include <HYPRE_IJ_mv.h>
 

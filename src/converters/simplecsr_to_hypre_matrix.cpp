@@ -1,10 +1,10 @@
 #include "hypre_matrix.h"
 
-#include <ALIEN/hypre/backend.h>
-#include <ALIEN/Core/Backend/IMatrixConverter.h>
-#include <ALIEN/Core/Backend/MatrixConverterRegisterer.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRMatrix.h>
-#include <ALIEN/Kernels/SimpleCSR/SimpleCSRBackEnd.h>
+#include <Alien/hypre/backend.h>
+#include <Alien/Core/Backend/IMatrixConverter.h>
+#include <Alien/Core/Backend/MatrixConverterRegisterer.h>
+#include <Alien/Kernels/SimpleCSR/DataStructure/SimpleCSRMatrix.h>
+#include <Alien/Kernels/SimpleCSR/SimpleCSRBackEnd.h>
 
 #include <arccore/collections/Array2.h>
 

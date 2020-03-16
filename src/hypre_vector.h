@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ALIEN/Core/Impl/IVectorImpl.h>
+#include <Alien/Core/Impl/IVectorImpl.h>
 
 #include <HYPRE_IJ_mv.h>
 

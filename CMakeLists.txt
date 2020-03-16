@@ -33,7 +33,7 @@ find_package(Arccore REQUIRED)
 # (and could not be found because not yet installed)
 # otherwise we need to find ALIEN
 if(NOT TARGET alien_core)
-  find_package(ALIEN REQUIRED)
+  find_package(Alien REQUIRED)
 endif()
 
 find_package(Hypre REQUIRED)

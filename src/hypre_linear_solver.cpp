@@ -1,11 +1,11 @@
 #include "hypre_matrix.h"
 #include "hypre_vector.h"
 
-#include <ALIEN/hypre/backend.h>
-#include <ALIEN/hypre/options.h>
-#include <ALIEN/hypre/export.h>
-#include <ALIEN/Expression/Solver/SolverStats/SolverStater.h>
-#include <ALIEN/Core/Backend/LinearSolverT.h>
+#include <Alien/hypre/backend.h>
+#include <Alien/hypre/options.h>
+#include <Alien/hypre/export.h>
+#include <Alien/Expression/Solver/SolverStats/SolverStater.h>
+#include <Alien/Core/Backend/LinearSolverT.h>
 
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 
