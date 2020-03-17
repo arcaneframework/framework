@@ -39,6 +39,7 @@ set(SOURCES
   PlatformUtils.cc
   ReferenceCounter.h
   Ref.h
+  RefDeclarations.h
   Ref.cc
   Span.h
   Span2.h

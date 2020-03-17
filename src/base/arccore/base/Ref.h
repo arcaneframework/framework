@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* Ref.h                                                       (C) 2000-2019 */
+/* Ref.h                                                       (C) 2000-2020 */
 /*                                                                           */
 /* Gestion des références sur une instance.                                  */
 /*---------------------------------------------------------------------------*/
@@ -10,35 +10,13 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/ExternalRef.h"
-
-#include <memory>
+#include "arccore/base/RefDeclarations.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arccore
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Structure servant à tagger les interfaces/classes qui utilisent
- * un compteur de référence interne.
- *
- * Ce tag s'utilise via un typedef comme suit:
- *
- * \code
- * class MyClass
- * {
- *   public:
- *    typedef ReferenceCounterTag ReferenceCounterTagType;
- *   public:
- *    void addReference();
- *    void removeReference();
- * };
- * \endcode
- */
-struct ReferenceCounterTag {};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -81,25 +59,16 @@ class ReferenceCounterWrapper
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Caractéristiques pour gérer les compteurs de référence.
- *
- * Par défaut, on utilise comme implémentation la classe std::shared_ptr.
- */
-template<typename InstanceType,class T = void>
-struct RefTraits
+//! Spécialisation pour indiquer qu'on utilise l'implémentation 'shared_ptr'
+template<typename InstanceType>
+struct RefTraitsTagId<InstanceType,REF_TAG_SHARED_PTR>
 {
   typedef std::shared_ptr<InstanceType> ImplType;
 };
 
-/*!
- * \brief Spécialisation de la classe gérant un compteur de référence
- * si la classe utilise le tag 'ReferenceCounterTag'.
- *
- * Dans ce cas, on utilise 'ReferenceCounter' comme implémentation.
- */
+//! Spécialisation pour indiquer qu'on utilise l'implémentation 'ReferenceCounter'
 template<typename InstanceType>
-struct RefTraits<InstanceType,std::enable_if_t<std::is_same_v<typename InstanceType::ReferenceCounterTagType,ReferenceCounterTag>>>
+struct RefTraitsTagId<InstanceType,REF_TAG_REFERENCE_COUNTER>
 {
   typedef Internal::ReferenceCounterWrapper<InstanceType> ImplType;
 };
@@ -125,11 +94,11 @@ struct RefTraits<InstanceType,std::enable_if_t<std::is_same_v<typename InstanceT
  * deuxième implémentation est accessible si le type \a InstanceType
  * définit un type ReferenceCounterTagType valant ReferenceCounterTag.
  */
-template<typename InstanceType>
+template<typename InstanceType,int ImplTagId>
 class Ref
 : public RefBase
 {
-  typedef typename RefTraits<InstanceType>::ImplType ImplType;
+  typedef typename RefTraitsTagId<InstanceType,ImplTagId>::ImplType ImplType;
   using RefBase::DeleterBase;
   class Deleter : DeleterBase
   {
@@ -151,14 +120,14 @@ class Ref
     bool m_no_destroy;
   };
  public:
-  typedef Ref<InstanceType> ThatClass;
+  typedef Ref<InstanceType,ImplTagId> ThatClass;
  private:
   explicit Ref(InstanceType* t) : m_instance(t,Deleter(nullptr)){}
   Ref(InstanceType* t,Internal::ExternalRef handle) : m_instance(t,Deleter(handle)){}
   Ref(InstanceType* t,bool no_destroy) : m_instance(t,Deleter(nullptr,no_destroy)){}
  public:
   Ref() = default;
-  Ref(const Ref<InstanceType>& rhs) = default;
+  Ref(const ThatClass& rhs) = default;
   ThatClass& operator=(const ThatClass& rhs) = default;
   ~Ref() = default;
   
@@ -172,9 +141,9 @@ class Ref
    * L'instance \a t doit avoir été créée par l'opérateur 'operator new'
    * et sera détruite par l'opérateur 'operator delete'
    */
-  static Ref<InstanceType> create(InstanceType* t)
+  static ThatClass create(InstanceType* t)
   {
-    return Ref<InstanceType>(t);
+    return ThatClass(t);
   }
 
   /*!
@@ -182,14 +151,14 @@ class Ref
    * \brief Créé une référence à partir d'une instance ayant une
    * référence externe.
    */
-  static Ref<InstanceType> createWithHandle(InstanceType* t,Internal::ExternalRef handle)
+  static ThatClass createWithHandle(InstanceType* t,Internal::ExternalRef handle)
   {
-    return Ref<InstanceType>(t,handle);
+    return ThatClass(t,handle);
   }
 
-  static Ref<InstanceType> _createNoDestroy(InstanceType* t)
+  static ThatClass _createNoDestroy(InstanceType* t)
   {
-    return Ref<InstanceType>(t,true);
+    return ThatClass(t,true);
   }
 
  public:
@@ -224,26 +193,26 @@ class Ref
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename InstanceType>
-inline bool operator==(const Ref<InstanceType>& a,const Ref<InstanceType>& b)
+template<typename InstanceType,int TagId>
+inline bool operator==(const Ref<InstanceType,TagId>& a,const Ref<InstanceType,TagId>& b)
 {
   return a.get()==b.get();
 }
 
-template<typename InstanceType>
-inline bool operator!=(const Ref<InstanceType>& a,const Ref<InstanceType>& b)
+template<typename InstanceType,int TagId>
+inline bool operator!=(const Ref<InstanceType,TagId>& a,const Ref<InstanceType,TagId>& b)
 {
   return a.get()!=b.get();
 }
 
-template<typename InstanceType>
-inline bool operator<(const Ref<InstanceType>& a,const Ref<InstanceType>& b)
+template<typename InstanceType,int TagId>
+inline bool operator<(const Ref<InstanceType,TagId>& a,const Ref<InstanceType,TagId>& b)
 {
   return a.get()<b.get();
 }
 
-template<typename InstanceType>
-inline bool operator!(const Ref<InstanceType>& a)
+template<typename InstanceType,int TagId>
+inline bool operator!(const Ref<InstanceType,TagId>& a)
 {
   return a.isNull();
 }
@@ -257,8 +226,8 @@ inline bool operator!(const Ref<InstanceType>& a)
  * sera détruit par l'opérateur 'operator delete' lorsqu'il n'y aura plus
  * de référence dessus.
  */
-template<typename InstanceType>
-Ref<InstanceType> makeRef(InstanceType* t)
+template<typename InstanceType> auto
+makeRef(InstanceType* t) -> Ref<InstanceType> 
 {
   return Ref<InstanceType>::create(t);
 }
