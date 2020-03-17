@@ -178,12 +178,44 @@ namespace PolyhedralMeshTest {
     return face_family;
   }
 
-
-
-  void addCells(Neo::Mesh &mesh) {
+  void _createMesh(Neo::Mesh &mesh,
+                   std::vector<Neo::utils::Int64> const &node_uids,
+                   std::vector<Neo::utils::Int64> const &cell_uids,
+                   std::vector<Neo::utils::Int64> const &face_uids,
+                   std::vector<Neo::utils::Real3>& node_coords, // not const since they can be moved
+                   std::vector<Neo::utils::Int64>& cell_nodes,
+                   std::vector<Neo::utils::Int64>& cell_faces,
+                   std::vector<Neo::utils::Int64>& face_nodes,
+                   std::vector<size_t>&& nb_node_per_cells,
+                   std::vector<size_t>&& nb_node_per_faces,
+                   std::vector<size_t>&& nb_face_per_cells) {
     auto &cell_family = addCellFamily(mesh, StaticMesh::cell_family_name);
     auto &node_family = addNodeFamily(mesh, StaticMesh::node_family_name);
     auto &face_family = addFaceFamily(mesh, StaticMesh::face_family_name);
+    mesh.beginUpdate();
+    auto added_cells = Neo::AddedItemRange{};
+    auto added_nodes = Neo::AddedItemRange{};
+    auto added_faces = Neo::AddedItemRange{};
+    StaticMesh::addItems(mesh, cell_family, cell_uids, added_cells);
+    StaticMesh::addItems(mesh, node_family, node_uids, added_nodes);
+    StaticMesh::addItems(mesh, face_family, face_uids, added_faces);
+    StaticMesh::setNodeCoords(mesh, node_family, added_nodes, node_coords);
+    StaticMesh::addConnectivity(mesh, cell_family, added_cells, node_family,
+                                std::move(nb_node_per_cells), cell_nodes);
+    StaticMesh::addConnectivity(mesh, face_family, added_faces, node_family,
+                                std::move(nb_node_per_faces), face_nodes);
+    StaticMesh::addConnectivity(mesh, cell_family, added_cells, face_family,
+                                std::move(nb_face_per_cells), cell_faces);
+    auto valid_mesh_state = mesh.endUpdate();
+    auto &new_cells = added_cells.get(valid_mesh_state);
+    auto &new_nodes = added_nodes.get(valid_mesh_state);
+    auto &new_faces = added_faces.get(valid_mesh_state);
+    std::cout << "Added cells range after endUpdate: " << new_cells;
+    std::cout << "Added nodes range after endUpdate: " << new_nodes;
+    std::cout << "Added faces range after endUpdate: " << new_faces;
+  }
+
+  void addCells(Neo::Mesh &mesh) {
     std::vector<Neo::utils::Int64> node_uids{0, 1, 2, 3, 4, 5};
     std::vector<Neo::utils::Int64> cell_uids{0};
     std::vector<Neo::utils::Int64> face_uids{0, 1, 2, 3, 4, 5, 6, 7};
@@ -194,35 +226,18 @@ namespace PolyhedralMeshTest {
     std::vector<Neo::utils::Int64> cell_nodes{0, 1, 2, 3, 4, 5};
     std::vector<Neo::utils::Int64> cell_faces{0, 1, 2, 3, 4, 5, 6, 7};
 
-    std::vector<Neo::utils::Int64> face_nodes{3, 0, 1, 4, 3, 0, 1, 5, 3, 1, 2,
-                                              4, 3, 1, 2, 5, 3, 2, 3, 4, 3, 2,
-                                              3, 5, 3, 3, 0, 4, 3, 3, 0, 5};
+    std::vector<Neo::utils::Int64> face_nodes{0, 1, 4, 0, 1, 5, 1, 2, 4, 1, 2, 5,
+                                              2, 3, 4, 2, 3, 5, 3, 0, 4, 3, 0, 5};
 
-
-    mesh.beginUpdate();
-    auto added_cells = Neo::AddedItemRange{};
-    auto added_nodes = Neo::AddedItemRange{};
-    auto added_faces = Neo::AddedItemRange{};
-    StaticMesh::addItems(mesh, cell_family, cell_uids, added_cells);
-    StaticMesh::addItems(mesh, node_family, node_uids, added_nodes);
-    StaticMesh::addItems(mesh, face_family, face_uids, added_faces);
-    StaticMesh::setNodeCoords(mesh, node_family, added_nodes, node_coords);
-    auto nb_node_per_cell = 5;
-    StaticMesh::addConnectivity(mesh, cell_family, added_cells, node_family,
-                                nb_node_per_cell, cell_nodes);
-    auto nb_node_per_face = 4;
-    StaticMesh::addConnectivity(mesh, face_family, added_faces, node_family,
-                                nb_node_per_face, face_nodes);
+    auto nb_node_per_cell = 6;
+    auto nb_node_per_face = 3;
     auto nb_face_per_cell = 8;
-    StaticMesh::addConnectivity(mesh, cell_family, added_cells, face_family,
-                                nb_face_per_cell, cell_faces);
-    auto valid_mesh_state = mesh.endUpdate();
-    auto &new_cells = added_cells.get(valid_mesh_state);
-    auto &new_nodes = added_nodes.get(valid_mesh_state);
-    auto &new_faces = added_faces.get(valid_mesh_state);
-    std::cout << "Added cells range after endUpdate: " << new_cells;
-    std::cout << "Added nodes range after endUpdate: " << new_nodes;
-    std::cout << "Added faces range after endUpdate: " << new_faces;
+
+    _createMesh(mesh, node_uids, cell_uids, face_uids, node_coords, cell_nodes,
+                cell_faces, face_nodes,
+                std::vector<size_t>(cell_uids.size(),nb_node_per_cell),
+                std::vector<size_t>(face_uids.size(),nb_node_per_face),
+                std::vector<size_t>(cell_uids.size(),nb_face_per_cell));
   }
 }
 
