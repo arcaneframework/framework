@@ -269,14 +269,10 @@ namespace XdmfTest {
       cell_data.push_back(cell_faces.size());
       for (auto face : cell_faces) {
         auto face_nodes = face_to_nodes[face];
-        std::cout << " face nb nodes " << face_nodes.size() << "for face " << face << std::endl;
         cell_data.push_back(face_nodes.size());
         cell_data.insert(cell_data.end(),face_nodes.begin(),face_nodes.end());
       }
     }
-    // debug
-    _printContainer(cell_data, "cell data for mesh to export ");
-    // debug
     xdmf_topo->insert(0, cell_data.data(),cell_data.size(), 1, 1);
     xdmf_grid->setTopology(xdmf_topo);
     domain->insert(xdmf_grid);
@@ -354,7 +350,6 @@ TEST(PolyhedralTest,ImportXdmfMesh)
   };
   std::set<FaceInfo, decltype(face_info_comp)> face_nodes_set(face_info_comp);
   face_nodes.reserve(topology->getSize());
-  std::cout << "TOPOLOGY " << topology->getValuesString().c_str()<< std::endl;
   std::vector<size_t> nb_node_per_faces;
   auto cell_index = 0;
   auto face_uid = 0;
