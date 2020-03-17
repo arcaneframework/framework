@@ -36,7 +36,7 @@ static const std::string cell_family_name{"CellFamily"};
 static const std::string face_family_name{"FaceFamily"};
 static const std::string node_family_name{"NodeFamily"};
 
-void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int64>& uids, Neo::AddedItemRange& added_item_range)
+void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int64> const& uids, Neo::AddedItemRange& added_item_range)
 {
   auto& added_items = added_item_range.new_items;
   // Add items
@@ -63,12 +63,12 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
       });// need to add a property check for existing uid
   }
 
-  // todo same interface with nb_connected_item_per_item as an array
+  // todo same interface with nb_connected_item_per_items as an array
   void addConnectivity(Neo::Mesh &mesh, Neo::Family &source_family,
                        Neo::ItemRange &source_items,
                        Neo::Family& target_family,
-                       int nb_connected_item_per_item,
-                       std::vector<Neo::utils::Int64>& connected_item_uids) {
+                       std::vector<size_t>&& nb_connected_item_per_items,
+                       std::vector<Neo::utils::Int64> const& connected_item_uids) {
     // add connectivity property if doesn't exist
     std::string connectivity_name =
         source_family.m_name + "to" + target_family.m_name + "_connectivity";
@@ -79,7 +79,7 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
         Neo::OutProperty{source_family, source_family.m_name + "to" +
                                             target_family.m_name +
                                             "_connectivity"},
-        [&connected_item_uids, nb_connected_item_per_item, &source_items,
+        [&connected_item_uids, nb_connected_item_per_items, &source_items,
          &source_family, &target_family](
             Neo::ItemLidsProperty const &source_family_lids_property,
             Neo::ItemLidsProperty const &target_family_lids_property,
@@ -89,14 +89,12 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
                     << std::endl;
           auto connected_item_lids =
               target_family_lids_property[connected_item_uids];
-          std::vector<std::size_t> nb_connected_item_per_item_array(
-              source_items.size(), nb_connected_item_per_item);
           if (source2target.isInitializableFrom(source_items)) {
-            source2target.resize(std::move(nb_connected_item_per_item_array));
+            source2target.resize(std::move(nb_connected_item_per_items));
             source2target.init(source_items, std::move(connected_item_lids));
           } else {
             source2target.append(source_items, connected_item_lids,
-                                 nb_connected_item_per_item_array);
+                                 nb_connected_item_per_items);
           }
           source2target.debugPrint();
         });
@@ -137,11 +135,11 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
   void addConnectivity(Neo::Mesh &mesh, Neo::Family &source_family,
                        Neo::AddedItemRange &source_items,
                        Neo::Family& target_family,
-                       int nb_connected_item_per_item,
-                       std::vector<Neo::utils::Int64>& connected_item_uids)
+                       std::vector<size_t>&& nb_connected_item_per_items,
+                       std::vector<Neo::utils::Int64> const& connected_item_uids)
   {
     addConnectivity(mesh, source_family, source_items.new_items, target_family,
-                    nb_connected_item_per_item, connected_item_uids);
+                    std::move(nb_connected_item_per_items), connected_item_uids);
   }
 
   Neo::ArrayProperty<Neo::utils::Int32> const& faces(Neo::Mesh const& mesh, Neo::Family const& source_family)
