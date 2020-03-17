@@ -20,7 +20,7 @@ if(Xdmf_FOUND)
     target_link_libraries(Neo.tests ${XDMF_LIBNAME} ${XDMF_Xdmf_LIB_DEPENDS})
     target_compile_definitions(Neo.tests PRIVATE HAS_XDMF=1)
 #    target_include_directories(Neo.tests PUBLIC ${XDMF_LIBXML2_INCLUDE_DIR})
-    message("-- XMDF Found")
+    message("-- XDMF Found")
 endif(Xdmf_FOUND)
 
 gtest_discover_tests(Neo.tests)
