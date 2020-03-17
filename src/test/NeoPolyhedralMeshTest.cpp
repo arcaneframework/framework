@@ -12,6 +12,7 @@
 
 #include "neo/Neo.h"
 #include "gtest/gtest.h"
+
 #ifdef  HAS_XDMF
 #include "XdmfDomain.hpp"
 #include "XdmfInformation.hpp"
@@ -19,6 +20,7 @@
 #include "XdmfSystemUtils.hpp"
 #include "XdmfHDF5Writer.hpp"
 #include "XdmfWriter.hpp"
+#include "XdmfReader.hpp"
 #endif
 
 template <typename Container>
@@ -317,4 +319,97 @@ TEST(PolyhedralTest,CreateXdmfMesh)
   EXPECT_EQ(std::string{ref_geometry_str},std::string{exported_geometry_str}); // comparer avec std::equal
 
 }
+
+TEST(PolyhedralTest,ImportXdmfMesh)
+{
+  auto reader = XdmfReader::New();
+  auto primaryDomain = shared_dynamic_cast<XdmfDomain>(reader->read("../test/meshes/example_mesh.xmf"));
+  auto grid = primaryDomain->getUnstructuredGrid("Polyhedra");
+  auto geometry = grid->getGeometry();
+  geometry->read();
+  EXPECT_EQ(geometry->getType()->getName(), XdmfGeometryType::XYZ()->getName());
+  std::vector<Neo::utils::Real3> node_coords(geometry->getNumberPoints(),{-1e6,-1e6,-1e6});
+  geometry->getValues(0,(double*)node_coords.data(),geometry->getNumberPoints()*3,1,1);
+  auto topology = grid->getTopology();
+  topology->read();
+  // Read only polyhedrons
+  EXPECT_EQ(XdmfTopologyType::Polyhedron()->getName(),topology->getType()->getName());
+  std::vector<Neo::utils::Int32> cell_data(topology->getSize(),-1);
+  topology->getValues(0,cell_data.data(),topology->getSize());
+  std::vector<Neo::utils::Int64> cell_uids;
+  std::vector<Neo::utils::Int64> face_uids;
+  std::vector<Neo::utils::Int64> face_nodes;
+  std::set<Neo::utils::Int64> node_uids_set;
+  std::vector<Neo::utils::Int64> node_uids;
+  std::set<Neo::utils::Int32> current_cell_nodes;
+  std::vector<Neo::utils::Int64> cell_nodes;
+  std::vector<Neo::utils::Int64> cell_faces;
+  std::vector<size_t> nb_node_per_cells;
+  std::vector<size_t> nb_face_per_cells;
+  using FaceNodes = std::set<int>;
+  using FaceUid = Neo::utils::Int64;
+  using FaceInfo = std::pair<FaceNodes,FaceUid>;
+  auto face_info_comp = [](FaceInfo const& face_info1, FaceInfo const& face_info2){
+    return face_info1.first < face_info2.first;
+  };
+  std::set<FaceInfo, decltype(face_info_comp)> face_nodes_set(face_info_comp);
+  face_nodes.reserve(topology->getSize());
+  std::cout << "TOPOLOGY " << topology->getValuesString().c_str()<< std::endl;
+  std::vector<size_t> nb_node_per_faces;
+  auto cell_index = 0;
+  auto face_uid = 0;
+  for (auto cell_data_index = 0; cell_data_index< cell_data.size();){
+    cell_uids.push_back(cell_index++);
+    auto cell_nb_face  = cell_data[cell_data_index++];
+    nb_face_per_cells.push_back(cell_nb_face);
+    for (auto face_index = 0; face_index< cell_nb_face;++face_index){
+      std::size_t face_nb_node = cell_data[cell_data_index++];
+      auto current_face_nodes = Neo::utils::ArrayView<Neo::utils::Int32>{face_nb_node,&cell_data[cell_data_index]};
+      auto [face_info, is_new_face] = face_nodes_set.emplace(FaceNodes{current_face_nodes.begin(),
+                             current_face_nodes.end()},face_uid);
+      if (!is_new_face) std::cout << "Face not inserted " << face_uid << std::endl;
+      if (is_new_face) {
+        face_nodes.insert(face_nodes.end(),current_face_nodes.begin(), current_face_nodes.end());
+        nb_node_per_faces.push_back(face_nb_node);
+      }
+      cell_faces.push_back(face_info->second);
+      if (is_new_face) face_uids.push_back(face_uid++);
+      current_cell_nodes.insert(current_face_nodes.begin(), current_face_nodes.end());
+      cell_data_index += face_nb_node;
+    }
+    cell_nodes.insert(cell_nodes.end(), current_cell_nodes.begin(),current_cell_nodes.end());
+    nb_node_per_cells.push_back(current_cell_nodes.size());
+    node_uids_set.insert(current_cell_nodes.begin(),current_cell_nodes.end());
+    current_cell_nodes.clear();
+  }
+  node_uids.insert(node_uids.end(),std::begin(node_uids_set), std::end(node_uids_set));
+  _printContainer(face_nodes, "face nodes ");
+  _printContainer(face_uids, "face uids ");
+  _printContainer(nb_node_per_faces, "nb node per face ");
+  _printContainer(node_uids_set, "node uids ");
+  _printContainer(cell_nodes, "cell nodes ");
+  _printContainer(nb_node_per_cells, "nb node per cell ");
+  _printContainer(cell_faces, "cell faces ");
+  _printContainer(nb_face_per_cells, "nb face per cell ");
+  // local checks
+  std::vector<Neo::utils::Int64> cell_uids_ref = {0, 1, 2};
+  EXPECT_TRUE(std::equal(cell_uids.begin(),cell_uids.end(),cell_uids_ref.begin(),cell_uids_ref.end()));
+  EXPECT_EQ(27,face_uids.size());
+  EXPECT_EQ(geometry->getNumberPoints(), node_uids_set.size());
+  // import mesh in Neo data structure
+  auto mesh = Neo::Mesh{"'ImportedMesh"};
+  PolyhedralMeshTest::_createMesh(mesh, node_uids,cell_uids,face_uids,node_coords,cell_nodes,cell_faces,face_nodes,
+      std::move(nb_node_per_cells),std::move(nb_node_per_faces),std::move(nb_face_per_cells));
+  std::string imported_mesh{"imported_mesh.xmf"};
+  XdmfTest::exportMesh(mesh,imported_mesh);
+  // Compare with original mesh
+  auto created_primaryDomain = shared_dynamic_cast<XdmfDomain>(reader->read(imported_mesh));
+  std::cout << "original topology " << topology->getValuesString().c_str()<< std::endl;
+  std::cout << "created topology " << created_primaryDomain->getUnstructuredGrid("Grid")->getTopology()->getValuesString().c_str()<< std::endl;
+  std::cout << "original geometry " << geometry->getValuesString().c_str()<< std::endl;
+  std::cout << "created geometry " << created_primaryDomain->getUnstructuredGrid("Grid")->getGeometry()->getValuesString().c_str()<< std::endl;
+  EXPECT_EQ(std::string{geometry->getValuesString().c_str()},std::string{created_primaryDomain->getUnstructuredGrid("Grid")->getGeometry()->getValuesString().c_str()}); // comparer avec std::equal
+  EXPECT_EQ(std::string{topology->getValuesString().c_str()},std::string{created_primaryDomain->getUnstructuredGrid("Grid")->getTopology()->getValuesString().c_str()}); // comparer avec std::equal
+}
+
 #endif
