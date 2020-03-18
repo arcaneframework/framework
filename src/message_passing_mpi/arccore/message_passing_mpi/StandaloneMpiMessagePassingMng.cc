@@ -36,7 +36,7 @@ class StandaloneMpiMessagePassingMng::Impl
     ::MPI_Comm_size(mpi_comm, &m_comm_size);
 
     m_stat = new Stat();
-    MpiLock *mpi_lock = nullptr;
+    MpiLock* mpi_lock = nullptr;
     m_adapter = new MpiAdapter(m_trace_mng.get(), m_stat, mpi_comm, mpi_lock);
 
     m_dispatchers = new Dispatchers();

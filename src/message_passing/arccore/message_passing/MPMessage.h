@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* Request.h                                                   (C) 2000-2020 */
+/* MPMessage.h                                                 (C) 2000-2020 */
 /*                                                                           */
-/* Requête d'un message.                                                     */
+/* Message.                                                                  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCCORE_MESSAGEPASSING_REQUEST_H
-#define ARCCORE_MESSAGEPASSING_REQUEST_H
+#ifndef ARCCORE_MESSAGEPASSING_MESSAGE_H
+#define ARCCORE_MESSAGEPASSING_MESSAGE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -20,13 +20,14 @@
 namespace Arccore::MessagePassing
 {
 /*!
- * \brief Requête d'un message.
+ * \brief Message.
  *
- * Ces informations sont utilisées pour les messages non bloquants.
+ * Ces informations sont utilisées pour récupérer les informations suite à un
+ * appel à mpMessageProbe().
  */
-class ARCCORE_MESSAGEPASSING_EXPORT Request
+class ARCCORE_MESSAGEPASSING_EXPORT MPMessage
 {
-  union _Request
+  union _Message
   {
     int i;
     long l;
@@ -46,94 +47,93 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
 
  public:
 
-  Request()
+  MPMessage()
   : m_return_value(0)
   {
     m_type = T_Null;
-    m_request = null_request;
+    m_message = null_message;
   }
 
-  Request(int return_value,void* arequest)
+  MPMessage(int return_value,void* amessage)
   : m_return_value(return_value)
   {
     m_type = T_Ptr;
-    m_request.v = arequest;
+    m_message.v = amessage;
   }
 
-  Request(int return_value,const void* arequest)
+  MPMessage(int return_value,const void* amessage)
   : m_return_value(return_value)
   {
     m_type = T_Ptr;
-    m_request.cv = arequest;
+    m_message.cv = amessage;
   }
 
-  Request(int return_value,int arequest)
+  MPMessage(int return_value,int amessage)
   : m_return_value(return_value)
   {
     m_type = T_Int;
-    m_request.i = arequest;
+    m_message.i = amessage;
   }
 
-  Request(int return_value,long arequest)
+  MPMessage(int return_value,long amessage)
   : m_return_value(return_value)
   {
     m_type = T_Long;
-    m_request.l = arequest;
+    m_message.l = amessage;
   }
 
-  Request(int return_value,std::size_t arequest)
+  MPMessage(int return_value,std::size_t amessage)
   : m_return_value(return_value)
   {
     m_type = T_SizeT;
-    m_request.st = arequest;
+    m_message.st = amessage;
   }
 
-  Request(const Request& rhs)
+  MPMessage(const MPMessage& rhs)
   : m_return_value(rhs.m_return_value), m_type(rhs.m_type)
   {
-    m_request.cv = rhs.m_request.cv;
+    m_message.cv = rhs.m_message.cv;
   }
 
-  const Request& operator=(const Request& rhs)
+  const MPMessage& operator=(const MPMessage& rhs)
   {
     m_return_value = rhs.m_return_value;
     m_type = rhs.m_type;
-    m_request.cv = rhs.m_request.cv;
+    m_message.cv = rhs.m_message.cv;
     return (*this);
   }
 
  public:
 
   template<typename T>
-  operator const T*() const { return (const T*)m_request.cv; }
+  operator const T*() const { return (const T*)m_message.cv; }
   template<typename T>
-  operator T*() const { return (T*)m_request.v; }
-  operator int() const { return m_request.i; }
-  operator long() const { return m_request.l; }
-  operator size_t() const { return m_request.st; }
+  operator T*() const { return (T*)m_message.v; }
+  operator int() const { return m_message.i; }
+  operator long() const { return m_message.l; }
+  operator size_t() const { return m_message.st; }
 
  public:
 
-  int returnValue() const { return m_return_value; }
-  //ARCCORE_DEPRECATED long request() const { return m_request.l; }
+  //int returnValue() const { return m_return_value; }
   bool isValid() const
   {
     if (m_type==T_Null)
       return false;
     if (m_type==T_Int)
-      return m_request.i!=null_request.i;
+      return m_message.i!=null_message.i;
     if (m_type==T_Long)
-      return m_request.l!=null_request.l;
+      return m_message.l!=null_message.l;
     if (m_type==T_SizeT)
-      return m_request.st!=null_request.st;
-    return m_request.cv!=null_request.cv;
+      return m_message.st!=null_message.st;
+    return m_message.cv!=null_message.cv;
   }
-  void* requestAsVoidPtr() const { return m_request.v; }
+  void* messageAsVoidPtr() const { return m_message.v; }
 
-  static void setNullRequest(Request r) { null_request = r.m_request; }
+  static void setNullMessage(MPMessage r) { null_message = r.m_message; }
 
   void reset() {
-    m_request = null_request;
+    m_message = null_message;
   }
 
   void print(std::ostream& o) const;
@@ -142,18 +142,18 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
 
   int m_return_value;
   int m_type;
-  _Request m_request;
+  _Message m_message;
 
-  static _Request null_request;
+  static _Message null_message;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 inline std::ostream&
-operator<<(std::ostream& o,const Request& prequest)
+operator<<(std::ostream& o,const MPMessage& pmessage)
 {
-  prequest.print(o);
+  pmessage.print(o);
   return o;
 }
 

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* MpiAdapter.h                                                (C) 2000-2019 */
+/* MpiAdapter.h                                                (C) 2000-2020 */
 /*                                                                           */
 /* Implémentation des messages avec MPI.                                     */
 /*---------------------------------------------------------------------------*/
@@ -14,6 +14,7 @@
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
 #include "arccore/message_passing_mpi/MessagePassingMpiEnum.h"
 #include "arccore/message_passing_mpi/IMpiProfiling.h"
+#include "arccore/message_passing/MPMessage.h"
 #include "arccore/collections/CollectionsGlobal.h"
 
 #include "arccore/base/BaseTypes.h"
@@ -90,6 +91,11 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
                          Int32 proc,int mpi_tag,bool is_blocked);
 
   void  probeRecvPack(UniqueArray<Byte>& recv_buffer,Int32 proc);
+
+  MPMessage messageProbe(Int32 source,Int32 tag,bool is_blocking);
+  Request directRecv(void* recv_buffer,Int64 recv_buffer_size,
+                     MPMessage message,Int64 elem_size,MPI_Datatype data_type,
+                     bool is_blocked);
 
   Request directRecvPack(void* recv_buffer,Int64 recv_buffer_size,
                          Int32 proc,int mpi_tag,bool is_blocking);

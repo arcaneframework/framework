@@ -676,19 +676,22 @@ directSendPack(const void* send_buffer,Int64 send_buffer_size,
   return directSend(send_buffer,send_buffer_size,proc,1,MPI_PACKED,mpi_tag,is_blocked);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 MpiMessagePassingMng* MpiAdapter::
-commSplit(bool keep) {
-    MPI_Comm new_comm;
+commSplit(bool keep)
+{
+  MPI_Comm new_comm;
 
-    MPI_Comm_split(m_communicator, (keep) ? 1 : MPI_UNDEFINED, commRank(), &new_comm);
-    if (keep) {
-      // Failed if new_comm is MPI_COMM_NULL
-      return StandaloneMpiMessagePassingMng::create(new_comm, true);
-    }
-    else {
-      return nullptr;
-    }
+  MPI_Comm_split(m_communicator, (keep) ? 1 : MPI_UNDEFINED, commRank(), &new_comm);
+  if (keep) {
+    // Failed if new_comm is MPI_COMM_NULL
+    return StandaloneMpiMessagePassingMng::create(new_comm, true);
+  }
+  else {
+    return nullptr;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -778,7 +781,7 @@ directRecv(void* recv_buffer,Int64 recv_buffer_size,
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
-probeRecvPack(UniqueArray<Byte>& recv_buffer,Integer proc)
+probeRecvPack(UniqueArray<Byte>& recv_buffer,Int32 proc)
 {
   double begin_time = MPI_Wtime();
   MPI_Status status;
@@ -801,6 +804,109 @@ probeRecvPack(UniqueArray<Byte>& recv_buffer,Integer proc)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+MPMessage MpiAdapter::
+messageProbe(Int32 source,Int32 tag,bool is_blocking)
+{
+  MPI_Status mpi_status;
+  int has_message = 0;
+  MPI_Message message;
+  int ret = 0;
+  if (is_blocking){
+    ret = MPI_Mprobe(source,tag,m_communicator,&message,&mpi_status);
+    has_message = true;
+  }
+  else
+    ret = MPI_Improbe(source,tag,m_communicator,&has_message,&message,&mpi_status);
+  MPMessage ret_message;
+  if (has_message!=0)
+    ret_message = MPMessage(ret,message);
+  return ret_message;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+//! Réception via MPI_Mrecv() ou MPI_Imrecv()
+Request MpiAdapter::
+directRecv(void* recv_buffer,Int64 recv_buffer_size,
+           MPMessage message,Int64 elem_size,MPI_Datatype data_type,
+           bool is_blocked)
+{
+  MPI_Status  mpi_status;
+  MPI_Request mpi_request = MPI_REQUEST_NULL;
+  MPI_Message mpi_message = (MPI_Message)message;
+  int ret = 0;
+  double begin_time = 0.0;
+  double end_time = 0.0;
+
+  Int64 recv_size = recv_buffer_size * elem_size;
+  if (m_is_trace){
+    info() << "MPI_TRACE: MPI Mrecv: recv before "
+           << " size=" << recv_size
+           << " from_msg=" << message
+           << " datatype=" << data_type
+           << " blocking=" << is_blocked;
+  }
+  if (is_blocked){
+    // si m_mpi_lock n'est pas nul, il faut
+    // utiliser un MPI_IRecv suivi d'une boucle
+    // active de MPI_Test pour eviter tout probleme
+    // de dead lock.
+    if (m_mpi_lock){
+      {
+        MpiLock::Section mls(m_mpi_lock);
+        begin_time = MPI_Wtime();
+        int rbuf_size = _checkSize(recv_buffer_size);
+        MPI_Imrecv(recv_buffer,rbuf_size,data_type,&mpi_message,&mpi_request);
+        //m_mpi_prof->iRecv(recv_buffer, rbuf_size, data_type, i_proc, mpi_tag, m_communicator, &mpi_request);
+      }
+      int is_finished = 0;
+      MPI_Status mpi_status;
+      while (is_finished==0){
+        MpiLock::Section mls(m_mpi_lock);
+	      MPI_Request_get_status(mpi_request,&is_finished,&mpi_status);
+        if (is_finished!=0){
+          end_time = MPI_Wtime();
+          m_mpi_prof->wait(&mpi_request, (MPI_Status *) MPI_STATUS_IGNORE);
+          mpi_request = MPI_REQUEST_NULL;
+        }
+      }
+    }
+    else{
+      MpiLock::Section mls(m_mpi_lock);
+      begin_time = MPI_Wtime();
+      int rbuf_size = _checkSize(recv_buffer_size);
+      MPI_Mrecv(recv_buffer,rbuf_size,data_type,&mpi_message,&mpi_status);
+      //m_mpi_prof->recv(recv_buffer, rbuf_size, data_type, i_proc, mpi_tag, m_communicator, &mpi_status);
+      end_time = MPI_Wtime();
+    }
+  }
+  else{
+    {
+      MpiLock::Section mls(m_mpi_lock);
+      begin_time = MPI_Wtime();
+      int rbuf_size = _checkSize(recv_buffer_size);
+      //m_mpi_prof->iRecv(recv_buffer, rbuf_size, data_type, i_proc, mpi_tag, m_communicator, &mpi_request);
+      ret = MPI_Imrecv(recv_buffer,rbuf_size,data_type,&mpi_message,&mpi_request);
+      //m_mpi_prof->iRecv(recv_buffer, rbuf_size, data_type, i_proc, mpi_tag, m_communicator, &mpi_request);
+      end_time = MPI_Wtime();
+      _addRequest(mpi_request);
+    }
+    if (m_is_trace){
+      info() << "MPI Recv: recv after "
+             << " request=" << mpi_request;
+    }
+  }
+  double sr_time   = (end_time-begin_time);
+  
+  debug(Trace::High) << "MPI Recv: recv after " << recv_size
+                     << " time " << sr_time << " blocking " << is_blocked;
+  m_stat->add(MpiInfo(eMpiName::Recv).name(),end_time-begin_time,recv_size);
+  return Request(ret,mpi_request);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Request MpiAdapter::
 directRecvPack(void* recv_buffer,Int64 recv_buffer_size,
                Int32 proc,int mpi_tag,bool is_blocking)
@@ -813,7 +919,8 @@ directRecvPack(void* recv_buffer,Int64 recv_buffer_size,
 
 // FIXME: Implement direct method with MPI_STATUS_IGNORE
 void MpiAdapter::
-waitAllRequests(ArrayView<Request> requests) {
+waitAllRequests(ArrayView<Request> requests)
+{
   UniqueArray<bool> indexes(requests.size());
   UniqueArray<MPI_Status> mpi_status(requests.size());
   return waitAllRequestsMPI(requests, indexes, mpi_status);
@@ -825,8 +932,9 @@ waitAllRequests(ArrayView<Request> requests) {
 // FIXME: Implement direct method with MPI_STATUS_IGNORE
 void MpiAdapter::
 waitSomeRequests(ArrayView<Request> requests,
-                      ArrayView<bool> indexes,
-                      bool is_non_blocking) {
+                 ArrayView<bool> indexes,
+                 bool is_non_blocking)
+{
   UniqueArray<MPI_Status> mpi_status(requests.size());
   return waitSomeRequestsMPI(requests, indexes, mpi_status, is_non_blocking);
 }
