@@ -14,6 +14,7 @@
 #include "arccore/message_passing/ITypeDispatcher.h"
 #include "arccore/message_passing/IControlDispatcher.h"
 #include "arccore/message_passing/Request.h"
+#include "arccore/message_passing/PointToPointMessageInfo.h"
 #include "arccore/collections/Array.h"
 
 /*---------------------------------------------------------------------------*/
@@ -77,10 +78,20 @@ namespace Arccore::MessagePassing
     type* x = nullptr;                                                                                                \
     return pm->dispatchers()->dispatcher(x)->send(values, rank, is_blocked);                                          \
   }                                                                                                                   \
+  inline Request mpSend(IMessagePassingMng* pm, Span<const type> values, PointToPointMessageInfo message)             \
+  {                                                                                                                   \
+    type* x = nullptr;                                                                                                \
+    return pm->dispatchers()->dispatcher(x)->send(values, message);                                                   \
+  }                                                                                                                   \
   inline Request mpReceive(IMessagePassingMng* pm, Span<type> values, Int32 rank, bool is_blocked)                    \
   {                                                                                                                   \
     type* x = nullptr;                                                                                                \
     return pm->dispatchers()->dispatcher(x)->receive(values, rank, is_blocked);                                       \
+  }                                                                                                                   \
+  inline Request mpReceive(IMessagePassingMng* pm, Span<type> values, PointToPointMessageInfo message)                \
+  {                                                                                                                   \
+    type* x = nullptr;                                                                                                \
+    return pm->dispatchers()->dispatcher(x)->receive(values, message);                                                \
   }                                                                                                                   \
   inline void mpAllToAll(IMessagePassingMng* pm, Span<const type> send_buf, Span<type> recv_buf, Int32 count)         \
   {                                                                                                                   \
@@ -154,6 +165,16 @@ mpWait(IMessagePassingMng* pm, ArrayView<Request> requests,
     mpTestSome(pm, requests, indexes);
     break;
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline Request
+mpProbe(IMessagePassingMng* pm, PointToPointMessageInfo& message)
+{
+  auto d = pm->dispatchers()->controlDispatcher();
+  return d->probe(message);
 }
 
 /*---------------------------------------------------------------------------*/

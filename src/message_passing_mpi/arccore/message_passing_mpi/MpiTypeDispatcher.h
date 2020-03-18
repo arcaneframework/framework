@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* MpiTypeDispatcher.h                                         (C) 2000-2018 */
+/* MpiTypeDispatcher.h                                         (C) 2000-2020 */
 /*                                                                           */
 /* Gestion des messages pour un type de données.                             */
 /*---------------------------------------------------------------------------*/
@@ -15,11 +15,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
-{
-namespace MessagePassing
-{
-namespace Mpi
+namespace Arccore::MessagePassing::Mpi
 {
 
 /*---------------------------------------------------------------------------*/
@@ -45,7 +41,9 @@ class MpiTypeDispatcher
                         Int32ConstArrayView send_index,Span<Type> recv_buf,
                         Int32ConstArrayView recv_count,Int32ConstArrayView recv_index) override;
   Request send(Span<const Type> send_buffer,Int32 rank,bool is_blocked) override;
+  Request send(Span<const Type> send_buffer,PointToPointMessageInfo message) override;
   Request receive(Span<Type> recv_buffer,Int32 rank,bool is_blocked) override;
+  Request receive(Span<Type> recv_buffer,PointToPointMessageInfo message) override;
   Type allReduce(eReduceType op,Type send_buf) override;
   void allReduce(eReduceType op,Span<Type> send_buf) override;
  public:
@@ -63,9 +61,7 @@ class MpiTypeDispatcher
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Mpi
-} // End namespace MessagePassing
-} // End namespace Arccore
+} // End namespace Arccore::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -804,7 +804,7 @@ probeRecvPack(UniqueArray<Byte>& recv_buffer,Int32 proc)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MPMessage MpiAdapter::
+MessageId MpiAdapter::
 messageProbe(Int32 source,Int32 tag,bool is_blocking)
 {
   MPI_Status mpi_status;
@@ -817,9 +817,9 @@ messageProbe(Int32 source,Int32 tag,bool is_blocking)
   }
   else
     ret = MPI_Improbe(source,tag,m_communicator,&has_message,&message,&mpi_status);
-  MPMessage ret_message;
+  MessageId ret_message;
   if (has_message!=0)
-    ret_message = MPMessage(ret,message);
+    ret_message = MessageId(ret,message);
   return ret_message;
 }
 
@@ -828,7 +828,7 @@ messageProbe(Int32 source,Int32 tag,bool is_blocking)
 //! Réception via MPI_Mrecv() ou MPI_Imrecv()
 Request MpiAdapter::
 directRecv(void* recv_buffer,Int64 recv_buffer_size,
-           MPMessage message,Int64 elem_size,MPI_Datatype data_type,
+           MessageId message,Int64 elem_size,MPI_Datatype data_type,
            bool is_blocked)
 {
   MPI_Status  mpi_status;

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* MessagePassingGlobal.h                                      (C) 2000-2018 */
+/* MessagePassingGlobal.h                                      (C) 2000-2020 */
 /*                                                                           */
 /* Définitions globales de la composante 'MessagePassing' de 'Arccore'.      */
 /*---------------------------------------------------------------------------*/
@@ -25,14 +25,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
-{
-namespace MessagePassing
+namespace Arccore::MessagePassing
 {
 //! Numéro correspondant à un rang nul
 static const Int32 A_NULL_RANK = static_cast<Int32>(-1);
 
 class Request;
+class MessageId;
+class PointToPointMessageInfo;
 class IStat;
 class IMessagePassingMng;
 class MessagePassingMng;
@@ -61,8 +61,7 @@ enum eWaitType
   WaitSomeNonBlocking //! Traite uniquement les messages qui peuvent l'être sans attendre.
 };
 
-} // End namespace MessagePassing
-} // End namespace Arccore
+} // End namespace Arccore::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

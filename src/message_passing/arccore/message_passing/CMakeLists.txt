@@ -3,8 +3,10 @@ set(SOURCES
   MessagePassingGlobal.cc
   Dispatchers.h
   Dispatchers.cc
-  MPMessage.h
-  MPMessage.cc
+  MessageId.h
+  MessageId.cc
+  PointToPointMessageInfo.h
+  PointToPointMessageInfo.cc
   Request.h
   Request.cc
   IStat.h

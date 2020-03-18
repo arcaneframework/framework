@@ -1,4 +1,4 @@
-// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* MpiControlDispatcher.cc                                     (C) 2000-2020 */
 /*                                                                           */
@@ -9,6 +9,8 @@
 #include "arccore/message_passing_mpi/MpiControlDispatcher.h"
 #include "arccore/message_passing_mpi/MpiAdapter.h"
 #include "arccore/message_passing_mpi/MpiMessagePassingMng.h"
+#include "arccore/message_passing/Request.h"
+#include "arccore/base/NotImplementedException.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -61,6 +63,15 @@ void MpiControlDispatcher::
 barrier()
 {
   m_adapter->barrier();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Request MpiControlDispatcher::
+probe(PointToPointMessageInfo& message)
+{
+  ARCCORE_THROW(NotImplementedException,"");
 }
 
 /*---------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
 /* MpiControlDispatcher.h                                      (C) 2000-2020 */
 /*                                                                           */
@@ -29,6 +29,7 @@ class MpiControlDispatcher
                         bool is_non_blocking) override;
   IMessagePassingMng* commSplit(bool keep) override;
   void barrier() override;
+  Request probe(PointToPointMessageInfo& message) override;
 
  private:
   IMessagePassingMng* m_parallel_mng;

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* MpiTypeDispatcherImpl.h                                     (C) 2000-2018 */
+/* MpiTypeDispatcherImpl.h                                     (C) 2000-2020 */
 /*                                                                           */
 /* Implémentation de 'MpiTypeDispatcher'.                                    */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,8 @@
 
 #include "arccore/message_passing/Messages.h"
 #include "arccore/message_passing/Request.h"
+
+#include "arccore/base/NotImplementedException.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -225,6 +227,31 @@ receive(Span<Type> recv_buffer,Int32 rank,bool is_blocked)
   MpiLock::Section mls(m_adapter->mpiLock());
   return m_adapter->directRecv(recv_buffer.data(),recv_buffer.size(),
                                rank,sizeof(Type),type,100,is_blocked);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request MpiTypeDispatcher<Type>::
+send(Span<const Type> send_buffer,PointToPointMessageInfo message)
+{
+  ARCCORE_THROW(NotImplementedException,"generic send");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request MpiTypeDispatcher<Type>::
+receive(Span<Type> recv_buffer,PointToPointMessageInfo message)
+{
+  bool is_blocked = message.isBlocking();
+  if (!message.isMessageId())
+    ARCCORE_THROW(NotImplementedException,"only MessageId is supported");
+  MessageId message_id = message.messageId();
+  MPI_Datatype type = m_datatype->datatype();
+  MpiLock::Section mls(m_adapter->mpiLock());
+  return m_adapter->directRecv(recv_buffer.data(),recv_buffer.size(),
+                               message_id,sizeof(Type),type,is_blocked);
 }
 
 /*---------------------------------------------------------------------------*/

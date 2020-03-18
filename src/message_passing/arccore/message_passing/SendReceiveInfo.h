@@ -4,7 +4,7 @@
 /*                                                                           */
 /* Message.                                                                  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCCORE_MESSAGEPASSING_MESSAGE_H
+#ifndef ARCCORE_MESSAGEPASSING_SENDRECEIVCEINFO_H
 #define ARCCORE_MESSAGEPASSING_MESSAGE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -20,12 +20,13 @@
 namespace Arccore::MessagePassing
 {
 /*!
- * \brief Message.
+ * \brief MessageId.
  *
  * Ces informations sont utilisées pour récupérer les informations suite à un
- * appel à mpMessageProbe().
+ * appel à mpMessageProbe(). Avec MPI, cette classe encapsule le type
+ * MPI_Message.
  */
-class ARCCORE_MESSAGEPASSING_EXPORT MPMessage
+class ARCCORE_MESSAGEPASSING_EXPORT MessageId
 {
   union _Message
   {
@@ -47,55 +48,55 @@ class ARCCORE_MESSAGEPASSING_EXPORT MPMessage
 
  public:
 
-  MPMessage()
+  MessageId()
   : m_return_value(0)
   {
     m_type = T_Null;
     m_message = null_message;
   }
 
-  MPMessage(int return_value,void* amessage)
+  MessageId(int return_value,void* amessage)
   : m_return_value(return_value)
   {
     m_type = T_Ptr;
     m_message.v = amessage;
   }
 
-  MPMessage(int return_value,const void* amessage)
+  MessageId(int return_value,const void* amessage)
   : m_return_value(return_value)
   {
     m_type = T_Ptr;
     m_message.cv = amessage;
   }
 
-  MPMessage(int return_value,int amessage)
+  MessageId(int return_value,int amessage)
   : m_return_value(return_value)
   {
     m_type = T_Int;
     m_message.i = amessage;
   }
 
-  MPMessage(int return_value,long amessage)
+  MessageId(int return_value,long amessage)
   : m_return_value(return_value)
   {
     m_type = T_Long;
     m_message.l = amessage;
   }
 
-  MPMessage(int return_value,std::size_t amessage)
+  MessageId(int return_value,std::size_t amessage)
   : m_return_value(return_value)
   {
     m_type = T_SizeT;
     m_message.st = amessage;
   }
 
-  MPMessage(const MPMessage& rhs)
+  MessageId(const MessageId& rhs)
   : m_return_value(rhs.m_return_value), m_type(rhs.m_type)
   {
     m_message.cv = rhs.m_message.cv;
   }
 
-  const MPMessage& operator=(const MPMessage& rhs)
+  const MessageId& operator=(const MessageId& rhs)
   {
     m_return_value = rhs.m_return_value;
     m_type = rhs.m_type;
@@ -106,12 +107,12 @@ class ARCCORE_MESSAGEPASSING_EXPORT MPMessage
  public:
 
   template<typename T>
-  operator const T*() const { return (const T*)m_message.cv; }
+  explicit operator const T*() const { return (const T*)m_message.cv; }
   template<typename T>
-  operator T*() const { return (T*)m_message.v; }
-  operator int() const { return m_message.i; }
-  operator long() const { return m_message.l; }
-  operator size_t() const { return m_message.st; }
+  explicit operator T*() const { return (T*)m_message.v; }
+  explicit operator int() const { return m_message.i; }
+  explicit operator long() const { return m_message.l; }
+  explicit operator size_t() const { return m_message.st; }
 
  public:
 
@@ -130,7 +131,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT MPMessage
   }
   void* messageAsVoidPtr() const { return m_message.v; }
 
-  static void setNullMessage(MPMessage r) { null_message = r.m_message; }
+  static void setNullMessage(MessageId r) { null_message = r.m_message; }
 
   void reset() {
     m_message = null_message;
@@ -151,7 +152,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT MPMessage
 /*---------------------------------------------------------------------------*/
 
 inline std::ostream&
-operator<<(std::ostream& o,const MPMessage& pmessage)
+operator<<(std::ostream& o,const MessageId& pmessage)
 {
   pmessage.print(o);
   return o;

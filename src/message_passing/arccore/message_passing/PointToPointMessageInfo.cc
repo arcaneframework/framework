@@ -1,46 +1,39 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* Message.cc                                                  (C) 2000-2020 */
+/* PointToPointMessageInfo.cc                                  (C) 2000-2020 */
 /*                                                                           */
-/* Requête d'un message.                                                     */
+/* Informations pour les messages point à point.                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing/MPMessage.h"
+#include "arccore/message_passing/PointToPointMessageInfo.h"
 
 #include <iostream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arccore::MessagePassing
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MessagePassing::MPMessage::_Message MessagePassing::MPMessage::null_message;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MessagePassing::MPMessage::
+void PointToPointMessageInfo::
 print(std::ostream& o) const
 {
-  if (m_type==T_Null)
+  if (m_type==Type::T_Null)
     o << "(null)";
-  else if (m_type==T_Int)
-    o << m_message.i;
-  else if (m_type==T_Long)
-    o << m_message.l;
+  else if (m_type==Type::T_RankTag)
+    o << "(rank=" << m_rank << ",tag=" << m_tag << ")";
   else
-    o << m_message.cv;
+    o << m_message_id;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // End namespace Arccore::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

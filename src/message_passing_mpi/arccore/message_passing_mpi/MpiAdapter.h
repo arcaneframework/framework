@@ -14,7 +14,7 @@
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
 #include "arccore/message_passing_mpi/MessagePassingMpiEnum.h"
 #include "arccore/message_passing_mpi/IMpiProfiling.h"
-#include "arccore/message_passing/MPMessage.h"
+#include "arccore/message_passing/PointToPointMessageInfo.h"
 #include "arccore/collections/CollectionsGlobal.h"
 
 #include "arccore/base/BaseTypes.h"
@@ -92,9 +92,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 
   void  probeRecvPack(UniqueArray<Byte>& recv_buffer,Int32 proc);
 
-  MPMessage messageProbe(Int32 source,Int32 tag,bool is_blocking);
+  MessageId messageProbe(Int32 source,Int32 tag,bool is_blocking);
   Request directRecv(void* recv_buffer,Int64 recv_buffer_size,
-                     MPMessage message,Int64 elem_size,MPI_Datatype data_type,
+                     MessageId message,Int64 elem_size,MPI_Datatype data_type,
                      bool is_blocked);
 
   Request directRecvPack(void* recv_buffer,Int64 recv_buffer_size,
