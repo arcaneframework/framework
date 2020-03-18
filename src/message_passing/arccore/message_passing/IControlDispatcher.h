@@ -39,7 +39,7 @@ class IControlDispatcher
 
   virtual void barrier() =0;
 
-  virtual Request probe(PointToPointMessageInfo& message) =0;
+  virtual MessageId probe(PointToPointMessageInfo message) =0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -29,7 +29,7 @@ class MpiControlDispatcher
                         bool is_non_blocking) override;
   IMessagePassingMng* commSplit(bool keep) override;
   void barrier() override;
-  Request probe(PointToPointMessageInfo& message) override;
+  MessageId probe(PointToPointMessageInfo message) override;
 
  private:
   IMessagePassingMng* m_parallel_mng;

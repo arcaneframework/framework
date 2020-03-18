@@ -169,9 +169,18 @@ mpWait(IMessagePassingMng* pm, ArrayView<Request> requests,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-inline Request
-mpProbe(IMessagePassingMng* pm, PointToPointMessageInfo& message)
+/*!
+ * \brief Teste si un message est disponible.
+ *
+ * Cette fonction permet de savoir si un message issu du couple (rang,tag)
+ * est disponible. \a message doit avoir été initialisé avec un couple (rang,tag)
+ * (message.isRankTag() doit être vrai).
+ * Retourne une instance de \a MessageId.
+ * En mode non bloquant, si aucun message n'est disponible, alors
+ * MessageId::isValid() vaut \a false pour l'instance retournée.
+ */
+inline MessageId
+mpProbe(IMessagePassingMng* pm, PointToPointMessageInfo message)
 {
   auto d = pm->dispatchers()->controlDispatcher();
   return d->probe(message);

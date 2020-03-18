@@ -68,9 +68,10 @@ barrier()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Request MpiControlDispatcher::
-probe(PointToPointMessageInfo& message)
+MessageId MpiControlDispatcher::
+probe(PointToPointMessageInfo message)
 {
+  ARCCORE_UNUSED(message);
   ARCCORE_THROW(NotImplementedException,"");
 }
 
