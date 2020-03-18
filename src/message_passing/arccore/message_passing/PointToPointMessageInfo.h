@@ -17,9 +17,15 @@
 namespace Arccore::MessagePassing
 {
 /*!
- * \brief PointToPointMessage.
+ * \brief Informations pour envoyer/recevoir un message point à point.
  *
- * Informations pour les messages point à point.
+ * Il existe deux manière de construire une instance de cette classe:
+ * - en donnant un rang destinataire, avec éventuellement un tag
+ * - via un MessageId obtenu lors d'un appel à mpProbe(). Dans ce dernier
+ * cas, l'instance ne peut être utilisée qu'en réception via mpReceive().
+ *
+ * Il est possible de spécifier si le message sera bloquant lors de la
+ * construction ou via l'appel à setBlocking().
  */
 class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
 {
@@ -32,12 +38,19 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
   };
  public:
 
+  PointToPointMessageInfo(){}
   explicit PointToPointMessageInfo(Int32 rank)
   : m_rank(rank), m_tag(100), m_type(Type::T_RankTag){}
+  PointToPointMessageInfo(Int32 rank,eBlockingType blocking_type)
+  : m_rank(rank), m_tag(100), m_is_blocking(blocking_type==Blocking), m_type(Type::T_RankTag){}
   PointToPointMessageInfo(Int32 rank,Int32 tag)
   : m_rank(rank), m_tag(tag), m_type(Type::T_RankTag){}
-  PointToPointMessageInfo(MessageId message_id)
+  PointToPointMessageInfo(Int32 rank,Int32 tag,eBlockingType blocking_type)
+  : m_rank(rank), m_tag(tag), m_is_blocking(blocking_type==Blocking), m_type(Type::T_RankTag){}
+  explicit PointToPointMessageInfo(MessageId message_id)
   : m_message_id(message_id), m_type(Type::T_MessageId){}
+  PointToPointMessageInfo(MessageId message_id,eBlockingType blocking_type)
+  : m_message_id(message_id), m_is_blocking(blocking_type==Blocking), m_type(Type::T_MessageId){}
 
  public:
   PointToPointMessageInfo& setBlocking(bool is_blocking)
@@ -53,12 +66,16 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
   bool isRankTag() const { return m_type==Type::T_RankTag; }
   //! Identifiant du message
   MessageId messageId() const { return m_message_id; }
+  //! Rang de la destination/origine du message
   Int32 rank() const { return m_rank; }
+  //! Tag du message
   Int32 tag() const { return m_tag; }
+  //! Affiche le message
   void print(std::ostream& o) const;
 
  public:
 
+  // Indique si le message est valide (i.e: il a été initialisé avec un message valide)
   bool isValid() const
   {
     if (m_type==Type::T_Null)
@@ -75,8 +92,8 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
   Int32 m_rank = A_NULL_RANK;
   Int32 m_tag = 100;
   MessageId m_message_id;
+  bool m_is_blocking = true;
   Type m_type = Type::T_Null;
-  bool m_is_blocking = false;
 };
 
 /*---------------------------------------------------------------------------*/

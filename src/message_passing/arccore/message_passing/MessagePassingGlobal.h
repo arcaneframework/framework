@@ -60,7 +60,14 @@ enum eWaitType
   WaitSome,//! Attend que au moins un message de la liste soit traité
   WaitSomeNonBlocking //! Traite uniquement les messages qui peuvent l'être sans attendre.
 };
-
+/*!
+ * \brief Type indiquant si un message est bloquant ou non.
+ */
+enum eBlockingType
+{
+  Blocking = 0,
+  NonBlocking
+};
 } // End namespace Arccore::MessagePassing
 
 /*---------------------------------------------------------------------------*/
