@@ -45,9 +45,16 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
     m_is_blocking = is_blocking;
     return (*this);
   }
+  //! Indique si le message est bloquant.
   bool isBlocking() const { return m_is_blocking; }
+  //! Vrai si l'instance a été créée avec un MessageId. Dans ce cas messageId() est valide
   bool isMessageId() const { return m_type==Type::T_MessageId; }
+  //! Vrai si l'instance a été créée avec un couple (rank,tag). Dans ce cas rank() et tag() sont valides.
+  bool isRankTag() const { return m_type==Type::T_RankTag; }
+  //! Identifiant du message
   MessageId messageId() const { return m_message_id; }
+  Int32 rank() const { return m_rank; }
+  Int32 tag() const { return m_tag; }
   void print(std::ostream& o) const;
 
  public:

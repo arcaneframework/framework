@@ -17,6 +17,7 @@
 #include "arccore/message_passing/Messages.h"
 #include "arccore/message_passing/Request.h"
 
+#include "arccore/base/NotSupportedException.h"
 #include "arccore/base/NotImplementedException.h"
 
 /*---------------------------------------------------------------------------*/
@@ -235,7 +236,19 @@ receive(Span<Type> recv_buffer,Int32 rank,bool is_blocked)
 template<class Type> Request MpiTypeDispatcher<Type>::
 send(Span<const Type> send_buffer,PointToPointMessageInfo message)
 {
-  ARCCORE_THROW(NotImplementedException,"generic send");
+  MPI_Datatype type = m_datatype->datatype();
+  Int64 sizeof_type = sizeof(Type);
+  MpiLock::Section mls(m_adapter->mpiLock());
+  bool is_blocking = message.isBlocking();
+  if (message.isRankTag()){
+    return m_adapter->directSend(send_buffer.data(),send_buffer.size(),
+                                 message.rank(),sizeof_type,type,message.tag(),is_blocking);
+  }
+  if (message.isMessageId()){
+    // Le send avec un MessageId n'existe pas.
+    ARCCORE_THROW(NotSupportedException,"Invalid generic send with MessageId");
+  }
+  ARCCORE_THROW(NotSupportedException,"Invalid message_info");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -244,14 +257,20 @@ send(Span<const Type> send_buffer,PointToPointMessageInfo message)
 template<class Type> Request MpiTypeDispatcher<Type>::
 receive(Span<Type> recv_buffer,PointToPointMessageInfo message)
 {
-  bool is_blocked = message.isBlocking();
-  if (!message.isMessageId())
-    ARCCORE_THROW(NotImplementedException,"only MessageId is supported");
-  MessageId message_id = message.messageId();
   MPI_Datatype type = m_datatype->datatype();
+  Int64 sizeof_type = sizeof(Type);
   MpiLock::Section mls(m_adapter->mpiLock());
-  return m_adapter->directRecv(recv_buffer.data(),recv_buffer.size(),
-                               message_id,sizeof(Type),type,is_blocked);
+  bool is_blocking = message.isBlocking();
+  if (message.isRankTag()){
+    return m_adapter->directRecv(recv_buffer.data(),recv_buffer.size(),
+                                 message.rank(),sizeof_type,type,message.tag(),is_blocking);
+  }
+  if (message.isMessageId()){
+    MessageId message_id = message.messageId();
+    return m_adapter->directRecv(recv_buffer.data(),recv_buffer.size(),
+                                 message_id,sizeof_type,type,is_blocking);
+  }
+  ARCCORE_THROW(NotSupportedException,"Invalid message_info");
 }
 
 /*---------------------------------------------------------------------------*/
