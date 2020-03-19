@@ -36,6 +36,8 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
     T_MessageId,
     T_Null
   };
+  //! Valeur par défaut du tag.
+  static constexpr int DEFAULT_TAG = 100;
  public:
 
   PointToPointMessageInfo(){}

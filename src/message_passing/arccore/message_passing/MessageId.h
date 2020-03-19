@@ -22,9 +22,14 @@ namespace Arccore::MessagePassing
 /*!
  * \brief MessageId.
  *
- * Ces informations sont utilisées pour récupérer les informations suite à un
- * appel à mpMessageProbe(). Avec MPI, cette classe encapsule le type
- * MPI_Message.
+ * Ces informations sont utilisées pour récupérer les informations d'un
+ * message suite à un appel à mpProbe(). L'instance retournée peut-être
+ * utilisée pour faire une réception via mpiReceive().
+ *
+ * Une fois l'appel à mpProbe() effectué, il est possible de récupérer les
+ * informations sur la source du message via sourceInfo().
+ *
+ * Avec MPI, cette classe encapsule le type MPI_Message.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT MessageId
 {
@@ -45,60 +50,70 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageId
     T_Ptr,
     T_Null
   };
-
+ public:
+  class SourceInfo
+  {
+   public:
+    SourceInfo() : m_rank(A_NULL_RANK), m_tag(0), m_size(0){}
+    SourceInfo(Int32 rank,Int32 tag,Int64 size)
+    : m_rank(rank), m_tag(tag), m_size(size){}
+   public:
+    Int32 rank() const { return m_rank; }
+    Int32 tag() const { return m_tag; }
+    Int64 size() const { return m_size; }
+   private:
+    Int32 m_rank;
+    Int32 m_tag;
+    Int64 m_size;
+  };
  public:
 
-  MessageId()
-  : m_return_value(0)
-  {
-    m_type = T_Null;
-    m_message = null_message;
-  }
+  MessageId() : m_message(null_message){}
 
-  MessageId(int return_value,void* amessage)
-  : m_return_value(return_value)
+  MessageId(SourceInfo source_info,void* amessage)
+  : m_source_info(source_info)
   {
     m_type = T_Ptr;
     m_message.v = amessage;
   }
 
-  MessageId(int return_value,const void* amessage)
-  : m_return_value(return_value)
+  MessageId(SourceInfo source_info,const void* amessage)
+  : m_source_info(source_info)
   {
     m_type = T_Ptr;
     m_message.cv = amessage;
   }
 
-  MessageId(int return_value,int amessage)
-  : m_return_value(return_value)
+  MessageId(SourceInfo source_info,int amessage)
+  : m_source_info(source_info)
   {
     m_type = T_Int;
     m_message.i = amessage;
   }
 
-  MessageId(int return_value,long amessage)
-  : m_return_value(return_value)
+  MessageId(SourceInfo source_info,long amessage)
+  : m_source_info(source_info)
   {
     m_type = T_Long;
     m_message.l = amessage;
   }
 
-  MessageId(int return_value,std::size_t amessage)
-  : m_return_value(return_value)
+  MessageId(SourceInfo source_info,std::size_t amessage)
+  : m_source_info(source_info)
   {
     m_type = T_SizeT;
     m_message.st = amessage;
   }
 
   MessageId(const MessageId& rhs)
-  : m_return_value(rhs.m_return_value), m_type(rhs.m_type)
+  : m_source_info(rhs.m_source_info), m_type(rhs.m_type)
   {
     m_message.cv = rhs.m_message.cv;
   }
 
   const MessageId& operator=(const MessageId& rhs)
   {
-    m_return_value = rhs.m_return_value;
+    m_source_info = rhs.m_source_info;
     m_type = rhs.m_type;
     m_message.cv = rhs.m_message.cv;
     return (*this);
@@ -116,7 +131,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageId
 
  public:
 
-  //int returnValue() const { return m_return_value; }
+  //int returnValue() const { return m_source_info; }
   bool isValid() const
   {
     if (m_type==T_Null)
@@ -140,12 +155,14 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageId
 
   void print(std::ostream& o) const;
 
+  //! Informations sur la source du message;
+  SourceInfo sourceInfo() const { return m_source_info; }
+
  private:
 
-  int m_return_value;
-  int m_type;
+  SourceInfo m_source_info;
+  int m_type = T_Null;
   _Message m_message;
-
   static _Message null_message;
 };
 
