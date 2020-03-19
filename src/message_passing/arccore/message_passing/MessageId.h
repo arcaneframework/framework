@@ -9,7 +9,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing/MessagePassingGlobal.h"
+#include "arccore/message_passing/MessageTag.h"
 
 #include <cstddef>
 #include <iosfwd>
@@ -54,16 +54,16 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageId
   class SourceInfo
   {
    public:
-    SourceInfo() : m_rank(A_NULL_RANK), m_tag(0), m_size(0){}
-    SourceInfo(Int32 rank,Int32 tag,Int64 size)
+    SourceInfo() : m_rank(A_NULL_RANK), m_size(0){}
+    SourceInfo(Int32 rank,MessageTag tag,Int64 size)
     : m_rank(rank), m_tag(tag), m_size(size){}
    public:
     Int32 rank() const { return m_rank; }
-    Int32 tag() const { return m_tag; }
+    MessageTag tag() const { return m_tag; }
     Int64 size() const { return m_size; }
    private:
     Int32 m_rank;
-    Int32 m_tag;
+    MessageTag m_tag;
     Int64 m_size;
   };
  public:

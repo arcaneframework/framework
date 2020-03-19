@@ -10,6 +10,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/message_passing/MessageId.h"
+#include "arccore/message_passing/MessageTag.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,18 +37,16 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
     T_MessageId,
     T_Null
   };
-  //! Valeur par défaut du tag.
-  static constexpr int DEFAULT_TAG = 100;
  public:
 
   PointToPointMessageInfo(){}
   explicit PointToPointMessageInfo(Int32 rank)
-  : m_rank(rank), m_tag(100), m_type(Type::T_RankTag){}
+  : m_rank(rank), m_type(Type::T_RankTag){}
   PointToPointMessageInfo(Int32 rank,eBlockingType blocking_type)
-  : m_rank(rank), m_tag(100), m_is_blocking(blocking_type==Blocking), m_type(Type::T_RankTag){}
-  PointToPointMessageInfo(Int32 rank,Int32 tag)
+  : m_rank(rank), m_is_blocking(blocking_type==Blocking), m_type(Type::T_RankTag){}
+  PointToPointMessageInfo(Int32 rank,MessageTag tag)
   : m_rank(rank), m_tag(tag), m_type(Type::T_RankTag){}
-  PointToPointMessageInfo(Int32 rank,Int32 tag,eBlockingType blocking_type)
+  PointToPointMessageInfo(Int32 rank,MessageTag tag,eBlockingType blocking_type)
   : m_rank(rank), m_tag(tag), m_is_blocking(blocking_type==Blocking), m_type(Type::T_RankTag){}
   explicit PointToPointMessageInfo(MessageId message_id)
   : m_message_id(message_id), m_type(Type::T_MessageId){}
@@ -71,7 +70,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
   //! Rang de la destination/origine du message
   Int32 rank() const { return m_rank; }
   //! Tag du message
-  Int32 tag() const { return m_tag; }
+  MessageTag tag() const { return m_tag; }
   //! Affiche le message
   void print(std::ostream& o) const;
 
@@ -92,7 +91,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
  private:
 
   Int32 m_rank = A_NULL_RANK;
-  Int32 m_tag = 100;
+  MessageTag m_tag = MessageTag::defaultTag();
   MessageId m_message_id;
   bool m_is_blocking = true;
   Type m_type = Type::T_Null;

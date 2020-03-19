@@ -5,6 +5,8 @@ set(SOURCES
   Dispatchers.cc
   MessageId.h
   MessageId.cc
+  MessageTag.h
+  MessageTag.cc
   PointToPointMessageInfo.h
   PointToPointMessageInfo.cc
   Request.h

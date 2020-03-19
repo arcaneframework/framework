@@ -824,7 +824,8 @@ probeMessage(Int32 source,Int32 tag,bool is_blocking)
     // Récupère la taille en octet du message.
     MPI_Count message_size = 0;
     MPI_Get_elements_x(&mpi_status,MPI_BYTE,&message_size);
-    MessageId::SourceInfo si(mpi_status.MPI_SOURCE,mpi_status.MPI_TAG,message_size);
+    MessageTag tag(mpi_status.MPI_TAG);
+    MessageId::SourceInfo si(mpi_status.MPI_SOURCE,tag,message_size);
     ret_message = MessageId(si,message);
   }
   return ret_message;
@@ -843,7 +844,7 @@ probeMessage(PointToPointMessageInfo message)
   if (!message.isRankTag())
     ARCCORE_FATAL("Invalid message_info: message.isRankTag() is false");
 
-  return probeMessage(message.rank(),message.tag(),message.isBlocking());
+  return probeMessage(message.rank(),message.tag().value(),message.isBlocking());
 }
 
 /*---------------------------------------------------------------------------*/

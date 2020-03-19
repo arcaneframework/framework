@@ -23,6 +23,9 @@ namespace Arccore::MessagePassing
  * \brief Requête d'un message.
  *
  * Ces informations sont utilisées pour les messages non bloquants.
+ *
+ * \note Le type exact de la requête dépend de l'implémentation. On encapsule
+ * cela dans une union.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT Request
 {

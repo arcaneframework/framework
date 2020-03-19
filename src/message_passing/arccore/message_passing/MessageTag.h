@@ -1,0 +1,71 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+/*---------------------------------------------------------------------------*/
+/* MessageTag.h                                                (C) 2000-2020 */
+/*                                                                           */
+/* Tag d'un message.                                                         */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCCORE_MESSAGEPASSING_MESSAGETAG_H
+#define ARCCORE_MESSAGEPASSING_MESSAGETAG_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arccore/message_passing/MessagePassingGlobal.h"
+
+#include <iosfwd>
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arccore::MessagePassing
+{
+/*!
+ * \brief Tag d'un message.
+ *
+ * Le type exact de la requête dépend de l'implémentation. Pour être le plus
+ * générique possible, on utilise le type 'Int32'.
+ *
+ * Avec l'implémentation MPI, ce type est utilisé pour le tag MPI et
+ * les valeurs maximales autorisées dépendent de l'implémentation. La norme
+ * MPI indique seulement qu'il faut au moins autoriser 2^30 (32767) valeurs.
+ */
+class ARCCORE_MESSAGEPASSING_EXPORT MessageTag
+{
+ public:
+  MessageTag() : m_tag(A_NULL_TAG_VALUE){}
+  explicit MessageTag(Int32 tag) : m_tag(tag){}
+  friend bool operator==(const MessageTag& a,const MessageTag& b)
+  {
+    return a.m_tag==b.m_tag;
+  }
+  Int32 value() const { return m_tag; }
+  bool isNull() const { return m_tag==A_NULL_TAG_VALUE; }
+  void print(std::ostream& o) const;
+ public:
+  //! Valeur par défaut du tag.
+  static constexpr Int32 DEFAULT_TAG_VALUE = 100;
+  //! Tag par défaut pour les send/receive sans argument tag.
+  static MessageTag defaultTag() { return MessageTag(DEFAULT_TAG_VALUE); }
+ private:
+  Int32 m_tag;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline std::ostream&
+operator<<(std::ostream& o,const MessageTag& tag)
+{
+  tag.print(o);
+  return o;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arccore::MessagePassing
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif  
+
