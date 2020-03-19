@@ -25,7 +25,7 @@ set(SOURCES
   MpiDatatype.h
   MpiDatatype.cc
   MpiControlDispatcher.h
-  MpiControlDispatcher.cpp
+  MpiControlDispatcher.cc
   MpiTypeDispatcher.h
   MpiTypeDispatcherImpl.h
   MpiTypeDispatcher.cc
