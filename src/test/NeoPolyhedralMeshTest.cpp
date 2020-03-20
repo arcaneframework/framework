@@ -189,8 +189,8 @@ namespace PolyhedralMeshTest {
                    std::vector<Neo::utils::Int64>& cell_faces,
                    std::vector<Neo::utils::Int64>& face_nodes,
                    std::vector<size_t>&& nb_node_per_cells,
-                   std::vector<size_t>&& nb_node_per_faces,
-                   std::vector<size_t>&& nb_face_per_cells) {
+                   std::vector<size_t>&& nb_face_per_cells,
+                   std::vector<size_t>&& nb_node_per_faces) {
     auto &cell_family = addCellFamily(mesh, StaticMesh::cell_family_name);
     auto &node_family = addNodeFamily(mesh, StaticMesh::node_family_name);
     auto &face_family = addFaceFamily(mesh, StaticMesh::face_family_name);
@@ -234,12 +234,12 @@ namespace PolyhedralMeshTest {
     auto nb_node_per_cell = 6;
     auto nb_node_per_face = 3;
     auto nb_face_per_cell = 8;
-
     _createMesh(mesh, node_uids, cell_uids, face_uids, node_coords, cell_nodes,
                 cell_faces, face_nodes,
                 std::vector<size_t>(cell_uids.size(),nb_node_per_cell),
-                std::vector<size_t>(face_uids.size(),nb_node_per_face),
-                std::vector<size_t>(cell_uids.size(),nb_face_per_cell));
+                std::vector<size_t>(cell_uids.size(),nb_face_per_cell),
+                std::vector<size_t>(face_uids.size(),nb_node_per_face));
+
   }
 }
 
@@ -394,7 +394,7 @@ TEST(PolyhedralTest,ImportXdmfMesh)
   // import mesh in Neo data structure
   auto mesh = Neo::Mesh{"'ImportedMesh"};
   PolyhedralMeshTest::_createMesh(mesh, node_uids,cell_uids,face_uids,node_coords,cell_nodes,cell_faces,face_nodes,
-      std::move(nb_node_per_cells),std::move(nb_node_per_faces),std::move(nb_face_per_cells));
+      std::move(nb_node_per_cells),std::move(nb_face_per_cells),std::move(nb_node_per_faces));
   std::string imported_mesh{"imported_mesh.xmf"};
   XdmfTest::exportMesh(mesh,imported_mesh);
   // Compare with original mesh
