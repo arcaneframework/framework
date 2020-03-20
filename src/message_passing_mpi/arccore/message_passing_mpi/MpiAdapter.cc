@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* MpiAdapter.cc                                               (C) 2000-2019 */
+/* MpiAdapter.cc                                               (C) 2000-2020 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant MPI.                               */
 /*---------------------------------------------------------------------------*/
@@ -10,34 +10,29 @@
 
 #include <cstdint>
 
-#include <arccore/trace/ITraceMng.h>
+#include "arccore/trace/ITraceMng.h"
 
-#include <arccore/collections/Array.h>
+#include "arccore/collections/Array.h"
 
-#include <arccore/message_passing/Request.h>
-#include <arccore/message_passing/IStat.h>
+#include "arccore/message_passing/Request.h"
+#include "arccore/message_passing/IStat.h"
 
-#include <arccore/base/IStackTraceService.h>
-#include <arccore/base/TimeoutException.h>
-#include <arccore/base/String.h>
-#include <arccore/base/NotImplementedException.h>
-#include <arccore/base/PlatformUtils.h>
-#include <arccore/base/FatalErrorException.h>
-#include <arccore/base/TraceInfo.h>
+#include "arccore/base/IStackTraceService.h"
+#include "arccore/base/TimeoutException.h"
+#include "arccore/base/String.h"
+#include "arccore/base/NotImplementedException.h"
+#include "arccore/base/PlatformUtils.h"
+#include "arccore/base/FatalErrorException.h"
+#include "arccore/base/TraceInfo.h"
 
-#include "MpiLock.h"
-#include "NoMpiProfiling.h"
-#include "StandaloneMpiMessagePassingMng.h"
-
+#include "arccore/message_passing_mpi/MpiLock.h"
+#include "arccore/message_passing_mpi/NoMpiProfiling.h"
+#include "arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
-{
-namespace MessagePassing
-{
-namespace Mpi
+namespace Arccore::MessagePassing::Mpi
 {
 
 /*---------------------------------------------------------------------------*/
@@ -811,12 +806,18 @@ probeMessage(Int32 source,Int32 tag,bool is_blocking)
   int has_message = 0;
   MPI_Message message;
   int ret = 0;
+  int mpi_source = source;
+  if (source==A_NULL_RANK)
+    mpi_source = MPI_ANY_SOURCE;
+  int mpi_tag = tag;
+  if (tag==A_NULL_TAG_VALUE)
+    mpi_tag = MPI_ANY_TAG;
   if (is_blocking){
-    ret = MPI_Mprobe(source,tag,m_communicator,&message,&mpi_status);
+    ret = MPI_Mprobe(mpi_source,mpi_tag,m_communicator,&message,&mpi_status);
     has_message = true;
   }
   else
-    ret = MPI_Improbe(source,tag,m_communicator,&has_message,&message,&mpi_status);
+    ret = MPI_Improbe(mpi_source,mpi_tag,m_communicator,&has_message,&message,&mpi_status);
   if (ret!=0)
     ARCCORE_FATAL("Error during call to MPI_Mprobe r={0}",ret);
   MessageId ret_message;
@@ -1268,9 +1269,7 @@ getMpiProfiling()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Mpi
-} // End namespace MessagePassing
-} // End namespace Arccore
+} // End namespace Arccore::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
