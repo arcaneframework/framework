@@ -59,8 +59,12 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageId
     : m_rank(rank), m_tag(tag), m_size(size){}
    public:
     Int32 rank() const { return m_rank; }
+    void setRank(Int32 rank) { m_rank = rank; }
     MessageTag tag() const { return m_tag; }
+    void setTag(MessageTag tag) { m_tag = tag; }
     Int64 size() const { return m_size; }
+    void setSize(Int64 size) { m_size = size; }
+
    private:
     Int32 m_rank;
     MessageTag m_tag;
@@ -157,6 +161,9 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageId
 
   //! Informations sur la source du message;
   SourceInfo sourceInfo() const { return m_source_info; }
+
+  //! Positionne les informations sur la source du message;
+  void setSourceInfo(SourceInfo si) { m_source_info = si; }
 
  private:
 

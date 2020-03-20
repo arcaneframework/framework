@@ -69,8 +69,12 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
   MessageId messageId() const { return m_message_id; }
   //! Rang de la destination/origine du message
   Int32 rank() const { return m_rank; }
+  //! Rang de la destination/origine du message
+  void setRank(Int32 rank) { m_rank = rank; }
   //! Tag du message
   MessageTag tag() const { return m_tag; }
+  //! Positionne le tag du message
+  void setTag(MessageTag tag) { m_tag = tag; }
   //! Affiche le message
   void print(std::ostream& o) const;
 
