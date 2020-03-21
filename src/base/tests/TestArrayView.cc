@@ -118,5 +118,17 @@ TEST(ArrayView,Iterator)
   _testIterator(values4);
 }
 
+TEST(Span,Convert)
+{
+  using namespace Arccore;
+  std::vector<Int64> vector_values = { 5, 7, 11 };
+  Span<const Int64> a_const_span(vector_values.data(),vector_values.size());
+  Span<Int64> a_span(vector_values.data(),vector_values.size());
+  ByteConstSpan a_const_bytes = asBytes(a_const_span);
+  ByteSpan a_bytes = asWritableBytes(a_span);
+  ASSERT_EQ(a_const_bytes.size(),24) << "Bad a_const_bytes_size (1)";
+  ASSERT_EQ(a_bytes.size(),24) << "Bad a_bytes_size (2)";
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

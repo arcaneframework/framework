@@ -141,6 +141,8 @@ class Span
 
   //! Retourne la taille du tableau
   inline Int64 size() const { return m_size; }
+  //! Retourne la taille du tableau en octets
+  inline Int64 sizeBytes() const { return m_size * sizeof(value_type); }
   //! Nombre d'éléments du tableau
   inline Int64 length() const { return m_size; }
 
@@ -507,6 +509,32 @@ template<typename DataType> inline void
 sampleSpan(Span<const DataType> values,Span<const Int32> indexes,Span<DataType> result)
 {
   _sampleSpan(values,indexes,result);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Converti la vue en un tableau d'octets non modifiables.
+ */
+template<typename DataType> inline Span<const std::byte>
+asBytes(Span<const DataType> s)
+{
+  return {reinterpret_cast<const std::byte*>(s.data()), s.sizeBytes()};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Converti la vue en un tableau d'octets modifiables.
+ *
+ * Cette méthode n'est accessible que si \a DataType n'est pas `const`.
+ */
+template<typename DataType,
+         typename std::enable_if_t<!std::is_const<DataType>::value, int> = 0>
+inline Span<std::byte>
+asWritableBytes(Span<DataType> s)
+{
+  return {reinterpret_cast<std::byte*>(s.data()), s.sizeBytes()};
 }
 
 /*---------------------------------------------------------------------------*/
