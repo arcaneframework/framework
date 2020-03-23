@@ -162,10 +162,10 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
   }
 
   namespace utilities {
-    using FaceNodesInCell = std::vector<std::vector<int>>; // [face_index_in_cell][node_index_in_face] = node_index_in_cell
+    using ItemNodesInCell = std::vector<std::vector<int>>; // [face_index_in_cell][node_index_in_face] = node_index_in_cell
     using NbNodeInCell = int;
-    using CellTypes = std::vector<std::pair<NbNodeInCell,FaceNodesInCell>>;
-    void getFaceConnectivityFromCell(std::vector<Neo::utils::Int64> const& cell_nodes,
+    using CellTypes = std::vector<std::pair<NbNodeInCell, ItemNodesInCell>>;
+    void getItemConnectivityFromCell(std::vector<Neo::utils::Int64> const& cell_nodes,
                                      std::vector<int> cell_type_indexes, CellTypes const& cell_types,
                                      int& nb_faces,
                                      std::vector<Neo::utils::Int64>& face_nodes,
@@ -195,7 +195,7 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
                          {return current_cell_nodes[node_index];});
           auto [face_info, is_new_face] = face_nodes_set.emplace(FaceNodes{current_face_nodes.begin(),
                                                                            current_face_nodes.end()},face_index);
-          if (!is_new_face) std::cout << "Face not inserted " << face_index << std::endl;
+          if (!is_new_face) std::cout << "Item not inserted " << face_index << std::endl;
           if (is_new_face) {
             face_nodes.insert(face_nodes.end(),current_face_nodes.begin(), current_face_nodes.end());
           }
@@ -350,26 +350,38 @@ TEST(PolyhedralTest,TypedUtilitiesTest){
                                             8, 9, 11, 10, 27, 28, 31, 29, // hexa
                                             28, 9, 11, 31, 32}; // prism
   using CellTypeIndexes = std::vector<int>;
+  // Get Face Connectivity info
   std::vector<Neo::utils::Int64> face_nodes;
   std::vector<Neo::utils::Int32> cell_face_indexes;
   int nb_faces = 0;
-  StaticMesh::utilities::getFaceConnectivityFromCell(cell_nodes,
-                                                     CellTypeIndexes {0,0,1},
-                                                     {{8,{{0, 3, 2, 1},
-                                                             {1, 2, 6, 5},
-                                                             {4, 5, 6, 7},
-                                                             {2, 3, 7, 6},
-                                                             {0, 3, 7, 4},
-                                                             {0, 1, 5, 4}}},
-                                                      {5,{{0, 3, 2,1},
-                                                             {1, 2, 4},
-                                                             {2, 3, 4},
-                                                             {3, 0, 4},
-                                                             {0, 1, 4}}}},
-                                                     nb_faces,face_nodes,cell_face_indexes);
+  StaticMesh::utilities::getItemConnectivityFromCell(
+      cell_nodes, CellTypeIndexes{0, 0, 1},
+      {{8,
+        {{0, 3, 2, 1},
+         {1, 2, 6, 5},
+         {4, 5, 6, 7},
+         {2, 3, 7, 6},
+         {0, 3, 7, 4},
+         {0, 1, 5, 4}}},
+       {5, {{0, 3, 2, 1}, {1, 2, 4}, {2, 3, 4}, {3, 0, 4}, {0, 1, 4}}}},
+      nb_faces, face_nodes, cell_face_indexes);
   std::cout << "Nb faces found from cell info " << nb_faces << std::endl;
   _printContainer(face_nodes, "Face nodes from cell info");
   _printContainer(cell_face_indexes, "Cell faces (indexes) from cell info");
+  // Get Edge Connectivity info
+  std::vector<Neo::utils::Int64> edge_nodes;
+  std::vector<Neo::utils::Int32> cell_edge_indexes;
+  int nb_edges = 0;
+  StaticMesh::utilities::getItemConnectivityFromCell(
+      cell_nodes, CellTypeIndexes{0, 0, 1},
+      {{8, {{0, 3}, {3, 2}, {2, 1}, {1, 0}, {2, 6}, {6, 5}, {5, 1},
+               {4, 5}, {6, 7}, {7, 4}, {3, 7}, {4, 0}}},
+       {5, {{0, 3}, {3, 2}, {2, 1}, {1, 0}, {2, 4}, {4, 1}, {3, 4}, {0, 4}}}},
+      nb_edges, edge_nodes, cell_edge_indexes);
+  std::cout << "Nb edges found from cell info " << nb_edges << std::endl;
+  _printContainer(edge_nodes, "Edge nodes from cell info");
+  _printContainer(cell_edge_indexes, "Cell edges (indexes) from cell info");
+  // Validation
   EXPECT_EQ(15,nb_faces);
   std::vector<int> cell_face_indexes_ref{0,1,2,3,4,5,6,7,8,9,1,10,7,11,12,13,14};
   EXPECT_TRUE(std::equal(
@@ -393,6 +405,19 @@ TEST(PolyhedralTest,TypedUtilitiesTest){
   EXPECT_TRUE(std::equal(
       face_nodes.begin(),face_nodes.end(),
       face_nodes_ref.begin(),face_nodes_ref.end()));
+  EXPECT_EQ(24,nb_edges);
+  std::vector<int> cell_edge_indexes_ref{0,1,2,3,4,5,6,7,8,9,10,11,2,12,13,14,15,16,17,18,19,5,4,6,16,15,13,17,20,21,22,23};
+  std::vector<Neo::utils::Int64> edge_nodes_ref{1,15,  15,10,  10,8,  8,1,
+                                                10,29,  29,27,  27,8,  25,27,  29,30,
+                                                30,25,  15,30,  25,1,  10,11,  11,9,
+                                                9,8,  11,31,  31,28,  28,9, 27,28,  31,29,
+                                                11,32,  32,9,  31,32,  28,32};
+  EXPECT_TRUE(std::equal(
+      edge_nodes.begin(),edge_nodes.end(),
+      edge_nodes_ref.begin(),edge_nodes_ref.end()));
+  EXPECT_TRUE(std::equal(
+      cell_edge_indexes.begin(),cell_edge_indexes.end(),
+      cell_edge_indexes_ref.begin(),cell_edge_indexes_ref.end()));
 }
 
 #ifdef HAS_XDMF
