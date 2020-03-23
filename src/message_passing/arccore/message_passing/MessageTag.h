@@ -42,6 +42,14 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageTag
   {
     return a.m_tag==b.m_tag;
   }
+  friend bool operator!=(const MessageTag& a,const MessageTag& b)
+  {
+    return a.m_tag!=b.m_tag;
+  }
+  friend bool operator<(const MessageTag& a,const MessageTag& b)
+  {
+    return a.m_tag<=b.m_tag;
+  }
   Int32 value() const { return m_tag; }
   bool isNull() const { return m_tag==A_NULL_TAG_VALUE; }
   void print(std::ostream& o) const;

@@ -34,11 +34,16 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageRank
   {
     return a.m_rank==b.m_rank;
   }
+  friend bool operator!=(const MessageRank& a,const MessageRank& b)
+  {
+    return a.m_rank!=b.m_rank;
+  }
   friend bool operator<(const MessageRank& a,const MessageRank& b)
   {
     return a.m_rank<=b.m_rank;
   }
   Int32 value() const { return m_rank; }
+  void setValue(Int32 rank) { m_rank = rank; }
   bool isNull() const { return m_rank==A_NULL_RANK; }
   void print(std::ostream& o) const;
   friend inline std::ostream& operator<<(std::ostream& o,const MessageRank& tag)

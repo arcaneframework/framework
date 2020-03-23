@@ -826,7 +826,8 @@ _probeMessage(MessageRank source,MessageTag tag,bool is_blocking)
     MPI_Count message_size = 0;
     MPI_Get_elements_x(&mpi_status,MPI_BYTE,&message_size);
     MessageTag tag(mpi_status.MPI_TAG);
-    MessageId::SourceInfo si(mpi_status.MPI_SOURCE,tag,message_size);
+    MessageRank rank(mpi_status.MPI_SOURCE);
+    MessageId::SourceInfo si(rank,tag,message_size);
     ret_message = MessageId(si,message);
   }
   return ret_message;
