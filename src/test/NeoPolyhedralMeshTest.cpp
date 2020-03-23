@@ -25,7 +25,7 @@
 
 template <typename Container>
 void _printContainer(Container&& container, std::string const& name){
-  std::cout << name << container.size() << std::endl;
+  std::cout << name << " , size : " << container.size() << std::endl;
   for (auto element : container) {
     std::cout << element << " " ;
   }
