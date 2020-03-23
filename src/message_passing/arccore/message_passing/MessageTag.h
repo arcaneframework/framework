@@ -21,12 +21,17 @@ namespace Arccore::MessagePassing
 /*!
  * \brief Tag d'un message.
  *
- * Le type exact de la requête dépend de l'implémentation. Pour être le plus
- * générique possible, on utilise le type 'Int32'.
+ * Le type exact du tag dépend de l'implémentation. Pour être le plus
+ * générique possible, on utilise le type 'Int32' qui est aussi le type
+ * utilisé couramment avec MPI.
  *
  * Avec l'implémentation MPI, ce type est utilisé pour le tag MPI et
  * les valeurs maximales autorisées dépendent de l'implémentation. La norme
  * MPI indique seulement qu'il faut au moins autoriser 2^30 (32767) valeurs.
+ *
+ * En mode échange de message hybride (MPI + mémoire partagée), la valeur
+ * maximale du tag peut être plus faible. Pour toutes ces raisons, il
+ * est conseillé de ne pas dépasser la valeur 4096.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT MessageTag
 {
@@ -40,6 +45,12 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageTag
   Int32 value() const { return m_tag; }
   bool isNull() const { return m_tag==A_NULL_TAG_VALUE; }
   void print(std::ostream& o) const;
+  friend inline std::ostream&
+  operator<<(std::ostream& o,const MessageTag& tag)
+  {
+    tag.print(o);
+    return o;
+  }
  public:
   //! Valeur par défaut du tag.
   static constexpr Int32 DEFAULT_TAG_VALUE = 100;
@@ -48,16 +59,6 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageTag
  private:
   Int32 m_tag;
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-inline std::ostream&
-operator<<(std::ostream& o,const MessageTag& tag)
-{
-  tag.print(o);
-  return o;
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
