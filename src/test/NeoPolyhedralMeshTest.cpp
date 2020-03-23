@@ -345,6 +345,55 @@ TEST(PolyhedralTest,CreateMesh1)
   PolyhedralMeshTest::addCells(mesh);
 }
 
+TEST(PolyhedralTest,TypedUtilitiesTest){
+  std::vector<Neo::utils::Int64> cell_nodes{1, 8, 10, 15, 25, 27, 29, 30, // hexa
+                                            8, 9, 11, 10, 27, 28, 31, 29, // hexa
+                                            28, 9, 11, 31, 32}; // prism
+  using CellTypeIndexes = std::vector<int>;
+  std::vector<Neo::utils::Int64> face_nodes;
+  std::vector<Neo::utils::Int32> cell_face_indexes;
+  int nb_faces = 0;
+  StaticMesh::utilities::getFaceConnectivityFromCell(cell_nodes,
+                                                     CellTypeIndexes {0,0,1},
+                                                     {{8,{{0, 3, 2, 1},
+                                                             {1, 2, 6, 5},
+                                                             {4, 5, 6, 7},
+                                                             {2, 3, 7, 6},
+                                                             {0, 3, 7, 4},
+                                                             {0, 1, 5, 4}}},
+                                                      {5,{{0, 3, 2,1},
+                                                             {1, 2, 4},
+                                                             {2, 3, 4},
+                                                             {3, 0, 4},
+                                                             {0, 1, 4}}}},
+                                                     nb_faces,face_nodes,cell_face_indexes);
+  std::cout << "Nb faces found from cell info " << nb_faces << std::endl;
+  _printContainer(face_nodes, "Face nodes from cell info");
+  _printContainer(cell_face_indexes, "Cell faces (indexes) from cell info");
+  EXPECT_EQ(15,nb_faces);
+  std::vector<int> cell_face_indexes_ref{0,1,2,3,4,5,6,7,8,9,1,10,7,11,12,13,14};
+  EXPECT_TRUE(std::equal(
+      cell_face_indexes.begin(),cell_face_indexes.end(),
+      cell_face_indexes_ref.begin(),cell_face_indexes_ref.end()));
+  std::vector<Neo::utils::Int64> face_nodes_ref{1,15,10,8,
+                                                8,10,29,27,
+                                                25,27,29,30,
+                                                10,15,30,29,
+                                                1,15,30,25,
+                                                1,8,27,25,
+                                                8,10,11,9,
+                                                9,11,31,28,
+                                                27,28,31,29,
+                                                11,10,29,31,
+                                                8,9,28,27,
+                                                9,11,32,
+                                                11,31,32,
+                                                31,28,32,
+                                                28,9,32};
+  EXPECT_TRUE(std::equal(
+      face_nodes.begin(),face_nodes.end(),
+      face_nodes_ref.begin(),face_nodes_ref.end()));
+}
 
 #ifdef HAS_XDMF
 TEST(PolyhedralTest,CreateXdmfMesh)
