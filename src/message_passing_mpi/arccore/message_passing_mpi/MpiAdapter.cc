@@ -845,7 +845,7 @@ probeMessage(PointToPointMessageInfo message)
   if (!message.isRankTag())
     ARCCORE_FATAL("Invalid message_info: message.isRankTag() is false");
 
-  return probeMessage(message.rank(),message.tag().value(),message.isBlocking());
+  return probeMessage(message.destinationRank(),message.tag().value(),message.isBlocking());
 }
 
 /*---------------------------------------------------------------------------*/
