@@ -92,7 +92,6 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 
   void  probeRecvPack(UniqueArray<Byte>& recv_buffer,Int32 proc);
 
-  MessageId probeMessage(Int32 source,Int32 tag,bool is_blocking);
   MessageId probeMessage(PointToPointMessageInfo message);
   Request directRecv(void* recv_buffer,Int64 recv_buffer_size,
                      MessageId message,Int64 elem_size,MPI_Datatype data_type,
@@ -188,6 +187,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   void _addRequest(MPI_Request request);
   void _removeRequest(MPI_Request request);
   void _checkFatalInRequest();
+  MessageId _probeMessage(MessageRank source,MessageTag tag,bool is_blocking);
 };
 
 /*---------------------------------------------------------------------------*/

@@ -800,17 +800,17 @@ probeRecvPack(UniqueArray<Byte>& recv_buffer,Int32 proc)
 /*---------------------------------------------------------------------------*/
 
 MessageId MpiAdapter::
-probeMessage(Int32 source,Int32 tag,bool is_blocking)
+_probeMessage(MessageRank source,MessageTag tag,bool is_blocking)
 {
   MPI_Status mpi_status;
   int has_message = 0;
   MPI_Message message;
   int ret = 0;
-  int mpi_source = source;
-  if (source==A_NULL_RANK)
+  int mpi_source = source.value();
+  if (source.isNull())
     mpi_source = MPI_ANY_SOURCE;
-  int mpi_tag = tag;
-  if (tag==A_NULL_TAG_VALUE)
+  int mpi_tag = tag.value();
+  if (tag.isNull())
     mpi_tag = MPI_ANY_TAG;
   if (is_blocking){
     ret = MPI_Mprobe(mpi_source,mpi_tag,m_communicator,&message,&mpi_status);
@@ -845,7 +845,7 @@ probeMessage(PointToPointMessageInfo message)
   if (!message.isRankTag())
     ARCCORE_FATAL("Invalid message_info: message.isRankTag() is false");
 
-  return probeMessage(message.destinationRank(),message.tag().value(),message.isBlocking());
+  return _probeMessage(message.destinationRank(),message.tag(),message.isBlocking());
 }
 
 /*---------------------------------------------------------------------------*/

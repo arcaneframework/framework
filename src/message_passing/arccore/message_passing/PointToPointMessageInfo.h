@@ -11,6 +11,7 @@
 
 #include "arccore/message_passing/MessageId.h"
 #include "arccore/message_passing/MessageTag.h"
+#include "arccore/message_passing/MessageRank.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,13 +47,13 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
  public:
 
   PointToPointMessageInfo(){}
-  explicit PointToPointMessageInfo(Int32 rank)
+  explicit PointToPointMessageInfo(MessageRank rank)
   : m_dest_rank(rank), m_type(Type::T_RankTag){}
-  PointToPointMessageInfo(Int32 rank,eBlockingType blocking_type)
+  PointToPointMessageInfo(MessageRank rank,eBlockingType blocking_type)
   : m_dest_rank(rank), m_is_blocking(blocking_type==Blocking), m_type(Type::T_RankTag){}
-  PointToPointMessageInfo(Int32 rank,MessageTag tag)
+  PointToPointMessageInfo(MessageRank rank,MessageTag tag)
   : m_dest_rank(rank), m_tag(tag), m_type(Type::T_RankTag){}
-  PointToPointMessageInfo(Int32 rank,MessageTag tag,eBlockingType blocking_type)
+  PointToPointMessageInfo(MessageRank rank,MessageTag tag,eBlockingType blocking_type)
   : m_dest_rank(rank), m_tag(tag), m_is_blocking(blocking_type==Blocking), m_type(Type::T_RankTag){}
   explicit PointToPointMessageInfo(MessageId message_id)
   : m_message_id(message_id), m_type(Type::T_MessageId){}
@@ -74,13 +75,13 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
   //! Identifiant du message
   MessageId messageId() const { return m_message_id; }
   //! Rang de la destination du message
-  Int32 destinationRank() const { return m_dest_rank; }
+  MessageRank destinationRank() const { return m_dest_rank; }
   //! Positionne le rang de la destination du message
-  void setDestinationRank(Int32 rank) { m_dest_rank = rank; }
+  void setDestinationRank(MessageRank rank) { m_dest_rank = rank; }
   //! Rang d'origine du message
-  Int32 sourceRank() const { return m_source_rank; }
+  MessageRank sourceRank() const { return m_source_rank; }
   //! Positionne le rang d'origine du message
-  void setSourceRank(Int32 rank) { m_source_rank = rank; }
+  void setSourceRank(MessageRank rank) { m_source_rank = rank; }
   //! Tag du message
   MessageTag tag() const { return m_tag; }
   //! Positionne le tag du message
@@ -104,8 +105,8 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
 
  private:
 
-  Int32 m_dest_rank = A_NULL_RANK;
-  Int32 m_source_rank = A_NULL_RANK;
+  MessageRank m_dest_rank;
+  MessageRank m_source_rank;
   MessageTag m_tag = MessageTag::defaultTag();
   MessageId m_message_id;
   bool m_is_blocking = true;

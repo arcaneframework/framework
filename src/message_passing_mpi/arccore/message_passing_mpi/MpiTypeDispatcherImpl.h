@@ -241,7 +241,8 @@ send(Span<const Type> send_buffer,PointToPointMessageInfo message)
   MpiLock::Section mls(m_adapter->mpiLock());
   bool is_blocking = message.isBlocking();
   if (message.isRankTag()){
-    return m_adapter->directSend(send_buffer.data(),send_buffer.size(),message.destinationRank(),
+    return m_adapter->directSend(send_buffer.data(),send_buffer.size(),
+                                 message.destinationRank().value(),
                                  sizeof_type,type,message.tag().value(),is_blocking);
   }
   if (message.isMessageId()){
@@ -263,7 +264,8 @@ receive(Span<Type> recv_buffer,PointToPointMessageInfo message)
   bool is_blocking = message.isBlocking();
   if (message.isRankTag()){
     return m_adapter->directRecv(recv_buffer.data(),recv_buffer.size(),
-                                 message.destinationRank(),sizeof_type,type,message.tag().value(),
+                                 message.destinationRank().value(),sizeof_type,type,
+                                 message.tag().value(),
                                  is_blocking);
   }
   if (message.isMessageId()){
