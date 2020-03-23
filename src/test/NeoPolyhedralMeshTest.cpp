@@ -10,6 +10,11 @@
  *-------------------------
  */
 
+#include <vector>
+#include <set>
+#include <array>
+#include <algorithm>
+
 #include "neo/Neo.h"
 #include "gtest/gtest.h"
 
@@ -154,6 +159,55 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
   {
     auto& node_family = mesh.getFamily(Neo::ItemKind::IK_Node,node_family_name);
     return getConnectivity(mesh, source_family, node_family);
+  }
+
+  namespace utilities {
+    using FaceNodesInCell = std::vector<std::vector<int>>; // [face_index_in_cell][node_index_in_face] = node_index_in_cell
+    using NbNodeInCell = int;
+    using CellTypes = std::vector<std::pair<NbNodeInCell,FaceNodesInCell>>;
+    void getFaceConnectivityFromCell(std::vector<Neo::utils::Int64> const& cell_nodes,
+                                     std::vector<int> cell_type_indexes, CellTypes const& cell_types,
+                                     int& nb_faces,
+                                     std::vector<Neo::utils::Int64>& face_nodes,
+                                     std::vector<Neo::utils::Int32>& cell_faces)
+    {
+      nb_faces = 0;
+      auto cell_index = 0;
+      auto face_index = 0;
+      using FaceNodes = std::set<int>;
+      using FaceUid = Neo::utils::Int64;
+      using FaceInfo = std::pair<FaceNodes,FaceUid>;
+      auto face_info_comp = [](FaceInfo const& face_info1, FaceInfo const& face_info2){
+        return face_info1.first < face_info2.first;
+      };
+      std::set<FaceInfo, decltype(face_info_comp)> face_nodes_set(face_info_comp);
+      for (int cell_nodes_index = 0; cell_nodes_index < cell_nodes.size();) {
+        auto [nb_node_in_cell, face_nodes_all_faces] = cell_types[cell_type_indexes[cell_index++]];
+        auto current_cell_nodes = Neo::utils::ConstArrayView<Neo::utils::Int64>{(size_t)nb_node_in_cell,&cell_nodes[cell_nodes_index]};
+        for (auto current_face_node_indexes_in_cell : face_nodes_all_faces)
+        {
+          std::vector<Neo::utils::Int64> current_face_nodes;
+          current_face_nodes.reserve(current_face_node_indexes_in_cell.size());
+          std::transform(current_face_node_indexes_in_cell.begin(),
+                         current_face_node_indexes_in_cell.end(),
+                         std::back_inserter(current_face_nodes),
+                         [&current_cell_nodes](auto& node_index)
+                         {return current_cell_nodes[node_index];});
+          auto [face_info, is_new_face] = face_nodes_set.emplace(FaceNodes{current_face_nodes.begin(),
+                                                                           current_face_nodes.end()},face_index);
+          if (!is_new_face) std::cout << "Face not inserted " << face_index << std::endl;
+          if (is_new_face) {
+            face_nodes.insert(face_nodes.end(),current_face_nodes.begin(), current_face_nodes.end());
+          }
+          cell_faces.push_back(face_info->second);
+          if (is_new_face) {
+            nb_faces++;
+            ++face_index;
+          }
+        }
+        cell_nodes_index += nb_node_in_cell;
+      }
+    }
   }
 }
 
