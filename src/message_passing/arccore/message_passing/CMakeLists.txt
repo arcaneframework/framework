@@ -7,6 +7,8 @@ set(SOURCES
   MessageId.cc
   MessageTag.h
   MessageTag.cc
+  MessageRank.h
+  MessageRank.cc
   PointToPointMessageInfo.h
   PointToPointMessageInfo.cc
   Request.h

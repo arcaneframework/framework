@@ -36,6 +36,7 @@ static const Int32 A_NULL_TAG_VALUE = static_cast<Int32>(-1);
 class Request;
 class MessageId;
 class MessageTag;
+class MessageRank;
 class PointToPointMessageInfo;
 class IStat;
 class IMessagePassingMng;
