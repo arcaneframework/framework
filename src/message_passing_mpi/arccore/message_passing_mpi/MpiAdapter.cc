@@ -160,10 +160,11 @@ class MpiAdapter::RequestSet
     }
   }
   void setEmptyRequest(MPI_Request r) { m_empty_request = r; }
- private:
-  std::map<MPI_Request,RequestInfo> m_allocated_requests;
+ public:
   bool m_request_error_is_fatal = false;
   bool m_is_report_error_in_request = true;
+ private:
+  std::map<MPI_Request,RequestInfo> m_allocated_requests;
   bool m_use_trace_full_stack = false;
   MPI_Request m_empty_request = MPI_REQUEST_NULL;
 };
@@ -196,7 +197,6 @@ MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,MpiLock* mpi_lock, IMpiPro
 , m_communicator(comm)
 , m_comm_rank(0)
 , m_comm_size(0)
-, m_request_error_is_fatal(false)
 , m_is_report_error_in_request(true)
 , m_empty_request(MPI_REQUEST_NULL)
 {
@@ -1102,14 +1102,13 @@ waitSomeRequests(ArrayView<Request> requests,
   return waitSomeRequestsMPI(requests, indexes, mpi_status, is_non_blocking);
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
 waitAllRequestsMPI(ArrayView<Request> requests,
-                ArrayView<bool> indexes,
-                ArrayView<MPI_Status> mpi_status)
+                   ArrayView<bool> indexes,
+                   ArrayView<MPI_Status> mpi_status)
 {
   Integer size = requests.size();
   if (size==0)
@@ -1149,6 +1148,8 @@ waitAllRequestsMPI(ArrayView<Request> requests,
   for( Integer i=0; i<size; ++i ) {
     if (requests[i].isValid()){
       _removeRequest((MPI_Request)(requests[i]));
+      if (requests[i].subRequest())
+        ARCCORE_THROW(NotImplementedException,"SubRequest support");
       requests[i].reset();
     }
   }
@@ -1163,7 +1164,7 @@ waitAllRequestsMPI(ArrayView<Request> requests,
 
 void MpiAdapter::
 waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
-                 ArrayView<MPI_Status> mpi_status,bool is_non_blocking)
+                    ArrayView<MPI_Status> mpi_status,bool is_non_blocking)
 {
   Integer size = requests.size();
   if (size==0)
@@ -1190,7 +1191,7 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
       {
         MpiLock::Section mls(m_mpi_lock);
         m_mpi_prof->testSome(size, saved_mpi_request.data(), &nb_completed_request,
-                        completed_requests.data(), mpi_status.data());
+                             completed_requests.data(), mpi_status.data());
       }
       //If there is no active handle in the list, it returns outcount = MPI_UNDEFINED.
       if (nb_completed_request == MPI_UNDEFINED) // Si aucune requete n'etait valide.
@@ -1202,7 +1203,7 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
       {
         MpiLock::Section mls(m_mpi_lock);
         m_mpi_prof->waitSome(size, saved_mpi_request.data(), &nb_completed_request,
-                        completed_requests.data(), mpi_status.data());
+                             completed_requests.data(), mpi_status.data());
       }
       // Il ne faut pas utiliser mpi_request[i] car il est modifié par Mpi
       // mpi_request[i] == MPI_REQUEST_NULL
@@ -1235,6 +1236,8 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
       indexes[index] = true;
       if (requests[index].isValid()){
         _removeRequest(static_cast<MPI_Request>(requests[index]));
+        if (requests[index].subRequest())
+          ARCCORE_THROW(NotImplementedException,"SubRequest support");
         requests[index].reset();
       }
     }
@@ -1291,6 +1294,8 @@ testRequest(Request& request)
     //info() << "** TEST REQUEST r=" << mr << " is_finished=" << is_finished;
     if (is_finished!=0){
       m_request_set->removeRequest(request_iter);
+      if (request.subRequest())
+        ARCCORE_THROW(NotImplementedException,"SubRequest support");
       request.reset();
       return true;
     }

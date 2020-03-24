@@ -104,18 +104,19 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 
   void waitAllRequests(ArrayView<Request> requests);
 
+ private:
   void waitAllRequestsMPI(ArrayView<Request> requests,
-                       ArrayView<bool> indexes,
-                       ArrayView<MPI_Status> mpi_status);
-
+                          ArrayView<bool> indexes,
+                          ArrayView<MPI_Status> mpi_status);
+ public:
   void waitSomeRequests(ArrayView<Request> requests,
                         ArrayView<bool> indexes,
                         bool is_non_blocking);
 
   void waitSomeRequestsMPI(ArrayView<Request> requests,
-                        ArrayView<bool> indexes,
-                        ArrayView<MPI_Status> mpi_status,bool is_non_blocking);
-
+                           ArrayView<bool> indexes,
+                           ArrayView<MPI_Status> mpi_status,bool is_non_blocking);
+ public:
   //! Rang de cette instance dans le communicateur
   int commRank() const { return m_comm_rank; }
 
