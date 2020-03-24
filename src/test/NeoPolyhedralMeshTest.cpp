@@ -444,7 +444,7 @@ TEST(PolyhedralTest,CreateXdmfMesh)
 
 }
 
-TEST(PolyhedralTest,ImportXdmfMesh)
+TEST(PolyhedralTest,ImportXdmfPolyhedronMesh)
 {
   auto reader = XdmfReader::New();
   auto primaryDomain = shared_dynamic_cast<XdmfDomain>(reader->read("../test/meshes/example_mesh.xmf"));
@@ -533,6 +533,74 @@ TEST(PolyhedralTest,ImportXdmfMesh)
   std::cout << "created geometry " << created_primaryDomain->getUnstructuredGrid("Grid")->getGeometry()->getValuesString().c_str()<< std::endl;
   EXPECT_EQ(std::string{geometry->getValuesString().c_str()},std::string{created_primaryDomain->getUnstructuredGrid("Grid")->getGeometry()->getValuesString().c_str()}); // comparer avec std::equal
   EXPECT_EQ(std::string{topology->getValuesString().c_str()},std::string{created_primaryDomain->getUnstructuredGrid("Grid")->getTopology()->getValuesString().c_str()}); // comparer avec std::equal
+}
+
+TEST(PolyhedralTest,ImportXdmfHexahedronMesh) {
+  auto reader = XdmfReader::New();
+  auto primaryDomain = shared_dynamic_cast<XdmfDomain>(
+      reader->read("../test/meshes/example_hexahedron.xmf"));
+  auto grid = primaryDomain->getUnstructuredGrid("Hexahedron");
+  auto geometry = grid->getGeometry();
+  geometry->read();
+  EXPECT_EQ(geometry->getType()->getName(), XdmfGeometryType::XYZ()->getName());
+  std::vector<Neo::utils::Real3> node_coords(geometry->getNumberPoints(),
+                                             {-1e6, -1e6, -1e6});
+  geometry->getValues(0, (double *)node_coords.data(),
+                      geometry->getNumberPoints() * 3, 1, 1);
+  auto topology = grid->getTopology();
+  topology->read();
+  // Read only polyhedrons
+  EXPECT_EQ(XdmfTopologyType::Hexahedron()->getName(),
+            topology->getType()->getName());
+  std::vector<Neo::utils::Int32> cell_data(topology->getSize(), -1);
+  topology->getValues(0, cell_data.data(), topology->getSize());
+  std::vector<Neo::utils::Int64> cell_uids;
+  std::set<Neo::utils::Int64> node_uids_set;
+  std::vector<Neo::utils::Int64> node_uids;
+  std::set<Neo::utils::Int32> current_cell_nodes;
+  std::vector<Neo::utils::Int64> cell_nodes;
+  std::size_t cell_nb_nodes = 8;
+  auto cell_index = 0;
+  for (auto cell_data_index = 0; cell_data_index < cell_data.size();) {
+    cell_uids.push_back(cell_index++);
+    auto current_cell_nodes = Neo::utils::ConstArrayView<int>{
+        cell_nb_nodes, &cell_data[cell_data_index]};
+    cell_nodes.insert(cell_nodes.end(), current_cell_nodes.begin(),
+                      current_cell_nodes.end());
+    node_uids_set.insert(current_cell_nodes.begin(), current_cell_nodes.end());
+    cell_data_index += cell_nb_nodes;
+  }
+  node_uids.insert(node_uids.end(), std::begin(node_uids_set),
+                   std::end(node_uids_set));
+  _printContainer(node_uids, "node uids ");
+  _printContainer(cell_nodes, "cell nodes ");
+  auto mesh = Neo::Mesh{"'ImportedHexMesh"};
+  using CellTypeIndexes = std::vector<int>;
+  std::vector<Neo::utils::Int64> face_nodes;
+  std::vector<Neo::utils::Int32> cell_face_indexes;
+  int nb_faces = 0;
+  StaticMesh::utilities::getItemConnectivityFromCell(
+      cell_nodes, CellTypeIndexes{0},
+      {{8,
+        {{0, 3, 2, 1},
+         {1, 2, 6, 5},
+         {4, 5, 6, 7},
+         {2, 3, 7, 6},
+         {0, 3, 7, 4},
+         {0, 1, 5, 4}}}},
+      nb_faces, face_nodes, cell_face_indexes); //utilities
+  //  // On peut symmetriser une connectivité
+  //  std::vector<Neo::utils::Int64> node_faces;
+  //  StaticMesh::reverseConnectivity(face_nodes,node_faces); // utilities
+  std::vector<Neo::utils::Int64> face_uids(nb_faces);
+  std::vector<Neo::utils::Int64> cell_faces;
+  std::copy(cell_face_indexes.begin(),cell_face_indexes.end(),cell_faces.begin()); // face indexes are taken as uids
+  std::iota(face_uids.begin(),face_uids.end(), 0);
+  PolyhedralMeshTest::_createMesh(mesh, node_uids, cell_uids, face_uids,
+                                  node_coords,cell_nodes,cell_faces,face_nodes,
+                                  std::vector<size_t>(cell_uids.size(),8),
+                                  std::vector<size_t>(cell_uids.size(),6),
+                                  std::vector<size_t>(face_uids.size(),4));
 }
 
 #endif
