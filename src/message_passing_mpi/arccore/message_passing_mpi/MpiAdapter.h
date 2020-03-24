@@ -42,6 +42,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 : public TraceAccessor
 {
  public:
+  class RequestSet;
+ public:
 
   MpiAdapter(ITraceMng* msg,IStat* stat,MPI_Comm comm,MpiLock* mpi_lock,
              IMpiProfiling* mpi_prof = nullptr);
@@ -174,7 +176,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   Int64 m_nb_all_reduce = 0;
   Int64 m_nb_reduce = 0;
   bool m_is_trace = false;
-  std::set<MPI_Request> m_allocated_requests;
+  RequestSet* m_request_set = nullptr;
   bool m_request_error_is_fatal;
   bool m_is_report_error_in_request;
   //! Requête vide. Voir MpiAdapter.cc pour plus d'infos.
