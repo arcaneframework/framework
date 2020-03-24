@@ -45,6 +45,8 @@ class MpiAdapter::RequestSet
     String m_stack_trace;
   };
  public:
+  typedef std::map<MPI_Request,RequestInfo>::iterator Iterator;
+ public:
   RequestSet(ITraceMng* tm) : TraceAccessor(tm)
   {
     if (Platform::getEnvironmentVariable("ARCCORE_NOREPORT_ERROR_MPIREQUEST")=="TRUE")
@@ -65,15 +67,24 @@ class MpiAdapter::RequestSet
   {
     _removeRequest(request);
   }
-  //! Vérifie que la requête est dans la liste
-  void checkHasRequest(MPI_Request request)
+  void removeRequest(Iterator request_iter)
   {
+    if (request_iter==m_allocated_requests.end())
+      return;
+    m_allocated_requests.erase(request_iter);
+  }
+  //! Vérifie que la requête est dans la liste
+  Iterator findRequest(MPI_Request request)
+  {
+    if (request==m_empty_request)
+      return m_allocated_requests.end();
     auto ireq = m_allocated_requests.find(request);
     if (ireq==m_allocated_requests.end()){
       error() << "MpiAdapter::testRequest() request not referenced "
               << " id=" << request;
       _checkFatalInRequest();
     }
+    return ireq;
   }
  private:
   /*!
@@ -1271,14 +1282,15 @@ testRequest(Request& request)
   {
     MpiLock::Section mls(m_mpi_lock);
 
-    if (mr!=m_empty_request){
-      m_request_set->checkHasRequest(mr);
-    }
+    // Il faut d'abord recuperer l'emplacement de la requete car si elle
+    // est finie, elle sera automatiquement libérée par MPI lors du test
+    // et du coup on ne pourra plus la supprimer
+    RequestSet::Iterator request_iter = m_request_set->findRequest(mr);
 
     m_mpi_prof->test(&mr, &is_finished, (MPI_Status *) MPI_STATUS_IGNORE);
     //info() << "** TEST REQUEST r=" << mr << " is_finished=" << is_finished;
     if (is_finished!=0){
-      _removeRequest(static_cast<MPI_Request>(request));
+      m_request_set->removeRequest(request_iter);
       request.reset();
       return true;
     }
