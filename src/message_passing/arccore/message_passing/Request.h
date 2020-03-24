@@ -19,6 +19,16 @@
 
 namespace Arccore::MessagePassing
 {
+class Request;
+
+class ARCCORE_MESSAGEPASSING_EXPORT ISubRequest
+{
+ public:
+  virtual ~ISubRequest() = default;
+ public:
+  virtual Request executeOnCompletion() =0;
+};
+
 /*!
  * \brief Requête d'un message.
  *
@@ -50,7 +60,6 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
  public:
 
   Request()
-  : m_return_value(0)
   {
     m_type = T_Null;
     m_request = null_request;
@@ -118,7 +127,6 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
  public:
 
   int returnValue() const { return m_return_value; }
-  //ARCCORE_DEPRECATED long request() const { return m_request.l; }
   bool isValid() const
   {
     if (m_type==T_Null)
@@ -135,18 +143,22 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
 
   static void setNullRequest(Request r) { null_request = r.m_request; }
 
-  void reset() {
+  void reset()
+  {
     m_request = null_request;
+    m_sub_request = nullptr;
   }
-
+  ISubRequest* subRequest() const { return m_sub_request; }
+  void setSubRequest(ISubRequest* s) { m_sub_request = s; }
   void print(std::ostream& o) const;
 
  private:
 
-  int m_return_value;
-  int m_type;
+  int m_return_value = 0;
+  int m_type = T_Null;
   _Request m_request;
-
+  ISubRequest* m_sub_request = nullptr;
+  Int64 m_id = 0;
   static _Request null_request;
 };
 
