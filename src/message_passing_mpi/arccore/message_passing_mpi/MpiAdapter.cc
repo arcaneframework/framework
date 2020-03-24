@@ -39,15 +39,27 @@ class MpiAdapter::RequestSet
 : public TraceAccessor
 {
  public:
+  struct RequestInfo
+  {
+    TraceInfo m_trace;
+    String m_stack_trace;
+  };
+ public:
   RequestSet(ITraceMng* tm) : TraceAccessor(tm)
   {
     if (Platform::getEnvironmentVariable("ARCCORE_NOREPORT_ERROR_MPIREQUEST")=="TRUE")
       m_is_report_error_in_request = false;
+    if (Platform::getEnvironmentVariable("ARCCORE_MPIREQUEST_STACKTRACE")=="TRUE")
+      m_use_trace_full_stack = true;
   }
  public:
   void addRequest(MPI_Request request)
   {
-    _addRequest(request);
+    _addRequest(request,TraceInfo());
+  }
+  void addRequest(MPI_Request request,const TraceInfo& ti)
+  {
+    _addRequest(request,ti);
   }
   void removeRequest(MPI_Request request)
   {
@@ -67,7 +79,7 @@ class MpiAdapter::RequestSet
   /*!
    * \warning Cette fonction doit etre appelee avec le verrou mpi_lock actif.
    */
-  void _addRequest(MPI_Request request)
+  void _addRequest(MPI_Request request,const TraceInfo& trace_info)
   {
     if (request==MPI_REQUEST_NULL){
       if (m_is_report_error_in_request || m_request_error_is_fatal){
@@ -88,7 +100,11 @@ class MpiAdapter::RequestSet
       }
       return;
     }
-    m_allocated_requests.insert(request);
+    RequestInfo rinfo;
+    rinfo.m_trace = trace_info;
+    if (m_use_trace_full_stack)
+      rinfo.m_stack_trace = Platform::getStackTrace();
+    m_allocated_requests.insert(std::make_pair(request,rinfo));
   }
 
   /*!
@@ -124,13 +140,25 @@ class MpiAdapter::RequestSet
       ARCCORE_FATAL("Error in requests management");
   }
   Int64 nbRequest() const { return m_allocated_requests.size(); }
+  void printRequests() const
+  {
+    info() << "PRINT REQUESTS\n";
+    for( auto& x : m_allocated_requests ){
+      info() << "Request id=" << x.first << " trace=" << x.second.m_trace
+             << " stack=" << x.second.m_stack_trace;
+    }
+  }
   void setEmptyRequest(MPI_Request r) { m_empty_request = r; }
  private:
-  std::set<MPI_Request> m_allocated_requests;
+  std::map<MPI_Request,RequestInfo> m_allocated_requests;
   bool m_request_error_is_fatal = false;
   bool m_is_report_error_in_request = true;
+  bool m_use_trace_full_stack = false;
   MPI_Request m_empty_request = MPI_REQUEST_NULL;
 };
+
+#define ARCCORE_ADD_REQUEST(request)\
+  m_request_set->addRequest(request,A_FUNCINFO);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -211,6 +239,7 @@ destroy()
   // dans un destructeur.
   if (nb_request!=0){
     warning() << " Pending mpi requests size=" << nb_request;
+    m_request_set->printRequests();
     _checkFatalInRequest();
   }
   delete this;
@@ -279,10 +308,10 @@ nonBlockingBroadcast(void* buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype)
   double begin_time = MPI_Wtime();
   ret = MPI_Ibcast(buf,_nb_elem,datatype,root,m_communicator,&mpi_request);
   double end_time = MPI_Wtime();
-  double sr_time   = (end_time-begin_time);
+  double sr_time = (end_time-begin_time);
   //TODO determiner la taille des messages
   m_stat->add("IBroadcast",sr_time,0);
-  _addRequest(mpi_request);
+  ARCCORE_ADD_REQUEST(mpi_request);
   return Request(ret,mpi_request);
 }
 
@@ -324,7 +353,7 @@ nonBlockingGather(const void* send_buf,void* recv_buf,
   double sr_time   = (end_time-begin_time);
   //TODO determiner la taille des messages
   m_stat->add("IGather",sr_time,0);
-  _addRequest(mpi_request);
+  ARCCORE_ADD_REQUEST(mpi_request);
   return Request(ret,mpi_request);
 }
 
@@ -365,7 +394,7 @@ nonBlockingAllGather(const void* send_buf,void* recv_buf,
   double sr_time   = (end_time-begin_time);
   //TODO determiner la taille des messages
   m_stat->add("IAllGather",sr_time,0);
-  _addRequest(mpi_request);
+  ARCCORE_ADD_REQUEST(mpi_request);
   return Request(ret,mpi_request);
 }
 
@@ -472,7 +501,7 @@ nonBlockingAllToAll(const void* send_buf,void* recv_buf,Integer count,MPI_Dataty
   double sr_time   = (end_time-begin_time);
   //TODO determiner la taille des messages
   m_stat->add("IAllToAll",sr_time,0);
-  _addRequest(mpi_request);
+  ARCCORE_ADD_REQUEST(mpi_request);
   return Request(ret,mpi_request);
 }
 
@@ -525,7 +554,7 @@ nonBlockingAllToAllVariable(const void* send_buf,const int* send_counts,
   double sr_time = (end_time-begin_time);
   //TODO determiner la taille des messages
   m_stat->add("IAllToAll",sr_time,0);
-  _addRequest(mpi_request);
+  ARCCORE_ADD_REQUEST(mpi_request);
   return Request(ret,mpi_request);
 }
 
@@ -548,7 +577,7 @@ nonBlockingBarrier()
   MPI_Request mpi_request = MPI_REQUEST_NULL;
   int ret = -1;
   ret = MPI_Ibarrier(m_communicator,&mpi_request);
-  _addRequest(mpi_request);
+  ARCCORE_ADD_REQUEST(mpi_request);
   return Request(ret,mpi_request);
 }
 
@@ -598,7 +627,7 @@ nonBlockingAllReduce(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatyp
   ret = MPI_Iallreduce(_sbuf,recv_buf,_n,datatype,op,m_communicator,&mpi_request);
   double end_time = MPI_Wtime();
   m_stat->add("IReduce",end_time-begin_time,_n);
-  _addRequest(mpi_request);
+  ARCCORE_ADD_REQUEST(mpi_request);
   return Request(ret,mpi_request);
 }
 
@@ -742,7 +771,7 @@ directSend(const void* send_buffer,Int64 send_buffer_size,
       if (m_is_trace)
         info() << " ISend ret=" << ret << " proc=" << proc << " request=" << mpi_request;
       end_time = MPI_Wtime();
-      _addRequest(mpi_request);
+      ARCCORE_ADD_REQUEST(mpi_request);
     }
     if (m_is_trace){
       info() << "MPI Send: send after"
@@ -854,7 +883,7 @@ directRecv(void* recv_buffer,Int64 recv_buffer_size,
       int rbuf_size = _checkSize(recv_buffer_size);
       m_mpi_prof->iRecv(recv_buffer, rbuf_size, data_type, i_proc, mpi_tag, m_communicator, &mpi_request);
       end_time = MPI_Wtime();
-      _addRequest(mpi_request);
+      ARCCORE_ADD_REQUEST(mpi_request);
     }
     if (m_is_trace){
       info() << "MPI Recv: recv after "
@@ -1012,7 +1041,7 @@ directRecv(void* recv_buffer,Int64 recv_buffer_size,
       ret = MPI_Imrecv(recv_buffer,rbuf_size,data_type,&mpi_message,&mpi_request);
       //m_mpi_prof->iRecv(recv_buffer, rbuf_size, data_type, i_proc, mpi_tag, m_communicator, &mpi_request);
       end_time = MPI_Wtime();
-      _addRequest(mpi_request);
+      ARCCORE_ADD_REQUEST(mpi_request);
     }
     if (m_is_trace){
       info() << "MPI Recv: recv after "
