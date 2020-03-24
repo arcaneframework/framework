@@ -197,7 +197,6 @@ MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,MpiLock* mpi_lock, IMpiPro
 , m_communicator(comm)
 , m_comm_rank(0)
 , m_comm_size(0)
-, m_is_report_error_in_request(true)
 , m_empty_request(MPI_REQUEST_NULL)
 {
   m_request_set = new RequestSet(trace);
@@ -258,6 +257,28 @@ destroy()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+void MpiAdapter::
+setRequestErrorAreFatal(bool v)
+{
+  m_request_set->m_request_error_is_fatal = v;
+}
+bool MpiAdapter::
+isRequestErrorAreFatal() const
+{
+  return m_request_set->m_request_error_is_fatal;
+}
+
+void MpiAdapter::
+setPrintRequestError(bool v)
+{
+  m_request_set->m_is_report_error_in_request = v;
+}
+bool MpiAdapter::
+isPrintRequestError() const
+{
+  return m_request_set->m_is_report_error_in_request;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1343,7 +1364,7 @@ enableDebugRequest(bool enable_debug_request)
 void MpiAdapter::
 _checkFatalInRequest()
 {
-  if (m_request_error_is_fatal)
+  if (isRequestErrorAreFatal())
     ARCCORE_FATAL("Error in requests management");
 }
 

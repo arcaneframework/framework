@@ -150,12 +150,12 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
  public:
 
   //! Indique si les erreurs dans la liste des requêtes sont fatales
-  void setRequestErrorAreFatal(bool v) { m_request_error_is_fatal = v; }
-  bool isRequestErrorAreFatal() const { return m_request_error_is_fatal; }
+  void setRequestErrorAreFatal(bool v);
+  bool isRequestErrorAreFatal() const;
 
   //! Indique si on affiche des messages pour les erreurs dans les requêtes.
-  void setPrintRequestError(bool v) { m_is_report_error_in_request = v; }
-  bool isPrintRequestError() const { return m_is_report_error_in_request; }
+  void setPrintRequestError(bool v);
+  bool isPrintRequestError() const;
 
   //! Indique si on affiche des messages pour chaque appel MPI.
   void setTraceMPIMessage(bool v) { m_is_trace = v; }
@@ -178,8 +178,6 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   Int64 m_nb_reduce = 0;
   bool m_is_trace = false;
   RequestSet* m_request_set = nullptr;
-  bool m_request_error_is_fatal;
-  bool m_is_report_error_in_request;
   //! Requête vide. Voir MpiAdapter.cc pour plus d'infos.
   MPI_Request m_empty_request;
   int m_recv_buffer_for_empty_request[1];
