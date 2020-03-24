@@ -208,6 +208,16 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
         cell_nodes_index += nb_node_in_cell;
       }
     }
+
+    void reverseConnectivity(std::vector<Neo::utils::Int64> const& original_source_item_uids,
+                             std::vector<Neo::utils::Int64> const& original_target_item_uids,
+                             std::vector<Neo::utils::Int64> const& original_connectivity,
+                             std::vector<size_t> const& nb_connected_items_per_item_original,
+                             std::vector<size_t> & nb_connected_items_per_item_reversed)
+    {
+      ; // let's go
+
+    }
   }
 }
 
@@ -234,6 +244,20 @@ namespace PolyhedralMeshTest {
     return face_family;
   }
 
+void _createMesh(Neo::Mesh &mesh,
+                 std::vector<Neo::utils::Int64> const &node_uids,
+                 std::vector<Neo::utils::Int64> const &cell_uids,
+                 std::vector<Neo::utils::Int64> const &face_uids,
+                 std::vector<Neo::utils::Real3>& node_coords, // not const since they can be moved
+                 std::vector<Neo::utils::Int64>& cell_nodes,
+                 std::vector<Neo::utils::Int64>& cell_faces,
+                 std::vector<Neo::utils::Int64>& face_nodes,
+                 std::vector<size_t>&& nb_node_per_cells,
+                 std::vector<size_t>&& nb_face_per_cells,
+                 std::vector<size_t>&& nb_node_per_faces) {
+  std::__throw_invalid_argument("Missing face_cells connectivity");
+}
+
   void _createMesh(Neo::Mesh &mesh,
                    std::vector<Neo::utils::Int64> const &node_uids,
                    std::vector<Neo::utils::Int64> const &cell_uids,
@@ -242,9 +266,11 @@ namespace PolyhedralMeshTest {
                    std::vector<Neo::utils::Int64>& cell_nodes,
                    std::vector<Neo::utils::Int64>& cell_faces,
                    std::vector<Neo::utils::Int64>& face_nodes,
+                   std::vector<Neo::utils::Int64>& face_cells,
                    std::vector<size_t>&& nb_node_per_cells,
                    std::vector<size_t>&& nb_face_per_cells,
-                   std::vector<size_t>&& nb_node_per_faces) {
+                   std::vector<size_t>&& nb_node_per_faces,
+                   std::vector<size_t>&& nb_cell_per_faces) {
     auto &cell_family = addCellFamily(mesh, StaticMesh::cell_family_name);
     auto &node_family = addNodeFamily(mesh, StaticMesh::node_family_name);
     auto &face_family = addFaceFamily(mesh, StaticMesh::face_family_name);
@@ -262,6 +288,8 @@ namespace PolyhedralMeshTest {
                                 std::move(nb_node_per_faces), face_nodes);
     StaticMesh::addConnectivity(mesh, cell_family, added_cells, face_family,
                                 std::move(nb_face_per_cells), cell_faces);
+    StaticMesh::addConnectivity(mesh, face_family, added_faces, cell_family,
+                                std::move(nb_cell_per_faces), face_cells);
     auto valid_mesh_state = mesh.endUpdate();
     auto &new_cells = added_cells.get(valid_mesh_state);
     auto &new_nodes = added_nodes.get(valid_mesh_state);
@@ -284,16 +312,43 @@ namespace PolyhedralMeshTest {
 
     std::vector<Neo::utils::Int64> face_nodes{0, 1, 4, 0, 1, 5, 1, 2, 4, 1, 2, 5,
                                               2, 3, 4, 2, 3, 5, 3, 0, 4, 3, 0, 5};
+    std::vector<Neo::utils::Int64> face_cells(face_uids.size(),0);
 
     auto nb_node_per_cell = 6;
     auto nb_node_per_face = 3;
     auto nb_face_per_cell = 8;
+    auto nb_cell_per_face = 1;
     _createMesh(mesh, node_uids, cell_uids, face_uids, node_coords, cell_nodes,
-                cell_faces, face_nodes,
+                cell_faces, face_nodes, face_cells,
                 std::vector<size_t>(cell_uids.size(),nb_node_per_cell),
                 std::vector<size_t>(cell_uids.size(),nb_face_per_cell),
-                std::vector<size_t>(face_uids.size(),nb_node_per_face));
-
+                std::vector<size_t>(face_uids.size(),nb_node_per_face),
+                std::vector<size_t>(face_uids.size(),nb_cell_per_face));
+    // Validation
+    auto cell_family = mesh.getFamily(Neo::ItemKind::IK_Cell,StaticMesh::cell_family_name);
+    auto node_family = mesh.getFamily(Neo::ItemKind::IK_Node,StaticMesh::node_family_name);
+    auto face_family = mesh.getFamily(Neo::ItemKind::IK_Face,StaticMesh::face_family_name);
+    EXPECT_EQ(cell_uids.size(),cell_family.nbElements());
+    EXPECT_EQ(node_uids.size(),node_family.nbElements());
+    EXPECT_EQ(face_uids.size(),face_family.nbElements());
+    // Check cell to nodes connectivity
+    std::vector<Neo::utils::Int64> reconstructed_cell_nodes;
+    auto cell_to_nodes = StaticMesh::getConnectivity(mesh,cell_family,node_family);
+    for (auto cell : cell_family.all()) {
+      auto current_cell_nodes = cell_to_nodes[cell];
+      reconstructed_cell_nodes.insert(reconstructed_cell_nodes.end(),current_cell_nodes.begin(),current_cell_nodes.end());
+    }
+    EXPECT_TRUE(std::equal(cell_nodes.begin(),cell_nodes.end(),reconstructed_cell_nodes.begin()));
+    _printContainer(reconstructed_cell_nodes, "Recons cell nodes ");
+    // Check face to cells connectivity
+    std::vector<Neo::utils::Int64> reconstructed_face_cells;
+    auto face_to_cells = StaticMesh::getConnectivity(mesh,face_family,cell_family);
+    for (auto face : face_family.all()) {
+      auto current_face_cells = face_to_cells[face];
+      reconstructed_face_cells.insert(reconstructed_face_cells.end(),current_face_cells.begin(),current_face_cells.end());
+    }
+    EXPECT_TRUE(std::equal(face_cells.begin(),face_cells.end(),reconstructed_face_cells.begin()));
+    _printContainer(reconstructed_face_cells, "Recons face cells ");
   }
 }
 
