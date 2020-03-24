@@ -93,13 +93,16 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
 
   //! Message bloquant associé à \a message_id
   explicit PointToPointMessageInfo(MessageId message_id)
-  : m_message_id(message_id), m_type(Type::T_MessageId){}
+  : m_message_id(message_id), m_type(Type::T_MessageId)
+  {
+    _setInfosFromMessageId();
+  }
 
   //! Message associé à \a message_id avec le mode bloquant \a blocking_type
   PointToPointMessageInfo(MessageId message_id,eBlockingType blocking_type)
   : m_message_id(message_id), m_is_blocking(blocking_type==Blocking), m_type(Type::T_MessageId)
   {
-    setSourceRank(message_id.sourceInfo().rank());
+    _setInfosFromMessageId();
   }
 
  public:
@@ -116,10 +119,32 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
   bool isRankTag() const { return m_type==Type::T_RankTag; }
   //! Identifiant du message
   MessageId messageId() const { return m_message_id; }
+  //! Positionne l'identifiant du message et change le type du message
+  void setMessageId(const MessageId& message_id)
+  {
+    m_type = Type::T_MessageId;
+    m_message_id = message_id;
+    _setInfosFromMessageId();
+  }
+  //! Positionne le rang destination et le tag du message et change le type du message
+  void setRankTag(MessageRank rank,MessageTag tag)
+  {
+    m_type = Type::T_RankTag;
+    // Attention à bien appeler les méthodes pour mettre à jour
+    // les valeurs associées de `m_message_id`
+    setDestinationRank(rank);
+    setTag(tag);
+  }
   //! Rang de la destination du message
   MessageRank destinationRank() const { return m_dest_rank; }
   //! Positionne le rang de la destination du message
-  void setDestinationRank(MessageRank rank) { m_dest_rank = rank; }
+  void setDestinationRank(MessageRank rank)
+  {
+    m_dest_rank = rank;
+    MessageId::SourceInfo si = m_message_id.sourceInfo();
+    si.setRank(rank);
+    m_message_id.setSourceInfo(si);
+  }
   //! Rang d'origine du message
   MessageRank sourceRank() const { return m_source_rank; }
   //! Positionne le rang d'origine du message
@@ -127,7 +152,13 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
   //! Tag du message
   MessageTag tag() const { return m_tag; }
   //! Positionne le tag du message
-  void setTag(MessageTag tag) { m_tag = tag; }
+  void setTag(MessageTag tag)
+  {
+    m_tag = tag;
+    MessageId::SourceInfo si = m_message_id.sourceInfo();
+    si.setTag(tag);
+    m_message_id.setSourceInfo(si);
+  }
   //! Affiche le message
   void print(std::ostream& o) const;
 
@@ -153,6 +184,12 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
   MessageId m_message_id;
   bool m_is_blocking = true;
   Type m_type = Type::T_Null;
+
+  void _setInfosFromMessageId()
+  {
+    m_dest_rank = m_message_id.sourceInfo().rank();
+    m_tag = m_message_id.sourceInfo().tag();
+  }
 };
 
 /*---------------------------------------------------------------------------*/
