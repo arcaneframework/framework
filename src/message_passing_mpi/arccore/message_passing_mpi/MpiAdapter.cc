@@ -1108,7 +1108,7 @@ waitAllRequests(ArrayView<Request> requests)
   UniqueArray<bool> indexes(requests.size());
   UniqueArray<MPI_Status> mpi_status(requests.size());
   while (_waitAllRequestsMPI(requests, indexes, mpi_status)){
-    info() << "DO AGAIN ALL_REQUESTS";
+    ; // Continue tant qu'il y a des requêtes.
   }
 }
 
@@ -1150,10 +1150,12 @@ _handleEndRequests(ArrayView<Request> requests,ArrayView<bool> done_indexes)
         // Attention à bien utiliser une référence sinon le reset ne
         // s'applique pas à la bonne variable
         Request& r = requests[i];
+        // Note: la requête peut ne pas être valide (par exemple s'il s'agit)
+        // d'une requête bloquante mais avoir tout de même une sous-requête.
+        if (r.hasSubRequest())
+          new_requests.add(SubRequestInfo(r.subRequest(),i));
         if (r.isValid()){
           _removeRequest((MPI_Request)(r));
-          if (r.hasSubRequest())
-            new_requests.add(SubRequestInfo(r.subRequest(),i));
           r.reset();
         }
       }
@@ -1190,7 +1192,6 @@ _waitAllRequestsMPI(ArrayView<Request> requests,
                     ArrayView<MPI_Status> mpi_status)
 {
   Integer size = requests.size();
-  info() << "WAIT_ALL_REQUEST n=" << size;
   if (size==0)
     return false;
   //ATTENTION: Mpi modifie en retour de MPI_Waitall ce tableau
