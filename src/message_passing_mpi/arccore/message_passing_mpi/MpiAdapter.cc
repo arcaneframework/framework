@@ -1107,7 +1107,9 @@ waitAllRequests(ArrayView<Request> requests)
 {
   UniqueArray<bool> indexes(requests.size());
   UniqueArray<MPI_Status> mpi_status(requests.size());
-  return waitAllRequestsMPI(requests, indexes, mpi_status);
+  while (_waitAllRequestsMPI(requests, indexes, mpi_status)){
+    info() << "DO AGAIN ALL_REQUESTS";
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1120,20 +1122,28 @@ waitSomeRequests(ArrayView<Request> requests,
                  bool is_non_blocking)
 {
   UniqueArray<MPI_Status> mpi_status(requests.size());
-  return waitSomeRequestsMPI(requests, indexes, mpi_status, is_non_blocking);
+  waitSomeRequestsMPI(requests, indexes, mpi_status, is_non_blocking);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-void MpiAdapter::
-waitAllRequestsMPI(ArrayView<Request> requests,
-                   ArrayView<bool> indexes,
-                   ArrayView<MPI_Status> mpi_status)
+namespace
+{
+struct SubRequestInfo
+{
+  SubRequestInfo(Ref<ISubRequest> sr,Integer i) : sub_request(sr), index(i){}
+  Ref<ISubRequest> sub_request;
+  Integer index = -1;
+};
+}
+bool MpiAdapter::
+_waitAllRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
+                    ArrayView<MPI_Status> mpi_status)
 {
   Integer size = requests.size();
+  info() << "WAIT_ALL_REQUEST n=" << size;
   if (size==0)
-    return;
+    return false;
   //ATTENTION: Mpi modifie en retour de MPI_Waitall ce tableau
   UniqueArray<MPI_Request> mpi_request(size);
   for( Integer i=0; i<size; ++i ){
@@ -1166,18 +1176,38 @@ waitAllRequestsMPI(ArrayView<Request> requests,
   }
   // Il ne faut pas utiliser mpi_request[i] car il est modifié par Mpi
   // mpi_request[i] == MPI_REQUEST_NULL
-  for( Integer i=0; i<size; ++i ) {
-    if (requests[i].isValid()){
-      _removeRequest((MPI_Request)(requests[i]));
-      if (requests[i].subRequest())
-        ARCCORE_THROW(NotImplementedException,"SubRequest support");
-      requests[i].reset();
+  UniqueArray<SubRequestInfo> sub_requests;
+  {
+    MpiLock::Section mls(m_mpi_lock);
+    for( Integer i=0; i<size; ++i ) {
+      // Attention à bien utiliser une référence sinon le reset ne
+      // s'applique pas à la bonne variable
+      Request& r = requests[i];
+      if (r.isValid()){
+        _removeRequest((MPI_Request)(r));
+        if (r.hasSubRequest())
+          sub_requests.add(SubRequestInfo(r.subRequest(),i));
+        r.reset();
+      }
     }
   }
-
+  // NOTE: les appels aux sous-requêtes peuvent générer d'autres requêtes.
+  // Il faut faire attention à ne pas utiliser les sous-requêtes avec
+  // le verrou actif.
+  bool has_new_request = false;
+  if (!sub_requests.empty()){
+    for( SubRequestInfo& sri : sub_requests ){
+      Request r = sri.sub_request->executeOnCompletion();
+      if (r.isValid()){
+        has_new_request = true;
+        requests[sri.index] = r;
+      }
+    }
+  }
   if (m_is_trace)
     info() << " MPI_waitall end size=" << size;
   m_stat->add(MpiInfo(eMpiName::Waitall).name(),diff_time,size);
+  return has_new_request;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1257,7 +1287,7 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
       indexes[index] = true;
       if (requests[index].isValid()){
         _removeRequest(static_cast<MPI_Request>(requests[index]));
-        if (requests[index].subRequest())
+        if (requests[index].hasSubRequest())
           ARCCORE_THROW(NotImplementedException,"SubRequest support");
         requests[index].reset();
       }
@@ -1315,7 +1345,7 @@ testRequest(Request& request)
     //info() << "** TEST REQUEST r=" << mr << " is_finished=" << is_finished;
     if (is_finished!=0){
       m_request_set->removeRequest(request_iter);
-      if (request.subRequest())
+      if (request.hasSubRequest())
         ARCCORE_THROW(NotImplementedException,"SubRequest support");
       request.reset();
       return true;

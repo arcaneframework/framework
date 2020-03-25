@@ -105,9 +105,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   void waitAllRequests(ArrayView<Request> requests);
 
  private:
-  void waitAllRequestsMPI(ArrayView<Request> requests,
-                          ArrayView<bool> indexes,
-                          ArrayView<MPI_Status> mpi_status);
+  bool _waitAllRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
+                           ArrayView<MPI_Status> mpi_status);
  public:
   void waitSomeRequests(ArrayView<Request> requests,
                         ArrayView<bool> indexes,

@@ -10,6 +10,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/message_passing/MessagePassingGlobal.h"
+#include "arccore/base/Ref.h"
 
 #include <cstddef>
 #include <iosfwd>
@@ -100,19 +101,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
     m_request.st = arequest;
   }
 
-  Request(const Request& rhs)
-  : m_return_value(rhs.m_return_value), m_type(rhs.m_type)
-  {
-    m_request.cv = rhs.m_request.cv;
-  }
-
-  const Request& operator=(const Request& rhs)
-  {
-    m_return_value = rhs.m_return_value;
-    m_type = rhs.m_type;
-    m_request.cv = rhs.m_request.cv;
-    return (*this);
-  }
+  Request& operator=(const Request& rhs) = default;
 
  public:
 
@@ -146,10 +135,11 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
   void reset()
   {
     m_request = null_request;
-    m_sub_request = nullptr;
+    m_sub_request.reset();
   }
-  ISubRequest* subRequest() const { return m_sub_request; }
-  void setSubRequest(ISubRequest* s) { m_sub_request = s; }
+  Ref<ISubRequest> subRequest() const { return m_sub_request; }
+  bool hasSubRequest() const { return !m_sub_request.isNull(); }
+  void setSubRequest(Ref<ISubRequest> s) { m_sub_request = s; }
   void print(std::ostream& o) const;
 
  private:
@@ -157,8 +147,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
   int m_return_value = 0;
   int m_type = T_Null;
   _Request m_request;
-  ISubRequest* m_sub_request = nullptr;
-  Int64 m_id = 0;
+  Ref<ISubRequest> m_sub_request;
   static _Request null_request;
 };
 
