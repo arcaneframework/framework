@@ -1127,17 +1127,66 @@ waitSomeRequests(ArrayView<Request> requests,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-namespace
-{
-struct SubRequestInfo
+
+struct MpiAdapter::SubRequestInfo
 {
   SubRequestInfo(Ref<ISubRequest> sr,Integer i) : sub_request(sr), index(i){}
   Ref<ISubRequest> sub_request;
   Integer index = -1;
 };
-}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 bool MpiAdapter::
-_waitAllRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
+_handleEndRequests(ArrayView<Request> requests,ArrayView<bool> done_indexes)
+{
+  UniqueArray<SubRequestInfo> new_requests;
+  {
+    MpiLock::Section mls(m_mpi_lock);
+    Integer size = requests.size();
+    for( Integer i=0; i<size; ++i ) {
+      if (done_indexes[i]){
+        // Attention à bien utiliser une référence sinon le reset ne
+        // s'applique pas à la bonne variable
+        Request& r = requests[i];
+        if (r.isValid()){
+          _removeRequest((MPI_Request)(r));
+          if (r.hasSubRequest())
+            new_requests.add(SubRequestInfo(r.subRequest(),i));
+          r.reset();
+        }
+      }
+    }
+  }
+
+  // NOTE: les appels aux sous-requêtes peuvent générer d'autres requêtes.
+  // Il faut faire attention à ne pas utiliser les sous-requêtes avec
+  // le verrou actif.
+  bool has_new_request = false;
+  if (!new_requests.empty()){
+    for( SubRequestInfo& sri : new_requests ){
+      Request r = sri.sub_request->executeOnCompletion();
+      Integer index = sri.index;
+      // S'il y a une nouvelle requête, alors elle remplace
+      // l'ancienne et donc il faut faire comme ci
+      // la requête d'origine n'est pas terminée.
+      if (r.isValid()){
+        has_new_request = true;
+        requests[index] = r;
+        done_indexes[index] = false;
+      }
+    }
+  }
+  return has_new_request;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool MpiAdapter::
+_waitAllRequestsMPI(ArrayView<Request> requests,
+                    ArrayView<bool> indexes,
                     ArrayView<MPI_Status> mpi_status)
 {
   Integer size = requests.size();
@@ -1148,7 +1197,6 @@ _waitAllRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
   UniqueArray<MPI_Request> mpi_request(size);
   for( Integer i=0; i<size; ++i ){
     mpi_request[i] = (MPI_Request)(requests[i]);
-    indexes[i] = true;
   }
   if (m_is_trace)
     info() << " MPI_waitall begin size=" << size;
@@ -1174,36 +1222,13 @@ _waitAllRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
     double end_time = MPI_Wtime();
     diff_time = end_time - begin_time;
   }
-  // Il ne faut pas utiliser mpi_request[i] car il est modifié par Mpi
-  // mpi_request[i] == MPI_REQUEST_NULL
-  UniqueArray<SubRequestInfo> sub_requests;
-  {
-    MpiLock::Section mls(m_mpi_lock);
-    for( Integer i=0; i<size; ++i ) {
-      // Attention à bien utiliser une référence sinon le reset ne
-      // s'applique pas à la bonne variable
-      Request& r = requests[i];
-      if (r.isValid()){
-        _removeRequest((MPI_Request)(r));
-        if (r.hasSubRequest())
-          sub_requests.add(SubRequestInfo(r.subRequest(),i));
-        r.reset();
-      }
-    }
+
+  // Indique que chaque requête est traitée car on a fait un waitall.
+  for( Integer i=0; i<size; ++i ){
+    indexes[i] = true;
   }
-  // NOTE: les appels aux sous-requêtes peuvent générer d'autres requêtes.
-  // Il faut faire attention à ne pas utiliser les sous-requêtes avec
-  // le verrou actif.
-  bool has_new_request = false;
-  if (!sub_requests.empty()){
-    for( SubRequestInfo& sri : sub_requests ){
-      Request r = sri.sub_request->executeOnCompletion();
-      if (r.isValid()){
-        has_new_request = true;
-        requests[sri.index] = r;
-      }
-    }
-  }
+
+  bool has_new_request = _handleEndRequests(requests,indexes);
   if (m_is_trace)
     info() << " MPI_waitall end size=" << size;
   m_stat->add(MpiInfo(eMpiName::Waitall).name(),diff_time,size);
@@ -1229,12 +1254,11 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
     // Sauve la requete pour la desallouer dans m_allocated_requests,
     // car sa valeur ne sera plus valide après appel à MPI_Wait*
     saved_mpi_request[i] = static_cast<MPI_Request>(requests[i]);
-    //info() << " REQUEST_WAIT I=" << i << " M=" << size
-    //<< " R=" << mpi_request[i];
   }
 
+  debug() << "WaitRequestBegin is_non_blocking=" << is_non_blocking << " n=" << size;
+
   double begin_time = MPI_Wtime();
-  debug() << "WaitRequestBegin is_non_blocking=" << is_non_blocking;
 
   try{
     if (is_non_blocking){
@@ -1252,6 +1276,8 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
     else{
       _trace(MpiInfo(eMpiName::Waitsome).name().localstr());
       {
+        // TODO: si le verrou existe, il faut faire une boucle de testSome() pour ne
+        // pas bloquer.
         MpiLock::Section mls(m_mpi_lock);
         m_mpi_prof->waitSome(size, saved_mpi_request.data(), &nb_completed_request,
                              completed_requests.data(), mpi_status.data());
@@ -1260,7 +1286,7 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
       // mpi_request[i] == MPI_REQUEST_NULL
       if (nb_completed_request == MPI_UNDEFINED) // Si aucune requete n'etait valide.
       	nb_completed_request = 0;
-      debug() << "WaitRequest nb_completed=" << nb_completed_request;
+      debug() << "WaitSomeRequest nb_completed=" << nb_completed_request;
     }
   }
   catch(TimeoutException& ex)
@@ -1276,27 +1302,23 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
     throw;
   }
 
-  {
-    MpiLock::Section mls(m_mpi_lock);
-    for( int z=0; z<nb_completed_request; ++z ){
-      int index = completed_requests[z];
-      debug() << "Completed z=" << z
-              << " index=" << index
-              << " status=" << mpi_status[z].MPI_SOURCE
-              << " status_index=" << mpi_status[index].MPI_SOURCE;
-      indexes[index] = true;
-      if (requests[index].isValid()){
-        _removeRequest(static_cast<MPI_Request>(requests[index]));
-        if (requests[index].hasSubRequest())
-          ARCCORE_THROW(NotImplementedException,"SubRequest support");
-        requests[index].reset();
-      }
-    }
+  for( int z=0; z<nb_completed_request; ++z ){
+    int index = completed_requests[z];
+    debug() << "Completed z=" << z
+            << " index=" << index
+            << " status=" << mpi_status[z].MPI_SOURCE
+            << " status_index=" << mpi_status[index].MPI_SOURCE;
+    indexes[index] = true;
   }
 
+  bool has_new_request = _handleEndRequests(requests,indexes);
+  if (has_new_request){
+    // Si on a de nouvelles requêtes, alors il est possible qu'aucune
+    // requête n'est aboutie. En cas de testSome, cela n'est pas grave.
+    // En cas de waitSome, cela signifie qu'il faut attendre à nouveau.
+  }
   double end_time = MPI_Wtime();
   m_stat->add(MpiInfo(eMpiName::Waitsome).name(),end_time-begin_time,size);
-  //return ret;
 }
 
 /*---------------------------------------------------------------------------*/

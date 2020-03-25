@@ -43,6 +43,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 {
  public:
   class RequestSet;
+  struct SubRequestInfo;
  public:
 
   MpiAdapter(ITraceMng* msg,IStat* stat,MPI_Comm comm,MpiLock* mpi_lock,
@@ -188,6 +189,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   void _removeRequest(MPI_Request request);
   void _checkFatalInRequest();
   MessageId _probeMessage(MessageRank source,MessageTag tag,bool is_blocking);
+  bool _handleEndRequests(ArrayView<Request> requests,ArrayView<bool> done_indexes);
 };
 
 /*---------------------------------------------------------------------------*/
