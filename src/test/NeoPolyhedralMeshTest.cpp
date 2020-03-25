@@ -210,13 +210,41 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
     }
 
     void reverseConnectivity(std::vector<Neo::utils::Int64> const& original_source_item_uids,
-                             std::vector<Neo::utils::Int64> const& original_target_item_uids,
                              std::vector<Neo::utils::Int64> const& original_connectivity,
                              std::vector<size_t> const& nb_connected_items_per_item_original,
+                             std::vector<Neo::utils::Int64> & new_source_item_uids,
+                             std::vector<Neo::utils::Int64> & reversed_connectivity,
                              std::vector<size_t> & nb_connected_items_per_item_reversed)
     {
-      ; // let's go
-
+      assert(("Invalid argument size, utilities::reverseConnectivity",original_source_item_uids.size()==nb_connected_items_per_item_original.size()));
+      assert(("Invalid argument size, utilities::reverseConnectivity",
+          original_connectivity.size()==std::accumulate(nb_connected_items_per_item_original.begin(),nb_connected_items_per_item_original.end(),0)));
+      auto source_item_index = 0;
+      std::map<Neo::utils::Int64,std::vector<Neo::utils::Int64>> reversed_connectivity_map;
+      for (int original_connectivity_index = 0; original_connectivity_index < original_connectivity.size(); ) {
+        auto current_item_nb_connected_items = nb_connected_items_per_item_original[source_item_index];
+        auto current_item_connected_items = Neo::utils::ConstArrayView<Neo::utils::Int64>{
+            current_item_nb_connected_items,
+            &original_connectivity[original_connectivity_index]};
+        for (auto connected_item : current_item_connected_items) {
+          reversed_connectivity_map[connected_item].push_back(original_source_item_uids[source_item_index]);
+        }
+        source_item_index++;
+        original_connectivity_index+= current_item_nb_connected_items;
+      }
+      new_source_item_uids.resize(reversed_connectivity_map.size());
+      nb_connected_items_per_item_reversed.resize(reversed_connectivity_map.size());
+      auto new_source_item_uids_index = 0;
+      reversed_connectivity.clear();
+      reversed_connectivity.reserve(4*reversed_connectivity_map.size());// choose an average of 4 connected elements per item
+      for (auto [new_source_item_uid,new_source_item_connected_items] : reversed_connectivity_map) {
+        new_source_item_uids[new_source_item_uids_index] = new_source_item_uid;
+        reversed_connectivity.insert(reversed_connectivity.end(),
+                                     new_source_item_connected_items.begin(),
+                                     new_source_item_connected_items.end());
+        nb_connected_items_per_item_reversed[new_source_item_uids_index++] =
+            new_source_item_connected_items.size();
+      }
     }
   }
 }
@@ -398,6 +426,30 @@ TEST(PolyhedralTest,CreateMesh1)
 {
   auto mesh = Neo::Mesh{"PolyhedralMesh"};
   PolyhedralMeshTest::addCells(mesh);
+}
+
+TEST(PolyhedralTest,ConnectivityUtilitiesTest){
+  // get face cells by reversing connectivity
+  std::vector<Neo::utils::Int64> cell_uids{0,1,2,3};
+  std::vector<Neo::utils::Int64> cell_faces{0,1,2,3,4,5,0,3,5,0,1,2,3};
+  std::vector<size_t> nb_face_per_cells{3,3,3,4};
+  std::vector<Neo::utils::Int64> face_uids;
+  std::vector<Neo::utils::Int64> face_cells;
+  std::vector<size_t> nb_cell_per_faces;
+  StaticMesh::utilities::reverseConnectivity(cell_uids,cell_faces,nb_face_per_cells,
+                                             face_uids,face_cells,nb_cell_per_faces);
+  _printContainer(face_uids, "Face uids ");
+  _printContainer(face_cells, "Face cells ");
+  _printContainer(nb_cell_per_faces, "Cell per faces ");
+  std::vector<Neo::utils::Int64> face_uids_ref{0,1,2,3,4,5};
+  std::vector<Neo::utils::Int64> face_cells_ref{0,2,3,0,3,0,3,1,2,3,1,1,2};
+  std::vector<size_t> nb_cell_per_faces_ref{3,2,2,3,1,2};
+  EXPECT_TRUE(std::equal(face_uids.begin(),face_uids.end(),
+                         face_uids_ref.begin(),face_uids_ref.end()));
+  EXPECT_TRUE(std::equal(face_cells.begin(),face_cells.end(),
+                         face_cells_ref.begin(),face_cells_ref.end()));
+  EXPECT_TRUE(std::equal(nb_cell_per_faces.begin(),nb_cell_per_faces.end(),
+                         nb_cell_per_faces_ref.begin(),nb_cell_per_faces_ref.end()));
 }
 
 TEST(PolyhedralTest,TypedUtilitiesTest){
