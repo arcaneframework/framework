@@ -18,6 +18,7 @@
 
 namespace Arccore::MessagePassing::Mpi
 {
+class MpiAdapter;
 /*!
  * \brief Spécialisation MPI d'une 'Request'.
  *
@@ -30,8 +31,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiRequest
  public:
 
   MpiRequest() = default;
-  MpiRequest(int ret_value,MPI_Request mpi_request)
-  : Request(ret_value,mpi_request){}
+  MpiRequest(int ret_value,MpiAdapter* creator,MPI_Request mpi_request)
+  : Request(ret_value,creator,mpi_request){}
 };
 
 /*---------------------------------------------------------------------------*/

@@ -15,6 +15,7 @@
 #include "arccore/message_passing_mpi/MessagePassingMpiEnum.h"
 #include "arccore/message_passing_mpi/IMpiProfiling.h"
 #include "arccore/message_passing/PointToPointMessageInfo.h"
+#include "arccore/message_passing/Request.h"
 #include "arccore/collections/CollectionsGlobal.h"
 
 #include "arccore/base/BaseTypes.h"
@@ -40,13 +41,15 @@ namespace Arccore::MessagePassing::Mpi
  */
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 : public TraceAccessor
+, public IRequestCreator
 {
  public:
   class RequestSet;
   struct SubRequestInfo;
  public:
 
-  MpiAdapter(ITraceMng* msg,IStat* stat,MPI_Comm comm,MpiLock* mpi_lock,
+  MpiAdapter(ITraceMng* msg,IStat* stat,
+             MPI_Comm comm,MpiLock* mpi_lock,
              IMpiProfiling* mpi_prof = nullptr);
 
  protected:
@@ -146,6 +149,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   void barrier();
 
   int toMPISize(Int64 count);
+
+  //! Construit une requête Arccore à partir d'une requête MPI.
+  Request buildRequest(int ret,MPI_Request request);
 
  public:
 

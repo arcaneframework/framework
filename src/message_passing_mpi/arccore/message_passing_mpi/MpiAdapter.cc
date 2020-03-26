@@ -190,7 +190,8 @@ int _checkSize(Int64 i64_size)
 /*---------------------------------------------------------------------------*/
 
 MpiAdapter::
-MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,MpiLock* mpi_lock, IMpiProfiling* mpi_op)
+MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,
+           MpiLock* mpi_lock, IMpiProfiling* mpi_op)
 : TraceAccessor(trace)
 , m_stat(stat)
 , m_mpi_lock(mpi_lock)
@@ -236,6 +237,15 @@ MpiAdapter::
 {
   delete m_request_set;
   delete m_mpi_prof;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Request MpiAdapter::
+buildRequest(int ret,MPI_Request mpi_request)
+{
+  return MpiRequest(ret,this,mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -345,7 +355,7 @@ nonBlockingBroadcast(void* buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype)
   //TODO determiner la taille des messages
   m_stat->add("IBroadcast",sr_time,0);
   ARCCORE_ADD_REQUEST(mpi_request);
-  return MpiRequest(ret,mpi_request);
+  return buildRequest(ret,mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -387,7 +397,7 @@ nonBlockingGather(const void* send_buf,void* recv_buf,
   //TODO determiner la taille des messages
   m_stat->add("IGather",sr_time,0);
   ARCCORE_ADD_REQUEST(mpi_request);
-  return Request(ret,mpi_request);
+  return buildRequest(ret,mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -428,7 +438,7 @@ nonBlockingAllGather(const void* send_buf,void* recv_buf,
   //TODO determiner la taille des messages
   m_stat->add("IAllGather",sr_time,0);
   ARCCORE_ADD_REQUEST(mpi_request);
-  return Request(ret,mpi_request);
+  return buildRequest(ret,mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -535,7 +545,7 @@ nonBlockingAllToAll(const void* send_buf,void* recv_buf,Integer count,MPI_Dataty
   //TODO determiner la taille des messages
   m_stat->add("IAllToAll",sr_time,0);
   ARCCORE_ADD_REQUEST(mpi_request);
-  return Request(ret,mpi_request);
+  return buildRequest(ret,mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -588,7 +598,7 @@ nonBlockingAllToAllVariable(const void* send_buf,const int* send_counts,
   //TODO determiner la taille des messages
   m_stat->add("IAllToAll",sr_time,0);
   ARCCORE_ADD_REQUEST(mpi_request);
-  return Request(ret,mpi_request);
+  return buildRequest(ret,mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -611,7 +621,7 @@ nonBlockingBarrier()
   int ret = -1;
   ret = MPI_Ibarrier(m_communicator,&mpi_request);
   ARCCORE_ADD_REQUEST(mpi_request);
-  return Request(ret,mpi_request);
+  return buildRequest(ret,mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -661,7 +671,7 @@ nonBlockingAllReduce(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatyp
   double end_time = MPI_Wtime();
   m_stat->add("IReduce",end_time-begin_time,_n);
   ARCCORE_ADD_REQUEST(mpi_request);
-  return Request(ret,mpi_request);
+  return buildRequest(ret,mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -817,7 +827,7 @@ directSend(const void* send_buffer,Int64 send_buffer_size,
                      << " time " << sr_time << " blocking " << is_blocked;
   // TODO(FL): regarder comment faire pour profiler le Isend
   m_stat->add(MpiInfo(eMpiName::Send).name(),end_time-begin_time,send_size);
-  return Request(ret,mpi_request);
+  return buildRequest(ret,mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -926,7 +936,7 @@ directRecv(void* recv_buffer,Int64 recv_buffer_size,
   debug(Trace::High) << "MPI Recv: recv after " << recv_size
                      << " time " << sr_time << " blocking " << is_blocked;
   m_stat->add(MpiInfo(eMpiName::Recv).name(),end_time-begin_time,recv_size);
-  return Request(ret,mpi_request);
+  return buildRequest(ret,mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1084,7 +1094,7 @@ directRecv(void* recv_buffer,Int64 recv_buffer_size,
   debug(Trace::High) << "MPI Recv: recv after " << recv_size
                      << " time " << sr_time << " blocking " << is_blocked;
   m_stat->add(MpiInfo(eMpiName::Recv).name(),end_time-begin_time,recv_size);
-  return Request(ret,mpi_request);
+  return buildRequest(ret,mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
