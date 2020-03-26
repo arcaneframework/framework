@@ -30,13 +30,35 @@ class ARCCORE_MESSAGEPASSING_EXPORT ISubRequest
   virtual Request executeOnCompletion() =0;
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Interface d'un créateur de requête.
+ */
+class ARCCORE_MESSAGEPASSING_EXPORT IRequestCreator
+{
+ public:
+  virtual ~IRequestCreator() = default;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Requête d'un message.
  *
- * Ces informations sont utilisées pour les messages non bloquants.
+ * Ces informations sont utilisées pour les messages non bloquants. Une
+ * requête non nulle est associée à un \a IMessagePassingMng.
  *
- * \note Le type exact de la requête dépend de l'implémentation. On encapsule
- * cela dans une union.
+ * Cette classe permet de conserver de manière générique une requête sans
+ * connaitre son type exact (par exemple MPI_Request avec la norme MPI). On utilise
+ * pour cela une union. Pour être certain de créér une instance de cette
+ * classe avec avec les bons paramètes, il est préférable d'utiliser une
+ * spécialisation (par exemple la classe MpiRequest).
+ *
+ * Une requête peut être associée à une sous-requête (ISubRequest) dont
+ * la méthode ISubRequest::executeOnCompletion() sera exécutée
+ * lorsque la requête sera satisfaite. Cela permet de générer d'autres
+ * requêtes automatiquement.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT Request
 {
@@ -66,6 +88,9 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
     m_request = null_request;
   }
 
+ public:
+
+  ARCCORE_DEPRECATED_2020("Use overload with IRequestCreator pointer")
   Request(int return_value,void* arequest)
   : m_return_value(return_value)
   {
@@ -73,6 +98,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
     m_request.v = arequest;
   }
 
+  ARCCORE_DEPRECATED_2020("Use overload with IRequestCreator pointer")
   Request(int return_value,const void* arequest)
   : m_return_value(return_value)
   {
@@ -80,6 +106,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
     m_request.cv = arequest;
   }
 
+  ARCCORE_DEPRECATED_2020("Use overload with IRequestCreator pointer")
   Request(int return_value,int arequest)
   : m_return_value(return_value)
   {
@@ -87,6 +114,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
     m_request.i = arequest;
   }
 
+  ARCCORE_DEPRECATED_2020("Use overload with IRequestCreator pointer")
   Request(int return_value,long arequest)
   : m_return_value(return_value)
   {
@@ -94,6 +122,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
     m_request.l = arequest;
   }
 
+  ARCCORE_DEPRECATED_2020("Use overload with IRequestCreator pointer")
   Request(int return_value,std::size_t arequest)
   : m_return_value(return_value)
   {
@@ -101,7 +130,42 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
     m_request.st = arequest;
   }
 
-  Request& operator=(const Request& rhs) = default;
+ public:
+
+  Request(int return_value,IRequestCreator* creator,void* arequest)
+  : m_return_value(return_value), m_creator(creator)
+  {
+    m_type = T_Ptr;
+    m_request.v = arequest;
+  }
+
+  Request(int return_value,IRequestCreator* creator,const void* arequest)
+  : m_return_value(return_value), m_creator(creator)
+  {
+    m_type = T_Ptr;
+    m_request.cv = arequest;
+  }
+
+  Request(int return_value,IRequestCreator* creator,int arequest)
+  : m_return_value(return_value), m_creator(creator)
+  {
+    m_type = T_Int;
+    m_request.i = arequest;
+  }
+
+  Request(int return_value,IRequestCreator* creator,long arequest)
+  : m_return_value(return_value), m_creator(creator)
+  {
+    m_type = T_Long;
+    m_request.l = arequest;
+  }
+
+  Request(int return_value,IRequestCreator* creator,std::size_t arequest)
+  : m_return_value(return_value), m_creator(creator)
+  {
+    m_type = T_SizeT;
+    m_request.st = arequest;
+  }
 
  public:
 
@@ -140,6 +204,10 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
   Ref<ISubRequest> subRequest() const { return m_sub_request; }
   bool hasSubRequest() const { return !m_sub_request.isNull(); }
   void setSubRequest(Ref<ISubRequest> s) { m_sub_request = s; }
+
+  //! Pointeur sur le créateur de la requête
+  void* creator() const { return m_creator; }
+
   void print(std::ostream& o) const;
 
  private:
@@ -148,6 +216,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
   int m_type = T_Null;
   _Request m_request;
   Ref<ISubRequest> m_sub_request;
+  IRequestCreator* m_creator = nullptr;
   static _Request null_request;
 };
 
