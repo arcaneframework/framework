@@ -160,6 +160,7 @@ void removeItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::I
   // This algo will be executed before remove : todo plug graph in Neo otherwise this won't work
   const std::string ok_to_start_remove_property_name = "ok_to_start_remove_property";
   family.addProperty<Neo::utils::Int32>(ok_to_start_remove_property_name);
+  family.addProperty<Neo::utils::Int32>(removed_item_property_name);
   mesh.addAlgorithm(
       Neo::OutProperty{family,removed_item_property_name},
       Neo::OutProperty{family,ok_to_start_remove_property_name},

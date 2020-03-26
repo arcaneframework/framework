@@ -159,7 +159,7 @@ node_family.addArrayProperty<Neo::utils::Int32>("node2cells");
 node_family.addProperty<Neo::utils::Int32>("internal_end_of_remove_tag"); // not a user-defined property // todo use byte ?
 
 // Test adds
-auto& property = node_family.getProperty("node_lids");
+auto& property = node_family.getProperty("node_uids");
 
 // Adding cell family and properties
 auto& cell_family = mesh.getFamily(Neo::ItemKind::IK_Cell,"CellFamily");
