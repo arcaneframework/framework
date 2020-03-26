@@ -696,18 +696,23 @@ TEST(PolyhedralTest,ImportXdmfHexahedronMesh) {
          {0, 3, 7, 4},
          {0, 1, 5, 4}}}},
       nb_faces, face_nodes, cell_face_indexes); //utilities
-  //  // On peut symmetriser une connectivité
-  //  std::vector<Neo::utils::Int64> node_faces;
-  //  StaticMesh::reverseConnectivity(face_nodes,node_faces); // utilities
   std::vector<Neo::utils::Int64> face_uids(nb_faces);
-  std::vector<Neo::utils::Int64> cell_faces;
+  std::vector<Neo::utils::Int64> cell_faces(cell_face_indexes.size());
   std::copy(cell_face_indexes.begin(),cell_face_indexes.end(),cell_faces.begin()); // face indexes are taken as uids
   std::iota(face_uids.begin(),face_uids.end(), 0);
+  // get face cells by reversing connectivity
+  std::vector<Neo::utils::Int64> face_cells;
+  std::vector<Neo::utils::Int64> connected_face_uids;
+  std::vector<size_t> nb_cell_per_faces;
+  StaticMesh::utilities::reverseConnectivity(cell_uids,cell_faces,std::vector<size_t>(cell_uids.size(),6),
+                                             connected_face_uids,face_cells,nb_cell_per_faces);
   PolyhedralMeshTest::_createMesh(mesh, node_uids, cell_uids, face_uids,
-                                  node_coords,cell_nodes,cell_faces,face_nodes,
+                                  node_coords,cell_nodes,cell_faces,
+                                  face_nodes, face_cells,
                                   std::vector<size_t>(cell_uids.size(),8),
                                   std::vector<size_t>(cell_uids.size(),6),
-                                  std::vector<size_t>(face_uids.size(),4));
+                                  std::vector<size_t>(face_uids.size(),4),
+                                  std::move(nb_cell_per_faces));
 }
 
 #endif
