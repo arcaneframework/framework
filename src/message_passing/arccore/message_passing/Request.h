@@ -205,8 +205,8 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
   bool hasSubRequest() const { return !m_sub_request.isNull(); }
   void setSubRequest(Ref<ISubRequest> s) { m_sub_request = s; }
 
-  //! Pointeur sur le créateur de la requête
-  void* creator() const { return m_creator; }
+  //! Créateur de la requête
+  IRequestCreator* creator() const { return m_creator; }
 
   void print(std::ostream& o) const;
 
