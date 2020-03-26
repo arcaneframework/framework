@@ -6,9 +6,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "MpiAdapter.h"
-
-#include <cstdint>
+#include "arccore/message_passing_mpi/MpiAdapter.h"
 
 #include "arccore/trace/ITraceMng.h"
 
@@ -27,7 +25,10 @@
 
 #include "arccore/message_passing_mpi/MpiLock.h"
 #include "arccore/message_passing_mpi/NoMpiProfiling.h"
+#include "arccore/message_passing_mpi/MpiRequest.h"
 #include "arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h"
+
+#include <cstdint>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -344,7 +345,7 @@ nonBlockingBroadcast(void* buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype)
   //TODO determiner la taille des messages
   m_stat->add("IBroadcast",sr_time,0);
   ARCCORE_ADD_REQUEST(mpi_request);
-  return Request(ret,mpi_request);
+  return MpiRequest(ret,mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -842,9 +843,7 @@ commSplit(bool keep)
     // Failed if new_comm is MPI_COMM_NULL
     return StandaloneMpiMessagePassingMng::create(new_comm, true);
   }
-  else {
-    return nullptr;
-  }
+  return nullptr;
 }
 
 /*---------------------------------------------------------------------------*/

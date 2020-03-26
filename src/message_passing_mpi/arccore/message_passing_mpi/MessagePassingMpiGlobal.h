@@ -66,6 +66,7 @@ namespace MessagePassing
 
 namespace Mpi
 {
+class MpiRequest;
 class MpiAdapter;
 class MpiLock;
 class IMpiReduceOperator;
@@ -73,7 +74,6 @@ class MpiDatatype;
 class MpiMessagePassingMng;
 template<typename DataType>
 class StdMpiReduceOperator;
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
