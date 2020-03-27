@@ -83,7 +83,7 @@ add_subdirectory(modules/AlienExternalPackages)
 add_subdirectory(modules/AlienTrilinos)
 add_subdirectory(modules/AlienHPDDM)
 add_subdirectory(modules/AlienIFPENSolvers)
-add_subdirectory(modules/AlienArcaneTools)
+add_subdirectory(modules/arcane_tools)
 
 message_separator()
 logStatus("Loading tests...")

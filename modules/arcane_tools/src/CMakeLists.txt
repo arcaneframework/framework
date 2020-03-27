@@ -2,11 +2,11 @@ if (NOT TARGET arcane_core)
     return()
 endif ()
 
-createLibrary(ALIEN-ArcaneTools
-  EXPORT ALIEN/ALIEN-ArcaneToolsExport.h
+createLibrary(alien_arcane_tools
+  EXPORT alien/AlienArcaneToolsExport.h
   )
 
-addSources(ALIEN-ArcaneTools
+addSources(alien_arcane_tools
   ALIEN/ArcaneTools/Accessors/ItemVectorAccessor.cc
   #ALIEN/ArcaneTools/IndexManager/ArcGeoSim/ContactAbstractFamily.cc
   ALIEN/ArcaneTools/IndexManager/SimpleAbstractFamily.cc
@@ -16,24 +16,24 @@ addSources(ALIEN-ArcaneTools
   )
 
 if(TARGET petsc)
-  addSources(ALIEN-ArcaneTools 
+  addSources(alien_arcane_tools 
     ALIEN/ArcaneTools/IO/MatrixRowPrinter.cc
     )
-  linkLibraries(ALIEN-ArcaneTools petsc)
-  linkLibraries(ALIEN-ArcaneTools ALIEN-ExternalPackages)
+  linkLibraries(alien_arcane_tools petsc)
+  linkLibraries(alien_arcane_tools ALIEN-ExternalPackages)
 endif()
 
-linkLibraries(ALIEN-ArcaneTools alien)
+linkLibraries(alien_arcane_tools alien)
 
-commit(ALIEN-ArcaneTools)
+commit(alien_arcane_tools)
 
-target_include_directories(ALIEN-ArcaneTools PUBLIC
+target_include_directories(alien_arcane_tools PUBLIC
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:include>)
 
-install(DIRECTORY ALIEN 
+install(DIRECTORY alien 
         DESTINATION include
         FILES_MATCHING PATTERN "*.h"
   )

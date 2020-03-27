@@ -28,7 +28,7 @@ namespace ArcaneTools {
    *  structures internes des interfaces critiques
    *  (en particulier getIndex vectoriel)
    */
-  class ALIEN_ARCANETOOLS_EXPORT BasicIndexManager : public IItemIndexManager
+  class ALIEN_ARCANE_TOOLS_EXPORT BasicIndexManager : public IItemIndexManager
   {
  public:
   class ItemAbstractFamily : public IAbstractFamily

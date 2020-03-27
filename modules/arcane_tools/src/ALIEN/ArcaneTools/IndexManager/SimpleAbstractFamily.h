@@ -22,7 +22,7 @@ namespace ArcaneTools {
   /*---------------------------------------------------------------------------*/
 
   /* Dans cette implémentation, implicitement le localId du i_ème item est i */
-  class ALIEN_ARCANETOOLS_EXPORT SimpleAbstractFamily
+  class ALIEN_ARCANE_TOOLS_EXPORT SimpleAbstractFamily
   : public IIndexManager::IAbstractFamily
   {
    public:

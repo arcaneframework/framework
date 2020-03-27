@@ -28,7 +28,7 @@ namespace ArcaneTools {
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
-  class ALIEN_ARCANETOOLS_EXPORT IndexManagerBlockBuilder : public IBlockBuilder
+  class ALIEN_ARCANE_TOOLS_EXPORT IndexManagerBlockBuilder : public IBlockBuilder
 {
 public:
  typedef VMap<Arccore::Integer, Arccore::Integer> ValuePerBlock;

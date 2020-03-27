@@ -24,11 +24,11 @@ namespace ArcaneTools {
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
-  template class ALIEN_ARCANETOOLS_EXPORT ItemVectorAccessorT<double>;
+  template class ALIEN_ARCANE_TOOLS_EXPORT ItemVectorAccessorT<double>;
 
 #ifdef WIN32
-  template class ALIEN_ARCANETOOLS_EXPORT ItemVectorAccessorT<double>::VectorElement;
-  template void ALIEN_ARCANETOOLS_EXPORT
+  template class ALIEN_ARCANE_TOOLS_EXPORT ItemVectorAccessorT<double>::VectorElement;
+  template void ALIEN_ARCANE_TOOLS_EXPORT
   ItemVectorAccessorT<double>::VectorElement::operator=(const double&);
 #endif
 

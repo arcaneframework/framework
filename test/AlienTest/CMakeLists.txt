@@ -19,7 +19,7 @@ linkLibraries(alien_arcane_test.exe
         alien_move_semantic
         ALIEN-ExternalPackages
         ALIEN-IFPENSolvers
-        ALIEN-ArcaneTools
+        alien_arcane_tools
         arcane_core
         arcane_std
         arcane_mpi
