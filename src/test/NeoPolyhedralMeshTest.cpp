@@ -182,36 +182,38 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
     {
       nb_items = 0;
       auto cell_index = 0;
-      auto face_index = 0;
-      using FaceNodes = std::set<int>;
-      using FaceUid = Neo::utils::Int64;
-      using FaceInfo = std::pair<FaceNodes,FaceUid>;
-      auto face_info_comp = [](FaceInfo const& face_info1, FaceInfo const& face_info2){
-        return face_info1.first < face_info2.first;
+      auto item_index = 0;
+      using ItemNodes = std::set<int>;
+      using ItemUid = Neo::utils::Int64;
+      using ItemInfo = std::pair<ItemNodes, ItemUid>;
+      auto item_info_comp = [](ItemInfo const& item_info1,
+                               ItemInfo const& item_info2){
+        return item_info1.first < item_info2.first;
       };
-      std::set<FaceInfo, decltype(face_info_comp)> face_nodes_set(face_info_comp);
+      std::set<ItemInfo, decltype(item_info_comp)> item_nodes_set(item_info_comp);
       for (int cell_nodes_index = 0; cell_nodes_index < cell_nodes.size();) {
-        auto [nb_node_in_cell, face_nodes_all_faces] = cell_types[cell_type_indexes[cell_index++]];
+        auto [nb_node_in_cell, item_nodes_all_items] = cell_types[cell_type_indexes[cell_index++]];
         auto current_cell_nodes = Neo::utils::ConstArrayView<Neo::utils::Int64>{(size_t)nb_node_in_cell,&cell_nodes[cell_nodes_index]};
-        for (auto current_face_node_indexes_in_cell : face_nodes_all_faces)
+        for (auto current_item_node_indexes_in_cell : item_nodes_all_items)
         {
-          std::vector<Neo::utils::Int64> current_face_nodes;
-          current_face_nodes.reserve(current_face_node_indexes_in_cell.size());
-          std::transform(current_face_node_indexes_in_cell.begin(),
-                         current_face_node_indexes_in_cell.end(),
-                         std::back_inserter(current_face_nodes),
+          std::vector<Neo::utils::Int64> current_item_nodes;
+          current_item_nodes.reserve(current_item_node_indexes_in_cell.size());
+          std::transform(current_item_node_indexes_in_cell.begin(),
+                         current_item_node_indexes_in_cell.end(),
+                         std::back_inserter(current_item_nodes),
                          [&current_cell_nodes](auto& node_index)
                          {return current_cell_nodes[node_index];});
-          auto [face_info, is_new_face] = face_nodes_set.emplace(FaceNodes{current_face_nodes.begin(),
-                                                                           current_face_nodes.end()},face_index);
-          if (!is_new_face) std::cout << "Item not inserted " << face_index << std::endl;
-          if (is_new_face) {
-            item_nodes.insert(item_nodes.end(),current_face_nodes.begin(), current_face_nodes.end());
+          auto [item_info, is_new_item] = item_nodes_set.emplace(
+              ItemNodes{current_item_nodes.begin(),
+                                                                           current_item_nodes.end()},item_index);
+          if (!is_new_item) std::cout << "Item not inserted " << item_index << std::endl;
+          if (is_new_item) {
+            item_nodes.insert(item_nodes.end(),current_item_nodes.begin(), current_item_nodes.end());
           }
-          cell_items.push_back(face_info->second);
-          if (is_new_face) {
+          cell_items.push_back(item_info->second);
+          if (is_new_item) {
             nb_items++;
-            ++face_index;
+            ++item_index;
           }
         }
         cell_nodes_index += nb_node_in_cell;
