@@ -719,6 +719,8 @@ TEST(PolyhedralTest,ImportXdmfHexahedronMesh) {
   std::vector<size_t> nb_cell_per_faces;
   StaticMesh::utilities::reverseConnectivity(cell_uids,cell_faces,std::vector<size_t>(cell_uids.size(),6),
                                              connected_face_uids,face_cells,nb_cell_per_faces);
+  _printContainer(face_cells, "  Face cells ");
+  _printContainer(nb_cell_per_faces, "  Nb cell per faces ");
   PolyhedralMeshTest::_createMesh(mesh, node_uids, cell_uids, face_uids,
                                   node_coords,cell_nodes,cell_faces,
                                   face_nodes, face_cells,
