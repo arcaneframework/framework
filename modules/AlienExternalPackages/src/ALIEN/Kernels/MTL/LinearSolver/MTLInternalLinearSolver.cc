@@ -2,8 +2,8 @@
 
 #include <ALIEN/Alien-ExternalPackagesPrecomp.h>
 
-#include <ALIEN/Expression/Solver/SolverStats/SolverStater.h>
-#include <ALIEN/Core/Backend/LinearSolverT.h>
+#include <alien/expression/solver/solver_stats/SolverStater.h>
+#include <alien/core/backend/LinearSolverT.h>
 
 #include <boost/numeric/mtl/mtl.hpp>
 #include <boost/numeric/itl/itl.hpp>
@@ -13,7 +13,7 @@
 #include <ALIEN/Kernels/MTL/MTLBackEnd.h>
 
 #include <ALIEN/Kernels/MTL/Algebra/MTLLinearAlgebra.h>
-#include <ALIEN/Data/Space.h>
+#include <alien/data/Space.h>
 
 #include <ALIEN/axl/MTLLinearSolver_IOptions.h>
 

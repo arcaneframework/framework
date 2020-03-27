@@ -1,7 +1,7 @@
 
 logStatus(" ** Generate alien configuration files :")
 
-logStatus("  * ALIENConfig.h")
+logStatus("  * AlienLegacyConfig.h")
 
 get_property(TARGETS GLOBAL PROPERTY ${PROJECT_NAME}_TARGETS)
 
@@ -13,11 +13,11 @@ foreach(target ${TARGETS})
 endforeach()
 
 configure_file(
-  ${PROJECT_SOURCE_DIR}/cmake/ALIENConfig.h.in 
-  ${PROJECT_BINARY_DIR}/ALIEN/ALIENConfig.h
+  ${PROJECT_SOURCE_DIR}/cmake/AlienLegacyConfig.h.in 
+  ${PROJECT_BINARY_DIR}/alien/AlienLegacyConfig.h
   )
 
 install(
-  FILES ${PROJECT_BINARY_DIR}/ALIEN/ALIENConfig.h
-  DESTINATION include/ALIEN
+  FILES ${PROJECT_BINARY_DIR}/alien/AlienLegacyConfig.h
+  DESTINATION include/alien
   )

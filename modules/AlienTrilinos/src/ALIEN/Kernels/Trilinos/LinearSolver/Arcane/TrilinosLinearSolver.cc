@@ -3,7 +3,7 @@
 /**
  * Interface du service de résolution de système linéaire
  */
-#include "ALIEN/ALIENConfig.h"
+#include "alien/AlienLegacyConfig.h"
 
 #include "ALIEN/Kernels/Trilinos/TrilinosPrecomp.h"
 #include "ALIEN/Alien-TrilinosPrecomp.h"

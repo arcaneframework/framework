@@ -5,8 +5,8 @@
 
 #include <boost/program_options/variables_map.hpp>
 
-#include <ALIEN/Expression/Solver/ILinearSolver.h>
-#include <ALIEN/Utils/ParameterManager/BaseParameterManager.h>
+#include <alien/expression/solver/ILinearSolver.h>
+#include <alien/utils/parameter_manager/BaseParameterManager.h>
 
 #include <ALIEN/Alien-ExternalPackages.h>
 #include <ALIEN/Alien-IFPENSolvers.h>

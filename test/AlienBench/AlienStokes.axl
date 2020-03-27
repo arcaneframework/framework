@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<module name="AlienStokes" version="1.0">
+
+	<description>Descripteur du module Laplacian</description>
+
+   <variables>
+    
+    <!--  NODE COORD   -->
+    <variable
+      field-name="node_coord"
+      name="NodeCoord"
+      data-type="real3"
+      item-kind="node"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+      
+    <!-- Pressure -->
+    <variable
+      field-name="p"
+      name="P"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" 
+    />
+    <variable
+      field-name="xP"
+      name="XP"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" 
+    />
+    
+    <!-- Face Velocity -->
+    <variable
+      field-name="flux"
+      name="FLUX"
+      data-type="real"
+      item-kind="face"
+      dim="0"
+      dump="true"
+      need-sync="true" 
+    />
+    
+    <!-- Cell Velocity -->
+    <variable
+      field-name="v"
+      name="V"
+      data-type="real"
+      item-kind="cell"
+      dim="1"
+      dump="true"
+      need-sync="true" 
+    />
+    
+    <!-- Velocity -->
+    <variable
+      field-name="xV"
+      name="XV"
+      data-type="real"
+      item-kind="cell"
+      dim="1"
+      dump="true"
+      need-sync="true" 
+    />
+    
+    <!-- Energy -->
+    <variable
+      field-name="e"
+      name="E"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" 
+    />
+    
+    
+    
+    <!-- Energy -->
+    <variable
+      field-name="xE"
+      name="XE"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" 
+    />
+    
+    <!-- Face source term -->
+    <variable
+      field-name="f"
+      name="F"
+      data-type="real"
+      item-kind="face"
+      dim="0"
+      dump="true"
+      need-sync="true" 
+    />
+    
+    <!-- Cell source term -->
+    <variable
+      field-name="g"
+      name="G"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" 
+    />
+    
+    <variable
+      field-name="fD"
+      name="FD"
+      data-type="real"
+      item-kind="face"
+      dim="0"
+      dump="true"
+      need-sync="true" 
+    />
+    
+    <variable
+      field-name="fN"
+      name="FN"
+      data-type="real"
+      item-kind="face"
+      dim="0"
+      dump="true"
+      need-sync="true" 
+    />
+    <variable
+      field-name="x"
+      name="X"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" 
+    />
+    
+    
+    
+    
+    <variable
+      field-name="cell_center"
+      name="CellCenter"
+      data-type="real3"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" 
+    />
+
+    <variable
+      field-name="face_center"
+      name="FaceCenter"
+      data-type="real3"
+      item-kind="face"
+      dim="0"
+      dump="true"
+      need-sync="true" 
+    />
+    <variable
+      field-name="face_normal"
+      name="FaceNormal"
+      data-type="real3"
+      item-kind="face"
+      dim="0"
+      dump="true"
+      need-sync="true" 
+    />
+    <variable
+      field-name="face_type"
+      name="FaceType"
+      data-type="integer"
+      item-kind="face"
+      dim="0"
+      dump="true"
+      need-sync="true" 
+    />
+    <variable
+      field-name="face_orientation"
+      name="FaceOrientation"
+      data-type="integer"
+      item-kind="face"
+      dim="0"
+      dump="true"
+      need-sync="true" 
+    />
+    
+    
+
+  </variables>
+  
+  <entry-points>
+    <entry-point method-name="init" name="Init" where="start-init" property="none" />
+    <entry-point method-name="test" name="Test" where="compute-loop" property="none" />
+    </entry-points>
+
+  <options>
+    
+        
+    <simple name="homogeneous" type="bool" default="false">
+      <description>to activate homogeneous laplacian test</description>
+    </simple>
+    
+    <simple name="uzawa-factor" type="real" default="0.5">
+      <description>Uzawa factor</description>
+    </simple>
+    
+    <simple name="uzawa-max-nb-iterations" type="integer" default="10">
+      <description>Uzawa max nb iterations</description>
+    </simple>
+    
+
+    
+    <service-instance name="linear-solver" type="Alien::ILinearSolver">
+       <description>Service solveur</description>
+    </service-instance>
+   </options>
+</module>

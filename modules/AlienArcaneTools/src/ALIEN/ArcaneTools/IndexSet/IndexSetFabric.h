@@ -1,7 +1,7 @@
 #ifndef ALIEN_ARCANETOOLS_INDEXSET_INDEXSETFABRIC_H
 #define ALIEN_ARCANETOOLS_INDEXSET_INDEXSETFABRIC_H
 
-#include <ALIEN/Data/Space.h>
+#include <alien/data/Space.h>
 #include <ALIEN/ArcaneTools/IIndexManager.h>
 
 #include <arccore/trace/ITraceMng.h>

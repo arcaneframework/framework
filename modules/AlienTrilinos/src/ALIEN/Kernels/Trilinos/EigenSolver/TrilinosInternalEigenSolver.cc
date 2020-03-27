@@ -14,14 +14,14 @@
 #include <ALIEN/Kernels/Trilinos/Algebra/TrilinosInternalLinearAlgebra.h>
 #include <ALIEN/Kernels/Trilinos/DataStructure/TrilinosInternal.h>
 
-#include <ALIEN/Data/Space.h>
-#include <ALIEN/Data/IMatrix.h>
-#include <ALIEN/Data/IVector.h>
-#include <ALIEN/Expression/Solver/IEigenSolver.h>
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
-#include <ALIEN/Core/Impl/MultiVectorImpl.h>
+#include <alien/data/Space.h>
+#include <alien/data/IMatrix.h>
+#include <alien/data/IVector.h>
+#include <alien/expression/solver/IEigenSolver.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
+#include <alien/core/impl/MultiVectorImpl.h>
 #include <ALIEN/Kernels/Trilinos/TrilinosPrecomp.h>
-#include <ALIEN/Core/Backend/EigenSolverT.h>
+#include <alien/core/backend/EigenSolverT.h>
 #include <ALIEN/axl/TrilinosEigenSolver_IOptions.h>
 
 #include <ALIEN/Kernels/Trilinos/EigenSolver/TrilinosInternalEigenSolver.h>

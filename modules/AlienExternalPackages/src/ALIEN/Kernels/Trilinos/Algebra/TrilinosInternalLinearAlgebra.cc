@@ -7,10 +7,10 @@
 #include <ALIEN/Kernels/Trilinos/TrilinosBackEnd.h>
 #include <ALIEN/Kernels/Trilinos/DataStructure/TrilinosInternal.h>
 
-#include <ALIEN/Core/Backend/LinearAlgebraT.h>
-//#include <ALIEN/Kernels/SimpleCSR/Algebra/CBLASMPIKernel.h>
+#include <alien/core/backend/LinearAlgebraT.h>
+//#include <alien/kernels/simple_csr/algebra/CBLASMPIKernel.h>
 
-#include <ALIEN/Data/Space.h>
+#include <alien/data/Space.h>
 
 
 #include <ALIEN/Kernels/Trilinos/DataStructure/TrilinosMatrix.h>

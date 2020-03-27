@@ -6,9 +6,9 @@
  */
 
 #include <ALIEN/Kernels/MTL/MTLPrecomp.h>
-#include <ALIEN/Core/Impl/IVectorImpl.h>
-#include <ALIEN/Data/ISpace.h>
-#include <ALIEN/Distribution/VectorDistribution.h>
+#include <alien/core/impl/IVectorImpl.h>
+#include <alien/data/ISpace.h>
+#include <alien/distribution/VectorDistribution.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

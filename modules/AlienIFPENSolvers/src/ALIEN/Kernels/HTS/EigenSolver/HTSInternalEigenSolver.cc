@@ -19,13 +19,13 @@
 #include "HARTSSolver/MatrixVector/CSR/CSRMatrixImpT.h"
 #endif
 
-#include <ALIEN/Data/Space.h>
-#include <ALIEN/Expression/Solver/IEigenSolver.h>
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
-#include <ALIEN/Core/Impl/MultiVectorImpl.h>
-#include <ALIEN/Kernels/SimpleCSR/SimpleCSRPrecomp.h>
+#include <alien/data/Space.h>
+#include <alien/expression/solver/IEigenSolver.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
+#include <alien/core/impl/MultiVectorImpl.h>
+#include <alien/kernels/simple_csr/SimpleCSRPrecomp.h>
 #include <ALIEN/Kernels/HTS/EigenSolver/HTSInternalEigenSolver.h>
-#include <ALIEN/Core/Backend/EigenSolverT.h>
+#include <alien/core/backend/EigenSolverT.h>
 #include <ALIEN/axl/HTSEigenSolver_IOptions.h>
 
 

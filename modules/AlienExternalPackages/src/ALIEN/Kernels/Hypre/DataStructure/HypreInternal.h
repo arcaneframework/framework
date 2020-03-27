@@ -16,7 +16,7 @@
  *  can be only included by HypreLinearSystem and HypreLinearSolver
  */
 
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

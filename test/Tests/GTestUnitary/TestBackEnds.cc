@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 
-#include <ALIEN/Alien.h>
+#include <alien/Alien.h>
 
 namespace Environment {
   extern Arccore::MessagePassing::IMessagePassingMng* parallelMng();

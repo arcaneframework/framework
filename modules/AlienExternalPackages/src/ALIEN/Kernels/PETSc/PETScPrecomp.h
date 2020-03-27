@@ -1,9 +1,9 @@
 #pragma once
 
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 
 #ifdef WIN32
-//#include <ALIEN/Utils/WinUtil.h>
+//#include <alien/utils/WinUtil.h>
 #endif
 
 #define PETSC_DESTROY_NEW

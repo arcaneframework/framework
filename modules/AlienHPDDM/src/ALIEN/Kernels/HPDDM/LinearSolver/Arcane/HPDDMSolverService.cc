@@ -14,13 +14,13 @@
 
 
 
-#include "ALIEN/ALIENConfig.h"
+#include "alien/AlienLegacyConfig.h"
 
 #include <ALIEN/Kernels/HPDDM/HPDDMPrecomp.h>
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 #include <ALIEN/Alien-HPDDMPrecomp.h>
 #include <ALIEN/Kernels/HPDDM/HPDDMBackEnd.h>
-#include <ALIEN/Core/Backend/LinearSolver.h>
+#include <alien/core/backend/LinearSolver.h>
 #include <ALIEN/Kernels/HPDDM/LinearSolver/HPDDMInternalSolver.h>
 #include <ALIEN/Kernels/HPDDM/LinearSolver/HPDDMOptionTypes.h>
 #include <ALIEN/axl/HPDDMSolver_axl.h>
@@ -45,7 +45,7 @@ public:
   HPDDMLinearSolver(const Arcane::ServiceBuildInfo & sbi);
 #endif
 
-  HPDDMLinearSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng, std::shared_ptr<IOptionsHPDDMSolver> _options);
+  HPDDMLinearSolver(IMessagePassingMng* parallel_mng, std::shared_ptr<IOptionsHPDDMSolver> _options);
 
   /** Destructeur de la classe */
   virtual ~HPDDMLinearSolver(){};
@@ -64,7 +64,7 @@ HPDDMLinearSolver::HPDDMLinearSolver(const Arcane::ServiceBuildInfo & sbi)
 }
 #endif
 
-HPDDMLinearSolver::HPDDMLinearSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,  std::shared_ptr<IOptionsHPDDMSolver>  _options)
+HPDDMLinearSolver::HPDDMLinearSolver(IMessagePassingMng* parallel_mng,  std::shared_ptr<IOptionsHPDDMSolver>  _options)
 : ArcaneHPDDMSolverObject(_options)
 , Alien::HPDDMInternalSolver(parallel_mng, options())
 //, LinearSolver<BackEnd::tag::hpddm>(parallel_mng, options())

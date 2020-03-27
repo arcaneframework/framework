@@ -41,7 +41,7 @@ if(TARGET nvamg)
   linkLibraries(ALIEN-Trilinos nvamg)
 endif()
 
-linkLibraries(ALIEN-Trilinos ALIEN ALIEN-RefSemanticMVHandlers)
+linkLibraries(ALIEN-Trilinos alien alien_ref_semantic)
 
 target_include_directories(ALIEN-Trilinos PUBLIC
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>

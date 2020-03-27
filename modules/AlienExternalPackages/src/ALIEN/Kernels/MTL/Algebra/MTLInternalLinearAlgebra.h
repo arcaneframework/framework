@@ -4,10 +4,10 @@
 
 #include <ALIEN/Alien-ExternalPackagesPrecomp.h>
 
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 
 #include <ALIEN/Kernels/MTL/MTLBackEnd.h>
-#include <ALIEN/Core/Backend/IInternalLinearAlgebraT.h>
+#include <alien/core/backend/IInternalLinearAlgebraT.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

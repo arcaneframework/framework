@@ -7,10 +7,10 @@
 #ifndef ALIEN_KERNEL_MCG_ALGEBRA_MCGLINEARALGEBRA_H
 #define ALIEN_KERNEL_MCG_ALGEBRA_MCGLINEARALGEBRA_H
 
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 
 #include <ALIEN/Kernels/MCG/MCGBackEnd.h>
-#include <ALIEN/Core/Backend/LinearAlgebra.h>
+#include <alien/core/backend/LinearAlgebra.h>
 #include <ALIEN/Kernels/MCG/Algebra/MCGInternalLinearAlgebra.h>
 
 /*---------------------------------------------------------------------------*/

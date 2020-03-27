@@ -1,7 +1,7 @@
 #include <ALIEN/Kernels/Trilinos/TrilinosBackEnd.h>
 #include <ALIEN/Kernels/Trilinos/DataStructure/TrilinosInternal.h>
 
-#include <ALIEN/Core/Block/Block.h>
+#include <alien/core/block/Block.h>
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 #include "TrilinosVector.h"
 
@@ -38,7 +38,7 @@ void
 TrilinosVector<ValueT,TagT>::allocate() {
         const VectorDistribution &dist = this->distribution();
         m_local_offset = dist.offset();
-        const Arccore::Integer globalSize = dist.globalSize();
+        const Integer globalSize = dist.globalSize();
         auto *parallel_mng = const_cast<Arccore::MessagePassing::IMessagePassingMng *>(dist.parallelMng());
         auto *mpi_mng = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng *>(parallel_mng);
         const MPI_Comm *comm = static_cast<const MPI_Comm *>(mpi_mng->getMPIComm());

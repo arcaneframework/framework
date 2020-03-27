@@ -6,7 +6,7 @@
 #include <ALIEN/Kernels/HTS/DataStructure/HTSInternal.h>
 #include <ALIEN/Kernels/HTS/HTSBackEnd.h>
 
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 
 #ifdef ALIEN_USE_HTSSOLVER

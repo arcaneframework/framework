@@ -7,10 +7,10 @@
 #include <ALIEN/Kernels/MCG/DataStructure/MCGMatrix.h>
 #include <ALIEN/Kernels/MCG/DataStructure/MCGVector.h>
 #include <ALIEN/Kernels/MCG/DataStructure/MCGInternal.h>
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
-#include <ALIEN/Core/Impl/MultiVectorImpl.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
+#include <alien/core/impl/MultiVectorImpl.h>
 
-#include <ALIEN/Core/Backend/LinearAlgebraT.h>
+#include <alien/core/backend/LinearAlgebraT.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

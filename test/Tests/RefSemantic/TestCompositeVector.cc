@@ -1,12 +1,12 @@
 #include <gtest/gtest.h>
 
-#include <ALIEN/Core/Impl/MultiVectorImpl.h>
-#include <ALIEN/Data/CompositeVector.h>
-#include <ALIEN/Distribution/VectorDistribution.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRVector.h>
+#include <alien/core/impl/MultiVectorImpl.h>
+#include <alien/data/CompositeVector.h>
+#include <alien/distribution/VectorDistribution.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
 
-#include <ALIEN/Data/Scalar/Vector.h>
-#include <ALIEN/Data/Space.h>
+#include <alien/data/Scalar/Vector.h>
+#include <alien/data/Space.h>
 #include <ALIEN/Functional/Cast.h>
 #include <ALIEN/Handlers/VectorAccessors/Scalar/VectorReader.h>
 #include <ALIEN/Handlers/VectorAccessors/Scalar/VectorWriter.h>

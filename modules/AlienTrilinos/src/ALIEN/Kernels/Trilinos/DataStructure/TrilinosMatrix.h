@@ -7,8 +7,8 @@
 #include <vector>
 
 #include <ALIEN/Kernels/Trilinos/TrilinosPrecomp.h>
-#include <ALIEN/Core/Impl/IMatrixImpl.h>
-#include <ALIEN/Data/ISpace.h>
+#include <alien/core/impl/IMatrixImpl.h>
+#include <alien/data/ISpace.h>
 
 /*---------------------------------------------------------------------------*/
 
@@ -54,7 +54,7 @@ public:
                   int block_size,
                   ValueT const *values);
 
-        bool setMatrixValues(Arccore::Real const *values);
+  bool setMatrixValues(Real const *values);
 
   void mult(TrilinosVector<ValueT,TagT> const& x, TrilinosVector<ValueT,TagT>& y) const ;
 

@@ -5,10 +5,10 @@
 #include <ALIEN/Kernels/Trilinos/TrilinosBackEnd.h>
 #include <ALIEN/Kernels/Trilinos/DataStructure/TrilinosInternal.h>
 
-#include <ALIEN/Kernels/SimpleCSR/Algebra/CBLASMPIKernel.h>
-#include <ALIEN/Core/Backend/LinearAlgebraT.h>
+#include <alien/kernels/simple_csr/algebra/CBLASMPIKernel.h>
+#include <alien/core/backend/LinearAlgebraT.h>
 
-#include <ALIEN/Data/Space.h>
+#include <alien/data/Space.h>
 
 
 #include <ALIEN/Kernels/Trilinos/DataStructure/TrilinosMatrix.h>
@@ -65,7 +65,7 @@ TpetraCudaInternalLinearAlgebraFactory(IParallelMng* pm)
 
 /*---------------------------------------------------------------------------*/
 
-    Arccore::Real
+    Real
 TrilinosInternalLinearAlgebra::norm0(const Vector& x) const
 {
   return 0.;
@@ -73,7 +73,7 @@ TrilinosInternalLinearAlgebra::norm0(const Vector& x) const
 
 /*---------------------------------------------------------------------------*/
 
-    Arccore::Real
+    Real
 TrilinosInternalLinearAlgebra::norm1(const Vector& x) const
 {
   return x.norm1() ;
@@ -81,7 +81,7 @@ TrilinosInternalLinearAlgebra::norm1(const Vector& x) const
 
 /*---------------------------------------------------------------------------*/
 
-    Arccore::Real
+    Real
 TrilinosInternalLinearAlgebra::norm2(const Vector& x) const
 {
   return x.norm2() ;
@@ -108,17 +108,23 @@ TrilinosInternalLinearAlgebra::axpy(const Real& alpha, const UniqueArray<Real>& 
 }
 
 void
-    TrilinosInternalLinearAlgebra::axpy(const Arccore::Real &alpha, const Vector &x, Vector &r) const {
-        throw Arccore::NotImplementedException(
+    TrilinosInternalLinearAlgebra::axpy(const Real &alpha, const Vector &x, Vector &r) const {
+        throw NotImplementedException(
                 A_FUNCINFO, "TrilinosInternalLinearAlgebra::aypx not implemented");
     }
 
 /*---------------------------------------------------------------------------*/
+void
+TrilinosInternalLinearAlgebra::aypx(const Real& alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const
+{
+  throw NotImplementedException(
+      A_FUNCINFO, "TrilinosInternalLinearAlgebra::aypx not implemented");
+}
 
 void
-    TrilinosInternalLinearAlgebra::aypx(const Arccore::Real &alpha, Vector &y, const Vector &x) const
+    TrilinosInternalLinearAlgebra::aypx(const Real &alpha, Vector &y, const Vector &x) const
 {
-    throw Arccore::NotImplementedException(
+    throw NotImplementedException(
             A_FUNCINFO, "TrilinosInternalLinearAlgebra::aypx not implemented");
 }
 
@@ -157,9 +163,9 @@ TrilinosInternalLinearAlgebra::scal(const Real& alpha, UniqueArray<Real>& x) con
 }
 
 void
-    TrilinosInternalLinearAlgebra::scal(const Arccore::Real &alpha, Vector &x) const
+    TrilinosInternalLinearAlgebra::scal(const Real &alpha, Vector &x) const
 {
-    throw Arccore::NotImplementedException(
+    throw NotImplementedException(
             A_FUNCINFO, "TrilinosInternalLinearAlgebra::scal not implemented");
 }
 
@@ -168,7 +174,7 @@ void
 void
 TrilinosInternalLinearAlgebra::diagonal(const Matrix& a, Vector& x) const
 {
-    throw Arccore::NotImplementedException(
+    throw NotImplementedException(
             A_FUNCINFO, "TrilinosInternalLinearAlgebra::diagonal not implemented");
 }
 
@@ -177,7 +183,7 @@ TrilinosInternalLinearAlgebra::diagonal(const Matrix& a, Vector& x) const
 void
 TrilinosInternalLinearAlgebra::reciprocal(Vector& x) const
 {
-    throw Arccore::NotImplementedException(
+    throw NotImplementedException(
             A_FUNCINFO, "TrilinosInternalLinearAlgebra::reciprocal not implemented");
 }
 
@@ -186,7 +192,7 @@ TrilinosInternalLinearAlgebra::reciprocal(Vector& x) const
 void
 TrilinosInternalLinearAlgebra::pointwiseMult(const Vector& x, const Vector& y, Vector& w) const
 {
-    throw Arccore::NotImplementedException(
+    throw NotImplementedException(
             A_FUNCINFO, "TrilinosInternalLinearAlgebra::pointwiseMult not implemented");
 }
 

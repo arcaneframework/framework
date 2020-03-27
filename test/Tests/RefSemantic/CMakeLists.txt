@@ -48,8 +48,8 @@ if (TARGET GTest::GTest)
     linkLibraries(gtest.refmvhandlers
             Boost::program_options
             GTest::GTest
-            ALIEN
-            ALIEN-RefSemantic
+            alien
+            alien_ref_semantic
             )
 
     target_include_directories(gtest.refmvhandlers PUBLIC

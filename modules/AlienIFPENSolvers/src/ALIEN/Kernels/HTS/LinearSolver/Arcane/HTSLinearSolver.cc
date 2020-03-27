@@ -3,7 +3,7 @@
 /**
  * Interface du service de résolution de système linéaire
  */
-#include "ALIEN/ALIENConfig.h"
+#include "alien/AlienLegacyConfig.h"
 #include "HARTS/HARTS.h"
 #include "HARTSSolver/HTS.h"
 #include <ALIEN/Kernels/HTS/LinearSolver/Arcane/HTSLinearSolver.h>

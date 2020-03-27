@@ -6,10 +6,10 @@
 #endif
 
 #include <ALIEN/Kernels/MCG/MCGPrecomp.h>
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 #include <ALIEN/Alien-IFPENSolversPrecomp.h>
 #include <ALIEN/Kernels/MCG/MCGBackEnd.h>
-#include <ALIEN/Core/Backend/LinearSolver.h>
+#include <alien/core/backend/LinearSolver.h>
 #include <ALIEN/Kernels/MCG/LinearSolver/MCGInternalLinearSolver.h>
 #include <ALIEN/Kernels/MCG/LinearSolver/GPUOptionTypes.h>
 #include <ALIEN/axl/GPUSolver_axl.h>

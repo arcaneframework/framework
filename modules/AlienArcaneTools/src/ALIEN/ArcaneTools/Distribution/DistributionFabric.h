@@ -1,8 +1,8 @@
 #ifndef ALIEN_DISTRIBUTION_CREATEDISTRIBUTION_H
 #define ALIEN_DISTRIBUTION_CREATEDISTRIBUTION_H
 
-#include <ALIEN/Distribution/MatrixDistribution.h>
-#include <ALIEN/Distribution/VectorDistribution.h>
+#include <alien/distribution/MatrixDistribution.h>
+#include <alien/distribution/VectorDistribution.h>
 #include <ALIEN/ArcaneTools/IIndexManager.h>
 
 #include <arcane/IParallelMng.h>

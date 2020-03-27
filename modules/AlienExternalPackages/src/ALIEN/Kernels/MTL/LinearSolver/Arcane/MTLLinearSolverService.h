@@ -2,12 +2,12 @@
 #define MTLSOLVERIMPL_H
 
 #include <ALIEN/Kernels/MTL/MTLPrecomp.h>
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 #include <ALIEN/Alien-ExternalPackagesPrecomp.h>
 #include <ALIEN/Kernels/MTL/LinearSolver/MTLInternalLinearSolver.h>
 
 #include <ALIEN/Kernels/MTL/MTLBackEnd.h>
-#include <ALIEN/Core/Backend/LinearSolver.h>
+#include <alien/core/backend/LinearSolver.h>
 
 #include <ALIEN/Kernels/MTL/LinearSolver/MTLOptionTypes.h>
 

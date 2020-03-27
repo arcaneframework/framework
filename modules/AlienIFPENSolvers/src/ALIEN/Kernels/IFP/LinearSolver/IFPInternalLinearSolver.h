@@ -8,9 +8,9 @@
 #ifndef ALIEN_IFPLINEARSOLVER_H_
 #define ALIEN_IFPLINEARSOLVER_H_
 
-#include <ALIEN/Utils/Precomp.h>
-#include <ALIEN/Expression/Solver/SolverStats/SolverStater.h>
-#include <ALIEN/Core/Backend/IInternalLinearSolverT.h>
+#include <alien/utils/Precomp.h>
+#include <alien/expression/solver/solver_stats/SolverStater.h>
+#include <alien/core/backend/IInternalLinearSolverT.h>
 #include <ALIEN/Kernels/IFP/DataStructure/IFPVector.h>
 #include <ALIEN/Kernels/IFP/DataStructure/IFPMatrix.h>
 #include <ALIEN/Alien-IFPENSolversPrecomp.h>
@@ -46,7 +46,7 @@ public:
   void end();
 
   //! return package back end name
-  Arccore::String getBackEndName() const { return "ifpsolver"; }
+  String getBackEndName() const { return "ifpsolver"; }
 
   bool solve(const MatrixType& A, const VectorType& b, VectorSolType& x);
 
@@ -82,19 +82,19 @@ private:
 
 private:
 
-  Arccore::Integer m_max_iteration;
-  Arccore::Real m_stop_criteria_value;
-  Arccore::Integer m_precond_option;
+  Integer m_max_iteration;
+  Real m_stop_criteria_value;
+  Integer m_precond_option;
   bool m_precond_pressure;
   bool m_normalisation_pivot;
   bool m_normalize_opt; // pour être homogène avec la configuration de MCGSolver
-  Arccore::Integer m_ilu0_algo;
+  Integer m_ilu0_algo;
   bool m_keep_rhs ;
   
   Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng;
   Status m_status;
   SolverStater m_stater;  //<! Statistiques d'exécution du solveur
-  Arccore::Integer m_print_info;
+  Integer m_print_info;
   IOptionsIFPLinearSolver* m_options;
 };
 

@@ -7,8 +7,8 @@
 #include <vector>
 
 #include <ALIEN/Kernels/HPDDM/HPDDMPrecomp.h>
-#include <ALIEN/Core/Impl/IMatrixImpl.h>
-#include <ALIEN/Data/ISpace.h>
+#include <alien/core/impl/IMatrixImpl.h>
+#include <alien/data/ISpace.h>
 
 /*---------------------------------------------------------------------------*/
 
@@ -43,7 +43,7 @@ public:
 
  public:
 
-  void compute(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+  void compute(IMessagePassingMng* parallel_mng,
                const CSRMatrixType& A,
                unsigned short nu,
                bool schwarz_coarse_correction)
@@ -51,7 +51,7 @@ public:
     m_internal.compute(parallel_mng,A,nu,schwarz_coarse_correction) ;
   }
 
-  void compute(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+  void compute(IMessagePassingMng* parallel_mng,
                const CSRMatrixType& Ad,
                const CSRMatrixType& An,
                unsigned short nu,

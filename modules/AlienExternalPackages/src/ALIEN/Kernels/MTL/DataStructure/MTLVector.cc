@@ -5,7 +5,7 @@
 
 #include <ALIEN/Kernels/MTL/DataStructure/MTLInternal.h>
 #include <ALIEN/Kernels/MTL/MTLBackEnd.h>
-#include <ALIEN/Core/Block/Block.h>
+#include <alien/core/block/Block.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

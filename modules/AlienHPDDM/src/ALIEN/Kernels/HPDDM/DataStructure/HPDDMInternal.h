@@ -65,12 +65,12 @@ class MatrixInternal
 
 
 
-  void compute(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+  void compute(IMessagePassingMng* parallel_mng,
                const CSRMatrixType& A,
                unsigned short nu,
                bool schwarz_coarse_correction) ;
 
-  void compute(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+  void compute(IMessagePassingMng* parallel_mng,
                const CSRMatrixType& Ad,
                const CSRMatrixType& An,
                unsigned short nu,
@@ -94,7 +94,7 @@ private :
                 unsigned short nu,
                 bool schwarz_coarse_correction) ;
 
-  Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng = nullptr ;
+  IMessagePassingMng* m_parallel_mng = nullptr ;
 
   int                           m_ndofs = 0 ;
   int                           m_nnz   = 0 ;

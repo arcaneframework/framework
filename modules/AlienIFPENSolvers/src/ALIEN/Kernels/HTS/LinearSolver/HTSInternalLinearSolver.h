@@ -8,14 +8,14 @@
 #ifndef ALIEN_KERNELS_HTS_LINEARSOLVER_HTSINTERNALLINEARSOLVER_H
 #define ALIEN_KERNELS_HTS_LINEARSOLVER_HTSINTERNALLINEARSOLVER_H
 
-#include <ALIEN/Utils/Precomp.h>
-#include <ALIEN/Core/Backend/IInternalLinearSolverT.h>
+#include <alien/utils/Precomp.h>
+#include <alien/core/backend/IInternalLinearSolverT.h>
 #include <ALIEN/Kernels/HTS/LinearSolver/HTSOptionTypes.h>
-#include <ALIEN/Expression/Solver/SolverStats/SolverStater.h>
-#include <ALIEN/Core/Backend/IInternalLinearSolverT.h>
-#include <ALIEN/Utils/Trace/ObjectWithTrace.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRVector.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRMatrix.h>
+#include <alien/expression/solver/solver_stats/SolverStater.h>
+#include <alien/core/backend/IInternalLinearSolverT.h>
+#include <alien/utils/trace/ObjectWithTrace.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
 #include <ALIEN/Alien-IFPENSolversPrecomp.h>
 
 class IOptionsHTSSolver;
@@ -32,9 +32,9 @@ class ALIEN_IFPENSOLVERS_EXPORT HTSInternalLinearSolver
  private:
   typedef SolverStatus Status;
 
-  typedef SimpleCSRMatrix<Arccore::Real>      CSRMatrixType;
-  typedef SimpleCSRVector<Arccore::Real>      CSRVectorType;
-  typedef SimpleCSRInternal::MatrixInternal<Arccore::Real>  CSRInternalMatrixType;
+  typedef SimpleCSRMatrix<Real>      CSRMatrixType;
+  typedef SimpleCSRVector<Real>      CSRVectorType;
+  typedef SimpleCSRInternal::MatrixInternal<Real>  CSRInternalMatrixType;
 
  public:
   /** Constructeur de la classe */
@@ -54,7 +54,7 @@ class ALIEN_IFPENSOLVERS_EXPORT HTSInternalLinearSolver
   //! Finalize
   void end();
 
-  Arccore::String getBackEndName() const {
+  String getBackEndName() const {
     return "htssolver" ;
   }
 
@@ -80,7 +80,7 @@ class ALIEN_IFPENSOLVERS_EXPORT HTSInternalLinearSolver
   const SolverStat & getSolverStat() const { return m_stater; }
   SolverStater& getSolverStater() { return m_stater; }
 
-  Arccore::String getName() const { return "htssolver"; }
+  String getName() const { return "htssolver"; }
 
 
   //! Etat du solveur
@@ -96,7 +96,7 @@ class ALIEN_IFPENSOLVERS_EXPORT HTSInternalLinearSolver
 
   struct RunOp
   {
-    typedef HartsSolver::CSRMatrix<Arccore::Real,1> MatrixType ;
+    typedef HartsSolver::CSRMatrix<Real,1> MatrixType ;
     typedef MatrixType::VectorDataType     VectorDataType ;
     HartsSolver::HTSSolver*         m_solver;
     MatrixType&                     m_A;
@@ -106,7 +106,7 @@ class ALIEN_IFPENSOLVERS_EXPORT HTSInternalLinearSolver
     HartsSolver::HTSSolver::ContextType& m_context ;
 
     RunOp(HartsSolver::HTSSolver* solver,
-          HartsSolver::CSRMatrix<Arccore::Real,1>& A,
+          HartsSolver::CSRMatrix<Real,1>& A,
           const double* b,
           double* x,
           HartsSolver::HTSSolver::Status& status,
@@ -152,8 +152,8 @@ class ALIEN_IFPENSOLVERS_EXPORT HTSInternalLinearSolver
   //HTSOptionTypes::ePreconditioner m_precond_opt ;
 
   //!Solver parameters
-  Arccore::Integer m_max_iteration = 0 ;
-  Arccore::Real    m_precision     = 0. ;
+  Integer m_max_iteration = 0 ;
+  Real    m_precision     = 0. ;
 
   //!Linear system builder options
   //!@{
@@ -165,22 +165,22 @@ class ALIEN_IFPENSOLVERS_EXPORT HTSInternalLinearSolver
 
   // multithread options
   bool    m_use_thread = false;
-  Arccore::Integer m_num_thread = 1 ;
+  Integer m_num_thread = 1 ;
   HARTS::eThreadEnvType m_thread_env_type = HARTS::PTh ;
 
   int m_current_ctx_id = -1 ;
 
-  Arccore::Integer m_output_level = 0 ;
+  Integer m_output_level = 0 ;
 
-  Arccore::Integer m_solve_num          = 0 ;
-  Arccore::Integer m_total_iter_num     = 0 ;
-  Arccore::Real m_current_solve_time    = 0. ;
-  Arccore::Real m_total_solve_time      = 0. ;
-  Arccore::Real m_current_system_time   = 0. ;
-  Arccore::Real m_total_system_time     = 0. ;
-  Arccore::Real m_int_total_solve_time  = 0. ;
-  Arccore::Real m_int_total_setup_time  = 0. ;
-  Arccore::Real m_int_total_finish_time = 0. ;
+  Integer m_solve_num          = 0 ;
+  Integer m_total_iter_num     = 0 ;
+  Real m_current_solve_time    = 0. ;
+  Real m_total_solve_time      = 0. ;
+  Real m_current_system_time   = 0. ;
+  Real m_total_system_time     = 0. ;
+  Real m_int_total_solve_time  = 0. ;
+  Real m_int_total_setup_time  = 0. ;
+  Real m_int_total_finish_time = 0. ;
 
   SolverStater m_stater;
 

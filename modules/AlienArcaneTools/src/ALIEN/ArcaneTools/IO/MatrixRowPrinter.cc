@@ -4,8 +4,8 @@
 #include "ALIEN/ArcaneTools/IO/MatrixRowPrinter.h"
 
 #include <ALIEN/ArcaneTools/IIndexManager.h>
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
-#include <ALIEN/Core/Impl/MultiVectorImpl.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
+#include <alien/core/impl/MultiVectorImpl.h>
 #include <ALIEN/Kernels/PETSc/DataStructure/PETScInternal.h>
 #include <ALIEN/Kernels/PETSc/DataStructure/PETScVector.h>
 #include <ALIEN/Kernels/PETSc/PETScBackEnd.h>

@@ -9,13 +9,13 @@
 #include <ALIEN/Kernels/PETSc/DataStructure/PETScInit.h>
 #include <ALIEN/Kernels/PETSc/PETScBackEnd.h>
 
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
-#include <ALIEN/Core/Impl/MultiVectorImpl.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
+#include <alien/core/impl/MultiVectorImpl.h>
 
-#include <ALIEN/Data/IMatrix.h>
-#include <ALIEN/Data/IVector.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRMatrix.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRVector.h>
+#include <alien/data/IMatrix.h>
+#include <alien/data/IVector.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
 #include <petscmat.h>
 #include <petscsys.h>
 #include <petscvec.h>

@@ -3,10 +3,10 @@
 #define ALIEN_KERNELS_TRILINOS_ALGEBRA_TRILINOSINTERNALLINEARALGEBRA_H
 
 #include <ALIEN/Alien-TrilinosPrecomp.h>
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 
 #include <ALIEN/Kernels/Trilinos/TrilinosBackEnd.h>
-#include <ALIEN/Core/Backend/IInternalLinearAlgebraT.h>
+#include <alien/core/backend/IInternalLinearAlgebraT.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -27,23 +27,23 @@ public:
     virtual ~TrilinosInternalLinearAlgebra() {}
 
     // IInternalLinearAlgebra interface.
-    Arccore::Real norm0(const Vector &x) const;
+    Real norm0(const Vector &x) const;
 
-    Arccore::Real norm1(const Vector &x) const;
+    Real norm1(const Vector &x) const;
 
-    Arccore::Real norm2(const Vector &x) const;
+    Real norm2(const Vector &x) const;
 
     void mult(const Matrix &a, const Vector &x, Vector &r) const;
 
-    void axpy(const Arccore::Real &alpha, const Vector &x, Vector &r) const;
+    void axpy(const Real &alpha, const Vector &x, Vector &r) const;
 
-    void aypx(const Arccore::Real &alpha, Vector &y, const Vector &x) const;
+    void aypx(const Real &alpha, Vector &y, const Vector &x) const;
 
     void copy(const Vector &x, Vector &r) const;
 
-    Arccore::Real dot(const Vector &x, const Vector &y) const;
+    Real dot(const Vector &x, const Vector &y) const;
 
-    void scal(const Arccore::Real &alpha, Vector &x) const;
+    void scal(const Real &alpha, Vector &x) const;
 
     void diagonal(const Matrix &a, Vector &x) const;
 

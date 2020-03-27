@@ -8,18 +8,18 @@
 #ifndef ALIEN_KERNELS_MCG_LINEARSOLVER_MCGINTERNALLINEARSOLVER_H
 #define ALIEN_KERNELS_MCG_LINEARSOLVER_MCGINTERNALLINEARSOLVER_H
 
-#include <ALIEN/Utils/Precomp.h>
-#include <ALIEN/Core/Backend/IInternalLinearSolverT.h>
+#include <alien/utils/Precomp.h>
+#include <alien/core/backend/IInternalLinearSolverT.h>
 #include <ALIEN/Kernels/MCG/LinearSolver/GPUInternal.h>
 #include <ALIEN/Kernels/MCG/DataStructure/MCGVector.h>
 #include <ALIEN/Kernels/MCG/DataStructure/MCGMatrix.h>
 #include <ALIEN/Kernels/MCG/DataStructure/MCGInternal.h>
 #include <ALIEN/Kernels/MCG/LinearSolver/GPUOptionTypes.h>
-#include <ALIEN/Expression/Solver/SolverStats/SolverStater.h>
-#include <ALIEN/Core/Backend/IInternalLinearSolverT.h>
-#include <ALIEN/Utils/Trace/ObjectWithTrace.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRVector.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRMatrix.h>
+#include <alien/expression/solver/solver_stats/SolverStater.h>
+#include <alien/core/backend/IInternalLinearSolverT.h>
+#include <alien/utils/trace/ObjectWithTrace.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
 #include <ALIEN/Alien-IFPENSolversPrecomp.h>
 
 class IOptionsGPUSolver;

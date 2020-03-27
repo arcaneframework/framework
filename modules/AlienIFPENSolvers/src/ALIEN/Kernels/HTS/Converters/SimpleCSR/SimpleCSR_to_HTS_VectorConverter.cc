@@ -1,12 +1,12 @@
-#include <ALIEN/Core/Backend/IVectorConverter.h>
-#include <ALIEN/Core/Backend/VectorConverterRegisterer.h>
+#include <alien/core/backend/IVectorConverter.h>
+#include <alien/core/backend/VectorConverterRegisterer.h>
 
 #include <iostream>
 #include <ALIEN/Kernels/HTS/DataStructure/HTSVector.h>
 
 #include <ALIEN/Kernels/HTS/HTSBackEnd.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRVector.h>
-#include <ALIEN/Kernels/SimpleCSR/SimpleCSRBackEnd.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
 using namespace Alien;
 
 /*---------------------------------------------------------------------------*/
@@ -43,7 +43,7 @@ SimpleCSR_to_HTS_VectorConverter::convert(
     cout() << "Converting SimpleCSRVector: " << &v << " to HTSVector " << &v2;
   });
 
-  Arccore::ConstArrayView<Arccore::Real> values = v.values();
+  ConstArrayView<Real> values = v.values();
   v2.setValues(v.scalarizedLocalSize(), values.data());
 }
 

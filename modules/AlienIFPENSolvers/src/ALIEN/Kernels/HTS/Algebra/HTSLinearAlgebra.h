@@ -7,10 +7,10 @@
 #ifndef ALIEN_KERNEL_HTS_ALGEBRA_HTSLINEARALGEBRA_H
 #define ALIEN_KERNEL_HTS_ALGEBRA_HTSLINEARALGEBRA_H
 
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 
 #include <ALIEN/Kernels/HTS/HTSBackEnd.h>
-#include <ALIEN/Core/Backend/LinearAlgebra.h>
+#include <alien/core/backend/LinearAlgebra.h>
 
 /*---------------------------------------------------------------------------*/
 

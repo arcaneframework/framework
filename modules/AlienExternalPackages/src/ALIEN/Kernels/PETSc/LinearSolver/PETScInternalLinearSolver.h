@@ -1,9 +1,9 @@
 #ifndef ALIEN_KERNELS_PETSC_PETSCLINEARSOLVER_H
 #define ALIEN_KERNELS_PETSC_PETSCLINEARSOLVER_H
 
-#include <ALIEN/Core/Backend/IInternalLinearSolverT.h>
-#include <ALIEN/Expression/Solver/SolverStats/SolverStater.h>
-#include <ALIEN/Utils/Trace/ObjectWithTrace.h>
+#include <alien/core/backend/IInternalLinearSolverT.h>
+#include <alien/expression/solver/solver_stats/SolverStater.h>
+#include <alien/utils/trace/ObjectWithTrace.h>
 
 #include <arccore/message_passing/IMessagePassingMng.h>
 

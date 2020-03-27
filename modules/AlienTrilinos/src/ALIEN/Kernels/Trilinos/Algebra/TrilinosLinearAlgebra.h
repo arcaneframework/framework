@@ -7,10 +7,10 @@
 #ifndef ALIEN_KERNEL_TRILINOS_ALGEBRA_TRILINOSLINEARALGEBRA_H
 #define ALIEN_KERNEL_TRILINOS_ALGEBRA_TRILINOSLINEARALGEBRA_H
 
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 
 #include <ALIEN/Kernels/Trilinos/TrilinosBackEnd.h>
-#include <ALIEN/Core/Backend/LinearAlgebra.h>
+#include <alien/core/backend/LinearAlgebra.h>
 
 /*---------------------------------------------------------------------------*/
 

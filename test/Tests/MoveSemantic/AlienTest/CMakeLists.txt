@@ -10,8 +10,8 @@ endif ()
 
 linkLibraries(alien_test.exe
         Boost::program_options
-        ALIEN
-        ALIEN-MoveSemantic
+        alien
+        alien_move_semantic
         )
 
 if (TARGET ALIEN-ExternalPackages)
@@ -25,10 +25,6 @@ if (TARGET ALIEN-IFPENSolvers)
             ALIEN-IFPENSolvers
             )
 endif ()
-
-#if (TARGET trilinos)
-#    linkLibraries(alien_test.exe ALIEN-Trilinos)
-#endif ()
 
 target_include_directories(alien_test.exe
         PUBLIC ${PROJECT_SOURCE_DIR}/test)

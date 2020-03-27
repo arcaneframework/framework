@@ -23,7 +23,7 @@
 #include <arcane/utils/OStringStream.h>
 #include <arcane/ITimeLoopMng.h>
 #include <ALIEN/ArcaneTools/Accessors/ItemVectorAccessor.h>
-#include <ALIEN/Core/Block/VBlock.h>
+#include <alien/core/block/VBlock.h>
 
 #include <ALIEN/ArcaneTools/IIndexManager.h>
 #include <ALIEN/ArcaneTools/IndexManager/BasicIndexManager.h>
@@ -31,16 +31,14 @@
 #include <ALIEN/ArcaneTools/Distribution/DistributionFabric.h>
 #include <ALIEN/ArcaneTools/IndexSet/IndexSetFabric.h>
 
-#include <ALIEN/Kernels/SimpleCSR/Algebra/SimpleCSRLinearAlgebra.h>
+#include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
 
 
-#include <ALIEN/Alien-RefSemantic.h>
+#include <alien/AlienRefSemantic.h>
 
-
-
-#include <ALIEN/Kernels/Redistributor/Redistributor.h>
-#include <ALIEN/Data/Scalar/RedistributedVector.h>
-#include <ALIEN/Data/Scalar/RedistributedMatrix.h>
+#include <alien/kernels/redistributor/Redistributor.h>
+#include <alien/data/scalar/RedistributedVector.h>
+#include <alien/data/scalar/RedistributedMatrix.h>
 
 #ifdef ALIEN_USE_PETSC
 #include <ALIEN/Kernels/PETSc/IO/AsciiDumper.h>
@@ -60,14 +58,14 @@
 #include <ALIEN/Kernels/Trilinos/Algebra/TrilinosLinearAlgebra.h>
 #endif
 
-#include <ALIEN/Expression/Solver/ILinearSolver.h>
+#include <alien/expression/solver/ILinearSolver.h>
 
 #include "AlienBenchModule.h"
 
 #include <arcane/ItemPairGroup.h>
 #include <arcane/IMesh.h>
 
-#include <ALIEN/Core/Impl/MultiVectorImpl.h>
+#include <alien/core/impl/MultiVectorImpl.h>
 
 using namespace Arcane;
 using namespace Alien;

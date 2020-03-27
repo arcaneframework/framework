@@ -6,10 +6,10 @@
 #endif
 
 #include <ALIEN/Kernels/PETSc/PETScPrecomp.h>
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 #include <ALIEN/Alien-ExternalPackagesPrecomp.h>
 #include <ALIEN/Kernels/PETSc/PETScBackEnd.h>
-#include <ALIEN/Core/Backend/EigenSolver.h>
+#include <alien/core/backend/EigenSolver.h>
 #include <ALIEN/Kernels/PETSc/EigenSolver/SLEPcInternalEigenSolver.h>
 #include <ALIEN/Kernels/PETSc/EigenSolver/SLEPcEigenOptionTypes.h>
 #include <ALIEN/axl/SLEPcEigenSolver_axl.h>

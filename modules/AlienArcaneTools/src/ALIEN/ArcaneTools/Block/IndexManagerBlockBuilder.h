@@ -2,12 +2,13 @@
 #ifndef ALIEN_USEROBJECTS_DATA_ARCANE_INDEXMANAGERBLOCKBUILDER_H
 #define ALIEN_USEROBJECTS_DATA_ARCANE_INDEXMANAGERBLOCKBUILDER_H
 
-#include <ALIEN/Core/Block/IBlockBuilder.h>
-#include <ALIEN/Utils/VMap.h>
-#include <ALIEN/Distribution/MatrixDistribution.h>
-#include <ALIEN/Distribution/VectorDistribution.h>
+#include <alien/core/block/IBlockBuilder.h>
+#include <alien/utils/VMap.h>
+#include <alien/distribution/MatrixDistribution.h>
+#include <alien/distribution/VectorDistribution.h>
+
+#include "ALIEN/Alien-ArcaneToolsPrecomp.h"
 #include "ALIEN/ArcaneTools/IIndexManager.h"
-#include "ALIEN/ALIEN-ArcaneToolsPrecomp.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

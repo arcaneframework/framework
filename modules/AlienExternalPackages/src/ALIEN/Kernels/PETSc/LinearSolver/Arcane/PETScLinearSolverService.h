@@ -7,7 +7,7 @@
 #include <ALIEN/Alien-ExternalPackagesPrecomp.h>
 #include <ALIEN/Kernels/PETSc/PETScPrecomp.h>
 #include <ALIEN/Kernels/PETSc/PETScBackEnd.h>
-#include <ALIEN/Core/Backend/LinearSolver.h>
+#include <alien/core/backend/LinearSolver.h>
 #include <ALIEN/Kernels/PETSc/LinearSolver/PETScInternalLinearSolver.h>
 #include <ALIEN/Kernels/PETSc/LinearSolver/IPETScKSP.h>
 #include <ALIEN/axl/PETScLinearSolver_axl.h>

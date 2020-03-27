@@ -19,6 +19,12 @@
     <simple name="output-level" type="integer" default="0">
       <description>Verbosity indicator (min=0, max=3)</description>
     </simple>
+    <simple name="max-restart-iteration-num" type="integer" default="40">
+      <description>Maximal number of iterations</description>
+    </simple>
+    <simple name="krylov-method" type="string" default="bcg">
+      <description>gmres|bgmres|cg|bcg|gcrodr|bgcrodr|bfbcg|richardson|none</description>
+    </simple>
     <simple name="cmd-line-param" type="string" minOccurs="0" maxOccurs="1">
       <description>Additional command line parameters</description>
     </simple>

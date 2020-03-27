@@ -1,24 +1,19 @@
 #include <gtest/gtest.h>
 
-#include <ALIEN/Kernels/DoK/DoKMatrixT.h>
-#include <ALIEN/Distribution/MatrixDistribution.h>
+#include <alien/kernels/dok/DoKMatrixT.h>
+#include <alien/distribution/MatrixDistribution.h>
 
 // For DoKReverseIndexer test.
-#include <ALIEN/Kernels/DoK/DoKReverseIndexer.h>
+#include <alien/kernels/dok/DoKReverseIndexer.h>
 
 // For SimpleCSR convert tests
-#include <ALIEN/Kernels/DoK/Converters/DoK_to_SimpleCSR_Matrix_Converter.h>
-#include <ALIEN/Kernels/DoK/Converters/SimpleCSR_to_DoK_Matrix_Converter.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRMatrix.h>
+#include <alien/kernels/dok/converters/DoKToSimpleCSRMatrixConverter.h>
+#include <alien/kernels/dok/converters/SimpleCSRToDoKMatrixConverter.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
 
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
-#include <ALIEN/Kernels/DoK/DoKBackEnd.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
+#include <alien/kernels/dok/DoKBackEnd.h>
 
-// CEA interface !
-#if 0
-#include <ALIEN/Data/MatrixData.h>
-#include <ALIEN/Builder/Scalar/DirectMatrixBuilder.h>
-#endif // 0
 
 namespace Environment {
   extern Arccore::MessagePassing::IMessagePassingMng* parallelMng();

@@ -4,15 +4,13 @@
 #include <arcane/IItemFamily.h>
 #include <arcane/anyitem/AnyItem.h>
 
-#include <ALIEN/Utils/Precomp.h>
 
-#include "ALIEN/ALIEN-ArcaneToolsPrecomp.h"
 #include "ALIEN/ArcaneTools/IIndexManager.h"
-#include <ALIEN/Core/Block/Block.h>
-#include <ALIEN/Core/Block/VBlock.h>
-#include <ALIEN/Data/IVector.h>
-#include <ALIEN/Distribution/VectorDistribution.h>
-#include <ALIEN/Handlers/VectorAccessors/Scalar/BaseVectorWriter.h>
+#include <alien/core/block/Block.h>
+#include <alien/core/block/VBlock.h>
+#include <alien/data/IVector.h>
+#include <alien/distribution/VectorDistribution.h>
+#include <alien/handlers/vector_accessors/scalar/BaseVectorWriter.h>
 #include <arcane/Item.h>
 #include <arcane/utils/Array.h>
 #include <arcane/utils/AutoRef.h>
@@ -20,6 +18,7 @@
 
 #include <arcane/IVariable.h>
 #include <arcane/MeshVariableArrayRef.h>
+#include "ALIEN/Alien-ArcaneToolsPrecomp.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

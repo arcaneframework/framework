@@ -1,5 +1,5 @@
 #include "ALIEN/ArcaneTools/IndexManager/AnyItemAbstractFamily.h"
-#include "ALIEN/Utils/ArrayUtils.h"
+#include "alien/utils/ArrayUtils.h"
 
 #include <algorithm>
 

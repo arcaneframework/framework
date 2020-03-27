@@ -1,10 +1,10 @@
 #ifndef HYPRESOLVERIMPL_H
 #define HYPRESOLVERIMPL_H
 
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 #include <ALIEN/Alien-ExternalPackagesPrecomp.h>
 #include <ALIEN/Kernels/Hypre/HypreBackEnd.h>
-#include <ALIEN/Core/Backend/LinearSolver.h>
+#include <alien/core/backend/LinearSolver.h>
 
 #include <ALIEN/Kernels/Hypre/LinearSolver/HypreOptionTypes.h>
 #include <ALIEN/axl/HypreSolver_axl.h>

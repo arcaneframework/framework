@@ -7,8 +7,8 @@
 
 #include <ALIEN/Kernels/IFP/IFPSolverPrecomp.h>
 #include <ALIEN/Kernels/IFP/DataStructure/IFPSolverInternal.h>
-#include <ALIEN/Core/Impl/IVectorImpl.h>
-#include <ALIEN/Data/ISpace.h>
+#include <alien/core/impl/IVectorImpl.h>
+#include <alien/data/ISpace.h>
 
 /*---------------------------------------------------------------------------*/
 
@@ -69,7 +69,7 @@ public:
     void update(const MCGVector & v);
   */
 
-  void setValues(double const* values, Arccore::Integer const* node_list, Arccore::Integer const* node_to_local_node) ;
+  void setValues(double const* values, Integer const* node_list, Integer const* node_to_local_node) ;
   void setExtraValues(double const* values) ;
 
 private:
@@ -92,7 +92,7 @@ private:
   VectorInternal *                       m_internal ;
   const MultiVectorImpl *                m_multi_impl;
   bool                                   m_resizable_block_size ;
-  Arccore::Integer                                m_is_rhs ;
+  Integer                                m_is_rhs ;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -1,7 +1,7 @@
 #include <ALIEN/Kernels/Trilinos/TrilinosBackEnd.h>
 #include <ALIEN/Kernels/Trilinos/DataStructure/TrilinosInternal.h>
 
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 #include "TrilinosMatrix.h"
 #include "TrilinosVector.h"
@@ -38,11 +38,11 @@ MatrixInternal<ValueT,TagT>::initMatrix(int local_offset,
 
 template<typename ValueT,typename TagT>
 bool
-MatrixInternal<ValueT, TagT>::setMatrixValues(Arccore::Real const *values)
+MatrixInternal<ValueT, TagT>::setMatrixValues(Real const *values)
 {
   using Teuchos::Array;
   using Teuchos::ArrayView;
-    Arccore::Real const *values_ptr = values;
+    Real const *values_ptr = values;
     auto &csr_matrix = *m_internal;
   for(int irow=0;irow<m_local_size;++irow)
   {
@@ -61,7 +61,7 @@ MatrixInternal<ValueT, TagT>::setMatrixValues(Arccore::Real const *values)
 
 template<typename ValueT,typename TagT>
 void
-MatrixInternal<ValueT,TagT>::mult(vector_type const& x, vector_type& y)
+MatrixInternal<ValueT,TagT>::mult(vector_type const& x, vector_type& y) const
 {
   m_internal->apply(x,y) ;
 }
@@ -85,7 +85,7 @@ TrilinosMatrix<ValueT, TagT>::TrilinosMatrix(const MultiMatrixImpl* multi_impl)
   const auto& col_space = multi_impl->colSpace();
 
   if (row_space.size() != col_space.size())
-      throw Arccore::FatalErrorException("Trilinos matrix must be square");
+      throw FatalErrorException("Trilinos matrix must be square");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -98,25 +98,27 @@ TrilinosMatrix<ValueT,TagT>::~TrilinosMatrix()
 
 template<typename ValueT,typename TagT>
 bool
-TrilinosMatrix<ValueT, TagT>::initMatrix(Arccore::MessagePassing::IMessagePassingMng const *parallel_mng,
+TrilinosMatrix<ValueT, TagT>::initMatrix(IMessagePassingMng const *parallel_mng,
                                          int local_offset,
                                          int global_size,
                                          int nrows,
                                          int const *kcol,
                                          int const *cols,
                                          int block_size,
-                                         ValueT const *values) {
-        auto *parallel_mng_ = const_cast<Arccore::MessagePassing::IMessagePassingMng *>(parallel_mng);
-        const auto *mpi_mng = dynamic_cast<const Arccore::MessagePassing::Mpi::MpiMessagePassingMng *>(parallel_mng_);
-        const MPI_Comm *comm = static_cast<const MPI_Comm *>(mpi_mng->getMPIComm());
-        m_internal.reset(new MatrixInternal(local_offset, global_size, nrows, *comm));
+                                         ValueT const *values)
+{
+  using namespace Arccore::MessagePassing::Mpi ;
+  auto *parallel_mng_ = const_cast<IMessagePassingMng *>(parallel_mng);
+  const auto *mpi_mng = dynamic_cast<const MpiMessagePassingMng *>(parallel_mng_);
+  const MPI_Comm *comm = static_cast<const MPI_Comm *>(mpi_mng->getMPIComm());
+  m_internal.reset(new MatrixInternal(local_offset, global_size, nrows, *comm));
 
-        return m_internal->initMatrix(local_offset, nrows, kcol, cols, block_size, values);
-    }
+  return m_internal->initMatrix(local_offset, nrows, kcol, cols, block_size, values);
+}
 
 template<typename ValueT,typename TagT>
 bool
-TrilinosMatrix<ValueT, TagT>::setMatrixValues(Arccore::Real const *values)
+TrilinosMatrix<ValueT, TagT>::setMatrixValues(Real const *values)
 {
   return m_internal->setMatrixValues(values) ;
 }

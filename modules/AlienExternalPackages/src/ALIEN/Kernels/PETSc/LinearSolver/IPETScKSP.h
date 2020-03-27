@@ -5,11 +5,11 @@
  */
 
 #include <ALIEN/Kernels/PETSc/PETScPrecomp.h>
-#include <ALIEN/Utils/ParameterManager/BaseParameterManager.h>
+#include <alien/utils/parameter_manager/BaseParameterManager.h>
 #include <petscksp.h>
 
-#include <ALIEN/Data/Space.h>
-#include <ALIEN/Distribution/MatrixDistribution.h>
+#include <alien/data/Space.h>
+#include <alien/distribution/MatrixDistribution.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

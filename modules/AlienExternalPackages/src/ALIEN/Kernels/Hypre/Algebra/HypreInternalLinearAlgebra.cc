@@ -5,11 +5,11 @@
 
 #include <ALIEN/Kernels/Hypre/HypreBackEnd.h>
 
-#include <ALIEN/Core/Backend/LinearAlgebraT.h>
+#include <alien/core/backend/LinearAlgebraT.h>
 #include <ALIEN/Kernels/Hypre/DataStructure/HypreMatrix.h>
 #include <ALIEN/Kernels/Hypre/DataStructure/HypreVector.h>
 #include <ALIEN/Kernels/Hypre/DataStructure/HypreInternal.h>
-#include <ALIEN/Data/Space.h>
+#include <alien/data/Space.h>
 
 #include <arccore/base/NotImplementedException.h>
 

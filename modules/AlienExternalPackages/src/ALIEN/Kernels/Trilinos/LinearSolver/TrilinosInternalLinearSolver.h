@@ -8,12 +8,12 @@
 #ifndef ALIEN_KERNELS_TRILINOS_LINEARSOLVER_TRILINOSINTERNALLINEARSOLVER_H
 #define ALIEN_KERNELS_TRILINOS_LINEARSOLVER_TRILINOSINTERNALLINEARSOLVER_H
 
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 #include <ALIEN/Alien-ExternalPackagesPrecomp.h>
 #include <ALIEN/Kernels/Trilinos/LinearSolver/TrilinosOptionTypes.h>
-#include <ALIEN/Expression/Solver/SolverStats/SolverStater.h>
-#include <ALIEN/Core/Backend/IInternalLinearSolverT.h>
-#include <ALIEN/Utils/Trace/ObjectWithTrace.h>
+#include <alien/expression/solver/solver_stats/SolverStater.h>
+#include <alien/core/backend/IInternalLinearSolverT.h>
+#include <alien/utils/trace/ObjectWithTrace.h>
 #include <ALIEN/Kernels/Trilinos/DataStructure/TrilinosVector.h>
 #include <ALIEN/Kernels/Trilinos/DataStructure/TrilinosMatrix.h>
 

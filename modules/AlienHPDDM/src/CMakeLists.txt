@@ -31,7 +31,7 @@ else ()
   linkLibraries(ALIEN-HPDDM ALIEN-StrongOptions)
 endif()
 
-linkLibraries(ALIEN-HPDDM ALIEN)
+linkLibraries(ALIEN-HPDDM alien)
 
 target_include_directories(ALIEN-HPDDM PUBLIC
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>

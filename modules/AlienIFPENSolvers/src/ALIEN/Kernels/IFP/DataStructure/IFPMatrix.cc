@@ -10,7 +10,7 @@
 #include <ALIEN/Kernels/IFP/DataStructure/IFPVector.h>
 #include <ALIEN/Kernels/IFP/DataStructure/IFPSolverInternal.h>
 #include <ALIEN/Kernels/IFP/IFPSolverBackEnd.h>
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
 
 /*---------------------------------------------------------------------------*/
 
@@ -43,21 +43,21 @@ IFPMatrix::~IFPMatrix()
 
 bool
 IFPMatrix::
-initMatrix(Arccore::Integer links_num,          // num of links
-     Arccore::Integer global_nodes_num,   // global num of nodes
-     Arccore::Integer nodes_num,          // num of nodes [includes ghost nodes]
-     Arccore::Integer local_nodes_num,    // num of nodes in linear system [without ghost nodes]
-     Arccore::Integer max_node_id,
-     Arccore::Integer equations_num,      // num of equations by link
-     Arccore::Integer unknowns_num,       // num of unknowns by link
-     Arccore::Integer* nodeList,          // list of nodes as local Arcane num [size=nodes_num]
-     Arccore::Integer* globalNodeList,    // list of nodes as global Arcane num [size=nodes_num]
-     Arccore::Integer* nodeToLocalRow,
-     Arccore::Integer* rowUidList,
-     Arccore::Integer* i_node,            // list of nodes i of links (ij) [local index; size=links_num]
-     Arccore::Integer* global_i_node,     // idem but global index
-     Arccore::Integer* j_node,            // list of nodes i of links (ij)
-     Arccore::Integer* global_j_node      // idem but global index
+initMatrix(Integer links_num,          // num of links
+     Integer global_nodes_num,   // global num of nodes
+     Integer nodes_num,          // num of nodes [includes ghost nodes]
+     Integer local_nodes_num,    // num of nodes in linear system [without ghost nodes]
+     Integer max_node_id,
+     Integer equations_num,      // num of equations by link
+     Integer unknowns_num,       // num of unknowns by link
+     Integer* nodeList,          // list of nodes as local Arcane num [size=nodes_num]
+     Integer* globalNodeList,    // list of nodes as global Arcane num [size=nodes_num]
+     Integer* nodeToLocalRow,
+     Integer* rowUidList,
+     Integer* i_node,            // list of nodes i of links (ij) [local index; size=links_num]
+     Integer* global_i_node,     // idem but global index
+     Integer* j_node,            // list of nodes i of links (ij)
+     Integer* global_j_node      // idem but global index
      )
 {
   /* m_node_to_local_row describes local nodes only.
@@ -96,23 +96,23 @@ initMatrix(Arccore::Integer links_num,          // num of links
    * be careful store row size on (node+1)
    * row_size is allocated as fortran array, starting at index 1
    */
-  Arccore::Integer * row_size = new Arccore::Integer[local_nodes_num+1];
+  Integer * row_size = new Integer[local_nodes_num+1];
 
-  for(Arccore::Integer node=0; node<=local_nodes_num; ++node)
+  for(Integer node=0; node<=local_nodes_num; ++node)
   {
     row_size[node] = 0;
   }
 
-  for(Arccore::Integer link=0; link<links_num; ++link)
+  for(Integer link=0; link<links_num; ++link)
   {
-    const Arccore::Integer rowi = nodeToLocalRow[i_node[link]];
+    const Integer rowi = nodeToLocalRow[i_node[link]];
 
     if(rowi!=-1)
     {
       row_size[rowi + 1]++;
     }
 
-    const Arccore::Integer rowj = nodeToLocalRow[j_node[link]];
+    const Integer rowj = nodeToLocalRow[j_node[link]];
 
     if(rowj!=-1)
     {
@@ -121,10 +121,10 @@ initMatrix(Arccore::Integer links_num,          // num of links
   }
 
   //Compte Column Index Pointer for CSR Format
-  Arccore::Integer * columnIndexPtr = new Arccore::Integer[local_nodes_num+1];
+  Integer * columnIndexPtr = new Integer[local_nodes_num+1];
 
   columnIndexPtr[0] = 0;
-  for(Arccore::Integer node=1; node<local_nodes_num; ++node)
+  for(Integer node=1; node<local_nodes_num; ++node)
   {
     columnIndexPtr[node] = columnIndexPtr[node-1] + row_size[node];
     row_size[node] = 0;
@@ -132,21 +132,21 @@ initMatrix(Arccore::Integer links_num,          // num of links
   columnIndexPtr[local_nodes_num] = columnIndexPtr[local_nodes_num-1] + row_size[local_nodes_num];
 
   //Fill ColumnIndex Array
-  Arccore::Integer columnIndexSize = columnIndexPtr[local_nodes_num];
+  Integer columnIndexSize = columnIndexPtr[local_nodes_num];
 
-  Arccore::Integer * columnIndex = new Arccore::Integer[columnIndexSize];
+  Integer * columnIndex = new Integer[columnIndexSize];
 
   //Loop in Link (ij) : on row i, ColIndew=j and on row j ColIndex=i
-  for(Arccore::Integer link=0; link<links_num; ++link)
+  for(Integer link=0; link<links_num; ++link)
   {
-    const Arccore::Integer rowi = nodeToLocalRow[i_node[link]];
+    const Integer rowi = nodeToLocalRow[i_node[link]];
     if(rowi!=-1)
     {
       columnIndex[columnIndexPtr[rowi]+row_size[rowi] ] = global_j_node[link];
       row_size[rowi]++;
     }
 
-    const Arccore::Integer rowj = nodeToLocalRow[j_node[link]];
+    const Integer rowj = nodeToLocalRow[j_node[link]];
     if(rowj!=-1)
     {
       columnIndex[columnIndexPtr[rowj]+row_size[rowj]] = global_i_node[link];
@@ -183,29 +183,29 @@ initMatrix(Arccore::Integer links_num,          // num of links
 
 bool
 IFPMatrix::
-initMatrix(Arccore::Integer links_num,          //num of links
-     Arccore::Integer global_nodes_num,   //global num of nodes
-     Arccore::Integer nodes_num,          //num of nodes [includes ghost nodes]
-     Arccore::Integer local_nodes_num,    //num of nodes in linear system [without ghost nodes]
-     Arccore::Integer max_node_id,
-     Arccore::Integer equations_num,      //num of equations by link
-     Arccore::Integer unknowns_num,       //num of unknowns by link
-     Arccore::Integer* nodeList,          //list of nodes as local Arcane num [size=nodes_num]
-     Arccore::Integer* globalNodeList,    //list of nodes as global Arcane num [size=nodes_num]
-     Arccore::Integer* nodeToLocalRow,
-     Arccore::Integer* rowUidList,
-     Arccore::Integer* i_node,            //list of nodes i of links (ij) [local index; size=links_num]
-     Arccore::Integer* global_i_node,     //    idem but global index
-     Arccore::Integer* j_node,            //list of nodes i of links (ij)
-     Arccore::Integer* global_j_node,     //idem but global index
-     Arccore::Integer* ass_elem_node_ptr, //List of offset of Associated element List
-     Arccore::Integer* ass_elem_node,     //List of Associated elements of links
-     Arccore::Integer* global_ass_elem_node, //idem with global index
-     Arccore::Integer extra_eq_num,
-     Arccore::Integer global_extra_eq_num,
-     Arccore::Integer* extra_eq_ids,
-     Arccore::Integer* extra_eq_elem_node_ptr,
-     Arccore::Integer* extra_eq_elem_node
+initMatrix(Integer links_num,          //num of links
+     Integer global_nodes_num,   //global num of nodes
+     Integer nodes_num,          //num of nodes [includes ghost nodes]
+     Integer local_nodes_num,    //num of nodes in linear system [without ghost nodes]
+     Integer max_node_id,
+     Integer equations_num,      //num of equations by link
+     Integer unknowns_num,       //num of unknowns by link
+     Integer* nodeList,          //list of nodes as local Arcane num [size=nodes_num]
+     Integer* globalNodeList,    //list of nodes as global Arcane num [size=nodes_num]
+     Integer* nodeToLocalRow,
+     Integer* rowUidList,
+     Integer* i_node,            //list of nodes i of links (ij) [local index; size=links_num]
+     Integer* global_i_node,     //    idem but global index
+     Integer* j_node,            //list of nodes i of links (ij)
+     Integer* global_j_node,     //idem but global index
+     Integer* ass_elem_node_ptr, //List of offset of Associated element List
+     Integer* ass_elem_node,     //List of Associated elements of links
+     Integer* global_ass_elem_node, //idem with global index
+     Integer extra_eq_num,
+     Integer global_extra_eq_num,
+     Integer* extra_eq_ids,
+     Integer* extra_eq_elem_node_ptr,
+     Integer* extra_eq_elem_node
      )
 {
   /* m_node_to_local_row describes local nodes only.
@@ -243,36 +243,36 @@ initMatrix(Arccore::Integer links_num,          //num of links
    * be careful store row size on (node+1)
    * row_size is allocated as fortran array, starting at index 1
    */
-  Arccore::Integer * row_size = new Arccore::Integer[local_nodes_num+1];
+  Integer * row_size = new Integer[local_nodes_num+1];
 
-  for(Arccore::Integer node=0; node<=local_nodes_num; ++node)
+  for(Integer node=0; node<=local_nodes_num; ++node)
   {
     row_size[node] = 0;
   }
 
-  typedef std::set<Arccore::Integer> SetType ;
+  typedef std::set<Integer> SetType ;
   typedef SetType::iterator SetIterType ;
   typedef std::pair<SetIterType,bool> InsertReturnType ;
 
-  Arccore::UniqueArray<SetType> m_matrix(local_nodes_num);
+  UniqueArray<SetType> m_matrix(local_nodes_num);
 
-  for(Arccore::Integer link=0; link<links_num; ++link)
+  for(Integer link=0; link<links_num; ++link)
     {
-      const Arccore::Integer rowi = nodeToLocalRow[i_node[link]];
+      const Integer rowi = nodeToLocalRow[i_node[link]];
 
       if(rowi!=-1)
       {
         SetType& s = m_matrix[rowi];
-        Arccore::Integer colj = j_node[link];
+        Integer colj = j_node[link];
         InsertReturnType valuej = s.insert(colj) ;
         if(valuej.second)
         {
           row_size[rowi+1]++;
         }
 
-        for(Arccore::Integer k=ass_elem_node_ptr[link]; k<ass_elem_node_ptr[link+1]; ++k)
+        for(Integer k=ass_elem_node_ptr[link]; k<ass_elem_node_ptr[link+1]; ++k)
         {
-          Arccore::Integer col = ass_elem_node[k];
+          Integer col = ass_elem_node[k];
           InsertReturnType value = s.insert(col) ;
           if(value.second)
           {
@@ -281,20 +281,20 @@ initMatrix(Arccore::Integer links_num,          //num of links
         }
       }
 
-      const Arccore::Integer rowj = nodeToLocalRow[j_node[link]];
+      const Integer rowj = nodeToLocalRow[j_node[link]];
 
       if(rowj!=-1)
       {
-        std::set<Arccore::Integer>& s = m_matrix[rowj];
-        Arccore::Integer coli = i_node[link];
+        std::set<Integer>& s = m_matrix[rowj];
+        Integer coli = i_node[link];
         InsertReturnType valuei = s.insert(coli) ;
         if(valuei.second)
         {
           row_size[rowj+1]++;
         }
-        for(Arccore::Integer k=ass_elem_node_ptr[link]; k<ass_elem_node_ptr[link+1]; ++k)
+        for(Integer k=ass_elem_node_ptr[link]; k<ass_elem_node_ptr[link+1]; ++k)
         {
-          Arccore::Integer col = ass_elem_node[k];
+          Integer col = ass_elem_node[k];
           InsertReturnType value = s.insert(col) ;
           if(value.second)
           {
@@ -305,12 +305,12 @@ initMatrix(Arccore::Integer links_num,          //num of links
     }
 
   //Compte Column Index Pointer for CSR Format
-  Arccore::Integer * columnIndexPtr = new Arccore::Integer[local_nodes_num+1];
+  Integer * columnIndexPtr = new Integer[local_nodes_num+1];
 
   columnIndexPtr[0] = 0;
   m_matrix[0].clear();
 
-  for(Arccore::Integer node=1; node<local_nodes_num; ++node)
+  for(Integer node=1; node<local_nodes_num; ++node)
   {
     columnIndexPtr[node] = columnIndexPtr[node-1] + row_size[node];
     row_size[node] = 0;
@@ -320,19 +320,19 @@ initMatrix(Arccore::Integer links_num,          //num of links
     row_size[local_nodes_num];
 
   //Fill ColumnIndex Array
-  Arccore::Integer columnIndexSize = columnIndexPtr[local_nodes_num];
+  Integer columnIndexSize = columnIndexPtr[local_nodes_num];
 
-  Arccore::Integer * columnIndex = new Arccore::Integer[columnIndexSize];
+  Integer * columnIndex = new Integer[columnIndexSize];
 
   //Loop in Link (ij) : on row i, ColIndew=j and on row j ColIndex=i
-  for(Arccore::Integer link=0; link<links_num; ++link)
+  for(Integer link=0; link<links_num; ++link)
   {
-    const Arccore::Integer rowi = nodeToLocalRow[i_node[link]];
+    const Integer rowi = nodeToLocalRow[i_node[link]];
 
     if(rowi!=-1)
     {
-      std::set<Arccore::Integer>& s = m_matrix[rowi];
-      const Arccore::Integer colj = j_node[link];
+      std::set<Integer>& s = m_matrix[rowi];
+      const Integer colj = j_node[link];
 
       if(s.find(colj) == s.end())
       {
@@ -341,9 +341,9 @@ initMatrix(Arccore::Integer links_num,          //num of links
         row_size[rowi]++;
       }
 
-      for(Arccore::Integer k=ass_elem_node_ptr[link]; k<ass_elem_node_ptr[link+1]; ++k)
+      for(Integer k=ass_elem_node_ptr[link]; k<ass_elem_node_ptr[link+1]; ++k)
       {
-        const Arccore::Integer col = ass_elem_node[k];
+        const Integer col = ass_elem_node[k];
         if(s.find(col) == s.end())
         {
           s.insert(col);
@@ -353,12 +353,12 @@ initMatrix(Arccore::Integer links_num,          //num of links
       }
     }
 
-    const Arccore::Integer rowj = nodeToLocalRow[j_node[link]];
+    const Integer rowj = nodeToLocalRow[j_node[link]];
 
     if(rowj!=-1)
     {
-      std::set<Arccore::Integer>& s = m_matrix[rowj];
-      const Arccore::Integer coli = i_node[link];
+      std::set<Integer>& s = m_matrix[rowj];
+      const Integer coli = i_node[link];
 
       if(s.find(coli) == s.end())
       {
@@ -367,9 +367,9 @@ initMatrix(Arccore::Integer links_num,          //num of links
         row_size[rowj]++;
       }
 
-      for(Arccore::Integer k=ass_elem_node_ptr[link]; k<ass_elem_node_ptr[link+1]; ++k)
+      for(Integer k=ass_elem_node_ptr[link]; k<ass_elem_node_ptr[link+1]; ++k)
       {
-        const Arccore::Integer col = ass_elem_node[k];
+        const Integer col = ass_elem_node[k];
         if(s.find(col) == s.end())
         {
           s.insert(col);
@@ -384,10 +384,10 @@ initMatrix(Arccore::Integer links_num,          //num of links
   if(global_extra_eq_num>0)
   {
 
-    Arccore::Integer perf_node_num = extra_eq_elem_node_ptr[extra_eq_num] ;
+    Integer perf_node_num = extra_eq_elem_node_ptr[extra_eq_num] ;
 
-    Arccore::Integer * perf_node = new Arccore::Integer[perf_node_num];
-    for(Arccore::Integer perf=0;perf<perf_node_num;++perf)
+    Integer * perf_node = new Integer[perf_node_num];
+    for(Integer perf=0;perf<perf_node_num;++perf)
       perf_node[perf] = extra_eq_elem_node[perf] ;
 
     // IFP Solver init
@@ -457,30 +457,30 @@ initMatrix(Arccore::Integer links_num,          //num of links
 
 bool
 IFPMatrix::
-initMatrix(Arccore::Integer links_num,    //num of links
-     Arccore::Integer global_nodes_num,   //global num of nodes
-     Arccore::Integer nodes_num,          //num of nodes [includes ghost nodes]
-     Arccore::Integer local_nodes_num,    //num of nodes in linear system [without ghost nodes]
-     Arccore::Integer max_node_id,
-     Arccore::Integer equations_num,      //num of equations by link
-     Arccore::Integer unknowns_num,       //num of unknowns by link
-     Arccore::Integer* unknowns_num_per_cell, // num of unknowns per cell
-     Arccore::Integer* nodeList,          //list of nodes as local Arcane num [size=nodes_num]
-     Arccore::Integer* globalNodeList,    //list of nodes as global Arcane num [size=nodes_num]
-     Arccore::Integer* nodeToLocalRow,
-     Arccore::Integer* i_node,            //list of nodes i of links (ij) [local index; size=links_num]
-     Arccore::Integer* global_i_node,     //    idem but global index
-     Arccore::Integer* j_node,            //list of nodes i of links (ij)
-     Arccore::Integer* global_j_node,     //idem but global index
-     Arccore::Integer* ass_elem_node_ptr, //List of offset of Associated element List
-     Arccore::Integer* ass_elem_node,     //List of Associated elements of links
-     Arccore::Integer* global_ass_elem_node, //idem with global index
-     Arccore::Integer extra_eq_num,
-     Arccore::Integer global_extra_eq_num,
-     Arccore::Integer* extra_eq_ids,
-     Arccore::Integer* extra_eq_elem_node_ptr,
-     Arccore::Integer* extra_eq_elem_node,
-     Arccore::Integer* extra_eq_elem_lid
+initMatrix(Integer links_num,    //num of links
+     Integer global_nodes_num,   //global num of nodes
+     Integer nodes_num,          //num of nodes [includes ghost nodes]
+     Integer local_nodes_num,    //num of nodes in linear system [without ghost nodes]
+     Integer max_node_id,
+     Integer equations_num,      //num of equations by link
+     Integer unknowns_num,       //num of unknowns by link
+     Integer* unknowns_num_per_cell, // num of unknowns per cell
+     Integer* nodeList,          //list of nodes as local Arcane num [size=nodes_num]
+     Integer* globalNodeList,    //list of nodes as global Arcane num [size=nodes_num]
+     Integer* nodeToLocalRow,
+     Integer* i_node,            //list of nodes i of links (ij) [local index; size=links_num]
+     Integer* global_i_node,     //    idem but global index
+     Integer* j_node,            //list of nodes i of links (ij)
+     Integer* global_j_node,     //idem but global index
+     Integer* ass_elem_node_ptr, //List of offset of Associated element List
+     Integer* ass_elem_node,     //List of Associated elements of links
+     Integer* global_ass_elem_node, //idem with global index
+     Integer extra_eq_num,
+     Integer global_extra_eq_num,
+     Integer* extra_eq_ids,
+     Integer* extra_eq_elem_node_ptr,
+     Integer* extra_eq_elem_node,
+     Integer* extra_eq_elem_lid
      )
 {
 
@@ -504,32 +504,32 @@ if(MatrixInternal::isInstancied())
 
   m_node_list_ref = nodeList;
 
-Arccore::Integer * row_size = new Arccore::Integer[local_nodes_num+1];
+Integer * row_size = new Integer[local_nodes_num+1];
 
-  for(Arccore::Integer node=0; node<=local_nodes_num; ++node)
+  for(Integer node=0; node<=local_nodes_num; ++node)
   {
     row_size[node] = 0;
   }
 
-  Arccore::UniqueArray< std::set<Arccore::Integer> > m_matrix(local_nodes_num);
+  UniqueArray< std::set<Integer> > m_matrix(local_nodes_num);
 
-  for(Arccore::Integer link=0; link<links_num; ++link)
+  for(Integer link=0; link<links_num; ++link)
     {
-      const Arccore::Integer rowi = nodeToLocalRow[i_node[link]];
+      const Integer rowi = nodeToLocalRow[i_node[link]];
 
       if(rowi!=-1)
       {
-        std::set<Arccore::Integer>& s = m_matrix[rowi];
-        Arccore::Integer colj = j_node[link];
+        std::set<Integer>& s = m_matrix[rowi];
+        Integer colj = j_node[link];
         if(s.find(colj)==s.end())
         {
           s.insert(colj);
           row_size[rowi+1]++;
         }
 
-        for(Arccore::Integer k=ass_elem_node_ptr[link]; k<ass_elem_node_ptr[link+1]; ++k)
+        for(Integer k=ass_elem_node_ptr[link]; k<ass_elem_node_ptr[link+1]; ++k)
         {
-          Arccore::Integer col = ass_elem_node[k];
+          Integer col = ass_elem_node[k];
           if(s.find(col)==s.end())
           {
             s.insert(col);
@@ -538,20 +538,20 @@ Arccore::Integer * row_size = new Arccore::Integer[local_nodes_num+1];
         }
       }
 
-      const Arccore::Integer rowj = nodeToLocalRow[j_node[link]];
+      const Integer rowj = nodeToLocalRow[j_node[link]];
 
       if(rowj!=-1)
       {
-        std::set<Arccore::Integer>& s = m_matrix[rowj];
-        Arccore::Integer coli = i_node[link];
+        std::set<Integer>& s = m_matrix[rowj];
+        Integer coli = i_node[link];
         if(s.find(coli)==s.end())
         {
           s.insert(coli);
           row_size[rowj+1]++;
         }
-        for(Arccore::Integer k=ass_elem_node_ptr[link]; k<ass_elem_node_ptr[link+1]; ++k)
+        for(Integer k=ass_elem_node_ptr[link]; k<ass_elem_node_ptr[link+1]; ++k)
         {
-          Arccore::Integer col = ass_elem_node[k];
+          Integer col = ass_elem_node[k];
           if(s.find(col)==s.end())
           {
             s.insert(col);
@@ -562,12 +562,12 @@ Arccore::Integer * row_size = new Arccore::Integer[local_nodes_num+1];
     }
 
 
-  Arccore::Integer * columnIndexPtr = new Arccore::Integer[local_nodes_num+1];
+  Integer * columnIndexPtr = new Integer[local_nodes_num+1];
 
   columnIndexPtr[0] = 0;
   m_matrix[0].clear();
 
-  for(Arccore::Integer node=1; node<local_nodes_num; ++node)
+  for(Integer node=1; node<local_nodes_num; ++node)
   {
     columnIndexPtr[node] = columnIndexPtr[node-1] + row_size[node];
     row_size[node] = 0;
@@ -577,19 +577,19 @@ Arccore::Integer * row_size = new Arccore::Integer[local_nodes_num+1];
     row_size[local_nodes_num];
 
 
-  Arccore::Integer columnIndexSize = columnIndexPtr[local_nodes_num];
+  Integer columnIndexSize = columnIndexPtr[local_nodes_num];
 
-  Arccore::Integer * columnIndex = new Arccore::Integer[columnIndexSize];
+  Integer * columnIndex = new Integer[columnIndexSize];
 
 
-for(Arccore::Integer link=0; link<links_num; ++link)
+for(Integer link=0; link<links_num; ++link)
   {
-    const Arccore::Integer rowi = nodeToLocalRow[i_node[link]];
+    const Integer rowi = nodeToLocalRow[i_node[link]];
 
     if(rowi!=-1)
     {
-      std::set<Arccore::Integer>& s = m_matrix[rowi];
-      const Arccore::Integer colj = j_node[link];
+      std::set<Integer>& s = m_matrix[rowi];
+      const Integer colj = j_node[link];
 
       if(s.find(colj) == s.end())
       {
@@ -598,9 +598,9 @@ for(Arccore::Integer link=0; link<links_num; ++link)
         row_size[rowi]++;
       }
 
-      for(Arccore::Integer k=ass_elem_node_ptr[link]; k<ass_elem_node_ptr[link+1]; ++k)
+      for(Integer k=ass_elem_node_ptr[link]; k<ass_elem_node_ptr[link+1]; ++k)
       {
-        const Arccore::Integer col = ass_elem_node[k];
+        const Integer col = ass_elem_node[k];
         if(s.find(col) == s.end())
         {
           s.insert(col);
@@ -610,12 +610,12 @@ for(Arccore::Integer link=0; link<links_num; ++link)
       }
     }
 
-    const Arccore::Integer rowj = nodeToLocalRow[j_node[link]];
+    const Integer rowj = nodeToLocalRow[j_node[link]];
 
     if(rowj!=-1)
     {
-      std::set<Arccore::Integer>& s = m_matrix[rowj];
-      const Arccore::Integer coli = i_node[link];
+      std::set<Integer>& s = m_matrix[rowj];
+      const Integer coli = i_node[link];
 
       if(s.find(coli) == s.end())
       {
@@ -624,9 +624,9 @@ for(Arccore::Integer link=0; link<links_num; ++link)
         row_size[rowj]++;
       }
 
-      for(Arccore::Integer k=ass_elem_node_ptr[link]; k<ass_elem_node_ptr[link+1]; ++k)
+      for(Integer k=ass_elem_node_ptr[link]; k<ass_elem_node_ptr[link+1]; ++k)
       {
-        const Arccore::Integer col = ass_elem_node[k];
+        const Integer col = ass_elem_node[k];
         if(s.find(col) == s.end())
         {
           s.insert(col);
@@ -640,11 +640,11 @@ for(Arccore::Integer link=0; link<links_num; ++link)
  //les puits couplés
   if(global_extra_eq_num>0)
   {
-    Arccore::Integer perf_node_num = extra_eq_elem_node_ptr[extra_eq_num] ;
+    Integer perf_node_num = extra_eq_elem_node_ptr[extra_eq_num] ;
 
-    Arccore::Integer * perf_node = new Arccore::Integer[perf_node_num];
-    Arccore::Integer * perf_lid = new Arccore::Integer[perf_node_num];
-    for(Arccore::Integer perf=0;perf<perf_node_num;++perf)
+    Integer * perf_node = new Integer[perf_node_num];
+    Integer * perf_lid = new Integer[perf_node_num];
+    for(Integer perf=0;perf<perf_node_num;++perf)
     {
       perf_node[perf] = extra_eq_elem_node[perf] ;
       perf_lid[perf] = extra_eq_elem_lid[perf] ;
@@ -726,9 +726,9 @@ initMatrix(int equations_num,
            int global_nodes_num,
            int nodes_num,
            int row_offset,
-           Arccore::ConstArrayView<Arccore::Integer> columnIndexesPtr,
-           Arccore::ConstArrayView<Arccore::Integer> columnIndexes,
-           Arccore::Int64 timestamp)
+           ConstArrayView<Integer> columnIndexesPtr,
+           ConstArrayView<Integer> columnIndexes,
+           Int64 timestamp)
 { 
   /* m_node_to_local_row describes local nodes only.
    * Ghost nodes verifies m_node_to_local_row[node] == -1
@@ -769,7 +769,7 @@ initMatrix(int equations_num,
 
   int matrix_size = columnIndexesPtr[nodes_num] ;
 
-  Arccore::UniqueArray<Arccore::Integer> split_tags;
+  UniqueArray<Integer> split_tags;
   m_internal->m_elliptic_split_tag = computeEllipticSplitTags(split_tags,equations_num);
 
   //     =====    IFP Solver init   ==================================
@@ -810,22 +810,22 @@ initMatrix(int equations_num,
 void
 IFPMatrix::
 initWellMatrix(
-     Arccore::Integer extra_eq_num,
-     Arccore::Integer global_extra_eq_num,
-     Arccore::Integer* extra_eq_ids,
-     Arccore::Integer* extra_eq_elem_node_ptr,
-     Arccore::Integer* extra_eq_elem_node,
-     Arccore::Integer* extra_eq_elem_lid
+     Integer extra_eq_num,
+     Integer global_extra_eq_num,
+     Integer* extra_eq_ids,
+     Integer* extra_eq_elem_node_ptr,
+     Integer* extra_eq_elem_node,
+     Integer* extra_eq_elem_lid
      )
 {
    //les puits couplés
     if(global_extra_eq_num>0)
     {
-      Arccore::Integer perf_node_num = extra_eq_elem_node_ptr[extra_eq_num] ;
+      Integer perf_node_num = extra_eq_elem_node_ptr[extra_eq_num] ;
 
-      std::vector<Arccore::Integer> perf_node(perf_node_num);
-      std::vector<Arccore::Integer> perf_lid(perf_node_num);
-      for(Arccore::Integer perf=0;perf<perf_node_num;++perf)
+      std::vector<Integer> perf_node(perf_node_num);
+      std::vector<Integer> perf_lid(perf_node_num);
+      for(Integer perf=0;perf<perf_node_num;++perf)
       {
         perf_node[perf] = extra_eq_elem_node[perf] ;
         perf_lid[perf] = extra_eq_elem_lid[perf] ;
@@ -850,7 +850,7 @@ IFPMatrix::
 allocate()
 {
   if(!MatrixInternal::isInstancied())
-    throw Arccore::FatalErrorException(A_FUNCINFO, "Cannot set values in non-allocated IFPSolver matrix");
+    throw FatalErrorException(A_FUNCINFO, "Cannot set values in non-allocated IFPSolver matrix");
 
   F2C(ifpsolverallocatematrix)();
   return true ;
@@ -860,14 +860,14 @@ allocate()
 
 bool
 IFPMatrix::
-allocate(Arccore::ArrayView<Arccore::Integer> coupled_lids)
+allocate(ArrayView<Integer> coupled_lids)
 {
   if(!MatrixInternal::isInstancied())
-    throw Arccore::FatalErrorException(A_FUNCINFO, "Cannot set values in non-allocated IFPSolver matrix");
+    throw FatalErrorException(A_FUNCINFO, "Cannot set values in non-allocated IFPSolver matrix");
 
   int nwells = coupled_lids.size() ;
-  Arccore::UniqueArray<Arccore::Integer> well_lids(nwells) ;
-  for(Arccore::Integer i=0;i<nwells;++i)
+  UniqueArray<Integer> well_lids(nwells) ;
+  for(Integer i=0;i<nwells;++i)
   {
     well_lids[i] = coupled_lids[i] + 1 ;
   }
@@ -881,14 +881,14 @@ allocate(Arccore::ArrayView<Arccore::Integer> coupled_lids)
 
 bool
 IFPMatrix::
-allocateRS(Arccore::ArrayView<Arccore::Integer> coupled_uids)
+allocateRS(ArrayView<Integer> coupled_uids)
 {
   if(!MatrixInternal::isInstancied())
-    throw Arccore::FatalErrorException(A_FUNCINFO, "Cannot set values in non-allocated IFPSolver matrix");
+    throw FatalErrorException(A_FUNCINFO, "Cannot set values in non-allocated IFPSolver matrix");
 
   int nwells = coupled_uids.size() ;
-  Arccore::UniqueArray<Arccore::Integer> well_uids(nwells) ;
-  for(Arccore::Integer i=0;i<nwells;++i)
+  UniqueArray<Integer> well_uids(nwells) ;
+  for(Integer i=0;i<nwells;++i)
     well_uids[i] = coupled_uids[i] + 1 ;
   F2C(ifpsolverinitrscoupledwells)(&nwells,well_uids.data()) ;
 
@@ -912,7 +912,7 @@ IFPMatrix::
 setMatrixValues(const double * values)
 { 
   if(!MatrixInternal::isInstancied())
-    throw Arccore::FatalErrorException(A_FUNCINFO, "Cannot set values in non-allocated IFPSolver matrix");
+    throw FatalErrorException(A_FUNCINFO, "Cannot set values in non-allocated IFPSolver matrix");
 
   F2C(ifpsolversetmatrixdata)((double*)values);
   m_internal->m_filled = true ;
@@ -927,7 +927,7 @@ IFPMatrix::
 setMatrixBlockValues(const double * values)
 {
   if(!MatrixInternal::isInstancied())
-    throw Arccore::FatalErrorException(A_FUNCINFO, "Cannot set values in non-allocated IFPSolver matrix");
+    throw FatalErrorException(A_FUNCINFO, "Cannot set values in non-allocated IFPSolver matrix");
 
   F2C(ifpsolversetmatrixdata)((double*)values);
   m_internal->m_filled = true ;
@@ -939,15 +939,15 @@ setMatrixBlockValues(const double * values)
  //A. Anciaux pour BlockTailleVariable
 bool
 IFPMatrix::
-setMatrixRsValues(Arccore::Real* dFijdXi,
-                  Arccore::Real* dCidXi,
-                  Arccore::Integer* nodeList,
-                  Arccore::Integer* nodeToLocalRow,
-                  Arccore::Integer* i_node,
-                  Arccore::Integer* j_node)
+setMatrixRsValues(Real* dFijdXi,
+                  Real* dCidXi,
+                  Integer* nodeList,
+                  Integer* nodeToLocalRow,
+                  Integer* i_node,
+                  Integer* j_node)
 {
   if(!MatrixInternal::isInstancied())
-    throw Arccore::FatalErrorException(A_FUNCINFO, "Cannot set values in non-allocated IFPSolver matrix");
+    throw FatalErrorException(A_FUNCINFO, "Cannot set values in non-allocated IFPSolver matrix");
 
   F2C(ifpsetmatrixrsdata)(dFijdXi,
                           dCidXi,
@@ -965,15 +965,15 @@ setMatrixRsValues(Arccore::Real* dFijdXi,
 
 bool
 IFPMatrix::
-setMatrixValues(Arccore::Real* dFijdXi,
-        Arccore::Real* dCidXi,
-        Arccore::Integer* nodeList,
-        Arccore::Integer* nodeToLocalRow,
-        Arccore::Integer* i_node,
-        Arccore::Integer* j_node)
+setMatrixValues(Real* dFijdXi,
+        Real* dCidXi,
+        Integer* nodeList,
+        Integer* nodeToLocalRow,
+        Integer* i_node,
+        Integer* j_node)
 {
   if(!MatrixInternal::isInstancied())
-    throw Arccore::FatalErrorException(A_FUNCINFO, "Cannot set values in non-allocated IFPSolver matrix");
+    throw FatalErrorException(A_FUNCINFO, "Cannot set values in non-allocated IFPSolver matrix");
 
   F2C(ifpsetmatrixdata)(dFijdXi,
                         dCidXi,
@@ -990,16 +990,16 @@ setMatrixValues(Arccore::Real* dFijdXi,
 
 bool
 IFPMatrix::
-setMatrixValues(Arccore::Real* dFijdXi,
-                Arccore::Real* dCidXi,
-                Arccore::Integer* nodeList,
-                Arccore::Integer* nodeToLocalRow,
-                Arccore::Integer* i_node,
-                Arccore::Integer* j_node,
-                Arccore::Integer* ass_elem_node_ptr)
+setMatrixValues(Real* dFijdXi,
+                Real* dCidXi,
+                Integer* nodeList,
+                Integer* nodeToLocalRow,
+                Integer* i_node,
+                Integer* j_node,
+                Integer* ass_elem_node_ptr)
 {
   if(!MatrixInternal::isInstancied())
-    throw Arccore::FatalErrorException(A_FUNCINFO, "Cannot set values in non-allocated IFPSolver matrix");
+    throw FatalErrorException(A_FUNCINFO, "Cannot set values in non-allocated IFPSolver matrix");
 
   F2C(ifpsolversetsumfirsteq)(&m_sum_first_eq) ;
   F2C(ifpsetmatrixdata2)(dFijdXi,
@@ -1016,19 +1016,19 @@ setMatrixValues(Arccore::Real* dFijdXi,
 
 bool
 IFPMatrix::
-setMatrixValues(Arccore::Real* dFijdXi1,
-                Arccore::Real* dFijdXi2,
-                Arccore::Real* dCidXi,
-                Arccore::Integer* nodeList,
-                Arccore::Integer* nodeToLocalRow,
-                Arccore::Integer* i_node,
-                Arccore::Integer* j_node,
-                Arccore::Integer* ass_elem_node_ptr,
-                Arccore::Integer NumOfLink1,
-                Arccore::Integer NumOfLink2)
+setMatrixValues(Real* dFijdXi1,
+                Real* dFijdXi2,
+                Real* dCidXi,
+                Integer* nodeList,
+                Integer* nodeToLocalRow,
+                Integer* i_node,
+                Integer* j_node,
+                Integer* ass_elem_node_ptr,
+                Integer NumOfLink1,
+                Integer NumOfLink2)
 {
   if(!MatrixInternal::isInstancied())
-    throw Arccore::FatalErrorException(A_FUNCINFO, "Cannot set values in non-allocated IFPSolver matrix");
+    throw FatalErrorException(A_FUNCINFO, "Cannot set values in non-allocated IFPSolver matrix");
 
   F2C(ifpsolversetsumfirsteq)(&m_sum_first_eq) ;
   F2C(ifpsetmatrixdata4)(dFijdXi1,
@@ -1049,12 +1049,12 @@ setMatrixValues(Arccore::Real* dFijdXi1,
 
 bool
 IFPMatrix::
-setMatrixExtraValues(Arccore::Real* ExtraRowValues,
-                     Arccore::Real* ExtraColValues,
-                     Arccore::Real* ExtraDiagValues)
+setMatrixExtraValues(Real* ExtraRowValues,
+                     Real* ExtraColValues,
+                     Real* ExtraDiagValues)
 {
   if(!MatrixInternal::isInstancied())
-    throw Arccore::FatalErrorException(A_FUNCINFO, "Cannot set values in non-allocated IFPSolver matrix");
+    throw FatalErrorException(A_FUNCINFO, "Cannot set values in non-allocated IFPSolver matrix");
 
   //space().message() << "IFP MATRIX SET WELL DATA";
   F2C(ifpsetmatrixwelldata)(ExtraRowValues,
@@ -1071,12 +1071,12 @@ setMatrixExtraValues(Arccore::Real* ExtraRowValues,
 //A. Anciaux pour BlockTailleVariable
 bool
 IFPMatrix::
-setMatrixRsExtraValues(Arccore::Real* ExtraRowValues,
-                     Arccore::Real* ExtraColValues,
-                     Arccore::Real* ExtraDiagValues)
+setMatrixRsExtraValues(Real* ExtraRowValues,
+                     Real* ExtraColValues,
+                     Real* ExtraDiagValues)
 {
   if(!MatrixInternal::isInstancied())
-    throw Arccore::FatalErrorException(A_FUNCINFO, "Cannot set values in non-allocated IFPSolver matrix");
+    throw FatalErrorException(A_FUNCINFO, "Cannot set values in non-allocated IFPSolver matrix");
 
   F2C(ifpsetmatrixrswelldata)(ExtraRowValues,
                             ExtraColValues,
@@ -1118,25 +1118,25 @@ initSubMatrix11(int nb_extra_eq,
 
 bool
 IFPMatrix::
-initSubMatrix11Values( Arccore::Arccore::Real const* ExtraDiagValues)
+initSubMatrix11Values( Real const* ExtraDiagValues)
 {
-  F2C(ifpsetmatrixwelldiagdata)((Arccore::Real*)ExtraDiagValues);
+  F2C(ifpsetmatrixwelldiagdata)((Real*)ExtraDiagValues);
   return true ;
 }
 
 bool
 IFPMatrix::
-initSubMatrix10Values( Arccore::Real const* ExtraRowValues)
+initSubMatrix10Values( Real const* ExtraRowValues)
 {
-  F2C(ifpsetmatrixwellrowdata)((Arccore::Real*)ExtraRowValues);
+  F2C(ifpsetmatrixwellrowdata)((Real*)ExtraRowValues);
   return true ;
 }
 
 bool
 IFPMatrix::
-initSubMatrix01Values( Arccore::Real const* ExtraColValues)
+initSubMatrix01Values( Real const* ExtraColValues)
 {
-  F2C(ifpsetmatrixwellcoldata)((Arccore::Real*)ExtraColValues);
+  F2C(ifpsetmatrixwellcoldata)((Real*)ExtraColValues);
   return true ;
 }
 */
@@ -1165,15 +1165,15 @@ getSymmetricProfile() const
 /*---------------------------------------------------------------------------*/
 bool
 IFPMatrix::
-computeEllipticSplitTags(Arccore::UniqueArray<Arccore::Integer> & split_tags,int equation_num) const
+computeEllipticSplitTags(UniqueArray<Integer> & split_tags,int equation_num) const
 {
   //const IIndexManager * iindex_mng = this->space().indexManager();
   const ISpace& space = this->rowSpace();
   const MatrixDistribution& dist = this->distribution();
 
   //Integer total_size;
-  Arccore::Integer min_local_index = dist.rowOffset();
-  Arccore::Integer local_size = dist.localRowSize();
+  Integer min_local_index = dist.rowOffset();
+  Integer local_size = dist.localRowSize();
 
   //iindex_mng->stats(total_size,min_local_index,local_size);
 
@@ -1189,29 +1189,29 @@ computeEllipticSplitTags(Arccore::UniqueArray<Arccore::Integer> & split_tags,int
   /*
   for(IIndexManager::EntryEnumerator i = iindex_mng->enumerateEntry(); i.hasNext(); ++i)
     {
-      UniqueArray<Arccore::Integer> indices = iindex_mng->getIndexes(*i);
+      UniqueArray<Integer> indices = iindex_mng->getIndexes(*i);
       if(i->tagValue("block-tag") == "Elliptic" and not indices.empty())
         {
           elliptic_split_tag_found = true ;
 
-          ConstArrayView<Arccore::Integer> localIds = i->getOwnLocalIds();
-          for(Arccore::Integer i=0,is=localIds.size();i<is;i++){
-            const Arccore::Integer index=indices[localIds[i]];
+          ConstArrayView<Integer> localIds = i->getOwnLocalIds();
+          for(Integer i=0,is=localIds.size();i<is;i++){
+            const Integer index=indices[localIds[i]];
             // par construction les OwnLocalIds sont toujours isOwn==true
             split_tags[(index-min_local_index)*equation_num] = 2 ; // DP_PressTyp ==  cf. M_DOMAINPARTITION_MODULE.f90
           }
         }
     }
   */
-  for(Arccore::Integer i=0;i<space.nbField();++i)
+  for(Integer i=0;i<space.nbField();++i)
   {
-    const Arccore::UniqueArray<Arccore::Integer>& indices = space.field(i);
+    const UniqueArray<Integer>& indices = space.field(i);
     if(space.fieldLabel(i) == "Elliptic" and not indices.empty())
     {
       elliptic_split_tag_found = true;
-      for(Arccore::Integer j=0;j<indices.size();++j)
+      for(Integer j=0;j<indices.size();++j)
       {
-	const Arccore::Integer index = indices[j];
+	const Integer index = indices[j];
 	split_tags[(index-min_local_index)*equation_num] = 2 ; // DP_PressTyp ==  cf. M_DOMAINPARTITION_MODULE.f90
       }
     }

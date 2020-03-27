@@ -1,12 +1,12 @@
-#include <ALIEN/Core/Backend/IVectorConverter.h>
-#include <ALIEN/Core/Backend/VectorConverterRegisterer.h>
+#include <alien/core/backend/IVectorConverter.h>
+#include <alien/core/backend/VectorConverterRegisterer.h>
 
 #include <iostream>
 #include <ALIEN/Kernels/PETSc/DataStructure/PETScVector.h>
 
 #include <ALIEN/Kernels/PETSc/PETScBackEnd.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRVector.h>
-#include <ALIEN/Kernels/SimpleCSR/SimpleCSRBackEnd.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
 
 using namespace Alien;
 

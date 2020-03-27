@@ -5,8 +5,8 @@
 #include <ALIEN/Kernels/Hypre/DataStructure/HypreVector.h>
 #include <ALIEN/Kernels/Hypre/HypreBackEnd.h>
 #include <ALIEN/Kernels/Hypre/DataStructure/HypreInternal.h>
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
-#include <ALIEN/Data/ISpace.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
+#include <alien/data/ISpace.h>
 
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 

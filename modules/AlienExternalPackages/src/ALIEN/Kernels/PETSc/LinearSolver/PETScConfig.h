@@ -8,7 +8,7 @@
 #ifndef PETSCCONFIG_H_
 #define PETSCCONFIG_H_
 
-#include <ALIEN/Utils/Trace/ObjectWithTrace.h>
+#include <alien/utils/trace/ObjectWithTrace.h>
 #include <ALIEN/Kernels/PETSc/LinearSolver/IPETScPC.h>
 
 namespace Alien {

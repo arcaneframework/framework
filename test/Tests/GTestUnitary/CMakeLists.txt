@@ -46,11 +46,7 @@ endforeach ()
 
 linkLibraries(gtest.unitary
         GTest::GTest
-        ALIEN
-        # ${DEP_LIBRARIES}
-        # ALIEN-CEA
-        # ALIEN-IFPEN
-        # ALIEN-ExternalPackages
+        alien
         )
 
 target_include_directories(gtest.unitary

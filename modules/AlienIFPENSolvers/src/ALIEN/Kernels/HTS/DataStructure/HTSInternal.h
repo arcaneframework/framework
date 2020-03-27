@@ -8,7 +8,7 @@
  *  can be only included by LinearSystem and LinearSolver
  */
 
-#include <ALIEN/Distribution/MatrixDistribution.h>
+#include <alien/distribution/MatrixDistribution.h>
 
 #include "HARTSSolver/HARTSSolverConfig.h"
 

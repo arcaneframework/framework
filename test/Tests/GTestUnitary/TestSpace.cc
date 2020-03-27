@@ -1,5 +1,5 @@
 
-#include <ALIEN/Alien.h>
+#include <alien/Alien.h>
 
 #include "gtest/gtest.h"
 

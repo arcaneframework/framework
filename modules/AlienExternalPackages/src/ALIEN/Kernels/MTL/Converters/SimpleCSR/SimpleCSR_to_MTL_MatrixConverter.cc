@@ -1,15 +1,15 @@
-#include <ALIEN/Core/Backend/IMatrixConverter.h>
-#include <ALIEN/Core/Backend/MatrixConverterRegisterer.h>
+#include <alien/core/backend/IMatrixConverter.h>
+#include <alien/core/backend/MatrixConverterRegisterer.h>
 
 #include <iostream>
 #include <ALIEN/Kernels/MTL/DataStructure/MTLVector.h>
 #include <ALIEN/Kernels/MTL/DataStructure/MTLMatrix.h>
-#include <ALIEN/Core/Block/ComputeBlockOffsets.h>
+#include <alien/core/block/ComputeBlockOffsets.h>
 
 #include <ALIEN/Kernels/MTL/MTLBackEnd.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/CSRStructInfo.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRMatrix.h>
-#include <ALIEN/Kernels/SimpleCSR/SimpleCSRBackEnd.h>
+#include <alien/kernels/simple_csr/data_structure/CSRStructInfo.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
+#include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
 
 using namespace Alien;
 using namespace Alien::SimpleCSRInternal;

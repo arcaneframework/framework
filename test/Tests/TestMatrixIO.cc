@@ -2,7 +2,7 @@
 
 #include "DefaultToolsForTesting.h"
 
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 #include <ALIEN/UserObjects/Data/MatrixData.h>
 #include <ALIEN/UserObjects/Data/VectorData.h>
 #include <ALIEN/Expression/VectorExp.h>

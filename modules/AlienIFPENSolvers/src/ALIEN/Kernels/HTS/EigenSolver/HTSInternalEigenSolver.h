@@ -8,14 +8,14 @@
 #ifndef ALIEN_KERNELS_HTS_EIGENSOLVER_HTSINTERNALEIGENSOLVER_H
 #define ALIEN_KERNELS_HTS_EIGENSOLVER_HTSINTERNALEIGENSOLVER_H
 
-#include <ALIEN/Utils/Precomp.h>
-#include <ALIEN/Core/Backend/IInternalEigenSolverT.h>
+#include <alien/utils/Precomp.h>
+#include <alien/core/backend/IInternalEigenSolverT.h>
 #include <ALIEN/Kernels/HTS/EigenSolver/HTSEigenOptionTypes.h>
-#include <ALIEN/Core/Backend/EigenSolver.h>
-#include <ALIEN/Core/Backend/EigenSolverT.h>
-#include <ALIEN/Utils/Trace/ObjectWithTrace.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRVector.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRMatrix.h>
+#include <alien/core/backend/EigenSolver.h>
+#include <alien/core/backend/EigenSolverT.h>
+#include <alien/utils/trace/ObjectWithTrace.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
 #include <ALIEN/Alien-IFPENSolversPrecomp.h>
 
 class IOptionsHTSEigenSolver;
@@ -30,9 +30,9 @@ class ALIEN_IFPENSOLVERS_EXPORT HTSInternalEigenSolver
  private:
   typedef IEigenSolver::Status Status;
 
-  typedef SimpleCSRMatrix<Arccore::Real>      CSRMatrixType;
-  typedef SimpleCSRVector<Arccore::Real>      CSRVectorType;
-  typedef SimpleCSRInternal::MatrixInternal<Arccore::Real>  CSRInternalMatrixType;
+  typedef SimpleCSRMatrix<Real>      CSRMatrixType;
+  typedef SimpleCSRVector<Real>      CSRVectorType;
+  typedef SimpleCSRInternal::MatrixInternal<Real>  CSRInternalMatrixType;
 
  public:
   /** Constructeur de la classe */
@@ -47,7 +47,7 @@ class ALIEN_IFPENSOLVERS_EXPORT HTSInternalEigenSolver
   void init();
 
 
-  Arccore::String getBackEndName() const {
+  String getBackEndName() const {
     return "htssolver" ;
   }
 
@@ -69,7 +69,7 @@ class ALIEN_IFPENSOLVERS_EXPORT HTSInternalEigenSolver
 
   //! Etat du solveur
   const Status& getStatus() const ;
-  Arccore::String getName() const { return "htssolver"; }
+  String getName() const { return "htssolver"; }
 
 
   //! Etat du solveur
@@ -89,12 +89,12 @@ class ALIEN_IFPENSOLVERS_EXPORT HTSInternalEigenSolver
   Status                                  m_status;
 
   //!Solver parameters
-  Arccore::Integer m_max_iteration = 0 ;
-  Arccore::Real    m_tol           = 0. ;
+  Integer m_max_iteration = 0 ;
+  Real    m_tol           = 0. ;
 
   int m_current_ctx_id = -1 ;
 
-  Arccore::Integer m_output_level = 0 ;
+  Integer m_output_level = 0 ;
 
 
   IOptionsHTSEigenSolver* m_options = nullptr ;

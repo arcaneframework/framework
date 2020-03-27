@@ -1,16 +1,15 @@
 #ifndef ALIEN_INDEXMANAGER_BASICINDEXMANAGER_H
 #define ALIEN_INDEXMANAGER_BASICINDEXMANAGER_H
 
-#include <ALIEN/Utils/Precomp.h>
 #include <map>
 #include <memory>
 #include <vector>
-
-#include "ALIEN/ALIEN-ArcaneToolsPrecomp.h"
+#include "ALIEN/Alien-ArcaneToolsPrecomp.h"
 #include "ALIEN/ArcaneTools/IIndexManager.h"
 #include "ALIEN/ArcaneTools/IndexManager/IItemIndexManager.h"
 
 #include <arcane/ItemInternalVectorView.h>
+#include "ALIEN/Alien-ArcaneToolsPrecomp.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

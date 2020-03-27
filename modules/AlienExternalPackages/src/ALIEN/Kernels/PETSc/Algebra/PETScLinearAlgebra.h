@@ -1,10 +1,10 @@
 #ifndef ALIEN_KERNELS_PETSC_ALGEBRA_PETSCLINEARALGEBRA_H
 #define ALIEN_KERNELS_PETSC_ALGEBRA_PETSCLINEARALGEBRA_H
 
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 
 #include <ALIEN/Kernels/PETSc/PETScBackEnd.h>
-#include <ALIEN/Core/Backend/LinearAlgebra.h>
+#include <alien/core/backend/LinearAlgebra.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

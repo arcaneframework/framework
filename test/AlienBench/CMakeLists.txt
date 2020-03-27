@@ -3,11 +3,13 @@ createExecutable(alien_bench.exe)
 addSources(alien_bench.exe
         main.cc
         AlienBenchModule.cc
+        AlienStokesModule.cc
         ArcaneCodeService.cc
         )
 
 generateAxl(alien_bench.exe
         AlienBench.axl
+        AlienStokes.axl
         NO_COPY
         )
 
@@ -17,8 +19,8 @@ endif ()
 
 linkLibraries(alien_bench.exe
         Boost::boost
-        ALIEN
-        ALIEN-RefSemantic
+        alien
+        alien_ref_semantic
         ALIEN-ExternalPackages
         ALIEN-IFPENSolvers
         ALIEN-ArcaneTools

@@ -1,11 +1,10 @@
 #ifndef ALIEN_IINDEX_MANAGER_H
 #define ALIEN_IINDEX_MANAGER_H
 
-#include <ALIEN/Utils/Precomp.h>
 
 #include <memory> // for std::shared_ptr.
 #include <vector>
-
+#include <ALIEN/Alien-ArcaneToolsPrecomp.h>
 namespace Arccore {
 class ITraceMng;
 }

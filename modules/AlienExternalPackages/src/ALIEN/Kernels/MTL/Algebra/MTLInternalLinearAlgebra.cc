@@ -1,6 +1,6 @@
 #include <ALIEN/Kernels/MTL/Algebra/MTLInternalLinearAlgebra.h>
 
-#include <ALIEN/Core/Backend/LinearAlgebraT.h>
+#include <alien/core/backend/LinearAlgebraT.h>
 
 #include <ALIEN/Kernels/MTL/DataStructure/MTLInternal.h>
 #include <ALIEN/Kernels/MTL/DataStructure/MTLMatrix.h>
@@ -8,8 +8,8 @@
 #include <ALIEN/Kernels/MTL/MTLBackEnd.h>
 #include <boost/numeric/mtl/mtl.hpp>
 
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
-#include <ALIEN/Core/Impl/MultiVectorImpl.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
+#include <alien/core/impl/MultiVectorImpl.h>
 
 #include <arccore/base/NotImplementedException.h>
 
@@ -175,7 +175,8 @@ void
 MTLInternalLinearAlgebra::scal(const Real & alpha, UniqueArray<Real>& x) const {
   throw NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::scal not implemented");
 }
-END_NAMESPACE
+
+} // END_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

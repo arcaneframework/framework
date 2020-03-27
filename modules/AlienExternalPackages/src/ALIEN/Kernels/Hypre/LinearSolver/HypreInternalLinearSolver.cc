@@ -4,11 +4,11 @@
 
 #include <ALIEN/Alien-ExternalPackagesPrecomp.h>
 
-#include <ALIEN/Expression/Solver/SolverStats/SolverStater.h>
-#include <ALIEN/Core/Backend/LinearSolverT.h>
+#include <alien/expression/solver/solver_stats/SolverStater.h>
+#include <alien/core/backend/LinearSolverT.h>
 
-#include <ALIEN/Expression/Solver/ILinearSolver.h>
-#include <ALIEN/Expression/Solver/ILinearAlgebra.h>
+#include <alien/expression/solver/ILinearSolver.h>
+#include <alien/expression/solver/ILinearAlgebra.h>
 
 #include <ALIEN/Kernels/Hypre/HypreBackEnd.h>
 #include <ALIEN/Kernels/Hypre/DataStructure/HypreVector.h>

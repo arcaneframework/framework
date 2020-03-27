@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include <ALIEN/Alien.h>
+#include <alien/Alien.h>
 
 TEST(TestCompositeSpace, DefaultConstructor) {
   const Alien::CompositeKernel::Space s;

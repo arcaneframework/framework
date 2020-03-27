@@ -1,7 +1,7 @@
 #pragma once
 
-#include <ALIEN/Core/Impl/IVectorImpl.h>
-#include <ALIEN/Distribution/VectorDistribution.h>
+#include <alien/core/impl/IVectorImpl.h>
+#include <alien/distribution/VectorDistribution.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

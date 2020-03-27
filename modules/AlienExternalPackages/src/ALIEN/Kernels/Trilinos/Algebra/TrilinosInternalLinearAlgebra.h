@@ -3,10 +3,10 @@
 #define ALIEN_KERNELS_TRILINOS_ALGEBRA_TRILINOSINTERNALLINEARALGEBRA_H
 
 #include <ALIEN/Alien-ExternalPackagesPrecomp.h>
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 
 #include <ALIEN/Kernels/Trilinos/TrilinosBackEnd.h>
-#include <ALIEN/Core/Backend/IInternalLinearAlgebraT.h>
+#include <alien/core/backend/IInternalLinearAlgebraT.h>
 
 #define KOKKOS_ENABLE_OPENMP
 #define KOKKOS_ENABLE_THREADS

@@ -2,7 +2,7 @@
 #ifndef ALIEN_IFPEN_FUNCTIONAL_DUMP_H
 #define ALIEN_IFPEN_FUNCTIONAL_DUMP_H
 
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 #include <ALIEN/Alien-ExternalPackagesPrecomp.h>
 #include <ALIEN/Kernels/PETSc/IO/AsciiDumper.h>
 

@@ -8,15 +8,15 @@
 #ifndef ALIEN_KERNELS_PETSC_EIGENSOLVER_PETSCINTERNALEIGENSOLVER_H
 #define ALIEN_KERNELS_PETSC_EIGENSOLVER_PETSCINTERNALEIGENSOLVER_H
 
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 #include <ALIEN/Alien-ExternalPackagesPrecomp.h>
-#include <ALIEN/Core/Backend/IInternalEigenSolverT.h>
+#include <alien/core/backend/IInternalEigenSolverT.h>
 #include <ALIEN/Kernels/PETSc/EigenSolver/SLEPcEigenOptionTypes.h>
-#include <ALIEN/Core/Backend/EigenSolver.h>
-#include <ALIEN/Core/Backend/EigenSolverT.h>
-#include <ALIEN/Utils/Trace/ObjectWithTrace.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRVector.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRMatrix.h>
+#include <alien/core/backend/EigenSolver.h>
+#include <alien/core/backend/EigenSolverT.h>
+#include <alien/utils/trace/ObjectWithTrace.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
 
 class IOptionsSLEPcEigenSolver;
 

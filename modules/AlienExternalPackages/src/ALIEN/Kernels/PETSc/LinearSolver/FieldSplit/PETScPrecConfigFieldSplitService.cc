@@ -9,7 +9,7 @@
 
 #include <ALIEN/axl/PETScPrecConfigFieldSplit_StrongOptions.h>
 
-#include <ALIEN/Core/Utils/Partition.h>
+#include <alien/core/utils/Partition.h>
 
 #include <arccore/message_passing/IMessagePassingMng.h>
 

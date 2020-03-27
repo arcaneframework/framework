@@ -5,7 +5,7 @@
 
 #include <ALIEN/Kernels/HPDDM/DataStructure/HPDDMInternal.h>
 #include <ALIEN/Kernels/HPDDM/HPDDMBackEnd.h>
-#include <ALIEN/Core/Block/Block.h>
+#include <alien/core/block/Block.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

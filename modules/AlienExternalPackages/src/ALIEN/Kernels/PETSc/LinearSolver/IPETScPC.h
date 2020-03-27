@@ -7,8 +7,8 @@
 #include <ALIEN/Kernels/PETSc/PETScPrecomp.h>
 #include <petscpc.h>
 
-#include <ALIEN/Data/Space.h>
-#include <ALIEN/Distribution/MatrixDistribution.h>
+#include <alien/data/Space.h>
+#include <alien/distribution/MatrixDistribution.h>
 
 // For old PETSc version
 #ifndef MATSOLVERSUPERLU_DIST

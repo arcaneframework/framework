@@ -5,7 +5,7 @@
 
 
 #include <IFPSolver.h>
-#include <ALIEN/Core/Impl/MultiVectorImpl.h>
+#include <alien/core/impl/MultiVectorImpl.h>
 
 /*---------------------------------------------------------------------------*/
 
@@ -22,11 +22,11 @@ int VectorInternal::m_static_init_rhs = 0 ;
 /*---------------------------------------------------------------------------*/
 
 MatrixInternal::
-MatrixInternal(const MultiMatrixImpl * matrix_impl, Arccore::Int64 timestamp)
+MatrixInternal(const MultiMatrixImpl * matrix_impl, Int64 timestamp)
   : m_timestamp(timestamp)
 { 
   if (m_static_multi_impl != NULL)
-    throw Arccore::FatalErrorException(A_FUNCINFO,"Cannot build two instances of vector with IFPSolver");
+    throw FatalErrorException(A_FUNCINFO,"Cannot build two instances of vector with IFPSolver");
   m_static_multi_impl = matrix_impl;
 }
 

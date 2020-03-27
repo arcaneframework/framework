@@ -7,7 +7,7 @@
 #include <ALIEN/Kernels/MCG/LinearSolver/GPUInternal.h>
 #include <ALIEN/Kernels/MCG/DataStructure/MCGInternal.h>
 
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
 
 /*---------------------------------------------------------------------------*/
 

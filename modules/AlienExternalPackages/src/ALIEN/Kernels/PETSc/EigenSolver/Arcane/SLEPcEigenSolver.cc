@@ -3,7 +3,7 @@
 /**
  * Interface du service de résolution de système linéaire
  */
-#include "ALIEN/ALIENConfig.h"
+#include "alien/AlienLegacyConfig.h"
 #include <ALIEN/Kernels/PETSc/EigenSolver/Arcane/SLEPcEigenSolver.h>
 #include <ALIEN/axl/SLEPcEigenSolver_StrongOptions.h>
 

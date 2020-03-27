@@ -8,7 +8,7 @@
 #include <ALIEN/Kernels/PETSc/PETScPrecomp.h>
 #include <ALIEN/Alien-ExternalPackagesPrecomp.h>
 
-#include <ALIEN/Utils/ParameterManager/BaseParameterManager.h>
+#include <alien/utils/parameter_manager/BaseParameterManager.h>
 
 #include <ALIEN/Kernels/PETSc/LinearSolver/IPETScPC.h>
 #include <ALIEN/Kernels/PETSc/LinearSolver/IPETScKSP.h>

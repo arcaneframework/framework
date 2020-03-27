@@ -8,12 +8,12 @@
 #ifndef ALIEN_KERNELS_TRILINOS_LINEARSOLVER_TRILINOSINTERNALLINEARSOLVER_H
 #define ALIEN_KERNELS_TRILINOS_LINEARSOLVER_TRILINOSINTERNALLINEARSOLVER_H
 
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 #include <ALIEN/Alien-TrilinosPrecomp.h>
 #include <ALIEN/Kernels/Trilinos/LinearSolver/TrilinosOptionTypes.h>
-#include <ALIEN/Expression/Solver/SolverStats/SolverStater.h>
-#include <ALIEN/Core/Backend/IInternalLinearSolverT.h>
-#include <ALIEN/Utils/Trace/ObjectWithTrace.h>
+#include <alien/expression/solver/solver_stats/SolverStater.h>
+#include <alien/core/backend/IInternalLinearSolverT.h>
+#include <alien/utils/trace/ObjectWithTrace.h>
 #include <ALIEN/Kernels/Trilinos/DataStructure/TrilinosVector.h>
 #include <ALIEN/Kernels/Trilinos/DataStructure/TrilinosMatrix.h>
 
@@ -56,7 +56,7 @@ public:
   //! Finalize
   void end();
 
-    Arccore::String getBackEndName() const;
+  String getBackEndName() const;
 
   typedef typename TrilinosInternal::SolverInternal<TagT> solver_type ;
 
@@ -85,7 +85,7 @@ public:
   const SolverStat & getSolverStat() const { return m_stater; }
   SolverStater& getSolverStater() { return m_stater; }
 
-    Arccore::String getName() const { return "ttilinos"; }
+    String getName() const { return "trilinos"; }
 
 
   //! Etat du solveur
@@ -129,20 +129,20 @@ public:
     std::unique_ptr<solver_type> m_trilinos_solver;
 
     //!Solver parameters
-    Arccore::Integer m_max_iteration = 0;
-    Arccore::Real m_precision = 0.;
+    Integer m_max_iteration = 0;
+    Real m_precision = 0.;
 
 
     // multithread options
     bool m_use_thread = false;
-    Arccore::Integer m_num_thread = 1;
+    Integer m_num_thread = 1;
 
     int m_current_ctx_id = -1;
 
-    Arccore::Integer m_output_level = 0;
+    Integer m_output_level = 0;
 
-    Arccore::Integer m_solve_num = 0;
-    Arccore::Integer m_total_iter_num = 0;
+    Integer m_solve_num = 0;
+    Integer m_total_iter_num = 0;
 
     SolverStater m_stater;
 

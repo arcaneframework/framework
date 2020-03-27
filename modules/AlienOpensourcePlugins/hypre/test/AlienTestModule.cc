@@ -13,7 +13,7 @@
 #include <ALIEN/ArcaneTools/Accessors/ItemVectorAccessor.h>
 #include <ALIEN/ArcaneTools/IndexManager/BasicIndexManager.h>
 #include <ALIEN/ArcaneTools/IndexManager/SimpleAbstractFamily.h>
-#include <ALIEN/Core/Block/VBlock.h>
+#include <alien/core/block/VBlock.h>
 
 #include <ALIEN/ArcaneTools/IIndexManager.h>
 
@@ -28,9 +28,9 @@
 #include <ALIEN/Builder/Scalar/DirectMatrixBuilder.h>
 #include <ALIEN/Builder/Scalar/MatrixProfiler.h>
 #include <ALIEN/Builder/Scalar/ProfiledMatrixBuilder.h>
-#include <ALIEN/Kernels/SimpleCSR/Algebra/SimpleCSRLinearAlgebra.h>
+#include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
 
-#include <ALIEN/Expression/Solver/ILinearSolver.h>
+#include <alien/expression/solver/ILinearSolver.h>
 
 #include "AlienTestOptionTypes.h"
 #include "AlienTestModule.h"
@@ -38,7 +38,7 @@
 #include <arcane/ItemPairGroup.h>
 #include <arcane/IMesh.h>
 
-#include <ALIEN/Core/Impl/MultiVectorImpl.h>
+#include <alien/core/impl/MultiVectorImpl.h>
 
 using namespace Arcane;
 using namespace Alien;

@@ -20,8 +20,8 @@
 
 /*---------------------------------------------------------------------------*/
 
-#include <ALIEN/Core/Impl/MultiVectorImpl.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRVector.h>
+#include <alien/core/impl/MultiVectorImpl.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

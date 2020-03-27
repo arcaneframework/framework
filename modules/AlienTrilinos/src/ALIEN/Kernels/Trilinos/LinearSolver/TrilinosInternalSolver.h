@@ -55,7 +55,7 @@ template<typename TagT>
 class SolverInternal
 {
 public :
-  typedef typename TrilinosMatrix<Arccore::Real, TagT>::MatrixInternal MatrixInternalType;
+  typedef typename TrilinosMatrix<Real, TagT>::MatrixInternal MatrixInternalType;
 
   typedef typename MatrixInternalType::matrix_type           matrix_type ;
   typedef typename matrix_type::scalar_type                  scalar_type;
@@ -68,7 +68,7 @@ public :
                               global_ordinal_type,
                               node_type>                     vec_type;
 
-    typedef typename TrilinosVector<Arccore::Real, TagT>::VectorInternal VectorInternalType;
+    typedef typename TrilinosVector<Real, TagT>::VectorInternal VectorInternalType;
     typedef typename VectorInternalType::vector_type vector_type;
 
   typedef Tpetra::Operator<scalar_type,
@@ -92,6 +92,12 @@ public :
   typedef Teuchos::ScalarTraits<scalar_type>                 STS;
   typedef typename STS::magnitudeType                        magnitude_type;
   typedef Teuchos::ScalarTraits<magnitude_type>              STM;
+
+  typedef typename STS::coordinateType                       real_type;
+  typedef Tpetra::MultiVector<real_type,
+                              local_ordinal_type,
+                              global_ordinal_type,
+                              node_type>                     RealValuedMultiVector;
 
   struct Status
   {

@@ -1,16 +1,16 @@
 #include <iostream>
 
-#include <ALIEN/Utils/Precomp.h>
-#include <ALIEN/Core/Backend/IMatrixConverter.h>
-#include <ALIEN/Core/Backend/MatrixConverterRegisterer.h>
+#include <alien/utils/Precomp.h>
+#include <alien/core/backend/IMatrixConverter.h>
+#include <alien/core/backend/MatrixConverterRegisterer.h>
 
 #include <ALIEN/Kernels/Hypre/DataStructure/HypreMatrix.h>
 
 #include <ALIEN/Kernels/Hypre/HypreBackEnd.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/CSRStructInfo.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRMatrix.h>
-#include <ALIEN/Kernels/SimpleCSR/SimpleCSRBackEnd.h>
-#include <ALIEN/Distribution/MatrixDistribution.h>
+#include <alien/kernels/simple_csr/data_structure/CSRStructInfo.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
+#include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
+#include <alien/distribution/MatrixDistribution.h>
 
 #include <arccore/collections/Array2.h>
 

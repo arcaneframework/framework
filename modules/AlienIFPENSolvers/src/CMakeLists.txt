@@ -43,7 +43,7 @@ if(TARGET umfpack)
   linkLibraries(ALIEN-IFPENSolvers umfpack)
 endif()
 
-linkLibraries(ALIEN-IFPENSolvers ALIEN)
+linkLibraries(ALIEN-IFPENSolvers alien)
 linkLibraries(ALIEN-IFPENSolvers Boost::system)
 
 target_include_directories(ALIEN-IFPENSolvers PUBLIC

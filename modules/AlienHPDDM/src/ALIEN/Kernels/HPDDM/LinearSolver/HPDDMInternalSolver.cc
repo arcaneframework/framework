@@ -22,25 +22,25 @@
 #include "ALIEN/Kernels/HPDDM/HPDDMPrecomp.h"
 
 
-#include <ALIEN/Data/Space.h>
-#include <ALIEN/Expression/Solver/ILinearSolver.h>
-#include <ALIEN/Expression/Solver/ILinearAlgebra.h>
-#include <ALIEN/Expression/Solver/SolverStats/SolverStat.h>
-#include <ALIEN/Expression/Solver/SolverStats/SolverStater.h>
+#include <alien/data/Space.h>
+#include <alien/expression/solver/ILinearSolver.h>
+#include <alien/expression/solver/ILinearAlgebra.h>
+#include <alien/expression/solver/solver_stats/SolverStat.h>
+#include <alien/expression/solver/solver_stats/SolverStater.h>
 
-#include <ALIEN/Kernels/SimpleCSR/SimpleCSRPrecomp.h>
-#include <ALIEN/Kernels/SimpleCSR/Algebra/SimpleCSRLinearAlgebra.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRMatrix.h>
+#include <alien/kernels/simple_csr/SimpleCSRPrecomp.h>
+#include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
 
 //#include <ALIEN/Kernels/HPDDM/Algebra/HPDDMLinearAlgebra.h>
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
-#include <ALIEN/Core/Impl/MultiVectorImpl.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
+#include <alien/core/impl/MultiVectorImpl.h>
 
 
 //#include <ALIEN/Kernels/HPDDM/Algebra/HPDDMLinearAlgebra.h>
 //#include <ALIEN/Kernels/HPDDM/LinearSolver/HPDDMInternalLinearSolver.h>
-#include <ALIEN/Core/Backend/LinearSolverT.h>
-#include <ALIEN/Core/Block/ComputeBlockOffsets.h>
+#include <alien/core/backend/LinearSolverT.h>
+#include <alien/core/block/ComputeBlockOffsets.h>
 #include <ALIEN/axl/HPDDMSolver_IOptions.h>
 
 #include <ALIEN/Kernels/HPDDM/DataStructure/HPDDMInternal.h>
@@ -54,7 +54,7 @@ namespace Alien {
 
 
 /*---------------------------------------------------------------------------*/
-HPDDMInternalSolver::HPDDMInternalSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+HPDDMInternalSolver::HPDDMInternalSolver(IMessagePassingMng* parallel_mng,
                                          IOptionsHPDDMSolver* options)
   : m_parallel_mng(parallel_mng)
   , m_options(options)
@@ -114,7 +114,6 @@ HPDDMInternalSolver::end()
 
 void HPDDMInternalSolver::_computeHPDDMRhs(CSRMatrixType const& A, CSRVectorType const& b)
 {
-  using namespace Arccore ;
   m_hpddm_rhs.resize(m_hpddm_matrix.getNDofs()) ;
   auto values = b.values() ;
   for(auto i=0;i<values.size();++i)
@@ -135,8 +134,6 @@ void HPDDMInternalSolver::_computeHPDDMRhs(CSRMatrixType const& A, CSRVectorType
 void
 HPDDMInternalSolver::_computeHPDDMSol(CSRMatrixType const& A, CSRVectorType const& x)
 {
-  using namespace Arccore ;
-
   m_hpddm_sol.resize(m_hpddm_matrix.getNDofs()) ;
   auto values = x.values() ;
   for(auto i=0;i<values.size();++i)
@@ -170,20 +167,24 @@ bool HPDDMInternalSolver::solve(CSRMatrixType const& A,
 {
   if(m_output_level>0)
     alien_info([&] { cout()<<"HPDDMSolver::solve"; } ) ;
+
   {
     Alien::SolverStater::Sentry s(m_init_solver_time) ;
 
-  HPDDM::Option& opt = *HPDDM::Option::get();
-  bool schwarz_coarse_correction = opt.set("schwarz_coarse_correction") ;
-  m_hpddm_matrix.compute(m_parallel_mng,
-                         A,
-                         opt["geneo_nu"],
-                         schwarz_coarse_correction) ;
+    HPDDM::Option& opt = *HPDDM::Option::get();
+    bool schwarz_coarse_correction = opt.set("schwarz_coarse_correction") ;
+    m_hpddm_matrix.compute(m_parallel_mng,
+                           A,
+                           opt["geneo_nu"],
+                           schwarz_coarse_correction) ;
 
-  _computeHPDDMRhs(A,b) ;
-  _computeHPDDMSol(A,x) ;
+    _computeHPDDMRhs(A,b) ;
+    _computeHPDDMSol(A,x) ;
+  }
 
-  m_status.iteration_count = HPDDM::IterativeMethod::solve(m_hpddm_matrix.matrix(),
+  {
+    Alien::SolverStater::Sentry s(m_iter_solver_time) ;
+    m_status.iteration_count = HPDDM::IterativeMethod::solve(m_hpddm_matrix.matrix(),
                                                            m_hpddm_rhs.data(),
                                                            m_hpddm_sol.data(),
                                                            1,
@@ -208,16 +209,19 @@ bool HPDDMInternalSolver::solve(CSRMatrixType const& Ad,
 {
   if(m_output_level>0)
     alien_info([&] { cout()<<"HPDDMSolver::solve"; } ) ;
+  {
 
-  HPDDM::Option& opt = *HPDDM::Option::get();
-  bool schwarz_coarse_correction = opt.set("schwarz_coarse_correction") ;
-  m_hpddm_matrix.compute(m_parallel_mng,
-                         Ad,An,
-                         opt["geneo_nu"],
-                         schwarz_coarse_correction) ;
+    Alien::SolverStater::Sentry s(m_init_solver_time) ;
 
-  _computeHPDDMRhs(Ad,b) ;
-  _computeHPDDMSol(Ad,x) ;
+    HPDDM::Option& opt = *HPDDM::Option::get();
+    bool schwarz_coarse_correction = opt.set("schwarz_coarse_correction") ;
+    m_hpddm_matrix.compute(m_parallel_mng,
+                           Ad,An,
+                           opt["geneo_nu"],
+                           schwarz_coarse_correction) ;
+
+    _computeHPDDMRhs(Ad,b) ;
+    _computeHPDDMSol(Ad,x) ;
   }
 
   {
@@ -299,7 +303,7 @@ solve(IMatrix const& Ad,IMatrix const& An, IVector const& b, IVector& x)
 }
 
 ILinearSolver*
-HPDDMInternalSolverFactory(Arccore::MessagePassing::IMessagePassingMng* p_mng, IOptionsHPDDMSolver* options)
+HPDDMInternalSolverFactory(IMessagePassingMng* p_mng, IOptionsHPDDMSolver* options)
 {
   return new HPDDMInternalSolver(p_mng, options);
 }

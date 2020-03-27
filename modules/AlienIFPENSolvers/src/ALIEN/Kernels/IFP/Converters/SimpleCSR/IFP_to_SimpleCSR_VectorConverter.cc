@@ -1,12 +1,12 @@
-#include <ALIEN/Core/Backend/IVectorConverter.h>
-#include <ALIEN/Core/Backend/VectorConverterRegisterer.h>
+#include <alien/core/backend/IVectorConverter.h>
+#include <alien/core/backend/VectorConverterRegisterer.h>
 
 #include <iostream>
 #include <ALIEN/Kernels/IFP/DataStructure/IFPVector.h>
 
 #include <ALIEN/Kernels/IFP/IFPSolverBackEnd.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRVector.h>
-#include <ALIEN/Kernels/SimpleCSR/SimpleCSRBackEnd.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
 
 
 using namespace Alien;
@@ -45,7 +45,7 @@ convert(const IVectorImpl * sourceImpl, IVectorImpl * targetImpl) const
     cout() << "Converting IFPVector: " << &v << " to SimpleCSRVector " << &v2;
     });
 
-  Arccore::ArrayView<Arccore::Real> values = v2.values();
+  ArrayView<Real> values = v2.values();
 
   v.getValues(values.size(), v2.getDataPtr());
 }

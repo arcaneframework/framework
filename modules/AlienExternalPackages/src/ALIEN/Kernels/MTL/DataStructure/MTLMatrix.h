@@ -8,8 +8,8 @@
 #include <vector>
 
 #include <ALIEN/Kernels/MTL/MTLPrecomp.h>
-#include <ALIEN/Core/Impl/IMatrixImpl.h>
-#include <ALIEN/Data/ISpace.h>
+#include <alien/core/impl/IMatrixImpl.h>
+#include <alien/data/ISpace.h>
 
 /*---------------------------------------------------------------------------*/
 

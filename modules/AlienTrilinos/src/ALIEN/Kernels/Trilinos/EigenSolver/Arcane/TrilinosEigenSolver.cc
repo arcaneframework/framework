@@ -3,9 +3,9 @@
 /**
  * Interface du service de résolution de système linéaire
  */
-#include "ALIEN/ALIENConfig.h"
-#include <ALIEN/Data/IMatrix.h>
-#include <ALIEN/Data/IVector.h>
+#include "alien/AlienLegacyConfig.h"
+#include <alien/data/IMatrix.h>
+#include <alien/data/IVector.h>
 #include <ALIEN/Kernels/Trilinos/TrilinosPrecomp.h>
 #include <ALIEN/Alien-TrilinosPrecomp.h>
 

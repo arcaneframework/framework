@@ -3,15 +3,15 @@
 
 #include <ALIEN/Kernels/HTS/HTSBackEnd.h>
 
-#include <ALIEN/Core/Backend/LinearAlgebraT.h>
-#include <ALIEN/Kernels/SimpleCSR/Algebra/CBLASMPIKernel.h>
+#include <alien/core/backend/LinearAlgebraT.h>
+#include <alien/kernels/simple_csr/algebra/CBLASMPIKernel.h>
 
-#include <ALIEN/Data/Space.h>
+#include <alien/data/Space.h>
 
 
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRMatrix.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRVector.h>
-#include <ALIEN/Kernels/SimpleCSR/Algebra/SimpleCSRInternalLinearAlgebra.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/algebra/SimpleCSRInternalLinearAlgebra.h>
 
 #include <ALIEN/Kernels/HTS/DataStructure/HTSMatrix.h>
 
@@ -29,13 +29,13 @@ template class ALIEN_IFPENSOLVERS_EXPORT
     LinearAlgebra<BackEnd::tag::hts, BackEnd::tag::simplecsr>;
 
 /*---------------------------------------------------------------------------*/
-IInternalLinearAlgebra<SimpleCSRMatrix<Arccore::Real>, SimpleCSRVector<Arccore::Real>>*
+IInternalLinearAlgebra<SimpleCSRMatrix<Real>, SimpleCSRVector<Real>>*
 HTSSolverInternalLinearAlgebraFactory()
 {
   return new HTSSolverInternalLinearAlgebra();
 }
 
-IInternalLinearAlgebra<HTSMatrix<Arccore::Real>, SimpleCSRVector<Arccore::Real>>*
+IInternalLinearAlgebra<HTSMatrix<Real>, SimpleCSRVector<Real>>*
 HTSInternalLinearAlgebraFactory()
 {
   return new HTSInternalLinearAlgebra();
@@ -56,7 +56,7 @@ HTSInternalLinearAlgebra::~HTSInternalLinearAlgebra()
 
 /*---------------------------------------------------------------------------*/
 
-Arccore::Real
+Real
 HTSInternalLinearAlgebra::norm0(const Vector& x) const
 {
   return 0.;
@@ -64,16 +64,16 @@ HTSInternalLinearAlgebra::norm0(const Vector& x) const
 
 /*---------------------------------------------------------------------------*/
 
-Arccore::Real
+Real
 HTSInternalLinearAlgebra::norm1(const Vector& x) const
 {
-  throw Arccore::NotImplementedException(
+  throw NotImplementedException(
       A_FUNCINFO, "HTSInternalLinearAlgebra::aypx not implemented");
 }
 
 /*---------------------------------------------------------------------------*/
 
-Arccore::Real
+Real
 HTSInternalLinearAlgebra::norm2(const Vector& x) const
 {
   return CBLASMPIKernel::nrm2(x.distribution(), x);
@@ -86,21 +86,37 @@ HTSInternalLinearAlgebra::mult(const Matrix& a, const Vector& x, Vector& r) cons
 {
   a.mult(x.getDataPtr(),r.getDataPtr()) ;
 }
+void
+HTSInternalLinearAlgebra::mult(const Matrix& a, const UniqueArray<Real>& vx, UniqueArray<Real>& vr) const
+{
+  a.mult(dataPtr(vx),dataPtr(vr)) ;
+}
 
 /*---------------------------------------------------------------------------*/
+void
+HTSInternalLinearAlgebra::axpy(const Real& alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+{
+  cblas::axpy(x.size(), alpha, dataPtr(x),1, dataPtr(r),1);
+}
 
 void
-HTSInternalLinearAlgebra::axpy(const Arccore::Real& alpha, const Vector& x, Vector& r) const
+HTSInternalLinearAlgebra::axpy(const Real& alpha, const Vector& x, Vector& r) const
 {
   CBLASMPIKernel::axpy(x.distribution(), alpha, x, r);
 }
 
 /*---------------------------------------------------------------------------*/
+void
+HTSInternalLinearAlgebra::aypx(const Real& alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const
+{
+  throw NotImplementedException(
+      A_FUNCINFO, "HTSInternalLinearAlgebra::aypx not implemented");
+}
 
 void
-HTSInternalLinearAlgebra::aypx(const Arccore::Real& alpha, Vector& y, const Vector& x) const
+HTSInternalLinearAlgebra::aypx(const Real& alpha, Vector& y, const Vector& x) const
 {
-  throw Arccore::NotImplementedException(
+  throw NotImplementedException(
       A_FUNCINFO, "HTSInternalLinearAlgebra::aypx not implemented");
 }
 
@@ -124,7 +140,7 @@ HTSInternalLinearAlgebra::dot(Integer local_size, const UniqueArray<Real>& vx, c
   return cblas::dot(local_size, dataPtr(vx),1, dataPtr(vy),1);
 }
 
-Arccore::Real
+Real
 HTSInternalLinearAlgebra::dot(const Vector& x, const Vector& y) const
 {
   return CBLASMPIKernel::dot(x.distribution(), x, y);
@@ -151,7 +167,7 @@ HTSInternalLinearAlgebra::scal(const Real& alpha, Vector& x) const
 void
 HTSInternalLinearAlgebra::diagonal(const Matrix& a, Vector& x) const
 {
-  throw Arccore::NotImplementedException(
+  throw NotImplementedException(
       A_FUNCINFO, "HTSInternalLinearAlgebra::diagonal not implemented");
 }
 
@@ -160,7 +176,7 @@ HTSInternalLinearAlgebra::diagonal(const Matrix& a, Vector& x) const
 void
 HTSInternalLinearAlgebra::reciprocal(Vector& x) const
 {
-  throw Arccore::NotImplementedException(
+  throw NotImplementedException(
       A_FUNCINFO, "HTSInternalLinearAlgebra::reciprocal not implemented");
 }
 
@@ -169,7 +185,7 @@ HTSInternalLinearAlgebra::reciprocal(Vector& x) const
 void
 HTSInternalLinearAlgebra::pointwiseMult(const Vector& x, const Vector& y, Vector& w) const
 {
-  throw Arccore::NotImplementedException(
+  throw NotImplementedException(
       A_FUNCINFO, "HTSInternalLinearAlgebra::pointwiseMult not implemented");
 }
 

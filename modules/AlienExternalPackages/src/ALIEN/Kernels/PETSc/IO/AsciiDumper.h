@@ -6,7 +6,7 @@
  */
 
 #include <ALIEN/Alien-ExternalPackagesPrecomp.h>
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 
 namespace Arccore {
 class ITraceMng;

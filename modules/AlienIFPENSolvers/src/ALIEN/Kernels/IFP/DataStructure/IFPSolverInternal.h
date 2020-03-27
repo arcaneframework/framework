@@ -6,7 +6,7 @@
  */
 
 #include <ALIEN/Kernels/IFP/IFPSolverPrecomp.h>
-#include <ALIEN/Data/ISpace.h>
+#include <alien/data/ISpace.h>
 
 /*---------------------------------------------------------------------------*/
 
@@ -26,10 +26,10 @@ BEGIN_IFPSOLVERINTENRAL_NAMESPACE
 class MatrixInternal
 {
 public:
-  MatrixInternal(const MultiMatrixImpl * matrix_impl, Arccore::Int64 timestamp=-1);
+  MatrixInternal(const MultiMatrixImpl * matrix_impl, Int64 timestamp=-1);
   virtual ~MatrixInternal();
   void init() ;
-    Arccore::Int64 timestamp() const {
+    Int64 timestamp() const {
     return m_timestamp ;
   }
 public:
@@ -37,7 +37,7 @@ public:
   bool m_extra_filled         = false ;
   bool m_elliptic_split_tag   = false ;
   bool m_system_is_resizeable = false ;
-  Arccore::Int64 m_timestamp           = -1 ;
+  Int64 m_timestamp           = -1 ;
 
 public:
   static bool isInstancied() { return m_static_multi_impl != NULL; }

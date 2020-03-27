@@ -7,8 +7,8 @@
 #include <vector>
 
 #include <ALIEN/Kernels/Trilinos/TrilinosPrecomp.h>
-#include <ALIEN/Core/Impl/IMatrixImpl.h>
-#include <ALIEN/Data/ISpace.h>
+#include <alien/core/impl/IMatrixImpl.h>
+#include <alien/data/ISpace.h>
 
 /*---------------------------------------------------------------------------*/
 

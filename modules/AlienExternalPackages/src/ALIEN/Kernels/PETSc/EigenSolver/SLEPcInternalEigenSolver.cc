@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "ALIEN/Utils/Precomp.h"
+#include "alien/utils/Precomp.h"
 
 #ifdef ALIEN_USE_PETSC
 #include <petscmat.h>
@@ -30,13 +30,13 @@
 #include <ALIEN/Kernels/PETSc/DataStructure/PETScInternal.h>
 
 
-#include <ALIEN/Data/Space.h>
-#include <ALIEN/Expression/Solver/IEigenSolver.h>
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
-#include <ALIEN/Core/Impl/MultiVectorImpl.h>
-#include <ALIEN/Kernels/SimpleCSR/SimpleCSRPrecomp.h>
+#include <alien/data/Space.h>
+#include <alien/expression/solver/IEigenSolver.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
+#include <alien/core/impl/MultiVectorImpl.h>
+#include <alien/kernels/simple_csr/SimpleCSRPrecomp.h>
 #include "SLEPcInternalEigenSolver.h"
-#include <ALIEN/Core/Backend/EigenSolverT.h>
+#include <alien/core/backend/EigenSolverT.h>
 #include <ALIEN/axl/SLEPcEigenSolver_IOptions.h>
 
 

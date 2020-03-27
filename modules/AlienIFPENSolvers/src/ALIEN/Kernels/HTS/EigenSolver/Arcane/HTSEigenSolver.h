@@ -6,10 +6,10 @@
 #endif
 
 #include <ALIEN/Kernels/HTS/HTSPrecomp.h>
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 #include <ALIEN/Alien-IFPENSolversPrecomp.h>
 #include <ALIEN/Kernels/HTS/HTSBackEnd.h>
-#include <ALIEN/Core/Backend/EigenSolver.h>
+#include <alien/core/backend/EigenSolver.h>
 #include <ALIEN/Kernels/HTS/EigenSolver/HTSInternalEigenSolver.h>
 #include <ALIEN/Kernels/HTS/EigenSolver/HTSEigenOptionTypes.h>
 #include <ALIEN/axl/HTSEigenSolver_axl.h>

@@ -5,7 +5,7 @@
 
 #include <ALIEN/Kernels/HTS/DataStructure/HTSInternal.h>
 #include <ALIEN/Kernels/HTS/HTSBackEnd.h>
-#include <ALIEN/Core/Block/Block.h>
+#include <alien/core/block/Block.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

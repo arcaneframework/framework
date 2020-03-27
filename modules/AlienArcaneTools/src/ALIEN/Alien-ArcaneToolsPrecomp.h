@@ -8,6 +8,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include <alien/utils/Precomp.h>
 #include "ALIEN/ALIEN-ArcaneToolsExport.h"
+#include <alien/AlienLegacyConfig.h>
 
 #endif

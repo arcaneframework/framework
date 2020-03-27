@@ -19,22 +19,22 @@
 #include <ALIEN/ArcaneTools/Accessors/ItemVectorAccessor.h>
 #include <ALIEN/ArcaneTools/IndexManager/BasicIndexManager.h>
 #include <ALIEN/ArcaneTools/IndexManager/SimpleAbstractFamily.h>
-#include <ALIEN/Core/Block/VBlock.h>
+#include <alien/core/block/VBlock.h>
 
 #include <ALIEN/ArcaneTools/IIndexManager.h>
 
-#include <ALIEN/Accessor/BlockVectorReader.h>
-#include <ALIEN/Accessor/BlockVectorWriter.h>
-#include <ALIEN/Accessor/VectorReader.h>
-#include <ALIEN/Accessor/VectorWriter.h>
+#include <alien/accessor/BlockVectorReader.h>
+#include <alien/accessor/BlockVectorWriter.h>
+#include <alien/accessor/VectorReader.h>
+#include <alien/accessor/VectorWriter.h>
 #include <ALIEN/ArcaneTools/Block/IndexManagerBlockBuilder.h>
 #include <ALIEN/ArcaneTools/Distribution/DistributionFabric.h>
 #include <ALIEN/ArcaneTools/IndexSet/IndexSetFabric.h>
-#include <ALIEN/Builder/Block/ProfiledBlockMatrixBuilder.h>
-#include <ALIEN/Builder/Scalar/DirectMatrixBuilder.h>
-#include <ALIEN/Builder/Scalar/MatrixProfiler.h>
-#include <ALIEN/Builder/Scalar/ProfiledMatrixBuilder.h>
-#include <ALIEN/Kernels/SimpleCSR/Algebra/SimpleCSRLinearAlgebra.h>
+#include <alien/builder/block/ProfiledBlockMatrixBuilder.h>
+#include <alien/builder/scalar/DirectMatrixBuilder.h>
+#include <alien/builder/scalar/MatrixProfiler.h>
+#include <alien/builder/scalar/ProfiledMatrixBuilder.h>
+#include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
 // Stream non implémenté pour CEA
 //#include <RefSemanticMVHandlers/Stream/StreamMatrixBuilder.h>
 //#include <RefSemanticMVHandlers/Stream/StreamVBlockMatrixBuilder.h>
@@ -46,7 +46,7 @@
 #include <ALIEN/Kernels/MTL/Algebra/MTLLinearAlgebra.h>
 #endif
 
-#include <ALIEN/Expression/Solver/ILinearSolver.h>
+#include <alien/expression/solver/ILinearSolver.h>
 
 #include "AlienTestOptionTypes.h"
 #include "AlienTestModule.h"
@@ -54,7 +54,7 @@
 #include <arcane/ItemPairGroup.h>
 #include <arcane/IMesh.h>
 
-#include <ALIEN/Core/Impl/MultiVectorImpl.h>
+#include <alien/core/impl/MultiVectorImpl.h>
 
 using namespace Arcane;
 using namespace Alien;

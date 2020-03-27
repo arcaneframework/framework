@@ -6,9 +6,9 @@
 #define IFPSOLVERIMPL_H
 
 #include <ALIEN/Kernels/IFP/IFPSolverPrecomp.h>
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 #include <ALIEN/Kernels/IFP/IFPSolverBackEnd.h>
-#include <ALIEN/Core/Backend/LinearSolver.h>
+#include <alien/core/backend/LinearSolver.h>
 #include <ALIEN/Kernels/IFP/LinearSolver/IFPSolverProperty.h>
 #include <ALIEN/Kernels/IFP/LinearSolver/IFPInternalLinearSolver.h>
 

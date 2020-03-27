@@ -19,24 +19,24 @@
 #include "HARTSSolver/MatrixVector/CSR/CSRMatrixImpT.h"
 #endif
 
-#include <ALIEN/Data/Space.h>
-#include <ALIEN/Expression/Solver/ILinearSolver.h>
-#include <ALIEN/Expression/Solver/ILinearAlgebra.h>
-#include <ALIEN/Expression/Solver/SolverStats/SolverStat.h>
-#include <ALIEN/Expression/Solver/SolverStats/SolverStater.h>
+#include <alien/data/Space.h>
+#include <alien/expression/solver/ILinearSolver.h>
+#include <alien/expression/solver/ILinearAlgebra.h>
+#include <alien/expression/solver/solver_stats/SolverStat.h>
+#include <alien/expression/solver/solver_stats/SolverStater.h>
 
-#include <ALIEN/Kernels/SimpleCSR/SimpleCSRPrecomp.h>
-#include <ALIEN/Kernels/SimpleCSR/Algebra/SimpleCSRLinearAlgebra.h>
+#include <alien/kernels/simple_csr/SimpleCSRPrecomp.h>
+#include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
 
 #include <ALIEN/Kernels/HTS/Algebra/HTSLinearAlgebra.h>
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
-#include <ALIEN/Core/Impl/MultiVectorImpl.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
+#include <alien/core/impl/MultiVectorImpl.h>
 
 
 #include <ALIEN/Kernels/HTS/Algebra/HTSLinearAlgebra.h>
 #include <ALIEN/Kernels/HTS/LinearSolver/HTSInternalLinearSolver.h>
-#include <ALIEN/Core/Backend/LinearSolverT.h>
-#include <ALIEN/Core/Block/ComputeBlockOffsets.h>
+#include <alien/core/backend/LinearSolverT.h>
+#include <alien/core/block/ComputeBlockOffsets.h>
 #include <ALIEN/axl/HTSSolver_IOptions.h>
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 

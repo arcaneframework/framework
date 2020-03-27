@@ -15,24 +15,24 @@
 #include "MatrixVector/CSRMatrixImpT.h"
 #endif
 
-#include <ALIEN/Data/Space.h>
-#include <ALIEN/Expression/Solver/ILinearSolver.h>
-#include <ALIEN/Expression/Solver/ILinearAlgebra.h>
-#include <ALIEN/Expression/Solver/SolverStats/SolverStat.h>
-#include <ALIEN/Expression/Solver/SolverStats/SolverStater.h>
+#include <alien/data/Space.h>
+#include <alien/expression/solver/ILinearSolver.h>
+#include <alien/expression/solver/ILinearAlgebra.h>
+#include <alien/expression/solver/solver_stats/SolverStat.h>
+#include <alien/expression/solver/solver_stats/SolverStater.h>
 #include <ALIEN/Kernels/MCG/Algebra/MCGLinearAlgebra.h>
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
-#include <ALIEN/Core/Impl/MultiVectorImpl.h>
-#include <ALIEN/Kernels/SimpleCSR/SimpleCSRPrecomp.h>
-#include <ALIEN/Kernels/SimpleCSR/Algebra/SimpleCSRLinearAlgebra.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
+#include <alien/core/impl/MultiVectorImpl.h>
+#include <alien/kernels/simple_csr/SimpleCSRPrecomp.h>
+#include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
 #include <ALIEN/Kernels/MCG/LinearSolver/GPUInternal.h>
 #include <ALIEN/Kernels/MCG/DataStructure/MCGVector.h>
 #include <ALIEN/Kernels/MCG/DataStructure/MCGMatrix.h>
 #include <ALIEN/Kernels/MCG/DataStructure/MCGInternal.h>
 #include <ALIEN/Kernels/MCG/LinearSolver/GPUOptionTypes.h>
 #include <ALIEN/Kernels/MCG/LinearSolver/MCGInternalLinearSolver.h>
-#include <ALIEN/Core/Backend/LinearSolverT.h>
-#include <ALIEN/Core/Block/ComputeBlockOffsets.h>
+#include <alien/core/backend/LinearSolverT.h>
+#include <alien/core/block/ComputeBlockOffsets.h>
 #include <ALIEN/axl/GPUSolver_IOptions.h>
 //Vector accessor?
 

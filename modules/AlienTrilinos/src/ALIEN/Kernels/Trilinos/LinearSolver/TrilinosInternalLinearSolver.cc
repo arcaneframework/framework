@@ -11,17 +11,19 @@
 #include <Kokkos_Macros.hpp>
 #include <KokkosCompat_ClassicNodeAPI_Wrapper.hpp>
 
-#include <ALIEN/Data/Space.h>
-#include <ALIEN/Expression/Solver/ILinearSolver.h>
-#include <ALIEN/Expression/Solver/ILinearAlgebra.h>
-#include <ALIEN/Expression/Solver/SolverStats/SolverStat.h>
-#include <ALIEN/Expression/Solver/SolverStats/SolverStater.h>
+#include <alien/data/Space.h>
+#include <alien/expression/solver/ILinearSolver.h>
+#include <alien/expression/solver/ILinearAlgebra.h>
+#include <alien/expression/solver/solver_stats/SolverStat.h>
+#include <alien/expression/solver/solver_stats/SolverStater.h>
 
-#include <ALIEN/Kernels/SimpleCSR/SimpleCSRPrecomp.h>
-#include <ALIEN/Kernels/SimpleCSR/Algebra/SimpleCSRLinearAlgebra.h>
+#include <alien/kernels/simple_csr/SimpleCSRPrecomp.h>
+#include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
 
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
-#include <ALIEN/Core/Impl/MultiVectorImpl.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
+#include <alien/core/impl/MultiVectorImpl.h>
+
+#include <alien/AlienRefSemantic.h>
 
 #include <ALIEN/Kernels/Trilinos/TrilinosBackEnd.h>
 #include <ALIEN/Kernels/Trilinos/DataStructure/TrilinosInternal.h>
@@ -36,8 +38,8 @@
 #include <ALIEN/axl/TrilinosSolver_IOptions.h>
 #include <ALIEN/Kernels/Trilinos/LinearSolver/TrilinosInternalSolver.h>
 #include <ALIEN/Kernels/Trilinos/LinearSolver/TrilinosInternalLinearSolver.h>
-#include <ALIEN/Core/Backend/LinearSolverT.h>
-#include <ALIEN/Core/Block/ComputeBlockOffsets.h>
+#include <alien/core/backend/LinearSolverT.h>
+#include <alien/core/block/ComputeBlockOffsets.h>
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 
 /*---------------------------------------------------------------------------*/
@@ -90,7 +92,7 @@ template<typename TagT>
     }
 
     template<typename TagT>
-    Arccore::String TrilinosInternalLinearSolver<TagT>::getBackEndName() const {
+    String TrilinosInternalLinearSolver<TagT>::getBackEndName() const {
         return AlgebraTraits<TagT>::name();
     }
 
@@ -198,7 +200,7 @@ void
 TrilinosInternalLinearSolver<TagT>::
 internalPrintInfo() const
 {
-    m_stater.print(const_cast<Arccore::ITraceMng *>(traceMng()), m_status,
+    m_stater.print(const_cast<ITraceMng *>(traceMng()), m_status,
                    Arccore::String::format("Linear Solver : {0}", "TrilinosSolver"));
 }
 
@@ -213,8 +215,8 @@ algebra() const
 
 template class TrilinosInternalLinearSolver<BackEnd::tag::tpetraserial> ;
 
-    IInternalLinearSolver<TrilinosMatrix<Arccore::Real, BackEnd::tag::tpetraserial>,
-            TrilinosVector<Arccore::Real, BackEnd::tag::tpetraserial>> *
+    IInternalLinearSolver<TrilinosMatrix<Real, BackEnd::tag::tpetraserial>,
+            TrilinosVector<Real, BackEnd::tag::tpetraserial>> *
     TrilinosInternalLinearSolverFactory(Arccore::MessagePassing::IMessagePassingMng *p_mng,
                                         IOptionsTrilinosSolver *options) {
         return new TrilinosInternalLinearSolver<BackEnd::tag::tpetraserial>(p_mng, options);

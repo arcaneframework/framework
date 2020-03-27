@@ -2,15 +2,15 @@
 
 #include <ALIEN/Alien-RefSemantic.h>
 
-#include <ALIEN/Data/Space.h>
-#include <ALIEN/Expression/Solver/IEigenSolver.h>
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
-#include <ALIEN/Core/Impl/MultiVectorImpl.h>
-#include <ALIEN/Core/Backend/EigenSolver.h>
-#include <ALIEN/Core/Backend/EigenSolverT.h>
-#include <ALIEN/Core/Backend/IInternalEigenSolverT.h>
+#include <alien/data/Space.h>
+#include <alien/expression/solver/IEigenSolver.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
+#include <alien/core/impl/MultiVectorImpl.h>
+#include <alien/core/backend/EigenSolver.h>
+#include <alien/core/backend/EigenSolverT.h>
+#include <alien/core/backend/IInternalEigenSolverT.h>
 
-#include <ALIEN/Kernels/SimpleCSR/SimpleCSRPrecomp.h>
+#include <alien/kernels/simple_csr/SimpleCSRPrecomp.h>
 
 #ifdef ALIEN_USE_HARTS
 #include "HARTS/HARTS.h"

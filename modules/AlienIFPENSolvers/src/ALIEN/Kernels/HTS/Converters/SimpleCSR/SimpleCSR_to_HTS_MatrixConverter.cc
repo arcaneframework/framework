@@ -1,14 +1,14 @@
-#include <ALIEN/Core/Backend/IMatrixConverter.h>
-#include <ALIEN/Core/Backend/MatrixConverterRegisterer.h>
+#include <alien/core/backend/IMatrixConverter.h>
+#include <alien/core/backend/MatrixConverterRegisterer.h>
 
 #include <iostream>
 #include <ALIEN/Kernels/HTS/DataStructure/HTSMatrix.h>
-#include <ALIEN/Core/Block/ComputeBlockOffsets.h>
+#include <alien/core/block/ComputeBlockOffsets.h>
 
 #include <ALIEN/Kernels/HTS/HTSBackEnd.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/CSRStructInfo.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRMatrix.h>
-#include <ALIEN/Kernels/SimpleCSR/SimpleCSRBackEnd.h>
+#include <alien/kernels/simple_csr/data_structure/CSRStructInfo.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
+#include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
 
 using namespace Alien;
 using namespace Alien::SimpleCSRInternal;
@@ -27,8 +27,8 @@ class SimpleCSR_to_HTS_MatrixConverter : public IMatrixConverter
   }
   BackEndId targetBackend() const { return AlgebraTraits<BackEnd::tag::hts>::name(); }
   void convert(const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const;
-  void _build(const SimpleCSRMatrix<Arccore::Real>& sourceImpl, HTSMatrix<Arccore::Real>& targetImpl) const;
-  void _buildBlock(const SimpleCSRMatrix<Arccore::Real>& sourceImpl, HTSMatrix<Arccore::Real>& targetImpl) const;
+  void _build(const SimpleCSRMatrix<Real>& sourceImpl, HTSMatrix<Real>& targetImpl) const;
+  void _buildBlock(const SimpleCSRMatrix<Real>& sourceImpl, HTSMatrix<Real>& targetImpl) const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -44,9 +44,9 @@ void
 SimpleCSR_to_HTS_MatrixConverter::convert(
     const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const
 {
-  const SimpleCSRMatrix<Arccore::Real>& v =
-      cast<SimpleCSRMatrix<Arccore::Real>>(sourceImpl, sourceBackend());
-  HTSMatrix<Arccore::Real>& v2 = cast<HTSMatrix<Arccore::Real>>(targetImpl, targetBackend());
+  const SimpleCSRMatrix<Real>& v =
+      cast<SimpleCSRMatrix<Real>>(sourceImpl, sourceBackend());
+  HTSMatrix<Real>& v2 = cast<HTSMatrix<Real>>(targetImpl, targetBackend());
 
   alien_debug([&] {
     cout() << "Converting SimpleCSRMatrix: " << &v << " to HTSMatrix " << &v2;
@@ -55,24 +55,24 @@ SimpleCSR_to_HTS_MatrixConverter::convert(
   if(targetImpl->block())
     _buildBlock(v,v2);
   else if(targetImpl->vblock())
-    throw Arccore::FatalErrorException(A_FUNCINFO,"Block sizes are variable - builds not yet implemented");
+    throw FatalErrorException(A_FUNCINFO,"Block sizes are variable - builds not yet implemented");
   else
     _build(v,v2);
 }
 
 void
 SimpleCSR_to_HTS_MatrixConverter::_build(
-    const SimpleCSRMatrix<Arccore::Real>& sourceImpl, HTSMatrix<Arccore::Real>& targetImpl) const
+    const SimpleCSRMatrix<Real>& sourceImpl, HTSMatrix<Real>& targetImpl) const
 {
-  typedef SimpleCSRMatrix<Arccore::Real>::MatrixInternal CSRMatrixType ;
+  typedef SimpleCSRMatrix<Real>::MatrixInternal CSRMatrixType ;
 
   const MatrixDistribution& dist = targetImpl.distribution();
   const CSRStructInfo & profile = sourceImpl.getCSRProfile();
-  const Arccore::Integer localSize = profile.getNRow();
-  const Arccore::Integer localOffset = dist.rowOffset();
+  const Integer localSize = profile.getNRow();
+  const Integer localOffset = dist.rowOffset();
   auto const& matrixInternal = sourceImpl.internal();
-  const Arccore::Integer myRank = dist.parallelMng()->commRank();
-  const Arccore::Integer nProc = dist.parallelMng()->commSize();
+  const Integer myRank = dist.parallelMng()->commRank();
+  const Integer nProc = dist.parallelMng()->commSize();
 
 
   {
@@ -85,24 +85,24 @@ SimpleCSR_to_HTS_MatrixConverter::_build(
 
     if (not targetImpl.initMatrix(dist.parallelMng(),nrows,kcol,cols,block_size))
     {
-      throw Arccore::FatalErrorException(A_FUNCINFO, "HTS Initialisation failed");
+      throw FatalErrorException(A_FUNCINFO, "HTS Initialisation failed");
     }
 
     if (not targetImpl.setMatrixValues(matrixInternal.getDataPtr()))
     {
-      throw Arccore::FatalErrorException(A_FUNCINFO, "Cannot set HTS Matrix Values");
+      throw FatalErrorException(A_FUNCINFO, "Cannot set HTS Matrix Values");
     }
 
     if(not targetImpl.computeDDMatrix())
     {
-      throw Arccore::FatalErrorException(A_FUNCINFO, "Cannot set HTS DDMatrix Values");
+      throw FatalErrorException(A_FUNCINFO, "Cannot set HTS DDMatrix Values");
     }
   }
 }
 
 void
 SimpleCSR_to_HTS_MatrixConverter::_buildBlock(
-    const SimpleCSRMatrix<Arccore::Real>& sourceImpl, HTSMatrix<Arccore::Real>& targetImpl) const
+    const SimpleCSRMatrix<Real>& sourceImpl, HTSMatrix<Real>& targetImpl) const
 {
 
 }

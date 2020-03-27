@@ -1,8 +1,8 @@
 #ifndef TESTS_ENVIRONMENT_H
 #define TESTS_ENVIRONMENT_H
 
-#include <ALIEN/ALIENConfig.h>
-#include <ALIEN/Data/Universe.h>
+#include <alien/AlienLegacyConfig.h>
+#include <alien/data/Universe.h>
 
 #include <arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h>
 #include <arccore/trace/ITraceMng.h>

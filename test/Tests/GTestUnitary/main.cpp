@@ -2,7 +2,7 @@
 
 #include <Tests/Environment.h>
 
-#include <ALIEN/Data/Universe.h>
+#include <alien/data/Universe.h>
 
 int main(int argc, char **argv)
 {

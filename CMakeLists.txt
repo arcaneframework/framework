@@ -68,7 +68,7 @@ message_separator()
 
 logStatus("Load alien specifics tools :")
 
-include(LoadAlienConfigFile)
+include(LoadAlienLegacyConfigFile)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------

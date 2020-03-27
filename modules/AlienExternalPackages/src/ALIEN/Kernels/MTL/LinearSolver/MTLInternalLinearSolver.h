@@ -1,13 +1,13 @@
 #ifndef ALIEN_KERNELS_MTL_LINEARSOLVER_MTLINTERNALLINEARSOLVER_H_
 #define ALIEN_KERNELS_MTL_LINEARSOLVER_MTLINTERNALLINEARSOLVER_H_
 
-#include <ALIEN/Utils/Precomp.h>
-#include <ALIEN/Expression/Solver/SolverStats/SolverStater.h>
-#include <ALIEN/Core/Backend/IInternalLinearSolverT.h>
+#include <alien/utils/Precomp.h>
+#include <alien/expression/solver/solver_stats/SolverStater.h>
+#include <alien/core/backend/IInternalLinearSolverT.h>
 #include <ALIEN/Kernels/MTL/DataStructure/MTLInternal.h>
 #include <ALIEN/Kernels/MTL/LinearSolver/MTLOptionTypes.h>
-#include <ALIEN/Utils/Trace/ObjectWithTrace.h>
-#include <ALIEN/Data/Space.h>
+#include <alien/utils/trace/ObjectWithTrace.h>
+#include <alien/data/Space.h>
 
 class IOptionsMTLLinearSolver;
 

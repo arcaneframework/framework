@@ -15,7 +15,7 @@
 #include <ALIEN/Kernels/PETSc/LinearSolver/PETScInitType.h>
 #include <ALIEN/Kernels/PETSc/LinearSolver/PETScInternalLinearSolver.h>
 #include <ALIEN/axl/PETScSolverConfigRichardson_axl.h>
-#include <ALIEN/Core/Backend/IInternalLinearSolverT.h>
+#include <alien/core/backend/IInternalLinearSolverT.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

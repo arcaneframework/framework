@@ -2,8 +2,8 @@
 
 #include <ALIEN/Kernels/PETSc/PETScBackEnd.h>
 
-#include <ALIEN/Core/Backend/LinearAlgebraT.h>
-#include <ALIEN/Data/Space.h>
+#include <alien/core/backend/LinearAlgebraT.h>
+#include <alien/data/Space.h>
 #include <ALIEN/Kernels/PETSc/DataStructure/PETScInit.h>
 #include <ALIEN/Kernels/PETSc/DataStructure/PETScInternal.h>
 #include <ALIEN/Kernels/PETSc/DataStructure/PETScMatrix.h>
@@ -156,8 +156,6 @@ PETScInternalLinearAlgebra::pointwiseMult(
 
 /*---------------------------------------------------------------------------*/
 
-} // namespace Alien
-
 
 void
 PETScInternalLinearAlgebra::mult(const Matrix& a, const UniqueArray<Real>& x, UniqueArray<Real>& r) const {
@@ -185,7 +183,7 @@ PETScInternalLinearAlgebra::scal(const Real & alpha, UniqueArray<Real>& x) const
   throw NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::scal not implemented");
 }
 
-END_NAMESPACE
+} // END_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

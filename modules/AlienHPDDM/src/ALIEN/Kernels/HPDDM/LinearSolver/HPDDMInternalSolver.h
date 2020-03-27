@@ -16,14 +16,14 @@
 #define ALIEN_HPDDMINTERNALSOLVER_H
 // Interface du service 
 
-#include <ALIEN/Utils/Precomp.h>
-#include <ALIEN/Core/Backend/IInternalLinearSolverT.h>
+#include <alien/utils/Precomp.h>
+#include <alien/core/backend/IInternalLinearSolverT.h>
 #include <ALIEN/Kernels/HPDDM/LinearSolver/HPDDMOptionTypes.h>
-#include <ALIEN/Expression/Solver/SolverStats/SolverStater.h>
-#include <ALIEN/Core/Backend/IInternalLinearSolverT.h>
-#include <ALIEN/Utils/Trace/ObjectWithTrace.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRVector.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRMatrix.h>
+#include <alien/expression/solver/solver_stats/SolverStater.h>
+#include <alien/core/backend/IInternalLinearSolverT.h>
+#include <alien/utils/trace/ObjectWithTrace.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
 #include <ALIEN/Alien-HPDDMPrecomp.h>
 
 #include <ALIEN/Kernels/HPDDM/LinearSolver/ILinearSolverDDM.h>
@@ -47,13 +47,13 @@ class ALIEN_HPDDM_EXPORT HPDDMInternalSolver
  public:
   typedef SolverStatus Status;
 
-  typedef SimpleCSRMatrix<Arccore::Real>      CSRMatrixType;
-  typedef SimpleCSRVector<Arccore::Real>      CSRVectorType;
-  typedef SimpleCSRInternal::MatrixInternal<Arccore::Real>  CSRInternalMatrixType;
+  typedef SimpleCSRMatrix<Real>                    CSRMatrixType;
+  typedef SimpleCSRVector<Real>                    CSRVectorType;
+  typedef SimpleCSRInternal::MatrixInternal<Real>  CSRInternalMatrixType;
 
   
   /** Constructeur de la classe */
-  HPDDMInternalSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+  HPDDMInternalSolver(IMessagePassingMng* parallel_mng,
                       IOptionsHPDDMSolver* options) ;
   
   /** Destructeur de la classe */
@@ -61,8 +61,8 @@ class ALIEN_HPDDM_EXPORT HPDDMInternalSolver
   
 public:
   //! return package back end name
-  Arccore::String getBackEndName() const { return "hpddm" ; }
-  Arccore::String getName() const { return "hpddm"; }
+  String getBackEndName() const { return "hpddm" ; }
+  String getName() const { return "hpddm"; }
 
   void init();
   void init(int argc, char const** argv) ;
@@ -71,7 +71,7 @@ public:
   void end() ;
 
 
-  void updateParallelMng(Arccore::MessagePassing::IMessagePassingMng* pm)
+  void updateParallelMng(IMessagePassingMng* pm)
   {
     m_parallel_mng = pm;
   }
@@ -120,21 +120,22 @@ private:
   void _computeSol(CSRVectorType& x) ;
 
 
-  Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng = nullptr;
-  IOptionsHPDDMSolver*                         m_options      = nullptr ;
+  IMessagePassingMng*  m_parallel_mng = nullptr;
+  IOptionsHPDDMSolver* m_options      = nullptr ;
 
-  typedef HPDDMMatrix<Arccore::Real>::MatrixInternal     HPDDMMatrixType ;
-  typedef HPDDMMatrixType::HPDDMValueType                HPDDMValueType ;
+  typedef HPDDMMatrix<Real>::MatrixInternal     HPDDMMatrixType ;
+  typedef HPDDMMatrixType::HPDDMValueType       HPDDMValueType ;
 
-  HPDDMMatrixType             m_hpddm_matrix ;
-  std::vector<Arccore::Real>  m_hpddm_sol ;
-  std::vector<Arccore::Real>  m_hpddm_rhs ;
+  HPDDMMatrixType    m_hpddm_matrix ;
+  std::vector<Real>  m_hpddm_sol ;
+  std::vector<Real>  m_hpddm_rhs ;
 
   
   Alien::SolverStater m_stater;  //<! Statistiques d'ex�cution du solveur
   Alien::ILinearSolver::Status m_status;
-
-  Arccore::Integer m_output_level = 0 ;
+  Real    m_init_solver_time = 0.;
+  Real    m_iter_solver_time = 0.;
+  Integer m_output_level     = 0 ;
 };
 
 }

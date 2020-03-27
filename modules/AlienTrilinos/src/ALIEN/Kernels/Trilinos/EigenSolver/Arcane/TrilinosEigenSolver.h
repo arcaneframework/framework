@@ -6,16 +6,16 @@
 #endif
 
 #include <ALIEN/Kernels/Trilinos/TrilinosPrecomp.h>
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 #include <ALIEN/Alien-TrilinosPrecomp.h>
 #include <ALIEN/Kernels/Trilinos/TrilinosBackEnd.h>
-#include <ALIEN/Data/IMatrix.h>
-#include <ALIEN/Data/IVector.h>
+#include <alien/data/IMatrix.h>
+#include <alien/data/IVector.h>
 #include <ALIEN/Kernels/Trilinos/DataStructure/TrilinosVector.h>
 #include <ALIEN/Kernels/Trilinos/DataStructure/TrilinosMatrix.h>
 #include <ALIEN/Kernels/Trilinos/EigenSolver/TrilinosEigenOptionTypes.h>
 #include <ALIEN/axl/TrilinosEigenSolver_axl.h>
-#include <ALIEN/Core/Backend/EigenSolver.h>
+#include <alien/core/backend/EigenSolver.h>
 #include <ALIEN/Kernels/Trilinos/EigenSolver/TrilinosInternalEigenSolver.h>
 
 

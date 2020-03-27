@@ -8,7 +8,7 @@
 #include <ALIEN/Kernels/PETSc/PETScBackEnd.h>
 #include <ALIEN/Kernels/PETSc/DataStructure/PETScInternal.h>
 
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
 
 /*---------------------------------------------------------------------------*/
 

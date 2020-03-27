@@ -1,6 +1,6 @@
 #include <ALIEN/Functional/Dump.h>
-#include <ALIEN/Data/IMatrix.h>
-#include <ALIEN/Data/IVector.h>
+#include <alien/data/IMatrix.h>
+#include <alien/data/IVector.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

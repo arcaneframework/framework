@@ -12,7 +12,7 @@
 #include <boost/numeric/mtl/mtl.hpp>
 #include <boost/numeric/itl/itl.hpp>
 
-#include <ALIEN/Distribution/MatrixDistribution.h>
+#include <alien/distribution/MatrixDistribution.h>
 
 /*---------------------------------------------------------------------------*/
 

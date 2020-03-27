@@ -8,15 +8,15 @@
 #ifndef ALIEN_KERNELS_TRILINOS_EIGENSOLVER_TRILINOSINTERNALEIGENSOLVER_H
 #define ALIEN_KERNELS_TRILINOS_EIGENSOLVER_TRILINOSINTERNALEIGENSOLVER_H
 
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 #include <ALIEN/Alien-TrilinosPrecomp.h>
 #include <ALIEN/Kernels/Trilinos/EigenSolver/TrilinosEigenOptionTypes.h>
-#include <ALIEN/Expression/Solver/IEigenSolver.h>
-//#include <ALIEN/Core/Backend/IInternalEigenSolverT.h>
-#include <ALIEN/Core/Backend/EigenSolver.h>
-//#include <ALIEN/Core/Backend/EigenSolverT.h>
+#include <alien/expression/solver/IEigenSolver.h>
+//#include <alien/core/backend/IInternalEigenSolverT.h>
+#include <alien/core/backend/EigenSolver.h>
+//#include <alien/core/backend/EigenSolverT.h>
 
-#include <ALIEN/Utils/Trace/ObjectWithTrace.h>
+#include <alien/utils/trace/ObjectWithTrace.h>
 #include <ALIEN/Kernels/Trilinos/DataStructure/TrilinosVector.h>
 #include <ALIEN/Kernels/Trilinos/DataStructure/TrilinosMatrix.h>
 
@@ -46,7 +46,7 @@ class ALIEN_TRILINOS_EXPORT TrilinosInternalEigenSolver
   void init();
 
 
-    Arccore::String getBackEndName() const {
+    String getBackEndName() const {
         return "tpetraserial";
     }
 
@@ -69,7 +69,7 @@ class ALIEN_TRILINOS_EXPORT TrilinosInternalEigenSolver
   //! Etat du solveur
   const Status& getStatus() const ;
 
-    Arccore::String getName() const { return "trilinos"; }
+    String getName() const { return "trilinos"; }
 
 
   //! Etat du solveur
@@ -85,12 +85,12 @@ private:
     Status m_status;
 
     //!Solver parameters
-    Arccore::Integer m_max_iteration = 0;
-    Arccore::Real m_tol = 0.;
+    Integer m_max_iteration = 0;
+    Real m_tol = 0.;
 
     int m_current_ctx_id = -1;
 
-    Arccore::Integer m_output_level = 0;
+    Integer m_output_level = 0;
 
 
     IOptionsTrilinosEigenSolver *m_options = nullptr;

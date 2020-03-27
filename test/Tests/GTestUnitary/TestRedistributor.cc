@@ -1,32 +1,14 @@
 #include <gtest/gtest.h>
 
-#include <ALIEN/Kernels/Redistributor/Redistributor.h>
-#include <ALIEN/Kernels/Redistributor/RedistributorMatrix.h>
+#include <alien/kernels/redistributor/Redistributor.h>
+#include <alien/kernels/redistributor/RedistributorMatrix.h>
 
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
 
-// CEA or IFPEN interface !
-#if 0
-#include <ALIEN/Data/MatrixData.h>
-#include <ALIEN/Data/Scalar/Vector.h>
 
-#include <ALIEN/Functional/Dump.h>
-#include <ALIEN/Functional/Ones.h>
+#include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
 
-#include <ALIEN/Builder/Scalar/ProfiledMatrixBuilder.h>
-#include <ALIEN/Builder/Scalar/MatrixProfiler.h>
-
-#include <ALIEN/Handlers/VectorAccessors/Scalar/VectorWriter.h>
-
-#include <ALIEN/Data/Scalar/RedistributedVector.h>
-#include <ALIEN/Data/Scalar/RedistributedMatrix.h>
-
-#include <ALIEN/Alien-ImportExport.h>
-#include <ALIEN/Alien-ExternalPackages.h>
-
-#endif //0
-
-#include <ALIEN/Kernels/SimpleCSR/Algebra/SimpleCSRLinearAlgebra.h>
+using namespace Arccore;
 
 namespace Environment {
   extern Arccore::MessagePassing::IMessagePassingMng* parallelMng();

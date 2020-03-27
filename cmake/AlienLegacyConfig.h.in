@@ -4,13 +4,13 @@
  * 
  */
 
-#ifndef ALIENCONFIG_H
-#define ALIENCONFIG_H
+#ifndef ALIENLEGACYCONFIG_H
+#define ALIENLEGACYCONFIG_H
 
-#define ALIEN_VERSION "@PROJECT_VERSION@"
-#define ALIEN_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
-#define ALIEN_VERSION_MINOR @PROJECT_VERSION_MINOR@
-#define ALIEN_VERSION_PATCH @PROJECT_VERSION_PATCH@
+#define ALIEN_LEGACY_VERSION "@PROJECT_VERSION@"
+#define ALIEN_LEGACY_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define ALIEN_LEGACY_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define ALIEN_LEGACY_VERSION_PATCH @PROJECT_VERSION_PATCH@
 
 /* Defines that depends on compiler */
 //Tag var as a voluntary unused variable.
@@ -139,4 +139,4 @@ namespace Arccore {
     String format(const T&... t) { return String::format(t...); }
 }
 
-#endif // ALIENCONFIG_H
+#endif // ALIENLEGACYCONFIG_H

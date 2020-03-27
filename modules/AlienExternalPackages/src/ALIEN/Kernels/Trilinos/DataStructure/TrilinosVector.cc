@@ -1,7 +1,7 @@
 #include <ALIEN/Kernels/Trilinos/TrilinosBackEnd.h>
 #include <ALIEN/Kernels/Trilinos/DataStructure/TrilinosInternal.h>
 
-#include <ALIEN/Core/Block/Block.h>
+#include <alien/core/block/Block.h>
 #include "TrilinosVector.h"
 
 /*---------------------------------------------------------------------------*/

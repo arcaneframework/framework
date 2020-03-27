@@ -1,4 +1,4 @@
-#include <ALIEN/Expression/Solver/ILinearSolver.h>
+#include <alien/expression/solver/ILinearSolver.h>
 
 #include "petsc.h"
 #include "PETScConfig.h"

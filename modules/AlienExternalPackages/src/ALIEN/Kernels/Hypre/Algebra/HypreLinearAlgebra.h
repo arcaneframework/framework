@@ -7,10 +7,10 @@
 #ifndef ALIEN_LINEARALGEBRA2_HYPREIMPL_HYPRELINEARALGEBRA_H
 #define ALIEN_LINEARALGEBRA2_HYPREIMPL_HYPRELINEARALGEBRA_H
 
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 
 #include <ALIEN/Kernels/Hypre/HypreBackEnd.h>
-#include <ALIEN/Core/Backend/LinearAlgebra.h>
+#include <alien/core/backend/LinearAlgebra.h>
 
 /*---------------------------------------------------------------------------*/
 

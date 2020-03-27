@@ -7,10 +7,10 @@
 #ifndef ALIEN_KERNEL_HPDDM_ALGEBRA_HPDDMLINEARALGEBRA_H
 #define ALIEN_KERNEL_HPDDM_ALGEBRA_HPDDMLINEARALGEBRA_H
 
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 
 #include <ALIEN/Kernels/HPDDM/HPDDMBackEnd.h>
-#include <ALIEN/Core/Backend/LinearAlgebra.h>
+#include <alien/core/backend/LinearAlgebra.h>
 
 /*---------------------------------------------------------------------------*/
 

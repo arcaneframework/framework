@@ -5,9 +5,9 @@
 #include <ALIEN/Alien-ExternalPackages.h>
 #include <ALIEN/Alien-ImportExport.h>
 #include <ALIEN/Alien-RefSemantic.h>
-#include <ALIEN/Data/Scalar/RedistributedMatrix.h>
-#include <ALIEN/Data/Scalar/RedistributedVector.h>
-#include <ALIEN/Expression/Solver/ILinearAlgebra.h>
+#include <alien/data/Scalar/RedistributedMatrix.h>
+#include <alien/data/Scalar/RedistributedVector.h>
+#include <alien/expression/solver/ILinearAlgebra.h>
 #include <ALIEN/Kernels/Redistributor/Redistributor.h>
 #ifdef ALIEN_USE_PETSC
 #include <ALIEN/Kernels/PETSc/Algebra/PETScLinearAlgebra.h>

@@ -1,8 +1,8 @@
 #ifndef ALIEN_IITEMINDEX_MANAGER_H
 #define ALIEN_IITEMINDEX_MANAGER_H
 
-#include <ALIEN/Utils/Precomp.h>
 
+#include "ALIEN/Alien-ArcaneToolsPrecomp.h"
 #include "ALIEN/ArcaneTools/IIndexManager.h"
 
 namespace Arcane {

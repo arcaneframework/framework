@@ -5,9 +5,9 @@
 
 #include <ALIEN/Kernels/HPDDM/HPDDMPrecomp.h>
 
-#include <ALIEN/Expression/Solver/SolverStats/SolverStater.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRVector.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRMatrix.h>
+#include <alien/expression/solver/solver_stats/SolverStater.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
 
 #include <ALIEN/Kernels/HPDDM/DataStructure/HPDDMInternal.h>
 
@@ -15,7 +15,7 @@
 
 #include <ALIEN/Kernels/HPDDM/HPDDMBackEnd.h>
 
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
 
 
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
@@ -34,7 +34,7 @@ int HPDDMInternal::getEnv(std::string const& key,int default_value)
   return default_value ;
 }
 
-void HPDDMInternal::initialize(Arccore::MessagePassing::IMessagePassingMng* parallel_mng)
+void HPDDMInternal::initialize(IMessagePassingMng* parallel_mng)
 {
   if(m_is_initialized)
     return ;
@@ -595,7 +595,7 @@ _compute(HPDDM::MatrixCSR<ValueT>* matrix_dirichlet,
 template<typename ValueT>
 void
 MatrixInternal<ValueT>::
-compute(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+compute(IMessagePassingMng* parallel_mng,
         const CSRMatrixType& A,
         unsigned short nu,
         bool schwarz_coarse_correction)
@@ -615,7 +615,7 @@ compute(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
 template<typename ValueT>
 void
 MatrixInternal<ValueT>::
-compute( Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+compute( IMessagePassingMng* parallel_mng,
          const CSRMatrixType& Ad,
          const CSRMatrixType& An,
          unsigned short nu,
@@ -648,7 +648,7 @@ HPDDMMatrix<ValueT>::HPDDMMatrix(const MultiMatrixImpl* multi_impl)
   const auto& col_space = multi_impl->colSpace();
 
   if(row_space.size() != col_space.size())
-    throw Arccore::FatalErrorException("HPDDM matrix must be square");
+    throw FatalErrorException("HPDDM matrix must be square");
 }
 
 /*---------------------------------------------------------------------------*/

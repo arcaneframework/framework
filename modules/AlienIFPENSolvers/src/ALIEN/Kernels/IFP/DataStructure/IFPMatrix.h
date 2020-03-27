@@ -6,8 +6,8 @@
  */
 
 #include <ALIEN/Kernels/IFP/IFPSolverPrecomp.h>
-#include <ALIEN/Core/Impl/IMatrixImpl.h>
-#include <ALIEN/Data/Space.h>
+#include <alien/core/impl/IMatrixImpl.h>
+#include <alien/data/Space.h>
 #include <ALIEN/Alien-IFPENSolversPrecomp.h>
 
 /*---------------------------------------------------------------------------*/
@@ -83,92 +83,92 @@ public:
 
 public:
   bool
-  initMatrix(Arccore::Integer links_num,          // num of links
-             Arccore::Integer global_nodes_num,   // global num of nodes
-             Arccore::Integer nodes_num,          // num of nodes [includes ghost nodes]
-             Arccore::Integer local_nodes_num,    // num of nodes in linear system [without ghost nodes]
-             Arccore::Integer max_node_id,        // max node id
-             Arccore::Integer equations_num,      // num of equations by link
-             Arccore::Integer unknowns_num,       // num of unknowns by link
-             Arccore::Integer* nodeList,          // list of nodes as local Arcane num [size=nodes_num]
-             Arccore::Integer* globalNodeList,    // list of nodes as global Arcane num [size=nodes_num]
-             Arccore::Integer* nodeToLocalRow,
-             Arccore::Integer* rowUidList,
-             Arccore::Integer* i_node,            // list of nodes i of links (ij) [local index; size=links_num]
-             Arccore::Integer* global_i_node,     // idem but global index
-             Arccore::Integer* j_node,            // list of nodes i of links (ij)
-             Arccore::Integer* global_j_node      // idem but global index
+  initMatrix(Integer links_num,          // num of links
+             Integer global_nodes_num,   // global num of nodes
+             Integer nodes_num,          // num of nodes [includes ghost nodes]
+             Integer local_nodes_num,    // num of nodes in linear system [without ghost nodes]
+             Integer max_node_id,        // max node id
+             Integer equations_num,      // num of equations by link
+             Integer unknowns_num,       // num of unknowns by link
+             Integer* nodeList,          // list of nodes as local Arcane num [size=nodes_num]
+             Integer* globalNodeList,    // list of nodes as global Arcane num [size=nodes_num]
+             Integer* nodeToLocalRow,
+             Integer* rowUidList,
+             Integer* i_node,            // list of nodes i of links (ij) [local index; size=links_num]
+             Integer* global_i_node,     // idem but global index
+             Integer* j_node,            // list of nodes i of links (ij)
+             Integer* global_j_node      // idem but global index
             );
 
   bool
-  initMatrix(Arccore::Integer links_num,          //num of links
-             Arccore::Integer global_nodes_num,   //global num of nodes
-             Arccore::Integer nodes_num,          //num of nodes [includes ghost nodes]
-             Arccore::Integer local_nodes_num,    //num of nodes in linear system [without ghost nodes]
-             Arccore::Integer max_node_id,        // max node id
-             Arccore::Integer equations_num,      //num of equations by link
-             Arccore::Integer unknowns_num,       //num of unknowns by link
-             Arccore::Integer* nodeList,          //list of nodes as local Arcane num [size=nodes_num]
-             Arccore::Integer* globalNodeList,    //list of nodes as global Arcane num [size=nodes_num]
-             Arccore::Integer* nodeToLocalRow,
-             Arccore::Integer* rowUidList,
-             Arccore::Integer* i_node,            //list of nodes i of links (ij) [local index; size=links_num]
-             Arccore::Integer* global_i_node,     //    idem but global index
-             Arccore::Integer* j_node,            //list of nodes i of links (ij)
-             Arccore::Integer* global_j_node,     //idem but global index
-             Arccore::Integer* ass_elem_node_ptr, //List of offset of Associated element List
-             Arccore::Integer* ass_elem_node,     //List of Associated elements of links
-             Arccore::Integer* global_ass_elem_node, //idem with global index
-             Arccore::Integer extra_eq_num,            // num of well equations
-             Arccore::Integer global_extra_eq_num,     // global num of well equations
-             Arccore::Integer* extra_eq_ids,           // well equation ids
-             Arccore::Integer* extra_eq_elem_node_ptr, // perf node offset
-             Arccore::Integer* extra_eq_elem_node      // perf node ids
+  initMatrix(Integer links_num,          //num of links
+             Integer global_nodes_num,   //global num of nodes
+             Integer nodes_num,          //num of nodes [includes ghost nodes]
+             Integer local_nodes_num,    //num of nodes in linear system [without ghost nodes]
+             Integer max_node_id,        // max node id
+             Integer equations_num,      //num of equations by link
+             Integer unknowns_num,       //num of unknowns by link
+             Integer* nodeList,          //list of nodes as local Arcane num [size=nodes_num]
+             Integer* globalNodeList,    //list of nodes as global Arcane num [size=nodes_num]
+             Integer* nodeToLocalRow,
+             Integer* rowUidList,
+             Integer* i_node,            //list of nodes i of links (ij) [local index; size=links_num]
+             Integer* global_i_node,     //    idem but global index
+             Integer* j_node,            //list of nodes i of links (ij)
+             Integer* global_j_node,     //idem but global index
+             Integer* ass_elem_node_ptr, //List of offset of Associated element List
+             Integer* ass_elem_node,     //List of Associated elements of links
+             Integer* global_ass_elem_node, //idem with global index
+             Integer extra_eq_num,            // num of well equations
+             Integer global_extra_eq_num,     // global num of well equations
+             Integer* extra_eq_ids,           // well equation ids
+             Integer* extra_eq_elem_node_ptr, // perf node offset
+             Integer* extra_eq_elem_node      // perf node ids
              ) ;
   bool initMatrix(int equations_num,
                   int unknowns_num,
                   int global_nodes_num,
                   int nodes_num,
                   int row_offset,
-                  Arccore::ConstArrayView<Arccore::Integer> columnIndexesPtr,
-                  Arccore::ConstArrayView<Arccore::Integer> columnIndexes,
-                  Arccore::Int64 timestamp) ;
+                  ConstArrayView<Integer> columnIndexesPtr,
+                  ConstArrayView<Integer> columnIndexes,
+                  Int64 timestamp) ;
 
   //version BlockTailleVariable
   bool
-  initMatrix(Arccore::Integer links_num,          //num of links
-             Arccore::Integer global_nodes_num,   //global num of nodes
-             Arccore::Integer nodes_num,          //num of nodes [includes ghost nodes]
-             Arccore::Integer local_nodes_num,    //num of nodes in linear system [without ghost nodes]
-             Arccore::Integer max_node_id,        // max node id
-             Arccore::Integer equations_num,      //num of equations by link
-             Arccore::Integer unknowns_num,       //num of unknowns by link
-             Arccore::Integer* unknowns_num_per_cell, // num of unknowns per cell
-             Arccore::Integer* nodeList,          //list of nodes as local Arcane num [size=nodes_num]
-             Arccore::Integer* globalNodeList,    //list of nodes as global Arcane num [size=nodes_num]
-             Arccore::Integer* nodeToLocalRow,
-             Arccore::Integer* i_node,            //list of nodes i of links (ij) [local index; size=links_num]
-             Arccore::Integer* global_i_node,     //    idem but global index
-             Arccore::Integer* j_node,            //list of nodes i of links (ij)
-             Arccore::Integer* global_j_node,     //idem but global index
-             Arccore::Integer* ass_elem_node_ptr, //List of offset of Associated element List
-             Arccore::Integer* ass_elem_node,     //List of Associated elements of links
-             Arccore::Integer* global_ass_elem_node, //idem with global index
-             Arccore::Integer extra_eq_num,
-             Arccore::Integer global_extra_eq_num,
-             Arccore::Integer* extra_eq_ids,
-             Arccore::Integer* extra_eq_elem_node_ptr,
-             Arccore::Integer* extra_eq_elem_node,
-             Arccore::Integer* extra_eq_elem_node_lid
+  initMatrix(Integer links_num,          //num of links
+             Integer global_nodes_num,   //global num of nodes
+             Integer nodes_num,          //num of nodes [includes ghost nodes]
+             Integer local_nodes_num,    //num of nodes in linear system [without ghost nodes]
+             Integer max_node_id,        // max node id
+             Integer equations_num,      //num of equations by link
+             Integer unknowns_num,       //num of unknowns by link
+             Integer* unknowns_num_per_cell, // num of unknowns per cell
+             Integer* nodeList,          //list of nodes as local Arcane num [size=nodes_num]
+             Integer* globalNodeList,    //list of nodes as global Arcane num [size=nodes_num]
+             Integer* nodeToLocalRow,
+             Integer* i_node,            //list of nodes i of links (ij) [local index; size=links_num]
+             Integer* global_i_node,     //    idem but global index
+             Integer* j_node,            //list of nodes i of links (ij)
+             Integer* global_j_node,     //idem but global index
+             Integer* ass_elem_node_ptr, //List of offset of Associated element List
+             Integer* ass_elem_node,     //List of Associated elements of links
+             Integer* global_ass_elem_node, //idem with global index
+             Integer extra_eq_num,
+             Integer global_extra_eq_num,
+             Integer* extra_eq_ids,
+             Integer* extra_eq_elem_node_ptr,
+             Integer* extra_eq_elem_node,
+             Integer* extra_eq_elem_node_lid
              );
 
   /*
-  void initWellMatrix(Arccore::Integer extra_eq_num,
-                      Arccore::Integer global_extra_eq_num,
-                      Arccore::Integer* extra_eq_ids,
-                      Arccore::Integer* extra_eq_elem_node_ptr,
-                      Arccore::Integer* extra_eq_elem_node,
-                      Arccore::Integer* extra_eq_elem_lid) ;
+  void initWellMatrix(Integer extra_eq_num,
+                      Integer global_extra_eq_num,
+                      Integer* extra_eq_ids,
+                      Integer* extra_eq_elem_node_ptr,
+                      Integer* extra_eq_elem_node,
+                      Integer* extra_eq_elem_lid) ;
 
   bool initSubMatrix01(int nrow,
                        int global_nb_extra_eq,
@@ -183,64 +183,64 @@ public:
 
   bool allocate() ;
 
-  bool allocate(Arccore::ArrayView<Arccore::Integer> coupled_ids) ;
+  bool allocate(ArrayView<Integer> coupled_ids) ;
 
-  bool allocateRS(Arccore::ArrayView<Arccore::Integer> coupled_ids) ;
+  bool allocateRS(ArrayView<Integer> coupled_ids) ;
 
   bool setMatrixValues(const double * values) ;
 
   bool setMatrixBlockValues(const double * values) ;
 
-  bool setMatrixValues( Arccore::Real* dFijdXi,
-                        Arccore::Real* dCidXi,
-                        Arccore::Integer* nodeList,
-                        Arccore::Integer* nodeToLocalRow,
-                        Arccore::Integer* i_node,
-                        Arccore::Integer* j_node) ;
+  bool setMatrixValues( Real* dFijdXi,
+                        Real* dCidXi,
+                        Integer* nodeList,
+                        Integer* nodeToLocalRow,
+                        Integer* i_node,
+                        Integer* j_node) ;
 
-  bool setMatrixValues( Arccore::Real* dFijdXi,
-                        Arccore::Real* dCidXi,
-                        Arccore::Integer* nodeList,
-                        Arccore::Integer* nodeToLocalRow,
-                        Arccore::Integer* i_node,
-                        Arccore::Integer* j_node,
-                        Arccore::Integer* ass_elem_node_ptr) ;
+  bool setMatrixValues( Real* dFijdXi,
+                        Real* dCidXi,
+                        Integer* nodeList,
+                        Integer* nodeToLocalRow,
+                        Integer* i_node,
+                        Integer* j_node,
+                        Integer* ass_elem_node_ptr) ;
 
-  bool setMatrixValues( Arccore::Real* dFijdXi,
-                        Arccore::Real* MatFracFij,
-                        Arccore::Real* dCidXi,
-                        Arccore::Integer* nodeList,
-                        Arccore::Integer* nodeToLocalRow,
-                        Arccore::Integer* i_node,
-                        Arccore::Integer* j_node,
-                        Arccore::Integer* ass_elem_node_ptr,
-                        Arccore::Integer NumOfLink1,
-                        Arccore::Integer NumOfLink2) ;
+  bool setMatrixValues( Real* dFijdXi,
+                        Real* MatFracFij,
+                        Real* dCidXi,
+                        Integer* nodeList,
+                        Integer* nodeToLocalRow,
+                        Integer* i_node,
+                        Integer* j_node,
+                        Integer* ass_elem_node_ptr,
+                        Integer NumOfLink1,
+                        Integer NumOfLink2) ;
 
  //A. Anciaux pour BlockTailleVariable
-  bool setMatrixRsValues(Arccore::Real* dFijdXi,
-                         Arccore::Real* dCidXi,
-                         Arccore::Integer* nodeList,
-                         Arccore::Integer* nodeToLocalRow,
-                         Arccore::Integer* i_node,
-                         Arccore::Integer* j_node);
+  bool setMatrixRsValues(Real* dFijdXi,
+                         Real* dCidXi,
+                         Integer* nodeList,
+                         Integer* nodeToLocalRow,
+                         Integer* i_node,
+                         Integer* j_node);
 
-  bool setMatrixExtraValues( Arccore::Real* ExtraRowValues,
-                             Arccore::Real* ExtraColValues,
-                             Arccore::Real* ExtraDiagValues) ;
+  bool setMatrixExtraValues( Real* ExtraRowValues,
+                             Real* ExtraColValues,
+                             Real* ExtraDiagValues) ;
 
   //A. Anciaux pour BlockTailleVariable
-  bool setMatrixRsExtraValues(Arccore::Real* ExtraRowValues,
-                              Arccore::Real* ExtraColValues,
-                              Arccore::Real* ExtraDiagValues);
+  bool setMatrixRsExtraValues(Real* ExtraRowValues,
+                              Real* ExtraColValues,
+                              Real* ExtraDiagValues);
 
   bool setInitValues(int nrows, const int* rows, double * values) ;
 
-  bool initSubMatrix11Values( Arccore::Real const* ExtraDiagValues) ;
+  bool initSubMatrix11Values( Real const* ExtraDiagValues) ;
 
-  bool initSubMatrix10Values( Arccore::Real const* ExtraRowValues) ;
+  bool initSubMatrix10Values( Real const* ExtraRowValues) ;
 
-  bool initSubMatrix01Values( Arccore::Real const* ExtraColValues) ;
+  bool initSubMatrix01Values( Real const* ExtraColValues) ;
 
   bool setSymmetricProfile(bool value);
 
@@ -253,9 +253,9 @@ public:
 
 private :
   //! Ensemble des tags pour la construction CprAMG
-  bool computeEllipticSplitTags(Arccore::UniqueArray<Arccore::Integer> & split_tags,int equation_num) const;
+  bool computeEllipticSplitTags(UniqueArray<Integer> & split_tags,int equation_num) const;
 
-  Arccore::Integer ijk(Arccore::Integer i, Arccore::Integer j, Arccore::Integer k, Arccore::Integer block_size, Arccore::Integer unknowns_num) const {
+  Integer ijk(Integer i, Integer j, Integer k, Integer block_size, Integer unknowns_num) const {
     return k*block_size+i*unknowns_num+j ;
   }
 
@@ -265,14 +265,14 @@ private :
 
 private:
   MatrixInternal * m_internal ;
-  Arccore::Integer* m_node_list_ref;
+  Integer* m_node_list_ref;
 
   //! conversion from arcane node numbering to graph node numbering (without ghost)
-  Arccore::Integer  m_row_offset;
+  Integer  m_row_offset;
 
   bool m_graph_initialized ;
   bool m_symmetric_profile;
-  Arccore::Integer m_sum_first_eq;
+  Integer m_sum_first_eq;
 
   Space const* m_space0 ;
   Space const* m_space1 ;

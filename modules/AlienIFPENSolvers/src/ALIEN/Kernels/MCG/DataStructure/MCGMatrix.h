@@ -7,9 +7,9 @@
 
 #include <ALIEN/Kernels/MCG/MCGPrecomp.h>
 #include <ALIEN/Kernels/MCG/MCGBackEnd.h>
-#include <ALIEN/Core/Impl/IMatrixImpl.h>
-#include <ALIEN/Core/Block/Block.h>
-#include <ALIEN/Data/Space.h>
+#include <alien/core/impl/IMatrixImpl.h>
+#include <alien/core/block/Block.h>
+#include <alien/data/Space.h>
 
 /*---------------------------------------------------------------------------*/
 

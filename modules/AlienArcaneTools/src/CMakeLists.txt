@@ -23,7 +23,7 @@ if(TARGET petsc)
   linkLibraries(ALIEN-ArcaneTools ALIEN-ExternalPackages)
 endif()
 
-linkLibraries(ALIEN-ArcaneTools ALIEN)
+linkLibraries(ALIEN-ArcaneTools alien)
 
 commit(ALIEN-ArcaneTools)
 

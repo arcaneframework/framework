@@ -8,7 +8,7 @@
  *  can be only included by LinearSystem and LinearSolver
  */
 
-#include <ALIEN/Distribution/MatrixDistribution.h>
+#include <alien/distribution/MatrixDistribution.h>
 
 #include <ALIEN/Kernels/Trilinos/TrilinosPrecomp.h>
 
@@ -183,7 +183,7 @@ class MatrixInternal
                   int block_size,
                   ValueT const* values);
 
-    bool setMatrixValues(Arccore::Real const *values);
+    bool setMatrixValues(Real const *values);
 
   void mult(vector_type const& x, vector_type& y) const;
   void mult(ValueT const* x, ValueT* y) const;

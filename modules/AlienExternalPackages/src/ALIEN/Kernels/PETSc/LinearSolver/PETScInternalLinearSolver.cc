@@ -11,10 +11,10 @@
 #include <arcane/MathUtils.h>
 #endif
 
-#include <ALIEN/Utils/ParameterManager/BaseParameterManager.h>
+#include <alien/utils/parameter_manager/BaseParameterManager.h>
 
-#include <ALIEN/Core/Backend/LinearSolverT.h>
-#include <ALIEN/Expression/Solver/SolverStats/SolverStater.h>
+#include <alien/core/backend/LinearSolverT.h>
+#include <alien/expression/solver/solver_stats/SolverStater.h>
 
 #include <arccore/base/NotImplementedException.h>
 
@@ -29,8 +29,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "ALIEN/Utils/Precomp.h"
-#include <ALIEN/Data/Space.h>
+#include "alien/utils/Precomp.h"
+#include <alien/data/Space.h>
 #include <ALIEN/Kernels/PETSc/Algebra/PETScInternalLinearAlgebra.h>
 #include <ALIEN/Kernels/PETSc/Algebra/PETScLinearAlgebra.h>
 #include <ALIEN/Kernels/PETSc/DataStructure/PETScInternal.h>

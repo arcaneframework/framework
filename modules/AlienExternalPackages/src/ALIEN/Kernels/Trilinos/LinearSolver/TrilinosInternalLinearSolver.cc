@@ -11,17 +11,17 @@
 #include <Kokkos_Macros.hpp>
 #include <KokkosCompat_ClassicNodeAPI_Wrapper.hpp>
 
-#include <ALIEN/Data/Space.h>
-#include <ALIEN/Expression/Solver/ILinearSolver.h>
-#include <ALIEN/Expression/Solver/ILinearAlgebra.h>
-#include <ALIEN/Expression/Solver/SolverStats/SolverStat.h>
-#include <ALIEN/Expression/Solver/SolverStats/SolverStater.h>
+#include <alien/data/Space.h>
+#include <alien/expression/solver/ILinearSolver.h>
+#include <alien/expression/solver/ILinearAlgebra.h>
+#include <alien/expression/solver/solver_stats/SolverStat.h>
+#include <alien/expression/solver/solver_stats/SolverStater.h>
 
-#include <ALIEN/Kernels/SimpleCSR/SimpleCSRPrecomp.h>
-#include <ALIEN/Kernels/SimpleCSR/Algebra/SimpleCSRLinearAlgebra.h>
+#include <alien/kernels/simple_csr/SimpleCSRPrecomp.h>
+#include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
 
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
-#include <ALIEN/Core/Impl/MultiVectorImpl.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
+#include <alien/core/impl/MultiVectorImpl.h>
 
 #include <ALIEN/Kernels/Trilinos/TrilinosBackEnd.h>
 #include <ALIEN/Kernels/Trilinos/DataStructure/TrilinosInternal.h>
@@ -34,8 +34,8 @@
 #include <ALIEN/axl/TrilinosSolver_IOptions.h>
 #include <ALIEN/Kernels/Trilinos/LinearSolver/TrilinosInternalSolver.h>
 #include <ALIEN/Kernels/Trilinos/LinearSolver/TrilinosInternalLinearSolver.h>
-#include <ALIEN/Core/Backend/LinearSolverT.h>
-#include <ALIEN/Core/Block/ComputeBlockOffsets.h>
+#include <alien/core/backend/LinearSolverT.h>
+#include <alien/core/block/ComputeBlockOffsets.h>
 
 #define KOKKOS_ENABLE_OPENMP
 #define KOKKOS_ENABLE_THREADS

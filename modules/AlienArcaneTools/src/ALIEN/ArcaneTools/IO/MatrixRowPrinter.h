@@ -6,13 +6,13 @@
  */
 
 #include <map>
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 #include <ALIEN/Kernels/PETSc/DataStructure/PETScMatrix.h>
 #include <ALIEN/Kernels/PETSc/DataStructure/PETScVector.h>
 #include <ALIEN/Kernels/PETSc/DataStructure/PETScMatrix.h>
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
-#include <ALIEN/Core/Impl/MultiVectorImpl.h>
-#include <ALIEN/Data/IMatrix.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
+#include <alien/core/impl/MultiVectorImpl.h>
+#include <alien/data/IMatrix.h>
 #include "ALIEN/ArcaneTools/IIndexManager.h"
 
 /*---------------------------------------------------------------------------*/

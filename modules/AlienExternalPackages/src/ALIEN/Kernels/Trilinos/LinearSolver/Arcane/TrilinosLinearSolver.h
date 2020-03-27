@@ -6,10 +6,10 @@
 #endif
 
 #include <ALIEN/Kernels/Trilinos/TrilinosPrecomp.h>
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 #include <ALIEN/Alien-ExternalPackagesPrecomp.h>
 #include <ALIEN/Kernels/Trilinos/TrilinosBackEnd.h>
-#include <ALIEN/Core/Backend/LinearSolver.h>
+#include <alien/core/backend/LinearSolver.h>
 #include <ALIEN/Kernels/Trilinos/LinearSolver/TrilinosInternalLinearSolver.h>
 #include <ALIEN/Kernels/Trilinos/LinearSolver/TrilinosOptionTypes.h>
 #include <ALIEN/axl/TrilinosSolver_axl.h>

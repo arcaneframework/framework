@@ -3,8 +3,8 @@
  */
 #include <ALIEN/Kernels/IFP/LinearSolver/IFPInternalLinearSolver.h>
 
-#include <ALIEN/Expression/Solver/ILinearSolver.h>
-#include <ALIEN/Core/Backend/LinearSolverT.h>
+#include <alien/expression/solver/ILinearSolver.h>
+#include <alien/core/backend/LinearSolverT.h>
 #include <ALIEN/Kernels/IFP/LinearSolver/IFPSolverProperty.h>
 
 /*---------------------------------------------------------------------------*/
@@ -12,18 +12,18 @@
 #include "IFPSolverProperty.h"
 #include "IFPSolver.h"
 
-#include <ALIEN/Utils/Trace.h>
+#include <alien/utils/Trace.h>
 
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
-#include <ALIEN/Core/Impl/MultiVectorImpl.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
+#include <alien/core/impl/MultiVectorImpl.h>
 #include <ALIEN/Kernels/IFP/DataStructure/IFPVector.h>
 #include <ALIEN/Kernels/IFP/DataStructure/IFPMatrix.h>
 #include <ALIEN/Kernels/IFP/IFPSolverBackEnd.h>
 #include <ALIEN/Kernels/IFP/DataStructure/IFPSolverInternal.h>
-#include <ALIEN/Expression/Solver/SolverStats/SolverStat.h>
-#include <ALIEN/Expression/Solver/SolverStats/SolverStater.h>
+#include <alien/expression/solver/solver_stats/SolverStat.h>
+#include <alien/expression/solver/solver_stats/SolverStater.h>
 #include <ALIEN/axl/IFPLinearSolver_IOptions.h>
-#include <ALIEN/Data/Space.h>
+#include <alien/data/Space.h>
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 
 #ifndef MPICH_SKIP_MPICXX
@@ -74,7 +74,7 @@ IFPInternalLinearSolver::init()
     F2C(ifpsolversetoutputlevel)(&m_print_info) ;
   }
   else{
-    Arccore::Integer print_info = 0;
+    Integer print_info = 0;
     F2C(ifpsolversetoutputlevel)(&print_info) ; // IFPSolve should not keep a reference to print_info
   }
 
@@ -118,18 +118,18 @@ IFPInternalLinearSolver::init()
     m_normalize_opt = m_options->needNormalisation();
     m_keep_rhs = m_options->keepRhs();
 
-    Arccore::Integer needMpiInit = 0;
-    Arccore::Integer fcomm = 0;
+    Integer needMpiInit = 0;
+    Integer fcomm = 0;
 
     {
         auto mpi_mng = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(m_parallel_mng);
     	auto* ptr = mpi_mng->getMPIComm();
     	if(ptr) {
     		auto* comm = static_cast<const MPI_Comm*>(ptr);
-    		fcomm = static_cast<Arccore::Integer>(*comm);
+    		fcomm = static_cast<Integer>(*comm);
     		needMpiInit = 1;
     	} else {
-    		fcomm = static_cast<Arccore::Integer>(MPI_COMM_WORLD);
+    		fcomm = static_cast<Integer>(MPI_COMM_WORLD);
     		needMpiInit = 0;
     	}
     }
@@ -320,11 +320,11 @@ IFPInternalLinearSolver::internalPrintInfo() const
 {
   m_stater.print(Universe().traceMng(),
 	             m_status,
-	             Arccore::String("Linear Solver : IFPLinearSolver"));
-  Arccore::Real init_solver_count = 0 ;
-  Arccore::Real init_precond_count = 0 ;
-  Arccore::Real normalyze_count = 0 ;
-  Arccore::Real loop_solver_count = 0 ;
+	             String("Linear Solver : IFPLinearSolver"));
+  Real init_solver_count = 0 ;
+  Real init_precond_count = 0 ;
+  Real normalyze_count = 0 ;
+  Real loop_solver_count = 0 ;
   F2C(ifpsolvergetperfcount)(&init_solver_count,
                              &init_precond_count,
                              &normalyze_count,
