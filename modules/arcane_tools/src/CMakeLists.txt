@@ -7,17 +7,17 @@ createLibrary(alien_arcane_tools
   )
 
 addSources(alien_arcane_tools
-  ALIEN/ArcaneTools/Accessors/ItemVectorAccessor.cc
-  #ALIEN/ArcaneTools/IndexManager/ArcGeoSim/ContactAbstractFamily.cc
-  ALIEN/ArcaneTools/IndexManager/SimpleAbstractFamily.cc
-  ALIEN/ArcaneTools/IndexManager/BasicIndexManager.cc
-  ALIEN/ArcaneTools/IndexManager/AnyItemAbstractFamily.cc
-  ALIEN/ArcaneTools/Block/IndexManagerBlockBuilder.cc
+  alien/arcane_tools/accessors/ItemVectorAccessor.cc
+  #alien/arcane_tools/indexManager/ArcGeoSim/ContactAbstractFamily.cc
+  alien/arcane_tools/indexManager/SimpleAbstractFamily.cc
+  alien/arcane_tools/indexManager/BasicIndexManager.cc
+  alien/arcane_tools/indexManager/AnyItemAbstractFamily.cc
+  alien/arcane_tools/block/IndexManagerBlockBuilder.cc
   )
 
 if(TARGET petsc)
   addSources(alien_arcane_tools 
-    ALIEN/ArcaneTools/IO/MatrixRowPrinter.cc
+    alien/arcane_tools/io/MatrixRowPrinter.cc
     )
   linkLibraries(alien_arcane_tools petsc)
   linkLibraries(alien_arcane_tools alien_external_packages)

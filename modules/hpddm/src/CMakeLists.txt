@@ -3,7 +3,7 @@ if (NOT TARGET hpddm)
 endif ()
 
 createLibrary(alien_hpddm
-  EXPORT ALIEN/AlienHPDDMExport.h
+  EXPORT alien/AlienHPDDMExport.h
   )
 
 set_target_properties(alien_hpddm
@@ -22,7 +22,7 @@ else()
 endif()
 
 if(TARGET hpddm)
-  addDirectory(ALIEN/Kernels/HPDDM)
+  addDirectory(alien/Kernels/HPDDM)
 endif()
 
 if(TARGET arcane_core)

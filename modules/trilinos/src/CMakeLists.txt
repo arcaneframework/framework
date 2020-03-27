@@ -23,7 +23,7 @@ endif ()
 
 
 if (TARGET trilinos)
-    addDirectory(ALIEN/Kernels/Trilinos)
+    addDirectory(alien/Kernels/Trilinos)
 endif ()
 
 if (TARGET arcane_core)

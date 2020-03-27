@@ -14,22 +14,22 @@
 #include <arcane/utils/OStringStream.h>
 #include <arcane/utils/PlatformUtils.h>
 
-#include <ALIEN/AlienExternalPackages.h>
+#include <alien/AlienExternalPackages.h>
 
-#include <ALIEN/ArcaneTools/Accessors/ItemVectorAccessor.h>
-#include <ALIEN/ArcaneTools/IndexManager/BasicIndexManager.h>
-#include <ALIEN/ArcaneTools/IndexManager/SimpleAbstractFamily.h>
+#include <alien/arcane_tools/accessors/ItemVectorAccessor.h>
+#include <alien/arcane_tools/indexManager/BasicIndexManager.h>
+#include <alien/arcane_tools/indexManager/SimpleAbstractFamily.h>
 #include <alien/core/block/VBlock.h>
 
-#include <ALIEN/ArcaneTools/IIndexManager.h>
+#include <alien/arcane_tools/IIndexManager.h>
 
 #include <alien/accessor/BlockVectorReader.h>
 #include <alien/accessor/BlockVectorWriter.h>
 #include <alien/accessor/VectorReader.h>
 #include <alien/accessor/VectorWriter.h>
-#include <ALIEN/ArcaneTools/Block/IndexManagerBlockBuilder.h>
-#include <ALIEN/ArcaneTools/Distribution/DistributionFabric.h>
-#include <ALIEN/ArcaneTools/IndexSet/IndexSetFabric.h>
+#include <alien/arcane_tools/block/IndexManagerBlockBuilder.h>
+#include <alien/arcane_tools/distribution/DistributionFabric.h>
+#include <alien/arcane_tools/indexSet/IndexSetFabric.h>
 #include <alien/builder/block/ProfiledBlockMatrixBuilder.h>
 #include <alien/builder/scalar/DirectMatrixBuilder.h>
 #include <alien/builder/scalar/MatrixProfiler.h>
@@ -39,11 +39,11 @@
 //#include <RefSemanticMVHandlers/Stream/StreamMatrixBuilder.h>
 //#include <RefSemanticMVHandlers/Stream/StreamVBlockMatrixBuilder.h>
 #ifdef ALIEN_USE_PETSC
-#include <ALIEN/Kernels/PETSc/IO/AsciiDumper.h>
-#include <ALIEN/Kernels/PETSc/Algebra/PETScLinearAlgebra.h>
+#include <alien/Kernels/PETSc/IO/AsciiDumper.h>
+#include <alien/Kernels/PETSc/Algebra/PETScLinearAlgebra.h>
 #endif
 #ifdef ALIEN_USE_MTL4
-#include <ALIEN/Kernels/MTL/Algebra/MTLLinearAlgebra.h>
+#include <alien/Kernels/MTL/Algebra/MTLLinearAlgebra.h>
 #endif
 
 #include <alien/expression/solver/ILinearSolver.h>

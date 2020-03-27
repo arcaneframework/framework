@@ -1,6 +1,6 @@
 // backend opensource
-#include <ALIEN/hypre/backend.h>
-#include <ALIEN/hypre/options.h>
+#include <alien/hypre/backend.h>
+#include <alien/hypre/options.h>
 #include <ALIEN/axl/OSHypreSolver_axl.h>
 
 /*---------------------------------------------------------------------------*/

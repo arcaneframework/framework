@@ -1,6 +1,6 @@
-#include <ALIEN/hypre/backend.h>
+#include <alien/hypre/backend.h>
 
-#include <ALIEN/Alien-MoveSemantic.h>
+#include <alien/Alien-MoveSemantic.h>
 
 #include <arcane/ITimeLoopMng.h>
 #include <arcane/Timer.h>
@@ -10,24 +10,24 @@
 #include <arcane/utils/OStringStream.h>
 #include <arcane/utils/PlatformUtils.h>
 
-#include <ALIEN/ArcaneTools/Accessors/ItemVectorAccessor.h>
-#include <ALIEN/ArcaneTools/IndexManager/BasicIndexManager.h>
-#include <ALIEN/ArcaneTools/IndexManager/SimpleAbstractFamily.h>
+#include <alien/arcane_tools/Accessors/ItemVectorAccessor.h>
+#include <alien/arcane_tools/IndexManager/BasicIndexManager.h>
+#include <alien/arcane_tools/IndexManager/SimpleAbstractFamily.h>
 #include <alien/core/block/VBlock.h>
 
-#include <ALIEN/ArcaneTools/IIndexManager.h>
+#include <alien/arcane_tools/IIndexManager.h>
 
-#include <ALIEN/Accessor/BlockVectorReader.h>
-#include <ALIEN/Accessor/BlockVectorWriter.h>
-#include <ALIEN/Accessor/VectorReader.h>
-#include <ALIEN/Accessor/VectorWriter.h>
-#include <ALIEN/ArcaneTools/Block/IndexManagerBlockBuilder.h>
-#include <ALIEN/ArcaneTools/Distribution/DistributionFabric.h>
-#include <ALIEN/ArcaneTools/IndexSet/IndexSetFabric.h>
-#include <ALIEN/Builder/Block/ProfiledBlockMatrixBuilder.h>
-#include <ALIEN/Builder/Scalar/DirectMatrixBuilder.h>
-#include <ALIEN/Builder/Scalar/MatrixProfiler.h>
-#include <ALIEN/Builder/Scalar/ProfiledMatrixBuilder.h>
+#include <alien/Accessor/BlockVectorReader.h>
+#include <alien/Accessor/BlockVectorWriter.h>
+#include <alien/Accessor/VectorReader.h>
+#include <alien/Accessor/VectorWriter.h>
+#include <alien/arcane_tools/Block/IndexManagerBlockBuilder.h>
+#include <alien/arcane_tools/Distribution/DistributionFabric.h>
+#include <alien/arcane_tools/IndexSet/IndexSetFabric.h>
+#include <alien/Builder/Block/ProfiledBlockMatrixBuilder.h>
+#include <alien/Builder/Scalar/DirectMatrixBuilder.h>
+#include <alien/Builder/Scalar/MatrixProfiler.h>
+#include <alien/Builder/Scalar/ProfiledMatrixBuilder.h>
 #include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
 
 #include <alien/expression/solver/ILinearSolver.h>
