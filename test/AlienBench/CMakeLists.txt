@@ -34,7 +34,7 @@ linkLibraries(alien_bench.exe
         )
 
 if (TARGET trilinos)
-    linkLibraries(alien_bench.exe ALIEN-Trilinos)
+    linkLibraries(alien_bench.exe alien_trilinos)
 endif ()
 
 if (TARGET hpddm)

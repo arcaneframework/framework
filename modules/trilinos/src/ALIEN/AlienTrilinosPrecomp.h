@@ -1,4 +1,4 @@
 #pragma once
 
-#include "ALIEN/ALIEN-TrilinosExport.h"
+#include "alien/AlienTrilinosExport.h"
 #include <alien/AlienLegacyConfig.h>

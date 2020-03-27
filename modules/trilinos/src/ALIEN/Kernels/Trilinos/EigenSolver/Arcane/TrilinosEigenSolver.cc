@@ -7,7 +7,7 @@
 #include <alien/data/IMatrix.h>
 #include <alien/data/IVector.h>
 #include <ALIEN/Kernels/Trilinos/TrilinosPrecomp.h>
-#include <ALIEN/Alien-TrilinosPrecomp.h>
+#include <ALIEN/AlienTrilinosPrecomp.h>
 
 #include <ALIEN/Kernels/Trilinos/TrilinosBackEnd.h>
 #include <ALIEN/Kernels/Trilinos/DataStructure/TrilinosInternal.h>

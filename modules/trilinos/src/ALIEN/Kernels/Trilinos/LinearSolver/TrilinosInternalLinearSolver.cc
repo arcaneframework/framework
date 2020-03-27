@@ -33,7 +33,7 @@
 #include <ALIEN/Kernels/Trilinos/DataStructure/TrilinosVector.h>
 
 #include <ALIEN/Kernels/Trilinos/LinearSolver/TrilinosOptionTypes.h>
-#include <ALIEN/Alien-TrilinosPrecomp.h>
+#include <ALIEN/AlienTrilinosPrecomp.h>
 
 #include <ALIEN/axl/TrilinosSolver_IOptions.h>
 #include <ALIEN/Kernels/Trilinos/LinearSolver/TrilinosInternalSolver.h>

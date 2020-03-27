@@ -1,5 +1,5 @@
 set(CMAKE_CXX_COMPILER "$ENV{TRILINOS_ROOT}/bin/nvcc_wrapper")
-addSources(ALIEN-Trilinos
+addSources(alien_trilinos
     Algebra/TrilinosInternalLinearAlgebra.cc
     LinearSolver/TrilinosInternalLinearSolver.cc
     Converters/SimpleCSR/SimpleCSR_to_Trilinos_MatrixConverter.cc
@@ -9,10 +9,10 @@ addSources(ALIEN-Trilinos
     DataStructure/TrilinosMatrix.cc
     DataStructure/TrilinosVector.cc
     )
-addSources(ALIEN-Trilinos
+addSources(alien_trilinos
     EigenSolver/TrilinosInternalEigenSolver.cc
     )
-generateAxl(ALIEN-Trilinos
+generateAxl(alien_trilinos
     LinearSolver/Arcane/TrilinosSolver.axl
     AXL_OPTION_GENERATION_MODE ${AXL_OPTION_GENERATION_TYPE}
     NAMESPACE ${NAMESPACE_TYPE}
@@ -20,7 +20,7 @@ generateAxl(ALIEN-Trilinos
     ${IS_WITH_MESH}
     INSTALL_GENERATED_FILES
     )
-generateAxl(ALIEN-Trilinos
+generateAxl(alien_trilinos
     EigenSolver/Arcane/TrilinosEigenSolver.axl
     AXL_OPTION_GENERATION_MODE ${AXL_OPTION_GENERATION_TYPE}
     NAMESPACE ${NAMESPACE_TYPE}
@@ -28,11 +28,11 @@ generateAxl(ALIEN-Trilinos
     ${IS_WITH_MESH}
     INSTALL_GENERATED_FILES
     )
-addSources(ALIEN-Trilinos
+addSources(alien_trilinos
     LinearSolver/Arcane/TrilinosLinearSolver.cc
     )
 
-addSources(ALIEN-Trilinos
+addSources(alien_trilinos
     EigenSolver/Arcane/TrilinosEigenSolver.cc
     )
-linkLibraries(ALIEN-Trilinos trilinos)
+linkLibraries(alien_trilinos trilinos)

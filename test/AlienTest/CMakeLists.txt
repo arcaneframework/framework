@@ -30,7 +30,7 @@ linkLibraries(alien_arcane_test.exe
         )
 
 if (TARGET trilinos)
-    linkLibraries(alien_arcane_test.exe ALIEN-Trilinos)
+    linkLibraries(alien_arcane_test.exe alien_trilinos)
 endif ()
 
 commit(alien_arcane_test.exe)

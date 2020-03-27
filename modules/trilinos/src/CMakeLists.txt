@@ -2,11 +2,11 @@ if (NOT TARGET trilinos)
     return()
 endif ()
 
-createLibrary(ALIEN-Trilinos
-        EXPORT ALIEN/ALIEN-TrilinosExport.h
+createLibrary(alien_trilinos
+        EXPORT alien/AlienTrilinosExport.h
         )
 
-set_target_properties(ALIEN-Trilinos
+set_target_properties(alien_trilinos
         PROPERTIES LINKER_LANGUAGE "CXX")
 
 if (TARGET arcane_core)
@@ -23,35 +23,34 @@ endif ()
 
 
 if (TARGET trilinos)
-    message(status "USE TRILINOS")
     addDirectory(ALIEN/Kernels/Trilinos)
 endif ()
 
 if (TARGET arcane_core)
-    linkLibraries(ALIEN-Trilinos arcane_core arcane_std)
+    linkLibraries(alien_trilinos arcane_core arcane_std)
 else ()
-    linkLibraries(ALIEN-Trilinos ALIEN-StrongOptions)
+    linkLibraries(alien_trilinos ALIEN-StrongOptions)
 endif ()
 
 if (TARGET umfpack)
-    linkLibraries(ALIEN-Trilinos umfpack)
+    linkLibraries(alien_trilinos umfpack)
 endif ()
 
 if(TARGET nvamg)
-  linkLibraries(ALIEN-Trilinos nvamg)
+  linkLibraries(alien_trilinos nvamg)
 endif()
 
-linkLibraries(ALIEN-Trilinos alien alien_ref_semantic)
+linkLibraries(alien_trilinos alien alien_ref_semantic)
 
-target_include_directories(ALIEN-Trilinos PUBLIC
+target_include_directories(alien_trilinos PUBLIC
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<INSTALL_INTERFACE:include>)
 
-commit(ALIEN-Trilinos)
+commit(alien_trilinos)
 
-install(DIRECTORY ALIEN
+install(DIRECTORY alien
         DESTINATION include
         FILES_MATCHING PATTERN "*.h"
         )

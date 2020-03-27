@@ -9,7 +9,7 @@
 #define ALIEN_KERNELS_TRILINOS_EIGENSOLVER_TRILINOSINTERNALEIGENSOLVER_H
 
 #include <alien/utils/Precomp.h>
-#include <ALIEN/Alien-TrilinosPrecomp.h>
+#include <ALIEN/AlienTrilinosPrecomp.h>
 #include <ALIEN/Kernels/Trilinos/EigenSolver/TrilinosEigenOptionTypes.h>
 #include <alien/expression/solver/IEigenSolver.h>
 //#include <alien/core/backend/IInternalEigenSolverT.h>

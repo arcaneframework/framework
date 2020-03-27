@@ -7,7 +7,7 @@
 
 #include <ALIEN/Kernels/Trilinos/TrilinosPrecomp.h>
 #include <alien/utils/Precomp.h>
-#include <ALIEN/Alien-TrilinosPrecomp.h>
+#include <ALIEN/AlienTrilinosPrecomp.h>
 #include <ALIEN/Kernels/Trilinos/TrilinosBackEnd.h>
 #include <alien/core/backend/LinearSolver.h>
 #include <ALIEN/Kernels/Trilinos/LinearSolver/TrilinosInternalLinearSolver.h>

@@ -6,7 +6,7 @@
  */
 
 #include <alien/utils/Precomp.h>
-#include <ALIEN/Alien-TrilinosPrecomp.h>
+#include <ALIEN/AlienTrilinosPrecomp.h>
 
 #define BEGIN_TRILINOSINTERNAL_NAMESPACE                                                 \
   namespace Alien {                                                                      \

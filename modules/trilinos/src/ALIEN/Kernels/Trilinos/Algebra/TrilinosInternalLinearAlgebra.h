@@ -2,7 +2,7 @@
 #ifndef ALIEN_KERNELS_TRILINOS_ALGEBRA_TRILINOSINTERNALLINEARALGEBRA_H
 #define ALIEN_KERNELS_TRILINOS_ALGEBRA_TRILINOSINTERNALLINEARALGEBRA_H
 
-#include <ALIEN/Alien-TrilinosPrecomp.h>
+#include <ALIEN/AlienTrilinosPrecomp.h>
 #include <alien/utils/Precomp.h>
 
 #include <ALIEN/Kernels/Trilinos/TrilinosBackEnd.h>

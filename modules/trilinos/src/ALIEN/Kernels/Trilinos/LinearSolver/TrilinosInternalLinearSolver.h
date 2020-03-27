@@ -9,7 +9,7 @@
 #define ALIEN_KERNELS_TRILINOS_LINEARSOLVER_TRILINOSINTERNALLINEARSOLVER_H
 
 #include <alien/utils/Precomp.h>
-#include <ALIEN/Alien-TrilinosPrecomp.h>
+#include <ALIEN/AlienTrilinosPrecomp.h>
 #include <ALIEN/Kernels/Trilinos/LinearSolver/TrilinosOptionTypes.h>
 #include <alien/expression/solver/solver_stats/SolverStater.h>
 #include <alien/core/backend/IInternalLinearSolverT.h>
