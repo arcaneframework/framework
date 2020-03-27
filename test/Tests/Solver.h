@@ -8,7 +8,7 @@
 #include <alien/expression/solver/ILinearSolver.h>
 #include <alien/utils/parameter_manager/BaseParameterManager.h>
 
-#include <ALIEN/Alien-ExternalPackages.h>
+#include <ALIEN/AlienExternalPackages.h>
 #include <ALIEN/Alien-IFPENSolvers.h>
 
 #ifdef ALIEN_USE_MTL4

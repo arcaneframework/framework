@@ -27,9 +27,9 @@ macro(compile_test BUILDER)
             ALIEN-RefSemantic
             )
 
-    if (TARGET ALIEN-ExternalPackages)
+    if (TARGET alien_external_packages)
         linkLibraries(refmvhandlers.Scalar${BUILDER}
-                ALIEN-ExternalPackages
+                alien_external_packages
                 )
     endif ()
 
@@ -84,9 +84,9 @@ linkLibraries(refmvhandlers.ScalarRedistributor
         ALIEN-RefSemantic
         )
 
-if (TARGET ALIEN-ExternalPackages)
+if (TARGET alien_external_packages)
     linkLibraries(refmvhandlers.ScalarRedistributor
-            ALIEN-ExternalPackages
+            alien_external_packages
             )
 endif ()
 
@@ -130,9 +130,9 @@ linkLibraries(refmvhandlers.ScalarRedistributorAlgebra
         ALIEN-RefSemantic
         )
 
-if (TARGET ALIEN-ExternalPackages)
+if (TARGET alien_external_packages)
     linkLibraries(refmvhandlers.ScalarRedistributorAlgebra
-            ALIEN-ExternalPackages
+            alien_external_packages
             )
 endif ()
 

@@ -14,9 +14,9 @@ linkLibraries(alien_test.exe
         alien_move_semantic
         )
 
-if (TARGET ALIEN-ExternalPackages)
+if (TARGET alien_external_packages)
     linkLibraries(alien_test.exe
-            ALIEN-ExternalPackages
+            alien_external_packages
             )
 endif ()
 

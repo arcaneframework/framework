@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <ALIEN/Alien-ExternalPackages.h>
+#include <ALIEN/AlienExternalPackages.h>
 #include <ALIEN/Alien-RefSemantic.h>
 
 #ifdef ALIEN_USE_MCGSOLVER

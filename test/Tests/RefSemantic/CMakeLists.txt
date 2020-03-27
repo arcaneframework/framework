@@ -33,9 +33,9 @@ if (TARGET GTest::GTest)
         linkLibraries(gtest.refmvhandlers intel)
     endif ()
 
-    if (TARGET ALIEN-ExternalPackages)
+    if (TARGET alien_external_packages)
         linkLibraries(gtest.refmvhandlers
-                ALIEN-ExternalPackages
+                alien_external_packages
                 )
     endif ()
 

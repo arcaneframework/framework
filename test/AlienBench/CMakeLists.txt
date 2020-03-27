@@ -21,7 +21,7 @@ linkLibraries(alien_bench.exe
         Boost::boost
         alien
         alien_ref_semantic
-        ALIEN-ExternalPackages
+        alien_external_packages
         ALIEN-IFPENSolvers
         alien_arcane_tools
         arcane_core

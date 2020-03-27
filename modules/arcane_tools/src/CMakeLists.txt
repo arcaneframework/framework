@@ -20,7 +20,7 @@ if(TARGET petsc)
     ALIEN/ArcaneTools/IO/MatrixRowPrinter.cc
     )
   linkLibraries(alien_arcane_tools petsc)
-  linkLibraries(alien_arcane_tools ALIEN-ExternalPackages)
+  linkLibraries(alien_arcane_tools alien_external_packages)
 endif()
 
 linkLibraries(alien_arcane_tools alien)

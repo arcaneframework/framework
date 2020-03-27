@@ -17,7 +17,7 @@ linkLibraries(alien_arcane_test.exe
         Boost::boost
         alien
         alien_move_semantic
-        ALIEN-ExternalPackages
+        alien_external_packages
         ALIEN-IFPENSolvers
         alien_arcane_tools
         arcane_core

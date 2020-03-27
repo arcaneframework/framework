@@ -79,7 +79,7 @@ message_separator()
 logStatus("Loading components...")
 
 add_subdirectory(modules/AlienOptions)
-add_subdirectory(modules/AlienExternalPackages)
+add_subdirectory(modules/external_packages)
 add_subdirectory(modules/trilinos)
 add_subdirectory(modules/hpddm)
 add_subdirectory(modules/AlienIFPENSolvers)

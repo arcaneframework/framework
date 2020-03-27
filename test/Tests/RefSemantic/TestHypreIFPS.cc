@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <ALIEN/Alien-RefSemanticMVHandlers.h>
-#include <ALIEN/Alien-ExternalPackages.h>
+#include <ALIEN/AlienExternalPackages.h>
 
 #ifdef ALIEN_USE_HYPRE
 #include <ALIEN/Kernels/Hypre/LinearSolver/HypreInternalLinearSolver.h>

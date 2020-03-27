@@ -14,7 +14,7 @@
 #include <arcane/utils/OStringStream.h>
 #include <arcane/utils/PlatformUtils.h>
 
-#include <ALIEN/Alien-ExternalPackages.h>
+#include <ALIEN/AlienExternalPackages.h>
 
 #include <ALIEN/ArcaneTools/Accessors/ItemVectorAccessor.h>
 #include <ALIEN/ArcaneTools/IndexManager/BasicIndexManager.h>

@@ -10,9 +10,9 @@ foreach (BUILDER Profiled Stream Import)
         linkLibraries(refmvhandlers.Block${BUILDER} intel)
     endif ()
 
-    if (TARGET ALIEN-ExternalPackages)
+    if (TARGET alien_external_packages)
         linkLibraries(refmvhandlers.Block${BUILDER}
-                ALIEN-ExternalPackages
+                alien_external_packages
                 )
     endif ()
 
@@ -51,9 +51,9 @@ foreach (BUILDER VBlockStream)
 
     addSources(refmvhandlers.${BUILDER} ${BUILDER}.cpp BuilderTestVBlockFramework.cpp)
 
-    if (TARGET ALIEN-ExternalPackages)
+    if (TARGET alien_external_packages)
         linkLibraries(refmvhandlers.${BUILDER}
-                ALIEN-ExternalPackages
+                alien_external_packages
                 )
     endif ()
 
