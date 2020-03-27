@@ -178,6 +178,34 @@ HypreInternalLinearAlgebra::scal(const Arccore::Real& alpha, HypreVector& x) con
 }
 
 /*---------------------------------------------------------------------------*/
+
+void
+HypreInternalLinearAlgebra::mult(const Matrix& a, const UniqueArray<Real>& x, UniqueArray<Real>& r) const {
+ throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::mult not implemented");
+}
+
+void
+HypreInternalLinearAlgebra::axpy(const Real & alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const {
+  throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::norm0 not implemented");
+}
+
+void
+HypreInternalLinearAlgebra::aypx(const Real & alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const {
+  throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::axpy not implemented");
+}
+void
+HypreInternalLinearAlgebra::copy(const UniqueArray<Real>& x, UniqueArray<Real>& r) const {
+  throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::copy not implemented");
+}
+Real
+HypreInternalLinearAlgebra::dot(Integer local_size, const UniqueArray<Real>& x, const UniqueArray<Real>& y) const {
+  throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::dot not implemented");
+return Real() ;
+}
+void
+HypreInternalLinearAlgebra::scal(const Real & alpha, UniqueArray<Real>& x) const {
+  throw NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::scal not implemented");
+}
 /*---------------------------------------------------------------------------*/
 
 } // namespace Alien

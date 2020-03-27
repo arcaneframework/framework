@@ -122,6 +122,32 @@ TrilinosInternalLinearSolver<TagT>::init()
     m_trilinos_solver->initSolverParameters(m_options);
 
 }
+template<typename TagT>
+void TrilinosInternalLinearSolver<TagT>::setMatrixCoordinate(Matrix const& A, Vector const& x, Vector const& y, Vector const& z)
+{
+
+  const CSRMatrixType& matrix = A.impl()->template get<TagT>() ;
+
+  typedef typename solver_type::vec_type VectorType ;
+  m_trilinos_solver->m_coordinates = rcp( new VectorType(matrix.internal()->m_map, 3, false) );
+
+  Teuchos::ArrayRCP<Teuchos::ArrayRCP<typename solver_type::real_type> > Coord(3);
+  Coord[0] = m_trilinos_solver->m_coordinates->getDataNonConst(0);
+  Coord[1] = m_trilinos_solver->m_coordinates->getDataNonConst(1);
+  Coord[2] = m_trilinos_solver->m_coordinates->getDataNonConst(2);
+
+  Alien::VectorReader x_view(x);
+  Alien::VectorReader y_view(y);
+  Alien::VectorReader z_view(z);
+
+  for(int i=0;i<x_view.size();++i)
+  {
+    Coord[0][i] = x_view[i] ;
+    Coord[1][i] = y_view[i] ;
+    Coord[2][i] = z_view[i] ;
+  }
+}
+
 
 template<typename TagT>
 void

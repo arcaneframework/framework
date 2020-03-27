@@ -66,6 +66,13 @@ MatrixInternal<ValueT,TagT>::mult(vector_type const& x, vector_type& y)
   m_internal->apply(x,y) ;
 }
 
+template<typename ValueT,typename TagT>
+void
+MatrixInternal<ValueT,TagT>::mult(ValueT const* x, ValueT* y) const
+{
+  //m_internal->apply(x,y) ;
+}
+
 END_TRILINOSINTERNAL_NAMESPACE
 
 namespace Alien {
@@ -120,6 +127,13 @@ void
 TrilinosMatrix<ValueT,TagT>::mult(TrilinosVector<ValueT,TagT> const& x, TrilinosVector<ValueT,TagT>& y) const
 {
   m_internal->mult(*x.internal()->m_internal,*y.internal()->m_internal) ;
+}
+
+template<typename ValueT,typename TagT>
+void
+TrilinosMatrix<ValueT,TagT>::mult(ValueT const* x, ValueT* y) const
+{
+  m_internal->mult(x,y) ;
 }
 
 template<typename ValueT,typename TagT>

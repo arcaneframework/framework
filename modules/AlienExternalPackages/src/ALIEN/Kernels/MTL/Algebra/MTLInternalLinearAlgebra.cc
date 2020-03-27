@@ -150,7 +150,32 @@ MTLInternalLinearAlgebra::pointwiseMult(const Vector& x, const Vector& y, Vector
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Alien
+void
+MTLInternalLinearAlgebra::mult(const Matrix& a, const UniqueArray<Real>& x, UniqueArray<Real>& r) const {
+ throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::mult not implemented");
+}
+void
+MTLInternalLinearAlgebra::axpy(const Real & alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const {
+  throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::axpy not implemented");
+}
+void
+MTLInternalLinearAlgebra::aypx(const Real & alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const {
+  throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::aypx not implemented");
+}
+void
+MTLInternalLinearAlgebra::copy(const UniqueArray<Real>& x, UniqueArray<Real>& r) const {
+  throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::copy not implemented");
+}
+Real
+MTLInternalLinearAlgebra::dot(Integer local_size, const UniqueArray<Real>& x, const UniqueArray<Real>& y) const {
+  throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::dot not implemented");
+return Real() ;
+}
+void
+MTLInternalLinearAlgebra::scal(const Real & alpha, UniqueArray<Real>& x) const {
+  throw NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::scal not implemented");
+}
+END_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

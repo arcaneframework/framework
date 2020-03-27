@@ -185,7 +185,8 @@ class MatrixInternal
 
     bool setMatrixValues(Arccore::Real const *values);
 
-  void mult(vector_type const& x, vector_type& y) ;
+  void mult(vector_type const& x, vector_type& y) const;
+  void mult(ValueT const* x, ValueT* y) const;
 
   int  m_block_size  = 1 ;
   bool m_is_parallel = false ;

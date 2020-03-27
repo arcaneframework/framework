@@ -84,14 +84,15 @@ SimpleCSR_to_Trilinos_MatrixConverter<TagT>::_build(
     int const *cols = matrix_profile.getCols().unguardedBasePointer();
     int block_size = sourceImpl.block() ? sourceImpl.block()->size() : 1;
 
-    if (not targetImpl.initMatrix(dist.parallelMng(),
-                                  localOffset,
-                                  globalSize,
-                                  nrows, kcol, cols,
-                                  block_size,
-                                  matrixInternal.getValues().data())) {
-        throw Arccore::FatalErrorException(A_FUNCINFO, "Trilinos Initialisation failed");
-    }
+  if (not targetImpl.initMatrix(dist.parallelMng(),
+                                localOffset,
+                                globalSize,
+                                nrows,kcol,cols,
+                                block_size,
+                                matrixInternal.getDataPtr()))
+  {
+    throw FatalErrorException(A_FUNCINFO, "Trilinos Initialisation failed");
+  }
 
 }
 

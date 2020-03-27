@@ -88,7 +88,7 @@ SimpleCSR_to_HTS_MatrixConverter::_build(
       throw Arccore::FatalErrorException(A_FUNCINFO, "HTS Initialisation failed");
     }
 
-    if (not targetImpl.setMatrixValues(matrixInternal.getValues().data()))
+    if (not targetImpl.setMatrixValues(matrixInternal.getDataPtr()))
     {
       throw Arccore::FatalErrorException(A_FUNCINFO, "Cannot set HTS Matrix Values");
     }

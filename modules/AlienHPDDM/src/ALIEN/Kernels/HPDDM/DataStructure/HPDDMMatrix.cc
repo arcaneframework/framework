@@ -5,6 +5,7 @@
 
 #include <ALIEN/Kernels/HPDDM/HPDDMPrecomp.h>
 
+#include <ALIEN/Expression/Solver/SolverStats/SolverStater.h>
 #include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRVector.h>
 #include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRMatrix.h>
 
@@ -569,11 +570,13 @@ _compute(HPDDM::MatrixCSR<ValueT>* matrix_dirichlet,
     if (schwarz_coarse_correction)
     {
       if (rank == 0)
-        std::cout << "HPDDM Using Two Levels"<<std::endl;
+        std::cout << "HPDDM Using Two Levels"<< m_ndofs<<" "<<m_nnz<<std::endl;
       //double& ref = opt["geneo_nu"];
       //unsigned short nu = ref;
+      Real eigen_solver_time = 0. ;
       if (nu > 0)
       {
+        Alien::SolverStater::Sentry s(eigen_solver_time) ;
         m_matrix.template solveGEVP < EIGENSOLVER > (matrix_neumann);
         //nu = opt["geneo_nu"];
         //m_hpddm_matrix.super::initialize(nu);
@@ -582,6 +585,8 @@ _compute(HPDDM::MatrixCSR<ValueT>* matrix_dirichlet,
       }
       else
         std::cout << "Warning ! Case nu = 0 not supported. Falling back to 1 level method"<<std::endl;
+      if (rank == 0)
+        std::cout<<"EIGEN SOLVER TIME : "<<eigen_solver_time<<std::endl ;
     }
     m_matrix.callNumfact();
   }

@@ -112,6 +112,8 @@ HTSInternalLinearSolver::init()
   m_hts_solver->setCurrentContext(&context) ;
 
   m_hts_solver->setParameter<int>("output",m_output_level) ;
+  m_hts_solver->setParameter<int>("parallel-trace",m_options->parallelTrace()) ;
+
   if(m_options->normalizeOpt())
      m_hts_solver->setParameter<int>("normalize-opt",1) ;
   m_hts_solver->setParameter<int>("max-iteration",m_options->maxIterationNum()) ;

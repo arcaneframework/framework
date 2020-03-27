@@ -78,7 +78,8 @@ HPDDMInternalSolver::init()
   std::string optstring(
       "-hpddm_verbosity "      + std::to_string(m_options->outputLevel()) +
       " -hpddm_max_it "        + std::to_string(m_options->maxIterationNum()) +
-      " -hpddm_gmres_restart " + std::to_string(m_options->maxIterationNum()));
+      " -hpddm_gmres_restart " + std::to_string(m_options->maxRestartIterationNum()) +
+      " -hpddm_krylov_method " + localstr(m_options->krylovMethod()) );
   opt.parse(optstring);
   std::stringstream stream;
   stream << "-hpddm_tol " << m_options->stopCriteriaValue();
@@ -169,6 +170,8 @@ bool HPDDMInternalSolver::solve(CSRMatrixType const& A,
 {
   if(m_output_level>0)
     alien_info([&] { cout()<<"HPDDMSolver::solve"; } ) ;
+  {
+    Alien::SolverStater::Sentry s(m_init_solver_time) ;
 
   HPDDM::Option& opt = *HPDDM::Option::get();
   bool schwarz_coarse_correction = opt.set("schwarz_coarse_correction") ;
@@ -185,6 +188,7 @@ bool HPDDMInternalSolver::solve(CSRMatrixType const& A,
                                                            m_hpddm_sol.data(),
                                                            1,
                                                            m_hpddm_matrix.matrix().getCommunicator());
+  }
 
   HPDDMValueType storage[2];
   m_hpddm_matrix.matrix().computeResidual(m_hpddm_sol.data(), m_hpddm_rhs.data(), storage, 1);
@@ -214,12 +218,16 @@ bool HPDDMInternalSolver::solve(CSRMatrixType const& Ad,
 
   _computeHPDDMRhs(Ad,b) ;
   _computeHPDDMSol(Ad,x) ;
+  }
 
-  m_status.iteration_count = HPDDM::IterativeMethod::solve(m_hpddm_matrix.matrix(),
+  {
+    Alien::SolverStater::Sentry s(m_iter_solver_time) ;
+    m_status.iteration_count = HPDDM::IterativeMethod::solve(m_hpddm_matrix.matrix(),
                                                            m_hpddm_rhs.data(),
                                                            m_hpddm_sol.data(),
                                                            1,
                                                            m_hpddm_matrix.matrix().getCommunicator());
+  }
 
   HPDDMValueType storage[2];
   m_hpddm_matrix.matrix().computeResidual(m_hpddm_sol.data(), m_hpddm_rhs.data(), storage, 1);
@@ -239,7 +247,13 @@ void
 HPDDMInternalSolver::
 internalPrintInfo() const
 {
-  m_stater.print(const_cast<Arccore::ITraceMng*>(traceMng()), m_status, Arccore::String::format("Linear Solver : {0}","MTLLinearSolver"));
+  m_stater.print(const_cast<ITraceMng*>(traceMng()), m_status, format("Linear Solver : {0}","HPDDMSolver"));
+  if(m_output_level>0)
+      alien_info([&] {
+                       cout()<<"INIT SOLVER TIME : "<<m_init_solver_time;
+                       cout()<<"ITER SOLVER TIME : "<<m_iter_solver_time;
+                     }
+                ) ;
 }
 
 

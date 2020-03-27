@@ -58,6 +58,8 @@ public:
 
   void mult(TrilinosVector<ValueT,TagT> const& x, TrilinosVector<ValueT,TagT>& y) const ;
 
+  void mult(ValueT const*x, ValueT* y) const ;
+
   void dump(std::string const& filename) const ;
 
  public:

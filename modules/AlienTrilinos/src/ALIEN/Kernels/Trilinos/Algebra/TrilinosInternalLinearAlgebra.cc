@@ -5,6 +5,7 @@
 #include <ALIEN/Kernels/Trilinos/TrilinosBackEnd.h>
 #include <ALIEN/Kernels/Trilinos/DataStructure/TrilinosInternal.h>
 
+#include <ALIEN/Kernels/SimpleCSR/Algebra/CBLASMPIKernel.h>
 #include <ALIEN/Core/Backend/LinearAlgebraT.h>
 
 #include <ALIEN/Data/Space.h>
@@ -93,8 +94,18 @@ TrilinosInternalLinearAlgebra::mult(const Matrix& a, const Vector& x, Vector& r)
 {
   a.mult(x,r) ;
 }
+void
+TrilinosInternalLinearAlgebra::mult(const Matrix& a, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+{
+  a.mult(dataPtr(x),dataPtr(r)) ;
+}
 
 /*---------------------------------------------------------------------------*/
+void
+TrilinosInternalLinearAlgebra::axpy(const Real& alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+{
+  cblas::axpy(x.size(), alpha, dataPtr(x),1, dataPtr(r),1);
+}
 
 void
     TrilinosInternalLinearAlgebra::axpy(const Arccore::Real &alpha, const Vector &x, Vector &r) const {
@@ -114,20 +125,36 @@ void
 /*---------------------------------------------------------------------------*/
 
 void
-TrilinosInternalLinearAlgebra::copy(const Vector& x, Vector& r) const {
-        throw Arccore::NotImplementedException(
-                A_FUNCINFO, "TrilinosInternalLinearAlgebra::aypx not implemented");
-    }
+TrilinosInternalLinearAlgebra::copy(const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+{
+  cblas::copy(x.size(), dataPtr(x),1, dataPtr(r),1);
+}
+void
+TrilinosInternalLinearAlgebra::copy(const Vector& x, Vector& r) const
+{
+	throw NotImplementedException(
+	      A_FUNCINFO, "TrilinosInternalLinearAlgebra::aypx not implemented");
+}
 
 /*---------------------------------------------------------------------------*/
-
-    Arccore::Real
+Real
+TrilinosInternalLinearAlgebra::dot(Integer local_size, const UniqueArray<Real>& vx, const UniqueArray<Real>& vy) const
+{
+  return cblas::dot(local_size, dataPtr(vx),1, dataPtr(vy),1);
+}
+Real
 TrilinosInternalLinearAlgebra::dot(const Vector& x, const Vector& y) const
 {
   return x.dot(y) ;
 }
 
 /*---------------------------------------------------------------------------*/
+void
+TrilinosInternalLinearAlgebra::scal(const Real& alpha, UniqueArray<Real>& x) const
+{
+  throw NotImplementedException(
+      A_FUNCINFO, "TrilinosInternalLinearAlgebra::scal not implemented");
+}
 
 void
     TrilinosInternalLinearAlgebra::scal(const Arccore::Real &alpha, Vector &x) const

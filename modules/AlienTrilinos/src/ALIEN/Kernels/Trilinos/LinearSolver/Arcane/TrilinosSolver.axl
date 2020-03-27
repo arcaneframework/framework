@@ -308,8 +308,12 @@
         <description>0th order ILU preconditioner</description>
       </enumvalue>
       <enumvalue name="ILUT" genvalue="TrilinosOptionTypes::ILUT">
-        <description>0th order ILU preconditioner FixedPoint</description>
+        <description>0th order ILU preconditioner</description>
       </enumvalue>
+      <enumvalue name="FILU" genvalue="TrilinosOptionTypes::FILU">
+        <description>FAST ILU preconditioner FixedPoint</description>
+      </enumvalue>
+      
       <enumvalue name="ML" genvalue="TrilinosOptionTypes::MLPC">
         <description>ML</description>
       </enumvalue>

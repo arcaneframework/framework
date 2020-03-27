@@ -39,6 +39,14 @@ public:
   void diagonal(const Matrix& a, Vector& x) const;
   void reciprocal(Vector& x) const;
   void pointwiseMult(const Vector& x, const Vector& y, Vector& w) const;
+
+  void mult(const Matrix& a, const UniqueArray<Real>& x, UniqueArray<Real>& r) const ;
+  void axpy(const Real & alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const;
+  void aypx(const Real & alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const;
+  void copy(const UniqueArray<Real>& x, UniqueArray<Real>& r) const;
+  Real dot(Integer local_size, const UniqueArray<Real>& x, const UniqueArray<Real>& y) const;
+  void scal(const Real & alpha, UniqueArray<Real>& x) const;
+
 };
 
 /*---------------------------------------------------------------------------*/

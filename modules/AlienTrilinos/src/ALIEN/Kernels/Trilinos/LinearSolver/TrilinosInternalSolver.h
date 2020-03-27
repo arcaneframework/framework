@@ -100,7 +100,8 @@ public :
     magnitude_type m_residual =  -1.;
   };
 
-
+public :
+  Teuchos::RCP<RealValuedMultiVector>  m_coordinates;
 private :
   std::string                          m_precond_name;
   Teuchos::RCP<Teuchos::ParameterList> m_precond_parameters ;

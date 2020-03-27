@@ -34,6 +34,11 @@ addSources(ALIEN-IFPENSolvers
     EigenSolver/Arcane/HTSEigenSolver.cc
     )
 linkLibraries(ALIEN-IFPENSolvers htssolver harts tbb spectra mtl)
+
+if(TARGET arpack)
+  linkLibraries(ALIEN-IFPENSolvers arpack)
+endif()
+
 if(TARGET cuda)
-linkLibraries(ALIEN-IFPENSolvers cuda)
+  linkLibraries(ALIEN-IFPENSolvers cuda)
 endif()

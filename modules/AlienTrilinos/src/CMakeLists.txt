@@ -37,11 +37,11 @@ if (TARGET umfpack)
     linkLibraries(ALIEN-Trilinos umfpack)
 endif ()
 
-#if(TARGET nvamg)
-#  linkLibraries(ALIEN-Trilinos nvamg)
-#endif()
+if(TARGET nvamg)
+  linkLibraries(ALIEN-Trilinos nvamg)
+endif()
 
-linkLibraries(ALIEN-Trilinos ALIEN)
+linkLibraries(ALIEN-Trilinos ALIEN ALIEN-RefSemanticMVHandlers)
 
 target_include_directories(ALIEN-Trilinos PUBLIC
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>

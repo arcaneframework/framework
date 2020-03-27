@@ -25,8 +25,9 @@ class SolverStater;
 
 template <typename TagT>
 class ALIEN_TRILINOS_EXPORT TrilinosInternalLinearSolver
-        : public IInternalLinearSolver<TrilinosMatrix<Arccore::Real, TagT>, TrilinosVector<Arccore::Real, TagT>>,
-          public ObjectWithTrace {
+: public IInternalLinearSolver<TrilinosMatrix<Arccore::Real, TagT>, TrilinosVector<Arccore::Real, TagT>>
+, public TPetraSolver
+, public ObjectWithTrace {
 private:
     typedef SolverStatus Status;
 
@@ -58,6 +59,8 @@ public:
     Arccore::String getBackEndName() const;
 
   typedef typename TrilinosInternal::SolverInternal<TagT> solver_type ;
+
+  void setMatrixCoordinate(Matrix const& A, Vector const& x, Vector const& y, Vector const& z) ;
 
   //bool solve(IMatrix const& A, IVector const& b, IVector& x);
   bool solve(const CSRMatrixType& matrix, const CSRVectorType& b, CSRVectorType& x) ;

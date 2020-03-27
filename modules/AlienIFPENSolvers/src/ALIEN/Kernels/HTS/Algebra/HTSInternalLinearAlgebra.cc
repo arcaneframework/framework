@@ -105,6 +105,11 @@ HTSInternalLinearAlgebra::aypx(const Arccore::Real& alpha, Vector& y, const Vect
 }
 
 /*---------------------------------------------------------------------------*/
+void
+HTSInternalLinearAlgebra::copy(const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+{
+  cblas::copy(x.size(), dataPtr(x),1, dataPtr(r),1);
+}
 
 void
 HTSInternalLinearAlgebra::copy(const Vector& x, Vector& r) const
@@ -113,6 +118,11 @@ HTSInternalLinearAlgebra::copy(const Vector& x, Vector& r) const
 }
 
 /*---------------------------------------------------------------------------*/
+Real
+HTSInternalLinearAlgebra::dot(Integer local_size, const UniqueArray<Real>& vx, const UniqueArray<Real>& vy) const
+{
+  return cblas::dot(local_size, dataPtr(vx),1, dataPtr(vy),1);
+}
 
 Arccore::Real
 HTSInternalLinearAlgebra::dot(const Vector& x, const Vector& y) const
@@ -123,9 +133,16 @@ HTSInternalLinearAlgebra::dot(const Vector& x, const Vector& y) const
 /*---------------------------------------------------------------------------*/
 
 void
-HTSInternalLinearAlgebra::scal(const Arccore::Real& alpha, Vector& x) const
+HTSInternalLinearAlgebra::scal(const Real& alpha ALIEN_UNUSED_PARAM, UniqueArray<Real>& x ALIEN_UNUSED_PARAM) const
 {
-  throw Arccore::NotImplementedException(
+  throw NotImplementedException(
+      A_FUNCINFO, "HTSInternalLinearAlgebra::scal not implemented");
+}
+
+void
+HTSInternalLinearAlgebra::scal(const Real& alpha, Vector& x) const
+{
+  throw NotImplementedException(
       A_FUNCINFO, "HTSInternalLinearAlgebra::scal not implemented");
 }
 

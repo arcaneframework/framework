@@ -9,6 +9,10 @@
       <description>output level</description>
     </simple>
     
+    <simple name="parallel-trace" type="integer" default="0">
+      <description>parallel output level</description>
+    </simple>
+    
     <simple name="export-iter" type="integer" default="-1">
       <description>export iter</description>
     </simple>

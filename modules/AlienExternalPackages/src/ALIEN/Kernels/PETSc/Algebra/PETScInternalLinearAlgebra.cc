@@ -158,5 +158,34 @@ PETScInternalLinearAlgebra::pointwiseMult(
 
 } // namespace Alien
 
+
+void
+PETScInternalLinearAlgebra::mult(const Matrix& a, const UniqueArray<Real>& x, UniqueArray<Real>& r) const {
+ throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::mult not implemented");
+}
+void
+PETScInternalLinearAlgebra::axpy(const Real & alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const {
+  throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::axpy not implemented");
+}
+void
+PETScInternalLinearAlgebra::aypx(const Real & alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const {
+  throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::aypx not implemented");
+}
+void
+PETScInternalLinearAlgebra::copy(const UniqueArray<Real>& x, UniqueArray<Real>& r) const {
+  throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::copy not implemented");
+}
+Real
+PETScInternalLinearAlgebra::dot(Integer local_size, const UniqueArray<Real>& x, const UniqueArray<Real>& y) const {
+  throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::dot not implemented");
+return Real() ;
+}
+void
+PETScInternalLinearAlgebra::scal(const Real & alpha, UniqueArray<Real>& x) const {
+  throw NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::scal not implemented");
+}
+
+END_NAMESPACE
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
