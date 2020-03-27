@@ -18,7 +18,7 @@ linkLibraries(alien_arcane_test.exe
         alien
         alien_move_semantic
         alien_external_packages
-        ALIEN-IFPENSolvers
+        alien_ifpen_solvers
         alien_arcane_tools
         arcane_core
         arcane_std

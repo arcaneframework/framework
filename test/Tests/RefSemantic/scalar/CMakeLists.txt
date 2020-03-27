@@ -33,9 +33,9 @@ macro(compile_test BUILDER)
                 )
     endif ()
 
-    if (TARGET ALIEN-IFPENSolvers)
+    if (TARGET alien_ifpen_solvers)
         linkLibraries(refmvhandlers.Scalar${BUILDER}
-                ALIEN-IFPENSolvers
+                alien_ifpen_solvers
                 )
     endif ()
 
@@ -90,9 +90,9 @@ if (TARGET alien_external_packages)
             )
 endif ()
 
-if (TARGET ALIEN-IFPENSolvers)
+if (TARGET alien_ifpen_solvers)
     linkLibraries(refmvhandlers.ScalarRedistributor
-            ALIEN-IFPENSolvers
+            alien_ifpen_solvers
             )
 endif ()
 
@@ -136,9 +136,9 @@ if (TARGET alien_external_packages)
             )
 endif ()
 
-if (TARGET ALIEN-IFPENSolvers)
+if (TARGET alien_ifpen_solvers)
     linkLibraries(refmvhandlers.ScalarRedistributorAlgebra
-            ALIEN-IFPENSolvers
+            alien_ifpen_solvers
             )
 endif ()
 

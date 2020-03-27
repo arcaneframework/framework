@@ -82,7 +82,7 @@ add_subdirectory(modules/AlienOptions)
 add_subdirectory(modules/external_packages)
 add_subdirectory(modules/trilinos)
 add_subdirectory(modules/hpddm)
-add_subdirectory(modules/AlienIFPENSolvers)
+add_subdirectory(modules/ifpen_solvers)
 add_subdirectory(modules/arcane_tools)
 
 message_separator()

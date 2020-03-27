@@ -16,9 +16,9 @@ foreach (BUILDER Profiled Stream Import)
                 )
     endif ()
 
-    if (TARGET ALIEN-IFPENSolvers)
+    if (TARGET alien_ifpen_solvers)
         linkLibraries(refmvhandlers.Block${BUILDER}
-                ALIEN-IFPENSolvers
+                alien_ifpen_solvers
                 )
     endif ()
 
@@ -57,9 +57,9 @@ foreach (BUILDER VBlockStream)
                 )
     endif ()
 
-    if (TARGET ALIEN-IFPENSolvers)
+    if (TARGET alien_ifpen_solvers)
         linkLibraries(refmvhandlers.${BUILDER}
-                ALIEN-IFPENSolvers
+                alien_ifpen_solvers
                 )
     endif ()
 

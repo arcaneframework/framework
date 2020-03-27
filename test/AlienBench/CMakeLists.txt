@@ -22,7 +22,7 @@ linkLibraries(alien_bench.exe
         alien
         alien_ref_semantic
         alien_external_packages
-        ALIEN-IFPENSolvers
+        alien_ifpen_solvers
         alien_arcane_tools
         arcane_core
         arcane_std

@@ -39,9 +39,9 @@ if (TARGET GTest::GTest)
                 )
     endif ()
 
-    if (TARGET ALIEN-IFPENSolvers)
+    if (TARGET alien_ifpen_solvers)
         linkLibraries(gtest.refmvhandlers
-                ALIEN-IFPENSolvers
+                alien_ifpen_solvers
                 )
     endif ()
 
