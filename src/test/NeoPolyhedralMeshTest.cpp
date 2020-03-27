@@ -165,13 +165,22 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
     using ItemNodesInCell = std::vector<std::vector<int>>; // [face_index_in_cell][node_index_in_face] = node_index_in_cell
     using NbNodeInCell = int;
     using CellTypes = std::vector<std::pair<NbNodeInCell, ItemNodesInCell>>;
+    struct DefaultItemOrientation {
+      bool isOrdered(Neo::utils::ConstArrayView<Neo::utils::Int64> item_nodes)
+      {
+        std::__throw_bad_function_call();//todo implement
+      }
+    };
+    template<typename ItemOrientation = DefaultItemOrientation>
     void getItemConnectivityFromCell(std::vector<Neo::utils::Int64> const& cell_nodes,
                                      std::vector<int> cell_type_indexes, CellTypes const& cell_types,
-                                     int& nb_faces,
-                                     std::vector<Neo::utils::Int64>& face_nodes,
-                                     std::vector<Neo::utils::Int32>& cell_faces)
+                                     int& nb_items,
+                                     std::vector<Neo::utils::Int64>& item_nodes,
+                                     std::vector<Neo::utils::Int32>& cell_items,
+                                     std::vector<int>& item_orientation_in_cell,
+                                     ItemOrientation const& item_orientation=DefaultItemOrientation{})
     {
-      nb_faces = 0;
+      nb_items = 0;
       auto cell_index = 0;
       auto face_index = 0;
       using FaceNodes = std::set<int>;
@@ -197,11 +206,11 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
                                                                            current_face_nodes.end()},face_index);
           if (!is_new_face) std::cout << "Item not inserted " << face_index << std::endl;
           if (is_new_face) {
-            face_nodes.insert(face_nodes.end(),current_face_nodes.begin(), current_face_nodes.end());
+            item_nodes.insert(item_nodes.end(),current_face_nodes.begin(), current_face_nodes.end());
           }
-          cell_faces.push_back(face_info->second);
+          cell_items.push_back(face_info->second);
           if (is_new_face) {
-            nb_faces++;
+            nb_items++;
             ++face_index;
           }
         }
@@ -460,6 +469,7 @@ TEST(PolyhedralTest,TypedUtilitiesTest){
   // Get Face Connectivity info
   std::vector<Neo::utils::Int64> face_nodes;
   std::vector<Neo::utils::Int32> cell_face_indexes;
+  std::vector<int> face_orientation_in_cell;
   int nb_faces = 0;
   StaticMesh::utilities::getItemConnectivityFromCell(
       cell_nodes, CellTypeIndexes{0, 0, 1},
@@ -471,20 +481,21 @@ TEST(PolyhedralTest,TypedUtilitiesTest){
          {0, 3, 7, 4},
          {0, 1, 5, 4}}},
        {5, {{0, 3, 2, 1}, {1, 2, 4}, {2, 3, 4}, {3, 0, 4}, {0, 1, 4}}}},
-      nb_faces, face_nodes, cell_face_indexes);
+      nb_faces, face_nodes, cell_face_indexes,face_orientation_in_cell);
   std::cout << "Nb faces found from cell info " << nb_faces << std::endl;
   _printContainer(face_nodes, "Face nodes from cell info");
   _printContainer(cell_face_indexes, "Cell faces (indexes) from cell info");
   // Get Edge Connectivity info
   std::vector<Neo::utils::Int64> edge_nodes;
   std::vector<Neo::utils::Int32> cell_edge_indexes;
+  std::vector<int> edge_orientation_in_cell;
   int nb_edges = 0;
   StaticMesh::utilities::getItemConnectivityFromCell(
       cell_nodes, CellTypeIndexes{0, 0, 1},
       {{8, {{0, 3}, {3, 2}, {2, 1}, {1, 0}, {2, 6}, {6, 5}, {5, 1},
                {4, 5}, {6, 7}, {7, 4}, {3, 7}, {4, 0}}},
        {5, {{0, 3}, {3, 2}, {2, 1}, {1, 0}, {2, 4}, {4, 1}, {3, 4}, {0, 4}}}},
-      nb_edges, edge_nodes, cell_edge_indexes);
+      nb_edges, edge_nodes, cell_edge_indexes,edge_orientation_in_cell);
   std::cout << "Nb edges found from cell info " << nb_edges << std::endl;
   _printContainer(edge_nodes, "Edge nodes from cell info");
   _printContainer(cell_edge_indexes, "Cell edges (indexes) from cell info");
@@ -698,6 +709,7 @@ TEST(PolyhedralTest,ImportXdmfHexahedronMesh) {
   using CellTypeIndexes = std::vector<int>;
   std::vector<Neo::utils::Int64> face_nodes;
   std::vector<Neo::utils::Int32> cell_face_indexes;
+  std::vector<int> face_orientation_in_cell;
   int nb_faces = 0;
   StaticMesh::utilities::getItemConnectivityFromCell(
       cell_nodes, CellTypeIndexes{0},
@@ -708,11 +720,12 @@ TEST(PolyhedralTest,ImportXdmfHexahedronMesh) {
          {2, 3, 7, 6},
          {0, 3, 7, 4},
          {0, 1, 5, 4}}}},
-      nb_faces, face_nodes, cell_face_indexes); //utilities
+      nb_faces, face_nodes, cell_face_indexes,face_orientation_in_cell);
   std::vector<Neo::utils::Int64> face_uids(nb_faces);
   std::vector<Neo::utils::Int64> cell_faces(cell_face_indexes.size());
   std::copy(cell_face_indexes.begin(),cell_face_indexes.end(),cell_faces.begin()); // face indexes are taken as uids
   std::iota(face_uids.begin(),face_uids.end(), 0);
+
   // get face cells by reversing connectivity
   std::vector<Neo::utils::Int64> face_cells;
   std::vector<Neo::utils::Int64> connected_face_uids;
