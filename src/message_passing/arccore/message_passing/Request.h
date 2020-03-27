@@ -210,6 +210,12 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
 
   void print(std::ostream& o) const;
 
+  friend inline std::ostream& operator<<(std::ostream& o,const Request& prequest)
+  {
+    prequest.print(o);
+    return o;
+  }
+
  private:
 
   int m_return_value = 0;
@@ -219,16 +225,6 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
   IRequestCreator* m_creator = nullptr;
   static _Request null_request;
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-inline std::ostream&
-operator<<(std::ostream& o,const Request& prequest)
-{
-  prequest.print(o);
-  return o;
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

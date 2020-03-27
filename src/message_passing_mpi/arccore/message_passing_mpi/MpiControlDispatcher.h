@@ -11,6 +11,7 @@
 
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
 #include "arccore/message_passing/IControlDispatcher.h"
+#include "arccore/base/NotImplementedException.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,6 +31,10 @@ class MpiControlDispatcher
   IMessagePassingMng* commSplit(bool keep) override;
   void barrier() override;
   MessageId probe(PointToPointMessageInfo message) override;
+  Ref<IRequestList> createRequestListRef() override
+  {
+    ARCCORE_THROW(NotImplementedException,"");
+  }
 
  private:
   IMessagePassingMng* m_parallel_mng;

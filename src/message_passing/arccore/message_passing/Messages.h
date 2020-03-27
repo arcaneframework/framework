@@ -110,6 +110,16 @@ namespace Arccore::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+inline Ref<IRequestList>
+mpCreateRequestListRef(IMessagePassingMng* pm)
+{
+  auto d = pm->dispatchers()->controlDispatcher();
+  return d->createRequestListRef();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 inline void
 mpWaitAll(IMessagePassingMng* pm, ArrayView<Request> requests)
 {

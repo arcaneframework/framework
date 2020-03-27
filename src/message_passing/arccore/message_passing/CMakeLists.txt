@@ -13,6 +13,7 @@ set(SOURCES
   PointToPointMessageInfo.cc
   Request.h
   Request.cc
+  IRequestList.h
   IStat.h
   IDispatchers.h
   ITypeDispatcher.h
