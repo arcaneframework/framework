@@ -38,7 +38,7 @@ if (TARGET trilinos)
 endif ()
 
 if (TARGET hpddm)
-    linkLibraries(alien_bench.exe ALIEN-HPDDM)
+    linkLibraries(alien_bench.exe alien_hpddm)
 endif ()
 
 commit(alien_bench.exe)

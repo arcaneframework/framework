@@ -24,7 +24,7 @@
 #include <alien/utils/trace/ObjectWithTrace.h>
 #include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
 #include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
-#include <ALIEN/Alien-HPDDMPrecomp.h>
+#include <ALIEN/AlienHPDDMPrecomp.h>
 
 #include <ALIEN/Kernels/HPDDM/LinearSolver/ILinearSolverDDM.h>
 #include <ALIEN/Kernels/HPDDM/DataStructure/HPDDMInternal.h>

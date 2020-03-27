@@ -2,11 +2,11 @@ if (NOT TARGET hpddm)
     return()
 endif ()
 
-createLibrary(ALIEN-HPDDM
-  EXPORT ALIEN/ALIEN-HPDDMExport.h
+createLibrary(alien_hpddm
+  EXPORT ALIEN/AlienHPDDMExport.h
   )
 
-set_target_properties(ALIEN-HPDDM
+set_target_properties(alien_hpddm
 		      PROPERTIES LINKER_LANGUAGE "CXX")
 
 if(TARGET arcane_core)
@@ -26,20 +26,20 @@ if(TARGET hpddm)
 endif()
 
 if(TARGET arcane_core)
-  linkLibraries(ALIEN-HPDDM arcane_core arcane_std)
+  linkLibraries(alien_hpddm arcane_core arcane_std)
 else ()
-  linkLibraries(ALIEN-HPDDM ALIEN-StrongOptions)
+  linkLibraries(alien_hpddm ALIEN-StrongOptions)
 endif()
 
-linkLibraries(ALIEN-HPDDM alien)
+linkLibraries(alien_hpddm alien)
 
-target_include_directories(ALIEN-HPDDM PUBLIC
+target_include_directories(alien_hpddm PUBLIC
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:include>)
 
-commit(ALIEN-HPDDM)
+commit(alien_hpddm)
 
 install(DIRECTORY ALIEN
 	DESTINATION include

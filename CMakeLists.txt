@@ -81,7 +81,7 @@ logStatus("Loading components...")
 add_subdirectory(modules/AlienOptions)
 add_subdirectory(modules/AlienExternalPackages)
 add_subdirectory(modules/trilinos)
-add_subdirectory(modules/AlienHPDDM)
+add_subdirectory(modules/hpddm)
 add_subdirectory(modules/AlienIFPENSolvers)
 add_subdirectory(modules/arcane_tools)
 

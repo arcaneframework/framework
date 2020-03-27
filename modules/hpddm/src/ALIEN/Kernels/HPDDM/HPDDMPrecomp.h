@@ -6,7 +6,7 @@
  */
 
 #include <alien/utils/Precomp.h>
-#include <ALIEN/Alien-HPDDMPrecomp.h>
+#include <ALIEN/AlienHPDDMPrecomp.h>
 
 #define BEGIN_HPDDMINTERNAL_NAMESPACE namespace Alien {   namespace HPDDMInternal {
 #define END_HPDDMINTERNAL_NAMESPACE }   }

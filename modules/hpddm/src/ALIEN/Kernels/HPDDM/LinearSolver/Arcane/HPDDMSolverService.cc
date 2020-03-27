@@ -14,11 +14,10 @@
 
 
 
-#include "alien/AlienLegacyConfig.h"
+#include <ALIEN/AlienHPDDMPrecomp.h>
 
 #include <ALIEN/Kernels/HPDDM/HPDDMPrecomp.h>
 #include <alien/utils/Precomp.h>
-#include <ALIEN/Alien-HPDDMPrecomp.h>
 #include <ALIEN/Kernels/HPDDM/HPDDMBackEnd.h>
 #include <alien/core/backend/LinearSolver.h>
 #include <ALIEN/Kernels/HPDDM/LinearSolver/HPDDMInternalSolver.h>

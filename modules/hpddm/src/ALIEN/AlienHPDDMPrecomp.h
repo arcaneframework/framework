@@ -8,7 +8,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "ALIEN/ALIEN-HPDDMExport.h"
+#include "ALIEN/AlienHPDDMExport.h"
 #include <alien/AlienLegacyConfig.h>
 
 #endif
