@@ -6,17 +6,17 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "StandaloneMpiMessagePassingMng.h"
+#include "arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h"
 
-#include <arccore/message_passing/Dispatchers.h>
-#include <arccore/message_passing/Stat.h>
-#include <arccore/trace/ITraceMng.h>
-#include <arccore/base/ReferenceCounter.h>
+#include "arccore/message_passing/Dispatchers.h"
+#include "arccore/message_passing/Stat.h"
+#include "arccore/trace/ITraceMng.h"
+#include "arccore/base/ReferenceCounter.h"
 
-#include "MpiAdapter.h"
-#include "MpiDatatype.h"
-#include "MpiTypeDispatcher.h"
-#include "MpiControlDispatcher.h"
+#include "arccore/message_passing_mpi/MpiAdapter.h"
+#include "arccore/message_passing_mpi/MpiDatatype.h"
+#include "arccore/message_passing_mpi/MpiTypeDispatcher.h"
+#include "arccore/message_passing_mpi/MpiControlDispatcher.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,8 +28,7 @@ class StandaloneMpiMessagePassingMng::Impl
 {
  public:
   explicit Impl(MPI_Comm mpi_comm, bool clean_comm=false)
-  : m_trace_mng(nullptr), m_stat(nullptr), m_dispatchers(nullptr),
-    m_adapter(nullptr), m_comm_rank(-1), m_comm_size(-1), m_communicator(mpi_comm)
+  : m_communicator(mpi_comm), m_clean_comm(clean_comm)
   {
     m_trace_mng = Arccore::arccoreCreateDefaultTraceMng();
     ::MPI_Comm_rank(mpi_comm, &m_comm_rank);
@@ -56,15 +55,16 @@ class StandaloneMpiMessagePassingMng::Impl
   {
     return MpiMessagePassingMng::BuildInfo(m_comm_rank,m_comm_size,m_dispatchers,m_communicator);
   }
+
  public:
   ReferenceCounter<ITraceMng> m_trace_mng;
-  IStat* m_stat;
-  Dispatchers* m_dispatchers;
-  MpiAdapter* m_adapter;
-  int m_comm_rank;
-  int m_comm_size;
-  MPI_Comm m_communicator;
-  bool m_clean_comm;
+  IStat* m_stat = nullptr;
+  Dispatchers* m_dispatchers = nullptr;
+  MpiAdapter* m_adapter = nullptr;
+  int m_comm_rank = A_NULL_RANK;
+  int m_comm_size = A_NULL_RANK;
+  MPI_Comm m_communicator = MPI_COMM_NULL;
+  bool m_clean_comm = false;
 };
 
 /*---------------------------------------------------------------------------*/
