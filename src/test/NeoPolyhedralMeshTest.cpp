@@ -626,10 +626,23 @@ TEST(PolyhedralTest,ImportXdmfPolyhedronMesh)
   EXPECT_TRUE(std::equal(cell_uids.begin(),cell_uids.end(),cell_uids_ref.begin(),cell_uids_ref.end()));
   EXPECT_EQ(27,face_uids.size());
   EXPECT_EQ(geometry->getNumberPoints(), node_uids_set.size());
+  // get face cells by reversing connectivity
+  std::vector<Neo::utils::Int64> face_cells;
+  std::vector<Neo::utils::Int64> connected_face_uids;
+  std::vector<size_t> nb_cell_per_faces;
+  StaticMesh::utilities::reverseConnectivity(cell_uids,cell_faces,nb_face_per_cells,
+                                             connected_face_uids,face_cells,nb_cell_per_faces);
+  _printContainer(face_cells, "  Face cells ");
+  _printContainer(nb_cell_per_faces, "  Nb cell per faces ");
   // import mesh in Neo data structure
   auto mesh = Neo::Mesh{"'ImportedMesh"};
-  PolyhedralMeshTest::_createMesh(mesh, node_uids,cell_uids,face_uids,node_coords,cell_nodes,cell_faces,face_nodes,
-      std::move(nb_node_per_cells),std::move(nb_face_per_cells),std::move(nb_node_per_faces));
+  PolyhedralMeshTest::_createMesh(mesh, node_uids,cell_uids,face_uids,
+                                  node_coords,cell_nodes,cell_faces,
+                                  face_nodes, face_cells,
+                                  std::move(nb_node_per_cells),
+                                  std::move(nb_face_per_cells),
+                                  std::move(nb_node_per_faces),
+                                  std::move(nb_cell_per_faces));
   std::string imported_mesh{"imported_mesh.xmf"};
   XdmfTest::exportMesh(mesh,imported_mesh);
   // Compare with original mesh
