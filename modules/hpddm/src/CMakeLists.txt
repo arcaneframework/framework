@@ -28,7 +28,7 @@ endif()
 if(TARGET arcane_core)
   linkLibraries(alien_hpddm arcane_core arcane_std)
 else ()
-  linkLibraries(alien_hpddm ALIEN-StrongOptions)
+  linkLibraries(alien_hpddm alien_strong_options)
 endif()
 
 linkLibraries(alien_hpddm alien)

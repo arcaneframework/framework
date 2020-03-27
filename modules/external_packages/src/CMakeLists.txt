@@ -39,7 +39,7 @@ endif()
 if (TARGET arcane_core)
     linkLibraries(alien_external_packages arcane_core arcane_std)
 else ()
-    linkLibraries(alien_external_packages ALIEN-StrongOptions)
+    linkLibraries(alien_external_packages alien_strong_options)
 endif()
 
 if(TARGET umfpack)

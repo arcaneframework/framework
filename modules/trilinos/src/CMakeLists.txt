@@ -29,7 +29,7 @@ endif ()
 if (TARGET arcane_core)
     linkLibraries(alien_trilinos arcane_core arcane_std)
 else ()
-    linkLibraries(alien_trilinos ALIEN-StrongOptions)
+    linkLibraries(alien_trilinos alien_strong_options)
 endif ()
 
 if (TARGET umfpack)

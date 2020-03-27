@@ -78,7 +78,7 @@ enable_testing()
 message_separator()
 logStatus("Loading components...")
 
-add_subdirectory(modules/AlienOptions)
+add_subdirectory(modules/options)
 add_subdirectory(modules/external_packages)
 add_subdirectory(modules/trilinos)
 add_subdirectory(modules/hpddm)
@@ -108,7 +108,7 @@ endif ()
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-add_subdirectory(modules/AlienOpensourcePlugins)
+add_subdirectory(modules/plugins)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------

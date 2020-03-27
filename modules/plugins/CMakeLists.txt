@@ -2,8 +2,8 @@ if (NOT TARGET arcane_core OR NOT TARGET alien_hypre)
     return()
 endif ()
 
-createLibrary(ALIEN-OpensourceArcaneSolvers
-        EXPORT ALIEN/ALIEN-OpensourceArcaneSolversExport.h
+createLibrary(alien_plugins_solvers
+        EXPORT alien/AlienOpensourceArcaneSolversExport.h
         )
 
 set(AXL_OPTION_GENERATION_TYPE "ALL")
@@ -11,7 +11,7 @@ set(NAMESPACE_TYPE "Arccore")
 set(IS_WITH_ARCANE "")
 set(IS_WITH_MESH "NO_MESH")
 
-generateAxl(ALIEN-OpensourceArcaneSolvers
+generateAxl(alien_plugins_solvers
         hypre/src/OSHypreSolver.axl
         AXL_OPTION_GENERATION_MODE ${AXL_OPTION_GENERATION_TYPE}
         NAMESPACE ${NAMESPACE_TYPE}
@@ -20,17 +20,17 @@ generateAxl(ALIEN-OpensourceArcaneSolvers
         INSTALL_GENERATED_FILES
         )
 
-addSources(ALIEN-OpensourceArcaneSolvers
+addSources(alien_plugins_solvers
         hypre/src/OSHypreLinearSolverService.cc
         )
 
-linkLibraries(ALIEN-OpensourceArcaneSolvers
+linkLibraries(alien_plugins_solvers
         alien_hypre
         arcane_core
         arcane_std
         )
 
-target_include_directories(ALIEN-OpensourceArcaneSolvers PUBLIC
+target_include_directories(alien_plugins_solvers PUBLIC
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -41,6 +41,6 @@ install(TARGETS alien_hypre
         EXPORT ALIENTargets
         )
 
-commit(ALIEN-OpensourceArcaneSolvers)
+commit(alien_plugins_solvers)
 
 add_subdirectory(hypre/test)

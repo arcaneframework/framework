@@ -36,7 +36,7 @@ endif()
 if(TARGET arcane_core)
   linkLibraries(alien_ifpen_solvers arcane_core arcane_std)
 else ()
-    linkLibraries(alien_ifpen_solvers ALIEN-StrongOptions)
+    linkLibraries(alien_ifpen_solvers alien_strong_options)
 endif()
 
 if(TARGET umfpack)
