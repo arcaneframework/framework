@@ -1,13 +1,13 @@
 #include <gtest/gtest.h>
 
 #include <ALIEN/AlienExternalPackages.h>
-#include <ALIEN/Alien-RefSemantic.h>
+#include <ALIEN/AlienRefSemantic.h>
 
 #ifdef ALIEN_USE_MCGSOLVER
-#include <ALIEN/Kernels/mcg/linear_solver/arcane/GPULinearSolver.h>
-#include <ALIEN/Kernels/mcg/linear_solver/GPUOptionTypes.h>
-#include <ALIEN/axl/GPUSolver_IOptions.h>
-#include <ALIEN/axl/GPUSolver_StrongOptions.h>
+#include <ALIEN/Kernels/mcg/linear_solver/arcane/MCGLinearSolver.h>
+#include <ALIEN/Kernels/mcg/linear_solver/MCGOptionTypes.h>
+#include <ALIEN/axl/MCGSolver_IOptions.h>
+#include <ALIEN/axl/MCGSolver_StrongOptions.h>
 #endif
 
 namespace Environment {
@@ -79,16 +79,16 @@ TEST(TestCompositeMatrixToMCG, CompositeMCGTest) {
   ASSERT_EQ(nbSubMatrices*size, v.rowSpace().size());
   ASSERT_EQ(nbSubMatrices*size, v.colSpace().size());
   //
-  using namespace GPUSolverOptionsNames;
-  std::shared_ptr<IOptionsGPUSolver> options(new StrongOptionsGPUSolver{
+  using namespace MCGSolverOptionsNames;
+  std::shared_ptr<IOptionsMCGSolver> options(new StrongOptionsMCGSolver{
 	  _output = 1
 	  , _maxIterationNum = 1000
 	  , _stopCriteriaValue = 1e-6
-	  , _kernel = GPUOptionTypes::eKernelType::MCKernel
-	  , _solver = GPUOptionTypes::eSolver::BiCGStab
-	  , _preconditioner = GPUOptionTypes::ePreconditioner::ILU0PC
+	  , _kernel = MCGOptionTypes::eKernelType::CPU_CBLAS_BCSR
+	  , _solver = MCGOptionTypes::eSolver::BiCGStab
+	  , _preconditioner = MCGOptionTypes::ePreconditioner::ILU0PC
   });
-  auto* solver = new Alien::GPULinearSolver(Environment::parallelMng(), options);
+  auto* solver = new Alien::MCGLinearSolver(Environment::parallelMng(), options);
   //
   solver->init();
   solver->solve(v,vec,vecSol);

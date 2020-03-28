@@ -57,10 +57,10 @@
 #include <ALIEN/axl/IFPLinearSolver_StrongOptions.h>
 #endif
 #ifdef ALIEN_USE_MCGSOLVER
-#include <ALIEN/Kernels/mcg/linear_solver/arcane/GPULinearSolver.h>
-#include <ALIEN/Kernels/mcg/linear_solver/GPUOptionTypes.h>
-#include <ALIEN/axl/GPUSolver_IOptions.h>
-#include <ALIEN/axl/GPUSolver_StrongOptions.h>
+#include <ALIEN/Kernels/mcg/linear_solver/arcane/MCGLinearSolver.h>
+#include <ALIEN/Kernels/mcg/linear_solver/MCGOptionTypes.h>
+#include <ALIEN/axl/MCGSolver_IOptions.h>
+#include <ALIEN/axl/MCGSolver_StrongOptions.h>
 #endif
 
 #include <Tests/Environment.h>
@@ -174,19 +174,19 @@ extern std::shared_ptr<Alien::ILinearSolver> createSolver(boost::program_options
   {
 #ifdef ALIEN_USE_MCGSOLVER
     std::string precond_type_s = vm["precond"].as<std::string>();
-    GPUOptionTypes::ePreconditioner precond_type = OptionsGPUSolverUtils::stringToPreconditionerEnum(precond_type_s);
+    MCGOptionTypes::ePreconditioner precond_type = OptionsMCGSolverUtils::stringToPreconditionerEnum(precond_type_s);
     std::string kernel_type_s = vm["kernel"].as<std::string>();
-    GPUOptionTypes::eKernelType kernel_type = OptionsGPUSolverUtils::stringToKernelEnum(kernel_type_s);
+    MCGOptionTypes::eKernelType kernel_type = OptionsMCGSolverUtils::stringToKernelEnum(kernel_type_s);
     // options
-    auto options = std::make_shared<StrongOptionsGPUSolver>(
-							    GPUSolverOptionsNames::_output = vm["output-level"].as<int>(),
-							    GPUSolverOptionsNames::_maxIterationNum = max_iter,
-							    GPUSolverOptionsNames::_stopCriteriaValue = tol,
-							    GPUSolverOptionsNames::_kernel = kernel_type,
-							    GPUSolverOptionsNames::_preconditioner = precond_type
+    auto options = std::make_shared<StrongOptionsMCGSolver>(
+							    MCGSolverOptionsNames::_output = vm["output-level"].as<int>(),
+                  MCGSolverOptionsNames::_maxIterationNum = max_iter,
+                  MCGSolverOptionsNames::_stopCriteriaValue = tol,
+                  MCGSolverOptionsNames::_kernel = kernel_type,
+                  MCGSolverOptionsNames::_preconditioner = precond_type
 							    );
     // service
-    return std::make_shared<Alien::GPULinearSolver>(pm, options);
+    return std::make_shared<Alien::MCGLinearSolver>(pm, options);
 #else
     tm->fatal() << "*** package " << solver_package << " not available!";
 #endif

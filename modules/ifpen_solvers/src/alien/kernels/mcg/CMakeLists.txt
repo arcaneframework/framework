@@ -7,11 +7,13 @@ addSources(alien_ifpen_solvers
     converters/Composite/Composite_to_MCG_VectorConverter.cc
     converters/Composite/Composite_to_MCG_MatrixConverter.cc
     data_structure/MCGVector.cc
+    data_structure/MCGCompositeVector.cc
     data_structure/MCGMatrix.cc
+    data_structure/MCGCompositeMatrix.cc
     )
 
 generateAxl(alien_ifpen_solvers
-    linear_solver/arcane/GPUSolver.axl
+    linear_solver/arcane/MCGSolver.axl
     AXL_OPTION_GENERATION_MODE ${AXL_OPTION_GENERATION_TYPE}
     NAMESPACE ${NAMESPACE_TYPE}
     ${IS_WITH_ARCANE}
@@ -20,15 +22,7 @@ generateAxl(alien_ifpen_solvers
     )
 
 addSources(alien_ifpen_solvers
-    linear_solver/arcane/GPULinearSolver.cc
+    linear_solver/arcane/MCGLinearSolver.cc
     )
 
-linkLibraries(alien_ifpen_solvers mcgsolver nvamg hwloc metis hdf5)
-
-if(TARGET harts)
-  linkLibraries(alien_ifpen_solvers harts)
-endif()
-
-if(TARGET tbb)
-  linkLibraries(alien_ifpen_solvers tbb)
-endif()
+linkLibraries(alien_ifpen_solvers mcgsolver nvamg hwloc metis hdf5 cuda)

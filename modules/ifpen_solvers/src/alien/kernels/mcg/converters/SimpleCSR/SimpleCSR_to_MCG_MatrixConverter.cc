@@ -29,10 +29,6 @@ public:
   //void convert(const IMatrixImpl * sourceImpl, IMatrixImpl * targetImpl, int i, int j) const;
 
   void _build(const SimpleCSRMatrix<Real> & sourceImpl, MCGMatrix & targetImpl) const;
-  void _buildBlock(const SimpleCSRMatrix<Real> & sourceImpl, MCGMatrix & targetImpl) const;
-  void _buildSubMatrix01(const SimpleCSRMatrix<Real> & sourceImpl, MCGMatrix & targetImpl) const;
-  void _buildSubMatrix10(const SimpleCSRMatrix<Real> & sourceImpl, MCGMatrix & targetImpl) const;
-  void _buildSubMatrix11(const SimpleCSRMatrix<Real> & sourceImpl, MCGMatrix & targetImpl) const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -56,9 +52,7 @@ convert(const IMatrixImpl * sourceImpl, IMatrixImpl * targetImpl) const
       cout() << "Converting SimpleCSRMatrix: " << &v << " to MCGMatrix " << &v2;
     });
 
-  if(sourceImpl->block())
-    _buildBlock(v,v2);
-  else if(sourceImpl->vblock())
+  if(sourceImpl->vblock())
     throw FatalErrorException(A_FUNCINFO,"Block sizes are variable - builds not yet implemented");
   else
     _build(v,v2);
@@ -69,38 +63,6 @@ SimpleCSR_to_MCG_MatrixConverter::
 _build(const SimpleCSRMatrix<Real> & sourceImpl, MCGMatrix & targetImpl) const
 {
   const CSRStructInfo & profile = sourceImpl.getCSRProfile();
-  const Integer localSize = profile.getNRow();
-  const SimpleCSRMatrix<Real>::MatrixInternal& matrixInternal = sourceImpl.internal();
-
-  targetImpl.setBlockSize(1,1);
-
-  ConstArrayView<Integer> row_offset = profile.getRowOffset();
-  ConstArrayView<Integer> cols = profile.getCols();
-  ConstArrayView<Real> values = matrixInternal.getValues();
-  if (not targetImpl.initMatrix(localSize,
-                                row_offset.unguardedBasePointer(),
-                                cols.unguardedBasePointer()))
-  {
-    throw FatalErrorException(A_FUNCINFO,"GPUSolver Initialisation failed");
-  }
-
-
-  const bool success = targetImpl.initMatrixValues(localSize,
-						   row_offset.unguardedBasePointer(),
-						   cols.unguardedBasePointer(),
-						   values.unguardedBasePointer());
-
-  if (not success)
-  {
-    throw FatalErrorException(A_FUNCINFO,"Cannot set GPUSolver Matrix Values");
-  }
-}
-
-void
-SimpleCSR_to_MCG_MatrixConverter::
-_buildBlock(const SimpleCSRMatrix<Real> & sourceImpl, MCGMatrix & targetImpl) const
-{
-  const CSRStructInfo & profile = sourceImpl.getCSRProfile();
   const Integer local_size = profile.getNRow();
   const Integer block_size = sourceImpl.block()->size();
   targetImpl.setBlockSize(block_size,block_size);
@@ -109,21 +71,25 @@ _buildBlock(const SimpleCSRMatrix<Real> & sourceImpl, MCGMatrix & targetImpl) co
 
   const SimpleCSRMatrix<Real>::MatrixInternal& matrixInternal = sourceImpl.internal();
   ConstArrayView<Real> values = matrixInternal.getValues();
-  if (not targetImpl.initMatrix(local_size,
+  int block_size = 1;
+  int block_size2 = 1;
+  if(sourceImpl.block())
+  {
+    block_size = sourceImpl.block()->sizeX();
+    block_size2 = sourceImpl.block()->sizeY();
+  }
+  if (not targetImpl.initMatrix(block_size,block_size2,local_size,
 				row_offset.unguardedBasePointer(),
 				cols.unguardedBasePointer()))
   {
-    throw FatalErrorException(A_FUNCINFO,"GPUSolver Initialisation failed");
+    throw FatalErrorException(A_FUNCINFO,"MCGSolver Initialisation failed");
   }
 
-  const bool success = targetImpl.initMatrixValues(local_size,
-                                                   row_offset.unguardedBasePointer(),
-                                                   cols.unguardedBasePointer(),
-                                                   values.unguardedBasePointer());
+  const bool success = targetImpl.initMatrixValues(values.unguardedBasePointer());
 
   if (not success)
   {
-    throw FatalErrorException(A_FUNCINFO,"Cannot set GPUSolver Matrix Values");
+    throw FatalErrorException(A_FUNCINFO,"Cannot set MCGSolver Matrix Values");
   }
 }
 

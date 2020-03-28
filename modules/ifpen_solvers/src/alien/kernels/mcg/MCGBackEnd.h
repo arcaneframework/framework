@@ -18,6 +18,8 @@ namespace Alien {
 class MultiVectorImpl;
 class MCGMatrix;
 class MCGVector;
+class MCGCompositeMatrix;
+class MCGCompositeVector;
 class MatrixData;
 class MatrixExp;
 class VectorData;
@@ -37,6 +39,7 @@ MCGInternalLinearSolverFactory(IParallelMng* p_mng, IOptionsMCGSolver* options);
 namespace BackEnd {
   namespace tag {
     struct mcgsolver {} ;
+    struct mcgsolver_composite {};
   }
 }
 
@@ -58,7 +61,27 @@ struct AlgebraTraits<BackEnd::tag::mcgsolver>  {
   }
 
   static BackEndId name() { return "mcgsolver"; }
-} ;
+};
+
+template<>
+struct AlgebraTraits<BackEnd::tag::mcgsolver_composite>  {
+  typedef MCGCompositeMatrix matrix_type;
+  typedef MCGCompositeVector vector_type;
+
+  typedef IOptionsMCGSolver options_type;
+  typedef ILinearAlgebra algebra_type;
+  typedef ILinearSolver solver_type;
+
+  static algebra_type* algebra_factory() {
+    return MCGInternalLinearAlgebraFactory();
+  }
+
+  static solver_type* solver_factory(IParallelMng* p_mng, options_type* options) {
+    return MCGInternalLinearSolverFactory(p_mng, options);
+  }
+
+  static BackEndId name() { return "mcgsolver_composite"; }
+};
 
 /*---------------------------------------------------------------------------*/
 

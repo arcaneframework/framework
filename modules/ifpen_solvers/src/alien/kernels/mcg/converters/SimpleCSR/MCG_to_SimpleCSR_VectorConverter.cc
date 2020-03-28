@@ -46,7 +46,7 @@ convert(const IVectorImpl * sourceImpl, IVectorImpl * targetImpl) const
 
   //v.getValues(space.localSize(), v2.getDataPtr());
   ArrayView<Real> values = v2.getValuesView();
-  v.getValues(values.size(), values.unguardedBasePointer());
+  v.getValues(values.unguardedBasePointer());
 }
 
 /*---------------------------------------------------------------------------*/

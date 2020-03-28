@@ -48,7 +48,7 @@ convert(const IVectorImpl * sourceImpl, IVectorImpl * targetImpl) const
 
   ConstArrayView<Real> values = v.values();
   //v2.setValues(sourceImpl->distribution().localSize(),dataPtr(values));
-  v2.setValues(values.size(),dataPtr(values));
+  v2.setValues(dataPtr(values));
 }
 
 /*

@@ -35,7 +35,7 @@ namespace Environment {
           boost::program_options::value<int>()->default_value(1),
           "nb of tests for perf measure")
       ("kernel",
-          boost::program_options::value<std::string>()->default_value("mckernel"),
+          boost::program_options::value<std::string>()->default_value("CPUCBLAS"),
           "mcgsolver kernel name")
       ("output-level",
           boost::program_options::value<int>()->default_value(0),

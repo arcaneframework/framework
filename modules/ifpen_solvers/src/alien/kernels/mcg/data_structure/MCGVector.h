@@ -44,26 +44,18 @@ public:
   void free() { }
   void clear() { }
 
+public:
+  void setValues(double const* values);
+  void getValues(double* values) const;
 
 public:
-
-  void setValues(const int nrows, double const* values) ;
-  void setExtraEqValues(const int nrows, double const* values) ;
-
-  void getValues(const int nrows, double* values) const ;
-
-public:
-  // Méthodes restreintes à usage interne de l'implémentation PETSc
-  VectorInternal * internal() { return m_internal ; }
-  const VectorInternal * internal() const{ return m_internal ; }
+  VectorInternal * internal() { return m_internal; }
+  const VectorInternal * internal() const{ return m_internal; }
 
   void update(const MCGVector & v);
  
-private:
-  bool assemble();
-
 private :
-  VectorInternal * m_internal;
+  VectorInternal *m_internal = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -9,7 +9,7 @@
  *  can be only included by LinearSystem and LinearSolver
  */
 #include <alien/kernels/mcg/MCGPrecomp.h>
-
+#include <MCGS.h>
 /*---------------------------------------------------------------------------*/
 
 BEGIN_MCGINTERNAL_NAMESPACE
@@ -23,94 +23,27 @@ inline void checkParallel(bool)
 
 }
 
-
-template<int N>
-struct CSRStruct
-{
-
-  typedef GPUSolver::MatrixStruct          MatrixStruct ;
-  typedef BCSR::BCSRMatrix<double,N>           MatrixBN ;
-  typedef typename MatrixBN::Block2DType   MatrixBNValue ;
-  typedef double                           VectorBNValue ;
-  typedef BCSR::BCSRMatrix<double,1,double,N>  MatrixB1xN;
-  typedef typename MatrixB1xN::Block2DType MatrixB1xNValue;
-
-  CSRStruct()
-  : m_values(NULL)
-  , m_matrix(NULL)
-  , m_cmatrix2matrix(NULL)
-  , m_matrix2cmatrix(NULL)
-  {}
-
-  virtual ~CSRStruct() {
-    delete m_matrix ;
-    delete m_cmatrix2matrix ;
-    delete m_matrix2cmatrix ;
-  }
-
-  void init(MatrixStruct* matrix_struct,Real const* values) {
-    m_values = (MatrixBNValue*) values ;
-    m_matrix = new MatrixBN(matrix_struct,m_values) ;
-  }
-
-  void initExtraEqRow(MatrixStruct* matrix_struct,Real const* values) {
-    m_cmatrix2matrix = new MatrixB1xN(matrix_struct,(MatrixB1xNValue*)values) ;
-  }
-
-  void initExtraEqCol(MatrixStruct* matrix_struct,Real const* values) {
-    m_matrix2cmatrix = new MatrixB1xN(matrix_struct,(MatrixB1xNValue*)values) ;
-  }
-
-  MatrixBNValue*      m_values ;
-  MatrixBN*           m_matrix;
-  MatrixB1xN*         m_cmatrix2matrix;
-  MatrixB1xN*         m_matrix2cmatrix;
-};
-
 /*---------------------------------------------------------------------------*/
 
 class MatrixInternal
 {
 public :
-  typedef GPUSolver::MatrixStruct  MatrixStruct ;
-  typedef BCSR::BCSRMatrix<double,1>   MatrixB1 ;
-  typedef MatrixB1::Block2DType    MatrixB1Value ;
+  typedef MCGSolver::CSRProfile ProfileType;
+  typedef MCGSolver::BCSRMatrix<double> MatrixType;
 
-
-  MatrixStruct*       m_struct ;
-  MatrixStruct*       m_extra_block11_struct ;
-  MatrixStruct*       m_extra_block01_struct ;
-
-  MatrixB1*    m_cmatrix ;
-  CSRStruct<1> m_csr_b1 ;
-  CSRStruct<2> m_csr_b2 ;
-  CSRStruct<3> m_csr_b3 ;
-  CSRStruct<4> m_csr_b4 ;
-
-
-  Integer             m_equations_num ;
+  //MatrixType *m_matrix = nullptr;
+  MatrixType* m_matrix[2][2] = {{nullptr,nullptr},{nullptr,nullptr}};
 
   MatrixInternal()
-  : m_struct(NULL)
-  , m_extra_block11_struct(NULL)
-  , m_extra_block01_struct(NULL)
-  , m_cmatrix(NULL)
   {}
 
   ~MatrixInternal()
   {
-      delete m_struct;
-      delete m_extra_block11_struct;
-      delete m_extra_block01_struct;
-      delete m_cmatrix ;
-   }
-
-  template<int N>
-  CSRStruct<N>& getCSRStruct() ;
-
-  template<int N>
-  CSRStruct<N> const& getCSRStruct() const;
-
+    delete m_matrix[0][0];
+    delete m_matrix[0][1];
+    delete m_matrix[1][0];
+    delete m_matrix[1][1];
+  }
 };
 
 
@@ -119,31 +52,31 @@ public :
 class VectorInternal
 {
 public :
-  VectorInternal(int nrow)
-  : m_internal(nrow,true)
-  , m_extra_eq_internal(0)
+  VectorInternal(int nrow,int block_size)
+  : m_bvector(nrow,block_size)
   {
-    ;
+
   }
 
-  void init(int nrow,
-            double* values)
+  MCGSolver::BVector<double> m_bvector;
+};
+
+/*---------------------------------------------------------------------------*/
+
+class CompositeVectorInternal
+{
+public:
+  CompositeVectorInternal(const std::vector<std::pair<int,int>>& composite_info)
   {
-    m_internal.init(nrow,values) ;
+    m_bvector.reserve(composite_info.size());
+
+    for(const auto &p : composite_info)
+    {
+      m_bvector.emplace_back(p.first,p.second);
+    }
   }
 
-  void initExtraEq(int nrow,
-                   double* values)
-  {
-    m_extra_eq_internal.init(nrow,values) ;
-  }
-
-
-
-  Alien::GPUInternal::Vector m_internal ;
-
-  Alien::GPUInternal::Vector m_extra_eq_internal ;
-
+  std::vector<MCGSolver::BVector<double>> m_bvector;
 };
 
 /*---------------------------------------------------------------------------*/

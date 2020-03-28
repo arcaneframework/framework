@@ -22,14 +22,15 @@
 #include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
 #include <alien/AlienIFPENSolversPrecomp.h>
 
-class IOptionsGPUSolver;
+class IOptionsMCGSolver;
 
 namespace Alien {
 
 class SolverStater;
 
-class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
-                                                          public ObjectWithTrace
+class ALIEN_EXTERNALPACKAGES_EXPORT MCGInternalLinearSolver
+: public ILinearSolver
+  , public ObjectWithTrace
 {
  private:
   typedef SolverStatus Status;
@@ -38,13 +39,18 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
 
   typedef MCGInternal::MatrixInternal  MCGMatrixType;
   typedef MCGInternal::VectorInternal  MCGVectorType;
+  typedef MCGInternal::CompositeVectorInternal MCGCompositeVectorType;
+
   typedef SimpleCSRMatrix<Real>      CSRMatrixType;
   typedef SimpleCSRVector<Real>      CSRVectorType;
   typedef SimpleCSRInternal::MatrixInternal<Real>  CSRInternalMatrixType;
 
  public:
+  MCGInternalLinearSolver() = delete;
+  MCGInternalLinearSolver(const MCGInternalLinearSolver&) = delete;
+
   /** Constructeur de la classe */
-  MCGInternalLinearSolver(IParallelMng* parallel_mng = nullptr, IOptionsGPUSolver* options = nullptr);
+  MCGInternalLinearSolver(IParallelMng* parallel_mng = nullptr, IOptionsMCGSolver* options = nullptr);
 
   /** Destructeur de la classe */
   virtual ~MCGInternalLinearSolver();
@@ -100,118 +106,96 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
 
  private:
 
-  bool _solve(MCGMatrixType const& A, MCGVectorType const& b, MCGVectorType& x) ;
-  bool _solve(MCGMatrixType const& A, MCGVectorType const& b, MCGVectorType& x, MCGVectorType& x0) ;
+  bool _solve(const MCGMatrixType& A,const MCGVectorType& b,MCGVectorType& x,
+      MCGSolver::PartitionInfo* part_info=nullptr);
+  bool _solve(const MCGMatrixType& A,const MCGVectorType& b,const MCGVectorType& x0,MCGVectorType& x,
+      MCGSolver::PartitionInfo* part_info=nullptr);
 
-  bool _solve(MCGMatrixType const& A,MCGVectorType const& diag_scal,MCGVectorType const& b, MCGVectorType& x);
-  bool _solve(MCGMatrixType const& A,MCGVectorType const& diag_scal,MCGVectorType const& b, MCGVectorType& x, MCGVectorType& x0);
+  bool _solve(const MCGMatrixType& A,const MCGCompositeVectorType& b,MCGCompositeVectorType& x,
+      MCGSolver::PartitionInfo* part_info=nullptr);
+  bool _solve(const MCGMatrixType& A,const MCGCompositeVectorType& b,
+      const MCGCompositeVectorType& x0,MCGCompositeVectorType& x,
+      MCGSolver::PartitionInfo* part_info=nullptr);
 
-  bool _solveMC(CSRMatrixType const& A, CSRVectorType const& b, CSRVectorType& x) ;
-  bool _solve(CSRMatrixType const& A, CSRVectorType const& b, CSRVectorType& x) ;
+
   void updateLinearSystem();
   inline void _startPerfCount();
   inline void _endPerfCount();
 
-  template<int N>
-  GPUSolver::System* _createSystem(MCGMatrixType const& A,
-                                   MCGVectorType const& b,
-                                   MCGVectorType& x) ;
-  template<int N>
-  GPUSolver::System* _createSystem(MCGMatrixType const& A,
-                                   MCGVectorType const& diag_scal,
-                                   MCGVectorType const& b,
-                                   MCGVectorType& x) ;
-
-  template<int N>
-  GPUSolver::System* _createSystem(MCGMatrixType const& A,
-                                   MCGVectorType const& b,
+  MCGSolver::LinearSystem* _createSystem(const MCGMatrixType& A,
+                                   const MCGVectorType& b,
                                    MCGVectorType& x,
-                                   MCGVectorType& x0) ;
-  template<int N>
-  GPUSolver::System* _createSystem(MCGMatrixType const& A,
-                                   MCGVectorType const& diag_scal,
-                                   MCGVectorType const& b,
+                                   MCGSolver::PartitionInfo* part_info=nullptr);
+
+  MCGSolver::LinearSystem* _createSystem(const MCGMatrixType& A,
+                                   const MCGVectorType& b,
+                                   const MCGVectorType& x0,
                                    MCGVectorType& x,
-                                   MCGVectorType& x0) ;
+                                   MCGSolver::PartitionInfo* part_info=nullptr);
 
-  GPUSolver::System* _computeGPUSystem(MCGMatrixType const& A,
-                                       MCGVectorType const& b,
-                                       MCGVectorType& x,
-                                       Integer equations_num) ;
+  MCGSolver::LinearSystem* _createSystem(const MCGMatrixType& A,
+                                   const MCGCompositeVectorType& b,
+                                   MCGCompositeVectorType& x,
+                                   MCGSolver::PartitionInfo* part_info=nullptr);
 
-  GPUSolver::System* _computeGPUSystem(MCGMatrixType const& A,
-                                       MCGVectorType const& b,
-                                       MCGVectorType& x,
-                                       MCGVectorType& x0,
-                                       Integer equations_num) ;
+  MCGSolver::LinearSystem* _createSystem(const MCGMatrixType& A,
+                                   const MCGCompositeVectorType& b,
+                                   const MCGCompositeVectorType& x0,
+                                   MCGCompositeVectorType& x,
+                                   MCGSolver::PartitionInfo* part_info=nullptr);
 
-  GPUSolver::System* _computeGPUSystem(MCGMatrixType const& A,
-                                       MCGVectorType const& diag_scal,
-                                       MCGVectorType const& b,
-                                       MCGVectorType& x,
-                                       Integer equations_num) ;
-
- GPUSolver::System* _computeGPUSystem(MCGMatrixType const& A,
-                                       MCGVectorType const& diag_scal,
-                                       MCGVectorType const& b,
-                                       MCGVectorType& x,
-                                       MCGVectorType& x0,
-                                       Integer equations_num) ;
  protected :
 
-  GPUSolver* m_gpu_solver ;
+  MCGSolver::LinearSolver* m_solver = nullptr;
  private:
   //! Structure interne du solveur
+  bool m_use_mpi = false;
+  IParallelMng*                m_parallel_mng = nullptr;
+  MCGSolver::MachineInfo*      m_machine_info = nullptr;
+  MCGSolver::MPIInfo*          m_mpi_info = nullptr;
 
-  bool m_use_mpi ;
-  IParallelMng*                m_parallel_mng ;
-  MCGSolver::MachineInfo       m_machine_info ;
-  MCGSolver::MPIInfo*           m_mpi_info;
-  MCGSolver::ParallelContext<MCGSolver::PartitionInfo>*  m_parallel_context ;
-
-  //Status m_status;
-  GPUSolver::Status m_mcgs_status;
+  MCGSolver::Status m_mcg_status;
   Alien::SolverStatus m_status;
 
   //!Preconditioner options
-  GPUOptionTypes::ePreconditioner m_precond_opt ;
+  MCGOptionTypes::ePreconditioner m_precond_opt = MCGOptionTypes::NonePC;
 
   //!Solver parameters
-  GPUOptionTypes::eSolver m_solver_opt;
-  Integer m_max_iteration ;
-  Real m_precision ;
+  MCGOptionTypes::eSolver m_solver_opt = MCGOptionTypes::BiCGStab;
+  Integer m_max_iteration = 1000;
+  Real m_precision = 1e-6;
 
   //!Linear system builder options
   //!@{
-  bool m_use_unit_diag ;
-  bool m_keep_diag_opt ;
-  Integer  m_normalize_opt ;
+  bool m_use_unit_diag = false;
+  bool m_keep_diag_opt = false;
+  Integer  m_normalize_opt = 0;
   //!@}
 
-  String m_matrix_file_name ;
+  String m_matrix_file_name;
 
   // multithread options
-  bool m_use_thread;
-  Integer m_num_thread;
+  bool m_use_thread = false;
+  Integer m_num_thread = 0;
 
-  int m_current_ctx_id ;
+  int m_current_ctx_id = 0;
 
-  Integer m_output_level ;
+  Integer m_output_level = 0;
 
-  Integer m_solve_num;
-  Integer m_total_iter_num;
-  Real m_current_solve_time;
-  Real m_total_solve_time;
-  Real m_current_system_time;
-  Real m_total_system_time;
-  Real m_int_total_solve_time;
-  Real m_int_total_setup_time;
-  Real m_int_total_finish_time;
+  Integer m_solve_num = 0;
+  Integer m_total_iter_num = 0;
+  Real m_current_solve_time = 0;
+  Real m_total_solve_time = 0;
+  Real m_current_system_time = 0;
+  Real m_total_system_time = 0;
+  Real m_int_total_solve_time = 0;
+  Real m_int_total_setup_time = 0;
+  Real m_int_total_finish_time = 0;
 
-  SolverStat   m_stat ;
+  SolverStat   m_stat;
   SolverStater m_stater;
 
-  IOptionsGPUSolver* m_options;
+  IOptionsMCGSolver* m_options = nullptr;
   std::vector<double>  m_pressure_diag; 
 
   std::string m_dir;
