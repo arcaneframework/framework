@@ -27,6 +27,8 @@ set(SOURCES
   MpiControlDispatcher.h
   MpiControlDispatcher.cc
   MpiRequest.h
+  MpiRequestList.h
+  MpiRequestList.cc
   MpiTypeDispatcher.h
   MpiTypeDispatcherImpl.h
   MpiTypeDispatcher.cc
