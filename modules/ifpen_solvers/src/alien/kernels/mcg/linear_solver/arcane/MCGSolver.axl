@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
-<service name="GPUSolver" version="1.0">
+<service name="MCGSolver" version="1.0">
 
-  <description>Service de solveur GPU</description>
+  <description>Service de solveur MCGSolver</description>
   <interface name="Alien::ILinearSolver" inherited="false"/>
 
   <options>
@@ -77,76 +77,37 @@
     <simple name="stop-criteria-value" type="real" default="1e-6">
       <description>Expected accuracy</description>
     </simple>
-    <enumeration name="kernel" type="GPUOptionTypes::eKernelType" default="GPU">
+    <enumeration name="kernel" type="MCGOptionTypes::eKernelType" default="CPU_CBLAS_BCSR">
       <description>Kernel type</description>
-      <enumvalue name="GPU" genvalue="GPUOptionTypes::GPUKernel">
-        <description>GPU kernel</description>
+      <enumvalue name="CPU_CBLAS_BCSR" genvalue="MCGOptionTypes::CPU_CBLAS_BCSR">
+        <description>CPU BLAS kernel (usualy mkl) with block CSR matrix</description>
       </enumvalue>
-      <enumvalue name="CPU" genvalue="GPUOptionTypes::CPUKernel">
-        <description>CPU kernel</description>
-      </enumvalue>
-      <enumvalue name="CPUCBLAS" genvalue="GPUOptionTypes::CPUCBLASKernel">
-        <description>CPU BLAS kernel (usualy mkl) with block CSR spmv</description>
-      </enumvalue>
-      <enumvalue name="CPUSSE2" genvalue="GPUOptionTypes::CPUSSE2Kernel">
-        <description>CPU SSE2 kernel with block CSR spmv </description>
-      </enumvalue>
-      <enumvalue name="CPUAVX" genvalue="GPUOptionTypes::CPUAVXKernel">
-        <description>CPU AVX kernel with block CSR spmv</description>
+      <enumvalue name="CPU_AVX_BCSR" genvalue="MCGOptionTypes::CPU_AVX_BCSR">
+        <description>CPU AVX kernel with block CSR matrix</description>
       </enumvalue> 
-      <enumvalue name="GPUCUBLASEll" genvalue="GPUOptionTypes::GPUCUBLASEllSpmvKernel">
-        <description>GPU CUBLAS kernel with CUSPARSE Ellpack spmv</description>
+      <enumvalue name="GPU_CUBLAS_BELL" genvalue="MCGOptionTypes::GPU_CUBLAS_BELL">
+        <description>GPU CUBLAS kernel with block Ellpack matrix</description>
       </enumvalue>       
-      <enumvalue name="GPUCUBLASBSR" genvalue="GPUOptionTypes::GPUCUBLASBSRSpmvKernel">
-        <description>GPU CUBLAS kernel with CUSPARSE BSR spmv</description>
-      </enumvalue>
-      <enumvalue name="GPUCUBLASIFPENV2" genvalue="GPUOptionTypes::GPUCUBLASIFPENV2SpmvKernel">
-        <description>GPU CUBLAS kernel with IFPENV2 spmv</description>
-      </enumvalue>
-      <enumvalue name="GPUCUBLASIFPENV3" genvalue="GPUOptionTypes::GPUCUBLASIFPENV3SpmvKernel">
-        <description>GPU CUBLAS kernel with IFPENV3 spmv</description>
-      </enumvalue>
-      <enumvalue name="GPUCUBLASHybrid" genvalue="GPUOptionTypes::GPUCUBLASHybridSpmvKernel">
-        <description>GPU CUBLAS kernel with hybrid spmv (cpu pthread + CUSPARSE Ellpack)</description>
-      </enumvalue>
-      <enumvalue name="MCKernel" genvalue="GPUOptionTypes::MCKernel">
-        <description>MC kernel </description>
+      <enumvalue name="GPU_CUBLAS_BCSP" genvalue="MCGOptionTypes::GPU_CUBLAS_BCSP">
+        <description>GPU CUBLAS kernel with block CSP matrix</description>
       </enumvalue>
     </enumeration>
-    <enumeration name="solver" type="GPUOptionTypes::eSolver" default="BiCGStab">
+    <enumeration name="solver" type="MCGOptionTypes::eSolver" default="BiCGStab">
       <description>Solveur type</description>
-      <enumvalue name="BiCGStab" genvalue="GPUOptionTypes::BiCGStab">
+      <enumvalue name="BiCGStab" genvalue="MCGOptionTypes::BiCGStab">
         <description>BiCGStab Solver</description>
       </enumvalue>
-      <enumvalue name="Gmres" genvalue="GPUOptionTypes::Gmres">
+      <enumvalue name="Gmres" genvalue="MCGOptionTypes::Gmres">
         <description>Gmres Solver</description>
       </enumvalue>     
     </enumeration>
-    <enumeration name="preconditioner" type="GPUOptionTypes::ePreconditioner" default="None">
+    <enumeration name="preconditioner" type="MCGOptionTypes::ePreconditioner" default="None">
       <description>type def preconditionnement</description>
-      <enumvalue name="None" genvalue="GPUOptionTypes::NonePC">
+      <enumvalue name="None" genvalue="MCGOptionTypes::NonePC">
         <description>Id preconditioner</description>
       </enumvalue>
-      <enumvalue name="Diag" genvalue="GPUOptionTypes::DiagPC">
-        <description>Diagonal preconditioner</description>
-      </enumvalue>
-      <enumvalue name="ILU0" genvalue="GPUOptionTypes::ILU0PC">
+      <enumvalue name="ILU0" genvalue="MCGOptionTypes::ILU0PC">
         <description>0th order ILU preconditioner (only for CPU kernels)</description>
-      </enumvalue>
-      <enumvalue name="ColorBlockILU0" genvalue="GPUOptionTypes::ColorBlockILU0PC">
-        <description>0th order ILU preconditioner with matrix reordering (coloring) </description>
-      </enumvalue>
-      <enumvalue name="Poly" genvalue="GPUOptionTypes::PolyPC">
-        <description>0th order ILU preconditioner</description>
-      </enumvalue>
-      <enumvalue name="PolyNK" genvalue="GPUOptionTypes::PolyNKPC">
-        <description>0th order ILU preconditioner</description>
-      </enumvalue>
-      <enumvalue name="BSSOR" genvalue="GPUOptionTypes::BSSORPC">
-        <description>Block SSOR preconditioner</description>
-      </enumvalue>
-      <enumvalue name="CprNK" genvalue="GPUOptionTypes::CprPC">
-        <description>Cpr preconditioner</description>
       </enumvalue>
     </enumeration>
     <simple name="sp-prec" type="bool" default="false">
