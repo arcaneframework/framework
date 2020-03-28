@@ -22,24 +22,24 @@
 #include "HARTSSolver/MatrixVector/CSR/CSRMatrixImpT.h"
 
 #include <ALIEN/axl/HTSEigenSolver_IOptions.h>
-#include <ALIEN/Kernels/HTS/EigenSolver/HTSEigenOptionTypes.h>
-#include <ALIEN/Kernels/HTS/EigenSolver/HTSInternalEigenSolver.h>
+#include <ALIEN/Kernels/hts/eigen_solver/HTSEigenOptionTypes.h>
+#include <ALIEN/Kernels/hts/eigen_solver/HTSInternalEigenSolver.h>
 
-#include <ALIEN/Kernels/HTS/EigenSolver/Arcane/HTSEigenSolver.h>
+#include <ALIEN/Kernels/hts/eigen_solver/arcane/HTSEigenSolver.h>
 #include <ALIEN/axl/HTSEigenSolver_IOptions.h>
 #include <ALIEN/axl/HTSEigenSolver_StrongOptions.h>
 #endif
 
 #ifdef ALIEN_USE_SLEPC
-#include <ALIEN/Kernels/PETSc/DataStructure/PETScVector.h>
-#include <ALIEN/Kernels/PETSc/DataStructure/PETScMatrix.h>
+#include <ALIEN/Kernels/PETSc/data_structure/PETScVector.h>
+#include <ALIEN/Kernels/PETSc/data_structure/PETScMatrix.h>
 #include <ALIEN/Kernels/PETSc/PETScBackEnd.h>
 
 #include <ALIEN/axl/SLEPcEigenSolver_IOptions.h>
-#include <ALIEN/Kernels/PETSc/EigenSolver/SLEPcEigenOptionTypes.h>
-#include <ALIEN/Kernels/PETSc/EigenSolver/SLEPcInternalEigenSolver.h>
+#include <ALIEN/Kernels/PETSc/eigen_solver/SLEPcEigenOptionTypes.h>
+#include <ALIEN/Kernels/PETSc/eigen_solver/SLEPcInternalEigenSolver.h>
 
-#include <ALIEN/Kernels/PETSc/EigenSolver/Arcane/SLEPcEigenSolver.h>
+#include <ALIEN/Kernels/PETSc/eigen_solver/arcane/SLEPcEigenSolver.h>
 #include <ALIEN/axl/SLEPcEigenSolver_IOptions.h>
 #include <ALIEN/axl/SLEPcEigenSolver_StrongOptions.h>
 #endif

@@ -35,15 +35,12 @@
 #include <alien/builder/scalar/MatrixProfiler.h>
 #include <alien/builder/scalar/ProfiledMatrixBuilder.h>
 #include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
-// Stream non implémenté pour CEA
-//#include <RefSemanticMVHandlers/Stream/StreamMatrixBuilder.h>
-//#include <RefSemanticMVHandlers/Stream/StreamVBlockMatrixBuilder.h>
 #ifdef ALIEN_USE_PETSC
-#include <alien/Kernels/PETSc/IO/AsciiDumper.h>
-#include <alien/Kernels/PETSc/Algebra/PETScLinearAlgebra.h>
+#include <alien/kernels/petsc/io/AsciiDumper.h>
+#include <alien/kernels/petsc/algebra/PETScLinearAlgebra.h>
 #endif
 #ifdef ALIEN_USE_MTL4
-#include <alien/Kernels/MTL/Algebra/MTLLinearAlgebra.h>
+#include <alien/kernels/mtl/algebra/MTLLinearAlgebra.h>
 #endif
 
 #include <alien/expression/solver/ILinearSolver.h>

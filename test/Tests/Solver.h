@@ -12,19 +12,19 @@
 #include <ALIEN/Alien-IFPENSolvers.h>
 
 #ifdef ALIEN_USE_MTL4
-#include <ALIEN/Kernels/MTL/LinearSolver/Arcane/MTLLinearSolverService.h>
-#include <ALIEN/Kernels/MTL/LinearSolver/MTLOptionTypes.h>
+#include <ALIEN/Kernels/MTL/linear_solver/arcane/MTLLinearSolverService.h>
+#include <ALIEN/Kernels/MTL/linear_solver/MTLOptionTypes.h>
 #include <ALIEN/axl/MTLLinearSolver_IOptions.h>
 #include <ALIEN/axl/MTLLinearSolver_StrongOptions.h>
 #endif
 #ifdef ALIEN_USE_PETSC
-#include <ALIEN/Kernels/PETSc/Algebra/PETScLinearAlgebra.h>
-#include <ALIEN/Kernels/PETSc/LinearSolver/Arcane/PETScLinearSolverService.h>
-#include <ALIEN/Kernels/PETSc/LinearSolver/PETScInternalLinearSolver.h>
+#include <ALIEN/Kernels/PETSc/algebra/PETScLinearAlgebra.h>
+#include <ALIEN/Kernels/PETSc/linear_solver/arcane/PETScLinearSolverService.h>
+#include <ALIEN/Kernels/PETSc/linear_solver/PETScInternalLinearSolver.h>
 // preconditionner
-#include <ALIEN/Kernels/PETSc/LinearSolver/Arcane/PETScPrecConfigDiagonalService.h>
-#include <ALIEN/Kernels/PETSc/LinearSolver/Arcane/PETScPrecConfigJacobiService.h>
-#include <ALIEN/Kernels/PETSc/LinearSolver/Arcane/PETScPrecConfigNoPreconditionerService.h>
+#include <ALIEN/Kernels/PETSc/linear_solver/arcane/PETScPrecConfigDiagonalService.h>
+#include <ALIEN/Kernels/PETSc/linear_solver/arcane/PETScPrecConfigJacobiService.h>
+#include <ALIEN/Kernels/PETSc/linear_solver/arcane/PETScPrecConfigNoPreconditionerService.h>
 #include <ALIEN/axl/PETScPrecConfigDiagonal_IOptions.h>
 #include <ALIEN/axl/PETScPrecConfigDiagonal_StrongOptions.h>
 #include <ALIEN/axl/PETScPrecConfigJacobi_IOptions.h>
@@ -32,10 +32,10 @@
 #include <ALIEN/axl/PETScPrecConfigNoPreconditioner_IOptions.h>
 #include <ALIEN/axl/PETScPrecConfigNoPreconditioner_StrongOptions.h>
 // solver
-#include <ALIEN/Kernels/PETSc/LinearSolver/Arcane/PETScSolverConfigBiCGStabService.h>
-#include <ALIEN/Kernels/PETSc/LinearSolver/Arcane/PETScSolverConfigLUService.h>
-#include <ALIEN/Kernels/PETSc/LinearSolver/IPETScKSP.h>
-#include <ALIEN/Kernels/PETSc/LinearSolver/IPETScPC.h>
+#include <ALIEN/Kernels/PETSc/linear_solver/arcane/PETScSolverConfigBiCGStabService.h>
+#include <ALIEN/Kernels/PETSc/linear_solver/arcane/PETScSolverConfigLUService.h>
+#include <ALIEN/Kernels/PETSc/linear_solver/IPETScKSP.h>
+#include <ALIEN/Kernels/PETSc/linear_solver/IPETScPC.h>
 #include <ALIEN/axl/PETScSolverConfigBiCGStab_IOptions.h>
 #include <ALIEN/axl/PETScSolverConfigBiCGStab_StrongOptions.h>
 #include <ALIEN/axl/PETScSolverConfigLU_IOptions.h>
@@ -45,20 +45,20 @@
 #include <ALIEN/axl/PETScLinearSolver_StrongOptions.h>
 #endif
 #ifdef ALIEN_USE_HYPRE
-#include <ALIEN/Kernels/Hypre/LinearSolver/HypreOptionTypes.h>
-#include <ALIEN/Kernels/Hypre/LinearSolver/Arcane/HypreLinearSolver.h>
+#include <ALIEN/Kernels/Hypre/linear_solver/HypreOptionTypes.h>
+#include <ALIEN/Kernels/Hypre/linear_solver/arcane/HypreLinearSolver.h>
 #include <ALIEN/axl/HypreSolver_IOptions.h>
 #include <ALIEN/axl/HypreSolver_StrongOptions.h>
 #endif
 #ifdef ALIEN_USE_IFPSOLVER
-#include <ALIEN/Kernels/IFP/LinearSolver/Arcane/IFPLinearSolverService.h>
-#include <ALIEN/Kernels/IFP/LinearSolver/IFPSolverProperty.h>
+#include <ALIEN/Kernels/ifp/linear_solver/arcane/IFPLinearSolverService.h>
+#include <ALIEN/Kernels/ifp/linear_solver/IFPSolverProperty.h>
 #include <ALIEN/axl/IFPLinearSolver_IOptions.h>
 #include <ALIEN/axl/IFPLinearSolver_StrongOptions.h>
 #endif
 #ifdef ALIEN_USE_MCGSOLVER
-#include <ALIEN/Kernels/MCG/LinearSolver/Arcane/GPULinearSolver.h>
-#include <ALIEN/Kernels/MCG/LinearSolver/GPUOptionTypes.h>
+#include <ALIEN/Kernels/mcg/linear_solver/arcane/GPULinearSolver.h>
+#include <ALIEN/Kernels/mcg/linear_solver/GPUOptionTypes.h>
 #include <ALIEN/axl/GPUSolver_IOptions.h>
 #include <ALIEN/axl/GPUSolver_StrongOptions.h>
 #endif

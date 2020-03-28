@@ -4,8 +4,8 @@
 #include <ALIEN/Alien-RefSemantic.h>
 
 #ifdef ALIEN_USE_MCGSOLVER
-#include <ALIEN/Kernels/MCG/LinearSolver/Arcane/GPULinearSolver.h>
-#include <ALIEN/Kernels/MCG/LinearSolver/GPUOptionTypes.h>
+#include <ALIEN/Kernels/mcg/linear_solver/arcane/GPULinearSolver.h>
+#include <ALIEN/Kernels/mcg/linear_solver/GPUOptionTypes.h>
 #include <ALIEN/axl/GPUSolver_IOptions.h>
 #include <ALIEN/axl/GPUSolver_StrongOptions.h>
 #endif

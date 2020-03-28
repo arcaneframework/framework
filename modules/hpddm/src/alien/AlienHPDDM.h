@@ -3,8 +3,8 @@
 
 
 #ifdef ALIEN_USE_HPDDM
-#include <alien/Kernels/HPDDM/LinearSolver/Arcane/HPDDMLinearSolverService.h>
-#include <alien/Kernels/HPDDM/LinearSolver/HPDDMInternalSolver.h>
+#include <alien/kernels/hpddm/linear_solver/arcane/HPDDMLinearSolverService.h>
+#include <alien/kernels/hpddm/linear_solver/HPDDMInternalSolver.h>
 #endif
 
 #endif /* ALIEN_ALIEN_HPDDM_H */

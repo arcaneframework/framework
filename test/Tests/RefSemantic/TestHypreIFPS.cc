@@ -4,16 +4,16 @@
 #include <ALIEN/AlienExternalPackages.h>
 
 #ifdef ALIEN_USE_HYPRE
-#include <ALIEN/Kernels/Hypre/LinearSolver/HypreInternalLinearSolver.h>
-#include <ALIEN/Kernels/Hypre/LinearSolver/Arcane/HypreLinearSolver.h>
-#include <ALIEN/Kernels/Hypre/LinearSolver/HypreOptionTypes.h>
-#include <ALIEN/Kernels/Hypre/DataStructure/HypreMatrix.h>
+#include <ALIEN/Kernels/Hypre/linear_solver/HypreInternalLinearSolver.h>
+#include <ALIEN/Kernels/Hypre/linear_solver/arcane/HypreLinearSolver.h>
+#include <ALIEN/Kernels/Hypre/linear_solver/HypreOptionTypes.h>
+#include <ALIEN/Kernels/Hypre/data_structure/HypreMatrix.h>
 #include <ALIEN/axl/HypreSolver_IOptions.h>
 #include <ALIEN/axl/HypreSolver_StrongOptions.h>
 #endif
 #ifdef ALIEN_USE_IFPSOLVER
-#include <ALIEN/Kernels/IFP/LinearSolver/Arcane/IFPLinearSolverService.h>
-#include <ALIEN/Kernels/IFP/LinearSolver/IFPSolverProperty.h>
+#include <ALIEN/Kernels/ifp/linear_solver/arcane/IFPLinearSolverService.h>
+#include <ALIEN/Kernels/ifp/linear_solver/IFPSolverProperty.h>
 #include <ALIEN/axl/IFPLinearSolver_IOptions.h>
 #include <ALIEN/axl/IFPLinearSolver_StrongOptions.h>
 #endif

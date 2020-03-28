@@ -3,6 +3,6 @@
 #include <alien/AlienTrilinosPrecomp.h>
 
 #ifdef ALIEN_USE_TRILINOS
-#include <alien/Kernels/Trilinos/LinearSolver/Arcane/TrilinosLinearSolverService.h>
-#include <alien/Kernels/Trilinos/LinearSolver/TrilinosInternalLinearSolver.h>
+#include <alien/kernels/trilinos/linear_solver/arcane/TrilinosLinearSolverService.h>
+#include <alien/kernels/trilinos/linear_solver/TrilinosInternalLinearSolver.h>
 #endif

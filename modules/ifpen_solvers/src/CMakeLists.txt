@@ -22,15 +22,15 @@ else ()
 endif ()
 
 if(TARGET mcgsolver)
-  addDirectory(alien/Kernels/MCG)
+  addDirectory(alien/kernels/mcg)
 endif()
 
 if(TARGET ifpsolver)
-    addDirectory(alien/Kernels/IFP)
+    addDirectory(alien/kernels/ifp)
 endif()
 
 if(TARGET htssolver)
-  addDirectory(alien/Kernels/HTS)
+  addDirectory(alien/kernels/hts)
 endif()
 
 if(TARGET arcane_core)

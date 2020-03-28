@@ -7,9 +7,9 @@
 
 #include <map>
 #include <alien/utils/Precomp.h>
-#include <alien/Kernels/PETSc/DataStructure/PETScMatrix.h>
-#include <alien/Kernels/PETSc/DataStructure/PETScVector.h>
-#include <alien/Kernels/PETSc/DataStructure/PETScMatrix.h>
+#include <alien/kernels/petsc/data_structure/PETScMatrix.h>
+#include <alien/kernels/petsc/data_structure/PETScVector.h>
+#include <alien/kernels/petsc/data_structure/PETScMatrix.h>
 #include <alien/core/impl/MultiMatrixImpl.h>
 #include <alien/core/impl/MultiVectorImpl.h>
 #include <alien/data/IMatrix.h>

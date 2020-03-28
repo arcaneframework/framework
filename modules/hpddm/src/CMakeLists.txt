@@ -22,7 +22,7 @@ else()
 endif()
 
 if(TARGET hpddm)
-  addDirectory(alien/Kernels/HPDDM)
+  addDirectory(alien/kernels/hpddm)
 endif()
 
 if(TARGET arcane_core)

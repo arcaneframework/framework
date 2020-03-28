@@ -3,10 +3,10 @@
 #include <alien/AlienIFPENSolversPrecomp.h>
 
 #ifdef ALIEN_USE_IFPSOLVER
-#include <alien/Kernels/IFP/LinearSolver/Arcane/IFPLinearSolverService.h>
-#include <alien/Kernels/IFP/LinearSolver/IFPInternalLinearSolver.h>
+#include <alien/kernels/ifp/linear_solver/arcane/IFPLinearSolverService.h>
+#include <alien/kernels/ifp/linear_solver/IFPInternalLinearSolver.h>
 #endif
 
 #ifdef ALIEN_USE_MCGSOLVER
-#include <alien/Kernels/MCG/LinearSolver/Arcane/GPULinearSolver.h>
+#include <alien/kernels/mcg/linear_solver/arcane/GPULinearSolver.h>
 #endif

@@ -41,21 +41,21 @@
 #include <alien/data/scalar/RedistributedMatrix.h>
 
 #ifdef ALIEN_USE_PETSC
-#include <alien/Kernels/PETSc/IO/AsciiDumper.h>
-#include <alien/Kernels/PETSc/Algebra/PETScLinearAlgebra.h>
+#include <alien/kernels/petsc/io/AsciiDumper.h>
+#include <alien/kernels/petsc/algebra/PETScLinearAlgebra.h>
 #endif
 #ifdef ALIEN_USE_MTL4
-#include <alien/Kernels/MTL/Algebra/MTLLinearAlgebra.h>
+#include <alien/kernels/mtl/algebra/MTLLinearAlgebra.h>
 #endif
 #ifdef ALIEN_USE_HTSSOLVER
-#include <alien/Kernels/HTS/HTSBackEnd.h>
-#include <alien/Kernels/HTS/DataStructure/HTSMatrix.h>
-#include <alien/Kernels/HTS/Algebra/HTSLinearAlgebra.h>
+#include <alien/kernels/hts/HTSBackEnd.h>
+#include <alien/kernels/hts/data_structure/HTSMatrix.h>
+#include <alien/kernels/hts/algebra/HTSLinearAlgebra.h>
 #endif
 #ifdef ALIEN_USE_TRILINOS
-#include <alien/Kernels/Trilinos/TrilinosBackEnd.h>
-#include <alien/Kernels/Trilinos/DataStructure/TrilinosMatrix.h>
-#include <alien/Kernels/Trilinos/Algebra/TrilinosLinearAlgebra.h>
+#include <alien/kernels/trilinos/TrilinosBackEnd.h>
+#include <alien/kernels/trilinos/data_structure/TrilinosMatrix.h>
+#include <alien/kernels/trilinos/algebra/TrilinosLinearAlgebra.h>
 #endif
 
 #include <alien/expression/solver/ILinearSolver.h>

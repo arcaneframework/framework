@@ -10,10 +10,10 @@
 #include <alien/expression/solver/ILinearAlgebra.h>
 #include <ALIEN/Kernels/Redistributor/Redistributor.h>
 #ifdef ALIEN_USE_PETSC
-#include <ALIEN/Kernels/PETSc/Algebra/PETScLinearAlgebra.h>
+#include <ALIEN/Kernels/PETSc/algebra/PETScLinearAlgebra.h>
 #endif
 #ifdef ALIEN_USE_HYPRE
-#include <ALIEN/Kernels/Hypre/Algebra/HypreLinearAlgebra.h>
+#include <ALIEN/Kernels/Hypre/algebra/HypreLinearAlgebra.h>
 #endif
 
 

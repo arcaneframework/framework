@@ -6,9 +6,9 @@
 #include <alien/arcane_tools/IIndexManager.h>
 #include <alien/core/impl/MultiMatrixImpl.h>
 #include <alien/core/impl/MultiVectorImpl.h>
-#include <alien/Kernels/PETSc/DataStructure/PETScInternal.h>
-#include <alien/Kernels/PETSc/DataStructure/PETScVector.h>
-#include <alien/Kernels/PETSc/PETScBackEnd.h>
+#include <alien/kernels/petsc/data_structure/PETScInternal.h>
+#include <alien/kernels/petsc/data_structure/PETScVector.h>
+#include <alien/kernels/petsc/PETScBackEnd.h>
 
 #include <petscmat.h>
 #include <petscsys.h>

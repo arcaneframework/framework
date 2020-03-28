@@ -22,17 +22,17 @@ else ()
 endif ()
 
 if(TARGET hypre)
-    addDirectory(alien/Kernels/Hypre)
+    addDirectory(alien/kernels/hypre)
 endif()
 
 if(TARGET mtl)
-    addDirectory(alien/Kernels/MTL)
+    addDirectory(alien/kernels/mtl)
 endif()
 
 if(TARGET petsc)
-    addDirectory(alien/Kernels/PETSc)
+    addDirectory(alien/kernels/petsc)
     addSources(alien_external_packages
-            alien/Functional/Dump.cc
+            alien/functional/Dump.cc
             )
 endif()
 
