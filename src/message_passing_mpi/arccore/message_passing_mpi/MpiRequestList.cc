@@ -18,36 +18,31 @@ namespace Arccore::MessagePassing::Mpi
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer MpiRequestList::
-wait(eWaitType wait_type)
+void MpiRequestList::
+_wait(eWaitType wait_type)
 {
-  removeDoneRequests();
   switch(wait_type){
   case WaitAll:
     m_adapter->waitAllRequests(_requests());
-    return (-1);
+    break;
   case WaitSome:
-    return _doWaitSome(false);
+    _doWaitSome(false);
+    break;
   case WaitSomeNonBlocking:
-    return _doWaitSome(true);
+    _doWaitSome(true);
+    break;
   }
-  return 0;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer MpiRequestList::
+void MpiRequestList::
 _doWaitSome(bool is_non_blocking)
 {
-  Integer nb_request = nbRequest();
+  Integer nb_request = size();
   m_requests_status.resize(nb_request);
   m_adapter->waitSomeRequests(_requests(),_requestsDone(), is_non_blocking);
-  Integer nb_done = 0;
-  for( bool v : _requestsDone() )
-    if (v)
-      ++nb_done;
-  return nb_done;
 }
 
 /*---------------------------------------------------------------------------*/

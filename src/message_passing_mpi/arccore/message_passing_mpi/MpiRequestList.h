@@ -29,7 +29,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiRequestList
 
  public:
 
-  Integer wait(eWaitType wait_type) override;
+  void _wait(eWaitType wait_type) override;
 
  private:
 
@@ -38,7 +38,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiRequestList
 
  private:
 
-  Integer _doWaitSome(bool is_non_blocking);
+  void _doWaitSome(bool is_non_blocking);
 };
 
 /*---------------------------------------------------------------------------*/

@@ -10,6 +10,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/message_passing/MessagePassingGlobal.h"
+#include "arccore/base/BaseTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -24,33 +25,56 @@ namespace Arccore::MessagePassing
 class ARCCORE_MESSAGEPASSING_EXPORT IRequestList
 {
  public:
+
   virtual ~IRequestList() = default;
+
  public:
 
-  //! Ajoute la requête \a r à la liste
-  virtual void addRequest(Request r) =0;
+  //! Ajoute la requête \a r à la liste des requêtes
+  virtual void add(Request r) =0;
+
+  //! Ajoute la liste de requêtes \a rlist à la liste des requêtes
+  virtual void add(Span<Request> rlist) =0;
+
+  //! \a index-ième requête de la liste
+  virtual Request request(Int32 index) const =0;
 
   //! Nombre de requêtes
-  virtual Integer nbRequest() const =0;
+  virtual Int32 size() const =0;
 
   /*!
    * \brief Attend ou test la complétion de une ou plusieurs requêtes.
    *
-   * Cette méthode appelle removeDoneRequest() avant d'attendre la
-   * complétion. En retour, retourne le nombre de requêtes terminées.
-   * Il est possible de tester si une requête est terminée via la
-   * méthode isRequestDone();
+   * En retour, retourne le nombre de nouvelles requêtes terminées.
+   * Il est ensuite possible de tester si une requête est terminée via la
+   * méthode isRequestDone() ou de récupérer les indices des
+   * requêtes terminées via doneRequestIndexes().
+   *
+   * \note Les requêtes terminées après un appel à wait() restent
+   * dans la liste des requêtes. Il faut appeler la méthode
+   * removeDoneRequests() si on souhaite les supprimer.
    */
-  virtual Integer wait(eWaitType wait_type) =0;
+  virtual Int32 wait(eWaitType wait_type) =0;
 
-  //! Indique si la requête est terminée
-  virtual bool isRequestDone(Integer index) const =0;
+  //! Indique si la requête est terminée depuis le dernier appel à wait()
+  virtual bool isRequestDone(Int32 index) const =0;
 
-  //! \a index-ième requête de la liste
-  virtual Request request(Integer index) const =0;
-
-  //! Supprime de la liste les requêtes terminées
+  /*!
+   * \brief Supprime de la liste les requêtes terminées.
+   *
+   * Toutes les requêtes pour lesquelles isRequestDone() est vrai sont
+   * supprimées de la liste des requêtes.
+   * Après appel à cette méthode, on considère qu'il n'y a plus de
+   * requêtes terminées. Par conséquent, doneRequestsIndexes() sera vide
+   * et isRequestDone() retournera toujours \a false.
+   */
   virtual void removeDoneRequests() =0;
+
+  /*!
+   * \brief Indices dans le tableaux des requêtes des requêtes terminée lors
+   * du dernier appel à wait().
+   */
+  virtual ConstArrayView<Int32> doneRequestIndexes() const =0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -31,24 +31,40 @@ class ARCCORE_MESSAGEPASSING_EXPORT RequestListBase
 
  public:
 
-  void addRequest(Request r) override { _addRequest(r); }
-  Integer nbRequest() const override { return m_requests.size(); }
+  void add(Request r) override { _add(r); }
+  void add(Span<Request> r) override { _add(r); }
+  Int32 wait(eWaitType wait_type) final;
+  Int32 size() const override { return m_requests.size(); }
   void removeDoneRequests() override;
-  bool isRequestDone(Integer index) const override { return m_requests_done[index]; }
-  Request request(Integer index) const override { return m_requests[index]; }
+  bool isRequestDone(Int32 index) const override { return m_requests_done[index]; }
+  Request request(Int32 index) const override { return m_requests[index]; }
+  ConstArrayView<Int32> doneRequestIndexes() const final;
 
  protected:
 
-  virtual void _addRequest(Request r)
+  virtual void _add(Request r)
   {
     m_requests.add(r);
     m_requests_done.add(false);
+  }
+  virtual void _add(Span<Request> rlist)
+  {
+    m_requests.addRange(rlist);
+    m_requests_done.addRange(false,rlist.size());
   }
   virtual void _removeRequestAtIndex(Integer pos)
   {
     m_requests.remove(pos);
     m_requests_done.remove(pos);
   }
+  /*!
+   * \brief Effectue l'attente ou le test.
+   *
+   * L'implémentation doit remplir à \a _requestsDone() avec la
+   * valeur \a true pour chaque requête terminée sauf si
+   * \a wait_type vaut WaitAll.
+   */
+  virtual void _wait(eWaitType wait_type) =0;
 
  protected:
 
@@ -59,6 +75,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT RequestListBase
 
   UniqueArray<Request> m_requests;
   UniqueArray<bool> m_requests_done;
+  UniqueArray<Int32> m_done_request_indexes;
 };
 
 /*---------------------------------------------------------------------------*/
