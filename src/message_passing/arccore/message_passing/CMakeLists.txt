@@ -14,6 +14,8 @@ set(SOURCES
   Request.h
   Request.cc
   IRequestList.h
+  RequestListBase.h
+  RequestListBase.cc
   IStat.h
   IDispatchers.h
   ITypeDispatcher.h
