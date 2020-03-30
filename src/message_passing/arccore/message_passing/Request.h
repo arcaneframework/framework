@@ -184,22 +184,34 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
   {
     if (m_type==T_Null)
       return false;
+    // Si le type de la requête est différent du type
+    // de la requête nulle, alors la requête est considérée
+    // comme valide.
+    if (m_type!=null_request_type)
+      return true;
     if (m_type==T_Int)
       return m_request.i!=null_request.i;
     if (m_type==T_Long)
       return m_request.l!=null_request.l;
     if (m_type==T_SizeT)
       return m_request.st!=null_request.st;
-    return m_request.cv!=null_request.cv;
+    if (m_type==T_Ptr)
+      return m_request.cv!=null_request.cv;
+    return false;
   }
   void* requestAsVoidPtr() const { return m_request.v; }
 
-  static void setNullRequest(Request r) { null_request = r.m_request; }
+  static void setNullRequest(Request r)
+  {
+    null_request = r.m_request;
+    null_request_type = r.m_type;
+  }
 
   void reset()
   {
     m_request = null_request;
     m_sub_request.reset();
+    m_type = T_Null;
   }
   Ref<ISubRequest> subRequest() const { return m_sub_request; }
   bool hasSubRequest() const { return !m_sub_request.isNull(); }
@@ -216,6 +228,9 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
     return o;
   }
 
+  //! \internal
+  Int32 _type() const { return m_type; }
+
  private:
 
   int m_return_value = 0;
@@ -224,6 +239,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
   Ref<ISubRequest> m_sub_request;
   IRequestCreator* m_creator = nullptr;
   static _Request null_request;
+  static int null_request_type;
 };
 
 /*---------------------------------------------------------------------------*/
