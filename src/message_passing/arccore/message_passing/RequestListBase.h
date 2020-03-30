@@ -35,6 +35,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT RequestListBase
   void add(Span<Request> r) override { _add(r); }
   Int32 wait(eWaitType wait_type) final;
   Int32 size() const override { return m_requests.size(); }
+  void clear() final;
   void removeDoneRequests() override;
   bool isRequestDone(Int32 index) const override { return m_requests_done[index]; }
   Request request(Int32 index) const override { return m_requests[index]; }

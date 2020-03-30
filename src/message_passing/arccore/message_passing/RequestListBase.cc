@@ -19,6 +19,17 @@ namespace Arccore::MessagePassing::internal
 /*---------------------------------------------------------------------------*/
 
 void RequestListBase::
+clear()
+{
+  m_requests.clear();
+  m_requests_done.clear();
+  m_done_request_indexes.clear();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RequestListBase::
 removeDoneRequests()
 {
   Integer n = m_requests.size();

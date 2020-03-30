@@ -42,6 +42,9 @@ class ARCCORE_MESSAGEPASSING_EXPORT IRequestList
   //! Nombre de requêtes
   virtual Int32 size() const =0;
 
+  //! Supprime toutes les requêtes de la liste
+  virtual void clear() =0;
+
   /*!
    * \brief Attend ou test la complétion de une ou plusieurs requêtes.
    *
