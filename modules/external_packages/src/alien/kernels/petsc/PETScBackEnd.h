@@ -45,7 +45,9 @@ extern IInternalLinearSolver<PETScMatrix, PETScVector>* PETScInternalLinearSolve
 
 namespace BackEnd {
   namespace tag {
-    struct petsc{};
+    struct petsc
+    {
+    };
   }
 }
 
@@ -58,7 +60,7 @@ template <> struct AlgebraTraits<BackEnd::tag::petsc>
   typedef PETScVector vector_type;
   typedef IOptionsPETScLinearSolver options_type;
   typedef IInternalLinearAlgebra<matrix_type, vector_type> algebra_type;
-  typedef IInternalLinearSolver<matrix_type, vector_type>  solver_type;
+  typedef IInternalLinearSolver<matrix_type, vector_type> solver_type;
   static algebra_type* algebra_factory(
       Arccore::MessagePassing::IMessagePassingMng* p_mng = nullptr)
   {

@@ -19,7 +19,8 @@ MTLVector::MTLVector(const MultiVectorImpl* multi_impl)
 : IVectorImpl(multi_impl, AlgebraTraits<BackEnd::tag::mtl>::name())
 , m_internal(nullptr)
 , m_local_offset(0)
-{}
+{
+}
 
 /*---------------------------------------------------------------------------*/
 
@@ -67,9 +68,8 @@ MTLVector::allocate()
 void
 MTLVector::setValues(const int nrow, const double* values)
 {
-  for (int i= 0; i < nrow; ++i)
-  {
-    m_internal->m_internal[m_local_offset+i] = values[i] ;
+  for (int i = 0; i < nrow; ++i) {
+    m_internal->m_internal[m_local_offset + i] = values[i];
   }
 }
 
@@ -82,8 +82,7 @@ MTLVector::getValues(const int nrow, double* values) const
 }
 
 void
-MTLVector::
-dump() const
+MTLVector::dump() const
 {
   std::cout << m_internal->m_internal;
 }

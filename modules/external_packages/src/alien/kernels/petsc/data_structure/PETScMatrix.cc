@@ -40,10 +40,10 @@ PETScMatrix::initMatrix(const int local_size, const int local_offset,
     Arccore::ConstArrayView<Arccore::Integer> offdiag_lineSizes, const bool parallel)
 {
   int ierr = 0; // code d'erreur de retour
-  if(m_internal) {
+  if (m_internal) {
     delete m_internal;
   }
-  m_internal = new MatrixInternal(parallel) ;
+  m_internal = new MatrixInternal(parallel);
 
   Arccore::Integer max_diag_size = 0, max_offdiag_size = 0;
 

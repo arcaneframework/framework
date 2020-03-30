@@ -16,7 +16,6 @@
 #include <alien/kernels/petsc/linear_solver/PETScConfig.h>
 #include <ALIEN/axl/SymmetricMultiplicativeFieldSplitType_axl.h>
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -26,8 +25,8 @@ namespace Alien {
 /*---------------------------------------------------------------------------*/
 
 class ALIEN_EXTERNAL_PACKAGES_EXPORT SymmetricMultiplicativeFieldSplitTypeService
-: public ArcaneSymmetricMultiplicativeFieldSplitTypeObject,
-  public PETScConfig
+    : public ArcaneSymmetricMultiplicativeFieldSplitTypeObject,
+      public PETScConfig
 {
  public:
 #ifdef ALIEN_USE_ARCANE
@@ -37,16 +36,17 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT SymmetricMultiplicativeFieldSplitTypeServic
       Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
       std::shared_ptr<IOptionsSymmetricMultiplicativeFieldSplitType> options);
   ~SymmetricMultiplicativeFieldSplitTypeService() {}
-  
-public:
- //! Configure FieldSplit type
- Arccore::Integer configure(PC& pc, const Arccore::Integer nbField);
+
+ public:
+  //! Configure FieldSplit type
+  Arccore::Integer configure(PC& pc, const Arccore::Integer nbField);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_SYMMETRICMULTIPLICATIVEFIELDSPLITTYPE(SymmetricMultiplicative,SymmetricMultiplicativeFieldSplitTypeService);
+ARCANE_REGISTER_SERVICE_SYMMETRICMULTIPLICATIVEFIELDSPLITTYPE(
+    SymmetricMultiplicative, SymmetricMultiplicativeFieldSplitTypeService);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -55,4 +55,4 @@ ARCANE_REGISTER_SERVICE_SYMMETRICMULTIPLICATIVEFIELDSPLITTYPE(SymmetricMultiplic
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif //SYMMETRICMULTIPLICATIVEFIELDSPLITSERVICE_H
+#endif // SYMMETRICMULTIPLICATIVEFIELDSPLITSERVICE_H

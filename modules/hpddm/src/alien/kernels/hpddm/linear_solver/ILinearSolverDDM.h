@@ -19,24 +19,18 @@ namespace Alien {
 class ILinearSolverDDM : public ILinearSolver
 {
 
-public:
+ public:
+  ILinearSolverDDM() {}
 
-  ILinearSolverDDM() { }
-  
-  virtual ~ILinearSolverDDM() { }
-  
-public:
+  virtual ~ILinearSolverDDM() {}
 
-virtual bool solve(const Alien::IMatrix& Ad,
-           const Alien::IMatrix& An,
-           const Alien::IVector& b,
-           Alien::IVector& x) = 0 ;
-
+ public:
+  virtual bool solve(const Alien::IMatrix& Ad, const Alien::IMatrix& An,
+      const Alien::IVector& b, Alien::IVector& x) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 }
 
 /*---------------------------------------------------------------------------*/

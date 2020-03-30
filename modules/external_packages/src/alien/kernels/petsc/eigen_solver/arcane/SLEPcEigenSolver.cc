@@ -14,12 +14,16 @@ namespace Alien {
 #ifdef ALIEN_USE_ARCANE
 SLEPcEigenSolver::SLEPcEigenSolver(const Arcane::ServiceBuildInfo& sbi)
 : ArcaneSLEPcEigenSolverObject(sbi)
-, Alien::SLEPcInternalEigenSolver(sbi.subDomain()->parallelMng()->messagePassingMng(), options())
+, Alien::SLEPcInternalEigenSolver(
+      sbi.subDomain()->parallelMng()->messagePassingMng(), options())
 //, EigenSolver<BackEnd::tag::SLEPcsolver>(sbi.subDomain()->parallelMng(), options())
-{}
+{
+}
 #endif
 
-SLEPcEigenSolver::SLEPcEigenSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,  std::shared_ptr<IOptionsSLEPcEigenSolver>  _options)
+SLEPcEigenSolver::SLEPcEigenSolver(
+    Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+    std::shared_ptr<IOptionsSLEPcEigenSolver> _options)
 : ArcaneSLEPcEigenSolverObject(_options)
 , Alien::SLEPcInternalEigenSolver(parallel_mng, options())
 //, EigenSolver<BackEnd::tag::SLEPcsolver>(parallel_mng, options())
@@ -28,7 +32,7 @@ SLEPcEigenSolver::SLEPcEigenSolver(Arccore::MessagePassing::IMessagePassingMng* 
 
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_SLEPCEIGENSOLVER(SLEPcEigenSolver,SLEPcEigenSolver);
+ARCANE_REGISTER_SERVICE_SLEPCEIGENSOLVER(SLEPcEigenSolver, SLEPcEigenSolver);
 
 } // namespace Alien
 

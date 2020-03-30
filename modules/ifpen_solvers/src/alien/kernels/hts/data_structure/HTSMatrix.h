@@ -14,8 +14,7 @@
 
 BEGIN_HTSINTERNAL_NAMESPACE
 
-template<typename ValueTi,bool is_mpi>
-class MatrixInternal;
+template <typename ValueTi, bool is_mpi> class MatrixInternal;
 
 END_HTSINTERNAL_NAMESPACE
 
@@ -30,26 +29,21 @@ template <typename ValueT> class HTSMatrix : public IMatrixImpl
   typedef HTSInternal::MatrixInternal<ValueT, true> MatrixInternal;
 
  public:
-  HTSMatrix(const MultiMatrixImpl * multi_impl);
-  virtual ~HTSMatrix() ;
+  HTSMatrix(const MultiMatrixImpl* multi_impl);
+  virtual ~HTSMatrix();
 
-public:
-
+ public:
   void clear() {}
 
  public:
-  bool initMatrix(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
-      int nrows,
-      int const* kcol,
-      int const* cols,
-      int block_size);
+  bool initMatrix(Arccore::MessagePassing::IMessagePassingMng* parallel_mng, int nrows,
+      int const* kcol, int const* cols, int block_size);
 
-  bool setMatrixValues(Arccore::Real const* values) ;
+  bool setMatrixValues(Arccore::Real const* values);
 
-  bool computeDDMatrix() ;
+  bool computeDDMatrix();
 
-  void mult(ValueT const* x, ValueT* y) const ;
-
+  void mult(ValueT const* x, ValueT* y) const;
 
  public:
   MatrixInternal* internal() { return m_internal.get(); }
@@ -58,8 +52,7 @@ public:
   //   void update(const Alien::SimpleCSRMatrix<ValueT> & v);
   //   void update(const HTSMatrix & v);
 
-private :
-
+ private:
   std::unique_ptr<MatrixInternal> m_internal;
 };
 

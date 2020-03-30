@@ -51,26 +51,25 @@ MTLMatrix::initMatrix(
 
 /*---------------------------------------------------------------------------*/
 
-bool 
-MTLMatrix::
-addMatrixValues(const int nrow,
-                const int * rows,
-                const int * row_offset,
-                const int * cols,
-                const double * values)
-{ 
+bool
+MTLMatrix::addMatrixValues(const int nrow, const int* rows, const int* row_offset,
+    const int* cols, const double* values)
+{
   MTL4Internal::Features::checkParallel(distribution());
 #ifdef MTL_4_0_9555
-  mtl::mat::inserter< MTL4Internal::MatrixInternal::MTLMatrixType,mtl::update_plus<MTL4Internal::MatrixInternal::MTLMatrixType::value_type> > ins(m_internal->m_internal);
+  mtl::mat::inserter<MTL4Internal::MatrixInternal::MTLMatrixType,
+      mtl::update_plus<MTL4Internal::MatrixInternal::MTLMatrixType::value_type>>
+      ins(m_internal->m_internal);
 #else
-  mtl::matrix::inserter< MTL4Internal::MatrixInternal::MTLMatrixType,mtl::update_plus<MTL4Internal::MatrixInternal::MTLMatrixType::value_type> > ins(m_internal->m_internal);
+  mtl::matrix::inserter<MTL4Internal::MatrixInternal::MTLMatrixType,
+      mtl::update_plus<MTL4Internal::MatrixInternal::MTLMatrixType::value_type>>
+      ins(m_internal->m_internal);
 #endif
-  int off = 0 ;
-  for (int i= 0; i < nrow; i++)
-    for (int j= 0; j < row_offset[i+1]-row_offset[i]; j++)
-    {
-      ins[rows[i]][cols[off]] << values[off] ;
-      off++ ;
+  int off = 0;
+  for (int i = 0; i < nrow; i++)
+    for (int j = 0; j < row_offset[i + 1] - row_offset[i]; j++) {
+      ins[rows[i]][cols[off]] << values[off];
+      off++;
     }
   return true;
 }
@@ -83,16 +82,17 @@ MTLMatrix::setMatrixValues(const int max_row_size, const int nrow, const int* ro
 {
   MTL4Internal::Features::checkParallel(distribution());
 #ifdef MTL_4_0_9555
-  mtl::mat::inserter<MTL4Internal::MatrixInternal::MTLMatrixType> ins(m_internal->m_internal, max_row_size);
+  mtl::mat::inserter<MTL4Internal::MatrixInternal::MTLMatrixType> ins(
+      m_internal->m_internal, max_row_size);
 #else
-  mtl::matrix::inserter<MTL4Internal::MatrixInternal::MTLMatrixType> ins(m_internal->m_internal, max_row_size);
+  mtl::matrix::inserter<MTL4Internal::MatrixInternal::MTLMatrixType> ins(
+      m_internal->m_internal, max_row_size);
 #endif
-  int off = 0 ;
-  for (int i= 0; i < nrow; i++)
-    for (int j= 0; j < row_offset[i+1]-row_offset[i]; j++)
-    {
-      ins[rows[i]][cols[off]] << values[off] ;
-      off++ ;
+  int off = 0;
+  for (int i = 0; i < nrow; i++)
+    for (int j = 0; j < row_offset[i + 1] - row_offset[i]; j++) {
+      ins[rows[i]][cols[off]] << values[off];
+      off++;
     }
   return true;
 }
@@ -106,27 +106,25 @@ MTLMatrix::setMatrixBlockValues(const int offset, const int max_row_size,
 {
   MTL4Internal::Features::checkParallel(distribution());
 #ifdef MTL_4_0_9555
-  mtl::mat::inserter<MTL4Internal::MatrixInternal::MTLMatrixType> ins(m_internal->m_internal, max_row_size);
+  mtl::mat::inserter<MTL4Internal::MatrixInternal::MTLMatrixType> ins(
+      m_internal->m_internal, max_row_size);
 #else
-  mtl::matrix::inserter<MTL4Internal::MatrixInternal::MTLMatrixType> ins(m_internal->m_internal, max_row_size);
+  mtl::matrix::inserter<MTL4Internal::MatrixInternal::MTLMatrixType> ins(
+      m_internal->m_internal, max_row_size);
 #endif
-  int bs = equations_num*unknowns_num ;
-  int un = unknowns_num ;
-  int col_count = 0 ;
-  int mat_count = 0 ;
-  for(int irow=0;irow<nrow;++irow)
-  {
-    int row = offset + irow ;
-    int ncols = row_offset[irow+1]-row_offset[irow] ;
-    for(int k=0;k<ncols;++k)
-    {
-      for(int i=0;i<equations_num;++i)
-      {
-        int ir = row*equations_num+i ;
-        for(int j=0;j<unknowns_num;++j)
-        {
-          int jc = cols[col_count+k]*unknowns_num+j;
-          ins[ir][jc] << values[mat_count+ijk(i,j,k,bs,un)] ;
+  int bs = equations_num * unknowns_num;
+  int un = unknowns_num;
+  int col_count = 0;
+  int mat_count = 0;
+  for (int irow = 0; irow < nrow; ++irow) {
+    int row = offset + irow;
+    int ncols = row_offset[irow + 1] - row_offset[irow];
+    for (int k = 0; k < ncols; ++k) {
+      for (int i = 0; i < equations_num; ++i) {
+        int ir = row * equations_num + i;
+        for (int j = 0; j < unknowns_num; ++j) {
+          int jc = cols[col_count + k] * unknowns_num + j;
+          ins[ir][jc] << values[mat_count + ijk(i, j, k, bs, un)];
         }
       }
     }

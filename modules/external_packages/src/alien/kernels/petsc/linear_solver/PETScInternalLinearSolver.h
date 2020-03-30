@@ -25,16 +25,13 @@ class PETScVector;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class PETScInternalLinearSolver
-  : public IInternalLinearSolver<PETScMatrix, PETScVector>
-  , public ObjectWithTrace
+class PETScInternalLinearSolver : public IInternalLinearSolver<PETScMatrix, PETScVector>,
+                                  public ObjectWithTrace
 {
-private:
-
+ private:
   typedef SolverStatus Status;
 
-public:
-
+ public:
   struct VerboseTypes
   {
     enum eChoice
@@ -45,13 +42,17 @@ public:
     };
   };
 
-  struct InitType {
-    enum eInit { User, Zero, Knoll };
+  struct InitType
+  {
+    enum eInit
+    {
+      User,
+      Zero,
+      Knoll
+    };
   };
 
-
-public:
-
+ public:
   class SolverFactory;
   friend class SolverFactory;
 
@@ -61,16 +62,16 @@ public:
   class FieldSplitFactory;
   friend class FieldSplitFactory;
 
-public:
- PETScInternalLinearSolver(
-     Arccore::MessagePassing::IMessagePassingMng* parallel_mng = nullptr,
-     IOptionsPETScLinearSolver* options = nullptr);
+ public:
+  PETScInternalLinearSolver(
+      Arccore::MessagePassing::IMessagePassingMng* parallel_mng = nullptr,
+      IOptionsPETScLinearSolver* options = nullptr);
 
- virtual ~PETScInternalLinearSolver();
+  virtual ~PETScInternalLinearSolver();
 
-public:
+ public:
   //! Initialisation
-  void init(int argv,char** argc);
+  void init(int argv, char** argc);
   virtual void init();
 
   void updateParallelMng(Arccore::MessagePassing::IMessagePassingMng* pm);
@@ -96,9 +97,7 @@ public:
 
   //! Etat du solveur
   const Status& getStatus() const;
-  Status& getStatusRef() {
-    return m_status ;
-  }
+  Status& getStatusRef() { return m_status; }
 
   //! Statistiques du solveur
   const SolverStat& getSolverStat() const { return m_stater; }
@@ -106,27 +105,26 @@ public:
   SolverStat& getSolverStat() { return m_stater; }
   SolverStater& getSolverStater() { return m_stater; }
 
-
   void internalPrintInfo() const;
 
-  bool isParallel() {
-    if(m_parallel_mng)
-      return m_parallel_mng->commSize()> 1;
+  bool isParallel()
+  {
+    if (m_parallel_mng)
+      return m_parallel_mng->commSize() > 1;
     else
       return false;
   }
 
-public:
- void checkError(const Arccore::String& msg, int ierr);
+ public:
+  void checkError(const Arccore::String& msg, int ierr);
 
- Arccore::String convergedReasonString(const Arccore::Integer reason) const;
+  Arccore::String convergedReasonString(const Arccore::Integer reason) const;
 
-private:
+ private:
   bool _isNull(const PETScVector& b);
   bool _solveNullRHS(PETScVector& x);
 
-public:
-
+ public:
   //! Status
   Status m_status;
 

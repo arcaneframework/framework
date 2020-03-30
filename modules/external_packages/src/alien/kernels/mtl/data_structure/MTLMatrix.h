@@ -16,7 +16,6 @@
 namespace Alien::MTL4Internal {
 
 class MatrixInternal;
-
 }
 
 /*---------------------------------------------------------------------------*/
@@ -31,11 +30,10 @@ class MTLMatrix : public IMatrixImpl
   typedef MTL4Internal::MatrixInternal MatrixInternal;
 
  public:
-  MTLMatrix(const MultiMatrixImpl * multi_impl);
-  virtual ~MTLMatrix() ;
+  MTLMatrix(const MultiMatrixImpl* multi_impl);
+  virtual ~MTLMatrix();
 
-public:
-
+ public:
   void clear() {}
 
  public:
@@ -61,14 +59,14 @@ public:
   //   void update(const Alien::SimpleCSRMatrix<double> & v);
   //   void update(const MTLMatrix & v);
 
-private :
- Arccore::Integer ijk(Arccore::Integer i, Arccore::Integer j, Arccore::Integer k,
-     Arccore::Integer block_size, Arccore::Integer unknowns_num) const
- {
-   return k * block_size + i * unknowns_num + j;
- }
+ private:
+  Arccore::Integer ijk(Arccore::Integer i, Arccore::Integer j, Arccore::Integer k,
+      Arccore::Integer block_size, Arccore::Integer unknowns_num) const
+  {
+    return k * block_size + i * unknowns_num + j;
+  }
 
- MatrixInternal* m_internal;
+  MatrixInternal* m_internal;
 };
 
 /*---------------------------------------------------------------------------*/

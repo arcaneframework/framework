@@ -38,17 +38,15 @@ namespace Internal {
 
 class HypreVector : public IVectorImpl
 {
-public:
-
+ public:
   friend class ::SimpleCSR_to_Hypre_VectorConverter;
 
   typedef Internal::VectorInternal VectorInternal;
 
-public:
+ public:
+  HypreVector(const MultiVectorImpl* multi_impl);
 
-  HypreVector(const MultiVectorImpl * multi_impl);
-
-  virtual ~HypreVector() ;
+  virtual ~HypreVector();
 
  public:
   void init(const VectorDistribution& dist, const bool need_allocate);
@@ -57,32 +55,25 @@ public:
   void free() {}
   void clear() {}
 
-private:
-  bool setValues(const int nrow,
-                 const double * values) ;
+ private:
+  bool setValues(const int nrow, const double* values);
 
-  bool setValues(const int nrow,
-                 const int* rows,
-                 const double * values) ;
+  bool setValues(const int nrow, const int* rows, const double* values);
 
-public:
-  bool getValues(const int nrow,
-                 const int* rows,
-                 double * values) const ;
+ public:
+  bool getValues(const int nrow, const int* rows, double* values) const;
 
-  bool getValues(const int nrow,
-                 double * values) const ;
-public:
-  
+  bool getValues(const int nrow, double* values) const;
+
+ public:
   // Méthodes restreintes à usage interne de l'implémentation HYPRE
   VectorInternal* internal() { return m_internal; }
   const VectorInternal* internal() const { return m_internal; }
 
   // These functions should be removed when the relevant Converters will be implemented
-  void update(const HypreVector & v);
-  
-private:
+  void update(const HypreVector& v);
 
+ private:
   bool assemble();
 
  private:

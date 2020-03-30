@@ -95,7 +95,8 @@ VectorInternal::setValues(const int nrow, const int* rows, const Arccore::Real* 
 /*---------------------------------------------------------------------------*/
 
 bool
-VectorInternal::setInitValues(const int nrow, const int* rows, const Arccore::Real* values)
+VectorInternal::setInitValues(
+    const int nrow, const int* rows, const Arccore::Real* values)
 {
   int ierr = HYPRE_IJVectorSetValues(m_internal,
       nrow, // nb de valeurs

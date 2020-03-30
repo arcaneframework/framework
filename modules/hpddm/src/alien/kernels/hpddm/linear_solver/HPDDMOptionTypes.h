@@ -10,19 +10,19 @@ struct HPDDMOptionTypes
   };
 
   enum ePreconditioner
-    {
-      None,
-      Poly,
-      Chebyshev,
-      BSSOR,
-      ILU0,
-      ILU0FP,
-      Cpr,
-      DDMLPC,
-      AMGPC,
-      CprAMG,
-      CprDDML
-    };
+  {
+    None,
+    Poly,
+    Chebyshev,
+    BSSOR,
+    ILU0,
+    ILU0FP,
+    Cpr,
+    DDMLPC,
+    AMGPC,
+    CprAMG,
+    CprDDML
+  };
 };
 
 #endif /* HPDDM_OPTION_TYPES */

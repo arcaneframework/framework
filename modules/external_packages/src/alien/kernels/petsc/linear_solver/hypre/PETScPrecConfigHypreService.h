@@ -14,14 +14,15 @@
 #include <alien/kernels/petsc/linear_solver/IPETScKSP.h>
 #include <alien/kernels/petsc/linear_solver/PETScConfig.h>
 
-struct PETScPrecConfigHypreOptions {
-  enum eType 
-    {
-      PILUT,
-      AMG,
-      ParaSails,
-      Euclid
-    };
+struct PETScPrecConfigHypreOptions
+{
+  enum eType
+  {
+    PILUT,
+    AMG,
+    ParaSails,
+    Euclid
+  };
 };
 
 #include <ALIEN/axl/PETScPrecConfigHypre_axl.h>
@@ -36,11 +37,11 @@ struct PETScPrecConfigHypreOptions {
 namespace Alien {
 
 class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScPrecConfigHypreService
-: public ArcanePETScPrecConfigHypreObject,
-  public PETScConfig
+    : public ArcanePETScPrecConfigHypreObject,
+      public PETScConfig
 {
  public:
-  /** Constructeur de la classe */
+/** Constructeur de la classe */
 #ifdef ALIEN_USE_ARCANE
   PETScPrecConfigHypreService(const Arcane::ServiceBuildInfo& sbi);
 #endif
@@ -50,13 +51,10 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScPrecConfigHypreService
   /** Destructeur de la classe */
   virtual ~PETScPrecConfigHypreService() {}
 
-  void configure(PC & pc,
-                 const ISpace& space,
-                 const MatrixDistribution& distribution);
+  void configure(PC& pc, const ISpace& space, const MatrixDistribution& distribution);
 
   //! Check need of KSPSetUp before calling this PC configure
   virtual bool needPrematureKSPSetUp() const { return false; }
-
 };
 } // namespace Alien
 /*---------------------------------------------------------------------------*/
@@ -67,4 +65,4 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScPrecConfigHypreService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif //PETSCPRECCONFIGHYPRESERVICE_H
+#endif // PETSCPRECCONFIGHYPRESERVICE_H

@@ -1,7 +1,7 @@
 /* Author : gratienj
  * Preconditioner created by combining separate preconditioners for individual
  * fields or groups of fields. See the users manual section "Solving Block Matrices"
- * for more details in PETSc 3.3 documentation : 
+ * for more details in PETSc 3.3 documentation :
  * http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf
  */
 
@@ -27,13 +27,13 @@ namespace Alien {
 /*---------------------------------------------------------------------------*/
 
 class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScPrecConfigFieldSplitService
-: public ArcanePETScPrecConfigFieldSplitObject,
-  public PETScConfig
+    : public ArcanePETScPrecConfigFieldSplitObject,
+      public PETScConfig
 {
  public:
-  /** Constructeur de la classe */
+/** Constructeur de la classe */
 #ifdef ALIEN_USE_ARCANE
-  PETScPrecConfigFieldSplitService(const Arcane::ServiceBuildInfo & sbi);
+  PETScPrecConfigFieldSplitService(const Arcane::ServiceBuildInfo& sbi);
 #endif
 
   PETScPrecConfigFieldSplitService(
@@ -41,15 +41,13 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScPrecConfigFieldSplitService
       std::shared_ptr<IOptionsPETScPrecConfigFieldSplit> options);
   /** Destructeur de la classe */
   virtual ~PETScPrecConfigFieldSplitService() {}
-  
-public:
+
+ public:
   //! Initialisation
-  void configure(PC & pc,
-                 const ISpace& space,
-                 const MatrixDistribution& distribution);
+  void configure(PC& pc, const ISpace& space, const MatrixDistribution& distribution);
 
   //! Check need of KSPSetUp before calling this PC configure
-   virtual bool needPrematureKSPSetUp() const { return true; }
+  virtual bool needPrematureKSPSetUp() const { return true; }
 
  private:
   Arccore::Integer initializeFields(
@@ -70,4 +68,4 @@ public:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif //PETSCSOLVERCONFIGFIELDSPLITSERVICE_H
+#endif // PETSCSOLVERCONFIGFIELDSPLITSERVICE_H

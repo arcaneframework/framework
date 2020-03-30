@@ -14,32 +14,30 @@
 #include <alien/kernels/hts/linear_solver/HTSOptionTypes.h>
 #include <ALIEN/axl/HTSSolver_axl.h>
 
-
 /**
  * Interface du service de résolution de système linéaire
  */
 
-//class HTSSolver ;
+// class HTSSolver ;
 
 namespace Alien {
 
 class ALIEN_IFPEN_SOLVERS_EXPORT HTSLinearSolver : public ArcaneHTSSolverObject,
-                                                  public HTSInternalLinearSolver
+                                                   public HTSInternalLinearSolver
 //, public LinearSolver<BackEnd::tag::htssolver>
 {
  public:
-  /** Constructeur de la classe */
+/** Constructeur de la classe */
 
 #ifdef ALIEN_USE_ARCANE
-  HTSLinearSolver(const Arcane::ServiceBuildInfo & sbi);
+  HTSLinearSolver(const Arcane::ServiceBuildInfo& sbi);
 #endif
 
-  HTSLinearSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng, std::shared_ptr<IOptionsHTSSolver> _options);
+  HTSLinearSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+      std::shared_ptr<IOptionsHTSSolver> _options);
 
   /** Destructeur de la classe */
   virtual ~HTSLinearSolver(){};
-
-
 };
 
 } // namespace Alien

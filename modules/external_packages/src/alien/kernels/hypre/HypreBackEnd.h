@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 
 namespace Arccore::MessagePassing {
-  class IMessagePassingMng;
+class IMessagePassingMng;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -42,7 +42,8 @@ extern IInternalLinearSolver<HypreMatrix, HypreVector>* HypreInternalLinearSolve
 namespace BackEnd {
   namespace tag {
     struct hypre
-    {};
+    {
+    };
   } // namespace tag
 }
 

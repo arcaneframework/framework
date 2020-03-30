@@ -13,28 +13,27 @@ struct TrilinosOptionTypes
     KLU2,
     NumOfSolver
   };
-  static const std::string solver_type[NumOfSolver] ;
-  static std::string const& solverName(eSolver solver) {
-    return solver_type[solver] ;
-  }
+  static const std::string solver_type[NumOfSolver];
+  static std::string const& solverName(eSolver solver) { return solver_type[solver]; }
 
   enum ePreconditioner
-    {
-      None,
-      Relaxation,
-      Chebyshev,
-      ILUK,
-      ILUT,
-      FILU,
-      Schwarz,
-      MLPC,
-      MueLuPC,
-      NumOfPrecond
-    };
-  static const std::string preconditioner_type[NumOfPrecond] ;
+  {
+    None,
+    Relaxation,
+    Chebyshev,
+    ILUK,
+    ILUT,
+    FILU,
+    Schwarz,
+    MLPC,
+    MueLuPC,
+    NumOfPrecond
+  };
+  static const std::string preconditioner_type[NumOfPrecond];
 
-  static std::string const& precondName(ePreconditioner precond) {
-    return preconditioner_type[precond] ;
+  static std::string const& precondName(ePreconditioner precond)
+  {
+    return preconditioner_type[precond];
   }
 };
 

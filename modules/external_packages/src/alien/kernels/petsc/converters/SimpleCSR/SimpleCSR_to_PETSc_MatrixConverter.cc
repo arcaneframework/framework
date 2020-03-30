@@ -61,7 +61,7 @@ SimpleCSR_to_PETSc_MatrixConverter::convert(
     throw Arccore::FatalErrorException(
         A_FUNCINFO, "Block sizes are variable - builds not yet implemented");
   else
-    _build(v,v2);
+    _build(v, v2);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -35,10 +35,8 @@ class IPETScKSP
 
  public:
   //! Initialisation
-  virtual void configure(KSP & ksp,
-                         const ISpace& space,
-                         const MatrixDistribution& distribution) = 0;
-
+  virtual void configure(
+      KSP& ksp, const ISpace& space, const MatrixDistribution& distribution) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -16,11 +16,17 @@ class PETSc_to_SimpleCSR_VectorConverter : public IVectorConverter
 {
  public:
   PETSc_to_SimpleCSR_VectorConverter();
-  virtual ~PETSc_to_SimpleCSR_VectorConverter() { }
-public:
-  Alien::BackEndId sourceBackend() const { return AlgebraTraits<BackEnd::tag::petsc>::name(); }
-  Alien::BackEndId targetBackend() const { return AlgebraTraits<BackEnd::tag::simplecsr>::name(); }
-  void convert(const IVectorImpl * sourceImpl, IVectorImpl * targetImpl) const;
+  virtual ~PETSc_to_SimpleCSR_VectorConverter() {}
+ public:
+  Alien::BackEndId sourceBackend() const
+  {
+    return AlgebraTraits<BackEnd::tag::petsc>::name();
+  }
+  Alien::BackEndId targetBackend() const
+  {
+    return AlgebraTraits<BackEnd::tag::simplecsr>::name();
+  }
+  void convert(const IVectorImpl* sourceImpl, IVectorImpl* targetImpl) const;
 };
 
 /*---------------------------------------------------------------------------*/

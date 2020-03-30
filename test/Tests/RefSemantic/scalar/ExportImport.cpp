@@ -5,7 +5,8 @@
 
 #include <Tests/Environment.h>
 
-int main(int argc, char **argv)
+int
+main(int argc, char** argv)
 {
   // Pour initialiser MPI, les traces et
   // le gestionnaire de parallélisme
@@ -37,26 +38,25 @@ int main(int argc, char **argv)
   auto tag = Alien::DirectMatrixOptions::eResetValues;
   {
     Alien::DirectMatrixBuilder builder(A, tag);
-    builder.reserve(7) ;
+    builder.reserve(7);
     builder.allocate();
-    builder(0,0) = 1.;
-    builder(0,1) = 6.;
-    builder(0,3) = 9.;
-    builder(1,1) = 2.;
-    builder(2,2) = 3.;
-    builder(2,3) = 4.;
-    builder(3,3) = 5.;
+    builder(0, 0) = 1.;
+    builder(0, 1) = 6.;
+    builder(0, 3) = 9.;
+    builder(1, 1) = 2.;
+    builder(2, 2) = 3.;
+    builder(2, 3) = 4.;
+    builder(3, 3) = 5.;
   }
 
   Alien::SystemWriter writer("matrix");
   writer.dump(A);
 
-  Alien::SystemWriter writerHDF("matrix-hdf","hdf5");
+  Alien::SystemWriter writerHDF("matrix-hdf", "hdf5");
   writerHDF.dump(A);
 
-  Alien::SystemWriter writerSMART("matrix-smart","smart");
+  Alien::SystemWriter writerSMART("matrix-smart", "smart");
   writerSMART.dump(A);
-
 
   tm->info() << "* xe = 1";
 
@@ -70,27 +70,28 @@ int main(int argc, char **argv)
 
   Alien::PETScLinearAlgebra algebra;
 
-  algebra.mult(A,xe,b);
+  algebra.mult(A, xe, b);
 
   Alien::SystemWriter writer_b("matrix_b");
-  writer_b.dump(A,b);
+  writer_b.dump(A, b);
 
-  Alien::SystemWriter writer_bHDF("matrix_b-hdf","hdf5");
-  writer_bHDF.dump(A,b);
+  Alien::SystemWriter writer_bHDF("matrix_b-hdf", "hdf5");
+  writer_bHDF.dump(A, b);
 
-  Alien::SystemWriter writer_bSMART("matrix_b-smart","smart");
-  writer_bSMART.dump(A,b);
+  Alien::SystemWriter writer_bSMART("matrix_b-smart", "smart");
+  writer_bSMART.dump(A, b);
 
-  Alien::SolutionInfo sol_info(Alien::SolutionInfo::N2_RELATIVE2RHS_RES,1e-16,"Unity solution, rhs obtained with petsc SpMV");
+  Alien::SolutionInfo sol_info(Alien::SolutionInfo::N2_RELATIVE2RHS_RES, 1e-16,
+      "Unity solution, rhs obtained with petsc SpMV");
 
   Alien::SystemWriter writer_b_x("matrix_b_x");
-  writer_b_x.dump(A,b,xe,sol_info);
+  writer_b_x.dump(A, b, xe, sol_info);
 
-  Alien::SystemWriter writer_b_xHDF("matrix_b_x-hdf","hdf5");
-  writer_b_xHDF.dump(A,b,xe,sol_info);
+  Alien::SystemWriter writer_b_xHDF("matrix_b_x-hdf", "hdf5");
+  writer_b_xHDF.dump(A, b, xe, sol_info);
 
-  Alien::SystemWriter writer_b_xSMART("matrix_b_x-smart","smart");
-  writer_b_xSMART.dump(A,b,xe,sol_info);
+  Alien::SystemWriter writer_b_xSMART("matrix_b_x-smart", "smart");
+  writer_b_xSMART.dump(A, b, xe, sol_info);
 
   /*
   Alien::SystemReader reader("matrix","ascii",pm);

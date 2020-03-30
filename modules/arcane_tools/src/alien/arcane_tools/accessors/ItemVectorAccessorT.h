@@ -42,102 +42,99 @@ namespace ArcaneTools {
   , m_space(vector.space())
   , m_distribution(vector.impl()->distribution())
   , m_block(vector.impl()->block())
-  , m_vblock(vector.impl()->vblock()) {}
+  , m_vblock(vector.impl()->vblock())
+  {
+  }
 
-/*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
-template<typename ValueT>
-typename ItemVectorAccessorT<ValueT>::VectorElement
-ItemVectorAccessorT<ValueT>::
-operator()(const IIndexManager::Entry & entry,
-           typename ItemVectorAccessorT<ValueT>::eSubBlockExtractingPolicyType policy ALIEN_UNUSED_PARAM)
-{
-  if(m_vblock)
-    // XT (27/07/2016) : This is just to allow compilation
-    return VectorElement(*this,
-                         m_block,
-                         entry,
-                         this->m_values);
+  template <typename ValueT>
+  typename ItemVectorAccessorT<ValueT>::VectorElement ItemVectorAccessorT<ValueT>::
+  operator()(const IIndexManager::Entry& entry,
+      typename ItemVectorAccessorT<ValueT>::eSubBlockExtractingPolicyType policy
+          ALIEN_UNUSED_PARAM)
+  {
+    if (m_vblock)
+      // XT (27/07/2016) : This is just to allow compilation
+      return VectorElement(*this, m_block, entry, this->m_values);
     /*
     return VectorElement(*this,
                          m_vblock,
                          entry,
                          this->m_values,
-			 this->m_vector_impl.vblockImpl().offsetOfLocalIndex(),
+       this->m_vector_impl.vblockImpl().offsetOfLocalIndex(),
                          policy==FirstContiguousIndexes);
     */
-  else
-    return VectorElement(*this,
-                         m_block,
-                         entry,
-                         this->m_values);
-}
+    else
+      return VectorElement(*this, m_block, entry, this->m_values);
+  }
 
-/*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
-template<typename ValueT>
-ItemVectorAccessorT<ValueT>::VectorElement::
-VectorElement(
-    ItemVectorAccessorT<ValueT>& accessor, const Block* block,
-    const IIndexManager::Entry& entry, Arccore::ArrayView<ValueT> values)
-: m_entry(entry)
+  template <typename ValueT>
+  ItemVectorAccessorT<ValueT>::VectorElement::VectorElement(
+      ItemVectorAccessorT<ValueT>& accessor, const Block* block,
+      const IIndexManager::Entry& entry, Arccore::ArrayView<ValueT> values)
+  : m_entry(entry)
   , m_main_accessor(accessor)
   , m_values(values)
   , m_first_contiguous(true)
   , m_block(block)
-  , m_vblock(nullptr) {}
+  , m_vblock(nullptr)
+  {
+  }
 
-/*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
-template<typename ValueT>
-ItemVectorAccessorT<ValueT>::VectorElement::
-VectorElement(
-    ItemVectorAccessorT<ValueT>& accessor, const VBlock* block,
-    const IIndexManager::Entry& entry, Arccore::ArrayView<ValueT> values,
-    Arccore::ConstArrayView<Arccore::Integer> values_ptr,
-    bool first_contiguous_indexes_policy)
-: m_entry(entry)
+  template <typename ValueT>
+  ItemVectorAccessorT<ValueT>::VectorElement::VectorElement(
+      ItemVectorAccessorT<ValueT>& accessor, const VBlock* block,
+      const IIndexManager::Entry& entry, Arccore::ArrayView<ValueT> values,
+      Arccore::ConstArrayView<Arccore::Integer> values_ptr,
+      bool first_contiguous_indexes_policy)
+  : m_entry(entry)
   , m_main_accessor(accessor)
   , m_values(values)
   , m_values_ptr(values_ptr)
   , m_first_contiguous(first_contiguous_indexes_policy)
   , m_block(nullptr)
-  , m_vblock(block) {}
+  , m_vblock(block)
+  {
+  }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
-template <typename ValueT>
-void ItemVectorAccessorT<ValueT>::VectorElement::operator=(const Arccore::Real& value)
-{
-  const VectorDistribution& dist = this->m_main_accessor.m_distribution;
-  Arccore::ConstArrayView<Arccore::Integer> indices = this->m_entry.getOwnIndexes();
-  const Arccore::Integer offset = dist.offset();
-  const Arccore::Integer nIndex = indices.size();
-  Arccore::ArrayView<Arccore::Real>& values = this->m_values;
+  template <typename ValueT>
+  void ItemVectorAccessorT<ValueT>::VectorElement::operator=(const Arccore::Real& value)
+  {
+    const VectorDistribution& dist = this->m_main_accessor.m_distribution;
+    Arccore::ConstArrayView<Arccore::Integer> indices = this->m_entry.getOwnIndexes();
+    const Arccore::Integer offset = dist.offset();
+    const Arccore::Integer nIndex = indices.size();
+    Arccore::ArrayView<Arccore::Real>& values = this->m_values;
 
-  if (m_block) {
-    const Arccore::Integer fix_block_size = m_block->size();
-    for (Arccore::Integer i = 0; i < nIndex; ++i)
-      for (Arccore::Integer j = 0; j < fix_block_size; ++j)
-        values[fix_block_size * (indices[i] - offset) + j] = value;
-  } else if (m_vblock) {
-    for (Arccore::Integer i = 0; i < nIndex; ++i) {
-      Arccore::Integer index = indices[i] - offset;
-      Arccore::Integer ptr = this->m_values_ptr[index];
-      Arccore::Integer block_size = this->m_values_ptr[index + 1] - ptr;
-      for (Arccore::Integer j = 0; j < block_size; ++j)
-        values[ptr + j] = value;
+    if (m_block) {
+      const Arccore::Integer fix_block_size = m_block->size();
+      for (Arccore::Integer i = 0; i < nIndex; ++i)
+        for (Arccore::Integer j = 0; j < fix_block_size; ++j)
+          values[fix_block_size * (indices[i] - offset) + j] = value;
+    } else if (m_vblock) {
+      for (Arccore::Integer i = 0; i < nIndex; ++i) {
+        Arccore::Integer index = indices[i] - offset;
+        Arccore::Integer ptr = this->m_values_ptr[index];
+        Arccore::Integer block_size = this->m_values_ptr[index + 1] - ptr;
+        for (Arccore::Integer j = 0; j < block_size; ++j)
+          values[ptr + j] = value;
+      }
+    } else {
+      for (Arccore::Integer i = 0; i < nIndex; ++i)
+        values[indices[i] - offset] = value;
     }
   }
-  else {
-    for (Arccore::Integer i = 0; i < nIndex; ++i)
-      values[indices[i] - offset] = value;
-  }
-}
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
 } // namespace Alien
 

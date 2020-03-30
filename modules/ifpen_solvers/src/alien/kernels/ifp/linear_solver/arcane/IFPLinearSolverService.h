@@ -19,24 +19,25 @@ namespace Alien {
 /*---------------------------------------------------------------------------*/
 
 class ALIEN_IFPEN_SOLVERS_EXPORT IFPLinearSolverService
-: public ArcaneIFPLinearSolverObject,
-  public IFPInternalLinearSolver
+    : public ArcaneIFPLinearSolverObject,
+      public IFPInternalLinearSolver
 {
  public:
  public:
-  /** Constructeur de la classe */
+/** Constructeur de la classe */
 
 #ifdef ALIEN_USE_ARCANE
-  IFPLinearSolverService(const Arcane::ServiceBuildInfo & sbi);
+  IFPLinearSolverService(const Arcane::ServiceBuildInfo& sbi);
 #endif
-  IFPLinearSolverService(Arccore::MessagePassing::IMessagePassingMng* parallel_mng, std::shared_ptr<IOptionsIFPLinearSolver> options);
+  IFPLinearSolverService(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+      std::shared_ptr<IOptionsIFPLinearSolver> options);
 
   /** Destructeur de la classe */
   virtual ~IFPLinearSolverService() {}
 
-public:
+ public:
 };
 
 } // namespace Alien
 
-#endif //IFPSOLVERIMPL_H
+#endif // IFPSOLVERIMPL_H

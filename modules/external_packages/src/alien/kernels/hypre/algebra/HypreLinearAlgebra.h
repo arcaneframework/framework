@@ -17,7 +17,6 @@
 namespace Alien {
 
 typedef LinearAlgebra<BackEnd::tag::hypre> HypreLinearAlgebra;
-
 }
 
 /*---------------------------------------------------------------------------*/

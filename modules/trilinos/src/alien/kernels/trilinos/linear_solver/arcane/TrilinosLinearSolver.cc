@@ -28,38 +28,40 @@ template <typename TagT>
 TrilinosLinearSolver<TagT>::TrilinosLinearSolver(const Arcane::ServiceBuildInfo& sbi)
 : ArcaneTrilinosSolverObject(sbi)
 , LinearSolver<TagT>(sbi.subDomain()->parallelMng()->messagePassingMng(), options())
-{}
+{
+}
 #endif
-template<typename TagT>
-TrilinosLinearSolver<TagT>::TrilinosLinearSolver(Arccore::MessagePassing::IMessagePassingMng *parallel_mng,
-                                                 std::shared_ptr<IOptionsTrilinosSolver> _options)
-        : ArcaneTrilinosSolverObject(_options), LinearSolver<TagT>(parallel_mng, options())
+template <typename TagT>
+TrilinosLinearSolver<TagT>::TrilinosLinearSolver(
+    Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+    std::shared_ptr<IOptionsTrilinosSolver> _options)
+: ArcaneTrilinosSolverObject(_options)
+, LinearSolver<TagT>(parallel_mng, options())
 {
 }
 
-
 /*---------------------------------------------------------------------------*/
 
-template class TrilinosLinearSolver<BackEnd::tag::tpetraserial> ;
-typedef TrilinosLinearSolver<BackEnd::tag::tpetraserial> SolverSerial ;
-ARCANE_REGISTER_SERVICE_TRILINOSSOLVER(TrilinosSolver,SolverSerial);
+template class TrilinosLinearSolver<BackEnd::tag::tpetraserial>;
+typedef TrilinosLinearSolver<BackEnd::tag::tpetraserial> SolverSerial;
+ARCANE_REGISTER_SERVICE_TRILINOSSOLVER(TrilinosSolver, SolverSerial);
 
 #ifdef KOKKOS_ENABLE_OPENMP
-template class TrilinosLinearSolver<BackEnd::tag::tpetraomp> ;
-typedef TrilinosLinearSolver<BackEnd::tag::tpetraomp> SolverOMP ;
-ARCANE_REGISTER_SERVICE_TRILINOSSOLVER(TrilinosSolverOMP,SolverOMP);
+template class TrilinosLinearSolver<BackEnd::tag::tpetraomp>;
+typedef TrilinosLinearSolver<BackEnd::tag::tpetraomp> SolverOMP;
+ARCANE_REGISTER_SERVICE_TRILINOSSOLVER(TrilinosSolverOMP, SolverOMP);
 #endif
 
 #ifdef KOKKOS_ENABLE_THREADS
-template class TrilinosLinearSolver<BackEnd::tag::tpetrapth> ;
-typedef TrilinosLinearSolver<BackEnd::tag::tpetrapth> SolverPTH ;
-ARCANE_REGISTER_SERVICE_TRILINOSSOLVER(TrilinosSolverPTH,SolverPTH);
+template class TrilinosLinearSolver<BackEnd::tag::tpetrapth>;
+typedef TrilinosLinearSolver<BackEnd::tag::tpetrapth> SolverPTH;
+ARCANE_REGISTER_SERVICE_TRILINOSSOLVER(TrilinosSolverPTH, SolverPTH);
 #endif
 
 #ifdef KOKKOS_ENABLE_CUDA
-template class TrilinosLinearSolver<BackEnd::tag::tpetracuda> ;
-typedef TrilinosLinearSolver<BackEnd::tag::tpetracuda> SolverCUDA ;
-ARCANE_REGISTER_SERVICE_TRILINOSSOLVER(TrilinosSolverCUDA,SolverCUDA);
+template class TrilinosLinearSolver<BackEnd::tag::tpetracuda>;
+typedef TrilinosLinearSolver<BackEnd::tag::tpetracuda> SolverCUDA;
+ARCANE_REGISTER_SERVICE_TRILINOSSOLVER(TrilinosSolverCUDA, SolverCUDA);
 #endif
 
 } // namespace Alien

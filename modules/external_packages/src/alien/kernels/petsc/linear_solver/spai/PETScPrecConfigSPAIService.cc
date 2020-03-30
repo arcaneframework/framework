@@ -31,17 +31,15 @@ PETScPrecConfigSPAIService::PETScPrecConfigSPAIService(
     std::shared_ptr<IOptionsPETScPrecConfigSPAI> options)
 : ArcanePETScPrecConfigSPAIObject(options)
 , PETScConfig(parallel_mng->commSize() > 1)
-{}
-
-void
-PETScPrecConfigSPAIService::configure(PC & pc,
-		const ISpace& space,
-		const MatrixDistribution& distribution){
-	alien_fatal([&] {
-		cout() << "configure SPAI not available need to be checked";
-	});
+{
 }
 
+void
+PETScPrecConfigSPAIService::configure(
+    PC& pc, const ISpace& space, const MatrixDistribution& distribution)
+{
+  alien_fatal([&] { cout() << "configure SPAI not available need to be checked"; });
+}
 
 //  //! Initialisation
 //  void configure(PC & pc, const IIndexManager * indexManager)
@@ -66,7 +64,7 @@ PETScPrecConfigSPAIService::configure(PC & pc,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_PETSCPRECCONFIGSPAI(SPAI,PETScPrecConfigSPAIService);
+ARCANE_REGISTER_SERVICE_PETSCPRECCONFIGSPAI(SPAI, PETScPrecConfigSPAIService);
 
 } // namespace Alien
 
@@ -79,4 +77,3 @@ REGISTER_STRONG_OPTIONS_PETSCPRECCONFIGSPAI();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

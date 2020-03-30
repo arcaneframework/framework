@@ -32,31 +32,31 @@ PETScPrecConfigNoPreconditionerService::PETScPrecConfigNoPreconditionerService(
 : ArcanePETScPrecConfigNoPreconditionerObject(options)
 , PETScConfig(parallel_mng->commSize() > 1)
 {
-	;
+  ;
 }
-
 
 //! Initialisation
-void PETScPrecConfigNoPreconditionerService::configure(PC & pc,
-		const ISpace& space,
-		const MatrixDistribution& distribution)
+void
+PETScPrecConfigNoPreconditionerService::configure(
+    PC& pc, const ISpace& space, const MatrixDistribution& distribution)
 {
-	alien_debug([&] {
-		cout() << "configure PETSc none preconditioner";
-	});
-	checkError("Set preconditioner",PCSetType(pc,PCNONE));
+  alien_debug([&] { cout() << "configure PETSc none preconditioner"; });
+  checkError("Set preconditioner", PCSetType(pc, PCNONE));
 }
 //! Check need of KSPSetUp before calling this PC configure
-bool PETScPrecConfigNoPreconditionerService::needPrematureKSPSetUp() const
+bool
+PETScPrecConfigNoPreconditionerService::needPrematureKSPSetUp() const
 {
-	return false;
+  return false;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_PETSCPRECCONFIGNOPRECONDITIONER(NoPreconditioner,PETScPrecConfigNoPreconditionerService);
-ARCANE_REGISTER_SERVICE_PETSCPRECCONFIGNOPRECONDITIONER(NoPrec,PETScPrecConfigNoPreconditionerService);
+ARCANE_REGISTER_SERVICE_PETSCPRECCONFIGNOPRECONDITIONER(
+    NoPreconditioner, PETScPrecConfigNoPreconditionerService);
+ARCANE_REGISTER_SERVICE_PETSCPRECCONFIGNOPRECONDITIONER(
+    NoPrec, PETScPrecConfigNoPreconditionerService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

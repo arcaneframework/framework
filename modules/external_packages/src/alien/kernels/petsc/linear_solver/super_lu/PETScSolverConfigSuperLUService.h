@@ -18,11 +18,11 @@
 namespace Alien {
 
 class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScSolverConfigSuperLUService
-: public ArcanePETScSolverConfigSuperLUObject,
-  public PETScConfig
+    : public ArcanePETScSolverConfigSuperLUObject,
+      public PETScConfig
 {
  public:
-  /** Constructeur de la classe */
+/** Constructeur de la classe */
 #ifdef ALIEN_USE_ARCANE
   PETScSolverConfigSuperLUService(const Arcane::ServiceBuildInfo& sbi);
 #endif
@@ -33,17 +33,13 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScSolverConfigSuperLUService
 
   /** Destructeur de la classe */
   virtual ~PETScSolverConfigSuperLUService() {}
-  
-public:
 
+ public:
   //! Initialisation
-  void configure(KSP & ksp,
-                   const ISpace& space,
-                   const MatrixDistribution& distribution);
-
+  void configure(KSP& ksp, const ISpace& space, const MatrixDistribution& distribution);
 };
 
 } // namespace Alien
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#endif //PETSCSOLVERCONFIGSUPERLUSERVICE_H
+#endif // PETSCSOLVERCONFIGSUPERLUSERVICE_H

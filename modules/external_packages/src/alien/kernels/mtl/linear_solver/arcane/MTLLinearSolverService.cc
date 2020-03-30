@@ -16,8 +16,8 @@ namespace Alien {
 
 /*---------------------------------------------------------------------------*/
 #ifdef ALIEN_USE_ARCANE
-MTLLinearSolverService::MTLLinearSolverService(const Arcane::ServiceBuildInfo & sbi)
-  : ArcaneMTLLinearSolverObject(sbi)
+MTLLinearSolverService::MTLLinearSolverService(const Arcane::ServiceBuildInfo& sbi)
+: ArcaneMTLLinearSolverObject(sbi)
 , LinearSolver<BackEnd::tag::mtl>(
       sbi.subDomain()->parallelMng()->messagePassingMng(), options())
 {
@@ -36,15 +36,14 @@ MTLLinearSolverService::MTLLinearSolverService(
 
 /*---------------------------------------------------------------------------*/
 
-MTLLinearSolverService::
-~MTLLinearSolverService()
+MTLLinearSolverService::~MTLLinearSolverService()
 {
   ;
 }
 
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_MTLLINEARSOLVER(MTLSolver,MTLLinearSolverService);
+ARCANE_REGISTER_SERVICE_MTLLINEARSOLVER(MTLSolver, MTLLinearSolverService);
 
 } // namespace Alien
 

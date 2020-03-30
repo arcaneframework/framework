@@ -24,7 +24,8 @@ SchurFieldSplitTypeService::SchurFieldSplitTypeService(
     const Arcane::ServiceBuildInfo& sbi)
 : ArcaneSchurFieldSplitTypeObject(sbi)
 , PETScConfig(sbi.subDomain()->parallelMng()->isParallel())
-{}
+{
+}
 #endif
 
 SchurFieldSplitTypeService::SchurFieldSplitTypeService(
@@ -32,7 +33,8 @@ SchurFieldSplitTypeService::SchurFieldSplitTypeService(
     std::shared_ptr<IOptionsSchurFieldSplitType> options)
 : ArcaneSchurFieldSplitTypeObject(options)
 , PETScConfig(parallel_mng->commSize() > 1)
-{}
+{
+}
 
 //! Configure FieldSplit type
 Arccore::Integer
@@ -55,7 +57,7 @@ SchurFieldSplitTypeService::configure(PC& pc, const Arccore::Integer nbField)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_SCHURFIELDSPLITTYPE(Schur,SchurFieldSplitTypeService);
+ARCANE_REGISTER_SERVICE_SCHURFIELDSPLITTYPE(Schur, SchurFieldSplitTypeService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

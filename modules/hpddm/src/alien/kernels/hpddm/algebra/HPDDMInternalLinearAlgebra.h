@@ -21,12 +21,10 @@ namespace Alien {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-typedef SimpleCSRInternalLinearAlgebra HPDDMSolverInternalLinearAlgebra ;
+typedef SimpleCSRInternalLinearAlgebra HPDDMSolverInternalLinearAlgebra;
 
-//typedef AlgebraTraits<BackEnd::tag::hpddm>::matrix_type       HPDDMCSRMatrix;
+// typedef AlgebraTraits<BackEnd::tag::hpddm>::matrix_type       HPDDMCSRMatrix;
 typedef AlgebraTraits<BackEnd::tag::simplecsr>::vector_type CSRVector;
-
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

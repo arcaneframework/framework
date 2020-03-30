@@ -6,7 +6,8 @@ namespace Environment {
 extern Alien::ITraceMng* traceMng();
 }
 
-void buildMatrix(Alien::BlockMatrix& A,std::string const& filename, std::string const& format)
+void
+buildMatrix(Alien::BlockMatrix& A, std::string const& filename, std::string const& format)
 {
   auto* tm = Environment::traceMng();
 
@@ -20,10 +21,9 @@ void buildMatrix(Alien::BlockMatrix& A,std::string const& filename, std::string 
   {
     Alien::MatrixProfiler profiler(A);
 
-    for(int irow = offset; irow < offset + lsize; ++irow)
-    {
-      profiler.addMatrixEntry(irow,irow);
-      if(irow - 1 >= 0)
+    for (int irow = offset; irow < offset + lsize; ++irow) {
+      profiler.addMatrixEntry(irow, irow);
+      if (irow - 1 >= 0)
         profiler.addMatrixEntry(irow, irow - 1);
       if (irow + 1 < gsize)
         profiler.addMatrixEntry(irow, irow + 1);
@@ -50,9 +50,9 @@ void buildMatrix(Alien::BlockMatrix& A,std::string const& filename, std::string 
           values2d[j][j + 1] = -1;
       }
       builder(i, i) = values2d.view();
-      if(i - 1 >= 0)
+      if (i - 1 >= 0)
         builder(i, i - 1) = values2dExtraDiag.view();
-      if(i + 1 < gsize)
+      if (i + 1 < gsize)
         builder(i, i + 1) = values2dExtraDiag.view();
     }
   }

@@ -18,12 +18,11 @@
 #include <alien/core/backend/EigenSolver.h>
 #include <alien/kernels/trilinos/eigen_solver/TrilinosInternalEigenSolver.h>
 
-
 /**
  * Interface du service de résolution de probleme aux valuers propres
  */
 
-//class TrilinosSolver ;
+// class TrilinosSolver ;
 
 namespace Alien {
 
@@ -32,19 +31,17 @@ class ALIEN_TRILINOS_EXPORT TrilinosEigenSolver : public ArcaneTrilinosEigenSolv
 //, public LinearSolver<BackEnd::tag::Trilinossolver>
 {
  public:
-  /** Constructeur de la classe */
+/** Constructeur de la classe */
 
 #ifdef ALIEN_USE_ARCANE
-  TrilinosEigenSolver(const Arcane::ServiceBuildInfo & sbi);
+  TrilinosEigenSolver(const Arcane::ServiceBuildInfo& sbi);
 #endif
 
-  TrilinosEigenSolver(Arccore::MessagePassing::IMessagePassingMng *parallel_mng,
-                      std::shared_ptr<IOptionsTrilinosEigenSolver> _options);
+  TrilinosEigenSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+      std::shared_ptr<IOptionsTrilinosEigenSolver> _options);
 
   /** Destructeur de la classe */
   virtual ~TrilinosEigenSolver(){};
-
-
 };
 
 } // namespace Alien

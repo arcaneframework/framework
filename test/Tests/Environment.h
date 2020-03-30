@@ -9,57 +9,60 @@
 
 namespace Environment {
 
-  struct Private
-  {
-    Arccore::ITraceMng* tm;
-    Arccore::MessagePassing::IMessagePassingMng* pm;
-  } __private;
+struct Private
+{
+  Arccore::ITraceMng* tm;
+  Arccore::MessagePassing::IMessagePassingMng* pm;
+} __private;
 
-  extern void initialize(int argc, char **argv)
-  {
-    MPI_Init(&argc, &argv);
+extern void
+initialize(int argc, char** argv)
+{
+  MPI_Init(&argc, &argv);
 
-    // Gestionnaire de parallélisme
-    __private.pm = Arccore::MessagePassing::Mpi::StandaloneMpiMessagePassingMng::create(MPI_COMM_WORLD);
+  // Gestionnaire de parallélisme
+  __private.pm = Arccore::MessagePassing::Mpi::StandaloneMpiMessagePassingMng::create(
+      MPI_COMM_WORLD);
 
-    // Gestionnaire de trace
-    __private.tm = Arccore::arccoreCreateDefaultTraceMng();
-  }
+  // Gestionnaire de trace
+  __private.tm = Arccore::arccoreCreateDefaultTraceMng();
+}
 
-  extern void finalize()
-  {
-    MPI_Finalize();
-  }
+extern void
+finalize()
+{
+  MPI_Finalize();
+}
 
-  extern Arccore::MessagePassing::IMessagePassingMng* parallelMng()
-  {
-    Arccore::MessagePassing::IMessagePassingMng* pm = __private.pm;
-    return pm;
-  }
+extern Arccore::MessagePassing::IMessagePassingMng*
+parallelMng()
+{
+  Arccore::MessagePassing::IMessagePassingMng* pm = __private.pm;
+  return pm;
+}
 
-  extern Arccore::ITraceMng* traceMng()
-  {
-    Arccore::ITraceMng* tm = __private.tm;
-    return tm;
-  }
-
+extern Arccore::ITraceMng*
+traceMng()
+{
+  Arccore::ITraceMng* tm = __private.tm;
+  return tm;
+}
 }
 
 namespace Environment {
 
-  template<typename T>
-  extern int execute(int argc, char **argv, T&& t)
-  {
-    initialize(argc, argv);
+template <typename T>
+extern int
+execute(int argc, char** argv, T&& t)
+{
+  initialize(argc, argv);
 
-    int ret = t();
+  int ret = t();
 
-    finalize();
+  finalize();
 
-    return ret;
-  }
-
+  return ret;
+}
 }
 
 #endif
-

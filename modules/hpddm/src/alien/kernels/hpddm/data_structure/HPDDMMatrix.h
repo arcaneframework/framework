@@ -14,8 +14,7 @@
 
 BEGIN_HPDDMINTERNAL_NAMESPACE
 
-template<typename ValueT>
-class MatrixInternal;
+template <typename ValueT> class MatrixInternal;
 
 END_HPDDMINTERNAL_NAMESPACE
 
@@ -24,54 +23,42 @@ END_HPDDMINTERNAL_NAMESPACE
 namespace Alien {
 
 /*---------------------------------------------------------------------------*/
-template<typename ValueT>
-class HPDDMMatrix : public IMatrixImpl
+template <typename ValueT> class HPDDMMatrix : public IMatrixImpl
 {
  public:
   typedef HPDDMInternal::MatrixInternal<ValueT> MatrixInternal;
-  typedef SimpleCSRMatrix<ValueT>      CSRMatrixType;
-  typedef SimpleCSRVector<ValueT>      CSRVectorType;
+  typedef SimpleCSRMatrix<ValueT> CSRMatrixType;
+  typedef SimpleCSRVector<ValueT> CSRVectorType;
 
-public :
-
-  HPDDMMatrix(const MultiMatrixImpl * multi_impl);
+ public:
+  HPDDMMatrix(const MultiMatrixImpl* multi_impl);
   virtual ~HPDDMMatrix() {}
 
-public:
-
+ public:
   void clear() {}
 
  public:
-
-  void compute(IMessagePassingMng* parallel_mng,
-               const CSRMatrixType& A,
-               unsigned short nu,
-               bool schwarz_coarse_correction)
+  void compute(IMessagePassingMng* parallel_mng, const CSRMatrixType& A,
+      unsigned short nu, bool schwarz_coarse_correction)
   {
-    m_internal.compute(parallel_mng,A,nu,schwarz_coarse_correction) ;
+    m_internal.compute(parallel_mng, A, nu, schwarz_coarse_correction);
   }
 
-  void compute(IMessagePassingMng* parallel_mng,
-               const CSRMatrixType& Ad,
-               const CSRMatrixType& An,
-               unsigned short nu,
-               bool schwarz_coarse_correction)
+  void compute(IMessagePassingMng* parallel_mng, const CSRMatrixType& Ad,
+      const CSRMatrixType& An, unsigned short nu, bool schwarz_coarse_correction)
   {
-    m_internal.compute(parallel_mng,Ad,An,nu,schwarz_coarse_correction) ;
+    m_internal.compute(parallel_mng, Ad, An, nu, schwarz_coarse_correction);
   }
-
 
  public:
   MatrixInternal* internal() { return &m_internal; }
   const MatrixInternal* internal() const { return &m_internal; }
 
-private :
+ private:
   MatrixInternal m_internal;
 };
 
 /*---------------------------------------------------------------------------*/
-
-
 }
 
 /*---------------------------------------------------------------------------*/

@@ -18,7 +18,8 @@ dump(const IMatrix& a, const AsciiDumper::Style style)
 
 /*---------------------------------------------------------------------------*/
 
-void dump(const IVector& a,const AsciiDumper::Style style)
+void
+dump(const IVector& a, const AsciiDumper::Style style)
 {
   Alien::AsciiDumper(style).dump(a);
 }

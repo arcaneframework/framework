@@ -5,13 +5,12 @@
 
 #include <alien/core/impl/MultiMatrixImpl.h>
 
-
 #include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
 
 using namespace Arccore;
 
 namespace Environment {
-  extern Arccore::MessagePassing::IMessagePassingMng* parallelMng();
+extern Arccore::MessagePassing::IMessagePassingMng* parallelMng();
 }
 
 TEST(TestRedistributor, RedistributorMatrix)
@@ -23,10 +22,10 @@ TEST(TestRedistributor, RedistributorMatrix)
   Alien::Space col_space(mdist.globalColSize(), "Space");
 
   std::unique_ptr<Alien::MultiMatrixImpl> multimat(
-						   new Alien::MultiMatrixImpl(row_space.clone(), col_space.clone(), mdist.clone()));
+      new Alien::MultiMatrixImpl(row_space.clone(), col_space.clone(), mdist.clone()));
 
   Alien::RedistributorMatrix mat(multimat.get());
-  //mat.updateTargetPM(Environment::parallelMng());
+  // mat.updateTargetPM(Environment::parallelMng());
 }
 
 // This test requires IFPEN API.
@@ -101,4 +100,4 @@ TEST(TestRedistributor, Redistributor)
   algebra.axpy(2.,bb, xx);
   algebra.mult(Aa, xx, bb);
 }
-#endif //0
+#endif // 0

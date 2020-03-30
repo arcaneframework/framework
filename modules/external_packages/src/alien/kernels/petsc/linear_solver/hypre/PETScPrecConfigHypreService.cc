@@ -33,53 +33,54 @@ PETScPrecConfigHypreService::PETScPrecConfigHypreService(
     std::shared_ptr<IOptionsPETScPrecConfigHypre> options)
 : ArcanePETScPrecConfigHypreObject(options)
 , PETScConfig(parallel_mng->commSize() > 1)
-{}
+{
+}
 
 void
-PETScPrecConfigHypreService::
-configure(PC & pc,
-		const ISpace& space,
-		const MatrixDistribution& distribution)
+PETScPrecConfigHypreService::configure(
+    PC& pc, const ISpace& space, const MatrixDistribution& distribution)
 {
-	alien_debug([&] {
-		cout() << "configure PETSc hypre preconditioner";
-	});
-	//if(options()->fieldSplitMode())
-	checkError("Set preconditioner",PCSetType(pc,PCHYPRE));
+  alien_debug([&] { cout() << "configure PETSc hypre preconditioner"; });
+  // if(options()->fieldSplitMode())
+  checkError("Set preconditioner", PCSetType(pc, PCHYPRE));
 
-	// for more options see
-	// http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCHYPRE.html
+  // for more options see
+  // http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCHYPRE.html
 
-	switch (options()->type()) {
-	case PETScPrecConfigHypreOptions::PILUT:
-		checkError("Set Hypre preconditioner",PCHYPRESetType(pc,"pilut"));
-		break;
-	case PETScPrecConfigHypreOptions::AMG:
-		checkError("Set Hypre preconditioner",PCHYPRESetType(pc,"boomeramg"));
-		checkError("Set Hypre coarsening", PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_coarsen_type","Falgout"));
-		checkError("Set Hypre Interpolation type", PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_interp_type","classical"));
-		checkError("Set Hypre Relax type", PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_relax_type_all","SOR/Jacobi"));
-		checkError("Hypre AMG SetDebugFlag",PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_print_debug", "1"));
-		PCSetFromOptions(pc);
-		// Default option is reversed in PETSc (CF-Relaxation is default)
-		//checkError("Set Hypre Relax order", PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_CF","1"));
-		break;
-	case PETScPrecConfigHypreOptions::ParaSails:
-		checkError("Set Hypre preconditioner",PCHYPRESetType(pc,"parasails"));
-		break;
-	case PETScPrecConfigHypreOptions::Euclid:
-		checkError("Set Hypre preconditioner",PCHYPRESetType(pc,"euclid"));
-		break;
+  switch (options()->type()) {
+  case PETScPrecConfigHypreOptions::PILUT:
+    checkError("Set Hypre preconditioner", PCHYPRESetType(pc, "pilut"));
+    break;
+  case PETScPrecConfigHypreOptions::AMG:
+    checkError("Set Hypre preconditioner", PCHYPRESetType(pc, "boomeramg"));
+    checkError("Set Hypre coarsening",
+        PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_coarsen_type", "Falgout"));
+    checkError("Set Hypre Interpolation type",
+        PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_interp_type", "classical"));
+    checkError("Set Hypre Relax type",
+        PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_relax_type_all", "SOR/Jacobi"));
+    checkError("Hypre AMG SetDebugFlag",
+        PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_print_debug", "1"));
+    PCSetFromOptions(pc);
+    // Default option is reversed in PETSc (CF-Relaxation is default)
+    // checkError("Set Hypre Relax order", PetscOptionsSetValue(NULL,
+    // "-pc_hypre_boomeramg_CF","1"));
+    break;
+  case PETScPrecConfigHypreOptions::ParaSails:
+    checkError("Set Hypre preconditioner", PCHYPRESetType(pc, "parasails"));
+    break;
+  case PETScPrecConfigHypreOptions::Euclid:
+    checkError("Set Hypre preconditioner", PCHYPRESetType(pc, "euclid"));
+    break;
   default:
     throw Arccore::NotImplementedException(A_FUNCINFO, "Undefined Hypre type");
   }
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_PETSCPRECCONFIGHYPRE(Hypre,PETScPrecConfigHypreService);
+ARCANE_REGISTER_SERVICE_PETSCPRECCONFIGHYPRE(Hypre, PETScPrecConfigHypreService);
 
 } // namespace Alien
 
@@ -91,4 +92,3 @@ REGISTER_STRONG_OPTIONS_PETSCPRECCONFIGHYPRE();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

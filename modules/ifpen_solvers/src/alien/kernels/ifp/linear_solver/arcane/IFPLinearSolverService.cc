@@ -9,7 +9,6 @@
 
 #include <ALIEN/axl/IFPLinearSolver_StrongOptions.h>
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 namespace Alien {
@@ -17,20 +16,24 @@ namespace Alien {
 #ifdef ALIEN_USE_ARCANE
 IFPLinearSolverService::IFPLinearSolverService(const Arcane::ServiceBuildInfo& sbi)
 : ArcaneIFPLinearSolverObject(sbi)
-, Alien::IFPInternalLinearSolver(sbi.subDomain()->parallelMng()->messagePassingMng(), options())
-{}
+, Alien::IFPInternalLinearSolver(
+      sbi.subDomain()->parallelMng()->messagePassingMng(), options())
+{
+}
 #endif
 
-IFPLinearSolverService::IFPLinearSolverService(Arccore::MessagePassing::IMessagePassingMng* parallel_mng, std::shared_ptr<IOptionsIFPLinearSolver> _options)
-  : ArcaneIFPLinearSolverObject(_options)
-  , Alien::IFPInternalLinearSolver(parallel_mng, options())
+IFPLinearSolverService::IFPLinearSolverService(
+    Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+    std::shared_ptr<IOptionsIFPLinearSolver> _options)
+: ArcaneIFPLinearSolverObject(_options)
+, Alien::IFPInternalLinearSolver(parallel_mng, options())
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_IFPLINEARSOLVER(IFPSolver,IFPLinearSolverService);
+ARCANE_REGISTER_SERVICE_IFPLINEARSOLVER(IFPSolver, IFPLinearSolverService);
 
 } // namespace Alien
 

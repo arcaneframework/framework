@@ -64,5 +64,6 @@ SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
 Standard:        Cpp11
+SortIncludes: false
 TabWidth:        2
 UseTab:          Never

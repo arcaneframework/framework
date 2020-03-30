@@ -22,11 +22,11 @@
 namespace Alien {
 
 class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScPrecConfigSPAIService
-: public ArcanePETScPrecConfigSPAIObject,
-  public PETScConfig
+    : public ArcanePETScPrecConfigSPAIObject,
+      public PETScConfig
 {
  public:
-  /** Constructeur de la classe */
+/** Constructeur de la classe */
 #ifdef ALIEN_USE_ARCANE
   PETScPrecConfigSPAIService(const Arcane::ServiceBuildInfo& sbi);
 #endif
@@ -37,16 +37,11 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScPrecConfigSPAIService
   /** Destructeur de la classe */
   virtual ~PETScPrecConfigSPAIService() {}
 
-public:
-
-  void configure(PC & pc,
-      const ISpace& space,
-      const MatrixDistribution& distribution);
+ public:
+  void configure(PC& pc, const ISpace& space, const MatrixDistribution& distribution);
 
   //! Check need of KSPSetUp before calling this PC configure
-  virtual bool needPrematureKSPSetUp() const {
-    return false;
-  }
+  virtual bool needPrematureKSPSetUp() const { return false; }
 };
 } // namespace Alien
 /*---------------------------------------------------------------------------*/
@@ -56,4 +51,4 @@ public:
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#endif //PETSCPRECCONFIGSPAISERVICE_H
+#endif // PETSCPRECCONFIGSPAISERVICE_H

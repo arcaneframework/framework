@@ -25,58 +25,57 @@ BEGIN_IFPSOLVERINTENRAL_NAMESPACE
 
 class MatrixInternal
 {
-public:
-  MatrixInternal(const MultiMatrixImpl * matrix_impl, Int64 timestamp=-1);
+ public:
+  MatrixInternal(const MultiMatrixImpl* matrix_impl, Int64 timestamp = -1);
   virtual ~MatrixInternal();
-  void init() ;
-    Int64 timestamp() const {
-    return m_timestamp ;
-  }
-public:
-  bool m_filled               = false ;
-  bool m_extra_filled         = false ;
-  bool m_elliptic_split_tag   = false ;
-  bool m_system_is_resizeable = false ;
-  Int64 m_timestamp           = -1 ;
+  void init();
+  Int64 timestamp() const { return m_timestamp; }
+ public:
+  bool m_filled = false;
+  bool m_extra_filled = false;
+  bool m_elliptic_split_tag = false;
+  bool m_system_is_resizeable = false;
+  Int64 m_timestamp = -1;
 
-public:
+ public:
   static bool isInstancied() { return m_static_multi_impl != NULL; }
-  static const MultiMatrixImpl * multiImpl() { return m_static_multi_impl; }
+  static const MultiMatrixImpl* multiImpl() { return m_static_multi_impl; }
 
-private:
-  static const MultiMatrixImpl * m_static_multi_impl;
+ private:
+  static const MultiMatrixImpl* m_static_multi_impl;
 };
 
 /*---------------------------------------------------------------------------*/
 
 class VectorInternal
 {
-private:
+ private:
   friend class MatrixInternal;
 
-public :
-  VectorInternal(const MultiVectorImpl * vector_impl);
+ public:
+  VectorInternal(const MultiVectorImpl* vector_impl);
   virtual ~VectorInternal();
 
-public:
-  int  m_offset ;
-  int  m_local_size ;
-  int* m_rows ;
+ public:
+  int m_offset;
+  int m_local_size;
+  int* m_rows;
   bool m_filled;
   bool m_extra_filled;
 
-public:
+ public:
   static bool isInstancied() { return m_static_multi_impl != NULL; }
   static void setRepresentationSwitch(const bool s);
   static bool hasRepresentationSwitch();
   static void initRHS(const bool s);
-  static int isRHS() ;
+  static int isRHS();
 
-private:
-  //! Tant que m_static_representation_switch est activé, les mises à jour en écriture sont désactivées
+ private:
+  //! Tant que m_static_representation_switch est activé, les mises à jour en écriture
+  //! sont désactivées
   static bool m_static_representation_switch;
-  static const MultiVectorImpl * m_static_multi_impl;
-  static int m_static_init_rhs ;
+  static const MultiVectorImpl* m_static_multi_impl;
+  static int m_static_init_rhs;
 };
 
 /*---------------------------------------------------------------------------*/

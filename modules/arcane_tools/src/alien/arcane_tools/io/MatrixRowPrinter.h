@@ -35,56 +35,55 @@ namespace ArcaneTools {
     {
       eNone,
       eShortLid,
-    eShortUid,
-    eFull
+      eShortUid,
+      eFull
+    };
+
+   public:
+    //! Object to get row data
+    /*! May be optimized if necessary */
+    typedef std::map<Arccore::Integer, Arccore::Real> RowData;
+
+   public:
+    /** Constructeur de la classe */
+    /*! @a reverse_mapping_type select what display is used if the matrix has an
+     * index-manager
+     * - eNone : no reverse mapping
+     * - eShortLid : reverse mapping with local id
+     * - eShortUid : reverse mapping with unique id
+     * - eFull : reverse mapping with local id, unique id and owner
+     */
+    MatrixRowPrinter(const IMatrix& matrix, const IIndexManager& index_mng,
+        const ReverseMappingType reverse_mapping_type);
+
+    /** Destructeur de la classe */
+    virtual ~MatrixRowPrinter();
+
+   public:
+    //! Print a matrix row (using global numbering)
+    Arccore::String operator()(const Arccore::Integer global_line_index) const
+    {
+      return print(global_line_index);
+    }
+
+    //! Print a matrix row (using global numbering)
+    Arccore::String print(const Arccore::Integer global_line_index) const;
+
+    //! Dump a vector
+    RowData extract(const Arccore::Integer global_line_index) const;
+
+   private:
+    //! Check error of PETSc commands
+    void checkError(const Arccore::String& msg, int ierr) const;
+
+   private:
+    class Internal;
+    Internal* m_internal;
+    const PETScMatrix& m_petsc_matrix;
   };
 
- public:
-  //! Object to get row data
-  /*! May be optimized if necessary */
-  typedef std::map<Arccore::Integer, Arccore::Real> RowData;
-
- public:
-  /** Constructeur de la classe */
-  /*! @a reverse_mapping_type select what display is used if the matrix has an
-   * index-manager
-   * - eNone : no reverse mapping
-   * - eShortLid : reverse mapping with local id
-   * - eShortUid : reverse mapping with unique id
-   * - eFull : reverse mapping with local id, unique id and owner
-   */
-  MatrixRowPrinter(const IMatrix& matrix,
-                   const IIndexManager& index_mng,
-                   const ReverseMappingType reverse_mapping_type);
-  
-  /** Destructeur de la classe */
-  virtual ~MatrixRowPrinter();
-
- public:
-  //! Print a matrix row (using global numbering)
-  Arccore::String operator()(const Arccore::Integer global_line_index) const
-  {
-    return print(global_line_index);
-  }
-
-  //! Print a matrix row (using global numbering)
-  Arccore::String print(const Arccore::Integer global_line_index) const;
-
-  //! Dump a vector
-  RowData extract(const Arccore::Integer global_line_index) const;
-
- private:
-  //! Check error of PETSc commands
-  void checkError(const Arccore::String& msg, int ierr) const;
-
- private:
-  class Internal;
-  Internal* m_internal;
-  const PETScMatrix& m_petsc_matrix;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
 } // namespace Alien
 

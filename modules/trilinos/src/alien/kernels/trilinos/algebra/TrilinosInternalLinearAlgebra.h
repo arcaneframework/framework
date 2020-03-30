@@ -20,47 +20,50 @@ typedef AlgebraTraits<BackEnd::tag::tpetraserial>::matrix_type TrilinosMatrixTyp
 typedef AlgebraTraits<BackEnd::tag::tpetraserial>::vector_type TrilinosVectorType;
 
 class ALIEN_TRILINOS_EXPORT TrilinosInternalLinearAlgebra
-        : public IInternalLinearAlgebra<TrilinosMatrixType, TrilinosVectorType> {
-public:
-    TrilinosInternalLinearAlgebra(Arccore::MessagePassing::IMessagePassingMng *pm = nullptr) {}
+    : public IInternalLinearAlgebra<TrilinosMatrixType, TrilinosVectorType>
+{
+ public:
+  TrilinosInternalLinearAlgebra(Arccore::MessagePassing::IMessagePassingMng* pm = nullptr)
+  {
+  }
 
-    virtual ~TrilinosInternalLinearAlgebra() {}
+  virtual ~TrilinosInternalLinearAlgebra() {}
 
-    // IInternalLinearAlgebra interface.
-    Real norm0(const Vector &x) const;
+  // IInternalLinearAlgebra interface.
+  Real norm0(const Vector& x) const;
 
-    Real norm1(const Vector &x) const;
+  Real norm1(const Vector& x) const;
 
-    Real norm2(const Vector &x) const;
+  Real norm2(const Vector& x) const;
 
-    void mult(const Matrix &a, const Vector &x, Vector &r) const;
+  void mult(const Matrix& a, const Vector& x, Vector& r) const;
 
-    void axpy(const Real &alpha, const Vector &x, Vector &r) const;
+  void axpy(const Real& alpha, const Vector& x, Vector& r) const;
 
-    void aypx(const Real &alpha, Vector &y, const Vector &x) const;
+  void aypx(const Real& alpha, Vector& y, const Vector& x) const;
 
-    void copy(const Vector &x, Vector &r) const;
+  void copy(const Vector& x, Vector& r) const;
 
-    Real dot(const Vector &x, const Vector &y) const;
+  Real dot(const Vector& x, const Vector& y) const;
 
-    void scal(const Real &alpha, Vector &x) const;
+  void scal(const Real& alpha, Vector& x) const;
 
-    void diagonal(const Matrix &a, Vector &x) const;
+  void diagonal(const Matrix& a, Vector& x) const;
 
-    void reciprocal(Vector &x) const;
+  void reciprocal(Vector& x) const;
 
-    void pointwiseMult(const Vector &x, const Vector &y, Vector &w) const;
+  void pointwiseMult(const Vector& x, const Vector& y, Vector& w) const;
 
-  void mult(const Matrix& a, const UniqueArray<Real>& x, UniqueArray<Real>& r) const ;
-  void axpy(const Real & alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const;
-  void aypx(const Real & alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const;
+  void mult(const Matrix& a, const UniqueArray<Real>& x, UniqueArray<Real>& r) const;
+  void axpy(const Real& alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const;
+  void aypx(const Real& alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const;
   void copy(const UniqueArray<Real>& x, UniqueArray<Real>& r) const;
-  Real dot(Integer local_size, const UniqueArray<Real>& x, const UniqueArray<Real>& y) const;
-  void scal(const Real & alpha, UniqueArray<Real>& x) const;
+  Real dot(
+      Integer local_size, const UniqueArray<Real>& x, const UniqueArray<Real>& y) const;
+  void scal(const Real& alpha, UniqueArray<Real>& x) const;
 
-  void dump(Matrix const& a,std::string const& filename) const ;
-  void dump(Vector const& x,std::string const& filename) const ;
-
+  void dump(Matrix const& a, std::string const& filename) const;
+  void dump(Vector const& x, std::string const& filename) const;
 };
 
 #ifdef KOKKOS_ENABLE_OPENMP
@@ -68,21 +71,21 @@ typedef AlgebraTraits<BackEnd::tag::tpetraomp>::matrix_type TpetraOmpMatrixType;
 typedef AlgebraTraits<BackEnd::tag::tpetraomp>::vector_type TpetraOmpVectorType;
 
 class ALIEN_TRILINOS_EXPORT TpetraOmpInternalLinearAlgebra
-  : public IInternalLinearAlgebra<TpetraOmpMatrixType, TpetraOmpVectorType>
+    : public IInternalLinearAlgebra<TpetraOmpMatrixType, TpetraOmpVectorType>
 {
  public:
-  TpetraOmpInternalLinearAlgebra(IParallelMng* pm = nullptr){}
+  TpetraOmpInternalLinearAlgebra(IParallelMng* pm = nullptr) {}
   virtual ~TpetraOmpInternalLinearAlgebra() {}
 
   // IInternalLinearAlgebra interface.
-  Real norm0(const Vector& x) const  { return 0. ; }
-  Real norm1(const Vector& x) const  { return 0. ; }
-  Real norm2(const Vector& x) const  { return 0. ; }
+  Real norm0(const Vector& x) const { return 0.; }
+  Real norm1(const Vector& x) const { return 0.; }
+  Real norm2(const Vector& x) const { return 0.; }
   void mult(const Matrix& a, const Vector& x, Vector& r) const {}
   void axpy(const Real& alpha, const Vector& x, Vector& r) const {}
   void aypx(const Real& alpha, Vector& y, const Vector& x) const {}
   void copy(const Vector& x, Vector& r) const {}
-  Real dot(const Vector& x, const Vector& y) const { return 0. ; }
+  Real dot(const Vector& x, const Vector& y) const { return 0.; }
   void scal(const Real& alpha, Vector& x) const {}
   void diagonal(const Matrix& a, Vector& x) const {}
   void reciprocal(Vector& x) const {}
@@ -95,25 +98,25 @@ typedef AlgebraTraits<BackEnd::tag::tpetrapth>::matrix_type TpetraPthMatrixType;
 typedef AlgebraTraits<BackEnd::tag::tpetrapth>::vector_type TpetraPthVectorType;
 
 class ALIEN_TRILINOS_EXPORT TpetraPthInternalLinearAlgebra
-  : public IInternalLinearAlgebra<TpetraPthMatrixType, TpetraPthVectorType>
+    : public IInternalLinearAlgebra<TpetraPthMatrixType, TpetraPthVectorType>
 {
  public:
-  TpetraPthInternalLinearAlgebra(IParallelMng* pm = nullptr){}
+  TpetraPthInternalLinearAlgebra(IParallelMng* pm = nullptr) {}
   virtual ~TpetraPthInternalLinearAlgebra() {}
 
   // IInternalLinearAlgebra interface.
-  Real norm0(const Vector& x) const { return 0. ; }
-  Real norm1(const Vector& x) const { return 0. ; }
-  Real norm2(const Vector& x) const { return 0. ; }
-  void mult(const Matrix& a, const Vector& x, Vector& r) const { }
-  void axpy(const Real& alpha, const Vector& x, Vector& r) const { }
-  void aypx(const Real& alpha, Vector& y, const Vector& x) const { }
-  void copy(const Vector& x, Vector& r) const { }
-  Real dot(const Vector& x, const Vector& y) const { return 0. ; }
-  void scal(const Real& alpha, Vector& x) const { }
-  void diagonal(const Matrix& a, Vector& x) const { }
-  void reciprocal(Vector& x) const { }
-  void pointwiseMult(const Vector& x, const Vector& y, Vector& w) const { }
+  Real norm0(const Vector& x) const { return 0.; }
+  Real norm1(const Vector& x) const { return 0.; }
+  Real norm2(const Vector& x) const { return 0.; }
+  void mult(const Matrix& a, const Vector& x, Vector& r) const {}
+  void axpy(const Real& alpha, const Vector& x, Vector& r) const {}
+  void aypx(const Real& alpha, Vector& y, const Vector& x) const {}
+  void copy(const Vector& x, Vector& r) const {}
+  Real dot(const Vector& x, const Vector& y) const { return 0.; }
+  void scal(const Real& alpha, Vector& x) const {}
+  void diagonal(const Matrix& a, Vector& x) const {}
+  void reciprocal(Vector& x) const {}
+  void pointwiseMult(const Vector& x, const Vector& y, Vector& w) const {}
 };
 #endif
 
@@ -123,25 +126,25 @@ typedef AlgebraTraits<BackEnd::tag::tpetracuda>::matrix_type TpetraCudaMatrixTyp
 typedef AlgebraTraits<BackEnd::tag::tpetracuda>::vector_type TpetraCudaVectorType;
 
 class ALIEN_TRILINOS_EXPORT TpetraCudaInternalLinearAlgebra
-  : public IInternalLinearAlgebra<TpetraCudaMatrixType, TpetraCudaVectorType>
+    : public IInternalLinearAlgebra<TpetraCudaMatrixType, TpetraCudaVectorType>
 {
  public:
-  TpetraCudaInternalLinearAlgebra(IParallelMng* pm = nullptr){}
+  TpetraCudaInternalLinearAlgebra(IParallelMng* pm = nullptr) {}
   virtual ~TpetraCudaInternalLinearAlgebra() {}
 
   // IInternalLinearAlgebra interface.
-  Real norm0(const Vector& x) const { return 0. ; }
-  Real norm1(const Vector& x) const { return 0. ; }
-  Real norm2(const Vector& x) const { return 0. ; }
-  void mult(const Matrix& a, const Vector& x, Vector& r) const { }
-  void axpy(const Real& alpha, const Vector& x, Vector& r) const { }
-  void aypx(const Real& alpha, Vector& y, const Vector& x) const { }
-  void copy(const Vector& x, Vector& r) const { }
-  Real dot(const Vector& x, const Vector& y) const { return 0. ; }
-  void scal(const Real& alpha, Vector& x) const { }
-  void diagonal(const Matrix& a, Vector& x) const { }
-  void reciprocal(Vector& x) const { }
-  void pointwiseMult(const Vector& x, const Vector& y, Vector& w) const { }
+  Real norm0(const Vector& x) const { return 0.; }
+  Real norm1(const Vector& x) const { return 0.; }
+  Real norm2(const Vector& x) const { return 0.; }
+  void mult(const Matrix& a, const Vector& x, Vector& r) const {}
+  void axpy(const Real& alpha, const Vector& x, Vector& r) const {}
+  void aypx(const Real& alpha, Vector& y, const Vector& x) const {}
+  void copy(const Vector& x, Vector& r) const {}
+  Real dot(const Vector& x, const Vector& y) const { return 0.; }
+  void scal(const Real& alpha, Vector& x) const {}
+  void diagonal(const Matrix& a, Vector& x) const {}
+  void reciprocal(Vector& x) const {}
+  void pointwiseMult(const Vector& x, const Vector& y, Vector& w) const {}
 };
 #endif
 

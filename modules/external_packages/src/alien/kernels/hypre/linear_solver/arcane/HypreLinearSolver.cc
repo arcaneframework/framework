@@ -20,9 +20,11 @@ HypreLinearSolver::HypreLinearSolver(const Arcane::ServiceBuildInfo& sbi)
 
 /*---------------------------------------------------------------------------*/
 
-HypreLinearSolver::HypreLinearSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng, std::shared_ptr<IOptionsHypreSolver> _options)
-  : ArcaneHypreSolverObject(_options)
-  , LinearSolver<BackEnd::tag::hypre> (parallel_mng, options())
+HypreLinearSolver::HypreLinearSolver(
+    Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+    std::shared_ptr<IOptionsHypreSolver> _options)
+: ArcaneHypreSolverObject(_options)
+, LinearSolver<BackEnd::tag::hypre>(parallel_mng, options())
 {
   ;
 }
@@ -36,9 +38,8 @@ HypreLinearSolver::~HypreLinearSolver()
 
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_HYPRESOLVER(HypreSolver,HypreLinearSolver);
+ARCANE_REGISTER_SERVICE_HYPRESOLVER(HypreSolver, HypreLinearSolver);
 
 } // namespace Alien
 
 REGISTER_STRONG_OPTIONS_HYPRESOLVER();
-

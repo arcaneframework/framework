@@ -15,11 +15,17 @@ class HTS_to_SimpleCSR_VectorConverter : public IVectorConverter
 {
  public:
   HTS_to_SimpleCSR_VectorConverter();
-  virtual ~HTS_to_SimpleCSR_VectorConverter() { }
-public:
-  Alien::BackEndId sourceBackend() const { return AlgebraTraits<BackEnd::tag::hts>::name(); }
-  Alien::BackEndId targetBackend() const { return AlgebraTraits<BackEnd::tag::simplecsr>::name(); }
-  void convert(const IVectorImpl * sourceImpl, IVectorImpl * targetImpl) const;
+  virtual ~HTS_to_SimpleCSR_VectorConverter() {}
+ public:
+  Alien::BackEndId sourceBackend() const
+  {
+    return AlgebraTraits<BackEnd::tag::hts>::name();
+  }
+  Alien::BackEndId targetBackend() const
+  {
+    return AlgebraTraits<BackEnd::tag::simplecsr>::name();
+  }
+  void convert(const IVectorImpl* sourceImpl, IVectorImpl* targetImpl) const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -35,12 +41,13 @@ void
 HTS_to_SimpleCSR_VectorConverter::convert(
     const IVectorImpl* sourceImpl, IVectorImpl* targetImpl) const
 {
-  const HTSVector<double,true> & v = cast<HTSVector<double,true>>(sourceImpl, sourceBackend());
-  SimpleCSRVector<double> & v2 = cast<SimpleCSRVector<double> >(targetImpl, targetBackend());
-  
-  alien_debug([&] {
-    cout() << "Converting HTSVector: " << &v << " to SimpleCSRVector " << &v2;
-  });
+  const HTSVector<double, true>& v =
+      cast<HTSVector<double, true>>(sourceImpl, sourceBackend());
+  SimpleCSRVector<double>& v2 =
+      cast<SimpleCSRVector<double>>(targetImpl, targetBackend());
+
+  alien_debug(
+      [&] { cout() << "Converting HTSVector: " << &v << " to SimpleCSRVector " << &v2; });
 
   v.getValues(v2.values().size(), v2.getDataPtr());
 }

@@ -28,7 +28,8 @@ class SimpleCSR_to_HTS_MatrixConverter : public IMatrixConverter
   BackEndId targetBackend() const { return AlgebraTraits<BackEnd::tag::hts>::name(); }
   void convert(const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const;
   void _build(const SimpleCSRMatrix<Real>& sourceImpl, HTSMatrix<Real>& targetImpl) const;
-  void _buildBlock(const SimpleCSRMatrix<Real>& sourceImpl, HTSMatrix<Real>& targetImpl) const;
+  void _buildBlock(
+      const SimpleCSRMatrix<Real>& sourceImpl, HTSMatrix<Real>& targetImpl) const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -48,53 +49,49 @@ SimpleCSR_to_HTS_MatrixConverter::convert(
       cast<SimpleCSRMatrix<Real>>(sourceImpl, sourceBackend());
   HTSMatrix<Real>& v2 = cast<HTSMatrix<Real>>(targetImpl, targetBackend());
 
-  alien_debug([&] {
-    cout() << "Converting SimpleCSRMatrix: " << &v << " to HTSMatrix " << &v2;
-  });
+  alien_debug(
+      [&] { cout() << "Converting SimpleCSRMatrix: " << &v << " to HTSMatrix " << &v2; });
 
-  if(targetImpl->block())
-    _buildBlock(v,v2);
-  else if(targetImpl->vblock())
-    throw FatalErrorException(A_FUNCINFO,"Block sizes are variable - builds not yet implemented");
+  if (targetImpl->block())
+    _buildBlock(v, v2);
+  else if (targetImpl->vblock())
+    throw FatalErrorException(
+        A_FUNCINFO, "Block sizes are variable - builds not yet implemented");
   else
-    _build(v,v2);
+    _build(v, v2);
 }
 
 void
 SimpleCSR_to_HTS_MatrixConverter::_build(
     const SimpleCSRMatrix<Real>& sourceImpl, HTSMatrix<Real>& targetImpl) const
 {
-  typedef SimpleCSRMatrix<Real>::MatrixInternal CSRMatrixType ;
+  typedef SimpleCSRMatrix<Real>::MatrixInternal CSRMatrixType;
 
   const MatrixDistribution& dist = targetImpl.distribution();
-  const CSRStructInfo & profile = sourceImpl.getCSRProfile();
+  const CSRStructInfo& profile = sourceImpl.getCSRProfile();
   const Integer localSize = profile.getNRow();
   const Integer localOffset = dist.rowOffset();
   auto const& matrixInternal = sourceImpl.internal();
   const Integer myRank = dist.parallelMng()->commRank();
   const Integer nProc = dist.parallelMng()->commSize();
 
-
   {
 
-    auto const& matrix_profile = sourceImpl.internal().getCSRProfile() ;
-    int nrows = matrix_profile.getNRow() ;
-    int const* kcol = matrix_profile.getRowOffset().unguardedBasePointer() ;
-    int const* cols = matrix_profile.getCols().unguardedBasePointer() ;
-    int block_size = sourceImpl.block() ? sourceImpl.block()->size() : 1 ;
+    auto const& matrix_profile = sourceImpl.internal().getCSRProfile();
+    int nrows = matrix_profile.getNRow();
+    int const* kcol = matrix_profile.getRowOffset().unguardedBasePointer();
+    int const* cols = matrix_profile.getCols().unguardedBasePointer();
+    int block_size = sourceImpl.block() ? sourceImpl.block()->size() : 1;
 
-    if (not targetImpl.initMatrix(dist.parallelMng(),nrows,kcol,cols,block_size))
-    {
+    if (not targetImpl.initMatrix(dist.parallelMng(), nrows, kcol, cols, block_size)) {
       throw FatalErrorException(A_FUNCINFO, "HTS Initialisation failed");
     }
 
-    if (not targetImpl.setMatrixValues(matrixInternal.getDataPtr()))
-    {
+    if (not targetImpl.setMatrixValues(matrixInternal.getDataPtr())) {
       throw FatalErrorException(A_FUNCINFO, "Cannot set HTS Matrix Values");
     }
 
-    if(not targetImpl.computeDDMatrix())
-    {
+    if (not targetImpl.computeDDMatrix()) {
       throw FatalErrorException(A_FUNCINFO, "Cannot set HTS DDMatrix Values");
     }
   }
@@ -104,7 +101,6 @@ void
 SimpleCSR_to_HTS_MatrixConverter::_buildBlock(
     const SimpleCSRMatrix<Real>& sourceImpl, HTSMatrix<Real>& targetImpl) const
 {
-
 }
 
 /*---------------------------------------------------------------------------*/

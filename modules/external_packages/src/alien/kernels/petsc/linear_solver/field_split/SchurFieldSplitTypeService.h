@@ -28,24 +28,24 @@ namespace Alien {
 /*---------------------------------------------------------------------------*/
 
 class ALIEN_EXTERNAL_PACKAGES_EXPORT SchurFieldSplitTypeService
-: public ArcaneSchurFieldSplitTypeObject,
-  public PETScConfig
+    : public ArcaneSchurFieldSplitTypeObject,
+      public PETScConfig
 {
  public:
-  /** Constructeur de la classe */
+/** Constructeur de la classe */
 #ifdef ALIEN_USE_ARCANE
-  SchurFieldSplitTypeService(const Arcane::ServiceBuildInfo & sbi);
+  SchurFieldSplitTypeService(const Arcane::ServiceBuildInfo& sbi);
 #endif
 
   SchurFieldSplitTypeService(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
       std::shared_ptr<IOptionsSchurFieldSplitType> options);
 
   /** Destructeur de la classe */
-  virtual ~SchurFieldSplitTypeService() {};
-  
-public:
- //! Configure FieldSplit type
- Arccore::Integer configure(PC& pc, const Arccore::Integer nbField);
+  virtual ~SchurFieldSplitTypeService(){};
+
+ public:
+  //! Configure FieldSplit type
+  Arccore::Integer configure(PC& pc, const Arccore::Integer nbField);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -58,4 +58,4 @@ public:
 /*---------------------------------------------------------------------------*/
 #endif /* PETSC_VERSION */
 /*---------------------------------------------------------------------------*/
-#endif //SCHURFIELDSPLITSERVICE_H
+#endif // SCHURFIELDSPLITSERVICE_H

@@ -9,7 +9,6 @@
 namespace Alien {
 
 typedef LinearAlgebra<BackEnd::tag::mtl> MTLLinearAlgebra;
-
 }
 
 #endif /* ALIEN_KERNELS_MTL_ALGEBRA_MTLLINEARALGEBRA_H */

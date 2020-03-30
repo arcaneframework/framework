@@ -32,36 +32,29 @@ class MultiVectorImpl;
 
 class IFPVector : public IVectorImpl
 {
-public :
+ public:
   friend class ::SimpleCSR_to_IFP_VectorConverter;
   typedef IFPSolverInternal::VectorInternal VectorInternal;
 
-public:
+ public:
+  IFPVector(const MultiVectorImpl* multi_impl);
 
-  IFPVector(const MultiVectorImpl * multi_impl);
+  virtual ~IFPVector();
 
-  virtual ~IFPVector() ;
+ public:
+  bool isResizable() const { return m_resizable_block_size; }
 
-public:
-  bool isResizable() const {
-    return m_resizable_block_size ;
-  }
+  void setResizable(bool resizable) { m_resizable_block_size = resizable; }
 
-  void setResizable(bool resizable) {
-    m_resizable_block_size = resizable ;
-  }
-
-  void init(const VectorDistribution & dist, const bool need_allocate);
+  void init(const VectorDistribution& dist, const bool need_allocate);
 
   bool allocate();
   bool allocate(bool resizable);
   bool freeData();
 
-  void clear() {
-    freeData() ;
-  }
+  void clear() { freeData(); }
 
-  void update(const IFPVector & v);
+  void update(const IFPVector& v);
   /*
     void update(const PETScVector & v);
     void update(const MTLVector & v);
@@ -69,30 +62,31 @@ public:
     void update(const MCGVector & v);
   */
 
-  void setValues(double const* values, Integer const* node_list, Integer const* node_to_local_node) ;
-  void setExtraValues(double const* values) ;
+  void setValues(
+      double const* values, Integer const* node_list, Integer const* node_to_local_node);
+  void setExtraValues(double const* values);
 
-private:
-  void setValues(double const* values) ;
-  void addValues(double const* values) ;
+ private:
+  void setValues(double const* values);
+  void addValues(double const* values);
 
-public:
-  bool getValues(int nrows, int* rows,double* values) const ;
-  bool getValues(int nrows, double* values) const ;
-  bool getExtraValues(double* values) const ;
+ public:
+  bool getValues(int nrows, int* rows, double* values) const;
+  bool getValues(int nrows, double* values) const;
+  bool getExtraValues(double* values) const;
 
-public:
-  VectorInternal * internal() { return m_internal; }
-  const VectorInternal *  internal() const { return m_internal; }
+ public:
+  VectorInternal* internal() { return m_internal; }
+  const VectorInternal* internal() const { return m_internal; }
 
-private:
+ private:
   void _check() const;
 
-private:
-  VectorInternal *                       m_internal ;
-  const MultiVectorImpl *                m_multi_impl;
-  bool                                   m_resizable_block_size ;
-  Integer                                m_is_rhs ;
+ private:
+  VectorInternal* m_internal;
+  const MultiVectorImpl* m_multi_impl;
+  bool m_resizable_block_size;
+  Integer m_is_rhs;
 };
 
 /*---------------------------------------------------------------------------*/

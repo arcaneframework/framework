@@ -8,7 +8,6 @@
 
 #include <alien/data/Space.h>
 
-
 #include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
 #include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
 #include <alien/kernels/simple_csr/algebra/SimpleCSRInternalLinearAlgebra.h>
@@ -84,19 +83,21 @@ HTSInternalLinearAlgebra::norm2(const Vector& x) const
 void
 HTSInternalLinearAlgebra::mult(const Matrix& a, const Vector& x, Vector& r) const
 {
-  a.mult(x.getDataPtr(),r.getDataPtr()) ;
+  a.mult(x.getDataPtr(), r.getDataPtr());
 }
 void
-HTSInternalLinearAlgebra::mult(const Matrix& a, const UniqueArray<Real>& vx, UniqueArray<Real>& vr) const
+HTSInternalLinearAlgebra::mult(
+    const Matrix& a, const UniqueArray<Real>& vx, UniqueArray<Real>& vr) const
 {
-  a.mult(dataPtr(vx),dataPtr(vr)) ;
+  a.mult(dataPtr(vx), dataPtr(vr));
 }
 
 /*---------------------------------------------------------------------------*/
 void
-HTSInternalLinearAlgebra::axpy(const Real& alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+HTSInternalLinearAlgebra::axpy(
+    const Real& alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
 {
-  cblas::axpy(x.size(), alpha, dataPtr(x),1, dataPtr(r),1);
+  cblas::axpy(x.size(), alpha, dataPtr(x), 1, dataPtr(r), 1);
 }
 
 void
@@ -107,7 +108,8 @@ HTSInternalLinearAlgebra::axpy(const Real& alpha, const Vector& x, Vector& r) co
 
 /*---------------------------------------------------------------------------*/
 void
-HTSInternalLinearAlgebra::aypx(const Real& alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const
+HTSInternalLinearAlgebra::aypx(
+    const Real& alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const
 {
   throw NotImplementedException(
       A_FUNCINFO, "HTSInternalLinearAlgebra::aypx not implemented");
@@ -124,7 +126,7 @@ HTSInternalLinearAlgebra::aypx(const Real& alpha, Vector& y, const Vector& x) co
 void
 HTSInternalLinearAlgebra::copy(const UniqueArray<Real>& x, UniqueArray<Real>& r) const
 {
-  cblas::copy(x.size(), dataPtr(x),1, dataPtr(r),1);
+  cblas::copy(x.size(), dataPtr(x), 1, dataPtr(r), 1);
 }
 
 void
@@ -135,9 +137,10 @@ HTSInternalLinearAlgebra::copy(const Vector& x, Vector& r) const
 
 /*---------------------------------------------------------------------------*/
 Real
-HTSInternalLinearAlgebra::dot(Integer local_size, const UniqueArray<Real>& vx, const UniqueArray<Real>& vy) const
+HTSInternalLinearAlgebra::dot(
+    Integer local_size, const UniqueArray<Real>& vx, const UniqueArray<Real>& vy) const
 {
-  return cblas::dot(local_size, dataPtr(vx),1, dataPtr(vy),1);
+  return cblas::dot(local_size, dataPtr(vx), 1, dataPtr(vy), 1);
 }
 
 Real
@@ -149,7 +152,8 @@ HTSInternalLinearAlgebra::dot(const Vector& x, const Vector& y) const
 /*---------------------------------------------------------------------------*/
 
 void
-HTSInternalLinearAlgebra::scal(const Real& alpha ALIEN_UNUSED_PARAM, UniqueArray<Real>& x ALIEN_UNUSED_PARAM) const
+HTSInternalLinearAlgebra::scal(
+    const Real& alpha ALIEN_UNUSED_PARAM, UniqueArray<Real>& x ALIEN_UNUSED_PARAM) const
 {
   throw NotImplementedException(
       A_FUNCINFO, "HTSInternalLinearAlgebra::scal not implemented");

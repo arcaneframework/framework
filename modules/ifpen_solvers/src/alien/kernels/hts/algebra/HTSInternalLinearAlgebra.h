@@ -28,7 +28,7 @@ typedef AlgebraTraits<BackEnd::tag::hts>::matrix_type HTSCSRMatrix;
 typedef AlgebraTraits<BackEnd::tag::simplecsr>::vector_type CSRVector;
 
 class ALIEN_IFPEN_SOLVERS_EXPORT HTSInternalLinearAlgebra
-  : public IInternalLinearAlgebra<HTSCSRMatrix, CSRVector>
+    : public IInternalLinearAlgebra<HTSCSRMatrix, CSRVector>
 {
  public:
   HTSInternalLinearAlgebra();
@@ -48,15 +48,14 @@ class ALIEN_IFPEN_SOLVERS_EXPORT HTSInternalLinearAlgebra
   void reciprocal(Vector& x) const;
   void pointwiseMult(const Vector& x, const Vector& y, Vector& w) const;
 
-  void mult(const Matrix& a, const UniqueArray<Real>& x, UniqueArray<Real>& r) const ;
-  void axpy(const Real & alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const;
-  void aypx(const Real & alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const;
+  void mult(const Matrix& a, const UniqueArray<Real>& x, UniqueArray<Real>& r) const;
+  void axpy(const Real& alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const;
+  void aypx(const Real& alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const;
   void copy(const UniqueArray<Real>& x, UniqueArray<Real>& r) const;
-  Real dot(Integer local_size, const UniqueArray<Real>& x, const UniqueArray<Real>& y) const;
-  void scal(const Real & alpha, UniqueArray<Real>& x) const;
-
+  Real dot(
+      Integer local_size, const UniqueArray<Real>& x, const UniqueArray<Real>& y) const;
+  void scal(const Real& alpha, UniqueArray<Real>& x) const;
 };
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

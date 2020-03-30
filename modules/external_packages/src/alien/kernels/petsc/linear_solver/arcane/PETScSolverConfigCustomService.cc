@@ -33,15 +33,13 @@ PETScSolverConfigCustomService::PETScSolverConfigCustomService(
 : ArcanePETScSolverConfigCustomObject(options)
 , PETScConfig(parallel_mng->commSize() > 1)
 {
-	;
+  ;
 }
 
 //! Initialisation
 void
-PETScSolverConfigCustomService::
-configure(KSP & ksp,
-		const ISpace& space,
-		const MatrixDistribution& distribution)
+PETScSolverConfigCustomService::configure(
+    KSP& ksp, const ISpace& space, const MatrixDistribution& distribution)
 {
   alien_debug([&] { cout() << "configure PETSc custom solver"; });
   Arccore::String prefix = Arccore::String::format("{0}_", this);
@@ -68,7 +66,7 @@ configure(KSP & ksp,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_PETSCSOLVERCONFIGCUSTOM(Custom,PETScSolverConfigCustomService);
+ARCANE_REGISTER_SERVICE_PETSCSOLVERCONFIGCUSTOM(Custom, PETScSolverConfigCustomService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -42,9 +42,8 @@ class IPETScPC
 
  public:
   //! Initialisation
-  virtual void configure(PC & pc,
-                         const ISpace& space,
-                         const MatrixDistribution& distribution) = 0;
+  virtual void configure(
+      PC& pc, const ISpace& space, const MatrixDistribution& distribution) = 0;
 
   //! Check need of KSPSetUp before calling this PC configure
   virtual bool needPrematureKSPSetUp() const = 0;

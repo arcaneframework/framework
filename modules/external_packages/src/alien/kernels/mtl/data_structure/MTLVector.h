@@ -39,40 +39,35 @@ class MTLVector : public IVectorImpl
   typedef MTL4Internal::VectorInternal VectorInternal;
 
  public:
-
-  MTLVector(const MultiVectorImpl * multi_impl);
+  MTLVector(const MultiVectorImpl* multi_impl);
 
   virtual ~MTLVector();
 
-public:
-
-  void init(const VectorDistribution & dist, const bool need_allocate);
+ public:
+  void init(const VectorDistribution& dist, const bool need_allocate);
   void allocate();
 
-  void free() { }
-  void clear() { }
+  void free() {}
+  void clear() {}
 
-public:
-
+ public:
   void setValues(const int nrows, double const* values);
 
   void getValues(const int nrows, double* values) const;
 
-public:
-
+ public:
   // Méthodes restreintes à usage interne de l'implémentation PETSc
-  VectorInternal * internal() { return m_internal ; }
+  VectorInternal* internal() { return m_internal; }
 
-  const VectorInternal * internal() const{ return m_internal ; }
+  const VectorInternal* internal() const { return m_internal; }
 
   void dump() const;
-private:
 
+ private:
   bool assemble();
 
-private :
-
-  VectorInternal * m_internal;
+ private:
+  VectorInternal* m_internal;
   int m_local_offset;
 };
 

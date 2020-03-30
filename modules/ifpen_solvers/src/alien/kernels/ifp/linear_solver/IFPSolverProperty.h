@@ -3,27 +3,18 @@
 
 class IFPSolverProperty
 {
-public:
+ public:
   IFPSolverProperty() {}
   virtual ~IFPSolverProperty() {}
-  typedef enum { 
-                 Diag,
-                 ILU0,
-                 AMG,
-                 CprAmg
-               } ePrecondType ;
+  typedef enum { Diag, ILU0, AMG, CprAmg } ePrecondType;
+
+  typedef enum { All, Pressure } ePrecondEquationType;
 
   typedef enum {
-                  All,
-                  Pressure
-                } ePrecondEquationType;
-
-  typedef enum { 
-                 Normal,   
-                 BlockJacobi,
-                 Optimized,                
-               } eIluAlgo ;
-
-} ;
+    Normal,
+    BlockJacobi,
+    Optimized,
+  } eIluAlgo;
+};
 
 #endif /*IFPSOLVERPROPERTY_H_*/

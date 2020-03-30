@@ -4,7 +4,8 @@
 
 #include <alien/data/Universe.h>
 
-int main(int argc, char **argv)
+int
+main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
 
@@ -19,4 +20,3 @@ int main(int argc, char **argv)
 
   return ret;
 }
-

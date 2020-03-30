@@ -7,7 +7,7 @@
 #include <alien/kernels/ifp/IFPSolverBackEnd.h>
 
 /*---------------------------------------------------------------------------*/
-using namespace std ;
+using namespace std;
 
 namespace Alien {
 
@@ -27,76 +27,71 @@ IFPVector::IFPVector(const MultiVectorImpl* multi_impl)
 
 IFPVector::~IFPVector()
 {
-  delete m_internal ;
+  delete m_internal;
   freeData();
 }
 
 /*---------------------------------------------------------------------------*/
 
 bool
-IFPVector::
-allocate()
+IFPVector::allocate()
 {
-  m_resizable_block_size = false ;
+  m_resizable_block_size = false;
   F2C(ifpsolverallocatevector)(&m_is_rhs);
-  return true ;
+  return true;
 }
 
 bool
-IFPVector::
-allocate(bool resizable)
+IFPVector::allocate(bool resizable)
 {
-    m_resizable_block_size = resizable ;
-    if(resizable)
-      F2C(ifpsolverallocatersvector)(&m_is_rhs);
-    else
-      F2C(ifpsolverallocatevector)(&m_is_rhs);
-  return true ;
+  m_resizable_block_size = resizable;
+  if (resizable)
+    F2C(ifpsolverallocatersvector)(&m_is_rhs);
+  else
+    F2C(ifpsolverallocatevector)(&m_is_rhs);
+  return true;
 }
 
 /*---------------------------------------------------------------------------*/
 
 bool
-IFPVector::
-freeData()
+IFPVector::freeData()
 {
   F2C(ifpvectorfreedata)(&m_is_rhs);
-  return true ;
+  return true;
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-IFPVector::
-setValues(const double * values, Integer const* node_list, Integer const* node_to_local_node)
+IFPVector::setValues(
+    const double* values, Integer const* node_list, Integer const* node_to_local_node)
 {
   _check();
-  if(m_resizable_block_size)
-    F2C(ifpsetrsvectordata)((double*)values,(Integer*)node_list);
+  if (m_resizable_block_size)
+    F2C(ifpsetrsvectordata)((double*)values, (Integer*)node_list);
   else
-    F2C(ifpsetvectordata)((double*)values,(Integer*)node_list,(Integer*) node_to_local_node);
+    F2C(ifpsetvectordata)
+    ((double*)values, (Integer*)node_list, (Integer*)node_to_local_node);
   m_internal->m_filled = true;
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-IFPVector::
-addValues(const double * values)
-{ 
+IFPVector::addValues(const double* values)
+{
   _check();
-  if(m_resizable_block_size)
-  {
-    // TODO
-    //F2C(ifpsolveraddrsvectordata)((double*)values);
+  if (m_resizable_block_size) {
+// TODO
+// F2C(ifpsolveraddrsvectordata)((double*)values);
 #ifndef NO_USER_WARNING
 #ifndef WIN32
 #warning TODO IMPLEMENT  ifpsolveraddrsvectordata
 #endif
 #endif /* NO_USER_WARNING */
-    cerr<<"ifpsolveraddrsvectordata not yet implemented"<<endl ;
-  }
-  else
+    cerr << "ifpsolveraddrsvectordata not yet implemented" << endl;
+  } else
     F2C(ifpsolveraddvectordata)((double*)values);
   m_internal->m_filled = true;
 }
@@ -104,31 +99,27 @@ addValues(const double * values)
 /*---------------------------------------------------------------------------*/
 
 void
-IFPVector::
-setValues(const double * values)
+IFPVector::setValues(const double* values)
 {
   _check();
-  if(m_resizable_block_size)
-  {
-    //TODO
-    //F2C(ifpsolversetrsvectordata)((double*)values);
+  if (m_resizable_block_size) {
+// TODO
+// F2C(ifpsolversetrsvectordata)((double*)values);
 #ifndef NO_USER_WARNING
 #ifndef WIN32
 #warning TODO IMPLEMENT  ifpsolversetrsvectordata
 #endif
 #endif /* NO_USER_WARNING */
-    cerr<<"ifpsolversetrsvectordata not yet implemented"<<endl ;
-  }
-  else
-    F2C(ifpsolversetvectordata)((double*)values,&m_is_rhs);
+    cerr << "ifpsolversetrsvectordata not yet implemented" << endl;
+  } else
+    F2C(ifpsolversetvectordata)((double*)values, &m_is_rhs);
   m_internal->m_filled = true;
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-IFPVector::
-setExtraValues(const double * values)
+IFPVector::setExtraValues(const double* values)
 {
   _check();
   F2C(ifpsetvectorwelldata)((double*)values);
@@ -138,99 +129,96 @@ setExtraValues(const double * values)
 /*---------------------------------------------------------------------------*/
 
 bool
-IFPVector::
-getValues(int nrow,
-          int* rows,
-          double* values) const
+IFPVector::getValues(int nrow, int* rows, double* values) const
 {
   _check();
-  if (not m_internal->m_filled) return false;
-  int block_size = m_multi_impl->block()?m_multi_impl->block()->size():1 ;
-  int nnode = nrow/block_size ;
-  int noffset = m_internal->m_offset ;
-  F2C(ifpsolvergetsolutiondata3)(values,&nnode,rows,&noffset);
-  return true ;
+  if (not m_internal->m_filled)
+    return false;
+  int block_size = m_multi_impl->block() ? m_multi_impl->block()->size() : 1;
+  int nnode = nrow / block_size;
+  int noffset = m_internal->m_offset;
+  F2C(ifpsolvergetsolutiondata3)(values, &nnode, rows, &noffset);
+  return true;
 }
 
 /*---------------------------------------------------------------------------*/
 
 bool
-IFPVector::
-getValues(int nrow,
-          double* values) const
+IFPVector::getValues(int nrow, double* values) const
 {
   _check();
-  if (not m_internal->m_filled) return false;
+  if (not m_internal->m_filled)
+    return false;
 
-  if(m_resizable_block_size)
-    F2C(ifpsolvergetsolutionrsdata3)(values,&nrow,m_internal->m_rows,&m_internal->m_offset);
-  else
-  {
-    int block_size = m_multi_impl->block()?m_multi_impl->block()->size():1 ;
-    int nnode = nrow/block_size ;
-    int noffset = m_internal->m_offset ;
-    F2C(ifpsolvergetsolutiondata3)(values,&nnode,m_internal->m_rows,&noffset);
+  if (m_resizable_block_size)
+    F2C(ifpsolvergetsolutionrsdata3)
+    (values, &nrow, m_internal->m_rows, &m_internal->m_offset);
+  else {
+    int block_size = m_multi_impl->block() ? m_multi_impl->block()->size() : 1;
+    int nnode = nrow / block_size;
+    int noffset = m_internal->m_offset;
+    F2C(ifpsolvergetsolutiondata3)(values, &nnode, m_internal->m_rows, &noffset);
   }
-  return true ;
+  return true;
 }
 
 /*---------------------------------------------------------------------------*/
 
 bool
-IFPVector::
-getExtraValues(double* values) const
+IFPVector::getExtraValues(double* values) const
 {
   _check();
   F2C(ifpgetvectorwelldata)(values);
-  return true ;
-}
-
-/*---------------------------------------------------------------------------*/
-
-void 
-IFPVector::
-init(const VectorDistribution & dist, const bool need_allocate)
-{
-  // il n'y a pas de notion d'allocation dans IFPSolver
-  //   if (need_allocate)
-    {
-      const int local_size = dist.localSize();
-      const int local_offset = dist.offset();
-//       const int global_size = infos.getGlobalSize();
-//       const bool parallel = infos.isParallel();
-
-      delete m_internal ;
-      m_internal = new VectorInternal(m_multi_impl) ;
-      m_internal->m_offset = local_offset ;
-      m_internal->m_local_size = local_size ;
-      m_internal->m_rows = new int[local_size] ;
-      for(int i=0;i<local_size;++i)
-        m_internal->m_rows[i] = m_internal->m_offset+i ;
-
-#ifndef NO_USER_WARNING
-#ifndef WIN32
-#warning "TODO: A. Anciaux: je initialiser le m_system_is_resizeable � true ici dans le cas ou space contient l'information pour"
-#endif
-#endif /* NO_USER_WARNING */
-    }
+  return true;
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-IFPVector::
-_check() const
+IFPVector::init(const VectorDistribution& dist, const bool need_allocate)
 {
-  if( !VectorInternal::isInstancied()) 
-    throw FatalErrorException(A_FUNCINFO,"Cannot use IFPVector before its graph initialization");
-  if (m_internal==NULL) 
-    throw FatalErrorException(A_FUNCINFO,"Cannot use IFPVector before its own initialization");
+  // il n'y a pas de notion d'allocation dans IFPSolver
+  //   if (need_allocate)
+  {
+    const int local_size = dist.localSize();
+    const int local_offset = dist.offset();
+    //       const int global_size = infos.getGlobalSize();
+    //       const bool parallel = infos.isParallel();
+
+    delete m_internal;
+    m_internal = new VectorInternal(m_multi_impl);
+    m_internal->m_offset = local_offset;
+    m_internal->m_local_size = local_size;
+    m_internal->m_rows = new int[local_size];
+    for (int i = 0; i < local_size; ++i)
+      m_internal->m_rows[i] = m_internal->m_offset + i;
+
+#ifndef NO_USER_WARNING
+#ifndef WIN32
+#warning                                                                                 \
+    "TODO: A. Anciaux: je initialiser le m_system_is_resizeable � true ici dans le cas ou space contient l'information pour"
+#endif
+#endif /* NO_USER_WARNING */
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+IFPVector::_check() const
+{
+  if (!VectorInternal::isInstancied())
+    throw FatalErrorException(
+        A_FUNCINFO, "Cannot use IFPVector before its graph initialization");
+  if (m_internal == NULL)
+    throw FatalErrorException(
+        A_FUNCINFO, "Cannot use IFPVector before its own initialization");
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
-void 
+void
 IFPVector::
 update(const SimpleCSRVector<double> & v)
 {
@@ -240,7 +228,7 @@ update(const SimpleCSRVector<double> & v)
   setValues(values.unguardedBasePointer());
 }
 
-void 
+void
 IFPVector::
 update(const PETScVector & v)
 {
@@ -252,13 +240,13 @@ update(const PETScVector & v)
 }
 */
 
-void 
-IFPVector::
-update(const IFPVector & v)
+void
+IFPVector::update(const IFPVector& v)
 {
-  if (VectorInternal::hasRepresentationSwitch()) return;
-  //space().message() << "Updating IFPVector " << this << " with IFPVector " << &v;
-  ALIEN_ASSERT((this == &v),("Unexpected error"));
+  if (VectorInternal::hasRepresentationSwitch())
+    return;
+  // space().message() << "Updating IFPVector " << this << " with IFPVector " << &v;
+  ALIEN_ASSERT((this == &v), ("Unexpected error"));
 }
 
 /*

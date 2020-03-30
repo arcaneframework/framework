@@ -15,11 +15,17 @@ class SimpleCSR_to_MTL_VectorConverter : public IVectorConverter
 {
  public:
   SimpleCSR_to_MTL_VectorConverter();
-  virtual ~SimpleCSR_to_MTL_VectorConverter() { }
-public:
-  Alien::BackEndId sourceBackend() const { return AlgebraTraits<BackEnd::tag::simplecsr>::name(); }
-  Alien::BackEndId targetBackend() const { return AlgebraTraits<BackEnd::tag::mtl>::name(); }
-  void convert(const IVectorImpl * sourceImpl, IVectorImpl * targetImpl) const;
+  virtual ~SimpleCSR_to_MTL_VectorConverter() {}
+ public:
+  Alien::BackEndId sourceBackend() const
+  {
+    return AlgebraTraits<BackEnd::tag::simplecsr>::name();
+  }
+  Alien::BackEndId targetBackend() const
+  {
+    return AlgebraTraits<BackEnd::tag::mtl>::name();
+  }
+  void convert(const IVectorImpl* sourceImpl, IVectorImpl* targetImpl) const;
 };
 
 /*---------------------------------------------------------------------------*/

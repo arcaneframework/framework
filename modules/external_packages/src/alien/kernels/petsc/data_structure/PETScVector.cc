@@ -22,8 +22,7 @@ PETScVector::PETScVector(const MultiVectorImpl* multi_impl)
 
 /*---------------------------------------------------------------------------*/
 
-PETScVector::
-~PETScVector()
+PETScVector::~PETScVector()
 {
   delete m_internal;
 }

@@ -12,23 +12,23 @@
 namespace Alien {
 
 class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreLinearSolver
-: public ArcaneHypreSolverObject,
-  public LinearSolver<BackEnd::tag::hypre>
+    : public ArcaneHypreSolverObject,
+      public LinearSolver<BackEnd::tag::hypre>
 {
  public:
-  /** Constructeur de la classe */
+/** Constructeur de la classe */
 
 #ifdef ALIEN_USE_ARCANE
-  HypreLinearSolver(const Arcane::ServiceBuildInfo & sbi);
+  HypreLinearSolver(const Arcane::ServiceBuildInfo& sbi);
 #endif
 
-  HypreLinearSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng, std::shared_ptr<IOptionsHypreSolver> _options);
+  HypreLinearSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+      std::shared_ptr<IOptionsHypreSolver> _options);
 
   /** Destructeur de la classe */
   virtual ~HypreLinearSolver();
 
-public:
-
+ public:
 };
 
 } // namespace Alien

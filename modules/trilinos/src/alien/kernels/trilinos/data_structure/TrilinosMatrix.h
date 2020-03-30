@@ -14,11 +14,9 @@
 
 BEGIN_TRILINOSINTERNAL_NAMESPACE
 
-template<typename ValueT,typename TagT>
-class MatrixInternal;
+template <typename ValueT, typename TagT> class MatrixInternal;
 
-template<typename ValueT,typename TagT>
-class VectorInternal;
+template <typename ValueT, typename TagT> class VectorInternal;
 
 END_TRILINOSINTERNAL_NAMESPACE
 
@@ -33,43 +31,33 @@ template <typename ValueT, typename TagT> class TrilinosMatrix : public IMatrixI
 {
  public:
   typedef TrilinosInternal::MatrixInternal<ValueT, TagT> MatrixInternal;
-  typedef ValueT                                        scalar_type ;
+  typedef ValueT scalar_type;
 
-public :
+ public:
+  TrilinosMatrix(const MultiMatrixImpl* multi_impl);
+  virtual ~TrilinosMatrix();
 
-  TrilinosMatrix(const MultiMatrixImpl * multi_impl);
-  virtual ~TrilinosMatrix() ;
-
-public:
-
+ public:
   void clear() {}
 
  public:
-  bool initMatrix(Arccore::MessagePassing::IMessagePassingMng const *parallel_mng,
-                  int local_offset,
-                  int global_size,
-                  int nrows,
-                  int const *kcol,
-                  int const *cols,
-                  int block_size,
-                  ValueT const *values);
+  bool initMatrix(Arccore::MessagePassing::IMessagePassingMng const* parallel_mng,
+      int local_offset, int global_size, int nrows, int const* kcol, int const* cols,
+      int block_size, ValueT const* values);
 
-  bool setMatrixValues(Real const *values);
+  bool setMatrixValues(Real const* values);
 
-  void mult(TrilinosVector<ValueT,TagT> const& x, TrilinosVector<ValueT,TagT>& y) const ;
+  void mult(TrilinosVector<ValueT, TagT> const& x, TrilinosVector<ValueT, TagT>& y) const;
 
-  void mult(ValueT const*x, ValueT* y) const ;
+  void mult(ValueT const* x, ValueT* y) const;
 
-  void dump(std::string const& filename) const ;
+  void dump(std::string const& filename) const;
 
  public:
   MatrixInternal* internal() { return m_internal.get(); }
   const MatrixInternal* internal() const { return m_internal.get(); }
 
-
-
-private :
-
+ private:
   std::unique_ptr<MatrixInternal> m_internal;
 };
 

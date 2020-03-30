@@ -17,8 +17,7 @@ BEGIN_HPDDMINTERNAL_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-template<typename ValueT>
-class VectorInternal;
+template <typename ValueT> class VectorInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,52 +31,41 @@ namespace Alien {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-template<typename ValueT,bool is_mpi>
-class HPDDMVector
-  : public IVectorImpl
+template <typename ValueT, bool is_mpi> class HPDDMVector : public IVectorImpl
 {
-public:
-
+ public:
   typedef HPDDMInternal::VectorInternal<ValueT> VectorInternal;
 
-public:
-
-  HPDDMVector(const MultiVectorImpl * multi_impl);
+ public:
+  HPDDMVector(const MultiVectorImpl* multi_impl);
 
   virtual ~HPDDMVector();
 
-public:
-
-  void init(const VectorDistribution & dist, const bool need_allocate);
+ public:
+  void init(const VectorDistribution& dist, const bool need_allocate);
   void allocate();
 
-  void free() { }
-  void clear() { }
+  void free() {}
+  void clear() {}
 
-public:
-
+ public:
   void setValues(const int nrows, ValueT const* values);
 
   void getValues(const int nrows, ValueT* values) const;
 
-public:
+ public:
+  VectorInternal* internal() { return m_internal.get(); }
 
-  VectorInternal * internal() { return m_internal.get() ; }
+  const VectorInternal* internal() const { return m_internal.get(); }
 
-  const VectorInternal * internal() const{ return m_internal.get() ; }
-
-private:
-
-
-private :
-
+ private:
+ private:
   std::unique_ptr<VectorInternal> m_internal;
   int m_local_offset;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 }
 
 /*---------------------------------------------------------------------------*/

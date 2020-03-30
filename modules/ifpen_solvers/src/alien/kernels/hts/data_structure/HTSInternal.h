@@ -29,7 +29,6 @@
 #include "HARTSSolver/Utils/MPI/MPIParallelMng.h"
 #include "HARTSSolver/Utils/MPI/MPIEnv.h"
 
-
 #include "HARTSSolver/MatrixVector/ProfileInfo.h"
 #include "HARTSSolver/MatrixVector/Allocator.h"
 #include "HARTSSolver/Graph/MatrixGraph.h"
@@ -58,183 +57,157 @@ BEGIN_HTSINTERNAL_NAMESPACE
 //! Check parallel feature for MTL
 struct Features
 {
-  static void checkParallel(const MatrixDistribution & dist)
-  {
-  }
+  static void checkParallel(const MatrixDistribution& dist) {}
 };
 
 /*---------------------------------------------------------------------------*/
 struct HTSInternal
 {
-  typedef HartsSolver::MPIInfo       MPIEnvType ;
-  typedef RunTimeSystem::ThreadEnv   ThreadEnvType ;
-  typedef RunTimeSystem::MachineInfo MachineInfoType ;
+  typedef HartsSolver::MPIInfo MPIEnvType;
+  typedef RunTimeSystem::ThreadEnv ThreadEnvType;
+  typedef RunTimeSystem::MachineInfo MachineInfoType;
   typedef RunTimeSystem::ThreadSystemTopology ThreadSystemTopologyType;
 
-  static void initialize(Arccore::MessagePassing::IMessagePassingMng* parallel_mng) ;
-  static void finalize() ;
-  static MPIEnvType* getMPIEnv() {
-    return m_mpi_env.get() ;
-  }
+  static void initialize(Arccore::MessagePassing::IMessagePassingMng* parallel_mng);
+  static void finalize();
+  static MPIEnvType* getMPIEnv() { return m_mpi_env.get(); }
 
-  static void initMPIEnv(MPI_Comm comm) ;
+  static void initMPIEnv(MPI_Comm comm);
 
-  template<typename ValueT>
-  static ValueT getEnv(std::string const& key, ValueT default_value) ;
+  template <typename ValueT>
+  static ValueT getEnv(std::string const& key, ValueT default_value);
 
  private:
-  static bool            m_is_initialized ;
-  static int             m_nb_threads  ;
-  static std::size_t     m_nb_hyper_threads ;
-  static std::size_t     m_mpi_core_id_offset ;
-  static std::unique_ptr<MachineInfoType>          m_machine_info ;
+  static bool m_is_initialized;
+  static int m_nb_threads;
+  static std::size_t m_nb_hyper_threads;
+  static std::size_t m_mpi_core_id_offset;
+  static std::unique_ptr<MachineInfoType> m_machine_info;
   static std::unique_ptr<ThreadSystemTopologyType> m_topology;
 
-  static std::unique_ptr<ThreadEnvType>            m_thread_env  ;
-  static std::unique_ptr<MPIEnvType>               m_mpi_env  ;
+  static std::unique_ptr<ThreadEnvType> m_thread_env;
+  static std::unique_ptr<MPIEnvType> m_mpi_env;
 };
 
-template<typename ValueT,bool is_mpi=true>
-class MatrixInternal
+template <typename ValueT, bool is_mpi = true> class MatrixInternal
 {
  public:
-
 #ifdef USE_NUMA_ALLOCATOR
- typedef HartsSolver::MatrixVector::NumaAllocator       AllocatorType ;
+  typedef HartsSolver::MatrixVector::NumaAllocator AllocatorType;
 #else
 #ifdef USE_HBW_ALLOCATOR
- typedef HartsSolver::MatrixVector::HBWAllocator        AllocatorType ;
+  typedef HartsSolver::MatrixVector::HBWAllocator AllocatorType;
 #else
- typedef HartsSolver::MatrixVector::DefaultAllocator    AllocatorType ;
+  typedef HartsSolver::MatrixVector::DefaultAllocator AllocatorType;
 #endif
 #endif
 
- typedef HartsSolver::CSRMatrix<ValueT,1,AllocatorType> CpuMatrixType ;
+  typedef HartsSolver::CSRMatrix<ValueT, 1, AllocatorType> CpuMatrixType;
 #ifdef SIMD_VERSION
-#if defined (USE_AVX512)
- typedef
-         HartsSolver::MatrixVector::
-         SellCSMatrix<ValueT,
-                     AllocatorType>                   SimdMatrixType ;
- typedef HartsSolver::MatrixVector::
-        CSRMatrixProxyT<CpuMatrixType,
-                        SimdMatrixType>               MatrixType ;
+#if defined(USE_AVX512)
+  typedef HartsSolver::MatrixVector::SellCSMatrix<ValueT, AllocatorType> SimdMatrixType;
+  typedef HartsSolver::MatrixVector::CSRMatrixProxyT<CpuMatrixType, SimdMatrixType>
+      MatrixType;
 #else
- typedef CpuMatrixType                                MatrixType ;
+  typedef CpuMatrixType MatrixType;
 #endif
 
 #else
- typedef CpuMatrixType                                MatrixType ;
+  typedef CpuMatrixType MatrixType;
 #endif
 
- typedef MatrixType                                   MCMatrixType ;
- typedef HartsSolver::DistStructInfo                  DistStructInfoType ;
+  typedef MatrixType MCMatrixType;
+  typedef HartsSolver::DistStructInfo DistStructInfoType;
 
- typedef typename MatrixType::ProfileType             ProfileType ;
- typedef typename ProfileType::InfoVectorType         InfoVectorType ;
- typedef typename MatrixType::VectorType              VectorType;
- typedef typename MCMatrixType::VectorDataType        VectorDataType ;
+  typedef typename MatrixType::ProfileType ProfileType;
+  typedef typename ProfileType::InfoVectorType InfoVectorType;
+  typedef typename MatrixType::VectorType VectorType;
+  typedef typename MCMatrixType::VectorDataType VectorDataType;
 
- typedef Graph::Partition                                 GraphPartitionType ;
- typedef RunTimeSystem::BasePartitioner<Graph::Partition> PartitionerType ;
- typedef Graph::MPIPartition                              MPIPartitionType ;
+  typedef Graph::Partition GraphPartitionType;
+  typedef RunTimeSystem::BasePartitioner<Graph::Partition> PartitionerType;
+  typedef Graph::MPIPartition MPIPartitionType;
 
+  typedef HartsSolver::MCCSRMatrix<MatrixType, Graph::Partition, is_mpi> MCCSRMatrixType;
+  typedef typename MCCSRMatrixType::DDProfileType DDProfileType;
 
- typedef
-     HartsSolver::MCCSRMatrix<MatrixType,
-                              Graph::Partition,
-                              is_mpi>                      MCCSRMatrixType ;
- typedef typename MCCSRMatrixType::DDProfileType           DDProfileType ;
+  typedef HartsSolver::CSRProfile MCProfileType;
+  typedef HartsSolver::ProfileView MCProfileViewType;
+  typedef MCProfileType::PermutationType MCProfilePermType;
 
- typedef HartsSolver::CSRProfile           MCProfileType ;
- typedef HartsSolver::ProfileView          MCProfileViewType ;
- typedef MCProfileType::PermutationType    MCProfilePermType ;
+  MatrixInternal() {}
 
+  bool initMatrix(Arccore::MessagePassing::IMessagePassingMng* parallel_mng, int nrows,
+      int const* kcol, int const* cols, int block_size);
 
-  MatrixInternal()
-  {}
+  bool setMatrixValues(Arccore::Real const* values);
 
-  bool initMatrix(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
-                  int nrows,
-                  int const* kcol,
-                  int const* cols,
-                  int block_size);
+  bool computeDDMatrix();
 
-  bool setMatrixValues(Arccore::Real const* values) ;
+  void mult(ValueT const* x, ValueT* y);
 
-  bool computeDDMatrix() ;
+  int m_block_size = 1;
+  bool m_is_parallel = false;
 
-  void mult(ValueT const* x, ValueT* y) ;
-
-  int  m_block_size  = 1 ;
-  bool m_is_parallel = false ;
-
-
-
-  std::unique_ptr<MPIPartitionType>  m_partition_info ;
-  std::unique_ptr<Graph::Partition>  m_partition ;
-  std::unique_ptr<PartitionerType>   m_rs_partition ;
-  std::unique_ptr<MCProfileType>     m_profile ;
-  std::unique_ptr<MCProfilePermType> m_profile_permutation ;
-  std::unique_ptr<MCMatrixType>      m_matrix ;
-  std::unique_ptr<DistStructInfoType> m_dist_info ;
+  std::unique_ptr<MPIPartitionType> m_partition_info;
+  std::unique_ptr<Graph::Partition> m_partition;
+  std::unique_ptr<PartitionerType> m_rs_partition;
+  std::unique_ptr<MCProfileType> m_profile;
+  std::unique_ptr<MCProfilePermType> m_profile_permutation;
+  std::unique_ptr<MCMatrixType> m_matrix;
+  std::unique_ptr<DistStructInfoType> m_dist_info;
 
  public:
-  std::unique_ptr<DDProfileType>     m_dd_profile ;
-  std::unique_ptr<MCCSRMatrixType>   m_dd_matrix ;
+  std::unique_ptr<DDProfileType> m_dd_profile;
+  std::unique_ptr<MCCSRMatrixType> m_dd_matrix;
 };
 
 /*---------------------------------------------------------------------------*/
 
-template<typename ValueT,bool is_mpi=true>
-class VectorInternal
+template <typename ValueT, bool is_mpi = true> class VectorInternal
 {
  public:
-
 #ifdef USE_NUMA_ALLOCATOR
- typedef HartsSolver::MatrixVector::NumaAllocator       AllocatorType ;
+  typedef HartsSolver::MatrixVector::NumaAllocator AllocatorType;
 #else
 #ifdef USE_HBW_ALLOCATOR
- typedef HartsSolver::MatrixVector::HBWAllocator        AllocatorType ;
+  typedef HartsSolver::MatrixVector::HBWAllocator AllocatorType;
 #else
- typedef HartsSolver::MatrixVector::DefaultAllocator    AllocatorType ;
+  typedef HartsSolver::MatrixVector::DefaultAllocator AllocatorType;
 #endif
 #endif
 
- typedef HartsSolver::CSRMatrix<ValueT,1,AllocatorType> CpuMatrixType ;
+  typedef HartsSolver::CSRMatrix<ValueT, 1, AllocatorType> CpuMatrixType;
 #ifdef SIMD_VERSION
-#if defined (USE_AVX512)
- typedef
-         HartsSolver::MatrixVector::
-         SellCSMatrix<ValueT,
-                     AllocatorType>                   SimdMatrixType ;
- typedef HartsSolver::MatrixVector::
-        CSRMatrixProxyT<CpuMatrixType,
-                        SimdMatrixType>               MatrixType ;
+#if defined(USE_AVX512)
+  typedef HartsSolver::MatrixVector::SellCSMatrix<ValueT, AllocatorType> SimdMatrixType;
+  typedef HartsSolver::MatrixVector::CSRMatrixProxyT<CpuMatrixType, SimdMatrixType>
+      MatrixType;
 #else
- typedef CpuMatrixType                                MatrixType ;
+  typedef CpuMatrixType MatrixType;
 #endif
 
 #else
- typedef CpuMatrixType                                MatrixType ;
+  typedef CpuMatrixType MatrixType;
 #endif
 
- typedef MatrixType                                   MCMatrixType ;
- typedef HartsSolver::DistStructInfo                  DistStructInfoType ;
+  typedef MatrixType MCMatrixType;
+  typedef HartsSolver::DistStructInfo DistStructInfoType;
 
- typedef typename MatrixType::ProfileType             ProfileType ;
- typedef typename ProfileType::InfoVectorType         InfoVectorType ;
- typedef typename MatrixType::VectorType              VectorType;
- typedef typename MCMatrixType::VectorDataType        VectorDataType ;
+  typedef typename MatrixType::ProfileType ProfileType;
+  typedef typename ProfileType::InfoVectorType InfoVectorType;
+  typedef typename MatrixType::VectorType VectorType;
+  typedef typename MCMatrixType::VectorDataType VectorDataType;
 
- VectorInternal(std::size_t local_size)
- : m_local_size(local_size)
- {}
+  VectorInternal(std::size_t local_size)
+  : m_local_size(local_size)
+  {
+  }
 
- //VectorType m_data ;
- VectorDataType const* m_data       = nullptr;
- std::size_t       m_local_size = 0 ;
-} ;
+  // VectorType m_data ;
+  VectorDataType const* m_data = nullptr;
+  std::size_t m_local_size = 0;
+};
 /*---------------------------------------------------------------------------*/
 
 END_HTSINTERNAL_NAMESPACE

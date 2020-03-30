@@ -25,7 +25,7 @@ class MTLInternalLinearSolver : public IInternalLinearSolver<MTLMatrix, MTLVecto
   typedef IVector VectorType;
   typedef IVector Vector;
 
-  typedef SolverStatus Status ;
+  typedef SolverStatus Status;
 
   typedef MTL4Internal::MatrixInternal MatrixInternal;
   typedef MTL4Internal::VectorInternal VectorInternal;
@@ -36,7 +36,8 @@ class MTLInternalLinearSolver : public IInternalLinearSolver<MTLMatrix, MTLVecto
       IOptionsMTLLinearSolver* options);
 
   // Destructeur de la classe
-  virtual ~MTLInternalLinearSolver() ;
+  virtual ~MTLInternalLinearSolver();
+
  public:
   //! Initialisation
   virtual void init();
@@ -44,7 +45,7 @@ class MTLInternalLinearSolver : public IInternalLinearSolver<MTLMatrix, MTLVecto
   void updateParameters();
 
   //! Finalize
-  void end() ;
+  void end();
 
   /////////////////////////////////////////////////////////////////////////////
   //
@@ -59,21 +60,20 @@ class MTLInternalLinearSolver : public IInternalLinearSolver<MTLMatrix, MTLVecto
   bool hasParallelSupport() const;
 
   //! Algèbre linéaire compatible
-  std::shared_ptr<ILinearAlgebra> algebra() const ;
+  std::shared_ptr<ILinearAlgebra> algebra() const;
 
   //! Etat du solveur
-  const Alien::SolverStatus & getStatus() const ;
-  Alien::SolverStatus & getStatusRef() {
-    return m_status ;
-  }
+  const Alien::SolverStatus& getStatus() const;
+  Alien::SolverStatus& getStatusRef() { return m_status; }
 
   //! Statistiques du solveur
-  SolverStater & getSolverStat() { return m_stater; }
-  const SolverStat & getSolverStat() const { return m_stater; }
-  SolverStater & getSolverStater() { return m_stater; }
+  SolverStater& getSolverStat() { return m_stater; }
+  const SolverStat& getSolverStat() const { return m_stater; }
+  SolverStater& getSolverStater() { return m_stater; }
 
  private:
-  bool _solve(MatrixInternal::MTLMatrixType const& A, VectorInternal::MTLVectorType const& b, VectorInternal::MTLVectorType& x) ;
+  bool _solve(MatrixInternal::MTLMatrixType const& A,
+      VectorInternal::MTLVectorType const& b, VectorInternal::MTLVectorType& x);
   void internalPrintInfo() const;
 
  private:

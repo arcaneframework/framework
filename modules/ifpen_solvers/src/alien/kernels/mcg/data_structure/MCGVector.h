@@ -15,8 +15,7 @@
 
 BEGIN_MCGINTERNAL_NAMESPACE
 
-class VectorInternal ;
-
+class VectorInternal;
 
 END_MCGINTERNAL_NAMESPACE
 
@@ -32,30 +31,29 @@ class MCGVector : public IVectorImpl
   typedef MCGInternal::VectorInternal VectorInternal;
 
  public:
+  MCGVector(const MultiVectorImpl* multi_impl);
 
-  MCGVector(const MultiVectorImpl * multi_impl);
+  virtual ~MCGVector();
 
-  virtual ~MCGVector() ;
-
-public:
-  void init(const VectorDistribution & dist, const bool need_allocate);
+ public:
+  void init(const VectorDistribution& dist, const bool need_allocate);
   void allocate();
 
-  void free() { }
-  void clear() { }
+  void free() {}
+  void clear() {}
 
-public:
+ public:
   void setValues(double const* values);
   void getValues(double* values) const;
 
-public:
-  VectorInternal * internal() { return m_internal; }
-  const VectorInternal * internal() const{ return m_internal; }
+ public:
+  VectorInternal* internal() { return m_internal; }
+  const VectorInternal* internal() const { return m_internal; }
 
-  void update(const MCGVector & v);
- 
-private :
-  VectorInternal *m_internal = nullptr;
+  void update(const MCGVector& v);
+
+ private:
+  VectorInternal* m_internal = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

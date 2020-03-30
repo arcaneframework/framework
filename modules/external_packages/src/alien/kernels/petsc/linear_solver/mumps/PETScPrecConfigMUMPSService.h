@@ -31,37 +31,32 @@
 namespace Alien {
 
 class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScPrecConfigMUMPSService
-: public ArcanePETScPrecConfigMUMPSObject,
-  public PETScConfig
+    : public ArcanePETScPrecConfigMUMPSObject,
+      public PETScConfig
 {
  public:
-  /** Constructeur de la classe */
+/** Constructeur de la classe */
 #ifdef ALIEN_USE_ARCANE
   PETScPrecConfigMUMPSService(const Arcane::ServiceBuildInfo& sbi);
 #endif
 
-  PETScPrecConfigMUMPSService(IParallelMng* parallel_mng, std::shared_ptr<IOptionsPETScPrecConfigMUMPS> options) ;
+  PETScPrecConfigMUMPSService(
+      IParallelMng* parallel_mng, std::shared_ptr<IOptionsPETScPrecConfigMUMPS> options);
 
   /** Destructeur de la classe */
   virtual ~PETScPrecConfigMUMPSService() {}
 
-public:
-
+ public:
   //! Initialisation
-    void configure(PC & pc,
-                   const ISpace& space,
-                   const MatrixDistribution& distribution);
+  void configure(PC& pc, const ISpace& space, const MatrixDistribution& distribution);
 
-    //! Check need of KSPSetUp before calling this PC configure
-    virtual bool needPrematureKSPSetUp() const
-    {
-      return true;
-    }
+  //! Check need of KSPSetUp before calling this PC configure
+  virtual bool needPrematureKSPSetUp() const { return true; }
 };
 
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_PETSCPRECCONFIGMUMPS(MUMPS,PETScPrecConfigMUMPSService);
+ARCANE_REGISTER_SERVICE_PETSCPRECCONFIGMUMPS(MUMPS, PETScPrecConfigMUMPSService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -69,5 +64,4 @@ ARCANE_REGISTER_SERVICE_PETSCPRECCONFIGMUMPS(MUMPS,PETScPrecConfigMUMPSService);
 /*---------------------------------------------------------------------------*/
 #endif /* PETSC_VERSION */
 /*---------------------------------------------------------------------------*/
-#endif //PETSCPRECCONFIGSUPERLUSERVICE_H
-
+#endif // PETSCPRECCONFIGSUPERLUSERVICE_H

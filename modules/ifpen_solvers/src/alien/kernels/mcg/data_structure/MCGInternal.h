@@ -5,7 +5,7 @@
  */
 
 //! Internal struct for MCG implementation
-/*! Separate data from header; 
+/*! Separate data from header;
  *  can be only included by LinearSystem and LinearSolver
  */
 #include <alien/kernels/mcg/MCGPrecomp.h>
@@ -16,26 +16,25 @@ BEGIN_MCGINTERNAL_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 
- //! Check parallel feature for MCG
-inline void checkParallel(bool)
+//! Check parallel feature for MCG
+inline void
+checkParallel(bool)
 {
   // This behaviour may be changed when Parallel MCG will be plugged
-
 }
 
 /*---------------------------------------------------------------------------*/
 
 class MatrixInternal
 {
-public :
+ public:
   typedef MCGSolver::CSRProfile ProfileType;
   typedef MCGSolver::BCSRMatrix<double> MatrixType;
 
-  //MatrixType *m_matrix = nullptr;
-  MatrixType* m_matrix[2][2] = {{nullptr,nullptr},{nullptr,nullptr}};
+  // MatrixType *m_matrix = nullptr;
+  MatrixType* m_matrix[2][2] = { { nullptr, nullptr }, { nullptr, nullptr } };
 
-  MatrixInternal()
-  {}
+  MatrixInternal() {}
 
   ~MatrixInternal()
   {
@@ -46,16 +45,14 @@ public :
   }
 };
 
-
 /*---------------------------------------------------------------------------*/
 
 class VectorInternal
 {
-public :
-  VectorInternal(int nrow,int block_size)
-  : m_bvector(nrow,block_size)
+ public:
+  VectorInternal(int nrow, int block_size)
+  : m_bvector(nrow, block_size)
   {
-
   }
 
   MCGSolver::BVector<double> m_bvector;
@@ -65,14 +62,13 @@ public :
 
 class CompositeVectorInternal
 {
-public:
-  CompositeVectorInternal(const std::vector<std::pair<int,int>>& composite_info)
+ public:
+  CompositeVectorInternal(const std::vector<std::pair<int, int>>& composite_info)
   {
     m_bvector.reserve(composite_info.size());
 
-    for(const auto &p : composite_info)
-    {
-      m_bvector.emplace_back(p.first,p.second);
+    for (const auto& p : composite_info) {
+      m_bvector.emplace_back(p.first, p.second);
     }
   }
 

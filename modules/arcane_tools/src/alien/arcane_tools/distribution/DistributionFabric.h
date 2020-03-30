@@ -21,34 +21,36 @@ namespace ArcaneTools {
   /*---------------------------------------------------------------------------*/
 
   inline VectorDistribution
-  /*
-  createVectorDistribution(IIndexManager* index_mng,
-                           std::shared_ptr<IParallelMng> parallel_mng)
-  */
-  createVectorDistribution(IIndexManager* index_mng, Arcane::IParallelMng* parallel_mng)
+      /*
+      createVectorDistribution(IIndexManager* index_mng,
+                               std::shared_ptr<IParallelMng> parallel_mng)
+      */
+      createVectorDistribution(
+          IIndexManager* index_mng, Arcane::IParallelMng* parallel_mng)
   {
-  auto global_size = index_mng->globalSize();
-  auto local_size = index_mng->localSize();
-  return VectorDistribution(global_size, local_size, parallel_mng->messagePassingMng());
+    auto global_size = index_mng->globalSize();
+    auto local_size = index_mng->localSize();
+    return VectorDistribution(global_size, local_size, parallel_mng->messagePassingMng());
   }
 
-/*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
-inline MatrixDistribution
-/*
-createMatrixDistribution(IIndexManager* index_mng,
-                         std::shared_ptr<IParallelMng> parallel_mng)
-*/
-createMatrixDistribution(IIndexManager* index_mng, Arcane::IParallelMng* parallel_mng)
+  inline MatrixDistribution
+      /*
+      createMatrixDistribution(IIndexManager* index_mng,
+                               std::shared_ptr<IParallelMng> parallel_mng)
+      */
+      createMatrixDistribution(
+          IIndexManager* index_mng, Arcane::IParallelMng* parallel_mng)
   {
-  auto global_size = index_mng->globalSize();
-  auto local_size = index_mng->localSize();
-  return MatrixDistribution(
-      global_size, global_size, local_size, parallel_mng->messagePassingMng());
+    auto global_size = index_mng->globalSize();
+    auto local_size = index_mng->localSize();
+    return MatrixDistribution(
+        global_size, global_size, local_size, parallel_mng->messagePassingMng());
   }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
 } // namespace Alien
 

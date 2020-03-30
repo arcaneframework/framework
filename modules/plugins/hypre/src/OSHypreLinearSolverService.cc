@@ -6,46 +6,51 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class OSHypreLinearSolverService
-        : public ArcaneOSHypreSolverObject {
-public:
+class OSHypreLinearSolverService : public ArcaneOSHypreSolverObject
+{
+ public:
+  OSHypreLinearSolverService(const Arcane::ServiceBuildInfo& sbi)
+  : ArcaneOSHypreSolverObject(sbi)
+  {
+  }
 
-    OSHypreLinearSolverService(const Arcane::ServiceBuildInfo &sbi)
-            : ArcaneOSHypreSolverObject(sbi) {}
+  virtual ~OSHypreLinearSolverService() {}
 
-    virtual ~OSHypreLinearSolverService() {}
+  void init()
+  {
+    auto solveroptions = Alien::Hypre::Options()
+                             .numIterationsMax(options()->numIterationsMax())
+                             .stopCriteriaValue(options()->stopCriteriaValue())
+                             .preconditioner(options()->preconditioner())
+                             .solver(options()->solver());
 
-    void init() {
-        auto solveroptions = Alien::Hypre::Options()
-                .numIterationsMax(options()->numIterationsMax())
-                .stopCriteriaValue(options()->stopCriteriaValue())
-                .preconditioner(options()->preconditioner())
-                .solver(options()->solver());
+    m_solver.reset(new Alien::Hypre::LinearSolver(solveroptions));
+  }
 
-        m_solver.reset(new Alien::Hypre::LinearSolver(solveroptions));
-    }
+  Arccore::String getBackEndName() const { return m_solver->getBackEndName(); }
 
-    Arccore::String getBackEndName() const { return m_solver->getBackEndName(); }
+  void end() { m_solver->end(); }
 
-    void end() { m_solver->end(); }
+  bool solve(const Alien::IMatrix& A, const Alien::IVector& b, Alien::IVector& x)
+  {
+    return m_solver->solve(A, b, x);
+  }
 
-    bool solve(const Alien::IMatrix &A, const Alien::IVector &b, Alien::IVector &x) {
-        return m_solver->solve(A, b, x);
-    }
+  Alien::SolverStat const& getSolverStat() const { return m_solver->getSolverStat(); }
 
-    Alien::SolverStat const &getSolverStat() const { return m_solver->getSolverStat(); }
+  std::shared_ptr<Alien::ILinearAlgebra> algebra() const { return m_solver->algebra(); }
 
-    std::shared_ptr<Alien::ILinearAlgebra> algebra() const { return m_solver->algebra(); }
+  bool hasParallelSupport() const { return m_solver->hasParallelSupport(); }
 
-    bool hasParallelSupport() const { return m_solver->hasParallelSupport(); }
+  const Alien::SolverStatus& getStatus() const { return m_solver->getStatus(); }
 
-    const Alien::SolverStatus &getStatus() const { return m_solver->getStatus(); }
+  void setNullSpaceConstantOption(bool flag)
+  {
+    m_solver->setNullSpaceConstantOption(flag);
+  }
 
-    void setNullSpaceConstantOption(bool flag) { m_solver->setNullSpaceConstantOption(flag); }
-
-private:
-
-    std::unique_ptr<Alien::Hypre::LinearSolver> m_solver;
+ private:
+  std::unique_ptr<Alien::Hypre::LinearSolver> m_solver;
 };
 
 /*---------------------------------------------------------------------------*/

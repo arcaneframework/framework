@@ -29,71 +29,62 @@ PETScSolverConfigRichardsonService::PETScSolverConfigRichardsonService(
 : ArcanePETScSolverConfigRichardsonObject(options)
 , PETScConfig(parallel_mng->commSize() > 1)
 {
-	;
+  ;
 }
-
 
 //! Initialisation
 void
-PETScSolverConfigRichardsonService::
-configure(KSP & ksp,
-		const ISpace& space,
-		const MatrixDistribution& distribution)
+PETScSolverConfigRichardsonService::configure(
+    KSP& ksp, const ISpace& space, const MatrixDistribution& distribution)
 {
-	alien_debug([&] {
-		cout() << "configure PETSc richardson solver";
-	});
+  alien_debug([&] { cout() << "configure PETSc richardson solver"; });
 
-	PETScInitType::apply(this,ksp,options()->initType());
+  PETScInitType::apply(this, ksp, options()->initType());
 
-	checkError("Set solver tolerances",KSPSetTolerances(ksp,
-			options()->stopCriteriaValue(),
-			1e-15,
-			PETSC_DEFAULT,
-			options()->numIterationsMax()));
-	checkError("Solver set type",KSPSetType(ksp,KSPRICHARDSON));
+  checkError(
+      "Set solver tolerances", KSPSetTolerances(ksp, options()->stopCriteriaValue(),
+                                   1e-15, PETSC_DEFAULT, options()->numIterationsMax()));
+  checkError("Solver set type", KSPSetType(ksp, KSPRICHARDSON));
 
-	if (options()->right())
-	{
+  if (options()->right()) {
 #ifndef PETSC_KSPSETPCSIDE_NEW
-		checkError(" Set solver preconditioner side ", KSPSetPreconditionerSide(ksp,PC_RIGHT));
+    checkError(
+        " Set solver preconditioner side ", KSPSetPreconditionerSide(ksp, PC_RIGHT));
 #else /* PETSC_KSPSETPCSIDE_NEW */
-		checkError(" Set solver preconditioner side ", KSPSetPCSide(ksp,PC_RIGHT));
+    checkError(" Set solver preconditioner side ", KSPSetPCSide(ksp, PC_RIGHT));
 #endif /* PETSC_KSPSETPCSIDE_NEW */
-		checkError(" Set solver unpreconditioned norm type ", KSPSetNormType(ksp, KSP_NORM_UNPRECONDITIONED));
-	}
+    checkError(" Set solver unpreconditioned norm type ",
+        KSPSetNormType(ksp, KSP_NORM_UNPRECONDITIONED));
+  }
 
-	double scale = options()->scale();
+  double scale = options()->scale();
 #ifdef PETSC_HAVE_KSPRICHARDSONSETSELFSCALE
-	if ( scale != 0.0) {
+  if (scale != 0.0) {
 #endif // PETSC_HAVE_KSPRICHARDSONSETSELFSCALE
-		checkError("Set Richardson Scale",KSPRichardsonSetScale(ksp,scale));
+    checkError("Set Richardson Scale", KSPRichardsonSetScale(ksp, scale));
 #ifdef PETSC_HAVE_KSPRICHARDSONSETSELFSCALE
-	}
-	else {
-		checkError("Set Richardson Self Scale",KSPRichardsonSetSelfScale(ksp,PETSC_TRUE));
-	}
+  } else {
+    checkError("Set Richardson Self Scale", KSPRichardsonSetSelfScale(ksp, PETSC_TRUE));
+  }
 #endif // PETSC_HAVE_KSPRICHARDSONSETSELFSCALE
 
-	PC pc;
-	checkError("Get preconditioner",KSPGetPC(ksp,&pc));
-	IPETScPC * preconditioner = options()->preconditioner() ;
-	bool needSetUp = preconditioner->needPrematureKSPSetUp();
-	if (needSetUp)
-	{
-		checkError("Solver setup",KSPSetUp(ksp));
-		preconditioner->configure(pc, space, distribution);
-	}
-	else
-	{
-		preconditioner->configure(pc, space, distribution);
-		checkError("Solver setup",KSPSetUp(ksp));
-	}
+  PC pc;
+  checkError("Get preconditioner", KSPGetPC(ksp, &pc));
+  IPETScPC* preconditioner = options()->preconditioner();
+  bool needSetUp = preconditioner->needPrematureKSPSetUp();
+  if (needSetUp) {
+    checkError("Solver setup", KSPSetUp(ksp));
+    preconditioner->configure(pc, space, distribution);
+  } else {
+    preconditioner->configure(pc, space, distribution);
+    checkError("Solver setup", KSPSetUp(ksp));
+  }
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_PETSCSOLVERCONFIGRICHARDSON(Richardson,PETScSolverConfigRichardsonService);
+ARCANE_REGISTER_SERVICE_PETSCSOLVERCONFIGRICHARDSON(
+    Richardson, PETScSolverConfigRichardsonService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -104,4 +95,3 @@ REGISTER_STRONG_OPTIONS_PETSCSOLVERCONFIGRICHARDSON();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

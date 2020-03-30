@@ -29,7 +29,6 @@
 #include <alien/kernels/petsc/algebra/PETScInternalLinearAlgebra.h>
 #include <alien/kernels/petsc/data_structure/PETScInternal.h>
 
-
 #include <alien/data/Space.h>
 #include <alien/expression/solver/IEigenSolver.h>
 #include <alien/core/impl/MultiMatrixImpl.h>
@@ -38,7 +37,6 @@
 #include "SLEPcInternalEigenSolver.h"
 #include <alien/core/backend/EigenSolverT.h>
 #include <ALIEN/axl/SLEPcEigenSolver_IOptions.h>
-
 
 /*---------------------------------------------------------------------------*/
 
@@ -63,314 +61,313 @@ SLEPC::initialize(bool is_io_master)
   }
 #endif
 }
-void SLEPC::finalize()
+void
+SLEPC::finalize()
 {
 #ifdef USE_SLEPC
   SlepcFinalize();
-  SLEPC::m_initialized = false ;
+  SLEPC::m_initialized = false;
 #endif
 }
 
 /*---------------------------------------------------------------------------*/
-SLEPcInternalEigenSolver::SLEPcInternalEigenSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng, IOptionsSLEPcEigenSolver* options)
+SLEPcInternalEigenSolver::SLEPcInternalEigenSolver(
+    Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+    IOptionsSLEPcEigenSolver* options)
 : m_parallel_mng(parallel_mng)
 , m_options(options)
 {
-
 }
-
 
 void
 SLEPcInternalEigenSolver::init(int argc, char const** argv)
 {
 }
 
-
 /*---------------------------------------------------------------------------*/
 
 void
 SLEPcInternalEigenSolver::init()
 {
-  SLEPC::initialize(true) ;
+  SLEPC::initialize(true);
 
   m_output_level = m_options->output();
 
-  m_max_iteration = m_options->maxIterationNum() ;
-  m_tol           = m_options->tol() ;
-  m_evtype        = (eSolverType) m_options->evType() ;
-  m_nev           = m_options->nev() ;
-  m_evorder       = m_options->evOrder() ;
-  m_evbound       = m_options->evBound() ;
+  m_max_iteration = m_options->maxIterationNum();
+  m_tol = m_options->tol();
+  m_evtype = (eSolverType)m_options->evType();
+  m_nev = m_options->nev();
+  m_evorder = m_options->evOrder();
+  m_evbound = m_options->evBound();
 
-  m_ncv = std::max(m_nev+2,2*m_nev) ;
-  m_mpd =m_ncv ;
+  m_ncv = std::max(m_nev + 2, 2 * m_nev);
+  m_mpd = m_ncv;
 }
 
-
 /*---------------------------------------------------------------------------*/
 
-
-
-
-
-
 /*---------------------------------------------------------------------------*/
-
-
 
 const Alien::IEigenSolver::Status&
-SLEPcInternalEigenSolver::
-getStatus() const
+SLEPcInternalEigenSolver::getStatus() const
 {
   return m_status;
 }
 
-
-
-int SLEPcInternalEigenSolver::_solve(int nrows, PETScMatrix const& matrixA,
-         std::vector<Arccore::Real>& r_eigen_values,
-         std::vector<Arccore::Real>& i_eigen_values,
-         std::vector< std::vector<Arccore::Real>>& eigen_vectors,
-         SLEPcStatus& status)
+int
+SLEPcInternalEigenSolver::_solve(int nrows, PETScMatrix const& matrixA,
+    std::vector<Arccore::Real>& r_eigen_values,
+    std::vector<Arccore::Real>& i_eigen_values,
+    std::vector<std::vector<Arccore::Real>>& eigen_vectors, SLEPcStatus& status)
 {
 #ifdef ALIEN_USE_SLEPC
-  const Mat & A = matrixA.internal()->m_internal;
+  const Mat& A = matrixA.internal()->m_internal;
 
-    EPS            eps;         /* eigenproblem solver context */
-    //const EPSType type;
-    Vec xr,xi;
-    PetscErrorCode ierr;
+  EPS eps; /* eigenproblem solver context */
+  // const EPSType type;
+  Vec xr, xi;
+  PetscErrorCode ierr;
 
-    ierr = MatCreateVecs(A,PETSC_NULL,&xr);CHKERRQ(ierr);
-    ierr = MatCreateVecs(A,PETSC_NULL,&xi);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A, PETSC_NULL, &xr);
+  CHKERRQ(ierr);
+  ierr = MatCreateVecs(A, PETSC_NULL, &xi);
+  CHKERRQ(ierr);
 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                  Create the eigensolver and set various options
+       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  /*
+       Create eigensolver context
+  */
+  ierr = EPSCreate(PETSC_COMM_SELF, &eps);
+  CHKERRQ(ierr);
 
-    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                    Create the eigensolver and set various options
-         - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-    /*
-         Create eigensolver context
-    */
-    ierr = EPSCreate(PETSC_COMM_SELF,&eps);CHKERRQ(ierr);
-
-    /*
-       Set operators. In this case, it is a generalized eigenvalue problem
-    */
-    ierr += EPSSetOperators(eps,A,NULL);CHKERRQ(ierr);
-    ierr += EPSSetProblemType(eps,EPS_HEP);CHKERRQ(ierr);
-    ierr += EPSSetDimensions(eps,m_nev,m_ncv,m_mpd);
-    ierr += EPSSetTolerances(eps,m_tol,m_max_iteration);CHKERRQ(ierr);
-    /*
-       Select portion of spectrum
-    */
-    ierr = EPSSetTarget(eps,0.0);CHKERRQ(ierr);CHKERRQ(ierr);
-    switch(m_evorder)
-    {
-      case 0 :
-        ierr = EPSSetWhichEigenpairs(eps,EPS_SMALLEST_MAGNITUDE);CHKERRQ(ierr) ;
-        break ;
-      case 1 :
-        ierr = EPSSetWhichEigenpairs(eps,EPS_TARGET_MAGNITUDE);CHKERRQ(ierr);
-        break ;
-      default :
-        break ;
-    }
-
-
-    switch(m_evtype)
-    {
-      case Arnoldi :
-      {
-          ierr = EPSSetType(eps,EPSARNOLDI) ;CHKERRQ(ierr);
-      }
-      break ;
-      case Arpack :
-      {
-        ierr = EPSSetType(eps,EPSARPACK) ;CHKERRQ(ierr);
-      }
-      break ;
-      case KrylovSchur :
-      default :
-      {
-          ierr = EPSSetType(eps,EPSKRYLOVSCHUR) ;CHKERRQ(ierr);
-      }
-      break ;
-    }
-      /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                            Solve the eigensystem
-           - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-    ierr = EPSSolve(eps);CHKERRQ(ierr);
-
-    /*
-       Optional: Get some information from the solver and display it
-    */
-
-
-    ierr = EPSGetIterationNumber(eps,&status.m_nb_iter);CHKERRQ(ierr);
-    status.m_succeed = ierr==0 ;
-    int nconv ;
-    EPSGetConverged( eps, &nconv );
-    m_nconv = std::min(nconv,m_nev) ;
-    status.m_nconv = m_nconv ;
-    r_eigen_values.resize(m_nconv) ;
-    i_eigen_values.resize(m_nconv) ;
-    eigen_vectors.resize(m_nconv) ;
-    for (int j=0; j<m_nconv; j++)
-    {
-      EPSGetEigenpair( eps, j, &r_eigen_values[j], &i_eigen_values[j], xr, xi );
-      eigen_vectors[j].resize(nrows) ;
-      Arccore::Real* v_ptr = eigen_vectors[j].data() ;
-      PetscScalar *xr_ptr ;
-      VecGetArray(xr,&xr_ptr);
-      for(std::size_t i=0;i<nrows;++i)
-        v_ptr[i] = xr_ptr[i] ;
-
+  /*
+     Set operators. In this case, it is a generalized eigenvalue problem
+  */
+  ierr += EPSSetOperators(eps, A, NULL);
+  CHKERRQ(ierr);
+  ierr += EPSSetProblemType(eps, EPS_HEP);
+  CHKERRQ(ierr);
+  ierr += EPSSetDimensions(eps, m_nev, m_ncv, m_mpd);
+  ierr += EPSSetTolerances(eps, m_tol, m_max_iteration);
+  CHKERRQ(ierr);
+  /*
+     Select portion of spectrum
+  */
+  ierr = EPSSetTarget(eps, 0.0);
+  CHKERRQ(ierr);
+  CHKERRQ(ierr);
+  switch (m_evorder) {
+  case 0:
+    ierr = EPSSetWhichEigenpairs(eps, EPS_SMALLEST_MAGNITUDE);
+    CHKERRQ(ierr);
+    break;
+  case 1:
+    ierr = EPSSetWhichEigenpairs(eps, EPS_TARGET_MAGNITUDE);
+    CHKERRQ(ierr);
+    break;
+  default:
+    break;
   }
-  ierr = EPSDestroy( &eps );CHKERRQ(ierr);
-  //ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&xr);CHKERRQ(ierr);
-  ierr = VecDestroy(&xi);CHKERRQ(ierr);
-  status.m_error = ierr ;
-  return ierr ;
+
+  switch (m_evtype) {
+  case Arnoldi: {
+    ierr = EPSSetType(eps, EPSARNOLDI);
+    CHKERRQ(ierr);
+  } break;
+  case Arpack: {
+    ierr = EPSSetType(eps, EPSARPACK);
+    CHKERRQ(ierr);
+  } break;
+  case KrylovSchur:
+  default: {
+    ierr = EPSSetType(eps, EPSKRYLOVSCHUR);
+    CHKERRQ(ierr);
+  } break;
+  }
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                        Solve the eigensystem
+       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+  ierr = EPSSolve(eps);
+  CHKERRQ(ierr);
+
+  /*
+     Optional: Get some information from the solver and display it
+  */
+
+  ierr = EPSGetIterationNumber(eps, &status.m_nb_iter);
+  CHKERRQ(ierr);
+  status.m_succeed = ierr == 0;
+  int nconv;
+  EPSGetConverged(eps, &nconv);
+  m_nconv = std::min(nconv, m_nev);
+  status.m_nconv = m_nconv;
+  r_eigen_values.resize(m_nconv);
+  i_eigen_values.resize(m_nconv);
+  eigen_vectors.resize(m_nconv);
+  for (int j = 0; j < m_nconv; j++) {
+    EPSGetEigenpair(eps, j, &r_eigen_values[j], &i_eigen_values[j], xr, xi);
+    eigen_vectors[j].resize(nrows);
+    Arccore::Real* v_ptr = eigen_vectors[j].data();
+    PetscScalar* xr_ptr;
+    VecGetArray(xr, &xr_ptr);
+    for (std::size_t i = 0; i < nrows; ++i)
+      v_ptr[i] = xr_ptr[i];
+  }
+  ierr = EPSDestroy(&eps);
+  CHKERRQ(ierr);
+  // ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = VecDestroy(&xr);
+  CHKERRQ(ierr);
+  ierr = VecDestroy(&xi);
+  CHKERRQ(ierr);
+  status.m_error = ierr;
+  return ierr;
 #else
-  return 1 ;
+  return 1;
 #endif
 }
 
-int SLEPcInternalEigenSolver::_solve(int nrows,PETScMatrix const& matrixA,
-                                     PETScMatrix const& matrixB,
-                                     std::vector<Arccore::Real>& r_eigen_values,
-                                     std::vector<Arccore::Real>& i_eigen_values,
-                                     std::vector<std::vector<Arccore::Real>>& eigen_vectors,
-                                     SLEPcStatus& status)
+int
+SLEPcInternalEigenSolver::_solve(int nrows, PETScMatrix const& matrixA,
+    PETScMatrix const& matrixB, std::vector<Arccore::Real>& r_eigen_values,
+    std::vector<Arccore::Real>& i_eigen_values,
+    std::vector<std::vector<Arccore::Real>>& eigen_vectors, SLEPcStatus& status)
 {
 #ifdef ALIEN_USE_SLEPC
-  const Mat & A = matrixA.internal()->m_internal;
-  const Mat & B = matrixB.internal()->m_internal;
+  const Mat& A = matrixA.internal()->m_internal;
+  const Mat& B = matrixB.internal()->m_internal;
 
-    EPS            eps;         /* eigenproblem solver context */
-    //const EPSType type;
-    Vec xr,xi;
-    PetscErrorCode ierr;
+  EPS eps; /* eigenproblem solver context */
+  // const EPSType type;
+  Vec xr, xi;
+  PetscErrorCode ierr;
 
-    ierr = MatCreateVecs(A,PETSC_NULL,&xr);CHKERRQ(ierr);
-    ierr = MatCreateVecs(A,PETSC_NULL,&xi);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A, PETSC_NULL, &xr);
+  CHKERRQ(ierr);
+  ierr = MatCreateVecs(A, PETSC_NULL, &xi);
+  CHKERRQ(ierr);
 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                  Create the eigensolver and set various options
+       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  /*
+       Create eigensolver context
+  */
+  ierr = EPSCreate(PETSC_COMM_SELF, &eps);
+  CHKERRQ(ierr);
 
-    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                    Create the eigensolver and set various options
-         - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-    /*
-         Create eigensolver context
-    */
-    ierr = EPSCreate(PETSC_COMM_SELF,&eps);CHKERRQ(ierr);
+  /*
+     Set operators. In this case, it is a generalized eigenvalue problem
+  */
+  ierr = EPSSetOperators(eps, A, B);
+  CHKERRQ(ierr);
+  ierr += EPSSetProblemType(eps, EPS_GNHEP);
+  CHKERRQ(ierr);
+  ierr += EPSSetDimensions(eps, m_nev, m_ncv, m_mpd);
+  ierr += EPSSetTolerances(eps, m_tol, m_max_iteration);
+  CHKERRQ(ierr);
+  /*
+     Select portion of spectrum
+  */
+  ierr = EPSSetTarget(eps, 0.0);
+  CHKERRQ(ierr);
+  CHKERRQ(ierr);
+  // ierr = EPSSetWhichEigenpairs(eps,EPS_SMALLEST_MAGNITUDE);CHKERRQ(ierr) ;
+  ierr = EPSSetWhichEigenpairs(eps, EPS_TARGET_MAGNITUDE);
+  CHKERRQ(ierr);
+  /*
+     Use shift-and-invert to avoid solving linear systems with a singular B
+     in case nulldim>0
+  */
+  PetscBool flag;
+  ST st;
+  ierr = EPSGetST(eps, &st);
+  CHKERRQ(ierr);
+  ierr = STSetType(st, STSINVERT);
+  CHKERRQ(ierr);
 
-    /*
-       Set operators. In this case, it is a generalized eigenvalue problem
-    */
-    ierr = EPSSetOperators(eps,A,B);CHKERRQ(ierr);
-    ierr += EPSSetProblemType(eps,EPS_GNHEP);CHKERRQ(ierr);
-    ierr += EPSSetDimensions(eps,m_nev,m_ncv,m_mpd);
-    ierr += EPSSetTolerances(eps,m_tol,m_max_iteration);CHKERRQ(ierr);
-    /*
-       Select portion of spectrum
-    */
-    ierr = EPSSetTarget(eps,0.0);CHKERRQ(ierr);CHKERRQ(ierr);
-    //ierr = EPSSetWhichEigenpairs(eps,EPS_SMALLEST_MAGNITUDE);CHKERRQ(ierr) ;
-    ierr = EPSSetWhichEigenpairs(eps,EPS_TARGET_MAGNITUDE);CHKERRQ(ierr);
-    /*
-       Use shift-and-invert to avoid solving linear systems with a singular B
-       in case nulldim>0
-    */
-    PetscBool      flag;
-    ST             st;
-    ierr = EPSGetST(eps,&st);CHKERRQ(ierr);
-    ierr = STSetType(st,STSINVERT);CHKERRQ(ierr);
-
-
-    switch(m_evtype)
-    {
-      case Arnoldi :
-      {
-          ierr = EPSSetType(eps,EPSARNOLDI) ;CHKERRQ(ierr);
-      }
-      break ;
-      case Arpack :
-      {
-        ierr = EPSSetType(eps,EPSARPACK) ;CHKERRQ(ierr);
-      }
-      break ;
-      case KrylovSchur :
-      default :
-      {
-          ierr = EPSSetType(eps,EPSKRYLOVSCHUR) ;CHKERRQ(ierr);
-      }
-      break ;
-    }
-      /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                            Solve the eigensystem
-           - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-    ierr = EPSSolve(eps);CHKERRQ(ierr);
-
-    /*
-       Optional: Get some information from the solver and display it
-    */
-
-
-    ierr = EPSGetIterationNumber(eps,&status.m_nb_iter);CHKERRQ(ierr);
-    status.m_succeed = ierr==0 ;
-    int nconv ;
-    EPSGetConverged( eps, &nconv );
-    m_nconv = std::min(nconv,m_nev) ;
-    status.m_nconv = m_nconv ;
-    r_eigen_values.resize(m_nconv) ;
-    i_eigen_values.resize(m_nconv) ;
-    eigen_vectors.resize(m_nconv) ;
-    for (int j=0; j<m_nconv; j++)
-    {
-      EPSGetEigenpair( eps, j, &r_eigen_values[j], &i_eigen_values[j], xr, xi );
-      eigen_vectors[j].resize(nrows) ;
-      Arccore::Real* v_ptr = eigen_vectors[j].data() ;
-      PetscScalar *xr_ptr ;
-      VecGetArray(xr,&xr_ptr);
-      for(std::size_t i=0;i<nrows;++i)
-        v_ptr[i] = xr_ptr[i] ;
-
+  switch (m_evtype) {
+  case Arnoldi: {
+    ierr = EPSSetType(eps, EPSARNOLDI);
+    CHKERRQ(ierr);
+  } break;
+  case Arpack: {
+    ierr = EPSSetType(eps, EPSARPACK);
+    CHKERRQ(ierr);
+  } break;
+  case KrylovSchur:
+  default: {
+    ierr = EPSSetType(eps, EPSKRYLOVSCHUR);
+    CHKERRQ(ierr);
+  } break;
   }
-  ierr = EPSDestroy( &eps );CHKERRQ(ierr);
-  //ierr = MatDestroy(&A);CHKERRQ(ierr);
-  //ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = VecDestroy(&xr);CHKERRQ(ierr);
-  ierr = VecDestroy(&xi);CHKERRQ(ierr);
-  status.m_error = ierr ;
-  return ierr ;
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                        Solve the eigensystem
+       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+  ierr = EPSSolve(eps);
+  CHKERRQ(ierr);
+
+  /*
+     Optional: Get some information from the solver and display it
+  */
+
+  ierr = EPSGetIterationNumber(eps, &status.m_nb_iter);
+  CHKERRQ(ierr);
+  status.m_succeed = ierr == 0;
+  int nconv;
+  EPSGetConverged(eps, &nconv);
+  m_nconv = std::min(nconv, m_nev);
+  status.m_nconv = m_nconv;
+  r_eigen_values.resize(m_nconv);
+  i_eigen_values.resize(m_nconv);
+  eigen_vectors.resize(m_nconv);
+  for (int j = 0; j < m_nconv; j++) {
+    EPSGetEigenpair(eps, j, &r_eigen_values[j], &i_eigen_values[j], xr, xi);
+    eigen_vectors[j].resize(nrows);
+    Arccore::Real* v_ptr = eigen_vectors[j].data();
+    PetscScalar* xr_ptr;
+    VecGetArray(xr, &xr_ptr);
+    for (std::size_t i = 0; i < nrows; ++i)
+      v_ptr[i] = xr_ptr[i];
+  }
+  ierr = EPSDestroy(&eps);
+  CHKERRQ(ierr);
+  // ierr = MatDestroy(&A);CHKERRQ(ierr);
+  // ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = VecDestroy(&xr);
+  CHKERRQ(ierr);
+  ierr = VecDestroy(&xi);
+  CHKERRQ(ierr);
+  status.m_error = ierr;
+  return ierr;
 #else
-  return 1 ;
+  return 1;
 #endif
 }
 
 bool
-SLEPcInternalEigenSolver::
-solve(EigenProblem& p)
+SLEPcInternalEigenSolver::solve(EigenProblem& p)
 {
   using namespace Alien;
 
-  return false ;
+  return false;
 }
 
 bool
-SLEPcInternalEigenSolver::
-solve(GeneralizedEigenProblem& p)
+SLEPcInternalEigenSolver::solve(GeneralizedEigenProblem& p)
 {
   using namespace Alien;
 
-  return false ;
+  return false;
 }
 
 IEigenSolver*
-SLEPcInternalEigenSolverFactory(Arccore::MessagePassing::IMessagePassingMng* p_mng, IOptionsSLEPcEigenSolver* options)
+SLEPcInternalEigenSolverFactory(
+    Arccore::MessagePassing::IMessagePassingMng* p_mng, IOptionsSLEPcEigenSolver* options)
 {
   return new SLEPcInternalEigenSolver(p_mng, options);
 }

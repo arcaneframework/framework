@@ -20,7 +20,8 @@ PETScSolverConfigLUService::PETScSolverConfigLUService(
     const Arcane::ServiceBuildInfo& sbi)
 : ArcanePETScSolverConfigLUObject(sbi)
 , PETScConfig(sbi.subDomain()->parallelMng()->isParallel())
-{}
+{
+}
 #endif
 
 PETScSolverConfigLUService::PETScSolverConfigLUService(
@@ -28,35 +29,27 @@ PETScSolverConfigLUService::PETScSolverConfigLUService(
     std::shared_ptr<IOptionsPETScSolverConfigLU> options)
 : ArcanePETScSolverConfigLUObject(options)
 , PETScConfig(parallel_mng->commSize() > 1)
-{}
+{
+}
 
 //! Initialisation
 void
-PETScSolverConfigLUService::
-configure(KSP & ksp,
-	  const ISpace& space,
-	  const MatrixDistribution& distribution)
+PETScSolverConfigLUService::configure(
+    KSP& ksp, const ISpace& space, const MatrixDistribution& distribution)
 {
-  alien_debug([&] {
-    cout() << "configure PETSc lu solver";
-  });
- 
-  checkError("Set solver tolerances",KSPSetTolerances(ksp,
-						      1e-9,
-						      1e-15,
-						      PETSC_DEFAULT,
-						      2));
+  alien_debug([&] { cout() << "configure PETSc lu solver"; });
 
-  checkError("Solver set type",KSPSetType(ksp,KSPPREONLY));
-  
+  checkError(
+      "Set solver tolerances", KSPSetTolerances(ksp, 1e-9, 1e-15, PETSC_DEFAULT, 2));
+
+  checkError("Solver set type", KSPSetType(ksp, KSPPREONLY));
+
   PC pc;
-  checkError("Get preconditioner",KSPGetPC(ksp,&pc));
-  checkError("Preconditioner set type",PCSetType(pc,PCLU));
-  
+  checkError("Get preconditioner", KSPGetPC(ksp, &pc));
+  checkError("Preconditioner set type", PCSetType(pc, PCLU));
+
   if (isParallel()) {
-    alien_fatal([&] {
-      cout() << "PETSc LU is not available in parallel";
-    });
+    alien_fatal([&] { cout() << "PETSc LU is not available in parallel"; });
   }
 
   checkError("Set lu solver package", PCFactorSetMatSolverType(pc, MATSOLVERPETSC));
@@ -67,7 +60,7 @@ configure(KSP & ksp,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_PETSCSOLVERCONFIGLU(LU,PETScSolverConfigLUService);
+ARCANE_REGISTER_SERVICE_PETSCSOLVERCONFIGLU(LU, PETScSolverConfigLUService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

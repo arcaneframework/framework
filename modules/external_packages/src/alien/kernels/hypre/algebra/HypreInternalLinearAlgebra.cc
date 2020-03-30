@@ -29,15 +29,14 @@ namespace {
     HYPRE_ParVector res;
     HYPRE_IJVectorGetObject(v.internal()->internal(), reinterpret_cast<void**>(&res));
     return res;
-}
+  }
 
-HYPRE_ParCSRMatrix
-hypre_implem(const HypreMatrix& m)
-{
-  HYPRE_ParCSRMatrix res;
-  HYPRE_IJMatrixGetObject(m.internal()->internal(), reinterpret_cast<void**>(&res));
-  return res;
-}
+  HYPRE_ParCSRMatrix hypre_implem(const HypreMatrix& m)
+  {
+    HYPRE_ParCSRMatrix res;
+    HYPRE_IJMatrixGetObject(m.internal()->internal(), reinterpret_cast<void**>(&res));
+    return res;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -73,7 +72,8 @@ Arccore::Real
 HypreInternalLinearAlgebra::norm0(const HypreVector& vx ALIEN_UNUSED_PARAM) const
 {
   Arccore::Real result = 0;
-  throw Arccore::NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::norm0 not implemented");
+  throw Arccore::NotImplementedException(
+      A_FUNCINFO, "HypreLinearAlgebra::norm0 not implemented");
   // VecNorm(vx.internal()->m_internal, NORM_INFINITY, &result);
   return result;
 }
@@ -84,7 +84,8 @@ Arccore::Real
 HypreInternalLinearAlgebra::norm1(const HypreVector& vx ALIEN_UNUSED_PARAM) const
 {
   Arccore::Real result = 0;
-  throw Arccore::NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::norm1 not implemented");
+  throw Arccore::NotImplementedException(
+      A_FUNCINFO, "HypreLinearAlgebra::norm1 not implemented");
   // VecNorm(vx.internal()->m_internal, NORM_1, &result);
   return result;
 }
@@ -103,16 +104,18 @@ void
 HypreInternalLinearAlgebra::mult(
     const HypreMatrix& ma, const HypreVector& vx, HypreVector& vr) const
 {
-  HYPRE_ParCSRMatrixMatvec(1.0, hypre_implem(ma), hypre_implem(vx), 0.0, hypre_implem(vr));
+  HYPRE_ParCSRMatrixMatvec(
+      1.0, hypre_implem(ma), hypre_implem(vx), 0.0, hypre_implem(vr));
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-HypreInternalLinearAlgebra::axpy(
-    const Arccore::Real& alpha ALIEN_UNUSED_PARAM, const HypreVector& vx ALIEN_UNUSED_PARAM, HypreVector& vr ALIEN_UNUSED_PARAM) const
+HypreInternalLinearAlgebra::axpy(const Arccore::Real& alpha ALIEN_UNUSED_PARAM,
+    const HypreVector& vx ALIEN_UNUSED_PARAM, HypreVector& vr ALIEN_UNUSED_PARAM) const
 {
-  throw Arccore::NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::axpy not implemented");
+  throw Arccore::NotImplementedException(
+      A_FUNCINFO, "HypreLinearAlgebra::axpy not implemented");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -135,7 +138,8 @@ HypreInternalLinearAlgebra::dot(const HypreVector& vx, const HypreVector& vy) co
 /*---------------------------------------------------------------------------*/
 
 void
-HypreInternalLinearAlgebra::diagonal(HypreMatrix const& m ALIEN_UNUSED_PARAM, HypreVector& v ALIEN_UNUSED_PARAM) const
+HypreInternalLinearAlgebra::diagonal(
+    HypreMatrix const& m ALIEN_UNUSED_PARAM, HypreVector& v ALIEN_UNUSED_PARAM) const
 {
   throw Arccore::NotImplementedException(
       A_FUNCINFO, "HypreLinearAlgebra::diagonal not implemented");
@@ -153,17 +157,18 @@ HypreInternalLinearAlgebra::reciprocal(HypreVector& v ALIEN_UNUSED_PARAM) const
 /*---------------------------------------------------------------------------*/
 
 void
-HypreInternalLinearAlgebra::aypx(
-    const double& alpha ALIEN_UNUSED_PARAM, HypreVector& y ALIEN_UNUSED_PARAM, const HypreVector& x ALIEN_UNUSED_PARAM) const
+HypreInternalLinearAlgebra::aypx(const double& alpha ALIEN_UNUSED_PARAM,
+    HypreVector& y ALIEN_UNUSED_PARAM, const HypreVector& x ALIEN_UNUSED_PARAM) const
 {
-  throw Arccore::NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::aypx not implemented");
+  throw Arccore::NotImplementedException(
+      A_FUNCINFO, "HypreLinearAlgebra::aypx not implemented");
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-HypreInternalLinearAlgebra::pointwiseMult(
-    const HypreVector& x ALIEN_UNUSED_PARAM, const HypreVector& y ALIEN_UNUSED_PARAM, HypreVector& w ALIEN_UNUSED_PARAM) const
+HypreInternalLinearAlgebra::pointwiseMult(const HypreVector& x ALIEN_UNUSED_PARAM,
+    const HypreVector& y ALIEN_UNUSED_PARAM, HypreVector& w ALIEN_UNUSED_PARAM) const
 {
   throw Arccore::NotImplementedException(
       A_FUNCINFO, "HypreLinearAlgebra::pointwiseMult not implemented");
@@ -180,30 +185,40 @@ HypreInternalLinearAlgebra::scal(const Arccore::Real& alpha, HypreVector& x) con
 /*---------------------------------------------------------------------------*/
 
 void
-HypreInternalLinearAlgebra::mult(const Matrix& a, const UniqueArray<Real>& x, UniqueArray<Real>& r) const {
- throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::mult not implemented");
+HypreInternalLinearAlgebra::mult(
+    const Matrix& a, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+{
+  throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::mult not implemented");
 }
 
 void
-HypreInternalLinearAlgebra::axpy(const Real & alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const {
+HypreInternalLinearAlgebra::axpy(
+    const Real& alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+{
   throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::norm0 not implemented");
 }
 
 void
-HypreInternalLinearAlgebra::aypx(const Real & alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const {
+HypreInternalLinearAlgebra::aypx(
+    const Real& alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const
+{
   throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::axpy not implemented");
 }
 void
-HypreInternalLinearAlgebra::copy(const UniqueArray<Real>& x, UniqueArray<Real>& r) const {
+HypreInternalLinearAlgebra::copy(const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+{
   throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::copy not implemented");
 }
 Real
-HypreInternalLinearAlgebra::dot(Integer local_size, const UniqueArray<Real>& x, const UniqueArray<Real>& y) const {
+HypreInternalLinearAlgebra::dot(
+    Integer local_size, const UniqueArray<Real>& x, const UniqueArray<Real>& y) const
+{
   throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::dot not implemented");
-return Real() ;
+  return Real();
 }
 void
-HypreInternalLinearAlgebra::scal(const Real & alpha, UniqueArray<Real>& x) const {
+HypreInternalLinearAlgebra::scal(const Real& alpha, UniqueArray<Real>& x) const
+{
   throw NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::scal not implemented");
 }
 /*---------------------------------------------------------------------------*/

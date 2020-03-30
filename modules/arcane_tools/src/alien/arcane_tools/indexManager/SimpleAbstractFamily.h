@@ -23,7 +23,7 @@ namespace ArcaneTools {
 
   /* Dans cette implémentation, implicitement le localId du i_ème item est i */
   class ALIEN_ARCANE_TOOLS_EXPORT SimpleAbstractFamily
-  : public IIndexManager::IAbstractFamily
+      : public IIndexManager::IAbstractFamily
   {
    public:
     //! Construit une famille à partir des uniqueIds connus localement et leur
@@ -63,8 +63,8 @@ namespace ArcaneTools {
     Arccore::UniqueArray<Arccore::Integer> m_owners;
   };
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
 } // namespace Alien
 

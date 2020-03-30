@@ -17,8 +17,7 @@ BEGIN_TRILINOSINTERNAL_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-template<typename ValueT,typename TagT>
-class VectorInternal;
+template <typename ValueT, typename TagT> class VectorInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -38,53 +37,44 @@ template <typename ValueT, typename TagT> class TrilinosVector : public IVectorI
   typedef TrilinosInternal::VectorInternal<ValueT, TagT> VectorInternal;
 
  public:
-
-  TrilinosVector(const MultiVectorImpl * multi_impl);
+  TrilinosVector(const MultiVectorImpl* multi_impl);
 
   virtual ~TrilinosVector();
 
-public:
-
-  void init(const VectorDistribution & dist, const bool need_allocate);
+ public:
+  void init(const VectorDistribution& dist, const bool need_allocate);
   void allocate();
 
-  void free() { }
-  void clear() { }
+  void free() {}
+  void clear() {}
 
-public:
-
+ public:
   void setValues(const int nrows, ValueT const* values);
 
   void getValues(const int nrows, ValueT* values) const;
 
-  ValueT* getDataPtr() {
-	  return nullptr ;
-  }
+  ValueT* getDataPtr() { return nullptr; }
 
-  ValueT const* getDataPtr() const {
-	  return nullptr ;
-  }
+  ValueT const* getDataPtr() const { return nullptr; }
 
-  ValueT norm1() const ;
+  ValueT norm1() const;
 
-  ValueT norm2() const ;
+  ValueT norm2() const;
 
-  ValueT dot(TrilinosVector const& y) const ;
+  ValueT dot(TrilinosVector const& y) const;
 
-public:
+ public:
+  VectorInternal* internal() { return m_internal.get(); }
 
-  VectorInternal * internal() { return m_internal.get() ; }
-
-  const VectorInternal * internal() const{ return m_internal.get() ; }
+  const VectorInternal* internal() const { return m_internal.get(); }
 
   void dump() const;
   void dump(std::string const& filename) const;
-private:
 
+ private:
   bool assemble();
 
-private :
-
+ private:
   std::unique_ptr<VectorInternal> m_internal;
   int m_local_offset;
 };

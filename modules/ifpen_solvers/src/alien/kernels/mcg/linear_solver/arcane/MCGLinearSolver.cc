@@ -8,18 +8,18 @@
 
 BEGIN_NAMESPACE(Alien)
 
-
 /** Constructeur de la classe */
 
 #ifdef ALIEN_USE_ARCANE
-MCGLinearSolver::MCGLinearSolver(const Arcane::ServiceBuildInfo & sbi)
+MCGLinearSolver::MCGLinearSolver(const Arcane::ServiceBuildInfo& sbi)
 : ArcaneGPUSolverObject(sbi)
 , Alien::MCGInternalLinearSolver(sbi.subDomain()->parallelMng(), options())
 {
 }
 #endif
 
-MCGLinearSolver::MCGLinearSolver(IParallelMng* parallel_mng,  std::shared_ptr<IOptionsMCGSolver>  _options)
+MCGLinearSolver::MCGLinearSolver(
+    IParallelMng* parallel_mng, std::shared_ptr<IOptionsMCGSolver> _options)
 : ArcaneMCGSolverObject(_options)
 , Alien::MCGInternalLinearSolver(parallel_mng, options())
 {
@@ -27,7 +27,7 @@ MCGLinearSolver::MCGLinearSolver(IParallelMng* parallel_mng,  std::shared_ptr<IO
 
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_MCGSOLVER(MCGSolver,MCGLinearSolver);
+ARCANE_REGISTER_SERVICE_MCGSOLVER(MCGSolver, MCGLinearSolver);
 
 END_NAMESPACE
 

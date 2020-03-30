@@ -16,7 +16,7 @@
 
 BEGIN_NAMESPACE(Alien)
 
-//typedef LinearAlgebra<BackEnd::tag::hpddm,BackEnd::tag::simplecsr> HPDDMLinearAlgebra;
+// typedef LinearAlgebra<BackEnd::tag::hpddm,BackEnd::tag::simplecsr> HPDDMLinearAlgebra;
 
 END_NAMESPACE
 

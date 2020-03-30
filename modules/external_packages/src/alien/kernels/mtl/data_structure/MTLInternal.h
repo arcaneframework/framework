@@ -25,7 +25,7 @@ struct Features
 {
   static void checkParallel(const MatrixDistribution& dist)
   {
-    // This behaviour may be changed when Parallel MTL will be plugged
+// This behaviour may be changed when Parallel MTL will be plugged
 #ifndef USE_PMTL4
     if (dist.isParallel())
       throw Arccore::FatalErrorException(
@@ -62,12 +62,14 @@ class MatrixInternal
   typedef mtl::matrix::distributed<matrix_type> MTLMatrixType;
   MatrixInternal(int nrow, int ncol, mtl::par::block_distribution& row_dist)
   : m_internal(nrow, ncol, row_dist)
-  {}
+  {
+  }
 #else /* USE_PMTL4 */
   typedef row_matrix_type MTLMatrixType;
   MatrixInternal(int nrow, int ncol)
   : m_internal(nrow, ncol)
-  {}
+  {
+  }
 #endif /* USE_PMTL4 */
 
  public:
@@ -86,12 +88,14 @@ class VectorInternal
   typedef mtl::vector::distributed<vector_type> MTLVectorType;
   VectorInternal(int nrow, mtl::par::block_distribution& row_dist)
   : m_internal(nrow, row_dist)
-  {}
+  {
+  }
 #else /* USE_PMTL4 */
   typedef vector_type MTLVectorType;
   VectorInternal(int nrow)
   : m_internal(nrow)
-  {}
+  {
+  }
 #endif /* USE_PMTL4 */
 
  public:

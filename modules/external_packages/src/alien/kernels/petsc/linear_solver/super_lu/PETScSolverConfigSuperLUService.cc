@@ -25,28 +25,23 @@ PETScSolverConfigSuperLUService::PETScSolverConfigSuperLUService(
     std::shared_ptr<IOptionsPETScSolverConfigSuperLU> options)
 : ArcanePETScSolverConfigSuperLUObject(options)
 , PETScConfig(parallel_mng->commSize() > 1)
-{}
+{
+}
 
 //! Initialisation
 void
-PETScSolverConfigSuperLUService::configure(KSP & ksp,
-		const ISpace& space,
-		const MatrixDistribution& distribution)
+PETScSolverConfigSuperLUService::configure(
+    KSP& ksp, const ISpace& space, const MatrixDistribution& distribution)
 {
-	alien_debug([&] {
-		cout() << "configure PETSc superlu solver";
-	});
+  alien_debug([&] { cout() << "configure PETSc superlu solver"; });
 
-	checkError("Set solver tolerances",KSPSetTolerances(ksp,
-			1e-9,
-			1e-15,
-			PETSC_DEFAULT,
-			2));
+  checkError(
+      "Set solver tolerances", KSPSetTolerances(ksp, 1e-9, 1e-15, PETSC_DEFAULT, 2));
 
-	checkError("Solver set type",KSPSetType(ksp,KSPPREONLY));
-	PC pc;
-	checkError("Get preconditioner",KSPGetPC(ksp,&pc));
-	checkError("Preconditioner set type",PCSetType(pc,PCLU));
+  checkError("Solver set type", KSPSetType(ksp, KSPPREONLY));
+  PC pc;
+  checkError("Get preconditioner", KSPGetPC(ksp, &pc));
+  checkError("Preconditioner set type", PCSetType(pc, PCLU));
 
   if (isParallel())
 #ifdef WIN32
@@ -65,12 +60,12 @@ PETScSolverConfigSuperLUService::configure(KSP & ksp,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_PETSCSOLVERCONFIGSUPERLU(SuperLU,PETScSolverConfigSuperLUService);
-ARCANE_REGISTER_SERVICE_PETSCSOLVERCONFIGSUPERLU(LU,PETScSolverConfigSuperLUService);
+ARCANE_REGISTER_SERVICE_PETSCSOLVERCONFIGSUPERLU(
+    SuperLU, PETScSolverConfigSuperLUService);
+ARCANE_REGISTER_SERVICE_PETSCSOLVERCONFIGSUPERLU(LU, PETScSolverConfigSuperLUService);
 
 } // namespace Alien
 
 REGISTER_STRONG_OPTIONS_PETSCSOLVERCONFIGSUPERLU();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

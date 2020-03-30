@@ -17,8 +17,7 @@ BEGIN_HTSINTERNAL_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-template<typename ValueT,bool is_mpi>
-class VectorInternal;
+template <typename ValueT, bool is_mpi> class VectorInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -38,38 +37,33 @@ template <typename ValueT, bool is_mpi> class HTSVector : public IVectorImpl
   typedef HTSInternal::VectorInternal<ValueT, is_mpi> VectorInternal;
 
  public:
-
-  HTSVector(const MultiVectorImpl * multi_impl);
+  HTSVector(const MultiVectorImpl* multi_impl);
 
   virtual ~HTSVector();
 
-public:
-
-  void init(const VectorDistribution & dist, const bool need_allocate);
+ public:
+  void init(const VectorDistribution& dist, const bool need_allocate);
   void allocate();
 
-  void free() { }
-  void clear() { }
+  void free() {}
+  void clear() {}
 
-public:
-
+ public:
   void setValues(const int nrows, ValueT const* values);
 
   void getValues(const int nrows, ValueT* values) const;
 
-public:
+ public:
+  VectorInternal* internal() { return m_internal.get(); }
 
-  VectorInternal * internal() { return m_internal.get() ; }
-
-  const VectorInternal * internal() const{ return m_internal.get() ; }
+  const VectorInternal* internal() const { return m_internal.get(); }
 
   void dump() const;
-private:
 
+ private:
   bool assemble();
 
-private :
-
+ private:
   std::unique_ptr<VectorInternal> m_internal;
   int m_local_offset;
 };

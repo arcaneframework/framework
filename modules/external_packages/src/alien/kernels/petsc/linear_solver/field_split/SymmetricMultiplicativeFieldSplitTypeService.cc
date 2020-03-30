@@ -23,7 +23,8 @@ SymmetricMultiplicativeFieldSplitTypeService::
     SymmetricMultiplicativeFieldSplitTypeService(const Arcane::ServiceBuildInfo& sbi)
 : ArcaneSymmetricMultiplicativeFieldSplitTypeObject(sbi)
 , PETScConfig(sbi.subDomain()->parallelMng()->isParallel())
-{}
+{
+}
 #endif
 
 SymmetricMultiplicativeFieldSplitTypeService::
@@ -32,7 +33,8 @@ SymmetricMultiplicativeFieldSplitTypeService::
         std::shared_ptr<IOptionsSymmetricMultiplicativeFieldSplitType> options)
 : ArcaneSymmetricMultiplicativeFieldSplitTypeObject(options)
 , PETScConfig(parallel_mng->commSize() > 1)
-{}
+{
+}
 
 //! Configure FieldSplit type
 
@@ -49,7 +51,8 @@ SymmetricMultiplicativeFieldSplitTypeService::configure(
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_SYMMETRICMULTIPLICATIVEFIELDSPLITTYPE(SymmetricMultiplicative,SymmetricMultiplicativeFieldSplitTypeService);
+ARCANE_REGISTER_SERVICE_SYMMETRICMULTIPLICATIVEFIELDSPLITTYPE(
+    SymmetricMultiplicative, SymmetricMultiplicativeFieldSplitTypeService);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -59,4 +62,3 @@ REGISTER_STRONG_OPTIONS_SYMMETRICMULTIPLICATIVEFIELDSPLITTYPE();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

@@ -28,23 +28,26 @@ class VectorExp;
 class ILinearSolver;
 class ILinearAlgebra;
 
-extern ILinearAlgebra*
-MCGInternalLinearAlgebraFactory();
+extern ILinearAlgebra* MCGInternalLinearAlgebraFactory();
 
-extern ILinearSolver*
-MCGInternalLinearSolverFactory(IParallelMng* p_mng, IOptionsMCGSolver* options);
+extern ILinearSolver* MCGInternalLinearSolverFactory(
+    IParallelMng* p_mng, IOptionsMCGSolver* options);
 
 /*---------------------------------------------------------------------------*/
 
 namespace BackEnd {
   namespace tag {
-    struct mcgsolver {} ;
-    struct mcgsolver_composite {};
+    struct mcgsolver
+    {
+    };
+    struct mcgsolver_composite
+    {
+    };
   }
 }
 
-template<>
-struct AlgebraTraits<BackEnd::tag::mcgsolver>  {
+template <> struct AlgebraTraits<BackEnd::tag::mcgsolver>
+{
   typedef MCGMatrix matrix_type;
   typedef MCGVector vector_type;
 
@@ -52,19 +55,18 @@ struct AlgebraTraits<BackEnd::tag::mcgsolver>  {
   typedef ILinearAlgebra algebra_type;
   typedef ILinearSolver solver_type;
 
-  static algebra_type* algebra_factory() {
-    return MCGInternalLinearAlgebraFactory();
-  }
+  static algebra_type* algebra_factory() { return MCGInternalLinearAlgebraFactory(); }
 
-  static solver_type* solver_factory(IParallelMng* p_mng, options_type* options) {
+  static solver_type* solver_factory(IParallelMng* p_mng, options_type* options)
+  {
     return MCGInternalLinearSolverFactory(p_mng, options);
   }
 
   static BackEndId name() { return "mcgsolver"; }
 };
 
-template<>
-struct AlgebraTraits<BackEnd::tag::mcgsolver_composite>  {
+template <> struct AlgebraTraits<BackEnd::tag::mcgsolver_composite>
+{
   typedef MCGCompositeMatrix matrix_type;
   typedef MCGCompositeVector vector_type;
 
@@ -72,11 +74,10 @@ struct AlgebraTraits<BackEnd::tag::mcgsolver_composite>  {
   typedef ILinearAlgebra algebra_type;
   typedef ILinearSolver solver_type;
 
-  static algebra_type* algebra_factory() {
-    return MCGInternalLinearAlgebraFactory();
-  }
+  static algebra_type* algebra_factory() { return MCGInternalLinearAlgebraFactory(); }
 
-  static solver_type* solver_factory(IParallelMng* p_mng, options_type* options) {
+  static solver_type* solver_factory(IParallelMng* p_mng, options_type* options)
+  {
     return MCGInternalLinearSolverFactory(p_mng, options);
   }
 
@@ -90,4 +91,3 @@ struct AlgebraTraits<BackEnd::tag::mcgsolver_composite>  {
 /*---------------------------------------------------------------------------*/
 
 #endif /* ALIEN_MCGIMPL_MCGBACKEND_H */
-

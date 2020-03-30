@@ -58,15 +58,16 @@ class AsciiDumper::Internal
   static void initializeViewer(
       PetscViewer& viewer, const Dist& dist, Arccore::String filename, const Style style)
   {
-    if(dist.parallelMng() == nullptr)
+    if (dist.parallelMng() == nullptr)
       throw Arccore::FatalErrorException("dist parallel mng ptr is nullptr");
     std::cout << dist.isParallel() << std::endl;
     std::cout << dist.parallelMng() << std::endl;
     auto* parallel_mng =
         dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(
             dist.parallelMng());
-    if(parallel_mng == nullptr)
-      throw Arccore::FatalErrorException("parallel mng ptr is nullptr : not a MpiMessagePassingMng impl");
+    if (parallel_mng == nullptr)
+      throw Arccore::FatalErrorException(
+          "parallel mng ptr is nullptr : not a MpiMessagePassingMng impl");
     const MPI_Comm* arcane_mpi_comm = parallel_mng->getMPIComm();
     if (arcane_mpi_comm == 0) {
       PetscViewerASCIIOpen(PETSC_COMM_SELF, filename.localstr(), &viewer);
@@ -102,7 +103,7 @@ class AsciiDumper::Internal
 #endif /* PETSC_VIEWERDESTROY_NEW */
   }
 
-private:
+ private:
   static void _pushFormat(PetscViewer& viewer, const Style style)
   {
     switch (style) {
@@ -121,7 +122,8 @@ private:
 #ifdef PETSC_OPTIONSSETVALUE_OLD
     PetscOptionsSetValue("-mat_ascii_output_large", ""); // force output for large data
 #else
-    PetscOptionsSetValue(NULL, "-mat_ascii_output_large",""); // force output for large data
+    PetscOptionsSetValue(
+        NULL, "-mat_ascii_output_large", ""); // force output for large data
 #endif
   }
 };
@@ -143,8 +145,8 @@ AsciiDumper::dump(const Arccore::String filename, const IMatrix& a)
 {
   const auto& dist = a.impl()->distribution();
 
-  if(m_style == eSequentialFixedBlockSizeStype) {
-    if(Internal::isSequential(dist)) {
+  if (m_style == eSequentialFixedBlockSizeStype) {
+    if (Internal::isSequential(dist)) {
       std::ofstream str(filename.localstr());
       _blockDump(a, str);
       return;
@@ -172,8 +174,8 @@ AsciiDumper::dump(const Arccore::String filename, const IVector& v)
 {
   const auto& dist = v.impl()->distribution();
 
-  if(m_style == eSequentialFixedBlockSizeStype) {
-    if(Internal::isSequential(dist)) {
+  if (m_style == eSequentialFixedBlockSizeStype) {
+    if (Internal::isSequential(dist)) {
       std::ofstream str(filename.localstr());
       _blockDump(v, str);
       return;
@@ -197,17 +199,16 @@ AsciiDumper::dump(const Arccore::String filename, const IVector& v)
 /*---------------------------------------------------------------------------*/
 
 void
-AsciiDumper::
-dump(const IMatrix & a)
+AsciiDumper::dump(const IMatrix& a)
 {
   const auto& dist = a.impl()->distribution();
 
-  if(m_style == eSequentialFixedBlockSizeStype) {
+  if (m_style == eSequentialFixedBlockSizeStype) {
 #ifdef ALIEN_USE_ARCANE
     if (!m_trace)
       m_trace = _arcaneGetDefaultSubDomain()->traceMng();
 #endif
-    if(Internal::isSequential(dist)) {
+    if (Internal::isSequential(dist)) {
       std::ostringstream str;
       _blockDump(a, str);
       if (m_trace)
@@ -219,12 +220,12 @@ dump(const IMatrix & a)
       m_style = eMatlabStyle;
     }
   }
-  if(m_style == eSequentialVariableBlockSizeStype) {
+  if (m_style == eSequentialVariableBlockSizeStype) {
 #ifdef ALIEN_USE_ARCANE
     if (!m_trace)
       m_trace = _arcaneGetDefaultSubDomain()->traceMng();
 #endif
-    if(Internal::isSequential(dist)) {
+    if (Internal::isSequential(dist)) {
       std::ostringstream str;
       _vblockDump(a, str);
       if (m_trace)
@@ -246,17 +247,16 @@ dump(const IMatrix & a)
 /*---------------------------------------------------------------------------*/
 
 void
-AsciiDumper::
-dump(const IVector & v)
+AsciiDumper::dump(const IVector& v)
 {
   const auto& dist = v.impl()->distribution();
 
-  if(m_style == eSequentialFixedBlockSizeStype) {
+  if (m_style == eSequentialFixedBlockSizeStype) {
 #ifdef ALIEN_USE_ARCANE
     if (!m_trace)
       m_trace = _arcaneGetDefaultSubDomain()->traceMng();
 #endif
-    if(Internal::isSequential(dist)) {
+    if (Internal::isSequential(dist)) {
       std::ostringstream str;
       _blockDump(v, str);
       if (m_trace)
@@ -278,8 +278,7 @@ dump(const IVector & v)
 /*---------------------------------------------------------------------------*/
 
 void
-AsciiDumper::
-_blockDump(const IMatrix& a, std::ostream & str)
+AsciiDumper::_blockDump(const IMatrix& a, std::ostream& str)
 {
   const auto& dist = a.impl()->distribution();
   const auto* block = a.impl()->block();
@@ -345,14 +344,13 @@ _blockDump(const IMatrix& a, std::ostream & str)
 /*---------------------------------------------------------------------------*/
 
 void
-AsciiDumper::
-_vblockDump(const IMatrix& a, std::ostream & str)
+AsciiDumper::_vblockDump(const IMatrix& a, std::ostream& str)
 {
   const auto& dist = a.impl()->distribution();
   const auto* row_vblock = a.impl()->rowBlock();
   const auto* col_vblock = a.impl()->colBlock();
 
-  if(row_vblock==nullptr)
+  if (row_vblock == nullptr)
     throw Arccore::FatalErrorException(
         "Builder is adapted to 'variable block size' kind matrix");
 
@@ -367,7 +365,8 @@ _vblockDump(const IMatrix& a, std::ostream & str)
   const CSR& csr = internal_matrix.getCSRProfile();
 
   str << "VBlockMatrix[rows=" << local_size << ",cols=" << local_size
-      << ",maxBlockSize=" << row_vblock->maxBlockSize() << "x" << col_vblock->maxBlockSize() << ",nnz=" << csr.getNnz()
+      << ",maxBlockSize=" << row_vblock->maxBlockSize() << "x"
+      << col_vblock->maxBlockSize() << ",nnz=" << csr.getNnz()
       << ",ordering=" << csr.getColOrdering() << "]\n";
 
   Arccore::ConstArrayView<Arccore::Integer> rows = csr.getRowOffset();
@@ -417,8 +416,7 @@ _vblockDump(const IMatrix& a, std::ostream & str)
 /*---------------------------------------------------------------------------*/
 
 void
-AsciiDumper::
-_blockDump(const IVector& v, std::ostream & str)
+AsciiDumper::_blockDump(const IVector& v, std::ostream& str)
 {
   const auto& dist = v.impl()->distribution();
   const auto* block = v.impl()->block();

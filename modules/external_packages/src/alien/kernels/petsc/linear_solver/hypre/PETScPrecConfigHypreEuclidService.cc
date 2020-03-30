@@ -32,54 +32,60 @@ PETScPrecConfigHypreEuclidService::PETScPrecConfigHypreEuclidService(
     std::shared_ptr<IOptionsPETScPrecConfigHypreEuclid> options)
 : ArcanePETScPrecConfigHypreEuclidObject(options)
 , PETScConfig(parallel_mng->commSize() > 1)
-{}
+{
+}
 
 //! Initialisation
 void
-PETScPrecConfigHypreEuclidService::configure(PC & pc,
-		const ISpace& space,
-		const MatrixDistribution& distribution)
+PETScPrecConfigHypreEuclidService::configure(
+    PC& pc, const ISpace& space, const MatrixDistribution& distribution)
 {
-	alien_debug([&] {
-		cout() << "configure PETSc euclid preconditioner";
-	});
-	checkError("Set preconditioner",           PCSetType(pc,PCHYPRE));
-	checkError("Set Hypre preconditioner",     PCHYPRESetType(pc,"euclid"));
-	{
-		std::stringstream opt;
-		opt<< options()->levels();
+  alien_debug([&] { cout() << "configure PETSc euclid preconditioner"; });
+  checkError("Set preconditioner", PCSetType(pc, PCHYPRE));
+  checkError("Set Hypre preconditioner", PCHYPRESetType(pc, "euclid"));
+  {
+    std::stringstream opt;
+    opt << options()->levels();
 #ifdef PETSC_OPTIONSSETVALUE_OLD
-		checkError("Set Hypre Euclid levels"      ,PetscOptionsSetValue("pc_hypre_euclid_levels", opt.str().c_str()));
+    checkError("Set Hypre Euclid levels",
+        PetscOptionsSetValue("pc_hypre_euclid_levels", opt.str().c_str()));
 #else
-		checkError("Set Hypre Euclid levels"      ,PetscOptionsSetValue(NULL, "pc_hypre_euclid_levels", opt.str().c_str()));
+    checkError("Set Hypre Euclid levels",
+        PetscOptionsSetValue(NULL, "pc_hypre_euclid_levels", opt.str().c_str()));
 #endif
-	}
-	{
-		std::stringstream opt;
-		opt<< options()->useBlockJacobi();
+  }
+  {
+    std::stringstream opt;
+    opt << options()->useBlockJacobi();
 #ifdef PETSC_OPTIONSSETVALUE_OLD
-		checkError("Set Hypre Euclid block jacobi",PetscOptionsSetValue("pc_hypre_euclid_bj", opt.str().c_str()));
+    checkError("Set Hypre Euclid block jacobi",
+        PetscOptionsSetValue("pc_hypre_euclid_bj", opt.str().c_str()));
 #else
-		checkError("Set Hypre Euclid block jacobi",PetscOptionsSetValue(NULL,"pc_hypre_euclid_bj", opt.str().c_str()));
+    checkError("Set Hypre Euclid block jacobi",
+        PetscOptionsSetValue(NULL, "pc_hypre_euclid_bj", opt.str().c_str()));
 #endif
-	}
-	{
-		std::stringstream opt;
-		opt<< options()->printStatistics();
+  }
+  {
+    std::stringstream opt;
+    opt << options()->printStatistics();
 #ifdef PETSC_OPTIONSSETVALUE_OLD
-		checkError("Set Hypre Euclid statistics"  ,PetscOptionsSetValue("pc_hypre_euclid_print_statistics", opt.str().c_str()));
+    checkError("Set Hypre Euclid statistics",
+        PetscOptionsSetValue("pc_hypre_euclid_print_statistics", opt.str().c_str()));
 #else
-		checkError("Set Hypre Euclid statistics"  ,PetscOptionsSetValue(NULL,"pc_hypre_euclid_print_statistics", opt.str().c_str()));
+    checkError("Set Hypre Euclid statistics",
+        PetscOptionsSetValue(
+            NULL, "pc_hypre_euclid_print_statistics", opt.str().c_str()));
 #endif
-	}
-	checkError("Set Hypre Euclid options"     , PCSetFromOptions(pc));
-	// checkError("Hypre Euclid Viewer",PCView(pc,PETSC_NULL));
+  }
+  checkError("Set Hypre Euclid options", PCSetFromOptions(pc));
+  // checkError("Hypre Euclid Viewer",PCView(pc,PETSC_NULL));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_PETSCPRECCONFIGHYPREEUCLID(HypreEuclid,PETScPrecConfigHypreEuclidService);
+ARCANE_REGISTER_SERVICE_PETSCPRECCONFIGHYPREEUCLID(
+    HypreEuclid, PETScPrecConfigHypreEuclidService);
 
 } // namespace Alien
 

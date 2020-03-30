@@ -30,8 +30,7 @@ PETScLinearSolverService::PETScLinearSolverService(
 
 /*---------------------------------------------------------------------------*/
 
-PETScLinearSolverService::
-~PETScLinearSolverService()
+PETScLinearSolverService::~PETScLinearSolverService()
 {
   ;
 }
@@ -39,7 +38,7 @@ PETScLinearSolverService::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_PETSCLINEARSOLVER(PETScSolver,PETScLinearSolverService);
+ARCANE_REGISTER_SERVICE_PETSCLINEARSOLVER(PETScSolver, PETScLinearSolverService);
 
 } // namespace Alien
 

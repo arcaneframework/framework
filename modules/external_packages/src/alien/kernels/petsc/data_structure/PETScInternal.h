@@ -38,7 +38,8 @@ struct MatrixInternal
   : m_internal()
   , m_type((parallel) ? MATMPIAIJ : MATSEQAIJ)
   , m_parallel(parallel)
-  {}
+  {
+  }
 
   ~MatrixInternal()
   {

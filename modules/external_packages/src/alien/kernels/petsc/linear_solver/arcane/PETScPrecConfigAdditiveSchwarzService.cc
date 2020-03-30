@@ -31,63 +31,59 @@ PETScPrecConfigAdditiveSchwarzService::PETScPrecConfigAdditiveSchwarzService(
 : ArcanePETScPrecConfigAdditiveSchwarzObject(options)
 , PETScConfig(parallel_mng->commSize() > 1)
 {
-    ;
-  }
+  ;
+}
 
-bool PETScPrecConfigAdditiveSchwarzService::needPrematureKSPSetUp() const
+bool
+PETScPrecConfigAdditiveSchwarzService::needPrematureKSPSetUp() const
 {
-	return false;
+  return false;
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void PETScPrecConfigAdditiveSchwarzService::configure(PC & pc,
-		const ISpace& space,
-		const MatrixDistribution& distribution)
+void
+PETScPrecConfigAdditiveSchwarzService::configure(
+    PC& pc, const ISpace& space, const MatrixDistribution& distribution)
 {
-	alien_debug([&] {
-		cout() << "configure PETSc additive schwarz preconditioner";
-	});
-	checkError("Set preconditioner",PCSetType(pc,PCASM));
-	// KSPSetUp has been already called (cf needPrematureKSPSetUp)
-	// you can set up sub solver using PCASMGetSubKSP
-	// details in http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/src/ksp/ksp/examples/tutorials/ex8.c.html
+  alien_debug([&] { cout() << "configure PETSc additive schwarz preconditioner"; });
+  checkError("Set preconditioner", PCSetType(pc, PCASM));
+  // KSPSetUp has been already called (cf needPrematureKSPSetUp)
+  // you can set up sub solver using PCASMGetSubKSP
+  // details in
+  // http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/src/ksp/ksp/examples/tutorials/ex8.c.html
 
-	int asm_overlap = options()->localBlocks();
-	if ( asm_overlap> 0)
-		checkError("Set AdditiveSchwarz overlap",PCASMSetOverlap(pc,asm_overlap));
-	else
-	{
-		alien_fatal([&]{
-			cout() << "AdditiveSchwarz does not allow non-positive overlapping";
-		});
-	}
+  int asm_overlap = options()->localBlocks();
+  if (asm_overlap > 0)
+    checkError("Set AdditiveSchwarz overlap", PCASMSetOverlap(pc, asm_overlap));
+  else {
+    alien_fatal(
+        [&] { cout() << "AdditiveSchwarz does not allow non-positive overlapping"; });
+  }
 
-	int local_blocks = options()->localBlocks();
-	if (local_blocks <= 0)
-	{
-		alien_fatal([&]{
-			cout() << "AdditiveSchwarz does not allow non-positive local blocks number";
-		});
-	}
-	else if (local_blocks > 1)
-	{
-		checkError("Set AdditiveSchwarz blocks",PCASMSetLocalSubdomains(pc,local_blocks, PETSC_NULL, PETSC_NULL));
-	}
-	// else 1 : default
-	switch (options()->type()) {
-	case PETScPrecConfigAdditiveSchwarzOptionTypes::Basic:
-		checkError("Set AdditiveSchwarz type",PCASMSetType(pc,PC_ASM_BASIC));
-		break;
-	case PETScPrecConfigAdditiveSchwarzOptionTypes::Restrict:
-		checkError("Set AdditiveSchwarz type",PCASMSetType(pc,PC_ASM_RESTRICT));
-		break;
-	case PETScPrecConfigAdditiveSchwarzOptionTypes::Interpolate:
-		checkError("Set AdditiveSchwarz type",PCASMSetType(pc,PC_ASM_INTERPOLATE));
-		break;
-	case PETScPrecConfigAdditiveSchwarzOptionTypes::None:
-		checkError("Set AdditiveSchwarz type",PCASMSetType(pc,PC_ASM_NONE));
-		break;
+  int local_blocks = options()->localBlocks();
+  if (local_blocks <= 0) {
+    alien_fatal([&] {
+      cout() << "AdditiveSchwarz does not allow non-positive local blocks number";
+    });
+  } else if (local_blocks > 1) {
+    checkError("Set AdditiveSchwarz blocks",
+        PCASMSetLocalSubdomains(pc, local_blocks, PETSC_NULL, PETSC_NULL));
+  }
+  // else 1 : default
+  switch (options()->type()) {
+  case PETScPrecConfigAdditiveSchwarzOptionTypes::Basic:
+    checkError("Set AdditiveSchwarz type", PCASMSetType(pc, PC_ASM_BASIC));
+    break;
+  case PETScPrecConfigAdditiveSchwarzOptionTypes::Restrict:
+    checkError("Set AdditiveSchwarz type", PCASMSetType(pc, PC_ASM_RESTRICT));
+    break;
+  case PETScPrecConfigAdditiveSchwarzOptionTypes::Interpolate:
+    checkError("Set AdditiveSchwarz type", PCASMSetType(pc, PC_ASM_INTERPOLATE));
+    break;
+  case PETScPrecConfigAdditiveSchwarzOptionTypes::None:
+    checkError("Set AdditiveSchwarz type", PCASMSetType(pc, PC_ASM_NONE));
+    break;
   default:
     throw Arccore::NotImplementedException(A_FUNCINFO, "Undefined AdditiveSchwarz type");
   }

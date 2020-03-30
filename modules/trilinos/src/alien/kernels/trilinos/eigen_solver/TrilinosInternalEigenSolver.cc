@@ -32,19 +32,20 @@ namespace Alien {
 
 /*---------------------------------------------------------------------------*/
 TrilinosInternalEigenSolver::TrilinosInternalEigenSolver(
-        Arccore::MessagePassing::IMessagePassingMng *parallel_mng, IOptionsTrilinosEigenSolver *options)
+    Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+    IOptionsTrilinosEigenSolver* options)
 : m_parallel_mng(parallel_mng)
 , m_options(options)
-{}
+{
+}
 
 void
 TrilinosInternalEigenSolver::init(int argc, char const** argv)
 {
 #ifdef ALIEN_USE_TRILINOSSOLVER
-  //m_hts_solver.reset(new HartsSolver::HTSSolver()) ;
+// m_hts_solver.reset(new HartsSolver::HTSSolver()) ;
 #endif
 }
-
 
 /*---------------------------------------------------------------------------*/
 
@@ -54,57 +55,43 @@ TrilinosInternalEigenSolver::init()
   m_output_level = m_options->output();
 }
 
-
 /*---------------------------------------------------------------------------*/
 
-
-
-
-
-
 /*---------------------------------------------------------------------------*/
-
-
 
 const Alien::IEigenSolver::Status&
-TrilinosInternalEigenSolver::
-getStatus() const
+TrilinosInternalEigenSolver::getStatus() const
 {
   return m_status;
 }
 
-
-
-
 bool
-TrilinosInternalEigenSolver::
-solve(EigenProblem& p)
+TrilinosInternalEigenSolver::solve(EigenProblem& p)
 {
   using namespace Alien;
 
 #ifdef ALIEN_USE_TRILINOSSOLVER
-    //EigenProblemT<BackEnd::tag::simplecsr> true_problem(p) ;
-    //return solve(true_problem) ;
+// EigenProblemT<BackEnd::tag::simplecsr> true_problem(p) ;
+// return solve(true_problem) ;
 #endif
-  return false ;
+  return false;
 }
 
 bool
-TrilinosInternalEigenSolver::
-solve(GeneralizedEigenProblem& p)
+TrilinosInternalEigenSolver::solve(GeneralizedEigenProblem& p)
 {
   using namespace Alien;
 
 #ifdef ALIEN_USE_TRILINOSSOLVER
-    //EigenProblemT<BackEnd::tag::simplecsr> true_problem(p) ;
-    //return solve(true_problem) ;
+// EigenProblemT<BackEnd::tag::simplecsr> true_problem(p) ;
+// return solve(true_problem) ;
 #endif
-  return false ;
+  return false;
 }
 
-IEigenSolver *
-TrilinosInternalEigenSolverFactory(Arccore::MessagePassing::IMessagePassingMng *p_mng,
-                                   IOptionsTrilinosEigenSolver *options)
+IEigenSolver*
+TrilinosInternalEigenSolverFactory(Arccore::MessagePassing::IMessagePassingMng* p_mng,
+    IOptionsTrilinosEigenSolver* options)
 {
   return new TrilinosInternalEigenSolver(p_mng, options);
 }

@@ -30,24 +30,23 @@ PETScPrecConfigDiagonalService::PETScPrecConfigDiagonalService(
 : ArcanePETScPrecConfigDiagonalObject(options)
 , PETScConfig(parallel_mng->commSize() > 1)
 {
-     ;
- }
+  ;
+}
 
-bool PETScPrecConfigDiagonalService::needPrematureKSPSetUp() const
+bool
+PETScPrecConfigDiagonalService::needPrematureKSPSetUp() const
 {
-	return false;
+  return false;
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void PETScPrecConfigDiagonalService::configure(PC & pc,
-		const ISpace& space,
-		const MatrixDistribution& distribution)
+void
+PETScPrecConfigDiagonalService::configure(
+    PC& pc, const ISpace& space, const MatrixDistribution& distribution)
 {
-	alien_debug([&] {
-		cout() << "configure PETSc none preconditioner";
-	});
-	checkError("Set preconditioner",PCSetType(pc,PCNONE));
+  alien_debug([&] { cout() << "configure PETSc none preconditioner"; });
+  checkError("Set preconditioner", PCSetType(pc, PCNONE));
 }
 /*---------------------------------------------------------------------------*/
 

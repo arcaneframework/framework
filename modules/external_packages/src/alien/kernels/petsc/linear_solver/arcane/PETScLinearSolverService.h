@@ -25,14 +25,14 @@ namespace Alien {
  *  ajoutée afin d'utiliser PETScLinearSolverService sans sa partie 'service'
  */
 class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScLinearSolverService
-: public ArcanePETScLinearSolverObject, public LinearSolver<BackEnd::tag::petsc>
+    : public ArcanePETScLinearSolverObject,
+      public LinearSolver<BackEnd::tag::petsc>
 {
-private:
-
-public:
-  /** Constructeur de la classe */
+ private:
+ public:
+/** Constructeur de la classe */
 #ifdef ALIEN_USE_ARCANE
-  PETScLinearSolverService(const Arcane::ServiceBuildInfo & sbi);
+  PETScLinearSolverService(const Arcane::ServiceBuildInfo& sbi);
 #endif
 
   PETScLinearSolverService(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
@@ -40,7 +40,6 @@ public:
 
   /** Destructeur de la classe */
   virtual ~PETScLinearSolverService();
-  
 };
 
 /*---------------------------------------------------------------------------*/
@@ -51,4 +50,4 @@ public:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif //PETSCLINEARSOLVERSERVICE_H
+#endif // PETSCLINEARSOLVERSERVICE_H

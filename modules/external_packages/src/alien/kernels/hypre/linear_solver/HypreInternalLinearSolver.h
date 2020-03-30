@@ -36,20 +36,18 @@ class HypreVector;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class HypreInternalLinearSolver
-  : public IInternalLinearSolver<HypreMatrix, HypreVector>
-  , public ObjectWithTrace
+class HypreInternalLinearSolver : public IInternalLinearSolver<HypreMatrix, HypreVector>,
+                                  public ObjectWithTrace
 {
-public:
-
+ public:
   typedef SolverStatus Status;
 
-  HypreInternalLinearSolver(Arccore::MessagePassing::IMessagePassingMng* pm = nullptr, IOptionsHypreSolver* options = nullptr);
+  HypreInternalLinearSolver(Arccore::MessagePassing::IMessagePassingMng* pm = nullptr,
+      IOptionsHypreSolver* options = nullptr);
 
   virtual ~HypreInternalLinearSolver();
 
-public:
-
+ public:
   virtual void init();
 
   void updateParallelMng(Arccore::MessagePassing::IMessagePassingMng* pm);
@@ -68,24 +66,21 @@ public:
 
   //! Etat du solveur
   const Status& getStatus() const;
-  Status& getStatusRef() {
-    return m_status ;
-  }
+  Status& getStatusRef() { return m_status; }
 
   const SolverStat& getSolverStat() const { return m_stater; }
-  SolverStater & getSolverStater() { return m_stater; }
+  SolverStater& getSolverStater() { return m_stater; }
 
-private:
-
+ private:
   Status m_status;
 
-  //SolverStat m_stat;
+  // SolverStat m_stat;
   SolverStater m_stater;
   Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng;
   IOptionsHypreSolver* m_options;
-private:
 
-  void checkError(const Arccore::String & msg, int ierr, int skipError = 0) const;
+ private:
+  void checkError(const Arccore::String& msg, int ierr, int skipError = 0) const;
 };
 
 /*---------------------------------------------------------------------------*/

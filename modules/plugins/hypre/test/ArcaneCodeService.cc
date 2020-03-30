@@ -26,98 +26,99 @@ namespace Arcane {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-    class ArcaneCodeService : public CodeService {
-    public:
-        ArcaneCodeService(const ServiceBuildInfo &sbi);
+class ArcaneCodeService : public CodeService
+{
+ public:
+  ArcaneCodeService(const ServiceBuildInfo& sbi);
 
-        virtual ~ArcaneCodeService();
+  virtual ~ArcaneCodeService();
 
-    public:
+ public:
+  virtual bool parseArgs(StringList& args);
 
-        virtual bool parseArgs(StringList &args);
+  virtual ISession* createSession();
 
-        virtual ISession *createSession();
+  virtual void initCase(ISubDomain* sub_domain, bool is_continue);
 
-        virtual void initCase(ISubDomain *sub_domain, bool is_continue);
+ public:
+  void build() {}
 
-    public:
+ protected:
+  virtual void _preInitializeSubDomain(ISubDomain* sd);
 
-        void build() {}
-
-    protected:
-
-        virtual void _preInitializeSubDomain(ISubDomain *sd);
-
-    private:
-    };
+ private:
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-    ArcaneCodeService::
-    ArcaneCodeService(const ServiceBuildInfo &sbi)
-            : CodeService(sbi) {
-        _addExtension(String("arc"));
-    }
+ArcaneCodeService::ArcaneCodeService(const ServiceBuildInfo& sbi)
+: CodeService(sbi)
+{
+  _addExtension(String("arc"));
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-    ArcaneCodeService::
-    ~ArcaneCodeService() {
-    }
+ArcaneCodeService::~ArcaneCodeService()
+{
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-    void ArcaneCodeService::
-    _preInitializeSubDomain(ISubDomain *) {
-    }
+void
+ArcaneCodeService::_preInitializeSubDomain(ISubDomain*)
+{
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-    void ArcaneCodeService::
-    initCase(ISubDomain *sub_domain, bool is_continue) {
-        {
-            TimeLoopReader stl(_application());
-            stl.readTimeLoops();
-            stl.registerTimeLoops(sub_domain);
-            stl.setUsedTimeLoop(sub_domain);
-        }
-        CodeService::initCase(sub_domain, is_continue);
-        if (sub_domain->parallelMng()->isMasterIO())
-            sub_domain->session()->writeExecInfoFile();
-    }
+void
+ArcaneCodeService::initCase(ISubDomain* sub_domain, bool is_continue)
+{
+  {
+    TimeLoopReader stl(_application());
+    stl.readTimeLoops();
+    stl.registerTimeLoops(sub_domain);
+    stl.setUsedTimeLoop(sub_domain);
+  }
+  CodeService::initCase(sub_domain, is_continue);
+  if (sub_domain->parallelMng()->isMasterIO())
+    sub_domain->session()->writeExecInfoFile();
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-    ISession *ArcaneCodeService::
-    createSession() {
-        ArcaneSession *session = new ArcaneSession(_application());
-        session->build();
-        _application()->addSession(session);
-        return session;
-    }
+ISession*
+ArcaneCodeService::createSession()
+{
+  ArcaneSession* session = new ArcaneSession(_application());
+  session->build();
+  _application()->addSession(session);
+  return session;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-    bool ArcaneCodeService::
-    parseArgs(StringList &args) {
-        ARCANE_UNUSED(args);
-        return false;
-    }
+bool
+ArcaneCodeService::parseArgs(StringList& args)
+{
+  ARCANE_UNUSED(args);
+  return false;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-    ARCANE_REGISTER_APPLICATION_FACTORY(ArcaneCodeService, ICodeService, ArcaneCode);
+ARCANE_REGISTER_APPLICATION_FACTORY(ArcaneCodeService, ICodeService, ArcaneCode);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 }
 
 /*---------------------------------------------------------------------------*/

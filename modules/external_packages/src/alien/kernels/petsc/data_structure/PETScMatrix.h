@@ -15,7 +15,6 @@
 namespace Alien::PETScInternal {
 
 struct MatrixInternal;
-
 }
 
 /*---------------------------------------------------------------------------*/
@@ -30,17 +29,16 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScMatrix : public IMatrixImpl
   typedef PETScInternal::MatrixInternal MatrixInternal;
 
  public:
-  PETScMatrix(const MultiMatrixImpl * multi_impl);
-  virtual ~PETScMatrix() ;
+  PETScMatrix(const MultiMatrixImpl* multi_impl);
+  virtual ~PETScMatrix();
 
-public:
+ public:
+  void clear() {}
 
-  void clear() { }
-
-public:
+ public:
   bool initMatrix(const int local_size, const int local_offset, const int global_size,
-     Arccore::ConstArrayView<Arccore::Integer> diag_lineSizes,
-     Arccore::ConstArrayView<Arccore::Integer> offdiag_lineSizes, const bool parallel);
+      Arccore::ConstArrayView<Arccore::Integer> diag_lineSizes,
+      Arccore::ConstArrayView<Arccore::Integer> offdiag_lineSizes, const bool parallel);
 
   bool addMatrixValues(
       const int row, const int ncols, const int* cols, const Arccore::Real* values);
@@ -52,18 +50,18 @@ public:
 
   bool assemble();
 
-public:
-  MatrixInternal * internal() { return m_internal ; }
-  const MatrixInternal * internal() const { return m_internal ; }
+ public:
+  MatrixInternal* internal() { return m_internal; }
+  const MatrixInternal* internal() const { return m_internal; }
 
-private :
- Arccore::Integer ijk(Arccore::Integer i, Arccore::Integer j, Arccore::Integer k,
-     Arccore::Integer block_size, Arccore::Integer unknowns_num) const
- {
-   return k * block_size + i * unknowns_num + j;
- }
+ private:
+  Arccore::Integer ijk(Arccore::Integer i, Arccore::Integer j, Arccore::Integer k,
+      Arccore::Integer block_size, Arccore::Integer unknowns_num) const
+  {
+    return k * block_size + i * unknowns_num + j;
+  }
 
- MatrixInternal* m_internal ;
+  MatrixInternal* m_internal;
 };
 
 /*---------------------------------------------------------------------------*/

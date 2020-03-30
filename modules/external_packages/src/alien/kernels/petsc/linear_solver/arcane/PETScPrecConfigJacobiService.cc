@@ -33,21 +33,20 @@ PETScPrecConfigJacobiService::PETScPrecConfigJacobiService(
 : ArcanePETScPrecConfigJacobiObject(options)
 , PETScConfig(parallel_mng->commSize() > 1)
 {
-	;
+  ;
 }
 
 //! Initialisation
-void PETScPrecConfigJacobiService::configure(PC & pc,
-		const ISpace& space,
-		const MatrixDistribution& distribution)
+void
+PETScPrecConfigJacobiService::configure(
+    PC& pc, const ISpace& space, const MatrixDistribution& distribution)
 {
-	alien_debug([&] {
-		cout() << "configure PETSc block jacobi preconditioner";
-	});
-	checkError("Set preconditioner",PCSetType(pc,PCBJACOBI));
-	// KSPSetUp has been already called (cf needPrematureKSPSetUp)
-	// you can set up sub solver using PCBJacobiGetSubKSP (for PCBJACOBI ie by block)
-	// details in http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/src/ksp/ksp/examples/tutorials/ex7.c.html
+  alien_debug([&] { cout() << "configure PETSc block jacobi preconditioner"; });
+  checkError("Set preconditioner", PCSetType(pc, PCBJACOBI));
+  // KSPSetUp has been already called (cf needPrematureKSPSetUp)
+  // you can set up sub solver using PCBJacobiGetSubKSP (for PCBJACOBI ie by block)
+  // details in
+  // http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/src/ksp/ksp/examples/tutorials/ex7.c.html
 
   checkError("Preconditioner setup", PCSetUp(pc));
 
@@ -73,18 +72,18 @@ void PETScPrecConfigJacobiService::configure(PC & pc,
 }
 
 //! Check need of KSPSetUp before calling this PC configure
-bool PETScPrecConfigJacobiService::needPrematureKSPSetUp() const
+bool
+PETScPrecConfigJacobiService::needPrematureKSPSetUp() const
 {
-	return true;
+  return true;
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_PETSCPRECCONFIGJACOBI(Jacobi,PETScPrecConfigJacobiService);
-ARCANE_REGISTER_SERVICE_PETSCPRECCONFIGJACOBI(ILU,PETScPrecConfigJacobiService);
-ARCANE_REGISTER_SERVICE_PETSCPRECCONFIGJACOBI(BlockILU,PETScPrecConfigJacobiService);
+ARCANE_REGISTER_SERVICE_PETSCPRECCONFIGJACOBI(Jacobi, PETScPrecConfigJacobiService);
+ARCANE_REGISTER_SERVICE_PETSCPRECCONFIGJACOBI(ILU, PETScPrecConfigJacobiService);
+ARCANE_REGISTER_SERVICE_PETSCPRECCONFIGJACOBI(BlockILU, PETScPrecConfigJacobiService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -95,5 +94,3 @@ REGISTER_STRONG_OPTIONS_PETSCPRECCONFIGJACOBI();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-

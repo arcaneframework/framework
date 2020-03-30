@@ -35,11 +35,11 @@ extern IInternalLinearSolver<MTLMatrix, MTLVector>* MTLInternalLinearSolverFacto
 /*---------------------------------------------------------------------------*/
 
 namespace BackEnd {
-namespace tag {
-  struct mtl
-  {
-  };
-}
+  namespace tag {
+    struct mtl
+    {
+    };
+  }
 }
 
 template <> struct AlgebraTraits<BackEnd::tag::mtl>
@@ -48,7 +48,7 @@ template <> struct AlgebraTraits<BackEnd::tag::mtl>
   typedef MTLVector vector_type;
   typedef IOptionsMTLLinearSolver options_type;
   typedef IInternalLinearAlgebra<matrix_type, vector_type> algebra_type;
-  typedef IInternalLinearSolver<matrix_type, vector_type>  solver_type;
+  typedef IInternalLinearSolver<matrix_type, vector_type> solver_type;
   static algebra_type* algebra_factory(
       Arccore::MessagePassing::IMessagePassingMng* p_mng = nullptr)
   {

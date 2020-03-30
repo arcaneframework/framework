@@ -16,12 +16,15 @@ namespace Alien {
 #ifdef ALIEN_USE_ARCANE
 HTSEigenSolver::HTSEigenSolver(const Arcane::ServiceBuildInfo& sbi)
 : ArcaneHTSEigenSolverObject(sbi)
-, Alien::HTSInternalEigenSolver(sbi.subDomain()->parallelMng()->messagePassingMng(), options())
+, Alien::HTSInternalEigenSolver(
+      sbi.subDomain()->parallelMng()->messagePassingMng(), options())
 //, EigenSolver<BackEnd::tag::htssolver>(sbi.subDomain()->parallelMng(), options())
-{}
+{
+}
 #endif
 
-HTSEigenSolver::HTSEigenSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,  std::shared_ptr<IOptionsHTSEigenSolver>  _options)
+HTSEigenSolver::HTSEigenSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+    std::shared_ptr<IOptionsHTSEigenSolver> _options)
 : ArcaneHTSEigenSolverObject(_options)
 , Alien::HTSInternalEigenSolver(parallel_mng, options())
 //, EigenSolver<BackEnd::tag::htssolver>(parallel_mng, options())
@@ -30,7 +33,7 @@ HTSEigenSolver::HTSEigenSolver(Arccore::MessagePassing::IMessagePassingMng* para
 
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_HTSEIGENSOLVER(HTSEigenSolver,HTSEigenSolver);
+ARCANE_REGISTER_SERVICE_HTSEIGENSOLVER(HTSEigenSolver, HTSEigenSolver);
 
 } // namespace Alien
 

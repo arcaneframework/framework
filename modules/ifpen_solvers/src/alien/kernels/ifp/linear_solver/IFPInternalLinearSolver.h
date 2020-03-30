@@ -29,15 +29,15 @@ class ALIEN_IFPEN_SOLVERS_EXPORT IFPInternalLinearSolver : public ILinearSolver
   typedef IVector VectorType;
   typedef IVector VectorSolType;
 
-public:
+ public:
   /** Constructeur de la classe */
-  IFPInternalLinearSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng, IOptionsIFPLinearSolver* options=nullptr);
+  IFPInternalLinearSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+      IOptionsIFPLinearSolver* options = nullptr);
 
   /** Destructeur de la classe */
   virtual ~IFPInternalLinearSolver();
 
-public:
-
+ public:
   void init();
 
   void updateParallelMng(Arccore::MessagePassing::IMessagePassingMng* pm);
@@ -54,34 +54,32 @@ public:
   bool hasParallelSupport() const { return true; }
 
   //! Algèbre linéaire compatible
-  std::shared_ptr<ILinearAlgebra> algebra() const {
-    return std::shared_ptr<ILinearAlgebra>() ;
+  std::shared_ptr<ILinearAlgebra> algebra() const
+  {
+    return std::shared_ptr<ILinearAlgebra>();
   }
 
   //! Etat du solveur
-  const Status & getStatus() const;
-  Status & getStatusRef() {
-    return m_status ;
-  }
+  const Status& getStatus() const;
+  Status& getStatusRef() { return m_status; }
 
   //! Statistiques du solveur
-  const SolverStat & getSolverStat() const { return m_stater; }
-  SolverStater & getSolverStater() { return m_stater; }
+  const SolverStat& getSolverStat() const { return m_stater; }
+  SolverStater& getSolverStater() { return m_stater; }
 
   //! Etat du solveur
   void setNullSpaceConstantOption(bool flag);
 
-private:
+ private:
   bool _solve();
-  //A. Anciaux
-   bool _solveRs(bool m_resizeable);
+  // A. Anciaux
+  bool _solveRs(bool m_resizeable);
 
-  void internalPrintInfo() const ;
+  void internalPrintInfo() const;
 
-  void updateParameters() ;
+  void updateParameters();
 
-private:
-
+ private:
   Integer m_max_iteration;
   Real m_stop_criteria_value;
   Integer m_precond_option;
@@ -89,11 +87,11 @@ private:
   bool m_normalisation_pivot;
   bool m_normalize_opt; // pour être homogène avec la configuration de MCGSolver
   Integer m_ilu0_algo;
-  bool m_keep_rhs ;
-  
+  bool m_keep_rhs;
+
   Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng;
   Status m_status;
-  SolverStater m_stater;  //<! Statistiques d'exécution du solveur
+  SolverStater m_stater; //<! Statistiques d'exécution du solveur
   Integer m_print_info;
   IOptionsIFPLinearSolver* m_options;
 };
@@ -101,4 +99,3 @@ private:
 } // namespace Alien
 
 #endif /* PETSCLINEARSOLVER_H_ */
-	

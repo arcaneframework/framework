@@ -14,21 +14,18 @@
 BEGIN_NAMESPACE(Alien)
 
 /*---------------------------------------------------------------------------*/
-MCGCompositeVector::
-MCGCompositeVector(const MultiVectorImpl *multi_impl)
-  : IVectorImpl(multi_impl, AlgebraTraits<BackEnd::tag::mcgsolver_composite>::name())
+MCGCompositeVector::MCGCompositeVector(const MultiVectorImpl* multi_impl)
+: IVectorImpl(multi_impl, AlgebraTraits<BackEnd::tag::mcgsolver_composite>::name())
 {
   // get composite backend
   const CompositeKernel::Vector& v = multi_impl->get<BackEnd::tag::composite>();
-  std::vector<std::pair<int,int>> composite_info(v.size());
+  std::vector<std::pair<int, int>> composite_info(v.size());
 
-  for(int i=0;i<v.size();++i)
-  {
+  for (int i = 0; i < v.size(); ++i) {
     const int n = v[i].space().size();
 
     int block_size = 1;
-    if(v[i].impl()->block())
-    {
+    if (v[i].impl()->block()) {
       block_size = v[i].impl()->block()->sizeX();
     }
 
@@ -37,51 +34,46 @@ MCGCompositeVector(const MultiVectorImpl *multi_impl)
   }
 
   m_internal = new VectorInternal(composite_info);
-
 }
 
 /*---------------------------------------------------------------------------*/
 
-MCGCompositeVector::
-~MCGCompositeVector()
+MCGCompositeVector::~MCGCompositeVector()
 {
   delete m_internal;
 }
 
 /*---------------------------------------------------------------------------*/
 
-void 
-MCGCompositeVector::
-init(const VectorDistribution & dist,
-     const bool need_allocate)
+void
+MCGCompositeVector::init(const VectorDistribution& dist, const bool need_allocate)
 {
-  if (need_allocate) allocate();
+  if (need_allocate)
+    allocate();
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-MCGCompositeVector::
-allocate()
+MCGCompositeVector::allocate()
 {
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-MCGCompositeVector::
-setValues(const int part,const double* values)
+MCGCompositeVector::setValues(const int part, const double* values)
 {
-  const int n = m_internal->m_bvector[part].m_size*m_internal->m_bvector[part].m_block_size;
+  const int n =
+      m_internal->m_bvector[part].m_size * m_internal->m_bvector[part].m_block_size;
   double* data = m_internal->m_bvector[part].data();
 
-  for(int i=0;i<n;++i)
+  for (int i = 0; i < n; ++i)
     data[i] = values[i];
 }
 /*---------------------------------------------------------------------------*/
 void
-MCGCompositeVector::
-getValues(const int part,double * values) const
+MCGCompositeVector::getValues(const int part, double* values) const
 {
 #if 1
   throw FatalErrorException(A_FUNCINFO, "Not implemented");
@@ -89,24 +81,23 @@ getValues(const int part,double * values) const
   const VectorDistribution& dist = this->distribution();
   int block_size = 1;
 
-  if(this->block())
+  if (this->block())
     block_size = this->block()->sizeX();
-  else if(this->vblock())
+  else if (this->vblock())
     throw FatalErrorException(A_FUNCINFO, "Not implemented yet for vblock");
 
   const double* data = m_internal->m_bvector.data();
-  for (int i= 0; i < dist.localSize()*block_size; i++)
+  for (int i = 0; i < dist.localSize() * block_size; i++)
     values[i] = data[i];
 #endif
 }
 
 /*---------------------------------------------------------------------------*/
-void 
-MCGCompositeVector::
-update(const MCGCompositeVector & v)
+void
+MCGCompositeVector::update(const MCGCompositeVector& v)
 {
   MCGInternal::checkParallel(this->distribution().isParallel());
-  ALIEN_ASSERT((this == &v),("Unexpected error"));
+  ALIEN_ASSERT((this == &v), ("Unexpected error"));
 }
 
 /*---------------------------------------------------------------------------*/

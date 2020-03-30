@@ -16,12 +16,16 @@ namespace Alien {
 #ifdef ALIEN_USE_ARCANE
 HTSLinearSolver::HTSLinearSolver(const Arcane::ServiceBuildInfo& sbi)
 : ArcaneHTSSolverObject(sbi)
-, Alien::HTSInternalLinearSolver(sbi.subDomain()->parallelMng()->messagePassingMng(), options())
+, Alien::HTSInternalLinearSolver(
+      sbi.subDomain()->parallelMng()->messagePassingMng(), options())
 //, LinearSolver<BackEnd::tag::htssolver>(sbi.subDomain()->parallelMng(), options())
-{}
+{
+}
 #endif
 
-HTSLinearSolver::HTSLinearSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,  std::shared_ptr<IOptionsHTSSolver>  _options)
+HTSLinearSolver::HTSLinearSolver(
+    Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+    std::shared_ptr<IOptionsHTSSolver> _options)
 : ArcaneHTSSolverObject(_options)
 , Alien::HTSInternalLinearSolver(parallel_mng, options())
 //, LinearSolver<BackEnd::tag::htssolver>(parallel_mng, options())
@@ -30,7 +34,7 @@ HTSLinearSolver::HTSLinearSolver(Arccore::MessagePassing::IMessagePassingMng* pa
 
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_HTSSOLVER(HTSSolver,HTSLinearSolver);
+ARCANE_REGISTER_SERVICE_HTSSOLVER(HTSSolver, HTSLinearSolver);
 
 } // namespace Alien
 

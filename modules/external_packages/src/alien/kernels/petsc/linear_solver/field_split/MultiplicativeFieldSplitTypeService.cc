@@ -23,14 +23,16 @@ MultiplicativeFieldSplitTypeService::MultiplicativeFieldSplitTypeService(
     const Arcane::ServiceBuildInfo& sbi)
 : ArcaneMultiplicativeFieldSplitTypeObject(sbi)
 , PETScConfig(sbi.subDomain()->parallelMng()->isParallel())
-{}
+{
+}
 #endif
 MultiplicativeFieldSplitTypeService::MultiplicativeFieldSplitTypeService(
     Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
     std::shared_ptr<IOptionsMultiplicativeFieldSplitType> options)
 : ArcaneMultiplicativeFieldSplitTypeObject(options)
 , PETScConfig(parallel_mng->commSize() > 1)
-{}
+{
+}
 
 //! Configure FieldSplit type
 
@@ -46,7 +48,8 @@ MultiplicativeFieldSplitTypeService::configure(PC& pc, const Arccore::Integer nb
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_MULTIPLICATIVEFIELDSPLITTYPE(Multiplicative,MultiplicativeFieldSplitTypeService);
+ARCANE_REGISTER_SERVICE_MULTIPLICATIVEFIELDSPLITTYPE(
+    Multiplicative, MultiplicativeFieldSplitTypeService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -57,4 +60,3 @@ REGISTER_STRONG_OPTIONS_MULTIPLICATIVEFIELDSPLITTYPE();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

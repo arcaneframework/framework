@@ -1,6 +1,5 @@
 
 
-
 #include "alien/kernels/trilinos/TrilinosPrecomp.h"
 #include <alien/kernels/trilinos/TrilinosBackEnd.h>
 #include <alien/kernels/trilinos/data_structure/TrilinosInternal.h>
@@ -9,7 +8,6 @@
 #include <alien/core/backend/LinearAlgebraT.h>
 
 #include <alien/data/Space.h>
-
 
 #include <alien/kernels/trilinos/data_structure/TrilinosMatrix.h>
 #include <alien/kernels/trilinos/data_structure/TrilinosVector.h>
@@ -25,16 +23,15 @@ namespace Alien {
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-    template
-    class ALIEN_TRILINOS_EXPORT LinearAlgebra<BackEnd::tag::tpetraserial>;
-IInternalLinearAlgebra<TrilinosMatrixType, TrilinosVectorType> *
-TrilinosInternalLinearAlgebraFactory(Arccore::MessagePassing::IMessagePassingMng *pm)
+template class ALIEN_TRILINOS_EXPORT LinearAlgebra<BackEnd::tag::tpetraserial>;
+IInternalLinearAlgebra<TrilinosMatrixType, TrilinosVectorType>*
+TrilinosInternalLinearAlgebraFactory(Arccore::MessagePassing::IMessagePassingMng* pm)
 {
   return new TrilinosInternalLinearAlgebra(pm);
 }
 
 #ifdef KOKKOS_ENABLE_OPENMP
-template class ALIEN_TRILINOS_EXPORT LinearAlgebra<BackEnd::tag::tpetraomp> ;
+template class ALIEN_TRILINOS_EXPORT LinearAlgebra<BackEnd::tag::tpetraomp>;
 
 IInternalLinearAlgebra<TpetraOmpMatrixType, TpetraOmpVectorType>*
 TpetraOmpInternalLinearAlgebraFactory(IParallelMng* pm)
@@ -44,7 +41,7 @@ TpetraOmpInternalLinearAlgebraFactory(IParallelMng* pm)
 #endif
 
 #ifdef KOKKOS_ENABLE_THREADS
-template class ALIEN_TRILINOS_EXPORT LinearAlgebra<BackEnd::tag::tpetrapth> ;
+template class ALIEN_TRILINOS_EXPORT LinearAlgebra<BackEnd::tag::tpetrapth>;
 
 IInternalLinearAlgebra<TpetraPthMatrixType, TpetraPthVectorType>*
 TpetraPthInternalLinearAlgebraFactory(IParallelMng* pm)
@@ -54,7 +51,7 @@ TpetraPthInternalLinearAlgebraFactory(IParallelMng* pm)
 #endif
 /*---------------------------------------------------------------------------*/
 #ifdef KOKKOS_ENABLE_CUDA
-template class ALIEN_TRILINOS_EXPORT LinearAlgebra<BackEnd::tag::tpetracuda> ;
+template class ALIEN_TRILINOS_EXPORT LinearAlgebra<BackEnd::tag::tpetracuda>;
 
 IInternalLinearAlgebra<TpetraCudaMatrixType, TpetraCudaVectorType>*
 TpetraCudaInternalLinearAlgebraFactory(IParallelMng* pm)
@@ -65,7 +62,7 @@ TpetraCudaInternalLinearAlgebraFactory(IParallelMng* pm)
 
 /*---------------------------------------------------------------------------*/
 
-    Real
+Real
 TrilinosInternalLinearAlgebra::norm0(const Vector& x) const
 {
   return 0.;
@@ -73,18 +70,18 @@ TrilinosInternalLinearAlgebra::norm0(const Vector& x) const
 
 /*---------------------------------------------------------------------------*/
 
-    Real
+Real
 TrilinosInternalLinearAlgebra::norm1(const Vector& x) const
 {
-  return x.norm1() ;
+  return x.norm1();
 }
 
 /*---------------------------------------------------------------------------*/
 
-    Real
+Real
 TrilinosInternalLinearAlgebra::norm2(const Vector& x) const
 {
-  return x.norm2() ;
+  return x.norm2();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -92,66 +89,72 @@ TrilinosInternalLinearAlgebra::norm2(const Vector& x) const
 void
 TrilinosInternalLinearAlgebra::mult(const Matrix& a, const Vector& x, Vector& r) const
 {
-  a.mult(x,r) ;
+  a.mult(x, r);
 }
 void
-TrilinosInternalLinearAlgebra::mult(const Matrix& a, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+TrilinosInternalLinearAlgebra::mult(
+    const Matrix& a, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
 {
-  a.mult(dataPtr(x),dataPtr(r)) ;
+  a.mult(dataPtr(x), dataPtr(r));
 }
 
 /*---------------------------------------------------------------------------*/
 void
-TrilinosInternalLinearAlgebra::axpy(const Real& alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+TrilinosInternalLinearAlgebra::axpy(
+    const Real& alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
 {
-  cblas::axpy(x.size(), alpha, dataPtr(x),1, dataPtr(r),1);
+  cblas::axpy(x.size(), alpha, dataPtr(x), 1, dataPtr(r), 1);
 }
 
 void
-    TrilinosInternalLinearAlgebra::axpy(const Real &alpha, const Vector &x, Vector &r) const {
-        throw NotImplementedException(
-                A_FUNCINFO, "TrilinosInternalLinearAlgebra::aypx not implemented");
-    }
+TrilinosInternalLinearAlgebra::axpy(const Real& alpha, const Vector& x, Vector& r) const
+{
+  throw NotImplementedException(
+      A_FUNCINFO, "TrilinosInternalLinearAlgebra::aypx not implemented");
+}
 
 /*---------------------------------------------------------------------------*/
 void
-TrilinosInternalLinearAlgebra::aypx(const Real& alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const
+TrilinosInternalLinearAlgebra::aypx(
+    const Real& alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const
 {
   throw NotImplementedException(
       A_FUNCINFO, "TrilinosInternalLinearAlgebra::aypx not implemented");
 }
 
 void
-    TrilinosInternalLinearAlgebra::aypx(const Real &alpha, Vector &y, const Vector &x) const
+TrilinosInternalLinearAlgebra::aypx(const Real& alpha, Vector& y, const Vector& x) const
 {
-    throw NotImplementedException(
-            A_FUNCINFO, "TrilinosInternalLinearAlgebra::aypx not implemented");
+  throw NotImplementedException(
+      A_FUNCINFO, "TrilinosInternalLinearAlgebra::aypx not implemented");
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-TrilinosInternalLinearAlgebra::copy(const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+TrilinosInternalLinearAlgebra::copy(
+    const UniqueArray<Real>& x, UniqueArray<Real>& r) const
 {
-  cblas::copy(x.size(), dataPtr(x),1, dataPtr(r),1);
+  cblas::copy(x.size(), dataPtr(x), 1, dataPtr(r), 1);
 }
 void
 TrilinosInternalLinearAlgebra::copy(const Vector& x, Vector& r) const
 {
-	throw NotImplementedException(
-	      A_FUNCINFO, "TrilinosInternalLinearAlgebra::aypx not implemented");
+  throw NotImplementedException(
+      A_FUNCINFO, "TrilinosInternalLinearAlgebra::aypx not implemented");
 }
 
 /*---------------------------------------------------------------------------*/
 Real
-TrilinosInternalLinearAlgebra::dot(Integer local_size, const UniqueArray<Real>& vx, const UniqueArray<Real>& vy) const
+TrilinosInternalLinearAlgebra::dot(
+    Integer local_size, const UniqueArray<Real>& vx, const UniqueArray<Real>& vy) const
 {
-  return cblas::dot(local_size, dataPtr(vx),1, dataPtr(vy),1);
+  return cblas::dot(local_size, dataPtr(vx), 1, dataPtr(vy), 1);
 }
 Real
 TrilinosInternalLinearAlgebra::dot(const Vector& x, const Vector& y) const
 {
-  return x.dot(y) ;
+  return x.dot(y);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -163,10 +166,10 @@ TrilinosInternalLinearAlgebra::scal(const Real& alpha, UniqueArray<Real>& x) con
 }
 
 void
-    TrilinosInternalLinearAlgebra::scal(const Real &alpha, Vector &x) const
+TrilinosInternalLinearAlgebra::scal(const Real& alpha, Vector& x) const
 {
-    throw NotImplementedException(
-            A_FUNCINFO, "TrilinosInternalLinearAlgebra::scal not implemented");
+  throw NotImplementedException(
+      A_FUNCINFO, "TrilinosInternalLinearAlgebra::scal not implemented");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -174,8 +177,8 @@ void
 void
 TrilinosInternalLinearAlgebra::diagonal(const Matrix& a, Vector& x) const
 {
-    throw NotImplementedException(
-            A_FUNCINFO, "TrilinosInternalLinearAlgebra::diagonal not implemented");
+  throw NotImplementedException(
+      A_FUNCINFO, "TrilinosInternalLinearAlgebra::diagonal not implemented");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -183,27 +186,30 @@ TrilinosInternalLinearAlgebra::diagonal(const Matrix& a, Vector& x) const
 void
 TrilinosInternalLinearAlgebra::reciprocal(Vector& x) const
 {
-    throw NotImplementedException(
-            A_FUNCINFO, "TrilinosInternalLinearAlgebra::reciprocal not implemented");
+  throw NotImplementedException(
+      A_FUNCINFO, "TrilinosInternalLinearAlgebra::reciprocal not implemented");
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-TrilinosInternalLinearAlgebra::pointwiseMult(const Vector& x, const Vector& y, Vector& w) const
+TrilinosInternalLinearAlgebra::pointwiseMult(
+    const Vector& x, const Vector& y, Vector& w) const
 {
-    throw NotImplementedException(
-            A_FUNCINFO, "TrilinosInternalLinearAlgebra::pointwiseMult not implemented");
+  throw NotImplementedException(
+      A_FUNCINFO, "TrilinosInternalLinearAlgebra::pointwiseMult not implemented");
 }
 
-void TrilinosInternalLinearAlgebra::dump(Matrix const& a,std::string const& filename) const
+void
+TrilinosInternalLinearAlgebra::dump(Matrix const& a, std::string const& filename) const
 {
-  a.dump(filename) ;
+  a.dump(filename);
 }
 
-void TrilinosInternalLinearAlgebra::dump(Vector const& x,std::string const& filename) const
+void
+TrilinosInternalLinearAlgebra::dump(Vector const& x, std::string const& filename) const
 {
-  x.dump(filename) ;
+  x.dump(filename);
 }
 
 } // namespace Alien

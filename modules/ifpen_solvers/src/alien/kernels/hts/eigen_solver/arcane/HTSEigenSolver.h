@@ -14,32 +14,30 @@
 #include <alien/kernels/hts/eigen_solver/HTSEigenOptionTypes.h>
 #include <ALIEN/axl/HTSEigenSolver_axl.h>
 
-
 /**
  * Interface du service de résolution de probleme aux valuers propres
  */
 
-//class HTSSolver ;
+// class HTSSolver ;
 
 namespace Alien {
 
 class ALIEN_IFPEN_SOLVERS_EXPORT HTSEigenSolver : public ArcaneHTSEigenSolverObject,
-                                                 public HTSInternalEigenSolver
+                                                  public HTSInternalEigenSolver
 //, public LinearSolver<BackEnd::tag::htssolver>
 {
  public:
-  /** Constructeur de la classe */
+/** Constructeur de la classe */
 
 #ifdef ALIEN_USE_ARCANE
-  HTSEigenSolver(const Arcane::ServiceBuildInfo & sbi);
+  HTSEigenSolver(const Arcane::ServiceBuildInfo& sbi);
 #endif
 
-  HTSEigenSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng, std::shared_ptr<IOptionsHTSEigenSolver> _options);
+  HTSEigenSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+      std::shared_ptr<IOptionsHTSEigenSolver> _options);
 
   /** Destructeur de la classe */
   virtual ~HTSEigenSolver(){};
-
-
 };
 
 } // namespace Alien

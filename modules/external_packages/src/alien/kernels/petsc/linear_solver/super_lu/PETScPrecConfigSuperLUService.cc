@@ -42,14 +42,11 @@ PETScPrecConfigSuperLUService::PETScPrecConfigSuperLUService(
 
 //! Initialisation
 void
-PETScPrecConfigSuperLUService::configure(PC & pc,
-					 const ISpace& space,
-					 const MatrixDistribution& distribution)
+PETScPrecConfigSuperLUService::configure(
+    PC& pc, const ISpace& space, const MatrixDistribution& distribution)
 {
-  alien_debug([&] {
-      cout() << "configure PETSc superlu preconditioner";
-    });
-  checkError("Set preconditioner",PCSetType(pc,PCLU));
+  alien_debug([&] { cout() << "configure PETSc superlu preconditioner"; });
+  checkError("Set preconditioner", PCSetType(pc, PCLU));
 
   if (m_is_parallel)
     checkError("Set superlu_dist solver package",
@@ -61,20 +58,18 @@ PETScPrecConfigSuperLUService::configure(PC & pc,
   // checkError("Set fill factor",  PCFactorSetUpMatSolverPackage(pc));
   double fill_factor = options()->fillFactor();
   if (fill_factor < 1.0) {
-    alien_fatal([&]{
-        cout() << "Bad Fill Factor: cannot be less than 1.0";
-      });
+    alien_fatal([&] { cout() << "Bad Fill Factor: cannot be less than 1.0"; });
   }
-  checkError("Set fill factor",PCFactorSetFill(pc, fill_factor));
+  checkError("Set fill factor", PCFactorSetFill(pc, fill_factor));
   // checkError("Set shift type",PCFactorSetShiftType(pc,PETSC_DECIDE));
-  checkError("Set shift amount",PCFactorSetShiftAmount(pc, PETSC_DECIDE));
+  checkError("Set shift amount", PCFactorSetShiftAmount(pc, PETSC_DECIDE));
 
-  checkError("Preconditioner setup",PCSetUp(pc));
+  checkError("Preconditioner setup", PCSetUp(pc));
 }
 
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_PETSCPRECCONFIGSUPERLU(SuperLU,PETScPrecConfigSuperLUService);
+ARCANE_REGISTER_SERVICE_PETSCPRECCONFIGSUPERLU(SuperLU, PETScPrecConfigSuperLUService);
 
 } // namespace Alien
 

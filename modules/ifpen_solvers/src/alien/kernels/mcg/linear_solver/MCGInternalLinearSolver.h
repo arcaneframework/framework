@@ -28,148 +28,132 @@ namespace Alien {
 
 class SolverStater;
 
-class ALIEN_EXTERNALPACKAGES_EXPORT MCGInternalLinearSolver
-: public ILinearSolver
-  , public ObjectWithTrace
+class ALIEN_EXTERNALPACKAGES_EXPORT MCGInternalLinearSolver : public ILinearSolver,
+                                                              public ObjectWithTrace
 {
  private:
   typedef SolverStatus Status;
   typedef MCGMatrix MatrixType;
   typedef MCGVector VectorType;
 
-  typedef MCGInternal::MatrixInternal  MCGMatrixType;
-  typedef MCGInternal::VectorInternal  MCGVectorType;
+  typedef MCGInternal::MatrixInternal MCGMatrixType;
+  typedef MCGInternal::VectorInternal MCGVectorType;
   typedef MCGInternal::CompositeVectorInternal MCGCompositeVectorType;
 
-  typedef SimpleCSRMatrix<Real>      CSRMatrixType;
-  typedef SimpleCSRVector<Real>      CSRVectorType;
-  typedef SimpleCSRInternal::MatrixInternal<Real>  CSRInternalMatrixType;
+  typedef SimpleCSRMatrix<Real> CSRMatrixType;
+  typedef SimpleCSRVector<Real> CSRVectorType;
+  typedef SimpleCSRInternal::MatrixInternal<Real> CSRInternalMatrixType;
 
  public:
   MCGInternalLinearSolver() = delete;
   MCGInternalLinearSolver(const MCGInternalLinearSolver&) = delete;
 
   /** Constructeur de la classe */
-  MCGInternalLinearSolver(IParallelMng* parallel_mng = nullptr, IOptionsMCGSolver* options = nullptr);
+  MCGInternalLinearSolver(
+      IParallelMng* parallel_mng = nullptr, IOptionsMCGSolver* options = nullptr);
 
   /** Destructeur de la classe */
   virtual ~MCGInternalLinearSolver();
 
  public:
   //! Initialisation
-  //void init(int argv,char const** argc);
+  // void init(int argv,char const** argc);
   void init();
   void updateParallelMng(IParallelMng* pm);
-  void updateParameters() ;
+  void updateParameters();
 
-  //void setDiagScal(double* Diag, int size);
+  // void setDiagScal(double* Diag, int size);
   //! Finalize
   void end();
 
-  String getBackEndName() const {
-    return "mcgsolver" ;
-  }
+  String getBackEndName() const { return "mcgsolver"; }
 
   //! Rï¿œsolution du systï¿œme linï¿œaire
   bool solve(IMatrix const& A, IVector const& b, IVector& x);
 
   //! Indicateur de support de r�solution parall�le
-  bool hasParallelSupport() const
-  {
-    return true ;
-  }
+  bool hasParallelSupport() const { return true; }
 
-  std::shared_ptr<ILinearAlgebra> algebra() const ;
+  std::shared_ptr<ILinearAlgebra> algebra() const;
 
   //! Etat du solveur
-  const Alien::SolverStatus & getStatus() const ;
+  const Alien::SolverStatus& getStatus() const;
 
-  const SolverStat & getSolverStat() const { return m_stat; }
+  const SolverStat& getSolverStat() const { return m_stat; }
 
   String getName() const { return "gpusolver"; }
 
   //! R�solution du syst�me lin�aire
 
-  bool solve() ;
-
+  bool solve();
 
   //! Etat du solveur
-  void setNullSpaceConstantOption(bool flag) {
-    alien_warning([&] {
-        cout() << "Null Space Constant Option not yet implemented" ;
-      });
+  void setNullSpaceConstantOption(bool flag)
+  {
+    alien_warning([&] { cout() << "Null Space Constant Option not yet implemented"; });
   }
 
-  void printInfo() const ;
-  void printInfo() ;
+  void printInfo() const;
+  void printInfo();
   void printCurrentTimeInfo() {}
 
  private:
+  bool _solve(const MCGMatrixType& A, const MCGVectorType& b, MCGVectorType& x,
+      MCGSolver::PartitionInfo* part_info = nullptr);
+  bool _solve(const MCGMatrixType& A, const MCGVectorType& b, const MCGVectorType& x0,
+      MCGVectorType& x, MCGSolver::PartitionInfo* part_info = nullptr);
 
-  bool _solve(const MCGMatrixType& A,const MCGVectorType& b,MCGVectorType& x,
-      MCGSolver::PartitionInfo* part_info=nullptr);
-  bool _solve(const MCGMatrixType& A,const MCGVectorType& b,const MCGVectorType& x0,MCGVectorType& x,
-      MCGSolver::PartitionInfo* part_info=nullptr);
-
-  bool _solve(const MCGMatrixType& A,const MCGCompositeVectorType& b,MCGCompositeVectorType& x,
-      MCGSolver::PartitionInfo* part_info=nullptr);
-  bool _solve(const MCGMatrixType& A,const MCGCompositeVectorType& b,
-      const MCGCompositeVectorType& x0,MCGCompositeVectorType& x,
-      MCGSolver::PartitionInfo* part_info=nullptr);
-
+  bool _solve(const MCGMatrixType& A, const MCGCompositeVectorType& b,
+      MCGCompositeVectorType& x, MCGSolver::PartitionInfo* part_info = nullptr);
+  bool _solve(const MCGMatrixType& A, const MCGCompositeVectorType& b,
+      const MCGCompositeVectorType& x0, MCGCompositeVectorType& x,
+      MCGSolver::PartitionInfo* part_info = nullptr);
 
   void updateLinearSystem();
   inline void _startPerfCount();
   inline void _endPerfCount();
 
-  MCGSolver::LinearSystem* _createSystem(const MCGMatrixType& A,
-                                   const MCGVectorType& b,
-                                   MCGVectorType& x,
-                                   MCGSolver::PartitionInfo* part_info=nullptr);
+  MCGSolver::LinearSystem* _createSystem(const MCGMatrixType& A, const MCGVectorType& b,
+      MCGVectorType& x, MCGSolver::PartitionInfo* part_info = nullptr);
+
+  MCGSolver::LinearSystem* _createSystem(const MCGMatrixType& A, const MCGVectorType& b,
+      const MCGVectorType& x0, MCGVectorType& x,
+      MCGSolver::PartitionInfo* part_info = nullptr);
 
   MCGSolver::LinearSystem* _createSystem(const MCGMatrixType& A,
-                                   const MCGVectorType& b,
-                                   const MCGVectorType& x0,
-                                   MCGVectorType& x,
-                                   MCGSolver::PartitionInfo* part_info=nullptr);
+      const MCGCompositeVectorType& b, MCGCompositeVectorType& x,
+      MCGSolver::PartitionInfo* part_info = nullptr);
 
   MCGSolver::LinearSystem* _createSystem(const MCGMatrixType& A,
-                                   const MCGCompositeVectorType& b,
-                                   MCGCompositeVectorType& x,
-                                   MCGSolver::PartitionInfo* part_info=nullptr);
+      const MCGCompositeVectorType& b, const MCGCompositeVectorType& x0,
+      MCGCompositeVectorType& x, MCGSolver::PartitionInfo* part_info = nullptr);
 
-  MCGSolver::LinearSystem* _createSystem(const MCGMatrixType& A,
-                                   const MCGCompositeVectorType& b,
-                                   const MCGCompositeVectorType& x0,
-                                   MCGCompositeVectorType& x,
-                                   MCGSolver::PartitionInfo* part_info=nullptr);
-
- protected :
-
+ protected:
   MCGSolver::LinearSolver* m_solver = nullptr;
+
  private:
   //! Structure interne du solveur
   bool m_use_mpi = false;
-  IParallelMng*                m_parallel_mng = nullptr;
-  MCGSolver::MachineInfo*      m_machine_info = nullptr;
-  MCGSolver::MPIInfo*          m_mpi_info = nullptr;
+  IParallelMng* m_parallel_mng = nullptr;
+  MCGSolver::MachineInfo* m_machine_info = nullptr;
+  MCGSolver::MPIInfo* m_mpi_info = nullptr;
 
   MCGSolver::Status m_mcg_status;
   Alien::SolverStatus m_status;
 
-  //!Preconditioner options
+  //! Preconditioner options
   MCGOptionTypes::ePreconditioner m_precond_opt = MCGOptionTypes::NonePC;
 
-  //!Solver parameters
+  //! Solver parameters
   MCGOptionTypes::eSolver m_solver_opt = MCGOptionTypes::BiCGStab;
   Integer m_max_iteration = 1000;
   Real m_precision = 1e-6;
 
-  //!Linear system builder options
+  //! Linear system builder options
   //!@{
   bool m_use_unit_diag = false;
   bool m_keep_diag_opt = false;
-  Integer  m_normalize_opt = 0;
+  Integer m_normalize_opt = 0;
   //!@}
 
   String m_matrix_file_name;
@@ -192,15 +176,14 @@ class ALIEN_EXTERNALPACKAGES_EXPORT MCGInternalLinearSolver
   Real m_int_total_setup_time = 0;
   Real m_int_total_finish_time = 0;
 
-  SolverStat   m_stat;
+  SolverStat m_stat;
   SolverStater m_stater;
 
   IOptionsMCGSolver* m_options = nullptr;
-  std::vector<double>  m_pressure_diag; 
+  std::vector<double> m_pressure_diag;
 
   std::string m_dir;
-  std::map<std::string,int> m_dir_enum;
-
+  std::map<std::string, int> m_dir_enum;
 };
 
 } // namespace Alien

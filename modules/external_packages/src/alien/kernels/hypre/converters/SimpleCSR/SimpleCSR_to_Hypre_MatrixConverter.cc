@@ -31,7 +31,8 @@ class SimpleCSR_to_Hypre_MatrixConverter : public IMatrixConverter
   }
   BackEndId targetBackend() const { return AlgebraTraits<BackEnd::tag::hypre>::name(); }
   void convert(const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const;
-  void _build(const SimpleCSRMatrix<Arccore::Real>& sourceImpl, HypreMatrix& targetImpl) const;
+  void _build(
+      const SimpleCSRMatrix<Arccore::Real>& sourceImpl, HypreMatrix& targetImpl) const;
   void _buildBlock(
       const SimpleCSRMatrix<Arccore::Real>& sourceImpl, HypreMatrix& targetImpl) const;
 };
@@ -49,18 +50,20 @@ void
 SimpleCSR_to_Hypre_MatrixConverter::convert(
     const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const
 {
-  const SimpleCSRMatrix<Arccore::Real> & v = cast<SimpleCSRMatrix<Arccore::Real> >(sourceImpl, sourceBackend());
+  const SimpleCSRMatrix<Arccore::Real>& v =
+      cast<SimpleCSRMatrix<Arccore::Real>>(sourceImpl, sourceBackend());
   auto& v2 = cast<HypreMatrix>(targetImpl, targetBackend());
 
   alien_debug([&] {
     cout() << "Converting SimpleCSRMatrix: " << &v << " to HypreMatrix " << &v2;
   });
-  if(targetImpl->block())
-      _buildBlock(v,v2);
-  else if(targetImpl->vblock())
-    throw Arccore::FatalErrorException(A_FUNCINFO,"Block sizes are variable - builds not yet implemented");
+  if (targetImpl->block())
+    _buildBlock(v, v2);
+  else if (targetImpl->vblock())
+    throw Arccore::FatalErrorException(
+        A_FUNCINFO, "Block sizes are variable - builds not yet implemented");
   else
-    _build(v,v2);
+    _build(v, v2);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -70,10 +73,11 @@ SimpleCSR_to_Hypre_MatrixConverter::_build(
     const SimpleCSRMatrix<Arccore::Real>& sourceImpl, HypreMatrix& targetImpl) const
 {
   const MatrixDistribution& dist = sourceImpl.distribution();
-  const CSRStructInfo & profile = sourceImpl.getCSRProfile();
+  const CSRStructInfo& profile = sourceImpl.getCSRProfile();
   const Arccore::Integer localSize = profile.getNRow();
   const Arccore::Integer localOffset = dist.rowOffset();
-  const SimpleCSRMatrix<Arccore::Real>::MatrixInternal& matrixInternal = sourceImpl.internal();
+  const SimpleCSRMatrix<Arccore::Real>::MatrixInternal& matrixInternal =
+      sourceImpl.internal();
 
   Arccore::Integer data_count = 0;
   Arccore::Integer pos = 0;
@@ -126,8 +130,8 @@ SimpleCSR_to_Hypre_MatrixConverter::_build(
           targetImpl.setMatrixValues(1, &row, &ncols, indices.data(), values.data());
 
       if (not success) {
-        throw Arccore::FatalErrorException(
-            A_FUNCINFO, Arccore::String::format("Cannot set Hypre Matrix Values for row {0}", row));
+        throw Arccore::FatalErrorException(A_FUNCINFO,
+            Arccore::String::format("Cannot set Hypre Matrix Values for row {0}", row));
       }
     }
   }
@@ -143,11 +147,12 @@ SimpleCSR_to_Hypre_MatrixConverter::_buildBlock(
     const SimpleCSRMatrix<Arccore::Real>& sourceImpl, HypreMatrix& targetImpl) const
 {
   const MatrixDistribution& dist = sourceImpl.distribution();
-  const CSRStructInfo & profile = sourceImpl.getCSRProfile();
+  const CSRStructInfo& profile = sourceImpl.getCSRProfile();
   const Arccore::Integer localSize = profile.getNRow();
   const Arccore::Integer block_size = targetImpl.block()->size();
   const Arccore::Integer localOffset = dist.rowOffset();
-  const SimpleCSRMatrix<Arccore::Real>::MatrixInternal& matrixInternal = sourceImpl.internal();
+  const SimpleCSRMatrix<Arccore::Real>::MatrixInternal& matrixInternal =
+      sourceImpl.internal();
 
   Arccore::Integer max_line_size = localSize * block_size;
   Arccore::Integer data_count = 0;
@@ -213,8 +218,8 @@ SimpleCSR_to_Hypre_MatrixConverter::_buildBlock(
             1, &rows, &num_cols, indices.data(), values[i].data());
 
         if (not success) {
-          throw Arccore::FatalErrorException(
-              A_FUNCINFO, Arccore::String::format("Cannot set Hypre Matrix Values for row {0}", row));
+          throw Arccore::FatalErrorException(A_FUNCINFO,
+              Arccore::String::format("Cannot set Hypre Matrix Values for row {0}", row));
         }
       }
     }

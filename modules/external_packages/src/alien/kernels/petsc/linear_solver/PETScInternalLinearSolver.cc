@@ -89,31 +89,28 @@ PETScInternalLinearSolver::PETScInternalLinearSolver(
 , m_null_space_constant_opt(false)
 , m_parallel_mng(parallel_mng)
 , m_options(options)
-{}
+{
+}
 
 /*---------------------------------------------------------------------------*/
 
-PETScInternalLinearSolver::
-~PETScInternalLinearSolver()
+PETScInternalLinearSolver::~PETScInternalLinearSolver()
 {
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-PETScInternalLinearSolver::
-init(int argc, char** argv)
+PETScInternalLinearSolver::init(int argc, char** argv)
 {
-  if(m_parallel_mng == nullptr)
+  if (m_parallel_mng == nullptr)
     return;
-  //m_stater.reset();
-  //m_stater.startInitializationMeasure();
+  // m_stater.reset();
+  // m_stater.startInitializationMeasure();
 
-  if (not m_global_initialized) 
-  {
+  if (not m_global_initialized) {
     std::vector<std::string> petsc_options;
-    if (m_options->traceInfo())
-    {
+    if (m_options->traceInfo()) {
       // See PetscInitialize for details
       // http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/Sys/PetscInitialize.html
       petsc_options.push_back("-info");
@@ -121,38 +118,33 @@ init(int argc, char** argv)
       petsc_options.push_back("petsc.log");
       m_global_want_trace = true;
     }
-    if(argc>0)
-    {
-      for(int i=0;i<argc;++i)
-      {
+    if (argc > 0) {
+      for (int i = 0; i < argc; ++i) {
         std::stringstream stream;
         stream << argv[i];
         petsc_options.push_back(stream.str());
       }
     }
-    if (not petsc_options.empty())
-    {
+    if (not petsc_options.empty()) {
       alien_info([&] {
         std::stringstream petsc_options_str("PETSC CMD : ");
-        for(std::size_t i=0;i<petsc_options.size();++i)
-          petsc_options_str<<petsc_options[i]<<" ";
-        cout()<<petsc_options_str.str();
+        for (std::size_t i = 0; i < petsc_options.size(); ++i)
+          petsc_options_str << petsc_options[i] << " ";
+        cout() << petsc_options_str.str();
       });
     }
 
     // Emulate argc,argv with dynamic options
     // (since PetscOptionsInsertString cannot insert info options)
-//    int petsc_argc = petsc_options.size()+1;
-    const char ** petsc_c_options = new const char*[argc];
+    //    int petsc_argc = petsc_options.size()+1;
+    const char** petsc_c_options = new const char*[argc];
     petsc_c_options[0] = NULL;
-    for(std::size_t i=0;i<petsc_options.size();++i)
-      petsc_c_options[i+1] = petsc_options[i].c_str();
-    char ** argv2 = (char**)petsc_c_options;
+    for (std::size_t i = 0; i < petsc_options.size(); ++i)
+      petsc_c_options[i + 1] = petsc_options[i].c_str();
+    char** argv2 = (char**)petsc_c_options;
 
-    alien_debug([&] {
-      cout() << "PETSc Initialisation";
-    });
-    PetscInitialize(&argc,&argv2,NULL,"PETSc Initialisation");
+    alien_debug([&] { cout() << "PETSc Initialisation"; });
+    PetscInitialize(&argc, &argv2, NULL, "PETSc Initialisation");
     delete[] petsc_c_options;
 
     // Reduce memory due to log for graphical viewer
@@ -160,45 +152,39 @@ init(int argc, char** argv)
     PetscLogObjects(PETSC_FALSE);
 
 #if ((PETSC_VERSION_MAJOR <= 3 && PETSC_VERSION_MINOR < 3) || (PETSC_VERSION_MAJOR < 3))
-    if (m_options->traceInfo())
-    {
-      alien_info([&] {
-        cout() << "PETSc options:";
-      });
+    if (m_options->traceInfo()) {
+      alien_info([&] { cout() << "PETSc options:"; });
       PetscOptionsPrint(stdout);
     }
 #endif /* PETSC_VERSION */
 
     m_global_initialized = true;
-  }
-  else
-  {
-	if (m_options->traceInfo() != m_global_want_trace) {
+  } else {
+    if (m_options->traceInfo() != m_global_want_trace) {
       alien_warning([&] {
-        cout() << "PETSc trace-info option is global and given by the first initialisation; current state is " << ((m_global_want_trace)?"on":"off");
+        cout() << "PETSc trace-info option is global and given by the first "
+                  "initialisation; current state is "
+               << ((m_global_want_trace) ? "on" : "off");
       });
     }
   }
 
-  //m_stater.stopInitializationMeasure();
+  // m_stater.stopInitializationMeasure();
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-PETScInternalLinearSolver::
-init()
+PETScInternalLinearSolver::init()
 {
-  if(m_parallel_mng == nullptr)
+  if (m_parallel_mng == nullptr)
     return;
-  //m_stater.reset();
-  //m_stater.startInitializationMeasure();
+  // m_stater.reset();
+  // m_stater.startInitializationMeasure();
 
-  if (not m_global_initialized)
-  {
+  if (not m_global_initialized) {
     std::vector<Arccore::String> petsc_options;
-    if (m_options->traceInfo())
-    {
+    if (m_options->traceInfo()) {
       // See PetscInitialize for details
       // http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/Sys/PetscInitialize.html
       petsc_options.push_back("-info");
@@ -206,63 +192,56 @@ init()
       petsc_options.push_back("petsc.log");
       m_global_want_trace = true;
     }
-    if(m_options->cmdLineParam().size()>0)
-    {
-    	petsc_options.push_back(" "); // separator
+    if (m_options->cmdLineParam().size() > 0) {
+      petsc_options.push_back(" "); // separator
       Arccore::String command = m_options->cmdLineParam()[0];
       petsc_options.push_back(command);
     }
-    if (not petsc_options.empty())
-    {
+    if (not petsc_options.empty()) {
       alien_info([&] {
         std::stringstream petsc_options_str("PETSC CMD : ");
-        for(std::size_t i=0;i<petsc_options.size();++i)
-          petsc_options_str<<petsc_options[i]<<" ";
-        cout()<<petsc_options_str.str();
+        for (std::size_t i = 0; i < petsc_options.size(); ++i)
+          petsc_options_str << petsc_options[i] << " ";
+        cout() << petsc_options_str.str();
       });
     }
 
     // Emulate argc,argv with dynamic options
     // (since PetscOptionsInsertString cannot insert info options)
-    int petsc_argc = petsc_options.size()+1;
-    const char ** petsc_c_options = new const char*[petsc_argc];
+    int petsc_argc = petsc_options.size() + 1;
+    const char** petsc_c_options = new const char*[petsc_argc];
     petsc_c_options[0] = NULL;
-    for(std::size_t i=0;i<petsc_options.size();++i)
+    for (std::size_t i = 0; i < petsc_options.size(); ++i)
       petsc_c_options[i + 1] = petsc_options[i].localstr();
-    char ** argv = (char**)petsc_c_options;
+    char** argv = (char**)petsc_c_options;
 
-    alien_debug([&] {
-      cout() << "PETSc Initialisation";
-    });
-    PetscInitialize(&petsc_argc,&argv,NULL,"PETSc Initialisation");
+    alien_debug([&] { cout() << "PETSc Initialisation"; });
+    PetscInitialize(&petsc_argc, &argv, NULL, "PETSc Initialisation");
     delete[] petsc_c_options;
 
     // Reduce memory due to log for graphical viewer
     PetscLogActions(PETSC_FALSE);
     PetscLogObjects(PETSC_FALSE);
 #if ((PETSC_VERSION_MAJOR <= 3 && PETSC_VERSION_MINOR < 3) || (PETSC_VERSION_MAJOR < 3))
-    if (m_options->traceInfo())
-    {
-      alien_info([&] {
-        cout() << "PETSc options:";
-      });
+    if (m_options->traceInfo()) {
+      alien_info([&] { cout() << "PETSc options:"; });
       PetscOptionsPrint(stdout);
     }
 #endif /* PETSC_VERSION */
 
     m_global_initialized = true;
-  }
-  else
-  {
-	if (m_options->traceInfo() != m_global_want_trace) {
+  } else {
+    if (m_options->traceInfo() != m_global_want_trace) {
       alien_warning([&] {
-        cout() << "PETSc trace-info option is global and given by the first initialisation; current state is " << ((m_global_want_trace)?"on":"off");
+        cout() << "PETSc trace-info option is global and given by the first "
+                  "initialisation; current state is "
+               << ((m_global_want_trace) ? "on" : "off");
       });
     }
   }
 
   m_verbose = m_options->verbose();
-  //m_stater.stopInitializationMeasure();
+  // m_stater.stopInitializationMeasure();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -282,8 +261,7 @@ PETScInternalLinearSolver::updateParallelMng(
 /*---------------------------------------------------------------------------*/
 
 const Alien::SolverStatus&
-PETScInternalLinearSolver::
-getStatus() const
+PETScInternalLinearSolver::getStatus() const
 {
   return m_status;
 }
@@ -291,8 +269,7 @@ getStatus() const
 /*---------------------------------------------------------------------------*/
 
 std::shared_ptr<ILinearAlgebra>
-PETScInternalLinearSolver::
-algebra() const
+PETScInternalLinearSolver::algebra() const
 {
   return std::shared_ptr<ILinearAlgebra>(new PETScLinearAlgebra());
 }
@@ -300,66 +277,65 @@ algebra() const
 /*---------------------------------------------------------------------------*/
 
 bool
-PETScInternalLinearSolver::
-solve(const PETScMatrix& matrix, const PETScVector& rhs, PETScVector& sol)
+PETScInternalLinearSolver::solve(
+    const PETScMatrix& matrix, const PETScVector& rhs, PETScVector& sol)
 {
   // Find zero second member
-  if (_isNull(rhs)) return _solveNullRHS(sol);
+  if (_isNull(rhs))
+    return _solveNullRHS(sol);
 
-  const Mat & A = matrix.internal()->m_internal;
-  const Vec & b = rhs.internal()->m_internal;
-  Vec & x = sol.internal()->m_internal;
+  const Mat& A = matrix.internal()->m_internal;
+  const Vec& b = rhs.internal()->m_internal;
+  Vec& x = sol.internal()->m_internal;
 
-  if (m_verbose==VerboseTypes::high)
-  {
+  if (m_verbose == VerboseTypes::high) {
     alien_info([&] {
-      cout()<<"|---------------------------------------------|";
-      cout()<<"| Start Linear Solver #"<< m_stater.solveCount();
+      cout() << "|---------------------------------------------|";
+      cout() << "| Start Linear Solver #" << m_stater.solveCount();
     });
   }
 
-  //m_stater.startSolveMeasure();
+  // m_stater.startSolveMeasure();
   KSP ksp;
 
-  checkError("Solver create",KSPCreate(PETSC_COMM_WORLD,&ksp));
-  checkError("Set solver operators", KSPSetOperators(ksp,
-                                                     A,
-                                                     A
+  checkError("Solver create", KSPCreate(PETSC_COMM_WORLD, &ksp));
+  checkError("Set solver operators", KSPSetOperators(ksp, A, A
 #if ((PETSC_VERSION_MAJOR <= 3 && PETSC_VERSION_MINOR <= 3) || (PETSC_VERSION_MAJOR < 3))
-                                                     ,DIFFERENT_NONZERO_PATTERN
+                                         ,
+                                         DIFFERENT_NONZERO_PATTERN
 #endif // PETSC_VERSION
-						     ));
+                                         ));
 
   // On utilise row space pour le moment
   // N'est utilisé que dans FieldSplit
   // Voir avec refactoring PETSc
   m_options->solver()->configure(ksp, matrix.rowSpace(), matrix.distribution());
 
-  // Impact local : à réactiver en tant qu'option spécifique et probablement dans l'interface ILinearSolver
-  // L'implémentation doit être prise en charge par les solveurs (faut il factoriser ce mini bout de code ?)
-  // L'API devrait permettre de demander au solveur sa capacité de traiter les pbs à une constante près, si oui
-  // le prend en charge, sinon demande à l'utilisateur de le prendre en charge
+// Impact local : à réactiver en tant qu'option spécifique et probablement dans
+// l'interface ILinearSolver
+// L'implémentation doit être prise en charge par les solveurs (faut il factoriser ce mini
+// bout de code ?)
+// L'API devrait permettre de demander au solveur sa capacité de traiter les pbs à une
+// constante près, si oui
+// le prend en charge, sinon demande à l'utilisateur de le prendre en charge
 #ifdef PETSC_GETPCTYPE_NEW
   PCType pctype;
 #else
   const PCType pctype;
 #endif
   PC pc;
-  KSPGetPC(ksp,&pc);
+  KSPGetPC(ksp, &pc);
   PCGetType(pc, &pctype);
-  if(m_null_space_constant_opt)
-  {
+  if (m_null_space_constant_opt) {
     std::cout << "NULL SPACE\n";
-    if(!std::string(pctype).compare(PCLU))
-    {
+    if (!std::string(pctype).compare(PCLU)) {
       alien_info([&] {
-        cout() << "[PETScSolver::NullSpaceHasConstants] Matrix factorization accounting for zero pivot\n";
+        cout() << "[PETScSolver::NullSpaceHasConstants] Matrix factorization accounting "
+                  "for zero pivot\n";
       });
       PCFactorSetShiftAmount(pc, PETSC_DECIDE);
       PCFactorReorderForNonzeroDiagonal(pc, 1e-10);
-    }
-    else
-    {
+    } else {
       MatNullSpace nsp;
       MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, NULL, &nsp);
 #ifdef PETSC_HAVE_KSPSETNULLSPACE
@@ -373,57 +349,56 @@ solve(const PETScMatrix& matrix, const PETScVector& rhs, PETScVector& sol)
     }
   }
 
-  if (m_verbose==VerboseTypes::high) {
+  if (m_verbose == VerboseTypes::high) {
 #ifdef PETSC_KSPMONITORTRUERESIDUALNORM_OLD
-    KSPMonitorSet(ksp,KSPMonitorTrueResidualNorm,PETSC_NULL,PETSC_NULL);
+    KSPMonitorSet(ksp, KSPMonitorTrueResidualNorm, PETSC_NULL, PETSC_NULL);
 #else
-    PetscViewerAndFormat *vf;
-    PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_DEFAULT,&vf);
-    KSPMonitorSet(ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPMonitorTrueResidualNorm,
-                  vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy);
+    PetscViewerAndFormat* vf;
+    PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_DEFAULT, &vf);
+    KSPMonitorSet(ksp,
+        (PetscErrorCode(*)(KSP, PetscInt, PetscReal, void*))KSPMonitorTrueResidualNorm,
+        vf, (PetscErrorCode(*)(void**))PetscViewerAndFormatDestroy);
 #endif
   }
 
-  checkError("Solver solve",KSPSolve(ksp,
-                                     b,
-                                     x));
+  checkError("Solver solve", KSPSolve(ksp, b, x));
 
   KSPConvergedReason ksp_reason;
-  KSPGetConvergedReason(ksp,&ksp_reason);
+  KSPGetConvergedReason(ksp, &ksp_reason);
 
-  KSPGetIterationNumber(ksp,&m_status.iteration_count);
-  KSPGetResidualNorm(ksp,&m_status.residual);
+  KSPGetIterationNumber(ksp, &m_status.iteration_count);
+  KSPGetResidualNorm(ksp, &m_status.residual);
 
   m_status.succeeded = (ksp_reason >= 0);
 
-  if (m_verbose==VerboseTypes::high) {
+  if (m_verbose == VerboseTypes::high) {
     alien_info([&] {
       cout() << "| PETScSolver final state : " << convergedReasonString(ksp_reason);
     });
   } else if (not m_status.succeeded) {
     alien_info([&] {
-      cout() << "PETScSolver final state : " << convergedReasonString(ksp_reason) << " after " <<m_status.iteration_count<<" iteration(s)" << " with residual " << m_status.residual;
+      cout() << "PETScSolver final state : " << convergedReasonString(ksp_reason)
+             << " after " << m_status.iteration_count << " iteration(s)"
+             << " with residual " << m_status.residual;
     });
   }
 
 #if ((PETSC_VERSION_MAJOR <= 3 && PETSC_VERSION_MINOR < 3) || (PETSC_VERSION_MAJOR < 3))
-  checkError("Solver destroy",KSPDestroy(ksp));
+  checkError("Solver destroy", KSPDestroy(ksp));
 #else /* PETSC_VERSION */
-  checkError("Solver destroy",KSPDestroy(&ksp));
+  checkError("Solver destroy", KSPDestroy(&ksp));
 #endif /* PETSC_VERSION */
 
-  //m_stater.stopSolveMeasure(m_status);
+  // m_stater.stopSolveMeasure(m_status);
 
-  if (m_verbose==VerboseTypes::high)
-  {
+  if (m_verbose == VerboseTypes::high) {
     alien_info([&] {
-      cout()<<"| End Linear Solver";
-      cout()<<"|---------------------------------------------|";
+      cout() << "| End Linear Solver";
+      cout() << "|---------------------------------------------|";
     });
   }
 
-  if (m_verbose!=VerboseTypes::low)
-  {
+  if (m_verbose != VerboseTypes::low) {
     internalPrintInfo();
   }
   return m_status.succeeded;
@@ -432,11 +407,9 @@ solve(const PETScMatrix& matrix, const PETScVector& rhs, PETScVector& sol)
 /*---------------------------------------------------------------------------*/
 
 void
-PETScInternalLinearSolver::
-end()
+PETScInternalLinearSolver::end()
 {
-  if (m_verbose!=VerboseTypes::low)
-  {
+  if (m_verbose != VerboseTypes::low) {
     internalPrintInfo();
   }
 }
@@ -446,13 +419,13 @@ end()
 void
 PETScInternalLinearSolver::checkError(const Arccore::String& msg, int ierr)
 {
-  if (ierr != 0)
-  {
-    const char * text;
-    char * specific;
-    PetscErrorMessage(ierr,&text,&specific);
+  if (ierr != 0) {
+    const char* text;
+    char* specific;
+    PetscErrorMessage(ierr, &text, &specific);
     alien_fatal([&] {
-      cout() << msg << " failed : " << text << " / " << specific << "[code=" << ierr << "]";
+      cout() << msg << " failed : " << text << " / " << specific << "[code=" << ierr
+             << "]";
     });
   }
 }
@@ -498,9 +471,9 @@ PETScInternalLinearSolver::convergedReasonString(const Arccore::Integer reason) 
   case KSP_DIVERGED_INDEFINITE_MAT:
     return "diverged indefinite matrix";
   case KSP_CONVERGED_ITERATING:
-    return "converged ITERATING";    
+    return "converged ITERATING";
   default: {
-    //String msg = String("Undefined PETSc reason [") + reason + String("]");
+    // String msg = String("Undefined PETSc reason [") + reason + String("]");
     std::stringstream msg("Undefined PETSc reason [");
     msg << reason << "]";
     throw Arccore::NotSupportedException(A_FUNCINFO, msg.str());
@@ -511,10 +484,9 @@ PETScInternalLinearSolver::convergedReasonString(const Arccore::Integer reason) 
 /*---------------------------------------------------------------------------*/
 
 void
-PETScInternalLinearSolver::
-internalPrintInfo() const
+PETScInternalLinearSolver::internalPrintInfo() const
 {
-  if(traceMng())
+  if (traceMng())
     m_stater.print(const_cast<Arccore::ITraceMng*>(traceMng()), m_status,
         "Linear Solver : PETScLinearSolver");
 }
@@ -522,13 +494,13 @@ internalPrintInfo() const
 /*---------------------------------------------------------------------------*/
 
 bool
-PETScInternalLinearSolver::
-_isNull(const PETScVector& b)
+PETScInternalLinearSolver::_isNull(const PETScVector& b)
 {
   bool is_zero_second_member = false;
   PETScInternalLinearAlgebra my_algebra(m_parallel_mng);
 #ifdef ALIEN_USE_ARCANE
-  if (Arcane::math::isNearlyZero(my_algebra.norm0(b))) is_zero_second_member = true;
+  if (Arcane::math::isNearlyZero(my_algebra.norm0(b)))
+    is_zero_second_member = true;
 #else
   if (my_algebra.norm0(b) < std::numeric_limits<Arccore::Real>::epsilon())
     is_zero_second_member = true;
@@ -539,38 +511,32 @@ _isNull(const PETScVector& b)
 /*---------------------------------------------------------------------------*/
 
 bool
-PETScInternalLinearSolver::
-_solveNullRHS(PETScVector& x)
+PETScInternalLinearSolver::_solveNullRHS(PETScVector& x)
 {
-  if (m_verbose==VerboseTypes::high)
-      {
-	alien_info([&] {
-	    cout()<<"|---------------------------------------------|";
-	    cout()<<"| Start Linear Solver #"<< m_stater.solveCount();
-	    cout()<<"| -- Zero second member -- ";
-	  });
-      }
+  if (m_verbose == VerboseTypes::high) {
+    alien_info([&] {
+      cout() << "|---------------------------------------------|";
+      cout() << "| Start Linear Solver #" << m_stater.solveCount();
+      cout() << "| -- Zero second member -- ";
+    });
+  }
   // x = 0;
   PETScInternalLinearAlgebra my_algebra(m_parallel_mng);
   my_algebra.scal(0, x);
 
-  //m_stater.startSolveMeasure();
+  // m_stater.startSolveMeasure();
   m_status.succeeded = true;
-  if (m_verbose==VerboseTypes::high)
-  {
-    alien_info([&] {
-	cout()<< "| PETScSolver final state : converged " ;
-      });
+  if (m_verbose == VerboseTypes::high) {
+    alien_info([&] { cout() << "| PETScSolver final state : converged "; });
   }
-  //m_stater.stopSolveMeasure(m_status);
+  // m_stater.stopSolveMeasure(m_status);
 
-  if (m_verbose==VerboseTypes::high)
-    {
-      alien_info([&] {
-	cout()<<"| End Linear Solver";
-	cout()<<"|---------------------------------------------|";
-	});
-    }
+  if (m_verbose == VerboseTypes::high) {
+    alien_info([&] {
+      cout() << "| End Linear Solver";
+      cout() << "|---------------------------------------------|";
+    });
+  }
 
   return m_status.succeeded;
 }
@@ -591,5 +557,3 @@ PETScInternalLinearSolverFactory(Arccore::MessagePassing::IMessagePassingMng* p_
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-

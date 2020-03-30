@@ -27,8 +27,7 @@ HypreVector::HypreVector(const MultiVectorImpl* multi_impl)
 
 /*---------------------------------------------------------------------------*/
 
-HypreVector::
-~HypreVector()
+HypreVector::~HypreVector()
 {
   delete m_internal;
 }
@@ -39,9 +38,9 @@ void
 HypreVector::init(const VectorDistribution& dist, const bool need_allocate)
 {
   const Block* block = this->block();
-  if(this->block())
-      m_block_size *= block->size();
-  else if(this->vblock())
+  if (this->block())
+    m_block_size *= block->size();
+  else if (this->vblock())
     throw Arccore::FatalErrorException(A_FUNCINFO, "Not implemented yet");
   else
     m_block_size = 1;
@@ -57,17 +56,18 @@ HypreVector::allocate()
 {
   delete m_internal;
   const VectorDistribution& dist = this->distribution();
-  auto* pm = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng *>(dist.parallelMng());
-  if(*static_cast<const MPI_Comm*>(pm->getMPIComm()) != MPI_COMM_NULL)
-    m_internal = new VectorInternal(*static_cast<const MPI_Comm*>(pm->getMPIComm())) ;
+  auto* pm = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(
+      dist.parallelMng());
+  if (*static_cast<const MPI_Comm*>(pm->getMPIComm()) != MPI_COMM_NULL)
+    m_internal = new VectorInternal(*static_cast<const MPI_Comm*>(pm->getMPIComm()));
   else
-    m_internal = new VectorInternal(MPI_COMM_WORLD) ;
-  int ilower = dist.offset()*m_block_size ;
-  int iupper = ilower+dist.localSize()*m_block_size -1 ;
-  m_internal->init(ilower,iupper);
-  m_rows.resize(dist.localSize()*m_block_size) ;
-  for(int i=0;i<dist.localSize()*m_block_size;++i)
-    m_rows[i] = ilower+i ;
+    m_internal = new VectorInternal(MPI_COMM_WORLD);
+  int ilower = dist.offset() * m_block_size;
+  int iupper = ilower + dist.localSize() * m_block_size - 1;
+  m_internal->init(ilower, iupper);
+  m_rows.resize(dist.localSize() * m_block_size);
+  for (int i = 0; i < dist.localSize() * m_block_size; ++i)
+    m_rows[i] = ilower + i;
 }
 
 /*---------------------------------------------------------------------------*/

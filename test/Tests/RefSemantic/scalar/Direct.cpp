@@ -2,10 +2,11 @@
 #include <ALIEN/Alien-RefSemantic.h>
 
 namespace Environment {
-  extern Alien::ITraceMng* traceMng();
+extern Alien::ITraceMng* traceMng();
 }
 
-void buildMatrix(Alien::Matrix& A,std::string const& filename, std::string const& format)
+void
+buildMatrix(Alien::Matrix& A, std::string const& filename, std::string const& format)
 {
   auto* tm = Environment::traceMng();
 
@@ -21,10 +22,9 @@ void buildMatrix(Alien::Matrix& A,std::string const& filename, std::string const
     builder.reserve(3); // Réservation de 3 coefficients par ligne
     builder.allocate(); // Allocation de l'espace mémoire réservé
 
-    for(int irow = offset; irow < offset + lsize; ++irow)
-    {
-      builder(irow,irow) = 2.;
-      if(irow - 1 >= 0)
+    for (int irow = offset; irow < offset + lsize; ++irow) {
+      builder(irow, irow) = 2.;
+      if (irow - 1 >= 0)
         builder(irow, irow - 1) = -1.;
       if (irow + 1 < gsize)
         builder(irow, irow + 1) = -1.;

@@ -23,7 +23,8 @@ AdditiveFieldSplitTypeService::AdditiveFieldSplitTypeService(
     const Arcane::ServiceBuildInfo& sbi)
 : ArcaneAdditiveFieldSplitTypeObject(sbi)
 , PETScConfig(sbi.subDomain()->parallelMng()->isParallel())
-{}
+{
+}
 #endif
 
 AdditiveFieldSplitTypeService::AdditiveFieldSplitTypeService(
@@ -31,7 +32,8 @@ AdditiveFieldSplitTypeService::AdditiveFieldSplitTypeService(
     std::shared_ptr<IOptionsAdditiveFieldSplitType> options)
 : ArcaneAdditiveFieldSplitTypeObject(options)
 , PETScConfig(parallel_mng->commSize() > 1)
-{}
+{
+}
 
 //! Configure FieldSplit type
 Arccore::Integer
@@ -45,7 +47,7 @@ AdditiveFieldSplitTypeService::configure(PC& pc, const Arccore::Integer nbField)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_ADDITIVEFIELDSPLITTYPE(Additive,AdditiveFieldSplitTypeService);
+ARCANE_REGISTER_SERVICE_ADDITIVEFIELDSPLITTYPE(Additive, AdditiveFieldSplitTypeService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -54,7 +56,5 @@ ARCANE_REGISTER_SERVICE_ADDITIVEFIELDSPLITTYPE(Additive,AdditiveFieldSplitTypeSe
 
 REGISTER_STRONG_OPTIONS_ADDITIVEFIELDSPLITTYPE();
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

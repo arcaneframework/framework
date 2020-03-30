@@ -15,7 +15,6 @@
 namespace Alien::PETScInternal {
 
 struct VectorInternal;
-
 }
 
 /*---------------------------------------------------------------------------*/
@@ -30,9 +29,9 @@ class PETScVector : public IVectorImpl
   typedef PETScInternal::VectorInternal VectorInternal;
 
  public:
-  PETScVector(const MultiVectorImpl * multi_impl);
+  PETScVector(const MultiVectorImpl* multi_impl);
 
-    virtual ~PETScVector() ;
+  virtual ~PETScVector();
 
  public:
   void init(const VectorDistribution& dist, const bool need_allocate,

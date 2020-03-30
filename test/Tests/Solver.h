@@ -67,158 +67,150 @@
 
 namespace Environment {
 
-extern std::shared_ptr<Alien::ILinearSolver> createSolver(boost::program_options::variables_map& vm)
+extern std::shared_ptr<Alien::ILinearSolver>
+createSolver(boost::program_options::variables_map& vm)
 {
   auto* pm = Environment::parallelMng();
   auto* tm = Environment::traceMng();
-  
+
   std::string solver_package = vm["solver-package"].as<std::string>();
-  
+
   tm->info() << "Try to create solver-package : " << solver_package;
   double tol = vm["tol"].as<double>();
   int max_iter = vm["max-iter"].as<int>();
-  if(solver_package.compare("petsc") == 0)
-  {
+  if (solver_package.compare("petsc") == 0) {
 #ifdef ALIEN_USE_PETSC
     std::shared_ptr<Alien::IPETScPC> prec = nullptr;
     // preconditionner service
     std::string precond_type_s = vm["precond"].as<std::string>();
-    if(precond_type_s.compare("bjacobi")==0){
+    if (precond_type_s.compare("bjacobi") == 0) {
       auto options_prec = std::make_shared<StrongOptionsPETScPrecConfigJacobi>();
       prec = std::make_shared<Alien::PETScPrecConfigJacobiService>(pm, options_prec);
-    }
-    else if(precond_type_s.compare("diag")==0){
+    } else if (precond_type_s.compare("diag") == 0) {
       auto options_prec = std::make_shared<StrongOptionsPETScPrecConfigDiagonal>();
       prec = std::make_shared<Alien::PETScPrecConfigDiagonalService>(pm, options_prec);
+    } else if (precond_type_s.compare("none") == 0) {
+      auto options_prec =
+          std::make_shared<StrongOptionsPETScPrecConfigNoPreconditioner>();
+      prec = std::make_shared<Alien::PETScPrecConfigNoPreconditionerService>(
+          pm, options_prec);
     }
-    else if(precond_type_s.compare("none")==0){
-      auto options_prec = std::make_shared<StrongOptionsPETScPrecConfigNoPreconditioner>();
-      prec = std::make_shared<Alien::PETScPrecConfigNoPreconditionerService>(pm, options_prec);
-    } 
     std::string solver = vm["solver"].as<std::string>();
-    if(solver.compare("bicgs")==0)
-    {
+    if (solver.compare("bicgs") == 0) {
       // solver service bicgs
       using namespace PETScSolverConfigBiCGStabOptionsNames;
       auto options_solver = std::make_shared<StrongOptionsPETScSolverConfigBiCGStab>(
-										     _numIterationsMax = max_iter,
-										     _stopCriteriaValue = tol,
-										     _preconditioner = prec
-										     );
+          _numIterationsMax = max_iter, _stopCriteriaValue = tol, _preconditioner = prec);
       // root petsc option
       auto root_options = std::make_shared<StrongOptionsPETScLinearSolver>(
-									   PETScLinearSolverOptionsNames::_solver = std::make_shared<Alien::PETScSolverConfigBiCGStabService>(pm, options_solver)
-									   );
+          PETScLinearSolverOptionsNames::_solver =
+              std::make_shared<Alien::PETScSolverConfigBiCGStabService>(
+                  pm, options_solver));
       // root petsc service
       return std::make_shared<Alien::PETScLinearSolverService>(pm, root_options);
     }
-    if(solver.compare("lu")==0)
-    {
+    if (solver.compare("lu") == 0) {
       // solver service lu
       using namespace PETScSolverConfigLUOptionsNames;
       auto options_solver = std::make_shared<StrongOptionsPETScSolverConfigLU>();
       // root petsc option
       auto root_options = std::make_shared<StrongOptionsPETScLinearSolver>(
-									   PETScLinearSolverOptionsNames::_solver = std::make_shared<Alien::PETScSolverConfigLUService>(pm, options_solver)
-									   );
+          PETScLinearSolverOptionsNames::_solver =
+              std::make_shared<Alien::PETScSolverConfigLUService>(pm, options_solver));
       // root petsc service
       return std::make_shared<Alien::PETScLinearSolverService>(pm, root_options);
-    }    
+    }
     tm->fatal() << "*** solver " << solver << " not available in test!";
 #else
     tm->fatal() << "*** package " << solver_package << " not available!";
 #endif
   }
-	
-  if(solver_package.compare("hypre") == 0)
-  {
+
+  if (solver_package.compare("hypre") == 0) {
 #ifdef ALIEN_USE_HYPRE
     std::string solver_type_s = vm["solver"].as<std::string>();
-    HypreOptionTypes::eSolver solver_type = OptionsHypreSolverUtils::stringToSolverEnum(solver_type_s);
+    HypreOptionTypes::eSolver solver_type =
+        OptionsHypreSolverUtils::stringToSolverEnum(solver_type_s);
     std::string precond_type_s = vm["precond"].as<std::string>();
-    HypreOptionTypes::ePreconditioner precond_type = OptionsHypreSolverUtils::stringToPreconditionerEnum(precond_type_s);
+    HypreOptionTypes::ePreconditioner precond_type =
+        OptionsHypreSolverUtils::stringToPreconditionerEnum(precond_type_s);
     // options
     using namespace HypreSolverOptionsNames;
     auto options = std::make_shared<StrongOptionsHypreSolver>(
-							      _numIterationsMax = max_iter,
-							      _stopCriteriaValue = tol,
-							      _solver = solver_type,
-							      _preconditioner = precond_type
-							      );
+        _numIterationsMax = max_iter, _stopCriteriaValue = tol, _solver = solver_type,
+        _preconditioner = precond_type);
     // service
     return std::make_shared<Alien::HypreLinearSolver>(pm, options);
 #else
     tm->fatal() << "*** package " << solver_package << " not available!";
 #endif
   }
-	
-  if(solver_package.compare("ifpsolver") == 0)
-  {
+
+  if (solver_package.compare("ifpsolver") == 0) {
 #ifdef ALIEN_USE_IFPSOLVER
     std::string precond_type_s = vm["precond"].as<std::string>();
-    IFPSolverProperty::ePrecondType precond_type = OptionsIFPLinearSolverUtils::stringToPrecondOptionEnum(precond_type_s);
+    IFPSolverProperty::ePrecondType precond_type =
+        OptionsIFPLinearSolverUtils::stringToPrecondOptionEnum(precond_type_s);
     // options
     auto options = std::make_shared<StrongOptionsIFPLinearSolver>(
-								  IFPLinearSolverOptionsNames::_output = vm["output-level"].as<int>(),
-								  IFPLinearSolverOptionsNames::_numIterationsMax = max_iter,
-								  IFPLinearSolverOptionsNames::_stopCriteriaValue = tol,
-								  IFPLinearSolverOptionsNames::_precondOption = precond_type
-								  );
+        IFPLinearSolverOptionsNames::_output = vm["output-level"].as<int>(),
+        IFPLinearSolverOptionsNames::_numIterationsMax = max_iter,
+        IFPLinearSolverOptionsNames::_stopCriteriaValue = tol,
+        IFPLinearSolverOptionsNames::_precondOption = precond_type);
     // service
     return std::make_shared<Alien::IFPLinearSolverService>(pm, options);
 #else
     tm->fatal() << "*** package " << solver_package << " not available!";
 #endif
   }
-  if(solver_package.compare("mcgsolver") ==0 )
-  {
+  if (solver_package.compare("mcgsolver") == 0) {
 #ifdef ALIEN_USE_MCGSOLVER
     std::string precond_type_s = vm["precond"].as<std::string>();
-    MCGOptionTypes::ePreconditioner precond_type = OptionsMCGSolverUtils::stringToPreconditionerEnum(precond_type_s);
+    MCGOptionTypes::ePreconditioner precond_type =
+        OptionsMCGSolverUtils::stringToPreconditionerEnum(precond_type_s);
     std::string kernel_type_s = vm["kernel"].as<std::string>();
-    MCGOptionTypes::eKernelType kernel_type = OptionsMCGSolverUtils::stringToKernelEnum(kernel_type_s);
+    MCGOptionTypes::eKernelType kernel_type =
+        OptionsMCGSolverUtils::stringToKernelEnum(kernel_type_s);
     // options
     auto options = std::make_shared<StrongOptionsMCGSolver>(
-							    MCGSolverOptionsNames::_output = vm["output-level"].as<int>(),
-                  MCGSolverOptionsNames::_maxIterationNum = max_iter,
-                  MCGSolverOptionsNames::_stopCriteriaValue = tol,
-                  MCGSolverOptionsNames::_kernel = kernel_type,
-                  MCGSolverOptionsNames::_preconditioner = precond_type
-							    );
+        MCGSolverOptionsNames::_output = vm["output-level"].as<int>(),
+        MCGSolverOptionsNames::_maxIterationNum = max_iter,
+        MCGSolverOptionsNames::_stopCriteriaValue = tol,
+        MCGSolverOptionsNames::_kernel = kernel_type,
+        MCGSolverOptionsNames::_preconditioner = precond_type);
     // service
     return std::make_shared<Alien::MCGLinearSolver>(pm, options);
 #else
     tm->fatal() << "*** package " << solver_package << " not available!";
 #endif
   }
-  
-  if(solver_package.compare("mtlsolver") ==0 )
-  {
+
+  if (solver_package.compare("mtlsolver") == 0) {
 #ifdef ALIEN_USE_MTL4
     std::string solver_type_s = vm["solver"].as<std::string>();
-    MTLOptionTypes::eSolver solver_type = OptionsMTLLinearSolverUtils::stringToSolverEnum(solver_type_s);
+    MTLOptionTypes::eSolver solver_type =
+        OptionsMTLLinearSolverUtils::stringToSolverEnum(solver_type_s);
     std::string precond_type_s = vm["precond"].as<std::string>();
-    MTLOptionTypes::ePreconditioner precond_type = OptionsMTLLinearSolverUtils::stringToPreconditionerEnum(precond_type_s);
+    MTLOptionTypes::ePreconditioner precond_type =
+        OptionsMTLLinearSolverUtils::stringToPreconditionerEnum(precond_type_s);
     // options
     auto options = std::make_shared<StrongOptionsMTLLinearSolver>(
-								  MTLLinearSolverOptionsNames::_outputLevel = vm["output-level"].as<int>(),
-								  MTLLinearSolverOptionsNames::_maxIterationNum = max_iter,
-								  MTLLinearSolverOptionsNames::_stopCriteriaValue = tol,
-								  MTLLinearSolverOptionsNames::_preconditioner = precond_type,
-								  MTLLinearSolverOptionsNames::_solver = solver_type
-								  );
+        MTLLinearSolverOptionsNames::_outputLevel = vm["output-level"].as<int>(),
+        MTLLinearSolverOptionsNames::_maxIterationNum = max_iter,
+        MTLLinearSolverOptionsNames::_stopCriteriaValue = tol,
+        MTLLinearSolverOptionsNames::_preconditioner = precond_type,
+        MTLLinearSolverOptionsNames::_solver = solver_type);
     // service
     return std::make_shared<Alien::MTLLinearSolverService>(pm, options);
 #else
     tm->fatal() << "*** package " << solver_package << " not available!";
 #endif
   }
-	
+
   tm->fatal() << "*** package " << solver_package << " not available!";
-	
+
   return std::shared_ptr<Alien::ILinearSolver>();
-  }
-  
+}
 }
 
 #endif

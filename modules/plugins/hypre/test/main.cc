@@ -13,20 +13,21 @@
 using namespace Arcane;
 
 int
-main(int argc, char *argv[]) {
-    int r = 0;
+main(int argc, char* argv[])
+{
+  int r = 0;
 #ifdef USEALIEN_USE_MPI
-    MPI_Init(&argc, &argv);
+  MPI_Init(&argc, &argv);
 #endif // USEALIEN_USE_MPI
-    ArcaneMain::arcaneInitialize();
-    {
-        ApplicationInfo app_info(&argc, &argv, "AlienTest", VersionInfo(1, 0, 0));
-        r = ArcaneMain::arcaneMain(app_info);
-    }
-    ArcaneMain::arcaneFinalize();
+  ArcaneMain::arcaneInitialize();
+  {
+    ApplicationInfo app_info(&argc, &argv, "AlienTest", VersionInfo(1, 0, 0));
+    r = ArcaneMain::arcaneMain(app_info);
+  }
+  ArcaneMain::arcaneFinalize();
 #ifdef USEALIEN_USE_MPI
-    MPI_Finalize();
+  MPI_Finalize();
 #endif // USEALIEN_USE_MPI
 
-    return r;
+  return r;
 }

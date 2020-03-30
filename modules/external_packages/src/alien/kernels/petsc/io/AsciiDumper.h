@@ -33,35 +33,40 @@ class PETScVector;
 
 class ALIEN_EXTERNAL_PACKAGES_EXPORT AsciiDumper
 {
-public:
+ public:
+  enum Style
+  {
+    eDefaultStyle,
+    eMatlabStyle,
+    eInfoStyle,
+    eSequentialFixedBlockSizeStype,
+    eSequentialVariableBlockSizeStype
+  };
 
-  enum Style { eDefaultStyle, eMatlabStyle, eInfoStyle, eSequentialFixedBlockSizeStype, eSequentialVariableBlockSizeStype };
+ public:
+  AsciiDumper(const Style style = eDefaultStyle, Arccore::ITraceMng* trace = NULL);
 
-public:
- AsciiDumper(const Style style = eDefaultStyle, Arccore::ITraceMng* trace = NULL);
+  virtual ~AsciiDumper() {}
 
- virtual ~AsciiDumper() {}
-  
-public:
- //! Dump a matrix in a file
- void dump(const Arccore::String filename, const IMatrix& a);
+ public:
+  //! Dump a matrix in a file
+  void dump(const Arccore::String filename, const IMatrix& a);
 
- //! Dump a vector in a file
- void dump(const Arccore::String filename, const IVector& a);
+  //! Dump a vector in a file
+  void dump(const Arccore::String filename, const IVector& a);
 
- //! Dump a matrix in std output
+  //! Dump a matrix in std output
   void dump(const IMatrix& a);
 
   //! Dump a vector in std output
   void dump(const IVector& v);
 
-private:
-
+ private:
   void _blockDump(const IMatrix& a, std::ostream& str);
   void _vblockDump(const IMatrix& a, std::ostream& str);
   void _blockDump(const IVector& v, std::ostream& str);
 
-private:
+ private:
   Style m_style;
   class Internal;
   Arccore::ITraceMng* m_trace;

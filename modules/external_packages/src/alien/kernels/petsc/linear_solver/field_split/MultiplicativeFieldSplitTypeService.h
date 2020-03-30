@@ -24,12 +24,12 @@ namespace Alien {
 /*---------------------------------------------------------------------------*/
 
 class ALIEN_EXTERNAL_PACKAGES_EXPORT MultiplicativeFieldSplitTypeService
-: public ArcaneMultiplicativeFieldSplitTypeObject,
-  public PETScConfig
+    : public ArcaneMultiplicativeFieldSplitTypeObject,
+      public PETScConfig
 {
  public:
 #ifdef ALIEN_USE_ARCANE
-  MultiplicativeFieldSplitTypeService(const Arcane::ServiceBuildInfo & sbi) ;
+  MultiplicativeFieldSplitTypeService(const Arcane::ServiceBuildInfo& sbi);
 #endif
 
   MultiplicativeFieldSplitTypeService(
@@ -37,10 +37,10 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT MultiplicativeFieldSplitTypeService
       std::shared_ptr<IOptionsMultiplicativeFieldSplitType> options);
 
   ~MultiplicativeFieldSplitTypeService() {}
-  
-public:
- //! Configure FieldSplit type
- Arccore::Integer configure(PC& pc, const Arccore::Integer nbField);
+
+ public:
+  //! Configure FieldSplit type
+  Arccore::Integer configure(PC& pc, const Arccore::Integer nbField);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -50,4 +50,4 @@ public:
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#endif //MULTIPLICATIVEFIELDSPLITSERVICE_H
+#endif // MULTIPLICATIVEFIELDSPLITSERVICE_H

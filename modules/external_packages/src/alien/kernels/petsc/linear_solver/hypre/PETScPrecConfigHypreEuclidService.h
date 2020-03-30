@@ -22,11 +22,11 @@
 namespace Alien {
 
 class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScPrecConfigHypreEuclidService
-: public ArcanePETScPrecConfigHypreEuclidObject,
-  public PETScConfig
+    : public ArcanePETScPrecConfigHypreEuclidObject,
+      public PETScConfig
 {
  public:
-  /** Constructeur de la classe */
+/** Constructeur de la classe */
 #ifdef ALIEN_USE_ARCANE
   PETScPrecConfigHypreEuclidService(const Arcane::ServiceBuildInfo& sbi);
 #endif
@@ -38,9 +38,7 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScPrecConfigHypreEuclidService
   virtual ~PETScPrecConfigHypreEuclidService() {}
 
   //! Initialisation
-  void configure(PC & pc,
-                 const ISpace& space,
-                 const MatrixDistribution& distribution);
+  void configure(PC& pc, const ISpace& space, const MatrixDistribution& distribution);
 
   //! Check need of KSPSetUp before calling this PC configure
   virtual bool needPrematureKSPSetUp() const { return false; }
@@ -53,5 +51,4 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScPrecConfigHypreEuclidService
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#endif //PETSCPRECCONFIGHYPREEUCLIDSERVICE_H
-
+#endif // PETSCPRECCONFIGHYPREEUCLIDSERVICE_H

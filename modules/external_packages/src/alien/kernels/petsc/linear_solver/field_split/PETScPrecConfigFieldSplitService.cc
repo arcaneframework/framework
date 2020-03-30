@@ -40,20 +40,16 @@ PETScPrecConfigFieldSplitService::PETScPrecConfigFieldSplitService(
 : ArcanePETScPrecConfigFieldSplitObject(options)
 , PETScConfig(parallel_mng->commSize() > 1)
 {
-	m_default_block_tag="default";
+  m_default_block_tag = "default";
 }
 
 //! Initialisation
 void
-PETScPrecConfigFieldSplitService::
-configure(PC & pc,
-		const ISpace& space,
-		const MatrixDistribution& distribution)
+PETScPrecConfigFieldSplitService::configure(
+    PC& pc, const ISpace& space, const MatrixDistribution& distribution)
 {
-	alien_debug([&] {
-		cout() << "configure PETSc FlieldSplit preconditioner";
-	});
-	/*const Integer blocks_size = options()->block().size();
+  alien_debug([&] { cout() << "configure PETSc FlieldSplit preconditioner"; });
+  /*const Integer blocks_size = options()->block().size();
     traceMng()->error() << "blocks_size 1 "<< blocks_size;
     IFieldSplitType* field_split_solver2 = options()->type();
     if(field_split_solver2 == NULL)
@@ -112,13 +108,13 @@ configure(PC & pc,
       // pas bon verifier manque indirection
       IPETScKSP* sub_solver = options()->block()[i]->solver();
       sub_solver->configure(subksp[i], space, distribution);
-		}
-	}
+    }
+  }
 }
 
 Arccore::Integer
-PETScPrecConfigFieldSplitService::
-initializeFields(const ISpace& space, const MatrixDistribution& distribution)
+PETScPrecConfigFieldSplitService::initializeFields(
+    const ISpace& space, const MatrixDistribution& distribution)
 {
   const Arccore::String block_tag =
       options()
@@ -145,10 +141,10 @@ initializeFields(const ISpace& space, const MatrixDistribution& distribution)
   }
 
   // Partiton des indices
-	Partition partition(space, distribution);
-	partition.create(m_field_tags);
+  Partition partition(space, distribution);
+  partition.create(m_field_tags);
 
-	bool has_untagged_part = partition.hasUntaggedPart();
+  bool has_untagged_part = partition.hasUntaggedPart();
   //
   bool has_default_block = (options()->defaultBlock().size() > 0);
 
@@ -172,8 +168,7 @@ initializeFields(const ISpace& space, const MatrixDistribution& distribution)
   // Incrémentation de nerror si partition vide
   // Utilisation de current_field_indices comme buffer
   auto createIS = [&](Arccore::String tag,
-                      const Arccore::UniqueArray<Arccore::Integer>& indices,
-                      IS& petsc_is) {
+      const Arccore::UniqueArray<Arccore::Integer>& indices, IS& petsc_is) {
     if (verbosity)
       alien_info(
           [&] { cout() << "Tag '" << tag << "' has " << indices.size() << " indices"; });
@@ -189,7 +184,7 @@ initializeFields(const ISpace& space, const MatrixDistribution& distribution)
       std::sort(current_field_indices.begin(),
           current_field_indices.end()); // PETSc requires index ordering
 
-      // Creation de l'index set pour PETSc
+// Creation de l'index set pour PETSc
 #if ((PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 3) || (PETSC_VERSION_MAJOR < 3))
       checkError("Create IndexSet",
           ISCreateGeneral(PETSC_COMM_WORLD, current_field_indices.size(),
@@ -227,8 +222,9 @@ initializeFields(const ISpace& space, const MatrixDistribution& distribution)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//using namespace Arcane;
-ARCANE_REGISTER_SERVICE_PETSCPRECCONFIGFIELDSPLIT(FieldSplit,PETScPrecConfigFieldSplitService);
+// using namespace Arcane;
+ARCANE_REGISTER_SERVICE_PETSCPRECCONFIGFIELDSPLIT(
+    FieldSplit, PETScPrecConfigFieldSplitService);
 
 } // namespace Alien
 

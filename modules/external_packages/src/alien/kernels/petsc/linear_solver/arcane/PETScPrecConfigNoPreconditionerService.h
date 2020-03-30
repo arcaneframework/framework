@@ -11,11 +11,10 @@
 #include <alien/kernels/petsc/linear_solver/PETScConfig.h>
 #include <ALIEN/axl/PETScPrecConfigNoPreconditioner_axl.h>
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//using namespace Arcane;
+// using namespace Arcane;
 
 namespace Alien {
 
@@ -23,13 +22,13 @@ namespace Alien {
 /*---------------------------------------------------------------------------*/
 
 class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScPrecConfigNoPreconditionerService
-: public ArcanePETScPrecConfigNoPreconditionerObject,
-  public PETScConfig
+    : public ArcanePETScPrecConfigNoPreconditionerObject,
+      public PETScConfig
 {
  public:
-  /** Constructeur de la classe */
+/** Constructeur de la classe */
 #ifdef ALIEN_USE_ARCANE
-  PETScPrecConfigNoPreconditionerService(const Arcane::ServiceBuildInfo & sbi);
+  PETScPrecConfigNoPreconditionerService(const Arcane::ServiceBuildInfo& sbi);
 #endif
   PETScPrecConfigNoPreconditionerService(
       Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
@@ -38,15 +37,11 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScPrecConfigNoPreconditionerService
   /** Destructeur de la classe */
   virtual ~PETScPrecConfigNoPreconditionerService() {}
 
-public:
-
+ public:
   //! Initialisation
-  void configure(PC & pc,
-                 const ISpace& space,
-                 const MatrixDistribution& distribution);
+  void configure(PC& pc, const ISpace& space, const MatrixDistribution& distribution);
   //! Check need of KSPSetUp before calling this PC configure
   virtual bool needPrematureKSPSetUp() const;
-
 };
 
 /*---------------------------------------------------------------------------*/
@@ -54,6 +49,6 @@ public:
 
 } // namespace Alien
 
-#endif //PETSCPRECCONFIGNOPRECONDITIONNERSERVICE_H
+#endif // PETSCPRECCONFIGNOPRECONDITIONNERSERVICE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -18,10 +18,10 @@ class PETScConfig : protected ObjectWithTrace
  public:
   PETScConfig(bool is_parallel)
   : m_is_parallel(is_parallel)
-  {}
-
-  bool isParallel() const { return m_is_parallel ;
+  {
   }
+
+  bool isParallel() const { return m_is_parallel; }
 
   //! Explains error
   void checkError(const Arccore::String& msg, int ierr) const
@@ -39,7 +39,7 @@ class PETScConfig : protected ObjectWithTrace
 
   void init(){};
 
-  bool m_is_parallel ;
+  bool m_is_parallel;
 };
 
 } // namespace Alien

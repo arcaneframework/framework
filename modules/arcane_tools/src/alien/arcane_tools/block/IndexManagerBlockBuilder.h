@@ -29,36 +29,36 @@ namespace ArcaneTools {
   /*---------------------------------------------------------------------------*/
 
   class ALIEN_ARCANE_TOOLS_EXPORT IndexManagerBlockBuilder : public IBlockBuilder
-{
-public:
- typedef VMap<Arccore::Integer, Arccore::Integer> ValuePerBlock;
+  {
+   public:
+    typedef VMap<Arccore::Integer, Arccore::Integer> ValuePerBlock;
 
-public:
-  IndexManagerBlockBuilder(IIndexManager& index_mng,
-                           const VectorDistribution& distribution);
-  
-  IndexManagerBlockBuilder(IIndexManager& index_mng,
-                           const MatrixDistribution& distribution);
+   public:
+    IndexManagerBlockBuilder(
+        IIndexManager& index_mng, const VectorDistribution& distribution);
 
-  ~IndexManagerBlockBuilder() {}
+    IndexManagerBlockBuilder(
+        IIndexManager& index_mng, const MatrixDistribution& distribution);
 
-  void fill(Arccore::Integer value) { m_sizes.fill(value); }
+    ~IndexManagerBlockBuilder() {}
 
-  ValuePerBlock&& sizes() const { return std::move(ghost_sizes); }
+    void fill(Arccore::Integer value) { m_sizes.fill(value); }
 
-  void compute() const;
-private:
+    ValuePerBlock&& sizes() const { return std::move(ghost_sizes); }
 
-  struct EntryRecvRequest;
-  struct EntrySendRequest;
+    void compute() const;
 
-private:
-  IIndexManager* m_index_mng;
-  mutable ValuePerBlock ghost_sizes;
-};
+   private:
+    struct EntryRecvRequest;
+    struct EntrySendRequest;
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+   private:
+    IIndexManager* m_index_mng;
+    mutable ValuePerBlock ghost_sizes;
+  };
+
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
 } // namespace Alien
 
