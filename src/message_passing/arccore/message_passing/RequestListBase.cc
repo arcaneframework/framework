@@ -51,7 +51,7 @@ wait(eWaitType wait_type)
   m_requests_done.fill(false);
 
   // Délegue l'appel effectif à la classe dérivée qui doit remplir
-  // le champ \a m_requests_done.
+  // le champ \a m_requests_done (sauf pour WaitAll)
   _wait(wait_type);
 
   if (wait_type==WaitAll)

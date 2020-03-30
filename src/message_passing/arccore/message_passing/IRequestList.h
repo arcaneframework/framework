@@ -71,7 +71,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT IRequestList
   virtual void removeDoneRequests() =0;
 
   /*!
-   * \brief Indices dans le tableaux des requêtes des requêtes terminée lors
+   * \brief Indices dans le tableaux des requêtes des requêtes terminées lors
    * du dernier appel à wait().
    */
   virtual ConstArrayView<Int32> doneRequestIndexes() const =0;

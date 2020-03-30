@@ -1180,7 +1180,7 @@ _handleEndRequests(ArrayView<Request> requests,ArrayView<bool> done_indexes)
       Request r = sri.sub_request->executeOnCompletion();
       Integer index = sri.index;
       // S'il y a une nouvelle requête, alors elle remplace
-      // l'ancienne et donc il faut faire comme ci
+      // l'ancienne et donc il faut faire comme si
       // la requête d'origine n'est pas terminée.
       if (r.isValid()){
         has_new_request = true;
@@ -1281,7 +1281,7 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
       //If there is no active handle in the list, it returns outcount = MPI_UNDEFINED.
       if (nb_completed_request == MPI_UNDEFINED) // Si aucune requete n'etait valide.
       	nb_completed_request = 0;
-      debug() << "TestSome nb_completed=" << nb_completed_request;
+      debug() << "WaitSomeRequestMPI: TestSome nb_completed=" << nb_completed_request;
     }
     else{
       _trace(MpiInfo(eMpiName::Waitsome).name().localstr());
@@ -1314,17 +1314,18 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
 
   for( int z=0; z<nb_completed_request; ++z ){
     int index = completed_requests[z];
-    debug() << "Completed z=" << z
+    debug() << "Completed my_rank=" << m_comm_rank << " z=" << z
             << " index=" << index
             << " status=" << mpi_status[z].MPI_SOURCE
             << " status_index=" << mpi_status[index].MPI_SOURCE;
+
     indexes[index] = true;
   }
 
   bool has_new_request = _handleEndRequests(requests,indexes);
   if (has_new_request){
     // Si on a de nouvelles requêtes, alors il est possible qu'aucune
-    // requête n'est aboutie. En cas de testSome, cela n'est pas grave.
+    // requête n'aie aboutie. En cas de testSome, cela n'est pas grave.
     // En cas de waitSome, cela signifie qu'il faut attendre à nouveau.
   }
   double end_time = MPI_Wtime();
