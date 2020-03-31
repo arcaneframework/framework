@@ -40,6 +40,26 @@ BasicSerializeMessage(Int32 orig_rank,Int32 dest_rank,eMessageType mtype)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+BasicSerializeMessage::
+BasicSerializeMessage(Int32 orig_rank,Int32 dest_rank,eMessageType mtype,
+                      BasicSerializer* s)
+: BasicSerializeMessage(orig_rank,dest_rank,mtype)
+{
+  m_buffer = s;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+BasicSerializeMessage::
+~BasicSerializeMessage()
+{
+  delete m_buffer;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arccore::MessagePassing
 
 /*---------------------------------------------------------------------------*/
