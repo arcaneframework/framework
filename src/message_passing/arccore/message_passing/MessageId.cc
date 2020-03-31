@@ -27,6 +27,7 @@ MessagePassing::MessageId::_Message MessagePassing::MessageId::null_message;
 void MessagePassing::MessageId::
 print(std::ostream& o) const
 {
+  o << "(id=";
   if (m_type==T_Null)
     o << "(null)";
   else if (m_type==T_Int)
@@ -35,6 +36,9 @@ print(std::ostream& o) const
     o << m_message.l;
   else
     o << m_message.cv;
+  o << ",source_rank=" << m_source_info.rank()
+    << " tag=" << m_source_info.tag()
+    << " size=" << m_source_info.size();
 }
 
 /*---------------------------------------------------------------------------*/
