@@ -166,9 +166,17 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
     using NbNodeInCell = int;
     using CellTypes = std::vector<std::pair<NbNodeInCell, ItemNodesInCell>>;
     struct DefaultItemOrientation {
-      bool isOrdered(Neo::utils::ConstArrayView<Neo::utils::Int64> item_nodes)
+      bool isOrdered(Neo::utils::ConstArrayView<Neo::utils::Int64> item_nodes) const
       {
-        std::__throw_bad_function_call();//todo implement
+        auto nb_nodes = item_nodes.size();
+        if (nb_nodes ==2) {
+          if (item_nodes[0] < item_nodes[1]) return true;
+          else return false;
+        }
+        auto min_position = std::distance(item_nodes.begin(),std::min(
+            item_nodes.begin(),item_nodes.end()));
+        if (item_nodes[(min_position-1+nb_nodes)%nb_nodes] > item_nodes[(min_position+1)%nb_nodes]) return true;
+        else return false;
       }
     };
     template<typename ItemOrientation = DefaultItemOrientation>
