@@ -31,6 +31,8 @@ set(SOURCES
   MpiRequestList.cc
   MpiSerializeMessage.h
   MpiSerializeMessage.cc
+  MpiSerializeDispatcher.h
+  MpiSerializeDispatcher.cc
   MpiTypeDispatcher.h
   MpiTypeDispatcherImpl.h
   MpiTypeDispatcher.cc
