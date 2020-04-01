@@ -17,15 +17,21 @@
 
 namespace Arccore::MessagePassing::Mpi
 {
-class MpiSerializeDispatcher
+class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeDispatcher
 : public ISerializeDispatcher
 {
  public:
+
+  static const int DEFAULT_SERIALIZE_TAG = 101;
+
+ public:
+
   MpiSerializeDispatcher(IMessagePassingMng* parallel_mng, MpiAdapter* adapter);
 
  public:
 
  private:
+
   IMessagePassingMng* m_parallel_mng;
   MpiAdapter* m_adapter;
 };

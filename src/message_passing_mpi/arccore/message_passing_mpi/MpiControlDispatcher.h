@@ -18,7 +18,7 @@
 
 namespace Arccore::MessagePassing::Mpi
 {
-class MpiControlDispatcher
+class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiControlDispatcher
 : public IControlDispatcher
 {
  public:
