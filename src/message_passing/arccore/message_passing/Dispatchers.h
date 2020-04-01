@@ -92,7 +92,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT Dispatchers
   IControlDispatcher* m_control = nullptr;
   ISerializeDispatcher* m_serialize = nullptr;
 
-  bool m_is_delete_dispatchers;
+  bool m_is_delete_dispatchers = false;
 };
 
 /*---------------------------------------------------------------------------*/
