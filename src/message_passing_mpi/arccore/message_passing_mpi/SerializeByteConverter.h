@@ -12,6 +12,7 @@
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
 //TODO: mettre cela dans un .cc
 #include "arccore/serialize/BasicSerializer.h"
+#include "arccore/base/FatalErrorException.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -50,7 +51,7 @@ class SerializeByteConverter
     Int64 size = buffer.size();
     const Int64 align_size = BasicSerializer::paddingSize();
     if ((size%align_size)!=0)
-      ARCANE_FATAL("Buffer size '{0}' is not a multiple of '{1}' Invalid size",size,align_size);
+      ARCCORE_FATAL("Buffer size '{0}' is not a multiple of '{1}' Invalid size",size,align_size);
     m_final_size = size / align_size;
   }
   SpanType* data() { return m_buffer.data(); }

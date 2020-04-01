@@ -46,21 +46,6 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeMessageRequest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// TODO: a supprimer par la suite. Utile temporairement pour connexion avec Arcane
-class ARCCORE_MESSAGEPASSINGMPI_EXPORT IMpiSerializeMessageListAdapter
-{
- public:
-  virtual ~IMpiSerializeMessageListAdapter() = default;
- public:
-  virtual ITraceMng* traceMng() =0;
-  virtual Int64 serializeBufferSize() =0;
-  virtual Request _sendSerializerWithTag(ISerializer* values,Int32 rank,int mpi_tag,bool is_blocking) =0;
-  virtual Request _recvSerializerBytes(Span<Byte> bytes,Int32 rank,int tag,bool is_blocking) =0;
-  virtual void _checkBigMessage(Int64 message_size) =0;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Implémentation MPI de la gestion des 'ISerializeMessage'.
  */
@@ -73,7 +58,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeMessageList
 
  public:
 
-  MpiSerializeMessageList(IMpiSerializeMessageListAdapter* mpm,MpiAdapter* adapter);
+  MpiSerializeMessageList(MpiSerializeDispatcher* dispatcher);
 
  public:
 
@@ -90,7 +75,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeMessageList
 
  private:
 
-  IMpiSerializeMessageListAdapter* m_parallel_mng = nullptr;
+  MpiSerializeDispatcher* m_dispatcher = nullptr;
   MpiAdapter* m_adapter = nullptr;
   ITraceMng* m_trace = nullptr;
   UniqueArray<MpiSerializeMessage*> m_messages_to_process;

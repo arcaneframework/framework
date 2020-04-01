@@ -79,10 +79,10 @@ class MpiSerializeMessageList::_SortMessages
 /*---------------------------------------------------------------------------*/
 
 MpiSerializeMessageList::
-MpiSerializeMessageList(IMpiSerializeMessageListAdapter* mpm,MpiAdapter* adapter)
-: m_parallel_mng(mpm)
-, m_adapter(adapter)
-, m_trace(adapter->traceMng())
+MpiSerializeMessageList(MpiSerializeDispatcher* dispatcher)
+: m_dispatcher(dispatcher)
+, m_adapter(dispatcher->adapter())
+, m_trace(m_adapter->traceMng())
 {}
 
 /*---------------------------------------------------------------------------*/
@@ -109,8 +109,7 @@ processPendingMessages()
   // croissant des rang de processeurs
   // - lorsque deux processeurs communiquent, c'est celui dont le rang est
   // le plus faible qui envoie ces messages d'abord.
-  IMpiSerializeMessageListAdapter* pm = m_parallel_mng;
-  ITraceMng* msg = pm->traceMng();
+  ITraceMng* msg = m_trace;
   Integer nb_message = m_messages_to_process.size();
   std::stable_sort(std::begin(m_messages_to_process),std::end(m_messages_to_process),_SortMessages());
   for( Integer i=0, is=m_messages_to_process.size(); i<is; ++i ){
@@ -125,7 +124,7 @@ processPendingMessages()
                  << " send?=" << pmsg->isSend();
   }
 
-  Int64 serialize_buffer_size = pm->serializeBufferSize();
+  Int64 serialize_buffer_size = m_dispatcher->serializeBufferSize();
   for( Integer i=0; i<nb_message; ++i ){
     MpiSerializeMessage* mpi_msg = m_messages_to_process[i];
     ISerializeMessage* pmsg = mpi_msg->message();
@@ -133,13 +132,13 @@ processPendingMessages()
                  << (pmsg->isSend() ? " To send" : " To receive");
     Request new_request;
     if (pmsg->isSend()){
-      new_request = m_parallel_mng->_sendSerializerWithTag(pmsg->serializer(),pmsg->destRank(),pmsg->tag(),false);
+      new_request = m_dispatcher->sendSerializerWithTag(pmsg->serializer(),pmsg->destRank(),pmsg->tag(),false);
     }
     else{
       BasicSerializer* sbuf = mpi_msg->serializeBuffer();
       msg->debug() << "call recvSerializer2 tag=" << pmsg->tag() << " from=" << pmsg->destRank();
       sbuf->preallocate(serialize_buffer_size);
-      new_request = pm->_recvSerializerBytes(sbuf->globalBuffer(),pmsg->destRank(),pmsg->tag(),false);
+      new_request = m_dispatcher->recvSerializerBytes(sbuf->globalBuffer(),pmsg->destRank(),pmsg->tag(),false);
     }
     m_messages_request.add(MpiSerializeMessageRequest(mpi_msg,new_request));
   }
@@ -169,7 +168,7 @@ Integer MpiSerializeMessageList::
 _waitMessages(eWaitType wait_type)
 {
   Integer nb_message_finished = 0;
-  ITraceMng* msg = m_parallel_mng->traceMng();
+  ITraceMng* msg = m_trace;
   Integer nb_message = m_messages_request.size();
   Int32 comm_rank = m_adapter->commRank();
   UniqueArray<MPI_Status> mpi_status(nb_message);
@@ -317,14 +316,14 @@ _processOneMessageGlobalBuffer(MpiSerializeMessage* msm,int source,int mpi_tag)
   // et si le message total est trop gros (>m_serialize_buffer_size)
   // poste un nouveau message pour récupèrer les données sérialisées.
   if (msm->messageNumber()==0){
-    if (message_size<=m_parallel_mng->serializeBufferSize()){
+    if (message_size<=m_dispatcher->serializeBufferSize()){
       sbuf->setFromSizes();
       return request;
     }
-    m_parallel_mng->_checkBigMessage(message_size);
+    m_dispatcher->_checkBigMessage(message_size);
     sbuf->preallocate(message_size);
     Span<Byte> bytes = sbuf->globalBuffer();
-    request = m_parallel_mng->_recvSerializerBytes(bytes,dest_rank,mpi_tag+1,false);
+    request = m_dispatcher->recvSerializerBytes(bytes,dest_rank,mpi_tag+1,false);
     msm->incrementMessageNumber();
     return request;
   }
