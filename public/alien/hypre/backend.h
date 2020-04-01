@@ -1,8 +1,8 @@
 #pragma once
 
-#include <Alien/Core/Backend/BackEnd.h>
-#include <Alien/Core/Backend/LinearSolver.h>
-#include <Alien/Core/Backend/LinearAlgebra.h>
+#include <alien/core/backend/BackEnd.h>
+#include <alien/core/backend/LinearSolver.h>
+#include <alien/core/backend/LinearAlgebra.h>
 
 namespace Alien::Hypre {
     class Matrix;

@@ -1,18 +1,20 @@
 #include "hypre_matrix.h"
 #include "hypre_vector.h"
 
-#include <Alien/hypre/backend.h>
-#include <Alien/hypre/options.h>
-#include <Alien/hypre/export.h>
-#include <Alien/Expression/Solver/SolverStats/SolverStater.h>
-#include <Alien/Core/Backend/LinearSolverT.h>
-
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
+#include <boost/timer.hpp>
 
 #include <HYPRE_parcsr_ls.h>
 #include <HYPRE_parcsr_mv.h>
 
-#include <boost/timer.hpp>
+#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
+
+#include <alien/expression/solver/SolverStater.h>
+#include <alien/core/backend/LinearSolverT.h>
+
+#include <alien/hypre/backend.h>
+#include <alien/hypre/options.h>
+#include <alien/hypre/export.h>
+
 
 namespace Alien {
 

@@ -26,6 +26,6 @@ target_include_directories(alien_hypre PUBLIC
 include(GenerateExportHeader)
 
 generate_export_header(alien_hypre
-        EXPORT_FILE_NAME Alien/hypre/export.h
+        EXPORT_FILE_NAME alien/hypre/export.h
         )
 

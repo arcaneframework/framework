@@ -38,7 +38,7 @@ endif()
 
 find_package(Hypre REQUIRED)
 find_package(MPI REQUIRED)
-find_package(Boost COMPONENTS program_options REQUIRED)
+find_package(Boost REQUIRED) # For boost::timer.
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------

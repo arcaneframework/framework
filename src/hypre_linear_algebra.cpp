@@ -1,17 +1,20 @@
 #include "hypre_matrix.h"
 #include "hypre_vector.h"
 
-#include <Alien/hypre/backend.h>
-#include <Alien/hypre/export.h>
-#include <Alien/Core/Backend/LinearAlgebraT.h>
+#include <cmath>
+
+// FIXME: use public API for Hypre !
+#include <_hypre_parcsr_mv.h>
 
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 #include <arccore/base/NotImplementedException.h>
 #include <arccore/base/TraceInfo.h>
 
-#include <_hypre_parcsr_mv.h>
+#include <alien/core/backend/LinearAlgebraT.h>
 
-#include <cmath>
+#include <alien/hypre/backend.h>
+#include <alien/hypre/export.h>
+
 
 namespace Alien {
 

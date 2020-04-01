@@ -1,12 +1,13 @@
 #include "hypre_matrix.h"
 
-#include <Alien/hypre/backend.h>
-#include <Alien/Core/Backend/IMatrixConverter.h>
-#include <Alien/Core/Backend/MatrixConverterRegisterer.h>
-#include <Alien/Kernels/SimpleCSR/DataStructure/SimpleCSRMatrix.h>
-#include <Alien/Kernels/SimpleCSR/SimpleCSRBackEnd.h>
-
 #include <arccore/collections/Array2.h>
+
+#include <alien/core/backend/IMatrixConverter.h>
+#include <alien/core/backend/MatrixConverterRegisterer.h>
+#include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
+#include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
+
+#include <alien/hypre/backend.h>
 
 class SimpleCSR_to_Hypre_MatrixConverter : public Alien::IMatrixConverter {
 public:

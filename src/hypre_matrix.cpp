@@ -1,8 +1,8 @@
 #include "hypre_matrix.h"
 
-#include <Alien/hypre/backend.h>
-#include <Alien/Core/Impl/MultiMatrixImpl.h>
-#include <Alien/Data/ISpace.h>
+#include <alien/hypre/backend.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
+#include <alien/data/ISpace.h>
 
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 

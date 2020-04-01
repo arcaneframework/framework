@@ -1,10 +1,11 @@
 #include "hypre_vector.h"
 
-#include <Alien/hypre/backend.h>
-#include <Alien/Core/Backend/IVectorConverter.h>
-#include <Alien/Core/Backend/VectorConverterRegisterer.h>
-#include <Alien/Kernels/SimpleCSR/DataStructure/SimpleCSRVector.h>
-#include <Alien/Kernels/SimpleCSR/SimpleCSRBackEnd.h>
+#include <alien/core/backend/IVectorConverter.h>
+#include <alien/core/backend/VectorConverterRegisterer.h>
+#include <alien/kernels/simple_csr/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
+
+#include <alien/hypre/backend.h>
 
 class Hypre_to_SimpleCSR_VectorConverter : public Alien::IVectorConverter {
 public:
