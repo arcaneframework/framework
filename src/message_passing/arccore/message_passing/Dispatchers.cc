@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* Dispatchers.cc                                              (C) 2000-2018 */
+/* Dispatchers.cc                                              (C) 2000-2020 */
 /*                                                                           */
 /* Conteneur des dispatchers.                                                */
 /*---------------------------------------------------------------------------*/
@@ -13,10 +13,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
-{
-
-namespace MessagePassing
+namespace Arccore::MessagePassing
 {
 
 /*---------------------------------------------------------------------------*/
@@ -24,22 +21,6 @@ namespace MessagePassing
 
 Dispatchers::
 Dispatchers()
-: m_char(nullptr)
-, m_unsigned_char(nullptr)
-, m_signed_char(nullptr)
-, m_short(nullptr)
-, m_unsigned_short(nullptr)
-, m_int(nullptr)
-, m_unsigned_int(nullptr)
-, m_long(nullptr)
-, m_unsigned_long(nullptr)
-, m_long_long(nullptr)
-, m_unsigned_long_long(nullptr)
-, m_float(nullptr)
-, m_double(nullptr)
-, m_long_double(nullptr)
-, m_control(nullptr)
-, m_is_delete_dispatchers(false)
 {
 }
 
@@ -71,11 +52,7 @@ Dispatchers::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace MessagePassing
-} // End namespace Arccore
+} // End namespace Arccore::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

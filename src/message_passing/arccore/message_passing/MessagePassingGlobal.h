@@ -37,6 +37,7 @@ class IRequestCreator;
 class IRequestList;
 class ISerializeMessage;
 class ISerializeMessageList;
+class ISerializeDispatcher;
 class Request;
 class MessageId;
 class MessageTag;
