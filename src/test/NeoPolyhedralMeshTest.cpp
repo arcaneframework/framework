@@ -471,7 +471,25 @@ TEST(PolyhedralTest,ConnectivityUtilitiesTest){
                          nb_cell_per_faces_ref.begin(),nb_cell_per_faces_ref.end()));
 }
 
-TEST(PolyhedralTest,TypedUtilitiesTest){
+TEST(PolyhedralTest,TypedUtilitiesOrientationTest) {
+  // Test item orientation
+  StaticMesh::utilities::DefaultItemOrientation item_orientation{};
+  std::vector<Neo::utils::Int64> face_nodes_mock{1, 2, 3};
+  EXPECT_TRUE(item_orientation.isOrdered(
+      {face_nodes_mock.size(), face_nodes_mock.data()}));
+  face_nodes_mock = {7, 6, 5, 9, 10, 11};
+  EXPECT_FALSE(item_orientation.isOrdered(
+      {face_nodes_mock.size(), face_nodes_mock.data()}));
+  std::vector<Neo::utils::Int64> edge_node_mock{0, 100};
+  EXPECT_TRUE(item_orientation.isOrdered(
+      {edge_node_mock.size(), edge_node_mock.data()}));
+  edge_node_mock = {6, 1};
+  EXPECT_FALSE(item_orientation.isOrdered(
+      {edge_node_mock.size(), edge_node_mock.data()}));
+}
+
+TEST(PolyhedralTest,TypedUtilitiesConnectivityTest) {
+  // Test item connectivity
   std::vector<Neo::utils::Int64> cell_nodes{1, 8, 10, 15, 25, 27, 29, 30, // hexa
                                             8, 9, 11, 10, 27, 28, 31, 29, // hexa
                                             28, 9, 11, 31, 32}; // prism
