@@ -1,46 +1,52 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* SerializeGlobal.h                                           (C) 2000-2020 */
+/* MpiSerializeMessage.cc                                      (C) 2000-2020 */
 /*                                                                           */
-/* Définitions globales de la composante 'Serialize' de 'Arccore'.           */
-/*---------------------------------------------------------------------------*/
-#ifndef ARCCORE_SERIALIZE_SERIALIZEGLOBAL_H
-#define ARCCORE_SERIALIZE_SERIALIZEGLOBAL_H
+/* Encapsulation de ISerializeMessage pour MPI.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/base/ArccoreGlobal.h"
+#include "arccore/message_passing_mpi/MpiSerializeMessage.h"
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#if defined(ARCCORE_COMPONENT_arccore_serialize)
-#define ARCCORE_SERIALIZE_EXPORT ARCCORE_EXPORT
-#define ARCCORE_SERIALIZE_EXTERN_TPL
-#else
-#define ARCCORE_SERIALIZE_EXPORT ARCCORE_IMPORT
-#define ARCCORE_SERIALIZE_EXTERN_TPL extern
-#endif
+#include "arccore/message_passing/ISerializeMessage.h"
+#include "arccore/serialize/BasicSerializer.h"
+#include "arccore/base/FatalErrorException.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arccore::MessagePassing::Mpi
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ISerializer;
-class BasicSerializer;
+MpiSerializeMessage::
+MpiSerializeMessage(ISerializeMessage* message,Integer index)
+: m_message(message)
+, m_serialize_buffer(0)
+, m_message_index(index)
+, m_message_number(0)
+{
+  ISerializer* sr = message->serializer();
+  m_serialize_buffer = dynamic_cast<BasicSerializer*>(sr);
+  if (!m_serialize_buffer){
+    ARCCORE_FATAL("Can not convert 'ISerializer' to 'BasicSerializer'");
+  }
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+MpiSerializeMessage::
+~MpiSerializeMessage()
+{
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+} // End namespace Arccore::MessagePassing::Mpi
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
