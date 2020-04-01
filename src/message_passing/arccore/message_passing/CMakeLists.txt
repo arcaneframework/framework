@@ -19,6 +19,7 @@ set(SOURCES
   ISerializeMessage.h
   RequestListBase.h
   RequestListBase.cc
+  ISerializeMessageList.h
   IStat.h
   IDispatchers.h
   ITypeDispatcher.h

@@ -36,6 +36,7 @@ static const Int32 A_NULL_TAG_VALUE = static_cast<Int32>(-1);
 class IRequestCreator;
 class IRequestList;
 class ISerializeMessage;
+class ISerializeMessageList;
 class Request;
 class MessageId;
 class MessageTag;
