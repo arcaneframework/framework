@@ -11,10 +11,10 @@
 #include "arccore/message_passing_mpi/MpiAdapter.h"
 #include "arccore/message_passing_mpi/MpiMessagePassingMng.h"
 #include "arccore/message_passing_mpi/MpiLock.h"
-#include "arccore/message_passing_mpi/SerializeByteConverter.h"
 #include "arccore/message_passing/Request.h"
 #include "arccore/serialize/BasicSerializer.h"
 #include "arccore/base/NotImplementedException.h"
+#include "arccore/base/FatalErrorException.h"
 #include "arccore/base/NotSupportedException.h"
 #include "arccore/base/ArgumentException.h"
 #include "arccore/trace/ITraceMng.h"
@@ -24,6 +24,51 @@
 
 namespace Arccore::MessagePassing::Mpi
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Wrappeur pour envoyer un tableau d'octets d'un sérialiseur.
+ *
+ * \a SpanType doit être un 'Byte' ou un 'const Byte'.
+ *
+ * Comme MPI utilise un 'int' pour le nombre d'éléments d'un message, on ne
+ * peut pas dépasser 2^31 octets pas message. Par contre, les versions 3.0+
+ * de MPI supportent des messages dont la longueur dépasse 2^31.
+ * On utilise donc un type dérivé MPI contenant N octets (avec N donné
+ * par SerializeBuffer::paddingSize()) et on indique à MPI que c'est ce type
+ * qu'on envoie. Le nombre d'éléments est donc divisé par N ce qui permet
+ * de tenir sur 'int' si la taille du message est inférieure à 2^31 * N octets
+ * (en février 2019, N=128 soit des messages de 256Go maximum).
+ *
+ * \note Pour que cela fonctionne, le tableau \a buffer doit avoir une
+ * mémoire allouée arrondie au multiple de N supérieur au nombre d'éléments
+ * mais normalement cela est garanti par le SerializeBuffer.
+ */
+template<typename SpanType>
+class SerializeByteConverter
+{
+ public:
+  SerializeByteConverter(Span<SpanType> buffer,MPI_Datatype byte_serializer_datatype)
+  : m_buffer(buffer), m_datatype(byte_serializer_datatype), m_final_size(-1)
+  {
+    Int64 size = buffer.size();
+    const Int64 align_size = BasicSerializer::paddingSize();
+    if ((size%align_size)!=0)
+      ARCCORE_FATAL("Buffer size '{0}' is not a multiple of '{1}' Invalid size",size,align_size);
+    m_final_size = size / align_size;
+  }
+  SpanType* data() { return m_buffer.data(); }
+  Int64 size() const { return m_final_size; }
+  Int64 messageSize() const { return m_buffer.size() * sizeof(Byte); }
+  Int64 elementSize() const { return BasicSerializer::paddingSize(); }
+  MPI_Datatype datatype() const { return m_datatype; }
+ private:
+  Span<SpanType> m_buffer;
+  MPI_Datatype m_datatype;
+  Int64 m_final_size;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -186,7 +231,7 @@ sendSerializerWithTag(ISerializer* values,Int32 rank,int mpi_tag,bool is_blockin
 Request MpiSerializeDispatcher::
 recvSerializerBytes(Span<Byte> bytes,MessageId message_id,bool is_blocking)
 {
-  internal::SerializeByteConverter<Byte> sbc(bytes,m_byte_serializer_datatype);
+  SerializeByteConverter<Byte> sbc(bytes,m_byte_serializer_datatype);
   MPI_Datatype dt = sbc.datatype();
   return m_adapter->directRecv(sbc.data(),sbc.size(),message_id,sbc.elementSize(),dt,is_blocking);
 }
@@ -197,7 +242,7 @@ recvSerializerBytes(Span<Byte> bytes,MessageId message_id,bool is_blocking)
 Request MpiSerializeDispatcher::
 recvSerializerBytes(Span<Byte> bytes,Int32 rank,int tag,bool is_blocking)
 {
-  internal::SerializeByteConverter<Byte> sbc(bytes,m_byte_serializer_datatype);
+  SerializeByteConverter<Byte> sbc(bytes,m_byte_serializer_datatype);
   MPI_Datatype dt = sbc.datatype();
   return m_adapter->directRecv(sbc.data(),sbc.size(),rank,sbc.elementSize(),dt,tag,is_blocking);
 }
@@ -208,7 +253,7 @@ recvSerializerBytes(Span<Byte> bytes,Int32 rank,int tag,bool is_blocking)
 Request MpiSerializeDispatcher::
 _sendSerializerBytes(Span<const Byte> bytes,Int32 rank,int tag,bool is_blocking)
 {
-  internal::SerializeByteConverter<const Byte> sbc(bytes,m_byte_serializer_datatype);
+  SerializeByteConverter<const Byte> sbc(bytes,m_byte_serializer_datatype);
   MPI_Datatype dt = sbc.datatype();
   m_trace->info(4) << "_sendSerializerBytes: orig_size=" << bytes.size()
                    << " second_size=" << sbc.size()
@@ -381,7 +426,7 @@ broadcastSerializer(ISerializer* values,Int32 rank)
     if (m_is_trace_serializer)
       tm->info() << "MpiSerializeDispatcher::broadcastSerializer(): sending "
                  << BasicSerializer::SizesPrinter(*sbuf);
-    internal::SerializeByteConverter<Byte> sbc(bytes,m_byte_serializer_datatype);
+    SerializeByteConverter<Byte> sbc(bytes,m_byte_serializer_datatype);
     m_adapter->broadcast(sbc.data(),sbc.size(),rank,sbc.datatype());
   }
   else{
@@ -390,7 +435,7 @@ broadcastSerializer(ISerializer* values,Int32 rank)
     m_adapter->broadcast(total_size_buf.data(),total_size_buf.size(),rank,int64_datatype);
     sbuf->preallocate(total_size);
     Span<Byte> bytes = sbuf->globalBuffer();
-    internal::SerializeByteConverter<Byte> sbc(bytes,m_byte_serializer_datatype);
+    SerializeByteConverter<Byte> sbc(bytes,m_byte_serializer_datatype);
     m_adapter->broadcast(sbc.data(),sbc.size(),rank,sbc.datatype());
     sbuf->setFromSizes();
     if (m_is_trace_serializer)

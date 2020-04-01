@@ -43,7 +43,6 @@ set(SOURCES
   NoMpiProfiling.h
   StandaloneMpiMessagePassingMng.cc
   StandaloneMpiMessagePassingMng.h
-  SerializeByteConverter.h
 )
 
 arccore_add_component_library(message_passing_mpi
