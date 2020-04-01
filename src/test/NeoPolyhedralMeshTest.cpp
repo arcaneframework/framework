@@ -173,7 +173,7 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
           if (item_nodes[0] < item_nodes[1]) return true;
           else return false;
         }
-        auto min_position = std::distance(item_nodes.begin(),std::min(
+        auto min_position = std::distance(item_nodes.begin(),std::min_element(
             item_nodes.begin(),item_nodes.end()));
         if (item_nodes[(min_position-1+nb_nodes)%nb_nodes] > item_nodes[(min_position+1)%nb_nodes]) return true;
         else return false;
