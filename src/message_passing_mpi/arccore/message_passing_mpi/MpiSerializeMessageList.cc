@@ -152,13 +152,9 @@ processPendingMessages()
 Integer MpiSerializeMessageList::
 waitMessages(eWaitType wait_type)
 {
-  //Timer::Phase tphase(m_parallel_mng->timeStats(),TP_Communication);
-  if (wait_type==WaitAll){
-    while (_waitMessages(WaitSome)!=(-1))
-      ;
-    return (-1);
-  }
-  return _waitMessages(wait_type);
+  Integer n = _waitMessages(wait_type);
+  m_dispatcher->checkFinishedSubRequests();
+  return n;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -166,6 +162,20 @@ waitMessages(eWaitType wait_type)
 
 Integer MpiSerializeMessageList::
 _waitMessages(eWaitType wait_type)
+{
+  if (wait_type==WaitAll){
+    while (_waitMessages2(WaitSome)!=(-1))
+      ;
+    return (-1);
+  }
+  return _waitMessages2(wait_type);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer MpiSerializeMessageList::
+_waitMessages2(eWaitType wait_type)
 {
   Integer nb_message_finished = 0;
   ITraceMng* msg = m_trace;

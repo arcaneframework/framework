@@ -72,6 +72,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeMessageList
  private:
 
   Integer _waitMessages(eWaitType wait_type);
+  Integer _waitMessages2(eWaitType wait_type);
 
  private:
 
