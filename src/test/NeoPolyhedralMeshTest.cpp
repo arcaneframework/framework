@@ -199,6 +199,9 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
         return item_info1.first < item_info2.first;
       };
       std::set<ItemInfo, decltype(item_info_comp)> item_nodes_set(item_info_comp);
+      item_nodes.reserve(4 * cell_nodes.size()); // rough approx
+      cell_items.reserve(cell_nodes.size()); // rough approx
+      item_orientation_in_cell.reserve(2 * cell_nodes.size()); // rough approx
       for (int cell_nodes_index = 0; cell_nodes_index < cell_nodes.size();) {
         auto [nb_node_in_cell, item_nodes_all_items] = cell_types[cell_type_indexes[cell_index++]];
         auto current_cell_nodes = Neo::utils::ConstArrayView<Neo::utils::Int64>{(size_t)nb_node_in_cell,&cell_nodes[cell_nodes_index]};
@@ -213,11 +216,13 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
                          {return current_cell_nodes[node_index];});
           auto [item_info, is_new_item] = item_nodes_set.emplace(
               ItemNodes{current_item_nodes.begin(),
-                                                                           current_item_nodes.end()},item_index);
+                        current_item_nodes.end()},item_index);
           if (!is_new_item) std::cout << "Item not inserted " << item_index << std::endl;
           if (is_new_item) {
             item_nodes.insert(item_nodes.end(),current_item_nodes.begin(), current_item_nodes.end());
           }
+          auto orientation = item_orientation.isOrdered({current_item_nodes.size(),current_item_nodes.data()}) ? 1: -1;
+          item_orientation_in_cell.push_back(orientation);
           cell_items.push_back(item_info->second);
           if (is_new_item) {
             nb_items++;
@@ -513,6 +518,7 @@ TEST(PolyhedralTest,TypedUtilitiesConnectivityTest) {
   std::cout << "Nb faces found from cell info " << nb_faces << std::endl;
   _printContainer(face_nodes, "Face nodes from cell info");
   _printContainer(cell_face_indexes, "Cell faces (indexes) from cell info");
+  _printContainer(face_orientation_in_cell, "Face orientation in cell ");
   // Get Edge Connectivity info
   std::vector<Neo::utils::Int64> edge_nodes;
   std::vector<Neo::utils::Int32> cell_edge_indexes;
@@ -527,6 +533,7 @@ TEST(PolyhedralTest,TypedUtilitiesConnectivityTest) {
   std::cout << "Nb edges found from cell info " << nb_edges << std::endl;
   _printContainer(edge_nodes, "Edge nodes from cell info");
   _printContainer(cell_edge_indexes, "Cell edges (indexes) from cell info");
+  _printContainer(edge_orientation_in_cell, "Edge orientation in cell ");
   // Validation
   EXPECT_EQ(15,nb_faces);
   std::vector<int> cell_face_indexes_ref{0,1,2,3,4,5,6,7,8,9,1,10,7,11,12,13,14};
@@ -564,6 +571,12 @@ TEST(PolyhedralTest,TypedUtilitiesConnectivityTest) {
   EXPECT_TRUE(std::equal(
       cell_edge_indexes.begin(),cell_edge_indexes.end(),
       cell_edge_indexes_ref.begin(),cell_edge_indexes_ref.end()));
+  std::vector<int> edge_orientation_in_cell_ref{1,-1,-1,-1,1,-1,-1,1,1,-1,1,-1,
+                                                1,1,-1,-1,1,-1,-1,1,-1,-1,1,-1,
+                                                1,-1,-1,1,1,-1,1,1};
+  EXPECT_TRUE(std::equal(edge_orientation_in_cell.begin(),
+                         edge_orientation_in_cell.end(),
+                         edge_orientation_in_cell_ref.begin()));
 }
 
 #ifdef HAS_XDMF
