@@ -77,7 +77,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT ISerializeMessageList
    * qui.
    */
   virtual Ref<ISerializeMessage>
-  createMessage(MessageRank source,MessageRank destination,
+  createMessage(MessageRank destination,
                 ePointToPointMessageType type) =0;
 };
 

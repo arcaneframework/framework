@@ -101,6 +101,10 @@ addMessage(ISerializeMessage* msg)
 void MpiSerializeMessageList::
 processPendingMessages()
 {
+  Integer nb_message = m_messages_to_process.size();
+  if (nb_message==0)
+    return;
+
   // L'envoie de messages peut se faire en mode bloquant ou non bloquant.
   // Quel que soit le mode, l'ordre d'envoie doit permettre de ne pas
   // avoir de deadlock. Pour cela, on applique l'algorithme suivant:
@@ -109,7 +113,6 @@ processPendingMessages()
   // - lorsque deux processeurs communiquent, c'est celui dont le rang est
   // le plus faible qui envoie ces messages d'abord.
   ITraceMng* msg = m_trace;
-  Integer nb_message = m_messages_to_process.size();
   std::stable_sort(std::begin(m_messages_to_process),std::end(m_messages_to_process),_SortMessages());
   for( Integer i=0, is=m_messages_to_process.size(); i<is; ++i ){
     ISerializeMessage* pmsg = m_messages_to_process[i]->message();
@@ -350,9 +353,9 @@ _processOneMessageGlobalBuffer(MpiSerializeMessage* msm,MessageRank source,Messa
 /*---------------------------------------------------------------------------*/
 
 Ref<ISerializeMessage> MpiSerializeMessageList::
-createMessage(MessageRank source,MessageRank destination,
-              ePointToPointMessageType type)
+createMessage(MessageRank destination,ePointToPointMessageType type)
 {
+  MessageRank source(m_adapter->commRank());
   auto x = BasicSerializeMessage::create(source,destination,type);
   x->setInternalTag(MessageTag(MpiSerializeDispatcher::DEFAULT_SERIALIZE_TAG));
   return x;

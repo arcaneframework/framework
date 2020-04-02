@@ -47,8 +47,15 @@ _toMessageType(ePointToPointMessageType type)
 /*---------------------------------------------------------------------------*/
 
 BasicSerializeMessage::
-BasicSerializeMessage(Int32 orig_rank,Int32 dest_rank,eMessageType mtype)
-: BasicSerializeMessage(MessageRank(orig_rank),MessageRank(dest_rank),_toP2PType(mtype))
+BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
+                      ePointToPointMessageType type,
+                      BasicSerializer* s)
+: m_orig_rank(orig_rank)
+, m_dest_rank(dest_rank)
+, m_old_message_type(_toMessageType(type))
+, m_message_type(type)
+, m_is_send(false)
+, m_buffer(s)
 {
   _init();
 }
@@ -57,24 +64,9 @@ BasicSerializeMessage(Int32 orig_rank,Int32 dest_rank,eMessageType mtype)
 /*---------------------------------------------------------------------------*/
 
 BasicSerializeMessage::
-BasicSerializeMessage(Int32 orig_rank,Int32 dest_rank,eMessageType mtype,
-                      BasicSerializer* s)
-: BasicSerializeMessage(orig_rank,dest_rank,mtype)
-{
-  m_buffer = s;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-BasicSerializeMessage::
 BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
                       ePointToPointMessageType type)
-: m_orig_rank(orig_rank)
-, m_dest_rank(dest_rank)
-, m_old_message_type(_toMessageType(type))
-, m_message_type(type)
-, m_is_send(false)
+: BasicSerializeMessage(orig_rank,dest_rank,type,new BasicSerializer())
 {
   _init();
 }

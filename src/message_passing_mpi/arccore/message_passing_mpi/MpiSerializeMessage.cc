@@ -31,7 +31,7 @@ MpiSerializeMessage(ISerializeMessage* message,Integer index)
   ISerializer* sr = message->serializer();
   m_serialize_buffer = dynamic_cast<BasicSerializer*>(sr);
   if (!m_serialize_buffer){
-    ARCCORE_FATAL("Can not convert 'ISerializer' to 'BasicSerializer'");
+    ARCCORE_FATAL("Can not convert 'ISerializer' (v={0}) to 'BasicSerializer'",sr);
   }
 }
 

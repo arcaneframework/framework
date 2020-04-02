@@ -42,22 +42,28 @@ namespace Arccore::MessagePassing
 class ARCCORE_MESSAGEPASSING_EXPORT BasicSerializeMessage
 : public ISerializeMessage
 {
- public:
-  ARCCORE_DEPRECATED_2020("Use ISerializeMessageList::create() static method instead")
-  BasicSerializeMessage(Int32 orig_rank,Int32 dest_rank,eMessageType mtype);
  protected:
-  BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,ePointToPointMessageType mtype);
+
+  BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
+                        ePointToPointMessageType mtype);
  public:
+
   ~BasicSerializeMessage();
   BasicSerializeMessage& operator=(const BasicSerializeMessage&) = delete;
   BasicSerializeMessage(const BasicSerializeMessage&) = delete;
+
  protected:
-  BasicSerializeMessage(Int32 orig_rank,Int32 dest_rank,eMessageType mtype,
+
+  BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
+                        ePointToPointMessageType type,
                         BasicSerializer* serializer);
  public:
+
   static Ref<ISerializeMessage>
   create(MessageRank source,MessageRank destination,ePointToPointMessageType type);
+
  public:
+
   bool isSend() const override { return m_is_send; }
   eMessageType messageType() const override { return m_old_message_type; }
   Int32 destRank() const override { return m_dest_rank.value(); }
@@ -72,7 +78,14 @@ class ARCCORE_MESSAGEPASSING_EXPORT BasicSerializeMessage
   Int32 tag() const override { return m_tag.value(); }
   void setInternalTag(MessageTag tag) override { m_tag = tag; }
   MessageTag internalTag() const override { return m_tag; }
+
+ protected:
+
+  static ePointToPointMessageType _toP2PType(eMessageType mtype);
+  static eMessageType _toMessageType(ePointToPointMessageType mtype);
+
  private:
+
   MessageRank m_orig_rank; //!< Rang de l'expéditeur de la requête
   MessageRank m_dest_rank; //!< Rang du destinataire du message
   MessageTag m_tag = MessageTag(0);
@@ -83,8 +96,6 @@ class ARCCORE_MESSAGEPASSING_EXPORT BasicSerializeMessage
   bool m_finished = false; //!< \c true si message terminé
  private:
   void _init();
-  static ePointToPointMessageType _toP2PType(eMessageType mtype);
-  static eMessageType _toMessageType(ePointToPointMessageType mtype);
 };
 
 /*---------------------------------------------------------------------------*/
