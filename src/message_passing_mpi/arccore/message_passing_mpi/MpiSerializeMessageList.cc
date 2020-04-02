@@ -10,8 +10,7 @@
 #include "arccore/message_passing_mpi/MpiSerializeMessage.h"
 #include "arccore/message_passing_mpi/MpiSerializeDispatcher.h"
 #include "arccore/message_passing_mpi/MpiAdapter.h"
-#include "arccore/message_passing/ISerializeMessage.h"
-#include "arccore/serialize/BasicSerializer.h"
+#include "arccore/message_passing/BasicSerializeMessage.h"
 #include "arccore/trace/ITraceMng.h"
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/TimeoutException.h"
@@ -339,6 +338,16 @@ _processOneMessageGlobalBuffer(MpiSerializeMessage* msm,int source,int mpi_tag)
   }
   sbuf->setFromSizes();
   return request;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<ISerializeMessage> MpiSerializeMessageList::
+createMessage(MessageRank source,MessageRank destination,
+              ePointToPointMessageType type)
+{
+  return BasicSerializeMessage::create(source,destination,type);
 }
 
 /*---------------------------------------------------------------------------*/

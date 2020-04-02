@@ -65,13 +65,31 @@ class ARCCORE_MESSAGEPASSING_EXPORT ISerializeMessage
    * Dans le cas d'une réception, il est possible de spécifier n'importe quel
    * rang en spécifiant A_NULL_RANK.
    */
+  ARCCORE_DEPRECATED_2020("Use destination() instead")
   virtual Int32 destRank() const =0;
+
+  /*!
+   * \brief Rang du destinataire (si isSend() est vrai) ou de l'envoyeur.
+   *
+   * Dans le cas d'une réception, le rang peut valoir nul pour indiquer
+   * qu'on souhaite recevoir de n'importe qui.
+   * rang en spécifiant A_NULL_RANK.
+   */
+  virtual MessageRank destination() const =0;
 
   /*!
    * \brief Rang de l'envoyeur du message
    * Voir aussi destRank() pour une interprétation suivant la valeur de isSend()
    */
+  ARCCORE_DEPRECATED_2020("Use source() instead")
   virtual Int32 origRank() const =0;
+
+  /*!
+   * \brief Rang de l'envoyeur du message
+   *
+   * Voir aussi destination() pour une interprétation suivant la valeur de isSend()
+   */
+  virtual MessageRank source() const =0;
 
   //! Sérialiseur
   virtual ISerializer* serializer() =0;
@@ -87,18 +105,33 @@ class ARCCORE_MESSAGEPASSING_EXPORT ISerializeMessage
 
   /*!
    * \internal
-   * \brief Positionne un tag pour le message. Ce
-   * Ce tag est utile s'il faut envoyer/recevoir plusieurs messages
-   * à un même couple origin/destination.
-   * Cette méthode est interne à Arcane.
    */
+  ARCCORE_DEPRECATED_2020("Use setInternalTag() instead")
   virtual void setTag(Int32 tag) =0;
 
   /*!
    * \internal
-   * \brief Tag du message.
+   * \brief Positionne un tag interne pour le message.
+   *
+   * Ce tag est utile s'il faut envoyer/recevoir plusieurs messages
+   * à un même couple origin/destination.
+   *
+   * Cette méthode est interne à %Arccore.
    */
+  virtual void setInternalTag(MessageTag tag) =0;
+
+  /*!
+   * \internal
+   * \brief Tag interne du message.
+   */
+  ARCCORE_DEPRECATED_2020("Use internalTag() instead")
   virtual Int32 tag() const =0;
+
+  /*!
+   * \internal
+   * \brief Tag interne du message.
+   */
+  virtual MessageTag internalTag() const =0;
 };
 
 /*---------------------------------------------------------------------------*/

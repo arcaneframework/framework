@@ -10,6 +10,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/message_passing/MessagePassingGlobal.h"
+#include "arccore/base/RefDeclarations.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -27,6 +28,9 @@ class ISerializeMessage;
 /*!
  * \internal
  * \brief Interface d'une liste de messages de sérialisation.
+ *
+ * Les instances de cette classe sont en général créées via la
+ * méthode mpCreateSerializeMessageListRef().
  */
 class ARCCORE_MESSAGEPASSING_EXPORT ISerializeMessageList
 {
@@ -62,6 +66,19 @@ class ARCCORE_MESSAGEPASSING_EXPORT ISerializeMessageList
    * l'ont tous été.
    */
   virtual Integer waitMessages(eWaitType wt) =0;
+
+  /*!
+   * \brief Créé un message de sérialisation.
+   *
+   * Le message peut être un message d'envoie ou de réception.
+   *
+   * Si le message est de réception (MsgReceive), il est possible de
+   * spécifier un rang nul pour indiquer qu'on souhaite recevoir de n'importe
+   * qui.
+   */
+  virtual Ref<ISerializeMessage>
+  createMessage(MessageRank source,MessageRank destination,
+                ePointToPointMessageType type) =0;
 };
 
 /*---------------------------------------------------------------------------*/
