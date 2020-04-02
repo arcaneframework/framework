@@ -50,6 +50,8 @@ class MpiAdapter::RequestSet
  public:
   RequestSet(ITraceMng* tm) : TraceAccessor(tm)
   {
+    if (arccoreIsCheck())
+        m_request_error_is_fatal = true;
     if (Platform::getEnvironmentVariable("ARCCORE_NOREPORT_ERROR_MPIREQUEST")=="TRUE")
       m_is_report_error_in_request = false;
     if (Platform::getEnvironmentVariable("ARCCORE_MPIREQUEST_STACKTRACE")=="TRUE")

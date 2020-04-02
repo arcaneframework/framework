@@ -41,6 +41,27 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace
+{
+#ifdef ARCCORE_CHECK
+static bool global_arccore_is_check = true;
+#else
+static bool global_arccore_is_check = false;
+#endif
+}
+
+extern "C++" ARCCORE_BASE_EXPORT
+bool arccoreIsCheck()
+{
+  return global_arccore_is_check;
+}
+
+extern "C++" ARCCORE_BASE_EXPORT
+void arccoreSetCheck(bool v)
+{
+  global_arccore_is_check = v;
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
