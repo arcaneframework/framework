@@ -10,6 +10,7 @@
 
 #include "arccore/message_passing_mpi/MpiAdapter.h"
 #include "arccore/message_passing_mpi/MpiMessagePassingMng.h"
+#include "arccore/message_passing_mpi/MpiSerializeMessageList.h"
 #include "arccore/message_passing_mpi/MpiLock.h"
 #include "arccore/message_passing/Request.h"
 #include "arccore/serialize/BasicSerializer.h"
@@ -455,6 +456,16 @@ _castSerializer(ISerializer* serializer)
   if (!sbuf)
     ARCCORE_THROW(ArgumentException,"Can not cast 'ISerializer' to 'BasicSerializer'");
   return sbuf;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<ISerializeMessageList> MpiSerializeDispatcher::
+createSerializeMessageListRef()
+{
+  ISerializeMessageList* x = new MpiSerializeMessageList(this);
+  return makeRef(x);
 }
 
 /*---------------------------------------------------------------------------*/

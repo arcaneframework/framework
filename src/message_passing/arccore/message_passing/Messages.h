@@ -109,7 +109,11 @@ namespace Arccore::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Créé une liste de requêtes.
+ *
+ * \sa IRequestList
+ */
 inline Ref<IRequestList>
 mpCreateRequestListRef(IMessagePassingMng* pm)
 {
@@ -185,7 +189,9 @@ mpWait(IMessagePassingMng* pm, ArrayView<Request> requests,
  * Cette fonction permet de savoir si un message issu du couple (rang,tag)
  * est disponible. \a message doit avoir été initialisé avec un couple (rang,tag)
  * (message.isRankTag() doit être vrai).
+ *
  * Retourne une instance de \a MessageId.
+ *
  * En mode non bloquant, si aucun message n'est disponible, alors
  * MessageId::isValid() vaut \a false pour l'instance retournée.
  */
@@ -215,6 +221,16 @@ mpBarrier(IMessagePassingMng* pm)
   auto d = pm->dispatchers()->controlDispatcher();
   d->barrier();
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Créé une liste de messages de sérialisation.
+ *
+ * \sa IRequestList
+ */
+ARCCORE_MESSAGEPASSING_EXPORT Ref<ISerializeMessageList>
+mpCreateSerializeMessageListRef(IMessagePassingMng* pm);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

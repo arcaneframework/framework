@@ -54,6 +54,10 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeDispatcher
 
  public:
 
+  Ref<ISerializeMessageList> createSerializeMessageListRef() override;
+
+ public:
+
   // Ces méthodes sont spécifiques à la version MPI.
   //!@{
   Int64 serializeBufferSize() const { return m_serialize_buffer_size; }
