@@ -61,15 +61,16 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeDispatcher
   // Ces méthodes sont spécifiques à la version MPI.
   //!@{
   Int64 serializeBufferSize() const { return m_serialize_buffer_size; }
-  Request sendSerializerWithTag(ISerializer* values,Int32 rank,int mpi_tag,bool is_blocking);
-  Request recvSerializerBytes(Span<Byte> bytes,Int32 rank,int tag,bool is_blocking);
+  Request sendSerializerWithTag(ISerializer* values,MessageRank rank,MessageTag mpi_tag,bool is_blocking);
+  Request recvSerializerBytes(Span<Byte> bytes,MessageRank rank,MessageTag tag,bool is_blocking);
   Request recvSerializerBytes(Span<Byte> bytes,MessageId message_id,bool is_blocking);
-  void recvSerializer2(ISerializer* values,Int32 rank,int mpi_tag);
+  void recvSerializer2(ISerializer* values,MessageRank rank,MessageTag mpi_tag);
+  static MessageTag nextSerializeTag(MessageTag tag);
   //!@}
 
-  void broadcastSerializer(ISerializer* values,Int32 rank);
-  Request sendSerializer(const ISerializer* s,PointToPointMessageInfo message);
-  Request receiveSerializer(ISerializer* s,PointToPointMessageInfo message);
+  void broadcastSerializer(ISerializer* values,MessageRank rank);
+  Request sendSerializer(const ISerializer* s,const PointToPointMessageInfo& message);
+  Request receiveSerializer(ISerializer* s,const PointToPointMessageInfo& message);
 
   void checkFinishedSubRequests();
 
@@ -90,7 +91,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeDispatcher
   BasicSerializer* _castSerializer(ISerializer* serializer);
   const BasicSerializer* _castSerializer(const ISerializer* serializer);
   void _checkBigMessage(Int64 message_size);
-  Request _sendSerializerBytes(Span<const Byte> bytes,Int32 rank,int tag,bool is_blocking);
+  Request _sendSerializerBytes(Span<const Byte> bytes,MessageRank rank,
+                               MessageTag tag,bool is_blocking);
   void _init();
 };
 

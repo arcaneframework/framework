@@ -78,7 +78,8 @@ class MpiSerializeDispatcher::SendSerializerSubRequest
 : public ISubRequest
 {
  public:
-  SendSerializerSubRequest(MpiSerializeDispatcher* pm,BasicSerializer* buf,Int32 rank,Int32 mpi_tag)
+  SendSerializerSubRequest(MpiSerializeDispatcher* pm,BasicSerializer* buf,
+                           MessageRank rank,MessageTag mpi_tag)
   : m_parallel_mng(pm), m_serialize_buffer(buf), m_rank(rank), m_mpi_tag(mpi_tag) {}
   ~SendSerializerSubRequest() override
   {
@@ -91,8 +92,8 @@ class MpiSerializeDispatcher::SendSerializerSubRequest
   }
   MpiSerializeDispatcher* m_parallel_mng;
   BasicSerializer* m_serialize_buffer;
-  Int32 m_rank;
-  Int32 m_mpi_tag;
+  MessageRank m_rank;
+  MessageTag m_mpi_tag;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -102,7 +103,8 @@ class MpiSerializeDispatcher::ReceiveSerializerSubRequest
 : public ISubRequest
 {
  public:
-  ReceiveSerializerSubRequest(MpiSerializeDispatcher* pm,BasicSerializer* buf,Int32 rank,Int32 mpi_tag,Integer action)
+  ReceiveSerializerSubRequest(MpiSerializeDispatcher* pm,BasicSerializer* buf,
+                              MessageRank rank,MessageTag mpi_tag,Integer action)
   : m_parallel_mng(pm), m_serialize_buffer(buf), m_rank(rank), m_mpi_tag(mpi_tag), m_action(action) {}
  public:
   Request executeOnCompletion() override
@@ -131,10 +133,13 @@ class MpiSerializeDispatcher::ReceiveSerializerSubRequest
   }
   MpiSerializeDispatcher* m_parallel_mng;
   BasicSerializer* m_serialize_buffer;
-  Int32 m_rank;
-  Int32 m_mpi_tag;
+  MessageRank m_rank;
+  MessageTag m_mpi_tag;
   Int32 m_action;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -164,6 +169,15 @@ MpiSerializeDispatcher::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+MessageTag MpiSerializeDispatcher::
+nextSerializeTag(MessageTag tag)
+{
+  return MessageTag(tag.value()+1);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void MpiSerializeDispatcher::
 _init()
 {
@@ -178,7 +192,8 @@ _init()
 /*---------------------------------------------------------------------------*/
 
 Request MpiSerializeDispatcher::
-sendSerializerWithTag(ISerializer* values,Int32 rank,int mpi_tag,bool is_blocking)
+sendSerializerWithTag(ISerializer* values,MessageRank rank,MessageTag mpi_tag,
+                      bool is_blocking)
 {
   BasicSerializer* sbuf = _castSerializer(values);
   ITraceMng* tm = m_trace;
@@ -223,7 +238,7 @@ sendSerializerWithTag(ISerializer* values,Int32 rank,int mpi_tag,bool is_blockin
 
   if (m_is_trace_serializer)
     tm->info() << "Big message second size=" << bytes.size();
-  return _sendSerializerBytes(bytes,rank,mpi_tag+1,is_blocking);
+  return _sendSerializerBytes(bytes,rank,nextSerializeTag(mpi_tag),is_blocking);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -241,32 +256,35 @@ recvSerializerBytes(Span<Byte> bytes,MessageId message_id,bool is_blocking)
 /*---------------------------------------------------------------------------*/
 
 Request MpiSerializeDispatcher::
-recvSerializerBytes(Span<Byte> bytes,Int32 rank,int tag,bool is_blocking)
+recvSerializerBytes(Span<Byte> bytes,MessageRank rank,MessageTag tag,bool is_blocking)
 {
   SerializeByteConverter<Byte> sbc(bytes,m_byte_serializer_datatype);
   MPI_Datatype dt = sbc.datatype();
-  return m_adapter->directRecv(sbc.data(),sbc.size(),rank,sbc.elementSize(),dt,tag,is_blocking);
+  return m_adapter->directRecv(sbc.data(),sbc.size(),rank.value(),
+                               sbc.elementSize(),dt,tag.value(),is_blocking);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Request MpiSerializeDispatcher::
-_sendSerializerBytes(Span<const Byte> bytes,Int32 rank,int tag,bool is_blocking)
+_sendSerializerBytes(Span<const Byte> bytes,MessageRank rank,MessageTag tag,
+                     bool is_blocking)
 {
   SerializeByteConverter<const Byte> sbc(bytes,m_byte_serializer_datatype);
   MPI_Datatype dt = sbc.datatype();
   m_trace->info(4) << "_sendSerializerBytes: orig_size=" << bytes.size()
                    << " second_size=" << sbc.size()
                    << " message_size=" << sbc.messageSize();
-  return m_adapter->directSend(sbc.data(),sbc.size(),rank,sbc.elementSize(),dt,tag,is_blocking);
+  return m_adapter->directSend(sbc.data(),sbc.size(),rank.value(),
+                               sbc.elementSize(),dt,tag.value(),is_blocking);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MpiSerializeDispatcher::
-recvSerializer2(ISerializer* values,Int32 rank,int mpi_tag)
+recvSerializer2(ISerializer* values,MessageRank rank,MessageTag mpi_tag)
 {
   BasicSerializer* sbuf = _castSerializer(values);
   ITraceMng* tm = m_trace;
@@ -295,7 +313,7 @@ recvSerializer2(ISerializer* values,Int32 rank,int mpi_tag)
     tm->info() << "Receive overflow buffer: " << total_recv_size;
   sbuf->preallocate(total_recv_size);
   bytes = sbuf->globalBuffer();
-  recvSerializerBytes(bytes,rank,mpi_tag+1,true);
+  recvSerializerBytes(bytes,rank,nextSerializeTag(mpi_tag),true);
   sbuf->setFromSizes();
   if (m_is_trace_serializer)
     tm->info() << "End receive overflow buffer: " << total_recv_size;
@@ -338,12 +356,12 @@ _checkBigMessage(Int64 message_size)
 /*---------------------------------------------------------------------------*/
 
 Request MpiSerializeDispatcher::
-sendSerializer(const ISerializer* s,PointToPointMessageInfo message)
+sendSerializer(const ISerializer* s,const PointToPointMessageInfo& message)
 {
   BasicSerializer* sbuf = _castSerializer(const_cast<ISerializer*>(s));
 
-  Int32 rank = message.destinationRank().value();
-  Int32 mpi_tag = message.tag().value();
+  MessageRank rank = message.destinationRank();
+  MessageTag mpi_tag = message.tag();
   bool is_blocking = message.isBlocking();
 
   ITraceMng* tm = m_trace;
@@ -371,7 +389,7 @@ sendSerializer(const ISerializer* s,PointToPointMessageInfo message)
   // va envoyer tout le message
   auto x = sbuf->copyAndGetSizesBuffer();
   Request r1 = _sendSerializerBytes(x,rank,mpi_tag,is_blocking);
-  auto* x2 = new SendSerializerSubRequest(this,sbuf,rank,mpi_tag+1);
+  auto* x2 = new SendSerializerSubRequest(this,sbuf,rank,nextSerializeTag(mpi_tag));
   r1.setSubRequest(makeRef<ISubRequest>(x2));
   return r1;
 }
@@ -380,11 +398,11 @@ sendSerializer(const ISerializer* s,PointToPointMessageInfo message)
 /*---------------------------------------------------------------------------*/
 
 Request MpiSerializeDispatcher::
-receiveSerializer(ISerializer* s,PointToPointMessageInfo message)
+receiveSerializer(ISerializer* s,const PointToPointMessageInfo& message)
 {
   BasicSerializer* sbuf = _castSerializer(s);
-  Int32 rank = message.destinationRank().value();
-  Int32 tag = message.tag().value();
+  MessageRank rank = message.destinationRank();
+  MessageTag tag = message.tag();
   bool is_blocking = message.isBlocking();
 
   sbuf->preallocate(m_serialize_buffer_size);
@@ -397,7 +415,7 @@ receiveSerializer(ISerializer* s,PointToPointMessageInfo message)
     r = recvSerializerBytes(bytes,message.messageId(),is_blocking);
   else
     ARCCORE_THROW(NotSupportedException,"Only message.isRankTag() or message.isMessageId() is supported");
-  auto* sr = new ReceiveSerializerSubRequest(this,sbuf,rank,tag+1,1);
+  auto* sr = new ReceiveSerializerSubRequest(this,sbuf,rank,nextSerializeTag(tag),1);
   r.setSubRequest(makeRef<ISubRequest>(sr));
   return r;
 }
@@ -406,11 +424,11 @@ receiveSerializer(ISerializer* s,PointToPointMessageInfo message)
 /*---------------------------------------------------------------------------*/
 
 void MpiSerializeDispatcher::
-broadcastSerializer(ISerializer* values,Int32 rank)
+broadcastSerializer(ISerializer* values,MessageRank rank)
 {
   BasicSerializer* sbuf = _castSerializer(values);
   ITraceMng* tm = m_trace;
-  Int32 my_rank = m_adapter->commRank();
+  MessageRank my_rank(m_adapter->commRank());
   bool is_broadcaster = (rank==my_rank);
 
   MPI_Datatype int64_datatype = MpiBuiltIn::datatype(Int64());
@@ -423,21 +441,21 @@ broadcastSerializer(ISerializer* values,Int32 rank)
     Span<Byte> bytes = sbuf->globalBuffer();
     _checkBigMessage(total_size);
     Int64ArrayView total_size_buf(1,&total_size);
-    m_adapter->broadcast(total_size_buf.data(),total_size_buf.size(),rank,int64_datatype);
+    m_adapter->broadcast(total_size_buf.data(),total_size_buf.size(),rank.value(),int64_datatype);
     if (m_is_trace_serializer)
       tm->info() << "MpiSerializeDispatcher::broadcastSerializer(): sending "
                  << BasicSerializer::SizesPrinter(*sbuf);
     SerializeByteConverter<Byte> sbc(bytes,m_byte_serializer_datatype);
-    m_adapter->broadcast(sbc.data(),sbc.size(),rank,sbc.datatype());
+    m_adapter->broadcast(sbc.data(),sbc.size(),rank.value(),sbc.datatype());
   }
   else{
     Int64 total_size = 0;
     Int64ArrayView total_size_buf(1,&total_size);
-    m_adapter->broadcast(total_size_buf.data(),total_size_buf.size(),rank,int64_datatype);
+    m_adapter->broadcast(total_size_buf.data(),total_size_buf.size(),rank.value(),int64_datatype);
     sbuf->preallocate(total_size);
     Span<Byte> bytes = sbuf->globalBuffer();
     SerializeByteConverter<Byte> sbc(bytes,m_byte_serializer_datatype);
-    m_adapter->broadcast(sbc.data(),sbc.size(),rank,sbc.datatype());
+    m_adapter->broadcast(sbc.data(),sbc.size(),rank.value(),sbc.datatype());
     sbuf->setFromSizes();
     if (m_is_trace_serializer)
       tm->info() << "MpiSerializeDispatcher::broadcastSerializer(): receiving from "

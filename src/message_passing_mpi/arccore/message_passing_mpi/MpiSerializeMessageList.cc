@@ -41,15 +41,15 @@ class MpiSerializeMessageList::_SortMessages
   }
   static bool compare(const ISerializeMessage* pm1,const ISerializeMessage* pm2)
   {
-    Int32 dest_p1 = pm1->destRank();
-    Int32 dest_p2 = pm2->destRank();
-    Int32 p1_tag = pm1->tag();
-    Int32 p2_tag = pm2->tag();
+    MessageRank dest_p1 = pm1->destination();
+    MessageRank dest_p2 = pm2->destination();
+    MessageTag p1_tag = pm1->internalTag();
+    MessageTag p2_tag = pm2->internalTag();
       
     // TODO: traiter le cas destRank()==A_NULL_RANK
     if (dest_p1==dest_p2){
-      Int32 orig_p1 = pm1->origRank();
-      Int32 orig_p2 = pm2->origRank();
+      MessageRank orig_p1 = pm1->source();
+      MessageRank orig_p2 = pm2->source();
 
       if (pm1->isSend()){
         if (orig_p1==orig_p2 && (p1_tag!=p2_tag))
@@ -113,13 +113,15 @@ processPendingMessages()
   std::stable_sort(std::begin(m_messages_to_process),std::end(m_messages_to_process),_SortMessages());
   for( Integer i=0, is=m_messages_to_process.size(); i<is; ++i ){
     ISerializeMessage* pmsg = m_messages_to_process[i]->message();
-    // Tag 0 indique le tag par defaut
-    if (pmsg->tag()==0)
-      pmsg->setTag(MpiSerializeDispatcher::DEFAULT_SERIALIZE_TAG);
+    // Tag 0 indique le tag par defaut pour les messages de serialisation
+    // TODO: regarder pourquoi ne pas mettre directement cette valeur dans
+    // BasicSerializeMessage
+    if (pmsg->internalTag()==MessageTag(0))
+      pmsg->setInternalTag(MessageTag(MpiSerializeDispatcher::DEFAULT_SERIALIZE_TAG));
     msg->debug() << "Sorted message " << i
-                 << " orig=" << pmsg->origRank()
-                 << " dest=" << pmsg->destRank()
-                 << " tag=" << pmsg->tag()
+                 << " orig=" << pmsg->source()
+                 << " dest=" << pmsg->destination()
+                 << " tag=" << pmsg->internalTag()
                  << " send?=" << pmsg->isSend();
   }
 
@@ -127,17 +129,19 @@ processPendingMessages()
   for( Integer i=0; i<nb_message; ++i ){
     MpiSerializeMessage* mpi_msg = m_messages_to_process[i];
     ISerializeMessage* pmsg = mpi_msg->message();
-    msg->debug() << "sending message " << i << " to " << pmsg->destRank()
+    msg->debug() << "sending message " << i << " to " << pmsg->destination()
                  << (pmsg->isSend() ? " To send" : " To receive");
     Request new_request;
+    MessageRank dest = pmsg->destination();
+    MessageTag tag = pmsg->internalTag();
     if (pmsg->isSend()){
-      new_request = m_dispatcher->sendSerializerWithTag(pmsg->serializer(),pmsg->destRank(),pmsg->tag(),false);
+      new_request = m_dispatcher->sendSerializerWithTag(pmsg->serializer(),dest,tag,false);
     }
     else{
       BasicSerializer* sbuf = mpi_msg->serializeBuffer();
-      msg->debug() << "call recvSerializer2 tag=" << pmsg->tag() << " from=" << pmsg->destRank();
+      msg->debug() << "call recvSerializer2 tag=" << tag << " from=" << dest;
       sbuf->preallocate(serialize_buffer_size);
-      new_request = m_dispatcher->recvSerializerBytes(sbuf->globalBuffer(),pmsg->destRank(),pmsg->tag(),false);
+      new_request = m_dispatcher->recvSerializerBytes(sbuf->globalBuffer(),dest,tag,false);
     }
     m_messages_request.add(MpiSerializeMessageRequest(mpi_msg,new_request));
   }
@@ -195,8 +199,8 @@ _waitMessages2(eWaitType wait_type)
     msg->debug() << "Waiting for message: "
                  << " rank=" << comm_rank
                  << " issend=" << msm->message()->isSend()
-                 << " dest=" << msm->message()->destRank()
-                 << " tag=" << msm->message()->tag()
+                 << " dest=" << msm->message()->destination()
+                 << " tag=" << msm->message()->internalTag()
                  << " request=" << (MPI_Request)requests[z];
   }
   mpi_status.resize(nb_message);
@@ -223,7 +227,7 @@ _waitMessages2(eWaitType wait_type)
       MpiSerializeMessage* msm = m_messages_request[z].m_mpi_message;
       ostr << "IndexReturn message: "
            << " issend=" << msm->message()->isSend()
-           << " dest=" << msm->message()->destRank()
+           << " dest=" << msm->message()->destination()
            << " done_index=" << done_indexes[z]
            << " status_src=" << mpi_status[z].MPI_SOURCE
            << " status_tag=" << mpi_status[z].MPI_TAG
@@ -238,7 +242,7 @@ _waitMessages2(eWaitType wait_type)
     MpiSerializeMessage* msm = m_messages_request[z].m_mpi_message;
     msg->debug() << "IndexReturn message: "
                  << " issend=" << msm->message()->isSend()
-                 << " dest=" << msm->message()->destRank()
+                 << " dest=" << msm->message()->destination()
                  << " done_index=" << done_indexes[z]
                  << " status_src=" << mpi_status[z].MPI_SOURCE
                  << " status_tag=" << mpi_status[z].MPI_TAG
@@ -259,7 +263,8 @@ _waitMessages2(eWaitType wait_type)
                    << " err=" << mpi_status[i].MPI_ERROR
                    << " request=" << rq;
       ++mpi_status_index;
-      Request r = this->_processOneMessage(mpi_msg,status.MPI_SOURCE,status.MPI_TAG);
+      Request r = _processOneMessage(mpi_msg,MessageRank(status.MPI_SOURCE),
+                                     MessageTag(status.MPI_TAG));
       if (r.isValid()){
         msg->debug() << "Add new receive operation for message number " << i
                      << " request=" << (MPI_Request)r;
@@ -289,7 +294,7 @@ _waitMessages2(eWaitType wait_type)
  * \brief Effectue la requête. Retourne une éventuelle requête si non nul.
  */
 Request MpiSerializeMessageList::
-_processOneMessage(MpiSerializeMessage* msm, int source, int mpi_tag)
+_processOneMessage(MpiSerializeMessage* msm, MessageRank source, MessageTag mpi_tag)
 {
   Request request;
   m_trace->debug() << "Process one message msg=" << this
@@ -306,17 +311,17 @@ _processOneMessage(MpiSerializeMessage* msm, int source, int mpi_tag)
  * \brief Effectue la requête. Retourne une éventuelle requête si non nul.
  */
 Request MpiSerializeMessageList::
-_processOneMessageGlobalBuffer(MpiSerializeMessage* msm,int source,int mpi_tag)
+_processOneMessageGlobalBuffer(MpiSerializeMessage* msm,MessageRank source,MessageTag mpi_tag)
 {
   Request request;
   m_trace->debug() << "Process one message (GlobalBuffer) msg=" << this
                    << " number=" << msm->messageNumber()
                    << " is_send=" << msm->message()->isSend();
 
-  Int32 dest_rank = msm->message()->destRank();
-  if (dest_rank==A_NULL_RANK)
+  MessageRank dest_rank = msm->message()->destination();
+  if (dest_rank.isNull())
     // Signife que le message était un MPI_ANY_SOURCE
-    dest_rank = static_cast<Int32>(source);
+    dest_rank = source;
   BasicSerializer* sbuf = msm->serializeBuffer();
 
   Int64 message_size = sbuf->totalSize();
@@ -332,7 +337,8 @@ _processOneMessageGlobalBuffer(MpiSerializeMessage* msm,int source,int mpi_tag)
     m_dispatcher->_checkBigMessage(message_size);
     sbuf->preallocate(message_size);
     Span<Byte> bytes = sbuf->globalBuffer();
-    request = m_dispatcher->recvSerializerBytes(bytes,dest_rank,mpi_tag+1,false);
+    MessageTag next_tag = MpiSerializeDispatcher::nextSerializeTag(mpi_tag);
+    request = m_dispatcher->recvSerializerBytes(bytes,dest_rank,next_tag,false);
     msm->incrementMessageNumber();
     return request;
   }
@@ -347,7 +353,9 @@ Ref<ISerializeMessage> MpiSerializeMessageList::
 createMessage(MessageRank source,MessageRank destination,
               ePointToPointMessageType type)
 {
-  return BasicSerializeMessage::create(source,destination,type);
+  auto x = BasicSerializeMessage::create(source,destination,type);
+  x->setInternalTag(MessageTag(MpiSerializeDispatcher::DEFAULT_SERIALIZE_TAG));
+  return x;
 }
 
 /*---------------------------------------------------------------------------*/

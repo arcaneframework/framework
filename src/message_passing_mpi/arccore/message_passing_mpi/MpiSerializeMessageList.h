@@ -68,8 +68,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeMessageList
   Ref<ISerializeMessage> createMessage(MessageRank source,MessageRank destination,
                                        ePointToPointMessageType type) override;
 
-  Request _processOneMessageGlobalBuffer(MpiSerializeMessage* msm,int source,int mpi_tag);
-  Request _processOneMessage(MpiSerializeMessage* msm, int source, int mpi_tag);
+  Request _processOneMessageGlobalBuffer(MpiSerializeMessage* msm,MessageRank source,MessageTag mpi_tag);
+  Request _processOneMessage(MpiSerializeMessage* msm,MessageRank source,MessageTag mpi_tag);
 
  private:
 
