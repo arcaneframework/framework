@@ -33,7 +33,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeDispatcher
   friend MpiSerializeMessageList;
   class ReceiveSerializerSubRequest;
   class SendSerializerSubRequest;
+
  public:
+
   class SerializeSubRequest
   {
    public:
@@ -43,9 +45,6 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeDispatcher
     Byte m_bytes[MAX_REQUEST_SIZE];
     Request m_request;
   };
- public:
-
-  static const int DEFAULT_SERIALIZE_TAG = 101;
 
  public:
 

@@ -116,11 +116,6 @@ processPendingMessages()
   std::stable_sort(std::begin(m_messages_to_process),std::end(m_messages_to_process),_SortMessages());
   for( Integer i=0, is=m_messages_to_process.size(); i<is; ++i ){
     ISerializeMessage* pmsg = m_messages_to_process[i]->message();
-    // Tag 0 indique le tag par defaut pour les messages de serialisation
-    // TODO: regarder pourquoi ne pas mettre directement cette valeur dans
-    // BasicSerializeMessage
-    if (pmsg->internalTag()==MessageTag(0))
-      pmsg->setInternalTag(MessageTag(MpiSerializeDispatcher::DEFAULT_SERIALIZE_TAG));
     msg->debug() << "Sorted message " << i
                  << " orig=" << pmsg->source()
                  << " dest=" << pmsg->destination()
@@ -358,7 +353,6 @@ createMessage(MessageRank destination,ePointToPointMessageType type)
 {
   MessageRank source(m_adapter->commRank());
   auto x = BasicSerializeMessage::create(source,destination,type);
-  x->setInternalTag(MessageTag(MpiSerializeDispatcher::DEFAULT_SERIALIZE_TAG));
   return x;
 }
 

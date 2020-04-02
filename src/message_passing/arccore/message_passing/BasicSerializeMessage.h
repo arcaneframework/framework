@@ -42,6 +42,13 @@ namespace Arccore::MessagePassing
 class ARCCORE_MESSAGEPASSING_EXPORT BasicSerializeMessage
 : public ISerializeMessage
 {
+ public:
+
+  static const Int32 DEFAULT_SERIALIZE_TAG_VALUE = 101;
+
+  //! Tag par défaut pour les messages de sérialisation
+  static MessageTag defaultTag() { return MessageTag(DEFAULT_SERIALIZE_TAG_VALUE); }
+
  protected:
 
   BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
@@ -88,7 +95,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT BasicSerializeMessage
 
   MessageRank m_orig_rank; //!< Rang de l'expéditeur de la requête
   MessageRank m_dest_rank; //!< Rang du destinataire du message
-  MessageTag m_tag = MessageTag(0);
+  MessageTag m_tag = defaultTag();
   eMessageType m_old_message_type; //!< Type du message (obsolète)
   ePointToPointMessageType m_message_type; //!< Type du message
   bool m_is_send; //!< \c true si envoie, \c false si réception

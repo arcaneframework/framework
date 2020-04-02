@@ -52,6 +52,7 @@ BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
                       BasicSerializer* s)
 : m_orig_rank(orig_rank)
 , m_dest_rank(dest_rank)
+, m_tag(defaultTag())
 , m_old_message_type(_toMessageType(type))
 , m_message_type(type)
 , m_is_send(false)
