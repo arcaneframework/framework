@@ -12,7 +12,6 @@
 #include "arccore/message_passing/IMessagePassingMng.h"
 #include "arccore/message_passing/IDispatchers.h"
 #include "arccore/message_passing/ITypeDispatcher.h"
-#include "arccore/message_passing/IControlDispatcher.h"
 #include "arccore/message_passing/Request.h"
 #include "arccore/message_passing/PointToPointMessageInfo.h"
 #include "arccore/collections/Array.h"
@@ -114,72 +113,56 @@ namespace Arccore::MessagePassing
  *
  * \sa IRequestList
  */
-inline Ref<IRequestList>
-mpCreateRequestListRef(IMessagePassingMng* pm)
-{
-  auto d = pm->dispatchers()->controlDispatcher();
-  return d->createRequestListRef();
-}
+ARCCORE_MESSAGEPASSING_EXPORT Ref<IRequestList>
+mpCreateRequestListRef(IMessagePassingMng* pm);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline void
-mpWaitAll(IMessagePassingMng* pm, ArrayView<Request> requests)
-{
-  auto d = pm->dispatchers()->controlDispatcher();
-  d->waitAllRequests(requests);
-}
+ARCCORE_MESSAGEPASSING_EXPORT void
+mpWaitAll(IMessagePassingMng* pm, ArrayView<Request> requests);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-inline void
-mpWait(IMessagePassingMng* pm, Request request)
-{
-  mpWaitAll(pm, ArrayView<Request>(1, &request));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-inline void
-mpWaitSome(IMessagePassingMng* pm, ArrayView<Request> requests, ArrayView<bool> indexes)
-{
-  auto d = pm->dispatchers()->controlDispatcher();
-  d->waitSomeRequests(requests, indexes, false);
-}
+/*!
+ * \brief Bloque jusqu'à ce que la requête \a request soit terminée.
+ */
+ARCCORE_MESSAGEPASSING_EXPORT void
+mpWait(IMessagePassingMng* pm, Request request);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-inline void
-mpTestSome(IMessagePassingMng* pm, ArrayView<Request> requests, ArrayView<bool> indexes)
-{
-  auto d = pm->dispatchers()->controlDispatcher();
-  d->waitSomeRequests(requests, indexes, false);
-}
+/*!
+ * \brief Bloque jusqu'à ce qu'au moins une des requêtes de \a request soit terminée.
+ *
+ * En retour, le tableaux \a indexes contient la valeur \a true pour indiquer
+ * qu'une requête est terminée.
+ */
+ARCCORE_MESSAGEPASSING_EXPORT void
+mpWaitSome(IMessagePassingMng* pm, ArrayView<Request> requests, ArrayView<bool> indexes);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Teste si des requêtes de \a request sont terminées.
+ *
+ * En retour, le tableaux \a indexes contient la valeur \a true pour indiquer
+ * qu'une requête est terminée.
+ */
+ARCCORE_MESSAGEPASSING_EXPORT void
+mpTestSome(IMessagePassingMng* pm, ArrayView<Request> requests, ArrayView<bool> indexes);
 
-inline void
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Fonction générale d'attente de terminaison de requête.
+ *
+ * En fonction de la valeur de \a wait_type, appelle mpWait(), mpWaitSome(), ou
+ * mpTestSome().
+ */
+ARCCORE_MESSAGEPASSING_EXPORT void
 mpWait(IMessagePassingMng* pm, ArrayView<Request> requests,
-       ArrayView<bool> indexes, eWaitType w_type)
-{
-  switch (w_type) {
-  case WaitAll:
-    mpWaitAll(pm, requests);
-    indexes.fill(true);
-    break;
-  case WaitSome:
-    mpWaitSome(pm, requests, indexes);
-    break;
-  case WaitSomeNonBlocking:
-    mpTestSome(pm, requests, indexes);
-    break;
-  }
-}
+       ArrayView<bool> indexes, eWaitType wait_type);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -195,32 +178,31 @@ mpWait(IMessagePassingMng* pm, ArrayView<Request> requests,
  * En mode non bloquant, si aucun message n'est disponible, alors
  * MessageId::isValid() vaut \a false pour l'instance retournée.
  */
-inline MessageId
-mpProbe(IMessagePassingMng* pm, PointToPointMessageInfo message)
-{
-  auto d = pm->dispatchers()->controlDispatcher();
-  return d->probe(message);
-}
+ARCCORE_MESSAGEPASSING_EXPORT MessageId
+mpProbe(IMessagePassingMng* pm, PointToPointMessageInfo message);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-inline IMessagePassingMng*
-mpSplit(IMessagePassingMng* pm, bool keep)
-{
-  auto d = pm->dispatchers()->controlDispatcher();
-  return d->commSplit(keep);
-}
+/*!
+ * \brief Créé une nouvelle instance de \a IMessagePassingMng.
+ *
+ * \a keep est vrai si ce rang est présent dans le nouveau communicateur.
+ *
+ * L'instance retournée doit être détruite par l'appel à l'opérateur
+ * operator delele().
+ */
+ARCCORE_MESSAGEPASSING_EXPORT IMessagePassingMng*
+mpSplit(IMessagePassingMng* pm, bool keep);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-inline void
-mpBarrier(IMessagePassingMng* pm)
-{
-  auto d = pm->dispatchers()->controlDispatcher();
-  d->barrier();
-}
+/*!
+ * \brief Effectue une barrière
+ *
+ * Bloque tant que tous les rangs n'ont pas atteint cette appel.
+ */
+ARCCORE_MESSAGEPASSING_EXPORT void
+mpBarrier(IMessagePassingMng* pm);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
