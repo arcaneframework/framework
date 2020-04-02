@@ -158,6 +158,7 @@ processPendingMessages()
 Integer MpiSerializeMessageList::
 waitMessages(eWaitType wait_type)
 {
+  processPendingMessages();
   Integer n = _waitMessages(wait_type);
   m_dispatcher->checkFinishedSubRequests();
   return n;
