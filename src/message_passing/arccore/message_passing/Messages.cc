@@ -10,6 +10,7 @@
 
 #include "arccore/message_passing/ISerializeDispatcher.h"
 #include "arccore/message_passing/IControlDispatcher.h"
+#include "arccore/message_passing/MessageId.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -95,7 +96,7 @@ mpWait(IMessagePassingMng* pm, ArrayView<Request> requests,
 /*---------------------------------------------------------------------------*/
 
 MessageId
-mpProbe(IMessagePassingMng* pm, PointToPointMessageInfo message)
+mpProbe(IMessagePassingMng* pm, const PointToPointMessageInfo& message)
 {
   auto d = pm->dispatchers()->controlDispatcher();
   return d->probe(message);

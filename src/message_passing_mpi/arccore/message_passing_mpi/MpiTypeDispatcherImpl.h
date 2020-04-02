@@ -19,15 +19,12 @@
 
 #include "arccore/base/NotSupportedException.h"
 #include "arccore/base/NotImplementedException.h"
+#include "arccore/collections/Array.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
-{
-namespace MessagePassing
-{
-namespace Mpi
+namespace Arccore::MessagePassing::Mpi
 {
 
 /*---------------------------------------------------------------------------*/
@@ -234,7 +231,7 @@ receive(Span<Type> recv_buffer,Int32 rank,bool is_blocked)
 /*---------------------------------------------------------------------------*/
 
 template<class Type> Request MpiTypeDispatcher<Type>::
-send(Span<const Type> send_buffer,PointToPointMessageInfo message)
+send(Span<const Type> send_buffer,const PointToPointMessageInfo& message)
 {
   MPI_Datatype type = m_datatype->datatype();
   Int64 sizeof_type = sizeof(Type);
@@ -256,7 +253,7 @@ send(Span<const Type> send_buffer,PointToPointMessageInfo message)
 /*---------------------------------------------------------------------------*/
 
 template<class Type> Request MpiTypeDispatcher<Type>::
-receive(Span<Type> recv_buffer,PointToPointMessageInfo message)
+receive(Span<Type> recv_buffer,const PointToPointMessageInfo& message)
 {
   MPI_Datatype type = m_datatype->datatype();
   Int64 sizeof_type = sizeof(Type);
@@ -312,9 +309,7 @@ allReduce(eReduceType op,Span<Type> send_buf)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Mpi
-} // End namespace MessagePassing
-} // End namespace Arccore
+} // End namespace Arccore::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -40,7 +40,7 @@ class IControlDispatcher
 
   virtual void barrier() =0;
 
-  virtual MessageId probe(PointToPointMessageInfo message) =0;
+  virtual MessageId probe(const PointToPointMessageInfo& message) =0;
 
   //! Création d'une liste de requêtes associé à ce gestionnaire
   virtual Ref<IRequestList> createRequestListRef() =0;

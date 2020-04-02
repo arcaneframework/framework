@@ -13,8 +13,8 @@
 #include "arccore/message_passing/IDispatchers.h"
 #include "arccore/message_passing/ITypeDispatcher.h"
 #include "arccore/message_passing/Request.h"
-#include "arccore/message_passing/PointToPointMessageInfo.h"
-#include "arccore/collections/Array.h"
+#include "arccore/base/RefDeclarations.h"
+#include "arccore/base/Span.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -77,7 +77,7 @@ namespace Arccore::MessagePassing
     type* x = nullptr;                                                                                                \
     return pm->dispatchers()->dispatcher(x)->send(values, rank, is_blocked);                                          \
   }                                                                                                                   \
-  inline Request mpSend(IMessagePassingMng* pm, Span<const type> values, PointToPointMessageInfo message)             \
+  inline Request mpSend(IMessagePassingMng* pm, Span<const type> values, const PointToPointMessageInfo& message)      \
   {                                                                                                                   \
     type* x = nullptr;                                                                                                \
     return pm->dispatchers()->dispatcher(x)->send(values, message);                                                   \
@@ -87,7 +87,7 @@ namespace Arccore::MessagePassing
     type* x = nullptr;                                                                                                \
     return pm->dispatchers()->dispatcher(x)->receive(values, rank, is_blocked);                                       \
   }                                                                                                                   \
-  inline Request mpReceive(IMessagePassingMng* pm, Span<type> values, PointToPointMessageInfo message)                \
+  inline Request mpReceive(IMessagePassingMng* pm, Span<type> values, const PointToPointMessageInfo& message)         \
   {                                                                                                                   \
     type* x = nullptr;                                                                                                \
     return pm->dispatchers()->dispatcher(x)->receive(values, message);                                                \
@@ -179,7 +179,7 @@ mpWait(IMessagePassingMng* pm, ArrayView<Request> requests,
  * MessageId::isValid() vaut \a false pour l'instance retournée.
  */
 ARCCORE_MESSAGEPASSING_EXPORT MessageId
-mpProbe(IMessagePassingMng* pm, PointToPointMessageInfo message);
+mpProbe(IMessagePassingMng* pm, const PointToPointMessageInfo& message);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -209,7 +209,7 @@ mpBarrier(IMessagePassingMng* pm);
 /*!
  * \brief Créé une liste de messages de sérialisation.
  *
- * \sa IRequestList
+ * \sa ISerializeMessageList
  */
 ARCCORE_MESSAGEPASSING_EXPORT Ref<ISerializeMessageList>
 mpCreateSerializeMessageListRef(IMessagePassingMng* pm);
