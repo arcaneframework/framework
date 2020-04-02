@@ -60,10 +60,10 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeDispatcher
   // Ces méthodes sont spécifiques à la version MPI.
   //!@{
   Int64 serializeBufferSize() const { return m_serialize_buffer_size; }
-  Request sendSerializerWithTag(ISerializer* values,MessageRank rank,MessageTag mpi_tag,bool is_blocking);
-  Request recvSerializerBytes(Span<Byte> bytes,MessageRank rank,MessageTag tag,bool is_blocking);
-  Request recvSerializerBytes(Span<Byte> bytes,MessageId message_id,bool is_blocking);
-  void recvSerializer2(ISerializer* values,MessageRank rank,MessageTag mpi_tag);
+  Request legacySendSerializer(ISerializer* values,const PointToPointMessageInfo& message);
+  void legacyReceiveSerializer(ISerializer* values,MessageRank rank,MessageTag mpi_tag);
+  void checkFinishedSubRequests();
+  MpiAdapter* adapter() const { return m_adapter; }
   static MessageTag nextSerializeTag(MessageTag tag);
   //!@}
 
@@ -71,9 +71,12 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeDispatcher
   Request sendSerializer(const ISerializer* s,const PointToPointMessageInfo& message);
   Request receiveSerializer(ISerializer* s,const PointToPointMessageInfo& message);
 
-  void checkFinishedSubRequests();
 
-  MpiAdapter* adapter() const { return m_adapter; }
+ protected:
+
+  // Ceux deux méthodes sont utilisés aussi par 'MpiSerializeMessageList'
+  Request _recvSerializerBytes(Span<Byte> bytes,MessageRank rank,MessageTag tag,bool is_blocking);
+  Request _recvSerializerBytes(Span<Byte> bytes,MessageId message_id,bool is_blocking);
 
  private:
 
@@ -82,7 +85,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeDispatcher
   Int64 m_serialize_buffer_size;
   Int64 m_max_serialize_buffer_size;
   UniqueArray<SerializeSubRequest*> m_sub_requests;
-  bool m_is_trace_serializer= false;
+  bool m_is_trace_serializer = false;
   MPI_Datatype m_byte_serializer_datatype;
 
  private:
@@ -90,6 +93,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeDispatcher
   BasicSerializer* _castSerializer(ISerializer* serializer);
   const BasicSerializer* _castSerializer(const ISerializer* serializer);
   void _checkBigMessage(Int64 message_size);
+  Request _sendSerializerWithTag(ISerializer* values,MessageRank rank,
+                                 MessageTag mpi_tag,bool is_blocking);
   Request _sendSerializerBytes(Span<const Byte> bytes,MessageRank rank,
                                MessageTag tag,bool is_blocking);
   void _init();

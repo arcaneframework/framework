@@ -133,13 +133,13 @@ processPendingMessages()
     MessageRank dest = pmsg->destination();
     MessageTag tag = pmsg->internalTag();
     if (pmsg->isSend()){
-      new_request = m_dispatcher->sendSerializerWithTag(pmsg->serializer(),dest,tag,false);
+      new_request = m_dispatcher->legacySendSerializer(pmsg->serializer(),{dest,tag,NonBlocking});
     }
     else{
       BasicSerializer* sbuf = mpi_msg->serializeBuffer();
       msg->debug() << "call recvSerializer2 tag=" << tag << " from=" << dest;
       sbuf->preallocate(serialize_buffer_size);
-      new_request = m_dispatcher->recvSerializerBytes(sbuf->globalBuffer(),dest,tag,false);
+      new_request = m_dispatcher->_recvSerializerBytes(sbuf->globalBuffer(),dest,tag,false);
     }
     m_messages_request.add(MpiSerializeMessageRequest(mpi_msg,new_request));
   }
@@ -337,7 +337,7 @@ _processOneMessageGlobalBuffer(MpiSerializeMessage* msm,MessageRank source,Messa
     sbuf->preallocate(message_size);
     Span<Byte> bytes = sbuf->globalBuffer();
     MessageTag next_tag = MpiSerializeDispatcher::nextSerializeTag(mpi_tag);
-    request = m_dispatcher->recvSerializerBytes(bytes,dest_rank,next_tag,false);
+    request = m_dispatcher->_recvSerializerBytes(bytes,dest_rank,next_tag,false);
     msm->incrementMessageNumber();
     return request;
   }

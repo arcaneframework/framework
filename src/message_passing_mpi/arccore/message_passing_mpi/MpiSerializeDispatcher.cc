@@ -121,7 +121,7 @@ class MpiSerializeDispatcher::ReceiveSerializerSubRequest
 
       sbuf->preallocate(total_recv_size);
       auto bytes = sbuf->globalBuffer();
-      Request r2 = m_parallel_mng->recvSerializerBytes(bytes,m_rank,m_mpi_tag,false);
+      Request r2 = m_parallel_mng->_recvSerializerBytes(bytes,m_rank,m_mpi_tag,false);
       ISubRequest* sr = new ReceiveSerializerSubRequest(m_parallel_mng,m_serialize_buffer,m_rank,m_mpi_tag,2);
       r2.setSubRequest(makeRef(sr));
       return r2;
@@ -192,9 +192,15 @@ _init()
 /*---------------------------------------------------------------------------*/
 
 Request MpiSerializeDispatcher::
-sendSerializerWithTag(ISerializer* values,MessageRank rank,MessageTag mpi_tag,
-                      bool is_blocking)
+legacySendSerializer(ISerializer* values,const PointToPointMessageInfo& message)
 {
+  if (!message.isRankTag())
+    ARCCORE_FATAL("Only message.isRangTag()==true are allowed for legacy mode");
+
+  MessageRank rank = message.destinationRank();
+  MessageTag mpi_tag = message.tag();
+  bool is_blocking = message.isBlocking();
+
   BasicSerializer* sbuf = _castSerializer(values);
   ITraceMng* tm = m_trace;
 
@@ -209,7 +215,6 @@ sendSerializerWithTag(ISerializer* values,MessageRank rank,MessageTag mpi_tag,
                << BasicSerializer::SizesPrinter(*sbuf)
                << " tag=" << mpi_tag;
 
-  
   // Si le message est plus petit que le buffer par défaut de sérialisation,
   // envoie tout le message
   if (total_size<=m_serialize_buffer_size){
@@ -245,7 +250,7 @@ sendSerializerWithTag(ISerializer* values,MessageRank rank,MessageTag mpi_tag,
 /*---------------------------------------------------------------------------*/
 
 Request MpiSerializeDispatcher::
-recvSerializerBytes(Span<Byte> bytes,MessageId message_id,bool is_blocking)
+_recvSerializerBytes(Span<Byte> bytes,MessageId message_id,bool is_blocking)
 {
   SerializeByteConverter<Byte> sbc(bytes,m_byte_serializer_datatype);
   MPI_Datatype dt = sbc.datatype();
@@ -256,7 +261,7 @@ recvSerializerBytes(Span<Byte> bytes,MessageId message_id,bool is_blocking)
 /*---------------------------------------------------------------------------*/
 
 Request MpiSerializeDispatcher::
-recvSerializerBytes(Span<Byte> bytes,MessageRank rank,MessageTag tag,bool is_blocking)
+_recvSerializerBytes(Span<Byte> bytes,MessageRank rank,MessageTag tag,bool is_blocking)
 {
   SerializeByteConverter<Byte> sbc(bytes,m_byte_serializer_datatype);
   MPI_Datatype dt = sbc.datatype();
@@ -284,7 +289,7 @@ _sendSerializerBytes(Span<const Byte> bytes,MessageRank rank,MessageTag tag,
 /*---------------------------------------------------------------------------*/
 
 void MpiSerializeDispatcher::
-recvSerializer2(ISerializer* values,MessageRank rank,MessageTag mpi_tag)
+legacyReceiveSerializer(ISerializer* values,MessageRank rank,MessageTag mpi_tag)
 {
   BasicSerializer* sbuf = _castSerializer(values);
   ITraceMng* tm = m_trace;
@@ -294,7 +299,7 @@ recvSerializer2(ISerializer* values,MessageRank rank,MessageTag mpi_tag)
   sbuf->preallocate(m_serialize_buffer_size);
   Span<Byte> bytes = sbuf->globalBuffer();
 
-  recvSerializerBytes(bytes,rank,mpi_tag,true);
+  _recvSerializerBytes(bytes,rank,mpi_tag,true);
   Int64 total_recv_size = sbuf->totalSize();
 
   if (m_is_trace_serializer)
@@ -313,7 +318,7 @@ recvSerializer2(ISerializer* values,MessageRank rank,MessageTag mpi_tag)
     tm->info() << "Receive overflow buffer: " << total_recv_size;
   sbuf->preallocate(total_recv_size);
   bytes = sbuf->globalBuffer();
-  recvSerializerBytes(bytes,rank,nextSerializeTag(mpi_tag),true);
+  _recvSerializerBytes(bytes,rank,nextSerializeTag(mpi_tag),true);
   sbuf->setFromSizes();
   if (m_is_trace_serializer)
     tm->info() << "End receive overflow buffer: " << total_recv_size;
@@ -326,6 +331,8 @@ void MpiSerializeDispatcher::
 checkFinishedSubRequests()
 {
   // Regarde si les sous-requêtes sont terminées pour les libérer
+  // Cela est uniquement avec le mode historique où on utilise
+  // la classe 'MpiSerializeMessageList'.
   UniqueArray<SerializeSubRequest*> new_sub_requests;
   for( Integer i=0, n=m_sub_requests.size(); i<n; ++i ){
     SerializeSubRequest* ssr = m_sub_requests[i];
@@ -386,7 +393,9 @@ sendSerializer(const ISerializer* s,const PointToPointMessageInfo& message)
   }
 
   // Sinon, envoie d'abord les tailles puis une autre requête qui
-  // va envoyer tout le message
+  // va envoyer tout le message.
+  // TODO: pour des raisons de performance, il faudrait envoyer la deuxième
+  // requête directement.
   auto x = sbuf->copyAndGetSizesBuffer();
   Request r1 = _sendSerializerBytes(x,rank,mpi_tag,is_blocking);
   auto* x2 = new SendSerializerSubRequest(this,sbuf,rank,nextSerializeTag(mpi_tag));
@@ -410,9 +419,9 @@ receiveSerializer(ISerializer* s,const PointToPointMessageInfo& message)
 
   Request r;
   if (message.isRankTag())
-    r = recvSerializerBytes(bytes,rank,tag,is_blocking);
+    r = _recvSerializerBytes(bytes,rank,tag,is_blocking);
   else if (message.isMessageId())
-    r = recvSerializerBytes(bytes,message.messageId(),is_blocking);
+    r = _recvSerializerBytes(bytes,message.messageId(),is_blocking);
   else
     ARCCORE_THROW(NotSupportedException,"Only message.isRankTag() or message.isMessageId() is supported");
   auto* sr = new ReceiveSerializerSubRequest(this,sbuf,rank,nextSerializeTag(tag),1);
