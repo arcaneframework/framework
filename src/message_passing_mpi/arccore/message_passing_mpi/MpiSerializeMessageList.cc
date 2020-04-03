@@ -349,10 +349,11 @@ _processOneMessageGlobalBuffer(MpiSerializeMessage* msm,MessageRank source,Messa
 /*---------------------------------------------------------------------------*/
 
 Ref<ISerializeMessage> MpiSerializeMessageList::
-createMessage(MessageRank destination,ePointToPointMessageType type)
+createAndAddMessage(MessageRank destination,ePointToPointMessageType type)
 {
   MessageRank source(m_adapter->commRank());
   auto x = BasicSerializeMessage::create(source,destination,type);
+  addMessage(x.get());
   return x;
 }
 

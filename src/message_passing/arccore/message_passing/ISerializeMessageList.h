@@ -26,11 +26,31 @@ class ISerializeMessage;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
  * \brief Interface d'une liste de messages de sérialisation.
  *
  * Les instances de cette classe sont en général créées via la
  * méthode mpCreateSerializeMessageListRef().
+ *
+ * \code
+ * using namespace Arccore;
+ * IMessagePassingMng* mpm = ...;
+ * Ref<ISerializeMessagList> serialize_list(mpCreateSerializeMessageListRef(mpm));
+ * // Ajoute deux messages pour recevoir du rang 1 et 3.
+ * Ref<ISerializeMessage*> message1(serialize_list.createAndAddMessage(MessageRank(1),MsgReceive));
+ * Ref<ISerializeMessage*> message2(serialize_list.createAndAddMessage(MessageRank(3),MsgReceive));
+ *
+ * // Attend que les messages soient terminés
+ * // En mode WaitSome ou TestSome, il est possible de savoir si
+ * // un message est terminé en appelant la méthode ISerializeMessage::finished()
+ * serialize_list->wait(WaitAll);
+ *
+ * // Récupère les données de sérialisation du premier message
+ * ISerializer* sb1 = message1.serializer();
+ * sb1->setMode(ISerializer::ModeGet);
+ * UniqueArray<Int32> int32_array;
+ * sb1->getArray(int32_array);
+ * ...
+ * \endcode
  */
 class ARCCORE_MESSAGEPASSING_EXPORT ISerializeMessageList
 {
@@ -49,7 +69,13 @@ class ARCCORE_MESSAGEPASSING_EXPORT ISerializeMessageList
    */
   virtual void addMessage(ISerializeMessage* msg) =0;
 
-  //! Envoie les messages de la liste qui ne l'ont pas encore été
+  /*!
+   * \brief Envoie les messages de la liste qui ne l'ont pas encore été.
+   *
+   * Cette méthode envoie les messages ajoutés via addMessage() qui ne l'ont
+   * pas encore été. Il n'est en général pas nécessaire d'appeler cette
+   * méthode car cele est fait automatiquement lors de l'appel à waitMessages().
+   */
   virtual void processPendingMessages() =0;
 
   /*!
@@ -68,17 +94,22 @@ class ARCCORE_MESSAGEPASSING_EXPORT ISerializeMessageList
   virtual Integer waitMessages(eWaitType wt) =0;
 
   /*!
-   * \brief Créé un message de sérialisation.
+   * \brief Créé et ajoute un message de sérialisation.
    *
    * Le message peut être un message d'envoie ou de réception.
    *
    * Si le message est de réception (MsgReceive), il est possible de
    * spécifier un rang nul pour indiquer qu'on souhaite recevoir de n'importe
    * qui.
+   *
+   * Cette méthode appelle addMessage() pour ajouter automatiquement le
+   * message créé à la liste des messages. L'instance ne conserve pas de référence
+   * au message créé qui ne doit pas être détruit tant qu'il n'est
+   * pas terminé.
    */
   virtual Ref<ISerializeMessage>
-  createMessage(MessageRank destination,
-                ePointToPointMessageType type) =0;
+  createAndAddMessage(MessageRank destination,
+                      ePointToPointMessageType type) =0;
 };
 
 /*---------------------------------------------------------------------------*/

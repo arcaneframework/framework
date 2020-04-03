@@ -65,8 +65,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeMessageList
   void addMessage(ISerializeMessage* msg) override;
   void processPendingMessages() override;
   Integer waitMessages(eWaitType wait_type) override;
-  Ref<ISerializeMessage> createMessage(MessageRank destination,
-                                       ePointToPointMessageType type) override;
+  Ref<ISerializeMessage>
+  createAndAddMessage(MessageRank destination,ePointToPointMessageType type) override;
 
   Request _processOneMessageGlobalBuffer(MpiSerializeMessage* msm,MessageRank source,MessageTag mpi_tag);
   Request _processOneMessage(MpiSerializeMessage* msm,MessageRank source,MessageTag mpi_tag);
