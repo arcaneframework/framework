@@ -36,7 +36,7 @@ enum class TimeMetricPhase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCCORE_BASE_EXPORT TimeMetricActionBuildInfo
+class ARCCORE_TRACE_EXPORT TimeMetricActionBuildInfo
 {
  public:
   explicit TimeMetricActionBuildInfo(const String& name)
@@ -74,7 +74,7 @@ class ARCCORE_BASE_EXPORT TimeMetricAction
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 // TODO: n'autoriser que la sémantique std::move
-class ARCCORE_BASE_EXPORT TimeMetricId
+class ARCCORE_TRACE_EXPORT TimeMetricId
 {
  public:
   TimeMetricId() : m_id(-1){}
@@ -92,7 +92,7 @@ class ARCCORE_BASE_EXPORT TimeMetricId
 /*!
  * \brief Sentinelle pour collecter les informations temporelles.
  */
-class ARCCORE_BASE_EXPORT TimeMetricSentry
+class ARCCORE_TRACE_EXPORT TimeMetricSentry
 {
  public:
   TimeMetricSentry() : m_collector(nullptr){}
@@ -123,7 +123,7 @@ class ARCCORE_BASE_EXPORT TimeMetricSentry
 /*!
  * \brief s standards pour les phases temporelles.
  */
-class ARCCORE_BASE_EXPORT StandardPhaseTimeMetrics
+class ARCCORE_TRACE_EXPORT StandardPhaseTimeMetrics
 {
  public:
   StandardPhaseTimeMetrics() = default;
@@ -132,16 +132,26 @@ class ARCCORE_BASE_EXPORT StandardPhaseTimeMetrics
   void initialize(ITimeMetricCollector* collector);
  public:
   //! Action pour indiquer qu'on est dans une phase d'échange de message
-  const TimeMetricAction& messagePassingPhase();
+  const TimeMetricAction& messagePassingPhase() const { return m_message_passing_phase; }
   //! Action pour indiquer qu'on est dans une phase d'entrée-sortie.
-  const TimeMetricAction& inputOutputPhase();
+  const TimeMetricAction& inputOutputPhase() const { return m_input_output_phase; }
   //! Action pour indiquer qu'on est dans une phase de calcul.
-  const TimeMetricAction& computationPhase();
+  const TimeMetricAction& computationPhase() const { return m_computation_phase; }
  private:
   TimeMetricAction m_message_passing_phase;
   TimeMetricAction m_input_output_phase;
   TimeMetricAction m_computation_phase;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCCORE_TRACE_EXPORT TimeMetricAction
+timeMetricPhaseMessagePassing(ITimeMetricCollector* c);
+extern "C++" ARCCORE_TRACE_EXPORT TimeMetricAction
+timeMetricPhaseInputOutput(ITimeMetricCollector* c);
+extern "C++" ARCCORE_TRACE_EXPORT TimeMetricAction
+timeMetricPhaseComputation(ITimeMetricCollector* c);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
