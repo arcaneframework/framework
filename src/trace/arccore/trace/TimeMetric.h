@@ -1,88 +1,96 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* IMetricCollector.h                                          (C) 2000-2020 */
+/* TimeMetric.h                                                (C) 2000-2020 */
 /*                                                                           */
-/* Interface gérant les statistiques sur les temps d'exécution.              */
+/* Classes gérant les métriques temporelles.                                 */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCCORE_TRACE_IMETRICCOLLECTOR_H
-#define ARCCORE_TRACE_IMETRICCOLLECTOR_H
+#ifndef ARCCORE_TRACE_TIMEMETRICCOLLECTOR_H
+#define ARCCORE_TRACE_TIMEMETRICCOLLECTOR_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/trace/TraceGlobal.h"
+#include "arccore/trace/ITimeMetricCollector.h"
+#include "arccore/base/String.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*
+ * API en cours de définition. Ne pas utiliser en dehors de Arccore/Arcane.
+ */
 
 namespace Arccore
 {
 
-class IMetricCollector;
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCCORE_BASE_EXPORT MetricActionHandle
+class ARCCORE_BASE_EXPORT TimeMetricActionHandleBuildInfo
 {
  public:
-  IMetricCollector* m_collector;
+  TimeMetricActionHandleBuildInfo(const String& name)
+  : m_name(name){}
+ public:
+  const String& name() const { return m_name; }
+ public:
+  String m_name;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCCORE_BASE_EXPORT MetricId
+class ARCCORE_BASE_EXPORT TimeMetricActionHandle
 {
  public:
+  TimeMetricActionHandle(ITimeMetricCollector* c,const String& name)
+  : m_collector(c), m_name(name){}
+ public:
+  ITimeMetricCollector* collector() const { return m_collector; }
+  const String& name() const { return m_name; }
+ public:
+  ITimeMetricCollector* m_collector;
+  String m_name;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// TODO: n'autoriser que la sémantique std::move
+class ARCCORE_BASE_EXPORT TimeMetricId
+{
+ public:
+  TimeMetricId() : m_handle(nullptr){}
+  TimeMetricId(const TimeMetricActionHandle* handle) : m_handle(handle){}
+  const TimeMetricActionHandle* handlePointer() const { return m_handle; }
+ public:
+  const TimeMetricActionHandle* m_handle = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCCORE_BASE_EXPORT MetricSentry
+class ARCCORE_BASE_EXPORT TimeMetricSentry
 {
  public:
-  inline MetricSentry(const MetricActionHandle& handle);
-  inline ~MetricSentry() noexcept(false);
+  inline TimeMetricSentry(const TimeMetricActionHandle& handle);
+  inline ~TimeMetricSentry() noexcept(false);
  private:
-  IMetricCollector* m_collector;
-  MetricId m_id;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Interface gérant les statistiques sur l'exécution.
- */
-class ARCCORE_BASE_EXPORT IMetricCollector
-{
- public:
-
- public:
-
-  // Libère les ressources.
-  virtual ~IMetricCollector() = default;
-
- public:
-
-  virtual MetricActionHandle getHandle(StringView name) =0;
-  virtual MetricId beginAction(const MetricActionHandle& handle) =0;
-  virtual void endAction(const MetricId& handle) =0;
+  ITimeMetricCollector* m_collector;
+  TimeMetricId m_id;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MetricSentry::
-MetricSentry(const MetricActionHandle& handle)
+TimeMetricSentry::
+TimeMetricSentry(const TimeMetricActionHandle& handle)
  : m_collector(handle.m_collector)
 {
   if (m_collector)
     m_id = m_collector->beginAction(handle);
 }
 
-MetricSentry::
-~MetricSentry() noexcept(false)
+TimeMetricSentry::
+~TimeMetricSentry() noexcept(false)
 {
   if (m_collector)
     m_collector->endAction(m_id);

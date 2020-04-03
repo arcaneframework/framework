@@ -1,12 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* TraceGlobal.h                                               (C) 2000-2020 */
+/* TimeMetric.h                                                (C) 2000-2020 */
 /*                                                                           */
-/* Définitions globales de la composante 'Trace' de 'Arccore'.               */
+/* Classes gérant les métriques temporelles.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/trace/TraceGlobal.h"
+#include "arccore/trace/TimeMetric.h"
+#include "arccore/trace/ITimeMetricCollector.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
