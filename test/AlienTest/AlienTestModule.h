@@ -31,13 +31,13 @@ class AlienTestModule : public ArcaneAlienTestObject
   void test();
 
  private:
-  void buildAndFillInVector(Alien::VectorData& vectorB, const double& value);
+  void buildAndFillInVector(Alien::Vector& vectorB, const double& value);
 
-  void buildAndFillInBlockVector(Alien::VectorData& vectorB, const double& value);
+  void buildAndFillInBlockVector(Alien::Vector& vectorB, const double& value);
 
-  void buildAndFillInBlockVector(Alien::VectorData& vectorB,
+  void buildAndFillInBlockVector(Alien::Vector& vectorB,
       ConstArrayView<Integer> allXIndex, ConstArrayView<Real> value);
-  void buildAndFillInBlockVector(Alien::VectorData& vectorB,
+  void buildAndFillInBlockVector(Alien::Vector& vectorB,
       ConstArrayView<Integer> allUIndex, ConstArray2View<Integer> allPIndex,
       ConstArrayView<Integer> allXIndex, ConstArrayView<Real> value);
 
@@ -89,12 +89,12 @@ class AlienTestModule : public ArcaneAlienTestObject
       const Arccore::UniqueArray<Integer>& allUIndex,
       const Arccore::UniqueArray<Integer>& allXIndex, Builder& builder);
 
-  Alien::SolverStatus solve(Alien::ILinearSolver* solver, Alien::MatrixData& matrixA,
-      Alien::VectorData& vectorB, Alien::VectorData& vectorX,
+  Alien::SolverStatus solve(Alien::ILinearSolver* solver, Alien::Matrix& matrixA,
+      Alien::Vector& vectorB, Alien::Vector& vectorX,
       AlienTestOptionTypes::eBuilderType builderType);
 
   void vectorVariableUpdate(
-      Alien::VectorData& vectorB, Alien::ArcaneTools::IIndexManager::Entry indexSetU);
+      Alien::Vector& vectorB, Alien::ArcaneTools::IIndexManager::Entry indexSetU);
 
   void checkVectorValues(Alien::IVector& VectorX, const double& value);
 

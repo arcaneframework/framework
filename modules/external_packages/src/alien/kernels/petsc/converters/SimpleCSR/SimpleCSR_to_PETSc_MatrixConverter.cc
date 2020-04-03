@@ -6,8 +6,8 @@
 #include <iostream>
 
 #include <alien/kernels/petsc/PETScBackEnd.h>
-#include <alien/kernels/simple_csr/data_structure/CSRStructInfo.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
+#include <alien/kernels/simple_csr/CSRStructInfo.h>
+#include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
 #include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
 
 #include <arccore/collections/Array2.h>

@@ -7,8 +7,8 @@
 #include <alien/core/block/ComputeBlockOffsets.h>
 
 #include <alien/kernels/mtl/MTLBackEnd.h>
-#include <alien/kernels/simple_csr/data_structure/CSRStructInfo.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
+#include <alien/kernels/simple_csr/CSRStructInfo.h>
+#include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
 #include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
 
 using namespace Alien;

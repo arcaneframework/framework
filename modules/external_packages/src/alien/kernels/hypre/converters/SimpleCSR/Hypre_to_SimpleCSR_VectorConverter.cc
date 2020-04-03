@@ -5,8 +5,8 @@
 #include <alien/kernels/hypre/data_structure/HypreVector.h>
 
 #include <alien/kernels/hypre/HypreBackEnd.h>
-#include <alien/kernels/simple_csr/data_structure/CSRStructInfo.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/CSRStructInfo.h>
+#include <alien/kernels/simple_csr/SimpleCSRVector.h>
 #include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
 
 using namespace Alien;

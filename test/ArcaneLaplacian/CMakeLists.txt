@@ -17,7 +17,7 @@ if (TARGET intel)
 endif ()
 
 linkLibraries(laplacian
-        alien
+        Alien::alien_core
         arcane_core
         arcane_std
         arcane_mpi

@@ -7,8 +7,8 @@
 #include <alien/kernels/hypre/data_structure/HypreMatrix.h>
 
 #include <alien/kernels/hypre/HypreBackEnd.h>
-#include <alien/kernels/simple_csr/data_structure/CSRStructInfo.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
+#include <alien/kernels/simple_csr/CSRStructInfo.h>
+#include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
 #include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
 #include <alien/distribution/MatrixDistribution.h>
 

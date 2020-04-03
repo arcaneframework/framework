@@ -1,7 +1,8 @@
 #include <gtest/gtest.h>
 
-#include <ALIEN/AlienExternalPackages.h>
-#include <ALIEN/AlienRefSemantic.h>
+#include <alien/AlienExternalPackages.h>
+#include <alien/AlienRefSemantic.h>
+#include <alien/functional/Cast.h>
 
 #ifdef ALIEN_USE_MCGSOLVER
 #include <ALIEN/Kernels/mcg/linear_solver/arcane/MCGLinearSolver.h>

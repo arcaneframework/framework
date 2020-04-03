@@ -19,8 +19,8 @@ endif ()
 
 linkLibraries(alien_bench.exe
         Boost::boost
-        alien
-        alien_ref_semantic
+        Alien::alien_core
+        Alien::alien_semantic_ref
         alien_external_packages
         alien_ifpen_solvers
         alien_arcane_tools

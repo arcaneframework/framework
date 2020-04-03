@@ -9,7 +9,7 @@
 #include <alien/core/block/VBlock.h>
 #include <alien/data/IVector.h>
 #include <alien/distribution/VectorDistribution.h>
-#include <alien/handlers/vector_accessors/scalar/BaseVectorWriter.h>
+#include <alien/handlers/scalar/BaseVectorWriter.h>
 #include <arcane/Item.h>
 #include <arcane/utils/Array.h>
 #include <arcane/utils/AutoRef.h>

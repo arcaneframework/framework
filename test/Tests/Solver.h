@@ -8,23 +8,23 @@
 #include <alien/expression/solver/ILinearSolver.h>
 #include <alien/utils/parameter_manager/BaseParameterManager.h>
 
-#include <ALIEN/AlienExternalPackages.h>
-#include <ALIEN/Alien-IFPENSolvers.h>
+#include <alien/AlienExternalPackages.h>
+#include <alien/AlienIFPENSolvers.h>
 
 #ifdef ALIEN_USE_MTL4
-#include <ALIEN/Kernels/MTL/linear_solver/arcane/MTLLinearSolverService.h>
-#include <ALIEN/Kernels/MTL/linear_solver/MTLOptionTypes.h>
+#include <alien/kernels/mtl/linear_solver/arcane/MTLLinearSolverService.h>
+#include <alien/kernels/mtl/linear_solver/MTLOptionTypes.h>
 #include <ALIEN/axl/MTLLinearSolver_IOptions.h>
 #include <ALIEN/axl/MTLLinearSolver_StrongOptions.h>
 #endif
 #ifdef ALIEN_USE_PETSC
-#include <ALIEN/Kernels/PETSc/algebra/PETScLinearAlgebra.h>
-#include <ALIEN/Kernels/PETSc/linear_solver/arcane/PETScLinearSolverService.h>
-#include <ALIEN/Kernels/PETSc/linear_solver/PETScInternalLinearSolver.h>
+#include <alien/kernels/petsc/algebra/PETScLinearAlgebra.h>
+#include <alien/kernels/petsc/linear_solver/arcane/PETScLinearSolverService.h>
+#include <alien/kernels/petsc/linear_solver/PETScInternalLinearSolver.h>
 // preconditionner
-#include <ALIEN/Kernels/PETSc/linear_solver/arcane/PETScPrecConfigDiagonalService.h>
-#include <ALIEN/Kernels/PETSc/linear_solver/arcane/PETScPrecConfigJacobiService.h>
-#include <ALIEN/Kernels/PETSc/linear_solver/arcane/PETScPrecConfigNoPreconditionerService.h>
+#include <alien/kernels/petsc/linear_solver/arcane/PETScPrecConfigDiagonalService.h>
+#include <alien/kernels/petsc/linear_solver/arcane/PETScPrecConfigJacobiService.h>
+#include <alien/kernels/petsc/linear_solver/arcane/PETScPrecConfigNoPreconditionerService.h>
 #include <ALIEN/axl/PETScPrecConfigDiagonal_IOptions.h>
 #include <ALIEN/axl/PETScPrecConfigDiagonal_StrongOptions.h>
 #include <ALIEN/axl/PETScPrecConfigJacobi_IOptions.h>
@@ -32,10 +32,10 @@
 #include <ALIEN/axl/PETScPrecConfigNoPreconditioner_IOptions.h>
 #include <ALIEN/axl/PETScPrecConfigNoPreconditioner_StrongOptions.h>
 // solver
-#include <ALIEN/Kernels/PETSc/linear_solver/arcane/PETScSolverConfigBiCGStabService.h>
-#include <ALIEN/Kernels/PETSc/linear_solver/arcane/PETScSolverConfigLUService.h>
-#include <ALIEN/Kernels/PETSc/linear_solver/IPETScKSP.h>
-#include <ALIEN/Kernels/PETSc/linear_solver/IPETScPC.h>
+#include <alien/kernels/petsc/linear_solver/arcane/PETScSolverConfigBiCGStabService.h>
+#include <alien/kernels/petsc/linear_solver/arcane/PETScSolverConfigLUService.h>
+#include <alien/kernels/petsc/linear_solver/IPETScKSP.h>
+#include <alien/kernels/petsc/linear_solver/IPETScPC.h>
 #include <ALIEN/axl/PETScSolverConfigBiCGStab_IOptions.h>
 #include <ALIEN/axl/PETScSolverConfigBiCGStab_StrongOptions.h>
 #include <ALIEN/axl/PETScSolverConfigLU_IOptions.h>
@@ -45,8 +45,8 @@
 #include <ALIEN/axl/PETScLinearSolver_StrongOptions.h>
 #endif
 #ifdef ALIEN_USE_HYPRE
-#include <ALIEN/Kernels/Hypre/linear_solver/HypreOptionTypes.h>
-#include <ALIEN/Kernels/Hypre/linear_solver/arcane/HypreLinearSolver.h>
+#include <alien/kernels/hypre/linear_solver/HypreOptionTypes.h>
+#include <alien/kernels/hypre/linear_solver/arcane/HypreLinearSolver.h>
 #include <ALIEN/axl/HypreSolver_IOptions.h>
 #include <ALIEN/axl/HypreSolver_StrongOptions.h>
 #endif

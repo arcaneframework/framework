@@ -2,18 +2,19 @@
 
 #include <Tests/Options.h>
 
-#include <ALIEN/Alien-ExternalPackages.h>
-#include <ALIEN/Alien-ImportExport.h>
-#include <ALIEN/Alien-RefSemantic.h>
-#include <alien/data/Scalar/RedistributedMatrix.h>
-#include <alien/data/Scalar/RedistributedVector.h>
+#include <alien/Alien.h>
+#include <alien/AlienExternalPackages.h>
+#include <alien/AlienImportExport.h>
+#include <alien/AlienRefSemantic.h>
+#include <alien/data/scalar/RedistributedMatrix.h>
+#include <alien/data/scalar/RedistributedVector.h>
 #include <alien/expression/solver/ILinearAlgebra.h>
-#include <ALIEN/Kernels/Redistributor/Redistributor.h>
+#include <alien/kernels/redistributor/Redistributor.h>
 #ifdef ALIEN_USE_PETSC
-#include <ALIEN/Kernels/PETSc/algebra/PETScLinearAlgebra.h>
+#include <alien/kernels/petsc/algebra/PETScLinearAlgebra.h>
 #endif
 #ifdef ALIEN_USE_HYPRE
-#include <ALIEN/Kernels/Hypre/algebra/HypreLinearAlgebra.h>
+#include <alien/kernels/hypre/algebra/HypreLinearAlgebra.h>
 #endif
 
 // Méthode de construction de la matrice

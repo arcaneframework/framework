@@ -1,7 +1,8 @@
 #include <Tests/Options.h>
 
-#include <ALIEN/Alien-ExternalPackages.h>
-#include <ALIEN/Alien-RefSemantic.h>
+#include <alien/Alien.h>
+#include <alien/AlienExternalPackages.h>
+#include <alien/AlienRefSemantic.h>
 
 #include <Tests/Solver.h>
 

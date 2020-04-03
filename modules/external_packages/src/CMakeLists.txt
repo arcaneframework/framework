@@ -46,7 +46,7 @@ if(TARGET umfpack)
     linkLibraries(alien_external_packages umfpack)
 endif()
 
-linkLibraries(alien_external_packages alien)
+linkLibraries(alien_external_packages Alien::alien_core)
 
 target_include_directories(alien_external_packages PUBLIC
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>

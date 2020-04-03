@@ -39,6 +39,8 @@
 #include <alien/data/scalar/RedistributedVector.h>
 #include <alien/data/scalar/RedistributedMatrix.h>
 
+#include <alien/expression/solver/SolverStater.h>
+
 #ifdef ALIEN_USE_PETSC
 #include <alien/kernels/petsc/io/AsciiDumper.h>
 #include <alien/kernels/petsc/algebra/PETScLinearAlgebra.h>

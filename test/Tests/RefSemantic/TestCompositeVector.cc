@@ -3,13 +3,13 @@
 #include <alien/core/impl/MultiVectorImpl.h>
 #include <alien/data/CompositeVector.h>
 #include <alien/distribution/VectorDistribution.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/SimpleCSRVector.h>
 
-#include <alien/data/Scalar/Vector.h>
+#include <alien/data/scalar/Vector.h>
 #include <alien/data/Space.h>
-#include <ALIEN/Functional/Cast.h>
-#include <ALIEN/Handlers/VectorAccessors/Scalar/VectorReader.h>
-#include <ALIEN/Handlers/VectorAccessors/Scalar/VectorWriter.h>
+#include <alien/functional/Cast.h>
+#include <alien/handlers/scalar/VectorReader.h>
+#include <alien/handlers/scalar/VectorWriter.h>
 
 #include <arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h>
 

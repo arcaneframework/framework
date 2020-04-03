@@ -1,4 +1,4 @@
-#include <ALIEN/Alien-RefSemantic.h>
+#include <alien/AlienRefSemantic.h>
 #include <Tests/Options.h>
 
 int

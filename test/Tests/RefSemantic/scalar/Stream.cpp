@@ -1,4 +1,4 @@
-#include <ALIEN/Alien-RefSemantic.h>
+#include <alien/AlienRefSemantic.h>
 
 namespace Environment {
 extern Arccore::MessagePassing::IMessagePassingMng* parallelMng();

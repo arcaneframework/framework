@@ -23,8 +23,8 @@ macro(compile_test BUILDER)
 
     linkLibraries(refmvhandlers.Scalar${BUILDER}
             Boost::program_options
-            ALIEN
-            ALIEN-RefSemantic
+            Alien::alien_core
+            Alien::alien_semantic_ref
             )
 
     if (TARGET alien_external_packages)
@@ -80,8 +80,8 @@ addSources(refmvhandlers.ScalarRedistributor
 
 linkLibraries(refmvhandlers.ScalarRedistributor
         Boost::program_options
-        ALIEN
-        ALIEN-RefSemantic
+        Alien::alien_core
+        Alien::alien_semantic_ref
         )
 
 if (TARGET alien_external_packages)
@@ -126,8 +126,8 @@ addSources(refmvhandlers.ScalarRedistributorAlgebra
 
 linkLibraries(refmvhandlers.ScalarRedistributorAlgebra
         Boost::program_options
-        ALIEN
-        ALIEN-RefSemantic
+        Alien::alien_core
+        Alien::alien_semantic_ref
         )
 
 if (TARGET alien_external_packages)

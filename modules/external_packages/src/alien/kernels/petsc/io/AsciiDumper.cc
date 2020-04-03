@@ -14,8 +14,8 @@
 
 #include <alien/data/IMatrix.h>
 #include <alien/data/IVector.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
+#include <alien/kernels/simple_csr/SimpleCSRVector.h>
 #include <petscmat.h>
 #include <petscsys.h>
 #include <petscvec.h>

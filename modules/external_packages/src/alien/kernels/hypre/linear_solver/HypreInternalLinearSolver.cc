@@ -4,7 +4,7 @@
 
 #include <alien/AlienExternalPackagesPrecomp.h>
 
-#include <alien/expression/solver/solver_stats/SolverStater.h>
+#include <alien/expression/solver/SolverStater.h>
 #include <alien/core/backend/LinearSolverT.h>
 
 #include <alien/expression/solver/ILinearSolver.h>

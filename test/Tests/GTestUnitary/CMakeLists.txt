@@ -46,7 +46,7 @@ endforeach ()
 
 linkLibraries(gtest.unitary
         GTest::GTest
-        alien
+        Alien::alien_core
         )
 
 target_include_directories(gtest.unitary

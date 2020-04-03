@@ -11,9 +11,9 @@
 #include <memory>
 
 #include <alien/utils/Precomp.h>
-#include <alien/expression/solver/solver_stats/SolverStater.h>
+#include <alien/expression/solver/SolverStater.h>
 #include <alien/core/backend/IInternalLinearSolverT.h>
-#include <alien/utils/trace/ObjectWithTrace.h>
+#include <alien/utils/ObjectWithTrace.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

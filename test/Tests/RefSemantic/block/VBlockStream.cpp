@@ -1,5 +1,5 @@
 
-#include <ALIEN/Alien-RefSemantic.h>
+#include <alien/AlienRefSemantic.h>
 
 namespace Environment {
 extern Arccore::ITraceMng* traceMng();

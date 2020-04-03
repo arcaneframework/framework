@@ -5,7 +5,7 @@
 #include <alien/kernels/petsc/data_structure/PETScVector.h>
 
 #include <alien/kernels/petsc/PETScBackEnd.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/SimpleCSRVector.h>
 #include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
 
 using namespace Alien;

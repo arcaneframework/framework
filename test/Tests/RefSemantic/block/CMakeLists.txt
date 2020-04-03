@@ -28,8 +28,8 @@ foreach (BUILDER Profiled Stream Import)
 
     linkLibraries(refmvhandlers.Block${BUILDER}
             Boost::program_options
-            ALIEN
-            ALIEN-RefSemantic
+            Alien::alien_core
+            Alien::alien_semantic_ref
             )
 
     target_include_directories(refmvhandlers.Block${BUILDER}
@@ -70,8 +70,8 @@ foreach (BUILDER VBlockStream)
     #endif ()
 
     linkLibraries(refmvhandlers.${BUILDER}
-            ALIEN
-            ALIEN-RefSemantic
+            Alien::alien_core
+            Alien::alien_semantic_ref
             Boost::program_options
             )
 

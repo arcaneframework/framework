@@ -9,7 +9,7 @@
 // For SimpleCSR convert tests
 #include <alien/kernels/dok/converters/DoKToSimpleCSRMatrixConverter.h>
 #include <alien/kernels/dok/converters/SimpleCSRToDoKMatrixConverter.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
+#include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
 
 #include <alien/core/impl/MultiMatrixImpl.h>
 #include <alien/kernels/dok/DoKBackEnd.h>

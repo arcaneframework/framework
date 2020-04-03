@@ -1,11 +1,12 @@
 #include <Tests/Options.h>
 
-#include <ALIEN/Alien-ExternalPackages.h>
-#include <ALIEN/Alien-ImportExport.h>
-#include <ALIEN/Alien-RefSemantic.h>
-#include <alien/data/Scalar/RedistributedMatrix.h>
-#include <alien/data/Scalar/RedistributedVector.h>
-#include <ALIEN/Kernels/Redistributor/Redistributor.h>
+#include <alien/Alien.h>
+#include <alien/AlienExternalPackages.h>
+#include <alien/AlienImportExport.h>
+#include <alien/AlienRefSemantic.h>
+#include <alien/data/scalar/RedistributedMatrix.h>
+#include <alien/data/scalar/RedistributedVector.h>
+#include <alien/kernels/redistributor/Redistributor.h>
 
 #include <Tests/Solver.h>
 

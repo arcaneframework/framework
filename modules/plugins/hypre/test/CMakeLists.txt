@@ -9,8 +9,8 @@ addSources(hypre_arcane_test.exe
 arcane_target_add_axl(hypre_arcane_test.exe AlienTest)
 
 linkLibraries(hypre_arcane_test.exe
-        alien
-        alien_move_semantic
+        Alien::alien_core
+        Alien::alien_semantic_move
         alien_plugins_solvers
         alien_arcane_tools
         arcane_core

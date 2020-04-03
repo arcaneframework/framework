@@ -21,7 +21,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include <alien/core/impl/MultiVectorImpl.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/SimpleCSRVector.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
