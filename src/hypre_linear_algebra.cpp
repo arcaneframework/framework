@@ -146,6 +146,7 @@ namespace Alien::Hypre {
         HYPRE_ParVectorScale(static_cast<double>(alpha), hypre_implem(x));
     }
 
+    ALIEN_HYPRE_EXPORT
     IInternalLinearAlgebra<Hypre::Matrix, Hypre::Vector> *
     InternalLinearAlgebraFactory() {
         return new Hypre::InternalLinearAlgebra();

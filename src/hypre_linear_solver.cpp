@@ -307,16 +307,19 @@ namespace Alien::Hypre {
   }
 
 
+ALIEN_HYPRE_EXPORT
   std::shared_ptr<ILinearAlgebra>
   InternalLinearSolver::algebra() const {
       return std::make_shared<LinearAlgebra>();
   }
 
+ALIEN_HYPRE_EXPORT
   IInternalLinearSolver<Matrix, Vector> *
   InternalLinearSolverFactory(const Options& options) {
     return new InternalLinearSolver(options);
   }
 
+ALIEN_HYPRE_EXPORT
   IInternalLinearSolver<Matrix, Vector> *
   InternalLinearSolverFactory() {
     return new InternalLinearSolver();
