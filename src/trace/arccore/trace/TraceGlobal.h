@@ -44,8 +44,8 @@ class TraceMessageDbg;
 class ITimeMetricCollector;
 class TimeMetricSentry;
 class TimeMetricId;
-class TimeMetricActionHandle;
-class TimeMetricActionHandleBuildInfo;
+class TimeMetricAction;
+class TimeMetricActionBuildInfo;
 
 namespace Trace
 {

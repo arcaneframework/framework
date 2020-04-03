@@ -20,9 +20,9 @@ namespace Arccore
 
 namespace
 {
-inline TimeMetricActionHandle _build(ITimeMetricCollector* c,TimeMetricPhase p)
+inline TimeMetricAction _build(ITimeMetricCollector* c,TimeMetricPhase p)
 {
-  return TimeMetricActionHandle(c,TimeMetricActionHandleBuildInfo(String(),(int)p));
+  return TimeMetricAction(c,TimeMetricActionBuildInfo(String(),(int)p));
 }
 }
 

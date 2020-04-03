@@ -36,12 +36,12 @@ enum class TimeMetricPhase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCCORE_BASE_EXPORT TimeMetricActionHandleBuildInfo
+class ARCCORE_BASE_EXPORT TimeMetricActionBuildInfo
 {
  public:
-  explicit TimeMetricActionHandleBuildInfo(const String& name)
+  explicit TimeMetricActionBuildInfo(const String& name)
   : m_name(name), m_phase(-1){}
-  TimeMetricActionHandleBuildInfo(const String& name,int phase)
+  TimeMetricActionBuildInfo(const String& name,int phase)
   : m_name(name), m_phase(phase){}
  public:
   const String& name() const { return m_name; }
@@ -54,12 +54,12 @@ class ARCCORE_BASE_EXPORT TimeMetricActionHandleBuildInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCCORE_BASE_EXPORT TimeMetricActionHandle
+class ARCCORE_BASE_EXPORT TimeMetricAction
 {
  public:
-  TimeMetricActionHandle()
+  TimeMetricAction()
   : m_collector(nullptr), m_phase(-1) {}
-  TimeMetricActionHandle(ITimeMetricCollector* c,const TimeMetricActionHandleBuildInfo& x)
+  TimeMetricAction(ITimeMetricCollector* c,const TimeMetricActionBuildInfo& x)
   : m_collector(c), m_name(x.name()), m_phase(x.phase()){}
  public:
   ITimeMetricCollector* collector() const { return m_collector; }
@@ -78,12 +78,12 @@ class ARCCORE_BASE_EXPORT TimeMetricId
 {
  public:
   TimeMetricId() : m_id(-1){}
-  explicit TimeMetricId(const TimeMetricActionHandle& handle,Int64 id)
-  : m_handle(handle), m_id(id){}
-  const TimeMetricActionHandle& handle() const { return m_handle; }
+  explicit TimeMetricId(const TimeMetricAction& action,Int64 id)
+  : m_action(action), m_id(id){}
+  const TimeMetricAction& action() const { return m_action; }
   Int64 id() const { return m_id; }
  public:
-  TimeMetricActionHandle m_handle;
+  TimeMetricAction m_action;
   Int64 m_id;
 };
 
@@ -102,11 +102,11 @@ class ARCCORE_BASE_EXPORT TimeMetricSentry
     // Met à nul \a rhs pour ne pas qu'il appelle 'endAction'.
     rhs.m_collector = nullptr;
   }
-  explicit TimeMetricSentry(const TimeMetricActionHandle& handle)
-  : m_collector(handle.collector())
+  explicit TimeMetricSentry(const TimeMetricAction& action)
+  : m_collector(action.collector())
   {
     if (m_collector)
-      m_id = m_collector->beginAction(handle);
+      m_id = m_collector->beginAction(action);
   }
   ~TimeMetricSentry() noexcept(false)
   {
@@ -121,7 +121,7 @@ class ARCCORE_BASE_EXPORT TimeMetricSentry
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Handles standards pour les phases temporelles.
+ * \brief s standards pour les phases temporelles.
  */
 class ARCCORE_BASE_EXPORT StandardPhaseTimeMetrics
 {
@@ -131,16 +131,16 @@ class ARCCORE_BASE_EXPORT StandardPhaseTimeMetrics
  public:
   void initialize(ITimeMetricCollector* collector);
  public:
-  //! Handle pour indiquer qu'on est dans une phase d'échange de message
-  const TimeMetricActionHandle& messagePassingPhase();
-  //! Handle pour indiquer qu'on est dans une phase d'entrée-sortie.
-  const TimeMetricActionHandle& inputOutputPhase();
-  //! Handle pour indiquer qu'on est dans une phase de calcul.
-  const TimeMetricActionHandle& computationPhase();
+  //! Action pour indiquer qu'on est dans une phase d'échange de message
+  const TimeMetricAction& messagePassingPhase();
+  //! Action pour indiquer qu'on est dans une phase d'entrée-sortie.
+  const TimeMetricAction& inputOutputPhase();
+  //! Action pour indiquer qu'on est dans une phase de calcul.
+  const TimeMetricAction& computationPhase();
  private:
-  TimeMetricActionHandle m_message_passing_phase;
-  TimeMetricActionHandle m_input_output_phase;
-  TimeMetricActionHandle m_computation_phase;
+  TimeMetricAction m_message_passing_phase;
+  TimeMetricAction m_input_output_phase;
+  TimeMetricAction m_computation_phase;
 };
 
 /*---------------------------------------------------------------------------*/

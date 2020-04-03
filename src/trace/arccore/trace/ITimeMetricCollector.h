@@ -37,8 +37,8 @@ class ARCCORE_BASE_EXPORT ITimeMetricCollector
 
  public:
 
-  virtual TimeMetricActionHandle getHandle(const TimeMetricActionHandleBuildInfo& x) =0;
-  virtual TimeMetricId beginAction(const TimeMetricActionHandle& handle) =0;
+  virtual TimeMetricAction getAction(const TimeMetricActionBuildInfo& x) =0;
+  virtual TimeMetricId beginAction(const TimeMetricAction& handle) =0;
   virtual void endAction(const TimeMetricId& metric_id) =0;
 };
 
