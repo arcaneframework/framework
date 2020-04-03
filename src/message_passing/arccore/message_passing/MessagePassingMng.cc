@@ -1,21 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* MessagePassingMng.cc                                        (C) 2000-2018 */
+/* MessagePassingMng.cc                                        (C) 2000-2020 */
 /*                                                                           */
 /* Gestionnaire des échanges de messages.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing/MessagePassingGlobal.h"
 #include "arccore/message_passing/MessagePassingMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
-{
-
-namespace MessagePassing
+namespace Arccore::MessagePassing
 {
 
 /*---------------------------------------------------------------------------*/
@@ -49,12 +45,22 @@ dispatchers()
   return m_dispatchers;
 }
 
+ITimeMetricCollector* MessagePassingMng::
+timeMetricCollector() const
+{
+  return m_time_metric_collector;
+}
+
+void MessagePassingMng::
+setTimeMetricCollector(ITimeMetricCollector* c)
+{
+  m_time_metric_collector = c;
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace MessagePassing
-
-} // End namespace Arccore
+} // End namespace Arccore::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
