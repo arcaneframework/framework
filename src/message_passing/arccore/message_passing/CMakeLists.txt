@@ -31,10 +31,12 @@ set(SOURCES
   Messages.cc
   Stat.h
   Stat.cc
+  SerializeMessageList.h
+  SerializeMessageList.cc
 )
 
 arccore_add_component_library(message_passing
   FILES ${SOURCES}
 )
 
-target_link_libraries(arccore_message_passing PUBLIC arccore_serialize arccore_collections arccore_base)
+target_link_libraries(arccore_message_passing PUBLIC arccore_serialize arccore_collections arccore_trace arccore_base)
