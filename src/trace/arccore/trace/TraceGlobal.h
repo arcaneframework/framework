@@ -40,6 +40,11 @@ typedef TraceMessage TraceMessageDbg;
 #else
 class TraceMessageDbg;
 #endif
+class IMetricCollector;
+class MetricSentry;
+class MetricId;
+class MetricActionHandle;
+
 namespace Trace
 {
 }

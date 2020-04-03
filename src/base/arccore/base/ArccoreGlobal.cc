@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* ArccoreGlobal.cc                                            (C) 2000-2018 */
+/* ArccoreGlobal.cc                                            (C) 2000-2020 */
 /*                                                                           */
 /* Déclarations générales de Arccore.                                        */
 /*---------------------------------------------------------------------------*/

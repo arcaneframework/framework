@@ -548,6 +548,7 @@ _checkPointer(T* t,const char* file,const char* func,int line)
 
 // Défitions des types de base.
 class String;
+class StringView;
 class StringFormatterArg;
 class StringBuilder;
 
