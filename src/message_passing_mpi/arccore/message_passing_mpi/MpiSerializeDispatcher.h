@@ -54,6 +54,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeDispatcher
  public:
 
   Ref<ISerializeMessageList> createSerializeMessageListRef() override;
+  Request sendSerializer(const ISerializer* s,const PointToPointMessageInfo& message) override;
+  Request receiveSerializer(ISerializer* s,const PointToPointMessageInfo& message) override;
 
  public:
 
@@ -68,8 +70,6 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeDispatcher
   //!@}
 
   void broadcastSerializer(ISerializer* values,MessageRank rank);
-  Request sendSerializer(const ISerializer* s,const PointToPointMessageInfo& message);
-  Request receiveSerializer(ISerializer* s,const PointToPointMessageInfo& message);
 
 
  protected:

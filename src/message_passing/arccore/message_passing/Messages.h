@@ -214,6 +214,14 @@ mpBarrier(IMessagePassingMng* pm);
 ARCCORE_MESSAGEPASSING_EXPORT Ref<ISerializeMessageList>
 mpCreateSerializeMessageListRef(IMessagePassingMng* pm);
 
+//! Message d'envoi utilisant un ISerializer.
+ARCCORE_MESSAGEPASSING_EXPORT Request
+mpSend(IMessagePassingMng* pm, const ISerializer* values, const PointToPointMessageInfo& message);
+
+//! Message de réception utilisant un ISerializer.
+ARCCORE_MESSAGEPASSING_EXPORT Request
+mpReceive(IMessagePassingMng* pm, ISerializer* values, const PointToPointMessageInfo& message);
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

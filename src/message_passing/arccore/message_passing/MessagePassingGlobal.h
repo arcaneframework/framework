@@ -25,6 +25,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arccore
+{
+class ISerializer;
+}
+
 namespace Arccore::MessagePassing
 {
 //! Numéro correspondant à un rang nul

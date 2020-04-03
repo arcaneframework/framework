@@ -135,6 +135,28 @@ mpCreateSerializeMessageListRef(IMessagePassingMng* pm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Request
+mpSend(IMessagePassingMng* pm, const ISerializer* values,
+       const PointToPointMessageInfo& message)
+{
+  auto d = pm->dispatchers()->serializeDispatcher();
+  return d->sendSerializer(values,message);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Request
+mpReceive(IMessagePassingMng* pm, ISerializer* values,
+          const PointToPointMessageInfo& message)
+{
+  auto d = pm->dispatchers()->serializeDispatcher();
+  return d->receiveSerializer(values,message);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arccore
 
 /*---------------------------------------------------------------------------*/

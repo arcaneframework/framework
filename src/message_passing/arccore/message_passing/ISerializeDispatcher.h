@@ -33,7 +33,13 @@ class ARCCORE_MESSAGEPASSING_EXPORT ISerializeDispatcher
   //! Créé une liste de messages de sérialisation
   virtual Ref<ISerializeMessageList> createSerializeMessageListRef() =0;
 
-  public:
+  //! Message d'envoi
+  virtual Request
+  sendSerializer(const ISerializer* s,const PointToPointMessageInfo& message) =0;
+
+  //! Message de réception
+  virtual Request
+  receiveSerializer(ISerializer* s,const PointToPointMessageInfo& message) =0;
 };
 
 /*---------------------------------------------------------------------------*/
