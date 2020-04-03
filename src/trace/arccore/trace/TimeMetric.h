@@ -4,8 +4,8 @@
 /*                                                                           */
 /* Classes gérant les métriques temporelles.                                 */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCCORE_TRACE_TIMEMETRICCOLLECTOR_H
-#define ARCCORE_TRACE_TIMEMETRICCOLLECTOR_H
+#ifndef ARCCORE_TRACE_TIMEMETRIC_H
+#define ARCCORE_TRACE_TIMEMETRIC_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -18,9 +18,20 @@
 /*
  * API en cours de définition. Ne pas utiliser en dehors de Arccore/Arcane.
  */
-
 namespace Arccore
 {
+/*!
+ * \brief Catégories standards pour les phases temporelles.
+ *
+ * \note Les valeurs de ces catégories doivent correspondre à celle
+ * de l'énumération eTimePhase de %Arcane.
+ */
+enum class TimeMetricPhase
+{
+  Computation = 0,
+  MessagePassing = 1,
+  InputOutput = 2
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,12 +39,16 @@ namespace Arccore
 class ARCCORE_BASE_EXPORT TimeMetricActionHandleBuildInfo
 {
  public:
-  TimeMetricActionHandleBuildInfo(const String& name)
-  : m_name(name){}
+  explicit TimeMetricActionHandleBuildInfo(const String& name)
+  : m_name(name), m_phase(-1){}
+  TimeMetricActionHandleBuildInfo(const String& name,int phase)
+  : m_name(name), m_phase(phase){}
  public:
   const String& name() const { return m_name; }
+  int phase() const { return m_phase; }
  public:
   String m_name;
+  int m_phase = -1;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -42,14 +57,18 @@ class ARCCORE_BASE_EXPORT TimeMetricActionHandleBuildInfo
 class ARCCORE_BASE_EXPORT TimeMetricActionHandle
 {
  public:
-  TimeMetricActionHandle(ITimeMetricCollector* c,const String& name)
-  : m_collector(c), m_name(name){}
+  TimeMetricActionHandle()
+  : m_collector(nullptr), m_phase(-1) {}
+  TimeMetricActionHandle(ITimeMetricCollector* c,const TimeMetricActionHandleBuildInfo& x)
+  : m_collector(c), m_name(x.name()), m_phase(x.phase()){}
  public:
   ITimeMetricCollector* collector() const { return m_collector; }
   const String& name() const { return m_name; }
- public:
+  int phase() const { return m_phase; }
+ private:
   ITimeMetricCollector* m_collector;
   String m_name;
+  int m_phase;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -58,21 +77,42 @@ class ARCCORE_BASE_EXPORT TimeMetricActionHandle
 class ARCCORE_BASE_EXPORT TimeMetricId
 {
  public:
-  TimeMetricId() : m_handle(nullptr){}
-  TimeMetricId(const TimeMetricActionHandle* handle) : m_handle(handle){}
-  const TimeMetricActionHandle* handlePointer() const { return m_handle; }
+  TimeMetricId() : m_id(-1){}
+  explicit TimeMetricId(const TimeMetricActionHandle& handle,Int64 id)
+  : m_handle(handle), m_id(id){}
+  const TimeMetricActionHandle& handle() const { return m_handle; }
+  Int64 id() const { return m_id; }
  public:
-  const TimeMetricActionHandle* m_handle = nullptr;
+  TimeMetricActionHandle m_handle;
+  Int64 m_id;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Sentinelle pour collecter les informations temporelles.
+ */
 class ARCCORE_BASE_EXPORT TimeMetricSentry
 {
  public:
-  inline TimeMetricSentry(const TimeMetricActionHandle& handle);
-  inline ~TimeMetricSentry() noexcept(false);
+  TimeMetricSentry() : m_collector(nullptr){}
+  TimeMetricSentry(TimeMetricSentry&& rhs)
+  : m_collector(rhs.m_collector), m_id(rhs.m_id)
+  {
+    // Met à nul \a rhs pour ne pas qu'il appelle 'endAction'.
+    rhs.m_collector = nullptr;
+  }
+  explicit TimeMetricSentry(const TimeMetricActionHandle& handle)
+  : m_collector(handle.collector())
+  {
+    if (m_collector)
+      m_id = m_collector->beginAction(handle);
+  }
+  ~TimeMetricSentry() noexcept(false)
+  {
+  if (m_collector)
+    m_collector->endAction(m_id);
+  }
  private:
   ITimeMetricCollector* m_collector;
   TimeMetricId m_id;
@@ -80,21 +120,28 @@ class ARCCORE_BASE_EXPORT TimeMetricSentry
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-TimeMetricSentry::
-TimeMetricSentry(const TimeMetricActionHandle& handle)
- : m_collector(handle.m_collector)
+/*!
+ * \brief Handles standards pour les phases temporelles.
+ */
+class ARCCORE_BASE_EXPORT StandardPhaseTimeMetrics
 {
-  if (m_collector)
-    m_id = m_collector->beginAction(handle);
-}
-
-TimeMetricSentry::
-~TimeMetricSentry() noexcept(false)
-{
-  if (m_collector)
-    m_collector->endAction(m_id);
-}
+ public:
+  StandardPhaseTimeMetrics() = default;
+  StandardPhaseTimeMetrics(ITimeMetricCollector* c) { initialize(c); }
+ public:
+  void initialize(ITimeMetricCollector* collector);
+ public:
+  //! Handle pour indiquer qu'on est dans une phase d'échange de message
+  const TimeMetricActionHandle& messagePassingPhase();
+  //! Handle pour indiquer qu'on est dans une phase d'entrée-sortie.
+  const TimeMetricActionHandle& inputOutputPhase();
+  //! Handle pour indiquer qu'on est dans une phase de calcul.
+  const TimeMetricActionHandle& computationPhase();
+ private:
+  TimeMetricActionHandle m_message_passing_phase;
+  TimeMetricActionHandle m_input_output_phase;
+  TimeMetricActionHandle m_computation_phase;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

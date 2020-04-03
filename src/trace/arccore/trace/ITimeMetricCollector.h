@@ -4,8 +4,8 @@
 /*                                                                           */
 /* Interface gérant les statistiques sur les temps d'exécution.              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCCORE_TRACE_IMETRICCOLLECTOR_H
-#define ARCCORE_TRACE_IMETRICCOLLECTOR_H
+#ifndef ARCCORE_TRACE_ITIMEMETRICCOLLECTOR_H
+#define ARCCORE_TRACE_ITIMEMETRICCOLLECTOR_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
