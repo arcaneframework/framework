@@ -172,11 +172,17 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   void setMpiProfiling(IMpiProfiling* mpi_profiling);
 	IMpiProfiling* getMpiProfiling();
 
+ public:
+
+  ITimeMetricCollector* timeMetricCollector() const { return m_metric_collector; }
+  void setTimeMetricCollector(ITimeMetricCollector* v) { m_metric_collector = v; }
+
  private:
 
   IStat* m_stat;
   MpiLock* m_mpi_lock;
   IMpiProfiling* m_mpi_prof;
+  ITimeMetricCollector* m_metric_collector = nullptr;
   MPI_Comm m_communicator; //!< Communicateur MPI
   int m_comm_rank;
   int m_comm_size;

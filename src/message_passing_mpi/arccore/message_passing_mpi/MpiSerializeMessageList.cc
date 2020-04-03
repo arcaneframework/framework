@@ -82,6 +82,7 @@ MpiSerializeMessageList(MpiSerializeDispatcher* dispatcher)
 : m_dispatcher(dispatcher)
 , m_adapter(dispatcher->adapter())
 , m_trace(m_adapter->traceMng())
+, m_message_passing_phase(timeMetricPhaseMessagePassing(m_adapter->timeMetricCollector()))
 {}
 
 /*---------------------------------------------------------------------------*/
@@ -165,6 +166,7 @@ waitMessages(eWaitType wait_type)
 Integer MpiSerializeMessageList::
 _waitMessages(eWaitType wait_type)
 {
+  TimeMetricSentry tphase(m_message_passing_phase);
   if (wait_type==WaitAll){
     while (_waitMessages2(WaitSome)!=(-1))
       ;
