@@ -189,7 +189,12 @@ install(FILES "${project_config}" "${version_config}"
 
 install(EXPORT ${ARCCORE_EXPORT_TARGET}
   DESTINATION ${config_install_dir})
- 
+
+if (ARCCORE_EXPORT_TARGET STREQUAL ArccoreTargets)
+  message(STATUS "Exporting 'ArccoreTargets'")
+  export(EXPORT ${ARCCORE_EXPORT_TARGET} FILE ${Arccore_config_install_dir}/ArccoreTargets.cmake)
+endif()
+
 # ----------------------------------------------------------------------------
 # Local Variables:
 # tab-width: 2
