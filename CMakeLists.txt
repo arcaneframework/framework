@@ -54,6 +54,9 @@ if(CMAKE_BUILD_TYPE STREQUAL Debug)
   set(ARCCORE_DEBUG YES)
 endif()
 
+option(ARCCORE_USE_MPI "Whether or not MPI support must be set" ON)
+
+
 # ----------------------------------------------------------------------------
 # Il ne faut surtout pas inclure le répertoire courante automatiquement
 # car cela pose des problèmes avec certains fichiers tels que 'String.h' qui
@@ -154,8 +157,9 @@ arccore_add_component_directory(concurrency)
 arccore_add_component_directory(trace)
 arccore_add_component_directory(serialize)
 arccore_add_component_directory(message_passing)
-arccore_add_component_directory(message_passing_mpi)
-
+if (ARCCORE_USE_MPI)
+  arccore_add_component_directory(message_passing_mpi)
+endif()
 # ----------------------------------------------------------------------------
 
 # Include module with fuction 'write_basic_package_version_file'

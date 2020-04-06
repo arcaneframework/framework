@@ -4,6 +4,13 @@ set(Arccore_VERSION @Arccore_VERSION@)
 
 include(${PACKAGE_PREFIX_DIR}/@config_install_dir@/@ARCCORE_EXPORT_TARGET@.cmake)
 
+include(CMakeFindDependencyMacro)
+
+if (@ARCCORE_USE_MPI@)
+find_dependency(MPI)
+endif()
+find_dependency(Glib)
+
 get_target_property(_AFULL @namespace@arccore_full INTERFACE_LINK_LIBRARIES)
 
 # Parcours l'ensemble des cibles de cette bibliothèque interface
@@ -21,6 +28,7 @@ foreach(package ${_AFULL})
   endif(TARGET ${package})
 endforeach(package ${_AFULL})
 list(REMOVE_DUPLICATES _AINCFULL)
+
 
 set(Arccore_LIBRARIES @namespace@arccore_full)
 set(Arccore_INCLUDE_DIRS ${_AINCFULL})
