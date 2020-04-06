@@ -1,0 +1,12 @@
+@PACKAGE_INIT@
+
+find_dependency(Arccon)
+find_dependency(Arccore)
+find_dependency(Alien)
+find_dependency(MPI)
+find_dependency(Hypre)
+
+include(${PACKAGE_PREFIX_DIR}/@config_install_dir@/@ALIEN_EXPORT_TARGET@.cmake)
+
+
+

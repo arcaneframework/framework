@@ -1,4 +1,4 @@
-#include "hypre_matrix.h"
+#include "../hypre_matrix.h"
 
 #include <arccore/collections/Array2.h>
 
