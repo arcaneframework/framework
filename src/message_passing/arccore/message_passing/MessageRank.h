@@ -40,7 +40,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageRank
   }
   friend bool operator<(const MessageRank& a,const MessageRank& b)
   {
-    return a.m_rank<=b.m_rank;
+    return a.m_rank<b.m_rank;
   }
   Int32 value() const { return m_rank; }
   void setValue(Int32 rank) { m_rank = rank; }

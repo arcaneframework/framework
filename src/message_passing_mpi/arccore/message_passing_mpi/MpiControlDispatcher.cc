@@ -69,7 +69,7 @@ barrier()
 /*---------------------------------------------------------------------------*/
 
 MessageId MpiControlDispatcher::
-probe(PointToPointMessageInfo message)
+probe(const PointToPointMessageInfo& message)
 {
   return m_adapter->probeMessage(message);
 }

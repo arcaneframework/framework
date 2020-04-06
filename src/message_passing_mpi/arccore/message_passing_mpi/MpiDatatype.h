@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* MpiDatatype.h                                               (C) 2000-2018 */
+/* MpiDatatype.h                                               (C) 2000-2020 */
 /*                                                                           */
 /* Encapsulation d'un MPI_Datatype.                                          */
 /*---------------------------------------------------------------------------*/
@@ -15,14 +15,11 @@
 #include "arccore/base/FatalErrorException.h"
 
 #include <algorithm>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
-{
-namespace MessagePassing
-{
-namespace Mpi
+namespace Arccore::MessagePassing::Mpi
 {
 
 /*---------------------------------------------------------------------------*/
@@ -209,9 +206,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDatatype
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Mpi
-} // End namespace MessagePassing
-} // End namespace Arccore
+} // End namespace Arccore::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

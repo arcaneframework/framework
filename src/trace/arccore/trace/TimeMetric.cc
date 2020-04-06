@@ -1,14 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* MessageId.cc                                                (C) 2000-2020 */
+/* TimeMetric.h                                                (C) 2000-2020 */
 /*                                                                           */
-/* Identifiant d'un message point à point.                                   */
+/* Classes gérant les métriques temporelles.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing/MessageId.h"
-
-#include <iostream>
+#include "arccore/trace/TimeMetric.h"
+#include "arccore/trace/ITimeMetricCollector.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -19,26 +18,25 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MessagePassing::MessageId::_Message MessagePassing::MessageId::null_message;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MessagePassing::MessageId::
-print(std::ostream& o) const
+namespace
 {
-  o << "(id=";
-  if (m_type==T_Null)
-    o << "(null)";
-  else if (m_type==T_Int)
-    o << m_message.i;
-  else if (m_type==T_Long)
-    o << m_message.l;
-  else
-    o << m_message.cv;
-  o << ",source_rank=" << m_source_info.rank()
-    << " tag=" << m_source_info.tag()
-    << " size=" << m_source_info.size();
+inline TimeMetricAction _build(ITimeMetricCollector* c,TimeMetricPhase p)
+{
+  return TimeMetricAction(c,TimeMetricActionBuildInfo(String(),(int)p));
+}
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void StandardPhaseTimeMetrics::
+initialize(ITimeMetricCollector* collector)
+{
+  if (!collector)
+    return;
+  m_message_passing_phase = _build(collector,TimeMetricPhase::MessagePassing);
+  m_input_output_phase = _build(collector,TimeMetricPhase::InputOutput);
+  m_computation_phase = _build(collector,TimeMetricPhase::Computation);
 }
 
 /*---------------------------------------------------------------------------*/

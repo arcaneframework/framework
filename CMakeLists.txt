@@ -152,6 +152,7 @@ arccore_add_component_directory(base)
 arccore_add_component_directory(collections)
 arccore_add_component_directory(concurrency)
 arccore_add_component_directory(trace)
+arccore_add_component_directory(serialize)
 arccore_add_component_directory(message_passing)
 arccore_add_component_directory(message_passing_mpi)
 

@@ -11,6 +11,9 @@ set(SOURCES
   TraceMessage.cc
   ITraceMng.h
   TraceMng.cc
+  ITimeMetricCollector.h
+  TimeMetric.h
+  TimeMetric.cc
 )
 
 arccore_add_component_library(trace

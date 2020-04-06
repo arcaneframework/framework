@@ -1,4 +1,6 @@
 set(SOURCES
+  BasicSerializeMessage.h
+  BasicSerializeMessage.cc
   MessagePassingGlobal.h
   MessagePassingGlobal.cc
   Dispatchers.h
@@ -14,8 +16,10 @@ set(SOURCES
   Request.h
   Request.cc
   IRequestList.h
+  ISerializeMessage.h
   RequestListBase.h
   RequestListBase.cc
+  ISerializeMessageList.h
   IStat.h
   IDispatchers.h
   ITypeDispatcher.h
@@ -24,6 +28,7 @@ set(SOURCES
   MessagePassingMng.h
   MessagePassingMng.cc
   Messages.h
+  Messages.cc
   Stat.h
   Stat.cc
 )
@@ -32,4 +37,4 @@ arccore_add_component_library(message_passing
   FILES ${SOURCES}
 )
 
-target_link_libraries(arccore_message_passing PUBLIC arccore_collections arccore_base)
+target_link_libraries(arccore_message_passing PUBLIC arccore_serialize arccore_collections arccore_base)

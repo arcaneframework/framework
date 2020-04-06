@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* TraceGlobal.h                                               (C) 2000-2018 */
+/* TraceGlobal.h                                               (C) 2000-2020 */
 /*                                                                           */
 /* Définitions globales de la composante 'Trace' de 'Arccore'.               */
 /*---------------------------------------------------------------------------*/

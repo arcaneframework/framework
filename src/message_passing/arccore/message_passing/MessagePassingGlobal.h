@@ -25,6 +25,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arccore
+{
+class ISerializer;
+}
+
 namespace Arccore::MessagePassing
 {
 //! Numéro correspondant à un rang nul
@@ -35,6 +40,9 @@ static const Int32 A_NULL_TAG_VALUE = static_cast<Int32>(-1);
 
 class IRequestCreator;
 class IRequestList;
+class ISerializeMessage;
+class ISerializeMessageList;
+class ISerializeDispatcher;
 class Request;
 class MessageId;
 class MessageTag;
@@ -63,9 +71,11 @@ enum eReduceType
  */
 enum eWaitType
 {
-  WaitAll, //! Attend que tous les messages de la liste soient traités
-  WaitSome,//! Attend que au moins un message de la liste soit traité
-  WaitSomeNonBlocking //! Traite uniquement les messages qui peuvent l'être sans attendre.
+  WaitAll = 0, //! Attend que tous les messages de la liste soient traités
+  WaitSome = 1, //! Attend que au moins un message de la liste soit traité
+  TestSome = 2, //! Traite uniquement les messages qui peuvent l'être sans attendre.
+  //! \deprecated Utiliser TestSome à la place
+  WaitSomeNonBlocking = 2
 };
 /*!
  * \brief Type indiquant si un message est bloquant ou non.
@@ -75,6 +85,21 @@ enum eBlockingType
   Blocking = 0,
   NonBlocking
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Type de message point à point.
+ */
+enum ePointToPointMessageType
+{
+  MsgSend = 0,
+  MsgReceive
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arccore::MessagePassing
 
 /*---------------------------------------------------------------------------*/
