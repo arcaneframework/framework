@@ -79,6 +79,21 @@ generate_export_header(alien_hypre
         EXPORT_FILE_NAME include/alien/hypre/export.h
         )
 
+set(ALIEN_EXPORT_TARGET ${PROJECT_NAME}Targets)
+
+install(DIRECTORY include/alien/hypre
+        DESTINATION include/alien
+        )
+
+install(TARGETS alien_hypre EXPORT ${ALIEN_EXPORT_TARGET}
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        )
+
+install(
+        FILES ${CMAKE_CURRENT_BINARY_DIR}/include/alien/hypre/export.h
+        DESTINATION include/alien/hypre
+)
 
 enable_testing()
 
