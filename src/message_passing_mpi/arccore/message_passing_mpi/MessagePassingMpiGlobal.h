@@ -58,13 +58,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
-{
-
-namespace MessagePassing
-{
-
-namespace Mpi
+namespace Arccore::MessagePassing::Mpi
 {
 class MpiRequest;
 class MpiAdapter;
@@ -72,6 +66,9 @@ class MpiLock;
 class IMpiReduceOperator;
 class MpiDatatype;
 class MpiMessagePassingMng;
+class MpiSerializeMessage;
+class MpiSerializeMessageList;
+class MpiSerializeDispatcher;
 template<typename DataType>
 class StdMpiReduceOperator;
 
@@ -128,11 +125,10 @@ datatype(unsigned long long)
 { return MPI_LONG_LONG; }
 }
 
-}
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-}
-
-}
+} // End namespace Arccore::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

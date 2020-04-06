@@ -1,50 +1,52 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* MessageId.cc                                                (C) 2000-2020 */
+/* MpiSerializeMessage.cc                                      (C) 2000-2020 */
 /*                                                                           */
-/* Identifiant d'un message point à point.                                   */
+/* Encapsulation de ISerializeMessage pour MPI.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing/MessageId.h"
+#include "arccore/message_passing_mpi/MpiSerializeMessage.h"
 
-#include <iostream>
+#include "arccore/message_passing/ISerializeMessage.h"
+#include "arccore/serialize/BasicSerializer.h"
+#include "arccore/base/FatalErrorException.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arccore::MessagePassing::Mpi
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MessagePassing::MessageId::_Message MessagePassing::MessageId::null_message;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MessagePassing::MessageId::
-print(std::ostream& o) const
+MpiSerializeMessage::
+MpiSerializeMessage(ISerializeMessage* message,Integer index)
+: m_message(message)
+, m_serialize_buffer(0)
+, m_message_index(index)
+, m_message_number(0)
 {
-  o << "(id=";
-  if (m_type==T_Null)
-    o << "(null)";
-  else if (m_type==T_Int)
-    o << m_message.i;
-  else if (m_type==T_Long)
-    o << m_message.l;
-  else
-    o << m_message.cv;
-  o << ",source_rank=" << m_source_info.rank()
-    << " tag=" << m_source_info.tag()
-    << " size=" << m_source_info.size();
+  ISerializer* sr = message->serializer();
+  m_serialize_buffer = dynamic_cast<BasicSerializer*>(sr);
+  if (!m_serialize_buffer){
+    ARCCORE_FATAL("Can not convert 'ISerializer' (v={0}) to 'BasicSerializer'",sr);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+MpiSerializeMessage::
+~MpiSerializeMessage()
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arccore::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

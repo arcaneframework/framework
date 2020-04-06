@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* TraceGlobal.h                                               (C) 2000-2018 */
+/* SerializeGlobal.h                                           (C) 2000-2020 */
 /*                                                                           */
-/* Définitions globales de la composante 'Trace' de 'Arccore'.               */
+/* Définitions globales de la composante 'Serialize' de 'Arccore'.           */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCCORE_TRACE_TRACEGLOBAL_H
-#define ARCCORE_TRACE_TRACEGLOBAL_H
+#ifndef ARCCORE_SERIALIZE_SERIALIZEGLOBAL_H
+#define ARCCORE_SERIALIZE_SERIALIZEGLOBAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -14,12 +14,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#if defined(ARCCORE_COMPONENT_arccore_trace)
-#define ARCCORE_TRACE_EXPORT ARCCORE_EXPORT
-#define ARCCORE_TRACE_EXTERN_TPL
+#if defined(ARCCORE_COMPONENT_arccore_serialize)
+#define ARCCORE_SERIALIZE_EXPORT ARCCORE_EXPORT
+#define ARCCORE_SERIALIZE_EXTERN_TPL
 #else
-#define ARCCORE_TRACE_EXPORT ARCCORE_IMPORT
-#define ARCCORE_TRACE_EXTERN_TPL extern
+#define ARCCORE_SERIALIZE_EXPORT ARCCORE_IMPORT
+#define ARCCORE_SERIALIZE_EXTERN_TPL extern
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -27,30 +27,17 @@
 
 namespace Arccore
 {
-class ITraceStream;
-class ITraceMng;
-class TraceMessageClass; 
-class TraceClassConfig;
-class TraceMessage;
-class TraceMessageListenerArgs;
-class ITraceMessageListener;
-class TraceAccessor;
-#ifdef ARCCORE_DEBUG
-typedef TraceMessage TraceMessageDbg;
-#else
-class TraceMessageDbg;
-#endif
 
-class ITimeMetricCollector;
-class TimeMetricSentry;
-class TimeMetricId;
-class TimeMetricAction;
-class TimeMetricActionBuildInfo;
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-namespace Trace
-{
-}
-}
+class ISerializer;
+class BasicSerializer;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

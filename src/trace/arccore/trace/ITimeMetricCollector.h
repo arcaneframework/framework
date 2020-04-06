@@ -1,55 +1,51 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* IControlDispatcher.h                                        (C) 2000-2020 */
+/* ITimeMetricCollector.h                                      (C) 2000-2020 */
 /*                                                                           */
-/* Manage Control/Utility parallel messages.                                 */
+/* Interface gérant les statistiques sur les temps d'exécution.              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCCORE_MESSAGEPASSING_ICONTROLDISPATCHER_H
-#define ARCCORE_MESSAGEPASSING_ICONTROLDISPATCHER_H
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#include "arccore/message_passing/MessagePassingGlobal.h"
-#include "arccore/collections/CollectionsGlobal.h"
-#include "arccore/base/BaseTypes.h"
-#include "arccore/base/Ref.h"
-
+#ifndef ARCCORE_TRACE_ITIMEMETRICCOLLECTOR_H
+#define ARCCORE_TRACE_ITIMEMETRICCOLLECTOR_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore::MessagePassing
+#include "arccore/trace/TraceGlobal.h"
+#include "arccore/base/String.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*
+ * API en cours de définition. Ne pas utiliser en dehors de Arccore/Arcane.
+ */
+
+namespace Arccore
 {
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
- * \brief Manage control streams for parallel messages.
+ * \brief Interface gérant les statistiques sur l'exécution.
  */
-class IControlDispatcher
+class ARCCORE_BASE_EXPORT ITimeMetricCollector
 {
  public:
-  virtual ~IControlDispatcher() = default;
 
  public:
-  virtual void waitAllRequests(ArrayView<Request> requests) =0;
 
-  virtual void waitSomeRequests(ArrayView<Request> requests,
-                                ArrayView<bool> indexes, bool is_non_blocking) =0;
+  // Libère les ressources.
+  virtual ~ITimeMetricCollector() = default;
 
-  virtual IMessagePassingMng* commSplit(bool keep) =0;
+ public:
 
-  virtual void barrier() =0;
-
-  virtual MessageId probe(const PointToPointMessageInfo& message) =0;
-
-  //! Création d'une liste de requêtes associé à ce gestionnaire
-  virtual Ref<IRequestList> createRequestListRef() =0;
+  virtual TimeMetricAction getAction(const TimeMetricActionBuildInfo& x) =0;
+  virtual TimeMetricId beginAction(const TimeMetricAction& handle) =0;
+  virtual void endAction(const TimeMetricId& metric_id) =0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing
+} // End namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

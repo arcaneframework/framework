@@ -43,9 +43,9 @@ class ITypeDispatcher
                                 ConstArrayView<Int32> send_index,Span<Type> recv_buf,
                                 ConstArrayView<Int32> recv_count,ConstArrayView<Int32> recv_index) =0;
   virtual Request send(Span<const Type> send_buffer,Int32 rank,bool is_blocked) =0;
-  virtual Request send(Span<const Type> send_buffer,PointToPointMessageInfo message) =0;
+  virtual Request send(Span<const Type> send_buffer,const PointToPointMessageInfo& message) =0;
   virtual Request receive(Span<Type> recv_buffer,Int32 rank,bool is_blocked) =0;
-  virtual Request receive(Span<Type> recv_buffer,PointToPointMessageInfo message) =0;
+  virtual Request receive(Span<Type> recv_buffer,const PointToPointMessageInfo& message) =0;
   virtual Type allReduce(eReduceType op,Type send_buf) =0;
   virtual void allReduce(eReduceType op,Span<Type> send_buf) =0;
 };

@@ -17,6 +17,8 @@ set(SOURCES
   CStringUtils.h
   CStringUtils.cc
   BaseTypes.h
+  BasicDataType.h
+  BasicDataType.cc
   BasicTranscoder.h
   BasicTranscoder.cc
   BaseTypes.h

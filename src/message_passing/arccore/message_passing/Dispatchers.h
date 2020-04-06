@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*---------------------------------------------------------------------------*/
-/* Dispatchers.h                                               (C) 2000-2018 */
+/* Dispatchers.h                                               (C) 2000-2020 */
 /*                                                                           */
 /* Conteneur des dispatchers.                                                */
 /*---------------------------------------------------------------------------*/
@@ -14,9 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
-{
-namespace MessagePassing
+namespace Arccore::MessagePassing
 {
 
 /*---------------------------------------------------------------------------*/
@@ -50,6 +48,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT Dispatchers
   ITypeDispatcher<long double>* dispatcher(long double*) override { return m_long_double; }
 
   IControlDispatcher* controlDispatcher() override { return m_control; }
+  ISerializeDispatcher* serializeDispatcher() override { return m_serialize; }
 
  public:
 
@@ -68,37 +67,38 @@ class ARCCORE_MESSAGEPASSING_EXPORT Dispatchers
   void setDispatcher(ITypeDispatcher<double>* x) { m_double = x; }
   void setDispatcher(ITypeDispatcher<long double>* x) { m_long_double = x; }
   void setDispatcher(IControlDispatcher* x) { m_control = x; }
+  void setDispatcher(ISerializeDispatcher* x) { m_serialize = x; }
 
   //! Indique si lors de la destruction on appelle l'opérateur delete sur les instances (faux par défaut)
   void setDeleteDispatchers(bool v) { m_is_delete_dispatchers = v; }
 
  private:
 
-  ITypeDispatcher<char>* m_char;
-  ITypeDispatcher<unsigned char>* m_unsigned_char;
-  ITypeDispatcher<signed char>* m_signed_char;
-  ITypeDispatcher<short>* m_short;
-  ITypeDispatcher<unsigned short>* m_unsigned_short;
-  ITypeDispatcher<int>* m_int;
-  ITypeDispatcher<unsigned int>* m_unsigned_int;
-  ITypeDispatcher<long>* m_long;
-  ITypeDispatcher<unsigned long>* m_unsigned_long;
-  ITypeDispatcher<long long>* m_long_long;
-  ITypeDispatcher<unsigned long long>* m_unsigned_long_long;
-  ITypeDispatcher<float>* m_float;
-  ITypeDispatcher<double>* m_double;
-  ITypeDispatcher<long double>* m_long_double;
+  ITypeDispatcher<char>* m_char = nullptr;
+  ITypeDispatcher<unsigned char>* m_unsigned_char = nullptr;
+  ITypeDispatcher<signed char>* m_signed_char = nullptr;
+  ITypeDispatcher<short>* m_short = nullptr;
+  ITypeDispatcher<unsigned short>* m_unsigned_short = nullptr;
+  ITypeDispatcher<int>* m_int = nullptr;
+  ITypeDispatcher<unsigned int>* m_unsigned_int = nullptr;
+  ITypeDispatcher<long>* m_long = nullptr;
+  ITypeDispatcher<unsigned long>* m_unsigned_long = nullptr;
+  ITypeDispatcher<long long>* m_long_long = nullptr;
+  ITypeDispatcher<unsigned long long>* m_unsigned_long_long = nullptr;
+  ITypeDispatcher<float>* m_float = nullptr;
+  ITypeDispatcher<double>* m_double = nullptr;
+  ITypeDispatcher<long double>* m_long_double = nullptr;
 
-  IControlDispatcher* m_control;
+  IControlDispatcher* m_control = nullptr;
+  ISerializeDispatcher* m_serialize = nullptr;
 
-  bool m_is_delete_dispatchers;
+  bool m_is_delete_dispatchers = false;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace MessagePassing
-} // End namespace Arccore
+} // End namespace Arccore::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

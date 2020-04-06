@@ -14,6 +14,8 @@
 #include "arccore/message_passing/Dispatchers.h"
 #include "arccore/message_passing/IMessagePassingMng.h"
 #include "arccore/message_passing/IRequestList.h"
+#include "arccore/message_passing/ISerializeMessageList.h"
+#include "arccore/message_passing/ISerializeDispatcher.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
