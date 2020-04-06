@@ -43,7 +43,42 @@ find_package(Boost REQUIRED) # For boost::timer.
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-add_subdirectory(src)
+add_library(alien_hypre
+        include/alien/hypre/backend.h
+        include/alien/hypre/options.h
+        src/hypre_vector.cpp
+        src/hypre_vector.h
+        src/hypre_matrix.cpp
+        src/hypre_matrix.h
+        src/hypre_linear_algebra.cpp
+        src/hypre_linear_solver.cpp
+        src/converters/hypre_to_simplecsr_vector.cpp
+        src/converters/simplecsr_to_hypre_vector.cpp
+        src/converters/simplecsr_to_hypre_matrix.cpp
+        )
+
+target_link_libraries(alien_hypre PUBLIC
+        arccore_trace
+        arccore_collections
+        arccore_base
+        arccore_message_passing_mpi
+        Alien::alien_core
+        arcconpkg_Hypre
+        )
+
+target_include_directories(alien_hypre PUBLIC
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+        )
+
+add_library(Alien::alien_hypre ALIAS alien_hypre)
+
+include(GenerateExportHeader)
+
+generate_export_header(alien_hypre
+        EXPORT_FILE_NAME include/alien/hypre/export.h
+        )
+
 
 enable_testing()
 

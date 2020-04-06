@@ -1,4 +1,4 @@
-#include "hypre_vector.h"
+#include "../hypre_vector.h"
 
 #include <alien/core/backend/IVectorConverter.h>
 #include <alien/core/backend/VectorConverterRegisterer.h>
