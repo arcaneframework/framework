@@ -83,9 +83,7 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
     mesh.addAlgorithm(
         Neo::InProperty{source_family, source_family.lidPropName()},
         Neo::InProperty{target_family, target_family.lidPropName()},
-        Neo::OutProperty{source_family, source_family.m_name + "to" +
-                                            target_family.m_name +
-                                            "_connectivity"},
+        Neo::OutProperty{source_family, connectivity_name},
         [&connected_item_uids, nb_connected_item_per_items, &source_items,
          &source_family, &target_family](
             Neo::ItemLidsProperty const &source_family_lids_property,
@@ -166,7 +164,7 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
     using NbNodeInCell = int;
     using CellTypes = std::vector<std::pair<NbNodeInCell, ItemNodesInCell>>;
     struct DefaultItemOrientation {
-      bool isOrdered(Neo::utils::ConstArrayView<Neo::utils::Int64> item_nodes) const
+      static bool isOrdered(Neo::utils::ConstArrayView<Neo::utils::Int64> item_nodes)
       {
         auto nb_nodes = item_nodes.size();
         if (nb_nodes ==2) {
@@ -365,7 +363,6 @@ void _createMesh(Neo::Mesh &mesh,
     std::vector<Neo::utils::Int64> face_nodes{0, 1, 4, 0, 1, 5, 1, 2, 4, 1, 2, 5,
                                               2, 3, 4, 2, 3, 5, 3, 0, 4, 3, 0, 5};
     std::vector<Neo::utils::Int64> face_cells(face_uids.size(),0);
-
     auto nb_node_per_cell = 6;
     auto nb_node_per_face = 3;
     auto nb_face_per_cell = 8;
@@ -617,7 +614,7 @@ TEST(PolyhedralTest,ImportXdmfPolyhedronMesh)
   topology->read();
   // Read only polyhedrons
   EXPECT_EQ(XdmfTopologyType::Polyhedron()->getName(),topology->getType()->getName());
-  std::vector<Neo::utils::Int32> cell_data(topology->getSize(),-1);
+  std::vector<Neo::utils::Int64> cell_data(topology->getSize(),-1);
   topology->getValues(0,cell_data.data(),topology->getSize());
   std::vector<Neo::utils::Int64> cell_uids;
   std::vector<Neo::utils::Int64> face_uids;
@@ -646,7 +643,7 @@ TEST(PolyhedralTest,ImportXdmfPolyhedronMesh)
     nb_face_per_cells.push_back(cell_nb_face);
     for (auto face_index = 0; face_index< cell_nb_face;++face_index){
       std::size_t face_nb_node = cell_data[cell_data_index++];
-      auto current_face_nodes = Neo::utils::ArrayView<Neo::utils::Int32>{face_nb_node,&cell_data[cell_data_index]};
+      auto current_face_nodes = Neo::utils::ConstArrayView<Neo::utils::Int64>{face_nb_node,&cell_data[cell_data_index]};
       auto [face_info, is_new_face] = face_nodes_set.emplace(FaceNodes{current_face_nodes.begin(),
                              current_face_nodes.end()},face_uid);
       if (!is_new_face) std::cout << "Face not inserted " << face_uid << std::endl;
