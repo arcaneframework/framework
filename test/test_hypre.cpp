@@ -1,7 +1,11 @@
 #include <alien/hypre/backend.h>
-#include <alien/AlienRefSemantic.h>
+
+#include <iostream>
 
 #include <arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h>
+
+#include <alien/alien/ref/AlienRefSemantic.h>
+
 
 int test() {
 
