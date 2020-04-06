@@ -28,16 +28,8 @@ list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
 include(${ARCCON_CMAKE_COMMANDS})
 
 find_package(Arccore REQUIRED)
-
-# mode plugin ? ALIEN should be defined by parent project
-# (and could not be found because not yet installed)
-# otherwise we need to find ALIEN
-if(NOT TARGET alien_core)
-  find_package(Alien REQUIRED)
-endif()
-
+find_package(Alien REQUIRED)
 find_package(Hypre REQUIRED)
-find_package(MPI REQUIRED)
 find_package(Boost REQUIRED) # For boost::timer.
 
 # ----------------------------------------------------------------------------
