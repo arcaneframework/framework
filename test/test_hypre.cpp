@@ -4,7 +4,7 @@
 
 #include <arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h>
 
-#include <alien/alien/ref/AlienRefSemantic.h>
+#include <alien/ref/AlienRefSemantic.h>
 
 
 int test() {
