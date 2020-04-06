@@ -62,6 +62,7 @@ target_link_libraries(alien_hypre PUBLIC
 target_include_directories(alien_hypre PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         )
 
 add_library(Alien::alien_hypre ALIAS alien_hypre)
@@ -72,26 +73,33 @@ generate_export_header(alien_hypre
         EXPORT_FILE_NAME include/alien/hypre/export.h
         )
 
+# Tests
+
+enable_testing()
+
+add_subdirectory(test)
+
+# Install
+
+include(ArcconSetInstallDirs)
+
 set(ALIEN_EXPORT_TARGET ${PROJECT_NAME}Targets)
 
 install(DIRECTORY include/alien/hypre
-        DESTINATION include/alien
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/alien
         )
 
 install(TARGETS alien_hypre EXPORT ${ALIEN_EXPORT_TARGET}
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
 
 install(
         FILES ${CMAKE_CURRENT_BINARY_DIR}/include/alien/hypre/export.h
-        DESTINATION include/alien/hypre
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/alien/hypre
 )
 
-include(ArcconSetInstallDirs)
-
 set(alien_install_lib "${CMAKE_INSTALL_LIBDIR}/alien")
-
 set(config_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 
 install(EXPORT ${ALIEN_EXPORT_TARGET}
@@ -103,22 +111,15 @@ include(CMakePackageConfigHelpers)
 set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
 set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
 
-set(ALIEN_MODULE_PATH ${alien_install_lib}/cmake)
-
 configure_package_config_file(
         "${PROJECT_NAME}Config.cmake.in"
         "${project_config}"
         INSTALL_DESTINATION "${config_install_dir}"
-        PATH_VARS ALIEN_MODULE_PATH
 )
 
 install(FILES "${project_config}"
         DESTINATION "${config_install_dir}"
         )
-
-enable_testing()
-
-add_subdirectory(test)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
