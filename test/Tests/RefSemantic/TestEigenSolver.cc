@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <alien/AlienRefSemantic.h>
+#include <alien/ref/AlienRefSemantic.h>
 
 #include <alien/data/Space.h>
 #include <alien/expression/solver/IEigenSolver.h>

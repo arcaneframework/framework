@@ -2,7 +2,7 @@
 
 #include <alien/Alien.h>
 #include <alien/AlienExternalPackages.h>
-#include <alien/AlienRefSemantic.h>
+#include <alien/ref/AlienRefSemantic.h>
 
 #include <Tests/Solver.h>
 

@@ -33,9 +33,9 @@
 
 #include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
 
-#include <alien/AlienRefSemantic.h>
+#include <alien/ref/AlienRefSemantic.h>
 
-#include <alien/mv_expr/MVExpr.h>
+#include <alien/ref/mv_expr/MVExpr.h>
 
 #ifdef ALIEN_USE_PETSC
 #include <alien/kernels/petsc/io/AsciiDumper.h>
@@ -56,7 +56,7 @@
 #endif
 
 #include <alien/expression/solver/ILinearSolver.h>
-#include <alien/AlienImportExport.h>
+#include <alien/ref/AlienImportExport.h>
 
 #include "AlienStokesModule.h"
 

@@ -1,7 +1,7 @@
 #include <Tests/Options.h>
 
-#include <alien/AlienImportExport.h>
-#include <alien/AlienRefSemantic.h>
+#include <alien/ref/AlienImportExport.h>
+#include <alien/ref/AlienRefSemantic.h>
 
 #include <Tests/Solver.h>
 

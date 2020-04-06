@@ -23,17 +23,17 @@
 
 #include <alien/arcane_tools/IIndexManager.h>
 
-#include <alien/handlers/block/BlockVectorReader.h>
-#include <alien/handlers/block/BlockVectorWriter.h>
-#include <alien/handlers/scalar/VectorReader.h>
-#include <alien/handlers/scalar/VectorWriter.h>
+#include <alien/move/handlers/block/BlockVectorReader.h>
+#include <alien/move/handlers/block/BlockVectorWriter.h>
+#include <alien/move/handlers/scalar/VectorReader.h>
+#include <alien/move/handlers/scalar/VectorWriter.h>
 #include <alien/arcane_tools/block/IndexManagerBlockBuilder.h>
 #include <alien/arcane_tools/distribution/DistributionFabric.h>
 #include <alien/arcane_tools/indexSet/IndexSetFabric.h>
-#include <alien/handlers/block/ProfiledBlockMatrixBuilder.h>
-#include <alien/handlers/scalar/DirectMatrixBuilder.h>
-#include <alien/handlers/profiler/MatrixProfiler.h>
-#include <alien/handlers/scalar/ProfiledMatrixBuilder.h>
+#include <alien/move/handlers/block/ProfiledBlockMatrixBuilder.h>
+#include <alien/move/handlers/scalar/DirectMatrixBuilder.h>
+#include <alien/move/handlers/scalar/MatrixProfiler.h>
+#include <alien/move/handlers/scalar/ProfiledMatrixBuilder.h>
 #include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
 #ifdef ALIEN_USE_PETSC
 #include <alien/kernels/petsc/io/AsciiDumper.h>
@@ -213,8 +213,8 @@ AlienTestModule::test()
   Alien::ArcaneTools::createIndexSet(space, &index_manager, "P", traceMng());
   Alien::ArcaneTools::createIndexSet(space, &index_manager, "Q", traceMng());
 
-  Alien::Vector vectorB(m_vdist);
-  Alien::Vector vectorX(m_vdist);
+  Alien::VectorData vectorB(space, m_vdist);
+  Alien::VectorData vectorX(space, m_vdist);
 
   std::unique_ptr<Alien::ArcaneTools::IndexManagerBlockBuilder> block_builder(nullptr);
   std::unique_ptr<Alien::VBlock> vblock(nullptr);
@@ -320,7 +320,7 @@ AlienTestModule::test()
   Arcane::XmlNode rootXmlBuilderNode = options()->builder.rootElement();
   Arcane::XmlNodeList builderNodeList = rootXmlBuilderNode.children("builder");
 
-  Alien::Matrix matrixA(space, m_mdist); // local matrix for exact measure without
+  Alien::MatrixData matrixA(space, m_mdist); // local matrix for exact measure without
                                              // side effect (however, you can reuse a
                                              // matrix with several builder)
   if (m_vect_size == 0) {
@@ -408,7 +408,7 @@ AlienTestModule::test()
 
             {
               SimpleCSRLinearAlgebra alg;
-              Alien::Vector vectorR(space, m_vdist);
+              Alien::VectorData vectorR(space, m_vdist);
               vectorR.setBlockInfos(vectorX.block());
               alg.mult(matrixA, vectorX, vectorR);
               alg.axpy(-1., vectorB, vectorR);
@@ -418,7 +418,7 @@ AlienTestModule::test()
 #ifdef ALIEN_USE_MTL4
             if (m_parallel_mng->commSize() == 1) {
               Alien::MTLLinearAlgebra alg;
-              Alien::Vector vectorR(space, m_vdist);
+              Alien::VectorData vectorR(space, m_vdist);
               vectorR.setBlockInfos(vectorX.block());
               alg.mult(matrixA, vectorX, vectorR);
               alg.axpy(-1., vectorB, vectorR);
@@ -550,8 +550,8 @@ AlienTestModule::test()
 
     if (m_vect_size == 0) {
       Alien::SimpleCSRLinearAlgebra testAlg;
-      Alien::Vector vectorY(space, m_vdist);
-      Alien::Vector vectorRes(space, m_vdist);
+      Alien::VectorData vectorY(space, m_vdist);
+      Alien::VectorData vectorRes(space, m_vdist);
 
       vectorY.setBlockInfos(vectorX.block());
       vectorRes.setBlockInfos(vectorX.block());
@@ -593,7 +593,7 @@ AlienTestModule::test()
           if (status.succeeded
               && options()->builder[ibuilder] != AlienTestOptionTypes::DirectBuilder) {
             SimpleCSRLinearAlgebra alg;
-            Alien::Vector vectorR(space, m_vdist);
+            Alien::VectorData vectorR(space, m_vdist);
             vectorR.setBlockInfos(vectorX.block());
             alg.mult(matrixA, vectorX, vectorR);
             alg.axpy(-1., vectorB, vectorR);
@@ -652,7 +652,7 @@ AlienTestModule::test()
 /*---------------------------------------------------------------------------*/
 
 void
-AlienTestModule::buildAndFillInBlockVector(Alien::Vector& vectorB,
+AlienTestModule::buildAndFillInBlockVector(Alien::VectorData& vectorB,
     ConstArrayView<Integer> allXIndex, ConstArrayView<Real> value)
 {
   Alien::LocalBlockVectorWriter b(std::move(vectorB));
@@ -670,7 +670,7 @@ AlienTestModule::buildAndFillInBlockVector(Alien::Vector& vectorB,
 }
 
 void
-AlienTestModule::buildAndFillInBlockVector(Alien::Vector& vectorB,
+AlienTestModule::buildAndFillInBlockVector(Alien::VectorData& vectorB,
     ConstArrayView<Integer> allUIndex, ConstArray2View<Integer> allPIndex,
     ConstArrayView<Integer> allXIndex ALIEN_UNUSED_PARAM, ConstArrayView<Real> value)
 {
@@ -696,7 +696,7 @@ AlienTestModule::buildAndFillInBlockVector(Alien::Vector& vectorB,
 }
 
 void
-AlienTestModule::buildAndFillInVector(Alien::Vector& vectorB, const double& value)
+AlienTestModule::buildAndFillInVector(Alien::VectorData& vectorB, const double& value)
 {
   const Alien::VectorDistribution& dist = vectorB.distribution();
   Alien::LocalVectorWriter v(std::move(vectorB));
@@ -708,7 +708,7 @@ AlienTestModule::buildAndFillInVector(Alien::Vector& vectorB, const double& valu
 
 void
 AlienTestModule::buildAndFillInBlockVector(
-    Alien::Vector& vectorB, const double& value)
+    Alien::VectorData& vectorB, const double& value)
 {
   const Alien::VectorDistribution& dist = vectorB.distribution();
   const Alien::Block* block = vectorB.block();
@@ -1068,8 +1068,8 @@ AlienTestModule::fillInMatrix(const CellCellGroup& cell_cell_connection,
 /*---------------------------------------------------------------------------*/
 
 Alien::SolverStatus
-AlienTestModule::solve(Alien::ILinearSolver* solver, Alien::Matrix& matrixA,
-    Alien::Vector& vectorB, Alien::Vector& vectorX,
+AlienTestModule::solve(Alien::ILinearSolver* solver, Alien::MatrixData& matrixA,
+    Alien::VectorData& vectorB, Alien::VectorData& vectorX,
     AlienTestOptionTypes::eBuilderType builderType)
 {
   { // Réinitialisation de vectorX
@@ -1095,8 +1095,8 @@ AlienTestModule::solve(Alien::ILinearSolver* solver, Alien::Matrix& matrixA,
     const VBlock* vblock = vectorB.vblock();
     std::shared_ptr<Alien::ILinearAlgebra> alg = solver->algebra();
     if (alg) {
-      Alien::Vector vectorY(col_space, m_vdist);
-      Alien::Vector vectorRes(row_space, m_vdist);
+      Alien::VectorData vectorY(col_space, m_vdist);
+      Alien::VectorData vectorRes(row_space, m_vdist);
 
       vectorY.setBlockInfos(block);
       vectorRes.setBlockInfos(block);
@@ -1116,8 +1116,8 @@ AlienTestModule::solve(Alien::ILinearSolver* solver, Alien::Matrix& matrixA,
     {
       if (builderType != AlienTestOptionTypes::DirectBuilder) {
         Alien::SimpleCSRLinearAlgebra testAlg;
-        Alien::Vector vectorY(col_space, m_vdist);
-        Alien::Vector vectorRes(row_space, m_vdist);
+        Alien::VectorData vectorY(col_space, m_vdist);
+        Alien::VectorData vectorRes(row_space, m_vdist);
 
         vectorY.setBlockInfos(block);
         vectorRes.setBlockInfos(block);
@@ -1135,8 +1135,8 @@ AlienTestModule::solve(Alien::ILinearSolver* solver, Alien::Matrix& matrixA,
 #ifdef ALIEN_USE_PETSC
     {
       Alien::PETScLinearAlgebra testAlg;
-      Alien::Vector vectorY(col_space, m_vdist);
-      Alien::Vector vectorRes(row_space, m_vdist);
+      Alien::VectorData vectorY(col_space, m_vdist);
+      Alien::VectorData vectorRes(row_space, m_vdist);
 
       vectorY.setBlockInfos(block);
       vectorRes.setBlockInfos(block);
@@ -1165,7 +1165,7 @@ AlienTestModule::checkVectorValues(Alien::IVector& vectorX, const double& value)
   // const VectorDistribution& dist = vectorX.distribution();
   const Block* block = vectorX.impl()->block();
   const VBlock* vblock = vectorX.impl()->vblock();
-  auto& vx = dynamic_cast<Alien::Vector&>(vectorX);
+  auto& vx = dynamic_cast<Alien::VectorData&>(vectorX);
   if (block) {
     const Alien::LocalBlockVectorReader v(vx);
     for (Integer i = 0; i < m_vdist.localSize(); ++i) {
@@ -1189,7 +1189,7 @@ AlienTestModule::checkVectorValues(Alien::IVector& vectorX, const double& value)
 /*---------------------------------------------------------------------------*/
 
 void
-AlienTestModule::vectorVariableUpdate(Alien::Vector& vectorB,
+AlienTestModule::vectorVariableUpdate(Alien::VectorData& vectorB,
     Alien::ArcaneTools::IIndexManager::ScalarIndexSet indexSetU)
 {
   ///////////////////////////////////////////////////////////////////////////

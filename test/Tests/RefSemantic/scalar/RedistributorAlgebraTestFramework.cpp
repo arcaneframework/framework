@@ -4,10 +4,10 @@
 
 #include <alien/Alien.h>
 #include <alien/AlienExternalPackages.h>
-#include <alien/AlienImportExport.h>
-#include <alien/AlienRefSemantic.h>
-#include <alien/data/scalar/RedistributedMatrix.h>
-#include <alien/data/scalar/RedistributedVector.h>
+#include <alien/ref/AlienImportExport.h>
+#include <alien/ref/AlienRefSemantic.h>
+#include <alien/ref/data/scalar/RedistributedMatrix.h>
+#include <alien/ref/data/scalar/RedistributedVector.h>
 #include <alien/expression/solver/ILinearAlgebra.h>
 #include <alien/kernels/redistributor/Redistributor.h>
 #ifdef ALIEN_USE_PETSC

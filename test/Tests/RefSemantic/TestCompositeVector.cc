@@ -5,11 +5,10 @@
 #include <alien/distribution/VectorDistribution.h>
 #include <alien/kernels/simple_csr/SimpleCSRVector.h>
 
-#include <alien/data/scalar/Vector.h>
 #include <alien/data/Space.h>
 #include <alien/functional/Cast.h>
-#include <alien/handlers/scalar/VectorReader.h>
-#include <alien/handlers/scalar/VectorWriter.h>
+#include <alien/ref/handlers/scalar/VectorReader.h>
+#include <alien/ref/handlers/scalar/VectorWriter.h>
 
 #include <arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h>
 

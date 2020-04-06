@@ -1,4 +1,4 @@
-#include <alien/AlienRefSemantic.h>
+#include <alien/ref/AlienRefSemantic.h>
 
 namespace Environment {
 extern Alien::ITraceMng* traceMng();

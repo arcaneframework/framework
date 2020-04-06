@@ -14,9 +14,7 @@ if (TARGET arcane_core)
 
     add_subdirectory(ArcaneLaplacian)
 
-    # Ce test doit etre refactoré pour ne plus
-    # utiliser l'API CEA Move-Semantic
-    # add_subdirectory(AlienTest)
+    add_subdirectory(AlienTest)
 
     add_subdirectory(AlienBench)
 

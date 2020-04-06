@@ -1,6 +1,6 @@
 #include <string>
-#include <alien/AlienImportExport.h>
-#include <alien/AlienRefSemantic.h>
+#include <alien/ref/AlienImportExport.h>
+#include <alien/ref/AlienRefSemantic.h>
 
 namespace Environment {
 extern Arccore::ITraceMng* traceMng();

@@ -16,7 +16,7 @@ endif ()
 linkLibraries(alien_arcane_test.exe
         Boost::boost
         Alien::alien_core
-        Alien::alien_semantic_ref
+        Alien::alien_semantic_move
         alien_external_packages
         alien_ifpen_solvers
         alien_arcane_tools

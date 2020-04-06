@@ -33,11 +33,11 @@
 
 #include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
 
-#include <alien/AlienRefSemantic.h>
+#include <alien/ref/AlienRefSemantic.h>
 
 #include <alien/kernels/redistributor/Redistributor.h>
-#include <alien/data/scalar/RedistributedVector.h>
-#include <alien/data/scalar/RedistributedMatrix.h>
+#include <alien/ref/data/scalar/RedistributedVector.h>
+#include <alien/ref/data/scalar/RedistributedMatrix.h>
 
 #include <alien/expression/solver/SolverStater.h>
 

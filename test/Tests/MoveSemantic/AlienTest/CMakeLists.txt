@@ -10,8 +10,8 @@ endif ()
 
 linkLibraries(alien_test.exe
         Boost::program_options
-        alien
-        alien_move_semantic
+        Alien::alien_core
+        Alien::alien_semantic_move
         )
 
 if (TARGET alien_external_packages)

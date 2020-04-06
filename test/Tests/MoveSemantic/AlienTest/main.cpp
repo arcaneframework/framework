@@ -12,9 +12,11 @@
 #include <boost/timer.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <ALIEN/Alien-ExternalPackages.h>
-#include <ALIEN/Alien-IFPENSolvers.h>
-#include <ALIEN/Alien-MoveSemantic.h>
+#include <alien/AlienExternalPackages.h>
+#include <alien/AlienIFPENSolvers.h>
+#include <alien/move/AlienMoveSemantic.h>
+
+#include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
 
 #include <Tests/Environment.h>
 #include <Tests/Solver.h>
