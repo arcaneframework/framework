@@ -13,7 +13,7 @@ cmake_policy(SET CMP0074 NEW)
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-project(ALIEN_HYPRE)
+project(AlienHypre)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -58,12 +58,12 @@ add_library(alien_hypre
         )
 
 target_link_libraries(alien_hypre PUBLIC
-        arccore_trace
-        arccore_collections
-        arccore_base
-        arccore_message_passing_mpi
+        Arccore::arccore_trace
+        Arccore::arccore_collections
+        Arccore::arccore_base
+        Arccore::arccore_message_passing_mpi
         Alien::alien_core
-        arcconpkg_Hypre
+        arccon::Hypre
         )
 
 target_include_directories(alien_hypre PUBLIC
@@ -94,6 +94,34 @@ install(
         FILES ${CMAKE_CURRENT_BINARY_DIR}/include/alien/hypre/export.h
         DESTINATION include/alien/hypre
 )
+
+include(ArcconSetInstallDirs)
+
+set(alien_install_lib "${CMAKE_INSTALL_LIBDIR}/alien")
+
+set(config_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+
+install(EXPORT ${ALIEN_EXPORT_TARGET}
+        NAMESPACE Alien::
+        DESTINATION ${config_install_dir})
+
+include(CMakePackageConfigHelpers)
+
+set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
+set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
+
+set(ALIEN_MODULE_PATH ${alien_install_lib}/cmake)
+
+configure_package_config_file(
+        "${PROJECT_NAME}Config.cmake.in"
+        "${project_config}"
+        INSTALL_DESTINATION "${config_install_dir}"
+        PATH_VARS ALIEN_MODULE_PATH
+)
+
+install(FILES "${project_config}"
+        DESTINATION "${config_install_dir}"
+        )
 
 enable_testing()
 
