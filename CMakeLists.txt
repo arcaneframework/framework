@@ -144,7 +144,7 @@ set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
 # Configuration
 set(version_config "${generated_dir}/${PROJECT_NAME}ConfigVersion.cmake")
 set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
-set(namespace "${Arccore}::")
+set(namespace "Arccore::")
 
 # ----------------------------------------------------------------------------
 
@@ -188,7 +188,8 @@ install(FILES "${project_config}" "${version_config}"
 )
 
 install(EXPORT ${ARCCORE_EXPORT_TARGET}
-  DESTINATION ${config_install_dir})
+  DESTINATION ${config_install_dir}
+  NAMESPACE "${namespace}")
  
 # ----------------------------------------------------------------------------
 # Local Variables:

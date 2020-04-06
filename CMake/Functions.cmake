@@ -89,6 +89,7 @@ function(arccore_add_component_library component_name)
       RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
       ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
     target_link_libraries(arccore_full INTERFACE ${_LIB_NAME})
+    add_library(Arccore::${_LIB_NAME} ALIAS ${_LIB_NAME})
   endif()
 
   # Génère les bibliothèques dans le répertoire 'lib' du projet.
