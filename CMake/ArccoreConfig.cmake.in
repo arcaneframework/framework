@@ -6,10 +6,12 @@ include(${PACKAGE_PREFIX_DIR}/@config_install_dir@/@ARCCORE_EXPORT_TARGET@.cmake
 
 include(CMakeFindDependencyMacro)
 
-if (@ARCCORE_USE_MPI@)
-find_dependency(MPI)
+if(NOT ARCCORE_NO_FIND_DEPENDENCY)
+  if (@ARCCORE_USE_MPI@)
+    find_dependency(MPI)
+  endif()
+  find_dependency(Glib)
 endif()
-find_dependency(Glib)
 
 get_target_property(_AFULL @namespace@arccore_full INTERFACE_LINK_LIBRARIES)
 
