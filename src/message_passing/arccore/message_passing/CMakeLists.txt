@@ -17,6 +17,7 @@ set(SOURCES
   Request.cc
   IRequestList.h
   ISerializeMessage.h
+  ISerializeDispatcher.h
   RequestListBase.h
   RequestListBase.cc
   ISerializeMessageList.h
