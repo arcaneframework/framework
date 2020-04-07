@@ -4,7 +4,14 @@ set(Arccore_VERSION @Arccore_VERSION@)
 
 include(${PACKAGE_PREFIX_DIR}/@config_install_dir@/@ARCCORE_EXPORT_TARGET@.cmake)
 
-get_target_property(_AFULL arccore_full INTERFACE_LINK_LIBRARIES)
+include(CMakeFindDependencyMacro)
+
+if (@ARCCORE_USE_MPI@)
+find_dependency(MPI)
+endif()
+find_dependency(Glib)
+
+get_target_property(_AFULL @namespace@arccore_full INTERFACE_LINK_LIBRARIES)
 
 # Parcours l'ensemble des cibles de cette bibliothèque interface
 # et définit une variable 'Arcane_INCLUDE_DIRS' qui
@@ -22,7 +29,8 @@ foreach(package ${_AFULL})
 endforeach(package ${_AFULL})
 list(REMOVE_DUPLICATES _AINCFULL)
 
-set(Arccore_LIBRARIES arccore_full)
+
+set(Arccore_LIBRARIES @namespace@arccore_full)
 set(Arccore_INCLUDE_DIRS ${_AINCFULL})
 
 check_required_components(Arccore)
