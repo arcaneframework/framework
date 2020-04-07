@@ -87,6 +87,7 @@ endif()
 
 add_library(arccore_build_compile_flags INTERFACE)
 install(TARGETS arccore_build_compile_flags EXPORT ${ARCCORE_EXPORT_TARGET})
+add_library(Arccore::arccore_build_compile_flags ALIAS arccore_build_compile_flags)
 
 # ----------------------------------------------------------------------------
 # Create an interface library 'arccore_full' that groups all Arccore components.
