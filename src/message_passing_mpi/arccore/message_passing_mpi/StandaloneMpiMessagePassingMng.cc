@@ -17,6 +17,7 @@
 #include "arccore/message_passing_mpi/MpiDatatype.h"
 #include "arccore/message_passing_mpi/MpiTypeDispatcher.h"
 #include "arccore/message_passing_mpi/MpiControlDispatcher.h"
+#include "arccore/message_passing_mpi/MpiSerializeDispatcher.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -124,6 +125,7 @@ create(MPI_Comm mpi_comm, bool clean_comm)
   _createAndSetDispatcher<long double>(dsp,mpm,adapter);
 
   dsp->setDispatcher(new MpiControlDispatcher(mpm,adapter));
+  dsp->setDispatcher(new MpiSerializeDispatcher(adapter));
 
   return mpm;
 }

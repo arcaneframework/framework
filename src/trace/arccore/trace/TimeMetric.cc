@@ -22,7 +22,9 @@ namespace
 {
 inline TimeMetricAction _build(ITimeMetricCollector* c,TimeMetricPhase p)
 {
-  return TimeMetricAction(c,TimeMetricActionBuildInfo(String(),(int)p));
+  if (c)
+    return TimeMetricAction(c,TimeMetricActionBuildInfo(String(),(int)p));
+  return TimeMetricAction();
 }
 }
 
@@ -37,6 +39,33 @@ initialize(ITimeMetricCollector* collector)
   m_message_passing_phase = _build(collector,TimeMetricPhase::MessagePassing);
   m_input_output_phase = _build(collector,TimeMetricPhase::InputOutput);
   m_computation_phase = _build(collector,TimeMetricPhase::Computation);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TimeMetricAction
+timeMetricPhaseMessagePassing(ITimeMetricCollector* c)
+{
+  return _build(c,TimeMetricPhase::MessagePassing);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TimeMetricAction
+timeMetricPhaseInputOutput(ITimeMetricCollector* c)
+{
+  return _build(c,TimeMetricPhase::InputOutput);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TimeMetricAction
+timeMetricPhaseComputation(ITimeMetricCollector* c)
+{
+  return _build(c,TimeMetricPhase::Computation);
 }
 
 /*---------------------------------------------------------------------------*/

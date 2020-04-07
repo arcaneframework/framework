@@ -13,6 +13,7 @@
 #include "arccore/message_passing/ISerializeMessageList.h"
 #include "arccore/message_passing/Request.h"
 #include "arccore/trace/TraceGlobal.h"
+#include "arccore/trace/TimeMetric.h"
 #include "arccore/base/BaseTypes.h"
 #include "arccore/serialize/SerializeGlobal.h"
 #include "arccore/collections/Array.h"
@@ -83,6 +84,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeMessageList
   ITraceMng* m_trace = nullptr;
   UniqueArray<MpiSerializeMessage*> m_messages_to_process;
   UniqueArray<MpiSerializeMessageRequest> m_messages_request;
+  TimeMetricAction m_message_passing_phase;
 };
 
 /*---------------------------------------------------------------------------*/

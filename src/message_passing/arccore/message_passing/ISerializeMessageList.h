@@ -36,8 +36,8 @@ class ISerializeMessage;
  * IMessagePassingMng* mpm = ...;
  * Ref<ISerializeMessagList> serialize_list(mpCreateSerializeMessageListRef(mpm));
  * // Ajoute deux messages pour recevoir du rang 1 et 3.
- * Ref<ISerializeMessage*> message1(serialize_list.createAndAddMessage(MessageRank(1),MsgReceive));
- * Ref<ISerializeMessage*> message2(serialize_list.createAndAddMessage(MessageRank(3),MsgReceive));
+ * Ref<ISerializeMessage> message1(serialize_list->createAndAddMessage(MessageRank(1),MsgReceive));
+ * Ref<ISerializeMessage> message2(serialize_list->createAndAddMessage(MessageRank(3),MsgReceive));
  *
  * // Attend que les messages soient terminés
  * // En mode WaitSome ou TestSome, il est possible de savoir si

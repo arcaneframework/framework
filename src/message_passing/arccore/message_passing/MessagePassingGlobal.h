@@ -28,6 +28,7 @@
 namespace Arccore
 {
 class ISerializer;
+class ITimeMetricCollector;
 }
 
 namespace Arccore::MessagePassing
