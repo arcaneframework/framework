@@ -3,6 +3,8 @@ set(SOURCES
   BasicSerializeMessage.cc
   MessagePassingGlobal.h
   MessagePassingGlobal.cc
+  Communicator.h
+  Communicator.cc
   Dispatchers.h
   Dispatchers.cc
   MessageId.h

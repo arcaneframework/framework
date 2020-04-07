@@ -39,6 +39,7 @@ static const Int32 A_NULL_RANK = static_cast<Int32>(-1);
 //! Numéro correspondant à un rang nul
 static const Int32 A_NULL_TAG_VALUE = static_cast<Int32>(-1);
 
+class Communicator;
 class IRequestCreator;
 class IRequestList;
 class ISerializeMessage;
