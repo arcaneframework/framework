@@ -812,7 +812,8 @@ TEST(PolyhedralTest,ImportXdmfPolyhedronMesh)
         nb_node_per_faces.push_back(face_nb_node);
       }
       cell_faces.push_back(face_info->second);
-      cell_faces_orientation.push_back(StaticMesh::utilities::DefaultItemOrientation::isOrdered(current_face_nodes)); // to be reversed
+      auto face_orientation = StaticMesh::utilities::DefaultItemOrientation::isOrdered(current_face_nodes) ? 1:-1;
+      cell_faces_orientation.push_back(face_orientation);
       if (is_new_face) face_uids.push_back(face_uid++);
       current_cell_nodes.insert(current_face_nodes.begin(), current_face_nodes.end());
       cell_data_index += face_nb_node;
@@ -831,6 +832,7 @@ TEST(PolyhedralTest,ImportXdmfPolyhedronMesh)
   _printContainer(nb_node_per_cells, "nb node per cell ");
   _printContainer(cell_faces, "cell faces ");
   _printContainer(nb_face_per_cells, "nb face per cell ");
+  _printContainer(cell_faces_orientation," cell faces orientation");
   // local checks
   std::vector<Neo::utils::Int64> cell_uids_ref = {0, 1, 2};
   EXPECT_TRUE(std::equal(cell_uids.begin(),cell_uids.end(),cell_uids_ref.begin(),cell_uids_ref.end()));
@@ -840,15 +842,19 @@ TEST(PolyhedralTest,ImportXdmfPolyhedronMesh)
   std::vector<Neo::utils::Int64> face_cells;
   std::vector<Neo::utils::Int64> connected_face_uids;
   std::vector<size_t> nb_cell_per_faces;
+  std::vector<int> face_orientation_in_cells;
   StaticMesh::utilities::reverseConnectivity(cell_uids,cell_faces,nb_face_per_cells,
-                                             connected_face_uids,face_cells,nb_cell_per_faces);
+                                             connected_face_uids,face_cells,
+                                             nb_cell_per_faces, cell_faces_orientation,
+                                             face_orientation_in_cells);
   _printContainer(face_cells, "  Face cells ");
   _printContainer(nb_cell_per_faces, "  Nb cell per faces ");
+  _printContainer(face_orientation_in_cells, "  Face orientation in cells");
   // import mesh in Neo data structure
   auto mesh = Neo::Mesh{"'ImportedMesh"};
   PolyhedralMeshTest::_createMesh(mesh, node_uids,cell_uids,face_uids,
                                   node_coords,cell_nodes,cell_faces,
-                                  face_nodes, face_cells,
+                                  face_nodes, face_cells,face_orientation_in_cells,
                                   std::move(nb_node_per_cells),
                                   std::move(nb_face_per_cells),
                                   std::move(nb_node_per_faces),
