@@ -398,35 +398,6 @@ namespace PolyhedralMeshTest {
     return face_family;
   }
 
-void _createMesh(Neo::Mesh &mesh,
-                 std::vector<Neo::utils::Int64> const &node_uids,
-                 std::vector<Neo::utils::Int64> const &cell_uids,
-                 std::vector<Neo::utils::Int64> const &face_uids,
-                 std::vector<Neo::utils::Real3>& node_coords, // not const since they can be moved
-                 std::vector<Neo::utils::Int64>& cell_nodes,
-                 std::vector<Neo::utils::Int64>& cell_faces,
-                 std::vector<Neo::utils::Int64>& face_nodes,
-                 std::vector<size_t>&& nb_node_per_cells,
-                 std::vector<size_t>&& nb_face_per_cells,
-                 std::vector<size_t>&& nb_node_per_faces) {
-  std::__throw_invalid_argument("Missing face_cells connectivity");
-}
-
-void _createMesh(Neo::Mesh &mesh,
-                 std::vector<Neo::utils::Int64> const &node_uids,
-                 std::vector<Neo::utils::Int64> const &cell_uids,
-                 std::vector<Neo::utils::Int64> const &face_uids,
-                 std::vector<Neo::utils::Real3>& node_coords, // not const since they can be moved
-                 std::vector<Neo::utils::Int64>& cell_nodes,
-                 std::vector<Neo::utils::Int64>& cell_faces,
-                 std::vector<Neo::utils::Int64>& face_nodes,
-                 std::vector<Neo::utils::Int64>& face_cells,
-                 std::vector<size_t>&& nb_node_per_cells,
-                 std::vector<size_t>&& nb_face_per_cells,
-                 std::vector<size_t>&& nb_node_per_faces,
-                 std::vector<size_t>&& nb_cell_per_faces){
-    std::__throw_bad_function_call();
-  }
   void _createMesh(Neo::Mesh &mesh,
                    std::vector<Neo::utils::Int64> const &node_uids,
                    std::vector<Neo::utils::Int64> const &cell_uids,
