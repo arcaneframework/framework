@@ -929,14 +929,17 @@ TEST(PolyhedralTest,ImportXdmfHexahedronMesh) {
   std::vector<Neo::utils::Int64> face_cells;
   std::vector<Neo::utils::Int64> connected_face_uids;
   std::vector<size_t> nb_cell_per_faces;
+  std::vector<int> face_orientation_in_cells;
   StaticMesh::utilities::reverseConnectivity(cell_uids,cell_faces,std::vector<size_t>(cell_uids.size(),6),
-                                             connected_face_uids,face_cells,nb_cell_per_faces);
+                                             connected_face_uids,face_cells,nb_cell_per_faces,
+                                             cell_face_orientations,face_orientation_in_cells);
   _printContainer(face_cells, "  Face cells ");
   _printContainer(nb_cell_per_faces, "  Nb cell per faces ");
   _printContainer(cell_face_orientations," Cell faces orientations ");
+  _printContainer(face_orientation_in_cells, "Face orientation in cells");
   PolyhedralMeshTest::_createMesh(mesh, node_uids, cell_uids, face_uids,
                                   node_coords,cell_nodes,cell_faces,
-                                  face_nodes, face_cells, cell_face_orientations,
+                                  face_nodes, face_cells, face_orientation_in_cells,
                                   std::vector<size_t>(cell_uids.size(),8),
                                   std::vector<size_t>(cell_uids.size(),6),
                                   std::vector<size_t>(face_uids.size(),4),
