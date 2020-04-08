@@ -150,7 +150,8 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
                                Neo::Family& target_family,
                                std::vector<size_t>&& nb_connected_item_per_items,
                                std::vector<Neo::utils::Int64> const& connected_item_uids,
-                               std::vector<int> const& source_item_orientation_in_target_item)
+                               std::vector<int> const& source_item_orientation_in_target_item,
+                               bool do_check_orientation)
   {
     addConnectivity(mesh,source_family,source_items,target_family,
                     std::move(nb_connected_item_per_items),connected_item_uids);
@@ -163,10 +164,12 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
                                Neo::Family& target_family,
                                std::vector<size_t>&& nb_connected_item_per_items,
                                std::vector<Neo::utils::Int64> const& connected_item_uids,
-                               std::vector<int> const& source_item_orientation_in_target_item)
+                               std::vector<int> const& source_item_orientation_in_target_item,
+                               bool do_check_orientation = false)
   {
     addOrientedConnectivity(mesh, source_family, source_items.new_items, target_family,
-                            std::move(nb_connected_item_per_items), connected_item_uids, source_item_orientation_in_target_item);
+                            std::move(nb_connected_item_per_items), connected_item_uids,
+                            source_item_orientation_in_target_item,do_check_orientation);
   }
 
   Neo::ArrayProperty<Neo::utils::Int32> const &
@@ -398,7 +401,7 @@ namespace PolyhedralMeshTest {
     return face_family;
   }
 
-  void _createMesh(Neo::Mesh &mesh,
+  void  _createMesh(Neo::Mesh &mesh,
                    std::vector<Neo::utils::Int64> const &node_uids,
                    std::vector<Neo::utils::Int64> const &cell_uids,
                    std::vector<Neo::utils::Int64> const &face_uids,
@@ -431,8 +434,9 @@ namespace PolyhedralMeshTest {
                                 std::move(nb_face_per_cells), cell_faces);
     StaticMesh::addConnectivity(mesh, face_family, added_faces, cell_family,
                                 std::move(nb_cell_per_faces), face_cells);
+    auto do_check_orientation = true;
     StaticMesh::addOrientedConnectivity(mesh,face_family,added_faces,cell_family,
-        std::move(nb_cell_per_faces),face_cells,face_orientation_in_cells);
+        std::move(nb_cell_per_faces),face_cells,face_orientation_in_cells,do_check_orientation);
     auto valid_mesh_state = mesh.endUpdate();
     auto &new_cells = added_cells.get(valid_mesh_state);
     auto &new_nodes = added_nodes.get(valid_mesh_state);
