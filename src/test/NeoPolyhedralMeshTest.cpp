@@ -115,35 +115,61 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
                     std::move(nb_connected_item_per_items), connected_item_uids);
   }
 
+  void addConnectivityOrientationCheck(Neo::Mesh &mesh, Neo::Family& source_family,
+                                       Neo::Family const& target_family)
+  {
+    std::string orientation_name =
+        source_family.m_name + "to" + target_family.m_name + "_connectivity_orientation";
+    std::string orientation_check_name = orientation_name + "_check";
+    source_family.addProperty<int>(orientation_check_name);
+    mesh.addAlgorithm(
+        Neo::InProperty{source_family, orientation_name},
+        Neo::OutProperty{source_family, orientation_check_name},
+        [&source_family,&target_family](Neo::ArrayProperty<int> const& item_orientation,
+           Neo::PropertyT<int> & item_orientation_check) {
+            std::cout << "Algorithm: check orientation in connectivity between "
+              << source_family.m_name << "  and  " << target_family.m_name
+              << std::endl;
+          for (auto item : source_family.all()) {
+            auto orientation = item_orientation[item];
+            if (std::abs(std::accumulate(orientation.begin(),orientation.end(),0)) <= 1) {
+              item_orientation_check[item] = 0;
+            }
+            else item_orientation_check[item] = 1;
+          }
+        }
+    );
+  }
+
   void addConnectivityOrientation(Neo::Mesh &mesh, Neo::Family &source_family,
                                   Neo::ItemRange &source_items,
                                   Neo::Family& target_family,
                                   std::vector<size_t>&& nb_connected_item_per_items,
                                   std::vector<int> const& source_item_orientation_in_target_item) {
-// add orientation property if doesn't exist
-  std::string orientation_name =
-      source_family.m_name + "to" + target_family.m_name + "_connectivity_orientation";
-  source_family.addArrayProperty<int>(orientation_name);
-  mesh.addAlgorithm(
-      Neo::InProperty{source_family, source_family.lidPropName()},
-      Neo::OutProperty{source_family, orientation_name},
-      [&source_item_orientation_in_target_item, nb_connected_item_per_items, &source_items,
-          &source_family, &target_family](
-          Neo::ItemLidsProperty const &source_family_lids_property,
-          Neo::ArrayProperty<int> & item_orientation) {
-        std::cout << "Algorithm: add orientation in connectivity between "
-                  << source_family.m_name << "  and  " << target_family.m_name
-                  << std::endl;
-        if (item_orientation.isInitializableFrom(source_items)) {
-          item_orientation.resize(std::move(nb_connected_item_per_items));
-          item_orientation.init(source_items, std::move(source_item_orientation_in_target_item));
-        } else {
-          item_orientation.append(source_items, source_item_orientation_in_target_item,
-                                  nb_connected_item_per_items);
-        }
-        item_orientation.debugPrint();
-      });
-}
+    // add orientation property if doesn't exist
+    std::string orientation_name =
+        source_family.m_name + "to" + target_family.m_name + "_connectivity_orientation";
+    source_family.addArrayProperty<int>(orientation_name);
+    mesh.addAlgorithm(
+        Neo::InProperty{source_family, source_family.lidPropName()},
+        Neo::OutProperty{source_family, orientation_name},
+        [&source_item_orientation_in_target_item, nb_connected_item_per_items, &source_items,
+            &source_family, &target_family](
+            Neo::ItemLidsProperty const &source_family_lids_property,
+            Neo::ArrayProperty<int> & item_orientation) {
+          std::cout << "Algorithm: add orientation in connectivity between "
+                    << source_family.m_name << "  and  " << target_family.m_name
+                    << std::endl;
+          if (item_orientation.isInitializableFrom(source_items)) {
+            item_orientation.resize(std::move(nb_connected_item_per_items));
+            item_orientation.init(source_items, std::move(source_item_orientation_in_target_item));
+          } else {
+            item_orientation.append(source_items, source_item_orientation_in_target_item,
+                                    nb_connected_item_per_items);
+          }
+          item_orientation.debugPrint();
+        });
+  }
 
   void addOrientedConnectivity(Neo::Mesh &mesh, Neo::Family &source_family,
                                Neo::ItemRange &source_items,
@@ -157,6 +183,7 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
                     std::move(nb_connected_item_per_items),connected_item_uids);
     addConnectivityOrientation(mesh,source_family,source_items,target_family,
                                std::move(nb_connected_item_per_items),source_item_orientation_in_target_item);
+    if (do_check_orientation) addConnectivityOrientationCheck(mesh, source_family, target_family);
   }
 
   void addOrientedConnectivity(Neo::Mesh &mesh, Neo::Family &source_family,
