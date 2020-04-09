@@ -39,36 +39,36 @@ void _printContainer(Container&& container, std::string const& name){
 
 namespace StaticMesh {
 
-static const std::string cell_family_name{"CellFamily"};
-static const std::string face_family_name{"FaceFamily"};
-static const std::string node_family_name{"NodeFamily"};
+  static const std::string cell_family_name{"CellFamily"};
+  static const std::string face_family_name{"FaceFamily"};
+  static const std::string node_family_name{"NodeFamily"};
 
-void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int64> const& uids, Neo::AddedItemRange& added_item_range)
-{
-  auto& added_items = added_item_range.new_items;
-  // Add items
-  mesh.addAlgorithm(  Neo::OutProperty{family,family.lidPropName()},
-                      [&family,&uids,&added_items](Neo::ItemLidsProperty & lids_property){
-                        std::cout << "Algorithm: create items in family " << family.m_name << std::endl;
-                        added_items = lids_property.append(uids);
-                        lids_property.debugPrint();
-                        std::cout << "Inserted item range : " << added_items;
-                      });
-  // register their uids
-  auto uid_property_name = family.m_name+"_uids";
-  mesh.addAlgorithm(
-      Neo::InProperty{family,family.lidPropName()},
-      Neo::OutProperty{family, uid_property_name},
-      [&family,&uids,&added_items](Neo::ItemLidsProperty const& item_lids_property,
-                                   Neo::PropertyT<Neo::utils::Int64>& item_uids_property){
-        std::cout << "Algorithm: register item uids for family " << family.m_name << std::endl;
-        if (item_uids_property.isInitializableFrom(added_items))
-          item_uids_property.init(added_items,std::move(uids)); // init can steal the input values
-        else
-          item_uids_property.append(added_items, uids);
-        item_uids_property.debugPrint();
-      });// need to add a property check for existing uid
-  }
+  void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int64> const& uids, Neo::AddedItemRange& added_item_range)
+  {
+    auto& added_items = added_item_range.new_items;
+    // Add items
+    mesh.addAlgorithm(  Neo::OutProperty{family,family.lidPropName()},
+                        [&family,&uids,&added_items](Neo::ItemLidsProperty & lids_property){
+                          std::cout << "Algorithm: create items in family " << family.m_name << std::endl;
+                          added_items = lids_property.append(uids);
+                          lids_property.debugPrint();
+                          std::cout << "Inserted item range : " << added_items;
+                        });
+    // register their uids
+    auto uid_property_name = family.m_name+"_uids";
+    mesh.addAlgorithm(
+        Neo::InProperty{family,family.lidPropName()},
+        Neo::OutProperty{family, uid_property_name},
+        [&family,&uids,&added_items](Neo::ItemLidsProperty const& item_lids_property,
+                                     Neo::PropertyT<Neo::utils::Int64>& item_uids_property){
+          std::cout << "Algorithm: register item uids for family " << family.m_name << std::endl;
+          if (item_uids_property.isInitializableFrom(added_items))
+            item_uids_property.init(added_items,std::move(uids)); // init can steal the input values
+          else
+            item_uids_property.append(added_items, uids);
+          item_uids_property.debugPrint();
+        });// need to add a property check for existing uid
+    }
 
   // todo same interface with nb_connected_item_per_items as an array
   void addConnectivity(Neo::Mesh &mesh, Neo::Family &source_family,
