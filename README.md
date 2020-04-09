@@ -96,7 +96,7 @@ make -j 8 install
 
 # Compilation `ALIEN` opensource
 
-* `ALIEN` branche `dev-refactoring-open-source` dans le chemin `${Alien_DIR}` :
+* `ALIEN` branche `open-source` dans le chemin `${Alien_DIR}` :
 ```
 git clone git@gitlab.ifpen.fr:Arcane/alienopensource/alien.git
 cd alien
