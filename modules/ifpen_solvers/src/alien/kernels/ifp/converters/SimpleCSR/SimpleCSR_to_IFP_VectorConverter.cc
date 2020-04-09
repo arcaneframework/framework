@@ -5,7 +5,7 @@
 #include <alien/kernels/ifp/data_structure/IFPVector.h>
 
 #include <alien/kernels/ifp/IFPSolverBackEnd.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/SimpleCSRVector.h>
 #include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
 using namespace Alien;
 

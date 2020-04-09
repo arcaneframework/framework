@@ -3,7 +3,6 @@
 
 #include "MCGInternalLinearAlgebra.h"
 
-#include <alien/kernels/mcg/linear_solver/GPUInternal.h>
 #include <alien/kernels/mcg/data_structure/MCGMatrix.h>
 #include <alien/kernels/mcg/data_structure/MCGVector.h>
 #include <alien/kernels/mcg/data_structure/MCGInternal.h>

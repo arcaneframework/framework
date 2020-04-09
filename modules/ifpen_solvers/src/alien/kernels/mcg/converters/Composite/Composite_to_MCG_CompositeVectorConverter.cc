@@ -1,11 +1,11 @@
-#include <ALIEN/Core/Backend/VectorConverterRegisterer.h>
+#include <alien/core/backend/VectorConverterRegisterer.h>
 
-#include <ALIEN/Kernels/Composite/DataStructure/CompositeVector.h>
-#include <ALIEN/Kernels/MCG/DataStructure/MCGCompositeVector.h>
-#include <ALIEN/Kernels/MCG/MCGBackEnd.h>
-#include <ALIEN/Core/Impl/MultiVectorImpl.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRVector.h>
-#include <ALIEN/Kernels/SimpleCSR/SimpleCSRBackEnd.h>
+#include <alien/kernels/composite/data_structure/CompositeVector.h>
+#include <alien/kernels/mcg/data_structure/MCGCompositeVector.h>
+#include <alien/kernels/mcg/MCGBackEnd.h>
+#include <alien/core/impl/MultiVectorImpl.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

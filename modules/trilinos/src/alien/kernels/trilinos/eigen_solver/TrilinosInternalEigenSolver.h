@@ -16,7 +16,7 @@
 #include <alien/core/backend/EigenSolver.h>
 //#include <alien/core/backend/EigenSolverT.h>
 
-#include <alien/utils/trace/ObjectWithTrace.h>
+#include <alien/utils/ObjectWithTrace.h>
 #include <alien/kernels/trilinos/data_structure/TrilinosVector.h>
 #include <alien/kernels/trilinos/data_structure/TrilinosMatrix.h>
 

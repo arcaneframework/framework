@@ -1,16 +1,16 @@
-#include "ALIEN/Core/Backend/IMatrixConverter.h"
-#include "ALIEN/Core/Backend/MatrixConverterRegisterer.h"
+#include "alien/core/backend/IMatrixConverter.h"
+#include "alien/core/backend/MatrixConverterRegisterer.h"
 
 #include <iostream>
 
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/CSRStructInfo.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRMatrix.h>
-#include <ALIEN/Kernels/Composite/DataStructure/CompositeMatrix.h>
-#include <ALIEN/Kernels/MCG/DataStructure/MCGVector.h>
-#include <ALIEN/Kernels/MCG/DataStructure/MCGCompositeMatrix.h>
+#include <alien/kernels/simple_csr/data_structure/CSRStructInfo.h>
+#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
+#include <alien/kernels/composite/data_structure/CompositeMatrix.h>
+#include <alien/kernels/mcg/data_structure/MCGVector.h>
+#include <alien/kernels/mcg/data_structure/MCGCompositeMatrix.h>
 
-#include "ALIEN/Kernels/Composite/CompositeBackEnd.h"
-#include "ALIEN/Kernels/MCG/MCGBackEnd.h"
+#include "alien/kernels/composite/CompositeBackEnd.h"
+#include "alien/kernels/mcg/MCGBackEnd.h"
 
 using namespace Alien;
 using namespace Alien::SimpleCSRInternal;

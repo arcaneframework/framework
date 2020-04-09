@@ -11,9 +11,9 @@
 #include <alien/utils/Precomp.h>
 #include <alien/AlienTrilinosPrecomp.h>
 #include <alien/kernels/trilinos/linear_solver/TrilinosOptionTypes.h>
-#include <alien/expression/solver/solver_stats/SolverStater.h>
+#include <alien/expression/solver/SolverStater.h>
 #include <alien/core/backend/IInternalLinearSolverT.h>
-#include <alien/utils/trace/ObjectWithTrace.h>
+#include <alien/utils/ObjectWithTrace.h>
 #include <alien/kernels/trilinos/data_structure/TrilinosVector.h>
 #include <alien/kernels/trilinos/data_structure/TrilinosMatrix.h>
 

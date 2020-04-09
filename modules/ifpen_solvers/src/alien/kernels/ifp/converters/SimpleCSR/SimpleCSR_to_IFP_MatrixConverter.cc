@@ -5,8 +5,8 @@
 #include <alien/kernels/ifp/data_structure/IFPMatrix.h>
 
 #include <alien/kernels/ifp/IFPSolverBackEnd.h>
-#include <alien/kernels/simple_csr/data_structure/CSRStructInfo.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
+#include <alien/kernels/simple_csr/CSRStructInfo.h>
+#include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
 #include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
 
 using namespace Alien;

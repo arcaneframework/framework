@@ -131,6 +131,11 @@ AlienBenchModule::test()
   Alien::Vector vectorBB(m_vdist);
   Alien::Vector vectorX(m_vdist);
 
+  Alien::Vector coordX(m_vdist);
+  Alien::Vector coordY(m_vdist);
+  Alien::Vector coordZ(m_vdist);
+
+
   ///////////////////////////////////////////////////////////////////////////
   //
   // VECTOR BUILDING AND FILLING
@@ -152,9 +157,17 @@ AlienBenchModule::test()
   {
     // Builder du vecteur
     Alien::VectorWriter writer(vectorX);
-    ENUMERATE_CELL (icell, areaU.own()) {
+    Alien::VectorWriter x(coordX);
+    Alien::VectorWriter y(coordY);
+    Alien::VectorWriter z(coordZ);
+
+    ENUMERATE_CELL(icell,areaU.own())
+    {
       const Integer iIndex = allUIndex[icell->localId()];
-      writer[iIndex] = m_u[icell];
+      writer[iIndex] = m_u[icell] ;
+      x[iIndex] = m_cell_center[icell].x ;
+      y[iIndex] = m_cell_center[icell].y ;
+      z[iIndex] = m_cell_center[icell].z ;
     }
   }
 
@@ -271,7 +284,7 @@ AlienBenchModule::test()
 }*/
 #endif
 #ifdef ALIEN_USE_TRILINOS
-  {
+  /*{
     info() << "Trilinos";
     Alien::TrilinosLinearAlgebra tpetraAlg;
     tpetraAlg.mult(matrixA, vectorX, vectorB);
@@ -282,7 +295,7 @@ AlienBenchModule::test()
     // tpetraAlg.dump(vectorB,"vectorB.txt") ;
     // tpetraAlg.dump(vectorBB,"vectorBB.txt") ;
     // tpetraAlg.dump(vectorX,"vectorX.txt") ;
-  }
+  }*/
 #endif
 
   if (options()->unitRhs()) {
@@ -304,6 +317,36 @@ AlienBenchModule::test()
   {
     Alien::ILinearSolver* solver = options()->linearSolver();
     solver->init();
+#ifdef ALIEN_USE_TRILINOS
+      if(solver->getBackEndName().contains("tpetraserial"))
+      {
+        auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetraserial>(false) ;
+        mat.setMatrixCoordinate(coordX,coordY,coordZ) ;
+      }
+#ifdef KOKKOS_ENABLE_OPENMP
+      if(solver->getBackEndName().contains("tpetraomp"))
+      {
+        auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetraomp>(false) ;
+        mat.setMatrixCoordinate(coordX,coordY,coordZ) ;
+      }
+#endif
+#ifdef KOKKOS_ENABLE_THREADS
+
+      if(solver->getBackEndName().contains("tpetrapth"))
+      {
+        auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetrapth>(false) ;
+        mat.setMatrixCoordinate(coordX,coordY,coordZ) ;
+      }
+#endif
+#ifdef KOKKOS_ENABLE_CUDA
+      if(solver->getBackEndName().contains("tpetracuda"))
+      {
+        auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetracuda>(true) ;
+        mat->setCoordinate(coordX,coordY,coordZ) ;
+      }
+#endif
+#endif
+    
 
     if (not solver->hasParallelSupport() and m_parallel_mng->commSize() > 1) {
       info() << "Current solver has not a parallel support for solving linear system : "

@@ -9,6 +9,8 @@
 #include <alien/kernels/trilinos/TrilinosPrecomp.h>
 #include <alien/core/impl/IMatrixImpl.h>
 #include <alien/data/ISpace.h>
+#include <alien/ref/data/scalar/Vector.h>
+#include <alien/ref/handlers/scalar/VectorReader.h>
 
 /*---------------------------------------------------------------------------*/
 
@@ -46,6 +48,8 @@ template <typename ValueT, typename TagT> class TrilinosMatrix : public IMatrixI
       int block_size, ValueT const* values);
 
   bool setMatrixValues(Real const* values);
+
+  void setMatrixCoordinate(Vector const& x, Vector const& y, Vector const& z) ;
 
   void mult(TrilinosVector<ValueT, TagT> const& x, TrilinosVector<ValueT, TagT>& y) const;
 

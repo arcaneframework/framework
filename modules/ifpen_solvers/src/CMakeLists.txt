@@ -43,7 +43,9 @@ if(TARGET umfpack)
   linkLibraries(alien_ifpen_solvers umfpack)
 endif()
 
-linkLibraries(alien_ifpen_solvers Alien::alien_core)
+linkLibraries(alien_ifpen_solvers Alien::alien_core
+                                  Alien::alien_kernel_simplecsr)
+
 linkLibraries(alien_ifpen_solvers Boost::system)
 
 target_include_directories(alien_ifpen_solvers PUBLIC

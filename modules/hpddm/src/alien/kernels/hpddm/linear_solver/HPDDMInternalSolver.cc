@@ -23,12 +23,12 @@
 #include <alien/data/Space.h>
 #include <alien/expression/solver/ILinearSolver.h>
 #include <alien/expression/solver/ILinearAlgebra.h>
-#include <alien/expression/solver/solver_stats/SolverStat.h>
-#include <alien/expression/solver/solver_stats/SolverStater.h>
+#include <alien/expression/solver/SolverStat.h>
+#include <alien/expression/solver/SolverStater.h>
 
 #include <alien/kernels/simple_csr/SimpleCSRPrecomp.h>
 #include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
+#include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
 
 //#include <alien/kernels/hpddm/algebra/HPDDMLinearAlgebra.h>
 #include <alien/core/impl/MultiMatrixImpl.h>

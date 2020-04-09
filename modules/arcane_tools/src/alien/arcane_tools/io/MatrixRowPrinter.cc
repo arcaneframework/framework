@@ -109,7 +109,7 @@ namespace ArcaneTools {
   Arccore::String MatrixRowPrinter::Internal::identify(
       const Arccore::Integer global_index)
   {
-    VMap<Arccore::Integer, Arccore::Integer>::const_iterator finder =
+    auto finder =
         m_reverse_data.find(global_index);
     if (finder == m_reverse_data.end())
 #ifdef ALIEN_USE_ARCANE

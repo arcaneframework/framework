@@ -20,8 +20,8 @@
 #include <alien/kernels/ifp/data_structure/IFPMatrix.h>
 #include <alien/kernels/ifp/IFPSolverBackEnd.h>
 #include <alien/kernels/ifp/data_structure/IFPSolverInternal.h>
-#include <alien/expression/solver/solver_stats/SolverStat.h>
-#include <alien/expression/solver/solver_stats/SolverStater.h>
+#include <alien/expression/solver/SolverStat.h>
+#include <alien/expression/solver/SolverStater.h>
 #include <ALIEN/axl/IFPLinearSolver_IOptions.h>
 #include <alien/data/Space.h>
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>

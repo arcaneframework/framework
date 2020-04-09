@@ -2,10 +2,10 @@
 #include <alien/core/backend/VectorConverterRegisterer.h>
 
 #include <iostream>
+#include <alien/kernels/trilinos/TrilinosBackEnd.h>
 #include <alien/kernels/trilinos/data_structure/TrilinosVector.h>
 
-#include <alien/kernels/trilinos/TrilinosBackEnd.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/SimpleCSRVector.h>
 #include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
 using namespace Alien;
 

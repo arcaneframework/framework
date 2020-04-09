@@ -111,6 +111,31 @@ TrilinosMatrix<ValueT, TagT>::setMatrixValues(Real const* values)
   return m_internal->setMatrixValues(values);
 }
 
+template<typename ValueT,typename TagT>
+void TrilinosMatrix<ValueT,TagT>::setMatrixCoordinate(Vector const& x, Vector const& y, Vector const& z)
+{
+  typedef typename MatrixInternal::coord_vector_type CoordVectorType ;
+  typedef typename MatrixInternal::real_type         RealType ;
+  assert(m_internal.get()) ;
+  m_internal->m_coordinates = rcp( new CoordVectorType(m_internal->m_map, 3, false) );
+
+  Teuchos::ArrayRCP<Teuchos::ArrayRCP<RealType> > Coord(3);
+  Coord[0] = m_internal->m_coordinates->getDataNonConst(0);
+  Coord[1] = m_internal->m_coordinates->getDataNonConst(1);
+  Coord[2] = m_internal->m_coordinates->getDataNonConst(2);
+
+  Alien::LocalVectorReader x_view(x);
+  Alien::LocalVectorReader y_view(y);
+  Alien::LocalVectorReader z_view(z);
+
+  for(int i=0;i<m_internal->m_local_size;++i)
+  {
+    Coord[0][i] = x_view[i] ;
+    Coord[1][i] = y_view[i] ;
+    Coord[2][i] = z_view[i] ;
+  }
+}
+
 template <typename ValueT, typename TagT>
 void
 TrilinosMatrix<ValueT, TagT>::mult(

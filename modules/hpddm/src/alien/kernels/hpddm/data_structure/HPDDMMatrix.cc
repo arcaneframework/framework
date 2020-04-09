@@ -5,9 +5,9 @@
 
 #include <alien/kernels/hpddm/HPDDMPrecomp.h>
 
-#include <alien/expression/solver/solver_stats/SolverStater.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
+#include <alien/expression/solver/SolverStater.h>
+#include <alien/kernels/simple_csr/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
 
 #include <alien/kernels/hpddm/data_structure/HPDDMInternal.h>
 

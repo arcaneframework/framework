@@ -22,8 +22,8 @@
 #include <alien/data/Space.h>
 #include <alien/expression/solver/ILinearSolver.h>
 #include <alien/expression/solver/ILinearAlgebra.h>
-#include <alien/expression/solver/solver_stats/SolverStat.h>
-#include <alien/expression/solver/solver_stats/SolverStater.h>
+#include <alien/expression/solver/SolverStat.h>
+#include <alien/expression/solver/SolverStater.h>
 
 #include <alien/kernels/simple_csr/SimpleCSRPrecomp.h>
 #include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>

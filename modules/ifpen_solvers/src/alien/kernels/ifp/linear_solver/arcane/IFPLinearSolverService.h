@@ -5,8 +5,8 @@
 #ifndef IFPSOLVERIMPL_H
 #define IFPSOLVERIMPL_H
 
-#include <alien/kernels/ifp/IFPSolverPrecomp.h>
 #include <alien/utils/Precomp.h>
+#include <alien/kernels/ifp/IFPSolverPrecomp.h>
 #include <alien/kernels/ifp/IFPSolverBackEnd.h>
 #include <alien/core/backend/LinearSolver.h>
 #include <alien/kernels/ifp/linear_solver/IFPSolverProperty.h>

@@ -5,7 +5,7 @@
 #include <alien/kernels/hts/data_structure/HTSVector.h>
 
 #include <alien/kernels/hts/HTSBackEnd.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/SimpleCSRVector.h>
 #include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
 using namespace Alien;
 

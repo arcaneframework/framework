@@ -13,9 +13,9 @@
 #include <alien/kernels/hts/eigen_solver/HTSEigenOptionTypes.h>
 #include <alien/core/backend/EigenSolver.h>
 #include <alien/core/backend/EigenSolverT.h>
-#include <alien/utils/trace/ObjectWithTrace.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
+#include <alien/utils/ObjectWithTrace.h>
+#include <alien/kernels/simple_csr/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
 #include <alien/AlienIFPENSolversPrecomp.h>
 
 class IOptionsHTSEigenSolver;

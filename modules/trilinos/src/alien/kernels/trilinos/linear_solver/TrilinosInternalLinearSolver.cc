@@ -14,8 +14,8 @@
 #include <alien/data/Space.h>
 #include <alien/expression/solver/ILinearSolver.h>
 #include <alien/expression/solver/ILinearAlgebra.h>
-#include <alien/expression/solver/solver_stats/SolverStat.h>
-#include <alien/expression/solver/solver_stats/SolverStater.h>
+#include <alien/expression/solver/SolverStat.h>
+#include <alien/expression/solver/SolverStater.h>
 
 #include <alien/kernels/simple_csr/SimpleCSRPrecomp.h>
 #include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
@@ -23,7 +23,7 @@
 #include <alien/core/impl/MultiMatrixImpl.h>
 #include <alien/core/impl/MultiVectorImpl.h>
 
-#include <alien/AlienRefSemantic.h>
+#include <alien/ref/AlienRefSemantic.h>
 
 #include <alien/kernels/trilinos/TrilinosBackEnd.h>
 #include <alien/kernels/trilinos/data_structure/TrilinosInternal.h>

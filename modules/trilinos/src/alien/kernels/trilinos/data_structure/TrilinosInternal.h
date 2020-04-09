@@ -134,7 +134,16 @@ class MatrixInternal
 
   typedef Tpetra::Vector<scalar_type, local_ordinal_type, global_ordinal_type, node_type>
       vector_type;
+  
+  typedef Teuchos::ScalarTraits<scalar_type>                 STS;
+  typedef typename STS::magnitudeType                        magnitude_type;
+  typedef typename STS::coordinateType                       real_type;
 
+  typedef Tpetra::MultiVector<real_type,
+                              local_ordinal_type,
+                              global_ordinal_type,
+                              node_type>                     coord_vector_type;
+  
   MatrixInternal(int local_offset, int global_size, int local_size, MPI_Comm const& comm)
   {
     using Teuchos::Array;
@@ -169,6 +178,7 @@ class MatrixInternal
 
   Teuchos::RCP<const Teuchos::Comm<int>> m_comm;
   Teuchos::RCP<const map_type> m_map;
+  Teuchos::RCP<coord_vector_type>          m_coordinates;
 
   std::unique_ptr<matrix_type> m_internal;
 };

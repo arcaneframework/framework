@@ -19,11 +19,11 @@
 #include <alien/utils/Precomp.h>
 #include <alien/core/backend/IInternalLinearSolverT.h>
 #include <alien/kernels/hpddm/linear_solver/HPDDMOptionTypes.h>
-#include <alien/expression/solver/solver_stats/SolverStater.h>
+#include <alien/expression/solver/SolverStater.h>
 #include <alien/core/backend/IInternalLinearSolverT.h>
-#include <alien/utils/trace/ObjectWithTrace.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
+#include <alien/utils/ObjectWithTrace.h>
+#include <alien/kernels/simple_csr/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
 #include <alien/AlienHPDDMPrecomp.h>
 
 #include <alien/kernels/hpddm/linear_solver/ILinearSolverDDM.h>

@@ -51,14 +51,14 @@
 #include <ALIEN/axl/HypreSolver_StrongOptions.h>
 #endif
 #ifdef ALIEN_USE_IFPSOLVER
-#include <ALIEN/Kernels/ifp/linear_solver/arcane/IFPLinearSolverService.h>
-#include <ALIEN/Kernels/ifp/linear_solver/IFPSolverProperty.h>
+#include <alien/kernels/ifp/linear_solver/arcane/IFPLinearSolverService.h>
+#include <alien/kernels/ifp/linear_solver/IFPSolverProperty.h>
 #include <ALIEN/axl/IFPLinearSolver_IOptions.h>
 #include <ALIEN/axl/IFPLinearSolver_StrongOptions.h>
 #endif
 #ifdef ALIEN_USE_MCGSOLVER
-#include <ALIEN/Kernels/mcg/linear_solver/arcane/MCGLinearSolver.h>
-#include <ALIEN/Kernels/mcg/linear_solver/MCGOptionTypes.h>
+#include <alien/kernels/mcg/linear_solver/arcane/MCGLinearSolver.h>
+#include <alien/kernels/mcg/linear_solver/MCGOptionTypes.h>
 #include <ALIEN/axl/MCGSolver_IOptions.h>
 #include <ALIEN/axl/MCGSolver_StrongOptions.h>
 #endif

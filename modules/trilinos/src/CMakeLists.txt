@@ -40,7 +40,7 @@ if(TARGET nvamg)
   linkLibraries(alien_trilinos nvamg)
 endif()
 
-linkLibraries(alien_trilinos alien alien_ref_semantic)
+linkLibraries(alien_trilinos Alien::alien_core Alien::alien_semantic_ref)
 
 target_include_directories(alien_trilinos PUBLIC
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>

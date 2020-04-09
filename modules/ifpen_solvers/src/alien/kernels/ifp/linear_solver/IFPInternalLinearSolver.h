@@ -9,7 +9,7 @@
 #define ALIEN_IFPLINEARSOLVER_H_
 
 #include <alien/utils/Precomp.h>
-#include <alien/expression/solver/solver_stats/SolverStater.h>
+#include <alien/expression/solver/SolverStater.h>
 #include <alien/core/backend/IInternalLinearSolverT.h>
 #include <alien/kernels/ifp/data_structure/IFPVector.h>
 #include <alien/kernels/ifp/data_structure/IFPMatrix.h>

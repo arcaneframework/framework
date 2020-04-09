@@ -131,7 +131,7 @@ main(int argc, char** argv)
     Alien::RedistributedVector xx(x, redist);
 
     auto solver = Environment::createSolver(arguments);
-    // solver->updateParallelMng(Aa.distribution().parallelMng());
+    solver->updateParallelMng(Aa.distribution().parallelMng());
     solver->init();
     solver->solve(Aa, bb, xx);
 
