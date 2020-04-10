@@ -1,3 +1,21 @@
+/*
+ * Copyright 2020 IFPEN-CEA
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include <alien/hypre/backend.h>
 
 #include <iostream>
@@ -6,9 +24,8 @@
 
 #include <alien/ref/AlienRefSemantic.h>
 
-
-int test() {
-
+int test()
+{
   auto* pm = Arccore::MessagePassing::Mpi::StandaloneMpiMessagePassingMng::create(MPI_COMM_WORLD);
   auto* tm = Arccore::arccoreCreateDefaultTraceMng();
 
@@ -39,10 +56,9 @@ int test() {
     builder.reserve(3); // Réservation de 3 coefficients par ligne
     builder.allocate(); // Allocation de l'espace mémoire réservé
 
-    for(int irow = offset; irow < offset + lsize; ++irow)
-    {
-      builder(irow,irow) = 2.;
-      if(irow - 1 >= 0)
+    for (int irow = offset; irow < offset + lsize; ++irow) {
+      builder(irow, irow) = 2.;
+      if (irow - 1 >= 0)
         builder(irow, irow - 1) = -1.;
       if (irow + 1 < gsize)
         builder(irow, irow + 1) = -1.;
@@ -61,23 +77,23 @@ int test() {
 
   Alien::Hypre::LinearAlgebra algebra;
 
-  algebra.mult(A,xe,b);
+  algebra.mult(A, xe, b);
 
   Alien::Vector x(size, pm);
 
   tm->info() << "* x = A^-1 b";
 
-//  auto options = Alien::Hypre::Options()
-//          .numIterationsMax(100)
-//          .stopCriteriaValue(1e-10)
-//          .preconditioner(Alien::Hypre::OptionTypes::AMGPC)
-//          .solver(Alien::Hypre::OptionTypes::GMRES);
-//
-//  auto solver = Alien::Hypre::LinearSolver (options);
+  //  auto options = Alien::Hypre::Options()
+  //          .numIterationsMax(100)
+  //          .stopCriteriaValue(1e-10)
+  //          .preconditioner(Alien::Hypre::OptionTypes::AMGPC)
+  //          .solver(Alien::Hypre::OptionTypes::GMRES);
+  //
+  //  auto solver = Alien::Hypre::LinearSolver (options);
 
-  auto solver = Alien::Hypre::LinearSolver ();
+  auto solver = Alien::Hypre::LinearSolver();
 
-  solver.solve(A,b,x);
+  solver.solve(A, b, x);
 
   tm->info() << "* r = Ax - b";
 
@@ -86,11 +102,11 @@ int test() {
   {
     Alien::Vector tmp(size, pm);
     tm->info() << "t = Ax";
-    algebra.mult(A,x,tmp);
+    algebra.mult(A, x, tmp);
     tm->info() << "r = t";
-    algebra.copy(tmp,r);
+    algebra.copy(tmp, r);
     tm->info() << "r -= b";
-    algebra.axpy(-1.,b,r);
+    algebra.axpy(-1., b, r);
   }
 
   auto norm = algebra.norm2(r);
@@ -101,9 +117,9 @@ int test() {
 
   {
     tm->info() << "r = x";
-    algebra.copy(x,r);
+    algebra.copy(x, r);
     tm->info() << "r -= xe";
-    algebra.axpy(-1.,xe,r);
+    algebra.axpy(-1., xe, r);
   }
 
   tm->info() << " => ||r|| = " << norm;
@@ -114,21 +130,20 @@ int test() {
   return 0;
 }
 
-int main(int argc, char **argv) {
-
+int main(int argc, char** argv)
+{
   MPI_Init(&argc, &argv);
 
   auto ret = 0;
 
   try {
-
     ret = test();
-
-  } catch (const Arccore::Exception &ex) {
+  }
+  catch (const Arccore::Exception& ex) {
     std::cerr << "Exception: " << ex << '\n';
     ret = 3;
   }
-  catch (const std::exception &ex) {
+  catch (const std::exception& ex) {
     std::cerr << "** A standard exception occured: " << ex.what() << ".\n";
     ret = 2;
   }
