@@ -31,7 +31,8 @@ PETScInternalLinearAlgebra::PETScInternalLinearAlgebra(
   PETScInternal::initPETSc();
   // Devrait faire le PETScInitialize qui est actuellement dans le solveur
   // Attention, cette initialisation serait globale et non restreinte à cet objet
-  if (pm != nullptr && pm->commSize() > 1) {
+  if (pm != nullptr)
+  {
     auto mpi_mng = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(pm);
     PETSC_COMM_WORLD = *static_cast<const MPI_Comm*>(mpi_mng->getMPIComm());
   }

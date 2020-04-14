@@ -6,6 +6,8 @@
 #include <alien/kernels/petsc/PETScBackEnd.h>
 #include <alien/kernels/petsc/data_structure/PETScInternal.h>
 
+#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
+
 /*---------------------------------------------------------------------------*/
 
 namespace Alien {
@@ -14,8 +16,6 @@ namespace Alien {
 
 PETScVector::PETScVector(const MultiVectorImpl* multi_impl)
 : IVectorImpl(multi_impl, AlgebraTraits<BackEnd::tag::petsc>::name())
-, m_internal(NULL)
-, m_block_size(1)
 {
   ;
 }
@@ -23,14 +23,12 @@ PETScVector::PETScVector(const MultiVectorImpl* multi_impl)
 /*---------------------------------------------------------------------------*/
 
 PETScVector::~PETScVector()
-{
-  delete m_internal;
-}
+{}
 
 /*---------------------------------------------------------------------------*/
 
 void
-PETScVector::init(const VectorDistribution& dist ALIEN_UNUSED_PARAM,
+PETScVector::init(const VectorDistribution& dist,
     const bool need_allocate, Arccore::Integer block_size ALIEN_UNUSED_PARAM)
 {
   if (need_allocate)
@@ -42,10 +40,19 @@ PETScVector::init(const VectorDistribution& dist ALIEN_UNUSED_PARAM,
 void
 PETScVector::allocate()
 {
-  delete m_internal;
   const VectorDistribution& dist = this->distribution();
-  m_internal = new VectorInternal(this->scalarizedLocalSize(), this->scalarizedOffset(),
-      this->scalarizedGlobalSize(), dist.isParallel());
+
+  Arccore::MessagePassing::Mpi::MpiMessagePassingMng*
+  mpi_pm = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(dist.parallelMng()) ;
+  MPI_Comm comm ;
+
+  if(mpi_pm && mpi_pm->getMPIComm())
+    comm = *mpi_pm->getMPIComm() ;
+  else
+    comm = MPI_COMM_NULL ;
+
+  m_internal.reset(new VectorInternal(this->scalarizedLocalSize(), this->scalarizedOffset(),
+      this->scalarizedGlobalSize(), dist.isParallel(),comm));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -53,7 +60,7 @@ PETScVector::allocate()
 bool
 PETScVector::setValues(const int nrow, const int* rows, const double* values)
 {
-  if (m_internal->m_internal == NULL)
+  if (m_internal->m_internal == nullptr)
     return false;
   int ierr = VecSetValues(m_internal->m_internal,
       nrow, // nb de valeurs
@@ -66,7 +73,7 @@ PETScVector::setValues(const int nrow, const int* rows, const double* values)
 bool
 PETScVector::setValues(const int nrow, const double* values)
 {
-  if (m_internal == NULL)
+  if (!m_internal.get())
     return false;
 
   int* rows = new int[nrow];
@@ -84,7 +91,7 @@ PETScVector::setValues(const int nrow, const double* values)
 bool
 PETScVector::setValues(Arccore::ConstArrayView<Arccore::Real> values)
 {
-  ALIEN_ASSERT((m_internal != NULL), ("Not initialized PETScVector before updating"));
+  ALIEN_ASSERT((m_internal.get()), ("Not initialized PETScVector before updating"));
   if (not setValues(this->scalarizedLocalSize(), values.unguardedBasePointer()))
     throw Arccore::FatalErrorException(A_FUNCINFO, "Error while setting vetor data");
   if (not assemble())
@@ -97,7 +104,7 @@ PETScVector::setValues(Arccore::ConstArrayView<Arccore::Real> values)
 bool
 PETScVector::getValues(const int nrow, const int* rows, double* values) const
 {
-  if (m_internal == NULL)
+  if (!m_internal.get())
     return false;
 
   int ierr = VecGetValues(m_internal->m_internal,
@@ -111,7 +118,7 @@ PETScVector::getValues(const int nrow, const int* rows, double* values) const
 bool
 PETScVector::getValues(const int nrow, double* values) const
 {
-  if (m_internal == NULL)
+  if (!m_internal.get())
     return false;
 
   int* rows = new int[nrow];

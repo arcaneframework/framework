@@ -55,7 +55,7 @@ struct MatrixInternal
  public:
   Mat m_internal;
   const MatType m_type;
-  bool m_parallel;
+  bool m_parallel = false;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -67,13 +67,13 @@ struct VectorInternal
 
  public:
   VectorInternal(const int local_size, const int local_offset, const int global_size,
-      const bool parallel);
+      const bool parallel, MPI_Comm comm);
   ~VectorInternal();
 
  public:
   Vec m_internal;
-  int m_offset;
-  bool m_parallel;
+  int m_offset = 0 ;
+  bool m_parallel = false;
 };
 
 /*---------------------------------------------------------------------------*/

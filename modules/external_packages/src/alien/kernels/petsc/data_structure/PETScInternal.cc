@@ -10,17 +10,17 @@ namespace Alien::PETScInternal {
 /*---------------------------------------------------------------------------*/
 
 VectorInternal::VectorInternal(const int local_size, const int local_offset,
-    const int global_size, const bool parallel)
+    const int global_size, const bool parallel, MPI_Comm comm)
 : m_offset(local_offset)
 , m_parallel(parallel)
 {
   int ierr = 0;
   if (m_parallel) { // Use parallel structures
     // -- B Vector --
-    ierr += VecCreateMPI(PETSC_COMM_WORLD, local_size, global_size, &m_internal);
+    ierr += VecCreateMPI(comm, local_size, global_size, &m_internal);
   } else { // Use sequential structures
     // -- B Vector --
-    ierr += VecCreateSeq(PETSC_COMM_WORLD, local_size, &m_internal);
+    ierr += VecCreateSeq(PETSC_COMM_SELF, local_size, &m_internal);
   }
   int low;
   ierr += VecGetOwnershipRange(m_internal, &low, PETSC_NULL);

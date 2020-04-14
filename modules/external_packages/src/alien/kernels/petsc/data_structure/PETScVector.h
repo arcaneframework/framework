@@ -55,8 +55,8 @@ class PETScVector : public IVectorImpl
 
  public:
   // Méthodes restreintes à usage interne de l'implémentation PETSc
-  VectorInternal* internal() { return m_internal; }
-  const VectorInternal* internal() const { return m_internal; }
+  VectorInternal* internal() { return m_internal.get(); }
+  const VectorInternal* internal() const { return m_internal.get(); }
 
   /*
   void update(const IFPVector & v);
@@ -70,8 +70,8 @@ class PETScVector : public IVectorImpl
   bool assemble();
 
  private:
-  VectorInternal* m_internal;
-  Arccore::Integer m_block_size;
+  std::unique_ptr<VectorInternal> m_internal;
+  Arccore::Integer m_block_size = 1;
 };
 
 /*---------------------------------------------------------------------------*/
