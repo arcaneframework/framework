@@ -131,19 +131,28 @@ namespace StaticMesh {
     source_family.addProperty<int>(orientation_check_name);
     mesh.addAlgorithm(
         Neo::InProperty{source_family, orientation_name},
+        Neo::InProperty{source_family, source_family.m_name+"_uids"},
         Neo::OutProperty{source_family, orientation_check_name},
-        [&source_family,&target_family](Neo::ArrayProperty<int> const& item_orientation,
-           Neo::PropertyT<int> & item_orientation_check) {
+        [&source_family,&target_family](
+            Neo::ArrayProperty<int> const& item_orientation,
+            Neo::PropertyT<Neo::utils::Int64 > const& item_uids,
+            Neo::PropertyT<int> & item_orientation_check) {
             std::cout << "Algorithm: check orientation in connectivity between "
               << source_family.m_name << "  and  " << target_family.m_name
               << std::endl;
-          for (auto item : source_family.all()) {
-            auto orientation = item_orientation[item];
-            if (std::abs(std::accumulate(orientation.begin(),orientation.end(),0)) <= 1) {
-              item_orientation_check[item] = 0;
+            item_orientation_check.init(source_family.all(), 1);
+            std::ostringstream exception_info;
+            exception_info << "Connectivity orientation false for items\n";
+            auto has_error = false;
+            for (auto item : source_family.all()) {
+              auto orientation = item_orientation[item];
+              if (std::abs(std::accumulate(orientation.begin(),orientation.end(), 0)) > 1) {
+                item_orientation_check[item] = 0;
+                exception_info << item_uids[item] << " ";
+                has_error = true;
+              }
             }
-            else item_orientation_check[item] = 1;
-          }
+            if (has_error) throw std::runtime_error(exception_info.str());
         }
     );
   }
@@ -627,6 +636,64 @@ TEST(PolyhedralTest,TypedUtilitiesOrientationTest) {
   edge_node_mock = {6, 1};
   EXPECT_FALSE(item_orientation.isOrdered(
       {edge_node_mock.size(), edge_node_mock.data()}));
+}
+
+TEST(PolyhedralTest,ItemOrientationCheckTest){
+  Neo::Mesh mesh{"test_orientation_check_mesh"};
+  // mock values, does not represent a real mesh
+  std::vector<Neo::utils::Int64> cell_uids{0,1,2};
+  std::vector<Neo::utils::Int64> face_uids{0,1,2,3,4};
+  std::vector<Neo::utils::Int64> face_cells{0,1,1,2,2,0,0,1};
+  std::vector<std::size_t> nb_cell_per_faces{2,2,2,1,1};
+  std::vector<int> face_orientation_in_cells{1,-1,-1,1,-1,1,-1,-1};
+  auto& cell_family = StaticMesh::addFamily(mesh,Neo::ItemKind::IK_Cell, "CellFamily");
+  auto& face_family = StaticMesh::addFamily(mesh,Neo::ItemKind::IK_Face, "FaceFamily");
+  auto added_cells = Neo::AddedItemRange{};
+  auto added_faces = Neo::AddedItemRange{};
+  mesh.beginUpdate();
+  StaticMesh::addItems(mesh,cell_family,cell_uids,added_cells);
+  StaticMesh::addItems(mesh,face_family,face_uids,added_faces);
+  auto do_check_orientation = true;
+  StaticMesh::addOrientedConnectivity(mesh,face_family,added_faces,cell_family,
+                                      std::move(nb_cell_per_faces),face_cells,face_orientation_in_cells,
+                                      do_check_orientation);
+  auto mesh_state = mesh.endUpdate();
+  Neo::PropertyT<int> orientation_check_result = face_family.getConcreteProperty<Neo::PropertyT<int>>(
+      "FaceFamilytoCellFamily_connectivity_orientation_check");
+  _printContainer(orientation_check_result.m_data, "orientation check result");
+  std::vector<int> orientation_check_result_ref{1,1,1,1,1};
+  EXPECT_TRUE(std::equal(orientation_check_result.m_data.begin(),
+                         orientation_check_result.m_data.end(),
+                         orientation_check_result_ref.begin()));
+}
+
+TEST(PolyhedralTest,ItemOrientationCheckTestWrongOrientation){
+  Neo::Mesh mesh{"test_orientation_check_mesh"};
+  // mock values, does not represent a real mesh
+  std::vector<Neo::utils::Int64> cell_uids{0,1,2};
+  std::vector<Neo::utils::Int64> face_uids{0,1,2,3,4};
+  std::vector<Neo::utils::Int64> face_cells{0,1,1,2,2,0,0,1};
+  std::vector<std::size_t> nb_cell_per_faces{2,2,2,1,1};
+  std::vector<int> face_orientation_in_cells{1,1,-1,1,-1,-1,-1,-1};
+  auto& cell_family = StaticMesh::addFamily(mesh,Neo::ItemKind::IK_Cell, "CellFamily");
+  auto& face_family = StaticMesh::addFamily(mesh,Neo::ItemKind::IK_Face, "FaceFamily");
+  auto added_cells = Neo::AddedItemRange{};
+  auto added_faces = Neo::AddedItemRange{};
+  mesh.beginUpdate();
+  StaticMesh::addItems(mesh,cell_family,cell_uids,added_cells);
+  StaticMesh::addItems(mesh,face_family,face_uids,added_faces);
+  auto do_check_orientation = true;
+  StaticMesh::addOrientedConnectivity(mesh,face_family,added_faces,cell_family,
+                                      std::move(nb_cell_per_faces),face_cells,face_orientation_in_cells,
+                                      do_check_orientation);
+  EXPECT_THROW(mesh.endUpdate(),std::runtime_error);
+  Neo::PropertyT<int> orientation_check_result = face_family.getConcreteProperty<Neo::PropertyT<int>>(
+      "FaceFamilytoCellFamily_connectivity_orientation_check");
+  _printContainer(orientation_check_result.m_data, "orientation check result");
+  std::vector<int> orientation_check_result_ref{0,1,0,1,1};
+  EXPECT_TRUE(std::equal(orientation_check_result.m_data.begin(),
+                         orientation_check_result.m_data.end(),
+                         orientation_check_result_ref.begin()));
 }
 
 TEST(PolyhedralTest,TypedUtilitiesConnectivityTest) {
