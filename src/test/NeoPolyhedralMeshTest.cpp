@@ -43,6 +43,13 @@ namespace StaticMesh {
   static const std::string face_family_name{"FaceFamily"};
   static const std::string node_family_name{"NodeFamily"};
 
+  Neo::Family& addFamily(Neo::Mesh& mesh, Neo::ItemKind item_kind, std::string family_name)
+  {
+    auto& cell_family = mesh.addFamily(item_kind, std::move(family_name));
+    cell_family.addProperty<Neo::utils::Int64>(family_name + "_uids");
+    return cell_family;
+  }
+
   void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int64> const& uids, Neo::AddedItemRange& added_item_range)
   {
     auto& added_items = added_item_range.new_items;
