@@ -177,8 +177,8 @@ class MatrixInternal
   int m_local_size = 0;
 
   Teuchos::RCP<const Teuchos::Comm<int>> m_comm;
-  Teuchos::RCP<const map_type> m_map;
-  Teuchos::RCP<coord_vector_type>          m_coordinates;
+  Teuchos::RCP<const map_type>           m_map;
+  Teuchos::RCP<coord_vector_type>        m_coordinates;
 
   std::unique_ptr<matrix_type> m_internal;
 };

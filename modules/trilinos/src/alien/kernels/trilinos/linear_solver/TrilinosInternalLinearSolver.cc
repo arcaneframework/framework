@@ -92,6 +92,7 @@ template <typename TagT>
 void
 TrilinosInternalLinearSolver<TagT>::init()
 {
+  if(m_initialized) return ;
   bool use_amgx = false;
   if (m_options->muelu().size() > 0 && m_options->muelu()[0]->amgx().size() > 0
       && m_options->muelu()[0]->amgx()[0]->enable())
@@ -118,33 +119,8 @@ TrilinosInternalLinearSolver<TagT>::init()
 
   m_solver_name = TrilinosOptionTypes::solverName(m_options->solver());
   m_trilinos_solver->initSolverParameters(m_options);
-}
-template <typename TagT>
-void
-TrilinosInternalLinearSolver<TagT>::setMatrixCoordinate(
-    Matrix const& A, Vector const& x, Vector const& y, Vector const& z)
-{
-
-  const CSRMatrixType& matrix = A.impl()->template get<TagT>();
-
-  typedef typename solver_type::vec_type VectorType;
-  m_trilinos_solver->m_coordinates =
-      rcp(new VectorType(matrix.internal()->m_map, 3, false));
-
-  Teuchos::ArrayRCP<Teuchos::ArrayRCP<typename solver_type::real_type>> Coord(3);
-  Coord[0] = m_trilinos_solver->m_coordinates->getDataNonConst(0);
-  Coord[1] = m_trilinos_solver->m_coordinates->getDataNonConst(1);
-  Coord[2] = m_trilinos_solver->m_coordinates->getDataNonConst(2);
-
-  Alien::VectorReader x_view(x);
-  Alien::VectorReader y_view(y);
-  Alien::VectorReader z_view(z);
-
-  for (int i = 0; i < x_view.size(); ++i) {
-    Coord[0][i] = x_view[i];
-    Coord[1][i] = y_view[i];
-    Coord[2][i] = z_view[i];
-  }
+  
+  m_initialized = true ;
 }
 
 template <typename TagT>
@@ -161,8 +137,10 @@ TrilinosInternalLinearSolver<TagT>::solve(
     const CSRMatrixType& matrix, const CSRVectorType& b, CSRVectorType& x)
 {
   typename TrilinosInternal::SolverInternal<TagT>::Status status =
-      m_trilinos_solver->solve(*matrix.internal()->m_internal, *b.internal()->m_internal,
-          *x.internal()->m_internal);
+      m_trilinos_solver->solve(*matrix.internal()->m_internal,
+                                matrix.internal()->m_coordinates,
+                               *b.internal()->m_internal,
+                               *x.internal()->m_internal);
   m_status.succeeded = status.m_converged;
   m_status.iteration_count = status.m_num_iters;
   m_status.residual = status.m_residual;

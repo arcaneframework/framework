@@ -188,7 +188,10 @@
             </simple>
            <simple name="min-rows-per-proc" type="integer" default="800">
               <description></description>
-            </simple>
+           </simple>
+           <simple name="algorithm" type="string" default="multijagged">
+              <description>repartition algorithm</description>
+           </simple>
         </complex>
         <complex name="amgx" type="AMGXOptType" minOccurs="0" maxOccurs="1">
            <simple name="enable" type="bool" default="false">
@@ -313,7 +316,9 @@
       <enumvalue name="FILU" genvalue="TrilinosOptionTypes::FILU">
         <description>FAST ILU preconditioner FixedPoint</description>
       </enumvalue>
-      
+      <enumvalue name="Schwarz" genvalue="TrilinosOptionTypes::Schwarz">
+        <description>Schwarz preconditioner</description>
+      </enumvalue>
       <enumvalue name="ML" genvalue="TrilinosOptionTypes::MLPC">
         <description>ML</description>
       </enumvalue>

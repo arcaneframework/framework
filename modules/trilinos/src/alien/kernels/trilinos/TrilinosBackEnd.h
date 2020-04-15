@@ -51,13 +51,6 @@ namespace BackEnd {
 }
 class Matrix;
 class Vector;
-class TPetraSolver
-{
- public:
-  virtual ~TPetraSolver() {}
-  virtual void setMatrixCoordinate(
-      Matrix const& A, Vector const& x, Vector const& y, Vector const& z) = 0;
-};
 
 extern IInternalLinearSolver<TrilinosMatrix<Real, BackEnd::tag::tpetraserial>,
     TrilinosVector<Real, BackEnd::tag::tpetraserial>>*

@@ -1,11 +1,15 @@
+#include <alien/utils/Precomp.h>
+#include <cmath>
+
 #include <gtest/gtest.h>
+#include <alien/ref/AlienRefSemantic.h>
 
-#include <ALIEN/Alien-RefSemanticMVHandlers.h>
+#include <alien/ref/AlienImportExport.h>
+#include <alien/ref/mv_expr/MVExpr.h>
 
-#include <ALIEN/MVExpr/MVExpr.h>
 
 namespace Environment {
-extern Alien::IParallelMng* parallelMng();
+extern Alien::IMessagePassingMng* parallelMng();
 extern Alien::ITraceMng* traceMng();
 }
 

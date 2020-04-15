@@ -83,13 +83,16 @@ template <typename TagT> class SolverInternal
   typedef Belos::SolverManager<scalar_type, vec_type, op_type> solver_type;
 
   typedef Teuchos::ScalarTraits<scalar_type> STS;
+  typedef typename STS::coordinateType real_type;
   typedef typename STS::magnitudeType magnitude_type;
   typedef Teuchos::ScalarTraits<magnitude_type> STM;
 
-  typedef typename STS::coordinateType real_type;
-  typedef Tpetra::MultiVector<real_type, local_ordinal_type, global_ordinal_type,
-      node_type>
-      RealValuedMultiVector;
+  typedef Tpetra::MultiVector<real_type, 
+                              local_ordinal_type, 
+                              global_ordinal_type,
+                              node_type> RealValuedMultiVector;
+  
+  typedef Teuchos::RCP<RealValuedMultiVector> coord_type ;
 
   struct Status
   {
@@ -97,9 +100,6 @@ template <typename TagT> class SolverInternal
     int m_num_iters = 0;
     magnitude_type m_residual = -1.;
   };
-
- public:
-  Teuchos::RCP<RealValuedMultiVector> m_coordinates;
 
  private:
   std::string m_precond_name;
@@ -111,7 +111,7 @@ template <typename TagT> class SolverInternal
   bool m_use_amgx = false;
 #ifdef HAVE_MUELU_AMGX
   amgx_prec_type* m_amgx_M_ptr = nullptr;
-  RCP<op_type> m_amgx_M;
+  Teuchos::RCP<op_type> m_amgx_M;
 #endif
   Teuchos::RCP<const Teuchos::Comm<int>> m_comm;
 
@@ -256,6 +256,19 @@ template <typename TagT> class SolverInternal
                 "fact: relative threshold", options->iluk()[0]->relativeThreshold());
             m_precond_parameters->set("schwarz: subdomain solver parameters", plist);
           }
+        }
+        if(options->schwarz()[0]->subdomainSolver()==TrilinosOptionTypes::precondName(TrilinosOptionTypes::FILU))
+        {
+            if(options->filu().size()>0)
+            {
+              ParameterList plist ;
+              //plist.set ("Ifpack2::Preconditioner", "FILU");
+              plist.set("level",options->filu()[0]->level()) ;
+              plist.set("damping factor",options->filu()[0]->dampingFactor()) ;
+              plist.set("triangular solve iterations",options->filu()[0]->solverNbIterations()) ;
+              plist.set("sweeps",options->filu()[0]->factorNbIterations()) ;
+              m_precond_parameters->set("schwarz: subdomain solver parameters",plist);
+            }
         }
         if (options->schwarz()[0]->subdomainSolver() == "CHEBYSHEV") {
           if (options->chebyshev().size() > 0) {
@@ -481,8 +494,12 @@ template <typename TagT> class SolverInternal
 
   Teuchos::RCP<Tpetra::Operator<scalar_type, local_ordinal_type, global_ordinal_type,
       node_type>>
-  createPreconditioner(matrix_type& A, const std::string& precondType,
-      Teuchos::RCP<Teuchos::ParameterList> plist, std::ostream& out, std::ostream& err)
+  createPreconditioner(matrix_type& A, 
+                       coord_type& A_coordinates, 
+                       const std::string& precondType,
+                       Teuchos::RCP<Teuchos::ParameterList> plist,
+                       std::ostream& out,
+                       std::ostream& err)
   {
     using Teuchos::ParameterList;
     using Teuchos::RCP;
@@ -532,7 +549,7 @@ template <typename TagT> class SolverInternal
           node_type>
           prec_type;
       RCP<op_type> opMat(rcpFromRef(A));
-      RCP<prec_type> prec = MueLu::CreateTpetraPreconditioner(opMat, *plist);
+      RCP<prec_type> prec = MueLu::CreateTpetraPreconditioner(opMat, *plist,A_coordinates);
       return prec;
     } else {
       typedef Ifpack2::Preconditioner<scalar_type, local_ordinal_type,
@@ -599,7 +616,10 @@ template <typename TagT> class SolverInternal
     return status;
   }
 
-  Status solve(matrix_type& A, const vector_type& B, vector_type& X)
+  Status solve(matrix_type& A, 
+               coord_type coordinates,
+               const vector_type& B, 
+               vector_type& X)
   {
     using Teuchos::parameterList;
     using Teuchos::RCP;
@@ -617,8 +637,7 @@ template <typename TagT> class SolverInternal
       M = m_amgx_M;
     } else
 #endif
-      M = createPreconditioner(
-          A, m_precond_name, m_precond_parameters, std::cout, std::cerr);
+      M = createPreconditioner(A,coordinates, m_precond_name, m_precond_parameters, std::cout, std::cerr);
 
     // Create a LinearProblem struct with the problem to solve.
     // A, X, B, and M are passed by (smart) pointer, not copied.

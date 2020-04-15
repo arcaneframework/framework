@@ -27,7 +27,6 @@ template <typename TagT>
 class ALIEN_TRILINOS_EXPORT TrilinosInternalLinearSolver
     : public IInternalLinearSolver<TrilinosMatrix<Arccore::Real, TagT>,
           TrilinosVector<Arccore::Real, TagT>>,
-      public TPetraSolver,
       public ObjectWithTrace
 {
  private:
@@ -63,9 +62,6 @@ class ALIEN_TRILINOS_EXPORT TrilinosInternalLinearSolver
   String getBackEndName() const;
 
   typedef typename TrilinosInternal::SolverInternal<TagT> solver_type;
-
-  void setMatrixCoordinate(
-      Matrix const& A, Vector const& x, Vector const& y, Vector const& z);
 
   // bool solve(IMatrix const& A, IVector const& b, IVector& x);
   bool solve(const CSRMatrixType& matrix, const CSRVectorType& b, CSRVectorType& x);
@@ -106,7 +102,7 @@ class ALIEN_TRILINOS_EXPORT TrilinosInternalLinearSolver
  protected:
  private:
   //! Structure interne du solveur
-
+  bool m_initialized  = false ;
   bool m_use_mpi = false;
   Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng = nullptr;
 
