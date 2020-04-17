@@ -552,6 +552,7 @@ namespace PolyhedralMeshTest {
   }
 }
 
+#ifdef HAS_XDMF
 namespace XdmfTest {
   void exportMesh(Neo::Mesh const& mesh, std::string const& file_name)
   {
@@ -593,6 +594,7 @@ namespace XdmfTest {
     domain->accept(writer);
   }
 }
+#endif //HAS_XDMF
 
 TEST(PolyhedralTest,CreateMesh1)
 {
@@ -1038,4 +1040,4 @@ TEST(PolyhedralTest,ImportXdmfHexahedronMesh) {
                                   std::move(nb_cell_per_faces));
 }
 
-#endif
+#endif //HAS_XDMF
