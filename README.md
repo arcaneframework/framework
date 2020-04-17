@@ -93,8 +93,6 @@ cmake -DCMAKE_BUILD_TYPE=Release
 make -j 8 install
 ```
 
-> La branche `dev-cea` est en cours de finalisation pour intégrer les demandes IFPEN
-> issues de la branche `mr-ifpen-commsplit`.  
 
 # Compilation `ALIEN` opensource
 
