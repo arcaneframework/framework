@@ -100,7 +100,7 @@ make -j 8 install
 ```
 git clone git@gitlab.ifpen.fr:Arcane/alienopensource/alien.git
 cd alien
-git checkout dev-refactoring-open-source
+git checkout open-source
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release 
       -DCMAKE_INSTALL_PREFIX=${Alien_DIR}
