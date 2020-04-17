@@ -6,7 +6,7 @@
 source ~commonlib/toolchain.csh
 source ~commonlib/arcdev.csh
 source ~commonlib/arcuser.csh
-source ~commonlib/arcsolver.csh
+source ~commonlib/arcsolver-advanced.csh
 module load CMake/3.14.3
 module load dotNET-Core-Sdk/3.0.100
 module load SLEPc/3.10.2
