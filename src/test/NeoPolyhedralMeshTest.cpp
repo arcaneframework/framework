@@ -39,35 +39,52 @@ void _printContainer(Container&& container, std::string const& name){
 
 namespace StaticMesh {
 
-static const std::string cell_family_name{"CellFamily"};
-static const std::string face_family_name{"FaceFamily"};
-static const std::string node_family_name{"NodeFamily"};
+  static const std::string cell_family_name{"CellFamily"};
+  static const std::string face_family_name{"FaceFamily"};
+  static const std::string node_family_name{"NodeFamily"};
 
-void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int64> const& uids, Neo::AddedItemRange& added_item_range)
-{
-  auto& added_items = added_item_range.new_items;
-  // Add items
-  mesh.addAlgorithm(  Neo::OutProperty{family,family.lidPropName()},
-                      [&family,&uids,&added_items](Neo::ItemLidsProperty & lids_property){
-                        std::cout << "Algorithm: create items in family " << family.m_name << std::endl;
-                        added_items = lids_property.append(uids);
-                        lids_property.debugPrint();
-                        std::cout << "Inserted item range : " << added_items;
-                      });
-  // register their uids
-  auto uid_property_name = family.m_name+"_uids";
-  mesh.addAlgorithm(
-      Neo::InProperty{family,family.lidPropName()},
-      Neo::OutProperty{family, uid_property_name},
-      [&family,&uids,&added_items](Neo::ItemLidsProperty const& item_lids_property,
-                                   Neo::PropertyT<Neo::utils::Int64>& item_uids_property){
-        std::cout << "Algorithm: register item uids for family " << family.m_name << std::endl;
-        if (item_uids_property.isInitializableFrom(added_items))
-          item_uids_property.init(added_items,std::move(uids)); // init can steal the input values
-        else
-          item_uids_property.append(added_items, uids);
-        item_uids_property.debugPrint();
-      });// need to add a property check for existing uid
+  Neo::Family& addFamily(Neo::Mesh& mesh, Neo::ItemKind item_kind, std::string family_name)
+  {
+    auto& cell_family = mesh.addFamily(item_kind, std::move(family_name));
+    cell_family.addProperty<Neo::utils::Int64>(family_name + "_uids");
+    return cell_family;
+  }
+
+  void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int64> const& uids, Neo::AddedItemRange& added_item_range)
+  {
+    auto& added_items = added_item_range.new_items;
+    // Add items
+    mesh.addAlgorithm(  Neo::OutProperty{family,family.lidPropName()},
+                        [&family,&uids,&added_items](Neo::ItemLidsProperty & lids_property){
+                          std::cout << "Algorithm: create items in family " << family.m_name << std::endl;
+                          added_items = lids_property.append(uids);
+                          lids_property.debugPrint();
+                          std::cout << "Inserted item range : " << added_items;
+                        });
+    // register their uids
+    auto uid_property_name = family.m_name+"_uids";
+    mesh.addAlgorithm(
+        Neo::InProperty{family,family.lidPropName()},
+        Neo::OutProperty{family, uid_property_name},
+        [&family,&uids,&added_items](Neo::ItemLidsProperty const& item_lids_property,
+                                     Neo::PropertyT<Neo::utils::Int64>& item_uids_property){
+          std::cout << "Algorithm: register item uids for family " << family.m_name << std::endl;
+          if (item_uids_property.isInitializableFrom(added_items))
+            item_uids_property.init(added_items,std::move(uids)); // init can steal the input values
+          else
+            item_uids_property.append(added_items, uids);
+          item_uids_property.debugPrint();
+        });// need to add a property check for existing uid
+  }
+
+  std::vector<Neo::utils::Int64> lid2uids(Neo::Family const& family,
+                                          Neo::utils::ConstArrayView<Neo::utils::Int32> item_lids)
+  {
+    auto & uid_property = family.getConcreteProperty<Neo::PropertyT<Neo::utils::Int64>>(family.m_name+"_uids");
+    std::vector<Neo::utils::Int64> item_uids(item_lids.size());
+    std::transform(item_lids.begin(),item_lids.end(),item_uids.begin(),
+                   [&uid_property](auto lid){ return uid_property[lid];});
+    return item_uids;
   }
 
   // todo same interface with nb_connected_item_per_items as an array
@@ -115,47 +132,84 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
                     std::move(nb_connected_item_per_items), connected_item_uids);
   }
 
+  void addConnectivityOrientationCheck(Neo::Mesh &mesh, Neo::Family& source_family,
+                                       Neo::Family const& target_family)
+  {
+    std::string orientation_name =
+        source_family.m_name + "to" + target_family.m_name + "_connectivity_orientation";
+    std::string orientation_check_name = orientation_name + "_check";
+    source_family.addProperty<int>(orientation_check_name);
+    mesh.addAlgorithm(
+        Neo::InProperty{source_family, orientation_name},
+        Neo::InProperty{source_family, source_family.m_name+"_uids"},
+        Neo::OutProperty{source_family, orientation_check_name},
+        [&source_family,&target_family](
+            Neo::ArrayProperty<int> const& item_orientation,
+            Neo::PropertyT<Neo::utils::Int64 > const& item_uids,
+            Neo::PropertyT<int> & item_orientation_check) {
+            std::cout << "Algorithm: check orientation in connectivity between "
+              << source_family.m_name << "  and  " << target_family.m_name
+              << std::endl;
+            item_orientation_check.init(source_family.all(), 1);
+            std::ostringstream exception_info;
+            exception_info << "Connectivity orientation false for items\n";
+            auto has_error = false;
+            for (auto item : source_family.all()) {
+              auto orientation = item_orientation[item];
+              if (std::abs(std::accumulate(orientation.begin(),orientation.end(), 0)) > 1) {
+                item_orientation_check[item] = 0;
+                exception_info << item_uids[item] << " ";
+                has_error = true;
+              }
+            }
+            if (has_error) throw std::runtime_error(exception_info.str());
+        }
+    );
+  }
+
   void addConnectivityOrientation(Neo::Mesh &mesh, Neo::Family &source_family,
                                   Neo::ItemRange &source_items,
                                   Neo::Family& target_family,
                                   std::vector<size_t>&& nb_connected_item_per_items,
                                   std::vector<int> const& source_item_orientation_in_target_item) {
-// add orientation property if doesn't exist
-  std::string orientation_name =
-      source_family.m_name + "to" + target_family.m_name + "_connectivity_orientation";
-  source_family.addArrayProperty<int>(orientation_name);
-  mesh.addAlgorithm(
-      Neo::InProperty{source_family, source_family.lidPropName()},
-      Neo::OutProperty{source_family, orientation_name},
-      [&source_item_orientation_in_target_item, nb_connected_item_per_items, &source_items,
-          &source_family, &target_family](
-          Neo::ItemLidsProperty const &source_family_lids_property,
-          Neo::ArrayProperty<int> & item_orientation) {
-        std::cout << "Algorithm: add orientation in connectivity between "
-                  << source_family.m_name << "  and  " << target_family.m_name
-                  << std::endl;
-        if (item_orientation.isInitializableFrom(source_items)) {
-          item_orientation.resize(std::move(nb_connected_item_per_items));
-          item_orientation.init(source_items, std::move(source_item_orientation_in_target_item));
-        } else {
-          item_orientation.append(source_items, source_item_orientation_in_target_item,
-                                  nb_connected_item_per_items);
-        }
-        item_orientation.debugPrint();
-      });
-}
+    // add orientation property if doesn't exist
+    std::string orientation_name =
+        source_family.m_name + "to" + target_family.m_name + "_connectivity_orientation";
+    source_family.addArrayProperty<int>(orientation_name);
+    mesh.addAlgorithm(
+        Neo::InProperty{source_family, source_family.lidPropName()},
+        Neo::OutProperty{source_family, orientation_name},
+        [&source_item_orientation_in_target_item, nb_connected_item_per_items, &source_items,
+            &source_family, &target_family](
+            Neo::ItemLidsProperty const &source_family_lids_property,
+            Neo::ArrayProperty<int> & item_orientation) {
+          std::cout << "Algorithm: add orientation in connectivity between "
+                    << source_family.m_name << "  and  " << target_family.m_name
+                    << std::endl;
+          if (item_orientation.isInitializableFrom(source_items)) {
+            item_orientation.resize(std::move(nb_connected_item_per_items));
+            item_orientation.init(source_items, std::move(source_item_orientation_in_target_item));
+          } else {
+            item_orientation.append(source_items, source_item_orientation_in_target_item,
+                                    nb_connected_item_per_items);
+          }
+          item_orientation.debugPrint();
+        });
+  }
 
   void addOrientedConnectivity(Neo::Mesh &mesh, Neo::Family &source_family,
                                Neo::ItemRange &source_items,
                                Neo::Family& target_family,
                                std::vector<size_t>&& nb_connected_item_per_items,
                                std::vector<Neo::utils::Int64> const& connected_item_uids,
-                               std::vector<int> const& source_item_orientation_in_target_item)
+                               std::vector<int> const& source_item_orientation_in_target_item,
+                               bool do_check_orientation)
   {
     addConnectivity(mesh,source_family,source_items,target_family,
                     std::move(nb_connected_item_per_items),connected_item_uids);
     addConnectivityOrientation(mesh,source_family,source_items,target_family,
                                std::move(nb_connected_item_per_items),source_item_orientation_in_target_item);
+    if (do_check_orientation) addConnectivityOrientationCheck(mesh, source_family, target_family);
   }
 
   void addOrientedConnectivity(Neo::Mesh &mesh, Neo::Family &source_family,
@@ -163,10 +217,12 @@ void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int6
                                Neo::Family& target_family,
                                std::vector<size_t>&& nb_connected_item_per_items,
                                std::vector<Neo::utils::Int64> const& connected_item_uids,
-                               std::vector<int> const& source_item_orientation_in_target_item)
+                               std::vector<int> const& source_item_orientation_in_target_item,
+                               bool do_check_orientation = false)
   {
     addOrientedConnectivity(mesh, source_family, source_items.new_items, target_family,
-                            std::move(nb_connected_item_per_items), connected_item_uids, source_item_orientation_in_target_item);
+                            std::move(nb_connected_item_per_items), connected_item_uids,
+                            source_item_orientation_in_target_item,do_check_orientation);
   }
 
   Neo::ArrayProperty<Neo::utils::Int32> const &
@@ -398,7 +454,7 @@ namespace PolyhedralMeshTest {
     return face_family;
   }
 
-  void _createMesh(Neo::Mesh &mesh,
+  void  _createMesh(Neo::Mesh &mesh,
                    std::vector<Neo::utils::Int64> const &node_uids,
                    std::vector<Neo::utils::Int64> const &cell_uids,
                    std::vector<Neo::utils::Int64> const &face_uids,
@@ -431,8 +487,9 @@ namespace PolyhedralMeshTest {
                                 std::move(nb_face_per_cells), cell_faces);
     StaticMesh::addConnectivity(mesh, face_family, added_faces, cell_family,
                                 std::move(nb_cell_per_faces), face_cells);
+    auto do_check_orientation = true;
     StaticMesh::addOrientedConnectivity(mesh,face_family,added_faces,cell_family,
-        std::move(nb_cell_per_faces),face_cells,face_orientation_in_cells);
+        std::move(nb_cell_per_faces),face_cells,face_orientation_in_cells,do_check_orientation);
     auto valid_mesh_state = mesh.endUpdate();
     auto &new_cells = added_cells.get(valid_mesh_state);
     auto &new_nodes = added_nodes.get(valid_mesh_state);
@@ -495,7 +552,51 @@ namespace PolyhedralMeshTest {
   }
 }
 
+#ifdef HAS_XDMF
 namespace XdmfTest {
+  auto _changeNodeOrder(std::vector<Neo::utils::Int64> const& face_nodes,
+                        Neo::utils::Int32 cell_lid,
+                        Neo::utils::ConstArrayView<Neo::utils::Int32> face_cells,
+                        Neo::utils::ConstArrayView<int> face_orientation)
+  {
+    auto count = 0;
+    for (auto connected_cell_lid : face_cells){
+      if (connected_cell_lid == cell_lid){
+        break;
+      }
+      count++;
+    }
+    auto do_change_node_order = false;
+    if (count < face_orientation.size()) {
+      do_change_node_order = (face_orientation[count] == -1);
+    }
+    if (do_change_node_order) {
+      std::vector<Neo::utils::Int64> new_node_order(face_nodes);
+      std::sort(new_node_order.begin(),new_node_order.end());
+      std::sort(new_node_order.begin() + 1, new_node_order.end(),
+                std::greater<Neo::utils::Int64>());
+      // implicit in test examples : first min_id then max and strictly decreasing order
+      // DEBUG
+      _printContainer(face_nodes," DEBUG FACE NODES ");
+      // DEBUG
+      return std::make_pair(do_change_node_order, new_node_order);
+    }
+    else {
+      // check if face is stored positive, otherwise reorder
+      if (StaticMesh::utilities::DefaultItemOrientation::isOrdered({face_nodes.size(),face_nodes.data()}))
+        return std::make_pair(do_change_node_order,std::vector<Neo::utils::Int64>{});
+      else {
+        // face is +1 oriented in the current cell, but was stored negatively oriented
+        // return ascending sorted node order (is positive and fit with initial mesh)
+        do_change_node_order = true;
+        std::vector<Neo::utils::Int64> new_node_order(face_nodes);
+        std::sort(new_node_order.begin(),new_node_order.end());
+        return std::make_pair(do_change_node_order,new_node_order);
+      }
+
+    }
+  }
+
   void exportMesh(Neo::Mesh const& mesh, std::string const& file_name)
   {
     auto domain = XdmfDomain::New();
@@ -516,13 +617,17 @@ namespace XdmfTest {
     cell_data.reserve(cell_family.nbElements()*4); // 4 faces by cell approx
     auto& cell_to_faces = StaticMesh::faces(mesh, cell_family);
     auto& face_to_nodes = StaticMesh::nodes(mesh, face_family);
+    auto const& [face_cells,face_orientation_in_cells] = StaticMesh::getOrientedConnectivity(mesh,face_family,cell_family);
     for (auto cell : cell_family.all()) {
       auto cell_faces = cell_to_faces[cell];
       cell_data.push_back(cell_faces.size());
       for (auto face : cell_faces) {
         auto face_nodes = face_to_nodes[face];
+        auto face_nodes_uids = StaticMesh::lid2uids(face_family,face_nodes);
         cell_data.push_back(face_nodes.size());
-        cell_data.insert(cell_data.end(),face_nodes.begin(),face_nodes.end());
+        auto [do_change_node_order,face_nodes_new_order] = _changeNodeOrder(face_nodes_uids,cell,face_cells[face],face_orientation_in_cells[face]);
+        if (!do_change_node_order) cell_data.insert(cell_data.end(),face_nodes.begin(),face_nodes.end());
+        else cell_data.insert(cell_data.end(),face_nodes_new_order.begin(),face_nodes_new_order.end());
       }
     }
     xdmf_topo->insert(0, cell_data.data(),cell_data.size(), 1, 1);
@@ -536,6 +641,7 @@ namespace XdmfTest {
     domain->accept(writer);
   }
 }
+#endif //HAS_XDMF
 
 TEST(PolyhedralTest,CreateMesh1)
 {
@@ -589,6 +695,64 @@ TEST(PolyhedralTest,TypedUtilitiesOrientationTest) {
   edge_node_mock = {6, 1};
   EXPECT_FALSE(item_orientation.isOrdered(
       {edge_node_mock.size(), edge_node_mock.data()}));
+}
+
+TEST(PolyhedralTest,ItemOrientationCheckTest){
+  Neo::Mesh mesh{"test_orientation_check_mesh"};
+  // mock values, does not represent a real mesh
+  std::vector<Neo::utils::Int64> cell_uids{0,1,2};
+  std::vector<Neo::utils::Int64> face_uids{0,1,2,3,4};
+  std::vector<Neo::utils::Int64> face_cells{0,1,1,2,2,0,0,1};
+  std::vector<std::size_t> nb_cell_per_faces{2,2,2,1,1};
+  std::vector<int> face_orientation_in_cells{1,-1,-1,1,-1,1,-1,-1};
+  auto& cell_family = StaticMesh::addFamily(mesh,Neo::ItemKind::IK_Cell, "CellFamily");
+  auto& face_family = StaticMesh::addFamily(mesh,Neo::ItemKind::IK_Face, "FaceFamily");
+  auto added_cells = Neo::AddedItemRange{};
+  auto added_faces = Neo::AddedItemRange{};
+  mesh.beginUpdate();
+  StaticMesh::addItems(mesh,cell_family,cell_uids,added_cells);
+  StaticMesh::addItems(mesh,face_family,face_uids,added_faces);
+  auto do_check_orientation = true;
+  StaticMesh::addOrientedConnectivity(mesh,face_family,added_faces,cell_family,
+                                      std::move(nb_cell_per_faces),face_cells,face_orientation_in_cells,
+                                      do_check_orientation);
+  auto mesh_state = mesh.endUpdate();
+  Neo::PropertyT<int> orientation_check_result = face_family.getConcreteProperty<Neo::PropertyT<int>>(
+      "FaceFamilytoCellFamily_connectivity_orientation_check");
+  _printContainer(orientation_check_result.m_data, "orientation check result");
+  std::vector<int> orientation_check_result_ref{1,1,1,1,1};
+  EXPECT_TRUE(std::equal(orientation_check_result.m_data.begin(),
+                         orientation_check_result.m_data.end(),
+                         orientation_check_result_ref.begin()));
+}
+
+TEST(PolyhedralTest,ItemOrientationCheckTestWrongOrientation){
+  Neo::Mesh mesh{"test_orientation_check_mesh"};
+  // mock values, does not represent a real mesh
+  std::vector<Neo::utils::Int64> cell_uids{0,1,2};
+  std::vector<Neo::utils::Int64> face_uids{0,1,2,3,4};
+  std::vector<Neo::utils::Int64> face_cells{0,1,1,2,2,0,0,1};
+  std::vector<std::size_t> nb_cell_per_faces{2,2,2,1,1};
+  std::vector<int> face_orientation_in_cells{1,1,-1,1,-1,-1,-1,-1};
+  auto& cell_family = StaticMesh::addFamily(mesh,Neo::ItemKind::IK_Cell, "CellFamily");
+  auto& face_family = StaticMesh::addFamily(mesh,Neo::ItemKind::IK_Face, "FaceFamily");
+  auto added_cells = Neo::AddedItemRange{};
+  auto added_faces = Neo::AddedItemRange{};
+  mesh.beginUpdate();
+  StaticMesh::addItems(mesh,cell_family,cell_uids,added_cells);
+  StaticMesh::addItems(mesh,face_family,face_uids,added_faces);
+  auto do_check_orientation = true;
+  StaticMesh::addOrientedConnectivity(mesh,face_family,added_faces,cell_family,
+                                      std::move(nb_cell_per_faces),face_cells,face_orientation_in_cells,
+                                      do_check_orientation);
+  EXPECT_THROW(mesh.endUpdate(),std::runtime_error);
+  Neo::PropertyT<int> orientation_check_result = face_family.getConcreteProperty<Neo::PropertyT<int>>(
+      "FaceFamilytoCellFamily_connectivity_orientation_check");
+  _printContainer(orientation_check_result.m_data, "orientation check result");
+  std::vector<int> orientation_check_result_ref{0,1,0,1,1};
+  EXPECT_TRUE(std::equal(orientation_check_result.m_data.begin(),
+                         orientation_check_result.m_data.end(),
+                         orientation_check_result_ref.begin()));
 }
 
 TEST(PolyhedralTest,TypedUtilitiesConnectivityTest) {
@@ -923,4 +1087,4 @@ TEST(PolyhedralTest,ImportXdmfHexahedronMesh) {
                                   std::move(nb_cell_per_faces));
 }
 
-#endif
+#endif //HAS_XDMF

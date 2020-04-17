@@ -44,22 +44,30 @@ using Int32 = int;
 struct Real3 { double x,y,z;};
 template <typename T>
 struct ArrayView {
+  std::size_t m_size;
+  T* m_ptr;
   T& operator[](int const i) {assert(i<m_size); return *(m_ptr+i);}
   T* begin() {return m_ptr;}
   T* end()   {return m_ptr+m_size;}
   std::size_t size() const {return m_size;}
-  std::size_t m_size;
-  T* m_ptr;
+  std::vector<T> copy() { std::vector<T> vec(m_size);
+    std::copy(this->begin(), this->end(), vec.begin());
+    return vec;
+  }
 };
 
 template <typename T>
 struct ConstArrayView {
+  std::size_t m_size;
+  const T* m_ptr;
   const T& operator[](int const i) const {assert(i<m_size); return *(m_ptr+i);}
   const T* begin() const {return m_ptr;}
   const T* end() const  {return m_ptr+m_size;}
   std::size_t size() const {return m_size;}
-  std::size_t m_size;
-  const T* m_ptr;
+  std::vector<T> copy() { std::vector<T> vec(m_size);
+    std::copy(this->begin(), this->end(), vec.begin());
+    return vec;
+  }
 };
 
 static constexpr utils::Int32 NULL_ITEM_LID = -1;

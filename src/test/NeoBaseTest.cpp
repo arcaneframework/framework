@@ -8,6 +8,22 @@
  *-------------------------
  */
 
+TEST(NeoUtils,test_array_view){
+  std::vector<int> vec{0,1,2};
+  // build a view from a vector
+  Neo::utils::ArrayView<int> view{vec.size(), vec.data()};
+  Neo::utils::ConstArrayView<int> constview{vec.size(), vec.data()};
+  EXPECT_TRUE(std::equal(view.begin(),view.end(),vec.begin()));
+  EXPECT_TRUE(std::equal(constview.begin(),constview.end(),vec.begin()));
+  // build a vector from a view
+  std::vector<int> vec2 = view.copy();
+  std::vector<int> vec3(view.copy());
+  std::vector<int> vec4(constview.copy());
+  EXPECT_TRUE(std::equal(vec2.begin(),vec2.end(),view.begin()));
+  EXPECT_TRUE(std::equal(vec3.begin(),vec3.end(),view.begin()));
+  EXPECT_TRUE(std::equal(vec4.begin(),vec4.end(),constview.begin()));
+}
+
 TEST(NeoTestItemRange,test_item_range){
   // Test with only contiguous indexes
   std::cout << "== Testing contiguous item range from 0 with 5 items =="<< std::endl;
