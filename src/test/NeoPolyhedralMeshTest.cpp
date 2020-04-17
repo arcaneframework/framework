@@ -554,6 +554,49 @@ namespace PolyhedralMeshTest {
 
 #ifdef HAS_XDMF
 namespace XdmfTest {
+  auto _changeNodeOrder(std::vector<Neo::utils::Int64> const& face_nodes,
+                        Neo::utils::Int32 cell_lid,
+                        Neo::utils::ConstArrayView<Neo::utils::Int32> face_cells,
+                        Neo::utils::ConstArrayView<int> face_orientation)
+  {
+    auto count = 0;
+    for (auto connected_cell_lid : face_cells){
+      if (connected_cell_lid == cell_lid){
+        break;
+      }
+      count++;
+    }
+    auto do_change_node_order = false;
+    if (count < face_orientation.size()) {
+      do_change_node_order = (face_orientation[count] == -1);
+    }
+    if (do_change_node_order) {
+      std::vector<Neo::utils::Int64> new_node_order(face_nodes);
+      std::sort(new_node_order.begin(),new_node_order.end());
+      std::sort(new_node_order.begin() + 1, new_node_order.end(),
+                std::greater<Neo::utils::Int64>());
+      // implicit in test examples : first min_id then max and strictly decreasing order
+      // DEBUG
+      _printContainer(face_nodes," DEBUG FACE NODES ");
+      // DEBUG
+      return std::make_pair(do_change_node_order, new_node_order);
+    }
+    else {
+      // check if face is stored positive, otherwise reorder
+      if (StaticMesh::utilities::DefaultItemOrientation::isOrdered({face_nodes.size(),face_nodes.data()}))
+        return std::make_pair(do_change_node_order,std::vector<Neo::utils::Int64>{});
+      else {
+        // face is +1 oriented in the current cell, but was stored negatively oriented
+        // return ascending sorted node order (is positive and fit with initial mesh)
+        do_change_node_order = true;
+        std::vector<Neo::utils::Int64> new_node_order(face_nodes);
+        std::sort(new_node_order.begin(),new_node_order.end());
+        return std::make_pair(do_change_node_order,new_node_order);
+      }
+
+    }
+  }
+
   void exportMesh(Neo::Mesh const& mesh, std::string const& file_name)
   {
     auto domain = XdmfDomain::New();
@@ -574,13 +617,17 @@ namespace XdmfTest {
     cell_data.reserve(cell_family.nbElements()*4); // 4 faces by cell approx
     auto& cell_to_faces = StaticMesh::faces(mesh, cell_family);
     auto& face_to_nodes = StaticMesh::nodes(mesh, face_family);
+    auto const& [face_cells,face_orientation_in_cells] = StaticMesh::getOrientedConnectivity(mesh,face_family,cell_family);
     for (auto cell : cell_family.all()) {
       auto cell_faces = cell_to_faces[cell];
       cell_data.push_back(cell_faces.size());
       for (auto face : cell_faces) {
         auto face_nodes = face_to_nodes[face];
+        auto face_nodes_uids = StaticMesh::lid2uids(face_family,face_nodes);
         cell_data.push_back(face_nodes.size());
-        cell_data.insert(cell_data.end(),face_nodes.begin(),face_nodes.end());
+        auto [do_change_node_order,face_nodes_new_order] = _changeNodeOrder(face_nodes_uids,cell,face_cells[face],face_orientation_in_cells[face]);
+        if (!do_change_node_order) cell_data.insert(cell_data.end(),face_nodes.begin(),face_nodes.end());
+        else cell_data.insert(cell_data.end(),face_nodes_new_order.begin(),face_nodes_new_order.end());
       }
     }
     xdmf_topo->insert(0, cell_data.data(),cell_data.size(), 1, 1);
