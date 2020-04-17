@@ -75,7 +75,17 @@ namespace StaticMesh {
             item_uids_property.append(added_items, uids);
           item_uids_property.debugPrint();
         });// need to add a property check for existing uid
-    }
+  }
+
+  std::vector<Neo::utils::Int64> lid2uids(Neo::Family const& family,
+                                          Neo::utils::ConstArrayView<Neo::utils::Int32> item_lids)
+  {
+    auto & uid_property = family.getConcreteProperty<Neo::PropertyT<Neo::utils::Int64>>(family.m_name+"_uids");
+    std::vector<Neo::utils::Int64> item_uids(item_lids.size());
+    std::transform(item_lids.begin(),item_lids.end(),item_uids.begin(),
+                   [&uid_property](auto lid){ return uid_property[lid];});
+    return item_uids;
+  }
 
   // todo same interface with nb_connected_item_per_items as an array
   void addConnectivity(Neo::Mesh &mesh, Neo::Family &source_family,
