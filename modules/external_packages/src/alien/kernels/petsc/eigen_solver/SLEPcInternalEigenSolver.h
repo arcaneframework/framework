@@ -14,9 +14,9 @@
 #include <alien/kernels/petsc/eigen_solver/SLEPcEigenOptionTypes.h>
 #include <alien/core/backend/EigenSolver.h>
 #include <alien/core/backend/EigenSolverT.h>
-#include <alien/utils/trace/ObjectWithTrace.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
+#include <alien/utils/ObjectWithTrace.h>
+#include <alien/kernels/simple_csr/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
 
 class IOptionsSLEPcEigenSolver;
 

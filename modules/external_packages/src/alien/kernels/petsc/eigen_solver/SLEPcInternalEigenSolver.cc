@@ -9,6 +9,8 @@
 
 #include "alien/utils/Precomp.h"
 
+#include <alien/AlienExternalPackagesPrecomp.h>
+
 #ifdef ALIEN_USE_PETSC
 #include <petscmat.h>
 #include <petscvec.h>
