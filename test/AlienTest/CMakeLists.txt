@@ -7,7 +7,13 @@ addSources(alien_arcane_test.exe
         ArcaneCodeService.cc
         )
 
-arcane_target_add_axl(alien_arcane_test.exe AlienTest)
+#arcane_target_add_axl(alien_arcane_test.exe AlienTest)
+generateAxl(alien_arcane_test.exe
+            AlienTest.axl
+            NO_COPY
+           )
+
+
 
 if (TARGET intel)
     linkLibraries(alien_arcane_test.exe intel)
