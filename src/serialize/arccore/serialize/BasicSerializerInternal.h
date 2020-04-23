@@ -38,7 +38,7 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class BasicSerializer::Impl
+class ARCCORE_SERIALIZE_EXPORT BasicSerializer::Impl
 {
  public:
   virtual ~Impl(){}
@@ -64,7 +64,7 @@ class BasicSerializer::Impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class BasicSerializer::Impl2
+class ARCCORE_SERIALIZE_EXPORT BasicSerializer::Impl2
 {
  public:
   Impl2();

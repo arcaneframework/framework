@@ -71,7 +71,7 @@ class ARCCORE_TRACE_EXPORT TimeMetricActionBuildInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCCORE_BASE_EXPORT TimeMetricAction
+class ARCCORE_TRACE_EXPORT TimeMetricAction
 {
  public:
   TimeMetricAction()

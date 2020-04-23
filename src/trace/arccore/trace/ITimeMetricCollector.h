@@ -43,7 +43,7 @@ namespace Arccore
 /*!
  * \brief Interface gérant les statistiques sur l'exécution.
  */
-class ARCCORE_BASE_EXPORT ITimeMetricCollector
+class ARCCORE_TRACE_EXPORT ITimeMetricCollector
 {
  public:
 
