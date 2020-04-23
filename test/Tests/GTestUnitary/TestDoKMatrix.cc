@@ -7,8 +7,8 @@
 #include <alien/kernels/dok/DoKReverseIndexer.h>
 
 // For SimpleCSR convert tests
-#include <alien/kernels/dok/converters/DoKToSimpleCSRMatrixConverter.h>
-#include <alien/kernels/dok/converters/SimpleCSRToDoKMatrixConverter.h>
+#include <alien/kernels/dok/converters/to_simple_csr_matrix.h>
+#include <alien/kernels/dok/converters/from_simple_csr_matrix.h>
 #include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
 
 #include <alien/core/impl/MultiMatrixImpl.h>
