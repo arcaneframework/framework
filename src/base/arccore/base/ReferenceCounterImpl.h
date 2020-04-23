@@ -32,11 +32,18 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \file ReferenceCounterImpl.h
+ *
+ * Ce fichier ne doit être inclus que par les classes implémentations
+ * utilisant un compte de référence. Pour les déclarations, il faut utiliser
+ * le fichier 'RefDeclarations.h'
+ */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 namespace Arccore
 {
-
-// Ce fichier ne doit être inclu que pour une instantation spécifique.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -60,17 +67,28 @@ removeReference(T* t)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Implémentation thread-safe d'un compteur de référence.
+ *
+ * L'implémentation utilise un std::atomic pour conserver le nombre de
+ * références.
+ *
+ * La méthode removeReference() détruit l'instance lorsque ce compteur
+ * de référence atteint 0.
+ */
 class ReferenceCounterImpl
 {
  public:
-  ReferenceCounterImpl() {}
+
   virtual ~ReferenceCounterImpl() = default;
+
  public:
+
   void addReference()
   {
     ++m_nb_ref;
   }
+
   void removeReference()
   {
     // Décrémente et retourne la valeur d'avant.
@@ -86,8 +104,26 @@ class ReferenceCounterImpl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-//! A mettre dans la définition de la classe implémentation
+/*!
+ * \brief Macro pour définir les méthodes gérant les compteurs
+ * de référence.
+ *
+ * Cette macro s'utilise dans une classe implémentant une interface
+ * pour laquelle la macro ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS()
+ * a été utilisée. La classe implémentation doit dérivé de
+ * ReferenceCounterImpl. Par exemple:
+ *
+ * \code
+ * class MyClass
+ * : public ReferenceCounterImpl
+ * , public IMyInterface
+ * {
+ *   ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+ *  public:
+ *   void myMethod1() override;
+ * };
+ * \endcode
+ */
 #define ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS()\
  public:\
   Arccore::ReferenceCounterImpl* _internalReferenceCounter() override { return this; } \
@@ -97,8 +133,23 @@ class ReferenceCounterImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! A mettre dans le '.cc' d'une classe gérant un compteur de référence
-#define ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(class_name)      \
+/*!
+ * \brief Macro pour définir les méthodes et types une classe qui
+ * utilise un compteur de référence.
+ *
+ * Cette macro doit être utilisée pour une classe pour laquelle on
+ * a utilisé la macro ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(). Elle doit
+ * se trouver dans une seule unité de translation (un fichier '.cc' par
+ * exemple) et être utilisée dans le namespace Arccore. Par exemple:
+ *
+ * \code
+ * namespace Arccore
+ * {
+ *   ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(MyNamespace::MyClass);
+ * }
+ * \endcode
+ */
+#define ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(class_name) \
 template class ExternalReferenceCounterAccessor<class_name>
 
 /*---------------------------------------------------------------------------*/

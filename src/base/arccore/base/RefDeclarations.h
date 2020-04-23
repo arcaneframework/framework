@@ -34,6 +34,17 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*!
+ * \file RefDeclarations.h
+ *
+ * Ce fichier contient les déclarations et macros pour gérer classes
+ * utilisant les compteurs de référence. Pour l'implémentation il faut utiliser
+ * le fichier 'ReferenceCounterImpl.h'
+ */
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace Arccore
 {
 
@@ -99,7 +110,13 @@ struct RefTraitsTagId;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Accesseur des méthodes de gestion de compteurs de référence.
+ *
+ * Le classe T doit définir deux méthodes addReference() et removeReference()
+ * pour gérer les compteurs de références. removeReference() doit détruire
+ * l'instance si le compteur arrive à zéro.
+ */
 template<class T>
 class ReferenceCounterAccessor
 {
@@ -121,7 +138,29 @@ class ARCCORE_EXPORT ExternalReferenceCounterAccessor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! A mettre dans la définition de la classe interface
+/*!
+ * \brief Macro pour déclarer les méthodes virtuelles gérant les compteurs
+ * de référence.
+ *
+ * Cette macro s'utilise de la même manière que les déclarations
+ * de méthodes d'une interface. Elle permet de définir des méthodes virtuelles
+ * pure pour accèder aux informations des compteurs de référence.
+ *
+ * La classe implémentant l'interface doit utiliser la macro
+ * ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS() pour définir les
+ * méthodes virtuelles utilisées.
+ *
+ * \code
+ * class IMyInterface
+ * {
+ *   ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
+ *  public:
+ *   virtual ~IMyInterface() = default;
+ *  public:
+ *   virtual void myMethod1() = 0;
+ * };
+ * \endcode
+ */
 #define ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS() \
  public:\
   typedef Arccore::ReferenceCounterTag ReferenceCounterTagType;  \
@@ -131,7 +170,28 @@ class ARCCORE_EXPORT ExternalReferenceCounterAccessor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Macro pour déclarer qu'une classe utilise un compteur de
+ * référence.
+ *
+ * La macro doit être utilisée dans le namespace Arccore. Par exemple:
+ *
+ * \code
+ * namespace MyNamespace
+ * {
+ *   class MyClass;
+ * }
+ *
+ * namespace Arccore
+ * {
+ *   ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(MyNamespace::MyClass);
+ * }
+ * \endcode
+ *
+ * Il faudra ensuite utiliser la macro
+ * ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS() dans le fichier source pour
+ * définir les méthodes et types nécessaires
+ */
 #define ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(class_name) \
 template<> \
 struct RefTraits<class_name> \
