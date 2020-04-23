@@ -100,6 +100,52 @@ struct RefTraitsTagId;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<class T>
+class ReferenceCounterAccessor
+{
+ public:
+  static void addReference(T* t) { t->addReference(); }
+  static void removeReference(T* t) { t->removeReference(); }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class T>
+class ARCCORE_EXPORT ExternalReferenceCounterAccessor
+{
+ public:
+  static void addReference(T* t);
+  static void removeReference(T* t);
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+//! A mettre dans la définition de la classe interface
+#define ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS() \
+ public:\
+  typedef Arccore::ReferenceCounterTag ReferenceCounterTagType;  \
+  virtual Arccore::ReferenceCounterImpl* _internalReferenceCounter() =0; \
+  virtual void addReference() =0;\
+  virtual void removeReference() =0
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#define ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(class_name) \
+template<> \
+struct RefTraits<class_name> \
+{\
+  static constexpr int TagId = Arccore::REF_TAG_REFERENCE_COUNTER;\
+};\
+template<>\
+class ReferenceCounterAccessor<class_name>\
+: public ExternalReferenceCounterAccessor<class_name>\
+{}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arccore
 
 /*---------------------------------------------------------------------------*/

@@ -17,7 +17,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ITraceMng.h                                                 (C) 2000-2019 */
+/* ITraceMng.h                                                 (C) 2000-2020 */
 /*                                                                           */
 /* Gestionnaire des traces.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -29,6 +29,7 @@
 #include "arccore/base/ArrayView.h"
 #include "arccore/base/BaseTypes.h"
 #include "arccore/trace/TraceMessage.h"
+#include "arccore/base/RefDeclarations.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -163,15 +164,9 @@ class ARCCORE_TRACE_EXPORT ITraceStream
  */
 class ARCCORE_TRACE_EXPORT ITraceMng
 {
+  ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
  public:
-  typedef ReferenceCounterTag ReferenceCounterTagType;
- protected:
   virtual ~ITraceMng() = default;
- public:
-  //! Ajoute une référence sur cette instance.
-  virtual void addReference() =0;
-  //! Supprime une référence et détruit l'instance s'il n'y a plus de référence dessus.
-  virtual void removeReference() =0;
  public:
   //! Flot pour un message d'erreur
   virtual TraceMessage error() =0;

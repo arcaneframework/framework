@@ -17,18 +17,18 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConcurrencyGlobal.h                                         (C) 2000-2018 */
+/* ReferenceCounterImpl.h                                      (C) 2000-2020 */
 /*                                                                           */
-/* Définitions globales de la composante 'Concurrency' de 'Arccore'.         */
+/* Implémentations liées au gestionnaire de compteur de référence.           */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCCORE_BASE_REFERENCECOUNTERIMPL_H
+#define ARCCORE_BASE_REFERENCECOUNTERIMPL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/ReferenceCounter.h"
-#include "arccore/concurrency/ConcurrencyGlobal.h"
 
-#include "arccore/concurrency/NullThreadImplementation.h"
-#include "arccore/concurrency/SpinLock.h"
-#include "arccore/base/ReferenceCounterImpl.h"
+#include <atomic>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,38 +36,70 @@
 namespace Arccore
 {
 
-namespace
+// Ce fichier ne doit être inclu que pour une instantation spécifique.
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class T> ARCCORE_IMPORT void
+ExternalReferenceCounterAccessor<T>::
+addReference(T* t)
 {
-NullThreadImplementation global_null_thread_implementation;
-ReferenceCounter<IThreadImplementation> global_thread_implementation{&global_null_thread_implementation};
+  t->addReference();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCCORE_CONCURRENCY_EXPORT IThreadImplementation* Concurrency::
-getThreadImplementation()
+template<class T> ARCCORE_IMPORT void
+ExternalReferenceCounterAccessor<T>::
+removeReference(T* t)
 {
-  return global_thread_implementation.get();
+  t->addReference();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCCORE_CONCURRENCY_EXPORT IThreadImplementation* Concurrency::
-setThreadImplementation(IThreadImplementation* service)
+class ReferenceCounterImpl
 {
-  IThreadImplementation* old_service = global_thread_implementation.get();
-  global_thread_implementation = service;
-  if (!service)
-    global_thread_implementation = &global_null_thread_implementation;
-  return old_service;
-}
+ public:
+  ReferenceCounterImpl() {}
+  virtual ~ReferenceCounterImpl() = default;
+ public:
+  void addReference()
+  {
+    ++m_nb_ref;
+  }
+  void removeReference()
+  {
+    // Décrémente et retourne la valeur d'avant.
+    // Si elle vaut 1, cela signifie qu'on n'a plus de références
+    // sur l'objet et qu'il faut le détruire.
+    Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
+    if (v==1)
+      delete this;
+  }
+ public:
+  std::atomic<Int32> m_nb_ref = 0;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(IThreadImplementation);
+//! A mettre dans la définition de la classe implémentation
+#define ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS()\
+ public:\
+  Arccore::ReferenceCounterImpl* _internalReferenceCounter() override { return this; } \
+  void addReference() override { Arccore::ReferenceCounterImpl::addReference(); } \
+  void removeReference() override { Arccore::ReferenceCounterImpl::removeReference(); }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! A mettre dans le '.cc' d'une classe gérant un compteur de référence
+#define ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(class_name)      \
+template class ExternalReferenceCounterAccessor<class_name>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -76,3 +108,5 @@ ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(IThreadImplementation);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#endif  

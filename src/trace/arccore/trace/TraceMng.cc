@@ -35,6 +35,7 @@
 #include "arccore/base/PlatformUtils.h"
 #include "arccore/base/ReferenceCounter.h"
 #include "arccore/base/Span.h"
+#include "arccore/base/ReferenceCounterImpl.h"
 
 #include "arccore/concurrency/Mutex.h"
 
@@ -203,25 +204,20 @@ thread_local TraceMngStreamListStorage global_stream_list_storage;
  * \brief Implémentation du gestionnaire de traces.
  */
 class TraceMng
-: public ITraceMng
+: public ReferenceCounterImpl
+, public ITraceMng
 {
  public:
 
- public:
-
   TraceMng();
+
  protected:
+
   ~TraceMng() override;
 
  public:
 
-  void addReference() override { ++m_nb_ref; }
-  void removeReference() override
-  {
-    Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
-    if (v==1)
-      delete this;
-  }
+  ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
 
  public:
 	
@@ -468,7 +464,8 @@ class TraceMng
   bool m_is_error_disabled;
   bool m_is_log_disabled;
   bool m_has_color;
-  std::atomic<Int32> m_nb_ref;
+
+ private:
 
   TraceTimer m_trace_timer;
   void _writeTimeString(std::ostream& out);
@@ -552,9 +549,7 @@ TraceMng()
 , m_is_error_disabled(false)
 , m_is_log_disabled(false)
 , m_has_color(false)
-, m_nb_ref(0)
 {
-
 #if OLD
   {
     String s;
@@ -1356,6 +1351,12 @@ removeListener(ITraceMessageListener* v)
     return;
   m_listeners->erase(v);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(ITraceMng);
+ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(ITraceStream);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

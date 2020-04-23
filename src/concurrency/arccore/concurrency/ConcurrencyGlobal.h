@@ -17,7 +17,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConcurrencyGlobal.h                                         (C) 2000-2018 */
+/* ConcurrencyGlobal.h                                         (C) 2000-2020 */
 /*                                                                           */
 /* Définitions globales de la composante 'Concurrency' de 'Arccore'.         */
 /*---------------------------------------------------------------------------*/
@@ -26,7 +26,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/base/ArccoreGlobal.h"
+#include "arccore/base/RefDeclarations.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -56,6 +56,8 @@ class NullThreadBarrier;
 class ThreadImpl;
 //! Classe opaque encapsulant l'implementation d'un mutex
 class MutexImpl;
+
+ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(IThreadImplementation);
 
 namespace Concurrency
 {

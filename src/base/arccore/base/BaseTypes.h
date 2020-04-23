@@ -88,8 +88,11 @@ class FixedStackFrameArray;
 class IStackTraceService;
 template<typename T>
 class CheckedPointer;
+template<class T>
+class ReferenceCounterAccessor;
 template<typename T>
 class ReferenceCounter;
+class ReferenceCounterImpl;
 class ArgumentException;
 class IndexOutOfRangeException;
 class FatalErrorException;

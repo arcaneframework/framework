@@ -27,6 +27,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/CheckedPointer.h"
+#include "arccore/base/RefDeclarations.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -72,14 +73,14 @@ class ReferenceCounter
   : BaseClass(nullptr) { _changeValue(from.m_value); }
 
   //! Opérateur de copie
-  const ReferenceCounter<T>& operator=(const ReferenceCounter<T>& from)
+  ReferenceCounter<T>& operator=(const ReferenceCounter<T>& from)
   {
     _changeValue(from.m_value);
     return (*this);
   }
 
   //! Affecte à l'instance la value \a new_value
-  const ReferenceCounter<T>& operator=(T* new_value)
+  ReferenceCounter<T>& operator=(T* new_value)
   {
     _changeValue(new_value);
     return (*this);
@@ -94,7 +95,7 @@ class ReferenceCounter
   void _removeRef()
   {
     if (m_value)
-      m_value->removeReference();
+      ReferenceCounterAccessor<T>::removeReference(m_value);
   }
   //! Change l'objet référencé en \a new_value
   void _changeValue(T* new_value)
@@ -104,7 +105,7 @@ class ReferenceCounter
     // Toujours ajouter avant pour le cas où la nouvelle valeur
     // et l'ancienne seraient issues de la même instance.
     if (new_value)
-      new_value->addReference();
+      ReferenceCounterAccessor<T>::addReference(new_value);
     _removeRef();
     m_value = new_value;
   }
