@@ -56,6 +56,10 @@ class MpiSerializeMessageList::_SortMessages
   {
     return compare(pm1,pm2);
   }
+  // Note: avec la version 16.5.3 (avril 2020) de VisualStudio, ce
+  // comparateur génère une exception en mode débug. Cela signifie qu'il
+  // n'est pas cohérent.
+  // TODO: corriger le problème
   static bool compare(const ISerializeMessage* pm1,const ISerializeMessage* pm2)
   {
     MessageRank dest_p1 = pm1->destination();
@@ -131,7 +135,10 @@ processPendingMessages()
   // - lorsque deux processeurs communiquent, c'est celui dont le rang est
   // le plus faible qui envoie ces messages d'abord.
   ITraceMng* msg = m_trace;
-  std::stable_sort(std::begin(m_messages_to_process),std::end(m_messages_to_process),_SortMessages());
+  // NOTE (avril 2020): n'appelle plus le tri car il semble que l'opérateur
+  // de comparaison ne soit pas cohérent. De plus, il n'est normalement
+  // plus nécessaire de faire ce tri car tout est non bloquant.
+  //std::stable_sort(std::begin(m_messages_to_process),std::end(m_messages_to_process),_SortMessages());
   for( Integer i=0, is=m_messages_to_process.size(); i<is; ++i ){
     ISerializeMessage* pmsg = m_messages_to_process[i]->message();
     msg->debug() << "Sorted message " << i
