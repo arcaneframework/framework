@@ -129,6 +129,7 @@ if (NOT DEFINED ARCCORE_WANT_TEST)
 endif()
 
 if (ARCCORE_WANT_TEST)
+  enable_testing()
   find_package(GTest)
   if (GTEST_FOUND)
     include(GoogleTest)
