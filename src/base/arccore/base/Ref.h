@@ -58,12 +58,31 @@ namespace Internal
 template<typename InstanceType>
 class ReferenceCounterWrapper
 {
+  //! Vérifie que la classe 'InstanceType' a bien un typedef sur ReferenceCounterTag (\sa Ref)
+  inline static void _checkHasReferenceCounterTag()
+  {
+    static_assert(std::is_same_v<typename InstanceType::ReferenceCounterTagType,ReferenceCounterTag>,"Bad tag");
+  }
  public:
   template<typename U>
   ReferenceCounterWrapper(InstanceType* ptr,U&& uref)
   : m_instance(ptr)
   {
     ARCCORE_UNUSED(uref);
+    _checkHasReferenceCounterTag();
+ }
+  explicit ReferenceCounterWrapper(InstanceType* ptr)
+  : m_instance(ptr)
+  {
+    _checkHasReferenceCounterTag();
+  }
+  //! Autorise à convertir si 'T*' et 'InstanceType*' sont convertibles
+  template<typename T,
+           typename X = typename std::is_convertible<T*,InstanceType*>::type>
+	explicit ReferenceCounterWrapper(const ReferenceCounterWrapper<T>& r)
+  : m_instance(r.get())
+  {
+    _checkHasReferenceCounterTag();
   }
   ReferenceCounterWrapper() = default;
  public:
@@ -81,6 +100,7 @@ template<typename InstanceType>
 struct RefTraitsTagId<InstanceType,REF_TAG_SHARED_PTR>
 {
   typedef std::shared_ptr<InstanceType> ImplType;
+  static constexpr int RefType = REF_TAG_SHARED_PTR;
 };
 
 //! Spécialisation pour indiquer qu'on utilise l'implémentation 'ReferenceCounter'
@@ -88,6 +108,7 @@ template<typename InstanceType>
 struct RefTraitsTagId<InstanceType,REF_TAG_REFERENCE_COUNTER>
 {
   typedef Internal::ReferenceCounterWrapper<InstanceType> ImplType;
+  static constexpr int RefType = REF_TAG_REFERENCE_COUNTER;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -115,7 +136,14 @@ template<typename InstanceType,int ImplTagId>
 class Ref
 : public RefBase
 {
+ public:
+  typedef Ref<InstanceType,ImplTagId> ThatClass;
   typedef typename RefTraitsTagId<InstanceType,ImplTagId>::ImplType ImplType;
+ private:
+
+  template<typename... _Args>
+	using _IsRefConstructible = typename std::enable_if<std::is_constructible<ImplType, _Args...>::value>::type;
+
   using RefBase::DeleterBase;
   class Deleter : DeleterBase
   {
@@ -137,12 +165,23 @@ class Ref
     bool m_no_destroy;
   };
  public:
-  typedef Ref<InstanceType,ImplTagId> ThatClass;
+  static constexpr int RefType = RefTraitsTagId<InstanceType,ImplTagId>::RefType;
  private:
   explicit Ref(InstanceType* t) : m_instance(t,Deleter(nullptr)){}
   Ref(InstanceType* t,Internal::ExternalRef handle) : m_instance(t,Deleter(handle)){}
   Ref(InstanceType* t,bool no_destroy) : m_instance(t,Deleter(nullptr,no_destroy)){}
+ private:
+  Ref(ImplType&& t) : m_instance(t) {}
  public:
+  /*!
+   * \brief Construit une référence issue d'une autre référence sur un type compatible.
+   *
+   * La conversion est autorisée si on peut construire une instance de 'ImplType'
+   * à partir de celle de celle de Ref<T>::ImplType.
+   */
+  template<typename T, typename = _IsRefConstructible<typename Ref<T>::ImplType> >
+	Ref(const Ref<T>& rhs) noexcept
+  : m_instance(rhs._internalInstance()){}
   Ref() = default;
   Ref(const ThatClass& rhs) = default;
   ThatClass& operator=(const ThatClass& rhs) = default;
@@ -161,6 +200,14 @@ class Ref
   static ThatClass create(InstanceType* t)
   {
     return ThatClass(t);
+  }
+
+  template<typename PointerType, typename... Args>
+  static inline Ref<InstanceType>
+  createRef(Args&&... args)
+  {
+    PointerType* pt = new PointerType(std::forward<Args>(args)...);
+    return Ref<InstanceType>(pt);
   }
 
   /*!
@@ -202,8 +249,8 @@ class Ref
     m_instance.reset();
     return t;
   }
+  const ImplType& _internalInstance() const { return m_instance; }
  private:
-
   ImplType m_instance;
 };
 
@@ -245,6 +292,31 @@ inline bool operator!(const Ref<InstanceType,TagId>& a)
  */
 template<typename InstanceType> auto
 makeRef(InstanceType* t) -> Ref<InstanceType> 
+{
+  return Ref<InstanceType>::create(t);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Récupère une référence sur le pointeur \a t.
+ *
+ * Cette méthode n'est disponible que si la classe InstanceType utilise un
+ * compteur de réference (ImplTagId==REF_TAG_REFERENCE_COUNTER).
+ *
+ * \code
+ * class A {};
+ * class B : public A {};
+ * Ref<B> rb = ...;
+ * B* b = rb.get();
+ * Ref<A> ra = makeRefFromInstance<A>(b);
+ * \endcode
+ */
+template<typename InstanceType,
+         typename InstanceType2,
+         typename std::enable_if_t<Ref<InstanceType>::RefType,int> = REF_TAG_REFERENCE_COUNTER >
+inline Ref<InstanceType>
+makeRefFromInstance(InstanceType2* t)
 {
   return Ref<InstanceType>::create(t);
 }
