@@ -62,7 +62,7 @@ template<class T> ARCCORE_IMPORT void
 ExternalReferenceCounterAccessor<T>::
 removeReference(T* t)
 {
-  t->addReference();
+  t->removeReference();
 }
 
 /*---------------------------------------------------------------------------*/
