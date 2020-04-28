@@ -1,0 +1,128 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2020 IFPEN-CEA
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* MessagePassingGlobal.h                                      (C) 2000-2020 */
+/*                                                                           */
+/* Définitions globales de la composante 'MessagePassing' de 'Arccore'.      */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCCORE_MESSAGEPASSING_MESSAGEPASSINGGLOBAL_H
+#define ARCCORE_MESSAGEPASSING_MESSAGEPASSINGGLOBAL_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arccore/base/ArccoreGlobal.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#if defined(ARCCORE_COMPONENT_arccore_message_passing)
+#define ARCCORE_MESSAGEPASSING_EXPORT ARCCORE_EXPORT
+#define ARCCORE_MESSAGEPASSING_EXTERN_TPL
+#else
+#define ARCCORE_MESSAGEPASSING_EXPORT ARCCORE_IMPORT
+#define ARCCORE_MESSAGEPASSING_EXTERN_TPL extern
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arccore
+{
+class ISerializer;
+class ITimeMetricCollector;
+}
+
+namespace Arccore::MessagePassing
+{
+//! Numéro correspondant à un rang nul
+static const Int32 A_NULL_RANK = static_cast<Int32>(-1);
+
+//! Numéro correspondant à un rang nul
+static const Int32 A_NULL_TAG_VALUE = static_cast<Int32>(-1);
+
+class Communicator;
+class IRequestCreator;
+class IRequestList;
+class ISerializeMessage;
+class ISerializeMessageList;
+class ISerializeDispatcher;
+class Request;
+class MessageId;
+class MessageTag;
+class MessageRank;
+class PointToPointMessageInfo;
+class IStat;
+class IMessagePassingMng;
+class MessagePassingMng;
+class IDispatchers;
+class Dispatchers;
+template<class DataType>
+class ITypeDispatcher;
+
+/*!
+ * \brief Types des réductions supportées.
+ */
+enum eReduceType
+{
+  ReduceMin, //!< Minimum des valeurs
+  ReduceMax, //!< Maximum des valeurs
+  ReduceSum  //!< Somme des valeurs
+};
+
+/*!
+ * \brief Type d'attente.
+ */
+enum eWaitType
+{
+  WaitAll = 0, //! Attend que tous les messages de la liste soient traités
+  WaitSome = 1, //! Attend que au moins un message de la liste soit traité
+  TestSome = 2, //! Traite uniquement les messages qui peuvent l'être sans attendre.
+  //! \deprecated Utiliser TestSome à la place
+  WaitSomeNonBlocking = 2
+};
+/*!
+ * \brief Type indiquant si un message est bloquant ou non.
+ */
+enum eBlockingType
+{
+  Blocking = 0,
+  NonBlocking
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Type de message point à point.
+ */
+enum ePointToPointMessageType
+{
+  MsgSend = 0,
+  MsgReceive
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arccore::MessagePassing
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif  
+

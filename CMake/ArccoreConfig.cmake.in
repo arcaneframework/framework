@@ -1,0 +1,40 @@
+set(Arccore_VERSION @Arccore_VERSION@)
+
+@PACKAGE_INIT@
+
+include(${PACKAGE_PREFIX_DIR}/@config_install_dir@/@ARCCORE_EXPORT_TARGET@.cmake)
+
+include(CMakeFindDependencyMacro)
+
+if(NOT ARCCORE_NO_FIND_DEPENDENCY)
+  if (@ARCCORE_USE_MPI@)
+    find_dependency(MPI)
+  endif()
+  find_dependency(Glib)
+endif()
+
+get_target_property(_AFULL @namespace@arccore_full INTERFACE_LINK_LIBRARIES)
+
+# Parcours l'ensemble des cibles de cette bibliothèque interface
+# et définit une variable 'Arcane_INCLUDE_DIRS' qui
+# servira pour le find_packages.
+# NOTE: on est obligé de déterminer cette liste dans ce fichier
+# car si on utilise les 'generator-expression' de cmake, la valeurs
+# des variables dépend de la configuration.
+foreach(package ${_AFULL})
+  if(TARGET ${package})
+    get_target_property(_AINC ${package} INTERFACE_INCLUDE_DIRECTORIES)
+    if (_AINC)
+      list(APPEND _AINCFULL ${_AINC})
+    endif (_AINC)
+  endif(TARGET ${package})
+endforeach(package ${_AFULL})
+list(REMOVE_DUPLICATES _AINCFULL)
+
+
+set(Arccore_LIBRARIES @namespace@arccore_full)
+set(Arccore_INCLUDE_DIRS ${_AINCFULL})
+
+check_required_components(Arccore)
+
+set(Arccore_FOUND YES)
