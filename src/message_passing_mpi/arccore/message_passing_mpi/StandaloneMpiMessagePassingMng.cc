@@ -141,7 +141,7 @@ create(MPI_Comm mpi_comm, bool clean_comm)
   _createAndSetDispatcher<double>(dsp,mpm,adapter);
   _createAndSetDispatcher<long double>(dsp,mpm,adapter);
 
-  dsp->setDispatcher(new MpiControlDispatcher(mpm,adapter));
+  dsp->setDispatcher(new MpiControlDispatcher(adapter));
   dsp->setDispatcher(new MpiSerializeDispatcher(adapter));
 
   return mpm;

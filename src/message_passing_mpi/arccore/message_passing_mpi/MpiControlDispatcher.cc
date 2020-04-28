@@ -38,9 +38,8 @@ namespace Arccore::MessagePassing::Mpi
 /*---------------------------------------------------------------------------*/
 
 MpiControlDispatcher::
-MpiControlDispatcher(IMessagePassingMng* parallel_mng, MpiAdapter* adapter)
-: m_parallel_mng(parallel_mng)
-, m_adapter(adapter)
+MpiControlDispatcher(MpiAdapter* adapter)
+: m_adapter(adapter)
 {
 }
 

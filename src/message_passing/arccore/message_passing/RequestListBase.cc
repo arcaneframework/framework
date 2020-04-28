@@ -49,7 +49,6 @@ clear()
 void RequestListBase::
 removeDoneRequests()
 {
-  Integer n = m_requests.size();
   // TODO: optimiser cela en supprimant plusieurs valeurs d'un coup
   for( Integer i=0, n=m_requests.size(); i<n; ++i ){
     if (m_requests_done[i]){

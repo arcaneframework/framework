@@ -39,7 +39,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiControlDispatcher
 : public IControlDispatcher
 {
  public:
-  MpiControlDispatcher(IMessagePassingMng* parallel_mng, MpiAdapter* adapter);
+  MpiControlDispatcher(MpiAdapter* adapter);
 
  public:
   void waitAllRequests(ArrayView<Request> requests) override;
@@ -54,7 +54,6 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiControlDispatcher
   }
 
  private:
-  IMessagePassingMng* m_parallel_mng;
   MpiAdapter* m_adapter;
 };
 
