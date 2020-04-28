@@ -40,6 +40,7 @@ set(SOURCES
   PlatformUtils.h
   PlatformUtils.cc
   ReferenceCounter.h
+  ReferenceCounterImpl.h
   Ref.h
   RefDeclarations.h
   Ref.cc
