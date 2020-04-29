@@ -1,0 +1,24 @@
+*~
+
+Debug*
+debug*
+Release*
+release*
+
+!build-system
+
+.cproject
+.project
+.settings
+
+*#*
+/build_debug/
+
+*.orig
+
+# clion
+.idea
+cmake-build*
+
+# plugins
+plugins
