@@ -162,7 +162,7 @@ struct ItemView {
 
 struct ItemRangeView{ // todo revoir le nom
   ItemView operator*() const {return ItemView{};}
-  bool operator==(const ItemRangeView& item_iterator) {return false;}
+  bool operator==(const ItemRangeView& item_iterator) {return true;}
   bool operator!=(const ItemRangeView& item_iterator) {return !(*this == item_iterator);}
   ItemRangeView& operator++() {return *this;}
   ItemRangeView operator++(int) {auto retval = *this; ++(*this); return retval;}
