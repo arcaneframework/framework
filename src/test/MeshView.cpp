@@ -170,18 +170,23 @@ struct ItemRangeView{ // todo revoir le nom
 };
 
 struct GroupView{
+  std::string name;
   Neo::utils::ConstArrayView<Neo::utils::Int32> item_lids;
   ItemRangeView enumerator() const {return ItemRangeView{};}
   ItemRangeView begin() const {return ItemRangeView{};}
   ItemRangeView end() const {return ItemRangeView{};}
+  int size() const { return item_lids.size();}
 };
 
 struct FamilyView {
+  std::string name;
+  Neo::ItemKind item_kind = Neo::ItemKind::IK_None;
+  Neo::utils::Int32 max_local_id = Neo::utils::NULL_ITEM_LID;
+  GroupView all_items;
   Neo::utils::ConstArrayView<Neo::utils::Int32> item_lids;
   Neo::utils::ConstArrayView<Neo::utils::Int64> item_uids;
-  // Neo::utils::ConstArrayView<Neo::ItemGroup> item_groups; // todo Neo::Group
+  std::map<std::string, GroupView> item_groups;
   int nbItem() {return item_lids.size();}
-  GroupView allItems() {return GroupView{item_lids};}
 };
 
 struct MeshView{
@@ -191,9 +196,24 @@ struct MeshView{
   FamilyView edge_family;
   FamilyView node_family;
   std::map<std::string, FamilyView> dof_families;
-  GroupView const& allCells() const {}
+  GroupView const& allCells() const {return cell_family.all_items;}
 };
 
+class MeshViewBuilder
+{
+public:
+  virtual MeshView build() = 0;
+};
+
+struct NeoMeshViewBuilder : public MeshViewBuilder
+{
+  Neo::Mesh const & m_neo_mesh;
+  MeshView build() override {
+    auto & cell_family = m_neo_mesh.getFamily(Neo::ItemKind::IK_Cell,"CellFamily");
+    auto & face_family = m_neo_mesh.getFamily(Neo::ItemKind::IK_Face,"FaceFamily");
+//    auto cell_lids = Neo::utils::ConstArrayView<Neo::utils::Int32>{cell_family._lidProp().values().};
+  }
+};
 
 }
 
@@ -227,5 +247,38 @@ TEST(MeshViewTest,MeshInfoTest)
   // Nombre d'éléments de la famille de dof "DofFamily"
   std::cout << view.dof_families["DofFamily"].nbItem() << std::endl;
 }
+
+TEST(MeshViewTest,MeshFamilyInfoTest)
+{
+  auto mesh = Neo::Mesh{"MeshForView"};
+  tools::MeshView view {mesh.m_name};
+  auto & cell_family = view.cell_family;
+  std::cout << cell_family.name << " ";
+  std::cout << Neo::utils::itemKindName(cell_family.item_kind) << " ";
+  std::cout << cell_family.nbItem() << " ";
+  std::cout << cell_family.max_local_id << std::endl;
+  // iterate all items group
+  for (auto icell : cell_family.all_items) {
+    std::cout << " Cell in family" << std::endl;
+  }
+  // iterate all family groups
+  for (auto [name, group] : cell_family.item_groups) {
+    std::cout << " Cell family group " << name
+              << " with size " << group.size()
+              << std::endl;
+  }
+  // Print lids
+  for (auto lid : cell_family.item_lids) {
+    std::cout << " cell lid " << std::endl;
+  }
+  // Print uids
+  for (auto uid : cell_family.item_uids) {
+    std::cout << " cell uid " << std::endl;
+  }
+}
+
+
+
+
 
 
