@@ -73,7 +73,7 @@ struct ConstArrayView {
 static constexpr utils::Int32 NULL_ITEM_LID = -1;
 
 
-std::string itemKindName(ItemKind item_kind){
+inline std::string itemKindName(ItemKind item_kind){
   switch (item_kind) {
   case ItemKind::IK_Node :
     return "IK_Node";
