@@ -154,8 +154,26 @@ namespace utils{
 
 namespace tools{
 
+struct ItemView {
+  Neo::utils::Int32 localId() const {return -1;}
+  Neo::utils::Int64 uniqueId() const {return -1;}
+  int owner() const {return -1;}
+};
+
+struct ItemRangeView{ // todo revoir le nom
+  ItemView operator*() const {return ItemView{};}
+  bool operator==(const ItemRangeView& item_iterator) {return false;}
+  bool operator!=(const ItemRangeView& item_iterator) {return !(*this == item_iterator);}
+  ItemRangeView& operator++() {return *this;}
+  ItemRangeView operator++(int) {auto retval = *this; ++(*this); return retval;}
+
+};
+
 struct GroupView{
   Neo::utils::ConstArrayView<Neo::utils::Int32> item_lids;
+  ItemRangeView enumerator() const {return ItemRangeView{};}
+  ItemRangeView begin() const {return ItemRangeView{};}
+  ItemRangeView end() const {return ItemRangeView{};}
 };
 
 struct FamilyView {
@@ -178,6 +196,20 @@ struct MeshView{
 
 
 }
+
+TEST(MeshViewTest,MeshIterationTest)
+{
+  auto mesh = Neo::Mesh{"MeshForView"};
+  utils::fillMesh(mesh);
+  tools::MeshView view{mesh.m_name};
+  for (auto icell : view.allCells())
+  {
+    std::cout << icell.localId() << std::endl;
+    std::cout << icell.uniqueId() << std::endl;
+    std::cout << icell.owner() << std::endl;
+  }
+}
+
 
 TEST(MeshViewTest,MeshInfoTest)
 {
