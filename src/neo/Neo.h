@@ -71,6 +71,32 @@ struct ConstArrayView {
 };
 
 static constexpr utils::Int32 NULL_ITEM_LID = -1;
+
+
+std::string itemKindName(ItemKind item_kind){
+  switch (item_kind) {
+  case ItemKind::IK_Node :
+    return "IK_Node";
+    break;
+  case ItemKind::IK_Edge :
+    return "IK_Edge";
+    break;
+  case ItemKind::IK_Face :
+    return "IK_Face";
+    break;
+  case ItemKind::IK_Cell :
+    return "IK_Cell";
+    break;
+  case ItemKind::IK_Dof :
+    return "IK_Dof";
+    break;
+  case ItemKind::IK_None :
+    return "IK_None";
+    break;
+  }
+}
+
+
 }// end namespace utils
 
 inline
