@@ -33,7 +33,7 @@
 namespace Neo {
 
 enum class ItemKind {
-  IK_Node, IK_Edge, IK_Face, IK_Cell, IK_Dof, IK_None
+  IK_None, IK_Node, IK_Edge, IK_Face, IK_Cell, IK_Dof
 };
 
 
