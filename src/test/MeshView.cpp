@@ -178,7 +178,10 @@ struct GroupView{
   int size() const { return item_lids.size();}
 };
 
+struct MeshView;
+
 struct FamilyView {
+  MeshView const& mesh;
   std::string name;
   Neo::ItemKind item_kind = Neo::ItemKind::IK_None;
   Neo::utils::Int32 max_local_id = Neo::utils::NULL_ITEM_LID;
@@ -186,15 +189,15 @@ struct FamilyView {
   Neo::utils::ConstArrayView<Neo::utils::Int32> item_lids;
   Neo::utils::ConstArrayView<Neo::utils::Int64> item_uids;
   std::map<std::string, GroupView> item_groups;
-  int nbItem() {return item_lids.size();}
+  int nbItem() const {return item_lids.size();}
 };
 
 struct MeshView{
   const std::string& name;
-  FamilyView cell_family;
-  FamilyView face_family;
-  FamilyView edge_family;
-  FamilyView node_family;
+  FamilyView cell_family = FamilyView{*this};
+  FamilyView face_family = FamilyView{*this};
+  FamilyView edge_family = FamilyView{*this};
+  FamilyView node_family = FamilyView{*this};
   std::map<std::string, FamilyView> dof_families;
   GroupView const& allCells() const {return cell_family.all_items;}
 };
@@ -245,7 +248,8 @@ TEST(MeshViewTest,MeshInfoTest)
   // Nombre de mailles du maillage
   std::cout << view.cell_family.nbItem() << std::endl;
   // Nombre d'éléments de la famille de dof "DofFamily"
-  std::cout << view.dof_families["DofFamily"].nbItem() << std::endl;
+//  view.dof_families["DoFFamily"] = tools::FamilyView{view,"DoFFamily"};
+//  std::cout << view.dof_families["DofFamily"].nbItem() << std::endl;
 }
 
 TEST(MeshViewTest,MeshFamilyInfoTest)
@@ -254,6 +258,7 @@ TEST(MeshViewTest,MeshFamilyInfoTest)
   tools::MeshView view {mesh.m_name};
   auto & cell_family = view.cell_family;
   std::cout << cell_family.name << " ";
+  std::cout << " from mesh " << cell_family.mesh.name << " ";
   std::cout << Neo::utils::itemKindName(cell_family.item_kind) << " ";
   std::cout << cell_family.nbItem() << " ";
   std::cout << cell_family.max_local_id << std::endl;
