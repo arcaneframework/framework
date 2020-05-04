@@ -169,9 +169,14 @@ struct ItemRangeView{ // todo revoir le nom
 
 };
 
+struct FamilyView;
+
 struct GroupView{
+  FamilyView const& family;
   std::string name;
+  Neo::ItemKind item_kind = Neo::ItemKind::IK_None;
   Neo::utils::ConstArrayView<Neo::utils::Int32> item_lids;
+  Neo::utils::ConstArrayView<int> item_owners;
   ItemRangeView enumerator() const {return ItemRangeView{};}
   ItemRangeView begin() const {return ItemRangeView{};}
   ItemRangeView end() const {return ItemRangeView{};}
@@ -185,7 +190,7 @@ struct FamilyView {
   std::string name;
   Neo::ItemKind item_kind = Neo::ItemKind::IK_None;
   Neo::utils::Int32 max_local_id = Neo::utils::NULL_ITEM_LID;
-  GroupView all_items;
+  GroupView all_items = GroupView{*this};
   Neo::utils::ConstArrayView<Neo::utils::Int32> item_lids;
   Neo::utils::ConstArrayView<Neo::utils::Int64> item_uids;
   std::map<std::string, GroupView> item_groups;
@@ -193,7 +198,7 @@ struct FamilyView {
 };
 
 struct MeshView{
-  const std::string& name;
+  std::string const name;
   FamilyView cell_family = FamilyView{*this};
   FamilyView face_family = FamilyView{*this};
   FamilyView edge_family = FamilyView{*this};
@@ -282,7 +287,22 @@ TEST(MeshViewTest,MeshFamilyInfoTest)
   }
 }
 
-
+TEST(MeshViewTest,MeshGroupInfoTest)
+{
+  tools::MeshView mesh_view{"MeshView4GroupTest"};
+  tools::FamilyView family_view{mesh_view,"FamilyView4GroupTest"};
+  tools::GroupView group_view{family_view};
+  std::cout << "group name " << group_view.name;
+  std::cout << " with size " << group_view.size();
+  if (group_view.size() == 0) std::cout << " empty group";
+  std::cout << " item kind " << Neo::utils::itemKindName(group_view.item_kind);
+  std::cout << " from family " << group_view.family.name << " from mesh " << group_view.family.mesh.name;
+  // owners : dans la famille également ?
+  auto current_rank = 0;
+  for (auto item : group_view) {
+    if (group_view.item_owners[item.localId()] == current_rank) std::cout << "Item is own " << std::endl;
+  }
+}
 
 
 
