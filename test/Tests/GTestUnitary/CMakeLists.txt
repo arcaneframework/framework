@@ -49,6 +49,11 @@ linkLibraries(gtest.unitary
         Alien::alien_core
         )
 
+if (TARGET arcane_core)
+else ()
+    linkLibraries(gtest.unitary alien_strong_options)
+endif ()
+
 target_include_directories(gtest.unitary
         PUBLIC ${PROJECT_SOURCE_DIR}/test)
 

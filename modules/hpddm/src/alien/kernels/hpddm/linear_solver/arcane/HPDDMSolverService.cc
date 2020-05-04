@@ -12,16 +12,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include <alien/utils/Precomp.h>
 #include <alien/AlienHPDDMPrecomp.h>
 
 #include <alien/kernels/hpddm/HPDDMPrecomp.h>
-#include <alien/utils/Precomp.h>
 #include <alien/kernels/hpddm/HPDDMBackEnd.h>
 #include <alien/core/backend/LinearSolver.h>
-#include <alien/kernels/hpddm/linear_solver/HPDDMInternalSolver.h>
 #include <alien/kernels/hpddm/linear_solver/HPDDMOptionTypes.h>
 #include <ALIEN/axl/HPDDMSolver_axl.h>
 
+#include <alien/kernels/hpddm/linear_solver/HPDDMInternalSolver.h>
 #include <ALIEN/axl/HPDDMSolver_StrongOptions.h>
 
 namespace Alien {

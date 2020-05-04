@@ -125,7 +125,7 @@ cmake -DCMAKE_BUILD_TYPE=Release
       -DArccon_DIR=${Arccon_DIR}/share/cmake/Arccon 
       -DArccore_DIR=${Arccore_DIR}/lib/cmake/Arccore
       -DAxlstar_DIR=${Axlstar_DIR}/share/cmake/Axlstar
-      -DALIEN_DIR=${Alien_DIR}/lib/cmake/ALIEN      
+      -DAlien_DIR=${Alien_DIR}/lib/cmake/Alien      
       -DArcane_DIR=${Arcane_DIR}/lib/cmake/Arcane
       -DPLUGIN_DIR=${Plugin_DIR} ..
 make -j 8 install

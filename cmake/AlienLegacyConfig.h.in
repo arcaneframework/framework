@@ -128,7 +128,7 @@
 #cmakedefine ALIEN_USE_HPDDM
 
 #ifndef ALIEN_USE_ARCANE
-#include "ALIEN/ServiceOptions.h"
+#include "alien/ServiceOptions.h"
 #endif
 
 #include <arccore/base/String.h>
