@@ -22,6 +22,22 @@ TEST(NeoUtils,test_array_view){
   EXPECT_TRUE(std::equal(vec2.begin(),vec2.end(),view.begin()));
   EXPECT_TRUE(std::equal(vec3.begin(),vec3.end(),view.begin()));
   EXPECT_TRUE(std::equal(vec4.begin(),vec4.end(),constview.begin()));
+  std::vector<int> dim2_vec{0,1,2,3,4,5};
+  // build a dim2 view from vector
+  auto dim1_size = 2;
+  auto dim2_size = 3;
+  Neo::utils::Array2View<int> dim2_view{dim1_size,dim2_size,dim2_vec.data()};
+  Neo::utils::ConstArray2View<int> dim2_const_view{dim2_size,dim1_size,dim2_vec.data()};
+  for (auto i = 0; i < dim1_size; ++i) {
+    for (auto j = 0; j < dim2_size; ++j) {
+      EXPECT_EQ(dim2_view[i][j], dim2_vec[i*dim2_size+j]);
+      EXPECT_EQ(dim2_const_view[j][i], dim2_vec[j*dim1_size+i]);
+    }
+  }
+  // Copy all Array2View data into a 1D vector
+  std::vector<int> dim2_view_vector_copy{dim2_view.copy()};
+  std::vector<int> dim2_const_view_vector_copy{dim2_const_view.copy()};
+  EXPECT_TRUE(std::equal(dim2_vec.begin(),dim2_vec.end(),dim2_const_view_vector_copy.begin()));
 }
 
 TEST(NeoTestItemRange,test_item_range){
