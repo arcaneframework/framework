@@ -12,7 +12,7 @@ include_directories(${GTEST_INCLUDE_DIRS})
 find_package(Xdmf QUIET)
 
 add_executable(Neo.tests
-        test/NeoBaseTest.cpp neo/Neo.h test/NeoEvolutiveMeshTest.cpp test/NeoPolyhedralMeshTest.cpp)
+        test/NeoBaseTest.cpp neo/Neo.h test/NeoEvolutiveMeshTest.cpp test/NeoPolyhedralMeshTest.cpp test/MeshView.cpp)
 
 target_link_libraries(Neo.tests GTest::GTest GTest::Main)
 
