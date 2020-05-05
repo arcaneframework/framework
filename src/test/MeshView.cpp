@@ -166,7 +166,6 @@ struct ItemRangeView{ // todo revoir le nom
   bool operator!=(const ItemRangeView& item_iterator) {return !(*this == item_iterator);}
   ItemRangeView& operator++() {return *this;}
   ItemRangeView operator++(int) {auto retval = *this; ++(*this); return retval;}
-
 };
 
 struct FamilyView;
@@ -181,6 +180,10 @@ struct GroupView{
   ItemRangeView begin() const {return ItemRangeView{};}
   ItemRangeView end() const {return ItemRangeView{};}
   int size() const { return item_lids.size();}
+  ItemRangeView nodeGroup() const { return ItemRangeView{};}
+  ItemRangeView edgeGroup() const {return ItemRangeView{};}
+  ItemRangeView faceGroup() const {return ItemRangeView{};}
+  ItemRangeView cellGroup() const {return ItemRangeView{};}
 };
 
 struct MeshView;
@@ -194,6 +197,12 @@ struct FamilyView {
   Neo::utils::ConstArrayView<Neo::utils::Int32> item_lids;
   Neo::utils::ConstArrayView<Neo::utils::Int64> item_uids;
   std::map<std::string, GroupView> item_groups;
+  // Connectivities
+  Neo::utils::ConstArray2View<Neo::utils::Int32> nodes;
+  Neo::utils::ConstArray2View<Neo::utils::Int32> edges;
+  Neo::utils::ConstArray2View<Neo::utils::Int32> faces;
+  Neo::utils::ConstArray2View<Neo::utils::Int32> cells;
+  std::map<std::string,Neo::utils::ConstArray2View<Neo::utils::Int32>> connectivities;
   int nbItem() const {return item_lids.size();}
 };
 
@@ -304,6 +313,18 @@ TEST(MeshViewTest,MeshGroupInfoTest)
   }
 }
 
-
+TEST(MeshViewTest,MeshConnectivityInfoTest)
+{
+  // Item Connectivity
+  tools::MeshView mesh_view{"MeshView4ConnectivityTest"};
+  for (auto icell : mesh_view.cell_family.all_items) {
+      std::cout << "cell lid " << icell.localId() << " connected with nodes : " << std::endl;
+    for (auto inode : mesh_view.cell_family.nodes[icell.localId()]) {
+      std::cout << " node lid " << inode;
+    }
+  }
+  // Group Connectivity
+  auto face_nodes = mesh_view.face_family.all_items.nodeGroup();
+}
 
 
