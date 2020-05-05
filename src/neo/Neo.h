@@ -753,11 +753,11 @@ struct NoDepsDualOutAlgoHandler : public IAlgorithm {
   }
 };
 
-class Mesh;
+class MeshBase;
 
 class ValidMeshState{
   ValidMeshState() {}
-  friend class Mesh;
+  friend class MeshBase;
 };
 
 
@@ -769,7 +769,7 @@ struct AddedItemRange{
   ItemRange new_items;
 };
 
-class Mesh {
+class MeshBase {
 public:
   Family& addFamily(ItemKind ik, std::string&& name) {
     std::cout << "Add Family " << name << " in mesh " << m_name << std::endl;

@@ -43,14 +43,14 @@ namespace StaticMesh {
   static const std::string face_family_name{"FaceFamily"};
   static const std::string node_family_name{"NodeFamily"};
 
-  Neo::Family& addFamily(Neo::Mesh& mesh, Neo::ItemKind item_kind, std::string family_name)
+  Neo::Family& addFamily(Neo::MeshBase & mesh, Neo::ItemKind item_kind, std::string family_name)
   {
     auto& cell_family = mesh.addFamily(item_kind, std::move(family_name));
     cell_family.addProperty<Neo::utils::Int64>(family_name + "_uids");
     return cell_family;
   }
 
-  void addItems(Neo::Mesh& mesh, Neo::Family& family, std::vector<Neo::utils::Int64> const& uids, Neo::AddedItemRange& added_item_range)
+  void addItems(Neo::MeshBase & mesh, Neo::Family& family, std::vector<Neo::utils::Int64> const& uids, Neo::AddedItemRange& added_item_range)
   {
     auto& added_items = added_item_range.new_items;
     // Add items
@@ -88,7 +88,7 @@ namespace StaticMesh {
   }
 
   // todo same interface with nb_connected_item_per_items as an array
-  void addConnectivity(Neo::Mesh &mesh, Neo::Family &source_family,
+  void addConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
                        Neo::ItemRange &source_items,
                        Neo::Family& target_family,
                        std::vector<size_t>&& nb_connected_item_per_items,
@@ -122,7 +122,7 @@ namespace StaticMesh {
         });
   }
 
-  void addConnectivity(Neo::Mesh &mesh, Neo::Family &source_family,
+  void addConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
                        Neo::AddedItemRange &source_items,
                        Neo::Family& target_family,
                        std::vector<size_t>&& nb_connected_item_per_items,
@@ -132,7 +132,7 @@ namespace StaticMesh {
                     std::move(nb_connected_item_per_items), connected_item_uids);
   }
 
-  void addConnectivityOrientationCheck(Neo::Mesh &mesh, Neo::Family& source_family,
+  void addConnectivityOrientationCheck(Neo::MeshBase &mesh, Neo::Family& source_family,
                                        Neo::Family const& target_family)
   {
     std::string orientation_name =
@@ -167,7 +167,7 @@ namespace StaticMesh {
     );
   }
 
-  void addConnectivityOrientation(Neo::Mesh &mesh, Neo::Family &source_family,
+  void addConnectivityOrientation(Neo::MeshBase &mesh, Neo::Family &source_family,
                                   Neo::ItemRange &source_items,
                                   Neo::Family& target_family,
                                   std::vector<size_t>&& nb_connected_item_per_items,
@@ -197,7 +197,7 @@ namespace StaticMesh {
         });
   }
 
-  void addOrientedConnectivity(Neo::Mesh &mesh, Neo::Family &source_family,
+  void addOrientedConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
                                Neo::ItemRange &source_items,
                                Neo::Family& target_family,
                                std::vector<size_t>&& nb_connected_item_per_items,
@@ -212,7 +212,7 @@ namespace StaticMesh {
     if (do_check_orientation) addConnectivityOrientationCheck(mesh, source_family, target_family);
   }
 
-  void addOrientedConnectivity(Neo::Mesh &mesh, Neo::Family &source_family,
+  void addOrientedConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
                                Neo::AddedItemRange &source_items,
                                Neo::Family& target_family,
                                std::vector<size_t>&& nb_connected_item_per_items,
@@ -226,7 +226,7 @@ namespace StaticMesh {
   }
 
   Neo::ArrayProperty<Neo::utils::Int32> const &
-  getConnectivity(Neo::Mesh const &mesh, Neo::Family const& source_family,
+  getConnectivity(Neo::MeshBase const &mesh, Neo::Family const& source_family,
                   Neo::Family const &target_family)
   {
     return source_family.getConcreteProperty <
@@ -235,7 +235,7 @@ namespace StaticMesh {
   }
 
  std::pair<Neo::ArrayProperty<Neo::utils::Int32>const&,Neo::ArrayProperty<int>const&>
- getOrientedConnectivity(Neo::Mesh const &mesh, Neo::Family const& source_family,
+ getOrientedConnectivity(Neo::MeshBase const &mesh, Neo::Family const& source_family,
                          Neo::Family const &target_family)
  {
     auto const& connectivity = getConnectivity(mesh,source_family,target_family);
@@ -246,7 +246,7 @@ namespace StaticMesh {
  }
 
   // todo : define 2 signatures to indicate eventual memory stealing...?
-  void setNodeCoords(Neo::Mesh& mesh, Neo::Family& node_family, Neo::AddedItemRange& added_node_range, std::vector<Neo::utils::Real3>& node_coords){
+  void setNodeCoords(Neo::MeshBase & mesh, Neo::Family& node_family, Neo::AddedItemRange& added_node_range, std::vector<Neo::utils::Real3>& node_coords){
     node_family.addProperty<Neo::utils::Real3>(std::string("node_coords"));
     auto& added_nodes = added_node_range.new_items;
     mesh.addAlgorithm(
@@ -262,19 +262,19 @@ namespace StaticMesh {
   }
 
   // todo define also a const method
-  Neo::utils::ArrayView<Neo::utils::Real3> getNodeCoords(Neo::Mesh const& mesh, Neo::Family& node_family)
+  Neo::utils::ArrayView<Neo::utils::Real3> getNodeCoords(Neo::MeshBase const& mesh, Neo::Family& node_family)
   {
     auto& node_coords = node_family.getConcreteProperty<Neo::PropertyT<Neo::utils::Real3>>("node_coords");
     return node_coords.values(); //
   }
 
-  Neo::ArrayProperty<Neo::utils::Int32> const& faces(Neo::Mesh const& mesh, Neo::Family const& source_family)
+  Neo::ArrayProperty<Neo::utils::Int32> const& faces(Neo::MeshBase const& mesh, Neo::Family const& source_family)
   {
     auto &face_family = mesh.getFamily(Neo::ItemKind::IK_Face, face_family_name);
     return getConnectivity(mesh, source_family, face_family);
   }
 
-  Neo::ArrayProperty<Neo::utils::Int32> const& nodes(Neo::Mesh const& mesh, Neo::Family const& source_family)
+  Neo::ArrayProperty<Neo::utils::Int32> const& nodes(Neo::MeshBase const& mesh, Neo::Family const& source_family)
   {
     auto& node_family = mesh.getFamily(Neo::ItemKind::IK_Node,node_family_name);
     return getConnectivity(mesh, source_family, node_family);
@@ -433,28 +433,28 @@ namespace StaticMesh {
 
 namespace PolyhedralMeshTest {
 
-  auto &addCellFamily(Neo::Mesh &mesh, std::string family_name) {
+  auto &addCellFamily(Neo::MeshBase &mesh, std::string family_name) {
     auto &cell_family =
         mesh.addFamily(Neo::ItemKind::IK_Cell, std::move(family_name));
     cell_family.addProperty<Neo::utils::Int64>(family_name + "_uids");
     return cell_family;
   }
 
-  auto &addNodeFamily(Neo::Mesh &mesh, std::string family_name) {
+  auto &addNodeFamily(Neo::MeshBase &mesh, std::string family_name) {
     auto &node_family =
         mesh.addFamily(Neo::ItemKind::IK_Node, std::move(family_name));
     node_family.addProperty<Neo::utils::Int64>(family_name + "_uids");
     return node_family;
   }
 
-  auto &addFaceFamily(Neo::Mesh &mesh, std::string family_name) {
+  auto &addFaceFamily(Neo::MeshBase &mesh, std::string family_name) {
     auto &face_family =
         mesh.addFamily(Neo::ItemKind::IK_Face, std::move(family_name));
     face_family.addProperty<Neo::utils::Int64>(family_name + "_uids");
     return face_family;
   }
 
-  void  _createMesh(Neo::Mesh &mesh,
+  void  _createMesh(Neo::MeshBase &mesh,
                    std::vector<Neo::utils::Int64> const &node_uids,
                    std::vector<Neo::utils::Int64> const &cell_uids,
                    std::vector<Neo::utils::Int64> const &face_uids,
@@ -499,7 +499,7 @@ namespace PolyhedralMeshTest {
     std::cout << "Added faces range after endUpdate: " << new_faces;
   }
 
-  void addCells(Neo::Mesh &mesh) {
+  void addCells(Neo::MeshBase &mesh) {
     std::vector<Neo::utils::Int64> node_uids{0, 1, 2, 3, 4, 5};
     std::vector<Neo::utils::Int64> cell_uids{0};
     std::vector<Neo::utils::Int64> face_uids{0, 1, 2, 3, 4, 5, 6, 7};
@@ -597,7 +597,7 @@ namespace XdmfTest {
     }
   }
 
-  void exportMesh(Neo::Mesh const& mesh, std::string const& file_name)
+  void exportMesh(Neo::MeshBase const& mesh, std::string const& file_name)
   {
     auto domain = XdmfDomain::New();
     auto domain_info = XdmfInformation::New("Domain", " For polyhedral data from Neo");
@@ -645,7 +645,7 @@ namespace XdmfTest {
 
 TEST(PolyhedralTest,CreateMesh1)
 {
-  auto mesh = Neo::Mesh{"PolyhedralMesh"};
+  auto mesh = Neo::MeshBase{"PolyhedralMesh"};
   PolyhedralMeshTest::addCells(mesh);
 }
 
@@ -698,7 +698,7 @@ TEST(PolyhedralTest,TypedUtilitiesOrientationTest) {
 }
 
 TEST(PolyhedralTest,ItemOrientationCheckTest){
-  Neo::Mesh mesh{"test_orientation_check_mesh"};
+  Neo::MeshBase mesh{"test_orientation_check_mesh"};
   // mock values, does not represent a real mesh
   std::vector<Neo::utils::Int64> cell_uids{0,1,2};
   std::vector<Neo::utils::Int64> face_uids{0,1,2,3,4};
@@ -727,7 +727,7 @@ TEST(PolyhedralTest,ItemOrientationCheckTest){
 }
 
 TEST(PolyhedralTest,ItemOrientationCheckTestWrongOrientation){
-  Neo::Mesh mesh{"test_orientation_check_mesh"};
+  Neo::MeshBase mesh{"test_orientation_check_mesh"};
   // mock values, does not represent a real mesh
   std::vector<Neo::utils::Int64> cell_uids{0,1,2};
   std::vector<Neo::utils::Int64> face_uids{0,1,2,3,4};
@@ -843,7 +843,7 @@ TEST(PolyhedralTest,TypedUtilitiesConnectivityTest) {
 
 
 TEST(PolyhedralTest,OrientedConnectivityTest) {
-  auto mesh = Neo::Mesh{"PolyhedralMeshWithOrientation"};
+  auto mesh = Neo::MeshBase{"PolyhedralMeshWithOrientation"};
   PolyhedralMeshTest::addCells(mesh);
   // create simple 2D mesh with orientation
   auto& face_family = mesh.getFamily(Neo::ItemKind::IK_Face,
@@ -873,7 +873,7 @@ TEST(PolyhedralTest,OrientedConnectivityTest) {
 #ifdef HAS_XDMF
 TEST(PolyhedralTest,CreateXdmfMesh)
 {
-  auto mesh = Neo::Mesh{"PolyhedralMesh"};
+  auto mesh = Neo::MeshBase{"PolyhedralMesh"};
   PolyhedralMeshTest::addCells(mesh);
   auto exported_mesh{"test_output.xmf"};
   XdmfTest::exportMesh(mesh,exported_mesh);
@@ -986,7 +986,7 @@ TEST(PolyhedralTest,ImportXdmfPolyhedronMesh)
   _printContainer(nb_cell_per_faces, "  Nb cell per faces ");
   _printContainer(face_orientation_in_cells, "  Face orientation in cells");
   // import mesh in Neo data structure
-  auto mesh = Neo::Mesh{"'ImportedMesh"};
+  auto mesh = Neo::MeshBase{"'ImportedMesh"};
   PolyhedralMeshTest::_createMesh(mesh, node_uids,cell_uids,face_uids,
                                   node_coords,cell_nodes,cell_faces,
                                   face_nodes, face_cells,face_orientation_in_cells,
@@ -1045,7 +1045,7 @@ TEST(PolyhedralTest,ImportXdmfHexahedronMesh) {
                    std::end(node_uids_set));
   _printContainer(node_uids, "node uids ");
   _printContainer(cell_nodes, "cell nodes ");
-  auto mesh = Neo::Mesh{"'ImportedHexMesh"};
+  auto mesh = Neo::MeshBase{"'ImportedHexMesh"};
   using CellTypeIndexes = std::vector<int>;
   std::vector<Neo::utils::Int64> face_nodes;
   std::vector<Neo::utils::Int32> cell_face_indexes;

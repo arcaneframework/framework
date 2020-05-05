@@ -169,7 +169,7 @@ TEST(NeoTestFamily,test_family)
   }
 }
 
-void mesh_property_test(const Neo::Mesh& mesh){
+void mesh_property_test(const Neo::MeshBase & mesh){
   std::cout << "== Print Mesh " << mesh.m_name << " Properties =="<< std::endl;
   for (const auto& [kind_name_pair,family] : mesh.m_families) {
     std::cout << "= In family " << kind_name_pair.second << " =" << std::endl;
@@ -180,7 +180,7 @@ void mesh_property_test(const Neo::Mesh& mesh){
   std::cout << "== End Print Mesh " << mesh.m_name << " Properties =="<< std::endl;
 }
 
-void prepare_mesh(Neo::Mesh& mesh){
+void prepare_mesh(Neo::MeshBase & mesh){
 
 // Adding node family and properties
 auto& node_family = mesh.getFamily(Neo::ItemKind::IK_Node,"NodeFamily");
@@ -208,7 +208,7 @@ TEST(NeoTestBaseMeshCreation,base_mesh_creation_test) {
 
 
 // creating mesh
-auto mesh = Neo::Mesh{"my_neo_mesh"};
+auto mesh = Neo::MeshBase{"my_neo_mesh"};
 auto& node_family = mesh.addFamily(Neo::ItemKind::IK_Node,"NodeFamily");
 auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell,"CellFamily");
 
@@ -432,7 +432,7 @@ Neo::utils::Real3 r = {0,0,0};
 std::array<Neo::utils::Real3,3> node_coords = {r,r,r};// don't get why I can't write {{0,0,0},{0,0,0},{0,0,0}}; ...??
 
 // creating mesh
-auto mesh = Neo::Mesh{"my_neo_mesh"};
+auto mesh = Neo::MeshBase{"my_neo_mesh"};
 auto& node_family = mesh.addFamily(Neo::ItemKind::IK_Node,"NodeFamily");
 auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell,"CellFamily");
 

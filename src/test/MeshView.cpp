@@ -15,7 +15,7 @@
 #include "neo/Neo.h"
 
 namespace utils{
-  void fillMesh(Neo::Mesh& mesh){
+  void fillMesh(Neo::MeshBase & mesh){
     // creating mesh
     auto& node_family = mesh.addFamily(Neo::ItemKind::IK_Node,"NodeFamily");
     auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell,"CellFamily");
@@ -224,7 +224,7 @@ public:
 
 struct NeoMeshViewBuilder : public MeshViewBuilder
 {
-  Neo::Mesh const & m_neo_mesh;
+  Neo::MeshBase const & m_neo_mesh;
   MeshView build() override {
     auto & cell_family = m_neo_mesh.getFamily(Neo::ItemKind::IK_Cell,"CellFamily");
     auto & face_family = m_neo_mesh.getFamily(Neo::ItemKind::IK_Face,"FaceFamily");
@@ -236,7 +236,7 @@ struct NeoMeshViewBuilder : public MeshViewBuilder
 
 TEST(MeshViewTest,MeshIterationTest)
 {
-  auto mesh = Neo::Mesh{"MeshForView"};
+  auto mesh = Neo::MeshBase{"MeshForView"};
   utils::fillMesh(mesh);
   tools::MeshView view{mesh.m_name};
   for (auto icell : view.allCells())
@@ -250,7 +250,7 @@ TEST(MeshViewTest,MeshIterationTest)
 
 TEST(MeshViewTest,MeshInfoTest)
 {
-  auto mesh = Neo::Mesh{"MeshForView"};
+  auto mesh = Neo::MeshBase{"MeshForView"};
   utils::fillMesh(mesh);
   tools::MeshView view{mesh.m_name};
   // Nombre de noeuds du maillage
@@ -268,7 +268,7 @@ TEST(MeshViewTest,MeshInfoTest)
 
 TEST(MeshViewTest,MeshFamilyInfoTest)
 {
-  auto mesh = Neo::Mesh{"MeshForView"};
+  auto mesh = Neo::MeshBase{"MeshForView"};
   tools::MeshView view {mesh.m_name};
   auto & cell_family = view.cell_family;
   std::cout << cell_family.name << " ";
