@@ -168,6 +168,17 @@ struct ItemRangeView{ // todo revoir le nom
   ItemRangeView operator++(int) {auto retval = *this; ++(*this); return retval;}
 };
 
+template <typename T>
+struct VariableViewT {
+  T operator[](ItemView & item) {return T{};}
+};
+
+struct VariableView {
+  using ViewType = std::variant<VariableViewT<Neo::utils::Int32>,VariableViewT<Neo::utils::Int64>,
+      VariableViewT<Neo::utils::Real3>,VariableViewT<double>>;
+  ViewType view;
+};
+
 struct FamilyView;
 
 struct GroupView{
@@ -203,6 +214,7 @@ struct FamilyView {
   Neo::utils::ConstArray2View<Neo::utils::Int32> faces;
   Neo::utils::ConstArray2View<Neo::utils::Int32> cells;
   std::map<std::string,Neo::utils::ConstArray2View<Neo::utils::Int32>> connectivities;
+  std::map<std::string,VariableView> variables;
   int nbItem() const {return item_lids.size();}
 };
 
@@ -213,6 +225,7 @@ struct MeshView{
   FamilyView edge_family = FamilyView{*this};
   FamilyView node_family = FamilyView{*this};
   std::map<std::string, FamilyView> dof_families;
+  VariableViewT<Neo::utils::Real3> node_coords;
   GroupView const& allCells() const {return cell_family.all_items;}
 };
 
@@ -325,6 +338,28 @@ TEST(MeshViewTest,MeshConnectivityInfoTest)
   }
   // Group Connectivity
   auto face_nodes = mesh_view.face_family.all_items.nodeGroup();
+}
+
+TEST(MeshViewTest,MeshVariableInfoTest)
+{
+  tools::MeshView mesh_view{"MeshView4VariableTest"};
+  auto& node_coords = mesh_view.node_coords;
+  for (auto inode : mesh_view.node_family.all_items){
+    std::cout << " node " << inode.localId() << std::endl;
+    std::cout << " Coords  {"
+              << node_coords[inode].x << ","
+              << node_coords[inode].y << ","
+              << node_coords[inode].z << ",}" << std::endl;
+  }
+  auto cell_variable_ite = mesh_view.cell_family.variables.find("my_cell_int_var");
+  if (cell_variable_ite != mesh_view.cell_family.variables.end()) {
+    auto& cell_variable = cell_variable_ite->second;
+    auto concrete_cell_variable = std::get<tools::VariableViewT<int>>(cell_variable.view);
+    for (auto icell : mesh_view.cell_family.all_items) {
+      std::cout << "cell_variable[icell : " << icell.localId() << "] = ";
+      std::cout << concrete_cell_variable[icell] << std::endl;
+    }
+  }
 }
 
 
