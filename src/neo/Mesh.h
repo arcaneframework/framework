@@ -6,13 +6,14 @@
 #define NEO_MESH_H
 
 /*-------------------------
- * sdc - (C) 2019-2020
+ * sdc - (C) 2020
  * NEtwork Oriented kernel
  * POC Mesh API
  *--------------------------
  */
 
 #include <memory>
+#include <string>
 
 namespace Neo {
 
@@ -20,12 +21,15 @@ class MeshBase;
 
 class Mesh {
 
-  Mesh(const std::string& mesh_name);
+public:
+  Mesh(std::string const& mesh_name);
   ~Mesh();
 
 private:
-
   std::unique_ptr<MeshBase> mesh_graph;
+
+public:
+  std::string const& name() const;
 };
 
 } // end namespace Neo
