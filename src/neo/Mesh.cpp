@@ -2,4 +2,12 @@
 // Created by dechaiss on 5/6/20.
 //
 
-#include "Mesh.h"
+#include "neo/Mesh.h"
+#include "neo/Neo.h"
+
+
+Neo::Mesh::Mesh(const std::string& mesh_name)
+ : mesh_graph(std::make_unique<Neo::MeshBase>(Neo::MeshBase{mesh_name})){
+}
+
+Neo::Mesh::~Mesh() = default;

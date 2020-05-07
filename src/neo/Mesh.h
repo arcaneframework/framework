@@ -12,8 +12,22 @@
  *--------------------------
  */
 
-#include "neo/Neo.h"
+#include <memory>
 
-class Mesh {};
+namespace Neo {
+
+class MeshBase;
+
+class Mesh {
+
+  Mesh(const std::string& mesh_name);
+  ~Mesh();
+
+private:
+
+  std::unique_ptr<MeshBase> mesh_graph;
+};
+
+} // end namespace Neo
 
 #endif // NEO_MESH_H
