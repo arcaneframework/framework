@@ -174,7 +174,7 @@ class ARCCORE_EXPORT ExternalReferenceCounterAccessor
  * \brief Macro pour déclarer qu'une classe utilise un compteur de
  * référence.
  *
- * La macro doit être utilisée dans le namespace Arccore. Par exemple:
+ * La macro doit être utilisée en dehors de tout namespace. Par exemple:
  *
  * \code
  * namespace MyNamespace
@@ -182,10 +182,7 @@ class ARCCORE_EXPORT ExternalReferenceCounterAccessor
  *   class MyClass;
  * }
  *
- * namespace Arccore
- * {
- *   ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(MyNamespace::MyClass);
- * }
+ * ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(MyNamespace::MyClass);
  * \endcode
  *
  * Il faudra ensuite utiliser la macro
@@ -193,7 +190,8 @@ class ARCCORE_EXPORT ExternalReferenceCounterAccessor
  * définir les méthodes et types nécessaires
  */
 #define ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(class_name) \
-template<> \
+namespace Arccore {\
+template<>                   \
 struct RefTraits<class_name> \
 {\
   static constexpr int TagId = Arccore::REF_TAG_REFERENCE_COUNTER;\
@@ -201,7 +199,8 @@ struct RefTraits<class_name> \
 template<>\
 class ReferenceCounterAccessor<class_name>\
 : public ExternalReferenceCounterAccessor<class_name>\
-{}
+{};                                                  \
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

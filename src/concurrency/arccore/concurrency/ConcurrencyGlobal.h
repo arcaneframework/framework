@@ -57,8 +57,6 @@ class ThreadImpl;
 //! Classe opaque encapsulant l'implementation d'un mutex
 class MutexImpl;
 
-ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(IThreadImplementation);
-
 namespace Concurrency
 {
 extern "C++" ARCCORE_CONCURRENCY_EXPORT IThreadImplementation*
@@ -67,6 +65,8 @@ extern "C++" ARCCORE_CONCURRENCY_EXPORT IThreadImplementation*
 setThreadImplementation(IThreadImplementation* impl);
 }
 }
+
+ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(IThreadImplementation)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

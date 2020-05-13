@@ -32,10 +32,8 @@ namespace MyTest
 class TestRefOwn;
 class TestBaseType;
 }
-namespace Arccore
-{
+
 ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(MyTest::TestBaseType);
-}
 
 namespace MyTest
 {
