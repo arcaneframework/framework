@@ -767,7 +767,7 @@ class ValidMeshState{
 };
 
 
-struct AddedItemRange{
+struct ScheduledItemRange {
 
   ItemRange &get(ValidMeshState const &valid_mesh_state){
     return new_items;
