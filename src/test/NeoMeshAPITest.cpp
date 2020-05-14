@@ -27,8 +27,14 @@ TEST(NeoMeshApiTest,AddFamilyTest)
   auto mesh = Neo::Mesh{"AddFamilyTestMesh"};
   auto cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell,"CellFamily");
   std::cout << "Create family " << cell_family.name() << " with item kind " << Neo::utils::itemKindName(cell_family.itemKind()) << std::endl;
-  auto node_family = mesh.addFamily(Neo::ItemKind::IK_Node,"Node Family");
+  EXPECT_EQ(cell_family.name(),"CellFamily");
+  EXPECT_EQ(cell_family.itemKind(),Neo::ItemKind::IK_Cell);
+  auto node_family = mesh.addFamily(Neo::ItemKind::IK_Node,"NodeFamily");
   std::cout << "Create family " << node_family.name() << " with item kind " << Neo::utils::itemKindName(node_family.itemKind()) << std::endl;
+  EXPECT_EQ(node_family.name(),"NodeFamily");
+  EXPECT_EQ(node_family.itemKind(),Neo::ItemKind::IK_Node);
   auto dof_family  = mesh.addFamily(Neo::ItemKind::IK_Dof,"DoFFamily");
   std::cout << "Create family " << dof_family.name() << " with item kind " << Neo::utils::itemKindName(dof_family.itemKind()) << std::endl;
+  EXPECT_EQ(dof_family.name(),"DoFFamily");
+  EXPECT_EQ(dof_family.itemKind(),Neo::ItemKind::IK_Dof);
 }
