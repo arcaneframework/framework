@@ -18,6 +18,8 @@
 namespace Neo {
 
 class MeshBase;
+enum class ItemKind;
+class Family;
 
 class Mesh {
 
@@ -29,7 +31,9 @@ private:
   std::unique_ptr<MeshBase> mesh_graph;
 
 public:
-  std::string const& name() const;
+  std::string const& name() const noexcept ;
+
+  Neo::Family&  addFamily(Neo::ItemKind item_kind, std::string family_name) noexcept ;
 };
 
 } // end namespace Neo

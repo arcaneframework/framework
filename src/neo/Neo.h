@@ -570,15 +570,25 @@ template <typename...T> VisitorOverload(T...) -> VisitorOverload<T...>;
 class Family {
 public:
 
-  Family(ItemKind ik, std::string name) : m_ik(ik), m_name(std::move(name)), m_prop_lid_name(m_name) {
+  ItemKind m_ik;
+  std::string m_name;
+  std::string m_prop_lid_name;
+  std::map<std::string, Property> m_properties;
+  ItemRange m_all;
+
+  Family(ItemKind ik, std::string name) : m_ik(ik), m_name(std::move(name)), m_prop_lid_name(name) {
     m_prop_lid_name.append("_lids");
     m_properties[lidPropName()] = ItemLidsProperty{lidPropName()};
   }
 
+  constexpr std::string const& name() const noexcept {return m_name;}
+  constexpr ItemKind const& itemKind() const noexcept {return m_ik;}
+
   template<typename T>
   void addProperty(std::string const& name){
     auto [iter,is_inserted] = m_properties.insert(std::make_pair(name,PropertyT<T>{name}));
-    if (is_inserted) std::cout << "Add property " << name << " in Family " << m_name<< std::endl;
+    if (is_inserted) std::cout << "Add property " << name << " in Family " << m_name
+                << std::endl;
   };
 
   Property& getProperty(const std::string& name) {
@@ -606,7 +616,8 @@ public:
   template <typename T>
   void addArrayProperty(std::string const& name){
     auto [iter, is_inserted] = m_properties.insert(std::make_pair(name, ArrayProperty<T>{name}));
-    if (is_inserted) std::cout << "Add array property " << name << " in Family " << m_name<< std::endl;
+    if (is_inserted) std::cout << "Add array property " << name << " in Family " << m_name
+                << std::endl;
   }
 
   std::string const&  lidPropName()
@@ -633,12 +644,7 @@ public:
     return std::get<ItemLidsProperty>(prop_iterator->second);
   }
 
-  ItemKind m_ik;
-  std::string m_name;
-  std::string m_prop_lid_name;
-//    ItemLidsProperty* m_lid_property; // todo try to avoid raw ptr
-  std::map<std::string, Property> m_properties;
-  ItemRange m_all;
+
 
 private :
   Property& _getProperty(const std::string& name) {
