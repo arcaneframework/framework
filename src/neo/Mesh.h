@@ -14,6 +14,10 @@
 
 #include <memory>
 #include <string>
+#include <vector>
+
+#include "Neo.h"
+#include "neo/Utils.h"
 
 namespace Neo {
 
@@ -28,7 +32,7 @@ public:
   ~Mesh();
 
 private:
-  std::unique_ptr<MeshBase> mesh_graph;
+  std::unique_ptr<MeshBase> m_mesh_graph;
 
 public:
   std::string const& name() const noexcept ;
