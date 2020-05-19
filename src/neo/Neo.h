@@ -693,15 +693,15 @@ struct NoDepsDualOutAlgoHandler : public IAlgorithm {
 
 class MeshBase;
 
-class ValidMeshState{
-  ValidMeshState() {}
+class ItemRangeUnlocker {
+  constexpr ItemRangeUnlocker() {}
   friend class MeshBase;
 };
 
 
 struct ScheduledItemRange {
 
-  ItemRange &get(ValidMeshState const &valid_mesh_state){
+  ItemRange &get(ItemRangeUnlocker const &valid_mesh_state){
     return new_items;
   }
   ItemRange new_items;
@@ -745,11 +745,11 @@ public:
   }
 
   void beginUpdate() { std::cout << "begin mesh update" << std::endl;}
-  ValidMeshState endUpdate() {
+  ItemRangeUnlocker endUpdate() {
     std::cout << "end mesh update" << std::endl;
     std::for_each(m_algos.begin(),m_algos.end(),[](auto& algo){(*algo.get())();});
     m_algos.clear();
-    return ValidMeshState{};
+    return ItemRangeUnlocker{};
   }
 
 
