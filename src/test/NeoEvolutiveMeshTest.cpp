@@ -213,7 +213,6 @@ void addCells(Neo::MeshBase &mesh){
 
   std::vector<Neo::utils::Int64> face_nodes{6,7,8,9,9,10,10,11,1,7,2,8,0,1,2,3,3,4,4,5};
 
-  mesh.beginUpdate();
   auto added_cells = Neo::ScheduledItemRange{};
   auto added_nodes = Neo::ScheduledItemRange{};
   auto added_faces = Neo::ScheduledItemRange{};
@@ -248,7 +247,6 @@ TEST(EvolutiveMeshTest,MoveNodes)
   std::vector<Neo::utils::Int64> node_uids{6,7,8,9,10,11};
   std::vector<Neo::utils::Real3> node_coords{{0,0,-1},{0,1.5,-1},{0,1.5,-1},
                                              {0,2.7,-1},{0,3.85,-1},{0,5,-1}};
-  mesh.beginUpdate();
   moveNodes(mesh, mesh.getFamily(Neo::ItemKind::IK_Node, node_family_name),node_uids, node_coords);
   mesh.endUpdate();
 }
@@ -266,7 +264,6 @@ TEST(EvolutiveMeshTest,RemoveCells)
   // Remove cell 0, 1 and 2
   std::vector<Neo::utils::Int64> removed_cells{0,1,2};
   removeItems(mesh,mesh.getFamily(Neo::ItemKind::IK_Cell, cell_family_name),removed_cells);
-  mesh.beginUpdate();
   mesh.endUpdate();
 
 }

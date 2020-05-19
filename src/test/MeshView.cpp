@@ -41,7 +41,6 @@ namespace utils{
     std::vector<Neo::utils::Int64> cell_uids{0,2,7,9};
 
 // add algos:
-    mesh.beginUpdate();
 
 // create nodes
     auto added_nodes = Neo::ItemRange{};

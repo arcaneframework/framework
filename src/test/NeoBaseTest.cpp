@@ -221,7 +221,6 @@ std::vector<Neo::utils::Real3> node_coords{{0,0,0}, {0,1,0}, {0,0,1}};
 std::vector<Neo::utils::Int64> cell_uids{0,2,7,9};
 
 // add algos: 
-mesh.beginUpdate();
 
 // create nodes
 auto added_nodes = Neo::ItemRange{};
@@ -439,7 +438,6 @@ auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell,"CellFamily");
 
 prepare_mesh(mesh);
 
-mesh.beginUpdate();
 
 mesh.addAlgorithm(Neo::InProperty{node_family,node_family.lidPropName()},
                   Neo::OutProperty{node_family,"node_coords"},

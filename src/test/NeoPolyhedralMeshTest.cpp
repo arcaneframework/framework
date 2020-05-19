@@ -471,7 +471,6 @@ namespace PolyhedralMeshTest {
     auto &cell_family = addCellFamily(mesh, StaticMesh::cell_family_name);
     auto &node_family = addNodeFamily(mesh, StaticMesh::node_family_name);
     auto &face_family = addFaceFamily(mesh, StaticMesh::face_family_name);
-    mesh.beginUpdate();
     auto added_cells = Neo::ScheduledItemRange{};
     auto added_nodes = Neo::ScheduledItemRange{};
     auto added_faces = Neo::ScheduledItemRange{};
@@ -709,7 +708,6 @@ TEST(PolyhedralTest,ItemOrientationCheckTest){
   auto& face_family = StaticMesh::addFamily(mesh,Neo::ItemKind::IK_Face, "FaceFamily");
   auto added_cells = Neo::ScheduledItemRange{};
   auto added_faces = Neo::ScheduledItemRange{};
-  mesh.beginUpdate();
   StaticMesh::addItems(mesh,cell_family,cell_uids,added_cells);
   StaticMesh::addItems(mesh,face_family,face_uids,added_faces);
   auto do_check_orientation = true;
@@ -738,7 +736,6 @@ TEST(PolyhedralTest,ItemOrientationCheckTestWrongOrientation){
   auto& face_family = StaticMesh::addFamily(mesh,Neo::ItemKind::IK_Face, "FaceFamily");
   auto added_cells = Neo::ScheduledItemRange{};
   auto added_faces = Neo::ScheduledItemRange{};
-  mesh.beginUpdate();
   StaticMesh::addItems(mesh,cell_family,cell_uids,added_cells);
   StaticMesh::addItems(mesh,face_family,face_uids,added_faces);
   auto do_check_orientation = true;
