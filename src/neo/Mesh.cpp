@@ -16,10 +16,15 @@ std::string const& Neo::Mesh::name() const noexcept {
   return m_mesh_graph->m_name;
 }
 
+std::string Neo::Mesh::uniqueIdPropertyName(const std::string& family_name) const noexcept
+{
+  return family_name+"_uids";
+}
+
 Neo::Family& Neo::Mesh::addFamily(Neo::ItemKind item_kind, std::string family_name) noexcept
 {
   auto& cell_family = m_mesh_graph->addFamily(item_kind, std::move(family_name));
-  cell_family.addProperty<Neo::utils::Int64>(family_name + "_uids");
+  cell_family.addProperty<Neo::utils::Int64>(uniqueIdPropertyName(family_name));
   return cell_family;
 }
 
@@ -35,10 +40,9 @@ void Neo::Mesh::scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::In
                         std::cout << "Inserted item range : " << added_items;
                       });
   // register their uids
-  auto uid_property_name = family.name()+"_uids";
   m_mesh_graph->addAlgorithm(
       Neo::InProperty{family,family.lidPropName()},
-      Neo::OutProperty{family, uid_property_name},
+      Neo::OutProperty{family, uniqueIdPropertyName(family.name())},
       [&family,&uids,&added_items](Neo::ItemLidsProperty const& item_lids_property,
                                    Neo::PropertyT<Neo::utils::Int64>& item_uids_property){
         std::cout << "Algorithm: register item uids for family " << family.name() << std::endl;
@@ -59,10 +63,9 @@ void Neo::Mesh::scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::In
                                  std::cout << "Inserted item range : " << added_items;
                                });
   // register their uids
-  auto uid_property_name = family.name()+"_uids";
   m_mesh_graph->addAlgorithm(
       Neo::InProperty{family,family.lidPropName()},
-      Neo::OutProperty{family, uid_property_name},
+      Neo::OutProperty{family, uniqueIdPropertyName(family.name())},
       [&family,uids,&added_items](Neo::ItemLidsProperty const& item_lids_property,
                                    Neo::PropertyT<Neo::utils::Int64>& item_uids_property){
         std::cout << "Algorithm: register item uids for family " << family.name() << std::endl;

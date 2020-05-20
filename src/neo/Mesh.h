@@ -30,6 +30,9 @@ class ItemRangeUnlocker;
 class Mesh {
 
 public:
+  using UidPropertyType = Neo::PropertyT<Neo::utils::Int64>;
+
+public:
   Mesh(std::string const& mesh_name);
   ~Mesh();
 
@@ -39,9 +42,13 @@ private:
 public:
   std::string const& name() const noexcept ;
 
+  std::string uniqueIdPropertyName(const std::string& family_name) const noexcept;
+
   Neo::Family&  addFamily(Neo::ItemKind item_kind, std::string family_name) noexcept ;
+
   void scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> const& uids, Neo::ScheduledItemRange & added_item_range) noexcept ;
   void scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> && uids, Neo::ScheduledItemRange & added_item_range) noexcept ;
+
   Neo::ItemRangeUnlocker applyScheduledOperations() noexcept;
 };
 

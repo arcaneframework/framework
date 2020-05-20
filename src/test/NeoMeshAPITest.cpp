@@ -58,4 +58,17 @@ TEST(NeoMeshApiTest,AddItemTest)
     std::cout << "Added local id " << item << std::endl;
   }
   EXPECT_EQ(cell_uids.size()+3,new_cells.size()+new_cells2.size());
+  auto& cell_uid_property = cell_family.getConcreteProperty<Neo::Mesh::UidPropertyType>
+      (mesh.uniqueIdPropertyName(cell_family.name()));
+  std::vector<Neo::utils::Int64> expected_uids{2,3,4};
+  auto i = 0;
+  for (auto item : new_cells) {
+    std::cout << "Added unique id " << cell_uid_property[item] << std::endl;
+    EXPECT_EQ(expected_uids[i++],cell_uid_property[item]);
+  }
+  i = 0;
+  for (auto item : new_cells2) {
+    std::cout << "Added unique id " << cell_uid_property[item] << std::endl;
+    EXPECT_EQ(cell_uids[i++],cell_uid_property[item]);
+  }
 }
