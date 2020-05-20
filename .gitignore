@@ -22,3 +22,6 @@ cmake-build*
 
 # plugins
 plugins
+
+# MacOS
+.DS_Store

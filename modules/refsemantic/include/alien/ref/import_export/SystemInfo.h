@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <string>
+
 namespace Alien {
 
 class MatrixDistribution;

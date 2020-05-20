@@ -41,6 +41,10 @@ using namespace Arccore;
  */
 struct VBlockImpl::Internal
 {
+  // SD : clang error here, explicit ctor (VMap) in implicit ctor
+  Internal(const VBlock& blocks)
+    : m_blocks(blocks) {}
+    
   //! Variable blocks information
   const VBlock& m_blocks;
   //! All offsets array

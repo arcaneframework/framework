@@ -60,7 +60,7 @@ template <typename ValueT> class StreamMatrixBuilderT<ValueT>::BaseInserter
   Integer m_index;
   Integer m_current_size;
   Integer* m_current_k;
-#ifdef WIN32
+#if defined(WIN32) or defined(__clang__)
   ValueT* __restrict m_values;
 #else
   ValueT __restrict__* m_values;
