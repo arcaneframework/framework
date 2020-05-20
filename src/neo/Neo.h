@@ -745,7 +745,7 @@ public:
   }
 
   ItemRangeUnlocker applyAlgorithms() {
-    std::cout << "end mesh update" << std::endl;
+    std::cout << "apply added algorithms" << std::endl;
     std::for_each(m_algos.begin(),m_algos.end(),[](auto& algo){(*algo.get())();});
     m_algos.clear();
     return ItemRangeUnlocker{};
