@@ -11,10 +11,12 @@ mark_as_advanced(Hypre_INCLUDE_DIRS)
 
 set(Hypre_INCLUDE_DIRS ${Hypre_INCLUDE_DIR})
 
-  # Look for other lib for Hypre
-  # It is the case on debian based platform
+# SD: others libraries should be found by find_library
+# Look for other lib for Hypre
+# It is the case on debian based platform
 get_filename_component(Hypre_LIBRARY_DIR ${Hypre_LIBRARY} DIRECTORY)
-file(GLOB Hypre_LIBRARIES ${Hypre_LIBRARY_DIR}/libHYPRE*.so)
+# extra : .so .a .dylib, etc
+file(GLOB Hypre_LIBRARIES ${Hypre_LIBRARY_DIR}/libHYPRE*.*)
 
 message(STATUS "Hypre_INCLUDE_DIRS=${Hypre_INCLUDE_DIRS}")
 message(STATUS "Hypre_LIBRARIES=${Hypre_LIBRARIES}")
