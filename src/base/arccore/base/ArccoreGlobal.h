@@ -1,4 +1,4 @@
-﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
 // Copyright 2000-2020 IFPEN-CEA
 //
@@ -37,6 +37,8 @@
 // Determine le type de l'os.
 #if defined(__linux)
 #  define ARCCORE_OS_LINUX
+#elif defined(__APPLE__)
+#  define ARCCORE_OS_MACOS
 #elif defined(_AIX)
 #  define ARCCORE_OS_AIX
 #elif defined(__WIN32__) || defined(__NT__) || defined(WIN32) || defined(_WIN32) || defined(WIN32) || defined(_WINDOWS)
@@ -77,6 +79,10 @@
 #endif
 
 #ifdef ARCCORE_OS_LINUX
+#  define ARCCORE_VALID_TARGET
+#endif
+
+#ifdef ARCCORE_OS_MACOS
 #  define ARCCORE_VALID_TARGET
 #endif
 
