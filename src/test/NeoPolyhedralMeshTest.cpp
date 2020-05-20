@@ -489,13 +489,13 @@ namespace PolyhedralMeshTest {
     auto do_check_orientation = true;
     StaticMesh::addOrientedConnectivity(mesh,face_family,added_faces,cell_family,
         std::move(nb_cell_per_faces),face_cells,face_orientation_in_cells,do_check_orientation);
-    auto valid_mesh_state = mesh.endUpdate();
+    auto valid_mesh_state = mesh.applyAlgorithms();
     auto &new_cells = added_cells.get(valid_mesh_state);
     auto &new_nodes = added_nodes.get(valid_mesh_state);
     auto &new_faces = added_faces.get(valid_mesh_state);
-    std::cout << "Added cells range after endUpdate: " << new_cells;
-    std::cout << "Added nodes range after endUpdate: " << new_nodes;
-    std::cout << "Added faces range after endUpdate: " << new_faces;
+    std::cout << "Added cells range after applyAlgorithms: " << new_cells;
+    std::cout << "Added nodes range after applyAlgorithms: " << new_nodes;
+    std::cout << "Added faces range after applyAlgorithms: " << new_faces;
   }
 
   void addCells(Neo::MeshBase &mesh) {
@@ -714,7 +714,7 @@ TEST(PolyhedralTest,ItemOrientationCheckTest){
   StaticMesh::addOrientedConnectivity(mesh,face_family,added_faces,cell_family,
                                       std::move(nb_cell_per_faces),face_cells,face_orientation_in_cells,
                                       do_check_orientation);
-  auto mesh_state = mesh.endUpdate();
+  auto mesh_state = mesh.applyAlgorithms();
   Neo::PropertyT<int> orientation_check_result = face_family.getConcreteProperty<Neo::PropertyT<int>>(
       "FaceFamilytoCellFamily_connectivity_orientation_check");
   _printContainer(orientation_check_result.m_data, "orientation check result");
@@ -742,7 +742,7 @@ TEST(PolyhedralTest,ItemOrientationCheckTestWrongOrientation){
   StaticMesh::addOrientedConnectivity(mesh,face_family,added_faces,cell_family,
                                       std::move(nb_cell_per_faces),face_cells,face_orientation_in_cells,
                                       do_check_orientation);
-  EXPECT_THROW(mesh.endUpdate(),std::runtime_error);
+  EXPECT_THROW(mesh.applyAlgorithms(),std::runtime_error);
   Neo::PropertyT<int> orientation_check_result = face_family.getConcreteProperty<Neo::PropertyT<int>>(
       "FaceFamilytoCellFamily_connectivity_orientation_check");
   _printContainer(orientation_check_result.m_data, "orientation check result");

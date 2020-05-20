@@ -744,7 +744,7 @@ public:
     m_algos.push_back(std::make_unique<NoDepsDualOutAlgoHandler<decltype(algo)>>(std::move(out_property1),std::move(out_property2),std::forward<Algorithm>(algo)));
   }
 
-  ItemRangeUnlocker endUpdate() {
+  ItemRangeUnlocker applyAlgorithms() {
     std::cout << "end mesh update" << std::endl;
     std::for_each(m_algos.begin(),m_algos.end(),[](auto& algo){(*algo.get())();});
     m_algos.clear();

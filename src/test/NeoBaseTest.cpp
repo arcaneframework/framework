@@ -415,7 +415,7 @@ mesh.addAlgorithm(
                   });
 
 // launch algos
-mesh.endUpdate();
+mesh.applyAlgorithms();
 
 // test properties
 mesh_property_test(mesh);
@@ -449,6 +449,6 @@ mesh.addAlgorithm(Neo::InProperty{node_family,node_family.lidPropName()},
     //node_coords_property.appendAt(lids, node_coords);// steal node_coords memory//todo
   });
 
-mesh.endUpdate();
+mesh.applyAlgorithms();
   
 }

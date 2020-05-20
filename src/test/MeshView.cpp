@@ -147,7 +147,7 @@ namespace utils{
                         cells2nodes.debugPrint();
                       });
     // launch algos
-    mesh.endUpdate();
+    mesh.applyAlgorithms();
   }
 }
 
