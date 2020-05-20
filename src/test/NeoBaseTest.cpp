@@ -69,12 +69,11 @@ TEST(NeoTestItemRange,test_item_range){
 
 TEST(NeoTestProperty,test_property)
  {
-  Neo::PropertyT<Neo::utils::Int32> property{"name"};
-  std::vector<Neo::utils::Int32> values {1,2,3};
-  Neo::ItemRange item_range{Neo::ItemIndexes{{},0,3}};
-  if (property.isInitializableFrom(item_range)) {
-    property.init(item_range,values);
-  }
+   Neo::PropertyT<Neo::utils::Int32> property{"name"};
+   std::vector<Neo::utils::Int32> values {1,2,3};
+   Neo::ItemRange item_range{Neo::ItemIndexes{{},0,3}};
+   EXPECT_TRUE(property.isInitializableFrom(item_range));
+   property.init(item_range,values);
    EXPECT_EQ(values.size(),property.size());
    std::vector<Neo::utils::Int32> new_values {4,5,6};
    Neo::ItemRange new_item_range{Neo::ItemIndexes{{},3,3}};
@@ -85,7 +84,6 @@ TEST(NeoTestProperty,test_property)
    for (auto i =0; i < values.size(); ++i){
      EXPECT_EQ(property_values[i],values[i]);
    }
-
 }
 
 TEST(NeoTestArrayProperty,test_array_property)
@@ -119,6 +117,16 @@ TEST(NeoTestArrayProperty,test_array_property)
   array_property.append(item_range, values_added, nb_element_per_item); // expected result: "10" "10" "10" "1" "2" "3" "4" "12" "12" "6" "6" "6" "7" "11" "11" "11" "8" "8" "8" "9" "13"
   array_property.debugPrint();
   EXPECT_EQ(21,array_property.size());
+}
+
+TEST(NeoTestPropertyView, test_property_view)
+{
+  Neo::PropertyT<Neo::utils::Int32> property{"name"};
+  std::vector<Neo::utils::Int32> values {1,2,3,10,100,1000};
+  Neo::ItemRange item_range{Neo::ItemIndexes{{},0,6}};
+  property.init(item_range,values);
+  auto prop_view = property.view();
+  auto partial_prop_view = property.view({Neo::ItemIndexes{{1,3,5},0,0}});
 }
 
 TEST(NeoTestPropertyGraph,test_property_graph)

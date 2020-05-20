@@ -149,6 +149,12 @@ Int32 minItem(ItemRange const &item_range) {
 }
 }
 
+template <typename DataType>
+class PropertyView
+{
+
+};
+
 class PropertyBase{
 public:
   std::string m_name;
@@ -157,6 +163,7 @@ public:
 template <typename DataType>
 class PropertyT : public PropertyBase  {
 public:
+  std::vector<DataType> m_data;
 
   void init(const ItemRange& item_range, const DataType& value){
     if (isInitializableFrom(item_range))
@@ -196,11 +203,13 @@ public:
     std::cout << std::endl;
   }
 
-  Neo::utils::ArrayView<DataType> values() {return Neo::utils::ArrayView<DataType>{m_data.size(), m_data.data()};}
+  utils::ArrayView<DataType> values() {return Neo::utils::ArrayView<DataType>{m_data.size(), m_data.data()};}
 
   std::size_t size() const {return m_data.size();}
 
-  std::vector<DataType> m_data;
+  PropertyView<DataType> view() {return PropertyView<DataType>{};}
+  PropertyView<DataType> view(ItemRange const& item_range) {return PropertyView<DataType>{};}
+
 };
 
 template <typename DataType>
