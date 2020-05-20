@@ -38,3 +38,24 @@ TEST(NeoMeshApiTest,AddFamilyTest)
   EXPECT_EQ(dof_family.name(),"DoFFamily");
   EXPECT_EQ(dof_family.itemKind(),Neo::ItemKind::IK_Dof);
 }
+
+TEST(NeoMeshApiTest,AddItemTest)
+{
+  auto mesh = Neo::Mesh{"AddItemsTestMesh"};
+  auto cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell,"CellFamily");
+  auto added_cells = Neo::ScheduledItemRange{};
+  auto added_cells2 = Neo::ScheduledItemRange{};
+  std::vector<Neo::utils::Int64> cell_uids{1,10,100};
+  mesh.scheduleAddItems(cell_family,{2,3,4},added_cells);
+  mesh.scheduleAddItems(cell_family,cell_uids,added_cells2);
+  auto item_range_unlocker = mesh.applyScheduledOperations();
+  auto new_cells = added_cells.get(item_range_unlocker);
+  for (auto item : new_cells) {
+    std::cout << "Added local id " << item << std::endl;
+  }
+  auto new_cells2 = added_cells2.get(item_range_unlocker);
+  for (auto item : new_cells2) {
+    std::cout << "Added local id " << item << std::endl;
+  }
+  EXPECT_EQ(cell_uids.size()+3,new_cells.size()+new_cells2.size());
+}

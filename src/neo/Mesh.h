@@ -24,6 +24,8 @@ namespace Neo {
 class MeshBase;
 enum class ItemKind;
 class Family;
+struct ScheduledItemRange;
+class ItemRangeUnlocker;
 
 class Mesh {
 
@@ -38,6 +40,9 @@ public:
   std::string const& name() const noexcept ;
 
   Neo::Family&  addFamily(Neo::ItemKind item_kind, std::string family_name) noexcept ;
+  void scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> const& uids, Neo::ScheduledItemRange & added_item_range) noexcept ;
+  void scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> && uids, Neo::ScheduledItemRange & added_item_range) noexcept ;
+  Neo::ItemRangeUnlocker applyScheduledOperations() noexcept;
 };
 
 } // end namespace Neo
