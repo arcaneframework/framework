@@ -45,7 +45,10 @@ list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
 include(${ARCCON_CMAKE_COMMANDS})
 
 find_package(Arccore REQUIRED)
-find_package(Alien REQUIRED)
+
+if(NOT TARGET Alien::alien_core)
+  find_package(Alien REQUIRED)
+endif()
 find_package(Hypre REQUIRED)
 find_package(Boost REQUIRED) # For boost::timer.
 
