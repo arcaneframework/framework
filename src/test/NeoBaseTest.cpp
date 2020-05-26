@@ -38,6 +38,9 @@ TEST(NeoUtils,test_array_view){
   std::vector<int> dim2_view_vector_copy{dim2_view.copy()};
   std::vector<int> dim2_const_view_vector_copy{dim2_const_view.copy()};
   EXPECT_TRUE(std::equal(dim2_vec.begin(),dim2_vec.end(),dim2_const_view_vector_copy.begin()));
+  // Try out of bound error
+  EXPECT_DEATH(view[4],".*i<m_size.*");
+  EXPECT_DEATH(dim2_view[0][4],".*i<m_size.*");
 }
 
 TEST(NeoTestItemRange,test_item_range){
