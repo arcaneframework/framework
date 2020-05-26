@@ -72,7 +72,7 @@ struct ItemUniqueId {};
 using DataType = std::variant<utils::Int32, utils::Int64, utils::Real3>;// ajouter des types dans la def de famille si necessaire
 using DataIndex = std::variant<int,ItemUniqueId>;
 
-struct ItemIndexes {
+struct ItemIndexes { // todo change type, theses are local ids cf. Issue#7
   std::vector<std::size_t> m_non_contiguous_indexes = {};
   std::size_t m_first_contiguous_index = 0;
   std::size_t m_nb_contiguous_indexes = 0;
