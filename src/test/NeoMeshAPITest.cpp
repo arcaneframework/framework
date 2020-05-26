@@ -46,7 +46,7 @@ TEST(NeoMeshApiTest,AddItemTest)
   auto added_cells = Neo::ScheduledItemRange{};
   auto added_cells2 = Neo::ScheduledItemRange{};
   std::vector<Neo::utils::Int64> cell_uids{1,10,100};
-  mesh.scheduleAddItems(cell_family,{2,3,4},added_cells);
+  mesh.scheduleAddItems(cell_family,{2,3,4},added_cells); // memory stealing API
   mesh.scheduleAddItems(cell_family,cell_uids,added_cells2);
   auto item_range_unlocker = mesh.applyScheduledOperations();
   auto new_cells = added_cells.get(item_range_unlocker);
@@ -77,4 +77,18 @@ TEST(NeoMeshApiTest,AddItemTest)
   for (auto i = 0; i < new_cells.size(); ++i) {
     std::cout << "uid view index " << i << " = " << uid_view[i]<< std::endl;
   }
+}
+
+TEST(NeoMeshApiTest,SetNodeCoordsTest)
+{
+  auto mesh = Neo::Mesh{"SetNodeCoordsTestMesh"};
+  auto node_family = mesh.addFamily(Neo::ItemKind::IK_Node,"NodeFamily");
+  auto added_nodes  = Neo::ScheduledItemRange{};
+  auto added_nodes2 = Neo::ScheduledItemRange{};
+  std::vector<Neo::utils::Int64> node_uids{1,10,100};
+  mesh.scheduleAddItems(node_family,node_uids,added_nodes);
+  mesh.scheduleAddItems(node_family,{0,5},added_nodes2);
+  std::vector<Neo::utils::Real3> node_coords{{0,0,0},{0,0,1},{0,1,0}};
+  mesh.scheduleSetNodeCoords(node_family,added_nodes,node_coords);
+  mesh.scheduleSetNodeCoords(node_family,added_nodes2,{{1,0,0},{1,1,1}});// memory stealing API
 }

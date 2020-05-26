@@ -46,8 +46,11 @@ public:
 
   Neo::Family&  addFamily(Neo::ItemKind item_kind, std::string family_name) noexcept ;
 
-  void scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> const& uids, Neo::ScheduledItemRange & added_item_range) noexcept ;
-  void scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> && uids, Neo::ScheduledItemRange & added_item_range) noexcept ;
+  void scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> const& uids, Neo::ScheduledItemRange & future_added_item_range) noexcept ;
+  void scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> && uids, Neo::ScheduledItemRange & future_added_item_range) noexcept ;
+
+  void scheduleSetNodeCoords(Neo::Family& node_family, Neo::ScheduledItemRange const& future_added_item_range,std::vector<Neo::utils::Real3> && node_coords){}
+  void scheduleSetNodeCoords(Neo::Family& node_family, Neo::ScheduledItemRange const& future_added_item_range,std::vector<Neo::utils::Real3> const& node_coords){}
 
   Neo::ItemRangeUnlocker applyScheduledOperations() noexcept;
 };
