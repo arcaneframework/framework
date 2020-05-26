@@ -71,4 +71,10 @@ TEST(NeoMeshApiTest,AddItemTest)
     std::cout << "Added unique id " << cell_uid_property[item] << std::endl;
     EXPECT_EQ(cell_uids[i++],cell_uid_property[item]);
   }
+  // Get uids view
+  Neo::PropertyView<Neo::utils::Int64> uid_view = cell_uid_property.view(new_cells);
+  // Print uids
+  for (auto i = 0; i < new_cells.size(); ++i) {
+    std::cout << "uid view index " << i << " = " << uid_view[i]<< std::endl;
+  }
 }
