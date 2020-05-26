@@ -153,9 +153,20 @@ template <typename DataType>
 class PropertyView
 {
 public:
-  std::vector<int> m_indexes;
+  std::vector<int> const m_indexes;
   Neo::utils::ArrayView<DataType> m_data_view;
   DataType& operator[] (int index) {
+    assert(("Error, exceeds property view size",index < m_indexes.size()));
+    return m_data_view[m_indexes[index]];}
+};
+
+template <typename DataType>
+class PropertyConstView
+{
+public:
+  std::vector<int> const m_indexes;
+  Neo::utils::ConstArrayView<DataType> m_data_view;
+  DataType const& operator[] (int index) const{
     assert(("Error, exceeds property view size",index < m_indexes.size()));
     return m_data_view[m_indexes[index]];}
 };
@@ -212,11 +223,21 @@ public:
 
   std::size_t size() const {return m_data.size();}
 
-  PropertyView<DataType> view() {std::vector<int> indexes(m_data.size()); std::iota(indexes.begin(),indexes.end(),0);
-  return PropertyView<DataType>{std::move(indexes),Neo::utils::ArrayView<DataType>{m_data.size(),m_data.data()}};}
-  PropertyView<DataType> view(ItemRange const& item_range) {std::vector<int> indexes; indexes.reserve(item_range.size());
+  PropertyView<DataType> view() {
+    std::vector<int> indexes(m_data.size()); std::iota(indexes.begin(),indexes.end(),0);
+    return PropertyView<DataType>{std::move(indexes),Neo::utils::ArrayView<DataType>{m_data.size(),m_data.data()}};}
+  PropertyView<DataType> view(ItemRange const& item_range) {
+    std::vector<int> indexes; indexes.reserve(item_range.size());
     for (auto item : item_range) indexes.push_back(item);
     return PropertyView<DataType>{std::move(indexes),Neo::utils::ArrayView<DataType>{m_data.size(),m_data.data()}};}
+
+  PropertyConstView<DataType> constView() {
+    std::vector<int> indexes(m_data.size()); std::iota(indexes.begin(),indexes.end(),0);
+    return PropertyConstView<DataType>{std::move(indexes),Neo::utils::ConstArrayView<DataType>{m_data.size(),m_data.data()}};}
+  PropertyConstView<DataType> constView(ItemRange const& item_range) {
+    std::vector<int> indexes; indexes.reserve(item_range.size());
+    for (auto item : item_range) indexes.push_back(item);
+    return PropertyConstView<DataType>{std::move(indexes),Neo::utils::ConstArrayView<DataType>{m_data.size(),m_data.data()}};}
 
 };
 

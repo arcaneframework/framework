@@ -150,6 +150,25 @@ TEST(NeoTestPropertyView, test_property_view)
 
 }
 
+ TEST(NeoTestPropertyView, test_property_const_view)
+ {
+   Neo::PropertyT<Neo::utils::Int32> property{"name"};
+   std::vector<Neo::utils::Int32> values {1,2,3,10,100,1000};
+   Neo::ItemRange item_range{Neo::ItemIndexes{{},0,6}};
+   property.init(item_range,values);
+   auto property_const_view = property.constView();
+   auto partial_item_range = Neo::ItemRange{Neo::ItemIndexes{{1,3,5}}};
+   auto partial_property_const_view = property.constView(partial_item_range);
+   for (auto i = 0 ; i < item_range.size();++i) {
+     std::cout << "prop values at index " << i << " " << property_const_view[i] << std::endl;
+   }
+   for (auto i = 0 ; i < partial_item_range.size();++i) {
+     std::cout << "prop values at index " << i <<" " << partial_property_const_view[i] << std::endl;
+   }
+   EXPECT_DEATH(property_const_view[7],".*Error, exceeds property view size.*");
+   EXPECT_DEATH(partial_property_const_view[3],".*Error, exceeds property view size.*");
+ }
+
 TEST(NeoTestPropertyGraph,test_property_graph)
 {
   std::cout << "Test Property Graph" << std::endl;
