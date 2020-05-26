@@ -129,7 +129,8 @@ TEST(NeoTestPropertyView, test_property_view)
   Neo::ItemRange item_range{Neo::ItemIndexes{{},0,6}};
   property.init(item_range,values);
   auto property_view = property.view();
-  auto partial_item_range = Neo::ItemRange{Neo::ItemIndexes{{1,3,5}}};
+  std::vector<std::size_t> local_ids{1,3,5};
+  auto partial_item_range = Neo::ItemRange{Neo::ItemIndexes{local_ids}};
   auto partial_property_view = property.view(partial_item_range);
   for (auto i = 0 ; i < item_range.size();++i) {
     std::cout << "prop values at index " << i << " " << property_view[i] << std::endl;
@@ -137,6 +138,13 @@ TEST(NeoTestPropertyView, test_property_view)
   for (auto i = 0 ; i < partial_item_range.size();++i) {
     std::cout << "prop values at index " << i <<" " << partial_property_view[i] << std::endl;
   }
+  // Change values
+  auto new_val = 50;
+  property_view[2] = new_val;
+  EXPECT_EQ(property[2],new_val);
+  partial_property_view[2] = new_val;
+  EXPECT_EQ(property[local_ids[2]],new_val);
+  // Check out of bound
   EXPECT_DEATH(property_view[7],".*Error, exceeds property view size.*");
   EXPECT_DEATH(partial_property_view[3],".*Error, exceeds property view size.*");
 
