@@ -125,8 +125,18 @@ TEST(NeoTestPropertyView, test_property_view)
   std::vector<Neo::utils::Int32> values {1,2,3,10,100,1000};
   Neo::ItemRange item_range{Neo::ItemIndexes{{},0,6}};
   property.init(item_range,values);
-  auto prop_view = property.view();
-  auto partial_prop_view = property.view({Neo::ItemIndexes{{1,3,5},0,0}});
+  auto property_view = property.view();
+  auto partial_item_range = Neo::ItemRange{Neo::ItemIndexes{{1,3,5}}};
+  auto partial_property_view = property.view(partial_item_range);
+  for (auto i = 0 ; i < item_range.size();++i) {
+    std::cout << "prop values at index " << i << " " << property_view[i] << std::endl;
+  }
+  for (auto i = 0 ; i < partial_item_range.size();++i) {
+    std::cout << "prop values at index " << i <<" " << partial_property_view[i] << std::endl;
+  }
+  EXPECT_DEATH(property_view[7],".*Error, exceeds property view size.*");
+  EXPECT_DEATH(partial_property_view[3],".*Error, exceeds property view size.*");
+
 }
 
 TEST(NeoTestPropertyGraph,test_property_graph)

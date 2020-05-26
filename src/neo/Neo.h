@@ -152,7 +152,12 @@ Int32 minItem(ItemRange const &item_range) {
 template <typename DataType>
 class PropertyView
 {
-
+public:
+  std::vector<int> m_indexes;
+  Neo::utils::ArrayView<DataType> m_data_view;
+  DataType& operator[] (int index) {
+    assert(("Error, exceeds property view size",index < m_indexes.size()));
+    return m_data_view[m_indexes[index]];}
 };
 
 class PropertyBase{
@@ -207,8 +212,11 @@ public:
 
   std::size_t size() const {return m_data.size();}
 
-  PropertyView<DataType> view() {return PropertyView<DataType>{};}
-  PropertyView<DataType> view(ItemRange const& item_range) {return PropertyView<DataType>{};}
+  PropertyView<DataType> view() {std::vector<int> indexes(m_data.size()); std::iota(indexes.begin(),indexes.end(),0);
+  return PropertyView<DataType>{std::move(indexes),Neo::utils::ArrayView<DataType>{m_data.size(),m_data.data()}};}
+  PropertyView<DataType> view(ItemRange const& item_range) {std::vector<int> indexes; indexes.reserve(item_range.size());
+    for (auto item : item_range) indexes.push_back(item);
+    return PropertyView<DataType>{std::move(indexes),Neo::utils::ArrayView<DataType>{m_data.size(),m_data.data()}};}
 
 };
 
