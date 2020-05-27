@@ -89,6 +89,7 @@ TEST(NeoMeshApiTest,SetNodeCoordsTest)
   mesh.scheduleAddItems(node_family,node_uids,added_nodes);
   mesh.scheduleAddItems(node_family,{0,5},added_nodes2);
   std::vector<Neo::utils::Real3> node_coords{{0,0,0},{0,0,1},{0,1,0}};
-  mesh.scheduleSetNodeCoords(node_family,added_nodes,node_coords);
-  mesh.scheduleSetNodeCoords(node_family,added_nodes2,{{1,0,0},{1,1,1}});// memory stealing API
+  mesh.scheduleSetItemCoords(node_family,added_nodes,node_coords);
+  mesh.scheduleSetItemCoords(node_family, added_nodes2,{{1,0,0},{1,1,1}});// memory stealing API
+  mesh.applyScheduledOperations();
 }

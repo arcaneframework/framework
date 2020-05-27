@@ -79,6 +79,45 @@ void Neo::Mesh::scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::In
       });// need to add a property check for existing uid
 }
 
+void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::ScheduledItemRange const& future_added_item_range,std::vector<Neo::utils::Real3> const& item_coords)
+{
+  auto coord_prop_name = _itemCoordPropertyName(item_family);
+  item_family.addProperty<Neo::utils::Real3>(coord_prop_name);
+  auto& added_items = future_added_item_range.new_items;
+  m_mesh_graph->addAlgorithm(
+          Neo::InProperty{item_family, item_family.lidPropName()},
+          Neo::OutProperty{item_family,coord_prop_name},
+          [&item_coords,&added_items](Neo::ItemLidsProperty const& item_lids_property,
+                                      Neo::PropertyT<Neo::utils::Real3>& item_coords_property){
+            std::cout << "Algorithm: register item coords" << std::endl;
+            item_coords_property.append(added_items, item_coords);
+            item_coords_property.debugPrint();
+          });
+}
+
+void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::ScheduledItemRange const&future_added_item_range,std::vector<Neo::utils::Real3>&& item_coords)
+{
+  auto coord_prop_name = _itemCoordPropertyName(item_family);
+  item_family.addProperty<Neo::utils::Real3>(coord_prop_name);
+  auto& added_items = future_added_item_range.new_items;
+  m_mesh_graph->addAlgorithm(
+          Neo::InProperty{item_family, item_family.lidPropName()},
+          Neo::OutProperty{item_family,coord_prop_name},
+          [item_coords,&added_items](Neo::ItemLidsProperty const& item_lids_property,
+                                     Neo::PropertyT<Neo::utils::Real3>& item_coords_property){
+            std::cout << "Algorithm: register item coords" << std::endl;
+            if (item_coords_property.isInitializableFrom(added_items)) {
+              item_coords_property.init(
+                  added_items,
+                  std::move(item_coords)); // init can steal the input values
+            }
+            else {
+              item_coords_property.append(added_items, item_coords);
+            }
+            item_coords_property.debugPrint();
+          });
+}
+
 Neo::ItemRangeUnlocker Neo::Mesh::applyScheduledOperations() noexcept
 {
   return m_mesh_graph->applyAlgorithms();

@@ -49,10 +49,13 @@ public:
   void scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> const& uids, Neo::ScheduledItemRange & future_added_item_range) noexcept ;
   void scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> && uids, Neo::ScheduledItemRange & future_added_item_range) noexcept ;
 
-  void scheduleSetNodeCoords(Neo::Family& node_family, Neo::ScheduledItemRange const& future_added_item_range,std::vector<Neo::utils::Real3> && node_coords){}
-  void scheduleSetNodeCoords(Neo::Family& node_family, Neo::ScheduledItemRange const& future_added_item_range,std::vector<Neo::utils::Real3> const& node_coords){}
+  void scheduleSetItemCoords(Neo::Family& item_family, Neo::ScheduledItemRange const& future_added_item_range,std::vector<Neo::utils::Real3> const& item_coords);
+  void scheduleSetItemCoords(Neo::Family& item_family, Neo::ScheduledItemRange const& future_added_item_range,std::vector<Neo::utils::Real3> && item_coords);
 
   Neo::ItemRangeUnlocker applyScheduledOperations() noexcept;
+
+private:
+  std::string _itemCoordPropertyName(Family const& item_family) {return item_family.name()+"_item_coordinates";}
 };
 
 } // end namespace Neo
