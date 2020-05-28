@@ -116,9 +116,10 @@ struct ItemRange {
   bool isEmpty() const  {return size() == 0;}
   ItemIndexes m_indexes;
 };
+}// end namespace Neo
 
 inline
-std::ostream &operator<<(std::ostream &os, const ItemRange &item_range){
+std::ostream &operator<<(std::ostream &os, const Neo::ItemRange &item_range){
   os << "Item Range : lids ";
   for (auto lid : item_range.m_indexes.m_non_contiguous_indexes) {
     os << lid;
@@ -133,6 +134,7 @@ std::ostream &operator<<(std::ostream &os, const ItemRange &item_range){
   return os;
 }
 
+namespace Neo{
 namespace utils {
 inline
 Int32 maxItem(ItemRange const &item_range) {
