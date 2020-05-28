@@ -81,11 +81,16 @@ namespace utils {
 
 }// end namespace utils
 
+}// end namespace Neo
+
 inline
-std::ostream& operator<<(std::ostream& oss, const Neo::utils::Real3& real3){
+std::ostream& operator<<(std::ostream& oss, Neo::utils::Real3 const& real3){
   oss << "{" << real3.x  << ","  << real3.y << "," << real3.z << "}";
   return oss;
 }
+inline
+bool operator==(Neo::utils::Real3 const& a, Neo::utils::Real3 const& b){
+  return a.x == b.x && a.y == b.y && a.z == b.z;
 }
 
 #endif // NEO_UTILS_H
