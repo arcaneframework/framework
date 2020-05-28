@@ -79,7 +79,7 @@ void Neo::Mesh::scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::In
       });// need to add a property check for existing uid
 }
 
-void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::ScheduledItemRange const& future_added_item_range,std::vector<Neo::utils::Real3> const& item_coords)
+void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::ScheduledItemRange const& future_added_item_range,std::vector<Neo::utils::Real3> const& item_coords) noexcept
 {
   auto coord_prop_name = _itemCoordPropertyName(item_family);
   item_family.addProperty<Neo::utils::Real3>(coord_prop_name);
@@ -95,7 +95,7 @@ void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::ScheduledIt
           });
 }
 
-void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::ScheduledItemRange const&future_added_item_range,std::vector<Neo::utils::Real3>&& item_coords)
+void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::ScheduledItemRange const&future_added_item_range,std::vector<Neo::utils::Real3>&& item_coords) noexcept
 {
   auto coord_prop_name = _itemCoordPropertyName(item_family);
   item_family.addProperty<Neo::utils::Real3>(coord_prop_name);
@@ -121,4 +121,14 @@ void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::ScheduledIt
 Neo::ItemRangeUnlocker Neo::Mesh::applyScheduledOperations() noexcept
 {
   return m_mesh_graph->applyAlgorithms();
+}
+
+Neo::Mesh::CoordPropertyType& Neo::Mesh::getItemCoordProperty(Neo::Family & family)
+{
+  return family.getConcreteProperty<CoordPropertyType>(_itemCoordPropertyName(family));
+}
+
+Neo::Mesh::CoordPropertyType const& Neo::Mesh::getItemCoordProperty(Neo::Family const& family) const
+{
+  return family.getConcreteProperty<CoordPropertyType>(_itemCoordPropertyName(family));
 }
