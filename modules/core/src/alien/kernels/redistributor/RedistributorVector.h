@@ -34,7 +34,7 @@ class RedistributorVector : public IVectorImpl
   RedistributorVector(const MultiVectorImpl* src_impl);
   virtual ~RedistributorVector() {}
 
-  void init(const VectorDistribution& dist, const bool need_allocate);
+  void init(const VectorDistribution& dist, const bool need_allocate) override;
 
   //! Clear data
   void clear() override;
