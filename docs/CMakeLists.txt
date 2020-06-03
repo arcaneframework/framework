@@ -9,6 +9,8 @@ set(DOXYGEN_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 # For sphinx
 set(DOXYGEN_GENERATE_HTML NO)
 set(DOXYGEN_GENERATE_XML YES)
+set(SPHINX_COPYRIGHT "CEA, IFPEN")
+set(SPHINX_AUTHOR "CEA, IFPEN")
 
 # this target will only be built if specifically asked to.
 # run "make api-docs" to create the doxygen documentation
@@ -21,6 +23,6 @@ sphinx_add_docs(
         alien_api_docs_sphinx
         BREATHE_PROJECTS alien_api_docs_doxygen
         BUILDER html
-        SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        SOURCE_DIRECTORY sphinx
         OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/api-docs"
 )

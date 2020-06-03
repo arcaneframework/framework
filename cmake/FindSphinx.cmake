@@ -2,10 +2,9 @@ include(FindPackageHandleStandardArgs)
 
 macro(_Sphinx_find_executable _exe)
     string(TOUPPER "${_exe}" _uc)
-    # sphinx-(build|quickstart)-3 x.x.x
     find_program(
             SPHINX_${_uc}_EXECUTABLE
-            NAMES "sphinx-${_exe}-3" "sphinx-${_exe}" "sphinx-${_exe}.exe")
+            NAMES "sphinx-${_exe}" "sphinx-${_exe}.exe")
 
     if(SPHINX_${_uc}_EXECUTABLE)
         execute_process(
@@ -28,89 +27,17 @@ macro(_Sphinx_find_executable _exe)
     unset(_uc)
 endmacro()
 
-macro(_Sphinx_find_extension _ext)
-    if(_SPHINX_PYTHON_EXECUTABLE)
-        execute_process(
-                COMMAND ${_SPHINX_PYTHON_EXECUTABLE} -c "import ${_ext}"
-                RESULT_VARIABLE _result)
-        if(_result EQUAL 0)
-            set(Sphinx_${_ext}_FOUND TRUE)
-        else()
-            set(Sphinx_${_ext}_FOUND FALSE)
-        endif()
-    elseif(CMAKE_HOST_WIN32 AND SPHINX_BUILD_EXECUTABLE)
-        # script-build on Windows located under (when PIP is used):
-        # C:/Program Files/PythonXX/Scripts
-        # C:/Users/username/AppData/Roaming/Python/PythonXX/Sripts
-        #
-        # Python modules are installed under:
-        # C:/Program Files/PythonXX/Lib
-        # C:/Users/username/AppData/Roaming/Python/PythonXX/site-packages
-        #
-        # To verify a given module is installed, use the Python base directory
-        # and test if either Lib/module.py or site-packages/module.py exists.
-        get_filename_component(_dirname "${SPHINX_BUILD_EXECUTABLE}" DIRECTORY)
-        get_filename_component(_dirname "${_dirname}" DIRECTORY)
-        if(IS_DIRECTORY "${_dirname}/Lib/${_ext}" OR
-                IS_DIRECTORY "${_dirname}/site-packages/${_ext}")
-            set(Sphinx_${_ext}_FOUND TRUE)
-        else()
-            set(Sphinx_${_ext}_FOUND FALSE)
-        endif()
-    endif()
-endmacro()
-
 #
 # Find sphinx-build and sphinx-quickstart.
 #
 _Sphinx_find_executable(build)
 _Sphinx_find_executable(quickstart)
 
-#
-# Verify both executables are part of the Sphinx distribution.
-#
-if(SPHINX_BUILD_EXECUTABLE AND SPHINX_QUICKSTART_EXECUTABLE)
-    if(NOT SPHINX_BUILD_VERSION STREQUAL SPHINX_QUICKSTART_VERSION)
-        message(FATAL_ERROR "Versions for sphinx-build (${SPHINX_BUILD_VERSION})"
-                "and sphinx-quickstart (${SPHINX_QUICKSTART_VERSION})"
-                "do not match")
-    endif()
-endif()
-
-#
-# To verify the required Sphinx extensions are available, the right Python
-# installation must be queried (2 vs 3). Of course, this only makes sense on
-# UNIX-like systems.
-#
-if(NOT CMAKE_HOST_WIN32 AND SPHINX_BUILD_EXECUTABLE)
-    file(READ "${SPHINX_BUILD_EXECUTABLE}" _contents)
-    if(_contents MATCHES "^#!([^\n]+)")
-        string(STRIP "${CMAKE_MATCH_1}" _shebang)
-        if(EXISTS "${_shebang}")
-            set(_SPHINX_PYTHON_EXECUTABLE "${_shebang}")
-        endif()
-    endif()
-endif()
-
-foreach(_comp IN LISTS Sphinx_FIND_COMPONENTS)
-    if(_comp STREQUAL "build")
-        # Do nothing, sphinx-build is always required.
-    elseif(_comp STREQUAL "quickstart")
-        # Do nothing, sphinx-quickstart is optional, but looked up by default.
-    elseif(_comp STREQUAL "breathe")
-        _Sphinx_find_extension(${_comp})
-    else()
-        message(WARNING "${_comp} is not a valid or supported Sphinx extension")
-        set(Sphinx_${_comp}_FOUND FALSE)
-        continue()
-    endif()
-endforeach()
-
 find_package_handle_standard_args(
         Sphinx
         VERSION_VAR SPHINX_VERSION
         REQUIRED_VARS SPHINX_BUILD_EXECUTABLE SPHINX_BUILD_VERSION
-        HANDLE_COMPONENTS)
+        )
 
 
 # Generate a conf.py template file using sphinx-quickstart.
@@ -234,10 +161,6 @@ function(sphinx_add_docs _target)
 
 
     if(_args_BREATHE_PROJECTS)
-        if(NOT Sphinx_breathe_FOUND)
-            message(FATAL_ERROR "Sphinx extension 'breathe' is not available. Needed"
-                    "by sphinx_add_docs for target ${_target}")
-        endif()
         list(APPEND SPHINX_EXTENSIONS breathe)
 
         foreach(_doxygen_target ${_args_BREATHE_PROJECTS})
