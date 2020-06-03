@@ -928,7 +928,7 @@ _writeListing(Span<const Byte> input,Int32 level,int color,bool do_flush)
       verbosity_level = m_verbosity_level;
     // Pas de couleur si on redirige les sorties
     int listing_color = 0;
-    bool is_printed = (message_level <= m_verbosity_level);
+    bool is_printed = (message_level <= verbosity_level);
     if (is_printed)
       _writeColor(*listing_stream,input,listing_color,do_flush);
   }
