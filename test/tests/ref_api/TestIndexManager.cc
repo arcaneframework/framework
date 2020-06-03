@@ -28,7 +28,7 @@
 
 TEST(TestIndexManager, Constructor)
 {
-  auto trace_mng = AlienTest::Environment::traceMng();
+  // auto trace_mng = AlienTest::Environment::traceMng(); // not yet used
 
   auto comm_size = AlienTest::Environment::parallelMng()->commSize();
   auto comm_rank = AlienTest::Environment::parallelMng()->commRank();
