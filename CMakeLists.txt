@@ -47,6 +47,8 @@ option(ALIEN_UNIT_TESTS "Whether or not to enable unit tests" ON)
 option(ALIEN_USE_HDF5 "Enable HDF5 export" OFF)
 option(ALIEN_USE_XML "Enable xml export" ON)
 
+option(ALIEN_GENERATE_DOCUMENTATION "Generate API documentation" OFF)
+
 # Make this conditional.
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -97,6 +99,10 @@ if (ALIEN_UNIT_TESTS)
     enable_testing()
     add_subdirectory(test)
 endif ()
+
+if (ALIEN_GENERATE_DOCUMENTATION)
+    add_subdirectory(docs)
+endif(ALIEN_GENERATE_DOCUMENTATION)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
