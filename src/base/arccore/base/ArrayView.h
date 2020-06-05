@@ -1,4 +1,4 @@
-// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
 // Copyright 2000-2020 IFPEN-CEA
 //
@@ -28,11 +28,7 @@
 
 #include "arccore/base/ArrayRange.h"
 
-#ifdef ARCCORE_OS_MACOS
 #include <iostream>
-#else
-#include <iosfwd>
-#endif
 #include <cstddef>
 
 /*---------------------------------------------------------------------------*/
