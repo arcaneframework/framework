@@ -41,9 +41,9 @@ private:
   std::unique_ptr<MeshBase> m_mesh_graph;
 
 public:
-  std::string const& name() const noexcept ;
+  [[nodiscard]] std::string const& name() const noexcept ;
 
-  std::string uniqueIdPropertyName(const std::string& family_name) const noexcept ;
+  [[nodiscard]] std::string uniqueIdPropertyName(const std::string& family_name) const noexcept ;
 
   Neo::Family&  addFamily(Neo::ItemKind item_kind, std::string family_name) noexcept ;
 
@@ -57,11 +57,11 @@ public:
   Neo::ItemRangeUnlocker applyScheduledOperations() noexcept ;
 
   //! Use this method to change coordinates of existing items
-  CoordPropertyType& getItemCoordProperty(Neo::Family & family);
-  CoordPropertyType const& getItemCoordProperty(Neo::Family const& family) const;
+  [[nodiscard]] CoordPropertyType& getItemCoordProperty(Neo::Family & family);
+  [[nodiscard]] CoordPropertyType const& getItemCoordProperty(Neo::Family const& family) const;
 
 private:
-  std::string _itemCoordPropertyName(Family const& item_family) const {return item_family.name()+"_item_coordinates";}
+  [[nodiscard]] std::string _itemCoordPropertyName(Family const& item_family) const {return item_family.name()+"_item_coordinates";}
 };
 
 } // end namespace Neo
