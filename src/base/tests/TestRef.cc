@@ -33,7 +33,7 @@ class TestRefOwn;
 class TestBaseType;
 }
 
-ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(MyTest::TestBaseType);
+ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(MyTest::TestBaseType)
 
 namespace MyTest
 {
@@ -166,6 +166,23 @@ _doTest1Helper()
   if constexpr (id == 1){
     ClassType* ct = ref1.get();
     auto z = makeRefFromInstance<TestBaseType>(ct);
+  }
+  {
+    RefType null_ref_type;
+    ASSERT_EQ(null_ref_type.get(),nullptr);
+    if constexpr (id==0){
+      ClassType* ct2 = null_ref_type._release();
+      ASSERT_EQ(ct2,nullptr);
+    }
+  }
+  {
+    ClassType* ct = nullptr;
+    RefType null_ref_type(makeRef(ct));
+    ASSERT_EQ(null_ref_type.get(),nullptr);
+    if constexpr (id==0){
+      ClassType* ct2 = null_ref_type._release();
+      ASSERT_EQ(ct2,nullptr);
+    }
   }
   std::cout << "** ** END_TEST\n";
 }

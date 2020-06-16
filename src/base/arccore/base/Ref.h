@@ -244,7 +244,8 @@ class Ref
     // de ne pas détruire l'instance de 'm_instance' et on
     // retourne cette dernière.
     Deleter* r = std::get_deleter<Deleter>(m_instance);
-    r->setNoDestroy(true);
+    if (r)
+      r->setNoDestroy(true);
     InstanceType* t = m_instance.get();
     m_instance.reset();
     return t;
