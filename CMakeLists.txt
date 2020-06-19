@@ -88,14 +88,6 @@ endif()
 add_library(arccore_build_compile_flags INTERFACE)
 install(TARGETS arccore_build_compile_flags EXPORT ${ARCCORE_EXPORT_TARGET})
 
-if(APPLE)
-  add_compile_definitions(arccore_build_compile_flags PUBLIC ARCCORE_OS_MACOS)
-elseif(WIN32)
-  add_compile_definitions(arccore_build_compile_flags PUBLIC ARCCORE_OS_WIN32)
-elseif(UNIX) # Unix is last as MacOS is also "UNIX" for CMake.
-  add_compile_definitions(arccore_build_compile_flags PUBLIC ARCCORE_OS_UNIX)
-endif()
-
 add_library(Arccore::arccore_build_compile_flags ALIAS arccore_build_compile_flags)
 
 # ----------------------------------------------------------------------------

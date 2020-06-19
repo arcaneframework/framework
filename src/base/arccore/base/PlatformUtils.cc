@@ -1,4 +1,4 @@
-// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
 // Copyright 2000-2020 IFPEN-CEA
 //
@@ -34,11 +34,6 @@
 #include <fstream>
 #include <cstring>
 
-// SD: problem here with MacOS
-//#ifndef ARCCORE_OS_WIN32
-//#define ARCCORE_OS_UNIX
-//#endif
-
 #ifdef ARCCORE_OS_WIN32
 #include <sys/types.h>
 #include <sys/timeb.h>
@@ -49,7 +44,7 @@
 #include <shlobj.h>
 #endif
 
-#if defined(ARCCORE_OS_UNIX) or defined(ARCCORE_OS_MACOS)
+#if defined(ARCCORE_OS_LINUX) or defined(ARCCORE_OS_MACOS)
 #include <unistd.h>
 #include <sys/resource.h>
 #include <time.h>
