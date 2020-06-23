@@ -157,13 +157,7 @@ function(arccon_dotnet_install_publish_directory)
   if (NOT ARGS_DESTINATION)
     logFatalError("In ${_func_name}: DESTINATION not specified")
   endif()
-  # Attention à bien mettre les droits SETUID pour le groupe pour que
-  # les répertoires créés aient les bons groupes.
-  install(DIRECTORY ${ARGS_DIRECTORY}
-    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE SETGID
-    USE_SOURCE_PERMISSIONS
-    DESTINATION ${ARGS_DESTINATION}
-    )
+  arccon_install_directory(NAMES ${ARGS_DIRECTORY} DESTINATION ${ARGS_DESTINATION})
 endfunction()
 
 # ----------------------------------------------------------------------------

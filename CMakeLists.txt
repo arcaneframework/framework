@@ -8,12 +8,13 @@ project(Arccon
   VERSION 1.0.0)
 
 include(${CMAKE_CURRENT_LIST_DIR}/build-system/ArcconSetInstallDirs.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/build-system/commands/user/installDirectory.cmake)
 
 set(config_install_dir "${CMAKE_INSTALL_DATAROOTDIR}/cmake/${PROJECT_NAME}")
 set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
 set(arccon_install_lib "${CMAKE_INSTALL_LIBDIR}/arccon")
 
-install(DIRECTORY build-system packages DESTINATION ${arccon_install_lib})
+arccon_install_directory(NAMES build-system packages DESTINATION ${arccon_install_lib})
 install(FILES Arccon.cmake loadArccon.cmake Readme.md DESTINATION ${arccon_install_lib})
 
 set(PACKAGES_DIR_SYSTEM ${arccon_install_lib}/build-system/packages)
