@@ -639,6 +639,8 @@ class AbstractArray
   }
   void _resize(Int64 s)
   {
+    if (s<0)
+      s = 0;
     if (s>m_p->size) {
       this->_internalRealloc(s,false);
       this->_createRangeDefault(m_p->size,s,IsPODType());
@@ -655,6 +657,8 @@ class AbstractArray
   }
   void _resize(Int64 s,ConstReferenceType value)
   {
+    if (s<0)
+      s = 0;
     if (s>m_p->size){
       this->_internalRealloc(s,false);
       this->_createRange(m_p->size,s,value,IsPODType());
