@@ -115,3 +115,30 @@ TEST(NeoMeshApiTest,SetNodeCoordsTest)
   auto cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell,"CellFamily");
   EXPECT_THROW(mesh.getItemCoordProperty(cell_family),std::invalid_argument);
 }
+
+TEST(NeoMeshApiTest,AddItemConnectivity)
+{
+  auto mesh = Neo::Mesh{"AddItemConnectivityTestMesh"};
+  auto node_family = mesh.addFamily(Neo::ItemKind::IK_Node,"NodeFamily");
+  auto cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell,"CellFamily");
+  auto dof_family  = mesh.addFamily(Neo::ItemKind::IK_Dof,"DoFFamily");
+  std::vector<Neo::utils::Int64> node_uids {0,1,2,3,4,5};
+  std::vector<Neo::utils::Int64> cell_uids{0,1};
+  std::vector<Neo::utils::Int64> dof_uids{0,1,2,3,4};
+  auto added_nodes = Neo::ScheduledItemRange{};
+  auto added_cells = Neo::ScheduledItemRange{};
+  auto added_dofs = Neo::ScheduledItemRange{};
+  mesh.scheduleAddItems(node_family, node_uids, added_nodes);
+  mesh.scheduleAddItems(cell_family, cell_uids, added_cells);
+  mesh.scheduleAddItems(dof_family, dof_uids, added_dofs);
+  // Create connectivity (fictive mesh) cells with 3 nodes
+  auto nb_node_per_cell = 3;
+  std::vector<Neo::utils::Int64> cell_nodes {0,2,1,3,5,4};
+  mesh.scheduleAddConnectivity(cell_family,added_cells,node_family,nb_node_per_cell,cell_nodes,"cell_to_nodes");
+  // Connectivity cell to dof
+  std::vector<int> nb_dof_per_cell{3,2};
+  std::vector<Neo::utils::Int64> cell_dofs {0,3,4,2,1,};
+  mesh.scheduleAddConnectivity(cell_family,added_cells,dof_family,nb_dof_per_cell,cell_dofs,"cell_to_dofs");
+  // apply
+  mesh.applyScheduledOperations();
+}
