@@ -54,26 +54,26 @@ public:
   //! Use this method to add connectivity of new items (i.e addItems and addConnectivity are applied with the same call to applyScheduledOperations)
   void scheduleAddConnectivity(Neo::Family& source_family, Neo::ScheduledItemRange const& source_items,
                                Neo::Family& target_family, int nb_connected_item_per_item,
-                               std::vector<Neo::utils::Int64>& connected_item_uids,
+                               std::vector<Neo::utils::Int64> const& connected_item_uids,
                                std::string const& connectivity_name) noexcept ;
 
   //! Use this method to add connectivity of existing items
   void scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRange const& source_items,
                                Neo::Family& target_family, int nb_connected_item_per_item,
-                               std::vector<Neo::utils::Int64>& connected_item_uids,
+                               std::vector<Neo::utils::Int64>const& connected_item_uids,
                                std::string const& connectivity_name) noexcept ;
 
   //! Connectivity vith variable size (nb of connected items per item is variable)
   //! Use this method to add connectivity of new items (i.e addItems and addConnectivity are applied with the same call to applyScheduledOperations)
   void scheduleAddConnectivity(Neo::Family& source_family, Neo::ScheduledItemRange const& source_items,
-                               Neo::Family& target_family, std::vector<int> nb_connected_item_per_item,
-                               std::vector<Neo::utils::Int64>& connected_item_uids,
+                               Neo::Family& target_family, std::vector<int> const& nb_connected_item_per_item,
+                               std::vector<Neo::utils::Int64> const& connected_item_uids,
                                std::string const& connectivity_name) noexcept ;
 
   //! Use this method to add connectivity of existing items
   void scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRange const& source_items,
-                               Neo::Family& target_family, std::vector<int> nb_connected_item_per_item,
-                               std::vector<Neo::utils::Int64>& connected_item_uids,
+                               Neo::Family& target_family, std::vector<int> const& nb_connected_item_per_item,
+                               std::vector<Neo::utils::Int64> const& connected_item_uids,
                                std::string const& connectivity_name) noexcept ;
 
   //! Use this method to set coordinates of new items
