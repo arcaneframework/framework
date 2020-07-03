@@ -27,6 +27,17 @@ class Family;
 struct ScheduledItemRange;
 class ItemRangeUnlocker;
 
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Asynchronous Mesh API, schedule operations and apply them with
+ * \fn applyScheduledOperations
+ *
+ * When an operation requires an array of external data, two options are available
+ * - leave ownership of the array : pass a temporary array or std::move your array
+ * - keep ownershop of the array : pass a const&. Warning in this case the array
+ *   must stay alive until \fn applyScheduledOperation is called.
+ */
+
 class Mesh {
 
 public:
