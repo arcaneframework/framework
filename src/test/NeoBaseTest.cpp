@@ -22,6 +22,25 @@ TEST(NeoUtils,test_array_view){
   EXPECT_TRUE(std::equal(vec2.begin(),vec2.end(),view.begin()));
   EXPECT_TRUE(std::equal(vec3.begin(),vec3.end(),view.begin()));
   EXPECT_TRUE(std::equal(vec4.begin(),vec4.end(),constview.begin()));
+  std::vector<int> dim2_vec{0,1,2,3,4,5};
+  // build a dim2 view from vector
+  auto dim1_size = 2;
+  auto dim2_size = 3;
+  Neo::utils::Array2View<int> dim2_view{dim1_size,dim2_size,dim2_vec.data()};
+  Neo::utils::ConstArray2View<int> dim2_const_view{dim2_size,dim1_size,dim2_vec.data()};
+  for (auto i = 0; i < dim1_size; ++i) {
+    for (auto j = 0; j < dim2_size; ++j) {
+      EXPECT_EQ(dim2_view[i][j], dim2_vec[i*dim2_size+j]);
+      EXPECT_EQ(dim2_const_view[j][i], dim2_vec[j*dim1_size+i]);
+    }
+  }
+  // Copy all Array2View data into a 1D vector
+  std::vector<int> dim2_view_vector_copy{dim2_view.copy()};
+  std::vector<int> dim2_const_view_vector_copy{dim2_const_view.copy()};
+  EXPECT_TRUE(std::equal(dim2_vec.begin(),dim2_vec.end(),dim2_const_view_vector_copy.begin()));
+  // Try out of bound error
+  EXPECT_DEATH(view[4],".*i<m_size.*");
+  EXPECT_DEATH(dim2_view[0][4],".*i<m_size.*");
 }
 
 TEST(NeoTestItemRange,test_item_range){
@@ -53,12 +72,11 @@ TEST(NeoTestItemRange,test_item_range){
 
 TEST(NeoTestProperty,test_property)
  {
-  Neo::PropertyT<Neo::utils::Int32> property{"name"};
-  std::vector<Neo::utils::Int32> values {1,2,3};
-  Neo::ItemRange item_range{Neo::ItemIndexes{{},0,3}};
-  if (property.isInitializableFrom(item_range)) {
-    property.init(item_range,values);
-  }
+   Neo::PropertyT<Neo::utils::Int32> property{"name"};
+   std::vector<Neo::utils::Int32> values {1,2,3};
+   Neo::ItemRange item_range{Neo::ItemIndexes{{},0,3}};
+   EXPECT_TRUE(property.isInitializableFrom(item_range));
+   property.init(item_range,values);
    EXPECT_EQ(values.size(),property.size());
    std::vector<Neo::utils::Int32> new_values {4,5,6};
    Neo::ItemRange new_item_range{Neo::ItemIndexes{{},3,3}};
@@ -69,7 +87,6 @@ TEST(NeoTestProperty,test_property)
    for (auto i =0; i < values.size(); ++i){
      EXPECT_EQ(property_values[i],values[i]);
    }
-
 }
 
 TEST(NeoTestArrayProperty,test_array_property)
@@ -104,6 +121,53 @@ TEST(NeoTestArrayProperty,test_array_property)
   array_property.debugPrint();
   EXPECT_EQ(21,array_property.size());
 }
+
+TEST(NeoTestPropertyView, test_property_view)
+{
+  Neo::PropertyT<Neo::utils::Int32> property{"name"};
+  std::vector<Neo::utils::Int32> values {1,2,3,10,100,1000};
+  Neo::ItemRange item_range{Neo::ItemIndexes{{},0,6}};
+  property.init(item_range,values);
+  auto property_view = property.view();
+  std::vector<std::size_t> local_ids{1,3,5};
+  auto partial_item_range = Neo::ItemRange{Neo::ItemIndexes{local_ids}};
+  auto partial_property_view = property.view(partial_item_range);
+  for (auto i = 0 ; i < item_range.size();++i) {
+    std::cout << "prop values at index " << i << " " << property_view[i] << std::endl;
+  }
+  for (auto i = 0 ; i < partial_item_range.size();++i) {
+    std::cout << "prop values at index " << i <<" " << partial_property_view[i] << std::endl;
+  }
+  // Change values
+  auto new_val = 50;
+  property_view[2] = new_val;
+  EXPECT_EQ(property[2],new_val);
+  partial_property_view[2] = new_val;
+  EXPECT_EQ(property[local_ids[2]],new_val);
+  // Check out of bound
+  EXPECT_DEATH(property_view[7],".*Error, exceeds property view size.*");
+  EXPECT_DEATH(partial_property_view[3],".*Error, exceeds property view size.*");
+
+}
+
+ TEST(NeoTestPropertyView, test_property_const_view)
+ {
+   Neo::PropertyT<Neo::utils::Int32> property{"name"};
+   std::vector<Neo::utils::Int32> values {1,2,3,10,100,1000};
+   Neo::ItemRange item_range{Neo::ItemIndexes{{},0,6}};
+   property.init(item_range,values);
+   auto property_const_view = property.constView();
+   auto partial_item_range = Neo::ItemRange{Neo::ItemIndexes{{1,3,5}}};
+   auto partial_property_const_view = property.constView(partial_item_range);
+   for (auto i = 0 ; i < item_range.size();++i) {
+     std::cout << "prop values at index " << i << " " << property_const_view[i] << std::endl;
+   }
+   for (auto i = 0 ; i < partial_item_range.size();++i) {
+     std::cout << "prop values at index " << i <<" " << partial_property_const_view[i] << std::endl;
+   }
+   EXPECT_DEATH(property_const_view[7],".*Error, exceeds property view size.*");
+   EXPECT_DEATH(partial_property_const_view[3],".*Error, exceeds property view size.*");
+ }
 
 TEST(NeoTestPropertyGraph,test_property_graph)
 {
@@ -153,7 +217,7 @@ TEST(NeoTestFamily,test_family)
   }
 }
 
-void mesh_property_test(const Neo::Mesh& mesh){
+void mesh_property_test(const Neo::MeshBase & mesh){
   std::cout << "== Print Mesh " << mesh.m_name << " Properties =="<< std::endl;
   for (const auto& [kind_name_pair,family] : mesh.m_families) {
     std::cout << "= In family " << kind_name_pair.second << " =" << std::endl;
@@ -164,7 +228,7 @@ void mesh_property_test(const Neo::Mesh& mesh){
   std::cout << "== End Print Mesh " << mesh.m_name << " Properties =="<< std::endl;
 }
 
-void prepare_mesh(Neo::Mesh& mesh){
+void prepare_mesh(Neo::MeshBase & mesh){
 
 // Adding node family and properties
 auto& node_family = mesh.getFamily(Neo::ItemKind::IK_Node,"NodeFamily");
@@ -192,7 +256,7 @@ TEST(NeoTestBaseMeshCreation,base_mesh_creation_test) {
 
 
 // creating mesh
-auto mesh = Neo::Mesh{"my_neo_mesh"};
+auto mesh = Neo::MeshBase{"my_neo_mesh"};
 auto& node_family = mesh.addFamily(Neo::ItemKind::IK_Node,"NodeFamily");
 auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell,"CellFamily");
 
@@ -205,7 +269,6 @@ std::vector<Neo::utils::Real3> node_coords{{0,0,0}, {0,1,0}, {0,0,1}};
 std::vector<Neo::utils::Int64> cell_uids{0,2,7,9};
 
 // add algos: 
-mesh.beginUpdate();
 
 // create nodes
 auto added_nodes = Neo::ItemRange{};
@@ -400,7 +463,7 @@ mesh.addAlgorithm(
                   });
 
 // launch algos
-mesh.endUpdate();
+mesh.applyAlgorithms();
 
 // test properties
 mesh_property_test(mesh);
@@ -416,14 +479,13 @@ Neo::utils::Real3 r = {0,0,0};
 std::array<Neo::utils::Real3,3> node_coords = {r,r,r};// don't get why I can't write {{0,0,0},{0,0,0},{0,0,0}}; ...??
 
 // creating mesh
-auto mesh = Neo::Mesh{"my_neo_mesh"};
+auto mesh = Neo::MeshBase{"my_neo_mesh"};
 auto& node_family = mesh.addFamily(Neo::ItemKind::IK_Node,"NodeFamily");
 auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell,"CellFamily");
 
 
 prepare_mesh(mesh);
 
-mesh.beginUpdate();
 
 mesh.addAlgorithm(Neo::InProperty{node_family,node_family.lidPropName()},
                   Neo::OutProperty{node_family,"node_coords"},
@@ -435,6 +497,6 @@ mesh.addAlgorithm(Neo::InProperty{node_family,node_family.lidPropName()},
     //node_coords_property.appendAt(lids, node_coords);// steal node_coords memory//todo
   });
 
-mesh.endUpdate();
+mesh.applyAlgorithms();
   
 }

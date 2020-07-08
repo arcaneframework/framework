@@ -21,6 +21,8 @@
 
 #include "gtest/gtest.h"
 
+#include "neo/Utils.h"
+
 /*-------------------------
  * sdc - (C)-2019 -
  * NEtwork Oriented kernel
@@ -33,50 +35,34 @@
 namespace Neo {
 
 enum class ItemKind {
-  IK_Node, IK_Edge, IK_Face, IK_Cell, IK_Dof, IK_None
+  IK_None, IK_Node, IK_Edge, IK_Face, IK_Cell, IK_Dof
 };
-
-
 
 namespace utils {
-using Int64 = long int;
-using Int32 = int;
-struct Real3 { double x,y,z;};
-template <typename T>
-struct ArrayView {
-  std::size_t m_size;
-  T* m_ptr;
-  T& operator[](int const i) {assert(i<m_size); return *(m_ptr+i);}
-  T* begin() {return m_ptr;}
-  T* end()   {return m_ptr+m_size;}
-  std::size_t size() const {return m_size;}
-  std::vector<T> copy() { std::vector<T> vec(m_size);
-    std::copy(this->begin(), this->end(), vec.begin());
-    return vec;
+
+inline std::string itemKindName(ItemKind item_kind){
+  switch (item_kind) {
+  case ItemKind::IK_Node :
+    return "IK_Node";
+    break;
+  case ItemKind::IK_Edge :
+    return "IK_Edge";
+    break;
+  case ItemKind::IK_Face :
+    return "IK_Face";
+    break;
+  case ItemKind::IK_Cell :
+    return "IK_Cell";
+    break;
+  case ItemKind::IK_Dof :
+    return "IK_Dof";
+    break;
+  case ItemKind::IK_None :
+    return "IK_None";
+    break;
   }
-};
+}
 
-template <typename T>
-struct ConstArrayView {
-  std::size_t m_size;
-  const T* m_ptr;
-  const T& operator[](int const i) const {assert(i<m_size); return *(m_ptr+i);}
-  const T* begin() const {return m_ptr;}
-  const T* end() const  {return m_ptr+m_size;}
-  std::size_t size() const {return m_size;}
-  std::vector<T> copy() { std::vector<T> vec(m_size);
-    std::copy(this->begin(), this->end(), vec.begin());
-    return vec;
-  }
-};
-
-static constexpr utils::Int32 NULL_ITEM_LID = -1;
-}// end namespace utils
-
-inline
-std::ostream& operator<<(std::ostream& oss, const Neo::utils::Real3& real3){
-  oss << "{" << real3.x  << ","  << real3.y << "," << real3.z << "}";
-  return oss;
 }
 
 struct ItemLocalId {};
@@ -86,7 +72,7 @@ struct ItemUniqueId {};
 using DataType = std::variant<utils::Int32, utils::Int64, utils::Real3>;// ajouter des types dans la def de famille si necessaire
 using DataIndex = std::variant<int,ItemUniqueId>;
 
-struct ItemIndexes {
+struct ItemIndexes { // todo change type, theses are local ids cf. Issue#7
   std::vector<std::size_t> m_non_contiguous_indexes = {};
   std::size_t m_first_contiguous_index = 0;
   std::size_t m_nb_contiguous_indexes = 0;
@@ -130,9 +116,10 @@ struct ItemRange {
   bool isEmpty() const  {return size() == 0;}
   ItemIndexes m_indexes;
 };
+}// end namespace Neo
 
 inline
-std::ostream &operator<<(std::ostream &os, const ItemRange &item_range){
+std::ostream &operator<<(std::ostream &os, const Neo::ItemRange &item_range){
   os << "Item Range : lids ";
   for (auto lid : item_range.m_indexes.m_non_contiguous_indexes) {
     os << lid;
@@ -147,6 +134,7 @@ std::ostream &operator<<(std::ostream &os, const ItemRange &item_range){
   return os;
 }
 
+namespace Neo{
 namespace utils {
 inline
 Int32 maxItem(ItemRange const &item_range) {
@@ -163,6 +151,28 @@ Int32 minItem(ItemRange const &item_range) {
 }
 }
 
+template <typename DataType>
+class PropertyView
+{
+public:
+  std::vector<int> const m_indexes;
+  Neo::utils::ArrayView<DataType> m_data_view;
+  DataType& operator[] (int index) {
+    assert(("Error, exceeds property view size",index < m_indexes.size()));
+    return m_data_view[m_indexes[index]];}
+};
+
+template <typename DataType>
+class PropertyConstView
+{
+public:
+  std::vector<int> const m_indexes;
+  Neo::utils::ConstArrayView<DataType> m_data_view;
+  DataType const& operator[] (int index) const{
+    assert(("Error, exceeds property view size",index < m_indexes.size()));
+    return m_data_view[m_indexes[index]];}
+};
+
 class PropertyBase{
 public:
   std::string m_name;
@@ -171,6 +181,7 @@ public:
 template <typename DataType>
 class PropertyT : public PropertyBase  {
 public:
+  std::vector<DataType> m_data;
 
   void init(const ItemRange& item_range, const DataType& value){
     if (isInitializableFrom(item_range))
@@ -210,11 +221,26 @@ public:
     std::cout << std::endl;
   }
 
-  Neo::utils::ArrayView<DataType> values() {return Neo::utils::ArrayView<DataType>{m_data.size(), m_data.data()};}
+  utils::ArrayView<DataType> values() {return Neo::utils::ArrayView<DataType>{m_data.size(), m_data.data()};}
 
   std::size_t size() const {return m_data.size();}
 
-  std::vector<DataType> m_data;
+  PropertyView<DataType> view() {
+    std::vector<int> indexes(m_data.size()); std::iota(indexes.begin(),indexes.end(),0);
+    return PropertyView<DataType>{std::move(indexes),Neo::utils::ArrayView<DataType>{m_data.size(),m_data.data()}};}
+  PropertyView<DataType> view(ItemRange const& item_range) {
+    std::vector<int> indexes; indexes.reserve(item_range.size());
+    for (auto item : item_range) indexes.push_back(item);
+    return PropertyView<DataType>{std::move(indexes),Neo::utils::ArrayView<DataType>{m_data.size(),m_data.data()}};}
+
+  PropertyConstView<DataType> constView() {
+    std::vector<int> indexes(m_data.size()); std::iota(indexes.begin(),indexes.end(),0);
+    return PropertyConstView<DataType>{std::move(indexes),Neo::utils::ConstArrayView<DataType>{m_data.size(),m_data.data()}};}
+  PropertyConstView<DataType> constView(ItemRange const& item_range) {
+    std::vector<int> indexes; indexes.reserve(item_range.size());
+    for (auto item : item_range) indexes.push_back(item);
+    return PropertyConstView<DataType>{std::move(indexes),Neo::utils::ConstArrayView<DataType>{m_data.size(),m_data.data()}};}
+
 };
 
 template <typename DataType>
@@ -516,15 +542,25 @@ template <typename...T> VisitorOverload(T...) -> VisitorOverload<T...>;
 class Family {
 public:
 
-  Family(ItemKind ik, std::string name) : m_ik(ik), m_name(std::move(name)), m_prop_lid_name(m_name) {
+  ItemKind m_ik;
+  std::string m_name;
+  std::string m_prop_lid_name;
+  std::map<std::string, Property> m_properties;
+  ItemRange m_all;
+
+  Family(ItemKind ik, std::string name) : m_ik(ik), m_name(std::move(name)), m_prop_lid_name(name) {
     m_prop_lid_name.append("_lids");
     m_properties[lidPropName()] = ItemLidsProperty{lidPropName()};
   }
 
+  constexpr std::string const& name() const noexcept {return m_name;}
+  constexpr ItemKind const& itemKind() const noexcept {return m_ik;}
+
   template<typename T>
   void addProperty(std::string const& name){
     auto [iter,is_inserted] = m_properties.insert(std::make_pair(name,PropertyT<T>{name}));
-    if (is_inserted) std::cout << "Add property " << name << " in Family " << m_name<< std::endl;
+    if (is_inserted) std::cout << "Add property " << name << " in Family " << m_name
+                << std::endl;
   };
 
   Property& getProperty(const std::string& name) {
@@ -552,7 +588,8 @@ public:
   template <typename T>
   void addArrayProperty(std::string const& name){
     auto [iter, is_inserted] = m_properties.insert(std::make_pair(name, ArrayProperty<T>{name}));
-    if (is_inserted) std::cout << "Add array property " << name << " in Family " << m_name<< std::endl;
+    if (is_inserted) std::cout << "Add array property " << name << " in Family " << m_name
+                << std::endl;
   }
 
   std::string const&  lidPropName()
@@ -579,12 +616,7 @@ public:
     return std::get<ItemLidsProperty>(prop_iterator->second);
   }
 
-  ItemKind m_ik;
-  std::string m_name;
-  std::string m_prop_lid_name;
-//    ItemLidsProperty* m_lid_property; // todo try to avoid raw ptr
-  std::map<std::string, Property> m_properties;
-  ItemRange m_all;
+
 
 private :
   Property& _getProperty(const std::string& name) {
@@ -699,23 +731,23 @@ struct NoDepsDualOutAlgoHandler : public IAlgorithm {
   }
 };
 
-class Mesh;
+class MeshBase;
 
-class ValidMeshState{
-  ValidMeshState() {}
-  friend class Mesh;
+class ItemRangeUnlocker {
+  constexpr ItemRangeUnlocker() {}
+  friend class MeshBase;
 };
 
 
-struct AddedItemRange{
+struct ScheduledItemRange {
 
-  ItemRange &get(ValidMeshState const &valid_mesh_state){
+  ItemRange &get(ItemRangeUnlocker const &valid_mesh_state){
     return new_items;
   }
   ItemRange new_items;
 };
 
-class Mesh {
+class MeshBase {
 public:
   Family& addFamily(ItemKind ik, std::string&& name) {
     std::cout << "Add Family " << name << " in mesh " << m_name << std::endl;
@@ -752,12 +784,11 @@ public:
     m_algos.push_back(std::make_unique<NoDepsDualOutAlgoHandler<decltype(algo)>>(std::move(out_property1),std::move(out_property2),std::forward<Algorithm>(algo)));
   }
 
-  void beginUpdate() { std::cout << "begin mesh update" << std::endl;}
-  ValidMeshState endUpdate() {
-    std::cout << "end mesh update" << std::endl;
+  ItemRangeUnlocker applyAlgorithms() {
+    std::cout << "apply added algorithms" << std::endl;
     std::for_each(m_algos.begin(),m_algos.end(),[](auto& algo){(*algo.get())();});
     m_algos.clear();
-    return ValidMeshState{};
+    return ItemRangeUnlocker{};
   }
 
 
