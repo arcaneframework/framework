@@ -43,9 +43,9 @@ TEST(NeoMeshApiTest,AddItemTest)
 {
   auto mesh = Neo::Mesh{"AddItemsTestMesh"};
   auto cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell,"CellFamily");
-  auto added_cells = Neo::ScheduledItemRange{};
-  auto added_cells2 = Neo::ScheduledItemRange{};
-  auto added_cells3 = Neo::ScheduledItemRange{};
+  auto added_cells = Neo::FutureItemRange{};
+  auto added_cells2 = Neo::FutureItemRange{};
+  auto added_cells3 = Neo::FutureItemRange{};
   {
     // check lifetime
     std::vector<Neo::utils::Int64> cell_uids{1,10,100};
@@ -99,8 +99,8 @@ TEST(NeoMeshApiTest,SetNodeCoordsTest)
 {
   auto mesh = Neo::Mesh{"SetNodeCoordsTestMesh"};
   auto node_family = mesh.addFamily(Neo::ItemKind::IK_Node,"NodeFamily");
-  auto added_nodes  = Neo::ScheduledItemRange{};
-  auto added_nodes2 = Neo::ScheduledItemRange{};
+  auto added_nodes  = Neo::FutureItemRange{};
+  auto added_nodes2 = Neo::FutureItemRange{};
   std::vector<Neo::utils::Int64> node_uids{1,10,100};
   mesh.scheduleAddItems(node_family,node_uids,added_nodes);
   mesh.scheduleAddItems(node_family,{0,5},added_nodes2);
@@ -153,9 +153,9 @@ TEST(NeoMeshApiTest,AddItemConnectivity)
   std::vector<Neo::utils::Int64> node_uids {0,1,2,3,4,5};
   std::vector<Neo::utils::Int64> cell_uids{0,1};
   std::vector<Neo::utils::Int64> dof_uids{0,1,2,3,4};
-  auto added_nodes = Neo::ScheduledItemRange{};
-  auto added_cells = Neo::ScheduledItemRange{};
-  auto added_dofs = Neo::ScheduledItemRange{};
+  auto added_nodes = Neo::FutureItemRange{};
+  auto added_cells = Neo::FutureItemRange{};
+  auto added_dofs = Neo::FutureItemRange{};
   mesh.scheduleAddItems(node_family, node_uids, added_nodes);
   mesh.scheduleAddItems(cell_family, cell_uids, added_cells);
   mesh.scheduleAddItems(dof_family, dof_uids, added_dofs);

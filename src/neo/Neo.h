@@ -739,7 +739,7 @@ class ItemRangeUnlocker {
 };
 
 
-struct ScheduledItemRange {
+struct FutureItemRange {
 
   ItemRange &get(ItemRangeUnlocker const &valid_mesh_state){
     return new_items;

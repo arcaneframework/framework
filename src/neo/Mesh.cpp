@@ -28,7 +28,7 @@ Neo::Family& Neo::Mesh::addFamily(Neo::ItemKind item_kind, std::string family_na
   return cell_family;
 }
 
-void Neo::Mesh::scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> uids, Neo::ScheduledItemRange & added_item_range) noexcept
+void Neo::Mesh::scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> uids, Neo::FutureItemRange & added_item_range) noexcept
 {
   auto& added_items = added_item_range.new_items;
   // Add items
@@ -95,7 +95,7 @@ void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRan
       });
 }
 
-void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::ScheduledItemRange const& source_items,
+void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::FutureItemRange const& source_items,
                              Neo::Family& target_family, std::vector<int> nb_connected_item_per_item,
                              std::vector<Neo::utils::Int64> connected_item_uids,
                              std::string const& connectivity_name) noexcept
@@ -112,7 +112,7 @@ void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRan
   scheduleAddConnectivity(source_family,source_items,target_family,std::move(nb_connected_item_per_item_array),std::move(connected_item_uids), connectivity_name);
 }
 
-void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::ScheduledItemRange const& source_items,
+void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::FutureItemRange const& source_items,
                                         Neo::Family& target_family, int nb_connected_item_per_item,
                                         std::vector<Neo::utils::Int64> connected_item_uids,
                                         std::string const& connectivity_name) noexcept
@@ -121,7 +121,7 @@ void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::Schedul
   scheduleAddConnectivity(source_family,source_items.new_items,target_family,std::move(nb_connected_item_per_item_array),std::move(connected_item_uids), connectivity_name);
 }
 
-void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::ScheduledItemRange const&future_added_item_range,std::vector<Neo::utils::Real3> item_coords) noexcept
+void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::FutureItemRange const&future_added_item_range,std::vector<Neo::utils::Real3> item_coords) noexcept
 {
   auto coord_prop_name = _itemCoordPropertyName(item_family);
   item_family.addProperty<Neo::utils::Real3>(coord_prop_name);
