@@ -32,11 +32,10 @@ class ItemRangeUnlocker;
  * \brief Asynchronous Mesh API, schedule operations and apply them with
  * \fn applyScheduledOperations
  *
- * When an operation requires an array of external data, two options are available
- * - leave ownership of the array : pass a temporary array or std::move your array (&& signature);
- *      In this case the array is 'stolen'
- * - keep ownership of the array : pass a const&.
- *      In this case the array is copied.
+ * When an operation requires an array of external data, since the call to
+ * mesh operations is asynchronous the array is copied.
+ * To avoid memory copy pass as much as possible your data arrays by rvalue
+ * (temporary array or std::move your array);
  *
  */
 
