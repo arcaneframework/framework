@@ -45,9 +45,15 @@ TEST(NeoMeshApiTest,AddItemTest)
   auto cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell,"CellFamily");
   auto added_cells = Neo::ScheduledItemRange{};
   auto added_cells2 = Neo::ScheduledItemRange{};
-  std::vector<Neo::utils::Int64> cell_uids{1,10,100};
+  auto added_cells3 = Neo::ScheduledItemRange{};
+  {
+    // check lifetime
+    std::vector<Neo::utils::Int64> cell_uids{1,10,100};
+    mesh.scheduleAddItems(cell_family,cell_uids,added_cells2);
+  }
+  std::vector<Neo::utils::Int64> cell_uids2{1,10,100};
   mesh.scheduleAddItems(cell_family,{2,3,4},added_cells); // memory stealing API
-  mesh.scheduleAddItems(cell_family,cell_uids,added_cells2);
+  mesh.scheduleAddItems(cell_family,std::move(cell_uids2),added_cells3);// memory stealing API
   auto item_range_unlocker = mesh.applyScheduledOperations();
   auto new_cells = added_cells.get(item_range_unlocker);
   for (auto item : new_cells) {
@@ -57,6 +63,11 @@ TEST(NeoMeshApiTest,AddItemTest)
   for (auto item : new_cells2) {
     std::cout << "Added local id " << item << std::endl;
   }
+  auto new_cells3 = added_cells3.get(item_range_unlocker);
+  for (auto item : new_cells3) {
+    std::cout << "Added local id " << item << std::endl;
+  }
+  std::vector<Neo::utils::Int64> cell_uids{1,10,100};
   EXPECT_EQ(cell_uids.size()+3,new_cells.size()+new_cells2.size());
   auto& cell_uid_property = cell_family.getConcreteProperty<Neo::Mesh::UidPropertyType>
       (mesh.uniqueIdPropertyName(cell_family.name()));
@@ -68,6 +79,11 @@ TEST(NeoMeshApiTest,AddItemTest)
   }
   i = 0;
   for (auto item : new_cells2) {
+    std::cout << "Added unique id " << cell_uid_property[item] << std::endl;
+    EXPECT_EQ(cell_uids[i++],cell_uid_property[item]);
+  }
+  i = 0;
+  for (auto item : new_cells3) {
     std::cout << "Added unique id " << cell_uid_property[item] << std::endl;
     EXPECT_EQ(cell_uids[i++],cell_uid_property[item]);
   }
@@ -88,15 +104,27 @@ TEST(NeoMeshApiTest,SetNodeCoordsTest)
   std::vector<Neo::utils::Int64> node_uids{1,10,100};
   mesh.scheduleAddItems(node_family,node_uids,added_nodes);
   mesh.scheduleAddItems(node_family,{0,5},added_nodes2);
-  std::vector<Neo::utils::Real3> node_coords{{0,0,0},{0,0,1},{0,1,0}};
-  mesh.scheduleSetItemCoords(node_family,added_nodes,node_coords);
+  {
+    std::vector<Neo::utils::Real3> node_coords{{0,0,0},{0,0,1},{0,1,0}};
+    mesh.scheduleSetItemCoords(node_family,added_nodes,node_coords);
+  } // Check memory
   mesh.scheduleSetItemCoords(node_family, added_nodes2,{{1,0,0},{1,1,1}});// memory stealing API
   auto item_range_unlocker  = mesh.applyScheduledOperations();
-  auto& added_node_range = added_nodes.get(item_range_unlocker);
-  auto & node_coord_property = mesh.getItemCoordProperty(node_family);
+  auto& added_node_range  = added_nodes.get(item_range_unlocker);
+  auto& added_node_range2 = added_nodes2.get(item_range_unlocker);
+  auto& node_coord_property = mesh.getItemCoordProperty(node_family);
   auto const& node_coord_property_const = mesh.getItemCoordProperty(node_family);
   auto i = 0;
+  std::vector<Neo::utils::Real3> node_coords{{0,0,0},{0,0,1},{0,1,0}};
   for (auto item : added_node_range) {
+    std::cout << "Node coord for item " << item << " = " << node_coord_property_const[item]<< std::endl;
+    EXPECT_EQ(node_coord_property_const[item].x,node_coords[i].x);
+    EXPECT_EQ(node_coord_property_const[item].y,node_coords[i].y);
+    EXPECT_EQ(node_coord_property_const[item].z,node_coords[i++].z);
+  }
+  i = 0;
+  node_coords = {{1,0,0},{1,1,1}};
+  for (auto item : added_node_range2) {
     std::cout << "Node coord for item " << item << " = " << node_coord_property_const[item]<< std::endl;
     EXPECT_EQ(node_coord_property_const[item].x,node_coords[i].x);
     EXPECT_EQ(node_coord_property_const[item].y,node_coords[i].y);
@@ -133,12 +161,14 @@ TEST(NeoMeshApiTest,AddItemConnectivity)
   mesh.scheduleAddItems(dof_family, dof_uids, added_dofs);
   // Create connectivity (fictive mesh) cells with 3 nodes
   auto nb_node_per_cell = 4;
-  std::vector<Neo::utils::Int64> cell_nodes {0,1,2,3,5,0,3,4};
-  mesh.scheduleAddConnectivity(cell_family,added_cells,node_family,nb_node_per_cell,cell_nodes,"cell_to_nodes");
+  {
+    std::vector<Neo::utils::Int64> cell_nodes {0,1,2,3,5,0,3,4};
+    mesh.scheduleAddConnectivity(cell_family,added_cells,node_family,nb_node_per_cell,cell_nodes,"cell_to_nodes");
+  } // check memory
   // Connectivity cell to dof
   std::vector<int> nb_dof_per_cell{3,2};
   std::vector<Neo::utils::Int64> cell_dofs {0,3,4,2,1,};
-  mesh.scheduleAddConnectivity(cell_family,added_cells,dof_family,nb_dof_per_cell,cell_dofs,"cell_to_dofs");
+  mesh.scheduleAddConnectivity(cell_family,added_cells,dof_family,std::move(nb_dof_per_cell),std::move(cell_dofs),"cell_to_dofs");
   // apply
   auto added_range_unlocker = mesh.applyScheduledOperations();
   // Add further connectivity
