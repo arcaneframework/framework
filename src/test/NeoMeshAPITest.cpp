@@ -156,7 +156,7 @@ TEST(NeoMeshApiTest,AddItemConnectivity)
   // Connectivity cell to dof
   std::vector<int> nb_dof_per_cell{3,2};
   std::vector<Neo::utils::Int64> cell_dofs {0,3,4,2,1,};
-  mesh.scheduleAddConnectivity(cell_family,added_cells,dof_family,nb_dof_per_cell,cell_dofs,"cell_to_dofs");
+  mesh.scheduleAddConnectivity(cell_family,added_cells,dof_family,std::move(nb_dof_per_cell),std::move(cell_dofs),"cell_to_dofs");
   // apply
   auto added_range_unlocker = mesh.applyScheduledOperations();
   // Add further connectivity
