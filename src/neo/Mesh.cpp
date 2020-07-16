@@ -121,7 +121,7 @@ void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::Schedul
   scheduleAddConnectivity(source_family,source_items.new_items,target_family,std::move(nb_connected_item_per_item_array),std::move(connected_item_uids), connectivity_name);
 }
 
-void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::ScheduledItemRange const& future_added_item_range,std::vector<Neo::utils::Real3> const& item_coords) noexcept
+void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::ScheduledItemRange const&future_added_item_range,std::vector<Neo::utils::Real3> item_coords) noexcept
 {
   auto coord_prop_name = _itemCoordPropertyName(item_family);
   item_family.addProperty<Neo::utils::Real3>(coord_prop_name);
@@ -129,23 +129,8 @@ void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::ScheduledIt
   m_mesh_graph->addAlgorithm(
           Neo::InProperty{item_family, item_family.lidPropName()},
           Neo::OutProperty{item_family,coord_prop_name},
-          [&item_coords,&added_items](Neo::ItemLidsProperty const& item_lids_property,
-                                      Neo::PropertyT<Neo::utils::Real3>& item_coords_property){
-            std::cout << "Algorithm: register item coords" << std::endl;
-            item_coords_property.append(added_items, item_coords);
-            item_coords_property.debugPrint();
-          });
-}
-
-void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::ScheduledItemRange const&future_added_item_range,std::vector<Neo::utils::Real3>&& item_coords) noexcept
-{
-  auto coord_prop_name = _itemCoordPropertyName(item_family);
-  item_family.addProperty<Neo::utils::Real3>(coord_prop_name);
-  auto& added_items = future_added_item_range.new_items;
-  m_mesh_graph->addAlgorithm(
-          Neo::InProperty{item_family, item_family.lidPropName()},
-          Neo::OutProperty{item_family,coord_prop_name},
-          [item_coords,&added_items](Neo::ItemLidsProperty const& item_lids_property,
+          [item_coords{std::move(item_coords)},&added_items]
+          (Neo::ItemLidsProperty const& item_lids_property,
                                      Neo::PropertyT<Neo::utils::Real3>& item_coords_property){
             std::cout << "Algorithm: register item coords" << std::endl;
             if (item_coords_property.isInitializableFrom(added_items)) {

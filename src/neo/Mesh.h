@@ -88,8 +88,7 @@ public:
                                std::string const& connectivity_name) noexcept ;
 
   //! Use this method to set coordinates of new items
-  void scheduleSetItemCoords(Neo::Family& item_family, Neo::ScheduledItemRange const& future_added_item_range,std::vector<Neo::utils::Real3> const& item_coords) noexcept ;
-  void scheduleSetItemCoords(Neo::Family& item_family, Neo::ScheduledItemRange const& future_added_item_range,std::vector<Neo::utils::Real3> && item_coords) noexcept ;
+  void scheduleSetItemCoords(Neo::Family& item_family, Neo::ScheduledItemRange const& future_added_item_range,std::vector<Neo::utils::Real3> item_coords) noexcept ;
 
   Neo::ItemRangeUnlocker applyScheduledOperations() noexcept ;
 
