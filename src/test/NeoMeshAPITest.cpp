@@ -104,15 +104,27 @@ TEST(NeoMeshApiTest,SetNodeCoordsTest)
   std::vector<Neo::utils::Int64> node_uids{1,10,100};
   mesh.scheduleAddItems(node_family,node_uids,added_nodes);
   mesh.scheduleAddItems(node_family,{0,5},added_nodes2);
-  std::vector<Neo::utils::Real3> node_coords{{0,0,0},{0,0,1},{0,1,0}};
-  mesh.scheduleSetItemCoords(node_family,added_nodes,node_coords);
+  {
+    std::vector<Neo::utils::Real3> node_coords{{0,0,0},{0,0,1},{0,1,0}};
+    mesh.scheduleSetItemCoords(node_family,added_nodes,node_coords);
+  } // Check memory
   mesh.scheduleSetItemCoords(node_family, added_nodes2,{{1,0,0},{1,1,1}});// memory stealing API
   auto item_range_unlocker  = mesh.applyScheduledOperations();
-  auto& added_node_range = added_nodes.get(item_range_unlocker);
+  auto& added_node_range  = added_nodes.get(item_range_unlocker);
+  auto& added_node_range2 = added_nodes2.get(item_range_unlocker);
   auto& node_coord_property = mesh.getItemCoordProperty(node_family);
   auto const& node_coord_property_const = mesh.getItemCoordProperty(node_family);
   auto i = 0;
+  std::vector<Neo::utils::Real3> node_coords{{0,0,0},{0,0,1},{0,1,0}};
   for (auto item : added_node_range) {
+    std::cout << "Node coord for item " << item << " = " << node_coord_property_const[item]<< std::endl;
+    EXPECT_EQ(node_coord_property_const[item].x,node_coords[i].x);
+    EXPECT_EQ(node_coord_property_const[item].y,node_coords[i].y);
+    EXPECT_EQ(node_coord_property_const[item].z,node_coords[i++].z);
+  }
+  i = 0;
+  node_coords = {{1,0,0},{1,1,1}};
+  for (auto item : added_node_range2) {
     std::cout << "Node coord for item " << item << " = " << node_coord_property_const[item]<< std::endl;
     EXPECT_EQ(node_coord_property_const[item].x,node_coords[i].x);
     EXPECT_EQ(node_coord_property_const[item].y,node_coords[i].y);
