@@ -733,15 +733,14 @@ struct NoDepsDualOutAlgoHandler : public IAlgorithm {
 
 class MeshBase;
 
-class ItemRangeUnlocker {
-  constexpr ItemRangeUnlocker() {}
+class EndOfMeshUpdate {
   friend class MeshBase;
 };
 
 
-struct ScheduledItemRange {
+struct FutureItemRange {
 
-  ItemRange &get(ItemRangeUnlocker const &valid_mesh_state){
+  ItemRange &get(EndOfMeshUpdate const &){
     return new_items;
   }
   ItemRange new_items;
@@ -784,11 +783,11 @@ public:
     m_algos.push_back(std::make_unique<NoDepsDualOutAlgoHandler<decltype(algo)>>(std::move(out_property1),std::move(out_property2),std::forward<Algorithm>(algo)));
   }
 
-  ItemRangeUnlocker applyAlgorithms() {
+  EndOfMeshUpdate applyAlgorithms() {
     std::cout << "apply added algorithms" << std::endl;
     std::for_each(m_algos.begin(),m_algos.end(),[](auto& algo){(*algo.get())();});
     m_algos.clear();
-    return ItemRangeUnlocker{};
+    return EndOfMeshUpdate{};
   }
 
 

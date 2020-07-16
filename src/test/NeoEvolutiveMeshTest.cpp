@@ -32,7 +32,7 @@ auto& addFaceFamily(Neo::MeshBase & mesh,std::string family_name){
 }
 
 // todo create another signature where uids are moved, or make clear that they potentially are...
-void addItems(Neo::MeshBase & mesh, Neo::Family& family, std::vector<Neo::utils::Int64>& uids, Neo::ScheduledItemRange & added_item_range)
+void addItems(Neo::MeshBase & mesh, Neo::Family& family, std::vector<Neo::utils::Int64>& uids, Neo::FutureItemRange & added_item_range)
 {
   auto& added_items = added_item_range.new_items;
   // Add items
@@ -92,29 +92,29 @@ void addConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
       });
 
   // handle target item removal in connectivity : todo plug graph in Neo otherwise this won't work
-  std::string removed_item_property_name = "removed_items"+source_family.m_name;
-  source_family.addProperty<Neo::utils::Int32>(removed_item_property_name);
-  mesh.addAlgorithm(
-      Neo::InProperty{source_family,removed_item_property_name},
-      Neo::OutProperty{source_family,connectivity_name},
-      [&source_family,&target_family](
-          Neo::PropertyT<Neo::utils::Int32> const& source_family_removed_items,
-          Neo::ArrayProperty<Neo::utils::Int32> &connectivity){
-        std::cout << "Algorithm update connectivity after remove " << connectivity.m_name << std::endl;
-        for (auto item : source_family.all()) {
-          auto connected_items = connectivity[item];
-          for (auto& connected_item : connected_items){
-            if (connected_item != Neo::utils::NULL_ITEM_LID && source_family_removed_items[connected_item] == 1) {
-              std::cout << "modify connected item : "<< connected_item << target_family.m_name << std::endl;
-              connected_item = Neo::utils::NULL_ITEM_LID;
-            }
-          }
-        }
-      });
+//  std::string removed_item_property_name = "removed_items"+source_family.m_name;
+//  source_family.addProperty<Neo::utils::Int32>(removed_item_property_name);
+//  mesh.addAlgorithm(
+//      Neo::InProperty{source_family,removed_item_property_name},
+//      Neo::OutProperty{source_family,connectivity_name},
+//      [&source_family,&target_family](
+//          Neo::PropertyT<Neo::utils::Int32> const& source_family_removed_items,
+//          Neo::ArrayProperty<Neo::utils::Int32> &connectivity){
+//        std::cout << "Algorithm update connectivity after remove " << connectivity.m_name << std::endl;
+//        for (auto item : source_family.all()) {
+//          auto connected_items = connectivity[item];
+//          for (auto& connected_item : connected_items){
+//            if (connected_item != Neo::utils::NULL_ITEM_LID && source_family_removed_items[connected_item] == 1) {
+//              std::cout << "modify connected item : "<< connected_item << target_family.m_name << std::endl;
+//              connected_item = Neo::utils::NULL_ITEM_LID;
+//            }
+//          }
+//        }
+//      });
 }
 
 void addConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
-                     Neo::ScheduledItemRange &source_items,
+                     Neo::FutureItemRange &source_items,
                      Neo::Family& target_family,
                      int nb_connected_item_per_item,
                      std::vector<Neo::utils::Int64>& connected_item_uids)
@@ -125,7 +125,7 @@ void addConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
 
 
 // todo : define 2 signatures to indicate eventual memory stealing...?
-void setNodeCoords(Neo::MeshBase & mesh, Neo::Family& node_family, Neo::ScheduledItemRange & added_node_range, std::vector<Neo::utils::Real3>& node_coords){
+void setNodeCoords(Neo::MeshBase & mesh, Neo::Family& node_family, Neo::FutureItemRange & added_node_range, std::vector<Neo::utils::Real3>& node_coords){
   node_family.addProperty<Neo::utils::Real3>(std::string("node_coords"));
   auto& added_nodes = added_node_range.new_items;
   mesh.addAlgorithm(
@@ -213,9 +213,9 @@ void addCells(Neo::MeshBase &mesh){
 
   std::vector<Neo::utils::Int64> face_nodes{6,7,8,9,9,10,10,11,1,7,2,8,0,1,2,3,3,4,4,5};
 
-  auto added_cells = Neo::ScheduledItemRange{};
-  auto added_nodes = Neo::ScheduledItemRange{};
-  auto added_faces = Neo::ScheduledItemRange{};
+  auto added_cells = Neo::FutureItemRange{};
+  auto added_nodes = Neo::FutureItemRange{};
+  auto added_faces = Neo::FutureItemRange{};
   addItems(mesh, cell_family, cell_uids, added_cells);
   addItems(mesh, node_family, node_uids, added_nodes);
   addItems(mesh, face_family, face_uids, added_faces);
@@ -265,6 +265,6 @@ TEST(EvolutiveMeshTest,RemoveCells)
   // Remove cell 0, 1 and 2
   std::vector<Neo::utils::Int64> removed_cells{0,1,2};
   removeItems(mesh,mesh.getFamily(Neo::ItemKind::IK_Cell, cell_family_name),removed_cells);
-  mesh.applyAlgorithms();
+//  mesh.applyAlgorithms(); // todo plug graph to activate this test.
 
 }

@@ -50,7 +50,7 @@ namespace StaticMesh {
     return cell_family;
   }
 
-  void addItems(Neo::MeshBase & mesh, Neo::Family& family, std::vector<Neo::utils::Int64> const& uids, Neo::ScheduledItemRange & added_item_range)
+  void addItems(Neo::MeshBase & mesh, Neo::Family& family, std::vector<Neo::utils::Int64> const& uids, Neo::FutureItemRange & added_item_range)
   {
     auto& added_items = added_item_range.new_items;
     // Add items
@@ -123,7 +123,7 @@ namespace StaticMesh {
   }
 
   void addConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
-                       Neo::ScheduledItemRange &source_items,
+                       Neo::FutureItemRange &source_items,
                        Neo::Family& target_family,
                        std::vector<size_t>&& nb_connected_item_per_items,
                        std::vector<Neo::utils::Int64> const& connected_item_uids)
@@ -213,7 +213,7 @@ namespace StaticMesh {
   }
 
   void addOrientedConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
-                               Neo::ScheduledItemRange &source_items,
+                               Neo::FutureItemRange &source_items,
                                Neo::Family& target_family,
                                std::vector<size_t>&& nb_connected_item_per_items,
                                std::vector<Neo::utils::Int64> const& connected_item_uids,
@@ -246,7 +246,7 @@ namespace StaticMesh {
  }
 
   // todo : define 2 signatures to indicate eventual memory stealing...?
-  void setNodeCoords(Neo::MeshBase & mesh, Neo::Family& node_family, Neo::ScheduledItemRange & added_node_range, std::vector<Neo::utils::Real3>& node_coords){
+  void setNodeCoords(Neo::MeshBase & mesh, Neo::Family& node_family, Neo::FutureItemRange & added_node_range, std::vector<Neo::utils::Real3>& node_coords){
     node_family.addProperty<Neo::utils::Real3>(std::string("node_coords"));
     auto& added_nodes = added_node_range.new_items;
     mesh.addAlgorithm(
@@ -471,9 +471,9 @@ namespace PolyhedralMeshTest {
     auto &cell_family = addCellFamily(mesh, StaticMesh::cell_family_name);
     auto &node_family = addNodeFamily(mesh, StaticMesh::node_family_name);
     auto &face_family = addFaceFamily(mesh, StaticMesh::face_family_name);
-    auto added_cells = Neo::ScheduledItemRange{};
-    auto added_nodes = Neo::ScheduledItemRange{};
-    auto added_faces = Neo::ScheduledItemRange{};
+    auto added_cells = Neo::FutureItemRange{};
+    auto added_nodes = Neo::FutureItemRange{};
+    auto added_faces = Neo::FutureItemRange{};
     StaticMesh::addItems(mesh, cell_family, cell_uids, added_cells);
     StaticMesh::addItems(mesh, node_family, node_uids, added_nodes);
     StaticMesh::addItems(mesh, face_family, face_uids, added_faces);
@@ -706,8 +706,8 @@ TEST(PolyhedralTest,ItemOrientationCheckTest){
   std::vector<int> face_orientation_in_cells{1,-1,-1,1,-1,1,-1,-1};
   auto& cell_family = StaticMesh::addFamily(mesh,Neo::ItemKind::IK_Cell, "CellFamily");
   auto& face_family = StaticMesh::addFamily(mesh,Neo::ItemKind::IK_Face, "FaceFamily");
-  auto added_cells = Neo::ScheduledItemRange{};
-  auto added_faces = Neo::ScheduledItemRange{};
+  auto added_cells = Neo::FutureItemRange{};
+  auto added_faces = Neo::FutureItemRange{};
   StaticMesh::addItems(mesh,cell_family,cell_uids,added_cells);
   StaticMesh::addItems(mesh,face_family,face_uids,added_faces);
   auto do_check_orientation = true;
@@ -734,8 +734,8 @@ TEST(PolyhedralTest,ItemOrientationCheckTestWrongOrientation){
   std::vector<int> face_orientation_in_cells{1,1,-1,1,-1,-1,-1,-1};
   auto& cell_family = StaticMesh::addFamily(mesh,Neo::ItemKind::IK_Cell, "CellFamily");
   auto& face_family = StaticMesh::addFamily(mesh,Neo::ItemKind::IK_Face, "FaceFamily");
-  auto added_cells = Neo::ScheduledItemRange{};
-  auto added_faces = Neo::ScheduledItemRange{};
+  auto added_cells = Neo::FutureItemRange{};
+  auto added_faces = Neo::FutureItemRange{};
   StaticMesh::addItems(mesh,cell_family,cell_uids,added_cells);
   StaticMesh::addItems(mesh,face_family,face_uids,added_faces);
   auto do_check_orientation = true;

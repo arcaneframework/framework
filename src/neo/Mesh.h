@@ -24,8 +24,8 @@ namespace Neo {
 class MeshBase;
 enum class ItemKind;
 class Family;
-struct ScheduledItemRange;
-class ItemRangeUnlocker;
+struct FutureItemRange;
+class EndOfMeshUpdate;
 
 /*---------------------------------------------------------------------------*/
 /*!
@@ -59,11 +59,11 @@ public:
 
   Neo::Family&  addFamily(Neo::ItemKind item_kind, std::string family_name) noexcept ;
 
-  void scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> uids, Neo::ScheduledItemRange & future_added_item_range) noexcept ;
+  void scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> uids, Neo::FutureItemRange & future_added_item_range) noexcept ;
 
   //! Connectivity vith fix size (nb of connected items per item is constant)
   //! Use this method to add connectivity of new items (i.e addItems and addConnectivity are applied with the same call to applyScheduledOperations)
-  void scheduleAddConnectivity(Neo::Family& source_family, Neo::ScheduledItemRange const& source_items,
+  void scheduleAddConnectivity(Neo::Family& source_family, Neo::FutureItemRange const& source_items,
                                Neo::Family& target_family, int nb_connected_item_per_item,
                                std::vector<Neo::utils::Int64> connected_item_uids,
                                std::string const& connectivity_name) noexcept ;
@@ -76,7 +76,7 @@ public:
 
   //! Connectivity vith variable size (nb of connected items per item is variable)
   //! Use this method to add connectivity of new items (i.e addItems and addConnectivity are applied with the same call to applyScheduledOperations)
-  void scheduleAddConnectivity(Neo::Family& source_family, Neo::ScheduledItemRange const& source_items,
+  void scheduleAddConnectivity(Neo::Family& source_family, Neo::FutureItemRange const& source_items,
                                Neo::Family& target_family, std::vector<int> nb_connected_item_per_item,
                                std::vector<Neo::utils::Int64> connected_item_uids,
                                std::string const& connectivity_name) noexcept ;
@@ -88,9 +88,9 @@ public:
                                std::string const& connectivity_name) noexcept ;
 
   //! Use this method to set coordinates of new items
-  void scheduleSetItemCoords(Neo::Family& item_family, Neo::ScheduledItemRange const& future_added_item_range,std::vector<Neo::utils::Real3> item_coords) noexcept ;
+  void scheduleSetItemCoords(Neo::Family& item_family, Neo::FutureItemRange const& future_added_item_range,std::vector<Neo::utils::Real3> item_coords) noexcept ;
 
-  Neo::ItemRangeUnlocker applyScheduledOperations() noexcept ;
+  Neo::EndOfMeshUpdate applyScheduledOperations() noexcept ;
 
   //! Use this method to change coordinates of existing items
   [[nodiscard]] CoordPropertyType& getItemCoordProperty(Neo::Family & family);
