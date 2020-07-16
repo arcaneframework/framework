@@ -92,25 +92,25 @@ void addConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
       });
 
   // handle target item removal in connectivity : todo plug graph in Neo otherwise this won't work
-  std::string removed_item_property_name = "removed_items"+source_family.m_name;
-  source_family.addProperty<Neo::utils::Int32>(removed_item_property_name);
-  mesh.addAlgorithm(
-      Neo::InProperty{source_family,removed_item_property_name},
-      Neo::OutProperty{source_family,connectivity_name},
-      [&source_family,&target_family](
-          Neo::PropertyT<Neo::utils::Int32> const& source_family_removed_items,
-          Neo::ArrayProperty<Neo::utils::Int32> &connectivity){
-        std::cout << "Algorithm update connectivity after remove " << connectivity.m_name << std::endl;
-        for (auto item : source_family.all()) {
-          auto connected_items = connectivity[item];
-          for (auto& connected_item : connected_items){
-            if (connected_item != Neo::utils::NULL_ITEM_LID && source_family_removed_items[connected_item] == 1) {
-              std::cout << "modify connected item : "<< connected_item << target_family.m_name << std::endl;
-              connected_item = Neo::utils::NULL_ITEM_LID;
-            }
-          }
-        }
-      });
+//  std::string removed_item_property_name = "removed_items"+source_family.m_name;
+//  source_family.addProperty<Neo::utils::Int32>(removed_item_property_name);
+//  mesh.addAlgorithm(
+//      Neo::InProperty{source_family,removed_item_property_name},
+//      Neo::OutProperty{source_family,connectivity_name},
+//      [&source_family,&target_family](
+//          Neo::PropertyT<Neo::utils::Int32> const& source_family_removed_items,
+//          Neo::ArrayProperty<Neo::utils::Int32> &connectivity){
+//        std::cout << "Algorithm update connectivity after remove " << connectivity.m_name << std::endl;
+//        for (auto item : source_family.all()) {
+//          auto connected_items = connectivity[item];
+//          for (auto& connected_item : connected_items){
+//            if (connected_item != Neo::utils::NULL_ITEM_LID && source_family_removed_items[connected_item] == 1) {
+//              std::cout << "modify connected item : "<< connected_item << target_family.m_name << std::endl;
+//              connected_item = Neo::utils::NULL_ITEM_LID;
+//            }
+//          }
+//        }
+//      });
 }
 
 void addConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
@@ -265,6 +265,6 @@ TEST(EvolutiveMeshTest,RemoveCells)
   // Remove cell 0, 1 and 2
   std::vector<Neo::utils::Int64> removed_cells{0,1,2};
   removeItems(mesh,mesh.getFamily(Neo::ItemKind::IK_Cell, cell_family_name),removed_cells);
-  mesh.applyAlgorithms();
+//  mesh.applyAlgorithms(); // todo plug graph to activate this test.
 
 }
