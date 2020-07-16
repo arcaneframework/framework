@@ -60,8 +60,7 @@ public:
 
   Neo::Family&  addFamily(Neo::ItemKind item_kind, std::string family_name) noexcept ;
 
-  void scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> const& uids, Neo::ScheduledItemRange & future_added_item_range) noexcept ;
-  void scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> && uids, Neo::ScheduledItemRange & future_added_item_range) noexcept ;
+  void scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> uids, Neo::ScheduledItemRange & future_added_item_range) noexcept ;
 
   //! Connectivity vith fix size (nb of connected items per item is constant)
   //! Use this method to add connectivity of new items (i.e addItems and addConnectivity are applied with the same call to applyScheduledOperations)
