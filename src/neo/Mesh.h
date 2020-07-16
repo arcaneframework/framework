@@ -25,7 +25,7 @@ class MeshBase;
 enum class ItemKind;
 class Family;
 struct FutureItemRange;
-class ItemRangeUnlocker;
+class EndOfMeshUpdate;
 
 /*---------------------------------------------------------------------------*/
 /*!
@@ -90,7 +90,7 @@ public:
   //! Use this method to set coordinates of new items
   void scheduleSetItemCoords(Neo::Family& item_family, Neo::FutureItemRange const& future_added_item_range,std::vector<Neo::utils::Real3> item_coords) noexcept ;
 
-  Neo::ItemRangeUnlocker applyScheduledOperations() noexcept ;
+  Neo::EndOfMeshUpdate applyScheduledOperations() noexcept ;
 
   //! Use this method to change coordinates of existing items
   [[nodiscard]] CoordPropertyType& getItemCoordProperty(Neo::Family & family);

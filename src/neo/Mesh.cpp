@@ -145,7 +145,7 @@ void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::FutureItemR
           });
 }
 
-Neo::ItemRangeUnlocker Neo::Mesh::applyScheduledOperations() noexcept
+Neo::EndOfMeshUpdate Neo::Mesh::applyScheduledOperations() noexcept
 {
   return m_mesh_graph->applyAlgorithms();
 }
