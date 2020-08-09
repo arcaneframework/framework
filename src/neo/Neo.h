@@ -368,28 +368,40 @@ public:
   explicit ItemLidsProperty(std::string const& name) : PropertyBase{name}{};
 
   ItemRange append(std::vector<Neo::utils::Int64> const& uids) {
-    std::size_t counter = 0;
     ItemIndexes item_indexes{};
+    // handle mutliple insertion
+    auto min_size = std::min(m_empty_lids.size(),uids.size());
+    auto empty_lid_size = m_empty_lids.size();
     auto& non_contiguous_lids = item_indexes.m_non_contiguous_indexes;
-    non_contiguous_lids.reserve(m_empty_lids.size());
-    if (uids.size() >= m_empty_lids.size()) {
-      for (auto empty_lid : m_empty_lids) {
-        m_uid2lid[uids[counter++]] = empty_lid;
-        non_contiguous_lids.push_back(empty_lid);
-      }
-      item_indexes.m_first_contiguous_index = m_last_id +1;
-      for (auto uid = uids.begin() + counter; uid != uids.end(); ++uid) { // todo use span
-        m_uid2lid[*uid] = ++m_last_id;
-      }
-      item_indexes.m_nb_contiguous_indexes = m_last_id - item_indexes.m_first_contiguous_index +1 ;
-      m_empty_lids.clear();
+    non_contiguous_lids.resize(min_size);
+    auto used_empty_lid_count = 0;
+    for(auto i = 0; i < min_size;++i){
+      const auto [inserted, do_insert] = m_uid2lid.insert({uids[i],m_empty_lids[empty_lid_size-1-used_empty_lid_count]});
+      non_contiguous_lids[i]= inserted->second;
+      if (do_insert) ++used_empty_lid_count;
     }
-    else {// empty_lids.size > uids.size
-      for(auto uid : uids) {
-        m_uid2lid[uid] = m_empty_lids.back();
-        non_contiguous_lids.push_back(m_empty_lids.back());
-        m_empty_lids.pop_back();
+    m_empty_lids.resize(empty_lid_size-used_empty_lid_count);
+    using item_index_and_lid = std::pair<int,Neo::utils::Int32> ;
+    std::vector<item_index_and_lid> existing_items;
+    existing_items.reserve(uids.size() - min_size);
+    auto first_contiguous_id = m_last_id+1;
+    for (auto i = min_size; i < uids.size();++i){
+      const auto [inserted, do_insert] = m_uid2lid.insert({uids[i],++m_last_id});
+      if (!do_insert) existing_items.push_back({i-min_size,inserted->second});
+      ++item_indexes.m_nb_contiguous_indexes;
+    }
+    // if an existing item is inserted, cannot use contiguous indexes, otherwise the range
+    // will not handle the items in their insertion order, all lids must be in non_contiguous_indexes
+    if (! existing_items.empty()) {
+      std::vector<Neo::utils::Int32> non_contiguous_from_contigous_lids(item_indexes.m_nb_contiguous_indexes);
+      std::iota(non_contiguous_from_contigous_lids.begin(),non_contiguous_from_contigous_lids.end(),first_contiguous_id);
+      for (const auto [item_index,item_lid] : existing_items){
+        non_contiguous_from_contigous_lids[item_index] = item_lid;
       }
+      item_indexes.m_nb_contiguous_indexes = 0;
+      item_indexes.m_non_contiguous_indexes.insert(item_indexes.m_non_contiguous_indexes.end(),
+              non_contiguous_from_contigous_lids.begin(),
+              non_contiguous_from_contigous_lids.end());
     }
     return ItemRange{std::move(item_indexes)};
   }
