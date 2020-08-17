@@ -387,7 +387,10 @@ public:
     auto first_contiguous_id = m_last_id+1;
     for (auto i = min_size; i < uids.size();++i){
       const auto [inserted, do_insert] = m_uid2lid.insert({uids[i],++m_last_id});
-      if (!do_insert) existing_items.push_back({i-min_size,inserted->second});
+      if (!do_insert) {
+        existing_items.push_back({i-min_size,inserted->second});
+        --m_last_id;
+    }
       ++item_indexes.m_nb_contiguous_indexes;
     }
     // if an existing item is inserted, cannot use contiguous indexes, otherwise the range
@@ -397,6 +400,7 @@ public:
       std::iota(non_contiguous_from_contigous_lids.begin(),non_contiguous_from_contigous_lids.end(),first_contiguous_id);
       for (const auto [item_index,item_lid] : existing_items){
         non_contiguous_from_contigous_lids[item_index] = item_lid;
+        std::for_each(non_contiguous_from_contigous_lids.begin()+item_index+1,non_contiguous_from_contigous_lids.end(),[](auto& current_lid){return --current_lid;});
       }
       item_indexes.m_nb_contiguous_indexes = 0;
       item_indexes.m_non_contiguous_indexes.insert(item_indexes.m_non_contiguous_indexes.end(),
