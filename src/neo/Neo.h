@@ -385,6 +385,7 @@ public:
     std::vector<item_index_and_lid> existing_items;
     existing_items.reserve(uids.size() - min_size);
     auto first_contiguous_id = m_last_id+1;
+    item_indexes.m_first_contiguous_index = first_contiguous_id;
     for (auto i = min_size; i < uids.size();++i){
       const auto [inserted, do_insert] = m_uid2lid.insert({uids[i],++m_last_id});
       if (!do_insert) {
