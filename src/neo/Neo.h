@@ -73,8 +73,8 @@ using DataType = std::variant<utils::Int32, utils::Int64, utils::Real3>;// ajout
 using DataIndex = std::variant<int,ItemUniqueId>;
 
 struct ItemIndexes { // todo change type, theses are local ids cf. Issue#7
-  std::vector<std::size_t> m_non_contiguous_indexes = {};
-  std::size_t m_first_contiguous_index = 0;
+  std::vector<Neo::utils::Int32 > m_non_contiguous_indexes = {};
+  Neo::utils::Int32 m_first_contiguous_index = 0;
   std::size_t m_nb_contiguous_indexes = 0;
   std::size_t size()  const {return m_non_contiguous_indexes.size()+m_nb_contiguous_indexes;}
   int operator() (int index) const{
@@ -87,8 +87,8 @@ struct ItemIndexes { // todo change type, theses are local ids cf. Issue#7
     return item_lid;
   }
 
-  static std::vector<std::size_t> getIndexes(std::vector<Neo::utils::Int32> const& item_lids){
-    std::vector<std::size_t> indexes{};
+  static std::vector<Neo::utils::Int32 > getIndexes(std::vector<Neo::utils::Int32> const& item_lids){
+    std::vector<Neo::utils::Int32> indexes{};
     std::copy_if(item_lids.begin(),item_lids.end(),std::back_inserter(indexes),[](auto const& lid) { return lid != utils::NULL_ITEM_LID; });
     return indexes;
   }

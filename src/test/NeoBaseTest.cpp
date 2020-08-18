@@ -129,7 +129,7 @@ TEST(NeoTestPropertyView, test_property_view)
   Neo::ItemRange item_range{Neo::ItemIndexes{{},0,6}};
   property.init(item_range,values);
   auto property_view = property.view();
-  std::vector<std::size_t> local_ids{1,3,5};
+  std::vector<Neo::utils::Int32> local_ids{1,3,5};
   auto partial_item_range = Neo::ItemRange{Neo::ItemIndexes{local_ids}};
   auto partial_property_view = property.view(partial_item_range);
   for (auto i = 0 ; i < item_range.size();++i) {
