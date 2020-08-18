@@ -62,7 +62,14 @@ inline std::string itemKindName(ItemKind item_kind){
     break;
   }
 }
-
+  template <typename Container>
+  void printContainer(Container&& container, std::string const& name="Container"){
+    std::cout << name << " , size : " << container.size() << std::endl;
+    for (auto element : container) {
+      std::cout << element << " " ;
+    }
+    std::cout << std::endl;
+  }
 }
 
 struct ItemLocalId {};
