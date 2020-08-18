@@ -43,6 +43,27 @@ TEST(NeoUtils,test_array_view){
   EXPECT_DEATH(dim2_view[0][4],".*i<m_size.*");
 }
 
+
+void _testItemIndexes(Neo::utils::Int32 const& first_index,
+                      std::size_t const& nb_indexes,
+                      std::vector<Neo::utils::Int32> const& non_contiguous_indexes= {}){
+  auto item_indexes = Neo::ItemIndexes{non_contiguous_indexes,first_index,nb_indexes};
+  auto item_array = item_indexes.itemArray();
+  Neo::utils::printContainer(item_array, "ItemIndexes");
+  std::vector<Neo::utils::Int32> item_array_ref(nb_indexes);
+  std::iota(item_array_ref.begin(), item_array_ref.end(), first_index);
+  item_array_ref.insert(item_array_ref.end(),non_contiguous_indexes.begin(),non_contiguous_indexes.end());
+  EXPECT_TRUE(std::equal(item_array.begin(),item_array.end(),item_array_ref.begin()));
+}
+
+TEST(NeoTestItemIndexes,test_item_indexes){
+  _testItemIndexes(0, 10);
+  _testItemIndexes(5, 10);
+  _testItemIndexes(0,0,{1,3,5,9});
+  _testItemIndexes(0,10,{1,3,5,9});
+  _testItemIndexes(5,10,{1,3,5,9});
+}
+
 TEST(NeoTestItemRange,test_item_range){
   // Test with only contiguous indexes
   std::cout << "== Testing contiguous item range from 0 with 5 items =="<< std::endl;
