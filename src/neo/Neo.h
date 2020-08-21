@@ -96,8 +96,8 @@ struct ItemIndexes { // todo change type, theses are local ids cf. Issue#7
 
   std::vector<Neo::utils::Int32> itemArray() {
     std::vector<Neo::utils::Int32> item_array(m_non_contiguous_indexes.size()+m_nb_contiguous_indexes);
-    std::iota(item_array.begin(),item_array.begin()+m_nb_contiguous_indexes,m_first_contiguous_index);
-    std::copy(m_non_contiguous_indexes.begin(),m_non_contiguous_indexes.end(),item_array.begin() + m_nb_contiguous_indexes);
+    std::copy(m_non_contiguous_indexes.begin(),m_non_contiguous_indexes.end(),item_array.begin());
+    std::iota(item_array.begin() + m_non_contiguous_indexes.size(),item_array.end(),m_first_contiguous_index);
     return item_array;
   }
 

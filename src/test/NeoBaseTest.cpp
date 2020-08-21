@@ -43,17 +43,21 @@ TEST(NeoUtils,test_array_view){
   EXPECT_DEATH(dim2_view[0][4],".*i<m_size.*");
 }
 
-
 void _testItemIndexes(Neo::utils::Int32 const& first_index,
                       std::size_t const& nb_indexes,
                       std::vector<Neo::utils::Int32> const& non_contiguous_indexes= {}){
   auto item_indexes = Neo::ItemIndexes{non_contiguous_indexes,first_index,nb_indexes};
   auto item_array = item_indexes.itemArray();
+  EXPECT_EQ(item_indexes.size(),nb_indexes+non_contiguous_indexes.size());
   Neo::utils::printContainer(item_array, "ItemIndexes");
   std::vector<Neo::utils::Int32> item_array_ref(nb_indexes);
-  std::iota(item_array_ref.begin(), item_array_ref.end(), first_index);
-  item_array_ref.insert(item_array_ref.end(),non_contiguous_indexes.begin(),non_contiguous_indexes.end());
+  item_array_ref.insert(item_array_ref.begin(),non_contiguous_indexes.begin(),non_contiguous_indexes.end());
+  std::iota(item_array_ref.begin() + non_contiguous_indexes.size(), item_array_ref.end(), first_index);
+  Neo::utils::printContainer(item_array_ref, "ItemArrayRef");
   EXPECT_TRUE(std::equal(item_array.begin(),item_array.end(),item_array_ref.begin()));
+  for (int(i) = 0; (i) < item_indexes.size(); ++(i)) {
+    EXPECT_EQ(item_indexes(i),item_array_ref[i]);
+  }
 }
 
 TEST(NeoTestItemIndexes,test_item_indexes){
