@@ -148,7 +148,7 @@ void moveNodes(Neo::MeshBase & mesh, Neo::Family& node_family, std::vector<Neo::
                                   Neo::PropertyT<Neo::utils::Real3> & node_coords_property){
         std::cout << "Algorithm: change node coords" << std::endl;
         // get range from uids and append
-        auto moved_node_range = Neo::ItemRange{Neo::ItemIndexes::getIndexes(node_lids_property[node_uids])};
+        auto moved_node_range = Neo::ItemRange{Neo::ItemLocalIds::getIndexes(node_lids_property[node_uids])};
         node_coords_property.append(moved_node_range, node_coords);
         node_coords_property.debugPrint();
       });
