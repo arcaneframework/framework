@@ -73,21 +73,37 @@ TEST(NeoTestItemRange,test_item_range){
   // Test with only contiguous local ids
   std::cout << "== Testing contiguous item range from 0 with 5 items =="<< std::endl;
   auto ir = Neo::ItemRange{Neo::ItemLocalIds{{},0,5}};
+  std::vector<Neo::utils::Int32> local_ids;
   for (auto item : ir) {
     std::cout << "item lid " << item << std::endl;
+    local_ids.push_back(item);
   }
+  auto local_ids_stored = ir.localIds();
+  std::cout << local_ids_stored<< std::endl;
+  EXPECT_TRUE(std::equal(local_ids_stored.begin(),local_ids_stored.end(),local_ids.begin()));
+  local_ids.clear();
   // Test with only non contiguous local ids
   std::cout << "== Testing non contiguous item range {3,5,7} =="<< std::endl;
   ir = Neo::ItemRange{Neo::ItemLocalIds{{3,5,7},0,0}};
   for (auto item : ir) {
     std::cout << "item lid " << item << std::endl;
+    local_ids.push_back(item);
   }
+  local_ids_stored = ir.localIds();
+  std::cout << local_ids_stored<< std::endl;
+  EXPECT_TRUE(std::equal(local_ids_stored.begin(),local_ids_stored.end(),local_ids.begin()));
+  local_ids.clear();
   // Test range mixing contiguous and non contiguous local ids
   std::cout << "== Testing non contiguous item range {3,5,7} + 8 to 11 =="<< std::endl;
   ir = Neo::ItemRange{Neo::ItemLocalIds{{3,5,7},8,4}};
   for (auto item : ir) {
     std::cout << "item lid " << item << std::endl;
+    local_ids.push_back(item);
   }
+  local_ids_stored = ir.localIds();
+  std::cout << local_ids_stored<< std::endl;
+  EXPECT_TRUE(std::equal(local_ids_stored.begin(),local_ids_stored.end(),local_ids.begin()));
+  local_ids.clear();
   // Internal test for out of bound
   std::cout << "Get out of bound values (index > size) " << ir.m_item_lids(100) << std::endl;
   std::cout << "Get out of bound values (index < 0) " << ir.m_item_lids(-100) << std::endl;
