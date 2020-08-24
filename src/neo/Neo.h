@@ -511,7 +511,8 @@ public:
   void debugPrint() const {
     std::cout << "= Print property " << m_name << " =" << std::endl;
     for (auto uid : m_uid2lid){
-      std::cout << " uid to lid  " << uid.first << " : " << uid.second;
+      if (uid.second != Neo::utils::NULL_ITEM_LID)
+        std::cout << " uid to lid  " << uid.first << " : " << uid.second;
     }
     std::cout << std::endl;
   }
