@@ -436,23 +436,36 @@ public:
     return ItemRange{std::move(item_local_ids)};
   }
 
-  ItemRange remove(std::vector<utils::Int64> const& uids){
-    ItemLocalIds item_indexes{};
-    item_indexes.m_non_contiguous_lids.resize(uids.size());
+  /*! Remove item with uids \a uids.
+   *
+   * @param uids :unique ids of item to remove. If a non existing uid is given,
+   * the code won't throw. The return range will contain a NULL_ITEM_LID for this
+   * unexisting uid.
+   * @return Returns a range  containing the local ids of removed items. They can
+   * be used to update properties. If a local id is NULL_ITEM_LID, it means the
+   * corresponding uids was not existing.
+   *
+   */
+  ItemRange remove(std::vector<utils::Int64> const& uids) noexcept {
+    ItemLocalIds item_local_ids{};
+    item_local_ids.m_non_contiguous_lids.resize(uids.size());
     auto empty_lids_size = m_empty_lids.size();
     m_empty_lids.resize( empty_lids_size + uids.size());
     auto counter = 0;
     auto empty_lids_index = empty_lids_size;
     for (auto uid : uids) {
-      // remove from map (set NULL_ITEM_LID)
+      // remove from map
       // add in range and in empty_lids
-      auto& lid = m_uid2lid.at(uid); // checks bound. To see whether costly
-      m_empty_lids[empty_lids_index++] = lid;
-      item_indexes.m_non_contiguous_lids[counter++] = lid;
-      lid = utils::NULL_ITEM_LID;
+      auto uid_lid_ite = m_uid2lid.find(uid);
+      auto lid = utils::NULL_ITEM_LID;
+      if (uid_lid_ite != m_uid2lid.end()) {
+        lid = uid_lid_ite->second;
+        m_uid2lid.erase(uid_lid_ite);
+      } // uid_lid_ite is now invalid
+      if (lid != utils::NULL_ITEM_LID) m_empty_lids[empty_lids_index++] = lid;
+      item_local_ids.m_non_contiguous_lids[counter++] = lid;
     }
-    return ItemRange{std::move(item_indexes)};
-    // todo handle last_id ??
+    return ItemRange{std::move(item_local_ids)};
   }
 
   std::size_t size() const {
