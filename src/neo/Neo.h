@@ -32,6 +32,15 @@
  *--------------------------
  */
 
+template <typename T>
+std::ostream& operator<<(std::ostream& oss, std::vector<T> const& container)
+{
+  for (auto const &val : container) {
+    oss << val << " ";
+  }
+  return oss;
+}
+
 namespace Neo {
 
 enum class ItemKind {
@@ -65,9 +74,7 @@ inline std::string itemKindName(ItemKind item_kind){
   template <typename Container>
   void printContainer(Container&& container, std::string const& name="Container"){
     std::cout << name << " , size : " << container.size() << std::endl;
-    for (auto element : container) {
-      std::cout << element << " " ;
-    }
+    std::copy(container.begin(),container.end(),std::ostream_iterator<typename std::remove_reference_t<Container>::value_type>(std::cout," "));
     std::cout << std::endl;
   }
 }
