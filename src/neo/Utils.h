@@ -49,30 +49,44 @@ namespace utils {
     }
   };
 
+  /*!
+   * \brief 2-Dimensional view of a contiguous data chunk
+   * The second dimension varies first {(i,j),(i,j+1),(i+1,j),(i+1,j+1)}...
+   * \fn operator[i] returns a view of size \refitem Array2View.m_dim2_size
+   * @tparam T
+   */
   template <typename T>
   struct Array2View {
     int m_dim1_size = 0;
     int m_dim2_size = 0;
     T* m_ptr = nullptr;
     ArrayView<T> operator[](int i) {assert(i<m_dim1_size); return {(std::size_t)m_dim2_size,m_ptr+i*m_dim2_size};}
+    T* begin() {return m_ptr;}
+    T* end()   {return m_ptr+(m_dim1_size*m_dim2_size);}
     int dim1Size() const { return m_dim1_size; }
     int dim2Size() const { return m_dim2_size; }
-    std::vector<T> copy() { std::vector<T> vec(m_dim1_size+m_dim2_size);
-      std::copy(m_ptr, m_ptr+m_dim1_size+m_dim2_size+1, vec.begin());
+    std::vector<T> copy() { std::vector<T> vec(m_dim1_size*m_dim2_size);
+      std::copy(this->begin(),this->end(), vec.begin());
       return vec;
     }
   };
 
+  /*!
+   * 2-Dimensional const view. cf. \refitem Array2View
+   * @tparam T
+   */
   template <typename T>
   struct ConstArray2View {
     int m_dim1_size = 0;
     int m_dim2_size = 0;
     T* m_ptr = nullptr;
     ConstArrayView<T> operator[](int i) const {assert(i<m_dim1_size); return {(std::size_t)m_dim2_size,m_ptr+i*m_dim2_size};}
+    const T* begin() {return m_ptr;}
+    const T* end()   {return m_ptr+(m_dim1_size*m_dim2_size);}
     int dim1Size() const { return m_dim1_size; }
     int dim2Size() const { return m_dim2_size; }
-    std::vector<T> copy() { std::vector<T> vec(m_dim1_size+m_dim2_size);
-      std::copy(m_ptr, m_ptr+m_dim1_size+m_dim2_size+1, vec.begin());
+    std::vector<T> copy() { std::vector<T> vec(m_dim1_size*m_dim2_size);
+      std::copy(this->begin(), this->end(), vec.begin());
       return vec;
     }
   };
