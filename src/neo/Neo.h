@@ -367,11 +367,11 @@ public:
 
   // todo should be computed only when m_offsets is updated, at least implement an array version
   utils::Int32 _getItemIndexInData(const utils::Int32 item) const{
-    std::accumulate(m_offsets.begin(),m_offsets.begin()+item,0);
+    return std::accumulate(m_offsets.begin(),m_offsets.begin()+item,0);
   }
 
   utils::Int32 _getItemIndexInData(const utils::Int32 item, const std::vector<std::size_t>& offsets) const{
-    std::accumulate(offsets.begin(),offsets.begin()+item,0);
+    return std::accumulate(offsets.begin(),offsets.begin()+item,0);
   }
 
   std::size_t size() const {
