@@ -186,6 +186,12 @@ _addMessage(ISerializeMessage* sm,const PointToPointMessageInfo& message_info)
 PointToPointMessageInfo SerializeMessageList::
 buildMessageInfo(ISerializeMessage* sm)
 {
+  MessageId message_id(sm->_internalMessageId());
+  if (message_id.isValid()){
+    PointToPointMessageInfo message_info(message_id,NonBlocking);
+    message_info.setSourceRank(sm->source());
+    return message_info;
+  }
   return { sm->source(), sm->destination(), sm->internalTag(), NonBlocking }; 
 }
 

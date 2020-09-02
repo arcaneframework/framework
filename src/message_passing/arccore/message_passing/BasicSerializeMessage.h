@@ -30,6 +30,7 @@
 #include "arccore/message_passing/ISerializeMessage.h"
 #include "arccore/message_passing/MessageRank.h"
 #include "arccore/message_passing/MessageTag.h"
+#include "arccore/message_passing/MessageId.h"
 #include "arccore/base/RefDeclarations.h"
 
 /*---------------------------------------------------------------------------*/
@@ -70,9 +71,10 @@ class ARCCORE_MESSAGEPASSING_EXPORT BasicSerializeMessage
 
   BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
                         ePointToPointMessageType mtype);
+
  public:
 
-  ~BasicSerializeMessage();
+  ~BasicSerializeMessage() override;
   BasicSerializeMessage& operator=(const BasicSerializeMessage&) = delete;
   BasicSerializeMessage(const BasicSerializeMessage&) = delete;
 
@@ -81,10 +83,15 @@ class ARCCORE_MESSAGEPASSING_EXPORT BasicSerializeMessage
   BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
                         ePointToPointMessageType type,
                         BasicSerializer* serializer);
+
+  BasicSerializeMessage(MessageRank orig_rank,MessageId message_id,
+                        BasicSerializer* serializer);
  public:
 
   static Ref<ISerializeMessage>
   create(MessageRank source,MessageRank destination,ePointToPointMessageType type);
+  static Ref<ISerializeMessage>
+  create(MessageRank source,MessageId message_id);
 
  public:
 
@@ -102,6 +109,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT BasicSerializeMessage
   Int32 tag() const override { return m_tag.value(); }
   void setInternalTag(MessageTag tag) override { m_tag = tag; }
   MessageTag internalTag() const override { return m_tag; }
+  MessageId _internalMessageId() const override { return m_message_id; }
 
  protected:
 
@@ -118,6 +126,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT BasicSerializeMessage
   bool m_is_send; //!< \c true si envoie, \c false si réception
   BasicSerializer* m_buffer = nullptr; //!< Tampon contenant les infos
   bool m_finished = false; //!< \c true si message terminé
+  MessageId m_message_id; //!< MessageId associé (peut être nul)
  private:
   void _init();
 };

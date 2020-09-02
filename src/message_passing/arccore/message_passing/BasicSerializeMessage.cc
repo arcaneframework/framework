@@ -82,11 +82,28 @@ BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
 /*---------------------------------------------------------------------------*/
 
 BasicSerializeMessage::
+BasicSerializeMessage(MessageRank orig_rank,MessageId message_id,
+                      BasicSerializer* s)
+: m_orig_rank(orig_rank)
+, m_dest_rank(message_id.sourceInfo().rank())
+, m_tag(message_id.sourceInfo().tag())
+, m_old_message_type(MT_Recv)
+, m_message_type(MsgReceive)
+, m_is_send(false)
+, m_buffer(s)
+, m_message_id(message_id)
+{
+  _init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+BasicSerializeMessage::
 BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
                       ePointToPointMessageType type)
 : BasicSerializeMessage(orig_rank,dest_rank,type,new BasicSerializer())
 {
-  _init();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -122,6 +139,16 @@ Ref<ISerializeMessage> BasicSerializeMessage::
 create(MessageRank source,MessageRank destination,ePointToPointMessageType type)
 {
   ISerializeMessage* m = new BasicSerializeMessage(source,destination,type);
+  return makeRef(m);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<ISerializeMessage> BasicSerializeMessage::
+create(MessageRank source,MessageId message_id)
+{
+  ISerializeMessage* m = new BasicSerializeMessage(source,message_id,new BasicSerializer());
   return makeRef(m);
 }
 

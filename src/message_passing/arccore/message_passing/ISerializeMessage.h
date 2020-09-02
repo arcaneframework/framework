@@ -60,11 +60,11 @@ class ARCCORE_MESSAGEPASSING_EXPORT ISerializeMessage
  public:
 
   enum eMessageType
-    {
-      MT_Send,
-      MT_Recv,
-      MT_Broadcast
-    };
+  {
+    MT_Send,
+    MT_Recv,
+    MT_Broadcast
+  };
 
   virtual ~ISerializeMessage() {} //!< Libère les ressources.
 
@@ -149,6 +149,12 @@ class ARCCORE_MESSAGEPASSING_EXPORT ISerializeMessage
    * \brief Tag interne du message.
    */
   virtual MessageTag internalTag() const =0;
+
+  /*!
+   * \internal
+   * \brief Identificant du message
+   */
+  virtual MessageId _internalMessageId() const =0;
 };
 
 /*---------------------------------------------------------------------------*/
