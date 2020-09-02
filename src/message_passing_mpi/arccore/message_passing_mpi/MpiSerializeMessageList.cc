@@ -164,7 +164,12 @@ processPendingMessages()
       BasicSerializer* sbuf = mpi_msg->serializeBuffer();
       msg->debug() << "call recvSerializer2 tag=" << tag << " from=" << dest;
       sbuf->preallocate(serialize_buffer_size);
-      new_request = m_dispatcher->_recvSerializerBytes(sbuf->globalBuffer(),dest,tag,false);
+      MessageId message_id = pmsg->_internalMessageId();
+      if (message_id.isValid())
+        // Message de sérialisation utilisant MPI_Message
+        new_request = m_dispatcher->_recvSerializerBytes(sbuf->globalBuffer(),message_id,false);
+      else
+        new_request = m_dispatcher->_recvSerializerBytes(sbuf->globalBuffer(),dest,tag,false);
     }
     m_messages_request.add(MpiSerializeMessageRequest(mpi_msg,new_request));
   }
