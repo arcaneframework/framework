@@ -99,7 +99,7 @@ class FatalErrorException;
 class NotSupportedException;
 class NotImplementedException;
 class TimeoutException;
-
+enum class eBasicDataType : unsigned char;
 class IFunctor;
 template<typename ArgType>
 class IFunctorWithArgumentT;
