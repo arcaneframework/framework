@@ -21,6 +21,8 @@
 # TODO: pouvoir étendre cette fonction en spécifiant d'autres propriétés.
 #
 function(arccon_register_package_library lib_name var_name)
+  find_package_handle_standard_args(${lib_name} DEFAULT_MSG
+          ${var_name}_LIBRARIES ${var_name}_INCLUDE_DIRS)
   set(_FOUND FALSE)
   if (${lib_name}_FOUND)
     set(_FOUND TRUE)
