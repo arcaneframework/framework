@@ -43,6 +43,7 @@ ConstructorInitializerIndentWidth: 0
 ContinuationIndentWidth: 0
 Cpp11BracedListStyle: false
 DerivePointerAlignment: false
+PointerAlignment: Left
 DisableFormat:   false
 ExperimentalAutoDetectBinPacking: false
 FixNamespaceComments: true
@@ -52,7 +53,7 @@ IndentCaseLabels: false
 IndentWidth:     2
 # IndentWrappedFunctionNames: true
 IndentWrappedFunctionNames: false
-KeepEmptyLinesAtTheStartOfBlocks: false
+KeepEmptyLinesAtTheStartOfBlocks: true
 MacroBlockBegin: ''
 MacroBlockEnd:   ''
 MaxEmptyLinesToKeep: 1
@@ -67,8 +68,7 @@ PenaltyBreakFirstLessLess: 120
 PenaltyBreakString: 1000
 PenaltyExcessCharacter: 1000000
 PenaltyReturnTypeOnItsOwnLine: 60
-PointerAlignment: Left
-ReflowComments: true
+ReflowComments: false
 SpaceAfterTemplateKeyword: true
 SpaceAfterCStyleCast: false
 SpaceBeforeAssignmentOperators: true
@@ -81,7 +81,7 @@ SpacesInContainerLiterals: true
 SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
-Standard:        Cpp11
+Standard:        c++17
 SortIncludes: false
 TabWidth:        2
 UseTab:          Never
