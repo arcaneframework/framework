@@ -472,15 +472,15 @@ mesh.addAlgorithm(
                   [&removed_node_uids,&removed_nodes, &node_family](
         Neo::ItemLidsProperty& node_lids_property,
         Neo::PropertyT<Neo::utils::Int32 > & internal_end_of_remove_tag){
-                    std::cout << "Algorithm: remove nodes" << std::endl;
-                    removed_nodes = node_lids_property.remove(removed_node_uids);
-                    node_lids_property.debugPrint();
-                    std::cout << "removed item range : " << removed_nodes;
                     // Store removed items in internal_end_of_remove_tag
                     internal_end_of_remove_tag.init(node_family.all(),0);
                     for (auto removed_item : removed_nodes) {
                       internal_end_of_remove_tag[removed_item] = 1;
                     }
+                    std::cout << "Algorithm: remove nodes" << std::endl;
+                    removed_nodes = node_lids_property.remove(removed_node_uids);
+                    node_lids_property.debugPrint();
+                    std::cout << "removed item range : " << removed_nodes;
                   });
 
 // handle node removal in connectivity with node family = target family
