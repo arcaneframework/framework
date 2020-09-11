@@ -219,22 +219,96 @@ TEST(NeoTestPropertyGraph,test_property_graph)
  
 TEST(NeoTestLidsProperty,test_lids_property)
 {
-  std::cout << "Test lids Property" << std::endl;
+  std::cout << "Test lids_range Property" << std::endl;
   auto lid_prop = Neo::ItemLidsProperty{"test_property"};
   std::vector<Neo::utils::Int64 > uids {1,2,3,4,5};
-  lid_prop.append(uids);
+  auto nb_item = uids.size();
+  // Checking append
+  auto added_item_range = lid_prop.append(uids);
   lid_prop.debugPrint();
+  EXPECT_EQ(uids.size(),lid_prop.size());
+  auto i = 0;
+  auto added_local_ids = lid_prop[uids];
+  auto added_local_ids_ref = added_item_range.localIds();
+  EXPECT_TRUE(std::equal(added_local_ids.begin(),added_local_ids.end(),added_local_ids_ref.begin()));
+  for (auto item : added_item_range) {
+    std::cout << " uid " << uids[i++] << " lid " << item  << std::endl;
+  }
+  // Check values function
+  auto lids_range = lid_prop.values();
+  EXPECT_EQ(lids_range.size(),uids.size());
+  EXPECT_TRUE(std::equal(lids_range.begin(), lids_range.end(),added_local_ids_ref.begin()));
+  // Checking append with duplicates
+  uids  = {6,7,7,8,1,5,9};
+  auto one_lid = lid_prop[{1}]; // store lid of uid =1 must not change
+  auto five_lid = lid_prop[{5}]; // store lid of uid =5 must not change
+  auto nb_duplicates = 3;
+  nb_item += uids.size()-nb_duplicates;
+  added_item_range = lid_prop.append(uids);
+  lid_prop.debugPrint();
+  i = 0;
+  for (auto item : added_item_range) {
+    std::cout << " uid " << uids[i++] << " lid " << item  << std::endl;
+  }
+  added_local_ids = lid_prop[uids];
+  added_local_ids_ref = added_item_range.localIds();
+  EXPECT_TRUE(std::equal(added_local_ids.begin(),added_local_ids.end(),added_local_ids_ref.begin()));
+  EXPECT_EQ(one_lid,lid_prop[{1}]);
+  EXPECT_EQ(five_lid,lid_prop[{5}]);
+  // Checking remove
+  auto removed_uids = std::vector<Neo::utils::Int64>{1,3,5,9};
+  auto removed_lids_ref = lid_prop[removed_uids];
+  auto removed_lids = lid_prop.remove(removed_uids);
+  nb_item -= removed_uids.size();
+  EXPECT_TRUE(std::equal(removed_lids_ref.begin(),removed_lids_ref.end(),removed_lids.begin()));
+  for (auto lid : removed_lids) {
+    std::cout << "removed lids_range: " << lid<< std::endl;
+  }
+  // Checking value function
   for (auto item : lid_prop.values()) {
     std::cout << "Item range, lid " << item << std::endl;
   }
-  EXPECT_EQ(lid_prop.size(),5);
-  uids = {1,3,5};
-  lid_prop.remove(uids);
-  std::cout << "new range size " << lid_prop.values().size();
+  EXPECT_EQ(lid_prop.values().size(),lid_prop.size());
+  EXPECT_EQ(lid_prop.values().size(),nb_item);
+  std::vector<Neo::utils::Int64> remaining_uids {2,4,6,7,8};
+  auto lids_ref = lid_prop[remaining_uids];
+  auto lids = lid_prop.values().localIds();
+  EXPECT_TRUE(std::equal(lids_ref.begin(),lids_ref.end(),lids.begin()));
+  lid_prop.debugPrint();
+  // Check re-add removed items
+  std::vector<Neo::utils::Int64> added_uids(removed_uids);
+  auto added_items = lid_prop.append(removed_uids);
+  nb_item += removed_lids.size();
+  lid_prop.debugPrint();
+  EXPECT_EQ(added_items.size(),removed_uids.size());
+  EXPECT_EQ(std::count(added_items.begin(),added_items.end(),Neo::utils::NULL_ITEM_LID),0);
+  auto added_lids = added_items.localIds();
+  auto added_lids_ref = lid_prop[added_uids];
+  EXPECT_TRUE(std::equal(added_lids.begin(),added_lids.end(),added_lids_ref.begin()));
+  //Check add new items
+  added_uids  = {10,11,12};
+  added_items = lid_prop.append(added_uids);
+  nb_item += added_items.size();
+  lid_prop.debugPrint();
+  EXPECT_EQ(added_items.size(),3);
+  EXPECT_EQ(std::count(added_items.begin(),added_items.end(),Neo::utils::NULL_ITEM_LID),0);
+  added_lids = added_items.localIds();
+  added_lids_ref = lid_prop[added_uids];
+  EXPECT_TRUE(std::equal(added_lids.begin(),added_lids.end(),added_lids_ref.begin()));
+  // Checking value function
   for (auto item : lid_prop.values()) {
     std::cout << "Item range, lid " << item << std::endl;
   }
-  EXPECT_EQ(lid_prop.size(),2);
+  EXPECT_EQ(lid_prop.values().size(),lid_prop.size());
+  EXPECT_EQ(lid_prop.values().size(),nb_item);
+  remaining_uids = {1,2,3,4,5,6,7,8,9,10,11,12};
+  lids_ref = lid_prop[remaining_uids];
+  lids = lid_prop.values().localIds();
+  // reorder lids in a set since the order is not warrantied (use of removed lids)
+  std::set<Neo::utils::Int32> reordered_lids_ref{lids_ref.begin(),lids_ref.end()};
+  std::set<Neo::utils::Int32> reordered_lids{lids.begin(),lids.end()};
+  EXPECT_EQ(reordered_lids_ref.size(),reordered_lids.size());
+  EXPECT_TRUE(std::equal(reordered_lids_ref.begin(),reordered_lids_ref.end(),reordered_lids.begin()));
 }
 
 TEST(NeoTestFamily,test_family)
