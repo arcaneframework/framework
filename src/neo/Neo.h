@@ -32,6 +32,15 @@
  *--------------------------
  */
 
+template <typename T>
+std::ostream& operator<<(std::ostream& oss, std::vector<T> const& container)
+{
+  for (auto const &val : container) {
+    oss << val << " ";
+  }
+  return oss;
+}
+
 namespace Neo {
 
 enum class ItemKind {
@@ -62,7 +71,12 @@ inline std::string itemKindName(ItemKind item_kind){
     break;
   }
 }
-
+  template <typename Container>
+  void printContainer(Container&& container, std::string const& name="Container"){
+    std::cout << name << " , size : " << container.size() << std::endl;
+    std::copy(container.begin(),container.end(),std::ostream_iterator<typename std::remove_reference_t<Container>::value_type>(std::cout," "));
+    std::cout << std::endl;
+  }
 }
 
 struct ItemLocalId {};
@@ -72,23 +86,31 @@ struct ItemUniqueId {};
 using DataType = std::variant<utils::Int32, utils::Int64, utils::Real3>;// ajouter des types dans la def de famille si necessaire
 using DataIndex = std::variant<int,ItemUniqueId>;
 
-struct ItemIndexes { // todo change type, theses are local ids cf. Issue#7
-  std::vector<std::size_t> m_non_contiguous_indexes = {};
-  std::size_t m_first_contiguous_index = 0;
-  std::size_t m_nb_contiguous_indexes = 0;
-  std::size_t size()  const {return m_non_contiguous_indexes.size()+m_nb_contiguous_indexes;}
+struct ItemLocalIds {
+  std::vector<Neo::utils::Int32 > m_non_contiguous_lids = {};
+  Neo::utils::Int32 m_first_contiguous_lid = 0;
+  std::size_t m_nb_contiguous_lids = 0;
+  std::size_t size()  const {return m_non_contiguous_lids.size()+ m_nb_contiguous_lids;}
   int operator() (int index) const{
     if (index >= int(size())) return  size();
     if (index < 0) return -1;
     auto item_lid = 0;
-    (index >= m_non_contiguous_indexes.size() || m_non_contiguous_indexes.size()==0) ?
-        item_lid = m_first_contiguous_index + (index  - m_non_contiguous_indexes.size()) : // work on fluency
-        item_lid = m_non_contiguous_indexes[index];
+    (index >= m_non_contiguous_lids.size() || m_non_contiguous_lids.size()==0) ?
+        item_lid = m_first_contiguous_lid + (index  - m_non_contiguous_lids.size()) : // work on fluency
+        item_lid = m_non_contiguous_lids[index];
     return item_lid;
   }
 
-  static std::vector<std::size_t> getIndexes(std::vector<Neo::utils::Int32> const& item_lids){
-    std::vector<std::size_t> indexes{};
+  std::vector<Neo::utils::Int32> itemArray() {
+    std::vector<Neo::utils::Int32> item_array(m_non_contiguous_lids.size()+
+                                              m_nb_contiguous_lids);
+    std::copy(m_non_contiguous_lids.begin(), m_non_contiguous_lids.end(),item_array.begin());
+    std::iota(item_array.begin() + m_non_contiguous_lids.size(),item_array.end(), m_first_contiguous_lid);
+    return item_array;
+  }
+
+  static std::vector<Neo::utils::Int32 > getIndexes(std::vector<Neo::utils::Int32> const& item_lids){
+    std::vector<Neo::utils::Int32> indexes{};
     std::copy_if(item_lids.begin(),item_lids.end(),std::back_inserter(indexes),[](auto const& lid) { return lid != utils::NULL_ITEM_LID; });
     return indexes;
   }
@@ -99,34 +121,35 @@ struct ItemIterator {
   using difference_type = int;
   using pointer = int*;
   using reference = int;
-  explicit ItemIterator(ItemIndexes item_indexes, int index) : m_index(index), m_item_indexes(item_indexes){}
+  explicit ItemIterator(ItemLocalIds item_indexes, int index) : m_index(index), m_item_indexes(item_indexes){}
   ItemIterator& operator++() {++m_index;return *this;} // todo (handle traversal order...)
   ItemIterator operator++(int) {auto retval = *this; ++(*this); return retval;} // todo (handle traversal order...)
   int operator*() const {return m_item_indexes(m_index);}
   bool operator==(const ItemIterator& item_iterator) {return m_index == item_iterator.m_index;}
   bool operator!=(const ItemIterator& item_iterator) {return !(*this == item_iterator);}
   int m_index;
-  ItemIndexes m_item_indexes;
+  ItemLocalIds m_item_indexes;
 };
 struct ItemRange {
-  bool isContiguous() const {return m_indexes.m_non_contiguous_indexes.empty();};
-  ItemIterator begin() const {return ItemIterator{m_indexes,0};}
-  ItemIterator end() const {return ItemIterator{m_indexes,int(m_indexes.size())};} // todo : consider reverse range : constructeur (ItemIndexes, traversal_order=forward) enum à faire
-  std::size_t size() const {return m_indexes.size();}
+  bool isContiguous() const {return m_item_lids.m_non_contiguous_lids.empty();};
+  ItemIterator begin() const {return ItemIterator{m_item_lids,0};}
+  ItemIterator end() const {return ItemIterator{m_item_lids,int(m_item_lids.size())};} // todo : consider reverse range : constructeur (ItemLocalIds, traversal_order=forward) enum à faire
+  std::size_t size() const {return m_item_lids.size();}
   bool isEmpty() const  {return size() == 0;}
-  ItemIndexes m_indexes;
+  std::vector<Neo::utils::Int32> localIds() {return m_item_lids.itemArray();}
+  ItemLocalIds m_item_lids;
 };
 }// end namespace Neo
 
 inline
 std::ostream &operator<<(std::ostream &os, const Neo::ItemRange &item_range){
   os << "Item Range : lids ";
-  for (auto lid : item_range.m_indexes.m_non_contiguous_indexes) {
+  for (auto lid : item_range.m_item_lids.m_non_contiguous_lids) {
     os << lid;
     os << " ";
   }
-  auto last_contiguous_index = item_range.m_indexes.m_first_contiguous_index + item_range.m_indexes.m_nb_contiguous_indexes;
-  for (auto i = item_range.m_indexes.m_first_contiguous_index; i < last_contiguous_index; ++i) {
+  auto last_contiguous_lid = item_range.m_item_lids.m_first_contiguous_lid + item_range.m_item_lids.m_nb_contiguous_lids;
+  for (auto i = item_range.m_item_lids.m_first_contiguous_lid; i < last_contiguous_lid; ++i) {
     os << i;
     os << " ";
   }
@@ -286,7 +309,7 @@ public:
       }
     }
     // copy old values
-    ItemRange old_values_range{ItemIndexes{{},0,m_offsets.size()}};
+    ItemRange old_values_range{ItemLocalIds{{},0,m_offsets.size()}};
     for (auto item : old_values_range) {
       if (!marked_items[item]) {
         auto connected_items = (*this)[item];
@@ -344,11 +367,11 @@ public:
 
   // todo should be computed only when m_offsets is updated, at least implement an array version
   utils::Int32 _getItemIndexInData(const utils::Int32 item) const{
-    std::accumulate(m_offsets.begin(),m_offsets.begin()+item,0);
+    return std::accumulate(m_offsets.begin(),m_offsets.begin()+item,0);
   }
 
   utils::Int32 _getItemIndexInData(const utils::Int32 item, const std::vector<std::size_t>& offsets) const{
-    std::accumulate(offsets.begin(),offsets.begin()+item,0);
+    return std::accumulate(offsets.begin(),offsets.begin()+item,0);
   }
 
   std::size_t size() const {
@@ -368,108 +391,121 @@ public:
   explicit ItemLidsProperty(std::string const& name) : PropertyBase{name}{};
 
   ItemRange append(std::vector<Neo::utils::Int64> const& uids) {
-    std::size_t counter = 0;
-    ItemIndexes item_indexes{};
-    auto& non_contiguous_lids = item_indexes.m_non_contiguous_indexes;
-    non_contiguous_lids.reserve(m_empty_lids.size());
-    if (uids.size() >= m_empty_lids.size()) {
-      for (auto empty_lid : m_empty_lids) {
-        m_uid2lid[uids[counter++]] = empty_lid;
-        non_contiguous_lids.push_back(empty_lid);
-      }
-      item_indexes.m_first_contiguous_index = m_last_id +1;
-      for (auto uid = uids.begin() + counter; uid != uids.end(); ++uid) { // todo use span
-        m_uid2lid[*uid] = ++m_last_id;
-      }
-      item_indexes.m_nb_contiguous_indexes = m_last_id - item_indexes.m_first_contiguous_index +1 ;
-      m_empty_lids.clear();
+    ItemLocalIds item_local_ids{};
+    // handle mutliple insertion
+    auto min_size = std::min(m_empty_lids.size(),uids.size());
+    auto empty_lid_size = m_empty_lids.size();
+    auto& non_contiguous_lids = item_local_ids.m_non_contiguous_lids;
+    non_contiguous_lids.resize(min_size);
+    auto used_empty_lid_count = 0;
+    for(auto i = 0; i < min_size;++i){
+      const auto [inserted, do_insert] = m_uid2lid.insert({uids[i],m_empty_lids[empty_lid_size-1-used_empty_lid_count]});
+      non_contiguous_lids[i]= inserted->second;
+      if (do_insert) ++used_empty_lid_count;
     }
-    else {// empty_lids.size > uids.size
-      for(auto uid : uids) {
-        m_uid2lid[uid] = m_empty_lids.back();
-        non_contiguous_lids.push_back(m_empty_lids.back());
-        m_empty_lids.pop_back();
-      }
+    m_empty_lids.resize(empty_lid_size-used_empty_lid_count);
+    using item_index_and_lid = std::pair<int,Neo::utils::Int32> ;
+    std::vector<item_index_and_lid> existing_items;
+    existing_items.reserve(uids.size() - min_size);
+    auto first_contiguous_id = m_last_id+1;
+    item_local_ids.m_first_contiguous_lid = first_contiguous_id;
+    for (auto i = min_size; i < uids.size();++i){
+      const auto [inserted, do_insert] = m_uid2lid.insert({uids[i],++m_last_id});
+      if (!do_insert) {
+        existing_items.push_back({i-min_size,inserted->second});
+        --m_last_id;
     }
-    return ItemRange{std::move(item_indexes)};
+      ++item_local_ids.m_nb_contiguous_lids;
+    }
+    // if an existing item is inserted, cannot use contiguous indexes, otherwise the range
+    // will not handle the items in their insertion order, all lids must be in non_contiguous_indexes
+    if (! existing_items.empty()) {
+      std::vector<Neo::utils::Int32> non_contiguous_from_contigous_lids(
+          item_local_ids.m_nb_contiguous_lids);
+      std::iota(non_contiguous_from_contigous_lids.begin(),non_contiguous_from_contigous_lids.end(),first_contiguous_id);
+      for (const auto [item_index,item_lid] : existing_items){
+        non_contiguous_from_contigous_lids[item_index] = item_lid;
+        std::for_each(non_contiguous_from_contigous_lids.begin()+item_index+1,non_contiguous_from_contigous_lids.end(),[](auto& current_lid){return --current_lid;});
+      }
+      item_local_ids.m_nb_contiguous_lids = 0;
+      item_local_ids.m_non_contiguous_lids.insert(
+          item_local_ids.m_non_contiguous_lids.end(),
+              non_contiguous_from_contigous_lids.begin(),
+              non_contiguous_from_contigous_lids.end());
+    }
+    return ItemRange{std::move(item_local_ids)};
   }
 
-  ItemRange remove(std::vector<utils::Int64> const& uids){
-    ItemIndexes item_indexes{};
-    item_indexes.m_non_contiguous_indexes.resize(uids.size());
+  /*! Remove item with uids \a uids.
+   *
+   * @param uids :unique ids of item to remove. If a non existing uid is given,
+   * the code won't throw. The return range will contain a NULL_ITEM_LID for this
+   * unexisting uid.
+   * @return Returns a range  containing the local ids of removed items. They can
+   * be used to update properties. If a local id is NULL_ITEM_LID, it means the
+   * corresponding uids was not existing.
+   *
+   */
+  ItemRange remove(std::vector<utils::Int64> const& uids) noexcept {
+    ItemLocalIds item_local_ids{};
+    item_local_ids.m_non_contiguous_lids.resize(uids.size());
     auto empty_lids_size = m_empty_lids.size();
     m_empty_lids.resize( empty_lids_size + uids.size());
     auto counter = 0;
     auto empty_lids_index = empty_lids_size;
     for (auto uid : uids) {
-      // remove from map (set NULL_ITEM_LID)
+      // remove from map
       // add in range and in empty_lids
-      auto& lid = m_uid2lid.at(uid); // checks bound. To see whether costly
-      m_empty_lids[empty_lids_index++] = lid;
-      item_indexes.m_non_contiguous_indexes[counter++] = lid;
-      lid = utils::NULL_ITEM_LID;
+      auto uid_lid_ite = m_uid2lid.find(uid);
+      auto lid = utils::NULL_ITEM_LID;
+      if (uid_lid_ite != m_uid2lid.end()) {
+        lid = uid_lid_ite->second;
+        m_uid2lid.erase(uid_lid_ite);
+      } // uid_lid_ite is now invalid
+      if (lid != utils::NULL_ITEM_LID) m_empty_lids[empty_lids_index++] = lid;
+      item_local_ids.m_non_contiguous_lids[counter++] = lid;
     }
-    return ItemRange{std::move(item_indexes)};
-    // todo handle last_id ??
+    return ItemRange{std::move(item_local_ids)};
   }
 
   std::size_t size() const {
     return m_last_id+1-m_empty_lids.size();
   }
 
+  /*! Access to the item_lids stored in the property through an ItemRange object.
+   *
+   * @return  the ItemRange containing the lids of the property.
+   */
   ItemRange values(){
     // TODO...; + il faut mettre en cache (dans la famille ?). ? de la mise à jour (la Propriété peut dire si la range est à jour)
     // 2 stratégies : on crée l'étendue continue avant ou après les non contigus...
     // (on estime que l'on décime les id les plus élevés ou les plus faibles), avoir le choix (avec un paramètre par défaut)
-    ItemIndexes item_indexes{};
+    ItemLocalIds item_local_ids{};
     if (m_empty_lids.empty()) { // range contiguous
-      item_indexes = ItemIndexes{{},0,(std::size_t)(m_last_id+1)};
+      item_local_ids = ItemLocalIds{{},0,(std::size_t)(m_last_id+1)};
     }
-    else { // mix a contiguous range and non contiguous elements. Choose the larger contiguous range
-      auto max_empty_lid = *std::max_element(m_empty_lids.begin(),m_empty_lids.end());
-      auto min_empty_lid = *std::min_element(m_empty_lids.begin(),m_empty_lids.end());
-      auto left_contiguous_range_size = min_empty_lid;
-      auto right_contiguous_range_size = m_last_id-max_empty_lid;
-      auto choose_left_contiguous_range = (left_contiguous_range_size > right_contiguous_range_size) ? true : false;
-      if (choose_left_contiguous_range) {
-        item_indexes.m_first_contiguous_index = 0;
-        item_indexes.m_nb_contiguous_indexes = left_contiguous_range_size;
-        // build non contiguous
-        auto empty_lids_sorted = m_empty_lids;
-        std::sort(empty_lids_sorted.begin(), empty_lids_sorted.end());
-        auto empty_lid_index = 0;
-        auto non_contiguous_lid_index = 0;
-        auto& non_contiguous_lids = item_indexes.m_non_contiguous_indexes;
-        non_contiguous_lids.reserve(left_contiguous_range_size+m_empty_lids.size());
-        for (auto lid = item_indexes.m_nb_contiguous_indexes;
-             lid < m_last_id + 1; ++lid) {
-          if (lid != empty_lids_sorted[empty_lid_index]) non_contiguous_lids[non_contiguous_lid_index++] = lid;
-          else ++empty_lid_index;
-        }
-      } else {
-        item_indexes.m_first_contiguous_index = max_empty_lid +1;
-        item_indexes.m_nb_contiguous_indexes = right_contiguous_range_size;
-        // build non contiguous
-        auto empty_lids_sorted = m_empty_lids;
-        std::sort(empty_lids_sorted.begin(), empty_lids_sorted.end());
-        auto empty_lid_index = 0;
-        auto non_contiguous_lid_index = 0;
-        auto& non_contiguous_lids = item_indexes.m_non_contiguous_indexes;
-        non_contiguous_lids.reserve(right_contiguous_range_size+m_empty_lids.size());
-        for (auto lid = 0;
-             lid < max_empty_lid +1; ++lid) {
-          if (lid != empty_lids_sorted[empty_lid_index]) non_contiguous_lids[non_contiguous_lid_index++] = lid;
-          else ++empty_lid_index;
-        }
-      }
+    else {// range discontiguous
+      std::vector<Neo::utils::Int32> lids(m_last_id + 1);
+      std::iota(lids.begin(), lids.end(), 0);
+      std::for_each(m_empty_lids.begin(), m_empty_lids.end(),
+                    [&lids](auto const &emty_lid) {
+                      lids[emty_lid] = Neo::utils::NULL_ITEM_LID;
+                    });
+      auto& active_lids = item_local_ids.m_non_contiguous_lids;
+      active_lids.resize(lids.size() - m_empty_lids.size());
+      std::copy_if(lids.begin(), lids.end(), active_lids.begin(),
+                   [](auto const &lid_source) {
+                     return lid_source != Neo::utils::NULL_ITEM_LID;
+                   });
     }
-    return ItemRange{std::move(item_indexes)};
+    return ItemRange{std::move(item_local_ids)};
   }
 
   void debugPrint() const {
     std::cout << "= Print property " << m_name << " =" << std::endl;
     for (auto uid : m_uid2lid){
-      std::cout << " uid to lid  " << uid.first << " : " << uid.second;
+      if (uid.second != Neo::utils::NULL_ITEM_LID)
+        std::cout << " uid to lid  " << uid.first << " : " << uid.second;
     }
     std::cout << std::endl;
   }

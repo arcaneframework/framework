@@ -43,28 +43,70 @@ TEST(NeoUtils,test_array_view){
   EXPECT_DEATH(dim2_view[0][4],".*i<m_size.*");
 }
 
+void _testItemLocalIds(Neo::utils::Int32 const& first_lid,
+                      std::size_t const& nb_lids,
+                      std::vector<Neo::utils::Int32> const&non_contiguous_lids = {}){
+  auto item_local_ids = Neo::ItemLocalIds{non_contiguous_lids, first_lid, nb_lids};
+  auto item_array = item_local_ids.itemArray();
+  EXPECT_EQ(item_local_ids.size(), nb_lids + non_contiguous_lids.size());
+  Neo::utils::printContainer(item_array, "ItemLocalIds");
+  std::vector<Neo::utils::Int32> item_array_ref(nb_lids);
+  item_array_ref.insert(item_array_ref.begin(), non_contiguous_lids.begin(),
+                        non_contiguous_lids.end());
+  std::iota(item_array_ref.begin() + non_contiguous_lids.size(), item_array_ref.end(), first_lid);
+  Neo::utils::printContainer(item_array_ref, "ItemArrayRef");
+  EXPECT_TRUE(std::equal(item_array.begin(),item_array.end(),item_array_ref.begin()));
+  for (int(i) = 0; (i) < item_local_ids.size(); ++(i)) {
+    EXPECT_EQ(item_local_ids(i),item_array_ref[i]);
+  }
+}
+
+TEST(NeoTestItemLocalIds,test_item_local_ids){
+  _testItemLocalIds(0, 10);
+  _testItemLocalIds(5, 10);
+  _testItemLocalIds(0, 0, {1, 3, 5, 9});
+  _testItemLocalIds(0, 10, {1, 3, 5, 9});
+  _testItemLocalIds(5, 10, {1, 3, 5, 9});
+}
+
 TEST(NeoTestItemRange,test_item_range){
-  // Test with only contiguous indexes
+  // Test with only contiguous local ids
   std::cout << "== Testing contiguous item range from 0 with 5 items =="<< std::endl;
-  auto ir = Neo::ItemRange{Neo::ItemIndexes{{},0,5}};
+  auto ir = Neo::ItemRange{Neo::ItemLocalIds{{},0,5}};
+  std::vector<Neo::utils::Int32> local_ids;
   for (auto item : ir) {
     std::cout << "item lid " << item << std::endl;
+    local_ids.push_back(item);
   }
-  // Test with only non contiguous indexes
+  auto local_ids_stored = ir.localIds();
+  std::cout << local_ids_stored<< std::endl;
+  EXPECT_TRUE(std::equal(local_ids_stored.begin(),local_ids_stored.end(),local_ids.begin()));
+  local_ids.clear();
+  // Test with only non contiguous local ids
   std::cout << "== Testing non contiguous item range {3,5,7} =="<< std::endl;
-  ir = Neo::ItemRange{Neo::ItemIndexes{{3,5,7},0,0}};
+  ir = Neo::ItemRange{Neo::ItemLocalIds{{3,5,7},0,0}};
   for (auto item : ir) {
     std::cout << "item lid " << item << std::endl;
+    local_ids.push_back(item);
   }
-  // Test range mixing contiguous and non contiguous indexes
+  local_ids_stored = ir.localIds();
+  std::cout << local_ids_stored<< std::endl;
+  EXPECT_TRUE(std::equal(local_ids_stored.begin(),local_ids_stored.end(),local_ids.begin()));
+  local_ids.clear();
+  // Test range mixing contiguous and non contiguous local ids
   std::cout << "== Testing non contiguous item range {3,5,7} + 8 to 11 =="<< std::endl;
-  ir = Neo::ItemRange{Neo::ItemIndexes{{3,5,7},8,4}};
+  ir = Neo::ItemRange{Neo::ItemLocalIds{{3,5,7},8,4}};
   for (auto item : ir) {
     std::cout << "item lid " << item << std::endl;
+    local_ids.push_back(item);
   }
+  local_ids_stored = ir.localIds();
+  std::cout << local_ids_stored<< std::endl;
+  EXPECT_TRUE(std::equal(local_ids_stored.begin(),local_ids_stored.end(),local_ids.begin()));
+  local_ids.clear();
   // Internal test for out of bound
-  std::cout << "Get out of bound values (index > size) " << ir.m_indexes(100) << std::endl;
-  std::cout << "Get out of bound values (index < 0) " << ir.m_indexes(-100) << std::endl;
+  std::cout << "Get out of bound values (index > size) " << ir.m_item_lids(100) << std::endl;
+  std::cout << "Get out of bound values (index < 0) " << ir.m_item_lids(-100) << std::endl;
 
 
   // todo test out reverse range
@@ -74,12 +116,12 @@ TEST(NeoTestProperty,test_property)
  {
    Neo::PropertyT<Neo::utils::Int32> property{"name"};
    std::vector<Neo::utils::Int32> values {1,2,3};
-   Neo::ItemRange item_range{Neo::ItemIndexes{{},0,3}};
+   Neo::ItemRange item_range{Neo::ItemLocalIds{{},0,3}};
    EXPECT_TRUE(property.isInitializableFrom(item_range));
    property.init(item_range,values);
    EXPECT_EQ(values.size(),property.size());
    std::vector<Neo::utils::Int32> new_values {4,5,6};
-   Neo::ItemRange new_item_range{Neo::ItemIndexes{{},3,3}};
+   Neo::ItemRange new_item_range{Neo::ItemLocalIds{{},3,3}};
    property.append(new_item_range, new_values);
    property.debugPrint();
    EXPECT_EQ(values.size()+new_values.size(),property.size());
@@ -94,7 +136,7 @@ TEST(NeoTestArrayProperty,test_array_property)
   auto array_property =
       Neo::ArrayProperty<Neo::utils::Int32>{"test_array_property"};
   // add elements: 5 items with one value
-  Neo::ItemRange item_range{Neo::ItemIndexes{{},0,5}};
+  Neo::ItemRange item_range{Neo::ItemLocalIds{{},0,5}};
   std::vector<Neo::utils::Int32> values{0,1,2,3,4};
   array_property.resize({1,1,1,1,1});
   array_property.init(item_range,values);
@@ -102,19 +144,19 @@ TEST(NeoTestArrayProperty,test_array_property)
   EXPECT_EQ(values.size(),array_property.size());
   // Add 3 items
   std::vector<std::size_t> nb_element_per_item{0,3,1};
-  item_range = {Neo::ItemIndexes{{5,6,7}}};
+  item_range = {Neo::ItemLocalIds{{5,6,7}}};
   std::vector<Neo::utils::Int32> values_added{6,6,6,7};
   array_property.append(item_range, values_added, nb_element_per_item);
   array_property.debugPrint(); // expected result: "0" "1" "2" "3" "4" "6" "6" "6" "7" (check with test framework)
   EXPECT_EQ(values.size()+values_added.size(),array_property.size());
   // Add three more items
-  item_range = {Neo::ItemIndexes{{},8,3}};
+  item_range = {Neo::ItemLocalIds{{},8,3}};
   std::for_each(values_added.begin(), values_added.end(), [](auto &elt) {return elt += 2;});
   array_property.append(item_range, values_added, nb_element_per_item);
   array_property.debugPrint(); // expected result: "0" "1" "2" "3" "4" "6" "6" "6" "7" "8" "8" "8" "9"
   EXPECT_EQ(values.size()+2*values_added.size(),array_property.size());
   // Add items and modify existing item
-  item_range = {Neo::ItemIndexes{{0,8,5},11,1}};
+  item_range = {Neo::ItemLocalIds{{0,8,5},11,1}};
   nb_element_per_item = {3,3,2,1};
   values_added = {10,10,10,11,11,11,12,12,13};
   array_property.append(item_range, values_added, nb_element_per_item); // expected result: "10" "10" "10" "1" "2" "3" "4" "12" "12" "6" "6" "6" "7" "11" "11" "11" "8" "8" "8" "9" "13"
@@ -126,11 +168,11 @@ TEST(NeoTestPropertyView, test_property_view)
 {
   Neo::PropertyT<Neo::utils::Int32> property{"name"};
   std::vector<Neo::utils::Int32> values {1,2,3,10,100,1000};
-  Neo::ItemRange item_range{Neo::ItemIndexes{{},0,6}};
+  Neo::ItemRange item_range{Neo::ItemLocalIds{{},0,6}};
   property.init(item_range,values);
   auto property_view = property.view();
-  std::vector<std::size_t> local_ids{1,3,5};
-  auto partial_item_range = Neo::ItemRange{Neo::ItemIndexes{local_ids}};
+  std::vector<Neo::utils::Int32> local_ids{1,3,5};
+  auto partial_item_range = Neo::ItemRange{Neo::ItemLocalIds{local_ids}};
   auto partial_property_view = property.view(partial_item_range);
   for (auto i = 0 ; i < item_range.size();++i) {
     std::cout << "prop values at index " << i << " " << property_view[i] << std::endl;
@@ -154,10 +196,10 @@ TEST(NeoTestPropertyView, test_property_view)
  {
    Neo::PropertyT<Neo::utils::Int32> property{"name"};
    std::vector<Neo::utils::Int32> values {1,2,3,10,100,1000};
-   Neo::ItemRange item_range{Neo::ItemIndexes{{},0,6}};
+   Neo::ItemRange item_range{Neo::ItemLocalIds{{},0,6}};
    property.init(item_range,values);
    auto property_const_view = property.constView();
-   auto partial_item_range = Neo::ItemRange{Neo::ItemIndexes{{1,3,5}}};
+   auto partial_item_range = Neo::ItemRange{Neo::ItemLocalIds{{1,3,5}}};
    auto partial_property_const_view = property.constView(partial_item_range);
    for (auto i = 0 ; i < item_range.size();++i) {
      std::cout << "prop values at index " << i << " " << property_const_view[i] << std::endl;
@@ -177,22 +219,96 @@ TEST(NeoTestPropertyGraph,test_property_graph)
  
 TEST(NeoTestLidsProperty,test_lids_property)
 {
-  std::cout << "Test lids Property" << std::endl;
+  std::cout << "Test lids_range Property" << std::endl;
   auto lid_prop = Neo::ItemLidsProperty{"test_property"};
   std::vector<Neo::utils::Int64 > uids {1,2,3,4,5};
-  lid_prop.append(uids);
+  auto nb_item = uids.size();
+  // Checking append
+  auto added_item_range = lid_prop.append(uids);
   lid_prop.debugPrint();
+  EXPECT_EQ(uids.size(),lid_prop.size());
+  auto i = 0;
+  auto added_local_ids = lid_prop[uids];
+  auto added_local_ids_ref = added_item_range.localIds();
+  EXPECT_TRUE(std::equal(added_local_ids.begin(),added_local_ids.end(),added_local_ids_ref.begin()));
+  for (auto item : added_item_range) {
+    std::cout << " uid " << uids[i++] << " lid " << item  << std::endl;
+  }
+  // Check values function
+  auto lids_range = lid_prop.values();
+  EXPECT_EQ(lids_range.size(),uids.size());
+  EXPECT_TRUE(std::equal(lids_range.begin(), lids_range.end(),added_local_ids_ref.begin()));
+  // Checking append with duplicates
+  uids  = {6,7,7,8,1,5,9};
+  auto one_lid = lid_prop[{1}]; // store lid of uid =1 must not change
+  auto five_lid = lid_prop[{5}]; // store lid of uid =5 must not change
+  auto nb_duplicates = 3;
+  nb_item += uids.size()-nb_duplicates;
+  added_item_range = lid_prop.append(uids);
+  lid_prop.debugPrint();
+  i = 0;
+  for (auto item : added_item_range) {
+    std::cout << " uid " << uids[i++] << " lid " << item  << std::endl;
+  }
+  added_local_ids = lid_prop[uids];
+  added_local_ids_ref = added_item_range.localIds();
+  EXPECT_TRUE(std::equal(added_local_ids.begin(),added_local_ids.end(),added_local_ids_ref.begin()));
+  EXPECT_EQ(one_lid,lid_prop[{1}]);
+  EXPECT_EQ(five_lid,lid_prop[{5}]);
+  // Checking remove
+  auto removed_uids = std::vector<Neo::utils::Int64>{1,3,5,9};
+  auto removed_lids_ref = lid_prop[removed_uids];
+  auto removed_lids = lid_prop.remove(removed_uids);
+  nb_item -= removed_uids.size();
+  EXPECT_TRUE(std::equal(removed_lids_ref.begin(),removed_lids_ref.end(),removed_lids.begin()));
+  for (auto lid : removed_lids) {
+    std::cout << "removed lids_range: " << lid<< std::endl;
+  }
+  // Checking value function
   for (auto item : lid_prop.values()) {
     std::cout << "Item range, lid " << item << std::endl;
   }
-  EXPECT_EQ(lid_prop.size(),5);
-  uids = {1,3,5};
-  lid_prop.remove(uids);
-  std::cout << "new range size " << lid_prop.values().size();
+  EXPECT_EQ(lid_prop.values().size(),lid_prop.size());
+  EXPECT_EQ(lid_prop.values().size(),nb_item);
+  std::vector<Neo::utils::Int64> remaining_uids {2,4,6,7,8};
+  auto lids_ref = lid_prop[remaining_uids];
+  auto lids = lid_prop.values().localIds();
+  EXPECT_TRUE(std::equal(lids_ref.begin(),lids_ref.end(),lids.begin()));
+  lid_prop.debugPrint();
+  // Check re-add removed items
+  std::vector<Neo::utils::Int64> added_uids(removed_uids);
+  auto added_items = lid_prop.append(removed_uids);
+  nb_item += removed_lids.size();
+  lid_prop.debugPrint();
+  EXPECT_EQ(added_items.size(),removed_uids.size());
+  EXPECT_EQ(std::count(added_items.begin(),added_items.end(),Neo::utils::NULL_ITEM_LID),0);
+  auto added_lids = added_items.localIds();
+  auto added_lids_ref = lid_prop[added_uids];
+  EXPECT_TRUE(std::equal(added_lids.begin(),added_lids.end(),added_lids_ref.begin()));
+  //Check add new items
+  added_uids  = {10,11,12};
+  added_items = lid_prop.append(added_uids);
+  nb_item += added_items.size();
+  lid_prop.debugPrint();
+  EXPECT_EQ(added_items.size(),3);
+  EXPECT_EQ(std::count(added_items.begin(),added_items.end(),Neo::utils::NULL_ITEM_LID),0);
+  added_lids = added_items.localIds();
+  added_lids_ref = lid_prop[added_uids];
+  EXPECT_TRUE(std::equal(added_lids.begin(),added_lids.end(),added_lids_ref.begin()));
+  // Checking value function
   for (auto item : lid_prop.values()) {
     std::cout << "Item range, lid " << item << std::endl;
   }
-  EXPECT_EQ(lid_prop.size(),2);
+  EXPECT_EQ(lid_prop.values().size(),lid_prop.size());
+  EXPECT_EQ(lid_prop.values().size(),nb_item);
+  remaining_uids = {1,2,3,4,5,6,7,8,9,10,11,12};
+  lids_ref = lid_prop[remaining_uids];
+  lids = lid_prop.values().localIds();
+  // reorder lids in a set since the order is not warrantied (use of removed lids)
+  std::set<Neo::utils::Int32> reordered_lids_ref{lids_ref.begin(),lids_ref.end()};
+  std::set<Neo::utils::Int32> reordered_lids{lids.begin(),lids.end()};
+  EXPECT_EQ(reordered_lids_ref.size(),reordered_lids.size());
+  EXPECT_TRUE(std::equal(reordered_lids_ref.begin(),reordered_lids_ref.end(),reordered_lids.begin()));
 }
 
 TEST(NeoTestFamily,test_family)
@@ -430,15 +546,15 @@ mesh.addAlgorithm(
                   [&removed_node_uids,&removed_nodes, &node_family](
         Neo::ItemLidsProperty& node_lids_property,
         Neo::PropertyT<Neo::utils::Int32 > & internal_end_of_remove_tag){
-                    std::cout << "Algorithm: remove nodes" << std::endl;
-                    removed_nodes = node_lids_property.remove(removed_node_uids);
-                    node_lids_property.debugPrint();
-                    std::cout << "removed item range : " << removed_nodes;
                     // Store removed items in internal_end_of_remove_tag
                     internal_end_of_remove_tag.init(node_family.all(),0);
                     for (auto removed_item : removed_nodes) {
                       internal_end_of_remove_tag[removed_item] = 1;
                     }
+                    std::cout << "Algorithm: remove nodes" << std::endl;
+                    removed_nodes = node_lids_property.remove(removed_node_uids);
+                    node_lids_property.debugPrint();
+                    std::cout << "removed item range : " << removed_nodes;
                   });
 
 // handle node removal in connectivity with node family = target family
@@ -449,7 +565,7 @@ mesh.addAlgorithm(
         Neo::PropertyT<Neo::utils::Int32> const& internal_end_of_remove_tag,
         Neo::ArrayProperty<Neo::utils::Int32> & cells2nodes){
 //                    std::transform()
-//                    Neo::ItemRange node_range {Neo::ItemIndexes{{},0,node_family.size()}};
+//                    Neo::ItemRange node_range {Neo::ItemLocalIds{{},0,node_family.size()}};
                     for (auto cell : cell_family.all()) {
                       auto connected_nodes = cells2nodes[cell];
                       for (auto& connected_node : connected_nodes){
