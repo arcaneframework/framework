@@ -97,6 +97,7 @@ namespace utils {
 
 }// end namespace Neo
 
+// Real3 utilities
 inline
 std::ostream& operator<<(std::ostream& oss, Neo::utils::Real3 const& real3){
   oss << "{" << real3.x  << ","  << real3.y << "," << real3.z << "}";
@@ -106,5 +107,18 @@ inline
 bool operator==(Neo::utils::Real3 const& a, Neo::utils::Real3 const& b){
   return a.x == b.x && a.y == b.y && a.z == b.z;
 }
+
+// Array utilities
+template <typename T>
+std::ostream& operator<<(std::ostream& oss, std::vector<T> const& container)
+{
+  for (auto const &val : container) {
+    oss << val << " ";
+  }
+  return oss;
+}
+
+
+
 
 #endif // NEO_UTILS_H

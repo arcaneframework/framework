@@ -32,15 +32,6 @@
  *--------------------------
  */
 
-template <typename T>
-std::ostream& operator<<(std::ostream& oss, std::vector<T> const& container)
-{
-  for (auto const &val : container) {
-    oss << val << " ";
-  }
-  return oss;
-}
-
 namespace Neo {
 
 enum class ItemKind {
