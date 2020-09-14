@@ -93,6 +93,13 @@ namespace utils {
 
   static constexpr utils::Int32 NULL_ITEM_LID = -1;
 
+template <typename Container>
+void printContainer(Container&& container, std::string const& name="Container"){
+  std::cout << name << " , size : " << container.size() << std::endl;
+  std::copy(container.begin(),container.end(),std::ostream_iterator<typename std::remove_reference_t<Container>::value_type>(std::cout," "));
+  std::cout << std::endl;
+}
+
 }// end namespace utils
 
 }// end namespace Neo
