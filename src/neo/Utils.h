@@ -93,12 +93,18 @@ namespace utils {
 
   static constexpr utils::Int32 NULL_ITEM_LID = -1;
 
-template <typename Container>
-void printContainer(Container&& container, std::string const& name="Container"){
-  std::cout << name << " , size : " << container.size() << std::endl;
-  std::copy(container.begin(),container.end(),std::ostream_iterator<typename std::remove_reference_t<Container>::value_type>(std::cout," "));
-  std::cout << std::endl;
-}
+  template <typename Container>
+  std::ostream&  _printContainer(Container&& container, std::ostream& oss){
+    std::copy(container.begin(),container.end(),std::ostream_iterator<typename std::remove_reference_t<Container>::value_type>(oss," "));
+    return oss;
+  }
+
+  template <typename Container>
+  void printContainer(Container&& container, std::string const& name="Container"){
+    std::cout << name << " , size : " << container.size() << std::endl;
+    _printContainer(container, std::cout);
+    std::cout << std::endl;
+  }
 
 }// end namespace utils
 
@@ -119,12 +125,20 @@ bool operator==(Neo::utils::Real3 const& a, Neo::utils::Real3 const& b){
 template <typename T>
 std::ostream& operator<<(std::ostream& oss, std::vector<T> const& container)
 {
-  for (auto const &val : container) {
-    oss << val << " ";
-  }
-  return oss;
+  return Neo::utils::_printContainer(container, oss);
 }
 
+template <typename T>
+std::ostream& operator<<(std::ostream& oss, Neo::utils::ArrayView<T> const& container)
+{
+  return Neo::utils::_printContainer(container, oss);
+}
+
+template <typename T>
+std::ostream& operator<<(std::ostream& oss, Neo::utils::ConstArrayView<T> const& container)
+{
+  return Neo::utils::_printContainer(container, oss);
+}
 
 
 
