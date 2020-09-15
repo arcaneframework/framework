@@ -23,6 +23,7 @@ namespace utils {
   struct Real3 { double x,y,z;};
   template <typename T>
   struct ArrayView {
+    using value_type = T;
     std::size_t m_size = 0;
     T* m_ptr = nullptr;
     T& operator[](int i) {assert(i<m_size); return *(m_ptr+i);}
@@ -37,6 +38,7 @@ namespace utils {
 
   template <typename T>
   struct ConstArrayView {
+    using value_type = T;
     std::size_t m_size = 0;
     const T* m_ptr = nullptr;
     const T& operator[](int i) const {assert(i<m_size); return *(m_ptr+i);}
@@ -57,6 +59,7 @@ namespace utils {
    */
   template <typename T>
   struct Array2View {
+    using value_type = T;
     int m_dim1_size = 0;
     int m_dim2_size = 0;
     T* m_ptr = nullptr;
@@ -77,6 +80,7 @@ namespace utils {
    */
   template <typename T>
   struct ConstArray2View {
+    using value_type = T;
     int m_dim1_size = 0;
     int m_dim2_size = 0;
     T* m_ptr = nullptr;
