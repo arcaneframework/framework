@@ -153,28 +153,56 @@ TEST(NeoMeshApiTest,AddItemConnectivity)
   std::vector<Neo::utils::Int64> node_uids {0,1,2,3,4,5};
   std::vector<Neo::utils::Int64> cell_uids{0,1};
   std::vector<Neo::utils::Int64> dof_uids{0,1,2,3,4};
-  auto added_nodes = Neo::FutureItemRange{};
-  auto added_cells = Neo::FutureItemRange{};
-  auto added_dofs = Neo::FutureItemRange{};
-  mesh.scheduleAddItems(node_family, node_uids, added_nodes);
-  mesh.scheduleAddItems(cell_family, cell_uids, added_cells);
-  mesh.scheduleAddItems(dof_family, dof_uids, added_dofs);
-  // Create connectivity (fictive mesh) cells with 3 nodes
+  auto added_nodes_future = Neo::FutureItemRange{};
+  auto added_cells_future = Neo::FutureItemRange{};
+  auto added_dofs_future = Neo::FutureItemRange{};
+  mesh.scheduleAddItems(node_family, node_uids, added_nodes_future);
+  mesh.scheduleAddItems(cell_family, cell_uids, added_cells_future);
+  mesh.scheduleAddItems(dof_family, dof_uids, added_dofs_future);
+  // Create connectivity (fictive mesh) cells with 4 nodes
+  std::string cell_to_nodes_connectivity_name{"cell_to_nodes"};
+  std::string cell_to_dofs_connectivity_name{"cell_to_dofs"};
+  std::string node_to_cells_connectivity_name{"node_to_cell"};
+  std::string node_to_dofs_connectivity_name{"node_to_dofs"};
+
   auto nb_node_per_cell = 4;
   {
     std::vector<Neo::utils::Int64> cell_nodes {0,1,2,3,5,0,3,4};
-    mesh.scheduleAddConnectivity(cell_family,added_cells,node_family,nb_node_per_cell,cell_nodes,"cell_to_nodes");
+    mesh.scheduleAddConnectivity(cell_family, added_cells_future,node_family,nb_node_per_cell,cell_nodes,cell_to_nodes_connectivity_name);
   } // check memory
   // Connectivity cell to dof
   std::vector<int> nb_dof_per_cell{3,2};
   std::vector<Neo::utils::Int64> cell_dofs {0,3,4,2,1,};
-  mesh.scheduleAddConnectivity(cell_family,added_cells,dof_family,std::move(nb_dof_per_cell),std::move(cell_dofs),"cell_to_dofs");
+  std::vector<Neo::utils::Int64> cell_dofs_ref{cell_dofs};
+  mesh.scheduleAddConnectivity(cell_family, added_cells_future,dof_family,std::move(nb_dof_per_cell),std::move(cell_dofs),cell_to_dofs_connectivity_name);
   // apply
   auto added_range_unlocker = mesh.applyScheduledOperations();
   // Add further connectivity
-  auto added_nodes_range = added_nodes.get(added_range_unlocker);
-  mesh.scheduleAddConnectivity(node_family,added_nodes_range,cell_family,{2,1,1,2,1,1},{0,1,0,0,0,1,1,1},"node_to_cells");
+  auto added_nodes = added_nodes_future.get(added_range_unlocker);
+  mesh.scheduleAddConnectivity(node_family, added_nodes,cell_family,{2,1,1,2,1,1},{0,1,0,0,0,1,1,1},node_to_cells_connectivity_name);
   auto nb_dof_per_node =1;
-  mesh.scheduleAddConnectivity(node_family,added_nodes_range,dof_family,nb_dof_per_node,{0,1,2,3,4,0},"node_to_dof");
-  mesh.applyScheduledOperations();
+  mesh.scheduleAddConnectivity(node_family, added_nodes,dof_family,nb_dof_per_node,{0,1,2,3,4,0},node_to_dofs_connectivity_name);
+  auto range_getter = mesh.applyScheduledOperations();
+  auto added_cells = added_cells_future.get(range_getter);
+  // check connectivity
+  auto const cell_to_nodes = mesh.getConnectivity(cell_family, node_family,cell_to_nodes_connectivity_name);
+  EXPECT_EQ(cell_to_nodes_connectivity_name,cell_to_nodes.connectivity_name);
+  EXPECT_EQ(&cell_family,&cell_to_nodes.source_family);
+  EXPECT_EQ(&node_family,&cell_to_nodes.target_family);
+  for (auto const cell : added_cells){
+    std::cout << "cell lid " << cell << " nodes lids " << cell_to_nodes[cell] << std::endl;
+  }
+  auto const cell_to_dofs = mesh.getConnectivity(cell_family,dof_family,cell_to_dofs_connectivity_name);
+  EXPECT_EQ(cell_to_dofs_connectivity_name,cell_to_dofs.connectivity_name);
+  EXPECT_EQ(&cell_family,&cell_to_dofs.source_family);
+  EXPECT_EQ(&dof_family,&cell_to_dofs.target_family);
+  std::vector<Neo::utils::Int32> cell_dofs_lids = dof_family._lidProp().operator[](cell_dofs_ref);
+  for (auto const cell : added_cells){
+    auto current_cell_dofs = cell_to_dofs[cell];
+    std::cout << "cell lid " << cell << " dofs lids " << current_cell_dofs << std::endl;
+    auto i = 0;
+    for (auto dof_lid : current_cell_dofs) {
+      EXPECT_EQ(dof_lid,current_cell_dofs[i++]);
+    }
+  }
 }

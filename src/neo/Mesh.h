@@ -44,6 +44,18 @@ class Mesh {
 public:
   using UidPropertyType   = Neo::PropertyT<Neo::utils::Int64>;
   using CoordPropertyType = Neo::PropertyT<Neo::utils::Real3>;
+  using ConnectivityPropertyType = Neo::ArrayProperty<Neo::utils::Int32>;
+
+  struct Connectivity{
+    Neo::Family const& source_family;
+    Neo::Family const& target_family;
+    std::string const& connectivity_name;
+    ConnectivityPropertyType const& connectivity_value;
+
+    Neo::utils::ConstArrayView<Neo::utils::Int32> operator[] (Neo::utils::Int32 item_lid) const noexcept {
+      return connectivity_value[item_lid];
+    }
+  };
 
 public:
   Mesh(std::string const& mesh_name);
@@ -51,6 +63,7 @@ public:
 
 private:
   std::unique_ptr<MeshBase> m_mesh_graph;
+  std::map<std::string,Connectivity> m_connectivities;
 
 public:
   [[nodiscard]] std::string const& name() const noexcept ;
@@ -139,6 +152,13 @@ public:
 
   //! Use this method to set coordinates of new items
   void scheduleSetItemCoords(Neo::Family& item_family, Neo::FutureItemRange const& future_added_item_range,std::vector<Neo::utils::Real3> item_coords) noexcept ;
+
+  Connectivity const getConnectivity(Neo::Family const& source_family,Neo::Family const& target_family,std::string const& connectivity_name){
+    auto connectivity_iter = m_connectivities.find(connectivity_name);
+    if (connectivity_iter == m_connectivities.end()) throw std::invalid_argument("Cannot find Connectivity "+connectivity_name);
+    return connectivity_iter->second;
+    // todo check source and target family type...(add operator== on family)
+  }
 
   Neo::EndOfMeshUpdate applyScheduledOperations() noexcept ;
 

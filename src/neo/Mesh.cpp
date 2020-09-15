@@ -76,7 +76,13 @@ void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRan
                                         std::string const& connectivity_unique_name) noexcept
 {
   // add connectivity property if doesn't exist
-  source_family.addArrayProperty<Neo::utils::Int32>(connectivity_name);
+  source_family.addArrayProperty<Neo::utils::Int32>(connectivity_unique_name);
+  // Create connectivity wrapper and add it to mesh
+  auto& connectivity_property = source_family.getConcreteProperty<Mesh::ConnectivityPropertyType>(connectivity_unique_name);
+  m_connectivities.insert(std::make_pair(connectivity_unique_name,
+                                         Connectivity{source_family,target_family,
+                                                      connectivity_unique_name,
+                                                      connectivity_property}));
   // temporary conversion into size_t (to remove when size_t will be removed from Neo core)
   std::vector<std::size_t> nb_connected_item_per_item_size_t_conversion_to_deprecate;
   std::transform(nb_connected_item_per_item.begin(), nb_connected_item_per_item.end(),
