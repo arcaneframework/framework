@@ -61,27 +61,77 @@ public:
 
   void scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> uids, Neo::FutureItemRange & future_added_item_range) noexcept ;
 
-  //! Connectivity vith fix size (nb of connected items per item is constant)
-  //! Use this method to add connectivity of new items (i.e addItems and addConnectivity are applied with the same call to applyScheduledOperations)
+    /*!
+   * @brief Ask for a fixed-size connectivity add between \a source_family and \a target_family. Source items are scheduled but not created.
+   * @param source_family The family of source items.
+   * @param source_items Items to be connected. Use of a FutureItemRange means these items come from a the AddItems operation not yet applied.
+     * (i.e addItems and addConnectivity are applied with the same call to applyScheduledOperations)
+   * @param target_family The family of target items.
+   * @param nb_connected_item_per_item Connectivity fix size value.
+   * @param connected_item_uids Unique ids of the connected items.
+   * @param connectivity_unique_name Connectivity name must be unique
+   *
+   * Connectivity with fix size (nb of connected items per item is constant).
+   * Use this method to add connectivity with source items scheduled but not yet created
+   * i.e addItems and addConnectivity are applied in the same call to applyScheduledOperations.
+   */
   void scheduleAddConnectivity(Neo::Family& source_family, Neo::FutureItemRange const& source_items,
                                Neo::Family& target_family, int nb_connected_item_per_item,
                                std::vector<Neo::utils::Int64> connected_item_uids,
                                std::string const& connectivity_unique_name) noexcept ;
 
-  //! Use this method to add connectivity of existing items
+  /*!
+   * @brief Ask for a fixed-size connectivity add between \a source_family and \a target_family. Source items are already created.
+   * @param source_family The family of source items.
+   * @param source_items Items to be connected. Given via an ItemRange.
+     * (i.e addItems and addConnectivity are applied with the same call to applyScheduledOperations)
+   * @param target_family The family of target items.
+   * @param nb_connected_item_per_item Connectivity fix size value.
+   * @param connected_item_uids Unique ids of the connected items.
+   * @param connectivity_unique_name Connectivity name must be unique
+   *
+   * Connectivity with fix size (nb of connected items per item is constant).
+   * Use this method to add connectivity with source items already created
+   * in a previous call to applyScheduledOperations.
+   */
   void scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRange const& source_items,
                                Neo::Family& target_family, int nb_connected_item_per_item,
                                std::vector<Neo::utils::Int64> connected_item_uids,
                                std::string const& connectivity_unique_name) noexcept ;
 
-  //! Connectivity vith variable size (nb of connected items per item is variable)
-  //! Use this method to add connectivity of new items (i.e addItems and addConnectivity are applied with the same call to applyScheduledOperations)
+  /*!
+   * @brief Ask for a variable size connectivity add between \a source_family and \a target_family. Source items are scheduled but not created.
+   * @param source_family The family of source items.
+   * @param source_items Items to be connected. Use of a FutureItemRange means these items come from a the AddItems operation not yet applied.
+     * (i.e addItems and addConnectivity are applied with the same call to applyScheduledOperations)
+   * @param target_family The family of target items.
+   * @param nb_connected_item_per_item Number of connected item per items. Array with size equal to source items number.
+   * @param connected_item_uids Unique ids of the connected items.
+   * @param connectivity_unique_name Connectivity name must be unique
+   *
+   * Connectivity with variable size (nb of connected items per item is variable)
+   * Use this method to add connectivity with source items scheduled but not yet created
+   * i.e addItems and addConnectivity are applied in the same call to applyScheduledOperations.
+   */
   void scheduleAddConnectivity(Neo::Family& source_family, Neo::FutureItemRange const& source_items,
                                Neo::Family& target_family, std::vector<int> nb_connected_item_per_item,
                                std::vector<Neo::utils::Int64> connected_item_uids,
                                std::string const& connectivity_unique_name) noexcept ;
 
-  //! Use this method to add connectivity of existing items
+  /*!
+    * @brief Ask for a variable size connectivity add between \a source_family and \a target_family. Source items are already created.
+    * @param source_family The family of source items.
+    * @param source_items Items to be connected. Use of a FutureItemRange means these items come from a the AddItems operation not yet applied.
+      * (i.e addItems and addConnectivity are applied with the same call to applyScheduledOperations)
+    * @param target_family The family of target items.
+    * @param nb_connected_item_per_item Number of connected item per items. Array with size equal to source items number.
+    * @param connected_item_uids Unique ids of the connected items.
+    * @param connectivity_unique_name Connectivity name must be unique
+    *
+    * Connectivity with variable size (nb of connected items per item is variable)
+    * Use this method to add connectivity with source items already created
+    * in a previous call to applyScheduledOperations.
+    */
   void scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRange const& source_items,
                                Neo::Family& target_family, std::vector<int> nb_connected_item_per_item,
                                std::vector<Neo::utils::Int64> connected_item_uids,
