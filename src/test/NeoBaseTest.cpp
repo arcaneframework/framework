@@ -315,7 +315,8 @@ TEST(NeoTestFamily,test_family)
 {
   Neo::Family family(Neo::ItemKind::IK_Dof,"MyFamily");
   EXPECT_EQ(family.lidPropName(),family._lidProp().m_name);
-  family._lidProp().append({0,1,2}); // internal
+  std::vector<Neo::utils::Int64> uids{0,1,2};
+  family._lidProp().append(uids); // internal
   EXPECT_EQ(3,family.nbElements());
   std::string scalar_prop_name("MyScalarProperty");
   std::string array_prop_name("MyArrayProperty");
@@ -328,8 +329,14 @@ TEST(NeoTestFamily,test_family)
   EXPECT_EQ(array_prop_name,family.getConcreteProperty<Neo::ArrayProperty<Neo::utils::Int32>>(array_prop_name).m_name);
   EXPECT_EQ(3,family.all().size());
   auto i = 0;
+  auto local_ids = family.itemUniqueIdsToLocalids(uids);
   for (auto item : family.all() ) {
-    EXPECT_EQ(i++,item);
+    EXPECT_EQ(local_ids[i++],item);
+  }
+  family.itemUniqueIdsToLocalids(local_ids, uids);
+  i = 0;
+  for (auto item : family.all() ) {
+    EXPECT_EQ(local_ids[i++],item);
   }
 }
 

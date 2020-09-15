@@ -577,6 +577,14 @@ public:
   constexpr std::string const& name() const noexcept {return m_name;}
   constexpr ItemKind const& itemKind() const noexcept {return m_ik;}
 
+  std::vector<Neo::utils::Int32> itemUniqueIdsToLocalids(std::vector<Neo::utils::Int64> const& item_uids) const {
+    return _lidProp().operator[](item_uids);
+  }
+  void itemUniqueIdsToLocalids(std::vector<Neo::utils::Int32> & item_lids, std::vector<Neo::utils::Int64> const& item_uids) const {
+    assert(("In itemUniqueIdsToLocalIds, lids and uids sizes differ.",item_lids.size() == item_uids.size()));
+    _lidProp()._getLidsFromUids(item_lids,item_uids);
+  }
+
   template<typename T>
   void addProperty(std::string const& name){
     auto [iter,is_inserted] = m_properties.insert(std::make_pair(name,PropertyT<T>{name}));
