@@ -196,7 +196,7 @@ TEST(NeoMeshApiTest,AddItemConnectivity)
   EXPECT_EQ(cell_to_dofs_connectivity_name,cell_to_dofs.connectivity_name);
   EXPECT_EQ(&cell_family,&cell_to_dofs.source_family);
   EXPECT_EQ(&dof_family,&cell_to_dofs.target_family);
-  std::vector<Neo::utils::Int32> cell_dofs_lids = dof_family._lidProp().operator[](cell_dofs_ref);
+  std::vector<Neo::utils::Int32> cell_dofs_lids = dof_family.itemUniqueIdsToLocalids(cell_dofs_ref);
   for (auto const cell : added_cells){
     auto current_cell_dofs = cell_to_dofs[cell];
     std::cout << "cell lid " << cell << " dofs lids " << current_cell_dofs << std::endl;
