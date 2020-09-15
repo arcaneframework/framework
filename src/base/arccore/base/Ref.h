@@ -46,7 +46,7 @@ class ARCCORE_BASE_EXPORT RefBase
   class ARCCORE_BASE_EXPORT DeleterBase
   {
    protected:
-    bool _destroyHandle(void* instance,Internal::ExternalRef& handle);
+    bool _destroyHandle(const void* instance,Internal::ExternalRef& handle);
   };
 };
 
