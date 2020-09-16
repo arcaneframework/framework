@@ -172,7 +172,7 @@ include(CMakePackageConfigHelpers)
 # Use:
 #   * PROJECT_VERSION
 write_basic_package_version_file(
-  "${version_config}" COMPATIBILITY SameMajorVersion
+  "${version_config}" COMPATIBILITY SameMinorVersion
 )
 
 # Configure '<PROJECT-NAME>Config.cmake'
