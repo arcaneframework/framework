@@ -183,12 +183,7 @@ public:
    * @param connectivity_name Name of the connectivity
    * @return Connectivity, a connectivity wrapper object
    */
-  Connectivity const getConnectivity(Neo::Family const& source_family,Neo::Family const& target_family,std::string const& connectivity_name){
-    auto connectivity_iter = m_connectivities.find(connectivity_name);
-    if (connectivity_iter == m_connectivities.end()) throw std::invalid_argument("Cannot find Connectivity "+connectivity_name);
-    return connectivity_iter->second;
-    // todo check source and target family type...(add operator== on family)
-  }
+  Connectivity const getConnectivity(Neo::Family const& source_family,Neo::Family const& target_family,std::string const& connectivity_name);
 
   /*!
    * @brief Apply all scheduled operations (addItems, addConnectivities, setItemCoords)

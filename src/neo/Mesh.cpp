@@ -192,6 +192,16 @@ Neo::Mesh::CoordPropertyType& Neo::Mesh::getItemCoordProperty(Neo::Family & fami
 
 /*-----------------------------------------------------------------------------*/
 
+Neo::Mesh::Connectivity const Neo::Mesh::getConnectivity(Neo::Family const& source_family,Neo::Family const& target_family,std::string const& connectivity_name)
+{
+  auto connectivity_iter = m_connectivities.find(connectivity_name);
+  if (connectivity_iter == m_connectivities.end()) throw std::invalid_argument("Cannot find Connectivity "+connectivity_name);
+  return connectivity_iter->second;
+  // todo check source and target family type...(add operator== on family)
+}
+
+/*-----------------------------------------------------------------------------*/
+
 Neo::Mesh::CoordPropertyType const& Neo::Mesh::getItemCoordProperty(Neo::Family const& family) const
 {
   return family.getConcreteProperty<CoordPropertyType>(_itemCoordPropertyName(family));
