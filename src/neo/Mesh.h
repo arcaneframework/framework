@@ -49,7 +49,7 @@ public:
   struct Connectivity{
     Neo::Family const& source_family;
     Neo::Family const& target_family;
-    std::string const& connectivity_name;
+    std::string const& name;
     ConnectivityPropertyType const& connectivity_value;
 
     Neo::utils::ConstArrayView<Neo::utils::Int32> operator[] (Neo::utils::Int32 item_lid) const noexcept {
