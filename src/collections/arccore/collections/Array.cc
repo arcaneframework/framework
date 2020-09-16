@@ -263,7 +263,7 @@ overlapError(const void* begin1,Int64 size1,
   ARCCORE_UNUSED(begin2);
   ARCCORE_UNUSED(size1);
   ARCCORE_UNUSED(size2);
-  throw FatalErrorException(A_FUNCINFO,"source and destinations overlaps");
+  ARCCORE_FATAL("source and destinations overlaps");
 }
 
 /*---------------------------------------------------------------------------*/

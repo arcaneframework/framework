@@ -17,7 +17,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMemoryAllocator.h                                          (C) 2000-2018 */
+/* IMemoryAllocator.h                                          (C) 2000-2020 */
 /*                                                                           */
 /* Interface d'un allocateur mémoire.                                        */
 /*---------------------------------------------------------------------------*/
@@ -54,7 +54,7 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator
    *
    * Les objets alloués par l'allocateur doivent tous avoir été désalloués.
    */
-  virtual ~IMemoryAllocator() {}
+  virtual ~IMemoryAllocator() = default;
 
  public:
 
@@ -112,6 +112,16 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator
    * 
    */
   virtual size_t adjustCapacity(size_t wanted_capacity,size_t element_size) =0;
+
+ /*!
+  * \brief Valeur de l'alignement garanti par l'allocateur.
+  *
+  * Cette méthode permet de s'assurer qu'un allocateur a un alignement suffisant
+  * pour certaines opérations comme la vectorisation par exemple.
+  *
+  * S'il n'y a aucune garantie, retourne 0.
+  */
+  virtual size_t guarantedAlignment() =0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -137,6 +147,7 @@ class ARCCORE_COLLECTIONS_EXPORT DefaultMemoryAllocator
   void* reallocate(void* current_ptr,size_t new_size) override;
   void deallocate(void* ptr) override;
   size_t adjustCapacity(size_t wanted_capacity,size_t element_size) override;
+  size_t guarantedAlignment() override { return 0; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -173,9 +184,9 @@ class ARCCORE_COLLECTIONS_EXPORT AlignedMemoryAllocator
   // TODO marquer les méthodes comme 'final'.
 
   //! Alignement pour les structures utilisant la vectorisation
-  static ARCCORE_CONSTEXPR Integer simdAlignment() { return 64; }
+  static constexpr Integer simdAlignment() { return 64; }
   //! Alignement pour une ligne de cache.
-  static ARCCORE_CONSTEXPR Integer cacheLineAlignment() { return 64; }
+  static constexpr Integer cacheLineAlignment() { return 64; }
 
   /*!
    * \brief Allocateur garantissant l'alignement pour utiliser
@@ -209,6 +220,7 @@ class ARCCORE_COLLECTIONS_EXPORT AlignedMemoryAllocator
   void* reallocate(void* current_ptr,size_t new_size) override;
   void deallocate(void* ptr) override;
   size_t adjustCapacity(size_t wanted_capacity,size_t element_size) override;
+  size_t guarantedAlignment() override { return m_alignment; }
 
  private:
 
@@ -224,15 +236,15 @@ class ARCCORE_COLLECTIONS_EXPORT AlignedMemoryAllocator
  * La sortie des informations se fait sur std::cout.
  */
 class ARCCORE_COLLECTIONS_EXPORT PrintableMemoryAllocator
-: public IMemoryAllocator
+: public DefaultMemoryAllocator
 {
+  using Base = DefaultMemoryAllocator;
+
  public:
 
-  bool hasRealloc() const override;
   void* allocate(size_t new_size) override;
   void* reallocate(void* current_ptr,size_t new_size) override;
   void deallocate(void* ptr) override;
-  size_t adjustCapacity(size_t wanted_capacity,size_t element_size) override;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -228,19 +228,10 @@ adjustCapacity(size_t wanted_capacity,size_t element_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool PrintableMemoryAllocator::
-hasRealloc() const
-{
-  return true;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void* PrintableMemoryAllocator::
 allocate(size_t new_size)
 {
-  void* ptr = ::malloc(new_size);
+  void* ptr = Base::allocate(new_size);
   std::cout << "DEF_ARRAY_ALLOCATE new_size=" << new_size << " ptr=" << ptr << '\n';
   return ptr;
 }
@@ -251,7 +242,7 @@ allocate(size_t new_size)
 void* PrintableMemoryAllocator::
 reallocate(void* current_ptr,size_t new_size)
 {
-  void* ptr = ::realloc(current_ptr,new_size);
+  void* ptr = Base::reallocate(current_ptr,new_size);
   std::cout << "DEF_ARRAY_REALLOCATE new_size=" << new_size
             << " current_ptr=" << current_ptr
             << " new_ptr=" << ptr << '\n';
@@ -265,17 +256,7 @@ void PrintableMemoryAllocator::
 deallocate(void* ptr)
 {
   std::cout << "DEF_ARRAY_DEALLOCATE ptr=" << ptr << '\n';
-  ::free(ptr);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-size_t PrintableMemoryAllocator::
-adjustCapacity(size_t wanted_capacity,size_t element_size)
-{
-  ARCCORE_UNUSED(element_size);
-  return wanted_capacity;
+  Base::deallocate(ptr);
 }
 
 /*---------------------------------------------------------------------------*/
