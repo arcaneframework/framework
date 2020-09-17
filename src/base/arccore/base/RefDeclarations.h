@@ -129,11 +129,11 @@ class ReferenceCounterAccessor
 /*---------------------------------------------------------------------------*/
 
 template<class T>
-class ARCCORE_EXPORT ExternalReferenceCounterAccessor
+class ExternalReferenceCounterAccessor
 {
  public:
-  static void addReference(T* t);
-  static void removeReference(T* t);
+  static ARCCORE_EXPORT void addReference(T* t);
+  static ARCCORE_EXPORT void removeReference(T* t);
 };
 
 /*---------------------------------------------------------------------------*/
