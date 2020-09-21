@@ -45,7 +45,7 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 
 bool RefBase::DeleterBase::
-_destroyHandle(const void* instance,Internal::ExternalRef& handle)
+_destroyHandleTrue(const void* instance,Internal::ExternalRef& handle)
 {
   ARCCORE_UNUSED(instance);
   //std::cerr << "DELETE SERVICE i=" << instance << " h=" << handle << "\n";
@@ -54,6 +54,23 @@ _destroyHandle(const void* instance,Internal::ExternalRef& handle)
   return false;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool RefBase::DeleterBase::
+_destroyHandle(const void* instance,Internal::ExternalRef& handle)
+{
+  return _destroyHandleTrue(instance,handle);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool RefBase::DeleterBase::
+_destroyHandle(void* instance,Internal::ExternalRef& handle)
+{
+  return _destroyHandleTrue(instance,handle);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

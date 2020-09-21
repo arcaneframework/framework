@@ -47,6 +47,9 @@ class ARCCORE_BASE_EXPORT RefBase
   {
    protected:
     bool _destroyHandle(const void* instance,Internal::ExternalRef& handle);
+    bool _destroyHandle(void* instance,Internal::ExternalRef& handle);
+   private:
+    bool _destroyHandleTrue(const void* instance,Internal::ExternalRef& handle);
   };
 };
 
