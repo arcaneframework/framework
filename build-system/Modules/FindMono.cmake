@@ -42,9 +42,9 @@ endif (ALIEN_MONO_MKBUNDLE)
 include(FindPackageHandleStandardArgs)
 
 # pour limiter le mode verbose
-set(MONO_FIND_QUIETLY ON)
+set(Mono_FIND_QUIETLY ON)
 
-find_package_handle_standard_args(MONO
+find_package_handle_standard_args(Mono
   DEFAULT_MSG 
   MONO_EXEC 
   Mkbundle_EXEC
