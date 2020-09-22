@@ -47,7 +47,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMessagePassingMng
 {
  public:
 
-  virtual ~IMessagePassingMng(){}
+  virtual ~IMessagePassingMng() = default;
 
  public:
 
@@ -57,12 +57,14 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMessagePassingMng
   //! Nombre d'instance dans le communicateur
   virtual Int32 commSize() const =0;
 
-  //! Interface pour collecter les temps d'exéctution (peut être nul)
+  //! Interface pour collecter les temps d'exécution (peut être nul)
   virtual ITimeMetricCollector* timeMetricCollector() const =0;
 
  public:
 
   virtual IDispatchers* dispatchers() =0;
+
+ public:
 };
 
 /*---------------------------------------------------------------------------*/

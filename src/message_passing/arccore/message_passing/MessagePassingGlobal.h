@@ -72,6 +72,8 @@ class IMessagePassingMng;
 class MessagePassingMng;
 class IDispatchers;
 class Dispatchers;
+class IProfiler;
+class IControlDispatcher;
 template<class DataType>
 class ITypeDispatcher;
 

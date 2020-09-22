@@ -27,6 +27,7 @@ set(SOURCES
   IDispatchers.h
   ITypeDispatcher.h
   IControlDispatcher.h
+  IProfiler.h
   IMessagePassingMng.h
   MessagePassingMng.h
   MessagePassingMng.cc

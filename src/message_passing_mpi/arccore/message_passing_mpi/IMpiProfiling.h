@@ -17,7 +17,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMpiProfiling.h                                             (C) 2000-2018 */
+/* IMpiProfiling.h                                             (C) 2000-2020 */
 /*                                                                           */
 /* Interface d'abstraction des operations MPI.                               */
 /*---------------------------------------------------------------------------*/
@@ -28,6 +28,8 @@
 
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
 
+#include "arccore/message_passing/IProfiler.h"
+
 #include "arccore/collections/CollectionsGlobal.h"
 
 #include "arccore/base/BaseTypes.h"
@@ -35,11 +37,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
-{
-namespace MessagePassing
-{
-namespace Mpi
+namespace Arccore::MessagePassing::Mpi
 {
 
 /*---------------------------------------------------------------------------*/
@@ -51,6 +49,7 @@ namespace Mpi
  * afin de les profiler sans etre trop verbeux et intrusif dans le MPIAdapter
  */
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT IMpiProfiling
+: public IProfiler
 {
  public:
 
@@ -131,9 +130,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT IMpiProfiling
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Mpi
-} // End namespace MessagePassing
-} // End namespace Arccore
+} // namespace Arccore::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

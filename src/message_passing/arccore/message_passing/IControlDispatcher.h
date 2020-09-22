@@ -61,6 +61,11 @@ class IControlDispatcher
 
   //! Création d'une liste de requêtes associé à ce gestionnaire
   virtual Ref<IRequestList> createRequestListRef() =0;
+
+ public:
+
+  virtual IProfiler* profiler() const =0;
+  virtual void setProfiler(IProfiler* p) =0;
 };
 
 /*---------------------------------------------------------------------------*/

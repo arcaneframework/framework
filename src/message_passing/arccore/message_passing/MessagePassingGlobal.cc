@@ -25,7 +25,7 @@
 
 // Il est nécessaire d'inclure tous les fichiers d'en-tête qui ne sont
 // pas directement inclus par des fichiers '.cc' pour s'assurer que
-// les symbols externes sont bien définis.
+// les symboles externes sont bien définis.
 #include "arccore/message_passing/MessagePassingGlobal.h"
 #include "arccore/message_passing/ITypeDispatcher.h"
 #include "arccore/message_passing/Dispatchers.h"
@@ -33,6 +33,7 @@
 #include "arccore/message_passing/IRequestList.h"
 #include "arccore/message_passing/ISerializeMessageList.h"
 #include "arccore/message_passing/ISerializeDispatcher.h"
+#include "arccore/message_passing/IProfiler.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

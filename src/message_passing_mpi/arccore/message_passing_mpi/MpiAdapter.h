@@ -187,7 +187,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
  public:
 
   void setMpiProfiling(IMpiProfiling* mpi_profiling);
-	IMpiProfiling* getMpiProfiling();
+  void setProfiler(IProfiler* profiler);
+	IMpiProfiling* getMpiProfiling() const;
+	IProfiler* profiler() const;
 
  public:
 

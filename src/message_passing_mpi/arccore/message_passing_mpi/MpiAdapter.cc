@@ -1454,7 +1454,7 @@ _checkFatalInRequest()
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
-setMpiProfiling(IMpiProfiling *mpi_profiling)
+setMpiProfiling(IMpiProfiling* mpi_profiling)
 {
 	m_mpi_prof = mpi_profiling;
 }
@@ -1463,7 +1463,33 @@ setMpiProfiling(IMpiProfiling *mpi_profiling)
 /*---------------------------------------------------------------------------*/
 
 IMpiProfiling* MpiAdapter::
-getMpiProfiling()
+getMpiProfiling() const
+{
+	return m_mpi_prof;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MpiAdapter::
+setProfiler(IProfiler* profiler)
+{
+  if (!profiler){
+    m_mpi_prof = nullptr;
+    return;
+  }
+
+  IMpiProfiling* p = dynamic_cast<IMpiProfiling*>(profiler);
+  if (!p)
+    ARCCORE_FATAL("Invalid profiler. Profiler has to implemented interface 'IMpiProfiling'");
+	m_mpi_prof = p;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IProfiler* MpiAdapter::
+profiler() const
 {
 	return m_mpi_prof;
 }
