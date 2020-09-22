@@ -13,7 +13,7 @@
 # et fichier par un find_library() ou find_path()
 arccon_return_if_package_found(Glib)
 
-include(FindPkgConfig)
+find_package(PkgConfig)
 pkg_check_modules(PKG_GLIB glib-2.0 gthread-2.0 gmodule-2.0)
 
 message(STATUS "Infos from pkg_check_modules")
