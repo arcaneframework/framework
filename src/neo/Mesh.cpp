@@ -133,7 +133,9 @@ void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRan
                              std::vector<Neo::utils::Int64>  connected_item_uids,
                              std::string const& connectivity_unique_name) noexcept
 {
-  std::vector<int> nb_connected_item_per_item_array(connected_item_uids.size(),nb_connected_item_per_item) ;
+  assert (("source items and connected item uids sizes are not coherent with nb_connected_item_per_item",
+      source_items.size()*nb_connected_item_per_item == connected_item_uids.size()));
+  std::vector<int> nb_connected_item_per_item_array(source_items.size(),nb_connected_item_per_item) ;
   scheduleAddConnectivity(source_family,source_items,target_family,std::move(nb_connected_item_per_item_array),std::move(connected_item_uids),
                           connectivity_unique_name);
 }
@@ -145,7 +147,10 @@ void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::FutureI
                                         std::vector<Neo::utils::Int64> connected_item_uids,
                                         std::string const& connectivity_unique_name) noexcept
 {
-  std::vector<int> nb_connected_item_per_item_array(connected_item_uids.size(),nb_connected_item_per_item) ;
+  assert (("Connected item uids size is not compatible with nb_connected_item_per_item",
+      connected_item_uids.size()%nb_connected_item_per_item==0));
+  auto source_item_size = connected_item_uids.size()/nb_connected_item_per_item;
+  std::vector<int> nb_connected_item_per_item_array(source_item_size,nb_connected_item_per_item) ;
   scheduleAddConnectivity(source_family,source_items.new_items,target_family,std::move(nb_connected_item_per_item_array),std::move(connected_item_uids),
                           connectivity_unique_name);
 }
