@@ -57,13 +57,16 @@ public:
     }
   };
 
+  enum class ConnectivityOperation { Add, Modify};
+
 public:
   Mesh(std::string const& mesh_name);
   ~Mesh();
 
 private:
   std::unique_ptr<MeshBase> m_mesh_graph;
-  std::map<std::string,Connectivity> m_connectivities;
+  using ConnectivityMapType = std::map<std::string,Connectivity>;
+  ConnectivityMapType m_connectivities;
 
 public:
   /*!
@@ -100,6 +103,7 @@ public:
    * @param nb_connected_item_per_item Connectivity fix size value.
    * @param connected_item_uids Unique ids of the connected items.
    * @param connectivity_unique_name Connectivity name must be unique
+   * @param add_or_modify Indicates whether Connectivity is added or modified (add is default)
    *
    * Connectivity with fix size (nb of connected items per item is constant).
    * Use this method to add connectivity with source items scheduled but not yet created
@@ -108,7 +112,8 @@ public:
   void scheduleAddConnectivity(Neo::Family& source_family, Neo::FutureItemRange const& source_items,
                                Neo::Family& target_family, int nb_connected_item_per_item,
                                std::vector<Neo::utils::Int64> connected_item_uids,
-                               std::string const& connectivity_unique_name) noexcept ;
+                               std::string const& connectivity_unique_name,
+                               ConnectivityOperation add_or_modify = ConnectivityOperation::Add);
 
   /*!
    * @brief Ask for a fixed-size connectivity add between \p source_family and \p target_family. Source items are already created.
@@ -119,6 +124,7 @@ public:
    * @param nb_connected_item_per_item Connectivity fix size value.
    * @param connected_item_uids Unique ids of the connected items.
    * @param connectivity_unique_name Connectivity name must be unique
+   * @param add_or_modify Indicates whether Connectivity is added or modified (add is default)
    *
    * Connectivity with fix size (nb of connected items per item is constant).
    * Use this method to add connectivity with source items already created
@@ -127,7 +133,8 @@ public:
   void scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRange const& source_items,
                                Neo::Family& target_family, int nb_connected_item_per_item,
                                std::vector<Neo::utils::Int64> connected_item_uids,
-                               std::string const& connectivity_unique_name) noexcept ;
+                               std::string const& connectivity_unique_name,
+                               ConnectivityOperation add_or_modify = ConnectivityOperation::Add);
 
   /*!
    * @brief Ask for a variable size connectivity add between \p source_family and \p target_family. Source items are scheduled but not created.
@@ -138,6 +145,7 @@ public:
    * @param nb_connected_item_per_item Number of connected item per items. Array with size equal to source items number.
    * @param connected_item_uids Unique ids of the connected items.
    * @param connectivity_unique_name Connectivity name must be unique
+   * @param add_or_modify Indicates whether Connectivity is added or modified (add is default)
    *
    * Connectivity with variable size (nb of connected items per item is variable)
    * Use this method to add connectivity with source items scheduled but not yet created
@@ -146,7 +154,8 @@ public:
   void scheduleAddConnectivity(Neo::Family& source_family, Neo::FutureItemRange const& source_items,
                                Neo::Family& target_family, std::vector<int> nb_connected_item_per_item,
                                std::vector<Neo::utils::Int64> connected_item_uids,
-                               std::string const& connectivity_unique_name) noexcept ;
+                               std::string const& connectivity_unique_name,
+                               ConnectivityOperation add_or_modify = ConnectivityOperation::Add);
 
   /*!
     * @brief Ask for a variable size connectivity add between \p source_family and \p target_family. Source items are already created.
@@ -157,6 +166,7 @@ public:
     * @param nb_connected_item_per_item Number of connected item per items. Array with size equal to source items number.
     * @param connected_item_uids Unique ids of the connected items.
     * @param connectivity_unique_name Connectivity name must be unique
+    * @param add_or_modify Indicates whether Connectivity is added or modified (add is default)
     *
     * Connectivity with variable size (nb of connected items per item is variable)
     * Use this method to add connectivity with source items already created
@@ -165,7 +175,8 @@ public:
   void scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRange const& source_items,
                                Neo::Family& target_family, std::vector<int> nb_connected_item_per_item,
                                std::vector<Neo::utils::Int64> connected_item_uids,
-                               std::string const& connectivity_unique_name) noexcept ;
+                               std::string const& connectivity_unique_name,
+                               ConnectivityOperation add_or_modify = ConnectivityOperation::Add);
 
   /*!
    * @brief Schedule an set item coordinates. Will be applied when applyScheduledOperations will be called
@@ -182,6 +193,7 @@ public:
    * @param target_family Family of the target items
    * @param connectivity_name Name of the connectivity
    * @return Connectivity, a connectivity wrapper object
+   * @throw a std::invalid_argument if the connectivity is not found
    */
   Connectivity const getConnectivity(Neo::Family const& source_family,Neo::Family const& target_family,std::string const& connectivity_name);
 
@@ -196,7 +208,9 @@ public:
   [[nodiscard]] CoordPropertyType const& getItemCoordProperty(Neo::Family const& family) const;
 
 private:
+
   [[nodiscard]] std::string _itemCoordPropertyName(Family const& item_family) const {return item_family.name()+"_item_coordinates";}
+
 };
 
 } // end namespace Neo

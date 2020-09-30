@@ -2,6 +2,8 @@
 // Created by dechaiss on 5/6/20.
 //
 
+#include <stdexcept>
+
 #include "neo/Mesh.h"
 #include "neo/Neo.h"
 
@@ -73,16 +75,21 @@ void Neo::Mesh::scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::In
 void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRange const& source_items,
                                         Neo::Family& target_family, std::vector<int> nb_connected_item_per_item,
                                         std::vector<Neo::utils::Int64> connected_item_uids,
-                                        std::string const& connectivity_unique_name) noexcept
+                                        std::string const& connectivity_unique_name,
+                                        ConnectivityOperation add_or_modify)
 {
   // add connectivity property if doesn't exist
   source_family.addArrayProperty<Neo::utils::Int32>(connectivity_unique_name);
   // Create connectivity wrapper and add it to mesh
   auto& connectivity_property = source_family.getConcreteProperty<Mesh::ConnectivityPropertyType>(connectivity_unique_name);
-  m_connectivities.insert(std::make_pair(connectivity_unique_name,
-                                         Connectivity{source_family,target_family,
-                                                      connectivity_unique_name,
-                                                      connectivity_property}));
+  auto [iterator, is_inserted] = m_connectivities.insert(std::make_pair(connectivity_unique_name,
+                                                                        Connectivity{source_family,target_family,
+                                                                                     connectivity_unique_name,
+                                                                                     connectivity_property}));
+  if (!is_inserted && add_or_modify==ConnectivityOperation::Add) {
+    throw std::invalid_argument("Cannot include already inserted connectivity "+connectivity_unique_name);
+  }
+
   // temporary conversion into size_t (to remove when size_t will be removed from Neo core)
   std::vector<std::size_t> nb_connected_item_per_item_size_t_conversion_to_deprecate;
   std::transform(nb_connected_item_per_item.begin(), nb_connected_item_per_item.end(),
@@ -118,26 +125,28 @@ void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRan
 /*-----------------------------------------------------------------------------*/
 
 void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::FutureItemRange const& source_items,
-                             Neo::Family& target_family, std::vector<int> nb_connected_item_per_item,
-                             std::vector<Neo::utils::Int64> connected_item_uids,
-                             std::string const& connectivity_unique_name) noexcept
+                                        Neo::Family& target_family, std::vector<int> nb_connected_item_per_item,
+                                        std::vector<Neo::utils::Int64> connected_item_uids,
+                                        std::string const& connectivity_unique_name,
+                                        ConnectivityOperation add_or_modify)
 {
   scheduleAddConnectivity(source_family,source_items.new_items,target_family,std::move(nb_connected_item_per_item),std::move(connected_item_uids),
-                          connectivity_unique_name);
+                          connectivity_unique_name,add_or_modify);
 }
 
 /*-----------------------------------------------------------------------------*/
 
 void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRange const& source_items,
-                             Neo::Family& target_family, int nb_connected_item_per_item,
-                             std::vector<Neo::utils::Int64>  connected_item_uids,
-                             std::string const& connectivity_unique_name) noexcept
+                                        Neo::Family& target_family, int nb_connected_item_per_item,
+                                        std::vector<Neo::utils::Int64>  connected_item_uids,
+                                        std::string const& connectivity_unique_name,
+                                        ConnectivityOperation add_or_modify)
 {
   assert (("source items and connected item uids sizes are not coherent with nb_connected_item_per_item",
       source_items.size()*nb_connected_item_per_item == connected_item_uids.size()));
   std::vector<int> nb_connected_item_per_item_array(source_items.size(),nb_connected_item_per_item) ;
   scheduleAddConnectivity(source_family,source_items,target_family,std::move(nb_connected_item_per_item_array),std::move(connected_item_uids),
-                          connectivity_unique_name);
+                          connectivity_unique_name,add_or_modify);
 }
 
 /*-----------------------------------------------------------------------------*/
@@ -145,14 +154,15 @@ void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRan
 void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::FutureItemRange const& source_items,
                                         Neo::Family& target_family, int nb_connected_item_per_item,
                                         std::vector<Neo::utils::Int64> connected_item_uids,
-                                        std::string const& connectivity_unique_name) noexcept
+                                        std::string const& connectivity_unique_name,
+                                        ConnectivityOperation add_or_modify)
 {
   assert (("Connected item uids size is not compatible with nb_connected_item_per_item",
       connected_item_uids.size()%nb_connected_item_per_item==0));
   auto source_item_size = connected_item_uids.size()/nb_connected_item_per_item;
   std::vector<int> nb_connected_item_per_item_array(source_item_size,nb_connected_item_per_item) ;
   scheduleAddConnectivity(source_family,source_items.new_items,target_family,std::move(nb_connected_item_per_item_array),std::move(connected_item_uids),
-                          connectivity_unique_name);
+                          connectivity_unique_name,add_or_modify);
 }
 
 /*-----------------------------------------------------------------------------*/
