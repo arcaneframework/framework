@@ -207,6 +207,20 @@ public:
   [[nodiscard]] CoordPropertyType& getItemCoordProperty(Neo::Family & family);
   [[nodiscard]] CoordPropertyType const& getItemCoordProperty(Neo::Family const& family) const;
 
+  /*!
+   * @brief Get items of kind \p item_kind connected to family \p source_family
+   * @param source_family Family of source items
+   * @param item_kind Kind of connected items
+   * @return A vector of all Connectivities connecting \p source_family to a target family with kind \p item_kind
+   */
+  std::vector<Connectivity> items(Neo::Family const& source_family, Neo::ItemKind item_kind) const noexcept;
+
+  std::vector<Connectivity> edges(Neo::Family const& source_family) const noexcept;
+  std::vector<Connectivity> nodes(Neo::Family const& source_family) const noexcept;
+  std::vector<Connectivity> faces(Neo::Family const& source_family) const noexcept;
+  std::vector<Connectivity> cells(Neo::Family const& source_family) const noexcept;
+
+  std::vector<Connectivity> dofs(Neo::Family const& source_family) const noexcept;
 private:
 
   [[nodiscard]] std::string _itemCoordPropertyName(Family const& item_family) const {return item_family.name()+"_item_coordinates";}

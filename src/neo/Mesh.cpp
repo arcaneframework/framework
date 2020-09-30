@@ -223,4 +223,55 @@ Neo::Mesh::CoordPropertyType const& Neo::Mesh::getItemCoordProperty(Neo::Family 
 }
 
 /*-----------------------------------------------------------------------------*/
+
+std::vector<Neo::Mesh::Connectivity> Neo::Mesh::items(Neo::Family const& source_family, Neo::ItemKind item_kind) const noexcept
+{
+  std::vector<Connectivity> connectivities_vector{};
+  std::transform(m_connectivities.begin(),m_connectivities.end(),std::back_inserter(connectivities_vector),
+                 [](auto& name_connectivity_pair){
+                   return name_connectivity_pair.second;});
+  std::vector<Connectivity> item_connectivities_vector{};
+  std::copy_if(connectivities_vector.begin(),connectivities_vector.end(),std::back_inserter(item_connectivities_vector),
+               [&source_family,item_kind](auto& connectivity){
+                 return (connectivity.source_family.name() == source_family.name() && // todo replace by a comparison operator betwenn families
+                         connectivity.target_family.itemKind() == item_kind);
+               });
+  return item_connectivities_vector;
+}
+
+/*-----------------------------------------------------------------------------*/
+
+std::vector<Neo::Mesh::Connectivity> Neo::Mesh::edges(Neo::Family const& source_family) const noexcept
+{
+  return items(source_family,Neo::ItemKind::IK_Edge);
+}
+
+/*-----------------------------------------------------------------------------*/
+
+std::vector<Neo::Mesh::Connectivity> Neo::Mesh::nodes(Neo::Family const& source_family) const noexcept
+{
+  return items(source_family,Neo::ItemKind::IK_Node);
+}
+/*-----------------------------------------------------------------------------*/
+
+std::vector<Neo::Mesh::Connectivity> Neo::Mesh::faces(Neo::Family const& source_family) const noexcept
+{
+  return items(source_family,Neo::ItemKind::IK_Face);
+}
+
+/*-----------------------------------------------------------------------------*/
+
+std::vector<Neo::Mesh::Connectivity> Neo::Mesh::cells(Neo::Family const& source_family) const noexcept
+{
+  return items(source_family,Neo::ItemKind::IK_Cell);
+}
+
+/*-----------------------------------------------------------------------------*/
+
+std::vector<Neo::Mesh::Connectivity> Neo::Mesh::dofs(Neo::Family const& source_family) const noexcept
+{
+  return items(source_family,Neo::ItemKind::IK_Dof);
+}
+
+/*-----------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------*/
