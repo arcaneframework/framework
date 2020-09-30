@@ -266,7 +266,8 @@ public:
     if (item_range.size()==0) return;
     // todo: see how to handle new element add or remove impact on property (size/values)
     assert(item_range.size()==nb_values_per_item.size());
-    assert(values.size()==std::accumulate(nb_values_per_item.begin(),nb_values_per_item.end(),0));
+    assert(("connected items array size and nb_values_per_item size are not compatible",
+    values.size()==std::accumulate(nb_values_per_item.begin(),nb_values_per_item.end(),0)));
     if (utils::minItem(item_range) >= m_offsets.size()) _appendByBackInsertion(item_range,values,nb_values_per_item); // only new items
     else _appendByReconstruction(item_range,values,nb_values_per_item); // includes existing items
   }
