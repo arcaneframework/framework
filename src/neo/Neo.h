@@ -769,13 +769,32 @@ private:
   EndOfMeshUpdate() = default;
 };
 
-
 struct FutureItemRange {
 
-  ItemRange &get(EndOfMeshUpdate const &){
+  ItemRange new_items;
+  bool is_data_released = false;
+
+  FutureItemRange() = default;
+  virtual ~FutureItemRange() = default;
+
+  FutureItemRange(FutureItemRange&) = default;
+  FutureItemRange& operator=(FutureItemRange&) = default;
+
+  FutureItemRange(FutureItemRange&&) = default;
+  FutureItemRange& operator=(FutureItemRange&&) = default;
+
+  virtual ItemRange get(EndOfMeshUpdate const &) {
+    if (is_data_released)
+      throw std::runtime_error(
+          "Impossible to call FutureItemRange.get(), data already released.");
+    is_data_released = true;
+    return std::move(new_items);
+  }
+
+  virtual ItemRange& __internal__() {
     return new_items;
   }
-  ItemRange new_items;
+
 };
 
 class MeshBase {

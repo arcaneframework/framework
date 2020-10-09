@@ -490,9 +490,9 @@ namespace PolyhedralMeshTest {
     StaticMesh::addOrientedConnectivity(mesh,face_family,added_faces,cell_family,
         std::move(nb_cell_per_faces),face_cells,face_orientation_in_cells,do_check_orientation);
     auto valid_mesh_state = mesh.applyAlgorithms();
-    auto &new_cells = added_cells.get(valid_mesh_state);
-    auto &new_nodes = added_nodes.get(valid_mesh_state);
-    auto &new_faces = added_faces.get(valid_mesh_state);
+    auto new_cells = added_cells.get(valid_mesh_state);
+    auto new_nodes = added_nodes.get(valid_mesh_state);
+    auto new_faces = added_faces.get(valid_mesh_state);
     std::cout << "Added cells range after applyAlgorithms: " << new_cells;
     std::cout << "Added nodes range after applyAlgorithms: " << new_nodes;
     std::cout << "Added faces range after applyAlgorithms: " << new_faces;

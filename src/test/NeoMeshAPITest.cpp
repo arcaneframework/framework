@@ -110,8 +110,8 @@ TEST(NeoMeshApiTest,SetNodeCoordsTest)
   } // Check memory
   mesh.scheduleSetItemCoords(node_family, added_nodes2,{{1,0,0},{1,1,1}});// memory stealing API
   auto item_range_unlocker  = mesh.applyScheduledOperations();
-  auto& added_node_range  = added_nodes.get(item_range_unlocker);
-  auto& added_node_range2 = added_nodes2.get(item_range_unlocker);
+  auto added_node_range  = added_nodes.get(item_range_unlocker);
+  auto added_node_range2 = added_nodes2.get(item_range_unlocker);
   auto& node_coord_property = mesh.getItemCoordProperty(node_family);
   auto const& node_coord_property_const = mesh.getItemCoordProperty(node_family);
   auto i = 0;
