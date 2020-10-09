@@ -797,6 +797,57 @@ struct FutureItemRange {
 
 };
 
+struct FilteredFutureItemRange : public FutureItemRange {
+
+  FutureItemRange const& m_future_range;
+  std::vector<int> m_filter;
+  bool is_data_filtered = false;
+
+  FilteredFutureItemRange() = delete;
+
+  FilteredFutureItemRange(FutureItemRange& future_item_range_ref,
+                          std::vector<int> filter)
+    : m_future_range(future_item_range_ref)
+    , m_filter(std::move(filter)){}
+
+  virtual ~FilteredFutureItemRange() = default;
+
+  FilteredFutureItemRange(FilteredFutureItemRange&) = default;
+  FilteredFutureItemRange& operator=(FilteredFutureItemRange&) = default;
+
+  FilteredFutureItemRange(FilteredFutureItemRange&&) = default;
+  FilteredFutureItemRange& operator=(FilteredFutureItemRange&&) = default;
+
+  ItemRange get(EndOfMeshUpdate const & end_update) override {
+    if (!is_data_filtered) throw std::runtime_error("Impossible to call FilteredFutureItemRange.get(), data not yet filtered. Call __internal()__ first.");
+    return FutureItemRange::get(end_update);
+  }
+
+  ItemRange& __internal__() override {
+    if (!is_data_filtered) {
+      std::vector<Neo::utils::Int32> filtered_lids(m_filter.size());
+      auto i = 0;
+      auto local_ids = m_future_range.new_items.localIds();
+      std::transform(m_filter.begin(),m_filter.end(),filtered_lids.begin(),
+                     [&local_ids](auto index){
+                       return local_ids[index];
+                     });
+      new_items = ItemRange{{std::move(filtered_lids)}};
+      is_data_filtered = true;
+    }
+    return new_items;
+  }
+};
+
+inline Neo::FutureItemRange make_future_range(){
+  return FutureItemRange{};
+}
+
+inline Neo::FilteredFutureItemRange make_future_range(FutureItemRange& future_item_range,
+                                               std::vector<int> filter) {
+  return FilteredFutureItemRange{future_item_range,std::move(filter)};
+}
+
 class MeshBase {
 public:
   Family& addFamily(ItemKind ik, std::string&& name) {

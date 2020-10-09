@@ -112,6 +112,35 @@ TEST(NeoTestItemRange,test_item_range){
   // todo test out reverse range
 }
 
+ TEST(NeoTestFutureItemRange,test_future_item_range){
+  Neo::FutureItemRange future_item_range{};
+  // Manually fill contained ItemRange
+  std::vector<Neo::utils::Int32> lids{0,2,4,6};
+  future_item_range.new_items = Neo::ItemRange{Neo::ItemLocalIds{lids}};
+  auto end_update = Neo::EndOfMeshUpdate{};
+  // declare a filtered range
+  std::vector<int> filter {0,1,2};
+  auto filtered_future_range = Neo::make_future_range(future_item_range,filter);
+  // Get item_ranges : warning get of filtered range must be down before get of future range
+  // target filtering by calling __internal__(). This call handled by mesh algos,
+  // must be done before calling associated future_range.get()
+   filtered_future_range.__internal__();
+   auto item_range = future_item_range.get(end_update);
+   auto filtered_range = filtered_future_range.get(end_update);
+   // Check item ranges
+  auto lids_in_range = item_range.localIds();
+  EXPECT_TRUE(std::equal(lids.begin(),lids.end(), lids_in_range.begin()));
+  EXPECT_THROW(future_item_range.get(end_update),std::runtime_error);
+
+  std::vector<Neo::utils::Int32> filtered_lids = filtered_range.localIds();
+  std::vector<Neo::utils::Int32> filtered_lids_ref;
+  for (auto i : filter) {
+    filtered_lids_ref.push_back(lids[i]);
+  }
+  EXPECT_EQ(filtered_lids.size(),filtered_lids_ref.size());
+  EXPECT_TRUE(std::equal(filtered_lids_ref.begin(),filtered_lids_ref.end(),filtered_lids.begin()));
+}
+
 TEST(NeoTestProperty,test_property)
  {
    Neo::PropertyT<Neo::utils::Int32> property{"name"};
