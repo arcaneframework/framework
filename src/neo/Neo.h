@@ -86,7 +86,7 @@ struct ItemLocalIds {
     return item_lid;
   }
 
-  std::vector<Neo::utils::Int32> itemArray() {
+  std::vector<Neo::utils::Int32> itemArray() const {
     std::vector<Neo::utils::Int32> item_array(m_non_contiguous_lids.size()+
                                               m_nb_contiguous_lids);
     std::copy(m_non_contiguous_lids.begin(), m_non_contiguous_lids.end(),item_array.begin());
@@ -121,7 +121,7 @@ struct ItemRange {
   ItemIterator end() const {return ItemIterator{m_item_lids,int(m_item_lids.size())};} // todo : consider reverse range : constructeur (ItemLocalIds, traversal_order=forward) enum à faire
   std::size_t size() const {return m_item_lids.size();}
   bool isEmpty() const  {return size() == 0;}
-  std::vector<Neo::utils::Int32> localIds() {return m_item_lids.itemArray();}
+  std::vector<Neo::utils::Int32> localIds() const {return m_item_lids.itemArray();}
   ItemLocalIds m_item_lids;
 };
 }// end namespace Neo
