@@ -1,4 +1,4 @@
-// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
 // Copyright 2000-2020 IFPEN-CEA
 //
@@ -119,6 +119,34 @@
 typedef ARCCORE_TYPE_INT16 Int16;
 typedef ARCCORE_TYPE_INT32 Int32;
 typedef ARCCORE_TYPE_INT64 Int64;
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*
+ * Macros pour le support de la programmation hétérogène (CPU/GPU)
+ - ARCANE_DEVICE_CODE: indique une partie de code compilée uniquement sur le device
+ - ARCANE_HOST_DEVICE: indique que la méthode/variable est accessible à la fois
+   sur le device et l'hôte
+ - ARCANE_DEVICE: indique que la méthode/variable est accessible uniquement sur
+   le device.
+*/
+
+#if defined(__CUDA_ARCH__)
+#define ARCCORE_DEVICE_CODE
+#endif
+
+#if defined(__CUDACC__)
+#define ARCCORE_HOST_DEVICE __host__ __device__
+#define ARCCORE_DEVICE __device__
+#endif
+
+#ifndef ARCCORE_HOST_DEVICE
+#define ARCCORE_HOST_DEVICE
+#endif
+
+#ifndef ARCCORE_DEVICE
+#define ARCCORE_DEVICE
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -490,31 +518,38 @@ arccoreRangeError ARCCORE_NORETURN(Int32 i,Int32 max_size);
 /*!
  * \brief Vérifie un éventuel débordement de tableau.
  */
-static inline void
+static inline ARCCORE_HOST_DEVICE void
 arccoreCheckAt(Int32 i,Int32 max_size)
 {
-  if (i<0 || i>=max_size)
+  // TODO: ajouter support du débordement pour le GPU
+#ifndef ARCCORE_DEVICE_CODE
+ if (i<0 || i>=max_size)
     arccoreRangeError(i,max_size);
+#endif
 }
 
 /*!
  * \brief Vérifie un éventuel débordement de tableau.
  */
-static inline void
+static inline ARCCORE_HOST_DEVICE void
 arccoreCheckAt(Int64 i,Int64 max_size)
 {
+#ifndef ARCCORE_DEVICE_CODE
   if (i<0 || i>=max_size)
     arccoreRangeError(i,max_size);
+#endif
 }
 
 /*!
  * \brief Vérifie un éventuel débordement de tableau.
  */
-static inline void
+static inline ARCCORE_HOST_DEVICE void
 arccoreCheckAt(Int32 i,Int64 max_size)
 {
+#ifndef ARCCORE_DEVICE_CODE
   if (i<0 || i>=max_size)
     arccoreRangeError((Int64)i,max_size);
+#endif
 }
 
 #ifdef ARCCORE_CHECK
