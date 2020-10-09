@@ -92,22 +92,22 @@ class Span
  public:
 
   //! Construit une vue vide.
-  Span() : m_ptr(nullptr), m_size(0) {}
+  ARCCORE_HOST_DEVICE Span() : m_ptr(nullptr), m_size(0) {}
   //! Constructeur de recopie depuis une autre vue
-  Span(const ArrayView<value_type>& from)
+  ARCCORE_HOST_DEVICE Span(const ArrayView<value_type>& from)
   : m_ptr(from.m_ptr), m_size(from.size()) {}
   // Constructeur à partir d'un ConstArrayView. Cela n'est autorisé que
   // si T est const.
   template<typename X,typename = Span_enable_if_t<std::is_same<X,value_type>::value> >
-  Span(const ConstArrayView<X>& from)
+  ARCCORE_HOST_DEVICE Span(const ConstArrayView<X>& from)
   : m_ptr(from.data()), m_size(from.size()) {}
   // Pour un Span<const T>, on a le droit de construire depuis un Span<T>
   template<typename X,typename = Span_enable_if_t<std::is_same<X,value_type>::value> >
-  Span(const Span<X>& from)
+  ARCCORE_HOST_DEVICE Span(const Span<X>& from)
   : m_ptr(from.data()), m_size(from.size()) {}
   //! Construit une vue sur une zone mémoire commencant par \a ptr et
   // contenant \a asize éléments.
-  Span(T* ptr,Int64 asize)
+  ARCCORE_HOST_DEVICE Span(T* ptr,Int64 asize)
   : m_ptr(ptr), m_size(asize) {}
 
  public:
@@ -117,7 +117,7 @@ class Span
    *
    * En mode \a check, vérifie les débordements.
    */
-  inline T& operator[](Int64 i)
+  ARCCORE_HOST_DEVICE inline T& operator[](Int64 i)
   {
     ARCCORE_CHECK_AT(i,m_size);
     return m_ptr[i];
@@ -128,7 +128,7 @@ class Span
    *
    * En mode \a check, vérifie les débordements.
    */
-  inline const T& operator[](Int64 i) const
+  ARCCORE_HOST_DEVICE inline const T& operator[](Int64 i) const
   {
     ARCCORE_CHECK_AT(i,m_size);
     return m_ptr[i];
@@ -139,7 +139,7 @@ class Span
    *
    * En mode \a check, vérifie les débordements.
    */
-  inline const T& item(Int64 i) const
+  ARCCORE_HOST_DEVICE inline const T& item(Int64 i) const
   {
     ARCCORE_CHECK_AT(i,m_size);
     return m_ptr[i];
@@ -150,18 +150,18 @@ class Span
    *
    * En mode \a check, vérifie les débordements.
    */
-  inline void setItem(Int64 i,const T& v)
+  ARCCORE_HOST_DEVICE inline void setItem(Int64 i,const T& v)
   {
     ARCCORE_CHECK_AT(i,m_size);
     m_ptr[i] = v;
   }
 
   //! Retourne la taille du tableau
-  inline Int64 size() const { return m_size; }
+  ARCCORE_HOST_DEVICE inline Int64 size() const { return m_size; }
   //! Retourne la taille du tableau en octets
-  inline Int64 sizeBytes() const { return m_size * sizeof(value_type); }
+  ARCCORE_HOST_DEVICE inline Int64 sizeBytes() const { return m_size * sizeof(value_type); }
   //! Nombre d'éléments du tableau
-  inline Int64 length() const { return m_size; }
+  ARCCORE_HOST_DEVICE inline Int64 length() const { return m_size; }
 
   /*!
    * \brief Itérateur sur le premier élément du tableau.
@@ -231,7 +231,7 @@ class Span
   }
 
   //! Remplit le tableau avec la valeur \a o
-  inline void fill(T o)
+  ARCCORE_HOST_DEVICE inline void fill(T o)
   {
     for( Int64 i=0, n=m_size; i<n; ++i )
       m_ptr[i] = o;
@@ -262,7 +262,7 @@ class Span
    * Si `(abegin+asize` est supérieur à la taille du tableau,
    * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
    */
-  Span<T> subspan(Int64 abegin,Int64 asize) const
+  ARCCORE_HOST_DEVICE Span<T> subspan(Int64 abegin,Int64 asize) const
   {
     if (abegin>=m_size)
       return Span<T>();
@@ -314,9 +314,9 @@ class Span
   }
 
   //! Retourne \a true si le tableau est vide (dimension nulle)
-  bool empty() const { return m_size==0; }
+  ARCCORE_HOST_DEVICE bool empty() const { return m_size==0; }
   //! \a true si le tableau contient l'élément de valeur \a v
-  bool contains(const T& v) const
+  ARCCORE_HOST_DEVICE bool contains(const T& v) const
   {
     for( Int64 i=0; i<m_size; ++i ){
       if (m_ptr[i]==v)
@@ -327,12 +327,12 @@ class Span
 
  public:
 
-  void setArray(const ArrayView<T>& v)
+  ARCCORE_HOST_DEVICE void setArray(const ArrayView<T>& v)
   {
     m_ptr = v.m_ptr;
     m_size = v.m_size;
   }
-  void setArray(const Span<T>& v)
+  ARCCORE_HOST_DEVICE void setArray(const Span<T>& v)
   {
     m_ptr = v.m_ptr;
     m_size = v.m_size;
@@ -346,7 +346,7 @@ class Span
    * operator[](): aucune vérification de dépassement n'est possible,
    * même en mode vérification.
    */
-  const_pointer data() const
+  ARCCORE_HOST_DEVICE const_pointer data() const
   { return m_ptr; }
 
   /*!
@@ -357,7 +357,7 @@ class Span
    * operator[](): aucune vérification de dépassement n'est possible,
    * même en mode vérification.
    */
-  pointer data()
+  ARCCORE_HOST_DEVICE pointer data()
   { return m_ptr; }
 
  protected:
