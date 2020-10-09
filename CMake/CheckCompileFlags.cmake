@@ -33,7 +33,9 @@ if (NOT WIN32)
 
   check_cxx_compiler_flag("-Wpedantic" HAVE_WPEDANTIC)
   if(HAVE_WPEDANTIC)
-    target_compile_options(arccore_build_compile_flags INTERFACE -Wpedantic)
+    # N'utilise pas cet avertissement de compilation si on compile avec CUDA car
+    # cela génère pleins d'avertissement sur l'utilisation d'extensions GNU GCC.
+    target_compile_options(arccore_build_compile_flags INTERFACE "$<$<COMPILE_LANGUAGE:CXX>:-Wpedantic>")
   endif()
 
   check_cxx_compiler_flag("-Wextra" HAVE_WEXTRA)
