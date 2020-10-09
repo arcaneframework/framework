@@ -44,7 +44,7 @@ Neo::Family& Neo::Mesh::addFamily(Neo::ItemKind item_kind, std::string family_na
 
 void Neo::Mesh::scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> uids, Neo::FutureItemRange & added_item_range) noexcept
 {
-  auto& added_items = added_item_range.new_items;
+  auto& added_items = added_item_range.__internal__();
   // Add items
   m_mesh_graph->addAlgorithm(  Neo::OutProperty{family,family.lidPropName()},
                                [&family,uids,&added_items](Neo::ItemLidsProperty & lids_property){
@@ -124,13 +124,13 @@ void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRan
 
 /*-----------------------------------------------------------------------------*/
 
-void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::FutureItemRange const& source_items,
+void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::FutureItemRange& source_items,
                                         Neo::Family& target_family, std::vector<int> nb_connected_item_per_item,
                                         std::vector<Neo::utils::Int64> connected_item_uids,
                                         std::string const& connectivity_unique_name,
                                         ConnectivityOperation add_or_modify)
 {
-  scheduleAddConnectivity(source_family,source_items.new_items,target_family,std::move(nb_connected_item_per_item),std::move(connected_item_uids),
+  scheduleAddConnectivity(source_family,source_items.__internal__(),target_family,std::move(nb_connected_item_per_item),std::move(connected_item_uids),
                           connectivity_unique_name,add_or_modify);
 }
 
@@ -151,7 +151,7 @@ void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRan
 
 /*-----------------------------------------------------------------------------*/
 
-void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::FutureItemRange const& source_items,
+void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::FutureItemRange& source_items,
                                         Neo::Family& target_family, int nb_connected_item_per_item,
                                         std::vector<Neo::utils::Int64> connected_item_uids,
                                         std::string const& connectivity_unique_name,
@@ -161,17 +161,17 @@ void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::FutureI
       connected_item_uids.size()%nb_connected_item_per_item==0));
   auto source_item_size = connected_item_uids.size()/nb_connected_item_per_item;
   std::vector<int> nb_connected_item_per_item_array(source_item_size,nb_connected_item_per_item) ;
-  scheduleAddConnectivity(source_family,source_items.new_items,target_family,std::move(nb_connected_item_per_item_array),std::move(connected_item_uids),
+  scheduleAddConnectivity(source_family,source_items.__internal__(),target_family,std::move(nb_connected_item_per_item_array),std::move(connected_item_uids),
                           connectivity_unique_name,add_or_modify);
 }
 
 /*-----------------------------------------------------------------------------*/
 
-void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::FutureItemRange const&future_added_item_range,std::vector<Neo::utils::Real3> item_coords) noexcept
+void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::FutureItemRange& future_added_item_range,std::vector<Neo::utils::Real3> item_coords) noexcept
 {
   auto coord_prop_name = _itemCoordPropertyName(item_family);
   item_family.addProperty<Neo::utils::Real3>(coord_prop_name);
-  auto& added_items = future_added_item_range.new_items;
+  auto& added_items = future_added_item_range.__internal__();
   m_mesh_graph->addAlgorithm(
           Neo::InProperty{item_family, item_family.lidPropName()},
           Neo::OutProperty{item_family,coord_prop_name},

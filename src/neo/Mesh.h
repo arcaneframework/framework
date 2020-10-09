@@ -109,7 +109,7 @@ public:
    * Use this method to add connectivity with source items scheduled but not yet created
    * i.e addItems and addConnectivity are applied in the same call to applyScheduledOperations.
    */
-  void scheduleAddConnectivity(Neo::Family& source_family, Neo::FutureItemRange const& source_items,
+  void scheduleAddConnectivity(Neo::Family& source_family, Neo::FutureItemRange& source_items,
                                Neo::Family& target_family, int nb_connected_item_per_item,
                                std::vector<Neo::utils::Int64> connected_item_uids,
                                std::string const& connectivity_unique_name,
@@ -151,7 +151,7 @@ public:
    * Use this method to add connectivity with source items scheduled but not yet created
    * i.e addItems and addConnectivity are applied in the same call to applyScheduledOperations.
    */
-  void scheduleAddConnectivity(Neo::Family& source_family, Neo::FutureItemRange const& source_items,
+  void scheduleAddConnectivity(Neo::Family& source_family, Neo::FutureItemRange& source_items,
                                Neo::Family& target_family, std::vector<int> nb_connected_item_per_item,
                                std::vector<Neo::utils::Int64> connected_item_uids,
                                std::string const& connectivity_unique_name,
@@ -185,7 +185,7 @@ public:
    * They will be created in applyScheduledOperations before the call to this coords set.
    * @param item_coords Value of the items coordinates
    */
-  void scheduleSetItemCoords(Neo::Family& item_family, Neo::FutureItemRange const& future_added_item_range,std::vector<Neo::utils::Real3> item_coords) noexcept ;
+  void scheduleSetItemCoords(Neo::Family& item_family, Neo::FutureItemRange& future_added_item_range,std::vector<Neo::utils::Real3> item_coords) noexcept ;
 
   /*!
    * @brief Get item connectivity between \p source_family and \p target_family with name \p name
