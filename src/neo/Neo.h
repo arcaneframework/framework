@@ -765,6 +765,8 @@ class MeshBase;
 
 class EndOfMeshUpdate {
   friend class MeshBase;
+private:
+  EndOfMeshUpdate() = default;
 };
 
 
