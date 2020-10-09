@@ -325,9 +325,8 @@ public:
       m_data.resize(m_data.size()+values.size(),DataType());
       index = 0;
       for (auto item : item_range) {
-        std::cout << "item is " << item<< std::endl;
         auto connected_items = (*this)[item];
-        std::cout << " item " << item << " index in data " << _getItemIndexInData(item) << std::endl;
+//        std::cout << " item " << item << " index in data " << _getItemIndexInData(item) << std::endl;
         for (auto& connected_item : connected_items) {
           connected_item = values[index++];
         }
