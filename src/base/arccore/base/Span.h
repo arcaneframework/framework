@@ -117,7 +117,7 @@ class Span
    *
    * En mode \a check, vérifie les débordements.
    */
-  ARCCORE_HOST_DEVICE inline T& operator[](Int64 i)
+  ARCCORE_HOST_DEVICE inline reference operator[](Int64 i) const
   {
     ARCCORE_CHECK_AT(i,m_size);
     return m_ptr[i];
@@ -128,18 +128,7 @@ class Span
    *
    * En mode \a check, vérifie les débordements.
    */
-  ARCCORE_HOST_DEVICE inline const T& operator[](Int64 i) const
-  {
-    ARCCORE_CHECK_AT(i,m_size);
-    return m_ptr[i];
-  }
-
-  /*!
-   * \brief i-ème élément du tableau.
-   *
-   * En mode \a check, vérifie les débordements.
-   */
-  ARCCORE_HOST_DEVICE inline const T& item(Int64 i) const
+  ARCCORE_HOST_DEVICE inline reference item(Int64 i) const
   {
     ARCCORE_CHECK_AT(i,m_size);
     return m_ptr[i];
