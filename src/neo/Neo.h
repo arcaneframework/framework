@@ -847,6 +847,37 @@ inline Neo::FilteredFutureItemRange make_future_range(FutureItemRange& future_it
   return FilteredFutureItemRange{future_item_range,std::move(filter)};
 }
 
+/*!
+ * Create a FilteredFutureItemRange filtering an FutureItemRange. The filter is here computed.
+ * @tparam item_id Maybe local_id (Neo::utils::Int32) or unique_id (Neo::utils::Int64)
+ * @param future_item_range The future range filtered
+ * @param future_item_range_ids The set of ids in the future range
+ * @param ids_subset The subset of ids kept from the future range
+ * @return The FilteredFutureItemRange
+ */
+template <typename item_id>
+inline Neo::FilteredFutureItemRange make_future_range(FutureItemRange& future_item_range,
+                                                      std::vector<item_id> future_item_range_ids,
+                                                      std::vector<item_id> ids_subset){
+    std::vector<int> filter(ids_subset.size());
+    std::map<item_id, int> uid_index_map;
+    auto index = 0;
+    for (auto uid : future_item_range_ids) {
+      uid_index_map.insert({uid,index++});
+    }
+    auto error = 0;
+    auto i = 0;
+    for (auto uid : ids_subset) {
+      auto iterator = uid_index_map.find(uid);
+      if (iterator == uid_index_map.end()) ++error;
+      else filter[i++] = (*iterator).second;
+    }
+    if (error > 0 ) throw std::runtime_error("in make_future_range, ids_subset contains element not present in future_item_range_ids");
+
+  return FilteredFutureItemRange{future_item_range,std::move(filter)};
+
+}
+
 class MeshBase {
 public:
   Family& addFamily(ItemKind ik, std::string&& name) {
