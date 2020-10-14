@@ -87,10 +87,10 @@ class Span2
 
  public:
   //! Créé une vue 2D de dimension [\a dim1_size][\a dim2_size]
-  Span2(ElementType* ptr,Int64 dim1_size,Int64 dim2_size)
+  ARCCORE_HOST_DEVICE Span2(ElementType* ptr,Int64 dim1_size,Int64 dim2_size)
   : m_ptr(ptr), m_dim1_size(dim1_size), m_dim2_size(dim2_size) {}
   //! Créé une vue 2D vide.
-  Span2() : m_ptr(0), m_dim1_size(0), m_dim2_size(0) {}
+  ARCCORE_HOST_DEVICE Span2() : m_ptr(nullptr), m_dim1_size(0), m_dim2_size(0) {}
   //! Constructeur de recopie depuis une autre vue
   Span2(const Array2View<value_type>& from)
   : m_ptr(from.m_ptr), m_dim1_size(from.dim1Size()),m_dim2_size(from.dim2Size()) {}
@@ -101,37 +101,37 @@ class Span2
   : m_ptr(from.data()), m_dim1_size(from.dim1Size()),m_dim2_size(from.dim2Size()) {}
   // Pour un Span<const T>, on a le droit de construire depuis un Span<T>
   template<typename X,typename = Span_enable_if_t<std::is_same<X,value_type>::value> >
-  Span2(const Span2<X>& from)
+  ARCCORE_HOST_DEVICE Span2(const Span2<X>& from)
   : m_ptr(from.data()), m_dim1_size(from.dim1Size()),m_dim2_size(from.dim2Size()) {}
   //! Construit une vue sur une zone mémoire commencant par \a ptr et
   // contenant \a asize éléments.
  public:
   //! Nombre d'éléments de la première dimension
-  Int64 dim1Size() const { return m_dim1_size; }
+  ARCCORE_HOST_DEVICE Int64 dim1Size() const { return m_dim1_size; }
   //! Nombre d'éléments de la deuxième dimension
-  Int64 dim2Size() const { return m_dim2_size; }
+  ARCCORE_HOST_DEVICE Int64 dim2Size() const { return m_dim2_size; }
   //! Nombre total d'éléments.
-  Int64 totalNbElement() const { return m_dim1_size*m_dim2_size; }
+  ARCCORE_HOST_DEVICE Int64 totalNbElement() const { return m_dim1_size*m_dim2_size; }
  public:
-  Span<ElementType> operator[](Int64 i)
+  ARCCORE_HOST_DEVICE Span<ElementType> operator[](Int64 i)
   {
     ARCCORE_CHECK_AT(i,m_dim1_size);
     return Span<ElementType>(m_ptr + (m_dim2_size*i),m_dim2_size);
   }
-  Span<const ElementType> operator[](Int64 i) const
+  ARCCORE_HOST_DEVICE Span<const ElementType> operator[](Int64 i) const
   {
     ARCCORE_CHECK_AT(i,m_dim1_size);
     return Span<const ElementType>(m_ptr + (m_dim2_size*i),m_dim2_size);
   }
   //! Valeur de l'élément [\a i][\a j]
-  ElementType item(Int64 i,Int64 j) const
+  ARCCORE_HOST_DEVICE ElementType item(Int64 i,Int64 j) const
   {
     ARCCORE_CHECK_AT(i,m_dim1_size);
     ARCCORE_CHECK_AT(j,m_dim2_size);
     return m_ptr[(m_dim2_size*i) + j];
   }
   //! Positionne l'élément [\a i][\a j] à \a value
-  ElementType setItem(Int64 i,Int64 j,const ElementType& value)
+  ARCCORE_HOST_DEVICE ElementType setItem(Int64 i,Int64 j,const ElementType& value)
   {
     ARCCORE_CHECK_AT(i,m_dim1_size);
     ARCCORE_CHECK_AT(j,m_dim2_size);
@@ -165,7 +165,7 @@ class Span2
   /*!
    * \brief Pointeur sur la mémoire allouée.
    */
-  inline ElementType* data() { return m_ptr; }
+  ARCCORE_HOST_DEVICE inline ElementType* data() { return m_ptr; }
  private:
   ElementType* m_ptr;
   Int64 m_dim1_size;
