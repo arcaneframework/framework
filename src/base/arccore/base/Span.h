@@ -95,12 +95,12 @@ class Span
   ARCCORE_HOST_DEVICE Span() : m_ptr(nullptr), m_size(0) {}
   //! Constructeur de recopie depuis une autre vue
   ARCCORE_HOST_DEVICE Span(const ArrayView<value_type>& from)
-  : m_ptr(from.m_ptr), m_size(from.size()) {}
+  : m_ptr(from.m_ptr), m_size(from.m_size) {}
   // Constructeur à partir d'un ConstArrayView. Cela n'est autorisé que
   // si T est const.
   template<typename X,typename = Span_enable_if_t<std::is_same<X,value_type>::value> >
   ARCCORE_HOST_DEVICE Span(const ConstArrayView<X>& from)
-  : m_ptr(from.data()), m_size(from.size()) {}
+  : m_ptr(from.m_ptr), m_size(from.m_size) {}
   // Pour un Span<const T>, on a le droit de construire depuis un Span<T>
   template<typename X,typename = Span_enable_if_t<std::is_same<X,value_type>::value> >
   ARCCORE_HOST_DEVICE Span(const Span<X>& from)
