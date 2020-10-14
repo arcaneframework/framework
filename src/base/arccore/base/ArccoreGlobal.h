@@ -504,31 +504,6 @@ extern "C++" ARCCORE_BASE_EXPORT void
 arccoreRangeError ARCCORE_NORETURN (Int64 i,Int64 max_size);
 
 /*!
- * \brief Signale une erreur de débordement.
- *
- * Signale un débordement de tableau. Affiche un message et appelle
- * arcaneDebugPause().
- *
- * \param i indice invalide
- * \param max_size nombre d'éléments du tableau
- */
-extern "C++" ARCCORE_BASE_EXPORT void
-arccoreRangeError ARCCORE_NORETURN(Int32 i,Int32 max_size);
-
-/*!
- * \brief Vérifie un éventuel débordement de tableau.
- */
-static inline ARCCORE_HOST_DEVICE void
-arccoreCheckAt(Int32 i,Int32 max_size)
-{
-  // TODO: ajouter support du débordement pour le GPU
-#ifndef ARCCORE_DEVICE_CODE
- if (i<0 || i>=max_size)
-    arccoreRangeError(i,max_size);
-#endif
-}
-
-/*!
  * \brief Vérifie un éventuel débordement de tableau.
  */
 static inline ARCCORE_HOST_DEVICE void
@@ -537,18 +512,6 @@ arccoreCheckAt(Int64 i,Int64 max_size)
 #ifndef ARCCORE_DEVICE_CODE
   if (i<0 || i>=max_size)
     arccoreRangeError(i,max_size);
-#endif
-}
-
-/*!
- * \brief Vérifie un éventuel débordement de tableau.
- */
-static inline ARCCORE_HOST_DEVICE void
-arccoreCheckAt(Int32 i,Int64 max_size)
-{
-#ifndef ARCCORE_DEVICE_CODE
-  if (i<0 || i>=max_size)
-    arccoreRangeError((Int64)i,max_size);
 #endif
 }
 
