@@ -67,33 +67,37 @@ TEST(NeoMeshApiTest,AddItemTest)
   for (auto item : new_cells3) {
     std::cout << "Added local id " << item << std::endl;
   }
-  std::vector<Neo::utils::Int64> cell_uids{1,10,100};
-  EXPECT_EQ(cell_uids.size()+3,new_cells.size()+new_cells2.size());
-  auto& cell_uid_property = cell_family.getConcreteProperty<Neo::Mesh::UidPropertyType>
-      (mesh.uniqueIdPropertyName(cell_family.name()));
-  std::vector<Neo::utils::Int64> expected_uids{2,3,4};
+  // API for uids
+  // get uid property
+  auto const& cell_uid_property = mesh.getItemUidsProperty(cell_family);
+  EXPECT_EQ(&cell_uid_property,
+      &cell_family.getConcreteProperty<Neo::Mesh::UidPropertyType>(mesh.uniqueIdPropertyName(cell_family.name())));
+  // or get directly uids
+  auto cell_uids = mesh.uniqueIds(cell_family, new_cells.localIds());
+  cell_uids2 = mesh.uniqueIds(cell_family, new_cells2.localIds());
+  auto cell_uids3 = mesh.uniqueIds(cell_family, new_cells3.localIds());
   auto i = 0;
   for (auto item : new_cells) {
     std::cout << "Added unique id " << cell_uid_property[item] << std::endl;
-    EXPECT_EQ(expected_uids[i++],cell_uid_property[item]);
+    EXPECT_EQ(cell_uids[i++],cell_uid_property[item]);
   }
   i = 0;
   for (auto item : new_cells2) {
     std::cout << "Added unique id " << cell_uid_property[item] << std::endl;
-    EXPECT_EQ(cell_uids[i++],cell_uid_property[item]);
+    EXPECT_EQ(cell_uids2[i++],cell_uid_property[item]);
   }
   i = 0;
   for (auto item : new_cells3) {
     std::cout << "Added unique id " << cell_uid_property[item] << std::endl;
-    EXPECT_EQ(cell_uids[i++],cell_uid_property[item]);
+    EXPECT_EQ(cell_uids3[i++],cell_uid_property[item]);
   }
   // Get uids view
-  Neo::PropertyView<Neo::utils::Int64> uid_view = cell_uid_property.view(new_cells);
+  auto uid_view = cell_uid_property.constView(new_cells);
   // Print uids
   for (auto i = 0; i < new_cells.size(); ++i) {
     std::cout << "uid view index " << i << " = " << uid_view[i]<< std::endl;
   }
-}
+ }
 
 TEST(NeoMeshApiTest,SetNodeCoordsTest)
 {

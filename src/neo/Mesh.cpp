@@ -273,5 +273,17 @@ std::vector<Neo::Mesh::Connectivity> Neo::Mesh::dofs(Neo::Family const& source_f
   return items(source_family,Neo::ItemKind::IK_Dof);
 }
 
+std::vector<Neo::utils::Int64> Neo::Mesh::uniqueIds(Neo::Family const& item_family,
+                                                    std::vector<Neo::utils::Int32> const& item_lids) const noexcept
+{
+  auto const& uid_property = getItemUidsProperty(item_family);
+  return uid_property[item_lids];
+}
+
+const Neo::Mesh::UidPropertyType & Neo::Mesh::getItemUidsProperty(const Neo::Family &item_family) const noexcept
+{
+  return item_family.getConcreteProperty<UidPropertyType>(uniqueIdPropertyName(item_family.name()));
+}
+
 /*-----------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------*/

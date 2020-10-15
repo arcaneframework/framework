@@ -203,9 +203,23 @@ public:
    */
   Neo::EndOfMeshUpdate applyScheduledOperations() noexcept ;
 
-  //! Use this method to change coordinates of existing items
+  /*!
+   * Use this method to change coordinates of existing items
+   * @param family ItemFamily of item to change coordinates
+   * @return Coordinates property. Usage : Real3 coord = coord_prop[item_lid];
+   */
   [[nodiscard]] CoordPropertyType& getItemCoordProperty(Neo::Family & family);
   [[nodiscard]] CoordPropertyType const& getItemCoordProperty(Neo::Family const& family) const;
+
+  /*!
+   * Get unique id property of a family
+   * @param item_family ItemFamily of concerned items
+   * @return UniqueId property. Udage Neo::utils::Int64 uid = uid_prop[item_lid]
+   *
+   * A more direct usage is to call directy \fn uniqueIds(item_family,item_lids)
+   * to get uids of given lids
+   */
+  [[nodiscard]] UidPropertyType const & getItemUidsProperty(const Family &item_family) const noexcept;
 
   /*!
    * @brief Get items of kind \p item_kind connected to family \p source_family
@@ -221,10 +235,18 @@ public:
   std::vector<Connectivity> cells(Neo::Family const& source_family) const noexcept;
 
   std::vector<Connectivity> dofs(Neo::Family const& source_family) const noexcept;
+
+  /*!
+   * Get unique ids from \p item_lids in \p item_family
+   * @param item_family Family of given items
+   * @param item_lids Given item local ids
+   * @return Given item unique ids
+   */
+  std::vector<Neo::utils::Int64> uniqueIds(Family const &item_family,const std::vector<Neo::utils::Int32> &item_lids) const noexcept ;
+
 private:
 
   [[nodiscard]] std::string _itemCoordPropertyName(Family const& item_family) const {return item_family.name()+"_item_coordinates";}
-
 };
 
 } // end namespace Neo
