@@ -162,7 +162,7 @@ TEST(NeoTestItemRange,test_item_range){
 
 TEST(NeoTestProperty,test_property)
  {
-   Neo::PropertyT<Neo::utils::Int32> property{"name"};
+   Neo::PropertyT<Neo::utils::Int32> property{"test"};
    std::vector<Neo::utils::Int32> values {1,2,3};
    Neo::ItemRange item_range{Neo::ItemLocalIds{{},0,3}};
    EXPECT_TRUE(property.isInitializableFrom(item_range));
@@ -173,10 +173,43 @@ TEST(NeoTestProperty,test_property)
    property.append(new_item_range, new_values);
    property.debugPrint();
    EXPECT_EQ(values.size()+new_values.size(),property.size());
+   auto all_values{values};
+   std::copy(new_values.begin(),new_values.end(),std::back_inserter(all_values));
    auto property_values = property.values();
-   for (auto i =0; i < values.size(); ++i){
-     EXPECT_EQ(property_values[i],values[i]);
+   for (auto i =0; i < all_values.size(); ++i){
+     EXPECT_EQ(property_values[i],all_values[i]);
    }
+   // test operator[] (4 versions)
+   auto i = 0;
+   for (auto item : item_range) {
+     EXPECT_EQ(property[item],values[i++]);
+   }
+   i = 0;
+   const auto& const_property = property;
+   for (const auto &item : new_item_range) {
+     EXPECT_EQ(property[item],new_values[i++]);
+   }
+   // check operator[item_lids] on a lids array. Extract lids and values
+   std::vector<int> item_indexes{0,3,4,5};
+   auto local_ids = item_range.localIds();
+   auto lids_new_range = new_item_range.localIds();
+   std::copy(lids_new_range.begin(), lids_new_range.end(),
+             std::back_inserter(local_ids));
+   std::vector<Neo::utils::Int32> extracted_values_ref;
+   std::transform(item_indexes.begin(),item_indexes.end(),std::back_inserter(extracted_values_ref),
+                  [&all_values](auto index){return all_values[index];});
+   std::vector<Neo::utils::Int32> extracted_lids;
+   std::transform(item_indexes.begin(),item_indexes.end(),std::back_inserter(extracted_lids),
+                  [&local_ids](auto index){return local_ids[index];});
+   auto extracted_values = property[extracted_lids];
+   std::cout << "extracted_values " << extracted_values << std::endl;
+   std::cout << "extracted_values_ref " << extracted_values_ref<< std::endl;
+   EXPECT_TRUE(std::equal(extracted_values.begin(),extracted_values.end(),extracted_values_ref.begin()));
+   // todo check throw if lids out of bound
+   ASSERT_DEATH(property[1000],".*Input item lid.*");
+   ASSERT_DEATH(const_property[1000],".*Input item lid.*");
+   extracted_lids = {100, 1000, 1000000};
+   ASSERT_DEATH(property[extracted_lids],".*Max input item lid.*");
 }
 
 TEST(NeoTestArrayProperty,test_array_property)

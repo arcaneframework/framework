@@ -218,8 +218,31 @@ public:
     }
   }
 
-  DataType & operator[] (Neo::utils::Int32 item) { return m_data[item]; }
-  DataType const& operator[] (Neo::utils::Int32 item) const { return m_data[item]; }
+  DataType & operator[] (utils::Int32 item) {
+    assert(("Input item lid > max local id, In PropertyT[]",item < m_data.size()));
+    return m_data[item]; }
+  DataType const& operator[] (utils::Int32 item) const {
+    assert(("Input item lid > max local id, In PropertyT[]",item < m_data.size()));
+    return m_data[item]; }
+  std::vector<DataType> operator[] (std::vector<utils::Int32>const& items) const {
+    return _arrayAccessor(items);
+  }
+  std::vector<DataType> operator[] (utils::ConstArrayView<utils::Int32>const& items) const {
+    return _arrayAccessor(items);
+  }
+
+  template <typename ArrayType>
+  std::vector<DataType> _arrayAccessor (ArrayType items) const {
+    // check bounds
+    assert(("Max input item lid > max local id, In PropertyT[]",
+               *(std::max_element(items.begin(),items.end()))< m_data.size()));
+
+    std::vector<DataType> values;
+    values.reserve(items.size());
+    std::transform(items.begin(),items.end(),std::back_inserter(values),
+                   [this](auto item){return m_data[item];});
+    return values;
+  }
 
   void debugPrint() const {
     std::cout << "= Print property " << m_name << " =" << std::endl;
