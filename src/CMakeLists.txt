@@ -24,4 +24,5 @@ if(Xdmf_FOUND)
 endif(Xdmf_FOUND)
 
 gtest_discover_tests(Neo.tests)
+enable_testing()
 
