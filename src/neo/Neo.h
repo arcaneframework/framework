@@ -259,15 +259,17 @@ public:
   PropertyView<DataType> view() {
     std::vector<int> indexes(m_data.size()); std::iota(indexes.begin(),indexes.end(),0);
     return PropertyView<DataType>{std::move(indexes),Neo::utils::ArrayView<DataType>{m_data.size(),m_data.data()}};}
+
   PropertyView<DataType> view(ItemRange const& item_range) {
     std::vector<int> indexes; indexes.reserve(item_range.size());
     for (auto item : item_range) indexes.push_back(item);
     return PropertyView<DataType>{std::move(indexes),Neo::utils::ArrayView<DataType>{m_data.size(),m_data.data()}};}
 
-  PropertyConstView<DataType> constView() {
+  PropertyConstView<DataType> constView() const {
     std::vector<int> indexes(m_data.size()); std::iota(indexes.begin(),indexes.end(),0);
     return PropertyConstView<DataType>{std::move(indexes),Neo::utils::ConstArrayView<DataType>{m_data.size(),m_data.data()}};}
-  PropertyConstView<DataType> constView(ItemRange const& item_range) {
+    
+  PropertyConstView<DataType> constView(ItemRange const& item_range) const {
     std::vector<int> indexes; indexes.reserve(item_range.size());
     for (auto item : item_range) indexes.push_back(item);
     return PropertyConstView<DataType>{std::move(indexes),Neo::utils::ConstArrayView<DataType>{m_data.size(),m_data.data()}};}
