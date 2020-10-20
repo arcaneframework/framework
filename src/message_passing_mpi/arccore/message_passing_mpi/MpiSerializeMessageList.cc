@@ -159,6 +159,7 @@ processPendingMessages()
     MessageTag tag = pmsg->internalTag();
     if (pmsg->isSend()){
       new_request = m_dispatcher->legacySendSerializer(pmsg->serializer(),{dest,tag,NonBlocking});
+      //new_request = m_dispatcher->sendSerializer(pmsg->serializer(),{dest,tag,NonBlocking});
     }
     else{
       BasicSerializer* sbuf = mpi_msg->serializeBuffer();
@@ -218,11 +219,13 @@ _waitMessages2(eWaitType wait_type)
   UniqueArray<Request> requests(nb_message);
   UniqueArray<bool> done_indexes(nb_message);
   done_indexes.fill(false);
+
 #ifdef ARCANE_TRACE_MPI
   msg->info() << "Waiting for "
               << " rank =" << m_parallel_mng->commRank()
               << " for  " << nb_message << " messages";
 #endif
+
   for( Integer z=0; z<nb_message; ++z ){
     MpiSerializeMessage* msm = m_messages_request[z].m_mpi_message;
     requests[z] = m_messages_request[z].m_request;
@@ -231,7 +234,7 @@ _waitMessages2(eWaitType wait_type)
                  << " issend=" << msm->message()->isSend()
                  << " dest=" << msm->message()->destination()
                  << " tag=" << msm->message()->internalTag()
-                 << " request=" << (MPI_Request)requests[z];
+                 << " request=" << requests[z];
   }
   mpi_status.resize(nb_message);
   MpiAdapter* adapter = m_adapter;
@@ -262,7 +265,7 @@ _waitMessages2(eWaitType wait_type)
            << " status_src=" << mpi_status[z].MPI_SOURCE
            << " status_tag=" << mpi_status[z].MPI_TAG
            << " status_err=" << mpi_status[z].MPI_ERROR
-           << " request=" << (MPI_Request)requests[z]
+           << " request=" << requests[z]
            << "\n";
     }
     msg->pinfo() << "Info messages: myrank=" << comm_rank << " " << ostr.str();
@@ -274,10 +277,7 @@ _waitMessages2(eWaitType wait_type)
                  << " issend=" << msm->message()->isSend()
                  << " dest=" << msm->message()->destination()
                  << " done_index=" << done_indexes[z]
-                 << " status_src=" << mpi_status[z].MPI_SOURCE
-                 << " status_tag=" << mpi_status[z].MPI_TAG
-                 << " status_err=" << mpi_status[z].MPI_ERROR
-                 << " request=" << (MPI_Request)requests[z];
+                 << " request=" << requests[z];
   }
 
   UniqueArray<MpiSerializeMessageRequest> new_messages;
@@ -287,14 +287,16 @@ _waitMessages2(eWaitType wait_type)
     MpiSerializeMessage* mpi_msg = m_messages_request[i].m_mpi_message;
     if (done_indexes[i]){
       MPI_Status status = mpi_status[mpi_status_index];
-      MPI_Request rq = (MPI_Request)requests[i];
-      msg->debug() << "Message number " << i << " Ok, source=" << status.MPI_SOURCE
-                   << " tag=" << mpi_status[i].MPI_TAG
-                   << " err=" << mpi_status[i].MPI_ERROR
+      Request rq = requests[i];
+      MessageRank source(status.MPI_SOURCE);
+      MessageTag tag(status.MPI_TAG);
+      msg->debug() << "Message number " << i << " Finished, source=" << source
+                   << " tag=" << tag
+                   << " err=" << status.MPI_ERROR
+                   << " is_send=" << mpi_msg->message()->isSend()
                    << " request=" << rq;
       ++mpi_status_index;
-      Request r = _processOneMessage(mpi_msg,MessageRank(status.MPI_SOURCE),
-                                     MessageTag(status.MPI_TAG));
+      Request r = _processOneMessage(mpi_msg,source,tag);
       if (r.isValid()){
         msg->debug() << "Add new receive operation for message number " << i
                      << " request=" << (MPI_Request)r;
@@ -308,7 +310,7 @@ _waitMessages2(eWaitType wait_type)
     }
     else{
       msg->debug() << "Message number " << i << " not finished"
-                   << " request=" << (MPI_Request)requests[i];
+                   << " request=" << requests[i];
       new_messages.add(MpiSerializeMessageRequest(mpi_msg,requests[i]));
     }
   }

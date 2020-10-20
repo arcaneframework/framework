@@ -105,6 +105,11 @@ class MpiSerializeDispatcher::SendSerializerSubRequest
  public:
   Request executeOnCompletion() override
   {
+    bool do_print  = m_parallel_mng->m_is_trace_serializer;
+    ITraceMng* tm = m_parallel_mng->traceMng();
+    if (do_print)
+      tm->info() << " SendSerializerSubRequest::executeOnCompletion()"
+                 << " rank=" << m_rank << " tag=" << m_mpi_tag;
     Span<Byte> bytes = m_serialize_buffer->globalBuffer();
     return m_parallel_mng->_sendSerializerBytes(bytes,m_rank,m_mpi_tag,false);
   }
@@ -128,6 +133,9 @@ class MpiSerializeDispatcher::ReceiveSerializerSubRequest
  public:
   Request executeOnCompletion() override
   {
+    if (m_dispatcher->m_is_trace_serializer)
+      m_dispatcher->traceMng()->info() << " ReceiveSerializerSubRequest::executeOnCompletion()"
+                                         << " rank=" << m_rank << " tag=" << m_mpi_tag;
     if (m_action==1){
       BasicSerializer* sbuf = m_serialize_buffer;
       Int64 total_recv_size = sbuf->totalSize();
@@ -140,6 +148,7 @@ class MpiSerializeDispatcher::ReceiveSerializerSubRequest
 
       sbuf->preallocate(total_recv_size);
       auto bytes = sbuf->globalBuffer();
+      //m_serialize_buffer->setTag(m_mpi_tag);
       Request r2 = m_dispatcher->_recvSerializerBytes(bytes,m_rank,m_mpi_tag,false);
       ISubRequest* sr = new ReceiveSerializerSubRequest(m_dispatcher,m_serialize_buffer,m_rank,m_mpi_tag,2);
       r2.setSubRequest(makeRef(sr));
@@ -235,7 +244,7 @@ legacySendSerializer(ISerializer* values,const PointToPointMessageInfo& message)
     tm->info() << "legacySendSerializer(): sending to "
                << " rank=" << rank << " bytes " << bytes.size()
                << BasicSerializer::SizesPrinter(*sbuf)
-               << " tag=" << mpi_tag;
+               << " tag=" << mpi_tag << " is_blocking=" << is_blocking;
 
   // Si le message est plus petit que le buffer par défaut de sérialisation,
   // envoie tout le message
@@ -293,8 +302,11 @@ _recvSerializerBytes(Span<Byte> bytes,MessageRank rank,MessageTag tag,bool is_bl
   if (m_is_trace_serializer)
     m_trace->info() << "_recvSerializerBytes: size=" << bytes.size()
                     << " rank=" << rank << " tag=" << tag << " is_blocking=" << is_blocking;
-  return m_adapter->directRecv(sbc.data(),sbc.size(),rank.value(),
-                               sbc.elementSize(),dt,tag.value(),is_blocking);
+  Request r = m_adapter->directRecv(sbc.data(),sbc.size(),rank.value(),
+                                    sbc.elementSize(),dt,tag.value(),is_blocking);
+  if (m_is_trace_serializer)
+    m_trace->info() << "_recvSerializerBytes: request=" << r;
+  return r;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -308,10 +320,14 @@ _sendSerializerBytes(Span<const Byte> bytes,MessageRank rank,MessageTag tag,
   MPI_Datatype dt = sbc.datatype();
   if (m_is_trace_serializer)
     m_trace->info() << "_sendSerializerBytes: orig_size=" << bytes.size()
+                    << " rank=" << rank << " tag=" << tag
                     << " second_size=" << sbc.size()
                     << " message_size=" << sbc.messageSize();
-  return m_adapter->directSend(sbc.data(),sbc.size(),rank.value(),
-                               sbc.elementSize(),dt,tag.value(),is_blocking);
+  Request  r = m_adapter->directSend(sbc.data(),sbc.size(),rank.value(),
+                                     sbc.elementSize(),dt,tag.value(),is_blocking);
+  if (m_is_trace_serializer)
+    m_trace->info() << "_sendSerializerBytes: request=" << r;
+  return r;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -324,7 +340,8 @@ legacyReceiveSerializer(ISerializer* values,MessageRank rank,MessageTag mpi_tag)
   ITraceMng* tm = m_trace;
 
   if (m_is_trace_serializer)
-    tm->info() << "legacyReceiveSerializer() begin receive tag=" << mpi_tag;
+    tm->info() << "legacyReceiveSerializer() begin receive"
+               << " rank=" << rank << " tag=" << mpi_tag;
   sbuf->preallocate(m_serialize_buffer_size);
   Span<Byte> bytes = sbuf->globalBuffer();
 

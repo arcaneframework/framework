@@ -87,7 +87,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeDispatcher
   //!@}
 
   void broadcastSerializer(ISerializer* values,MessageRank rank);
-
+  ITraceMng* traceMng() const { return m_trace; }
 
  protected:
 
