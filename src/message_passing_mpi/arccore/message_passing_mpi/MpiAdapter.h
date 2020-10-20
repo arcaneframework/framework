@@ -220,7 +220,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   void _removeRequest(MPI_Request request);
   void _checkFatalInRequest();
   MessageId _probeMessage(MessageRank source,MessageTag tag,bool is_blocking);
-  bool _handleEndRequests(ArrayView<Request> requests,ArrayView<bool> done_indexes);
+  bool _handleEndRequests(ArrayView<Request> requests,ArrayView<bool> done_indexes,
+                          ArrayView<MPI_Status> status);
+  void _checkHasNoRequests();
 };
 
 /*---------------------------------------------------------------------------*/

@@ -67,8 +67,9 @@ class MpiAdapter::RequestSet
  public:
   RequestSet(ITraceMng* tm) : TraceAccessor(tm)
   {
+    m_trace_mng_ref = makeRef(tm);
     if (arccoreIsCheck())
-        m_request_error_is_fatal = true;
+      m_request_error_is_fatal = true;
     if (Platform::getEnvironmentVariable("ARCCORE_NOREPORT_ERROR_MPIREQUEST")=="TRUE")
       m_is_report_error_in_request = false;
     if (Platform::getEnvironmentVariable("ARCCORE_MPIREQUEST_STACKTRACE")=="TRUE")
@@ -121,6 +122,7 @@ class MpiAdapter::RequestSet
     }
     if (request==m_empty_request)
       return;
+    ++m_total_added_request;
     //info() << "MPI_ADAPTER:ADD REQUEST " << request;
     auto i = m_allocated_requests.find(request);
     if (i!=m_allocated_requests.end()){
@@ -171,6 +173,7 @@ class MpiAdapter::RequestSet
       ARCCORE_FATAL("Error in requests management");
   }
   Int64 nbRequest() const { return m_allocated_requests.size(); }
+  Int64 totalAddedRequest() const { return m_total_added_request; }
   void printRequests() const
   {
     info() << "PRINT REQUESTS\n";
@@ -187,6 +190,8 @@ class MpiAdapter::RequestSet
   std::map<MPI_Request,RequestInfo> m_allocated_requests;
   bool m_use_trace_full_stack = false;
   MPI_Request m_empty_request = MPI_REQUEST_NULL;
+  Int64 m_total_added_request = 0;
+  Ref<ITraceMng> m_trace_mng_ref;
 };
 
 #define ARCCORE_ADD_REQUEST(request)\
@@ -271,7 +276,7 @@ buildRequest(int ret,MPI_Request mpi_request)
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
-destroy()
+_checkHasNoRequests()
 {
   Int64 nb_request = m_request_set->nbRequest();
   // On ne peut pas faire ce test dans le destructeur car il peut
@@ -282,6 +287,16 @@ destroy()
     m_request_set->printRequests();
     _checkFatalInRequest();
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MpiAdapter::
+destroy()
+{
+  info() << "Total added MPI requests = " << m_request_set->totalAddedRequest();
+  _checkHasNoRequests();
   delete this;
 }
 
@@ -626,6 +641,9 @@ nonBlockingAllToAllVariable(const void* send_buf,const int* send_counts,
 void MpiAdapter::
 barrier()
 {
+  // TODO: a priori on ne devrait pas avoir de requêtes en vol possible
+  // entre deux barrières pour éviter tout problème.
+  // _checkHasNoRequests();
   // TODO ajouter trace correspondante pour le profiling.
   MPI_Barrier(m_communicator);
 }
@@ -831,7 +849,7 @@ directSend(const void* send_buffer,Int64 send_buffer_size,
       int sbuf_size = _checkSize(send_buffer_size);
       m_mpi_prof->iSend(v_send_buffer, sbuf_size, data_type, proc, mpi_tag, m_communicator, &mpi_request);
       if (m_is_trace)
-        info() << " ISend ret=" << ret << " proc=" << proc << " request=" << mpi_request;
+        info() << " ISend ret=" << ret << " proc=" << proc << " tag=" << mpi_tag << " request=" << mpi_request;
       end_time = MPI_Wtime();
       ARCCORE_ADD_REQUEST(mpi_request);
     }
@@ -1167,12 +1185,13 @@ struct MpiAdapter::SubRequestInfo
 /*---------------------------------------------------------------------------*/
 
 bool MpiAdapter::
-_handleEndRequests(ArrayView<Request> requests,ArrayView<bool> done_indexes)
+_handleEndRequests(ArrayView<Request> requests,ArrayView<bool> done_indexes,
+                   ArrayView<MPI_Status> status)
 {
   UniqueArray<SubRequestInfo> new_requests;
+  Integer size = requests.size();
   {
     MpiLock::Section mls(m_mpi_lock);
-    Integer size = requests.size();
     for( Integer i=0; i<size; ++i ) {
       if (done_indexes[i]){
         // Attention à bien utiliser une référence sinon le reset ne
@@ -1180,8 +1199,11 @@ _handleEndRequests(ArrayView<Request> requests,ArrayView<bool> done_indexes)
         Request& r = requests[i];
         // Note: la requête peut ne pas être valide (par exemple s'il s'agit)
         // d'une requête bloquante mais avoir tout de même une sous-requête.
-        if (r.hasSubRequest())
+        if (r.hasSubRequest()){
+          if (m_is_trace)
+            info() << "Done request r=" << r << " mpi_r=" << r << " i=" << i << " has sub request";
           new_requests.add(SubRequestInfo(r.subRequest(),i));
+        }
         if (r.isValid()){
           _removeRequest((MPI_Request)(r));
           r.reset();
@@ -1195,9 +1217,23 @@ _handleEndRequests(ArrayView<Request> requests,ArrayView<bool> done_indexes)
   // le verrou actif.
   bool has_new_request = false;
   if (!new_requests.empty()){
+    // Contient le status de la \a ième requête
+    UniqueArray<MPI_Status> old_status(size);
+    {
+      Integer index = 0;
+      for( Integer i=0; i<size; ++i ){
+        if (done_indexes[i]){
+          old_status[i] = status[index];
+          ++index;
+        }
+      }
+    }
+    // S'il y a des nouvelles requêtes, il faut décaler les valeurs de 'status'
     for( SubRequestInfo& sri : new_requests ){
       Request r = sri.sub_request->executeOnCompletion();
       Integer index = sri.index;
+      if (m_is_trace)
+        info() << "Handle new request index=" << index << " old_r=" << requests[index] << " new_r=" << r;
       // S'il y a une nouvelle requête, alors elle remplace
       // l'ancienne et donc il faut faire comme si
       // la requête d'origine n'est pas terminée.
@@ -1207,6 +1243,16 @@ _handleEndRequests(ArrayView<Request> requests,ArrayView<bool> done_indexes)
         done_indexes[index] = false;
       }
     }
+    {
+      Integer index = 0;
+      for( Integer i=0; i<size; ++i ){
+        if (done_indexes[i]){
+          status[index] = old_status[i];
+          ++index;
+        }
+      }
+    }
+
   }
   return has_new_request;
 }
@@ -1257,7 +1303,7 @@ _waitAllRequestsMPI(ArrayView<Request> requests,
     indexes[i] = true;
   }
 
-  bool has_new_request = _handleEndRequests(requests,indexes);
+  bool has_new_request = _handleEndRequests(requests,indexes,mpi_status);
   if (m_is_trace)
     info() << " MPI_waitall end size=" << size;
   m_stat->add(MpiInfo(eMpiName::Waitall).name(),diff_time,size);
@@ -1335,13 +1381,13 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
     int index = completed_requests[z];
     debug() << "Completed my_rank=" << m_comm_rank << " z=" << z
             << " index=" << index
-            << " status=" << mpi_status[z].MPI_SOURCE
-            << " status_index=" << mpi_status[index].MPI_SOURCE;
+            << " tag=" << mpi_status[z].MPI_TAG
+            << " source=" << mpi_status[z].MPI_SOURCE;
 
     indexes[index] = true;
   }
 
-  bool has_new_request = _handleEndRequests(requests,indexes);
+  bool has_new_request = _handleEndRequests(requests,indexes,mpi_status);
   if (has_new_request){
     // Si on a de nouvelles requêtes, alors il est possible qu'aucune
     // requête n'aie aboutie. En cas de testSome, cela n'est pas grave.
