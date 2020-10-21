@@ -102,6 +102,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeMessageList
   UniqueArray<MpiSerializeMessage*> m_messages_to_process;
   UniqueArray<MpiSerializeMessageRequest> m_messages_request;
   TimeMetricAction m_message_passing_phase;
+  bool m_is_verbose = false;
 };
 
 /*---------------------------------------------------------------------------*/

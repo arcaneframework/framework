@@ -428,7 +428,8 @@ sendSerializer(const ISerializer* s,const PointToPointMessageInfo& message)
                << " p2p_message=" << message
                << " rank=" << rank << " bytes " << bytes.size()
                << BasicSerializer::SizesPrinter(*sbuf)
-               << " tag=" << mpi_tag;
+               << " tag=" << mpi_tag
+               << " total_size=" << total_size;
 
   
   // Si le message est plus petit que le buffer par défaut de sérialisation,

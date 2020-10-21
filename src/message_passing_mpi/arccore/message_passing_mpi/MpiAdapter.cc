@@ -295,7 +295,6 @@ _checkHasNoRequests()
 void MpiAdapter::
 destroy()
 {
-  info() << "Total added MPI requests = " << m_request_set->totalAddedRequest();
   _checkHasNoRequests();
   delete this;
 }
