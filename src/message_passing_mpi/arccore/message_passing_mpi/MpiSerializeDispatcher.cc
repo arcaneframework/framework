@@ -91,32 +91,54 @@ class SerializeByteConverter
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Sous-requête d'envoi.
+ *
+ * Cette classe est utilisée lorsqu'un message de sérialisation est trop
+ * gros pour être envoyé en une seule fois. Dans ce cas, un deuxième message
+ * est envoyé. Ce deuxième message contient le message complet de sérialisation
+ * car le destinataire connait la taille complète du message et peut donc
+ * allouer la mémoire nécessaire.
+ */
 class MpiSerializeDispatcher::SendSerializerSubRequest
 : public ISubRequest
 {
  public:
   SendSerializerSubRequest(MpiSerializeDispatcher* pm,BasicSerializer* buf,
                            MessageRank rank,MessageTag mpi_tag)
-  : m_parallel_mng(pm), m_serialize_buffer(buf), m_rank(rank), m_mpi_tag(mpi_tag) {}
+  : m_dispatcher(pm), m_serialize_buffer(buf), m_rank(rank), m_mpi_tag(mpi_tag) {}
   ~SendSerializerSubRequest() override
   {
   }
  public:
   Request executeOnCompletion() override
   {
-    bool do_print  = m_parallel_mng->m_is_trace_serializer;
-    ITraceMng* tm = m_parallel_mng->traceMng();
-    if (do_print)
-      tm->info() << " SendSerializerSubRequest::executeOnCompletion()"
-                 << " rank=" << m_rank << " tag=" << m_mpi_tag;
-    Span<Byte> bytes = m_serialize_buffer->globalBuffer();
-    return m_parallel_mng->_sendSerializerBytes(bytes,m_rank,m_mpi_tag,false);
+    if (!m_is_message_sent)
+      sendMessage();
+    return m_send_request;
   }
-  MpiSerializeDispatcher* m_parallel_mng;
+ public:
+  void sendMessage()
+  {
+    if (m_is_message_sent)
+      ARCCORE_FATAL("Message already sent");
+    bool do_print  = m_dispatcher->m_is_trace_serializer;
+    if (do_print){
+      ITraceMng* tm = m_dispatcher->traceMng();
+      tm->info() << " SendSerializerSubRequest::sendMessage()"
+                 << " rank=" << m_rank << " tag=" << m_mpi_tag;
+    }
+    Span<Byte> bytes = m_serialize_buffer->globalBuffer();
+    m_send_request = m_dispatcher->_sendSerializerBytes(bytes,m_rank,m_mpi_tag,false);
+    m_is_message_sent = true;
+  }
+ private:
+  MpiSerializeDispatcher* m_dispatcher;
   BasicSerializer* m_serialize_buffer;
   MessageRank m_rank;
   MessageTag m_mpi_tag;
+  Request m_send_request;
+  bool m_is_message_sent = false;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -133,9 +155,11 @@ class MpiSerializeDispatcher::ReceiveSerializerSubRequest
  public:
   Request executeOnCompletion() override
   {
-    if (m_dispatcher->m_is_trace_serializer)
-      m_dispatcher->traceMng()->info() << " ReceiveSerializerSubRequest::executeOnCompletion()"
-                                         << " rank=" << m_rank << " tag=" << m_mpi_tag;
+    if (m_dispatcher->m_is_trace_serializer){
+      ITraceMng* tm = m_dispatcher->traceMng();
+      tm->info() << " ReceiveSerializerSubRequest::executeOnCompletion()"
+                 << " rank=" << m_rank << " tag=" << m_mpi_tag;
+    }
     if (m_action==1){
       BasicSerializer* sbuf = m_serialize_buffer;
       Int64 total_recv_size = sbuf->totalSize();
@@ -442,11 +466,11 @@ sendSerializer(const ISerializer* s,const PointToPointMessageInfo& message)
 
   // Sinon, envoie d'abord les tailles puis une autre requête qui
   // va envoyer tout le message.
-  // TODO: pour des raisons de performance, il faudrait envoyer la deuxième
-  // requête directement.
   auto x = sbuf->copyAndGetSizesBuffer();
   Request r1 = _sendSerializerBytes(x,rank,mpi_tag,is_blocking);
   auto* x2 = new SendSerializerSubRequest(this,sbuf,rank,nextSerializeTag(mpi_tag));
+  // Envoi directement le message pour des raisons de performance.
+  x2->sendMessage();
   r1.setSubRequest(makeRef<ISubRequest>(x2));
   return r1;
 }
