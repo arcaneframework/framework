@@ -162,7 +162,7 @@ processPendingMessages()
       // de legacySendSerializer() mais avant de fair cela il faut envoyer
       // les deux messages potentiels en même temps pour des raisons de
       // performance (voir MpiSerializeDispatcher::sendSerializer())
-      bool do_old = true;
+      bool do_old = false;
       if (do_old)
         new_request = m_dispatcher->legacySendSerializer(pmsg->serializer(),{dest,tag,NonBlocking});
       else
