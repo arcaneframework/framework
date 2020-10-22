@@ -237,12 +237,19 @@ public:
   std::vector<Connectivity> dofs(Neo::Family const& source_family) const noexcept;
 
   /*!
-   * Get unique ids from \p item_lids in \p item_family
+   * Get unique ids from \p item_lids (local ids) in \p item_family
    * @param item_family Family of given items
    * @param item_lids Given item local ids
    * @return Given item unique ids
    */
   std::vector<Neo::utils::Int64> uniqueIds(Family const &item_family,const std::vector<Neo::utils::Int32> &item_lids) const noexcept ;
+  /*!
+   * Get local ids from \p item_uids (unique ids) in \p item_family
+   * @param item_family Family of given items
+   * @param item_uids Given item unique ids
+   * @return Given item local ids
+   */
+  std::vector<Neo::utils::Int32> localIds(Family const &item_family,const std::vector<Neo::utils::Int64> &item_uids) const noexcept ;
 
 private:
 

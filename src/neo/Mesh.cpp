@@ -280,10 +280,19 @@ std::vector<Neo::utils::Int64> Neo::Mesh::uniqueIds(Neo::Family const& item_fami
   return uid_property[item_lids];
 }
 
+/*-----------------------------------------------------------------------------*/
+
 const Neo::Mesh::UidPropertyType & Neo::Mesh::getItemUidsProperty(const Neo::Family &item_family) const noexcept
 {
   return item_family.getConcreteProperty<UidPropertyType>(uniqueIdPropertyName(item_family.name()));
 }
 
+/*-----------------------------------------------------------------------------*/
+
+std::vector<Neo::utils::Int32> Neo::Mesh::localIds(Neo::Family const& item_family,
+                                                    std::vector<Neo::utils::Int64> const& item_uids) const noexcept
+{
+  return item_family.itemUniqueIdsToLocalids(item_uids);
+}
 /*-----------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------*/

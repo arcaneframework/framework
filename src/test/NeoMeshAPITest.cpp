@@ -91,6 +91,16 @@ TEST(NeoMeshApiTest,AddItemTest)
     std::cout << "Added unique id " << cell_uid_property[item] << std::endl;
     EXPECT_EQ(cell_uids3[i++],cell_uid_property[item]);
   }
+  // API for lids
+  auto cell_lids = mesh.localIds(cell_family, cell_uids);
+  auto cell_lids2 = mesh.localIds(cell_family, cell_uids2);
+  auto cell_lids3 = mesh.localIds(cell_family, cell_uids3);
+  auto cell_lids_ref = new_cells.localIds();
+  auto cell_lids_ref2 = new_cells2.localIds();
+  auto cell_lids_ref3 = new_cells3.localIds();
+  EXPECT_TRUE(std::equal(cell_lids_ref.begin(),cell_lids_ref.end(),cell_lids.begin()));
+  EXPECT_TRUE(std::equal(cell_lids_ref2.begin(),cell_lids_ref2.end(),cell_lids2.begin()));
+  EXPECT_TRUE(std::equal(cell_lids_ref3.begin(),cell_lids_ref3.end(),cell_lids3.begin()));
   // Get uids view
   auto uid_view = cell_uid_property.constView(new_cells);
   // Print uids
