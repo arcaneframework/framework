@@ -337,6 +337,12 @@ public:
   void _appendByBackInsertion(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<std::size_t> const& nb_connected_item_per_item){
     if (item_range.isContiguous()) {
       std::cout << "Append in ArrayProperty by back insertion, contiguous range" << std::endl;
+      auto max_existing_lid = m_offsets.size()-1;
+      auto min_new_lid = utils::minItem(item_range);
+      if (min_new_lid > max_existing_lid+1) {
+        //m_data.resize(min_new_lid,Neo::utils::NULL_ITEM_LID);// do not add not needed value : offset is 0
+        m_offsets.resize(min_new_lid,0);
+      }
       std::copy(nb_connected_item_per_item.begin(),
                 nb_connected_item_per_item.end(),
                 std::back_inserter(m_offsets));
@@ -373,6 +379,7 @@ public:
       std::cout << "\"" << val << "\" ";
     }
     std::cout << std::endl;
+    Neo::utils::printContainer(m_offsets, "Offsets ");
   }
 
   // todo should be computed only when m_offsets is updated, at least implement an array version
