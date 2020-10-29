@@ -340,7 +340,6 @@ public:
       auto max_existing_lid = m_offsets.size()-1;
       auto min_new_lid = utils::minItem(item_range);
       if (min_new_lid > max_existing_lid+1) {
-        //m_data.resize(min_new_lid,Neo::utils::NULL_ITEM_LID);// do not add not needed value : offset is 0
         m_offsets.resize(min_new_lid,0);
       }
       std::copy(nb_connected_item_per_item.begin(),

@@ -249,6 +249,7 @@ TEST(NeoTestArrayProperty,test_array_property)
   EXPECT_EQ(21,array_property.size());
   ref_values = {10,10,10,1,2,3,4,12,12,6,6,6,7,11,11,11,8,8,8,9,13};
   EXPECT_TRUE(std::equal(ref_values.begin(),ref_values.end(),array_property.m_data.begin()));
+
   // Check add non 0-starting contiguous range in an empty array property
   auto array_property2 = Neo::ArrayProperty<Neo::utils::Int32>{"test_array_property2"};
   item_range = {Neo::ItemLocalIds{{},3,4}};
@@ -271,23 +272,84 @@ TEST(NeoTestArrayProperty,test_array_property)
     for (auto value : array_property2[item])
       values_check.push_back(value);
   }
-  std::cout << values_check << std::endl;
   EXPECT_TRUE(std::equal(values.begin(),values.end(),values_check.begin()));
   // Check for the whole range
   item_range = {Neo::ItemLocalIds{{},0,7}};
   values = {0,1,1,3,4,4,5,6,6};
   values_check.clear();
   for (auto item : item_range) {
-    std::cout << "item" << item<<std::endl;
     for (auto value : array_property2[item]){
-      std::cout << "push_back"<<std::endl;
       values_check.push_back(value);
     }
   }
+  EXPECT_TRUE(std::equal(values.begin(),values.end(),values_check.begin()));
+  // Check with existing property but insertion past the last element
+  item_range = {Neo::ItemLocalIds{{},8,3}}; // lids {8,9,10}
+  values = {8,9,9,10};
+  array_property2.append(item_range, values,{1,2,1});
+  array_property2.debugPrint();
+  values_check.clear();
+  for (auto item : item_range) {
+    for (auto value : array_property2[item])
+      values_check.push_back(value);
+  }
+  EXPECT_TRUE(std::equal(values.begin(),values.end(),values_check.begin()));
+
+  // Same two tests with discontiguous range
+  auto array_property3 = Neo::ArrayProperty<Neo::utils::Int32>{"test_array_property3"};
+  item_range = {Neo::ItemLocalIds{{3,5,6}}};
+  values = {3,3,5,6,6};
+  array_property3.append(item_range,values,{2,1,2});
+  array_property3.debugPrint();
+  values_check.clear();
+  for (auto item : item_range) {
+    for (auto value : array_property3[item])
+      values_check.push_back(value);
+  }
   std::cout << values_check << std::endl;
   EXPECT_TRUE(std::equal(values.begin(),values.end(),values_check.begin()));
-  // todo check with existing property but insertion past the last element
-  // todo same two tests with discontiguous range(one more test with discontiguous range : reconstruction with a hole ie add {3,5,7} range in property {0,3}
+  // Fill the first items
+  item_range = {Neo::ItemLocalIds{{0,2}}};
+  values = {0,2,2};
+  array_property3.append(item_range, values, {1, 2});
+  array_property3.debugPrint();
+  values_check.clear();
+  for (auto item : item_range) {
+    for (auto value : array_property3[item])
+      values_check.push_back(value);
+  }
+  EXPECT_TRUE(std::equal(values.begin(),values.end(),values_check.begin()));
+  // Check for the whole range
+  item_range = {Neo::ItemLocalIds{{},0,7}};
+  values = {0,2,2,3,3,5,6,6};
+  values_check.clear();
+  for (auto item : item_range) {
+    for (auto value : array_property3[item]){
+      values_check.push_back(value);
+    }
+  }
+  EXPECT_TRUE(std::equal(values.begin(),values.end(),values_check.begin()));
+  // Check with existing property but insertion past the last element
+  item_range = {Neo::ItemLocalIds{{8,10,12}}}; // lids {8,9,10}
+  values = {8,10,10,12};
+  array_property3.append(item_range, values,{1,2,1});
+  array_property3.debugPrint();
+  values_check.clear();
+  for (auto item : item_range) {
+    for (auto value : array_property3[item])
+      values_check.push_back(value);
+  }
+  EXPECT_TRUE(std::equal(values.begin(),values.end(),values_check.begin()));
+  // Check for the whole range
+  item_range = {Neo::ItemLocalIds{{},0,13}};
+  values = {0,2,2,3,3,5,6,6,8,10,10,12};
+  values_check.clear();
+  for (auto item : item_range) {
+    for (auto value : array_property3[item]){
+      values_check.push_back(value);
+    }
+  }
+  EXPECT_TRUE(std::equal(values.begin(),values.end(),values_check.begin()));
 }
 
 TEST(NeoTestPropertyView, test_property_view)
