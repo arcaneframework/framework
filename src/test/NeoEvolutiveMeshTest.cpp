@@ -80,7 +80,7 @@ void addConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
         std::cout << "Algorithm: register connectivity between " <<
           source_family.m_name << "  and  " << target_family.m_name << std::endl;
         auto connected_item_lids = target_family_lids_property[connected_item_uids];
-        std::vector<std::size_t > nb_connected_item_per_item_array(source_items.size(),nb_connected_item_per_item);
+        std::vector<int> nb_connected_item_per_item_array(source_items.size(),nb_connected_item_per_item);
         if (source2target.isInitializableFrom(source_items)) {
           source2target.resize(std::move(nb_connected_item_per_item_array));
           source2target.init(source_items,std::move(connected_item_lids));

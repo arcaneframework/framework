@@ -89,18 +89,12 @@ void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRan
   if (!is_inserted && add_or_modify==ConnectivityOperation::Add) {
     throw std::invalid_argument("Cannot include already inserted connectivity "+connectivity_unique_name);
   }
-
-  // temporary conversion into size_t (to remove when size_t will be removed from Neo core)
-  std::vector<std::size_t> nb_connected_item_per_item_size_t_conversion_to_deprecate;
-  std::transform(nb_connected_item_per_item.begin(), nb_connected_item_per_item.end(),
-      std::back_inserter(nb_connected_item_per_item_size_t_conversion_to_deprecate),
-      [](auto& val){return (std::size_t)val;});
   m_mesh_graph->addAlgorithm(
       Neo::InProperty{source_family,source_family.lidPropName()},
       Neo::InProperty{target_family,target_family.lidPropName()},
       Neo::OutProperty{source_family, connectivity_unique_name},
       [connected_item_uids{std::move(connected_item_uids)},
-             nb_connected_item_per_item_size_t_conversion_to_deprecate{std::move(nb_connected_item_per_item_size_t_conversion_to_deprecate)},
+             nb_connected_item_per_item{std::move(nb_connected_item_per_item)},
              & source_items, &source_family, &target_family]
           (Neo::ItemLidsProperty const& source_family_lids_property,
            Neo::ItemLidsProperty const& target_family_lids_property,
@@ -108,15 +102,13 @@ void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRan
         std::cout << "Algorithm: register connectivity between " <<
                   source_family.m_name << "  and  " << target_family.m_name << std::endl;
         auto connected_item_lids = target_family_lids_property[connected_item_uids];
-//        std::vector<std::size_t > nb_connected_item_per_item(source_items.size(),nb_connected_item_per_item);
         if (source2target.isInitializableFrom(source_items)) {
-          source2target.resize(std::move(
-              nb_connected_item_per_item_size_t_conversion_to_deprecate));
+          source2target.resize(std::move(nb_connected_item_per_item));
           source2target.init(source_items,std::move(connected_item_lids));
         }
         else {
           source2target.append(source_items,connected_item_lids,
-              nb_connected_item_per_item_size_t_conversion_to_deprecate);
+                               nb_connected_item_per_item);
         }
         source2target.debugPrint();
       });

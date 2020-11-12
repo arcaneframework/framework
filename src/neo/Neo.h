@@ -74,8 +74,8 @@ using DataIndex = std::variant<int,ItemUniqueId>;
 struct ItemLocalIds {
   std::vector<Neo::utils::Int32 > m_non_contiguous_lids = {};
   Neo::utils::Int32 m_first_contiguous_lid = 0;
-  std::size_t m_nb_contiguous_lids = 0;
-  std::size_t size()  const {return m_non_contiguous_lids.size()+ m_nb_contiguous_lids;}
+  int m_nb_contiguous_lids = 0;
+  int size()  const {return m_non_contiguous_lids.size()+ m_nb_contiguous_lids;}
   int operator() (int index) const{
     if (index >= int(size())) return  size();
     if (index < 0) return -1;
@@ -279,7 +279,7 @@ public:
 template <typename DataType>
 class ArrayProperty : public PropertyBase {
 public:
-  void resize(std::vector<std::size_t> sizes){ // only 2 moves if a rvalue is passed. One copy + one move if lvalue
+  void resize(std::vector<int> sizes){ // only 2 moves if a rvalue is passed. One copy + one move if lvalue
     m_offsets = std::move(sizes);
   }
   bool isInitializableFrom(const ItemRange& item_range){return item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty() ;}
@@ -287,7 +287,7 @@ public:
     assert(isInitializableFrom(item_range));
     m_data = std::move(values);
   }
-  void append(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<std::size_t> const& nb_values_per_item){
+  void append(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_values_per_item){
     if (item_range.size()==0) return;
     // todo: see how to handle new element add or remove impact on property (size/values)
     assert(item_range.size()==nb_values_per_item.size());
@@ -297,10 +297,10 @@ public:
     else _appendByReconstruction(item_range,values,nb_values_per_item); // includes existing items
   }
 
-  void _appendByReconstruction(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<std::size_t> const& nb_connected_item_per_item){
+  void _appendByReconstruction(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_connected_item_per_item){
     std::cout << "Append in ArrayProperty by reconstruction" << std::endl;
     // Compute new offsets
-    std::vector<std::size_t> new_offsets(m_offsets);
+    std::vector<int> new_offsets(m_offsets);
     if (utils::maxItem(item_range) >= new_offsets.size()) new_offsets.resize(utils::maxItem(item_range)+1);// todo ajouter ArrayProperty::resize(maxlid)
     auto index = 0;
     for (auto item : item_range) {
@@ -320,7 +320,7 @@ public:
       }
     }
     // copy old values
-    ItemRange old_values_range{ItemLocalIds{{},0,m_offsets.size()}};
+    ItemRange old_values_range{ItemLocalIds{{},0,(int)m_offsets.size()}};
     for (auto item : old_values_range) {
       if (!marked_items[item]) {
         auto connected_items = (*this)[item];
@@ -334,7 +334,7 @@ public:
     m_data    = std::move(new_data);
   }
 
-  void _appendByBackInsertion(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<std::size_t> const& nb_connected_item_per_item){
+  void _appendByBackInsertion(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_connected_item_per_item){
     if (item_range.isContiguous()) {
       std::cout << "Append in ArrayProperty by back insertion, contiguous range" << std::endl;
       auto max_existing_lid = m_offsets.size()-1;
@@ -386,18 +386,18 @@ public:
     return std::accumulate(m_offsets.begin(),m_offsets.begin()+item,0);
   }
 
-  utils::Int32 _getItemIndexInData(const utils::Int32 item, const std::vector<std::size_t>& offsets) const{
+  utils::Int32 _getItemIndexInData(const utils::Int32 item, const std::vector<int>& offsets) const{
     return std::accumulate(offsets.begin(),offsets.begin()+item,0);
   }
 
-  std::size_t size() const {
+  int size() const {
     return std::accumulate(m_offsets.begin(), m_offsets.end(), 0);
   }
 
 
 //  private:
   std::vector<DataType> m_data;
-  std::vector<std::size_t> m_offsets;
+  std::vector<int> m_offsets;
 
 };
 
@@ -498,7 +498,7 @@ public:
     // (on estime que l'on décime les id les plus élevés ou les plus faibles), avoir le choix (avec un paramètre par défaut)
     ItemLocalIds item_local_ids{};
     if (m_empty_lids.empty()) { // range contiguous
-      item_local_ids = ItemLocalIds{{},0,(std::size_t)(m_last_id+1)};
+      item_local_ids = ItemLocalIds{{},0,m_last_id+1};
     }
     else {// range discontiguous
       std::vector<Neo::utils::Int32> lids(m_last_id + 1);
@@ -548,7 +548,14 @@ private:
 
 };
 
-using Property = std::variant<PropertyT<utils::Int32>, PropertyT<utils::Real3>,PropertyT<utils::Int64>,ItemLidsProperty, ArrayProperty<utils::Int32>>;
+using Property = std::variant<
+    PropertyT<utils::Int32>,
+    PropertyT<int>,
+    PropertyT<utils::Real3>,
+    PropertyT<utils::Int64>,
+    ItemLidsProperty,
+    ArrayProperty<int>,
+    ArrayProperty<utils::Int32>>;
 
 namespace tye {
 template <typename... T> struct VisitorOverload : public T... {

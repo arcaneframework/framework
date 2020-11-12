@@ -45,7 +45,7 @@ TEST(NeoUtils,test_array_view){
 }
 
 void _testItemLocalIds(Neo::utils::Int32 const& first_lid,
-                      std::size_t const& nb_lids,
+                       int const& nb_lids,
                       std::vector<Neo::utils::Int32> const&non_contiguous_lids = {}){
   auto item_local_ids = Neo::ItemLocalIds{non_contiguous_lids, first_lid, nb_lids};
   auto item_array = item_local_ids.itemArray();
@@ -224,7 +224,7 @@ TEST(NeoTestArrayProperty,test_array_property)
   array_property.debugPrint();
   EXPECT_EQ(values.size(),array_property.size());
   // Add 3 items
-  std::vector<std::size_t> nb_element_per_item{0,3,1};
+  std::vector<int> nb_element_per_item{0,3,1};
   item_range = {Neo::ItemLocalIds{{5,6,7}}};
   std::vector<Neo::utils::Int32> values_added{6,6,6,7};
   array_property.append(item_range, values_added, nb_element_per_item);
@@ -644,7 +644,7 @@ mesh.addAlgorithm(
 // register connectivity
 // node to cell
 std::vector<Neo::utils::Int64> connected_cell_uids{0,0,2,2,7,9};
-std::vector<std::size_t> nb_cell_per_node{1,2,3};
+std::vector<int> nb_cell_per_node{1,2,3};
 mesh.addAlgorithm(
     Neo::InProperty{node_family,node_family.lidPropName()},
     Neo::InProperty{cell_family,cell_family.lidPropName()},
@@ -667,7 +667,7 @@ mesh.addAlgorithm(
 
 // cell to node
 std::vector<Neo::utils::Int64> connected_node_uids{0,1,2,1,2,0,2,1,0};// on ne connecte volontairement pas toutes les mailles pour vérifier initialisation ok sur la famille
-std::vector<std::size_t> nb_node_per_cell{3,0,3,3};
+auto nb_node_per_cell = {3,0,3,3};
 mesh.addAlgorithm(Neo::InProperty{node_family,node_family.lidPropName()},
                   Neo::InProperty{cell_family,cell_family.lidPropName()},
                   Neo::OutProperty{cell_family,"cell2nodes"},
@@ -713,7 +713,7 @@ mesh.addAlgorithm(
 
 // add connectivity to new cells
 std::vector<Neo::utils::Int64> new_cell_connected_node_uids{0,1,2,1,2};// on ne connecte volontairement pas toutes les mailles pour vérifier initialisation ok sur la famille
-std::vector<std::size_t> nb_node_per_new_cell{0,3,2};
+std::vector<int> nb_node_per_new_cell{0,3,2};
 mesh.addAlgorithm(Neo::InProperty{node_family,node_family.lidPropName()},
                   Neo::InProperty{cell_family,cell_family.lidPropName()},
                   Neo::OutProperty{cell_family,"cell2nodes"},

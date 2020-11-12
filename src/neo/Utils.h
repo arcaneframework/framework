@@ -25,12 +25,22 @@ namespace utils {
   template <typename T>
   struct ArrayView {
     using value_type = T;
-    std::size_t m_size = 0;
+    using size_type = int;
+    using vector_size_type = typename std::vector<T>::size_type;
+
+    size_type m_size = 0;
     T* m_ptr = nullptr;
+
+    ArrayView(size_type size, T* data) : m_size(size), m_ptr(data){}
+    ArrayView(vector_size_type size, T* data) : m_size(size), m_ptr(data){}
+    ArrayView() = default;
+
     T& operator[](int i) {assert(i<m_size); return *(m_ptr+i);}
+
     T* begin() {return m_ptr;}
     T* end()   {return m_ptr+m_size;}
-    std::size_t size() const {return m_size;}
+
+    int size() const {return m_size;}
     std::vector<T> copy() { std::vector<T> vec(m_size);
       std::copy(this->begin(), this->end(), vec.begin());
       return vec;
@@ -40,12 +50,20 @@ namespace utils {
   template <typename T>
   struct ConstArrayView {
     using value_type = T;
-    std::size_t m_size = 0;
+    using size_type = int;
+    using vector_size_type = typename std::vector<T>::size_type;
+
+    int m_size = 0;
     const T* m_ptr = nullptr;
+
+    ConstArrayView(size_type size, const T* data) : m_size(size), m_ptr(data){}
+    ConstArrayView(vector_size_type size, const T* data) : m_size(size), m_ptr(data){}
+    ConstArrayView() = default;
+
     const T& operator[](int i) const {assert(i<m_size); return *(m_ptr+i);}
     const T* begin() const {return m_ptr;}
     const T* end() const  {return m_ptr+m_size;}
-    std::size_t size() const {return m_size;}
+    int size() const {return m_size;}
     std::vector<T> copy() { std::vector<T> vec(m_size);
       std::copy(this->begin(), this->end(), vec.begin());
       return vec;
@@ -61,14 +79,20 @@ namespace utils {
   template <typename T>
   struct Array2View {
     using value_type = T;
-    int m_dim1_size = 0;
-    int m_dim2_size = 0;
+    using size_type = int;
+
+    size_type m_dim1_size = 0;
+    size_type m_dim2_size = 0;
     T* m_ptr = nullptr;
-    ArrayView<T> operator[](int i) {assert(i<m_dim1_size); return {(std::size_t)m_dim2_size,m_ptr+i*m_dim2_size};}
+
+    ArrayView<T> operator[](int i) {assert(i<m_dim1_size); return {m_dim2_size,m_ptr+i*m_dim2_size};}
+
     T* begin() {return m_ptr;}
     T* end()   {return m_ptr+(m_dim1_size*m_dim2_size);}
-    int dim1Size() const { return m_dim1_size; }
-    int dim2Size() const { return m_dim2_size; }
+
+    size_type dim1Size() const { return m_dim1_size; }
+    size_type dim2Size() const { return m_dim2_size; }
+
     std::vector<T> copy() { std::vector<T> vec(m_dim1_size*m_dim2_size);
       std::copy(this->begin(),this->end(), vec.begin());
       return vec;
@@ -82,14 +106,20 @@ namespace utils {
   template <typename T>
   struct ConstArray2View {
     using value_type = T;
-    int m_dim1_size = 0;
-    int m_dim2_size = 0;
+    using size_type = int;
+
+    size_type m_dim1_size = 0;
+    size_type m_dim2_size = 0;
     T* m_ptr = nullptr;
-    ConstArrayView<T> operator[](int i) const {assert(i<m_dim1_size); return {(std::size_t)m_dim2_size,m_ptr+i*m_dim2_size};}
+
+    ConstArrayView<T> operator[](int i) const {assert(i<m_dim1_size); return {m_dim2_size,m_ptr+i*m_dim2_size};}
+
     const T* begin() {return m_ptr;}
     const T* end()   {return m_ptr+(m_dim1_size*m_dim2_size);}
-    int dim1Size() const { return m_dim1_size; }
-    int dim2Size() const { return m_dim2_size; }
+
+    size_type dim1Size() const { return m_dim1_size; }
+    size_type dim2Size() const { return m_dim2_size; }
+
     std::vector<T> copy() { std::vector<T> vec(m_dim1_size*m_dim2_size);
       std::copy(this->begin(), this->end(), vec.begin());
       return vec;
