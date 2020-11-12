@@ -15,11 +15,12 @@
 #include <iostream>
 #include <vector>
 #include <cassert>
+#include <cstdint>
 
 namespace Neo {
 namespace utils {
-  using Int64 = long int;
-  using Int32 = int;
+  using Int64 = std::uint64_t;
+  using Int32 = std::uint32_t;
   struct Real3 { double x,y,z;};
   template <typename T>
   struct ArrayView {
