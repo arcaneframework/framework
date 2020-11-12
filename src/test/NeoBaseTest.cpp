@@ -174,7 +174,7 @@ TEST(NeoTestItemRange,test_item_range){
 
 TEST(NeoTestProperty,test_property)
  {
-   Neo::PropertyT<Neo::utils::Int32> property{"test"};
+   Neo::PropertyT<Neo::utils::Int32> property{"test_property"};
    std::vector<Neo::utils::Int32> values {1,2,3};
    Neo::ItemRange item_range{Neo::ItemLocalIds{{},0,3}};
    EXPECT_TRUE(property.isInitializableFrom(item_range));
@@ -222,6 +222,31 @@ TEST(NeoTestProperty,test_property)
    ASSERT_DEATH(const_property[1000],".*Input item lid.*");
    extracted_lids = {100, 1000, 1000000};
    ASSERT_DEATH(property[extracted_lids],".*Max input item lid.*");
+   // Check append with holes, contiguous range
+   item_range = {Neo::ItemLocalIds{{},8,2}};
+   values = {8,9};
+   property.append(item_range, values, Neo::utils::NULL_ITEM_LID);
+   property.debugPrint();
+   extracted_values = property[{8,9}];
+   EXPECT_TRUE(std::equal(values.begin(),values.end(),extracted_values.begin()));
+   auto null_ids = {Neo::utils::NULL_ITEM_LID,Neo::utils::NULL_ITEM_LID};
+   auto extracted_null_ids = property[{6,7}];
+   EXPECT_TRUE(std::equal(null_ids.begin(),null_ids.end(),extracted_null_ids.begin()));
+   // Check append in empty property contiguous range
+   Neo::PropertyT<Neo::utils::Int32> property2{"test_property2"};
+   item_range = {Neo::ItemLocalIds{{},2,3}};
+   values = {2,3,4};
+   property2.append(item_range,values,Neo::utils::NULL_ITEM_LID);
+   property2.debugPrint();
+   extracted_values = property2[{2,3,4}];
+   EXPECT_TRUE(std::equal(values.begin(),values.end(),extracted_values.begin()));
+   extracted_null_ids = property2[{0,1}];
+   EXPECT_TRUE(std::equal(null_ids.begin(),null_ids.end(),extracted_null_ids.begin()));
+   // Check append with holes, discontiguous range todo
+   // Check append in empty property discontiguous range todo
+   // Check append with holes, mixed range todo
+   // Check append in empty property mixed range todo
+
 }
 
 TEST(NeoTestArrayProperty,test_array_property)
