@@ -73,7 +73,10 @@ TEST(NeoTestItemLocalIds,test_item_local_ids){
 TEST(NeoTestItemRange,test_item_range){
   // Test with only contiguous local ids
   std::cout << "== Testing contiguous item range from 0 with 5 items =="<< std::endl;
-  auto ir = Neo::ItemRange{Neo::ItemLocalIds{{},0,5}};
+  auto nb_item = 5;
+  auto ir = Neo::ItemRange{Neo::ItemLocalIds{{},0,nb_item}};
+  EXPECT_EQ(ir.size(),nb_item);
+  EXPECT_EQ(ir.maxLocalId(),nb_item-1);
   std::vector<Neo::utils::Int32> local_ids;
   for (auto item : ir) {
     std::cout << "item lid " << item << std::endl;
@@ -85,7 +88,11 @@ TEST(NeoTestItemRange,test_item_range){
   local_ids.clear();
   // Test with only non contiguous local ids
   std::cout << "== Testing non contiguous item range {3,5,7} =="<< std::endl;
-  ir = Neo::ItemRange{Neo::ItemLocalIds{{3,5,7},0,0}};
+  auto non_contiguous_lids = {3,5,7};
+  ir = Neo::ItemRange{Neo::ItemLocalIds{non_contiguous_lids,0,0}};
+  EXPECT_EQ(ir.size(),non_contiguous_lids.size());
+  EXPECT_EQ(ir.maxLocalId(),*std::max_element(non_contiguous_lids.begin(),
+                                              non_contiguous_lids.end()));
   for (auto item : ir) {
     std::cout << "item lid " << item << std::endl;
     local_ids.push_back(item);
@@ -96,7 +103,11 @@ TEST(NeoTestItemRange,test_item_range){
   local_ids.clear();
   // Test range mixing contiguous and non contiguous local ids
   std::cout << "== Testing non contiguous item range {3,5,7} + 8 to 11 =="<< std::endl;
-  ir = Neo::ItemRange{Neo::ItemLocalIds{{3,5,7},8,4}};
+  auto nb_contiguous_lids = 4;
+  auto first_contiguous_lid = 8;
+  ir = Neo::ItemRange{Neo::ItemLocalIds{non_contiguous_lids,first_contiguous_lid,nb_contiguous_lids}};
+  EXPECT_EQ(ir.size(),non_contiguous_lids.size()+nb_contiguous_lids);
+  EXPECT_EQ(ir.maxLocalId(),first_contiguous_lid+nb_contiguous_lids-1);
   for (auto item : ir) {
     std::cout << "item lid " << item << std::endl;
     local_ids.push_back(item);

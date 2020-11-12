@@ -72,10 +72,12 @@ using DataType = std::variant<utils::Int32, utils::Int64, utils::Real3>;// ajout
 using DataIndex = std::variant<int,ItemUniqueId>;
 
 struct ItemLocalIds {
-  std::vector<Neo::utils::Int32 > m_non_contiguous_lids = {};
-  Neo::utils::Int32 m_first_contiguous_lid = 0;
+  std::vector<utils::Int32 > m_non_contiguous_lids = {};
+  utils::Int32 m_first_contiguous_lid = 0;
   int m_nb_contiguous_lids = 0;
+
   int size()  const {return m_non_contiguous_lids.size()+ m_nb_contiguous_lids;}
+
   int operator() (int index) const{
     if (index >= int(size())) return  size();
     if (index < 0) return -1;
@@ -86,20 +88,31 @@ struct ItemLocalIds {
     return item_lid;
   }
 
-  std::vector<Neo::utils::Int32> itemArray() const {
-    std::vector<Neo::utils::Int32> item_array(m_non_contiguous_lids.size()+
+  std::vector<utils::Int32> itemArray() const {
+    std::vector<utils::Int32> item_array(m_non_contiguous_lids.size()+
                                               m_nb_contiguous_lids);
     std::copy(m_non_contiguous_lids.begin(), m_non_contiguous_lids.end(),item_array.begin());
     std::iota(item_array.begin() + m_non_contiguous_lids.size(),item_array.end(), m_first_contiguous_lid);
     return item_array;
   }
 
-  static std::vector<Neo::utils::Int32 > getIndexes(std::vector<Neo::utils::Int32> const& item_lids){
-    std::vector<Neo::utils::Int32> indexes{};
+  utils::Int32 maxLocalId() const {
+    auto max_contiguous_lid = m_first_contiguous_lid+m_nb_contiguous_lids-1;
+    if (m_non_contiguous_lids.empty()) return max_contiguous_lid;
+    else {
+      auto max_non_contiguous_lid = *std::max_element(m_non_contiguous_lids.begin(),
+                                                      m_non_contiguous_lids.end());
+      return std::max(max_contiguous_lid,max_non_contiguous_lid);
+    }
+  }
+
+  static std::vector<utils::Int32 > getIndexes(std::vector<utils::Int32> const& item_lids){
+    std::vector<utils::Int32> indexes{};
     std::copy_if(item_lids.begin(),item_lids.end(),std::back_inserter(indexes),[](auto const& lid) { return lid != utils::NULL_ITEM_LID; });
     return indexes;
   }
 };
+
 struct ItemIterator {
   using iterator_category = std::input_iterator_tag;
   using value_type = int;
@@ -116,13 +129,16 @@ struct ItemIterator {
   ItemLocalIds m_item_indexes;
 };
 struct ItemRange {
+  std::vector<utils::Int32> localIds() const {return m_item_lids.itemArray();}
+  ItemLocalIds m_item_lids;
+
   bool isContiguous() const {return m_item_lids.m_non_contiguous_lids.empty();};
   ItemIterator begin() const {return ItemIterator{m_item_lids,0};}
   ItemIterator end() const {return ItemIterator{m_item_lids,int(m_item_lids.size())};} // todo : consider reverse range : constructeur (ItemLocalIds, traversal_order=forward) enum à faire
   std::size_t size() const {return m_item_lids.size();}
   bool isEmpty() const  {return size() == 0;}
-  std::vector<Neo::utils::Int32> localIds() const {return m_item_lids.itemArray();}
-  ItemLocalIds m_item_lids;
+  utils::Int32 maxLocalId() const noexcept { return m_item_lids.maxLocalId();}
+
 };
 }// end namespace Neo
 
