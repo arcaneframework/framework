@@ -19,8 +19,8 @@
 
 namespace Neo {
 namespace utils {
-  using Int64 = std::uint64_t;
-  using Int32 = std::uint32_t;
+  using Int64 = std::int64_t;
+  using Int32 = std::int32_t;
   struct Real3 { double x,y,z;};
   template <typename T>
   struct ArrayView {
