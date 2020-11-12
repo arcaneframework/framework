@@ -19,4 +19,10 @@
 //#define ALIEN_UNUSED_PARAM  __attribute__((unused))
 #define ALIEN_UNUSED_PARAM
 
+// LibXml2
+#cmakedefine ALIEN_USE_LIBXML2
+
+// HDF5
+#cmakedefine ALIEN_USE_HDF5
+
 #endif // ALIENCONFIG_H
