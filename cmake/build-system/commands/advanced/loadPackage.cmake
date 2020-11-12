@@ -1,7 +1,7 @@
 # NB: par défaut les packages sont cherchés dans un répertoire 'packages' situé à l'endroit
 #     du script d'appel de load_packages
 
-macro(loadPackage)
+macro(isp_loadPackage)
 
     set(options ESSENTIAL)
     set(oneValueArgs NAME PATH)

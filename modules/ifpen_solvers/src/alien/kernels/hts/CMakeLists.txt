@@ -33,7 +33,7 @@ addSources(alien_ifpen_solvers
 addSources(alien_ifpen_solvers
     eigen_solver/arcane/HTSEigenSolver.cc
     )
-linkLibraries(alien_ifpen_solvers htssolver harts tbb spectra mtl)
+linkLibraries(alien_ifpen_solvers htssolver harts tbb spectra)
 
 if(TARGET arpack)
   linkLibraries(alien_ifpen_solvers arpack)

@@ -21,4 +21,4 @@
           linear_solver/arcane/MTLLinearSolverService.cc
           )
 
-  linkLibraries(alien_external_packages mtl Boost::boost)
+  linkLibraries(alien_external_packages mtl4 Boost::boost)

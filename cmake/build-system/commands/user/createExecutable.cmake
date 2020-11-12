@@ -1,4 +1,4 @@
-function(createExecutable exe)
+function(isp_createExecutable exe)
 
   if(TARGET ${exe})
     logFatalError("executable ${exe} already defined")

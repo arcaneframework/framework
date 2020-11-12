@@ -25,7 +25,7 @@ if(TARGET hypre)
     addDirectory(alien/kernels/hypre)
 endif()
 
-if(TARGET mtl)
+if(TARGET mtl4)
     addDirectory(alien/kernels/mtl)
 endif()
 
