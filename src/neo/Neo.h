@@ -207,11 +207,11 @@ public:
     m_data = std::move(values);
   }
 
-  void append(const ItemRange& item_range, const std::vector<DataType>& values) {
+  void append(const ItemRange& item_range, const std::vector<DataType>& values, DataType default_value=DataType{}) {
     if (item_range.size()==0) return;
     assert(("item_range and values sizes differ",item_range.size() == values.size()));
     auto max_item = utils::maxItem(item_range);
-    if (max_item > m_data.size()) m_data.resize(max_item+1);
+    if (max_item > m_data.size()) m_data.resize(max_item+1,default_value);
     std::size_t counter{0};
     for (auto item : item_range) {
       m_data[item] = values[counter++];
