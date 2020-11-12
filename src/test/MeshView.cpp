@@ -174,7 +174,7 @@ struct VariableViewT {
 
 struct VariableView {
   using ViewType = std::variant<VariableViewT<Neo::utils::Int32>,VariableViewT<Neo::utils::Int64>,
-      VariableViewT<Neo::utils::Real3>,VariableViewT<double>,VariableViewT<int>>;
+      VariableViewT<Neo::utils::Real3>,VariableViewT<double>>;
   ViewType view;
 };
 

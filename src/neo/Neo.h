@@ -550,11 +550,11 @@ private:
 
 using Property = std::variant<
     PropertyT<utils::Int32>,
-    PropertyT<int>,
+    //PropertyT<int>, // int and Int32 are same types
     PropertyT<utils::Real3>,
     PropertyT<utils::Int64>,
     ItemLidsProperty,
-    ArrayProperty<int>,
+    //ArrayProperty<int>, // int and Int32 are same types
     ArrayProperty<utils::Int32>>;
 
 namespace tye {
