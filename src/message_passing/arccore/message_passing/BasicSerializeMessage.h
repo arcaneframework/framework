@@ -69,8 +69,6 @@ class ARCCORE_MESSAGEPASSING_EXPORT BasicSerializeMessage
 
  protected:
 
-  BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
-                        ePointToPointMessageType mtype);
 
  public:
 
@@ -81,7 +79,14 @@ class ARCCORE_MESSAGEPASSING_EXPORT BasicSerializeMessage
  protected:
 
   BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
+                        ePointToPointMessageType mtype);
+  BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
+                        MessageTag tag,ePointToPointMessageType mtype);
+  BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
                         ePointToPointMessageType type,
+                        BasicSerializer* serializer);
+  BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
+                        MessageTag tag,ePointToPointMessageType type,
                         BasicSerializer* serializer);
 
   BasicSerializeMessage(MessageRank orig_rank,MessageId message_id,
@@ -90,6 +95,9 @@ class ARCCORE_MESSAGEPASSING_EXPORT BasicSerializeMessage
 
   static Ref<ISerializeMessage>
   create(MessageRank source,MessageRank destination,ePointToPointMessageType type);
+  static Ref<ISerializeMessage>
+  create(MessageRank source,MessageRank destination,MessageTag tag,
+         ePointToPointMessageType type);
   static Ref<ISerializeMessage>
   create(MessageRank source,MessageId message_id);
 

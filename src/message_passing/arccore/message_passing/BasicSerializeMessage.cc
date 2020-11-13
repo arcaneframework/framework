@@ -65,17 +65,28 @@ _toMessageType(ePointToPointMessageType type)
 
 BasicSerializeMessage::
 BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
-                      ePointToPointMessageType type,
+                      MessageTag tag,ePointToPointMessageType type,
                       BasicSerializer* s)
 : m_orig_rank(orig_rank)
 , m_dest_rank(dest_rank)
-, m_tag(defaultTag())
+, m_tag(tag)
 , m_old_message_type(_toMessageType(type))
 , m_message_type(type)
 , m_is_send(false)
 , m_buffer(s)
 {
   _init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+BasicSerializeMessage::
+BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
+                      ePointToPointMessageType type,
+                      BasicSerializer* s)
+: BasicSerializeMessage(orig_rank,dest_rank,defaultTag(),type,s)
+{
 }
 
 /*---------------------------------------------------------------------------*/
@@ -101,8 +112,18 @@ BasicSerializeMessage(MessageRank orig_rank,MessageId message_id,
 
 BasicSerializeMessage::
 BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
+                      MessageTag tag,ePointToPointMessageType type)
+: BasicSerializeMessage(orig_rank,dest_rank,tag,type,new BasicSerializer())
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+BasicSerializeMessage::
+BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
                       ePointToPointMessageType type)
-: BasicSerializeMessage(orig_rank,dest_rank,type,new BasicSerializer())
+: BasicSerializeMessage(orig_rank,dest_rank,defaultTag(),type)
 {
 }
 
@@ -130,6 +151,17 @@ _init()
     m_is_send = false;
     break;
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<ISerializeMessage> BasicSerializeMessage::
+create(MessageRank source,MessageRank destination,MessageTag tag,
+       ePointToPointMessageType type)
+{
+  ISerializeMessage* m = new BasicSerializeMessage(source,destination,tag,type);
+  return makeRef(m);
 }
 
 /*---------------------------------------------------------------------------*/
