@@ -31,6 +31,7 @@
 #include "arccore/trace/ITraceMng.h"
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/TimeoutException.h"
+#include "arccore/base/NotSupportedException.h"
 
 #include <algorithm>
 
@@ -157,24 +158,35 @@ processPendingMessages()
     Request new_request;
     MessageRank dest = pmsg->destination();
     MessageTag tag = pmsg->internalTag();
+    bool is_one_message_strategy = (pmsg->strategy()==ISerializeMessage::eStrategy::OneMessage);
     if (pmsg->isSend()){
       // TODO: il faut utiliser m_dispatcher->sendSerializer() à la place
       // de legacySendSerializer() mais avant de fair cela il faut envoyer
       // les deux messages potentiels en même temps pour des raisons de
       // performance (voir MpiSerializeDispatcher::sendSerializer())
       bool do_old = false;
-      if (do_old)
+      if (do_old){
+        if (is_one_message_strategy)
+          ARCCORE_THROW(NotSupportedException,"OneMessage strategy with legacy send serializer");
         new_request = m_dispatcher->legacySendSerializer(pmsg->serializer(),{dest,tag,NonBlocking});
+      }
       else
-        new_request = m_dispatcher->sendSerializer(pmsg->serializer(),{dest,tag,NonBlocking});
+        new_request = m_dispatcher->sendSerializer(pmsg->serializer(),{dest,tag,NonBlocking},is_one_message_strategy);
     }
     else{
       BasicSerializer* sbuf = mpi_msg->serializeBuffer();
       sbuf->preallocate(serialize_buffer_size);
       MessageId message_id = pmsg->_internalMessageId();
-      if (message_id.isValid())
+      if (message_id.isValid()){
         // Message de sérialisation utilisant MPI_Message
+        // 'message_id' contient la taille du message final. On préalloue donc
+        // le buffer de réception à cette taille ce qui permet si besoin de ne faire
+        // qu'un seul message de réception.
+        // préallouer le buffer à la taille né
+        if (is_one_message_strategy)
+          sbuf->preallocate(message_id.sourceInfo().size());
         new_request = m_dispatcher->_recvSerializerBytes(sbuf->globalBuffer(),message_id,false);
+      }
       else
         new_request = m_dispatcher->_recvSerializerBytes(sbuf->globalBuffer(),dest,tag,false);
     }
@@ -403,7 +415,8 @@ _processOneMessageGlobalBuffer(MpiSerializeMessage* msm,MessageRank source,Messa
   // et si le message total est trop gros (>m_serialize_buffer_size)
   // poste un nouveau message pour récupèrer les données sérialisées.
   if (msm->messageNumber()==0){
-    if (message_size<=m_dispatcher->serializeBufferSize()){
+    if (message_size<=m_dispatcher->serializeBufferSize()
+        || msm->message()->strategy()==ISerializeMessage::eStrategy::OneMessage){
       sbuf->setFromSizes();
       return request;
     }

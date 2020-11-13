@@ -80,6 +80,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeDispatcher
   //!@{
   Int64 serializeBufferSize() const { return m_serialize_buffer_size; }
   Request legacySendSerializer(ISerializer* values,const PointToPointMessageInfo& message);
+  Request sendSerializer(const ISerializer* s,const PointToPointMessageInfo& message,bool force_one_message);
   void legacyReceiveSerializer(ISerializer* values,MessageRank rank,MessageTag mpi_tag);
   void checkFinishedSubRequests();
   MpiAdapter* adapter() const { return m_adapter; }

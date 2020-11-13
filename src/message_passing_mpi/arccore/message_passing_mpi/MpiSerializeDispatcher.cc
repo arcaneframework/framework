@@ -435,6 +435,16 @@ _checkBigMessage(Int64 message_size)
 Request MpiSerializeDispatcher::
 sendSerializer(const ISerializer* s,const PointToPointMessageInfo& message)
 {
+  return sendSerializer(s,message,false);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Request MpiSerializeDispatcher::
+sendSerializer(const ISerializer* s,const PointToPointMessageInfo& message,
+               bool force_one_message)
+{
   BasicSerializer* sbuf = _castSerializer(const_cast<ISerializer*>(s));
 
   MessageRank rank = message.destinationRank();
@@ -456,9 +466,9 @@ sendSerializer(const ISerializer* s,const PointToPointMessageInfo& message)
                << " total_size=" << total_size;
 
   
-  // Si le message est plus petit que le buffer par défaut de sérialisation,
-  // envoie tout le message
-  if (total_size<=m_serialize_buffer_size){
+  // Si le message est plus petit que le buffer par défaut de sérialisation
+  // ou qu'on choisit de n'envoyer qu'un seul message, envoie tout le message
+  if (total_size<=m_serialize_buffer_size || force_one_message){
     if (m_is_trace_serializer)
       tm->info() << "Small message size=" << bytes.size();
     return _sendSerializerBytes(bytes,rank,mpi_tag,is_blocking);
