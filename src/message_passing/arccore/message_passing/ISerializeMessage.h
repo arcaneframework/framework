@@ -65,8 +65,22 @@ class ARCCORE_MESSAGEPASSING_EXPORT ISerializeMessage
     MT_Recv,
     MT_Broadcast
   };
+ //! Stratégie d'envoi/réception
+  enum class eStrategy
+  {
+    //! Stratégie par défaut.
+    Default,
+    /*!
+     * \brief Stratégie utilisant un seul message si possible.
+     *
+     * Cela suppose d'utiliser la fonction mpProbe()
+     * pour connaitre la taille du message
+     * avant de poster la réception.
+     */
+    OneMessage
+  };
 
-  virtual ~ISerializeMessage() {} //!< Libère les ressources.
+  virtual ~ISerializeMessage() = default; //!< Libère les ressources.
 
  public:
 
@@ -155,6 +169,17 @@ class ARCCORE_MESSAGEPASSING_EXPORT ISerializeMessage
    * \brief Identificant du message
    */
   virtual MessageId _internalMessageId() const =0;
+
+  /*!
+   * \brief Positionne la stratégie d'envoi/réception.
+   *
+   * La stratégie utilisée doit être la même pour le message envoyé
+   * et le message de réception sinon le comportement est indéfini.
+   */
+  virtual void setStrategy(eStrategy strategy) =0;
+
+  //! Stratégie utilisée pour les envois/réceptions
+  virtual eStrategy strategy() const =0;
 };
 
 /*---------------------------------------------------------------------------*/

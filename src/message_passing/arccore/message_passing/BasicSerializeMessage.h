@@ -110,6 +110,8 @@ class ARCCORE_MESSAGEPASSING_EXPORT BasicSerializeMessage
   void setInternalTag(MessageTag tag) override { m_tag = tag; }
   MessageTag internalTag() const override { return m_tag; }
   MessageId _internalMessageId() const override { return m_message_id; }
+  void setStrategy(eStrategy strategy) override { m_strategy = strategy; }
+  eStrategy strategy() const override { return m_strategy; }
 
  protected:
 
@@ -123,11 +125,14 @@ class ARCCORE_MESSAGEPASSING_EXPORT BasicSerializeMessage
   MessageTag m_tag = defaultTag();
   eMessageType m_old_message_type; //!< Type du message (obsolète)
   ePointToPointMessageType m_message_type; //!< Type du message
+  eStrategy m_strategy = eStrategy::Default;
   bool m_is_send; //!< \c true si envoie, \c false si réception
   BasicSerializer* m_buffer = nullptr; //!< Tampon contenant les infos
   bool m_finished = false; //!< \c true si message terminé
   MessageId m_message_id; //!< MessageId associé (peut être nul)
+
  private:
+
   void _init();
 };
 
