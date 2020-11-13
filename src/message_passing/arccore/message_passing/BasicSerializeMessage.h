@@ -117,8 +117,9 @@ class ARCCORE_MESSAGEPASSING_EXPORT BasicSerializeMessage
   void setInternalTag(MessageTag tag) override { m_tag = tag; }
   MessageTag internalTag() const override { return m_tag; }
   MessageId _internalMessageId() const override { return m_message_id; }
-  void setStrategy(eStrategy strategy) override { m_strategy = strategy; }
+  void setStrategy(eStrategy strategy) override;
   eStrategy strategy() const override { return m_strategy; }
+  bool isProcessed() const override { return m_is_processed; }
 
  public:
 
@@ -126,6 +127,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT BasicSerializeMessage
   BasicSerializer* trueSerializer() const { return m_buffer; }
   Int32 messageNumber() const { return m_message_number; }
   void setMessageNumber(Int32 v) { m_message_number = v; }
+  void setIsProcessed(bool v) { m_is_processed = v; }
 
  protected:
 
@@ -145,6 +147,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT BasicSerializeMessage
   bool m_finished = false; //!< \c true si message terminé
   MessageId m_message_id; //!< MessageId associé (peut être nul)
   Int32 m_message_number = 0; //! Numéro du message lorsqu'on utilise plusieurs messages
+  bool m_is_processed = false;
 
  private:
 

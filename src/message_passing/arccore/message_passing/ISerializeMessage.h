@@ -180,6 +180,14 @@ class ARCCORE_MESSAGEPASSING_EXPORT ISerializeMessage
 
   //! Stratégie utilisée pour les envois/réceptions
   virtual eStrategy strategy() const =0;
+
+  /*!
+   * \brief Indique si le message a déjà été traité.
+   *
+   * Si le message a déjà été traité, il n'est pas possible de changer certaines
+   * caractéristiques (comme la stratégie ou le tag)
+   */
+  virtual bool isProcessed() const =0;
 };
 
 /*---------------------------------------------------------------------------*/

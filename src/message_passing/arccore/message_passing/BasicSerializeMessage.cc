@@ -156,6 +156,17 @@ _init()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void BasicSerializeMessage::
+setStrategy(eStrategy strategy)
+{
+  if (m_is_processed)
+    ARCCORE_FATAL("Can not change strategy if isProcessed() is true");
+  m_strategy = strategy;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Ref<ISerializeMessage> BasicSerializeMessage::
 create(MessageRank source,MessageRank destination,MessageTag tag,
        ePointToPointMessageType type)
