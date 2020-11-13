@@ -39,18 +39,16 @@ namespace Arccore::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Interface d'un message de sérialisation entre IParallelMng.
+ * \brief Interface d'un message de sérialisation entre IMessagePassingMng.
  *
  * Un message de sérialisation consiste en une série d'octets envoyés
- * d'un sous-domaine (origRank()) à un autre (destRank()).
- * Si isSend() est vrai, c'est origRank() qui envoie à destRank(),
+ * d'un rang source() à un rang destination().
+ * Si isSend() est vrai, c'est source() qui envoie à destination(),
  * sinon c'est l'inverse.
  * S'il s'agit d'un message de réception, le serializer() est alloué
  * et remplit automatiquement. Pour que le parallélisme fonctionne correctement,
- * il faut qu'à un message d'envoie corresponde un message de réception
- * complémentaire (envoyé par destRank()).
- *
- * Les messages sont envoyés par IParallelMng::processMessages().
+ * il faut qu'à un message d'envoi corresponde un message de réception
+ * complémentaire (envoyé par le rang destination()).
  *
  * Le message peut-être non bloquant. Un message peut-être détruit
  * lorsque sa propriété finished() est vrai.

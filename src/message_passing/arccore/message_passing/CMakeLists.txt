@@ -15,6 +15,8 @@ set(SOURCES
   MessageRank.cc
   PointToPointMessageInfo.h
   PointToPointMessageInfo.cc
+  PointToPointSerializerMng.h
+  PointToPointSerializerMng.cc
   Request.h
   Request.cc
   IRequestList.h
