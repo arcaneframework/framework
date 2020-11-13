@@ -38,6 +38,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arccore::MessagePassing
+{
+class BasicSerializeMessage;
+}
 namespace Arccore::MessagePassing::Mpi
 {
 
@@ -54,11 +58,11 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeMessageRequest
 {
  public:
   MpiSerializeMessageRequest()
-  : m_mpi_message(0), m_request() {}
-  MpiSerializeMessageRequest(MpiSerializeMessage* mpi_message,Request request)
+  : m_mpi_message(nullptr), m_request() {}
+  MpiSerializeMessageRequest(BasicSerializeMessage* mpi_message,Request request)
   : m_mpi_message(mpi_message), m_request(request) {}
  public:
-  MpiSerializeMessage* m_mpi_message;
+  BasicSerializeMessage* m_mpi_message;
   Request m_request;
 };
 
@@ -86,8 +90,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeMessageList
   Ref<ISerializeMessage>
   createAndAddMessage(MessageRank destination,ePointToPointMessageType type) override;
 
-  Request _processOneMessageGlobalBuffer(MpiSerializeMessage* msm,MessageRank source,MessageTag mpi_tag);
-  Request _processOneMessage(MpiSerializeMessage* msm,MessageRank source,MessageTag mpi_tag);
+  Request _processOneMessageGlobalBuffer(BasicSerializeMessage* msm,MessageRank source,MessageTag mpi_tag);
+  Request _processOneMessage(BasicSerializeMessage* msm,MessageRank source,MessageTag mpi_tag);
 
  private:
 
@@ -99,7 +103,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeMessageList
   MpiSerializeDispatcher* m_dispatcher = nullptr;
   MpiAdapter* m_adapter = nullptr;
   ITraceMng* m_trace = nullptr;
-  UniqueArray<MpiSerializeMessage*> m_messages_to_process;
+  UniqueArray<BasicSerializeMessage*> m_messages_to_process;
   UniqueArray<MpiSerializeMessageRequest> m_messages_request;
   TimeMetricAction m_message_passing_phase;
   bool m_is_verbose = false;

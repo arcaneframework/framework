@@ -83,7 +83,6 @@ class MpiLock;
 class IMpiReduceOperator;
 class MpiDatatype;
 class MpiMessagePassingMng;
-class MpiSerializeMessage;
 class MpiSerializeMessageList;
 class MpiSerializeDispatcher;
 template<typename DataType>

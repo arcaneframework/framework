@@ -24,7 +24,6 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/message_passing_mpi/MpiSerializeMessageList.h"
-#include "arccore/message_passing_mpi/MpiSerializeMessage.h"
 #include "arccore/message_passing_mpi/MpiSerializeDispatcher.h"
 #include "arccore/message_passing_mpi/MpiAdapter.h"
 #include "arccore/message_passing/BasicSerializeMessage.h"
@@ -48,9 +47,9 @@ class MpiSerializeMessageList::_SortMessages
 {
  public:
 
-  bool operator()(const MpiSerializeMessage* m1,const MpiSerializeMessage* m2)
+  bool operator()(const BasicSerializeMessage* m1,const BasicSerializeMessage* m2)
   {
-    return _SortMessages::compare(m1->message(),m2->message());
+    return _SortMessages::compare(m1,m2);
   }
   
   bool operator()(const ISerializeMessage* pm1,const ISerializeMessage* pm2)
@@ -111,11 +110,12 @@ MpiSerializeMessageList(MpiSerializeDispatcher* dispatcher)
 /*---------------------------------------------------------------------------*/
 
 void MpiSerializeMessageList::
-addMessage(ISerializeMessage* msg)
+addMessage(ISerializeMessage* message)
 {
-  Integer nb_msg = m_messages_to_process.size();
-  MpiSerializeMessage* msm = new MpiSerializeMessage(msg,nb_msg);
-  m_messages_to_process.add(msm);
+  BasicSerializeMessage* true_message = dynamic_cast<BasicSerializeMessage*>(message);
+  if (!true_message)
+    ARCCORE_FATAL("Can not convert 'ISerializeMessage' to 'BasicSerializeMessag'");
+  m_messages_to_process.add(true_message);
 }
   
 /*---------------------------------------------------------------------------*/
@@ -139,11 +139,11 @@ processPendingMessages()
   // NOTE (avril 2020): n'appelle plus le tri car il semble que l'opérateur
   // de comparaison ne soit pas cohérent. De plus, il n'est normalement
   // plus nécessaire de faire ce tri car tout est non bloquant.
-  //std::stable_sort(std::begin(m_messages_to_process),std::end(m_messages_to_process),_SortMessages());
+  std::stable_sort(std::begin(m_messages_to_process),std::end(m_messages_to_process),_SortMessages());
   bool print_sorted = false;
   if (print_sorted)
     for( Integer i=0, is=m_messages_to_process.size(); i<is; ++i ){
-      ISerializeMessage* pmsg = m_messages_to_process[i]->message();
+      ISerializeMessage* pmsg = m_messages_to_process[i];
       msg->debug() << "Sorted message " << i
                    << " orig=" << pmsg->source()
                    << " dest=" << pmsg->destination()
@@ -153,8 +153,8 @@ processPendingMessages()
 
   Int64 serialize_buffer_size = m_dispatcher->serializeBufferSize();
   for( Integer i=0; i<nb_message; ++i ){
-    MpiSerializeMessage* mpi_msg = m_messages_to_process[i];
-    ISerializeMessage* pmsg = mpi_msg->message();
+    BasicSerializeMessage* mpi_msg = m_messages_to_process[i];
+    ISerializeMessage* pmsg = mpi_msg;
     Request new_request;
     MessageRank dest = pmsg->destination();
     MessageTag tag = pmsg->internalTag();
@@ -174,7 +174,7 @@ processPendingMessages()
         new_request = m_dispatcher->sendSerializer(pmsg->serializer(),{dest,tag,NonBlocking},is_one_message_strategy);
     }
     else{
-      BasicSerializer* sbuf = mpi_msg->serializeBuffer();
+      BasicSerializer* sbuf = mpi_msg->trueSerializer();
       sbuf->preallocate(serialize_buffer_size);
       MessageId message_id = pmsg->_internalMessageId();
       if (message_id.isValid()){
@@ -248,12 +248,12 @@ _waitMessages2(eWaitType wait_type)
     msg->info() << "Waiting for rank =" << comm_rank << " nb_message=" << nb_message;
 
     for( Integer z=0; z<nb_message; ++z ){
-      MpiSerializeMessage* msm = m_messages_request[z].m_mpi_message;
+      BasicSerializeMessage* msm = m_messages_request[z].m_mpi_message;
       msg->info(4) << "Waiting for message: "
                    << " rank=" << comm_rank
-                   << " issend=" << msm->message()->isSend()
-                   << " dest=" << msm->message()->destination()
-                   << " tag=" << msm->message()->internalTag()
+                   << " issend=" << msm->isSend()
+                   << " dest=" << msm->destination()
+                   << " tag=" << msm->internalTag()
                    << " request=" << requests[z];
     }
   }
@@ -279,10 +279,10 @@ _waitMessages2(eWaitType wait_type)
   catch(const TimeoutException&){
     std::ostringstream ostr;
     for( Integer z=0; z<nb_message; ++z ){
-      MpiSerializeMessage* msm = m_messages_request[z].m_mpi_message;
+      BasicSerializeMessage* message = m_messages_request[z].m_mpi_message;
       ostr << "IndexReturn message: "
-           << " issend=" << msm->message()->isSend()
-           << " dest=" << msm->message()->destination()
+           << " issend=" << message->isSend()
+           << " dest=" << message->destination()
            << " done_index=" << done_indexes[z]
            << " status_src=" << mpi_status[z].MPI_SOURCE
            << " status_tag=" << mpi_status[z].MPI_TAG
@@ -295,10 +295,10 @@ _waitMessages2(eWaitType wait_type)
   }
   if (m_is_verbose){
     for( Integer z=0; z<nb_message; ++z ){
-      MpiSerializeMessage* msm = m_messages_request[z].m_mpi_message;
-      bool is_send = msm->message()->isSend();
-      MessageRank destination = msm->message()->destination();
-      Int64 message_size = msm->serializeBuffer()->totalSize();
+      BasicSerializeMessage* message = m_messages_request[z].m_mpi_message;
+      bool is_send = message->isSend();
+      MessageRank destination = message->destination();
+      Int64 message_size = message->trueSerializer()->totalSize();
       if (is_send)
         msg->info() << "IndexReturn message: Send: "
                     << " dest=" << destination
@@ -321,7 +321,7 @@ _waitMessages2(eWaitType wait_type)
 
   int mpi_status_index = 0;
   for( Integer i=0; i<nb_message; ++i ){
-    MpiSerializeMessage* mpi_msg = m_messages_request[i].m_mpi_message;
+    BasicSerializeMessage* mpi_msg = m_messages_request[i].m_mpi_message;
     if (done_indexes[i]){
       MPI_Status status = mpi_status[mpi_status_index];
       Request rq = requests[i];
@@ -336,7 +336,7 @@ _waitMessages2(eWaitType wait_type)
         msg->info() << "Message number " << i << " Finished, source=" << source
                     << " tag=" << tag
                     << " err=" << status.MPI_ERROR
-                    << " is_send=" << mpi_msg->message()->isSend()
+                    << " is_send=" << mpi_msg->isSend()
                     << " request=" << rq;
       }
       ++mpi_status_index;
@@ -348,9 +348,8 @@ _waitMessages2(eWaitType wait_type)
         new_messages.add(MpiSerializeMessageRequest(mpi_msg,r));
       }
       else{
-        mpi_msg->message()->setFinished(true);
+        mpi_msg->setFinished(true);
         ++nb_message_finished;
-        delete mpi_msg;
       }
     }
     else{
@@ -373,16 +372,16 @@ _waitMessages2(eWaitType wait_type)
  * \brief Effectue la requête. Retourne une éventuelle requête si non nul.
  */
 Request MpiSerializeMessageList::
-_processOneMessage(MpiSerializeMessage* msm, MessageRank source, MessageTag mpi_tag)
+_processOneMessage(BasicSerializeMessage* message, MessageRank source, MessageTag mpi_tag)
 {
   Request request;
   if (m_is_verbose)
     m_trace->info() << "Process one message msg=" << this
-                    << " number=" << msm->messageNumber()
-                    << " is_send=" << msm->message()->isSend();
-  if (msm->message()->isSend())
+                    << " number=" << message->messageNumber()
+                    << " is_send=" << message->isSend();
+  if (message->isSend())
     return request;
-  return _processOneMessageGlobalBuffer(msm,source,mpi_tag);
+  return _processOneMessageGlobalBuffer(message,source,mpi_tag);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -391,21 +390,21 @@ _processOneMessage(MpiSerializeMessage* msm, MessageRank source, MessageTag mpi_
  * \brief Effectue la requête. Retourne une éventuelle requête si non nul.
  */
 Request MpiSerializeMessageList::
-_processOneMessageGlobalBuffer(MpiSerializeMessage* msm,MessageRank source,MessageTag mpi_tag)
+_processOneMessageGlobalBuffer(BasicSerializeMessage* message,MessageRank source,MessageTag mpi_tag)
 {
   Request request;
-  BasicSerializer* sbuf = msm->serializeBuffer();
+  BasicSerializer* sbuf = message->trueSerializer();
   Int64 message_size = sbuf->totalSize();
 
-  MessageRank dest_rank = msm->message()->destination();
+  MessageRank dest_rank = message->destination();
   if (dest_rank.isNull())
     // Signife que le message était un MPI_ANY_SOURCE
     dest_rank = source;
 
   if (m_is_verbose){
     m_trace->info() << "Process one message (GlobalBuffer) msg=" << this
-                    << " number=" << msm->messageNumber()
-                    << " is_send=" << msm->message()->isSend()
+                    << " number=" << message->messageNumber()
+                    << " is_send=" << message->isSend()
                     << " dest_rank=" << dest_rank
                     << " size=" << message_size
                     << " (buf_size=" << m_dispatcher->serializeBufferSize() << ")";
@@ -414,9 +413,9 @@ _processOneMessageGlobalBuffer(MpiSerializeMessage* msm,MessageRank source,Messa
   // S'il s'agit du premier message, récupère la longueur totale.
   // et si le message total est trop gros (>m_serialize_buffer_size)
   // poste un nouveau message pour récupèrer les données sérialisées.
-  if (msm->messageNumber()==0){
+  if (message->messageNumber()==0){
     if (message_size<=m_dispatcher->serializeBufferSize()
-        || msm->message()->strategy()==ISerializeMessage::eStrategy::OneMessage){
+        || message->strategy()==ISerializeMessage::eStrategy::OneMessage){
       sbuf->setFromSizes();
       return request;
     }
@@ -425,7 +424,7 @@ _processOneMessageGlobalBuffer(MpiSerializeMessage* msm,MessageRank source,Messa
     Span<Byte> bytes = sbuf->globalBuffer();
     MessageTag next_tag = MpiSerializeDispatcher::nextSerializeTag(mpi_tag);
     request = m_dispatcher->_recvSerializerBytes(bytes,dest_rank,next_tag,false);
-    msm->incrementMessageNumber();
+    message->setMessageNumber(1);
     return request;
   }
   sbuf->setFromSizes();
