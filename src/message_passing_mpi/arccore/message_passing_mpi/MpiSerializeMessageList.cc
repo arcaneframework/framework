@@ -139,7 +139,7 @@ processPendingMessages()
   // NOTE (avril 2020): n'appelle plus le tri car il semble que l'opérateur
   // de comparaison ne soit pas cohérent. De plus, il n'est normalement
   // plus nécessaire de faire ce tri car tout est non bloquant.
-  std::stable_sort(std::begin(m_messages_to_process),std::end(m_messages_to_process),_SortMessages());
+  //std::stable_sort(std::begin(m_messages_to_process),std::end(m_messages_to_process),_SortMessages());
   bool print_sorted = false;
   if (print_sorted)
     for( Integer i=0, is=m_messages_to_process.size(); i<is; ++i ){
