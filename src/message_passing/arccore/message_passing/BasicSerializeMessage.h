@@ -110,7 +110,6 @@ class ARCCORE_MESSAGEPASSING_EXPORT BasicSerializeMessage
   MessageRank destination() const override { return m_dest_rank; }
   MessageRank source() const override { return m_orig_rank; }
   ISerializer* serializer() override { return m_buffer; }
-  BasicSerializer& buffer() { return *m_buffer; }
   bool finished() const override { return m_finished; }
   void setFinished(bool v) override { m_finished = v; }
   void setTag(Int32 tag) override { m_tag = MessageTag(tag); }
@@ -120,6 +119,13 @@ class ARCCORE_MESSAGEPASSING_EXPORT BasicSerializeMessage
   MessageId _internalMessageId() const override { return m_message_id; }
   void setStrategy(eStrategy strategy) override { m_strategy = strategy; }
   eStrategy strategy() const override { return m_strategy; }
+
+ public:
+
+  BasicSerializer& buffer() { return *m_buffer; }
+  BasicSerializer* trueSerializer() const { return m_buffer; }
+  Int32 messageNumber() const { return m_message_number; }
+  void setMessageNumber(Int32 v) { m_message_number = v; }
 
  protected:
 
@@ -138,6 +144,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT BasicSerializeMessage
   BasicSerializer* m_buffer = nullptr; //!< Tampon contenant les infos
   bool m_finished = false; //!< \c true si message terminé
   MessageId m_message_id; //!< MessageId associé (peut être nul)
+  Int32 m_message_number = 0; //! Numéro du message lorsqu'on utilise plusieurs messages
 
  private:
 
