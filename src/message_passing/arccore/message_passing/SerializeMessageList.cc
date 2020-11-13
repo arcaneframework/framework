@@ -76,6 +76,7 @@ processPendingMessages()
     }
     else
       _addMessage(sm,message_info);
+    sm->setIsProcessed(true);
   }
   m_messages_to_process.clear();
 }
@@ -179,7 +180,6 @@ _addMessage(BasicSerializeMessage* sm,const PointToPointMessageInfo& message_inf
     r = mpSend(m_message_passing_mng,s,message_info);
   else
     r = mpReceive(m_message_passing_mng,s,message_info);
-
   m_request_list->add(r);
   m_messages_serialize.add(sm);
 }

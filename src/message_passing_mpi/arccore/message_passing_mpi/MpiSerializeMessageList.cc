@@ -190,6 +190,7 @@ processPendingMessages()
       else
         new_request = m_dispatcher->_recvSerializerBytes(sbuf->globalBuffer(),dest,tag,false);
     }
+    mpi_msg->setIsProcessed(true);
     m_messages_request.add(MpiSerializeMessageRequest(mpi_msg,new_request));
   }
   // Plus de messages à exécuter
