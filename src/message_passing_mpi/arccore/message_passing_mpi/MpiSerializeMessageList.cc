@@ -114,7 +114,7 @@ addMessage(ISerializeMessage* message)
 {
   BasicSerializeMessage* true_message = dynamic_cast<BasicSerializeMessage*>(message);
   if (!true_message)
-    ARCCORE_FATAL("Can not convert 'ISerializeMessage' to 'BasicSerializeMessag'");
+    ARCCORE_FATAL("Can not convert 'ISerializeMessage' to 'BasicSerializeMessage'");
   m_messages_to_process.add(true_message);
 }
   

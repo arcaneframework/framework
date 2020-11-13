@@ -29,6 +29,7 @@
 #include "arccore/message_passing/BasicSerializeMessage.h"
 #include "arccore/message_passing/Messages.h"
 #include "arccore/base/NotImplementedException.h"
+#include "arccore/base/FatalErrorException.h"
 
 #include <algorithm>
 
@@ -53,9 +54,12 @@ SerializeMessageList(IMessagePassingMng* mpm)
 /*---------------------------------------------------------------------------*/
 
 void SerializeMessageList::
-addMessage(ISerializeMessage* msg)
+addMessage(ISerializeMessage* message)
 {
-  m_messages_to_process.add(msg);
+  BasicSerializeMessage* true_message = dynamic_cast<BasicSerializeMessage*>(message);
+  if (!true_message)
+    ARCCORE_FATAL("Can not convert 'ISerializeMessage' to 'BasicSerializeMessage'");
+  m_messages_to_process.add(true_message);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -64,7 +68,7 @@ addMessage(ISerializeMessage* msg)
 void SerializeMessageList::
 processPendingMessages()
 {
-  for( ISerializeMessage* sm : m_messages_to_process ){
+  for( BasicSerializeMessage* sm : m_messages_to_process ){
     PointToPointMessageInfo message_info(buildMessageInfo(sm));
     if (sm->destination().isNull() && !m_allow_any_rank_receive){
       // Il faudra faire un probe pour ce message
@@ -144,7 +148,7 @@ _waitMessages(eWaitType wait_type)
     m_remaining_serialize_messages.clear();
     Integer nb_done = 0;
     for( Integer i=0; i<nb_request; ++i ){
-      ISerializeMessage* sm = m_messages_serialize[i];
+      BasicSerializeMessage* sm = m_messages_serialize[i];
       if (m_request_list->isRequestDone(i)){
         ++nb_done;
         sm->setFinished(true);
@@ -167,7 +171,7 @@ _waitMessages(eWaitType wait_type)
 /*---------------------------------------------------------------------------*/
 
 void SerializeMessageList::
-_addMessage(ISerializeMessage* sm,const PointToPointMessageInfo& message_info)
+_addMessage(BasicSerializeMessage* sm,const PointToPointMessageInfo& message_info)
 {
   Request r;
   ISerializer* s = sm->serializer();

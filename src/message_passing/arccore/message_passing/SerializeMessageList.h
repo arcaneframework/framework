@@ -51,16 +51,16 @@ namespace Arccore::MessagePassing::internal
 class ARCCORE_MESSAGEPASSING_EXPORT SerializeMessageList
 : public ISerializeMessageList
 {
-  using SerializeMessageContainer = UniqueArray<ISerializeMessage*>;
+  using SerializeMessageContainer = UniqueArray<BasicSerializeMessage*>;
 
   struct ProbeInfo
   {
    public:
     ProbeInfo() = default;
-    ProbeInfo(ISerializeMessage* sm,const PointToPointMessageInfo& message_info)
+    ProbeInfo(BasicSerializeMessage* sm,const PointToPointMessageInfo& message_info)
     : m_serialize_message(sm), m_message_info(message_info){}
    public:
-    ISerializeMessage* m_serialize_message = nullptr;
+    BasicSerializeMessage* m_serialize_message = nullptr;
     PointToPointMessageInfo m_message_info;
     bool m_is_probe_done = false;
   };
@@ -91,7 +91,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT SerializeMessageList
   TimeMetricAction m_message_passing_phase;
 
   Integer _waitMessages(eWaitType wait_type);
-  void _addMessage(ISerializeMessage* sm,const PointToPointMessageInfo& message_info);
+  void _addMessage(BasicSerializeMessage* sm,const PointToPointMessageInfo& message_info);
   PointToPointMessageInfo buildMessageInfo(ISerializeMessage* sm);
   void _doProbe();
 };
