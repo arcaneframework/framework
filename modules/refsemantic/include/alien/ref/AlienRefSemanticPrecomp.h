@@ -19,3 +19,4 @@
 #pragma once
 
 #include <alien/ref/AlienRefExport.h>
+#include <alien/AlienConfig.h>
