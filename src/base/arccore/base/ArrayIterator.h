@@ -67,83 +67,83 @@ class ArrayIterator
   typedef typename _TraitsType::pointer pointer;
  public:
 
-  ArrayIterator() ARCCORE_NOEXCEPT : m_ptr(_Iterator()) { }
+  ARCCORE_HOST_DEVICE ArrayIterator() ARCCORE_NOEXCEPT : m_ptr(_Iterator()) { }
 
-  explicit ArrayIterator(const _Iterator& __i) ARCCORE_NOEXCEPT
-    : m_ptr(__i) { }
+  ARCCORE_HOST_DEVICE explicit ArrayIterator(const _Iterator& __i) ARCCORE_NOEXCEPT
+  : m_ptr(__i) { }
 
   // Allow iterator to const_iterator conversion
   template<typename X,typename = Iterator_enable_if_t<std::is_same<X,value_type*>::value> >
-  ArrayIterator(const ArrayIterator<X>& iter) ARCCORE_NOEXCEPT
+  ARCCORE_HOST_DEVICE ArrayIterator(const ArrayIterator<X>& iter) ARCCORE_NOEXCEPT
   : m_ptr(iter.base()) { }
 
   // Forward iterator requirements
-  reference operator*() const ARCCORE_NOEXCEPT { return *m_ptr; }
-  pointer operator->() const ARCCORE_NOEXCEPT { return m_ptr; }
-  ArrayIterator& operator++() ARCCORE_NOEXCEPT { ++m_ptr; return *this; }
-  const ArrayIterator operator++(int) ARCCORE_NOEXCEPT { return ArrayIterator(m_ptr++); }
+  ARCCORE_HOST_DEVICE reference operator*() const ARCCORE_NOEXCEPT { return *m_ptr; }
+  ARCCORE_HOST_DEVICE pointer operator->() const ARCCORE_NOEXCEPT { return m_ptr; }
+  ARCCORE_HOST_DEVICE ArrayIterator& operator++() ARCCORE_NOEXCEPT { ++m_ptr; return *this; }
+  ARCCORE_HOST_DEVICE const ArrayIterator operator++(int) ARCCORE_NOEXCEPT { return ArrayIterator(m_ptr++); }
 
   // Bidirectional iterator requirements
-  ArrayIterator& operator--() ARCCORE_NOEXCEPT { --m_ptr; return *this; }
-  const ArrayIterator operator--(int) ARCCORE_NOEXCEPT { return ArrayIterator(m_ptr--); }
+  ARCCORE_HOST_DEVICE ArrayIterator& operator--() ARCCORE_NOEXCEPT { --m_ptr; return *this; }
+  ARCCORE_HOST_DEVICE const ArrayIterator operator--(int) ARCCORE_NOEXCEPT { return ArrayIterator(m_ptr--); }
 
   // Random access iterator requirements
-  reference operator[](difference_type n) const ARCCORE_NOEXCEPT { return m_ptr[n]; }
-  ArrayIterator& operator+=(difference_type n) ARCCORE_NOEXCEPT { m_ptr += n; return *this; }
-  ArrayIterator operator+(difference_type n) const ARCCORE_NOEXCEPT { return ArrayIterator(m_ptr+n); }
-  ArrayIterator& operator-=(difference_type n) ARCCORE_NOEXCEPT { m_ptr -= n; return *this; }
-  ArrayIterator operator-(difference_type n) const ARCCORE_NOEXCEPT { return ArrayIterator(m_ptr-n); }
+  ARCCORE_HOST_DEVICE reference operator[](difference_type n) const ARCCORE_NOEXCEPT { return m_ptr[n]; }
+  ARCCORE_HOST_DEVICE ArrayIterator& operator+=(difference_type n) ARCCORE_NOEXCEPT { m_ptr += n; return *this; }
+  ARCCORE_HOST_DEVICE ArrayIterator operator+(difference_type n) const ARCCORE_NOEXCEPT { return ArrayIterator(m_ptr+n); }
+  ARCCORE_HOST_DEVICE ArrayIterator& operator-=(difference_type n) ARCCORE_NOEXCEPT { m_ptr -= n; return *this; }
+  ARCCORE_HOST_DEVICE ArrayIterator operator-(difference_type n) const ARCCORE_NOEXCEPT { return ArrayIterator(m_ptr-n); }
 
-  const _Iterator& base() const ARCCORE_NOEXCEPT { return m_ptr; }
+  ARCCORE_HOST_DEVICE const _Iterator& base() const ARCCORE_NOEXCEPT { return m_ptr; }
 };
 
 // Forward iterator requirements
-template<typename I1, typename I2> inline bool
+template<typename I1, typename I2> ARCCORE_HOST_DEVICE inline bool
 operator==(const ArrayIterator<I1>& lhs,const ArrayIterator<I2>& rhs) ARCCORE_NOEXCEPT
 { return lhs.base() == rhs.base(); }
 
-template<typename I> inline bool
+template<typename I> ARCCORE_HOST_DEVICE inline bool
 operator==(const ArrayIterator<I>& lhs,const ArrayIterator<I>& rhs)  ARCCORE_NOEXCEPT
 { return lhs.base() == rhs.base(); }
 
-template<typename I1, typename I2> inline bool
+template<typename I1, typename I2> ARCCORE_HOST_DEVICE inline bool
 operator!=(const ArrayIterator<I1>& lhs,const ArrayIterator<I2>& rhs) ARCCORE_NOEXCEPT
 { return lhs.base() != rhs.base(); }
 
-template<typename I> inline bool
+template<typename I> ARCCORE_HOST_DEVICE inline bool
 operator!=(const ArrayIterator<I>& lhs,const ArrayIterator<I>& rhs) ARCCORE_NOEXCEPT
 { return lhs.base() != rhs.base(); }
 
 // Random access iterator requirements
-template<typename I1, typename I2> inline bool
+template<typename I1, typename I2> ARCCORE_HOST_DEVICE inline bool
 operator<(const ArrayIterator<I1>& lhs,const ArrayIterator<I2>& rhs) ARCCORE_NOEXCEPT
 { return lhs.base() < rhs.base(); }
 
-template<typename I> inline bool
+template<typename I> ARCCORE_HOST_DEVICE inline bool
 operator<(const ArrayIterator<I>& lhs,const ArrayIterator<I>& rhs) ARCCORE_NOEXCEPT
 { return lhs.base() < rhs.base(); }
 
-template<typename I1, typename I2> inline bool
+template<typename I1, typename I2> ARCCORE_HOST_DEVICE inline bool
 operator>(const ArrayIterator<I1>& lhs,const ArrayIterator<I2>& rhs) ARCCORE_NOEXCEPT
 { return lhs.base() > rhs.base(); }
 
-template<typename I> inline bool
+template<typename I> ARCCORE_HOST_DEVICE inline bool
 operator>(const ArrayIterator<I>& lhs,const ArrayIterator<I>& rhs) ARCCORE_NOEXCEPT
 { return lhs.base() > rhs.base(); }
 
-template<typename I1, typename I2> inline bool
+template<typename I1, typename I2> ARCCORE_HOST_DEVICE inline bool
 operator<=(const ArrayIterator<I1>& lhs,const ArrayIterator<I2>& rhs) ARCCORE_NOEXCEPT
 { return lhs.base() <= rhs.base(); }
 
-template<typename I> inline bool
+template<typename I> ARCCORE_HOST_DEVICE inline bool
 operator<=(const ArrayIterator<I>& lhs,const ArrayIterator<I>& rhs) ARCCORE_NOEXCEPT
 { return lhs.base() <= rhs.base(); }
 
-template<typename I1, typename I2> inline bool
+template<typename I1, typename I2> ARCCORE_HOST_DEVICE inline bool
 operator>=(const ArrayIterator<I1>& lhs,const ArrayIterator<I2>& rhs) ARCCORE_NOEXCEPT
 { return lhs.base() >= rhs.base(); }
 
-template<typename I> inline bool
+template<typename I> ARCCORE_HOST_DEVICE inline bool
 operator>=(const ArrayIterator<I>& lhs,const ArrayIterator<I>& rhs) ARCCORE_NOEXCEPT
 { return lhs.base() >= rhs.base(); }
 
@@ -154,7 +154,7 @@ operator>=(const ArrayIterator<I>& lhs,const ArrayIterator<I>& rhs) ARCCORE_NOEX
 template<typename I1, typename I2>
 #if __cplusplus >= 201103L
 // DR 685.
-inline auto
+ARCCORE_HOST_DEVICE inline auto
 operator-(const ArrayIterator<I1>& lhs,const ArrayIterator<I2>& rhs) ARCCORE_NOEXCEPT
   -> decltype(lhs.base() - rhs.base())
 #else
@@ -163,11 +163,11 @@ operator-(const ArrayIterator<I1>& lhs,const ArrayIterator<I2>& rhs) ARCCORE_NOE
 #endif
 { return lhs.base() - rhs.base(); }
 
-template<typename I> inline typename ArrayIterator<I>::difference_type
+template<typename I> ARCCORE_HOST_DEVICE inline typename ArrayIterator<I>::difference_type
 operator-(const ArrayIterator<I>& lhs,const ArrayIterator<I>& rhs) ARCCORE_NOEXCEPT
 { return lhs.base() - rhs.base(); }
 
-template<typename I> inline ArrayIterator<I>
+template<typename I> ARCCORE_HOST_DEVICE inline ArrayIterator<I>
 operator+(typename ArrayIterator<I>::difference_type n,
           const ArrayIterator<I>& i) ARCCORE_NOEXCEPT
 { return ArrayIterator<I>(i.base() + n); }

@@ -155,27 +155,27 @@ class Span
   /*!
    * \brief Itérateur sur le premier élément du tableau.
    */
-  iterator begin() { return iterator(m_ptr); }
+  ARCCORE_HOST_DEVICE iterator begin() { return iterator(m_ptr); }
   /*!
    * \brief Itérateur sur le premier élément après la fin du tableau.
    */
-  iterator end() { return iterator(m_ptr+m_size); }
+  ARCCORE_HOST_DEVICE iterator end() { return iterator(m_ptr+m_size); }
   /*!
    * \brief Itérateur constant sur le premier élément du tableau.
    */
-  const_iterator begin() const { return iterator(m_ptr); }
+  ARCCORE_HOST_DEVICE const_iterator begin() const { return iterator(m_ptr); }
   /*!
    * \brief Itérateur constant sur le premier élément après la fin du tableau.
    */
-  const_iterator end() const { return iterator(m_ptr+m_size); }
+  ARCCORE_HOST_DEVICE const_iterator end() const { return iterator(m_ptr+m_size); }
   //! Itérateur inverse sur le premier élément du tableau.
-  reverse_iterator rbegin() { return std::make_reverse_iterator(end()); }
+  ARCCORE_HOST_DEVICE reverse_iterator rbegin() { return std::make_reverse_iterator(end()); }
   //! Itérateur inverse sur le premier élément du tableau.
-  const_reverse_iterator rbegin() const { return std::make_reverse_iterator(end()); }
+  ARCCORE_HOST_DEVICE const_reverse_iterator rbegin() const { return std::make_reverse_iterator(end()); }
   //! Itérateur inverse sur le premier élément après la fin du tableau.
-  reverse_iterator rend() { return std::make_reverse_iterator(begin()); }
+  ARCCORE_HOST_DEVICE reverse_iterator rend() { return std::make_reverse_iterator(begin()); }
   //! Itérateur inverse sur le premier élément après la fin du tableau.
-  const_reverse_iterator rend() const { return std::make_reverse_iterator(begin()); }
+  ARCCORE_HOST_DEVICE const_reverse_iterator rend() const { return std::make_reverse_iterator(begin()); }
 
  public:
 
@@ -192,28 +192,28 @@ class Span
 
  public:
   //! Addresse du index-ème élément
-  inline T* ptrAt(Int64 index)
+  ARCCORE_HOST_DEVICE inline T* ptrAt(Int64 index)
   {
     ARCCORE_CHECK_AT(index,m_size);
     return m_ptr+index;
   }
 
   //! Addresse du index-ème élément
-  inline const T* ptrAt(Int64 index) const
+  ARCCORE_HOST_DEVICE inline const T* ptrAt(Int64 index) const
   {
     ARCCORE_CHECK_AT(index,m_size);
     return m_ptr+index;
   }
 
   // Elément d'indice \a i. Vérifie toujours les débordements
-  const T& at(Int64 i) const
+  ARCCORE_HOST_DEVICE const T& at(Int64 i) const
   {
     arccoreCheckAt(i,m_size);
     return m_ptr[i];
   }
 
   // Positionne l'élément d'indice \a i. Vérifie toujours les débordements
-  void setAt(Int64 i,const T& value)
+  ARCCORE_HOST_DEVICE void setAt(Int64 i,const T& value)
   {
     arccoreCheckAt(i,m_size);
     m_ptr[i] = value;
@@ -335,8 +335,7 @@ class Span
    * operator[](): aucune vérification de dépassement n'est possible,
    * même en mode vérification.
    */
-  ARCCORE_HOST_DEVICE const_pointer data() const
-  { return m_ptr; }
+  ARCCORE_HOST_DEVICE const_pointer data() const { return m_ptr; }
 
   /*!
    * \brief Pointeur constant sur le début de la vue.
@@ -346,8 +345,7 @@ class Span
    * operator[](): aucune vérification de dépassement n'est possible,
    * même en mode vérification.
    */
-  ARCCORE_HOST_DEVICE pointer data()
-  { return m_ptr; }
+  ARCCORE_HOST_DEVICE pointer data() { return m_ptr; }
 
  protected:
   
