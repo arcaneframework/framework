@@ -113,15 +113,10 @@ class Span2
   //! Nombre total d'éléments.
   ARCCORE_HOST_DEVICE Int64 totalNbElement() const { return m_dim1_size*m_dim2_size; }
  public:
-  ARCCORE_HOST_DEVICE Span<ElementType> operator[](Int64 i)
+  ARCCORE_HOST_DEVICE Span<ElementType> operator[](Int64 i) const
   {
     ARCCORE_CHECK_AT(i,m_dim1_size);
     return Span<ElementType>(m_ptr + (m_dim2_size*i),m_dim2_size);
-  }
-  ARCCORE_HOST_DEVICE Span<const ElementType> operator[](Int64 i) const
-  {
-    ARCCORE_CHECK_AT(i,m_dim1_size);
-    return Span<const ElementType>(m_ptr + (m_dim2_size*i),m_dim2_size);
   }
   //! Valeur de l'élément [\a i][\a j]
   ARCCORE_HOST_DEVICE ElementType item(Int64 i,Int64 j) const

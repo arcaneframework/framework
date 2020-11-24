@@ -48,18 +48,16 @@ namespace Arccore
 template<class DataType>
 class Array2View
 {
+  friend class Span2<DataType>;
+  friend class Span2<const DataType>;
  public:
   friend class ConstArray2View<DataType>;
  public:
   //! Créé une vue 2D de dimension [\a dim1_size][\a dim2_size]
   Array2View(DataType* ptr,Integer dim1_size,Integer dim2_size)
-  : m_ptr(ptr), m_dim1_size(dim1_size), m_dim2_size(dim2_size)
-  {
-  }
+  : m_ptr(ptr), m_dim1_size(dim1_size), m_dim2_size(dim2_size) {}
   //! Créé une vue 2D vide.
-  Array2View() : m_ptr(0), m_dim1_size(0), m_dim2_size(0)
-  {
-  }
+  Array2View() : m_ptr(nullptr), m_dim1_size(0), m_dim2_size(0) {}
  public:
   //! Nombre d'éléments de la première dimension
   Integer dim1Size() const { return m_dim1_size; }
