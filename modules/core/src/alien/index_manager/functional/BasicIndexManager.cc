@@ -952,7 +952,11 @@ namespace Alien {
 #ifdef USE_ARCANE_PARALLELMNG
         delete request.comm;
         request.comm = NULL;
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> 3b45ab6... add new IndexManager implementation
         SerializeMessage* msg = new SerializeMessage(
             m_parallel_mng->commRank(), destDomainId, ISerializeMessage::MT_Recv);
         returnedRequests.push_back(msg);
