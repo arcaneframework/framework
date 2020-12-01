@@ -71,7 +71,9 @@ template<typename T> class Array3View;
 template<typename T> class ConstArray4View;
 template<typename T> class Array4View;
 template<class DataType> class CoreArray;
+template<typename T,typename SizeType> class SpanImpl;
 template<typename T> class Span;
+template<typename T> class SmallSpan;
 template<typename T> class Span2;
 
 class StringImpl;

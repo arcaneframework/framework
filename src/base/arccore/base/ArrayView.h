@@ -44,6 +44,7 @@ template<typename T> class ConstArrayView;
 template<typename T> class ConstIterT;
 template<typename T> class IterT;
 template<typename T> class Span;
+template<typename T> class SmallSpan;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -105,6 +106,8 @@ class ArrayView
 {
   friend class Span<T>;
   friend class Span<const T>;
+  friend class SmallSpan<T>;
+  friend class SmallSpan<const T>;
  public:
 
   //! Type des éléments du tableau
@@ -466,6 +469,7 @@ template<class T>
 class ConstArrayView
 {
   friend class Span<const T>;
+  friend class SmallSpan<const T>;
  public:
 
   //! Type des éléments du tableau
