@@ -512,6 +512,8 @@ arccoreCheckAt(Int64 i,Int64 max_size)
 #ifndef ARCCORE_DEVICE_CODE
   if (i<0 || i>=max_size)
     arccoreRangeError(i,max_size);
+#else
+  assert(i>=0 && i<max_size);
 #endif
 }
 
