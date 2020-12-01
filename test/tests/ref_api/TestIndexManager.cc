@@ -21,7 +21,10 @@
 #include <alien/distribution/MatrixDistribution.h>
 #include <alien/distribution/VectorDistribution.h>
 #include <alien/index_manager/IndexManager.h>
+#include <alien/index_manager/IIndexManager.h>
 #include <alien/index_manager/functional/DefaultAbstractFamily.h>
+#include <alien/index_manager/functional/AbstractItemFamily.h>
+#include <alien/index_manager/functional/BasicIndexManager.h>
 #include <alien/ref/AlienRefSemantic.h>
 
 #include <Environment.h>
@@ -57,6 +60,111 @@ TEST(TestIndexManager, Constructor)
 
   ASSERT_EQ(index_manager.globalSize(), global_size);
   ASSERT_EQ(index_manager.localSize(), local_size);
+}
+
+TEST(TestIndexManager, ConstructorWithGhosts)
+{
+  auto trace_mng = AlienTest::Environment::traceMng(); // not yet used
+
+  auto comm_size = AlienTest::Environment::parallelMng()->commSize();
+  auto comm_rank = AlienTest::Environment::parallelMng()->commRank();
+  auto ni = 4;
+  auto nj = comm_size;
+  auto global_size = ni * nj;
+  auto local_size = ni;
+
+  Alien::UniqueArray<Alien::Int64> uids;
+  Alien::UniqueArray<Alien::Integer> owners;
+
+  uids.reserve(local_size+2);
+  owners.reserve(local_size+2);
+  for (int i = 0; i < ni; ++i) {
+    uids.add(comm_rank * ni + i);
+    owners.add(comm_rank);
+  }
+
+  int nb_ghost = 0 ;
+  if(comm_size>1)
+  {
+    if(comm_rank>0)
+    {
+      uids.add(comm_rank * ni + -1);
+      owners.add(comm_rank-1) ;
+      ++nb_ghost ;
+    }
+    if(comm_rank<comm_size-1)
+    {
+      uids.add(comm_rank * ni + ni);
+      owners.add(comm_rank+1) ;
+      ++nb_ghost ;
+    }
+  }
+
+
+  Alien::AbstractItemFamily family(uids,owners, AlienTest::Environment::parallelMng());
+  Alien::IndexManager index_manager(AlienTest::Environment::parallelMng(),trace_mng);
+
+  auto indexSetU = index_manager.buildScalarIndexSet("U", family, 0);
+
+  index_manager.prepare();
+
+  ASSERT_EQ(index_manager.globalSize(), global_size);
+  ASSERT_EQ(index_manager.localSize(), local_size);
+  
+}
+
+
+TEST(TestIndexManager, ConstructorWithGhosts2)
+{
+  auto trace_mng = AlienTest::Environment::traceMng(); // not yet used
+
+  auto comm_size = AlienTest::Environment::parallelMng()->commSize();
+  auto comm_rank = AlienTest::Environment::parallelMng()->commRank();
+  auto ni = 4;
+  auto nj = comm_size;
+  auto global_size = ni * nj;
+  auto local_size = ni;
+
+  Alien::UniqueArray<Alien::Int64> uids;
+  Alien::UniqueArray<Alien::Integer> lids;
+  Alien::UniqueArray<Alien::Integer> owners;
+
+  uids.reserve(local_size+2);
+  owners.reserve(local_size+2);
+  for (int i = 0; i < ni; ++i) {
+    uids.add(comm_rank * ni + i);
+    owners.add(comm_rank) ;
+  }
+
+  int nb_ghost = 0 ;
+  if(comm_size>1)
+  {
+    if(comm_rank>0)
+    {
+      uids.add(comm_rank * ni + -1);
+      owners.add(comm_rank-1) ;
+      ++nb_ghost ;
+    }
+    if(comm_rank<comm_size-1)
+    {
+      uids.add(comm_rank * ni + ni);
+      owners.add(comm_rank+1) ;
+      ++nb_ghost ;
+    }
+  }
+
+
+  Alien::AbstractFamily family(uids,owners, AlienTest::Environment::parallelMng());
+
+  Alien::BasicIndexManager index_manager(AlienTest::Environment::parallelMng());
+
+  auto indexSetU = index_manager.buildScalarIndexSet("U", family);
+
+  index_manager.prepare();
+
+  ASSERT_EQ(index_manager.globalSize(), global_size);
+  ASSERT_EQ(index_manager.localSize(), local_size);
+
 }
 
 TEST(TestIndexManager, MultiDofFamily)

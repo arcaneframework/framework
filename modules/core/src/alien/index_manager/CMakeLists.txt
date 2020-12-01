@@ -22,8 +22,12 @@ add_library(alien_index_manager OBJECT
         ScalarIndexSet.cc
         functional/DefaultAbstractFamily.h
         functional/DefaultAbstractFamily.cc
+        functional/AbstractItemFamily.h
+        functional/AbstractItemFamily.cc
         functional/DefaultIndexManager.h
         functional/DefaultIndexManager.cc
+        functional/BasicIndexManager.h
+        functional/BasicIndexManager.cc
         )
 
 target_include_directories(alien_index_manager PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../..)

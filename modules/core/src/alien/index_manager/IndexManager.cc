@@ -153,8 +153,9 @@ struct IndexManager::EntryRecvRequest
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IndexManager::IndexManager(Alien::IMessagePassingMng* parallelMng)
+IndexManager::IndexManager(Alien::IMessagePassingMng* parallelMng, Alien::ITraceMng* traceMng)
 : m_parallel_mng(parallelMng)
+, m_trace_mng(traceMng)
 , m_local_owner(0)
 , m_state(Undef)
 , m_verbose(false)
@@ -364,7 +365,6 @@ IndexManager::begin_prepare(EntryIndexMap& entry_index)
         else
           return a.m_entry_uid < b.m_entry_uid;
       });
-
   ALIEN_ASSERT(
       ((Integer)entry_index.size() == m_local_entry_count + m_global_entry_count),
       ("Inconsistent global size"));
@@ -459,6 +459,7 @@ struct IndexManager::ParallelRequests
 void
 IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
 {
+
   ALIEN_ASSERT((m_parallel_mng->commSize() > 1), ("Parallel mode expected"));
 
   /* Algorithme:
@@ -477,12 +478,12 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
     const InternalEntryIndex& entryIndex = *i;
     const Integer item_owner = entryIndex.m_item_owner;
     if (item_owner != m_local_owner) {
-      //    if (m_trace) m_trace->pinfo() << item.localId() << " : " << item.uniqueId() <<
-      //    " is owned by " << item.owner() << " with localIndex=" << i->second;
+          //if (m_trace_mng) m_trace_mng->pinfo() << entryIndex.m_item_localid << " : " << entryIndex.m_item_uid <<
+          //" is owned by " << item_owner << " with localIndex=" << entryIndex.m_item_index;
       parallel->sendRequests[item_owner][entryIndex.m_entry_uid].count++;
     } else {
-      //    if (m_trace) m_trace->pinfo() << item.localId() << " : " << item.uniqueId() <<
-      //    " is local with localIndex=" << i->second;
+          //if (m_trace_mng) m_trace_mng->pinfo() << entryIndex.m_item_localid << " : " << entryIndex.m_item_uid <<
+          //" is local with localIndex=" << entryIndex.m_item_index;
     }
   }
 
@@ -500,9 +501,6 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
       EntrySendRequest& request = j->second;
       const Integer entryImpl = j->first;
       const String nameString = m_entries[entryImpl]->getName();
-
-      // if (m_trace) m_trace->pinfo() << "Entry [" << nameString << "] to " <<
-      // destDomainId << " : " << request.count;
 
       // Données pour receveur
       sendToDomains[2 * destDomainId + 0] += 1;
@@ -528,6 +526,7 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
   }
 
   // 2 - Accumulation des valeurs à demander
+
   for (auto i = entry_index.begin(); i != entry_index.end(); ++i) {
     const auto& entryIndex = *i;
     const Integer entryImpl = entryIndex.m_entry_uid;
@@ -538,6 +537,7 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
   }
 
   // Réception des annonces de demandes (les nombres d'entrée + taille)
+
   UniqueArray<Integer> recvFromDomains(2 * m_parallel_mng->commSize());
   Arccore::MessagePassing::mpAllToAll(m_parallel_mng, sendToDomains, recvFromDomains, 2);
 
@@ -618,16 +618,16 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
       const Integer entry_kind = currentEntry->getKind();
       UniqueArray<Int32> lids(ids.size());
       family->uniqueIdToLocalId(lids, ids);
-
       // Vérification d'intégrité : toutes les entrées demandées sont définies localement
       auto owners = family->owners(lids);
       for (Integer j = 0; j < uidCount; ++j) {
         const Integer current_item_lid = lids[j];
         const Int64 current_item_uid = ids[j];
         const Integer current_item_owner = owners[j];
-        if (current_item_owner != m_local_owner)
+         if (current_item_owner != m_local_owner)
+        {
           throw FatalErrorException("Non local EntryIndex requested");
-
+        }
         InternalEntryIndex lookup_entry{ entry_uid, entry_kind, current_item_uid,
           current_item_lid, 0, current_item_owner };
 
@@ -643,8 +643,9 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
             });
 
         if ((lookup == entry_index.end()) || !(*lookup == lookup_entry))
+        {
           throw FatalErrorException("Not locally defined entry requested");
-
+        }
         // Mise en place de la pre-valeur retour [avant renumérotation locale] (EntryIndex
         // écrit sur un Int64)
         ids[j] = lookup->m_item_index;
@@ -689,10 +690,11 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
   }
 
   // Calcul de la taille global d'indexation (donc du système associé)
-  m_global_entry_count = 0;
-  for (Integer i = 0; i < m_parallel_mng->commSize(); ++i) {
-    m_global_entry_count += allLocalSizes[i];
-  }
+  //m_global_entry_count = 0;
+  //for (Integer i = 0; i < m_parallel_mng->commSize(); ++i) {
+  //  m_global_entry_count += allLocalSizes[i];
+  //}
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -700,7 +702,7 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
 void
 IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
 {
-  ALIEN_ASSERT((m_parallel_mng->commSize() > 1), ("Parallel mode expected"));
+   ALIEN_ASSERT((m_parallel_mng->commSize() > 1), ("Parallel mode expected"));
 
   // Table de ré-indexation (EntryIndex->Integer)
   Alien::UniqueArray<Integer> entry_reindex(m_local_entry_count + m_global_entry_count);
@@ -716,6 +718,7 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
       entry_reindex[i->m_item_index + m_global_entry_count] =
           newIndex; // Table de translation
       i->m_item_index = newIndex;
+
     }
   }
 
@@ -752,6 +755,7 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
       const Integer entryImpl = j->first;
       const String nameString = m_entries[entryImpl]->getName();
 
+
       // On ne peut pas associer directement le message à cette entrée
       // : dans le cas d'échange multiple il n'y pas de garantie d'arrivée
       // à la bonne place
@@ -772,11 +776,13 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
 
   // Traitement des communications
   parallel->messageList->processPendingMessages();
+
+  //parallel->messageList->waitMessages(Arccore::MessagePassing::WaitSomeNonBlocking);
+  //parallel->messageList->waitMessages(Arccore::MessagePassing::WaitSome);
   parallel->messageList->waitMessages(Arccore::MessagePassing::WaitAll);
   // delete parallel->messageList;
   // parallel->messageList = NULL; // Destruction propre de l'ancienne liste
   parallel->messageList.reset();
-
   // 6 - Traitement des réponses
   // Association aux EntrySendRequest du buffer correspondant
   for (auto i = returnedRequests.begin(); i != returnedRequests.end(); ++i) {
@@ -794,7 +800,8 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
     const Integer idCount = sbuf.getInteger();
     ALIEN_ASSERT((request.count == idCount), ("Inconsistency detected"));
 #else
-    sbuf->getInteger();
+    const Integer idCount = sbuf->getInteger();
+    ALIEN_ASSERT((request.count == idCount), ("Inconsistency detected"));
 #endif
   }
 
@@ -814,6 +821,8 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
       i->m_item_index = newIndex;
     }
   }
+  m_global_entry_count = m_global_entry_offset;
+
 }
 
 /*---------------------------------------------------------------------------*/
