@@ -690,10 +690,10 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
   }
 
   // Calcul de la taille global d'indexation (donc du système associé)
-  //m_global_entry_count = 0;
-  //for (Integer i = 0; i < m_parallel_mng->commSize(); ++i) {
-  //  m_global_entry_count += allLocalSizes[i];
-  //}
+  m_global_entry_count = 0;
+  for (Integer i = 0; i < m_parallel_mng->commSize(); ++i) {
+    m_global_entry_count += allLocalSizes[i];
+  }
 
 }
 
@@ -715,7 +715,7 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
     const Integer item_owner = entryIndex.m_item_owner;
     if (item_owner == m_local_owner) { // Numérotation locale !
       const Integer newIndex = currentEntryIndex++;
-      entry_reindex[i->m_item_index + m_global_entry_count] =
+      entry_reindex[i->m_item_index + m_global_entry_offset] =
           newIndex; // Table de translation
       i->m_item_index = newIndex;
 
@@ -729,7 +729,7 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
     auto& ids = recvRequest.ids;
     for (Integer j = 0; j < ids.size(); ++j) {
       sbuf->putInteger(
-          entry_reindex[ids[j] + m_global_entry_count]); // Via la table de réindexation
+          entry_reindex[ids[j] + m_global_entry_offset]); // Via la table de réindexation
     }
   }
 
@@ -817,11 +817,10 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
       --request.count;
       auto sbuf = request.comm->serializer();
       const Integer newIndex = sbuf->getInteger();
-      entry_reindex[i->m_item_index + m_global_entry_count] = newIndex;
+      entry_reindex[i->m_item_index + m_global_entry_offset] = newIndex;
       i->m_item_index = newIndex;
     }
   }
-  m_global_entry_count = m_global_entry_offset;
 
 }
 
