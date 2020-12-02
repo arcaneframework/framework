@@ -5,6 +5,7 @@ include(LoadAlienTest)
 #-----------------------------------------------------------
 
 add_subdirectory(Tests)
+add_subdirectory(AlienInterfaceC)
 
 #-----------------------------------------------------------
 # Arcane

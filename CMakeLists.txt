@@ -84,6 +84,7 @@ add_subdirectory(modules/trilinos)
 add_subdirectory(modules/hpddm)
 add_subdirectory(modules/ifpen_solvers)
 add_subdirectory(modules/arcane_tools)
+add_subdirectory(modules/interface_c)
 
 message_separator()
 logStatus("Loading tests...")
