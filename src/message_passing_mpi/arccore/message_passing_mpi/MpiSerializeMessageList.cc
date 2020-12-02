@@ -115,6 +115,9 @@ addMessage(ISerializeMessage* message)
   BasicSerializeMessage* true_message = dynamic_cast<BasicSerializeMessage*>(message);
   if (!true_message)
     ARCCORE_FATAL("Can not convert 'ISerializeMessage' to 'BasicSerializeMessage'");
+  if (true_message->isSend() && true_message->source()!=MessageRank(m_adapter->commRank()))
+    ARCCORE_FATAL("Invalid source '{0}' for send message (expected={1})",
+                  true_message->source(),m_adapter->commRank());
   m_messages_to_process.add(true_message);
 }
   
