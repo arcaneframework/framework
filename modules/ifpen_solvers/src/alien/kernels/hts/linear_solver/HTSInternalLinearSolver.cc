@@ -35,6 +35,7 @@
 #include <alien/kernels/hts/algebra/HTSLinearAlgebra.h>
 #include <alien/kernels/hts/linear_solver/HTSInternalLinearSolver.h>
 #include <alien/core/backend/LinearSolverT.h>
+#include <alien/core/backend/SolverFabricRegisterer.h>
 #include <alien/core/block/ComputeBlockOffsets.h>
 #include <ALIEN/axl/HTSSolver_IOptions.h>
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
@@ -481,12 +482,14 @@ HTSInternalLinearSolverFactory(
 
 #include <alien/kernels/hts/linear_solver/HTSInternalLinearSolver.h>
 #include <alien/kernels/hts/linear_solver/HTSOptionTypes.h>
+#include <alien/kernels/hts/linear_solver/arcane/HTSLinearSolver.h>
 #include <ALIEN/axl/HTSSolver_axl.h>
+#include <ALIEN/axl/HTSSolver_StrongOptions.h>
 
 namespace Alien {
 
 template<>
-class SolverFabric<Alien::BackEnd::tag::hts>
+class SolverFabric<Alien::BackEnd::tag::htssolver>
 : public ISolverFabric
 {
 public :
@@ -494,9 +497,10 @@ public :
      return "htssolver" ;
   }
 
-  static void
-  add_options(CmdLineOptionDescType& cmdline_options)
+  void
+  add_options(CmdLineOptionDescType& cmdline_options) const
   {
+    std::cout<<"ADD HTS SOLVER OPTIONS"<<std::endl ;
     using namespace boost::program_options;
     options_description desc("HTSSolver options");
     desc.add_options()("hts-solver",     value<std::string>()->default_value("bicgs"),"solver algo name : bicgstab ddml")
@@ -536,38 +540,39 @@ public :
                       ("hts-ml-solver-nev",        value<int>()->default_value(1),"ML local solver nb max of eigen values")
                       ("hts-ml-coarse-solver",     value<int>()->default_value(0),"DDML option -- coarse solver choice -- \n \t 0->LU, \n \t 1->LUS, \n \t 2->LUMT, \n \t 3->LUMTS \n \t 4->DistLU")
                       ("hts-coarse-solver-ntile",  value<int>()->default_value(1), "nb domain per tile")
-                      ("hts-neumann-cor",          value<int>()->default_value(-1(,"ML Neumann cor")
+                      ("hts-neumann-cor",          value<int>()->default_value(-1),"ML Neumann cor")
                       ("hts-relax-solver",         value<int>()->default_value(0),"relax solver option")
                       ("hts-cpr-solver",           value<int>()->default_value(0),"cpr solver option")
                       ("hts-amg-algo",             value<std::string>()->default_value("PMIS"),"AMG algorithm option, AGGREGATION or PMIS");
+    cmdline_options.add(desc) ;
   }
 
 
   template<typename OptionT>
-  Alien::ILinearSolver* create(OptionT const& options,Alien::IMessagePassingMng* pm)
+  Alien::ILinearSolver* _create(OptionT const& options,Alien::IMessagePassingMng* pm) const
   {
     double tol = get<double>(options,"tol");
     int max_iter = get<int>(options,"max-iter");
 
     std::string precond_type_s = get<std::string>(options,"hts-precond");
-    IFPSolverProperty::ePrecondType precond_type =
-        OptionsIFPLinearSolverUtils::stringToPrecondOptionEnum(precond_type_s);
+    HTSOptionTypes::ePreconditioner precond_type =
+        OptionsHTSSolverUtils::stringToPreconditionerEnum(precond_type_s);
     // options
     auto solver_options = std::make_shared<StrongOptionsHTSSolver>(
         HTSSolverOptionsNames::_output = get<int>(options,"output-level"),
-        HTSSolverOptionsNames::_numIterationsMax = max_iter,
+        HTSSolverOptionsNames::_maxIterationNum = max_iter,
         HTSSolverOptionsNames::_stopCriteriaValue = tol,
-        HTSSolverOptionsNames::_precondOption = precond_type);
+        HTSSolverOptionsNames::_preconditioner = precond_type);
     // service
     return  new Alien::HTSLinearSolver(pm, solver_options);
   }
 
-  Alien::ILinearSolver* create(CmdLineOptionType const& options,Alien::IMessagePassingMng* pm)
+  Alien::ILinearSolver* create(CmdLineOptionType const& options,Alien::IMessagePassingMng* pm) const
   {
     return _create(options,pm) ;
   }
 
-  Alien::ILinearSolver* create(JsonOptionType const& options,Alien::IMessagePassingMng* pm)
+  Alien::ILinearSolver* create(JsonOptionType const& options,Alien::IMessagePassingMng* pm) const
   {
     return _create(options,pm) ;
   }
