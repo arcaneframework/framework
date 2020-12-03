@@ -476,4 +476,104 @@ HTSInternalLinearSolverFactory(
 {
   return new HTSInternalLinearSolver(p_mng, options);
 }
+
+}
+
+#include <alien/kernels/hts/linear_solver/HTSInternalLinearSolver.h>
+#include <alien/kernels/hts/linear_solver/HTSOptionTypes.h>
+#include <ALIEN/axl/HTSSolver_axl.h>
+
+namespace Alien {
+
+template<>
+class SolverFabric<Alien::BackEnd::tag::hts>
+: public ISolverFabric
+{
+public :
+  BackEndId backend() const {
+     return "htssolver" ;
+  }
+
+  static void
+  add_options(CmdLineOptionDescType& cmdline_options)
+  {
+    using namespace boost::program_options;
+    options_description desc("HTSSolver options");
+    desc.add_options()("hts-solver",     value<std::string>()->default_value("bicgs"),"solver algo name : bicgstab ddml")
+                      ("hts-precond",    value<std::string>()->default_value("none"),"preconditioner diag none poly chebyshev bssor ilu0 ilu0fp ddml amg cpramg")
+                      ("hts-nb-threads", value<int>()->default_value(1), "number of thread for multithreaded solver")
+                      ("hts-pqueue",     value<int>()->default_value(0),"Parallel Queue System :\n \t 0->Single\n \t 1->Distributed \n \t 2->Squential")
+                      ("hts-thread-env-type",value<int>()->default_value(0),"ThreadEnv System : \n \t 0->Pth\n \t 1->OpenMP \n \t 2->TBB")
+                      ("hts-affinity-mode",  value<int>()->default_value(0),"Affinity Mode : \n \t 0->Block \n \t 1->Interleave")
+                      ("hts-use-simd",       value<int>()->default_value(0)," enable simd optimization")
+                      ("hts-nb-part",        value<int>()->default_value(1),"number of domain partitions")
+                      ("hts-nb-subpart",     value<int>()->default_value(0),"number of subdomain partitions")
+                      ("hts-metis",          value<int>()->default_value(1),"to use metis partitioner on each MPI domains")
+                      ("hts-smetis",         value<int>()->default_value(1),"to use metis partitioner on each MPI domains")
+                      ("hts-poly-factor",    value<double>()->default_value(0.), "polynomial factor")
+                      ("hts-poly-eigenvalue-ratio",value<double>()->default_value(30.),"polynomial eigen ratio")
+                      ("hts-poly-eigenvalue-max",  value<double>()->default_value(0.),"polynomial eigenvalue max factor")
+                      ("hts-poly-eigenvalue-min",  value<double>()->default_value(0.),"polynomial eigenvalue min factor")
+                      ("hts-poly-factor-max-iter", value<int>()->default_value(3),"polynomial max iter factor")
+                      ("hts-poly-degree",          value<int>()->default_value(3),"polynomial degree")
+                      ("hts-ilufp-factor-niter",   value<int>()->default_value(0),"fixed point ilu number of factorization iterations")
+                      ("hts-ilufp-solver-niter",   value<int>()->default_value(1),"fixed point ilu number of solver iterations")
+                      ("hts-ilufp-tol",            value<double>()->default_value(0.),"fixed point ilu tolerance")
+                      ("hts-ilu-level",            value<int>()->default_value(0),"iluk level")
+                      ("hts-ilu-drop-tol",         value<double>()->default_value(0.),"iluk drop tolerance")
+                      ("hts-ml-algo",              value<int>()->default_value(0),"0->AS, 1->ML")
+                      ("hts-ml-iter",              value<int>()->default_value(3),"ML iter")
+                      ("hts-ml-tol",               value<double>()->default_value(0.5),"ML tolerance")
+                      ("hts-ml-nev",               value<int>()->default_value(1),"ML nb max of eigen values")
+                      ("hts-ml-evtype",            value<int>()->default_value(1),"ML Eigen Solver type : \n 0->SLEPC \n \t 1->ARPACK \n \t 2->Spectra")
+                      ("hts-ml-evbound",           value<double>()->default_value(0.), "nb max of eigen values")
+                      ("hts-ml-evtol",             value<double>()->default_value(1.e-6),"ML ev algo tolerance")
+                      ("hts-ml-ev-max-iter",       value<int>()->default_value(1000),"ML ev algo max iter")
+                      ("hts-ml-coarse-op",         value<int>()->default_value(1),"ML option -- Coarse operator choice -- \n \t 1) Nicolaides \n \t  2) GenEO")
+                      ("hts-ml-solver",            value<int>()->default_value(0),"DDML option -- local solver choice -- \n \t 0->LU, \n \t 1->LUS, \n \t 2->BCGS, \n \t 3->ILUBCGS")
+                      ("hts-ml-solver-iter",       value<int>()->default_value(100),"ML local solver iter")
+                      ("hts-ml-solver-tol",        value<double>()->default_value(1.e-6),"ML local solver tolerance")
+                      ("hts-ml-solver-nev",        value<int>()->default_value(1),"ML local solver nb max of eigen values")
+                      ("hts-ml-coarse-solver",     value<int>()->default_value(0),"DDML option -- coarse solver choice -- \n \t 0->LU, \n \t 1->LUS, \n \t 2->LUMT, \n \t 3->LUMTS \n \t 4->DistLU")
+                      ("hts-coarse-solver-ntile",  value<int>()->default_value(1), "nb domain per tile")
+                      ("hts-neumann-cor",          value<int>()->default_value(-1(,"ML Neumann cor")
+                      ("hts-relax-solver",         value<int>()->default_value(0),"relax solver option")
+                      ("hts-cpr-solver",           value<int>()->default_value(0),"cpr solver option")
+                      ("hts-amg-algo",             value<std::string>()->default_value("PMIS"),"AMG algorithm option, AGGREGATION or PMIS");
+  }
+
+
+  template<typename OptionT>
+  Alien::ILinearSolver* create(OptionT const& options,Alien::IMessagePassingMng* pm)
+  {
+    double tol = get<double>(options,"tol");
+    int max_iter = get<int>(options,"max-iter");
+
+    std::string precond_type_s = get<std::string>(options,"hts-precond");
+    IFPSolverProperty::ePrecondType precond_type =
+        OptionsIFPLinearSolverUtils::stringToPrecondOptionEnum(precond_type_s);
+    // options
+    auto solver_options = std::make_shared<StrongOptionsHTSSolver>(
+        HTSSolverOptionsNames::_output = get<int>(options,"output-level"),
+        HTSSolverOptionsNames::_numIterationsMax = max_iter,
+        HTSSolverOptionsNames::_stopCriteriaValue = tol,
+        HTSSolverOptionsNames::_precondOption = precond_type);
+    // service
+    return  new Alien::HTSLinearSolver(pm, solver_options);
+  }
+
+  Alien::ILinearSolver* create(CmdLineOptionType const& options,Alien::IMessagePassingMng* pm)
+  {
+    return _create(options,pm) ;
+  }
+
+  Alien::ILinearSolver* create(JsonOptionType const& options,Alien::IMessagePassingMng* pm)
+  {
+    return _create(options,pm) ;
+  }
+};
+
+typedef SolverFabric<Alien::BackEnd::tag::htssolver> HTSSOLVERSolverFabric ;
+REGISTER_SOLVER_FABRIC(HTSSOLVERSolverFabric);
+
 } // namespace Alien

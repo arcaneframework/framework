@@ -183,7 +183,6 @@ int main(int argc, char** argv)
       err2 += err*err ;
     }
 
-    printf("LOCAL REL ERROR2 : %f %f\n",err2,norm2) ;
     MPI_Allreduce(&norm2,&gnorm2,1,MPI_DOUBLE,MPI_SUM,comm) ;
     MPI_Allreduce(&err2,&gerr2,1,MPI_DOUBLE,MPI_SUM,comm) ;
 

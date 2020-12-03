@@ -35,6 +35,7 @@
 
 #include <alien/expression/solver/ILinearSolver.h>
 #include <alien/utils/parameter_manager/BaseParameterManager.h>
+#include <alien/core/backend/SolverFactory.h>
 
 #include <alien/AlienExternalPackages.h>
 #include <alien/AlienIFPENSolvers.h>
@@ -45,7 +46,6 @@
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/parsers.hpp>
 
-#include "SolverFabric.h"
 
 class AlienManager
 {
@@ -156,7 +156,6 @@ public :
   {
     int id = m_linear_systems.size() ;
     m_linear_systems.push_back(std::make_unique<LinearSystem>(comm)) ;
-    std::cout<<"RETURN SYSTEM ID : "<<id<<" "<<m_linear_systems.size()<<std::endl ;
 
     return id ;
   }
@@ -170,7 +169,6 @@ public :
 
   LinearSystem* getLinearSystem(int system_id)
   {
-    std::cout<<"ASSERT "<<system_id<<" "<<m_linear_systems.size()<<std::endl ;
     assert((std::size_t)system_id < m_linear_systems.size()) ;
     return m_linear_systems[system_id].get() ;
   }
@@ -208,7 +206,6 @@ public :
 
     int id = m_linear_solvers.size() ;
     m_linear_solvers.push_back(std::make_unique<LinearSolver>(comm,config_file)) ;
-    std::cout<<"RETURN SOLVER ID : "<<id<<" "<<m_linear_solvers.size()<<std::endl ;
     return id ;
   }
 
@@ -257,7 +254,7 @@ init(int global_nrows,
   auto* mng = AlienManager::instance() ;
   auto* pm = mng->parallelMng() ;
   int my_rank = pm->commRank() ;
-  auto* tm = mng->traceMng() ;
+  //auto* tm = mng->traceMng() ;
 
   m_index_manager.reset(new Alien::IndexManager(mng->parallelMng(),mng->traceMng())) ;
   m_index_manager->init() ;
@@ -415,21 +412,12 @@ init(int argc, char** argv)
 
   options_description parse_command_line_desc ;
   parse_command_line_desc.add(generic) ;
-#ifdef ALIEN_USE_PETSC
-  SolverFabric<Alien::BackEnd::tag::petsc>::add_options(parse_command_line_desc) ;
-#endif
-#ifdef ALIEN_USE_HYPRE
-  SolverFabric<Alien::BackEnd::tag::hypre>::add_options(parse_command_line_desc) ;
-#endif
-#ifdef ALIEN_USE_IFPSOLVER
-  SolverFabric<Alien::BackEnd::tag::ifpsolver>::add_options(parse_command_line_desc) ;
-#endif
-#ifdef ALIEN_USE_MCGSOLVER
-  SolverFabric<Alien::BackEnd::tag::mcgsolver>::add_options(parse_command_line_desc) ;
-#endif
-#ifdef ALIEN_USE_MTL4
-  SolverFabric<Alien::BackEnd::tag::mtl>::add_options(parse_command_line_desc) ;
-#endif
+  Alien::SolverFactory::add_options("petsc",parse_command_line_desc) ;
+  Alien::SolverFactory::add_options("hypre",parse_command_line_desc) ;
+  Alien::SolverFactory::add_options("mtl4",parse_command_line_desc) ;
+  Alien::SolverFactory::add_options("ifpsolver",parse_command_line_desc) ;
+  Alien::SolverFactory::add_options("htssolver",parse_command_line_desc) ;
+  Alien::SolverFactory::add_options("mcgsolver",parse_command_line_desc) ;
 
   variables_map vm;
   store(parse_command_line(argc,argv,parse_command_line_desc), vm);
@@ -448,46 +436,7 @@ init(int argc, char** argv)
   std::string solver_package = vm["solver-package"].as<std::string>();
 
   tm->info() << "Try to create solver-package : " << solver_package;
-  if (solver_package.compare("petsc") == 0)
-  {
-#ifdef ALIEN_USE_PETSC
-    m_linear_solver.reset(SolverFabric<Alien::BackEnd::tag::petsc>::create(vm,pm)) ;
-#else
-    tm->fatal() << "*** package " << solver_package << " not available!";
-#endif
-
-  }
-
-  if (solver_package.compare("hypre") == 0) {
-#ifdef ALIEN_USE_HYPRE
-    m_linear_solver.reset(SolverFabric<Alien::BackEnd::tag::hypre>::create(vm,pm)) ;
-#else
-    tm->fatal() << "*** package " << solver_package << " not available!";
-#endif
-  }
-
-  if (solver_package.compare("ifpsolver") == 0) {
-#ifdef ALIEN_USE_IFPSOLVER
-    m_linear_solver.reset(SolverFabric<Alien::BackEnd::tag::ifpsolver>::create(vm,pm)) ;
-#else
-    tm->fatal() << "*** package " << solver_package << " not available!";
-#endif
-  }
-  if (solver_package.compare("mcgsolver") == 0) {
-#ifdef ALIEN_USE_MCGSOLVER
-    m_linear_solver.reset(SolverFabric<SolverFabric::tag::mcgsolver>::create(vm,pm)) ;
-#else
-    tm->fatal() << "*** package " << solver_package << " not available!";
-#endif
-  }
-  if (solver_package.compare("mtlsolver") == 0) {
-#ifdef ALIEN_USE_MTL4
-    m_linear_solver.reset(SolverFabric<Alien::BackEnd::tag::mtl>::create(vm,pm)) ;
-#else
-    tm->fatal() << "*** package " << solver_package << " not available!";
-#endif
-  }
-
+  m_linear_solver.reset(Alien::SolverFactory::create(solver_package,vm,pm)) ;
   if(m_linear_solver.get()==nullptr)
     tm->fatal() << "*** package " << solver_package << " not available!";
 }
@@ -520,42 +469,7 @@ init(std::string const& configfile)
   tm->info() << "Try to create solver-package : " << solver_package;
 
   pt::ptree config = root.get_child("config") ;
-
-  if (solver_package.compare("petsc") == 0)
-  {
-#ifdef ALIEN_USE_PETSC
-    tm->info() << "Configuring : " << solver_package;
-    m_linear_solver.reset(SolverFabric<Alien::BackEnd::tag::petsc>::create(config,pm)) ;
-    tm->info() << "after Configuring : " << m_linear_solver.get();
-#else
-    tm->fatal() << "*** package " << solver_package << " not available!";
-#endif
-  }
-
-  if (solver_package.compare("hypre") == 0) {
-#ifdef ALIEN_USE_HYPRE
-    m_linear_solver.reset(SolverFabric<Alien::BackEnd::tag::hypre>::create(config,pm)) ;
-#else
-    tm->fatal() << "*** package " << solver_package << " not available!";
-#endif
-  }
-
-  if (solver_package.compare("ifpsolver") == 0) {
-#ifdef ALIEN_USE_IFPSOLVER
-    m_linear_solver.reset(SolverFabric<Alien::BackEnd::tag::ifpsolver>::create(config,pm)) ;
-#else
-    tm->fatal() << "*** package " << solver_package << " not available!";
-#endif
-  }
-
-  if (solver_package.compare("mtlsolver") == 0) {
-#ifdef ALIEN_USE_MTL4
-    m_linear_solver.reset(SolverFabric<Alien::BackEnd::tag::mtl>::create(config,pm)) ;
-#else
-    tm->fatal() << "*** package " << solver_package << " not available!";
-#endif
-  }
-
+  m_linear_solver.reset(Alien::SolverFactory::create(solver_package,config,pm)) ;
   if(m_linear_solver.get()==nullptr)
     tm->fatal() << "*** package " << solver_package << " not available!";
 }

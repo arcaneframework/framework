@@ -10,6 +10,8 @@
 #include <alien/expression/solver/ILinearSolver.h>
 #include <alien/expression/solver/ILinearAlgebra.h>
 
+#include <alien/core/backend/SolverFabricRegisterer.h>
+
 #include <alien/kernels/hypre/HypreBackEnd.h>
 #include <alien/kernels/hypre/data_structure/HypreVector.h>
 #include <alien/kernels/hypre/data_structure/HypreMatrix.h>
@@ -17,6 +19,10 @@
 #include "HypreOptionTypes.h"
 
 #include <ALIEN/axl/HypreSolver_IOptions.h>
+
+#include <alien/kernels/hypre/linear_solver/arcane/HypreLinearSolver.h>
+#include <ALIEN/axl/HypreSolver_IOptions.h>
+#include <ALIEN/axl/HypreSolver_StrongOptions.h>
 
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 
@@ -368,6 +374,62 @@ HypreInternalLinearSolverFactory(
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<>
+class SolverFabric<Alien::BackEnd::tag::hypre>
+: public ISolverFabric
+{
+public :
+  
+  BackEndId backend() const {
+     return "hypre" ;
+  }
+
+  void
+  add_options(CmdLineOptionDescType& cmdline_options) const
+  {
+    using namespace boost::program_options;
+    options_description desc("HYPRE options");
+    desc.add_options()("hypre-solver", value<std::string>()->default_value("bicgs"),"solver algo name : amg cg gmres bicgstab")
+                      ("hypre-precond", value<std::string>()->default_value("none"),"preconditioner none diag amg parasails euclid");
+
+    cmdline_options.add(desc) ;
+  }
+
+  template<typename OptionT>
+  Alien::ILinearSolver* _create(OptionT const& options,Alien::IMessagePassingMng* pm) const
+  {
+    double tol = get<double>(options,"tol");
+    int max_iter = get<int>(options,"max-iter");
+
+    std::string solver_type_s =  get<std::string>(options,"hypre-solver");
+    HypreOptionTypes::eSolver solver_type =
+        OptionsHypreSolverUtils::stringToSolverEnum(solver_type_s);
+    std::string precond_type_s =  get<std::string>(options,"hypre-precond");
+    HypreOptionTypes::ePreconditioner precond_type =
+        OptionsHypreSolverUtils::stringToPreconditionerEnum(precond_type_s);
+    // options
+    using namespace HypreSolverOptionsNames;
+    auto solver_options = std::make_shared<StrongOptionsHypreSolver>(
+        _numIterationsMax = max_iter, _stopCriteriaValue = tol, _solver = solver_type,
+        _preconditioner = precond_type);
+    // service
+   return new Alien::HypreLinearSolver(pm, solver_options);
+  }
+
+  Alien::ILinearSolver* create(CmdLineOptionType const& options,Alien::IMessagePassingMng* pm) const
+  {
+    return _create(options,pm) ;
+  }
+
+  Alien::ILinearSolver* create(JsonOptionType const& options,Alien::IMessagePassingMng* pm) const
+  {
+    return _create(options,pm) ;
+  }
+
+};
+
+typedef SolverFabric<Alien::BackEnd::tag::hypre> HypreSolverFabric ;
+REGISTER_SOLVER_FABRIC(HypreSolverFabric);
 } // namespace Alien
 
 /*---------------------------------------------------------------------------*/

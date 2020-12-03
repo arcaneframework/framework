@@ -13,8 +13,11 @@
 
 #include <alien/utils/parameter_manager/BaseParameterManager.h>
 
+
 #include <alien/core/backend/LinearSolverT.h>
 #include <alien/expression/solver/SolverStater.h>
+#include <alien/core/backend/SolverFabricRegisterer.h>
+
 
 #include <arccore/base/NotImplementedException.h>
 
@@ -40,6 +43,7 @@
 #include <alien/kernels/petsc/linear_solver/IPETScPC.h>
 #include <alien/kernels/petsc/PETScBackEnd.h>
 #include <ALIEN/axl/PETScLinearSolver_IOptions.h>
+
 
 #include <arccore/base/NotSupportedException.h>
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
@@ -550,8 +554,131 @@ PETScInternalLinearSolverFactory(Arccore::MessagePassing::IMessagePassingMng* p_
   return new PETScInternalLinearSolver(p_mng, options);
 }
 
+
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+#include <alien/kernels/petsc/algebra/PETScLinearAlgebra.h>
+#include <alien/kernels/petsc/linear_solver/arcane/PETScLinearSolverService.h>
+#include <alien/kernels/petsc/linear_solver/PETScInternalLinearSolver.h>
+// preconditionner
+#include <alien/kernels/petsc/linear_solver/arcane/PETScPrecConfigDiagonalService.h>
+#include <alien/kernels/petsc/linear_solver/arcane/PETScPrecConfigJacobiService.h>
+#include <alien/kernels/petsc/linear_solver/arcane/PETScPrecConfigNoPreconditionerService.h>
+#include <ALIEN/axl/PETScPrecConfigDiagonal_IOptions.h>
+#include <ALIEN/axl/PETScPrecConfigDiagonal_StrongOptions.h>
+#include <ALIEN/axl/PETScPrecConfigJacobi_IOptions.h>
+#include <ALIEN/axl/PETScPrecConfigJacobi_StrongOptions.h>
+#include <ALIEN/axl/PETScPrecConfigNoPreconditioner_IOptions.h>
+#include <ALIEN/axl/PETScPrecConfigNoPreconditioner_StrongOptions.h>
+// solver
+#include <alien/kernels/petsc/linear_solver/arcane/PETScSolverConfigBiCGStabService.h>
+#include <alien/kernels/petsc/linear_solver/arcane/PETScSolverConfigLUService.h>
+#include <alien/kernels/petsc/linear_solver/IPETScKSP.h>
+#include <alien/kernels/petsc/linear_solver/IPETScPC.h>
+#include <ALIEN/axl/PETScSolverConfigBiCGStab_IOptions.h>
+#include <ALIEN/axl/PETScSolverConfigBiCGStab_StrongOptions.h>
+#include <ALIEN/axl/PETScSolverConfigLU_IOptions.h>
+#include <ALIEN/axl/PETScSolverConfigLU_StrongOptions.h>
+// root linear solver instance
+#include <ALIEN/axl/PETScLinearSolver_IOptions.h>
+#include <ALIEN/axl/PETScLinearSolver_StrongOptions.h>
+
+namespace Alien {
+
+template<>
+class SolverFabric<Alien::BackEnd::tag::petsc>
+: public ISolverFabric
+{
+public :
+  BackEndId backend() const {
+     return "petsc" ;
+  }
+
+
+  void
+  add_options(CmdLineOptionDescType& cmdline_options) const
+  {
+    using namespace boost::program_options;
+    options_description desc("PETSC options");
+    desc.add_options()("petsc-solver", value<std::string>()->default_value("bicgs"),"solver algo name : bicgs lu")
+                      ("petsc-precond", value<std::string>()->default_value("none"),"preconditioner bjacobi diag none");
+
+    cmdline_options.add(desc) ;
+  }
+
+
+  template<typename OptionT>
+  Alien::ILinearSolver* _create(OptionT const& options,Alien::IMessagePassingMng* pm) const
+  {
+    double tol = get<double>(options,"tol");
+    int max_iter = get<int>(options,"max-iter");
+
+    std::shared_ptr<Alien::IPETScPC> prec = nullptr;
+    // preconditionner service
+    std::string precond_type_s = get<std::string>(options,"petsc-precond");
+    if (precond_type_s.compare("bjacobi") == 0)
+    {
+      auto options_prec = std::make_shared<StrongOptionsPETScPrecConfigJacobi>();
+      prec = std::make_shared<Alien::PETScPrecConfigJacobiService>(pm, options_prec);
+    }
+    else if (precond_type_s.compare("diag") == 0)
+    {
+      auto options_prec = std::make_shared<StrongOptionsPETScPrecConfigDiagonal>();
+      prec = std::make_shared<Alien::PETScPrecConfigDiagonalService>(pm, options_prec);
+    }
+    else if (precond_type_s.compare("none") == 0)
+    {
+      auto options_prec =
+          std::make_shared<StrongOptionsPETScPrecConfigNoPreconditioner>();
+      prec = std::make_shared<Alien::PETScPrecConfigNoPreconditionerService>(
+          pm, options_prec);
+    }
+    std::string solver = get<std::string>(options,"petsc-solver");
+    if (solver.compare("bicgs") == 0)
+    {
+      // solver service bicgs
+      using namespace PETScSolverConfigBiCGStabOptionsNames;
+      auto options_solver = std::make_shared<StrongOptionsPETScSolverConfigBiCGStab>(
+          _numIterationsMax = max_iter, _stopCriteriaValue = tol, _preconditioner = prec);
+      // root petsc option
+      auto root_options = std::make_shared<StrongOptionsPETScLinearSolver>(
+          PETScLinearSolverOptionsNames::_solver =
+              std::make_shared<Alien::PETScSolverConfigBiCGStabService>(
+                  pm, options_solver));
+      // root petsc service
+      return new Alien::PETScLinearSolverService(pm, root_options);
+    }
+    if (solver.compare("lu") == 0)
+    {
+      // solver service lu
+      using namespace PETScSolverConfigLUOptionsNames;
+      auto options_solver = std::make_shared<StrongOptionsPETScSolverConfigLU>();
+      // root petsc option
+      auto root_options = std::make_shared<StrongOptionsPETScLinearSolver>(
+          PETScLinearSolverOptionsNames::_solver =
+              std::make_shared<Alien::PETScSolverConfigLUService>(pm, options_solver));
+      // root petsc service
+      return new Alien::PETScLinearSolverService(pm, root_options);
+    }
+    return nullptr ;
+  }
+
+
+  Alien::ILinearSolver* create(CmdLineOptionType const& options,Alien::IMessagePassingMng* pm) const
+  {
+    return _create(options,pm) ;
+  }
+
+  Alien::ILinearSolver* create(JsonOptionType const& options,Alien::IMessagePassingMng* pm) const
+  {
+    return _create(options,pm) ;
+  }
+};
+
+typedef SolverFabric<Alien::BackEnd::tag::petsc> PETSCSolverFabric ;
+REGISTER_SOLVER_FABRIC(PETSCSolverFabric);
 
 } // namespace Alien
 
