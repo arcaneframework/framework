@@ -37,9 +37,10 @@ namespace Arccore
 
 TraceAccessor::
 TraceAccessor(ITraceMng* trace)
-: m_trace(trace)
-, m_local_verbose_level(TraceMessage::DEFAULT_LEVEL)
+: m_local_verbose_level(TraceMessage::DEFAULT_LEVEL)
 {
+  if (trace)
+    m_trace = makeRef(trace);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -56,7 +57,7 @@ TraceAccessor::
 ITraceMng* TraceAccessor::
 traceMng() const
 {
-  return m_trace;
+  return m_trace.get();
 }
 
 /*---------------------------------------------------------------------------*/

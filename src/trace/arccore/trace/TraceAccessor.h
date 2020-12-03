@@ -27,6 +27,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/trace/TraceMessage.h"
+#include "arccore/base/Ref.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -150,7 +151,7 @@ class ARCCORE_TRACE_EXPORT TraceAccessor
 
  private:
 
-  ITraceMng* m_trace;
+ Ref<ITraceMng> m_trace;
   Int32 m_local_verbose_level;
 };
 
