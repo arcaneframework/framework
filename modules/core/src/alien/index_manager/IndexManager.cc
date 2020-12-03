@@ -653,8 +653,8 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
     }
 
     { // Préparation des retours
-      auto dest = recvRequest.comm->source(); // Attention à l'ordre bizarre
-      auto orig = recvRequest.comm->destination(); //       de SerializeMessage
+      auto dest = recvRequest.comm->destination(); // Attention à l'ordre bizarre
+      auto orig = recvRequest.comm->source(); //       de SerializeMessage
       recvRequest.comm.reset();
       recvRequest.comm = Alien::BasicSerializeMessage::create(
           orig, dest, Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
