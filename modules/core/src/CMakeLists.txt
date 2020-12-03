@@ -33,6 +33,7 @@ add_library(alien_core
         alien/core/backend/IInternalLinearSolverT.h
         alien/core/backend/IMatrixConverter.h
         alien/core/backend/IVectorConverter.h
+        alien/core/backend/ISolverFabric.h
         alien/core/backend/LinearAlgebra.h
         alien/core/backend/LinearAlgebraT.h
         alien/core/backend/LinearAlgebraExpr.h
@@ -43,6 +44,9 @@ add_library(alien_core
         alien/core/backend/MatrixConverterRegisterer.h
         alien/core/backend/VectorConverterRegisterer.cc
         alien/core/backend/VectorConverterRegisterer.h
+        alien/core/backend/SolverFabricRegisterer.cc
+        alien/core/backend/SolverFabricRegisterer.h
+        alien/core/backend/SolverFactory.h
         alien/core/block/Block.cc
         alien/core/block/Block.h
         alien/core/block/BlockSizeVector.cc
