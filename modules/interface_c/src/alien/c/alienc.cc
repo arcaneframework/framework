@@ -418,6 +418,7 @@ init(int argc, char** argv)
   Alien::SolverFactory::add_options("ifpsolver",parse_command_line_desc) ;
   Alien::SolverFactory::add_options("htssolver",parse_command_line_desc) ;
   Alien::SolverFactory::add_options("mcgsolver",parse_command_line_desc) ;
+  Alien::SolverFactory::add_options("trilinos",parse_command_line_desc) ;
 
   variables_map vm;
   store(parse_command_line(argc,argv,parse_command_line_desc), vm);
