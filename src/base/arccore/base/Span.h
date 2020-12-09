@@ -416,7 +416,7 @@ class Span
  public:
 
   //! Construit une vue vide.
-  ARCCORE_HOST_DEVICE Span() = default;
+  Span() = default;
   //! Constructeur de recopie depuis une autre vue
   ARCCORE_HOST_DEVICE Span(const ArrayView<value_type>& from)
   : BaseClass(from.m_ptr,from.m_size) {}
@@ -512,7 +512,7 @@ class SmallSpan
  public:
 
   //! Construit une vue vide.
-  ARCCORE_HOST_DEVICE SmallSpan() = default;
+  SmallSpan() = default;
   //! Constructeur de recopie depuis une autre vue
   ARCCORE_HOST_DEVICE SmallSpan(const ArrayView<value_type>& from)
   : BaseClass(from.m_ptr,from.m_size) {}
