@@ -62,7 +62,7 @@ void Vector::setProfile(int ilower, int iupper)
   // -- B Vector --
   auto ierr = VecCreate(m_comm, &m_vec);
   ierr |= VecSetType(m_vec, VECMPI);
-  ierr |= VecSetSizes(m_vec, iupper-ilower, PETSC_DECIDE);
+  ierr |= VecSetSizes(m_vec, iupper - ilower + 1, PETSC_DECIDE);
 
   if (ierr) {
     throw Arccore::FatalErrorException(A_FUNCINFO, "PETSc Vector Initialisation failed");

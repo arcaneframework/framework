@@ -56,7 +56,7 @@ void Matrix::setProfile(int ilower, int iupper,
   m_comm = pm ? (*pm->getMPIComm()) : MPI_COMM_WORLD;
 
   auto ierr = MatCreate(m_comm, &m_mat);
-  ierr |= MatSetSizes(m_mat, iupper-ilower, jupper-jlower,
+  ierr |= MatSetSizes(m_mat, iupper - ilower + 1, jupper - jlower + 1,
                       PETSC_DETERMINE, PETSC_DETERMINE);
   ierr |= MatSetType(m_mat, MATMPIAIJ);
   ierr |= MatAssemblyBegin(m_mat, MAT_FINAL_ASSEMBLY);
