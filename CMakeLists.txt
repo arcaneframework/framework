@@ -56,7 +56,9 @@ find_package(Boost REQUIRED) # For boost::timer.
 # ----------------------------------------------------------------------------
 
 add_library(alien_petsc
-        )
+  src/matrix.cpp
+  src/matrix.h
+  )
 
 target_link_libraries(alien_petsc PUBLIC
         Arccore::arccore_trace
@@ -83,9 +85,9 @@ generate_export_header(alien_petsc
 
 # Tests
 
-enable_testing()
+#enable_testing()
 
-add_subdirectory(test)
+#add_subdirectory(test)
 
 # Install
 
