@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<service name="UnitTestCartesianMeshPatch" version="1.0" namespace-name="ArcaneTest" type="caseoption">
+    <tests class-set-up="setUpForClass" test-set-up="setUp" class-tear-down="tearDownForClass" test-tear-down="tearDown">
+     <test name="Test cartesian mesh patch cells and parents" method-name="testCartesianMeshPatchCellsAndParents"/>
+     <test name="Test cartesian mesh patch cell direction mng" method-name="testCartesianMeshPatchCellDirectionMng"/>
+     <test name="Test cartesian mesh patch face direction mng" method-name="testCartesianMeshPatchFaceDirectionMng"/>
+     <test name="Test cartesian mesh patch node direction mng" method-name="testCartesianMeshPatchNodeDirectionMng"/>
+     <test name="Test cartesian mesh patch cartesian connectivity" method-name="testCartesianMeshPatchCartesianConnectivity"/>
+    </tests>
+</service>

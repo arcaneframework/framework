@@ -10,6 +10,7 @@ set(ARCANE_SOURCES
   AMRCartesianMeshTesterModule.cc
   CartesianMeshTestUtils.cc
   CartesianMeshTestUtils.h
+  UnitTestCartesianMeshPatch.cc
 )
 
 set(AXL_FILES 
@@ -21,4 +22,5 @@ set(AXL_FILES
   GeometricUnitTest
   MeshMaterialSyncUnitTest
   AMRCartesianMeshTester
+  UnitTestCartesianMeshPatch
 )

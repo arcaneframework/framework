@@ -150,6 +150,9 @@ if (SLOOP_FOUND)
   ARCANE_ADD_TEST_PARALLEL(aleph_kappa_sloop testAlephSloop.arc 4 -arcane_opt nb_sub_domain 2 -arcane_opt idle_service AlephKappa)
 endif ()
 
+# Pas actif pour l'instant car en échec
+# arcane_add_test_sequential(cartesianpatch1 unitCartesianPatch1.arc)
+
 #####################
 # HyODA Mixed Cells #
 #####################
