@@ -160,7 +160,7 @@ _internalComputeInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& c
   m_p->m_outer_all_items = face_family->createGroup(String("AllOuter")+base_group_name,outer_lids,true);
   m_p->m_all_items = all_faces;
 
-  _computeCellInfos(cells_center,faces_center);
+  _computeCellInfos(cell_dm,cells_center,faces_center);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -173,15 +173,34 @@ _internalComputeInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& c
  * des centres des faces et des centres des mailles.
  */
 void FaceDirectionMng::
-_computeCellInfos(const VariableCellReal3& cells_center,const VariableFaceReal3& faces_center)
+_computeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells_center,
+                  const VariableFaceReal3& faces_center)
 {
   eMeshDirection dir = m_direction;
+
+  // Créé l'ensemble des mailles du patch et s'en sert
+  // pour être sur que chaque maille devant/derrière est dans
+  // cet ensemble
+  std::set<Int32> patch_cells_set;
+  ENUMERATE_CELL(icell,cell_dm.allCells()){
+    patch_cells_set.insert(icell.itemLocalId());
+  }
+
   ENUMERATE_FACE(iface,m_p->m_all_items){
     Face face = *iface;
     Int32 face_lid = iface.itemLocalId();
     Real3 face_coord = faces_center[iface];
     Cell front_cell = face.frontCell();
     Cell back_cell = face.backCell();
+
+    // Vérifie que les mailles sont dans notre patch.
+    if (!front_cell.null())
+      if (patch_cells_set.find(front_cell.localId())==patch_cells_set.end())
+        front_cell = Cell();
+    if (!back_cell.null())
+      if (patch_cells_set.find(back_cell.localId())==patch_cells_set.end())
+        back_cell = Cell();
+
     ItemInternal* front_cell_i = front_cell.internal();
     ItemInternal* back_cell_i = back_cell.internal();
     bool is_inverse = false;

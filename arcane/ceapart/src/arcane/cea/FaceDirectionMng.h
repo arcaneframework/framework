@@ -189,7 +189,8 @@ class ARCANE_CEA_EXPORT FaceDirectionMng
   eMeshDirection m_direction;
   Impl* m_p;
 
-  void _computeCellInfos(const VariableCellReal3& cells_center,
+  void _computeCellInfos(const CellDirectionMng& cell_dm,
+                         const VariableCellReal3& cells_center,
                          const VariableFaceReal3& faces_center);
 };
 
