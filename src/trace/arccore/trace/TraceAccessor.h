@@ -50,10 +50,17 @@ class TraceMessage;
 class ARCCORE_TRACE_EXPORT TraceAccessor
 {
  public:
+  // NOTE: il ne faut pas utiliser les versions 'default' des constructeurs,
+  // destructeurs et opérateurs de recopie sinon il faut que 'ITraceMng' soit connu
+  // à cause de l'utilisation de 'Ref' et on ne souhaite pas inclure
+  // 'ITraceMng.h' s'il n'est pas utilisé directement.
 
-  // Construit un accesseur via le gestionnaire de trace \a m.
+  //! Construit un accesseur via le gestionnaire de trace \a m.
   explicit TraceAccessor(ITraceMng* m);
-  TraceAccessor(const TraceAccessor& rhs) = default;
+  //! Constructeur par recopie
+  TraceAccessor(const TraceAccessor& rhs);
+  //! Opérateur de recopie
+  TraceAccessor& operator=(const TraceAccessor& rhs);
   virtual ~TraceAccessor(); //!< Libère les ressources
 
  public:
@@ -151,7 +158,7 @@ class ARCCORE_TRACE_EXPORT TraceAccessor
 
  private:
 
- Ref<ITraceMng> m_trace;
+  Ref<ITraceMng> m_trace;
   Int32 m_local_verbose_level;
 };
 
