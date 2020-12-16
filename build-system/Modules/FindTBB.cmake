@@ -1,4 +1,4 @@
-#
+ï»¿#
 # Find the TBB (Intel Thread Building blocks) includes and library
 #
 # This module defines
@@ -10,8 +10,8 @@ arccon_return_if_package_found(TBB)
 
 find_library(TBB_LIBRARY_DEBUG NAMES tbb_debug)
 find_library(TBB_LIBRARY_RELEASE NAMES tbb)
-MESSAGE(STATUS "TBB DEBUG ${TBB_LIBRARY_DEBUG}")
-MESSAGE(STATUS "TBB RELEASE ${TBB_LIBRARY_RELEASE}")
+message(STATUS "TBB DEBUG ${TBB_LIBRARY_DEBUG}")
+message(STATUS "TBB RELEASE ${TBB_LIBRARY_RELEASE}")
 
 find_path(TBB_INCLUDE_DIR tbb/tbb_thread.h)
 
@@ -27,18 +27,22 @@ set(TBB_FOUND NO)
 if (TBB_INCLUDE_DIR AND TBB_LIBRARY_RELEASE AND TBB_LIBRARY_DEBUG)
   set(TBB_FOUND YES)
   if (WIN32)
+    set(TBB_LIBRARIES "$<$<CONFIG:Debug>:${TBB_LIBRARY_DEBUG}>$<$<CONFIG:Release>:${TBB_LIBRARY_RELEASE}>")
   else()
     set(TBB_LIBRARIES ${TBB_LIBRARY_RELEASE} )
   endif()
   set(TBB_INCLUDE_DIRS ${TBB_INCLUDE_DIR})
 endif()
 
-# Créé une interface cible pour référencer facilement le package dans les dépendances.
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
+# CrÃ©Ã© une interface cible pour rÃ©fÃ©rencer facilement le package dans les dÃ©pendances.
 # Utilise TBB_LIBRARY_DEBUG si on compile en mode Debug, TBB_LIBRARY_RELEASE sinon
-# En débug, il faut aussi définir TBB_USE_DEBUG=1 pour que les vérifications soient
-# activées.
-# TODO: il faudrait pouvoir spécifier la version Debug même en compilation
-# en mode optimisé.
+# En dÃ©bug, il faut aussi dÃ©finir TBB_USE_DEBUG=1 pour que les vÃ©rifications soient
+# activÃ©es.
+# TODO: il faudrait pouvoir spÃ©cifier la version Debug mÃªme en compilation
+# en mode optimisÃ©.
 if (TBB_FOUND)
   arccon_register_package_library(TBB TBB)
   if (CMAKE_BUILD_TYPE STREQUAL Debug)
@@ -46,17 +50,22 @@ if (TBB_FOUND)
       target_compile_definitions(arcconpkg_TBB INTERFACE TBB_USE_DEBUG=1)
     endif()
   endif()
-  # Sous Win32, utilise les generator-expression pour spécifier le choix de la bibliothèque
+  # Sous Win32, utilise les generator-expression pour spÃ©cifier le choix de la bibliothÃ¨que
   # en fonction de la cible 'Debug' ou 'Release'.
-  # Sous Unix, on devrait faire la même chose mais cela pose problème avec le fichier
-  # .pc généré donc pour l'instant on laisse comme ci dessous.
-  if (WIN32)
-    target_link_libraries(arcconpkg_TBB INTERFACE "$<$<CONFIG:debug>:${TBB_LIBRARY_DEBUG}>$<$<CONFIG:release>:${TBB_LIBRARY_RELEASE}>")
-  else()
+  # Sous Unix, on devrait faire la mÃªme chose mais cela pose problÃ¨me avec le fichier
+  # .pc gÃ©nÃ©rÃ© donc pour l'instant on laisse comme ci dessous.
+  if (NOT WIN32)
     if (CMAKE_BUILD_TYPE STREQUAL Debug)
       target_link_libraries(arcconpkg_TBB INTERFACE ${TBB_LIBRARY_DEBUG})
     else()
       target_link_libraries(arcconpkg_TBB INTERFACE ${TBB_LIBRARY_RELEASE})
     endif()
   endif()
-endif (TBB_FOUND)
+endif ()
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:
