@@ -46,7 +46,6 @@ using Arccore::MessagePassing::MessageRank;
 
 using Arccore::BasicSerializer;
 using Arccore::ISerializer;
-using Arccore::MessagePassing::BasicSerializeMessage;
 using Arccore::MessagePassing::ISerializeMessage;
 using Arccore::MessagePassing::ISerializeMessageList;
 
