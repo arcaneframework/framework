@@ -648,7 +648,7 @@ namespace Alien {
         sbuf.put(nameString);
         sbuf.put(request.count);
 #else
-        request.comm = Alien::BasicSerializeMessage::create(
+        request.comm = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
                   MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
                   Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
         messageList->addMessage(request.comm.get());
@@ -707,7 +707,7 @@ namespace Alien {
         recvRequest.comm = recvMsg;
         messageList->addMessage(recvMsg);
 #else
-        auto recvMsg = Alien::BasicSerializeMessage::create(
+        auto recvMsg = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
             MessageRank(m_parallel_mng->commRank()), MessageRank(isd),
             Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
         recvRequests.push_back(EntryRecvRequest());
@@ -839,10 +839,10 @@ namespace Alien {
         sbuf.put(nameString);
         sbuf.put(uidCount);
 #else
-        auto dest = recvRequest.comm->source(); // Attention à l'ordre bizarre
-        auto orig = recvRequest.comm->destination(); //       de SerializeMessage
+        auto dest = recvRequest.comm->destination(); // Attention à l'ordre bizarre
+        auto orig = recvRequest.comm->source(); //       de SerializeMessage
         recvRequest.comm.reset();
-        recvRequest.comm = Alien::BasicSerializeMessage::create(
+        recvRequest.comm = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
                   orig, dest, Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
         messageList->addMessage(recvRequest.comm.get());
 
@@ -952,14 +952,14 @@ namespace Alien {
 #ifdef USE_ARCANE_PARALLELMNG
         delete request.comm;
         request.comm = NULL;
-        
+
         SerializeMessage* msg = new SerializeMessage(
             m_parallel_mng->commRank(), destDomainId, ISerializeMessage::MT_Recv);
         returnedRequests.push_back(msg);
         messageList->addMessage(msg);
 
 #else
-        auto msg = Alien::BasicSerializeMessage::create(
+        auto msg = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
                   MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
                   Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
 
