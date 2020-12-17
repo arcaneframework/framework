@@ -509,7 +509,8 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
       sendToDomains[2 * destDomainId + 1] += request.count;
 
       // Construction du message du EntrySendRequest
-      request.comm = Alien::BasicSerializeMessage::create(
+      // FIXME do not use Arccore internal structure.
+      request.comm = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
           MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
           Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
 
@@ -545,7 +546,8 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
     while (recvCount-- > 0) {
       //    if (m_trace) m_trace->pinfo() << "will receive an entry with " <<
       //    recvFromDomains[2*isd+1] << " uid from " << isd;
-      auto recvMsg = Alien::BasicSerializeMessage::create(
+      // FIXME do not use Arccore internal structure !
+      auto recvMsg = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
           MessageRank(m_parallel_mng->commRank()), MessageRank(isd),
           Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
 
@@ -653,7 +655,7 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
       auto dest = recvRequest.comm->source(); // Attention à l'ordre bizarre
       auto orig = recvRequest.comm->destination(); //       de SerializeMessage
       recvRequest.comm.reset();
-      recvRequest.comm = Alien::BasicSerializeMessage::create(
+      recvRequest.comm = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
           orig, dest, Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
 
       parallel->messageList->addMessage(recvRequest.comm.get());
@@ -757,7 +759,7 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
       // request.comm = NULL;
       request.comm.reset();
 
-      auto msg = Alien::BasicSerializeMessage::create(
+      auto msg = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
           MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
           Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
 
