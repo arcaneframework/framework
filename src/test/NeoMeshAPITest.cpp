@@ -289,4 +289,62 @@ TEST(NeoMeshApiTest,AddItemConnectivity) {
                                connected_dofs, cell_to_dofs_connectivity_name,
                                Neo::Mesh::ConnectivityOperation::Modify);
   mesh.applyScheduledOperations();
+  // Try to connect a subpart of added items by index
+  {
+    cell_uids = {2, 3, 4};
+    dof_uids = {5, 6};
+    auto added_cells_future_new = Neo::FutureItemRange{};
+    auto added_dofs_future_new = Neo::FutureItemRange{};
+    mesh.scheduleAddItems(cell_family, cell_uids, added_cells_future_new);
+    mesh.scheduleAddItems(dof_family, dof_uids, added_dofs_future_new);
+    // Create a filtered ItemRange containing elements with indexes 0 & 1
+    auto filtered_future_cell_range =
+        Neo::make_future_range(added_cells_future, {0, 1});
+    mesh.scheduleAddConnectivity(cell_family, filtered_future_cell_range,
+                                 dof_family, {1, 2}, {5, 5, 6},
+                                 "cell_to_dofs_new");
+    auto end_update = mesh.applyScheduledOperations();
+    auto added_cells_filtered = filtered_future_cell_range.get(end_update);
+    auto added_cells2 = added_cells_future_new.get(end_update);
+  }
+  // Try to connect a subpart of added items by a uids vector
+  {
+    cell_uids = {5, 6, 7};
+    dof_uids = {7, 8};
+    auto added_cells_future_new = Neo::FutureItemRange{};
+    auto added_dofs_future_new = Neo::FutureItemRange{};
+    mesh.scheduleAddItems(cell_family, cell_uids, added_cells_future_new);
+    mesh.scheduleAddItems(dof_family, dof_uids, added_dofs_future_new);
+    // Create a filtered ItemRange containing cells with uids 5 & 7
+    auto filtered_future_cell_range =
+        Neo::make_future_range(added_cells_future, cell_uids, {5,7});
+    mesh.scheduleAddConnectivity(cell_family, filtered_future_cell_range,
+                                 dof_family, {2, 1}, {7, 8, 7},
+                                 "cell_to_dofs_new2",Neo::Mesh::ConnectivityOperation::Modify);
+    mesh.scheduleAddConnectivity(cell_family, added_cells_future_new,
+                                 dof_family, {2, 1, 2}, {7, 8, 7, 8,7},
+                                 "cell_to_dofs_new3",Neo::Mesh::ConnectivityOperation::Modify);
+    auto end_update = mesh.applyScheduledOperations();
+    auto cell_to_dofs_new = mesh.dofs(cell_family).back(); // get the last cell to dof connectivity
+    auto cell_dofs_cons = mesh.dofs(cell_family);
+    auto added_cell_new = added_cells_future_new.get(end_update);
+    for (auto cell : added_cell_new) {
+      for (auto dof : cell_to_dofs_new[cell]) {
+        std::cout << "cell " << cell << " connected with dof " << dof << std::endl;
+      }
+    }
+    //    auto source_cell_lids = mesh.localIds(cell_family,{5,7});
+//    std::vector<Neo::utils::Int32> connected_dofs_lids;
+//    connected_dofs_lids.reserve(2);
+//    for (const auto cell : source_cell_lids) {
+//      for (auto dof : cell_to_dofs_new[cell]) {
+//        connected_dofs_lids.push_back(dof);
+//      }
+//    }
+//    std::vector<Neo::utils::Int64> connected_dofs_uids = mesh.uniqueIds(dof_family,connected_dofs_lids);
+//    std::vector<Neo::utils::Int64> connected_dofs_uids_ref {7,8,7};
+//    EXPECT_TRUE(std::equal(connected_dofs_uids_ref.begin(),
+//                           connected_dofs_uids_ref.end(),
+//                           connected_dofs_uids.begin()));
+  }
 }
