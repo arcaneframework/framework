@@ -242,6 +242,7 @@ TEST(NeoTestProperty,test_property)
    EXPECT_TRUE(std::equal(values.begin(),values.end(),extracted_values.begin()));
    extracted_null_ids = property2[{0,1}];
    EXPECT_TRUE(std::equal(null_ids.begin(),null_ids.end(),extracted_null_ids.begin()));
+
    // Check append with holes, discontiguous range todo
    // Check append in empty property discontiguous range todo
    // Check append with holes, mixed range todo
@@ -386,6 +387,8 @@ TEST(NeoTestArrayProperty,test_array_property)
     }
   }
   EXPECT_TRUE(std::equal(values.begin(),values.end(),values_check.begin()));
+
+  // Add tests with mixed range todo
 }
 
 TEST(NeoTestPropertyView, test_property_view)
