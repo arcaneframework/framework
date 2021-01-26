@@ -10,25 +10,21 @@ endif ()
 
 linkLibraries(alien_test.exe
         Boost::program_options
-        ALIEN
-        ALIEN-MoveSemantic
+        Alien::alien_core
+        Alien::alien_semantic_move
         )
 
-if (TARGET ALIEN-ExternalPackages)
+if (TARGET alien_external_packages)
     linkLibraries(alien_test.exe
-            ALIEN-ExternalPackages
+            alien_external_packages
             )
 endif ()
 
-if (TARGET ALIEN-IFPENSolvers)
+if (TARGET alien_ifpen_solvers)
     linkLibraries(alien_test.exe
-            ALIEN-IFPENSolvers
+            alien_ifpen_solvers
             )
 endif ()
-
-#if (TARGET trilinos)
-#    linkLibraries(alien_test.exe ALIEN-Trilinos)
-#endif ()
 
 target_include_directories(alien_test.exe
         PUBLIC ${PROJECT_SOURCE_DIR}/test)

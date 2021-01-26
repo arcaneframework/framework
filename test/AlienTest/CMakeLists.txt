@@ -7,7 +7,13 @@ addSources(alien_arcane_test.exe
         ArcaneCodeService.cc
         )
 
-arcane_target_add_axl(alien_arcane_test.exe AlienTest)
+#arcane_target_add_axl(alien_arcane_test.exe AlienTest)
+generateAxl(alien_arcane_test.exe
+            AlienTest.axl
+            NO_COPY
+           )
+
+
 
 if (TARGET intel)
     linkLibraries(alien_arcane_test.exe intel)
@@ -15,11 +21,11 @@ endif ()
 
 linkLibraries(alien_arcane_test.exe
         Boost::boost
-        ALIEN
-        ALIEN-MoveSemantic
-        ALIEN-ExternalPackages
-        ALIEN-IFPENSolvers
-        ALIEN-ArcaneTools
+        Alien::alien_core
+        Alien::alien_semantic_move
+        alien_external_packages
+        alien_ifpen_solvers
+        alien_arcane_tools
         arcane_core
         arcane_std
         arcane_mpi
@@ -30,7 +36,7 @@ linkLibraries(alien_arcane_test.exe
         )
 
 if (TARGET trilinos)
-    linkLibraries(alien_arcane_test.exe ALIEN-Trilinos)
+    linkLibraries(alien_arcane_test.exe alien_trilinos)
 endif ()
 
 commit(alien_arcane_test.exe)

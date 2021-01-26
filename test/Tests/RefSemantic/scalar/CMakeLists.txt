@@ -23,19 +23,19 @@ macro(compile_test BUILDER)
 
     linkLibraries(refmvhandlers.Scalar${BUILDER}
             Boost::program_options
-            ALIEN
-            ALIEN-RefSemantic
+            Alien::alien_core
+            Alien::alien_semantic_ref
             )
 
-    if (TARGET ALIEN-ExternalPackages)
+    if (TARGET alien_external_packages)
         linkLibraries(refmvhandlers.Scalar${BUILDER}
-                ALIEN-ExternalPackages
+                alien_external_packages
                 )
     endif ()
 
-    if (TARGET ALIEN-IFPENSolvers)
+    if (TARGET alien_ifpen_solvers)
         linkLibraries(refmvhandlers.Scalar${BUILDER}
-                ALIEN-IFPENSolvers
+                alien_ifpen_solvers
                 )
     endif ()
 
@@ -80,19 +80,19 @@ addSources(refmvhandlers.ScalarRedistributor
 
 linkLibraries(refmvhandlers.ScalarRedistributor
         Boost::program_options
-        ALIEN
-        ALIEN-RefSemantic
+        Alien::alien_core
+        Alien::alien_semantic_ref
         )
 
-if (TARGET ALIEN-ExternalPackages)
+if (TARGET alien_external_packages)
     linkLibraries(refmvhandlers.ScalarRedistributor
-            ALIEN-ExternalPackages
+            alien_external_packages
             )
 endif ()
 
-if (TARGET ALIEN-IFPENSolvers)
+if (TARGET alien_ifpen_solvers)
     linkLibraries(refmvhandlers.ScalarRedistributor
-            ALIEN-IFPENSolvers
+            alien_ifpen_solvers
             )
 endif ()
 
@@ -126,19 +126,19 @@ addSources(refmvhandlers.ScalarRedistributorAlgebra
 
 linkLibraries(refmvhandlers.ScalarRedistributorAlgebra
         Boost::program_options
-        ALIEN
-        ALIEN-RefSemantic
+        Alien::alien_core
+        Alien::alien_semantic_ref
         )
 
-if (TARGET ALIEN-ExternalPackages)
+if (TARGET alien_external_packages)
     linkLibraries(refmvhandlers.ScalarRedistributorAlgebra
-            ALIEN-ExternalPackages
+            alien_external_packages
             )
 endif ()
 
-if (TARGET ALIEN-IFPENSolvers)
+if (TARGET alien_ifpen_solvers)
     linkLibraries(refmvhandlers.ScalarRedistributorAlgebra
-            ALIEN-IFPENSolvers
+            alien_ifpen_solvers
             )
 endif ()
 

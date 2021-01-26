@@ -6,14 +6,14 @@
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-loadPackage(NAME ALIEN ESSENTIAL)
+isp_loadPackage(NAME Alien ESSENTIAL)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-loadPackage(NAME MPI   ESSENTIAL)
-loadPackage(NAME Boost ESSENTIAL)
-loadPackage(NAME GTest ESSENTIAL)
+isp_loadPackage(NAME MPI   ESSENTIAL)
+isp_loadPackage(NAME Boost ESSENTIAL)
+isp_loadPackage(NAME GTest ESSENTIAL)
 
 set(MPI_ROOT ${MPI_ROOT_PATH})
 
@@ -28,16 +28,16 @@ set(MPI_ROOT ${MPI_ROOT_PATH})
 
 # tools
 
-loadPackage(NAME LibXml2)
-loadPackage(NAME Metis)
-loadPackage(NAME HDF5)
-loadPackage(NAME HWLoc)
-loadPackage(NAME Numa)
-loadPackage(NAME TBB)
-loadPackage(NAME HARTS)
-loadPackage(NAME Cuda)
-loadPackage(NAME NvAMG)
-loadPackage(NAME FFTW3)
+isp_loadPackage(NAME LibXml2)
+isp_loadPackage(NAME Metis)
+isp_loadPackage(NAME HDF5)
+isp_loadPackage(NAME HWLoc)
+isp_loadPackage(NAME Numa)
+isp_loadPackage(NAME TBB)
+isp_loadPackage(NAME HARTS)
+isp_loadPackage(NAME Cuda)
+isp_loadPackage(NAME NvAMG)
+isp_loadPackage(NAME FFTW3)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -45,21 +45,21 @@ loadPackage(NAME FFTW3)
 # solveurs
 
 #loadPackage(NAME Umfpack)
-loadPackage(NAME PETSc)
-loadPackage(NAME SLEPc)
-loadPackage(NAME Hypre)
-loadPackage(NAME MTL4)
-loadPackage(NAME SuperLU)
-loadPackage(NAME SuperLU_DIST)
-loadPackage(NAME IFPSolver)
-loadPackage(NAME MCGSolver)
-loadPackage(NAME Eigen3)
-loadPackage(NAME Spectra)
-loadPackage(NAME HTSSolver)
-loadPackage(NAME Trilinos)
-loadPackage(NAME MUMPS)
-loadPackage(NAME Arpack)
-loadPackage(NAME HPDDM)
+isp_loadPackage(NAME PETSc)
+isp_loadPackage(NAME SLEPc)
+isp_loadPackage(NAME Hypre)
+isp_loadPackage(NAME MTL4)
+isp_loadPackage(NAME SuperLU)
+isp_loadPackage(NAME SuperLU_DIST)
+isp_loadPackage(NAME MUMPS)
+isp_loadPackage(NAME IFPSolver)
+isp_loadPackage(NAME MCGSolver)
+isp_loadPackage(NAME Eigen3)
+isp_loadPackage(NAME Spectra)
+isp_loadPackage(NAME HTSSolver)
+isp_loadPackage(NAME Trilinos)
+isp_loadPackage(NAME Arpack)
+isp_loadPackage(NAME HPDDM)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -99,7 +99,7 @@ find_package(Boost COMPONENTS program_options system REQUIRED)
 
 # NB: en dernier car arcane charge éventuellement d'autres packages
 #     si le package existe déjà, on ne fait rien
-loadPackage(NAME Arcane)
+isp_loadPackage(NAME Arcane)
 
 if(NOT TARGET arcane_core)
     logStatus("arcane is not found")

@@ -1,12 +1,13 @@
 
 
-#include <ALIEN/Alien-RefSemantic.h>
+#include <alien/ref/AlienRefSemantic.h>
 
 namespace Environment {
 extern Arccore::ITraceMng* traceMng();
 }
 
-void buildMatrix(Alien::BlockMatrix& A,std::string const& filename, std::string const& format)
+void
+buildMatrix(Alien::BlockMatrix& A, std::string const& filename, std::string const& format)
 {
   auto* tm = Environment::traceMng();
 
@@ -24,10 +25,9 @@ void buildMatrix(Alien::BlockMatrix& A,std::string const& filename, std::string 
     // Nb: auto ne fonctionne pas
     Alien::StreamMatrixBuilder::Profiler& profiler = stream.getNewInserter();
 
-    for(int irow = offset; irow < offset + lsize; ++irow)
-    {
-      profiler.addMatrixEntry(irow,irow);
-      if(irow - 1 >= 0)
+    for (int irow = offset; irow < offset + lsize; ++irow) {
+      profiler.addMatrixEntry(irow, irow);
+      if (irow - 1 >= 0)
         profiler.addMatrixEntry(irow, irow - 1);
       if (irow + 1 < gsize)
         profiler.addMatrixEntry(irow, irow + 1);
@@ -58,13 +58,11 @@ void buildMatrix(Alien::BlockMatrix& A,std::string const& filename, std::string 
       }
       builder.addBlockData(values2d);
       ++builder;
-      if(i - 1 >= 0)
-      {
+      if (i - 1 >= 0) {
         builder.addBlockData(values2dExtraDiag);
         ++builder;
       }
-      if(i + 1 < gsize)
-      {
+      if (i + 1 < gsize) {
         builder.addBlockData(values2dExtraDiag);
         ++builder;
       }

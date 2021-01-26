@@ -31,7 +31,7 @@ endif ()
 #  list(APPEND DEP_LIBRARIES ALIEN-IFPEN)
 #endif (TARGET ALIEN-IFPEN)
 
-createExecutable(gtest.unitary)
+isp_createExecutable(gtest.unitary)
 
 addSources(gtest.unitary
         main.cpp)
@@ -46,12 +46,13 @@ endforeach ()
 
 linkLibraries(gtest.unitary
         GTest::GTest
-        ALIEN
-        # ${DEP_LIBRARIES}
-        # ALIEN-CEA
-        # ALIEN-IFPEN
-        # ALIEN-ExternalPackages
+        Alien::alien_core
         )
+
+if (TARGET arcane_core)
+else ()
+    linkLibraries(gtest.unitary alien_strong_options)
+endif ()
 
 target_include_directories(gtest.unitary
         PUBLIC ${PROJECT_SOURCE_DIR}/test)

@@ -1,14 +1,16 @@
 #include <Tests/Options.h>
 
-#include <ALIEN/Alien-ImportExport.h>
-#include <ALIEN/Alien-RefSemantic.h>
+#include <alien/ref/AlienImportExport.h>
+#include <alien/ref/AlienRefSemantic.h>
 
 #include <Tests/Solver.h>
 
 // Méthode de construction de la matrice
-extern void buildMatrix(Alien::BlockMatrix& A, std::string const& filename, std::string const& format);
+extern void buildMatrix(
+    Alien::BlockMatrix& A, std::string const& filename, std::string const& format);
 
-int main(int argc, char **argv)
+int
+main(int argc, char** argv)
 {
   return Environment::execute(argc, argv, [&] {
 
@@ -17,19 +19,21 @@ int main(int argc, char **argv)
 
     // Options pour ce test
     boost::program_options::options_description options;
-    options.add_options()
-        ("help", "print usage")
-        ("dump-on-screen", "dump algebraic objects on screen")
-        ("dump-on-file", "dump algebraic objects on file")
-        ("size",boost::program_options::value<int>()->default_value(100),"size of problem")
-        ("block-size",boost::program_options::value<int>()->default_value(5),"size of block")
-        ("file-name",boost::program_options::value<std::string>()->default_value("System"),"Input filename")
-        ("format",boost::program_options::value<std::string>()->default_value("ascii")," format ascii or hdf5");
+    options.add_options()("help", "print usage")(
+        "dump-on-screen", "dump algebraic objects on screen")(
+        "dump-on-file", "dump algebraic objects on file")("size",
+        boost::program_options::value<int>()->default_value(100), "size of problem")(
+        "block-size", boost::program_options::value<int>()->default_value(5),
+        "size of block")("file-name",
+        boost::program_options::value<std::string>()->default_value("System"),
+        "Input filename")("format",
+        boost::program_options::value<std::string>()->default_value("ascii"),
+        " format ascii or hdf5");
 
     // On récupère les options (+ celles de la configuration des solveurs)
     auto arguments = Environment::options(argc, argv, options);
 
-    if(arguments.count("help")) {
+    if (arguments.count("help")) {
       tm->info() << "Usage :\n" << options;
       return 1;
     }
@@ -40,7 +44,8 @@ int main(int argc, char **argv)
     std::string format = arguments["format"].as<std::string>();
 
     tm->info() << "Example Alien :";
-    tm->info() << "Use of blocks builder (RefSemanticMVHandlers API) for Laplacian problem";
+    tm->info()
+        << "Use of blocks builder (RefSemanticMVHandlers API) for Laplacian problem";
     tm->info() << " => solving linear system Ax = b";
     tm->info() << " * problem size = " << size;
     tm->info() << " * block size = " << block_size;
@@ -57,15 +62,14 @@ int main(int argc, char **argv)
 
     Alien::BlockMatrix A(size, size, block, pm);
 
-    size = A.rowSpace().size() ;
-    block_size = A.block().size() ;
+    size = A.rowSpace().size();
+    block_size = A.block().size();
 
     tm->info() << "=> Matrix Distribution : " << A.distribution();
 
-    buildMatrix(A,filename,format);
+    buildMatrix(A, filename, format);
 
-    if(arguments.count("dump-on-screen"))
-    {
+    if (arguments.count("dump-on-screen")) {
 #ifdef ALIEN_USE_PETSC
       tm->info() << "dump A on screen";
       Alien::dump(A);
@@ -78,8 +82,7 @@ int main(int argc, char **argv)
 
     tm->info() << "=> Vector Distribution : " << xe.distribution();
 
-    if(arguments.count("dump-on-screen"))
-    {
+    if (arguments.count("dump-on-screen")) {
 #ifdef ALIEN_USE_PETSC
       tm->info() << "dump exact solution xe";
       Alien::dump(xe);
@@ -94,22 +97,21 @@ int main(int argc, char **argv)
 
     Alien::PETScLinearAlgebra algebra;
 
-    algebra.mult(A,xe,b);
+    algebra.mult(A, xe, b);
 
-    if(arguments.count("dump-on-screen"))
-    {
+    if (arguments.count("dump-on-screen")) {
       tm->info() << "dump b";
       Alien::dump(b);
     }
 
-    if(arguments.count("dump-on-file"))
-    {
+    if (arguments.count("dump-on-file")) {
       tm->info() << "dump A, b";
-      Alien::SystemWriter system_writer("System-out",format,pm);
-      system_writer.dump(A,b) ;
+      Alien::SystemWriter system_writer("System-out", format, pm);
+      system_writer.dump(A, b);
     }
 
-    tm->info() << " ** [solver package=" << arguments["solver-package"].as<std::string>() << "]";
+    tm->info() << " ** [solver package=" << arguments["solver-package"].as<std::string>()
+               << "]";
 
     Alien::BlockVector x(size, block, pm);
 
@@ -117,7 +119,7 @@ int main(int argc, char **argv)
 
     auto solver = Environment::createSolver(arguments);
     solver->init();
-    solver->solve(A,b,x);
+    solver->solve(A, b, x);
 
     tm->info() << "* r = Ax - b";
 
@@ -126,19 +128,18 @@ int main(int argc, char **argv)
     {
       Alien::BlockVector tmp(size, block, pm);
       tm->info() << "t = Ax";
-      algebra.mult(A,x,tmp);
+      algebra.mult(A, x, tmp);
       tm->info() << "r = t";
-      algebra.copy(tmp,r);
+      algebra.copy(tmp, r);
       tm->info() << "r -= b";
-      algebra.axpy(-1.,b,r);
+      algebra.axpy(-1., b, r);
     }
 
     auto norm = algebra.norm2(r);
 
     tm->info() << " => ||r|| = " << norm;
 
-    if(arguments.count("dump-on-screen"))
-    {
+    if (arguments.count("dump-on-screen")) {
       tm->info() << "dump solution after solve";
       Alien::dump(x);
     }
@@ -147,22 +148,21 @@ int main(int argc, char **argv)
 
     {
       tm->info() << "r = x";
-      algebra.copy(x,r);
+      algebra.copy(x, r);
       tm->info() << "r -= xe";
-      algebra.axpy(-1.,xe,r);
+      algebra.axpy(-1., xe, r);
     }
 
     tm->info() << " => ||r|| = " << norm;
 
-    //double tol = arguments["tol"].as<double>();
-    if(norm > 1e-3)
+    // double tol = arguments["tol"].as<double>();
+    if (norm > 1e-3)
       tm->fatal() << "||r|| too big";
 
     tm->info() << " ";
     tm->info() << "... example finished !!!";
 
 #endif // ALIEN_USE_PETSC
-
 
     return 0;
   });

@@ -1,76 +1,68 @@
 #include <gtest/gtest.h>
 
-#include <ALIEN/Kernels/DoK/DoKMatrixT.h>
-#include <ALIEN/Distribution/MatrixDistribution.h>
+#include <alien/kernels/dok/DoKMatrixT.h>
+#include <alien/distribution/MatrixDistribution.h>
 
 // For DoKReverseIndexer test.
-#include <ALIEN/Kernels/DoK/DoKReverseIndexer.h>
+#include <alien/kernels/dok/DoKReverseIndexer.h>
 
 // For SimpleCSR convert tests
-#include <ALIEN/Kernels/DoK/Converters/DoK_to_SimpleCSR_Matrix_Converter.h>
-#include <ALIEN/Kernels/DoK/Converters/SimpleCSR_to_DoK_Matrix_Converter.h>
-#include <ALIEN/Kernels/SimpleCSR/DataStructure/SimpleCSRMatrix.h>
+#include <alien/kernels/dok/converters/to_simple_csr_matrix.h>
+#include <alien/kernels/dok/converters/from_simple_csr_matrix.h>
+#include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
 
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
-#include <ALIEN/Kernels/DoK/DoKBackEnd.h>
-
-// CEA interface !
-#if 0
-#include <ALIEN/Data/MatrixData.h>
-#include <ALIEN/Builder/Scalar/DirectMatrixBuilder.h>
-#endif // 0
+#include <alien/core/impl/MultiMatrixImpl.h>
+#include <alien/kernels/dok/DoKBackEnd.h>
 
 namespace Environment {
-  extern Arccore::MessagePassing::IMessagePassingMng* parallelMng();
+extern Arccore::MessagePassing::IMessagePassingMng* parallelMng();
 }
 
-
 namespace {
-  Arccore::Int32 g_row[] = {0, 0, 1, 1, 1, 2, 2};
-  Arccore::Int32 g_col[] = {0, 1, 0, 1, 2, 0, 2};
-  Arccore::Real g_value[] = {3, -2, -1, 4, -0.5, -2, 5};
+Arccore::Int32 g_row[] = { 0, 0, 1, 1, 1, 2, 2 };
+Arccore::Int32 g_col[] = { 0, 1, 0, 1, 2, 0, 2 };
+Arccore::Real g_value[] = { 3, -2, -1, 4, -0.5, -2, 5 };
 }
 
 /*
  * Auxiliary class to build toy matrices.
  */
-class TestDoKBuilder {
-public:
-  TestDoKBuilder(int num_rows = 3, bool square=false) :
-    m_num_rows(num_rows),
-    m_num_cols(num_rows),
-    m_mdist(m_num_rows, m_num_cols, Environment::parallelMng()),
-    m_row_space(new Alien::Space(m_mdist.globalRowSize(), "RowSpace")),
-    m_col_space(new Alien::Space(m_mdist.globalColSize(), "ColSpace")),
-    m_multimat ()
+class TestDoKBuilder
+{
+ public:
+  TestDoKBuilder(int num_rows = 3, bool square = false)
+  : m_num_rows(num_rows)
+  , m_num_cols(num_rows)
+  , m_mdist(m_num_rows, m_num_cols, Environment::parallelMng())
+  , m_row_space(new Alien::Space(m_mdist.globalRowSize(), "RowSpace"))
+  , m_col_space(new Alien::Space(m_mdist.globalColSize(), "ColSpace"))
+  , m_multimat()
   {
     if (square)
       m_col_space = m_row_space;
-    m_multimat.reset(new Alien::MultiMatrixImpl(m_row_space, m_col_space, m_mdist.clone()));
+    m_multimat.reset(
+        new Alien::MultiMatrixImpl(m_row_space, m_col_space, m_mdist.clone()));
   }
 
-  template <class Matrix>
-  Matrix* createEmptyMatrix() const {
+  template <class Matrix> Matrix* createEmptyMatrix() const
+  {
     return new Matrix(m_multimat.get());
   }
 
-  void fill (Alien::DoKMatrix& mat) const {
+  void fill(Alien::DoKMatrix& mat) const
+  {
     int lenght = sizeof(g_row) / sizeof(Arccore::Int32);
-    for (int i = 0 ; i < lenght ; i++) {
-      if(g_row[i] >= row_begin() && g_row[i] < row_end())
-	mat.setMatrixValue(g_row[i], g_col[i], g_value[i]);
+    for (int i = 0; i < lenght; i++) {
+      if (g_row[i] >= row_begin() && g_row[i] < row_end())
+        mat.setMatrixValue(g_row[i], g_col[i], g_value[i]);
     }
   }
 
-  Arccore::Int32 row_begin() const {
-    return m_mdist.rowOffset();
-  }
+  Arccore::Int32 row_begin() const { return m_mdist.rowOffset(); }
 
-  Arccore::Int32 row_end() const {
-    return m_mdist.rowOffset() + m_mdist.localRowSize();
-  }
+  Arccore::Int32 row_end() const { return m_mdist.rowOffset() + m_mdist.localRowSize(); }
 
-private:
+ private:
   Arccore::Int32 m_num_rows;
   Arccore::Int32 m_num_cols;
   Alien::MatrixDistribution m_mdist;
@@ -85,9 +77,10 @@ TEST(TestDoKMatrix, DoKReverseIndexer)
 
   std::cout << std::is_same<int, Arccore::Int32>::value << std::endl;
   std::cout << std::is_same<long long, Arccore::Int64>::value << std::endl;
-  //std::cout << std::is_same<long long, Alien::DoKReverseIndexer::Index>::value << std::endl;
+  // std::cout << std::is_same<long long, Alien::DoKReverseIndexer::Index>::value <<
+  // std::endl;
 
-  std::pair<int,int> i1(0, 0);
+  std::pair<int, int> i1(0, 0);
   long long o(0);
   r_index.record(o, i1);
 
@@ -118,7 +111,7 @@ TEST(TestDoKMatrix, Constructor)
 
   auto start = builder.row_begin();
   auto stop = builder.row_end();
-  for (int i = 0 ; i < r_index->size() ; i++) {
+  for (int i = 0; i < r_index->size(); i++) {
     auto cur = (*r_index)[i];
     ASSERT_GE(cur.first, start);
     ASSERT_LT(cur.first, stop);
@@ -134,7 +127,7 @@ TEST(TestDoKMatrix, ConvertFromCSR)
   Alien::Space col_space(mdist.globalColSize(), "Space");
 
   std::unique_ptr<Alien::MultiMatrixImpl> multimat(
- 						   new Alien::MultiMatrixImpl(row_space.clone(), col_space.clone(), mdist.clone()));
+      new Alien::MultiMatrixImpl(row_space.clone(), col_space.clone(), mdist.clone()));
 
   auto& csr_mat(multimat->get<Alien::BackEnd::tag::simplecsr>());
   auto& dok_mat(multimat->get<Alien::BackEnd::tag::DoK>(true));
@@ -148,7 +141,8 @@ TEST(TestDoKMatrix, ConvertFromCSR)
 TEST(TestDoKMatrix, ConvertToCSR)
 {
   TestDoKBuilder builder(3, true);
-  std::unique_ptr<Alien::DoKMatrix> dok_mat(builder.createEmptyMatrix<Alien::DoKMatrix>());
+  std::unique_ptr<Alien::DoKMatrix> dok_mat(
+      builder.createEmptyMatrix<Alien::DoKMatrix>());
 
   builder.fill(*dok_mat);
   dok_mat->compact();

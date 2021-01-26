@@ -3,11 +3,13 @@ createExecutable(alien_bench.exe)
 addSources(alien_bench.exe
         main.cc
         AlienBenchModule.cc
+        AlienStokesModule.cc
         ArcaneCodeService.cc
         )
 
 generateAxl(alien_bench.exe
         AlienBench.axl
+        AlienStokes.axl
         NO_COPY
         )
 
@@ -17,11 +19,11 @@ endif ()
 
 linkLibraries(alien_bench.exe
         Boost::boost
-        ALIEN
-        ALIEN-RefSemantic
-        ALIEN-ExternalPackages
-        ALIEN-IFPENSolvers
-        ALIEN-ArcaneTools
+        Alien::alien_core
+        Alien::alien_semantic_ref
+        alien_external_packages
+        alien_ifpen_solvers
+        alien_arcane_tools
         arcane_core
         arcane_std
         arcane_mpi
@@ -32,11 +34,11 @@ linkLibraries(alien_bench.exe
         )
 
 if (TARGET trilinos)
-    linkLibraries(alien_bench.exe ALIEN-Trilinos)
+    linkLibraries(alien_bench.exe alien_trilinos)
 endif ()
 
 if (TARGET hpddm)
-    linkLibraries(alien_bench.exe ALIEN-HPDDM)
+    linkLibraries(alien_bench.exe alien_hpddm)
 endif ()
 
 commit(alien_bench.exe)

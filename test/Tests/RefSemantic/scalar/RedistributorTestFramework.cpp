@@ -1,11 +1,12 @@
 #include <Tests/Options.h>
 
-#include <ALIEN/Alien-ExternalPackages.h>
-#include <ALIEN/Alien-ImportExport.h>
-#include <ALIEN/Alien-RefSemantic.h>
-#include <ALIEN/Data/Scalar/RedistributedMatrix.h>
-#include <ALIEN/Data/Scalar/RedistributedVector.h>
-#include <ALIEN/Kernels/Redistributor/Redistributor.h>
+#include <alien/Alien.h>
+#include <alien/AlienExternalPackages.h>
+#include <alien/ref/AlienImportExport.h>
+#include <alien/ref/AlienRefSemantic.h>
+#include <alien/ref/data/scalar/RedistributedMatrix.h>
+#include <alien/ref/data/scalar/RedistributedVector.h>
+#include <alien/kernels/redistributor/Redistributor.h>
 
 #include <Tests/Solver.h>
 
@@ -130,7 +131,7 @@ main(int argc, char** argv)
     Alien::RedistributedVector xx(x, redist);
 
     auto solver = Environment::createSolver(arguments);
-    // solver->updateParallelMng(Aa.distribution().parallelMng());
+    solver->updateParallelMng(Aa.distribution().parallelMng());
     solver->init();
     solver->solve(Aa, bb, xx);
 

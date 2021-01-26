@@ -1,28 +1,30 @@
 #include <gtest/gtest.h>
 
-#include <ALIEN/Alien-RefSemantic.h>
+#include <alien/Alien.h>
+#include <alien/ref/AlienRefSemantic.h>
 
 namespace Environment {
 extern Arccore::MessagePassing::IMessagePassingMng* parallelMng();
 }
 
-TEST(TestMatrixDirectBuilder, ConstructorWithSpaces) {
+TEST(TestMatrixDirectBuilder, ConstructorWithSpaces)
+{
   Alien::Space row_space(3, "RowSpace");
   Alien::Space col_space(4, "ColSpace");
   Alien::MatrixDistribution mdist(row_space, col_space, Environment::parallelMng());
   Alien::VectorDistribution vdist(col_space, Environment::parallelMng());
   Alien::Matrix A(mdist);
-  ASSERT_EQ (A.rowSpace(), row_space);
-  ASSERT_EQ (A.colSpace(), col_space);
+  ASSERT_EQ(A.rowSpace(), row_space);
+  ASSERT_EQ(A.colSpace(), col_space);
   auto tag = Alien::DirectMatrixOptions::eResetValues;
   {
     Alien::DirectMatrixBuilder builder(A, tag);
-    builder.reserve(5) ;
+    builder.reserve(5);
     builder.allocate();
-    builder(0,0) = 1.;
-    builder(1,1) = 1.;
-    builder(2,2) = 1.;
-    builder(2,3) = 1.;
+    builder(0, 0) = 1.;
+    builder(1, 1) = 1.;
+    builder(2, 2) = 1.;
+    builder(2, 3) = 1.;
   }
   // check with spmv
   Alien::SimpleCSRLinearAlgebra Alg;
@@ -36,7 +38,7 @@ TEST(TestMatrixDirectBuilder, ConstructorWithSpaces) {
   }
   Alien::VectorDistribution vdist2(row_space, Environment::parallelMng());
   Alien::Vector R(vdist2);
-  Alg.mult(A,X,R);
+  Alg.mult(A, X, R);
   {
     Alien::LocalVectorReader reader(R);
     std::cout << reader[0] << std::endl;

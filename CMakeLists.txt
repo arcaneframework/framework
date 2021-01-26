@@ -68,7 +68,7 @@ message_separator()
 
 logStatus("Load alien specifics tools :")
 
-include(LoadAlienConfigFile)
+include(LoadAlienLegacyConfigFile)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -78,12 +78,12 @@ enable_testing()
 message_separator()
 logStatus("Loading components...")
 
-add_subdirectory(modules/AlienOptions)
-add_subdirectory(modules/AlienExternalPackages)
-add_subdirectory(modules/AlienTrilinos)
-add_subdirectory(modules/AlienHPDDM)
-add_subdirectory(modules/AlienIFPENSolvers)
-add_subdirectory(modules/AlienArcaneTools)
+add_subdirectory(modules/options)
+add_subdirectory(modules/external_packages)
+add_subdirectory(modules/trilinos)
+add_subdirectory(modules/hpddm)
+add_subdirectory(modules/ifpen_solvers)
+add_subdirectory(modules/arcane_tools)
 
 message_separator()
 logStatus("Loading tests...")
@@ -108,7 +108,7 @@ endif ()
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-add_subdirectory(modules/AlienOpensourcePlugins)
+add_subdirectory(modules/plugins)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------

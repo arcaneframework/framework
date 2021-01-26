@@ -2,7 +2,9 @@
 
 ## Chargement des logiciels
 
-```
+``` 
+#Attention en bash utilisez les fichier .sh
+
 source ~commonlib/toolchain.csh
 source ~commonlib/arcdev.csh
 source ~commonlib/arcuser.csh
@@ -91,16 +93,14 @@ cmake -DCMAKE_BUILD_TYPE=Release
 make -j 8 install
 ```
 
-> La branche `dev-cea` est en cours de finalisation pour intégrer les demandes IFPEN
-> issues de la branche `mr-ifpen-commsplit`.  
 
 # Compilation `ALIEN` opensource
 
-* `ALIEN` branche `dev-refactoring-open-source` dans le chemin `${Alien_DIR}` :
+* `ALIEN` branche `open-source` dans le chemin `${Alien_DIR}` :
 ```
 git clone git@gitlab.ifpen.fr:Arcane/alienopensource/alien.git
 cd alien
-git checkout dev-refactoring-open-source
+git checkout open-source
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release 
       -DCMAKE_INSTALL_PREFIX=${Alien_DIR}
@@ -125,7 +125,7 @@ cmake -DCMAKE_BUILD_TYPE=Release
       -DArccon_DIR=${Arccon_DIR}/share/cmake/Arccon 
       -DArccore_DIR=${Arccore_DIR}/lib/cmake/Arccore
       -DAxlstar_DIR=${Axlstar_DIR}/share/cmake/Axlstar
-      -DALIEN_DIR=${Alien_DIR}/lib/cmake/ALIEN      
+      -DAlien_DIR=${Alien_DIR}/lib/cmake/Alien      
       -DArcane_DIR=${Arcane_DIR}/lib/cmake/Arcane
       -DPLUGIN_DIR=${Plugin_DIR} ..
 make -j 8 install

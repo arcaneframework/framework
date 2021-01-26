@@ -1,11 +1,12 @@
 
-#include <ALIEN/Alien-RefSemantic.h>
+#include <alien/ref/AlienRefSemantic.h>
 
 namespace Environment {
 extern Arccore::ITraceMng* traceMng();
 }
 
-void buildMatrix(Alien::VBlockMatrix& A)
+void
+buildMatrix(Alien::VBlockMatrix& A)
 {
   auto* tm = Environment::traceMng();
 
@@ -23,13 +24,12 @@ void buildMatrix(Alien::VBlockMatrix& A)
     // Nb: auto ne fonctionne pas
     Alien::StreamVBlockMatrixBuilder::Profiler& profiler = stream.getNewInserter();
 
-    for(int irow = offset; irow < offset + lsize; ++irow)
-    {
-      profiler.addMatrixEntry(irow,irow);
-      if(irow - 1 >= 0)
-	profiler.addMatrixEntry(irow, irow - 1);
+    for (int irow = offset; irow < offset + lsize; ++irow) {
+      profiler.addMatrixEntry(irow, irow);
+      if (irow - 1 >= 0)
+        profiler.addMatrixEntry(irow, irow - 1);
       if (irow + 1 < gsize)
-	profiler.addMatrixEntry(irow, irow + 1);
+        profiler.addMatrixEntry(irow, irow + 1);
     }
   }
 
@@ -42,7 +42,7 @@ void buildMatrix(Alien::VBlockMatrix& A)
     // Nb: auto ne fonctionne pas
     Alien::StreamVBlockMatrixBuilder::Filler& builder = stream.getInserter(0);
 
-    for(int i = offset; i < offset + lsize; ++i) {
+    for (int i = offset; i < offset + lsize; ++i) {
       const int block_size = A.vblock().size(i);
       Alien::UniqueArray2<double> values2d, values2dExtraDiag;
       values2d.resize(block_size, block_size);
@@ -60,11 +60,11 @@ void buildMatrix(Alien::VBlockMatrix& A)
       }
       builder.addBlockData(values2d.view());
       ++builder;
-      if(i - 1 >= 0) {
+      if (i - 1 >= 0) {
         builder.addBlockData(values2dExtraDiag.view());
         ++builder;
       }
-      if(i + 1 < gsize) {
+      if (i + 1 < gsize) {
         builder.addBlockData(values2dExtraDiag.view());
         ++builder;
       }

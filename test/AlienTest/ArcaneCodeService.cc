@@ -33,17 +33,14 @@ class ArcaneCodeService : public CodeService
   virtual ~ArcaneCodeService();
 
  public:
-
   virtual bool parseArgs(StringList& args);
   virtual ISession* createSession();
-  virtual void initCase(ISubDomain* sub_domain,bool is_continue);
+  virtual void initCase(ISubDomain* sub_domain, bool is_continue);
 
  public:
-
   void build() {}
 
  protected:
-
   virtual void _preInitializeSubDomain(ISubDomain* sd);
 
  private:
@@ -52,8 +49,7 @@ class ArcaneCodeService : public CodeService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ArcaneCodeService::
-ArcaneCodeService(const ServiceBuildInfo& sbi)
+ArcaneCodeService::ArcaneCodeService(const ServiceBuildInfo& sbi)
 : CodeService(sbi)
 {
   _addExtension(String("arc"));
@@ -62,24 +58,23 @@ ArcaneCodeService(const ServiceBuildInfo& sbi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ArcaneCodeService::
-~ArcaneCodeService()
+ArcaneCodeService::~ArcaneCodeService()
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ArcaneCodeService::
-_preInitializeSubDomain(ISubDomain*)
+void
+ArcaneCodeService::_preInitializeSubDomain(ISubDomain*)
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ArcaneCodeService::
-initCase(ISubDomain* sub_domain,bool is_continue)
+void
+ArcaneCodeService::initCase(ISubDomain* sub_domain, bool is_continue)
 {
   {
     TimeLoopReader stl(_application());
@@ -87,7 +82,7 @@ initCase(ISubDomain* sub_domain,bool is_continue)
     stl.registerTimeLoops(sub_domain);
     stl.setUsedTimeLoop(sub_domain);
   }
-  CodeService::initCase(sub_domain,is_continue);
+  CodeService::initCase(sub_domain, is_continue);
   if (sub_domain->parallelMng()->isMasterIO())
     sub_domain->session()->writeExecInfoFile();
 }
@@ -95,8 +90,8 @@ initCase(ISubDomain* sub_domain,bool is_continue)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ISession* ArcaneCodeService::
-createSession()
+ISession*
+ArcaneCodeService::createSession()
 {
   ArcaneSession* session = new ArcaneSession(_application());
   session->build();
@@ -107,8 +102,8 @@ createSession()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool ArcaneCodeService::
-parseArgs(StringList& args)
+bool
+ArcaneCodeService::parseArgs(StringList& args)
 {
   ARCANE_UNUSED(args);
   return false;
@@ -121,7 +116,6 @@ ARCANE_REGISTER_APPLICATION_FACTORY(ArcaneCodeService, ICodeService, ArcaneCode)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 }
 
 /*---------------------------------------------------------------------------*/

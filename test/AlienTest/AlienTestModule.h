@@ -10,20 +10,21 @@ class MemoryAllocationTracker;
 
 using namespace Arcane;
 
-class AlienTestModule :
-    public ArcaneAlienTestObject
+class AlienTestModule : public ArcaneAlienTestObject
 {
  public:
   //! Constructor
-  AlienTestModule(const Arcane::ModuleBuildInfo & mbi)
-    : ArcaneAlienTestObject(mbi)
-    , m_memory_tracker(NULL)
-    , m_uniform(m_generator) {}
+  AlienTestModule(const Arcane::ModuleBuildInfo& mbi)
+  : ArcaneAlienTestObject(mbi)
+  , m_memory_tracker(NULL)
+  , m_uniform(m_generator)
+  {
+  }
 
   //! Destructor
-  virtual ~AlienTestModule() {};
+  virtual ~AlienTestModule(){};
 
-public:
+ public:
   //! Initialization
   void init();
   //! Run the test
@@ -34,44 +35,47 @@ public:
 
   void buildAndFillInBlockVector(Alien::VectorData& vectorB, const double& value);
 
-  void buildAndFillInBlockVector(Alien::VectorData& vectorB, ConstArrayView<Integer>allXIndex, ConstArrayView<Real> value);
-  void buildAndFillInBlockVector(Alien::VectorData& vectorB, ConstArrayView<Integer>allUIndex, ConstArray2View<Integer>allPIndex, ConstArrayView<Integer>allXIndex, ConstArrayView<Real> value);
+  void buildAndFillInBlockVector(Alien::VectorData& vectorB,
+      ConstArrayView<Integer> allXIndex, ConstArrayView<Real> value);
+  void buildAndFillInBlockVector(Alien::VectorData& vectorB,
+      ConstArrayView<Integer> allUIndex, ConstArray2View<Integer> allPIndex,
+      ConstArrayView<Integer> allXIndex, ConstArrayView<Real> value);
 
-  template<typename Profiler>
+  template <typename Profiler>
   void profileMatrix(const CellCellGroup& cell_cell_connection, const ItemGroup areaP,
       const UniqueArray2<Integer>& allPIndex,
       const Arccore::UniqueArray<Integer>& allUIndex,
       const Arccore::UniqueArray<Integer>& allXIndex, Profiler& profiler);
 
-//  template<typename StreamBuilderT>
-//  void streamProfileMatrix(const CellCellGroup& cell_cell_connection,
-//      const ItemGroup areaU,
-//      const ItemGroup areaP,
-//      const UniqueArray2<Integer>& allPIndex,
-//      const Alien::IntegerUniqueArray& allUIndex,
-//      const Alien::IntegerUniqueArray& allXIndex,
-//      StreamBuilderT & inserters);
-//
-//  void streamFillInMatrix(const CellCellGroup& cell_cell_connection,
-//      const ItemGroup areaP,
-//      const UniqueArray2<Integer>& allPIndex,
-//      const Alien::IntegerUniqueArray& allUIndex,
-//      const Alien::IntegerUniqueArray& allXIndex,
-//      Alien::StreamMatrixBuilder & inserters);
-//
-//  void streamBlockFillInMatrix(const CellCellGroup& cell_cell_connection,
-//      const ItemGroup areaP,
-//      const UniqueArray2<Integer>& allPIndex,
-//      const Alien::IntegerUniqueArray& allUIndex,
-//      const Alien::IntegerUniqueArray& allXIndex,
-//      Alien::StreamMatrixBuilder & inserters);
-//
-//  void streamBlockFillInMatrix(const CellCellGroup& cell_cell_connection,
-//      const ItemGroup areaP,
-//      const UniqueArray2<Integer>& allPIndex,
-//      const Alien::IntegerUniqueArray& allUIndex,
-//      const Alien::IntegerUniqueArray& allXIndex,
-//      Alien::StreamVBlockMatrixBuilder & inserters);
+  //  template<typename StreamBuilderT>
+  //  void streamProfileMatrix(const CellCellGroup& cell_cell_connection,
+  //      const ItemGroup areaU,
+  //      const ItemGroup areaP,
+  //      const UniqueArray2<Integer>& allPIndex,
+  //      const Alien::IntegerUniqueArray& allUIndex,
+  //      const Alien::IntegerUniqueArray& allXIndex,
+  //      StreamBuilderT & inserters);
+  //
+  //  void streamFillInMatrix(const CellCellGroup& cell_cell_connection,
+  //      const ItemGroup areaP,
+  //      const UniqueArray2<Integer>& allPIndex,
+  //      const Alien::IntegerUniqueArray& allUIndex,
+  //      const Alien::IntegerUniqueArray& allXIndex,
+  //      Alien::StreamMatrixBuilder & inserters);
+  //
+  //  void streamBlockFillInMatrix(const CellCellGroup& cell_cell_connection,
+  //      const ItemGroup areaP,
+  //      const UniqueArray2<Integer>& allPIndex,
+  //      const Alien::IntegerUniqueArray& allUIndex,
+  //      const Alien::IntegerUniqueArray& allXIndex,
+  //      Alien::StreamMatrixBuilder & inserters);
+  //
+  //  void streamBlockFillInMatrix(const CellCellGroup& cell_cell_connection,
+  //      const ItemGroup areaP,
+  //      const UniqueArray2<Integer>& allPIndex,
+  //      const Alien::IntegerUniqueArray& allUIndex,
+  //      const Alien::IntegerUniqueArray& allXIndex,
+  //      Alien::StreamVBlockMatrixBuilder & inserters);
 
   template <typename Builder>
   void profiledFillInMatrix(const CellCellGroup& cell_cell_connection,
@@ -79,26 +83,25 @@ public:
       const Arccore::UniqueArray<Integer>& allUIndex,
       const Arccore::UniqueArray<Integer>& allXIndex, Builder& builder);
 
-  template<typename Builder>
+  template <typename Builder>
   void fillInMatrix(const CellCellGroup& cell_cell_connection, const ItemGroup areaP,
       const UniqueArray2<Integer>& allPIndex,
       const Arccore::UniqueArray<Integer>& allUIndex,
       const Arccore::UniqueArray<Integer>& allXIndex, Builder& builder);
 
-  Alien::SolverStatus solve(Alien::ILinearSolver * solver,
-      Alien::MatrixData & matrixA,
-      Alien::VectorData & vectorB,
-      Alien::VectorData& vectorX,
+  Alien::SolverStatus solve(Alien::ILinearSolver* solver, Alien::MatrixData& matrixA,
+      Alien::VectorData& vectorB, Alien::VectorData& vectorX,
       AlienTestOptionTypes::eBuilderType builderType);
 
-  void vectorVariableUpdate(Alien::VectorData & vectorB,
-                            Alien::ArcaneTools::IIndexManager::Entry indexSetU);
+  void vectorVariableUpdate(
+      Alien::VectorData& vectorB, Alien::ArcaneTools::IIndexManager::Entry indexSetU);
 
   void checkVectorValues(Alien::IVector& VectorX, const double& value);
 
-  void checkDotProductWithManyAlgebra(Alien::IVector& vectorB,Alien::IVector& vectorX,
-      Alien::Space& space);
-private :
+  void checkDotProductWithManyAlgebra(
+      Alien::IVector& vectorB, Alien::IVector& vectorX, Alien::Space& space);
+
+ private:
   eItemKind m_stencil_kind;
   Real m_diag_coeff;
   Integer m_vect_size;
@@ -113,10 +116,18 @@ private :
   Int64 getAllocationCount();
 
   // Type de statistiques
-  class BuildingStat {
-  public:
-    BuildingStat(AlienTestModule * owner, Arcane::Timer & timer)
-  : m_owner(owner), m_timer(timer), memory(0), memory_max(0), time(0), allocation_count(0) { }
+  class BuildingStat
+  {
+   public:
+    BuildingStat(AlienTestModule* owner, Arcane::Timer& timer)
+    : m_owner(owner)
+    , m_timer(timer)
+    , memory(0)
+    , memory_max(0)
+    , time(0)
+    , allocation_count(0)
+    {
+    }
     void start()
     {
       memory = m_owner->getAllocatedMemory();

@@ -2,7 +2,7 @@
 
 #include "DefaultToolsForTesting.h"
 
-#include <ALIEN/Utils/Precomp.h>
+#include <alien/utils/Precomp.h>
 #include <ALIEN/UserObjects/Data/MatrixData.h>
 #include <ALIEN/UserObjects/Data/VectorData.h>
 #include <ALIEN/Expression/VectorExp.h>
@@ -11,7 +11,7 @@
 #include <ALIEN/UserObjects/Builder/Scalar/DirectMatrixBuilder.h>
 #include <ALIEN/UserObjects/Accessor/VectorReader.h>
 #include <ALIEN/UserObjects/Accessor/VectorWriter.h>
-#include <ALIEN/Core/Kernels/SimpleCSR/Algebra/SimpleCSRLinearAlgebra.h>
+#include <ALIEN/Core/Kernels/SimpleCSR/algebra/SimpleCSRLinearAlgebra.h>
 
 TEST(TestMatrixIO, test)
 {

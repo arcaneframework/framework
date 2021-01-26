@@ -33,23 +33,23 @@ if (TARGET GTest::GTest)
         linkLibraries(gtest.refmvhandlers intel)
     endif ()
 
-    if (TARGET ALIEN-ExternalPackages)
+    if (TARGET alien_external_packages)
         linkLibraries(gtest.refmvhandlers
-                ALIEN-ExternalPackages
+                alien_external_packages
                 )
     endif ()
 
-    if (TARGET ALIEN-IFPENSolvers)
+    if (TARGET alien_ifpen_solvers)
         linkLibraries(gtest.refmvhandlers
-                ALIEN-IFPENSolvers
+                alien_ifpen_solvers
                 )
     endif ()
 
     linkLibraries(gtest.refmvhandlers
             Boost::program_options
             GTest::GTest
-            ALIEN
-            ALIEN-RefSemantic
+            Alien::alien_core
+            Alien::alien_semantic_ref
             )
 
     target_include_directories(gtest.refmvhandlers PUBLIC

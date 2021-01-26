@@ -10,15 +10,15 @@ foreach (BUILDER Profiled Stream Import)
         linkLibraries(refmvhandlers.Block${BUILDER} intel)
     endif ()
 
-    if (TARGET ALIEN-ExternalPackages)
+    if (TARGET alien_external_packages)
         linkLibraries(refmvhandlers.Block${BUILDER}
-                ALIEN-ExternalPackages
+                alien_external_packages
                 )
     endif ()
 
-    if (TARGET ALIEN-IFPENSolvers)
+    if (TARGET alien_ifpen_solvers)
         linkLibraries(refmvhandlers.Block${BUILDER}
-                ALIEN-IFPENSolvers
+                alien_ifpen_solvers
                 )
     endif ()
 
@@ -28,8 +28,8 @@ foreach (BUILDER Profiled Stream Import)
 
     linkLibraries(refmvhandlers.Block${BUILDER}
             Boost::program_options
-            ALIEN
-            ALIEN-RefSemantic
+            Alien::alien_core
+            Alien::alien_semantic_ref
             )
 
     target_include_directories(refmvhandlers.Block${BUILDER}
@@ -51,15 +51,15 @@ foreach (BUILDER VBlockStream)
 
     addSources(refmvhandlers.${BUILDER} ${BUILDER}.cpp BuilderTestVBlockFramework.cpp)
 
-    if (TARGET ALIEN-ExternalPackages)
+    if (TARGET alien_external_packages)
         linkLibraries(refmvhandlers.${BUILDER}
-                ALIEN-ExternalPackages
+                alien_external_packages
                 )
     endif ()
 
-    if (TARGET ALIEN-IFPENSolvers)
+    if (TARGET alien_ifpen_solvers)
         linkLibraries(refmvhandlers.${BUILDER}
-                ALIEN-IFPENSolvers
+                alien_ifpen_solvers
                 )
     endif ()
 
@@ -70,8 +70,8 @@ foreach (BUILDER VBlockStream)
     #endif ()
 
     linkLibraries(refmvhandlers.${BUILDER}
-            ALIEN
-            ALIEN-RefSemantic
+            Alien::alien_core
+            Alien::alien_semantic_ref
             Boost::program_options
             )
 

@@ -126,7 +126,7 @@ if(parentClassName!=null) fullStrongClassName = "StrongOptions"+parentClassName+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <ALIEN/Utils/ParameterManager/BaseParameterManager.h>
+#include <alien/utils/parameter_manager/BaseParameterManager.h>
 #include <set>
 
 /*---------------------------------------------------------------------------*/

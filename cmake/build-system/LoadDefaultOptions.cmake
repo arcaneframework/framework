@@ -50,7 +50,7 @@ endif()
 createOption(COMMANDLINE Cxx14
              NAME        USE_CXX14 
              MESSAGE     "C++14 standard" 
-             DEFAULT     OFF)
+             DEFAULT     ON)
 
 if(USE_CXX14) 
 
