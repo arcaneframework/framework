@@ -291,7 +291,7 @@ StreamMatrixBuilderT<ValueT>::computeProfile()
   m_ghost_size = 0;
   m_offset.resize(m_nproc + 1);
   {
-    MessagePassing::mpAllGather(m_parallel_mng,
+    Arccore::MessagePassing::mpAllGather(m_parallel_mng,
         ConstArrayView<Integer>(1, &m_local_offset), m_offset.subView(0, m_nproc));
   }
   m_offset[m_nproc] = m_global_size;
