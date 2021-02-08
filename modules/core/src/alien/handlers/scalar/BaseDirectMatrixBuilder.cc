@@ -178,54 +178,13 @@ namespace Common {
 
     if (m_reset_flag == DirectMatrixOptions::eResetAllocation
         or m_reset_flag == DirectMatrixOptions::eResetProfile
-        or profile.getColOrdering() != SimpleCSRInternal::CSRStructInfo::eFull)
-    {
+        or profile.getColOrdering() != SimpleCSRInternal::CSRStructInfo::eFull) {
       profile.getColOrdering() = SimpleCSRInternal::CSRStructInfo::eUndef;
       m_row_sizes.fill(0);
-    }
-    else
-    {
-      if(m_matrix_impl->isParallel())
-      {
-        // NEED TO SORT COLS BECAUSE OF DichotomyScan
-        if(m_reset_flag == DirectMatrixOptions::eResetValues)
-        {
-            for (Integer i = 0; i < m_local_size; ++i)
-            {
-              const Integer row_capacity = m_row_starts[i + 1] - m_row_starts[i];
-              m_row_sizes[i] = row_capacity;
-              auto view = ArrayView<Integer>(row_capacity,m_cols.data()+m_row_starts[i]) ;
-              std::sort(view.begin(),view.end()) ;
-             }
-        }
-        else
-        {
-            std::set<std::pair<Integer,Real>> entries;
-            for (Integer i = 0; i < m_local_size; ++i)
-            {
-                const Integer row_capacity = m_row_starts[i + 1] - m_row_starts[i];
-                m_row_sizes[i] = row_capacity;
-                entries.clear() ;
-                for(Integer k = m_row_starts[i]; k< m_row_starts[i + 1]; ++k)
-                {
-                    entries.insert(std::make_pair(m_cols[k],m_values[k])) ;
-                }
-                Integer k = 0 ;
-                for(auto e = entries.begin(); e!=entries.end(); ++e,++k)
-                {
-                   m_cols[k] = e->first ;
-                   m_values[k] = e->second ;
-                }
-             }
-         }
-      }
-      else
-      {
-         for (Integer i = 0; i < m_local_size; ++i)
-         {
-            const Integer row_capacity = m_row_starts[i + 1] - m_row_starts[i];
-            m_row_sizes[i] = row_capacity;
-         }
+    } else {
+      for (Integer i = 0; i < m_local_size; ++i) {
+        const Integer row_capacity = m_row_starts[i + 1] - m_row_starts[i];
+        m_row_sizes[i] = row_capacity;
       }
     }
 
@@ -649,6 +608,8 @@ namespace Common {
     m_matrix_impl->internal().getValues() = values; // copy values dans Matrix.getValues()
 
     if (m_nproc > 1) {
+      // FIXME: last parameter should be set to true
+      // but dichotomy scan relies on cols array to be sorted.
       m_matrix_impl->parallelStart(offset, m_parallel_mng, true);
     } else
       m_matrix_impl->sequentialStart();

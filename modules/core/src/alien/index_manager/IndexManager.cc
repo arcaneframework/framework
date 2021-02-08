@@ -99,25 +99,19 @@ struct IndexManager::EntryLocalId
 struct IndexManager::EntrySendRequest
 {
   EntrySendRequest()
-  //: comm(NULL)
-  : count(0)
   {}
 
   ~EntrySendRequest()
   {
-    // Valide même si comm vaut NULL
-    // delete comm;
   }
 
   EntrySendRequest(const EntrySendRequest& esr)
-  //: comm(NULL)
   : count(esr.count)
   {
-    // ALIEN_ASSERT((esr.comm == NULL), ("Bad initialization"));
   }
 
   Arccore::Ref<Arccore::MessagePassing::ISerializeMessage> comm;
-  Integer count;
+  Integer count = 0;
 
  private:
   void operator=(const EntrySendRequest&);
@@ -128,19 +122,13 @@ struct IndexManager::EntrySendRequest
 struct IndexManager::EntryRecvRequest
 {
   EntryRecvRequest()
-  // : comm(NULL)
   {}
 
   ~EntryRecvRequest()
-  {
-    // Valide même si comm vaut NULL
-    // delete comm;
-  }
+  {}
 
   EntryRecvRequest(const EntrySendRequest& err)
-  // : comm(NULL)
   {
-    // ALIEN_ASSERT((err.comm == NULL), ("Bad initialization"));
   }
 
   Arccore::Ref<Arccore::MessagePassing::ISerializeMessage> comm;
@@ -510,7 +498,7 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
       sendToDomains[2 * destDomainId + 1] += request.count;
 
       // Construction du message du EntrySendRequest
-      request.comm = Alien::BasicSerializeMessage::create(
+      request.comm = Arccore::MessagePassing::Mpi::BasicSerializeMessage::create(
           MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
           Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
 
@@ -548,7 +536,7 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
     while (recvCount-- > 0) {
           //if (m_trace_mng) m_trace_mng->pinfo() << "will receive an entry with " <<
           //recvFromDomains[2*isd+1] << " uid from " << isd;
-      auto recvMsg = Alien::BasicSerializeMessage::create(
+      auto recvMsg = Arccore::MessagePassing::Mpi::BasicSerializeMessage::create(
           MessageRank(m_parallel_mng->commRank()), MessageRank(isd),
           Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
 
@@ -656,7 +644,7 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
       auto dest = recvRequest.comm->destination(); // Attention à l'ordre bizarre
       auto orig = recvRequest.comm->source(); //       de SerializeMessage
       recvRequest.comm.reset();
-      recvRequest.comm = Alien::BasicSerializeMessage::create(
+      recvRequest.comm = Arccore::MessagePassing::Mpi::BasicSerializeMessage::create(
           orig, dest, Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
 
       parallel->messageList->addMessage(recvRequest.comm.get());
@@ -763,7 +751,7 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
       // request.comm = NULL;
       request.comm.reset();
 
-      auto msg = Alien::BasicSerializeMessage::create(
+      auto msg = Arccore::MessagePassing::Mpi::BasicSerializeMessage::create(
           MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
           Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
 
