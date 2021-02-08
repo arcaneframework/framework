@@ -59,38 +59,25 @@ template <typename ValueT> class SimpleCSRMatrix : public IMatrixImpl
   /** Constructeur de la classe */
   SimpleCSRMatrix()
   : IMatrixImpl(NULL, AlgebraTraits<BackEnd::tag::simplecsr>::name())
-  , m_is_parallel(false)
-  , m_local_size(0)
-  , m_local_offset(0)
-  , m_global_size(0)
-  , m_ghost_size(0)
   , m_send_policy(SimpleCSRInternal::CommProperty::ASynch)
   , m_recv_policy(SimpleCSRInternal::CommProperty::ASynch)
-  , m_parallel_mng(NULL)
-  , m_nproc(1)
-  , m_myrank(0)
-  , m_trace(NULL)
   {}
 
   /** Constructeur de la classe */
   SimpleCSRMatrix(const MultiMatrixImpl* multi_impl)
   : IMatrixImpl(multi_impl, AlgebraTraits<BackEnd::tag::simplecsr>::name())
   , m_matrix(multi_impl->vblock() != nullptr)
-  , m_is_parallel(false)
-  , m_local_size(0)
-  , m_local_offset(0)
-  , m_global_size(0)
-  , m_ghost_size(0)
   , m_send_policy(SimpleCSRInternal::CommProperty::ASynch)
   , m_recv_policy(SimpleCSRInternal::CommProperty::ASynch)
-  , m_parallel_mng(NULL)
-  , m_nproc(1)
-  , m_myrank(0)
-  , m_trace(NULL)
   {}
 
   /** Destructeur de la classe */
   virtual ~SimpleCSRMatrix() {}
+
+  void setTraceMng(ITraceMng* trace_mng)
+  {
+    m_trace = trace_mng ;
+  }
 
  public:
   void free()

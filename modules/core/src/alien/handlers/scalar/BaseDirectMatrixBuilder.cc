@@ -610,7 +610,7 @@ namespace Common {
     if (m_nproc > 1) {
       // FIXME: last parameter should be set to true
       // but dichotomy scan relies on cols array to be sorted.
-      m_matrix_impl->parallelStart(offset, m_parallel_mng, false);
+      m_matrix_impl->parallelStart(offset, m_parallel_mng, true);
     } else
       m_matrix_impl->sequentialStart();
     m_values = m_matrix_impl->internal().getValues();

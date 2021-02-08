@@ -164,7 +164,6 @@ VBlock::size(Integer index) const
 
   if (it == m_internal->m_all_sizes.end())
     throw FatalErrorException(A_FUNCINFO, "index is not registered");
-
   return it.value();
 }
 
