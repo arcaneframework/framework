@@ -35,19 +35,22 @@ namespace ArcaneTools {
       const Arccore::Int64ConstArrayView uniqueIds, IIndexManager* manager)
   : m_manager(manager)
   {
-    Arcane::IParallelMng* parallelMng = m_manager->parallelMng();
+    Alien::IMessagePassingMng* parallelMng = m_manager->parallelMng();
     const Arccore::Integer commSize = parallelMng->commSize();
     const Arccore::Integer commRank = parallelMng->commRank();
     const Arccore::Integer localSize = uniqueIds.size();
     Arccore::UniqueArray<Arccore::Integer> sizes(commSize);
-    parallelMng->allGather(Arccore::IntegerConstArrayView(1, &localSize), sizes);
+    //parallelMng->allGather(Arccore::IntegerConstArrayView(1, &localSize), sizes);
+    Arccore::MessagePassing::mpAllGather(parallelMng,Arccore::IntegerConstArrayView(1, &localSize), sizes);
     Arccore::UniqueArray<Arccore::Integer> starts(commSize + 1);
     starts[0] = 0;
     for (Arccore::Integer i = 0; i < commSize; ++i)
       starts[i + 1] = starts[i] + sizes[i];
 
     Arccore::UniqueArray<Arccore::Int64> allUniqueIds;
-    parallelMng->allGatherVariable(uniqueIds, allUniqueIds);
+    //parallelMng->allGatherVariable(uniqueIds, allUniqueIds);
+    Arccore::MessagePassing::mpAllGatherVariable(parallelMng,uniqueIds, allUniqueIds);
+
     m_unique_ids.reserve(allUniqueIds.size());
     m_owners.reserve(allUniqueIds.size());
 

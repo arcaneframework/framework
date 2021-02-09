@@ -1,4 +1,11 @@
 #include <iostream>
+#include "arcane_packages.h"
+#include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/NotSupportedException.h"
+#include "arcane/launcher/ArcaneLauncher.h"
+#include <arcane/utils/VersionInfo.h>
+#include <arcane/impl/ArcaneMain.h>
+
 #include <arcane/impl/ArcaneMain.h>
 
 #define USEALIEN_USE_MPI

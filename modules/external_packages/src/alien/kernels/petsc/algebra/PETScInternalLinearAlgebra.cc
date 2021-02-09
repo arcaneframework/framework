@@ -34,7 +34,9 @@ PETScInternalLinearAlgebra::PETScInternalLinearAlgebra(
   if (pm != nullptr)
   {
     auto mpi_mng = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(pm);
-    PETSC_COMM_WORLD = *static_cast<const MPI_Comm*>(mpi_mng->getMPIComm());
+    if(mpi_mng)
+      PETSC_COMM_WORLD = *static_cast<const MPI_Comm*>(mpi_mng->getMPIComm());
+
   }
 }
 

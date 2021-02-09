@@ -18,10 +18,11 @@ isp_loadPackage(NAME GTest ESSENTIAL)
 set(MPI_ROOT ${MPI_ROOT_PATH})
 
 ## En fait pour cette dependance, en reecrivant a minima, on veut juste les blas
-#loadPackage(NAME MKL)
+isp_loadPackage(NAME MKL)
 #if (NOT MKL_FOUND)
-#  loadPackage(NAME BLAS ESSENTIAL)
+#isp_loadPackage(NAME BLAS ESSENTIAL)
 #endif (NOT MKL_FOUND)
+isp_loadPackage(NAME OpenBLAS)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------

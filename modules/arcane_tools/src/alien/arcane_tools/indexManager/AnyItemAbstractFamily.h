@@ -50,7 +50,7 @@ namespace ArcaneTools {
    private:
     const Arcane::AnyItem::Family& m_family;
     IIndexManager* m_manager;
-    Arcane::UniqueArray<Arccore::Integer> m_lower_bounds;
+    UniqueArray<Arccore::Integer> m_lower_bounds;
   };
 
   /*---------------------------------------------------------------------------*/

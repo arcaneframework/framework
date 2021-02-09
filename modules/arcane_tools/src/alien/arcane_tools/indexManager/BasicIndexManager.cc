@@ -4,12 +4,11 @@
 #include <vector>
 
 #include <arcane/ArcaneVersion.h>
+#include <arcane/IMesh.h>
 #include <arcane/IItemFamily.h>
-#include <arcane/IParallelMng.h>
-#include <arcane/ISerializeMessageList.h>
 #include <arcane/ItemGroup.h>
 #include <arcane/ItemInternal.h>
-#include <arcane/SerializeMessage.h>
+#include <arcane/IParallelMng.h>
 #include <arcane/utils/Collection.h>
 #include <arcane/utils/Enumerator.h>
 #include <arcane/utils/Math.h>
@@ -17,7 +16,6 @@
 #include <arccore/collections/Array2.h>
 #include <arccore/trace/ITraceMng.h>
 
-using namespace Arcane;
 
 // #define SPLIT_CONTAINER
 /* La version avec SPLIT_CONTAINER fait moins d'appel virtuel mais consomme un peu plus de
@@ -43,7 +41,8 @@ namespace ArcaneTools {
   // Utilities
   namespace { // Unnamed namespace to avoid conflicts at linking time.
 
-    const Arccore::Integer KIND_SHIFT = 32;
+    const Arccore::Integer MESH_KIND_SHIFT = 32;
+    const Arccore::Integer FAMILY_KIND_SHIFT = 32*32;
   }
 
   /*---------------------------------------------------------------------------*/
@@ -75,7 +74,7 @@ namespace ArcaneTools {
   }
 
   void BasicIndexManager::ItemAbstractFamily::uniqueIdToLocalId(
-      Int32ArrayView localIds, Int64ConstArrayView uniqueIds) const
+      ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const
   {
     m_family->itemsUniqueIdToLocalId(localIds, uniqueIds, true);
   }
@@ -87,21 +86,23 @@ namespace ArcaneTools {
     return Item(internal->uniqueId(), internal->owner());
   }
 
-  IntegerSharedArray BasicIndexManager::ItemAbstractFamily::owners(
-      Int32ConstArrayView localIds) const
+  SharedArray<Integer> BasicIndexManager::ItemAbstractFamily::owners(
+      ConstArrayView<Int32> localIds) const
   {
-    IntegerSharedArray result(localIds.size());
-    for (Integer i = 0; i < localIds.size(); ++i) {
+    SharedArray<Integer> result(localIds.size());
+    for (Integer i = 0; i < localIds.size(); ++i)
+    {
       Arcane::ItemInternal* internal = m_item_internals[localIds[i]];
+      assert(internal) ;
       result[i] = internal->owner();
     }
     return result;
   }
 
-  Int64SharedArray BasicIndexManager::ItemAbstractFamily::uids(
-      Int32ConstArrayView localIds) const
+  SharedArray<Int64> BasicIndexManager::ItemAbstractFamily::uids(
+      ConstArrayView<Int32> localIds) const
   {
-    Int64SharedArray result(localIds.size());
+    SharedArray<Int64> result(localIds.size());
     for (Integer i = 0; i < localIds.size(); ++i) {
       Arcane::ItemInternal* internal = m_item_internals[localIds[i]];
       result[i] = internal->uniqueId();
@@ -109,7 +110,7 @@ namespace ArcaneTools {
     return result;
   }
 
-  Int32SharedArray BasicIndexManager::ItemAbstractFamily::allLocalIds() const
+  SharedArray<Int32> BasicIndexManager::ItemAbstractFamily::allLocalIds() const
   {
     return m_family->allItems().view().localIds();
   }
@@ -184,11 +185,11 @@ namespace ArcaneTools {
 
     Integer getKind() const
     {
-      ARCANE_ASSERT((m_kind >= 0), ("Unexpected negative kind"));
-      if (m_kind < KIND_SHIFT)
+      ALIEN_ASSERT((m_kind >= 0), ("Unexpected negative kind"));
+      if (m_kind < MESH_KIND_SHIFT)
         return -1; // this is an abstract entity
       else
-        return m_kind % KIND_SHIFT;
+        return (m_kind % FAMILY_KIND_SHIFT) % MESH_KIND_SHIFT;
     }
 
     const IAbstractFamily& getFamily() const { return *m_family; }
@@ -226,7 +227,7 @@ namespace ArcaneTools {
           }
         }
       m_own_size = own_i;
-      ARCANE_ASSERT((own_i == ghost_i), ("Not merged insertion"));
+      ALIEN_ASSERT((own_i == ghost_i), ("Not merged insertion"));
 
       //     // Tri  de la partie own des indices
       //     typedef UniqueArray<Integer>::iterator iterator;
@@ -338,27 +339,22 @@ namespace ArcaneTools {
   struct BasicIndexManager::EntrySendRequest
   {
     EntrySendRequest()
-    : comm(NULL)
-    , count(0)
     {
       ;
     }
 
     ~EntrySendRequest()
     {
-      // Valide même si comm vaut NULL
-      delete comm;
     }
 
     EntrySendRequest(const EntrySendRequest& esr)
-    : comm(NULL)
-    , count(esr.count)
+    : m_count(esr.m_count)
     {
-      ARCANE_ASSERT((esr.comm == NULL), ("Bad initialization"));
+      ALIEN_ASSERT((esr.m_comm.get() == NULL), ("Bad initialization"));
     }
 
-    SerializeMessage* comm;
-    Integer count;
+    Arccore::Ref<Arccore::MessagePassing::ISerializeMessage> m_comm;
+    Integer m_count = 0;
 
    private:
     void operator=(const EntrySendRequest&);
@@ -369,26 +365,21 @@ namespace ArcaneTools {
   struct BasicIndexManager::EntryRecvRequest
   {
     EntryRecvRequest()
-    : comm(NULL)
     {
       ;
     }
 
     ~EntryRecvRequest()
     {
-      // Valide même si comm vaut NULL
-      delete comm;
     }
 
-    // err is unused if ARCANE_ASSERT is empty.
+    // err is unused if ALIEN_ASSERT is empty.
     EntryRecvRequest(const EntrySendRequest& err ALIEN_UNUSED_PARAM)
-    : comm(NULL)
     {
-      ARCANE_ASSERT((err.comm == NULL), ("Bad initialization"));
     }
 
-    SerializeMessage* comm;
-    Int64UniqueArray ids;
+    Arccore::Ref<Arccore::MessagePassing::ISerializeMessage> m_comm;
+    UniqueArray<Int64> m_ids;
 
    private:
     void operator=(const EntryRecvRequest&);
@@ -421,19 +412,10 @@ namespace ArcaneTools {
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
-  BasicIndexManager::BasicIndexManager(IParallelMng* parallelMng)
-  : m_parallel_mng(parallelMng)
-  , m_local_owner(0)
+  BasicIndexManager::BasicIndexManager(Arcane::IParallelMng* parallelMng)
+  : m_parallel_mng(parallelMng->messagePassingMng())
   , m_state(Undef)
-  , m_trace(nullptr)
-  , m_local_entry_count(0)
   , m_global_entry_count()
-  , m_global_entry_offset(0)
-  , m_local_removed_entry_count(0)
-  , m_global_removed_entry_count(0)
-  , m_max_null_index_opt(false)
-  , m_creation_index(0)
-  , m_abstract_family_base_kind(0)
   {
     this->init();
   }
@@ -510,16 +492,16 @@ namespace ArcaneTools {
   /*---------------------------------------------------------------------------*/
 
   void BasicIndexManager::defineIndex(
-      const Entry& entry, const IntegerConstArrayView localIds)
+      const Entry& entry, const ConstArrayView<Integer> localIds)
   {
     if (m_state != Initialized)
       throw FatalErrorException(A_FUNCINFO, "Inconsistent state");
 
-    ARCANE_ASSERT((entry.manager() == this), ("Incompatible entry from another manager"));
+    ALIEN_ASSERT((entry.manager() == this), ("Incompatible entry from another manager"));
     MyEntryImpl* myEntry = static_cast<MyEntryImpl*>(entry.internal());
 
     const IAbstractFamily& family = myEntry->getFamily();
-    IntegerSharedArray owners = family.owners(localIds);
+    SharedArray<Integer> owners = family.owners(localIds);
     myEntry->reserveLid(localIds.size());
     for (Integer i = 0, is = localIds.size(); i < is; ++i) {
       const Integer localId = localIds[i];
@@ -541,13 +523,14 @@ namespace ArcaneTools {
   void BasicIndexManager::removeIndex(
       const ScalarIndexSet& entry, const Arcane::ItemGroup& itemGroup)
   {
+    using namespace Arcane ;
     if (m_state != Initialized)
       throw FatalErrorException(A_FUNCINFO, "Inconsistent state");
 
-    ARCANE_ASSERT((entry.manager() == this), ("Incompatible entry from another manager"));
+    ALIEN_ASSERT((entry.manager() == this), ("Incompatible entry from another manager"));
     MyEntryImpl* myEntry = static_cast<MyEntryImpl*>(entry.internal());
 
-    ARCANE_ASSERT((itemGroup.itemKind() == myEntry->getKind()), ("Bad kind item"));
+    ALIEN_ASSERT((itemGroup.itemKind() == myEntry->getKind()), ("Bad kind item"));
     ENUMERATE_ITEM (i, itemGroup) {
       const Item& item = *i;
       const Integer localId = item.localId();
@@ -616,11 +599,11 @@ namespace ArcaneTools {
 
     std::sort(entry_index.begin(), entry_index.end(), EntryIndexComparator());
 
-    ARCANE_ASSERT(
+    ALIEN_ASSERT(
         ((Integer)entry_index.size() == m_local_entry_count + m_global_entry_count),
         ("Inconsistent global size"));
 
-    if (m_parallel_mng->isParallel() and m_parallel_mng->commSize() > 1)
+    if (m_parallel_mng and m_parallel_mng->commSize() > 1)
       parallel_prepare(entry_index);
     else
       sequential_prepare(entry_index);
@@ -648,7 +631,7 @@ namespace ArcaneTools {
 
   void BasicIndexManager::parallel_prepare(EntryIndexMap& entry_index)
   {
-    ARCANE_ASSERT((m_parallel_mng->isParallel()), ("Parallel mode expected"));
+    ALIEN_ASSERT((m_parallel_mng && m_parallel_mng->commSize() > 1), ("Parallel mode expected"));
 
     /* Algorithme:
      * 1 - listing des couples Entry-Item non locaux
@@ -660,7 +643,8 @@ namespace ArcaneTools {
      */
 
     // Infos utiles
-    ISerializeMessageList* messageList;
+    //ISerializeMessageList* messageList;
+    Alien::Ref<ISerializeMessageList> messageList;
 
     // Structure pour accumuler et structurer la collecte de l'information
     typedef std::map<EntryImpl*, EntrySendRequest> SendRequestByEntry;
@@ -676,7 +660,7 @@ namespace ArcaneTools {
       if (item_owner != m_local_owner) {
         // 	  if (m_trace) m_trace->pinfo() << item.localId() << " : " << item.uniqueId()
         // << " is owned by " << item.owner() << " with localIndex=" << i->second;
-        sendRequests[item_owner][entryImpl].count++;
+        sendRequests[item_owner][entryImpl].m_count++;
       } else {
         // 	  if (m_trace) m_trace->pinfo() << item.localId() << " : " << item.uniqueId()
         // << " is local with localIndex=" << i->second;
@@ -684,7 +668,7 @@ namespace ArcaneTools {
     }
 
     // Liste de synthèse des messages (emissions / réceptions)
-    messageList = m_parallel_mng->createSerializeMessageList();
+    messageList = Arccore::MessagePassing::mpCreateSerializeMessageListRef(m_parallel_mng) ;
 
     // Contruction de la table de communications + préparation des messages d'envoi
     UniqueArray<Integer> sendToDomains(2 * m_parallel_mng->commSize(), 0);
@@ -698,26 +682,27 @@ namespace ArcaneTools {
         const String nameString = entryImpl->getName();
 
         //          if (m_trace) m_trace->pinfo() << "Entry [" << nameString << "] to " <<
-        //          destDomainId << " : " << request.count;
+        //          destDomainId << " : " << request..m_count;
 
         // Données pour receveur
         sendToDomains[2 * destDomainId + 0] += 1;
-        sendToDomains[2 * destDomainId + 1] += request.count;
+        sendToDomains[2 * destDomainId + 1] += request.m_count;
 
         // Construction du message du EntrySendRequest
-        request.comm = new SerializeMessage(
-            m_parallel_mng->commRank(), destDomainId, ISerializeMessage::MT_Send);
+         request.m_comm = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
+            MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
+            Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
 
-        messageList->addMessage(request.comm);
-        SerializeBuffer& sbuf = request.comm->buffer();
-        sbuf.setMode(ISerializer::ModeReserve); // phase préparatoire
-        sbuf.reserve(nameString); // Chaine de caractère du nom de l'entrée
-        sbuf.reserveInteger(1); // Nb d'item
-        sbuf.reserve(DT_Int64, request.count); // Les uid
-        sbuf.allocateBuffer(); // allocation mémoire
-        sbuf.setMode(ISerializer::ModePut);
-        sbuf.put(nameString);
-        sbuf.put(request.count);
+        messageList->addMessage(request.m_comm.get());
+        auto sbuf = request.m_comm->serializer();
+        sbuf->setMode(ISerializer::ModeReserve); // phase préparatoire
+        sbuf->reserve(nameString); // Chaine de caractère du nom de l'entrée
+        sbuf->reserveInteger(1); // Nb d'item
+        sbuf->reserve(Alien::ISerializer::DT_Int64, request.m_count); // Les uid
+        sbuf->allocateBuffer(); // allocation mémoire
+        sbuf->setMode(ISerializer::ModePut);
+        sbuf->put(nameString);
+        sbuf->put(request.m_count);
       }
     }
 
@@ -729,12 +714,12 @@ namespace ArcaneTools {
       const Integer item_owner = entryIndex.m_owner;
       const Int64 item_uid = entryIndex.m_uid;
       if (item_owner != m_local_owner)
-        sendRequests[item_owner][entryImpl].comm->buffer().put(item_uid);
+        sendRequests[item_owner][entryImpl].m_comm->serializer()->put(item_uid);
     }
 
     // Réception des annonces de demandes (les nombres d'entrée + taille)
     UniqueArray<Integer> recvFromDomains(2 * m_parallel_mng->commSize());
-    m_parallel_mng->allToAll(sendToDomains, recvFromDomains, 2);
+    Arccore::MessagePassing::mpAllToAll(m_parallel_mng,sendToDomains, recvFromDomains, 2);
 
     // Table des requetes exterieures (reçoit les uid et renverra les EntryIndex finaux)
     typedef std::list<EntryRecvRequest> RecvRequests;
@@ -743,25 +728,26 @@ namespace ArcaneTools {
     for (Integer isd = 0, nsd = m_parallel_mng->commSize(); isd < nsd; ++isd) {
       Integer recvCount = recvFromDomains[2 * isd + 0];
       while (recvCount-- > 0) {
-        // 	  if (m_trace) m_trace->pinfo() << "will receive an entry with " <<
-        // recvFromDomains[2*isd+1] << " uid from " << isd;
-        SerializeMessage* recvMsg = new SerializeMessage(
-            m_parallel_mng->commRank(), isd, ISerializeMessage::MT_Recv);
+        auto recvMsg = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
+              MessageRank(m_parallel_mng->commRank()), MessageRank(isd),
+              Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
+
+
         recvRequests.push_back(EntryRecvRequest());
         EntryRecvRequest& recvRequest = recvRequests.back();
-        recvRequest.comm = recvMsg;
-        messageList->addMessage(recvMsg);
+        recvRequest.m_comm = recvMsg;
+        messageList->addMessage(recvMsg.get());
       }
     }
 
     // Traitement des communications
     messageList->processPendingMessages();
-    messageList->waitMessages(Parallel::WaitAll);
-    delete messageList;
-    messageList = NULL; // Destruction propre
+    messageList->waitMessages(Arccore::MessagePassing::WaitAll);
+    messageList.reset();
 
     // Pour les réponses vers les demandeurs
-    messageList = m_parallel_mng->createSerializeMessageList();
+    messageList =
+        Arccore::MessagePassing::mpCreateSerializeMessageListRef(m_parallel_mng);
 
     // 3 - Réception et mise en base local des demandes
     for (RecvRequests::iterator i = recvRequests.begin(); i != recvRequests.end(); ++i) {
@@ -770,16 +756,16 @@ namespace ArcaneTools {
       Integer uidCount;
 
       { // Traitement des arrivées
-        SerializeBuffer& sbuf = recvRequest.comm->buffer();
-        sbuf.setMode(ISerializer::ModeGet);
+        auto sbuf = recvRequest.m_comm->serializer();
+        sbuf->setMode(ISerializer::ModeGet);
 
-        sbuf.get(nameString);
-        uidCount = sbuf.getInteger();
+        sbuf->get(nameString);
+        uidCount = sbuf->getInteger();
         // 	if (m_trace) m_trace->pinfo() << nameString << " received with " << uidCount
         // << " ids";
-        recvRequest.ids.resize(uidCount);
-        sbuf.get(recvRequest.ids);
-        ARCANE_ASSERT((uidCount == recvRequest.ids.size()), ("Inconsistency detected"));
+        recvRequest.m_ids.resize(uidCount);
+        sbuf->getSpan(recvRequest.m_ids);
+        ALIEN_ASSERT((uidCount == recvRequest.m_ids.size()), ("Inconsistency detected"));
 
 #ifndef NO_USER_WARNING
 #ifdef _MSC_VER
@@ -804,15 +790,15 @@ namespace ArcaneTools {
         const Integer current_creation_index = currentEntry->getCreationIndex();
 
         // Passage de l'uid à l'item associé (travaille sur place : pas de recopie)
-        Int64ArrayView ids = recvRequest.ids;
+        ArrayView<Int64> ids = recvRequest.m_ids;
 
         const IAbstractFamily& family = currentEntry->getFamily();
         const Integer entry_kind = currentEntry->getKind();
-        Int32UniqueArray lids(ids.size());
+        UniqueArray<Int32> lids(ids.size());
         family.uniqueIdToLocalId(lids, ids);
         // Vérification d'intégrité : toutes les entrées demandées sont définies
         // localement
-        IntegerSharedArray owners = family.owners(lids).clone();
+        SharedArray<Integer> owners = family.owners(lids).clone();
         for (Integer j = 0; j < uidCount; ++j) {
           const Integer current_item_lid = lids[j];
           const Int64 current_item_uid = ids[j];
@@ -836,21 +822,23 @@ namespace ArcaneTools {
       }
 
       { // Préparation des retours
-        Integer dest = recvRequest.comm->destRank(); // Attention à l'ordre bizarre
-        Integer orig = recvRequest.comm->origRank(); //       de SerializeMessage
-        delete recvRequest.comm;
-        recvRequest.comm = new SerializeMessage(orig, dest, ISerializeMessage::MT_Send);
-        messageList->addMessage(recvRequest.comm);
+        auto dest = recvRequest.m_comm->destination(); // Attention à l'ordre bizarre
+        auto orig = recvRequest.m_comm->source(); //       de SerializeMessage
+        recvRequest.m_comm.reset();
+        recvRequest.m_comm = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
+             orig, dest, Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
 
-        SerializeBuffer& sbuf = recvRequest.comm->buffer();
-        sbuf.setMode(ISerializer::ModeReserve); // phase préparatoire
-        sbuf.reserve(nameString); // Chaine de caractère du nom de l'entrée
-        sbuf.reserveInteger(1); // Nb d'item
-        sbuf.reserveInteger(uidCount); // Les index
-        sbuf.allocateBuffer(); // allocation mémoire
-        sbuf.setMode(ISerializer::ModePut);
-        sbuf.put(nameString);
-        sbuf.put(uidCount);
+        messageList->addMessage(recvRequest.m_comm.get());
+
+        auto sbuf = recvRequest.m_comm->serializer();
+        sbuf->setMode(ISerializer::ModeReserve); // phase préparatoire
+        sbuf->reserve(nameString); // Chaine de caractère du nom de l'entrée
+        sbuf->reserveInteger(1); // Nb d'item
+        sbuf->reserveInteger(uidCount); // Les index
+        sbuf->allocateBuffer(); // allocation mémoire
+        sbuf->setMode(ISerializer::ModePut);
+        sbuf->put(nameString);
+        sbuf->put(uidCount);
       }
     }
 
@@ -862,10 +850,10 @@ namespace ArcaneTools {
     UniqueArray<Integer> allLocalSizes(m_parallel_mng->commSize());
     UniqueArray<Integer> myLocalSize(1);
     myLocalSize[0] = m_local_entry_count;
-    m_parallel_mng->allGather(myLocalSize, allLocalSizes);
+    Arccore::MessagePassing::mpAllGather(m_parallel_mng,myLocalSize, allLocalSizes);
 
     // Table de ré-indexation (EntryIndex->Integer)
-    Arcane::IntegerUniqueArray entry_reindex(m_local_entry_count + m_global_entry_count);
+    UniqueArray<Integer> entry_reindex(m_local_entry_count + m_global_entry_count);
     entry_reindex.fill(-1); // valeur de type Erreur par défaut
 
     // Calcul de la taille des indices par entrée
@@ -882,7 +870,7 @@ namespace ArcaneTools {
     Integer currentEntryIndex = m_global_entry_offset; // commence par l'offset local
     for (EntryIndexMap::iterator i = entry_index.begin(); i != entry_index.end(); ++i) {
       const InternalEntryIndex& entryIndex = *i;
-      ARCANE_ASSERT((entryIndex.m_entry != NULL), ("Unexpected null entry"));
+      ALIEN_ASSERT((entryIndex.m_entry != NULL), ("Unexpected null entry"));
       const Integer item_owner = entryIndex.m_owner;
       if (item_owner == m_local_owner) { // Numérotation locale !
         const Integer newIndex = currentEntryIndex++;
@@ -895,16 +883,16 @@ namespace ArcaneTools {
     // 5 - Envoie des retours (EntryIndex globaux)
     for (RecvRequests::iterator i = recvRequests.begin(); i != recvRequests.end(); ++i) {
       EntryRecvRequest& recvRequest = *i;
-      SerializeBuffer& sbuf = recvRequest.comm->buffer();
-      Int64UniqueArray& ids = recvRequest.ids;
+      auto sbuf = recvRequest.m_comm->serializer();
+      UniqueArray<Int64>& ids = recvRequest.m_ids;
       for (Integer j = 0; j < ids.size(); ++j) {
-        sbuf.putInteger(
+        sbuf->putInteger(
             entry_reindex[ids[j] + m_global_entry_count]); // Via la table de réindexation
       }
     }
 
     // Table des buffers de retour
-    typedef std::list<SerializeMessage*> ReturnedRequests;
+    typedef std::list<Alien::Ref<Alien::ISerializeMessage>> ReturnedRequests;
     ReturnedRequests returnedRequests;
 
     // Acces rapide aux buffers connaissant le proc emetteur et le nom d'une entrée
@@ -928,13 +916,13 @@ namespace ArcaneTools {
         // On ne peut pas associer directement le message à cette entrée
         // : dans le cas d'échange multiple il n'y pas de garantie d'arrivée
         // à la bonne place
-        delete request.comm;
-        request.comm = NULL;
+        request.m_comm.reset();
 
-        SerializeMessage* msg = new SerializeMessage(
-            m_parallel_mng->commRank(), destDomainId, ISerializeMessage::MT_Recv);
+        auto msg = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
+            MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
+            Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
         returnedRequests.push_back(msg);
-        messageList->addMessage(msg);
+        messageList->addMessage(msg.get());
 
         fastReturnMap[nameString][destDomainId] = &request;
       }
@@ -942,30 +930,25 @@ namespace ArcaneTools {
 
     // Traitement des communications
     messageList->processPendingMessages();
-    messageList->waitMessages(Parallel::WaitAll);
-    delete messageList;
-    messageList = NULL; // Destruction propre de l'ancienne liste
+    messageList->waitMessages(Arccore::MessagePassing::WaitAll);
+    messageList.reset();
 
     // 6 - Traitement des réponses
     // Association aux EntrySendRequest du buffer correspondant
     for (ReturnedRequests::iterator i = returnedRequests.begin();
          i != returnedRequests.end(); ++i) {
-      SerializeMessage* message = *i;
-      const Integer origDomainId = message->destRank();
-      SerializeBuffer& sbuf = message->buffer();
-      sbuf.setMode(ISerializer::ModeGet);
+      auto& message = *i;
+      auto origDomainId = message->destination().value();
+      auto sbuf = message->serializer();
+      sbuf->setMode(ISerializer::ModeGet);
       String nameString;
-      sbuf.get(nameString);
-      ARCANE_ASSERT(
+      sbuf->get(nameString);
+      ALIEN_ASSERT(
           (fastReturnMap[nameString][origDomainId] != NULL), ("Inconsistency detected"));
       EntrySendRequest& request = *fastReturnMap[nameString][origDomainId];
-      request.comm = *i; // Reconnection pour accès rapide depuis l'EntrySendRequest
-#ifdef ARCANE_DEBUG_ASSERT
-      const Integer idCount = sbuf.getInteger();
-#else
-      sbuf.getInteger();
-#endif
-      ARCANE_ASSERT((request.count == idCount), ("Inconsistency detected"));
+      request.m_comm = *i; // Reconnection pour accès rapide depuis l'EntrySendRequest
+      const Integer idCount = sbuf->getInteger();
+      ALIEN_ASSERT((request.m_count == idCount), ("Inconsistency detected"));
     }
 
     // Distribution des reponses
@@ -976,10 +959,10 @@ namespace ArcaneTools {
       if (item_owner != m_local_owner) {
         EntryImpl* entryImpl = entryIndex.m_entry;
         EntrySendRequest& request = sendRequests[item_owner][entryImpl];
-        ARCANE_ASSERT((request.count > 0), ("Unexpected empty request"));
-        --request.count;
-        SerializeBuffer& sbuf = request.comm->buffer();
-        const Integer newIndex = sbuf.getInteger();
+        ALIEN_ASSERT((request.m_count > 0), ("Unexpected empty request"));
+        --request.m_count;
+        auto sbuf = request.m_comm->serializer();
+        const Integer newIndex = sbuf->getInteger();
         entry_reindex[i->m_index + m_global_entry_count] = newIndex;
         i->m_index = newIndex;
       }
@@ -996,9 +979,9 @@ namespace ArcaneTools {
 
   void BasicIndexManager::sequential_prepare(EntryIndexMap& entry_index)
   {
-    ARCANE_ASSERT((not m_parallel_mng->isParallel() || m_parallel_mng->commSize() <= 1),
+    ALIEN_ASSERT(((not m_parallel_mng) || m_parallel_mng->commSize() <= 1),
         ("Sequential mode expected"));
-    ARCANE_ASSERT((m_global_entry_count == 0),
+    ALIEN_ASSERT((m_global_entry_count == 0),
         ("Unexpected global entries (%d)", m_global_entry_count));
 
     // Très similaire à la section parallèle :
@@ -1008,7 +991,7 @@ namespace ArcaneTools {
      */
 
     // Table de ré-indexation (EntryIndex->Integer)
-    Arcane::IntegerUniqueArray entry_reindex(
+    UniqueArray<Integer> entry_reindex(
         m_local_entry_count + m_local_removed_entry_count);
     entry_reindex.fill(-1); // valeur de type Erreur par défaut
 
@@ -1022,8 +1005,8 @@ namespace ArcaneTools {
     // C'est ici et uniquement ici qu'est matérialisé l'ordre des entrées
     Integer currentEntryIndex = m_global_entry_offset; // commence par l'offset local
     for (EntryIndexMap::iterator i = entry_index.begin(); i != entry_index.end(); ++i) {
-      ARCANE_ASSERT((i->m_entry != NULL), ("Unexpected null entry"));
-      ARCANE_ASSERT((i->m_owner == m_local_owner),
+      ALIEN_ASSERT((i->m_entry != NULL), ("Unexpected null entry"));
+      ALIEN_ASSERT((i->m_owner == m_local_owner),
           ("Item cannot be non-local for sequential mode"));
       // Numérotation locale only !
       const Integer newIndex = currentEntryIndex++;
@@ -1074,12 +1057,12 @@ namespace ArcaneTools {
 
   /*---------------------------------------------------------------------------*/
 
-  Integer BasicIndexManager::getIndex(const Entry& entry, const Item& item) const
+  Integer BasicIndexManager::getIndex(const Entry& entry, const Arcane::Item& item) const
   {
     if (m_state != Prepared)
       throw FatalErrorException(A_FUNCINFO, "Inconsistent state");
 
-    ARCANE_ASSERT((entry.manager() == this), ("Incompatible entry from another manager"));
+    ALIEN_ASSERT((entry.manager() == this), ("Incompatible entry from another manager"));
     MyEntryImpl* myEntry = static_cast<MyEntryImpl*>(entry.internal());
     ConstArrayView<Integer> localIds = myEntry->getAllLocalIds();
     ConstArrayView<Integer> indices = myEntry->getAllIndexes();
@@ -1103,7 +1086,7 @@ namespace ArcaneTools {
     if (items.size() != indexes.size())
       throw FatalErrorException(A_FUNCINFO, "Inconsistent sizes");
 
-    ARCANE_ASSERT((entry.manager() == this), ("Incompatible entry from another manager"));
+    ALIEN_ASSERT((entry.manager() == this), ("Incompatible entry from another manager"));
     MyEntryImpl* myEntry = static_cast<MyEntryImpl*>(entry.internal());
 
     ConstArrayView<Integer> localIds = myEntry->getAllLocalIds();
@@ -1122,18 +1105,18 @@ namespace ArcaneTools {
 
   /*---------------------------------------------------------------------------*/
 
-  IntegerUniqueArray BasicIndexManager::getIndexes(const Entry& entry) const
+  UniqueArray<Integer> BasicIndexManager::getIndexes(const Entry& entry) const
   {
     if (m_state != Prepared)
       throw FatalErrorException(A_FUNCINFO, "Inconsistent state");
 
-    ARCANE_ASSERT((entry.manager() == this), ("Incompatible entry from another manager"));
+    ALIEN_ASSERT((entry.manager() == this), ("Incompatible entry from another manager"));
     MyEntryImpl* en = static_cast<MyEntryImpl*>(entry.internal());
-    ARCANE_ASSERT((en != NULL), ("Unexpected null entry"));
+    ALIEN_ASSERT((en != NULL), ("Unexpected null entry"));
     const IAbstractFamily& family = en->getFamily();
-    IntegerUniqueArray allIds(family.maxLocalId(), nullIndex());
-    const IntegerConstArrayView allIndices = en->getAllIndexes();
-    const IntegerConstArrayView allLocalIds = en->getAllLocalIds();
+    UniqueArray<Integer> allIds(family.maxLocalId(), nullIndex());
+    const ConstArrayView<Integer> allIndices = en->getAllIndexes();
+    const ConstArrayView<Integer> allLocalIds = en->getAllLocalIds();
     const Integer size = allIndices.size();
     for (Integer i = 0; i < size; ++i)
       allIds[allLocalIds[i]] = allIndices[i];
@@ -1150,12 +1133,12 @@ namespace ArcaneTools {
     Integer max_family_size = 0;
     for (Integer entry = 0; entry < entries.size(); ++entry) {
       // controles uniquement en première passe
-      ARCANE_ASSERT((entries[entry].manager() == this),
+      ALIEN_ASSERT((entries[entry].manager() == this),
           ("Incompatible entry from another manager"));
       MyEntryImpl* en = static_cast<MyEntryImpl*>(entries[entry].internal());
-      ARCANE_ASSERT((en != NULL), ("Unexpected null entry"));
+      ALIEN_ASSERT((en != NULL), ("Unexpected null entry"));
       const IAbstractFamily& family = en->getFamily();
-      max_family_size = math::max(max_family_size, family.maxLocalId());
+      max_family_size = std::max(max_family_size, family.maxLocalId());
     }
 
     UniqueArray2<Integer> allIds(max_family_size, entries.size());
@@ -1163,8 +1146,8 @@ namespace ArcaneTools {
 
     for (Integer entry = 0; entry < entries.size(); ++entry) {
       MyEntryImpl* en = static_cast<MyEntryImpl*>(entries[entry].internal());
-      const IntegerConstArrayView allIndices = en->getAllIndexes();
-      const IntegerConstArrayView allLocalIds = en->getAllLocalIds();
+      const ConstArrayView<Integer> allIndices = en->getAllIndexes();
+      const ConstArrayView<Integer> allLocalIds = en->getAllLocalIds();
       const Integer size = allIndices.size();
       for (Integer i = 0; i < size; ++i)
         allIds[allLocalIds[i]][entry] = allIndices[i];
@@ -1265,6 +1248,7 @@ namespace ArcaneTools {
     std::shared_ptr<IAbstractFamily>& family = m_abstract_families[kind];
     if (!family)
       family.reset(new ItemAbstractFamily(item_family));
+
     Entry en = buildEntry(name, family.get(), kind);
     defineIndex(en, itemGroup.view().localIds());
     return en;
@@ -1273,7 +1257,7 @@ namespace ArcaneTools {
   /*---------------------------------------------------------------------------*/
 
   IIndexManager::ScalarIndexSet BasicIndexManager::buildScalarIndexSet(const String name,
-      const IntegerConstArrayView localIds, const IAbstractFamily& family)
+      const ConstArrayView<Integer> localIds, const IAbstractFamily& family)
   {
     Entry en = buildEntry(name, &family, addNewAbstractFamily(&family));
     defineIndex(en, localIds);
@@ -1285,7 +1269,7 @@ namespace ArcaneTools {
   IIndexManager::ScalarIndexSet BasicIndexManager::buildScalarIndexSet(
       const String name, const IAbstractFamily& family)
   {
-    Int32UniqueArray localIds = family.allLocalIds();
+    UniqueArray<Int32> localIds = family.allLocalIds();
     Entry en = buildEntry(name, &family, addNewAbstractFamily(&family));
     defineIndex(en, localIds.view());
     return en;
@@ -1297,7 +1281,7 @@ namespace ArcaneTools {
       const String name, const Arcane::ItemGroup& itemGroup, const Integer n)
   {
     VectorIndexSet ens(n);
-    const IntegerConstArrayView localIds = itemGroup.view().localIds();
+    const ConstArrayView<Integer> localIds = itemGroup.view().localIds();
     Arcane::IItemFamily* item_family = itemGroup.itemFamily();
     Integer kind = kindFromItemFamily(item_family);
     std::shared_ptr<IAbstractFamily>& family = m_abstract_families[kind];
@@ -1314,7 +1298,7 @@ namespace ArcaneTools {
   /*---------------------------------------------------------------------------*/
 
   IIndexManager::VectorIndexSet BasicIndexManager::buildVectorIndexSet(const String name,
-      const IntegerConstArrayView localIds, const IAbstractFamily& family,
+      const ConstArrayView<Integer> localIds, const IAbstractFamily& family,
       const Integer n)
   {
     VectorIndexSet ens(n);
@@ -1331,7 +1315,7 @@ namespace ArcaneTools {
   IIndexManager::VectorIndexSet BasicIndexManager::buildVectorIndexSet(
       const String name, const IAbstractFamily& family, const Integer n)
   {
-    Int32UniqueArray localIds = family.allLocalIds();
+    UniqueArray<Int32> localIds = family.allLocalIds();
 
     VectorIndexSet ens(n);
     for (Integer i = 0; i < n; ++i) {
@@ -1371,7 +1355,7 @@ namespace ArcaneTools {
         m_abstract_family_to_kind_map.find(family);
     if (finder == m_abstract_family_to_kind_map.end()) {
       const Integer newKind = m_abstract_family_base_kind++;
-      ARCANE_ASSERT((newKind < KIND_SHIFT), ("Unexpected kind overflow"));
+      ALIEN_ASSERT((newKind < MESH_KIND_SHIFT), ("Unexpected kind overflow"));
       m_abstract_family_to_kind_map[family] = newKind;
       m_abstract_families[newKind] =
           std::shared_ptr<IAbstractFamily>(); // this place will be used when the family
@@ -1387,16 +1371,25 @@ namespace ArcaneTools {
 
   Integer BasicIndexManager::kindFromItemFamily(const Arcane::IItemFamily* family)
   {
-    IMesh* mesh = family->mesh();
-    std::pair<std::map<IMesh*, Integer>::iterator, bool> inserter =
-        m_item_family_meshes.insert(std::pair<IMesh*, Integer>(mesh, -1));
-    std::map<IMesh*, Integer>::iterator mesh_iterator = inserter.first;
+    Arcane::IMesh* mesh = family->mesh();
+    std::pair<std::map<Arcane::IMesh*, Integer>::iterator, bool> inserter =
+        m_item_family_meshes.insert(std::pair<Arcane::IMesh*, Integer>(mesh, -1));
+    std::map<Arcane::IMesh*, Integer>::iterator mesh_iterator = inserter.first;
     if (inserter.second) // new element
       mesh_iterator->second = m_item_family_meshes.size();
     const Integer mesh_id = mesh_iterator->second;
+    ALIEN_ASSERT((mesh_id<MESH_KIND_SHIFT),("Unexpected mesh overflow"));
     const Integer base_kind = family->itemKind();
-    ARCANE_ASSERT((base_kind < KIND_SHIFT), ("Unexpected kind overflow"));
-    const Integer newKind = mesh_id * KIND_SHIFT + base_kind;
+    ALIEN_ASSERT((base_kind < MESH_KIND_SHIFT), ("Unexpected kind overflow"));
+    Arcane::IItemFamilyCollection all_families = mesh->itemFamilies();
+    Arcane::IItemFamilyCollection::Iterator it = all_families.begin();
+    Integer family_id = 1;
+    for(; it != all_families.end(); ++it) {
+      if(*it == family) break;
+      if((*it)->itemKind() == base_kind)
+        family_id++;
+    }
+    const Integer newKind = family_id * FAMILY_KIND_SHIFT + mesh_id * MESH_KIND_SHIFT + base_kind;
     return newKind;
   }
 

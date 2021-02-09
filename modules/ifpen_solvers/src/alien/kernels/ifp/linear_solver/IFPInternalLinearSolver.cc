@@ -121,7 +121,9 @@ IFPInternalLinearSolver::init()
   {
     auto mpi_mng =
         dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(m_parallel_mng);
-    auto* ptr = mpi_mng->getMPIComm();
+    const void* ptr = nullptr ;
+    if(mpi_mng)
+       ptr = mpi_mng->getMPIComm();
     if (ptr) {
       auto* comm = static_cast<const MPI_Comm*>(ptr);
       fcomm = static_cast<Integer>(*comm);

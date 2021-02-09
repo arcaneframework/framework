@@ -27,7 +27,8 @@
 #include <alien/move/handlers/block/BlockVectorWriter.h>
 #include <alien/move/handlers/scalar/VectorReader.h>
 #include <alien/move/handlers/scalar/VectorWriter.h>
-#include <alien/arcane_tools/block/IndexManagerBlockBuilder.h>
+#include <alien/arcane_tools/block/BlockSizes.h>
+#include <alien/arcane_tools/block/BlockBuilder.h>
 #include <alien/arcane_tools/distribution/DistributionFabric.h>
 #include <alien/arcane_tools/indexSet/IndexSetFabric.h>
 #include <alien/move/handlers/block/ProfiledBlockMatrixBuilder.h>
@@ -203,8 +204,8 @@ AlienTestModule::test()
   UniqueArray2<Integer> allPIndex = index_manager.getIndexes(indexSetP);
   Arccore::UniqueArray<Integer> allXIndex = index_manager.getIndexes(indexSetX);
 
-  m_mdist = Alien::ArcaneTools::createMatrixDistribution(&index_manager, parallelMng());
-  m_vdist = Alien::ArcaneTools::createVectorDistribution(&index_manager, parallelMng());
+  m_mdist = Alien::ArcaneTools::createMatrixDistribution(&index_manager, parallelMng()->messagePassingMng());
+  m_vdist = Alien::ArcaneTools::createVectorDistribution(&index_manager, parallelMng()->messagePassingMng());
 
   Alien::Space space(m_vdist.globalSize(), "TestSpace");
 
@@ -216,11 +217,11 @@ AlienTestModule::test()
   Alien::VectorData vectorB(space, m_vdist);
   Alien::VectorData vectorX(space, m_vdist);
 
-  std::unique_ptr<Alien::ArcaneTools::IndexManagerBlockBuilder> block_builder(nullptr);
+  std::unique_ptr<Alien::ArcaneTools::BlockBuilder> block_builder(nullptr);
   std::unique_ptr<Alien::VBlock> vblock(nullptr);
   if (m_vect_size == 0) {
     block_builder.reset(
-        new Alien::ArcaneTools::IndexManagerBlockBuilder(index_manager, m_vdist));
+        new Alien::ArcaneTools::BlockBuilder(index_manager));
     auto& builder = *(block_builder.get());
     {
       auto areaT_lids = m_areaT.own().view().localIds();
@@ -245,7 +246,7 @@ AlienTestModule::test()
       builder[allXIndex[i]] = 1;
       info() << "index of xUids(" << i << ") : " << allXIndex[i];
     }
-    builder.compute();
+    //builder.compute();
     vblock.reset(new Alien::VBlock(builder.sizes()));
     vectorB.setBlockInfos(vblock.get());
     vectorX.setBlockInfos(vblock.get());

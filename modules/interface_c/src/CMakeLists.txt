@@ -11,7 +11,7 @@ addSources(alien_interface_c
            alien/fortran/M_AlienModule.f90
            )
 
-linkLibraries(alien_interface_c Alien::alien_core alien_strong_options alien_external_packages)
+linkLibraries(alien_interface_c Alien::alien_core alien_external_packages)
 
 if (TARGET intel)
     linkLibraries(gtest.refmvhandlers intel)

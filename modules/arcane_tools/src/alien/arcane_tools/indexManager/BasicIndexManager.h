@@ -148,7 +148,7 @@ namespace ArcaneTools {
         const VectorIndexSet& entries) const;
 
     //! Donne le gestionnaire parallèle ayant servi à l'indexation
-    Arcane::IParallelMng* parallelMng() const { return m_parallel_mng; }
+    Alien::IMessagePassingMng* parallelMng() const { return m_parallel_mng; }
 
     //! define null index : default = -1, if true null_index = max_index+1
     void setMaxNullIndexOpt(bool flag) { m_max_null_index_opt = flag; }
@@ -166,8 +166,9 @@ namespace ArcaneTools {
     void keepAlive(const IAbstractFamily* family);
 
    private:
-    Arcane::IParallelMng* m_parallel_mng;
-    Arccore::Integer m_local_owner; //!< Identifiant du 'propriétaire' courant
+    Alien::IMessagePassingMng* m_parallel_mng = nullptr;
+    Arccore::ITraceMng*        m_trace        = nullptr;
+
 
     enum State
     {
@@ -176,15 +177,15 @@ namespace ArcaneTools {
       Prepared
     } m_state;
 
-    Arccore::ITraceMng* m_trace;
 
-    Arccore::Integer m_local_entry_count;
-    Arccore::Integer m_global_entry_count;
-    Arccore::Integer m_global_entry_offset;
-    Arccore::Integer m_local_removed_entry_count;
-    Arccore::Integer m_global_removed_entry_count;
+    Arccore::Integer m_local_owner                = 0; //!< Identifiant du 'propriétaire' courant
+    Arccore::Integer m_local_entry_count          = 0;
+    Arccore::Integer m_global_entry_count         = 0;
+    Arccore::Integer m_global_entry_offset        = 0;
+    Arccore::Integer m_local_removed_entry_count  = 0;
+    Arccore::Integer m_global_removed_entry_count = 0;
 
-    bool m_max_null_index_opt;
+    bool m_max_null_index_opt                     = false;
 
     class MyEntryImpl;
     class MyEntryEnumeratorImpl;
@@ -227,11 +228,11 @@ namespace ArcaneTools {
     EntrySet m_entry_set;
 
     //! Index de creation des entrées
-    Arccore::Integer m_creation_index;
+    Arccore::Integer m_creation_index = 0;
 
     //! Famille des familles abstraites associées aux familles du maillage
 
-    Arccore::Integer m_abstract_family_base_kind;
+    Arccore::Integer m_abstract_family_base_kind = 0;
     std::map<Arcane::IMesh*, Arccore::Integer>
         m_item_family_meshes; //!< Table des maillages connues (pour grouper en maillage)
     // TODO: why a shared_ptr here ?

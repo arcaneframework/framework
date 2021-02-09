@@ -380,7 +380,7 @@ namespace ArcaneTools {
         const VectorIndexSet& entry) const = 0;
 
     //! Donne le gestionnaire parallèle ayant servi à l'indexation
-    virtual Arcane::IParallelMng* parallelMng() const = 0;
+    virtual Alien::IMessagePassingMng* parallelMng() const = 0;
 
     //! define null index : default == -1, if true nullIndex() == max index of current
     //! indexation

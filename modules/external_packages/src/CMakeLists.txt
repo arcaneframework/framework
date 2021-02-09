@@ -21,6 +21,8 @@ else ()
     set(IS_WITH_MESH "NO_MESH")
 endif ()
 
+include(${AXLSTAR_CMAKE_COMMANDS})
+
 if(TARGET hypre)
     addDirectory(alien/kernels/hypre)
 endif()
@@ -58,7 +60,7 @@ target_include_directories(alien_external_packages PUBLIC
 
 commit(alien_external_packages)
 
-install(DIRECTORY ALIEN
+install(DIRECTORY alien
         DESTINATION include
         FILES_MATCHING PATTERN "*.h"
         )

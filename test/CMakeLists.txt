@@ -1,3 +1,5 @@
+
+include(LoadBuildSystem)
 include(LoadAlienTest)
 
 #-----------------------------------------------------------

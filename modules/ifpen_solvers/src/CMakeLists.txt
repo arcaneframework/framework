@@ -21,6 +21,9 @@ else ()
     set(IS_WITH_MESH "NO_MESH")
 endif ()
 
+
+include(${AXLSTAR_CMAKE_COMMANDS})
+
 if(TARGET mcgsolver)
   addDirectory(alien/kernels/mcg)
 endif()
@@ -56,7 +59,7 @@ target_include_directories(alien_ifpen_solvers PUBLIC
 
 commit(alien_ifpen_solvers)
 
-install(DIRECTORY ALIEN
+install(DIRECTORY alien
 	DESTINATION include
 	FILES_MATCHING PATTERN "*.h"
   )

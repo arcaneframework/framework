@@ -7,12 +7,14 @@ createLibrary(alien_arcane_tools
   )
 
 addSources(alien_arcane_tools
+  alien/arcane_tools/data/Space.cc
   alien/arcane_tools/accessors/ItemVectorAccessor.cc
-  #alien/arcane_tools/indexManager/ArcGeoSim/ContactAbstractFamily.cc
   alien/arcane_tools/indexManager/SimpleAbstractFamily.cc
   alien/arcane_tools/indexManager/BasicIndexManager.cc
   alien/arcane_tools/indexManager/AnyItemAbstractFamily.cc
   alien/arcane_tools/block/IndexManagerBlockBuilder.cc
+  alien/arcane_tools/block/BlockBuilder.cc
+  alien/arcane_tools/block/BlockSizes.cc
   )
 
 if(TARGET petsc)
