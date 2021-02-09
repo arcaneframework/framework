@@ -194,14 +194,13 @@ StreamMatrixBuilderT<ValueT>::init()
 
   m_matrix_impl = &m_matrix.impl()->template get<BackEnd::tag::simplecsr>(true);
 
-  const ISpace& space = m_matrix_impl->rowSpace();
+  //const ISpace& space = m_matrix_impl->rowSpace();
   // if (space != m_matrix_impl->colSpace())
   //  throw FatalErrorException(
   //      "stream matrix builder must be used with square matrix");
 
   const MatrixDistribution& dist = m_matrix_impl->distribution();
 
-  // m_trace = space.traceMng() ;
   m_parallel_mng = dist.parallelMng();
 
   m_matrix_impl->free();
