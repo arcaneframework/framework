@@ -64,7 +64,6 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
   m_local_row_size.resize(nrow);
   for (Integer irow = 0; irow < nrow; ++irow) {
     Integer lrow_size = 0;
-    // fout<<"ROW("<<irow<<")";
     for (Integer icol = row_offset[irow]; icol < row_offset[irow + 1]; ++icol) {
       Integer col_uid = m_cols[icol];
       Integer ip = domainId(nproc, offset, col_uid);
@@ -84,7 +83,6 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
           // cols[icol] = col_lid;
           ++count[ip];
         }*/
-
         gids[ip].insert(col_uid);
       }
     }
@@ -107,8 +105,10 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
     std::vector<Integer> col_offset(nproc + 1);
     col_offset[0] = nrow;
     for (Integer ip = 1; ip < nproc + 1; ++ip)
+    {
       // col_offset[ip] = col_offset[ip - 1] + count[ip - 1];
       col_offset[ip] = col_offset[ip - 1] + gids[ip - 1].size();
+    }
     std::size_t ghost_size = col_offset[nproc] - col_offset[0];
     m_recv_info.m_rank_ids.resize(ghost_size);
     m_recv_info.m_ids.resize(ghost_size);
@@ -120,7 +120,6 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
         m_interface_rows[icount] = irow;
         m_interface_row_set.insert(irow);
         ++icount;
-        // fout<<my_rank<<"Interface row : "<<irow;
         for (Integer icol = row_offset[irow] + m_local_row_size[irow];
              icol < row_offset[irow + 1]; ++icol) {
           // compute local id of ghost col id
@@ -261,17 +260,7 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
     const VBlock* block_sizes, const MatrixDistribution& dist,
     ITraceMng* trace ALIEN_UNUSED_PARAM)
 {
-#ifdef DEBUG
-  StringBuilder send_file("send_dd_");
-  send_file += my_rank;
-  ofstream send_fout(send_file.toString().localstr());
-  StringBuilder recv_file("recv_dd_");
-  recv_file += my_rank;
-  ofstream recv_fout(recv_file.toString().localstr());
-  StringBuilder file("debug_dd_");
-  file += my_rank;
-  ofstream fout(file.toString().localstr());
-#endif
+  //alien_info([&] {cout() << "DistStructInfo::compute VBlock";}) ;
   std::vector<Integer> count(nproc);
   count.assign(nproc, 0);
   std::vector<Integer> block_count(nproc);
@@ -285,7 +274,9 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
 
   Integer block_nrow = 0;
   for (Integer i = 0; i < nrow; ++i)
+  {
     block_nrow += blocks.sizeFromLocalIndex(i);
+  }
 
   Integer local_offset = offset[my_rank];
 
@@ -315,7 +306,9 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
           ++count[ip];
           block_count[ip] += block_sizes->size(col_uid);
         }*/
-        gids[ip].insert(col_uid);
+        auto value = gids[ip].insert(col_uid);
+        if(value.second)
+           block_count[ip] += block_sizes->size(col_uid);
       }
     }
     // fout<<endl;
@@ -491,13 +484,13 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
       }
     } else {
       Integer nids = 0;
-      Arccore::MessagePassing::mpSend(parallel_mng, ArrayView<Integer>(1, &nids), ip);
+      Arccore::MessagePassing::mpReceive(parallel_mng, ArrayView<Integer>(1, &nids), ip);
       // trace->info()<<"RECV from "<<ip<<" nids="<<nids;
       if (nids > 0) {
         ++nb_neighbour;
         send_count += nids;
         send_ids[ip].resize(nids);
-        Arccore::MessagePassing::mpSend(
+        Arccore::MessagePassing::mpReceive(
             parallel_mng, ArrayView<Integer>(nids, &send_ids[ip][0]), ip);
       }
     }
@@ -509,8 +502,10 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
   m_send_info.m_block_ids_offset.resize(nb_neighbour + 1);
   Integer icount = 0, block_icount = 0;
   nb_neighbour = 0;
-  for (Integer ip = 0; ip < nproc; ++ip) {
-    if (send_ids[ip].size() > 0) {
+  for (Integer ip = 0; ip < nproc; ++ip)
+  {
+    if (send_ids[ip].size() > 0)
+    {
       m_send_info.m_ranks[nb_neighbour] = ip;
       m_send_info.m_ids_offset[nb_neighbour] = icount;
       m_send_info.m_block_ids_offset[nb_neighbour] = block_icount;
@@ -519,9 +514,9 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
         ++first_upper_neighb;
       Integer nids = send_ids[ip].size();
       Integer* ids = &send_ids[ip][0];
-      for (Integer i = 0; i < nids; ++i) {
+      for (Integer i = 0; i < nids; ++i)
+      {
         m_send_info.m_ids[icount] = ids[i] - local_offset;
-        // fout<<"SEND : "<<ids[i]<<" "<<ids[i] - local_offset<<endl;
         ++icount;
         block_icount += m_block_sizes[ids[i] - local_offset];
       }

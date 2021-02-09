@@ -20,7 +20,9 @@
 
 #include <vector>
 
+#include <alien/utils/Precomp.h>
 #include <alien/kernels/simple_csr/SimpleCSRPrecomp.h>
+#include <alien/utils/Trace.h>
 
 #include <arccore/message_passing/Messages.h>
 #include <arccore/message_passing/Request.h>
@@ -138,6 +140,8 @@ struct CommInfo
 
     m_ranks.copy(commInfo.m_ranks);
     m_ids.copy(commInfo.m_ids);
+    m_uids.copy(commInfo.m_uids);
+    m_rank_ids.copy(commInfo.m_rank_ids);
     m_ids_offset.copy(commInfo.m_ids_offset);
     m_block_ids_offset.copy(commInfo.m_block_ids_offset);
   }
@@ -219,12 +223,12 @@ template <typename ValueT> class SendRecvOp : public IASynchOp
         rbuffer = &m_rbuffer[0];
       } else
         rbuffer = m_recv_buffer;
+      //alien_info([&] {cout() << "RecvInfo Nb Neighb : "<<m_recv_info.m_num_neighbours;}) ;
       for (Integer i = 0; i < m_recv_info.m_num_neighbours; ++i) {
         Integer off = m_recv_info.m_ids_offset[i];
         Integer size = m_recv_info.m_ids_offset[i + 1] - off;
         ValueT* ptr = rbuffer + off * m_unknowns_num;
         Integer rank = m_recv_info.m_ranks[i];
-        //->info()<<"START RECV : "<<off;
         m_recv_request[i] = Arccore::MessagePassing::mpReceive(
             m_parallel_mng, ArrayView<ValueT>(size * m_unknowns_num, ptr), rank, false);
       }
@@ -248,12 +252,11 @@ template <typename ValueT> class SendRecvOp : public IASynchOp
                 m_send_buffer[m_send_info.m_ids[i] * m_unknowns_num + ui];
       sbuffer = &m_sbuffer[0];
     }
+    //alien_info([&] {cout() << "SendInfo Nb Neighb : "<<m_send_info.m_num_neighbours;}) ;
     for (Integer i = 0; i < m_send_info.m_num_neighbours; ++i) {
       Integer off = m_send_info.m_ids_offset[i];
       Integer size = m_send_info.m_ids_offset[i + 1] - off;
       ValueT const* ptr = sbuffer + off * m_unknowns_num;
-      // m_trace->info()<<m_parallel_mng->commRank()<<"SEND BUFFER="<<*ptr<<"
-      // size="<<size;
       Integer rank = m_send_info.m_ranks[i];
       if (m_send_policy == CommProperty::ASynch)
         m_send_request[i] = Arccore::MessagePassing::mpSend(m_parallel_mng,
@@ -302,10 +305,10 @@ template <typename ValueT> class SendRecvOp : public IASynchOp
 
   void _startBlock(bool insitu)
   {
-
+    //alien_info([&] {cout() << "StartBlock "<<insitu<<" send pol"<<m_send_policy;});
     if (m_recv_policy == CommProperty::ASynch) {
       m_recv_request.resize(m_recv_info.m_num_neighbours);
-      ValueT* rbuffer = NULL;
+      ValueT* rbuffer = nullptr;
       if (m_recv_info.m_ids.size() && !insitu) {
         Integer size = m_recv_info.m_block_ids_offset[m_recv_info.m_num_neighbours]
             - m_recv_info.m_block_ids_offset[0];
@@ -313,12 +316,12 @@ template <typename ValueT> class SendRecvOp : public IASynchOp
         rbuffer = &m_rbuffer[0];
       } else
         rbuffer = m_recv_buffer;
+      //alien_info([&] {cout() << "RecvInfo Nb Neighb : "<<m_recv_info.m_num_neighbours;}) ;
       for (Integer i = 0; i < m_recv_info.m_num_neighbours; ++i) {
         Integer off = m_recv_info.m_block_ids_offset[i];
         Integer size = m_recv_info.m_block_ids_offset[i + 1] - off;
         ValueT* ptr = rbuffer + off;
         Integer rank = m_recv_info.m_ranks[i];
-        //->info()<<"START RECV : "<<off;
         m_recv_request[i] = Arccore::MessagePassing::mpReceive(
             m_parallel_mng, ArrayView<ValueT>(size, ptr), rank, false);
       }
@@ -352,8 +355,6 @@ template <typename ValueT> class SendRecvOp : public IASynchOp
       Integer off = m_send_info.m_block_ids_offset[i];
       Integer size = m_send_info.m_block_ids_offset[i + 1] - off;
       ValueT const* ptr = sbuffer + off;
-      // m_trace->info()<<m_parallel_mng->commRank()<<"SEND BUFFER="<<*ptr<<"
-      // size="<<size;
       Integer rank = m_send_info.m_ranks[i];
       if (m_send_policy == CommProperty::ASynch)
         m_send_request[i] = Arccore::MessagePassing::mpSend(
@@ -366,9 +367,13 @@ template <typename ValueT> class SendRecvOp : public IASynchOp
 
   void _endBlock(bool insitu)
   {
+    //alien_info([&] {cout() << "EndBlock "<<insitu<<" recv pol="<<m_recv_policy;});
     if (m_recv_policy == CommProperty::ASynch)
+    {
       Arccore::MessagePassing::mpWaitAll(m_parallel_mng, m_recv_request);
-    else {
+    }
+    else
+    {
       ValueT* rbuffer = m_recv_buffer;
       if (m_recv_info.m_ids.size() && !insitu) {
         Arccore::Integer size =
@@ -376,7 +381,8 @@ template <typename ValueT> class SendRecvOp : public IASynchOp
         m_rbuffer.resize(size);
         rbuffer = &m_rbuffer[0];
       }
-      for (Integer i = 0; i < m_recv_info.m_num_neighbours; ++i) {
+      for (Integer i = 0; i < m_recv_info.m_num_neighbours; ++i)
+      {
         Integer off = m_recv_info.m_block_ids_offset[i];
         Integer size = m_recv_info.m_block_ids_offset[i + 1] - off;
         ValueT* ptr = rbuffer + off;
@@ -384,7 +390,8 @@ template <typename ValueT> class SendRecvOp : public IASynchOp
         Arccore::MessagePassing::mpReceive(
             m_parallel_mng, ArrayView<ValueT>(size, ptr), rank);
       }
-      if (m_recv_info.m_ids.size() && !insitu) {
+      if (m_recv_info.m_ids.size() && !insitu)
+      {
         Arccore::Integer size = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours]
             - m_recv_info.m_ids_offset[0];
         Integer offset = 0;

@@ -62,10 +62,7 @@ namespace Alien {
 template <typename ValueT>
 StreamMatrixBuilderT<ValueT>::StreamMatrixBuilderT(Matrix& matrix, bool init_and_start)
 : m_matrix(matrix)
-, m_matrix_impl(NULL)
 , m_col_ordering(eUndef)
-, m_order_row_cols_opt(false)
-, m_trace(NULL)
 , m_state(eNone)
 {
   if (init_and_start) {
@@ -80,10 +77,7 @@ template <typename ValueT>
 StreamMatrixBuilderT<ValueT>::StreamMatrixBuilderT(
     BlockMatrix& matrix, bool init_and_start)
 : m_matrix(matrix)
-, m_matrix_impl(NULL)
 , m_col_ordering(eUndef)
-, m_order_row_cols_opt(false)
-, m_trace(NULL)
 , m_state(eNone)
 {
   if (init_and_start) {
@@ -97,10 +91,7 @@ StreamMatrixBuilderT<ValueT>::StreamMatrixBuilderT(
 template <typename ValueT>
 StreamMatrixBuilderT<ValueT>::StreamMatrixBuilderT(IMatrix& matrix, bool init_and_start)
 : m_matrix(matrix)
-, m_matrix_impl(NULL)
 , m_col_ordering(eUndef)
-, m_order_row_cols_opt(false)
-, m_trace(NULL)
 , m_state(eNone)
 {
   if (init_and_start) {
@@ -200,17 +191,16 @@ StreamMatrixBuilderT<ValueT>::init()
     return;
 
   m_matrix.impl()->lock();
-  std::cout << "STREAM BUILDER INIT " << m_matrix.impl()->block() << std::endl;
+
   m_matrix_impl = &m_matrix.impl()->template get<BackEnd::tag::simplecsr>(true);
 
-  const ISpace& space = m_matrix_impl->rowSpace();
+  //const ISpace& space = m_matrix_impl->rowSpace();
   // if (space != m_matrix_impl->colSpace())
   //  throw FatalErrorException(
   //      "stream matrix builder must be used with square matrix");
 
   const MatrixDistribution& dist = m_matrix_impl->distribution();
 
-  // m_trace = space.traceMng() ;
   m_parallel_mng = dist.parallelMng();
 
   m_matrix_impl->free();
@@ -300,7 +290,7 @@ StreamMatrixBuilderT<ValueT>::computeProfile()
   m_ghost_size = 0;
   m_offset.resize(m_nproc + 1);
   {
-    MessagePassing::mpAllGather(m_parallel_mng,
+    Arccore::MessagePassing::mpAllGather(m_parallel_mng,
         ConstArrayView<Integer>(1, &m_local_offset), m_offset.subView(0, m_nproc));
   }
   m_offset[m_nproc] = m_global_size;
@@ -402,7 +392,7 @@ StreamMatrixBuilderT<ValueT>::computeProfile()
     kcols.resize(m_matrix_size);
 
   profile.allocate();
-  ArrayView<Integer> m_cols = profile.getCols();
+  ArrayView<Integer> cols = profile.getCols();
 
   m_matrix_impl->allocate();
   m_matrix_impl->internal().getValues().fill(0.);
@@ -419,7 +409,7 @@ StreamMatrixBuilderT<ValueT>::computeProfile()
         // increment position for ghost cols
         if (!isLocal(col_uid))
           VALUE_OF(iter) += ghost_offset;
-        m_cols[offset + ordered_idx] = col_uid;
+        cols[offset + ordered_idx] = col_uid;
         kcols[offset + VALUE_OF(iter)] = offset + ordered_idx;
         if (col_uid == row + m_local_offset) {
           upper_diag_index[row] = ordered_idx;
@@ -431,6 +421,7 @@ StreamMatrixBuilderT<ValueT>::computeProfile()
     }
   } else {
     for (Integer row = 0; row < m_local_size; ++row) {
+    	if(m_trace) m_trace->info()<<"ROW("<<row<<")";
       Integer ghost_offset = m_row_size[row] - m_ghost_row_size[row];
       // int ordered_idx = 0;
       for (typename RowCols::iterator iter = row_cols[row].begin();
@@ -439,7 +430,7 @@ StreamMatrixBuilderT<ValueT>::computeProfile()
         // increment position for ghost cols
         if (!isLocal(col_uid))
           VALUE_OF(iter) += ghost_offset;
-        m_cols[offset + VALUE_OF(iter)] = col_uid;
+        cols[offset + VALUE_OF(iter)] = col_uid;
         ++icount;
       }
       offset += m_row_size[row];

@@ -326,6 +326,8 @@ void
 SimpleCSRMatrixMultT<ValueT>::_parallelMultVariableBlock(
     const VectorType& x_impl, VectorType& y_impl) const
 {
+  //alien_info([&] { cout()<<"_parallelMultVariableBlock";}) ;
+
   ArrayView<ValueT> y = y_impl.fullValues();
 
   ConstArrayView<Integer> block_sizes = m_matrix_impl.getDistStructInfo().m_block_sizes;
@@ -395,8 +397,10 @@ SimpleCSRMatrixMultT<ValueT>::_parallelMultVariableBlock(
       ConstArrayView<ValueT> x(block_size_col, x_ptr + block_offsets[col]);
       ConstArray2View<ValueT> matrix(
           matrix_ptr + block_cols[j], block_size_row, block_size_col);
-      for (Integer krow = 0; krow < block_size_row; ++krow) {
-        for (Integer kcol = 0; kcol < block_size_col; ++kcol) {
+      for (Integer krow = 0; krow < block_size_row; ++krow)
+      {
+        for (Integer kcol = 0; kcol < block_size_col; ++kcol)
+        {
           tmpy[krow] += matrix[krow][kcol] * x[kcol];
         }
       }
@@ -414,6 +418,8 @@ void
 SimpleCSRMatrixMultT<ValueT>::_seqMultVariableBlock(
     const VectorType& x_impl, VectorType& y_impl) const
 {
+  //alien_info([&] { cout()<<"_seqMultVariableBlock";}) ;
+
   ArrayView<ValueT> y = y_impl.fullValues();
 
   const ValueT* x_ptr = x_impl.getDataPtr();
@@ -429,8 +435,7 @@ SimpleCSRMatrixMultT<ValueT>::_seqMultVariableBlock(
 
   UniqueArray<ValueT> tmpy;
   tmpy.reserve(block->maxBlockSize());
-  for (Integer irow = 0; irow < m_matrix_impl.m_local_size;
-       ++irow) // Attention, c'est local !!!!
+  for (Integer irow = 0; irow < m_matrix_impl.m_local_size;++irow) // Attention, c'est local !!!!
   {
     const Integer block_size_row = block->size(irow);
     tmpy.resize(block_size_row);
