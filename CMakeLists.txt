@@ -14,11 +14,11 @@ set(config_install_dir "${CMAKE_INSTALL_DATAROOTDIR}/cmake/${PROJECT_NAME}")
 set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
 set(arccon_install_lib "${CMAKE_INSTALL_LIBDIR}/arccon")
 
-arccon_install_directory(NAMES build-system packages DESTINATION ${arccon_install_lib})
+arccon_install_directory(NAMES build-system DESTINATION ${arccon_install_lib})
 install(FILES Arccon.cmake loadArccon.cmake Readme.md DESTINATION ${arccon_install_lib})
 
-set(PACKAGES_DIR_SYSTEM ${arccon_install_lib}/build-system/packages)
-set(PACKAGES_DIR_P ${arccon_install_lib}/packages)
+#set(PACKAGES_DIR_SYSTEM ${arccon_install_lib}/build-system/packages)
+#set(PACKAGES_DIR_P ${arccon_install_lib}/packages)
 set(MODULE_PATH_SYSTEM ${arccon_install_lib}/build-system)
 set(MODULE_PATH_M ${arccon_install_lib}/build-system/Modules)
 
@@ -31,7 +31,7 @@ set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
 include(CMakePackageConfigHelpers)
 configure_package_config_file(ArcconConfig.cmake.in ${project_config}
   INSTALL_DESTINATION ${config_install_dir}
-  PATH_VARS PACKAGES_DIR_SYSTEM PACKAGES_DIR_P
+  PATH_VARS
   MODULE_PATH_SYSTEM MODULE_PATH_M
   CMAKE_COMMANDS
   )
