@@ -45,7 +45,7 @@ option(ALIEN_COMPONENT_MoveSemantic "Whether or not to compile MoveSemantic pack
 option(ALIEN_UNIT_TESTS "Whether or not to enable unit tests" ON)
 
 option(ALIEN_USE_HDF5 "Enable HDF5 export" OFF)
-option(ALIEN_USE_XML "Enable xml export" ON)
+option(ALIEN_USE_LIBXML2 "Enable xml export" ON)
 
 option(ALIEN_GENERATE_DOCUMENTATION "Generate API documentation" OFF)
 
