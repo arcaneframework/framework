@@ -44,7 +44,6 @@ using Arccore::ConstArray2View;
 using Arccore::MessagePassing::IMessagePassingMng;
 using Arccore::MessagePassing::MessageRank;
 
-using Arccore::BasicSerializer;
 using Arccore::ISerializer;
 using Arccore::MessagePassing::ISerializeMessage;
 using Arccore::MessagePassing::ISerializeMessageList;

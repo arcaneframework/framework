@@ -478,12 +478,7 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
     const InternalEntryIndex& entryIndex = *i;
     const Integer item_owner = entryIndex.m_item_owner;
     if (item_owner != m_local_owner) {
-          //if (m_trace_mng) m_trace_mng->pinfo() << entryIndex.m_item_localid << " : " << entryIndex.m_item_uid <<
-          //" is owned by " << item_owner << " with localIndex=" << entryIndex.m_item_index;
       parallel->sendRequests[item_owner][entryIndex.m_entry_uid].count++;
-    } else {
-          //if (m_trace_mng) m_trace_mng->pinfo() << entryIndex.m_item_localid << " : " << entryIndex.m_item_uid <<
-          //" is local with localIndex=" << entryIndex.m_item_index;
     }
   }
 
@@ -544,8 +539,6 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
   for (Integer isd = 0, nsd = m_parallel_mng->commSize(); isd < nsd; ++isd) {
     Integer recvCount = recvFromDomains[2 * isd + 0];
     while (recvCount-- > 0) {
-      //    if (m_trace) m_trace->pinfo() << "will receive an entry with " <<
-      //    recvFromDomains[2*isd+1] << " uid from " << isd;
       // FIXME do not use Arccore internal structure !
       auto recvMsg = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
           MessageRank(m_parallel_mng->commRank()), MessageRank(isd),
@@ -581,8 +574,6 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
 
       sbuf->get(nameString);
       uidCount = sbuf->getInteger();
-      //  if (m_trace) m_trace->pinfo() << nameString << " received with " << uidCount <<
-      //  " ids";
       recvRequest.ids.resize(uidCount);
       sbuf->getSpan(recvRequest.ids);
       ALIEN_ASSERT((uidCount == recvRequest.ids.size()), ("Inconsistency detected"));
