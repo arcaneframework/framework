@@ -1,7 +1,7 @@
 
-#include <ALIEN/Alien-RefSemanticMVHandlers.h>
-#include <ALIEN/Alien-ExternalPackages.h>
-#include <ALIEN/Alien-ImportExport.h>
+#include <alien/AlienExternalPackages.h>
+#include <alien/ref/AlienRefSemantic.h>
+#include <alien/ref/AlienImportExport.h>
 
 #include <Tests/Environment.h>
 

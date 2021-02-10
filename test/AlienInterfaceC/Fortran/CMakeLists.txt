@@ -5,6 +5,7 @@ set_target_properties(alien_interface_fortran.exe PROPERTIES LINKER_LANGUAGE CXX
 
 addSources(alien_interface_fortran.exe
            Program.f90
+           main.c
            )
 
 

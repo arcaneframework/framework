@@ -190,20 +190,20 @@ endif()
 # ---------------------------------------------------------------------------
 # ---------------------------------------------------------------------------
 #
-## debug
-#createOption(COMMANDLINE Debug
-#             NAME        DEBUG
-#             MESSAGE     "Debug mode"
-#             DEFAULT     ON)
-#
-#if(DEBUG)
-#  set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type mode (Debug or Release)" FORCE)
-#else()
-#  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type mode (Debug or Release)" FORCE)
-#endif()
-#
-## on ne veut que la configuration courante
-#set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING INTERNAL FORCE)
+# debug
+createOption(COMMANDLINE Debug
+             NAME        DEBUG 
+             MESSAGE     "Debug mode" 
+             DEFAULT     ON)
+
+if(DEBUG)
+  set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type mode (Debug or Release)" FORCE)
+else()
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type mode (Debug or Release)" FORCE)
+endif()
+
+# on ne veut que la configuration courante
+set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING INTERNAL FORCE)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -274,9 +274,9 @@ createOption(COMMANDLINE Shared
 
 # shared libraries
 if(SHARED)
-  set(BUILD_SHARED_LIBS True CACHE STRING "Shared build mode (True or False)" FORCE)
+  set(BUILD_SHARED_LIBS True CACHE BOOL "Shared build mode (True or False)" FORCE)
 else()
-  set(BUILD_SHARED_LIBS False CACHE STRING "Shared build mode (True or False)" FORCE)
+  set(BUILD_SHARED_LIBS False CACHE BOOL "Shared build mode (True or False)" FORCE)
 endif()
 
 # ----------------------------------------------------------------------------

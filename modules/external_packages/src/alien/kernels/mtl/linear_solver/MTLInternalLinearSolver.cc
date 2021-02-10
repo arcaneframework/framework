@@ -17,10 +17,10 @@
 #include <alien/kernels/mtl/algebra/MTLLinearAlgebra.h>
 #include <alien/data/Space.h>
 
-#include <ALIEN/axl/MTLLinearSolver_IOptions.h>
 
-#include <alien/kernels/mtl/linear_solver/arcane/MTLLinearSolverService.h>
 #include <alien/kernels/mtl/linear_solver/MTLOptionTypes.h>
+#include <ALIEN/axl/MTLLinearSolver_IOptions.h>
+#include <alien/kernels/mtl/linear_solver/arcane/MTLLinearSolverService.h>
 #include <ALIEN/axl/MTLLinearSolver_IOptions.h>
 #include <ALIEN/axl/MTLLinearSolver_StrongOptions.h>
 

@@ -1,7 +1,7 @@
-# NB: par défaut les packages sont cherchés dans un répertoire 'packages' situé à l'endroit
+# NB: par defaut les packages sont cherches dans un repertoire 'packages' situe a l'endroit
 #     du script d'appel de load_packages
 
-macro(isp_loadPackage)
+macro(loadPackage)
 
     set(options ESSENTIAL)
     set(oneValueArgs NAME PATH)
@@ -20,7 +20,6 @@ macro(isp_loadPackage)
         logFatalError("load_package error, name is undefined")
     endif ()
 
-    # useless with Arccon
     if (NOT ARGS_PATH)
         get_filename_component(SELF_DIR ${CMAKE_CURRENT_LIST_FILE} PATH)
         set(path ${SELF_DIR}/packages)
@@ -32,7 +31,7 @@ macro(isp_loadPackage)
             set(path ${SELF_DIR}/${ARGS_PATH})
         endif ()
     endif ()
-#
+
 #    if (NOT EXISTS ${path}/Find${ARGS_NAME}.cmake AND NOT ARGS_META)
 #        logFatalError("Find${ARGS_NAME}.cmake is not found - check PATH")
 #    endif ()
@@ -44,14 +43,28 @@ macro(isp_loadPackage)
         set(${target}_IS_ESSENTIAL ON)
     endif ()
 
-    if (${target}_IS_DISABLED)
-        if (${${target}_IS_ESSENTIAL})
-            logFatalError("package ${ARGS_NAME} is essential, can't be disabled")
-        endif ()
+  if(NOT DEFINED ${target}_IS_DISABLED)
+    set(${target}_IS_DISABLED OFF)
+  endif()
+  
+  if(${${target}_IS_DISABLED})
+    if (${${target}_IS_ESSENTIAL})
+       logFatalError("package ${ARGS_NAME} is essential, can't be disabled")
+    endif ()
+  else ()
+    if (ARGS_META)
+       logStatus("Args meta : ${ARGS_META}")
+       logStatus("USE CMAKE CONFIG : ${${ARGS_NAME}_USE_CMAKE_CONFIG}")
+       logStatus("${ARGS_NAME}_ROOT : ${${ARGS_NAME}_ROOT}")
+       create_meta(NAME ${target})
     else ()
-        if (ARGS_META)
-            create_meta(NAME ${target})
-        else ()
+    
+       logStatus("Config path : ${path}/Find${ARGS_NAME}.cmake")
+       logStatus("Args meta : ${ARGS_META}")
+       logStatus("USE CMAKE CONFIG : ${${ARGS_NAME}_USE_CMAKE_CONFIG}")
+       logStatus("${ARGS_NAME}_ROOT : ${${ARGS_NAME}_ROOT}")
+       if(${ARGS_NAME}_USE_CMAKE_CONFIG AND NOT ARGS_META)
+           logStatus("**********************USING CMAKE CONFIG")
             # Arccon
             # we use find_package now !
             if (ARGS_ESSENTIAL)
@@ -59,6 +72,7 @@ macro(isp_loadPackage)
             else ()
                 find_package(${ARGS_NAME} QUIET)
             endif ()
+            logStatus("FOUND : ${${ARGS_NAME}_FOUND}")
             if(${ARGS_NAME}_FOUND)
                 # fix for package Arccon et Axlstar
                 if (${ARGS_NAME} STREQUAL "Arccon")
@@ -71,7 +85,9 @@ macro(isp_loadPackage)
                     set(ARCANE_FOUND ON)
                 endif ()
             endif()
-            #include(${path}/Find${ARGS_NAME}.cmake)
+      else()
+        include(${path}/Find${ARGS_NAME}.cmake)
+      endif()
             if (TARGET ${target})
                 set(${target}_IS_LOADED ON)
                 if (WIN32)

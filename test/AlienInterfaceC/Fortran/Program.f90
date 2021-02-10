@@ -1,4 +1,4 @@
-program Program
+subroutine test
     use M_AlienModule
     implicit none
 
@@ -144,4 +144,4 @@ program Program
   call ALIEN_finalize()
 
 
-end program Program
+end subroutine test

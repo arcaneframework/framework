@@ -8,14 +8,16 @@
           data_structure/MTLVector.cc
           )
 
+  include(${AXLSTAR_CMAKE_COMMANDS})
+
   generateAxl(alien_external_packages
-          linear_solver/arcane/MTLLinearSolver.axl
-          AXL_OPTION_GENERATION_MODE ${AXL_OPTION_GENERATION_TYPE}
-          NAMESPACE ${NAMESPACE_TYPE}
-          ${IS_WITH_ARCANE}
-          ${IS_WITH_MESH}
-          INSTALL_GENERATED_FILES
-          )
+        linear_solver/arcane/MTLLinearSolver.axl
+        AXL_OPTION_GENERATION_MODE ${AXL_OPTION_GENERATION_TYPE}
+        NAMESPACE ${NAMESPACE_TYPE}
+        ${IS_WITH_ARCANE}
+        ${IS_WITH_MESH}
+        INSTALL_GENERATED_FILES
+        )
 
   addSources(alien_external_packages
           linear_solver/arcane/MTLLinearSolverService.cc

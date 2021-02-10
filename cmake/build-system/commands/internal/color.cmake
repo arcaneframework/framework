@@ -1,4 +1,4 @@
-if(NOT WIN32)
+if(NOT WIN32 AND NOT NO_COLOR)
   string(ASCII 27 Esc)
   set(ColourReset "${Esc}[m")
   set(ColourBold  "${Esc}[1m")

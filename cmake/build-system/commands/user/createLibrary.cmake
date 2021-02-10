@@ -19,7 +19,7 @@ function(createLibrary library)
   # création de la librarie
   add_library(${library} "")
 
-  # Pour trouver le bon ALIENConfig.h
+  # Pour trouver le bon <Project>Config.h
   target_include_directories(${library} PUBLIC
           $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
           )

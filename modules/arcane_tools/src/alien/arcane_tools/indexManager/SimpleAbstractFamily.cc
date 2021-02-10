@@ -40,7 +40,6 @@ namespace ArcaneTools {
     const Arccore::Integer commRank = parallelMng->commRank();
     const Arccore::Integer localSize = uniqueIds.size();
     Arccore::UniqueArray<Arccore::Integer> sizes(commSize);
-    //parallelMng->allGather(Arccore::IntegerConstArrayView(1, &localSize), sizes);
     Arccore::MessagePassing::mpAllGather(parallelMng,Arccore::IntegerConstArrayView(1, &localSize), sizes);
     Arccore::UniqueArray<Arccore::Integer> starts(commSize + 1);
     starts[0] = 0;
@@ -48,7 +47,6 @@ namespace ArcaneTools {
       starts[i + 1] = starts[i] + sizes[i];
 
     Arccore::UniqueArray<Arccore::Int64> allUniqueIds;
-    //parallelMng->allGatherVariable(uniqueIds, allUniqueIds);
     Arccore::MessagePassing::mpAllGatherVariable(parallelMng,uniqueIds, allUniqueIds);
 
     m_unique_ids.reserve(allUniqueIds.size());

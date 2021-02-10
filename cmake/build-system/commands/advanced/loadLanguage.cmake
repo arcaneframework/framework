@@ -36,6 +36,10 @@ macro(loadLanguage)
       endif()
     endif()
     
+    if(NOT EXISTS ${path}/${ARGS_NAME}.cmake)
+      logFatalError("langage file '${path}/${ARGS_NAME}.cmake' not found")
+    endif()
+    
     include(${path}/${ARGS_NAME}.cmake)
 
     set_property(GLOBAL APPEND PROPERTY ${PROJECT_NAME}_LANGUAGES ${ARGS_NAME})

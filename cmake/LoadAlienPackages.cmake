@@ -6,39 +6,39 @@
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-isp_loadPackage(NAME Alien ESSENTIAL)
+loadPackage(NAME Alien ESSENTIAL)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-isp_loadPackage(NAME MPI   ESSENTIAL)
-isp_loadPackage(NAME Boost ESSENTIAL)
-isp_loadPackage(NAME GTest ESSENTIAL)
+loadPackage(NAME Mpi   ESSENTIAL)
+loadPackage(NAME Boost ESSENTIAL)
+loadPackage(NAME GTest ESSENTIAL)
 
 set(MPI_ROOT ${MPI_ROOT_PATH})
 
 ## En fait pour cette dependance, en reecrivant a minima, on veut juste les blas
-isp_loadPackage(NAME MKL)
+loadPackage(NAME MKL)
 #if (NOT MKL_FOUND)
-#isp_loadPackage(NAME BLAS ESSENTIAL)
+#loadPackage(NAME BLAS ESSENTIAL)
 #endif (NOT MKL_FOUND)
-isp_loadPackage(NAME OpenBLAS)
+loadPackage(NAME OpenBLAS)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
 # tools
 
-isp_loadPackage(NAME LibXml2)
-isp_loadPackage(NAME Metis)
-isp_loadPackage(NAME HDF5)
-isp_loadPackage(NAME HWLoc)
-isp_loadPackage(NAME Numa)
-isp_loadPackage(NAME TBB)
-isp_loadPackage(NAME HARTS)
-isp_loadPackage(NAME Cuda)
-isp_loadPackage(NAME NvAMG)
-isp_loadPackage(NAME FFTW3)
+loadPackage(NAME LibXml2)
+loadPackage(NAME Metis)
+loadPackage(NAME Hdf5)
+loadPackage(NAME HWLoc)
+loadPackage(NAME Numa)
+loadPackage(NAME TBB)
+loadPackage(NAME HARTS)
+loadPackage(NAME Cuda)
+loadPackage(NAME NvAMG)
+loadPackage(NAME FFTW3)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -46,21 +46,21 @@ isp_loadPackage(NAME FFTW3)
 # solveurs
 
 #loadPackage(NAME Umfpack)
-isp_loadPackage(NAME PETSc)
-isp_loadPackage(NAME SLEPc)
-isp_loadPackage(NAME Hypre)
-isp_loadPackage(NAME MTL4)
-isp_loadPackage(NAME SuperLU)
-isp_loadPackage(NAME SuperLU_DIST)
-isp_loadPackage(NAME MUMPS)
-isp_loadPackage(NAME IFPSolver)
-isp_loadPackage(NAME MCGSolver)
-isp_loadPackage(NAME Eigen3)
-isp_loadPackage(NAME Spectra)
-isp_loadPackage(NAME HTSSolver)
-isp_loadPackage(NAME Trilinos)
-isp_loadPackage(NAME Arpack)
-isp_loadPackage(NAME HPDDM)
+loadPackage(NAME PETSc)
+loadPackage(NAME SLEPc)
+loadPackage(NAME Hypre)
+loadPackage(NAME MTL4)
+loadPackage(NAME SuperLU)
+loadPackage(NAME SuperLU_DIST)
+loadPackage(NAME MUMPS)
+loadPackage(NAME IFPSolver)
+loadPackage(NAME MCGSolver)
+loadPackage(NAME Eigen3)
+loadPackage(NAME Spectra)
+loadPackage(NAME HTSSolver)
+loadPackage(NAME Trilinos)
+loadPackage(NAME Arpack)
+loadPackage(NAME HPDDM)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -83,7 +83,7 @@ if (TARGET arcconpkg_SuperLU)
 endif()
 
 if (TARGET arcconpkg_MTL4)
-  add_library(mtl ALIAS arcconpkg_MTL4)
+  add_library(mtl4 ALIAS arcconpkg_MTL4)
 endif()
 
 if (TARGET arcconpkg_TBB)
@@ -100,7 +100,7 @@ find_package(Boost COMPONENTS program_options system REQUIRED)
 
 # NB: en dernier car arcane charge éventuellement d'autres packages
 #     si le package existe déjà, on ne fait rien
-isp_loadPackage(NAME Arcane)
+loadPackage(NAME Arcane)
 
 if(NOT TARGET arcane_core)
     logStatus("arcane is not found")

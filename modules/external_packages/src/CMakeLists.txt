@@ -31,6 +31,10 @@ if(TARGET mtl4)
     addDirectory(alien/kernels/mtl)
 endif()
 
+if(TARGET arcconpkg_MTL4)
+    addDirectory(alien/kernels/mtl)
+endif()
+
 if(TARGET petsc)
     addDirectory(alien/kernels/petsc)
     addSources(alien_external_packages

@@ -13,6 +13,24 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
+set(USE_ARCCON TRUE)
+set(Arccon_USE_CMAKE_CONFIG TRUE)
+set(Arccore_USE_CMAKE_CONFIG TRUE)
+set(Axlstar_USE_CMAKE_CONFIG TRUE)
+set(Alien_USE_CMAKE_CONFIG TRUE)
+set(Arcane_USE_CMAKE_CONFIG TRUE)
+set(PETSc_USE_CMAKE_CONFIG TRUE)
+set(Hypre_USE_CMAKE_CONFIG TRUE)
+#set(MTL4_USE_CMAKE_CONFIG TRUE)
+set(SuperLU_USE_CMAKE_CONFIG TRUE)
+set(GTest_USE_CMAKE_CONFIG TRUE)
+set(TBB_USE_CMAKE_CONFIG TRUE)
+#set(Mpi_USE_CMAKE_CONFIG TRUE)
+set(OpenBLAS_USE_CMAKE_CONFIG TRUE)
+set(Boost_USE_CMAKE_CONFIG TRUE)
+set(Glib_USE_CMAKE_CONFIG TRUE)
+
+
 
 include(LoadBuildSystem)
 
