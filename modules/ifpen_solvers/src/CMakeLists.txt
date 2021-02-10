@@ -21,6 +21,9 @@ else ()
     set(IS_WITH_MESH "NO_MESH")
 endif ()
 
+
+include(${AXLSTAR_CMAKE_COMMANDS})
+
 if(TARGET mcgsolver)
   addDirectory(alien/kernels/mcg)
 endif()
@@ -46,7 +49,7 @@ endif()
 linkLibraries(alien_ifpen_solvers Alien::alien_core
                                   Alien::alien_kernel_simplecsr)
 
-linkLibraries(alien_ifpen_solvers Boost::system)
+linkLibraries(alien_ifpen_solvers Boost::program_options Boost::system)
 
 target_include_directories(alien_ifpen_solvers PUBLIC
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
@@ -56,7 +59,7 @@ target_include_directories(alien_ifpen_solvers PUBLIC
 
 commit(alien_ifpen_solvers)
 
-install(DIRECTORY ALIEN
+install(DIRECTORY alien
 	DESTINATION include
 	FILES_MATCHING PATTERN "*.h"
   )

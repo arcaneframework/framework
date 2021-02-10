@@ -35,6 +35,7 @@
 #include <alien/kernels/hts/algebra/HTSLinearAlgebra.h>
 #include <alien/kernels/hts/linear_solver/HTSInternalLinearSolver.h>
 #include <alien/core/backend/LinearSolverT.h>
+#include <alien/core/backend/SolverFabricRegisterer.h>
 #include <alien/core/block/ComputeBlockOffsets.h>
 #include <ALIEN/axl/HTSSolver_IOptions.h>
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
@@ -476,4 +477,166 @@ HTSInternalLinearSolverFactory(
 {
   return new HTSInternalLinearSolver(p_mng, options);
 }
+
+}
+
+#include <alien/kernels/hts/linear_solver/HTSInternalLinearSolver.h>
+#include <alien/kernels/hts/linear_solver/HTSOptionTypes.h>
+#include <alien/kernels/hts/linear_solver/arcane/HTSLinearSolver.h>
+#include <ALIEN/axl/HTSSolver_axl.h>
+#include <ALIEN/axl/HTSSolver_StrongOptions.h>
+
+namespace Alien {
+
+template<>
+class SolverFabric<Alien::BackEnd::tag::htssolver>
+: public ISolverFabric
+{
+public :
+  BackEndId backend() const {
+     return "htssolver" ;
+  }
+
+  void
+  add_options(CmdLineOptionDescType& cmdline_options) const
+  {
+    std::cout<<"ADD HTS SOLVER OPTIONS"<<std::endl ;
+    using namespace boost::program_options;
+    options_description desc("HTSSolver options");
+    desc.add_options()("hts-solver",     value<std::string>()->default_value("bicgs"),"solver algo name : bicgstab ddml")
+                      ("hts-precond",    value<std::string>()->default_value("none"),"preconditioner diag none poly chebyshev bssor ilu0 ilu0fp ddml amg cpramg")
+                      ("hts-nb-threads", value<int>()->default_value(1), "number of thread for multithreaded solver")
+                      ("hts-pqueue",     value<int>()->default_value(0),"Parallel Queue System :\n \t 0->Single\n \t 1->Distributed \n \t 2->Squential")
+                      ("hts-thread-env-type",value<int>()->default_value(0),"ThreadEnv System : \n \t 0->Pth\n \t 1->OpenMP \n \t 2->TBB")
+                      ("hts-affinity-mode",  value<int>()->default_value(0),"Affinity Mode : \n \t 0->Block \n \t 1->Interleave")
+                      ("hts-use-simd",       value<int>()->default_value(0)," enable simd optimization")
+                      ("hts-nb-part",        value<int>()->default_value(1),"number of domain partitions")
+                      ("hts-nb-subpart",     value<int>()->default_value(0),"number of subdomain partitions")
+                      ("hts-metis",          value<int>()->default_value(1),"to use metis partitioner on each MPI domains")
+                      ("hts-smetis",         value<int>()->default_value(1),"to use metis partitioner on each MPI domains")
+                      ("hts-poly-factor",    value<double>()->default_value(0.), "polynomial factor")
+                      ("hts-poly-eigenvalue-ratio",value<double>()->default_value(30.),"polynomial eigen ratio")
+                      ("hts-poly-eigenvalue-max",  value<double>()->default_value(0.),"polynomial eigenvalue max factor")
+                      ("hts-poly-eigenvalue-min",  value<double>()->default_value(0.),"polynomial eigenvalue min factor")
+                      ("hts-poly-factor-max-iter", value<int>()->default_value(3),"polynomial max iter factor")
+                      ("hts-poly-degree",          value<int>()->default_value(3),"polynomial degree")
+                      ("hts-ilufp-factor-niter",   value<int>()->default_value(0),"fixed point ilu number of factorization iterations")
+                      ("hts-ilufp-solver-niter",   value<int>()->default_value(1),"fixed point ilu number of solver iterations")
+                      ("hts-ilufp-tol",            value<double>()->default_value(0.),"fixed point ilu tolerance")
+                      ("hts-ilu-level",            value<int>()->default_value(0),"iluk level")
+                      ("hts-ilu-drop-tol",         value<double>()->default_value(0.),"iluk drop tolerance")
+                      ("hts-ml-algo",              value<int>()->default_value(0),"0->AS, 1->ML")
+                      ("hts-ml-iter",              value<int>()->default_value(3),"ML iter")
+                      ("hts-ml-tol",               value<double>()->default_value(0.5),"ML tolerance")
+                      ("hts-ml-nev",               value<int>()->default_value(1),"ML nb max of eigen values")
+                      ("hts-ml-evtype",            value<int>()->default_value(1),"ML Eigen Solver type : \n 0->SLEPC \n \t 1->ARPACK \n \t 2->Spectra")
+                      ("hts-ml-evbound",           value<double>()->default_value(0.), "nb max of eigen values")
+                      ("hts-ml-evtol",             value<double>()->default_value(1.e-6),"ML ev algo tolerance")
+                      ("hts-ml-ev-max-iter",       value<int>()->default_value(1000),"ML ev algo max iter")
+                      ("hts-ml-coarse-op",         value<int>()->default_value(1),"ML option -- Coarse operator choice -- \n \t 1) Nicolaides \n \t  2) GenEO")
+                      ("hts-ml-solver",            value<int>()->default_value(0),"DDML option -- local solver choice -- \n \t 0->LU, \n \t 1->LUS, \n \t 2->BCGS, \n \t 3->ILUBCGS")
+                      ("hts-ml-solver-iter",       value<int>()->default_value(100),"ML local solver iter")
+                      ("hts-ml-solver-tol",        value<double>()->default_value(1.e-6),"ML local solver tolerance")
+                      ("hts-ml-solver-nev",        value<int>()->default_value(1),"ML local solver nb max of eigen values")
+                      ("hts-ml-coarse-solver",     value<int>()->default_value(0),"DDML option -- coarse solver choice -- \n \t 0->LU, \n \t 1->LUS, \n \t 2->LUMT, \n \t 3->LUMTS \n \t 4->DistLU")
+                      ("hts-ml-coarse-solver-ntile",  value<int>()->default_value(1), "nb domain per tile")
+                      ("hts-ml-neumann-cor",          value<int>()->default_value(-1),"ML Neumann cor")
+                      ("hts-relax-solver",         value<int>()->default_value(0),"relax solver option")
+                      ("hts-cpr-solver",           value<int>()->default_value(0),"cpr solver option")
+                      ("hts-amg-algo",             value<std::string>()->default_value("PMIS"),"AMG algorithm option, AGGREGATION or PMIS");
+    cmdline_options.add(desc) ;
+  }
+
+
+  template<typename OptionT>
+  Alien::ILinearSolver* _create(OptionT const& options,Alien::IMessagePassingMng* pm) const
+  {
+    int output_level = get<int>(options,   "output-level") ;
+    double tol       = get<double>(options,"tol");
+    int max_iter     = get<int>(options,   "max-iter");
+
+    std::string precond_type_s = get<std::string>(options,"hts-precond");
+    HTSOptionTypes::ePreconditioner precond_type =
+        OptionsHTSSolverUtils::stringToPreconditionerEnum(precond_type_s);
+
+    std::string solver_type_s = get<std::string>(options,"hts-solver");
+    HTSOptionTypes::eSolver solver_type =
+        OptionsHTSSolverUtils::stringToSolverEnum(solver_type_s);
+
+    auto options_ml = std::make_shared<HTSSolverOptionsNames::StrongOptionsMLOptType>(
+        HTSSolverOptionsNames::MLOptTypeOptionsNames::_output            = get<int>(options,"hts-ml-output"),
+        HTSSolverOptionsNames::MLOptTypeOptionsNames::_algo              = get<int>(options,"hts-ml-algo"),
+        HTSSolverOptionsNames::MLOptTypeOptionsNames::_iter              = get<int>(options,"hts-ml-iter"),
+        HTSSolverOptionsNames::MLOptTypeOptionsNames::_tol               = get<double>(options,"hts-ml-tol"),
+        HTSSolverOptionsNames::MLOptTypeOptionsNames::_nev               = get<int>(options,"hts-ml-nev"),
+        HTSSolverOptionsNames::MLOptTypeOptionsNames::_evtype            = get<int>(options,"hts-ml-evtype"),
+        HTSSolverOptionsNames::MLOptTypeOptionsNames::_evbound           = get<int>(options,"hts-ml-evbound"),
+        HTSSolverOptionsNames::MLOptTypeOptionsNames::_evtol             = get<double>(options,"hts-ml-evtol"),
+        HTSSolverOptionsNames::MLOptTypeOptionsNames::_evMaxIter         = get<int>(options,"hts-ml-ev-max-iter"),
+        HTSSolverOptionsNames::MLOptTypeOptionsNames::_coarseOp          = get<int>(options,"hts-ml-coarse-op"),
+        HTSSolverOptionsNames::MLOptTypeOptionsNames::_solver            = get<int>(options,"hts-ml-solver"),
+        HTSSolverOptionsNames::MLOptTypeOptionsNames::_solverIter        = get<int>(options,"hts-ml-solver-iter"),
+        HTSSolverOptionsNames::MLOptTypeOptionsNames::_solverTol         = get<double>(options,"hts-ml-solver-tol"),
+        HTSSolverOptionsNames::MLOptTypeOptionsNames::_solverNev         = get<int>(options,"hts-ml-solver-nev"),
+        HTSSolverOptionsNames::MLOptTypeOptionsNames::_coarseSolver      = get<int>(options,"hts-ml-coarse-solver"),
+        HTSSolverOptionsNames::MLOptTypeOptionsNames::_coarseSolverNtile = get<int>(options,"hts-ml-coarse-solver-ntile"),
+        HTSSolverOptionsNames::MLOptTypeOptionsNames::_neumannCor        = get<int>(options,"hts-ml-neumann-cor"));
+
+    // options
+    auto solver_options = std::make_shared<StrongOptionsHTSSolver>(
+        HTSSolverOptionsNames::_output            = output_level,
+        HTSSolverOptionsNames::_maxIterationNum   = max_iter,
+        HTSSolverOptionsNames::_stopCriteriaValue = tol,
+        HTSSolverOptionsNames::_preconditioner    = precond_type,
+        HTSSolverOptionsNames::_solver            = solver_type,
+        HTSSolverOptionsNames::_polyFactor          = get<double>(options,"hts-poly-factor"),
+        HTSSolverOptionsNames::_polyEigenvalueRatio = get<double>(options,"hts-poly-eigenvalue-ratio"),
+        HTSSolverOptionsNames::_polyEigenvalueMax   = get<double>(options,"hts-poly-eigenvalue-max"),
+        HTSSolverOptionsNames::_polyEigenvalueMin   = get<double>(options,"hts-poly-eigenvalue-min"),
+        HTSSolverOptionsNames::_polyFactorMaxIter   = get<int>(options,"hts-poly-factor-max-iter"),
+        HTSSolverOptionsNames::_polyDegree         = get<int>(options,"hts-poly-degree"),
+        HTSSolverOptionsNames::_ilufpFactorNiter  = get<int>(options,"hts-ilufp-factor-niter"),
+        HTSSolverOptionsNames::_ilufpSolverNiter  = get<int>(options,"hts-ilufp-solver-niter"),
+        HTSSolverOptionsNames::_ilufpTol          = get<double>(options,"hts-ilufp-tol"),
+        HTSSolverOptionsNames::_iluLevel          = get<int>(options,"hts-ilu-level"),
+        HTSSolverOptionsNames::_iluDropTol        = get<double>(options,"hts-ilu-drop-tol"),
+        HTSSolverOptionsNames::_useUnitDiag       = (get<int>(options,"hts-use-unit-diag") == 1),
+        HTSSolverOptionsNames::_keepDiagOpt       = (get<int>(options,"hts-keep-diag-opt")== 1),
+        HTSSolverOptionsNames::_reorderOpt        = (get<int>(options,"hts-reorder-opt") == 1),
+        HTSSolverOptionsNames::_interfaceOpt      = (get<int>(options,"hts-interface-opt") == 1),
+        HTSSolverOptionsNames::_relaxSolver       = get<int>(options,"hts-relax-solver"),
+        HTSSolverOptionsNames::_cprSolver         = get<int>(options,"hts-cpr-solver"),
+        HTSSolverOptionsNames::_amgAlgo           = get<std::string>(options,"hts-amg-algo"),
+        HTSSolverOptionsNames::_normalizeOpt      = (get<int>(options,"hts-normalize-opt") == 1),
+        HTSSolverOptionsNames::_useThread         = (get<int>(options,"hts-use-thread") == 1),
+        HTSSolverOptionsNames::_nbThreads         = get<int>(options,"hts-nb-threads"),
+        HTSSolverOptionsNames::_pqueue            = get<int>(options,"hts-pqueue"),
+        HTSSolverOptionsNames::_threadEnvType     = get<int>(options,"hts-thread-env-type"),
+        HTSSolverOptionsNames::_affinityMode      = get<int>(options,"hts-affinity-mode"),
+        HTSSolverOptionsNames::_useSimd           = (get<int>(options,"hts-use-simd")==1),
+        HTSSolverOptionsNames::_nbPart            = get<int>(options,"hts-nb-part"),
+        HTSSolverOptionsNames::_nbSubpart         = get<int>(options,"hts-nb-subpart"),
+        HTSSolverOptionsNames::_metis             = get<int>(options,"hts-metis"),
+        HTSSolverOptionsNames::_smetis            = get<int>(options,"hts-smetis"),
+        HTSSolverOptionsNames::_sendrecvOpt       = get<int>(options,"hts-sendrecv-opt"),
+        HTSSolverOptionsNames::_dumpMatFileName   = get<std::string>(options,"hts-dump-mat-file-name"),
+        HTSSolverOptionsNames::_mlOpt             = options_ml);
+    // service
+    return  new Alien::HTSLinearSolver(pm, solver_options);
+  }
+
+  Alien::ILinearSolver* create(CmdLineOptionType const& options,Alien::IMessagePassingMng* pm) const
+  {
+    return _create(options,pm) ;
+  }
+
+  Alien::ILinearSolver* create(JsonOptionType const& options,Alien::IMessagePassingMng* pm) const
+  {
+    return _create(options,pm) ;
+  }
+};
+
+typedef SolverFabric<Alien::BackEnd::tag::htssolver> HTSSOLVERSolverFabric ;
+REGISTER_SOLVER_FABRIC(HTSSOLVERSolverFabric);
+
 } // namespace Alien

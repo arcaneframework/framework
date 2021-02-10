@@ -4,7 +4,7 @@ function(linkLibraries target)
   get_target_property(committed ${target} BUILDSYSTEM_COMMITTED)
 
   if(${committed})
-    logFatalError("target ${target} is alreday committed, can't link libraries")
+    logFatalError("target ${target} is already committed, can't link libraries")
   endif()
 
   # ajouts des libraries

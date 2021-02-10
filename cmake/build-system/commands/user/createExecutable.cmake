@@ -1,4 +1,4 @@
-function(isp_createExecutable exe)
+function(createExecutable exe)
 
   if(TARGET ${exe})
     logFatalError("executable ${exe} already defined")
@@ -9,7 +9,7 @@ function(isp_createExecutable exe)
   # création de l'executable
   add_executable(${exe} "")
 
-  # Pour trouver le bon ALIENConfig.h
+  # Pour trouver le bon <Project>Config.h
   target_include_directories(${exe} PUBLIC
           $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
           )

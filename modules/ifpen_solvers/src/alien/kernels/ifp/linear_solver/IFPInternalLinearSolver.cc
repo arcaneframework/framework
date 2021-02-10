@@ -7,6 +7,7 @@
 #include <alien/core/backend/LinearSolverT.h>
 #include <alien/kernels/ifp/linear_solver/IFPSolverProperty.h>
 
+#include <alien/core/backend/SolverFabricRegisterer.h>
 /*---------------------------------------------------------------------------*/
 
 #include "IFPSolverProperty.h"
@@ -120,7 +121,9 @@ IFPInternalLinearSolver::init()
   {
     auto mpi_mng =
         dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(m_parallel_mng);
-    auto* ptr = mpi_mng->getMPIComm();
+    const void* ptr = nullptr ;
+    if(mpi_mng)
+       ptr = mpi_mng->getMPIComm();
     if (ptr) {
       auto* comm = static_cast<const MPI_Comm*>(ptr);
       fcomm = static_cast<Integer>(*comm);
@@ -325,6 +328,68 @@ IFPInternalLinearSolverFactory(
   return new IFPInternalLinearSolver(p_mng, options);
 }
 
+}
+
+#include <alien/kernels/ifp/linear_solver/arcane/IFPLinearSolverService.h>
+#include <alien/kernels/ifp/linear_solver/IFPSolverProperty.h>
+#include <ALIEN/axl/IFPLinearSolver_IOptions.h>
+#include <ALIEN/axl/IFPLinearSolver_StrongOptions.h>
+
+
+namespace Alien {
+
+template<>
+class SolverFabric<Alien::BackEnd::tag::ifpsolver>
+: public ISolverFabric
+{
+public :
+  BackEndId backend() const {
+     return "ifpsolver" ;
+  }
+
+  void
+  add_options(CmdLineOptionDescType& cmdline_options) const
+  {
+    using namespace boost::program_options;
+    options_description desc("IFPSolver options");
+    desc.add_options()("ifps-solver", value<std::string>()->default_value("bicgs"),"solver algo name : bicgs lu")
+        ("ifps-precond", value<std::string>()->default_value("none"),"preconditioner diag none ilu0 amg cpramg");
+
+    cmdline_options.add(desc) ;
+  }
+
+  template<typename OptionT>
+  Alien::ILinearSolver* _create(OptionT const& options,Alien::IMessagePassingMng* pm) const
+  {
+    double tol = get<double>(options,"tol");
+    int max_iter = get<int>(options,"max-iter");
+
+    std::string precond_type_s = get<std::string>(options,"ifps-precond");
+    IFPSolverProperty::ePrecondType precond_type =
+        OptionsIFPLinearSolverUtils::stringToPrecondOptionEnum(precond_type_s);
+    // options
+    auto solver_options = std::make_shared<StrongOptionsIFPLinearSolver>(
+        IFPLinearSolverOptionsNames::_output = get<int>(options,"output-level"),
+        IFPLinearSolverOptionsNames::_numIterationsMax = max_iter,
+        IFPLinearSolverOptionsNames::_stopCriteriaValue = tol,
+        IFPLinearSolverOptionsNames::_precondOption = precond_type);
+    // service
+    return  new Alien::IFPLinearSolverService(pm, solver_options);
+  }
+
+  Alien::ILinearSolver* create(CmdLineOptionType const& options,Alien::IMessagePassingMng* pm) const
+  {
+    return _create(options,pm) ;
+  }
+
+  Alien::ILinearSolver* create(JsonOptionType const& options,Alien::IMessagePassingMng* pm) const
+  {
+    return _create(options,pm) ;
+  }
+};
+
+typedef SolverFabric<Alien::BackEnd::tag::ifpsolver> IFPSOLVERSolverFabric ;
+REGISTER_SOLVER_FABRIC(IFPSOLVERSolverFabric);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

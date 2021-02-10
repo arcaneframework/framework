@@ -52,11 +52,11 @@
       <description>polynomial degree</description>
     </simple>
     
-    <simple name="ilufp-factor-niter" type="real" default="0">
+    <simple name="ilufp-factor-niter" type="integer" default="0">
       <description>fixed point ilu number of factorization iterations</description>
     </simple>
     
-    <simple name="ilufp-solver-niter" type="real" default="1">
+    <simple name="ilufp-solver-niter" type="integer" default="1">
       <description>fixed point ilu number of solver iterations</description>
     </simple>
     
@@ -64,7 +64,7 @@
       <description>fixed point ilu tolerance</description>
     </simple>
     
-    <simple name="ilu-level" type="real" default="0">
+    <simple name="ilu-level" type="integer" default="0">
       <description>iluk level</description>
     </simple>
     
@@ -266,7 +266,7 @@
        </description>
     </simple>
     
-    <simple name="use-simd" type="integer" default="0">
+    <simple name="use-simd" type="bool" default="false">
       <description></description>
     </simple>
     

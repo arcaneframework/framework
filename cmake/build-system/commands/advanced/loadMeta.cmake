@@ -26,6 +26,8 @@ macro(loadMeta)
     add_library(${target} INTERFACE)
     set(${target}_IS_META ON)
     set(${TARGET}_FOUND ON)
+
+    set(${PROJECT_NAME}_${TARGET} TRUE)
 	
     get_property(TARGETS GLOBAL PROPERTY ${PROJECT_NAME}_TARGETS)
     list(APPEND TARGETS ${target})

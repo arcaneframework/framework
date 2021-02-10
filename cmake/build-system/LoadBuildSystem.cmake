@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.4.1)
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-message(status "TEST COMPILE")
 # outillage cmake
 include(CMakeParseArguments)
 include(FindPackageHandleStandardArgs)
@@ -62,6 +61,7 @@ include(${BUILD_SYSTEM_PATH}/commands/user/addSources.cmake)
 include(${BUILD_SYSTEM_PATH}/commands/user/addDirectory.cmake)
 include(${BUILD_SYSTEM_PATH}/commands/user/linkLibraries.cmake)
 include(${BUILD_SYSTEM_PATH}/commands/user/generateCMakeLists.cmake)
+include(${BUILD_SYSTEM_PATH}/commands/user/RegisterPackageLibrary.cmake)
 include(${BUILD_SYSTEM_PATH}/commands/user/generateCMakeConfig.cmake)
 
 # ----------------------------------------------------------------------------

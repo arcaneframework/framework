@@ -31,7 +31,7 @@ endif ()
 #  list(APPEND DEP_LIBRARIES ALIEN-IFPEN)
 #endif (TARGET ALIEN-IFPEN)
 
-isp_createExecutable(gtest.unitary)
+createExecutable(gtest.unitary)
 
 addSources(gtest.unitary
         main.cpp)

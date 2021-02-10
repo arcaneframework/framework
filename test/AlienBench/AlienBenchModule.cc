@@ -30,6 +30,7 @@
 #include <alien/arcane_tools/indexManager/SimpleAbstractFamily.h>
 #include <alien/arcane_tools/distribution/DistributionFabric.h>
 #include <alien/arcane_tools/indexSet/IndexSetFabric.h>
+#include <alien/arcane_tools/data/Space.h>
 
 #include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
 
@@ -121,11 +122,11 @@ AlienBenchModule::test()
   // Accès à l'indexation
   Arccore::UniqueArray<Arccore::Integer> allUIndex = index_manager.getIndexes(indexSetU);
 
-  m_mdist = Alien::ArcaneTools::createMatrixDistribution(&index_manager, parallelMng());
-  m_vdist = Alien::ArcaneTools::createVectorDistribution(&index_manager, parallelMng());
+  Alien::ArcaneTools::Space space(&index_manager, "TestSpace");
+  m_mdist = Alien::ArcaneTools::createMatrixDistribution(space);
+  m_vdist = Alien::ArcaneTools::createVectorDistribution(space);
 
   info() << "GLOBAL SIZE : " << m_vdist.globalSize();
-  Alien::Space space(m_vdist.globalSize(), "TestSpace");
 
   Alien::Vector vectorB(m_vdist);
   Alien::Vector vectorBB(m_vdist);

@@ -41,7 +41,7 @@ target_include_directories(alien_hpddm PUBLIC
 
 commit(alien_hpddm)
 
-install(DIRECTORY ALIEN
+install(DIRECTORY alien
 	DESTINATION include
 	FILES_MATCHING PATTERN "*.h"
   )

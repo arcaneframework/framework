@@ -21,11 +21,17 @@ else ()
     set(IS_WITH_MESH "NO_MESH")
 endif ()
 
+include(${AXLSTAR_CMAKE_COMMANDS})
+
 if(TARGET hypre)
     addDirectory(alien/kernels/hypre)
 endif()
 
 if(TARGET mtl4)
+    addDirectory(alien/kernels/mtl)
+endif()
+
+if(TARGET arcconpkg_MTL4)
     addDirectory(alien/kernels/mtl)
 endif()
 
@@ -46,7 +52,9 @@ if(TARGET umfpack)
     linkLibraries(alien_external_packages umfpack)
 endif()
 
-linkLibraries(alien_external_packages Alien::alien_core)
+linkLibraries(alien_external_packages 
+              Alien::alien_core 
+              Boost::program_options)
 
 target_include_directories(alien_external_packages PUBLIC
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
@@ -56,7 +64,7 @@ target_include_directories(alien_external_packages PUBLIC
 
 commit(alien_external_packages)
 
-install(DIRECTORY ALIEN
+install(DIRECTORY alien
         DESTINATION include
         FILES_MATCHING PATTERN "*.h"
         )

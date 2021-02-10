@@ -5,6 +5,8 @@
 #include <alien/expression/solver/SolverStater.h>
 #include <alien/core/backend/LinearSolverT.h>
 
+#include <alien/core/backend/SolverFabricRegisterer.h>
+
 #include <boost/numeric/mtl/mtl.hpp>
 #include <boost/numeric/itl/itl.hpp>
 
@@ -15,7 +17,12 @@
 #include <alien/kernels/mtl/algebra/MTLLinearAlgebra.h>
 #include <alien/data/Space.h>
 
+
+#include <alien/kernels/mtl/linear_solver/MTLOptionTypes.h>
 #include <ALIEN/axl/MTLLinearSolver_IOptions.h>
+#include <alien/kernels/mtl/linear_solver/arcane/MTLLinearSolverService.h>
+#include <ALIEN/axl/MTLLinearSolver_IOptions.h>
+#include <ALIEN/axl/MTLLinearSolver_StrongOptions.h>
 
 /*---------------------------------------------------------------------------*/
 
@@ -242,5 +249,63 @@ MTLInternalLinearSolverFactory(
 {
   return new MTLInternalLinearSolver(p_mng, options);
 }
+
+template<>
+class SolverFabric<Alien::BackEnd::tag::mtl>
+: public ISolverFabric
+{
+public :
+   BackEndId backend() const {
+     return "mtl4" ;
+  }
+
+  void
+  add_options(CmdLineOptionDescType& cmdline_options) const
+  {
+    using namespace boost::program_options;
+    options_description desc("MTL4 options");
+    desc.add_options()("mtl4-solver", value<std::string>()->default_value("bicgs"),"solver algo name : bicgstab")
+                      ("mtl4-precond", value<std::string>()->default_value("none"),"preconditioner ilu diag none");
+
+    cmdline_options.add(desc) ;
+  }
+
+  template<typename OptionT>
+  Alien::ILinearSolver* _create(OptionT const& options,Alien::IMessagePassingMng* pm) const
+  {
+    double tol = get<double>(options,"tol");
+    int max_iter = get<int>(options,"max-iter");
+
+    std::string solver_type_s = get<std::string>(options,"mtl4-solver");
+    MTLOptionTypes::eSolver solver_type =
+        OptionsMTLLinearSolverUtils::stringToSolverEnum(solver_type_s);
+    std::string precond_type_s = get<std::string>(options,"mtl4-precond");
+    MTLOptionTypes::ePreconditioner precond_type =
+        OptionsMTLLinearSolverUtils::stringToPreconditionerEnum(precond_type_s);
+    // options
+    auto solver_options = std::make_shared<StrongOptionsMTLLinearSolver>(
+        MTLLinearSolverOptionsNames::_outputLevel = get<int>(options,"output-level"),
+        MTLLinearSolverOptionsNames::_maxIterationNum = max_iter,
+        MTLLinearSolverOptionsNames::_stopCriteriaValue = tol,
+        MTLLinearSolverOptionsNames::_preconditioner = precond_type,
+        MTLLinearSolverOptionsNames::_solver = solver_type);
+    // service
+    return new Alien::MTLLinearSolverService(pm, solver_options);
+
+  }
+
+  Alien::ILinearSolver* create(CmdLineOptionType const& options,Alien::IMessagePassingMng* pm) const
+  {
+    return _create(options,pm) ;
+  }
+
+  Alien::ILinearSolver* create(JsonOptionType const& options,Alien::IMessagePassingMng* pm) const
+  {
+    return _create(options,pm) ;
+  }
+};
+
+typedef SolverFabric<Alien::BackEnd::tag::mtl> MTL4SolverFabric ;
+REGISTER_SOLVER_FABRIC(MTL4SolverFabric);
 
 } // namespace Alien

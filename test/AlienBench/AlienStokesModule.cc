@@ -30,6 +30,7 @@
 #include <alien/arcane_tools/indexManager/SimpleAbstractFamily.h>
 #include <alien/arcane_tools/distribution/DistributionFabric.h>
 #include <alien/arcane_tools/indexSet/IndexSetFabric.h>
+#include <alien/arcane_tools/data/Space.h>
 
 #include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
 
@@ -319,10 +320,10 @@ AlienStokesModule::test()
   Alien::UniqueArray<Integer> allPIndex = index_manager.getIndexes(indexSetP);
   Alien::UniqueArray<Integer> allUIndex = index_manager.getIndexes(indexSetU);
 
-  m_mdist = Alien::ArcaneTools::createMatrixDistribution(&index_manager, parallelMng());
-  m_vdist = Alien::ArcaneTools::createVectorDistribution(&index_manager, parallelMng());
+  Alien::ArcaneTools::Space space(&index_manager);
+  m_mdist = Alien::ArcaneTools::createMatrixDistribution(space);
+  m_vdist = Alien::ArcaneTools::createVectorDistribution(space);
 
-  Alien::Space space(m_vdist.globalSize(), "TestSpace");
   info() << "Space size = " << m_vdist.globalSize()
          << ", local size= " << m_vdist.localSize();
 
