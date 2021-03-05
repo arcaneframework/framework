@@ -17,7 +17,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StringView.cc                                               (C) 2000-2019 */
+/* StringView.cc                                               (C) 2000-2021 */
 /*                                                                           */
 /* Vue sur une chaîne de caractères UTF-8.                                   */
 /*---------------------------------------------------------------------------*/
@@ -59,8 +59,8 @@ bool
 operator==(StringView a,StringView b)
 {
   bool is_equal = (a.toStdStringView()==b.toStdStringView());
-  std::cout << "COMPARE: a=" << a.length() << " '" << a << "'"
-            << " b=" << b.length() << " '" << b << "' v=" << is_equal << '\n';
+  //std::cout << "COMPARE: a=" << a.length() << " '" << a << "'"
+  //          << " b=" << b.length() << " '" << b << "' v=" << is_equal << '\n';
   return is_equal;
 }
 
