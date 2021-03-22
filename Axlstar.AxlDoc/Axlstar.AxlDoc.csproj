@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\CommonExe.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\Arcane.Axl\Arcane.Axl.csproj" />
+  </ItemGroup>
+</Project>

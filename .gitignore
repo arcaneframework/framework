@@ -1,0 +1,5 @@
+*~
+*.userprefs
+.vs
+.vscode
+bin_dir

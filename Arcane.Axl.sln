@@ -1,0 +1,89 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arcane.Axl.T4", "Arcane.Axl.T4\Arcane.Axl.T4.csproj", "{7DDE3B74-A3EF-437F-B981-BB0AD2804CE5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Axlstar.Axl2ccT4", "Axlstar.Axl2ccT4\Axlstar.Axl2ccT4.csproj", "{DED6F957-D133-431A-8198-FE414DE1AB11}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arcane.Axl", "Arcane.Axl\Arcane.Axl.csproj", "{5D1289C3-C612-4A3C-BB85-A8B1CDD94BF1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Axlstar.Axl2cc", "Axlstar.Axl2cc\Axlstar.Axl2cc.csproj", "{D2B7C26B-36CC-4593-9AAD-65F0CD635E71}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Axlstar.AxlDoc", "Axlstar.AxlDoc\Axlstar.AxlDoc.csproj", "{580373D9-417E-4BB7-8232-72183649A203}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Axlstar.AxlCopy", "Axlstar.AxlCopy\Axlstar.AxlCopy.csproj", "{F2CEEB08-5355-4BD0-BCEE-C7FE68690D79}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Axlstar.Axl2cc.Tests", "Axlstar.Axl2cc.Tests\Axlstar.Axl2cc.Tests.csproj", "{BB366198-8C70-46AB-93B1-1D08E461117B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7DDE3B74-A3EF-437F-B981-BB0AD2804CE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7DDE3B74-A3EF-437F-B981-BB0AD2804CE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7DDE3B74-A3EF-437F-B981-BB0AD2804CE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7DDE3B74-A3EF-437F-B981-BB0AD2804CE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DED6F957-D133-431A-8198-FE414DE1AB11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DED6F957-D133-431A-8198-FE414DE1AB11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DED6F957-D133-431A-8198-FE414DE1AB11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DED6F957-D133-431A-8198-FE414DE1AB11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D1289C3-C612-4A3C-BB85-A8B1CDD94BF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D1289C3-C612-4A3C-BB85-A8B1CDD94BF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D1289C3-C612-4A3C-BB85-A8B1CDD94BF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D1289C3-C612-4A3C-BB85-A8B1CDD94BF1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2B7C26B-36CC-4593-9AAD-65F0CD635E71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2B7C26B-36CC-4593-9AAD-65F0CD635E71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2B7C26B-36CC-4593-9AAD-65F0CD635E71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2B7C26B-36CC-4593-9AAD-65F0CD635E71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{580373D9-417E-4BB7-8232-72183649A203}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{580373D9-417E-4BB7-8232-72183649A203}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{580373D9-417E-4BB7-8232-72183649A203}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{580373D9-417E-4BB7-8232-72183649A203}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2CEEB08-5355-4BD0-BCEE-C7FE68690D79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2CEEB08-5355-4BD0-BCEE-C7FE68690D79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2CEEB08-5355-4BD0-BCEE-C7FE68690D79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2CEEB08-5355-4BD0-BCEE-C7FE68690D79}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB366198-8C70-46AB-93B1-1D08E461117B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB366198-8C70-46AB-93B1-1D08E461117B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		Policies = $0
+		$0.DotNetNamingPolicy = $1
+		$0.TextStylePolicy = $2
+		$2.TabWidth = 2
+		$2.IndentWidth = 2
+		$2.EolMarker = Unix
+		$2.scope = text/x-csharp
+		$2.TabsToSpaces = True
+		$2.FileWidth = 100
+		$0.CSharpFormattingPolicy = $3
+		$3.AfterDelegateDeclarationParameterComma = True
+		$3.scope = text/x-csharp
+		$3.IndentSwitchSection = False
+		$3.NewLinesForBracesInProperties = False
+		$3.NewLinesForBracesInAccessors = False
+		$3.NewLinesForBracesInAnonymousMethods = False
+		$3.NewLinesForBracesInControlBlocks = False
+		$3.NewLinesForBracesInAnonymousTypes = False
+		$3.NewLinesForBracesInObjectCollectionArrayInitializers = False
+		$3.NewLinesForBracesInLambdaExpressionBody = False
+		$3.NewLineForElse = False
+		$3.NewLineForCatch = False
+		$3.NewLineForFinally = False
+		$3.NewLineForMembersInObjectInit = False
+		$3.NewLineForMembersInAnonymousTypes = False
+		$3.NewLineForClausesInQuery = False
+		$0.TextStylePolicy = $4
+		$4.FileWidth = 100
+		$4.TabWidth = 2
+		$4.TabsToSpaces = True
+		$4.IndentWidth = 2
+		$4.NoTabsAfterNonTabs = True
+		$4.scope = text/plain
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

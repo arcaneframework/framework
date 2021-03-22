@@ -1,0 +1,2 @@
+#!/bin/sh
+"@DOTNET_RUNNER_EXEC@" @DOTNET_RUNNER_ARGS@ "@AXLSTAR_INSTALL_BIN@/axlstar_dlls/@DLL_NAME@" "$@"

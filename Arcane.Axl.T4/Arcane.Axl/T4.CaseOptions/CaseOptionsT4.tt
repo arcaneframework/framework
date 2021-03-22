@@ -1,0 +1,566 @@
+<#@ template language="C#" linePragmas="false" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// #WARNING#: This file has been generated automatically. Do not edit.
+// Arcane version <#= Version #> : <#= DateTime.Now #>
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#ifndef ARCANE_CASEOPTION_<#= Xml.ClassName.ToUpper() #>_H
+#define ARCANE_CASEOPTION_<#= Xml.ClassName.ToUpper() #>_H
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arcane/utils/String.h"
+
+#include "arcane/CaseOptions.h"
+#include "arcane/CaseOptionsMulti.h"
+#include "arcane/CaseOptionBuildInfo.h"
+#include "arcane/XmlNodeList.h"
+<#  if(Xml.FlatteningExtended.Count () > 0) { #>
+#include "arcane/ItemGroup.h"
+<#  } #>
+<#  if(Xml.ServiceInstance.Count () > 0 || ComplexContainsServiceInstance) { #>
+#include "arcane/CaseOptionService.h"
+<#  } #>
+<# if (Xml.NeedTypeInclude) { #>
+#include "<#=IncludePath#>/Types<#=Xml.ClassName#>.h"
+<#  } #>
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  if(Xml.FlatteningExtended.Count() > 0) { #>
+
+ARCANE_BEGIN_NAMESPACE
+<#    foreach(var extended in Xml.FlatteningExtended) { #>
+extern "C++" bool 
+_caseOptionConvert(const Arcane::CaseOptionBase&,
+                   const Arcane::String&,
+                   <#= extended.type #> &);
+<#    } #>
+ARCANE_END_NAMESPACE
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  }
+	if (Xml.LesserThanVersionOne) { #>
+
+ARCANE_BEGIN_NAMESPACE
+ 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  }
+    if(Xml.NamespaceMacroName != null) { #>
+
+<#= Xml.NamespaceMacroName #>_BEGIN_NAMESPACE
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  } 
+    if(Xml.NamespaceName != null) { #>
+
+namespace <#= Xml.NamespaceName #> {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  } #>
+
+//! Options
+class CaseOptions<#= Xml.ClassName #>
+<# if (Xml.NeedTypeInclude) { #>
+: public Types<#= Xml.ClassName #>
+<# } #>
+{
+public:
+
+  /*-------------------------------------------------------------------------*/
+  /*--------------------------- Complex Options -----------------------------*/
+  /*-------------------------------------------------------------------------*/
+<#  
+    foreach(var complex in Xml.FlatteningComplex.Where( p => !p.IsRef)) { #>
+  // Generation for option '<#= complex.Name #>'
+    <# if (complex.IsMulti == true) { #>
+  // Generating multiple arity CaseOption for complex option value '<#= complex.Name #>'
+  class CaseOption<#= complex.type #>Value
+  : public Arcane::CaseOptionComplexValue
+<#    if (complex.HasInterface) { #>
+    , private <#= complex.@interface #>
+<#    } #>
+  {
+  public:
+
+    typedef CaseOption<#= complex.type #>Value ThatClass;
+
+    CaseOption<#= complex.type #>Value(Arcane::ICaseOptionsMulti* opt,Arcane::ICaseOptionList* icl, const Arcane::XmlNode& element)
+    : Arcane::CaseOptionComplexValue(opt,icl,element)
+<# GenerateOptionConstructorCalls(complex.Xml); #>
+
+    {
+<#  GenerateTranslationCalls(complex.Xml); #>
+
+    }
+ public:
+  // Interfaces for multi-arity class CaseOptions<#= complex.type #>
+  <# GenerateInterfaces(complex.Xml); #>
+
+<#   if (complex.HasInterface) { #>
+    <#= complex.@interface #>* _interface() { return this; }
+<# } #>
+  public:
+
+    const ThatClass* operator->() const { return this; }
+
+  public:
+   <# GenerateFields(complex.Xml); #>
+  };
+
+  // Generation for sub-option '<#= complex.Name #>'
+  class CaseOption<#= complex.type #>
+    : public Arcane::CaseOptionsMulti
+    , private Arcane::ArrayView< CaseOption<#= complex.type #>Value * >       
+  {
+  public:
+
+    typedef Arcane::ArrayView< CaseOption<#= complex.type #>Value * > BaseClass;
+
+    typedef CaseOption<#= complex.type #>Value value_type;
+
+  public:
+
+    CaseOption<#= complex.type #>(Arcane::ICaseOptionList* icl,
+              const Arcane::String& s, const Arcane::XmlNode& element)
+      : Arcane::CaseOptionsMulti(icl,s,element,<#= complex.MinOccurs #>,<#= complex.MaxOccurs #>) 
+    {
+    // Generating translations and default values.
+    <# GenerateTranslationAndDefaultValues(complex,String.Empty); #>
+    }
+
+    BaseClass operator()() { return (*this); }
+
+  protected:
+    void multiAllocate(const Arcane::XmlNodeList& elist)
+    {
+      Arcane::Integer s = elist.size();
+      value_type** v = 0;
+      if (s!=0)
+        v = new value_type*[s];
+      _setArray(v,s);
+      v = _ptr();
+<#    if (complex.HasInterface) { #>
+      m_interfaces.resize(s);
+<#    } #>
+      for( Arcane::Integer i=0; i<s; ++i ){
+        v[i] = new value_type(this,configList(),elist[i]);
+<#    if (complex.HasInterface) { #>
+        m_interfaces[i] = v[i]->_interface();
+<#    } #>
+      }
+    }
+
+  public:
+
+    ~CaseOption<#= complex.type #>()
+    {
+      Arcane::Integer s = count();
+      if (s==0) return;
+      value_type** v = _ptr();
+      for( Arcane::Integer i=0; i<s; ++i ){
+        delete v[i];
+      }
+      delete[] v;
+    }
+
+  public:
+
+    const value_type& operator[](Arcane::Integer i) const
+      { return *(BaseClass::operator[](i)); }
+    value_type& operator[](Arcane::Integer i)
+      { return *(BaseClass::operator[](i)); }
+    Arcane::Integer count() const
+      { return BaseClass::size(); }
+    Arcane::Integer size() const
+      { return BaseClass::size(); }
+
+<#   if (complex.HasInterface) { #>
+  public: 
+
+    Arcane::ConstArrayView< <#= complex.@interface #>* > _interface()
+      { return m_interfaces; }
+
+  private: 
+
+    Arcane::UniqueArray< <#= complex.@interface #>* > m_interfaces;
+<#    } #>
+  };
+  
+<# } else if (complex.IsSingle == true) { #>
+  // Generating simple arity CaseOption for option '<#= complex.Name #>'
+  class CaseOption<#= complex.type #>
+    : public Arcane::CaseOptions
+<#    if (complex.HasInterface) { #>
+    , private <#= complex.@interface #>
+<#    } #>
+  {
+  public:
+
+    CaseOption<#= complex.type #>(Arcane::ICaseOptionList* icl,
+              const Arcane::String& s, const Arcane::XmlNode& element, bool is_optional=false)
+      : Arcane::CaseOptions(icl,s,element,is_optional)
+<# GenerateOptionConstructorCalls(complex.Xml); #>
+    {
+<#  GenerateTranslationCalls(complex.Xml); #>
+<#  GenerateTranslationAndDefaultValues(complex,String.Empty); #>
+    }
+        
+    const CaseOption<#= complex.type #>& operator()() const { return *this; }
+
+<#    if (complex.HasInterface) { #>
+  public:
+
+    <#= complex.@interface #>* _interface() { return this; }
+
+<#    } #>
+ public:
+  // Interfaces for simple arity CaseOptions
+  <# GenerateInterfaces(complex.Xml);#>
+
+  private:
+    // Méthodes pour unifier la construction des options.
+    Arcane::ICaseOptionList* _configList() { return configList(); }
+    Arcane::XmlNode _element() { return Arcane::XmlNode(); }
+
+  public:
+  <# GenerateFields(complex.Xml); #>
+
+  };
+<#  } #>
+<# } #>
+
+  /*-------------------------------------------------------------------------*/
+  /*--------------------------- Non Complex Options -------------------------*/
+  /*-------------------------------------------------------------------------*/
+  
+<#  if(Xml.IsModule || Xml.IsNotCaseOption) { #>
+  CaseOptions<#= Xml.ClassName #>(Arcane::ICaseMng* cm)
+    : m_case_options(new Arcane::CaseOptions(cm,"<#= Xml.Name.ToLowerWithDash () #>"))
+<#  } else { #>
+  CaseOptions<#= Xml.ClassName #>(Arcane::ICaseOptions* co)
+    : m_case_options(co)
+<#  } #>
+<# GenerateOptionConstructorCalls(Xml); #>
+  {
+<#  GenerateTranslationCalls(Xml); #>
+<# GenerateTranslationAndDefaultValues(Base,String.Empty); #>
+  }
+
+public:
+  // Interfaces for main CaseOptions
+  <# GenerateInterfaces(Xml);#>
+
+public:
+
+  Arcane::ICaseOptions* caseOptions() const 
+  { 
+    return m_case_options.get();
+  }
+  
+  Arcane::ICaseOptionList* configList() const 
+  {
+    return m_case_options->configList(); 
+  }
+  
+  void setCaseModule(Arcane::IModule* m) 
+  { 
+    m_case_options->setCaseModule(m); 
+  }
+  
+  void setCaseServiceInfo(Arcane::IServiceInfo* si) 
+  {
+    m_case_options->setCaseServiceInfo(si); 
+  }
+  
+  void addAlternativeNodeName(const Arcane::String& lang,
+                              const Arcane::String& name)
+  { 
+    m_case_options->addAlternativeNodeName(lang,name); 
+  }
+
+private:
+
+  Arcane::ICaseOptionList* _configList() const { return configList(); }
+  Arcane::XmlNode _element() const { return Arcane::XmlNode(); }
+
+private:
+
+  static Arcane::ICaseOptions* _createCaseOption(Arcane::ICaseMng* cm,Arcane::ICaseOptions* co);
+
+  Arcane::ReferenceCounter<Arcane::ICaseOptions> m_case_options;
+
+public:
+
+  <#  GenerateFields(Xml); #>
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  if(Xml.NamespaceMacroName != null) { #>
+
+<#= Xml.NamespaceMacroName #>_END_NAMESPACE
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  } 
+    if(Xml.NamespaceName != null) { #>
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  }
+	if (Xml.LesserThanVersionOne) { #>
+
+ARCANE_END_NAMESPACE
+ 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  } #>
+
+#endif
+
+
+<#+
+ /*---------------------------------------------------------------------------*/
+ /*---------------------------------------------------------------------------*/
+ /* Fonction pour générer les interfaces (fonctions get*()) associés aux
+    options */
+ void GenerateInterfaces(OptionHandler opt) {
+#>
+
+ <#+ foreach(var e in opt.Simple.Where(p => p.IsMulti)) { #>
+   Arcane::ConstArrayView<  <#= e.type.QualifiedName () #> > get<#= e.Name.ToClassName () #>() { return <#= e.Name.ToFuncName () #>; }
+ <#+ }
+     foreach(var e in opt.Simple.Where(p => p.IsSingle)) { #>
+   <#= e.type.QualifiedReturnName (true) #> get<#= e.Name.ToClassName () #>() { return <#= e.Name.ToFuncName () #>(); }
+ <#+ } #>
+
+ <#+ foreach(var e in opt.Extended.Where(p => p.IsMulti)) { #>
+   Arcane::ConstArrayView<  <#= e.type.ConvertType () #> > get<#= e.Name.ToClassName () #>() { return <#= e.Name.ToFuncName () #>; }
+ <#+ } #>
+
+ <#+ foreach(var e in opt.Extended.Where(p => p.IsSingle)) { #>
+   <#= e.type.ConvertType () #> get<#= e.Name.ToClassName () #>() { return <#= e.Name.ToFuncName () #>(); }
+ <#+ }
+     foreach(var e in opt.Enumeration.Where(p => p.IsMulti)) { #>
+   Arcane::ConstArrayView<  <#= e.type.ConvertType () #> > get<#= e.Name.ToClassName () #>() { return <#= e.Name.ToFuncName () #>; }
+ <#+ }
+     foreach(var e in opt.Enumeration.Where(p => p.IsSingle)) { #>
+    <#= e.type.ConvertType () #> get<#= e.Name.ToClassName () #>() { return <#= e.Name.ToFuncName () #>(); }
+ <#+ } #>
+
+ <#+  foreach(var e in opt.ServiceInstance.Where(p => p.IsMulti)) { #>
+  Arcane::ConstArrayView< <#= e.type.ConvertType () #>* > get<#= e.Name.ToClassName () #>() { return <#= e.Name.ToFuncName () #>; }
+ <#+  } #>
+ <#+ foreach(var e in opt.ServiceInstance.Where(p => p.IsSingle)) { #>
+   <#= e.type.ConvertType () #>* get<#= e.Name.ToClassName () #>() { return <#= e.Name.ToFuncName () #>(); }
+ <#+ } #>
+ // Interfaces for complex options
+ <#+ foreach(var e in opt.Complex.Where(p => p.HasInterface && p.IsMulti)) { #>
+  Arcane::ConstArrayView<  <#= e.@interface.ConvertType () #>* > get<#= e.Name.ToClassName () #>() { return <#= e.Name.ToFuncName () #>._interface(); }
+ <#+ } #>
+ <#+ foreach(var e in opt.Complex.Where(p => p.HasInterface && p.IsSingle)) { #>
+  <#= e.@interface.ConvertType () #>* get<#= e.Name.ToClassName () #>() { return <#= e.Name.ToFuncName () #>._interface(); }
+ <#+ }
+    foreach(var e in opt.Complex.Where(p => p.IsRef)) {
+      var reference = Xml.FlatteningComplex.FirstOrDefault(p => p.type != null && p.type == e.@ref);
+      if(reference.HasInterface){
+        if(reference.IsMulti) { #>
+  Arcane::ConstArrayView<  <#= reference.@interface.ConvertType () #>* > get<#= e.Name.ToClassName () #>() { return <#= e.Name.ToFuncName () #>._interface(); }
+        <#+ } else { #>
+         <#= reference.@interface.ConvertType () #>* get<#= e.Name.ToClassName () #>() { return <#= e.Name.ToFuncName () #>._interface(); }
+     <#+ }
+      }
+    }
+
+    foreach(var e in opt.Options.Where(p => p.IsOptional)) { #>
+    bool has<#= e.Name.ToClassName () #>() const
+      { return <#= e.Name.ToFuncName () #>.isPresent(); }
+  <#+  } #>
+
+  <#+ // End of GenerateInterfaces() #>
+<#+ } #>
+<#+
+ /*---------------------------------------------------------------------------*/
+ /*---------------------------------------------------------------------------*/
+ /* Fonction pour générer les champs des options  */
+ void GenerateFields(OptionHandler opt) {
+#>
+
+<#+  foreach(var e in opt.Simple) {
+    if(e.IsMulti) {#>
+  Arcane::CaseOptionMultiSimpleT< <#= e.type.QualifiedName () #> >   <#= e.Name.ToFuncName () #>;
+<#+    } else { #>
+  Arcane::CaseOption<#= e.type.Name () #>    <#= e.Name.ToFuncName () #>;
+<#+    }
+  }
+
+    foreach(var e in opt.ServiceInstance) {
+    if(e.IsMulti) { #>
+  Arcane::CaseOptionMultiServiceT< <#= e.type #>  >   <#= e.Name.ToFuncName () #>;
+<#+    } else { #>
+  Arcane::CaseOptionServiceT< <#= e.type #> >   <#= e.Name.ToFuncName () #>;
+<#+    }
+    }
+
+    foreach(var e in opt.Enumeration) {
+    if(e.IsMulti) { #>
+  Arcane::CaseOptionMultiEnumT< <#= e.type #>  >   <#= e.Name.ToFuncName () #>;
+<#+    } else { #>
+  Arcane::CaseOptionEnumT< <#= e.type #> >   <#= e.Name.ToFuncName () #>;
+<#+    }
+    }
+
+    foreach(var e in opt.Extended) {
+    if(e.IsMulti) { #>
+  Arcane::CaseOptionMultiExtendedT< <#= e.type #>  >   <#= e.Name.ToFuncName () #>;
+<#+    } else { #>
+  Arcane::CaseOptionExtendedT< <#= e.type #> >   <#= e.Name.ToFuncName () #>;
+<#+    }
+    }
+
+    foreach(var e in opt.Complex) {
+    if(e.IsRef) { #>
+  CaseOption<#= e.@ref #>   <#= e.Name.ToFuncName () #>;
+<#+    } else { #>
+  CaseOption<#= e.type #>   <#= e.Name.ToFuncName () #>;
+<#+    }
+    } #>
+<#+ // End of GenerateFields() #>
+<#+ } #>
+<#+
+ /*---------------------------------------------------------------------------*/
+ /*---------------------------------------------------------------------------*/
+ /* Fonction pour générer les appels aux constructeurs des options */
+ void GenerateOptionConstructorCalls(OptionHandler opt) {
+#>
+<#+  foreach(var e in opt.Simple) { #>
+      , <#= e.Name.ToFuncName () #>(Arcane::CaseOptionBuildInfo(_configList(),
+        /* name       */ "<#= e.Name #>", _element(),
+        /* default    */ <#= e.Default #>,
+        /* min-occurs */ <#= e.MinOccurs #>,
+        /* max-occurs */ <#= e.MaxOccurs #>,
+        /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>)<#+
+      if(e.unit != null) { #>,
+        /* unit       */ "<#= e.unit #>")
+<#+    } else { #>)<#+ } #>
+
+<#+  }
+
+    foreach(var e in opt.ServiceInstance) {
+      if(e.IsSingle) { #>
+      , <#= e.Name.ToFuncName () #>(Arcane::CaseOptionBuildInfo(_configList(),
+        /* name       */ "<#= e.Name #>", _element(),
+        /* default    */ <#= e.Default #>,
+        /* min-occurs */ <#= e.MinOccurs #>,
+        /* max-occurs */ <#= e.MaxOccurs #>,
+        /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>),
+        /* allow-null */ <#= e.AllowsNull.ToString ().ToLower () #>,
+        /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>)
+<#+    } else { #>
+    , <#= e.Name.ToFuncName () #>(Arcane::CaseOptionBuildInfo(_configList(),
+        /* name       */ "<#= e.Name #>", _element(),
+        /* default    */ <#= e.Default #>,
+        /* min-occurs */ <#= e.MinOccurs #>,
+        /* max-occurs */ <#= e.MaxOccurs #>,
+        /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>),
+        /* allow-null */ <#= e.AllowsNull.ToString ().ToLower () #>)
+<#+    }
+  }
+
+    foreach(var e in opt.Enumeration) { #>
+     , <#= e.Name.ToFuncName () #>(Arcane::CaseOptionBuildInfo(_configList(),
+        /* name       */ "<#= e.Name #>", _element(),
+        /* default    */ <#= e.Default #>,
+        /* min-occurs */ <#= e.MinOccurs #>,
+        /* max-occurs */ <#= e.MaxOccurs #>,
+        /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>),
+        /* type       */ "<#= e.type #>")
+<#+  }
+
+    foreach(var e in opt.Extended) { #>
+      , <#= e.Name.ToFuncName () #>(Arcane::CaseOptionBuildInfo(_configList(),
+        /* name       */ "<#= e.Name #>", _element(),
+        /* default    */ <#= e.Default #>,
+        /* min-occurs */ <#= e.MinOccurs #>,
+        /* max-occurs */ <#= e.MaxOccurs #>,
+        /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>),
+        /* type       */ "<#= e.type #>")
+<#+  }
+
+    foreach(var e in opt.Complex) {
+      if (e.Name != null) { #>
+      , <#= e.Name.ToFuncName () #>(_configList(),
+        /* name       */ "<#= e.Name #>", _element()<#+
+        if (e.IsOptional) { #>,
+        /* optional   */ true)
+<#+      } else { #>)
+<#+      }
+      }
+    } #>
+<#+ // End of GenerateOptionConstructorCalls() #>
+<#+ } #>
+<#+
+ /*---------------------------------------------------------------------------*/
+ /*---------------------------------------------------------------------------*/
+ /* Fonction pour générer le support aux conversions de langage */
+ void GenerateTranslationCalls(OptionHandler opt) {
+#>
+
+<#+  foreach(var e in opt.Enumeration) {
+    if(e.enumvalue != null) {
+        foreach(var ee in e.enumvalue) { #>
+      {
+        auto x = new Arcane::CaseOptionEnumValue(
+          /* enum value name */ Arcane::String("<#= ee.Name #>"),
+          /* enum object     */ (int)(<#= ee.genvalue #>));
+<#+       if (ee.name!=null) {
+           foreach(var ed in ee.name) { #>
+        (*x).addAlternativeNodeName(
+          /* language         */ Arcane::String("<#= ed.lang #>"),
+          /* alternative name */ Arcane::String("<#= ed.Value #>"));
+        <#+ } #>
+      <#+ } #>
+        <#= e.Name.ToFuncName () #>.addEnumValue(x,false);
+      }
+<#+      }
+    }
+    }
+    foreach(var e in opt.Options) {
+      GenerateTranslationAndDefaultValues(e,e.Name.ToFuncName()+".");
+    }
+#>
+<#+ // End of GenerateTranslationCalls() #>
+<#+ } #>
+<#+
+ /*---------------------------------------------------------------------------*/
+ /*---------------------------------------------------------------------------*/
+ /* Fonction pour générer les traductions (élément <name>) et les valeurs */
+ /* par défaut (élément <defaultvalue>) */
+ void GenerateTranslationAndDefaultValues(Xsd.Base opt,string instance_name)
+ {
+   foreach(var ee in opt.Names) {
+     #><#= instance_name #>addAlternativeNodeName(
+          /* language         */ Arcane::String("<#= ee.lang #>"),
+          /* alternative name */ Arcane::String("<#= ee.Value #>"));
+<#+    }
+      foreach(var ee in opt.DefaultValues) { #>
+      <#= instance_name #>addDefaultValue(
+          /* category         */ Arcane::String("<#= ee.category #>"),
+          /* default value    */ Arcane::String("<#= ee.Value #>"));
+      <#+ }
+   // End of GenerateTranslationAndDefaultValues() #>
+<#+ } #>
