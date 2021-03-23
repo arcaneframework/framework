@@ -1,0 +1,50 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<service name="ZoltanMeshPartitioner" parent-name="MeshPartitionerBase" type="caseoption">
+  <name lang='fr'>zoltan</name>
+  <userclass>User</userclass>
+  <description>
+    Partionneur de maillage Zoltan
+  </description>
+    
+  <interface name="Arcane::IMeshPartitioner" inherited="false"/>
+
+  <variables>
+  </variables>
+
+  <options>
+
+    <simple
+       name = "use-hypergraphe"
+       type     = "bool"
+       default  = "true"
+       >
+      <name lang='fr'>mode-hypergraphe</name>
+      <userclass>User</userclass>
+      <description>
+        Vrai lorsque l'on souhaite utiliser la méthode hypergraphe, faux si l'on préfère la méthode géométrique (plus rapide mais moins bien réparti)
+      </description> 
+    </simple>
+
+    <simple name ="edge-weight-multiplier" type="real" default="2.">
+    </simple>
+
+    <simple name ="repart-frequency" type="integer" default="10">
+    </simple>
+
+    <simple name="model" type="string" default="OLDHG"/>
+
+    <simple name ="imbalance-tol" type="real" default="1.05">
+    </simple>
+
+    <simple name ="phg-repart-multiplier" type="real" default="10">
+    </simple>
+
+    <simple name ="phg-output-level" type="integer" default="0">
+    </simple>
+
+    <simple name ="debug-level" type="integer" default="0">
+    </simple>
+
+  </options>
+
+</service>

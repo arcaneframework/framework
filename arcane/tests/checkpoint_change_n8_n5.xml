@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<commands>
+  <test>-m 5 -n 8 @ARCANE_TEST_CASEPATH@/testHydro-checkpoint-basic2.arc</test>
+  <test>-m 5 -n 5 -arcane_opt continue @ARCANE_TEST_CASEPATH@/testHydro-checkpoint-basic2.arc</test>
+  <test>-m 5 -n 2 -arcane_opt continue @ARCANE_TEST_CASEPATH@/testHydro-checkpoint-basic2.arc</test>
+</commands>

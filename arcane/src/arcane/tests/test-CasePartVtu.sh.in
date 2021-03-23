@@ -1,0 +1,4 @@
+#!/bin/sh
+ARCANE_VTU_DATA_MODE_TO_ASCII=1
+export ARCANE_VTU_DATA_MODE_TO_ASCII
+@ARCANEBUILDROOT@/bin/arcane_partition_mesh -n 2 -p 4 --writer VtuNewMeshWriter tube5x5x100.vtk && @ARCANE_TEST_DRIVER@ launch -n 4 -m 2 @TEST_PATH@/testHydro-5-vtu.arc

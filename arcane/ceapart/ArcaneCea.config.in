@@ -1,0 +1,5 @@
+{
+  MpiRoot : "@ARCANECEA_MPI_PATH@",
+  MpiPrefix : "@ARCANECEA_MPI_PREFIX@",
+  MpiDistrib : "@ARCANECEA_MPI_DISTRIB@"
+}

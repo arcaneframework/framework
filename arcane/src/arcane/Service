@@ -1,0 +1,4 @@
+//!-- -*- C++ -*- --
+#include "arcane/AbstractService.h"
+#include "arcane/BasicService.h"
+#include "arcane/BasicTimeLoopService.h"

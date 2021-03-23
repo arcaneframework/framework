@@ -1,0 +1,55 @@
+<?xml version="1.0" ?>
+<module name="EOS" version="1.0">
+  <description>Descripteur du module de test des EOS</description>
+  <entry-points>
+    <entry-point method-name="computeEOS" name="ComputeEOS" where="compute-loop" property="none" />
+    <entry-point method-name="initEOS" name="InitEOS" where="start-init" property="none" />
+  </entry-points>
+  <variables>
+    <variable
+	field-name="density"
+	name="Density"
+	data-type="real"
+	item-kind="cell"
+	dim="0"
+	dump="true"
+	need-sync="true" />
+    <variable
+	field-name="pressure"
+	name="Pressure"
+	data-type="real"
+	item-kind="cell"
+	dim="0"
+	dump="true"
+	need-sync="true" />
+    <variable
+	field-name="internal_energy"
+	name="InternalEnergy"
+	data-type="real"
+	item-kind="cell"
+	dim="0"
+	dump="true"
+	need-sync="true" />
+    <variable
+	field-name="adiabatic_cst"
+	name="AdiabaticCst"
+	data-type="real"
+	item-kind="cell"
+	dim="0"
+	dump="true"
+	need-sync="true" />
+    <variable
+	field-name="sound_speed"
+	name="SoundSpeed"
+	data-type="real"
+	item-kind="cell"
+	dim="0"
+	dump="true"
+	need-sync="true" />
+  </variables>
+  <options>
+    <service-instance name="eos-model" type="EOS::IEquationOfState">
+      <description>Service d'equation d'état</description>
+    </service-instance>
+  </options>
+</module>

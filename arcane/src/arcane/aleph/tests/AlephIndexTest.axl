@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<module name="AlephIndexTest" version="1.0" namespace-name="ArcaneTest">
+  <description>Module de test d'Aleph+index</description>
+
+  <entry-points>
+    <entry-point method-name="init" name="init" where="init" property="none" />
+    <entry-point method-name="compute" name="compute" where="compute-loop" property="none" />
+  </entry-points>
+
+  <variables>
+    <variable field-name="cell_temperature" name="CellTemperature"
+              data-type="real" item-kind="cell" dim="0" dump="true" need-sync="true" />
+    <variable field-name="face_temperature" name="FaceTemperature"
+              data-type="real" item-kind="face" dim="0" dump="false" need-sync="true" />
+    <variable field-name="cell_coefs" name="CellCoefs"
+              data-type="real" item-kind="cell" dim="0" dump="false" need-sync="false" />
+  </variables> 
+
+  <options>
+	 <!-- Nombre d'itérations à faire -->
+    <simple name="iterations" type="integer" default="8">
+      <description>Max number of solver iteration</description>
+    </simple>
+
+ 	 <!-- Nombre de résolutions à effectuer -->
+    <simple name="aleph-number-of-solvers" type="integer" default="1">
+      <description>Nombre de résolutions à effectuer</description>
+    </simple>
+
+	 <!-- Delta T -->
+    <!-- Pas de temps hard-codé, devrait être 'piloté' -->
+	 <simple name="deltaT" type="real" default="0.005">
+ 		<description>Pas de temps utilisé pour le schéma</description>
+	 </simple>
+
+	 <!-- Température initiale des mailles -->
+	 <simple name="init-temperature" type="real" default="200">
+		<description>Température initiale dans tout le maillage</description>
+	 </simple>
+
+	 <!-- Conditions limites -->
+    <complex name="boundary-condition" type="BoundaryCondition" minOccurs="0" maxOccurs="unbounded">
+  		<description>Condition aux limites</description>
+      <extended name="surface" type="Arcane::FaceGroup">
+        <description>Surface sur laquelle s'applique la condition aux limites</description>
+      </extended>
+      <simple name="value" type="real">
+        <description>Valeur de la composante a fixer</description>
+      </simple>
+    </complex> 
+ </options>
+</module>

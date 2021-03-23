@@ -1,0 +1,32 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<!--  parent-name="PostProcessorService" -->
+<service name="Hdf5MpiReaderWriter" parent-name="CheckpointService" type="caseoption">
+  <name lang='fr'>arcane-hdf5-mpi-checkpoint2</name>
+  <userclass>User</userclass>
+  <description>
+    Protections/Reprise au format HDF5
+  </description>
+    
+  <interface name="Arcane::ICheckpointWriter" inherited="false"/>
+
+  <variables>
+  </variables>
+
+  <options>
+      
+   <!-- - - - - - fileset-size - - - - - -->
+   <simple
+    name    = "fileset-size"
+    type    = "integer"
+    default = "1"
+   >
+    <name lang='fr'>nombre-fichier-par-groupe</name>
+    <userclass>User</userclass>
+    <description>
+Nombre de fichiers par groupe. Si 1, il y aura un fichier par sous-domaine. Si 0, toutes les sorties
+se feront dans un seul fichier. Les autres valeurs ne sont pas supportés actuellement
+    </description>
+   </simple>
+  </options>
+
+</service>

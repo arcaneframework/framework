@@ -1,0 +1,28 @@
+This directory contains some tests to bench Simd code used by the Arcane Framework.
+
+First, if directory 'orig' is absent, you need to create it with the command 'do_copy'.
+It will copy some files from the Arcane Framework to the 'orig' directory.
+
+After that, you can compile and run all the benches with the command:
+
+  gmake -j4 test
+
+If needed, you can modify the Makefile if you want to change some options or compiler.
+You need a compiler with C++11 supports
+
+You will have several binaries:
+
+  test_avx512.exe
+  test_avx.exe
+  test_sse.exe
+  test_emul.exe
+
+NOTE: compiling avx512 requires a recent (post 2012) version of binutils.
+For exemple, CentOS 6 is too old.
+
+To run a specific test, simply execute the corresponding binary.
+
+To compile for intel compile, launch the command
+
+  gmake -j4 USE_INTEL=yes
+

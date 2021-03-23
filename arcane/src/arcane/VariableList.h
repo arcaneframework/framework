@@ -1,0 +1,1 @@
+#include "arcane/VariableCollection.h"

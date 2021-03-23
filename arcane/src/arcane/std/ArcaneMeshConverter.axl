@@ -1,0 +1,41 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<service name="ArcaneMeshConverter" type="caseoption" version="1.0" namespace-macro-name="ARCANE" >
+ <name lang='fr'>convertisseur-maillage</name>
+ <userclass>User</userclass>
+ <description>
+ </description>
+
+ <interface name="Arcane::IDirectExecution" />
+    
+ <variables>
+ </variables>
+
+ <options>
+      
+  <!-- Nom du service pour l'ecriture du maillage final -->
+  <simple
+   name = "writer-service-name"
+   type = "string"
+  >
+ <userclass>User</userclass>
+   <name lang='fr'>nom-service-ecriture</name>
+   <description>
+Nom du service utilisé pour écrire le maillages en sortie.
+   </description>
+  </simple>
+
+  <!-- Nom du service pour l'ecriture du maillage final -->
+  <simple
+   name = "file-name"
+   type = "string"
+  >
+ <userclass>User</userclass>
+   <name lang='fr'>nom-fichier</name>
+   <description>
+Nom du fichier de maillage généré.
+   </description>
+  </simple>
+
+ </options>
+
+</service>

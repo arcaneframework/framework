@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="@CSPATH@/Test1.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Arcane.Core/Arcane.Core.csproj" />
+    <ProjectReference Include="../Arcane.Services/Arcane.Services.csproj" />
+    <ProjectReference Include="../Arcane.Cea.Materials/Arcane.Cea.Materials.csproj" />
+  </ItemGroup>
+</Project>

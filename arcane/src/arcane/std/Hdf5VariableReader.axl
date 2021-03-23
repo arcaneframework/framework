@@ -1,0 +1,59 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<service name="Hdf5VariableReader" type="caseoption" version="1.0"
+   namespace-macro-name="ARCANE" parent-name="BasicTimeLoopService">
+ <name lang='fr'>lecteur-variable-hdf5</name>
+ <userclass>User</userclass>
+ <description>
+  Service global de lecture de valeurs de variables
+ </description>
+
+ <interface name="Arcane::ITimeLoopService" inherited="false" />
+    
+ <variables>
+ </variables>
+
+ <options>
+
+  <!-- - - - - - read - - - - - -->
+  <complex
+   name = "read"
+   type = "Read"
+   minOccurs = "0"
+   maxOccurs = "unbounded"
+  >
+   <name lang='fr'>lecture</name>
+  <userclass>User</userclass>
+   <description>
+Bloc de lecture
+   </description>
+
+   <!-- - - - - - mesh-name - - - - - -->
+   <simple
+    name = "mesh-name"
+    type = "string"
+    default = "Mesh0"
+   >
+    <name lang='fr'>nom-maillage</name>
+  <userclass>User</userclass>
+    <description>
+Nom du maillage
+    </description>
+   </simple>
+
+   <!-- - - - - - file-name - - - - - -->
+   <simple
+    name = "file-name"
+    type = "string"
+   >
+    <name lang='fr'>nom-fichier</name>
+  <userclass>User</userclass>
+    <description>
+Nom du fichier
+    </description>
+   </simple>
+
+  </complex>
+
+ </options>
+
+</service>

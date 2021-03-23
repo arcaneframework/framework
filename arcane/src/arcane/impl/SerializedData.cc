@@ -1,0 +1,307 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* SerializedData.cc                                           (C) 2000-2020 */
+/*                                                                           */
+/* Donnée sérialisée.                                                        */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/utils/NotImplementedException.h"
+#include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/IHashAlgorithm.h"
+#include "arcane/utils/CheckedConvert.h"
+
+#include "arcane/ISerializer.h"
+#include "arcane/impl/SerializedData.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+SerializedData::
+SerializedData()
+: m_base_data_type(DT_Unknown)
+, m_memory_size(0)
+, m_nb_dimension(0)
+, m_nb_element(0)
+, m_nb_base_element(0)
+, m_is_multi_size(false)
+, m_element_size(0)
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+SerializedData::
+SerializedData(eDataType base_data_type,Int64 memory_size,
+               Integer nb_dimension,Int64 nb_element,Int64 nb_base_element,
+               bool is_multi_size,IntegerConstArrayView dimensions)
+: m_base_data_type(base_data_type)
+, m_memory_size(memory_size)
+, m_nb_dimension(nb_dimension)
+, m_nb_element(nb_element)
+, m_nb_base_element(nb_base_element)
+, m_is_multi_size(is_multi_size)
+, m_dimensions(dimensions)
+, m_element_size(dataTypeSize(m_base_data_type))
+{
+  _copyDimensionsToExtents();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+SerializedData::
+SerializedData(eDataType base_data_type,Int64 memory_size,
+               Integer nb_dimension,Int64 nb_element,Int64 nb_base_element,
+               bool is_multi_size,Int64ConstArrayView extents)
+: m_base_data_type(base_data_type)
+, m_memory_size(memory_size)
+, m_nb_dimension(nb_dimension)
+, m_nb_element(nb_element)
+, m_nb_base_element(nb_base_element)
+, m_is_multi_size(is_multi_size)
+, m_extents(extents)
+, m_element_size(dataTypeSize(m_base_data_type))
+{
+  _copyExtentsToDimensions();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SerializedData::
+_copyDimensionsToExtents()
+{
+  Integer n = m_dimensions.size();
+  m_extents.resize(n);
+  for( Integer i=0; i<n; ++i )
+    m_extents[i] = m_dimensions[i];
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SerializedData::
+_copyExtentsToDimensions()
+{
+  Integer n = m_extents.size();
+  m_dimensions.resize(n);
+  // Il ne faut pas lever d'exceptions si on dépasse les bornes sinon
+  // le code lèvera une exception dès que le nombre d'éléments du tableau
+  // dépasse 32 bits
+  for( Integer i=0; i<n; ++i )
+    m_dimensions[i] = static_cast<Int32>(m_extents[i]);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SerializedData::
+setBuffer(ByteArrayView buffer)
+{
+  setBytes(Span<Byte>(buffer));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SerializedData::
+setBuffer(ByteConstArrayView buffer)
+{
+  setBytes(Span<const Byte>(buffer));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SerializedData::
+setBytes(Span<Byte> buffer)
+{
+  m_buffer = buffer;
+  m_const_buffer = buffer;
+  m_stored_buffer.clear();
+  m_memory_size = buffer.size();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SerializedData::
+setBytes(Span<const Byte> buffer)
+{
+  m_const_buffer = buffer;
+  m_buffer = Span<Byte>();
+  m_stored_buffer.clear();
+  m_memory_size = buffer.size();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SerializedData::
+setBuffer(SharedArray<Byte>& buffer)
+{
+  m_stored_buffer = buffer;
+  m_buffer = m_stored_buffer;
+  m_const_buffer = m_stored_buffer.view();
+  m_memory_size = buffer.size();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SerializedData::
+allocateMemory(Int64 size)
+{
+  m_stored_buffer = SharedArray<Byte>(size);
+  m_buffer = m_stored_buffer;
+  m_const_buffer = m_stored_buffer.view();
+  m_memory_size = size;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SerializedData::
+computeHash(IHashAlgorithm* algo,ByteArray& output) const
+{
+  // TODO: faire avec le support 64 bits mais cela change le hash.
+  algo->computeHash(m_const_buffer.constSmallView(),output);
+  const Byte* ptr = reinterpret_cast<const Byte*>(m_dimensions.data());
+  Integer msize = CheckedConvert::multiply(m_dimensions.size(),(Integer)sizeof(Integer));
+  ByteConstArrayView dim_bytes(msize,ptr);
+  algo->computeHash(dim_bytes,output);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \todo ne pas utiliser le type DT_Byte pour la serialisation mais
+ * le vrai type de base: ce type peut etre utiliser avec MPI et dans ce
+ * cas, si les machines sont heterogenes, on perd l'information du type
+ * et le put peut ne pas correspondre.
+ */
+void SerializedData::
+serialize(ISerializer* sbuf) const
+{
+  _serialize(sbuf);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SerializedData::
+serialize(ISerializer* sbuf)
+{
+  ISerializer::eMode mode = sbuf->mode();
+
+  switch(mode){
+  case ISerializer::ModeReserve:
+    _serialize(sbuf);
+    break;
+  case ISerializer::ModePut:
+    _serialize(sbuf);
+    break;
+  case ISerializer::ModeGet:
+    switch(sbuf->readMode()){
+    case ISerializer::ReadReplace:
+      {
+        m_base_data_type = (eDataType)sbuf->getInteger(); // Pour le m_base_data_type
+        m_memory_size = sbuf->getInt64(); // Pour le m_memory_size
+        m_nb_dimension = sbuf->getInteger(); // Pour le m_nb_dimension
+        m_nb_element = sbuf->getInt64(); // Pour le m_nb_element
+        m_nb_base_element = sbuf->getInt64(); // Pour le m_nb_base_element
+        m_is_multi_size = sbuf->getInteger(); // Pour le m_is_multi_size
+        m_element_size = sbuf->getInt64(); // Pour le m_element_size
+
+        Int64 dimensions_size = sbuf->getInt64();
+        m_extents.resize(dimensions_size);
+        sbuf->getSpan(m_extents);
+        _copyExtentsToDimensions();
+
+        Int64 buffer_size = sbuf->getInt64();
+        m_stored_buffer.resize(buffer_size);
+        sbuf->getSpan(m_stored_buffer); // Pour les données
+        m_buffer = m_stored_buffer;
+        m_const_buffer = m_buffer;
+      }
+      break;
+    case ISerializer::ReadAdd:
+      throw NotImplementedException("SerializedData::serialize()","ReadAdd");
+      break;
+    }
+    break;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \todo ne pas utiliser le type DT_Byte pour la serialisation mais
+ * le vrai type de base: ce type peut etre utiliser avec MPI et dans ce
+ * cas, si les machines sont heterogenes, on perd l'information du type
+ * et le put peut ne pas correspondre.
+ */
+void SerializedData::
+_serialize(ISerializer* sbuf) const
+{
+  ISerializer::eMode mode = sbuf->mode();
+  if (m_extents.size()!=m_dimensions.size())
+    ARCANE_FATAL("Incoherence between extents ({0}) and dimensions ({1})",
+                 m_extents.size(),m_dimensions.size());
+  switch(mode){
+  case ISerializer::ModeReserve:
+    sbuf->reserveInteger(1); // Pour le m_base_data_type
+    sbuf->reserve(DT_Int64,1); // Pour le m_memory_size
+    sbuf->reserveInteger(1); // Pour le m_nb_dimension
+    sbuf->reserve(DT_Int64,1); // Pour le m_nb_element
+    sbuf->reserve(DT_Int64,1); // Pour le m_nb_base_element
+    sbuf->reserveInteger(1); // Pour le m_is_multi_size
+    sbuf->reserve(DT_Int64,1); // Pour le m_element_size
+
+    sbuf->reserve(DT_Int64,1); // Pour le m_extents.size()
+    sbuf->reserveSpan(DT_Int64,m_extents.size()); // Pour les dimensions
+
+    sbuf->reserve(DT_Int64,1); // Pour le m_const_buffer.size()
+    sbuf->reserveSpan(DT_Byte,m_const_buffer.size()); // Pour les données
+    break;
+  case ISerializer::ModePut:
+    sbuf->putInteger(m_base_data_type); // Pour le m_base_data_type
+    sbuf->putInt64(m_memory_size); // Pour le m_memory_size
+    sbuf->putInteger(m_nb_dimension); // Pour le m_nb_dimension
+    sbuf->putInt64(m_nb_element); // Pour le m_nb_element
+    sbuf->putInt64(m_nb_base_element); // Pour le m_nb_base_element
+    sbuf->putInteger(m_is_multi_size); // Pour le m_is_multi_size
+    sbuf->putInt64(m_element_size); // Pour le m_element_size
+
+    sbuf->putInt64(m_extents.size()); // Pour le m_extents.size()
+    sbuf->putSpan(m_extents); // Pour les dimensions
+
+    sbuf->putInt64(m_const_buffer.size()); // Pour le m_const_buffer.size()
+    sbuf->putSpan(m_const_buffer); // Pour les données
+    break;
+  case ISerializer::ModeGet:
+    ARCANE_FATAL("This methode does not handle ModeGet");
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

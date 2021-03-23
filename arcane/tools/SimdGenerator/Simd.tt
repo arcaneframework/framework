@@ -1,0 +1,123 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+<# ISimdClass simd_class = SimdClass.CurrentType; #>
+<# string simd_name = simd_class.ClassName; #>
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<# if (simd_class.IsEmulated){ #>
+
+<# // Génération des operations binaires
+   foreach(BinaryOperation op in GenerateHelper.BinaryOperations) {
+     string cpp_symbol = CppHelper.OpSymbolName(op);
+     string cpp_func_namespace = CppHelper.OpFuncNamespace(op);
+     string cpp_op_func_name = CppHelper.OpFuncName(op);
+     int simd_length = simd_class.DoubleVectorLength;
+     bool has_namespace = !String.IsNullOrEmpty(cpp_func_namespace);
+#>
+<# if (has_namespace) { #>
+namespace <#= cpp_func_namespace #> {
+<# } #>
+// Emulated Binary operation <#= cpp_op_func_name #>
+inline <#=simd_name#> <#=cpp_op_func_name #> (<#=simd_name#> a,<#=simd_name#> b)
+{
+  return <#=simd_name#>::fromScalar(<#=CppHelper.ComputeArgs(cpp_symbol,cpp_op_func_name,true,true,simd_class)#>);
+}
+
+inline <#=simd_name#> <#=cpp_op_func_name #>(<#=simd_name#> a,Real b)
+{
+  return <#=simd_name#>::fromScalar(<#=CppHelper.ComputeArgs(cpp_symbol,cpp_op_func_name,true,false,simd_class)#>);
+}
+
+inline <#=simd_name#> <#=cpp_op_func_name #>(Real a,<#=simd_name#> b)
+{
+  return <#=simd_name#>::fromScalar(<#=CppHelper.ComputeArgs(cpp_symbol,cpp_op_func_name,false,true,simd_class)#>);
+}
+<# if (has_namespace) { #>
+}
+<# } #>
+<# } #>
+
+<# } else { #> // IsEmulated
+
+<# // Génération des operations binaires
+   foreach(BinaryOperation op in GenerateHelper.BinaryOperations) {
+     string op_func_name = simd_class.OpName(op);
+     string cpp_func_namespace = CppHelper.OpFuncNamespace(op);
+     string cpp_op_func_name = CppHelper.OpFuncName(op);
+     int nb_native_vector = simd_class.NbNativeVector;
+     bool has_namespace = !String.IsNullOrEmpty(cpp_func_namespace);
+#>
+<# if (has_namespace) { #>
+namespace <#= cpp_func_namespace #> {
+<# } #>
+// Binary operation <#= cpp_op_func_name #>
+inline <#=simd_name#> <#=cpp_op_func_name #> (<#=simd_name#> a,<#=simd_name#> b)
+{
+  return <#=simd_name#>(
+   <# for( int k=0; k<nb_native_vector; ++k ){
+     if (k != 0) { #> , <# } #>  <#=op_func_name#> (a.v<#=k#>,b.v<#=k#>)
+   <# } #>
+   );
+}
+
+inline <#=simd_name#> <#=cpp_op_func_name #>(<#=simd_name#> a,Real b)
+{
+  return <#=simd_name#>(
+   <# for( int k=0; k<nb_native_vector; ++k ){
+      if (k != 0) { #> , <# } #> <#=op_func_name#> (a.v<#=k#>,<#=simd_class.FromScalar("b")#>)
+  <# } #>
+  );
+}
+
+inline <#=simd_name#> <#=cpp_op_func_name #>(Real b,<#=simd_name#> a)
+{
+  return <#=simd_name#>(
+   <# for( int k=0; k<nb_native_vector; ++k ){
+      if (k != 0) { #> , <# } #> <#=op_func_name#> (<#=simd_class.FromScalar("b")#>, a.v<#=k#>)
+   <# } #>
+   );
+}
+<# if (has_namespace) { #>
+}
+<# } #>
+<# } #>
+
+<# } #> // IsEmulated
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+<# // Génération des operations unaires
+   foreach(UnaryOperation op in GenerateHelper.UnaryOperations) {
+     string cpp_op_func_name = CppHelper.OpFuncName(op);
+     string cpp_qualified_func_name = CppHelper.QualifiedFuncName(op);
+     string cpp_func_namespace = CppHelper.OpFuncNamespace(op);
+     string simd_func_name = simd_class.OpName(op);
+     bool has_simd = !String.IsNullOrEmpty(simd_func_name);
+     bool has_namespace = !String.IsNullOrEmpty(cpp_func_namespace);
+     // L'operateur unaire '-' n'est pas generé.
+     if (cpp_op_func_name=="operator-")
+       continue;
+#>
+<# if (has_namespace) { #>
+namespace <#= cpp_func_namespace #> {
+<# } #>
+// Unary operation <#= cpp_op_func_name #>
+inline <#=simd_name#> <#=cpp_op_func_name #> (<#=simd_name#> a)
+{
+<# if (has_simd) { #>
+  return <#=simd_name#>(<#=simd_func_name#>(a.v0));
+<# } else { #>
+  Real* za = (Real*)(&a);
+  return <#=simd_name#>::fromScalar(<#=CppHelper.ComputeArgs(cpp_qualified_func_name,"za",simd_class)#>);
+<# } #>
+}
+<# if (has_namespace) { #>
+}
+<# } #>
+
+<# } #>

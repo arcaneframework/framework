@@ -1,0 +1,54 @@
+<?xml version="1.0" ?>
+
+<module name="Poisson" version="1.0">
+
+  <description>Descripteur du module Poisson</description>
+  <variables>
+    <variable
+	field-name="cell_temperature"
+	name="CellTemperature"
+	data-type="real"
+	item-kind="cell"
+	dim="0"
+	dump="true"
+	need-sync="true" />
+    <variable
+	field-name="node_temperature"
+	name="NodeTemperature"
+	data-type="real"
+	item-kind="node"
+	dim="0"
+	dump="true"
+	need-sync="true" />
+  </variables>
+
+  <entry-points>
+    <entry-point method-name="initTemperatures" name="InitTemperatures" where="start-init" property="none" />
+    <entry-point method-name="propagateTemperatures" name="PropagateTemperatures" where="compute-loop" property="none" />
+  </entry-points>
+
+  <options>
+    <!-- - - - - - init-temperature - - - - -->
+    <simple name="init-temperature" type="real" default="300">
+      <description>Température iitiale dans tout le maillage</description>
+    </simple>
+
+    <!-- - - - - - boundary-condition - - - - -->
+    <complex name="boundary-condition" type="BoundaryCondition" minOccurs="0" maxOccurs="unbounded">
+      <description>Condition aux limites</description>
+
+      <extended name="surface" type="Arcane::FaceGroup">
+	<description>Surface sur laquelle s'applique la condition aux limites</description>
+      </extended>
+
+      <enumeration name="type" type="TypesPoisson::eBoundaryCondition">
+	<description>Type de condition aux limites</description>
+	<enumvalue genvalue="TypesPoisson::Temperature" name="Temperature" />
+      </enumeration>
+
+      <simple name="value" type="real">
+	<description>Valeur de la temperature.</description>
+      </simple>
+    </complex>
+  </options>
+</module>

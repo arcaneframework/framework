@@ -1,0 +1,123 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<service name="MetisMeshPartitioner" parent-name="MeshPartitionerBase" type="caseoption">
+  <name lang='fr'>metis</name>
+  <userclass>User</userclass>
+  <description>
+    Partionneur de maillage Metis
+  </description>
+    
+  <interface name="Arcane::IMeshPartitioner" inherited="false"/>
+
+  <variables>
+  </variables>
+
+  <options>
+    <simple name="max-diffusive-count" type="integer" default="10">
+      <description>Maximum diffusive repartition count before full repartitioning (negative values means never)</description>
+      <userclass>User</userclass>
+    </simple>
+    <simple name="imbalance-relative-tolerance" type="real" default="4.0">
+      <userclass>User</userclass>
+      <description>Imbalance tolerance; Force full repartitioning if imbalance if greater than 'imbalance-relative-tolerance' * maxImbalance
+      </description>
+    </simple>
+    <simple name="tolerance-target" type="real" default="1.05">
+      <userclass>User</userclass>
+      <description>Tolerance t used by partitioner. It means that all parts returned by partitioner should verify 'size' lte 'avg' * t.
+      </description>
+    </simple>
+    <simple name="dump-graph" type="bool" default="false">
+      <userclass>User</userclass>
+      <description>Dump graph on disk, in "Scotch" format. Allow to check input for partitioner.
+      </description>
+    </simple>
+    <enumeration name = "metis-call-strategy" type = "MetisCallStrategy" default = "one-processor-per-node">
+      <userclass>User</userclass>
+      <description>
+        Strategie a adopter pour les appels a Metis.
+      </description>
+      <enumvalue  name="all-processors"  genvalue="MetisCallStrategy::all_processors">
+        <userclass>User</userclass>
+        <description>
+          Metis utilise tous les processeurs disponibles. La repetabilite "run a run" n'est pas garantie.
+        </description>
+      </enumvalue>
+      <enumvalue  name="one-processor-per-node"  genvalue="MetisCallStrategy::one_processor_per_node">
+        <userclass>User</userclass>
+        <description>
+          Redistribue le graph sur un processeur par noeud. Cela permet souvent d'ameliorer les performances en
+          evitant d'avoir peu de mailles par processus. La repetabilite "run a run" du partitionnement n'est pas
+          garantie. Lorsqu'il n'y a qu'un seul noeud, tous les processeurs du noeuds sont utilises (pas de
+          regroupement du graph).
+        </description>
+      </enumvalue>
+      <enumvalue  name="two-processors-two-nodes"  genvalue="MetisCallStrategy::two_processors_two_nodes">
+        <userclass>User</userclass>
+        <description>
+          Effectue d'abord un regroupement du graph sur un processeur par noeud, puis effectue un regroupement
+          du graph sur 2 de ces processeurs. S'il n'y a qu'un seul noeud, les 2 processeurs sont choisis sur
+          ce noeud. La repetabilite "run a run" du partitionnement est garantie, mais cela consomme plus de
+          memoire et de temps CPU lors du partitionnement.
+        </description>
+      </enumvalue>
+      <enumvalue  name="two-gathered-processors"  genvalue="MetisCallStrategy::two_gathered_processors">
+        <userclass>User</userclass>
+        <description>
+          Effectue un regroupement du graph sur les 2 premiers processeurs. A priori, ces 2 processeurs se
+          trouvent sur le meme noeud. La repetabilite "run a run" du partitionnement est garantie, mais cela
+          consomme plus de memoire et de temps CPU lors du partitionnement.
+        </description>
+      </enumvalue>
+      <enumvalue  name="two-scattered-processors"  genvalue="MetisCallStrategy::two_scattered_processors">
+        <userclass>User</userclass>
+        <description>
+          Effectue un regroupement du graph sur 2 processeurs distants. A priori, ces 2 processeurs se
+          trouvent sur des noeuds differents. La repetabilite "run a run" du partitionnement est garantie, mais cela
+          consomme plus de memoire et de temps CPU lors du partitionnement.
+        </description>
+      </enumvalue>
+    </enumeration>
+
+    <!-- Stratégie à employer pour gérer les éventuelles  partitions vides générées par ParMetis -->
+    <enumeration name="empty-partition-strategy" type="MetisEmptyPartitionStrategy" default="take-from-biggest-partition-v2">
+      <userclass>User</userclass>
+      <description>
+        Strategie à adopter pour gérer les éventuelles partitions vides générées par ParMetis.
+      </description>
+      <enumvalue name="none" genvalue="MetisEmptyPartitionStrategy::DoNothing">
+        <description>
+          Ne fait aucun traitement pour les partitions vides. Cela risque potentiellement de poser problème
+          lors du partitionnement suivant car ParMetis n'est pas robuste lorsqu'on essaie de partitionner un
+          graphe distribué avec des composantes vides.
+        </description>
+      </enumvalue>
+      <enumvalue  name="take-from-biggest-partition-v1"  genvalue="MetisEmptyPartitionStrategy::TakeFromBiggestPartitionV1">
+        <userclass>User</userclass>
+        <description>
+          Tente de supprimer les partitions vides en faisant en sorte que le sous-domaine ayant le plus de mailles
+          donne une de ses mailles à une partition vide. Il s'agit de l'algorithme historique utilisé jusque dans
+          la version 2.18 de Arcane. Cet algorithme fonctionne bien sauf dans le cas où il y a plus de partitions
+          vide que de mailles dans le sous-domaine le plus grand car
+          il laisse des partitions vides. Il faut noter que ce cas
+          arrive uniquement si on a peu de mailles, beaucoup de
+          sous-domaines et un déséquilibre important.
+        </description>
+      </enumvalue>
+      <enumvalue  name="take-from-biggest-partition-v2"  genvalue="MetisEmptyPartitionStrategy::TakeFromBiggestPartitionV2">
+        <userclass>User</userclass>
+        <description>
+          Tente de supprimer les partitions vides en appliquant de
+          manière itérative la version 1 de cet algorithme.
+        </description>
+      </enumvalue>
+    </enumeration>
+
+    <simple name="input-output-digest" type="bool" default="false">
+      <userclass>User</userclass>
+      <description>
+        Affiche la signature des entrees / sorties de ParMetis.
+      </description>
+    </simple>
+  </options>
+
+</service>

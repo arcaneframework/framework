@@ -1,0 +1,66 @@
+﻿<#@ template language="C#v3.5" #>
+/*
+ * Génération des classes des vues sur les éléments géométriques (GeomElement).
+ */
+<# foreach( Item item in Connectivity.Items2DAnd3D ) { #>
+
+/*!
+ * \ingroup ArcaneGeometric
+ * \brief Vue constante sur les éléments géométriques de type GeomType::<#=item.Name#>.
+ * 
+ * Il est possible de récupérer une vue de ce type via:
+ * - directement depuis une instance de <#=item.Name#>ShapeView.
+ * - directement depuis une instance de <#=item.Name#>Element
+ * - une instance de <#=item.Name#>ElementView via <#=item.Name#>ElementView::constView()
+ * - une instance de GeomShapeView via GeomShapeView::to<#=item.Name#>Element()
+ *
+ * Pour plus d'informations sur l'usage, se reporter à \ref arcanedoc_cea_geometric_viewusage
+ */
+class ARCANE_CEA_GEOMETRIC_EXPORT <#=item.Name#>ElementConstView
+: public GeomElementConstViewBase
+{
+ public:
+  <#=item.Name#>ElementConstView(ARCANE_RESTRICT const Real3POD* ptr)
+  : GeomElementConstViewBase(ptr){}
+};
+
+/*!
+ * \ingroup ArcaneGeometric
+ * \brief Vue modifiable sur les éléments géométriques de type GeomType::<#=item.Name#>.
+ * 
+ * Il est possible de récupérer une vue de ce type via:
+ * - directement depuis une instance de <#=item.Name#>Element
+ * - une instance de <#=item.Name#>Element via <#=item.Name#>ElementView::view()
+ *
+ * Pour plus d'informations sur l'usage, se reporter à \ref arcanedoc_cea_geometric_viewusage
+ */
+class ARCANE_CEA_GEOMETRIC_EXPORT <#=item.Name#>ElementView
+: public GeomElementViewBase
+{
+ public:
+  typedef <#=item.Name#>ElementConstView ConstViewType;
+ public:
+  <#=item.Name#>ElementView(ARCANE_RESTRICT Real3POD* ptr)
+  : GeomElementViewBase(ptr){}
+  //! Initialise la vue avec les coordonnées passées en argument
+  void init(<#=item.CoordsArgString()#>)
+  {
+   <# for( int i=0; i<item.NbNode; ++i ) { #>
+   m_s[<#=i#>] = a<#=i#>;
+   <# } #>
+  }
+  //! Opérateur de conversion vers une vue constante
+  operator <#=item.Name#>ElementConstView() const { return ConstViewType(m_s); }
+  //! Vue constante sur l'élément
+  <#=item.Name#>ElementConstView constView() const { return ConstViewType(m_s); }
+};
+
+<# // Génère un typedef s'il existe un nom court #>
+<# if (item.BasicName != item.Name ) { #>
+//! Vue sur un élément de type GeomType::<#=item.Name#>
+typedef <#=item.Name#>ElementView <#=item.BasicName#>ElementView;
+//! Vue constante sur un élément de type GeomType::<#=item.Name#>
+typedef <#=item.Name#>ElementConstView <#=item.BasicName#>ElementConstView;
+<# } #>
+
+<# } #>

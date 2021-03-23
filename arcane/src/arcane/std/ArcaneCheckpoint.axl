@@ -1,0 +1,150 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+
+<!-- ###################################################################### -->
+<!-- ###################################################################### -->
+
+<!-- Options du jeu de données concernant le module de protections -->
+
+ <module name="ArcaneCheckpoint" version="1.0">
+ <name lang='fr'>arcane-protections-reprises</name>
+  <userclass>User</userclass>
+ <description>
+Options concernant les protections/reprises.
+<p>Les sorties peuvent être données en temps physique (frequence), en temps
+CPU (frequence-cpu) ou en periode entre deux iterations (periode). Si plusieurs
+sorties sont spécifiées, la priorité est accordée aux sorties en temps physique,
+puis en nombre d'itérations, puis en temps CPU. Si aucune option n'est spécifiée,
+aucune protection n'est effectuée, sauf éventuellement au temps final si
+l'option 'en-fin-de-calcul' est vraie.
+</p>
+ </description>
+    
+    <variables>
+      <variable field-name="next_iteration"
+                name="ArcaneCheckpointNextIteration"
+                data-type="integer"
+                item-kind="none"
+                dim="0"
+                dump="true"
+                need-sync="true"/>
+      <variable field-name="next_global_time"
+                name="ArcaneCheckpointNextGlobalTime"
+                data-type="real"
+                item-kind="none"
+                dim="0"
+                dump="true"
+                need-sync="true"/>
+      <variable field-name="next_cpu_time"
+                name="ArcaneCheckpointNextCPUTime"
+                data-type="integer"
+                item-kind="none"
+                dim="0"
+                dump="true"
+                need-sync="true"/>
+      <variable field-name="checkpoints_time"
+                name="ArcaneCheckpointCheckpointsTime"
+                data-type="real"
+                item-kind="none"
+                dim="1"
+                dump="true"
+                need-sync="true"/>
+    </variables>
+
+    <entry-points>
+      <entry-point method-name="checkpointCheckAndWriteData" 
+                   name="ArcaneCheckpointCheckAndWriteData" 
+                   where="compute-loop" 
+                   property="auto-load-end"/>
+      <entry-point method-name="checkpointStartInit" 
+                   name="ArcaneCheckpointStartInit" 
+                   where="start-init" 
+                   property="auto-load-end"/>
+      <entry-point method-name="checkpointInit" 
+                   name="ArcaneCheckpointInit" 
+                   where="init" 
+                   property="auto-load-end"/>
+      <entry-point method-name="checkpointExit" 
+                   name="ArcaneCheckpointExit" 
+                   where="exit" 
+                   property="auto-load-end"/>
+    </entry-points>
+
+  <options>
+      
+  <!-- - - - - - frequency - - - - -->
+  <simple
+   name    = "frequency"
+   type    = "real"
+   default = "0."
+  >
+   <name lang='fr'>frequence</name>
+   <userclass>User</userclass>
+   <description>
+Temps physique entre deux protections.
+   </description>
+  </simple>
+
+  <!-- - - - - - period - - - - -->
+  <simple
+   name    = "period"
+   type    = "integer"
+   default = "0"
+  >
+   <name lang='fr'>periode</name>
+   <userclass>User</userclass>
+   <description>
+Nombre d'itérations entre deux protections.
+   </description>
+  </simple>
+
+  <!-- - - - - - frequency-cpu - - - - -->
+  <simple
+   name    = "frequency-cpu"
+   type    = "integer"
+   default = "0"
+  >
+   <name lang='fr'>frequence-cpu</name>
+   <userclass>User</userclass>
+   <description>
+Temps CPU (exprimé en minutes) entre deux protections.
+   </description>
+  </simple>
+
+  <!-- - - - - - do-dump-at-end - - - - -->
+  <simple
+   name    = "do-dump-at-end"
+   type    = "bool"
+   default = "true"
+  >
+   <name lang='fr'>en-fin-de-calcul</name>
+   <userclass>User</userclass>
+   <description>
+Indique si une protection doit être effectuée en fin de calcul.
+   </description>
+  </simple>
+
+  <!-- - - - - - checkpoint-service-name - - - - -->
+  <service-instance
+   name    = "checkpoint-service"
+   type    = "Arcane::ICheckpointWriter"
+   default = "ArcaneHdf5Checkpoint2"
+   allow-null = "true"
+  >
+   <name lang='fr'>service-protection</name>
+  <userclass>User</userclass>
+   <description>
+Service utilisé pour les protections/reprises.
+ATTENTION: ne modifier cette valeur que si vous savez ce que vous faites.
+L'utilisation d'un service non approprié pourra empêcher les protections ou les reprises.
+   </description>
+  </service-instance>
+
+  <!-- ###################################################################### -->
+  <!-- ###################################################################### -->
+
+  </options>
+  
+  <!-- ###################################################################### -->
+  <!-- ###################################################################### -->
+  
+</module>

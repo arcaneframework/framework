@@ -1,0 +1,11 @@
+<!-- -*- C++ -*- -->
+#include "arcane/Observer.h"
+#include "arcane/utils/String.h"
+#include "arcane/utils/ConstCString.h"
+#include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/NotImplementedException.h"
+#include "arcane/utils/IFunctor.h"
+#include "arcane/utils/IFunctorWithArgument.h"
+#include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/TraceAccessor.h"
+#include "arcane/utils/SharedReference.h"

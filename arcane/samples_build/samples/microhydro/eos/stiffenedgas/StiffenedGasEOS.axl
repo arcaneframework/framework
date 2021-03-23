@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<service name="StiffenedGasEOS" version="1.0" type="caseoption">
+
+	<description>Jeu de données du service StiffenedGasEOS</description>
+  <interface name="IEquationOfState" />
+
+	<variables>
+		<!-- DENSITY -->
+		<variable
+			field-name="density"
+			name="Density"
+			data-type="real"
+			item-kind="cell"
+			dim="0"
+			dump="true"
+			need-sync="true" />
+		<!-- PRESSURE -->
+		<variable
+			field-name="pressure"
+			name="Pressure"
+			data-type="real"
+			item-kind="cell"
+			dim="0"
+			dump="true"
+			need-sync="true" />
+		<!-- INTERNAL ENERGY	 -->
+		<variable
+			field-name="internal_energy"
+			name="InternalEnergy"
+			data-type="real"
+			item-kind="cell"
+			dim="0"
+			dump="true"
+			need-sync="true" />
+		<!-- CELL VOLUME	 -->
+		<variable
+			field-name="cell_volume"
+			name="CellVolume"
+			data-type="real"
+			item-kind="cell"
+			dim="0"
+			dump="true"
+			need-sync="true" />
+		<!-- OLD CELL VOLUME	 -->
+		<variable
+			field-name="old_cell_volume"
+			name="OldCellVolume"
+			data-type="real"
+			item-kind="cell"
+			dim="0"
+			dump="true"
+			need-sync="true" />
+		<!-- 	NODE MASS	 -->
+		<variable
+			field-name="node_mass"
+			name="NodeMass"
+			data-type="real"
+			item-kind="node"
+			dim="0"
+			dump="true"
+			need-sync="true" />
+		<!-- 	ADIABATIC CONSTANT	 -->
+		<variable
+			field-name="adiabatic_cst"
+			name="AdiabaticCst"
+			data-type="real"
+			item-kind="cell"
+			dim="0"
+			dump="true"
+			need-sync="true" />
+		<!-- 	CARACTERISTIC LENGTH	 -->
+		<variable
+			field-name="caracteristic_length"
+			name="CaracteristicLength"
+			data-type="real"
+			item-kind="cell"
+			dim="0"
+			dump="true"
+			need-sync="true" />
+		<!-- 	SOUND SPEED	 -->
+		<variable
+			field-name="sound_speed"
+			name="SoundSpeed"
+			data-type="real"
+			item-kind="cell"
+			dim="0"
+			dump="true"
+			need-sync="true" />
+	</variables>
+
+	<options>
+		<!-- - - - - - limit tension - - - - -->
+		<simple name="limit-tension" type="real" default="0.01">
+			<description>Définition de la tension limite</description>
+		</simple>
+	</options>
+</service>

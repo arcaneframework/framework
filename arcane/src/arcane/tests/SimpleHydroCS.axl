@@ -1,0 +1,479 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+
+<!-- Description de la configuration du module 'ModuleSimpleHydro' -->
+<module name="SimpleHydroCS" version="1.0" namespace-macro-name="SIMPLE_HYDRO">
+
+  <variables>
+    <!-- DENSITY -->
+    <variable
+      field-name="density"
+      name="Density"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+    <!-- PRESSURE -->
+    <variable
+      field-name="pressure"
+      name="Pressure"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+    <!-- CELL MASS -->
+    <variable
+      field-name="cell_mass"
+      name="CellMass"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+    <!-- INTERNAL ENERGY	 -->
+    <variable
+      field-name="internal_energy"
+      name="InternalEnergy"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+    <!-- CELL VOLUME -->
+    <variable
+      field-name="volume"
+      name="Volume"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+    <!-- OLD CELL VOLUME -->
+    <variable
+      field-name="old_volume"
+      name="OldVolume"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+    <!-- CELL VISCOSITY FORCE -->
+    <variable
+      field-name="cell_viscosity_force"
+      name="CellViscosityForce"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+    <!-- CELL VISCOSITY WORK -->
+    <variable
+      field-name="cell_viscosity_work"
+      name="CellViscosityWork"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+    <!-- FORCE	 -->
+    <variable
+      field-name="force"
+      name="Force"
+      data-type="real3"
+      item-kind="node"
+      dim="0"
+      dump="false"
+      need-sync="false" />
+    <!-- 	VELOCITY	 -->
+    <variable
+      field-name="velocity"
+      name="Velocity"
+      data-type="real3"
+      item-kind="node"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+    <!-- 	NODE MASS	 -->
+    <variable
+      field-name="node_mass"
+      name="NodeMass"
+      data-type="real"
+      item-kind="node"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+    <!-- 	ADIABATIC CONSTANT	 -->
+    <variable
+      field-name="adiabatic_cst"
+      name="AdiabaticCst"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+    <!-- 	CARACTERISTIC LENGTH	 -->
+    <variable
+      field-name="caracteristic_length"
+      name="CaracteristicLength"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="false"
+      need-sync="true" />
+    <!-- 	SOUND SPEED	 -->
+    <variable
+      field-name="sound_speed"
+      name="SoundSpeed"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+    <!-- 	NODE COORD	 -->
+    <variable
+      field-name="node_coord"
+      name="NodeCoord"
+      data-type="real3"
+      item-kind="node"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+    <!-- 	CELL CQS	 -->
+    <variable
+      field-name="cell_cqs"
+      name="CellCQS"
+      data-type="real3"
+      item-kind="cell"
+      dim="1"
+      dump="true"
+      need-sync="true" />
+  </variables>
+
+  <entry-points>
+    <entry-point method-name="hydroStartInit" name="HydroStartInit" where="start-init" property="none" />
+    <entry-point method-name="hydroContinueInit" name="HydroContinueInit" where="continue-init" property="none" />
+    <entry-point
+      method-name="computePressureForce"
+      name="ComputePressureForce"
+      where="compute-loop"
+      property="none" />
+    <entry-point
+      method-name="computePseudoViscosity"
+      name="ComputePseudoViscosity"
+      where="compute-loop"
+      property="none" />
+    <entry-point
+      method-name="addPseudoViscosityContribution"
+      name="AddPseudoViscosityContribution"
+      where="compute-loop"
+      property="none" />
+    <entry-point method-name="computeVelocity" name="ComputeVelocity" where="compute-loop" property="none" />
+    <entry-point
+      method-name="computeViscosityWork"
+      name="ComputeViscosityWork"
+      where="compute-loop"
+      property="none" />
+    <entry-point
+      method-name="applyBoundaryCondition"
+      name="ApplyBoundaryCondition"
+      where="compute-loop"
+      property="none" />
+    <entry-point method-name="moveNodes" name="MoveNodes" where="compute-loop" property="none" />
+    <entry-point
+      method-name="computeGeometricValues"
+      name="ComputeGeometricValues"
+      where="compute-loop"
+      property="none" />
+    <entry-point method-name="updateDensity" name="UpdateDensity" where="compute-loop" property="none" />
+    <entry-point
+      method-name="applyEquationOfState"
+      name="ApplyEquationOfState"
+      where="compute-loop"
+      property="none" />
+    <entry-point method-name="computeDeltaT" name="ComputeDeltaT" where="compute-loop" property="none" />
+  </entry-points>
+  
+  <options>
+
+  <!-- - - - - - deltat-min - - - - -->
+  <simple
+   name = "deltat-min"
+   type = "real"
+   >
+   <userclass>User</userclass>
+   <description>
+Valeur minimale que peut prendre le <em>deltat</em> entre deux
+itérations.
+   </description>
+  </simple>
+
+  <!-- - - - - - deltat-max - - - - -->
+  <simple
+   name = "deltat-max"
+   type = "real"
+  >
+   <userclass>User</userclass>
+   <description>
+Valeur maximale que peut prendre le <em>deltat</em> entre deux
+itérations. Si le deltat calculé est supérieur à cette valeur,
+il est ramené à cette valeur.
+   </description>
+  </simple>
+
+  <!-- - - - - - deltat-init - - - - -->
+  <simple
+   name = "deltat-init"
+   type = "real"
+  >
+   <userclass>User</userclass>
+   <description>
+Valeur du <em>deltat</em> au moment du démarrage.
+   </description>
+  </simple>
+
+  <!-- - - - - - stop-time - - - - -->
+  <simple
+   name = "final-time"
+   type = "real"
+  >
+   <name lang='fr'>temps-final</name>
+   <userclass>User</userclass>
+   <description>
+Temps auquel on stoppe la simulation. Le code s'arrête dès que
+le temps courant est <strong>strictement</strong> supérieur à
+ce temps.
+   </description>
+  </simple>
+
+  <!-- - - - - - test-int32 - - - - -->
+  <simple
+   name = "test-int32"
+   type = "int32"
+   minOccurs = "0"
+   maxOccurs = "unbounded"
+  >
+   <name lang='fr'>test-int32</name>
+   <userclass>User</userclass>
+   <description>
+Temps auquel on stoppe la simulation. Le code s'arrête dès que
+le temps courant est <strong>strictement</strong> supérieur à
+ce temps.
+   </description>
+  </simple>
+
+  <!-- - - - - - test-real3 - - - - -->
+  <simple
+   name = "test-real3"
+   type = "real3"
+   default = "0.0 0.0 0.0"
+  >
+   <name lang='fr'>test-real3</name>
+   <userclass>User</userclass>
+   <description>
+   </description>
+  </simple>
+
+  <!-- - - - - - test-real3-array - - - - -->
+  <simple
+   name = "test-real3-array"
+   type = "real3"
+   minOccurs = "0"
+   maxOccurs = "unbounded"
+  >
+   <name lang='fr'>test-real3-array</name>
+   <userclass>User</userclass>
+   <description>
+   </description>
+  </simple>
+
+ <!-- - - - - - cfl - - - - -->
+  <simple
+   name = "cfl"
+   type     = "real"
+   default  = "0.3"
+  >
+   <description>
+Définition de la CFL
+   </description>
+  </simple>
+    
+  <!-- - - - - - variation-inf - - - - -->
+  <simple
+   name = "variation-inf"
+   type     = "real"
+   default  = "0.99"
+  >
+   <description>
+Amplitude maximale de décroissance du pas de temps
+   </description>
+  </simple>
+    
+  <!-- - - - - - variation-sup - - - - -->
+  <simple
+   name = "variation-sup"
+   type     = "real"
+   default  = "0.10"
+  >
+   <description>
+Amplitude maximale de croissance du pas de temps
+   </description>
+  </simple>
+    
+  <!-- - - - - - density-global-ratio - - - - -->
+  <simple
+   name = "density-global-ratio"
+   type     = "real"
+   default  = "0.1"
+  >
+   <description>
+Seuil d'accroissement relatif de la densité pour le contrôle du pas de temps
+   </description>
+  </simple>
+
+  <!-- - - - - - viscosity-linear-coef - - - - -->
+  <simple
+   name = "viscosity-linear-coef"
+   type     = "real"
+   default  = "1.0"
+  >
+   <description>
+Cette option détermine le coefficient linéaire pour la
+viscosité scalaire aux mailles ainsi que pour la viscosité
+tensorielle aux arêtes.
+   </description>
+  </simple>
+
+  <!-- - - - - - viscosity-quadratic-coef - - - - -->
+  <simple
+   name = "viscosity-quadratic-coef"
+   type     = "real"
+   default  = "1.0"
+  >
+   <description>
+Cette option détermine le coefficient quadratique pour la
+viscosité scalaire aux mailles ainsi que pour la viscosité
+tensorielle aux arêtes.
+   </description>
+  </simple>
+
+  <!-- - - - - - use-minimum-memory - - - - -->
+  <simple
+   name = "use-minimum-memory"
+   type     = "bool"
+   default  = "true"
+  >
+   <description>
+Vrai s'il faut limiter au maximum l'usage de la mémoire. Cela provoque
+la désallocation des structures du maillage et empêche les protections.
+   </description>
+  </simple>
+
+  <!-- - - - - - viscosity - - - - -->
+  <enumeration
+   name    = "viscosity"
+   type    = "TypesSimpleHydro.eViscosity"
+   default = "none"
+  >
+   <description>
+Choix de la viscosité.
+   </description>
+   <enumvalue genvalue="TypesSimpleHydro.eViscosity.ViscosityNo" name="none" />
+   <enumvalue genvalue="TypesSimpleHydro.eViscosity.ViscosityCellScalar" name="cell" />
+  </enumeration>
+
+   <enumeration
+    name = "sub-type"
+    type = "TypesSimpleHydro::eBoundaryCondition"
+    minOccurs = "0"
+    maxOccurs = "unbounded"
+   >
+    <description>
+Type de condition aux limites
+    </description>
+    <enumvalue genvalue="VelocityX" name="Vx" />
+    <enumvalue genvalue="VelocityY" name="Vy" />
+    <enumvalue genvalue="VelocityZ" name="Vz" />
+   </enumeration>
+
+   <extended
+    name = "volume"
+    type = "Arcane::ItemGroup"
+    minOccurs = "0"
+    maxOccurs = "unbounded"
+   >
+    <description>
+Surface sur laquelle s'applique la condition aux limites
+    </description>
+   </extended>
+
+   <simple
+    name = "string-test"
+    type = "ustring"
+    minOccurs = "0"
+    maxOccurs = "unbounded"
+   >
+    <description>
+Surface sur laquelle s'applique la condition aux limites
+    </description>
+   </simple>
+
+		<service-instance name="eos-model" type="IEquationOfState">
+				<description>Service d'equation d'état</description>
+		</service-instance>
+
+		<service-instance name="eos-model-array" type="IEquationOfState"     minOccurs = "0"
+    maxOccurs = "unbounded" >
+				<description>Service d'equation d'état multi</description>
+		</service-instance>
+
+<!-- - - - - - boundary-condition - - - - -->
+  <complex
+   name  = "boundary-condition"
+   type  = "BoundaryCondition"
+   minOccurs = "0"
+   maxOccurs = "unbounded"
+
+  >
+   <description>
+Condition aux limites
+   </description>
+
+   <enumeration
+    name = "type"
+    type = "TypesSimpleHydro::eBoundaryCondition"
+   >
+    <description>
+Type de condition aux limites
+    </description>
+    <enumvalue genvalue="TypesSimpleHydro::VelocityX" name="Vx" />
+    <enumvalue genvalue="TypesSimpleHydro::VelocityY" name="Vy" />
+    <enumvalue genvalue="TypesSimpleHydro::VelocityZ" name="Vz" />
+   </enumeration>
+
+   <extended
+    name = "surface"
+    type = "Arcane::FaceGroup"
+   >
+    <description>
+Surface sur laquelle s'applique la condition aux limites
+    </description>
+   </extended>
+
+   <simple
+    name = "value"
+    type = "real"
+   >
+    <description>
+Valeur de la composante à fixer.
+    </description>
+   </simple>
+
+  </complex>
+
+ </options>
+  
+  <!-- ###################################################################### -->
+  <!-- ###################################################################### -->
+  
+</module>

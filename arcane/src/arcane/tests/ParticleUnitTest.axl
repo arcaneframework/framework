@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
+
+<!-- ###################################################################### -->
+<!-- ###################################################################### -->
+
+<!-- Options du jeu de données pour le service de test des particules -->
+
+<service name="ParticleUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
+ <interface name="Arcane::IUnitTest" inherited="false" />
+ <options>
+   <simple name = "nb-particle-per-cell"
+           type = "integer"
+           default = "50"
+           >
+     <name lang='fr'>nb-particule-par-maille</name>
+     <description>
+       Nombre de particules par mailles créées à chaque itération.
+     </description>
+   </simple>
+
+   <simple name = "init-nb-particle-per-cell"
+           type = "integer"
+           default = "100"
+           >
+     <name lang='fr'>init-nb-particule-par-maille</name>
+     <description>
+       Nombre de particules par mailles créée à l'initialisation
+     </description>
+   </simple>
+
+   <simple name = "max-iteration"
+           type = "integer"
+           default = "10"
+           >
+     <name lang='fr'>max-iteration</name>
+     <description>
+       Nombre d'itérations à effectuer.
+     </description>
+   </simple>
+
+   <simple name = "destroy-ratio"
+           type = "real"
+           default = "0.5"
+           >
+     <name lang='fr'>ratio-destruction</name>
+     <description>
+       Proportion des particules détruites en fin d'itération.
+     </description>
+   </simple>
+
+	 <service-instance name="particle-exchanger" type="Arcane::IParticleExchanger" default="BasicParticleExchanger">
+		 <name lang="fr">echangeur-particule</name>
+		 <description>Service utilisé pour échanger les particules.</description>
+	 </service-instance>
+ </options>
+ <variables>
+	 <variable
+		 field-name="particle_temperature"
+		 name="Temperature"
+     family-name="ArcaneParticles"
+		 data-type="real"
+		 item-kind="particle"
+		 dim="0"
+		 dump="true"
+		 />
+	 <variable
+		 field-name="particle_temperature_with_ghost"
+		 name="Temperature"
+     family-name="ArcaneParticlesWithGhost"
+		 data-type="real"
+		 item-kind="particle"
+		 dim="0"
+		 dump="true"
+		 />
+ </variables> 
+</service>

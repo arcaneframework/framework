@@ -1,0 +1,40 @@
+Intellectual Property Notice
+------------------------------
+
+Arcane is licensed under the Apache License, Version 2.0 (LICENSE-APACHE
+or http://www.apache.org/licenses/LICENSE-2.0).
+
+Written by CEA/IFPEN and Contributors
+
+(C) Copyright 2000-2021 CEA/IFPEN. All rights reserved.
+(C) CEA: Commissariat à l'Énergie Atomique et aux Énergies Alternatives
+    (https://www.cea.fr)
+(C) IPFEN: IFP Énergies Nouvelles 
+    (https://www.ifpenergiesnouvelles.com)
+
+All content is the property of the respective authors or their employers.
+
+Copyrights and patents in the Arcane project are retained by contributors.
+No copyright assignment is required to contribute to Arcane
+
+SPDX usage
+------------
+
+Individual files contain SPDX tags instead of the full license text.
+This enables machine processing of license information based on the SPDX
+License Identifiers that are available here: https://spdx.org/licenses/
+
+External Packages
+-------------------
+
+Arcane bundles the following external packages.
+These packages are covered by various permissive licenses.
+See the license included with each package for full details.
+
+PackageName: rapidjson (src/arcane/utils/internal/json)
+PackageHomePage: https://rapidjson.org
+PackageLicenseDeclared: MIT
+
+PackageName: MD5 algorithm (src/arcane/utils/MD5HashAlgorithm_Licensed.h)
+PackageHomePage: Free Software Foundation
+PackageLicenseDeclared: LGPL-2.1-or-later

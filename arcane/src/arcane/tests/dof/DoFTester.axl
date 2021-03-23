@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<service name="DoFTester" version="1.0" type="caseoption" namespace-name="ArcaneTest" parent-name="Arcane::BasicUnitTest"> 
+  <interface name="Arcane::IUnitTest" inherited='false'/>
+  
+  <variables/>
+  
+  
+  <options>
+    <service-instance name="particle-exchanger" type="Arcane::IParticleExchanger" default="BasicParticleExchanger">
+      <name lang="fr">echangeur-particule</name>
+      <description>Service utilisé pour échanger les particules.</description>
+    </service-instance>
+  </options>
+</service>

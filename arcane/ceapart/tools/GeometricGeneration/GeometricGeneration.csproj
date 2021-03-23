@@ -1,0 +1,75 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework
+        Condition="'$(TargetFramework)'=='' and '$(BundledNETCoreAppTargetFrameworkVersion)'!=''"
+        >netcoreapp$(BundledNETCoreAppTargetFrameworkVersion)</TargetFramework>
+    <TargetFramework Condition="'$(TargetFramework)'==''">net461</TargetFramework>
+    <TargetExt>.dll</TargetExt>
+    <OutputType>Exe</OutputType>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Main.cs" />
+    <Compile Include="Connectivity.cs" />
+    <Compile Include="Item.cs" />
+    <Compile Include="CopyCoordOperation.cs">
+      <DependentUpon>CopyCoordOperation.tt</DependentUpon>
+    </Compile>
+    <Compile Include="GeneratedGeomShapeView.cs">
+      <DependentUpon>GeneratedGeomShapeView.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Face.cs" />
+    <Compile Include="Edge.cs" />
+    <Compile Include="ItemTypeBuilder.cs" />
+    <Compile Include="Real3.cs" />
+    <Compile Include="GeneratedConnectivity.cs">
+      <DependentUpon>GeneratedConnectivity.tt</DependentUpon>
+    </Compile>
+    <Compile Include="GeneratedGeomElementView.cs">
+      <DependentUpon>GeneratedGeomElementView.tt</DependentUpon>
+    </Compile>
+    <Compile Include="GeneratedGeomElement.cs">
+      <DependentUpon>GeneratedGeomElement.tt</DependentUpon>
+    </Compile>
+    <Compile Include="GeneratedGeomShapeViewDefinitions.cs">
+      <DependentUpon>GeneratedGeomShapeViewDefinitions.tt</DependentUpon>
+    </Compile>
+    <Compile Include="GeneratedGeomShapeViewDeclarations.cs">
+      <DependentUpon>GeneratedGeomShapeViewDeclarations.tt</DependentUpon>
+    </Compile>
+    <Compile Include="GeomType.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CopyCoordOperation.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CopyCoordOperation.cs</LastGenOutput>
+    </None>
+    <None Include="GeneratedGeomShapeView.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>GeneratedGeomShapeView.cs</LastGenOutput>
+    </None>
+    <None Include="GeneratedConnectivity.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>GeneratedConnectivity.cs</LastGenOutput>
+    </None>
+    <None Include="GeneratedGeomElementView.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>GeneratedGeomElementView.cs</LastGenOutput>
+    </None>
+    <None Include="GeneratedGeomElement.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>GeneratedGeomElement.cs</LastGenOutput>
+    </None>
+    <None Include="GeneratedGeomShapeViewDefinitions.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>GeneratedGeomShapeViewDefinitions.cs</LastGenOutput>
+    </None>
+    <None Include="GeneratedGeomShapeViewDeclarations.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>GeneratedGeomShapeViewDeclarations.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="system.codedom" Version="4.4.0" />
+</ItemGroup>
+</Project>

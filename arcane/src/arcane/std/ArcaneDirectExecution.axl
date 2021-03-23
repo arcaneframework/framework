@@ -1,0 +1,41 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<service name="ArcaneDirectExecution" type="subdomain" version="1.0" namespace-macro-name="ARCANE" >
+ <name lang='fr'>execution-directe</name>
+ <userclass>User</userclass>
+ <description>
+ </description>
+
+ <interface name="Arcane::IDirectExecution" />
+    
+ <variables>
+ </variables>
+
+ <options>
+      
+  <simple
+   name = "write-mesh"
+   type = "bool"
+   default = "false"
+  >
+ <userclass>User</userclass>
+  <name lang='fr'>ecrit-maillage</name>
+  <description>
+Ecrit le maillage après génération des groupes liés au glissement. Utile seulement en debug.
+  </description>
+ </simple>
+
+  <!-- Fichier de sortie pour la non-régression -->
+  <service-instance
+   name = "tool"
+   type = "Arcane::IDirectExecution"
+   minOccurs = "0"
+   maxOccurs = "unbounded"
+  >
+   <name lang='fr'>tool</name>
+   <description>
+Outil a executer
+   </description>
+  </service-instance>
+ </options>
+
+</service>

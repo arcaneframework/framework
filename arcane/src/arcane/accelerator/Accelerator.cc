@@ -1,0 +1,69 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* Accelerator.cc                                              (C) 2000-2020 */
+/*                                                                           */
+/* Déclarations générales pour le support des accélérateurs.                 */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arcane/accelerator/Reduce.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace
+{
+bool global_is_using_cuda_runtime = false;
+IRunQueueRuntime* global_cuda_runqueue_runtime = nullptr;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_ACCELERATOR_EXPORT
+bool isUsingCUDARuntime()
+{
+  return global_is_using_cuda_runtime;
+}
+
+extern "C++" ARCANE_ACCELERATOR_EXPORT
+void setUsingCUDARuntime(bool v)
+{
+  global_is_using_cuda_runtime = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Récupère l'implémentation CUDA de RunQueue
+extern "C++" ARCANE_ACCELERATOR_EXPORT
+IRunQueueRuntime* getCUDARunQueueRuntime()
+{
+  return global_cuda_runqueue_runtime;
+}
+
+//! Positionne l'implémentation CUDA de RunQueue.
+extern "C++" ARCANE_ACCELERATOR_EXPORT
+void setCUDARunQueueRuntime(IRunQueueRuntime* v)
+{
+  global_cuda_runqueue_runtime = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

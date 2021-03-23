@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <add key="samples_local_fallback" value="./_nuget_fallback" />
+    <add key="arcane_install" value="@CMAKE_INSTALL_PREFIX@/share/nupkgs" />
+  </packageSources>
+  <add key="globalPackagesFolder" value="./_nuget_packages" />
+</configuration>

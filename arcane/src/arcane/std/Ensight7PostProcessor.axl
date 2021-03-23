@@ -1,0 +1,105 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+
+  <!--  parent-name="PostProcessorService" -->
+  <service name="Ensight7PostProcessor" parent-name="PostProcessorWriterBase"
+   type="caseoption">
+    <name lang='fr'>post-processeur-ensight7</name>
+  <userclass>User</userclass>
+    <description>
+     Post Processeur au format Ensight7 Gold
+    </description>
+    
+    <interface name="Arcane::IPostProcessorWriter" inherited="false"/>
+
+    <variables>
+    </variables>
+
+    <options>
+      
+   <!-- - - - - - fileset-size - - - - - -->
+   <simple
+    name    = "fileset-size"
+    type    = "integer"
+    default = "0"
+   >
+    <name lang='fr'>nb-temps-par-fichier</name>
+  <userclass>User</userclass>
+    <description>
+Indique le nombre maximum d'instants
+de temps à mettre dans un fichier. Si l'option vaut 10 par exemple, les 10 premières sorties
+seront dans un fichier, les 10 suivantes dans un second et ainsi de suite. Si
+cette valeur vaut 0, il y a un temps par fichier et par variable. A noter que le dans la version actuelle de VTK (4.4+), seuls ce type de fichiers sont supportés en lecture.
+    </description>
+   </simple>
+
+   <simple
+    name    = "use-degenerated-hexa"
+    type    = "bool"
+    default = "true"
+   >
+  <userclass>User</userclass>
+    <description>
+Mode de représentation des hexahèdres dégénérés.
+Si use-degenerated-hexa = true alors ceux-ci sont représentés comme des héxahèdres avec des sommets confondus, sinon
+utilise le mode nfaced de Ensight (qui n'est pas compatible avec Paraview).
+    </description>
+   </simple>
+  
+
+   <!-- - - - - - binary-file - - - - - -->
+   <simple
+    name      = "binary-file"
+    type      = "bool"
+    default   = "true"
+   >
+  <userclass>User</userclass>
+    <name lang='fr'>fichier-binaire</name>
+    <description>
+Si vrai, le format de sauvegarde est binaire, sinon il est ASCII.
+    </description>
+   </simple>
+
+   <!-- - - - - - force-first-geometry - - - - - -->
+   <simple
+    name      = "force-first-geometry"
+    type      = "bool"
+    default   = "false"
+   >
+  <userclass>User</userclass>
+    <name lang='fr'>force-premiere-geometie</name>
+    <description>
+Si vrai, le format ne sauvegarde que la première géométrie.
+    </description>
+   </simple>
+
+
+    <!-- - - - - - - - save-uids - - - - - - - -->
+   <simple
+    name      = "save-uids"
+    type      = "bool"
+    default   = "false"
+   >
+  <userclass>User</userclass>
+    <name lang='fr'>sauve-uids</name>
+    <description>
+Si vrai, le format contient des propriétés supplémentaires 'Item'Uid identifiant les items portant des propriétés ('Item' étant Cell, Face, Edge, Node).
+    </description>
+   </simple>
+  
+
+   <!-- - - - - - one-file - - - - - -->
+   <!-- <simple
+    name      = "merge-file"
+    type      = "bool"
+    default   = "true"
+   >
+    <name lang='fr'>regroupe-fichier</name>
+    <description>
+Dans la version parallèle, true si on souhaite regrouper les fichiers de sorties
+dans un seul fichier 'case'.
+    </description>
+   </simple> -->
+
+    </options>
+
+  </service>

@@ -1,0 +1,52 @@
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+// -*- C++ -*-
+/*!
+  \page tutorialsample2 L'application "Poisson"
+
+
+  Le deuxième exemple de cette formation permet le développement d'un module qui calcule 
+  une diffusion numérique de la chaleur suivant l'équation de Poisson dans un parallélépipéde.
+  Le module doit initialiser toutes les mailles avec une temperature constante. Cette temperature
+  est lue dans le jeu de données qui fournit également des températures limites sur les surfaces
+  XMIN et ZMIN du maillage. La température sur les faces limites est prise en compte en initialisant 
+  la température des noeuds se trouvant sur ces faces. Puis, le module calcule la diffusion :
+     - la température d'une maille au temps n+1 est la moyenne des températures de ses noeuds au temps n,
+     - la température d'un noeud au temps n+1  est la moyenne des températures de ses mailles au temps n+1.
+
+  Le calcul doit s'arrêter quand le plus grand écart de températures (entre les temps n et n+1) sur une maille 
+  est inférieur à 0,2. Cet écart sera stocké dans une variable locale nommée \c max_delta_cell_t.
+
+  \section tutorialsample2_variables Variables
+  \par Prérequis
+  - Avoir fait le premier exemple de ce didacticiel : \ref tutorialsample1.
+  - Lire la partie section \ref arcanedoc_variable.
+  \par Actions à réaliser
+  - Compléter le fichier \c Poisson.axl pour déclarer les variables \e CellTemperature et \e NodeTemperature
+    représentant respectivement les températures aux mailles et aux noeuds.
+  - Compiler. 
+  - Regarder la déclaration des variables \c ArcanePoissonObject::m_cell_temperature et
+    \c ArcanePoissonObject::m_node_temperature dans le fichier \c Poisson_axl.h
+
+  \section tutorialsample1_datafile Fichier de données
+  \par Pré-requis
+  - Lire la section \ref arcanedoc_caseoptions.
+  \par Actions à réaliser
+  - Editer le jeu de données \c Poisson.arc et observer les éléments <tt>init-temperature</tt> et <tt>boundary-condition</tt>.
+  - Définir la grammaire de ces données en complétant le descripteur du module \c Poisson.axl (élément \c options)
+
+  \section tutorialsample2_enumerator Parcourir les entités du maillage
+  \par Pré-requis</b><br><br>
+  - Lire la section \ref arcane_overview_iteration
+  \par Actions à réaliser</b>
+  - Compléter le fichier \c PoissonModule.cc en effectuant les calculs décrits dans l'énoncé de l'exercice
+  - Compiler à l'aide des fichiers Makefile fournis
+  - Exécuter en séquentiel. Les fichiers de sortie sont au format Ensight Gold ; le visualiser (si possible !)
+
+  \section tutorialsample2_parallel Parallélisme
+  \par Pré-requis</b><br><br>
+  - Lire la section \ref arcanedoc_parallel.
+  \par Actions à réaliser</b>
+  - Exécuter en parallèle et visualiser le résultat
+  - Corriger les erreurs de diffusion en synchronisant la température et la variable \c max_delta_cell_t
+  - Exécuter en parallèle et visualiser le résultat
+*/

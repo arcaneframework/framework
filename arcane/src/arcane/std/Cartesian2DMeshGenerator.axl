@@ -1,0 +1,70 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<service name="Cartesian2DMeshGenerator" type="caseoption">
+  <userclass>User</userclass>
+  <description>
+    Générateur de maillage cartésien 2D.
+
+    Si le découpage en X et Y n'est pas spécifié, il faut que le
+    nombre de sous-domaine soit un carré (1, 4, 9, 16, 25, ...)
+
+    Si seul le découpage en X ou en Y est spécifié, il faut que cette
+    valeur spécifiée soit un diviseur du nombre de sous-domaine.
+  </description>
+    
+  <interface name="Arcane::IMeshBuilder" />
+
+  <options>
+    <simple name="origin" type="real2" >
+      <description>Origine du maillage</description>
+      <userclass>User</userclass>
+    </simple>
+    <simple name="nb-part-x" type="integer" default="0" >
+      <description>
+        Nombre de sous-domaine en X. Si absent ou si la
+        valeur '0' est specifiée,
+        alors le découpage en X est calculé dynamiquement
+      </description>
+      <userclass>User</userclass>
+    </simple>
+    <simple name="nb-part-y" type="integer" default="0">
+      <description>
+        Nombre de sous-domaine en Y. Si absent ou si la
+        valeur '0' est specifiée, alors le découpage en Y est calculé
+        dynamiquement
+      </description>
+      <userclass>User</userclass>
+    </simple>
+
+    <complex type="PartInfoX" name="x" minOccurs="1" maxOccurs="unbounded" >
+      <simple name="n" type="integer" >
+        <description>Nombre de mailles</description>
+        <userclass>User</userclass>
+      </simple>
+      <simple name="length" type="real" >
+        <description>Longueur</description>
+        <userclass>User</userclass>
+      </simple>
+      <simple name="progression" type="real" default="1.0">
+        <description>Progression</description>
+        <userclass>User</userclass>
+      </simple>
+    </complex>
+
+    <complex type="PartInfoY" name="y" minOccurs="1" maxOccurs="unbounded" >
+      <simple name="n" type="integer" >
+        <description>Nombre de mailles</description>
+        <userclass>User</userclass>
+      </simple>
+      <simple name="length" type="real" >
+        <description>Longueur</description>
+        <userclass>User</userclass>
+      </simple>
+      <simple name="progression" type="real" default="1.0">
+        <description>Progression</description>
+        <userclass>User</userclass>
+      </simple>
+    </complex>
+
+  </options>
+
+</service>

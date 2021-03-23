@@ -1,0 +1,15 @@
+﻿# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
+set(ARCANE_DOTNET_RUNTIME_coreclr "@ARCANE_DOTNET_RUNTIME_coreclr@" CACHE PATH "Arcane 'dotnet' exec path" FORCE)
+set(ARCANE_DOTNET_RUNTIME_mono "@ARCANE_DOTNET_RUNTIME_mono@" CACHE PATH "Arcane 'mono' exec path" FORCE)
+set(ARCANE_DOTNET_HAS_RUNTIME_coreclr @ARCANE_DOTNET_HAS_RUNTIME_coreclr@ CACHE BOOL "Is 'dotnet' runtime available" FORCE)
+set(ARCANE_DOTNET_HAS_RUNTIME_mono @ARCANE_DOTNET_HAS_RUNTIME_mono@ CACHE BOOL "Is 'mono' runtime available" FORCE)
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:

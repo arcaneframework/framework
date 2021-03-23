@@ -1,0 +1,10 @@
+set(ARCANE_SOURCES
+  MshMeshReader.cc
+  MshMeshWriter.cc
+  IosFile.cc
+  IosFile.h
+  IosFile.h
+  IosVtk.h
+  IosGmsh.h
+  IosXdmf.h
+)

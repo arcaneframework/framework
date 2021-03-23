@@ -1,0 +1,17 @@
+﻿{
+    "CodeBinPath" : "@ARCANE_INSTALL_BIN@",
+    "CodeLibPath" : "@ARCANE_INSTALL_LIB@",
+    "CodeSharePath" : "@ARCANE_INSTALL_SHR@",
+    "MpiBinary" : "@MPIEXEC_EXECUTABLE@",
+    "ValgrindBinary" : "@VALGRIND_EXEC_NAME@",
+    "MonoExecPath" : "@MONO_EXEC_PATH@",
+    "DotnetCoreClrPath" : "@DOTNET_EXEC@",
+    "ExternalLibraries" : "@ARCANE_EXTERNAL_LIBRARIES@",
+    "DefaultMeshWriter" : "@ARCANE_DEFAULT_MESHWRITER@",
+    "Config_MPIEXEC" : "@MPIEXEC_EXECUTABLE@",
+    "Config_MPIEXEC_NUMPROC_FLAG" : "@MPIEXEC_NUMPROC_FLAG@",
+    "Config_MPIEXEC_PREFLAGS" : "@MPIEXEC_PREFLAGS@",
+    "Config_MPIEXEC_POSTFLAGS" : "@MPIEXEC_POSTFLAGS@",
+    "Config_MPI_VENDOR_NAME" : "@MPI_VENDOR_NAME@"
+}
+

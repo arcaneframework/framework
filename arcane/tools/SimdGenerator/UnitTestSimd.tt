@@ -1,0 +1,79 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+
+<# foreach(BinaryOperation op in GenerateHelper.BinaryOperations) { #>
+<#   string simd_name = "SimdRealType";#>
+<#   string cpp_op_func_name = CppHelper.OpSymbolName(op);#>
+<#   string op_name = op.ToString();#>
+
+template<typename SimdRealType>
+class SimdTestBinary<#=op_name#>
+{
+ public:
+  static Real apply (Real a,Real b)
+  {
+    return (<#=CppHelper.GenTest(op)#>);
+  }
+
+  static <#=simd_name#> apply(<#=simd_name#> a,<#=simd_name#> b)
+  {
+    return (<#=CppHelper.GenTest(op)#>);
+  }
+
+  static <#=simd_name#> apply(<#=simd_name#> a,Real b)
+  {
+    return (<#=CppHelper.GenTest(op)#>);
+  }
+
+  static <#=simd_name#> apply(Real a,<#=simd_name#> b)
+  {
+    return (<#=CppHelper.GenTest(op)#>);
+  }
+};
+
+<# } #>
+
+template<typename SimdRealType>
+inline void _doAllBinary(const SimdUnitTest& st,const SimdTestValue<SimdRealType>& simd_value)
+{
+<# foreach(BinaryOperation op in GenerateHelper.BinaryOperations) { #>
+  SimdBinaryOperatorTester< SimdTestBinary<#=op.ToString()#><SimdRealType>, SimdRealType > ::doTest(st,simd_value,"<#=op.ToString()#>");
+<# } #>
+}
+
+
+
+<# foreach(UnaryOperation op in GenerateHelper.UnaryOperations) { #>
+<#   string simd_name = "SimdRealType"; #>
+<#   string cpp_qualified_func_name = CppHelper.QualifiedFuncName(op); #>
+<#   string op_name = op.ToString(); #>
+
+template<typename SimdRealType>
+class SimdTestUnary<#=op_name#>
+{
+ public:
+  static Real apply (Real a)
+  {
+    return <#=cpp_qualified_func_name#>(a);
+  }
+
+  static <#=simd_name#> apply(<#=simd_name#> a)
+  {
+    return <#=cpp_qualified_func_name#>(a);
+  }
+
+};
+
+<# } #>
+
+template<typename SimdRealType>
+inline void _doAllUnary(const SimdUnitTest& st,const SimdTestValue<SimdRealType>& simd_value)
+{
+<# foreach(UnaryOperation op in GenerateHelper.UnaryOperations) { #>
+  SimdUnaryOperatorTester< SimdTestUnary<#=op.ToString()#><SimdRealType>, SimdRealType > ::doTest(st,simd_value,"<#=op.ToString()#>");
+<# } #>
+}

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<module name="AlephMultiTest" version="1.0" namespace-name="ArcaneTest">
+  <description>Module de test d'Aleph+Multi</description>
+
+  <entry-points>
+    <entry-point method-name="init" name="init" where="init" property="none" />
+    <entry-point method-name="compute" name="compute" where="compute-loop" property="none" />
+  </entry-points>
+
+  <variables>
+    <variable field-name="cell_temperature" name="CellTemperature"
+              data-type="real" item-kind="cell" dim="0" dump="true" need-sync="true" />
+    <variable field-name="face_temperature" name="FaceTemperature"
+              data-type="real" item-kind="face" dim="0" dump="false" need-sync="true" />
+  </variables> 
+
+  <options>
+	 <simple name="deltaT" type="real" default="0.001"/>
+    <simple name="iterations" type="integer" default="2"/>
+	 <simple name="ini-temperature" type="real" default="300"/>
+	 <simple name="hot-temperature" type="real" default="700"/>
+
+    <simple name="aleph-number-of-successive-solvers" type="integer" default="2" />
+
+    <!-- On encode par chiffres les 'underlying' et 'number's'' -->
+    <simple name="aleph-number-of-resolutions-per-solvers" type="integer" default="0x73" />
+    <simple name="aleph-underlying-solver" type="integer" default="0x00" />
+    <simple name="aleph-number-of-cores" type="integer" default="0x10"/>
+
+ </options>
+</module>

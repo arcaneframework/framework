@@ -1,0 +1,4 @@
+<!-- -*- C++ -*- -->
+#include "arcane/utils/Array.h"
+#include "arcane/utils/Collection.h"
+#include "arcane/utils/List.h"

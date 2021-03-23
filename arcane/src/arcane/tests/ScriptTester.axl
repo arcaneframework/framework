@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
+
+<!-- ###################################################################### -->
+<!-- ###################################################################### -->
+
+<!-- Options du jeu de données concernant le module de test des scripts -->
+
+<module name="ScriptTester" version="1.0" namespace-name="ArcaneTest">
+ <options>
+  <script
+   name = "script1"
+  >
+   <description>
+Script1 à exécuter.
+   </description>
+  </script>
+  <script
+   name = "script2"
+  >
+   <description>
+Script2 à exécuter.
+   </description>
+  </script>
+ </options>
+</module>

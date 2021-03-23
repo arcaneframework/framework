@@ -1,0 +1,135 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+
+<!-- ###################################################################### -->
+<!-- ###################################################################### -->
+
+<!-- Options du jeu de données concernant le module de vérification de non-regression -->
+
+  <module name="ArcaneVerifier">
+    <name lang='fr'>arcane-verificateur</name>
+  <userclass>User</userclass>
+    <description>
+      Options concernant les vérifications de non-régression
+    </description>
+
+    <entry-points>
+      <entry-point method-name="onExit"
+                   name="VerifierOnExit"
+                   where="exit"
+                   property="auto-load-end"/>
+      <entry-point method-name="onInit"
+                   name="VerifierOnInit"
+                   where="init"
+                   property="auto-load-begin"/>
+    </entry-points>
+
+    <options>
+      
+   <simple
+   name    = "verify"
+   type    = "bool"
+   default = "false"
+  >
+   <name lang='fr'>verification-active</name>
+  <userclass>User</userclass>
+   <description>
+Indique si la vérification est active
+   </description>
+  </simple>
+
+  <simple
+   name    = "generate"
+   type    = "bool"
+   default = "false"
+  >
+   <name lang='fr'>generation</name>
+  <userclass>User</userclass>
+   <description>
+Indique s'il faut générer les informations pour une vérification ultérieure (vrai) ou 
+effectuer une vérification (faux)
+   </description>
+  </simple>
+
+  <simple
+   name    = "reference-file"
+   type    = "ustring"
+   default = "verif"
+  >
+   <name lang='fr'>fichier-reference</name>
+  <userclass>User</userclass>
+   <description>
+Nom du fichier contenant les valeurs de référence. En cas de génération et en
+mode parallèle, il y a autant de fichiers que de sous-domaines et chaque fichier
+est suffixé du numéro de sous-domaine
+   </description>
+  </simple>
+
+  <simple
+   name    = "compare-parallel-sequential"
+   type    = "bool"
+   default = "false"
+  >
+   <name lang='fr'>comparaison-parallele-sequentiel</name>
+  <userclass>User</userclass>
+   <description>
+Si vrai, indique que la comparaison doit se faire avec entre un cas parallèl et une référence séquentielle.
+   </description>
+  </simple>
+
+  <simple
+   name    = "result-file"
+   type    = "ustring"
+   default = "compare.xml"
+  >
+   <name lang='fr'>fichier-resultat</name>
+  <userclass>User</userclass>
+   <description>
+Nom du fichier contenant les résultats. Il s'agit d'un fichier au format XML et
+il est préférable de mettre l'extension 'xml' au nom de fichier.
+   </description>
+  </simple>
+
+  <complex
+   name    = "trace"
+   type    = "Trace"
+   minOccurs = "0"
+   maxOccurs = "unbounded"
+  >
+   <name lang='fr'>trace</name>
+  <userclass>User</userclass>
+   <description>
+Liste des variables à tracer.
+   </description>
+
+  <simple
+   name    = "variable-name"
+   type    = "ustring"
+  >
+   <name lang='fr'>nom-variable</name>
+   <description>
+Nom de la variable à tracer. Il doit s'agir d'une variable du maillage
+   </description>
+  </simple>
+
+  <simple
+   name    = "unique-id"
+   type    = "integer"
+   minOccurs = "0"
+   maxOccurs = "unbounded"
+  >
+   <name lang='fr'>unique-id</name>
+  <userclass>User</userclass>
+   <description>
+Numéro unique de l'entité à tracer.
+   </description>
+  </simple>
+
+  </complex>
+
+
+ </options>
+  
+  <!-- ###################################################################### -->
+  <!-- ###################################################################### -->
+  
+</module>

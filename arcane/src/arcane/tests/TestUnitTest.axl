@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
+
+<!-- ###################################################################### -->
+<!-- ###################################################################### -->
+
+<!-- Options du jeu de données pour le service de test des tests unitaires -->
+
+<service name="TestUnitTest" version="1.0" type="caseoption" namespace-name="ArcaneTest">
+ <interface name="ArcaneTest::ITestBidonInterface" inherited="false" />
+ <tests class-set-up="setUpForClass" test-set-up="setUp" class-tear-down="tearDownForClass" test-tear-down="tearDown">
+  <test name="Test 1" method-name="myTestMethod1"/>
+  <test name="Test 2" method-name="myTestMethod2"/>
+  <test name="Test 3" method-name="myTestMethod3"/>
+  <test name="Test 4" method-name="myTestMethod4"/>
+  <test name="Test 5" method-name="myTestMethod5"/>
+  <test name="Test 6 (parallel)" method-name="myTestMethod1Parallel"/>
+  <test name="Test 7 (parallel)" method-name="myTestMethod2Parallel"/>
+  <test name="Test 8 (parallel)" method-name="myTestMethod3Parallel"/>
+  <test name="Test 9 (parallel)" method-name="myTestMethod4Parallel"/>
+  <test name="Test 10 (parallel)" method-name="myTestMethod5Parallel"/>
+ </tests>
+ <options>
+    <simple name = "my-int" type = "int32"/>
+    <simple name = "my-double" type = "real"/>
+    <simple name = "my-boolean" type = "bool"/>
+ </options>
+</service>

@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arcane.MatVec", "Arcane.MatVec\Arcane.MatVec.csproj", "{D37ACACE-DA32-4BC7-8BA0-2F60227FA33F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MatVecTest", "MatVecTest\MatVecTest.csproj", "{3096C539-6CA0-4F76-B242-011378297E70}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arcane.Utils", "..\Arcane.Utils\Arcane.Utils.csproj", "{EF977D86-13AE-47DB-9734-1C709BF4C36B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3096C539-6CA0-4F76-B242-011378297E70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3096C539-6CA0-4F76-B242-011378297E70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3096C539-6CA0-4F76-B242-011378297E70}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{3096C539-6CA0-4F76-B242-011378297E70}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{D37ACACE-DA32-4BC7-8BA0-2F60227FA33F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D37ACACE-DA32-4BC7-8BA0-2F60227FA33F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D37ACACE-DA32-4BC7-8BA0-2F60227FA33F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D37ACACE-DA32-4BC7-8BA0-2F60227FA33F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF977D86-13AE-47DB-9734-1C709BF4C36B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF977D86-13AE-47DB-9734-1C709BF4C36B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF977D86-13AE-47DB-9734-1C709BF4C36B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF977D86-13AE-47DB-9734-1C709BF4C36B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		name = Arcane.MatVec
+		version = 0.1
+		StartupItem = Arcane.MatVec\Arcane.MatVec.csproj
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

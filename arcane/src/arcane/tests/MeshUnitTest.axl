@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8" ?><!-- -*- SGML -*- -->
+
+<!-- ###################################################################### -->
+<!-- ###################################################################### -->
+
+<!-- Options du jeu de données pour le service de test du maillage -->
+
+<service name="MeshUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
+ <interface name="Arcane::IUnitTest" inherited="false" />
+
+	<variables>
+    <variable
+      field-name="cell_flag"
+      name="MeshUnitTest_CellFlags"
+      data-type="integer"
+      item-kind="cell"
+      dim="0"
+      dump="false"
+      need-sync="true" 
+    />
+  </variables>
+
+ <options>
+  <!-- Fichier de sortie pour les maillages -->
+  <simple
+   name = "output-file"
+   type = "string"
+   default = "meshinfos"
+  >
+   <name lang='fr'>fichier-sortie</name>
+   <description>
+Nom du fichier de sortie des infos de maillage. Pour chaque sous-domaine, trois
+fichiers sont écrit: un fichier avec le maillage trié pour comparaisons avec
+un autre maillage, un fichier contenant la connectivité et un fichier écrit
+avec l'écrivain de maillage par défaut.
+   </description>
+  </simple>
+
+  <extended
+   name = "compute-normal"
+   type = "Arcane::FaceGroup"
+   minOccurs = "0"
+   maxOccurs = "unbounded"
+  >
+   <name lang='fr'>calcul-normale</name>
+   <description>
+Groupe de faces dont on souhaite calculer la normale.
+   </description>
+  </extended>
+
+  <extended
+   name = "compute-direction"
+   type = "Arcane::NodeGroup"
+   minOccurs = "0"
+   maxOccurs = "unbounded"
+  >
+   <name lang='fr'>calcul-direction</name>
+   <description>
+Groupe de noeuds formant une ligne dont on souhaite calculer la direction
+   </description>
+  </extended>
+
+  <simple
+   name = "test-variable-writer"
+   type = "bool"
+   default = "true"
+  >
+   <name lang='fr'>test-ecrivain-variable</name>
+   <description>
+Vrai si on teste l'ecriture des variables au format HDF5.
+   </description>
+  </simple>
+
+  <simple
+   name = "test-adjency"
+   type = "bool"
+   default = "true"
+  >
+   <name lang='fr'>test-adjacence</name>
+   <description>
+Vrai si on teste la création des groupes d'adjacence.
+   </description>
+  </simple>
+
+  <simple
+   name = "write-mesh"
+   type = "bool"
+   default = "true"
+  >
+   <name lang='fr'>ecrire-maillage</name>
+   <description>
+Vrai si on ecrit les informations de maillage dans un un fichier (dont le nom est donnee par l'options 'sortie-fichier').
+   </description>
+  </simple>
+
+  <simple
+   name = "additional-mesh"
+   type = "string"
+   minOccurs = "0"
+   maxOccurs = "unbounded"
+  >
+   <name lang='fr'>maillage-additionnel</name>
+   <description>
+Nom d'un maillage à lire en plus du maillage par défaut.
+   </description>
+  </simple>
+
+ </options>
+</service>

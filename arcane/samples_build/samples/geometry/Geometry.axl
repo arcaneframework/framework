@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<module name="Geometry" version="1.0">
+  <description>Descripteur du module 'Geometry'</description>
+  <variables>
+    <variable
+	field-name="cell_volume"
+	name="CellVolume"
+	data-type="real"
+	item-kind="cell"
+	dim="0"
+	dump="true"
+	need-sync="true" />
+  </variables>
+  <entry-points>
+    <entry-point method-name="init" name="Init" where="init" property="none" />
+    <entry-point method-name="computeSurfacesAndVolumes" name="ComputeSurfacesAndVolumes" where="compute-loop" property="none" />
+  </entry-points>
+
+  <options>
+    <simple name="max-iteration" type="int32" default="10">
+      <description>Nombre maximum d'itérations à effectuer</description>
+    </simple>
+  </options>
+</module>

@@ -1,0 +1,110 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* PrivateVariableArrayT.H                                     (C) 2000-2020 */
+/*                                                                           */
+/* Factorisation de variable array du maillage.                              */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arcane/PrivateVariableArray.h"
+#include "arcane/IMesh.h"
+#include "arcane/ItemGroup.h"
+#include "arcane/Variable.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class DataType> 
+PrivateVariableArrayT<DataType>::
+PrivateVariableArrayT(const VariableBuildInfo& vb, const VariableInfo& vi)
+: MeshVariableRef(vb)
+, m_private_part(PrivatePartType::getReference(vb,vi))
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class DataType> 
+PrivateVariableArrayT<DataType>::
+PrivateVariableArrayT(IVariable* var)
+: MeshVariableRef(var)
+, m_private_part(PrivatePartType::getReference(var))
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class DataType> 
+PrivateVariableArrayT<DataType>::
+PrivateVariableArrayT(const PrivateVariableArrayT& rhs)
+: MeshVariableRef(rhs)
+, m_private_part(rhs.m_private_part)
+{
+  updateFromInternal();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class DataType> void 
+PrivateVariableArrayT<DataType>::
+operator=(const PrivateVariableArrayT& rhs)
+{
+  VariableRef::operator=(rhs);
+  m_private_part = rhs.m_private_part;
+  updateFromInternal();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class DataType> void
+PrivateVariableArrayT<DataType>::
+updateFromInternal()
+{ 
+  m_view = m_private_part->value();
+  MeshVariableRef::updateFromInternal();
+  _executeUpdateFunctors();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class DataType> void
+PrivateVariableArrayT<DataType>::
+resize(Integer dim2_size)
+{
+  m_private_part->directResize(m_private_part->value().dim1Size(),dim2_size);
+  updateFromInternal();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class DataType> ItemGroup
+PrivateVariableArrayT<DataType>::
+itemGroup() const
+{
+  return m_private_part->itemGroup();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

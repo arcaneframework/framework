@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<!-- ###################################################################### -->
+<!-- ###################################################################### -->
+
+<module name="SingletonServiceTest" version="1.0" namespace-name="ArcaneTest" >
+  <description>
+    Module de test des services singletons
+  </description>
+
+ <entry-points>
+   <entry-point method-name="compute" name="Compute" where="compute-loop" property="none" />
+   <entry-point method-name="init" name="Init" where="init" property="none" />
+ </entry-points>
+
+ <!--  <variables>
+    <variable field-name="data" name="Data" data-type="real" item-kind="cell" dim="0"/>
+  </variables> -->
+
+ <options>
+ </options>
+
+</module>

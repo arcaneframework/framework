@@ -1,0 +1,11 @@
+build
+debug
+Debug
+release
+Release
+*~
+*.userprefs
+.idea
+.vs
+.vscode
+cmake-build-*

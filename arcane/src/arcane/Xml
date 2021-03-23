@@ -1,0 +1,3 @@
+<!-- -*- C++ -*- -->
+#include "arcane/IXmlDocumentHolder.h"
+#include "arcane/XmlNode.h"

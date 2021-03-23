@@ -1,0 +1,32 @@
+set(PKGS Hypre MPI)
+find_package(Hypre)
+if (NOT TARGET arccon::Hypre OR NOT TARGET arccon::MPI)
+  return()
+endif()
+
+# Recherche le numéro de version de Hypre.
+# Il est dans le fichier 'Hypre_config.h', sous la forme:
+# #define HYPRE_RELEASE_VERSION "2.20.0"
+find_file(_HYPRE_CONFIG_PATH NAMES HYPRE_config.h PATHS ${Hypre_INCLUDE_DIRS} REQUIRED)
+file(STRINGS ${_HYPRE_CONFIG_PATH} _HYPRE_VERSION_STR REGEX HYPRE_RELEASE_VERSION)
+string(REGEX MATCH "#define HYPRE_RELEASE_VERSION \"([0-9]+)\.([0-9]+)\.([0-9]+)\"" HYPRE_VERSION_REGEX_MATCH ${_HYPRE_VERSION_STR})
+set(ARCANE_HYPRE_VERSION ${CMAKE_MATCH_1}.${CMAKE_MATCH_2}.${CMAKE_MATCH_3})
+message(STATUS "Hypre_VERSION = ${ARCANE_HYPRE_VERSION}")
+
+include(srcs.cmake)
+
+arcane_add_library(arcane_aleph_hypre
+  INPUT_PATH ${Arcane_SOURCE_DIR}/src
+  RELATIVE_PATH arcane/aleph/hypre
+  FILES ${ARCANE_SOURCES}
+)
+
+arcane_add_arccon_packages(arcane_aleph_hypre PRIVATE ${PKGS})
+target_compile_definitions(arcane_aleph_hypre PRIVATE ARCANE_COMPONENT_arcane_aleph_hypre)
+if (ARCANE_HYPRE_VERSION VERSION_LESS 2.14)
+  target_compile_definitions(arcane_aleph_hypre PUBLIC ALEPH_HYPRE_USE_OLD_MALLOC)
+endif()
+
+target_link_libraries(arcane_aleph_hypre PUBLIC arccon::Hypre arccon::MPI)
+target_link_libraries(arcane_aleph_hypre PUBLIC ${ARCANE_BASE_LIBRARIES})
+arcane_register_library(arcane_aleph_hypre OPTIONAL)

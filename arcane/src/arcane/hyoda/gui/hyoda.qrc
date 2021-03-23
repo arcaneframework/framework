@@ -1,0 +1,21 @@
+<RCC>
+  <qresource prefix="png">
+    <file>png/hyoda-icon.png</file>
+    <file>png/hyoda-cell.png</file>
+    <file>png/hyoda-emacs.png</file>
+    <file>png/hyoda-exit.png</file>
+    <file>png/hyoda-gdb-next.png</file>
+    <file>png/hyoda-gdb-start.png</file>
+    <file>png/hyoda-gdb-stop.png</file>
+    <file>png/hyoda-gdb-tack.png</file>
+    <file>png/hyoda-gdb-untacked.png</file>
+    <file>png/hyoda-log.png</file>
+    <file>png/hyoda-logout.png</file>
+    <file>png/hyoda-Mathematica.png</file>
+    <file>png/hyoda-MathematicaDoc.png</file>
+    <file>png/hyoda-tool-cell.png</file>
+    <file>png/hyoda-tool-log.png</file>
+    <file>png/hyoda-tool-src.png</file>
+    <file>png/hyoda-matrix.png</file>
+  </qresource>
+</RCC>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<service name="Euclidian3Geometry" version="1.0" type="caseoption">
+	<description>Service Euclidian3Geometry</description>
+	<interface name="Arcane::Numerics::IGeometryMng" inherited="false"/>
+
+  <!-- Eviter l'utilisation de variable gloable dans un service -->
+  <variables/>
+
+	<options>
+    <simple name="variable-suffix" type="string" minOccurs="0" maxOccurs="1"/>
+  </options>
+</service>

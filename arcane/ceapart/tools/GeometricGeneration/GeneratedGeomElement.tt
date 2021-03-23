@@ -1,0 +1,53 @@
+﻿<#@ template language="C#v3.5" #>
+/*
+ * Génération des classes gérant les éléments géométriques (GeomElement).
+ */
+<# foreach( Item item in Connectivity.Items2DAnd3D ) { #>
+
+/*!
+ * \ingroup ArcaneGeometric
+ * \brief Eléments géométriques de type GeomType::<#=item.Name#>.
+ */
+class ARCANE_CEA_GEOMETRIC_EXPORT <#=item.Name#>Element
+: public GeomElementBase< <#=item.NbNode#> >
+{
+ public:
+  typedef <#=item.Name#>ElementConstView ConstViewType;
+  typedef <#=item.Name#>ElementView ViewType;
+ public:
+   using GeomElementBase< <#=item.NbNode#> >::init;
+
+  <#=item.Name#>Element(){}
+  <#=item.Name#>Element(const VariableNodeReal3& coords,ItemWithNodes item) : GeomElementBase(coords,item){}
+  <#=item.Name#>Element(Real3ConstArrayView coords) : GeomElementBase(coords){}
+  <#=item.Name#>Element(<#=item.CoordsArgString()#>)
+  {
+   <# for( int i=0; i<item.NbNode; ++i ) { #>
+   m_s[<#=i#>] = a<#=i#>;
+   <# } #>
+  }
+
+  //! Initialise l'instance avec les coordonnées passées en argument
+  void init(<#=item.CoordsArgString()#>)
+  {
+   <# for( int i=0; i<item.NbNode; ++i ) { #>
+   m_s[<#=i#>] = a<#=i#>;
+   <# } #>
+  }
+  //! Opérateur de conversion vers une vue constante
+  operator ConstViewType() const { return ConstViewType(m_s); }
+  //! Opérateur de conversion vers une vue modifiable
+  operator ViewType() { return ViewType(m_s); }
+  //! Vue constante sur l'élément
+  ConstViewType constView() const { return ConstViewType(m_s); }
+  //! Vue modifiable sur l'élément
+  ViewType view() { return ViewType(m_s); }
+};
+
+<# // Génère un typedef s'il existe un nom court #>
+<# if (item.BasicName != item.Name ) { #>
+//! Elément géométrique de type GeomType::<#=item.Name#>
+typedef <#=item.Name#>Element <#=item.BasicName#>Element;
+<# } #>
+
+<# } #>

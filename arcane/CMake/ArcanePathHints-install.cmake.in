@@ -1,0 +1,4 @@
+set(ARCANE_ARCCORE_HINT_PATH "@Arccore_DIR@")
+set(ARCANE_ARCCORE_CONFIG_INSTALL_DIR "@Arccore_config_install_dir@")
+set(ARCANE_AXLSTAR_HINT_PATH "@Axlstar_DIR@")
+set(ARCANE_AXLSTAR_CONFIG_INSTALL_DIR "@Axlstar_config_install_dir@")

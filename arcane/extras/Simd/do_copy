@@ -1,0 +1,23 @@
+SRC_PATH=../../arcane/src
+mkdir orig
+mkdir orig/arcane
+mkdir orig/arcane/utils
+cp ${SRC_PATH}/arcane/utils/ArcaneGlobal.h orig/arcane/utils
+cp ${SRC_PATH}/arcane/utils/Real2.h orig/arcane/utils
+cp ${SRC_PATH}/arcane/utils/Real3.h orig/arcane/utils
+cp ${SRC_PATH}/arcane/utils/Numeric.h orig/arcane/utils
+cp ${SRC_PATH}/arcane/utils/Limits.h orig/arcane/utils
+cp ${SRC_PATH}/arcane/utils/StdHeader.h orig/arcane/utils
+cp ${SRC_PATH}/arcane/utils/SimdCommon.h orig/arcane/utils
+cp ${SRC_PATH}/arcane/utils/SimdSSE.h orig/arcane/utils
+cp ${SRC_PATH}/arcane/utils/SimdSSEGenerated.h orig/arcane/utils
+cp ${SRC_PATH}/arcane/utils/SimdAVX.h orig/arcane/utils
+cp ${SRC_PATH}/arcane/utils/SimdAVXGenerated.h orig/arcane/utils
+cp ${SRC_PATH}/arcane/utils/SimdAVX512.h orig/arcane/utils
+cp ${SRC_PATH}/arcane/utils/SimdAVX512Generated.h orig/arcane/utils
+cp ${SRC_PATH}/arcane/utils/SimdEMUL.h orig/arcane/utils
+cp ${SRC_PATH}/arcane/utils/SimdEMULGenerated.h orig/arcane/utils
+cp ${SRC_PATH}/arcane/utils/Simd.h orig/arcane/utils
+cp ${SRC_PATH}/arcane/utils/SimdOperation.h orig/arcane/utils
+cp ${SRC_PATH}/arcane/SimdMathUtils.h orig/arcane
+cp ${SRC_PATH}/arcane/SimdItem.h orig/arcane

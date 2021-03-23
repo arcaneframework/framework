@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<module name="MicroHydro" parent-path="arcane" parent-name="BasicModule">
+
+	<description>Descripteur du module MicroHydro</description>
+
+	<variables>
+		<!-- DENSITY -->
+
+		<!-- PRESSURE -->
+
+		<!-- CELL MASS -->
+
+		<!-- INTERNAL ENERGY -->
+
+		<!-- CELL VOLUME -->
+
+		<!-- OLD CELL VOLUME -->
+
+		<!-- FORCE -->
+
+		<!-- VELOCITY -->
+
+		<!-- NODE MASS -->
+
+		<!-- ADIABATIC CONSTANT	-->
+
+		<!-- CARACTERISTIC LENGTH -->
+
+		<!-- SOUND SPEED -->
+
+		<!-- NODE COORD	-->
+
+		<!-- CELL CQS -->
+
+	</variables>
+
+	<entry-points>
+		<!-- HydroStartInit -->
+
+		<!-- ComputePressureForce -->
+
+		<!-- ComputeVelocity -->
+
+		<!-- ApplyBoundaryCondition -->
+
+		<!-- MoveNodes -->
+
+		<!-- ComputeGeometricValues -->
+
+		<!-- UpdateDensity -->
+
+		<!-- ApplyEquationOfState -->
+
+		<!-- ComputeDeltaT -->
+	</entry-points>
+
+	<options>
+		<!-- - - - - - deltat-min - - - - -->
+		<simple name="deltat-min" type="real">
+			<description>
+				Valeur minimale que peut prendre le
+				<em>deltat</em>
+				entre deux itérations.
+			</description>
+		</simple>
+
+		<!-- - - - - - deltat-max - - - - -->
+		<simple name="deltat-max" type="real">
+			<description>
+				Valeur maximale que peut prendre le
+				<em>deltat</em>
+				entre deux itérations. Si le deltat calculé est supérieur à cette valeur, il est ramené à cette valeur.
+			</description>
+		</simple>
+
+		<!-- - - - - - deltat-init - - - - -->
+		<simple name="deltat-init" type="real">
+			<description>
+				Valeur du
+				<em>deltat</em>
+				au moment du démarrage.
+			</description>
+		</simple>
+
+		<!-- - - - - - final time - - - - -->
+		<simple name="final-time" type="real">
+			<name lang="fr">temps-final</name>
+			<description>
+				Temps auquel on stoppe la simulation. Le code s'arrête dès que le temps courant est
+				<strong>strictement</strong>
+				supérieur à ce temps.
+			</description>
+		</simple>
+
+		<!-- - - - - - cfl - - - - -->
+		<simple name="cfl" type="real" default="0.3">
+			<description>Définition de la CFL</description>
+		</simple>
+
+		<!-- - - - - - boundary-condition - - - - -->
+		<complex name="boundary-condition" type="BoundaryCondition" minOccurs="0" maxOccurs="unbounded">
+			<description>Condition aux limites</description>
+
+			<enumeration>
+				<!-- à compléter -->
+			</enumeration>
+
+			<extended>
+				<!-- à compléter -->
+			</extended>
+
+			<simple>
+				<!-- à compléter -->
+			</simple>
+		</complex>
+		
+		<!-- - - - - - equation of state - - - - -->
+		<service-instance>
+				<!-- à compléter -->
+		</service-instance>
+	</options>
+</module>

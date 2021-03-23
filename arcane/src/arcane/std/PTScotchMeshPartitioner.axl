@@ -1,0 +1,30 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<service name="PTScotchMeshPartitioner" parent-name="MeshPartitionerBase" type="caseoption">
+  <name lang='fr'>PTScotch</name>
+  <userclass>User</userclass>
+  <description>
+    Partionneur de maillage utilisant PTScotch
+  </description>
+    
+  <interface name="Arcane::IMeshPartitioner" inherited="false"/>
+
+  <variables>
+  </variables>
+
+  <options>
+    <simple name="dump-graph" type="bool" default="false">
+      <userclass>User</userclass>
+      <description>Dump graph on disk, in "Scotch" format. Allow to check input for partitioner.
+      </description>
+    </simple>
+    <simple name="check-graph" type="bool" default="false">
+      <description>Force Scotch to verify graph integrity.
+      </description>
+    </simple>
+    <simple name="strategy" type="string" default="">
+      <description>Specify scotch strategy string. Used only if not empty.
+      </description>
+    </simple>
+  </options>
+
+</service>

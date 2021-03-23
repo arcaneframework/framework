@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<module name="HelloWorld" version="1.0">
+  <description>Descripteur du module Hello World</description>
+  <entry-points>
+    <entry-point method-name="printHelloWorld" name="PrintHelloWorld" where="compute-loop" property="none" />
+  </entry-points>
+</module>

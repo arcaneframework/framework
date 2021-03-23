@@ -1,0 +1,19 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+
+  <!--  parent-name="PostProcessorService" -->
+  <service name="EnsightHdfPostProcessor" parent-name="PostProcessorWriterBase"
+   type="caseoption">
+    <name lang='fr'>post-processeur-ensight-hdf</name>
+    <description>
+     Post Processeur au format Ensight HDF
+    </description>
+    
+    <interface name="Arcane::IPostProcessorWriter" inherited="false"/>
+
+    <variables>
+    </variables>
+
+    <options>
+    </options>
+
+  </service>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<!-- ###################################################################### -->
+<!-- ###################################################################### -->
+
+<module name="SubMeshTest" version="1.0" namespace-name="ArcaneTest" >
+  <description>
+    Module de test du sous-maillage
+  </description>
+
+  <variables>
+    <variable field-name="data" name="Data" data-type="real" item-kind="cell" dim="0"/>
+  </variables>
+
+  <options>
+    <service-instance name    = "format"
+                      type    = "Arcane::IPostProcessorWriter"
+                      default = "Ensight7PostProcessor"
+                      >
+      <name lang='fr'>format-service</name>
+      <description>
+        Indique le type de bibliothèque à utiliser pour les sorties
+        de dépouillement.
+      </description>
+    </service-instance>
+    
+    <!-- Nombre d'itérations à effectuer -->
+    <simple
+        name = "nb-iteration"
+        type = "integer"
+        >
+      <description>
+        Nombre d'itérations à effectuer
+      </description>
+    </simple>
+
+    <!-- nature du sous-maillage -->
+    <enumeration
+        name    = "submesh-kind"
+        type    = "Arcane::eItemKind"
+        default = "cell"
+        >
+      <name lang='fr'>genre-sous-maillage</name>
+      <description>Nature du sous-maillage</description>
+      <enumvalue genvalue="Arcane::IK_Cell" name="cell" />
+      <enumvalue genvalue="Arcane::IK_Face" name="face" />
+    </enumeration>
+
+  </options>
+</module>

@@ -1,0 +1,61 @@
+﻿# ----------------------------------------------------------------------------
+# Chemins contenant les 'dll' C#.
+
+set(ARCANE_DOTNET_WRAPPER_DIR "${ARCANE_PREFIX_DIR}/@ARCANE_DOTNET_WRAPPER_PUBLISH_RELATIVE_DIR@")
+set(ARCANE_DOTNET_TOOLS_DIR "${ARCANE_PREFIX_DIR}/@ARCANE_DOTNET_PUBLISH_RELATIVE_DIR@")
+set(ARCANE_DOTNET_WRAPPER_INCLUDE_DIR "${ARCANE_PREFIX_DIR}/share/wrapper/swig")
+set(ARCANE_DOTNET_WRAPPER_INCLUDE_DIRS "${ARCANE_DOTNET_WRAPPER_INCLUDE_DIR}" "${Arcane_INCLUDE_DIRS}")
+
+# ----------------------------------------------------------------------------
+# Positionne les chemins pour Swig si besoin
+# TODO Ne faire cela qui si Arcane est disponible avec SWIG
+if (NOT SWIG_DIR)
+  set(SWIG_DIR "@SWIG_DIR@")
+  message(STATUS "Setting swig directory to '${SWIG_DIR}'")
+endif()
+if (NOT SWIG_EXECUTABLE)
+  set(SWIG_EXECUTABLE "@SWIG_EXECUTABLE@")
+  message(STATUS "Setting swig exec to '${SWIG_EXECUTABLE}'")
+endif()
+
+# TODO Mettre la partie '.Net' (mais pas swig) dans un fichier de configuration séparé
+if (NOT ARCANE_MSBUILD_EXEC)
+  set (ARCANE_MSBUILD_EXEC @ARCCON_MSBUILD_EXEC_coreclr@)
+  if (NOT ARCANE_MSBUILD_EXEC)
+    set (ARCANE_MSBUILD_EXEC @ARCCON_MSBUILD_EXEC_mono@)
+  endif()
+endif()
+
+set(ArcaneSwig_FOUND FALSE)
+
+if (NOT ARCANE_MSBUILD_EXEC)
+  message(STATUS "INFO: Can not find '${ARCANE_MSBUILD_EXEC}' for EOS C# wrapper")
+  return()
+endif()
+
+find_package(SWIG)
+if (SWIG_FOUND)
+  if(POLICY CMP0078)
+    cmake_policy(SET CMP0078 NEW)
+  else()
+    set(UseSWIG_TARGET_NAME_PREFERENCE STANDARD)
+  endif()
+  if(POLICY CMP0086)
+    cmake_policy(SET CMP0086 NEW)
+  endif()
+  set(UseSWIG_MODULE_VERSION 2)
+  include(UseSWIG)
+else()
+  # Swig not found
+  message(STATUS "INFO: Can not find 'swig' for Arcane C# wrapper")
+  return()
+endif()
+
+set(ArcaneSwig_FOUND TRUE)
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:

@@ -1,0 +1,285 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* VariableBuildInfo.cc                                        (C) 2000-2020 */
+/*                                                                           */
+/* Informations pour construire une variable.                                */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arcane/VariableBuildInfo.h"
+
+#include "arcane/IModule.h"
+#include "arcane/ISubDomain.h"
+#include "arcane/IMesh.h"
+#include "arcane/IItemFamily.h"
+#include "arcane/IApplication.h"
+#include "arcane/IDataFactoryMng.h"
+
+#include "arcane/utils/Iostream.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+
+namespace
+{
+ISubDomain*
+_getSubDomainDeprecated(const MeshHandle& handle)
+{
+  return handle.subDomain();
+}
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableBuildInfo::
+VariableBuildInfo(IModule* m,const String& name,int property)
+: m_sub_domain(m->subDomain())
+, m_module(m)
+, m_mesh_handle(m->defaultMeshHandle())
+, m_name(name)
+, m_property(property)
+{
+  _init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableBuildInfo::
+VariableBuildInfo(ISubDomain* sd,const String& name,int property)
+: m_sub_domain(sd)
+, m_module(nullptr)
+, m_name(name)
+, m_property(property)
+{
+  _init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableBuildInfo::
+VariableBuildInfo(const MeshHandle& mesh_handle,const String& name,int property)
+: m_sub_domain(_getSubDomainDeprecated(mesh_handle))
+, m_module(nullptr)
+, m_mesh_handle(mesh_handle)
+, m_name(name)
+, m_property(property)
+{
+  _init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableBuildInfo::
+VariableBuildInfo(IMesh* mesh,const String& name,int property)
+: VariableBuildInfo(mesh->handle(),name,property)
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableBuildInfo::
+VariableBuildInfo(IModule* m,const String& name,
+                  const String& item_family_name,int property)
+: m_sub_domain(m->subDomain())
+, m_module(m)
+, m_mesh_handle(m->defaultMeshHandle())
+, m_name(name)
+, m_item_family_name(item_family_name)
+, m_property(property)
+{
+  _init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableBuildInfo::
+VariableBuildInfo(const MeshHandle& mesh_handle,const String& name,
+                  const String& item_family_name,int property)
+: m_sub_domain(_getSubDomainDeprecated(mesh_handle))
+, m_module(nullptr)
+, m_mesh_handle(mesh_handle)
+, m_name(name)
+, m_item_family_name(item_family_name)
+, m_property(property)
+{
+  _init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableBuildInfo::
+VariableBuildInfo(IMesh* mesh,const String& name,
+                  const String& item_family_name,int property)
+: VariableBuildInfo(mesh->handle(),name,item_family_name,property)
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableBuildInfo::
+VariableBuildInfo(ISubDomain* sd,const String& name,const String& mesh_name,
+                  const String& item_family_name,int property)
+: m_sub_domain(sd)
+, m_module(nullptr)
+, m_name(name)
+, m_item_family_name(item_family_name)
+, m_mesh_name(mesh_name)
+, m_property(property)
+{
+  _init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableBuildInfo::
+VariableBuildInfo(IItemFamily* family,const String& name,int property)
+: m_sub_domain(_getSubDomainDeprecated(family->mesh()->handle()))
+, m_module(nullptr)
+, m_mesh_handle(family->mesh()->handle())
+, m_name(name)
+, m_item_family_name(family->name())
+, m_property(property)
+{
+  _init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableBuildInfo::
+VariableBuildInfo(IModule* m,const String& name,
+                  const String& item_family_name,
+                  const String& item_group_name,int property)
+: m_sub_domain(m->subDomain())
+, m_module(m)
+, m_mesh_handle(m->defaultMesh()->handle())
+, m_name(name)
+, m_item_family_name(item_family_name)
+, m_item_group_name(item_group_name)
+, m_property(property)
+{
+  _init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableBuildInfo::
+VariableBuildInfo(const MeshHandle& mesh_handle,const String& name,
+                  const String& item_family_name,
+                  const String& item_group_name,int property)
+: m_sub_domain(_getSubDomainDeprecated(mesh_handle))
+, m_module(nullptr)
+, m_mesh_handle(mesh_handle)
+, m_name(name)
+, m_item_family_name(item_family_name)
+, m_item_group_name(item_group_name)
+, m_property(property)
+{
+  _init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableBuildInfo::
+VariableBuildInfo(IMesh* mesh,const String& name,
+                  const String& item_family_name,
+                  const String& item_group_name,int property)
+: VariableBuildInfo(mesh->handle(),name,item_family_name,item_group_name,property)
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableBuildInfo::
+VariableBuildInfo(ISubDomain* sd,const String& name,
+                  const String& mesh_name,
+                  const String& item_family_name,
+                  const String& item_group_name,int property)
+: m_sub_domain(sd)
+, m_module(nullptr)
+, m_name(name)
+, m_item_family_name(item_family_name)
+, m_item_group_name(item_group_name)
+, m_mesh_name(mesh_name)
+, m_property(property)
+{
+  _init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableBuildInfo::
+_init()
+{
+  if (!m_mesh_handle.isNull()){
+    m_mesh_name = m_mesh_handle.meshName();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IVariableMng* VariableBuildInfo::
+variableMng() const
+{
+  ARCANE_CHECK_POINTER(m_sub_domain);
+  return m_sub_domain->variableMng();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IDataFactory* VariableBuildInfo::
+dataFactory() const
+{
+  return dataFactoryMng()->deprecatedOldFactory();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IDataFactoryMng* VariableBuildInfo::
+dataFactoryMng() const
+{
+  ARCANE_CHECK_POINTER(m_sub_domain);
+  return m_sub_domain->application()->dataFactoryMng();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ITraceMng* VariableBuildInfo::
+traceMng() const
+{
+  ARCANE_CHECK_POINTER(m_sub_domain);
+  return m_sub_domain->traceMng();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

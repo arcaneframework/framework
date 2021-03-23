@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
+
+<!-- ###################################################################### -->
+
+<module name="CartesianMeshTester" version="1.0" namespace-name="ArcaneTest"> 
+ <description>
+   Module de test du gestionnaire de maillages cartésiesns
+  </description>
+
+ <options>
+ </options>
+
+ <entry-points>
+   <entry-point method-name="compute" name="compute" where="compute-loop" property="none" />
+   <entry-point method-name="init" name="init" where="init" property="none" />
+   <entry-point method-name="buildInit" name="buildInit" where="build" property="none" />
+ </entry-points>
+  
+</module>

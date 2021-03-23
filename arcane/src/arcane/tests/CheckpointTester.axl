@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
+
+<!-- ###################################################################### -->
+<!-- ###################################################################### -->
+
+<!-- Options du jeu de donnée concernant le module de test -->
+
+<service name="CheckpointTester" version="1.0" type="caseoption"
+  namespace-name="ArcaneTest" parent-name="Arcane::BasicTimeLoopService">
+ <description>
+  Service de test des variables partielles
+ </description>
+ <interface name="Arcane::ITimeLoopService" inherited='false'/>
+ <options>
+
+  <!-- Nombre d'itérations à effectuer -->
+  <simple
+   name = "nb-iteration"
+   type = "integer"
+   default = "2"
+  >
+   <description>
+Nombre d'itérations à effectuer
+   </description>
+  </simple>
+
+  <!-- Service de protection/reprise à tester -->
+  <!-- <simple
+   name = "service-name"
+   type = "string"
+  >
+   <description>
+Nom du service de protection à tester
+   </description>
+  </simple> -->
+
+  <!-- Période de sauvegarde pour les retours arrière -->
+  <simple
+   name = "backward-period"
+   type = "integer"
+   default = "1"
+  >
+   <description>
+Période de sauvegarde pour les retours arrière
+   </description>
+  </simple>
+
+  <!-- Itération a laquelle on déclenche le retour arrière -->
+  <simple
+   name = "backward-iteration"
+   type = "integer"
+   default = "1"
+  >
+   <description>
+Itération a laquelle on déclenche le retour arrière
+   </description>
+  </simple>
+
+ </options>
+</service>

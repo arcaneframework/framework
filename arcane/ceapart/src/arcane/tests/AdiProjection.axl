@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
+
+<!-- Options du module de contrôle du pas de temps -->
+<module name="AdiProjection" xml:space='preserve'>
+ <name lang='fr'>projection-adi</name>
+ <userclass>User</userclass>
+ <description>
+ Projection par directions alternées. Ave.
+   </description>
+
+ <entry-points>
+   <entry-point method-name="cartesianHydroStartInit" name="CartesianHydroStartInit" where="start-init" property="none" />
+   <entry-point method-name="cartesianHydroMain" name="CartesianHydroMain" where="compute-loop" property="none" />
+   <entry-point method-name="copyEulerianCoordinates" name="CopyEulerianCoordinates" where="compute-loop" property="none" />
+ </entry-points>
+
+ <variables>
+
+<!--   coords des noeuds du maillage eulérien (= avant phase -->
+<!--   Lagrange.) -->
+  <variable field-name="eulerian_coordinates"
+            name="EulerianCoordinates"
+            data-type="real3"
+            item-kind="node"
+            dim="0"
+            dump="true"
+            need-sync="true"/>
+
+<!--   coords des noeuds après phase Lagrange. Tableau de travail, est -->
+<!--   rempli depuis le maillage. Les noeuds ont bougé avec la vitesse -->
+<!--  de grille 0.5(velocity + old_velocity).-->
+  <variable field-name="lagrangian_coordinates"
+            name="LagrangianCoordinates"
+            data-type="real3"
+            item-kind="node"
+            dim="0"
+            dump="true"
+            need-sync="true"/>
+
+<!--  Volume des mailles au début du pas de temps. -->
+ <variable field-name="old_volume"
+           name="OldCellVolume"
+           data-type="real"
+           item-kind="cell"
+           dim="0"
+           dump="true"
+           need-sync="true"/>
+
+<!-- Vitesse nodale au début du pas de temps. Spécifique -->
+<!--  prédicteur/correcteur ?? -->
+ <variable field-name="old_velocity"
+           name="OldVelocity"
+           data-type="real3"
+           item-kind="node"
+           dim="0"
+           dump="true"
+           need-sync="true"/>
+
+<!-- Vitesse nodale à la fin du pas de temps. Spécifique -->
+<!--  prédicteur/correcteur ?? -->
+ <variable field-name="velocity"
+           name="Velocity"
+           data-type="real3"
+           item-kind="node"
+           dim="0"
+           dump="true"
+           need-sync="true"/>
+
+<!-- Vitesse de déplacement des noeuds du maillage -->
+ <variable field-name="lagrangian_velocity"
+           name="LagrangianVelocity"
+           data-type="real3"
+           item-kind="node"
+           dim="0"
+           dump="true"
+           need-sync="true"/>
+
+<!-- Flux de volume pour la projection (dVol pour S1F). Tableau mailles mixtes -->
+ <variable field-name="volume_flux_left"
+           name="VolumeFluxLeft"
+           data-type="real"
+           item-kind="cell"
+           dim="0"
+           dump="true"
+           need-sync="true"/>
+
+<!-- Flux de volume pour la projection (dVol pour S1F). Tableau mailles mixtes -->
+ <variable field-name="volume_flux_right"
+           name="VolumeFluxRight"
+           data-type="real"
+           item-kind="cell"
+           dim="0"
+           dump="true"
+           need-sync="true"/>
+
+<!-- Flux de masse pour la projection (dm pour S1F). Tableau mailles mixtes -->
+ <variable field-name="mass_flux_left"
+           name="MassFluxLeft"
+           data-type="real"
+           item-kind="cell"
+           dim="0"
+           dump="true"
+           need-sync="true"/>
+
+<!-- Flux de masse pour la projection (dm pour S1F). Tableau mailles mixtes -->
+ <variable field-name="mass_flux_right"
+           name="MassFluxRight"
+           data-type="real"
+           item-kind="cell"
+           dim="0"
+           dump="true"
+           need-sync="true"/>
+
+<!-- Flux de masse dual pour la projection des quantités aux noeuds (= -->
+<!--  la vitesse). -->
+ <variable field-name="nodal_mass_flux_left"
+           name="NodalMassFluxLeft"
+           data-type="real"
+           item-kind="node"
+           dim="0"
+           dump="true"
+           need-sync="true"/>
+
+<!-- Flux de masse dual pour la projection des quantités aux noeuds (= -->
+<!--  la vitesse). -->
+ <variable field-name="nodal_mass_flux_right"
+           name="NodalMassFluxRight"
+           data-type="real"
+           item-kind="node"
+           dim="0"
+           dump="true"
+           need-sync="true"/>
+
+<!-- Pour diagnostiquer une éventuelle perte de masse dans la masse nodale. -->
+ <variable field-name="delta_mass"
+           name="DeltaMass"
+           data-type="real"
+           item-kind="node"
+           dim="0"
+           dump="true"
+           need-sync="true"/>
+
+
+ <variable field-name="pressure_gradient"
+           name="PressureGradient"
+           data-type="real"
+           item-kind="node"
+           dim="0"
+           dump="true"
+           need-sync="true"/>
+
+
+<!-- Volume projeté directionnel. Tableau mailles mixtes -->
+ <variable field-name="directional_projected_volume"
+           name="DirectionalProjectedVolume"
+           data-type="real"
+           item-kind="cell"
+           dim="0"
+           dump="true"
+           need-sync="true"/>
+
+      <variable field-name="nrj"
+                name="InternalEnergy"
+                data-type="real"
+                item-kind="cell"
+                dim="0"
+                dump="true"
+                need-sync="true"/>
+
+<!-- Flux de masse pour la projection (dm pour S1F). Tableau mailles mixtes -->
+ <variable field-name="directional_internal_energy"
+           name="DirectionalInternalEnergy"
+           data-type="real"
+           item-kind="cell"
+           dim="0"
+           dump="true"
+           need-sync="true"/>
+
+<!-- Aire orientée -->
+ <variable field-name="initial_oriented_area"
+           name="InitialOrientedArea"
+           data-type="real3"
+           item-kind="face"
+           dim="0"
+           dump="true"
+           need-sync="true"/>
+
+ <variable field-name="face_normal"
+           name="FaceNormal"
+           data-type="real3"
+           item-kind="face"
+           dim="0"
+           dump="true"
+           need-sync="true"/>
+
+ <variable field-name="face_velocity"
+           name="FaceVelocity"
+           data-type="real3"
+           item-kind="face"
+           dim="0"
+           dump="true"
+           need-sync="true"/>
+
+ <variable field-name="old_density"
+                name="OldDensity"
+                data-type="real"
+                item-kind="cell"
+                dim="0"
+                dump="true"
+                need-sync="true"/>
+
+      <variable field-name="pressure"
+                name="Pressure"
+                data-type="real"
+                item-kind="cell"
+                dim="0"
+                dump="true"
+                need-sync="true"/>
+
+
+ <variable field-name="density"
+           name="Density"
+                data-type="real"
+                item-kind="cell"
+                dim="0"
+                dump="true"
+                need-sync="true"/>
+
+ <variable field-name="nodal_density"
+           name="NodalDensity"
+                data-type="real"
+                item-kind="node"
+                dim="0"
+                dump="true"
+                need-sync="true"/>
+
+ <variable field-name="old_nodal_density"
+           name="OldNodalDensity"
+                data-type="real"
+                item-kind="node"
+                dim="0"
+                dump="true"
+                need-sync="true"/>
+
+ </variables>
+
+
+
+ <options>
+
+  <simple name = "ordre-projection" type = "integer" default="1">
+   <userclass>User</userclass>
+   <description>
+   Ordre de projection.
+   </description>
+  </simple>
+
+ </options>
+
+</module>

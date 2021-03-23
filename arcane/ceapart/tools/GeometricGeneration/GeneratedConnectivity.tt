@@ -1,0 +1,33 @@
+﻿<#@ template language="C#v3.5" #>
+/*
+ * Génération des classes permettant de récupérer les informations
+ * de connectivité pour chaque type d'élément géométrique.
+ */
+<# foreach( Item item in Connectivity.Items ) { #>
+/*!
+ * \ingroup ArcaneGeometric
+ * \brief Informations de connectivité pour les éléments géométriques de type GeomType::<#=item.Name #>.
+<# if (item.Type==GeomType.Pyramid5) { #>
+ *
+ * \note la pyramide a 8 arêtes mais on la considère comme un hexaèdre dégénéré
+ * en le sommet de la pyramide. Pour prendre en compte cela, on indique
+ * qu'elle a 12 arêtes.
+<# } #>
+ */
+class ARCANE_CEA_GEOMETRIC_EXPORT <#=item.Name#>Connectivity
+: public CellConnectivity
+{
+ public:
+  <#=item.Name#>Connectivity()
+  : CellConnectivity(<#=item.NbNode#>,<#=item.NbEdge#>,<#=item.NbFace#>,GeomType::<#=item.Type#>)
+  { _init(); }
+ public:
+  Integer nbNode() const { return <#=item.NbNode#>; }
+  Integer nbEdge() const { return <#=item.NbEdge#>; }
+  Integer nbFace() const { return <#=item.NbFace#>; }
+ public:
+ private:
+  void _init();
+};
+<# } #>   
+   

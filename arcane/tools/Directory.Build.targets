@@ -1,0 +1,22 @@
+<Project InitialTargets="ArcaneAddAdditionalSources">
+  <!--
+      Regarde si un fichier 'csfiles.txt' existe et si c'est le cas considère qu'il contient
+      une liste de fichiers C# à ajouter à la compilation.
+      Le projet utilisateur doit spécifier une variable 'ArcaneAdditionalSourcePath' spécifiant le
+      répertoire dans lequel se trouve ces fichiers
+      -->
+  <ItemGroup>
+    <ArcaneOtherFile Include="csfiles.txt" />
+  </ItemGroup>
+  <Target Name="ArcaneAddAdditionalSources" BeforeTargets="Compile" Condition="'@(ArcaneOtherFile)'!=''">
+    <ReadLinesFromFile File="@(ArcaneOtherFile)">
+      <Output TaskParameter="Lines" ItemName="MyFileContents" />
+    </ReadLinesFromFile>
+    <ItemGroup>
+      <Compile Include="@(MyFileContents)" />
+      <!-- <Compile Include="@(MyFileContents->'$(ArcaneAdditionalSourcePath)%(Identity)')" /> -->
+    </ItemGroup>
+    <!-- <Message Text="FileContents: @(MyFileContents)" />
+    <Message Text="FileContents Transformed: @(MyFileContents->'$(ArcaneAdditionalSourcePath)%(Identity)', '%0a%0d')" /> -->
+  </Target>
+</Project>

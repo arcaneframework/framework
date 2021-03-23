@@ -1,0 +1,80 @@
+﻿<#@ template language="C#v3.5" #>
+/*
+ * Génération des classes des vues spécifiques des GeomShapeView.
+ */
+<# foreach( Item item in Connectivity.Items2DAnd3D ) { #>
+/*!
+ * \ingroup ArcaneGeometric
+ * \brief Vue spécifique sur les formes géométriques de type GeomType::<#=item.Name#>.
+ */
+class ARCANE_CEA_GEOMETRIC_EXPORT <#=item.Name#>ShapeView
+: public GeomShape<#=item.Dimension#>DView
+{
+ public: 
+  
+  typedef <#=item.BasicName#>ElementConstView ElementConstView;
+  typedef <#=item.BasicName#>ElementView ElementView;
+  typedef <#=item.BasicName#>Element ElementType;
+  typedef <#=item.SVCBasicName#>Element SVCElement;
+  typedef <#=item.SVCBasicName#>ElementView SVCElementView;
+
+ public:
+
+  <#=item.Name#>ShapeView() {}
+  explicit <#=item.Name#>ShapeView(const GeomShapeView& rhs)
+  : GeomShape<#=item.Dimension#>DView(rhs)
+  {
+    ARCANE_GEOMETRIC_CHECKTYPE(rhs.geomType(),GeomType::<#=item.Name#>);
+  }
+
+  //! Nombre de noeuds de la forme (retourne \a <#=item.NbNode#>)
+  static Integer nbNode() { return <#=item.NbNode#>; }
+  //! Type de la forme (retourne \a GeomType::<#=item.Type#> )
+  static GeomType geomType() { return GeomType::<#=item.Type#>; }
+  //! Remplit \a svc avec les valeurs du \a i-ème sous-volume de controle.
+  void fillSVC(<#=item.SVCBasicName#>ElementView svc, Integer i) { fillSubZone<#=item.BasicName#>(svc,i); }
+
+  //! Opérateur de conversion vers une vue constante sur l'élément géométrique
+  operator <#=item.Name#>ElementConstView () const { return ElementConstView(_nodeView()); }
+  //! Vue constante sur l'élément géométrique
+  <#=item.Name#>ElementConstView elemView() const { return ElementConstView(_nodeView()); }
+};
+<# // Génère un typedef s'il existe un nom court #>
+<# if (item.BasicName != item.Name ) { #>
+typedef <#=item.Name#>ShapeView <#=item.BasicName#>ShapeView;
+<# } #>
+
+<# } #>
+
+/*!
+ * \name Conversion vers une vue sur une forme géométrique spécifique.
+ *
+ * Ces méthodes permettent de convertir l'instance en une vue spécifique à un type donné.
+ * Le type géométrique (geomType()) de l'instance doit correspondre.
+ */
+//@{
+<# foreach( Item item in Connectivity.Items2DAnd3D ) { #>
+inline <#=item.Name#>ShapeView GeomShapeView::
+to<#=item.Name#>Shape() const
+{
+  return <#=item.Name#>ShapeView(*this);
+}
+<# } #>
+//@}
+
+/*!
+ * \name Conversion vers une vue sur un élément géométrique spécifique.
+ *
+ * Ces méthodes permettent de convertir l'instance en une vue spécifique à un type donné.
+ * Le type géométrique (geomType()) de l'instance doit correspondre.
+ */
+//@{
+<# foreach( Item item in Connectivity.Items2DAnd3D ) { #>
+inline <#=item.Name#>ElementConstView GeomShapeView::
+to<#=item.Name#>Element() const
+{
+  ARCANE_GEOMETRIC_CHECKTYPE(geomType(),GeomType::<#=item.Name#>);
+  return <#=item.Name#>ElementConstView(_nodeView());
+}
+<# } #>
+//@}

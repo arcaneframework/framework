@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<service name="PerfectGasEOS" version="1.0" type="caseoption">
+  <description>Jeu de données du service PerfectGasEOS</description>
+  <interface name="EOS::IEquationOfState" />
+  <options/>
+</service>

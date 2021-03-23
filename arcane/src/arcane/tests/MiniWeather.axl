@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
+
+<!-- ###################################################################### -->
+<!-- ###################################################################### -->
+
+<module name="MiniWeather" version="1.0" namespace-name="ArcaneTest::MiniWeather" >
+  <description>
+    Module de l'application 'MiniWeather'
+    (https://github.com/mrnorman/miniWeather)
+  </description>
+  <entry-points>
+    <entry-point method-name="build" name="MW_Build" where="build" property="none" />
+    <entry-point method-name="init" name="MW_Init" where="init" property="none" />
+    <entry-point method-name="exit" name="MW_Exit" where="exit" property="none" />
+    <entry-point method-name="computeLoop" name="MW_ComputeLoop" where="compute-loop" property="none" />
+  </entry-points>
+  <options>
+    <simple name = "nb-cell-x" type = "int32" default="400" >
+      <description>
+        Nombre de mailles en X (uniquement pour la version original de 'miniweather'
+      </description>
+    </simple>
+    <simple name = "nb-cell-z" type = "int32" default="200" >
+      <description>
+        Nombre de mailles en Z (uniquement pour la version original de 'miniweather'
+      </description>
+    </simple>
+    <simple name = "final-time" type = "real" default="2.0" >
+      <description>
+        Temps final
+      </description>
+    </simple>
+    <service-instance type="ArcaneTest::MiniWeather::IMiniWeatherService" name="implementation" />
+  </options>
+</module>

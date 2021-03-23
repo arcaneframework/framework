@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
+
+<!-- ###################################################################### -->
+<!-- ###################################################################### -->
+
+<!-- Options du jeu de données pour le service de test des variables -->
+
+<service name="RayMeshIntersectionUnitTest" version="1.0" type="caseoption"
+         parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
+ <interface name="Arcane::IUnitTest" inherited="false" />
+ <options>
+
+  <!-- Fichier de sortie pour les maillages -->
+
+ </options>
+</service>

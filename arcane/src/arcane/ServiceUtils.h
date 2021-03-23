@@ -1,0 +1,1 @@
+#include "arcane/IServiceInfo.h"

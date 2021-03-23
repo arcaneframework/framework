@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
+
+<!-- ###################################################################### -->
+
+<module name="MeshMaterialTester" version="1.0" namespace-name="ArcaneTest"> 
+ <description>
+   Module de test du gestionnaire des matériaux.
+  </description>
+
+ <options>
+
+   <simple
+    name = "recreate-from-dump"
+    type = "bool"
+    default = "false"
+   >
+    <description>Indique si on recréé les informations à partir du dump</description>
+   </simple>
+
+   <simple
+    name = "modification-flags"
+    type = "int32"
+    default = "0"
+   >
+    <description>Flags d'optimisation lors d'une modification dans les matériaux où les milieux</description>
+   </simple>
+
+  <!-- Infos sur les materiaux -->
+  <complex
+   name = "material"
+   type = "Material"
+    minOccurs = "1"
+    maxOccurs = "unbounded"
+  >
+   <description>Materiaux</description>
+
+   <simple
+    name = "name"
+    type = "string"
+   >
+    <description>Nom du materiau</description>
+   </simple>
+
+  </complex>
+
+  <!-- Liste des milieux et composition des materiaux -->
+  <complex
+   name = "environment"
+   type = "Environment"
+    minOccurs = "1"
+    maxOccurs = "unbounded"
+  >
+   <description>Milieu</description>
+
+   <simple
+    name = "name"
+    type = "string"
+   >
+    <description>Nom du milieu</description>
+   </simple>
+
+   <simple
+    name = "material"
+    type = "string"
+    minOccurs = "1"
+    maxOccurs = "unbounded"
+   >
+    <description>Nom du materiau</description>
+   </simple>
+
+  </complex>
+
+  <!-- - - - - - load-balance-service - - - - -->
+  <service-instance
+   name    = "load-balance-service"
+   type    = "Arcane::IMeshPartitioner"
+   optional = "true"
+  >
+   <name lang='fr'>service-equilibrage-charge</name>
+   <description>
+Service utilisé pour l'équilibrage de charge.
+   </description>
+  </service-instance>
+
+  <!-- - - - - - additionnal-test-service - - - - -->
+  <service-instance
+   name    = "additional-test-service"
+   type    = "Arcane::IUnitTest"
+   optional = "true"
+  >
+   <name lang='fr'>service-additionnel-test-unitaire</name>
+   <description>
+     Service additionnel de test unitaire.
+     Si spécifié, le test est exécuté après le démarrage
+   </description>
+  </service-instance>
+
+ </options>
+
+ <entry-points>
+   <entry-point method-name="compute" name="compute" where="compute-loop" property="none" />
+   <entry-point method-name="startInit" name="startInit" where="start-init" property="none" />
+   <entry-point method-name="continueInit" name="continueInit" where="continue-init" property="none" />
+   <entry-point method-name="buildInit" name="buildInit" where="build" property="none" />
+ </entry-points>
+ 
+ <variables>
+      <variable field-name="mat_density"
+                name="Density"
+                data-type="real"
+                item-kind="cell"
+                dim="0"
+                material="true"
+                >
+      </variable>
+      <variable field-name="mat_spectral1"
+                name="Spectral1"
+                data-type="real"
+                item-kind="cell"
+                dim="1"
+                material="true"
+                >
+      </variable>
+      <variable field-name="mat_spectral2"
+                name="Spectral2"
+                data-type="int32"
+                item-kind="cell"
+                dim="1"
+                material="true"
+                >
+      </variable>
+      <variable field-name="env_int32"
+                name="EnvInt32"
+                data-type="int32"
+                item-kind="cell"
+                dim="0"
+                environment="true"
+                >
+      </variable>
+      <variable field-name="env_empty_int64array"
+                name="EnvEmptyInt64Array"
+                data-type="int64"
+                item-kind="cell"
+                dim="1"
+                environment="true"
+                >
+      </variable>
+      <variable field-name="env_spectral1"
+                name="EnvOnlySpectral1"
+                data-type="real"
+                item-kind="cell"
+                dim="1"
+                environment="true"
+                >
+      </variable>
+      <variable field-name="env_spectral2"
+                name="EnvOnlySpectral2"
+                data-type="int32"
+                item-kind="cell"
+                dim="1"
+                environment="true"
+                >
+      </variable>
+ </variables>
+
+</module>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?><!-- -*- SGML -*- -->
+
+<!-- ###################################################################### -->
+<!-- ###################################################################### -->
+
+<!-- Options du jeu de données pour le service de test des particules -->
+
+<service name="SingletonService" version="1.0" type="subdomain" singleton="true" namespace-name="ArcaneTest">
+  <interface name="ArcaneTest::IServiceInterface1" inherited="false" />
+  <interface name="ArcaneTest::IServiceInterface2" />
+  <options>
+    <simple name = "option1"
+            type = "integer"
+            default = "50"
+            >
+      <description>
+        Option1
+      </description>
+    </simple>
+    <service-instance name="interface3" type="ArcaneTest::IServiceInterface3"
+                      default="ServiceTestInterface3Impl1" />
+  </options>
+</service>

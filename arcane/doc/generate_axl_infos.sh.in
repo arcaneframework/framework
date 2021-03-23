@@ -1,0 +1,14 @@
+﻿#!/bin/sh
+BUILD_PATH=@CMAKE_BINARY_DIR@
+SOURCE_PATH=@CMAKE_SOURCE_DIR@
+AXL_OUTPATH=${BUILD_PATH}/share/axl
+mkdir ${AXL_OUTPATH}
+mkdir ${AXL_OUTPATH}/dox
+mkdir ${AXL_OUTPATH}/final_axl
+#${BUILD_PATH}/bin/axlcopy install -b ${SOURCE_PATH}/src -o ${AXL_OUTPATH} arcane/std
+export STDENV_CODE_NAME=Arcane
+${BUILD_PATH}/bin/arcane_test_driver launch -arcane_opt arcane_internal
+/bin/rm ${AXL_OUTPATH}/final_axl/*.axl
+/bin/rm ${AXL_OUTPATH}/dox/*.dox
+${BUILD_PATH}/bin/axldoc --generate-final -a ${BUILD_PATH}/share/arcane_internal.xml -o ${AXL_OUTPATH}/final_axl ${AXL_OUTPATH}
+${BUILD_PATH}/bin/axldoc -u User -a ${AXL_OUTPATH}/final_axl/final_internal.xml -o ${AXL_OUTPATH}/dox ${AXL_OUTPATH}/final_axl/*.axl

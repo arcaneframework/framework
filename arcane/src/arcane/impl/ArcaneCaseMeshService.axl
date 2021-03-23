@@ -1,0 +1,133 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<service name="ArcaneCaseMeshService" parent-name="AbstractService" type="caseoption">
+  <userclass>User</userclass>
+  <description>
+    Service Arcane gérant un maillage du jeu de données.
+
+    Le maillage peut être soit lu à partir d'un fichier (élément
+    'filename'), soit généré dynamiquement (élément 'generator')
+  </description>
+    
+  <interface name="Arcane::ICaseMeshService" />
+
+  <options>
+    <!-- Service de création de maillage -->
+    <service-instance
+        name = "generator"
+        type = "Arcane::IMeshBuilder"
+        optional = "true"
+        >
+      <userclass>User</userclass>
+      <name lang='fr'>generateur</name>
+      <description>
+        Service de création/lecture de maillage
+
+        Ce service doit être spécifié si aucun fichier de maillage n'est défini.
+      </description>
+    </service-instance>
+
+    <simple name="filename"
+            type="string"
+            optional = "true"
+            >
+      <userclass>User</userclass>
+      <name lang="fr">fichier</name>
+      <description>
+        Nom du fichier de maillage. S'il n'est pas définit il faut
+        qu'un générateur de maillage soit spécifié.
+      </description>
+    </simple>
+
+    <simple name = "partitioner"
+            type = "string"
+            default = "DefaultPartitioner"
+            >
+      <userclass>User</userclass>
+      <name lang='fr'>partitionneur</name>
+      <description>
+        Nom du service de partitionnement à utiliser pour le découpage initial.
+
+        Si la valeur est 'External', alors on considère que le
+        partitionnement a déjà été effectué en amont du lancement du
+        code. Dans ce dernier cas, des fichiers de
+        maillage déjà découpés doivent être disponibles.
+      </description>
+    </simple>
+
+    <simple name="nb-ghost-layer"
+            type="int32"
+            default = "1"
+            >
+      <userclass>User</userclass>
+      <description>
+        Nombre de couches de mailles fantômes à ajouter au maillage en
+        cas de partitionnement.
+      </description>
+    </simple>
+
+    <simple name="ghost-layer-builder-version"
+            type="int32"
+            default = "2"
+            >
+      <description>
+        Version du gestionnaire de mailles fantôme à utiliser.
+
+        Cette option est interne à Arcane.
+      </description>
+    </simple>
+
+    <!-- Service spécifique de lecture de maillage -->
+    <service-instance
+        name = "specific-reader"
+        type = "Arcane::ICaseMeshReader"
+        optional = "true"
+        >
+      <userclass>User</userclass>
+      <name lang='fr'>lecteur-specifique</name>
+      <description>
+        Service spécifique de lecture de maillage.
+
+        Ce service peut être spécifié si on souhaite éviter
+        l'auto-détection du lecteur à utiliser ou si on souhaite
+        ajouter des options spécifiques à un lecture donné.
+      </description>
+    </service-instance>
+
+    <!-- Options pour initialiser les variables avec certaines valeurs -->
+    <complex type="Init" name="initialization">
+      <name lang='fr'>initialisation</name>
+      <userclass>User</userclass>
+      <description>
+	Informations d'initialisation.
+
+        Ces options permettent entre autre d'initialiser des variables sur des groupes
+        avec des valeurs prédéfinies
+      </description>
+
+      <complex type="InitVariable" name="variable" minOccurs="0" maxOccurs="unbounded">
+        <userclass>User</userclass>
+        <description>
+	  Liste des variables à initialiser
+        </description>
+        <simple name="name" type="string">
+          <description>
+            Nom de la variable à initialiser
+          </description>
+        </simple>
+        <simple name="value" type="string">
+          <description>
+            Valeur de la variable. La chaîne de caractères doit être convertible en le type de la variable
+          </description>
+        </simple>
+        <simple name="group" type="string">
+          <description>
+            Nom du groupe sur lequel on veut positionner les valeurs
+          </description>
+        </simple>
+      </complex>
+
+    </complex>
+
+  </options>
+
+</service>

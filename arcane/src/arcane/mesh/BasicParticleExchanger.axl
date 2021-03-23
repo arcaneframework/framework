@@ -1,0 +1,36 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<service name="BasicParticleExchanger" type="caseoption" namespace="Arcane::mesh">
+  <userclass>User</userclass>
+  <description>
+    Échangeur de particule simple.
+
+    Cet échangeur utilise un mécanisme synchrone. Lors de chaque
+    échange, les sous-domaines envoient et recoivent de leurs voisins
+    les particules à échanger. Après cette série de messages, une
+    réduction est effectuée pour savoir s'il reste encore des
+    particules à traiter. Il est éventullement possible de ne pas
+    faire cette réduction à chaque fois en modifiant l'option
+    `max-nb-message-without-reduce`.
+  </description>
+    
+  <interface name="Arcane::IParticleExchanger"/>
+
+  <options>
+    <simple name="max-nb-message-without-reduce" type = "int32" default = "5">
+      <description>
+        Nombre maximum de messages à envoyer avant d'effectuer la réduction
+        sur le nombre de particules restantes.
+      </description>
+    </simple>
+    <simple name="debug-exchange-items-level" type = "int32" default="0">
+      <description>
+        Indique si on affiche des informations supplémentaires dans le listing pour le debug des échanges.
+        - 1 pour des informations de base et
+        - 2 pour des informations plus détaillées.
+        A noter que les informations de niveau 2 peuvent générer un listing très gros
+        dans le cas d'un grand nombre de particules.
+      </description>
+    </simple>
+  </options>
+
+</service>

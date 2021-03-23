@@ -1,0 +1,21 @@
+set(ARCANE_SOURCES
+  AlephTestModule.cc
+  AlephTestModule.h
+  AlephTestSchemeFaces.cc
+  AlephTestSchemeFaces.h
+  AlephIndexTest.cc
+  AlephMultiTest.cc
+  AlephMultiTest.h
+  AlephTestModule.h
+  AlephTestSchemeFaces.h
+  AlephMultiTest.h
+  AlephTest.h
+  AlephTestScheme.h
+)
+
+set(AXL_FILES 
+  AlephTestModule
+  AlephTestSchemeFaces
+  AlephIndexTest
+  AlephMultiTest
+)

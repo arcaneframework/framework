@@ -1,0 +1,21 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arcane.Compiler.Directives", "Arcane.Compiler.Directives.csproj", "{F2AEAB20-A02D-4DD9-ADE2-9AE9EFF6E47D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F2AEAB20-A02D-4DD9-ADE2-9AE9EFF6E47D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2AEAB20-A02D-4DD9-ADE2-9AE9EFF6E47D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2AEAB20-A02D-4DD9-ADE2-9AE9EFF6E47D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2AEAB20-A02D-4DD9-ADE2-9AE9EFF6E47D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		name = Arcane.Compiler.Directives
+		StartupItem = Arcane.Compiler.Directives.csproj
+	EndGlobalSection
+EndGlobal

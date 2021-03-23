@@ -1,0 +1,57 @@
+﻿<#@ template language="C#v3.5" #>
+/*
+ * Génération des déclarations pour GeomShapeView.
+ * Ce fichier doit être inclus directement dans la définition de la classe GeomShapeView
+ */
+
+
+/*!
+ * \name Remplissage des sous-volumes de contrôle pour un type spécifique.
+ *
+ * Le type géométrique (geomType()) de l'instance doit correspondre au choix de la méthode utilisée.
+ */
+//@{
+<# foreach( Item item in Connectivity.Items2DAnd3D ) { #>
+/*!
+ * \brief Remplit \a svc avec les informations du \a i-ème sous-volume de contrôle.
+ * \pre type()==GeomType::<#=item.Name#>
+ */
+void fillSubZone<#=item.Name#>(<#=item.SVCBasicName#>ElementView svc,Integer i);
+<# } #>   
+//@}
+
+/*!
+ * \name Remplissage des sous-volumes de contrôle (méthodes obsolètes)
+ *
+ * Ces méthodes sont obsolètes et doivent être remplacées par la méthode
+ * équivalente avec le nom complet de l'élément.
+ */
+//@{
+<# foreach( Item item in Connectivity.Items2DAnd3D ) { #>
+<# if (item.BasicName != item.Name ) { #>
+/*!
+ * \brief Remplit \a svc avec les informations du \a i-ème sous-volume de contrôle.
+ *
+ * \deprecated Utiliser fillSubZone<#=item.Name#>() à la place
+ */
+void fillSubZone<#=item.BasicName#>(<#=item.SVCBasicName#>ElementView svc,Integer i)
+{ fillSubZone<#=item.Name#>(svc,i); }
+<# } #>
+<# } #>   
+//@}
+
+<# foreach( Item item in Connectivity.Items2DAnd3D ) { #>
+/*!
+ * \brief Retourne une vue spécifique vers un élément géométrique de type GeomType::<#=item.Name#>.
+ * \pre type()==GeomType::<#=item.Name#>
+ */
+inline <#=item.Name#>ElementConstView to<#=item.Name#>Element() const;
+<# } #>   
+
+<# foreach( Item item in Connectivity.Items2DAnd3D ) { #>
+/*!
+ * \brief Retourne une vue spécifique pour une forme géométrique de type GeomType::<#=item.Name#>.
+ * \pre type()==GeomType::<#=item.Name#>
+ */
+inline <#=item.Name#>ShapeView to<#=item.Name#>Shape() const;
+<# } #>   

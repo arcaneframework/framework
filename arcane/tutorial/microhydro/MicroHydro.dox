@@ -1,0 +1,100 @@
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+// -*- C++ -*-
+/*!
+  \page tutorialsample3 L'application "MicroHydro"
+
+
+  Le troisième exemple de cette formation permet le développement d'un module
+  hydrodynamique lagrangienne très simplifié :
+  - le seul type de maille supporté est l'hexaèdre,
+  - pas de pseudo viscosité supportée,
+  - le seul type de calcul de longueur caractéristique supporté est celui utilisant les médianes,
+  - le seul type de condition aux limites supporté est d'imposer une composante de la vitesse sur une surface,
+  - la masse nodale est supposée constante et n'est pas recalculée à chaque itération,
+  - aucun test de cohérence des valeurs (pression positive, volume positif, ...)  n'est effectué.
+
+  La liste des opérations effectuées par le module est la suivante :
+  - calcul des forces de pression,
+  - calcul de l'impulsion,
+  - prise en compte des conditions aux limites,
+  - déplacement des noeuds,
+  - calcul des nouvelles valeurs géométriques : volume des mailles, longueur caractéristique des mailles,
+    resultantes aux sommets de chaque maille,
+  - calcul de la densité,
+  - calcul de la pression et de l'énergie par l'équation d'état. Ce calcul est effectué par un service
+    ARCANE. Deux implémentations sont disponibles pour le service : gaz parfait, et "stiffened" gaz.
+  - calcul du nouveau pas de temps.
+
+  La liste des valeurs manipulées par le module est la suivante :
+
+<center>
+<small>
+<table>
+<tr><td><b>Nom</b></td><td><b>Elément</b></td><td><b>Type</b></td><td><b>Description</b></td></tr>
+<tr><td>Density </td><td> Maille </td><td> Réel </td><td> Densité par maille </td></tr>
+<tr><td>Pressure </td><td> Maille </td><td> Réel </td><td> Pression par maille </td></tr>
+<tr><td>CellMass </td><td> Maille </td><td> Réel </td><td> Masse par maille </td></tr>
+<tr><td>InternalEnergy </td><td> Maille </td><td> Réel </td><td> Energie interne par maille </td></tr>
+<tr><td>CellVolume </td><td> Maille </td><td> Réel </td><td> Volume de la maille </td></tr>
+<tr><td>OldCellVolume </td><td> Maille </td><td> Réel </td><td> Volume de la maille à l'itération précédente </td></tr>
+<tr><td>Force </td><td> Noeud </td><td> Coordonnée </td><td> Force aux noeuds </td></tr>
+<tr><td>Velocity </td><td> Noeud </td><td> Coordonnée </td><td> Vitesse aux noeuds </td></tr>
+<tr><td>NodeMass </td><td> Noeud </td><td> Réel  </td><td> Masse nodale </td></tr>
+<tr><td>AdiabaticCst </td><td> Maille </td><td> Réel  </td><td> Constante adiabatique par maille </td></tr>
+<tr><td>CaracteristicLength </td><td> Maille </td><td> Réel </td><td> Longueur caractéristique par maille </td></tr>
+<tr><td>SoundSpeed </td><td> Maille </td><td> Réel </td><td> Vitesse du son dans la maille </td></tr>
+<tr><td>NodeCoord </td><td> Noeud </td><td> Coordonnée </td><td> Coordonnées des noeuds </td></tr>
+<tr><td>CellCQs </td><td> Maille </td><td> Tableau de coordonnées</td><td> Résultante aux sommets</td></tr>
+</table>
+</small>
+</center>
+
+  \section tutorialsample2_conception Conception de l'application
+  \par Prérequis
+  - Avoir fait les deux premiers exemples de ce didacticiel : \ref tutorialsample1 et \ref tutorialsample2.
+  \par Actions à réaliser
+  A partir de l'énoncé de l'exercice et de la documentation des méthodes de la classe \c MicroHydroModule :
+  - Ecrire le descripteur du module :
+    - Fournir la liste des points d'entrée. Chaque opération citée précédemment devient un point d'entrée et un point
+      d'entrée d'initialisation est ajouté,
+    - Fournir la liste des variables,
+    - Compléter les options de configuration pour les conditions aux limites conformément au jeu de données \c MicroHydro.arc
+  - Décrire ensuite l'enchainement des points d'entrée dans le fichier de configuration
+    de l'application \c MicroHydro.config.
+
+  \section tutorialsample2_service Service d'équation d'état
+  \par Prérequis
+  - Lire la section \ref arcanedoc_service.
+  \par Actions à réaliser
+  Faire un service capable de calculer l'équation d'état pour un groupe de mailles donné :
+  - Regarder l'interface du service dans le fichier \c IEquationOfState et les implémentations
+    <em>perfect gas</em> et <em>stiffened gas</em>,
+  - Enregistrer les 2 implémentations dans ARCANE à l'aide à la macro,
+  - Dans le descripteur du module (\c MicroHydro.axl), saisir les options de configuration
+    pour le service d'équation d'état conformément au jeu de données \c MicroHydro.arc,
+  - Ecrire le code pour le service d'équation d'état du gaz parfait dans le fichier \c PerfectGasEOSService.cc.
+    Les formules sont : \f[P = (\gamma - 1) \rho e\f] \f[s = \sqrt{\gamma P / \rho} \f]
+    avec \f$P\f$ = pression, \f$e\f$ = énergie interne, \f$s\f$ = vitesse du son, \f$\gamma\f$ = constante adiabatique, et \f$\rho\f$ = densité
+  - Ecrire le code pour le service d'équation d'état "stiffened gas" dans le fichier \c StiffenedGasEOSService.cc.
+    Les formules sont : \f[P = ((\gamma - 1) \rho e) - (\gamma P_0)\f] \f[s = \sqrt{(\gamma / \rho)(P+P_0)} \f]
+    avec \f$P\f$ = pression, \f$P_0\f$ = tension limite, \f$e\f$ = énergie interne, \f$s\f$ = vitesse du son, 
+    \f$\gamma\f$ = constante adiabatique, et \f$\rho\f$ = densité
+  - Compléter les appels au service d'équation d'état dans le fichier \c MicroHydroModule.cc
+  - Compiler
+  - Choisir le service d'équation d'état voulu dans le jeu de données \c MicroHydro.arc. 
+    Ne pas oublier de préciser la tension limite dans le cas du service "stiffened gas".
+  - Exécuter en séquentiel et en parallèle et regarder les résultats.
+
+  \section tutorialsample2_protrep Prise en compte des protections/reprises
+  \par Prérequis
+   Ce module n'utilisant pas de structure de données interne autre que
+   les variables, il n'a rien à faire pour prendre en compte les
+   protections reprises.
+  \par Actions à réaliser
+   - Editer le fichier  \c MicroHydro.config et ajouter le module \c ArcaneCheckpoint permettant d'écrire des protections.
+   - Exécuter le code pendant 100 itérations : option <tt>-arcane_opt max_iteration 100</tt>.
+   - Reprendre l'exécution : option <tt>-arcane_opt continue</tt>.
+   - Ne plus sauvegarder le volume des mailles et ajouter un nouveau point d'entrée d'initialisation de reprise permettant de 
+     calculer le volume des mailles à partir de la position des noeuds.
+*/
+

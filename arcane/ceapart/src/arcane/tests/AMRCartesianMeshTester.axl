@@ -1,0 +1,32 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+
+<!-- ###################################################################### -->
+
+<module name="AMRCartesianMeshTester" version="1.0" namespace-name="ArcaneTest"> 
+ <description>
+   Module de test du gestionnaire de maillages cartésiens avec AMR
+  </description>
+
+ <options>
+   <simple name="nb-refine" type="integer" />
+   <complex name="refinement" type="Refinement" minOccurs="0" maxOccurs="unbounded">
+     <simple name="position" type="real2" />
+     <simple name="length" type="real2" />
+   </complex>
+   <service-instance name = "post-processor"
+                     type = "Arcane::IPostProcessorWriter"
+                     default = "Ensight7PostProcessor"
+                     >
+     <description>
+       Indique le type de bibliothèque à utiliser pour les sorties de dépouillement.
+     </description>
+   </service-instance>
+ </options>
+
+ <entry-points>
+   <entry-point method-name="compute" name="compute" where="compute-loop" property="none" />
+   <entry-point method-name="init" name="init" where="init" property="none" />
+   <entry-point method-name="buildInit" name="buildInit" where="build" property="none" />
+ </entry-points>
+
+</module>

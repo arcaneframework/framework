@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="@CSPATH@/MeshModification.cs" />
+    <Compile Include="@CSPATH@/DotNetTimeHistoryCurveWriter.cs" />
+    <Compile Include="@CSPATH@/DotNetCaseFunctionProvider.cs" />
+    <Compile Include="@CSPATH@/DotNetDataWriter.cs" />
+    <Compile Include="@CSPATH@/DotNetTestSingleton.cs" />
+    <Compile Include="@CSPATH@/SimpleHydro.cs" />
+    <Compile Include="@CSPATH@/PerfectGasEOS.cs" />
+    <Compile Include="@CSPATH@/Launcher.cs" />
+    <Compile Include="@CSOUTPATH@/PerfectGasEOS_axl.cs" />
+    <Compile Include="@CSOUTPATH@/SimpleHydroCS_axl.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Arcane.Core/Arcane.Core.csproj" />
+    <ProjectReference Include="../Arcane.Services/Arcane.Services.csproj" />
+    <ProjectReference Include="../Arcane.Launcher/Arcane.Launcher.csproj" />
+  </ItemGroup>
+</Project>

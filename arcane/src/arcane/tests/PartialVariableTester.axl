@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<module name="PartialVariableTester" version="1.0">
+  <description>Descripteur du module PartialVariableTester</description>
+
+  <variables />
+
+  <entry-points>
+    <entry-point
+      method-name="init"
+      name="Init"
+      where="init"
+      property="none"
+      />
+    <entry-point
+      method-name="compute"
+      name="Compute"
+      where="compute-loop"
+      property="none"
+      />
+  </entry-points>
+
+  <options>
+    <simple
+      name = "max-iteration"
+      type = "integer"
+      default = "10"
+      >
+      <name lang='fr'>max-iteration</name>
+      <description>Nombre d'itérations à effectuer</description>
+    </simple>
+  </options>
+
+</module>

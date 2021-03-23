@@ -1,0 +1,114 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<service name="ArcaneCasePartitioner" type="caseoption" version="1.0" namespace-macro-name="ARCANE" >
+ <name lang='fr'>partitionneur-cas</name>
+  <userclass>User</userclass>
+ <description>
+ </description>
+
+ <interface name="Arcane::IDirectExecution" />
+    
+ <variables>
+ </variables>
+
+ <options>
+      
+  <simple
+   name = "nb-cut-part"
+   type = "int32"
+   default = "0"
+  >
+   <name lang='fr'>nb-partie-decoupees</name>
+  <userclass>User</userclass>
+   <description>
+Découpe le maillage en ce nombre de parties.
+   </description>
+  </simple>
+
+  <simple
+   name = "library"
+   type = "string"
+   default = "DefaultPartitioner"
+  >
+   <name lang='fr'>bibliotheque</name>
+  <userclass>User</userclass>
+   <description>
+Nom de la bibliothèque à utiliser pour le partitionnement (Metis, Zoltan ou PTScotch)
+   </description>
+  </simple>
+
+
+  <extended 
+   name = "constraints"
+   type = "ItemGroup"
+   minOccurs = "0"
+   maxOccurs = "unbounded"
+  >
+   <name lang='fr'>indivisible</name>
+  <userclass>User</userclass>
+   <description>
+Groupes d'entités à ne pas découper
+   </description>
+  </extended>
+
+  <!-- Permet la création du fichier Correspondance (id globaux pour les nds et cells, par domaine) -->
+  <simple
+   name = "create-correspondances"
+   type     = "bool"
+   default  = "false"
+  >
+   <name lang='fr'>correspondance</name>
+  <userclass>User</userclass>
+   <description>Création du fichier Correspondance</description>
+  </simple>
+
+  <!-- Nombre de couches de mailles fantomes -->
+  <simple
+   name = "nb-ghost-layer"
+   type = "int32"
+   default = "0"
+  >
+   <name lang='fr'>nb-couches-fantomes</name>
+  <userclass>User</userclass>
+   <description>
+Nombre de couches de mailles fantômes.
+   </description>
+  </simple>
+
+  <!-- Nom du service pour l'ecriture du maillage final -->
+  <simple
+   name = "writer-service-name"
+   type = "string"
+  >
+   <name lang='fr'>nom-service-ecriture</name>
+  <userclass>User</userclass>
+   <description>
+Nom du service utilisé pour écrire les maillages en sortie.
+   </description>
+  </simple>
+
+  <!-- Nom du service pour l'ecriture du maillage final -->
+  <simple
+   name = "mesh-file-name-pattern"
+   type = "string"
+   default= "CPU%05d"
+  >
+   <name lang='fr'>patron-nom-fichier-maillage</name>
+  <userclass>User</userclass>
+   <description>
+Patron utilisé pour générer le nom du fichier de maillage. La syntaxe est celle de la fonction C printf et le %d est remplacé par le numéro de la partie.
+   </description>
+  </simple>
+
+  <!-- Fichier de sortie pour la non-régression -->
+  <!-- <service-instance
+   name = "tool"
+   type = "Arcane::IDirectExecution"
+  >
+   <name lang='fr'>tool</name>
+   <description>
+Outil a executer
+   </description>
+  </service-instance>  -->
+ </options>
+
+</service>

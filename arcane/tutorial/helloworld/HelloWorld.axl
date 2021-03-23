@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<!-- Compléter les attributs name et parent-name -->
+<module name="" parent-path="arcane" parent-name="">
+
+	<description>Descripteur du module Hello World</description>
+
+	<entry-points>
+		<!-- Compléter en déclarant l'unique point d'entrée du module -->
+	</entry-points>
+</module>

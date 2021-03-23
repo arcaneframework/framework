@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<service name="AnyItemTester" version="1.0" type="caseoption" namespace-name="ArcaneTest" parent-name="Arcane::BasicUnitTest"> 
+  <interface name="Arcane::IUnitTest" inherited='false'/>
+  
+  <variables>
+    
+    <variable
+        field-name="cell_variable"
+        name="CellVariable"
+        data-type="real"
+        item-kind="cell"
+        dim="0"
+        dump="true"
+        need-sync="true" 
+        />
+    
+    <variable
+        field-name="face_variable"
+        name="FaceVariable"
+        data-type="real"
+        item-kind="face"
+        dim="0"
+        dump="true"
+        need-sync="true" 
+        />
+    
+    <variable
+        field-name="cell_variable_array"
+        name="CellVariableArray"
+        data-type="real"
+        item-kind="cell"
+        dim="1"
+        dump="true"
+        need-sync="true" 
+        />
+    
+    <variable
+        field-name="face_variable_array"
+        name="FaceVariableArray"
+        data-type="real"
+        item-kind="face"
+        dim="1"
+        dump="true"
+        need-sync="true" 
+        />
+    
+    <!--variable
+        field-name="sum_t"
+        name="SumT"
+        data-type="real"
+        item-kind="cell"
+        dim="0"
+        dump="true"
+        need-sync="true" 
+        />
+    
+    <variable
+        field-name="t"
+        name="T"
+        data-type="real"
+        item-kind="face"
+        dim="0"
+        dump="true"
+        need-sync="true" 
+        />
+    
+    <variable
+        field-name="p"
+        name="P"
+        data-type="real"
+        item-kind="cell"
+        dim="0"
+        dump="true"
+        need-sync="true" 
+        />
+    
+    <variable
+        field-name="p_old"
+        name="POld"
+        data-type="real"
+        item-kind="cell"
+        dim="0"
+        dump="true"
+        need-sync="true" 
+        /-->
+    
+  </variables>
+  
+  
+  <options />
+  
+</service>

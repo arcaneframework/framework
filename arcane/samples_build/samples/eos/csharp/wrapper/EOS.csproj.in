@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Liste des fichiers générés par SWIG -->
+    <Compile Include="cs_files/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Référence au wrapper C# Arcane -->
+    <PackageReference Include="Arcane.Core" Version="@Arcane_VERSION@" />
+  </ItemGroup>
+</Project>

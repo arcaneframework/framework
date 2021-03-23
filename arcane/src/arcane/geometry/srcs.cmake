@@ -1,0 +1,24 @@
+set(ARCANE_SOURCES
+  Geometry.cc
+  impl/GeometryServiceBase.cc
+  impl/GeometryServiceBase.h
+  impl/ItemGroupGeometryProperty.cc
+  impl/ItemGroupGeometryProperty.h
+  euclidian/Euclidian3Geometry.cc
+  euclidian/Euclidian3Geometry.h
+  euclidian/Euclidian3GeometryService.cc
+  euclidian/Euclidian3GeometryService.h
+  IGeometry.h
+  IGeometryMng.h
+  ItemGroupBuilder.h
+  impl/GeometryServiceBase.h
+  impl/ItemGroupGeometryProperty.h
+  impl/GeometryServiceBaseT.h
+  impl/GeometryTemplatesT.h
+  euclidian/Euclidian3Geometry.h
+  euclidian/Euclidian3GeometryService.h
+)
+
+set(AXL_FILES 
+  euclidian/Euclidian3Geometry
+)

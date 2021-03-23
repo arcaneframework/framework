@@ -1,0 +1,20 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+// This file is generated. Do not edit.
+#ifndef ARCANE_GENERATED_ARCANEVERSION_H
+#define ARCANE_GENERATED_ARCANEVERSION_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#define ARCANE_VERSION_MAJOR   @Arcane_VERSION_MAJOR@
+#define ARCANE_VERSION_MINOR   @Arcane_VERSION_MINOR@
+#define ARCANE_VERSION_RELEASE @Arcane_VERSION_PATCH@
+#define ARCANE_VERSION_BETA    @Arcane_VERSION_TWEAK@
+
+#define ARCANE_VERSION @ARCANE_VERSION_NUMERIC@
+#define ARCANE_VERSION_STR "@Arcane_VERSION_MAJOR@.@Arcane_VERSION_MINOR@.@Arcane_VERSION_PATCH@.@Arcane_VERSION_TWEAK@"
+#define ARCANE_VERSION_STR_FULL "@ARCANE_VERSION_STR_FULL@"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif  

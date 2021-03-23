@@ -1,0 +1,127 @@
+KNC (icc 14.0.080)
+
+SimdKind:   KNC Cell:      45000 - Clocks0: 0.600000 s ClockCQS:  2.510000 s ClockEOS:  6.300000 s Prepare: 430.864198 ns -- CQS:  235.802469 ns EOS: 140.000000 ns
+SimdKind:  EMUL Cell:      45000 - Clocks0: 2.140000 s ClockCQS: 16.480000 s ClockEOS: 19.980000 s Prepare: 607.407407 ns -- CQS: 1770.370370 ns EOS: 444.000000 ns
+SimdKind: NOVEC Cell:      45000 - Clocks0: 1.770000 s ClockCQS: 14.150000 s ClockEOS: 20.060000 s Prepare: 438.271605 ns -- CQS: 1528.395062 ns EOS: 445.777778 ns
+
+
+Xeon E5-2665 0 @ 2.40GHz (gcc 4.7.2)
+
+SimdKind:   AVX Cell:      45000 - Clocks0: 0.090000 s ClockCQS: 0.470000 s ClockEOS: 1.040000 s Prepare: 53.086420 ns -- CQS:  46.913580 ns EOS: 23.111111 ns
+SimdKind:   SSE Cell:      45000 - Clocks0: 0.110000 s ClockCQS: 0.770000 s ClockEOS: 0.920000 s Prepare: 40.740741 ns -- CQS:  81.481481 ns EOS: 20.444444 ns
+SimdKind:  EMUL Cell:      45000 - Clocks0: 0.220000 s ClockCQS: 1.710000 s ClockEOS: 1.480000 s Prepare: 60.493827 ns -- CQS: 183.950617 ns EOS: 32.888889 ns
+SimdKind: NOVEC Cell:      45000 - Clocks0: 0.180000 s ClockCQS: 1.530000 s ClockEOS: 1.520000 s Prepare: 33.333333 ns -- CQS: 166.666667 ns EOS: 33.777778 ns
+
+Xeon E5-2665 0 @ 2.40GHz (icc 13.0.079)
+
+SimdKind:   AVX Cell:      45000 - Clocks0: 0.160000 s ClockCQS: 0.990000 s ClockEOS: 0.950000 s Prepare: 75.308642 ns -- CQS: 102.469136 ns EOS: 21.111111 ns
+SimdKind:   SSE Cell:      45000 - Clocks0: 0.120000 s ClockCQS: 0.770000 s ClockEOS: 0.960000 s Prepare: 53.086420 ns -- CQS:  80.246914 ns EOS: 21.333333 ns
+SimdKind:  EMUL Cell:      45000 - Clocks0: 0.210000 s ClockCQS: 1.560000 s ClockEOS: 1.480000 s Prepare: 66.666667 ns -- CQS: 166.666667 ns EOS: 32.888889 ns
+SimdKind: NOVEC Cell:      45000 - Clocks0: 0.280000 s ClockCQS: 2.520000 s ClockEOS: 1.480000 s Prepare: 34.567901 ns -- CQS: 276.543210 ns EOS: 32.888889 ns
+
+
+Xeon E5-2680 0 @ 2.70GHz (icc 14.0.080)
+
+SimdKind:   AVX Cell:      45000 - Clocks0: 0.140000 s ClockCQS: 0.940000 s ClockEOS: 0.830000 s Prepare: 56.790123 ns -- CQS:  98.765432 ns EOS: 18.444444 ns
+SimdKind:   SSE Cell:      45000 - Clocks0: 0.100000 s ClockCQS: 0.650000 s ClockEOS: 0.820000 s Prepare: 43.209877 ns -- CQS:  67.901235 ns EOS: 18.222222 ns
+SimdKind:  EMUL Cell:      45000 - Clocks0: 0.170000 s ClockCQS: 1.340000 s ClockEOS: 1.260000 s Prepare: 44.444444 ns -- CQS: 144.444444 ns EOS: 28.000000 ns
+SimdKind: NOVEC Cell:      45000 - Clocks0: 0.150000 s ClockCQS: 1.280000 s ClockEOS: 1.260000 s Prepare: 27.160494 ns -- CQS: 139.506173 ns EOS: 28.000000 ns
+
+Xeon E5-2680 0 @ 2.70GHz (icc 13.1.5.192)
+
+SimdKind:   AVX Cell:      45000 - Clocks0: 0.120000 s ClockCQS: 0.740000 s ClockEOS: 0.810000 s Prepare: 56.790123 ns -- CQS:  76.543210 ns EOS: 18.000000 ns
+SimdKind:   SSE Cell:      45000 - Clocks0: 0.100000 s ClockCQS: 0.670000 s ClockEOS: 0.820000 s Prepare: 40.740741 ns -- CQS:  70.370370 ns EOS: 18.222222 ns
+SimdKind:  EMUL Cell:      45000 - Clocks0: 0.170000 s ClockCQS: 1.340000 s ClockEOS: 1.260000 s Prepare: 44.444444 ns -- CQS: 144.444444 ns EOS: 28.000000 ns
+SimdKind: NOVEC Cell:      45000 - Clocks0: 0.250000 s ClockCQS: 2.180000 s ClockEOS: 1.270000 s Prepare: 39.506173 ns -- CQS: 238.271605 ns EOS: 28.222222 ns
+
+Xeon E5-2680 0 @ 2.70GHz (gcc 4.7.2)
+
+SimdKind:   AVX Cell:      45000 - Clocks0: 0.070000 s ClockCQS: 0.400000 s ClockEOS: 0.880000 s Prepare: 37.037037 ns -- CQS:  40.740741 ns EOS: 19.555556 ns
+SimdKind:   SSE Cell:      45000 - Clocks0: 0.100000 s ClockCQS: 0.650000 s ClockEOS: 0.830000 s Prepare: 43.209877 ns -- CQS:  67.901235 ns EOS: 18.444444 ns
+SimdKind:  EMUL Cell:      45000 - Clocks0: 0.200000 s ClockCQS: 1.520000 s ClockEOS: 1.260000 s Prepare: 59.259259 ns -- CQS: 162.962963 ns EOS: 28.000000 ns
+SimdKind: NOVEC Cell:      45000 - Clocks0: 0.150000 s ClockCQS: 1.310000 s ClockEOS: 1.290000 s Prepare: 23.456790 ns -- CQS: 143.209877 ns EOS: 28.666667 ns
+
+Xeon E5-2698 v3 @ 2.30GHz (haswell, gcc 4.7.2)
+
+SimdKind:   AVX Cell:      45000 - Clocks0: 0.100000 s ClockCQS: 0.530000 s ClockEOS: 0.920000 s Prepare: 58.024691 ns -- CQS:  53.086420 ns EOS: 20.444444 ns
+SimdKind:   SSE Cell:      45000 - Clocks0: 0.140000 s ClockCQS: 1.040000 s ClockEOS: 0.860000 s Prepare: 44.444444 ns -- CQS: 111.111111 ns EOS: 19.111111 ns
+SimdKind:  EMUL Cell:      45000 - Clocks0: 0.270000 s ClockCQS: 2.120000 s ClockEOS: 1.260000 s Prepare: 71.604938 ns -- CQS: 228.395062 ns EOS: 28.000000 ns
+SimdKind: NOVEC Cell:      45000 - Clocks0: 0.220000 s ClockCQS: 1.930000 s ClockEOS: 1.260000 s Prepare: 33.333333 ns -- CQS: 211.111111 ns EOS: 28.000000 ns
+
+Xeon X7560  @ 2.27GHz Nehalem (Tera100)
+SimdKind:   SSE Cell:      45000 - Clocks0: 0.160000 s ClockCQS: 1.070000 s ClockEOS: 1.510000 s Prepare: 65.432099 ns -- CQS: 112.345679 ns EOS: 33.555556 ns
+SimdKind:  EMUL Cell:      45000 - Clocks0: 0.280000 s ClockCQS: 2.200000 s ClockEOS: 2.120000 s Prepare: 74.074074 ns -- CQS: 237.037037 ns EOS: 47.111111 ns
+SimdKind: NOVEC Cell:      45000 - Clocks0: 0.250000 s ClockCQS: 2.110000 s ClockEOS: 2.110000 s Prepare: 48.148148 ns -- CQS: 229.629630 ns EOS: 46.888889 ns
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+Avec Arcane 2.5.1 (Juin 2017)
+
+Xeon(R) CPU E5-2698 v3 @ 2.30GHz (gcc 6.2)
+
+SimdKind:   AVX Cell:      45000 - Clocks0: 0.065848 s ClockCQS: 0.362260 s ClockEOS: 0.445374 s Prepare: 36.569907 ns -- CQS: 36.594132  ns EOS: 9.897200 ns
+SimdKind:   SSE Cell:      45000 - Clocks0: 0.096721 s ClockCQS: 0.694987 s ClockEOS: 0.505167 s Prepare: 33.608248 ns -- CQS: 73.859986  ns EOS: 11.225928 ns
+SimdKind:  EMUL Cell:      45000 - Clocks0: 0.173620 s ClockCQS: 1.381737 s ClockEOS: 0.807055 s Prepare: 43.761495 ns -- CQS: 149.150130 ns EOS: 17.934566 ns
+SimdKind: NOVEC Cell:      45000 - Clocks0: 0.146455 s ClockCQS: 1.252236 s ClockEOS: 0.808918 s Prepare: 26.211680 ns -- CQS: 136.516153 ns EOS: 17.975966 ns
+SimdKind: NOVEC(AVX+IVDEP)       - Clocks0: 0.145585 s ClockCQS: 1.236552 s ClockEOS: 0.808299 s Prepare: 27.074137 ns -- CQS: 134.687306 ns EOS: 17.962191 ns
+
+Xeon(R) CPU E5-2698 v3 @ 2.30GHz (icc 17.0)
+
+SimdKind:   AVX Cell:      45000 - Clocks0: 0.060754 s ClockCQS: 0.341592 s ClockEOS: 0.440695 s Prepare: 32.832887 ns -- CQS: 34.671360  ns EOS: 9.793229 ns
+SimdKind:   SSE Cell:      plantage
+SimdKind:  EMUL Cell:      45000 - Clocks0: 0.163115 s ClockCQS: 1.269666 s ClockEOS: 0.855109 s Prepare: 44.627631 ns -- CQS: 136.611285 ns EOS: 19.002416 ns
+SimdKind: NOVEC Cell:      45000 - Clocks0: 0.175110 s ClockCQS: 1.420202 s ClockEOS: 0.812780 s Prepare: 40.851758 ns -- CQS: 153.715022 ns EOS: 18.061786 ns
+SimdKind: NOVEC(AVX+IVDEP)       - Clocks0: 0.136158 s ClockCQS: 1.118432 s ClockEOS: 0.441173 s Prepare: 30.017635 ns -- CQS: 121.268490 ns EOS: 9.803846 ns
+
+Xeon Phi(TM) CPU 7250 @ 1.40GHz (gcc 6.2)
+
+SimdKind: AVX512 Cell:     45000 - Clocks0: 0.163204 s ClockCQS: 0.539453 s ClockEOS: 0.683341 s Prepare: 134.887224 ns -- CQS: 46.450503  ns EOS: 15.185356 ns
+SimdKind:   AVX Cell:      45000 - Clocks0: 0.254506 s ClockCQS: 1.220763 s ClockEOS: 1.633123 s Prepare: 163.493627 ns -- CQS: 119.290941 ns EOS: 36.291631 ns
+SimdKind:   SSE Cell:      45000 - Clocks0: 0.397412 s ClockCQS: 2.718815 s ClockEOS: 2.650946 s Prepare: 154.975432 ns -- CQS: 286.592996 ns EOS: 58.909914 ns
+SimdKind:  EMUL Cell:      45000 - Clocks0: 0.673072 s ClockCQS: 5.303745 s ClockEOS: 5.206811 s Prepare: 176.170196 ns -- CQS: 571.687957 ns EOS: 115.706905 ns
+SimdKind: NOVEC Cell:      45000 - Clocks0: 0.603103 s ClockCQS: 5.133132 s ClockEOS: 5.555756 s Prepare: 110.851806 ns -- CQS: 559.262817 ns EOS: 123.461252 ns
+SimdKind: NOVEC(AVX512+IVDEP)    - Clocks0: 0.423100 s ClockCQS: 3.425545 s ClockEOS: 5.214877 s Prepare: 99.439415  ns -- CQS: 370.672220 ns EOS: 115.886153 ns
+
+Xeon Phi(TM) CPU 7250 @ 1.40GHz (icc 17.0)
+
+SimdKind: AVX512 Cell:     45000 - Clocks0: 0.168001 s ClockCQS: 0.595259 s ClockEOS: 0.741430 s Prepare: 133.920040 ns -- CQS: 52.747932  ns EOS: 16.476229 ns
+SimdKind:   AVX Cell:      45000 - Clocks0: 0.269046 s ClockCQS: 1.490689 s ClockEOS: 2.253318 s Prepare: 148.119367 ns -- CQS: 150.820179 ns EOS: 50.073724 ns
+SimdKind:   SSE Cell: plantage
+SimdKind:  EMUL Cell:      45000 - Clocks0: 0.658436 s ClockCQS: 4.935699 s ClockEOS: 5.199447 s Prepare: 203.538765 ns -- CQS: 528.057122 ns EOS: 115.543275 ns
+SimdKind: NOVEC Cell:      45000 - Clocks0: 0.556428 s ClockCQS: 4.703832 s ClockEOS: 5.239368 s Prepare: 106.228664 ns -- CQS: 512.025150 ns EOS: 116.430399 ns
+SimdKind: NOVEC(IVDEP+AVX512)    - Clocks0: 0.405827 s ClockCQS: 3.321946 s ClockEOS: 0.523527 s Prepare: 90.903941  ns -- CQS: 360.014733 ns EOS: 11.633931 ns
+
+
+
+Xeon(R) CPU E5-2698 v3 @ 2.30GHz (gcc 6.2)
+
+SimdKind:   AVX Cell:      45000 - CQS: 36.594132  ns EOS: 9.897200 ns
+SimdKind:   SSE Cell:      45000 - CQS: 73.859986  ns EOS: 11.225928 ns
+SimdKind:  EMUL Cell:      45000 - CQS: 149.150130 ns EOS: 17.934566 ns
+SimdKind: NOVEC Cell:      45000 - CQS: 136.516153 ns EOS: 17.975966 ns
+SimdKind: NOVEC(AVX+IVDEP)       - CQS: 134.687306 ns EOS: 17.962191 ns
+
+Xeon(R) CPU E5-2698 v3 @ 2.30GHz (icc 17.0)
+
+SimdKind:   AVX Cell:      45000 - CQS: 34.671360  ns EOS: 9.793229 ns
+SimdKind:   SSE Cell:      plantage
+SimdKind:  EMUL Cell:      45000 - CQS: 136.611285 ns EOS: 19.002416 ns
+SimdKind: NOVEC Cell:      45000 - CQS: 153.715022 ns EOS: 18.061786 ns
+SimdKind: NOVEC(AVX+IVDEP)       - CQS: 121.268490 ns EOS: 9.803846 ns
+
+Xeon Phi(TM) CPU 7250 @ 1.40GHz (gcc 6.2)
+
+SimdKind: AVX512 Cell:     45000 - CQS: 46.450503  ns EOS: 15.185356 ns
+SimdKind:   AVX Cell:      45000 - CQS: 119.290941 ns EOS: 36.291631 ns
+SimdKind:   SSE Cell:      45000 - CQS: 286.592996 ns EOS: 58.909914 ns
+SimdKind:  EMUL Cell:      45000 - CQS: 571.687957 ns EOS: 115.706905 ns
+SimdKind: NOVEC Cell:      45000 - CQS: 559.262817 ns EOS: 123.461252 ns
+SimdKind: NOVEC(AVX512+IVDEP)    - CQS: 370.672220 ns EOS: 115.886153 ns
+
+Xeon Phi(TM) CPU 7250 @ 1.40GHz (icc 17.0)
+
+SimdKind: AVX512 Cell:     45000 - CQS: 52.747932  ns EOS: 16.476229 ns
+SimdKind:   AVX Cell:      45000 - CQS: 150.820179 ns EOS: 50.073724 ns
+SimdKind:   SSE Cell: plantage
+SimdKind:  EMUL Cell:      45000 - CQS: 528.057122 ns EOS: 115.543275 ns
+SimdKind: NOVEC Cell:      45000 - CQS: 512.025150 ns EOS: 116.430399 ns
+SimdKind: NOVEC(IVDEP+AVX512)    - CQS: 360.014733 ns EOS: 11.633931 ns

@@ -1,0 +1,369 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* TBBThreadImplementation.cc                                  (C) 2000-2020 */
+/*                                                                           */
+/* Implémentation des threads utilisant TBB (Intel Threads Building Blocks). */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arcane/utils/IThreadImplementationService.h"
+#include "arcane/utils/IThreadBarrier.h"
+#include "arcane/utils/NotImplementedException.h"
+#include "arcane/utils/IFunctor.h"
+#include "arcane/utils/Mutex.h"
+#include "arcane/utils/PlatformUtils.h"
+
+#include "arcane/FactoryService.h"
+#include "arcane/Concurrency.h"
+
+#include <tbb/tbb_stddef.h>
+#include <tbb/spin_mutex.h>
+#if TBB_VERSION_MAJOR >= 2020
+#define ARCANE_TBB_USE_STDTHREAD
+#include <thread>
+#else
+#include <tbb/tbb_thread.h>
+#include <tbb/atomic.h>
+#include <tbb/mutex.h>
+#endif
+
+#include <glib.h>
+#include <new>
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#ifdef ARCANE_TBB_USE_STDTHREAD
+typedef std::thread::id ThreadId;
+typedef std::thread ThreadType;
+// Essaie de convertir un std::thread::id en un 'Int64'.
+// Il n'existe pas de moyen portable de le faire donc on fait quelque
+// chose de pas forcément propre. A terme il serait préférable de supprimer
+// la méthode IThreadImplementation::currentThread().
+inline Int64 arcaneGetThisThreadId()
+{
+  std::thread::id i = std::this_thread::get_id();
+  static_assert(sizeof(std::thread::id)>=4,"arcaneGetThisThreadId() not implemented if sizeof(std::thread::id)<4");
+  if (sizeof(std::thread::id)>=8)
+    return *reinterpret_cast<Int64*>(&i);
+  return *reinterpret_cast<Int32*>(&i);
+}
+#else
+struct ThreadId
+{
+ public:
+#if defined(_WIN32) || defined(_WIN64)
+  DWORD my_id;
+#else
+  pthread_t my_id;
+#endif // _WIN32||_WIN64
+};
+
+typedef tbb::tbb_thread ThreadType;
+inline Int64 arcaneGetThisThreadId()
+{
+  ThreadType::id i = tbb::this_tbb_thread::get_id();
+  ThreadId* t = (ThreadId*)(&i);
+  Int64 v = Int64(t->my_id);
+  return v;
+}
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// Avec MPC, il faut utiliser l'implementation pthread car l'implementation glib
+// ne fonctionne pas si elle n'a pas ete recompilee avec MPC.
+#ifdef ARCANE_USE_MPC
+#define USE_PTHREAD 1
+#endif
+
+class TBBMutexImpl
+{
+  // Ne pas utiliser les TBB pour l'instant car
+  // ca ne marche pas (probablement un probleme de cast chez moi)
+ public:
+  TBBMutexImpl()
+  {
+	  //m_lock = new tbb::mutex::scoped_lock(m_mutex);
+#ifdef USE_PTHREAD
+	  pthread_mutex_init(&m_mutex,0);
+#else
+    m_mutex = g_mutex_new();
+#endif
+  }
+  ~TBBMutexImpl()
+  {
+	  //delete m_lock;
+#ifdef USE_PTHREAD
+    pthread_mutex_destroy(&m_mutex);
+#else
+    g_mutex_free(m_mutex);
+#endif
+  }
+ public:
+  void lock()
+  {
+#ifdef USE_PTHREAD
+    pthread_mutex_lock(&m_mutex);
+#else
+    g_mutex_lock(m_mutex);
+#endif
+	  //m_lock.acquire(m_mutex);
+  }
+  void unlock()
+  {
+	  //m_lock.release();
+#ifdef USE_PTHREAD
+    pthread_mutex_unlock(&m_mutex);
+#else
+    g_mutex_unlock(m_mutex);
+#endif
+  }
+
+#ifdef USE_PTHREAD
+  pthread_mutex_t m_mutex;
+#else
+  GMutex* m_mutex;
+#endif
+  /*tbb::mutex m_mutex;
+    tbb::mutex::scoped_lock m_lock;*/
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class TBBBarrier
+: public IThreadBarrier
+{
+ public:
+  TBBBarrier()
+  : m_nb_thread(0) {}
+
+  virtual void destroy(){ delete this; }
+
+  virtual void init(Integer nb_thread)
+  {
+    m_nb_thread = nb_thread;
+    m_nb_thread_finished = 0;
+    m_timestamp = 0;
+  };
+
+  virtual bool wait()
+  {
+    Int32 ts = m_timestamp;
+    int remaining_thread = m_nb_thread - m_nb_thread_finished.fetch_and_increment() - 1;
+    if (remaining_thread > 0) {
+
+      int count = 1;
+      while (m_timestamp==ts){
+        __TBB_Pause(count);
+        if (count<200)
+          count *= 2;
+        else{
+          //count = 0;
+          //__TBB_Yield();
+          //TODO: peut-être rendre la main (__TBB_Yield()) si trop
+        // d'itérations.
+        }
+      }
+
+      return false;
+    }
+    m_nb_thread_finished = 0;
+    ++m_timestamp;
+    return true;
+  }
+ private:
+  Int32 m_nb_thread;
+  tbb::atomic<Int32> m_nb_thread_finished;
+  tbb::atomic<Int32> m_timestamp;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C" IThreadBarrier*
+createGlibThreadBarrier();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Implémentation des threads utilisant TBB (Intel Threads Building Blocks).
+ */
+class TBBThreadImplementation
+: public IThreadImplementation
+{
+ public:
+
+  class StartFunc
+  {
+   public:
+    StartFunc(IFunctor* f) : m_f(f){}
+    void operator()() { m_f->executeFunctor(); }
+    IFunctor* m_f;
+  };
+
+ public:
+  TBBThreadImplementation()
+  : m_use_tbb_barrier(false), m_global_mutex_impl(nullptr)
+  {
+  }
+  virtual ~TBBThreadImplementation()
+  {
+    //std::cout << "DESTROYING TBB IMPLEMENTATION\n";
+    GlobalMutex::destroy();
+    if (m_global_mutex_impl)
+      this->destroyMutex(m_global_mutex_impl);
+  }
+
+ public:
+
+  void build()
+  {
+    if (!platform::getEnvironmentVariable("ARCANE_SPINLOCK_BARRIER").null())
+      m_use_tbb_barrier = true;
+  }
+
+  void initialize() override
+  {
+    m_global_mutex_impl = createMutex();
+    GlobalMutex::init(m_global_mutex_impl);
+  }
+
+ public:
+
+  void addReference() override { ++m_nb_ref; }
+  void removeReference() override
+  {
+    Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
+    if (v==1)
+      delete this;
+  }
+
+ public:
+  
+  ThreadImpl* createThread(IFunctor* f) override
+  {
+    return reinterpret_cast<ThreadImpl*>(new ThreadType(StartFunc(f)));
+  }
+  void joinThread(ThreadImpl* t) override
+  {
+    ThreadType* tt = reinterpret_cast<ThreadType*>(t);
+    tt->join();
+  }
+  void destroyThread(ThreadImpl* t) override
+  {
+    ThreadType* tt = reinterpret_cast<ThreadType*>(t);
+    delete tt;
+  }
+
+  void createSpinLock(Int64* spin_lock_addr) override
+  {
+    void* addr = spin_lock_addr;
+    new (addr) tbb::spin_mutex();
+  }
+  void lockSpinLock(Int64* spin_lock_addr,Int64* scoped_spin_lock_addr) override
+  {
+    tbb::spin_mutex* s = reinterpret_cast<tbb::spin_mutex*>(spin_lock_addr);
+    tbb::spin_mutex::scoped_lock* sl = new (scoped_spin_lock_addr) tbb::spin_mutex::scoped_lock();
+    sl->acquire(*s);
+  }
+  void unlockSpinLock(Int64* spin_lock_addr,Int64* scoped_spin_lock_addr) override
+  {
+    ARCANE_UNUSED(spin_lock_addr);
+    tbb::spin_mutex::scoped_lock* s = reinterpret_cast<tbb::spin_mutex::scoped_lock*>(scoped_spin_lock_addr);
+    s->release();
+    //TODO: detruire le scoped_lock.
+  }
+  
+  MutexImpl* createMutex() override
+  {
+    TBBMutexImpl* m = new TBBMutexImpl();
+    return reinterpret_cast<MutexImpl*>(m);
+  }
+  void destroyMutex(MutexImpl* mutex) override
+  {
+    TBBMutexImpl* tm = reinterpret_cast<TBBMutexImpl*>(mutex);
+    delete tm;
+  }
+  void lockMutex(MutexImpl* mutex) override
+  {
+    TBBMutexImpl* tm = reinterpret_cast<TBBMutexImpl*>(mutex);
+    tm->lock();
+  }
+  void unlockMutex(MutexImpl* mutex) override
+  {
+    TBBMutexImpl* tm = reinterpret_cast<TBBMutexImpl*>(mutex);
+    tm->unlock();
+  }
+
+  Int64 currentThread() override
+  {
+    Int64 v = arcaneGetThisThreadId();
+    //ThreadId* t = (ThreadId*)(&i);
+    //Int64 v = Int64(i); //t->my_id);
+    //if (v!=0)
+    //cout << "** V=" << v << '\n';
+    return v;
+  }
+
+  IThreadBarrier* createBarrier() override
+  {
+    // Il faut utiliser les TBB uniquement si demandé car il utilise
+    // l'attente active ce qui peut vite mettre la machine à genoux
+    // si le nombre de thread total est supérieur au nombre de coeurs
+    // de la machine.
+    if (m_use_tbb_barrier)
+      return new TBBBarrier();
+    return createGlibThreadBarrier();
+  }
+
+ private:
+  
+  bool m_use_tbb_barrier;
+  MutexImpl* m_global_mutex_impl;
+  std::atomic<int> m_nb_ref = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class TBBThreadImplementationService
+: public IThreadImplementationService
+{
+ public:
+  TBBThreadImplementationService(const ServiceBuildInfo&){}
+ public:
+  void build() {}
+ public:
+  IThreadImplementation* createImplementation() override
+  {
+    return new TBBThreadImplementation();
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ARCANE_REGISTER_SERVICE(TBBThreadImplementationService,
+                        ServiceProperty("TBBThreadImplementationService",ST_Application),
+                        ARCANE_SERVICE_INTERFACE(IThreadImplementationService));
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

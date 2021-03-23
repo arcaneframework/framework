@@ -1,0 +1,127 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+
+<!-- ###################################################################### -->
+<!-- ###################################################################### -->
+
+<!-- Options du jeu de donnée concernant le module d'équilibrage de la charge -->
+
+ <module name="ArcaneLoadBalance">
+ <name lang='fr'>arcane-equilibrage-charge</name>
+ <userclass>User</userclass>
+ <description>
+   Informations sur l'équilibrage de charge.
+
+<p>
+   Les options par défaut de ce module sont calculées pour des performances optimales. Il n'est à priori pas nécessaire de les changer. La seule option utile est l'activation ou non de l'équilibrage.
+</p>
+ </description>
+
+    <entry-points>
+      <entry-point method-name="checkLoadBalance" 
+                   name="LoadBalanceCheckLoadBalance" 
+                   where="compute-loop" 
+                   property="auto-load-end"/>
+      <entry-point method-name="loadBalanceInit" 
+                   name="LoadBalanceInit" 
+                   where="init" 
+                   property="auto-load-end"/>
+    </entry-points>
+
+  <options>
+
+  <service-instance
+   name    = "partitioner"
+   type    = "Arcane::IMeshPartitioner"
+   default = "DefaultPartitioner"
+  >
+ <userclass>User</userclass>
+   <name lang='fr'>partitionneur</name>
+   <description>
+Service de partitionnement à utiliser
+   </description>
+  </service-instance>
+
+  <simple
+   name    = "active"
+   type    = "bool"
+   default = "false"
+  >
+   <name lang='fr'>actif</name>
+   <userclass>User</userclass>
+   <description>
+Vrai si l'équilibrage de charge est actif
+   </description>
+  </simple>
+
+  <simple
+   name = "period"
+   type = "integer"
+   default = "10"
+  >
+   <name lang='fr'>periode</name>
+   <description>
+Nombre d'itérations entre deux vérifications du déséquilibre de charge
+   </description>
+  </simple>
+
+  <simple
+   name = "compact"
+   type = "bool"
+   default = "true"
+  >
+   <name lang='fr'>compacte</name>
+   <description>
+Vrai si on recompacte les entités après chaque équilibrage pour qu'il n'y ait plus
+de trous dans la numéroration. Tous les modules ne supportant pas les trous dans la numérotation,
+il est préférable de laisser cette option à vrai.
+   </description>
+  </simple>
+
+  <simple
+   name = "max-imbalance"
+   type = "real"
+   default = "0.6"
+  >
+   <name lang='fr'>desequilibre-maximal</name>
+   <description>
+Déséquilibre maximal toléré avant de provoquer un rééquilibrage de la charge.
+Le déséquilibre est calculé en regardant le temps CPU consacré au calcul
+de chaque processeur. Il est égal au temps du processeur effectuant le plus
+de calcul moins le temps du processeurs effectuant le moins de calcul et divisé
+par ce derniner. Par conséquent, le déséquilibre vaut 0 lorsque tous les
+processeurs utilise le même temps CPU, 1 lorsque le processeur le plus chargé
+passe 2 fois plus de temps en calcul que le processeur le moins chargé.
+   </description>
+  </simple>
+
+  <simple
+   name = "statistics"
+   type = "bool"
+   default = "false"
+  >
+   <name lang='fr'>statistiques</name>
+   <description>
+Vrai si on souhaite avoir des statistiques sur le temps de calcul de chaque sous-domaine.
+Les statistiques prennent la forme d'une courbe au cours du temps indiquant pour chaque sous-domaine
+le temps de calcul. Le nom de la courbe est de la forme 'SubDomainComputeTime%P' avec %P le numéro du
+sous-domaine.
+   </description>
+  </simple>
+
+  <simple
+   name = "min-cpu-time"
+   type = "real"
+   default = "800.0"
+  >
+   <name lang='fr'>temps-cpu-minimal</name>
+   <description>
+Temps cpu minimal (en secondes) entre deux repartitionnements.
+   </description>
+  </simple>
+
+  </options>
+  
+  <!-- ###################################################################### -->
+  <!-- ###################################################################### -->
+  
+</module>

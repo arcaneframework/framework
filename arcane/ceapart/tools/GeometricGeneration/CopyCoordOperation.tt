@@ -1,0 +1,54 @@
+﻿<#@ template language="C#v3.5" #>
+<# foreach( Item item in Connectivity.Items ) { #>
+void <#=item.Name#>Geom::
+computeFaces()
+{
+  // Calcule la position des milieux des arêtes.
+<#foreach(Face f in item.Faces){#>
+  m_coords[<#=f.Id+item.NbNode#>] = (<#
+  for( int i=0; i<f.NbNode; ++i ){
+      Write((i==0) ? "" : "+");
+  #>m_coords[<#=f.Nodes[i] #>]<#
+    }
+#>)/<#=f.NbNode#>.0;
+<# } #>
+}
+
+void <#=item.Name#>Geom::
+computeEdges(Real3ArrayView edges_coord)
+{
+  // Calcule la position des milieux des arêtes.
+<#foreach(Edge e in item.Edges){#>
+  edges_coord[<#=e.Id#>] = 0.5 * (m_coords[<#=e.FirstNode#>] + m_coords[<#=e.SecondNode#>]);
+<# } #>
+}
+ 
+// Copie des coordonnees
+// WARNING: This method is generated ! DO NOT EDIT !
+void CopyCoordOperation::
+apply<#= item.Name #>(ItemVectorView cell_group)
+{
+  ENUMERATE_CELL(icell,cell_group){
+    Cell cell = *icell;
+    CellGeom cell_geom = m_cell_geom_list.cellGeom(cell);
+    Int32* ARCANE_RESTRICT nodes_id = cell.internal()->nodesPtr();
+    Real3ArrayView geom_coord = cell_geom.unguardedCoords();
+<# for( int z=0; z< item.NbNode; ++z ) { #>
+    geom_coord[<#=z#>] = m_nodes_coords[nodes_id[<#=z#>]];
+<# }
+   foreach(Face f in item.Faces){
+#>
+    geom_coord[<#=f.Id+item.NbNode#>] = (<#
+    for( int i=0; i<f.NbNode; ++i ){
+      Write((i==0) ? "" : "+");
+    #>geom_coord[<#=f.Nodes[i] #>]<#
+    }
+#>)/<#=f.NbNode#>.0;
+<# } #>
+  }
+}
+<#
+}
+#>
+
+   

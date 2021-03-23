@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="@CMAKE_CURRENT_SOURCE_DIR@/EOS.Main.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Référence au wrapper C# Arcane -->
+    <PackageReference Include="Arcane.Launcher" Version="@Arcane_VERSION@" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Référence au projet contenant l'implémentation C# de 'PerfectGas' -->
+    <ProjectReference Include="../perfectgas/PerfectGas.csproj" />
+  </ItemGroup>
+</Project>

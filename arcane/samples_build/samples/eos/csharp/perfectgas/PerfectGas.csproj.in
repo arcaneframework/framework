@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="@CMAKE_CURRENT_SOURCE_DIR@/EOSPerfectGas.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="EOS">
+      <HintPath>@EOS_BINARY_DIR@/EOS.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Référence au wrapper C# Arcane -->
+    <PackageReference Include="Arcane.Core" Version="@Arcane_VERSION@" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,29 @@
+include ../../Makefile.config
+
+CXX=g++ -g
+
+LIBS=${ARCANE_LIBS}
+INCS=-I../../src
+
+AXL_EXE = ${ARCANEDIR}/bin/axl2cc.py
+
+all : ${EXAMPLE_NAME}.exe
+
+${EXAMPLE_NAME}.exe: main.o lib${EXAMPLE_NAME}.so
+	$(CXX) $< -o $@ lib${EXAMPLE_NAME}.so -Wl,-rpath -Wl,. ${SERVICE_LIBS} $(LIBS)
+
+main.o: main.cc
+	$(CXX) -c $(INCS) $< -o $@
+
+lib${EXAMPLE_NAME}.so: ${EXAMPLE_NAME}Module.o 
+	$(CXX) -shared -o $@ $^
+
+${EXAMPLE_NAME}Module.o: ${EXAMPLE_NAME}Module.cc ${EXAMPLE_NAME}Module.h ${EXAMPLE_NAME}_axl.h
+	$(CXX) -c $(INCS) $< -o $@
+
+${EXAMPLE_NAME}_axl.h : ${EXAMPLE_NAME}.axl
+	$(AXL_EXE) $<
+
+clean::
+	\rm -f *.o lib${EXAMPLE_NAME}.so ${EXAMPLE_NAME}.exe ${EXAMPLE_NAME}_axl.h
+ 	

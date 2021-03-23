@@ -1,0 +1,747 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* VariableArray.cc                                            (C) 2000-2020 */
+/*                                                                           */
+/* Variable tableau 1D.                                                      */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arcane/utils/NotSupportedException.h"
+#include "arcane/utils/ArgumentException.h"
+#include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/TraceInfo.h"
+#include "arcane/utils/Ref.h"
+#include "arcane/utils/MemoryAccessInfo.h"
+
+#include "arcane/VariableDiff.h"
+#include "arcane/VariableBuildInfo.h"
+#include "arcane/VariableInfo.h"
+#include "arcane/IApplication.h"
+#include "arcane/IVariableMng.h"
+#include "arcane/IItemFamily.h"
+#include "arcane/IVariableSynchronizer.h"
+#include "arcane/IDataReader.h"
+#include "arcane/ItemGroup.h"
+#include "arcane/IDataFactoryMng.h"
+#include "arcane/IParallelMng.h"
+
+#include "arcane/datatype/DataTracer.h"
+#include "arcane/datatype/DataTypeTraits.h"
+#include "arcane/datatype/DataStorageBuildInfo.h"
+
+#include "arcane/VariableArray.h"
+#include "arcane/RawCopy.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class DataType>
+class ArrayVariableDiff
+: public VariableDiff<DataType>
+{
+  typedef VariableDataTypeTraitsT<DataType> VarDataTypeTraits;
+  typedef typename VariableDiff<DataType>::DiffInfo DiffInfo;
+
+ public:
+
+  Integer
+  check(IVariable* var,ConstArrayView<DataType> ref,ConstArrayView<DataType> current,
+        int max_print,bool compare_ghost)
+  {
+    typedef typename VariableDataTypeTraitsT<DataType>::IsNumeric IsNumeric;
+
+    if (var->itemKind()==IK_Unknown)
+      return _checkAsArray(var,ref,current,max_print);
+
+    ITraceMng* msg = var->subDomain()->traceMng();
+    ItemGroup group = var->itemGroup();
+    if (group.null())
+      return 0;
+
+    GroupIndexTable * group_index_table = (var->isPartial())?group.localIdToIndex().get():0;
+
+    int nb_diff = 0;
+    bool compare_failed = false;
+    Integer ref_size = ref.size();
+    ENUMERATE_ITEM(i,group){
+      const Item& item = *i;
+      if (!item.isOwn() && !compare_ghost)
+        continue;
+      Integer index = item.localId();
+      if (group_index_table){
+        index = (*group_index_table)[index];
+        if (index<0)
+          continue;
+      }        
+      DataType diff = DataType();
+      if (index>=ref_size){
+        ++nb_diff;
+        compare_failed = true;
+      }
+      else{
+        DataType dref = ref[index];
+        DataType dcurrent = current[index];
+        if (VarDataTypeTraits::verifDifferent(dref,dcurrent,diff)){
+          this->m_diffs_info.add(DiffInfo(dcurrent,dref,diff,item,NULL_ITEM_ID));
+          ++nb_diff;
+        }
+      }
+    }
+    if (compare_failed){
+      Integer sid = var->subDomain()->subDomainId();
+      const String& var_name = var->name();
+      msg->pinfo() << "Processor " << sid << " : "
+                   << "comparison impossible because the number of the elements is different "
+                   << " for the variable " << var_name << " ref_size=" << ref_size;
+        
+    }
+    if (nb_diff!=0){
+      this->sort(IsNumeric());
+      this->dump(var,max_print);
+    }
+    return nb_diff;
+  }
+
+  Integer checkReplica(IParallelMng* pm,IVariable* var,ConstArrayView<DataType> var_value,
+                       Integer max_print)
+  {
+    // Appelle la bonne spécialisation pour être sur que le type template possède
+    // la réduction.
+    typedef typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax HasReduceMinMax;
+    return _checkReplica2(pm,var,var_value,max_print,HasReduceMinMax());
+  }
+
+ private:
+  
+  Integer _checkAsArray(IVariable* var,ConstArrayView<DataType> ref,
+                        ConstArrayView<DataType> current,int max_print)
+  {
+    typedef typename VariableDataTypeTraitsT<DataType>::IsNumeric IsNumeric;
+    ITraceMng* msg = var->subDomain()->traceMng();
+
+    int nb_diff = 0;
+    bool compare_failed = false;
+    Integer ref_size = ref.size();
+    Integer current_size = current.size();
+    for( Integer index=0; index<current_size; ++index ){
+      DataType diff = DataType();
+      if (index>=ref_size){
+        ++nb_diff;
+        compare_failed = true;
+      }
+      else{
+        DataType dref = ref[index];
+        DataType dcurrent = current[index];
+        if (VarDataTypeTraits::verifDifferent(dref,dcurrent,diff)){
+          this->m_diffs_info.add(DiffInfo(dcurrent,dref,diff,index,NULL_ITEM_ID));
+          ++nb_diff;
+        }
+      }
+    }
+    if (compare_failed){
+      Integer sid = var->subDomain()->subDomainId();
+      const String& var_name = var->name();
+      msg->pinfo() << "Processor " << sid << " : "
+                   << " comparaison impossible car nombre d'éléments différents"
+                   << " pour la variable " << var_name << " ref_size=" << ref_size;
+        
+    }
+    if (nb_diff!=0){
+      this->sort(IsNumeric());
+      this->dump(var,max_print);
+    }
+    return nb_diff;
+  }
+
+  Integer _checkReplica2(IParallelMng*,IVariable*,ConstArrayView<DataType>,
+                         Integer,FalseType has_reduce)
+  {
+    ARCANE_UNUSED(has_reduce);
+    throw NotSupportedException(A_FUNCINFO);
+  }
+
+  Integer _checkReplica2(IParallelMng* pm,IVariable* var,ConstArrayView<DataType> var_values,
+                         Integer max_print,TrueType has_reduce)
+  {
+    ARCANE_UNUSED(has_reduce);
+    typedef typename VariableDataTypeTraitsT<DataType>::IsNumeric IsNumeric;
+    ITraceMng* msg = pm->traceMng();
+    Integer size = var_values.size();
+    // Vérifie que tout les réplica ont le même nombre d'éléments pour la variable.
+    Integer max_size = pm->reduce(Parallel::ReduceMax,size);
+    Integer min_size = pm->reduce(Parallel::ReduceMin,size);
+    msg->info(5) << "CheckReplica2 rep_size=" << pm->commSize() << " rank=" << pm->commRank();
+    if (max_size!=min_size){
+      const String& var_name = var->name();
+      msg->info() << "Can not compare values on replica for variable '" << var_name << "'"
+                  << " because the number of elements is not the same on all the replica "
+                  << " min=" << min_size << " max="<< max_size;
+      return max_size;
+    }
+    Integer nb_diff = 0;
+    UniqueArray<DataType> min_values(var_values);
+    UniqueArray<DataType> max_values(var_values);
+    pm->reduce(Parallel::ReduceMax,max_values);
+    pm->reduce(Parallel::ReduceMin,min_values);
+
+    for( Integer index=0; index<size; ++index ){
+      DataType diff = DataType();
+      DataType min_val = min_values[index];
+      DataType max_val = max_values[index];
+      if (VarDataTypeTraits::verifDifferent(min_val,max_val,diff)){
+        this->m_diffs_info.add(DiffInfo(min_val,max_val,diff,index,NULL_ITEM_ID));
+        ++nb_diff;
+      }
+    }
+    if (nb_diff!=0){
+      this->sort(IsNumeric());
+      this->dump(var,max_print);
+    }
+    return nb_diff;
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> 
+inline MemoryAccessInfo 
+VariableArrayT<T>::
+_getMemoryInfo(Integer local_id,IMemoryAccessTrace* trace)
+{
+  return MemoryAccessInfo(&m_access_infos[local_id],trace,local_id);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> VariableArrayT<T>::
+VariableArrayT(const VariableBuildInfo& vb,const VariableInfo& info)
+: Variable(vb,info)
+, m_value(nullptr)
+{
+  IDataFactoryMng* df = vb.dataFactoryMng();
+  DataStorageBuildInfo storage_build_info(vb.traceMng());
+  String storage_full_type = info.storageTypeInfo().fullName();
+  Ref<IData> data = df->createSimpleDataRef(storage_full_type,storage_build_info);
+  m_value = dynamic_cast<ValueDataType*>(data.get());
+  _setData(makeRef(m_value));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> VariableArrayT<T>::
+~VariableArrayT()
+{
+  for( Integer i=0, s=m_trace_infos.size(); i<s; ++i )
+    delete m_trace_infos[i];
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> VariableArrayT<T>* VariableArrayT<T>::
+getReference(const VariableBuildInfo& vb,const VariableInfo& vi)
+{
+  ThatClass* true_ptr = 0;
+  IVariableMng* vm = vb.variableMng();
+  IVariable* var = vm->checkVariable(vi);
+  if (var)
+    true_ptr = dynamic_cast<ThatClass*>(var);
+  else{
+    true_ptr = new ThatClass(vb,vi);
+    vm->addVariable(true_ptr);
+  }
+  ARCANE_CHECK_PTR(true_ptr);
+  return true_ptr;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> VariableArrayT<T>* VariableArrayT<T>::
+getReference(IVariable* var)
+{
+  if (!var)
+    throw ArgumentException(A_FUNCINFO,"null variable");
+  ThatClass* true_ptr = dynamic_cast<ThatClass*>(var);
+  if (!true_ptr)
+    ARCANE_FATAL("Can not build a reference from variable {0}",var->name());
+  return true_ptr;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> void VariableArrayT<T>::
+print(std::ostream& o) const
+{
+	ConstArrayView<T> x(m_value->value().view());
+	Integer size = x.size();
+	o << "(dimension=" << size << ") ";
+	if (size<=150){
+		for( auto& i : x.range() ){
+			o << i << '\n';
+		}
+	}
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> void VariableArrayT<T>::
+synchronize()
+{
+  if (itemKind()==IK_Unknown)
+    ARCANE_THROW(NotSupportedException,"variable '{0}' is not a mesh variable",fullName());
+  IItemFamily* family = itemGroup().itemFamily();
+  if (!family)
+    ARCANE_FATAL("variable '{0}' without family",fullName());
+  if(isPartial())
+    itemGroup().synchronizer()->synchronize(this);
+  else
+    family->allItemsSynchronizer()->synchronize(this);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> Real VariableArrayT<T>::
+allocatedMemory() const
+{
+  Real v1 = (Real)(sizeof(T));
+  Real v2 = (Real)(m_value->value().size());
+  return v1 * v2;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> Integer VariableArrayT<T>::
+checkIfSync(int max_print)
+{
+  IItemFamily* family = itemGroup().itemFamily();
+  if (family){
+    UniqueArray<T> ref_array(value());
+    this->synchronize(); // fonctionne pour toutes les variables
+    ArrayVariableDiff<T> csa;
+    ArrayView<T> from_array(value());
+    Integer nerror = csa.check(this,ref_array,from_array,max_print,true);
+    value().copy(ref_array);
+    return nerror;
+  }
+  return 0;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> Integer VariableArrayT<T>::
+checkIfSame(IDataReader* reader,Integer max_print,bool compare_ghost)
+{
+  if (itemKind()==IK_Particle)
+    return 0;
+  Array<T>& from_array(value());
+
+  Ref< IArrayDataT<T> > ref_data(m_value->cloneTrueEmptyRef());
+  reader->read(this,ref_data.get());
+
+  ArrayVariableDiff<T> csa;
+  return csa.check(this,ref_data->value(),from_array,max_print,compare_ghost);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// Utilise une fonction Helper afin de spécialiser l'appel dans le
+// cas du type 'Byte' car ArrayVariableDiff::checkReplica() utilise
+// une réduction Min/Max et cela n'existe pas en MPI pour le type Byte.
+namespace
+{
+  template<typename T> Integer
+  _checkIfSameOnAllReplicaHelper(IParallelMng* pm,IVariable* var,
+                                 ConstArrayView<T> values,Integer max_print)
+  {
+    ArrayVariableDiff<T> csa;
+    return csa.checkReplica(pm,var,values,max_print);
+  }
+
+  // Spécialisation pour le type 'Byte' qui ne supporte pas les réductions.
+  Integer
+  _checkIfSameOnAllReplicaHelper(IParallelMng* pm,IVariable* var,
+                                 ConstArrayView<Byte> values,Integer max_print)
+  {
+    Integer size = values.size();
+    UniqueArray<Integer> int_values(size);
+    for( Integer i=0; i<size; ++i )
+      int_values[i] = values[i];
+    ArrayVariableDiff<Integer> csa;
+    return csa.checkReplica(pm,var,int_values,max_print);
+  }
+}
+
+template<typename T> Integer VariableArrayT<T>::
+_checkIfSameOnAllReplica(IParallelMng* replica_pm,Integer max_print)
+{
+  return _checkIfSameOnAllReplicaHelper(replica_pm,this,value().constView(),max_print);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Initialise la variable.
+ *
+ Initialise la variable avec la valeur \a value sur le groupe \a group.
+ 
+ La valeur étant passée sous forme d'une chaine de caractère, vérifie que
+ la conversion en le type de la variable est possible. De même vérifie
+ que le groupe \a group est du type #GroupType. Si l'un de ces deux points
+ n'est pas respecté, l'initialisation échoue.
+
+ \retval true en cas d'erreur,
+ \retval false en cas de succés.
+*/
+template<typename T> bool VariableArrayT<T>::
+initialize(const ItemGroup& group,const String& value)
+{
+  //TODO: peut-être vérifier que la variable est utilisée ?
+
+  // Tente de convertir value en une valeur du type de la variable.
+  T v = T();
+  bool is_bad = VariableDataTypeTraitsT<T>::getValue(v,value);
+
+  if (is_bad){
+    error() << String::format("Can not convert the string '{0}' to type '{1}'",
+                              value,dataType());
+    return true;
+  }
+
+  bool is_ok = false;
+
+  ArrayView<T> values(m_value->value());
+  if (group.itemFamily()==itemFamily()){
+    is_ok = true;
+    // TRES IMPORTANT
+    //TODO doit utiliser une indirection et une hierarchie entre groupe
+    // Enfin, affecte la valeur \a v à toutes les entités du groupe.
+    //ValueType& var_value = this->value();
+    ENUMERATE_ITEM(i,group){
+      Item elem = *i;
+      values[elem.localId()] = v;
+    }
+  }
+
+  if (is_ok)
+    return false;
+
+  eItemKind group_kind = group.itemKind();
+
+  error() << "The type of elements (" << itemKindName(group_kind)
+          << ") of the group `" << group.name() << "' does not match \n"
+          << "the type of the variable (" << itemKindName(this->itemKind()) << ").";
+  return true;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> void VariableArrayT<T>::
+setTraceInfo(Integer id,eTraceType tt)
+{
+  Integer s = m_trace_infos.size();
+  Integer vs = value().size();
+  if (vs<(id+1))
+    vs = (id+1); // Au cas où le trace est fait avant que la variable ne soit dimensionnée
+  if (s<vs){
+    m_trace_infos.resize(vs);
+    for( Integer i=s; i<vs; ++i )
+      m_trace_infos[i] = 0;
+  }
+  delete m_trace_infos[id];
+  m_trace_infos[id] = new DataTracerT<T>(subDomain()->traceMng(),id,tt,name());
+  //cout << "** SET TRACE INFOS: " << m_trace_infos[id] << '\n';
+  _setProperty(IVariable::PHasTrace);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> void VariableArrayT<T>::
+copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination)
+{
+  ARCANE_ASSERT(source.size()==destination.size(),
+                ("Impossible to copy: source and destination of different sizes !"));
+  ValueType& value =  m_value->value();
+  const Integer size = source.size();
+  for(Integer i=0; i<size; ++i )
+    value[destination[i]] = value[source[i]];
+  syncReferences();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> void VariableArrayT<T>::
+copyItemsMeanValues(Int32ConstArrayView first_source,
+                    Int32ConstArrayView second_source,
+                    Int32ConstArrayView destination)
+{
+  ARCANE_ASSERT((first_source.size()==destination.size()) && (second_source.size()==destination.size()),
+                ("Impossible to copy: source and destination of different sizes !"));
+  ValueType& value =  m_value->value();
+  const Integer size = first_source.size();
+  for(Integer i=0; i<size; ++i ) {
+    value[destination[i]] = (T)((value[first_source[i]]+value[second_source[i]])/2);
+  }
+  syncReferences();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<> void VariableArrayT<String>::
+copyItemsMeanValues(Int32ConstArrayView first_source,
+                    Int32ConstArrayView second_source,
+                    Int32ConstArrayView destination);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> void VariableArrayT<T>::
+compact(Int32ConstArrayView new_to_old_ids)
+{
+  if (isPartial()) {
+    debug(Trace::High) << "Skip compact for partial variable " << name();
+    return;
+  }
+
+  UniqueArray<T> old_value(value());
+  ValueType& current_value = m_value->value();
+  Integer new_size = new_to_old_ids.size();
+  current_value.resize(new_size);
+  if (arcaneIsCheck()){
+    for( Integer i=0; i<new_size; ++i )
+      current_value.setAt(i,old_value.at(new_to_old_ids[i]));
+  }
+  else{
+    for( Integer i=0; i<new_size; ++i )
+			RawCopy<T>::copy(current_value[i], old_value[ new_to_old_ids[i] ]); // current_value[i] = old_value[ new_to_old_ids[i] ];
+  }
+  if (_wantAccessInfo()){
+    UniqueArray<Byte> a_old_value(m_access_infos);
+    m_access_infos.resize(new_size);
+    for( Integer i=0; i<new_size; ++i )
+      m_access_infos[i] = a_old_value[ new_to_old_ids[i] ];
+  }
+  syncReferences();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> void VariableArrayT<T>::
+setIsSynchronized()
+{
+  setIsSynchronized(itemGroup());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> void VariableArrayT<T>::
+setIsSynchronized(const ItemGroup& group)
+{
+  if (!_wantAccessInfo())
+    return;
+  IMemoryAccessTrace* mt = memoryAccessTrace();
+  ENUMERATE_ITEM(iitem,group){
+    const Item& item = *iitem;
+    _getMemoryInfo(item.localId(),mt).setSync();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> void VariableArrayT<T>::
+_internalResize(Integer new_size,Integer nb_additional_element)
+{
+  Array<T>& container_ref = m_value->value();
+
+  if (nb_additional_element!=0){
+    Integer capacity = container_ref.capacity();
+    if (new_size>capacity)
+      container_ref.reserve(new_size+nb_additional_element);
+  }
+  eDataInitialisationPolicy init_policy = getGlobalDataInitialisationPolicy();
+  // Si la nouvelle taille est supérieure à l'ancienne,
+  // initialise les nouveaux éléments suivant
+  // la politique voulue
+  Integer current_size = container_ref.size();
+  if (!isUsed()){
+    // Si la variable n'est plus utilisée, libérée la mémoire
+    // associée.
+    container_ref.dispose();
+  }
+  container_ref.resize(new_size);
+  if (new_size>current_size){
+    if (init_policy==DIP_InitWithDefault){
+      ValueType& values = this->value();
+      for(Integer i=current_size; i<new_size; ++i)
+        values[i] = T();
+    }
+    else if (init_policy==DIP_InitWithNan){
+      ValueType & values = this->value();
+      ArrayView<T> view = values.view();
+      DataTypeTraitsT<T>::fillNan(view.subView(current_size,new_size-current_size));
+    }
+  }
+
+  // Compacte la mémoire si demandé
+  if (_wantShrink()){
+    if (container_ref.size() < container_ref.capacity()){
+      container_ref.shrink();
+    }
+  }
+
+  if (_wantAccessInfo()){
+    IMemoryAccessTrace* mt = memoryAccessTrace();
+    Integer old_size = m_access_infos.size();
+    m_access_infos.resize(new_size);
+    for( Integer i=old_size; i<new_size; ++i )
+      _getMemoryInfo(i,mt).setCreate();
+    ItemGroup group = itemGroup();
+    if (!group.null()){
+      ENUMERATE_ITEM(iitem,group){
+        const Item& item = *iitem;
+        _getMemoryInfo(item.localId(),mt).setNeedSync(!item.isOwn());
+      }
+    }
+  }
+  // Controle si toutes les modifs après le dispose n'ont pas altéré l'état de l'allocation
+  // Dans le cas d'une variable non utilisée, la capacité max autorisée est
+  // égale à celle d'un vecteur Simd de la plateforme.
+  // (cela ne peut pas être 0 car la classe Array doit allouer au moins un
+  // élément si on utilise un allocateur spécifique ce qui est le cas
+  // pour les variables.
+  ARCANE_ASSERT((isUsed() || m_value->value().capacity()<=AlignedMemoryAllocator::simdAlignment()),
+                ("Wrong unused data size %d",m_value->value().capacity()));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void VariableArrayT<DataType>::
+resizeWithReserve(Integer n,Integer nb_additional)
+{
+  _internalResize(n,nb_additional);
+  syncReferences();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void VariableArrayT<DataType>::
+shrinkMemory()
+{
+  value().shrink();
+  syncReferences();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void VariableArrayT<DataType>::
+fill(const DataType& value)
+{
+  m_value->value().fill(value);
+  if (_wantAccessInfo()){
+    IMemoryAccessTrace* mt = memoryAccessTrace();
+    for( Integer i=0, is=m_access_infos.size(); i<is; ++i )
+      _getMemoryInfo(i,mt).setWriteAndSync();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void VariableArrayT<DataType>::
+fill(const DataType& value,const ItemGroup& group)
+{
+  ARCANE_UNUSED(group);
+  this->fill(value);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void
+VariableArrayT<DataType>::
+swapValues(ThatClass& rhs)
+{
+  _checkSwapIsValid(&rhs);
+  // TODO: regarder s'il faut que les deux variables aient le même nombre
+  // d'éléments mais a priori cela ne semble pas indispensable.
+  m_value->swapValues(rhs.m_value);
+  m_access_infos.swap(rhs.m_access_infos);
+  // Il faut mettre à jour les références pour cette variable et \a rhs.
+  syncReferences();
+  rhs.syncReferences();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// SDP: Specialisation
+template<> void VariableArrayT<String>::
+copyItemsMeanValues(Int32ConstArrayView first_source,
+                    Int32ConstArrayView second_source,
+                    Int32ConstArrayView destination)
+{
+  Integer dsize = destination.size();
+  bool is_ok = (first_source.size()==dsize) && (second_source.size()==dsize);
+  if (!is_ok)
+		ARCANE_FATAL("Unable to copy: source and destination of different sizes !");
+
+  ValueType& value =  m_value->value();
+  const Integer size = first_source.size();
+  for(Integer i=0; i<size; ++i )
+    value[destination[i]] = value[first_source[i]];
+  syncReferences();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template class VariableArrayT<Byte>;
+template class VariableArrayT<Real>;
+template class VariableArrayT<Int16>;
+template class VariableArrayT<Int32>;
+template class VariableArrayT<Int64>;
+template class VariableArrayT<Real2>;
+template class VariableArrayT<Real2x2>;
+template class VariableArrayT<Real3>;
+template class VariableArrayT<Real3x3>;
+template class VariableArrayT<String>;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

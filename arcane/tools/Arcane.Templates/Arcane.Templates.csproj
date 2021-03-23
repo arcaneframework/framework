@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../CommonExe.props" />
+  <ItemGroup>
+    <PackageReference Include="Scriban" Version="3.3.2" />
+    <PackageReference Include="Mono.Options" Version="6.*" />
+</ItemGroup>
+</Project>

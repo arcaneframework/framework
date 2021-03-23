@@ -1,0 +1,1591 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+// -*- C++ -*-
+/*!
+  \mainpage Exemple d'utilisation d'Arcane pour la création d'un module d'hydrodynmique simplifié
+
+  Ce document décrit comment utiliser les fonctionnalités d'ARCANE
+  pour l'écriture d'un module d'hydrodynamique.
+
+  Ce manuel suppose que le lecteur a lu le manuel de spécifications
+  d'ARCANE et a une connaissance correcte des structures de base du
+  C++.
+
+  Dans un premier temps, nous décrirons les notions de bases d'ARCANE,
+  puis les types de haut niveaux que sont les variables, les points
+  d'entrée et les modules. Enfin, nous implémenterons un module réel
+  traitant une hydrodynamique simplifiée.
+
+  <ul>
+  <li>Section \ref arcane_overview "Vue d'ensemble d'ARCANE"</li>
+  <li>Section \ref arcanedoc_core "modules, variables et points d'entrée"</li>
+  <li>Section \ref simplehydro "Implémentation d'un module d'hydrodynamique"</li>
+  </ul>
+
+  On trouvera en annexe la description du format de fichier permettant
+  de configurer un jeu de données et la manière de l'utiliser (section
+  \ref arcanedoc_caseoptions "Configuration du jeu de données")
+*/
+
+/*!
+  \page simplehydro Implémentation d'un module d'hydrodynamique
+
+  \htmlonly
+  (Gilles Grospellier - 30/10/2002)
+  \endhtmlonly
+
+  Le module numérique retenu pour cette exemple est une version simplifiée du schéma numérique
+  décrit dans le document de spécification de l'hydrodynamique du projet. En particulier, on
+  restreindra l'implémentation sur les points suivants:
+
+  <ul>
+  <li>le seul type de maille supporté est l'hexaèdre;</li>
+  <li>le seul type de pseudo viscosité supporté est la pseudo-viscosité aux
+  mailles;</li>
+  <li>le seul type de calcul de longueur caractéristique supporté est
+  celui utilisant les médianes;</li>
+  <li>le seul type de condition aux limites supporté sera d'imposer une
+  composante de la vitesse sur une surface;</li>
+  <li>la masse nodale est supposé constante et n'est pas recalculée à chaque itération;</li>
+  <li>seul les gaz parfaits sont traités.</li>
+  </ul>
+
+
+  Afin de ne pas surchargé l'exemple, les tests de cohérences des
+  valeurs (pression positive, volume positif, ...) seront supprimés.
+
+  <ol>
+  <li>\ref simplehydro_specifs "Spécifications"</li>
+  <li>\ref simplehydro_conception "Conception"</li>
+  <li>\ref simplehydro_moduledefinition "Définition de la classe ModuleSimpleHydro"</li>
+  <li>\ref simplehydro_describeentrypoints "Description des points d'entrée"</li>
+  </ol>
+
+  \section simplehydro_specifs Spécifications
+
+  La première chose à faire avant de coder est de bien spécifier ce
+  que fera notre module et comment il le fera, c'est à dire la liste
+  des <b>opérations</b> et la liste des <b>valeurs</b> manipulées.
+
+  \subsection simplehydro_specifs_operations Opérations
+  
+  <p>Les opérations sont les suivantes:</p>
+
+  <ol>
+  <li>le calcul des forces de pression</li>
+  <li>le calcul de la pseudo-viscosité</li>
+  <li>le calcul de l'impulsion</li>
+  <li>la prise en compte des conditions aux limites</li>
+  <li>le déplacement des noeuds</li>
+  <li>le calcul des nouvelles valeurs géométriques:
+  <ul>
+  <li>volume des mailles</li>
+  <li>longueur caractéristique des mailles</li>
+  <li>resultantes aux sommets de chaque maille</li>
+  </ul>
+  <li>le calcul de la densité</li>
+  <li>le calcul de la pression et de l'énergie par l'équation d'état</li>
+  <li>le calcul du nouveau pas de temps.</li>
+  </ol>
+
+  De manière naturelle, le module disposera d'un point d'entrée pour
+  chaque phase.
+
+  \subsection simplehydro_specifs_values Liste des valeurs
+
+<p>Pour traiter ce problème, nous aurons besoin des valeurs suivantes:</p>
+
+<center>
+<small>
+<table>
+<tr><td><b>Nom</b></td><td><b>Elément</b></td><td><b>Type</b></td><td><b>Description</b></td></tr>
+<tr><td>Density </td><td> Maille </td><td> Réel </td><td> Densité par maille </td></tr>
+<tr><td>Pressure </td><td> Maille </td><td> Réel </td><td> Pression par maille </td></tr>
+<tr><td>CellMass </td><td> Maille </td><td> Réel </td><td> Masse par maille </td></tr>
+<tr><td>InternalEnergy </td><td> Maille </td><td> Réel </td><td> Energie interne par maille </td></tr>
+<tr><td>SoundSpeed          </td><td> Maille </td><td> Réel </td><td> Vitesse du son dans la maille </td></tr>
+<tr><td>Volume         </td><td> Maille </td><td> Réel </td><td> Volume de la maille </td></tr>
+<tr><td>OldVolume      </td><td> Maille </td><td> Réel </td><td> Volume de la maille à l'itération précédente </td></tr>
+<tr><td>ViscosityForce </td><td> Maille </td><td> Tableau de coordonnées </td><td> Contribution des forces de
+viscosité aux sommets des mailles </td></tr>
+<tr><td>ViscosityWork  </td><td> Maille </td><td> Réel  </td><td> Travail des forces de viscosité </td></tr>
+<tr><td>AdiabaticCst   </td><td> Maille </td><td> Réel  </td><td> Constante adiabatique du gaz parfait
+par maille </td></tr>
+<tr><td>CaracteristicLength </td><td> Maille </td><td> Réel </td><td> Longueur caractéristique par
+maille </td></tr>
+<tr><td>CellCQs             </td><td> Maille </td><td> Tableau de coordonnées</td><td> Résultante aux sommets de </td></tr>
+<tr><td>Forces         </td><td> noeud </td><td> Coordonnée </td><td> Force aux noeuds </td></tr>
+<tr><td>Velocity       </td><td> noeud </td><td> Coordonnée </td><td> Vitesse aux noeuds </td></tr>
+<tr><td>NodeMass       </td><td> noeud </td><td> Réel  </td><td> Masse nodale </td></tr>
+<tr><td>NodeCoord           </td><td> noeud </td><td> Coordonnée </td><td> Coordonnées des noeuds </td></tr>
+<tr><td>DensityRatioMaximum </td><td> Scalaire </td><td> Réel </td><td> Maximum de l'acroissement de densité</td></tr>
+<tr><td>DeltaT\_F             </td><td> Scalaire </td><td> Réel </td><td> \f$\Delta t_{n+1_2}\f$ entre
+\f$t^{n}\f$ et \f$t^{n+1}\f$ </td></tr>
+<tr><td>DeltaT\_N              </td><td> Scalaire </td><td> Réel </td><td> \f$\Delta t_{n}\f$ entre
+\f$t^{n-1_2}\f$ et \f$t^{n+1_2}\f$ </td></tr>
+<tr><td>OldDeltaT             </td><td> Scalaire </td><td> Réel </td><td> \f$\Delta t_{n+1_2}\f$ entre
+\f$t^{n-1}\f$ et \f$t^{1}\f$ </td></tr>
+</table>
+</small>
+</center>
+
+
+ \section simplehydro_conception Conception
+
+ A chaque opération définit précédemment sera associé un <b>point
+ d'entrée</b> d'ARCANE et à chaque valeur une <b>variable</b>.
+
+\subsection simplehydro_conception_entrypoints Points d'entrée
+
+Un point d'entrée est une <b>méthode</b> de la classe, dont la
+signature est du type suivant: \c void \c func().
+
+La boucle de calcul est découpé en 9 opérations, chacune définissant un
+point d'entrée. On ajoutera un point d'entrée pour l'initialisation
+(\c SH_HydroStartInit).
+
+<table>
+<tr><td><b>Nom du point d'entrée</b></td><td><b>Méthode</b></td><td><b>Description</b></td></tr>
+<tr><td>\c SH_HydroStartInit         </td><td> \c hydroStartInit() </td><td>
+Initialisation </td></tr>
+<tr><td>\c SH_ComputePressureForce  </td><td> \c computePressureForces() </td><td>
+calcul des forces de pression </td></tr>
+<tr><td>\c SH_ComputePseudoViscosity </td><td> \c computePseudoViscosity() </td><td>
+calcul de la pseudo-viscosité </td></tr>
+<tr><td>\c SH_ComputeImpulsion       </td><td> \c computeImpulsion() </td><td>
+calcul de l'impulsion </td></tr>
+<tr><td>\c SH_ApplyBoundaryCondition </td><td> \c applyBoundaryCondition() </td><td>
+prise en compte des conditions aux limites </td></tr>
+<tr><td>\c SH_MoveNodes              </td><td> \c moveNodes() </td><td>
+déplacement des noeuds </td></tr>
+<tr><td>\c SH_ComputeGeometricValues </td><td> \c computeGeometricValues() </td><td>
+calcul des nouvelles valeurs géométriques </td></tr>
+<tr><td>\c SH_UpdateDensity          </td><td> \c updateDensity() </td><td>
+mise à jour de la densité</td></tr>
+<tr><td>\c SH_ApplyEquationOfState   </td><td> \c applyEquationOfState() </td><td>
+applique l'équation d'état </td></tr>
+<tr><td>\c SH_ComputeDeltaT          </td><td> \c computeDeltaT() </td><td>
+calcul du nouveau pas de temps </td></tr>
+</table>
+
+\subsection simplehydro_conception_variables Variables
+
+La liste des variables est la suivante:
+
+<table>
+<tr><td><b>Nom</b></td><td><b>Type informatique</b></td><td><b>Nom imformatique</b></td></tr>
+<tr><td>Density               </td><td> VariableCellReal       </td><td> \c m_density </td></tr>
+<tr><td>Pressure              </td><td> VariableCellReal       </td><td> \c m_pressure </td></tr>
+<tr><td>CellMass              </td><td> VariableCellReal       </td><td> \c m_cell_mass </td></tr>
+<tr><td>InternalEnergy        </td><td> VariableCellReal       </td><td> \c m_internal_energy </td></tr>
+<tr><td>SoundSpeed            </td><td> VariableCellReal       </td><td> \c m_sound_speed </td></tr>
+<tr><td>Volume                </td><td> VariableCellReal       </td><td> \c m_volume </td></tr>
+<tr><td>OldVolume             </td><td> VariableCellReal       </td><td> \c m_old_volume </td></tr>
+<tr><td>ViscosityForce        </td><td> VariableCellArrayReal3 </td><td> \c m_viscosity_force </td></tr>
+<tr><td>ViscosityWork         </td><td> VariableCellReal       </td><td> \c m_viscosity_work </td></tr>
+<tr><td>AdiabaticCst          </td><td> VariableCellReal       </td><td> \c m_adiabatic_cst </td></tr>
+<tr><td>CaracteristicLength   </td><td> VariableCellReal       </td><td> \c m_caracteristic_length </td></tr>
+<tr><td>CellCQs               </td><td> VariableCellReal       </td><td> \c m_cell_cqs </td></tr>
+<tr><td>Forces                </td><td> VariableNodeReal3      </td><td> \c m_force </td></tr>
+<tr><td>Velocity              </td><td> VariableNodeReal3      </td><td> \c m_velocity </td></tr>
+<tr><td>NodeMass              </td><td> VariableNodeReal       </td><td> \c m_node_mass </td></tr>
+<tr><td>NodeCoord             </td><td> VariableNodeReal3      </td><td> \c m_node_coord </td></tr>
+<tr><td>DensityRatioMaximum   </td><td> VariableScalarReal     </td><td> \c m_density_ratio_maximum </td></tr>
+<tr><td>DeltaT_F             </td><td> VariableScalarReal     </td><td> \c m_delta_t_f </td></tr>
+<tr><td>DeltaT_N             </td><td> VariableScalarReal     </td><td> \c m_delta_t_n </td></tr>
+<tr><td>OldDeltaT             </td><td> VariableScalarReal     </td><td> \c m_old_deltat </td></tr>
+</table>
+
+\section simplehydro_moduledefinition Définition de la classe ModuleSimpleHydro
+
+Dans ARCANE, un module est une classe du langage
+C++. Dans notre exemple, cette classe aura pour nom \c
+ModuleSimpleHydro (par convention, tous les classes module ont un nom
+qui commence par \c Module). Maintenant que nous connaissons la liste des variables et des
+points d'entrées du module, il est possible de définir cette
+classe:
+<ul>
+<li>un module dérive toujours de la classe de base \c Module.
+Dans notre cas, comme nous voulant accéder aux informations du
+maillage, nous utilisons une classe dérivée de \c Module qui est \c BasicModule;</li>
+<li>chaque variable sera un champ de cette classe;</li>
+<li>chaque point d'entrée sera une méthode de cette classe.</li>
+</ul>
+
+Comme il dérive de la classe de base \c Module, tous les modules
+doivent respecter les contraintes suivantes:
+<ul>
+<li>définir un constructeur ayant le prototype suivant:
+\code
+ModuleSimpleHydro(const ModuleBuilder& mb)
+\endcode
+</li>
+<li>définir une méthode retournant le numéro de version de module,
+ayant la signature suivante:
+\code
+virtual VersionInfo versionInfo() const { return VersionInfo(1,0,1,0,0); }
+\endcode
+</li>
+</ul>
+
+En respectant ces contraintes, cela donne la définition suivante pour
+notre module d'hydrodynamique:
+
+\code
+class ModuleSimpleHydro
+: public BasicModule
+{
+ public:
+
+  //! Constructeur
+  ModuleSimpleHydro(const ModuleBuilder& cb);
+  ~ModuleSimpleHydro(); //!< Destructeur
+
+ public:
+	
+  virtual VersionInfo  versionInfo() const { return VersionInfo(1,0,1,0,0); }
+
+ public:
+
+  void hydroStartInit ();
+
+  void computePressureForce();
+  void computePseudoViscosity();
+  void computeImpulsion();
+  void applyBoundaryCondition();
+  void moveNodes();
+  void computeGeometricValues();
+  void updateDensity();
+  void applyEquationOfState();
+  void computeDeltaT();
+
+ private:
+
+  VariableCellReal m_density; //!< Densite par maille
+  VariableCellReal m_pressure; //!< Pression par maille
+  VariableCellReal m_cell_mass; //!< Masse par maille
+  VariableCellReal m_internal_energy;  //!< Energie interne des mailles
+  VariableCellReal m_volume; //!< Volume des mailles
+  VariableCellReal m_old_volume; //!< Volume d'une maille à l'itération précédente
+  VariableNodeReal3 m_force;  //!< Force aux noeuds
+  VariableNodeReal3 m_velocity; //!< Vitesse aux noeuds
+  VariableNodeReal m_node_mass; //! Masse nodale
+  VariableCellReal m_cell_viscosity_force;  //!< Contribution locale des forces de viscosité
+  VariableCellReal m_viscosity_work;  //!< Travail des forces de viscosité par maille
+  VariableCellReal m_adiabatic_cst; //!< Constante adiabatique par maille
+  VariableCellReal m_caracteristic_length; //!< Longueur caractéristique par maille
+  VariableCellReal m_sound_speed; //!< Vitesse du son dans la maille
+  VariableNodeReal3 m_node_coord; //!< Coordonnées des noeuds
+  VariableCellArrayReal3 m_cell_cqs; //!< Résultantes aux sommets pour chaque maille
+  VariableScalarReal m_density_ratio_maximum; //!< Accroissement maximum de la densité sur un pas de temps
+  VariableScalarReal m_delta_t_n; //!< Delta t n entre t^{n-1/2} et t^{n+1/2}
+  VariableScalarReal m_delta_t_f; //!< Delta t n+\demi  entre t^{n} et t^{n+1}
+  VariableScalarReal m_old_dt_f; //!< Delta t n-\demi  entre t^{n-1} et t^{n}
+};
+\endcode
+
+Le constructeur de la classe se charge ensuite:
+<ol>
+<li>d'associer à chaque champ variable un nom;</li>
+<li>d'associer à chaque méthode un nom de point d'entrée;</li>
+<li>éventuellement de construire une boucle en temps. En général, la
+ boucle en temps est spécifiée dans un fichier annexe mais pour
+ simplifier l'exemple, elle sera directement créée dans le
+ constructeur du module.</li>
+</ol>
+
+\subsection simplehydro_moduledefinition_associate_variable Associer une variable
+
+Pour associer un champ, par exemple \c m_density à la variable
+ correspondante, il faut insérer la ligne suivante dans le
+ constructeur:
+\code
+m_density(VariableBuilder(this,"Density"))
+
+\endcode
+L'exemple précédent associe le champ \c m_density avec la variable de
+nom \c Density pour le module (mot clé \c this). En suivant la syntaxe
+de construction du C++, cela donne pour l'ensemble des variables:
+
+\code
+ModuleSimpleHydro::
+ModuleSimpleHydro(const ModuleBuilder& mb)
+: BasicModule(mb)
+, m_density(VariableBuilder(this,"Density"))
+, m_pressure(VariableBuilder(this,"Pressure"))
+, m_cell_mass(VariableBuilder(this,"CellMass"))  
+, m_internal_energy(VariableBuilder(this,"InternalEnergy"))  
+, m_volume(VariableBuilder(this,"CellVolume"))
+, m_old_volume(VariableBuilder(this,"OldCellVolume"))
+, m_force(VariableBuilder(this,"Force"))
+, m_velocity(VariableBuilder(this,"Velocity"))
+, m_node_mass(VariableBuilder(this,"NodeMass"))
+, m_cell_viscosity_force(VariableBuilder(this,"CellViscosityForce"))
+, m_viscosity_work(VariableBuilder(this,"ViscosityWork"))
+, m_adiabatic_cst(VariableBuilder(this,"AdiabaticCst"))
+, m_caracteristic_length(VariableBuilder(this,"CaracteristicLength"))
+, m_sound_speed(VariableBuilder(this,"SoundSpeed"))
+, m_node_coord(VariableBuilder(this,"NodeCoord"))
+, m_cell_cqs(VariableBuilder(this,"CellCQS"))
+, m_density_ratio_maximum(VariableBuilder(this,"DensityRatioMaximum"))
+, m_delta_t_n(VariableBuilder(this,"CenteredDeltaT"))
+, m_delta_t_f(VariableBuilder(this,"SplitDeltaT"))
+, m_old_dt_f(VariableBuilder(this,"OldDTf"))
+{
+   ...
+}
+\endcode
+
+\subsection simplehydro_moduledefinition_associate_entrypoint Associer un point d'entrée
+
+Pour associer à une méthode de la classe un point d'entrée, par
+exemple à la méthode \c hydroStartInit() le point d'entrée de nom \c
+ SH_HydroStartInit, il faut insérer la ligne suivante dans le
+ constructeur:
+\code
+  addEntryPoint(this,"SH_HydroStartInit",
+	  &ModuleSimpleHydro::hydroStartInit,
+	  IEntryPoint::WStartInit);
+
+\endcode
+L'exemple précédent associe la méthode \c
+ModuleSimpleHydro::hydroStartInit au point d'entrée SH_HydroStartInit
+ du module (mot clé \c this). Le dernier argument indique que le point 
+d'entrée n'est exécuté qu'à l'initialisation, au démarrage du cas. Si
+ ce dernier argument est omis, le point d'entrée sera exécuté à chaque
+itération de la boucle de calcul.
+
+Pour l'ensemble des points d'entrée, cela donne le code suivant:
+
+\code
+{
+  addEntryPoint(this,"SH_HydroStartInit",
+	  &ModuleSimpleHydro::hydroStartInit,
+	  IEntryPoint::WStartInit);
+  addEntryPoint(this,"SH_ComputePressureForce",
+	  &ModuleSimpleHydro::computePressureForce);
+  addEntryPoint(this,"SH_ComputePseudoViscosity",
+	  &ModuleSimpleHydro::computePseudoViscosity);
+  addEntryPoint(this,"SH_ComputeImpulsion",
+	  &ModuleSimpleHydro::computeImpulsion);
+  addEntryPoint(this,"SH_ApplyBoundaryCondition",
+	  &ModuleSimpleHydro::applyBoundaryCondition);
+  addEntryPoint(this,"SH_MoveNodes",
+	  &ModuleSimpleHydro::moveNodes);
+  addEntryPoint(this,"SH_ComputeGeometricValues",
+	  &ModuleSimpleHydro::computeGeometricValues);
+  addEntryPoint(this,"SH_UpdateDensity",
+	  &ModuleSimpleHydro::updateDensity);
+  addEntryPoint(this,"SH_ApplyEquationOfState",
+	  &ModuleSimpleHydro::applyEquationOfState);
+  addEntryPoint(this,"SH_ComputeDeltaT",
+	  &ModuleSimpleHydro::computeDeltaT);
+  ...
+}
+\endcode
+
+\subsection simplehydro_moduledefinition_timeloop Création d'une boucle en temps
+
+Le code suivant permet de créer une boucle en temps de nom \c
+HydroSimple comportant l'ensemble des points d'entrée du
+module. Comme ce genre d'opération n'est pas utilisé couramment dans
+ARCANE car la boucle en temps est définie dans un fichier externe, on
+se contentera juste de donner le code source:
+
+\code
+{
+  ...
+  ITimeLoopMng* tlm = subDomain()->timeLoopMng();
+  BufferT<CString> clist;
+  clist.add("SH_HydroStartInit");
+  clist.add("SH_ComputePressureForce");
+  clist.add("SH_ComputePseudoViscosity");
+  clist.add("SH_ComputeImpulsion");
+  clist.add("SH_ApplyBoundaryCondition");
+  clist.add("SH_MoveNodes");
+  clist.add("SH_ComputeGeometricValues");
+  clist.add("SH_UpdateDensity");
+  clist.add("SH_ApplyEquationOfState");
+  clist.add("SH_ComputeDeltaT");
+  ITimeLoop* time_loop = ITimeLoop::createDefault(subDomain()->superMng(),"HydroSimple");
+  time_loop->setEntryPointsName(clist);
+  tlm->registerTimeLoop(time_loop);
+}
+\endcode
+
+Nous avons donc maintenant le constructeur complet de notre module:
+
+\code
+ModuleSimpleHydro::
+ModuleSimpleHydro(const ModuleBuilder& mb)
+: BasicModule(mb)
+, m_group_mng(mb.m_sub_domain->groupMng())
+, m_density (VariableBuilder(this,"Density"))
+, m_pressure(VariableBuilder(this,"Pressure"))
+, m_cell_mass(VariableBuilder(this,"CellMass"))  
+, m_internal_energy(VariableBuilder(this,"InternalEnergy"))  
+, m_volume(VariableBuilder(this,"CellVolume"))
+, m_old_volume(VariableBuilder(this,"OldCellVolume"))
+, m_force(VariableBuilder(this,"Force"))
+, m_velocity(VariableBuilder(this,"Velocity"))
+, m_node_mass(VariableBuilder(this,"NodeMass"))
+, m_cell_viscosity_force(VariableBuilder(this,"CellViscosityForce"))
+, m_viscosity_work(VariableBuilder(this,"ViscosityWork"))
+, m_adiabatic_cst(VariableBuilder(this,"AdiabaticCst"))
+, m_caracteristic_length(VariableBuilder(this,"CaracteristicLength"))
+, m_sound_speed(VariableBuilder(this,"SoundSpeed"))
+, m_node_coord(VariableBuilder(this,"NodeCoord"))
+, m_cell_cqs(VariableBuilder(this,"CellCQS"))
+, m_density_ratio_maximum(VariableBuilder(this,"DensityRatioMaximum"))
+, m_delta_t_n(VariableBuilder(this,"CenteredDeltaT"))
+, m_delta_t_f(VariableBuilder(this,"SplitDeltaT"))
+, m_old_dt_f(VariableBuilder(this,"OldDTf"))
+{
+  addEntryPoint(this,"SH_HydroStartInit",
+	  &ModuleSimpleHydro::hydroStartInit,
+	  IEntryPoint::WStartInit);
+  addEntryPoint(this,"SH_ComputePressureForce",
+	  &ModuleSimpleHydro::computePressureForce);
+  addEntryPoint(this,"SH_ComputePseudoViscosity",
+	  &ModuleSimpleHydro::computePseudoViscosity);
+  addEntryPoint(this,"SH_ComputeImpulsion",
+	  &ModuleSimpleHydro::computeImpulsion);
+  addEntryPoint(this,"SH_ApplyBoundaryCondition",
+	  &ModuleSimpleHydro::applyBoundaryCondition);
+  addEntryPoint(this,"SH_MoveNodes",
+	  &ModuleSimpleHydro::moveNodes);
+  addEntryPoint(this,"SH_ComputeGeometricValues",
+	  &ModuleSimpleHydro::computeGeometricValues);
+  addEntryPoint(this,"SH_UpdateDensity",
+	  &ModuleSimpleHydro::updateDensity);
+  addEntryPoint(this,"SH_ApplyEquationOfState",
+	  &ModuleSimpleHydro::applyEquationOfState);
+  addEntryPoint(this,"SH_ComputeDeltaT",
+	  &ModuleSimpleHydro::computeDeltaT);
+
+  {
+    ITimeLoopMng* tlm = subDomain()->timeLoopMng();
+    BufferT<CString> clist;
+    clist.add("SH_HydroStartInit");
+    clist.add("SH_ComputePressureForce");
+    clist.add("SH_ComputePseudoViscosity");
+    clist.add("SH_ComputeImpulsion");
+    clist.add("SH_ApplyBoundaryCondition");
+    clist.add("SH_MoveNodes");
+    clist.add("SH_ComputeGeometricValues");
+    clist.add("SH_UpdateDensity");
+    clist.add("SH_ApplyEquationOfState");
+    clist.add("SH_ComputeDeltaT");
+    ITimeLoop* time_loop = ITimeLoop::createDefault(subDomain()->superMng(),"HydroSimple");
+    time_loop->setEntryPointsName(clist);
+    tlm->registerTimeLoop(time_loop);
+  }
+}
+\endcode
+
+Le fait de dériver de la classe \c Module nous donne accès aux
+méthodes suivantes:
+
+<table>
+<tr><td><b>Méthode</b></td><td><b>Action</b></td></tr>
+<tr><td>\c info() </td><td> flot pour un message d'information </td></tr>
+<tr><td>\c fatal() </td><td> flot pour un message signalant une erreur fatale et provoque l'arrêt du code </td></tr>
+</table>
+
+Le fait de dériver de la classe \c BasicModule nous donne accès aux
+méthodes suivantes:
+
+<table>
+<tr><td><b>Méthode</b></td><td><b>Action</b></td></tr>
+<tr><td>\c allCells() </td><td> retourne le groupe de toutes les mailles </td></tr>
+<tr><td>\c allNodes() </td><td> retourne le groupe de tous les noeuds </td></tr>
+<tr><td>\c allFaces() </td><td> retourne le groupe de toutes les faces </td></tr>
+<tr><td>\c ownCells() </td><td> retourne le groupe des mailles propres au sous-domaine </td></tr>
+<tr><td>\c ownNodes() </td><td> retourne le groupe des noeuds propres au
+<tr><td>\c ownFaces() </td><td> retourne le groupe de toutes les faces propres au sous-domaine </td></tr>
+</table>
+
+\subsection simplehydro_moduledefinition_caseoptions Jeu de données
+
+Afin de rendre plus souple l'utilisation du module, il est commode de
+ paramétrer certaines valeurs dans un fichier externe au code qui est
+ lu à l'éxécution. Dans ARCANE, ce fichier s'appelle le jeu de
+ données. Les détails d'un tel fichier sont décrit dans les annexes
+\ref arcanedoc_caseoptions "configuration du jeu de données" et
+\ref simplehydro_caseoptions "jeu de données du module hydro". Pour le
+moment, il est seulement utile de savoir que l'accès au jeu de données 
+se fait par une classe, de nom <tt>CaseOptionsSimpleHydro</tt>. Pour
+ l'utiliser, il faut ajouter un membre de ce type dans
+<tt>ModuleSimpleHydro</tt> et le créé dans le constructeur:
+
+\code
+class ModuleSimpleHydro
+: public BasicModule
+{
+ public:
+  ...
+ private:
+  CaseOptionsSimpleHydro* m_options; // Options de configuration
+};
+\endcode
+
+Et pour la construction:
+
+\code
+ModuleSimpleHydro::
+ModuleSimpleHydro(const ModuleBuilder& mb)
+: BasicModule(mb)
+....
+{
+  m_options = new CaseOptionsSimpleHydro(mb.m_sub_domain->caseMng());
+  m_options->setCaseModule(this);
+  ...
+}
+\endcode
+
+Par la suite, la récupération des valeurs du jeu de données se fera
+par l'appel à des méthodes de <tt>m_options</tt>.
+
+\subsection simplehydro_moduledefinition_complete Code complet de la classe et du constructeur
+
+Compte tenu des éléments précédent, cela donne la définition suivante
+de la classe:
+
+\code
+class ModuleSimpleHydro
+: public BasicModule
+{
+ public:
+
+  //! Constructeur
+  ModuleSimpleHydro(const ModuleBuilder& cb);
+  ~ModuleSimpleHydro(); //!< Destructeur
+
+ public:
+	
+  virtual VersionInfo  versionInfo() const { return VersionInfo(1,0,1,0,0); }
+
+ public:
+
+  void hydroStartInit ();
+
+  void computePressureForce();
+  void computePseudoViscosity();
+  void computeImpulsion();
+  void applyBoundaryCondition();
+  void moveNodes();
+  void computeGeometricValues();
+  void updateDensity();
+  void applyEquationOfState();
+  void computeDeltaT();
+
+ private:
+
+  CaseOptionsSimpleHydro* m_options; // Options de configuration
+  VariableCellReal m_density; //!< Densite par maille
+  VariableCellReal m_pressure; //!< Pression par maille
+  VariableCellReal m_cell_mass; //!< Masse par maille
+  VariableCellReal m_internal_energy;  //!< Energie interne des mailles
+  VariableCellReal m_volume; //!< Volume des mailles
+  VariableCellReal m_old_volume; //!< Volume d'une maille à l'itération précédente
+  VariableNodeReal3 m_force;  //!< Force aux noeuds
+  VariableNodeReal3 m_velocity; //!< Vitesse aux noeuds
+  VariableNodeReal m_node_mass; //! Masse nodale
+  VariableCellReal m_cell_viscosity_force;  //!< Contribution locale des forces de viscosité
+  VariableCellReal m_viscosity_work;  //!< Travail des forces de viscosité par maille
+  VariableCellReal m_adiabatic_cst; //!< Constante adiabatique par maille
+  VariableCellReal m_caracteristic_length; //!< Longueur caractéristique par maille
+  VariableCellReal m_sound_speed; //!< Vitesse du son dans la maille
+  VariableNodeReal3 m_node_coord; //!< Coordonnées des noeuds
+  VariableCellArrayReal3 m_cell_cqs; //!< Résultantes aux sommets pour chaque maille
+
+  VariableScalarReal m_density_ratio_maximum; //!< Accroissement maximum de la densité sur un pas de temps
+  VariableScalarReal m_delta_t_n; //!< Delta t n entre t^{n-1/2} et t^{n+1/2}
+  VariableScalarReal m_delta_t_f; //!< Delta t n+\demi  entre t^{n} et t^{n+1}
+  VariableScalarReal m_old_dt_f; //!< Delta t n-\demi  entre t^{n-1} et t^{n}
+};
+\endcode
+
+Et le constructeur de la classe est donc:
+
+\code
+ModuleSimpleHydro::
+ModuleSimpleHydro(const ModuleBuilder& mb)
+: BasicModule(mb)
+, m_density (VariableBuilder(this,"Density"))
+, m_pressure(VariableBuilder(this,"Pressure"))
+, m_cell_mass(VariableBuilder(this,"CellMass"))  
+, m_internal_energy(VariableBuilder(this,"InternalEnergy"))  
+, m_volume(VariableBuilder(this,"CellVolume"))
+, m_old_volume(VariableBuilder(this,"OldCellVolume"))
+, m_force(VariableBuilder(this,"Force",IVariable::PNoDump|IVariable::PNoNeedSync))
+, m_velocity(VariableBuilder(this,"Velocity"))
+, m_node_mass(VariableBuilder(this,"NodeMass"))
+, m_cell_viscosity_force(VariableBuilder(this,"CellViscosityForce",IVariable::PNoDump))
+, m_viscosity_work(VariableBuilder(this,"ViscosityWork"))
+, m_adiabatic_cst(VariableBuilder(this,"AdiabaticCst"))
+, m_caracteristic_length(VariableBuilder(this,"CaracteristicLength",IVariable::PNoDump))
+, m_sound_speed(VariableBuilder(this,"SoundSpeed"))
+, m_node_coord(VariableBuilder(this,"NodeCoord"))
+, m_cell_cqs(VariableBuilder(this,"CellCQS"))
+, m_density_ratio_maximum(VariableBuilder(this,"DensityRatioMaximum"))
+, m_delta_t_n(VariableBuilder(this,"CenteredDeltaT"))
+, m_delta_t_f(VariableBuilder(this,"SplitDeltaT"))
+, m_old_dt_f(VariableBuilder(this,"OldDTf"))
+{
+  m_options = new CaseOptionsSimpleHydro(mb.m_sub_domain->caseMng());
+  m_options->setCaseModule(this);
+
+  addEntryPoint(this,"SH_HydroStartInit",
+	  &ModuleSimpleHydro::hydroStartInit,
+	  IEntryPoint::WStartInit);
+  addEntryPoint(this,"SH_ComputePressureForce",
+	  &ModuleSimpleHydro::computePressureForce);
+  addEntryPoint(this,"SH_ComputePseudoViscosity",
+	  &ModuleSimpleHydro::computePseudoViscosity);
+  addEntryPoint(this,"SH_ComputeImpulsion",
+	  &ModuleSimpleHydro::computeImpulsion);
+  addEntryPoint(this,"SH_ApplyBoundaryCondition",
+	  &ModuleSimpleHydro::applyBoundaryCondition);
+  addEntryPoint(this,"SH_MoveNodes",
+	  &ModuleSimpleHydro::moveNodes);
+  addEntryPoint(this,"SH_ComputeGeometricValues",
+	  &ModuleSimpleHydro::computeGeometricValues);
+  addEntryPoint(this,"SH_UpdateDensity",
+	  &ModuleSimpleHydro::updateDensity);
+  addEntryPoint(this,"SH_ApplyEquationOfState",
+	  &ModuleSimpleHydro::applyEquationOfState);
+  addEntryPoint(this,"SH_ComputeDeltaT",
+	  &ModuleSimpleHydro::computeDeltaT);
+
+  {
+    ITimeLoopMng* tlm = subDomain()->timeLoopMng();
+    BufferT<CString> clist;
+    clist.add("SH_HydroStartInit");
+    clist.add("SH_ComputePressureForce");
+    clist.add("SH_ComputePseudoViscosity");
+    clist.add("SH_ComputeImpulsion");
+    clist.add("SH_ApplyBoundaryCondition");
+    clist.add("SH_MoveNodes");
+    clist.add("SH_ComputeGeometricValues");
+    clist.add("SH_UpdateDensity");
+    clist.add("SH_ApplyEquationOfState");
+    clist.add("SH_ComputeDeltaT");
+    ITimeLoop* time_loop = ITimeLoop::createDefault(subDomain()->superMng(),"HydroSimple");
+    time_loop->setEntryPointsName(clist);
+    tlm->registerTimeLoop(time_loop);
+  }
+}
+\endcode
+
+Une fois le constructeur appelé, l'architecture possède toutes les
+informations utiles sur le module, à savoir la liste et le type de ses
+variables et de ses points d'entrée.
+
+
+
+\section simplehydro_describeentrypoints Description des points d'entrée
+
+\subsection simplehydro_describeentrypoints_init Initialisation
+
+L'initialisation comporte deux parties distinctes:
+<ul>
+<li> la première partie où il faut indiquer la taille des variables
+tableaux. Dans notre cas, il s'agit de \c m_cell_cqs et
+\c m_viscosity_force, qui sont toutes deux des variables
+aux mailles possédant une valeur pour chaque noeud de chaque
+maille. Comme on ne supporte que les héxaèdres, il y aura 8 valeurs par
+mailles;
+<li> la deuxième partie qui consiste à initialiser les variables avec
+leur valeur de départ. Pour les variables \c Pressure, \c Density et
+\c AdiabaticCst, c'est l'architecture qui les initialisent directement
+à partir du jeu de donnée. La variable \c NodeCoord est aussi
+initialisée par l'architecture lors de la lecture du maillage. Les
+autres variables sont calculées comme suit:
+<ul>
+<li> le pas de temps initial est donné par le jeu de donnée;</li>
+<li> les valeurs géométriques (longueur caractéristique, volume et
+résultantes aux sommets) sont calculées à partir des coordonnées des
+noeuds;</li>
+<li> la masse des mailles est calculée à partir de sa densité et de
+son volume.
+<li> la masse des mailles et la masse nodale. La masse d'une maille
+est calculé à partir de sa densité et de son volume. Chaque maille
+contribut pour 1/8ème de sa masse à la masse nodale de chacun de ses
+sommets. La masse d'une maille et la masse nodale sont constantes au
+cours du temps;</li>
+<li> la masse nodale est calculéé en ajoutant les contributions de
+chaque maille connecté à un noeud donné. Chaque maille
+contribut pour 1/8ème de sa masse à la masse nodale de chacun de ses
+sommets;</li>
+<li> l'énergie interne et la vitesse du son sont calculées en prenant
+une équation d'état du type gaz parfait.</li>
+</ul>
+</ul>
+
+Compte tenu de ces indications, voici le code de l'initialisation:
+
+\code
+void ModuleSimpleHydro::
+hydroStartInit()
+{
+  // Dimensionne les variables tableaux
+  m_cell_cqs.resize(8);
+
+  // Initialise le delta-t
+  Real deltat_init = m_options->deltatInit();
+  m_delta_t_n = deltat_init;
+  m_delta_t_f = deltat_init;
+
+  // Initialise les données géométriques: volume, cqs, longueurs caractéristiques
+  computeGeometricValues();
+
+  // Initialisation de la masses des mailles et des masses nodale
+  ENUMERATE_CELL(i_cell,allCells()){
+    const Cell& cell = *i_cell;
+
+    m_cell_mass[cell] = m_density[cell] * m_volume[cell];
+
+    Real contrib_node_mass = 0.125 * m_cell_mass[cell];
+    for( Integer i_node=0, nb_node=cell.nbNode(); i_node<nb_node; ++i_node){
+      m_node_mass[cell.node(i_node)] += contrib_node_mass;
+    }
+  }
+
+  m_node_mass.synchronize();
+
+  // Initialise l'énergie et la vitesse du son
+  ENUMERATE_CELL(i_cell,allCells()){
+    const Cell&  cell = *i_cell;
+    Real pressure      = m_pressure[cell];
+    Real adiabatic_cst = m_adiabatic_cst[cell];
+    Real density       = m_density[cell];
+    m_internal_energy[cell] = pressure / ((adiabatic_cst-1.) * density);
+    m_sound_speed[cell]     = sqrt(adiabatic_cst*pressure/density);
+  }
+}
+\endcode
+
+\subsection simplehydro_describeentrypoints_forces Calcul de la contribution des forces de pression
+
+Ce point d'entrée calcule la contribution des forces de pression par
+noeud. Pour chaque noeud de chaque maille, il s'agit de la
+pression multipliée par la résultante en ce noeud.
+
+\code
+void ModuleSimpleHydro::
+computePressureForce()
+{
+  // Remise à zéro du vecteur des forces.
+  m_force.fill(Real3::null());
+
+  // Calcul pour chaque noeud de chaque maille la contribution
+  // des forces de pression
+  ENUMERATE_CELL(i_cell,allCells()){
+    const Cell& cell = *i_cell;
+    for( Integer i_node=0, nb_node=cell.nbNode(); i_node<nb_node; ++i_node )
+      m_force[cell.node(i_node)] += m_pressure[cell] * m_cell_cqs[cell][i_node];
+  }
+}
+\endcode
+
+\subsection simplehydro_describeentrypoints_pseudo Calcul de la pseudo-viscosité
+
+Le seul type de pseudo-viscosité possible est une pseudo-viscosité aux
+mailles. Le choix de la pseudo-viscosité est contrôlé par une option
+du jeu de données (section
+\ref simplehydro_caseoptions "jeu de données du module hydro")
+ appelée \c viscosity() qui vaut
+\c ViscosityCellScalar pour une viscosité aux mailles ou
+\c ViscosityNo pour un calcul sans pseudo-viscosité. La
+contribution de la viscosité aux forces est stockée dans la variable
+\c m_cell_viscosity_force.
+
+\code
+void ModuleSimpleHydro::
+computePseudoViscosity()
+{
+  if (m_options->viscosity()==ViscosityCellScalar)
+    cellScalarPseudoViscosity();
+}
+
+void ModuleSimpleHydro::
+cellScalarPseudoViscosity()
+{
+  // Boucle sur les mailles du maillage
+  ENUMERATE_CELL(i_cell,allCells()){
+    const Cell& cell = *i_cell;
+    const Natural cell_nb_node = cell.nbNode();
+    const Real rho = m_density[cell];
+
+    // Calcul de la divergence de la vitesse
+    Real delta_speed = 0.;
+    for( Natural i_node=0; i_node<cell_nb_node; ++i_node )
+      delta_speed += math::scaMul(m_velocity[cell.node(i_node)],m_cell_cqs[cell][i_node]);
+    delta_speed /= m_volume[cell];
+
+    // Capture uniquement les chocs
+    bool shock = (math::min(Real(0.),delta_speed)<0.);
+    if (shock){
+      Real sound_speed         = m_sound_speed[cell];
+      Real dx                  = m_caracteristic_length[cell];
+      Real quadratic_viscosity =   rho * dx * dx * delta_speed * delta_speed;
+      Real linear_viscosity    =   -rho*sound_speed* dx * delta_speed;
+      Real scalar_viscosity    =   m_options->viscosityLinearCoef()*linear_viscosity
+      + m_options->viscosityQuadraticCoef()*quadratic_viscosity;
+      m_cell_viscosity_force[cell] = scalar_viscosity;
+
+    }
+    else
+      m_cell_viscosity_force[cell] = 0.;
+  }
+}
+\endcode
+
+\subsection simplehydro_describeentrypoints_impulsion Calcul de l'impulsion
+
+Ce point d'entrée calcule la force (\c m_force) qui s'applique aux noeuds en
+ajoutant l'éventuelle contribution de la pseudo-viscosité. Il calcule ensuite la
+nouvelle vitesse (\c m_velocity) aux noeuds et le travail des
+forces de viscosité qui sera utilisé lors du calcul de l'énergie interne.
+
+\code
+void ModuleSimpleHydro::
+computeImpulsion()
+{
+  // Prise en compte des forces de viscosité si demandé
+  bool add_viscosity_force = (!m_options->viscosity()==ViscosityNo);
+  if (add_viscosity_force){
+    ENUMERATE_CELL(i_cell,allCells()){
+      const Cell& cell = *i_cell;
+      Real scalar_viscosity = m_cell_viscosity_force[cell];
+      for( Natural i_node=0, nb_node=cell.nbNode(); i_node<nb_node; ++i_node )
+	m_force[cell.node(i_node)] += scalar_viscosity*m_cell_cqs[cell][i_node];
+    }
+  }
+
+  // Calcule l'impulsion aux noeuds
+  ENUMERATE_NODE(i_node,ownNodes()){
+    const Node& node = *i_node;
+    Real node_mass  = m_node_mass[node];
+
+    Real3 old_velocity = m_velocity[node];
+    Real3 new_velocity = old_velocity + (m_delta_t_n() / node_mass) * m_force[node];
+
+    m_velocity[node] = new_velocity;
+  }
+
+  // Synchronise la vitesse
+  m_velocity.synchronize();
+
+  // Calcul du travail des forces de viscosité dans une maille
+  ENUMERATE_CELL(i_cell,allCells()){
+    const Cell& cell = *i_cell; 
+    Real work = 0.;
+    Real scalar_viscosity = m_cell_viscosity_force[cell];
+    for( Natural i=0, n=cell.nbNode(); i<n; ++i )
+      work += math::scaMul(scalar_viscosity*m_cell_cqs[cell][i],m_velocity[cell.node(i)]);
+    m_viscosity_work[cell] = work;
+  }
+}
+\endcode
+
+\subsection simplehydro_describeentrypoints_boundary Prise en compte des conditions aux limites
+
+Les conditions aux limites à appliquer dépendent des options du
+jeu de données (section
+\ref simplehydro_caseoptions "jeu de données du module hydro").
+Dans cette implémentation, une condition aux limites
+possède les propriétés suivantes:
+<ul>
+<li> un type: trois types sont supportés: contraindre la composante
+\f$x\f$ du vecteur vitesse, contraindre la composante \f$y\f$ du vecteur
+vitesse ou contraindre la composante \f$z\f$ du vecteur vitesse;</li>
+<li> une valeur: il s'agit d'un réel indiquant la valeur de la
+contrainte;</li>
+<li> une surface: il s'agit de la surface sur laquelle s'applique la
+contrainte.</li>
+</ul>
+
+Appliquer les conditions aux limites consiste donc à fixer une
+composante d'un vecteur vitesse pour chaque noeud de chaque face de
+chaque surface sur laquelle on impose une condition aux limites.
+
+\code
+void ModuleSimpleHydro::
+applyBoundaryCondition()
+{
+  for( Natural i=0, nb=m_options->boundaryCondition.size(); i<nb; ++i){
+    GroupFace face_group = m_options->boundaryCondition[i]->surface();
+    Real value = m_options->boundaryCondition[i]->value();
+    eBoundaryCondition type = m_options->boundaryCondition[i]->type();
+
+    // boucle sur les faces de la surface
+    ENUMERATE_FACE(j,face_group){
+      const Face& face = *j;
+      Natural nb_node = face.nbNode();				
+
+      // boucle sur les noeuds de la face
+      for( Natural k=0; k<nb_node; ++k ){
+	const Node& node = face.node(k);
+	Real3& velocity = m_velocity[node];
+
+	switch(type) {
+	 case VelocityX: velocity.x = value; break;
+	 case VelocityY: velocity.y = value; break;
+	 case VelocityZ: velocity.z = value; break;
+	}
+      }
+    }
+  }
+\endcode
+
+\subsection simplehydro_describeentrypoints_move Déplacement des noeuds
+
+Il s'agit simplement de modifier les coordonnées (\c m_node_coord)
+des noeuds d'après la valeur du vecteur vitesse et du pas de temps.
+
+\code
+void ModuleSimpleHydro::
+moveNodes()
+{
+  ENUMERATE_NODE(i_node,allNodes()){
+    const Node& node = *i_node;
+    m_node_coord[node] += m_delta_t_f() * m_velocity[node];
+  }
+}
+\endcode
+
+\subsection simplehydro_describeentrypoints_geom Calcul des nouvelles valeurs géométriques
+
+On regroupe dans ce point d'entrée l'ensemble des calculs géométriques
+utiles pour le schéma. Dans notre cas, il s'agit pour chaque maille:
+<ul>
+<li>de calculer sa longueur caractéristique;</li>
+<li>de calculer les résultantes à ses sommets;</li>
+<li>de calculer son volume.</li>
+</ul>
+
+Pour optimiser le calcul (utilisation du cache), à chaque itération sur une maille, on stocke
+localement les coordonnées de ses noeuds et celles du centre de
+chaqu'une de ses faces.
+
+\code
+void ModuleSimpleHydro::
+computeGeometricValues()
+{
+  m_old_volume.copy(m_volume);
+
+  // Copie locale des coordonnées des sommets d'une maille
+  Real3 coord[8];
+  // Coordonnées des centres des faces
+  Real3 face_coord[6];
+
+  ENUMERATE_CELL(i_cell,allCells()){
+    const Cell& cell = *i_cell;
+
+    // Recopie les coordonnées locales (pour le cache)
+    for( Natural i = 0; i<8; ++i )
+      coord[i] = m_node_coord[cell.node(i)];
+
+    // Calcul les coordonnées des centres des faces
+    face_coord[0] = 0.25 * ( coord[0] + coord[3] + coord[2] + coord[1] );
+    face_coord[1] = 0.25 * ( coord[0] + coord[4] + coord[7] + coord[3] );
+    face_coord[2] = 0.25 * ( coord[0] + coord[1] + coord[5] + coord[4] );
+    face_coord[3] = 0.25 * ( coord[4] + coord[5] + coord[6] + coord[7] );
+    face_coord[4] = 0.25 * ( coord[1] + coord[2] + coord[6] + coord[5] );
+    face_coord[5] = 0.25 * ( coord[2] + coord[3] + coord[7] + coord[6] );
+
+    // Calcule la longueur caractéristique de la maille.
+    {
+      Real3 median1 = face_coord[0]-face_coord[3];
+      Real3 median2 = face_coord[2]-face_coord[5];
+      Real3 median3 = face_coord[1]-face_coord[4];
+      Real d1 = median1.abs();
+      Real d2 = median2.abs();
+      Real d3 = median3.abs();
+
+      Real dx_numerator   = d1*d2*d3;
+      Real dx_denominator = d1*d2 + d1*d3 + d2*d3;
+      m_caracteristic_length[cell] = dx_numerator / dx_denominator;
+    }
+
+    // Calcule les résultantes aux sommets
+    computeCQs(coord,face_coord,cell);
+
+    // Calcule le volume de la maille
+    {
+      Real volume = 0.;
+      for( Natural i_node=0, nb_node=cell.nbNode(); i_node<nb_node; ++i_node )
+	volume += math::scaMul(coord[i_node],m_cell_cqs[cell][i_node]);
+      volume /= 3.;
+
+      m_volume[cell] = volume;
+    }
+
+  }
+\endcode
+
+\code
+inline void ModuleSimpleHydro::
+computeCQs(Real3 node_coord[8],Real3 face_coord[6],const Cell& cell)
+{
+  const Real3 c0 = face_coord[0];
+  const Real3 c1 = face_coord[1];
+  const Real3 c2 = face_coord[2];
+  const Real3 c3 = face_coord[3];
+  const Real3 c4 = face_coord[4];
+  const Real3 c5 = face_coord[5];
+
+  // Calcul des normales face 1 :
+  const Real3 n1a04 = 0.5 * math::vecMul(node_coord[0] - c0 , node_coord[3] - c0);
+  const Real3 n1a03 = 0.5 * math::vecMul(node_coord[3] - c0 , node_coord[2] - c0);
+  const Real3 n1a02 = 0.5 * math::vecMul(node_coord[2] - c0 , node_coord[1] - c0);
+  const Real3 n1a01 = 0.5 * math::vecMul(node_coord[1] - c0 , node_coord[0] - c0);
+
+  // Calcul des normales face 2 :
+  const Real3 n2a05 = 0.5 * math::vecMul(node_coord[0] - c1 , node_coord[4] - c1);
+  const Real3 n2a12 = 0.5 * math::vecMul(node_coord[4] - c1 , node_coord[7] - c1);
+  const Real3 n2a08 = 0.5 * math::vecMul(node_coord[7] - c1 , node_coord[3] - c1);
+  const Real3 n2a04 = 0.5 * math::vecMul(node_coord[3] - c1 , node_coord[0] - c1);
+
+  // Calcul des normales face 3 :
+  const Real3 n3a01 = 0.5 * math::vecMul(node_coord[0] - c2 , node_coord[1] - c2);
+  const Real3 n3a06 = 0.5 * math::vecMul(node_coord[1] - c2 , node_coord[5] - c2);
+  const Real3 n3a09 = 0.5 * math::vecMul(node_coord[5] - c2 , node_coord[4] - c2);
+  const Real3 n3a05 = 0.5 * math::vecMul(node_coord[4] - c2 , node_coord[0] - c2);
+
+  // Calcul des normales face 4 :
+  const Real3 n4a09 = 0.5 * math::vecMul(node_coord[4] - c3 , node_coord[5] - c3);
+  const Real3 n4a10 = 0.5 * math::vecMul(node_coord[5] - c3 , node_coord[6] - c3);
+  const Real3 n4a11 = 0.5 * math::vecMul(node_coord[6] - c3 , node_coord[7] - c3);
+  const Real3 n4a12 = 0.5 * math::vecMul(node_coord[7] - c3 , node_coord[4] - c3);
+	
+  // Calcul des normales face 5 :
+  const Real3 n5a02 = 0.5 * math::vecMul(node_coord[1] - c4 , node_coord[2] - c4);
+  const Real3 n5a07 = 0.5 * math::vecMul(node_coord[2] - c4 , node_coord[6] - c4);
+  const Real3 n5a10 = 0.5 * math::vecMul(node_coord[6] - c4 , node_coord[5] - c4);
+  const Real3 n5a06 = 0.5 * math::vecMul(node_coord[5] - c4 , node_coord[1] - c4);
+      
+  // Calcul des normales face 6 :
+  const Real3 n6a03 = 0.5 * math::vecMul(node_coord[2] - c5 , node_coord[3] - c5);
+  const Real3 n6a08 = 0.5 * math::vecMul(node_coord[3] - c5 , node_coord[7] - c5);
+  const Real3 n6a11 = 0.5 * math::vecMul(node_coord[7] - c5 , node_coord[6] - c5);
+  const Real3 n6a07 = 0.5 * math::vecMul(node_coord[6] - c5 , node_coord[2] - c5);
+
+  // Calcul des résultantes aux sommets :
+  m_cell_cqs[cell][0] = (5.*(n1a01 + n1a04 + n2a04 + n2a05 + n3a05 + n3a01) +
+		 (n1a02 + n1a03 + n2a08 + n2a12 + n3a06 + n3a09))*(1./12.);
+  m_cell_cqs[cell][1] = (5.*(n1a01 + n1a02 + n3a01 + n3a06 + n5a06 + n5a02) +
+		 (n1a04 + n1a03 + n3a09 + n3a05 + n5a10 + n5a07))*(1./12.);
+  m_cell_cqs[cell][2] = (5.*(n1a02 + n1a03 + n5a07 + n5a02 + n6a07 + n6a03) +
+		 (n1a01 + n1a04 + n5a06 + n5a10 + n6a11 + n6a08))*(1./12.);
+  m_cell_cqs[cell][3] = (5.*(n1a03 + n1a04 + n2a08 + n2a04 + n6a08 + n6a03) +
+		 (n1a01 + n1a02 + n2a05 + n2a12 + n6a07 + n6a11))*(1./12.);
+  m_cell_cqs[cell][4] = (5.*(n2a05 + n2a12 + n3a05 + n3a09 + n4a09 + n4a12) +
+		 (n2a08 + n2a04 + n3a01 + n3a06 + n4a10 + n4a11))*(1./12.);
+  m_cell_cqs[cell][5] = (5.*(n3a06 + n3a09 + n4a09 + n4a10 + n5a10 + n5a06) +
+		 (n3a01 + n3a05 + n4a12 + n4a11 + n5a07 + n5a02))*(1./12.);
+  m_cell_cqs[cell][6] = (5.*(n4a11 + n4a10 + n5a10 + n5a07 + n6a07 + n6a11) +
+		 (n4a12 + n4a09 + n5a06 + n5a02 + n6a03 + n6a08))*(1./12.);
+  m_cell_cqs[cell][7] = (5.*(n2a08 + n2a12 + n4a12 + n4a11 + n6a11 + n6a08) +
+		 (n2a04 + n2a05 + n4a09 + n4a10 + n6a07 + n6a03))*(1./12.);
+}
+\endcode
+
+\subsection simplehydro_describeentrypoints_density Mise à jour de la densité
+
+Ce point d'entrée calcule la nouvelle valeur de la densité des
+mailles, en considérant que la masse d'une maille est constante au
+cours du temps. Dans ce cas, la nouvelle densité est égal à la masse
+divisée par le nouveau volume. Cette routine sauve aussi la valeur
+maximale de l'acroissement de densité (\c m_density_ratio_maximum)
+qui sera utilisée pour contraindre le pas de temps.
+
+\code
+void ModuleSimpleHydro::
+updateDensity()
+{
+  m_density_ratio_maximum = 0.;
+
+  ENUMERATE_CELL(i,ownCells()){
+    const Cell&  cell = *i;
+
+    Real  old_density = m_density[cell];
+    Real  new_density = m_cell_mass[cell] / m_volume[cell];
+
+    m_density[cell] = new_density;
+
+    Real density_ratio = (new_density - old_density) / new_density;
+
+    m_density_ratio_maximum = math::max(m_density_ratio_maximum(),density_ratio);
+  }
+
+  m_density_ratio_maximum.reduce(Parallel::ReduceMax);
+
+  m_density.synchronize();
+\endcode
+
+\subsection simplehydro_describeentrypoints_eos Equation d'état
+
+Ce point d'entrée calcule l'énergie interne, la pression et la vitesse
+du son dans la maille en considérant une équation d'état du gaz parfait.
+
+\code
+void ModuleSimpleHydro::
+applyEquationOfState()
+{
+  const Real deltatf = m_delta_t_f();
+  
+  // Calcul de l'énergie interne
+  ENUMERATE_CELL(i_cell,ownCells()){
+    const Cell& cell = *i_cell;
+    Real  adiabatic_cst     = m_adiabatic_cst[cell];
+    Real  volume_ratio      = m_volume[cell] / m_old_volume[cell];
+    Real  x                 = 0.5*(adiabatic_cst-1.);
+    Real  numer_accrois_nrj = 1. + x*(1.-volume_ratio);
+    Real  denom_accrois_nrj = 1. + x*(1.-1./volume_ratio);
+
+    m_internal_energy[cell] *= numer_accrois_nrj/denom_accrois_nrj;
+  
+    // Prise en compte du travail des forces de viscosité 
+    const bool add_viscosity_force = (!m_options->viscosity()==ViscosityNo);
+    if (add_viscosity_force)
+      m_internal_energy[cell] -= deltatf*m_viscosity_work[cell] / 
+	(m_cell_mass[cell]*denom_accrois_nrj);
+  }
+
+  // Synchronise l'énergie
+  m_internal_energy.synchronize();
+
+  // Calcul de la pression et de la vitesse du son
+  ENUMERATE_CELL(i_cell,allCells()){
+    const Cell& cell = *i_cell;
+    Real internal_energy = m_internal_energy[cell];
+    Real density         = m_density[cell];
+    Real adiabatic_cst   = m_adiabatic_cst[cell];
+    Real pressure        = (adiabatic_cst-1.) * density * internal_energy; 
+    m_pressure[cell]     = pressure;
+    m_sound_speed[cell]  = sqrt(adiabatic_cst*pressure/density);
+  }
+}
+\endcode
+
+\subsection simplehydro_describeentrypoints_deltat Calcul du nouveau pas de temps
+
+Ce point d'entrée qui est le dernier de la boucle de calcul détermine
+la valeur du pas de temps pour l'itération suivante. Le pas de temps
+est contraint par la prise en compte des valeurs suivantes:
+<ul>
+<li>la valeur de la CFL;</li>
+<li>la valeur de l'acroissement maximal de densité;</li>
+<li>les valeurs \c deltatMin() et \c deltatMax() du jeu de
+données;</li>
+<li>la valeur du temps final. Lors de la dernière itération, le pas
+de temps doit être tel qu'on s'arrête exactement au temps spécifié
+dans le jeu de données (\c finalTime()). </li>
+</ul>
+
+\code
+void ModuleSimpleHydro::
+computeDeltaT()
+{
+  const Real old_dt = m_global_deltat();
+
+  // Calcul du pas de temps pour le respect du critère de CFL
+  
+  Real minimum_aux = float_info<Real>::maxValue();
+  Real new_dt      = float_info<Real>::maxValue();
+
+  const bool new_test_cfl = true;
+
+  ENUMERATE_CELL(i,ownCells()){
+    const Cell& cell  = *i;
+    Real  cell_dx     = m_caracteristic_length[cell];
+    Real  density     = m_density[cell];
+    Real  pressure    = m_pressure[cell];
+    Real  sound_speed = m_sound_speed[cell];
+    Real  dx_sound    = cell_dx / sound_speed;
+    minimum_aux = math::min(minimum_aux,dx_sound);
+  }
+
+  new_dt = m_options->cfl()*minimum_aux;
+
+  Real cfl_dt = new_dt;
+
+  // Pas de variations trop brutales à la hausse comme à la baisse
+  Real max_dt = (1.+m_options->variationSup())*old_dt;
+  Real min_dt = (1.-m_options->variationInf())*old_dt;
+
+  new_dt = math::min(new_dt,max_dt);
+  new_dt = math::max(new_dt,min_dt);
+
+  Real variation_min_max_dt = new_dt;
+
+  // control de l'accroissement relatif de la densité
+  Real dgr = m_options->densityGlobalRatio();
+  if (m_density_ratio_maximum()>dgr)
+    new_dt = math::min(old_dt*dgr/m_density_ratio_maximum(),new_dt);
+
+  new_dt = parallelMng()->reduce(Parallel::ReduceMin,new_dt);
+
+  Real density_ratio_dt = new_dt;
+
+  // respect des valeurs min et max imposées par le fichier de données .plt
+  new_dt = math::min(new_dt,m_options->deltatMax());
+  new_dt = math::max(new_dt,m_options->deltatMin());
+
+  Real data_min_max_dt = new_dt;
+
+  // Le dernier calcul se fait exactement au temps stopTime()
+  {
+    Real stop_time  = m_options->finalTime();
+    bool not_yet_finish = ( m_global_time() < stop_time);
+    bool too_much = ( (m_global_time()+new_dt) > stop_time);
+
+    if ( not_yet_finish && too_much ){
+      new_dt = stop_time - m_global_time();
+      subDomain()->timeLoopMng()->stopComputeLoop();
+    }
+  }
+
+  // Mise à jour des variables
+  m_old_dt_f.assign(old_dt);
+  m_delta_t_n.assign(0.5*(old_dt+new_dt));
+  m_delta_t_f.assign(new_dt);
+  m_global_deltat.assign(new_dt);
+}
+\endcode
+
+\section simplehydro_parallel Prise en compte du parallélisme
+
+En parallèle, le maillage est partitionné en plusieurs sous-domaines, et chaque
+sous-domaine fait ces calculs séparément. Il faut donc pour prendre en
+compte correctement le parallélisme synchroniser entre sous-domaines
+certaines valeurs. En règle général, il n'y a pas de solution unique à ce
+problème:
+<ul>
+<li> pour certaines variables, il est possible soit de faire le
+calcul sur tout le sous-domaine, c'est à dire à la fois sur les
+entités fantômes et les entités propres, soit de faire le calcul
+uniquement sur les entités propres et synchroniser ensuite les valeurs
+calculées. C'est le cas par exemple du calcul des valeurs
+géométriques. Le choix de l'une ou l'autre des solutions dépend
+globalement de deux paramètres qui sont le temps nécessaire pour effectuer le
+calcul et le temps nécessaire pour effectuer la synchronisation. Chacun de
+ses paramètres dépend lui même d'autres paramètre comme la puissance
+du processeur, la bande passante du réseau d'interconnexion, ...;
+<li> lorsqu'on augmente le nombre de couches d'entités fantômes,
+certaines variables qui ne sont utilisés que temporairement lors d'une
+itération n'ont plus besoin d'être synchronisées. Cela permet donc de
+réduire le nombre de synchronisations mais en contre-partie chaque
+synchronisation concernera plus de processeurs et d'entités fantômes.
+</ul>
+
+Afin de ne pas compliquer inutilement la prise en compte du
+parallélisme, l'exemple précédent fonctionne en utilisant une
+couche de maille fantômes et privilégie le calcul au détriment du
+nombre de synchronisations.
+
+L'exemple précédent utilise deux opérations parallèles:
+<ul>
+<li>la synchronisation d'une variable. Elle se fait simplement par
+l'appel à la méthode \c synchronize() de la variable. Par exemple
+\c m_velocity.synchronize(); </li>
+<li>la réduction d'une variable. Elle se fait par l'appel à la
+méthode \c reduce() avec comme argument le type de réduction
+(somme, minimum ou maximum). </li>
+</ul>
+
+Dans notre exemple, on utilise trois synchronisations et deux
+réductions qui apparaissent dans cet ordre dans la boucle de calcul:
+<ol>
+<li>synchronisation de la vitesse (dans \c computeImpulsion());</li>
+<li>réduction sur \c m_density_ratio_maximum qui doit être le
+maximum sur l'ensemble des sous-domaines (dans \c updateDensity()); </li>
+<li>synchronisation de la densité (dans \c updateDensity()); </li>
+<li>synchronisation de l'énergie interne (dans
+\c applyEquationOfState()); </li>
+<li>réduction sur le pas de temps (dans \c computeDeltaT()) qui
+doit être le minimum sur l'ensemble des sous-domaines.</li>
+</ol>
+
+Le fait d'utiliser le même ordre de numérotation dans chaque
+sous-domaine permet de limiter au maximum le nombre de
+synchronisations. Par exemple, comme la vitesse est synchronisée, la
+position des noeuds l'est aussi et le volume aussi, car il est
+calculé en parcourant l'ensemble des noeuds d'une maille, ces
+noeuds étant toujours décrits dans le même ordre quel que soit le
+sous-domaine (et aussi quel que soit le découpage). De plus, si toutes
+les opérations se font en itérant sur un groupe de noeuds ou de
+mailles, il est alors garantit que le résultat sera identique en
+séquentiel et en parallèle, et ce quel que le découpage.
+
+\section simplehydro_checkpoint Prise en compte des protections/reprises
+
+Ce module n'utilisant pas de structures de donnée internes autre que
+les variables, il n'a rien à faire pour prendre en compte les
+protections reprises. En cas de reprise, les mêmes points d'entrée
+seront appelés sauf \c hydroStartInit() car sa déclaration indique
+que c'est un point d'entrée appelé uniquement lors du démarrage d'un
+nouveau cas. Le seul endroit du code ou l'aspect protection/reprise
+est pris en compte est dans le contructeur du module, lorsqu'une
+variable utilise la propriété \c IVariable::PNoDump, qui indique
+qu'on ne souhaite pas la protégée. Cet attribut est utilisé lorsque la
+valeur d'une variable n'est pas utile d'une itération à l'autre. C'est
+le cas par exemple de la force \c m_force. On peut aussi utiliser
+cet attribut pour des variables dîtes secondaires et qui se calculent
+facilement à partir d'autres variables. Par exemple, la longueur
+caractéristique et le volume peuvent facilement être recalculés à
+partir de la position des noeuds. Si on ne souhaite pas sauver ces deux
+variables, il suffit alors d'ajouter un point d'entrée
+d'initialisation en reprise qui se chargera de recalculer ces
+valeurs.
+*/
+
+/*!
+  \page simplehydro_caseoptions Jeu de données du module hydrodynamique simplifié.
+
+ Voici le fichier décrivant la liste des options pour le module
+ simplifié d'hydrodynamique:
+
+\code
+<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
+
+<!-- Description de la configuration du module 'ModuleSimpleHydro' -->
+<module-info name="SimpleHydro">
+ <options>
+
+  <!-- - - - - - deltat-min - - - - -->
+  <simple
+   name = "deltat-min"
+   type = "real"
+   >
+   <userclass>User</userclass>
+   <description>
+Valeur minimale que peut prendre le <em>deltat</em> entre deux
+itérations.
+   </description>
+  </simple>
+
+  <!-- - - - - - deltat-max - - - - -->
+  <simple
+   name = "deltat-max"
+   type = "real"
+  >
+   <userclass>User</userclass>
+   <description>
+Valeur maximale que peut prendre le <em>deltat</em> entre deux
+itérations. Si le deltat calculé est supérieur à cette valeur,
+il est ramené à cette valeur.
+   </description>
+  </simple>
+
+  <!-- - - - - - deltat-init - - - - -->
+  <simple
+   name = "deltat-init"
+   type = "real"
+  >
+   <userclass>User</userclass>
+   <description>
+Valeur du <em>deltat</em> au moment du démarrage.
+   </description>
+  </simple>
+
+  <!-- - - - - - stop-time - - - - -->
+  <simple
+   name = "final-time"
+   type = "real"
+  >
+   <name lang='fr'>temps-final</name>
+   <userclass>User</userclass>
+   <description>
+Temps auquel on stoppe la simulation. Le code s'arrête dès que
+le temps courant est <strong>strictement</strong> supérieur à
+ce temps.
+   </description>
+  </simple>
+
+ <!-- - - - - - cfl - - - - -->
+  <simple
+   name = "cfl"
+   type     = "real"
+   default  = "0.3"
+  >
+   <description>
+Définition de la CFL
+   </description>
+  </simple>
+    
+  <!-- - - - - - variation-inf - - - - -->
+  <simple
+   name = "variation-inf"
+   type     = "real"
+   default  = "0.99"
+  >
+   <description>
+Amplitude maximale de décroissance du pas de temps
+   </description>
+  </simple>
+    
+  <!-- - - - - - variation-sup - - - - -->
+  <simple
+   name = "variation-sup"
+   type     = "real"
+   default  = "0.10"
+  >
+   <description>
+Amplitude maximale de croissance du pas de temps
+   </description>
+  </simple>
+    
+  <!-- - - - - - density-global-ratio - - - - -->
+  <simple
+   name = "density-global-ratio"
+   type     = "real"
+   default  = "0.1"
+  >
+   <description>
+Seuil d'accroissement relatif de la densité pour le contrôle du pas de temps
+   </description>
+  </simple>
+
+  <!-- - - - - - viscosity-linear-coef - - - - -->
+  <simple
+   name = "viscosity-linear-coef"
+   type     = "real"
+   default  = "1.0"
+  >
+   <description>
+Cette option détermine le coefficient linéaire pour la
+viscosité scalaire aux mailles ainsi que pour la viscosité
+tensorielle aux arêtes.
+   </description>
+  </simple>
+
+  <!-- - - - - - viscosity-quadratic-coef - - - - -->
+  <simple
+   name = "viscosity-quadratic-coef"
+   type     = "real"
+   default  = "1.0"
+  >
+   <description>
+Cette option détermine le coefficient quadratique pour la
+viscosité scalaire aux mailles ainsi que pour la viscosité
+tensorielle aux arêtes.
+   </description>
+  </simple>
+
+  <!-- - - - - - use-minimum-memory - - - - -->
+  <simple
+   name = "use-minimum-memory"
+   type     = "bool"
+   default  = "true"
+  >
+   <description>
+Vrai s'il faut limiter au maximum l'usage de la mémoire. Cela provoque
+la désallocation des structures du maillage et empêche les protections.
+   </description>
+  </simple>
+
+  <!-- - - - - - viscosity - - - - -->
+  <enumeration
+   name    = "viscosity"
+   type    = "eViscosity"
+   default = "none"
+  >
+   <description>
+Choix de la viscosité.
+   </description>
+   <enumvalue genvalue="ViscosityNo"         name="none" />
+   <enumvalue genvalue="ViscosityCellScalar" name="cell" />
+  </enumeration>
+
+  <!-- - - - - - boundary-condition - - - - -->
+  <complex
+   name  = "boundary-condition"
+   type      = "BoundaryCondition"
+   minOccurs = "0"
+   maxOccurs = "unbounded"
+  >
+   <description>
+Condition aux limites
+   </description>
+
+   <enumeration
+    name = "type"
+    type = "eBoundaryCondition"
+   >
+    <description>
+Type de condition aux limites
+    </description>
+    <enumvalue genvalue="VelocityX" name="Vx" />
+    <enumvalue genvalue="VelocityY" name="Vy" />
+    <enumvalue genvalue="VelocityZ" name="Vz" />
+   </enumeration>
+
+   <extended
+    name = "surface"
+    type = "GroupFace"
+   >
+    <description>
+Surface sur laquelle s'applique la condition aux limites
+    </description>
+   </extended>
+
+   <simple
+    name = "value"
+    type = "real"
+   >
+    <description>
+Valeur de la composante à fixer.
+    </description>
+   </simple>
+
+  </complex>
+
+ </options>
+  
+  <!-- ###################################################################### -->
+  <!-- ###################################################################### -->
+  
+</module-info>
+\endcode
+
+
+Un exemple de jeu de donnée pour ce module:
+
+\code
+ <!-- Configuration du module hydrodynamique -->
+ <simple-hydro>
+
+   <deltat-init>   0.001   </deltat-init>
+   <deltat-min>    0.0001   </deltat-min>
+   <deltat-max>    0.01   </deltat-max>
+   <final-time>     0.2    </final-time>
+
+  <viscosity>cell</viscosity>
+  <viscosity-linear-coef>    .5    </viscosity-linear-coef>
+  <viscosity-quadratic-coef> .6    </viscosity-quadratic-coef>
+
+  <boundary-condition>
+    <surface>XMIN</surface><type>Vx</type><value>0.</value>
+  </boundary-condition>
+  <boundary-condition>
+    <surface>XMAX</surface><type>Vx</type><value>0.</value>
+  </boundary-condition>
+  <boundary-condition>
+    <surface>YMIN</surface><type>Vy</type><value>0.</value>
+  </boundary-condition>
+  <boundary-condition>
+    <surface>YMAX</surface><type>Vy</type><value>0.</value>
+  </boundary-condition>
+  <boundary-condition>
+    <surface>ZMIN</surface><type>Vz</type><value>0.</value>
+  </boundary-condition>
+  <boundary-condition>
+    <surface>ZMAX</surface><type>Vz</type><value>0.</value>
+  </boundary-condition>
+ </simple-hydro>
+\endcode
+*/
+

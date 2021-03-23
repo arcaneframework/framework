@@ -1,0 +1,27 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<service name="ArcaneCaseMeshMasterService" parent-name="AbstractService" type="caseoption">
+  <userclass>User</userclass>
+  <description>
+    Service Arcane gérant les maillages du jeu de données.
+  </description>
+    
+  <interface name="Arcane::ICaseMeshMasterService" />
+
+  <options>
+    <!-- Service de création/lecture de maillage -->
+    <service-instance
+        name = "mesh"
+        type = "Arcane::ICaseMeshService"
+        minOccurs = "1"
+        maxOccurs = "unbounded"
+        default = "ArcaneCaseMeshService"
+        >
+      <name lang='fr'>maillage</name>
+      <description>
+        Service de création/lecture de maillage
+      </description>
+    </service-instance>
+
+  </options>
+
+</service>

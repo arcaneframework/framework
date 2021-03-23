@@ -1,0 +1,17 @@
+#
+# Find Lapack libraries
+#
+# This module defines
+# LAPACK_LIBRARY
+# LAPACK_FOUND
+
+FIND_LIBRARY(LAPACK_LIBRARY lapack)
+
+SET(LAPACK_FOUND "NO")
+IF(LAPACK_LIBRARY)
+  SET(LAPACK_FOUND "YES")
+ENDIF(LAPACK_LIBRARY)
+
+
+
+

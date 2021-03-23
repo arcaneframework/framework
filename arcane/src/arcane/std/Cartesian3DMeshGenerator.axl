@@ -1,0 +1,78 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<service name="Cartesian3DMeshGenerator" type="caseoption">
+  <userclass>User</userclass>
+  <description>
+    Générateur de maillage cartésien 3D
+  </description>
+    
+  <interface name="Arcane::IMeshBuilder" />
+
+  <options>
+    <simple name="origin" type="real3" >
+      <description>Origine du maillage</description>
+      <userclass>User</userclass>
+    </simple>
+    <simple name="nb-part-x" type="integer" >
+      <description>Nombre de sous-domaine en X</description>
+      <userclass>User</userclass>
+    </simple>
+    <simple name="nb-part-y" type="integer" >
+      <description>Nombre de sous-domaine en Y</description>
+      <userclass>User</userclass>
+    </simple>
+    <simple name="nb-part-z" type="integer" >
+      <description>Nombre de sous-domaine en Z</description>
+      <userclass>User</userclass>
+    </simple>
+    <simple name="generate-sod-groups" type="bool" default="false">
+      <description>Vrai si on génère les groupes pour un cas test de sod (interne à Arcane)</description>
+    </simple>
+
+    <complex type="PartInfoX" name="x" minOccurs="1" maxOccurs="unbounded" >
+      <simple name="n" type="integer" >
+        <description>Nombre de mailles</description>
+        <userclass>User</userclass>
+      </simple>
+      <simple name="length" type="real" >
+        <description>Longueur</description>
+        <userclass>User</userclass>
+      </simple>
+      <simple name="progression" type="real" default="1.0">
+        <description>Progression</description>
+        <userclass>User</userclass>
+      </simple>
+    </complex>
+
+    <complex type="PartInfoY" name="y" minOccurs="1" maxOccurs="unbounded" >
+      <simple name="n" type="integer" >
+        <description>Nombre de mailles</description>
+        <userclass>User</userclass>
+      </simple>
+      <simple name="length" type="real" >
+        <description>Longueur</description>
+        <userclass>User</userclass>
+      </simple>
+      <simple name="progression" type="real" default="1.0">
+        <description>Progression</description>
+        <userclass>User</userclass>
+      </simple>
+    </complex>
+
+    <complex type="PartInfoZ" name="z" minOccurs="1" maxOccurs="unbounded" >
+      <simple name="n" type="integer" >
+        <description>Nombre de mailles</description>
+        <userclass>User</userclass>
+      </simple>
+      <simple name="length" type="real" >
+        <description>Longueur</description>
+        <userclass>User</userclass>
+      </simple>
+      <simple name="progression" type="real" default="1.0">
+        <description>Progression</description>
+        <userclass>User</userclass>
+      </simple>
+    </complex>
+
+  </options>
+
+</service>

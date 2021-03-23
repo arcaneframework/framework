@@ -1,0 +1,146 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* MeshReaderMng.h                                             (C) 2000-2019 */
+/*                                                                           */
+/* Gestionnaire de lecteurs de maillage.                                     */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arcane/MeshReaderMng.h"
+
+#include "arcane/utils/UniqueArray.h"
+#include "arcane/utils/ScopedPtr.h"
+
+#include "arcane/ISubDomain.h"
+#include "arcane/IMainFactory.h"
+#include "arcane/IMeshReader.h"
+#include "arcane/ServiceBuilder.h"
+#include "arcane/IPrimaryMesh.h"
+#include "arcane/XmlNode.h"
+#include "arcane/Properties.h"
+#include "arcane/IXmlDocumentHolder.h"
+#include "arcane/IParallelMng.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class IMeshReader;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class MeshReaderMng::Impl
+{
+ public:
+  Impl(ISubDomain* sd) : m_sub_domain(sd){}
+  ~Impl() = default;
+ public:
+  void checkInit()
+  {
+    if (m_is_init)
+      return;
+    m_is_init = true;
+    ServiceBuilder<IMeshReader> builder(m_sub_domain);
+    m_mesh_readers = builder.createAllInstances();
+  }
+ public:
+  ConstArrayView<Ref<IMeshReader>> readers() const { return m_mesh_readers; }
+ public:
+  ISubDomain* m_sub_domain = nullptr;
+  UniqueArray<Ref<IMeshReader>> m_mesh_readers;
+  bool m_is_init = false;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MeshReaderMng::
+MeshReaderMng(ISubDomain* sd)
+: m_p(new Impl(sd))
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MeshReaderMng::
+~MeshReaderMng()
+{
+  delete m_p;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// TODO: fusionner cette méthode avec cell de ISubDomain.
+IMesh* MeshReaderMng::
+readMesh(const String& mesh_name,const String& file_name)
+{
+  m_p->checkInit();
+  String extension;
+  {
+    // Cherche l'extension du fichier et la conserve dans \a extension
+    std::string_view fview = file_name.toStdStringView();
+    std::size_t extension_pos = fview.find_last_of('.');
+    if (extension_pos==std::string_view::npos)
+      ARCANE_FATAL("file name '{0}' has no extension",file_name);
+    fview.remove_prefix(extension_pos+1);
+    extension = fview;
+
+  }
+  // TODO: à terme, créer le maillage par le lecteur.
+  ISubDomain* sd = m_p->m_sub_domain;
+  IParallelMng* pm = sd->parallelMng()->sequentialParallelMng();
+  IPrimaryMesh* mesh = sd->mainFactory()->createMesh(sd,pm,mesh_name);
+  mesh->properties()->setBool("dump", false);
+
+  String use_unit_xml = "<?xml version=\"1.0\"?><file use-unit='true' />";
+
+  ITraceMng* tm = sd->traceMng();
+  ScopedPtrT<IXmlDocumentHolder> xml_doc(IXmlDocumentHolder::loadFromBuffer(use_unit_xml.bytes(), String(),tm));
+  XmlNode mesh_xml_node = xml_doc->documentNode().documentElement();
+
+  String dir_name;
+  bool is_bad = true;
+  for( auto& reader_ref : m_p->readers() ){
+    IMeshReader* reader = reader_ref.get();
+    if (!reader->allowExtension(extension))
+      continue;
+
+    auto ret = reader->readMeshFromFile(mesh,mesh_xml_node,
+                                        file_name,
+                                        dir_name,
+                                        false);
+    if (ret==IMeshReader::RTOk){
+      is_bad = false;
+      break;
+    }
+    if (ret==IMeshReader::RTError){
+      ARCANE_FATAL("Can not read mesh file '{0}'",file_name);
+    }
+  }
+
+  if (is_bad)
+    ARCANE_FATAL("No mesh reader is available for mesh file '{0}'",file_name);
+
+  return mesh;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+

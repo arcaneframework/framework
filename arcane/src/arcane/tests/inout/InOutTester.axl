@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<service name="InOutTester" version="1.0" type="caseoption" namespace-name="ArcaneTest" parent-name="Arcane::BasicUnitTest"> 
+  <interface name="Arcane::IUnitTest" inherited='false'/>
+  
+  <variables>
+    
+    <variable
+        field-name="in_variable"
+        name="InVariable"
+        data-type="real"
+        item-kind="cell"
+        dim="0"
+        dump="true"
+        need-sync="true" 
+        flow="in"
+        />
+    
+    <variable
+        field-name="out_variable"
+        name="OutVariable"
+        data-type="real"
+        item-kind="face"
+        dim="0"
+        dump="true"
+        need-sync="true" 
+        flow="out"
+        />
+    
+    <variable
+        field-name="inout_variable"
+        name="InOutVariable"
+        data-type="real"
+        item-kind="node"
+        dim="0"
+        dump="true"
+        need-sync="true" 
+        flow="inout"
+        />
+      
+    <variable
+        field-name="variable"
+        name="Variable"
+        data-type="real"
+        item-kind="cell"
+        dim="0"
+        dump="true"
+        need-sync="true" 
+        />
+    
+  </variables>
+  
+  <options />
+  
+</service>

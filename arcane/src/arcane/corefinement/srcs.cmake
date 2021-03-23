@@ -1,0 +1,22 @@
+set(ARCANE_SOURCES
+  ParallelCorefinementService.cc
+  ParallelCorefinementService.h
+  ParallelCorefinementService.h
+  IParallelCorefinement.h
+  surfaceutils/ISurfaceUtils.h
+  surfaceutils/ISurface.h
+  surfaceutils/geometrykernelsurfacetools/GeometryKernelSurfaceInternalUtils.cc
+  surfaceutils/geometrykernelsurfacetools/GeometryKernelSurfaceInternalUtils.h
+  surfaceutils/geometrykernelsurfacetools/GeometryKernelSurfaceImpl.cc
+  surfaceutils/geometrykernelsurfacetools/GeometryKernelSurfaceImpl.h
+  surfaceutils/geometrykernelsurfacetools/GeometryKernelSurfaceToolsService.cc
+  surfaceutils/geometrykernelsurfacetools/GeometryKernelSurfaceToolsService.h
+  surfaceutils/geometrykernelsurfacetools/GeometryKernelSurfaceInternalUtils.h
+  surfaceutils/geometrykernelsurfacetools/GeometryKernelSurfaceImpl.h
+  surfaceutils/geometrykernelsurfacetools/GeometryKernelSurfaceToolsService.h
+)
+
+set(AXL_FILES 
+  ParallelCorefinement
+  surfaceutils/geometrykernelsurfacetools/GeometryKernelSurfaceTools
+)

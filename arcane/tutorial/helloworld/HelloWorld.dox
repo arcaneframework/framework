@@ -1,0 +1,56 @@
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+// -*- C++ -*-
+/*!
+  \page tutorialsample1 L'application "Hello World !"
+
+
+  Le premier exemple de ce didacticiel permet le développement d'un module
+  utilisant ARCANE. Ce module a pour objectif d'afficher le message "Hello World !".
+
+  \section tutorialsample1_modules Modules
+  \par Prérequis
+  - Lire l'introduction du document \ref arcane_overview.
+  - Lire la section sur \ref arcanedoc_module.
+  \par Actions à réaliser
+  En suivant les documents précédemment référencés, vous devez : 
+  - Créer la classe \c HelloWorldModule en complétant les fichiers 
+    \c HelloWorldModule.h et \c HelloWorldModule.cc :
+      - Déclarer la classe
+      - Compléter l'héritage
+      - Définir les constructeurs et destructeurs
+      - Enregistrer le module avec la macro
+  - Compléter le fichier \c HelloWorld.axl qui décrit le module précédemment créé.
+  - Compiler. Les fichiers \c Makefile sont fournis. En les observant vous constaterez qu'il ne faut pas oublier :
+        - de compiler avec les fichiers <em>include</em> de ARCANE
+        - de faire l'édition de lien avec les bibliothèques <em>arcane</em>, <em>arcane_std</em> 
+          et <em>arcane_mpi</em> (pour les exécutions parallèles)
+
+  \section tutorialsample1_entrypoints Points d'entrée
+  \par Pré-requis</b><br><br>
+  - Lire la section sur \ref arcanedoc_entrypoint
+   \par Actions à réaliser</b>
+  - Compléter le module en créant une méthode \c  HelloWorldModule::printHelloWorld qui écrive "Hello World !"
+  - Compléter le fichier \c HelloWorld.axl en déclarant le point d'entrée
+  - Recompiler
+
+  \section tutorialsample1_timeloop Boucle en temps
+  \par Pré-requis
+  - Lire le document \ref arcanedoc_timeloop "La boucle en temps".
+  \par Actions à réaliser
+  - Compléter le fichier \c HelloWorld.config pour définir la boucle en temps de l'application
+  - Définir votre application en complétant le fichier \c main.cc
+  - Recompiler
+  
+  \section tutorialsample1_datafile Fichier de données
+  \par Actions à réaliser
+  - Compléter le fichier de données \c HelloWorld.arc en sélectionnant la boucle en temps définie précédemment.
+  - Exécuter !
+
+  \section tutorialsample1_traces Traces
+  \par Pré-requis
+  - Lire le document \ref arcanedoc_traces.
+  \par Actions à réaliser
+  - Afficher le message "Hello World" en utilisant les traces de ARCANE.
+  - Exécuter !
+  - Creér un fichier de configuration utilisateur <em>config.xml</em> et faites des exécutions en paramétrant l'affichage
+*/

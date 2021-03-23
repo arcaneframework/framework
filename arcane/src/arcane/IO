@@ -1,0 +1,8 @@
+// -- -*- C++ -*-
+#include "arcane/IIOMng.h"
+#include "arcane/Directory.h"
+#include "arcane/IPostProcessorWriter.h"
+#include "arcane/IDumpR.h"
+#include "arcane/IDumpW.h"
+#include "arcane/IDumpRW.h"
+

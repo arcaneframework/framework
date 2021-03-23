@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
+
+<!-- ###################################################################### -->
+<!-- ###################################################################### -->
+
+<module name="ParallelTester" version="1.0" namespace-name="ArcaneTest" >
+    <description>
+      Module de test du parallélisme
+    </description>
+ <options>
+  <!-- Nombre d'itérations à effectuer -->
+  <simple
+   name = "nb-iteration"
+   type = "integer"
+   default = "2"
+  >
+   <description>
+Nombre d'itérations à effectuer
+   </description>
+  </simple>
+
+  <!-- Fichier de sortie pour la non-régression -->
+  <simple
+   name = "output-file"
+   type = "string"
+   default = "test"
+  >
+   <name lang='fr'>fichier-sortie</name>
+   <description>
+Fichier de sortie des tests.
+   </description>
+  </simple>
+
+  <simple
+   name = "nb-internal-loop"
+   type = "integer"
+   default = "10"
+  >
+   <name lang='fr'>nb-boucles-internes</name>
+   <description>
+Nombre de boucles internes à effectuer (pour équilibrage).
+   </description>
+  </simple>
+
+  <simple
+   name = "nb-test-sync"
+   type = "integer"
+   default = "1"
+  >
+   <name lang='fr'>nb-test-sync</name>
+   <description>
+Nombre de boucles de synchronisations à effectuer (pour test performance).
+   </description>
+  </simple>
+
+  <!-- - - - - - load-balance-service - - - - -->
+  <service-instance
+   name    = "load-balance-service"
+   type    = "Arcane::IMeshPartitioner"
+   minOccurs = "0"
+   maxOccurs = "1"
+  >
+   <name lang='fr'>service-equilibrage-charge</name>
+   <description>
+Service utilisé pour l'équilibrage de charge.
+   </description>
+  </service-instance>
+
+  <enumeration
+   name = "test-id"
+   type = "TypesParallelTester::eTestParallel"
+  >
+   <description field-name="nom du test">
+Voici la liste des tests à effectuer: <enum-description/>
+Test affichage liste.
+   </description>
+	<enumvalue  genvalue="TypesParallelTester::TestAll" name="TestAll">
+	  <description>
+	    Lance tous les tests
+	  </description>
+	</enumvalue>
+	<enumvalue  genvalue="TypesParallelTester::TestParallelMng" name="ParallelMng">
+	  <description>
+	    Teste les services de IParallelMng
+	  </description>
+	</enumvalue>
+	<enumvalue  genvalue="TypesParallelTester::TestLoadBalance" name="LoadBalance">
+	  <description>
+	    Teste l'équilibrage de charge
+	  </description>
+	</enumvalue>
+	<enumvalue  genvalue="TypesParallelTester::TestGhostItemsReduceOperation" name="GhostItemsReduceOperation">
+	  <description>
+	    Teste les opérations parallèles sur les entités fantomes
+	  </description>
+	</enumvalue>
+	<enumvalue  genvalue="TypesParallelTester::TestGetVariableValues" name="GetVariableValues">
+	  <description>
+	    Teste l'opération <strong>IGetVariableValuesParallelOperation</strong>
+	  </description>
+	</enumvalue>
+	<enumvalue  genvalue="TypesParallelTester::TestTransferValues" name="TransferValues">
+	  <description>
+	    Teste l'opération 'ITransferValuesParallelOperation'
+	  </description>
+	</enumvalue>
+  </enumeration>
+
+ </options>
+</module>

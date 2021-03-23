@@ -1,0 +1,167 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+// -*- C++ -*-
+/*!
+  \page arcanedoc_beginners Premiers pas avec Arcane
+
+  \section arcanedoc_caseoptions_intro Introduction
+
+  TO BE DONE
+
+  \section Classes utilitaires
+
+  \subsection Chaînes de caractères
+
+
+  Il existe trois classes gérant les chaînes de caractères:
+  - String
+  - CString
+  - ConstCString
+
+  \subsubsection La classe 'String'
+
+  La classe String est celle qui doit être utilisée prioritairement. Il s'agit
+  d'une chaîne au format Unicode utilisant une sémantique de passage par valeur.
+  Par exemple:
+
+  \begincode
+  String s("Hello");
+  String s2(s);
+  s += " world";
+  std::cout << s << ' ' << s2 << '\n';
+  \endcode
+
+  Alors s2 contient 'Hello' et s contient 'Hello world'.
+  L'implémentation optimise la mémoire de telle sorte que la ligne 2 ne fait pas
+  de copie de \a s mais contient juste une référence.
+  
+  ATTENTION: en point important à noter est le constructeur String(const char* str) ne fait pas
+  de copie de \a str. Si on souhaite une copie, il faut utiliser le constructeur
+  String(const char* str,bool alloc).
+  Par exemple, le code suivant est invalide:
+
+  \begincode
+  String f()
+  {
+    std::string s("titi");
+    String s2(s.c_str());
+    return s2;
+  }
+  \endcode
+
+  Comme \c 's.c_str()' est local à la fonction, sa valeur stockée dans \a s2 devient
+  invalide dès qu'on quitte cette dernière. Il faut utiliser:
+
+  \begincode
+  String f()
+  {
+    std::string s("titi");
+    String s2(s.c_str(),true);
+    return s2;
+  }
+  \endcode
+
+  Ce genre de code ne devrait pas être fréquent et cette fonctionnalité permet d'utiliser
+  les chaînes de caractères C classique de manière très performante.
+
+
+  \subsubsection La classe 'CString'
+
+  La classe 'CString' correspond à une chaîne de caractère C classique mais avec une gestion
+  mémoire intégrée. Elle est similaire à la classe standard std::string. Cette classe est
+  encore utilisée dans Arcane mais est progressivement remplacer par la classe 'String'. Si
+  possible, utiliser cette dernière à la place de 'CString'.
+
+  \subsubsection La classe 'ConstCString'.
+
+  Cette classe encapsule un \c 'const char*' et une longueur. Elle ne gère aucune mémoire
+  et peut être utiliser en argument ou en retour de fonction partout ou est attentu
+  une \c 'const char*' classique. Comme elle ne fait aucune allocation, il ne faut jamais
+  utiliser cette classe pour stocker de manière permantent une valeur, comme par
+  exemple un champ d'une classe.
+
+  Une utilisation valide est par exemple:
+
+  \begincode
+  void printString(ConstCString cs)
+  { 
+    std::cout << "S=" << cs << '\n';
+  }
+  std::string s1("titi");
+  const char* s2("toto");
+  String s3("tata");
+  printString(s1.c_str());
+  printString(s2);
+  printString(s3.local());
+  \endcode
+
+  \section Utilisation des tableaux
+
+  Il existe plusieurs classes pour gérer les tableaux:
+  - CArrayT
+  - BufferT
+  - CArrayBaseT
+  - ConstCArrayT
+
+  Les classes \a CArrayT et \a BufferT sont similaires à la classe std::vector
+  de la STL mais sont instrumentées pour détecter en mode vérification les débordement
+  de tableaux et les allocations mémoire. En interne, ces deux classes gèrent
+  des tableaux C alloués dynamiquement. La différence entre les deux classes
+  est que le BufferT peut avoir une taille mémoire allouée (BufferT::capacity())
+  différente du nombre d'éléments du tableau (BufferT::size()). De plus, il possède
+  aussi une méthode BufferT::add() permettant d'ajouter un élément au tableau.
+
+  La classe ConstCArrayT est similaire à la classe ConstCString et stocke un
+  pointeur sur un tableau et un nombre d'éléments. Il s'agit uniquement d'une référence
+  et par conséquent, comme les ConstCString, cette reférence ne doit pas être
+  stockée de manière permanente, car elle devient invalide si le tableau auquel
+  elle fait référence est réalloué. Un ConstCArrayT ne permet pas de modifier les
+  valeurs des éléments.
+  
+  La classe CArrayBase est similaire à la classe ConstCArray, sauf qu'elle autorise
+  de modifier les valeurs des éléments.
+
+  Les classes CArrayT et BufferT sont convertibles directement en CArrayBase ou
+  ConstCArrayT.
+  
+  NOTE: les classes sont en cours de réorganisation dans Arcane. A terme, il y aura
+  fusion de 'CArray' et 'Buffer'. La classe conservée sera BufferT.
+  De plus, CArrayBaseT sera renommée MutableCArrayT.
+  
+  Un exemple d'utilisation:
+
+  \code
+  * template<typename T>
+  * T sum(ConstCArrayT<T> v)
+  * {
+  *   T sum = T();
+  *   for( Integer i=0, is=v.size(); i<is; ++i ){
+  *     sum += v[i];
+  *   }
+  * }
+  *
+  * template<typename T>
+  * void inc(CArrayBaseT<T> v)
+  * {
+  *   for( Integer i=0, is=v.size(); i<is; ++i ){
+  *     ++v[i];
+  *   }
+  * }
+  *
+  * int
+  * main()
+  * {
+  *    BufferT<Integer> z;
+  *    z.add(5);
+  *    z.add(7);
+  *    std::cout << sum(z) << '\n';
+  *    CArrayT<Integer> z2;
+  *    z2.resize(3);
+  *    z2[0] = z2[1] = z2[2] = 5;
+  *    inc(z2);
+  *    std::vector<Integer> z3;
+  *    z3.resize(3);
+  *    z3[0] = z3[1] = z3[2] = 5;
+  *    inc(z3);
+  * }
+  \endcode
+*/

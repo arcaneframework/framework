@@ -1,0 +1,5 @@
+//!-- -*- C++ -*- --
+#include "arcane/AbstractModule.h"
+#include "arcane/BasicModule.h"
+#include "arcane/IEntryPoint.h"
+#include "arcane/ModuleBuildInfo.h"

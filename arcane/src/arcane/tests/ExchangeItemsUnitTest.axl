@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
+
+<!-- ###################################################################### -->
+<!-- ###################################################################### -->
+
+<!-- Options du jeu de données pour le service de test du maillage -->
+
+<service name="ExchangeItemsUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
+ <interface name="Arcane::IUnitTest" inherited="false" />
+
+ <options>
+ 
+  <enumeration name="test-operation" type="TestOperation">
+    <enumvalue name="repartition-cells" genvalue="TestOperation::GatherBroadcastCells"/>
+    <enumvalue name="exchange-cell-owners" genvalue="TestOperation::ExchangeCellOwners"/>
+  </enumeration>
+ </options>
+ 
+ <variables>
+    <variable
+      field-name="cell_uids"
+      name="ExchangeItemsTest_CellUids"
+      data-type="int64"
+      item-kind="cell"
+      dim="0"
+      dump="false"
+      need-sync="true" 
+    />
+    
+    <variable field-name="ghostpp" name="GhostPP" data-type="integer" item-kind="cell" dim="1" dump="false" need-sync="false" />
+    <variable field-name="node_ghostpp" name="NodeGhostPP" data-type="integer" item-kind="node" dim="1" dump="false" need-sync="false" />
+    <variable field-name="face_ghostpp" name="FaceGhostPP" data-type="integer" item-kind="face" dim="1" dump="false" need-sync="false" />
+  </variables>
+ 
+
+</service>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{1B8369C9-FAD3-4B9B-ABE5-7D8BBED23E9C}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>SimdGenerator</RootNamespace>
+    <AssemblyName>SimdGenerator</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Externalconsole>true</Externalconsole>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Externalconsole>true</Externalconsole>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Simd.cs">
+      <DependentUpon>Simd.tt</DependentUpon>
+    </Compile>
+    <Compile Include="BinaryOperation.cs" />
+    <Compile Include="SimdClass.cs" />
+    <Compile Include="ISimdClass.cs" />
+    <Compile Include="SimdType.cs" />
+    <Compile Include="CppHelper.cs" />
+    <Compile Include="Main.cs" />
+    <Compile Include="GenerateHelper.cs" />
+    <Compile Include="UnaryOperation.cs" />
+    <Compile Include="UnitTestSimd.cs">
+      <DependentUpon>UnitTestSimd.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <None Include="Simd.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Simd.cs</LastGenOutput>
+    </None>
+    <None Include="UnitTestSimd.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>UnitTestSimd.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+</Project>

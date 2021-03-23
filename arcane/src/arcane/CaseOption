@@ -1,0 +1,6 @@
+#include "arcane/ICaseFunction.h"
+#include "arcane/CaseOptionBase.h"
+#include "arcane/CaseOptionBuildInfo.h"
+#include "arcane/CaseOptionException.h"
+#include "arcane/CaseOptions.h"
+#include "arcane/ICaseMng.h"

@@ -1,0 +1,56 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+
+<!-- ###################################################################### -->
+<!-- ###################################################################### -->
+
+<module name="UnitTest" version="1.0" namespace-macro-name="ARCANE">
+  <name lang='en'>unit-test-module</name>
+  <name lang='fr'>module-test-unitaire</name>
+  <userclass>User</userclass>
+  <description>
+    Module maître
+  </description>
+
+  <entry-points>
+    <entry-point method-name="unitTestInit" 
+                 name="UnitTestInit" 
+                 where="init" 
+                 property="none"/>
+    <entry-point method-name="unitTestDoTest" 
+                 name="UnitTestDoTest" 
+                 where="compute-loop" 
+                 property="none"/>
+    <entry-point method-name="unitTestExit" 
+                 name="UnitTestExit" 
+                 where="exit" 
+                 property="none"/>
+  </entry-points>
+
+  <options>
+
+  <!-- Fichier de sortie pour la non-régression -->
+  <service-instance
+   name = "test"
+   type = "Arcane::IUnitTest"
+   minOccurs = "0"
+   maxOccurs = "unbounded"
+  >
+   <name lang='fr'>test</name>
+   <userclass>User</userclass>
+   <description>Service de test</description>
+  </service-instance>
+
+  <service-instance
+   name = "xml-test"
+   type = "Arcane::IXmlUnitTest"
+   minOccurs = "0"
+   maxOccurs = "unbounded"
+  >
+   <name lang='fr'>xml-test</name>
+   <userclass>User</userclass>
+   <description>Service de test avec un rapport XML</description>
+  </service-instance>
+
+ </options>
+
+</module>

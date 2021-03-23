@@ -1,0 +1,235 @@
+<?xml version="1.0" ?>
+<module name="MicroHydro" version="1.0">
+
+<description>Descripteur du module MicroHydro</description>
+
+<variables>
+  <!-- DENSITY -->
+  <variable
+      field-name="density"
+      name="Density"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+  <!-- PRESSURE -->
+  <variable
+      field-name="pressure"
+      name="Pressure"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+  <!-- CELL MASS -->
+  <variable
+      field-name="cell_mass"
+      name="CellMass"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+  <!-- INTERNAL ENERGY	 -->
+  <variable
+      field-name="internal_energy"
+      name="InternalEnergy"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+  <!-- CELL VOLUME	 -->
+  <variable
+      field-name="cell_volume"
+      name="CellVolume"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="false"
+      need-sync="true" />
+  <!-- OLD CELL VOLUME	 -->
+  <variable
+      field-name="old_cell_volume"
+      name="OldCellVolume"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+  <!-- FORCE	 -->
+  <variable
+      field-name="force"
+      name="Force"
+      data-type="real3"
+      item-kind="node"
+      dim="0"
+      dump="false"
+      need-sync="false" />
+  <!-- 	VELOCITY	 -->
+  <variable
+      field-name="velocity"
+      name="Velocity"
+      data-type="real3"
+      item-kind="node"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+  <!-- 	NODE MASS	 -->
+  <variable
+      field-name="node_mass"
+      name="NodeMass"
+      data-type="real"
+      item-kind="node"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+  <!-- 	ADIABATIC CONSTANT	 -->
+  <variable
+      field-name="adiabatic_cst"
+      name="AdiabaticCst"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+  <!-- 	CARACTERISTIC LENGTH	 -->
+  <variable
+      field-name="caracteristic_length"
+      name="CaracteristicLength"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="false"
+      need-sync="true" />
+  <!-- 	SOUND SPEED	 -->
+  <variable
+      field-name="sound_speed"
+      name="SoundSpeed"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+  <!-- 	NODE COORD	 -->
+  <variable
+      field-name="node_coord"
+      name="NodeCoord"
+      data-type="real3"
+      item-kind="node"
+      dim="0"
+      dump="true"
+      need-sync="true" />
+  <!-- 	CELL CQS	 -->
+  <variable
+      field-name="cell_cqs"
+      name="CellCQS"
+      data-type="real3"
+      item-kind="cell"
+      dim="1"
+      dump="true"
+      need-sync="true" />
+</variables>
+
+<entry-points>
+  <entry-point method-name="hydroStartInit" name="HydroStartInit" where="start-init" property="none" />
+  <entry-point method-name="hydroContinueInit" name="HydroContinueInit" where="continue-init" property="none" />
+  <entry-point
+      method-name="computePressureForce"
+      name="ComputePressureForce"
+      where="compute-loop"
+      property="none" />
+  <entry-point method-name="computeVelocity" name="ComputeVelocity" where="compute-loop" property="none" />
+  <entry-point
+      method-name="applyBoundaryCondition"
+      name="ApplyBoundaryCondition"
+      where="compute-loop"
+      property="none" />
+  <entry-point method-name="moveNodes" name="MoveNodes" where="compute-loop" property="none" />
+  <entry-point
+      method-name="computeGeometricValues"
+      name="ComputeGeometricValues"
+      where="compute-loop"
+      property="none" />
+  <entry-point method-name="updateDensity" name="UpdateDensity" where="compute-loop" property="none" />
+  <entry-point
+      method-name="applyEquationOfState"
+      name="ApplyEquationOfState"
+      where="compute-loop"
+      property="none" />
+  <entry-point method-name="computeDeltaT" name="ComputeDeltaT" where="compute-loop" property="none" />
+</entry-points>
+
+<options>
+  <!-- - - - - - deltat-min - - - - -->
+  <simple name="deltat-min" type="real">
+    <description>
+      Valeur minimale que peut prendre le
+      <em>deltat</em>
+      entre deux itérations.
+    </description>
+  </simple>
+
+  <!-- - - - - - deltat-max - - - - -->
+  <simple name="deltat-max" type="real">
+    <description>
+      Valeur maximale que peut prendre le
+      <em>deltat</em>
+      entre deux itérations. Si le deltat calculé est supérieur à cette valeur, il est ramené à cette valeur.
+    </description>
+  </simple>
+
+  <!-- - - - - - deltat-init - - - - -->
+  <simple name="deltat-init" type="real">
+    <description>
+      Valeur du
+      <em>deltat</em>
+      au moment du démarrage.
+    </description>
+  </simple>
+
+  <!-- - - - - - final time - - - - -->
+  <simple name="final-time" type="real">
+    <name lang="fr">temps-final</name>
+    <description>
+      Temps auquel on stoppe la simulation. Le code s'arrête dès que le temps courant est
+      <strong>strictement</strong>
+      supérieur à ce temps.
+    </description>
+  </simple>
+
+  <!-- - - - - - cfl - - - - -->
+  <simple name="cfl" type="real" default="0.3">
+    <description>Définition de la CFL</description>
+  </simple>
+
+  <!-- - - - - - boundary-condition - - - - -->
+  <complex name="boundary-condition" type="BoundaryCondition" minOccurs="0" maxOccurs="unbounded">
+    <description>Condition aux limites</description>
+
+    <enumeration name="type" type="TypesMicroHydro::eBoundaryCondition">
+      <description>Type de condition aux limites</description>
+      <enumvalue genvalue="TypesMicroHydro::VelocityX" name="Vx" />
+      <enumvalue genvalue="TypesMicroHydro::VelocityY" name="Vy" />
+      <enumvalue genvalue="TypesMicroHydro::VelocityZ" name="Vz" />
+    </enumeration>
+
+    <extended name="surface" type="Arcane::FaceGroup">
+      <description>Surface sur laquelle s'applique la condition aux limites</description>
+    </extended>
+
+    <simple name="value" type="real">
+      <description>Valeur de la composante à fixer</description>
+    </simple>
+  </complex>
+		
+  <!-- - - - - - equation of state - - - - -->
+  <service-instance name="eos-model" type="IEquationOfState">
+    <description>Service d'equation d'état</description>
+  </service-instance>
+  <service-instance name="geometry" type="Arcane::Numerics::IGeometryMng" default="Euclidian3Geometry">
+    <description>Service Géométrie</description>
+  </service-instance>
+</options>
+</module>

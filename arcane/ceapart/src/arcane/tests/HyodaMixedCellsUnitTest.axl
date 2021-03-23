@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<service name="HyodaMixedCellsUnitTest" version="1.0" type="caseoption" 
+parent-name="Arcane::BasicTimeLoopService" namespace-name="ArcaneTest">
+
+  <interface name="Arcane::ITimeLoopService" inherited="false" />
+
+  <options>
+    <simple name = "iterations" type = "integer" default = "8"></simple> 
+    <complex name = "material" type = "Material" minOccurs = "1" maxOccurs = "unbounded">
+      <description>Materiaux</description>
+      <simple name = "name" type = "string"><description>Nom du materiau</description></simple>
+    </complex>
+    <complex name = "environment" type = "Environment" minOccurs = "1" maxOccurs = "unbounded" >
+      <description>Milieu</description>
+      <simple name = "name" type = "string"><description>Nom du milieu</description></simple>
+      <simple name = "material" type = "string" minOccurs = "1" maxOccurs = "unbounded">
+        <description>Nom du materiau</description>
+      </simple>
+    </complex>
+  </options>
+
+  <variables>
+    <variable field-name="density" name="density" data-type="real" item-kind="cell"
+              dim="0" dump="true" need-sync="true" material="true"/>
+    <variable field-name="qedge" name="qedge" data-type="real" item-kind="face"
+              dim="0" dump="true" need-sync="true"/>
+
+    <variable field-name="InterfaceNormal" name="InterfaceNormal" data-type="real3"
+              item-kind="cell" dim="0" dump="false" need-sync="true"/>
+    <variable field-name="InterfaceDistance" name="InterfaceDistance" data-type="real"
+              item-kind="cell" dim="1" dump="false" need-sync="true"/>
+  </variables>
+</service>

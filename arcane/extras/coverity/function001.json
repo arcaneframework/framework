@@ -1,0 +1,21 @@
+// A simple policy that tests for 1% coverage of functions.
+// Every function must have 1% of its lines covered.
+//
+// recent_date_cutoff and old_date_cutoff control how CIM displays lines.
+//
+// violation_name controls what name is assigned to defects.
+
+{
+  type: "Coverity test policy definition",
+  format_version: 1,
+  recent_date_cutoff: "2012-01-01",
+  old_date_cutoff: "2011-01-01",
+
+  rules: [
+    {
+      violation_name: "FUNCTION_INSUFFICIENTLY_TESTED",
+      aggregation_granularity: "function",
+      minimum_line_coverage_pct: 1
+    }
+  ]
+}

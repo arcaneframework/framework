@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<module name="AlephTestModule" version="1.0" namespace-name="ArcaneTest">
+  <description>Module de test d'Aleph</description>
+
+  <entry-points>
+    <entry-point method-name="init" name="init" where="init" property="none" />
+    <entry-point method-name="compute" name="compute" where="compute-loop" property="none" />
+  </entry-points>
+
+  <variables>
+    <variable field-name="cell_temperature" name="CellTemperature" data-type="real" item-kind="cell" dim="0" dump="true" need-sync="true" />
+    <variable field-name="face_temperature" name="FaceTemperature" data-type="real" item-kind="face" dim="0" dump="false" need-sync="true" />
+    <variable field-name="cell_matrix_idx" name="CellMatrixIdx" data-type="integer" item-kind="cell" dim="0" dump="false" need-sync="false" />
+    <variable field-name="sub_domain_id" name="SubDomainId" data-type="integer" item-kind="cell" dim="0" dump="false" need-sync="false" />
+    <variable field-name="unique_id" name="UniqueId" data-type="int64" item-kind="cell" dim="0" dump="false" need-sync="false" />
+  </variables> 
+
+  <options>
+    <service-instance name="schema" type="AlephTestScheme" default="Faces"/>
+
+	 <!-- Nombre d'itérations à faire -->
+    <!-- Devrait être 'piloté' par le code -->
+    <simple name="iterations" type="integer" default="8">
+      <description>max number of solver iteration</description>
+    </simple>
+
+    <simple name="aleph-delete-kernel" type="bool" default="false"/>
+
+ 	 <!-- Nombre de résolutions à effectuer -->
+    <simple name="aleph-number-of-solvers" type="integer" default="2">
+      <description>Nombre de résolutions à effectuer</description>
+    </simple>
+
+ 	 <!-- Choix du solveur sous-jacent d'Aleph -->
+    <!-- Par défaut, on utilise le solveur Hypre -->
+     <simple name="aleph-underlying-solver" type="integer" default="2" />
+
+ 	 <!-- Choix du nombre de sites pour le solveur sous-jacent d'Aleph -->
+    <simple name="aleph-number-of-cores" type="integer" default="1">
+      <description>Nombre de coeurs qu'utilisera Aleph de façon sous-jacente</description>
+    </simple>
+
+ 	 <!--  -->
+    <simple name="aleph-cell-ordering" type="bool" default="false">
+      <description>Renumerotation avec l'hypothese d'une topologie maille-maille</description>
+    </simple>
+
+	 <!-- Delta T -->
+    <!-- Pas de temps hard-codé, devrait être 'piloté' -->
+	 <simple name="deltaT" type="real" default="0.005">
+ 		<description>Pas de temps utilisé pour le schéma</description>
+	 </simple>
+
+	 <!-- Température initiale des mailles -->
+	 <simple name="init-temperature" type="real" default="200">
+		<description>Température initiale dans tout le maillage</description>
+	 </simple>
+
+	 <!-- Ratio du nombre de maille à AMR'er -->
+	 <simple name="init-amr" type="real" default="0.0">
+		<description>Ratio du nombre de mailles initiales à raffiner</description>
+	 </simple>
+
+	 <!-- Trig du refine -->
+	 <simple name="trig-refine" type="real" default="0.001">
+		<description>Trigger du raffinement</description>
+	 </simple>
+    
+	 <!-- Trig du coarsen -->
+	 <simple name="trig-coarse" type="real" default="0.001">
+		<description>Trigger du dé-raffinement</description>
+	 </simple>
+    
+	 <!-- Conditions limites -->
+    <!-- On force les limites aux faces -->
+    <complex name="boundary-condition" type="BoundaryCondition" minOccurs="0" maxOccurs="unbounded">
+  		<description>Condition aux limites</description>
+      <extended name="surface" type="Arcane::FaceGroup">
+        <description>Surface sur laquelle s'applique la condition aux limites</description>
+      </extended>
+      <simple name="value" type="real">
+        <description>Valeur de la composante a fixer</description>
+      </simple>
+    </complex> 
+ </options>
+</module>
