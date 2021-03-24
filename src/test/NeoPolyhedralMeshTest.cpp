@@ -877,7 +877,7 @@ TEST(PolyhedralTest,CreateXdmfMesh)
   // todo reimport to check
   auto reader = XdmfReader::New();
   auto exported_primaryDomain = shared_dynamic_cast<XdmfDomain>(reader->read(exported_mesh));
-  auto ref_primaryDomain = shared_dynamic_cast<XdmfDomain>(reader->read("../test/meshes/example_cell.xmf"));
+  auto ref_primaryDomain = shared_dynamic_cast<XdmfDomain>(reader->read("meshes/example_cell.xmf"));
   auto exported_topology_str = exported_primaryDomain->getUnstructuredGrid("Grid")->getTopology()->getValuesString();
   auto ref_topology_str = ref_primaryDomain->getUnstructuredGrid("Octahedron")->getTopology()->getValuesString();
   auto exported_geometry_str = exported_primaryDomain->getUnstructuredGrid("Grid")->getGeometry()->getValuesString();
@@ -894,7 +894,7 @@ TEST(PolyhedralTest,CreateXdmfMesh)
 TEST(PolyhedralTest,ImportXdmfPolyhedronMesh)
 {
   auto reader = XdmfReader::New();
-  auto primaryDomain = shared_dynamic_cast<XdmfDomain>(reader->read("../test/meshes/example_mesh.xmf"));
+  auto primaryDomain = shared_dynamic_cast<XdmfDomain>(reader->read("meshes/example_mesh.xmf"));
   auto grid = primaryDomain->getUnstructuredGrid("Polyhedra");
   auto geometry = grid->getGeometry();
   geometry->read();
@@ -1006,7 +1006,7 @@ TEST(PolyhedralTest,ImportXdmfPolyhedronMesh)
 TEST(PolyhedralTest,ImportXdmfHexahedronMesh) {
   auto reader = XdmfReader::New();
   auto primaryDomain = shared_dynamic_cast<XdmfDomain>(
-      reader->read("../test/meshes/example_hexahedron.xmf"));
+      reader->read("meshes/example_hexahedron.xmf"));
   auto grid = primaryDomain->getUnstructuredGrid("Hexahedron");
   auto geometry = grid->getGeometry();
   geometry->read();

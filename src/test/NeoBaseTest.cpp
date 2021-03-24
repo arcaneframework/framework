@@ -1,5 +1,6 @@
 
- #include "neo/Neo.h"
+#include "gtest/gtest.h"
+#include "neo/Neo.h"
 
 /*-------------------------
  * Neo library first test

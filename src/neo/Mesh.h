@@ -17,7 +17,7 @@
 #include <vector>
 
 #include "Neo.h"
-#include "neo/Utils.h"
+#include "Utils.h"
 
 namespace Neo {
 

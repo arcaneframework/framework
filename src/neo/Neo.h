@@ -19,9 +19,7 @@
 #include <vector>
 #include <stdexcept>
 
-#include "gtest/gtest.h"
-
-#include "neo/Utils.h"
+#include "Utils.h"
 
 /*-------------------------
  * sdc - (C)-2019 -

@@ -2,8 +2,8 @@
 // Created by dechaiss on 5/6/20.
 //
 
-#include "neo/Mesh.h"
-#include "neo/Neo.h"
+#include "Mesh.h"
+#include "Neo.h"
 
 
 Neo::Mesh::Mesh(const std::string& mesh_name)

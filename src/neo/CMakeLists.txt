@@ -1,0 +1,1 @@
+add_library(Neo.lib Utils.h Neo.h Mesh.h Mesh.cpp)
