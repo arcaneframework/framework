@@ -5,7 +5,7 @@ target_include_directories(Neo.tests PUBLIC ../.)
 find_package(GTest REQUIRED)
 target_include_directories(Neo.tests PRIVATE ${GTEST_INCLUDE_DIRS})
 
-find_package(Xdmf REQUIRED)
+find_package(Xdmf QUIET)
 
 if(Xdmf_FOUND)
     target_link_libraries(Neo.tests ${XDMF_LIBNAME} ${XDMF_Xdmf_LIB_DEPENDS})
@@ -21,5 +21,4 @@ gtest_discover_tests(Neo.tests)
 
 file( COPY meshes DESTINATION ${CMAKE_BINARY_DIR}/src/test)
 
-enable_testing()
 
