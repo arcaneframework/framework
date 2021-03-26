@@ -101,9 +101,11 @@ class MpiAdapter::RequestSet
       return m_allocated_requests.end();
     auto ireq = m_allocated_requests.find(request);
     if (ireq==m_allocated_requests.end()){
-      error() << "MpiAdapter::testRequest() request not referenced "
-              << " id=" << request;
-      _checkFatalInRequest();
+      if (m_is_report_error_in_request || m_request_error_is_fatal){
+        error() << "MpiAdapter::testRequest() request not referenced "
+                << " id=" << request;
+        _checkFatalInRequest();
+      }
     }
     return ireq;
   }
