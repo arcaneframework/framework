@@ -1,24 +1,13 @@
-Compilation
-===========
+# Benchs
 
-Pour exécuter les tests liés à Arcane, il faut que les produits
-suivants soient installés:
-
-- '.NetCore' version 3.1
-- Intel TBB (version 2019+)
-- MPI (support MPI 3.1)
-
-Arcane utilise l'outil 'cmake' pour la compilation.
-
-Lancement des tests
--------------------
+## Lancement direct des tests
 
 L'exécutable permettant de lancer les tests est
 `lib/arcane_tests_exec`. Pour lancer un test, il suffit de spécifier
 cet exécutable et le jeu de données à utiliser (fichiers avec
 l'extension `.arc`). Par exemple:
 
-```
+```{.sh}
 arcane_tests_exec hydro.arc
 ```
 
@@ -30,7 +19,7 @@ implémentations pour l'échange de message. Chaque mode est géré par un
 service Arcane dont le nom est affiché au début du listing. Par
 exemple:
 
-```
+```{.txt}
 *I-Internal   MessagePassing service=HybridParallelSuperMng
 ```
 
@@ -44,8 +33,6 @@ modes d'échange de message et le mode séquentiel:
   mode nécessite pour MPI le support de MPI_THREAD_MULTIPLE (Arcane
   peut éventuellement utiliser un verrou interne si seul le mode
   MPI_THREAD_SERIALIZED est disponible)
-
-
 
 Par défaut seul le sous-domaine 0 affiche le listing. La détection du
 nombre de sous-domaines gérés par MPI se fait automatiquement. Il est
@@ -85,11 +72,9 @@ mpiexec -n 4 arcane_tests_exec -A,S=5 hydro.arc
 *I-Init       Subdomain number is 0/20
 ```
 
-Benchs disponibles
-==================
+## Benchs disponibles
 
-MicroHydro
-----------
+### MicroHydro
 
 Ce bench contient une hydro très simplifiée sur un tube à choc. En
 parallèle, chaque sous-domaine contient le même morceau de tube qui
@@ -122,8 +107,7 @@ La valeur importante est celle qui suit `loop:`. Si l'extensibilité
 est bonne, cette valeur ne doit pas changer en fonction du nombre de
 sous-domaines.
 
-Particles:
-----------
+### Particles
 
 Ce bench comporte deux modes:
 
