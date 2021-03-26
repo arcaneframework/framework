@@ -225,6 +225,14 @@ if (Arccore_VERSION VERSION_LESS ARCANE_ARCCORE_NEEDED_VERSION)
     " Version ${ARCANE_ARCCORE_NEEDED_VERSION} required")
 endif()
 
+# Si arccore a déjà installé, on prend le mode check de arccore
+# pour garantir la cohérence avec Arcane.
+if (Arccore_DIR)
+  message(STATUS "[arcane] Setting ARCANE_WANT_CHECK from arccore")
+  set(ARCANE_WANT_CHECK ${ARCCORE_CHECK})
+endif()
+message(STATUS "[arcane] Is Check mode enabled ? ${ARCANE_WANT_CHECK} (from arccore: ${ARCCORE_CHECK})")
+
 # ----------------------------------------------------------------------------
 # Utilise les mêmes options de compilation que 'Arccore'.
 
@@ -996,7 +1004,7 @@ foreach(package ${ARCANE_PACKAGE_LIST})
 endforeach()
 
 # ----------------------------------------------------------------------------
-# Affiche les packages not trouvés
+# Affiche les packages non trouvés
 
 get_property(_NOT_FOUND_PACKAGE_LIST GLOBAL PROPERTY PACKAGES_NOT_FOUND)
 if (_NOT_FOUND_PACKAGE_LIST)
