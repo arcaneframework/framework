@@ -1060,6 +1060,7 @@ message(STATUS "ARCANE_OPTIONAL_LIBRARIES: ${ARCANE_OPTIONAL_LIBRARIES}")
 # n'est pas définie, on prend comme répertoire d'installation
 # ${CMAKE_CURRENT_BINARY_DIR}/install
 
+configure_file(CMake/ArcaneConfigCache.cmake.in ${generated_config_dir}/ArcaneConfigCache.cmake @ONLY)
 configure_file(CMake/ArcanePathHints.cmake.in ${generated_config_dir}/ArcanePathHints.cmake @ONLY)
 configure_file(CMake/ArcanePathHints-install.cmake.in ${generated_config_dir}/install/ArcanePathHints.cmake @ONLY)
 install(FILES ${generated_config_dir}/install/ArcanePathHints.cmake DESTINATION ${ARCANE_CMAKE_CONFIG_DIR})
@@ -1089,8 +1090,21 @@ write_basic_package_version_file(
   COMPATIBILITY ExactVersion )
 install(FILES
   ${generated_config_dir}/ArcaneConfig.cmake
+  ${generated_config_dir}/ArcaneConfigCache.cmake
   ${generated_config_dir}/ArcaneConfigVersion.cmake
   DESTINATION ${ARCANE_CMAKE_CONFIG_DIR})
+
+# ----------------------------------------------------------------------------
+
+set(_ARCANE_PACKAGES_ROOTINFO)
+foreach(package ${ARCANE_PACKAGE_LIST})
+  if (${package}_DIR)
+    set(_ARCANE_PACKAGES_ROOTINFO "${_ARCANE_PACKAGES_ROOTINFO}set(${package}_DIR \"${${package}_DIR}\")\n")
+  elseif (${package}_ROOT)
+    set(_ARCANE_PACKAGES_ROOTINFO "${_ARCANE_PACKAGES_ROOTINFO}set(${package}_ROOT \"${${package}_ROOT}\")\n")
+  endif()
+endforeach()
+file(APPEND ${generated_config_dir}/ArcaneConfigCache.cmake ${_ARCANE_PACKAGES_ROOTINFO})
 
 # ----------------------------------------------------------------------------
 # Installation du modèle coverity
