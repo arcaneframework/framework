@@ -35,6 +35,9 @@ list(REMOVE_DUPLICATES _AINCFULL)
 set(Arccore_LIBRARIES @namespace@arccore_full)
 set(Arccore_INCLUDE_DIRS ${_AINCFULL})
 
+set(ARCCORE_CHECK @ARCCORE_CHECK@)
+set(ARCCORE_DEBUG @ARCCORE_DEBUG@)
+
 check_required_components(Arccore)
 
 set(Arccore_FOUND YES)

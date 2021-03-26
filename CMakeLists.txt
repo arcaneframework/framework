@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
+﻿cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -6,15 +6,14 @@
 # For support of VERSION
 cmake_policy(SET CMP0048 NEW)
 # Check libraries with FOO_ROOT (CMake 3.12)
-if(POLICY CMP0074)
-  cmake_policy(SET CMP0074 NEW)
-endif()
+cmake_policy(SET CMP0074 NEW)
 # target_link_libraries from different libraries (CMake 3.13)
-if(POLICY CMP0079)
-  cmake_policy(SET CMP0079 NEW)
-endif()
+cmake_policy(SET CMP0079 NEW)
+# option() honors normal variables (CMake 3.13)
+cmake_policy(SET CMP0077 NEW)
+
 # ----------------------------------------------------------------------------
-# Récupère numéro de version de Arcane à partir du fichier 'version' et
+# Récupère numéro de version de Arccore à partir du fichier 'version' et
 # génère un fichier 'arcane_version.h' contenant ces informations.
 
 file(READ "version" ARCCORE_VERSION_STR_FULL)
@@ -49,13 +48,31 @@ include(ArcconSetInstallDirs)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
+# Positionne les variables 'ARCCORE_DEBUG' et 'ARCCORE_CHECK'.
+# en fonction des valeurs de 'CMAKE_BUILD_TYPE'.
+# Si ce dernier vaut 'Debug', on force le mode 'Check'. Sinon, on utilise
+# éventuellement la valeur donnée lors de la configuration.
+
+message(STATUS "[arccore] Is Check mode enabled (initial) ? ${ARCCORE_CHECK}")
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
   set(ARCCORE_DEBUG YES)
+  set(ARCCORE_CHECK YES)
+else()
+  set(ARCCORE_DEBUG NO)
+  if (NOT DEFINED ARCCORE_CHECK)
+    set(ARCCORE_CHECK FALSE)
+  endif()
 endif()
 
-option(ARCCORE_USE_MPI "Whether or not MPI support must be set" ON)
+set(ARCCORE_DEBUG ${ARCCORE_DEBUG} CACHE BOOL "Is Arccore in debug mode" FORCE)
 
+message(STATUS "[arccore] CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
+message(STATUS "[arccore] Is Check mode enabled (final) ? ${ARCCORE_CHECK}")
+
+# ----------------------------------------------------------------------------
+
+option(ARCCORE_USE_MPI "Whether or not MPI support is enabled" ON)
 
 # ----------------------------------------------------------------------------
 # Il ne faut surtout pas inclure le répertoire courante automatiquement
@@ -103,6 +120,7 @@ install(TARGETS arccore_full EXPORT ${ARCCORE_EXPORT_TARGET})
 if (CMAKE_COMPILER_IS_GNUCXX)
   target_compile_options(arccore_build_compile_flags INTERFACE -fvisibility-inlines-hidden -fvisibility=hidden)
 endif()
+
 # ----------------------------------------------------------------------------
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/CheckCompileFlags.cmake)
@@ -121,7 +139,7 @@ configure_file(${CMAKE_CURRENT_LIST_DIR}/arccore_config.h.in ${CMAKE_BINARY_DIR}
 install(FILES ${CMAKE_BINARY_DIR}/arccore/arccore_config.h DESTINATION include/arccore)
 
 # ----------------------------------------------------------------------------
-# Ajoute support des tests. Il faut le faire avant d'ajouter les componsants
+# Ajoute support des tests. Il faut le faire avant d'ajouter les composants
 # car ces derniers en ont besoin.
 
 # Par défaut on exécute les tests sauf si cela est explicitement pas demandé.
