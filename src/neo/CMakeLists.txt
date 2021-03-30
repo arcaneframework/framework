@@ -1,5 +1,5 @@
 add_library(Neo.lib SHARED Utils.h Neo.h Mesh.h Mesh.cpp)
-
-install(TARGETS Neo.lib EXPORT NeoConfig)
+set_target_properties(Neo.lib PROPERTIES PUBLIC_HEADER "Utils.h;Neo.h;Mesh.h")
+install(TARGETS Neo.lib EXPORT NeoConfig PUBLIC_HEADER)
 export (TARGETS Neo.lib FILE ${CMAKE_CURRENT_BINARY_DIR}/NeoConfig.cmake)
 install(EXPORT NeoConfig DESTINATION ${CMAKE_INSTALL_PREFIX}/cmake)
