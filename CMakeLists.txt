@@ -13,6 +13,16 @@ Project(ArcaneRepo LANGUAGES NONE)
 # TODO: utiliser CMAKE_CONFIGURATION_TYPE pour modifier les valeurs possibles
 # CMAKE_BUILD_TYPE et ainsi les faire correspondre à celles de Arcane.
 
+# NOTE: a terme, ARCANE_BUILD_TYPE ne sera plus utilisé et seul
+# ARCCORE_BUILD_MODE restera
+
+# Si 'ARCCORE_BUILD_MODE' est défini, on s'en sert pour positionner
+# ARCANE_BUILD_TYPE même si ce dernier est défini.
+
+if (DEFINED ARCCORE_BUILD_MODE)
+  set(ARCANE_BUILD_TYPE ${ARCCORE_BUILD_MODE})
+endif()
+
 if (NOT DEFINED ARCANE_BUILD_TYPE)
   if (NOT DEFINED CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
@@ -24,21 +34,31 @@ if (NOT DEFINED ARCANE_BUILD_TYPE)
   endif()
 else()
   if (ARCANE_BUILD_TYPE STREQUAL Debug)
-    set(CMAKE_BUILD_TYPE Debug)
+    if (NOT CMAKE_BUILD_TYPE)
+      set(CMAKE_BUILD_TYPE Debug)
+    endif()
     set(ARCANE_WANT_CHECK TRUE)
   endif()
 
   if (ARCANE_BUILD_TYPE STREQUAL Check)
-    set(CMAKE_BUILD_TYPE Release)
+    if (NOT CMAKE_BUILD_TYPE)
+      set(CMAKE_BUILD_TYPE Release)
+    endif()
     set(ARCANE_WANT_CHECK TRUE)
   endif()
 
   if (ARCANE_BUILD_TYPE STREQUAL Release)
-    set(CMAKE_BUILD_TYPE Release)
+    if (NOT CMAKE_BUILD_TYPE)
+      set(CMAKE_BUILD_TYPE Release)
+    endif()
   endif()
 endif()
 
-set(ARCANE_BUILD_TYPE ${ARCANE_BUILD_TYPE} CACHE STRING "Arcane build type (debug,check,release)" FORCE)
+if (NOT DEFINED ARCCORE_BUILD_MODE)
+  set(ARCCORE_BUILD_MODE ${ARCANE_BUILD_TYPE})
+endif()
+
+#set(ARCCORE_BUILD_MODE ${ARCCORE_BUILD_MODE} CACHE STRING "Arccore build mode (debug,check,release)" FORCE)
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "The type of build, options are: None Debug Release RelWithDebInfo" FORCE)
 
 message(STATUS "ARCANE_BUILD_TYPE = ${ARCANE_BUILD_TYPE}")
