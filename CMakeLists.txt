@@ -49,26 +49,43 @@ include(ArcconSetInstallDirs)
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Positionne les variables 'ARCCORE_DEBUG' et 'ARCCORE_CHECK'.
-# en fonction des valeurs de 'CMAKE_BUILD_TYPE'.
-# Si ce dernier vaut 'Debug', on force le mode 'Check'. Sinon, on utilise
-# éventuellement la valeur donnée lors de la configuration.
-
-message(STATUS "[arccore] Is Check mode enabled (initial) ? ${ARCCORE_CHECK}")
-
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-  set(ARCCORE_DEBUG YES)
-  set(ARCCORE_CHECK YES)
-else()
-  set(ARCCORE_DEBUG NO)
-  if (NOT DEFINED ARCCORE_CHECK)
-    set(ARCCORE_CHECK FALSE)
-  endif()
-endif()
-
-set(ARCCORE_DEBUG ${ARCCORE_DEBUG} CACHE BOOL "Is Arccore in debug mode" FORCE)
+# en fonction des valeurs de 'CMAKE_BUILD_TYPE' ou 'ARCCORE_BUILD_MODE'
 
 message(STATUS "[arccore] CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
+message(STATUS "[arccore] ARCCORE_BUILD_MODE (initial) = ${ARCCORE_BUILD_MODE}")
+
+# Si ARCCORE_BUILD_MODE n'est pas défini, positionne sa valeur en fonction
+# de la valeur de 'CMAKE_BUILD_TYPE'
+if (NOT ARCCORE_BUILD_MODE)
+  if(CMAKE_BUILD_TYPE STREQUAL Debug)
+    set(ARCCORE_BUILD_MODE Debug)
+  else()
+    set(ARCCORE_BUILD_MODE Release)
+  endif()
+  message(STATUS "Forcing 'ARCCORE_BUILD_MODE' to '${ARCCORE_BUILD_MODE}' from value of 'CMAKE_BUILD_TYPE'")
+endif()
+
+if(ARCCORE_BUILD_MODE STREQUAL Debug)
+  set(ARCCORE_DEBUG YES)
+  set(ARCCORE_CHECK YES)
+elseif(ARCCORE_BUILD_MODE STREQUAL Check)
+  set(ARCCORE_DEBUG NO)
+  set(ARCCORE_CHECK YES)
+elseif(ARCCORE_BUILD_MODE STREQUAL Release)
+  set(ARCCORE_DEBUG NO)
+  set(ARCCORE_CHECK NO)
+else()
+  message(FATAL_ERROR "Invalid value '${ARCCORE_BUILD_TYPE}' for 'ARCCORE_BUILD_TYPE'. Valid values are 'Debug', 'Check' or 'Release'")
+endif()
+
+set(ARCCORE_BUILD_MODE ${ARCCORE_BUILD_MODE} CACHE STRING "Arccore build type (debug,check,release)" FORCE)
+set(ARCCORE_DEBUG ${ARCCORE_DEBUG} CACHE BOOL "Is Arccore in debug mode ?" FORCE)
+set(ARCCORE_CHECK ${ARCCORE_CHECK} CACHE BOOL "Is Arccore in check mode ?" FORCE)
+
+message(STATUS "[arccore] CMAKE_BUILD_TYPE (final) = ${CMAKE_BUILD_TYPE}")
+message(STATUS "[arccore] ARCCORE_BUILD_MODE (final) = ${ARCCORE_BUILD_MODE}")
 message(STATUS "[arccore] Is Check mode enabled (final) ? ${ARCCORE_CHECK}")
+message(STATUS "[arccore] Is Debug mode enabled (final) ? ${ARCCORE_DEBUG}")
 
 # ----------------------------------------------------------------------------
 
