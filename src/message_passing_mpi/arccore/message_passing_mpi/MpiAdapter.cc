@@ -74,24 +74,37 @@ class MpiAdapter::RequestSet
       m_is_report_error_in_request = false;
     if (Platform::getEnvironmentVariable("ARCCORE_MPIREQUEST_STACKTRACE")=="TRUE")
       m_use_trace_full_stack = true;
+    if (Platform::getEnvironmentVariable("ARCCORE_TRACE_MPIREQUEST")=="TRUE")
+      m_trace_mpirequest = true;
   }
  public:
   void addRequest(MPI_Request request)
   {
+    if (m_trace_mpirequest)
+      info() << "MpiAdapter: AddRequest r=" << request;
     _addRequest(request,TraceInfo());
   }
   void addRequest(MPI_Request request,const TraceInfo& ti)
   {
+    if (m_trace_mpirequest)
+      info() << "MpiAdapter: AddRequest r=" << request;
     _addRequest(request,ti);
   }
   void removeRequest(MPI_Request request)
   {
+    if (m_trace_mpirequest)
+      info() << "MpiAdapter: RemoveRequest r=" << request;
     _removeRequest(request);
   }
   void removeRequest(Iterator request_iter)
   {
-    if (request_iter==m_allocated_requests.end())
+    if (request_iter==m_allocated_requests.end()){
+      if (m_trace_mpirequest)
+        info() << "MpiAdapter: RemoveRequestIter null iterator";
       return;
+    }
+    if (m_trace_mpirequest)
+      info() << "MpiAdapter: RemoveRequestIter r=" << request_iter->first;
     m_allocated_requests.erase(request_iter);
   }
   //! Vérifie que la requête est dans la liste
@@ -188,6 +201,7 @@ class MpiAdapter::RequestSet
  public:
   bool m_request_error_is_fatal = false;
   bool m_is_report_error_in_request = true;
+  bool m_trace_mpirequest = false;
  private:
   std::map<MPI_Request,RequestInfo> m_allocated_requests;
   bool m_use_trace_full_stack = false;
