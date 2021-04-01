@@ -14,7 +14,7 @@ if(Xdmf_FOUND)
     message("-- XDMF Found ${XDMF_INCLUDE_DIRS}" )
 endif(Xdmf_FOUND)
 
-target_link_libraries(Neo.tests GTest::GTest GTest::Main Neo.lib)
+target_link_libraries(Neo.tests GTest::GTest GTest::Main Neo)
 
 gtest_discover_tests(Neo.tests)
 
