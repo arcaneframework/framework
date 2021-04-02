@@ -1,4 +1,7 @@
-add_executable(arccore_trace.tests TestTraceMng.cc)
+arccore_add_component_test_executable(trace
+  FILES
+  TestTraceMng.cc
+  )
 
 target_link_libraries(arccore_trace.tests PUBLIC arccore_trace GTest::GTest GTest::Main)
 

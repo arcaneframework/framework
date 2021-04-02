@@ -120,6 +120,49 @@ function(arccore_add_component_library component_name)
 endfunction()
 
 # ----------------------------------------------------------------------------
+# Fonction pour créér l'exécutable de test d'un composant 'Arccore'
+#
+# arccore_add_component_test_executable(component_name
+#   FILES ...
+# )
+#
+# Par exemple:
+#
+# arccore_add_component_test_executable(base
+#   FILES ArccoreGlobal.cc ArccoreGlobal.h ...
+# )
+#
+function(arccore_add_component_test_executable component_name)
+  set(options)
+  set(oneValueArgs)
+  set(multiValueArgs FILES)
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  set(_EXE_NAME arccore_${component_name}.tests)
+  add_executable(${_EXE_NAME} ${ARGS_FILES})
+
+  # Génère les exécutables dans le répertoire 'lib' du projet.
+  # Cela permet sous windows de trouver automatiquement les dll des composantes
+
+  set(_exepath ${CMAKE_BINARY_DIR}/lib)
+  if (WIN32)
+    set_target_properties(${_EXE_NAME}
+      PROPERTIES
+      RUNTIME_OUTPUT_DIRECTORY_DEBUG ${_exepath}
+      RUNTIME_OUTPUT_DIRECTORY_RELEASE ${_exepath}
+      RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${_exepath}
+      )
+  else()
+    set_target_properties(${_EXE_NAME}
+      PROPERTIES
+      RUNTIME_OUTPUT_DIRECTORY ${_exepath}
+      )
+  endif()
+
+endfunction()
+
+# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Fonction pour ajoute un répertoire contenant un composant 'Arccore'.
 #

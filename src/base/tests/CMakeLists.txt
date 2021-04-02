@@ -1,4 +1,5 @@
-add_executable(arccore_base.tests
+arccore_add_component_test_executable(base
+  FILES
   TestString.cc
   TestStringView.cc
   TestArrayView.cc
