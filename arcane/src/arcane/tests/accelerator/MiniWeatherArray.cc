@@ -46,6 +46,7 @@
 #include "arcane/ServiceFactory.h"
 #include "arcane/tests/MiniWeatherTypes.h"
 #include "arcane/accelerator/NumArray.h"
+#include "arcane/accelerator/NumArrayViews.h"
 
 #include "arcane/accelerator/Runner.h"
 
@@ -408,8 +409,8 @@ compute_tendencies_x(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumAr
   const auto nx = this->nx();
   const auto nz = this->nz();
 
-  auto in_hy_dens_cell = hy_dens_cell.constSpan();
-  auto in_hy_dens_theta_cell = hy_dens_theta_cell.constSpan();
+  auto in_hy_dens_cell = ax::viewIn(command,hy_dens_cell);
+  auto in_hy_dens_theta_cell = ax::viewIn(command,hy_dens_theta_cell);
 
   const double hv_coef = -hv_beta * dx / (16 * dt());
   //Compute fluxes in the x-direction for each cell
@@ -471,9 +472,9 @@ compute_tendencies_z(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumAr
   const auto nx = this->nx();
   const auto nz = this->nz();
 
-  auto in_hy_dens_int = hy_dens_int.constSpan();
-  auto in_hy_dens_theta_int = hy_dens_theta_int.constSpan();
-  auto in_hy_pressure_int = hy_pressure_int.constSpan();
+  auto in_hy_dens_int = ax::viewIn(command,hy_dens_int);
+  auto in_hy_dens_theta_int = ax::viewIn(command,hy_dens_theta_int);
+  auto in_hy_pressure_int = ax::viewIn(command,hy_pressure_int);
 
   auto state = nstate.constSpan();
   //Compute the hyperviscosity coeficient
@@ -483,6 +484,7 @@ compute_tendencies_z(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumAr
   command << RUNCOMMAND_LOOPN(iter,2,nz+1,nx)
   {
     auto [k,i] = iter;
+
     double r, u, w, t, p, stencil[4], d3_vals[NUM_VARS], vals[NUM_VARS];
     //Use fourth-order interpolation from four cell averages to compute the value at the interface in question
     for (int ll = 0; ll < NUM_VARS; ll++){
