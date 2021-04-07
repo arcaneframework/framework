@@ -68,6 +68,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   MpiAdapter(ITraceMng* msg,IStat* stat,
              MPI_Comm comm,MpiLock* mpi_lock,
              IMpiProfiling* mpi_prof = nullptr);
+  MpiAdapter(const MpiAdapter& rhs) = delete;
+  MpiAdapter& operator=(const MpiAdapter& rhs) = delete;
 
  protected:
 
