@@ -65,7 +65,11 @@ class DataViewGetter
 {
  public:
   using ValueType = const DataType;
-  using AccessorReturnType = const DataType&;
+  using AccessorReturnType = const DataType;
+  static ARCCORE_HOST_DEVICE AccessorReturnType build(const DataType* ptr)
+  {
+    return { *ptr };
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -81,11 +85,33 @@ class DataViewSetter
   using ValueType = DataType;
   using AccessorReturnType = DataViewSetter<DataType>;
  public:
-  ARCCORE_HOST_DEVICE DataViewSetter(DataType* ptr)
+  explicit ARCCORE_HOST_DEVICE DataViewSetter(DataType* ptr)
   : m_ptr(ptr){}
-  ARCCORE_HOST_DEVICE void operator=(const DataType& v)
+  ARCCORE_HOST_DEVICE DataViewSetter(const DataViewSetter<DataType>& v)
+  : m_ptr(v.m_ptr){}
+  ARCCORE_HOST_DEVICE DataViewSetter<DataType>&
+  operator=(const DataType& v)
   {
     *m_ptr = v;
+    return (*this);
+  }
+  ARCCORE_HOST_DEVICE DataViewSetter<DataType>&
+  operator=(const DataViewSetter<DataType>& v)
+  {
+    // Attention: il faut mettre à jour la valeur et pas le pointeur
+    // sinon le code tel que a = b avec 'a' et 'b' deux instances de cette
+    // classe ne fonctionnera pas.
+    *m_ptr = *(v.m_ptr);
+    return (*this);
+  }
+  static ARCCORE_HOST_DEVICE AccessorReturnType build(DataType* ptr)
+  {
+    return AccessorReturnType(ptr);
+  }
+ public:
+  ARCCORE_HOST_DEVICE void operator+=(const DataType& v)
+  {
+    *m_ptr = (*m_ptr) + v;
   }
  private:
   DataType* m_ptr;
@@ -104,15 +130,36 @@ class DataViewGetterSetter
   using ValueType = DataType;
   using AccessorReturnType = DataViewGetterSetter<DataType>;
  public:
-  ARCCORE_HOST_DEVICE DataViewGetterSetter(DataType* ptr)
+  explicit ARCCORE_HOST_DEVICE DataViewGetterSetter(DataType* ptr)
   : m_ptr(ptr){}
-  ARCCORE_HOST_DEVICE void operator=(const DataType& v)
+  ARCCORE_HOST_DEVICE DataViewGetterSetter(const DataViewGetterSetter<DataType>& v)
+  : m_ptr(v.m_ptr){}
+  ARCCORE_HOST_DEVICE DataViewGetterSetter<DataType>
+  operator=(const DataType& v)
   {
     *m_ptr = v;
+    return (*this);
+  }
+  ARCCORE_HOST_DEVICE DataViewGetterSetter<DataType>
+  operator=(const DataViewGetterSetter<DataType>& v)
+  {
+    // Attention: il faut mettre à jour la valeur et pas le pointeur
+    // sinon le code tel que a = b avec 'a' et 'b' deux instances de cette
+    // classe ne fonctionnera pas.
+    *m_ptr = *(v.m_ptr);
+    return (*this);
   }
   ARCCORE_HOST_DEVICE operator DataType() const
   {
     return *m_ptr;
+  }
+  static ARCCORE_HOST_DEVICE AccessorReturnType build(DataType* ptr)
+  {
+    return AccessorReturnType(ptr);
+  }
+  ARCCORE_HOST_DEVICE void operator+=(const DataType& v)
+  {
+    *m_ptr = (*m_ptr) + v;
   }
  private:
   DataType* m_ptr;
@@ -140,7 +187,67 @@ class NumArrayView<Accessor,1>
 
   ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int64 i) const
   {
-    return m_values(i);
+    return Accessor::build(m_values.ptrAt(i));
+  }
+
+ private:
+
+  SpanType m_values;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue en lecture, écriture ou lecture/écriture sur un 'NumArray' 2D.
+ */
+template<typename Accessor>
+class NumArrayView<Accessor,2>
+: public NumArrayViewBase
+{
+ public:
+
+  using DataType = typename Accessor::ValueType;
+  using SpanType = MDSpan<DataType,2>;
+  using AccessorReturnType = typename Accessor::AccessorReturnType;
+
+ public:
+
+  NumArrayView(RunCommand& command,SpanType v)
+  : NumArrayViewBase(command), m_values(v){}
+
+  ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int64 i,Int64 j) const
+  {
+    return Accessor::build(m_values.ptrAt(i,j));
+  }
+
+ private:
+
+  SpanType m_values;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue en lecture, écriture ou lecture/écriture sur un 'NumArray' 2D.
+ */
+template<typename Accessor>
+class NumArrayView<Accessor,3>
+: public NumArrayViewBase
+{
+ public:
+
+  using DataType = typename Accessor::ValueType;
+  using SpanType = MDSpan<DataType,3>;
+  using AccessorReturnType = typename Accessor::AccessorReturnType;
+
+ public:
+
+  NumArrayView(RunCommand& command,SpanType v)
+  : NumArrayViewBase(command), m_values(v){}
+
+  ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int64 i,Int64 j,Int64 k) const
+  {
+    return Accessor::build(m_values.ptrAt(i,j,k));
   }
 
  private:
@@ -170,7 +277,7 @@ template<typename DataType,int N> auto
 viewInOut(RunCommand& command,NumArray<DataType,N>& v)
 {
   using Accessor = DataViewGetterSetter<DataType>;
-  return NumArrayView<Accessor,N>(command,v);
+  return NumArrayView<Accessor,N>(command,v.span());
 }
 
 /*----------------------------------------------1-----------------------------*/
