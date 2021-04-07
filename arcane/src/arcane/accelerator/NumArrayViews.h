@@ -1,0 +1,196 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* NumArrayViews.h                                             (C) 2000-2021 */
+/*                                                                           */
+/* Gestion des vues pour les 'NumArray' pour les accélérateurs.              */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_ACCELERATOR_NUMARRAYVIEW_H
+#define ARCANE_ACCELERATOR_NUMARRAYVIEW_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arcane/accelerator/NumArray.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \file NumArrayViews.h
+ *
+ * Ce fichier contient les déclarations des types pour gérer
+ * les vues pour les accélérateurs de la classe 'NumArray'.
+ */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType,int N>
+class NumArrayViewSetter;
+template<typename Accessor,int N>
+class NumArrayView;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe de base des vues sur les 'NumArray'.
+ */
+class NumArrayViewBase
+{
+ public:
+  explicit NumArrayViewBase(RunCommand& command)
+  : m_run_command(&command)
+  {
+  }
+ private:
+  RunCommand* m_run_command = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe pour accéder à un élément d'une vue en lecture.
+ * TODO: fusionner avec les vues sur les variables
+ */
+template<typename DataType>
+class DataViewGetter
+{
+ public:
+  using ValueType = const DataType;
+  using AccessorReturnType = const DataType&;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe pour accéder à un élément d'une vue en écriture.
+ * TODO: fusionner avec les vues sur les variables
+ */
+template<typename DataType>
+class DataViewSetter
+{
+ public:
+  using ValueType = DataType;
+  using AccessorReturnType = DataViewSetter<DataType>;
+ public:
+  ARCCORE_HOST_DEVICE DataViewSetter(DataType* ptr)
+  : m_ptr(ptr){}
+  ARCCORE_HOST_DEVICE void operator=(const DataType& v)
+  {
+    *m_ptr = v;
+  }
+ private:
+  DataType* m_ptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe pour accéder à un élément d'une vue en lecture/écriture.
+ * TODO: fusionner avec les vues sur les variables
+ */
+template<typename DataType>
+class DataViewGetterSetter
+{
+ public:
+  using ValueType = DataType;
+  using AccessorReturnType = DataViewGetterSetter<DataType>;
+ public:
+  ARCCORE_HOST_DEVICE DataViewGetterSetter(DataType* ptr)
+  : m_ptr(ptr){}
+  ARCCORE_HOST_DEVICE void operator=(const DataType& v)
+  {
+    *m_ptr = v;
+  }
+  ARCCORE_HOST_DEVICE operator DataType() const
+  {
+    return *m_ptr;
+  }
+ private:
+  DataType* m_ptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue en lecture, écriture ou lecture/écriture sur un 'NumArray' 1D.
+ */
+template<typename Accessor>
+class NumArrayView<Accessor,1>
+: public NumArrayViewBase
+{
+ public:
+
+  using DataType = typename Accessor::ValueType;
+  using SpanType = MDSpan<DataType,1>;
+  using AccessorReturnType = typename Accessor::AccessorReturnType;
+
+ public:
+
+  NumArrayView(RunCommand& command,SpanType v)
+  : NumArrayViewBase(command), m_values(v){}
+
+  ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int64 i) const
+  {
+    return m_values(i);
+  }
+
+ private:
+
+  SpanType m_values;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue en écriture.
+ */
+template<typename DataType,int N> auto
+viewOut(RunCommand& command,NumArray<DataType,N>& var)
+{
+  using Accessor = DataViewSetter<DataType>;
+  return NumArrayView<Accessor,N>(command,var.span());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
+ * \brief Vue en lecture/écriture.
+ */
+template<typename DataType,int N> auto
+viewInOut(RunCommand& command,NumArray<DataType,N>& v)
+{
+  using Accessor = DataViewGetterSetter<DataType>;
+  return NumArrayView<Accessor,N>(command,v);
+}
+
+/*----------------------------------------------1-----------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue en lecture.
+ */
+template<typename DataType,int N> auto
+viewIn(RunCommand& command,const NumArray<DataType,N>& v)
+{
+  using Accessor = DataViewGetter<DataType>;
+  return NumArrayView<Accessor,N>(command,v.constSpan());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane::Accelerator
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif

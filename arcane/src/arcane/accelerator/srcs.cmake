@@ -18,4 +18,5 @@ set( ARCANE_SOURCES
   Views.h
   NumArray.h
   NumArray.cc
+  NumArrayViews.h
 )
