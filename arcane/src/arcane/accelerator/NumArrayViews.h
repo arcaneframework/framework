@@ -37,6 +37,10 @@ template<typename DataType,int N>
 class NumArrayViewSetter;
 template<typename Accessor,int N>
 class NumArrayView;
+template<typename DataType>
+class DataViewSetter;
+template<typename DataType>
+class DataViewGetterSetter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -81,6 +85,8 @@ class DataViewGetter
 template<typename DataType>
 class DataViewSetter
 {
+  // Pour accéder à m_ptr;
+  friend class DataViewGetterSetter<DataType>;
  public:
   using ValueType = DataType;
   using AccessorReturnType = DataViewSetter<DataType>;
@@ -121,48 +127,42 @@ class DataViewSetter
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Classe pour accéder à un élément d'une vue en lecture/écriture.
- * TODO: fusionner avec les vues sur les variables
+ *
+ * Cette classe étend les fonctionnalités de DataViewSetter en ajoutant
+ * la possibilité d'accéder à la valeur de la donnée.
  */
 template<typename DataType>
 class DataViewGetterSetter
+: public DataViewSetter<DataType>
 {
+  using BaseType = DataViewSetter<DataType>;
+  using BaseType::m_ptr;
  public:
   using ValueType = DataType;
   using AccessorReturnType = DataViewGetterSetter<DataType>;
  public:
-  explicit ARCCORE_HOST_DEVICE DataViewGetterSetter(DataType* ptr)
-  : m_ptr(ptr){}
-  ARCCORE_HOST_DEVICE DataViewGetterSetter(const DataViewGetterSetter<DataType>& v)
-  : m_ptr(v.m_ptr){}
-  ARCCORE_HOST_DEVICE DataViewGetterSetter<DataType>
-  operator=(const DataType& v)
-  {
-    *m_ptr = v;
-    return (*this);
-  }
-  ARCCORE_HOST_DEVICE DataViewGetterSetter<DataType>
-  operator=(const DataViewGetterSetter<DataType>& v)
-  {
-    // Attention: il faut mettre à jour la valeur et pas le pointeur
-    // sinon le code tel que a = b avec 'a' et 'b' deux instances de cette
-    // classe ne fonctionnera pas.
-    *m_ptr = *(v.m_ptr);
-    return (*this);
-  }
+  explicit ARCCORE_HOST_DEVICE DataViewGetterSetter(DataType* ptr) : BaseType(ptr){}
+  ARCCORE_HOST_DEVICE DataViewGetterSetter(const DataViewGetterSetter& v) : BaseType(v){}
   ARCCORE_HOST_DEVICE operator DataType() const
   {
     return *m_ptr;
+  }
+  ARCCORE_HOST_DEVICE DataViewSetter<DataType>&
+  operator=(const DataViewGetterSetter<DataType>& v)
+  {
+    BaseType::operator=(v);
+    return (*this);
+  }
+  ARCCORE_HOST_DEVICE DataViewSetter<DataType>&
+  operator=(const DataType& v)
+  {
+    BaseType::operator=(v);
+    return (*this);
   }
   static ARCCORE_HOST_DEVICE AccessorReturnType build(DataType* ptr)
   {
     return AccessorReturnType(ptr);
   }
-  ARCCORE_HOST_DEVICE void operator+=(const DataType& v)
-  {
-    *m_ptr = (*m_ptr) + v;
-  }
- private:
-  DataType* m_ptr;
 };
 
 /*---------------------------------------------------------------------------*/
