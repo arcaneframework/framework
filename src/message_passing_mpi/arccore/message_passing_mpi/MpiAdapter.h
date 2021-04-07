@@ -211,9 +211,11 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   Int64 m_nb_reduce = 0;
   bool m_is_trace = false;
   RequestSet* m_request_set = nullptr;
-  //! Requête vide. Voir MpiAdapter.cc pour plus d'infos.
-  MPI_Request m_empty_request;
+  //! Requêtes vides. Voir MpiAdapter.cc pour plus d'infos.
+  MPI_Request m_empty_request1;
+  MPI_Request m_empty_request2;
   int m_recv_buffer_for_empty_request[1];
+  int m_send_buffer_for_empty_request[1];
 
  private:
   
