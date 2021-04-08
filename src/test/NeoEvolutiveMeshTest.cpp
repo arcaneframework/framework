@@ -80,7 +80,7 @@ void addConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
         std::cout << "Algorithm: register connectivity between " <<
           source_family.m_name << "  and  " << target_family.m_name << std::endl;
         auto connected_item_lids = target_family_lids_property[connected_item_uids];
-        std::vector<std::size_t > nb_connected_item_per_item_array(source_items.size(),nb_connected_item_per_item);
+        std::vector<int> nb_connected_item_per_item_array(source_items.size(),nb_connected_item_per_item);
         if (source2target.isInitializableFrom(source_items)) {
           source2target.resize(std::move(nb_connected_item_per_item_array));
           source2target.init(source_items,std::move(connected_item_lids));
@@ -226,9 +226,9 @@ void addCells(Neo::MeshBase &mesh){
   addConnectivity(mesh, face_family, added_faces, node_family, nb_node_per_face, face_nodes);
   auto valid_mesh_state =
       mesh.applyAlgorithms();// retourner un objet qui dévérouille la range
-  auto& new_cells = added_cells.get(valid_mesh_state);
-  auto& new_nodes = added_nodes.get(valid_mesh_state);
-  auto& new_faces = added_faces.get(valid_mesh_state);
+  auto new_cells = added_cells.get(valid_mesh_state);
+  auto new_nodes = added_nodes.get(valid_mesh_state);
+  auto new_faces = added_faces.get(valid_mesh_state);
   std::cout << "Added cells range after applyAlgorithms: " << new_cells;
   std::cout << "Added nodes range after applyAlgorithms: " << new_nodes;
   std::cout << "Added faces range after applyAlgorithms: " << new_faces;

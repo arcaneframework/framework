@@ -91,7 +91,7 @@ namespace StaticMesh {
   void addConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
                        Neo::ItemRange &source_items,
                        Neo::Family& target_family,
-                       std::vector<size_t>&& nb_connected_item_per_items,
+                       std::vector<int>&& nb_connected_item_per_items,
                        std::vector<Neo::utils::Int64> const& connected_item_uids) {
     // add connectivity property if doesn't exist
     std::string connectivity_name =
@@ -125,7 +125,7 @@ namespace StaticMesh {
   void addConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
                        Neo::FutureItemRange &source_items,
                        Neo::Family& target_family,
-                       std::vector<size_t>&& nb_connected_item_per_items,
+                       std::vector<int>&& nb_connected_item_per_items,
                        std::vector<Neo::utils::Int64> const& connected_item_uids)
   {
     addConnectivity(mesh, source_family, source_items.new_items, target_family,
@@ -170,7 +170,7 @@ namespace StaticMesh {
   void addConnectivityOrientation(Neo::MeshBase &mesh, Neo::Family &source_family,
                                   Neo::ItemRange &source_items,
                                   Neo::Family& target_family,
-                                  std::vector<size_t>&& nb_connected_item_per_items,
+                                  std::vector<int>&& nb_connected_item_per_items,
                                   std::vector<int> const& source_item_orientation_in_target_item) {
     // add orientation property if doesn't exist
     std::string orientation_name =
@@ -200,7 +200,7 @@ namespace StaticMesh {
   void addOrientedConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
                                Neo::ItemRange &source_items,
                                Neo::Family& target_family,
-                               std::vector<size_t>&& nb_connected_item_per_items,
+                               std::vector<int>&& nb_connected_item_per_items,
                                std::vector<Neo::utils::Int64> const& connected_item_uids,
                                std::vector<int> const& source_item_orientation_in_target_item,
                                bool do_check_orientation)
@@ -215,7 +215,7 @@ namespace StaticMesh {
   void addOrientedConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
                                Neo::FutureItemRange &source_items,
                                Neo::Family& target_family,
-                               std::vector<size_t>&& nb_connected_item_per_items,
+                               std::vector<int>&& nb_connected_item_per_items,
                                std::vector<Neo::utils::Int64> const& connected_item_uids,
                                std::vector<int> const& source_item_orientation_in_target_item,
                                bool do_check_orientation = false)
@@ -323,7 +323,7 @@ namespace StaticMesh {
       cell_item_orientations.reserve(2 * cell_nodes.size()); // rough approx
       for (int cell_nodes_index = 0; cell_nodes_index < cell_nodes.size();) {
         auto [nb_node_in_cell, item_nodes_all_items] = cell_types[cell_type_indexes[cell_index++]];
-        auto current_cell_nodes = Neo::utils::ConstArrayView<Neo::utils::Int64>{(size_t)nb_node_in_cell,&cell_nodes[cell_nodes_index]};
+        auto current_cell_nodes = Neo::utils::ConstArrayView<Neo::utils::Int64>{nb_node_in_cell,&cell_nodes[cell_nodes_index]};
         for (auto current_item_node_indexes_in_cell : item_nodes_all_items)
         {
           std::vector<Neo::utils::Int64> current_item_nodes;
@@ -354,10 +354,10 @@ namespace StaticMesh {
 
     void reverseConnectivity(std::vector<Neo::utils::Int64> const& original_source_item_uids,
                              std::vector<Neo::utils::Int64> const& original_connectivity,
-                             std::vector<size_t> const& nb_connected_items_per_item_original,
+                             std::vector<int> const& nb_connected_items_per_item_original,
                              std::vector<Neo::utils::Int64> & new_source_item_uids,
                              std::vector<Neo::utils::Int64> & reversed_connectivity,
-                             std::vector<size_t> & nb_connected_items_per_item_reversed,
+                             std::vector<int> & nb_connected_items_per_item_reversed,
                              std::vector<int> const& original_source_item_connected_item_orientations,
                              std::vector<int> & new_source_item_orientation_in_connected_items)
     {
@@ -414,10 +414,10 @@ namespace StaticMesh {
 
     void reverseConnectivity(std::vector<Neo::utils::Int64> const& original_source_item_uids,
                              std::vector<Neo::utils::Int64> const& original_connectivity,
-                             std::vector<size_t> const& nb_connected_items_per_item_original,
+                             std::vector<int> const& nb_connected_items_per_item_original,
                              std::vector<Neo::utils::Int64> & new_source_item_uids,
                              std::vector<Neo::utils::Int64> & reversed_connectivity,
-                             std::vector<size_t> & nb_connected_items_per_item_reversed)
+                             std::vector<int> & nb_connected_items_per_item_reversed)
     {
       std::vector<int> original_source_item_connected_item_orientations{};
       std::vector<int> new_source_item_orientation_in_connected_items{};
@@ -464,10 +464,10 @@ namespace PolyhedralMeshTest {
                    std::vector<Neo::utils::Int64>& face_nodes,
                    std::vector<Neo::utils::Int64>& face_cells,
                    std::vector<int>& face_orientation_in_cells,
-                   std::vector<size_t>&& nb_node_per_cells,
-                   std::vector<size_t>&& nb_face_per_cells,
-                   std::vector<size_t>&& nb_node_per_faces,
-                   std::vector<size_t>&& nb_cell_per_faces) {
+                   std::vector<int>&& nb_node_per_cells,
+                   std::vector<int>&& nb_face_per_cells,
+                   std::vector<int>&& nb_node_per_faces,
+                   std::vector<int>&& nb_cell_per_faces) {
     auto &cell_family = addCellFamily(mesh, StaticMesh::cell_family_name);
     auto &node_family = addNodeFamily(mesh, StaticMesh::node_family_name);
     auto &face_family = addFaceFamily(mesh, StaticMesh::face_family_name);
@@ -490,9 +490,9 @@ namespace PolyhedralMeshTest {
     StaticMesh::addOrientedConnectivity(mesh,face_family,added_faces,cell_family,
         std::move(nb_cell_per_faces),face_cells,face_orientation_in_cells,do_check_orientation);
     auto valid_mesh_state = mesh.applyAlgorithms();
-    auto &new_cells = added_cells.get(valid_mesh_state);
-    auto &new_nodes = added_nodes.get(valid_mesh_state);
-    auto &new_faces = added_faces.get(valid_mesh_state);
+    auto new_cells = added_cells.get(valid_mesh_state);
+    auto new_nodes = added_nodes.get(valid_mesh_state);
+    auto new_faces = added_faces.get(valid_mesh_state);
     std::cout << "Added cells range after applyAlgorithms: " << new_cells;
     std::cout << "Added nodes range after applyAlgorithms: " << new_nodes;
     std::cout << "Added faces range after applyAlgorithms: " << new_faces;
@@ -519,10 +519,10 @@ namespace PolyhedralMeshTest {
     std::vector<int> face_orientation_in_cells {1,1,1,1,1,1,-1,-1};
     _createMesh(mesh, node_uids, cell_uids, face_uids, node_coords, cell_nodes,
                 cell_faces, face_nodes, face_cells, face_orientation_in_cells,
-                std::vector<size_t>(cell_uids.size(),nb_node_per_cell),
-                std::vector<size_t>(cell_uids.size(),nb_face_per_cell),
-                std::vector<size_t>(face_uids.size(),nb_node_per_face),
-                std::vector<size_t>(face_uids.size(),nb_cell_per_face));
+                std::vector<int>(cell_uids.size(),nb_node_per_cell),
+                std::vector<int>(cell_uids.size(),nb_face_per_cell),
+                std::vector<int>(face_uids.size(),nb_node_per_face),
+                std::vector<int>(face_uids.size(),nb_cell_per_face));
     // Validation
     auto cell_family = mesh.getFamily(Neo::ItemKind::IK_Cell,StaticMesh::cell_family_name);
     auto node_family = mesh.getFamily(Neo::ItemKind::IK_Node,StaticMesh::node_family_name);
@@ -652,11 +652,11 @@ TEST(PolyhedralTest,ConnectivityUtilitiesTest){
   // get face cells by reversing connectivity
   std::vector<Neo::utils::Int64> cell_uids{0,1,2,3};
   std::vector<Neo::utils::Int64> cell_faces{0,1,2,2,3,4,4,6,5,6,7,8,9};
-  std::vector<size_t> nb_face_per_cells{3,3,3,4};
+  std::vector<int> nb_face_per_cells{3,3,3,4};
   std::vector<int> cell_face_orientations{1,1,1,-1,1,1,-1,1,1,-1,1,1,1};
   std::vector<Neo::utils::Int64> face_uids;
   std::vector<Neo::utils::Int64> face_cells;
-  std::vector<size_t> nb_cell_per_faces;
+  std::vector<int> nb_cell_per_faces;
   std::vector<int> face_orientation_in_cells;
   StaticMesh::utilities::reverseConnectivity(cell_uids,cell_faces,nb_face_per_cells,
                                              face_uids,face_cells,nb_cell_per_faces,
@@ -667,7 +667,7 @@ TEST(PolyhedralTest,ConnectivityUtilitiesTest){
   _printContainer(face_orientation_in_cells, "Face orientation in cells ");
   std::vector<Neo::utils::Int64> face_uids_ref{0,1,2,3,4,5,6,7,8,9};
   std::vector<Neo::utils::Int64> face_cells_ref{0,0,0,1,1,1,2,2,2,3,3,3,3};
-  std::vector<size_t> nb_cell_per_faces_ref{1,1,2,1,2,1,2,1,1,1};
+  std::vector<int> nb_cell_per_faces_ref{1,1,2,1,2,1,2,1,1,1};
   std::vector<int> face_orientation_in_cells_ref{1,1,1,-1,1,1,-1,1,1,-1,1,1,1};
   EXPECT_TRUE(std::equal(face_uids.begin(),face_uids.end(),
                          face_uids_ref.begin(),face_uids_ref.end()));
@@ -684,7 +684,7 @@ TEST(PolyhedralTest,TypedUtilitiesOrientationTest) {
   StaticMesh::utilities::DefaultItemOrientation item_orientation{};
   std::vector<Neo::utils::Int64> face_nodes_mock{1, 2, 3};
   EXPECT_TRUE(item_orientation.isOrdered(
-      {face_nodes_mock.size(), face_nodes_mock.data()}));
+      {(int)face_nodes_mock.size(), face_nodes_mock.data()}));
   face_nodes_mock = {7, 6, 5, 9, 10, 11};
   EXPECT_FALSE(item_orientation.isOrdered(
       {face_nodes_mock.size(), face_nodes_mock.data()}));
@@ -702,7 +702,7 @@ TEST(PolyhedralTest,ItemOrientationCheckTest){
   std::vector<Neo::utils::Int64> cell_uids{0,1,2};
   std::vector<Neo::utils::Int64> face_uids{0,1,2,3,4};
   std::vector<Neo::utils::Int64> face_cells{0,1,1,2,2,0,0,1};
-  std::vector<std::size_t> nb_cell_per_faces{2,2,2,1,1};
+  std::vector<int> nb_cell_per_faces{2,2,2,1,1};
   std::vector<int> face_orientation_in_cells{1,-1,-1,1,-1,1,-1,-1};
   auto& cell_family = StaticMesh::addFamily(mesh,Neo::ItemKind::IK_Cell, "CellFamily");
   auto& face_family = StaticMesh::addFamily(mesh,Neo::ItemKind::IK_Face, "FaceFamily");
@@ -730,7 +730,7 @@ TEST(PolyhedralTest,ItemOrientationCheckTestWrongOrientation){
   std::vector<Neo::utils::Int64> cell_uids{0,1,2};
   std::vector<Neo::utils::Int64> face_uids{0,1,2,3,4};
   std::vector<Neo::utils::Int64> face_cells{0,1,1,2,2,0,0,1};
-  std::vector<std::size_t> nb_cell_per_faces{2,2,2,1,1};
+  std::vector<int> nb_cell_per_faces{2,2,2,1,1};
   std::vector<int> face_orientation_in_cells{1,1,-1,1,-1,-1,-1,-1};
   auto& cell_family = StaticMesh::addFamily(mesh,Neo::ItemKind::IK_Cell, "CellFamily");
   auto& face_family = StaticMesh::addFamily(mesh,Neo::ItemKind::IK_Face, "FaceFamily");
@@ -877,7 +877,7 @@ TEST(PolyhedralTest,CreateXdmfMesh)
   // todo reimport to check
   auto reader = XdmfReader::New();
   auto exported_primaryDomain = shared_dynamic_cast<XdmfDomain>(reader->read(exported_mesh));
-  auto ref_primaryDomain = shared_dynamic_cast<XdmfDomain>(reader->read("../test/meshes/example_cell.xmf"));
+  auto ref_primaryDomain = shared_dynamic_cast<XdmfDomain>(reader->read("meshes/example_cell.xmf"));
   auto exported_topology_str = exported_primaryDomain->getUnstructuredGrid("Grid")->getTopology()->getValuesString();
   auto ref_topology_str = ref_primaryDomain->getUnstructuredGrid("Octahedron")->getTopology()->getValuesString();
   auto exported_geometry_str = exported_primaryDomain->getUnstructuredGrid("Grid")->getGeometry()->getValuesString();
@@ -894,7 +894,7 @@ TEST(PolyhedralTest,CreateXdmfMesh)
 TEST(PolyhedralTest,ImportXdmfPolyhedronMesh)
 {
   auto reader = XdmfReader::New();
-  auto primaryDomain = shared_dynamic_cast<XdmfDomain>(reader->read("../test/meshes/example_mesh.xmf"));
+  auto primaryDomain = shared_dynamic_cast<XdmfDomain>(reader->read("meshes/example_mesh.xmf"));
   auto grid = primaryDomain->getUnstructuredGrid("Polyhedra");
   auto geometry = grid->getGeometry();
   geometry->read();
@@ -916,8 +916,8 @@ TEST(PolyhedralTest,ImportXdmfPolyhedronMesh)
   std::vector<Neo::utils::Int64> cell_nodes;
   std::vector<Neo::utils::Int64> cell_faces;
   std::vector<int> cell_faces_orientation;
-  std::vector<size_t> nb_node_per_cells;
-  std::vector<size_t> nb_face_per_cells;
+  std::vector<int> nb_node_per_cells;
+  std::vector<int> nb_face_per_cells;
   using FaceNodes = std::set<int>;
   using FaceUid = Neo::utils::Int64;
   using FaceInfo = std::pair<FaceNodes,FaceUid>;
@@ -926,7 +926,7 @@ TEST(PolyhedralTest,ImportXdmfPolyhedronMesh)
   };
   std::set<FaceInfo, decltype(face_info_comp)> face_nodes_set(face_info_comp);
   face_nodes.reserve(topology->getSize());
-  std::vector<size_t> nb_node_per_faces;
+  std::vector<int> nb_node_per_faces;
   auto cell_index = 0;
   auto face_uid = 0;
   for (auto cell_data_index = 0; cell_data_index< cell_data.size();){
@@ -934,7 +934,7 @@ TEST(PolyhedralTest,ImportXdmfPolyhedronMesh)
     auto cell_nb_face  = cell_data[cell_data_index++];
     nb_face_per_cells.push_back(cell_nb_face);
     for (auto face_index = 0; face_index< cell_nb_face;++face_index){
-      std::size_t face_nb_node = cell_data[cell_data_index++];
+      int face_nb_node = cell_data[cell_data_index++];
       auto current_face_nodes = Neo::utils::ConstArrayView<Neo::utils::Int64>{face_nb_node,&cell_data[cell_data_index]};
       auto [face_info, is_new_face] = face_nodes_set.emplace(FaceNodes{current_face_nodes.begin(),
                              current_face_nodes.end()},face_uid);
@@ -973,7 +973,7 @@ TEST(PolyhedralTest,ImportXdmfPolyhedronMesh)
   // get face cells by reversing connectivity
   std::vector<Neo::utils::Int64> face_cells;
   std::vector<Neo::utils::Int64> connected_face_uids;
-  std::vector<size_t> nb_cell_per_faces;
+  std::vector<int> nb_cell_per_faces;
   std::vector<int> face_orientation_in_cells;
   StaticMesh::utilities::reverseConnectivity(cell_uids,cell_faces,nb_face_per_cells,
                                              connected_face_uids,face_cells,
@@ -1006,7 +1006,7 @@ TEST(PolyhedralTest,ImportXdmfPolyhedronMesh)
 TEST(PolyhedralTest,ImportXdmfHexahedronMesh) {
   auto reader = XdmfReader::New();
   auto primaryDomain = shared_dynamic_cast<XdmfDomain>(
-      reader->read("../test/meshes/example_hexahedron.xmf"));
+      reader->read("meshes/example_hexahedron.xmf"));
   auto grid = primaryDomain->getUnstructuredGrid("Hexahedron");
   auto geometry = grid->getGeometry();
   geometry->read();
@@ -1027,11 +1027,11 @@ TEST(PolyhedralTest,ImportXdmfHexahedronMesh) {
   std::vector<Neo::utils::Int64> node_uids;
   std::set<Neo::utils::Int32> current_cell_nodes;
   std::vector<Neo::utils::Int64> cell_nodes;
-  std::size_t cell_nb_nodes = 8;
+  int cell_nb_nodes = 8;
   auto cell_index = 0;
   for (auto cell_data_index = 0; cell_data_index < cell_data.size();) {
     cell_uids.push_back(cell_index++);
-    auto current_cell_nodes = Neo::utils::ConstArrayView<int>{
+    auto current_cell_nodes = Neo::utils::ConstArrayView<Neo::utils::Int32>{
         cell_nb_nodes, &cell_data[cell_data_index]};
     cell_nodes.insert(cell_nodes.end(), current_cell_nodes.begin(),
                       current_cell_nodes.end());
@@ -1066,9 +1066,9 @@ TEST(PolyhedralTest,ImportXdmfHexahedronMesh) {
   // get face cells by reversing connectivity
   std::vector<Neo::utils::Int64> face_cells;
   std::vector<Neo::utils::Int64> connected_face_uids;
-  std::vector<size_t> nb_cell_per_faces;
+  std::vector<int> nb_cell_per_faces;
   std::vector<int> face_orientation_in_cells;
-  StaticMesh::utilities::reverseConnectivity(cell_uids,cell_faces,std::vector<size_t>(cell_uids.size(),6),
+  StaticMesh::utilities::reverseConnectivity(cell_uids,cell_faces,std::vector<int>(cell_uids.size(),6),
                                              connected_face_uids,face_cells,nb_cell_per_faces,
                                              cell_face_orientations,face_orientation_in_cells);
   _printContainer(face_cells, "  Face cells ");
@@ -1078,9 +1078,9 @@ TEST(PolyhedralTest,ImportXdmfHexahedronMesh) {
   PolyhedralMeshTest::_createMesh(mesh, node_uids, cell_uids, face_uids,
                                   node_coords,cell_nodes,cell_faces,
                                   face_nodes, face_cells, face_orientation_in_cells,
-                                  std::vector<size_t>(cell_uids.size(),8),
-                                  std::vector<size_t>(cell_uids.size(),6),
-                                  std::vector<size_t>(face_uids.size(),4),
+                                  std::vector<int>(cell_uids.size(),8),
+                                  std::vector<int>(cell_uids.size(),6),
+                                  std::vector<int>(face_uids.size(),4),
                                   std::move(nb_cell_per_faces));
 }
 
