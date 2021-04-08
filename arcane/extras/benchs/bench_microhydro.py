@@ -56,9 +56,9 @@ xstr = """<?xml version="1.0"?>
 
   <!-- Configuration du module hydrodynamique -->
   <simple-hydro>
-    <deltat-init>0.001</deltat-init>
-    <deltat-min>0.0001</deltat-min>
-    <deltat-max>0.01</deltat-max>
+    <deltat-init>0.00001</deltat-init>
+    <deltat-min>0.000001</deltat-min>
+    <deltat-max>0.0001</deltat-max>
     <final-time>0.2</final-time>
 
     <viscosity>cell</viscosity>
@@ -114,6 +114,7 @@ required_arguments = parser.add_argument_group('required named arguments')
 required_arguments.add_argument("-n","--nb-proc", dest="nb_proc", action="store", help="number of processus", type=int, required=True)
 parser.add_argument("-s","--mesh-size", dest="mesh_size", action="store", help="size of mesh", type=int, default=10)
 parser.add_argument("-l","--load-balance", dest="do_load_balance", action="store_true", help="true if load balance is activated")
+parser.add_argument("-m","--max-iteration", dest="max_iteration", action="store", help="number of iteration to do", type=int, default=100)
 
 args = parser.parse_args()
 nb_proc = args.nb_proc
@@ -156,6 +157,6 @@ case_file.write(z)
 case_file.close()
 
 arcane_driver_path = "./bin/arcane_test_driver"
-command = [ arcane_driver_path, "launch", "-n", str(nb_proc), "-m", "100", "-We,ARCANE_NEW_MESHINIT,1", "test.arc" ]
+command = [ arcane_driver_path, "launch", "-n", str(nb_proc), "-m", str(args.max_iteration), "-We,ARCANE_NEW_MESHINIT,1", "test.arc" ]
 print(command)
 subprocess.run(command)
