@@ -20,6 +20,12 @@ target_compile_definitions(arcane_impl PRIVATE ARCANE_COMPONENT_arcane_impl)
 
 target_link_libraries(arcane_impl PUBLIC arcane_core)
 
+# Avec les versions statiques de la glib, cela est nécessaire
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  message(STATUS "Add library 'dl' to target 'arcane_impl'")
+  target_link_libraries(arcane_impl PUBLIC dl)
+endif()
+
 # FlexLM
 target_link_directories(arcane_utils PUBLIC ${FLEXLM_LIBRARY_DIRS})
 target_link_libraries(arcane_utils PUBLIC ${FLEXLM_LIBRARIES})
