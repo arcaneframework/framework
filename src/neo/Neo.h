@@ -30,15 +30,6 @@
  *--------------------------
  */
 
-template <typename T>
-std::ostream& operator<<(std::ostream& oss, std::vector<T> const& container)
-{
-  for (auto const &val : container) {
-    oss << val << " ";
-  }
-  return oss;
-}
-
 namespace Neo {
 
 enum class ItemKind {
@@ -69,12 +60,6 @@ inline std::string itemKindName(ItemKind item_kind){
     break;
   }
 }
-  template <typename Container>
-  void printContainer(Container&& container, std::string const& name="Container"){
-    std::cout << name << " , size : " << container.size() << std::endl;
-    std::copy(container.begin(),container.end(),std::ostream_iterator<typename std::remove_reference_t<Container>::value_type>(std::cout," "));
-    std::cout << std::endl;
-  }
 }
 
 struct ItemLocalId {};
@@ -85,10 +70,12 @@ using DataType = std::variant<utils::Int32, utils::Int64, utils::Real3>;// ajout
 using DataIndex = std::variant<int,ItemUniqueId>;
 
 struct ItemLocalIds {
-  std::vector<Neo::utils::Int32 > m_non_contiguous_lids = {};
-  Neo::utils::Int32 m_first_contiguous_lid = 0;
-  std::size_t m_nb_contiguous_lids = 0;
-  std::size_t size()  const {return m_non_contiguous_lids.size()+ m_nb_contiguous_lids;}
+  std::vector<utils::Int32 > m_non_contiguous_lids = {};
+  utils::Int32 m_first_contiguous_lid = 0;
+  int m_nb_contiguous_lids = 0;
+
+  int size()  const {return m_non_contiguous_lids.size()+ m_nb_contiguous_lids;}
+
   int operator() (int index) const{
     if (index >= int(size())) return  size();
     if (index < 0) return -1;
@@ -99,20 +86,31 @@ struct ItemLocalIds {
     return item_lid;
   }
 
-  std::vector<Neo::utils::Int32> itemArray() {
-    std::vector<Neo::utils::Int32> item_array(m_non_contiguous_lids.size()+
+  std::vector<utils::Int32> itemArray() const {
+    std::vector<utils::Int32> item_array(m_non_contiguous_lids.size()+
                                               m_nb_contiguous_lids);
     std::copy(m_non_contiguous_lids.begin(), m_non_contiguous_lids.end(),item_array.begin());
     std::iota(item_array.begin() + m_non_contiguous_lids.size(),item_array.end(), m_first_contiguous_lid);
     return item_array;
   }
 
-  static std::vector<Neo::utils::Int32 > getIndexes(std::vector<Neo::utils::Int32> const& item_lids){
-    std::vector<Neo::utils::Int32> indexes{};
+  utils::Int32 maxLocalId() const {
+    auto max_contiguous_lid = m_first_contiguous_lid+m_nb_contiguous_lids-1;
+    if (m_non_contiguous_lids.empty()) return max_contiguous_lid;
+    else {
+      auto max_non_contiguous_lid = *std::max_element(m_non_contiguous_lids.begin(),
+                                                      m_non_contiguous_lids.end());
+      return std::max(max_contiguous_lid,max_non_contiguous_lid);
+    }
+  }
+
+  static std::vector<utils::Int32 > getIndexes(std::vector<utils::Int32> const& item_lids){
+    std::vector<utils::Int32> indexes{};
     std::copy_if(item_lids.begin(),item_lids.end(),std::back_inserter(indexes),[](auto const& lid) { return lid != utils::NULL_ITEM_LID; });
     return indexes;
   }
 };
+
 struct ItemIterator {
   using iterator_category = std::input_iterator_tag;
   using value_type = int;
@@ -129,13 +127,16 @@ struct ItemIterator {
   ItemLocalIds m_item_indexes;
 };
 struct ItemRange {
+  std::vector<utils::Int32> localIds() const {return m_item_lids.itemArray();}
+  ItemLocalIds m_item_lids;
+
   bool isContiguous() const {return m_item_lids.m_non_contiguous_lids.empty();};
   ItemIterator begin() const {return ItemIterator{m_item_lids,0};}
   ItemIterator end() const {return ItemIterator{m_item_lids,int(m_item_lids.size())};} // todo : consider reverse range : constructeur (ItemLocalIds, traversal_order=forward) enum à faire
   std::size_t size() const {return m_item_lids.size();}
   bool isEmpty() const  {return size() == 0;}
-  std::vector<Neo::utils::Int32> localIds() {return m_item_lids.itemArray();}
-  ItemLocalIds m_item_lids;
+  utils::Int32 maxLocalId() const noexcept { return m_item_lids.maxLocalId();}
+
 };
 }// end namespace Neo
 
@@ -220,19 +221,42 @@ public:
     m_data = std::move(values);
   }
 
-  void append(const ItemRange& item_range, const std::vector<DataType>& values) {
+  void append(const ItemRange& item_range, const std::vector<DataType>& values, DataType default_value=DataType{}) {
     if (item_range.size()==0) return;
     assert(("item_range and values sizes differ",item_range.size() == values.size()));
     auto max_item = utils::maxItem(item_range);
-    if (max_item > m_data.size()) m_data.resize(max_item+1);
+    if (max_item > m_data.size()) m_data.resize(max_item+1,default_value);
     std::size_t counter{0};
     for (auto item : item_range) {
       m_data[item] = values[counter++];
     }
   }
 
-  DataType & operator[] (Neo::utils::Int32 item) { return m_data[item]; }
-  DataType const& operator[] (Neo::utils::Int32 item) const { return m_data[item]; }
+  DataType & operator[] (utils::Int32 item) {
+    assert(("Input item lid > max local id, In PropertyT[]",item < m_data.size()));
+    return m_data[item]; }
+  DataType const& operator[] (utils::Int32 item) const {
+    assert(("Input item lid > max local id, In PropertyT[]",item < m_data.size()));
+    return m_data[item]; }
+  std::vector<DataType> operator[] (std::vector<utils::Int32>const& items) const {
+    return _arrayAccessor(items);
+  }
+  std::vector<DataType> operator[] (utils::ConstArrayView<utils::Int32>const& items) const {
+    return _arrayAccessor(items);
+  }
+
+  template <typename ArrayType>
+  std::vector<DataType> _arrayAccessor (ArrayType items) const {
+    // check bounds
+    assert(("Max input item lid > max local id, In PropertyT[]",
+               *(std::max_element(items.begin(),items.end()))< m_data.size()));
+
+    std::vector<DataType> values;
+    values.reserve(items.size());
+    std::transform(items.begin(),items.end(),std::back_inserter(values),
+                   [this](auto item){return m_data[item];});
+    return values;
+  }
 
   void debugPrint() const {
     std::cout << "= Print property " << m_name << " =" << std::endl;
@@ -249,15 +273,17 @@ public:
   PropertyView<DataType> view() {
     std::vector<int> indexes(m_data.size()); std::iota(indexes.begin(),indexes.end(),0);
     return PropertyView<DataType>{std::move(indexes),Neo::utils::ArrayView<DataType>{m_data.size(),m_data.data()}};}
+
   PropertyView<DataType> view(ItemRange const& item_range) {
     std::vector<int> indexes; indexes.reserve(item_range.size());
     for (auto item : item_range) indexes.push_back(item);
     return PropertyView<DataType>{std::move(indexes),Neo::utils::ArrayView<DataType>{m_data.size(),m_data.data()}};}
 
-  PropertyConstView<DataType> constView() {
+  PropertyConstView<DataType> constView() const {
     std::vector<int> indexes(m_data.size()); std::iota(indexes.begin(),indexes.end(),0);
     return PropertyConstView<DataType>{std::move(indexes),Neo::utils::ConstArrayView<DataType>{m_data.size(),m_data.data()}};}
-  PropertyConstView<DataType> constView(ItemRange const& item_range) {
+    
+  PropertyConstView<DataType> constView(ItemRange const& item_range) const {
     std::vector<int> indexes; indexes.reserve(item_range.size());
     for (auto item : item_range) indexes.push_back(item);
     return PropertyConstView<DataType>{std::move(indexes),Neo::utils::ConstArrayView<DataType>{m_data.size(),m_data.data()}};}
@@ -267,7 +293,7 @@ public:
 template <typename DataType>
 class ArrayProperty : public PropertyBase {
 public:
-  void resize(std::vector<std::size_t> sizes){ // only 2 moves if a rvalue is passed. One copy + one move if lvalue
+  void resize(std::vector<int> sizes){ // only 2 moves if a rvalue is passed. One copy + one move if lvalue
     m_offsets = std::move(sizes);
   }
   bool isInitializableFrom(const ItemRange& item_range){return item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty() ;}
@@ -275,19 +301,20 @@ public:
     assert(isInitializableFrom(item_range));
     m_data = std::move(values);
   }
-  void append(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<std::size_t> const& nb_values_per_item){
+  void append(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_values_per_item){
     if (item_range.size()==0) return;
     // todo: see how to handle new element add or remove impact on property (size/values)
     assert(item_range.size()==nb_values_per_item.size());
-    assert(values.size()==std::accumulate(nb_values_per_item.begin(),nb_values_per_item.end(),0));
+    assert(("connected items array size and nb_values_per_item size are not compatible",
+    values.size()==std::accumulate(nb_values_per_item.begin(),nb_values_per_item.end(),0)));
     if (utils::minItem(item_range) >= m_offsets.size()) _appendByBackInsertion(item_range,values,nb_values_per_item); // only new items
     else _appendByReconstruction(item_range,values,nb_values_per_item); // includes existing items
   }
 
-  void _appendByReconstruction(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<std::size_t> const& nb_connected_item_per_item){
+  void _appendByReconstruction(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_connected_item_per_item){
     std::cout << "Append in ArrayProperty by reconstruction" << std::endl;
     // Compute new offsets
-    std::vector<std::size_t> new_offsets(m_offsets);
+    std::vector<int> new_offsets(m_offsets);
     if (utils::maxItem(item_range) >= new_offsets.size()) new_offsets.resize(utils::maxItem(item_range)+1);// todo ajouter ArrayProperty::resize(maxlid)
     auto index = 0;
     for (auto item : item_range) {
@@ -307,7 +334,7 @@ public:
       }
     }
     // copy old values
-    ItemRange old_values_range{ItemLocalIds{{},0,m_offsets.size()}};
+    ItemRange old_values_range{ItemLocalIds{{},0,(int)m_offsets.size()}};
     for (auto item : old_values_range) {
       if (!marked_items[item]) {
         auto connected_items = (*this)[item];
@@ -321,9 +348,14 @@ public:
     m_data    = std::move(new_data);
   }
 
-  void _appendByBackInsertion(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<std::size_t> const& nb_connected_item_per_item){
+  void _appendByBackInsertion(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_connected_item_per_item){
     if (item_range.isContiguous()) {
       std::cout << "Append in ArrayProperty by back insertion, contiguous range" << std::endl;
+      auto max_existing_lid = m_offsets.size()-1;
+      auto min_new_lid = utils::minItem(item_range);
+      if (min_new_lid > max_existing_lid+1) {
+        m_offsets.resize(min_new_lid,0);
+      }
       std::copy(nb_connected_item_per_item.begin(),
                 nb_connected_item_per_item.end(),
                 std::back_inserter(m_offsets));
@@ -337,9 +369,8 @@ public:
       m_data.resize(m_data.size()+values.size(),DataType());
       index = 0;
       for (auto item : item_range) {
-        std::cout << "item is " << item<< std::endl;
         auto connected_items = (*this)[item];
-        std::cout << " item " << item << " index in data " << _getItemIndexInData(item) << std::endl;
+//        std::cout << " item " << item << " index in data " << _getItemIndexInData(item) << std::endl;
         for (auto& connected_item : connected_items) {
           connected_item = values[index++];
         }
@@ -361,6 +392,7 @@ public:
       std::cout << "\"" << val << "\" ";
     }
     std::cout << std::endl;
+    Neo::utils::printContainer(m_offsets, "Offsets ");
   }
 
   // todo should be computed only when m_offsets is updated, at least implement an array version
@@ -368,18 +400,18 @@ public:
     return std::accumulate(m_offsets.begin(),m_offsets.begin()+item,0);
   }
 
-  utils::Int32 _getItemIndexInData(const utils::Int32 item, const std::vector<std::size_t>& offsets) const{
+  utils::Int32 _getItemIndexInData(const utils::Int32 item, const std::vector<int>& offsets) const{
     return std::accumulate(offsets.begin(),offsets.begin()+item,0);
   }
 
-  std::size_t size() const {
+  int size() const {
     return std::accumulate(m_offsets.begin(), m_offsets.end(), 0);
   }
 
 
 //  private:
   std::vector<DataType> m_data;
-  std::vector<std::size_t> m_offsets;
+  std::vector<int> m_offsets;
 
 };
 
@@ -480,7 +512,7 @@ public:
     // (on estime que l'on décime les id les plus élevés ou les plus faibles), avoir le choix (avec un paramètre par défaut)
     ItemLocalIds item_local_ids{};
     if (m_empty_lids.empty()) { // range contiguous
-      item_local_ids = ItemLocalIds{{},0,(std::size_t)(m_last_id+1)};
+      item_local_ids = ItemLocalIds{{},0,m_last_id+1};
     }
     else {// range discontiguous
       std::vector<Neo::utils::Int32> lids(m_last_id + 1);
@@ -530,7 +562,14 @@ private:
 
 };
 
-using Property = std::variant<PropertyT<utils::Int32>, PropertyT<utils::Real3>,PropertyT<utils::Int64>,ItemLidsProperty, ArrayProperty<utils::Int32>>;
+using Property = std::variant<
+    PropertyT<utils::Int32>,
+    //PropertyT<int>, // int and Int32 are same types
+    PropertyT<utils::Real3>,
+    PropertyT<utils::Int64>,
+    ItemLidsProperty,
+    //ArrayProperty<int>, // int and Int32 are same types
+    ArrayProperty<utils::Int32>>;
 
 namespace tye {
 template <typename... T> struct VisitorOverload : public T... {
@@ -589,6 +628,14 @@ public:
 
   constexpr std::string const& name() const noexcept {return m_name;}
   constexpr ItemKind const& itemKind() const noexcept {return m_ik;}
+
+  std::vector<Neo::utils::Int32> itemUniqueIdsToLocalids(std::vector<Neo::utils::Int64> const& item_uids) const {
+    return _lidProp().operator[](item_uids);
+  }
+  void itemUniqueIdsToLocalids(std::vector<Neo::utils::Int32> & item_lids, std::vector<Neo::utils::Int64> const& item_uids) const {
+    assert(("In itemUniqueIdsToLocalIds, lids and uids sizes differ.",item_lids.size() == item_uids.size()));
+    _lidProp()._getLidsFromUids(item_lids,item_uids);
+  }
 
   template<typename T>
   void addProperty(std::string const& name){
@@ -769,16 +816,119 @@ class MeshBase;
 
 class EndOfMeshUpdate {
   friend class MeshBase;
+private:
+  EndOfMeshUpdate() = default;
 };
-
 
 struct FutureItemRange {
 
-  ItemRange &get(EndOfMeshUpdate const &){
+  ItemRange new_items;
+  bool is_data_released = false;
+
+  FutureItemRange() = default;
+  virtual ~FutureItemRange() = default;
+
+  FutureItemRange(FutureItemRange&) = default;
+  FutureItemRange& operator=(FutureItemRange&) = default;
+
+  FutureItemRange(FutureItemRange&&) = default;
+  FutureItemRange& operator=(FutureItemRange&&) = default;
+
+  virtual ItemRange get(EndOfMeshUpdate const &) {
+    if (is_data_released)
+      throw std::runtime_error(
+          "Impossible to call FutureItemRange.get(), data already released.");
+    is_data_released = true;
+    return std::move(new_items);
+  }
+
+  virtual ItemRange& __internal__() {
     return new_items;
   }
-  ItemRange new_items;
+
 };
+
+struct FilteredFutureItemRange : public FutureItemRange {
+
+  FutureItemRange const& m_future_range;
+  std::vector<int> m_filter;
+  bool is_data_filtered = false;
+
+  FilteredFutureItemRange() = delete;
+
+  FilteredFutureItemRange(FutureItemRange& future_item_range_ref,
+                          std::vector<int> filter)
+    : m_future_range(future_item_range_ref)
+    , m_filter(std::move(filter)){}
+
+  virtual ~FilteredFutureItemRange() = default;
+
+  FilteredFutureItemRange(FilteredFutureItemRange&) = default;
+  FilteredFutureItemRange& operator=(FilteredFutureItemRange&) = default;
+
+  FilteredFutureItemRange(FilteredFutureItemRange&&) = default;
+  FilteredFutureItemRange& operator=(FilteredFutureItemRange&&) = default;
+
+  ItemRange get(EndOfMeshUpdate const & end_update) override {
+    if (!is_data_filtered) throw std::runtime_error("Impossible to call FilteredFutureItemRange.get(), data not yet filtered. Call __internal()__ first.");
+    return FutureItemRange::get(end_update);
+  }
+
+  ItemRange& __internal__() override {
+    if (!is_data_filtered) {
+      std::vector<Neo::utils::Int32> filtered_lids(m_filter.size());
+      auto i = 0;
+      auto local_ids = m_future_range.new_items.localIds();
+      std::transform(m_filter.begin(),m_filter.end(),filtered_lids.begin(),
+                     [&local_ids](auto index){
+                       return local_ids[index];
+                     });
+      new_items = ItemRange{{std::move(filtered_lids)}};
+      is_data_filtered = true;
+    }
+    return new_items;
+  }
+};
+
+inline Neo::FutureItemRange make_future_range(){
+  return FutureItemRange{};
+}
+
+inline Neo::FilteredFutureItemRange make_future_range(FutureItemRange& future_item_range,
+                                               std::vector<int> filter) {
+  return FilteredFutureItemRange{future_item_range,std::move(filter)};
+}
+
+/*!
+ * Create a FilteredFutureItemRange filtering an FutureItemRange. The filter is here computed.
+ * @tparam item_id Maybe local_id (Neo::utils::Int32) or unique_id (Neo::utils::Int64)
+ * @param future_item_range The future range filtered
+ * @param future_item_range_ids The set of ids in the future range
+ * @param ids_subset The subset of ids kept from the future range
+ * @return The FilteredFutureItemRange
+ */
+template <typename item_id>
+inline Neo::FilteredFutureItemRange make_future_range(FutureItemRange& future_item_range,
+                                                      std::vector<item_id> future_item_range_ids,
+                                                      std::vector<item_id> ids_subset){
+    std::vector<int> filter(ids_subset.size());
+    std::map<item_id, int> uid_index_map;
+    auto index = 0;
+    for (auto uid : future_item_range_ids) {
+      uid_index_map.insert({uid,index++});
+    }
+    auto error = 0;
+    auto i = 0;
+    for (auto uid : ids_subset) {
+      auto iterator = uid_index_map.find(uid);
+      if (iterator == uid_index_map.end()) ++error;
+      else filter[i++] = (*iterator).second;
+    }
+    if (error > 0 ) throw std::runtime_error("in make_future_range, ids_subset contains element not present in future_item_range_ids");
+
+  return FilteredFutureItemRange{future_item_range,std::move(filter)};
+
+}
 
 class MeshBase {
 public:

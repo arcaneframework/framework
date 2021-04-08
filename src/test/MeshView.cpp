@@ -105,7 +105,7 @@ namespace utils{
 // register connectivity
 // node to cell
     std::vector<Neo::utils::Int64> connected_cell_uids{0,0,2,2,7,9};
-    std::vector<std::size_t> nb_cell_per_node{1,2,3};
+    std::vector<int> nb_cell_per_node{1,2,3};
     mesh.addAlgorithm(
         Neo::InProperty{node_family,node_family.lidPropName()},
         Neo::InProperty{cell_family,cell_family.lidPropName()},
@@ -128,7 +128,7 @@ namespace utils{
 
 // cell to node
     std::vector<Neo::utils::Int64> connected_node_uids{0,1,2,1,2,0,2,1,0};// on ne connecte volontairement pas toutes les mailles pour vérifier initialisation ok sur la famille
-    std::vector<std::size_t> nb_node_per_cell{3,0,3,3};
+    std::vector<int> nb_node_per_cell{3,0,3,3};
     mesh.addAlgorithm(Neo::InProperty{node_family,node_family.lidPropName()},
                       Neo::InProperty{cell_family,cell_family.lidPropName()},
                       Neo::OutProperty{cell_family,"cell2nodes"},
