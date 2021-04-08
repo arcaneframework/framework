@@ -28,6 +28,9 @@ if(POLICY CMP0074)
   cmake_policy(SET CMP0074 NEW)
 endif()
 
+if(POLICY CMP0111)
+  cmake_policy(SET CMP0111 NEW)
+endif()
 
 # ----------------------------------------------------------------------------
 
@@ -217,13 +220,24 @@ if (ARCANE_WANT_CHECK)
   set(ARCCORE_CHECK TRUE)
 endif()
 
-set(ARCANE_ARCCORE_NEEDED_VERSION "1.8.0")
+set(ARCANE_ARCCORE_NEEDED_VERSION "2.0.0")
 find_package(Arccore ${ARCANE_ARCCORE_NEEDED_VERSION} REQUIRED)
 message(STATUS "Arccore_DIR = ${Arccore_DIR}")
 if (Arccore_VERSION VERSION_LESS ARCANE_ARCCORE_NEEDED_VERSION)
   message(FATAL_ERROR "Arccore version '${Arccore_VERSION}' is too old."
     " Version ${ARCANE_ARCCORE_NEEDED_VERSION} required")
 endif()
+
+# Si arccore a déjà installé, on prend le mode check de arccore
+# pour garantir la cohérence avec Arcane.
+if (Arccore_DIR)
+  # TODO: à terme, supprimer ces deux variables 'ARCANE_WANT_CHECK' et 'ARCANE_WANT_DEBUG'
+  message(STATUS "[arcane] Setting 'ARCANE_WANT_CHECK' and 'ARCANE_WANT_DEBUG' from arccore")
+  set(ARCANE_WANT_CHECK ${ARCCORE_CHECK})
+  set(ARCANE_WANT_DEBUG ${ARCCORE_DEBUG})
+endif()
+message(STATUS "[arcane] Is Check mode enabled ? ${ARCANE_WANT_CHECK} (from arccore: ${ARCCORE_CHECK})")
+message(STATUS "[arcane] Is Debug mode enabled ? ${ARCANE_WANT_DEBUG} (from arccore: ${ARCCORE_DEBUG})")
 
 # ----------------------------------------------------------------------------
 # Utilise les mêmes options de compilation que 'Arccore'.
@@ -598,10 +612,6 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 
 message(STATUS "ARCANE_EXTERNAL_LIBRARY_DIRS is ${ARCANE_EXTERNAL_LIBRARY_DIRS}")
 
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-  set(ARCANE_WANT_DEBUG YES)
-endif()
-
 # ----------------------------------------------------------------------------
 
 if (UNIX)
@@ -878,8 +888,8 @@ function(ARCANE_GEN_CORE_CONFIG_FILE filename)
   set(_STR "${_STR}#define ARCANE_ITEM_CONNECTIVITY_SIZE_MODE_NEW 2\n")
   set(_STR "${_STR}#define ARCANE_ITEM_CONNECTIVITY_SIZE_MODE_DYNAMIC 3\n")
   ARCANE_WRITE_ONE_CONFIG(ARCANE_USE_THREAD ARCANE_HAS_THREAD)
-  ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_CHECK ARCANE_CHECK)
-  ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_DEBUG ARCANE_DEBUG)
+  ARCANE_WRITE_ONE_CONFIG(ARCCORE_CHECK ARCANE_CHECK)
+  ARCANE_WRITE_ONE_CONFIG(ARCCORE_DEBUG ARCANE_DEBUG)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_CUDA ARCANE_HAS_CUDA)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_USE_CXX11 ARCANE_HAS_CXX11)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_USE_CXX14 ARCANE_HAS_CXX14)
@@ -996,7 +1006,7 @@ foreach(package ${ARCANE_PACKAGE_LIST})
 endforeach()
 
 # ----------------------------------------------------------------------------
-# Affiche les packages not trouvés
+# Affiche les packages non trouvés
 
 get_property(_NOT_FOUND_PACKAGE_LIST GLOBAL PROPERTY PACKAGES_NOT_FOUND)
 if (_NOT_FOUND_PACKAGE_LIST)
@@ -1052,6 +1062,7 @@ message(STATUS "ARCANE_OPTIONAL_LIBRARIES: ${ARCANE_OPTIONAL_LIBRARIES}")
 # n'est pas définie, on prend comme répertoire d'installation
 # ${CMAKE_CURRENT_BINARY_DIR}/install
 
+configure_file(CMake/ArcaneConfigCache.cmake.in ${generated_config_dir}/ArcaneConfigCache.cmake @ONLY)
 configure_file(CMake/ArcanePathHints.cmake.in ${generated_config_dir}/ArcanePathHints.cmake @ONLY)
 configure_file(CMake/ArcanePathHints-install.cmake.in ${generated_config_dir}/install/ArcanePathHints.cmake @ONLY)
 install(FILES ${generated_config_dir}/install/ArcanePathHints.cmake DESTINATION ${ARCANE_CMAKE_CONFIG_DIR})
@@ -1081,8 +1092,21 @@ write_basic_package_version_file(
   COMPATIBILITY ExactVersion )
 install(FILES
   ${generated_config_dir}/ArcaneConfig.cmake
+  ${generated_config_dir}/ArcaneConfigCache.cmake
   ${generated_config_dir}/ArcaneConfigVersion.cmake
   DESTINATION ${ARCANE_CMAKE_CONFIG_DIR})
+
+# ----------------------------------------------------------------------------
+
+set(_ARCANE_PACKAGES_ROOTINFO)
+foreach(package ${ARCANE_PACKAGE_LIST})
+  if (${package}_DIR)
+    set(_ARCANE_PACKAGES_ROOTINFO "${_ARCANE_PACKAGES_ROOTINFO}set(${package}_DIR \"${${package}_DIR}\")\n")
+  elseif (${package}_ROOT)
+    set(_ARCANE_PACKAGES_ROOTINFO "${_ARCANE_PACKAGES_ROOTINFO}set(${package}_ROOT \"${${package}_ROOT}\")\n")
+  endif()
+endforeach()
+file(APPEND ${generated_config_dir}/ArcaneConfigCache.cmake ${_ARCANE_PACKAGES_ROOTINFO})
 
 # ----------------------------------------------------------------------------
 # Installation du modèle coverity

@@ -46,6 +46,7 @@
 #include "arcane/ServiceFactory.h"
 #include "arcane/tests/MiniWeatherTypes.h"
 #include "arcane/accelerator/NumArray.h"
+#include "arcane/accelerator/NumArrayViews.h"
 
 #include "arcane/accelerator/Runner.h"
 
@@ -168,12 +169,15 @@ class MiniWeatherArray
  public:
 
   void init();
-  ARCCORE_HOST_DEVICE void injection(double x, double z, double &r, double &u, double &w, double &t, double &hr, double &ht);
+  ARCCORE_HOST_DEVICE void injection(double x, double z, double &r, double &u,
+                                     double &w, double &t, double &hr, double &ht);
   ARCCORE_HOST_DEVICE void hydro_const_theta(double z, double &r, double &t);
   void output(NumArray<double,3>& state, double etime);
-  void perform_timestep(NumArray<double,3>& state, NumArray<double,3>& state_tmp, NumArray<double,3>& flux, NumArray<double,3>& tend, double dt);
-  void semi_discrete_step(NumArray<double,3>& nstate_init, NumArray<double,3>& nstate_forcing, NumArray<double,3>& nstate_out,
-                          double dt, int dir, NumArray<double,3>& flux, NumArray<double,3>& tend);
+  void perform_timestep(NumArray<double,3>& state, NumArray<double,3>& state_tmp,
+                        NumArray<double,3>& flux, NumArray<double,3>& tend, double dt);
+  void semi_discrete_step(NumArray<double,3>& nstate_init, NumArray<double,3>& nstate_forcing,
+                          NumArray<double,3>& nstate_out, double dt, int dir,
+                          NumArray<double,3>& flux, NumArray<double,3>& tend);
   void compute_tendencies_x(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumArray<double,3>& tend);
   void compute_tendencies_z(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumArray<double,3>& tend);
   void set_halo_values_x(NumArray<double,3>& nstate);
@@ -362,13 +366,6 @@ void MiniWeatherArray::
 semi_discrete_step(NumArray<double,3>& nstate_init, NumArray<double,3>& nstate_forcing, NumArray<double,3>& nstate_out,
                    double dt, int dir, NumArray<double,3>& flux, NumArray<double,3>& tend)
 {
-  auto queue = makeQueue(m_runner);
-  auto command = makeCommand(queue);
-
-  auto state_init = nstate_init.constSpan();
-  auto state_out = nstate_out.span();
-  auto in_tend = tend.constSpan();
-
   if (dir == DIR_X) {
     // Set the halo values  in the x-direction
     set_halo_values_x(nstate_forcing);
@@ -381,6 +378,13 @@ semi_discrete_step(NumArray<double,3>& nstate_init, NumArray<double,3>& nstate_f
     // Compute the time tendencies for the fluid state in the z-direction
     compute_tendencies_z(nstate_forcing, flux, tend);
   }
+
+  auto queue = makeQueue(m_runner);
+  auto command = makeCommand(queue);
+
+  auto state_init = ax::viewIn(command,nstate_init);
+  auto state_out = ax::viewOut(command,nstate_out);
+  auto in_tend = ax::viewIn(command,tend);
 
   command << RUNCOMMAND_LOOP3(iter,NUM_VARS,nz(),nx())
   {
@@ -402,18 +406,18 @@ compute_tendencies_x(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumAr
   auto queue = makeQueue(m_runner);
   auto command = makeCommand(queue);
 
-  auto state = nstate.constSpan();
+  auto state = ax::viewIn(command,nstate);
 
   const auto dx = this->dx();
   const auto nx = this->nx();
   const auto nz = this->nz();
 
-  auto in_hy_dens_cell = hy_dens_cell.constSpan();
-  auto in_hy_dens_theta_cell = hy_dens_theta_cell.constSpan();
+  auto in_hy_dens_cell = ax::viewIn(command,hy_dens_cell);
+  auto in_hy_dens_theta_cell = ax::viewIn(command,hy_dens_theta_cell);
 
   const double hv_coef = -hv_beta * dx / (16 * dt());
   //Compute fluxes in the x-direction for each cell
-  auto out_flux = flux.span();
+  auto out_flux = ax::viewOut(command,flux);
   command.addKernelName("compute_tendencies_x") << RUNCOMMAND_LOOP2(iter,nz,nx+1)
   {
     auto [k, i] = iter;
@@ -443,8 +447,8 @@ compute_tendencies_x(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumAr
     out_flux(ID_RHOT,k,i) = r * u * t - hv_coef * d3_vals[ID_RHOT];
   };
 
-  auto in_flux = flux.constSpan();
-  auto out_tend = tend.span();
+  auto in_flux = ax::viewIn(command,flux);
+  auto out_tend = ax::viewOut(command,tend);
   // Use the fluxes to compute tendencies for each cell
   command << RUNCOMMAND_LOOPN(iter,3,NUM_VARS,nz,nx)
   {
@@ -471,18 +475,19 @@ compute_tendencies_z(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumAr
   const auto nx = this->nx();
   const auto nz = this->nz();
 
-  auto in_hy_dens_int = hy_dens_int.constSpan();
-  auto in_hy_dens_theta_int = hy_dens_theta_int.constSpan();
-  auto in_hy_pressure_int = hy_pressure_int.constSpan();
+  auto in_hy_dens_int = ax::viewIn(command,hy_dens_int);
+  auto in_hy_dens_theta_int = ax::viewIn(command,hy_dens_theta_int);
+  auto in_hy_pressure_int = ax::viewIn(command,hy_pressure_int);
 
-  auto state = nstate.constSpan();
+  auto state = ax::viewIn(command,nstate);
   //Compute the hyperviscosity coeficient
   const double hv_coef = -hv_beta * dx / (16 * dt());
   //Compute fluxes in the x-direction for each cell
-  auto out_flux = flux.span();
+  auto out_flux = ax::viewOut(command,flux);
   command << RUNCOMMAND_LOOPN(iter,2,nz+1,nx)
   {
     auto [k,i] = iter;
+
     double r, u, w, t, p, stencil[4], d3_vals[NUM_VARS], vals[NUM_VARS];
     //Use fourth-order interpolation from four cell averages to compute the value at the interface in question
     for (int ll = 0; ll < NUM_VARS; ll++){
@@ -510,8 +515,8 @@ compute_tendencies_z(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumAr
   };
 
   // Use the fluxes to compute tendencies for each cell
-  auto in_flux = flux.constSpan();
-  auto out_tend = tend.span();
+  auto in_flux = ax::viewIn(command,flux);
+  auto out_tend = ax::viewOut(command,tend);
   command << RUNCOMMAND_LOOP(iter,ArrayBounds<3>(NUM_VARS,nz,nx))
   {
     auto [ll, k, i] = iter;
@@ -531,10 +536,9 @@ set_halo_values_x(NumArray<double,3>& nstate)
   auto queue = makeQueue(m_runner);
   auto command = makeCommand(queue);
 
-  auto state_in = nstate.constSpan();
-  auto state_out = nstate.span();
-  auto in_hy_dens_cell = hy_dens_cell.constSpan();
-  auto in_hy_dens_theta_cell = hy_dens_theta_cell.constSpan();
+  auto state_in_out = ax::viewInOut(command,nstate);
+  auto in_hy_dens_cell = ax::viewIn(command,hy_dens_cell);
+  auto in_hy_dens_theta_cell = ax::viewIn(command,hy_dens_theta_cell);
 
   const auto nx = this->nx();
   const auto nz = this->nz();
@@ -544,10 +548,10 @@ set_halo_values_x(NumArray<double,3>& nstate)
   command << RUNCOMMAND_LOOP(iter,ArrayBounds<2>(NUM_VARS,nz))
   {
     auto [ll, k] = iter;
-    state_out(ll,k+hs,0) = state_in(ll,k+hs,nx+hs-2);
-    state_out(ll,k+hs,1) = state_in(ll,k+hs,nx+hs-1);
-    state_out(ll,k+hs,nx+hs) = state_in(ll,k+hs,hs);
-    state_out(ll,k+hs,nx+hs+1) = state_in(ll,k+hs,hs+1);
+    state_in_out(ll,k+hs,0) = state_in_out(ll,k+hs,nx+hs-2);
+    state_in_out(ll,k+hs,1) = state_in_out(ll,k+hs,nx+hs-1);
+    state_in_out(ll,k+hs,nx+hs) = state_in_out(ll,k+hs,hs);
+    state_in_out(ll,k+hs,nx+hs+1) = state_in_out(ll,k+hs,hs+1);
   };
 
   if (m_const.myrank == 0){
@@ -556,8 +560,8 @@ set_halo_values_x(NumArray<double,3>& nstate)
       auto [k, i] = iter;
       double z = ((double)(k_beg + k) + 0.5) * dz;
       if (abs(z - 3 * zlen / 4) <= zlen / 16){
-        state_out(ID_UMOM,k+hs,i) = (state_in(ID_DENS,k+hs,i) + in_hy_dens_cell(k + hs)) * 50.;
-        state_out(ID_RHOT,k+hs,i) = (state_in(ID_DENS,k+hs,i) + in_hy_dens_cell(k + hs)) * 298. - in_hy_dens_theta_cell(k + hs);
+        state_in_out(ID_UMOM,k+hs,i) = (state_in_out(ID_DENS,k+hs,i) + in_hy_dens_cell(k + hs)) * 50.;
+        state_in_out(ID_RHOT,k+hs,i) = (state_in_out(ID_DENS,k+hs,i) + in_hy_dens_cell(k + hs)) * 298. - in_hy_dens_theta_cell(k + hs);
       }
     };
   }
@@ -571,29 +575,28 @@ set_halo_values_x(NumArray<double,3>& nstate)
 void MiniWeatherArray::
 set_halo_values_z(NumArray<double,3>& nstate)
 {
-  auto state_in = nstate.constSpan();
-  auto state_out = nstate.span();
-
   auto queue = makeQueue(m_runner);
   auto command = makeCommand(queue);
 
   const auto nx = this->nx();
   const auto nz = this->nz();
 
+  auto state_in_out = ax::viewInOut(command,nstate);
+
   command << RUNCOMMAND_LOOP(iter,ArrayBounds<2>(NUM_VARS,nx+2*hs))
   {
     auto [ll,i] = iter;
     if (ll == ID_WMOM){
-      state_out(ll,0,i) = 0.0;
-      state_out(ll,1,i) = 0.0;
-      state_out(ll,nz+hs,i) = 0.0;
-      state_out(ll,nz+hs+1,i) = 0.0;
+      state_in_out(ll,0,i) = 0.0;
+      state_in_out(ll,1,i) = 0.0;
+      state_in_out(ll,nz+hs,i) = 0.0;
+      state_in_out(ll,nz+hs+1,i) = 0.0;
     }
     else {
-      state_out(ll,0,i) = state_in(ll,hs,i);
-      state_out(ll,1,i) = state_in(ll,hs,i); // GG: bizarre que ce soit pareil que au dessus.
-      state_out(ll,nz+hs,i) = state_in(ll,nz+hs-1,i);
-      state_out(ll,nz+hs+1,i) = state_in(ll,nz+hs-1,i); // Idem
+      state_in_out(ll,0,i) = state_in_out(ll,hs,i);
+      state_in_out(ll,1,i) = state_in_out(ll,hs,i); // GG: bizarre que ce soit pareil que au dessus.
+      state_in_out(ll,nz+hs,i) = state_in_out(ll,nz+hs-1,i);
+      state_in_out(ll,nz+hs+1,i) = state_in_out(ll,nz+hs-1,i); // Idem
     }
   };
 }
@@ -661,16 +664,25 @@ init()
   info() << "dx,dz: " << dx << " " << dz;
   info() << "dt: " << dt();
 
-  auto in_state = nstate.constSpan();
-  auto out_state = nstate.span();
-  auto out_state_tmp = nstate_tmp.span();
-
   const int nqpoints = 3;
-  const double qpoints[] = {0.112701665379258311482073460022E0, 0.500000000000000000000000000000E0, 0.887298334620741688517926539980E0};
-  const double qweights[] = {0.277777777777777777777777777779E0, 0.444444444444444444444444444444E0, 0.277777777777777777777777777779E0};
+  const double qpoints[] =
+  {
+    0.112701665379258311482073460022E0,
+    0.500000000000000000000000000000E0,
+    0.887298334620741688517926539980E0
+  };
+  const double qweights[] =
+  {
+    0.277777777777777777777777777779E0,
+    0.444444444444444444444444444444E0,
+    0.277777777777777777777777777779E0
+  };
 
   auto queue = makeQueue(m_runner);
   auto command = makeCommand(queue);
+
+  auto in_out_state = ax::viewInOut(command,nstate);
+  auto out_state_tmp = ax::viewOut(command,nstate_tmp);
 
   //////////////////////////////////////////////////////////////////////////
   // Initialize the cell-averaged fluid state via Gauss-Legendre quadrature
@@ -681,7 +693,7 @@ init()
     auto [k,i] = iter;
     double r, u, w, t, hr, ht;
     for (int ll = 0; ll < NUM_VARS; ll++)
-      out_state(ll,k,i) = 0.0;
+      in_out_state(ll,k,i) = 0.0;
 
     // Use Gauss-Legendre quadrature to initialize a hydrostatic balance + temperature perturbation
     for (int kk = 0; kk < nqpoints; kk++) {
@@ -694,15 +706,15 @@ init()
         injection(x, z, r, u, w, t, hr, ht);
 
         // Store into the fluid state array
-        out_state(ID_DENS,k,i) += + r * qweights[ii] * qweights[kk];
-        out_state(ID_UMOM,k,i) += + (r + hr) * u * qweights[ii] * qweights[kk];
-        out_state(ID_WMOM,k,i) += + (r + hr) * w * qweights[ii] * qweights[kk];
-        out_state(ID_RHOT,k,i) += + ((r + hr) * (t + ht) - hr * ht) * qweights[ii] * qweights[kk];
+        in_out_state(ID_DENS,k,i) += + r * qweights[ii] * qweights[kk];
+        in_out_state(ID_UMOM,k,i) += + (r + hr) * u * qweights[ii] * qweights[kk];
+        in_out_state(ID_WMOM,k,i) += + (r + hr) * w * qweights[ii] * qweights[kk];
+        in_out_state(ID_RHOT,k,i) += + ((r + hr) * (t + ht) - hr * ht) * qweights[ii] * qweights[kk];
       }
     }
 
     for (int ll = 0; ll < NUM_VARS; ll++)
-      out_state_tmp(ll,k,i) = in_state(ll,k,i);
+      out_state_tmp(ll,k,i) = in_out_state(ll,k,i);
   };
   info() << "End init part 1\n";
 

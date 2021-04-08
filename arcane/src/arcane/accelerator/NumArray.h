@@ -221,6 +221,12 @@ class MDSpan<DataType,1>
     ARCCORE_CHECK_AT(i,m_dimensions[0]);
     return m_ptr[i];
   }
+  //! Pointeur sur la valeur pour l'élément \a i
+  ARCCORE_HOST_DEVICE DataType* ptrAt(Int64 i) const
+  {
+    ARCCORE_CHECK_AT(i,m_dimensions[0]);
+    return m_ptr+i;
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -257,6 +263,13 @@ class MDSpan<DataType,2>
     ARCCORE_CHECK_AT(i,m_dimensions[0]);
     ARCCORE_CHECK_AT(j,m_dimensions[1]);
     return m_ptr[m_dimensions[1]*i + j];
+  }
+  //! Pointeur sur la valeur pour l'élément \a i,j
+  ARCCORE_HOST_DEVICE DataType* ptrAt(Int64 i,Int64 j) const
+  {
+    ARCCORE_CHECK_AT(i,m_dimensions[0]);
+    ARCCORE_CHECK_AT(j,m_dimensions[1]);
+    return m_ptr + (m_dimensions[1]*i + j);
   }
 };
 
@@ -304,6 +317,14 @@ class MDSpan<DataType,3>
     ARCCORE_CHECK_AT(j,m_dimensions[1]);
     ARCCORE_CHECK_AT(k,m_dimensions[2]);
     return m_ptr[(m_dim23_size*i) + m_dimensions[2]*j + k];
+  }
+  //! Pointeur sur la valeur pour l'élément \a i,j,k
+  ARCCORE_HOST_DEVICE DataType* ptrAt(Int64 i,Int64 j,Int64 k) const
+  {
+    ARCCORE_CHECK_AT(i,m_dimensions[0]);
+    ARCCORE_CHECK_AT(j,m_dimensions[1]);
+    ARCCORE_CHECK_AT(k,m_dimensions[2]);
+    return m_ptr+((m_dim23_size*i) + m_dimensions[2]*j + k);
   }
  private:
   Int64 m_dim23_size = 0; //!< dim2 * dim3
@@ -359,6 +380,15 @@ class MDSpan<DataType,4>
     ARCCORE_CHECK_AT(k,m_dimensions[2]);
     ARCCORE_CHECK_AT(l,m_dimensions[3]);
     return m_ptr[(m_dim234_size*i) + m_dim34_size*j + m_dimensions[3]*k + l];
+  }
+  //! Pointeur sur la valeur pour l'élément \a i,j,k
+  ARCCORE_HOST_DEVICE DataType* ptrAt(Int64 i,Int64 j,Int64 k,Int64 l) const
+  {
+    ARCCORE_CHECK_AT(i,m_dimensions[0]);
+    ARCCORE_CHECK_AT(j,m_dimensions[1]);
+    ARCCORE_CHECK_AT(k,m_dimensions[2]);
+    ARCCORE_CHECK_AT(l,m_dimensions[3]);
+    return m_ptr + ((m_dim234_size*i) + m_dim34_size*j + m_dimensions[3]*k + l);
   }
  private:
   Int64 m_dim34_size = 0; //!< dim3 * dim4
