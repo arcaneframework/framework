@@ -98,7 +98,7 @@ if (ARCDEPENDENCIES_NUGET_SOURCES_DIR)
   set(_RESTORE_SOURCE_ARGS /p:RestoreSources="${ARCDEPENDENCIES_NUGET_SOURCES_DIR}")
 endif()
 
-set(AXLSTAR_MSBUILD_COMMON_COMMAND_ARGS /p:RestoreNoCache=true ${_RESTORE_SOURCE_ARGS} /p:BinDir=${CMAKE_BINARY_DIR}/axlstar_obj/ ${AXLSTAR_MSBUILD_RESTORE_ARGS})
+set(AXLSTAR_MSBUILD_COMMON_COMMAND_ARGS /p:Configuration=Debug /p:Platform=\"Any CPU\" /p:RestoreNoCache=true ${_RESTORE_SOURCE_ARGS} /p:BinDir=${CMAKE_BINARY_DIR}/axlstar_obj/ ${AXLSTAR_MSBUILD_RESTORE_ARGS})
 
 # Avec 'dotnet', la version du framework utilisée est 'netcoreapp2.2'
 if (AXLSTAR_DOTNET_RUNNER STREQUAL coreclr)
