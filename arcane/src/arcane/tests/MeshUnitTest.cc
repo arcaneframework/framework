@@ -73,6 +73,10 @@
 
 #include <set>
 
+#ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
+#include "neo/Mesh.h"
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -186,6 +190,7 @@ public:
                         eItemKind link_kind);
   void _testAdditionalMeshes();
   void _testNullItem();
+  void _testCustomMeshTools();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -268,6 +273,7 @@ executeTest()
   _testMD5();
   _testUsedVariables();
   _testAdditionalMeshes();
+  _testCustomMeshTools();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1164,6 +1170,19 @@ _testAdditionalMeshes()
     IMesh* mesh = mesh_reader_mng.readMesh(mesh_name,mesh_file_name);
     info() << "Success in reading mesh named '" << mesh->name() << "'";
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUnitTest::
+_testCustomMeshTools()
+{
+#ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
+  // Test dépendance outillage externe pour maillage custom (ex polyédrique)
+  Neo::Mesh mesh{"test_mesh"};
+  info() << "Neo::Mesh{" << mesh.name() << "}";
+#endif
 }
 
 /*---------------------------------------------------------------------------*/

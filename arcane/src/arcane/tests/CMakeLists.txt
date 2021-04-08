@@ -24,6 +24,12 @@ endif()
 set(PKGS TBB)
 find_package(TBB)
 
+find_package(Neo QUIET)
+if (Neo_FOUND)
+  set(TEST_LIBS ${TEST_LIBS} Neo::Neo)
+  message(STATUS "Neo FOUND")
+endif()
+
 include(srcs.cmake)
 
 set(ARCANE_ACCELERATOR_SOURCES
@@ -79,6 +85,11 @@ arcane_target_set_standard_path(arcane_tests_exec)
 #set_target_properties(arcane_tests_lib PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 configure_file(ArcaneTest.config ${CMAKE_BINARY_DIR}/lib COPYONLY)
+
+if (Neo_FOUND)
+  target_compile_definitions(arcane_tests_exec PRIVATE ARCANE_HAS_CUSTOM_MESH_TOOLS)
+  target_compile_definitions(arcane_tests_lib PUBLIC ARCANE_HAS_CUSTOM_MESH_TOOLS)
+endif()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
