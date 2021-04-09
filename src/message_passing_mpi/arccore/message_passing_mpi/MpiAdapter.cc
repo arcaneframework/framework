@@ -110,7 +110,7 @@ class MpiAdapter::RequestSet
   //! Vérifie que la requête est dans la liste
   Iterator findRequest(MPI_Request request)
   {
-    if (request==m_empty_request)
+    if (_isEmptyRequest(request))
       return m_allocated_requests.end();
     auto ireq = m_allocated_requests.find(request);
     if (ireq==m_allocated_requests.end()){
@@ -135,7 +135,7 @@ class MpiAdapter::RequestSet
       }
       return;
     }
-    if (request==m_empty_request)
+    if (_isEmptyRequest(request))
       return;
     ++m_total_added_request;
     //info() << "MPI_ADAPTER:ADD REQUEST " << request;
@@ -168,7 +168,7 @@ class MpiAdapter::RequestSet
       }
       return;
     }
-    if (request==m_empty_request)
+    if (_isEmptyRequest(request))
       return;
     auto i = m_allocated_requests.find(request);
     if (i==m_allocated_requests.end()){
@@ -197,7 +197,11 @@ class MpiAdapter::RequestSet
              << " stack=" << x.second.m_stack_trace;
     }
   }
-  void setEmptyRequest(MPI_Request r) { m_empty_request = r; }
+  void setEmptyRequests(MPI_Request r1,MPI_Request r2)
+  {
+    m_empty_request1 = r1;
+    m_empty_request2 = r2;
+  }
  public:
   bool m_request_error_is_fatal = false;
   bool m_is_report_error_in_request = true;
@@ -205,9 +209,15 @@ class MpiAdapter::RequestSet
  private:
   std::map<MPI_Request,RequestInfo> m_allocated_requests;
   bool m_use_trace_full_stack = false;
-  MPI_Request m_empty_request = MPI_REQUEST_NULL;
+  MPI_Request m_empty_request1 = MPI_REQUEST_NULL;
+  MPI_Request m_empty_request2 = MPI_REQUEST_NULL;
   Int64 m_total_added_request = 0;
   Ref<ITraceMng> m_trace_mng_ref;
+ private:
+  bool _isEmptyRequest(MPI_Request r) const
+  {
+    return (r==m_empty_request1 || r==m_empty_request2);
+  }
 };
 
 #define ARCCORE_ADD_REQUEST(request)\
@@ -239,7 +249,8 @@ MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,
 , m_communicator(comm)
 , m_comm_rank(0)
 , m_comm_size(0)
-, m_empty_request(MPI_REQUEST_NULL)
+, m_empty_request1(MPI_REQUEST_NULL)
+, m_empty_request2(MPI_REQUEST_NULL)
 {
   m_request_set = new RequestSet(trace);
 
@@ -263,10 +274,17 @@ MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,
    * mais l'implémentation 1.8 de openmpi retourne cette requête lorsqu'on
    * appelle un IRecv avec une source MPI_PROC_NULL. On récupère donc la valeur
    * comme cela.
+   * A partir de la version 4 de openmpi, il semble aussi que les send avec
+   * de petits buffers génèrent toujours la même requête. Il faut donc aussi
+   * la supprimer des requêtes à tester.
    */
-  m_mpi_prof->iRecv(m_recv_buffer_for_empty_request, 1, MPI_INT, MPI_PROC_NULL,
-                    50505, m_communicator, &m_empty_request);
-  m_request_set->setEmptyRequest(m_empty_request);
+  MPI_Irecv(m_recv_buffer_for_empty_request, 1, MPI_CHAR, MPI_PROC_NULL,
+            50505, m_communicator, &m_empty_request1);
+
+  MPI_Isend(m_send_buffer_for_empty_request, 1, MPI_CHAR, m_comm_rank,
+            50505, m_communicator, &m_empty_request2);
+  
+  m_request_set->setEmptyRequests(m_empty_request1,m_empty_request2);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -275,6 +293,11 @@ MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,
 MpiAdapter::
 ~MpiAdapter()
 {
+  if (m_empty_request1 != MPI_REQUEST_NULL)
+    MPI_Request_free(&m_empty_request1);
+  if (m_empty_request2 != MPI_REQUEST_NULL)
+    MPI_Request_free(&m_empty_request2);
+
   delete m_request_set;
   delete m_mpi_prof;
 }
