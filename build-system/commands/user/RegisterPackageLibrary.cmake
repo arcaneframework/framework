@@ -44,16 +44,53 @@ function(arccon_register_package_library lib_name var_name)
       add_library(${_ALIAS_NAME} ALIAS arcconpkg_${lib_name})
       message(STATUS "Registering imported target '${_TARGET_NAME}'")
     endif()
-    set_target_properties(${_TARGET_NAME}
-      PROPERTIES
-      # Il est possible de spécfier que les fichiers des packages doivent
-      # être considérés comme des fichiers systèmes ce qui permet
-      # de ne pas avoir d'avertissements dessus. Pour cela il faut ajouter
-      # la ligne suivante (mais laisser INTERFACE_INCLUDE_DIRECTORIES)
-      #   INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${${var_name}_INCLUDE_DIRS}"
-      INTERFACE_INCLUDE_DIRECTORIES "${${var_name}_INCLUDE_DIRS}"
-      INTERFACE_LINK_LIBRARIES "${${var_name}_LIBRARIES}"
-      )
+    if (ARCCON_REGISTER_PACKAGE_VERSION STREQUAL 2)
+      # Utilise les commandes CMake au lieu de positionner directement les
+      # propriétés. Regarde aussi si '${var_name}_LIBRARIES' contient les mots
+      # clés 'optimized', 'debug' ou 'general'. Dans ce cas, n'ajoute pas ce mot clé
+      # et on ne garde que le mode 'optimized' ou 'general' mais pas le mode debug
+      # (si on garde le mode debug, CMake utilise des 'generator expression' et ces
+      # derniers ne sont pas toujours bien supportés par les makefiles.
+      # Voir doc de target_link_libraries()) pour plus d'infos
+      set(_ALL_LIBS "${${var_name}_LIBRARIES}")
+      message(STATUS "Checking: LIBS=${_ALL_LIBS}")
+      list(LENGTH _ALL_LIBS _ALL_LIBS_LENGTH)
+      set(_NEXT_LIB_KEEP TRUE)
+      foreach(_LIB_INDEX RANGE ${_ALL_LIBS_LENGTH})
+        if (_LIB_INDEX EQUAL ${_ALL_LIBS_LENGTH})
+          break()
+        endif()
+        list(GET _ALL_LIBS ${_LIB_INDEX} _CURRENT_LIB)
+        if (_CURRENT_LIB STREQUAL "debug")
+          set(_NEXT_LIB_KEEP FALSE)
+          continue()
+        elseif (_CURRENT_LIB STREQUAL "optimized")
+          set(_NEXT_LIB_KEEP TRUE)
+          continue()
+        elseif (_CURRENT_LIB STREQUAL "general")
+          set(_NEXT_LIB_KEEP TRUE)
+          continue()
+        endif()
+        message(STATUS "CURRENT_LIB=${_CURRENT_LIB} config=${_NEXT_LIB_KEEP}")
+        if (_NEXT_LIB_KEEP)
+          target_link_libraries(${_TARGET_NAME} INTERFACE "${_CURRENT_LIB}")
+        endif()
+        set(_NEXT_LIB_KEEP TRUE)
+      endforeach()
+      #target_link_libraries(${_TARGET_NAME} INTERFACE "${${var_name}_LIBRARIES}")
+      target_include_directories(${_TARGET_NAME} INTERFACE "${${var_name}_INCLUDE_DIRS}")
+    else()
+      set_target_properties(${_TARGET_NAME}
+        PROPERTIES
+        # Il est possible de spécfier que les fichiers des packages doivent
+        # être considérés comme des fichiers systèmes ce qui permet
+        # de ne pas avoir d'avertissements dessus. Pour cela il faut ajouter
+        # la ligne suivante (mais laisser INTERFACE_INCLUDE_DIRECTORIES)
+        #   INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${${var_name}_INCLUDE_DIRS}"
+        INTERFACE_INCLUDE_DIRECTORIES "${${var_name}_INCLUDE_DIRS}"
+        INTERFACE_LINK_LIBRARIES "${${var_name}_LIBRARIES}"
+        )
+    endif()
   endif()
   # Force _FOUND à être dans le cache pour qu'on puisse récupérer la liste
   # des packages la propriété PACKAGES_FOUND.
