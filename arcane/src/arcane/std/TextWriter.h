@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TextWriter.h                                                (C) 2000-2018 */
+/* TextWriter.h                                                (C) 2000-2021 */
 /*                                                                           */
 /* Ecrivain de données.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -25,16 +25,23 @@
 namespace Arcane
 {
 class IDeflateService;
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Classe d'écriture d'un fichier texte pour les protections/reprises
+ */
 class TextWriter
 {
+  class Impl;
  public:
 
   TextWriter(const String& filename,bool is_binary);
+  TextWriter(const TextWriter& rhs) = delete;
   TextWriter();
   ~TextWriter();
+  TextWriter& operator=(const TextWriter& rhs) = delete;
 
  public:
 
@@ -44,17 +51,13 @@ class TextWriter
   void write(const String& comment,Span<const Int32> values);
   void write(const String& comment,Span<const Int64> values);
   void write(const String& comment,Span<const Byte> values);
-  ostream& stream();
  public:
   const String& fileName() const;
-  bool isBinary() const { return m_is_binary; }
+  bool isBinary() const;
   void setDeflater(IDeflateService* ds);
   Int64 fileOffset();
  private:
-  String m_filename;
-  ofstream m_ostream;
-  bool m_is_binary;
-  IDeflateService* m_deflater;
+  Impl* m_p;
  private:
   void _writeComments(const String& comment);
   void _binaryWrite(const void* bytes,Int64 len);

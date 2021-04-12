@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TextReader.h                                                (C) 2000-2018 */
+/* TextReader.h                                                (C) 2000-2021 */
 /*                                                                           */
 /* Ecrivain de données.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -28,13 +28,19 @@ class IDeflateService;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \internal
+ * \brief Classe d'écriture d'un fichier texte pour les protections/reprises
+ */
 class TextReader
 {
+  class Impl;
  public:
 
-  explicit TextReader(const String& filename,bool is_binary);
+  TextReader(const String& filename,bool is_binary);
+  TextReader(const TextReader& rhs) = delete;
   ~TextReader();
+  TextReader& operator=(const TextReader& rhs) = delete;
 
  public:
 
@@ -47,15 +53,11 @@ class TextReader
   void read(Span<Byte> values);
 
  public:
-  const String& fileName() const { return m_filename; }
-  void setFileOffset(Int64 v) { m_istream.seekg(v,ios::beg); }
-  void setDeflater(IDeflateService* ds) { m_deflater = ds; }
+  String fileName() const;
+  void setFileOffset(Int64 v);
+  void setDeflater(IDeflateService* ds);
  private:
-  String m_filename;
-  ifstream m_istream;
-  Integer m_current_line;
-  bool m_is_binary;
-  IDeflateService* m_deflater;
+  Impl* m_p;
  private:
   void _removeComments();
   Integer _getInteger();
