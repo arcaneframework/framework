@@ -19,6 +19,9 @@
 
 #include "arcane/IDeflateService.h"
 #include "arcane/ArcaneException.h"
+#include "arcane/utils/Ref.h"
+
+#include <fstream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,7 +38,7 @@ class TextWriter::Impl
   String m_filename;
   ofstream m_ostream;
   bool m_is_binary = false;
-  IDeflateService* m_deflater = nullptr;
+  Ref<IDeflateService> m_deflater;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -63,7 +66,6 @@ TextWriter()
 TextWriter::
 ~TextWriter()
 {
-  delete m_p->m_deflater;
   delete m_p;
 }
 
@@ -177,7 +179,7 @@ fileName() const
 }
 
 void TextWriter::
-setDeflater(IDeflateService *ds)
+setDeflater(Ref<IDeflateService> ds)
 {
   m_p->m_deflater = ds;
 }
@@ -199,7 +201,7 @@ _binaryWrite(const void* bytes,Int64 len)
 {
   ostream& o = m_p->m_ostream;
   //cout << "** BINARY WRITE len=" << len << " deflater=" << m_deflater << '\n';
-  if (m_p->m_deflater && len > DEFLATE_MIN_SIZE) {
+  if (m_p->m_deflater.get() && len > DEFLATE_MIN_SIZE) {
     ByteUniqueArray compressed_values;
     Int32 small_len = arcaneCheckArraySize(len);
     m_p->m_deflater->compress(ByteConstArrayView(small_len,(const Byte*)bytes), compressed_values);

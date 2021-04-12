@@ -17,8 +17,6 @@
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/String.h"
 
-#include <fstream>
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -55,7 +53,7 @@ class TextReader
  public:
   String fileName() const;
   void setFileOffset(Int64 v);
-  void setDeflater(IDeflateService* ds);
+  void setDeflater(Ref<IDeflateService> ds);
  private:
   Impl* m_p;
  private:

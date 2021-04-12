@@ -17,8 +17,6 @@
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/String.h"
 
-#include <fstream>
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -54,7 +52,7 @@ class TextWriter
  public:
   const String& fileName() const;
   bool isBinary() const;
-  void setDeflater(IDeflateService* ds);
+  void setDeflater(Ref<IDeflateService> ds);
   Int64 fileOffset();
  private:
   Impl* m_p;

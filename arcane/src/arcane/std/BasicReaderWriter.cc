@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicReaderWriter.cc                                        (C) 2000-2019 */
+/* BasicReaderWriter.cc                                        (C) 2000-2021 */
 /*                                                                           */
 /* Lecture/Ecriture simple.                                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/ScopedPtr.h"
@@ -46,6 +44,7 @@
 
 #include "arcane/IDeflateService.h"
 #include "arcane/ServiceFinder2.h"
+#include "arcane/ServiceBuilder.h"
 
 #include "arcane/VerifierService.h"
 #include "arcane/IVariableMng.h"
@@ -236,11 +235,11 @@ _getBasicGroupFile(const String& path,const String& name,Int32 rank)
   return filename;
 }
 
-IDeflateService*
+Ref<IDeflateService>
 _createDeflater(IApplication* app,const String& name)
 {
-  ServiceFinder2T<IDeflateService,IApplication> sf(app,app);
-  IDeflateService* bc = sf.create(name);
+  ServiceBuilder<IDeflateService> sf(app);
+  Ref<IDeflateService> bc = sf.createReference(app,name);
   return bc;
 }
 
@@ -351,7 +350,7 @@ initialize(const String& path,Int32 rank)
   else
     ARCANE_FATAL("Unsupported version '{0}' (max=2)",version_id);
 
-  IDeflateService* deflater = nullptr;
+  Ref<IDeflateService> deflater;
   if (!deflater_name.null()){
     deflater = _createDeflater(m_application,deflater_name);
   }
@@ -557,8 +556,8 @@ class BasicGenericWriter
     String deflater_name = platform::getEnvironmentVariable("ARCANE_DEFLATER");
     if (!deflater_name.null()){
       m_write_deflater_name = deflater_name;
-      IDeflateService* bc = _createDeflater(m_application,m_write_deflater_name);
-      info() << "Use deflater name=" << deflater_name << " ptr=" << bc;
+      auto bc = _createDeflater(m_application,m_write_deflater_name);
+      info() << "Use deflater name=" << deflater_name;
       m_text_writer.setDeflater(bc);
     }
     String filename = _getBasicVariableFile(path,rank);

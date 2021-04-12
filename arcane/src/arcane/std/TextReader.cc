@@ -19,6 +19,9 @@
 
 #include "arcane/ArcaneException.h"
 #include "arcane/IDeflateService.h"
+#include "arcane/utils/Ref.h"
+
+#include <fstream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,7 +42,7 @@ class TextReader::Impl
   ifstream m_istream;
   Integer m_current_line = 0;
   bool m_is_binary = false;
-  IDeflateService* m_deflater = nullptr;
+  Ref<IDeflateService> m_deflater;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -63,7 +66,6 @@ TextReader(const String& filename,bool is_binary)
 TextReader::
 ~TextReader()
 {
-  delete m_p->m_deflater;
   delete m_p;
 }
 
@@ -219,7 +221,7 @@ void TextReader::
 _binaryRead(void* values, Int64 len)
 {
   istream& s = m_p->m_istream;
-  if (m_p->m_deflater && len > DEFLATE_MIN_SIZE) {
+  if (m_p->m_deflater.get() && len > DEFLATE_MIN_SIZE) {
     ByteUniqueArray compressed_values;
     Int64 compressed_size = 0;
     s.read((char*)&compressed_size, sizeof(Int64));
@@ -306,7 +308,7 @@ setFileOffset(Int64 v)
 /*---------------------------------------------------------------------------*/
 
 void TextReader::
-setDeflater(IDeflateService* ds)
+setDeflater(Ref<IDeflateService> ds)
 {
   m_p->m_deflater = ds;
 }
