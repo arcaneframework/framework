@@ -50,7 +50,7 @@ class TextWriter
   void write(const String& comment,Span<const Int64> values);
   void write(const String& comment,Span<const Byte> values);
  public:
-  const String& fileName() const;
+  String fileName() const;
   bool isBinary() const;
   void setDeflater(Ref<IDeflateService> ds);
   Int64 fileOffset();
@@ -59,6 +59,41 @@ class TextWriter
  private:
   void _writeComments(const String& comment);
   void _binaryWrite(const void* bytes,Int64 len);
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * Utilisation d'un TextWriter avec écriture sous la forme (clé,valeur).
+ */
+class KeyValueTextWriter
+{
+  class Impl;
+ public:
+
+  KeyValueTextWriter(const String& filename,bool is_binary);
+  KeyValueTextWriter(const TextWriter& rhs) = delete;
+  KeyValueTextWriter();
+  ~KeyValueTextWriter();
+  KeyValueTextWriter& operator=(const KeyValueTextWriter& rhs) = delete;
+
+ public:
+
+  void open(const String& filename,bool is_binary);
+  void write(const String& key,const String& comment,Int64ConstArrayView extents,Span<const Real> values);
+  void write(const String& key,const String& comment,Int64ConstArrayView extents,Span<const Int16> values);
+  void write(const String& key,const String& comment,Int64ConstArrayView extents,Span<const Int32> values);
+  void write(const String& key,const String& comment,Int64ConstArrayView extents,Span<const Int64> values);
+  void write(const String& key,const String& comment,Int64ConstArrayView extents,Span<const Byte> values);
+ public:
+  String fileName() const;
+  bool isBinary() const;
+  void setDeflater(Ref<IDeflateService> ds);
+  Int64 fileOffset();
+ private:
+  Impl* m_p;
+  void _addKey(const String& key,Int64ConstArrayView extents);
 };
 
 /*---------------------------------------------------------------------------*/

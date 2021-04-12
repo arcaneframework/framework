@@ -574,7 +574,7 @@ class BasicGenericWriter
   String m_write_deflater_name;
   String m_path;
   Int32 m_rank;
-  TextWriter m_text_writer;
+  KeyValueTextWriter m_text_writer;
   typedef std::map<String,VariableDataInfo*> VariableDataInfoMap;
   VariableDataInfoMap m_variables_data_info;
 };
@@ -587,7 +587,7 @@ writeData(const String& var_full_name,const ISerializedData* sdata)
 {
   //TODO: Verifier que initialize() a bien été appelé.
   auto var_data_info = new VariableDataInfo(var_full_name,sdata);
-  TextWriter* writer = &m_text_writer;
+  KeyValueTextWriter* writer = &m_text_writer;
   var_data_info->setFileOffset(writer->fileOffset());
   m_variables_data_info.insert(std::make_pair(var_full_name,var_data_info));
   info(4) << " SDATA name=" << var_full_name << " nb_element=" << sdata->nbElement()
@@ -602,54 +602,55 @@ writeData(const String& var_full_name,const ISerializedData* sdata)
 
   // Si la variable est de type tableau à deux dimensions, sauve les
   // tailles de la deuxième dimension par élément.
-  {
-    Int64ConstArrayView extents = sdata->extents();
+  Int64ConstArrayView extents = sdata->extents();
+  if (m_version==1 || m_version==2){
     Integer dimension_array_size = extents.size();
     if (dimension_array_size!=0){
+      String key_name = "VariableDim:" + var_full_name;
       String comment = String::format("Writing Dim1Size for '{0}'",var_full_name);
       if (m_version==1){
         UniqueArray<Integer> dims(dimension_array_size);
         for( Integer i=0; i<dimension_array_size; ++i )
           dims[i] = CheckedConvert::toInteger(extents[i]);
-        writer->write(comment,dims);
+        writer->write(key_name,comment,Int64ConstArrayView(),dims);
       }
       else
-        writer->write(comment,extents);
+        writer->write(key_name,comment,Int64ConstArrayView(),extents);
     }
   }
 
   // Maintenant, sauve les valeurs si necessaire
   Int64 nb_base_element = sdata->nbBaseElement();
   if (nb_base_element!=0 && ptr){
-
+    String key_name = var_full_name;
     String comment = String::format("Write Values for '{0}'",var_full_name);
     eDataType base_data_type = sdata->baseDataType();
     if (base_data_type==DT_Real){
-      writer->write(comment,Span<const Real>((const Real*)ptr,nb_base_element));
+      writer->write(key_name,comment,extents,Span<const Real>((const Real*)ptr,nb_base_element));
     }
     else if (base_data_type==DT_Real2){
-      writer->write(comment,Span<const Real>((const Real*)ptr,nb_base_element*2));
+      writer->write(key_name,comment,extents,Span<const Real>((const Real*)ptr,nb_base_element*2));
     }
     else if (base_data_type==DT_Real3){
-      writer->write(comment,Span<const Real>((const Real*)ptr,nb_base_element*3));
+      writer->write(key_name,comment,extents,Span<const Real>((const Real*)ptr,nb_base_element*3));
     }
     else if (base_data_type==DT_Real2x2){
-      writer->write(comment,Span<const Real>((const Real*)ptr,nb_base_element*4));
+      writer->write(key_name,comment,extents,Span<const Real>((const Real*)ptr,nb_base_element*4));
     }
     else if (base_data_type==DT_Real3x3){
-      writer->write(comment,Span<const Real>((const Real*)ptr,nb_base_element*9));
+      writer->write(key_name,comment,extents,Span<const Real>((const Real*)ptr,nb_base_element*9));
     }
     else if (base_data_type==DT_Int16){
-      writer->write(comment,Span<const Int16>((const Int16*)ptr,nb_base_element));
+      writer->write(key_name,comment,extents,Span<const Int16>((const Int16*)ptr,nb_base_element));
     }
     else if (base_data_type==DT_Int32){
-      writer->write(comment,Span<const Int32>((const Int32*)ptr,nb_base_element));
+      writer->write(key_name,comment,extents,Span<const Int32>((const Int32*)ptr,nb_base_element));
     }
     else if (base_data_type==DT_Int64){
-      writer->write(comment,Span<const Int64>((const Int64*)ptr,nb_base_element));
+      writer->write(key_name,comment,extents,Span<const Int64>((const Int64*)ptr,nb_base_element));
     }
     else if (base_data_type==DT_Byte){
-      writer->write(comment,Span<const Byte>((const Byte*)ptr,nb_base_element));
+      writer->write(key_name,comment,extents,Span<const Byte>((const Byte*)ptr,nb_base_element));
     }
     else
       ARCANE_THROW(NotSupportedException,"Bad datatype {0}",base_data_type);
