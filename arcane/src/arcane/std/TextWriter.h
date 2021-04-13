@@ -72,15 +72,13 @@ class KeyValueTextWriter
   class Impl;
  public:
 
-  KeyValueTextWriter(const String& filename,bool is_binary);
+  KeyValueTextWriter(const String& filename,bool is_binary,Int32 version);
   KeyValueTextWriter(const TextWriter& rhs) = delete;
-  KeyValueTextWriter();
   ~KeyValueTextWriter();
   KeyValueTextWriter& operator=(const KeyValueTextWriter& rhs) = delete;
 
  public:
 
-  void open(const String& filename,bool is_binary);
   void write(const String& key,const String& comment,Int64ConstArrayView extents,Span<const Real> values);
   void write(const String& key,const String& comment,Int64ConstArrayView extents,Span<const Int16> values);
   void write(const String& key,const String& comment,Int64ConstArrayView extents,Span<const Int32> values);

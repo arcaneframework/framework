@@ -72,7 +72,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -360,7 +361,7 @@ initialize(const String& path,Int32 rank)
   }
 
   String main_filename = _getBasicVariableFile(m_path,rank);
-  auto reader = new KeyValueTextReader(main_filename,m_is_binary);
+  auto reader = new KeyValueTextReader(main_filename,m_is_binary,m_version);
   m_text_reader = reader;
   reader->setDeflater(deflater);
 }
@@ -560,10 +561,10 @@ class BasicGenericWriter
       m_write_deflater_name = deflater_name;
       auto bc = _createDeflater(m_application,m_write_deflater_name);
       info() << "Use deflater name=" << deflater_name;
-      m_text_writer.setDeflater(bc);
+      m_text_writer->setDeflater(bc);
     }
     String filename = _getBasicVariableFile(path,rank);
-    m_text_writer.open(filename,m_is_binary);
+    m_text_writer = new KeyValueTextWriter(filename,m_is_binary,m_version);
   }
   void writeData(const String& var_full_name,const ISerializedData* sdata) override;
   void writeItemGroup(const String& group_full_name,Int64ConstArrayView written_unique_ids,
@@ -576,7 +577,7 @@ class BasicGenericWriter
   String m_write_deflater_name;
   String m_path;
   Int32 m_rank;
-  KeyValueTextWriter m_text_writer;
+  ScopedPtrT<KeyValueTextWriter> m_text_writer;
   typedef std::map<String,VariableDataInfo*> VariableDataInfoMap;
   VariableDataInfoMap m_variables_data_info;
 };
@@ -589,7 +590,7 @@ writeData(const String& var_full_name,const ISerializedData* sdata)
 {
   //TODO: Verifier que initialize() a bien été appelé.
   auto var_data_info = new VariableDataInfo(var_full_name,sdata);
-  KeyValueTextWriter* writer = &m_text_writer;
+  KeyValueTextWriter* writer = m_text_writer.get();
   var_data_info->setFileOffset(writer->fileOffset());
   m_variables_data_info.insert(std::make_pair(var_full_name,var_data_info));
   info(4) << " SDATA name=" << var_full_name << " nb_element=" << sdata->nbElement()
@@ -1797,7 +1798,7 @@ ARCANE_REGISTER_SERVICE(ArcaneBasicVerifierService2,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

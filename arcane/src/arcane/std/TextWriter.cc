@@ -250,26 +250,21 @@ class KeyValueTextWriter::Impl
     ExtentsInfo m_extents;
   };
  public:
+  Impl(const String& filename,bool is_binary,Int32 version)
+  : m_writer(filename,is_binary), m_version(version)
+  {}
+ public:
   TextWriter m_writer;
   std::map<String,DataInfo> m_data_infos;
+  Int32 m_version;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 KeyValueTextWriter::
-KeyValueTextWriter(const String& filename,bool is_binary)
-: m_p(new Impl())
-{
-  open(filename,is_binary);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-KeyValueTextWriter::
-KeyValueTextWriter()
-: m_p(new Impl())
+KeyValueTextWriter(const String& filename,bool is_binary,Int32 version)
+: m_p(new Impl(filename,is_binary,version))
 {
 }
 
@@ -284,15 +279,6 @@ KeyValueTextWriter::
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void KeyValueTextWriter::
-open(const String& filename,bool is_binary)
-{
-  m_p->m_writer.open(filename,is_binary);
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

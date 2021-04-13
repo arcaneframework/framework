@@ -322,18 +322,19 @@ setDeflater(Ref<IDeflateService> ds)
 class KeyValueTextReader::Impl
 {
  public:
-  Impl(const String& filename,bool is_binary)
-  : m_reader(filename,is_binary){}
+  Impl(const String& filename,bool is_binary,Int32 version)
+  : m_reader(filename,is_binary), m_version(version){}
  public:
   TextReader m_reader;
+  Int32 m_version;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 KeyValueTextReader::
-KeyValueTextReader(const String& filename,bool is_binary)
-: m_p(new Impl(filename,is_binary))
+KeyValueTextReader(const String& filename,bool is_binary,Int32 version)
+: m_p(new Impl(filename,is_binary,version))
 {
 }
 

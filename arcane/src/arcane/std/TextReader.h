@@ -79,7 +79,7 @@ class KeyValueTextReader
 
  public:
 
-  KeyValueTextReader(const String& filename,bool is_binary);
+  KeyValueTextReader(const String& filename,bool is_binary,Int32 version);
   KeyValueTextReader(const KeyValueTextReader& rhs) = delete;
   ~KeyValueTextReader();
   KeyValueTextReader& operator=(const KeyValueTextReader& rhs) = delete;
