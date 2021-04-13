@@ -287,7 +287,6 @@ class BasicGenericReader
   BasicGenericReader(IApplication* app,bool is_binary)
   : TraceAccessor(app->traceMng()),
     m_application(app),
-    m_text_reader(nullptr),
     m_is_binary(is_binary),
     m_rank(A_NULL_RANK),
     m_version(-1)
@@ -295,7 +294,6 @@ class BasicGenericReader
   }
   ~BasicGenericReader() override
   {
-    delete m_text_reader;
     for (auto x : m_variables_data_info )
       delete x.second;
   }
@@ -306,7 +304,7 @@ class BasicGenericReader
                      Int64Array& wanted_unique_ids) override;
  private:
   IApplication* m_application;
-  TextReader* m_text_reader;
+  ScopedPtrT<KeyValueTextReader> m_text_reader;
   bool m_is_binary;
   String m_path;
   Int32 m_rank;
@@ -362,7 +360,7 @@ initialize(const String& path,Int32 rank)
   }
 
   String main_filename = _getBasicVariableFile(m_path,rank);
-  auto reader = new TextReader(main_filename,m_is_binary);
+  auto reader = new KeyValueTextReader(main_filename,m_is_binary);
   m_text_reader = reader;
   reader->setDeflater(deflater);
 }
@@ -387,7 +385,7 @@ _getVarInfo(const String& full_name)
 void BasicGenericReader::
 readData(const String& var_full_name,IData* data)
 {
-  TextReader* reader = m_text_reader;
+  KeyValueTextReader* reader = m_text_reader.get();
   String vname = var_full_name;
   VariableDataInfo* vdi = _getVarInfo(vname);
   reader->setFileOffset(vdi->fileOffset());
@@ -400,21 +398,24 @@ readData(const String& var_full_name,IData* data)
   Int64 nb_base_element = vdi->nbBaseElement();
   bool is_multi_size = vdi->isMultiSize();
   Int64UniqueArray extents;
-  if (m_version==1){
-    // Dans la version 1, les dimensions sont des 'Int32'
-    IntegerUniqueArray dims;
-    if (dimension_array_size>0){
-      dims.resize(dimension_array_size);
-      extents.resize(dimension_array_size);
-      reader->read(dims);
+  if (m_version==1 || m_version==2){
+    String key_name = "VariableDim:" + var_full_name;
+    if (m_version==1){
+      // Dans la version 1, les dimensions sont des 'Int32'
+      IntegerUniqueArray dims;
+      if (dimension_array_size>0){
+        dims.resize(dimension_array_size);
+        extents.resize(dimension_array_size);
+        reader->read(key_name,dims);
+      }
+      for( Integer i=0; i<dimension_array_size; ++i )
+        extents[i] = dims[i];
     }
-    for( Integer i=0; i<dimension_array_size; ++i )
-      extents[i] = dims[i];
-  }
-  else{
-    if (dimension_array_size>0){
-      extents.resize(dimension_array_size);
-      reader->read(extents);
+    else{
+      if (dimension_array_size>0){
+        extents.resize(dimension_array_size);
+        reader->read(key_name,extents);
+      }
     }
   }
   IDataFactoryMng* df = m_application->dataFactoryMng();
@@ -429,11 +430,12 @@ readData(const String& var_full_name,IData* data)
   void* ptr = sd->bytes().data();
 
   bool print_values = false;
+  String key_name = var_full_name;
   if (storage_size!=0){
     eDataType base_data_type = sd->baseDataType();
     Real* real_ptr = (Real*)ptr;
     if (base_data_type==DT_Real){
-      reader->read(Span<Real>(real_ptr,nb_base_element));
+      reader->read(key_name,Span<Real>(real_ptr,nb_base_element));
       if (print_values){
         if (nb_base_element>1){
           info() << "VAR=" << var_full_name << " offset=" << vdi->fileOffset()
@@ -446,28 +448,28 @@ readData(const String& var_full_name,IData* data)
       }
     }
     else if (base_data_type==DT_Real2){
-      reader->read(Span<Real>(real_ptr,nb_base_element*2));
+      reader->read(key_name,Span<Real>(real_ptr,nb_base_element*2));
     }
     else if (base_data_type==DT_Real3){
-      reader->read(Span<Real>(real_ptr,nb_base_element*3));
+      reader->read(key_name,Span<Real>(real_ptr,nb_base_element*3));
     }
     else if (base_data_type==DT_Real2x2){
-      reader->read(Span<Real>(real_ptr,nb_base_element*4));
+      reader->read(key_name,Span<Real>(real_ptr,nb_base_element*4));
     }
     else if (base_data_type==DT_Real3x3){
-      reader->read(Span<Real>(real_ptr,nb_base_element*9));
+      reader->read(key_name,Span<Real>(real_ptr,nb_base_element*9));
     }
     else if (base_data_type==DT_Int16){
-      reader->read(Span<Int16>((Int16*)ptr,nb_base_element));
+      reader->read(key_name,Span<Int16>((Int16*)ptr,nb_base_element));
     }
     else if (base_data_type==DT_Int32){
-      reader->read(Span<Int32>((Int32*)ptr,nb_base_element));
+      reader->read(key_name,Span<Int32>((Int32*)ptr,nb_base_element));
     }
     else if (base_data_type==DT_Int64){
-      reader->read(Span<Int64>((Int64*)ptr,nb_base_element));
+      reader->read(key_name,Span<Int64>((Int64*)ptr,nb_base_element));
     }
     else if (base_data_type==DT_Byte){
-      reader->read(Span<Byte>((Byte*)ptr,storage_size));
+      reader->read(key_name,Span<Byte>((Byte*)ptr,storage_size));
     }
     else
       ARCANE_THROW(NotSupportedException,"Bad datatype {0}",base_data_type);

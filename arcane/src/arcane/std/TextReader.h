@@ -69,6 +69,41 @@ class TextReader
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Classe d'écriture d'un fichier texte pour les protections/reprises
+ */
+class KeyValueTextReader
+{
+  class Impl;
+
+ public:
+
+  KeyValueTextReader(const String& filename,bool is_binary);
+  KeyValueTextReader(const KeyValueTextReader& rhs) = delete;
+  ~KeyValueTextReader();
+  KeyValueTextReader& operator=(const KeyValueTextReader& rhs) = delete;
+
+ public:
+
+  void readIntegers(const String& key,Span<Integer> values);
+
+  void read(const String& key,Span<Int16> values);
+  void read(const String& key,Span<Int32> values);
+  void read(const String& key,Span<Int64> values);
+  void read(const String& key,Span<Real> values);
+  void read(const String& key,Span<Byte> values);
+
+ public:
+  String fileName() const;
+  void setFileOffset(Int64 v);
+  void setDeflater(Ref<IDeflateService> ds);
+ private:
+  Impl* m_p;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane
 

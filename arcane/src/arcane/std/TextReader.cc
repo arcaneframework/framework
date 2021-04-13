@@ -316,6 +316,97 @@ setDeflater(Ref<IDeflateService> ds)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class KeyValueTextReader::Impl
+{
+ public:
+  Impl(const String& filename,bool is_binary)
+  : m_reader(filename,is_binary){}
+ public:
+  TextReader m_reader;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+KeyValueTextReader::
+KeyValueTextReader(const String& filename,bool is_binary)
+: m_p(new Impl(filename,is_binary))
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+KeyValueTextReader::
+~KeyValueTextReader()
+{
+  delete m_p;
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void KeyValueTextReader::
+readIntegers(const String& key,Span<Integer> values)
+{
+  m_p->m_reader.readIntegers(values);
+}
+
+void KeyValueTextReader::
+read(const String& key,Span<Int16> values)
+{
+  m_p->m_reader.read(values);
+}
+
+void KeyValueTextReader::
+read(const String& key,Span<Int32> values)
+{
+  m_p->m_reader.read(values);
+}
+
+void KeyValueTextReader::
+read(const String& key,Span<Int64> values)
+{
+  m_p->m_reader.read(values);
+}
+
+void KeyValueTextReader::
+read(const String& key,Span<Real> values)
+{
+  m_p->m_reader.read(values);
+}
+
+void KeyValueTextReader::
+read(const String& key,Span<Byte> values)
+{
+  m_p->m_reader.read(values);
+}
+
+String KeyValueTextReader::
+fileName() const
+{
+  return m_p->m_reader.fileName();
+}
+
+void KeyValueTextReader::
+setFileOffset(Int64 v)
+{
+  m_p->m_reader.setFileOffset(v);
+}
+
+void KeyValueTextReader::
+setDeflater(Ref<IDeflateService> ds)
+{
+  m_p->m_reader.setDeflater(ds);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
