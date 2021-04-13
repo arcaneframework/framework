@@ -66,6 +66,8 @@
 #include "arcane/std/TextReader.h"
 #include "arcane/std/TextWriter.h"
 
+#include "arcane/std/ArcaneBasicCheckpoint_axl.h"
+
 #include <map>
 #include <set>
 
@@ -1358,12 +1360,12 @@ beginRead(const DataReaderInfo& infos)
  * \brief Protection/reprise basique (version 1).
  */
 class ArcaneBasicCheckpointService
-: public CheckpointService
+: public ArcaneArcaneBasicCheckpointObject
 {
  public:
 
   explicit ArcaneBasicCheckpointService(const ServiceBuildInfo& sbi)
-  : CheckpointService(sbi), m_write_index(0), m_writer(nullptr), m_reader(nullptr)
+  : ArcaneArcaneBasicCheckpointObject(sbi), m_write_index(0), m_writer(nullptr), m_reader(nullptr)
   { }
   IDataWriter* dataWriter() override { return m_writer; }
   IDataReader* dataReader() override { return m_reader; }
@@ -1494,13 +1496,21 @@ notifyBeginWrite()
   }
   filename = filename + "_n" + write_index;
 
+  Int32 version = 2;
+  if (options())
+    version = options()->formatVersion();
+
+  info() << "Writing checkpoint with 'ArcaneBasicCheckpointService'"
+         << " version=" << version
+         << " filename='" << filename << "'\n";
+
   platform::recursiveCreateDirectory(filename);
 
   IParallelMng* pm = subDomain()->parallelMng();
   IApplication* app = subDomain()->application();
   bool want_parallel = pm->isParallel();
   want_parallel = false;
-  m_writer = new BasicWriter(app,pm,filename,open_mode,2,want_parallel);
+  m_writer = new BasicWriter(app,pm,filename,open_mode,version,want_parallel);
   m_writer->initialize();
 }
 

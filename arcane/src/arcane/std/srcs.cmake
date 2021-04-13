@@ -78,6 +78,7 @@ set(AXL_FILES
   Hdf5VariableWriter
   Hdf5MpiReaderWriter
   EnsightHdfPostProcessor
+  ArcaneBasicCheckpoint
   ArcaneLoadBalance
   Ensight7PostProcessor
   ArcaneVerifier

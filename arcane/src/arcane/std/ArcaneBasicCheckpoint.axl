@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<!-- Options du jeu de données concernant le service de protection/reprise -->
+<service name="ArcaneBasicCheckpoint" parent-name="CheckpointService" type="caseoption">
+  <name lang='fr'>arcane-equilibrage-charge</name>
+  <userclass>User</userclass>
+  <description>
+    Service de protections/reprises
+  </description>
+  <interface name="Arcane::ICheckpointWriter" inherited="false"/>
+
+  <options>
+    <simple name="format-version" type="int32" default="2">
+      <userclass>User</userclass>
+      <description>
+        Version du format de stockage des informations
+      </description>
+    </simple>
+  </options>
+</service>
+
