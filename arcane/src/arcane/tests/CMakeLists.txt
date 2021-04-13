@@ -397,6 +397,7 @@ endif()
 ARCANE_ADD_TEST_PARALLEL(hyoda testHyoda.arc 1)
 
 ARCANE_ADD_TEST(checkpoint_basic testCheckpoint-3.arc -c 3 -m 5)
+ARCANE_ADD_TEST(checkpoint_basic2-v1 testCheckpoint-basic2-v1.arc -c 3 -m 5)
 ARCANE_ADD_TEST(checkpoint_basic2 testCheckpoint-basic2.arc -c 3 -m 5)
 ARCANE_ADD_TEST(checkpoint_basic_ghost5 testCheckpoint-6.arc -c 3 -m 5)
 arcane_add_test_parallel_all(amr2 testAMR-2.arc 3 4)
