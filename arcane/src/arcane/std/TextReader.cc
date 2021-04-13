@@ -347,6 +347,34 @@ KeyValueTextReader::
   delete m_p;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void KeyValueTextReader::
+getExtents(const String& key_name,Int64ArrayView extents)
+{
+  Integer dimension_array_size = extents.size();
+  if (m_p->m_version==1 || m_p->m_version==2){
+    //String true_key_name = "Extents:" + key_name;
+    if (m_p->m_version==1){
+      // Dans la version 1, les dimensions sont des 'Int32'
+      IntegerUniqueArray dims;
+      if (dimension_array_size>0){
+        dims.resize(dimension_array_size);
+        //extents.resize(dimension_array_size);
+        m_p->m_reader.read(dims);
+      }
+      for( Integer i=0; i<dimension_array_size; ++i )
+        extents[i] = dims[i];
+    }
+    else{
+      if (dimension_array_size>0){
+        //extents.resize(dimension_array_size);
+        m_p->m_reader.read(extents);
+      }
+    }
+  }
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

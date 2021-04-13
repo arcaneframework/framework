@@ -86,6 +86,7 @@ class KeyValueTextReader
 
  public:
 
+  void getExtents(const String& key_name,Int64ArrayView extents);
   void readIntegers(const String& key,Span<Integer> values);
 
   void read(const String& key,Span<Int16> values);

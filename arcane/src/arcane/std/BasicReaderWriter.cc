@@ -398,27 +398,9 @@ readData(const String& var_full_name,IData* data)
   Integer nb_dimension = vdi->nbDimension();
   Int64 nb_base_element = vdi->nbBaseElement();
   bool is_multi_size = vdi->isMultiSize();
-  Int64UniqueArray extents;
-  if (m_version==1 || m_version==2){
-    String key_name = "VariableDim:" + var_full_name;
-    if (m_version==1){
-      // Dans la version 1, les dimensions sont des 'Int32'
-      IntegerUniqueArray dims;
-      if (dimension_array_size>0){
-        dims.resize(dimension_array_size);
-        extents.resize(dimension_array_size);
-        reader->read(key_name,dims);
-      }
-      for( Integer i=0; i<dimension_array_size; ++i )
-        extents[i] = dims[i];
-    }
-    else{
-      if (dimension_array_size>0){
-        extents.resize(dimension_array_size);
-        reader->read(key_name,extents);
-      }
-    }
-  }
+  Int64UniqueArray extents(dimension_array_size);
+  reader->getExtents(var_full_name,extents);
+
   IDataFactoryMng* df = m_application->dataFactoryMng();
   Ref<ISerializedData> sd(df->createSerializedDataRef(data_type,memory_size,nb_dimension,nb_element,
                                                       nb_base_element,is_multi_size,extents));
@@ -556,6 +538,8 @@ class BasicGenericWriter
   {
     m_path = path;
     m_rank = rank;
+    String filename = _getBasicVariableFile(path,rank);
+    m_text_writer = new KeyValueTextWriter(filename,m_is_binary,m_version);
     String deflater_name = platform::getEnvironmentVariable("ARCANE_DEFLATER");
     if (!deflater_name.null()){
       m_write_deflater_name = deflater_name;
@@ -563,8 +547,6 @@ class BasicGenericWriter
       info() << "Use deflater name=" << deflater_name;
       m_text_writer->setDeflater(bc);
     }
-    String filename = _getBasicVariableFile(path,rank);
-    m_text_writer = new KeyValueTextWriter(filename,m_is_binary,m_version);
   }
   void writeData(const String& var_full_name,const ISerializedData* sdata) override;
   void writeItemGroup(const String& group_full_name,Int64ConstArrayView written_unique_ids,
@@ -606,21 +588,7 @@ writeData(const String& var_full_name,const ISerializedData* sdata)
   // Si la variable est de type tableau à deux dimensions, sauve les
   // tailles de la deuxième dimension par élément.
   Int64ConstArrayView extents = sdata->extents();
-  if (m_version==1 || m_version==2){
-    Integer dimension_array_size = extents.size();
-    if (dimension_array_size!=0){
-      String key_name = "VariableDim:" + var_full_name;
-      String comment = String::format("Writing Dim1Size for '{0}'",var_full_name);
-      if (m_version==1){
-        UniqueArray<Integer> dims(dimension_array_size);
-        for( Integer i=0; i<dimension_array_size; ++i )
-          dims[i] = CheckedConvert::toInteger(extents[i]);
-        writer->write(key_name,comment,Int64ConstArrayView(),dims);
-      }
-      else
-        writer->write(key_name,comment,Int64ConstArrayView(),extents);
-    }
-  }
+  writer->setExtents(var_full_name,extents);
 
   // Maintenant, sauve les valeurs si necessaire
   Int64 nb_base_element = sdata->nbBaseElement();

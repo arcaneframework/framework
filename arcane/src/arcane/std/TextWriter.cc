@@ -284,6 +284,29 @@ KeyValueTextWriter::
 /*---------------------------------------------------------------------------*/
 
 void KeyValueTextWriter::
+setExtents(const String& key_name,Int64ConstArrayView extents)
+{
+  if (m_p->m_version==1 || m_p->m_version==2){
+    Integer dimension_array_size = extents.size();
+    if (dimension_array_size!=0){
+      String true_key_name = "Extents:" + key_name;
+      String comment = String::format("Writing Dim1Size for '{0}'",key_name);
+      if (m_p->m_version==1){
+        UniqueArray<Integer> dims(dimension_array_size);
+        for( Integer i=0; i<dimension_array_size; ++i )
+          dims[i] = CheckedConvert::toInteger(extents[i]);
+        m_p->m_writer.write(comment,dims);
+      }
+      else
+        m_p->m_writer.write(comment,extents);
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void KeyValueTextWriter::
 write(const String& key,const String& comment,Int64ConstArrayView extents,
       Span<const Real> values)
 {

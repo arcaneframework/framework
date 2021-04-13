@@ -79,6 +79,7 @@ class KeyValueTextWriter
 
  public:
 
+  void setExtents(const String& key_name,Int64ConstArrayView extents);
   void write(const String& key,const String& comment,Int64ConstArrayView extents,Span<const Real> values);
   void write(const String& key,const String& comment,Int64ConstArrayView extents,Span<const Int16> values);
   void write(const String& key,const String& comment,Int64ConstArrayView extents,Span<const Int32> values);
