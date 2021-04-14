@@ -224,6 +224,16 @@ String _getArcaneDBTag()
 }
 
 String
+_getOwnMetatadaFile(const String& path,Int32 rank)
+{
+  StringBuilder filename = path;
+  filename += "/own_metadata_";
+  filename += rank;
+  filename += ".txt";
+  return filename;
+}
+
+String
 _getArcaneDBFile(const String& path,Int32 rank)
 {
   StringBuilder filename = path;
@@ -349,15 +359,31 @@ initialize(const String& path,Int32 rank)
   m_path = path;
   m_rank = rank;
 
-  StringBuilder filename = m_path;
-  filename += "/own_metadata_";
-  filename += rank;
-  filename += ".txt";
+  info(4) << "BasicGenericReader::initialize known_version=" << m_version;
 
-  info(4) << "Reading own metadata rank=" << rank << " file=" << filename;
+  ScopedPtrT<IXmlDocumentHolder> xdoc;
 
-  IApplication* app = m_application;
-  ScopedPtrT<IXmlDocumentHolder> xdoc(app->ioMng()->parseXmlFile(filename));
+  if (m_version>=3){
+    // Si on connait déjà la version et qu'elle est supérieure ou égale à 3
+    // alors les informations sont dans la base de données. Dans ce cas on lit
+    // directement les infos depuis cette base.
+    String main_filename = _getBasicVariableFile(m_version,m_path,rank);
+    auto reader = new KeyValueTextReader(main_filename,m_is_binary,m_version);
+    m_text_reader = reader;
+    Int64 meta_data_size = 0;
+    String key_name = "Global:OwnMetadata";
+    m_text_reader->getExtents(key_name,Int64ArrayView(1,&meta_data_size));
+    UniqueArray<Byte> bytes(meta_data_size);
+    m_text_reader->read(key_name,bytes);
+    info(4) << "Reading own metadata rank=" << rank << " from database";
+    xdoc = IXmlDocumentHolder::loadFromBuffer(bytes,"OwnMetadata",traceMng());
+  }
+  else{
+    StringBuilder filename = _getOwnMetatadaFile(m_path,m_rank);
+    info(4) << "Reading own metadata rank=" << rank << " file=" << filename;
+    IApplication* app = m_application;
+    xdoc = app->ioMng()->parseXmlFile(filename);
+  }
   XmlNode root = xdoc->documentNode().documentElement();
   XmlNodeList variables_elem = root.children("variable-data");
   String deflater_name = root.attrValue("deflater-service");
@@ -376,7 +402,7 @@ initialize(const String& path,Int32 rank)
     // - 1 seul fichier pour toutes les meta-données
     m_version = 3;
   else
-    ARCANE_FATAL("Unsupported version '{0}' (max=2)",version_id);
+    ARCANE_FATAL("Unsupported version '{0}' (max=3)",version_id);
 
   Ref<IDeflateService> deflater;
   if (!deflater_name.null()){
@@ -389,10 +415,13 @@ initialize(const String& path,Int32 rank)
     m_variables_data_info.insert(std::make_pair(var_full_name,vdi));
   }
 
-  String main_filename = _getBasicVariableFile(m_version,m_path,rank);
-  auto reader = new KeyValueTextReader(main_filename,m_is_binary,m_version);
-  m_text_reader = reader;
-  reader->setDeflater(deflater);
+  if (!m_text_reader.get()){
+    String main_filename = _getBasicVariableFile(m_version,m_path,rank);
+    auto reader = new KeyValueTextReader(main_filename,m_is_binary,m_version);
+    m_text_reader = reader;
+  }
+
+  m_text_reader->setDeflater(deflater);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -723,13 +752,6 @@ writeItemGroup(const String& group_full_name,Int64ConstArrayView written_unique_
 void BasicGenericWriter::
 endWrite()
 {
-  Int32 rank = m_rank;
-
-  StringBuilder filename = m_path;
-  filename += "/own_metadata_";
-  filename += rank;
-  filename += ".txt";
-
   IApplication* app = m_application;
   ScopedPtrT<IXmlDocumentHolder> xdoc(app->ressourceMng()->createXmlDocument());
   XmlNode doc = xdoc->documentNode();
@@ -743,9 +765,19 @@ endWrite()
     e.setAttrValue("full-name",vdi->fullName());
     vdi->write(e);
   }
-  String fn = filename.toString();
-  ofstream ofile(fn.localstr());
-  app->ioMng()->writeXmlFile(xdoc.get(),filename);
+  if (m_version>=3){
+    // Sauve les méta-données dans la base de données.
+    UniqueArray<Byte> bytes;
+    xdoc->save(bytes);
+    Int64 length = bytes.length();
+    String key_name = "Global:OwnMetadata";
+    m_text_writer->setExtents(key_name,Int64ConstArrayView(1,&length));
+    m_text_writer->write(key_name,"Own metadata",bytes);
+  }
+  else{
+    String filename = _getOwnMetatadaFile(m_path,m_rank);
+    app->ioMng()->writeXmlFile(xdoc.get(),filename);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1096,7 +1128,7 @@ class BasicReader
   bool m_want_parallel;
   Integer m_nb_written_part;
   bool m_is_binary;
-  bool m_version;
+  Int32 m_version;
 
   Int32 m_first_rank_to_read;
   Int32 m_nb_rank_to_read;
@@ -1418,7 +1450,7 @@ void BasicReader::
 beginRead(const DataReaderInfo& infos)
 {
   ARCANE_UNUSED(infos);
-  info() << "** ** BEGIN READ";
+  info(4) << "** ** BEGIN READ";
   IParallelMng* pm = m_parallel_mng;
 
   // Si un fichier 'arcane_acr_db.json' existe alors il est prioritaire
@@ -1441,6 +1473,7 @@ beginRead(const DataReaderInfo& infos)
     JSONValue jv_arcane_db = root.expectedChild(_getArcaneDBTag());
     m_version = jv_arcane_db.expectedChild("Version").valueAsInt32();
     m_nb_written_part = jv_arcane_db.expectedChild("NbPart").valueAsInt32();
+    info() << "Begin read using database version=" << m_version << " nb_part=" << m_nb_written_part;
   }
   else{
     // Ancien format
@@ -1452,7 +1485,7 @@ beginRead(const DataReaderInfo& infos)
       String filename = String::concat(m_path,"/infos.txt");
       ifstream ifile(filename.localstr());
       ifile >> nb_part;
-      info() << "** NB PART=" << nb_part;
+      info(4) << "** NB PART=" << nb_part;
       m_nb_written_part = nb_part;
     }
     pm->broadcast(Int32ArrayView(1,&m_nb_written_part),pm->masterIORank());
@@ -1460,7 +1493,7 @@ beginRead(const DataReaderInfo& infos)
 
   _setRanksToRead();
   info(4) << "RanksToRead: FIRST TO READ =" << m_first_rank_to_read
-          << " nb=" << m_nb_rank_to_read;
+          << " nb=" << m_nb_rank_to_read << " version=" << m_version;
   m_global_readers.resize(m_nb_rank_to_read);
   for( Integer i=0; i<m_nb_rank_to_read; ++i )
     m_global_readers[i] = _readOwnMetaDataAndCreateReader(i+m_first_rank_to_read);
