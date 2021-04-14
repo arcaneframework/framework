@@ -396,7 +396,8 @@ readData(const String& var_full_name,IData* data)
   KeyValueTextReader* reader = m_text_reader.get();
   String vname = var_full_name;
   VariableDataInfo* vdi = _getVarInfo(vname);
-  reader->setFileOffset(vdi->fileOffset());
+  if (m_version<3)
+    reader->setFileOffset(vdi->fileOffset());
 
   eDataType data_type = vdi->baseDataType();
   Int64 memory_size = vdi->memorySize();

@@ -54,6 +54,8 @@ class TextReader
   String fileName() const;
   void setFileOffset(Int64 v);
   void setDeflater(Ref<IDeflateService> ds);
+  ifstream& stream();
+  Int64 fileLength() const;
  private:
   Impl* m_p;
  private:
@@ -101,6 +103,11 @@ class KeyValueTextReader
   void setDeflater(Ref<IDeflateService> ds);
  private:
   Impl* m_p;
+ private:
+  void _readHeader();
+  void _readJSON();
+  void _readDirect(Int64 offset,Span<std::byte> bytes);
+  void _setFileOffset(const String& key_name);
 };
 
 /*---------------------------------------------------------------------------*/

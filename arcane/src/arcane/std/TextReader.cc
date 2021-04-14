@@ -16,12 +16,15 @@
 #include "arcane/utils/IOException.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/Ref.h"
+#include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/JSONReader.h"
 
 #include "arcane/ArcaneException.h"
 #include "arcane/IDeflateService.h"
-#include "arcane/utils/Ref.h"
 
 #include <fstream>
+#include <map>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,6 +44,7 @@ class TextReader::Impl
   String m_filename;
   ifstream m_istream;
   Integer m_current_line = 0;
+  Int64 m_file_length = 0;
   bool m_is_binary = false;
   Ref<IDeflateService> m_deflater;
 };
@@ -58,6 +62,7 @@ TextReader(const String& filename,bool is_binary)
   m_p->m_istream.open(filename.localstr(),mode);
   if (!m_p->m_istream)
     ARCANE_THROW(ReaderWriterException, "Can not read file '{0}' for reading", filename);
+  m_p->m_file_length = platform::getFileLength(filename);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -316,17 +321,69 @@ setDeflater(Ref<IDeflateService> ds)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ifstream& TextReader::
+stream()
+{
+  return m_p->m_istream;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 TextReader::
+fileLength() const
+{
+  return m_p->m_file_length;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 class KeyValueTextReader::Impl
 {
  public:
+  static constexpr int MAX_SIZE = 8;
+  // TODO: a fusionner avec KeyValueTextWriter::Impl::ExtentsInfo
+  struct ExtentsInfo
+  {
+    void fill(Int64ConstArrayView v)
+    {
+      if (v.size()>MAX_SIZE)
+        ARCANE_FATAL("Number of extents ({0}) is greater than max allowed ({1})",v.size(),MAX_SIZE);
+      nb = v.size();
+      for( Int32 i=0; i<nb; ++i )
+        sizes[i] = v[i];
+    }
+    Int64ConstArrayView view() const { return Int64ConstArrayView(nb,sizes); }
+    Int32 size() const { return nb; }
+   private:
+    Int32 nb = 0;
+   public:
+    Int64 sizes[MAX_SIZE];
+  };
+  struct DataInfo
+  {
+    Int64 m_file_offset = 0;
+    ExtentsInfo m_extents;
+  };
+ public:
   Impl(const String& filename,bool is_binary,Int32 version)
   : m_reader(filename,is_binary), m_version(version){}
  public:
   TextReader m_reader;
+  std::map<String,DataInfo> m_data_infos;
   Int32 m_version;
+ public:
+  DataInfo& findData(const String& key_name)
+  {
+    auto x = m_data_infos.find(key_name);
+    if (x==m_data_infos.end())
+      ARCANE_FATAL("Can not find key '{0}' in database",key_name);
+    return x->second;
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -336,6 +393,10 @@ KeyValueTextReader::
 KeyValueTextReader(const String& filename,bool is_binary,Int32 version)
 : m_p(new Impl(filename,is_binary,version))
 {
+  if (m_p->m_version>=3){
+    _readHeader();
+    _readJSON();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -351,10 +412,110 @@ KeyValueTextReader::
 /*---------------------------------------------------------------------------*/
 
 void KeyValueTextReader::
+_readDirect(Int64 offset,Span<std::byte> bytes)
+{
+  m_p->m_reader.setFileOffset(offset);
+  ifstream& s = m_p->m_reader.stream();
+  s.read((char*)bytes.data(),bytes.size());
+  if (s.fail())
+    ARCANE_FATAL("Can not read file part offset={0} length={1}",offset,bytes.length());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief En-tête du format de fichier.
+ *
+ * Toute modification dans cette en-tête doit être reportée dans la
+ * classe KeyValueTextWriter.
+ */
+void KeyValueTextReader::
+_readHeader()
+{
+  constexpr Integer header_size = 12;
+  Byte header_buf[header_size];
+  Span<Byte> header(header_buf,header_size);
+  header.fill(0);
+  _readDirect(0,asWritableBytes(header));
+  if (header[0]!='A' || header[1]!='C' || header[2]!='R' || header[3]!=(Byte)39)
+    ARCANE_FATAL("Bad header");
+  if (header[5]!=0 || header[6]!=0 || header[7]!=0)
+    ARCANE_FATAL("Bad header version");
+  Integer version = header[4];
+  if (version!=m_p->m_version)
+    ARCANE_FATAL("Invalid version for ACR file version={0} expected={1}",version,m_p->m_version);
+  // TODO: tester indianess
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void KeyValueTextReader::
+_readJSON()
+{
+  // Les informations sur la position dans le fichier et la longueur du
+  // texte JSON sont sauvgegardées à la fin du fichier sous la forme
+  // de deux Int64.
+  Int64 file_length = m_p->m_reader.fileLength();
+  // Ne devrait pas arriver vu qu'on a réussi à lire l'en-tête
+  if (file_length<16)
+    ARCANE_FATAL("File is too short");
+
+  UniqueArray<std::byte> json_bytes;
+
+  {
+    Int64 read_info[2];
+    // Doit toujours être la dernière écriture du fichier
+    Span<Int64> ri(read_info,2);
+    _readDirect(file_length-16,asWritableBytes(ri));
+    Int64 file_offset = read_info[0];
+    Int64 meta_data_size = read_info[1];
+    //std::cout << "FILE_INFO: offset=" << file_offset << " meta_data_size=" << meta_data_size << "\n";
+    json_bytes.resize(meta_data_size);
+    _readDirect(file_offset,json_bytes);
+  }
+
+  {
+    JSONDocument json_doc;
+    json_doc.parse(json_bytes);
+    JSONValue root = json_doc.root();
+    JSONValue data = root.child("Data");
+    UniqueArray<Int64> extents;
+    extents.reserve(12);
+    for( JSONValue v : data.valueAsArray() ){
+      String name = v.child("Name").valueAsString();
+      Int64 file_offset = v.child("FileOffset").valueAsInt64();
+      //std::cout << "Name=" << name << "\n";
+      //std::cout << "FileOffset=" << file_offset << "\n";
+      JSONValueList extents_info = v.child("Extents").valueAsArray();
+      extents.clear();
+      for( JSONValue v2 : extents_info ){
+        extents.add(v2.valueAsInt64());
+      }
+      Impl::DataInfo x;
+      x.m_file_offset = file_offset;
+      x.m_extents.fill(extents);
+      m_p->m_data_infos.insert(std::make_pair(name,x));
+    }
+  }
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void KeyValueTextReader::
 getExtents(const String& key_name,Int64ArrayView extents)
 {
   Integer dimension_array_size = extents.size();
-  if (m_p->m_version==1 || m_p->m_version==2){
+  if (m_p->m_version>=3){
+    Impl::DataInfo& data = m_p->findData(key_name);
+    Impl::ExtentsInfo& exi = data.m_extents;
+    if (extents.size()!=exi.size())
+      ARCANE_FATAL("Bad size for extents size={0} expected={1}",extents.size(),exi.size());
+    extents.copy(exi.view());
+  }
+  else {
     //String true_key_name = "Extents:" + key_name;
     if (m_p->m_version==1){
       // Dans la version 1, les dimensions sont des 'Int32'
@@ -382,36 +543,42 @@ getExtents(const String& key_name,Int64ArrayView extents)
 void KeyValueTextReader::
 readIntegers(const String& key,Span<Integer> values)
 {
+  _setFileOffset(key);
   m_p->m_reader.readIntegers(values);
 }
 
 void KeyValueTextReader::
 read(const String& key,Span<Int16> values)
 {
+  _setFileOffset(key);
   m_p->m_reader.read(values);
 }
 
 void KeyValueTextReader::
 read(const String& key,Span<Int32> values)
 {
+  _setFileOffset(key);
   m_p->m_reader.read(values);
 }
 
 void KeyValueTextReader::
 read(const String& key,Span<Int64> values)
 {
+  _setFileOffset(key);
   m_p->m_reader.read(values);
 }
 
 void KeyValueTextReader::
 read(const String& key,Span<Real> values)
 {
+  _setFileOffset(key);
   m_p->m_reader.read(values);
 }
 
 void KeyValueTextReader::
 read(const String& key,Span<Byte> values)
 {
+  _setFileOffset(key);
   m_p->m_reader.read(values);
 }
 
@@ -431,6 +598,20 @@ void KeyValueTextReader::
 setDeflater(Ref<IDeflateService> ds)
 {
   m_p->m_reader.setDeflater(ds);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void KeyValueTextReader::
+_setFileOffset(const String& key_name)
+{
+  // Avec les versions antérieures à la version 3, c'est l'appelant qui
+  // positionne l'offset car il est le seul à le connaitre.
+  if (m_p->m_version>=3){
+    Impl::DataInfo& data = m_p->findData(key_name);
+    setFileOffset(data.m_file_offset);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
