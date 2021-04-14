@@ -78,6 +78,8 @@
 
 namespace Arcane
 {
+using impl::KeyValueTextReader;
+using impl::KeyValueTextWriter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -550,7 +552,7 @@ readItemGroup(const String& group_full_name,Int64Array& written_unique_ids,
   }
   info(5) << "READ GROUP " << group_full_name;
   String filename = _getBasicGroupFile(m_path,group_full_name,m_rank);
-  TextReader reader(filename,m_is_binary);
+  impl::TextReader reader(filename,m_is_binary);
 
   {
     Integer nb_unique_id = 0;
@@ -736,7 +738,7 @@ writeItemGroup(const String& group_full_name,Int64ConstArrayView written_unique_
   }
 
   String filename = _getBasicGroupFile(m_path,group_full_name,m_rank);
-  TextWriter writer(filename,m_is_binary);
+  impl::TextWriter writer(filename,m_is_binary);
 
   // Sauve la liste des unique_ids écrits
   {
@@ -902,7 +904,7 @@ class BasicWriter
  private:
 
   void _directWriteVal(IVariable* v,IData* data);
-  void _writeVal(TextWriter* writer,VariableDataInfo* data_info,
+  void _writeVal(impl::TextWriter* writer,VariableDataInfo* data_info,
                  const ISerializedData* sdata);
 
   ParallelDataWriter* _getWriter(IVariable* var);
