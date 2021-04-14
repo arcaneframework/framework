@@ -54,6 +54,7 @@ class TextWriter
   bool isBinary() const;
   void setDeflater(Ref<IDeflateService> ds);
   Int64 fileOffset();
+  ostream& stream();
  private:
   Impl* m_p;
  private:
@@ -80,11 +81,11 @@ class KeyValueTextWriter
  public:
 
   void setExtents(const String& key_name,Int64ConstArrayView extents);
-  void write(const String& key,const String& comment,Int64ConstArrayView extents,Span<const Real> values);
-  void write(const String& key,const String& comment,Int64ConstArrayView extents,Span<const Int16> values);
-  void write(const String& key,const String& comment,Int64ConstArrayView extents,Span<const Int32> values);
-  void write(const String& key,const String& comment,Int64ConstArrayView extents,Span<const Int64> values);
-  void write(const String& key,const String& comment,Int64ConstArrayView extents,Span<const Byte> values);
+  void write(const String& key,const String& comment,Span<const Real> values);
+  void write(const String& key,const String& comment,Span<const Int16> values);
+  void write(const String& key,const String& comment,Span<const Int32> values);
+  void write(const String& key,const String& comment,Span<const Int64> values);
+  void write(const String& key,const String& comment,Span<const Byte> values);
  public:
   String fileName() const;
   bool isBinary() const;
@@ -93,6 +94,9 @@ class KeyValueTextWriter
  private:
   Impl* m_p;
   void _addKey(const String& key,Int64ConstArrayView extents);
+  void _writeKey(const String& key);
+  void _writeHeader();
+  void _writeEpilog();
 };
 
 /*---------------------------------------------------------------------------*/

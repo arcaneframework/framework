@@ -348,6 +348,11 @@ initialize(const String& path,Int32 rank)
     // Version 2:
     // - taille des dimensions sur 64 bits
     m_version = 2;
+  else if (version_id=="3")
+    // Version 3:
+    // - taille des dimensions sur 64 bits
+    // - 1 seul fichier pour toutes les meta-données
+    m_version = 3;
   else
     ARCANE_FATAL("Unsupported version '{0}' (max=2)",version_id);
 
@@ -599,31 +604,31 @@ writeData(const String& var_full_name,const ISerializedData* sdata)
     String comment = String::format("Write Values for '{0}'",var_full_name);
     eDataType base_data_type = sdata->baseDataType();
     if (base_data_type==DT_Real){
-      writer->write(key_name,comment,extents,Span<const Real>((const Real*)ptr,nb_base_element));
+      writer->write(key_name,comment,Span<const Real>((const Real*)ptr,nb_base_element));
     }
     else if (base_data_type==DT_Real2){
-      writer->write(key_name,comment,extents,Span<const Real>((const Real*)ptr,nb_base_element*2));
+      writer->write(key_name,comment,Span<const Real>((const Real*)ptr,nb_base_element*2));
     }
     else if (base_data_type==DT_Real3){
-      writer->write(key_name,comment,extents,Span<const Real>((const Real*)ptr,nb_base_element*3));
+      writer->write(key_name,comment,Span<const Real>((const Real*)ptr,nb_base_element*3));
     }
     else if (base_data_type==DT_Real2x2){
-      writer->write(key_name,comment,extents,Span<const Real>((const Real*)ptr,nb_base_element*4));
+      writer->write(key_name,comment,Span<const Real>((const Real*)ptr,nb_base_element*4));
     }
     else if (base_data_type==DT_Real3x3){
-      writer->write(key_name,comment,extents,Span<const Real>((const Real*)ptr,nb_base_element*9));
+      writer->write(key_name,comment,Span<const Real>((const Real*)ptr,nb_base_element*9));
     }
     else if (base_data_type==DT_Int16){
-      writer->write(key_name,comment,extents,Span<const Int16>((const Int16*)ptr,nb_base_element));
+      writer->write(key_name,comment,Span<const Int16>((const Int16*)ptr,nb_base_element));
     }
     else if (base_data_type==DT_Int32){
-      writer->write(key_name,comment,extents,Span<const Int32>((const Int32*)ptr,nb_base_element));
+      writer->write(key_name,comment,Span<const Int32>((const Int32*)ptr,nb_base_element));
     }
     else if (base_data_type==DT_Int64){
-      writer->write(key_name,comment,extents,Span<const Int64>((const Int64*)ptr,nb_base_element));
+      writer->write(key_name,comment,Span<const Int64>((const Int64*)ptr,nb_base_element));
     }
     else if (base_data_type==DT_Byte){
-      writer->write(key_name,comment,extents,Span<const Byte>((const Byte*)ptr,nb_base_element));
+      writer->write(key_name,comment,Span<const Byte>((const Byte*)ptr,nb_base_element));
     }
     else
       ARCANE_THROW(NotSupportedException,"Bad datatype {0}",base_data_type);
