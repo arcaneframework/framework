@@ -339,7 +339,7 @@ class BasicGenericReader
                      Int64Array& wanted_unique_ids) override;
  private:
   IApplication* m_application;
-  ScopedPtrT<KeyValueTextReader> m_text_reader;
+  Ref<KeyValueTextReader> m_text_reader;
   bool m_is_binary;
   String m_path;
   Int32 m_rank;
@@ -368,8 +368,8 @@ initialize(const String& path,Int32 rank)
     // alors les informations sont dans la base de données. Dans ce cas on lit
     // directement les infos depuis cette base.
     String main_filename = _getBasicVariableFile(m_version,m_path,rank);
-    auto reader = new KeyValueTextReader(main_filename,m_is_binary,m_version);
-    m_text_reader = reader;
+    m_text_reader = makeRef(new KeyValueTextReader(main_filename,m_is_binary,m_version));
+    //m_text_reader = reader;
     Int64 meta_data_size = 0;
     String key_name = "Global:OwnMetadata";
     m_text_reader->getExtents(key_name,Int64ArrayView(1,&meta_data_size));
@@ -417,8 +417,7 @@ initialize(const String& path,Int32 rank)
 
   if (!m_text_reader.get()){
     String main_filename = _getBasicVariableFile(m_version,m_path,rank);
-    auto reader = new KeyValueTextReader(main_filename,m_is_binary,m_version);
-    m_text_reader = reader;
+    m_text_reader = makeRef(new KeyValueTextReader(main_filename,m_is_binary,m_version));
   }
 
   m_text_reader->setDeflater(deflater);
@@ -595,12 +594,14 @@ class BasicGenericWriter
 , public IGenericWriter
 {
  public:
-  BasicGenericWriter(IApplication* app,bool is_binary,Int32 version)
+  BasicGenericWriter(IApplication* app,bool is_binary,Int32 version,
+                     Ref<KeyValueTextWriter> text_writer)
   : TraceAccessor(app->traceMng()),
     m_application(app),
     m_is_binary(is_binary),
     m_version(version),
-    m_rank(A_NULL_RANK)
+    m_rank(A_NULL_RANK),
+    m_text_writer(text_writer)
   {
   }
   ~BasicGenericWriter()
@@ -615,13 +616,15 @@ class BasicGenericWriter
     m_path = path;
     m_rank = rank;
     String filename = _getBasicVariableFile(m_version,path,rank);
-    m_text_writer = new KeyValueTextWriter(filename,m_is_binary,m_version);
-    String deflater_name = platform::getEnvironmentVariable("ARCANE_DEFLATER");
-    if (!deflater_name.null()){
-      m_write_deflater_name = deflater_name;
-      auto bc = _createDeflater(m_application,m_write_deflater_name);
-      info() << "Use deflater name=" << deflater_name;
-      m_text_writer->setDeflater(bc);
+    if (!m_text_writer){
+      m_text_writer = makeRef(new KeyValueTextWriter(filename,m_is_binary,m_version));
+      String deflater_name = platform::getEnvironmentVariable("ARCANE_DEFLATER");
+      if (!deflater_name.null()){
+        m_write_deflater_name = deflater_name;
+        auto bc = _createDeflater(m_application,m_write_deflater_name);
+        info() << "Use deflater name=" << deflater_name;
+        m_text_writer->setDeflater(bc);
+      }
     }
   }
   void writeData(const String& var_full_name,const ISerializedData* sdata) override;
@@ -635,7 +638,7 @@ class BasicGenericWriter
   String m_write_deflater_name;
   String m_path;
   Int32 m_rank;
-  ScopedPtrT<KeyValueTextWriter> m_text_writer;
+  Ref<KeyValueTextWriter> m_text_writer;
   typedef std::map<String,VariableDataInfo*> VariableDataInfoMap;
   VariableDataInfoMap m_variables_data_info;
 };
@@ -885,10 +888,12 @@ class BasicWriter
   bool m_is_gather;
   Int32 m_version;
 
+  Ref<KeyValueTextWriter> m_text_writer;
+
   std::map<ItemGroup,ParallelDataWriter*> m_parallel_data_writers;
   std::set<ItemGroup> m_written_groups;
 
-  IGenericWriter* m_global_writer;
+  ScopedPtrT<IGenericWriter> m_global_writer;
 
  private:
 
@@ -910,9 +915,7 @@ BasicWriter(IApplication* app,IParallelMng* pm,const String& path,
 , m_is_binary(true)
 , m_is_gather(false)
 , m_version(version)
-, m_global_writer(nullptr)
 {
-  m_global_writer = new BasicGenericWriter(app,m_is_binary,version);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -921,7 +924,6 @@ BasicWriter(IApplication* app,IParallelMng* pm,const String& path,
 BasicWriter::
 ~BasicWriter()
 {
-  delete m_global_writer;
   for( auto i : m_parallel_data_writers )
     delete i.second;
 }
@@ -932,6 +934,12 @@ BasicWriter::
 void BasicWriter::
 initialize()
 {
+  if (m_version>=3){
+    Int32 rank = m_parallel_mng->commRank();
+    String filename = _getBasicVariableFile(m_version,m_path,rank);
+    m_text_writer = makeRef(new KeyValueTextWriter(filename,m_is_binary,m_version));
+  }
+  m_global_writer = new BasicGenericWriter(m_application,m_is_binary,m_version,m_text_writer);
   if (m_verbose_level>0)
     info() << "** OPEN MODE = " << m_open_mode;
   if (m_open_mode==OpenModeTruncate && m_parallel_mng->isMasterIO())
@@ -1008,7 +1016,7 @@ void BasicWriter::
 write(IVariable* var,IData* data)
 {
   if (var->isPartial()){
-    info() << "** WARNING: partial variable not implemented in BasicReaderWriter";
+    info() << "** WARNING: partial variable not implemented in BasicWriter";
     return;
   }
   _directWriteVal(var,data);
@@ -1020,10 +1028,21 @@ write(IVariable* var,IData* data)
 void BasicWriter::
 setMetaData(const String& meta_data)
 {
-  Int32 my_rank = m_parallel_mng->commRank();
-  String filename = _getMetaDataFileName(my_rank);
-  ofstream ofile(filename.localstr());
-  meta_data.writeBytes(ofile);
+  // Dans la version 3, les méta-données de la protection sont dans la
+  // base de données.
+  if (m_version>=3){
+    Span<const Byte> bytes = meta_data.utf8();
+    Int64 length = bytes.length();
+    String key_name = "Global:CheckpointMetadata";
+    m_text_writer->setExtents(key_name,Int64ConstArrayView(1,&length));
+    m_text_writer->write(key_name,"Checkpoint metadata",bytes);
+  }
+  else{
+    Int32 my_rank = m_parallel_mng->commRank();
+    String filename = _getMetaDataFileName(my_rank);
+    ofstream ofile(filename.localstr());
+    meta_data.writeBytes(ofile);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1137,6 +1156,7 @@ class BasicReader
   std::map<String,ParallelDataReader*> m_parallel_data_readers;
   UniqueArray<IGenericReader*> m_global_readers;
   IItemGroupFinder* m_item_group_finder;
+  Ref<KeyValueTextReader> m_forced_rank_to_read_text_reader; //!< Lecteur pour le premier rang à lire.
 
  private:
 
@@ -1171,6 +1191,45 @@ BasicReader(IApplication* app,IParallelMng* pm,Int32 forced_rank_to_read,
 void BasicReader::
 initialize()
 {
+  IParallelMng* pm = m_parallel_mng;
+  // Si un fichier 'arcane_acr_db.json' existe alors on lit les informations
+  // de ce fichier pour détecter entre autre le numéro de version. Il faut
+  // le faire avant de lire les informations telles que les méta-données
+  // de la protection car l'emplacement des ces dernières dépend de la version
+  String db_filename = String::concat(m_path,"/arcane_acr_db.json");
+  Int32 has_db_file = 0;
+  {
+    if (pm->isMasterIO())
+      has_db_file = platform::isFileReadable(db_filename) ? 1 : 0;
+    pm->broadcast(Int32ArrayView(1,&has_db_file),pm->masterIORank());
+  }
+  if (has_db_file){
+    UniqueArray<Byte> bytes;
+    pm->ioMng()->collectiveRead(db_filename,bytes,false);
+    JSONDocument json_doc;
+    json_doc.parse(bytes,db_filename);
+    JSONValue root = json_doc.root();
+    JSONValue jv_arcane_db = root.expectedChild(_getArcaneDBTag());
+    m_version = jv_arcane_db.expectedChild("Version").valueAsInt32();
+    m_nb_written_part = jv_arcane_db.expectedChild("NbPart").valueAsInt32();
+    info() << "Begin read using database version=" << m_version << " nb_part=" << m_nb_written_part;
+  }
+  else{
+    // Ancien format
+    // Le proc maitre lit le fichier 'infos.txt' et envoie les informations
+    // aux autres. Ce format ne permet d'avoir que le nombre de parties
+    // comme information.
+    if (pm->isMasterIO()){
+      Integer nb_part = 0;
+      String filename = String::concat(m_path,"/infos.txt");
+      ifstream ifile(filename.localstr());
+      ifile >> nb_part;
+      info(4) << "** NB PART=" << nb_part;
+      m_nb_written_part = nb_part;
+    }
+    pm->broadcast(Int32ArrayView(1,&m_nb_written_part),pm->masterIORank());
+  }
+  //m_forced_rank_to_read_text_reader;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1363,12 +1422,23 @@ fillMetaData(ByteArray& bytes)
   Int32 rank = m_parallel_mng->commRank();
   if (m_forced_rank_to_read>=0)
     rank = m_forced_rank_to_read;
-  String filename = _getMetaDataFileName(rank);
-  info(4) << "Reading metadata file=" << filename;
-  ifstream ifile(filename.localstr());
-  Int64 file_length = platform::getFileLength(filename);
-  bytes.resize(file_length);
-  ifile.read((char*)bytes.data(),file_length);
+  if (m_version>=3){
+    String main_filename = _getBasicVariableFile(m_version,m_path,rank);
+    // TODO: conserver le lecteur pour le donnée au BasicReader afin
+    // d'éviter de lire plusieurs fois les méta-données.
+    KeyValueTextReader text_reader(main_filename,m_is_binary,m_version);
+    Int64 meta_data_size = 0;
+    String key_name = "Global:CheckpointMetadata";
+    info(4) << "Reading checkpoint metadata from database file=" << main_filename;
+    text_reader.getExtents(key_name,Int64ArrayView(1,&meta_data_size));
+    bytes.resize(meta_data_size);
+    text_reader.read(key_name,bytes);
+  }
+  else{
+    String filename = _getMetaDataFileName(rank);
+    info(4) << "Reading checkpoint metadata file=" << filename;
+    platform::readAllFile(filename,false,bytes);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1451,45 +1521,6 @@ beginRead(const DataReaderInfo& infos)
 {
   ARCANE_UNUSED(infos);
   info(4) << "** ** BEGIN READ";
-  IParallelMng* pm = m_parallel_mng;
-
-  // Si un fichier 'arcane_acr_db.json' existe alors il est prioritaire
-  // et on lit les informations nécessaires à partir de ce fichier.
-  // Sinon, les informations sont dans un fichier 'infos.txt' et dans ce
-  // il ne contient que le nombre de parties sauvegardées.
-  String db_filename = String::concat(m_path,"/arcane_acr_db.json");
-  Int32 has_db_file = 0;
-  {
-    if (pm->isMasterIO())
-      has_db_file = platform::isFileReadable(db_filename) ? 1 : 0;
-    pm->broadcast(Int32ArrayView(1,&has_db_file),pm->masterIORank());
-  }
-  if (has_db_file){
-    UniqueArray<Byte> bytes;
-    pm->ioMng()->collectiveRead(db_filename,bytes,false);
-    JSONDocument json_doc;
-    json_doc.parse(bytes,db_filename);
-    JSONValue root = json_doc.root();
-    JSONValue jv_arcane_db = root.expectedChild(_getArcaneDBTag());
-    m_version = jv_arcane_db.expectedChild("Version").valueAsInt32();
-    m_nb_written_part = jv_arcane_db.expectedChild("NbPart").valueAsInt32();
-    info() << "Begin read using database version=" << m_version << " nb_part=" << m_nb_written_part;
-  }
-  else{
-    // Ancien format
-    // Le proc maitre lit le fichier 'infos.txt' et envoie les informations
-    // aux autres. Ce format ne permet d'avoir que le nombre de parties
-    // comme information.
-    if (pm->isMasterIO()){
-      Integer nb_part = 0;
-      String filename = String::concat(m_path,"/infos.txt");
-      ifstream ifile(filename.localstr());
-      ifile >> nb_part;
-      info(4) << "** NB PART=" << nb_part;
-      m_nb_written_part = nb_part;
-    }
-    pm->broadcast(Int32ArrayView(1,&m_nb_written_part),pm->masterIORank());
-  }
 
   _setRanksToRead();
   info(4) << "RanksToRead: FIRST TO READ =" << m_first_rank_to_read
