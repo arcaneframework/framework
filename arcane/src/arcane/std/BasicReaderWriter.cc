@@ -319,9 +319,10 @@ class BasicGenericReader
  public:
   // Si 'version==-1', alors cela sera déterminé lors de
   // l'initialisation.
-  BasicGenericReader(IApplication* app,bool is_binary,Int32 version)
+  BasicGenericReader(IApplication* app,bool is_binary,Int32 version,Ref<KeyValueTextReader> text_reader)
   : TraceAccessor(app->traceMng()),
     m_application(app),
+    m_text_reader(text_reader),
     m_is_binary(is_binary),
     m_rank(A_NULL_RANK),
     m_version(version)
@@ -356,6 +357,10 @@ class BasicGenericReader
 void BasicGenericReader::
 initialize(const String& path,Int32 rank)
 {
+  // Dans le cas de la version 1 ou 2, on ne peut pas créer le KeyValueTextReader
+  // avant de lire les 'OwnMetaData' car ce sont ces dernières qui contiennent
+  // le numéro de version.
+
   m_path = path;
   m_rank = rank;
 
@@ -364,12 +369,12 @@ initialize(const String& path,Int32 rank)
   ScopedPtrT<IXmlDocumentHolder> xdoc;
 
   if (m_version>=3){
+    if (!m_text_reader.get())
+      ARCANE_FATAL("Null text reader");
     // Si on connait déjà la version et qu'elle est supérieure ou égale à 3
     // alors les informations sont dans la base de données. Dans ce cas on lit
     // directement les infos depuis cette base.
     String main_filename = _getBasicVariableFile(m_version,m_path,rank);
-    m_text_reader = makeRef(new KeyValueTextReader(main_filename,m_is_binary,m_version));
-    //m_text_reader = reader;
     Int64 meta_data_size = 0;
     String key_name = "Global:OwnMetadata";
     m_text_reader->getExtents(key_name,Int64ArrayView(1,&meta_data_size));
@@ -613,18 +618,17 @@ class BasicGenericWriter
  public:
   void initialize(const String& path,Int32 rank) override
   {
+    if (!m_text_writer)
+      ARCANE_FATAL("Null text writer");
     m_path = path;
     m_rank = rank;
-    String filename = _getBasicVariableFile(m_version,path,rank);
-    if (!m_text_writer){
-      m_text_writer = makeRef(new KeyValueTextWriter(filename,m_is_binary,m_version));
-      String deflater_name = platform::getEnvironmentVariable("ARCANE_DEFLATER");
-      if (!deflater_name.null()){
-        m_write_deflater_name = deflater_name;
-        auto bc = _createDeflater(m_application,m_write_deflater_name);
-        info() << "Use deflater name=" << deflater_name;
-        m_text_writer->setDeflater(bc);
-      }
+    // Permet de surcharger le service utilisé pour la compression
+    String deflater_name = platform::getEnvironmentVariable("ARCANE_DEFLATER");
+    if (!deflater_name.null()){
+      m_write_deflater_name = deflater_name;
+      auto bc = _createDeflater(m_application,m_write_deflater_name);
+      info() << "Use deflater name=" << deflater_name;
+      m_text_writer->setDeflater(bc);
     }
   }
   void writeData(const String& var_full_name,const ISerializedData* sdata) override;
@@ -934,11 +938,9 @@ BasicWriter::
 void BasicWriter::
 initialize()
 {
-  if (m_version>=3){
-    Int32 rank = m_parallel_mng->commRank();
-    String filename = _getBasicVariableFile(m_version,m_path,rank);
-    m_text_writer = makeRef(new KeyValueTextWriter(filename,m_is_binary,m_version));
-  }
+  Int32 rank = m_parallel_mng->commRank();
+  String filename = _getBasicVariableFile(m_version,m_path,rank);
+  m_text_writer = makeRef(new KeyValueTextWriter(filename,m_is_binary,m_version));
   m_global_writer = new BasicGenericWriter(m_application,m_is_binary,m_version,m_text_writer);
   if (m_verbose_level>0)
     info() << "** OPEN MODE = " << m_open_mode;
@@ -1229,7 +1231,10 @@ initialize()
     }
     pm->broadcast(Int32ArrayView(1,&m_nb_written_part),pm->masterIORank());
   }
-  //m_forced_rank_to_read_text_reader;
+  if (m_version>=3){
+    String main_filename = _getBasicVariableFile(m_version,m_path,m_forced_rank_to_read);
+    m_forced_rank_to_read_text_reader = makeRef(new KeyValueTextReader(main_filename,m_is_binary,m_version));
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1423,16 +1428,12 @@ fillMetaData(ByteArray& bytes)
   if (m_forced_rank_to_read>=0)
     rank = m_forced_rank_to_read;
   if (m_version>=3){
-    String main_filename = _getBasicVariableFile(m_version,m_path,rank);
-    // TODO: conserver le lecteur pour le donnée au BasicReader afin
-    // d'éviter de lire plusieurs fois les méta-données.
-    KeyValueTextReader text_reader(main_filename,m_is_binary,m_version);
     Int64 meta_data_size = 0;
     String key_name = "Global:CheckpointMetadata";
-    info(4) << "Reading checkpoint metadata from database file=" << main_filename;
-    text_reader.getExtents(key_name,Int64ArrayView(1,&meta_data_size));
+    info(4) << "Reading checkpoint metadata from database";
+    m_forced_rank_to_read_text_reader->getExtents(key_name,Int64ArrayView(1,&meta_data_size));
     bytes.resize(meta_data_size);
-    text_reader.read(key_name,bytes);
+    m_forced_rank_to_read_text_reader->read(key_name,bytes);
   }
   else{
     String filename = _getMetaDataFileName(rank);
@@ -1498,7 +1499,18 @@ _setRanksToRead()
 IGenericReader* BasicReader::
 _readOwnMetaDataAndCreateReader(Int32 rank)
 {
-  auto r = new BasicGenericReader(m_application,m_is_binary,m_version);
+  String main_filename = _getBasicVariableFile(m_version,m_path,rank);
+  Ref<KeyValueTextReader> text_reader;
+  if (m_version>=3){
+    // Si le rang est le même que m_forced_rank_to_read, alors peut réutiliser
+    // le lecteur déjà créé.
+    if (rank==m_forced_rank_to_read)
+      text_reader = m_forced_rank_to_read_text_reader;
+    else
+      text_reader = makeRef(new KeyValueTextReader(main_filename,m_is_binary,m_version));
+  }
+
+  auto r = new BasicGenericReader(m_application,m_is_binary,m_version,text_reader);
   r->initialize(m_path,rank);
   return r;
 }
