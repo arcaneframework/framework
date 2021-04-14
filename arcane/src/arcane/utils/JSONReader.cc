@@ -189,12 +189,15 @@ child(StringView name) const
   return keyValueChild(name).value();
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 JSONValue JSONValue::
 expectedChild(StringView name) const
 {
   JSONKeyValue k = keyValueChild(name);
   if (!k)
-    ARCANE_FATAL("No key '{0}' found in json document");
+    ARCANE_FATAL("No key '{0}' found in json document",name);
   return k.value();
 }
 
