@@ -476,6 +476,23 @@ void BasicGenericReader::
 readItemGroup(const String& group_full_name,Int64Array& written_unique_ids,
               Int64Array& wanted_unique_ids)
 {
+  if (m_version>=3){
+    {
+      String written_uid_name = String("GroupWrittenUid:")+group_full_name;
+      Int64 nb_written_uid = 0;
+      m_text_reader->getExtents(written_uid_name,Int64ArrayView(1,&nb_written_uid));
+      written_unique_ids.resize(nb_written_uid);
+      m_text_reader->read(written_uid_name,written_unique_ids);
+    }
+    {
+      String wanted_uid_name = String("GroupWantedUid:")+group_full_name;
+      Int64 nb_wanted_uid = 0;
+      m_text_reader->getExtents(wanted_uid_name,Int64ArrayView(1,&nb_wanted_uid));
+      wanted_unique_ids.resize(nb_wanted_uid);
+      m_text_reader->read(wanted_uid_name,wanted_unique_ids);
+    }
+    return;
+  }
   info(5) << "READ GROUP " << group_full_name;
   String filename = _getBasicGroupFile(m_path,group_full_name,m_rank);
   TextReader reader(filename,m_is_binary);
@@ -643,6 +660,23 @@ void BasicGenericWriter::
 writeItemGroup(const String& group_full_name,Int64ConstArrayView written_unique_ids,
                Int64ConstArrayView wanted_unique_ids)
 {
+  if (m_version>=3){
+    // Sauve les informations du groupe la base de données (clé,valeur)
+    {
+      String written_uid_name = String("GroupWrittenUid:")+group_full_name;
+      Int64 nb_written_uid = written_unique_ids.size();
+      m_text_writer->setExtents(written_uid_name,Int64ConstArrayView(1,&nb_written_uid));
+      m_text_writer->write(written_uid_name,"Written UniqueIds",written_unique_ids);
+    }
+    {
+      String wanted_uid_name = String("GroupWantedUid:")+group_full_name;
+      Int64 nb_wanted_uid = wanted_unique_ids.size();
+      m_text_writer->setExtents(wanted_uid_name,Int64ConstArrayView(1,&nb_wanted_uid));
+      m_text_writer->write(wanted_uid_name,"Wanted UniqueIds",wanted_unique_ids);
+    }
+    return;
+  }
+
   String filename = _getBasicGroupFile(m_path,group_full_name,m_rank);
   TextWriter writer(filename,m_is_binary);
 
