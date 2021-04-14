@@ -39,7 +39,7 @@ class TextReader
   class Impl;
  public:
 
-  TextReader(const String& filename,bool is_binary);
+  explicit TextReader(const String& filename);
   TextReader(const TextReader& rhs) = delete;
   ~TextReader();
   TextReader& operator=(const TextReader& rhs) = delete;
@@ -85,7 +85,7 @@ class KeyValueTextReader
 
  public:
 
-  KeyValueTextReader(const String& filename,bool is_binary,Int32 version);
+  KeyValueTextReader(const String& filename,Int32 version);
   KeyValueTextReader(const KeyValueTextReader& rhs) = delete;
   ~KeyValueTextReader();
   KeyValueTextReader& operator=(const KeyValueTextReader& rhs) = delete;

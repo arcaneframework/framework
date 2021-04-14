@@ -38,14 +38,13 @@ namespace Arcane::impl
 class TextReader::Impl
 {
  public:
-  Impl(const String& filename,bool is_binary)
-  : m_filename(filename), m_is_binary(is_binary) {}
+  Impl(const String& filename)
+  : m_filename(filename) {}
  public:
   String m_filename;
   ifstream m_istream;
   Integer m_current_line = 0;
   Int64 m_file_length = 0;
-  bool m_is_binary = false;
   Ref<IDeflateService> m_deflater;
 };
 
@@ -53,12 +52,10 @@ class TextReader::Impl
 /*---------------------------------------------------------------------------*/
 
 TextReader::
-TextReader(const String& filename,bool is_binary)
-: m_p(new Impl(filename,is_binary))
+TextReader(const String& filename)
+: m_p(new Impl(filename))
 {
-  ios::openmode mode = ios::in;
-  if (m_p->m_is_binary)
-    mode |= ios::binary;
+  ios::openmode mode = ios::in | ios::binary;
   m_p->m_istream.open(filename.localstr(),mode);
   if (!m_p->m_istream)
     ARCANE_THROW(ReaderWriterException, "Can not read file '{0}' for reading", filename);
@@ -107,13 +104,7 @@ _getInteger()
 void TextReader::
 readIntegers(Span<Integer> values)
 {
-  if (m_p->m_is_binary) {
-    read(values);
-  }
-  else {
-    for (Integer& v : values)
-      v = _getInteger();
-  }
+  read(values);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -124,9 +115,9 @@ _checkStream(const char* type, Int64 nb_read_value)
 {
   istream& s = m_p->m_istream;
   if (!s)
-    ARCANE_THROW(IOException, "Can not read '{0}' (nb_val={1} is_binary={2} bad?={3} "
-                              "fail?={4} eof?={5} pos={6}) file='{7}'",
-                 type, nb_read_value, m_p->m_is_binary, s.bad(), s.fail(),
+    ARCANE_THROW(IOException, "Can not read '{0}' (nb_val={1} bad?={2} "
+                 "fail?={3} eof?={4} pos={5}) file='{6}'",
+                 type, nb_read_value, s.bad(), s.fail(),
                  s.eof(), s.tellg(), m_p->m_filename);
 }
 
@@ -137,16 +128,10 @@ void TextReader::
 read(Span<Byte> values)
 {
   Int64 nb_value = values.size();
-  if (m_p->m_is_binary) {
-    // _removeComments() nécessaire pour compatibilité avec première version.
-    // a supprimer par la suite
-    _removeComments();
-    _binaryRead(values.data(), nb_value);
-  }
-  else {
-    _removeComments();
-    m_p->m_istream.read((char*)values.data(), nb_value);
-  }
+  // _removeComments() nécessaire pour compatibilité avec première version.
+  // a supprimer par la suite
+  _removeComments();
+  _binaryRead(values.data(), nb_value);
   _checkStream("Byte[]", nb_value);
 }
 
@@ -157,13 +142,7 @@ void TextReader::
 read(Span<Int64> values)
 {
   Int64 nb_value = values.size();
-  if (m_p->m_is_binary) {
-    _binaryRead(values.data(), nb_value * sizeof(Int64));
-  }
-  else {
-    for (Int64& v : values)
-      v = _getInt64();
-  }
+  _binaryRead(values.data(), nb_value * sizeof(Int64));
   _checkStream("Int64[]", nb_value);
 }
 
@@ -174,13 +153,7 @@ void TextReader::
 read(Span<Int16> values)
 {
   Int64 nb_value = values.size();
-  if (m_p->m_is_binary) {
-    _binaryRead(values.data(), nb_value * sizeof(Int16));
-  }
-  else {
-    for (Int16& v : values)
-      v = _getInt16();
-  }
+  _binaryRead(values.data(), nb_value * sizeof(Int16));
   _checkStream("Int16[]", nb_value);
 }
 
@@ -191,13 +164,7 @@ void TextReader::
 read(Span<Int32> values)
 {
   Int64 nb_value = values.size();
-  if (m_p->m_is_binary) {
-    _binaryRead(values.data(), nb_value * sizeof(Int32));
-  }
-  else {
-    for (Int32& v : values)
-      v = _getInt32();
-  }
+  _binaryRead(values.data(), nb_value * sizeof(Int32));
   _checkStream("Int32[]", nb_value);
 }
 
@@ -208,14 +175,7 @@ void TextReader::
 read(Span<Real> values)
 {
   Int64 nb_value = values.size();
-  if (m_p->m_is_binary) {
-    _binaryRead(values.data(), nb_value * sizeof(Real));
-  }
-  else {
-    for (Real& v : values) {
-      v = _getReal();
-    }
-  }
+  _binaryRead(values.data(), nb_value * sizeof(Real));
   _checkStream("Real[]", nb_value);
 }
 
@@ -370,8 +330,8 @@ class KeyValueTextReader::Impl
     ExtentsInfo m_extents;
   };
  public:
-  Impl(const String& filename,bool is_binary,Int32 version)
-  : m_reader(filename,is_binary), m_version(version){}
+  Impl(const String& filename,Int32 version)
+  : m_reader(filename), m_version(version){}
  public:
   TextReader m_reader;
   std::map<String,DataInfo> m_data_infos;
@@ -390,8 +350,8 @@ class KeyValueTextReader::Impl
 /*---------------------------------------------------------------------------*/
 
 KeyValueTextReader::
-KeyValueTextReader(const String& filename,bool is_binary,Int32 version)
-: m_p(new Impl(filename,is_binary,version))
+KeyValueTextReader(const String& filename,Int32 version)
+: m_p(new Impl(filename,version))
 {
   if (m_p->m_version>=3){
     _readHeader();

@@ -321,11 +321,10 @@ class BasicGenericReader
  public:
   // Si 'version==-1', alors cela sera déterminé lors de
   // l'initialisation.
-  BasicGenericReader(IApplication* app,bool is_binary,Int32 version,Ref<KeyValueTextReader> text_reader)
+  BasicGenericReader(IApplication* app,Int32 version,Ref<KeyValueTextReader> text_reader)
   : TraceAccessor(app->traceMng()),
     m_application(app),
     m_text_reader(text_reader),
-    m_is_binary(is_binary),
     m_rank(A_NULL_RANK),
     m_version(version)
   {
@@ -343,7 +342,6 @@ class BasicGenericReader
  private:
   IApplication* m_application;
   Ref<KeyValueTextReader> m_text_reader;
-  bool m_is_binary;
   String m_path;
   Int32 m_rank;
   Int32 m_version;
@@ -424,7 +422,7 @@ initialize(const String& path,Int32 rank)
 
   if (!m_text_reader.get()){
     String main_filename = _getBasicVariableFile(m_version,m_path,rank);
-    m_text_reader = makeRef(new KeyValueTextReader(main_filename,m_is_binary,m_version));
+    m_text_reader = makeRef(new KeyValueTextReader(main_filename,m_version));
   }
 
   m_text_reader->setDeflater(deflater);
@@ -552,7 +550,7 @@ readItemGroup(const String& group_full_name,Int64Array& written_unique_ids,
   }
   info(5) << "READ GROUP " << group_full_name;
   String filename = _getBasicGroupFile(m_path,group_full_name,m_rank);
-  impl::TextReader reader(filename,m_is_binary);
+  impl::TextReader reader(filename);
 
   {
     Integer nb_unique_id = 0;
@@ -601,11 +599,10 @@ class BasicGenericWriter
 , public IGenericWriter
 {
  public:
-  BasicGenericWriter(IApplication* app,bool is_binary,Int32 version,
+  BasicGenericWriter(IApplication* app,Int32 version,
                      Ref<KeyValueTextWriter> text_writer)
   : TraceAccessor(app->traceMng()),
     m_application(app),
-    m_is_binary(is_binary),
     m_version(version),
     m_rank(A_NULL_RANK),
     m_text_writer(text_writer)
@@ -639,7 +636,6 @@ class BasicGenericWriter
   void endWrite() override;
  private:
   IApplication* m_application;
-  bool m_is_binary;
   Int32 m_version;
   String m_write_deflater_name;
   String m_path;
@@ -738,7 +734,7 @@ writeItemGroup(const String& group_full_name,Int64ConstArrayView written_unique_
   }
 
   String filename = _getBasicGroupFile(m_path,group_full_name,m_rank);
-  impl::TextWriter writer(filename,m_is_binary);
+  impl::TextWriter writer(filename);
 
   // Sauve la liste des unique_ids écrits
   {
@@ -890,7 +886,6 @@ class BasicWriter
  private:
 
   bool m_want_parallel;
-  bool m_is_binary;
   bool m_is_gather;
   Int32 m_version;
 
@@ -918,7 +913,6 @@ BasicWriter(IApplication* app,IParallelMng* pm,const String& path,
             eOpenMode open_mode,Integer version,bool want_parallel)
 : BasicReaderWriterCommon(app,pm,path,open_mode)
 , m_want_parallel(want_parallel)
-, m_is_binary(true)
 , m_is_gather(false)
 , m_version(version)
 {
@@ -942,8 +936,8 @@ initialize()
 {
   Int32 rank = m_parallel_mng->commRank();
   String filename = _getBasicVariableFile(m_version,m_path,rank);
-  m_text_writer = makeRef(new KeyValueTextWriter(filename,m_is_binary,m_version));
-  m_global_writer = new BasicGenericWriter(m_application,m_is_binary,m_version,m_text_writer);
+  m_text_writer = makeRef(new KeyValueTextWriter(filename,m_version));
+  m_global_writer = new BasicGenericWriter(m_application,m_version,m_text_writer);
   if (m_verbose_level>0)
     info() << "** OPEN MODE = " << m_open_mode;
   if (m_open_mode==OpenModeTruncate && m_parallel_mng->isMasterIO())
@@ -1150,7 +1144,6 @@ class BasicReader
 
   bool m_want_parallel;
   Integer m_nb_written_part;
-  bool m_is_binary;
   Int32 m_version;
 
   Int32 m_first_rank_to_read;
@@ -1180,7 +1173,6 @@ BasicReader(IApplication* app,IParallelMng* pm,Int32 forced_rank_to_read,
 : BasicReaderWriterCommon(app,pm,path,BasicReaderWriterCommon::OpenModeRead)
 , m_want_parallel(want_parallel)
 , m_nb_written_part(0)
-, m_is_binary(true)
 , m_version(-1)
 , m_first_rank_to_read(0)
 , m_nb_rank_to_read(0)
@@ -1235,7 +1227,7 @@ initialize()
   }
   if (m_version>=3){
     String main_filename = _getBasicVariableFile(m_version,m_path,m_forced_rank_to_read);
-    m_forced_rank_to_read_text_reader = makeRef(new KeyValueTextReader(main_filename,m_is_binary,m_version));
+    m_forced_rank_to_read_text_reader = makeRef(new KeyValueTextReader(main_filename,m_version));
   }
 }
 
@@ -1509,10 +1501,10 @@ _readOwnMetaDataAndCreateReader(Int32 rank)
     if (rank==m_forced_rank_to_read)
       text_reader = m_forced_rank_to_read_text_reader;
     else
-      text_reader = makeRef(new KeyValueTextReader(main_filename,m_is_binary,m_version));
+      text_reader = makeRef(new KeyValueTextReader(main_filename,m_version));
   }
 
-  auto r = new BasicGenericReader(m_application,m_is_binary,m_version,text_reader);
+  auto r = new BasicGenericReader(m_application,m_version,text_reader);
   r->initialize(m_path,rank);
   return r;
 }

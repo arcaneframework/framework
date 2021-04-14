@@ -40,7 +40,6 @@ class TextWriter::Impl
  public:
   String m_filename;
   ofstream m_ostream;
-  bool m_is_binary = false;
   Ref<IDeflateService> m_deflater;
 };
 
@@ -48,10 +47,10 @@ class TextWriter::Impl
 /*---------------------------------------------------------------------------*/
 
 TextWriter::
-TextWriter(const String& filename,bool is_binary)
+TextWriter(const String& filename)
 : m_p(new Impl())
 {
-  open(filename,is_binary);
+  open(filename);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -76,13 +75,10 @@ TextWriter::
 /*---------------------------------------------------------------------------*/
 
 void TextWriter::
-open(const String& filename,bool is_binary)
+open(const String& filename)
 {
-  m_p->m_is_binary = is_binary;
   m_p->m_filename = filename;
-  ios::openmode mode = ios::out;
-  if (m_p->m_is_binary)
-    mode |= ios::binary;
+  ios::openmode mode = ios::out | ios::binary;
   m_p->m_ostream.open(filename.localstr(),mode);
   if (!m_p->m_ostream)
     ARCANE_THROW(ReaderWriterException,"Can not open file '{0}' for writing", filename);
@@ -95,15 +91,7 @@ open(const String& filename,bool is_binary)
 void TextWriter::
 write(const String& comment,Span<const Real> values)
 {
-  if (m_p->m_is_binary) {
-    _binaryWrite(values.data(), values.size() * sizeof(Real));
-  }
-  else {
-    _writeComments(comment);
-    for( Real v : values ){
-      m_p->m_ostream << v << '\n';
-    }
-  }
+  _binaryWrite(values.data(), values.size() * sizeof(Real));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -112,15 +100,7 @@ write(const String& comment,Span<const Real> values)
 void TextWriter::
 write(const String &comment,Span<const Int16> values)
 {
-  if (m_p->m_is_binary) {
-    _binaryWrite(values.data(), values.size() * sizeof(Int16));
-  }
-  else {
-    _writeComments(comment);
-    for( Int16 v : values ){
-      m_p->m_ostream << v << '\n';
-    }
-  }
+  _binaryWrite(values.data(), values.size() * sizeof(Int16));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -129,15 +109,7 @@ write(const String &comment,Span<const Int16> values)
 void TextWriter::
 write(const String& comment,Span<const Int32> values)
 {
-  if (m_p->m_is_binary) {
-    _binaryWrite(values.data(), values.size() * sizeof(Int32));
-  }
-  else {
-    _writeComments(comment);
-    for( Int32 v : values ){
-      m_p->m_ostream << v << '\n';
-    }
-  }
+  _binaryWrite(values.data(), values.size() * sizeof(Int32));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -146,15 +118,7 @@ write(const String& comment,Span<const Int32> values)
 void TextWriter::
 write(const String& comment,Span<const Int64> values)
 {
-  if (m_p->m_is_binary) {
-    _binaryWrite(values.data(), values.size() * sizeof(Int64));
-  }
-  else {
-    _writeComments(comment);
-    for( Int64 v : values ){
-      m_p->m_ostream << v << '\n';
-    }
-  }
+  _binaryWrite(values.data(), values.size() * sizeof(Int64));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -163,13 +127,7 @@ write(const String& comment,Span<const Int64> values)
 void TextWriter::
 write(const String& comment,Span<const Byte> values)
 {
-  if (m_p->m_is_binary) {
-    _binaryWrite(values.data(), values.size());
-  }
-  else {
-    _writeComments(comment);
-    m_p->m_ostream.write((const char *) values.data(), values.size());
-  }
+  _binaryWrite(values.data(), values.size());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -220,15 +178,6 @@ _binaryWrite(const void* bytes,Int64 len)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool TextWriter::
-isBinary() const
-{
-  return m_p->m_is_binary;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 ostream& TextWriter::
 stream()
 {
@@ -265,8 +214,8 @@ class KeyValueTextWriter::Impl
     ExtentsInfo m_extents;
   };
  public:
-  Impl(const String& filename,bool is_binary,Int32 version)
-  : m_writer(filename,is_binary), m_version(version)
+  Impl(const String& filename,Int32 version)
+  : m_writer(filename), m_version(version)
   {}
  public:
   TextWriter m_writer;
@@ -278,8 +227,8 @@ class KeyValueTextWriter::Impl
 /*---------------------------------------------------------------------------*/
 
 KeyValueTextWriter::
-KeyValueTextWriter(const String& filename,bool is_binary,Int32 version)
-: m_p(new Impl(filename,is_binary,version))
+KeyValueTextWriter(const String& filename,Int32 version)
+: m_p(new Impl(filename,version))
 {
   if (m_p->m_version>=3)
     _writeHeader();
@@ -464,15 +413,6 @@ String KeyValueTextWriter::
 fileName() const
 {
   return m_p->m_writer.fileName();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-bool KeyValueTextWriter::
-isBinary() const
-{
-  return m_p->m_writer.isBinary();
 }
 
 /*---------------------------------------------------------------------------*/

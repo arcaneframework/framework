@@ -39,7 +39,7 @@ class TextWriter
   class Impl;
  public:
 
-  TextWriter(const String& filename,bool is_binary);
+  explicit TextWriter(const String& filename);
   TextWriter(const TextWriter& rhs) = delete;
   TextWriter();
   ~TextWriter();
@@ -47,7 +47,7 @@ class TextWriter
 
  public:
 
-  void open(const String& filename,bool is_binary);
+  void open(const String& filename);
   void write(const String& comment,Span<const Real> values);
   void write(const String& comment,Span<const Int16> values);
   void write(const String& comment,Span<const Int32> values);
@@ -55,7 +55,6 @@ class TextWriter
   void write(const String& comment,Span<const Byte> values);
  public:
   String fileName() const;
-  bool isBinary() const;
   void setDeflater(Ref<IDeflateService> ds);
   Int64 fileOffset();
   ostream& stream();
@@ -77,7 +76,7 @@ class KeyValueTextWriter
   class Impl;
  public:
 
-  KeyValueTextWriter(const String& filename,bool is_binary,Int32 version);
+  explicit KeyValueTextWriter(const String& filename,Int32 version);
   KeyValueTextWriter(const TextWriter& rhs) = delete;
   ~KeyValueTextWriter();
   KeyValueTextWriter& operator=(const KeyValueTextWriter& rhs) = delete;
@@ -92,7 +91,6 @@ class KeyValueTextWriter
   void write(const String& key,const String& comment,Span<const Byte> values);
  public:
   String fileName() const;
-  bool isBinary() const;
   void setDeflater(Ref<IDeflateService> ds);
   Int64 fileOffset();
  private:
