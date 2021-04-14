@@ -89,7 +89,7 @@ open(const String& filename)
 /*---------------------------------------------------------------------------*/
 
 void TextWriter::
-write(const String& comment,Span<const Real> values)
+write(Span<const Real> values)
 {
   _binaryWrite(values.data(), values.size() * sizeof(Real));
 }
@@ -98,7 +98,7 @@ write(const String& comment,Span<const Real> values)
 /*---------------------------------------------------------------------------*/
 
 void TextWriter::
-write(const String &comment,Span<const Int16> values)
+write(Span<const Int16> values)
 {
   _binaryWrite(values.data(), values.size() * sizeof(Int16));
 }
@@ -107,7 +107,7 @@ write(const String &comment,Span<const Int16> values)
 /*---------------------------------------------------------------------------*/
 
 void TextWriter::
-write(const String& comment,Span<const Int32> values)
+write(Span<const Int32> values)
 {
   _binaryWrite(values.data(), values.size() * sizeof(Int32));
 }
@@ -116,7 +116,7 @@ write(const String& comment,Span<const Int32> values)
 /*---------------------------------------------------------------------------*/
 
 void TextWriter::
-write(const String& comment,Span<const Int64> values)
+write(Span<const Int64> values)
 {
   _binaryWrite(values.data(), values.size() * sizeof(Int64));
 }
@@ -125,7 +125,7 @@ write(const String& comment,Span<const Int64> values)
 /*---------------------------------------------------------------------------*/
 
 void TextWriter::
-write(const String& comment,Span<const Byte> values)
+write(Span<const Byte> values)
 {
   _binaryWrite(values.data(), values.size());
 }
@@ -347,11 +347,11 @@ setExtents(const String& key_name,Int64ConstArrayView extents)
         UniqueArray<Integer> dims(dimension_array_size);
         for( Integer i=0; i<dimension_array_size; ++i )
           dims[i] = CheckedConvert::toInteger(extents[i]);
-        m_p->m_writer.write(comment,dims);
+        m_p->m_writer.write(dims);
       }
       else
         // Sauve les dimensions comme un tableau de Int64
-        m_p->m_writer.write(comment,extents);
+        m_p->m_writer.write(extents);
     }
   }
 }
@@ -360,50 +360,50 @@ setExtents(const String& key_name,Int64ConstArrayView extents)
 /*---------------------------------------------------------------------------*/
 
 void KeyValueTextWriter::
-write(const String& key,const String& comment,Span<const Real> values)
+write(const String& key,Span<const Real> values)
 {
   _writeKey(key);
-  m_p->m_writer.write(comment,values);
+  m_p->m_writer.write(values);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void KeyValueTextWriter::
-write(const String& key,const String& comment,Span<const Int16> values)
+write(const String& key,Span<const Int16> values)
 {
   _writeKey(key);
-  m_p->m_writer.write(comment,values);
+  m_p->m_writer.write(values);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void KeyValueTextWriter::
-write(const String& key,const String& comment,Span<const Int32> values)
+write(const String& key,Span<const Int32> values)
 {
   _writeKey(key);
-  m_p->m_writer.write(comment,values);
+  m_p->m_writer.write(values);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void KeyValueTextWriter::
-write(const String& key,const String& comment,Span<const Int64> values)
+write(const String& key,Span<const Int64> values)
 {
   _writeKey(key);
-  m_p->m_writer.write(comment,values);
+  m_p->m_writer.write(values);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void KeyValueTextWriter::
-write(const String& key,const String& comment,Span<const Byte> values)
+write(const String& key,Span<const Byte> values)
 {
   _writeKey(key);
-  m_p->m_writer.write(comment,values);
+  m_p->m_writer.write(values);
 }
 
 /*---------------------------------------------------------------------------*/

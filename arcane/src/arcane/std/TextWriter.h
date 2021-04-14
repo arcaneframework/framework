@@ -48,11 +48,11 @@ class TextWriter
  public:
 
   void open(const String& filename);
-  void write(const String& comment,Span<const Real> values);
-  void write(const String& comment,Span<const Int16> values);
-  void write(const String& comment,Span<const Int32> values);
-  void write(const String& comment,Span<const Int64> values);
-  void write(const String& comment,Span<const Byte> values);
+  void write(Span<const Real> values);
+  void write(Span<const Int16> values);
+  void write(Span<const Int32> values);
+  void write(Span<const Int64> values);
+  void write(Span<const Byte> values);
  public:
   String fileName() const;
   void setDeflater(Ref<IDeflateService> ds);
@@ -70,6 +70,12 @@ class TextWriter
 /*!
  * \internal
  * Utilisation d'un TextWriter avec écriture sous la forme (clé,valeur).
+ *
+ * Pour chaque valeur à écrire, il faut d'abord appeler setExtents() pour
+ * positionner les dimensions de la donnée puis write() pour écrire les
+ * valeurs. Cela est nécessaire pour conserver la compatibilité avec les
+ * versions 1 et 2 du format où les données étaient écrites de manière
+ * séquentielles.
  */
 class KeyValueTextWriter
 {
@@ -84,11 +90,11 @@ class KeyValueTextWriter
  public:
 
   void setExtents(const String& key_name,Int64ConstArrayView extents);
-  void write(const String& key,const String& comment,Span<const Real> values);
-  void write(const String& key,const String& comment,Span<const Int16> values);
-  void write(const String& key,const String& comment,Span<const Int32> values);
-  void write(const String& key,const String& comment,Span<const Int64> values);
-  void write(const String& key,const String& comment,Span<const Byte> values);
+  void write(const String& key,Span<const Real> values);
+  void write(const String& key,Span<const Int16> values);
+  void write(const String& key,Span<const Int32> values);
+  void write(const String& key,Span<const Int64> values);
+  void write(const String& key,Span<const Byte> values);
  public:
   String fileName() const;
   void setDeflater(Ref<IDeflateService> ds);

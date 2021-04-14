@@ -675,34 +675,33 @@ writeData(const String& var_full_name,const ISerializedData* sdata)
   Int64 nb_base_element = sdata->nbBaseElement();
   if (nb_base_element!=0 && ptr){
     String key_name = var_full_name;
-    String comment = String::format("Write Values for '{0}'",var_full_name);
     eDataType base_data_type = sdata->baseDataType();
     if (base_data_type==DT_Real){
-      writer->write(key_name,comment,Span<const Real>((const Real*)ptr,nb_base_element));
+      writer->write(key_name,Span<const Real>((const Real*)ptr,nb_base_element));
     }
     else if (base_data_type==DT_Real2){
-      writer->write(key_name,comment,Span<const Real>((const Real*)ptr,nb_base_element*2));
+      writer->write(key_name,Span<const Real>((const Real*)ptr,nb_base_element*2));
     }
     else if (base_data_type==DT_Real3){
-      writer->write(key_name,comment,Span<const Real>((const Real*)ptr,nb_base_element*3));
+      writer->write(key_name,Span<const Real>((const Real*)ptr,nb_base_element*3));
     }
     else if (base_data_type==DT_Real2x2){
-      writer->write(key_name,comment,Span<const Real>((const Real*)ptr,nb_base_element*4));
+      writer->write(key_name,Span<const Real>((const Real*)ptr,nb_base_element*4));
     }
     else if (base_data_type==DT_Real3x3){
-      writer->write(key_name,comment,Span<const Real>((const Real*)ptr,nb_base_element*9));
+      writer->write(key_name,Span<const Real>((const Real*)ptr,nb_base_element*9));
     }
     else if (base_data_type==DT_Int16){
-      writer->write(key_name,comment,Span<const Int16>((const Int16*)ptr,nb_base_element));
+      writer->write(key_name,Span<const Int16>((const Int16*)ptr,nb_base_element));
     }
     else if (base_data_type==DT_Int32){
-      writer->write(key_name,comment,Span<const Int32>((const Int32*)ptr,nb_base_element));
+      writer->write(key_name,Span<const Int32>((const Int32*)ptr,nb_base_element));
     }
     else if (base_data_type==DT_Int64){
-      writer->write(key_name,comment,Span<const Int64>((const Int64*)ptr,nb_base_element));
+      writer->write(key_name,Span<const Int64>((const Int64*)ptr,nb_base_element));
     }
     else if (base_data_type==DT_Byte){
-      writer->write(key_name,comment,Span<const Byte>((const Byte*)ptr,nb_base_element));
+      writer->write(key_name,Span<const Byte>((const Byte*)ptr,nb_base_element));
     }
     else
       ARCANE_THROW(NotSupportedException,"Bad datatype {0}",base_data_type);
@@ -722,13 +721,13 @@ writeItemGroup(const String& group_full_name,Int64ConstArrayView written_unique_
       String written_uid_name = String("GroupWrittenUid:")+group_full_name;
       Int64 nb_written_uid = written_unique_ids.size();
       m_text_writer->setExtents(written_uid_name,Int64ConstArrayView(1,&nb_written_uid));
-      m_text_writer->write(written_uid_name,"Written UniqueIds",written_unique_ids);
+      m_text_writer->write(written_uid_name,written_unique_ids);
     }
     {
       String wanted_uid_name = String("GroupWantedUid:")+group_full_name;
       Int64 nb_wanted_uid = wanted_unique_ids.size();
       m_text_writer->setExtents(wanted_uid_name,Int64ConstArrayView(1,&nb_wanted_uid));
-      m_text_writer->write(wanted_uid_name,"Wanted UniqueIds",wanted_unique_ids);
+      m_text_writer->write(wanted_uid_name,wanted_unique_ids);
     }
     return;
   }
@@ -739,15 +738,15 @@ writeItemGroup(const String& group_full_name,Int64ConstArrayView written_unique_
   // Sauve la liste des unique_ids écrits
   {
     Integer nb_unique_id = written_unique_ids.size();
-    writer.write("Nb written uniqueIds",IntegerConstArrayView(1,&nb_unique_id));
-    writer.write("Written UniqueIds",written_unique_ids);
+    writer.write(IntegerConstArrayView(1,&nb_unique_id));
+    writer.write(written_unique_ids);
   }
 
   // Sauve la liste des unique_ids souhaités par ce sous-domaine
   {
     Integer nb_unique_id = wanted_unique_ids.size();
-    writer.write("Nb wanted uniqueIds",IntegerConstArrayView(1,&nb_unique_id));
-    writer.write("Writing Wanted UniqueIds",wanted_unique_ids);
+    writer.write(IntegerConstArrayView(1,&nb_unique_id));
+    writer.write(wanted_unique_ids);
   }
 }
 
@@ -777,7 +776,7 @@ endWrite()
     Int64 length = bytes.length();
     String key_name = "Global:OwnMetadata";
     m_text_writer->setExtents(key_name,Int64ConstArrayView(1,&length));
-    m_text_writer->write(key_name,"Own metadata",bytes);
+    m_text_writer->write(key_name,bytes);
   }
   else{
     String filename = _getOwnMetatadaFile(m_path,m_rank);
@@ -1033,7 +1032,7 @@ setMetaData(const String& meta_data)
     Int64 length = bytes.length();
     String key_name = "Global:CheckpointMetadata";
     m_text_writer->setExtents(key_name,Int64ConstArrayView(1,&length));
-    m_text_writer->write(key_name,"Checkpoint metadata",bytes);
+    m_text_writer->write(key_name,bytes);
   }
   else{
     Int32 my_rank = m_parallel_mng->commRank();
