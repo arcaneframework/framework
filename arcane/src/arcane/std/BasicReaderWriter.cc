@@ -20,6 +20,8 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/IOException.h"
 #include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/JSONWriter.h"
+#include "arcane/utils/JSONReader.h"
 
 #include "arcane/XmlNode.h"
 #include "arcane/IXmlDocumentHolder.h"
@@ -216,9 +218,27 @@ class BasicVariableMetaData
 
 namespace
 {
-String
-_getBasicVariableFile(const String& path,Int32 rank)
+String _getArcaneDBTag()
 {
+  return "ArcaneCheckpointRestartDataBase";
+}
+
+String
+_getArcaneDBFile(const String& path,Int32 rank)
+{
+  StringBuilder filename = path;
+  filename += "/arcane_db_n";
+  filename += rank;
+  filename += ".acr";
+  return filename;
+}
+
+String
+_getBasicVariableFile(Int32 version,const String& path,Int32 rank)
+{
+  if (version>=3){
+    return _getArcaneDBFile(path,rank);
+  }
   StringBuilder filename = path;
   filename += "/var___MAIN___";
   filename += rank;
@@ -287,12 +307,14 @@ class BasicGenericReader
 , public IGenericReader
 {
  public:
-  BasicGenericReader(IApplication* app,bool is_binary)
+  // Si 'version==-1', alors cela sera déterminé lors de
+  // l'initialisation.
+  BasicGenericReader(IApplication* app,bool is_binary,Int32 version)
   : TraceAccessor(app->traceMng()),
     m_application(app),
     m_is_binary(is_binary),
     m_rank(A_NULL_RANK),
-    m_version(-1)
+    m_version(version)
   {
   }
   ~BasicGenericReader() override
@@ -367,7 +389,7 @@ initialize(const String& path,Int32 rank)
     m_variables_data_info.insert(std::make_pair(var_full_name,vdi));
   }
 
-  String main_filename = _getBasicVariableFile(m_path,rank);
+  String main_filename = _getBasicVariableFile(m_version,m_path,rank);
   auto reader = new KeyValueTextReader(main_filename,m_is_binary,m_version);
   m_text_reader = reader;
   reader->setDeflater(deflater);
@@ -563,7 +585,7 @@ class BasicGenericWriter
   {
     m_path = path;
     m_rank = rank;
-    String filename = _getBasicVariableFile(path,rank);
+    String filename = _getBasicVariableFile(m_version,path,rank);
     m_text_writer = new KeyValueTextWriter(filename,m_is_binary,m_version);
     String deflater_name = platform::getEnvironmentVariable("ARCANE_DEFLATER");
     if (!deflater_name.null()){
@@ -829,6 +851,7 @@ class BasicWriter
   bool m_want_parallel;
   bool m_is_binary;
   bool m_is_gather;
+  Int32 m_version;
 
   std::map<ItemGroup,ParallelDataWriter*> m_parallel_data_writers;
   std::set<ItemGroup> m_written_groups;
@@ -854,6 +877,7 @@ BasicWriter(IApplication* app,IParallelMng* pm,const String& path,
 , m_want_parallel(want_parallel)
 , m_is_binary(true)
 , m_is_gather(false)
+, m_version(version)
 , m_global_writer(nullptr)
 {
   m_global_writer = new BasicGenericWriter(app,m_is_binary,version);
@@ -989,11 +1013,32 @@ endWrite()
 {
   IParallelMng* pm = m_parallel_mng;
   if (pm->isMasterIO()){
-    StringBuilder filename = m_path;
-    filename += "/infos.txt";
-    String fn = filename.toString();
-    ofstream ofile(fn.localstr());
-    ofile << pm->commSize() << '\n';
+    Int64 nb_part = pm->commSize();
+    if (m_version>=3){
+      // Sauvegarde les informations au format JSON
+      JSONWriter jsw;
+      {
+        JSONWriter::Object main_object(jsw);
+        jsw.writeKey(_getArcaneDBTag());
+        {
+          JSONWriter::Object db_object(jsw);
+          jsw.write("Version",(Int64)m_version);
+          jsw.write("NbPart",nb_part);
+        }
+      }
+      StringBuilder filename = m_path;
+      filename += "/arcane_acr_db.json";
+      String fn = filename.toString();
+      ofstream ofile(fn.localstr());
+      ofile << jsw.getBuffer();
+    }
+    else{
+      StringBuilder filename = m_path;
+      filename += "/infos.txt";
+      String fn = filename.toString();
+      ofstream ofile(fn.localstr());
+      ofile << nb_part << '\n';
+    }
   }
   m_global_writer->endWrite();
 }
@@ -1051,6 +1096,7 @@ class BasicReader
   bool m_want_parallel;
   Integer m_nb_written_part;
   bool m_is_binary;
+  bool m_version;
 
   Int32 m_first_rank_to_read;
   Int32 m_nb_rank_to_read;
@@ -1079,6 +1125,7 @@ BasicReader(IApplication* app,IParallelMng* pm,Int32 forced_rank_to_read,
 , m_want_parallel(want_parallel)
 , m_nb_written_part(0)
 , m_is_binary(true)
+, m_version(-1)
 , m_first_rank_to_read(0)
 , m_nb_rank_to_read(0)
 , m_forced_rank_to_read(forced_rank_to_read)
@@ -1349,7 +1396,7 @@ _setRanksToRead()
 IGenericReader* BasicReader::
 _readOwnMetaDataAndCreateReader(Int32 rank)
 {
-  auto r = new BasicGenericReader(m_application,m_is_binary);
+  auto r = new BasicGenericReader(m_application,m_is_binary,m_version);
   r->initialize(m_path,rank);
   return r;
 }
@@ -1373,15 +1420,43 @@ beginRead(const DataReaderInfo& infos)
   ARCANE_UNUSED(infos);
   info() << "** ** BEGIN READ";
   IParallelMng* pm = m_parallel_mng;
-  if (pm->isMasterIO()){
-    String filename = String::concat(m_path,"/infos.txt");
-    ifstream ifile(filename.localstr());
-    Integer nb_part = 0;
-    ifile >> nb_part;
-    info() << "** NB PART=" << nb_part;
-    m_nb_written_part = nb_part;
+
+  // Si un fichier 'arcane_acr_db.json' existe alors il est prioritaire
+  // et on lit les informations nécessaires à partir de ce fichier.
+  // Sinon, les informations sont dans un fichier 'infos.txt' et dans ce
+  // il ne contient que le nombre de parties sauvegardées.
+  String db_filename = String::concat(m_path,"/arcane_acr_db.json");
+  Int32 has_db_file = 0;
+  {
+    if (pm->isMasterIO())
+      has_db_file = platform::isFileReadable(db_filename) ? 1 : 0;
+    pm->broadcast(Int32ArrayView(1,&has_db_file),pm->masterIORank());
   }
-  pm->broadcast(IntegerArrayView(1,&m_nb_written_part),pm->masterIORank());
+  if (has_db_file){
+    UniqueArray<Byte> bytes;
+    pm->ioMng()->collectiveRead(db_filename,bytes,false);
+    JSONDocument json_doc;
+    json_doc.parse(bytes,db_filename);
+    JSONValue root = json_doc.root();
+    JSONValue jv_arcane_db = root.expectedChild(_getArcaneDBTag());
+    m_version = jv_arcane_db.expectedChild("Version").valueAsInt32();
+    m_nb_written_part = jv_arcane_db.expectedChild("NbPart").valueAsInt32();
+  }
+  else{
+    // Ancien format
+    // Le proc maitre lit le fichier 'infos.txt' et envoie les informations
+    // aux autres. Ce format ne permet d'avoir que le nombre de parties
+    // comme information.
+    if (pm->isMasterIO()){
+      Integer nb_part = 0;
+      String filename = String::concat(m_path,"/infos.txt");
+      ifstream ifile(filename.localstr());
+      ifile >> nb_part;
+      info() << "** NB PART=" << nb_part;
+      m_nb_written_part = nb_part;
+    }
+    pm->broadcast(Int32ArrayView(1,&m_nb_written_part),pm->masterIORank());
+  }
 
   _setRanksToRead();
   info(4) << "RanksToRead: FIRST TO READ =" << m_first_rank_to_read
