@@ -46,6 +46,7 @@ class BasicReaderWriterDatabaseEpilogFormat
  public:
   BasicReaderWriterDatabaseEpilogFormat()
   {
+    checkStructureSize();
     m_version = 1;
     m_padding0 = 0;
     m_padding1 = 0;
@@ -67,7 +68,6 @@ class BasicReaderWriterDatabaseEpilogFormat
   Int64 jsonDataInfoSize() const { return m_json_data_info_size; }
   Span<std::byte> bytes()
   {
-    checkStructureSize();
     return { reinterpret_cast<std::byte*>(this), STRUCT_SIZE };
   }
  private:
@@ -89,6 +89,71 @@ class BasicReaderWriterDatabaseEpilogFormat
       ARCANE_FATAL("Invalid size for epilog format size={0} expected={1}",s,STRUCT_SIZE);
   }
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Structure pour gérer l'en-tête
+class BasicReaderWriterDatabaseHeaderFormat
+{
+ public:
+  // La taille de cette structure ne doit pas être modifiée sous peine
+  // de rendre le format incompatible. Pour supporter des évolutions, on fixe
+  // une taille de 128 octets, soit 16 'Int64'
+  static constexpr Int64 STRUCT_SIZE = 128;
+ public:
+  BasicReaderWriterDatabaseHeaderFormat()
+  {
+    checkStructureSize();
+    // 4 premiers octets pour indiquer qu'il s'agit d'un fichier de protections
+    // arcane (ACR pour Arcane Checkpoint Restart)
+    m_header_begin[0] = 'A';
+    m_header_begin[1] = 'C';
+    m_header_begin[2] = 'R';
+    m_header_begin[3] = (Byte)39;
+    // 4 octets suivant pour indiquer l'indianness (pas encore utilisé)
+    m_endian_int = 0x01020304;
+    // Version du fichier (à modifier par l'appelant via setVersion())
+    m_version = 0;
+    m_padding0 = 0;
+    m_padding1 = 0;
+    m_padding2 = 0;
+    for( int i=0; i<12; ++i )
+      m_remaining_padding[i] = i;
+  }
+ public:
+  Span<std::byte> bytes()
+  {
+    return { reinterpret_cast<std::byte*>(this), STRUCT_SIZE };
+  }
+  void setVersion(Int32 version) { m_version = version; }
+  Int32 version() const { return m_version; }
+  void checkHeader()
+  {
+    // Vérifie que le header est correct.
+    if (m_header_begin[0]!='A' || m_header_begin[1]!='C' || m_header_begin[2]!='R' || m_header_begin[3]!=(Byte)39)
+      ARCANE_FATAL("Bad header");
+    // TODO: tester indianess
+  }
+ private:
+  Byte m_header_begin[4];
+  Int32 m_endian_int;
+  Int32 m_version;
+  Int32 m_padding0;
+  Int64 m_padding1;
+  Int64 m_padding2;
+  Int64 m_remaining_padding[12];
+ public:
+  static void checkStructureSize()
+  {
+    Int64 s = sizeof(BasicReaderWriterDatabaseHeaderFormat);
+    if (s!=STRUCT_SIZE)
+      ARCANE_FATAL("Invalid size for header format size={0} expected={1}",s,STRUCT_SIZE);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 class BasicReaderWriterDatabaseCommon
 {
@@ -184,28 +249,13 @@ KeyValueTextWriter::
 void KeyValueTextWriter::
 _writeHeader()
 {
-  Byte header[12];
-  // 4 premiers octets pour indiquer qu'il s'agit d'un fichier de protections
-  // arcane (ACR pour Arcane Checkpoint Restart)
-  header[0] = 'A';
-  header[1] = 'C';
-  header[2] = 'R';
-  header[3] = (Byte)39;
-  // 4 octets suivant pour la version
-  // Actuellement version 1 ou 2. La version 1 ne supporte que les fichiers
-  // de taille sur 32 bits. La seule différence de la version 2 est que
-  // les offsets et longueurs stoquées à la fin du fichier sont sur
-  // 64bit au lieu de 32.
-  header[4] = (Byte)m_p->m_version;
-  header[5] = 0;
-  header[6] = 0;
-  header[7] = 0;
-  // 4 octets suivant pour indiquer l'indianness.
-  Int32 v = 0x01020304;
-  Byte* ptr = (Byte*)(&v);
-  for( Integer i=0; i<4; ++i )
-    header[8+i] = ptr[i];
-  m_p->m_writer.stream().write((const char*)header,12);
+  BasicReaderWriterDatabaseHeaderFormat header;
+
+  // Actuellement si on passe dans cette partie de code,
+  // la version utilisée est 3 ou plus.
+  header.setVersion(m_p->m_version);
+  Span<std::byte> bytes(header.bytes());
+  m_p->m_writer.stream().write((const char*)bytes.data(),bytes.size());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -445,19 +495,13 @@ _readDirect(Int64 offset,Span<std::byte> bytes)
 void KeyValueTextReader::
 _readHeader()
 {
-  constexpr Integer header_size = 12;
-  Byte header_buf[header_size];
-  Span<Byte> header(header_buf,header_size);
-  header.fill(0);
-  _readDirect(0,asWritableBytes(header));
-  if (header[0]!='A' || header[1]!='C' || header[2]!='R' || header[3]!=(Byte)39)
-    ARCANE_FATAL("Bad header");
-  if (header[5]!=0 || header[6]!=0 || header[7]!=0)
-    ARCANE_FATAL("Bad header version");
-  Integer version = header[4];
+  BasicReaderWriterDatabaseHeaderFormat header;
+  Span<std::byte> bytes(header.bytes());
+  _readDirect(0,bytes);
+  header.checkHeader();
+  Int32 version = header.version();
   if (version!=m_p->m_version)
     ARCANE_FATAL("Invalid version for ACR file version={0} expected={1}",version,m_p->m_version);
-  // TODO: tester indianess
 }
 
 /*---------------------------------------------------------------------------*/
@@ -467,10 +511,9 @@ void KeyValueTextReader::
 _readJSON()
 {
   // Les informations sur la position dans le fichier et la longueur du
-  // texte JSON sont sauvgegardées dans l'épilog à la fin du fichier sous la forme
-  // de deux Int64.
+  // texte JSON sont sauvgegardées dans l'épilogue.
   Int64 file_length = m_p->m_reader.fileLength();
-  // Ne devrait pas arriver vu qu'on a réussi à lire l'en-tête
+  // Vérifie la longueur du fichier par précaution
   Int64 struct_size = BasicReaderWriterDatabaseEpilogFormat::STRUCT_SIZE;
   if (file_length<struct_size)
     ARCANE_FATAL("File is too short length={0} minimum={1}",file_length,struct_size);
@@ -497,6 +540,7 @@ _readJSON()
     _readDirect(file_offset,json_bytes);
   }
 
+  // Remplit les infos de la base de données à partir du JSON
   {
     JSONDocument json_doc;
     json_doc.parse(json_bytes);
