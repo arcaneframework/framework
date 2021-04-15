@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneGlobal.cc                                             (C) 2000-2018 */
+/* ArcaneGlobal.cc                                             (C) 2000-2021 */
 /*                                                                           */
 /* Déclarations générales de Arcane.                                         */
 /*---------------------------------------------------------------------------*/
@@ -38,6 +38,7 @@
 #include "arcane/utils/IThreadImplementationService.h"
 #include "arcane/utils/IMessagePassingProfilingService.h"
 #include "arcane/utils/ISymbolizerService.h"
+#include "arcane/utils/IDataCompressor.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

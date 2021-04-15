@@ -37,6 +37,7 @@ set(ARCANE_SOURCES
   FileContent.h
   GoBackwardException.cc
   GoBackwardException.h
+  IDataCompressor.h
   IOException.cc
   IOException.h
   JSONPropertyReader.h
