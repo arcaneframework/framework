@@ -35,6 +35,60 @@
 
 namespace Arcane::impl
 {
+//! Structure pour gérer l'épilogue.
+class BasicReaderWriterDatabaseEpilogFormat
+{
+ public:
+  // La taille de cette structure ne doit pas être modifiée sous peine
+  // de rendre le format incompatible. Pour supporter des évolutions, on fixe
+  // une taille de 128 octets, soit 16 'Int64'
+  static constexpr Int64 STRUCT_SIZE = 128;
+ public:
+  BasicReaderWriterDatabaseEpilogFormat()
+  {
+    m_version = 1;
+    m_padding0 = 0;
+    m_padding1 = 0;
+    m_padding2 = 0;
+    m_padding3 = 0;
+    m_json_data_info_file_offset = -1;
+    m_json_data_info_size = 0;
+    for( int i=0; i<10; ++i )
+      m_remaining_padding[i] = i;
+  }
+ public:
+  void setJSONDataInfoOffsetAndSize(Int64 file_offset,Int64 data_size)
+  {
+    m_json_data_info_file_offset = file_offset;
+    m_json_data_info_size = data_size;
+  }
+  Int32 version() const { return m_version; }
+  Int64 jsonDataInfoFileOffset() const { return m_json_data_info_file_offset; }
+  Int64 jsonDataInfoSize() const { return m_json_data_info_size; }
+  Span<std::byte> bytes()
+  {
+    checkStructureSize();
+    return { reinterpret_cast<std::byte*>(this), STRUCT_SIZE };
+  }
+ private:
+  // Version de l'epilogue. A ne pas confondre avec la version du fichier
+  // qui est dans l'en-tête.
+  Int32 m_version;
+  Int32 m_padding0;
+  Int64 m_padding1;
+  Int64 m_padding2;
+  Int64 m_padding3;
+  Int64 m_json_data_info_file_offset;
+  Int64 m_json_data_info_size;
+  Int64 m_remaining_padding[10];
+ public:
+  static void checkStructureSize()
+  {
+    Int64 s = sizeof(BasicReaderWriterDatabaseEpilogFormat);
+    if (s!=STRUCT_SIZE)
+      ARCANE_FATAL("Invalid size for epilog format size={0} expected={1}",s,STRUCT_SIZE);
+  }
+};
 
 class BasicReaderWriterDatabaseCommon
 {
@@ -174,22 +228,23 @@ _writeEpilog()
     }
     jsw.endArray();
   }
+
+  ostream& stream = m_p->m_writer.stream();
+
   // Conserve la position dans le fichier des méta-données
   // ainsi que leur taille.
   Int64 file_offset = fileOffset();
   StringView buf = jsw.getBuffer();
   Int64 meta_data_size = buf.size();
-  m_p->m_writer.stream().write((const char*)buf.bytes().data(),meta_data_size);
+
+  stream.write((const char*)buf.bytes().data(),meta_data_size);
 
   {
-    Int64 write_info[2];
-    write_info[0] = file_offset;
-    write_info[1] = meta_data_size;
-
+    BasicReaderWriterDatabaseEpilogFormat epilog;
+    epilog.setJSONDataInfoOffsetAndSize(file_offset,meta_data_size);
     // Doit toujours être la dernière écriture du fichier
-    Span<const Int64> wi(write_info,2);
-    auto wi_bytes = asBytes(wi);
-    m_p->m_writer.stream().write((const char*)wi_bytes.data(),wi_bytes.size());
+    auto epilog_bytes = epilog.bytes();
+    stream.write((const char*)epilog_bytes.data(),epilog_bytes.size());
   }
 }
 
@@ -412,22 +467,31 @@ void KeyValueTextReader::
 _readJSON()
 {
   // Les informations sur la position dans le fichier et la longueur du
-  // texte JSON sont sauvgegardées à la fin du fichier sous la forme
+  // texte JSON sont sauvgegardées dans l'épilog à la fin du fichier sous la forme
   // de deux Int64.
   Int64 file_length = m_p->m_reader.fileLength();
   // Ne devrait pas arriver vu qu'on a réussi à lire l'en-tête
-  if (file_length<16)
-    ARCANE_FATAL("File is too short");
+  Int64 struct_size = BasicReaderWriterDatabaseEpilogFormat::STRUCT_SIZE;
+  if (file_length<struct_size)
+    ARCANE_FATAL("File is too short length={0} minimum={1}",file_length,struct_size);
+
+  BasicReaderWriterDatabaseEpilogFormat epilog;
+
+  // Lit l'épilogue et verifie que la version est supportée.
+  {
+    _readDirect(file_length-struct_size,epilog.bytes());
+    const int expected_version = 1;
+    if (epilog.version()!=expected_version)
+      ARCANE_FATAL("Bad version for epilog version={0} expected={1}",
+                   epilog.version(),expected_version);
+  }
 
   UniqueArray<std::byte> json_bytes;
 
+  // Lit les données JSON
   {
-    Int64 read_info[2];
-    // Doit toujours être la dernière écriture du fichier
-    Span<Int64> ri(read_info,2);
-    _readDirect(file_length-16,asWritableBytes(ri));
-    Int64 file_offset = read_info[0];
-    Int64 meta_data_size = read_info[1];
+    Int64 file_offset = epilog.jsonDataInfoFileOffset();
+    Int64 meta_data_size = epilog.jsonDataInfoSize();
     //std::cout << "FILE_INFO: offset=" << file_offset << " meta_data_size=" << meta_data_size << "\n";
     json_bytes.resize(meta_data_size);
     _readDirect(file_offset,json_bytes);
