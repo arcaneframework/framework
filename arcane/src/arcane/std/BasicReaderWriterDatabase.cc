@@ -36,16 +36,12 @@
 namespace Arcane::impl
 {
 
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class KeyValueTextWriter::Impl
+class BasicReaderWriterDatabaseCommon
 {
  public:
-  static constexpr int MAX_SIZE = 8;
   struct ExtentsInfo
   {
+    static constexpr int MAX_SIZE = 8;
     void fill(Int64ConstArrayView v)
     {
       if (v.size()>MAX_SIZE)
@@ -55,21 +51,46 @@ class KeyValueTextWriter::Impl
         sizes[i] = v[i];
     }
     Int64ConstArrayView view() const { return Int64ConstArrayView(nb,sizes); }
+    Int32 size() const { return nb; }
+   private:
     Int32 nb = 0;
+   public:
     Int64 sizes[MAX_SIZE];
   };
+
   struct DataInfo
   {
     Int64 m_file_offset = 0;
     ExtentsInfo m_extents;
   };
+
+ public:
+
+  DataInfo& findData(const String& key_name)
+  {
+    auto x = m_data_infos.find(key_name);
+    if (x==m_data_infos.end())
+      ARCANE_FATAL("Can not find key '{0}' in database",key_name);
+    return x->second;
+  }
+
+ public:
+
+  std::map<String,DataInfo> m_data_infos;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class KeyValueTextWriter::Impl
+: public BasicReaderWriterDatabaseCommon
+{
  public:
   Impl(const String& filename,Int32 version)
   : m_writer(filename), m_version(version)
   {}
  public:
   TextWriter m_writer;
-  std::map<String,DataInfo> m_data_infos;
   Int32 m_version;
 };
 
@@ -309,48 +330,18 @@ _writeKey(const String& key)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class KeyValueTextReader::Impl
+: public BasicReaderWriterDatabaseCommon
 {
- public:
-  static constexpr int MAX_SIZE = 8;
-  // TODO: a fusionner avec KeyValueTextWriter::Impl::ExtentsInfo
-  struct ExtentsInfo
-  {
-    void fill(Int64ConstArrayView v)
-    {
-      if (v.size()>MAX_SIZE)
-        ARCANE_FATAL("Number of extents ({0}) is greater than max allowed ({1})",v.size(),MAX_SIZE);
-      nb = v.size();
-      for( Int32 i=0; i<nb; ++i )
-        sizes[i] = v[i];
-    }
-    Int64ConstArrayView view() const { return Int64ConstArrayView(nb,sizes); }
-    Int32 size() const { return nb; }
-   private:
-    Int32 nb = 0;
-   public:
-    Int64 sizes[MAX_SIZE];
-  };
-  struct DataInfo
-  {
-    Int64 m_file_offset = 0;
-    ExtentsInfo m_extents;
-  };
  public:
   Impl(const String& filename,Int32 version)
   : m_reader(filename), m_version(version){}
  public:
   TextReader m_reader;
-  std::map<String,DataInfo> m_data_infos;
   Int32 m_version;
- public:
-  DataInfo& findData(const String& key_name)
-  {
-    auto x = m_data_infos.find(key_name);
-    if (x==m_data_infos.end())
-      ARCANE_FATAL("Can not find key '{0}' in database",key_name);
-    return x->second;
-  }
 };
 
 /*---------------------------------------------------------------------------*/
