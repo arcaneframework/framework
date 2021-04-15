@@ -67,6 +67,7 @@
 
 #include "arcane/std/TextReader.h"
 #include "arcane/std/TextWriter.h"
+#include "arcane/std/BasicReaderWriterDatabase.h"
 
 #include "arcane/std/ArcaneBasicCheckpoint_axl.h"
 

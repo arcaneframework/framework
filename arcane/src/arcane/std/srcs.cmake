@@ -2,6 +2,8 @@ set(ARCANE_SOURCES
   ArcaneStdRegisterer.cc
   ArcaneStdRegisterer.h
   BasicReaderWriter.cc
+  BasicReaderWriterDatabase.cc
+  BasicReaderWriterDatabase.h
   ParallelDataReader.cc
   ParallelDataReader.h
   ParallelDataWriter.cc

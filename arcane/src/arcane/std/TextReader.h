@@ -75,47 +75,6 @@ class TextReader
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Classe d'écriture d'un fichier texte pour les protections/reprises
- */
-class KeyValueTextReader
-{
-  class Impl;
-
- public:
-
-  KeyValueTextReader(const String& filename,Int32 version);
-  KeyValueTextReader(const KeyValueTextReader& rhs) = delete;
-  ~KeyValueTextReader();
-  KeyValueTextReader& operator=(const KeyValueTextReader& rhs) = delete;
-
- public:
-
-  void getExtents(const String& key_name,Int64ArrayView extents);
-  void readIntegers(const String& key,Span<Integer> values);
-
-  void read(const String& key,Span<Int16> values);
-  void read(const String& key,Span<Int32> values);
-  void read(const String& key,Span<Int64> values);
-  void read(const String& key,Span<Real> values);
-  void read(const String& key,Span<Byte> values);
-
- public:
-  String fileName() const;
-  void setFileOffset(Int64 v);
-  void setDeflater(Ref<IDeflateService> ds);
- private:
-  Impl* m_p;
- private:
-  void _readHeader();
-  void _readJSON();
-  void _readDirect(Int64 offset,Span<std::byte> bytes);
-  void _setFileOffset(const String& key_name);
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane::impl
 
