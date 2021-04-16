@@ -52,7 +52,7 @@ namespace Arcane.VariableComparer
   public class ResultDatabasePart
   {
     // Cette valeur doit etre cohérente avec celle dans BasicReaderWriter.cc
-    const int DEFLATE_MIN_SIZE = 512;
+    int DEFLATE_MIN_SIZE = 512;
     ResultDatabase m_database;
     int m_part;
     public int Part { get { return m_part; } }
@@ -152,21 +152,28 @@ namespace Arcane.VariableComparer
       XmlElement doc_element = doc.DocumentElement;
       string deflater_service = doc_element.GetAttribute("deflater-service");
       if (!String.IsNullOrEmpty(deflater_service)){
-        if (deflater_service=="Bzip2"){
+        if (deflater_service=="Bzip2" || deflater_service=="Bzip2DataCompressor"){
           m_deflater = new Bzip2Deflater();
         }
-        else if (deflater_service == "LZ4") {
+        else if (deflater_service == "LZ4" || deflater_service == "LZ4DataCompressor") {
           m_deflater = new LZ4Deflater();
         }
         else
-          throw new ApplicationException("Can only handle 'Bzip2' or 'LZ4' deflater-service");
+          throw new ApplicationException("Can only handle 'Bzip2', 'LZ4', 'Bzip2DataCompressor' or 'LZ4DataCompressor' deflater-service");
       }
+      // Cette valeur n'est disponible qu'à partir de la version 3.0 de Arcane
+      // et si elle existe, elle remplace DEFLATE_MIN_SIZE.
+      string min_compress_size_str = doc_element.GetAttribute("min-compress-size");
+      if (!String.IsNullOrEmpty(min_compress_size_str))
+        DEFLATE_MIN_SIZE = int.Parse(min_compress_size_str);
       // Récupère le numéro de version. Si absent, il s'agit de la version 1.
       string version_str = doc_element.GetAttribute("version");
       if (!String.IsNullOrEmpty(version_str))
         m_version = int.Parse(version_str);
       Console.WriteLine("MetaDataVersion = {0}", m_version);
       m_variables_info = new Dictionary<string,VariableDataInfo>();
+      if (m_version>=3)
+        throw new ApplicationException("Unsupported version '{0}'. Valid values are '1' or '2'");
 
       foreach (XmlNode node in doc_element){
         if (node.Name != "variable-data")
