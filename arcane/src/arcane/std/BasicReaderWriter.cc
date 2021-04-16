@@ -22,6 +22,7 @@
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/JSONWriter.h"
 #include "arcane/utils/JSONReader.h"
+#include "arcane/utils/IDataCompressor.h"
 
 #include "arcane/XmlNode.h"
 #include "arcane/IXmlDocumentHolder.h"
@@ -43,9 +44,6 @@
 #include "arcane/VariableCollection.h"
 #include "arcane/IParallelReplication.h"
 #include "arcane/IVariableUtilities.h"
-
-#include "arcane/IDeflateService.h"
-#include "arcane/ServiceFinder2.h"
 #include "arcane/ServiceBuilder.h"
 
 #include "arcane/VerifierService.h"
@@ -271,11 +269,11 @@ _getBasicGroupFile(const String& path,const String& name,Int32 rank)
   return filename;
 }
 
-Ref<IDeflateService>
+Ref<IDataCompressor>
 _createDeflater(IApplication* app,const String& name)
 {
-  ServiceBuilder<IDeflateService> sf(app);
-  Ref<IDeflateService> bc = sf.createReference(app,name);
+  ServiceBuilder<IDataCompressor> sf(app);
+  Ref<IDataCompressor> bc = sf.createReference(app,name);
   return bc;
 }
 
@@ -410,7 +408,7 @@ initialize(const String& path,Int32 rank)
   else
     ARCANE_FATAL("Unsupported version '{0}' (max=3)",version_id);
 
-  Ref<IDeflateService> deflater;
+  Ref<IDataCompressor> deflater;
   if (!deflater_name.null()){
     deflater = _createDeflater(m_application,deflater_name);
   }
@@ -625,6 +623,7 @@ class BasicGenericWriter
     // Permet de surcharger le service utilisé pour la compression
     String deflater_name = platform::getEnvironmentVariable("ARCANE_DEFLATER");
     if (!deflater_name.null()){
+      deflater_name = deflater_name + "DataCompressor";
       m_write_deflater_name = deflater_name;
       auto bc = _createDeflater(m_application,m_write_deflater_name);
       info() << "Use deflater name=" << deflater_name;

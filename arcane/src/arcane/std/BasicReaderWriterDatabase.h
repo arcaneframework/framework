@@ -22,7 +22,7 @@
 
 namespace Arcane
 {
-class IDeflateService;
+class IDataCompressor;
 }
 
 namespace Arcane::impl
@@ -60,7 +60,7 @@ class KeyValueTextWriter
   void write(const String& key,Span<const Byte> values);
  public:
   String fileName() const;
-  void setDeflater(Ref<IDeflateService> ds);
+  void setDeflater(Ref<IDataCompressor> ds);
   Int64 fileOffset();
  private:
   Impl* m_p;
@@ -101,7 +101,7 @@ class KeyValueTextReader
  public:
   String fileName() const;
   void setFileOffset(Int64 v);
-  void setDeflater(Ref<IDeflateService> ds);
+  void setDeflater(Ref<IDataCompressor> ds);
  private:
   Impl* m_p;
  private:

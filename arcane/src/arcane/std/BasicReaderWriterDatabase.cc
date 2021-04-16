@@ -20,9 +20,9 @@
 #include "arcane/utils/JSONReader.h"
 #include "arcane/utils/JSONWriter.h"
 #include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/IDataCompressor.h"
 
 #include "arcane/ArcaneException.h"
-#include "arcane/IDeflateService.h"
 
 #include "arcane/std/TextReader.h"
 #include "arcane/std/TextWriter.h"
@@ -393,7 +393,7 @@ fileName() const
 /*---------------------------------------------------------------------------*/
 
 void KeyValueTextWriter::
-setDeflater(Ref<IDeflateService> ds)
+setDeflater(Ref<IDataCompressor> ds)
 {
   m_p->m_writer.setDeflater(ds);
 }
@@ -658,7 +658,7 @@ setFileOffset(Int64 v)
 }
 
 void KeyValueTextReader::
-setDeflater(Ref<IDeflateService> ds)
+setDeflater(Ref<IDataCompressor> ds)
 {
   m_p->m_reader.setDeflater(ds);
 }

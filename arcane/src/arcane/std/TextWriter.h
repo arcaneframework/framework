@@ -22,7 +22,7 @@
 
 namespace Arcane
 {
-class IDeflateService;
+class IDataCompressor;
 }
 
 namespace Arcane::impl
@@ -55,7 +55,7 @@ class TextWriter
   void write(Span<const Byte> values);
  public:
   String fileName() const;
-  void setDeflater(Ref<IDeflateService> ds);
+  void setDeflater(Ref<IDataCompressor> ds);
   Int64 fileOffset();
   ostream& stream();
  private:

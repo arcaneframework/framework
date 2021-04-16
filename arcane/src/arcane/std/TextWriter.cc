@@ -18,8 +18,8 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/Ref.h"
+#include "arcane/utils/IDataCompressor.h"
 
-#include "arcane/IDeflateService.h"
 #include "arcane/ArcaneException.h"
 
 #include <fstream>
@@ -38,7 +38,7 @@ class TextWriter::Impl
  public:
   String m_filename;
   ofstream m_ostream;
-  Ref<IDeflateService> m_deflater;
+  Ref<IDataCompressor> m_deflater;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -138,7 +138,7 @@ fileName() const
 }
 
 void TextWriter::
-setDeflater(Ref<IDeflateService> ds)
+setDeflater(Ref<IDataCompressor> ds)
 {
   m_p->m_deflater = ds;
 }
@@ -160,10 +160,9 @@ _binaryWrite(const void* bytes,Int64 len)
 {
   ostream& o = m_p->m_ostream;
   //cout << "** BINARY WRITE len=" << len << " deflater=" << m_deflater << '\n';
-  if (m_p->m_deflater.get() && len > DEFLATE_MIN_SIZE) {
-    ByteUniqueArray compressed_values;
-    Int32 small_len = arcaneCheckArraySize(len);
-    m_p->m_deflater->compress(ByteConstArrayView(small_len,(const Byte*)bytes), compressed_values);
+  if (m_p->m_deflater.get() && len > IDataCompressor::MIN_SIZE) {
+    UniqueArray<std::byte> compressed_values;
+    m_p->m_deflater->compress(Span<const std::byte>((const std::byte*)bytes,len), compressed_values);
     Int64 compressed_size = compressed_values.largeSize();
     o.write((const char *) &compressed_size, sizeof(Int64));
     o.write((const char *) compressed_values.data(), compressed_size);

@@ -18,9 +18,9 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/IDataCompressor.h"
 
 #include "arcane/ArcaneException.h"
-#include "arcane/IDeflateService.h"
 
 #include <fstream>
 
@@ -43,7 +43,7 @@ class TextReader::Impl
   ifstream m_istream;
   Integer m_current_line = 0;
   Int64 m_file_length = 0;
-  Ref<IDeflateService> m_deflater;
+  Ref<IDataCompressor> m_deflater;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -184,13 +184,13 @@ void TextReader::
 _binaryRead(void* values, Int64 len)
 {
   istream& s = m_p->m_istream;
-  if (m_p->m_deflater.get() && len > DEFLATE_MIN_SIZE) {
-    ByteUniqueArray compressed_values;
+  if (m_p->m_deflater.get() && len > IDataCompressor::MIN_SIZE) {
+    UniqueArray<std::byte> compressed_values;
     Int64 compressed_size = 0;
     s.read((char*)&compressed_size, sizeof(Int64));
-    compressed_values.resize(arcaneCheckArraySize(compressed_size));
+    compressed_values.resize(compressed_size);
     s.read((char*)compressed_values.data(), compressed_size);
-    m_p->m_deflater->decompress(compressed_values, ByteArrayView(arcaneCheckArraySize(len), (Byte*)values));
+    m_p->m_deflater->decompress(compressed_values, Span<std::byte>((std::byte*)values,len));
   }
   else {
     s.read((char*)values, len);
@@ -271,7 +271,7 @@ setFileOffset(Int64 v)
 /*---------------------------------------------------------------------------*/
 
 void TextReader::
-setDeflater(Ref<IDeflateService> ds)
+setDeflater(Ref<IDataCompressor> ds)
 {
   m_p->m_deflater = ds;
 }

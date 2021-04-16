@@ -22,7 +22,7 @@
 
 namespace Arcane
 {
-class IDeflateService;
+class IDataCompressor;
 }
 
 namespace Arcane::impl
@@ -57,7 +57,7 @@ class TextReader
  public:
   String fileName() const;
   void setFileOffset(Int64 v);
-  void setDeflater(Ref<IDeflateService> ds);
+  void setDeflater(Ref<IDataCompressor> ds);
   ifstream& stream();
   Int64 fileLength() const;
  private:
