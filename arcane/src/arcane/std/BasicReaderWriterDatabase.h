@@ -60,7 +60,8 @@ class KeyValueTextWriter
   void write(const String& key,Span<const Byte> values);
  public:
   String fileName() const;
-  void setDeflater(Ref<IDataCompressor> ds);
+  void setDataCompressor(Ref<IDataCompressor> dc);
+  Ref<IDataCompressor> dataCompressor() const;
   Int64 fileOffset();
  private:
   Impl* m_p;
@@ -101,7 +102,8 @@ class KeyValueTextReader
  public:
   String fileName() const;
   void setFileOffset(Int64 v);
-  void setDeflater(Ref<IDataCompressor> ds);
+  void setDataCompressor(Ref<IDataCompressor> ds);
+  Ref<IDataCompressor> dataCompressor() const;
  private:
   Impl* m_p;
  private:

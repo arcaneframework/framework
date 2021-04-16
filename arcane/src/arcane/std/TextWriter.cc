@@ -38,7 +38,7 @@ class TextWriter::Impl
  public:
   String m_filename;
   ofstream m_ostream;
-  Ref<IDataCompressor> m_deflater;
+  Ref<IDataCompressor> m_data_compressor;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -138,9 +138,15 @@ fileName() const
 }
 
 void TextWriter::
-setDeflater(Ref<IDataCompressor> ds)
+setDataCompressor(Ref<IDataCompressor> dc)
 {
-  m_p->m_deflater = ds;
+  m_p->m_data_compressor = dc;
+}
+
+Ref<IDataCompressor> TextWriter::
+dataCompressor() const
+{
+  return m_p->m_data_compressor;
 }
 
 Int64 TextWriter::
@@ -159,11 +165,11 @@ void TextWriter::
 _binaryWrite(const void* bytes,Int64 len)
 {
   ostream& o = m_p->m_ostream;
-  //cout << "** BINARY WRITE len=" << len << " deflater=" << m_deflater << '\n';
-  IDataCompressor* d = m_p->m_deflater.get();
+  //cout << "** BINARY WRITE len=" << len << " deflater=" << m_data_compressor << '\n';
+  IDataCompressor* d = m_p->m_data_compressor.get();
   if (d && len > d->minCompressSize()) {
     UniqueArray<std::byte> compressed_values;
-    m_p->m_deflater->compress(Span<const std::byte>((const std::byte*)bytes,len), compressed_values);
+    m_p->m_data_compressor->compress(Span<const std::byte>((const std::byte*)bytes,len), compressed_values);
     Int64 compressed_size = compressed_values.largeSize();
     o.write((const char *) &compressed_size, sizeof(Int64));
     o.write((const char *) compressed_values.data(), compressed_size);

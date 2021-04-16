@@ -43,7 +43,7 @@ class TextReader::Impl
   ifstream m_istream;
   Integer m_current_line = 0;
   Int64 m_file_length = 0;
-  Ref<IDataCompressor> m_deflater;
+  Ref<IDataCompressor> m_data_compressor;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -184,14 +184,14 @@ void TextReader::
 _binaryRead(void* values, Int64 len)
 {
   istream& s = m_p->m_istream;
-  IDataCompressor* d = m_p->m_deflater.get();
+  IDataCompressor* d = m_p->m_data_compressor.get();
   if (d && len > d->minCompressSize()) {
     UniqueArray<std::byte> compressed_values;
     Int64 compressed_size = 0;
     s.read((char*)&compressed_size, sizeof(Int64));
     compressed_values.resize(compressed_size);
     s.read((char*)compressed_values.data(), compressed_size);
-    m_p->m_deflater->decompress(compressed_values, Span<std::byte>((std::byte*)values,len));
+    m_p->m_data_compressor->decompress(compressed_values, Span<std::byte>((std::byte*)values,len));
   }
   else {
     s.read((char*)values, len);
@@ -272,9 +272,18 @@ setFileOffset(Int64 v)
 /*---------------------------------------------------------------------------*/
 
 void TextReader::
-setDeflater(Ref<IDataCompressor> ds)
+setDataCompressor(Ref<IDataCompressor> dc)
 {
-  m_p->m_deflater = ds;
+  m_p->m_data_compressor = dc;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IDataCompressor> TextReader::
+dataCompressor() const
+{
+  return m_p->m_data_compressor;
 }
 
 /*---------------------------------------------------------------------------*/

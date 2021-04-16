@@ -424,7 +424,7 @@ initialize(const String& path,Int32 rank)
     m_text_reader = makeRef(new KeyValueTextReader(main_filename,m_version));
   }
 
-  m_text_reader->setDeflater(deflater);
+  m_text_reader->setDataCompressor(deflater);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -621,13 +621,13 @@ class BasicGenericWriter
     m_path = path;
     m_rank = rank;
     // Permet de surcharger le service utilisé pour la compression
-    String deflater_name = platform::getEnvironmentVariable("ARCANE_DEFLATER");
-    if (!deflater_name.null()){
-      deflater_name = deflater_name + "DataCompressor";
-      auto bc = _createDeflater(m_application,deflater_name);
-      info() << "Use deflater name=" << deflater_name;
+    String data_compressor_name = platform::getEnvironmentVariable("ARCANE_DEFLATER");
+    if (!data_compressor_name.null()){
+      data_compressor_name = data_compressor_name + "DataCompressor";
+      auto bc = _createDeflater(m_application,data_compressor_name);
+      info() << "Use data_compressor name=" << data_compressor_name;
       m_deflater = bc;
-      m_text_writer->setDeflater(bc);
+      m_text_writer->setDataCompressor(bc);
     }
   }
   void writeData(const String& var_full_name,const ISerializedData* sdata) override;

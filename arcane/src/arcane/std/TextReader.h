@@ -57,7 +57,8 @@ class TextReader
  public:
   String fileName() const;
   void setFileOffset(Int64 v);
-  void setDeflater(Ref<IDataCompressor> ds);
+  void setDataCompressor(Ref<IDataCompressor> ds);
+  Ref<IDataCompressor> dataCompressor() const;
   ifstream& stream();
   Int64 fileLength() const;
  private:

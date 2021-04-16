@@ -55,7 +55,8 @@ class TextWriter
   void write(Span<const Byte> values);
  public:
   String fileName() const;
-  void setDeflater(Ref<IDataCompressor> ds);
+  void setDataCompressor(Ref<IDataCompressor> ds);
+  Ref<IDataCompressor> dataCompressor() const;
   Int64 fileOffset();
   ostream& stream();
  private:

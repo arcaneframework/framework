@@ -393,9 +393,18 @@ fileName() const
 /*---------------------------------------------------------------------------*/
 
 void KeyValueTextWriter::
-setDeflater(Ref<IDataCompressor> ds)
+setDataCompressor(Ref<IDataCompressor> ds)
 {
-  m_p->m_writer.setDeflater(ds);
+  m_p->m_writer.setDataCompressor(ds);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IDataCompressor> KeyValueTextWriter::
+dataCompressor() const
+{
+  return m_p->m_writer.dataCompressor();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -658,9 +667,18 @@ setFileOffset(Int64 v)
 }
 
 void KeyValueTextReader::
-setDeflater(Ref<IDataCompressor> ds)
+setDataCompressor(Ref<IDataCompressor> ds)
 {
-  m_p->m_reader.setDeflater(ds);
+  m_p->m_reader.setDataCompressor(ds);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IDataCompressor> KeyValueTextReader::
+dataCompressor() const
+{
+  return m_p->m_reader.dataCompressor();
 }
 
 /*---------------------------------------------------------------------------*/
