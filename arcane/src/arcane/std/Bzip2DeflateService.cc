@@ -208,7 +208,7 @@ ARCANE_REGISTER_SERVICE(Bzip2DeflateService,
                         ARCANE_SERVICE_INTERFACE(IDeflateService));
 
 ARCANE_REGISTER_SERVICE(Bzip2DataCompressor,
-                        ServiceProperty("Bzip2DataCompressor",ST_Application),
+                        ServiceProperty("Bzip2DataCompressor",ST_Application|ST_CaseOption),
                         ARCANE_SERVICE_INTERFACE(IDataCompressor));
 
 /*---------------------------------------------------------------------------*/

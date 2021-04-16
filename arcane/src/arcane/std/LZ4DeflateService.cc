@@ -179,7 +179,7 @@ ARCANE_REGISTER_SERVICE(LZ4DeflateService,
                         ARCANE_SERVICE_INTERFACE(IDeflateService));
 
 ARCANE_REGISTER_SERVICE(LZ4DataCompressor,
-                        ServiceProperty("LZ4DataCompressor",ST_Application),
+                        ServiceProperty("LZ4DataCompressor",ST_Application|ST_CaseOption),
                         ARCANE_SERVICE_INTERFACE(IDataCompressor));
 
 /*---------------------------------------------------------------------------*/

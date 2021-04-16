@@ -15,6 +15,12 @@
         Version du format de stockage des informations
       </description>
     </simple>
+    <service-instance name="data-compressor" type="Arcane::IDataCompressor" optional="true">
+      <userclass>User</userclass>
+      <description>
+        Service de compression des données.
+      </description>
+    </service-instance>
   </options>
 </service>
 
