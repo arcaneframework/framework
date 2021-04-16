@@ -624,9 +624,9 @@ class BasicGenericWriter
     String deflater_name = platform::getEnvironmentVariable("ARCANE_DEFLATER");
     if (!deflater_name.null()){
       deflater_name = deflater_name + "DataCompressor";
-      m_write_deflater_name = deflater_name;
-      auto bc = _createDeflater(m_application,m_write_deflater_name);
+      auto bc = _createDeflater(m_application,deflater_name);
       info() << "Use deflater name=" << deflater_name;
+      m_deflater = bc;
       m_text_writer->setDeflater(bc);
     }
   }
@@ -637,9 +637,9 @@ class BasicGenericWriter
  private:
   IApplication* m_application;
   Int32 m_version;
-  String m_write_deflater_name;
   String m_path;
   Int32 m_rank;
+  Ref<IDataCompressor> m_deflater;
   Ref<KeyValueTextWriter> m_text_writer;
   typedef std::map<String,VariableDataInfo*> VariableDataInfoMap;
   VariableDataInfoMap m_variables_data_info;
@@ -760,8 +760,11 @@ endWrite()
   ScopedPtrT<IXmlDocumentHolder> xdoc(app->ressourceMng()->createXmlDocument());
   XmlNode doc = xdoc->documentNode();
   XmlElement root(doc,"variables-data");
-  if (!m_write_deflater_name.null())
-    root.setAttrValue("deflater-service",m_write_deflater_name);
+  IDataCompressor* dc = m_deflater.get();
+  if (dc){
+    root.setAttrValue("deflater-service",dc->name());
+    root.setAttrValue("min-compress-size",String::fromNumber(dc->minCompressSize()));
+  }
   root.setAttrValue("version",String::fromNumber(m_version));
   for( auto i : m_variables_data_info ){
     VariableDataInfo* vdi = i.second;

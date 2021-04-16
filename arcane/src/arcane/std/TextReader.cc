@@ -184,7 +184,8 @@ void TextReader::
 _binaryRead(void* values, Int64 len)
 {
   istream& s = m_p->m_istream;
-  if (m_p->m_deflater.get() && len > IDataCompressor::MIN_SIZE) {
+  IDataCompressor* d = m_p->m_deflater.get();
+  if (d && len > d->minCompressSize()) {
     UniqueArray<std::byte> compressed_values;
     Int64 compressed_size = 0;
     s.read((char*)&compressed_size, sizeof(Int64));

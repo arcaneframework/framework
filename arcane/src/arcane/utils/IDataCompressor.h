@@ -30,13 +30,6 @@ namespace Arcane
 class ARCANE_UTILS_EXPORT IDataCompressor
 {
  public:
-
-  // Taille minimale en dessous de laquelle on ne compresse pas.
-  // NE JAMAIS MODIFIER sous peine de rendre incompatible les mécanismes de
-  // compression avec les données sauvegardées précédemment..
- static constexpr Integer MIN_SIZE = 256;
-
- public:
   
   virtual ~IDataCompressor() = default;
 
@@ -48,6 +41,20 @@ class ARCANE_UTILS_EXPORT IDataCompressor
 
   //! Nom de l'algorithme
   virtual String name() const =0;
+
+ /*!
+  * \brief Taille minimale du tableau en dessous de laquelle il n'est pas utile
+  * de compresser.
+  *
+  * Cela peut être utilisé par l'appelant pour ne pas pas compresser/décompresser
+  * certains tableaux. Cette valeur n'est pas utilisée en interne par cette instance.
+  *
+  * Si l'appelant utilise cette valeur, il faut garantir la cohérence à la fois
+  * en compression et décompression (i.e: ne pas appeler la décompression pour les
+  * tableaux dont la taille décompressée est inférieure à minCompressSize() si
+  * la méthode compress() n'a pas été appelée pour ce tableau.
+  */
+  virtual Int64 minCompressSize() const =0;
 
   /*!
    * \brief Compresse les données \a values et les stocke dans \a compressed_values.

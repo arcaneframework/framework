@@ -160,7 +160,8 @@ _binaryWrite(const void* bytes,Int64 len)
 {
   ostream& o = m_p->m_ostream;
   //cout << "** BINARY WRITE len=" << len << " deflater=" << m_deflater << '\n';
-  if (m_p->m_deflater.get() && len > IDataCompressor::MIN_SIZE) {
+  IDataCompressor* d = m_p->m_deflater.get();
+  if (d && len > d->minCompressSize()) {
     UniqueArray<std::byte> compressed_values;
     m_p->m_deflater->compress(Span<const std::byte>((const std::byte*)bytes,len), compressed_values);
     Int64 compressed_size = compressed_values.largeSize();

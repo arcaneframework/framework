@@ -130,6 +130,7 @@ class Bzip2DataCompressor
 
   void build() override {}
   String name() const override { return m_name; }
+  Int64 minCompressSize() const override { return 512; }
   void compress(Span<const std::byte> values,Array<std::byte>& compressed_values) override
   {
     Int64 input_size = values.size();
