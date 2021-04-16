@@ -409,9 +409,9 @@ initialize(const String& path,Int32 rank)
     ARCANE_FATAL("Unsupported version '{0}' (max=3)",version_id);
 
   Ref<IDataCompressor> deflater;
-  if (!deflater_name.null()){
+  if (!deflater_name.null())
     deflater = _createDeflater(m_application,deflater_name);
-  }
+
   for( Integer i=0, is=variables_elem.size(); i<is; ++i ){
     XmlNode n = variables_elem[i];
     String var_full_name = n.attrValue("full-name");
@@ -424,7 +424,11 @@ initialize(const String& path,Int32 rank)
     m_text_reader = makeRef(new KeyValueTextReader(main_filename,m_version));
   }
 
-  m_text_reader->setDataCompressor(deflater);
+  // Il est possible qu'il y ait déjà un algorithme de compression spécifié.
+  // Il ne faut pas l'écraser si aucun n'est spécifié dans 'OwnMetadata'.
+  // (Normalement cela ne devrait pas arriver sauf incohérence).
+  if (deflater.get())
+    m_text_reader->setDataCompressor(deflater);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -876,6 +880,11 @@ class BasicWriter
 
  public:
 
+  //! Positionne le service de compression. Doit être appelé avant initialize()
+  void setDataCompressor(Ref<IDataCompressor> data_compressor)
+  {
+    m_data_compressor = data_compressor;
+  }
   void initialize();
 
   void beginWrite(const VariableCollection& vars) override;
@@ -891,6 +900,7 @@ class BasicWriter
   bool m_is_gather;
   Int32 m_version;
 
+  Ref<IDataCompressor> m_data_compressor;
   Ref<KeyValueTextWriter> m_text_writer;
 
   std::map<ItemGroup,ParallelDataWriter*> m_parallel_data_writers;
@@ -939,6 +949,7 @@ initialize()
   Int32 rank = m_parallel_mng->commRank();
   String filename = _getBasicVariableFile(m_version,m_path,rank);
   m_text_writer = makeRef(new KeyValueTextWriter(filename,m_version));
+  m_text_writer->setDataCompressor(m_data_compressor);
   m_global_writer = new BasicGenericWriter(m_application,m_version,m_text_writer);
   if (m_verbose_level>0)
     info() << "** OPEN MODE = " << m_open_mode;
@@ -1075,6 +1086,7 @@ endWrite()
           JSONWriter::Object db_object(jsw);
           jsw.write("Version",(Int64)m_version);
           jsw.write("NbPart",nb_part);
+          jsw.write("DataCompressor",(m_data_compressor.get()) ? m_data_compressor->name() : String());
         }
       }
       StringBuilder filename = m_path;
@@ -1156,6 +1168,7 @@ class BasicReader
   UniqueArray<IGenericReader*> m_global_readers;
   IItemGroupFinder* m_item_group_finder;
   Ref<KeyValueTextReader> m_forced_rank_to_read_text_reader; //!< Lecteur pour le premier rang à lire.
+  Ref<IDataCompressor> m_data_compressor;
 
  private:
 
@@ -1201,6 +1214,7 @@ initialize()
       has_db_file = platform::isFileReadable(db_filename) ? 1 : 0;
     pm->broadcast(Int32ArrayView(1,&has_db_file),pm->masterIORank());
   }
+  String data_compressor_name;
   if (has_db_file){
     UniqueArray<Byte> bytes;
     pm->ioMng()->collectiveRead(db_filename,bytes,false);
@@ -1210,7 +1224,10 @@ initialize()
     JSONValue jv_arcane_db = root.expectedChild(_getArcaneDBTag());
     m_version = jv_arcane_db.expectedChild("Version").valueAsInt32();
     m_nb_written_part = jv_arcane_db.expectedChild("NbPart").valueAsInt32();
-    info() << "Begin read using database version=" << m_version << " nb_part=" << m_nb_written_part;
+    data_compressor_name = jv_arcane_db.expectedChild("DataCompressor").valueAsString();
+    info() << "Begin read using database version=" << m_version
+           << " nb_part=" << m_nb_written_part
+           << " compressor=" << data_compressor_name;
   }
   else{
     // Ancien format
@@ -1230,6 +1247,10 @@ initialize()
   if (m_version>=3){
     String main_filename = _getBasicVariableFile(m_version,m_path,m_forced_rank_to_read);
     m_forced_rank_to_read_text_reader = makeRef(new KeyValueTextReader(main_filename,m_version));
+    if (!data_compressor_name.empty()){
+      Ref<IDataCompressor> dc = _createDeflater(m_application,data_compressor_name);
+      m_forced_rank_to_read_text_reader->setDataCompressor(dc);
+    }
   }
 }
 
@@ -1543,12 +1564,32 @@ beginRead(const DataReaderInfo& infos)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Protection/reprise basique (version 1).
  */
 class ArcaneBasicCheckpointService
 : public ArcaneArcaneBasicCheckpointObject
 {
+ public:
+  struct MetaData
+  {
+    int m_version = -1;
+    static MetaData parse(const String& meta_data,ITraceMng* tm)
+    {
+      auto doc_ptr = IXmlDocumentHolder::loadFromBuffer(meta_data.bytes(),"MetaData",tm);
+      ScopedPtrT<IXmlDocumentHolder> xml_doc(doc_ptr);
+      XmlNode root = xml_doc->documentNode().documentElement();
+      Integer version = root.attr("version").valueAsInteger();
+      if (version!=1)
+        ARCANE_THROW(ReaderWriterException,"Bad checkpoint metadata version '{0}' (expected 1)",version);
+      MetaData md;
+      md.m_version = version;
+      return md;
+    }
+  };
  public:
 
   explicit ArcaneBasicCheckpointService(const ServiceBuildInfo& sbi)
@@ -1589,7 +1630,6 @@ class ArcaneBasicCheckpointService
   {
     return Directory(baseDirectoryName());
   }
-  void _parseMetaData(const String& meta_data);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -1615,27 +1655,13 @@ class ArcaneBasic2CheckpointService
 /*---------------------------------------------------------------------------*/
 
 void ArcaneBasicCheckpointService::
-_parseMetaData(const String& meta_data)
-{
-  IIOMng* io_mng = subDomain()->ioMng();
-  ScopedPtrT<IXmlDocumentHolder> xml_doc(io_mng->parseXmlBuffer(meta_data.utf8(),"MetaData"));
-  XmlNode root = xml_doc->documentNode().documentElement();
-  Integer version = root.attr("version").valueAsInteger();
-  if (version!=1){
-    ARCANE_THROW(ReaderWriterException,"Bad version '{0}' (expected 1)",version);
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ArcaneBasicCheckpointService::
 notifyBeginRead()
 {
-  String meta_data = readerMetaData();
-  _parseMetaData(meta_data);
+  String meta_data_str = readerMetaData();
+  MetaData md = MetaData::parse(meta_data_str,traceMng());
 
   info() << " GET META DATA READER " << readerMetaData()
+         << " version=" << md.m_version
          << " filename=" << fileName();
 
   String filename = fileName();
@@ -1684,8 +1710,15 @@ notifyBeginWrite()
   filename = filename + "_n" + write_index;
 
   Int32 version = 2;
-  if (options())
+  Ref<IDataCompressor> data_compressor;
+  if (options()){
     version = options()->formatVersion();
+    // N'utilise la compression qu'à partir de la version 3 car cela est
+    // incompatible avec les anciennes versions
+    if (version>=3){
+      data_compressor = options()->dataCompressor.instanceRef();
+    }
+  }
 
   info() << "Writing checkpoint with 'ArcaneBasicCheckpointService'"
          << " version=" << version
@@ -1698,6 +1731,7 @@ notifyBeginWrite()
   bool want_parallel = pm->isParallel();
   want_parallel = false;
   m_writer = new BasicWriter(app,pm,filename,open_mode,version,want_parallel);
+  m_writer->setDataCompressor(data_compressor);
   m_writer->initialize();
 }
 
@@ -1708,8 +1742,10 @@ void ArcaneBasicCheckpointService::
 notifyEndWrite()
 {
   OStringStream ostr;
-  ostr() << "<infos version='1'>\n";
-  ostr() << "</infos>\n";
+  ostr() << "<infos";
+  const int meta_data_version = 1;
+  ostr() << " version='" << meta_data_version << "'";
+  ostr() << "/>\n";
   setReaderMetaData(ostr.str());
   ++m_write_index;
   delete m_writer;
@@ -1757,23 +1793,7 @@ class ArcaneBasic2CheckpointReaderService
     info() << "FILE_NAME is " << buf;
     return buf;
   }
-  void _parseMetaData(const String& meta_data);
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ArcaneBasic2CheckpointReaderService::
-_parseMetaData(const String& meta_data)
-{
-  auto doc_ptr = IXmlDocumentHolder::loadFromBuffer(meta_data.bytes(),"MetaData",traceMng());
-  ScopedPtrT<IXmlDocumentHolder> xml_doc(doc_ptr);
-  XmlNode root = xml_doc->documentNode().documentElement();
-  Integer version = root.attr("version").valueAsInteger();
-  if (version!=1){
-    ARCANE_THROW(ReaderWriterException,"Bad version '{0}' (expected 1)",version);
-  }
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1782,10 +1802,12 @@ void ArcaneBasic2CheckpointReaderService::
 notifyBeginRead(const CheckpointReadInfo& cri)
 {
   const CheckpointInfo& ci = cri.checkpointInfo();
-  String reader_meta_data = ci.readerMetaData();
-  _parseMetaData(reader_meta_data);
+  String reader_meta_data_str = ci.readerMetaData();
+  auto md = ArcaneBasicCheckpointService::MetaData::parse(reader_meta_data_str,traceMng());
 
-  info() << "Basic2CheckpointReader GET META DATA READER " << reader_meta_data;
+  info() << "Basic2CheckpointReader GET META DATA READER " << reader_meta_data_str
+         << " version=" << md.m_version;
+
 
   Directory dump_dir(ci.directory());
   String filename = dump_dir.file(_defaultFileName(ci));
