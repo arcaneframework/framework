@@ -87,7 +87,7 @@
 #include <map>
 
 #ifdef ARCANE_FLEXLM
-#include "arcane/utils/FlexLMTools.h"
+#include "arcane/impl/FlexLMTools.h"
 #endif
 
 /*---------------------------------------------------------------------------*/
