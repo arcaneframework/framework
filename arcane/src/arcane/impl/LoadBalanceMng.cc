@@ -361,8 +361,8 @@ LoadBalanceMng(ISubDomain* sd, bool massAsCriterion)
 , m_mass_over_weigth(nullptr)
 , m_mass_res_weight(nullptr)
 , m_event_weights(nullptr)
-  // TODO: vérifier s'il est utile de créer cette variable.
-, m_cell_new_owner(VariableBuildInfo(m_mesh_handle, "CellFamilyNewOwner", IVariable::PExecutionDepend|IVariable::PNoDump))
+  // TODO: vérifier s'il est utile de créer cette variable. // SdC This variable is a problem when using a custom mesh
+, m_cell_new_owner(nullptr)
 {
   reset();
 }
@@ -394,6 +394,7 @@ reset()
 void LoadBalanceMng::
 initAccess(IMesh* mesh)
 {
+  m_cell_new_owner = std::make_unique<VariableCellInt32>(VariableBuildInfo(m_mesh_handle, "CellFamilyNewOwner", IVariable::PExecutionDepend | IVariable::PNoDump));
   if (!mesh)
     m_mesh_handle = mesh->handle();
   int vflags = IVariable::PExecutionDepend|IVariable::PNoDump|IVariable::PTemporary;
@@ -491,7 +492,7 @@ void LoadBalanceMng::
 notifyEndPartition()
 {
   IMesh* mesh = m_mesh_handle.mesh();
-  m_cell_new_owner.fill(mesh->parallelMng()->commRank(),mesh->ownCells());
+  m_cell_new_owner->fill(mesh->parallelMng()->commRank(),mesh->ownCells());
 }
 
 /*---------------------------------------------------------------------------*/
