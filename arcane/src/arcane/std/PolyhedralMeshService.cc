@@ -26,10 +26,27 @@ ARCANE_BEGIN_NAMESPACE
 
 class PolyhedralMeshService : public ArcanePolyhedralMeshObject
 {
+ public:
+  PolyhedralMeshService(const ServiceBuildInfo& sbi) : ArcanePolyhedralMeshObject(sbi) {}
+
+ public:
+  void createMesh(const String& name) override {
+    info() << "---CREATE MESH---- " << name;
+  }
+
+  void allocateMeshItems() override {
+    info() << "---ALLOCATE MESH ITEMS---- " ;
+  }
+
+  void partitionMesh() override {}
 
 };
 
-// todo register service
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ARCANE_REGISTER_SERVICE_POLYHEDRALMESH(PolyhedralMesh,PolyhedralMeshService);
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
