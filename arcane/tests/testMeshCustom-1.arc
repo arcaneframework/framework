@@ -3,7 +3,7 @@
  <arcane>
   <titre>Test Maillage Custom 1</titre>
   <description>Test Maillage 1</description>
-  <boucle-en-temps>UnitTest</boucle-en-temps>
+  <boucle-en-temps>CustomMeshTestLoop</boucle-en-temps>
  </arcane>
 
  <maillages>

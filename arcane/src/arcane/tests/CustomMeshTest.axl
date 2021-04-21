@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- -*- SGML -*- -->
+<module name="CustomMeshTest" version="1.0" namespace-name="ArcaneTest::CustomMesh">
+  <description>Module to test custom mesh</description>
+  <entry-points>
+    <entry-point method-name="init" name="Init" where="init" property="none" />
+  </entry-points>
+  <options/>
+</module>
