@@ -13,4 +13,10 @@ arcane_add_arccon_packages(arcane_mesh PRIVATE ${PKGS})
 
 target_link_libraries(arcane_mesh PUBLIC arcane_core)
 
+find_package(Neo QUIET)
+if (Neo_FOUND)
+  target_link_libraries(arcane_mesh PRIVATE Neo::Neo)
+  target_compile_definitions(arcane_mesh PRIVATE ARCANE_HAS_CUSTOM_MESH_TOOLS)
+endif()
+
 arcane_register_library(arcane_mesh)
