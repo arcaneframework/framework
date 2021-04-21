@@ -981,7 +981,7 @@ _printStats(ISubDomain* sub_domain,ITraceMng* trace,ITimeStats* time_stat)
   Integer nb_cell = 1;
   if (sub_domain){
     nb_loop = sub_domain->timeLoopMng()->nbLoop();
-    nb_cell = sub_domain->defaultMesh()->nbCell();
+    if (sub_domain->defaultMesh()) nb_cell = sub_domain->defaultMesh()->nbCell();
   }
   Real n = ((Real)nb_cell);
   trace->info() << "NB_CELL=" << nb_cell << " nb_loop=" << nb_loop;
