@@ -8,7 +8,7 @@
 
  <maillages>
  <maillage name="PolyhedralMesh">
-<!--  <meshgenerator><sod><x>10</x><y>5</y><z>5</z></sod></meshgenerator>-->
+  <fichier>example_polyhedral_cell.xmf</fichier>
  </maillage>
  </maillages>
 
