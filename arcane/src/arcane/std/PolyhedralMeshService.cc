@@ -13,6 +13,7 @@
 
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/ICaseMeshService.h"
+#include "arcane/mesh/PolyhedralMesh.h"
 
 #include "PolyhedralMesh_axl.h"
 
@@ -32,6 +33,8 @@ class PolyhedralMeshService : public ArcanePolyhedralMeshObject
  public:
   void createMesh(const String& name) override {
     info() << "---CREATE MESH---- " << name;
+    info() << "--Read mesh file " << options()->file();
+    mesh.read(options()->file);
   }
 
   void allocateMeshItems() override {
@@ -39,6 +42,9 @@ class PolyhedralMeshService : public ArcanePolyhedralMeshObject
   }
 
   void partitionMesh() override {}
+
+ private:
+  mesh::PolyhedralMesh mesh{subDomain()};
 
 };
 
