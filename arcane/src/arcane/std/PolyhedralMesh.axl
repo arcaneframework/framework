@@ -4,6 +4,10 @@
 
   <interface name="Arcane::ICaseMeshService"/>
 
-  <options/>
+  <options>
+    <simple name="file" type="string">
+      <name lang='fr'>fichier</name>
+    </simple>
+  </options>
 
 </service>
