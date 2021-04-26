@@ -1,17 +1,17 @@
 # Copyright 2020 IFPEN-CEA
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 # http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
+#
 # SPDX-License-Identifier: Apache-2.0
 
 add_library(alien_semantic_ref
@@ -58,24 +58,25 @@ add_library(alien_semantic_ref
         include/alien/ref/handlers/block/VBlockVectorWriter.h
         include/alien/ref/handlers/scalar/VectorReader.h
         include/alien/ref/handlers/scalar/VectorWriter.h
-        include/alien/ref/import_export/SystemInfo.h
-        src/import_export/SystemReader.cc
-        include/alien/ref/import_export/SystemReader.h
-        src/import_export/SystemWriter.cc
-        include/alien/ref/import_export/SystemWriter.h
-        src/import_export/HDF5Tools.h
         )
 
-if (ALIEN_USE_XML)
-    find_package(LibXml2 REQUIRED)
-    target_link_libraries(alien_semantic_ref PRIVATE arccon::LibXml2)
-    target_compile_definitions(alien_semantic_ref PRIVATE ALIEN_USE_LIBXML2)
-endif ()
+if (ALIEN_USE_XML AND ALIEN_USE_HDF5)
 
-if (ALIEN_USE_HDF5)
+    add_library(alien_ref_import_export OBJECT
+            include/alien/ref/import_export/SystemInfo.h
+            src/import_export/SystemReader.cc
+            include/alien/ref/import_export/SystemReader.h
+            src/import_export/SystemWriter.cc
+            include/alien/ref/import_export/SystemWriter.h
+            src/import_export/HDF5Tools.h)
+
+    find_package(LibXml2 REQUIRED)
     find_package(HDF5 REQUIRED)
-    target_link_libraries(alien_semantic_ref PRIVATE arccon::HDF5)
-    target_compile_definitions(alien_semantic_ref PRIVATE ALIEN_USE_HDF5)
+
+    target_link_libraries(alien_ref_import_export PRIVATE arccon::LibXml2 arccon::HDF5)
+    target_compile_definitions(alien_ref_import_export PRIVATE ALIEN_USE_LIBXML2 ALIEN_USE_HDF5)
+
+    target_link_libraries(alien_semantic_ref PRIVATE alien_ref_import_export)
 endif ()
 
 
