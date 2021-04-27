@@ -103,21 +103,25 @@ macro(alien_test)
         endif ()
 
         foreach (mpi ${ARGS_PROCS})
-
+            set(TEST_NAME "${ARGS_BENCH}.${ARGS_NAME}.mpi-${mpi}")
             if (NOT ARGS_WORKING_DIRECTORY)
                 add_test(
-                        NAME ${ARGS_BENCH}.${ARGS_NAME}.mpi-${mpi}
+                        NAME ${TEST_NAME}
                         COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${mpi} ${MPIEXEC_PREFLAGS}$<TARGET_FILE:${ARGS_COMMAND}> ${MPIEXEC_POSTFLAGS}
                         ${ARGS_OPTIONS}
                 )
             else ()
                 add_test(
-                        NAME ${ARGS_BENCH}.${ARGS_NAME}.mpi-${mpi}
+                        NAME ${TEST_NAME}
                         COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${mpi} ${MPIEXEC_PREFLAGS}$<TARGET_FILE:${ARGS_COMMAND}> ${MPIEXEC_POSTFLAGS}
                         ${ARGS_OPTIONS}
                         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${ARGS_WORKING_DIRECTORY}
                 )
             endif ()
+
+            # For openMPI oversubscribe
+            set_property(TEST ${TEST_NAME} APPEND PROPERTY ENVIRONMENT
+                    "OMPI_MCA_rmaps_base_oversubscribe=1")
 
             if (WIN32)
                 # ajout de bin/sys_dlls au PATH
