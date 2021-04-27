@@ -15,19 +15,18 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include <memory>
 #include "arcane/utils/ArcaneGlobal.h"
+#include "arcane/utils/String.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/ISubDomain.h"
-
-#ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
-#include "neo/Mesh.h"
-#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::mesh {
 
+class PolyhedralMeshImpl;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -35,9 +34,18 @@ class ARCANE_MESH_EXPORT PolyhedralMesh{
  public :
   ISubDomain* m_subdomain;
 
+  std::unique_ptr<PolyhedralMeshImpl> m_mesh; // using pimpl to limit dependency to neo lib to cc file
+
  public:
-  void read(String const& filename) {
-    m_subdomain->traceMng()->info() << "--PolyhedralMesh : reading " << filename;
+  PolyhedralMesh(ISubDomain* subDomain);
+  ~PolyhedralMesh(); // for pimpl idiom
+
+ public:
+  void read(String const& filename);
+
+ private:
+  void _errorEmptyMesh() {
+    m_subdomain->traceMng()->fatal() << "Cannot use PolyhedralMesh if Arcane is not linked with lib Neo";
   }
 
 };
