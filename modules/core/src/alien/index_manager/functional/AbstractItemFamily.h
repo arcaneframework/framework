@@ -66,11 +66,6 @@ class ALIEN_EXPORT AbstractItemFamily : public IAbstractFamily
    * @param uniqueIds Array of locally owned uniqueIds.
    * @param parallel_mng Parallel Manager.
    */
-
-  /* FIXME: Comments
-   * Local items then others ?
-   * Owners array is built in parallel ?
-   */
   AbstractItemFamily(const ConstArrayView<Int64> uniqueIds,
                      IMessagePassingMng* parallel_mng,
                      ITraceMng* trace_mng=nullptr);
