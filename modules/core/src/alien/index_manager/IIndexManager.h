@@ -359,11 +359,8 @@ class IIndexManager
       const VectorIndexSet& entry) const = 0;
 
   //! Donne le gestionnaire parallèle ayant servi à l'indexation
-#ifdef USE_ARCANE_PARALLELMNG
-  virtual Arcane::IParallelMng* parallelMng() const = 0;
-#else
   virtual Alien::IMessagePassingMng* parallelMng() const = 0;
-#endif
+
   //! define null index : default == -1, if true nullIndex() == max index of current
   //! indexation
   virtual void setMaxNullIndexOpt(bool flag) = 0;

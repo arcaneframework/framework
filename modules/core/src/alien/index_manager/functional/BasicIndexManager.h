@@ -11,9 +11,6 @@
 
 namespace Alien {
 
-#ifdef USE_ARCANE_PARALLELMNG
-namespace ArcaneParallelTest {
-#endif
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
@@ -29,11 +26,7 @@ namespace ArcaneParallelTest {
    public:
    public:
     //! Constructeur de la classe
-#ifdef USE_ARCANE_PARALLELMNG
-    BasicIndexManager(Arcane::IParallelMng* parallelMng);
-#else
   explicit BasicIndexManager(Alien::IMessagePassingMng* parallelMng);
-#endif
     //! Destructeur de la classe
     ~BasicIndexManager() override;
 
@@ -100,11 +93,7 @@ namespace ArcaneParallelTest {
 
     //! Donne le gestionnaire parallèle ayant servi à l'indexation
 
-#ifdef USE_ARCANE_PARALLELMNG
-    Arcane::IParallelMng* parallelMng() const { return m_parallel_mng; }
-#else
-  Alien::IMessagePassingMng* parallelMng() const { return m_parallel_mng; }
-#endif
+  [[nodiscard]] Arccore::MessagePassing::IMessagePassingMng* parallelMng() const { return m_parallel_mng; }
     //! define null index : default = -1, if true null_index = max_index+1
     void setMaxNullIndexOpt(bool flag) override { m_max_null_index_opt = flag; }
 
@@ -121,11 +110,7 @@ namespace ArcaneParallelTest {
     void keepAlive(const IAbstractFamily* family) override;
 
    private:
-#ifdef USE_ARCANE_PARALLELMNG
-    Arcane::IParallelMng* m_parallel_mng;
-#else
-  Alien::IMessagePassingMng* m_parallel_mng = nullptr;
-#endif
+  Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng = nullptr;
     Arccore::Integer m_local_owner = 0; //!< Identifiant du 'propriétaire' courant
 
     enum State
@@ -228,10 +213,6 @@ namespace ArcaneParallelTest {
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-
-#ifdef USE_ARCANE_PARALLELMNG
-}
-#endif
 } // namespace Alien
 
 /*---------------------------------------------------------------------------*/

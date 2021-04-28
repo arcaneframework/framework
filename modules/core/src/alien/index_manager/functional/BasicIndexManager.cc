@@ -44,10 +44,6 @@ namespace { // Unnamed namespace to avoid conflicts at linking time.
   const Arccore::Integer KIND_SHIFT = 32;
 }
 
-#ifdef USE_ARCANE_PARALLELMNG
-namespace ArcaneParallelTest {
-#endif
-
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
@@ -272,21 +268,15 @@ namespace ArcaneParallelTest {
 
     ~EntrySendRequest()
     {
-#ifdef USE_ARCANE_PARALLELMNG
-      delete comm;
-#endif
     }
 
     EntrySendRequest(const EntrySendRequest& esr)
     : comm(esr.comm)
     , count(esr.count)
     {}
-#ifdef USE_ARCANE_PARALLELMNG
-    SerializeMessage* comm = nullptr;
-#else
+
   // Arccore::MessagePassing::ISerializeMessage* comm = nullptr;
   Arccore::Ref<Arccore::MessagePassing::ISerializeMessage> comm;
-#endif
     Integer count = 0;
 
    private:
@@ -301,19 +291,12 @@ namespace ArcaneParallelTest {
 
     ~EntryRecvRequest()
     {
-#ifdef USE_ARCANE_PARALLELMNG
-      delete comm;
-#endif
     }
 
     // err is unused if ALIEN_ASSERT is empty.
     EntryRecvRequest(const EntrySendRequest& err ALIEN_UNUSED_PARAM) {}
 
-#ifdef USE_ARCANE_PARALLELMNG
-    SerializeMessage* comm = nullptr;
-#else
   Arccore::Ref<Arccore::MessagePassing::ISerializeMessage> comm;
-#endif
     UniqueArray<Int64> ids;
 
    private:
@@ -342,11 +325,8 @@ namespace ArcaneParallelTest {
   };
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-#ifdef USE_ARCANE_PARALLELMNG
-  BasicIndexManager::BasicIndexManager(IParallelMng* parallelMng)
-#else
+
 BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
-#endif
   : m_parallel_mng(parallelMng)
   , m_state(Undef)
   {
@@ -549,11 +529,7 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
      */
 
     // Infos utiles
-#ifdef USE_ARCANE_PARALLELMNG
-    ISerializeMessageList* messageList;
-#else
   Alien::Ref<ISerializeMessageList> messageList;
-#endif
 
     // Structure pour accumuler et structurer la collecte de l'information
     typedef std::map<EntryImpl*, EntrySendRequest> SendRequestByEntry;
@@ -577,11 +553,7 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
     }
 
     // Liste de synthèse des messages (emissions / réceptions)
-#ifdef USE_ARCANE_PARALLELMNG
-    messageList = m_parallel_mng->createSerializeMessageList();
-#else
   messageList = Arccore::MessagePassing::mpCreateSerializeMessageListRef(m_parallel_mng);
-#endif
     // Contruction de la table de communications + préparation des messages d'envoi
     UniqueArray<Integer> sendToDomains(2 * m_parallel_mng->commSize(), 0);
 
@@ -598,20 +570,6 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
         sendToDomains[2 * destDomainId + 1] += request.count;
 
         // Construction du message du EntrySendRequest
-#ifdef USE_ARCANE_PARALLELMNG
-        request.comm = new SerializeMessage(
-            m_parallel_mng->commRank(), destDomainId, ISerializeMessage::MT_Send);
-        messageList->addMessage(request.comm);
-        SerializeBuffer& sbuf = request.comm->buffer();
-        sbuf.setMode(ISerializer::ModeReserve); // phase préparatoire
-        sbuf.reserve(nameString); // Chaine de caractère du nom de l'entrée
-        sbuf.reserveInteger(1); // Nb d'item
-        sbuf.reserve(DT_Int64, request.count); // Les uid
-        sbuf.allocateBuffer(); // allocation mémoire
-        sbuf.setMode(ISerializer::ModePut);
-        sbuf.put(nameString);
-        sbuf.put(request.count);
-#else
       request.comm = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
           MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
           Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
@@ -626,7 +584,6 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
       sbuf->setMode(Alien::ISerializer::ModePut);
       sbuf->put(nameString);
       sbuf->put(request.count);
-#endif
       }
     }
 
@@ -637,22 +594,13 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
       MyEntryImpl* entryImpl = entryIndex.m_entry;
       const Integer item_owner = entryIndex.m_owner;
       const Int64 item_uid = entryIndex.m_uid;
-#ifdef USE_ARCANE_PARALLELMNG
-      if (item_owner != m_local_owner)
-        sendRequests[item_owner][entryImpl].comm->buffer().put(item_uid);
-#else
     if (item_owner != m_local_owner)
       sendRequests[item_owner][entryImpl].comm->serializer()->put(item_uid);
-#endif
     }
 
     // Réception des annonces de demandes (les nombres d'entrée + taille)
     UniqueArray<Integer> recvFromDomains(2 * m_parallel_mng->commSize());
-#ifdef USE_ARCANE_PARALLELMNG
-    m_parallel_mng->allToAll(sendToDomains, recvFromDomains, 2);
-#else
   Arccore::MessagePassing::mpAllToAll(m_parallel_mng, sendToDomains, recvFromDomains, 2);
-#endif
 
     // Table des requetes exterieures (reçoit les uid et renverra les EntryIndex finaux)
     typedef std::list<EntryRecvRequest> RecvRequests;
@@ -663,14 +611,6 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
       while (recvCount-- > 0) {
         // 	  if (m_trace) m_trace->pinfo() << "will receive an entry with " <<
         // recvFromDomains[2*isd+1] << " uid from " << isd;
-#ifdef USE_ARCANE_PARALLELMNG
-        SerializeMessage* recvMsg = new SerializeMessage(
-            m_parallel_mng->commRank(), isd, ISerializeMessage::MT_Recv);
-        recvRequests.push_back(EntryRecvRequest());
-        EntryRecvRequest& recvRequest = recvRequests.back();
-        recvRequest.comm = recvMsg;
-        messageList->addMessage(recvMsg);
-#else
       auto recvMsg = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
           MessageRank(m_parallel_mng->commRank()), MessageRank(isd),
           Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
@@ -678,27 +618,16 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
       EntryRecvRequest& recvRequest = recvRequests.back();
       recvRequest.comm = recvMsg;
       messageList->addMessage(recvMsg.get());
-#endif
       }
     }
 
     // Traitement des communications
     messageList->processPendingMessages();
-#ifdef USE_ARCANE_PARALLELMNG
-    messageList->waitMessages(Parallel::WaitAll);
-    delete messageList;
-    messageList = NULL; // Destruction propre
-#else
   messageList->waitMessages(Arccore::MessagePassing::WaitAll);
   messageList.reset();
-#endif
 
     // Pour les réponses vers les demandeurs
-#ifdef USE_ARCANE_PARALLELMNG
-    messageList = m_parallel_mng->createSerializeMessageList();
-#else
   messageList = Arccore::MessagePassing::mpCreateSerializeMessageListRef(m_parallel_mng);
-#endif
 
     // 3 - Réception et mise en base local des demandes
     for (RecvRequests::iterator i = recvRequests.begin(); i != recvRequests.end(); ++i) {
@@ -707,18 +636,6 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
       Integer uidCount;
 
       { // Traitement des arrivées
-#ifdef USE_ARCANE_PARALLELMNG
-        SerializeBuffer& sbuf = recvRequest.comm->buffer();
-        sbuf.setMode(ISerializer::ModeGet);
-
-        sbuf.get(nameString);
-        uidCount = sbuf.getInteger();
-        // 	if (m_trace) m_trace->pinfo() << nameString << " received with " << uidCount
-        // << " ids";
-        recvRequest.ids.resize(uidCount);
-        sbuf.get(recvRequest.ids);
-        ARCANE_ASSERT((uidCount == recvRequest.ids.size()), ("Inconsistency detected"));
-#else
       auto sbuf = recvRequest.comm->serializer();
       sbuf->setMode(Alien::ISerializer::ModeGet);
 
@@ -729,14 +646,7 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
       recvRequest.ids.resize(uidCount);
       sbuf->getSpan(recvRequest.ids);
       ALIEN_ASSERT((uidCount == recvRequest.ids.size()), ("Inconsistency detected"));
-#endif
-#ifndef NO_USER_WARNING
-#ifdef _MSC_VER
-#pragma message("CHECK: optimisable ?")
-#else
-#warning "CHECK: optimisable ?"
-#endif
-#endif
+
         /* Si on est sûr que les entrées et l'item demandées doivent
          * toujours exister (même les pires cas), on peut faire
          * l'indexation locale avant et envoyer immédiatement (via un
@@ -786,23 +696,6 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
       }
 
       { // Préparation des retours
-#ifdef USE_ARCANE_PARALLELMNG
-        Integer dest = recvRequest.comm->destRank(); // Attention à l'ordre bizarre
-        Integer orig = recvRequest.comm->origRank(); //       de SerializeMessage
-        delete recvRequest.comm;
-        recvRequest.comm = new SerializeMessage(orig, dest, ISerializeMessage::MT_Send);
-        messageList->addMessage(recvRequest.comm);
-
-        SerializeBuffer& sbuf = recvRequest.comm->buffer();
-        sbuf.setMode(ISerializer::ModeReserve); // phase préparatoire
-        sbuf.reserve(nameString); // Chaine de caractère du nom de l'entrée
-        sbuf.reserveInteger(1); // Nb d'item
-        sbuf.reserveInteger(uidCount); // Les index
-        sbuf.allocateBuffer(); // allocation mémoire
-        sbuf.setMode(ISerializer::ModePut);
-        sbuf.put(nameString);
-        sbuf.put(uidCount);
-#else
       auto dest = recvRequest.comm->destination(); // Attention à l'ordre bizarre
       auto orig = recvRequest.comm->source(); //       de SerializeMessage
       recvRequest.comm.reset();
@@ -819,7 +712,6 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
       sbuf->setMode(Alien::ISerializer::ModePut);
       sbuf->put(nameString);
       sbuf->put(uidCount);
-#endif
       }
     }
 
@@ -831,11 +723,8 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
     UniqueArray<Integer> allLocalSizes(m_parallel_mng->commSize());
     UniqueArray<Integer> myLocalSize(1);
     myLocalSize[0] = m_local_entry_count;
-#ifdef USE_ARCANE_PARALLELMNG
-    m_parallel_mng->allGather(myLocalSize, allLocalSizes);
-#else
+
   Arccore::MessagePassing::mpAllGather(m_parallel_mng, myLocalSize, allLocalSizes);
-#endif
     // Table de ré-indexation (EntryIndex->Integer)
     Alien::UniqueArray<Integer> entry_reindex(m_local_entry_count + m_global_entry_count);
     entry_reindex.fill(-1); // valeur de type Erreur par défaut
@@ -868,28 +757,16 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
 
     for (RecvRequests::iterator i = recvRequests.begin(); i != recvRequests.end(); ++i) {
       EntryRecvRequest& recvRequest = *i;
-#ifdef USE_ARCANE_PARALLELMNG
-      SerializeBuffer& sbuf = recvRequest.comm->buffer();
-      UniqueArray<Int64>& ids = recvRequest.ids;
-      for (Integer j = 0; j < ids.size(); ++j) {
-        sbuf.putInteger(
-            entry_reindex[ids[j] + m_global_entry_count]); // Via la table de réindexation
-#else
     auto sbuf = recvRequest.comm->serializer();
     auto& ids = recvRequest.ids;
     for (Integer j = 0; j < ids.size(); ++j) {
       sbuf->putInteger(
           entry_reindex[ids[j] + m_global_entry_count]); // Via la table de réindexation
-#endif
       }
     }
 
     // Table des buffers de retour
-#ifdef USE_ARCANE_PARALLELMNG
-    typedef std::list<SerializeMessage*> ReturnedRequests;
-#else
   typedef std::list<Alien::Ref<Alien::ISerializeMessage>> ReturnedRequests;
-#endif
     ReturnedRequests returnedRequests;
 
     // Acces rapide aux buffers connaissant le proc emetteur et le nom d'une entrée
@@ -913,27 +790,13 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
         // On ne peut pas associer directement le message à cette entrée
         // : dans le cas d'échange multiple il n'y pas de garantie d'arrivée
         // à la bonne place
-#ifdef USE_ARCANE_PARALLELMNG
-        delete request.comm;
-        request.comm = NULL;
-<<<<<<< HEAD
 
-=======
-
->>>>>>> 3b45ab6... add new IndexManager implementation
-        SerializeMessage* msg = new SerializeMessage(
-            m_parallel_mng->commRank(), destDomainId, ISerializeMessage::MT_Recv);
-        returnedRequests.push_back(msg);
-        messageList->addMessage(msg);
-
-#else
       auto msg = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
           MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
           Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
 
       returnedRequests.push_back(msg);
       messageList->addMessage(msg.get());
-#endif
 
         fastReturnMap[nameString][destDomainId] = &request;
       }
@@ -941,37 +804,13 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
 
     // Traitement des communications
     messageList->processPendingMessages();
-#ifdef USE_ARCANE_PARALLELMNG
-    messageList->waitMessages(Parallel::WaitAll);
-    delete messageList;
-    messageList = NULL; // Destruction propre de l'ancienne liste
-#else
   messageList->waitMessages(Arccore::MessagePassing::WaitAll);
   messageList.reset();
-#endif
 
     // 6 - Traitement des réponses
     // Association aux EntrySendRequest du buffer correspondant
     for (ReturnedRequests::iterator i = returnedRequests.begin();
          i != returnedRequests.end(); ++i) {
-#ifdef USE_ARCANE_PARALLELMNG
-      SerializeMessage* message = *i;
-      const Integer origDomainId = message->destRank();
-      SerializeBuffer& sbuf = message->buffer();
-      sbuf.setMode(ISerializer::ModeGet);
-      String nameString;
-      sbuf.get(nameString);
-      ARCANE_ASSERT(
-          (fastReturnMap[nameString][origDomainId] != NULL), ("Inconsistency detected"));
-      EntrySendRequest& request = *fastReturnMap[nameString][origDomainId];
-      request.comm = *i; // Reconnection pour accès rapide depuis l'EntrySendRequest
-#ifdef ARCANE_DEBUG_ASSERT
-      const Integer idCount = sbuf.getInteger();
-#else
-      sbuf.getInteger();
-#endif
-      ARCANE_ASSERT((request.count == idCount), ("Inconsistency detected"));
-#else
     auto& message = *i;
     auto origDomainId = message->destination().value();
     auto sbuf = message->serializer();
@@ -985,7 +824,6 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
 
     const Integer idCount = sbuf->getInteger();
     ALIEN_ASSERT((request.count == idCount), ("Inconsistency detected"));
-#endif
     }
 
     // Distribution des reponses
@@ -998,13 +836,9 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
         EntrySendRequest& request = sendRequests[item_owner][entryImpl];
         ALIEN_ASSERT((request.count > 0), ("Unexpected empty request"));
         --request.count;
-#ifdef USE_ARCANE_PARALLELMNG
-        SerializeBuffer& sbuf = request.comm->buffer();
-        const Integer newIndex = sbuf.getInteger();
-#else
       auto sbuf = request.comm->serializer();
       const Integer newIndex = sbuf->getInteger();
-#endif
+
         entry_reindex[i->m_index + m_global_entry_count] = newIndex;
         i->m_index = newIndex;
       }
@@ -1076,23 +910,6 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
       //      if (m_trace) m_trace->pinfo() << "Entry " << entry->getName() << " size = "
       //      << count_table[entry];
     }
-
-    //   // Calcul de la taille des indices par entrée
-    //   UniqueArray<Integer> count_table(m_creation_index, 0);
-    //   for(EntryIndexMap::const_iterator i = entry_index.begin(); i !=
-    //   entry_index.end(); ++i)
-    //     {
-    //       count_table[i->m_entry->getCreationIndex()]++;
-    //     }
-
-    //   // Dimensionnement des buffers de chaque entrée
-    //   for(EntrySet::iterator i = m_entry_set.begin(); i != m_entry_set.end(); ++i)
-    //     {
-    //       MyEntryImpl * entry = i->second;
-    //       entry->reserve(count_table[entry->getCreationIndex()]);
-    //       //      if (m_trace) m_trace->pinfo() << "Entry " << entry->getName() << "
-    //       size = " << count_table[entry];
-    //     }
   }
 
   /*---------------------------------------------------------------------------*/
@@ -1311,9 +1128,6 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
     }
   }
 
-#ifdef USE_ARCANE_PARALLELMNG
-}
-#endif
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
