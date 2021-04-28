@@ -43,8 +43,8 @@ class ALIEN_EXPORT AbstractItemFamily : public IAbstractFamily
    * @param owners Array of item owners
    * @param parallel_mng Parallel Manager.
    */
-  AbstractItemFamily(const ConstArrayView<Int64> uniqueIds,
-      const ConstArrayView<Integer> owners, IMessagePassingMng* parallel_mng,
+  AbstractItemFamily(const ConstArrayView<Int64>& uniqueIds,
+      const ConstArrayView<Integer>& owners, IMessagePassingMng* parallel_mng,
       ITraceMng* trace_mng = nullptr);
 
   /*! Build a family for locally known unique ids.
@@ -54,9 +54,9 @@ class ALIEN_EXPORT AbstractItemFamily : public IAbstractFamily
    * @param ghost_owners Array of ghost item owners
    * @param parallel_mng Parallel Manager.
    */
-  AbstractItemFamily(const ConstArrayView<Int64> uniqueIds,
-      const ConstArrayView<Int64> ghost_uniqueIds,
-      const ConstArrayView<Integer> ghost_owners, IMessagePassingMng* parallel_mng,
+  AbstractItemFamily(const ConstArrayView<Int64>& uniqueIds,
+      const ConstArrayView<Int64>& ghost_uniqueIds,
+      const ConstArrayView<Integer>& ghost_owners, IMessagePassingMng* parallel_mng,
       ITraceMng* trace_mng = nullptr);
 
   /*! Build a family for locally owned unique ids.
@@ -64,7 +64,7 @@ class ALIEN_EXPORT AbstractItemFamily : public IAbstractFamily
    * @param uniqueIds Array of locally owned uniqueIds.
    * @param parallel_mng Parallel Manager.
    */
-  AbstractItemFamily(const ConstArrayView<Int64> uniqueIds,
+  AbstractItemFamily(const ConstArrayView<Int64>& uniqueIds,
       IMessagePassingMng* parallel_mng, [[maybe_unused]] ITraceMng* trace_mng = nullptr);
 
   ~AbstractItemFamily() override = default;
@@ -133,7 +133,7 @@ class ALIEN_EXPORT AbstractFamily : public IIndexManager::IAbstractFamily
   ~AbstractFamily() override = default;
 
  public:
-  IAbstractFamily* clone() const { return new AbstractFamily(*this); }
+  IAbstractFamily* clone() const override { return new AbstractFamily(*this); }
 
  public:
   Int32 maxLocalId() const override { return m_unique_ids.size(); }
