@@ -37,7 +37,7 @@ namespace Alien {
     [[nodiscard]] bool isPrepared() const override { return m_state == Prepared; }
 
     //! Définit le gestionnaire de trace
-    void setTraceMng(Alien::ITraceMng* traceMng);
+    void setTraceMng(Alien::ITraceMng* traceMng) override;
 
     //! Préparation : fixe l'indexation (fin des définitions)
     void prepare() override;
@@ -49,55 +49,56 @@ namespace Alien {
 
     //! Retourne la taille globale
     /*! Uniquement valide après \a prepare */
-    [[nodiscard]] Arccore::Integer globalSize() const;
+    [[nodiscard]] Arccore::Integer globalSize() const override;
 
     //! Retourne l'indice minimum local
     /*! Uniquement valide après \a prepare */
-    [[nodiscard]] Arccore::Integer minLocalIndex() const;
+    [[nodiscard]] Arccore::Integer minLocalIndex() const override;
 
     //! Retourne l'indice minimum local
     /*! Uniquement valide après \a prepare */
-    [[nodiscard]] Arccore::Integer localSize() const;
+    [[nodiscard]] Arccore::Integer localSize() const override;
 
     //! Construction d'un enumerateur sur les \a Entry
     [[nodiscard]] EntryEnumerator enumerateEntry() const override;
 
     //! Construit une nouvelle entrée scalaire sur un ensemble d'entités abstraites
     ScalarIndexSet buildScalarIndexSet(const Arccore::String& name,
-        const Arccore::IntegerConstArrayView& localIds, const IAbstractFamily& family);
+        const Arccore::IntegerConstArrayView& localIds, const IAbstractFamily& family) override;
 
     //! Construit une nouvelle entrée scalaire sur l'ensemble des entités d'une familles
     //! abstraite
     ScalarIndexSet buildScalarIndexSet(
-        const Arccore::String& name, const IAbstractFamily& family);
+        const Arccore::String& name, const IAbstractFamily& family) override;
 
     //! Construit une nouvelle entrée vectoriellesur un ensemble d'entités abstraites
     /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
     VectorIndexSet buildVectorIndexSet(const Arccore::String& name,
         const Arccore::IntegerConstArrayView& localIds, const IAbstractFamily& family,
-        Arccore::Integer n);
+        Arccore::Integer n) override;
 
     //! Construit une nouvelle entrée scalaire sur l'ensemble des entités d'une familles
     //! abstraite
     /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
     VectorIndexSet buildVectorIndexSet(const Arccore::String& name,
-        const IAbstractFamily& family, Arccore::Integer n);
+        const IAbstractFamily& family, Arccore::Integer n) override;
 
     //! Fournit une table de translation indexé par les items
-    Arccore::UniqueArray<Arccore::Integer> getIndexes(const ScalarIndexSet& entry) const;
+    [[nodiscard]] Arccore::UniqueArray<Arccore::Integer> getIndexes(const ScalarIndexSet& entry) const override;
 
     //! Fournit une table de translation vectorielle indexé par les items puis par les
     //! entrées
-    Arccore::UniqueArray2<Arccore::Integer> getIndexes(
-        const VectorIndexSet& entries) const;
+    [[nodiscard]] Arccore::UniqueArray2<Arccore::Integer> getIndexes(
+        const VectorIndexSet& entries) const override;
 
     //! Donne le gestionnaire parallèle ayant servi à l'indexation
 
-  [[nodiscard]] Arccore::MessagePassing::IMessagePassingMng* parallelMng() const { return m_parallel_mng; }
+  [[nodiscard]] Arccore::MessagePassing::IMessagePassingMng* parallelMng() const override { return m_parallel_mng; }
+
     //! define null index : default = -1, if true null_index = max_index+1
     void setMaxNullIndexOpt(bool flag) override { m_max_null_index_opt = flag; }
 
-    Arccore::Integer nullIndex() const
+    [[nodiscard]] Arccore::Integer nullIndex() const override
     {
       ALIEN_ASSERT((m_state == Prepared), ("nullIndex is valid only in Prepared state"));
       if (m_max_null_index_opt)
@@ -185,7 +186,7 @@ namespace Alien {
 
     //! Retourne l'entrée associée à un nom
 
-    Entry getEntry(const Arccore::String& name) const;
+    [[nodiscard]] Entry getEntry(const Arccore::String& name) const override;
 
    protected:
     //! \internal Structure interne de communication dans prepare()
@@ -199,11 +200,11 @@ namespace Alien {
     void defineIndex(const Entry& entry, const Arccore::IntegerConstArrayView& localIds);
     void parallel_prepare(EntryIndexMap& entry_index);
     void sequential_prepare(EntryIndexMap& entry_index);
-    inline bool isOwn(const IAbstractFamily::Item& item) const
+    [[nodiscard]] inline bool isOwn(const IAbstractFamily::Item& item) const
     {
       return item.owner() == m_local_owner;
     }
-    inline bool isOwn(const InternalEntryIndex& i) const
+    [[nodiscard]] inline bool isOwn(const InternalEntryIndex& i) const
     {
       return i.m_owner == m_local_owner;
     }
