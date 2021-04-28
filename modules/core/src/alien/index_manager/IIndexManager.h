@@ -297,7 +297,7 @@ class IIndexManager
   virtual EntryEnumerator enumerateEntry() const = 0;
 
   //! Retourne l'entrée associée à un nom
-  virtual Entry getEntry(const Arccore::String name) const = 0;
+  virtual Entry getEntry(const Arccore::String& name) const = 0;
 
   typedef Entry ScalarIndexSet;
   typedef Arccore::UniqueArray<ScalarIndexSet> VectorIndexSet;
@@ -313,14 +313,14 @@ class IIndexManager
   // & itemGroup) = 0;
 
   //! Construit une nouvelle entrée scalaire sur un ensemble d'entités abstraites
-  virtual ScalarIndexSet buildScalarIndexSet(const Arccore::String name,
-      const Arccore::ConstArrayView<Arccore::Integer> localIds,
+  virtual ScalarIndexSet buildScalarIndexSet(const Arccore::String& name,
+      const Arccore::ConstArrayView<Arccore::Integer>& localIds,
       const IAbstractFamily& family) = 0;
 
   //! Construit une nouvelle entrée scalaire sur l'ensemble des entités d'une familles
   //! abstraite
   virtual ScalarIndexSet buildScalarIndexSet(
-      const Arccore::String name, const IAbstractFamily& family) = 0;
+      const Arccore::String& name, const IAbstractFamily& family) = 0;
 
   //! Construit une nouvelle entrée vectorielle sur des items du maillage
   /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
@@ -329,15 +329,15 @@ class IIndexManager
   // & itemGroup, const Integer n) = 0;
   //! Construit une nouvelle entrée vectoriellesur un ensemble d'entités abstraites
   /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
-  virtual VectorIndexSet buildVectorIndexSet(const Arccore::String name,
-      const Arccore::ConstArrayView<Arccore::Integer> localIds,
-      const IAbstractFamily& family, const Arccore::Integer n) = 0;
+  virtual VectorIndexSet buildVectorIndexSet(const Arccore::String& name,
+      const Arccore::ConstArrayView<Arccore::Integer>& localIds,
+      const IAbstractFamily& family, Arccore::Integer n) = 0;
 
   //! Construit une nouvelle entrée scalaire sur l'ensemble des entités d'une familles
   //! abstraite
   /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
-  virtual VectorIndexSet buildVectorIndexSet(const Arccore::String name,
-      const IAbstractFamily& family, const Arccore::Integer n) = 0;
+  virtual VectorIndexSet buildVectorIndexSet(const Arccore::String& name,
+      const IAbstractFamily& family, Arccore::Integer n) = 0;
 
   //! Demande de dé-indexation d'une partie d'une entrée
   /*! Utilisable uniquement avant prepare */

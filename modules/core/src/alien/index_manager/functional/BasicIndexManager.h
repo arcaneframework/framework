@@ -32,63 +32,63 @@ namespace ArcaneParallelTest {
 #ifdef USE_ARCANE_PARALLELMNG
     BasicIndexManager(Arcane::IParallelMng* parallelMng);
 #else
-  BasicIndexManager(Alien::IMessagePassingMng* parallelMng);
+  explicit BasicIndexManager(Alien::IMessagePassingMng* parallelMng);
 #endif
     //! Destructeur de la classe
-    virtual ~BasicIndexManager();
+    ~BasicIndexManager() override;
 
     //! Initialisation
-    void init();
+    void init() override;
 
     //! Indique si la phase de préparation est achevée
-    bool isPrepared() const { return m_state == Prepared; }
+    [[nodiscard]] bool isPrepared() const override { return m_state == Prepared; }
 
     //! Définit le gestionnaire de trace
     void setTraceMng(Alien::ITraceMng* traceMng);
 
     //! Préparation : fixe l'indexation (fin des définitions)
-    void prepare();
+    void prepare() override;
 
     //! Statistiques d'indexation
     /*! Uniquement valide après \a prepare */
     void stats(Arccore::Integer& globalSize, Arccore::Integer& minLocalIndex,
-        Arccore::Integer& localSize) const;
+        Arccore::Integer& localSize) const override;
 
     //! Retourne la taille globale
     /*! Uniquement valide après \a prepare */
-    Arccore::Integer globalSize() const;
+    [[nodiscard]] Arccore::Integer globalSize() const;
 
     //! Retourne l'indice minimum local
     /*! Uniquement valide après \a prepare */
-    Arccore::Integer minLocalIndex() const;
+    [[nodiscard]] Arccore::Integer minLocalIndex() const;
 
     //! Retourne l'indice minimum local
     /*! Uniquement valide après \a prepare */
-    Arccore::Integer localSize() const;
+    [[nodiscard]] Arccore::Integer localSize() const;
 
     //! Construction d'un enumerateur sur les \a Entry
-    EntryEnumerator enumerateEntry() const;
+    [[nodiscard]] EntryEnumerator enumerateEntry() const override;
 
     //! Construit une nouvelle entrée scalaire sur un ensemble d'entités abstraites
-    ScalarIndexSet buildScalarIndexSet(const Arccore::String name,
-        const Arccore::IntegerConstArrayView localIds, const IAbstractFamily& family);
+    ScalarIndexSet buildScalarIndexSet(const Arccore::String& name,
+        const Arccore::IntegerConstArrayView& localIds, const IAbstractFamily& family);
 
     //! Construit une nouvelle entrée scalaire sur l'ensemble des entités d'une familles
     //! abstraite
     ScalarIndexSet buildScalarIndexSet(
-        const Arccore::String name, const IAbstractFamily& family);
+        const Arccore::String& name, const IAbstractFamily& family);
 
     //! Construit une nouvelle entrée vectoriellesur un ensemble d'entités abstraites
     /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
-    VectorIndexSet buildVectorIndexSet(const Arccore::String name,
-        const Arccore::IntegerConstArrayView localIds, const IAbstractFamily& family,
-        const Arccore::Integer n);
+    VectorIndexSet buildVectorIndexSet(const Arccore::String& name,
+        const Arccore::IntegerConstArrayView& localIds, const IAbstractFamily& family,
+        Arccore::Integer n);
 
     //! Construit une nouvelle entrée scalaire sur l'ensemble des entités d'une familles
     //! abstraite
     /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
-    VectorIndexSet buildVectorIndexSet(const Arccore::String name,
-        const IAbstractFamily& family, const Arccore::Integer n);
+    VectorIndexSet buildVectorIndexSet(const Arccore::String& name,
+        const IAbstractFamily& family, Arccore::Integer n);
 
     //! Fournit une table de translation indexé par les items
     Arccore::UniqueArray<Arccore::Integer> getIndexes(const ScalarIndexSet& entry) const;
@@ -106,7 +106,7 @@ namespace ArcaneParallelTest {
   Alien::IMessagePassingMng* parallelMng() const { return m_parallel_mng; }
 #endif
     //! define null index : default = -1, if true null_index = max_index+1
-    void setMaxNullIndexOpt(bool flag) { m_max_null_index_opt = flag; }
+    void setMaxNullIndexOpt(bool flag) override { m_max_null_index_opt = flag; }
 
     Arccore::Integer nullIndex() const
     {
@@ -118,7 +118,7 @@ namespace ArcaneParallelTest {
     }
 
    public:
-    void keepAlive(const IAbstractFamily* family);
+    void keepAlive(const IAbstractFamily* family) override;
 
    private:
 #ifdef USE_ARCANE_PARALLELMNG
@@ -200,7 +200,7 @@ namespace ArcaneParallelTest {
 
     //! Retourne l'entrée associée à un nom
 
-    Entry getEntry(const Arccore::String name) const;
+    Entry getEntry(const Arccore::String& name) const;
 
    protected:
     //! \internal Structure interne de communication dans prepare()
@@ -209,9 +209,9 @@ namespace ArcaneParallelTest {
 
    protected: // Méthodes protègés en attendant une explicitation du besoin
    private:
-    Entry buildEntry(const Arccore::String name, const IAbstractFamily* itemFamily,
-        const Arccore::Integer kind);
-    void defineIndex(const Entry& entry, const Arccore::IntegerConstArrayView localIds);
+    Entry buildEntry(const Arccore::String& name, const IAbstractFamily* itemFamily,
+        Arccore::Integer kind);
+    void defineIndex(const Entry& entry, const Arccore::IntegerConstArrayView& localIds);
     void parallel_prepare(EntryIndexMap& entry_index);
     void sequential_prepare(EntryIndexMap& entry_index);
     inline bool isOwn(const IAbstractFamily::Item& item) const

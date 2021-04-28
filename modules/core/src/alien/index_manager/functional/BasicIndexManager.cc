@@ -20,21 +20,6 @@
 #include <arccore/collections/Array2.h>
 #include <arccore/trace/ITraceMng.h>
 
-#ifdef USE_ARCANE_PARALLELMNG
-#include <arcane/ArcaneVersion.h>
-#include <arcane/IItemFamily.h>
-#include <arcane/IParallelMng.h>
-#include <arcane/ISerializeMessageList.h>
-#include <arcane/ItemGroup.h>
-#include <arcane/ItemInternal.h>
-#include <arcane/SerializeMessage.h>
-#include <arcane/utils/Collection.h>
-#include <arcane/utils/Enumerator.h>
-#include <arcane/utils/Math.h>
-
-using namespace Arcane;
-#endif
-
 #include <alien/index_manager/functional/BasicIndexManager.h>
 
 // #define SPLIT_CONTAINER
@@ -76,7 +61,7 @@ namespace ArcaneParallelTest {
 
    public:
     //! Constructeur par défaut
-    MyEntryImpl(const String name, const IAbstractFamily* family,
+    MyEntryImpl(const String& name, const IAbstractFamily* family,
         const Integer creationIndex, BasicIndexManager* manager, Integer kind)
     : m_creation_index(creationIndex)
     , m_manager(manager)
@@ -88,48 +73,48 @@ namespace ArcaneParallelTest {
     , m_size(0)
     {}
 
-    virtual ~MyEntryImpl() {}
+    ~MyEntryImpl() override = default;
 
-    Arccore::ConstArrayView<Arccore::Integer> getOwnIndexes() const
+    Arccore::ConstArrayView<Arccore::Integer> getOwnIndexes() const override
     {
       return Arccore::ConstArrayView<Arccore::Integer>(m_own_size, m_all_indices.data());
     }
 
-    Arccore::ConstArrayView<Arccore::Integer> getOwnLocalIds() const
+    Arccore::ConstArrayView<Arccore::Integer> getOwnLocalIds() const override
     {
       return Arccore::ConstArrayView<Arccore::Integer>(m_own_size, m_all_items.data());
     }
 
-    Arccore::ConstArrayView<Arccore::Integer> getAllIndexes() const
+    Arccore::ConstArrayView<Arccore::Integer> getAllIndexes() const override
     {
       return Arccore::ConstArrayView<Arccore::Integer>(m_all_indices);
     }
 
-    Arccore::ConstArrayView<Integer> getAllLocalIds() const
+    Arccore::ConstArrayView<Integer> getAllLocalIds() const override
     {
       return Arccore::ConstArrayView<Integer>(m_all_items);
     }
 
-    void addTag(const String& tagname, const String& tagvalue)
+    void addTag(const String& tagname, const String& tagvalue) override
     {
       m_tags[tagname] = tagvalue;
     }
 
-    void removeTag(const String& tagname) { m_tags.erase(tagname); }
+    void removeTag(const String& tagname) override { m_tags.erase(tagname); }
 
-    bool hasTag(const String& tagname) { return m_tags.find(tagname) != m_tags.end(); }
+    bool hasTag(const String& tagname) override { return m_tags.find(tagname) != m_tags.end(); }
 
-    String tagValue(const String& tagname)
+    String tagValue(const String& tagname) override
     {
-      std::map<String, String>::const_iterator i = m_tags.find(tagname);
+      auto i = m_tags.find(tagname);
       if (i == m_tags.end())
         return String();
       return i->second;
     }
 
-    String getName() const { return m_name; }
+    String getName() const override { return m_name; }
 
-    Integer getKind() const
+    Integer getKind() const override
     {
       ALIEN_ASSERT((m_kind >= 0), ("Unexpected negative kind"));
       if (m_kind < KIND_SHIFT)
@@ -138,9 +123,9 @@ namespace ArcaneParallelTest {
         return m_kind % KIND_SHIFT;
     }
 
-    const IAbstractFamily& getFamily() const { return *m_family; }
+    const IAbstractFamily& getFamily() const override { return *m_family; }
 
-    IIndexManager* manager() const { return m_manager; }
+    IIndexManager* manager() const override { return m_manager; }
 
    protected:
     //! Préparation des buffers d'indices et d'items
@@ -156,12 +141,11 @@ namespace ArcaneParallelTest {
 
       Integer own_i = 0;
       Integer ghost_i = m_size;
-      for (EntryIndexMap::const_iterator i = entryIndex.begin(); i != entryIndex.end();
-           ++i)
-        if (i->m_entry == this) {
-          const Integer local_id = i->m_localid;
-          const Integer index = i->m_index;
-          const bool is_own = m_manager->isOwn(*i);
+      for (const auto & i : entryIndex)
+        if (i.m_entry == this) {
+          const Integer local_id = i.m_localid;
+          const Integer index = i.m_index;
+          const bool is_own = m_manager->isOwn(i);
           if (is_own) {
             m_all_items[own_i] = local_id;
             m_all_indices[own_i] = index;
@@ -406,7 +390,7 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
   /*---------------------------------------------------------------------------*/
 
   IIndexManager::Entry BasicIndexManager::buildEntry(
-      const String name, const IAbstractFamily* family, const Integer kind)
+      const String& name, const IAbstractFamily* family, const Integer kind)
   {
     if (m_state != Initialized)
       throw FatalErrorException(A_FUNCINFO, "Inconsistent state");
@@ -426,7 +410,7 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
 
   /*---------------------------------------------------------------------------*/
 
-  IIndexManager::Entry BasicIndexManager::getEntry(const String name) const
+  IIndexManager::Entry BasicIndexManager::getEntry(const String& name) const
   {
     EntrySet::const_iterator lookup = m_entry_set.find(name);
     if (lookup != m_entry_set.end()) {
@@ -440,7 +424,7 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
   /*---------------------------------------------------------------------------*/
 
   void BasicIndexManager::defineIndex(
-      const Entry& entry, const ConstArrayView<Integer> localIds)
+      const Entry& entry, const ConstArrayView<Integer>& localIds)
   {
     if (m_state != Initialized)
       throw FatalErrorException(A_FUNCINFO, "Inconsistent state");
@@ -1236,8 +1220,8 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
 
   /*---------------------------------------------------------------------------*/
 
-  IIndexManager::ScalarIndexSet BasicIndexManager::buildScalarIndexSet(const String name,
-      const ConstArrayView<Integer> localIds, const IAbstractFamily& family)
+  IIndexManager::ScalarIndexSet BasicIndexManager::buildScalarIndexSet(const String& name,
+      const ConstArrayView<Integer>& localIds, const IAbstractFamily& family)
   {
     ScalarIndexSet en = buildEntry(name, &family, addNewAbstractFamily(&family));
     defineIndex(en, localIds);
@@ -1247,7 +1231,7 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
   /*---------------------------------------------------------------------------*/
 
   IIndexManager::ScalarIndexSet BasicIndexManager::buildScalarIndexSet(
-      const String name, const IAbstractFamily& family)
+      const String& name, const IAbstractFamily& family)
   {
     UniqueArray<Int32> localIds = family.allLocalIds();
     Entry en = buildEntry(name, &family, addNewAbstractFamily(&family));
@@ -1257,9 +1241,9 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
 
   /*---------------------------------------------------------------------------*/
 
-  IIndexManager::VectorIndexSet BasicIndexManager::buildVectorIndexSet(const String name,
-      const ConstArrayView<Integer> localIds, const IAbstractFamily& family,
-      const Integer n)
+  IIndexManager::VectorIndexSet BasicIndexManager::buildVectorIndexSet(const String& name,
+      const ConstArrayView<Integer>& localIds, const IAbstractFamily& family,
+      Integer n)
   {
     VectorIndexSet ens(n);
     for (Integer i = 0; i < n; ++i) {
@@ -1273,7 +1257,7 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
   /*---------------------------------------------------------------------------*/
 
   IIndexManager::VectorIndexSet BasicIndexManager::buildVectorIndexSet(
-      const String name, const IAbstractFamily& family, const Integer n)
+      const String& name, const IAbstractFamily& family, Integer n)
   {
     UniqueArray<Int32> localIds = family.allLocalIds();
 
@@ -1290,7 +1274,7 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
 
   void BasicIndexManager::keepAlive(const IAbstractFamily* family)
   {
-    std::map<const IAbstractFamily*, Integer>::iterator finder =
+    auto finder =
         m_abstract_family_to_kind_map.find(family);
     if (finder == m_abstract_family_to_kind_map.end())
       return; // pas connu => on ne fait rien
@@ -1300,8 +1284,8 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
 
     IAbstractFamily* new_family = family->clone();
     m_abstract_families[finder->second].reset(new_family);
-    for (EntrySet::iterator i = m_entry_set.begin(); i != m_entry_set.end(); ++i) {
-      MyEntryImpl* entry = i->second;
+    for (auto & i : m_entry_set) {
+      MyEntryImpl* entry = i.second;
       if (&entry->getFamily() == family)
         entry->resetFamily(new_family);
     }
@@ -1311,7 +1295,7 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
 
   Integer BasicIndexManager::addNewAbstractFamily(const IAbstractFamily* family)
   {
-    std::map<const IAbstractFamily*, Integer>::iterator finder =
+    auto finder =
         m_abstract_family_to_kind_map.find(family);
     if (finder == m_abstract_family_to_kind_map.end()) {
       const Integer newKind = m_abstract_family_base_kind++;
