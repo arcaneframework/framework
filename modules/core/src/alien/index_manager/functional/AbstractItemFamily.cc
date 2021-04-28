@@ -220,7 +220,16 @@ AbstractFamily::AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
 
 /*---------------------------------------------------------------------------*/
 
+AbstractFamily::AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
+                               IMessagePassingMng* parallel_mng, ITraceMng* trace_mng)            : m_parallel_mng(parallel_mng), m_trace_mng(trace_mng)
+{
+  copy(m_unique_ids, uniqueIds);
+  m_owners.fill(parallel_mng->commRank());
 
+  for (Integer i = 0; i < uniqueIds.size(); ++i) {
+    m_uid2lid[uniqueIds[i]] = i;
+  }
+}
 /*---------------------------------------------------------------------------*/
 
     void
@@ -282,7 +291,6 @@ AbstractFamily::allLocalIds() const
     local_ids[i] = i;
   return local_ids;
 }
-
 
 
 } // namespace Alien
