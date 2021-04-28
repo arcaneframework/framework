@@ -28,20 +28,15 @@ struct OptionTypes
 {
   enum eSolver
   {
-    AMG,
     CG,
     GMRES,
-    BiCGStab,
-    Hybrid
+    BiCG,
   };
 
   enum ePreconditioner
   {
+    Jacobi,
     NoPC,
-    DiagPC,
-    AMGPC,
-    ParaSailsPC,
-    EuclidPC
   };
 };
 
@@ -79,7 +74,7 @@ struct Options
     return *this;
   }
 
-  Alien::PETSc::OptionTypes::ePreconditioner preconditioner_ = Alien::PETSc::OptionTypes::AMGPC;
+  Alien::PETSc::OptionTypes::ePreconditioner preconditioner_ = Alien::PETSc::OptionTypes::Jacobi;
   Alien::PETSc::OptionTypes::ePreconditioner preconditioner() const { return preconditioner_; }
   Options& preconditioner(Alien::PETSc::OptionTypes::ePreconditioner n)
   {
@@ -93,16 +88,12 @@ class OptionsUtils
  public:
   static OptionTypes::eSolver stringToSolverEnum(std::string solver_s)
   {
-    if (solver_s.compare("amg") == 0)
-      return OptionTypes::AMG;
-    else if (solver_s.compare("cg") == 0)
+    if (solver_s.compare("cg") == 0)
       return OptionTypes::CG;
     else if (solver_s.compare("gmres") == 0)
       return OptionTypes::GMRES;
-    else if (solver_s.compare("bicgstab") == 0)
-      return OptionTypes::BiCGStab;
-    else if (solver_s.compare("hybrid") == 0)
-      return OptionTypes::Hybrid;
+    else if (solver_s.compare("bicg") == 0)
+      return OptionTypes::BiCG;
     else
       throw Arccore::FatalErrorException(A_FUNCINFO, Arccore::String::format("solver enum name: {0} is not consistent with axl definition", solver_s));
   }
@@ -110,16 +101,12 @@ class OptionsUtils
   static std::string solverEnumToString(OptionTypes::eSolver solver)
   {
     switch (solver) {
-    case OptionTypes::AMG:
-      return "amg";
     case OptionTypes::CG:
       return "cg";
     case OptionTypes::GMRES:
       return "gmres";
-    case OptionTypes::BiCGStab:
-      return "bicgstab";
-    case OptionTypes::Hybrid:
-      return "hybrid";
+    case OptionTypes::BiCG:
+      return "bicg";
     default:
       throw Arccore::FatalErrorException(A_FUNCINFO, Arccore::String::format("Unmanaged PetscOptionTypes::eSolver value: {0}", solver));
     }
@@ -129,14 +116,8 @@ class OptionsUtils
   {
     if (preconditioner_s.compare("none") == 0)
       return OptionTypes::NoPC;
-    else if (preconditioner_s.compare("diag") == 0)
-      return OptionTypes::DiagPC;
-    else if (preconditioner_s.compare("amg") == 0)
-      return OptionTypes::AMGPC;
-    else if (preconditioner_s.compare("parasails") == 0)
-      return OptionTypes::ParaSailsPC;
-    else if (preconditioner_s.compare("euclid") == 0)
-      return OptionTypes::EuclidPC;
+    else if (preconditioner_s.compare("jacobi") == 0)
+      return OptionTypes::Jacobi;
     else
       throw Arccore::FatalErrorException(A_FUNCINFO, Arccore::String::format("preconditioner enum name: {0} is not consistent with axl definition", preconditioner_s));
   }
@@ -146,14 +127,8 @@ class OptionsUtils
     switch (preconditioner) {
     case OptionTypes::NoPC:
       return "none";
-    case OptionTypes::DiagPC:
-      return "diag";
-    case OptionTypes::AMGPC:
-      return "amg";
-    case OptionTypes::ParaSailsPC:
-      return "parasails";
-    case OptionTypes::EuclidPC:
-      return "euclid";
+    case OptionTypes::Jacobi:
+      return "jacobi";
     default:
       throw Arccore::FatalErrorException(A_FUNCINFO, Arccore::String::format("Unmanaged PetscOptionTypes::ePreconditioner value: {0}", preconditioner));
     }

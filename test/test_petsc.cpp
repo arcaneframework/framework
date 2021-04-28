@@ -17,6 +17,7 @@
  */
 
 #include <alien/petsc/backend.h>
+#include <alien/petsc/options.h>
 
 #include <iostream>
 
@@ -87,15 +88,14 @@ int test()
 
   tm->info() << "* x = A^-1 b";
 
-  //  auto options = Alien::PETSc::Options()
-  //          .numIterationsMax(100)
-  //          .stopCriteriaValue(1e-10)
-  //          .preconditioner(Alien::PETSc::OptionTypes::jacobi)
-  //          .solver(Alien::Hypre::OptionTypes::CG);
+  Alien::PETSc::Options options;
+  options.numIterationsMax(100);
+  options.stopCriteriaValue(1e-10);
+  options.preconditioner(Alien::PETSc::OptionTypes::Jacobi);
+  options.solver(Alien::PETSc::OptionTypes::CG);
   //
-  //  auto solver = Alien::Hypre::LinearSolver (options);
-
-  auto solver = Alien::PETSc::LinearSolver();
+  auto solver = Alien::PETSc::LinearSolver(options);
+  //auto solver = Alien::PETSc::LinearSolver();
 
   solver.solve(A, b, x);
 
