@@ -1,13 +1,12 @@
 
+#include <algorithm>
 #include <cstdlib>
 #include <iostream>
-#include <utility>
-#include <vector>
 #include <list>
 #include <map>
 #include <memory>
-#include <algorithm>
-
+#include <utility>
+#include <vector>
 
 #include <alien/utils/Precomp.h>
 #include <alien/utils/Trace.h>
@@ -38,9 +37,7 @@
 using namespace Arcane;
 #endif
 
-
 #include <alien/index_manager/functional/BasicIndexManager.h>
-
 
 // #define SPLIT_CONTAINER
 /* La version avec SPLIT_CONTAINER fait moins d'appel virtuel mais consomme un peu plus de
@@ -55,17 +52,17 @@ using namespace Arcane;
 
 namespace Alien {
 
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-  // Utilities
-  namespace { // Unnamed namespace to avoid conflicts at linking time.
+// Utilities
+namespace { // Unnamed namespace to avoid conflicts at linking time.
 
-    const Arccore::Integer KIND_SHIFT = 32;
-  }
+  const Arccore::Integer KIND_SHIFT = 32;
+}
 
 #ifdef USE_ARCANE_PARALLELMNG
-  namespace ArcaneParallelTest {
+namespace ArcaneParallelTest {
 #endif
 
   /*---------------------------------------------------------------------------*/
@@ -210,7 +207,7 @@ namespace Alien {
       m_defined_lids.add(localId);
       m_defined_indexes.add(pos);
 #else /* SPLIT_CONTAINER */
-      m_defined_lids.add(std::make_pair(localId, pos));
+    m_defined_lids.add(std::make_pair(localId, pos));
 #endif /* SPLIT_CONTAINER */
     }
 
@@ -221,7 +218,7 @@ namespace Alien {
 #ifdef SPLIT_CONTAINER
         if (m_defined_lids[i] == localId)
 #else /* SPLIT_CONTAINER */
-        if (m_defined_lids[i].first == localId)
+      if (m_defined_lids[i].first == localId)
 #endif /* SPLIT_CONTAINER */
         {
           m_defined_lids[i] = m_defined_lids.back();
@@ -240,10 +237,10 @@ namespace Alien {
     const UniqueArray<Integer>& definedLids() const { return m_defined_lids; }
     const UniqueArray<Integer>& definedIndexes() const { return m_defined_indexes; }
 #else /* SPLIT_CONTAINER */
-    const UniqueArray<std::pair<Integer, Integer>>& definedLids() const
-    {
-      return m_defined_lids;
-    }
+  const UniqueArray<std::pair<Integer, Integer>>& definedLids() const
+  {
+    return m_defined_lids;
+  }
 #endif /* SPLIT_CONTAINER */
 
     void freeDefinedLids()
@@ -252,7 +249,7 @@ namespace Alien {
       m_defined_lids.dispose();
       m_defined_indexes.dispose();
 #else /* SPLIT_CONTAINER */
-      m_defined_lids.dispose();
+    m_defined_lids.dispose();
 #endif /* SPLIT_CONTAINER */
       std::vector<bool>().swap(m_is_defined);
     }
@@ -270,15 +267,15 @@ namespace Alien {
     UniqueArray<Integer> m_defined_lids;
     UniqueArray<Integer> m_defined_indexes;
 #else /* SPLIT_CONTAINER */
-    UniqueArray<std::pair<Integer, Integer>> m_defined_lids;
+  UniqueArray<std::pair<Integer, Integer>> m_defined_lids;
 #endif /* SPLIT_CONTAINER */
 
    private:
     UniqueArray<Integer>
         m_all_items; //!< LocalIds des items gérés par cette entrée rangés own puis ghost
     UniqueArray<Integer> m_all_indices; //!< Indices 'own' dans la numérotation globale de
-                                        //!l'index-manager par cette entrée rangés own
-                                        //!puis ghost
+                                        //! l'index-manager par cette entrée rangés own
+                                        //! puis ghost
     Integer m_own_size; //!< Nombre d'items own dans les tableaux m_all_*
     Integer m_size;
 
@@ -291,28 +288,24 @@ namespace Alien {
 
   struct BasicIndexManager::EntrySendRequest
   {
-    EntrySendRequest()
-    {
-      ;
-    }
+    EntrySendRequest() { ; }
 
     ~EntrySendRequest()
     {
 #ifdef USE_ARCANE_PARALLELMNG
-       delete comm ;
+      delete comm;
 #endif
     }
 
     EntrySendRequest(const EntrySendRequest& esr)
     : comm(esr.comm)
     , count(esr.count)
-    {
-    }
+    {}
 #ifdef USE_ARCANE_PARALLELMNG
     SerializeMessage* comm = nullptr;
 #else
-    //Arccore::MessagePassing::ISerializeMessage* comm = nullptr;
-    Arccore::Ref<Arccore::MessagePassing::ISerializeMessage> comm;
+  // Arccore::MessagePassing::ISerializeMessage* comm = nullptr;
+  Arccore::Ref<Arccore::MessagePassing::ISerializeMessage> comm;
 #endif
     Integer count = 0;
 
@@ -324,27 +317,22 @@ namespace Alien {
 
   struct BasicIndexManager::EntryRecvRequest
   {
-    EntryRecvRequest()
-    {
-      ;
-    }
+    EntryRecvRequest() { ; }
 
     ~EntryRecvRequest()
     {
 #ifdef USE_ARCANE_PARALLELMNG
-       delete comm ;
+      delete comm;
 #endif
     }
 
     // err is unused if ALIEN_ASSERT is empty.
-    EntryRecvRequest(const EntrySendRequest& err ALIEN_UNUSED_PARAM)
-    {
-    }
+    EntryRecvRequest(const EntrySendRequest& err ALIEN_UNUSED_PARAM) {}
 
 #ifdef USE_ARCANE_PARALLELMNG
     SerializeMessage* comm = nullptr;
 #else
-    Arccore::Ref<Arccore::MessagePassing::ISerializeMessage> comm;
+  Arccore::Ref<Arccore::MessagePassing::ISerializeMessage> comm;
 #endif
     UniqueArray<Int64> ids;
 
@@ -355,31 +343,31 @@ namespace Alien {
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
   class BasicIndexManager::MyEntryEnumeratorImpl
-        : public IIndexManager::EntryEnumeratorImpl
+  : public IIndexManager::EntryEnumeratorImpl
+  {
+   protected:
+    EntrySet::const_iterator m_iter, m_end;
+
+   public:
+    MyEntryEnumeratorImpl(const EntrySet& entries)
+    : m_iter(entries.begin())
+    , m_end(entries.end())
     {
-     protected:
-      EntrySet::const_iterator m_iter, m_end;
+      ;
+    }
 
-     public:
-      MyEntryEnumeratorImpl(const EntrySet& entries)
-      : m_iter(entries.begin())
-      , m_end(entries.end())
-      {
-        ;
-      }
+    void moveNext() { ++m_iter; }
 
-      void moveNext() { ++m_iter; }
+    bool hasNext() const { return m_iter != m_end; }
 
-      bool hasNext() const { return m_iter != m_end; }
-
-      EntryImpl* get() const { return m_iter->second; }
-    };
+    EntryImpl* get() const { return m_iter->second; }
+  };
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 #ifdef USE_ARCANE_PARALLELMNG
   BasicIndexManager::BasicIndexManager(IParallelMng* parallelMng)
 #else
-  BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
+BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
 #endif
   : m_parallel_mng(parallelMng)
   , m_state(Undef)
@@ -487,8 +475,6 @@ namespace Alien {
 
   /*---------------------------------------------------------------------------*/
 
-
-
   /*---------------------------------------------------------------------------*/
 
   void BasicIndexManager::prepare()
@@ -518,7 +504,7 @@ namespace Alien {
       ConstArrayView<Integer> owners = family.owners(lids);
       ConstArrayView<Int64> uids = family.uids(lids);
 #else /* SPLIT_CONTAINER */
-      const UniqueArray<std::pair<Integer, Integer>>& lids = entry->definedLids();
+    const UniqueArray<std::pair<Integer, Integer>>& lids = entry->definedLids();
 #endif /* SPLIT_CONTAINER */
 
       for (Integer i = 0, is = lids.size(); i < is; ++i) {
@@ -530,10 +516,10 @@ namespace Alien {
         entry_index.push_back(InternalEntryIndex(entry, item_lid, entry_kind, item_uid,
             item_index, creation_index, item_owner));
 #else /* SPLIT_CONTAINER */
-        const Integer localid = lids[i].first;
-        IAbstractFamily::Item item = family.item(localid);
-        entry_index.push_back(InternalEntryIndex(entry, localid, entry_kind,
-            item.uniqueId(), lids[i].second, creation_index, item.owner()));
+      const Integer localid = lids[i].first;
+      IAbstractFamily::Item item = family.item(localid);
+      entry_index.push_back(InternalEntryIndex(entry, localid, entry_kind,
+          item.uniqueId(), lids[i].second, creation_index, item.owner()));
 #endif /* SPLIT_CONTAINER */
       }
       entry->freeDefinedLids();
@@ -588,7 +574,7 @@ namespace Alien {
 #ifdef USE_ARCANE_PARALLELMNG
     ISerializeMessageList* messageList;
 #else
-    Alien::Ref<ISerializeMessageList> messageList ;
+  Alien::Ref<ISerializeMessageList> messageList;
 #endif
 
     // Structure pour accumuler et structurer la collecte de l'information
@@ -616,7 +602,7 @@ namespace Alien {
 #ifdef USE_ARCANE_PARALLELMNG
     messageList = m_parallel_mng->createSerializeMessageList();
 #else
-    messageList = Arccore::MessagePassing::mpCreateSerializeMessageListRef(m_parallel_mng);
+  messageList = Arccore::MessagePassing::mpCreateSerializeMessageListRef(m_parallel_mng);
 #endif
     // Contruction de la table de communications + préparation des messages d'envoi
     UniqueArray<Integer> sendToDomains(2 * m_parallel_mng->commSize(), 0);
@@ -648,26 +634,26 @@ namespace Alien {
         sbuf.put(nameString);
         sbuf.put(request.count);
 #else
-        request.comm = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
-                  MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
-                  Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
-        messageList->addMessage(request.comm.get());
+      request.comm = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
+          MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
+          Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
+      messageList->addMessage(request.comm.get());
 
-        auto sbuf = request.comm->serializer();
-        sbuf->setMode(Alien::ISerializer::ModeReserve); // phase préparatoire
-        sbuf->reserve(nameString); // Chaine de caractère du nom de l'entrée
-        sbuf->reserveInteger(1); // Nb d'item
-        sbuf->reserve(Alien::ISerializer::DT_Int64, request.count); // Les uid
-        sbuf->allocateBuffer(); // allocation mémoire
-        sbuf->setMode(Alien::ISerializer::ModePut);
-        sbuf->put(nameString);
-        sbuf->put(request.count);
+      auto sbuf = request.comm->serializer();
+      sbuf->setMode(Alien::ISerializer::ModeReserve); // phase préparatoire
+      sbuf->reserve(nameString); // Chaine de caractère du nom de l'entrée
+      sbuf->reserveInteger(1); // Nb d'item
+      sbuf->reserve(Alien::ISerializer::DT_Int64, request.count); // Les uid
+      sbuf->allocateBuffer(); // allocation mémoire
+      sbuf->setMode(Alien::ISerializer::ModePut);
+      sbuf->put(nameString);
+      sbuf->put(request.count);
 #endif
       }
     }
 
     // 2 - Accumulation des valeurs à demander
-     for (EntryIndexMap::const_iterator i = entry_index.begin(); i != entry_index.end();
+    for (EntryIndexMap::const_iterator i = entry_index.begin(); i != entry_index.end();
          ++i) {
       const InternalEntryIndex& entryIndex = *i;
       MyEntryImpl* entryImpl = entryIndex.m_entry;
@@ -677,17 +663,17 @@ namespace Alien {
       if (item_owner != m_local_owner)
         sendRequests[item_owner][entryImpl].comm->buffer().put(item_uid);
 #else
-      if (item_owner != m_local_owner)
-        sendRequests[item_owner][entryImpl].comm->serializer()->put(item_uid);
+    if (item_owner != m_local_owner)
+      sendRequests[item_owner][entryImpl].comm->serializer()->put(item_uid);
 #endif
     }
 
     // Réception des annonces de demandes (les nombres d'entrée + taille)
-     UniqueArray<Integer> recvFromDomains(2 * m_parallel_mng->commSize());
+    UniqueArray<Integer> recvFromDomains(2 * m_parallel_mng->commSize());
 #ifdef USE_ARCANE_PARALLELMNG
     m_parallel_mng->allToAll(sendToDomains, recvFromDomains, 2);
 #else
-    Arccore::MessagePassing::mpAllToAll(m_parallel_mng, sendToDomains, recvFromDomains, 2);
+  Arccore::MessagePassing::mpAllToAll(m_parallel_mng, sendToDomains, recvFromDomains, 2);
 #endif
 
     // Table des requetes exterieures (reçoit les uid et renverra les EntryIndex finaux)
@@ -707,14 +693,14 @@ namespace Alien {
         recvRequest.comm = recvMsg;
         messageList->addMessage(recvMsg);
 #else
-        auto recvMsg = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
-            MessageRank(m_parallel_mng->commRank()), MessageRank(isd),
-            Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
-        recvRequests.push_back(EntryRecvRequest());
-        EntryRecvRequest& recvRequest = recvRequests.back();
-        recvRequest.comm = recvMsg;
-        messageList->addMessage(recvMsg.get());
-      #endif
+      auto recvMsg = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
+          MessageRank(m_parallel_mng->commRank()), MessageRank(isd),
+          Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
+      recvRequests.push_back(EntryRecvRequest());
+      EntryRecvRequest& recvRequest = recvRequests.back();
+      recvRequest.comm = recvMsg;
+      messageList->addMessage(recvMsg.get());
+#endif
       }
     }
 
@@ -725,15 +711,15 @@ namespace Alien {
     delete messageList;
     messageList = NULL; // Destruction propre
 #else
-    messageList->waitMessages(Arccore::MessagePassing::WaitAll);
-    messageList.reset() ;
+  messageList->waitMessages(Arccore::MessagePassing::WaitAll);
+  messageList.reset();
 #endif
 
     // Pour les réponses vers les demandeurs
 #ifdef USE_ARCANE_PARALLELMNG
     messageList = m_parallel_mng->createSerializeMessageList();
 #else
-    messageList = Arccore::MessagePassing::mpCreateSerializeMessageListRef(m_parallel_mng);
+  messageList = Arccore::MessagePassing::mpCreateSerializeMessageListRef(m_parallel_mng);
 #endif
 
     // 3 - Réception et mise en base local des demandes
@@ -755,16 +741,16 @@ namespace Alien {
         sbuf.get(recvRequest.ids);
         ARCANE_ASSERT((uidCount == recvRequest.ids.size()), ("Inconsistency detected"));
 #else
-        auto sbuf = recvRequest.comm->serializer();
-        sbuf->setMode(Alien::ISerializer::ModeGet);
+      auto sbuf = recvRequest.comm->serializer();
+      sbuf->setMode(Alien::ISerializer::ModeGet);
 
-        sbuf->get(nameString);
-        uidCount = sbuf->getInteger();
-        //  if (m_trace) m_trace->pinfo() << nameString << " received with " << uidCount <<
-        //  " ids";
-        recvRequest.ids.resize(uidCount);
-        sbuf->getSpan(recvRequest.ids);
-        ALIEN_ASSERT((uidCount == recvRequest.ids.size()), ("Inconsistency detected"));
+      sbuf->get(nameString);
+      uidCount = sbuf->getInteger();
+      //  if (m_trace) m_trace->pinfo() << nameString << " received with " << uidCount <<
+      //  " ids";
+      recvRequest.ids.resize(uidCount);
+      sbuf->getSpan(recvRequest.ids);
+      ALIEN_ASSERT((uidCount == recvRequest.ids.size()), ("Inconsistency detected"));
 #endif
 #ifndef NO_USER_WARNING
 #ifdef _MSC_VER
@@ -839,22 +825,22 @@ namespace Alien {
         sbuf.put(nameString);
         sbuf.put(uidCount);
 #else
-        auto dest = recvRequest.comm->destination(); // Attention à l'ordre bizarre
-        auto orig = recvRequest.comm->source(); //       de SerializeMessage
-        recvRequest.comm.reset();
-        recvRequest.comm = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
-                  orig, dest, Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
-        messageList->addMessage(recvRequest.comm.get());
+      auto dest = recvRequest.comm->destination(); // Attention à l'ordre bizarre
+      auto orig = recvRequest.comm->source(); //       de SerializeMessage
+      recvRequest.comm.reset();
+      recvRequest.comm = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
+          orig, dest, Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
+      messageList->addMessage(recvRequest.comm.get());
 
-        auto sbuf = recvRequest.comm->serializer();
-        sbuf->setMode(Alien::ISerializer::ModeReserve); // phase préparatoire
-        sbuf->reserve(nameString); // Chaine de caractère du nom de l'entrée
-        sbuf->reserveInteger(1); // Nb d'item
-        sbuf->reserveInteger(uidCount); // Les index
-        sbuf->allocateBuffer(); // allocation mémoire
-        sbuf->setMode(Alien::ISerializer::ModePut);
-        sbuf->put(nameString);
-        sbuf->put(uidCount);
+      auto sbuf = recvRequest.comm->serializer();
+      sbuf->setMode(Alien::ISerializer::ModeReserve); // phase préparatoire
+      sbuf->reserve(nameString); // Chaine de caractère du nom de l'entrée
+      sbuf->reserveInteger(1); // Nb d'item
+      sbuf->reserveInteger(uidCount); // Les index
+      sbuf->allocateBuffer(); // allocation mémoire
+      sbuf->setMode(Alien::ISerializer::ModePut);
+      sbuf->put(nameString);
+      sbuf->put(uidCount);
 #endif
       }
     }
@@ -870,7 +856,7 @@ namespace Alien {
 #ifdef USE_ARCANE_PARALLELMNG
     m_parallel_mng->allGather(myLocalSize, allLocalSizes);
 #else
-    Arccore::MessagePassing::mpAllGather(m_parallel_mng, myLocalSize, allLocalSizes);
+  Arccore::MessagePassing::mpAllGather(m_parallel_mng, myLocalSize, allLocalSizes);
 #endif
     // Table de ré-indexation (EntryIndex->Integer)
     Alien::UniqueArray<Integer> entry_reindex(m_local_entry_count + m_global_entry_count);
@@ -908,14 +894,14 @@ namespace Alien {
       SerializeBuffer& sbuf = recvRequest.comm->buffer();
       UniqueArray<Int64>& ids = recvRequest.ids;
       for (Integer j = 0; j < ids.size(); ++j) {
-         sbuf.putInteger(
+        sbuf.putInteger(
             entry_reindex[ids[j] + m_global_entry_count]); // Via la table de réindexation
 #else
-        auto sbuf = recvRequest.comm->serializer();
-        auto& ids = recvRequest.ids;
-        for (Integer j = 0; j < ids.size(); ++j) {
-          sbuf->putInteger(
-              entry_reindex[ids[j] + m_global_entry_count]); // Via la table de réindexation
+    auto sbuf = recvRequest.comm->serializer();
+    auto& ids = recvRequest.ids;
+    for (Integer j = 0; j < ids.size(); ++j) {
+      sbuf->putInteger(
+          entry_reindex[ids[j] + m_global_entry_count]); // Via la table de réindexation
 #endif
       }
     }
@@ -924,7 +910,7 @@ namespace Alien {
 #ifdef USE_ARCANE_PARALLELMNG
     typedef std::list<SerializeMessage*> ReturnedRequests;
 #else
-    typedef std::list<Alien::Ref<Alien::ISerializeMessage>> ReturnedRequests;
+  typedef std::list<Alien::Ref<Alien::ISerializeMessage>> ReturnedRequests;
 #endif
     ReturnedRequests returnedRequests;
 
@@ -963,12 +949,12 @@ namespace Alien {
         messageList->addMessage(msg);
 
 #else
-        auto msg = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
-                  MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
-                  Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
+      auto msg = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
+          MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
+          Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
 
-        returnedRequests.push_back(msg);
-        messageList->addMessage(msg.get());
+      returnedRequests.push_back(msg);
+      messageList->addMessage(msg.get());
 #endif
 
         fastReturnMap[nameString][destDomainId] = &request;
@@ -982,8 +968,8 @@ namespace Alien {
     delete messageList;
     messageList = NULL; // Destruction propre de l'ancienne liste
 #else
-    messageList->waitMessages(Arccore::MessagePassing::WaitAll);
-    messageList.reset() ;
+  messageList->waitMessages(Arccore::MessagePassing::WaitAll);
+  messageList.reset();
 #endif
 
     // 6 - Traitement des réponses
@@ -1008,19 +994,19 @@ namespace Alien {
 #endif
       ARCANE_ASSERT((request.count == idCount), ("Inconsistency detected"));
 #else
-      auto& message = *i;
-      auto origDomainId = message->destination().value();
-      auto sbuf = message->serializer();
-      sbuf->setMode(Alien::ISerializer::ModeGet);
-      String nameString;
-      sbuf->get(nameString);
-      ALIEN_ASSERT(
-          (fastReturnMap[nameString][origDomainId] != NULL), ("Inconsistency detected"));
-      EntrySendRequest& request = *fastReturnMap[nameString][origDomainId];
-      request.comm = *i; // Reconnection pour accès rapide depuis l'EntrySendRequest
+    auto& message = *i;
+    auto origDomainId = message->destination().value();
+    auto sbuf = message->serializer();
+    sbuf->setMode(Alien::ISerializer::ModeGet);
+    String nameString;
+    sbuf->get(nameString);
+    ALIEN_ASSERT(
+        (fastReturnMap[nameString][origDomainId] != NULL), ("Inconsistency detected"));
+    EntrySendRequest& request = *fastReturnMap[nameString][origDomainId];
+    request.comm = *i; // Reconnection pour accès rapide depuis l'EntrySendRequest
 
-      const Integer idCount = sbuf->getInteger();
-      ALIEN_ASSERT((request.count == idCount), ("Inconsistency detected"));
+    const Integer idCount = sbuf->getInteger();
+    ALIEN_ASSERT((request.count == idCount), ("Inconsistency detected"));
 #endif
     }
 
@@ -1038,8 +1024,8 @@ namespace Alien {
         SerializeBuffer& sbuf = request.comm->buffer();
         const Integer newIndex = sbuf.getInteger();
 #else
-        auto sbuf = request.comm->serializer();
-        const Integer newIndex = sbuf->getInteger();
+      auto sbuf = request.comm->serializer();
+      const Integer newIndex = sbuf->getInteger();
 #endif
         entry_reindex[i->m_index + m_global_entry_count] = newIndex;
         i->m_index = newIndex;
@@ -1057,8 +1043,7 @@ namespace Alien {
 
   void BasicIndexManager::sequential_prepare(EntryIndexMap& entry_index)
   {
-    ALIEN_ASSERT((m_parallel_mng->commSize() <= 1 ),
-        ("Sequential mode expected"));
+    ALIEN_ASSERT((m_parallel_mng->commSize() <= 1), ("Sequential mode expected"));
     ALIEN_ASSERT((m_global_entry_count == 0),
         ("Unexpected global entries (%d)", m_global_entry_count));
 
@@ -1069,8 +1054,7 @@ namespace Alien {
      */
 
     // Table de ré-indexation (EntryIndex->Integer)
-    UniqueArray<Integer> entry_reindex(
-        m_local_entry_count + m_local_removed_entry_count);
+    UniqueArray<Integer> entry_reindex(m_local_entry_count + m_local_removed_entry_count);
     entry_reindex.fill(-1); // valeur de type Erreur par défaut
 
     // Calcul de la taille des indices par entrée
@@ -1135,10 +1119,7 @@ namespace Alien {
 
   /*---------------------------------------------------------------------------*/
 
-
-
   /*---------------------------------------------------------------------------*/
-
 
   /*---------------------------------------------------------------------------*/
 
@@ -1259,7 +1240,6 @@ namespace Alien {
     // return a.m_creation_index < b.m_creation_index;
   }
 
-
   /*---------------------------------------------------------------------------*/
 
   IIndexManager::ScalarIndexSet BasicIndexManager::buildScalarIndexSet(const String name,
@@ -1280,8 +1260,6 @@ namespace Alien {
     defineIndex(en, localIds.view());
     return en;
   }
-
-
 
   /*---------------------------------------------------------------------------*/
 
@@ -1355,16 +1333,13 @@ namespace Alien {
     }
   }
 
-
-
 #ifdef USE_ARCANE_PARALLELMNG
 }
 #endif
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // namespace Alien
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

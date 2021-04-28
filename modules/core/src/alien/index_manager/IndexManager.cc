@@ -17,9 +17,9 @@
  */
 
 #include <algorithm>
-#include <list>
 #include <cstdlib>
 #include <iostream>
+#include <list>
 #include <map>
 #include <utility>
 #include <vector>
@@ -98,17 +98,13 @@ struct IndexManager::EntryLocalId
 
 struct IndexManager::EntrySendRequest
 {
-  EntrySendRequest()
-  {}
+  EntrySendRequest() {}
 
-  ~EntrySendRequest()
-  {
-  }
+  ~EntrySendRequest() {}
 
   EntrySendRequest(const EntrySendRequest& esr)
   : count(esr.count)
-  {
-  }
+  {}
 
   Arccore::Ref<Arccore::MessagePassing::ISerializeMessage> comm;
   Integer count = 0;
@@ -121,15 +117,11 @@ struct IndexManager::EntrySendRequest
 
 struct IndexManager::EntryRecvRequest
 {
-  EntryRecvRequest()
-  {}
+  EntryRecvRequest() {}
 
-  ~EntryRecvRequest()
-  {}
+  ~EntryRecvRequest() {}
 
-  EntryRecvRequest(const EntrySendRequest& err)
-  {
-  }
+  EntryRecvRequest(const EntrySendRequest& err) {}
 
   Arccore::Ref<Arccore::MessagePassing::ISerializeMessage> comm;
   UniqueArray<Int64> ids;
@@ -141,7 +133,8 @@ struct IndexManager::EntryRecvRequest
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IndexManager::IndexManager(Alien::IMessagePassingMng* parallelMng, Alien::ITraceMng* traceMng)
+IndexManager::IndexManager(
+    Alien::IMessagePassingMng* parallelMng, Alien::ITraceMng* traceMng)
 : m_parallel_mng(parallelMng)
 , m_trace_mng(traceMng)
 , m_local_owner(0)
@@ -466,12 +459,13 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
     const InternalEntryIndex& entryIndex = *i;
     const Integer item_owner = entryIndex.m_item_owner;
     if (item_owner != m_local_owner) {
-          //if (m_trace_mng) m_trace_mng->pinfo() << entryIndex.m_item_localid << " : " << entryIndex.m_item_uid <<
-          //" is owned by " << item_owner << " with localIndex=" << entryIndex.m_item_index;
+      // if (m_trace_mng) m_trace_mng->pinfo() << entryIndex.m_item_localid << " : " <<
+      // entryIndex.m_item_uid << " is owned by " << item_owner << " with localIndex=" <<
+      //entryIndex.m_item_index;
       parallel->sendRequests[item_owner][entryIndex.m_entry_uid].count++;
     } else {
-          //if (m_trace_mng) m_trace_mng->pinfo() << entryIndex.m_item_localid << " : " << entryIndex.m_item_uid <<
-          //" is local with localIndex=" << entryIndex.m_item_index;
+      // if (m_trace_mng) m_trace_mng->pinfo() << entryIndex.m_item_localid << " : " <<
+      // entryIndex.m_item_uid << " is local with localIndex=" << entryIndex.m_item_index;
     }
   }
 
@@ -534,8 +528,8 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
   for (Integer isd = 0, nsd = m_parallel_mng->commSize(); isd < nsd; ++isd) {
     Integer recvCount = recvFromDomains[2 * isd + 0];
     while (recvCount-- > 0) {
-          //if (m_trace_mng) m_trace_mng->pinfo() << "will receive an entry with " <<
-          //recvFromDomains[2*isd+1] << " uid from " << isd;
+      // if (m_trace_mng) m_trace_mng->pinfo() << "will receive an entry with " <<
+      // recvFromDomains[2*isd+1] << " uid from " << isd;
       auto recvMsg = Arccore::MessagePassing::Mpi::BasicSerializeMessage::create(
           MessageRank(m_parallel_mng->commRank()), MessageRank(isd),
           Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
@@ -613,8 +607,7 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
         const Integer current_item_lid = lids[j];
         const Int64 current_item_uid = ids[j];
         const Integer current_item_owner = owners[j];
-         if (current_item_owner != m_local_owner)
-        {
+        if (current_item_owner != m_local_owner) {
           throw FatalErrorException("Non local EntryIndex requested");
         }
         InternalEntryIndex lookup_entry{ entry_uid, entry_kind, current_item_uid,
@@ -682,7 +675,6 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
   for (Integer i = 0; i < m_parallel_mng->commSize(); ++i) {
     m_global_entry_count += allLocalSizes[i];
   }
-
 }
 
 /*---------------------------------------------------------------------------*/
@@ -690,7 +682,7 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
 void
 IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
 {
-   ALIEN_ASSERT((m_parallel_mng->commSize() > 1), ("Parallel mode expected"));
+  ALIEN_ASSERT((m_parallel_mng->commSize() > 1), ("Parallel mode expected"));
 
   // Table de ré-indexation (EntryIndex->Integer)
   Alien::UniqueArray<Integer> entry_reindex(m_local_entry_count + m_global_entry_count);
@@ -706,7 +698,6 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
       entry_reindex[i->m_item_index + m_global_entry_offset] =
           newIndex; // Table de translation
       i->m_item_index = newIndex;
-
     }
   }
 
@@ -743,7 +734,6 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
       const Integer entryImpl = j->first;
       const String nameString = m_entries[entryImpl]->getName();
 
-
       // On ne peut pas associer directement le message à cette entrée
       // : dans le cas d'échange multiple il n'y pas de garantie d'arrivée
       // à la bonne place
@@ -765,8 +755,8 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
   // Traitement des communications
   parallel->messageList->processPendingMessages();
 
-  //parallel->messageList->waitMessages(Arccore::MessagePassing::WaitSomeNonBlocking);
-  //parallel->messageList->waitMessages(Arccore::MessagePassing::WaitSome);
+  // parallel->messageList->waitMessages(Arccore::MessagePassing::WaitSomeNonBlocking);
+  // parallel->messageList->waitMessages(Arccore::MessagePassing::WaitSome);
   parallel->messageList->waitMessages(Arccore::MessagePassing::WaitAll);
   // delete parallel->messageList;
   // parallel->messageList = NULL; // Destruction propre de l'ancienne liste
@@ -809,7 +799,6 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
       i->m_item_index = newIndex;
     }
   }
-
 }
 
 /*---------------------------------------------------------------------------*/

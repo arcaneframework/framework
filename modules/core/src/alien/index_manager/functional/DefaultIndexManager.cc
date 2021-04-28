@@ -48,7 +48,8 @@ DefaultIndexManager::DefaultIndexManager(
 }
 /*---------------------------------------------------------------------------*/
 
-UniqueArray<Integer> DefaultIndexManager::operator[](Integer label) const
+UniqueArray<Integer>
+DefaultIndexManager::operator[](Integer label) const
 {
   return m_index_manager.getIndexes(m_index_sets[label]);
 }

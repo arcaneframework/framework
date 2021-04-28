@@ -1,23 +1,21 @@
 #pragma once
 
+#include <alien/index_manager/IIndexManager.h>
+#include <alien/utils/Precomp.h>
 #include <map>
 #include <memory>
 #include <vector>
-#include <alien/index_manager/IIndexManager.h>
-#include <alien/utils/Precomp.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Alien {
 
-
 #ifdef USE_ARCANE_PARALLELMNG
-  namespace ArcaneParallelTest {
+namespace ArcaneParallelTest {
 #endif
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -29,13 +27,12 @@ namespace Alien {
   class ALIEN_EXPORT BasicIndexManager : public IIndexManager
   {
    public:
-
    public:
     //! Constructeur de la classe
 #ifdef USE_ARCANE_PARALLELMNG
-   BasicIndexManager(Arcane::IParallelMng* parallelMng);
+    BasicIndexManager(Arcane::IParallelMng* parallelMng);
 #else
-    BasicIndexManager(Alien::IMessagePassingMng* parallelMng);
+  BasicIndexManager(Alien::IMessagePassingMng* parallelMng);
 #endif
     //! Destructeur de la classe
     virtual ~BasicIndexManager();
@@ -72,7 +69,6 @@ namespace Alien {
     //! Construction d'un enumerateur sur les \a Entry
     EntryEnumerator enumerateEntry() const;
 
-
     //! Construit une nouvelle entrée scalaire sur un ensemble d'entités abstraites
     ScalarIndexSet buildScalarIndexSet(const Arccore::String name,
         const Arccore::IntegerConstArrayView localIds, const IAbstractFamily& family);
@@ -81,7 +77,6 @@ namespace Alien {
     //! abstraite
     ScalarIndexSet buildScalarIndexSet(
         const Arccore::String name, const IAbstractFamily& family);
-
 
     //! Construit une nouvelle entrée vectoriellesur un ensemble d'entités abstraites
     /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
@@ -94,7 +89,6 @@ namespace Alien {
     /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
     VectorIndexSet buildVectorIndexSet(const Arccore::String name,
         const IAbstractFamily& family, const Arccore::Integer n);
-
 
     //! Fournit une table de translation indexé par les items
     Arccore::UniqueArray<Arccore::Integer> getIndexes(const ScalarIndexSet& entry) const;
@@ -109,7 +103,7 @@ namespace Alien {
 #ifdef USE_ARCANE_PARALLELMNG
     Arcane::IParallelMng* parallelMng() const { return m_parallel_mng; }
 #else
-    Alien::IMessagePassingMng* parallelMng() const { return m_parallel_mng; }
+  Alien::IMessagePassingMng* parallelMng() const { return m_parallel_mng; }
 #endif
     //! define null index : default = -1, if true null_index = max_index+1
     void setMaxNullIndexOpt(bool flag) { m_max_null_index_opt = flag; }
@@ -130,9 +124,9 @@ namespace Alien {
 #ifdef USE_ARCANE_PARALLELMNG
     Arcane::IParallelMng* m_parallel_mng;
 #else
-    Alien::IMessagePassingMng* m_parallel_mng = nullptr;
+  Alien::IMessagePassingMng* m_parallel_mng = nullptr;
 #endif
-    Arccore::Integer m_local_owner = 0 ; //!< Identifiant du 'propriétaire' courant
+    Arccore::Integer m_local_owner = 0; //!< Identifiant du 'propriétaire' courant
 
     enum State
     {
@@ -143,13 +137,13 @@ namespace Alien {
 
     Arccore::ITraceMng* m_trace = nullptr;
 
-    Arccore::Integer m_local_entry_count = 0 ;
-    Arccore::Integer m_global_entry_count = 0 ;
-    Arccore::Integer m_global_entry_offset = 0 ;
-    Arccore::Integer m_local_removed_entry_count = 0 ;
-    Arccore::Integer m_global_removed_entry_count = 0 ;
+    Arccore::Integer m_local_entry_count = 0;
+    Arccore::Integer m_global_entry_count = 0;
+    Arccore::Integer m_global_entry_offset = 0;
+    Arccore::Integer m_local_removed_entry_count = 0;
+    Arccore::Integer m_global_removed_entry_count = 0;
 
-    bool m_max_null_index_opt = false ;
+    bool m_max_null_index_opt = false;
 
     class MyEntryImpl;
     class MyEntryEnumeratorImpl;
@@ -166,8 +160,7 @@ namespace Alien {
       , m_index(index)
       // , m_creation_index(creation_index)
       , m_owner(owner)
-      {
-      }
+      {}
       MyEntryImpl* m_entry;
       Arccore::Int64 m_uid;
       Arccore::Integer m_localid, m_kind, m_index;
@@ -192,11 +185,11 @@ namespace Alien {
     EntrySet m_entry_set;
 
     //! Index de creation des entrées
-    Arccore::Integer m_creation_index = 0 ;
+    Arccore::Integer m_creation_index = 0;
 
     //! Famille des familles abstraites associées aux familles du maillage
 
-    Arccore::Integer m_abstract_family_base_kind = 0 ;
+    Arccore::Integer m_abstract_family_base_kind = 0;
 
     // TODO: why a shared_ptr here ?
     std::map<Arccore::Integer, std::shared_ptr<IAbstractFamily>>

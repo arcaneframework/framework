@@ -93,7 +93,8 @@ class ALIEN_EXPORT IndexManager
   };
 
  public:
-  IndexManager(Alien::IMessagePassingMng* parallelMng, Alien::ITraceMng* traceMng=nullptr);
+  IndexManager(
+      Alien::IMessagePassingMng* parallelMng, Alien::ITraceMng* traceMng = nullptr);
 
   virtual ~IndexManager();
 
@@ -236,7 +237,7 @@ class ALIEN_EXPORT IndexManager
 
  private:
   Alien::IMessagePassingMng* m_parallel_mng = nullptr;
-  Alien::ITraceMng*          m_trace_mng    = nullptr;
+  Alien::ITraceMng* m_trace_mng = nullptr;
   Integer m_local_owner; //!< current owner.
 
   enum State

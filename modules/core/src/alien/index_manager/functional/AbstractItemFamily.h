@@ -18,9 +18,9 @@
 
 #pragma once
 
-#include <unordered_map>
-#include <alien/index_manager/IAbstractFamily.h>
 #include "alien/index_manager/IIndexManager.h"
+#include <alien/index_manager/IAbstractFamily.h>
+#include <unordered_map>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -38,15 +38,14 @@ class ALIEN_EXPORT AbstractItemFamily : public IAbstractFamily
   AbstractItemFamily(const AbstractItemFamily& family);
 
   /*! Build a family for locally known unique ids.
-     *
-     * @param uniqueIds Array of locally known uniqueIds.
-     * @param owners Array of item owners
-     * @param parallel_mng Parallel Manager.
-     */
+   *
+   * @param uniqueIds Array of locally known uniqueIds.
+   * @param owners Array of item owners
+   * @param parallel_mng Parallel Manager.
+   */
   AbstractItemFamily(const ConstArrayView<Int64> uniqueIds,
-                     const ConstArrayView<Integer> owners,
-                     IMessagePassingMng* parallel_mng,
-                     ITraceMng* trace_mng=nullptr) ;
+      const ConstArrayView<Integer> owners, IMessagePassingMng* parallel_mng,
+      ITraceMng* trace_mng = nullptr);
 
   /*! Build a family for locally known unique ids.
    *
@@ -55,11 +54,10 @@ class ALIEN_EXPORT AbstractItemFamily : public IAbstractFamily
    * @param ghost_owners Array of ghost item owners
    * @param parallel_mng Parallel Manager.
    */
-  AbstractItemFamily(const ConstArrayView<Int64>   uniqueIds,
-                     const ConstArrayView<Int64>   ghost_uniqueIds,
-                     const ConstArrayView<Integer> ghost_owners,
-                     IMessagePassingMng* parallel_mng,
-                     ITraceMng* trace_mng=nullptr);
+  AbstractItemFamily(const ConstArrayView<Int64> uniqueIds,
+      const ConstArrayView<Int64> ghost_uniqueIds,
+      const ConstArrayView<Integer> ghost_owners, IMessagePassingMng* parallel_mng,
+      ITraceMng* trace_mng = nullptr);
 
   /*! Build a family for locally owned unique ids.
    *
@@ -67,8 +65,7 @@ class ALIEN_EXPORT AbstractItemFamily : public IAbstractFamily
    * @param parallel_mng Parallel Manager.
    */
   AbstractItemFamily(const ConstArrayView<Int64> uniqueIds,
-                     IMessagePassingMng* parallel_mng,
-                     ITraceMng* trace_mng=nullptr);
+      IMessagePassingMng* parallel_mng, ITraceMng* trace_mng = nullptr);
 
   virtual ~AbstractItemFamily() {}
 
@@ -78,8 +75,8 @@ class ALIEN_EXPORT AbstractItemFamily : public IAbstractFamily
  public:
   Int32 maxLocalId() const { return m_unique_ids.size(); }
 
-  void uniqueIdToLocalId(ArrayView<Int32> localIds,
-                         ConstArrayView<Int64> uniqueIds) const;
+  void uniqueIdToLocalId(
+      ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const;
 
   IAbstractFamily::Item item(Int32 localId) const;
 
@@ -91,10 +88,10 @@ class ALIEN_EXPORT AbstractItemFamily : public IAbstractFamily
 
  private:
   IMessagePassingMng* m_parallel_mng = nullptr;
-  ITraceMng*          m_trace_mng    = nullptr ;
+  ITraceMng* m_trace_mng = nullptr;
   UniqueArray<Int64> m_unique_ids;
   UniqueArray<Integer> m_owners;
-  std::unordered_map<Int64,Integer> m_uid2lid ;
+  std::unordered_map<Int64, Integer> m_uid2lid;
 };
 
 class ALIEN_EXPORT AbstractFamily : public IIndexManager::IAbstractFamily
@@ -103,15 +100,14 @@ class ALIEN_EXPORT AbstractFamily : public IIndexManager::IAbstractFamily
   AbstractFamily(const AbstractFamily& family);
 
   /*! Build a family for locally known unique ids.
-     *
-     * @param uniqueIds Array of locally known uniqueIds.
-     * @param owners Array of item owners
-     * @param parallel_mng Parallel Manager.
-     */
+   *
+   * @param uniqueIds Array of locally known uniqueIds.
+   * @param owners Array of item owners
+   * @param parallel_mng Parallel Manager.
+   */
   AbstractFamily(const ConstArrayView<Int64> uniqueIds,
-                     const ConstArrayView<Integer> owners,
-                     IMessagePassingMng* parallel_mng,
-                     ITraceMng* trace_mng=nullptr) ;
+      const ConstArrayView<Integer> owners, IMessagePassingMng* parallel_mng,
+      ITraceMng* trace_mng = nullptr);
 
   /*! Build a family for locally known unique ids.
    *
@@ -120,11 +116,10 @@ class ALIEN_EXPORT AbstractFamily : public IIndexManager::IAbstractFamily
    * @param ghost_owners Array of ghost item owners
    * @param parallel_mng Parallel Manager.
    */
-  AbstractFamily(const ConstArrayView<Int64>   uniqueIds,
-                     const ConstArrayView<Int64>   ghost_uniqueIds,
-                     const ConstArrayView<Integer> ghost_owners,
-                     IMessagePassingMng* parallel_mng,
-                     ITraceMng* trace_mng=nullptr);
+  AbstractFamily(const ConstArrayView<Int64> uniqueIds,
+      const ConstArrayView<Int64> ghost_uniqueIds,
+      const ConstArrayView<Integer> ghost_owners, IMessagePassingMng* parallel_mng,
+      ITraceMng* trace_mng = nullptr);
 
   /*! Build a family for locally owned unique ids.
    *
@@ -136,9 +131,8 @@ class ALIEN_EXPORT AbstractFamily : public IIndexManager::IAbstractFamily
    * Local items then others ?
    * Owners array is built in parallel ?
    */
-  AbstractFamily(const ConstArrayView<Int64> uniqueIds,
-                 IMessagePassingMng* parallel_mng,
-                 ITraceMng* trace_mng=nullptr);
+  AbstractFamily(const ConstArrayView<Int64> uniqueIds, IMessagePassingMng* parallel_mng,
+      ITraceMng* trace_mng = nullptr);
 
   virtual ~AbstractFamily() {}
 
@@ -148,23 +142,23 @@ class ALIEN_EXPORT AbstractFamily : public IIndexManager::IAbstractFamily
  public:
   Int32 maxLocalId() const { return m_unique_ids.size(); }
 
-  void uniqueIdToLocalId(ArrayView<Int32> localIds,
-                         ConstArrayView<Int64> uniqueIds) const;
+  void uniqueIdToLocalId(
+      ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const;
 
   IAbstractFamily::Item item(Int32 localId) const;
 
-  Arccore::SharedArray<Arccore::Integer>  owners(ConstArrayView<Int32> localIds) const;
+  Arccore::SharedArray<Arccore::Integer> owners(ConstArrayView<Int32> localIds) const;
 
-  Arccore::SharedArray<Arccore::Int64>  uids(ConstArrayView<Int32> localIds) const;
+  Arccore::SharedArray<Arccore::Int64> uids(ConstArrayView<Int32> localIds) const;
 
   Arccore::SharedArray<Arccore::Int32> allLocalIds() const;
 
  private:
   IMessagePassingMng* m_parallel_mng = nullptr;
-  ITraceMng*          m_trace_mng    = nullptr ;
+  ITraceMng* m_trace_mng = nullptr;
   UniqueArray<Int64> m_unique_ids;
   UniqueArray<Integer> m_owners;
-  std::unordered_map<Int64,Integer> m_uid2lid ;
+  std::unordered_map<Int64, Integer> m_uid2lid;
 };
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
