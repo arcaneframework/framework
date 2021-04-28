@@ -1,6 +1,5 @@
 
 #include <algorithm>
-#include <cstdlib>
 #include <list>
 #include <map>
 #include <memory>
@@ -190,7 +189,7 @@ class BasicIndexManager::MyEntryImpl : public IIndexManager::EntryImpl
 #endif /* SPLIT_CONTAINER */
   }
 
-  void undefineLid(const Integer localId)
+  [[maybe_unused]] void undefineLid(const Integer localId)
   {
     m_is_defined[localId] = false;
     for (Integer i = 0; i < m_defined_lids.size(); ++i) {
@@ -267,39 +266,34 @@ class BasicIndexManager::MyEntryImpl : public IIndexManager::EntryImpl
 
 struct BasicIndexManager::EntrySendRequest
 {
-  EntrySendRequest() {}
+  EntrySendRequest() = default;
 
-  ~EntrySendRequest() {}
+  ~EntrySendRequest() = default;
 
-  EntrySendRequest(const EntrySendRequest& esr)
-  : comm(esr.comm)
-  , count(esr.count)
-  {}
+  EntrySendRequest(const EntrySendRequest& esr) = default;
 
   // Arccore::MessagePassing::ISerializeMessage* comm = nullptr;
   Arccore::Ref<Arccore::MessagePassing::ISerializeMessage> comm;
   Integer count = 0;
 
- private:
-  void operator=(const EntrySendRequest&);
+  void operator=(const EntrySendRequest&) = delete;
 };
 
 /*---------------------------------------------------------------------------*/
 
 struct BasicIndexManager::EntryRecvRequest
 {
-  EntryRecvRequest() {}
+  EntryRecvRequest() = default;
 
-  ~EntryRecvRequest() {}
+  ~EntryRecvRequest() = default;
 
   // err is unused if ALIEN_ASSERT is empty.
-  EntryRecvRequest(const EntrySendRequest& err ALIEN_UNUSED_PARAM) {}
+  explicit EntryRecvRequest(const EntrySendRequest& err ALIEN_UNUSED_PARAM) {}
 
   Arccore::Ref<Arccore::MessagePassing::ISerializeMessage> comm;
   UniqueArray<Int64> ids;
 
- private:
-  void operator=(const EntryRecvRequest&);
+  void operator=(const EntryRecvRequest&) = delete;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -310,16 +304,16 @@ class BasicIndexManager::MyEntryEnumeratorImpl : public IIndexManager::EntryEnum
   EntrySet::const_iterator m_iter, m_end;
 
  public:
-  MyEntryEnumeratorImpl(const EntrySet& entries)
+  explicit MyEntryEnumeratorImpl(const EntrySet& entries)
   : m_iter(entries.begin())
   , m_end(entries.end())
   {}
 
-  void moveNext() { ++m_iter; }
+  void moveNext() override { ++m_iter; }
 
-  bool hasNext() const { return m_iter != m_end; }
+  [[nodiscard]] bool hasNext() const override { return m_iter != m_end; }
 
-  EntryImpl* get() const { return m_iter->second; }
+  [[nodiscard]] EntryImpl* get() const override { return m_iter->second; }
 };
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -355,8 +349,8 @@ BasicIndexManager::init()
   m_global_removed_entry_count = 0;
 
   // Destruction des structure de type entry
-  for (EntrySet::iterator i = m_entry_set.begin(); i != m_entry_set.end(); ++i) {
-    delete i->second;
+  for (auto& i : m_entry_set) {
+    delete i.second;
   }
   m_entry_set.clear();
 
@@ -384,14 +378,14 @@ BasicIndexManager::buildEntry(
 
   // Recherche de l'entrée d'un nom
   std::pair<EntrySet::iterator, bool> lookup =
-      m_entry_set.insert(EntrySet::value_type(name, (MyEntryImpl*)NULL));
+      m_entry_set.insert(EntrySet::value_type(name, (MyEntryImpl*)nullptr));
   if (lookup.second) {
-    MyEntryImpl* entry = new MyEntryImpl(name, family, m_creation_index++, this, kind);
+    auto* entry = new MyEntryImpl(name, family, m_creation_index++, this, kind);
     lookup.first->second = entry;
     return entry;
   } else {
     throw FatalErrorException(A_FUNCINFO, "Already defined entry");
-    return NULL;
+    return nullptr;
   }
 }
 
@@ -400,12 +394,12 @@ BasicIndexManager::buildEntry(
 IIndexManager::Entry
 BasicIndexManager::getEntry(const String& name) const
 {
-  EntrySet::const_iterator lookup = m_entry_set.find(name);
+  auto lookup = m_entry_set.find(name);
   if (lookup != m_entry_set.end()) {
     return lookup->second;
   } else {
     throw FatalErrorException(A_FUNCINFO, "Undefined entry requested");
-    return NULL;
+    return nullptr;
   }
 }
 
@@ -419,7 +413,7 @@ BasicIndexManager::defineIndex(
     throw FatalErrorException(A_FUNCINFO, "Inconsistent state");
 
   ALIEN_ASSERT((entry.manager() == this), ("Incompatible entry from another manager"));
-  MyEntryImpl* myEntry = static_cast<MyEntryImpl*>(entry.internal());
+  auto* myEntry = dynamic_cast<MyEntryImpl*>(entry.internal());
 
   const IAbstractFamily& family = myEntry->getFamily();
   SharedArray<Integer> owners = family.owners(localIds);
@@ -451,8 +445,8 @@ BasicIndexManager::prepare()
     throw FatalErrorException(A_FUNCINFO, "Inconsistent state");
 
   Integer total_size = 0;
-  for (EntrySet::iterator i = m_entry_set.begin(); i != m_entry_set.end(); ++i) {
-    MyEntryImpl* entry = i->second;
+  for (auto& i : m_entry_set) {
+    MyEntryImpl* entry = i.second;
     total_size += entry->definedLids().size();
   }
 
@@ -460,8 +454,8 @@ BasicIndexManager::prepare()
       entry_index; //!< Table des index d'entrées (>=0:local, <0:global) en phase1
   entry_index.reserve(total_size);
 
-  for (EntrySet::iterator i = m_entry_set.begin(); i != m_entry_set.end(); ++i) {
-    MyEntryImpl* entry = i->second;
+  for (auto& i : m_entry_set) {
+    MyEntryImpl* entry = i.second;
 
     const Integer creation_index = entry->getCreationIndex();
     const IAbstractFamily& family = entry->getFamily();
@@ -475,19 +469,19 @@ BasicIndexManager::prepare()
     const UniqueArray<std::pair<Integer, Integer>>& lids = entry->definedLids();
 #endif /* SPLIT_CONTAINER */
 
-    for (Integer i = 0, is = lids.size(); i < is; ++i) {
+    for (Integer id = 0, is = lids.size(); id < is; ++id) {
 #ifdef SPLIT_CONTAINER
-      const Integer item_lid = lids[i];
-      const Integer item_index = indexes[i];
-      const Integer item_owner = owners[i];
-      const Int64 item_uid = uids[i];
+      const Integer item_lid = lids[id];
+      const Integer item_index = indexes[id];
+      const Integer item_owner = owners[id];
+      const Int64 item_uid = uids[id];
       entry_index.push_back(InternalEntryIndex(
           entry, item_lid, entry_kind, item_uid, item_index, creation_index, item_owner));
 #else /* SPLIT_CONTAINER */
-      const Integer localid = lids[i].first;
+      const Integer localid = lids[id].first;
       IAbstractFamily::Item item = family.item(localid);
       entry_index.push_back(InternalEntryIndex(entry, localid, entry_kind,
-          item.uniqueId(), lids[i].second, creation_index, item.owner()));
+          item.uniqueId(), lids[id].second, creation_index, item.owner()));
 #endif /* SPLIT_CONTAINER */
     }
     entry->freeDefinedLids();
@@ -505,17 +499,17 @@ BasicIndexManager::prepare()
     sequential_prepare(entry_index);
 
   // Finalize : fige les données dans les entries
-  for (EntrySet::iterator i = m_entry_set.begin(); i != m_entry_set.end(); ++i) {
-    i->second->finalize(entry_index);
+  for (auto& i : m_entry_set) {
+    i.second->finalize(entry_index);
   }
 
   if (m_trace) {
     m_trace->info() << "Entry ordering :";
-    for (EntrySet::iterator i = m_entry_set.begin(); i != m_entry_set.end(); ++i) {
-      m_trace->info() << "\tEntry '" << i->first << "' placed at rank "
-                      << i->second->getCreationIndex() << " with "
-                      << i->second->getOwnLocalIds().size() << " local / "
-                      << i->second->getAllLocalIds().size() << " global indexes ";
+    for (auto& i : m_entry_set) {
+      m_trace->info() << "\tEntry '" << i.first << "' placed at rank "
+                      << i.second->getCreationIndex() << " with "
+                      << i.second->getOwnLocalIds().size() << " local / "
+                      << i.second->getAllLocalIds().size() << " global indexes ";
     }
     m_trace->info() << "Total local Entry indexes = " << m_local_entry_count;
   }
@@ -548,9 +542,7 @@ BasicIndexManager::parallel_prepare(EntryIndexMap& entry_index)
   SendRequests sendRequests;
 
   // 1 - Comptage des Items non locaux
-  for (EntryIndexMap::const_iterator i = entry_index.begin(); i != entry_index.end();
-       ++i) {
-    const InternalEntryIndex& entryIndex = *i;
+  for (const auto& entryIndex : entry_index) {
     MyEntryImpl* entryImpl = entryIndex.m_entry;
     const Integer item_owner = entryIndex.m_owner;
     if (item_owner != m_local_owner) {
@@ -568,12 +560,12 @@ BasicIndexManager::parallel_prepare(EntryIndexMap& entry_index)
   // Contruction de la table de communications + préparation des messages d'envoi
   UniqueArray<Integer> sendToDomains(2 * m_parallel_mng->commSize(), 0);
 
-  for (SendRequests::iterator i = sendRequests.begin(); i != sendRequests.end(); ++i) {
-    const Integer destDomainId = i->first;
-    SendRequestByEntry& requests = i->second;
-    for (SendRequestByEntry::iterator j = requests.begin(); j != requests.end(); ++j) {
-      EntrySendRequest& request = j->second;
-      EntryImpl* entryImpl = j->first;
+  for (auto& sendRequest : sendRequests) {
+    const Integer destDomainId = sendRequest.first;
+    SendRequestByEntry& requests = sendRequest.second;
+    for (auto& j : requests) {
+      EntrySendRequest& request = j.second;
+      EntryImpl* entryImpl = j.first;
       const String nameString = entryImpl->getName();
 
       // Données pour receveur
@@ -599,9 +591,7 @@ BasicIndexManager::parallel_prepare(EntryIndexMap& entry_index)
   }
 
   // 2 - Accumulation des valeurs à demander
-  for (EntryIndexMap::const_iterator i = entry_index.begin(); i != entry_index.end();
-       ++i) {
-    const InternalEntryIndex& entryIndex = *i;
+  for (const auto& entryIndex : entry_index) {
     MyEntryImpl* entryImpl = entryIndex.m_entry;
     const Integer item_owner = entryIndex.m_owner;
     const Int64 item_uid = entryIndex.m_uid;
@@ -641,8 +631,7 @@ BasicIndexManager::parallel_prepare(EntryIndexMap& entry_index)
   messageList = Arccore::MessagePassing::mpCreateSerializeMessageListRef(m_parallel_mng);
 
   // 3 - Réception et mise en base local des demandes
-  for (RecvRequests::iterator i = recvRequests.begin(); i != recvRequests.end(); ++i) {
-    EntryRecvRequest& recvRequest = *i;
+  for (auto& recvRequest : recvRequests) {
     String nameString;
     Integer uidCount;
 
@@ -665,7 +654,7 @@ BasicIndexManager::parallel_prepare(EntryIndexMap& entry_index)
        */
 
       // Reconstruction de l'entrée à partir du nom
-      EntrySet::iterator lookup = m_entry_set.find(nameString);
+      auto lookup = m_entry_set.find(nameString);
       // Si pas d'entrée de ce côté => système défectueux ?
       if (lookup == m_entry_set.end())
         throw FatalErrorException("Non local Entry Requested : degenerated system ?");
@@ -694,7 +683,7 @@ BasicIndexManager::parallel_prepare(EntryIndexMap& entry_index)
         InternalEntryIndex lookup_entry(currentEntry, current_item_lid, entry_kind,
             current_item_uid, 0, current_creation_index, current_item_owner);
 
-        EntryIndexMap::const_iterator lookup2 = std::lower_bound(
+        auto lookup2 = std::lower_bound(
             entry_index.begin(), entry_index.end(), lookup_entry, EntryIndexComparator());
 
         if ((lookup2 == entry_index.end()) || !(*lookup2 == lookup_entry))
@@ -752,21 +741,20 @@ BasicIndexManager::parallel_prepare(EntryIndexMap& entry_index)
 
   // C'est ici et uniquement ici qu'est matérialisé l'ordre des entrées
   Integer currentEntryIndex = m_global_entry_offset; // commence par l'offset local
-  for (EntryIndexMap::iterator i = entry_index.begin(); i != entry_index.end(); ++i) {
-    const InternalEntryIndex& entryIndex = *i;
-    ALIEN_ASSERT((entryIndex.m_entry != NULL), ("Unexpected null entry"));
+  for (auto& i : entry_index) {
+    const InternalEntryIndex& entryIndex = i;
+    ALIEN_ASSERT((entryIndex.m_entry != nullptr), ("Unexpected null entry"));
     const Integer item_owner = entryIndex.m_owner;
     if (item_owner == m_local_owner) { // Numérotation locale !
       const Integer newIndex = currentEntryIndex++;
-      entry_reindex[i->m_index + m_global_entry_count] = newIndex; // Table de translation
-      i->m_index = newIndex;
+      entry_reindex[i.m_index + m_global_entry_count] = newIndex; // Table de translation
+      i.m_index = newIndex;
     }
   }
 
   // 5 - Envoie des retours (EntryIndex globaux)
 
-  for (RecvRequests::iterator i = recvRequests.begin(); i != recvRequests.end(); ++i) {
-    EntryRecvRequest& recvRequest = *i;
+  for (auto& recvRequest : recvRequests) {
     auto sbuf = recvRequest.comm->serializer();
     auto& ids = recvRequest.ids;
     for (Integer j = 0; j < ids.size(); ++j) {
@@ -789,12 +777,12 @@ BasicIndexManager::parallel_prepare(EntryIndexMap& entry_index)
   FastReturnMap fastReturnMap;
 
   // Préparation des réceptions [sens inverse]
-  for (SendRequests::iterator i = sendRequests.begin(); i != sendRequests.end(); ++i) {
-    const Integer destDomainId = i->first;
-    SendRequestByEntry& requests = i->second;
-    for (SendRequestByEntry::iterator j = requests.begin(); j != requests.end(); ++j) {
-      EntrySendRequest& request = j->second;
-      EntryImpl* entryImpl = j->first;
+  for (auto& sendRequest : sendRequests) {
+    const Integer destDomainId = sendRequest.first;
+    SendRequestByEntry& requests = sendRequest.second;
+    for (auto& j : requests) {
+      EntrySendRequest& request = j.second;
+      EntryImpl* entryImpl = j.first;
       const String nameString = entryImpl->getName();
 
       // On ne peut pas associer directement le message à cette entrée
@@ -819,18 +807,18 @@ BasicIndexManager::parallel_prepare(EntryIndexMap& entry_index)
 
   // 6 - Traitement des réponses
   // Association aux EntrySendRequest du buffer correspondant
-  for (ReturnedRequests::iterator i = returnedRequests.begin();
-       i != returnedRequests.end(); ++i) {
-    auto& message = *i;
+  for (auto& returnedRequest : returnedRequests) {
+    auto& message = returnedRequest;
     auto origDomainId = message->destination().value();
     auto sbuf = message->serializer();
     sbuf->setMode(Alien::ISerializer::ModeGet);
     String nameString;
     sbuf->get(nameString);
     ALIEN_ASSERT(
-        (fastReturnMap[nameString][origDomainId] != NULL), ("Inconsistency detected"));
+        (fastReturnMap[nameString][origDomainId] != nullptr), ("Inconsistency detected"));
     EntrySendRequest& request = *fastReturnMap[nameString][origDomainId];
-    request.comm = *i; // Reconnection pour accès rapide depuis l'EntrySendRequest
+    request.comm =
+        returnedRequest; // Reconnection pour accès rapide depuis l'EntrySendRequest
 
     const Integer idCount = sbuf->getInteger();
     ALIEN_ASSERT((request.count == idCount), ("Inconsistency detected"));
@@ -838,8 +826,8 @@ BasicIndexManager::parallel_prepare(EntryIndexMap& entry_index)
 
   // Distribution des reponses
   // Par parcours dans ordre initial (celui de la demande)
-  for (EntryIndexMap::iterator i = entry_index.begin(); i != entry_index.end(); ++i) {
-    const InternalEntryIndex& entryIndex = *i;
+  for (auto& i : entry_index) {
+    const InternalEntryIndex& entryIndex = i;
     const Integer item_owner = entryIndex.m_owner;
     if (item_owner != m_local_owner) {
       EntryImpl* entryImpl = entryIndex.m_entry;
@@ -849,8 +837,8 @@ BasicIndexManager::parallel_prepare(EntryIndexMap& entry_index)
       auto sbuf = request.comm->serializer();
       const Integer newIndex = sbuf->getInteger();
 
-      entry_reindex[i->m_index + m_global_entry_count] = newIndex;
-      i->m_index = newIndex;
+      entry_reindex[i.m_index + m_global_entry_count] = newIndex;
+      i.m_index = newIndex;
     }
   }
 
@@ -889,14 +877,14 @@ BasicIndexManager::sequential_prepare(EntryIndexMap& entry_index)
 
   // C'est ici et uniquement ici qu'est matérialisé l'ordre des entrées
   Integer currentEntryIndex = m_global_entry_offset; // commence par l'offset local
-  for (EntryIndexMap::iterator i = entry_index.begin(); i != entry_index.end(); ++i) {
-    ALIEN_ASSERT((i->m_entry != NULL), ("Unexpected null entry"));
+  for (auto& i : entry_index) {
+    ALIEN_ASSERT((i.m_entry != nullptr), ("Unexpected null entry"));
     ALIEN_ASSERT(
-        (i->m_owner == m_local_owner), ("Item cannot be non-local for sequential mode"));
+        (i.m_owner == m_local_owner), ("Item cannot be non-local for sequential mode"));
     // Numérotation locale only !
     const Integer newIndex = currentEntryIndex++;
-    entry_reindex[i->m_index + m_global_entry_count] = newIndex; // Table de translation
-    i->m_index = newIndex;
+    entry_reindex[i.m_index + m_global_entry_count] = newIndex; // Table de translation
+    i.m_index = newIndex;
   }
 
   m_global_entry_count = m_local_entry_count;
@@ -909,15 +897,14 @@ BasicIndexManager::reserveEntries(const EntryIndexMap& entry_index)
 {
   // Calcul de la taille des indices par entrée
   std::map<const EntryImpl*, Integer> count_table;
-  for (EntryIndexMap::const_iterator i = entry_index.begin(); i != entry_index.end();
-       ++i) {
-    const EntryImpl* entryImpl = i->m_entry;
+  for (const auto& i : entry_index) {
+    const EntryImpl* entryImpl = i.m_entry;
     count_table[entryImpl]++;
   }
 
   // Dimensionnement des buffers de chaque entrée
-  for (EntrySet::iterator i = m_entry_set.begin(); i != m_entry_set.end(); ++i) {
-    MyEntryImpl* entry = i->second;
+  for (auto& i : m_entry_set) {
+    MyEntryImpl* entry = i.second;
     entry->reserve(count_table[entry]);
     //      if (m_trace) m_trace->pinfo() << "Entry " << entry->getName() << " size = "
     //      << count_table[entry];
@@ -937,8 +924,8 @@ BasicIndexManager::getIndexes(const Entry& entry) const
     throw FatalErrorException(A_FUNCINFO, "Inconsistent state");
 
   ALIEN_ASSERT((entry.manager() == this), ("Incompatible entry from another manager"));
-  MyEntryImpl* en = static_cast<MyEntryImpl*>(entry.internal());
-  ALIEN_ASSERT((en != NULL), ("Unexpected null entry"));
+  auto* en = dynamic_cast<MyEntryImpl*>(entry.internal());
+  ALIEN_ASSERT((en != nullptr), ("Unexpected null entry"));
   const IAbstractFamily& family = en->getFamily();
   UniqueArray<Integer> allIds(family.maxLocalId(), nullIndex());
   const ConstArrayView<Integer> allIndices = en->getAllIndexes();
@@ -962,8 +949,8 @@ BasicIndexManager::getIndexes(const VectorIndexSet& entries) const
     // controles uniquement en première passe
     ALIEN_ASSERT(
         (entries[entry].manager() == this), ("Incompatible entry from another manager"));
-    MyEntryImpl* en = static_cast<MyEntryImpl*>(entries[entry].internal());
-    ALIEN_ASSERT((en != NULL), ("Unexpected null entry"));
+    auto* en = dynamic_cast<MyEntryImpl*>(entries[entry].internal());
+    ALIEN_ASSERT((en != nullptr), ("Unexpected null entry"));
     const IAbstractFamily& family = en->getFamily();
     max_family_size = std::max(max_family_size, family.maxLocalId());
   }
@@ -972,7 +959,7 @@ BasicIndexManager::getIndexes(const VectorIndexSet& entries) const
   allIds.fill(nullIndex());
 
   for (Integer entry = 0; entry < entries.size(); ++entry) {
-    MyEntryImpl* en = static_cast<MyEntryImpl*>(entries[entry].internal());
+    auto* en = dynamic_cast<MyEntryImpl*>(entries[entry].internal());
     const ConstArrayView<Integer> allIndices = en->getAllIndexes();
     const ConstArrayView<Integer> allLocalIds = en->getAllLocalIds();
     const Integer size = allIndices.size();
