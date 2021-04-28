@@ -86,11 +86,9 @@ namespace ArcaneParallelTest {
     , m_is_defined(family->maxLocalId(), false)
     , m_own_size(0)
     , m_size(0)
-    {
+    {}
 
-    }
-
-    virtual ~MyEntryImpl() { }
+    virtual ~MyEntryImpl() {}
 
     Arccore::ConstArrayView<Arccore::Integer> getOwnIndexes() const
     {
@@ -286,7 +284,7 @@ namespace ArcaneParallelTest {
 
   struct BasicIndexManager::EntrySendRequest
   {
-    EntrySendRequest() { }
+    EntrySendRequest() {}
 
     ~EntrySendRequest()
     {
@@ -315,7 +313,7 @@ namespace ArcaneParallelTest {
 
   struct BasicIndexManager::EntryRecvRequest
   {
-    EntryRecvRequest() { }
+    EntryRecvRequest() {}
 
     ~EntryRecvRequest()
     {
@@ -350,9 +348,7 @@ namespace ArcaneParallelTest {
     MyEntryEnumeratorImpl(const EntrySet& entries)
     : m_iter(entries.begin())
     , m_end(entries.end())
-    {
-
-    }
+    {}
 
     void moveNext() { ++m_iter; }
 

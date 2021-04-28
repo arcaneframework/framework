@@ -54,7 +54,10 @@ struct IndexManager::EntryLocalId
     m_defined_lids.reserve(m_defined_lids.size() + count);
   }
 
-  [[nodiscard]] bool isDefinedLid(const Integer localId) const { return m_is_defined[localId]; }
+  [[nodiscard]] bool isDefinedLid(const Integer localId) const
+  {
+    return m_is_defined[localId];
+  }
 
   void defineLid(const Integer localId, const Integer pos)
   {
@@ -96,7 +99,7 @@ struct IndexManager::EntryLocalId
 
 struct IndexManager::EntrySendRequest
 {
-  EntrySendRequest() =default;
+  EntrySendRequest() = default;
 
   ~EntrySendRequest() = default;
 
@@ -457,7 +460,7 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
     if (item_owner != m_local_owner) {
       // if (m_trace_mng) m_trace_mng->pinfo() << entryIndex.m_item_localid << " : " <<
       // entryIndex.m_item_uid << " is owned by " << item_owner << " with localIndex=" <<
-      //entryIndex.m_item_index;
+      // entryIndex.m_item_index;
       parallel->sendRequests[item_owner][entryIndex.m_entry_uid].count++;
     } else {
       // if (m_trace_mng) m_trace_mng->pinfo() << entryIndex.m_item_localid << " : " <<

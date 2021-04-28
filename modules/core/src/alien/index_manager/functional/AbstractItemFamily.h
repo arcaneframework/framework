@@ -143,9 +143,11 @@ class ALIEN_EXPORT AbstractFamily : public IIndexManager::IAbstractFamily
 
   IAbstractFamily::Item item(Int32 localId) const override;
 
-  Arccore::SharedArray<Arccore::Integer> owners(ConstArrayView<Int32> localIds) const override;
+  Arccore::SharedArray<Arccore::Integer> owners(
+      ConstArrayView<Int32> localIds) const override;
 
-  Arccore::SharedArray<Arccore::Int64> uids(ConstArrayView<Int32> localIds) const override;
+  Arccore::SharedArray<Arccore::Int64> uids(
+      ConstArrayView<Int32> localIds) const override;
 
   Arccore::SharedArray<Arccore::Int32> allLocalIds() const override;
 

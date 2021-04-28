@@ -40,7 +40,8 @@ AbstractItemFamily::AbstractItemFamily(const AbstractItemFamily& family)
 
 /*---------------------------------------------------------------------------*/
 AbstractItemFamily::AbstractItemFamily(const ConstArrayView<Int64> uniqueIds,
-    const ConstArrayView<Integer> owners, IMessagePassingMng* parallel_mng, ITraceMng* trace_mng)
+    const ConstArrayView<Integer> owners, IMessagePassingMng* parallel_mng,
+    ITraceMng* trace_mng)
 : m_parallel_mng(parallel_mng)
 , m_trace_mng(trace_mng)
 {
@@ -48,69 +49,67 @@ AbstractItemFamily::AbstractItemFamily(const ConstArrayView<Int64> uniqueIds,
   copy(m_owners, owners);
 
   for (Integer i = 0; i < uniqueIds.size(); ++i) {
-            m_uid2lid[uniqueIds[i]] = i;
+    m_uid2lid[uniqueIds[i]] = i;
   }
 }
 
 AbstractItemFamily::AbstractItemFamily(const ConstArrayView<Int64> uniqueIds,
-                                       const ConstArrayView<Int64> ghost_uniqueIds,
-                                       const ConstArrayView<Integer> ghost_owners,
-                                       IMessagePassingMng* parallel_mng, ITraceMng* trace_mng)
+    const ConstArrayView<Int64> ghost_uniqueIds,
+    const ConstArrayView<Integer> ghost_owners, IMessagePassingMng* parallel_mng,
+    ITraceMng* trace_mng)
 : m_parallel_mng(parallel_mng)
 , m_trace_mng(trace_mng)
 {
   const Integer commRank = m_parallel_mng->commRank();
   const Integer localSize = uniqueIds.size();
-  const Integer ghostSize = ghost_uniqueIds.size() ;
+  const Integer ghostSize = ghost_uniqueIds.size();
 
-        m_unique_ids.reserve(localSize + ghostSize);
-        m_owners.reserve(localSize + ghostSize);
+  m_unique_ids.reserve(localSize + ghostSize);
+  m_owners.reserve(localSize + ghostSize);
 
   // remise en tête des uids locaux associé à commRank
   addRange(m_unique_ids, uniqueIds);
   addRange(m_owners, commRank, localSize);
   for (Integer ighost = 0; ighost < ghostSize; ++ighost) {
-            addRange(m_unique_ids, ghost_uniqueIds);
+    addRange(m_unique_ids, ghost_uniqueIds);
     addRange(m_owners, ghost_owners);
   }
 
   for (Integer i = 0; i < uniqueIds.size(); ++i) {
-            m_uid2lid[uniqueIds[i]] = i;
+    m_uid2lid[uniqueIds[i]] = i;
   }
 
   for (Integer i = 0; i < ghost_uniqueIds.size(); ++i) {
-            m_uid2lid[ghost_uniqueIds[i]] = localSize + i;
+    m_uid2lid[ghost_uniqueIds[i]] = localSize + i;
   }
-
 }
 
 /*---------------------------------------------------------------------------*/
 
-    AbstractItemFamily::
-    AbstractItemFamily(const ConstArrayView<Int64> uniqueIds,
-                       IMessagePassingMng *parallel_mng,
-    [[maybe_unused]] ITraceMng *trace_mng) {
+AbstractItemFamily::AbstractItemFamily(const ConstArrayView<Int64> uniqueIds,
+    IMessagePassingMng* parallel_mng, [[maybe_unused]] ITraceMng* trace_mng)
+{
 
-        m_unique_ids.copy(uniqueIds);
-        m_owners.fill(parallel_mng->commRank());
+  m_unique_ids.copy(uniqueIds);
+  m_owners.fill(parallel_mng->commRank());
 
-        for (Integer i = 0; i < uniqueIds.size(); ++i) {
-            m_uid2lid[uniqueIds[i]] = i;
-        }
-    }
-
+  for (Integer i = 0; i < uniqueIds.size(); ++i) {
+    m_uid2lid[uniqueIds[i]] = i;
+  }
+}
 
 /*---------------------------------------------------------------------------*/
 
-    void
-    AbstractItemFamily::uniqueIdToLocalId(
-            ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const {
+void
+AbstractItemFamily::uniqueIdToLocalId(
+    ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const
+{
 
   for (Integer i = 0; i < uniqueIds.size(); ++i) {
     auto iter = m_uid2lid.find(uniqueIds[i]);
     if (iter == m_uid2lid.end()) {
       throw Alien::FatalErrorException(A_FUNCINFO, "UniqueId not found");
-            } else
+    } else
       localIds[i] = iter->second;
   }
 }
@@ -143,8 +142,7 @@ AbstractItemFamily::uids(ConstArrayView<Int32> localIds) const
 {
   const Integer size = localIds.size();
   SharedArray<Int64> result(size);
-  for (Integer i = 0; i < size; ++i)
-  {
+  for (Integer i = 0; i < size; ++i) {
     result[i] = m_unique_ids[localIds[i]];
   }
   return SafeConstArrayView<Int64>(result);
@@ -173,8 +171,8 @@ AbstractFamily::AbstractFamily(const AbstractFamily& family)
 
 /*---------------------------------------------------------------------------*/
 AbstractFamily::AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
-                               const ConstArrayView<Integer>& owners,
-                               IMessagePassingMng* parallel_mng, ITraceMng* trace_mng)
+    const ConstArrayView<Integer>& owners, IMessagePassingMng* parallel_mng,
+    ITraceMng* trace_mng)
 : m_parallel_mng(parallel_mng)
 , m_trace_mng(trace_mng)
 {
@@ -182,46 +180,47 @@ AbstractFamily::AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
   copy(m_owners, owners);
 
   for (Integer i = 0; i < uniqueIds.size(); ++i) {
-            m_uid2lid[uniqueIds[i]] = i;
+    m_uid2lid[uniqueIds[i]] = i;
   }
 }
 
 AbstractFamily::AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
-                                       const ConstArrayView<Int64>& ghost_uniqueIds,
-                                       const ConstArrayView<Integer>& ghost_owners,
-                                       IMessagePassingMng* parallel_mng, ITraceMng* trace_mng)
+    const ConstArrayView<Int64>& ghost_uniqueIds,
+    const ConstArrayView<Integer>& ghost_owners, IMessagePassingMng* parallel_mng,
+    ITraceMng* trace_mng)
 : m_parallel_mng(parallel_mng)
 , m_trace_mng(trace_mng)
 {
   const Integer commRank = m_parallel_mng->commRank();
   const Integer localSize = uniqueIds.size();
-  const Integer ghostSize = ghost_uniqueIds.size() ;
+  const Integer ghostSize = ghost_uniqueIds.size();
 
-        m_unique_ids.reserve(localSize + ghostSize);
-        m_owners.reserve(localSize + ghostSize);
+  m_unique_ids.reserve(localSize + ghostSize);
+  m_owners.reserve(localSize + ghostSize);
 
   // remise en tête des uids locaux associé à commRank
   addRange(m_unique_ids, uniqueIds);
   addRange(m_owners, commRank, localSize);
   for (Integer ighost = 0; ighost < ghostSize; ++ighost) {
-            addRange(m_unique_ids, ghost_uniqueIds);
+    addRange(m_unique_ids, ghost_uniqueIds);
     addRange(m_owners, ghost_owners);
   }
 
   for (Integer i = 0; i < uniqueIds.size(); ++i) {
-            m_uid2lid[uniqueIds[i]] = i;
+    m_uid2lid[uniqueIds[i]] = i;
   }
 
   for (Integer i = 0; i < ghost_uniqueIds.size(); ++i) {
-            m_uid2lid[ghost_uniqueIds[i]] = localSize + i;
+    m_uid2lid[ghost_uniqueIds[i]] = localSize + i;
   }
-
 }
 
 /*---------------------------------------------------------------------------*/
 
 AbstractFamily::AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
-                               IMessagePassingMng* parallel_mng, ITraceMng* trace_mng)            : m_parallel_mng(parallel_mng), m_trace_mng(trace_mng)
+    IMessagePassingMng* parallel_mng, ITraceMng* trace_mng)
+: m_parallel_mng(parallel_mng)
+, m_trace_mng(trace_mng)
 {
   copy(m_unique_ids, uniqueIds);
   m_owners.fill(parallel_mng->commRank());
@@ -232,16 +231,17 @@ AbstractFamily::AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
 }
 /*---------------------------------------------------------------------------*/
 
-    void
-    AbstractFamily::uniqueIdToLocalId(
-            ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const {
+void
+AbstractFamily::uniqueIdToLocalId(
+    ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const
+{
 
   for (Integer i = 0; i < uniqueIds.size(); ++i) {
     auto iter = m_uid2lid.find(uniqueIds[i]);
     if (iter == m_uid2lid.end()) {
       localIds[i] = -1;
       throw Alien::FatalErrorException(A_FUNCINFO, "UniqueId not found");
-            } else
+    } else
       localIds[i] = iter->second;
   }
 }
@@ -274,8 +274,7 @@ AbstractFamily::uids(ConstArrayView<Int32> localIds) const
 {
   const Integer size = localIds.size();
   SharedArray<Int64> result(size);
-  for (Integer i = 0; i < size; ++i)
-  {
+  for (Integer i = 0; i < size; ++i) {
     result[i] = m_unique_ids[localIds[i]];
   }
   return result;
@@ -291,7 +290,6 @@ AbstractFamily::allLocalIds() const
     local_ids[i] = i;
   return local_ids;
 }
-
 
 } // namespace Alien
 
