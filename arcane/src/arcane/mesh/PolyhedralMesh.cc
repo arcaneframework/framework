@@ -34,7 +34,7 @@ namespace mesh
   class PolyhedralMeshImpl
   {
     ISubDomain* m_subdomain;
-    Neo::Mesh mesh{"Test"};
+    Neo::Mesh m_mesh{"Test"};
 
    public:
     PolyhedralMeshImpl(ISubDomain* subDomain) : m_subdomain(subDomain){}
@@ -43,6 +43,18 @@ namespace mesh
     void read(const String& filename)
     {
       m_subdomain->traceMng()->info() << "--PolyhedralMesh : reading " << filename;
+      // First step create a single cell
+      _createSingleCellTest();
+    }
+   private:
+    void _createSingleCellTest(){
+      auto cell_family = m_mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family");
+      auto node_family = m_mesh.addFamily(Neo::ItemKind::IK_Node, "node_family");
+      auto added_cells = Neo::FutureItemRange{};
+      m_mesh.scheduleAddItems(cell_family, {0}, added_cells);
+      auto added_nodes = Neo::FutureItemRange{};
+      m_mesh.scheduleAddItems(node_family, { 0, 1, 2, 3, 4, 5 }, added_nodes);
+      m_mesh.applyScheduledOperations();
     }
   };
 
