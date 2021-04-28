@@ -33,7 +33,7 @@ namespace Alien {
 class ALIEN_EXPORT DefaultAbstractFamily : public IAbstractFamily
 {
  public:
-  DefaultAbstractFamily(const DefaultAbstractFamily& family);
+  explicit DefaultAbstractFamily(const DefaultAbstractFamily& family);
 
   /*! Build a family for locally known unique ids.
    *
@@ -49,15 +49,10 @@ class ALIEN_EXPORT DefaultAbstractFamily : public IAbstractFamily
    * @param uniqueIds Array of locally owned uniqueIds.
    * @param parallel_mng Parallel Manager.
    */
-
-  /* FIXME: Comments
-   * Local items then others ?
-   * Owners array is built in parallel ?
-   */
   DefaultAbstractFamily(
       const ConstArrayView<Int64> uniqueIds, IMessagePassingMng* parallel_mng);
 
-  virtual ~DefaultAbstractFamily() {}
+  ~DefaultAbstractFamily() override = default;
 
  public:
   IAbstractFamily* clone() const { return new DefaultAbstractFamily(*this); }

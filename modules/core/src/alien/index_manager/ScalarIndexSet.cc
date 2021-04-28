@@ -16,7 +16,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <algorithm>
 #include <list>
 
 #include <alien/index_manager/IndexManager.h>

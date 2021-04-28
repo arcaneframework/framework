@@ -65,26 +65,26 @@ class ALIEN_EXPORT AbstractItemFamily : public IAbstractFamily
    * @param parallel_mng Parallel Manager.
    */
   AbstractItemFamily(const ConstArrayView<Int64> uniqueIds,
-      IMessagePassingMng* parallel_mng, ITraceMng* trace_mng = nullptr);
+      IMessagePassingMng* parallel_mng, [[maybe_unused]] ITraceMng* trace_mng = nullptr);
 
-  virtual ~AbstractItemFamily() {}
-
- public:
-  IAbstractFamily* clone() const { return new AbstractItemFamily(*this); }
+  ~AbstractItemFamily() override = default;
 
  public:
-  Int32 maxLocalId() const { return m_unique_ids.size(); }
+  IAbstractFamily* clone() const override { return new AbstractItemFamily(*this); }
+
+ public:
+  Int32 maxLocalId() const override { return m_unique_ids.size(); }
 
   void uniqueIdToLocalId(
-      ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const;
+      ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const override;
 
-  IAbstractFamily::Item item(Int32 localId) const;
+  IAbstractFamily::Item item(Int32 localId) const override;
 
-  SafeConstArrayView<Integer> owners(ConstArrayView<Int32> localIds) const;
+  SafeConstArrayView<Integer> owners(ConstArrayView<Int32> localIds) const override;
 
-  SafeConstArrayView<Int64> uids(ConstArrayView<Int32> localIds) const;
+  SafeConstArrayView<Int64> uids(ConstArrayView<Int32> localIds) const override;
 
-  SafeConstArrayView<Int32> allLocalIds() const;
+  SafeConstArrayView<Int32> allLocalIds() const override;
 
  private:
   IMessagePassingMng* m_parallel_mng = nullptr;
@@ -105,8 +105,8 @@ class ALIEN_EXPORT AbstractFamily : public IIndexManager::IAbstractFamily
    * @param owners Array of item owners
    * @param parallel_mng Parallel Manager.
    */
-  AbstractFamily(const ConstArrayView<Int64> uniqueIds,
-      const ConstArrayView<Integer> owners, IMessagePassingMng* parallel_mng,
+  AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
+      const ConstArrayView<Integer>& owners, IMessagePassingMng* parallel_mng,
       ITraceMng* trace_mng = nullptr);
 
   /*! Build a family for locally known unique ids.
@@ -116,9 +116,9 @@ class ALIEN_EXPORT AbstractFamily : public IIndexManager::IAbstractFamily
    * @param ghost_owners Array of ghost item owners
    * @param parallel_mng Parallel Manager.
    */
-  AbstractFamily(const ConstArrayView<Int64> uniqueIds,
-      const ConstArrayView<Int64> ghost_uniqueIds,
-      const ConstArrayView<Integer> ghost_owners, IMessagePassingMng* parallel_mng,
+  AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
+      const ConstArrayView<Int64>& ghost_uniqueIds,
+      const ConstArrayView<Integer>& ghost_owners, IMessagePassingMng* parallel_mng,
       ITraceMng* trace_mng = nullptr);
 
   /*! Build a family for locally owned unique ids.
@@ -127,31 +127,27 @@ class ALIEN_EXPORT AbstractFamily : public IIndexManager::IAbstractFamily
    * @param parallel_mng Parallel Manager.
    */
 
-  /* FIXME: Comments
-   * Local items then others ?
-   * Owners array is built in parallel ?
-   */
-  AbstractFamily(const ConstArrayView<Int64> uniqueIds, IMessagePassingMng* parallel_mng,
+  AbstractFamily(const ConstArrayView<Int64>& uniqueIds, IMessagePassingMng* parallel_mng,
       ITraceMng* trace_mng = nullptr);
 
-  virtual ~AbstractFamily() {}
+  ~AbstractFamily() override = default;
 
  public:
   IAbstractFamily* clone() const { return new AbstractFamily(*this); }
 
  public:
-  Int32 maxLocalId() const { return m_unique_ids.size(); }
+  Int32 maxLocalId() const override { return m_unique_ids.size(); }
 
   void uniqueIdToLocalId(
-      ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const;
+      ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const override;
 
-  IAbstractFamily::Item item(Int32 localId) const;
+  IAbstractFamily::Item item(Int32 localId) const override;
 
-  Arccore::SharedArray<Arccore::Integer> owners(ConstArrayView<Int32> localIds) const;
+  Arccore::SharedArray<Arccore::Integer> owners(ConstArrayView<Int32> localIds) const override;
 
-  Arccore::SharedArray<Arccore::Int64> uids(ConstArrayView<Int32> localIds) const;
+  Arccore::SharedArray<Arccore::Int64> uids(ConstArrayView<Int32> localIds) const override;
 
-  Arccore::SharedArray<Arccore::Int32> allLocalIds() const;
+  Arccore::SharedArray<Arccore::Int32> allLocalIds() const override;
 
  private:
   IMessagePassingMng* m_parallel_mng = nullptr;

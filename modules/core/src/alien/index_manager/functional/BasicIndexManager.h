@@ -152,7 +152,7 @@ namespace ArcaneParallelTest {
     {
       InternalEntryIndex(MyEntryImpl* e, Arccore::Integer lid, Arccore::Integer kind,
           Arccore::Int64 uid, Arccore::Integer index,
-          Arccore::Integer creation_index ALIEN_UNUSED_PARAM, Arccore::Integer owner)
+          [[maybe_unused]] Arccore::Integer creation_index, Arccore::Integer owner)
       : m_entry(e)
       , m_uid(uid)
       , m_localid(lid)

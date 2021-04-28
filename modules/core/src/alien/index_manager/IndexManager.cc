@@ -17,8 +17,6 @@
  */
 
 #include <algorithm>
-#include <cstdlib>
-#include <iostream>
 #include <list>
 #include <map>
 #include <utility>
@@ -47,7 +45,7 @@ namespace Alien {
 
 struct IndexManager::EntryLocalId
 {
-  EntryLocalId(Alien::Integer size)
+  explicit EntryLocalId(Alien::Integer size)
   : m_is_defined(size, false)
   {}
 
@@ -56,7 +54,7 @@ struct IndexManager::EntryLocalId
     m_defined_lids.reserve(m_defined_lids.size() + count);
   }
 
-  bool isDefinedLid(const Integer localId) const { return m_is_defined[localId]; }
+  [[nodiscard]] bool isDefinedLid(const Integer localId) const { return m_is_defined[localId]; }
 
   void defineLid(const Integer localId, const Integer pos)
   {
@@ -78,7 +76,7 @@ struct IndexManager::EntryLocalId
         A_FUNCINFO, "Inconsistent state : cannot find id to remove");
   }
 
-  const UniqueArray<std::pair<Integer, Integer>>& definedLids() const
+  [[nodiscard]] const UniqueArray<std::pair<Integer, Integer>>& definedLids() const
   {
     return m_defined_lids;
   }
@@ -98,9 +96,9 @@ struct IndexManager::EntryLocalId
 
 struct IndexManager::EntrySendRequest
 {
-  EntrySendRequest() {}
+  EntrySendRequest() =default;
 
-  ~EntrySendRequest() {}
+  ~EntrySendRequest() = default;
 
   EntrySendRequest(const EntrySendRequest& esr)
   : count(esr.count)
@@ -109,25 +107,23 @@ struct IndexManager::EntrySendRequest
   Arccore::Ref<Arccore::MessagePassing::ISerializeMessage> comm;
   Integer count = 0;
 
- private:
-  void operator=(const EntrySendRequest&);
+  void operator=(const EntrySendRequest&) = delete;
 };
 
 /*---------------------------------------------------------------------------*/
 
 struct IndexManager::EntryRecvRequest
 {
-  EntryRecvRequest() {}
+  EntryRecvRequest() = default;
 
-  ~EntryRecvRequest() {}
+  ~EntryRecvRequest() = default;
 
-  EntryRecvRequest(const EntrySendRequest& err) {}
+  explicit EntryRecvRequest(const EntrySendRequest& err) {}
 
   Arccore::Ref<Arccore::MessagePassing::ISerializeMessage> comm;
   UniqueArray<Int64> ids;
 
- private:
-  void operator=(const EntryRecvRequest&);
+  void operator=(const EntryRecvRequest&) = delete;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -194,7 +190,7 @@ IndexManager::setVerboseMode(bool verbose)
 
 ScalarIndexSet
 IndexManager::buildEntry(
-    const String name, const IAbstractFamily* family, const Integer kind)
+    const String& name, const IAbstractFamily* family, const Integer kind)
 {
   if (m_state != Initialized)
     throw FatalErrorException(A_FUNCINFO, "Inconsistent state");
@@ -219,7 +215,7 @@ IndexManager::buildEntry(
 
 void
 IndexManager::defineIndex(
-    const ScalarIndexSet& entry, const ConstArrayView<Integer> localIds)
+    const ScalarIndexSet& entry, const ConstArrayView<Integer>& localIds)
 {
   if (m_state != Initialized)
     throw FatalErrorException(A_FUNCINFO, "Inconsistent state");
@@ -255,7 +251,7 @@ IndexManager::defineIndex(
 
 void
 IndexManager::removeIndex(
-    const ScalarIndexSet& entry, const ConstArrayView<Integer> localIds)
+    const ScalarIndexSet& entry, const ConstArrayView<Integer>& localIds)
 {
   if (m_state != Initialized)
     throw FatalErrorException(A_FUNCINFO, "Inconsistent state");
@@ -614,7 +610,7 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
           current_item_lid, 0, current_item_owner };
 
         // Recherche de la liste triée par défaut
-        auto lookup = std::lower_bound(entry_index.begin(), entry_index.end(),
+        auto lookup2 = std::lower_bound(entry_index.begin(), entry_index.end(),
             lookup_entry, [](const InternalEntryIndex& a, const InternalEntryIndex& b) {
               if (a.m_entry_kind != b.m_entry_kind)
                 return a.m_entry_kind < b.m_entry_kind;
@@ -624,12 +620,12 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
                 return a.m_entry_uid < b.m_entry_uid;
             });
 
-        if ((lookup == entry_index.end()) || !(*lookup == lookup_entry))
+        if ((lookup2 == entry_index.end()) || !(*lookup2 == lookup_entry))
           throw FatalErrorException("Not locally defined entry requested");
 
         // Mise en place de la pre-valeur retour [avant renumérotation locale] (EntryIndex
         // écrit sur un Int64)
-        ids[j] = lookup->m_item_index;
+        ids[j] = lookup2->m_item_index;
       }
     }
 
@@ -771,7 +767,7 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
     String nameString;
     sbuf->get(nameString);
     ALIEN_ASSERT(
-        (fastReturnMap[nameString][origDomainId] != NULL), ("Inconsistency detected"));
+        (fastReturnMap[nameString][origDomainId] != nullptr), ("Inconsistency detected"));
     auto& request = *fastReturnMap[nameString][origDomainId];
     request.comm = *i; // Reconnection pour accès rapide depuis l'EntrySendRequest
 #ifdef ALIEN_DEBUG_ASSERT
@@ -933,7 +929,7 @@ IndexManager::localSize() const
 
 ScalarIndexSet
 IndexManager::buildScalarIndexSet(const String name,
-    const ConstArrayView<Integer> localIds, const IAbstractFamily& family,
+    const ConstArrayView<Integer>& localIds, const IAbstractFamily& family,
     const Integer kind, const eKeepAlive alive)
 {
   alien_debug([&] {
@@ -963,7 +959,7 @@ IndexManager::buildScalarIndexSet(const String name, const IAbstractFamily& fami
 
 IndexManager::VectorIndexSet
 IndexManager::buildVectorIndexSet(const String name,
-    const ConstArrayView<Integer> localIds, const IAbstractFamily& family,
+    const ConstArrayView<Integer>& localIds, const IAbstractFamily& family,
     const UniqueArray<Integer> kind, const eKeepAlive alive)
 {
   alien_debug([&] {

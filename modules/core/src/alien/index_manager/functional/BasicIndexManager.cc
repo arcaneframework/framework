@@ -1,7 +1,6 @@
 
 #include <algorithm>
 #include <cstdlib>
-#include <iostream>
 #include <list>
 #include <map>
 #include <memory>
@@ -9,7 +8,6 @@
 #include <vector>
 
 #include <alien/utils/Precomp.h>
-#include <alien/utils/Trace.h>
 
 #include <arccore/message_passing/BasicSerializeMessage.h>
 #include <arccore/message_passing/ISerializeMessageList.h>
@@ -89,10 +87,10 @@ namespace ArcaneParallelTest {
     , m_own_size(0)
     , m_size(0)
     {
-      ;
+
     }
 
-    virtual ~MyEntryImpl() { ; }
+    virtual ~MyEntryImpl() { }
 
     Arccore::ConstArrayView<Arccore::Integer> getOwnIndexes() const
     {
@@ -288,7 +286,7 @@ namespace ArcaneParallelTest {
 
   struct BasicIndexManager::EntrySendRequest
   {
-    EntrySendRequest() { ; }
+    EntrySendRequest() { }
 
     ~EntrySendRequest()
     {
@@ -317,7 +315,7 @@ namespace ArcaneParallelTest {
 
   struct BasicIndexManager::EntryRecvRequest
   {
-    EntryRecvRequest() { ; }
+    EntryRecvRequest() { }
 
     ~EntryRecvRequest()
     {
@@ -353,7 +351,7 @@ namespace ArcaneParallelTest {
     : m_iter(entries.begin())
     , m_end(entries.end())
     {
-      ;
+
     }
 
     void moveNext() { ++m_iter; }
@@ -795,15 +793,15 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
           InternalEntryIndex lookup_entry(currentEntry, current_item_lid, entry_kind,
               current_item_uid, 0, current_creation_index, current_item_owner);
 
-          EntryIndexMap::const_iterator lookup = std::lower_bound(entry_index.begin(),
+          EntryIndexMap::const_iterator lookup2 = std::lower_bound(entry_index.begin(),
               entry_index.end(), lookup_entry, EntryIndexComparator());
 
-          if ((lookup == entry_index.end()) || !(*lookup == lookup_entry))
+          if ((lookup2 == entry_index.end()) || !(*lookup2 == lookup_entry))
             throw FatalErrorException("Not locally defined entry requested");
 
           // Mise en place de la pre-valeur retour [avant renumérotation locale]
           // (EntryIndex écrit sur un Int64)
-          ids[j] = lookup->m_index;
+          ids[j] = lookup2->m_index;
         }
       }
 
