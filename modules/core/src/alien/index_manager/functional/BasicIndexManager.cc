@@ -552,12 +552,7 @@ BasicIndexManager::parallel_prepare(EntryIndexMap& entry_index)
     MyEntryImpl* entryImpl = entryIndex.m_entry;
     const Integer item_owner = entryIndex.m_owner;
     if (item_owner != m_local_owner) {
-      // 	  if (m_trace) m_trace->pinfo() << item.localId() << " : " << item.uniqueId()
-      // << " is owned by " << item.owner() << " with localIndex=" << i->second;
       sendRequests[item_owner][entryImpl].count++;
-    } else {
-      // 	  if (m_trace) m_trace->pinfo() << item.localId() << " : " << item.uniqueId()
-      // << " is local with localIndex=" << i->second;
     }
   }
 
@@ -616,8 +611,6 @@ BasicIndexManager::parallel_prepare(EntryIndexMap& entry_index)
   for (Integer isd = 0, nsd = m_parallel_mng->commSize(); isd < nsd; ++isd) {
     Integer recvCount = recvFromDomains[2 * isd + 0];
     while (recvCount-- > 0) {
-      // 	  if (m_trace) m_trace->pinfo() << "will receive an entry with " <<
-      // recvFromDomains[2*isd+1] << " uid from " << isd;
       auto recvMsg = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
           MessageRank(m_parallel_mng->commRank()), MessageRank(isd),
           Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
@@ -647,8 +640,6 @@ BasicIndexManager::parallel_prepare(EntryIndexMap& entry_index)
 
       sbuf->get(nameString);
       uidCount = sbuf->getInteger();
-      //  if (m_trace) m_trace->pinfo() << nameString << " received with " << uidCount <<
-      //  " ids";
       recvRequest.ids.resize(uidCount);
       sbuf->getSpan(recvRequest.ids);
       ALIEN_ASSERT((uidCount == recvRequest.ids.size()), ("Inconsistency detected"));
