@@ -38,8 +38,8 @@ DefaultAbstractFamily::DefaultAbstractFamily(const DefaultAbstractFamily& family
 
 /*---------------------------------------------------------------------------*/
 
-DefaultAbstractFamily::DefaultAbstractFamily(const ConstArrayView<Int64> uniqueIds,
-    const ConstArrayView<Integer> owners, IMessagePassingMng* parallel_mng)
+DefaultAbstractFamily::DefaultAbstractFamily(const ConstArrayView<Int64>& uniqueIds,
+    const ConstArrayView<Integer>& owners, IMessagePassingMng* parallel_mng)
 : m_parallel_mng(parallel_mng)
 {
   copy(m_unique_ids, uniqueIds);
@@ -49,7 +49,7 @@ DefaultAbstractFamily::DefaultAbstractFamily(const ConstArrayView<Int64> uniqueI
 /*---------------------------------------------------------------------------*/
 
 DefaultAbstractFamily::DefaultAbstractFamily(
-    const ConstArrayView<Int64> uniqueIds, IMessagePassingMng* parallel_mng)
+    const ConstArrayView<Int64>& uniqueIds, IMessagePassingMng* parallel_mng)
 : m_parallel_mng(parallel_mng)
 {
   const Integer commSize = m_parallel_mng->commSize();

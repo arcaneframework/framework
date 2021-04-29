@@ -173,8 +173,8 @@ IndexManager::init()
   m_global_removed_entry_count = 0;
 
   // Destruction des structure de type entry
-  for (auto i = m_entries.begin(); i != m_entries.end(); ++i) {
-    delete *i;
+  for (auto & m_entrie : m_entries) {
+    delete m_entrie;
   }
   m_entries.clear();
 
@@ -357,8 +357,8 @@ IndexManager::end_prepare(EntryIndexMap& entryIndex)
 {
   // Calcul de la taille des indices par entrée
   std::map<Integer, Integer> count_table;
-  for (auto i = entryIndex.begin(); i != entryIndex.end(); ++i) {
-    count_table[i->m_entry_uid]++;
+  for (auto & i : entryIndex) {
+    count_table[i.m_entry_uid]++;
   }
 
   auto isOwn = [&](const InternalEntryIndex& i) -> bool {
@@ -377,11 +377,11 @@ IndexManager::end_prepare(EntryIndexMap& entryIndex)
 
     Integer own_i = 0;
     Integer ghost_i = size;
-    for (auto i = entryIndex.begin(); i != entryIndex.end(); ++i) {
-      if (i->m_entry_uid == uid) {
-        const Integer local_id = i->m_item_localid;
-        const Integer index = i->m_item_index;
-        const bool is_own = isOwn(*i);
+    for (auto & i : entryIndex) {
+      if (i.m_entry_uid == uid) {
+        const Integer local_id = i.m_item_localid;
+        const Integer index = i.m_item_index;
+        const bool is_own = isOwn(i);
         if (is_own) {
           all_items[own_i] = local_id;
           all_indices[own_i] = index;
@@ -454,8 +454,7 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
   parallel = std::make_shared<ParallelRequests>();
 
   // 1 - Comptage des Items non locaux
-  for (auto i = entry_index.begin(); i != entry_index.end(); ++i) {
-    const InternalEntryIndex& entryIndex = *i;
+  for (auto & entryIndex : entry_index) {
     const Integer item_owner = entryIndex.m_item_owner;
     if (item_owner != m_local_owner) {
       // if (m_trace_mng) m_trace_mng->pinfo() << entryIndex.m_item_localid << " : " <<
@@ -478,9 +477,9 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
   for (auto i = parallel->sendRequests.begin(); i != parallel->sendRequests.end(); ++i) {
     const Integer destDomainId = i->first;
     auto& requests = i->second;
-    for (auto j = requests.begin(); j != requests.end(); ++j) {
-      EntrySendRequest& request = j->second;
-      const Integer entryImpl = j->first;
+    for (auto & j : requests) {
+      EntrySendRequest& request = j.second;
+      const Integer entryImpl = j.first;
       const String nameString = m_entries[entryImpl]->getName();
 
       // if (m_trace) m_trace->pinfo() << "Entry [" << nameString << "] to " <<
@@ -510,8 +509,7 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
 
   // 2 - Accumulation des valeurs à demander
 
-  for (auto i = entry_index.begin(); i != entry_index.end(); ++i) {
-    const auto& entryIndex = *i;
+  for (auto & entryIndex : entry_index) {
     const Integer entryImpl = entryIndex.m_entry_uid;
     const Integer item_owner = entryIndex.m_item_owner;
     const Int64 item_uid = entryIndex.m_item_uid;
@@ -689,20 +687,19 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
 
   // C'est ici et uniquement ici qu'est matérialisé l'ordre des entrées
   Integer currentEntryIndex = m_global_entry_offset; // commence par l'offset local
-  for (auto i = entry_index.begin(); i != entry_index.end(); ++i) {
-    const auto& entryIndex = *i;
+  for (auto & i : entry_index) {
+    const auto& entryIndex = i;
     const Integer item_owner = entryIndex.m_item_owner;
     if (item_owner == m_local_owner) { // Numérotation locale !
       const Integer newIndex = currentEntryIndex++;
-      entry_reindex[i->m_item_index + m_global_entry_offset] =
+      entry_reindex[i.m_item_index + m_global_entry_offset] =
           newIndex; // Table de translation
-      i->m_item_index = newIndex;
+      i.m_item_index = newIndex;
     }
   }
 
   // 5 - Envoie des retours (EntryIndex globaux)
-  for (auto i = parallel->recvRequests.begin(); i != parallel->recvRequests.end(); ++i) {
-    auto& recvRequest = *i;
+  for (auto & recvRequest : parallel->recvRequests) {
     auto sbuf = recvRequest.comm->serializer();
     auto& ids = recvRequest.ids;
     for (Integer j = 0; j < ids.size(); ++j) {
@@ -728,9 +725,9 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
   for (auto i = parallel->sendRequests.begin(); i != parallel->sendRequests.end(); ++i) {
     const Integer destDomainId = i->first;
     auto& requests = i->second;
-    for (auto j = requests.begin(); j != requests.end(); ++j) {
-      auto& request = j->second;
-      const Integer entryImpl = j->first;
+    for (auto & j : requests) {
+      auto& request = j.second;
+      const Integer entryImpl = j.first;
       const String nameString = m_entries[entryImpl]->getName();
 
       // On ne peut pas associer directement le message à cette entrée
@@ -762,8 +759,8 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
   parallel->messageList.reset();
   // 6 - Traitement des réponses
   // Association aux EntrySendRequest du buffer correspondant
-  for (auto i = returnedRequests.begin(); i != returnedRequests.end(); ++i) {
-    auto& message = *i;
+  for (auto & returnedRequest : returnedRequests) {
+    auto& message = returnedRequest;
     auto origDomainId = message->destination().value();
     auto sbuf = message->serializer();
     sbuf->setMode(Alien::ISerializer::ModeGet);
@@ -772,7 +769,7 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
     ALIEN_ASSERT(
         (fastReturnMap[nameString][origDomainId] != nullptr), ("Inconsistency detected"));
     auto& request = *fastReturnMap[nameString][origDomainId];
-    request.comm = *i; // Reconnection pour accès rapide depuis l'EntrySendRequest
+    request.comm = returnedRequest; // Reconnection pour accès rapide depuis l'EntrySendRequest
 #ifdef ALIEN_DEBUG_ASSERT
     const Integer idCount = sbuf.getInteger();
     ALIEN_ASSERT((request.count == idCount), ("Inconsistency detected"));
@@ -784,8 +781,8 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
 
   // Distribution des reponses
   // Par parcours dans ordre initial (celui de la demande)
-  for (auto i = entry_index.begin(); i != entry_index.end(); ++i) {
-    const auto& entryIndex = *i;
+  for (auto & i : entry_index) {
+    const auto& entryIndex = i;
     const Integer item_owner = entryIndex.m_item_owner;
     if (item_owner != m_local_owner) {
       const Integer entryImpl = entryIndex.m_entry_uid;
@@ -794,8 +791,8 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
       --request.count;
       auto sbuf = request.comm->serializer();
       const Integer newIndex = sbuf->getInteger();
-      entry_reindex[i->m_item_index + m_global_entry_offset] = newIndex;
-      i->m_item_index = newIndex;
+      entry_reindex[i.m_item_index + m_global_entry_offset] = newIndex;
+      i.m_item_index = newIndex;
     }
   }
 }
@@ -931,9 +928,9 @@ IndexManager::localSize() const
 /*---------------------------------------------------------------------------*/
 
 ScalarIndexSet
-IndexManager::buildScalarIndexSet(const String name,
+IndexManager::buildScalarIndexSet(const String& name,
     const ConstArrayView<Integer>& localIds, const IAbstractFamily& family,
-    const Integer kind, const eKeepAlive alive)
+    Integer kind, eKeepAlive alive)
 {
   alien_debug([&] {
     cout() << "IndexManager: build scalar index set '" << name << "', kind=" << kind;
@@ -946,8 +943,8 @@ IndexManager::buildScalarIndexSet(const String name,
 /*---------------------------------------------------------------------------*/
 
 ScalarIndexSet
-IndexManager::buildScalarIndexSet(const String name, const IAbstractFamily& family,
-    const Integer kind, const eKeepAlive alive)
+IndexManager::buildScalarIndexSet(const String& name, const IAbstractFamily& family,
+    Integer kind, eKeepAlive alive)
 {
   alien_debug([&] {
     cout() << "IndexManager: build scalar index set '" << name << "', kind=" << kind;
@@ -961,9 +958,9 @@ IndexManager::buildScalarIndexSet(const String name, const IAbstractFamily& fami
 /*---------------------------------------------------------------------------*/
 
 IndexManager::VectorIndexSet
-IndexManager::buildVectorIndexSet(const String name,
+IndexManager::buildVectorIndexSet(const String& name,
     const ConstArrayView<Integer>& localIds, const IAbstractFamily& family,
-    const UniqueArray<Integer> kind, const eKeepAlive alive)
+    const UniqueArray<Integer>& kind, eKeepAlive alive)
 {
   alien_debug([&] {
     cout() << "IndexManager: build vector index set '" << name
@@ -982,8 +979,8 @@ IndexManager::buildVectorIndexSet(const String name,
 /*---------------------------------------------------------------------------*/
 
 IndexManager::VectorIndexSet
-IndexManager::buildVectorIndexSet(const String name, const IAbstractFamily& family,
-    const UniqueArray<Integer> kind, const eKeepAlive alive)
+IndexManager::buildVectorIndexSet(const String& name, const IAbstractFamily& family,
+    const UniqueArray<Integer>& kind, eKeepAlive alive)
 {
   alien_debug([&] {
     cout() << "IndexManager: build vector index set '" << name
@@ -1003,7 +1000,7 @@ IndexManager::buildVectorIndexSet(const String name, const IAbstractFamily& fami
 /*---------------------------------------------------------------------------*/
 
 const IAbstractFamily*
-IndexManager::addNewAbstractFamily(const IAbstractFamily* family, const eKeepAlive alive)
+IndexManager::addNewAbstractFamily(const IAbstractFamily* family, eKeepAlive alive)
 {
   auto finder = m_abstract_families.find(family);
   if (finder

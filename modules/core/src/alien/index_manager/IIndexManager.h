@@ -47,7 +47,7 @@ class IIndexManager
     };
 
    public:
-    virtual ~IAbstractFamily() {}
+    virtual ~IAbstractFamily() = default;
 
    public:
     //! Construit un clone de cet objet
@@ -78,7 +78,7 @@ class IIndexManager
   {
    public:
     //! Destructeur
-    virtual ~EntryImpl() {}
+    virtual ~EntryImpl() = default;
     //! Retourne la liste des Index de l'Entry
     virtual Arccore::ConstArrayView<Arccore::Integer> getOwnIndexes() const = 0;
     //! Retourne la liste des Index de l'Entry (own + ghost)
@@ -120,16 +120,14 @@ class IIndexManager
    public:
     //! Constructeur par défaut
     Entry()
-    : m_impl(NULL)
+    : m_impl(nullptr)
     {}
 
     //! Constructeur par copie
-    Entry(const Entry& en)
-    : m_impl(en.m_impl)
-    {}
+    Entry(const Entry& en) = default;
 
     //! Constructeur
-    Entry(EntryImpl* impl)
+    explicit Entry(EntryImpl* impl)
     : m_impl(impl)
     {}
 
@@ -145,9 +143,9 @@ class IIndexManager
     EntryImpl* internal() const { return m_impl; }
 
     //! Indique si l'entrée est définie
-    bool null() const { return m_impl == NULL; }
+    bool null() const { return m_impl == nullptr; }
 
-    void nullify() { m_impl = NULL; }
+    void nullify() { m_impl = nullptr; }
 
     //! Ensemble des indices 'own' gérés par cette entrée
     Arccore::ConstArrayView<Arccore::Integer> getOwnIndexes() const
@@ -210,8 +208,8 @@ class IIndexManager
   class EntryEnumeratorImpl
   {
    public:
-    EntryEnumeratorImpl() {}
-    virtual ~EntryEnumeratorImpl() {}
+    EntryEnumeratorImpl() = default;
+    virtual ~EntryEnumeratorImpl() = default;
     virtual void moveNext() = 0;
     virtual bool hasNext() const = 0;
     virtual EntryImpl* get() const = 0;
@@ -226,15 +224,14 @@ class IIndexManager
 
    public:
     //! Constructeur par copie
-    EntryEnumerator(const EntryEnumerator& e)
-    : m_impl(e.m_impl)
-    {}
+    EntryEnumerator(const EntryEnumerator& e) = default;
+
     //! Constructeur par consultation de l'\a IndexManager
-    EntryEnumerator(IIndexManager const* manager)
+    explicit EntryEnumerator(IIndexManager const* manager)
     : m_impl(manager->enumerateEntry().m_impl)
     {}
     //! Constructeur par implémentation
-    EntryEnumerator(EntryEnumeratorImpl* impl)
+    explicit EntryEnumerator(EntryEnumeratorImpl* impl)
     : m_impl(impl)
     {}
     //! Avance l'énumérateur
@@ -242,7 +239,7 @@ class IIndexManager
     //! Teste l'existence d'un élément suivant
     bool hasNext() const { return m_impl->hasNext(); }
     //! Déréférencement
-    Entry operator*() const { return m_impl->get(); }
+    Entry operator*() const { return Entry(m_impl->get()); }
     //! Déréférencement indirect
     EntryImpl* operator->() const { return m_impl->get(); }
     //! Nombre d'élément dans l'énumérateur
@@ -253,15 +250,15 @@ class IIndexManager
         ++my_size;
       return my_size;
     }
-    bool null() { return m_impl == NULL; }
+    bool null() { return m_impl == nullptr; }
   };
 
  public:
   //! Constructeur par défaut
-  IIndexManager() {}
+  IIndexManager() = default;
 
   //! Destructeur
-  virtual ~IIndexManager() {}
+  virtual ~IIndexManager() = default;
 
   //! Indique si la phase de préparation est achevée
   virtual bool isPrepared() const = 0;

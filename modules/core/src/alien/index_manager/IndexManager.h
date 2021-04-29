@@ -51,7 +51,7 @@ class ALIEN_EXPORT IndexManager
   class Iterator
   {
    public:
-    Iterator(const ScalarIndexSetVector::iterator& it)
+    explicit Iterator(const ScalarIndexSetVector::iterator& it)
     : m_iterator(it)
     {}
     void operator++() { m_iterator++; }
@@ -65,7 +65,7 @@ class ALIEN_EXPORT IndexManager
   class ConstIterator
   {
    public:
-    ConstIterator(const ScalarIndexSetVector::const_iterator& it)
+    explicit ConstIterator(const ScalarIndexSetVector::const_iterator& it)
     : m_iterator(it)
     {}
     void operator++() { m_iterator++; }
@@ -93,7 +93,7 @@ class ALIEN_EXPORT IndexManager
   };
 
  public:
-  IndexManager(
+  explicit IndexManager(
       Alien::IMessagePassingMng* parallelMng, Alien::ITraceMng* traceMng = nullptr);
 
   virtual ~IndexManager();
@@ -140,9 +140,9 @@ class ALIEN_EXPORT IndexManager
    * @param alive
    * @return
    */
-  ScalarIndexSet buildScalarIndexSet(const String name,
+  ScalarIndexSet buildScalarIndexSet(const String& name,
       const ConstArrayView<Integer>& localIds, const IAbstractFamily& family,
-      const Integer kind, const eKeepAlive alive = DontClone);
+      Integer kind, eKeepAlive alive = DontClone);
 
   /*! New scalar entry, on elements of a family.
    *
@@ -152,8 +152,8 @@ class ALIEN_EXPORT IndexManager
    * @param alive
    * @return
    */
-  ScalarIndexSet buildScalarIndexSet(const String name, const IAbstractFamily& family,
-      const Integer kind, const eKeepAlive alive = DontClone);
+  ScalarIndexSet buildScalarIndexSet(const String& name, const IAbstractFamily& family,
+      Integer kind, eKeepAlive alive = DontClone);
 
   /*! New vector entry, on a set of abstract items.
    *
@@ -166,9 +166,9 @@ class ALIEN_EXPORT IndexManager
    *
    * Current implementation handles multi-scalar entries as vector.
    */
-  VectorIndexSet buildVectorIndexSet(const String name,
+  VectorIndexSet buildVectorIndexSet(const String& name,
       const ConstArrayView<Integer>& localIds, const IAbstractFamily& family,
-      const UniqueArray<Integer> kind, const eKeepAlive alive = DontClone);
+      const UniqueArray<Integer>& kind, eKeepAlive alive = DontClone);
   /*! New vector entry, on elements of a family.
    *
    * @param name
@@ -179,8 +179,8 @@ class ALIEN_EXPORT IndexManager
    *
    * Current implementation handles multi-scalar entries as vector.
    */
-  VectorIndexSet buildVectorIndexSet(const String name, const IAbstractFamily& family,
-      const UniqueArray<Integer> kind, const eKeepAlive alive = DontClone);
+  VectorIndexSet buildVectorIndexSet(const String& name, const IAbstractFamily& family,
+      const UniqueArray<Integer>& kind, eKeepAlive alive = DontClone);
   /*! }@ */
 
   /*! Remove a entities from the index.
@@ -213,14 +213,14 @@ class ALIEN_EXPORT IndexManager
 
   Integer nullIndex() const;
 
-  Iterator begin() { return m_entries.begin(); }
-  Iterator end() { return m_entries.end(); }
-  ConstIterator begin() const { return m_entries.begin(); }
-  ConstIterator end() const { return m_entries.end(); }
+  Iterator begin() { return Iterator(m_entries.begin()); }
+  Iterator end() { return Iterator(m_entries.end()); }
+  ConstIterator begin() const { return ConstIterator(m_entries.begin()); }
+  ConstIterator end() const { return ConstIterator(m_entries.end()); }
 
  private:
   ScalarIndexSet buildEntry(
-      const String& name, const IAbstractFamily* itemFamily, const Integer kind);
+      const String& name, const IAbstractFamily* itemFamily, Integer kind);
 
   void defineIndex(const ScalarIndexSet& entry, const ConstArrayView<Integer>& localIds);
 
@@ -233,7 +233,7 @@ class ALIEN_EXPORT IndexManager
   void end_prepare(EntryIndexMap& entryIndex);
 
   const IAbstractFamily* addNewAbstractFamily(
-      const IAbstractFamily* family, const eKeepAlive alive);
+      const IAbstractFamily* family, eKeepAlive alive);
 
  private:
   Alien::IMessagePassingMng* m_parallel_mng = nullptr;

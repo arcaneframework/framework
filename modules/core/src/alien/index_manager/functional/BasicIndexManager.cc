@@ -388,10 +388,10 @@ BasicIndexManager::buildEntry(
   if (lookup.second) {
     auto* entry = new MyEntryImpl(name, family, m_creation_index++, this, kind);
     lookup.first->second = entry;
-    return entry;
+    return Entry(entry);
   } else {
     throw FatalErrorException(A_FUNCINFO, "Already defined entry");
-    return nullptr;
+    return Entry(nullptr);
   }
 }
 
@@ -402,10 +402,10 @@ BasicIndexManager::getEntry(const String& name) const
 {
   auto lookup = m_entry_set.find(name);
   if (lookup != m_entry_set.end()) {
-    return lookup->second;
+    return Entry(lookup->second);
   } else {
     throw FatalErrorException(A_FUNCINFO, "Undefined entry requested");
-    return nullptr;
+    return Entry(nullptr);
   }
 }
 

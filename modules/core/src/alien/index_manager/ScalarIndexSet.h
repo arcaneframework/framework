@@ -46,14 +46,14 @@ class ALIEN_EXPORT ScalarIndexSet
 
   ScalarIndexSet(const ScalarIndexSet& en);
 
-  ScalarIndexSet(ScalarIndexSet&& en);
+  ScalarIndexSet(ScalarIndexSet&& en) noexcept ;
 
-  ScalarIndexSet(const String name, const Integer creationIndex,
-      const IndexManager* manager, const Integer kind);
+  ScalarIndexSet(const String& name, Integer creationIndex,
+      const IndexManager* manager, Integer kind);
 
   ScalarIndexSet& operator=(const ScalarIndexSet& en);
 
-  ScalarIndexSet& operator=(ScalarIndexSet&& en);
+  ScalarIndexSet& operator=(ScalarIndexSet&& en) noexcept ;
 
   bool operator==(const ScalarIndexSet& en) const;
 

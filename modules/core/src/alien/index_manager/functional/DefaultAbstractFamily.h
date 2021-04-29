@@ -33,7 +33,7 @@ namespace Alien {
 class ALIEN_EXPORT DefaultAbstractFamily : public IAbstractFamily
 {
  public:
-  explicit DefaultAbstractFamily(const DefaultAbstractFamily& family);
+  DefaultAbstractFamily(const DefaultAbstractFamily& family);
 
   /*! Build a family for locally known unique ids.
    *
@@ -41,8 +41,8 @@ class ALIEN_EXPORT DefaultAbstractFamily : public IAbstractFamily
    * @param owners Array of item owners
    * @param parallel_mng Parallel Manager.
    */
-  DefaultAbstractFamily(const ConstArrayView<Int64> uniqueIds,
-      const ConstArrayView<Integer> owners, IMessagePassingMng* parallel_mng);
+  DefaultAbstractFamily(const ConstArrayView<Int64>& uniqueIds,
+      const ConstArrayView<Integer>& owners, IMessagePassingMng* parallel_mng);
 
   /*! Build a family for locally owned unique ids.
    *
@@ -50,26 +50,26 @@ class ALIEN_EXPORT DefaultAbstractFamily : public IAbstractFamily
    * @param parallel_mng Parallel Manager.
    */
   DefaultAbstractFamily(
-      const ConstArrayView<Int64> uniqueIds, IMessagePassingMng* parallel_mng);
+      const ConstArrayView<Int64>& uniqueIds, IMessagePassingMng* parallel_mng);
 
   ~DefaultAbstractFamily() override = default;
 
  public:
-  IAbstractFamily* clone() const { return new DefaultAbstractFamily(*this); }
+  IAbstractFamily* clone() const override { return new DefaultAbstractFamily(*this); }
 
  public:
-  Int32 maxLocalId() const { return m_unique_ids.size(); }
+  Int32 maxLocalId() const override { return m_unique_ids.size(); }
 
   void uniqueIdToLocalId(
-      ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const;
+      ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const override;
 
-  IAbstractFamily::Item item(Int32 localId) const;
+  IAbstractFamily::Item item(Int32 localId) const override;
 
-  SafeConstArrayView<Integer> owners(ConstArrayView<Int32> localIds) const;
+  SafeConstArrayView<Integer> owners(ConstArrayView<Int32> localIds) const override;
 
-  SafeConstArrayView<Int64> uids(ConstArrayView<Int32> localIds) const;
+  SafeConstArrayView<Int64> uids(ConstArrayView<Int32> localIds) const override;
 
-  SafeConstArrayView<Int32> allLocalIds() const;
+  SafeConstArrayView<Int32> allLocalIds() const override;
 
  private:
   IMessagePassingMng* m_parallel_mng;
