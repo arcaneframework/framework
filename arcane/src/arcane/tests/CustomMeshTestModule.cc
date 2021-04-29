@@ -12,6 +12,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/ITimeLoopMng.h"
+#include "arcane/IMesh.h"
+#include "arcane/MeshHandle.h"
 
 #include "CustomMeshTest_axl.h"
 
@@ -30,6 +32,13 @@ class CustomMeshTestModule : public ArcaneCustomMeshTestObject {
  public:
   void init() {
     info() << "-- INIT CUSTOM MESH MODULE";
+    auto mesh = meshHandle().meshBase();
+//    auto all_cells = mesh->allCells();
+//    ENUMERATE_CELL (icell, all_cells){
+//      icell->localId();
+//    }
+
+
     subDomain()->timeLoopMng()->stopComputeLoop(true);
   }
 };
