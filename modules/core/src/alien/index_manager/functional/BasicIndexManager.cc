@@ -322,7 +322,7 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
 : m_parallel_mng(parallelMng)
 , m_state(Undef)
 {
-  this->init();
+  init_mine();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -330,13 +330,20 @@ BasicIndexManager::BasicIndexManager(IMessagePassingMng* parallelMng)
 
 BasicIndexManager::~BasicIndexManager()
 {
-  this->init();
+  // Call non virtual function from dtor
+  init_mine();
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
 BasicIndexManager::init()
+{
+  init_mine();
+}
+
+void
+BasicIndexManager::init_mine()
 {
   m_local_owner = m_parallel_mng->commRank();
 
@@ -358,7 +365,6 @@ BasicIndexManager::init()
   m_abstract_families.clear();
   m_abstract_family_to_kind_map.clear();
 }
-
 /*---------------------------------------------------------------------------*/
 
 void

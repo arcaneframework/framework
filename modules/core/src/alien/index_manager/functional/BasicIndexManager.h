@@ -215,6 +215,9 @@ class ALIEN_EXPORT BasicIndexManager : public IIndexManager
   }
   void reserveEntries(const EntryIndexMap& entry_index);
   Arccore::Integer addNewAbstractFamily(const IAbstractFamily* family);
+
+  //! Init datastructure with a non virtual function
+  void init_mine();
 };
 
 /*---------------------------------------------------------------------------*/
