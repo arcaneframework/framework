@@ -16,11 +16,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <algorithm>
+#include "ScalarIndexSet.h"
+
 #include <list>
 
 #include <alien/index_manager/IndexManager.h>
-#include <alien/index_manager/ScalarIndexSet.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,41 +41,34 @@ struct ScalarIndexSet::Internal
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ScalarIndexSet::ScalarIndexSet() {}
+ScalarIndexSet::ScalarIndexSet() = default;
 
 /*---------------------------------------------------------------------------*/
 
-ScalarIndexSet::ScalarIndexSet(const ScalarIndexSet& en)
-: m_internal(en.m_internal)
-{}
+ScalarIndexSet::ScalarIndexSet(const ScalarIndexSet& en) = default;
 
 /*---------------------------------------------------------------------------*/
 
-ScalarIndexSet::ScalarIndexSet(ScalarIndexSet&& en)
+ScalarIndexSet::ScalarIndexSet(ScalarIndexSet&& en) noexcept
 : m_internal(std::move(en.m_internal))
 {}
 
 /*---------------------------------------------------------------------------*/
 
 ScalarIndexSet::ScalarIndexSet(
-    const String name, const Integer uid, const IndexManager* manager, const Integer kind)
+    const String& name, const Integer uid, const IndexManager* manager, Integer kind)
 : m_internal(new Internal{ name, kind, uid, manager })
 {}
 
 /*---------------------------------------------------------------------------*/
 
-ScalarIndexSet&
-ScalarIndexSet::operator=(const ScalarIndexSet& en)
-{
-  m_internal = en.m_internal;
-  return *this;
-}
+ScalarIndexSet& ScalarIndexSet::operator=(const ScalarIndexSet& en) = default;
 
 /*---------------------------------------------------------------------------*/
 
 //! Opérateur de copie
 ScalarIndexSet&
-ScalarIndexSet::operator=(ScalarIndexSet&& en)
+ScalarIndexSet::operator=(ScalarIndexSet&& en) noexcept
 {
   m_internal = std::move(en.m_internal);
   return *this;

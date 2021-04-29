@@ -50,10 +50,10 @@ class IAbstractFamily
   };
 
  protected:
-  IAbstractFamily() {}
+  IAbstractFamily() = default;
 
  public:
-  virtual ~IAbstractFamily() {}
+  virtual ~IAbstractFamily() = default;
 
   IAbstractFamily(const IAbstractFamily&) = delete;
   IAbstractFamily(IAbstractFamily&&) = delete;

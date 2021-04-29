@@ -18,9 +18,11 @@
 
 #include "DefaultIndexManager.h"
 
+#include <list>
+
 #include <alien/index_manager/functional/DefaultAbstractFamily.h>
 #include <alien/utils/Precomp.h>
-#include <list>
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -48,7 +50,8 @@ DefaultIndexManager::DefaultIndexManager(
 }
 /*---------------------------------------------------------------------------*/
 
-UniqueArray<Integer> DefaultIndexManager::operator[](Integer label) const
+UniqueArray<Integer>
+DefaultIndexManager::operator[](Integer label) const
 {
   return m_index_manager.getIndexes(m_index_sets[label]);
 }
