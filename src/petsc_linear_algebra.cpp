@@ -141,7 +141,6 @@ void InternalLinearAlgebra::pointwiseMult(
 const Vector& x ALIEN_UNUSED_PARAM, const Vector& y ALIEN_UNUSED_PARAM, Vector& w ALIEN_UNUSED_PARAM) const
 {
   VecPointwiseMult(w.internal(), x.internal(), y.internal()); //Computes the componentwise multiplication w = x*y. 
-  throw Arccore::NotImplementedException(A_FUNCINFO, "PetscLinearAlgebra::pointwiseMult not implemented");
 }
 
 void InternalLinearAlgebra::scal(const Arccore::Real& alpha, Vector& x) const

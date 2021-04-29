@@ -183,12 +183,6 @@ namespace Alien::PETSc
     checkError("PETSc get iteration number",KSPGetIterationNumber(solver, &m_status.iteration_count));
     checkError("PETSc get residual norm",KSPGetResidualNorm(solver,&m_status.residual));
 
-    // pour info, à virer
-    /*std::cout<<"================ solver " << solver_name << std::endl;
-    std::cout<<"================ preconditioner " << precond_name << std::endl;   
-    std::cout<<"================ nb iterations " << m_status.iteration_count << std::endl;
-    std::cout<<"================ Final residual norm " << m_status.residual << std::endl;   */
-
     // destroy solver + pc
     checkError("PETSc destroy solver context",KSPDestroy(&solver)); // includes a call to PCDestroy
 
