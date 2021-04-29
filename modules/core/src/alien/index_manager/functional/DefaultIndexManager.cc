@@ -18,9 +18,11 @@
 
 #include "DefaultIndexManager.h"
 
+#include <list>
+
 #include <alien/index_manager/functional/DefaultAbstractFamily.h>
 #include <alien/utils/Precomp.h>
-#include <list>
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

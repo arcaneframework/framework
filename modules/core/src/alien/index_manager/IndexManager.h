@@ -20,8 +20,8 @@
 
 #include <map>
 #include <vector>
-
 #include <algorithm>
+
 #include <alien/index_manager/IAbstractFamily.h>
 #include <alien/index_manager/ScalarIndexSet.h>
 

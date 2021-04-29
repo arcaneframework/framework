@@ -16,10 +16,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include "ScalarIndexSet.h"
+
 #include <list>
 
 #include <alien/index_manager/IndexManager.h>
-#include <alien/index_manager/ScalarIndexSet.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

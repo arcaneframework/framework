@@ -1,10 +1,11 @@
 #pragma once
 
-#include <alien/index_manager/IIndexManager.h>
-#include <alien/utils/Precomp.h>
 #include <map>
 #include <memory>
 #include <vector>
+
+#include <alien/index_manager/IIndexManager.h>
+#include <alien/utils/Precomp.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

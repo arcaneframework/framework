@@ -18,9 +18,10 @@
 
 #pragma once
 
-#include "alien/index_manager/IIndexManager.h"
-#include <alien/index_manager/IAbstractFamily.h>
 #include <unordered_map>
+
+#include <alien/index_manager/IAbstractFamily.h>
+#include <alien/index_manager/IIndexManager.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

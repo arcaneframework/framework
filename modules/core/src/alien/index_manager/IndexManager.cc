@@ -24,10 +24,8 @@
 
 #include <arccore/message_passing/BasicSerializeMessage.h>
 #include <arccore/message_passing/ISerializeMessageList.h>
-
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 #include <arccore/message_passing_mpi/MpiSerializeMessageList.h>
-
 #include <arccore/message_passing/Messages.h>
 
 #include <alien/index_manager/IAbstractFamily.h>
