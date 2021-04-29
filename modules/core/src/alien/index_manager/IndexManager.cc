@@ -173,7 +173,7 @@ IndexManager::init()
   m_global_removed_entry_count = 0;
 
   // Destruction des structure de type entry
-  for (auto & m_entrie : m_entries) {
+  for (auto& m_entrie : m_entries) {
     delete m_entrie;
   }
   m_entries.clear();
@@ -357,7 +357,7 @@ IndexManager::end_prepare(EntryIndexMap& entryIndex)
 {
   // Calcul de la taille des indices par entrée
   std::map<Integer, Integer> count_table;
-  for (auto & i : entryIndex) {
+  for (auto& i : entryIndex) {
     count_table[i.m_entry_uid]++;
   }
 
@@ -377,7 +377,7 @@ IndexManager::end_prepare(EntryIndexMap& entryIndex)
 
     Integer own_i = 0;
     Integer ghost_i = size;
-    for (auto & i : entryIndex) {
+    for (auto& i : entryIndex) {
       if (i.m_entry_uid == uid) {
         const Integer local_id = i.m_item_localid;
         const Integer index = i.m_item_index;
@@ -454,7 +454,7 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
   parallel = std::make_shared<ParallelRequests>();
 
   // 1 - Comptage des Items non locaux
-  for (auto & entryIndex : entry_index) {
+  for (auto& entryIndex : entry_index) {
     const Integer item_owner = entryIndex.m_item_owner;
     if (item_owner != m_local_owner) {
       // if (m_trace_mng) m_trace_mng->pinfo() << entryIndex.m_item_localid << " : " <<
@@ -477,7 +477,7 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
   for (auto i = parallel->sendRequests.begin(); i != parallel->sendRequests.end(); ++i) {
     const Integer destDomainId = i->first;
     auto& requests = i->second;
-    for (auto & j : requests) {
+    for (auto& j : requests) {
       EntrySendRequest& request = j.second;
       const Integer entryImpl = j.first;
       const String nameString = m_entries[entryImpl]->getName();
@@ -509,7 +509,7 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
 
   // 2 - Accumulation des valeurs à demander
 
-  for (auto & entryIndex : entry_index) {
+  for (auto& entryIndex : entry_index) {
     const Integer entryImpl = entryIndex.m_entry_uid;
     const Integer item_owner = entryIndex.m_item_owner;
     const Int64 item_uid = entryIndex.m_item_uid;
@@ -687,7 +687,7 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
 
   // C'est ici et uniquement ici qu'est matérialisé l'ordre des entrées
   Integer currentEntryIndex = m_global_entry_offset; // commence par l'offset local
-  for (auto & i : entry_index) {
+  for (auto& i : entry_index) {
     const auto& entryIndex = i;
     const Integer item_owner = entryIndex.m_item_owner;
     if (item_owner == m_local_owner) { // Numérotation locale !
@@ -699,7 +699,7 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
   }
 
   // 5 - Envoie des retours (EntryIndex globaux)
-  for (auto & recvRequest : parallel->recvRequests) {
+  for (auto& recvRequest : parallel->recvRequests) {
     auto sbuf = recvRequest.comm->serializer();
     auto& ids = recvRequest.ids;
     for (Integer j = 0; j < ids.size(); ++j) {
@@ -725,7 +725,7 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
   for (auto i = parallel->sendRequests.begin(); i != parallel->sendRequests.end(); ++i) {
     const Integer destDomainId = i->first;
     auto& requests = i->second;
-    for (auto & j : requests) {
+    for (auto& j : requests) {
       auto& request = j.second;
       const Integer entryImpl = j.first;
       const String nameString = m_entries[entryImpl]->getName();
@@ -759,7 +759,7 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
   parallel->messageList.reset();
   // 6 - Traitement des réponses
   // Association aux EntrySendRequest du buffer correspondant
-  for (auto & returnedRequest : returnedRequests) {
+  for (auto& returnedRequest : returnedRequests) {
     auto& message = returnedRequest;
     auto origDomainId = message->destination().value();
     auto sbuf = message->serializer();
@@ -769,7 +769,8 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
     ALIEN_ASSERT(
         (fastReturnMap[nameString][origDomainId] != nullptr), ("Inconsistency detected"));
     auto& request = *fastReturnMap[nameString][origDomainId];
-    request.comm = returnedRequest; // Reconnection pour accès rapide depuis l'EntrySendRequest
+    request.comm =
+        returnedRequest; // Reconnection pour accès rapide depuis l'EntrySendRequest
 #ifdef ALIEN_DEBUG_ASSERT
     const Integer idCount = sbuf.getInteger();
     ALIEN_ASSERT((request.count == idCount), ("Inconsistency detected"));
@@ -781,7 +782,7 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
 
   // Distribution des reponses
   // Par parcours dans ordre initial (celui de la demande)
-  for (auto & i : entry_index) {
+  for (auto& i : entry_index) {
     const auto& entryIndex = i;
     const Integer item_owner = entryIndex.m_item_owner;
     if (item_owner != m_local_owner) {
@@ -929,8 +930,8 @@ IndexManager::localSize() const
 
 ScalarIndexSet
 IndexManager::buildScalarIndexSet(const String& name,
-    const ConstArrayView<Integer>& localIds, const IAbstractFamily& family,
-    Integer kind, eKeepAlive alive)
+    const ConstArrayView<Integer>& localIds, const IAbstractFamily& family, Integer kind,
+    eKeepAlive alive)
 {
   alien_debug([&] {
     cout() << "IndexManager: build scalar index set '" << name << "', kind=" << kind;
@@ -943,8 +944,8 @@ IndexManager::buildScalarIndexSet(const String& name,
 /*---------------------------------------------------------------------------*/
 
 ScalarIndexSet
-IndexManager::buildScalarIndexSet(const String& name, const IAbstractFamily& family,
-    Integer kind, eKeepAlive alive)
+IndexManager::buildScalarIndexSet(
+    const String& name, const IAbstractFamily& family, Integer kind, eKeepAlive alive)
 {
   alien_debug([&] {
     cout() << "IndexManager: build scalar index set '" << name << "', kind=" << kind;

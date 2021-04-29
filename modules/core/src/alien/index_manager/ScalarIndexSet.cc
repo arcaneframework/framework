@@ -61,8 +61,7 @@ ScalarIndexSet::ScalarIndexSet(
 
 /*---------------------------------------------------------------------------*/
 
-ScalarIndexSet&
-ScalarIndexSet::operator=(const ScalarIndexSet& en) = default;
+ScalarIndexSet& ScalarIndexSet::operator=(const ScalarIndexSet& en) = default;
 
 /*---------------------------------------------------------------------------*/
 
