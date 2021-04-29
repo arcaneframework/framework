@@ -17,6 +17,7 @@
 #include "arcane/ArcaneTypes.h"
 #include "arcane/ItemTypes.h"
 #include "arcane/VariableTypedef.h"
+#include "arcane/IMeshBase.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,7 +53,7 @@ class IVariableMng;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 //INFO: La doc complete est dans Mesh.dox
-class IMesh
+class IMesh : public IMeshBase
 {
  public:
 
@@ -62,33 +63,9 @@ class IMesh
 
   virtual void build() =0;
 
- public:
-
-  //! Handle sur ce maillage
-  virtual const MeshHandle& handle() const =0;
-
- public:
-
-  //! Nom du maillage
-  virtual String name() const =0;
 
   //! Nom de la fabrique utilisée pour créer le maillage
   virtual String factoryName() const =0;
-
-  //! Nombre de noeuds du maillage
-  virtual Integer nbNode() =0;
-
-  //! Nombre d'arêtes du maillage
-  virtual Integer nbEdge() =0;
-
-  //! Nombre de faces du maillage
-  virtual Integer nbFace() =0;
-
-  //! Nombre de mailles du maillage
-  virtual Integer nbCell() =0;
-
-  //! Nombre d'éléments du genre \a ik
-  virtual Integer nbItem(eItemKind ik) =0;
 
   //! Tableau interne des éléments du maillage de type \a type
   virtual ItemInternalList itemsInternal(eItemKind) =0;
@@ -147,9 +124,6 @@ class IMesh
   //! Gestionnaire de parallèlisme
   virtual IParallelMng* parallelMng() =0;
 
-  //! Gestionnaire de message associé
-  virtual ITraceMng* traceMng() =0;
-
  public:
 
   //! Graphe associé
@@ -157,16 +131,6 @@ class IMesh
   virtual IGraph* graph() { return nullptr; }
   
  public:
-
-  /*!
-   * \brief Dimension du maillage (1D, 2D ou 3D).
-   *
-   * La dimension correspond à la dimension des éléments mailles (Cell).
-   * Si des mailles de plusieurs dimensions sont présentes, c'est la dimension
-   * la plus importante qui est retournée.
-   * Si la dimension n'a pas encore été positionnée, retourne -1;
-   */
-  virtual Integer dimension() =0;
 
   //! Descripteur de connectivité
   /*! Cet objet permet de lire/modifier la connectivité */

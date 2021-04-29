@@ -17,6 +17,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/ISubDomain.h"
 #include "arcane/IMesh.h"
+#include "arcane/IMeshBase.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -57,6 +58,15 @@ void MeshHandle::MeshHandleRef::
 _setMesh(IMesh* mesh)
 {
   m_mesh_ptr = mesh;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshHandle::MeshHandleRef::
+_setMeshBase(IMeshBase* mesh_base)
+{
+  m_mesh_base_ptr = mesh_base;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -132,6 +142,20 @@ mesh() const
   if (do_fatal)
     ARCANE_FATAL("Invalid call for null mesh. Call MeshHandle::hasMesh() before to make sure mesh is valid");
   return nullptr;
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMeshBase* MeshHandle::
+meshBase() const
+{
+  auto imesh = mesh();
+  if (imesh) {
+    return static_cast<IMeshBase*>(imesh);
+  }
+  else return nullptr;
 }
 
 /*---------------------------------------------------------------------------*/
