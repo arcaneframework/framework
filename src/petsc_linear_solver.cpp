@@ -98,14 +98,13 @@ namespace Alien::PETSc
   }
 
   void InternalLinearSolver::checkError(const Arccore::String& msg, int ierr, int skipError) const
-  {/*
+  {
     if (ierr != 0 and (ierr & ~skipError) != 0) {
-      char hypre_error_msg[256];
-      HYPRE_DescribeError(ierr, hypre_error_msg);
-      alien_fatal([&] {
-        cout() << msg << " failed : " << hypre_error_msg << "[code=" << ierr << "]";
+      alien_fatal([&]{
+        cout() << msg << " failed. [code=" << ierr << "]";
+        CHKERRQ(ierr); // warning car macro qui appelle fx qui retourne un int
       });
-    }*/
+    }
   }
 
   bool InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
@@ -124,10 +123,7 @@ namespace Alien::PETSc
     MPI_Comm comm = MPI_COMM_WORLD;
     auto* mpi_comm_mng = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(A.distribution().parallelMng());
     if (mpi_comm_mng)
-      comm = *(mpi_comm_mng->getMPIComm());
-
-    /* types necessaires, clean later */
-    PetscErrorCode ierr;    
+      comm = *(mpi_comm_mng->getMPIComm());  
 
     // solver's choice
     // Liste à compléter (dans options.h), on met lesquels ?
@@ -168,32 +164,33 @@ namespace Alien::PETSc
     
     // Get options and configure solver + preconditioner
     KSP solver;    
-    ierr = KSPCreate(comm,&solver);CHKERRQ(ierr);
-    ierr = KSPSetType(solver,solver_name.c_str());    
-    ierr = KSPSetOperators(solver,A.internal(),A.internal());CHKERRQ(ierr); //Here the matrix that defines the linear system also serves as the preconditioning matrix      
+    checkError("PETSc create solver",KSPCreate(comm,&solver));
+    checkError("PETSc set solver type",KSPSetType(solver,solver_name.c_str()));    
+    checkError("PETSc set Operators",KSPSetOperators(solver,A.internal(),A.internal()));
+    //Here the matrix that defines the linear system also serves as the preconditioning matrix      
     
     PC preconditioner;
-    ierr = KSPGetPC(solver,&preconditioner);CHKERRQ(ierr);        
+    checkError("PETSc get the preconditioner",KSPGetPC(solver,&preconditioner));      
     int max_it = m_options.numIterationsMax();
     double rtol = m_options.stopCriteriaValue();
-    ierr = PCSetType(preconditioner,precond_name.c_str());CHKERRQ(ierr); // petsc prend un char *
-    ierr = KSPSetTolerances(solver,rtol,PETSC_DEFAULT,PETSC_DEFAULT,max_it);CHKERRQ(ierr);   
+    checkError("PETSc set the preconditioner",PCSetType(preconditioner,precond_name.c_str())); // petsc prend un char *
+    checkError("PETSc set tolerances",KSPSetTolerances(solver,rtol,PETSC_DEFAULT,PETSC_DEFAULT,max_it));  
 
     // solve
     m_status.succeeded = (KSPSolve(solver,b.internal(),x.internal()) == 0);
 
     // get nb iterations + final residual
-    KSPGetIterationNumber(solver, &m_status.iteration_count);
-    KSPGetResidualNorm(solver,&m_status.residual);
+    checkError("PETSc get iteration number",KSPGetIterationNumber(solver, &m_status.iteration_count));
+    checkError("PETSc get residual norm",KSPGetResidualNorm(solver,&m_status.residual));
 
     // pour info, à virer
-    std::cout<<"================ solver " << solver_name << std::endl;
+    /*std::cout<<"================ solver " << solver_name << std::endl;
     std::cout<<"================ preconditioner " << precond_name << std::endl;   
     std::cout<<"================ nb iterations " << m_status.iteration_count << std::endl;
-    std::cout<<"================ Final residual norm " << m_status.residual << std::endl;   
+    std::cout<<"================ Final residual norm " << m_status.residual << std::endl;   */
 
     // destroy solver + pc
-    KSPDestroy(&solver); // includes a call to PCDestroy
+    checkError("PETSc destroy solver context",KSPDestroy(&solver)); // includes a call to PCDestroy
 
     // update the counters
     ++m_solve_num;

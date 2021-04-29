@@ -21,9 +21,7 @@
 
 #include <cmath>
 
-// FIXME: use public API for Hypre !
-//#include <_hypre_parcsr_mv.h>
-#include <petscksp.h> // checkerror ... ?
+#include <petscksp.h>
 
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 #include <arccore/base/NotImplementedException.h>
@@ -37,26 +35,7 @@
 
 namespace Alien
 {
-/*namespace
-{
-  HYPRE_ParVector hypre_implem(const Hypre::Vector& v)
-  {
-    HYPRE_ParVector res;
-    HYPRE_IJVectorGetObject(v.internal(), reinterpret_cast<void**>(&res));
-    return res;
-  }
-
-
-  HYPRE_ParCSRMatrix hypre_implem(const Hypre::Matrix& m)
-  {
-    HYPRE_ParCSRMatrix res;
-    HYPRE_IJMatrixGetObject(m.internal(), reinterpret_cast<void**>(&res));
-    return res;
-  
-}// namespace
-*/
-
-template class ALIEN_PETSC_EXPORT LinearAlgebra<BackEnd::tag::petsc>;
+  template class ALIEN_PETSC_EXPORT LinearAlgebra<BackEnd::tag::petsc>;
 } // namespace Alien
 
 namespace Alien::PETSc
@@ -105,13 +84,17 @@ InternalLinearAlgebra::norm0(const Vector& vx ALIEN_UNUSED_PARAM) const
 Arccore::Real
 InternalLinearAlgebra::norm1(const Vector& vx ALIEN_UNUSED_PARAM) const
 {
-  throw Arccore::NotImplementedException(A_FUNCINFO, "PetscLinearAlgebra::norm1 not implemented");
+  PetscScalar norm;
+  VecNorm(vx.internal(),NORM_1,&norm);
+  return static_cast<Arccore::Real>(norm);
 }
 
 Arccore::Real
 InternalLinearAlgebra::norm2(const Vector& vx) const
 {
-  return std::sqrt(dot(vx, vx));
+  PetscScalar norm;
+  VecNorm(vx.internal(),NORM_2,&norm);
+  return static_cast<Arccore::Real>(norm);
 }
 
 void InternalLinearAlgebra::mult(const Matrix& ma, const Vector& vx, Vector& vr) const
@@ -122,7 +105,7 @@ void InternalLinearAlgebra::mult(const Matrix& ma, const Vector& vx, Vector& vr)
 void InternalLinearAlgebra::axpy(
 const Arccore::Real& alpha ALIEN_UNUSED_PARAM, const Vector& vx ALIEN_UNUSED_PARAM, Vector& vr ALIEN_UNUSED_PARAM) const
 {
-   VecAXPY(vr.internal(), alpha, vx.internal()); //  vr = alpha.vx + vr 
+  VecAXPY(vr.internal(), alpha, vx.internal()); //  vr = alpha.vx + vr 
 }
 
 void InternalLinearAlgebra::copy(const Vector& vx /*src*/, Vector& vr /*dest*/) const
@@ -140,36 +123,30 @@ InternalLinearAlgebra::dot(const Vector& vx, const Vector& vy) const
 
 void InternalLinearAlgebra::diagonal(Matrix const& m ALIEN_UNUSED_PARAM, Vector& v ALIEN_UNUSED_PARAM) const
 {
-  /*throw Arccore::NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::diagonal not implemented");*/
-  throw Arccore::NotImplementedException(A_FUNCINFO, "PetscLinearAlgebra::diagonal not implemented");
-
+  MatGetDiagonal(m.internal(),v.internal());
 }
 
 void InternalLinearAlgebra::reciprocal(Vector& v ALIEN_UNUSED_PARAM) const
 {
-  /*throw Arccore::NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::reciprocal not implemented");*/
-  throw Arccore::NotImplementedException(A_FUNCINFO, "PetscLinearAlgebra::reciprocal not implemented");
+  VecReciprocal(v.internal()); 
 }
 
 void InternalLinearAlgebra::aypx(
 const double& alpha ALIEN_UNUSED_PARAM, Vector& y ALIEN_UNUSED_PARAM, const Vector& x ALIEN_UNUSED_PARAM) const
 {
-  /*throw Arccore::NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::aypx not implemented");*/
-  throw Arccore::NotImplementedException(A_FUNCINFO, "PetscLinearAlgebra::aypx not implemented");  
+  VecAYPX(y.internal(),alpha,x.internal()); // y = x + alpha y
 }
 
 void InternalLinearAlgebra::pointwiseMult(
 const Vector& x ALIEN_UNUSED_PARAM, const Vector& y ALIEN_UNUSED_PARAM, Vector& w ALIEN_UNUSED_PARAM) const
 {
-  /*throw Arccore::NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::pointwiseMult not implemented");*/
+  VecPointwiseMult(w.internal(), x.internal(), y.internal()); //Computes the componentwise multiplication w = x*y. 
   throw Arccore::NotImplementedException(A_FUNCINFO, "PetscLinearAlgebra::pointwiseMult not implemented");
 }
 
 void InternalLinearAlgebra::scal(const Arccore::Real& alpha, Vector& x) const
 {
-  /*HYPRE_ParVectorScale(static_cast<double>(alpha), hypre_implem(x));*/
   VecScale(x.internal(), alpha);
-  //throw Arccore::NotImplementedException(A_FUNCINFO, "PetscLinearAlgebra::scal not implemented");
 }
 
 ALIEN_PETSC_EXPORT
