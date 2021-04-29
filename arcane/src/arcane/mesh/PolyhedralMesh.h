@@ -10,8 +10,8 @@
 /* Polyhedral mesh impl using Neo data structure                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANEFRAMEWORK_POLYHEDRALMESH_H
-#define ARCANEFRAMEWORK_POLYHEDRALMESH_H
+#ifndef ARCANE_POLYHEDRALMESH_H
+#define ARCANE_POLYHEDRALMESH_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -58,4 +58,4 @@ class ARCANE_MESH_EXPORT PolyhedralMesh{
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif //ARCANEFRAMEWORK_POLYHEDRALMESH_H
+#endif //ARCANE_POLYHEDRALMESH_H
