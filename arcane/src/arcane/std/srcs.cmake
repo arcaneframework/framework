@@ -38,7 +38,6 @@ set(ARCANE_SOURCES
   VtkMeshIOService.cc
   VoronoiMeshIOService.cc
   MeshPartitionerBase.cc
-  PolyhedralMeshService.cc
   MeshPartitionerBase.h
   PapiPerformanceService.h
   ProfilingInfo.cc
@@ -95,5 +94,4 @@ set(AXL_FILES
   Cartesian2DMeshGenerator
   Cartesian3DMeshGenerator
   Sod3DMeshGenerator
-  PolyhedralMesh
   )

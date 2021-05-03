@@ -65,6 +65,11 @@ namespace mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Arcane::mesh::PolyhedralMesh::~PolyhedralMesh() = default;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 // All PolyhedralMesh methods must be defined twice (emtpy in the second case)
 
@@ -87,6 +92,11 @@ read(const String& filename)
 
 #else // ARCANE_HAS_CUSTOM_MESH_TOOLS : empty class for compilation
 
+namespace mesh
+{
+  class PolyhedralMeshImpl{};
+}
+
 Arcane::mesh::PolyhedralMesh::
 PolyhedralMesh(ISubDomain* subdomain)
 : m_subdomain{subdomain}
@@ -97,7 +107,7 @@ PolyhedralMesh(ISubDomain* subdomain)
 /*---------------------------------------------------------------------------*/
 
 void Arcane::mesh::PolyhedralMesh::
-read(const String& filename)
+read([[maybe_unused]] const String& filename)
 {
   _errorEmptyMesh();
 }
