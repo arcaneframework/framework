@@ -226,8 +226,10 @@ set( ARCANE_SOURCES
   MeshInfos.h
   PolyhedralMesh.cc
   PolyhedralMesh.h
+  PolyhedralMeshService.cc
   )
 
 set(AXL_FILES 
   BasicParticleExchanger
+  PolyhedralMesh
   )
