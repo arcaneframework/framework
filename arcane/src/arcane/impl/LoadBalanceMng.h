@@ -14,6 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include <memory>
+
 #include "arcane/ILoadBalanceMng.h"
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/AutoRef.h"
@@ -170,7 +172,7 @@ class ARCANE_IMPL_EXPORT LoadBalanceMng
   ScopedPtrT<VariableCellReal> m_mass_res_weight;
   ScopedPtrT<VariableCellArrayReal> m_event_weights;
 
-  VariableCellInt32 m_cell_new_owner;
+  std::unique_ptr<VariableCellInt32> m_cell_new_owner; // SdC This variable is a problem when using a custom mesh
 };
 
 /*---------------------------------------------------------------------------*/

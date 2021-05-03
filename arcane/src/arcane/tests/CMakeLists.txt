@@ -27,7 +27,6 @@ find_package(TBB)
 find_package(Neo QUIET)
 if (Neo_FOUND)
   set(TEST_LIBS ${TEST_LIBS} Neo::Neo)
-  message(STATUS "Neo FOUND")
 endif()
 
 include(srcs.cmake)

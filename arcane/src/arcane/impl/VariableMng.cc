@@ -1785,7 +1785,8 @@ dumpStats(ostream& ostr,bool is_verbose)
 
   // Récupère le nombre de mailles pour faire des stats d'utilisation
   // mémoire moyenne par maille.
-  Integer nb_cell = subDomain()->defaultMesh()->allCells().size();
+  Integer nb_cell = 1;
+  if (subDomain()->defaultMesh()) nb_cell = subDomain()->defaultMesh()->allCells().size();
   if (nb_cell==0)
     nb_cell = 1;
 

@@ -224,8 +224,12 @@ set( ARCANE_SOURCES
   ConnectivityNewWithDependenciesTypes.h
   NewWithLegacyConnectivity.h
   MeshInfos.h
+  PolyhedralMesh.cc
+  PolyhedralMesh.h
+  PolyhedralMeshService.cc
   )
 
 set(AXL_FILES 
   BasicParticleExchanger
+  PolyhedralMesh
   )

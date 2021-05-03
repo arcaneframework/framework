@@ -62,6 +62,7 @@ set(ARCANE_SOURCES
   ArcaneTestDirectExecution.cc
   accelerator/MiniWeatherOriginalSequential.cc
   accelerator/MiniWeatherArraySequential.cc
+  CustomMeshTestModule
   )
 
 set(AXL_FILES 
@@ -94,5 +95,6 @@ set(AXL_FILES
   dof/DoFTester
   inout/InOutTester
   geometry/GeometryUnitTest
+  CustomMeshTest
   )
 
