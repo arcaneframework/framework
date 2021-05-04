@@ -76,7 +76,7 @@ class ARCANE_CORE_EXPORT MeshHandle
    public:
     void _destroyMesh();
     void _setMesh(IMesh* mesh);
-    void _setMeshBase(IMeshBase* mesh_base);
+    void _setMesh(IMeshBase* mesh_base);
    private:
     String m_mesh_name;
     IMesh* m_mesh_ptr = nullptr;
@@ -159,6 +159,7 @@ class ARCANE_CORE_EXPORT MeshHandle
 
   //! \internal
   void _setMesh(IMesh* mesh) { m_ref->_setMesh(mesh); }
+  void _setMesh(IMeshBase* mesh) { m_ref->_setMesh(mesh); }
 
   //! \internal
   void _destroyMesh() { m_ref->_destroyMesh(); }

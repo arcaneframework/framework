@@ -64,7 +64,7 @@ _setMesh(IMesh* mesh)
 /*---------------------------------------------------------------------------*/
 
 void MeshHandle::MeshHandleRef::
-_setMeshBase(IMeshBase* mesh_base)
+_setMesh(IMeshBase* mesh_base)
 {
   m_mesh_base_ptr = mesh_base;
 }
