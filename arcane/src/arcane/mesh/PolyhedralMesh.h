@@ -78,7 +78,7 @@ class ARCANE_MESH_EXPORT PolyhedralMesh : public IMeshBase {
   Integer dimension() override { return -1; }
 
  private:
-  void _errorEmptyMesh();
+  void _errorEmptyMesh() const;
 
 };
 

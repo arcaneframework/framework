@@ -98,7 +98,7 @@ const MeshHandle& mesh::PolyhedralMesh::handle() const
 /*---------------------------------------------------------------------------*/
 
 void mesh::PolyhedralMesh::
-_errorEmptyMesh() {
+_errorEmptyMesh() const {
   m_subdomain->traceMng()->fatal() << "Cannot use PolyhedralMesh if Arcane is not linked with lib Neo";
 }
 
