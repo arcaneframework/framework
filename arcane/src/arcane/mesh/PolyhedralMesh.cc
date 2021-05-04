@@ -11,11 +11,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/mesh/PolyhedralMesh.h"
+#include "arcane/IMeshMng.h"
+#include "arcane/MeshHandle.h"
+#include "arcane/ISubDomain.h"
+#include "arcane/utils/ITraceMng.h"
 
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 #include "neo/Mesh.h"
 #endif
+
+#include "arcane/mesh/PolyhedralMesh.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

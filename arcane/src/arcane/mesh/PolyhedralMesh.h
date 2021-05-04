@@ -18,11 +18,19 @@
 #include <memory>
 #include "arcane/utils/ArcaneGlobal.h"
 #include "arcane/utils/String.h"
-#include "arcane/utils/ITraceMng.h"
-#include "arcane/ISubDomain.h"
+#include "arcane/MeshHandle.h"
+#include "arcane/IMeshBase.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+namespace Arcane {
+class ISubDomain;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 
 namespace Arcane::mesh {
 
