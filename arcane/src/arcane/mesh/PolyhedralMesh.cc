@@ -39,10 +39,12 @@ namespace mesh
   class PolyhedralMeshImpl
   {
     ISubDomain* m_subdomain;
-    Neo::Mesh m_mesh{"Test"};
+    Neo::Mesh m_mesh{ "Test" };
 
    public:
-    PolyhedralMeshImpl(ISubDomain* subDomain) : m_subdomain(subDomain){}
+    PolyhedralMeshImpl(ISubDomain* subDomain)
+    : m_subdomain(subDomain)
+    {}
 
    public:
     void read(const String& filename)
@@ -52,25 +54,25 @@ namespace mesh
       _createSingleCellTest();
     }
    private:
-    void _createSingleCellTest(){
+    void _createSingleCellTest()
+    {
       auto cell_family = m_mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family");
       auto node_family = m_mesh.addFamily(Neo::ItemKind::IK_Node, "node_family");
       auto added_cells = Neo::FutureItemRange{};
-      m_mesh.scheduleAddItems(cell_family, {0}, added_cells);
+      m_mesh.scheduleAddItems(cell_family, { 0 }, added_cells);
       auto added_nodes = Neo::FutureItemRange{};
       m_mesh.scheduleAddItems(node_family, { 0, 1, 2, 3, 4, 5 }, added_nodes);
       m_mesh.applyScheduledOperations();
     }
   };
 
-}
-
+} // End namespace mesh
 #endif // End ARCANE_HAS_CUSTOM_MESH_TOOLS
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Arcane::mesh::PolyhedralMesh::~PolyhedralMesh() = default;
+mesh::PolyhedralMesh::~PolyhedralMesh() = default;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -78,7 +80,7 @@ Arcane::mesh::PolyhedralMesh::~PolyhedralMesh() = default;
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 // All PolyhedralMesh methods must be defined twice (emtpy in the second case)
 
-Arcane::mesh::PolyhedralMesh::
+mesh::PolyhedralMesh::
 PolyhedralMesh(ISubDomain* subdomain)
 : m_subdomain{subdomain}
 , m_mesh{ std::make_unique<mesh::PolyhedralMeshImpl>(m_subdomain) }
