@@ -37,9 +37,6 @@ class SimpleCSR_to_Petsc_VectorConverter : public Alien::IVectorConverter
 
   Alien::BackEndId targetBackend() const { return Alien::AlgebraTraits<Alien::BackEnd::tag::petsc>::name(); }
 
-       //BackEndId targetBackend() const { return Alien::AlgebraTraits<Alien::BackEnd::tag::petsc>::name(); }
-
-
   void convert(const Alien::IVectorImpl* sourceImpl, Alien::IVectorImpl* targetImpl) const;
 };
 
