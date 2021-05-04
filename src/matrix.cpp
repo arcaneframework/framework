@@ -61,8 +61,6 @@ void Matrix::setProfile(int ilower, int iupper,
                       PETSC_DETERMINE, PETSC_DETERMINE);
   ierr |= MatSetType(m_mat, MATMPIAIJ);
   ierr |= MatAssemblyBegin(m_mat, MAT_FINAL_ASSEMBLY);
- 
-  // Attention !!!, il manquait l'appel à MatSetup, ou alors: MatXXXXSetPreallocation()
   ierr |= MatSetUp(m_mat);
   
   if (ierr) {
