@@ -38,9 +38,11 @@ class PolyhedralMeshImpl;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_MESH_EXPORT PolyhedralMesh{
+class ARCANE_MESH_EXPORT PolyhedralMesh : public IMeshBase {
  public :
   ISubDomain* m_subdomain;
+  String m_mesh_handle_name;
+  MeshHandle m_mesh_handle;
 
   std::unique_ptr<PolyhedralMeshImpl> m_mesh; // using pimpl to limit dependency to neo lib to cc file
 
@@ -51,10 +53,32 @@ class ARCANE_MESH_EXPORT PolyhedralMesh{
  public:
   void read(String const& filename);
 
+  // IMeshBase interface
+ public:
+
+  //! Handle sur ce maillage
+  const MeshHandle& handle() const override;
+
+ public:
+
+  String name() const override;
+
+  Integer nbNode() override { return -1; }
+
+  Integer nbEdge() override { return -1; }
+
+  Integer nbFace() override { return -1; }
+
+  Integer nbCell() override { return -1; }
+
+  Integer nbItem(eItemKind ik) override { return -1; }
+
+  ITraceMng* traceMng() override;
+
+  Integer dimension() override { return -1; }
+
  private:
-  void _errorEmptyMesh() {
-    m_subdomain->traceMng()->fatal() << "Cannot use PolyhedralMesh if Arcane is not linked with lib Neo";
-  }
+  void _errorEmptyMesh();
 
 };
 

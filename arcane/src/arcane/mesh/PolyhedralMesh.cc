@@ -53,6 +53,9 @@ namespace mesh
       // First step create a single cell
       _createSingleCellTest();
     }
+
+    String name() const { return m_mesh.name(); }
+
    private:
     void _createSingleCellTest()
     {
@@ -77,6 +80,32 @@ mesh::PolyhedralMesh::~PolyhedralMesh() = default;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ITraceMng* mesh::PolyhedralMesh::
+traceMng()
+{
+  return m_subdomain->traceMng();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+const MeshHandle& mesh::PolyhedralMesh::handle() const
+{
+  return m_mesh_handle;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::
+_errorEmptyMesh() {
+  m_subdomain->traceMng()->fatal() << "Cannot use PolyhedralMesh if Arcane is not linked with lib Neo";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 // All PolyhedralMesh methods must be defined twice (emtpy in the second case)
 
@@ -84,7 +113,11 @@ mesh::PolyhedralMesh::
 PolyhedralMesh(ISubDomain* subdomain)
 : m_subdomain{subdomain}
 , m_mesh{ std::make_unique<mesh::PolyhedralMeshImpl>(m_subdomain) }
-{}
+, m_mesh_handle_name{"polyhedral_mesh_handle"}
+, m_mesh_handle{m_subdomain->meshMng()->createMeshHandle(m_mesh_handle_name)}
+{
+  m_mesh_handle._setMesh(this);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -94,6 +127,16 @@ read(const String& filename)
 {
   m_mesh->read(filename);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String Arcane::mesh::PolyhedralMesh::
+name() const
+{
+  return m_mesh->name();
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -117,6 +160,17 @@ void Arcane::mesh::PolyhedralMesh::
 read([[maybe_unused]] const String& filename)
 {
   _errorEmptyMesh();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+
+String Arcane::mesh::PolyhedralMesh::
+name() const
+{
+    _errorEmptyMesh();
+  return String{};
 }
 
 /*---------------------------------------------------------------------------*/
