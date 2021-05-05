@@ -60,12 +60,12 @@ Si `${INSTALL_PATH}` est le répertoire d'installation, les commandes suivantes 
 ~~~{.sh}
 mkdir ${BUILD_DIR}
 cd ${BUILD_DIR}
-cmake -S ${SOURCE_DIR} -DCMAKE_PREFIX_PATH=${INSTALL_PATH} -DArccon_ROOT:PATH=... -DAxlstar_ROOT:PATH=... -DArccore_ROOT:PATH=...
+cmake -S ${SOURCE_DIR} -DCMAKE_INSTALL_PREFIX=${INSTALL_PATH} -DArccon_ROOT:PATH=... -DAxlstar_ROOT:PATH=... -DArccore_ROOT:PATH=...
 cmake --build .
 cmake --build . --target install
 ~~~
 
-Par défaut, l'installation se fait dans /usr/local si l'option `CMAKE_PREFIX_PATH` n'est
+Par défaut, l'installation se fait dans /usr/local si l'option `CMAKE_INSTALL_PREFIX` n'est
 pas spécifié.
 
 ### Génération de la documentation
@@ -77,13 +77,13 @@ Une fois la configuration terminée, il suffit de lancer:
 Pour la documentation utilisateur:
 
 ~~~{.sh}
-cmake --build . --target userdoc
+cmake --build ${BUILD_DIR} --target userdoc
 ~~~
 
 Pour la documentation développeur
 
 ~~~{.sh}
-cmake --build . --target devdoc
+cmake --build ${BUILD_DIR} --target devdoc
 ~~~
 
 La documentation utilisateur ne contient les infos que des classes
