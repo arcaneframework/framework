@@ -41,7 +41,7 @@ class PolyhedralMeshImpl;
 class ARCANE_MESH_EXPORT PolyhedralMesh : public IMeshBase {
  public :
   ISubDomain* m_subdomain;
-  String m_mesh_handle_name;
+  inline static const String m_mesh_handle_name = "polyhedral_mesh_handle";
   MeshHandle m_mesh_handle;
 
   std::unique_ptr<PolyhedralMeshImpl> m_mesh; // using pimpl to limit dependency to neo lib to cc file
@@ -55,6 +55,8 @@ class ARCANE_MESH_EXPORT PolyhedralMesh : public IMeshBase {
 
   // IMeshBase interface
  public:
+
+  static String handleName() { return m_mesh_handle_name; }
 
   //! Handle sur ce maillage
   const MeshHandle& handle() const override;

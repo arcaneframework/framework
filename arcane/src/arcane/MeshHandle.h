@@ -130,6 +130,7 @@ class ARCANE_CORE_EXPORT MeshHandle
 
   //! Indique si le maillage associé a déjà été créé (i.e: mesh() est valide)
   bool hasMesh() const;
+  bool hasMeshBase() const;
 
  public:
 

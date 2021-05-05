@@ -113,7 +113,6 @@ mesh::PolyhedralMesh::
 PolyhedralMesh(ISubDomain* subdomain)
 : m_subdomain{subdomain}
 , m_mesh{ std::make_unique<mesh::PolyhedralMeshImpl>(m_subdomain) }
-, m_mesh_handle_name{"polyhedral_mesh_handle"}
 , m_mesh_handle{m_subdomain->meshMng()->createMeshHandle(m_mesh_handle_name)}
 {
   m_mesh_handle._setMesh(this);

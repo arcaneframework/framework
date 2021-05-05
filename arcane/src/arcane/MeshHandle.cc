@@ -130,6 +130,16 @@ hasMesh() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+bool MeshHandle::
+hasMeshBase() const
+{
+  IMeshBase* m = m_ref->meshBase();
+  return m;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 IMesh* MeshHandle::
 mesh() const
 {
@@ -151,11 +161,15 @@ mesh() const
 IMeshBase* MeshHandle::
 meshBase() const
 {
-  auto imesh = mesh();
-  if (imesh) {
-    return static_cast<IMeshBase*>(imesh);
-  }
-  else return nullptr;
+  auto* m = m_ref->meshBase();
+  if (m)
+    return m;
+  // A terme, faire un fatal si le maillage est nul. Pour des raisons de
+  // compatibilité avec l'existant, on retourne 'nullptr'.
+  bool do_fatal = false;
+  if (do_fatal)
+    ARCANE_FATAL("Invalid call for null mesh. Call MeshHandle::hasMesh() before to make sure mesh is valid");
+  return nullptr;
 }
 
 /*---------------------------------------------------------------------------*/
