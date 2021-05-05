@@ -11,7 +11,7 @@ TODO: fonctionalites principales d'Alien.
 ### Spack
 
 ```shell script
-spack install alien+hypre+superlu+hdf5
+spack install alien
 ```
 
 ### AlienIntegratedFramework
@@ -29,19 +29,51 @@ Alien has the following generic direct dependencies:
  - a C++ compiler that supports C++14
  - MPI
  - BLAS
-
-Alien also requires some of its framework components already installed and available for CMake (via CMAKE_PREFIX_PATH 
-or <PACKAGE>_ROOT):
- - Arccon, the framework centralized build system;
+ - Boost  
+ - Arccon, the framework centralized build system
  - Arccore, the base data structures, compiled with Arrays and MPI supports.
+
+### Optional dependencies
+
+Optional features of Alien depends on:
+ - libxml2, enabled with `ALIEN_USE_LIBXML2:BOOL=ON`
+ - hdf5, enabled with `ALIEN_USE_HDF5:BOOL=ON`
+ - GTest, for unit tests
+ - doxygen, sphinx and breathe, for documentation generation.
 
 ### Compiling
 
-Alien relies on CMake.
+Alien relies on CMake, the workflow for default options is the following:
 
 ```shell script
 cmake <ALIEN_SRC_PATH>
 cmake --build . 
+```
+
+#### Compile options
+
+Alien build options to pass to CMake with `-D`:
+ - ALIEN_COMPONENT_RefSemantic, enables build of the `ref` API
+ - ALIEN_COMPONENT_MoveSemantic, enables build of the `move` API
+ - ALIEN_UNIT_TESTS, enables unit tests (requires GTest)
+ - ALIEN_GENERATE_DOCUMENTATION, builds documentation (requirements below)
+ - ALIEN_USE_HDF5, use optional dependency hdf5
+ - ALIEN_USE_LIBXML2, use optional dependency libxml2
+
+In order to generate documentation, the following dependencies are mandatory:
+ - doxygen
+ - sphinx
+ - sphinx-rtd-theme-common
+ - breathe
+
+On debian/ubuntu, this translates to:
+```bash
+sudo apt install doxygen python3-breathe python3-sphinx-rtd-theme
+```
+
+Breathe and sphinx can also be installed with `pip`:
+```bash
+pip install breathe
 ```
 
 #### Important note for debian/ubuntu
@@ -51,6 +83,20 @@ library is not linked, nor referenced.
 This breaks our plugin frameworks, so, it is necessary to pass the following option to CMake.
 ```shell script
 -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-as-needed"
+```
+
+#### Example
+
+To build Alien and its documentation on ubuntu:
+```bash
+# Configure build
+cmake -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-as-needed" -DALIEN_UNIT_TESTS:BOOL=ON -DALIEN_GENERATE_DOCUMENTATION:BOOL=ON <ALIEN_SRC_PATH>
+# Build alien
+cmake --build .
+# Run tests
+ctest
+# Build documentation
+cmake --build . --target alien_doc
 ```
 
 ## Organization

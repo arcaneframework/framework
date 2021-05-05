@@ -20,9 +20,9 @@ doxygen_add_docs(alien_api_docs_doxygen
         )
 
 sphinx_add_docs(
-        alien_api_docs_sphinx
+        alien_doc
         BREATHE_PROJECTS alien_api_docs_doxygen
         BUILDER html
         SOURCE_DIRECTORY sphinx
-        OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/api-docs"
+        OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/alien_doc"
 )
