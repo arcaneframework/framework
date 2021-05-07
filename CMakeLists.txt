@@ -48,6 +48,7 @@ option(ALIEN_USE_HDF5 "Enable HDF5 export" OFF)
 option(ALIEN_USE_LIBXML2 "Enable xml export" ON)
 
 option(ALIEN_GENERATE_DOCUMENTATION "Generate API documentation" OFF)
+option(ALIEN_GENERATE_TUTORIAL "Compile examples of Alien" ON)
 
 # Make this conditional.
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -74,7 +75,6 @@ find_package(Arccore 2 REQUIRED)
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 include(LoadAlienConfigFile)
 
 # ----------------------------------------------------------------------------
@@ -103,6 +103,13 @@ endif ()
 if (ALIEN_GENERATE_DOCUMENTATION)
     add_subdirectory(docs)
 endif(ALIEN_GENERATE_DOCUMENTATION)
+
+#-----------------------------------------------------------
+# Tutorial
+#-----------------------------------------------------------
+if (ALIEN_GENERATE_TUTORIAL)
+    add_subdirectory(tutorial)
+endif(ALIEN_GENERATE_TUTORIAL)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
