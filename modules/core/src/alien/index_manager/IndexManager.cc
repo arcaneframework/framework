@@ -24,9 +24,9 @@
 
 #include <arccore/message_passing/BasicSerializeMessage.h>
 #include <arccore/message_passing/ISerializeMessageList.h>
+#include <arccore/message_passing/Messages.h>
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 #include <arccore/message_passing_mpi/MpiSerializeMessageList.h>
-#include <arccore/message_passing/Messages.h>
 
 #include <alien/index_manager/IAbstractFamily.h>
 #include <alien/index_manager/IndexManager.h>
@@ -455,13 +455,7 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
   for (auto& entryIndex : entry_index) {
     const Integer item_owner = entryIndex.m_item_owner;
     if (item_owner != m_local_owner) {
-      // if (m_trace_mng) m_trace_mng->pinfo() << entryIndex.m_item_localid << " : " <<
-      // entryIndex.m_item_uid << " is owned by " << item_owner << " with localIndex=" <<
-      // entryIndex.m_item_index;
       parallel->sendRequests[item_owner][entryIndex.m_entry_uid].count++;
-    } else {
-      // if (m_trace_mng) m_trace_mng->pinfo() << entryIndex.m_item_localid << " : " <<
-      // entryIndex.m_item_uid << " is local with localIndex=" << entryIndex.m_item_index;
     }
   }
 
@@ -479,9 +473,6 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
       EntrySendRequest& request = j.second;
       const Integer entryImpl = j.first;
       const String nameString = m_entries[entryImpl]->getName();
-
-      // if (m_trace) m_trace->pinfo() << "Entry [" << nameString << "] to " <<
-      // destDomainId << " : " << request.count;
 
       // Données pour receveur
       sendToDomains[2 * destDomainId + 0] += 1;
@@ -523,8 +514,6 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
   for (Integer isd = 0, nsd = m_parallel_mng->commSize(); isd < nsd; ++isd) {
     Integer recvCount = recvFromDomains[2 * isd + 0];
     while (recvCount-- > 0) {
-      // if (m_trace_mng) m_trace_mng->pinfo() << "will receive an entry with " <<
-      // recvFromDomains[2*isd+1] << " uid from " << isd;
       auto recvMsg = Arccore::MessagePassing::Mpi::BasicSerializeMessage::create(
           MessageRank(m_parallel_mng->commRank()), MessageRank(isd),
           Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
@@ -559,8 +548,6 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
 
       sbuf->get(nameString);
       uidCount = sbuf->getInteger();
-      //  if (m_trace) m_trace->pinfo() << nameString << " received with " << uidCount <<
-      //  " ids";
       recvRequest.ids.resize(uidCount);
       sbuf->getSpan(recvRequest.ids);
       ALIEN_ASSERT((uidCount == recvRequest.ids.size()), ("Inconsistency detected"));
@@ -679,33 +666,30 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
 {
   ALIEN_ASSERT((m_parallel_mng->commSize() > 1), ("Parallel mode expected"));
 
-  // Table de ré-indexation (EntryIndex->Integer)
-  Alien::UniqueArray<Integer> entry_reindex(m_local_entry_count + m_global_entry_count);
-  Alien::fill(entry_reindex, -1); // valeur de type Erreur par défaut
+  {
+    // Table de ré-indexation (EntryIndex->Integer)
+    Alien::UniqueArray<Integer> entry_reindex(m_local_entry_count);
+    Alien::fill(entry_reindex, -42); // valeur de type Erreur par défaut
 
-  // C'est ici et uniquement ici qu'est matérialisé l'ordre des entrées
-  Integer currentEntryIndex = m_global_entry_offset; // commence par l'offset local
-  for (auto& i : entry_index) {
-    const auto& entryIndex = i;
-    const Integer item_owner = entryIndex.m_item_owner;
-    if (item_owner == m_local_owner) { // Numérotation locale !
-      const Integer newIndex = currentEntryIndex++;
-      entry_reindex[i.m_item_index + m_global_entry_offset] =
-          newIndex; // Table de translation
-      i.m_item_index = newIndex;
+    // C'est ici et uniquement ici qu'est matérialisé l'ordre des entrées
+    Integer currentEntryIndex = m_global_entry_offset; // commence par l'offset local
+    for (auto& i : entry_index) {
+      if (i.m_item_owner == m_local_owner) { // Numérotation locale !
+        const Integer newIndex = currentEntryIndex++;
+        ALIEN_ASSERT(newIndex >= 0, "Invalid local id");
+        entry_reindex[i.m_item_index] = newIndex; // Table de translation
+        i.m_item_index = newIndex;
+      }
+    }
+
+    // 5 - Envoie des retours (EntryIndex globaux)
+    for (auto& recvRequest : parallel->recvRequests) {
+      auto sbuf = recvRequest.comm->serializer();
+      for (auto id : recvRequest.ids) {
+        sbuf->putInteger(entry_reindex[id]); // Via la table de réindexation
+      }
     }
   }
-
-  // 5 - Envoie des retours (EntryIndex globaux)
-  for (auto& recvRequest : parallel->recvRequests) {
-    auto sbuf = recvRequest.comm->serializer();
-    auto& ids = recvRequest.ids;
-    for (Integer j = 0; j < ids.size(); ++j) {
-      sbuf->putInteger(
-          entry_reindex[ids[j] + m_global_entry_offset]); // Via la table de réindexation
-    }
-  }
-
   // Table des buffers de retour
   typedef std::list<Alien::Ref<Alien::ISerializeMessage>> ReturnedRequests;
   ReturnedRequests returnedRequests;
@@ -749,12 +733,9 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
   // Traitement des communications
   parallel->messageList->processPendingMessages();
 
-  // parallel->messageList->waitMessages(Arccore::MessagePassing::WaitSomeNonBlocking);
-  // parallel->messageList->waitMessages(Arccore::MessagePassing::WaitSome);
   parallel->messageList->waitMessages(Arccore::MessagePassing::WaitAll);
-  // delete parallel->messageList;
-  // parallel->messageList = NULL; // Destruction propre de l'ancienne liste
   parallel->messageList.reset();
+
   // 6 - Traitement des réponses
   // Association aux EntrySendRequest du buffer correspondant
   for (auto& returnedRequest : returnedRequests) {
@@ -780,18 +761,16 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
 
   // Distribution des reponses
   // Par parcours dans ordre initial (celui de la demande)
-  for (auto& i : entry_index) {
-    const auto& entryIndex = i;
-    const Integer item_owner = entryIndex.m_item_owner;
+  for (auto& entry : entry_index) {
+    const Integer item_owner = entry.m_item_owner;
     if (item_owner != m_local_owner) {
-      const Integer entryImpl = entryIndex.m_entry_uid;
+      const Integer entryImpl = entry.m_entry_uid;
       auto& request = parallel->sendRequests[item_owner][entryImpl];
       ALIEN_ASSERT((request.count > 0), ("Unexpected empty request"));
       --request.count;
       auto sbuf = request.comm->serializer();
       const Integer newIndex = sbuf->getInteger();
-      entry_reindex[i.m_item_index + m_global_entry_offset] = newIndex;
-      i.m_item_index = newIndex;
+      entry.m_item_index = newIndex;
     }
   }
 }
