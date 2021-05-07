@@ -33,7 +33,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -68,8 +69,7 @@ CompositeMatrix::CompositeMatrix(Integer nc)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-CompositeMatrix::visit(ICopyOnWriteMatrix& v) const
+void CompositeMatrix::visit(ICopyOnWriteMatrix& v) const
 {
   v.accept(m_impl);
 }
@@ -77,8 +77,7 @@ CompositeMatrix::visit(ICopyOnWriteMatrix& v) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-CompositeMatrix::resize(Integer nc)
+void CompositeMatrix::resize(Integer nc)
 {
   m_composite_matrix.resize(nc);
 
@@ -144,8 +143,7 @@ CompositeMatrix::operator()(Integer i, Integer j) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-CompositeMatrix::setUserFeature(String feature)
+void CompositeMatrix::setUserFeature(String feature)
 {
   m_impl->setFeature(feature);
 }
@@ -153,8 +151,7 @@ CompositeMatrix::setUserFeature(String feature)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool
-CompositeMatrix::hasUserFeature(String feature) const
+bool CompositeMatrix::hasUserFeature(String feature) const
 {
   return m_impl->hasFeature(feature);
 }
@@ -188,8 +185,7 @@ CompositeMatrix::impl() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-CompositeMatrix::free()
+void CompositeMatrix::free()
 {
   for (Integer i = 0; i < this->size(); ++i)
     for (Integer j = 0; j < this->size(); ++j) {
@@ -201,8 +197,7 @@ CompositeMatrix::free()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-CompositeMatrix::clear()
+void CompositeMatrix::clear()
 {
   for (Integer i = 0; i < this->size(); ++i)
     for (Integer j = 0; j < this->size(); ++j) {

@@ -32,7 +32,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,8 +41,10 @@ namespace Alien {
 class Matrix;
 class Vector;
 
-namespace MVExpr {
-  namespace lazy {
+namespace MVExpr
+{
+  namespace lazy
+  {
     struct add_tag
     {};
     struct minus_tag
@@ -62,43 +65,50 @@ namespace MVExpr {
     {};
   } // namespace lazy
 
-  template <class A, class B> auto add(A&& a, B&& b)
+  template <class A, class B>
+  auto add(A&& a, B&& b)
   {
     return [=](auto visitor) { return visitor(lazy::add_tag{}, a(visitor), b(visitor)); };
   }
 
-  template <class A, class B> auto minus(A&& a, B&& b)
+  template <class A, class B>
+  auto minus(A&& a, B&& b)
   {
     return
-        [=](auto visitor) { return visitor(lazy::minus_tag{}, a(visitor), b(visitor)); };
+    [=](auto visitor) { return visitor(lazy::minus_tag{}, a(visitor), b(visitor)); };
   }
 
-  template <class A, class B> auto mul(A&& a, B&& b)
+  template <class A, class B>
+  auto mul(A&& a, B&& b)
   {
     return
-        [=](auto visitor) { return visitor(lazy::mult_tag{}, a(visitor), b(visitor)); };
+    [=](auto visitor) { return visitor(lazy::mult_tag{}, a(visitor), b(visitor)); };
   }
 
-  template <class A, class B> auto div(A&& a, B&& b)
+  template <class A, class B>
+  auto div(A&& a, B&& b)
   {
     return [=](auto visitor) { return visitor(lazy::div_tag{}, a(visitor), b(visitor)); };
   }
 
   struct distribution_evaluator;
-  template <class A, class B> auto scalMul(A&& a, B&& b)
+  template <class A, class B>
+  auto scalMul(A&& a, B&& b)
   {
     return [=](auto visitor) {
       return visitor(
-          lazy::dot_tag{}, a(distribution_evaluator()), a(visitor), b(visitor));
+      lazy::dot_tag{}, a(distribution_evaluator()), a(visitor), b(visitor));
     };
   }
 
-  template <class T> auto cst(T expr)
+  template <class T>
+  auto cst(T expr)
   {
     return [=](auto visitor) { return visitor(lazy::cst_tag{}, expr); };
   }
 
-  template <class T> auto ref(T const& expr)
+  template <class T>
+  auto ref(T const& expr)
   {
     return [&](auto visitor) -> decltype(visitor(lazy::ref_tag{}, expr)) {
       return visitor(lazy::ref_tag{}, expr);
@@ -108,7 +118,8 @@ namespace MVExpr {
   struct cpu_evaluator;
   struct alloc_size_evaluator;
 
-  template <typename T> auto matrixMult(Matrix const& matrix, UniqueArray<T> const& x)
+  template <typename T>
+  auto matrixMult(Matrix const& matrix, UniqueArray<T> const& x)
   {
 #ifdef DEBUG
     std::cout << "\t\t MatrixVectorMult" << std::endl;
@@ -130,7 +141,8 @@ namespace MVExpr {
     return std::move(y);
   }
 
-  template <typename T> auto vectorAdd(UniqueArray<T> const& x, UniqueArray<T> const& y)
+  template <typename T>
+  auto vectorAdd(UniqueArray<T> const& x, UniqueArray<T> const& y)
   {
 #ifdef DEBUG
     std::cout << "\t\t VectorAdd" << std::endl;
@@ -154,7 +166,8 @@ namespace MVExpr {
     return std::move(result);
   }
 
-  template <typename T> auto vectorMinus(UniqueArray<T> const& x, UniqueArray<T> const& y)
+  template <typename T>
+  auto vectorMinus(UniqueArray<T> const& x, UniqueArray<T> const& y)
   {
 #ifdef DEBUG
     std::cout << "\t\t VectorMinus" << std::endl;
@@ -180,7 +193,8 @@ namespace MVExpr {
     return std::move(result);
   }
 
-  template <typename T> auto vectorMult(T const& lambda, UniqueArray<T> const& x)
+  template <typename T>
+  auto vectorMult(T const& lambda, UniqueArray<T> const& x)
   {
 #ifdef DEBUG
     std::cout << "\t\t VectorScal" << std::endl;
@@ -211,14 +225,15 @@ namespace MVExpr {
     return alg.dot(a, b);
   }
 
-  template <typename Tag> auto vectorScalProductT(Vector const& a, Vector const& b)
+  template <typename Tag>
+  auto vectorScalProductT(Vector const& a, Vector const& b)
   {
     LinearAlgebraExpr<Tag> alg(a.distribution().parallelMng());
     return alg.dot(a, b);
   }
 
   auto vectorScalProduct(
-      VectorDistribution const* distribution, Vector const& a, UniqueArray<Real> const& b)
+  VectorDistribution const* distribution, Vector const& a, UniqueArray<Real> const& b)
   {
 #ifdef DEBUG
     std::cout << "\t\t VectorScal" << std::endl;
@@ -229,14 +244,14 @@ namespace MVExpr {
     Real value = alg.dot(local_size, csr_a.getArrayValues(), b);
     if (distribution && distribution->isParallel())
       return Arccore::MessagePassing::mpAllReduce(
-          distribution->parallelMng(), Arccore::MessagePassing::ReduceSum, value);
+      distribution->parallelMng(), Arccore::MessagePassing::ReduceSum, value);
     else
       return value;
   }
 
   template <typename Tag>
   auto vectorScalProductT(
-      VectorDistribution const* distribution, Vector const& a, UniqueArray<Real> const& b)
+  VectorDistribution const* distribution, Vector const& a, UniqueArray<Real> const& b)
   {
     auto const& csr_a = a.impl()->get<Tag>();
     LinearAlgebraExpr<Tag> alg(nullptr);
@@ -244,13 +259,13 @@ namespace MVExpr {
     Real value = alg.dot(local_size, csr_a.getArrayValues(), b);
     if (distribution && distribution->isParallel())
       return Arccore::MessagePassing::mpAllReduce(
-          distribution->parallelMng(), Arccore::MessagePassing::ReduceSum, value);
+      distribution->parallelMng(), Arccore::MessagePassing::ReduceSum, value);
     else
       return value;
   }
 
   auto vectorScalProduct(
-      VectorDistribution const* distribution, UniqueArray<Real> const& a, Vector const& b)
+  VectorDistribution const* distribution, UniqueArray<Real> const& a, Vector const& b)
   {
 #ifdef DEBUG
     std::cout << "\t\t VectorScal" << std::endl;
@@ -261,14 +276,14 @@ namespace MVExpr {
     Real value = alg.dot(local_size, a, csr_b.getArrayValues());
     if (distribution && distribution->isParallel())
       return Arccore::MessagePassing::mpAllReduce(
-          distribution->parallelMng(), Arccore::MessagePassing::ReduceSum, value);
+      distribution->parallelMng(), Arccore::MessagePassing::ReduceSum, value);
     else
       return value;
   }
 
   template <typename Tag>
   auto vectorScalProductT(
-      VectorDistribution const* distribution, UniqueArray<Real> const& a, Vector const& b)
+  VectorDistribution const* distribution, UniqueArray<Real> const& a, Vector const& b)
   {
     auto const& csr_b = b.impl()->get<Tag>();
     LinearAlgebraExpr<Tag> alg(nullptr);
@@ -276,13 +291,13 @@ namespace MVExpr {
     Real value = alg.dot(local_size, a, csr_b.getArrayValues());
     if (distribution && distribution->isParallel())
       return Arccore::MessagePassing::mpAllReduce(
-          distribution->parallelMng(), Arccore::MessagePassing::ReduceSum, value);
+      distribution->parallelMng(), Arccore::MessagePassing::ReduceSum, value);
     else
       return value;
   }
 
   auto vectorScalProduct(VectorDistribution const* distribution,
-      UniqueArray<Real> const& a, UniqueArray<Real> const& b)
+                         UniqueArray<Real> const& a, UniqueArray<Real> const& b)
   {
 #ifdef DEBUG
     std::cout << "\t\t VectorScal" << std::endl;
@@ -292,21 +307,21 @@ namespace MVExpr {
     Real value = alg.dot(local_size, a, b);
     if (distribution && distribution->isParallel())
       return Arccore::MessagePassing::mpAllReduce(
-          distribution->parallelMng(), Arccore::MessagePassing::ReduceSum, value);
+      distribution->parallelMng(), Arccore::MessagePassing::ReduceSum, value);
     else
       return value;
   }
 
   template <typename Tag>
   auto vectorScalProductT(VectorDistribution const* distribution,
-      UniqueArray<Real> const& a, UniqueArray<Real> const& b)
+                          UniqueArray<Real> const& a, UniqueArray<Real> const& b)
   {
     LinearAlgebraExpr<Tag> alg(distribution->parallelMng());
     Integer local_size = distribution ? distribution->localSize() : a.size();
     Real value = alg.dot(local_size, a, b);
     if (distribution && distribution->isParallel())
       return Arccore::MessagePassing::mpAllReduce(
-          distribution->parallelMng(), Arccore::MessagePassing::ReduceSum, value);
+      distribution->parallelMng(), Arccore::MessagePassing::ReduceSum, value);
     else
       return value;
   }
@@ -314,7 +329,8 @@ namespace MVExpr {
   struct cpu_evaluator
   {
 
-    template <typename T> auto operator()(lazy::cst_tag, T c)
+    template <typename T>
+    auto operator()(lazy::cst_tag, T c)
     {
 #ifdef DEBUG
       std::cout << "\t return cst" << std::endl;
@@ -322,7 +338,8 @@ namespace MVExpr {
       return c;
     }
 
-    template <typename T> T const& operator()(lazy::ref_tag, T const& r)
+    template <typename T>
+    T const& operator()(lazy::ref_tag, T const& r)
     {
 #ifdef DEBUG
       std::cout << "\t return ref : " << r.name() << std::endl;
@@ -411,7 +428,7 @@ namespace MVExpr {
     }
 
     auto operator()(lazy::dot_tag, const VectorDistribution* distribution,
-        Vector const& a, Vector const& b)
+                    Vector const& a, Vector const& b)
     {
 #ifdef DEBUG
       std::cout << "\t visit dot(a,b)" << std::endl;
@@ -420,7 +437,7 @@ namespace MVExpr {
     }
 
     auto operator()(lazy::dot_tag, VectorDistribution const* distribution,
-        Vector const& a, UniqueArray<Real> const& b)
+                    Vector const& a, UniqueArray<Real> const& b)
     {
 #ifdef DEBUG
       std::cout << "\t visit dot(a,b)" << std::endl;
@@ -429,7 +446,7 @@ namespace MVExpr {
     }
 
     auto operator()(lazy::dot_tag, VectorDistribution const* distribution,
-        UniqueArray<Real> const& a, Vector const& b)
+                    UniqueArray<Real> const& a, Vector const& b)
     {
 #ifdef DEBUG
       std::cout << "\t visit dot(a,b)" << std::endl;
@@ -438,7 +455,7 @@ namespace MVExpr {
     }
 
     auto operator()(lazy::dot_tag, VectorDistribution const* distribution,
-        UniqueArray<Real> const& a, UniqueArray<Real> const& b)
+                    UniqueArray<Real> const& a, UniqueArray<Real> const& b)
     {
 #ifdef DEBUG
       std::cout << "\t visit dot(a,b)" << std::endl;
@@ -446,18 +463,22 @@ namespace MVExpr {
       return vectorScalProduct(distribution, a, b);
     }
 
-    template <class A, class B> auto operator()(lazy::minus_tag, A a, B b)
+    template <class A, class B>
+    auto operator()(lazy::minus_tag, A a, B b)
     {
       return a - b;
     }
   };
 
-  template <typename Tag> struct kernel_evaluator
+  template <typename Tag>
+  struct kernel_evaluator
   {
 
-    template <typename T> auto operator()(lazy::cst_tag, T c) { return c; }
+    template <typename T>
+    auto operator()(lazy::cst_tag, T c) { return c; }
 
-    template <typename T> T const& operator()(lazy::ref_tag, T const& r) { return r; }
+    template <typename T>
+    T const& operator()(lazy::ref_tag, T const& r) { return r; }
 
     template <typename T>
     auto operator()(lazy::mult_tag, Matrix const& a, UniqueArray<T> const& b)
@@ -512,30 +533,31 @@ namespace MVExpr {
     }
 
     auto operator()(lazy::dot_tag, const VectorDistribution* distribution,
-        Vector const& a, Vector const& b)
+                    Vector const& a, Vector const& b)
     {
       return vectorScalProductT<Tag>(a, b);
     }
 
     auto operator()(lazy::dot_tag, VectorDistribution const* distribution,
-        Vector const& a, UniqueArray<Real> const& b)
+                    Vector const& a, UniqueArray<Real> const& b)
     {
       return vectorScalProductT<Tag>(distribution, a, b);
     }
 
     auto operator()(lazy::dot_tag, VectorDistribution const* distribution,
-        UniqueArray<Real> const& a, Vector const& b)
+                    UniqueArray<Real> const& a, Vector const& b)
     {
       return vectorScalProductT<Tag>(distribution, a, b);
     }
 
     auto operator()(lazy::dot_tag, VectorDistribution const* distribution,
-        UniqueArray<Real> const& a, UniqueArray<Real> const& b)
+                    UniqueArray<Real> const& a, UniqueArray<Real> const& b)
     {
       return vectorScalProductT<Tag>(distribution, a, b);
     }
 
-    template <class A, class B> auto operator()(lazy::minus_tag, A a, B b)
+    template <class A, class B>
+    auto operator()(lazy::minus_tag, A a, B b)
     {
       return a - b;
     }
@@ -543,19 +565,22 @@ namespace MVExpr {
 
   struct size_evaluator
   {
-    template <class T> auto operator()(lazy::cst_tag, T c)
+    template <class T>
+    auto operator()(lazy::cst_tag, T c)
     {
       return std::numeric_limits<size_t>::max();
     }
 
     auto operator()(lazy::ref_tag, Matrix const& r) { return r.rowSpace().size(); }
 
-    template <class T> auto operator()(lazy::ref_tag, T const& r)
+    template <class T>
+    auto operator()(lazy::ref_tag, T const& r)
     {
       return r.rowSpace().size();
     }
 
-    template <class T, class A, class B> auto operator()(T, A a, B b)
+    template <class T, class A, class B>
+    auto operator()(T, A a, B b)
     {
       return std::min(a, b);
     }
@@ -575,23 +600,27 @@ namespace MVExpr {
 
   struct allocsize_evaluator
   {
-    template <class T> auto operator()(lazy::cst_tag, T c) { return std::size_t(0); }
+    template <class T>
+    auto operator()(lazy::cst_tag, T c) { return std::size_t(0); }
 
     auto operator()(lazy::ref_tag, Matrix const& r) { return allocSize(r); }
 
     auto operator()(lazy::ref_tag, Vector const& r) { return allocSize(r); }
 
-    template <typename L> auto operator()(lazy::add_tag, L const& l, Vector const& r)
+    template <typename L>
+    auto operator()(lazy::add_tag, L const& l, Vector const& r)
     {
       return allocSize(r);
     }
 
-    template <typename L> auto operator()(lazy::minus_tag, L const& l, Vector const& r)
+    template <typename L>
+    auto operator()(lazy::minus_tag, L const& l, Vector const& r)
     {
       return allocSize(r);
     }
 
-    template <typename L> auto operator()(lazy::mult_tag, L const& l, Vector const& r)
+    template <typename L>
+    auto operator()(lazy::mult_tag, L const& l, Vector const& r)
     {
       return allocSize(r);
     }
@@ -599,7 +628,8 @@ namespace MVExpr {
 
   struct distribution_evaluator
   {
-    template <class T> VectorDistribution const* operator()(lazy::cst_tag, T c)
+    template <class T>
+    VectorDistribution const* operator()(lazy::cst_tag, T c)
     {
       return nullptr;
     }
@@ -620,13 +650,14 @@ namespace MVExpr {
       return &r.distribution();
     }
 
-    template <typename L> auto operator()(lazy::minus_tag, L const& l, Vector const& r)
+    template <typename L>
+    auto operator()(lazy::minus_tag, L const& l, Vector const& r)
     {
       return &r.distribution();
     }
 
     auto operator()(
-        lazy::mult_tag, VectorDistribution const* l, VectorDistribution const* r)
+    lazy::mult_tag, VectorDistribution const* l, VectorDistribution const* r)
     {
       if (l)
         return l;
@@ -640,19 +671,23 @@ namespace MVExpr {
       return &r.distribution();
     }
 
-    template <typename R> auto operator()(lazy::mult_tag, Matrix const& l, R const& r)
+    template <typename R>
+    auto operator()(lazy::mult_tag, Matrix const& l, R const& r)
     {
       return &l.distribution().rowDistribution();
     }
 
-    template <typename L> auto operator()(lazy::mult_tag, L const& l, Vector const& r)
+    template <typename L>
+    auto operator()(lazy::mult_tag, L const& l, Vector const& r)
     {
       return &r.distribution();
     }
   };
 
-  template <class E> auto base_eval(E const& expr) { return expr(cpu_evaluator()); }
-  template <class E> auto eval(E const& expr) { return expr(cpu_evaluator()); }
+  template <class E>
+  auto base_eval(E const& expr) { return expr(cpu_evaluator()); }
+  template <class E>
+  auto eval(E const& expr) { return expr(cpu_evaluator()); }
 
   auto operator*(Matrix const& l, Vector const& r) { return mul(ref(l), ref(r)); }
 
@@ -664,7 +699,8 @@ namespace MVExpr {
     return mul(cst(lambda), ref(r));
   }
 
-  template <typename R> auto operator*(Matrix const& l, R const& r)
+  template <typename R>
+  auto operator*(Matrix const& l, R const& r)
   {
     return mul(ref(l), r);
   }
@@ -678,12 +714,14 @@ namespace MVExpr {
 
   auto operator+(Vector const& l, Vector const& r) { return add(ref(l), ref(r)); }
 
-  template <typename R> auto operator+(Vector const& l, R const& r)
+  template <typename R>
+  auto operator+(Vector const& l, R const& r)
   {
     return add(ref(l), r);
   }
 
-  template <typename L> auto operator+(L const& l, Vector const& r)
+  template <typename L>
+  auto operator+(L const& l, Vector const& r)
   {
     return add(l, ref(r));
   }
@@ -695,69 +733,82 @@ namespace MVExpr {
     return add(l,r) ;
   }*/
 
-  template <typename R> auto operator-(Vector& l, R&& r) { return minus(ref(l), r); }
+  template <typename R>
+  auto operator-(Vector& l, R&& r) { return minus(ref(l), r); }
 
-  template <typename L> auto operator-(L&& l, Vector& r) { return minus(l, ref(r)); }
+  template <typename L>
+  auto operator-(L&& l, Vector& r) { return minus(l, ref(r)); }
 
-  template <typename L, typename R> auto operator-(L&& l, R&& r) { return minus(l, r); }
+  template <typename L, typename R>
+  auto operator-(L&& l, R&& r) { return minus(l, r); }
 
   auto dot(Vector const& x, Vector const& y) { return scalMul(ref(x), ref(y)); }
 
-  template <typename R> auto dot(Vector const& x, R const& y)
+  template <typename R>
+  auto dot(Vector const& x, R const& y)
   {
     return scalMul(ref(x), y);
   }
 
-  template <typename L> auto dot(L const& x, Vector const& y)
+  template <typename L>
+  auto dot(L const& x, Vector const& y)
   {
     return scalMul(x, ref(y));
   }
 
-  template <typename L, typename R> auto dot(L const& x, R const& y)
+  template <typename L, typename R>
+  auto dot(L const& x, R const& y)
   {
     return scalMul(x, y);
   }
 
-  template <class E> void assign(Vector& y, E const& expr)
+  template <class E>
+  void assign(Vector& y, E const& expr)
   {
     SimpleCSRVector<Real>& csr_y = y.impl()->get<BackEnd::tag::simplecsr>(true);
     csr_y.allocate();
     csr_y.setArrayValues(expr(cpu_evaluator()));
   }
 
-  template <typename Tag, class E> void kassign(Vector& y, E const& expr)
+  template <typename Tag, class E>
+  void kassign(Vector& y, E const& expr)
   {
     auto& backend_y = y.impl()->template get<Tag>(true);
     backend_y.allocate();
     backend_y.setArrayValues(expr(kernel_evaluator<Tag>()));
   }
 
-  template <typename A, typename B> auto vassign(A&& a, B&& b)
+  template <typename A, typename B>
+  auto vassign(A&& a, B&& b)
   {
     return [&](auto visitor) { return visitor(lazy::assign_tag{}, a, b); };
   }
 
-  template <typename E> auto veval(double& value, E&& e)
+  template <typename E>
+  auto veval(double& value, E&& e)
   {
     return [&](auto visitor) { return visitor(lazy::eval_tag{}, value, e); };
   }
 
   struct pipeline_evaluator
   {
-    template <typename T> void eval(T&& expr)
+    template <typename T>
+    void eval(T&& expr)
     {
 #ifdef DEBUG
       std::cout << "pipeline eval" << std::endl;
 #endif
       expr(*this);
     }
-    template <typename T0, typename... T> void eval(T0&& expr0, T&&... args)
+    template <typename T0, typename... T>
+    void eval(T0&& expr0, T&&... args)
     {
       eval(expr0);
       eval(args...);
     }
 
-    template <typename E> auto operator()(lazy::assign_tag, Vector& a, E&& expr)
+    template <typename E>
+    auto operator()(lazy::assign_tag, Vector& a, E&& expr)
     {
 #ifdef DEBUG
       std::cout << "vector assignement" << std::endl;
@@ -765,14 +816,16 @@ namespace MVExpr {
       assign(a, expr);
     }
 
-    template <typename E> auto operator()(lazy::eval_tag, double& value, E&& expr)
+    template <typename E>
+    auto operator()(lazy::eval_tag, double& value, E&& expr)
     {
       value = base_eval(expr);
       return value;
     }
   };
 
-  template <typename... T> void pipeline(T... args)
+  template <typename... T>
+  void pipeline(T... args)
   {
     pipeline_evaluator evaluator;
     evaluator.eval(args...);

@@ -27,7 +27,8 @@
 
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 
@@ -58,7 +59,7 @@ class ALIEN_EXPORT SolverStat
 
  public:
   void print(
-      ITraceMng* traceMng, const SolverStatus& status, String title = String()) const;
+  ITraceMng* traceMng, const SolverStatus& status, String title = String()) const;
 
  protected:
   Integer m_solve_count;
@@ -73,7 +74,7 @@ class ALIEN_EXPORT SolverStat
  private:
   class InternalTraceSizer;
   void _internalPrint(std::ostream& o, const Integer prefix_size,
-      const SolverStatus& status, String title) const;
+                      const SolverStatus& status, String title) const;
 };
 
 /*---------------------------------------------------------------------------*/

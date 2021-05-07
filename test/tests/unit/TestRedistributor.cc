@@ -57,7 +57,7 @@ TEST(TestRedistributor, RedistributorMatrix)
   Alien::Space col_space(mdist.globalColSize(), "Space");
 
   std::unique_ptr<Alien::MultiMatrixImpl> multimat(
-      new Alien::MultiMatrixImpl(row_space.clone(), col_space.clone(), mdist.clone()));
+  new Alien::MultiMatrixImpl(row_space.clone(), col_space.clone(), mdist.clone()));
 
   Alien::RedistributorMatrix mat(multimat.get());
   // mat.updateTargetPM(Environment::parallelMng());

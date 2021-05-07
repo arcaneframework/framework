@@ -18,7 +18,8 @@
 
 #pragma once
 
-namespace Alien {
+namespace Alien
+{
 
 class CountStampMng
 {

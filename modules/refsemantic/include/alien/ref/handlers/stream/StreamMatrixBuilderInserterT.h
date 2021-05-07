@@ -23,7 +23,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 
@@ -38,7 +39,7 @@ StreamMatrixBuilderT<ValueT>::BaseInserter::BaseInserter()
 
 template <typename ValueT>
 StreamMatrixBuilderT<ValueT>::BaseInserter::BaseInserter(
-    StreamMatrixBuilderT<ValueT>* parent, Integer id)
+StreamMatrixBuilderT<ValueT>* parent, Integer id)
 : m_id(id)
 , m_index(0)
 , m_current_size(0)
@@ -52,13 +53,13 @@ StreamMatrixBuilderT<ValueT>::BaseInserter::BaseInserter(
 
 /*---------------------------------------------------------------------------*/
 
-template <typename ValueT> StreamMatrixBuilderT<ValueT>::BaseInserter::~BaseInserter() {}
+template <typename ValueT>
+StreamMatrixBuilderT<ValueT>::BaseInserter::~BaseInserter() {}
 
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::BaseInserter::init()
+void StreamMatrixBuilderT<ValueT>::BaseInserter::init()
 {
   m_index = 0;
   m_current_size = 0;
@@ -80,8 +81,7 @@ StreamMatrixBuilderT<ValueT>::BaseInserter::getId() const
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::BaseInserter::end()
+void StreamMatrixBuilderT<ValueT>::BaseInserter::end()
 {
   init();
   m_n.resize(0);
@@ -93,9 +93,8 @@ StreamMatrixBuilderT<ValueT>::BaseInserter::end()
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::BaseInserter::setMatrixValues(
-    ValueT* matrix_values, Integer block_size)
+void StreamMatrixBuilderT<ValueT>::BaseInserter::setMatrixValues(
+ValueT* matrix_values, Integer block_size)
 {
   // ALIEN_ASSERT((this->m_parent->m_state == ePrepared),("Inconsistent state"));
   m_values = matrix_values;
@@ -108,8 +107,7 @@ StreamMatrixBuilderT<ValueT>::BaseInserter::setMatrixValues(
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::Profiler::reserve(Integer capacity)
+void StreamMatrixBuilderT<ValueT>::Profiler::reserve(Integer capacity)
 {
   // ALIEN_ASSERT((this->m_parent->m_state == ePrepared),("Inconsistent state"));
   this->m_row_index.reserve(capacity);
@@ -137,8 +135,7 @@ StreamMatrixBuilderT<ValueT>::BaseInserter::count()
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::Filler::start()
+void StreamMatrixBuilderT<ValueT>::Filler::start()
 {
   ALIEN_ASSERT((this->m_parent->m_state == eStart), ("Inconsistent state"));
   ALIEN_ASSERT((this->m_values != NULL), ("Inserter is not ready for filling"));
@@ -150,8 +147,7 @@ StreamMatrixBuilderT<ValueT>::Filler::start()
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::Filler::setEnd()
+void StreamMatrixBuilderT<ValueT>::Filler::setEnd()
 {
   this->m_index = this->m_size;
 }
@@ -159,8 +155,7 @@ StreamMatrixBuilderT<ValueT>::Filler::setEnd()
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-bool
-StreamMatrixBuilderT<ValueT>::Filler::isBegin()
+bool StreamMatrixBuilderT<ValueT>::Filler::isBegin()
 {
   return (this->m_index == 0);
 }
@@ -168,8 +163,7 @@ StreamMatrixBuilderT<ValueT>::Filler::isBegin()
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-bool
-StreamMatrixBuilderT<ValueT>::Filler::isEnd()
+bool StreamMatrixBuilderT<ValueT>::Filler::isEnd()
 {
   return (this->m_index == this->m_size);
 }
@@ -196,9 +190,8 @@ StreamMatrixBuilderT<ValueT>::Filler::index()
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::Profiler::addMatrixEntries(
-    ConstArrayView<Integer> row_index, ConstArrayView<Integer> col_index)
+void StreamMatrixBuilderT<ValueT>::Profiler::addMatrixEntries(
+ConstArrayView<Integer> row_index, ConstArrayView<Integer> col_index)
 {
   this->_startTimer();
   // ALIEN_ASSERT((this->m_parent->m_state == ePrepared),("Inconsistent state"));
@@ -218,10 +211,9 @@ StreamMatrixBuilderT<ValueT>::Profiler::addMatrixEntries(
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::Profiler::addMatrixEntries(
-    ConstArrayView<Integer> row_indexes,
-    const UniqueArray<ConstArrayView<Integer>>& col_indexes)
+void StreamMatrixBuilderT<ValueT>::Profiler::addMatrixEntries(
+ConstArrayView<Integer> row_indexes,
+const UniqueArray<ConstArrayView<Integer>>& col_indexes)
 {
   this->_startTimer();
   // ALIEN_ASSERT((this->m_parent->m_state == ePrepared),("Inconsistent state"));
@@ -246,10 +238,9 @@ StreamMatrixBuilderT<ValueT>::Profiler::addMatrixEntries(
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::Profiler::addMatrixEntries(
-    ConstArrayView<Integer> row_indexes, UniqueArray2<Integer> col_indexes,
-    ConstArrayView<Integer> stencil_lids, Integer size)
+void StreamMatrixBuilderT<ValueT>::Profiler::addMatrixEntries(
+ConstArrayView<Integer> row_indexes, UniqueArray2<Integer> col_indexes,
+ConstArrayView<Integer> stencil_lids, Integer size)
 {
   this->_startTimer();
   // ALIEN_ASSERT((this->m_parent->m_state == ePrepared),("Inconsistent state"));
@@ -273,9 +264,8 @@ StreamMatrixBuilderT<ValueT>::Profiler::addMatrixEntries(
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::Profiler::addMatrixEntries(
-    const Integer row_index, ConstArrayView<Integer> col_index)
+void StreamMatrixBuilderT<ValueT>::Profiler::addMatrixEntries(
+const Integer row_index, ConstArrayView<Integer> col_index)
 {
   this->_startTimer();
   // ALIEN_ASSERT((this->m_parent->m_state == ePrepared),("Inconsistent state"));
@@ -293,9 +283,8 @@ StreamMatrixBuilderT<ValueT>::Profiler::addMatrixEntries(
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::Profiler::addMatrixEntry(
-    Integer row_index, Integer col_index)
+void StreamMatrixBuilderT<ValueT>::Profiler::addMatrixEntry(
+Integer row_index, Integer col_index)
 {
   this->_startTimer();
   ALIEN_ASSERT((this->m_parent->m_state == ePrepared), ("Inconsistent state"));
@@ -310,8 +299,7 @@ StreamMatrixBuilderT<ValueT>::Profiler::addMatrixEntry(
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::Filler::setData(ConstArrayView<ValueT> values)
+void StreamMatrixBuilderT<ValueT>::Filler::setData(ConstArrayView<ValueT> values)
 {
   this->_startTimer();
   // ALIEN_ASSERT((this->m_parent->m_state == eStart),("Inconsistent state"));
@@ -325,8 +313,7 @@ StreamMatrixBuilderT<ValueT>::Filler::setData(ConstArrayView<ValueT> values)
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::Filler::setData(ValueT values)
+void StreamMatrixBuilderT<ValueT>::Filler::setData(ValueT values)
 {
   this->_startTimer();
   // ALIEN_ASSERT((this->m_parent->m_state == eStart),("Inconsistent state"));
@@ -338,8 +325,7 @@ StreamMatrixBuilderT<ValueT>::Filler::setData(ValueT values)
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::Filler::addData(ConstArrayView<ValueT> values)
+void StreamMatrixBuilderT<ValueT>::Filler::addData(ConstArrayView<ValueT> values)
 {
   this->_startTimer();
   // ALIEN_ASSERT((this->m_parent->m_state == eStart),("Inconsistent state"));
@@ -352,9 +338,8 @@ StreamMatrixBuilderT<ValueT>::Filler::addData(ConstArrayView<ValueT> values)
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::Filler::addData(
-    ConstArrayView<ValueT> values, ValueT factor)
+void StreamMatrixBuilderT<ValueT>::Filler::addData(
+ConstArrayView<ValueT> values, ValueT factor)
 {
   this->_startTimer();
   // ALIEN_ASSERT((this->m_parent->m_state == eStart),("Inconsistent state"));
@@ -367,8 +352,7 @@ StreamMatrixBuilderT<ValueT>::Filler::addData(
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::Filler::addData(ValueT values)
+void StreamMatrixBuilderT<ValueT>::Filler::addData(ValueT values)
 {
   this->_startTimer();
   // ALIEN_ASSERT((this->m_parent->m_state == eStart),("Inconsistent state"));
@@ -380,8 +364,7 @@ StreamMatrixBuilderT<ValueT>::Filler::addData(ValueT values)
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::Filler::addMultiData(ValueT value)
+void StreamMatrixBuilderT<ValueT>::Filler::addMultiData(ValueT value)
 {
   this->_startTimer();
   // ALIEN_ASSERT((this->m_parent->m_state == eStart),("Inconsistent state"));
@@ -393,27 +376,25 @@ StreamMatrixBuilderT<ValueT>::Filler::addMultiData(ValueT value)
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::Filler::addBlockData(ConstArrayView<ValueT> values)
+void StreamMatrixBuilderT<ValueT>::Filler::addBlockData(ConstArrayView<ValueT> values)
 {
   this->_startTimer();
   ALIEN_ASSERT((this->m_parent->m_state == eStart), ("Inconsistent state"));
   ALIEN_ASSERT((values.size() == this->m_current_size * this->m_block_size),
-      ("Incompatible size %d vs %d * %d ", values.size(), this->m_current_size,
-          this->m_block_size));
+               ("Incompatible size %d vs %d * %d ", values.size(), this->m_current_size,
+                this->m_block_size));
   for (Integer i = 0; i < this->m_current_size; ++i)
     for (Integer k = 0; k < this->m_block_size; ++k)
       this->m_values[this->m_current_k[i] * this->m_block_size + k] +=
-          values[i * this->m_block_size + k];
+      values[i * this->m_block_size + k];
   this->_stopTimer();
 }
 
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::Filler::addBlockData(
-    ConstArrayView<ValueT> values, ValueT factor)
+void StreamMatrixBuilderT<ValueT>::Filler::addBlockData(
+ConstArrayView<ValueT> values, ValueT factor)
 {
   this->_startTimer();
   // ALIEN_ASSERT((this->m_parent->m_state == eStart),("Inconsistent state"));
@@ -422,16 +403,15 @@ StreamMatrixBuilderT<ValueT>::Filler::addBlockData(
   for (Integer i = 0; i < this->m_current_size; ++i)
     for (Integer k = 0; k < this->m_block_size; ++k)
       this->m_values[this->m_current_k[i] * this->m_block_size + k] +=
-          factor * values[i * this->m_block_size + k];
+      factor * values[i * this->m_block_size + k];
   this->_stopTimer();
 }
 
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::Filler::addMultiData(
-    ConstArrayView<ValueT> values, Integer size)
+void StreamMatrixBuilderT<ValueT>::Filler::addMultiData(
+ConstArrayView<ValueT> values, Integer size)
 {
   this->_startTimer();
   // ALIEN_ASSERT((this->m_parent->m_state == eStart),("Inconsistent state"));
@@ -447,9 +427,8 @@ StreamMatrixBuilderT<ValueT>::Filler::addMultiData(
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::Filler::addMultiData(
-    ConstArrayView<ValueT> values, ValueT factor, Integer size)
+void StreamMatrixBuilderT<ValueT>::Filler::addMultiData(
+ConstArrayView<ValueT> values, ValueT factor, Integer size)
 {
   this->_startTimer();
   // ALIEN_ASSERT((this->m_parent->m_state == eStart),("Inconsistent state"));

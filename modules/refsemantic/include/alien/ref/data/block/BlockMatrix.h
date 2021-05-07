@@ -30,7 +30,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,10 +44,10 @@ class ALIEN_REFSEMANTIC_EXPORT BlockMatrix final : public IMatrix
   BlockMatrix(const Block& block, const MatrixDistribution& dist);
 
   BlockMatrix(Integer nrows, Integer ncols, Integer nrows_local, const Block& block,
-      IMessagePassingMng* parallel_mng);
+              IMessagePassingMng* parallel_mng);
 
   BlockMatrix(
-      Integer nrows, Integer ncols, const Block& block, IMessagePassingMng* parallel_mng);
+  Integer nrows, Integer ncols, const Block& block, IMessagePassingMng* parallel_mng);
 
   BlockMatrix(BlockMatrix&& m);
 

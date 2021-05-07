@@ -37,14 +37,15 @@
 using namespace Arccore::MessagePassing;
 using namespace Arccore;
 
-namespace Alien {
+namespace Alien
+{
 
 Redistributor::Redistributor(
-    int globalSize, Arccore::MessagePassing::IMessagePassingMng* super, bool keep)
+int globalSize, Arccore::MessagePassing::IMessagePassingMng* super, bool keep)
 : m_super_pm(super)
 {
   m_distributor.reset(new RedistributorCommPlan(
-      globalSize, m_super_pm, Arccore::MessagePassing::mpSplit(super, keep)));
+  globalSize, m_super_pm, Arccore::MessagePassing::mpSplit(super, keep)));
 }
 
 Redistributor::~Redistributor() {}
@@ -63,8 +64,7 @@ Redistributor::redistribute(MultiVectorImpl* vect)
   return red_vect.updateTargetPM(m_distributor.get());
 }
 
-void
-Redistributor::redistributeBack(MultiVectorImpl* vect ALIEN_UNUSED_PARAM)
+void Redistributor::redistributeBack(MultiVectorImpl* vect ALIEN_UNUSED_PARAM)
 {
   /*
     auto& dst_vect = vect->get<BackEnd::tag::redistributor>(true);

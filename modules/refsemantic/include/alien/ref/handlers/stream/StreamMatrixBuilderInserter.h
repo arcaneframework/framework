@@ -21,12 +21,14 @@
 #include <alien/ref/AlienRefSemanticPrecomp.h>
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 using namespace Arccore;
 
 /*---------------------------------------------------------------------------*/
 
-template <typename ValueT> class StreamMatrixBuilderT<ValueT>::BaseInserter
+template <typename ValueT>
+class StreamMatrixBuilderT<ValueT>::BaseInserter
 {
  protected:
   friend class StreamMatrixBuilderT<ValueT>;
@@ -89,12 +91,12 @@ class StreamMatrixBuilderT<ValueT>::Profiler
  public:
   void reserve(Integer capacity);
   void addMatrixEntries(
-      ConstArrayView<Integer> row_index, ConstArrayView<Integer> col_index);
+  ConstArrayView<Integer> row_index, ConstArrayView<Integer> col_index);
   void addMatrixEntries(ConstArrayView<Integer> row_indexes,
-      const UniqueArray<ConstArrayView<Integer>>& col_indexes);
+                        const UniqueArray<ConstArrayView<Integer>>& col_indexes);
   void addMatrixEntries(ConstArrayView<Integer> row_indexes,
-      UniqueArray2<Integer> col_indexes, ConstArrayView<Integer> stencil_lids,
-      Integer size);
+                        UniqueArray2<Integer> col_indexes, ConstArrayView<Integer> stencil_lids,
+                        Integer size);
   void addMatrixEntries(const Integer row_index, ConstArrayView<Integer> col_index);
   void addMatrixEntry(Integer row_index, Integer col_index);
 };
@@ -139,8 +141,8 @@ class StreamMatrixBuilderT<ValueT>::Filler
 
 template <typename ValueT>
 class StreamMatrixBuilderT<ValueT>::Inserter
-: public StreamMatrixBuilderT<ValueT>::Profiler,
-  public StreamMatrixBuilderT<ValueT>::Filler
+: public StreamMatrixBuilderT<ValueT>::Profiler
+, public StreamMatrixBuilderT<ValueT>::Filler
 {
  private:
   friend class StreamMatrixBuilderT<ValueT>;

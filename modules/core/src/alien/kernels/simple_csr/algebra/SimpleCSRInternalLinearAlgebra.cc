@@ -30,7 +30,8 @@
 
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -66,107 +67,95 @@ SimpleCSRInternalLinearAlgebra::~SimpleCSRInternalLinearAlgebra() {}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Real
-SimpleCSRInternalLinearAlgebra::norm0(const CSRVector& vx ALIEN_UNUSED_PARAM) const
+Real SimpleCSRInternalLinearAlgebra::norm0(const CSRVector& vx ALIEN_UNUSED_PARAM) const
 {
   // return CBLASMPIKernel::nrm0(x.space().structInfo(),vx);
   throw NotImplementedException(
-      A_FUNCINFO, "SimpleCSRLinearAlgebra::norm0 not implemented");
+  A_FUNCINFO, "SimpleCSRLinearAlgebra::norm0 not implemented");
 }
 
 /*---------------------------------------------------------------------------*/
 
-Real
-SimpleCSRInternalLinearAlgebra::norm1(const CSRVector& vx ALIEN_UNUSED_PARAM) const
+Real SimpleCSRInternalLinearAlgebra::norm1(const CSRVector& vx ALIEN_UNUSED_PARAM) const
 {
   // return CBLASMPIKernel::nrm1(x.space().structInfo(),vx);
   throw NotImplementedException(
-      A_FUNCINFO, "SimpleCSRLinearAlgebra::norm1 not implemented");
+  A_FUNCINFO, "SimpleCSRLinearAlgebra::norm1 not implemented");
 }
 
 /*---------------------------------------------------------------------------*/
 
-Real
-SimpleCSRInternalLinearAlgebra::norm2(const CSRVector& vx) const
+Real SimpleCSRInternalLinearAlgebra::norm2(const CSRVector& vx) const
 {
   return CBLASMPIKernel::nrm2(vx.distribution(), vx);
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-SimpleCSRInternalLinearAlgebra::mult(
-    const CSRMatrix& ma, const CSRVector& vx, CSRVector& vr) const
+void SimpleCSRInternalLinearAlgebra::mult(
+const CSRMatrix& ma, const CSRVector& vx, CSRVector& vr) const
 {
   Internal::SimpleCSRMatrixMultT<Real>(ma).mult(vx, vr);
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-SimpleCSRInternalLinearAlgebra::axpy(
-    const Real& alpha, const CSRVector& vx, CSRVector& vr) const
+void SimpleCSRInternalLinearAlgebra::axpy(
+const Real& alpha, const CSRVector& vx, CSRVector& vr) const
 {
   CBLASMPIKernel::axpy(vx.distribution(), alpha, vx, vr);
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-SimpleCSRInternalLinearAlgebra::aypx(const Real& alpha ALIEN_UNUSED_PARAM,
-    CSRVector& y ALIEN_UNUSED_PARAM, const CSRVector& x ALIEN_UNUSED_PARAM) const
+void SimpleCSRInternalLinearAlgebra::aypx(const Real& alpha ALIEN_UNUSED_PARAM,
+                                          CSRVector& y ALIEN_UNUSED_PARAM, const CSRVector& x ALIEN_UNUSED_PARAM) const
 {
   throw NotImplementedException(
-      A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
+  A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-SimpleCSRInternalLinearAlgebra::copy(const CSRVector& vx, CSRVector& vr) const
+void SimpleCSRInternalLinearAlgebra::copy(const CSRVector& vx, CSRVector& vr) const
 {
   CBLASMPIKernel::copy(vx.distribution(), vx, vr);
 }
 
 /*---------------------------------------------------------------------------*/
 
-Real
-SimpleCSRInternalLinearAlgebra::dot(const CSRVector& vx, const CSRVector& vy) const
+Real SimpleCSRInternalLinearAlgebra::dot(const CSRVector& vx, const CSRVector& vy) const
 {
   return CBLASMPIKernel::dot(vx.distribution(), vx, vy);
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-SimpleCSRInternalLinearAlgebra::scal(
-    const Real& alpha ALIEN_UNUSED_PARAM, CSRVector& x ALIEN_UNUSED_PARAM) const
+void SimpleCSRInternalLinearAlgebra::scal(
+const Real& alpha ALIEN_UNUSED_PARAM, CSRVector& x ALIEN_UNUSED_PARAM) const
 {
   throw NotImplementedException(
-      A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
+  A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
 }
 
-void
-SimpleCSRInternalLinearAlgebra::diagonal(
-    const CSRMatrix& a ALIEN_UNUSED_PARAM, CSRVector& x ALIEN_UNUSED_PARAM) const
+void SimpleCSRInternalLinearAlgebra::diagonal(
+const CSRMatrix& a ALIEN_UNUSED_PARAM, CSRVector& x ALIEN_UNUSED_PARAM) const
 {
   throw NotImplementedException(
-      A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
+  A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
 }
 
-void
-SimpleCSRInternalLinearAlgebra::reciprocal(CSRVector& x ALIEN_UNUSED_PARAM) const
+void SimpleCSRInternalLinearAlgebra::reciprocal(CSRVector& x ALIEN_UNUSED_PARAM) const
 {
   throw NotImplementedException(
-      A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
+  A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
 }
 
-void
-SimpleCSRInternalLinearAlgebra::pointwiseMult(const CSRVector& x ALIEN_UNUSED_PARAM,
-    const CSRVector& y ALIEN_UNUSED_PARAM, CSRVector& w ALIEN_UNUSED_PARAM) const
+void SimpleCSRInternalLinearAlgebra::pointwiseMult(const CSRVector& x ALIEN_UNUSED_PARAM,
+                                                   const CSRVector& y ALIEN_UNUSED_PARAM, CSRVector& w ALIEN_UNUSED_PARAM) const
 {
   throw NotImplementedException(
-      A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
+  A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
 }
 
 SimpleCSRInternalLinearAlgebraExpr::SimpleCSRInternalLinearAlgebraExpr()
@@ -180,150 +169,132 @@ SimpleCSRInternalLinearAlgebraExpr::~SimpleCSRInternalLinearAlgebraExpr() {}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Real
-SimpleCSRInternalLinearAlgebraExpr::norm0(const CSRVector& vx ALIEN_UNUSED_PARAM) const
+Real SimpleCSRInternalLinearAlgebraExpr::norm0(const CSRVector& vx ALIEN_UNUSED_PARAM) const
 {
   // return CBLASMPIKernel::nrm0(x.space().structInfo(),vx);
   throw NotImplementedException(
-      A_FUNCINFO, "SimpleCSRLinearAlgebra::norm0 not implemented");
+  A_FUNCINFO, "SimpleCSRLinearAlgebra::norm0 not implemented");
 }
 
 /*---------------------------------------------------------------------------*/
 
-Real
-SimpleCSRInternalLinearAlgebraExpr::norm1(const CSRVector& vx ALIEN_UNUSED_PARAM) const
+Real SimpleCSRInternalLinearAlgebraExpr::norm1(const CSRVector& vx ALIEN_UNUSED_PARAM) const
 {
   // return CBLASMPIKernel::nrm1(x.space().structInfo(),vx);
   throw NotImplementedException(
-      A_FUNCINFO, "SimpleCSRLinearAlgebra::norm1 not implemented");
+  A_FUNCINFO, "SimpleCSRLinearAlgebra::norm1 not implemented");
 }
 
 /*---------------------------------------------------------------------------*/
 
-Real
-SimpleCSRInternalLinearAlgebraExpr::norm2(const CSRVector& vx) const
+Real SimpleCSRInternalLinearAlgebraExpr::norm2(const CSRVector& vx) const
 {
   return CBLASMPIKernel::nrm2(vx.distribution(), vx);
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-SimpleCSRInternalLinearAlgebraExpr::mult(
-    const CSRMatrix& ma, const CSRVector& vx, CSRVector& vr) const
+void SimpleCSRInternalLinearAlgebraExpr::mult(
+const CSRMatrix& ma, const CSRVector& vx, CSRVector& vr) const
 {
   Internal::SimpleCSRMatrixMultT<Real>(ma).mult(vx, vr);
 }
 
-void
-SimpleCSRInternalLinearAlgebraExpr::mult(
-    const CSRMatrix& ma, const UniqueArray<Real>& vx, UniqueArray<Real>& vr) const
+void SimpleCSRInternalLinearAlgebraExpr::mult(
+const CSRMatrix& ma, const UniqueArray<Real>& vx, UniqueArray<Real>& vr) const
 {
   Internal::SimpleCSRMatrixMultT<Real>(ma).mult(vx, vr);
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-SimpleCSRInternalLinearAlgebraExpr::axpy(
-    const Real& alpha, const UniqueArray<Real>& vx, UniqueArray<Real>& vr) const
+void SimpleCSRInternalLinearAlgebraExpr::axpy(
+const Real& alpha, const UniqueArray<Real>& vx, UniqueArray<Real>& vr) const
 {
   cblas::axpy(vx.size(), alpha, dataPtr(vx), 1, dataPtr(vr), 1);
 }
 
-void
-SimpleCSRInternalLinearAlgebraExpr::axpy(
-    const Real& alpha, const CSRVector& vx, CSRVector& vr) const
+void SimpleCSRInternalLinearAlgebraExpr::axpy(
+const Real& alpha, const CSRVector& vx, CSRVector& vr) const
 {
   CBLASMPIKernel::axpy(vx.distribution(), alpha, vx, vr);
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-SimpleCSRInternalLinearAlgebraExpr::aypx(
-    const Real& alpha, UniqueArray<Real>& vy, UniqueArray<Real> const& vx) const
+void SimpleCSRInternalLinearAlgebraExpr::aypx(
+const Real& alpha, UniqueArray<Real>& vy, UniqueArray<Real> const& vx) const
 {
   throw NotImplementedException(
-      A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
+  A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
 }
 
-void
-SimpleCSRInternalLinearAlgebraExpr::aypx(const Real& alpha ALIEN_UNUSED_PARAM,
-    CSRVector& y ALIEN_UNUSED_PARAM, const CSRVector& x ALIEN_UNUSED_PARAM) const
+void SimpleCSRInternalLinearAlgebraExpr::aypx(const Real& alpha ALIEN_UNUSED_PARAM,
+                                              CSRVector& y ALIEN_UNUSED_PARAM, const CSRVector& x ALIEN_UNUSED_PARAM) const
 {
   throw NotImplementedException(
-      A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
+  A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-SimpleCSRInternalLinearAlgebraExpr::copy(
-    const UniqueArray<Real>& vx, UniqueArray<Real>& vr) const
+void SimpleCSRInternalLinearAlgebraExpr::copy(
+const UniqueArray<Real>& vx, UniqueArray<Real>& vr) const
 {
   cblas::copy(vx.size(), dataPtr(vx), 1, dataPtr(vr), 1);
 }
 
-void
-SimpleCSRInternalLinearAlgebraExpr::copy(const CSRVector& vx, CSRVector& vr) const
+void SimpleCSRInternalLinearAlgebraExpr::copy(const CSRVector& vx, CSRVector& vr) const
 {
   CBLASMPIKernel::copy(vx.distribution(), vx, vr);
 }
 
 /*---------------------------------------------------------------------------*/
 
-Real
-SimpleCSRInternalLinearAlgebraExpr::dot(
-    Integer local_size, const UniqueArray<Real>& vx, const UniqueArray<Real>& vy) const
+Real SimpleCSRInternalLinearAlgebraExpr::dot(
+Integer local_size, const UniqueArray<Real>& vx, const UniqueArray<Real>& vy) const
 {
   return cblas::dot(local_size, dataPtr(vx), 1, dataPtr(vy), 1);
 }
 
-Real
-SimpleCSRInternalLinearAlgebraExpr::dot(const CSRVector& vx, const CSRVector& vy) const
+Real SimpleCSRInternalLinearAlgebraExpr::dot(const CSRVector& vx, const CSRVector& vy) const
 {
   return CBLASMPIKernel::dot(vx.distribution(), vx, vy);
 }
 
 /*---------------------------------------------------------------------------*/
-void
-SimpleCSRInternalLinearAlgebraExpr::scal(
-    const Real& alpha ALIEN_UNUSED_PARAM, UniqueArray<Real>& x ALIEN_UNUSED_PARAM) const
+void SimpleCSRInternalLinearAlgebraExpr::scal(
+const Real& alpha ALIEN_UNUSED_PARAM, UniqueArray<Real>& x ALIEN_UNUSED_PARAM) const
 {
   throw NotImplementedException(
-      A_FUNCINFO, "SimpleCSRLinearAlgebra::scal not implemented");
+  A_FUNCINFO, "SimpleCSRLinearAlgebra::scal not implemented");
 }
 
-void
-SimpleCSRInternalLinearAlgebraExpr::scal(
-    const Real& alpha ALIEN_UNUSED_PARAM, CSRVector& x ALIEN_UNUSED_PARAM) const
+void SimpleCSRInternalLinearAlgebraExpr::scal(
+const Real& alpha ALIEN_UNUSED_PARAM, CSRVector& x ALIEN_UNUSED_PARAM) const
 {
   throw NotImplementedException(
-      A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
+  A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
 }
 
-void
-SimpleCSRInternalLinearAlgebraExpr::diagonal(
-    const CSRMatrix& a ALIEN_UNUSED_PARAM, CSRVector& x ALIEN_UNUSED_PARAM) const
+void SimpleCSRInternalLinearAlgebraExpr::diagonal(
+const CSRMatrix& a ALIEN_UNUSED_PARAM, CSRVector& x ALIEN_UNUSED_PARAM) const
 {
   throw NotImplementedException(
-      A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
+  A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
 }
 
-void
-SimpleCSRInternalLinearAlgebraExpr::reciprocal(CSRVector& x ALIEN_UNUSED_PARAM) const
+void SimpleCSRInternalLinearAlgebraExpr::reciprocal(CSRVector& x ALIEN_UNUSED_PARAM) const
 {
   throw NotImplementedException(
-      A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
+  A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
 }
 
-void
-SimpleCSRInternalLinearAlgebraExpr::pointwiseMult(const CSRVector& x ALIEN_UNUSED_PARAM,
-    const CSRVector& y ALIEN_UNUSED_PARAM, CSRVector& w ALIEN_UNUSED_PARAM) const
+void SimpleCSRInternalLinearAlgebraExpr::pointwiseMult(const CSRVector& x ALIEN_UNUSED_PARAM,
+                                                       const CSRVector& y ALIEN_UNUSED_PARAM, CSRVector& w ALIEN_UNUSED_PARAM) const
 {
   throw NotImplementedException(
-      A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
+  A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");
 }
 
 } // namespace Alien

@@ -27,7 +27,8 @@
 
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 /*---------------------------------------------------------------------------*/
@@ -50,15 +51,14 @@ class SolverStat::InternalTraceSizer : public Arccore::ITraceMessageListener
 
 /*---------------------------------------------------------------------------*/
 
-bool
-SolverStat::InternalTraceSizer::visitMessage(
-    const Arccore::TraceMessageListenerArgs& args)
+bool SolverStat::InternalTraceSizer::visitMessage(
+const Arccore::TraceMessageListenerArgs& args)
 {
   // const TraceMessage * message = args.message();
   ConstArrayView<char> input = args.buffer();
   m_size = input.size();
   return true; // Le ITraceMessageMng won't write this message when leaving
-               // ITraceMessageListener
+  // ITraceMessageListener
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -97,48 +97,42 @@ SolverStat::iterationCount() const
 
 /*---------------------------------------------------------------------------*/
 
-Real
-SolverStat::initializationTime() const
+Real SolverStat::initializationTime() const
 {
   return m_initialization_time;
 }
 
 /*---------------------------------------------------------------------------*/
 
-Real
-SolverStat::initializationCpuTime() const
+Real SolverStat::initializationCpuTime() const
 {
   return m_initialization_cpu_time;
 }
 
 /*---------------------------------------------------------------------------*/
 
-Real
-SolverStat::prepareTime() const
+Real SolverStat::prepareTime() const
 {
   return m_prepare_time;
 }
 
 /*---------------------------------------------------------------------------*/
 
-Real
-SolverStat::prepareCpuTime() const
+Real SolverStat::prepareCpuTime() const
 {
   return m_prepare_cpu_time;
 }
 
 /*---------------------------------------------------------------------------*/
 
-Real
-SolverStat::solveTime() const
+Real SolverStat::solveTime() const
 {
   return m_solve_time;
 }
 
 /*---------------------------------------------------------------------------*/
 
-Real
-SolverStat::solveCpuTime() const
+Real SolverStat::solveCpuTime() const
 {
   return m_solve_cpu_time;
 }
@@ -153,41 +147,36 @@ SolverStat::lastIterationCount() const
 
 /*---------------------------------------------------------------------------*/
 
-Real
-SolverStat::lastPrepareTime() const
+Real SolverStat::lastPrepareTime() const
 {
   return m_last_prepare_time;
 }
 
 /*---------------------------------------------------------------------------*/
 
-Real
-SolverStat::lastPrepareCpuTime() const
+Real SolverStat::lastPrepareCpuTime() const
 {
   return m_last_prepare_cpu_time;
 }
 
 /*---------------------------------------------------------------------------*/
 
-Real
-SolverStat::lastSolveTime() const
+Real SolverStat::lastSolveTime() const
 {
   return m_last_solve_time;
 }
 
 /*---------------------------------------------------------------------------*/
 
-Real
-SolverStat::lastSolveCpuTime() const
+Real SolverStat::lastSolveCpuTime() const
 {
   return m_last_solve_cpu_time;
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-SolverStat::print(
-    ITraceMng* traceMng, const Alien::SolverStatus& status, String title) const
+void SolverStat::print(
+ITraceMng* traceMng, const Alien::SolverStatus& status, String title) const
 {
   Integer prefix_size = 0;
   InternalTraceSizer sizer(prefix_size);
@@ -202,16 +191,16 @@ SolverStat::print(
 
 /*---------------------------------------------------------------------------*/
 
-void
-SolverStat::_internalPrint(std::ostream& o, const Integer prefix_size,
-    const Alien::SolverStatus& status, String title = String()) const
+void SolverStat::_internalPrint(std::ostream& o, const Integer prefix_size,
+                                const Alien::SolverStatus& status, String title = String()) const
 {
   char* prefix = NULL;
   if (prefix_size == 0) {
     prefix = new char[2];
     prefix[0] = '\n';
     prefix[1] = 0;
-  } else {
+  }
+  else {
     prefix = new char[prefix_size + 1];
     prefix[0] = '\n';
     for (Integer i = 1; i < prefix_size; ++i)

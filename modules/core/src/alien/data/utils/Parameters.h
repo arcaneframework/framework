@@ -28,7 +28,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -67,7 +68,7 @@ struct LocalIndexer
    * \returns The local id
    */
   static Arccore::Integer index(
-      Arccore::Integer id, Arccore::Integer offset ALIEN_UNUSED_PARAM)
+  Arccore::Integer id, Arccore::Integer offset ALIEN_UNUSED_PARAM)
   {
     return id;
   }
@@ -81,7 +82,8 @@ struct LocalIndexer
  * \brief Indexer
  * \tparam IndexerParameter The type of the indexer
  */
-template <typename IndexerParemeter = GlobalIndexer> struct Parameters
+template <typename IndexerParemeter = GlobalIndexer>
+struct Parameters
 {
   using Indexer = IndexerParemeter;
 };

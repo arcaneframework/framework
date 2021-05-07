@@ -33,12 +33,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <class Tag> LinearSolver<Tag>::~LinearSolver() {}
+template <class Tag>
+LinearSolver<Tag>::~LinearSolver() {}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -57,8 +59,7 @@ LinearSolver<Tag>::getBackEndName() const
  * \todo Check the comment below and fix if necessary
  */
 template <class Tag>
-bool
-LinearSolver<Tag>::solve(const IMatrix& A, const IVector& b, IVector& x)
+bool LinearSolver<Tag>::solve(const IMatrix& A, const IVector& b, IVector& x)
 {
   auto dist = A.impl()->distribution();
   // solve is a global call
@@ -70,7 +71,8 @@ LinearSolver<Tag>::solve(const IMatrix& A, const IVector& b, IVector& x)
   // solver is not parallel but dist is
   if (not m_solver->hasParallelSupport() && dist.isParallel()) {
     throw FatalErrorException("solver is not parallel");
-  } else {
+  }
+  else {
     m_solver->updateParallelMng(A.impl()->distribution().parallelMng());
   }
   // m_solver->getSolverStat().startPrepareMeasure();
@@ -85,8 +87,7 @@ LinearSolver<Tag>::solve(const IMatrix& A, const IVector& b, IVector& x)
 /*---------------------------------------------------------------------------*/
 
 template <class Tag>
-void
-LinearSolver<Tag>::init()
+void LinearSolver<Tag>::init()
 {
   m_solver->init();
 }
@@ -95,15 +96,13 @@ LinearSolver<Tag>::init()
 /*---------------------------------------------------------------------------*/
 
 template <class Tag>
-void
-LinearSolver<Tag>::end()
+void LinearSolver<Tag>::end()
 {
   m_solver->end();
 }
 
 template <class Tag>
-void
-LinearSolver<Tag>::updateParallelMng(Arccore::MessagePassing::IMessagePassingMng* pm)
+void LinearSolver<Tag>::updateParallelMng(Arccore::MessagePassing::IMessagePassingMng* pm)
 {
   m_solver->updateParallelMng(pm);
 }
@@ -121,8 +120,7 @@ LinearSolver<Tag>::getSolverStat() const
 /*---------------------------------------------------------------------------*/
 
 template <class Tag>
-bool
-LinearSolver<Tag>::hasParallelSupport() const
+bool LinearSolver<Tag>::hasParallelSupport() const
 {
   return m_solver->hasParallelSupport();
 }

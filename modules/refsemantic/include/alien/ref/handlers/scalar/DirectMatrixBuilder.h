@@ -25,7 +25,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -38,7 +39,7 @@ class DirectMatrixBuilder : public Common::DirectMatrixBuilder
   using Common::DirectMatrixBuilder::SymmetricFlag;
 
   DirectMatrixBuilder(Matrix& matrix, const ResetFlag reset_flag,
-      const SymmetricFlag symmetric_flag = SymmetricFlag::eSymmetric)
+                      const SymmetricFlag symmetric_flag = SymmetricFlag::eSymmetric)
   : Common::DirectMatrixBuilder(matrix, reset_flag, symmetric_flag)
   {}
 };

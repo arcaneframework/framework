@@ -18,5 +18,5 @@
 
 #pragma once
 
-#include <alien/ref/AlienRefExport.h>
 #include <alien/AlienConfig.h>
+#include <alien/ref/AlienRefExport.h>

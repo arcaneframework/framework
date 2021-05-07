@@ -26,7 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -45,16 +46,14 @@ TimestampMng::TimestampMng(const TimestampMng& tm)
 
 /*---------------------------------------------------------------------------*/
 
-Int64
-TimestampMng::timestamp() const
+Int64 TimestampMng::timestamp() const
 {
   return m_timestamp;
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-TimestampMng::updateTimestamp(Timestamp* ts) const
+void TimestampMng::updateTimestamp(Timestamp* ts) const
 {
   alien_debug([&] {
     cout() << "Udpate Timestamp " << ts << " (" << m_observers.size()
@@ -69,8 +68,7 @@ TimestampMng::updateTimestamp(Timestamp* ts) const
 
 /*---------------------------------------------------------------------------*/
 
-void
-TimestampMng::addObserver(std::shared_ptr<ITimestampObserver> observer)
+void TimestampMng::addObserver(std::shared_ptr<ITimestampObserver> observer)
 {
   alien_debug([&] {
     cout() << "Add Timestamp Observer " << observer.get() << " to TimestampMng " << this;
@@ -81,8 +79,7 @@ TimestampMng::addObserver(std::shared_ptr<ITimestampObserver> observer)
 
 /*---------------------------------------------------------------------------*/
 
-void
-TimestampMng::clearObservers()
+void TimestampMng::clearObservers()
 {
   m_observers.clear();
 }

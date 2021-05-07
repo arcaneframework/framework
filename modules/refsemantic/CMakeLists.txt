@@ -66,22 +66,22 @@ add_library(alien_semantic_ref
         src/import_export/HDF5Tools.h)
 
 if (ALIEN_USE_LIBXML2)
-  find_package(LibXml2 REQUIRED)
+    find_package(LibXml2 REQUIRED)
 
-  target_link_libraries(alien_semantic_ref PRIVATE arccon::LibXml2)
+    target_link_libraries(alien_semantic_ref PRIVATE arccon::LibXml2)
 endif ()
 
 if (ALIEN_USE_HDF5)
-  find_package(HDF5 REQUIRED)
+    find_package(HDF5 REQUIRED)
 
-  target_link_libraries(alien_semantic_ref PRIVATE arccon::HDF5)
+    target_link_libraries(alien_semantic_ref PRIVATE arccon::HDF5)
 endif ()
 
 if (ALIEN_MV_EXPR)
-  target_sources(alien_semantic_ref PRIVATE
-          include/alien/ref/mv_expr/MVExpr.h
-          )
-  #TODO: check C++ features.
+    target_sources(alien_semantic_ref PRIVATE
+            include/alien/ref/mv_expr/MVExpr.h
+            )
+    #TODO: check C++ features.
 endif ()
 
 target_link_libraries(alien_semantic_ref PUBLIC alien_core)

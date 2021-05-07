@@ -42,7 +42,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -61,10 +62,10 @@ namespace Alien {
  * While requesting a matrix in a specific format, if the up to date matrix is not in that
  * specific format, the up to date matrix will be converted, provided a converter exists.
  */
-class ALIEN_EXPORT MultiMatrixImpl : public TimestampMng,
-                                     public UserFeatureMng,
-                                     public ObjectWithTrace,
-                                     public ObjectWithLock
+class ALIEN_EXPORT MultiMatrixImpl : public TimestampMng
+, public UserFeatureMng
+, public ObjectWithTrace
+, public ObjectWithLock
 {
  public:
   //! Default constructor
@@ -77,7 +78,7 @@ class ALIEN_EXPORT MultiMatrixImpl : public TimestampMng,
    * \param[in] dist The distribution of the matrix
    */
   MultiMatrixImpl(std::shared_ptr<ISpace> row_space, std::shared_ptr<ISpace> col_space,
-      std::shared_ptr<MatrixDistribution> dist);
+                  std::shared_ptr<MatrixDistribution> dist);
 
   //! Free resources
   virtual ~MultiMatrixImpl();
@@ -180,7 +181,8 @@ class ALIEN_EXPORT MultiMatrixImpl : public TimestampMng,
    *
    * \returns The up to date matrix in the requested implementation
    */
-  template <typename tag> const typename AlgebraTraits<tag>::matrix_type& get() const;
+  template <typename tag>
+  const typename AlgebraTraits<tag>::matrix_type& get() const;
 
   /*!
    * \brief Get a specific matrix implementation
@@ -195,7 +197,8 @@ class ALIEN_EXPORT MultiMatrixImpl : public TimestampMng,
   typename AlgebraTraits<tag>::matrix_type& get(const bool update_stamp);
 
   //! Release a matrix implementation
-  template <typename tag> void release() const;
+  template <typename tag>
+  void release() const;
 
   /*!
    * \brief Clone this object
@@ -215,7 +218,8 @@ class ALIEN_EXPORT MultiMatrixImpl : public TimestampMng,
    * \param[in] backend The id of the specific implementation
    * \returns The matrix in the requested format
    */
-  template <typename matrix_type> IMatrixImpl*& getImpl(BackEndId backend) const;
+  template <typename matrix_type>
+  IMatrixImpl*& getImpl(BackEndId backend) const;
 
   /*!
    * \brief Update a matrix implementation
@@ -229,7 +233,8 @@ class ALIEN_EXPORT MultiMatrixImpl : public TimestampMng,
    * \param[in] backend The implementation backend id
    * \param[in] m The matrix to insert
    */
-  template <typename matrix_type> void insert(BackEndId backend, matrix_type* m);
+  template <typename matrix_type>
+  void insert(BackEndId backend, matrix_type* m);
 
  private:
   //! The matrix row space
@@ -263,7 +268,7 @@ MultiMatrixImpl::get() const
   typedef typename AlgebraTraits<tag>::matrix_type matrix_type;
   IMatrixImpl*& impl2 = getImpl<matrix_type>(AlgebraTraits<tag>::name());
   ALIEN_ASSERT(
-      (impl2->backend() == AlgebraTraits<tag>::name()), ("Inconsistent backend"));
+  (impl2->backend() == AlgebraTraits<tag>::name()), ("Inconsistent backend"));
   updateImpl(impl2);
   return *dynamic_cast<matrix_type*>(impl2);
 }
@@ -281,7 +286,7 @@ MultiMatrixImpl::get(const bool update_stamp)
   typedef typename AlgebraTraits<tag>::matrix_type matrix_type;
   IMatrixImpl*& impl2 = getImpl<matrix_type>(AlgebraTraits<tag>::name());
   ALIEN_ASSERT(
-      (impl2->backend() == AlgebraTraits<tag>::name()), ("Inconsistent backend"));
+  (impl2->backend() == AlgebraTraits<tag>::name()), ("Inconsistent backend"));
   updateImpl(impl2);
   if (update_stamp)
     impl2->updateTimestamp();
@@ -292,8 +297,7 @@ MultiMatrixImpl::get(const bool update_stamp)
 /*---------------------------------------------------------------------------*/
 
 template <typename tag>
-void
-MultiMatrixImpl::release() const
+void MultiMatrixImpl::release() const
 {
   auto finder = m_impls2.find(AlgebraTraits<tag>::name());
   if (finder == m_impls2.end())
@@ -324,8 +328,7 @@ MultiMatrixImpl::getImpl(BackEndId backend) const
 /*---------------------------------------------------------------------------*/
 
 template <typename matrix_type>
-void
-MultiMatrixImpl::insert(BackEndId backend, matrix_type* m)
+void MultiMatrixImpl::insert(BackEndId backend, matrix_type* m)
 {
   if (m_impls2.find(backend) != m_impls2.end()) {
     alien_fatal([&] { cout() << "try to insert already inserted value"; });

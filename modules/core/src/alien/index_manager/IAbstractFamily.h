@@ -23,7 +23,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -69,7 +70,7 @@ class IAbstractFamily
    * @throw FatalError if an item is not found.
    */
   virtual void uniqueIdToLocalId(
-      ArrayView<Integer> localIds, ConstArrayView<Int64> uniqueIds) const = 0;
+  ArrayView<Integer> localIds, ConstArrayView<Int64> uniqueIds) const = 0;
 
   //! Give back an Item from its local id.
   virtual Item item(Int32 localId) const = 0;

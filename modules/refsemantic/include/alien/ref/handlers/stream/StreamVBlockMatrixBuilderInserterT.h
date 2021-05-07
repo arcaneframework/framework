@@ -24,7 +24,8 @@
 
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 
@@ -39,7 +40,7 @@ StreamVBlockMatrixBuilderT<ValueT>::BaseInserter::BaseInserter()
 
 template <typename ValueT>
 StreamVBlockMatrixBuilderT<ValueT>::BaseInserter::BaseInserter(
-    StreamVBlockMatrixBuilderT<ValueT>* parent, Integer id)
+StreamVBlockMatrixBuilderT<ValueT>* parent, Integer id)
 : m_id(id)
 , m_index(0)
 , m_current_size(0)
@@ -59,8 +60,7 @@ StreamVBlockMatrixBuilderT<ValueT>::BaseInserter::~BaseInserter()
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamVBlockMatrixBuilderT<ValueT>::BaseInserter::init()
+void StreamVBlockMatrixBuilderT<ValueT>::BaseInserter::init()
 {
   m_index = 0;
   m_current_size = 0;
@@ -82,8 +82,7 @@ StreamVBlockMatrixBuilderT<ValueT>::BaseInserter::getId() const
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamVBlockMatrixBuilderT<ValueT>::BaseInserter::end()
+void StreamVBlockMatrixBuilderT<ValueT>::BaseInserter::end()
 {
   init();
   m_n.resize(0);
@@ -97,8 +96,7 @@ StreamVBlockMatrixBuilderT<ValueT>::BaseInserter::end()
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamVBlockMatrixBuilderT<ValueT>::BaseInserter::setMatrixValues(ValueT* matrix_values)
+void StreamVBlockMatrixBuilderT<ValueT>::BaseInserter::setMatrixValues(ValueT* matrix_values)
 {
   ALIEN_ASSERT((this->m_parent->m_state == ePrepared), ("Inconsistent state"));
   m_values = matrix_values;
@@ -126,8 +124,7 @@ StreamVBlockMatrixBuilderT<ValueT>::BaseInserter::count()
 }
 
 template <typename ValueT>
-bool
-StreamVBlockMatrixBuilderT<ValueT>::Filler::isBegin()
+bool StreamVBlockMatrixBuilderT<ValueT>::Filler::isBegin()
 {
   return (this->m_index == 0);
 }
@@ -135,8 +132,7 @@ StreamVBlockMatrixBuilderT<ValueT>::Filler::isBegin()
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-bool
-StreamVBlockMatrixBuilderT<ValueT>::Filler::isEnd()
+bool StreamVBlockMatrixBuilderT<ValueT>::Filler::isEnd()
 {
   return (this->m_index == this->m_size);
 }
@@ -160,8 +156,7 @@ StreamVBlockMatrixBuilderT<ValueT>::Filler::index()
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamVBlockMatrixBuilderT<ValueT>::Filler::start()
+void StreamVBlockMatrixBuilderT<ValueT>::Filler::start()
 {
   // ALIEN_ASSERT((this->m_parent->m_state == eStart),("Inconsistent state"));
   // ALIEN_ASSERT((this->m_values!=NULL),("Inserter is not ready for filling"));
@@ -175,9 +170,8 @@ StreamVBlockMatrixBuilderT<ValueT>::Filler::start()
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamVBlockMatrixBuilderT<ValueT>::Profiler::addMatrixEntry(
-    Integer row_index, Integer col_index)
+void StreamVBlockMatrixBuilderT<ValueT>::Profiler::addMatrixEntry(
+Integer row_index, Integer col_index)
 {
   // std::cout << "inserter inside " << row_index << "," << col_index << std::endl;
   this->_startTimer();
@@ -196,8 +190,7 @@ StreamVBlockMatrixBuilderT<ValueT>::Profiler::addMatrixEntry(
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamVBlockMatrixBuilderT<ValueT>::Filler::addBlockData(ConstArray2View<ValueT> values)
+void StreamVBlockMatrixBuilderT<ValueT>::Filler::addBlockData(ConstArray2View<ValueT> values)
 {
   this->_startTimer();
   // ALIEN_ASSERT((this->m_parent->m_state == eStart),("Inconsistent state"));
@@ -207,7 +200,7 @@ StreamVBlockMatrixBuilderT<ValueT>::Filler::addBlockData(ConstArray2View<ValueT>
   // row size %d vs %d",values.dim2Size(),this->m_current_block_size_col));
 
   Array2View<ValueT> view(
-      this->m_values + *this->m_current_k, values.dim1Size(), values.dim2Size());
+  this->m_values + *this->m_current_k, values.dim1Size(), values.dim2Size());
 
   for (Integer i = 0; i < values.dim1Size(); ++i)
     for (Integer k = 0; k < values.dim2Size(); ++k)

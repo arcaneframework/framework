@@ -25,9 +25,11 @@
 #include <alien/kernels/dok/ILocalMatrixIndexer.h>
 #include <alien/kernels/dok/IReverseIndexer.h>
 
-namespace Alien {
+namespace Alien
+{
 
-template <typename NNZValue> class DoKLocalMatrixT
+template <typename NNZValue>
+class DoKLocalMatrixT
 {
  public:
   typedef DoKLocalMatrixT<NNZValue> ThisClass;
@@ -69,7 +71,8 @@ template <typename NNZValue> class DoKLocalMatrixT
     auto offset = m_indexer->create(i, j, m_offset);
     if (offset == (Integer)m_values.size()) {
       m_values.add(val);
-    } else {
+    }
+    else {
       m_values[offset] = val;
     }
   }
@@ -98,10 +101,10 @@ template <typename NNZValue> class DoKLocalMatrixT
     std::cout << "Number of elements: " << m_values.size() << "\n";
     for (int i = 0; i < m_r_indexer->size(); ++i)
       std::cout
-          << "( " << (*m_r_indexer)[i].first << " , " << (*m_r_indexer)[i].second << " ) "
-          << " = "
-          << m_values[m_indexer->find((*m_r_indexer)[i].first, (*m_r_indexer)[i].second)]
-          << "\n";
+      << "( " << (*m_r_indexer)[i].first << " , " << (*m_r_indexer)[i].second << " ) "
+      << " = "
+      << m_values[m_indexer->find((*m_r_indexer)[i].first, (*m_r_indexer)[i].second)]
+      << "\n";
   }
 
  private:

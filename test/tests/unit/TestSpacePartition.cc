@@ -116,7 +116,7 @@ TEST(TestSpacePartiton, Partition)
   auto* pm = AlienTest::Environment::parallelMng();
   int size = i3.size();
   int allSize =
-      Arccore::MessagePassing::mpAllReduce(pm, Arccore::MessagePassing::ReduceSum, size);
+  Arccore::MessagePassing::mpAllReduce(pm, Arccore::MessagePassing::ReduceSum, size);
   UniqueArray<Integer> globali3(allSize, -1);
   ASSERT_EQ(static_cast<Integer>(allSize), 4);
   Arccore::MessagePassing::mpAllGather(pm, i3.constView(), globali3.view());

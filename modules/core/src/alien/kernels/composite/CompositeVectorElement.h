@@ -23,7 +23,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,7 +36,8 @@ class Timestamp;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace CompositeKernel {
+namespace CompositeKernel
+{
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -44,12 +46,13 @@ namespace CompositeKernel {
   {
    public:
     VectorElement(std::shared_ptr<IVector>& element, std::shared_ptr<ISpace>& space,
-        Timestamp& timestamp)
+                  Timestamp& timestamp)
     : m_element(element)
     , m_space(space)
     , m_timestamp(timestamp)
     {}
-    template <typename T> void operator=(T&& v) { _assign(new T(std::move(v))); }
+    template <typename T>
+    void operator=(T&& v) { _assign(new T(std::move(v))); }
 
    private:
     void _assign(IVector* vector);

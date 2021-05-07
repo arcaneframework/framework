@@ -24,14 +24,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 BlockVector::BlockVector()
 : m_impl(new MultiVectorImpl(std::make_shared<Space>(0),
-    std::make_shared<VectorDistribution>(VectorDistribution())))
+                             std::make_shared<VectorDistribution>(VectorDistribution())))
 {}
 
 /*---------------------------------------------------------------------------*/
@@ -45,10 +46,10 @@ BlockVector::BlockVector(const Block& block, const VectorDistribution& dist)
 /*---------------------------------------------------------------------------*/
 
 BlockVector::BlockVector(Integer nrows, Integer nrows_local, const Block& block,
-    IMessagePassingMng* parallel_mng)
+                         IMessagePassingMng* parallel_mng)
 : m_impl(new MultiVectorImpl(std::make_shared<Space>(nrows),
-    std::make_shared<VectorDistribution>(
-        VectorDistribution(nrows, nrows_local, parallel_mng))))
+                             std::make_shared<VectorDistribution>(
+                             VectorDistribution(nrows, nrows_local, parallel_mng))))
 {
   m_impl->setBlockInfos(&block);
 }
@@ -56,9 +57,9 @@ BlockVector::BlockVector(Integer nrows, Integer nrows_local, const Block& block,
 /*---------------------------------------------------------------------------*/
 
 BlockVector::BlockVector(
-    Integer nrows, const Block& block, IMessagePassingMng* parallel_mng)
+Integer nrows, const Block& block, IMessagePassingMng* parallel_mng)
 : m_impl(new MultiVectorImpl(std::make_shared<Space>(nrows),
-    std::make_shared<VectorDistribution>(VectorDistribution(nrows, parallel_mng))))
+                             std::make_shared<VectorDistribution>(VectorDistribution(nrows, parallel_mng))))
 {
   m_impl->setBlockInfos(&block);
 }
@@ -80,8 +81,7 @@ BlockVector::operator=(BlockVector&& vector)
 
 /*---------------------------------------------------------------------------*/
 
-void
-BlockVector::init(const Block& block, const VectorDistribution& dist)
+void BlockVector::init(const Block& block, const VectorDistribution& dist)
 {
   m_impl.reset(new MultiVectorImpl(dist.space().clone(), dist.clone()));
   m_impl->setBlockInfos(&block);
@@ -89,16 +89,14 @@ BlockVector::init(const Block& block, const VectorDistribution& dist)
 
 /*---------------------------------------------------------------------------*/
 
-void
-BlockVector::free()
+void BlockVector::free()
 {
   m_impl->free();
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-BlockVector::clear()
+void BlockVector::clear()
 {
   m_impl->clear();
 }
@@ -113,8 +111,7 @@ BlockVector::space() const
 
 /*---------------------------------------------------------------------------*/
 
-void
-BlockVector::visit(ICopyOnWriteVector& v) const
+void BlockVector::visit(ICopyOnWriteVector& v) const
 {
   v.accept(m_impl);
 }
@@ -129,16 +126,14 @@ BlockVector::distribution() const
 
 /*---------------------------------------------------------------------------*/
 
-void
-BlockVector::setUserFeature(String feature)
+void BlockVector::setUserFeature(String feature)
 {
   m_impl->setFeature(feature);
 }
 
 /*---------------------------------------------------------------------------*/
 
-bool
-BlockVector::hasUserFeature(String feature) const
+bool BlockVector::hasUserFeature(String feature) const
 {
   return m_impl->hasFeature(feature);
 }
@@ -151,7 +146,7 @@ BlockVector::block() const
     return *block;
   else
     throw FatalErrorException(
-        A_FUNCINFO, "Requesting for block information but none was provided");
+    A_FUNCINFO, "Requesting for block information but none was provided");
 }
 
 /*---------------------------------------------------------------------------*/

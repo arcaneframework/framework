@@ -23,7 +23,8 @@
 #include <arccore/message_passing/Messages.h>
 #include <cmath>
 
-namespace Alien {
+namespace Alien
+{
 
 class CBLASMPIKernel
 {
@@ -34,37 +35,37 @@ class CBLASMPIKernel
 
   template <typename Distribution, typename VectorT>
   static void copy(
-      Distribution const& dist ALIEN_UNUSED_PARAM, const VectorT& x, VectorT& y)
+  Distribution const& dist ALIEN_UNUSED_PARAM, const VectorT& x, VectorT& y)
   {
     typedef typename VectorT::ValueType ValueType;
     cblas::copy(
-        x.scalarizedLocalSize(), (ValueType*)x.getDataPtr(), 1, y.getDataPtr(), 1);
+    x.scalarizedLocalSize(), (ValueType*)x.getDataPtr(), 1, y.getDataPtr(), 1);
   }
 
   template <typename Distribution, typename VectorT>
   static void axpy(Distribution const& dist ALIEN_UNUSED_PARAM,
-      typename VectorT::ValueType alpha, const VectorT& x, VectorT& y)
+                   typename VectorT::ValueType alpha, const VectorT& x, VectorT& y)
   {
     cblas::axpy(x.scalarizedLocalSize(), alpha, x.getDataPtr(), 1, y.getDataPtr(), 1);
   }
 
   template <typename Distribution, typename VectorT>
   static void scal(Distribution const& dist ALIEN_UNUSED_PARAM,
-      typename VectorT::ValueType alpha, VectorT& x)
+                   typename VectorT::ValueType alpha, VectorT& x)
   {
     cblas::scal(x.scalarizedLocalSize(), alpha, x.getDataPtr(), 1);
   }
 
   template <typename Distribution, typename VectorT>
   static typename VectorT::ValueType dot(
-      Distribution const& dist, const VectorT& x, const VectorT& y)
+  Distribution const& dist, const VectorT& x, const VectorT& y)
   {
     typedef typename VectorT::ValueType ValueType;
     ValueType value = cblas::dot(x.scalarizedLocalSize(), (ValueType*)x.getDataPtr(), 1,
-        (ValueType*)y.getDataPtr(), 1);
+                                 (ValueType*)y.getDataPtr(), 1);
     if (dist.isParallel()) {
       return Arccore::MessagePassing::mpAllReduce(
-          dist.parallelMng(), Arccore::MessagePassing::ReduceSum, value);
+      dist.parallelMng(), Arccore::MessagePassing::ReduceSum, value);
     }
     return value;
   }
@@ -74,10 +75,10 @@ class CBLASMPIKernel
   {
     typedef typename VectorT::ValueType ValueType;
     typename VectorT::ValueType value = cblas::dot(x.scalarizedLocalSize(),
-        (ValueType*)x.getDataPtr(), 1, (ValueType*)x.getDataPtr(), 1);
+                                                   (ValueType*)x.getDataPtr(), 1, (ValueType*)x.getDataPtr(), 1);
     if (dist.isParallel()) {
       value = Arccore::MessagePassing::mpAllReduce(
-          dist.parallelMng(), Arccore::MessagePassing::ReduceSum, value);
+      dist.parallelMng(), Arccore::MessagePassing::ReduceSum, value);
     }
     return std::sqrt(value);
   }

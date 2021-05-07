@@ -26,13 +26,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class DirectMatrixBuilder : protected MoveObject<MatrixData>,
-                            public Common::DirectMatrixBuilder
+class DirectMatrixBuilder : protected MoveObject<MatrixData>
+, public Common::DirectMatrixBuilder
 {
  public:
   using Common::DirectMatrixBuilder::ReserveFlag;
@@ -40,7 +41,7 @@ class DirectMatrixBuilder : protected MoveObject<MatrixData>,
   using Common::DirectMatrixBuilder::SymmetricFlag;
 
   DirectMatrixBuilder(MatrixData&& matrix, const ResetFlag reset_flag,
-      const SymmetricFlag symmetric_flag = SymmetricFlag::eSymmetric)
+                      const SymmetricFlag symmetric_flag = SymmetricFlag::eSymmetric)
   : MoveObject<MatrixData>(std::move(matrix))
   , Common::DirectMatrixBuilder(reference(), reset_flag, symmetric_flag)
   {}

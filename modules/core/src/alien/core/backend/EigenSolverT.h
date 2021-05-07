@@ -33,7 +33,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -107,8 +108,7 @@ EigenSolver<Tag>::getBackEndName() const
 /*---------------------------------------------------------------------------*/
 
 template <class Tag>
-void
-EigenSolver<Tag>::init()
+void EigenSolver<Tag>::init()
 {
   m_solver->init();
 }
@@ -117,8 +117,7 @@ EigenSolver<Tag>::init()
 /*---------------------------------------------------------------------------*/
 
 template <class Tag>
-bool
-EigenSolver<Tag>::solve(EigenProblem& p)
+bool EigenSolver<Tag>::solve(EigenProblem& p)
 {
   return m_solver->solve(p);
 }
@@ -127,8 +126,7 @@ EigenSolver<Tag>::solve(EigenProblem& p)
 /*---------------------------------------------------------------------------*/
 
 template <class Tag>
-bool
-EigenSolver<Tag>::hasParallelSupport() const
+bool EigenSolver<Tag>::hasParallelSupport() const
 {
   return m_solver->hasParallelSupport();
 }
@@ -158,7 +156,7 @@ EigenSolver<Tag>::implem()
 
 template <class Tag>
 GeneralizedEigenSolver<Tag>::GeneralizedEigenSolver(
-    IMessagePassingMng* parallel_mng, IOptions* options)
+IMessagePassingMng* parallel_mng, IOptions* options)
 : m_solver(AlgebraTraits<Tag>::eigen_solver_factory(parallel_mng, options))
 {}
 
@@ -176,8 +174,7 @@ GeneralizedEigenSolver<Tag>::getBackEndName() const
 /*---------------------------------------------------------------------------*/
 
 template <class Tag>
-void
-GeneralizedEigenSolver<Tag>::init()
+void GeneralizedEigenSolver<Tag>::init()
 {
   m_solver->init();
 }
@@ -186,8 +183,7 @@ GeneralizedEigenSolver<Tag>::init()
 /*---------------------------------------------------------------------------*/
 
 template <class Tag>
-bool
-GeneralizedEigenSolver<Tag>::solve(GeneralizedEigenProblem& p)
+bool GeneralizedEigenSolver<Tag>::solve(GeneralizedEigenProblem& p)
 {
   return m_solver->solve(p);
 }

@@ -28,7 +28,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,7 +42,7 @@ class ALIEN_REFSEMANTIC_EXPORT BlockVector final : public IVector
   BlockVector(const Block& block, const VectorDistribution& dist);
 
   BlockVector(Integer nrows, Integer nrows_local, const Block& block,
-      IMessagePassingMng* parallel_mng);
+              IMessagePassingMng* parallel_mng);
 
   BlockVector(Integer nrows, const Block& block, IMessagePassingMng* parallel_mng);
 

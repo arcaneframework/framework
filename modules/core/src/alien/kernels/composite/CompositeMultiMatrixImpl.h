@@ -26,12 +26,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace CompositeKernel {
+namespace CompositeKernel
+{
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -53,8 +55,8 @@ namespace CompositeKernel {
   /*---------------------------------------------------------------------------*/
 
   class ALIEN_EXPORT MultiMatrixImpl
-  : private std::tuple<std::shared_ptr<Space>, std::shared_ptr<Space>>,
-    public Alien::MultiMatrixImpl
+  : private std::tuple<std::shared_ptr<Space>, std::shared_ptr<Space>>
+  , public Alien::MultiMatrixImpl
   {
    public:
     MultiMatrixImpl();

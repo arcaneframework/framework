@@ -7,27 +7,28 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
+inline VectorDistribution
+createVectorDistribution(
+IIndexManager* index_mng, Alien::IMessagePassingMng* parallel_mng)
+{
+  auto global_size = index_mng->globalSize();
+  auto local_size = index_mng->localSize();
+  return VectorDistribution(global_size, local_size, parallel_mng);
+}
 
-  inline VectorDistribution
-  createVectorDistribution(IIndexManager* index_mng, Alien::IMessagePassingMng* parallel_mng)
-  {
-    auto global_size = index_mng->globalSize();
-    auto local_size = index_mng->localSize();
-    return VectorDistribution(global_size, local_size, parallel_mng);
-  }
+/*---------------------------------------------------------------------------*/
 
-  /*---------------------------------------------------------------------------*/
-
-  inline MatrixDistribution
-  createMatrixDistribution(IIndexManager* index_mng, Alien::IMessagePassingMng* parallel_mng)
-  {
-    auto global_size = index_mng->globalSize();
-    auto local_size = index_mng->localSize();
-    return MatrixDistribution(
-        global_size, global_size, local_size, parallel_mng);
-  }
+inline MatrixDistribution
+createMatrixDistribution(
+IIndexManager* index_mng, Alien::IMessagePassingMng* parallel_mng)
+{
+  auto global_size = index_mng->globalSize();
+  auto local_size = index_mng->localSize();
+  return MatrixDistribution(global_size, global_size, local_size, parallel_mng);
+}
 
 } // namespace Alien
 

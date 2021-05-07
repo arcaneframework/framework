@@ -24,12 +24,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace CompositeKernel {
+namespace CompositeKernel
+{
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -37,7 +39,7 @@ namespace CompositeKernel {
   MultiVectorImpl::MultiVectorImpl()
   : std::tuple<std::shared_ptr<Space>>{ std::make_shared<Space>() }
   , Alien::MultiVectorImpl(
-        std::get<0>(*this), std::make_shared<VectorDistribution>(VectorDistribution()))
+    std::get<0>(*this), std::make_shared<VectorDistribution>(VectorDistribution()))
   {
     insert("composite", new Vector(this));
   }

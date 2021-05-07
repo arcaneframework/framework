@@ -26,7 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,13 +40,13 @@ class VBlockVector;
 /*---------------------------------------------------------------------------*/
 
 ALIEN_REFSEMANTIC_EXPORT extern Vector ones(
-    Arccore::Integer size, IMessagePassingMng* pm);
+Arccore::Integer size, IMessagePassingMng* pm);
 
 ALIEN_REFSEMANTIC_EXPORT extern BlockVector ones(
-    Integer size, const Block& block, IMessagePassingMng* pm);
+Integer size, const Block& block, IMessagePassingMng* pm);
 
 ALIEN_REFSEMANTIC_EXPORT extern VBlockVector ones(
-    Integer size, const VBlock& block, IMessagePassingMng* pm);
+Integer size, const VBlock& block, IMessagePassingMng* pm);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

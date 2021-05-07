@@ -31,7 +31,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 using namespace Arccore::MessagePassing;
@@ -52,7 +53,7 @@ struct MatrixDistribution::Internal
    * \param[in] parallel_mng The parallel manager
    */
   Internal(
-      const ISpace& row_space, const ISpace& col_space, IMessagePassingMng* parallel_mng);
+  const ISpace& row_space, const ISpace& col_space, IMessagePassingMng* parallel_mng);
 
   /*
    * \brief Constructor
@@ -61,7 +62,7 @@ struct MatrixDistribution::Internal
    * \param[in] parallel_mng The parallel manager
    */
   Internal(const ISpace& row_space, const ISpace& col_space,
-      std::shared_ptr<IMessagePassingMng> parallel_mng);
+           std::shared_ptr<IMessagePassingMng> parallel_mng);
 
   /*
    * \brief Constructor
@@ -70,7 +71,7 @@ struct MatrixDistribution::Internal
    * \param[in] parallel_mng The parallel manager
    */
   Internal(
-      Integer global_row_size, Integer global_col_size, IMessagePassingMng* parallel_mng);
+  Integer global_row_size, Integer global_col_size, IMessagePassingMng* parallel_mng);
 
   /*
    * \brief Constructor
@@ -79,7 +80,7 @@ struct MatrixDistribution::Internal
    * \param[in] parallel_mng The parallel manager
    */
   Internal(Integer global_row_size, Integer global_col_size,
-      std::shared_ptr<IMessagePassingMng> parallel_mng);
+           std::shared_ptr<IMessagePassingMng> parallel_mng);
 
   /*
    * \brief Constructor
@@ -89,28 +90,7 @@ struct MatrixDistribution::Internal
    * \param[in] parallel_mng The parallel manager
    */
   Internal(const ISpace& row_space, const ISpace& col_space, Integer local_row_size,
-      IMessagePassingMng* parallel_mng);
-
-  /*
-   * \brief Constructor
-   * \param[in] row_space The row space of the matrix
-   * \param[in] col_space The col space of the matrix
-   * \param[in] local_row_size The number of local rows in the matrix
-   * \param[in] local_col_size The number of local cols in the matrix
-   * \param[in] parallel_mng The parallel manager
-   */
-  Internal(const ISpace& row_space, const ISpace& col_space, Integer local_row_size,
-      Integer local_col_size, IMessagePassingMng* parallel_mng);
-
-  /*
-   * \brief Constructor
-   * \param[in] row_space The row space of the matrix
-   * \param[in] col_space The col space of the matrix
-   * \param[in] local_row_size The number of local rows in the matrix
-   * \param[in] parallel_mng The parallel manager
-   */
-  Internal(const ISpace& row_space, const ISpace& col_space, Integer local_row_size,
-      std::shared_ptr<IMessagePassingMng> parallel_mng);
+           IMessagePassingMng* parallel_mng);
 
   /*
    * \brief Constructor
@@ -121,7 +101,28 @@ struct MatrixDistribution::Internal
    * \param[in] parallel_mng The parallel manager
    */
   Internal(const ISpace& row_space, const ISpace& col_space, Integer local_row_size,
-      Integer local_col_size, std::shared_ptr<IMessagePassingMng> parallel_mng);
+           Integer local_col_size, IMessagePassingMng* parallel_mng);
+
+  /*
+   * \brief Constructor
+   * \param[in] row_space The row space of the matrix
+   * \param[in] col_space The col space of the matrix
+   * \param[in] local_row_size The number of local rows in the matrix
+   * \param[in] parallel_mng The parallel manager
+   */
+  Internal(const ISpace& row_space, const ISpace& col_space, Integer local_row_size,
+           std::shared_ptr<IMessagePassingMng> parallel_mng);
+
+  /*
+   * \brief Constructor
+   * \param[in] row_space The row space of the matrix
+   * \param[in] col_space The col space of the matrix
+   * \param[in] local_row_size The number of local rows in the matrix
+   * \param[in] local_col_size The number of local cols in the matrix
+   * \param[in] parallel_mng The parallel manager
+   */
+  Internal(const ISpace& row_space, const ISpace& col_space, Integer local_row_size,
+           Integer local_col_size, std::shared_ptr<IMessagePassingMng> parallel_mng);
 
   /*
    * \brief Constructor
@@ -131,7 +132,7 @@ struct MatrixDistribution::Internal
    * \param[in] parallel_mng The parallel manager
    */
   Internal(Integer global_row_size, Integer global_col_size, Integer local_row_size,
-      IMessagePassingMng* parallel_mng);
+           IMessagePassingMng* parallel_mng);
 
   /*
    * \brief Constructor
@@ -142,7 +143,7 @@ struct MatrixDistribution::Internal
    * \param[in] parallel_mng The parallel manager
    */
   Internal(Integer global_row_size, Integer global_col_size, Integer local_row_size,
-      Integer local_col_size, IMessagePassingMng* parallel_mng);
+           Integer local_col_size, IMessagePassingMng* parallel_mng);
 
   /*
    * \brief Constructor
@@ -152,7 +153,7 @@ struct MatrixDistribution::Internal
    * \param[in] parallel_mng The parallel manager
    */
   Internal(Integer global_row_size, Integer global_col_size, Integer local_row_size,
-      std::shared_ptr<IMessagePassingMng> parallel_mng);
+           std::shared_ptr<IMessagePassingMng> parallel_mng);
 
   /*
    * \brief Constructor
@@ -163,7 +164,7 @@ struct MatrixDistribution::Internal
    * \param[in] parallel_mng The parallel manager
    */
   Internal(Integer global_row_size, Integer global_col_size, Integer local_row_size,
-      Integer local_col_size, std::shared_ptr<IMessagePassingMng> parallel_mng);
+           Integer local_col_size, std::shared_ptr<IMessagePassingMng> parallel_mng);
 
   /*!
    * \brief Comparison operator
@@ -189,7 +190,7 @@ MatrixDistribution::Internal::Internal()
 /*---------------------------------------------------------------------------*/
 
 MatrixDistribution::Internal::Internal(
-    const ISpace& row_space, const ISpace& col_space, IMessagePassingMng* parallel_mng)
+const ISpace& row_space, const ISpace& col_space, IMessagePassingMng* parallel_mng)
 : m_row_distribution(std::make_shared<VectorDistribution>(row_space, parallel_mng))
 , m_col_distribution(std::make_shared<VectorDistribution>(col_space, parallel_mng))
 {}
@@ -198,7 +199,7 @@ MatrixDistribution::Internal::Internal(
 /*---------------------------------------------------------------------------*/
 
 MatrixDistribution::Internal::Internal(const ISpace& row_space, const ISpace& col_space,
-    std::shared_ptr<IMessagePassingMng> parallel_mng)
+                                       std::shared_ptr<IMessagePassingMng> parallel_mng)
 : m_row_distribution(std::make_shared<VectorDistribution>(row_space, parallel_mng))
 , m_col_distribution(std::make_shared<VectorDistribution>(col_space, parallel_mng))
 {}
@@ -207,7 +208,7 @@ MatrixDistribution::Internal::Internal(const ISpace& row_space, const ISpace& co
 /*---------------------------------------------------------------------------*/
 
 MatrixDistribution::Internal::Internal(
-    Integer global_row_size, Integer global_col_size, IMessagePassingMng* parallel_mng)
+Integer global_row_size, Integer global_col_size, IMessagePassingMng* parallel_mng)
 : Internal(Space(global_row_size), Space(global_col_size), parallel_mng)
 {}
 
@@ -215,7 +216,7 @@ MatrixDistribution::Internal::Internal(
 /*---------------------------------------------------------------------------*/
 
 MatrixDistribution::Internal::Internal(Integer global_row_size, Integer global_col_size,
-    std::shared_ptr<IMessagePassingMng> parallel_mng)
+                                       std::shared_ptr<IMessagePassingMng> parallel_mng)
 : Internal(Space(global_row_size), Space(global_col_size), parallel_mng)
 {}
 
@@ -223,9 +224,9 @@ MatrixDistribution::Internal::Internal(Integer global_row_size, Integer global_c
 /*---------------------------------------------------------------------------*/
 
 MatrixDistribution::Internal::Internal(const ISpace& row_space, const ISpace& col_space,
-    Integer local_row_size, IMessagePassingMng* parallel_mng)
+                                       Integer local_row_size, IMessagePassingMng* parallel_mng)
 : m_row_distribution(
-    std::make_shared<VectorDistribution>(row_space, local_row_size, parallel_mng))
+  std::make_shared<VectorDistribution>(row_space, local_row_size, parallel_mng))
 , m_col_distribution(std::make_shared<VectorDistribution>(col_space, parallel_mng))
 {}
 
@@ -233,20 +234,20 @@ MatrixDistribution::Internal::Internal(const ISpace& row_space, const ISpace& co
 /*---------------------------------------------------------------------------*/
 
 MatrixDistribution::Internal::Internal(const ISpace& row_space, const ISpace& col_space,
-    Integer local_row_size, Integer local_col_size, IMessagePassingMng* parallel_mng)
+                                       Integer local_row_size, Integer local_col_size, IMessagePassingMng* parallel_mng)
 : m_row_distribution(
-    std::make_shared<VectorDistribution>(row_space, local_row_size, parallel_mng))
+  std::make_shared<VectorDistribution>(row_space, local_row_size, parallel_mng))
 , m_col_distribution(
-      std::make_shared<VectorDistribution>(col_space, local_col_size, parallel_mng))
+  std::make_shared<VectorDistribution>(col_space, local_col_size, parallel_mng))
 {}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 MatrixDistribution::Internal::Internal(const ISpace& row_space, const ISpace& col_space,
-    Integer local_row_size, std::shared_ptr<IMessagePassingMng> parallel_mng)
+                                       Integer local_row_size, std::shared_ptr<IMessagePassingMng> parallel_mng)
 : m_row_distribution(
-    std::make_shared<VectorDistribution>(row_space, local_row_size, parallel_mng))
+  std::make_shared<VectorDistribution>(row_space, local_row_size, parallel_mng))
 , m_col_distribution(std::make_shared<VectorDistribution>(col_space, parallel_mng))
 {}
 
@@ -254,19 +255,19 @@ MatrixDistribution::Internal::Internal(const ISpace& row_space, const ISpace& co
 /*---------------------------------------------------------------------------*/
 
 MatrixDistribution::Internal::Internal(const ISpace& row_space, const ISpace& col_space,
-    Integer local_row_size, Integer local_col_size,
-    std::shared_ptr<IMessagePassingMng> parallel_mng)
+                                       Integer local_row_size, Integer local_col_size,
+                                       std::shared_ptr<IMessagePassingMng> parallel_mng)
 : m_row_distribution(
-    std::make_shared<VectorDistribution>(row_space, local_row_size, parallel_mng))
+  std::make_shared<VectorDistribution>(row_space, local_row_size, parallel_mng))
 , m_col_distribution(
-      std::make_shared<VectorDistribution>(col_space, local_col_size, parallel_mng))
+  std::make_shared<VectorDistribution>(col_space, local_col_size, parallel_mng))
 {}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 MatrixDistribution::Internal::Internal(Integer global_row_size, Integer global_col_size,
-    Integer local_row_size, IMessagePassingMng* parallel_mng)
+                                       Integer local_row_size, IMessagePassingMng* parallel_mng)
 : Internal(Space(global_row_size), Space(global_col_size), local_row_size, parallel_mng)
 {}
 
@@ -274,16 +275,16 @@ MatrixDistribution::Internal::Internal(Integer global_row_size, Integer global_c
 /*---------------------------------------------------------------------------*/
 
 MatrixDistribution::Internal::Internal(Integer global_row_size, Integer global_col_size,
-    Integer local_row_size, Integer local_col_size, IMessagePassingMng* parallel_mng)
+                                       Integer local_row_size, Integer local_col_size, IMessagePassingMng* parallel_mng)
 : Internal(Space(global_row_size), Space(global_col_size), local_row_size, local_col_size,
-    parallel_mng)
+           parallel_mng)
 {}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 MatrixDistribution::Internal::Internal(Integer global_row_size, Integer global_col_size,
-    Integer local_row_size, std::shared_ptr<IMessagePassingMng> parallel_mng)
+                                       Integer local_row_size, std::shared_ptr<IMessagePassingMng> parallel_mng)
 : Internal(Space(global_row_size), Space(global_col_size), local_row_size, parallel_mng)
 {}
 
@@ -291,20 +292,18 @@ MatrixDistribution::Internal::Internal(Integer global_row_size, Integer global_c
 /*---------------------------------------------------------------------------*/
 
 MatrixDistribution::Internal::Internal(Integer global_row_size, Integer global_col_size,
-    Integer local_row_size, Integer local_col_size,
-    std::shared_ptr<IMessagePassingMng> parallel_mng)
+                                       Integer local_row_size, Integer local_col_size,
+                                       std::shared_ptr<IMessagePassingMng> parallel_mng)
 : Internal(Space(global_row_size), Space(global_col_size), local_row_size, local_col_size,
-    parallel_mng)
+           parallel_mng)
 {}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool
-MatrixDistribution::Internal::operator==(const Internal& dist) const
+bool MatrixDistribution::Internal::operator==(const Internal& dist) const
 {
-  return ((dist.m_row_distribution == m_row_distribution)
-      && (dist.m_col_distribution == m_col_distribution));
+  return ((dist.m_row_distribution == m_row_distribution) && (dist.m_col_distribution == m_col_distribution));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -320,7 +319,7 @@ MatrixDistribution::MatrixDistribution()
 /*---------------------------------------------------------------------------*/
 
 MatrixDistribution::MatrixDistribution(
-    const ISpace& row_space, const ISpace& col_space, IMessagePassingMng* parallel_mng)
+const ISpace& row_space, const ISpace& col_space, IMessagePassingMng* parallel_mng)
 : m_internal(std::make_shared<Internal>(row_space, col_space, parallel_mng))
 {
   alien_debug([&] {
@@ -333,7 +332,7 @@ MatrixDistribution::MatrixDistribution(
 /*---------------------------------------------------------------------------*/
 
 MatrixDistribution::MatrixDistribution(
-    Integer global_row_size, Integer global_col_size, IMessagePassingMng* parallel_mng)
+Integer global_row_size, Integer global_col_size, IMessagePassingMng* parallel_mng)
 : m_internal(std::make_shared<Internal>(global_row_size, global_col_size, parallel_mng))
 {
   alien_debug([&] {
@@ -346,7 +345,7 @@ MatrixDistribution::MatrixDistribution(
 /*---------------------------------------------------------------------------*/
 
 MatrixDistribution::MatrixDistribution(Integer global_row_size, Integer global_col_size,
-    std::shared_ptr<IMessagePassingMng> parallel_mng)
+                                       std::shared_ptr<IMessagePassingMng> parallel_mng)
 : m_internal(std::make_shared<Internal>(global_row_size, global_col_size, parallel_mng))
 {
   alien_debug([&] {
@@ -359,9 +358,9 @@ MatrixDistribution::MatrixDistribution(Integer global_row_size, Integer global_c
 /*---------------------------------------------------------------------------*/
 
 MatrixDistribution::MatrixDistribution(const ISpace& row_space, const ISpace& col_space,
-    Integer local_row_size, IMessagePassingMng* parallel_mng)
+                                       Integer local_row_size, IMessagePassingMng* parallel_mng)
 : m_internal(
-    std::make_shared<Internal>(row_space, col_space, local_row_size, parallel_mng))
+  std::make_shared<Internal>(row_space, col_space, local_row_size, parallel_mng))
 {
   alien_debug([&] {
     cout() << "Create MatrixDistribution(global_row=" << row_space.size()
@@ -374,9 +373,9 @@ MatrixDistribution::MatrixDistribution(const ISpace& row_space, const ISpace& co
 /*---------------------------------------------------------------------------*/
 
 MatrixDistribution::MatrixDistribution(const ISpace& row_space, const ISpace& col_space,
-    Integer local_row_size, Integer local_col_size, IMessagePassingMng* parallel_mng)
+                                       Integer local_row_size, Integer local_col_size, IMessagePassingMng* parallel_mng)
 : m_internal(std::make_shared<Internal>(
-    row_space, col_space, local_row_size, local_col_size, parallel_mng))
+  row_space, col_space, local_row_size, local_col_size, parallel_mng))
 {
   alien_debug([&] {
     cout() << "Create MatrixDistribution(global_row=" << row_space.size()
@@ -389,9 +388,9 @@ MatrixDistribution::MatrixDistribution(const ISpace& row_space, const ISpace& co
 /*---------------------------------------------------------------------------*/
 
 MatrixDistribution::MatrixDistribution(Integer global_row_size, Integer global_col_size,
-    Integer local_row_size, IMessagePassingMng* parallel_mng)
+                                       Integer local_row_size, IMessagePassingMng* parallel_mng)
 : m_internal(std::make_shared<Internal>(
-    global_row_size, global_col_size, local_row_size, parallel_mng))
+  global_row_size, global_col_size, local_row_size, parallel_mng))
 {
   alien_debug([&] {
     cout() << "Create MatrixDistribution(global_row=" << global_row_size
@@ -403,9 +402,9 @@ MatrixDistribution::MatrixDistribution(Integer global_row_size, Integer global_c
 /*---------------------------------------------------------------------------*/
 
 MatrixDistribution::MatrixDistribution(Integer global_row_size, Integer global_col_size,
-    Integer local_row_size, Integer local_col_size, IMessagePassingMng* parallel_mng)
+                                       Integer local_row_size, Integer local_col_size, IMessagePassingMng* parallel_mng)
 : m_internal(std::make_shared<Internal>(
-    global_row_size, global_col_size, local_row_size, local_col_size, parallel_mng))
+  global_row_size, global_col_size, local_row_size, local_col_size, parallel_mng))
 {
   alien_debug([&] {
     cout() << "Create MatrixDistribution(global_row=" << global_row_size
@@ -418,9 +417,9 @@ MatrixDistribution::MatrixDistribution(Integer global_row_size, Integer global_c
 /*---------------------------------------------------------------------------*/
 
 MatrixDistribution::MatrixDistribution(Integer global_row_size, Integer global_col_size,
-    Integer local_row_size, std::shared_ptr<IMessagePassingMng> parallel_mng)
+                                       Integer local_row_size, std::shared_ptr<IMessagePassingMng> parallel_mng)
 : m_internal(std::make_shared<Internal>(
-    global_row_size, global_col_size, local_row_size, parallel_mng))
+  global_row_size, global_col_size, local_row_size, parallel_mng))
 {
   alien_debug([&] {
     cout() << "Create MatrixDistribution(global_row=" << global_row_size
@@ -432,10 +431,10 @@ MatrixDistribution::MatrixDistribution(Integer global_row_size, Integer global_c
 /*---------------------------------------------------------------------------*/
 
 MatrixDistribution::MatrixDistribution(Integer global_row_size, Integer global_col_size,
-    Integer local_row_size, Integer local_col_size,
-    std::shared_ptr<IMessagePassingMng> parallel_mng)
+                                       Integer local_row_size, Integer local_col_size,
+                                       std::shared_ptr<IMessagePassingMng> parallel_mng)
 : m_internal(std::make_shared<Internal>(
-    global_row_size, global_col_size, local_row_size, local_col_size, parallel_mng))
+  global_row_size, global_col_size, local_row_size, local_col_size, parallel_mng))
 {
   alien_debug([&] {
     cout() << "Create MatrixDistribution(global_row=" << global_row_size
@@ -516,8 +515,7 @@ MatrixDistribution::operator=(MatrixDistribution&& dist)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool
-MatrixDistribution::operator==(const MatrixDistribution& dist) const
+bool MatrixDistribution::operator==(const MatrixDistribution& dist) const
 {
   return *m_internal == *dist.m_internal;
 }
@@ -525,8 +523,7 @@ MatrixDistribution::operator==(const MatrixDistribution& dist) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool
-MatrixDistribution::isParallel() const
+bool MatrixDistribution::isParallel() const
 {
   return m_internal->m_row_distribution->isParallel();
 }

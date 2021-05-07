@@ -55,13 +55,13 @@ TEST(TestCompositeMatrix, CompositeConstructorsTest)
   Alien::MatrixDistribution dist1(5, 5, AlienTest::Environment::parallelMng());
   Alien::CompositeMatrix v(2);
   Alien::CompositeElement(v, 0, 0) =
-      Alien::Matrix(4, 4, AlienTest::Environment::parallelMng());
+  Alien::Matrix(4, 4, AlienTest::Environment::parallelMng());
   Alien::CompositeElement(v, 0, 1) =
-      Alien::Matrix(4, 5, AlienTest::Environment::parallelMng());
+  Alien::Matrix(4, 5, AlienTest::Environment::parallelMng());
   Alien::CompositeElement(v, 1, 0) =
-      Alien::Matrix(5, 4, AlienTest::Environment::parallelMng());
+  Alien::Matrix(5, 4, AlienTest::Environment::parallelMng());
   Alien::CompositeElement(v, 1, 1) =
-      Alien::Matrix(5, 5, AlienTest::Environment::parallelMng());
+  Alien::Matrix(5, 5, AlienTest::Environment::parallelMng());
   ASSERT_EQ(9, v.rowSpace().size());
   ASSERT_EQ(9, v.colSpace().size());
   auto& c00 = v(0, 0);
@@ -87,13 +87,13 @@ TEST(TestCompositeMatrix, CompositeResize)
   ASSERT_EQ(0, v.colSpace().size());
   v.resize(2);
   Alien::CompositeElement(v, 0, 0) =
-      Alien::Matrix(4, 4, AlienTest::Environment::parallelMng());
+  Alien::Matrix(4, 4, AlienTest::Environment::parallelMng());
   Alien::CompositeElement(v, 0, 1) =
-      Alien::Matrix(4, 5, AlienTest::Environment::parallelMng());
+  Alien::Matrix(4, 5, AlienTest::Environment::parallelMng());
   Alien::CompositeElement(v, 1, 0) =
-      Alien::Matrix(5, 4, AlienTest::Environment::parallelMng());
+  Alien::Matrix(5, 4, AlienTest::Environment::parallelMng());
   Alien::CompositeElement(v, 1, 1) =
-      Alien::Matrix(5, 5, AlienTest::Environment::parallelMng());
+  Alien::Matrix(5, 5, AlienTest::Environment::parallelMng());
   ASSERT_EQ(9, v.rowSpace().size());
   ASSERT_EQ(9, v.colSpace().size());
   auto& c00 = v(0, 0);
@@ -119,13 +119,13 @@ TEST(TestCompositeMatrix, CompositeMultipleResize)
   ASSERT_EQ(0, v.colSpace().size());
   v.resize(2);
   Alien::CompositeElement(v, 0, 0) =
-      Alien::Matrix(4, 4, AlienTest::Environment::parallelMng());
+  Alien::Matrix(4, 4, AlienTest::Environment::parallelMng());
   Alien::CompositeElement(v, 0, 1) =
-      Alien::Matrix(4, 5, AlienTest::Environment::parallelMng());
+  Alien::Matrix(4, 5, AlienTest::Environment::parallelMng());
   Alien::CompositeElement(v, 1, 0) =
-      Alien::Matrix(5, 4, AlienTest::Environment::parallelMng());
+  Alien::Matrix(5, 4, AlienTest::Environment::parallelMng());
   Alien::CompositeElement(v, 1, 1) =
-      Alien::Matrix(5, 5, AlienTest::Environment::parallelMng());
+  Alien::Matrix(5, 5, AlienTest::Environment::parallelMng());
   ASSERT_EQ(9, v.rowSpace().size());
   ASSERT_EQ(9, v.colSpace().size());
   {
@@ -153,13 +153,13 @@ TEST(TestCompositeMatrix, CompositeMultipleResize)
     }
   }
   Alien::CompositeElement(v, 0, 0) =
-      Alien::Matrix(4, 4, AlienTest::Environment::parallelMng());
+  Alien::Matrix(4, 4, AlienTest::Environment::parallelMng());
   Alien::CompositeElement(v, 0, 1) =
-      Alien::Matrix(4, 5, AlienTest::Environment::parallelMng());
+  Alien::Matrix(4, 5, AlienTest::Environment::parallelMng());
   Alien::CompositeElement(v, 1, 0) =
-      Alien::Matrix(5, 4, AlienTest::Environment::parallelMng());
+  Alien::Matrix(5, 4, AlienTest::Environment::parallelMng());
   Alien::CompositeElement(v, 1, 1) =
-      Alien::Matrix(5, 5, AlienTest::Environment::parallelMng());
+  Alien::Matrix(5, 5, AlienTest::Environment::parallelMng());
   ASSERT_EQ(9, v.rowSpace().size());
   ASSERT_EQ(9, v.colSpace().size());
   {
@@ -201,13 +201,13 @@ TEST(TestCompositeMatrix, TimeStampTest)
   std::cout << "main ts = " << impl->timestamp() << std::endl;
   v.resize(2);
   Alien::CompositeElement(v, 0, 0) =
-      Alien::Matrix(4, 4, AlienTest::Environment::parallelMng());
+  Alien::Matrix(4, 4, AlienTest::Environment::parallelMng());
   Alien::CompositeElement(v, 0, 1) =
-      Alien::Matrix(4, 4, AlienTest::Environment::parallelMng());
+  Alien::Matrix(4, 4, AlienTest::Environment::parallelMng());
   Alien::CompositeElement(v, 1, 0) =
-      Alien::Matrix(4, 4, AlienTest::Environment::parallelMng());
+  Alien::Matrix(4, 4, AlienTest::Environment::parallelMng());
   Alien::CompositeElement(v, 1, 1) =
-      Alien::Matrix(4, 4, AlienTest::Environment::parallelMng());
+  Alien::Matrix(4, 4, AlienTest::Environment::parallelMng());
   ASSERT_EQ(0, impl->timestamp());
   std::cout << "main ts = " << impl->timestamp() << std::endl;
   auto& c0 = v(0, 0);

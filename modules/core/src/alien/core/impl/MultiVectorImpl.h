@@ -41,14 +41,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ALIEN_EXPORT MultiVectorImpl : public TimestampMng,
-                                     public UserFeatureMng,
-                                     public ObjectWithTrace
+class ALIEN_EXPORT MultiVectorImpl : public TimestampMng
+, public UserFeatureMng
+, public ObjectWithTrace
 {
   /*!
    * \ingroup impl
@@ -75,7 +76,7 @@ class ALIEN_EXPORT MultiVectorImpl : public TimestampMng,
    * \param[in] dist The distribution of the vector
    */
   MultiVectorImpl(
-      std::shared_ptr<ISpace> space, std::shared_ptr<VectorDistribution> dist);
+  std::shared_ptr<ISpace> space, std::shared_ptr<VectorDistribution> dist);
 
   //! Free resources
   ~MultiVectorImpl() override;
@@ -158,7 +159,8 @@ class ALIEN_EXPORT MultiVectorImpl : public TimestampMng,
    *
    * \returns The up to date vector in the requested implementation
    */
-  template <typename tag> const typename AlgebraTraits<tag>::vector_type& get() const;
+  template <typename tag>
+  const typename AlgebraTraits<tag>::vector_type& get() const;
 
   /*!
    * \brief Get a specific vector implementation
@@ -173,7 +175,8 @@ class ALIEN_EXPORT MultiVectorImpl : public TimestampMng,
   typename AlgebraTraits<tag>::vector_type& get(bool update_stamp);
 
   //! Release a vector implementation
-  template <typename tag> void release() const;
+  template <typename tag>
+  void release() const;
 
  private:
   /*!
@@ -181,7 +184,8 @@ class ALIEN_EXPORT MultiVectorImpl : public TimestampMng,
    * \param[in] backend The id of the specific implementation
    * \returns The vector in the requested format
    */
-  template <typename vector_type> IVectorImpl*& getImpl(BackEndId backend) const;
+  template <typename vector_type>
+  IVectorImpl*& getImpl(BackEndId backend) const;
 
   /*!
    * \brief Update a vector implementation
@@ -195,7 +199,8 @@ class ALIEN_EXPORT MultiVectorImpl : public TimestampMng,
    * \param[in] backend The implementation backend id
    * \param[in] v The vector to insert
    */
-  template <typename vector_type> void insert(const BackEndId& backend, vector_type* v);
+  template <typename vector_type>
+  void insert(const BackEndId& backend, vector_type* v);
 
  private:
   //! The vector space
@@ -222,7 +227,7 @@ MultiVectorImpl::get() const
   typedef typename AlgebraTraits<tag>::vector_type vector_type;
   IVectorImpl*& impl2 = getImpl<vector_type>(AlgebraTraits<tag>::name());
   ALIEN_ASSERT(
-      (impl2->backend() == AlgebraTraits<tag>::name()), ("Inconsistent backend"));
+  (impl2->backend() == AlgebraTraits<tag>::name()), ("Inconsistent backend"));
   updateImpl(impl2);
   return *dynamic_cast<vector_type*>(impl2);
 }
@@ -237,7 +242,7 @@ MultiVectorImpl::get(const bool update_stamp)
   typedef typename AlgebraTraits<tag>::vector_type vector_type;
   IVectorImpl*& impl2 = getImpl<vector_type>(AlgebraTraits<tag>::name());
   ALIEN_ASSERT(
-      (impl2->backend() == AlgebraTraits<tag>::name()), ("Inconsistent backend"));
+  (impl2->backend() == AlgebraTraits<tag>::name()), ("Inconsistent backend"));
   updateImpl(impl2);
   if (update_stamp) {
     impl2->updateTimestamp();
@@ -249,8 +254,7 @@ MultiVectorImpl::get(const bool update_stamp)
 /*---------------------------------------------------------------------------*/
 
 template <typename tag>
-void
-MultiVectorImpl::release() const
+void MultiVectorImpl::release() const
 {
   auto finder = m_impls2.find(AlgebraTraits<tag>::name());
   if (finder == m_impls2.end())
@@ -279,8 +283,7 @@ MultiVectorImpl::getImpl(BackEndId backend) const
 /*---------------------------------------------------------------------------*/
 
 template <typename vector_type>
-void
-MultiVectorImpl::insert(const BackEndId& backend, vector_type* v)
+void MultiVectorImpl::insert(const BackEndId& backend, vector_type* v)
 {
   if (m_impls2.find(backend) != m_impls2.end()) {
     alien_fatal([&] { cout() << "try to insert already inserted value"; });

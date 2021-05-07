@@ -89,7 +89,7 @@ TEST(TestCompositeSpace, RValueConstructor)
     return s;
   };
   const Alien::CompositeKernel::Space s2 =
-      f(); // Attention, const déclenche de optimisations...
+  f(); // Attention, const déclenche de optimisations...
   ASSERT_TRUE(s1 == s2);
   Alien::CompositeKernel::Space s3;
   s3 = std::move(s2);

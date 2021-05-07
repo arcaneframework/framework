@@ -20,13 +20,15 @@
 
 #include <alien/core/backend/BackEnd.h>
 
-namespace Arccore::MessagePassing {
+namespace Arccore::MessagePassing
+{
 class IMessagePassingMng;
 }
 
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 
@@ -34,8 +36,10 @@ class RedistributorLinearSolver;
 class RedistributorMatrix;
 class RedistributorVector;
 class Space;
-template <class Matrix, class Vector> class IInternalLinearAlgebra;
-template <class Matrix, class Vector> class IInternalLinearSolver;
+template <class Matrix, class Vector>
+class IInternalLinearAlgebra;
+template <class Matrix, class Vector>
+class IInternalLinearSolver;
 
 extern IInternalLinearAlgebra<RedistributorMatrix, RedistributorVector>*
 redistributorLinearAlgebraFactory();
@@ -45,14 +49,17 @@ redistributorLinearSolverFactory(IMessagePassingMng* p_mng);
 
 /*---------------------------------------------------------------------------*/
 
-namespace BackEnd {
-  namespace tag {
+namespace BackEnd
+{
+  namespace tag
+  {
     struct redistributor
     {};
   } // namespace tag
 } // namespace BackEnd
 
-template <> struct AlgebraTraits<BackEnd::tag::redistributor>
+template <>
+struct AlgebraTraits<BackEnd::tag::redistributor>
 {
   typedef RedistributorMatrix matrix_type;
   typedef RedistributorVector vector_type;

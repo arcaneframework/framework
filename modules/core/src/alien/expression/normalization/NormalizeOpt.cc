@@ -37,7 +37,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -52,8 +53,7 @@ NormalizeOpt::NormalizeOpt()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-NormalizeOpt::setAlgo(eAlgoType algo)
+void NormalizeOpt::setAlgo(eAlgoType algo)
 {
   m_algo = algo;
 }
@@ -61,8 +61,7 @@ NormalizeOpt::setAlgo(eAlgoType algo)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-NormalizeOpt::setOpt(eOptType opt, bool flag)
+void NormalizeOpt::setOpt(eOptType opt, bool flag)
 {
   switch (opt) {
   case SumFirstEq:
@@ -90,7 +89,7 @@ NormalizeOpt::normalize(IMatrix& m, IVector& x) const
 
 NormalizeOpt::eErrorType
 NormalizeOpt::normalize(
-    CompositeMatrix& m, CompositeVector& x, ConstArrayView<Integer> eq_ids) const
+CompositeMatrix& m, CompositeVector& x, ConstArrayView<Integer> eq_ids) const
 {
   // need to update timestamp of all submatrices
   MatrixImpl& A00 = m(0, 0).impl()->get<Alien::BackEnd::tag::simplecsr>(true);
@@ -101,13 +100,13 @@ NormalizeOpt::normalize(
   VectorImpl& b1 = x[1].impl()->get<Alien::BackEnd::tag::simplecsr>(true);
   {
     eErrorType error =
-        _normalize(A00, A01, m(0, 1).impl()->hasFeature("transposed"), eq_ids, b0);
+    _normalize(A00, A01, m(0, 1).impl()->hasFeature("transposed"), eq_ids, b0);
     if (error != NoError)
       return error;
   }
   {
     eErrorType error =
-        _normalize(A11, eq_ids, A10, m(1, 0).impl()->hasFeature("transposed"), b1);
+    _normalize(A11, eq_ids, A10, m(1, 0).impl()->hasFeature("transposed"), b1);
     return error;
   }
 }
@@ -116,16 +115,14 @@ NormalizeOpt::normalize(
 /*---------------------------------------------------------------------------*/
 
 template <>
-void
-NormalizeOpt::Op::multInvDiag<0>()
+void NormalizeOpt::Op::multInvDiag<0>()
 {}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template <>
-void
-NormalizeOpt::Op::multInvDiag<1>()
+void NormalizeOpt::Op::multInvDiag<1>()
 {
   for (Integer irow = 0; irow < m_local_size; ++irow) {
     Integer off = m_row_offset[irow];
@@ -144,8 +141,7 @@ NormalizeOpt::Op::multInvDiag<1>()
 /*---------------------------------------------------------------------------*/
 
 template <Integer N>
-void
-NormalizeOpt::Op::multInvDiag()
+void NormalizeOpt::Op::multInvDiag()
 {
 #ifdef ALIEN_USE_EIGEN2
   if (m_algo == EigenLU) {
@@ -196,7 +192,8 @@ NormalizeOpt::Op::multInvDiag()
         else
           diag.setZero();
       }
-    } else {
+    }
+    else {
       for (Integer irow = 0; irow < m_local_size; ++irow) {
         Integer off = m_row_offset[irow] + m_upper_diag_index[irow];
 
@@ -241,7 +238,8 @@ NormalizeOpt::Op::multInvDiag()
           diag.setZero();
       }
     }
-  } else
+  }
+  else
 #endif
   {
     if (m_diag_first) {
@@ -264,7 +262,8 @@ NormalizeOpt::Op::multInvDiag()
         else
           lu.setZero();
       }
-    } else {
+    }
+    else {
       for (Integer irow = 0; irow < m_local_size; ++irow) {
         Integer off = m_row_offset[irow] + m_upper_diag_index[irow];
 
@@ -324,16 +323,14 @@ NormalizeOpt::_normalize(MatrixImpl& m, VectorImpl& x) const
 /*---------------------------------------------------------------------------*/
 
 template <>
-void
-NormalizeOpt::Op2::multInvDiag<0>()
+void NormalizeOpt::Op2::multInvDiag<0>()
 {}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template <>
-void
-NormalizeOpt::Op2::multInvDiag<1>()
+void NormalizeOpt::Op2::multInvDiag<1>()
 {
   if (m_submatrix2) {
     if (m_diag_first) {
@@ -380,7 +377,8 @@ NormalizeOpt::Op2::multInvDiag<1>()
         Integer off_diag = m_row_offset[irow];
         m_matrix[off_diag] = m_keep_diag ? 1. : 0.;
       }
-    } else {
+    }
+    else {
       ////////////////////////////////////////////
       //
       // NORMALIZE SubMatrix00 and RHS
@@ -452,8 +450,7 @@ NormalizeOpt::Op2::multInvDiag<1>()
 /*---------------------------------------------------------------------------*/
 
 template <Integer N>
-void
-NormalizeOpt::Op2::multInvDiag()
+void NormalizeOpt::Op2::multInvDiag()
 {
   if (m_submatrix2) {
     if (m_diag_first) {
@@ -521,8 +518,8 @@ NormalizeOpt::Op2::multInvDiag()
           LU<N> lu(diag, false);
           lu.setZero();
         }
-
-    } else {
+    }
+    else {
       ////////////////////////////////////////////
       //
       // NORMALIZE SubMatrix01
@@ -617,7 +614,7 @@ NormalizeOpt::Op2::multInvDiag()
 
 NormalizeOpt::eErrorType
 NormalizeOpt::_normalize(MatrixImpl& m, MatrixImpl& m2, bool trans,
-    ConstArrayView<Integer> eq_ids, VectorImpl& x) const
+                         ConstArrayView<Integer> eq_ids, VectorImpl& x) const
 {
   Op2 op(m, m2, trans, eq_ids, x, m_algo, m_sum_first_eq);
 
@@ -646,7 +643,7 @@ NormalizeOpt::_normalize(MatrixImpl& m, MatrixImpl& m2, bool trans,
 
 NormalizeOpt::eErrorType
 NormalizeOpt::_normalize(MatrixImpl& m, ConstArrayView<Integer> eq_ids, MatrixImpl& m2,
-    bool trans, VectorImpl& x) const
+                         bool trans, VectorImpl& x) const
 {
   Op2 op(m, eq_ids, m2, trans, x, m_algo, m_sum_first_eq);
 

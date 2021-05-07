@@ -29,20 +29,22 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Common {
+namespace Common
+{
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
   ProfiledMatrixBuilder::ProfiledMatrixBuilder(
-      IMatrix& matrix, const ResetFlag reset_values)
+  IMatrix& matrix, const ResetFlag reset_values)
   : m_matrix(matrix)
   , m_finalized(false)
   {
@@ -60,7 +62,7 @@ namespace Common {
     m_next_offset = m_local_offset + m_local_size;
 
     SimpleCSRInternal::CSRStructInfo const& profile =
-        m_matrix_impl->internal().getCSRProfile();
+    m_matrix_impl->internal().getCSRProfile();
     m_row_starts = profile.getRowOffset();
     m_local_row_size = m_matrix_impl->getDistStructInfo().m_local_row_size;
     m_cols = profile.getCols();
@@ -71,7 +73,7 @@ namespace Common {
 
     if (profile.getColOrdering() != SimpleCSRInternal::CSRStructInfo::eFull)
       throw FatalErrorException(
-          A_FUNCINFO, "Cannot build system without full column ordering");
+      A_FUNCINFO, "Cannot build system without full column ordering");
   }
 
   /*---------------------------------------------------------------------------*/
@@ -96,17 +98,18 @@ namespace Common {
     const Integer ncols = m_local_row_size[local_row];
     if (isLocal(jIndex)) {
       const Integer col =
-          ArrayScan::dichotomicScan(jIndex, m_cols.subConstView(row_start, ncols));
+      ArrayScan::dichotomicScan(jIndex, m_cols.subConstView(row_start, ncols));
 #ifdef CHECKPROFILE_ON_FILLING
       if (col == -1)
         throw FatalErrorException("Cannot add data on undefined column");
 #endif /* CHECKPROFILE_ON_FILLING */
       return m_values[row_start + col];
-    } else {
+    }
+    else {
       const Integer ngcols =
-          m_row_starts[iIndex - m_local_offset + 1] - row_start - ncols;
+      m_row_starts[iIndex - m_local_offset + 1] - row_start - ncols;
       const Integer col = ArrayScan::dichotomicScan(
-          jIndex, m_cols.subConstView(row_start + ncols, ngcols));
+      jIndex, m_cols.subConstView(row_start + ncols, ngcols));
 #ifdef CHECKPROFILE_ON_FILLING
       if (col == -1)
         throw FatalErrorException("Cannot add data on undefined column");
@@ -116,7 +119,7 @@ namespace Common {
   }
 
   void ProfiledMatrixBuilder::addData(
-      const Integer iIndex, const Integer jIndex, const Real value)
+  const Integer iIndex, const Integer jIndex, const Real value)
   {
     _startTimer();
     ALIEN_ASSERT((!m_finalized), ("Finalized matrix cannot be modified"));
@@ -129,17 +132,18 @@ namespace Common {
     const Integer ncols = m_local_row_size[local_row];
     if (isLocal(jIndex)) {
       const Integer col =
-          ArrayScan::dichotomicScan(jIndex, m_cols.subConstView(row_start, ncols));
+      ArrayScan::dichotomicScan(jIndex, m_cols.subConstView(row_start, ncols));
 #ifdef CHECKPROFILE_ON_FILLING
       if (col == -1)
         throw FatalErrorException("Cannot add data on undefined column");
 #endif /* CHECKPROFILE_ON_FILLING */
       m_values[row_start + col] += value;
-    } else {
+    }
+    else {
       const Integer ngcols =
-          m_row_starts[iIndex - m_local_offset + 1] - row_start - ncols;
+      m_row_starts[iIndex - m_local_offset + 1] - row_start - ncols;
       const Integer col = ArrayScan::dichotomicScan(
-          jIndex, m_cols.subConstView(row_start + ncols, ngcols));
+      jIndex, m_cols.subConstView(row_start + ncols, ngcols));
 #ifdef CHECKPROFILE_ON_FILLING
       if (col == -1)
         throw FatalErrorException("Cannot add data on undefined column");
@@ -152,12 +156,12 @@ namespace Common {
   /*---------------------------------------------------------------------------*/
 
   void ProfiledMatrixBuilder::addData(const Integer iIndex, const Real factor,
-      const ConstArrayView<Integer>& jIndexes, const ConstArrayView<Real>& jValues)
+                                      const ConstArrayView<Integer>& jIndexes, const ConstArrayView<Real>& jValues)
   {
     _startTimer();
     ALIEN_ASSERT((!m_finalized), ("Finalized matrix cannot be modified"));
     ALIEN_ASSERT((jIndexes.size() == jValues.size()),
-        ("Inconsistent sizes: %d vs %d", jIndexes.size(), jValues.size()));
+                 ("Inconsistent sizes: %d vs %d", jIndexes.size(), jValues.size()));
     const Integer local_row = iIndex - m_local_offset;
 #ifdef CHECKPROFILE_ON_FILLING
     if (local_row < 0 or local_row >= m_local_size)
@@ -173,11 +177,10 @@ namespace Common {
       Integer col = -1;
       if (isLocal(jIndex)) {
         col = ArrayScan::dichotomicScan(jIndex, m_cols.subConstView(row_start, ncols));
-      } else {
+      }
+      else {
         const Integer ngcols = row_size - ncols;
-        col = ncols
-            + ArrayScan::dichotomicScan(
-                jIndex, m_cols.subConstView(row_start + ncols, ngcols));
+        col = ncols + ArrayScan::dichotomicScan(jIndex, m_cols.subConstView(row_start + ncols, ngcols));
       }
 #ifdef CHECKPROFILE_ON_FILLING
       if (col == -1)
@@ -191,7 +194,7 @@ namespace Common {
   /*---------------------------------------------------------------------------*/
 
   void ProfiledMatrixBuilder::setData(
-      const Integer iIndex, const Integer jIndex, const Real value)
+  const Integer iIndex, const Integer jIndex, const Real value)
   {
     _startTimer();
     ALIEN_ASSERT((!m_finalized), ("Finalized matrix cannot be modified"));
@@ -208,9 +211,7 @@ namespace Common {
       col = ArrayScan::dichotomicScan(jIndex, m_cols.subConstView(row_start, ncols));
     else {
       const Integer ngcols = row_size - ncols;
-      col = ncols
-          + ArrayScan::dichotomicScan(
-              jIndex, m_cols.subConstView(row_start + ncols, ngcols));
+      col = ncols + ArrayScan::dichotomicScan(jIndex, m_cols.subConstView(row_start + ncols, ngcols));
     }
 #ifdef CHECKPROFILE_ON_FILLING
     if (col == -1)
@@ -223,12 +224,12 @@ namespace Common {
   /*---------------------------------------------------------------------------*/
 
   void ProfiledMatrixBuilder::setData(const Integer iIndex, const Real factor,
-      const ConstArrayView<Integer>& jIndexes, const ConstArrayView<Real>& jValues)
+                                      const ConstArrayView<Integer>& jIndexes, const ConstArrayView<Real>& jValues)
   {
     _startTimer();
     ALIEN_ASSERT((!m_finalized), ("Finalized matrix cannot be modified"));
     ALIEN_ASSERT((jIndexes.size() == jValues.size()),
-        ("Inconsistent sizes: %d vs %d", jIndexes.size(), jValues.size()));
+                 ("Inconsistent sizes: %d vs %d", jIndexes.size(), jValues.size()));
     const Integer local_row = iIndex - m_local_offset;
 #ifdef CHECKPROFILE_ON_FILLING
     if (local_row < 0 or local_row >= m_local_size)
@@ -245,9 +246,7 @@ namespace Common {
         col = ArrayScan::dichotomicScan(jIndex, m_cols.subConstView(row_start, ncols));
       else {
         const Integer ngcols = row_size - ncols;
-        col = ncols
-            + ArrayScan::dichotomicScan(
-                jIndex, m_cols.subConstView(row_start + ncols, ngcols));
+        col = ncols + ArrayScan::dichotomicScan(jIndex, m_cols.subConstView(row_start + ncols, ngcols));
       }
 #ifdef CHECKPROFILE_ON_FILLING
       if (col == -1)

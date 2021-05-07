@@ -26,7 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 using namespace Arccore;
 
 /*---------------------------------------------------------------------------*/
@@ -34,7 +35,7 @@ using namespace Arccore;
 
 VectorData::VectorData()
 : m_impl(new MultiVectorImpl(std::make_shared<Space>(0),
-    std::make_shared<VectorDistribution>(VectorDistribution())))
+                             std::make_shared<VectorDistribution>(VectorDistribution())))
 {}
 
 /*---------------------------------------------------------------------------*/
@@ -61,24 +62,21 @@ VectorData::~VectorData() {}
 
 /*---------------------------------------------------------------------------*/
 
-void
-VectorData::operator=(VectorData&& vector)
+void VectorData::operator=(VectorData&& vector)
 {
   m_impl = std::move(vector.m_impl);
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-VectorData::init(const ISpace& space, const VectorDistribution& dist)
+void VectorData::init(const ISpace& space, const VectorDistribution& dist)
 {
   m_impl.reset(new MultiVectorImpl(space.clone(), dist.clone()));
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-VectorData::setBlockInfos(const Integer block_size)
+void VectorData::setBlockInfos(const Integer block_size)
 {
   impl()->setBlockInfos(block_size);
 }
@@ -95,8 +93,7 @@ setBlockInfos(const IBlockBuilder& builder)
 
 /*---------------------------------------------------------------------------*/
 
-void
-VectorData::setBlockInfos(const Block* block)
+void VectorData::setBlockInfos(const Block* block)
 {
   if (block) {
     impl()->setBlockInfos(block);
@@ -105,8 +102,7 @@ VectorData::setBlockInfos(const Block* block)
 
 /*---------------------------------------------------------------------------*/
 
-void
-VectorData::setBlockInfos(const VBlock* block)
+void VectorData::setBlockInfos(const VBlock* block)
 {
   if (block) {
     impl()->setBlockInfos(block);
@@ -115,24 +111,21 @@ VectorData::setBlockInfos(const VBlock* block)
 
 /*---------------------------------------------------------------------------*/
 
-void
-VectorData::free()
+void VectorData::free()
 {
   impl()->free();
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-VectorData::clear()
+void VectorData::clear()
 {
   impl()->clear();
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-VectorData::visit(ICopyOnWriteVector& v) const
+void VectorData::visit(ICopyOnWriteVector& v) const
 {
   v.accept(m_impl);
 }
@@ -171,16 +164,14 @@ VectorData::vblock() const
 
 /*---------------------------------------------------------------------------*/
 
-void
-VectorData::setUserFeature(String feature)
+void VectorData::setUserFeature(String feature)
 {
   impl()->setFeature(feature);
 }
 
 /*---------------------------------------------------------------------------*/
 
-bool
-VectorData::hasUserFeature(String feature) const
+bool VectorData::hasUserFeature(String feature) const
 {
   return impl()->hasFeature(feature);
 }

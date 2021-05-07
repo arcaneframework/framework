@@ -22,9 +22,11 @@
 #include <alien/core/backend/MatrixConverterRegisterer.h>
 #include <alien/utils/Precomp.h>
 
-namespace Alien {
+namespace Alien
+{
 
-template <typename T> class SimpleCSRMatrix;
+template <typename T>
+class SimpleCSRMatrix;
 class DoKMatrix;
 
 class ALIEN_EXPORT DoKtoSimpleCSRMatrixConverter : public IMatrixConverter

@@ -28,15 +28,14 @@
 #include <alien/index_manager/IndexManager.h>
 #include <alien/index_manager/functional/DefaultAbstractFamily.h>
 
-namespace Environment {
-void
-initialize(int argc, char** argv)
+namespace Environment
+{
+void initialize(int argc, char** argv)
 {
   MPI_Init(&argc, &argv);
 }
 
-void
-finalize()
+void finalize()
 {
   MPI_Finalize();
 }
@@ -45,7 +44,7 @@ Arccore::MessagePassing::IMessagePassingMng*
 parallelMng()
 {
   return Arccore::MessagePassing::Mpi::StandaloneMpiMessagePassingMng::create(
-      MPI_COMM_WORLD);
+  MPI_COMM_WORLD);
 }
 
 Arccore::ITraceMng*
@@ -60,8 +59,7 @@ typedef Arccore::Integer LID;
 // Define index type for global (unique) ids
 typedef Arccore::Int64 UID;
 
-int
-main(int argc, char** argv)
+int main(int argc, char** argv)
 {
   /*
    * Example : Laplacian problem on a 2D square mesh of size NX x NY
@@ -150,7 +148,7 @@ main(int argc, char** argv)
   auto space = Alien::Space(global_size, "MySpace");
 
   auto mdist =
-      Alien::MatrixDistribution(global_size, global_size, local_size, parallel_mng);
+  Alien::MatrixDistribution(global_size, global_size, local_size, parallel_mng);
   auto vdist = Alien::VectorDistribution(global_size, local_size, parallel_mng);
 
   trace_mng->info() << "MATRIX DISTRIBUTION INFO";

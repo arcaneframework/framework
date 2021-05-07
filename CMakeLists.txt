@@ -102,14 +102,14 @@ endif ()
 
 if (ALIEN_GENERATE_DOCUMENTATION)
     add_subdirectory(docs)
-endif(ALIEN_GENERATE_DOCUMENTATION)
+endif (ALIEN_GENERATE_DOCUMENTATION)
 
 #-----------------------------------------------------------
 # Tutorial
 #-----------------------------------------------------------
 if (ALIEN_GENERATE_TUTORIAL)
     add_subdirectory(tutorial)
-endif(ALIEN_GENERATE_TUTORIAL)
+endif (ALIEN_GENERATE_TUTORIAL)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------

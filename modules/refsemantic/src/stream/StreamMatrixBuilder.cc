@@ -23,7 +23,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,16 +41,16 @@ template ALIEN_IFPEN_EXPORT StreamMatrixBuilderT<double>::Filler&
 StreamMatrixBuilderT<double>::Filler::operator++();
 template ALIEN_IFPEN_EXPORT void StreamMatrixBuilderT<double>::Filler::start();
 template ALIEN_IFPEN_EXPORT void StreamMatrixBuilderT<double>::Filler::addBlockData(
-    ConstArrayView<double> values);
+ConstArrayView<double> values);
 template ALIEN_IFPEN_EXPORT void StreamMatrixBuilderT<double>::Filler::addData(
-    double values);
+double values);
 template ALIEN_IFPEN_EXPORT void StreamMatrixBuilderT<double>::Filler::addData(
-    ConstArrayView<double> values, double factor);
+ConstArrayView<double> values, double factor);
 
 template ALIEN_IFPEN_EXPORT void StreamMatrixBuilderT<double>::Profiler::addMatrixEntry(
-    Integer row_index, Integer col_index);
+Integer row_index, Integer col_index);
 template ALIEN_IFPEN_EXPORT void StreamMatrixBuilderT<double>::Profiler::addMatrixEntries(
-    const Integer row_index, ConstArrayView<Integer> col_index);
+const Integer row_index, ConstArrayView<Integer> col_index);
 template ALIEN_IFPEN_EXPORT Integer
 StreamMatrixBuilderT<double>::BaseInserter::getId() const;
 #endif

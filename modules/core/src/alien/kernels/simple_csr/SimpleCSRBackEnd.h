@@ -24,23 +24,28 @@
 #include <alien/core/backend/IInternalLinearAlgebraExprT.h>
 #include <alien/core/backend/IInternalLinearAlgebraT.h>
 
-namespace Arccore::MessagePassing {
+namespace Arccore::MessagePassing
+{
 class IMessagePassingMng;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 class MultiVectorImpl;
-template <typename T> class SimpleCSRMatrix;
-template <typename T> class SimpleCSRVector;
+template <typename T>
+class SimpleCSRMatrix;
+template <typename T>
+class SimpleCSRVector;
 
-template <typename T> struct SimpleCSRTraits
+template <typename T>
+struct SimpleCSRTraits
 {
   typedef SimpleCSRMatrix<T> MatrixType;
   typedef SimpleCSRVector<T> VectorType;
@@ -54,26 +59,29 @@ SimpleCSRInternalLinearAlgebraExprFactory();
 
 /*---------------------------------------------------------------------------*/
 
-namespace BackEnd {
-  namespace tag {
+namespace BackEnd
+{
+  namespace tag
+  {
     struct simplecsr
     {};
   } // namespace tag
 } // namespace BackEnd
 
-template <> struct AlgebraTraits<BackEnd::tag::simplecsr>
+template <>
+struct AlgebraTraits<BackEnd::tag::simplecsr>
 {
   typedef SimpleCSRTraits<Real>::MatrixType matrix_type;
   typedef SimpleCSRTraits<Real>::VectorType vector_type;
   typedef SimpleCSRTraits<Real>::AlgebraType algebra_type;
   typedef SimpleCSRTraits<Real>::AlgebraExprType algebra_expr_type;
   static algebra_type* algebra_factory(
-      IMessagePassingMng* p_mng ALIEN_UNUSED_PARAM = nullptr)
+  IMessagePassingMng* p_mng ALIEN_UNUSED_PARAM = nullptr)
   {
     return SimpleCSRInternalLinearAlgebraFactory();
   }
   static algebra_expr_type* algebra_expr_factory(
-      IMessagePassingMng* p_mng ALIEN_UNUSED_PARAM = nullptr)
+  IMessagePassingMng* p_mng ALIEN_UNUSED_PARAM = nullptr)
   {
     return SimpleCSRInternalLinearAlgebraExprFactory();
   }

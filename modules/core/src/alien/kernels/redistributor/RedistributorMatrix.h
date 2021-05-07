@@ -22,7 +22,8 @@
 #include <alien/kernels/dok/DoKDistributor.h>
 #include <alien/utils/Precomp.h>
 
-namespace Alien {
+namespace Alien
+{
 
 // Forward declarations
 class RedistributorCommPlan;

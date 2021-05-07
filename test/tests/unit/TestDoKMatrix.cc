@@ -42,7 +42,8 @@
 #include <iostream>
 #include <utility>
 
-namespace {
+namespace
+{
 Arccore::Int32 g_row[] = { 0, 0, 1, 1, 1, 2, 2 };
 Arccore::Int32 g_col[] = { 0, 1, 0, 1, 2, 0, 2 };
 Arccore::Real g_value[] = { 3, -2, -1, 4, -0.5, -2, 5 };
@@ -65,10 +66,11 @@ class TestDoKBuilder
     if (square)
       m_col_space = m_row_space;
     m_multimat.reset(
-        new Alien::MultiMatrixImpl(m_row_space, m_col_space, m_mdist.clone()));
+    new Alien::MultiMatrixImpl(m_row_space, m_col_space, m_mdist.clone()));
   }
 
-  template <class Matrix> Matrix* createEmptyMatrix() const
+  template <class Matrix>
+  Matrix* createEmptyMatrix() const
   {
     return new Matrix(m_multimat.get());
   }
@@ -152,7 +154,7 @@ TEST(TestDoKMatrix, ConvertFromCSR)
   Alien::Space col_space(mdist.globalColSize(), "Space");
 
   std::unique_ptr<Alien::MultiMatrixImpl> multimat(
-      new Alien::MultiMatrixImpl(row_space.clone(), col_space.clone(), mdist.clone()));
+  new Alien::MultiMatrixImpl(row_space.clone(), col_space.clone(), mdist.clone()));
 
   auto& csr_mat(multimat->get<Alien::BackEnd::tag::simplecsr>());
   auto& dok_mat(multimat->get<Alien::BackEnd::tag::DoK>(true));
@@ -167,7 +169,7 @@ TEST(TestDoKMatrix, ConvertToCSR)
 {
   TestDoKBuilder builder(3, true);
   std::unique_ptr<Alien::DoKMatrix> dok_mat(
-      builder.createEmptyMatrix<Alien::DoKMatrix>());
+  builder.createEmptyMatrix<Alien::DoKMatrix>());
 
   builder.fill(*dok_mat);
   dok_mat->compact();

@@ -30,7 +30,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -91,7 +92,7 @@ class ALIEN_EXPORT ISpace
    * \param[in] indices The indices to which label is set
    */
   virtual void setField(
-      Arccore::String label, const Arccore::UniqueArray<Arccore::Integer>& indices) = 0;
+  Arccore::String label, const Arccore::UniqueArray<Arccore::Integer>& indices) = 0;
 
   /*!
    * \brief Get the number of fields
@@ -112,7 +113,7 @@ class ALIEN_EXPORT ISpace
    * \returns The indices associated to the field
    */
   virtual const Arccore::UniqueArray<Arccore::Integer>& field(
-      Arccore::Integer i) const = 0;
+  Arccore::Integer i) const = 0;
 
   /*!
    * \brief Get the indices associated to a label
@@ -120,7 +121,7 @@ class ALIEN_EXPORT ISpace
    * \returns The indices associated to the field
    */
   virtual const Arccore::UniqueArray<Arccore::Integer>& field(
-      Arccore::String label) const = 0;
+  Arccore::String label) const = 0;
 
   /*!
    * \brief Clone this object

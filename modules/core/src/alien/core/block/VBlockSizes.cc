@@ -29,7 +29,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 using namespace Arccore::MessagePassing;
@@ -57,9 +58,8 @@ VBlockSizes::VBlockSizes(const VBlock& blocks, const MatrixDistribution& dist)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-VBlockSizes::compute(const VBlock::ValuePerBlock& all_blocks_sizes, Integer localSize,
-    Integer localOffset, IMessagePassingMng* parallel_mng)
+void VBlockSizes::compute(const VBlock::ValuePerBlock& all_blocks_sizes, Integer localSize,
+                          Integer localOffset, IMessagePassingMng* parallel_mng)
 {
   m_local_scalarized_size = 0;
   for (Integer i = 0; i < localSize; ++i) {
@@ -72,13 +72,14 @@ VBlockSizes::compute(const VBlock::ValuePerBlock& all_blocks_sizes, Integer loca
   const bool is_parallel = (parallel_mng != NULL) && (parallel_mng->commSize() > 1);
   if (is_parallel) {
     m_global_scalarized_size = Arccore::MessagePassing::mpAllReduce(
-        parallel_mng, Arccore::MessagePassing::ReduceSum, m_local_scalarized_size);
+    parallel_mng, Arccore::MessagePassing::ReduceSum, m_local_scalarized_size);
     Arccore::UniqueArray<Arccore::Integer> local_sizes(parallel_mng->commSize());
     Arccore::MessagePassing::mpAllGather(parallel_mng,
-        Alien::ArrayView<Integer>(1, &m_local_scalarized_size), local_sizes);
+                                         Alien::ArrayView<Integer>(1, &m_local_scalarized_size), local_sizes);
     for (Integer i = 0; i < parallel_mng->commRank(); ++i)
       m_scalarized_offset += local_sizes[i];
-  } else
+  }
+  else
     m_global_scalarized_size = m_local_scalarized_size;
 }
 

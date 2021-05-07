@@ -28,7 +28,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,7 +45,8 @@ class EigenProblem;
  * \tparam Matrix The type of matrix used
  * \tparam Vector The type of vector used
  */
-template <class Matrix, class Vector> class IInternalEigenSolver
+template <class Matrix, class Vector>
+class IInternalEigenSolver
 {
  public:
   //! Free resources
@@ -85,7 +87,8 @@ template <class Matrix, class Vector> class IInternalEigenSolver
  * \tparam Matrix The type of matrix used
  * \tparam Vector The type of vector used
  */
-template <class Matrix, class Vector> class IInternalGeneralizedEigenSolver
+template <class Matrix, class Vector>
+class IInternalGeneralizedEigenSolver
 {
  public:
   //! Free resources

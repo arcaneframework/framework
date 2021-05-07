@@ -28,14 +28,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore::MessagePassing {
+namespace Arccore::MessagePassing
+{
 class IMessagePassingMng;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -53,7 +55,8 @@ class SolverStatus;
  * \tparam Matrix The type of matrix used
  * \tparam Vector The type of vector used
  */
-template <class Matrix, class Vector> class IInternalLinearSolver
+template <class Matrix, class Vector>
+class IInternalLinearSolver
 {
  public:
   //! Free resources

@@ -27,14 +27,16 @@
 
 #include <alien/data/ISpace.h>
 
-namespace Arccore::MessagePassing {
+namespace Arccore::MessagePassing
+{
 class IMessagePassingMng;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -63,7 +65,7 @@ class ALIEN_EXPORT MatrixDistribution
    * \param[in] parallel_mng The parallel manager
    */
   MatrixDistribution(const ISpace& row_space, const ISpace& col_space,
-      Arccore::MessagePassing::IMessagePassingMng* parallel_mng);
+                     Arccore::MessagePassing::IMessagePassingMng* parallel_mng);
 
   /*!
    * \brief Constructor
@@ -72,7 +74,7 @@ class ALIEN_EXPORT MatrixDistribution
    * \param[in] parallel_mng The parallel manager
    */
   MatrixDistribution(Arccore::Integer global_row_size, Arccore::Integer global_col_size,
-      Arccore::MessagePassing::IMessagePassingMng* parallel_mng);
+                     Arccore::MessagePassing::IMessagePassingMng* parallel_mng);
 
   /*!
    * \brief Constructor
@@ -81,7 +83,7 @@ class ALIEN_EXPORT MatrixDistribution
    * \param[in] parallel_mng The parallel manager
    */
   MatrixDistribution(Arccore::Integer global_row_size, Arccore::Integer global_col_size,
-      std::shared_ptr<Arccore::MessagePassing::IMessagePassingMng> parallel_mng);
+                     std::shared_ptr<Arccore::MessagePassing::IMessagePassingMng> parallel_mng);
 
   /*!
    * \brief Constructor
@@ -91,7 +93,7 @@ class ALIEN_EXPORT MatrixDistribution
    * \param[in] parallel_mng The parallel manager
    */
   MatrixDistribution(const ISpace& row_space, const ISpace& col_space,
-      Integer local_row_size, IMessagePassingMng* parallel_mng);
+                     Integer local_row_size, IMessagePassingMng* parallel_mng);
 
   /*!
    * \brief Constructor
@@ -102,7 +104,7 @@ class ALIEN_EXPORT MatrixDistribution
    * \param[in] parallel_mng The parallel manager
    */
   MatrixDistribution(const ISpace& row_space, const ISpace& col_space,
-      Integer local_row_size, Integer local_col_size, IMessagePassingMng* parallel_mng);
+                     Integer local_row_size, Integer local_col_size, IMessagePassingMng* parallel_mng);
 
   /*!
    * \brief Constructor
@@ -112,31 +114,8 @@ class ALIEN_EXPORT MatrixDistribution
    * \param[in] parallel_mng The parallel manager
    */
   MatrixDistribution(Arccore::Integer global_row_size, Arccore::Integer global_col_size,
-      Arccore::Integer local_row_size,
-      Arccore::MessagePassing::IMessagePassingMng* parallel_mng);
-
-  /*!
-   * \brief Constructor
-   * \param[in] global_row_size The number of rows in the matrix
-   * \param[in] global_col_size The number of cols in the matrix
-   * \param[in] local_row_size The number of local cols in the matrix
-   * \param[in] local_col_size The number of local cols in the matrix
-   * \param[in] parallel_mng The parallel manager
-   */
-  MatrixDistribution(Arccore::Integer global_row_size, Arccore::Integer global_col_size,
-      Arccore::Integer local_row_size, Arccore::Integer local_col_size,
-      Arccore::MessagePassing::IMessagePassingMng* parallel_mng);
-
-  /*!
-   * \brief Constructor
-   * \param[in] global_row_size The number of rows in the matrix
-   * \param[in] global_col_size The number of cols in the matrix
-   * \param[in] local_row_size The number of local cols in the matrix
-   * \param[in] parallel_mng The parallel manager
-   */
-  MatrixDistribution(Arccore::Integer global_row_size, Arccore::Integer global_col_size,
-      Arccore::Integer local_row_size,
-      std::shared_ptr<Arccore::MessagePassing::IMessagePassingMng> parallel_mng);
+                     Arccore::Integer local_row_size,
+                     Arccore::MessagePassing::IMessagePassingMng* parallel_mng);
 
   /*!
    * \brief Constructor
@@ -147,8 +126,31 @@ class ALIEN_EXPORT MatrixDistribution
    * \param[in] parallel_mng The parallel manager
    */
   MatrixDistribution(Arccore::Integer global_row_size, Arccore::Integer global_col_size,
-      Arccore::Integer local_row_size, Arccore::Integer local_col_size,
-      std::shared_ptr<Arccore::MessagePassing::IMessagePassingMng> parallel_mng);
+                     Arccore::Integer local_row_size, Arccore::Integer local_col_size,
+                     Arccore::MessagePassing::IMessagePassingMng* parallel_mng);
+
+  /*!
+   * \brief Constructor
+   * \param[in] global_row_size The number of rows in the matrix
+   * \param[in] global_col_size The number of cols in the matrix
+   * \param[in] local_row_size The number of local cols in the matrix
+   * \param[in] parallel_mng The parallel manager
+   */
+  MatrixDistribution(Arccore::Integer global_row_size, Arccore::Integer global_col_size,
+                     Arccore::Integer local_row_size,
+                     std::shared_ptr<Arccore::MessagePassing::IMessagePassingMng> parallel_mng);
+
+  /*!
+   * \brief Constructor
+   * \param[in] global_row_size The number of rows in the matrix
+   * \param[in] global_col_size The number of cols in the matrix
+   * \param[in] local_row_size The number of local cols in the matrix
+   * \param[in] local_col_size The number of local cols in the matrix
+   * \param[in] parallel_mng The parallel manager
+   */
+  MatrixDistribution(Arccore::Integer global_row_size, Arccore::Integer global_col_size,
+                     Arccore::Integer local_row_size, Arccore::Integer local_col_size,
+                     std::shared_ptr<Arccore::MessagePassing::IMessagePassingMng> parallel_mng);
 
   /*!
    * \brief Copy constructor
@@ -358,7 +360,7 @@ class ALIEN_EXPORT MatrixDistribution
 
 //! Print the distribution
 extern ALIEN_EXPORT std::ostream& operator<<(
-    std::ostream& nout, const MatrixDistribution& dist);
+std::ostream& nout, const MatrixDistribution& dist);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

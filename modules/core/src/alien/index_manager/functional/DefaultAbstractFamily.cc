@@ -25,7 +25,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,7 +40,7 @@ DefaultAbstractFamily::DefaultAbstractFamily(const DefaultAbstractFamily& family
 /*---------------------------------------------------------------------------*/
 
 DefaultAbstractFamily::DefaultAbstractFamily(const ConstArrayView<Int64>& uniqueIds,
-    const ConstArrayView<Integer>& owners, IMessagePassingMng* parallel_mng)
+                                             const ConstArrayView<Integer>& owners, IMessagePassingMng* parallel_mng)
 : m_parallel_mng(parallel_mng)
 {
   copy(m_unique_ids, uniqueIds);
@@ -49,7 +50,7 @@ DefaultAbstractFamily::DefaultAbstractFamily(const ConstArrayView<Int64>& unique
 /*---------------------------------------------------------------------------*/
 
 DefaultAbstractFamily::DefaultAbstractFamily(
-    const ConstArrayView<Int64>& uniqueIds, IMessagePassingMng* parallel_mng)
+const ConstArrayView<Int64>& uniqueIds, IMessagePassingMng* parallel_mng)
 : m_parallel_mng(parallel_mng)
 {
   const Integer commSize = m_parallel_mng->commSize();
@@ -57,7 +58,7 @@ DefaultAbstractFamily::DefaultAbstractFamily(
   const Integer localSize = uniqueIds.size();
   UniqueArray<Integer> sizes(commSize);
   Arccore::MessagePassing::mpAllGather(
-      m_parallel_mng, ConstArrayView<Integer>(1, &localSize), sizes);
+  m_parallel_mng, ConstArrayView<Integer>(1, &localSize), sizes);
   UniqueArray<Integer> starts(commSize + 1);
   starts[0] = 0;
   for (Integer i = 0; i < commSize; ++i)
@@ -95,9 +96,8 @@ DefaultAbstractFamily::DefaultAbstractFamily(
 
 /*---------------------------------------------------------------------------*/
 
-void
-DefaultAbstractFamily::uniqueIdToLocalId(
-    ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const
+void DefaultAbstractFamily::uniqueIdToLocalId(
+ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const
 {
   for (Integer i = 0; i < uniqueIds.size(); ++i) {
     Integer localId = -1;

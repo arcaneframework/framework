@@ -29,7 +29,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 class DoKMatrix : public IMatrixImpl
 {
@@ -69,7 +70,7 @@ class DoKMatrix : public IMatrixImpl
   void _distribute()
   {
     Redistributor redist(
-        distribution().globalRowSize(), distribution().parallelMng(), true);
+    distribution().globalRowSize(), distribution().parallelMng(), true);
     DoKDistributor dist(redist.commPlan());
     DoKLocalMatrixT<ValueType> new_data;
     // distribute does not work if src == tgt.

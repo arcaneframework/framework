@@ -26,7 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -34,7 +35,7 @@ using namespace Arccore;
 /*---------------------------------------------------------------------------*/
 
 ExtractionIndices::ExtractionIndices(const Integer rowStart, const Integer rowRange,
-    const Integer colStart, const Integer colRange)
+                                     const Integer colStart, const Integer colRange)
 : m_starting_row(rowStart)
 , m_starting_col(colStart)
 , m_row_range(rowRange)

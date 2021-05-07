@@ -34,12 +34,14 @@ limitations under the License.
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <class Tag, class TagV> LinearAlgebraExpr<Tag, TagV>::~LinearAlgebraExpr() {}
+template <class Tag, class TagV>
+LinearAlgebraExpr<Tag, TagV>::~LinearAlgebraExpr() {}
 
 /*---------------------------------------------------------------------------*/
 
@@ -76,14 +78,13 @@ LinearAlgebraExpr<Tag, TagV>::norm2(const IVector& x) const
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void
-LinearAlgebraExpr<Tag, TagV>::mult(const IMatrix& a, const IVector& x, IVector& r) const
+void LinearAlgebraExpr<Tag, TagV>::mult(const IMatrix& a, const IVector& x, IVector& r) const
 {
   const auto& ma = a.impl()->get<Tag>();
   const auto& vx = x.impl()->get<TagV>();
   auto& vr = r.impl()->get<TagV>(true);
   ALIEN_ASSERT((ma.colSpace() == vx.space() && ma.rowSpace() == vr.space()),
-      ("Incompatible spaces"));
+               ("Incompatible spaces"));
   m_algebra->mult(ma, vx, vr);
 }
 
@@ -91,9 +92,8 @@ LinearAlgebraExpr<Tag, TagV>::mult(const IMatrix& a, const IVector& x, IVector& 
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void
-LinearAlgebraExpr<Tag, TagV>::axpy(
-    const Arccore::Real& alpha, const IVector& x, IVector& r) const
+void LinearAlgebraExpr<Tag, TagV>::axpy(
+const Arccore::Real& alpha, const IVector& x, IVector& r) const
 {
   const auto& vx = x.impl()->get<TagV>();
   auto& vr = r.impl()->get<TagV>(true);
@@ -105,9 +105,8 @@ LinearAlgebraExpr<Tag, TagV>::axpy(
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void
-LinearAlgebraExpr<Tag, TagV>::aypx(
-    const Arccore::Real& alpha, IVector& y, const IVector& x) const
+void LinearAlgebraExpr<Tag, TagV>::aypx(
+const Arccore::Real& alpha, IVector& y, const IVector& x) const
 {
   const auto& vx = x.impl()->get<TagV>();
   auto& vy = y.impl()->get<TagV>(true);
@@ -118,8 +117,7 @@ LinearAlgebraExpr<Tag, TagV>::aypx(
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void
-LinearAlgebraExpr<Tag, TagV>::copy(const IVector& x, IVector& r) const
+void LinearAlgebraExpr<Tag, TagV>::copy(const IVector& x, IVector& r) const
 {
   const auto& vx = x.impl()->get<TagV>();
   auto& vr = r.impl()->get<TagV>(true);
@@ -130,8 +128,7 @@ LinearAlgebraExpr<Tag, TagV>::copy(const IVector& x, IVector& r) const
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-Real
-LinearAlgebraExpr<Tag, TagV>::dot(const IVector& x, const IVector& y) const
+Real LinearAlgebraExpr<Tag, TagV>::dot(const IVector& x, const IVector& y) const
 {
   const auto& vx = x.impl()->get<TagV>();
   const auto& vy = y.impl()->get<TagV>();
@@ -142,8 +139,7 @@ LinearAlgebraExpr<Tag, TagV>::dot(const IVector& x, const IVector& y) const
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void
-LinearAlgebraExpr<Tag, TagV>::diagonal(const IMatrix& a, IVector& x) const
+void LinearAlgebraExpr<Tag, TagV>::diagonal(const IMatrix& a, IVector& x) const
 {
   auto& vx = x.impl()->get<TagV>(true);
   const auto& ma = a.impl()->get<Tag>();
@@ -156,8 +152,7 @@ LinearAlgebraExpr<Tag, TagV>::diagonal(const IMatrix& a, IVector& x) const
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void
-LinearAlgebraExpr<Tag, TagV>::reciprocal(IVector& x) const
+void LinearAlgebraExpr<Tag, TagV>::reciprocal(IVector& x) const
 {
   auto& vx = x.impl()->get<TagV>(true);
   m_algebra->reciprocal(vx);
@@ -167,8 +162,7 @@ LinearAlgebraExpr<Tag, TagV>::reciprocal(IVector& x) const
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void
-LinearAlgebraExpr<Tag, TagV>::scal(const Real& alpha, IVector& x) const
+void LinearAlgebraExpr<Tag, TagV>::scal(const Real& alpha, IVector& x) const
 {
   auto& vx = x.impl()->get<TagV>(true);
   m_algebra->scal(alpha, vx);
@@ -178,9 +172,8 @@ LinearAlgebraExpr<Tag, TagV>::scal(const Real& alpha, IVector& x) const
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void
-LinearAlgebraExpr<Tag, TagV>::pointwiseMult(
-    const IVector& x, const IVector& y, IVector& w) const
+void LinearAlgebraExpr<Tag, TagV>::pointwiseMult(
+const IVector& x, const IVector& y, IVector& w) const
 {
   auto& vw = w.impl()->get<TagV>(true);
   const auto& vx = x.impl()->get<TagV>();
@@ -194,9 +187,8 @@ LinearAlgebraExpr<Tag, TagV>::pointwiseMult(
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void
-LinearAlgebraExpr<Tag, TagV>::mult(
-    const IMatrix& a, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+void LinearAlgebraExpr<Tag, TagV>::mult(
+const IMatrix& a, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
 {
   auto const& ma = a.impl()->get<Tag>();
   m_algebra->mult(ma, x, r);
@@ -206,9 +198,8 @@ LinearAlgebraExpr<Tag, TagV>::mult(
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void
-LinearAlgebraExpr<Tag, TagV>::axpy(
-    const Real& alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+void LinearAlgebraExpr<Tag, TagV>::axpy(
+const Real& alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
 {
   m_algebra->axpy(alpha, x, r);
 }
@@ -217,9 +208,8 @@ LinearAlgebraExpr<Tag, TagV>::axpy(
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void
-LinearAlgebraExpr<Tag, TagV>::aypx(
-    const Real& alpha, UniqueArray<Real>& y, UniqueArray<Real> const& x) const
+void LinearAlgebraExpr<Tag, TagV>::aypx(
+const Real& alpha, UniqueArray<Real>& y, UniqueArray<Real> const& x) const
 {
   m_algebra->aypx(alpha, y, x);
 }
@@ -228,9 +218,8 @@ LinearAlgebraExpr<Tag, TagV>::aypx(
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void
-LinearAlgebraExpr<Tag, TagV>::copy(
-    const Alien::UniqueArray<Real>& x, Alien::UniqueArray<Real>& r) const
+void LinearAlgebraExpr<Tag, TagV>::copy(
+const Alien::UniqueArray<Real>& x, Alien::UniqueArray<Real>& r) const
 {
   m_algebra->copy(x, r);
 }
@@ -239,9 +228,8 @@ LinearAlgebraExpr<Tag, TagV>::copy(
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-Real
-LinearAlgebraExpr<Tag, TagV>::dot(
-    Integer local_size, const UniqueArray<Real>& x, const UniqueArray<Real>& y) const
+Real LinearAlgebraExpr<Tag, TagV>::dot(
+Integer local_size, const UniqueArray<Real>& x, const UniqueArray<Real>& y) const
 {
   return m_algebra->dot(local_size, x, y);
 }
@@ -250,8 +238,7 @@ LinearAlgebraExpr<Tag, TagV>::dot(
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void
-LinearAlgebraExpr<Tag, TagV>::scal(const Real& alpha, Alien::UniqueArray<Real>& x) const
+void LinearAlgebraExpr<Tag, TagV>::scal(const Real& alpha, Alien::UniqueArray<Real>& x) const
 {
   m_algebra->scal(alpha, x);
 }
@@ -260,8 +247,7 @@ LinearAlgebraExpr<Tag, TagV>::scal(const Real& alpha, Alien::UniqueArray<Real>& 
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void
-LinearAlgebraExpr<Tag, TagV>::dump(const IMatrix& a, std::string const& filename) const
+void LinearAlgebraExpr<Tag, TagV>::dump(const IMatrix& a, std::string const& filename) const
 {
   auto const& ma = a.impl()->get<Tag>();
   m_algebra->dump(ma, filename);
@@ -271,8 +257,7 @@ LinearAlgebraExpr<Tag, TagV>::dump(const IMatrix& a, std::string const& filename
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void
-LinearAlgebraExpr<Tag, TagV>::dump(const IVector& x, std::string const& filename) const
+void LinearAlgebraExpr<Tag, TagV>::dump(const IVector& x, std::string const& filename) const
 {
   auto const& vx = x.impl()->get<TagV>();
   m_algebra->dump(vx, filename);

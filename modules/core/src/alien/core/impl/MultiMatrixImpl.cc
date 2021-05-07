@@ -31,7 +31,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -48,7 +49,7 @@ MultiMatrixImpl::MultiMatrixImpl()
 /*---------------------------------------------------------------------------*/
 
 MultiMatrixImpl::MultiMatrixImpl(std::shared_ptr<ISpace> row_space,
-    std::shared_ptr<ISpace> col_space, std::shared_ptr<MatrixDistribution> dist)
+                                 std::shared_ptr<ISpace> col_space, std::shared_ptr<MatrixDistribution> dist)
 : m_row_space(row_space)
 , m_col_space(col_space)
 , m_distribution(dist)
@@ -88,8 +89,7 @@ MultiMatrixImpl::~MultiMatrixImpl()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-MultiMatrixImpl::setBlockInfos(Integer block_size)
+void MultiMatrixImpl::setBlockInfos(Integer block_size)
 {
   m_block.reset(new Block(block_size));
 }
@@ -97,8 +97,7 @@ MultiMatrixImpl::setBlockInfos(Integer block_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-MultiMatrixImpl::setBlockInfos(const Block* blocks)
+void MultiMatrixImpl::setBlockInfos(const Block* blocks)
 {
   m_block = blocks->clone();
 }
@@ -106,8 +105,7 @@ MultiMatrixImpl::setBlockInfos(const Block* blocks)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-MultiMatrixImpl::setBlockInfos(const VBlock* blocks)
+void MultiMatrixImpl::setBlockInfos(const VBlock* blocks)
 {
   m_rows_block = blocks->clone();
 }
@@ -115,8 +113,7 @@ MultiMatrixImpl::setBlockInfos(const VBlock* blocks)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-MultiMatrixImpl::setRowBlockInfos(VBlock const* blocks)
+void MultiMatrixImpl::setRowBlockInfos(VBlock const* blocks)
 {
   m_rows_block = blocks->clone();
 }
@@ -124,8 +121,7 @@ MultiMatrixImpl::setRowBlockInfos(VBlock const* blocks)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-MultiMatrixImpl::setColBlockInfos(VBlock const* blocks)
+void MultiMatrixImpl::setColBlockInfos(VBlock const* blocks)
 {
   m_cols_block = blocks->clone();
 }
@@ -133,8 +129,7 @@ MultiMatrixImpl::setColBlockInfos(VBlock const* blocks)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-MultiMatrixImpl::free()
+void MultiMatrixImpl::free()
 {
   for (auto i = m_impls2.begin(); i != m_impls2.end(); ++i) {
     delete i->second;
@@ -146,8 +141,7 @@ MultiMatrixImpl::free()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-MultiMatrixImpl::clear()
+void MultiMatrixImpl::clear()
 {
   for (auto i = m_impls2.begin(); i != m_impls2.end(); ++i) {
     i->second->clear();
@@ -219,7 +213,7 @@ MultiMatrixImpl::clone() const
   matrixCloned->setTimestamp(impl, matrixToClone.timestamp());
   matrixCloned->updateTimestamp();
   impl->m_impls2.insert(
-      MultiMatrixImplMap::value_type(AlgebraTraits<tag>::name(), matrixCloned));
+  MultiMatrixImplMap::value_type(AlgebraTraits<tag>::name(), matrixCloned));
 
   // TOCHECK: to be removed or not ?
   /* WARNING: this implementation is temporary. Later it should be implemented through a
@@ -238,8 +232,7 @@ MultiMatrixImpl::clone() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-MultiMatrixImpl::updateImpl(IMatrixImpl* target) const
+void MultiMatrixImpl::updateImpl(IMatrixImpl* target) const
 {
   // If we are up to date, do nothing
   if (timestamp() == target->timestamp()) {
@@ -253,7 +246,7 @@ MultiMatrixImpl::updateImpl(IMatrixImpl* target) const
     if (candidate->timestamp() != timestamp())
       continue;
     auto* converter =
-        MatrixConverterRegisterer::getConverter(candidate->backend(), target->backend());
+    MatrixConverterRegisterer::getConverter(candidate->backend(), target->backend());
     // If no converter is found, we continue
     if (converter == nullptr)
       continue;
@@ -272,7 +265,7 @@ MultiMatrixImpl::updateImpl(IMatrixImpl* target) const
   }
   if (candidates.empty()) {
     auto msg = String::format("Matrix converter to: ", target->backend(),
-        " internal error: no timestamp matching");
+                              " internal error: no timestamp matching");
     throw FatalErrorException(A_FUNCINFO, msg);
   }
 
@@ -298,7 +291,7 @@ MultiMatrixImpl::updateImpl(IMatrixImpl* target) const
 
   // Checking that we have a converter from simplecsr to the requested implementation
   auto* simplecsr_target =
-      MatrixConverterRegisterer::getConverter(simplecsr->backend(), target->backend());
+  MatrixConverterRegisterer::getConverter(simplecsr->backend(), target->backend());
 
   // If not, throw error
   if (simplecsr_target == nullptr)
@@ -307,7 +300,7 @@ MultiMatrixImpl::updateImpl(IMatrixImpl* target) const
   // We look for each candidate
   for (auto* candidate : candidates) {
     auto* candidat_simplecsr = MatrixConverterRegisterer::getConverter(
-        candidate->backend(), simplecsr->backend());
+    candidate->backend(), simplecsr->backend());
     // If we have one, we can convert to the requested implementation through simplecsr
     if (candidat_simplecsr != nullptr) {
       // Conversion from candidate to simplecsr

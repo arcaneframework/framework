@@ -39,7 +39,7 @@ TEST(TestDistribution, VectorGlobalSizeConstructor)
   ASSERT_EQ(vd.parallelMng(), pm);
   ASSERT_EQ(10, vd.globalSize());
   auto gsize = Arccore::MessagePassing::mpAllReduce(
-      pm, Arccore::MessagePassing::ReduceSum, vd.localSize());
+  pm, Arccore::MessagePassing::ReduceSum, vd.localSize());
   ASSERT_EQ(10, gsize);
 }
 
@@ -71,7 +71,7 @@ TEST(TestDistribution, MatrixGlobalSizeConstructor)
   ASSERT_EQ(vd.parallelMng(), pm);
   ASSERT_EQ(10, vd.globalRowSize());
   auto gsize = Arccore::MessagePassing::mpAllReduce(
-      pm, Arccore::MessagePassing::ReduceSum, vd.localRowSize());
+  pm, Arccore::MessagePassing::ReduceSum, vd.localRowSize());
   ASSERT_EQ(10, gsize);
   ASSERT_EQ(5, vd.globalColSize());
   // ASSERT_EQ(5, vd.localColSize()); //FIXME: Why ?

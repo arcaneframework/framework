@@ -51,10 +51,11 @@
 #include <alien/ref/import_export/SystemInfo.h>
 #include <alien/ref/import_export/SystemReader.h>
 
-namespace Alien {
+namespace Alien
+{
 
 SystemWriter::SystemWriter(
-    std::string const& filename, std::string format, IMessagePassingMng* parallel_mng)
+std::string const& filename, std::string format, IMessagePassingMng* parallel_mng)
 : m_filename(filename)
 , m_format(format)
 , m_prec(6)
@@ -68,7 +69,8 @@ SystemWriter::SystemWriter(
     std::stringstream suf;
     suf << "-R" << m_rank << "P" << m_nproc;
     m_filename = filename + suf.str();
-  } else {
+  }
+  else {
     m_filename = filename;
   }
 
@@ -77,17 +79,16 @@ SystemWriter::SystemWriter(
   // N2_RELATIVE2X0_RES = ||Ax-b||2 / ||x0||2
   m_conv_crit_to_str[SolutionInfo::N2_ABS_RES] = std::string("||Ax-b||2");
   m_conv_crit_to_str[SolutionInfo::N2_RELATIVE2RHS_RES] =
-      std::string("||Ax-b||2 / ||b||2");
+  std::string("||Ax-b||2 / ||b||2");
   m_conv_crit_to_str[SolutionInfo::N2_RELATIVE2X0_RES] =
-      std::string("||Ax-b||2 / ||x0||2");
+  std::string("||Ax-b||2 / ||x0||2");
 }
 
 SystemWriter::~SystemWriter() {}
 
 template <typename FileNodeT>
-void
-SystemWriter::_writeMatrixInfo(Exporter& exporter, FileNodeT& parent_node, int nrows,
-    int ncols, int nnz, int blk_size, int blk_size2)
+void SystemWriter::_writeMatrixInfo(Exporter& exporter, FileNodeT& parent_node, int nrows,
+                                    int ncols, int nnz, int blk_size, int blk_size2)
 {
   FileNodeT matrix_info_node = exporter.createFileNode(parent_node, "matrix-info");
 
@@ -106,9 +107,8 @@ SystemWriter::_writeMatrixInfo(Exporter& exporter, FileNodeT& parent_node, int n
 }
 
 template <typename FileNodeT>
-void
-SystemWriter::_writeCSRProfile(Exporter& exporter, FileNodeT& parent_node, int nrows,
-    int nnz, int const* kcol, int const* cols)
+void SystemWriter::_writeCSRProfile(Exporter& exporter, FileNodeT& parent_node, int nrows,
+                                    int nnz, int const* kcol, int const* cols)
 {
   std::vector<int>& i32buffer = exporter.i32buffer;
   FileNodeT profile_node = exporter.createFileNode(parent_node, "profile");
@@ -133,9 +133,8 @@ SystemWriter::_writeCSRProfile(Exporter& exporter, FileNodeT& parent_node, int n
 }
 
 template <typename FileNodeT>
-void
-SystemWriter::_writeMatrixValues(Exporter& exporter, FileNodeT& parent_node, int nnz,
-    int blk_size, int blk_size2, double const* values)
+void SystemWriter::_writeMatrixValues(Exporter& exporter, FileNodeT& parent_node, int nnz,
+                                      int blk_size, int blk_size2, double const* values)
 {
   std::vector<double>& rbuffer = exporter.rbuffer;
   std::vector<int>& i32buffer = exporter.i32buffer;
@@ -163,9 +162,8 @@ SystemWriter::_writeMatrixValues(Exporter& exporter, FileNodeT& parent_node, int
 }
 
 template <typename FileNodeT>
-void
-SystemWriter::_writeVector(Exporter& exporter, FileNodeT& parent_node, int nrows,
-    int blk_size, double const* values)
+void SystemWriter::_writeVector(Exporter& exporter, FileNodeT& parent_node, int nrows,
+                                int blk_size, double const* values)
 {
   std::vector<double>& rbuffer = exporter.rbuffer;
   FileNodeT data_node = exporter.createFileNode(parent_node, "data");
@@ -187,9 +185,8 @@ SystemWriter::_writeVector(Exporter& exporter, FileNodeT& parent_node, int nrows
 }
 
 template <typename FileNodeT>
-void
-SystemWriter::_writeSolutionInfo(
-    Exporter& exporter, FileNodeT& parent_node, const SolutionInfo& sol_info)
+void SystemWriter::_writeSolutionInfo(
+Exporter& exporter, FileNodeT& parent_node, const SolutionInfo& sol_info)
 {
 
   FileNodeT solution_info_node = exporter.createFileNode(parent_node, "solution_info");
@@ -202,23 +199,20 @@ SystemWriter::_writeSolutionInfo(
 }
 
 template <typename FileNodeT>
-void
-SystemWriter::_beginDump(Exporter*& exporter, FileNodeT& base_node)
+void SystemWriter::_beginDump(Exporter*& exporter, FileNodeT& base_node)
 {
   exporter = new Exporter(m_filename, m_format, m_prec);
   base_node = exporter->createFileNode("system");
 }
 
 template <typename FileNodeT>
-void
-SystemWriter::_endDump(Exporter* exporter, FileNodeT& base_node)
+void SystemWriter::_endDump(Exporter* exporter, FileNodeT& base_node)
 {
   exporter->closeFileNode(base_node);
   delete exporter;
 }
 
-void
-SystemWriter::dump(Matrix const& A)
+void SystemWriter::dump(Matrix const& A)
 {
   const SimpleCSRMatrix<Real>& csr = A.impl()->get<BackEnd::tag::simplecsr>();
   const SimpleCSRMatrix<Real>::ProfileType& profile = csr.getProfile();
@@ -247,8 +241,7 @@ SystemWriter::dump(Matrix const& A)
   _endDump(exporter, root_node);
 }
 
-void
-SystemWriter::dump(Matrix const& A, Vector const& rhs)
+void SystemWriter::dump(Matrix const& A, Vector const& rhs)
 {
   // A is supposed to be square
 
@@ -287,9 +280,8 @@ SystemWriter::dump(Matrix const& A, Vector const& rhs)
   _endDump(exporter, root_node);
 }
 
-void
-SystemWriter::dump(
-    Matrix const& A, Vector const& rhs, Vector const& sol, SolutionInfo const& sol_info)
+void SystemWriter::dump(
+Matrix const& A, Vector const& rhs, Vector const& sol, SolutionInfo const& sol_info)
 {
   const SimpleCSRMatrix<Real>& csr = A.impl()->get<BackEnd::tag::simplecsr>();
   const SimpleCSRMatrix<Real>::ProfileType& profile = csr.getProfile();
@@ -331,7 +323,7 @@ SystemWriter::dump(
     exporter->write(solution_node, "rhs-ref", std::string("rhs-0"));
 
     FileNode solution_vector_node =
-        exporter->createFileNode(solution_node, "solution-vector");
+    exporter->createFileNode(solution_node, "solution-vector");
     const SimpleCSRVector<Real>& v = sol.impl()->get<BackEnd::tag::simplecsr>();
     const double* values = v.getAddressData();
     _writeVector(*exporter, solution_vector_node, nrows, blk_size, values);
@@ -342,8 +334,7 @@ SystemWriter::dump(
   _endDump(exporter, root_node);
 }
 
-void
-SystemWriter::dump(BlockMatrix const& A, BlockVector const& rhs)
+void SystemWriter::dump(BlockMatrix const& A, BlockVector const& rhs)
 {
   const SimpleCSRMatrix<Real>& csr = A.impl()->get<BackEnd::tag::simplecsr>();
   const SimpleCSRMatrix<Real>::ProfileType& profile = csr.getProfile();
@@ -379,9 +370,8 @@ SystemWriter::dump(BlockMatrix const& A, BlockVector const& rhs)
   _endDump(exporter, root_node);
 }
 
-void
-SystemWriter::dump(BlockMatrix const& A, BlockVector const& rhs, BlockVector const& sol,
-    SolutionInfo const& sol_info)
+void SystemWriter::dump(BlockMatrix const& A, BlockVector const& rhs, BlockVector const& sol,
+                        SolutionInfo const& sol_info)
 {
   const SimpleCSRMatrix<Real>& csr = A.impl()->get<BackEnd::tag::simplecsr>();
   const SimpleCSRMatrix<Real>::ProfileType& profile = csr.getProfile();

@@ -24,7 +24,8 @@
 
 #include <alien/core/backend/MatrixConverterRegisterer.h>
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -44,9 +45,8 @@ RedistributorToSimpleCSRMatrixConverter::targetBackend() const
   return AlgebraTraits<BackEnd::tag::simplecsr>::name();
 }
 
-void
-RedistributorToSimpleCSRMatrixConverter::convert(
-    const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const
+void RedistributorToSimpleCSRMatrixConverter::convert(
+const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const
 {
   const SrcMatrix& src = cast<SrcMatrix>(sourceImpl, sourceBackend());
   TgtMatrix& tgt = cast<TgtMatrix>(targetImpl, targetBackend());

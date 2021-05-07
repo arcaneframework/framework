@@ -30,7 +30,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -46,7 +47,7 @@ MultiVectorImpl::MultiVectorImpl()
 /*---------------------------------------------------------------------------*/
 
 MultiVectorImpl::MultiVectorImpl(
-    std::shared_ptr<ISpace> space, std::shared_ptr<VectorDistribution> distribution)
+std::shared_ptr<ISpace> space, std::shared_ptr<VectorDistribution> distribution)
 : m_space(std::move(space))
 , m_distribution(distribution)
 , m_block(nullptr)
@@ -80,8 +81,7 @@ MultiVectorImpl::~MultiVectorImpl()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-MultiVectorImpl::setBlockInfos(const Block* blocks)
+void MultiVectorImpl::setBlockInfos(const Block* blocks)
 {
   m_block = blocks->clone();
 }
@@ -89,8 +89,7 @@ MultiVectorImpl::setBlockInfos(const Block* blocks)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-MultiVectorImpl::setBlockInfos(const VBlock* blocks)
+void MultiVectorImpl::setBlockInfos(const VBlock* blocks)
 {
   m_variable_block = blocks->clone();
 }
@@ -98,8 +97,7 @@ MultiVectorImpl::setBlockInfos(const VBlock* blocks)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-MultiVectorImpl::setBlockInfos(Integer block_size)
+void MultiVectorImpl::setBlockInfos(Integer block_size)
 {
   m_block.reset(new Block(block_size));
 }
@@ -107,8 +105,7 @@ MultiVectorImpl::setBlockInfos(Integer block_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-MultiVectorImpl::free()
+void MultiVectorImpl::free()
 {
   for (MultiVectorImplMap::iterator i = m_impls2.begin(); i != m_impls2.end(); ++i) {
     delete i->second;
@@ -120,8 +117,7 @@ MultiVectorImpl::free()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-MultiVectorImpl::clear()
+void MultiVectorImpl::clear()
 {
   for (MultiVectorImplMap::iterator i = m_impls2.begin(); i != m_impls2.end(); ++i) {
     i->second->clear();
@@ -163,7 +159,7 @@ MultiVectorImpl::clone() const
   vectorCloned->setTimestamp(impl, vectorToClone.timestamp());
   vectorCloned->updateTimestamp();
   impl->m_impls2.insert(
-      MultiVectorImplMap::value_type(AlgebraTraits<tag>::name(), vectorCloned));
+  MultiVectorImplMap::value_type(AlgebraTraits<tag>::name(), vectorCloned));
 
   // TOCHECK: to be removed or not ?
   /* WARNING: this implementation is temporary. Later it should be implemented through a
@@ -182,8 +178,7 @@ MultiVectorImpl::clone() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-MultiVectorImpl::updateImpl(IVectorImpl* target) const
+void MultiVectorImpl::updateImpl(IVectorImpl* target) const
 {
   // If we are up to date, do nothing
   if (timestamp() == target->timestamp()) {
@@ -197,7 +192,7 @@ MultiVectorImpl::updateImpl(IVectorImpl* target) const
     if (candidate->timestamp() != timestamp())
       continue;
     auto* converter =
-        VectorConverterRegisterer::getConverter(candidate->backend(), target->backend());
+    VectorConverterRegisterer::getConverter(candidate->backend(), target->backend());
     // If no converter is found, we continue
     if (converter == nullptr)
       continue;
@@ -216,7 +211,7 @@ MultiVectorImpl::updateImpl(IVectorImpl* target) const
   }
   if (candidates.empty()) {
     auto msg = String::format("Vector converter to: ", target->backend(),
-        " internal error: no timestamp matching");
+                              " internal error: no timestamp matching");
     throw FatalErrorException(A_FUNCINFO, msg);
   }
 
@@ -242,7 +237,7 @@ MultiVectorImpl::updateImpl(IVectorImpl* target) const
 
   // Checking that we have a converter from simplecsr to the requested implementation
   auto* simplecsr_target =
-      VectorConverterRegisterer::getConverter(simplecsr->backend(), target->backend());
+  VectorConverterRegisterer::getConverter(simplecsr->backend(), target->backend());
 
   // If not, throw error
   if (simplecsr_target == nullptr)
@@ -251,7 +246,7 @@ MultiVectorImpl::updateImpl(IVectorImpl* target) const
   // We look for each candidate
   for (auto* candidate : candidates) {
     auto* candidat_simplecsr = VectorConverterRegisterer::getConverter(
-        candidate->backend(), simplecsr->backend());
+    candidate->backend(), simplecsr->backend());
     // If we have one, we can convert to the requested implementation through simplecsr
     if (candidat_simplecsr != nullptr) {
       // Conversion from candidate to simplecsr

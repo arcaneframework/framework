@@ -26,7 +26,8 @@
 
 using namespace Arccore;
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 

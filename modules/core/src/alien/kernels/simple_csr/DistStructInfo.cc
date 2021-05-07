@@ -38,12 +38,12 @@
 using namespace Arccore;
 using namespace Arccore::MessagePassing;
 
-namespace Alien::SimpleCSRInternal {
+namespace Alien::SimpleCSRInternal
+{
 
-void
-DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer my_rank,
-    IMessagePassingMng* parallel_mng, const CSRStructInfo& profile,
-    ITraceMng* trace ALIEN_UNUSED_PARAM)
+void DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer my_rank,
+                             IMessagePassingMng* parallel_mng, const CSRStructInfo& profile,
+                             ITraceMng* trace ALIEN_UNUSED_PARAM)
 {
 #ifdef DEBUG
   std::stringstream file("dd");
@@ -73,7 +73,8 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
         // turn col global id to local id
         m_cols[icol] = col_uid - local_offset;
         ++lrow_size;
-      } else {
+      }
+      else {
         /*
         std::map<Integer, Integer>::iterator iter = lids[ip].find(col_uid);
         if (iter == lids[ip].end()) {
@@ -104,8 +105,7 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
     m_interface_rows.resize(m_interface_nrow);
     std::vector<Integer> col_offset(nproc + 1);
     col_offset[0] = nrow;
-    for (Integer ip = 1; ip < nproc + 1; ++ip)
-    {
+    for (Integer ip = 1; ip < nproc + 1; ++ip) {
       // col_offset[ip] = col_offset[ip - 1] + count[ip - 1];
       col_offset[ip] = col_offset[ip - 1] + gids[ip - 1].size();
     }
@@ -166,7 +166,7 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
       // m_recv_info.m_ids_offset[nb_neighbour + 1] =
       // m_recv_info.m_ids_offset[nb_neighbour] + count[ip];
       m_recv_info.m_ids_offset[nb_neighbour + 1] =
-          m_recv_info.m_ids_offset[nb_neighbour] + gids[ip].size();
+      m_recv_info.m_ids_offset[nb_neighbour] + gids[ip].size();
       ++nb_neighbour;
     }
   m_ghost_nrow = m_recv_info.m_ids_offset[nb_neighbour] - nrow;
@@ -193,7 +193,7 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
           Integer nids = gids[ip2].size();
           // trace->info()<<"SEND to "<<ip2<<" nids="<<nids;
           Arccore::MessagePassing::mpSend(
-              parallel_mng, ConstArrayView<Integer>(1, &nids), ip2);
+          parallel_mng, ConstArrayView<Integer>(1, &nids), ip2);
           if (nids > 0) {
             buffer.clear();
             buffer.resize(nids);
@@ -207,12 +207,13 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
             }
 
             Arccore::MessagePassing::mpSend(
-                parallel_mng, ConstArrayView<Integer>(nids, &buffer[0]), ip2);
+            parallel_mng, ConstArrayView<Integer>(nids, &buffer[0]), ip2);
             offset += nids;
           }
         }
       }
-    } else {
+    }
+    else {
       Integer nids = 0;
       Arccore::MessagePassing::mpReceive(parallel_mng, ArrayView<Integer>(1, &nids), ip);
       // trace->info()<<"RECV from "<<ip<<" nids="<<nids;
@@ -221,7 +222,7 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
         send_count += nids;
         send_ids[ip].resize(nids);
         Arccore::MessagePassing::mpReceive(
-            parallel_mng, ArrayView<Integer>(nids, &send_ids[ip][0]), ip);
+        parallel_mng, ArrayView<Integer>(nids, &send_ids[ip][0]), ip);
       }
     }
   }
@@ -254,13 +255,12 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
   // m_send_info->printInfo(trace->info().file());
 }
 
-void
-DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer my_rank,
-    IMessagePassingMng* parallel_mng, const CSRStructInfo& profile,
-    const VBlock* block_sizes, const MatrixDistribution& dist,
-    ITraceMng* trace ALIEN_UNUSED_PARAM)
+void DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer my_rank,
+                             IMessagePassingMng* parallel_mng, const CSRStructInfo& profile,
+                             const VBlock* block_sizes, const MatrixDistribution& dist,
+                             ITraceMng* trace ALIEN_UNUSED_PARAM)
 {
-  //alien_info([&] {cout() << "DistStructInfo::compute VBlock";}) ;
+  // alien_info([&] {cout() << "DistStructInfo::compute VBlock";}) ;
   std::vector<Integer> count(nproc);
   count.assign(nproc, 0);
   std::vector<Integer> block_count(nproc);
@@ -273,8 +273,7 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
   VBlockImpl blocks(*block_sizes, dist);
 
   Integer block_nrow = 0;
-  for (Integer i = 0; i < nrow; ++i)
-  {
+  for (Integer i = 0; i < nrow; ++i) {
     block_nrow += blocks.sizeFromLocalIndex(i);
   }
 
@@ -295,7 +294,8 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
         // turn col global id to local id
         m_cols[icol] = col_uid - local_offset;
         ++lrow_size;
-      } else {
+      }
+      else {
         /*
         std::map<Integer, Integer>::iterator iter = lids[ip].find(col_uid);
         if (iter == lids[ip].end()) {
@@ -307,8 +307,8 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
           block_count[ip] += block_sizes->size(col_uid);
         }*/
         auto value = gids[ip].insert(col_uid);
-        if(value.second)
-           block_count[ip] += block_sizes->size(col_uid);
+        if (value.second)
+          block_count[ip] += block_sizes->size(col_uid);
       }
     }
     // fout<<endl;
@@ -375,7 +375,7 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
     ConstArrayView<Integer> local_offsets = blocks.offsetOfLocalIndex();
 
     ALIEN_ASSERT(
-        (local_offsets.size() == local_sizes.size() + 1), ("sizes are different"));
+    (local_offsets.size() == local_sizes.size() + 1), ("sizes are different"));
 
     const Integer size = local_sizes.size();
     const Integer ghost_size = ghost_sizes.size();
@@ -433,9 +433,9 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
       // m_recv_info.m_ids_offset[nb_neighbour + 1] =
       // m_recv_info.m_ids_offset[nb_neighbour] + count[ip];
       m_recv_info.m_ids_offset[nb_neighbour + 1] =
-          m_recv_info.m_ids_offset[nb_neighbour] + gids[ip].size();
+      m_recv_info.m_ids_offset[nb_neighbour] + gids[ip].size();
       m_recv_info.m_block_ids_offset[nb_neighbour + 1] =
-          m_recv_info.m_block_ids_offset[nb_neighbour] + block_count[ip];
+      m_recv_info.m_block_ids_offset[nb_neighbour] + block_count[ip];
       ++nb_neighbour;
     }
   m_ghost_nrow = m_recv_info.m_ids_offset[nb_neighbour] - nrow;
@@ -463,7 +463,7 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
           Integer nids = gids[ip2].size();
           // trace->info()<<"SEND to "<<ip2<<" nids="<<nids;
           Arccore::MessagePassing::mpSend(
-              parallel_mng, ConstArrayView<Integer>(1, &nids), ip2);
+          parallel_mng, ConstArrayView<Integer>(1, &nids), ip2);
           if (nids > 0) {
             buffer.clear();
             buffer.resize(nids);
@@ -477,12 +477,13 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
             }
 
             Arccore::MessagePassing::mpSend(
-                parallel_mng, ConstArrayView<Integer>(nids, &buffer[0]), ip2);
+            parallel_mng, ConstArrayView<Integer>(nids, &buffer[0]), ip2);
             offset += nids;
           }
         }
       }
-    } else {
+    }
+    else {
       Integer nids = 0;
       Arccore::MessagePassing::mpReceive(parallel_mng, ArrayView<Integer>(1, &nids), ip);
       // trace->info()<<"RECV from "<<ip<<" nids="<<nids;
@@ -491,7 +492,7 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
         send_count += nids;
         send_ids[ip].resize(nids);
         Arccore::MessagePassing::mpReceive(
-            parallel_mng, ArrayView<Integer>(nids, &send_ids[ip][0]), ip);
+        parallel_mng, ArrayView<Integer>(nids, &send_ids[ip][0]), ip);
       }
     }
   }
@@ -502,10 +503,8 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
   m_send_info.m_block_ids_offset.resize(nb_neighbour + 1);
   Integer icount = 0, block_icount = 0;
   nb_neighbour = 0;
-  for (Integer ip = 0; ip < nproc; ++ip)
-  {
-    if (send_ids[ip].size() > 0)
-    {
+  for (Integer ip = 0; ip < nproc; ++ip) {
+    if (send_ids[ip].size() > 0) {
       m_send_info.m_ranks[nb_neighbour] = ip;
       m_send_info.m_ids_offset[nb_neighbour] = icount;
       m_send_info.m_block_ids_offset[nb_neighbour] = block_icount;
@@ -514,8 +513,7 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
         ++first_upper_neighb;
       Integer nids = send_ids[ip].size();
       Integer* ids = &send_ids[ip][0];
-      for (Integer i = 0; i < nids; ++i)
-      {
+      for (Integer i = 0; i < nids; ++i) {
         m_send_info.m_ids[icount] = ids[i] - local_offset;
         ++icount;
         block_icount += m_block_sizes[ids[i] - local_offset];
@@ -528,8 +526,7 @@ DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Integer m
   // m_send_info.printInfo(send_fout);
 }
 
-void
-DistStructInfo::copy(const DistStructInfo& src)
+void DistStructInfo::copy(const DistStructInfo& src)
 {
   m_local_row_size.copy(src.m_local_row_size);
   m_ghost_nrow = src.m_ghost_nrow;

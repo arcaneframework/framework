@@ -33,7 +33,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 using namespace Arccore::MessagePassing;
@@ -90,7 +91,7 @@ struct VectorDistribution::Internal
    * \param[in] parallel_mng The parallel manager
    */
   Internal(const ISpace& space, Integer local_size,
-      std::shared_ptr<IMessagePassingMng> parallel_mng);
+           std::shared_ptr<IMessagePassingMng> parallel_mng);
 
   /*!
    * \brief Constructor
@@ -107,7 +108,7 @@ struct VectorDistribution::Internal
    * \param[in] parallel_mng The parallel manager
    */
   Internal(Integer global_size, Integer local_size,
-      std::shared_ptr<IMessagePassingMng> parallel_mng);
+           std::shared_ptr<IMessagePassingMng> parallel_mng);
 
   //! Free resources
   ~Internal() = default;
@@ -167,10 +168,10 @@ VectorDistribution::Internal::Internal()
 /*---------------------------------------------------------------------------*/
 
 VectorDistribution::Internal::Internal(
-    const ISpace& space, IMessagePassingMng* parallel_mng)
+const ISpace& space, IMessagePassingMng* parallel_mng)
 : m_space(space.clone())
 , m_parallel_mng(std::shared_ptr<IMessagePassingMng>(
-      parallel_mng, [](IMessagePassingMng*) {})) // Do not call delete.
+  parallel_mng, [](IMessagePassingMng*) {})) // Do not call delete.
 , m_rank(0)
 , m_global_size(m_space->size())
 , m_local_size(0)
@@ -196,7 +197,7 @@ VectorDistribution::Internal::Internal(
 /*---------------------------------------------------------------------------*/
 
 VectorDistribution::Internal::Internal(
-    const ISpace& space, std::shared_ptr<IMessagePassingMng> parallel_mng)
+const ISpace& space, std::shared_ptr<IMessagePassingMng> parallel_mng)
 : m_space(space.clone())
 , m_parallel_mng(parallel_mng)
 , m_rank(0)
@@ -224,7 +225,7 @@ VectorDistribution::Internal::Internal(
 /*---------------------------------------------------------------------------*/
 
 VectorDistribution::Internal::Internal(
-    Integer global_size, IMessagePassingMng* parallel_mng)
+Integer global_size, IMessagePassingMng* parallel_mng)
 : Internal(Space(global_size), parallel_mng)
 {}
 
@@ -232,7 +233,7 @@ VectorDistribution::Internal::Internal(
 /*---------------------------------------------------------------------------*/
 
 VectorDistribution::Internal::Internal(
-    Integer global_size, std::shared_ptr<IMessagePassingMng> parallel_mng)
+Integer global_size, std::shared_ptr<IMessagePassingMng> parallel_mng)
 : Internal(Space(global_size), parallel_mng)
 {}
 
@@ -240,10 +241,10 @@ VectorDistribution::Internal::Internal(
 /*---------------------------------------------------------------------------*/
 
 VectorDistribution::Internal::Internal(
-    const ISpace& space, Integer local_size, IMessagePassingMng* parallel_mng)
+const ISpace& space, Integer local_size, IMessagePassingMng* parallel_mng)
 : m_space(space.clone())
 , m_parallel_mng(std::shared_ptr<IMessagePassingMng>(
-      parallel_mng, [](IMessagePassingMng*) {})) // Do not use delete
+  parallel_mng, [](IMessagePassingMng*) {})) // Do not use delete
 , m_rank(0)
 , m_global_size(m_space->size())
 , m_local_size(local_size)
@@ -256,7 +257,7 @@ VectorDistribution::Internal::Internal(
   UniqueArray<Integer> lsize(np, 0);
   lsize[m_rank] = m_local_size;
   Arccore::MessagePassing::mpAllReduce(
-      m_parallel_mng.get(), Arccore::MessagePassing::ReduceMax, lsize.view());
+  m_parallel_mng.get(), Arccore::MessagePassing::ReduceMax, lsize.view());
   Integer gsize = std::accumulate(lsize.begin(), lsize.end(), 0);
   if (gsize != m_global_size) {
     alien_fatal([&] {
@@ -278,7 +279,7 @@ VectorDistribution::Internal::Internal(
 /*---------------------------------------------------------------------------*/
 
 VectorDistribution::Internal::Internal(const ISpace& space, Integer local_size,
-    std::shared_ptr<IMessagePassingMng> parallel_mng)
+                                       std::shared_ptr<IMessagePassingMng> parallel_mng)
 : m_space(space.clone())
 , m_parallel_mng(parallel_mng)
 , m_rank(0)
@@ -293,7 +294,7 @@ VectorDistribution::Internal::Internal(const ISpace& space, Integer local_size,
   UniqueArray<Integer> lsize(np, 0);
   lsize[m_rank] = m_local_size;
   Arccore::MessagePassing::mpAllReduce(
-      m_parallel_mng.get(), Arccore::MessagePassing::ReduceMax, lsize.view());
+  m_parallel_mng.get(), Arccore::MessagePassing::ReduceMax, lsize.view());
   Integer gsize = std::accumulate(lsize.begin(), lsize.end(), 0);
   if (gsize != m_global_size) {
     alien_fatal([&] {
@@ -315,7 +316,7 @@ VectorDistribution::Internal::Internal(const ISpace& space, Integer local_size,
 /*---------------------------------------------------------------------------*/
 
 VectorDistribution::Internal::Internal(
-    Integer global_size, Integer local_size, IMessagePassingMng* parallel_mng)
+Integer global_size, Integer local_size, IMessagePassingMng* parallel_mng)
 : Internal(Space(global_size), local_size, parallel_mng)
 {}
 
@@ -323,26 +324,22 @@ VectorDistribution::Internal::Internal(
 /*---------------------------------------------------------------------------*/
 
 VectorDistribution::Internal::Internal(Integer global_size, Integer local_size,
-    std::shared_ptr<IMessagePassingMng> parallel_mng)
+                                       std::shared_ptr<IMessagePassingMng> parallel_mng)
 : Internal(Space(global_size), local_size, parallel_mng)
 {}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool
-VectorDistribution::Internal::operator==(const Internal& dist) const
+bool VectorDistribution::Internal::operator==(const Internal& dist) const
 {
-  return ((dist.m_parallel_mng == m_parallel_mng) && (dist.m_rank == m_rank)
-      && (dist.m_global_size == m_global_size) && (dist.m_local_size == m_local_size)
-      && (dist.m_offset == m_offset));
+  return ((dist.m_parallel_mng == m_parallel_mng) && (dist.m_rank == m_rank) && (dist.m_global_size == m_global_size) && (dist.m_local_size == m_local_size) && (dist.m_offset == m_offset));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool
-VectorDistribution::Internal::isParallel() const
+bool VectorDistribution::Internal::isParallel() const
 {
   return (m_parallel_mng != nullptr) && (m_parallel_mng->commSize() > 1);
 }
@@ -365,7 +362,8 @@ VectorDistribution::Internal::owner(Integer i) const
       }
     }
     return 0;
-  } else { // or on proc < rank
+  }
+  else { // or on proc < rank
     Integer np = m_parallel_mng->commSize();
     for (int rk = m_rank + 1; rk < np - 1; ++rk) {
       if (i < m_offsets[rk + 1]) {
@@ -389,40 +387,40 @@ VectorDistribution::VectorDistribution()
 /*---------------------------------------------------------------------------*/
 
 VectorDistribution::VectorDistribution(
-    const ISpace& space, IMessagePassingMng* parallel_mng)
+const ISpace& space, IMessagePassingMng* parallel_mng)
 : m_internal(std::make_shared<Internal>(space, parallel_mng))
 {
   alien_debug(
-      [&] { cout() << "Create VectorDistribution(global=" << space.size() << ")"; });
+  [&] { cout() << "Create VectorDistribution(global=" << space.size() << ")"; });
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 VectorDistribution::VectorDistribution(
-    const ISpace& space, std::shared_ptr<IMessagePassingMng> parallel_mng)
+const ISpace& space, std::shared_ptr<IMessagePassingMng> parallel_mng)
 : m_internal(std::make_shared<Internal>(space, parallel_mng))
 {
   alien_debug(
-      [&] { cout() << "Create VectorDistribution(global=" << space.size() << ")"; });
+  [&] { cout() << "Create VectorDistribution(global=" << space.size() << ")"; });
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 VectorDistribution::VectorDistribution(
-    Integer global_size, IMessagePassingMng* parallel_mng)
+Integer global_size, IMessagePassingMng* parallel_mng)
 : m_internal(std::make_shared<Internal>(global_size, parallel_mng))
 {
   alien_debug(
-      [&] { cout() << "Create VectorDistribution(global=" << global_size << ")"; });
+  [&] { cout() << "Create VectorDistribution(global=" << global_size << ")"; });
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 VectorDistribution::VectorDistribution(
-    const ISpace& space, Integer local_size, IMessagePassingMng* parallel_mng)
+const ISpace& space, Integer local_size, IMessagePassingMng* parallel_mng)
 : m_internal(std::make_shared<Internal>(space, local_size, parallel_mng))
 {
   alien_debug([&] {
@@ -435,7 +433,7 @@ VectorDistribution::VectorDistribution(
 /*---------------------------------------------------------------------------*/
 
 VectorDistribution::VectorDistribution(const ISpace& space, Integer local_size,
-    std::shared_ptr<IMessagePassingMng> parallel_mng)
+                                       std::shared_ptr<IMessagePassingMng> parallel_mng)
 : m_internal(std::make_shared<Internal>(space, local_size, parallel_mng))
 {
   alien_debug([&] {
@@ -448,7 +446,7 @@ VectorDistribution::VectorDistribution(const ISpace& space, Integer local_size,
 /*---------------------------------------------------------------------------*/
 
 VectorDistribution::VectorDistribution(
-    Integer global_size, Integer local_size, IMessagePassingMng* parallel_mng)
+Integer global_size, Integer local_size, IMessagePassingMng* parallel_mng)
 : m_internal(std::make_shared<Internal>(global_size, local_size, parallel_mng))
 {
   alien_debug([&] {
@@ -461,7 +459,7 @@ VectorDistribution::VectorDistribution(
 /*---------------------------------------------------------------------------*/
 
 VectorDistribution::VectorDistribution(Integer global_size, Integer local_size,
-    std::shared_ptr<IMessagePassingMng> parallel_mng)
+                                       std::shared_ptr<IMessagePassingMng> parallel_mng)
 : m_internal(std::make_shared<Internal>(global_size, local_size, parallel_mng))
 {
   alien_debug([&] {
@@ -521,8 +519,7 @@ VectorDistribution::operator=(VectorDistribution&& dist)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool
-VectorDistribution::operator==(const VectorDistribution& dist) const
+bool VectorDistribution::operator==(const VectorDistribution& dist) const
 {
   return *m_internal == *dist.m_internal;
 }
@@ -530,8 +527,7 @@ VectorDistribution::operator==(const VectorDistribution& dist) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool
-VectorDistribution::isParallel() const
+bool VectorDistribution::isParallel() const
 {
   return m_internal->isParallel();
 }

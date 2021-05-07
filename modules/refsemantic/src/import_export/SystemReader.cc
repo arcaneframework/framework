@@ -33,10 +33,11 @@
 
 #include "HDF5Tools.h"
 
-namespace Alien {
+namespace Alien
+{
 
 SystemReader::SystemReader(
-    std::string const& filename, std::string format, IMessagePassingMng* parallel_mng)
+std::string const& filename, std::string format, IMessagePassingMng* parallel_mng)
 : m_filename(filename)
 , m_format(format)
 , m_prec(6)
@@ -53,9 +54,8 @@ SystemReader::SystemReader(
 SystemReader::~SystemReader() {}
 
 template <typename FileNodeT>
-void
-SystemReader::_readMatrixInfo(Importer& importer, FileNodeT& parent_node, int& nrows,
-    int& ncols, int& nnz, int& blk_size, int& blk_size2)
+void SystemReader::_readMatrixInfo(Importer& importer, FileNodeT& parent_node, int& nrows,
+                                   int& ncols, int& nnz, int& blk_size, int& blk_size2)
 {
   FileNodeT matrix_info_node = importer.openFileNode(parent_node, "matrix-info");
   importer.read(matrix_info_node, "nrows", nrows);
@@ -72,9 +72,8 @@ SystemReader::_readMatrixInfo(Importer& importer, FileNodeT& parent_node, int& n
 }
 
 template <typename FileNodeT>
-void
-SystemReader::_readCSRProfile(Importer& importer, FileNodeT& parent_node, int& nrows,
-    int& nnz, std::vector<int>& kcol, std::vector<int>& cols)
+void SystemReader::_readCSRProfile(Importer& importer, FileNodeT& parent_node, int& nrows,
+                                   int& nnz, std::vector<int>& kcol, std::vector<int>& cols)
 {
   FileNodeT profile_node = importer.openFileNode(parent_node, "profile");
 
@@ -91,9 +90,8 @@ SystemReader::_readCSRProfile(Importer& importer, FileNodeT& parent_node, int& n
 }
 
 template <typename FileNodeT>
-void
-SystemReader::_readMatrixValues(Importer& importer, FileNodeT& parent_node, int& size,
-    int& blk_size, int& blk_size2, std::vector<double>& values)
+void SystemReader::_readMatrixValues(Importer& importer, FileNodeT& parent_node, int& size,
+                                     int& blk_size, int& blk_size2, std::vector<double>& values)
 {
   std::vector<int>& i32buffer = importer.i32buffer;
   FileNodeT data_node = importer.openFileNode(parent_node, "data");
@@ -117,8 +115,7 @@ SystemReader::_readMatrixValues(Importer& importer, FileNodeT& parent_node, int&
   importer.closeFileNode(data_node);
 }
 
-void
-SystemReader::read(Matrix& A)
+void SystemReader::read(Matrix& A)
 {
 
   typedef Importer::FileNode FileNode;
@@ -140,10 +137,10 @@ SystemReader::read(Matrix& A)
       int file_blk_size;
       int file_blk_size2;
       _readMatrixInfo(
-          importer, matrix_node, nrows, ncols, nnz, file_blk_size, file_blk_size2);
+      importer, matrix_node, nrows, ncols, nnz, file_blk_size, file_blk_size2);
       if (file_blk_size != blk_size || file_blk_size2 != blk_size)
         throw FatalErrorException(
-            A_FUNCINFO, "Incompatible  block size with imported system");
+        A_FUNCINFO, "Incompatible  block size with imported system");
 
       const auto& dist = A.distribution();
       int offset = dist.rowOffset();
@@ -151,7 +148,7 @@ SystemReader::read(Matrix& A)
 
       if (offset + lsize > nrows)
         throw FatalErrorException(
-            A_FUNCINFO, "Incompatible  space size with imported system");
+        A_FUNCINFO, "Incompatible  space size with imported system");
 
       int file_nrows;
       int file_nnz;
@@ -177,13 +174,13 @@ SystemReader::read(Matrix& A)
       //       or explicitly distribute values according to distribution
 
       _readMatrixValues(
-          importer, matrix_node, file_nnz, file_blk_size, file_blk_size2, values);
+      importer, matrix_node, file_nnz, file_blk_size, file_blk_size2, values);
 
       if (file_nnz != nnz || file_blk_size != 1 || file_blk_size2 != 1)
         throw FatalErrorException(A_FUNCINFO, "Incoherent matrix values");
 
       Alien::Common::ProfiledMatrixBuilder builder(
-          A, Alien::ProfiledMatrixOptions::eResetValues);
+      A, Alien::ProfiledMatrixOptions::eResetValues);
 
       for (int irow = offset; irow < offset + lsize; ++irow) {
         for (int k = kcol[irow]; k < kcol[irow + 1]; ++k) {
@@ -196,8 +193,7 @@ SystemReader::read(Matrix& A)
   importer.closeFileNode(root_node);
 }
 
-void
-SystemReader::read(BlockMatrix& A)
+void SystemReader::read(BlockMatrix& A)
 {
   typedef Importer::FileNode FileNode;
 
@@ -219,7 +215,7 @@ SystemReader::read(BlockMatrix& A)
       int file_blk_size;
       int file_blk_size2;
       _readMatrixInfo(
-          importer, matrix_node, nrows, ncols, nnz, file_blk_size, file_blk_size2);
+      importer, matrix_node, nrows, ncols, nnz, file_blk_size, file_blk_size2);
 
       if (file_blk_size != file_blk_size2)
         throw FatalErrorException(A_FUNCINFO, "Non square block not supported");
@@ -237,7 +233,7 @@ SystemReader::read(BlockMatrix& A)
 
       if (offset + lsize > nrows)
         throw FatalErrorException(
-            A_FUNCINFO, "Incompatible  space size with imported system");
+        A_FUNCINFO, "Incompatible  space size with imported system");
 
       int file_nrows;
       int file_nnz;
@@ -260,14 +256,14 @@ SystemReader::read(BlockMatrix& A)
       // TODO: only read values from offset to offset + lsize
       //       or explicitly distribute values according to distribution
       _readMatrixValues(
-          importer, matrix_node, file_nnz, file_blk_size, file_blk_size2, values);
+      importer, matrix_node, file_nnz, file_blk_size, file_blk_size2, values);
 
       if (file_nnz != nnz || file_blk_size != blk_size || file_blk_size2 != blk_size2)
         throw FatalErrorException(A_FUNCINFO, "Incoherent matrix values");
 
       {
         Alien::ProfiledBlockMatrixBuilder builder(
-            A, Alien::ProfiledBlockMatrixBuilderOptions::eResetValues);
+        A, Alien::ProfiledBlockMatrixBuilderOptions::eResetValues);
 
         //        dist = A.distribution();
         //        offset = dist.rowOffset();
@@ -276,7 +272,7 @@ SystemReader::read(BlockMatrix& A)
         for (int irow = offset; irow < offset + lsize; ++irow) {
           for (int k = kcol[irow]; k < kcol[irow + 1]; ++k)
             builder(irow, cols[k]) =
-                Array2View<double>(&values[k * blk_size * blk_size], blk_size, blk_size);
+            Array2View<double>(&values[k * blk_size * blk_size], blk_size, blk_size);
         }
       }
     }

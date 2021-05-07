@@ -24,7 +24,8 @@
 #include <unordered_map>
 #include <utility>
 
-namespace Alien {
+namespace Alien
+{
 
 class IReverseIndexer;
 

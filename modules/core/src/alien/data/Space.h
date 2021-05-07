@@ -28,7 +28,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -122,7 +123,7 @@ class ALIEN_EXPORT Space final : public ISpace
    * \param[in] indices The indices to which label is set
    */
   void setField(
-      Arccore::String label, const Arccore::UniqueArray<Arccore::Integer>& indices);
+  Arccore::String label, const Arccore::UniqueArray<Arccore::Integer>& indices);
 
   /*!
    * \brief Get the number of fields

@@ -23,7 +23,8 @@
 #include <alien/utils/Precomp.h>
 #include <unordered_map>
 
-namespace Alien {
+namespace Alien
+{
 
 class IReverseIndexer;
 

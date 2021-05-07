@@ -23,7 +23,8 @@
 #include <alien/kernels/dok/DoKMatrixT.h>
 #include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -43,9 +44,8 @@ SimpleCSRtoDoKMatrixConverter::targetBackend() const
   return AlgebraTraits<BackEnd::tag::DoK>::name();
 }
 
-void
-SimpleCSRtoDoKMatrixConverter::convert(
-    const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const
+void SimpleCSRtoDoKMatrixConverter::convert(
+const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const
 {
   const SrcMatrix& src = cast<SrcMatrix>(sourceImpl, sourceBackend());
   TgtMatrix& tgt = cast<TgtMatrix>(targetImpl, targetBackend());
@@ -61,8 +61,7 @@ SimpleCSRtoDoKMatrixConverter::convert(
   this->_build(src, tgt);
 }
 
-void
-SimpleCSRtoDoKMatrixConverter::_build(const SrcMatrix& src, TgtMatrix& tgt) const
+void SimpleCSRtoDoKMatrixConverter::_build(const SrcMatrix& src, TgtMatrix& tgt) const
 {
   const MatrixDistribution& dist = tgt.distribution();
 

@@ -31,22 +31,22 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <boost/program_options/value_semantic.hpp>
 #include <boost/program_options/options_description.hpp>
-#include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/parsers.hpp>
+#include <boost/program_options/value_semantic.hpp>
+#include <boost/program_options/variables_map.hpp>
 
-#include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
-template<typename tag>
-class SolverFabric ;
+template <typename tag>
+class SolverFabric;
 
 /*!
  * \ingroup core
@@ -57,10 +57,10 @@ class SolverFabric ;
 class ISolverFabric : public ObjectWithTrace
 {
  public:
-  typedef boost::program_options::options_description CmdLineOptionDescType ;
-  typedef boost::program_options::variables_map       CmdLineOptionType ;
+  typedef boost::program_options::options_description CmdLineOptionDescType;
+  typedef boost::program_options::variables_map CmdLineOptionType;
 
-  typedef boost::property_tree::ptree JsonOptionType ;
+  typedef boost::property_tree::ptree JsonOptionType;
   //! Free resources
   virtual ~ISolverFabric() {}
 
@@ -71,31 +71,31 @@ class ISolverFabric : public ObjectWithTrace
    */
   virtual BackEndId backend() const = 0;
 
-  virtual void add_options(CmdLineOptionDescType& cmdline_options) const = 0 ;
+  virtual void add_options(CmdLineOptionDescType& cmdline_options) const = 0;
 
   /*!
    * \brief Convert a vector from one format to another
    * \param[in] sourceImpl Implementation of the source vector
    * \param[in,out] targetImpl Implementation of the target vector
    */
-  virtual Alien::ILinearSolver* create(CmdLineOptionType const& options,
-                                       Alien::IMessagePassingMng* pm) const = 0 ;
+  virtual Alien::ILinearSolver* create(
+  CmdLineOptionType const& options, Alien::IMessagePassingMng* pm) const = 0;
 
-  virtual Alien::ILinearSolver* create(JsonOptionType const& options,
-                                       Alien::IMessagePassingMng* pm) const = 0 ;
+  virtual Alien::ILinearSolver* create(
+  JsonOptionType const& options, Alien::IMessagePassingMng* pm) const = 0;
 
-protected :
-
-  template<typename T>
-  static T get(boost::program_options::variables_map const& options, std::string const& key)
+ protected:
+  template <typename T>
+  static T get(
+  boost::program_options::variables_map const& options, std::string const& key)
   {
-    return options[key].as<T>() ;
+    return options[key].as<T>();
   }
 
-  template<typename T>
+  template <typename T>
   static T get(boost::property_tree::ptree const& options, std::string const& key)
   {
-    return options.get<T>(key) ;
+    return options.get<T>(key);
   }
 };
 

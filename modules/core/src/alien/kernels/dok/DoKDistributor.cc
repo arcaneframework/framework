@@ -22,14 +22,14 @@
 #include "DoKMatrixT.h"
 #include <alien/kernels/redistributor/RedistributorCommPlan.h>
 
-namespace Alien {
+namespace Alien
+{
 
 DoKDistributor::DoKDistributor(const RedistributorCommPlan* commPlan)
 : m_distributor(new DoKDistributorComm(commPlan))
 {}
 
-void
-DoKDistributor::distribute(const DoKMatrix& src, DoKMatrix& dst)
+void DoKDistributor::distribute(const DoKMatrix& src, DoKMatrix& dst)
 {
   distribute(src.data(), dst.data());
 }

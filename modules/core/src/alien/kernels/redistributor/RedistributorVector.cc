@@ -32,7 +32,8 @@
 #include "RedistributorBackEnd.h"
 #include "RedistributorCommPlan.h"
 
-namespace Alien {
+namespace Alien
+{
 using namespace Arccore;
 
 RedistributorVector::RedistributorVector(const MultiVectorImpl* src_impl)
@@ -43,23 +44,20 @@ RedistributorVector::RedistributorVector(const MultiVectorImpl* src_impl)
   m_super_pm = distribution().parallelMng();
 }
 
-void
-RedistributorVector::init(const VectorDistribution& dist ALIEN_UNUSED_PARAM,
-    const bool need_allocate ALIEN_UNUSED_PARAM)
+void RedistributorVector::init(const VectorDistribution& dist ALIEN_UNUSED_PARAM,
+                               const bool need_allocate ALIEN_UNUSED_PARAM)
 {
   return;
 }
 
-void
-RedistributorVector::clear()
+void RedistributorVector::clear()
 {
   // m_tgt_impl.reset(nullptr);
   // m_tgt_dist.reset(nullptr);
 }
 
-void
-RedistributorVector::updateSuperPM(MultiVectorImpl* tgt_impl ALIEN_UNUSED_PARAM,
-    const RedistributorCommPlan* commPlan ALIEN_UNUSED_PARAM)
+void RedistributorVector::updateSuperPM(MultiVectorImpl* tgt_impl ALIEN_UNUSED_PARAM,
+                                        const RedistributorCommPlan* commPlan ALIEN_UNUSED_PARAM)
 {
   // TODO Throw exception
   /*
@@ -71,8 +69,7 @@ RedistributorVector::updateSuperPM(MultiVectorImpl* tgt_impl ALIEN_UNUSED_PARAM,
 std::shared_ptr<MultiVectorImpl>
 RedistributorVector::updateTargetPM(const RedistributorCommPlan* commPlan)
 {
-  if (m_tgt_impl
-      && m_tgt_impl->distribution().parallelMng() == commPlan->tgtParallelMng().get())
+  if (m_tgt_impl && m_tgt_impl->distribution().parallelMng() == commPlan->tgtParallelMng().get())
     return m_tgt_impl;
 
   m_tgt_dist.reset(new VectorDistribution(commPlan->distribution()));
@@ -94,8 +91,7 @@ RedistributorVector::redistribute()
   return m_tgt_impl;
 }
 
-void
-RedistributorVector::redistributeBack(SimpleCSRVector<Real>& vec_tgt) const
+void RedistributorVector::redistributeBack(SimpleCSRVector<Real>& vec_tgt) const
 {
   auto& vec_src = m_tgt_impl->get<BackEnd::tag::simplecsr>();
   m_distributor->distributeBack(vec_src, vec_tgt);

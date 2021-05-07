@@ -24,14 +24,17 @@
 
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 class IBlockBuilder;
-template <typename Scalar> class SimpleCSRMatrix;
+template <typename Scalar>
+class SimpleCSRMatrix;
 
 /*---------------------------------------------------------------------------*/
 
-template <typename ValueT = Real> class StreamVBlockMatrixBuilderT
+template <typename ValueT = Real>
+class StreamVBlockMatrixBuilderT
 {
  public:
   class Inserter;

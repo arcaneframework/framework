@@ -26,7 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,7 +46,7 @@ class ALIEN_EXPORT SubMatrix
   static MatrixData extractRange(const IMatrix& matrix, const ExtractionIndices& indices);
 
   static MatrixData extractIndices(
-      const IMatrix& matrix, const ExtractionIndices& indices);
+  const IMatrix& matrix, const ExtractionIndices& indices);
 };
 
 /*---------------------------------------------------------------------------*/

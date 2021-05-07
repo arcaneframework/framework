@@ -26,12 +26,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename NNZValue> class DoKDistributorT
+template <typename NNZValue>
+class DoKDistributorT
 {
  public:
   typedef DoKLocalMatrixT<NNZValue> Matrix;
@@ -113,11 +115,11 @@ template <typename NNZValue> class DoKDistributorT
     UniqueArray<Real> rcv_values(rcv_offset[comm_size]);
 
     pm->allToAllVariable(
-        snd_rows, snd_count, snd_offset, rcv_rows, rcv_count, rcv_offset);
+    snd_rows, snd_count, snd_offset, rcv_rows, rcv_count, rcv_offset);
     pm->allToAllVariable(
-        snd_cols, snd_count, snd_offset, rcv_cols, rcv_count, rcv_offset);
+    snd_cols, snd_count, snd_offset, rcv_cols, rcv_count, rcv_offset);
     pm->allToAllVariable(
-        snd_values, snd_count, snd_offset, rcv_values, rcv_count, rcv_offset);
+    snd_values, snd_count, snd_offset, rcv_values, rcv_count, rcv_offset);
 
     dst.setMaxNnz(rcv_values.size());
 

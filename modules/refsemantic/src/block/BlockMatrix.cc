@@ -24,21 +24,22 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 BlockMatrix::BlockMatrix()
 : m_impl(new MultiMatrixImpl(std::make_shared<Space>(0), std::make_shared<Space>(0),
-    std::make_shared<MatrixDistribution>(MatrixDistribution())))
+                             std::make_shared<MatrixDistribution>(MatrixDistribution())))
 {}
 
 /*---------------------------------------------------------------------------*/
 
 BlockMatrix::BlockMatrix(const Block& block, const MatrixDistribution& dist)
 : m_impl(
-    new MultiMatrixImpl(dist.rowSpace().clone(), dist.colSpace().clone(), dist.clone()))
+  new MultiMatrixImpl(dist.rowSpace().clone(), dist.colSpace().clone(), dist.clone()))
 {
   m_impl->setBlockInfos(&block);
 }
@@ -46,11 +47,11 @@ BlockMatrix::BlockMatrix(const Block& block, const MatrixDistribution& dist)
 /*---------------------------------------------------------------------------*/
 
 BlockMatrix::BlockMatrix(Integer nrows, Integer ncols, Integer nrows_local,
-    const Block& block, IMessagePassingMng* parallel_mng)
+                         const Block& block, IMessagePassingMng* parallel_mng)
 : m_impl(
-    new MultiMatrixImpl(std::make_shared<Space>(nrows), std::make_shared<Space>(ncols),
-        std::make_shared<MatrixDistribution>(
-            MatrixDistribution(nrows, ncols, nrows_local, parallel_mng))))
+  new MultiMatrixImpl(std::make_shared<Space>(nrows), std::make_shared<Space>(ncols),
+                      std::make_shared<MatrixDistribution>(
+                      MatrixDistribution(nrows, ncols, nrows_local, parallel_mng))))
 {
   m_impl->setBlockInfos(&block);
 }
@@ -58,10 +59,10 @@ BlockMatrix::BlockMatrix(Integer nrows, Integer ncols, Integer nrows_local,
 /*---------------------------------------------------------------------------*/
 
 BlockMatrix::BlockMatrix(
-    Integer nrows, Integer ncols, const Block& block, IMessagePassingMng* parallel_mng)
+Integer nrows, Integer ncols, const Block& block, IMessagePassingMng* parallel_mng)
 : m_impl(new MultiMatrixImpl(std::make_shared<Space>(nrows),
-    std::make_shared<Space>(ncols),
-    std::make_shared<MatrixDistribution>(MatrixDistribution(nrows, ncols, parallel_mng))))
+                             std::make_shared<Space>(ncols),
+                             std::make_shared<MatrixDistribution>(MatrixDistribution(nrows, ncols, parallel_mng))))
 {
   m_impl->setBlockInfos(&block);
 }
@@ -83,34 +84,30 @@ BlockMatrix::operator=(BlockMatrix&& matrix)
 
 /*---------------------------------------------------------------------------*/
 
-void
-BlockMatrix::init(const Block& block, const MatrixDistribution& dist)
+void BlockMatrix::init(const Block& block, const MatrixDistribution& dist)
 {
   m_impl.reset(new MultiMatrixImpl(
-      dist.rowSpace().clone(), dist.colSpace().clone(), dist.clone()));
+  dist.rowSpace().clone(), dist.colSpace().clone(), dist.clone()));
   m_impl->setBlockInfos(&block);
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-BlockMatrix::free()
+void BlockMatrix::free()
 {
   m_impl->free();
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-BlockMatrix::clear()
+void BlockMatrix::clear()
 {
   m_impl->clear();
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-BlockMatrix::visit(ICopyOnWriteMatrix& m) const
+void BlockMatrix::visit(ICopyOnWriteMatrix& m) const
 {
   m.accept(m_impl);
 }
@@ -141,16 +138,14 @@ BlockMatrix::colSpace() const
 
 /*---------------------------------------------------------------------------*/
 
-void
-BlockMatrix::setUserFeature(String feature)
+void BlockMatrix::setUserFeature(String feature)
 {
   m_impl->setFeature(feature);
 }
 
 /*---------------------------------------------------------------------------*/
 
-bool
-BlockMatrix::hasUserFeature(String feature) const
+bool BlockMatrix::hasUserFeature(String feature) const
 {
   return m_impl->hasFeature(feature);
 }
@@ -165,7 +160,7 @@ BlockMatrix::block() const
     return *block;
   else
     throw FatalErrorException(
-        A_FUNCINFO, "Requesting for block information but none was provided");
+    A_FUNCINFO, "Requesting for block information but none was provided");
 }
 
 /*---------------------------------------------------------------------------*/

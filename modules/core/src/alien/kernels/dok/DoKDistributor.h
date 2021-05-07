@@ -24,7 +24,8 @@
 #include <alien/kernels/dok/DoKDistributorComm.h>
 #include <alien/kernels/dok/DoKLocalMatrixT.h>
 
-namespace Alien {
+namespace Alien
+{
 
 class DoKMatrix;
 class MultiMatrixImpl;

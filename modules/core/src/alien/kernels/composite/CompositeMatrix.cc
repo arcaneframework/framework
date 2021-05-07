@@ -23,14 +23,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace CompositeKernel {
+namespace CompositeKernel
+{
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -108,7 +110,7 @@ namespace CompositeKernel {
     ALIEN_ASSERT(i < size(), "Bound error");
     ALIEN_ASSERT(j < size(), "Bound error");
     return MatrixElement(
-        m_matrices[i + j * m_nb_composite], m_row_space[i], m_col_space[j], *this);
+    m_matrices[i + j * m_nb_composite], m_row_space[i], m_col_space[j], *this);
   }
 
   /*---------------------------------------------------------------------------*/

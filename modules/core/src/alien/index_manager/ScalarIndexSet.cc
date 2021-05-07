@@ -25,7 +25,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -56,7 +57,7 @@ ScalarIndexSet::ScalarIndexSet(ScalarIndexSet&& en) noexcept
 /*---------------------------------------------------------------------------*/
 
 ScalarIndexSet::ScalarIndexSet(
-    const String& name, const Integer uid, const IndexManager* manager, Integer kind)
+const String& name, const Integer uid, const IndexManager* manager, Integer kind)
 : m_internal(new Internal{ name, kind, uid, manager })
 {}
 
@@ -77,8 +78,7 @@ ScalarIndexSet::operator=(ScalarIndexSet&& en) noexcept
 /*---------------------------------------------------------------------------*/
 
 //! Opérateur de comparaison
-bool
-ScalarIndexSet::operator==(const ScalarIndexSet& en) const
+bool ScalarIndexSet::operator==(const ScalarIndexSet& en) const
 {
   return m_internal == en.m_internal;
 }

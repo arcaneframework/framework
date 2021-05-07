@@ -19,7 +19,8 @@
 #ifndef ALIEN_UTILS_ARCANE_ALIENTYPES_H
 #define ALIEN_UTILS_ARCANE_ALIENTYPES_H
 
-namespace Alien {
+namespace Alien
+{
 
 using Arccore::Byte;
 using Arccore::Int32;
@@ -56,8 +57,7 @@ using Arccore::FatalErrorException;
 using Arccore::NotImplementedException;
 
 template <typename T>
-void
-add(UniqueArray<T>& array, const T& value)
+void add(UniqueArray<T>& array, const T& value)
 {
   array.add(value);
 }
@@ -70,22 +70,19 @@ unguardedBasePointer(const UniqueArray<T>& array)
 }
 
 template <typename T>
-T*
-unguardedBasePointer(UniqueArray<T>& array)
+T* unguardedBasePointer(UniqueArray<T>& array)
 {
   return array.unguardedBasePointer();
 }
 
 template <typename T>
-void
-addRange(UniqueArray<T>& array, ConstArrayView<T> range)
+void addRange(UniqueArray<T>& array, ConstArrayView<T> range)
 {
   array.addRange(range);
 }
 
 template <typename T>
-void
-addRange(UniqueArray<T>& array, T value, Integer size)
+void addRange(UniqueArray<T>& array, T value, Integer size)
 {
   array.addRange(value, size);
 }
@@ -97,8 +94,7 @@ localstr(String const& str)
 }
 
 template <typename T>
-T*
-dataPtr(UniqueArray<T>& v)
+T* dataPtr(UniqueArray<T>& v)
 {
   return v.unguardedBasePointer();
 }
@@ -111,8 +107,7 @@ dataPtr(UniqueArray<T> const& v)
 }
 
 template <typename T>
-T*
-dataPtr(ArrayView<T> v)
+T* dataPtr(ArrayView<T> v)
 {
   return v.begin();
 }
@@ -125,50 +120,43 @@ dataPtr(ConstArrayView<T> v)
 }
 
 template <typename T>
-void
-fill(UniqueArray<T>& v, T value)
+void fill(UniqueArray<T>& v, T value)
 {
   v.fill(value);
 }
 
 template <typename T>
-void
-fill(ArrayView<T> v, T value)
+void fill(ArrayView<T> v, T value)
 {
   v.fill(value);
 }
 
 template <typename T>
-void
-copy(UniqueArray<T>& v, const ConstArrayView<T>& v2)
+void copy(UniqueArray<T>& v, const ConstArrayView<T>& v2)
 {
   v.copy(v2);
 }
 
 template <typename T>
-void
-copy(UniqueArray<T>& v, const UniqueArray<T>& v2)
+void copy(UniqueArray<T>& v, const UniqueArray<T>& v2)
 {
   v.copy(v2);
 }
 
 template <typename T>
-void
-allocateData(UniqueArray2<T>& v, Integer dim1, Integer dim2)
+void allocateData(UniqueArray2<T>& v, Integer dim1, Integer dim2)
 {
   v.resize(dim1, dim2);
 }
 
 template <typename T>
-void
-freeData(UniqueArray<T>& v)
+void freeData(UniqueArray<T>& v)
 {
   v.dispose();
 }
 
 template <typename T>
-void
-fill(UniqueArray2<T>& v, T value)
+void fill(UniqueArray2<T>& v, T value)
 {
   v.fill(value);
 }
@@ -195,8 +183,7 @@ view(UniqueArray2<T>& v)
 }
 
 template <typename T>
-void
-pushBack(UniqueArray<T>& v, T value)
+void pushBack(UniqueArray<T>& v, T value)
 {
   v.add(value);
 }

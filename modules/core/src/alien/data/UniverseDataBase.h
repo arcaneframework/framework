@@ -32,7 +32,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -88,13 +89,14 @@ class ALIEN_EXPORT UniverseDataBase final
  private:
   template <typename T>
   using key_type =
-      typename std::conditional<std::is_copy_constructible<T>::value, T, T&>::type;
+  typename std::conditional<std::is_copy_constructible<T>::value, T, T&>::type;
 
   /*!
    * \brief Key object
    * \tparam T The type of the key
    */
-  template <typename T> struct Key : public IKey
+  template <typename T>
+  struct Key : public IKey
   {
     //! Free resources
     virtual ~Key() {}
@@ -115,7 +117,8 @@ class ALIEN_EXPORT UniverseDataBase final
    * \brief Object
    * \tparam T The type of the key
    */
-  template <typename T> struct Object : public IObject
+  template <typename T>
+  struct Object : public IObject
   {
     //! Free resources
     virtual ~Object() {}
@@ -168,7 +171,8 @@ class ALIEN_EXPORT UniverseDataBase final
      * \param[in] t The objects
      * \returns The object created
      */
-    template <typename U, typename... T> std::shared_ptr<U> create(T&... t)
+    template <typename U, typename... T>
+    std::shared_ptr<U> create(T&... t)
     {
       auto u = std::make_shared<U>(t...);
       std::shared_ptr<IObject> o(new Object<U>(u));

@@ -23,11 +23,13 @@
 
 /*---------------------------------------------------------------------------*/
 
-namespace Alien::SimpleCSRInternal {
+namespace Alien::SimpleCSRInternal
+{
 
 /*---------------------------------------------------------------------------*/
 
-template <typename ValueT = Real> class MatrixInternal
+template <typename ValueT = Real>
+class MatrixInternal
 {
  public:
   typedef ValueT ValueType;
@@ -59,7 +61,8 @@ template <typename ValueT = Real> class MatrixInternal
 
   MatrixInternal<ValueT>* clone() const { return new MatrixInternal<ValueT>(*this); }
 
-  template <typename T> void copy(const MatrixInternal<T>& internal)
+  template <typename T>
+  void copy(const MatrixInternal<T>& internal)
   {
     m_values.copy(internal.getValues());
     m_profile.copy(internal.getCSRProfile());

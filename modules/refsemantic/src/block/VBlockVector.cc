@@ -24,14 +24,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 VBlockVector::VBlockVector()
 : m_impl(new MultiVectorImpl(std::make_shared<Space>(0),
-    std::make_shared<VectorDistribution>(VectorDistribution())))
+                             std::make_shared<VectorDistribution>(VectorDistribution())))
 {}
 
 /*---------------------------------------------------------------------------*/
@@ -45,10 +46,10 @@ VBlockVector::VBlockVector(const VBlock& block, const VectorDistribution& dist)
 /*---------------------------------------------------------------------------*/
 
 VBlockVector::VBlockVector(Integer nrows, Integer nrows_local, const VBlock& block,
-    IMessagePassingMng* parallel_mng)
+                           IMessagePassingMng* parallel_mng)
 : m_impl(new MultiVectorImpl(std::make_shared<Space>(nrows),
-    std::make_shared<VectorDistribution>(
-        VectorDistribution(nrows, nrows_local, parallel_mng))))
+                             std::make_shared<VectorDistribution>(
+                             VectorDistribution(nrows, nrows_local, parallel_mng))))
 {
   m_impl->setBlockInfos(&block);
 }
@@ -56,9 +57,9 @@ VBlockVector::VBlockVector(Integer nrows, Integer nrows_local, const VBlock& blo
 /*---------------------------------------------------------------------------*/
 
 VBlockVector::VBlockVector(
-    Integer nrows, const VBlock& block, IMessagePassingMng* parallel_mng)
+Integer nrows, const VBlock& block, IMessagePassingMng* parallel_mng)
 : m_impl(new MultiVectorImpl(std::make_shared<Space>(nrows),
-    std::make_shared<VectorDistribution>(VectorDistribution(nrows, parallel_mng))))
+                             std::make_shared<VectorDistribution>(VectorDistribution(nrows, parallel_mng))))
 {
   m_impl->setBlockInfos(&block);
 }
@@ -80,8 +81,7 @@ VBlockVector::operator=(VBlockVector&& vector)
 
 /*---------------------------------------------------------------------------*/
 
-void
-VBlockVector::init(const VBlock& block, const VectorDistribution& dist)
+void VBlockVector::init(const VBlock& block, const VectorDistribution& dist)
 {
   m_impl.reset(new MultiVectorImpl(dist.space().clone(), dist.clone()));
   m_impl->setBlockInfos(&block);
@@ -89,16 +89,14 @@ VBlockVector::init(const VBlock& block, const VectorDistribution& dist)
 
 /*---------------------------------------------------------------------------*/
 
-void
-VBlockVector::free()
+void VBlockVector::free()
 {
   m_impl->free();
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-VBlockVector::clear()
+void VBlockVector::clear()
 {
   m_impl->clear();
 }
@@ -113,8 +111,7 @@ VBlockVector::space() const
 
 /*---------------------------------------------------------------------------*/
 
-void
-VBlockVector::visit(ICopyOnWriteVector& v) const
+void VBlockVector::visit(ICopyOnWriteVector& v) const
 {
   v.accept(m_impl);
 }
@@ -129,16 +126,14 @@ VBlockVector::distribution() const
 
 /*---------------------------------------------------------------------------*/
 
-void
-VBlockVector::setUserFeature(String feature)
+void VBlockVector::setUserFeature(String feature)
 {
   m_impl->setFeature(feature);
 }
 
 /*---------------------------------------------------------------------------*/
 
-bool
-VBlockVector::hasUserFeature(String feature) const
+bool VBlockVector::hasUserFeature(String feature) const
 {
   return m_impl->hasFeature(feature);
 }
@@ -153,7 +148,7 @@ VBlockVector::vblock() const
     return *block;
   else
     throw FatalErrorException(
-        A_FUNCINFO, "Requesting for block information but none was provided");
+    A_FUNCINFO, "Requesting for block information but none was provided");
 }
 
 /*---------------------------------------------------------------------------*/

@@ -24,17 +24,22 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 typedef String BackEndId;
 
-template <typename Tag> struct AlgebraTraits;
+template <typename Tag>
+struct AlgebraTraits;
 
-namespace BackEnd {
-  namespace tag {} // namespace tag
+namespace BackEnd
+{
+  namespace tag
+  {
+  } // namespace tag
 } // namespace BackEnd
 
 /*---------------------------------------------------------------------------*/

@@ -26,14 +26,16 @@
 
 #include <vector>
 
-namespace {
+namespace
+{
 static std::vector<Alien::ISolverFabric*>* solver_fabric_db = nullptr;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 

@@ -23,7 +23,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -36,8 +37,7 @@ NullMatrix::NullMatrix()
 
 /*---------------------------------------------------------------------------*/
 
-void
-NullMatrix::visit(ICopyOnWriteMatrix& m ALIEN_UNUSED_PARAM) const
+void NullMatrix::visit(ICopyOnWriteMatrix& m ALIEN_UNUSED_PARAM) const
 {
   throw FatalErrorException("NullMatrix can't be used in an expression");
 }

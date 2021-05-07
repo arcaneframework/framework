@@ -25,13 +25,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class MatrixProfiler : protected MoveObject<MatrixData>,
-                       public Common::MatrixProfilerT<Real>
+class MatrixProfiler : protected MoveObject<MatrixData>
+, public Common::MatrixProfilerT<Real>
 {
  public:
   MatrixProfiler(MatrixData&& matrix)

@@ -35,7 +35,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 using namespace Arccore::MessagePassing;
@@ -49,15 +50,13 @@ RedistributorMatrix::RedistributorMatrix(const MultiMatrixImpl* src_impl)
   m_super_pm = IMatrixImpl::distribution().parallelMng();
 }
 
-void
-RedistributorMatrix::clear()
+void RedistributorMatrix::clear()
 {
   // m_tgt_impl.reset(nullptr);
   // m_tgt_dist.reset(nullptr);
 }
 
-void
-RedistributorMatrix::setSuperPM(IMessagePassingMng* pm)
+void RedistributorMatrix::setSuperPM(IMessagePassingMng* pm)
 {
   m_super_pm = pm;
 }
@@ -65,15 +64,14 @@ RedistributorMatrix::setSuperPM(IMessagePassingMng* pm)
 std::shared_ptr<MultiMatrixImpl>
 RedistributorMatrix::updateTargetPM(const RedistributorCommPlan* commPlan)
 {
-  if (m_tgt_impl
-      && m_tgt_impl->distribution().parallelMng() == commPlan->tgtParallelMng().get())
+  if (m_tgt_impl && m_tgt_impl->distribution().parallelMng() == commPlan->tgtParallelMng().get())
     return m_tgt_impl;
 
   const MatrixDistribution& src_dist = distribution();
   m_tgt_dist.reset(new MatrixDistribution(
-      src_dist.globalRowSize(), src_dist.globalColSize(), commPlan->tgtParallelMng()));
+  src_dist.globalRowSize(), src_dist.globalColSize(), commPlan->tgtParallelMng()));
   m_tgt_impl.reset(
-      new MultiMatrixImpl(rowSpace().clone(), colSpace().clone(), m_tgt_dist));
+  new MultiMatrixImpl(rowSpace().clone(), colSpace().clone(), m_tgt_dist));
 
   // Now, we have to exchange data, using DoK representation.
   m_distributor.reset(new DoKDistributor(commPlan));
