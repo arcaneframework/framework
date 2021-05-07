@@ -46,3 +46,5 @@
 
 #include <alien/ref/functional/Ones.h>
 #include <alien/ref/functional/Zeros.h>
+
+#include <alien/ref/distribution/DistributionFabric.h>
