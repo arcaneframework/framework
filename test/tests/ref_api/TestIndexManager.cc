@@ -110,7 +110,6 @@ TEST(TestIndexManager, ConstructorWithGhosts)
 
   ASSERT_EQ(index_manager.globalSize(), global_size);
   ASSERT_EQ(index_manager.localSize(), local_size);
-  
 }
 
 
