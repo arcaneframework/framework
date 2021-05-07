@@ -24,21 +24,22 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 VBlockMatrix::VBlockMatrix()
 : m_impl(new MultiMatrixImpl(std::make_shared<Space>(0), std::make_shared<Space>(0),
-    std::make_shared<MatrixDistribution>(MatrixDistribution())))
+                             std::make_shared<MatrixDistribution>(MatrixDistribution())))
 {}
 
 /*---------------------------------------------------------------------------*/
 
 VBlockMatrix::VBlockMatrix(const VBlock& block, const MatrixDistribution& dist)
 : m_impl(
-    new MultiMatrixImpl(dist.rowSpace().clone(), dist.colSpace().clone(), dist.clone()))
+  new MultiMatrixImpl(dist.rowSpace().clone(), dist.colSpace().clone(), dist.clone()))
 {
   m_impl->setBlockInfos(&block);
 }
@@ -46,9 +47,9 @@ VBlockMatrix::VBlockMatrix(const VBlock& block, const MatrixDistribution& dist)
 /*---------------------------------------------------------------------------*/
 
 VBlockMatrix::VBlockMatrix(
-    const VBlock& row_block, const VBlock& col_block, const MatrixDistribution& dist)
+const VBlock& row_block, const VBlock& col_block, const MatrixDistribution& dist)
 : m_impl(
-    new MultiMatrixImpl(dist.rowSpace().clone(), dist.colSpace().clone(), dist.clone()))
+  new MultiMatrixImpl(dist.rowSpace().clone(), dist.colSpace().clone(), dist.clone()))
 {
   m_impl->setRowBlockInfos(&row_block);
   m_impl->setColBlockInfos(&col_block);
@@ -57,11 +58,11 @@ VBlockMatrix::VBlockMatrix(
 /*---------------------------------------------------------------------------*/
 
 VBlockMatrix::VBlockMatrix(Integer nrows, Integer ncols, Integer nrows_local,
-    const VBlock& row_block, const VBlock& col_block, IMessagePassingMng* parallel_mng)
+                           const VBlock& row_block, const VBlock& col_block, IMessagePassingMng* parallel_mng)
 : m_impl(
-    new MultiMatrixImpl(std::make_shared<Space>(nrows), std::make_shared<Space>(ncols),
-        std::make_shared<MatrixDistribution>(
-            MatrixDistribution(nrows, ncols, nrows_local, parallel_mng))))
+  new MultiMatrixImpl(std::make_shared<Space>(nrows), std::make_shared<Space>(ncols),
+                      std::make_shared<MatrixDistribution>(
+                      MatrixDistribution(nrows, ncols, nrows_local, parallel_mng))))
 {
   m_impl->setRowBlockInfos(&row_block);
   m_impl->setColBlockInfos(&col_block);
@@ -70,10 +71,10 @@ VBlockMatrix::VBlockMatrix(Integer nrows, Integer ncols, Integer nrows_local,
 /*---------------------------------------------------------------------------*/
 
 VBlockMatrix::VBlockMatrix(Integer nrows, Integer ncols, const VBlock& row_block,
-    const VBlock& col_block, IMessagePassingMng* parallel_mng)
+                           const VBlock& col_block, IMessagePassingMng* parallel_mng)
 : m_impl(new MultiMatrixImpl(std::make_shared<Space>(nrows),
-    std::make_shared<Space>(ncols),
-    std::make_shared<MatrixDistribution>(MatrixDistribution(nrows, ncols, parallel_mng))))
+                             std::make_shared<Space>(ncols),
+                             std::make_shared<MatrixDistribution>(MatrixDistribution(nrows, ncols, parallel_mng))))
 {
   m_impl->setRowBlockInfos(&row_block);
   m_impl->setColBlockInfos(&col_block);
@@ -96,34 +97,30 @@ VBlockMatrix::operator=(VBlockMatrix&& matrix)
 
 /*---------------------------------------------------------------------------*/
 
-void
-VBlockMatrix::init(const VBlock& block, const MatrixDistribution& dist)
+void VBlockMatrix::init(const VBlock& block, const MatrixDistribution& dist)
 {
   m_impl.reset(new MultiMatrixImpl(
-      dist.rowSpace().clone(), dist.colSpace().clone(), dist.clone()));
+  dist.rowSpace().clone(), dist.colSpace().clone(), dist.clone()));
   m_impl->setBlockInfos(&block);
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-VBlockMatrix::free()
+void VBlockMatrix::free()
 {
   m_impl->free();
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-VBlockMatrix::clear()
+void VBlockMatrix::clear()
 {
   m_impl->clear();
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-VBlockMatrix::visit(ICopyOnWriteMatrix& m) const
+void VBlockMatrix::visit(ICopyOnWriteMatrix& m) const
 {
   m.accept(m_impl);
 }
@@ -154,16 +151,14 @@ VBlockMatrix::colSpace() const
 
 /*---------------------------------------------------------------------------*/
 
-void
-VBlockMatrix::setUserFeature(String feature)
+void VBlockMatrix::setUserFeature(String feature)
 {
   m_impl->setFeature(feature);
 }
 
 /*---------------------------------------------------------------------------*/
 
-bool
-VBlockMatrix::hasUserFeature(String feature) const
+bool VBlockMatrix::hasUserFeature(String feature) const
 {
   return m_impl->hasFeature(feature);
 }
@@ -178,7 +173,7 @@ VBlockMatrix::vblock() const
     return *block;
   else
     throw FatalErrorException(
-        A_FUNCINFO, "Requesting for block information but none was provided");
+    A_FUNCINFO, "Requesting for block information but none was provided");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -191,7 +186,7 @@ VBlockMatrix::rowBlock() const
     return *block;
   else
     throw FatalErrorException(
-        A_FUNCINFO, "Requesting for block information but none was provided");
+    A_FUNCINFO, "Requesting for block information but none was provided");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -204,7 +199,7 @@ VBlockMatrix::colBlock() const
     return *block;
   else
     throw FatalErrorException(
-        A_FUNCINFO, "Requesting for block information but none was provided");
+    A_FUNCINFO, "Requesting for block information but none was provided");
 }
 
 /*---------------------------------------------------------------------------*/

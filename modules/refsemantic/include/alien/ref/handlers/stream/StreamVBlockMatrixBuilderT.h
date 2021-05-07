@@ -50,13 +50,14 @@
 
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
 StreamVBlockMatrixBuilderT<ValueT>::StreamVBlockMatrixBuilderT(
-    VBlockMatrix& matrix, bool init_and_start)
+VBlockMatrix& matrix, bool init_and_start)
 : m_matrix(matrix)
 , m_matrix_impl(NULL)
 , m_local_size(0)
@@ -88,8 +89,7 @@ StreamVBlockMatrixBuilderT<ValueT>::~StreamVBlockMatrixBuilderT()
 }
 
 template <typename ValueT>
-void
-StreamVBlockMatrixBuilderT<ValueT>::finalize()
+void StreamVBlockMatrixBuilderT<ValueT>::finalize()
 {
   bool has_error = false;
   for (auto iter = m_inserters.begin(); iter != m_inserters.end(); ++iter) {
@@ -108,8 +108,7 @@ StreamVBlockMatrixBuilderT<ValueT>::finalize()
 }
 
 template <typename ValueT>
-void
-StreamVBlockMatrixBuilderT<ValueT>::end()
+void StreamVBlockMatrixBuilderT<ValueT>::end()
 {
   _freeInserters();
 }
@@ -138,8 +137,7 @@ StreamVBlockMatrixBuilderT<ValueT>::getInserter(Integer id)
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamVBlockMatrixBuilderT<ValueT>::allocate()
+void StreamVBlockMatrixBuilderT<ValueT>::allocate()
 {
   computeProfile();
 }
@@ -147,8 +145,7 @@ StreamVBlockMatrixBuilderT<ValueT>::allocate()
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamVBlockMatrixBuilderT<ValueT>::_freeInserters()
+void StreamVBlockMatrixBuilderT<ValueT>::_freeInserters()
 {
   for (auto iter = m_inserters.begin(); iter != m_inserters.end(); ++iter)
     delete *iter;
@@ -158,8 +155,7 @@ StreamVBlockMatrixBuilderT<ValueT>::_freeInserters()
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamVBlockMatrixBuilderT<ValueT>::init()
+void StreamVBlockMatrixBuilderT<ValueT>::init()
 {
   if (m_state == eInit)
     return;
@@ -174,7 +170,7 @@ StreamVBlockMatrixBuilderT<ValueT>::init()
 
   if (!vblock)
     throw FatalErrorException(
-        A_FUNCINFO, "Space is not variable block size - Can't use block builder");
+    A_FUNCINFO, "Space is not variable block size - Can't use block builder");
 
   // m_trace = space.traceMng();
   m_parallel_mng = dist.parallelMng();
@@ -194,8 +190,7 @@ StreamVBlockMatrixBuilderT<ValueT>::init()
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamVBlockMatrixBuilderT<ValueT>::start()
+void StreamVBlockMatrixBuilderT<ValueT>::start()
 {
   m_matrix_impl->free();
   m_state = ePrepared;
@@ -204,8 +199,7 @@ StreamVBlockMatrixBuilderT<ValueT>::start()
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamVBlockMatrixBuilderT<ValueT>::fillZero()
+void StreamVBlockMatrixBuilderT<ValueT>::fillZero()
 {
   m_matrix_impl->internal().getValues().fill(0.);
 }
@@ -222,8 +216,7 @@ StreamVBlockMatrixBuilderT<ValueT>::vblock() const
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamVBlockMatrixBuilderT<ValueT>::computeProfile()
+void StreamVBlockMatrixBuilderT<ValueT>::computeProfile()
 {
   /**
    * Purpose : build the matrix profile
@@ -249,7 +242,8 @@ StreamVBlockMatrixBuilderT<ValueT>::computeProfile()
   if (m_parallel_mng == NULL) {
     m_myrank = 0;
     m_nproc = 1;
-  } else {
+  }
+  else {
     m_myrank = m_parallel_mng->commRank();
     m_nproc = m_parallel_mng->commSize();
   }
@@ -260,7 +254,7 @@ StreamVBlockMatrixBuilderT<ValueT>::computeProfile()
   m_block_ghost_size = 0;
   m_offset.resize(m_nproc + 1);
   Arccore::MessagePassing::mpAllGather(m_parallel_mng,
-      ConstArrayView<Integer>(1, &m_local_offset), m_offset.subView(0, m_nproc));
+                                       ConstArrayView<Integer>(1, &m_local_offset), m_offset.subView(0, m_nproc));
   m_offset[m_nproc] = m_global_size;
 
   // Utilitaire local (en attendant les lambda-functions)
@@ -328,13 +322,14 @@ StreamVBlockMatrixBuilderT<ValueT>::computeProfile()
         ins->m_data_index[i] = -1;
         m_block_data_index[nb_ins][i] = -1;
         // if(m_trace) m_trace->info()<<"Ghost Row : "<<i<<" "<<ins->m_row_index[i];
-      } else {
+      }
+      else {
 #ifdef USE_VMAP
         std::pair<RowCols::iterator, bool> finder = row_cols[row].insert(col);
         std::pair<RowCols::iterator, bool> block_finder = block_row_cols[row].insert(col);
 #else
         std::pair<RowCols::iterator, bool> finder =
-            row_cols[row].insert(std::pair<Integer, Integer>(col, 0));
+        row_cols[row].insert(std::pair<Integer, Integer>(col, 0));
 #endif
         RowCols::iterator inner_iter = finder.first;
         RowCols::iterator block_iter = block_finder.first;
@@ -348,20 +343,20 @@ StreamVBlockMatrixBuilderT<ValueT>::computeProfile()
             VALUE_OF(block_iter) = block_k - block_gk;
             ins->m_data_index[i] = k - gk;
             m_block_data_index[nb_ins][i] = block_k - block_gk;
-          } else {
+          }
+          else {
             // be careful, position will increment with ghost_offset after
             VALUE_OF(inner_iter) = gk;
             VALUE_OF(block_iter) = block_gk;
             ins->m_data_index[i] = gk;
             m_block_data_index[nb_ins][i] = block_gk;
             ++m_ghost_row_size[row];
-            m_block_ghost_row_size[row] += block_sizes->size(ins->m_row_index[i])
-                * block_sizes->size(ins->m_col_index[i]);
+            m_block_ghost_row_size[row] += block_sizes->size(ins->m_row_index[i]) * block_sizes->size(ins->m_col_index[i]);
           }
           ++m_row_size[row];
-          m_block_row_size[row] += block_sizes->size(ins->m_row_index[i])
-              * block_sizes->size(ins->m_col_index[i]);
-        } else {
+          m_block_row_size[row] += block_sizes->size(ins->m_row_index[i]) * block_sizes->size(ins->m_col_index[i]);
+        }
+        else {
           ins->m_data_index[i] = VALUE_OF(inner_iter);
           m_block_data_index[nb_ins][i] = VALUE_OF(block_iter);
         }
@@ -371,9 +366,9 @@ StreamVBlockMatrixBuilderT<ValueT>::computeProfile()
   }
 
   ArrayView<Integer> m_row_offsets =
-      m_matrix_impl->internal().getCSRProfile().getRowOffset();
+  m_matrix_impl->internal().getCSRProfile().getRowOffset();
   ArrayView<Integer> m_block_row_offsets =
-      m_matrix_impl->internal().getCSRProfile().getBlockRowOffset();
+  m_matrix_impl->internal().getCSRProfile().getBlockRowOffset();
   m_matrix_size = 0;
   m_block_matrix_size = 0;
   for (Integer row = 0; row < m_local_size; ++row) {
@@ -414,11 +409,12 @@ StreamVBlockMatrixBuilderT<ValueT>::computeProfile()
       const Integer col = m_cols[j];
       if (index == 0) {
         m_block_cols[index] = 0;
-      } else {
+      }
+      else {
         m_block_cols[index] = m_block_cols[index - 1] + previous_block_size;
       }
       previous_block_size =
-          block_sizes->size(col) * block_sizes->size(irow + m_local_offset);
+      block_sizes->size(col) * block_sizes->size(irow + m_local_offset);
       index++;
     }
   }
@@ -434,12 +430,13 @@ StreamVBlockMatrixBuilderT<ValueT>::computeProfile()
       if (row == m_local_size) {
         // Ghost row
         ins->m_data_index[i] = m_block_matrix_size; // equivalent to the null position
-      } else {
+      }
+      else {
         const Integer col = ins->m_col_index[i];
         const Integer ghost_offset =
-            (isLocal(col) ? 0 : m_block_row_size[row] - m_block_ghost_row_size[row]);
+        (isLocal(col) ? 0 : m_block_row_size[row] - m_block_ghost_row_size[row]);
         ins->m_data_index[i] =
-            m_block_data_index[nb_ins][i] + m_block_row_offsets[row] + ghost_offset;
+        m_block_data_index[nb_ins][i] + m_block_row_offsets[row] + ghost_offset;
       }
     }
     nb_ins++;

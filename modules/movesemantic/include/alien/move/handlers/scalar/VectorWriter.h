@@ -28,14 +28,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 class VectorWriter
-: protected MoveObject<VectorData>,
-  public Common::VectorWriterT<Arccore::Real, Parameters<GlobalIndexer>>
+: protected MoveObject<VectorData>
+, public Common::VectorWriterT<Arccore::Real, Parameters<GlobalIndexer>>
 {
  public:
   VectorWriter(VectorData&& vector)
@@ -55,8 +56,8 @@ class VectorWriter
 /*---------------------------------------------------------------------------*/
 
 class LocalVectorWriter
-: protected MoveObject<VectorData>,
-  public Common::VectorWriterT<Arccore::Real, Parameters<LocalIndexer>>
+: protected MoveObject<VectorData>
+, public Common::VectorWriterT<Arccore::Real, Parameters<LocalIndexer>>
 {
  public:
   LocalVectorWriter(VectorData&& vector)

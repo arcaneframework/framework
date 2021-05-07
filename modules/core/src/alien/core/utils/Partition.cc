@@ -29,7 +29,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -44,8 +45,7 @@ Partition::Partition(const ISpace& space, const MatrixDistribution& distribution
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-Partition::create(const UniqueArray<String>& tags)
+void Partition::create(const UniqueArray<String>& tags)
 {
   m_tags.clear();
   m_tags.copy(tags);

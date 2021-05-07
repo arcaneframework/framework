@@ -30,7 +30,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -86,8 +87,7 @@ Universe::dataBase()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-Universe::bigBang()
+void Universe::bigBang()
 {
   if (!m_internal) {
     m_internal.reset(new Internal());
@@ -97,8 +97,7 @@ Universe::bigBang()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-Universe::setTraceMng(ITraceMng* traceMng)
+void Universe::setTraceMng(ITraceMng* traceMng)
 {
   m_internal->m_trace_mng = traceMng;
 }
@@ -115,8 +114,7 @@ Universe::traceMng() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-Universe::setVerbosityLevel(Verbosity::Level level)
+void Universe::setVerbosityLevel(Verbosity::Level level)
 {
   m_internal->m_level = level;
 }
@@ -133,8 +131,7 @@ Universe::verbosityLevel() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-Universe::reset()
+void Universe::reset()
 {
   m_internal.reset(new Internal());
 }

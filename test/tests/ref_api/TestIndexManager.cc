@@ -20,11 +20,11 @@
 
 #include <alien/distribution/MatrixDistribution.h>
 #include <alien/distribution/VectorDistribution.h>
-#include <alien/index_manager/IndexManager.h>
 #include <alien/index_manager/IIndexManager.h>
-#include <alien/index_manager/functional/DefaultAbstractFamily.h>
+#include <alien/index_manager/IndexManager.h>
 #include <alien/index_manager/functional/AbstractItemFamily.h>
 #include <alien/index_manager/functional/BasicIndexManager.h>
+#include <alien/index_manager/functional/DefaultAbstractFamily.h>
 #include <alien/ref/AlienRefSemantic.h>
 
 #include <Environment.h>
@@ -76,33 +76,29 @@ TEST(TestIndexManager, ConstructorWithGhosts)
   Alien::UniqueArray<Alien::Int64> uids;
   Alien::UniqueArray<Alien::Integer> owners;
 
-  uids.reserve(local_size+2);
-  owners.reserve(local_size+2);
+  uids.reserve(local_size + 2);
+  owners.reserve(local_size + 2);
   for (int i = 0; i < ni; ++i) {
     uids.add(comm_rank * ni + i);
     owners.add(comm_rank);
   }
 
-  int nb_ghost = 0 ;
-  if(comm_size>1)
-  {
-    if(comm_rank>0)
-    {
+  int nb_ghost = 0;
+  if (comm_size > 1) {
+    if (comm_rank > 0) {
       uids.add(comm_rank * ni + -1);
-      owners.add(comm_rank-1) ;
-      ++nb_ghost ;
+      owners.add(comm_rank - 1);
+      ++nb_ghost;
     }
-    if(comm_rank<comm_size-1)
-    {
+    if (comm_rank < comm_size - 1) {
       uids.add(comm_rank * ni + ni);
-      owners.add(comm_rank+1) ;
-      ++nb_ghost ;
+      owners.add(comm_rank + 1);
+      ++nb_ghost;
     }
   }
 
-
-  Alien::AbstractItemFamily family(uids,owners, AlienTest::Environment::parallelMng());
-  Alien::IndexManager index_manager(AlienTest::Environment::parallelMng(),trace_mng);
+  Alien::AbstractItemFamily family(uids, owners, AlienTest::Environment::parallelMng());
+  Alien::IndexManager index_manager(AlienTest::Environment::parallelMng(), trace_mng);
 
   auto indexSetU = index_manager.buildScalarIndexSet("U", family, 0);
 
@@ -111,7 +107,6 @@ TEST(TestIndexManager, ConstructorWithGhosts)
   ASSERT_EQ(index_manager.globalSize(), global_size);
   ASSERT_EQ(index_manager.localSize(), local_size);
 }
-
 
 TEST(TestIndexManager, ConstructorWithGhosts2)
 {
@@ -128,32 +123,28 @@ TEST(TestIndexManager, ConstructorWithGhosts2)
   Alien::UniqueArray<Alien::Integer> lids;
   Alien::UniqueArray<Alien::Integer> owners;
 
-  uids.reserve(local_size+2);
-  owners.reserve(local_size+2);
+  uids.reserve(local_size + 2);
+  owners.reserve(local_size + 2);
   for (int i = 0; i < ni; ++i) {
     uids.add(comm_rank * ni + i);
-    owners.add(comm_rank) ;
+    owners.add(comm_rank);
   }
 
-  int nb_ghost = 0 ;
-  if(comm_size>1)
-  {
-    if(comm_rank>0)
-    {
+  int nb_ghost = 0;
+  if (comm_size > 1) {
+    if (comm_rank > 0) {
       uids.add(comm_rank * ni + -1);
-      owners.add(comm_rank-1) ;
-      ++nb_ghost ;
+      owners.add(comm_rank - 1);
+      ++nb_ghost;
     }
-    if(comm_rank<comm_size-1)
-    {
+    if (comm_rank < comm_size - 1) {
       uids.add(comm_rank * ni + ni);
-      owners.add(comm_rank+1) ;
-      ++nb_ghost ;
+      owners.add(comm_rank + 1);
+      ++nb_ghost;
     }
   }
 
-
-  Alien::AbstractFamily family(uids,owners, AlienTest::Environment::parallelMng());
+  Alien::AbstractFamily family(uids, owners, AlienTest::Environment::parallelMng());
 
   Alien::BasicIndexManager index_manager(AlienTest::Environment::parallelMng());
 
@@ -163,7 +154,6 @@ TEST(TestIndexManager, ConstructorWithGhosts2)
 
   ASSERT_EQ(index_manager.globalSize(), global_size);
   ASSERT_EQ(index_manager.localSize(), local_size);
-
 }
 
 TEST(TestIndexManager, MultiDofFamily)
@@ -190,7 +180,7 @@ TEST(TestIndexManager, MultiDofFamily)
   }
 
   Alien::DefaultAbstractFamily node_family(
-      node_uid, AlienTest::Environment::parallelMng());
+  node_uid, AlienTest::Environment::parallelMng());
 
   auto cell_local_size = 2 * (ni - 1);
   if (comm_rank == comm_size - 1)
@@ -204,7 +194,7 @@ TEST(TestIndexManager, MultiDofFamily)
   }
 
   Alien::DefaultAbstractFamily cell_family(
-      cell_uid, AlienTest::Environment::parallelMng());
+  cell_uid, AlienTest::Environment::parallelMng());
 
   Alien::IndexManager index_manager(AlienTest::Environment::parallelMng());
 
@@ -258,9 +248,9 @@ TEST(TestIndexManager, DistributionConstructor)
   index_manager.prepare();
 
   Alien::MatrixDistribution mdist = Alien::MatrixDistribution(
-      global_size, global_size, local_size, AlienTest::Environment::parallelMng());
+  global_size, global_size, local_size, AlienTest::Environment::parallelMng());
   Alien::VectorDistribution vdist = Alien::VectorDistribution(
-      global_size, local_size, AlienTest::Environment::parallelMng());
+  global_size, local_size, AlienTest::Environment::parallelMng());
 
   ASSERT_EQ(mdist.rowSpace().size(), global_size);
   ASSERT_EQ(vdist.space().size(), global_size);

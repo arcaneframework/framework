@@ -22,7 +22,8 @@
 #include <alien/kernels/simple_csr/SimpleCSRVector.h>
 #include <alien/utils/Precomp.h>
 
-namespace Alien {
+namespace Alien
+{
 
 class RedistributorCommPlan;
 
@@ -30,7 +31,7 @@ class SimpleCSRVectorRedistributor
 {
  public:
   SimpleCSRVectorRedistributor(
-      const RedistributorCommPlan* commPlan, const VectorDistribution& src_dist);
+  const RedistributorCommPlan* commPlan, const VectorDistribution& src_dist);
   virtual ~SimpleCSRVectorRedistributor();
 
   void distribute(const SimpleCSRVector<Real>& src, SimpleCSRVector<Real>& tgt);

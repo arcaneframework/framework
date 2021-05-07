@@ -28,12 +28,14 @@
 #include <alien/kernels/simple_csr/SimpleCSRPrecomp.h>
 #include <alien/kernels/simple_csr/SimpleCSRVector.h>
 
-namespace Alien::SimpleCSRInternal {
+namespace Alien::SimpleCSRInternal
+{
 
 /*@! Classe amie de SimpleCSRMatrix pour externaliser plus rapidement (mais moins
  * proprement)
  * le produit matrice vecteur */
-template <typename ValueT> class SimpleCSRMatrixMultT
+template <typename ValueT>
+class SimpleCSRMatrixMultT
 {
  public:
   //! Template parameter

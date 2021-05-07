@@ -29,7 +29,8 @@ limitations under the License.
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 class Space;
 
@@ -45,7 +46,8 @@ class Space;
  * \tparam M The type of matrix used
  * \tparam V The type of vector used
  */
-template <class M, class V> class IInternalLinearAlgebraExpr
+template <class M, class V>
+class IInternalLinearAlgebraExpr
 {
  public:
   //! Type of the matrix used
@@ -169,7 +171,7 @@ template <class M, class V> class IInternalLinearAlgebraExpr
   virtual void dump(Matrix const& a, std::string const& filename) const
   {
     throw NotImplementedException(
-        A_FUNCINFO, "IInternalLinearAlgebra::dump not implemented");
+    A_FUNCINFO, "IInternalLinearAlgebra::dump not implemented");
   }
 
   /*!
@@ -181,7 +183,7 @@ template <class M, class V> class IInternalLinearAlgebraExpr
   virtual void dump(Vector const& x, std::string const& filename) const
   {
     throw NotImplementedException(
-        A_FUNCINFO, "IInternalLinearAlgebra::dump not implemented");
+    A_FUNCINFO, "IInternalLinearAlgebra::dump not implemented");
   }
 
   /*!
@@ -194,7 +196,7 @@ template <class M, class V> class IInternalLinearAlgebraExpr
    * \param[in,out] r The resulting vector
    */
   virtual void mult(
-      const Matrix& a, const UniqueArray<Real>& x, UniqueArray<Real>& r) const = 0;
+  const Matrix& a, const UniqueArray<Real>& x, UniqueArray<Real>& r) const = 0;
 
   /*!
    * \brief Scale a vector by a factor and adds the result to another vector
@@ -207,7 +209,7 @@ template <class M, class V> class IInternalLinearAlgebraExpr
    * \param[in,out] y The resulting vector
    */
   virtual void axpy(
-      const Real& alpha, const UniqueArray<Real>& x, UniqueArray<Real>& y) const = 0;
+  const Real& alpha, const UniqueArray<Real>& x, UniqueArray<Real>& y) const = 0;
 
   /*!
    * \brief Scale a vector by a factor and adds the result to another vector
@@ -219,7 +221,7 @@ template <class M, class V> class IInternalLinearAlgebraExpr
    * \param[in] x The vector to add
    */
   virtual void aypx(
-      const Real& alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const = 0;
+  const Real& alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const = 0;
 
   /*!
    * \brief Copy a vector in another one
@@ -237,7 +239,7 @@ template <class M, class V> class IInternalLinearAlgebraExpr
    * \returns The dot product of x * y
    */
   virtual Real dot(Integer local_size, const UniqueArray<Real>& x,
-      const UniqueArray<Real>& y) const = 0;
+                   const UniqueArray<Real>& y) const = 0;
 
   /*!
    * \brief Scale a vector by a factor

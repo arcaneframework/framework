@@ -34,19 +34,23 @@
 
 /*---------------------------------------------------------------------------*/
 
-namespace Alien::SimpleCSRInternal {
+namespace Alien::SimpleCSRInternal
+{
 
-template <typename ValueT> class SimpleCSRMatrixMultT;
+template <typename ValueT>
+class SimpleCSRMatrixMultT;
 
 }
 
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 
-template <typename ValueT> class SimpleCSRMatrix : public IMatrixImpl
+template <typename ValueT>
+class SimpleCSRMatrix : public IMatrixImpl
 {
  public:
   typedef ValueT ValueType;
@@ -74,10 +78,7 @@ template <typename ValueT> class SimpleCSRMatrix : public IMatrixImpl
   /** Destructeur de la classe */
   virtual ~SimpleCSRMatrix() {}
 
-  void setTraceMng(ITraceMng* trace_mng)
-  {
-    m_trace = trace_mng ;
-  }
+  void setTraceMng(ITraceMng* trace_mng) { m_trace = trace_mng; }
 
  public:
   void free()
@@ -93,9 +94,11 @@ template <typename ValueT> class SimpleCSRMatrix : public IMatrixImpl
     if (block()) {
       const Integer size = block()->size();
       m_matrix.getValues().resize((getCSRProfile().getNnz() + 1) * size * size);
-    } else if (vblock()) {
+    }
+    else if (vblock()) {
       m_matrix.getValues().resize(getCSRProfile().getBlockNnz() + 1);
-    } else {
+    }
+    else {
       m_matrix.getValues().resize(getCSRProfile().getNnz() + 1);
     }
   }
@@ -151,7 +154,7 @@ template <typename ValueT> class SimpleCSRMatrix : public IMatrixImpl
   }
 
   void parallelStart(ArrayView<Integer> offset, IMessagePassingMng* parallel_mng,
-      bool need_sort_ghost_col = false)
+                     bool need_sort_ghost_col = false)
   {
     m_local_size = getCSRProfile().getNRows();
     m_parallel_mng = parallel_mng;
@@ -162,7 +165,8 @@ template <typename ValueT> class SimpleCSRMatrix : public IMatrixImpl
       m_myrank = 0;
       m_nproc = 1;
       m_is_parallel = false;
-    } else {
+    }
+    else {
       m_myrank = m_parallel_mng->commRank();
       m_nproc = m_parallel_mng->commSize();
       m_local_offset = offset[m_myrank];
@@ -174,13 +178,15 @@ template <typename ValueT> class SimpleCSRMatrix : public IMatrixImpl
         sortGhostCols(offset);
       if (block()) {
         m_matrix_dist_info.compute(
-            m_nproc, offset, m_myrank, m_parallel_mng, getCSRProfile(), m_trace);
-      } else if (vblock()) {
+        m_nproc, offset, m_myrank, m_parallel_mng, getCSRProfile(), m_trace);
+      }
+      else if (vblock()) {
         m_matrix_dist_info.compute(m_nproc, offset, m_myrank, m_parallel_mng,
-            getCSRProfile(), vblock(), distribution(), m_trace);
-      } else {
+                                   getCSRProfile(), vblock(), distribution(), m_trace);
+      }
+      else {
         m_matrix_dist_info.compute(
-            m_nproc, offset, m_myrank, m_parallel_mng, getCSRProfile(), m_trace);
+        m_nproc, offset, m_myrank, m_parallel_mng, getCSRProfile(), m_trace);
       }
       m_ghost_size = m_matrix_dist_info.m_ghost_nrow;
     }
@@ -218,7 +224,8 @@ template <typename ValueT> class SimpleCSRMatrix : public IMatrixImpl
             cols[first + local_count] = col;
             values[first + local_count] = values[k];
             ++local_count;
-          } else {
+          }
+          else {
             gcols[ghost_count] = col;
             gvalues[ghost_count] = values[k];
             ++ghost_count;

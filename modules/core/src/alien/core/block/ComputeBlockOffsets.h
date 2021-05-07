@@ -36,9 +36,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
-namespace IFPEN {
+namespace IFPEN
+{
   class BlockVector;
 }
 
@@ -53,8 +55,7 @@ namespace IFPEN {
  * \param[in,out] offsets The offset vector
  */
 template <typename T = std::vector<std::size_t>>
-void
-computeBlockOffsets(const VectorDistribution& dist, const Block& block, T& offsets)
+void computeBlockOffsets(const VectorDistribution& dist, const Block& block, T& offsets)
 {
   IMessagePassingMng* parallel_mng = dist.parallelMng();
   const Integer block_size = block.size();
@@ -64,7 +65,8 @@ computeBlockOffsets(const VectorDistribution& dist, const Block& block, T& offse
     for (Integer i = 0; i < nproc; ++i)
       offsets[i] = dist.offset(i) * block_size;
     offsets[nproc] = dist.globalSize() * block_size;
-  } else {
+  }
+  else {
     offsets.resize(2);
     offsets[0] = 0;
     offsets[1] = dist.globalSize() * block_size;
@@ -82,8 +84,7 @@ computeBlockOffsets(const VectorDistribution& dist, const Block& block, T& offse
  * \param[in,out] offsets The offset vector
  */
 template <typename T = std::vector<std::size_t>>
-void
-computeBlockOffsets(const MatrixDistribution& dist, const Block& block, T& offsets)
+void computeBlockOffsets(const MatrixDistribution& dist, const Block& block, T& offsets)
 {
   IMessagePassingMng* parallel_mng = dist.parallelMng();
   const Integer block_size = block.size();
@@ -93,7 +94,8 @@ computeBlockOffsets(const MatrixDistribution& dist, const Block& block, T& offse
     for (Integer i = 0; i < nproc; ++i)
       offsets[i] = dist.rowOffset(i) * block_size;
     offsets[nproc] = dist.globalRowSize() * block_size;
-  } else {
+  }
+  else {
     offsets.resize(2);
     offsets[0] = 0;
     offsets[1] = dist.globalRowSize() * block_size;

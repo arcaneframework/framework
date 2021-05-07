@@ -34,7 +34,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -215,18 +216,15 @@ Space::size() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool
-Space::operator==(const ISpace& space) const
+bool Space::operator==(const ISpace& space) const
 {
-  return (size() == space.size())
-      && ((name() == space.name()) || (name().empty() || space.name().empty()));
+  return (size() == space.size()) && ((name() == space.name()) || (name().empty() || space.name().empty()));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool
-Space::operator!=(const ISpace& space) const
+bool Space::operator!=(const ISpace& space) const
 {
   return not operator==(space);
 }
@@ -243,8 +241,7 @@ Space::name() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-Space::setField(String label, const UniqueArray<Arccore::Integer>& indices)
+void Space::setField(String label, const UniqueArray<Arccore::Integer>& indices)
 {
   m_internal->setField(label, indices);
 }

@@ -24,39 +24,40 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Matrix::Matrix()
 : m_impl(new MultiMatrixImpl(std::make_shared<Space>(0), std::make_shared<Space>(0),
-    std::make_shared<MatrixDistribution>(MatrixDistribution())))
+                             std::make_shared<MatrixDistribution>(MatrixDistribution())))
 {}
 
 /*---------------------------------------------------------------------------*/
 
 Matrix::Matrix(const MatrixDistribution& dist)
 : m_impl(
-    new MultiMatrixImpl(dist.rowSpace().clone(), dist.colSpace().clone(), dist.clone()))
+  new MultiMatrixImpl(dist.rowSpace().clone(), dist.colSpace().clone(), dist.clone()))
 {}
 
 /*---------------------------------------------------------------------------*/
 
 Matrix::Matrix(
-    Integer nrows, Integer ncols, Integer nrows_local, IMessagePassingMng* parallel_mng)
+Integer nrows, Integer ncols, Integer nrows_local, IMessagePassingMng* parallel_mng)
 : m_impl(
-    new MultiMatrixImpl(std::make_shared<Space>(nrows), std::make_shared<Space>(ncols),
-        std::make_shared<MatrixDistribution>(
-            MatrixDistribution(nrows, ncols, nrows_local, parallel_mng))))
+  new MultiMatrixImpl(std::make_shared<Space>(nrows), std::make_shared<Space>(ncols),
+                      std::make_shared<MatrixDistribution>(
+                      MatrixDistribution(nrows, ncols, nrows_local, parallel_mng))))
 {}
 
 /*---------------------------------------------------------------------------*/
 
 Matrix::Matrix(Integer nrows, Integer ncols, IMessagePassingMng* parallel_mng)
 : m_impl(new MultiMatrixImpl(std::make_shared<Space>(nrows),
-    std::make_shared<Space>(ncols),
-    std::make_shared<MatrixDistribution>(MatrixDistribution(nrows, ncols, parallel_mng))))
+                             std::make_shared<Space>(ncols),
+                             std::make_shared<MatrixDistribution>(MatrixDistribution(nrows, ncols, parallel_mng))))
 {}
 
 /*---------------------------------------------------------------------------*/
@@ -80,8 +81,7 @@ Matrix::operator=(Matrix&& matrix)
 
 /*---------------------------------------------------------------------------*/
 
-void
-Matrix::visit(ICopyOnWriteMatrix& m) const
+void Matrix::visit(ICopyOnWriteMatrix& m) const
 {
   m.accept(m_impl);
 }
@@ -112,16 +112,14 @@ Matrix::colSpace() const
 
 /*---------------------------------------------------------------------------*/
 
-void
-Matrix::setUserFeature(String feature)
+void Matrix::setUserFeature(String feature)
 {
   m_impl->setFeature(feature);
 }
 
 /*---------------------------------------------------------------------------*/
 
-bool
-Matrix::hasUserFeature(String feature) const
+bool Matrix::hasUserFeature(String feature) const
 {
   return m_impl->hasFeature(feature);
 }

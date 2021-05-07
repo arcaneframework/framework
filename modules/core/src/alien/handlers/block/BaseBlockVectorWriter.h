@@ -29,22 +29,26 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename T> class SimpleCSRVector;
+template <typename T>
+class SimpleCSRVector;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Common {
+namespace Common
+{
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
-  template <typename ValueT> class BlockVectorWriterBaseT
+  template <typename ValueT>
+  class BlockVectorWriterBaseT
   {
    public:
     explicit BlockVectorWriterBaseT(IVector& vector);
@@ -82,13 +86,14 @@ namespace Common {
       this->m_changed = true;
       if (this->m_block)
         return this->m_values.subView(
-            iIndex * this->m_block->size(), this->m_block->size());
+        iIndex * this->m_block->size(), this->m_block->size());
       else if (this->m_vblock) {
         const VBlock* block_sizes = this->m_vblock;
         const Integer size = block_sizes->size(iIndex);
         const Integer offset = this->m_vector_impl->vblockImpl().offset(iIndex);
         return this->m_values.subView(offset, size);
-      } else
+      }
+      else
         throw FatalErrorException(A_FUNCINFO, "No block infos");
     }
   };
@@ -110,14 +115,15 @@ namespace Common {
       this->m_changed = true;
       if (this->m_block)
         return this->m_values.subView(
-            (iIndex - m_local_offset) * this->m_block->size(), this->m_block->size());
+        (iIndex - m_local_offset) * this->m_block->size(), this->m_block->size());
       else if (this->m_vblock) {
         const VBlock* block_sizes = this->m_vblock;
         // const Integer size = block_sizes.size(iIndex-m_local_offset);
         const Integer size = block_sizes->size(iIndex);
         const Integer offset = this->m_vector_impl->vblockImpl().offset(iIndex);
         return this->m_values.subView(offset, size);
-      } else
+      }
+      else
         throw FatalErrorException(A_FUNCINFO, "No block infos");
     }
 

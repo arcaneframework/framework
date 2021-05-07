@@ -28,44 +28,43 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 class ALIEN_EXPORT SolverFactory
 {
-  public:
-  static void add_options(BackEndId back_end,
-                          ISolverFabric::CmdLineOptionDescType& cmdline_options)
+ public:
+  static void add_options(
+  BackEndId back_end, ISolverFabric::CmdLineOptionDescType& cmdline_options)
   {
-     auto* fabric = SolverFabricRegisterer::getSolverFabric(back_end) ;
-     if(fabric)
-       fabric->add_options(cmdline_options) ;
+    auto* fabric = SolverFabricRegisterer::getSolverFabric(back_end);
+    if (fabric)
+      fabric->add_options(cmdline_options);
   }
 
   static ILinearSolver* create(BackEndId back_end,
-                               ISolverFabric::CmdLineOptionType const& options,
-                               IMessagePassingMng* pm)
+                               ISolverFabric::CmdLineOptionType const& options, IMessagePassingMng* pm)
   {
-     auto* fabric = SolverFabricRegisterer::getSolverFabric(back_end) ;
-     if(fabric)
-       return fabric->create(options,pm) ;
-     else
-       return nullptr ;
+    auto* fabric = SolverFabricRegisterer::getSolverFabric(back_end);
+    if (fabric)
+      return fabric->create(options, pm);
+    else
+      return nullptr;
   }
 
   static ILinearSolver* create(BackEndId back_end,
-                              ISolverFabric::JsonOptionType const& options,
-                              IMessagePassingMng* pm)
+                               ISolverFabric::JsonOptionType const& options, IMessagePassingMng* pm)
   {
-     auto* fabric = SolverFabricRegisterer::getSolverFabric(back_end) ;
-     if(fabric)
-       return fabric->create(options,pm) ;
-     else
-       return nullptr ;
+    auto* fabric = SolverFabricRegisterer::getSolverFabric(back_end);
+    if (fabric)
+      return fabric->create(options, pm);
+    else
+      return nullptr;
   }
-} ;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -74,4 +73,3 @@ class ALIEN_EXPORT SolverFactory
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

@@ -22,13 +22,14 @@
 
 #include <alien/utils/Precomp.h>
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 using namespace Arccore::MessagePassing;
 
 RedistributorCommPlan::RedistributorCommPlan(
-    int globalSize, IMessagePassingMng* super_pm, IMessagePassingMng* target_pm)
+int globalSize, IMessagePassingMng* super_pm, IMessagePassingMng* target_pm)
 : m_super_pm(super_pm)
 , m_tgt_pm(target_pm)
 , m_proc_num(super_pm->commSize() + 1, -1)
@@ -44,7 +45,7 @@ RedistributorCommPlan::RedistributorCommPlan(
   // TODO avoid communication if m_pm_dst is m_pm_super
   UniqueArray<Int32> reverse_proc_num(m_super_pm->commSize());
   Arccore::MessagePassing::mpAllGather(
-      m_super_pm, ConstArrayView<Int32>(1, &tgt_rank), reverse_proc_num);
+  m_super_pm, ConstArrayView<Int32>(1, &tgt_rank), reverse_proc_num);
 
   for (Int32 i = 0; i < (Int32)reverse_proc_num.size(); ++i) {
     Int32 rank = reverse_proc_num[i];
@@ -81,8 +82,7 @@ RedistributorCommPlan::tgtDist() const
   return m_tgt_dist.view();
 }
 
-void
-RedistributorCommPlan::_buildTgtDist()
+void RedistributorCommPlan::_buildTgtDist()
 {
   Int32 super_comm_size = m_super_pm->commSize();
   Int32 super_rank = 0;
@@ -108,7 +108,7 @@ RedistributorCommPlan::_buildTgtDist()
 
   // This communication can be avoided if we store a root in the ctor.
   Int32 root = Arccore::MessagePassing::mpAllReduce(
-      m_super_pm, Arccore::MessagePassing::ReduceMax, super_rank);
+  m_super_pm, Arccore::MessagePassing::ReduceMax, super_rank);
 
   // Broadcast from root to all processes.
   Arccore::MessagePassing::mpBroadcast(m_super_pm, m_tgt_dist, root);

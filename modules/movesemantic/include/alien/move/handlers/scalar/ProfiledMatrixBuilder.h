@@ -25,13 +25,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ProfiledMatrixBuilder : protected MoveObject<MatrixData>,
-                              public Common::ProfiledMatrixBuilder
+class ProfiledMatrixBuilder : protected MoveObject<MatrixData>
+, public Common::ProfiledMatrixBuilder
 {
  public:
   using Common::ProfiledMatrixBuilder::ResetFlag;

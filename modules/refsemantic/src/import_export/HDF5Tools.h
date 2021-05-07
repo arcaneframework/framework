@@ -25,7 +25,8 @@
 
 #include <alien/utils/Precomp.h>
 
-namespace Alien {
+namespace Alien
+{
 struct HDF5Base
 {
   typedef enum
@@ -69,7 +70,10 @@ struct HDF5Base
 
    public:
 #ifdef ALIEN_USE_HDF5
-    hid_t nativeType(float) const { return H5T_NATIVE_FLOAT; }
+    hid_t nativeType(float) const
+    {
+      return H5T_NATIVE_FLOAT;
+    }
     hid_t nativeType(double) const { return H5T_NATIVE_DOUBLE; }
     hid_t nativeType(long double) const { return H5T_NATIVE_LDOUBLE; }
     hid_t nativeType(unsigned int) const { return H5T_NATIVE_UINT; }
@@ -85,7 +89,10 @@ struct HDF5Base
     hid_t nativeType(short) const { return H5T_NATIVE_SHORT; }
 // hid_t nativeType(eDataType sd) const;
 #endif
-    std::string type(double) const { return "double"; }
+    std::string type(double) const
+    {
+      return "double";
+    }
     std::string type(float) const { return "float"; }
     std::string type(int) const { return "int32"; }
     std::string type(Int64) const { return "int64"; }
@@ -132,7 +139,7 @@ struct HDF5Base
 struct Exporter : public HDF5Base
 {
   Exporter(std::string const& name, std::string const& out_format, int prec,
-      int smart_size_limit = 4)
+           int smart_size_limit = 4)
   : HDF5Base(name)
   , m_smart_size_limit(smart_size_limit)
   , m_write_xml_hdf(false)
@@ -156,7 +163,7 @@ struct Exporter : public HDF5Base
       hfile = H5Fcreate(hfile_name.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 #else
       throw FatalErrorException(A_FUNCINFO,
-          "hdf5 format requested while there is no support for hdf5 in Alien");
+                                "hdf5 format requested while there is no support for hdf5 in Alien");
 #endif
     }
     if (out_format.compare("smart") == 0) {
@@ -169,7 +176,7 @@ struct Exporter : public HDF5Base
       hfile = H5Fcreate(hfile_name.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 #else
       throw FatalErrorException(A_FUNCINFO,
-          "smart format requested while there is no support for hdf5 in Alien");
+                                "smart format requested while there is no support for hdf5 in Alien");
 #endif
     }
   }
@@ -198,7 +205,7 @@ struct Exporter : public HDF5Base
     if (type == HDF5 || type == SMART) {
 #ifdef ALIEN_USE_HDF5
       node.h_id =
-          H5Gcreate2(hfile, node.name.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+      H5Gcreate2(hfile, node.name.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 #endif
     }
     return node;
@@ -217,14 +224,14 @@ struct Exporter : public HDF5Base
     if (type == HDF5 || type == SMART) {
 #ifdef ALIEN_USE_HDF5
       node.h_id = H5Gcreate2(
-          parent.h_id, node.name.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+      parent.h_id, node.name.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 #endif
     }
     return node;
   }
 
   FileNode createFileNode(
-      FileNode const& parent, std::string name, std::string group_name)
+  FileNode const& parent, std::string name, std::string group_name)
   {
     FileNode node;
     node.name = name;
@@ -238,14 +245,14 @@ struct Exporter : public HDF5Base
     if (type == HDF5 || type == SMART) {
 #ifdef ALIEN_USE_HDF5
       node.h_id = H5Gcreate2(
-          parent.h_id, node.name.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+      parent.h_id, node.name.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 #endif
     }
     return node;
   }
 
   FileNode createFileNode(FileNode const& parent, std::string name, std::string att_name,
-      std::string att_kind, bool is_group = false)
+                          std::string att_kind, bool is_group = false)
   {
     FileNode node;
     node.name = name;
@@ -263,7 +270,7 @@ struct Exporter : public HDF5Base
     if (type == HDF5 || type == SMART) {
 #ifdef ALIEN_USE_HDF5
       node.h_id = H5Gcreate2(
-          parent.h_id, att_name.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+      parent.h_id, att_name.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 #endif
     }
     return node;
@@ -309,10 +316,10 @@ struct Exporter : public HDF5Base
       hsize_t dim = 1;
       hid_t dataspace_id = H5Screate_simple(1, &dim, NULL);
       hid_t dataset_id =
-          H5Dcreate2(parent_node.h_id, node_name.c_str(), m_types.nativeType(ValueT()),
-              dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+      H5Dcreate2(parent_node.h_id, node_name.c_str(), m_types.nativeType(ValueT()),
+                 dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
       herr_t status = H5Dwrite(
-          dataset_id, m_types.nativeType(ValueT()), H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
+      dataset_id, m_types.nativeType(ValueT()), H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
       if (status)
         std::cerr << "Error while writing HDF5 data set" << std::endl;
       H5Dclose(dataset_id);
@@ -330,10 +337,10 @@ struct Exporter : public HDF5Base
       hsize_t dim = 1;
       hid_t dataspace_id = H5Screate_simple(1, &dim, NULL);
       hid_t dataset_id =
-          H5Dcreate2(parent_node.h_id, node_name.c_str(), m_types.nativeType(ValueT()),
-              dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+      H5Dcreate2(parent_node.h_id, node_name.c_str(), m_types.nativeType(ValueT()),
+                 dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
       herr_t status = H5Dwrite(
-          dataset_id, m_types.nativeType(ValueT()), H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
+      dataset_id, m_types.nativeType(ValueT()), H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
       if (status)
         std::cerr << "Error while writing HDF5 data set" << std::endl;
       H5Dclose(dataset_id);
@@ -348,7 +355,7 @@ struct Exporter : public HDF5Base
 
   template <typename ValueT>
   void write(FileNode const& parent_node, const std::string& node_name,
-      std::vector<ValueT>& buffer, int nb_elems_per_line = 1)
+             std::vector<ValueT>& buffer, int nb_elems_per_line = 1)
   {
     switch (type) {
     case ASCII: {
@@ -381,10 +388,10 @@ struct Exporter : public HDF5Base
       hsize_t dim = buffer.size();
       hid_t dataspace_id = H5Screate_simple(1, &dim, NULL);
       hid_t dataset_id =
-          H5Dcreate2(parent_node.h_id, node_name.c_str(), m_types.nativeType(ValueT()),
-              dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+      H5Dcreate2(parent_node.h_id, node_name.c_str(), m_types.nativeType(ValueT()),
+                 dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
       herr_t status = H5Dwrite(dataset_id, m_types.nativeType(ValueT()), H5S_ALL, H5S_ALL,
-          H5P_DEFAULT, buffer.data());
+                               H5P_DEFAULT, buffer.data());
       if (status)
         std::cerr << "Error while writing HDF5 data set" << std::endl;
       H5Dclose(dataset_id);
@@ -406,7 +413,8 @@ struct Exporter : public HDF5Base
         }
         _tab(parent_node.level);
         fout << "</" << node_name << ">" << std::endl;
-      } else {
+      }
+      else {
         _tab(parent_node.level);
         fout << "<" << node_name << " format=\"hdf\"  type=\"" << m_types.type(ValueT())
              << "\">" << std::endl;
@@ -420,10 +428,10 @@ struct Exporter : public HDF5Base
       hsize_t dim = buffer.size();
       hid_t dataspace_id = H5Screate_simple(1, &dim, NULL);
       hid_t dataset_id =
-          H5Dcreate2(parent_node.h_id, node_name.c_str(), m_types.nativeType(ValueT()),
-              dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+      H5Dcreate2(parent_node.h_id, node_name.c_str(), m_types.nativeType(ValueT()),
+                 dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
       herr_t status = H5Dwrite(dataset_id, m_types.nativeType(ValueT()), H5S_ALL, H5S_ALL,
-          H5P_DEFAULT, buffer.data());
+                               H5P_DEFAULT, buffer.data());
       if (status)
         std::cerr << "Error while writing HDF5 data set" << std::endl;
       H5Dclose(dataset_id);
@@ -438,7 +446,7 @@ struct Exporter : public HDF5Base
   }
 
   void write(FileNode const& parent_node, const std::string& node_name,
-      const std::string& buffer)
+             const std::string& buffer)
   {
     switch (type) {
     case ASCII: {
@@ -463,10 +471,10 @@ struct Exporter : public HDF5Base
       hsize_t dim = buffer.size();
       hid_t dataspace_id = H5Screate_simple(1, &dim, NULL);
       hid_t dataset_id =
-          H5Dcreate2(parent_node.h_id, node_name.c_str(), m_types.nativeType(char()),
-              dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+      H5Dcreate2(parent_node.h_id, node_name.c_str(), m_types.nativeType(char()),
+                 dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
       herr_t status = H5Dwrite(dataset_id, m_types.nativeType(char()), H5S_ALL, H5S_ALL,
-          H5P_DEFAULT, buffer.c_str());
+                               H5P_DEFAULT, buffer.c_str());
       if (status)
         std::cerr << "Error while writing HDF5 data set" << std::endl;
       H5Dclose(dataset_id);
@@ -484,10 +492,10 @@ struct Exporter : public HDF5Base
       hsize_t dim = buffer.size();
       hid_t dataspace_id = H5Screate_simple(1, &dim, NULL);
       hid_t dataset_id =
-          H5Dcreate2(parent_node.h_id, node_name.c_str(), m_types.nativeType(char()),
-              dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+      H5Dcreate2(parent_node.h_id, node_name.c_str(), m_types.nativeType(char()),
+                 dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
       herr_t status = H5Dwrite(dataset_id, m_types.nativeType(char()), H5S_ALL, H5S_ALL,
-          H5P_DEFAULT, buffer.data());
+                               H5P_DEFAULT, buffer.data());
       if (status)
         std::cerr << "Error while writing HDF5 data set" << std::endl;
       H5Dclose(dataset_id);
@@ -527,20 +535,22 @@ struct Importer : public HDF5Base
       }
 #else
       throw FatalErrorException(
-          A_FUNCINFO, "xml format requested while there is no support for xml in Alien");
+      A_FUNCINFO, "xml format requested while there is no support for xml in Alien");
 #endif
-    } else if (in_format.compare("hdf5") == 0) {
+    }
+    else if (in_format.compare("hdf5") == 0) {
       format = "hdf";
       type = HDF5;
 #ifdef ALIEN_USE_HDF5
       hfile = H5Fopen(hfile_name.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
 #else
       throw FatalErrorException(A_FUNCINFO,
-          "hdf5 format requested while there is no support for hdf5 in Alien");
+                                "hdf5 format requested while there is no support for hdf5 in Alien");
 #endif
-    } else {
+    }
+    else {
       throw FatalErrorException(
-          A_FUNCINFO, "format requested not supported for read operations");
+      A_FUNCINFO, "format requested not supported for read operations");
     }
   }
 
@@ -583,7 +593,7 @@ struct Importer : public HDF5Base
       break;
     default:
       throw FatalErrorException(
-          A_FUNCINFO, "format requested not supported for read operations");
+      A_FUNCINFO, "format requested not supported for read operations");
       break;
     }
     return node;
@@ -618,7 +628,7 @@ struct Importer : public HDF5Base
     } break;
     default:
       throw FatalErrorException(
-          A_FUNCINFO, "format requested not supported for read operations");
+      A_FUNCINFO, "format requested not supported for read operations");
       break;
     }
     return node;
@@ -637,14 +647,14 @@ struct Importer : public HDF5Base
     } break;
     default:
       throw FatalErrorException(
-          A_FUNCINFO, "format requested not supported for read operations");
+      A_FUNCINFO, "format requested not supported for read operations");
       break;
     }
   }
 
   template <typename ValueT>
   void read(FileNode const& parent_node, const std::string& node_name,
-      std::vector<ValueT>& buffer)
+            std::vector<ValueT>& buffer)
   {
     switch (type) {
     case ASCII: {
@@ -692,7 +702,7 @@ struct Importer : public HDF5Base
       }
 
       status = H5Dread(dataset_id, m_types.nativeType(ValueT()), H5S_ALL, H5S_ALL,
-          H5P_DEFAULT, buffer.data());
+                       H5P_DEFAULT, buffer.data());
       if (status)
         throw FatalErrorException(A_FUNCINFO, "Error while reading HDF5 node");
 
@@ -754,7 +764,7 @@ struct Importer : public HDF5Base
       }
 
       status = H5Dread(
-          dataset_id, m_types.nativeType(ValueT()), H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
+      dataset_id, m_types.nativeType(ValueT()), H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
       if (status)
         throw FatalErrorException(A_FUNCINFO, "Error while reading HDF5 node");
 
@@ -799,7 +809,7 @@ struct Importer : public HDF5Base
       buffer.resize(size + 1);
       buffer[size] = '\0';
       status = H5Dread(dataset_id, m_types.nativeType(char()), H5S_ALL, H5S_ALL,
-          H5P_DEFAULT, &buffer[0]);
+                       H5P_DEFAULT, &buffer[0]);
       if (status) {
         throw FatalErrorException(A_FUNCINFO, "Error while reading HDF5 data set");
       }

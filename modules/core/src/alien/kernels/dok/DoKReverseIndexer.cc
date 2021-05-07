@@ -18,16 +18,16 @@
 
 #include "DoKReverseIndexer.h"
 
-namespace Alien {
+namespace Alien
+{
 
-DoKReverseIndexer::Index DoKReverseIndexer::operator[](
-    DoKReverseIndexer::Offset off) const
+DoKReverseIndexer::Index
+DoKReverseIndexer::operator[](DoKReverseIndexer::Offset off) const
 {
   return m_map.find(off)->second;
 }
 
-void
-DoKReverseIndexer::record(DoKReverseIndexer::Offset off, DoKReverseIndexer::Index i)
+void DoKReverseIndexer::record(DoKReverseIndexer::Offset off, DoKReverseIndexer::Index i)
 {
   m_map[off] = i;
 }

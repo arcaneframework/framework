@@ -23,7 +23,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,7 +36,8 @@ class Timestamp;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace CompositeKernel {
+namespace CompositeKernel
+{
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -44,13 +46,14 @@ namespace CompositeKernel {
   {
    public:
     MatrixElement(std::shared_ptr<IMatrix>& element, std::shared_ptr<ISpace>& row_space,
-        std::shared_ptr<ISpace>& col_space, Timestamp& timestamp)
+                  std::shared_ptr<ISpace>& col_space, Timestamp& timestamp)
     : m_element(element)
     , m_row_space(row_space)
     , m_col_space(col_space)
     , m_timestamp(timestamp)
     {}
-    template <typename T> void operator=(T&& v) { _assign(new T(std::move(v))); }
+    template <typename T>
+    void operator=(T&& v) { _assign(new T(std::move(v))); }
 
    private:
     void _assign(IMatrix* matrix);

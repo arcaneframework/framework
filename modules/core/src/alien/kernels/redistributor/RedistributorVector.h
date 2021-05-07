@@ -23,7 +23,8 @@
 #include <alien/kernels/simple_csr/redistribution/SimpleCSRVectorRedistributor.h>
 #include <alien/utils/Precomp.h>
 
-namespace Alien {
+namespace Alien
+{
 
 // Forward declarations
 class RedistributorCommPlan;

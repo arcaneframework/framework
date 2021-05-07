@@ -34,7 +34,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,7 +45,8 @@ namespace Alien {
  * \brief Universal object
  * \tparam U The type of the object
  */
-template <typename U> struct UniversalObject
+template <typename U>
+struct UniversalObject
 {
   /*!
    * \brief Constructor
@@ -67,7 +69,8 @@ template <typename U> struct UniversalObject
  * \tparam U The type of the universal object
  */
 template <typename U>
-class Universal : private UniversalObject<U>, private std::shared_ptr<U>
+class Universal : private UniversalObject<U>
+, private std::shared_ptr<U>
 {
  public:
   /*!

@@ -33,7 +33,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 typedef Arccore::String BackEndId;
 
@@ -52,7 +53,8 @@ class VBlock;
  * \ingroup impl
  * \brief Interface to handle abstract vectors implementation
  */
-class ALIEN_EXPORT IVectorImpl : public Timestamp, public ObjectWithTrace
+class ALIEN_EXPORT IVectorImpl : public Timestamp
+, public ObjectWithTrace
 {
  public:
   //! Type of the values stored in the vectors

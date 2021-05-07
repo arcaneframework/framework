@@ -23,7 +23,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,7 +43,7 @@ class ALIEN_EXPORT DefaultAbstractFamily : public IAbstractFamily
    * @param parallel_mng Parallel Manager.
    */
   DefaultAbstractFamily(const ConstArrayView<Int64>& uniqueIds,
-      const ConstArrayView<Integer>& owners, IMessagePassingMng* parallel_mng);
+                        const ConstArrayView<Integer>& owners, IMessagePassingMng* parallel_mng);
 
   /*! Build a family for locally owned unique ids.
    *
@@ -50,7 +51,7 @@ class ALIEN_EXPORT DefaultAbstractFamily : public IAbstractFamily
    * @param parallel_mng Parallel Manager.
    */
   DefaultAbstractFamily(
-      const ConstArrayView<Int64>& uniqueIds, IMessagePassingMng* parallel_mng);
+  const ConstArrayView<Int64>& uniqueIds, IMessagePassingMng* parallel_mng);
 
   ~DefaultAbstractFamily() override = default;
 
@@ -61,7 +62,7 @@ class ALIEN_EXPORT DefaultAbstractFamily : public IAbstractFamily
   Int32 maxLocalId() const override { return m_unique_ids.size(); }
 
   void uniqueIdToLocalId(
-      ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const override;
+  ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const override;
 
   IAbstractFamily::Item item(Int32 localId) const override;
 

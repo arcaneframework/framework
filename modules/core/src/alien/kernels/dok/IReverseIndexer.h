@@ -20,7 +20,8 @@
 
 #include <alien/utils/Precomp.h>
 
-namespace Alien {
+namespace Alien
+{
 
 class IReverseIndexer
 {

@@ -33,7 +33,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -69,8 +70,7 @@ CompositeVector::CompositeVector(Integer nc)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-CompositeVector::visit(ICopyOnWriteVector& v) const
+void CompositeVector::visit(ICopyOnWriteVector& v) const
 {
   v.accept(m_impl);
 }
@@ -78,8 +78,7 @@ CompositeVector::visit(ICopyOnWriteVector& v) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-CompositeVector::resize(Integer size)
+void CompositeVector::resize(Integer size)
 {
   m_composite_vector.resize(size);
 
@@ -117,7 +116,8 @@ CompositeVector::composite(Integer i)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IVector& CompositeVector::operator[](Integer i)
+IVector&
+CompositeVector::operator[](Integer i)
 {
   return m_composite_vector[i];
 }
@@ -125,7 +125,8 @@ IVector& CompositeVector::operator[](Integer i)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-const IVector& CompositeVector::operator[](Integer i) const
+const IVector&
+CompositeVector::operator[](Integer i) const
 {
   return m_composite_vector[i];
 }
@@ -133,8 +134,7 @@ const IVector& CompositeVector::operator[](Integer i) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-CompositeVector::setUserFeature(String feature)
+void CompositeVector::setUserFeature(String feature)
 {
   m_impl->setFeature(feature);
 }
@@ -142,8 +142,7 @@ CompositeVector::setUserFeature(String feature)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool
-CompositeVector::hasUserFeature(String feature) const
+bool CompositeVector::hasUserFeature(String feature) const
 {
   return m_impl->hasFeature(feature);
 }
@@ -177,8 +176,7 @@ CompositeVector::impl() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-CompositeVector::free()
+void CompositeVector::free()
 {
   for (Integer i = 0; i < this->size(); ++i)
     if (m_composite_vector[i].impl())
@@ -188,8 +186,7 @@ CompositeVector::free()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-CompositeVector::clear()
+void CompositeVector::clear()
 {
   for (Integer i = 0; i < this->size(); ++i)
     if (m_composite_vector[i].impl())

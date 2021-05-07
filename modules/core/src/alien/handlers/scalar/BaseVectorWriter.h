@@ -25,7 +25,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,12 +36,14 @@ class Timestamp;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Common {
+namespace Common
+{
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
-  template <typename ValueT> class VectorWriterBaseT
+  template <typename ValueT>
+  class VectorWriterBaseT
   {
    public:
     typedef ValueT ValueType;
@@ -97,13 +100,13 @@ namespace Common {
     }
 
     inline MultVectorElement operator()(
-        ValueType factor, const ConstArrayView<Integer>& indexes)
+    ValueType factor, const ConstArrayView<Integer>& indexes)
     {
       return MultVectorElement(this->m_values, factor, indexes, this->m_local_offset);
     }
 
     inline MultVectorElement2 operator()(
-        ValueType factor, const ConstArray2View<Integer>& indexes, Integer i)
+    ValueType factor, const ConstArray2View<Integer>& indexes, Integer i)
     {
       return MultVectorElement2(this->m_values, factor, indexes, i, this->m_local_offset);
     }

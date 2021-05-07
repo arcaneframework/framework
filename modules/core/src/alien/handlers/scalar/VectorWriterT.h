@@ -27,12 +27,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Common {
+namespace Common
+{
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -51,7 +53,8 @@ namespace Common {
 
   /*---------------------------------------------------------------------------*/
 
-  template <typename ValueT> void VectorWriterBaseT<ValueT>::end()
+  template <typename ValueT>
+  void VectorWriterBaseT<ValueT>::end()
   {
     if (m_finalized)
       return;
@@ -60,7 +63,8 @@ namespace Common {
 
   /*---------------------------------------------------------------------------*/
 
-  template <typename ValueT> void VectorWriterBaseT<ValueT>::operator=(const ValueType v)
+  template <typename ValueT>
+  void VectorWriterBaseT<ValueT>::operator=(const ValueType v)
   {
     for (Integer i = 0, is = m_values.size(); i < is; ++i)
       m_values[i] = v;

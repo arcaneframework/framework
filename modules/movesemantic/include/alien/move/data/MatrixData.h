@@ -29,7 +29,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -73,7 +74,7 @@ class ALIEN_MOVESEMANTIC_EXPORT MatrixData : public IMatrix
    *
    * This matrix is directly ready to use. */
   MatrixData(
-      const Space& row_space, const Space& col_space, const MatrixDistribution& dist);
+  const Space& row_space, const Space& col_space, const MatrixDistribution& dist);
 
   /*! Build a new matrix from a size.
    *

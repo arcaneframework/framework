@@ -29,7 +29,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -53,7 +54,7 @@ struct VBlock::Internal
    * \returns A new variable block size object
    */
   static VBlock::Internal* newVariableSizeBlock(
-      ValuePerBlock&& all_sizes, Integer max_block_size);
+  ValuePerBlock&& all_sizes, Integer max_block_size);
 
   /*!
    * \brief Creates a new variable block size element
@@ -62,7 +63,7 @@ struct VBlock::Internal
    * \returns A new variable block size object
    */
   static VBlock::Internal* newVariableSizeBlock(
-      const ValuePerBlock& all_sizes, Integer max_block_size);
+  const ValuePerBlock& all_sizes, Integer max_block_size);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -79,7 +80,7 @@ VBlock::Internal::newVariableSizeBlock(ValuePerBlock&& all_sizes, Integer max_bl
 
 VBlock::Internal*
 VBlock::Internal::newVariableSizeBlock(
-    const ValuePerBlock& all_sizes, Integer max_block_size)
+const ValuePerBlock& all_sizes, Integer max_block_size)
 {
   return new VBlock::Internal{ all_sizes, max_block_size };
 }
@@ -102,7 +103,7 @@ VBlock::VBlock(ValuePerBlock&& all_blocks_sizes)
     max_block_size = (max_block_size > block_size) ? max_block_size : block_size;
   }
   m_internal.reset(
-      Internal::newVariableSizeBlock(std::move(all_blocks_sizes), max_block_size));
+  Internal::newVariableSizeBlock(std::move(all_blocks_sizes), max_block_size));
 
   // TOCHECK: Debug info to remove or not ?
   /*
@@ -151,7 +152,7 @@ VBlock::VBlock(const ValuePerBlock& all_blocks_sizes)
     max_block_size = (max_block_size > block_size) ? max_block_size : block_size;
   }
   m_internal.reset(
-      Internal::newVariableSizeBlock(std::move(all_blocks_sizes), max_block_size));
+  Internal::newVariableSizeBlock(std::move(all_blocks_sizes), max_block_size));
 }
 
 /*---------------------------------------------------------------------------*/

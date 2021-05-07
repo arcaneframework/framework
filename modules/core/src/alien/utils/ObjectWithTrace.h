@@ -24,7 +24,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -66,22 +67,26 @@ class ObjectWithTrace
   virtual ~ObjectWithTrace() {}
 
  public:
-  template <typename T> void alien_info(T&& t) const
+  template <typename T>
+  void alien_info(T&& t) const
   {
     _print(Verbosity::Info, std::move(t));
   }
 
-  template <typename T> void alien_debug(T&& t) const
+  template <typename T>
+  void alien_debug(T&& t) const
   {
     _print(Verbosity::Debug, std::move(t));
   }
 
-  template <typename T> void alien_warning(T&& t) const
+  template <typename T>
+  void alien_warning(T&& t) const
   {
     _print(Verbosity::Warning, std::move(t));
   }
 
-  template <typename T> void alien_fatal(T&& t) const
+  template <typename T>
+  void alien_fatal(T&& t) const
   {
     auto* trace = traceMng();
     if (trace != nullptr) {
@@ -90,7 +95,7 @@ class ObjectWithTrace
       m_is_locked = true;
     }
     throw FatalErrorException(
-        A_FUNCINFO, "Fatal error in Alien - for more details, increase verbosity level");
+    A_FUNCINFO, "Fatal error in Alien - for more details, increase verbosity level");
   }
 
  protected:
@@ -109,7 +114,8 @@ class ObjectWithTrace
     }
   }
 
-  template <typename T> void _print(Verbosity::Level N, T&& t) const
+  template <typename T>
+  void _print(Verbosity::Level N, T&& t) const
   {
     auto* trace = traceMng();
     if (trace == nullptr)

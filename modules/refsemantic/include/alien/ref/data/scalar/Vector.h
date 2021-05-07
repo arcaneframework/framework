@@ -27,7 +27,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -53,7 +54,8 @@ class ALIEN_REFSEMANTIC_EXPORT Vector final : public IVector
   Vector& operator=(const Vector&) = delete;
 
   // FIXME: not implemented !
-  template <typename E> Vector& operator=(const E&);
+  template <typename E>
+  Vector& operator=(const E&);
 
  public:
   // Pour les expressions

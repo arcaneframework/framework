@@ -26,13 +26,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class BlockVectorWriter : protected MoveObject<VectorData>,
-                          public Common::BlockVectorWriterT<Real>
+class BlockVectorWriter : protected MoveObject<VectorData>
+, public Common::BlockVectorWriterT<Real>
 {
  public:
   BlockVectorWriter(VectorData&& vector)
@@ -51,8 +52,8 @@ class BlockVectorWriter : protected MoveObject<VectorData>,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class LocalBlockVectorWriter : protected MoveObject<VectorData>,
-                               public Common::LocalBlockVectorWriterT<Real>
+class LocalBlockVectorWriter : protected MoveObject<VectorData>
+, public Common::LocalBlockVectorWriterT<Real>
 {
  public:
   LocalBlockVectorWriter(VectorData&& vector)

@@ -28,7 +28,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -85,9 +86,11 @@ class BaseParameterMng
     m_child_mng = new BaseParameterMng[nbChild];
   }
 
-  template <typename ValueT> std::map<std::string, ValueT> const& getParams() const;
+  template <typename ValueT>
+  std::map<std::string, ValueT> const& getParams() const;
 
-  template <typename ValueT> std::map<std::string, ValueT>& getParams();
+  template <typename ValueT>
+  std::map<std::string, ValueT>& getParams();
 
   template <typename ValueT>
   void setParameter(std::string const& key, ValueT const& value)
@@ -107,7 +110,7 @@ class BaseParameterMng
 
   template <typename ValueT>
   void addOptions(
-      std::vector<std::string>& options, std::map<std::string, ValueT> const& params)
+  std::vector<std::string>& options, std::map<std::string, ValueT> const& params)
   {
     for (auto iter = params.begin(); iter != params.end(); ++iter) {
       options.push_back(iter->first);
@@ -147,13 +150,15 @@ template <>
 [[nodiscard]] ALIEN_EXPORT std::map<std::string, int> const&
 BaseParameterMng::getParams() const;
 
-template <> ALIEN_EXPORT std::map<std::string, int>& BaseParameterMng::getParams();
+template <>
+ALIEN_EXPORT std::map<std::string, int>& BaseParameterMng::getParams();
 
 template <>
 [[nodiscard]] ALIEN_EXPORT std::map<std::string, double> const&
 BaseParameterMng::getParams() const;
 
-template <> ALIEN_EXPORT std::map<std::string, double>& BaseParameterMng::getParams();
+template <>
+ALIEN_EXPORT std::map<std::string, double>& BaseParameterMng::getParams();
 
 template <>
 [[nodiscard]] ALIEN_EXPORT std::map<std::string, std::string> const&

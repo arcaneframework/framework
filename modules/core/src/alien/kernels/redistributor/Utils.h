@@ -22,9 +22,11 @@
 
 #include <arccore/message_passing/Messages.h>
 
-namespace Alien {
+namespace Alien
+{
 
-namespace RedistributionTools {
+namespace RedistributionTools
+{
 
   template <typename T>
   static void computeCounts(ConstArrayView<T> offsets, ArrayView<T> counts)
@@ -38,8 +40,8 @@ namespace RedistributionTools {
 
   template <typename T>
   static void exchange(IMessagePassingMng* pm, ConstArrayView<T> snd,
-      ConstArrayView<Int32> snd_offset, ArrayView<T> rcv,
-      ConstArrayView<Int32> rcv_offset)
+                       ConstArrayView<Int32> snd_offset, ArrayView<T> rcv,
+                       ConstArrayView<Int32> rcv_offset)
   {
     Int32 comm_size = pm->commSize();
     UniqueArray<Int32> snd_count(comm_size);
@@ -47,7 +49,7 @@ namespace RedistributionTools {
     Alien::RedistributionTools::computeCounts(snd_offset, snd_count.view());
     Alien::RedistributionTools::computeCounts(rcv_offset, rcv_count.view());
     Arccore::MessagePassing::mpAllToAllVariable(
-        pm, snd, snd_count, snd_offset, rcv, rcv_count, rcv_offset);
+    pm, snd, snd_count, snd_offset, rcv, rcv_count, rcv_offset);
   }
 
 } // namespace RedistributionTools

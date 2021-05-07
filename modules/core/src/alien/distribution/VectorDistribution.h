@@ -25,14 +25,16 @@
 
 #include <alien/data/ISpace.h>
 
-namespace Arccore::MessagePassing {
+namespace Arccore::MessagePassing
+{
 class IMessagePassingMng;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -55,7 +57,7 @@ class ALIEN_EXPORT VectorDistribution
    * \param[in] parallel_mng The parallel manager
    */
   VectorDistribution(
-      const ISpace& space, Arccore::MessagePassing::IMessagePassingMng* parallel_mng);
+  const ISpace& space, Arccore::MessagePassing::IMessagePassingMng* parallel_mng);
 
   /*!
    * \brief Constructor
@@ -63,7 +65,7 @@ class ALIEN_EXPORT VectorDistribution
    * \param[in] parallel_mng The parallel manager
    */
   VectorDistribution(const ISpace& space,
-      std::shared_ptr<Arccore::MessagePassing::IMessagePassingMng> parallel_mng);
+                     std::shared_ptr<Arccore::MessagePassing::IMessagePassingMng> parallel_mng);
 
   /*!
    * \brief Constructor
@@ -71,7 +73,7 @@ class ALIEN_EXPORT VectorDistribution
    * \param[in] parallel_mng The parallel manager
    */
   VectorDistribution(Arccore::Integer global_size,
-      Arccore::MessagePassing::IMessagePassingMng* parallel_mng);
+                     Arccore::MessagePassing::IMessagePassingMng* parallel_mng);
 
   /*!
    * \brief Constructor
@@ -79,7 +81,7 @@ class ALIEN_EXPORT VectorDistribution
    * \param[in] parallel_mng The parallel manager
    */
   VectorDistribution(Arccore::Integer global_size,
-      std::shared_ptr<Arccore::MessagePassing::IMessagePassingMng> parallel_mng);
+                     std::shared_ptr<Arccore::MessagePassing::IMessagePassingMng> parallel_mng);
 
   /*!
    * \brief Constructor
@@ -88,7 +90,7 @@ class ALIEN_EXPORT VectorDistribution
    * \param[in] parallel_mng The parallel manager
    */
   VectorDistribution(const ISpace& space, Arccore::Integer local_size,
-      Arccore::MessagePassing::IMessagePassingMng* parallel_mng);
+                     Arccore::MessagePassing::IMessagePassingMng* parallel_mng);
 
   /*!
    * \brief Constructor
@@ -97,7 +99,7 @@ class ALIEN_EXPORT VectorDistribution
    * \param[in] parallel_mng The parallel manager
    */
   VectorDistribution(const ISpace& space, Arccore::Integer local_size,
-      std::shared_ptr<Arccore::MessagePassing::IMessagePassingMng> parallel_mng);
+                     std::shared_ptr<Arccore::MessagePassing::IMessagePassingMng> parallel_mng);
 
   /*!
    * \brief Constructor
@@ -106,7 +108,7 @@ class ALIEN_EXPORT VectorDistribution
    * \param[in] parallel_mng The parallel manager
    */
   VectorDistribution(Arccore::Integer global_size, Arccore::Integer local_size,
-      Arccore::MessagePassing::IMessagePassingMng* parallel_mng);
+                     Arccore::MessagePassing::IMessagePassingMng* parallel_mng);
 
   /*!
    * \brief Constructor
@@ -115,7 +117,7 @@ class ALIEN_EXPORT VectorDistribution
    * \param[in] parallel_mng The parallel manager
    */
   VectorDistribution(Arccore::Integer global_size, Arccore::Integer local_size,
-      std::shared_ptr<Arccore::MessagePassing::IMessagePassingMng> parallel_mng);
+                     std::shared_ptr<Arccore::MessagePassing::IMessagePassingMng> parallel_mng);
 
   /*!
    * \brief Copy constructor
@@ -261,7 +263,7 @@ class ALIEN_EXPORT VectorDistribution
 
 //! Print the distribution
 extern ALIEN_EXPORT std::ostream& operator<<(
-    std::ostream& nout, const VectorDistribution& dist);
+std::ostream& nout, const VectorDistribution& dist);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

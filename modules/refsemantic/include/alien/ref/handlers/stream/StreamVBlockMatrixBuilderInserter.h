@@ -20,11 +20,13 @@
 
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 
-template <typename ValueT> class StreamVBlockMatrixBuilderT<ValueT>::BaseInserter
+template <typename ValueT>
+class StreamVBlockMatrixBuilderT<ValueT>::BaseInserter
 {
  protected:
   friend class StreamVBlockMatrixBuilderT<ValueT>;
@@ -122,8 +124,8 @@ class StreamVBlockMatrixBuilderT<ValueT>::Filler
 
 template <typename ValueT>
 class StreamVBlockMatrixBuilderT<ValueT>::Inserter
-: public StreamVBlockMatrixBuilderT<ValueT>::Profiler,
-  public StreamVBlockMatrixBuilderT<ValueT>::Filler
+: public StreamVBlockMatrixBuilderT<ValueT>::Profiler
+, public StreamVBlockMatrixBuilderT<ValueT>::Filler
 {
  private:
   friend class StreamVBlockMatrixBuilderT<ValueT>;

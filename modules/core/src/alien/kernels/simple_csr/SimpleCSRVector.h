@@ -27,11 +27,13 @@
 
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 
-template <typename ValueT> class SimpleCSRVector : public IVectorImpl
+template <typename ValueT>
+class SimpleCSRVector : public IVectorImpl
 {
  public:
   typedef ValueT ValueType;
@@ -101,7 +103,8 @@ template <typename ValueT> class SimpleCSRVector : public IVectorImpl
 
   ValueType const& operator[](Integer index) const { return m_values[index]; }
 
-  template <typename E> SimpleCSRVector& operator=(E const& expr);
+  template <typename E>
+  SimpleCSRVector& operator=(E const& expr);
 
   void init(const VectorDistribution& dist ALIEN_UNUSED_PARAM, const bool need_allocate)
   {

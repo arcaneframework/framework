@@ -29,20 +29,22 @@
 
 /*------------------------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*------------------------------------------------------------------------------------------*/
 
 template <typename IndexT, typename DataT>
 DataT*
 intrusive_vmap_insert(IndexT new_index, Integer& hint_pos, Integer& size,
-    Integer capacity, IndexT* indexes, DataT* data)
+                      Integer capacity, IndexT* indexes, DataT* data)
 {
   hint_pos =
-      ArrayScan::dichotomicPositionScan(new_index, ConstArrayView<IndexT>(size, indexes));
+  ArrayScan::dichotomicPositionScan(new_index, ConstArrayView<IndexT>(size, indexes));
   if (hint_pos < size and indexes[hint_pos] == new_index) {
     return &data[hint_pos];
-  } else if (size < capacity) {
+  }
+  else if (size < capacity) {
     for (Integer i = size; i > hint_pos; --i) {
       data[i] = data[i - 1];
       indexes[i] = indexes[i - 1];
@@ -51,7 +53,8 @@ intrusive_vmap_insert(IndexT new_index, Integer& hint_pos, Integer& size,
     data[hint_pos] = DataT();
     ++size;
     return &data[hint_pos];
-  } else {
+  }
+  else {
     return NULL;
   }
 }
@@ -62,7 +65,8 @@ intrusive_vmap_insert(IndexT new_index, Integer& hint_pos, Integer& size,
  *
  *
  */
-template <typename IndexT, typename DataT> class VMap
+template <typename IndexT, typename DataT>
+class VMap
 {
  public:
   class const_iterator;
@@ -182,7 +186,7 @@ VMap<IndexT, DataT>::VMap(const VMap& vmap)
   m_data = (DataT*)m_memory_pool;
   m_indexes = (IndexT*)(m_data + m_capacity);
   memcpy(
-      m_memory_pool, vmap.m_memory_pool, m_capacity * (sizeof(IndexT) + sizeof(DataT)));
+  m_memory_pool, vmap.m_memory_pool, m_capacity * (sizeof(IndexT) + sizeof(DataT)));
 }
 
 /*------------------------------------------------------------------------------------------*/
@@ -196,7 +200,7 @@ VMap<IndexT, DataT>::operator=(const VMap& vmap)
   free(m_memory_pool);
   m_memory_pool = malloc(m_capacity * (sizeof(IndexT) + sizeof(DataT)));
   memcpy(
-      m_memory_pool, vmap.m_memory_pool, m_capacity * (sizeof(IndexT) + sizeof(DataT)));
+  m_memory_pool, vmap.m_memory_pool, m_capacity * (sizeof(IndexT) + sizeof(DataT)));
   m_data = (DataT*)m_memory_pool;
   m_indexes = (IndexT*)(m_data + m_capacity);
   return *this;
@@ -204,7 +208,8 @@ VMap<IndexT, DataT>::operator=(const VMap& vmap)
 
 /*------------------------------------------------------------------------------------------*/
 
-template <typename IndexT, typename DataT> VMap<IndexT, DataT>::~VMap()
+template <typename IndexT, typename DataT>
+VMap<IndexT, DataT>::~VMap()
 {
   free(m_memory_pool);
 }
@@ -212,7 +217,8 @@ template <typename IndexT, typename DataT> VMap<IndexT, DataT>::~VMap()
 /*------------------------------------------------------------------------------------------*/
 
 template <typename IndexT, typename DataT>
-DataT& VMap<IndexT, DataT>::operator[](const IndexT index)
+DataT&
+VMap<IndexT, DataT>::operator[](const IndexT index)
 {
   return insert(index).first.value();
 }
@@ -224,7 +230,7 @@ typename VMap<IndexT, DataT>::iterator
 VMap<IndexT, DataT>::find(const IndexT index)
 {
   const Integer col =
-      ArrayScan::dichotomicScan(index, ConstArrayView<IndexT>(m_size, m_indexes));
+  ArrayScan::dichotomicScan(index, ConstArrayView<IndexT>(m_size, m_indexes));
   if (col == -1)
     return end();
   else
@@ -238,7 +244,7 @@ typename VMap<IndexT, DataT>::const_iterator
 VMap<IndexT, DataT>::find(const IndexT index) const
 {
   const Integer col =
-      ArrayScan::dichotomicScan(index, ConstArrayView<IndexT>(m_size, m_indexes));
+  ArrayScan::dichotomicScan(index, ConstArrayView<IndexT>(m_size, m_indexes));
   if (col == -1)
     return end();
   else
@@ -255,7 +261,7 @@ VMap<IndexT, DataT>::insert(const IndexT index)
 
   Integer hint_pos = 0;
   DataT* data =
-      intrusive_vmap_insert(index, hint_pos, m_size, m_capacity, m_indexes, m_data);
+  intrusive_vmap_insert(index, hint_pos, m_size, m_capacity, m_indexes, m_data);
   if (data == NULL) { // Too small: needs resize
     Integer old_capacity = m_capacity;
     m_capacity = new_capacity(m_capacity);

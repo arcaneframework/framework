@@ -33,7 +33,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 typedef String BackEndId;
 
@@ -52,7 +53,8 @@ class VBlock;
  * \ingroup impl
  * \brief Interface to handle abstract matrices implementation
  */
-class ALIEN_EXPORT IMatrixImpl : public Timestamp, public ObjectWithTrace
+class ALIEN_EXPORT IMatrixImpl : public Timestamp
+, public ObjectWithTrace
 {
  public:
   //! Type of the values stored in the matrix

@@ -31,7 +31,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -78,7 +79,8 @@ class IVectorConverter : public ObjectWithTrace
    * \brief Get the target backend id
    * \returns The target backend id
    */
-  template <typename T> BackEndId backendId() const { return AlgebraTraits<T>::name(); }
+  template <typename T>
+  BackEndId backendId() const { return AlgebraTraits<T>::name(); }
 
   /*!
    * \brief Cast a vector implementation in its actual type
@@ -88,7 +90,8 @@ class IVectorConverter : public ObjectWithTrace
    *
    * \todo Check backend using T
    */
-  template <typename T> static T& cast(IVectorImpl* impl, BackEndId backend)
+  template <typename T>
+  static T& cast(IVectorImpl* impl, BackEndId backend)
   {
     ALIEN_ASSERT((impl != NULL), ("Null implementation"));
     ALIEN_ASSERT((impl->backend() == backend), ("Bad backend"));
@@ -105,7 +108,8 @@ class IVectorConverter : public ObjectWithTrace
    *
    * \todo Check backend using T
    */
-  template <typename T> static const T& cast(const IVectorImpl* impl, BackEndId backend)
+  template <typename T>
+  static const T& cast(const IVectorImpl* impl, BackEndId backend)
   {
     ALIEN_ASSERT((impl != NULL), ("Null implementation"));
     ALIEN_ASSERT((impl->backend() == backend), ("Bad backend"));

@@ -29,7 +29,7 @@ TEST(TestImportExport, ImportExportMatrix)
 {
   Alien::Space row_space(10, "RowSpace");
   Alien::MatrixDistribution mdist(
-      row_space, row_space, AlienTest::Environment::parallelMng());
+  row_space, row_space, AlienTest::Environment::parallelMng());
 
   Alien::Matrix A(mdist);
   auto local_size = mdist.localRowSize();
@@ -87,7 +87,7 @@ TEST(TestImportExport, ExportSystem)
 {
   Alien::Space row_space(10, "RowSpace");
   Alien::MatrixDistribution mdist(
-      row_space, row_space, AlienTest::Environment::parallelMng());
+  row_space, row_space, AlienTest::Environment::parallelMng());
 
   Alien::Matrix A(mdist);
   auto local_size = mdist.localRowSize();

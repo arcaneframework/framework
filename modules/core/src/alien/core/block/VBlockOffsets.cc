@@ -29,7 +29,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -43,8 +44,9 @@ struct VBlockImpl::Internal
 {
   // SD : clang error here, explicit ctor (VMap) in implicit ctor
   Internal(const VBlock& blocks)
-    : m_blocks(blocks) {}
-    
+  : m_blocks(blocks)
+  {}
+
   //! Variable blocks information
   const VBlock& m_blocks;
   //! All offsets array
@@ -103,8 +105,7 @@ VBlockImpl::VBlockImpl(const VBlock& blocks, const MatrixDistribution& dist)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-VBlockImpl::compute(Integer localSize, Integer localOffset)
+void VBlockImpl::compute(Integer localSize, Integer localOffset)
 {
   m_internal->m_local_sizes.resize(localSize);
   m_internal->m_local_offsets.resize(localSize + 1);

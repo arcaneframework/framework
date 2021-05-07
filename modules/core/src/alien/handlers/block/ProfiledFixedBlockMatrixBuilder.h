@@ -26,12 +26,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename Scalar> class SimpleCSRMatrix;
+template <typename Scalar>
+class SimpleCSRMatrix;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -48,7 +50,8 @@ struct ProfiledBlockMatrixBuilderOptions
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Common {
+namespace Common
+{
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -60,7 +63,7 @@ namespace Common {
     {
      public:
       MatrixElement(const Integer iIndex, const Integer jIndex,
-          ProfiledFixedBlockMatrixBuilder& parent)
+                    ProfiledFixedBlockMatrixBuilder& parent)
       : m_iIndex(iIndex)
       , m_jIndex(jIndex)
       , m_parent(parent)
@@ -106,7 +109,7 @@ namespace Common {
     void addData(const Integer iIndex, const Integer jIndex, ConstArray2View<Real> value);
 
     void addData(const Integer iIndex, const Integer jIndex, const Real factor,
-        ConstArray2View<Real> value);
+                 ConstArray2View<Real> value);
 
     void setData(const Integer iIndex, const Integer jIndex, ConstArray2View<Real> value);
 

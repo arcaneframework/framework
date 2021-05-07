@@ -35,7 +35,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -56,7 +57,8 @@ class IMatrix;
  * \tparam Tag The tag of the type of matrix used
  * \tparam TagV The tag of the type of vector used
  */
-template <class Tag, class TagV = Tag> class LinearAlgebra : public ILinearAlgebra
+template <class Tag, class TagV = Tag>
+class LinearAlgebra : public ILinearAlgebra
 {
  public:
   /*!
@@ -225,7 +227,7 @@ template <class Tag, class TagV = Tag> class LinearAlgebra : public ILinearAlgeb
    * \returns The dot product of x * y
    */
   Real dot(
-      Integer local_size, const UniqueArray<Real>& x, const UniqueArray<Real>& y) const;
+  Integer local_size, const UniqueArray<Real>& x, const UniqueArray<Real>& y) const;
 
   /*!
    * \brief Scale a vector by a factor

@@ -23,12 +23,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename T> class SafeConstArrayView : private ConstArrayView<T>
+template <typename T>
+class SafeConstArrayView : private ConstArrayView<T>
 {
  public:
   //! Classe de base

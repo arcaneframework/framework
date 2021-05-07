@@ -24,7 +24,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,7 +37,7 @@ class ALIEN_EXPORT DefaultIndexManager
 {
  public:
   DefaultIndexManager(IMessagePassingMng* parallel_mng,
-      std::initializer_list<ConstArrayView<Int64>> uids);
+                      std::initializer_list<ConstArrayView<Int64>> uids);
 
   UniqueArray<Integer> operator[](Integer label) const;
 

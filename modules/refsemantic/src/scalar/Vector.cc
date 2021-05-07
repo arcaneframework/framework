@@ -24,14 +24,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Vector::Vector()
 : m_impl(new MultiVectorImpl(std::make_shared<Space>(0),
-    std::make_shared<VectorDistribution>(VectorDistribution())))
+                             std::make_shared<VectorDistribution>(VectorDistribution())))
 {}
 
 /*---------------------------------------------------------------------------*/
@@ -44,15 +45,15 @@ Vector::Vector(const VectorDistribution& dist)
 
 Vector::Vector(Integer nrows, Integer nrows_local, IMessagePassingMng* parallel_mng)
 : m_impl(new MultiVectorImpl(std::make_shared<Space>(nrows),
-    std::make_shared<VectorDistribution>(
-        VectorDistribution(nrows, nrows_local, parallel_mng))))
+                             std::make_shared<VectorDistribution>(
+                             VectorDistribution(nrows, nrows_local, parallel_mng))))
 {}
 
 /*---------------------------------------------------------------------------*/
 
 Vector::Vector(Integer nrows, IMessagePassingMng* parallel_mng)
 : m_impl(new MultiVectorImpl(std::make_shared<Space>(nrows),
-    std::make_shared<VectorDistribution>(VectorDistribution(nrows, parallel_mng))))
+                             std::make_shared<VectorDistribution>(VectorDistribution(nrows, parallel_mng))))
 {}
 
 /*---------------------------------------------------------------------------*/
@@ -72,8 +73,7 @@ Vector::operator=(Vector&& vector)
 
 /*---------------------------------------------------------------------------*/
 
-void
-Vector::visit(ICopyOnWriteVector& v) const
+void Vector::visit(ICopyOnWriteVector& v) const
 {
   v.accept(m_impl);
 }
@@ -96,16 +96,14 @@ Vector::distribution() const
 
 /*---------------------------------------------------------------------------*/
 
-void
-Vector::setUserFeature(String feature)
+void Vector::setUserFeature(String feature)
 {
   m_impl->setFeature(feature);
 }
 
 /*---------------------------------------------------------------------------*/
 
-bool
-Vector::hasUserFeature(String feature) const
+bool Vector::hasUserFeature(String feature) const
 {
   return m_impl->hasFeature(feature);
 }

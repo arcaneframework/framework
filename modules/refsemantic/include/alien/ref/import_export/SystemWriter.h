@@ -25,7 +25,8 @@
 #include <arccore/base/ArccoreGlobal.h>
 #include <arccore/message_passing/IMessagePassingMng.h>
 
-namespace Alien {
+namespace Alien
+{
 class Matrix;
 class Vector;
 class BlockMatrix;
@@ -36,42 +37,43 @@ class ALIEN_REFSEMANTIC_EXPORT SystemWriter
 {
  public:
   SystemWriter(std::string const& filename, std::string format = "ascii",
-      Arccore::MessagePassing::IMessagePassingMng* parallel_mng = nullptr);
+               Arccore::MessagePassing::IMessagePassingMng* parallel_mng = nullptr);
   virtual ~SystemWriter();
 
   void dump(Matrix const& A);
   void dump(Matrix const& A, Vector const& rhs);
   void dump(Matrix const& A, Vector const& rhs, Vector const& sol,
-      const SolutionInfo& sol_info);
+            const SolutionInfo& sol_info);
   void dump(BlockMatrix const& A, BlockVector const& rhs);
   void dump(BlockMatrix const& A, BlockVector const& rhs, BlockVector const& sol,
-      const SolutionInfo& sol_info);
+            const SolutionInfo& sol_info);
 
  private:
   template <typename FileNodeT>
   void _writeMatrixInfo(Exporter& exporter, FileNodeT& parent_node, int nrows, int ncols,
-      int nnz, int blk_size, int blk_size2);
+                        int nnz, int blk_size, int blk_size2);
 
   template <typename FileNodeT>
   void _writeCSRProfile(Exporter& exporter, FileNodeT& parent_node, int nrows, int nnz,
-      int const* kcol, int const* cols);
+                        int const* kcol, int const* cols);
 
   template <typename FileNodeT>
   void _writeMatrixValues(Exporter& exporter, FileNodeT& parent_node, int nnz,
-      int blk_size, int blk_size2, double const* values);
+                          int blk_size, int blk_size2, double const* values);
 
   template <typename FileNodeT>
   void _writeVector(Exporter& exporter, FileNodeT& vector_node, int nrows, int blk_size,
-      double const* values);
+                    double const* values);
 
   template <typename FileNodeT>
   void _writeSolutionInfo(
-      Exporter& exporter, FileNodeT& parent_node, const SolutionInfo& sol_info);
+  Exporter& exporter, FileNodeT& parent_node, const SolutionInfo& sol_info);
 
   template <typename FileNodeT>
   void _beginDump(Exporter*& exporter, FileNodeT& base_node);
 
-  template <typename FileNodeT> void _endDump(Exporter* exporter, FileNodeT& base_node);
+  template <typename FileNodeT>
+  void _endDump(Exporter* exporter, FileNodeT& base_node);
 
   std::string m_filename;
   std::string m_format;

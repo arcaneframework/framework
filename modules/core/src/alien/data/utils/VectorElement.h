@@ -30,7 +30,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,7 +43,8 @@ namespace Alien {
  * \tparam T The data type of the vector
  * \tparam Indexer The indexer
  */
-template <typename T, typename Indexer> class VectorElementT
+template <typename T, typename Indexer>
+class VectorElementT
 {
  public:
   /*!
@@ -52,8 +54,8 @@ template <typename T, typename Indexer> class VectorElementT
    * \param[in] local_offset The offset
    */
   VectorElementT(Arccore::ArrayView<T>& values,
-      const Arccore::ConstArrayView<Arccore::Integer>& indexes,
-      Arccore::Integer local_offset);
+                 const Arccore::ConstArrayView<Arccore::Integer>& indexes,
+                 Arccore::Integer local_offset);
 
   /*!
    * \brief Operator equal
@@ -92,7 +94,8 @@ template <typename T, typename Indexer> class VectorElementT
  * \tparam T The data type of the vector
  * \tparam Indexer The indexer
  */
-template <typename T, typename Indexer> class MultVectorElementT
+template <typename T, typename Indexer>
+class MultVectorElementT
 {
  public:
   /*!
@@ -103,8 +106,8 @@ template <typename T, typename Indexer> class MultVectorElementT
    * \param[in] local_offset The offset
    */
   MultVectorElementT(Arccore::ArrayView<T>& values, T factor,
-      const Arccore::ConstArrayView<Arccore::Integer>& indexes,
-      Arccore::Integer local_offset);
+                     const Arccore::ConstArrayView<Arccore::Integer>& indexes,
+                     Arccore::Integer local_offset);
 
   /*!
    * \brief Operator equal
@@ -145,7 +148,8 @@ template <typename T, typename Indexer> class MultVectorElementT
  * \tparam T The data type of the vector
  * \tparam Indexer The indexer
  */
-template <typename T, typename Indexer> class MultVectorElement2T
+template <typename T, typename Indexer>
+class MultVectorElement2T
 {
  public:
   /*!
@@ -157,8 +161,8 @@ template <typename T, typename Indexer> class MultVectorElement2T
    * \param[in] local_offset The offset
    */
   MultVectorElement2T(Arccore::ArrayView<T>& values, T factor,
-      const Arccore::ConstArray2View<Arccore::Integer>& indexes, Arccore::Integer i,
-      Arccore::Integer local_offset);
+                      const Arccore::ConstArray2View<Arccore::Integer>& indexes, Arccore::Integer i,
+                      Arccore::Integer local_offset);
 
   /*!
    * \brief Operator equal

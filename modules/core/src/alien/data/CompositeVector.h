@@ -31,12 +31,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace CompositeKernel {
+namespace CompositeKernel
+{
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -57,7 +59,8 @@ namespace CompositeKernel {
  *
  * This class allow to handle vectors made of several vectors
  */
-class ALIEN_EXPORT CompositeVector : public IVector, private ObjectWithTrace
+class ALIEN_EXPORT CompositeVector : public IVector
+, private ObjectWithTrace
 {
  public:
   //! Type of submatrix element
@@ -163,7 +166,7 @@ class ALIEN_EXPORT CompositeVector : public IVector, private ObjectWithTrace
 /*---------------------------------------------------------------------------*/
 
 extern ALIEN_EXPORT CompositeVector::Element CompositeElement(
-    CompositeVector& v, Arccore::Integer i);
+CompositeVector& v, Arccore::Integer i);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

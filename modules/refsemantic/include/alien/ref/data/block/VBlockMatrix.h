@@ -29,7 +29,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,13 +43,13 @@ class ALIEN_REFSEMANTIC_EXPORT VBlockMatrix final : public IMatrix
   VBlockMatrix(const VBlock& block, const MatrixDistribution& dist);
 
   VBlockMatrix(
-      const VBlock& row_block, const VBlock& col_block, const MatrixDistribution& dist);
+  const VBlock& row_block, const VBlock& col_block, const MatrixDistribution& dist);
 
   VBlockMatrix(Integer nrows, Integer ncols, Integer nrows_local, const VBlock& row_block,
-      const VBlock& col_block, IMessagePassingMng* parallel_mng);
+               const VBlock& col_block, IMessagePassingMng* parallel_mng);
 
   VBlockMatrix(Integer nrows, Integer ncols, const VBlock& row_block,
-      const VBlock& col_block, IMessagePassingMng* parallel_mng);
+               const VBlock& col_block, IMessagePassingMng* parallel_mng);
 
   VBlockMatrix(VBlockMatrix&& m);
 

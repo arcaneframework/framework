@@ -26,14 +26,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template <typename T>
-T&
-cast(IMatrix& M)
+T& cast(IMatrix& M)
 {
   static_assert(std::is_base_of<IMatrix, T>::value, "IMatrix is not a valid base");
   auto* m = dynamic_cast<T*>(&M);
@@ -58,8 +58,7 @@ cast(const IMatrix& M)
 /*---------------------------------------------------------------------------*/
 
 template <typename T>
-T&
-cast(IVector& M)
+T& cast(IVector& M)
 {
   static_assert(std::is_base_of<IVector, T>::value, "IVector is not a valid base");
   auto* m = dynamic_cast<T*>(&M);

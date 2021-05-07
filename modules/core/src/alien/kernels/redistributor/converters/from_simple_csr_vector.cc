@@ -24,7 +24,8 @@
 
 #include <alien/core/backend/VectorConverterRegisterer.h>
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -44,9 +45,8 @@ SimpleCSRtoRedistributorVectorConverter::targetBackend() const
   return AlgebraTraits<BackEnd::tag::redistributor>::name();
 }
 
-void
-SimpleCSRtoRedistributorVectorConverter::convert(
-    const IVectorImpl* sourceImpl, IVectorImpl* targetImpl) const
+void SimpleCSRtoRedistributorVectorConverter::convert(
+const IVectorImpl* sourceImpl, IVectorImpl* targetImpl) const
 {
   const SrcVector& src = cast<SrcVector>(sourceImpl, sourceBackend());
   TgtVector& tgt = cast<TgtVector>(targetImpl, targetBackend());

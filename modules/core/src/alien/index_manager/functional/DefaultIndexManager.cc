@@ -23,17 +23,17 @@
 #include <alien/index_manager/functional/DefaultAbstractFamily.h>
 #include <alien/utils/Precomp.h>
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 DefaultIndexManager::DefaultIndexManager(
-    IMessagePassingMng* parallel_mng, std::initializer_list<ConstArrayView<Int64>> uids)
+IMessagePassingMng* parallel_mng, std::initializer_list<ConstArrayView<Int64>> uids)
 : m_index_manager(parallel_mng)
 {
   m_index_manager.setVerboseMode(true);

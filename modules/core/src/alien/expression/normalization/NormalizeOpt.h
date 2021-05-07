@@ -36,7 +36,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -109,9 +110,10 @@ class ALIEN_EXPORT NormalizeOpt
    * \returns The eventual error
    */
   eErrorType normalize(CompositeMatrix& matrix, CompositeVector& vector,
-      ConstArrayView<Integer> eq_ids) const;
+                       ConstArrayView<Integer> eq_ids) const;
 
-  template <int N, bool check_null_pivot = true> class LU;
+  template <int N, bool check_null_pivot = true>
+  class LU;
   class Op;
   class Op2;
 
@@ -134,7 +136,7 @@ class ALIEN_EXPORT NormalizeOpt
    * \returns The eventual error
    */
   eErrorType _normalize(MatrixImpl& matrix, MatrixImpl& matrix2, bool trans,
-      ConstArrayView<Integer> eq_ids, VectorImpl& vector) const;
+                        ConstArrayView<Integer> eq_ids, VectorImpl& vector) const;
 
   /*!
    * \brief Normalize a linear system
@@ -146,8 +148,8 @@ class ALIEN_EXPORT NormalizeOpt
    * \returns The eventual error
    */
   eErrorType _normalize(MatrixImpl& matrix,
-      Arccore::ConstArrayView<Arccore::Integer> eq_ids, MatrixImpl& matrix2, bool trans,
-      VectorImpl& vector) const;
+                        Arccore::ConstArrayView<Arccore::Integer> eq_ids, MatrixImpl& matrix2, bool trans,
+                        VectorImpl& vector) const;
 
   //! The algorithm
   eAlgoType m_algo;
@@ -163,7 +165,8 @@ class ALIEN_EXPORT NormalizeOpt
  * \tparam N The size of the matrix
  * \tparam check_null_pivot Whether or not a null pivot should be checked
  */
-template <int N, bool check_null_pivot> class NormalizeOpt::LU
+template <int N, bool check_null_pivot>
+class NormalizeOpt::LU
 {
  public:
   //! Type of the blocks
@@ -183,7 +186,8 @@ template <int N, bool check_null_pivot> class NormalizeOpt::LU
         if (check_null_pivot) {
           assert(A[k][k] != 0);
           A[k][k] = 1 / A[k][k];
-        } else {
+        }
+        else {
           if (A[k][k] == 0)
             A[k][k] = 0;
           else
@@ -232,7 +236,8 @@ template <int N, bool check_null_pivot> class NormalizeOpt::LU
    * \tparam NRhs The number of rhs
    * \tparam TransRhs Wheteher the rhs is transposed
    */
-  template <int NRhs, bool TransRhs> void LXSolve(Arccore::Real* Xp) const
+  template <int NRhs, bool TransRhs>
+  void LXSolve(Arccore::Real* Xp) const
   {
     if (TransRhs) {
       typedef Real Rhs2DType[NRhs][N];
@@ -245,7 +250,8 @@ template <int N, bool check_null_pivot> class NormalizeOpt::LU
           }
         }
       }
-    } else {
+    }
+    else {
       typedef Real Rhs2DType[N][NRhs];
       Rhs2DType& X = *(Rhs2DType*)Xp;
 
@@ -265,7 +271,8 @@ template <int N, bool check_null_pivot> class NormalizeOpt::LU
    * \tparam NRhs The number of rhs
    * \tparam TransRhs Wheteher the rhs is transposed
    */
-  template <int NRhs, bool TransRhs> void UXSolve(Arccore::Real* Xp) const
+  template <int NRhs, bool TransRhs>
+  void UXSolve(Arccore::Real* Xp) const
   {
     if (TransRhs) {
       typedef Real Rhs2DType[NRhs][N];
@@ -282,7 +289,8 @@ template <int N, bool check_null_pivot> class NormalizeOpt::LU
           X[k][i] *= m_A[i][i];
         }
       }
-    } else {
+    }
+    else {
       typedef Real Rhs2DType[N][NRhs];
       Rhs2DType& X = *(Rhs2DType*)Xp;
 
@@ -307,7 +315,8 @@ template <int N, bool check_null_pivot> class NormalizeOpt::LU
    * \tparam NRhs The number of rhs
    * \tparam TransRhs Whether or not the rhs is transposed
    */
-  template <int NRhs, bool TransRhs> void solve(Arccore::Real* Xp) const
+  template <int NRhs, bool TransRhs>
+  void solve(Arccore::Real* Xp) const
   {
     LXSolve<NRhs, TransRhs>(Xp);
     UXSolve<NRhs, TransRhs>(Xp);
@@ -402,7 +411,8 @@ class NormalizeOpt::Op
    * \brief Row sum of blocks equation
    * \tparam diag_first Whether or not the first entry is the diagonal entry
    */
-  template <bool diag_first> void sumBlockEq()
+  template <bool diag_first>
+  void sumBlockEq()
   {
     for (Integer irow = 0; irow < m_local_size; ++irow) {
       checkNullEq(irow, (diag_first ? 0 : m_upper_diag_index[irow]));
@@ -410,7 +420,7 @@ class NormalizeOpt::Op
         for (Integer ieq = 1; ieq < m_equations_num; ++ieq)
           for (Integer ui = 0; ui < m_unknowns_num; ++ui)
             m_matrix[col * m_block_size + ij(0, ui)] +=
-                m_matrix[col * m_block_size + ij(ieq, ui)];
+            m_matrix[col * m_block_size + ij(ieq, ui)];
       }
       for (Integer ieq = 1; ieq < m_equations_num; ++ieq)
         m_rhs[irow * m_equations_num] += m_rhs[irow * m_equations_num + ieq];
@@ -418,7 +428,8 @@ class NormalizeOpt::Op
   }
 
   //! Invert diagonal
-  template <int N> void multInvDiag();
+  template <int N>
+  void multInvDiag();
 
  protected:
   Integer ijk(Integer i, Integer j, Integer k) const
@@ -639,7 +650,8 @@ class NormalizeOpt::Op2 : public NormalizeOpt::Op
             m_extra_eq_matrix[k * neq] = val;
           }
         }
-      } else {
+      }
+      else {
         // TOCHECK : to be removed ?
         // Integer neq = m2.eqSpace().structInfo().size() ;
         Integer neq = 1;
@@ -693,7 +705,8 @@ class NormalizeOpt::Op2 : public NormalizeOpt::Op
   }
 
   //! Invert diagonal
-  template <int N> void multInvDiag();
+  template <int N>
+  void multInvDiag();
 
  private:
   //! Number of extra equations

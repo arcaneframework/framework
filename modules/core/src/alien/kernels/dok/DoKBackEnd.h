@@ -23,7 +23,8 @@
 
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 
@@ -31,24 +32,29 @@ class DoKLinearSolver;
 class DoKMatrix;
 class VectorDoK;
 class Space;
-template <class Matrix, class Vector> class IInternalLinearAlgebra;
-template <class Matrix, class Vector> class IInternalLinearSolver;
+template <class Matrix, class Vector>
+class IInternalLinearAlgebra;
+template <class Matrix, class Vector>
+class IInternalLinearSolver;
 
 extern IInternalLinearAlgebra<DoKMatrix, VectorDoK>* DoKLinearAlgebraFactory();
 
 extern IInternalLinearSolver<DoKMatrix, VectorDoK>* DoKLinearSolverFactory(
-    IMessagePassingMng* p_mng);
+IMessagePassingMng* p_mng);
 
 /*---------------------------------------------------------------------------*/
 
-namespace BackEnd {
-  namespace tag {
+namespace BackEnd
+{
+  namespace tag
+  {
     struct DoK
     {};
   } // namespace tag
 } // namespace BackEnd
 
-template <> struct AlgebraTraits<BackEnd::tag::DoK>
+template <>
+struct AlgebraTraits<BackEnd::tag::DoK>
 {
   typedef DoKMatrix matrix_type;
   typedef VectorDoK vector_type;

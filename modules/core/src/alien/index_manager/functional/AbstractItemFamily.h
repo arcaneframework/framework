@@ -26,7 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,8 +46,8 @@ class ALIEN_EXPORT AbstractItemFamily : public IAbstractFamily
    * @param parallel_mng Parallel Manager.
    */
   AbstractItemFamily(const ConstArrayView<Int64>& uniqueIds,
-      const ConstArrayView<Integer>& owners, IMessagePassingMng* parallel_mng,
-      ITraceMng* trace_mng = nullptr);
+                     const ConstArrayView<Integer>& owners, IMessagePassingMng* parallel_mng,
+                     ITraceMng* trace_mng = nullptr);
 
   /*! Build a family for locally known unique ids.
    *
@@ -56,9 +57,9 @@ class ALIEN_EXPORT AbstractItemFamily : public IAbstractFamily
    * @param parallel_mng Parallel Manager.
    */
   AbstractItemFamily(const ConstArrayView<Int64>& uniqueIds,
-      const ConstArrayView<Int64>& ghost_uniqueIds,
-      const ConstArrayView<Integer>& ghost_owners, IMessagePassingMng* parallel_mng,
-      ITraceMng* trace_mng = nullptr);
+                     const ConstArrayView<Int64>& ghost_uniqueIds,
+                     const ConstArrayView<Integer>& ghost_owners, IMessagePassingMng* parallel_mng,
+                     ITraceMng* trace_mng = nullptr);
 
   /*! Build a family for locally owned unique ids.
    *
@@ -66,7 +67,7 @@ class ALIEN_EXPORT AbstractItemFamily : public IAbstractFamily
    * @param parallel_mng Parallel Manager.
    */
   AbstractItemFamily(const ConstArrayView<Int64>& uniqueIds,
-      IMessagePassingMng* parallel_mng, [[maybe_unused]] ITraceMng* trace_mng = nullptr);
+                     IMessagePassingMng* parallel_mng, [[maybe_unused]] ITraceMng* trace_mng = nullptr);
 
   ~AbstractItemFamily() override = default;
 
@@ -77,7 +78,7 @@ class ALIEN_EXPORT AbstractItemFamily : public IAbstractFamily
   Int32 maxLocalId() const override { return m_unique_ids.size(); }
 
   void uniqueIdToLocalId(
-      ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const override;
+  ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const override;
 
   IAbstractFamily::Item item(Int32 localId) const override;
 
@@ -107,8 +108,8 @@ class ALIEN_EXPORT AbstractFamily : public IIndexManager::IAbstractFamily
    * @param parallel_mng Parallel Manager.
    */
   AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
-      const ConstArrayView<Integer>& owners, IMessagePassingMng* parallel_mng,
-      ITraceMng* trace_mng = nullptr);
+                 const ConstArrayView<Integer>& owners, IMessagePassingMng* parallel_mng,
+                 ITraceMng* trace_mng = nullptr);
 
   /*! Build a family for locally known unique ids.
    *
@@ -118,9 +119,9 @@ class ALIEN_EXPORT AbstractFamily : public IIndexManager::IAbstractFamily
    * @param parallel_mng Parallel Manager.
    */
   AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
-      const ConstArrayView<Int64>& ghost_uniqueIds,
-      const ConstArrayView<Integer>& ghost_owners, IMessagePassingMng* parallel_mng,
-      ITraceMng* trace_mng = nullptr);
+                 const ConstArrayView<Int64>& ghost_uniqueIds,
+                 const ConstArrayView<Integer>& ghost_owners, IMessagePassingMng* parallel_mng,
+                 ITraceMng* trace_mng = nullptr);
 
   /*! Build a family for locally owned unique ids.
    *
@@ -129,7 +130,7 @@ class ALIEN_EXPORT AbstractFamily : public IIndexManager::IAbstractFamily
    */
 
   AbstractFamily(const ConstArrayView<Int64>& uniqueIds, IMessagePassingMng* parallel_mng,
-      ITraceMng* trace_mng = nullptr);
+                 ITraceMng* trace_mng = nullptr);
 
   ~AbstractFamily() override = default;
 
@@ -140,15 +141,15 @@ class ALIEN_EXPORT AbstractFamily : public IIndexManager::IAbstractFamily
   Int32 maxLocalId() const override { return m_unique_ids.size(); }
 
   void uniqueIdToLocalId(
-      ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const override;
+  ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const override;
 
   IAbstractFamily::Item item(Int32 localId) const override;
 
   Arccore::SharedArray<Arccore::Integer> owners(
-      ConstArrayView<Int32> localIds) const override;
+  ConstArrayView<Int32> localIds) const override;
 
   Arccore::SharedArray<Arccore::Int64> uids(
-      ConstArrayView<Int32> localIds) const override;
+  ConstArrayView<Int32> localIds) const override;
 
   Arccore::SharedArray<Arccore::Int32> allLocalIds() const override;
 

@@ -28,7 +28,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 class Space;
 
@@ -44,7 +45,8 @@ class Space;
  * \tparam M The type of matrix used
  * \tparam V The type of vector used
  */
-template <class M, class V> class IInternalLinearAlgebra
+template <class M, class V>
+class IInternalLinearAlgebra
 {
  public:
   //! Type of the matrix used
@@ -168,7 +170,7 @@ template <class M, class V> class IInternalLinearAlgebra
   virtual void dump(Matrix const& a, std::string const& filename) const
   {
     throw NotImplementedException(
-        A_FUNCINFO, "IInternalLinearAlgebra::dump not implemented");
+    A_FUNCINFO, "IInternalLinearAlgebra::dump not implemented");
   }
 
   /*!
@@ -180,7 +182,7 @@ template <class M, class V> class IInternalLinearAlgebra
   virtual void dump(Vector const& x, std::string const& filename) const
   {
     throw NotImplementedException(
-        A_FUNCINFO, "IInternalLinearAlgebra::dump not implemented");
+    A_FUNCINFO, "IInternalLinearAlgebra::dump not implemented");
   }
 };
 

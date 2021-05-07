@@ -22,9 +22,11 @@
 
 #include <alien/data/IMatrix.h>
 
-namespace Arccore {
+namespace Arccore
+{
 class ITraceMng;
-namespace MessagePassing {
+namespace MessagePassing
+{
   class IMessagePassingMng;
 }
 } // namespace Arccore
@@ -32,22 +34,26 @@ namespace MessagePassing {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename Scalar> class SimpleCSRMatrix;
+template <typename Scalar>
+class SimpleCSRMatrix;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Common {
+namespace Common
+{
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
-  template <typename ValueT = Real> class MatrixProfilerT
+  template <typename ValueT = Real>
+  class MatrixProfilerT
   {
    public:
     MatrixProfilerT(IMatrix& matrix);

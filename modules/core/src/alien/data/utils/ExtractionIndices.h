@@ -28,7 +28,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -48,7 +49,7 @@ class ALIEN_EXPORT ExtractionIndices final
    * \param[in] colRange The length of the col
    */
   ExtractionIndices(const Arccore::Integer rowStart, const Arccore::Integer rowRange,
-      const Arccore::Integer colStart = -1, const Arccore::Integer colRange = -1);
+                    const Arccore::Integer colStart = -1, const Arccore::Integer colRange = -1);
 
   //! Free resources
   ~ExtractionIndices();

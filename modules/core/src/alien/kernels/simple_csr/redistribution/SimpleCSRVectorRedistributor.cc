@@ -21,12 +21,13 @@
 #include <alien/kernels/redistributor/RedistributorCommPlan.h>
 #include <alien/utils/Precomp.h>
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
 SimpleCSRVectorRedistributor::SimpleCSRVectorRedistributor(
-    const RedistributorCommPlan* commPlan, const VectorDistribution& src_dist)
+const RedistributorCommPlan* commPlan, const VectorDistribution& src_dist)
 : m_comm_plan(commPlan)
 , m_pm_super(m_comm_plan->superParallelMng())
 , m_pm_dst(m_comm_plan->tgtParallelMng().get())
@@ -36,8 +37,7 @@ SimpleCSRVectorRedistributor::SimpleCSRVectorRedistributor(
 
 SimpleCSRVectorRedistributor::~SimpleCSRVectorRedistributor() {}
 
-void
-SimpleCSRVectorRedistributor::_computeCommPlan(const VectorDistribution& src_dist)
+void SimpleCSRVectorRedistributor::_computeCommPlan(const VectorDistribution& src_dist)
 {
   Int32 super_comm_size = m_pm_super->commSize();
 
@@ -86,32 +86,30 @@ SimpleCSRVectorRedistributor::_computeCommPlan(const VectorDistribution& src_dis
   }
 }
 
-void
-SimpleCSRVectorRedistributor::distribute(
-    const SimpleCSRVector<Real>& src, SimpleCSRVector<Real>& tgt)
+void SimpleCSRVectorRedistributor::distribute(
+const SimpleCSRVector<Real>& src, SimpleCSRVector<Real>& tgt)
 {
   // Copy values to a send buffer, in case src and dst are the same matrix.
   UniqueArray<Real> snd_values = src.fullValues(); // TODO: avoid this copy
   UniqueArray<Real> rcv_values(this->rcvSize());
 
   Alien::RedistributionTools::exchange(m_pm_super, snd_values.constView(),
-      m_snd_offset.constView(), rcv_values.view(), m_rcv_offset.constView());
+                                       m_snd_offset.constView(), rcv_values.view(), m_rcv_offset.constView());
 
   ArrayView<Real> values = tgt.fullValues();
   for (Integer i = 0; i < values.size(); ++i)
     values[i] = rcv_values[i];
 }
 
-void
-SimpleCSRVectorRedistributor::distributeBack(
-    const SimpleCSRVector<Real>& src, SimpleCSRVector<Real>& tgt)
+void SimpleCSRVectorRedistributor::distributeBack(
+const SimpleCSRVector<Real>& src, SimpleCSRVector<Real>& tgt)
 {
   // Copy values to a send buffer, in case src and dst are the same matrix.
   UniqueArray<Real> snd_values = src.fullValues(); // TODO: avoid this copy
   UniqueArray<Real> rcv_values(this->rcvBackSize());
 
   Alien::RedistributionTools::exchange(m_pm_super, snd_values.constView(),
-      m_rcv_offset.constView(), rcv_values.view(), m_snd_offset.constView());
+                                       m_rcv_offset.constView(), rcv_values.view(), m_snd_offset.constView());
 
   ArrayView<Real> values = tgt.fullValues();
   for (Integer i = 0; i < values.size(); ++i)

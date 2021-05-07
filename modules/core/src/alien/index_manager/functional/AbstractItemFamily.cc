@@ -26,7 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,8 +42,8 @@ AbstractItemFamily::AbstractItemFamily(const AbstractItemFamily& family)
 
 /*---------------------------------------------------------------------------*/
 AbstractItemFamily::AbstractItemFamily(const ConstArrayView<Int64>& uniqueIds,
-    const ConstArrayView<Integer>& owners, IMessagePassingMng* parallel_mng,
-    ITraceMng* trace_mng)
+                                       const ConstArrayView<Integer>& owners, IMessagePassingMng* parallel_mng,
+                                       ITraceMng* trace_mng)
 : m_parallel_mng(parallel_mng)
 , m_trace_mng(trace_mng)
 {
@@ -55,9 +56,9 @@ AbstractItemFamily::AbstractItemFamily(const ConstArrayView<Int64>& uniqueIds,
 }
 
 AbstractItemFamily::AbstractItemFamily(const ConstArrayView<Int64>& uniqueIds,
-    const ConstArrayView<Int64>& ghost_uniqueIds,
-    const ConstArrayView<Integer>& ghost_owners, IMessagePassingMng* parallel_mng,
-    ITraceMng* trace_mng)
+                                       const ConstArrayView<Int64>& ghost_uniqueIds,
+                                       const ConstArrayView<Integer>& ghost_owners, IMessagePassingMng* parallel_mng,
+                                       ITraceMng* trace_mng)
 : m_parallel_mng(parallel_mng)
 , m_trace_mng(trace_mng)
 {
@@ -88,7 +89,7 @@ AbstractItemFamily::AbstractItemFamily(const ConstArrayView<Int64>& uniqueIds,
 /*---------------------------------------------------------------------------*/
 
 AbstractItemFamily::AbstractItemFamily(const ConstArrayView<Int64>& uniqueIds,
-    IMessagePassingMng* parallel_mng, [[maybe_unused]] ITraceMng* trace_mng)
+                                       IMessagePassingMng* parallel_mng, [[maybe_unused]] ITraceMng* trace_mng)
 {
 
   m_unique_ids.copy(uniqueIds);
@@ -101,16 +102,16 @@ AbstractItemFamily::AbstractItemFamily(const ConstArrayView<Int64>& uniqueIds,
 
 /*---------------------------------------------------------------------------*/
 
-void
-AbstractItemFamily::uniqueIdToLocalId(
-    ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const
+void AbstractItemFamily::uniqueIdToLocalId(
+ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const
 {
 
   for (Integer i = 0; i < uniqueIds.size(); ++i) {
     auto iter = m_uid2lid.find(uniqueIds[i]);
     if (iter == m_uid2lid.end()) {
       throw Alien::FatalErrorException(A_FUNCINFO, "UniqueId not found");
-    } else
+    }
+    else
       localIds[i] = iter->second;
   }
 }
@@ -172,8 +173,8 @@ AbstractFamily::AbstractFamily(const AbstractFamily& family)
 
 /*---------------------------------------------------------------------------*/
 AbstractFamily::AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
-    const ConstArrayView<Integer>& owners, IMessagePassingMng* parallel_mng,
-    ITraceMng* trace_mng)
+                               const ConstArrayView<Integer>& owners, IMessagePassingMng* parallel_mng,
+                               ITraceMng* trace_mng)
 : m_parallel_mng(parallel_mng)
 , m_trace_mng(trace_mng)
 {
@@ -186,9 +187,9 @@ AbstractFamily::AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
 }
 
 AbstractFamily::AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
-    const ConstArrayView<Int64>& ghost_uniqueIds,
-    const ConstArrayView<Integer>& ghost_owners, IMessagePassingMng* parallel_mng,
-    ITraceMng* trace_mng)
+                               const ConstArrayView<Int64>& ghost_uniqueIds,
+                               const ConstArrayView<Integer>& ghost_owners, IMessagePassingMng* parallel_mng,
+                               ITraceMng* trace_mng)
 : m_parallel_mng(parallel_mng)
 , m_trace_mng(trace_mng)
 {
@@ -219,7 +220,7 @@ AbstractFamily::AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
 /*---------------------------------------------------------------------------*/
 
 AbstractFamily::AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
-    IMessagePassingMng* parallel_mng, ITraceMng* trace_mng)
+                               IMessagePassingMng* parallel_mng, ITraceMng* trace_mng)
 : m_parallel_mng(parallel_mng)
 , m_trace_mng(trace_mng)
 {
@@ -232,9 +233,8 @@ AbstractFamily::AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
 }
 /*---------------------------------------------------------------------------*/
 
-void
-AbstractFamily::uniqueIdToLocalId(
-    ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const
+void AbstractFamily::uniqueIdToLocalId(
+ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const
 {
 
   for (Integer i = 0; i < uniqueIds.size(); ++i) {
@@ -242,7 +242,8 @@ AbstractFamily::uniqueIdToLocalId(
     if (iter == m_uid2lid.end()) {
       localIds[i] = -1;
       throw Alien::FatalErrorException(A_FUNCINFO, "UniqueId not found");
-    } else
+    }
+    else
       localIds[i] = iter->second;
   }
 }

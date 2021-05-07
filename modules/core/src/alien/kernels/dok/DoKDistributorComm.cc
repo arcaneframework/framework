@@ -20,7 +20,8 @@ limitations under the License.
 #include <alien/distribution/MatrixDistribution.h>
 #include <alien/kernels/redistributor/RedistributorCommPlan.h>
 
-namespace Alien {
+namespace Alien
+{
 using namespace Arccore;
 
 DoKDistributorComm::DoKDistributorComm(const RedistributorCommPlan* commPlan)
@@ -29,8 +30,7 @@ DoKDistributorComm::DoKDistributorComm(const RedistributorCommPlan* commPlan)
 , m_pm_dst(m_comm_plan->tgtParallelMng().get())
 {}
 
-void
-DoKDistributorComm::computeCommPlan(IReverseIndexer* rev_index)
+void DoKDistributorComm::computeCommPlan(IReverseIndexer* rev_index)
 {
   Int32 super_comm_size = m_pm_super->commSize();
 
@@ -90,9 +90,9 @@ DoKDistributorComm::computeCommPlan(IReverseIndexer* rev_index)
   m_rcv_cols.resize(m_rcv_offset[super_comm_size], -1);
 
   Alien::RedistributionTools::exchange(m_pm_super, snd_rows.constView(),
-      m_snd_offset.constView(), m_rcv_rows.view(), m_rcv_offset.constView());
+                                       m_snd_offset.constView(), m_rcv_rows.view(), m_rcv_offset.constView());
   Alien::RedistributionTools::exchange(m_pm_super, snd_cols.constView(),
-      m_snd_offset.constView(), m_rcv_cols.view(), m_rcv_offset.constView());
+                                       m_snd_offset.constView(), m_rcv_cols.view(), m_rcv_offset.constView());
 }
 
 } // namespace Alien

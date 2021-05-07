@@ -33,7 +33,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -55,14 +56,15 @@ using namespace Arccore;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Common {
+namespace Common
+{
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
   DirectMatrixBuilder::DirectMatrixBuilder(IMatrix& matrix,
-      const DirectMatrixOptions::ResetFlag reset_flag,
-      const DirectMatrixOptions::SymmetricFlag symmetric_flag)
+                                           const DirectMatrixOptions::ResetFlag reset_flag,
+                                           const DirectMatrixOptions::SymmetricFlag symmetric_flag)
   : m_matrix(matrix)
   , m_matrix_impl(nullptr)
   , m_row_starts()
@@ -86,7 +88,8 @@ namespace Common {
 
     if (!m_parallel_mng) {
       m_nproc = 1;
-    } else {
+    }
+    else {
       m_nproc = m_parallel_mng->commSize();
     }
 
@@ -100,10 +103,11 @@ namespace Common {
     if (m_reset_flag == DirectMatrixOptions::eResetAllocation or never_allocated) {
       m_reset_flag = DirectMatrixOptions::eResetAllocation;
       m_row_sizes.resize(m_local_size, 0);
-    } else {
+    }
+    else {
       m_row_sizes.resize(m_local_size);
       SimpleCSRInternal::CSRStructInfo& profile =
-          m_matrix_impl->internal().getCSRProfile();
+      m_matrix_impl->internal().getCSRProfile();
       ConstArrayView<Integer> row_starts = profile.getRowOffset();
       for (Integer i = 0; i < m_local_size; ++i) {
         const Integer row_capacity = row_starts[i + 1] - row_starts[i];
@@ -124,16 +128,17 @@ namespace Common {
   /*---------------------------------------------------------------------------*/
 
   void DirectMatrixBuilder::reserve(
-      Integer n, const DirectMatrixOptions::ReserveFlag flag)
+  Integer n, const DirectMatrixOptions::ReserveFlag flag)
   {
     ALIEN_ASSERT((!m_allocated), ("Cannot reserve already allocated matrix"));
     m_reset_flag = DirectMatrixOptions::eResetAllocation;
 
     if (flag == DirectMatrixOptions::eResetReservation) {
       m_row_sizes.fill(n);
-    } else {
+    }
+    else {
       ALIEN_ASSERT((flag == DirectMatrixOptions::eExtendReservation),
-          ("Unexpected reservation flag"));
+                   ("Unexpected reservation flag"));
       for (Integer i = 0, is = m_row_sizes.size(); i < is; ++i)
         m_row_sizes[i] += n;
     }
@@ -142,7 +147,7 @@ namespace Common {
   /*---------------------------------------------------------------------------*/
 
   void DirectMatrixBuilder::reserve(
-      const ConstArrayView<Integer> indices, Integer n, const ReserveFlag flag)
+  const ConstArrayView<Integer> indices, Integer n, const ReserveFlag flag)
   {
     ALIEN_ASSERT((!m_allocated), ("Cannot reserve already allocated matrix"));
     m_reset_flag = DirectMatrixOptions::eResetAllocation;
@@ -150,9 +155,10 @@ namespace Common {
     if (flag == DirectMatrixOptions::eResetReservation) {
       for (Integer i = 0; i < indices.size(); ++i)
         m_row_sizes[indices[i] - m_local_offset] = n;
-    } else {
+    }
+    else {
       ALIEN_ASSERT((flag == DirectMatrixOptions::eExtendReservation),
-          ("Unexpected reservation flag"));
+                   ("Unexpected reservation flag"));
       for (Integer i = 0; i < indices.size(); ++i)
         m_row_sizes[indices[i] - m_local_offset] += n;
     }
@@ -176,56 +182,43 @@ namespace Common {
     m_cols = profile.getCols();
     m_values = m_matrix_impl->internal().getValues();
 
-    if (m_reset_flag == DirectMatrixOptions::eResetAllocation
-        or m_reset_flag == DirectMatrixOptions::eResetProfile
-        or profile.getColOrdering() != SimpleCSRInternal::CSRStructInfo::eFull)
-    {
+    if (m_reset_flag == DirectMatrixOptions::eResetAllocation or m_reset_flag == DirectMatrixOptions::eResetProfile or profile.getColOrdering() != SimpleCSRInternal::CSRStructInfo::eFull) {
       profile.getColOrdering() = SimpleCSRInternal::CSRStructInfo::eUndef;
       m_row_sizes.fill(0);
     }
-    else
-    {
-      if(m_matrix_impl->isParallel())
-      {
+    else {
+      if (m_matrix_impl->isParallel()) {
         // NEED TO SORT COLS BECAUSE OF DichotomyScan
-        if(m_reset_flag == DirectMatrixOptions::eResetValues)
-        {
-            for (Integer i = 0; i < m_local_size; ++i)
-            {
-              const Integer row_capacity = m_row_starts[i + 1] - m_row_starts[i];
-              m_row_sizes[i] = row_capacity;
-              auto view = ArrayView<Integer>(row_capacity,m_cols.data()+m_row_starts[i]) ;
-              std::sort(view.begin(),view.end()) ;
-             }
-        }
-        else
-        {
-            std::set<std::pair<Integer,Real>> entries;
-            for (Integer i = 0; i < m_local_size; ++i)
-            {
-                const Integer row_capacity = m_row_starts[i + 1] - m_row_starts[i];
-                m_row_sizes[i] = row_capacity;
-                entries.clear() ;
-                for(Integer k = m_row_starts[i]; k< m_row_starts[i + 1]; ++k)
-                {
-                    entries.insert(std::make_pair(m_cols[k],m_values[k])) ;
-                }
-                Integer k = 0 ;
-                for(auto e = entries.begin(); e!=entries.end(); ++e,++k)
-                {
-                   m_cols[k] = e->first ;
-                   m_values[k] = e->second ;
-                }
-             }
-         }
-      }
-      else
-      {
-         for (Integer i = 0; i < m_local_size; ++i)
-         {
+        if (m_reset_flag == DirectMatrixOptions::eResetValues) {
+          for (Integer i = 0; i < m_local_size; ++i) {
             const Integer row_capacity = m_row_starts[i + 1] - m_row_starts[i];
             m_row_sizes[i] = row_capacity;
-         }
+            auto view = ArrayView<Integer>(row_capacity, m_cols.data() + m_row_starts[i]);
+            std::sort(view.begin(), view.end());
+          }
+        }
+        else {
+          std::set<std::pair<Integer, Real>> entries;
+          for (Integer i = 0; i < m_local_size; ++i) {
+            const Integer row_capacity = m_row_starts[i + 1] - m_row_starts[i];
+            m_row_sizes[i] = row_capacity;
+            entries.clear();
+            for (Integer k = m_row_starts[i]; k < m_row_starts[i + 1]; ++k) {
+              entries.insert(std::make_pair(m_cols[k], m_values[k]));
+            }
+            Integer k = 0;
+            for (auto e = entries.begin(); e != entries.end(); ++e, ++k) {
+              m_cols[k] = e->first;
+              m_values[k] = e->second;
+            }
+          }
+        }
+      }
+      else {
+        for (Integer i = 0; i < m_local_size; ++i) {
+          const Integer row_capacity = m_row_starts[i + 1] - m_row_starts[i];
+          m_row_sizes[i] = row_capacity;
+        }
       }
     }
 
@@ -239,7 +232,7 @@ namespace Common {
   /*---------------------------------------------------------------------------*/
 
   void DirectMatrixBuilder::addData(
-      const Integer iIndex, const Integer jIndex, const Real value)
+  const Integer iIndex, const Integer jIndex, const Real value)
   {
     _startTimer();
     ALIEN_ASSERT((m_allocated), ("Not allocated matrix"));
@@ -259,8 +252,8 @@ namespace Common {
     Integer row_capacity = m_row_starts[local_row + 1] - row_start;
     Integer hint_pos; // hint insertion position not used
     Real* found_value = intrusive_vmap_insert(jIndex, hint_pos, row_size, row_capacity,
-        m_cols.unguardedBasePointer() + row_start,
-        m_values.unguardedBasePointer() + row_start);
+                                              m_cols.unguardedBasePointer() + row_start,
+                                              m_values.unguardedBasePointer() + row_start);
     if (found_value)
       *found_value += value;
     else // Manage extra data storage
@@ -271,12 +264,12 @@ namespace Common {
   /*---------------------------------------------------------------------------*/
 
   void DirectMatrixBuilder::addData(const Integer iIndex, const Real factor,
-      const ConstArrayView<Integer>& jIndexes, const ConstArrayView<Real>& jValues)
+                                    const ConstArrayView<Integer>& jIndexes, const ConstArrayView<Real>& jValues)
   {
     _startTimer();
     ALIEN_ASSERT((m_allocated), ("Not allocated matrix"));
     ALIEN_ASSERT((jIndexes.size() == jValues.size()),
-        ("Inconsistent sizes: %d vs %d", jIndexes.size(), jValues.size()));
+                 ("Inconsistent sizes: %d vs %d", jIndexes.size(), jValues.size()));
 
     if (iIndex == -1)
       return; // skip dead zone
@@ -298,8 +291,8 @@ namespace Common {
         throw FatalErrorException("column index undefined");
       Integer hint_pos; // hint insertion position not used
       Real* found_value = intrusive_vmap_insert(jIndex, hint_pos, row_size, row_capacity,
-          m_cols.unguardedBasePointer() + row_start,
-          m_values.unguardedBasePointer() + row_start);
+                                                m_cols.unguardedBasePointer() + row_start,
+                                                m_values.unguardedBasePointer() + row_start);
       if (found_value)
         *found_value += factor * jValues[i];
       else // Manage extra data storage
@@ -315,7 +308,7 @@ namespace Common {
   /*---------------------------------------------------------------------------*/
 
   void DirectMatrixBuilder::setData(
-      const Integer iIndex, const Integer jIndex, const Real value)
+  const Integer iIndex, const Integer jIndex, const Real value)
   {
     _startTimer();
     ALIEN_ASSERT((m_allocated), ("Not allocated matrix"));
@@ -335,8 +328,8 @@ namespace Common {
     Integer row_capacity = m_row_starts[local_row + 1] - row_start;
     Integer hint_pos; // hint insertion position not used
     Real* found_value = intrusive_vmap_insert(jIndex, hint_pos, row_size, row_capacity,
-        m_cols.unguardedBasePointer() + row_start,
-        m_values.unguardedBasePointer() + row_start);
+                                              m_cols.unguardedBasePointer() + row_start,
+                                              m_values.unguardedBasePointer() + row_start);
     if (found_value)
       *found_value = value;
     else // Manage extra data storage
@@ -347,12 +340,12 @@ namespace Common {
   /*---------------------------------------------------------------------------*/
 
   void DirectMatrixBuilder::setData(const Integer iIndex, const Real factor,
-      const ConstArrayView<Integer>& jIndexes, const ConstArrayView<Real>& jValues)
+                                    const ConstArrayView<Integer>& jIndexes, const ConstArrayView<Real>& jValues)
   {
     _startTimer();
     ALIEN_ASSERT((m_allocated), ("Not allocated matrix"));
     ALIEN_ASSERT((jIndexes.size() == jValues.size()),
-        ("Inconsistent sizes: %d vs %d", jIndexes.size(), jValues.size()));
+                 ("Inconsistent sizes: %d vs %d", jIndexes.size(), jValues.size()));
 
     if (iIndex == -1)
       return; // skip dead zone
@@ -374,8 +367,8 @@ namespace Common {
         throw FatalErrorException("column index undefined");
       Integer hint_pos; // hint insertion position not used
       Real* found_value = intrusive_vmap_insert(jIndex, hint_pos, row_size, row_capacity,
-          m_cols.unguardedBasePointer() + row_start,
-          m_values.unguardedBasePointer() + row_start);
+                                                m_cols.unguardedBasePointer() + row_start,
+                                                m_values.unguardedBasePointer() + row_start);
       if (found_value)
         *found_value = factor * jValues[i];
       else // Manage extra data storage
@@ -512,7 +505,7 @@ namespace Common {
     // Parallel reduction of the decision
     if (m_parallel_mng)
       need_squeeze = Arccore::MessagePassing::mpAllReduce(
-          m_parallel_mng, Arccore::MessagePassing::ReduceMax, need_squeeze);
+      m_parallel_mng, Arccore::MessagePassing::ReduceMax, need_squeeze);
 
     // Premature return if no need of squeeze
     if (!need_squeeze)
@@ -534,7 +527,8 @@ namespace Common {
           values[row_start + j] = m_values[row_start_orig + j];
         }
         offset += row_size;
-      } else { // Algo avec fusion des extras
+      }
+      else { // Algo avec fusion des extras
         const ColValueData& extra_col_value_data = ifinder->second;
         const Integer row_start_orig = m_row_starts[i];
         const Integer row_start = row_starts[i] = offset;
@@ -553,8 +547,7 @@ namespace Common {
             }
             break;
           }
-          if (extra_j_iter
-              == extra_col_value_data.end()) { // Copie la partie restante des originaux
+          if (extra_j_iter == extra_col_value_data.end()) { // Copie la partie restante des originaux
             while (j < row_size) {
               cols[pos] = m_cols[row_start_orig + j];
               values[pos] = m_values[row_start_orig + j];
@@ -570,7 +563,8 @@ namespace Common {
             values[pos] = m_values[row_start_orig + j];
             ++pos;
             ++j;
-          } else {
+          }
+          else {
             cols[pos] = KEY_OF(extra_j_iter);
             values[pos] = VALUE_OF(extra_j_iter);
             ++pos;
@@ -594,7 +588,7 @@ namespace Common {
     m_offset.resize(m_nproc + 1);
     if (m_parallel_mng) {
       Arccore::MessagePassing::mpAllGather(m_parallel_mng,
-          ConstArrayView<Integer>(1, &m_local_offset), m_offset.subView(0, m_nproc));
+                                           ConstArrayView<Integer>(1, &m_local_offset), m_offset.subView(0, m_nproc));
     }
     m_offset[m_nproc] = m_global_size;
 
@@ -628,7 +622,7 @@ namespace Common {
   /*---------------------------------------------------------------------------*/
 
   void DirectMatrixBuilder::updateProfile(UniqueArray<Integer>& row_starts,
-      UniqueArray<Integer>& cols, UniqueArray<Real>& values)
+                                          UniqueArray<Integer>& cols, UniqueArray<Real>& values)
   {
     SimpleCSRInternal::CSRStructInfo& profile = m_matrix_impl->internal().getCSRProfile();
     profile.getRowOffset().copy(row_starts);
@@ -641,7 +635,7 @@ namespace Common {
     offset.resize(m_nproc + 1);
     if (m_parallel_mng) {
       Arccore::MessagePassing::mpAllGather(m_parallel_mng,
-          ConstArrayView<Integer>(1, &m_local_offset), offset.subView(0, m_nproc));
+                                           ConstArrayView<Integer>(1, &m_local_offset), offset.subView(0, m_nproc));
     }
     offset[m_nproc] = m_global_size;
 
@@ -650,7 +644,8 @@ namespace Common {
 
     if (m_nproc > 1) {
       m_matrix_impl->parallelStart(offset, m_parallel_mng, true);
-    } else
+    }
+    else
       m_matrix_impl->sequentialStart();
     m_values = m_matrix_impl->internal().getValues();
   }
@@ -666,7 +661,7 @@ namespace Common {
             max_used_data = 0;
     Integer total_reserved_data = 0;
     Integer min_reserved_data =
-                (m_local_size > 0) ? std::numeric_limits<Integer>::max() : 0,
+            (m_local_size > 0) ? std::numeric_limits<Integer>::max() : 0,
             max_reserved_data = 0;
     for (Enumerator ie = e; !ie.end(); ++ie) {
       const Integer i = *ie;
@@ -685,7 +680,7 @@ namespace Common {
 
     Integer total_extra_data = 0;
     Integer min_extra_data =
-                (!m_extras.empty()) ? std::numeric_limits<Integer>::max() : 0,
+            (!m_extras.empty()) ? std::numeric_limits<Integer>::max() : 0,
             max_extra_data = 0;
     Integer extra_count = 0;
     typename Enumerator::Finder finder = e.finder();
@@ -702,7 +697,7 @@ namespace Common {
     need_squeeze |= (extra_count > 0);
     //  Parallel reduction of the decision : uniquement pour affichage
     need_squeeze = Arccore::MessagePassing::mpAllReduce(
-        m_parallel_mng, Arccore::MessagePassing::ReduceMax, need_squeeze);
+    m_parallel_mng, Arccore::MessagePassing::ReduceMax, need_squeeze);
 
     const Integer size = e.size();
     o << "Total used data                = " << total_used_data << " on " << size

@@ -26,7 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 /*---------------------------------------------------------------------------*/
@@ -39,16 +40,14 @@ Timestamp::Timestamp(const TimestampMng* manager)
 
 /*---------------------------------------------------------------------------*/
 
-Int64
-Timestamp::timestamp() const
+Int64 Timestamp::timestamp() const
 {
   return m_timestamp;
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-Timestamp::updateTimestamp()
+void Timestamp::updateTimestamp()
 {
   if (m_manager)
     m_manager->updateTimestamp(this);
@@ -56,20 +55,18 @@ Timestamp::updateTimestamp()
 
 /*---------------------------------------------------------------------------*/
 
-void
-Timestamp::copyTimestamp(const Timestamp& v)
+void Timestamp::copyTimestamp(const Timestamp& v)
 {
   m_timestamp = v.m_timestamp;
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-Timestamp::setTimestamp(const TimestampMng* manager, const Int64 timestamp)
+void Timestamp::setTimestamp(const TimestampMng* manager, const Int64 timestamp)
 {
   if (manager != m_manager)
     throw FatalErrorException(
-        A_FUNCINFO, "Illegal TimestampMng used for updating timestamp");
+    A_FUNCINFO, "Illegal TimestampMng used for updating timestamp");
   m_timestamp = timestamp;
 }
 

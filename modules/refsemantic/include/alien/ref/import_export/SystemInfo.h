@@ -20,7 +20,8 @@
 
 #include <string>
 
-namespace Alien {
+namespace Alien
+{
 
 class MatrixDistribution;
 
@@ -44,7 +45,7 @@ struct SolutionInfo
   Alien::MatrixDistribution* m_dist;
 
   SolutionInfo(eConvCrit conv_crit, double conv_crit_value,
-      const std::string& solver_comment, Alien::MatrixDistribution* dist = nullptr)
+               const std::string& solver_comment, Alien::MatrixDistribution* dist = nullptr)
   : m_conv_crit(conv_crit)
   , m_conv_crit_value(conv_crit_value)
   , m_solver_comment(solver_comment)

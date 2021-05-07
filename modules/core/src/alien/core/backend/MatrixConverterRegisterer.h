@@ -27,7 +27,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -77,13 +78,13 @@ class ALIEN_EXPORT MatrixConverterRegisterer
 /*!
  * \brief Macro to register a matrix converter
  */
-#define REGISTER_MATRIX_CONVERTER(converter)                                             \
-  extern "C++" Alien::IMatrixConverter* alienCreateMatrixConverter_##converter()         \
-  {                                                                                      \
-    return new converter();                                                              \
-  }                                                                                      \
-  Alien::MatrixConverterRegisterer globaliMatrixConverterRegisterer_##converter(         \
-      alienCreateMatrixConverter_##converter)
+#define REGISTER_MATRIX_CONVERTER(converter)                                     \
+  extern "C++" Alien::IMatrixConverter* alienCreateMatrixConverter_##converter() \
+  {                                                                              \
+    return new converter();                                                      \
+  }                                                                              \
+  Alien::MatrixConverterRegisterer globaliMatrixConverterRegisterer_##converter( \
+  alienCreateMatrixConverter_##converter)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

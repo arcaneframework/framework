@@ -28,7 +28,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,7 +50,7 @@ class ALIEN_EXPORT BlockSizeVector
    * \param[in] indexes Entries indexes
    */
   BlockSizeVector(Arccore::UniqueArray<Arccore::Integer>& sizes, Arccore::Integer offset,
-      Arccore::ConstArrayView<Arccore::Integer> indexes);
+                  Arccore::ConstArrayView<Arccore::Integer> indexes);
 
   /*!
    * \brief Operator equal

@@ -10,7 +10,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,7 +47,7 @@ class ALIEN_EXPORT BasicIndexManager : public IIndexManager
   //! Statistiques d'indexation
   /*! Uniquement valide après \a prepare */
   void stats(Arccore::Integer& globalSize, Arccore::Integer& minLocalIndex,
-      Arccore::Integer& localSize) const override;
+             Arccore::Integer& localSize) const override;
 
   //! Retourne la taille globale
   /*! Uniquement valide après \a prepare */
@@ -65,34 +66,34 @@ class ALIEN_EXPORT BasicIndexManager : public IIndexManager
 
   //! Construit une nouvelle entrée scalaire sur un ensemble d'entités abstraites
   ScalarIndexSet buildScalarIndexSet(const Arccore::String& name,
-      const Arccore::IntegerConstArrayView& localIds,
-      const IAbstractFamily& family) override;
+                                     const Arccore::IntegerConstArrayView& localIds,
+                                     const IAbstractFamily& family) override;
 
   //! Construit une nouvelle entrée scalaire sur l'ensemble des entités d'une familles
   //! abstraite
   ScalarIndexSet buildScalarIndexSet(
-      const Arccore::String& name, const IAbstractFamily& family) override;
+  const Arccore::String& name, const IAbstractFamily& family) override;
 
   //! Construit une nouvelle entrée vectoriellesur un ensemble d'entités abstraites
   /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
   VectorIndexSet buildVectorIndexSet(const Arccore::String& name,
-      const Arccore::IntegerConstArrayView& localIds, const IAbstractFamily& family,
-      Arccore::Integer n) override;
+                                     const Arccore::IntegerConstArrayView& localIds, const IAbstractFamily& family,
+                                     Arccore::Integer n) override;
 
   //! Construit une nouvelle entrée scalaire sur l'ensemble des entités d'une familles
   //! abstraite
   /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
   VectorIndexSet buildVectorIndexSet(const Arccore::String& name,
-      const IAbstractFamily& family, Arccore::Integer n) override;
+                                     const IAbstractFamily& family, Arccore::Integer n) override;
 
   //! Fournit une table de translation indexé par les items
   [[nodiscard]] Arccore::UniqueArray<Arccore::Integer> getIndexes(
-      const ScalarIndexSet& entry) const override;
+  const ScalarIndexSet& entry) const override;
 
   //! Fournit une table de translation vectorielle indexé par les items puis par les
   //! entrées
   [[nodiscard]] Arccore::UniqueArray2<Arccore::Integer> getIndexes(
-      const VectorIndexSet& entries) const override;
+  const VectorIndexSet& entries) const override;
 
   //! Donne le gestionnaire parallèle ayant servi à l'indexation
 
@@ -143,8 +144,8 @@ class ALIEN_EXPORT BasicIndexManager : public IIndexManager
   struct InternalEntryIndex
   {
     InternalEntryIndex(MyEntryImpl* e, Arccore::Integer lid, Arccore::Integer kind,
-        Arccore::Int64 uid, Arccore::Integer index,
-        [[maybe_unused]] Arccore::Integer creation_index, Arccore::Integer owner)
+                       Arccore::Int64 uid, Arccore::Integer index,
+                       [[maybe_unused]] Arccore::Integer creation_index, Arccore::Integer owner)
     : m_entry(e)
     , m_uid(uid)
     , m_localid(lid)
@@ -169,7 +170,7 @@ class ALIEN_EXPORT BasicIndexManager : public IIndexManager
   struct EntryIndexComparator
   {
     inline bool operator()(
-        const InternalEntryIndex& a, const InternalEntryIndex& b) const;
+    const InternalEntryIndex& a, const InternalEntryIndex& b) const;
   };
 
   //! Table des Entry connues localement
@@ -185,9 +186,9 @@ class ALIEN_EXPORT BasicIndexManager : public IIndexManager
 
   // TODO: why a shared_ptr here ?
   std::map<Arccore::Integer, std::shared_ptr<IAbstractFamily>>
-      m_abstract_families; //!< Table des IAbstractFamily ici gérées
+  m_abstract_families; //!< Table des IAbstractFamily ici gérées
   std::map<const IAbstractFamily*, Arccore::Integer>
-      m_abstract_family_to_kind_map; //!< Permet la gestion de la survie des
+  m_abstract_family_to_kind_map; //!< Permet la gestion de la survie des
   //!< IAbstractFamily extérieures
 
   //! Retourne l'entrée associée à un nom
@@ -202,7 +203,7 @@ class ALIEN_EXPORT BasicIndexManager : public IIndexManager
  protected: // Méthodes protègés en attendant une explicitation du besoin
  private:
   Entry buildEntry(const Arccore::String& name, const IAbstractFamily* itemFamily,
-      Arccore::Integer kind);
+                   Arccore::Integer kind);
   void defineIndex(const Entry& entry, const Arccore::IntegerConstArrayView& localIds);
   void parallel_prepare(EntryIndexMap& entry_index);
   void sequential_prepare(EntryIndexMap& entry_index);

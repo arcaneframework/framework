@@ -24,16 +24,15 @@
 
 #include <arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h>
 
-namespace AlienTest {
+namespace AlienTest
+{
 
-void
-Environment::initialize(int argc, char** argv)
+void Environment::initialize(int argc, char** argv)
 {
   MPI_Init(&argc, &argv);
 }
 
-void
-Environment::finalize()
+void Environment::finalize()
 {
   MPI_Finalize();
 }
@@ -42,7 +41,7 @@ Arccore::MessagePassing::IMessagePassingMng*
 Environment::parallelMng()
 {
   return Arccore::MessagePassing::Mpi::StandaloneMpiMessagePassingMng::create(
-      MPI_COMM_WORLD);
+  MPI_COMM_WORLD);
 }
 
 Arccore::ITraceMng*

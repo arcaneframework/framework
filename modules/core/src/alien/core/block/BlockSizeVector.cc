@@ -28,7 +28,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -36,7 +37,7 @@ using namespace Arccore;
 /*---------------------------------------------------------------------------*/
 
 BlockSizeVector::BlockSizeVector(
-    UniqueArray<Integer>& sizes, Integer offset, ConstArrayView<Integer> indexes)
+UniqueArray<Integer>& sizes, Integer offset, ConstArrayView<Integer> indexes)
 : m_sizes(sizes)
 , m_offset(offset)
 , m_indexes(indexes)
@@ -69,7 +70,8 @@ BlockSizeVector::operator+=(Integer size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-BlockSizeVector BlockSizeVectorFiller::operator[](ConstArrayView<Integer> indexes)
+BlockSizeVector
+BlockSizeVectorFiller::operator[](ConstArrayView<Integer> indexes)
 {
   return BlockSizeVector(m_sizes, m_offset, indexes);
 }
@@ -77,7 +79,8 @@ BlockSizeVector BlockSizeVectorFiller::operator[](ConstArrayView<Integer> indexe
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-BlockSizeVector BlockSizeVectorFiller::operator[](ConstArray2View<Integer> indexes)
+BlockSizeVector
+BlockSizeVectorFiller::operator[](ConstArray2View<Integer> indexes)
 {
   ConstArrayView<Integer> ids(indexes.totalNbElement(), indexes.unguardedBasePointer());
   return BlockSizeVector(m_sizes, m_offset, ids);
@@ -86,7 +89,8 @@ BlockSizeVector BlockSizeVectorFiller::operator[](ConstArray2View<Integer> index
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer& BlockSizeVectorFiller::operator[](Integer index)
+Integer&
+BlockSizeVectorFiller::operator[](Integer index)
 {
   return m_sizes[index - m_offset];
 }

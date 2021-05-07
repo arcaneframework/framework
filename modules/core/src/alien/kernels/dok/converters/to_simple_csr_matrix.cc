@@ -23,7 +23,8 @@
 #include <alien/kernels/dok/DoKMatrixT.h>
 #include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 using namespace Arccore::MessagePassing;
@@ -44,9 +45,8 @@ DoKtoSimpleCSRMatrixConverter::targetBackend() const
   return AlgebraTraits<BackEnd::tag::simplecsr>::name();
 }
 
-void
-DoKtoSimpleCSRMatrixConverter::convert(
-    const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const
+void DoKtoSimpleCSRMatrixConverter::convert(
+const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const
 {
   const SrcMatrix& src = cast<SrcMatrix>(sourceImpl, sourceBackend());
   TgtMatrix& tgt = cast<TgtMatrix>(targetImpl, targetBackend());
@@ -57,20 +57,20 @@ DoKtoSimpleCSRMatrixConverter::convert(
 
   if (sourceImpl->block()) {
     throw FatalErrorException(A_FUNCINFO, "Block matrices are not handled yet");
-  } else if (sourceImpl->vblock()) {
+  }
+  else if (sourceImpl->vblock()) {
     throw FatalErrorException(A_FUNCINFO, "Variable block matrices are not handled yet");
-  } else
+  }
+  else
     _build(src, tgt);
 }
 
-void
-DoKtoSimpleCSRMatrixConverter::_build(const SrcMatrix& src, TgtMatrix& tgt) const
+void DoKtoSimpleCSRMatrixConverter::_build(const SrcMatrix& src, TgtMatrix& tgt) const
 {
   _buildProfile(src, tgt);
 }
 
-void
-DoKtoSimpleCSRMatrixConverter::_buildProfile(const SrcMatrix& src, TgtMatrix& tgt) const
+void DoKtoSimpleCSRMatrixConverter::_buildProfile(const SrcMatrix& src, TgtMatrix& tgt) const
 {
   const ISpace& space = src.rowSpace();
   const MatrixDistribution& dist = src.distribution();

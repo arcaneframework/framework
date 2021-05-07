@@ -34,7 +34,8 @@
 
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 /*---------------------------------------------------------------------------*/
@@ -52,8 +53,7 @@ SolverStater::SolverStater()
 
 /*---------------------------------------------------------------------------*/
 
-void
-SolverStater::reset()
+void SolverStater::reset()
 {
   m_solve_count = 0;
   m_iteration_count = 0;
@@ -70,8 +70,7 @@ SolverStater::reset()
 
 /*---------------------------------------------------------------------------*/
 
-void
-SolverStater::startInitializationMeasure()
+void SolverStater::startInitializationMeasure()
 {
   ALIEN_ASSERT((m_state == eNone), ("Unexpected SolverStater state %d", m_state));
   _startTimer();
@@ -80,8 +79,7 @@ SolverStater::startInitializationMeasure()
 
 /*---------------------------------------------------------------------------*/
 
-void
-SolverStater::stopInitializationMeasure()
+void SolverStater::stopInitializationMeasure()
 {
   ALIEN_ASSERT((m_state == eInit), ("Unexpected SolverStater state %d", m_state));
   _stopTimer();
@@ -92,8 +90,7 @@ SolverStater::stopInitializationMeasure()
 
 /*---------------------------------------------------------------------------*/
 
-void
-SolverStater::startPrepareMeasure()
+void SolverStater::startPrepareMeasure()
 {
   ALIEN_ASSERT((m_state == eNone), ("Unexpected SolverStater state %d", m_state));
   _startTimer();
@@ -102,15 +99,15 @@ SolverStater::startPrepareMeasure()
 
 /*---------------------------------------------------------------------------*/
 
-void
-SolverStater::suspendPrepareMeasure()
+void SolverStater::suspendPrepareMeasure()
 {
   ALIEN_ASSERT((m_state == ePrepare), ("Unexpected SolverStater state %d", m_state));
   _stopTimer();
   if (m_suspend_count == 0) {
     m_last_prepare_time = m_real_time;
     m_last_prepare_cpu_time = m_cpu_time;
-  } else {
+  }
+  else {
     m_last_prepare_time += m_real_time;
     m_last_prepare_cpu_time += m_cpu_time;
   }
@@ -120,8 +117,7 @@ SolverStater::suspendPrepareMeasure()
 
 /*---------------------------------------------------------------------------*/
 
-void
-SolverStater::stopPrepareMeasure()
+void SolverStater::stopPrepareMeasure()
 {
   if (m_state == ePrepare)
     suspendPrepareMeasure();
@@ -138,8 +134,7 @@ SolverStater::stopPrepareMeasure()
 
 /*---------------------------------------------------------------------------*/
 
-void
-SolverStater::startSolveMeasure()
+void SolverStater::startSolveMeasure()
 {
   ALIEN_ASSERT((m_state == eNone), ("Unexpected SolverStater state %d", m_state));
   _startTimer();
@@ -148,8 +143,7 @@ SolverStater::startSolveMeasure()
 
 /*---------------------------------------------------------------------------*/
 
-void
-SolverStater::stopSolveMeasure(const Alien::SolverStatus& status)
+void SolverStater::stopSolveMeasure(const Alien::SolverStatus& status)
 {
   ALIEN_ASSERT((m_state == eSolve), ("Unexpected SolverStater state %d", m_state));
   _stopTimer();
@@ -165,8 +159,7 @@ SolverStater::stopSolveMeasure(const Alien::SolverStatus& status)
 
 /*---------------------------------------------------------------------------*/
 
-Real
-SolverStater::_getVirtualTime()
+Real SolverStater::_getVirtualTime()
 {
   // From Arcane 1.16.3 to work with historical timers and Windows
 #ifdef ARCANE_TIMER_USE_CLOCK
@@ -178,16 +171,14 @@ SolverStater::_getVirtualTime()
   int r = ::getitimer(ITIMER_VIRTUAL, &time_val);
   if (r != 0)
     _errorInTimer("getitimer()", r);
-  Real v = static_cast<Real>(time_val.it_value.tv_sec) * 1.
-      + static_cast<Real>(time_val.it_value.tv_usec) * 1e-6;
+  Real v = static_cast<Real>(time_val.it_value.tv_sec) * 1. + static_cast<Real>(time_val.it_value.tv_usec) * 1e-6;
   return (5000000. - v);
 #endif
 }
 
 /*---------------------------------------------------------------------------*/
 
-Real
-SolverStater::_getRealTime()
+Real SolverStater::_getRealTime()
 {
   // From Arcane 1.16.3 to work with old timers and Windows.
 #ifdef WIN32
@@ -204,24 +195,22 @@ SolverStater::_getRealTime()
   if (r != 0)
     _errorInTimer("gettimeofday()", r);
   Real tvalue =
-      (static_cast<Real>(tp.tv_sec) * 1. + static_cast<Real>(tp.tv_usec) * 1.e-6);
+  (static_cast<Real>(tp.tv_sec) * 1. + static_cast<Real>(tp.tv_usec) * 1.e-6);
   return tvalue;
 #endif
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-SolverStater::_errorInTimer(const String& msg, int retcode)
+void SolverStater::_errorInTimer(const String& msg, int retcode)
 {
   throw FatalErrorException(
-      A_FUNCINFO, String::format("{0} return code: {1} errno: {2}", msg, retcode, errno));
+  A_FUNCINFO, String::format("{0} return code: {1} errno: {2}", msg, retcode, errno));
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-SolverStater::_startTimer()
+void SolverStater::_startTimer()
 {
   ALIEN_ASSERT((m_state == eNone), ("Unexpected SolverStater state %d", m_state));
   m_real_time = _getRealTime();
@@ -230,8 +219,7 @@ SolverStater::_startTimer()
 
 /*---------------------------------------------------------------------------*/
 
-void
-SolverStater::_stopTimer()
+void SolverStater::_stopTimer()
 {
   ALIEN_ASSERT((m_state != eNone), ("Unexpected SolverStater state %d", m_state));
   m_real_time = _getRealTime() - m_real_time;

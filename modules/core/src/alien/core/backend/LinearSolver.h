@@ -37,7 +37,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -57,7 +58,8 @@ class IMatrix;
  *
  * \tparam Tag The tag of the type of solvers used
  */
-template <class Tag> class LinearSolver : public ILinearSolver
+template <class Tag>
+class LinearSolver : public ILinearSolver
 {
  public:
   //! The type of the solver

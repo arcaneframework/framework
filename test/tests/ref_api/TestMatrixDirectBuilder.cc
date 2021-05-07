@@ -28,7 +28,7 @@ TEST(TestMatrixDirectBuilder, ConstructorWithSpaces)
   Alien::Space row_space(3, "RowSpace");
   Alien::Space col_space(4, "ColSpace");
   Alien::MatrixDistribution mdist(
-      row_space, col_space, AlienTest::Environment::parallelMng());
+  row_space, col_space, AlienTest::Environment::parallelMng());
   Alien::VectorDistribution vdist(col_space, AlienTest::Environment::parallelMng());
   Alien::Matrix A(mdist);
   ASSERT_EQ(A.rowSpace(), row_space);
@@ -36,7 +36,7 @@ TEST(TestMatrixDirectBuilder, ConstructorWithSpaces)
   auto tag = Alien::DirectMatrixOptions::eResetValues;
   {
     Alien::DirectMatrixBuilder builder(
-        A, tag, Alien::DirectMatrixOptions::SymmetricFlag::eUnSymmetric);
+    A, tag, Alien::DirectMatrixOptions::SymmetricFlag::eUnSymmetric);
     builder.reserve(5);
     builder.allocate();
     builder(0, 0) = 1.;

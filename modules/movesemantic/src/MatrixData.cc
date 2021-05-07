@@ -28,7 +28,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -37,36 +38,36 @@ using namespace Arccore;
 
 MatrixData::MatrixData()
 : m_impl(new MultiMatrixImpl(std::make_shared<Space>(0), std::make_shared<Space>(0),
-    std::make_shared<MatrixDistribution>(MatrixDistribution())))
+                             std::make_shared<MatrixDistribution>(MatrixDistribution())))
 {}
 
 /*---------------------------------------------------------------------------*/
 
 MatrixData::MatrixData(const Space& space, const MatrixDistribution& dist)
 : m_impl(new MultiMatrixImpl(
-    std::make_shared<Space>(space), std::make_shared<Space>(space), dist.clone()))
+  std::make_shared<Space>(space), std::make_shared<Space>(space), dist.clone()))
 {}
 
 /*---------------------------------------------------------------------------*/
 
 MatrixData::MatrixData(
-    const Space& row_space, const Space& col_space, const MatrixDistribution& dist)
+const Space& row_space, const Space& col_space, const MatrixDistribution& dist)
 : m_impl(new MultiMatrixImpl(
-    std::make_shared<Space>(row_space), std::make_shared<Space>(col_space), dist.clone()))
+  std::make_shared<Space>(row_space), std::make_shared<Space>(col_space), dist.clone()))
 {}
 
 /*---------------------------------------------------------------------------*/
 
 MatrixData::MatrixData(Integer size, const MatrixDistribution& dist)
 : m_impl(new MultiMatrixImpl(
-    std::make_shared<Space>(size), std::make_shared<Space>(size), dist.clone()))
+  std::make_shared<Space>(size), std::make_shared<Space>(size), dist.clone()))
 {}
 
 /*---------------------------------------------------------------------------*/
 
 MatrixData::MatrixData(Integer row_size, Integer col_size, const MatrixDistribution& dist)
 : m_impl(new MultiMatrixImpl(
-    std::make_shared<Space>(row_size), std::make_shared<Space>(col_size), dist.clone()))
+  std::make_shared<Space>(row_size), std::make_shared<Space>(col_size), dist.clone()))
 {}
 
 /*---------------------------------------------------------------------------*/
@@ -77,19 +78,17 @@ MatrixData::MatrixData(MatrixData&& matrix)
 
 /*---------------------------------------------------------------------------*/
 
-void
-MatrixData::operator=(MatrixData&& matrix)
+void MatrixData::operator=(MatrixData&& matrix)
 {
   m_impl = std::move(matrix.m_impl);
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-MatrixData::init(const Space& space, const MatrixDistribution& dist)
+void MatrixData::init(const Space& space, const MatrixDistribution& dist)
 {
   m_impl.reset(new MultiMatrixImpl(
-      std::make_shared<Space>(space), std::make_shared<Space>(space), dist.clone()));
+  std::make_shared<Space>(space), std::make_shared<Space>(space), dist.clone()));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -110,8 +109,7 @@ MatrixData::vblock() const
 
 /*---------------------------------------------------------------------------*/
 
-void
-MatrixData::setBlockInfos(const Integer block_size)
+void MatrixData::setBlockInfos(const Integer block_size)
 {
   m_impl->setBlockInfos(block_size);
 }
@@ -130,8 +128,7 @@ MatrixData::setBlockInfos(const Integer block_size)
 
 /*---------------------------------------------------------------------------*/
 
-void
-MatrixData::setBlockInfos(const Block* block)
+void MatrixData::setBlockInfos(const Block* block)
 {
   if (block) {
     m_impl->setBlockInfos(block);
@@ -140,8 +137,7 @@ MatrixData::setBlockInfos(const Block* block)
 
 /*---------------------------------------------------------------------------*/
 
-void
-MatrixData::setBlockInfos(const VBlock* block)
+void MatrixData::setBlockInfos(const VBlock* block)
 {
   if (block) {
     m_impl->setBlockInfos(block);
@@ -150,24 +146,21 @@ MatrixData::setBlockInfos(const VBlock* block)
 
 /*---------------------------------------------------------------------------*/
 
-void
-MatrixData::free()
+void MatrixData::free()
 {
   m_impl->free();
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-MatrixData::clear()
+void MatrixData::clear()
 {
   m_impl->clear();
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-MatrixData::visit(ICopyOnWriteMatrix& m) const
+void MatrixData::visit(ICopyOnWriteMatrix& m) const
 {
   m.accept(m_impl);
 }
@@ -198,24 +191,21 @@ MatrixData::distribution() const
 
 /*---------------------------------------------------------------------------*/
 
-void
-MatrixData::setUserFeature(String feature)
+void MatrixData::setUserFeature(String feature)
 {
   m_impl->setFeature(feature);
 }
 
 /*---------------------------------------------------------------------------*/
 
-bool
-MatrixData::hasUserFeature(String feature) const
+bool MatrixData::hasUserFeature(String feature) const
 {
   return m_impl->hasFeature(feature);
 }
 
 /*---------------------------------------------------------------------------*/
 
-bool
-MatrixData::isComposite() const
+bool MatrixData::isComposite() const
 {
   return m_impl->hasFeature("composite");
 }

@@ -29,12 +29,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Common {
+namespace Common
+{
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -50,7 +52,7 @@ namespace Common {
   {
     using namespace Alien;
     SimpleCSRVector<ValueT>& v =
-        m_vector.impl()->template get<BackEnd::tag::simplecsr>(false);
+    m_vector.impl()->template get<BackEnd::tag::simplecsr>(false);
     m_values = v.fullValues();
     m_vector_impl = &v;
   }
@@ -64,11 +66,12 @@ namespace Common {
 
   /*---------------------------------------------------------------------------*/
 
-  template <typename ValueT> void BlockVectorWriterBaseT<ValueT>::end()
+  template <typename ValueT>
+  void BlockVectorWriterBaseT<ValueT>::end()
   {
     IMessagePassingMng* parallelMng = m_vector_impl->distribution().parallelMng();
     m_changed = Arccore::MessagePassing::mpAllReduce(
-        parallelMng, Arccore::MessagePassing::ReduceMax, m_changed);
+    parallelMng, Arccore::MessagePassing::ReduceMax, m_changed);
     if (m_finalized or not m_changed)
       return;
     m_finalized = true;
@@ -79,7 +82,7 @@ namespace Common {
 
   template <typename ValueT>
   BlockVectorWriterBaseT<ValueT>& BlockVectorWriterBaseT<ValueT>::operator=(
-      const ValueT v)
+  const ValueT v)
   {
     m_values.fill(v);
     return *this;

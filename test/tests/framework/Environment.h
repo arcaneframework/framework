@@ -26,7 +26,8 @@
 
 #include <alien/AlienTestExport.h>
 
-namespace AlienTest {
+namespace AlienTest
+{
 
 class ALIEN_TEST_FRAMEWORK_EXPORT Environment
 {
@@ -39,20 +40,24 @@ class ALIEN_TEST_FRAMEWORK_EXPORT Environment
 
   static Arccore::ITraceMng* traceMng();
 
-  template <typename T> static int execute(int argc, char** argv, T&& t)
+  template <typename T>
+  static int execute(int argc, char** argv, T&& t)
   {
     initialize(argc, argv);
 
     int ret = 0;
     try {
       ret = t();
-    } catch (const Arccore::Exception& ex) {
+    }
+    catch (const Arccore::Exception& ex) {
       std::cerr << "Exception: " << ex << '\n';
       ret = 3;
-    } catch (const std::exception& ex) {
+    }
+    catch (const std::exception& ex) {
       std::cerr << "** A standard exception occurred: " << ex.what() << ".\n";
       ret = 2;
-    } catch (...) {
+    }
+    catch (...) {
       std::cerr << "** An unknown exception has occured...\n";
       ret = 1;
     }

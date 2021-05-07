@@ -24,7 +24,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -39,8 +40,7 @@ RedistributedVector::~RedistributedVector() {}
 
 /*---------------------------------------------------------------------------*/
 
-void
-RedistributedVector::visit(ICopyOnWriteVector& v) const
+void RedistributedVector::visit(ICopyOnWriteVector& v) const
 {
   v.accept(m_impl);
 }
@@ -63,16 +63,14 @@ RedistributedVector::space() const
 
 /*---------------------------------------------------------------------------*/
 
-void
-RedistributedVector::setUserFeature(String feature)
+void RedistributedVector::setUserFeature(String feature)
 {
   m_impl->setFeature(feature);
 }
 
 /*---------------------------------------------------------------------------*/
 
-bool
-RedistributedVector::hasUserFeature(String feature) const
+bool RedistributedVector::hasUserFeature(String feature) const
 {
   return m_impl->hasFeature(feature);
 }

@@ -29,14 +29,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore::MessagePassing {
+namespace Arccore::MessagePassing
+{
 class IMessagePassingMng;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -58,7 +60,8 @@ class IOptions;
  * \tparam Tag The type of kernel used to compute eigen values
  * \tparam VectorT The type of kernel used to store eigen vectors
  */
-template <class Tag, typename VectorT> class EigenProblemT : public EigenProblem
+template <class Tag, typename VectorT>
+class EigenProblemT : public EigenProblem
 {
  public:
   /*!
@@ -203,7 +206,8 @@ class GeneralizedEigenProblemT : public GeneralizedEigenProblem
  *
  * \tparam Tag The type of kernel used to compute eigen values
  */
-template <class Tag> class EigenSolver : public IEigenSolver
+template <class Tag>
+class EigenSolver : public IEigenSolver
 {
  public:
   //! Type of the eigen solver used
@@ -216,7 +220,7 @@ template <class Tag> class EigenSolver : public IEigenSolver
    * \param[in] options Options passed to the eigen solver
    */
   EigenSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng = nullptr,
-      IOptions* options = nullptr);
+              IOptions* options = nullptr);
 
   //! Free resources
   virtual ~EigenSolver() {}
@@ -275,7 +279,8 @@ template <class Tag> class EigenSolver : public IEigenSolver
  *
  * \tparam Tag The type of kernel used to compute eigen values
  */
-template <class Tag> class GeneralizedEigenSolver : public IGeneralizedEigenSolver
+template <class Tag>
+class GeneralizedEigenSolver : public IGeneralizedEigenSolver
 {
  public:
   //! Type of the eigen solver used
@@ -288,7 +293,7 @@ template <class Tag> class GeneralizedEigenSolver : public IGeneralizedEigenSolv
    * \param[in] options Options passed to the eigen solver
    */
   GeneralizedEigenSolver(
-      IMessagePassingMng* parallel_mng = nullptr, IOptions* options = nullptr);
+  IMessagePassingMng* parallel_mng = nullptr, IOptions* options = nullptr);
 
   //! Free resources
   virtual ~GeneralizedEigenSolver() {}

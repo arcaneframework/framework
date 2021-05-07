@@ -26,7 +26,8 @@
 
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 typedef AlgebraTraits<BackEnd::tag::simplecsr>::matrix_type CSRMatrix;
 typedef AlgebraTraits<BackEnd::tag::simplecsr>::vector_type CSRVector;
@@ -85,7 +86,7 @@ class SimpleCSRInternalLinearAlgebraExpr
   void aypx(const Real& alpha, UniqueArray<Real>& y, UniqueArray<Real> const& x) const;
   void copy(const UniqueArray<Real>& x, UniqueArray<Real>& r) const;
   Real dot(
-      Integer local_size, const UniqueArray<Real>& x, const UniqueArray<Real>& y) const;
+  Integer local_size, const UniqueArray<Real>& x, const UniqueArray<Real>& y) const;
 
   void scal(const Real& alpha, UniqueArray<Real>& x) const;
 

@@ -8,7 +8,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -60,16 +61,16 @@ class IIndexManager
     virtual Arccore::Int32 maxLocalId() const = 0;
     //! Convertit des uniqueIds en localIds. Erreur fatale si un item n'est pas retrouvé
     virtual void uniqueIdToLocalId(Arccore::ArrayView<Arccore::Int32> localIds,
-        Arccore::ConstArrayView<Arccore::Int64> uniqueIds) const = 0;
+                                   Arccore::ConstArrayView<Arccore::Int64> uniqueIds) const = 0;
     //! Retourne un objet Item à partir de son localId
     virtual Item item(Arccore::Int32 localId) const = 0;
     //! Retourne l'ensemble des owners (propriétaires) d'un ensemble d'item décrits par
     //! leur localIds
     virtual Arccore::SharedArray<Arccore::Integer> owners(
-        Arccore::ConstArrayView<Arccore::Int32> localIds) const = 0;
+    Arccore::ConstArrayView<Arccore::Int32> localIds) const = 0;
     //! Retourne l'ensemble des uniqueIds d'un ensemble d'item décrits par leur localIds
     virtual Arccore::SharedArray<Arccore::Int64> uids(
-        Arccore::ConstArrayView<Arccore::Int32> localIds) const = 0;
+    Arccore::ConstArrayView<Arccore::Int32> localIds) const = 0;
     //! Retourne l'ensemble des identifiants locaux de la famille
     virtual Arccore::SharedArray<Arccore::Int32> allLocalIds() const = 0;
   };
@@ -97,7 +98,7 @@ class IIndexManager
     virtual const IAbstractFamily& getFamily() const = 0;
     //! Ajout d'un tag
     virtual void addTag(
-        const Arccore::String& tagname, const Arccore::String& tagvalue) = 0;
+    const Arccore::String& tagname, const Arccore::String& tagvalue) = 0;
     //! Suppression d'un tag
     virtual void removeTag(const Arccore::String& tagname) = 0;
     //! Test d'existance d'un tag
@@ -278,7 +279,7 @@ class IIndexManager
   //! Statistiques d'indexation
   /*! Uniquement valide après \a prepare */
   virtual void stats(Arccore::Integer& globalSize, Arccore::Integer& minLocalIndex,
-      Arccore::Integer& localSize) const = 0;
+                     Arccore::Integer& localSize) const = 0;
 
   //! Retourne la taille globale
   /*! Uniquement valide après \a prepare */
@@ -313,13 +314,13 @@ class IIndexManager
 
   //! Construit une nouvelle entrée scalaire sur un ensemble d'entités abstraites
   virtual ScalarIndexSet buildScalarIndexSet(const Arccore::String& name,
-      const Arccore::ConstArrayView<Arccore::Integer>& localIds,
-      const IAbstractFamily& family) = 0;
+                                             const Arccore::ConstArrayView<Arccore::Integer>& localIds,
+                                             const IAbstractFamily& family) = 0;
 
   //! Construit une nouvelle entrée scalaire sur l'ensemble des entités d'une familles
   //! abstraite
   virtual ScalarIndexSet buildScalarIndexSet(
-      const Arccore::String& name, const IAbstractFamily& family) = 0;
+  const Arccore::String& name, const IAbstractFamily& family) = 0;
 
   //! Construit une nouvelle entrée vectorielle sur des items du maillage
   /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
@@ -329,14 +330,14 @@ class IIndexManager
   //! Construit une nouvelle entrée vectoriellesur un ensemble d'entités abstraites
   /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
   virtual VectorIndexSet buildVectorIndexSet(const Arccore::String& name,
-      const Arccore::ConstArrayView<Arccore::Integer>& localIds,
-      const IAbstractFamily& family, Arccore::Integer n) = 0;
+                                             const Arccore::ConstArrayView<Arccore::Integer>& localIds,
+                                             const IAbstractFamily& family, Arccore::Integer n) = 0;
 
   //! Construit une nouvelle entrée scalaire sur l'ensemble des entités d'une familles
   //! abstraite
   /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
   virtual VectorIndexSet buildVectorIndexSet(
-      const Arccore::String& name, const IAbstractFamily& family, Arccore::Integer n) = 0;
+  const Arccore::String& name, const IAbstractFamily& family, Arccore::Integer n) = 0;
 
   //! Demande de dé-indexation d'une partie d'une entrée
   /*! Utilisable uniquement avant prepare */
@@ -351,11 +352,11 @@ class IIndexManager
 
   //! Fournit une table de translation indexé par les items
   virtual Arccore::UniqueArray<Arccore::Integer> getIndexes(
-      const ScalarIndexSet& entry) const = 0;
+  const ScalarIndexSet& entry) const = 0;
 
   //! Fournit une table de translation indexé par les items
   virtual Arccore::UniqueArray2<Arccore::Integer> getIndexes(
-      const VectorIndexSet& entry) const = 0;
+  const VectorIndexSet& entry) const = 0;
 
   //! Donne le gestionnaire parallèle ayant servi à l'indexation
   virtual Alien::IMessagePassingMng* parallelMng() const = 0;

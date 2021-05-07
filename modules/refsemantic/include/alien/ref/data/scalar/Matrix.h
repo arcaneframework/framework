@@ -27,7 +27,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,7 +41,7 @@ class ALIEN_REFSEMANTIC_EXPORT Matrix final : public IMatrix
   Matrix(const MatrixDistribution& dist);
 
   Matrix(Integer nrows, Integer ncols, Integer nrows_local,
-      IMessagePassingMng* parallel_mng);
+         IMessagePassingMng* parallel_mng);
 
   Matrix(Integer nrows, Integer ncols, IMessagePassingMng* parallel_mng);
 

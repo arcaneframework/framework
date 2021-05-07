@@ -24,7 +24,8 @@
 
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 
@@ -109,7 +110,8 @@ class ALIEN_EXPORT SolverStater : public SolverStat
 
 /*---------------------------------------------------------------------------*/
 
-template <typename SolverT> class SolverStatSentry
+template <typename SolverT>
+class SolverStatSentry
 {
  private:
   bool m_is_released = false;

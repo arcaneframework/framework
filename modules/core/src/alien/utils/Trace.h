@@ -24,14 +24,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template <typename T>
-void
-alien_debug(T&& t)
+void alien_debug(T&& t)
 {
 #ifndef NDEBUG
   if (Universe().traceMng() == nullptr)
@@ -43,8 +43,7 @@ alien_debug(T&& t)
 /*---------------------------------------------------------------------------*/
 
 template <typename T>
-void
-alien_debug(bool flag, T&& t)
+void alien_debug(bool flag, T&& t)
 {
 #ifndef NDEBUG
   if (not flag)
@@ -58,8 +57,7 @@ alien_debug(bool flag, T&& t)
 /*---------------------------------------------------------------------------*/
 
 template <typename T>
-void
-alien_info(T&& t)
+void alien_info(T&& t)
 {
   if (Universe().traceMng() == nullptr)
     return;
@@ -69,8 +67,7 @@ alien_info(T&& t)
 /*---------------------------------------------------------------------------*/
 
 template <typename T>
-void
-alien_info(bool flag, T&& t)
+void alien_info(bool flag, T&& t)
 {
   if (not flag)
     return;
@@ -82,8 +79,7 @@ alien_info(bool flag, T&& t)
 /*---------------------------------------------------------------------------*/
 
 template <typename T>
-void
-alien_fatal(T&& t)
+void alien_fatal(T&& t)
 {
   if (Universe().traceMng() == nullptr)
     return;
@@ -93,8 +89,7 @@ alien_fatal(T&& t)
 /*---------------------------------------------------------------------------*/
 
 template <typename T>
-void
-alien_fatal(bool flag, T&& t)
+void alien_fatal(bool flag, T&& t)
 {
   if (not flag)
     return;
@@ -106,8 +101,7 @@ alien_fatal(bool flag, T&& t)
 /*---------------------------------------------------------------------------*/
 
 template <typename T>
-void
-alien_warning(T&& t)
+void alien_warning(T&& t)
 {
   if (Universe().traceMng() == nullptr)
     return;
@@ -117,8 +111,7 @@ alien_warning(T&& t)
 /*---------------------------------------------------------------------------*/
 
 template <typename T>
-void
-alien_warning(bool flag, T&& t)
+void alien_warning(bool flag, T&& t)
 {
   if (not flag)
     return;

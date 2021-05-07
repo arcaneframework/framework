@@ -31,19 +31,23 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename T> class SimpleCSRVector;
+template <typename T>
+class SimpleCSRVector;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Common {
+namespace Common
+{
 
-  template <typename ValueT, typename Parameters> class BlockVectorReaderT
+  template <typename ValueT, typename Parameters>
+  class BlockVectorReaderT
   {
    public:
     using ValueType = ValueT;
@@ -61,13 +65,14 @@ namespace Common {
       const Integer id = Indexer::index(iIndex, m_local_offset);
       if (this->m_block)
         return this->m_values.subConstView(
-            id * this->m_block->size(), this->m_block->size());
+        id * this->m_block->size(), this->m_block->size());
       else if (this->m_vblock) {
         const VBlock* block_sizes = this->m_vblock;
         const Integer size = block_sizes->size(id);
         const Integer offset = this->m_vector_impl->vblockImpl().offset(id);
         return this->m_values.subConstView(offset, size);
-      } else
+      }
+      else
         throw FatalErrorException(A_FUNCINFO, "No block info");
     }
 

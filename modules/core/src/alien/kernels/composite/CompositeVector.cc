@@ -24,14 +24,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace CompositeKernel {
+namespace CompositeKernel
+{
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -56,7 +58,7 @@ namespace CompositeKernel {
   /*---------------------------------------------------------------------------*/
 
   void Vector::init(const VectorDistribution& dist ALIEN_UNUSED_PARAM,
-      bool need_allocate ALIEN_UNUSED_PARAM)
+                    bool need_allocate ALIEN_UNUSED_PARAM)
   {
     alien_debug([&] { cout() << "Initializing CompositeVector " << this; });
   }

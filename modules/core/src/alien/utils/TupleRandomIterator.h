@@ -23,25 +23,30 @@
 
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
-template <typename Iterator> struct TupleRandomIteratorTraits
+namespace Alien
+{
+template <typename Iterator>
+struct TupleRandomIteratorTraits
 {
   typedef typename Iterator::value_type value_type;
 };
 
-template <typename T> struct TupleRandomIteratorTraits<const T*>
+template <typename T>
+struct TupleRandomIteratorTraits<const T*>
 {
   typedef T value_type;
 };
 
-template <typename T> struct TupleRandomIteratorTraits<T*>
+template <typename T>
+struct TupleRandomIteratorTraits<T*>
 {
   typedef T value_type;
 };
 
 /*---------------------------------------------------------------------------*/
 
-template <typename IteratorA, typename IteratorB> class DualRandomIterator
+template <typename IteratorA, typename IteratorB>
+class DualRandomIterator
 {
  private:
   typedef typename TupleRandomIteratorTraits<IteratorA>::value_type TypeA;
@@ -216,10 +221,11 @@ class TripleRandomIterator
 
 /*---------------------------------------------------------------------------*/
 
-template <typename TupleIteratorT> struct FirstIndexComparator
+template <typename TupleIteratorT>
+struct FirstIndexComparator
 {
   bool operator()(const typename TupleIteratorT::const_reference& a,
-      const typename TupleIteratorT::const_reference& b) const
+                  const typename TupleIteratorT::const_reference& b) const
   {
     return boost::get<0>(a) < boost::get<0>(b);
   }

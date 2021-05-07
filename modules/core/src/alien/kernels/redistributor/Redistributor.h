@@ -22,7 +22,8 @@
 #include <alien/utils/Precomp.h>
 #include <memory>
 
-namespace Alien {
+namespace Alien
+{
 
 class MultiMatrixImpl;
 class MultiVectorImpl;

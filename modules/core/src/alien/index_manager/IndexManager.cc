@@ -36,7 +36,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -74,7 +75,7 @@ struct IndexManager::EntryLocalId
       }
     }
     throw FatalErrorException(
-        A_FUNCINFO, "Inconsistent state : cannot find id to remove");
+    A_FUNCINFO, "Inconsistent state : cannot find id to remove");
   }
 
   [[nodiscard]] const UniqueArray<std::pair<Integer, Integer>>& definedLids() const
@@ -131,7 +132,7 @@ struct IndexManager::EntryRecvRequest
 /*---------------------------------------------------------------------------*/
 
 IndexManager::IndexManager(
-    Alien::IMessagePassingMng* parallelMng, Alien::ITraceMng* traceMng)
+Alien::IMessagePassingMng* parallelMng, Alien::ITraceMng* traceMng)
 : m_parallel_mng(parallelMng)
 , m_trace_mng(traceMng)
 , m_local_owner(0)
@@ -157,8 +158,7 @@ IndexManager::~IndexManager()
 
 /*---------------------------------------------------------------------------*/
 
-void
-IndexManager::init()
+void IndexManager::init()
 {
   m_local_owner = m_parallel_mng->commRank();
 
@@ -181,8 +181,7 @@ IndexManager::init()
 
 /*---------------------------------------------------------------------------*/
 
-void
-IndexManager::setVerboseMode(bool verbose)
+void IndexManager::setVerboseMode(bool verbose)
 {
   m_verbose = verbose;
 }
@@ -191,7 +190,7 @@ IndexManager::setVerboseMode(bool verbose)
 
 ScalarIndexSet
 IndexManager::buildEntry(
-    const String& name, const IAbstractFamily* family, const Integer kind)
+const String& name, const IAbstractFamily* family, const Integer kind)
 {
   if (m_state != Initialized)
     throw FatalErrorException(A_FUNCINFO, "Inconsistent state");
@@ -214,9 +213,8 @@ IndexManager::buildEntry(
 
 /*---------------------------------------------------------------------------*/
 
-void
-IndexManager::defineIndex(
-    const ScalarIndexSet& entry, const ConstArrayView<Integer>& localIds)
+void IndexManager::defineIndex(
+const ScalarIndexSet& entry, const ConstArrayView<Integer>& localIds)
 {
   if (m_state != Initialized)
     throw FatalErrorException(A_FUNCINFO, "Inconsistent state");
@@ -239,10 +237,11 @@ IndexManager::defineIndex(
     if (not entry_local_ids->isDefinedLid(localId)) { // nouvelle entrée
       if (owners[i] == m_local_owner) {
         entry_local_ids->defineLid(
-            localId, +(m_local_removed_entry_count + m_local_entry_count++));
-      } else {
+        localId, +(m_local_removed_entry_count + m_local_entry_count++));
+      }
+      else {
         entry_local_ids->defineLid(
-            localId, -(m_global_removed_entry_count + (++m_global_entry_count)));
+        localId, -(m_global_removed_entry_count + (++m_global_entry_count)));
       }
     }
   }
@@ -250,9 +249,8 @@ IndexManager::defineIndex(
 
 /*---------------------------------------------------------------------------*/
 
-void
-IndexManager::removeIndex(
-    const ScalarIndexSet& entry, const ConstArrayView<Integer>& localIds)
+void IndexManager::removeIndex(
+const ScalarIndexSet& entry, const ConstArrayView<Integer>& localIds)
 {
   if (m_state != Initialized)
     throw FatalErrorException(A_FUNCINFO, "Inconsistent state");
@@ -273,7 +271,8 @@ IndexManager::removeIndex(
       if (owners[localId] == m_local_owner) {
         --m_local_entry_count;
         ++m_local_removed_entry_count;
-      } else {
+      }
+      else {
         --m_global_entry_count;
         ++m_global_removed_entry_count;
       }
@@ -283,8 +282,7 @@ IndexManager::removeIndex(
 
 /*---------------------------------------------------------------------------*/
 
-void
-IndexManager::prepare()
+void IndexManager::prepare()
 {
   EntryIndexMap entry_index;
 
@@ -293,7 +291,8 @@ IndexManager::prepare()
   if (m_parallel_mng->commSize() > 1) {
     begin_parallel_prepare(entry_index);
     end_parallel_prepare(entry_index);
-  } else {
+  }
+  else {
     sequential_prepare(entry_index);
   }
 
@@ -302,8 +301,7 @@ IndexManager::prepare()
 
 /*---------------------------------------------------------------------------*/
 
-void
-IndexManager::begin_prepare(EntryIndexMap& entry_index)
+void IndexManager::begin_prepare(EntryIndexMap& entry_index)
 {
   if (m_state != Initialized)
     throw FatalErrorException(A_FUNCINFO, "Inconsistent state");
@@ -326,7 +324,7 @@ IndexManager::begin_prepare(EntryIndexMap& entry_index)
       const Integer item_localid = lids[i].first;
       auto item = family->item(item_localid);
       entry_index.push_back(InternalEntryIndex{ entry_uid, entry_kind, item.uniqueId(),
-          item_localid, lids[i].second, item.owner() });
+                                                item_localid, lids[i].second, item.owner() });
     }
     entry_local_ids->freeDefinedLids();
   }
@@ -335,23 +333,22 @@ IndexManager::begin_prepare(EntryIndexMap& entry_index)
 
   // Tri par défaut
   std::sort(entry_index.begin(), entry_index.end(),
-      [](const InternalEntryIndex& a, const InternalEntryIndex& b) {
-        if (a.m_entry_kind != b.m_entry_kind)
-          return a.m_entry_kind < b.m_entry_kind;
-        else if (a.m_item_uid != b.m_item_uid)
-          return a.m_item_uid < b.m_item_uid;
-        else
-          return a.m_entry_uid < b.m_entry_uid;
-      });
+            [](const InternalEntryIndex& a, const InternalEntryIndex& b) {
+              if (a.m_entry_kind != b.m_entry_kind)
+                return a.m_entry_kind < b.m_entry_kind;
+              else if (a.m_item_uid != b.m_item_uid)
+                return a.m_item_uid < b.m_item_uid;
+              else
+                return a.m_entry_uid < b.m_entry_uid;
+            });
   ALIEN_ASSERT(
-      ((Integer)entry_index.size() == m_local_entry_count + m_global_entry_count),
-      ("Inconsistent global size"));
+  ((Integer)entry_index.size() == m_local_entry_count + m_global_entry_count),
+  ("Inconsistent global size"));
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-IndexManager::end_prepare(EntryIndexMap& entryIndex)
+void IndexManager::end_prepare(EntryIndexMap& entryIndex)
 {
   // Calcul de la taille des indices par entrée
   std::map<Integer, Integer> count_table;
@@ -384,7 +381,8 @@ IndexManager::end_prepare(EntryIndexMap& entryIndex)
           all_items[own_i] = local_id;
           all_indices[own_i] = index;
           ++own_i;
-        } else {
+        }
+        else {
           --ghost_i;
           all_items[ghost_i] = local_id;
           all_indices[ghost_i] = index;
@@ -434,8 +432,7 @@ struct IndexManager::ParallelRequests
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
+void IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
 {
 
   ALIEN_ASSERT((m_parallel_mng->commSize() > 1), ("Parallel mode expected"));
@@ -461,7 +458,7 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
 
   // Liste de synthèse des messages (emissions / réceptions)
   parallel->messageList =
-      Arccore::MessagePassing::mpCreateSerializeMessageListRef(m_parallel_mng);
+  Arccore::MessagePassing::mpCreateSerializeMessageListRef(m_parallel_mng);
 
   // Contruction de la table de communications + préparation des messages d'envoi
   UniqueArray<Integer> sendToDomains(2 * m_parallel_mng->commSize(), 0);
@@ -480,8 +477,8 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
 
       // Construction du message du EntrySendRequest
       request.comm = Arccore::MessagePassing::Mpi::BasicSerializeMessage::create(
-          MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
-          Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
+      MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
+      Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
 
       parallel->messageList->addMessage(request.comm.get());
       auto sbuf = request.comm->serializer();
@@ -515,8 +512,8 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
     Integer recvCount = recvFromDomains[2 * isd + 0];
     while (recvCount-- > 0) {
       auto recvMsg = Arccore::MessagePassing::Mpi::BasicSerializeMessage::create(
-          MessageRank(m_parallel_mng->commRank()), MessageRank(isd),
-          Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
+      MessageRank(m_parallel_mng->commRank()), MessageRank(isd),
+      Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
 
       parallel->recvRequests.push_back(EntryRecvRequest());
       EntryRecvRequest& recvRequest = parallel->recvRequests.back();
@@ -534,7 +531,7 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
 
   // Pour les réponses vers les demandeurs
   parallel->messageList =
-      Arccore::MessagePassing::mpCreateSerializeMessageListRef(m_parallel_mng);
+  Arccore::MessagePassing::mpCreateSerializeMessageListRef(m_parallel_mng);
 
   // 3 - Réception et mise en base local des demandes
   for (auto i = parallel->recvRequests.begin(); i != parallel->recvRequests.end(); ++i) {
@@ -567,7 +564,7 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
 
       // Reconstruction de l'entrée à partir du nom
       auto lookup = std::find_if(m_entries.begin(), m_entries.end(),
-          [&](ScalarIndexSet* s) { return s->getName() == nameString; });
+                                 [&](ScalarIndexSet* s) { return s->getName() == nameString; });
 
       // Si pas d'entrée de ce côté => système défectueux ?
       if (lookup == m_entries.end())
@@ -593,18 +590,18 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
           throw FatalErrorException("Non local EntryIndex requested");
         }
         InternalEntryIndex lookup_entry{ entry_uid, entry_kind, current_item_uid,
-          current_item_lid, 0, current_item_owner };
+                                         current_item_lid, 0, current_item_owner };
 
         // Recherche de la liste triée par défaut
         auto lookup2 = std::lower_bound(entry_index.begin(), entry_index.end(),
-            lookup_entry, [](const InternalEntryIndex& a, const InternalEntryIndex& b) {
-              if (a.m_entry_kind != b.m_entry_kind)
-                return a.m_entry_kind < b.m_entry_kind;
-              else if (a.m_item_uid != b.m_item_uid)
-                return a.m_item_uid < b.m_item_uid;
-              else
-                return a.m_entry_uid < b.m_entry_uid;
-            });
+                                        lookup_entry, [](const InternalEntryIndex& a, const InternalEntryIndex& b) {
+                                          if (a.m_entry_kind != b.m_entry_kind)
+                                            return a.m_entry_kind < b.m_entry_kind;
+                                          else if (a.m_item_uid != b.m_item_uid)
+                                            return a.m_item_uid < b.m_item_uid;
+                                          else
+                                            return a.m_entry_uid < b.m_entry_uid;
+                                        });
 
         if ((lookup2 == entry_index.end()) || !(*lookup2 == lookup_entry))
           throw FatalErrorException("Not locally defined entry requested");
@@ -620,7 +617,7 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
       auto orig = recvRequest.comm->source(); //       de SerializeMessage
       recvRequest.comm.reset();
       recvRequest.comm = Arccore::MessagePassing::Mpi::BasicSerializeMessage::create(
-          orig, dest, Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
+      orig, dest, Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
 
       parallel->messageList->addMessage(recvRequest.comm.get());
 
@@ -661,8 +658,7 @@ IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
 
 /*---------------------------------------------------------------------------*/
 
-void
-IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
+void IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
 {
   ALIEN_ASSERT((m_parallel_mng->commSize() > 1), ("Parallel mode expected"));
 
@@ -720,8 +716,8 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
       request.comm.reset();
 
       auto msg = Arccore::MessagePassing::Mpi::BasicSerializeMessage::create(
-          MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
-          Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
+      MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
+      Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
 
       returnedRequests.push_back(msg);
       parallel->messageList->addMessage(msg.get());
@@ -746,10 +742,10 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
     String nameString;
     sbuf->get(nameString);
     ALIEN_ASSERT(
-        (fastReturnMap[nameString][origDomainId] != nullptr), ("Inconsistency detected"));
+    (fastReturnMap[nameString][origDomainId] != nullptr), ("Inconsistency detected"));
     auto& request = *fastReturnMap[nameString][origDomainId];
     request.comm =
-        returnedRequest; // Reconnection pour accès rapide depuis l'EntrySendRequest
+    returnedRequest; // Reconnection pour accès rapide depuis l'EntrySendRequest
 #ifdef ALIEN_DEBUG_ASSERT
     const Integer idCount = sbuf.getInteger();
     ALIEN_ASSERT((request.count == idCount), ("Inconsistency detected"));
@@ -777,12 +773,11 @@ IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
 
 /*---------------------------------------------------------------------------*/
 
-void
-IndexManager::sequential_prepare(EntryIndexMap& entry_index)
+void IndexManager::sequential_prepare(EntryIndexMap& entry_index)
 {
   ALIEN_ASSERT((m_parallel_mng->commSize() <= 1), ("Sequential mode expected"));
   ALIEN_ASSERT((m_global_entry_count == 0),
-      ("Unexpected global entries (%d)", m_global_entry_count));
+               ("Unexpected global entries (%d)", m_global_entry_count));
 
   // Très similaire à la section parallèle :
   // 4 - Indexation locale
@@ -796,7 +791,7 @@ IndexManager::sequential_prepare(EntryIndexMap& entry_index)
   Integer currentEntryIndex = 0; // commence par l'offset local
   for (auto i = entry_index.begin(); i != entry_index.end(); ++i) {
     ALIEN_ASSERT((i->m_item_owner == m_local_owner),
-        ("Item cannot be non-local for sequential mode"));
+                 ("Item cannot be non-local for sequential mode"));
     // Numérotation locale only !
     const Integer newIndex = currentEntryIndex++;
     i->m_item_index = newIndex;
@@ -836,7 +831,7 @@ IndexManager::getIndexes(const VectorIndexSet& entries) const
   for (Integer i = 0; i < entries.size(); ++i) {
     // controles uniquement en première passe
     ALIEN_ASSERT(
-        (entries[i].manager() == this), ("Incompatible entry from another manager"));
+    (entries[i].manager() == this), ("Incompatible entry from another manager"));
     const auto& entry = entries[i];
     const IAbstractFamily& family = entry.getFamily();
     max_family_size = std::max(max_family_size, family.maxLocalId());
@@ -859,8 +854,7 @@ IndexManager::getIndexes(const VectorIndexSet& entries) const
 
 /*---------------------------------------------------------------------------*/
 
-void
-IndexManager::stats(Integer& globalSize, Integer& minLocalIndex, Integer& localSize) const
+void IndexManager::stats(Integer& globalSize, Integer& minLocalIndex, Integer& localSize) const
 {
   if (m_state != Prepared)
     throw FatalErrorException(A_FUNCINFO, "Inconsistent state");
@@ -907,8 +901,8 @@ IndexManager::localSize() const
 
 ScalarIndexSet
 IndexManager::buildScalarIndexSet(const String& name,
-    const ConstArrayView<Integer>& localIds, const IAbstractFamily& family, Integer kind,
-    eKeepAlive alive)
+                                  const ConstArrayView<Integer>& localIds, const IAbstractFamily& family, Integer kind,
+                                  eKeepAlive alive)
 {
   alien_debug([&] {
     cout() << "IndexManager: build scalar index set '" << name << "', kind=" << kind;
@@ -922,7 +916,7 @@ IndexManager::buildScalarIndexSet(const String& name,
 
 ScalarIndexSet
 IndexManager::buildScalarIndexSet(
-    const String& name, const IAbstractFamily& family, Integer kind, eKeepAlive alive)
+const String& name, const IAbstractFamily& family, Integer kind, eKeepAlive alive)
 {
   alien_debug([&] {
     cout() << "IndexManager: build scalar index set '" << name << "', kind=" << kind;
@@ -937,8 +931,8 @@ IndexManager::buildScalarIndexSet(
 
 IndexManager::VectorIndexSet
 IndexManager::buildVectorIndexSet(const String& name,
-    const ConstArrayView<Integer>& localIds, const IAbstractFamily& family,
-    const UniqueArray<Integer>& kind, eKeepAlive alive)
+                                  const ConstArrayView<Integer>& localIds, const IAbstractFamily& family,
+                                  const UniqueArray<Integer>& kind, eKeepAlive alive)
 {
   alien_debug([&] {
     cout() << "IndexManager: build vector index set '" << name
@@ -958,7 +952,7 @@ IndexManager::buildVectorIndexSet(const String& name,
 
 IndexManager::VectorIndexSet
 IndexManager::buildVectorIndexSet(const String& name, const IAbstractFamily& family,
-    const UniqueArray<Integer>& kind, eKeepAlive alive)
+                                  const UniqueArray<Integer>& kind, eKeepAlive alive)
 {
   alien_debug([&] {
     cout() << "IndexManager: build vector index set '" << name
@@ -981,13 +975,13 @@ const IAbstractFamily*
 IndexManager::addNewAbstractFamily(const IAbstractFamily* family, eKeepAlive alive)
 {
   auto finder = m_abstract_families.find(family);
-  if (finder
-      == m_abstract_families.end()) // La famille n'est pas stockée, nouvelle famille
+  if (finder == m_abstract_families.end()) // La famille n'est pas stockée, nouvelle famille
   {
     if (alive == eKeepAlive::DontClone) {
       m_abstract_families[family] = std::shared_ptr<IAbstractFamily>();
       return family;
-    } else {
+    }
+    else {
       auto clone = std::shared_ptr<IAbstractFamily>(family->clone());
       m_abstract_families[family] = clone;
       // On remplace les familles des entrées
@@ -997,14 +991,16 @@ IndexManager::addNewAbstractFamily(const IAbstractFamily* family, eKeepAlive ali
       }
       return clone.get();
     }
-  } else // La famille est connue
+  }
+  else // La famille est connue
   {
     if (finder->second) // Si clone, on le renvoit
       return finder->second.get();
     else { // Sinon, on crée éventuellement le clone
       if (alive == eKeepAlive::DontClone) {
         return family;
-      } else {
+      }
+      else {
         auto clone = std::shared_ptr<IAbstractFamily>(family->clone());
         m_abstract_families[family] = clone;
         // On remplace les familles des entrées
@@ -1080,8 +1076,7 @@ IndexManager::getFamily(const ScalarIndexSet& entry) const
 
 /*---------------------------------------------------------------------------*/
 
-void
-IndexManager::setMaxNullIndexOpt(bool flag)
+void IndexManager::setMaxNullIndexOpt(bool flag)
 {
   m_max_null_index_opt = flag;
 

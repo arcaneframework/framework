@@ -29,7 +29,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,7 +40,8 @@ namespace Alien {
  * \brief Tool to manipulate a matrix entry while building the matrix
  * \tparam Builder The type of the builder used to build the matrix
  */
-template <typename Builder> class MatrixElementT
+template <typename Builder>
+class MatrixElementT
 {
  public:
   /*!
@@ -49,7 +51,7 @@ template <typename Builder> class MatrixElementT
    * \param[in] parent The builder used to build the matrix
    */
   MatrixElementT(
-      const Arccore::Integer iIndex, const Arccore::Integer jIndex, Builder& parent)
+  const Arccore::Integer iIndex, const Arccore::Integer jIndex, Builder& parent)
   : m_iIndex(iIndex)
   , m_jIndex(jIndex)
   , m_parent(parent)
@@ -92,7 +94,8 @@ template <typename Builder> class MatrixElementT
    * \brief Comparison operator
    * \param[in] other To be compare against.
    */
-  template <typename Builder2> bool operator=(const MatrixElementT<Builder2>& other)
+  template <typename Builder2>
+  bool operator=(const MatrixElementT<Builder2>& other)
   {
     bool test_pattern = (m_iIndex == other.m_iIndex) && (m_jIndex == other.m_jIndex);
     // TODO: Check values.

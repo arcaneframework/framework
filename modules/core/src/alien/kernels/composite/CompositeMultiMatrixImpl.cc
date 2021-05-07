@@ -24,21 +24,23 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace CompositeKernel {
+namespace CompositeKernel
+{
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
   MultiMatrixImpl::MultiMatrixImpl()
   : std::tuple<std::shared_ptr<Space>, std::shared_ptr<Space>>{ std::make_shared<Space>(),
-    std::make_shared<Space>() }
+                                                                std::make_shared<Space>() }
   , Alien::MultiMatrixImpl(std::get<0>(*this), std::get<1>(*this),
-        std::make_shared<MatrixDistribution>(MatrixDistribution()))
+                           std::make_shared<MatrixDistribution>(MatrixDistribution()))
   {
     insert("composite", new Matrix(this));
   }

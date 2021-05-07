@@ -29,19 +29,21 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Common {
+namespace Common
+{
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
   ProfiledFixedBlockMatrixBuilder::ProfiledFixedBlockMatrixBuilder(
-      IMatrix& matrix, const ResetFlag reset_values)
+  IMatrix& matrix, const ResetFlag reset_values)
   : m_matrix(matrix)
   , m_finalized(false)
   {
@@ -67,7 +69,7 @@ namespace Common {
     m_next_offset = m_local_offset + m_local_size;
 
     SimpleCSRInternal::CSRStructInfo const& profile =
-        m_matrix_impl->internal().getCSRProfile();
+    m_matrix_impl->internal().getCSRProfile();
     m_row_starts = profile.getRowOffset();
     m_cols = profile.getCols();
     m_local_row_size = m_matrix_impl->getDistStructInfo().m_local_row_size;
@@ -78,7 +80,7 @@ namespace Common {
 
     if (profile.getColOrdering() != SimpleCSRInternal::CSRStructInfo::eFull)
       throw FatalErrorException(
-          A_FUNCINFO, "Cannot build system without full column ordering");
+      A_FUNCINFO, "Cannot build system without full column ordering");
   }
 
   /*---------------------------------------------------------------------------*/
@@ -93,7 +95,7 @@ namespace Common {
   /*---------------------------------------------------------------------------*/
 
   void ProfiledFixedBlockMatrixBuilder::addData(
-      const Integer iIndex, const Integer jIndex, const ConstArray2View<Real> value)
+  const Integer iIndex, const Integer jIndex, const ConstArray2View<Real> value)
   {
     ALIEN_ASSERT((!m_finalized), ("Finalized matrix cannot be modified"));
     ALIEN_ASSERT((value.dim1Size() == m_block_size), ("Block size error"));
@@ -111,9 +113,7 @@ namespace Common {
       col = ArrayScan::dichotomicScan(jIndex, m_cols.subConstView(row_start, ncols));
     else {
       const Integer ngcols = row_size - ncols;
-      col = ncols
-          + ArrayScan::dichotomicScan(
-              jIndex, m_cols.subConstView(row_start + ncols, ngcols));
+      col = ncols + ArrayScan::dichotomicScan(jIndex, m_cols.subConstView(row_start + ncols, ngcols));
     }
 #ifdef CHECKPROFILE_ON_FILLING
     if (col == -1)
@@ -130,7 +130,7 @@ namespace Common {
   /*---------------------------------------------------------------------------*/
 
   void ProfiledFixedBlockMatrixBuilder::addData(const Integer iIndex,
-      const Integer jIndex, const Real factor, const ConstArray2View<Real> value)
+                                                const Integer jIndex, const Real factor, const ConstArray2View<Real> value)
   {
     ALIEN_ASSERT((!m_finalized), ("Finalized matrix cannot be modified"));
     ALIEN_ASSERT((value.dim1Size() == m_block_size), ("Block size error"));
@@ -148,9 +148,7 @@ namespace Common {
       col = ArrayScan::dichotomicScan(jIndex, m_cols.subConstView(row_start, ncols));
     else {
       const Integer ngcols = row_size - ncols;
-      col = ncols
-          + ArrayScan::dichotomicScan(
-              jIndex, m_cols.subConstView(row_start + ncols, ngcols));
+      col = ncols + ArrayScan::dichotomicScan(jIndex, m_cols.subConstView(row_start + ncols, ngcols));
     }
 #ifdef CHECKPROFILE_ON_FILLING
     if (col == -1)
@@ -167,7 +165,7 @@ namespace Common {
   /*---------------------------------------------------------------------------*/
 
   void ProfiledFixedBlockMatrixBuilder::setData(
-      const Integer iIndex, const Integer jIndex, ConstArray2View<Real> value)
+  const Integer iIndex, const Integer jIndex, ConstArray2View<Real> value)
   {
     ALIEN_ASSERT((!m_finalized), ("Finalized matrix cannot be modified"));
     ALIEN_ASSERT((value.dim1Size() == m_block_size), ("Block size error"));
@@ -185,9 +183,7 @@ namespace Common {
       col = ArrayScan::dichotomicScan(jIndex, m_cols.subConstView(row_start, ncols));
     else {
       const Integer ngcols = row_size - ncols;
-      col = ncols
-          + ArrayScan::dichotomicScan(
-              jIndex, m_cols.subConstView(row_start + ncols, ngcols));
+      col = ncols + ArrayScan::dichotomicScan(jIndex, m_cols.subConstView(row_start + ncols, ngcols));
     }
 #ifdef CHECKPROFILE_ON_FILLING
     if (col == -1)

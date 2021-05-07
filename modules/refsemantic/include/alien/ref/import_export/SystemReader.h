@@ -26,11 +26,13 @@
 #include <alien/ref/AlienRefExport.h>
 #include <alien/ref/AlienRefSemanticPrecomp.h>
 
-namespace Arccore::MessagePassing {
+namespace Arccore::MessagePassing
+{
 class IMessagePassingMng;
 }
 
-namespace Alien {
+namespace Alien
+{
 
 class Matrix;
 class Vector;
@@ -44,7 +46,7 @@ class ALIEN_REFSEMANTIC_EXPORT SystemReader
 {
  public:
   SystemReader(std::string const& filename, std::string format = "ascii",
-      Arccore::MessagePassing::IMessagePassingMng* parallel_mng = nullptr);
+               Arccore::MessagePassing::IMessagePassingMng* parallel_mng = nullptr);
   virtual ~SystemReader();
 
   void read(Matrix& A);
@@ -58,15 +60,15 @@ class ALIEN_REFSEMANTIC_EXPORT SystemReader
  private:
   template <typename FileNodeT>
   void _readMatrixInfo(Importer& importer, FileNodeT& info_node, int& nrows, int& ncols,
-      int& nnz, int& blk_size, int& blk_size2);
+                       int& nnz, int& blk_size, int& blk_size2);
 
   template <typename FileNodeT>
   void _readCSRProfile(Importer& importer, FileNodeT& parent_node, int& nrows, int& nnz,
-      std::vector<int>& kcol, std::vector<int>& cols);
+                       std::vector<int>& kcol, std::vector<int>& cols);
 
   template <typename FileNodeT>
   void _readMatrixValues(Importer& importer, FileNodeT& parent_node, int& size,
-      int& blk_size, int& blk_size2, std::vector<double>& values);
+                         int& blk_size, int& blk_size2, std::vector<double>& values);
 
   std::string m_filename;
   std::string m_format;

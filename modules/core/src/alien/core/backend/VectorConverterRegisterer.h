@@ -27,7 +27,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -75,13 +76,13 @@ class ALIEN_EXPORT VectorConverterRegisterer
 /*!
  * \brief Macro to register a vector converter
  */
-#define REGISTER_VECTOR_CONVERTER(converter)                                             \
-  extern "C++" Alien::IVectorConverter* alienCreateVectorConverter_##converter()         \
-  {                                                                                      \
-    return new converter();                                                              \
-  }                                                                                      \
-  Alien::VectorConverterRegisterer globaliVectorConverterRegisterer_##converter(         \
-      alienCreateVectorConverter_##converter)
+#define REGISTER_VECTOR_CONVERTER(converter)                                     \
+  extern "C++" Alien::IVectorConverter* alienCreateVectorConverter_##converter() \
+  {                                                                              \
+    return new converter();                                                      \
+  }                                                                              \
+  Alien::VectorConverterRegisterer globaliVectorConverterRegisterer_##converter( \
+  alienCreateVectorConverter_##converter)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

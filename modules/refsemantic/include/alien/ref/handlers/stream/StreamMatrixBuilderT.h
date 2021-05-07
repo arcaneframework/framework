@@ -55,7 +55,8 @@
 
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 
@@ -75,7 +76,7 @@ StreamMatrixBuilderT<ValueT>::StreamMatrixBuilderT(Matrix& matrix, bool init_and
 
 template <typename ValueT>
 StreamMatrixBuilderT<ValueT>::StreamMatrixBuilderT(
-    BlockMatrix& matrix, bool init_and_start)
+BlockMatrix& matrix, bool init_and_start)
 : m_matrix(matrix)
 , m_col_ordering(eUndef)
 , m_state(eNone)
@@ -102,7 +103,8 @@ StreamMatrixBuilderT<ValueT>::StreamMatrixBuilderT(IMatrix& matrix, bool init_an
 
 /*---------------------------------------------------------------------------*/
 
-template <typename ValueT> StreamMatrixBuilderT<ValueT>::~StreamMatrixBuilderT()
+template <typename ValueT>
+StreamMatrixBuilderT<ValueT>::~StreamMatrixBuilderT()
 {
   _freeInserters();
 }
@@ -133,8 +135,7 @@ StreamMatrixBuilderT<ValueT>::getInserter(Integer id)
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::finalize()
+void StreamMatrixBuilderT<ValueT>::finalize()
 {
   bool has_error = false;
   for (auto iter = m_inserters.begin(); iter != m_inserters.end(); ++iter) {
@@ -155,8 +156,7 @@ StreamMatrixBuilderT<ValueT>::finalize()
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::end()
+void StreamMatrixBuilderT<ValueT>::end()
 {
   _freeInserters();
 }
@@ -164,8 +164,7 @@ StreamMatrixBuilderT<ValueT>::end()
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::allocate()
+void StreamMatrixBuilderT<ValueT>::allocate()
 {
   computeProfile();
 }
@@ -173,8 +172,7 @@ StreamMatrixBuilderT<ValueT>::allocate()
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::_freeInserters()
+void StreamMatrixBuilderT<ValueT>::_freeInserters()
 {
   for (auto iter = m_inserters.begin(); iter != m_inserters.end(); ++iter)
     delete *iter;
@@ -184,8 +182,7 @@ StreamMatrixBuilderT<ValueT>::_freeInserters()
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::init()
+void StreamMatrixBuilderT<ValueT>::init()
 {
   if (m_state == eInit)
     return;
@@ -194,10 +191,10 @@ StreamMatrixBuilderT<ValueT>::init()
 
   m_matrix_impl = &m_matrix.impl()->template get<BackEnd::tag::simplecsr>(true);
 
-  //const ISpace& space = m_matrix_impl->rowSpace();
-  // if (space != m_matrix_impl->colSpace())
-  //  throw FatalErrorException(
-  //      "stream matrix builder must be used with square matrix");
+  // const ISpace& space = m_matrix_impl->rowSpace();
+  //  if (space != m_matrix_impl->colSpace())
+  //   throw FatalErrorException(
+  //       "stream matrix builder must be used with square matrix");
 
   const MatrixDistribution& dist = m_matrix_impl->distribution();
 
@@ -213,7 +210,7 @@ StreamMatrixBuilderT<ValueT>::init()
   // block
   if (vblock)
     throw FatalErrorException(
-        A_FUNCINFO, "This builder works only with fixed block size");
+    A_FUNCINFO, "This builder works only with fixed block size");
 
   m_col_ordering = eUndef;
 
@@ -223,8 +220,7 @@ StreamMatrixBuilderT<ValueT>::init()
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::start()
+void StreamMatrixBuilderT<ValueT>::start()
 {
   m_matrix_impl->free();
   m_state = ePrepared;
@@ -233,8 +229,7 @@ StreamMatrixBuilderT<ValueT>::start()
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::fillZero()
+void StreamMatrixBuilderT<ValueT>::fillZero()
 {
   m_matrix_impl->internal().getValues().fill(0.);
 }
@@ -242,8 +237,7 @@ StreamMatrixBuilderT<ValueT>::fillZero()
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
-void
-StreamMatrixBuilderT<ValueT>::computeProfile()
+void StreamMatrixBuilderT<ValueT>::computeProfile()
 {
   /**
    * Purpose : build the matrix profile
@@ -282,7 +276,8 @@ StreamMatrixBuilderT<ValueT>::computeProfile()
   if (m_parallel_mng == NULL) {
     m_myrank = 0;
     m_nproc = 1;
-  } else {
+  }
+  else {
     m_myrank = m_parallel_mng->commRank();
     m_nproc = m_parallel_mng->commSize();
   }
@@ -291,7 +286,7 @@ StreamMatrixBuilderT<ValueT>::computeProfile()
   m_offset.resize(m_nproc + 1);
   {
     Arccore::MessagePassing::mpAllGather(m_parallel_mng,
-        ConstArrayView<Integer>(1, &m_local_offset), m_offset.subView(0, m_nproc));
+                                         ConstArrayView<Integer>(1, &m_local_offset), m_offset.subView(0, m_nproc));
   }
   m_offset[m_nproc] = m_global_size;
 
@@ -325,7 +320,8 @@ StreamMatrixBuilderT<ValueT>::computeProfile()
     upper_diag_index.resize(m_local_size);
     m_row_size.fill(0);
     row_cols.resize(m_local_size);
-  } else {
+  }
+  else {
     profile.setDiagFirst(true);
     m_row_size.fill(1);
     row_cols.resize(m_local_size);
@@ -350,12 +346,13 @@ StreamMatrixBuilderT<ValueT>::computeProfile()
         ins->m_data_index[i] = -1;
         if (m_trace)
           m_trace->info() << "Ghost Row : " << i << " " << ins->m_row_index[i];
-      } else {
+      }
+      else {
 #ifdef USE_VMAP
         std::pair<typename RowCols::iterator, bool> finder = row_cols[row].insert(col);
 #else /* USE_VMAP */
         std::pair<typename RowCols::iterator, bool> finder =
-            row_cols[row].insert(std::pair<Integer, InsBuildPos>(col, InsBuildPos()));
+        row_cols[row].insert(std::pair<Integer, InsBuildPos>(col, InsBuildPos()));
 #endif /* USE_VMAP */
         auto inner_iter = finder.first;
         if (finder.second) {
@@ -364,14 +361,16 @@ StreamMatrixBuilderT<ValueT>::computeProfile()
           if (isLocal(col)) {
             VALUE_OF(inner_iter) = k - gk;
             ins->m_data_index[i] = k - gk;
-          } else {
+          }
+          else {
             // be careful, position will increment with ghost_offset after
             VALUE_OF(inner_iter) = gk;
             ins->m_data_index[i] = gk;
             ++m_ghost_row_size[row];
           }
           ++m_row_size[row];
-        } else {
+        }
+        else {
           ins->m_data_index[i] = VALUE_OF(inner_iter);
         }
       }
@@ -379,7 +378,7 @@ StreamMatrixBuilderT<ValueT>::computeProfile()
   }
 
   ArrayView<Integer> row_offsets =
-      m_matrix_impl->internal().getCSRProfile().getRowOffset();
+  m_matrix_impl->internal().getCSRProfile().getRowOffset();
   m_matrix_size = 0;
   for (Integer row = 0; row < m_local_size; ++row) {
     row_offsets[row] = m_matrix_size;
@@ -419,9 +418,11 @@ StreamMatrixBuilderT<ValueT>::computeProfile()
       }
       offset += m_row_size[row];
     }
-  } else {
+  }
+  else {
     for (Integer row = 0; row < m_local_size; ++row) {
-    	if(m_trace) m_trace->info()<<"ROW("<<row<<")";
+      if (m_trace)
+        m_trace->info() << "ROW(" << row << ")";
       Integer ghost_offset = m_row_size[row] - m_ghost_row_size[row];
       // int ordered_idx = 0;
       for (typename RowCols::iterator iter = row_cols[row].begin();
@@ -444,14 +445,16 @@ StreamMatrixBuilderT<ValueT>::computeProfile()
       if (row == m_local_size) {
         // Ghost row
         ins->m_data_index[i] = m_matrix_size; // equivalent to the null position
-      } else {
+      }
+      else {
         Integer col = ins->m_col_index[i];
         Integer ghost_offset =
-            (isLocal(col) ? 0 : m_row_size[row] - m_ghost_row_size[row]);
+        (isLocal(col) ? 0 : m_row_size[row] - m_ghost_row_size[row]);
         if (m_order_row_cols_opt) {
           Integer build_pos = ins->m_data_index[i] + ghost_offset;
           ins->m_data_index[i] = kcols[row_offsets[row] + build_pos];
-        } else
+        }
+        else
           ins->m_data_index[i] += row_offsets[row] + ghost_offset;
       }
     }

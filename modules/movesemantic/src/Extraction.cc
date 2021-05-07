@@ -26,7 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -49,7 +50,7 @@ SubMatrix::extractRange(const IMatrix& matrix, const ExtractionIndices& indices)
 {
 
   const SimpleCSRMatrix<Real>* matrix_impl =
-      &matrix.impl()->get<BackEnd::tag::simplecsr>();
+  &matrix.impl()->get<BackEnd::tag::simplecsr>();
 
   const auto& dist = matrix_impl->distribution();
 
@@ -57,7 +58,7 @@ SubMatrix::extractRange(const IMatrix& matrix, const ExtractionIndices& indices)
   const Integer rowRange = indices.rowRange();
   const Integer startingCol = indices.colStart() != -1 ? indices.colStart() : 0;
   const Integer colRange =
-      indices.colRange() != -1 ? indices.colRange() : dist.globalRowSize();
+  indices.colRange() != -1 ? indices.colRange() : dist.globalRowSize();
 
   auto* parallel_mng = dist.parallelMng();
 
@@ -69,14 +70,14 @@ SubMatrix::extractRange(const IMatrix& matrix, const ExtractionIndices& indices)
   const Integer subMatrixEnd = startingRow + rowRange;
 
   const Integer subMatrixLocalSize = std::max(
-      std::min(subMatrixEnd, matrixEnd) - std::max(subMatrixStart, matrixStart), 0);
+  std::min(subMatrixEnd, matrixEnd) - std::max(subMatrixStart, matrixStart), 0);
   Space subMatrixRowSpace(rowRange);
   Space subMatrixColSpace(colRange);
   MatrixDistribution subMatrixDistribution(
-      rowRange, subMatrixLocalSize, rowRange, parallel_mng);
+  rowRange, subMatrixLocalSize, rowRange, parallel_mng);
   MatrixData subMatrix(subMatrixRowSpace, subMatrixColSpace, subMatrixDistribution);
   DirectMatrixBuilder builder(std::move(subMatrix), DirectMatrixOptions::eResetValues,
-      DirectMatrixOptions::eUnSymmetric);
+                              DirectMatrixOptions::eUnSymmetric);
   const Integer nnzMatrix = matrix_impl->internal().getValues().size();
   const Integer nrowsMatrix = matrix_impl->distribution().localRowSize();
   const Integer averageEntriesByRow = nnzMatrix / nrowsMatrix;
@@ -92,10 +93,10 @@ SubMatrix::extractRange(const IMatrix& matrix, const ExtractionIndices& indices)
   ConstArrayView<Real> values = matrix_impl->internal().getValues();
 
   ALIEN_ASSERT(
-      (startingRow >= 0 && startingRow < matrix_impl->distribution().globalRowSize()),
-      ("Error, submatrix and matrix dimensions are incompatibles"));
+  (startingRow >= 0 && startingRow < matrix_impl->distribution().globalRowSize()),
+  ("Error, submatrix and matrix dimensions are incompatibles"));
   ALIEN_ASSERT((startingRow + rowRange <= matrix_impl->distribution().globalRowSize()),
-      ("Error, submatrix and matrix dimensions are incompatibles"));
+               ("Error, submatrix and matrix dimensions are incompatibles"));
 
   for (Integer i = 0; i < nrowsMatrix; ++i) {
     const Integer local_row = i;
@@ -109,7 +110,7 @@ SubMatrix::extractRange(const IMatrix& matrix, const ExtractionIndices& indices)
         continue;
 
       builder.setData(indices.toLocalRow(global_row), indices.toLocalCol(global_col),
-          values[global_col]);
+                      values[global_col]);
     }
   }
 
@@ -121,7 +122,7 @@ SubMatrix::extractRange(const IMatrix& matrix, const ExtractionIndices& indices)
 
 MatrixData
 SubMatrix::extractIndices(const IMatrix& matrix ALIEN_UNUSED_PARAM,
-    const ExtractionIndices& indices ALIEN_UNUSED_PARAM)
+                          const ExtractionIndices& indices ALIEN_UNUSED_PARAM)
 {
   return MatrixData();
 }

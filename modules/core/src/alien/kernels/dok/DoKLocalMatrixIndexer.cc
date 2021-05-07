@@ -31,11 +31,11 @@
 
 #include <alien/kernels/dok/DoKReverseIndexer.h>
 
-namespace Alien {
+namespace Alien
+{
 using namespace Arccore;
 
-void
-DoKLocalMatrixIndexer::associate(Integer i, Integer j, Offset offset)
+void DoKLocalMatrixIndexer::associate(Integer i, Integer j, Offset offset)
 {
   m_data[Key(i, j)] = offset;
 }
@@ -45,14 +45,15 @@ DoKLocalMatrixIndexer::find(Integer i, Integer j)
 {
   try {
     return m_data.at(DoKLocalMatrixIndexer::Key(i, j));
-  } catch (std::out_of_range) {
+  }
+  catch (std::out_of_range) {
     return -1;
   }
 }
 
 DoKLocalMatrixIndexer::Offset
 DoKLocalMatrixIndexer::create(
-    Integer i, Integer j, DoKLocalMatrixIndexer::Offset& tentative_offset)
+Integer i, Integer j, DoKLocalMatrixIndexer::Offset& tentative_offset)
 {
   Offset o = find(i, j);
   if (o < 0) {
@@ -69,8 +70,10 @@ DoKLocalMatrixIndexer::clone() const
   return new DoKLocalMatrixIndexer(*this);
 }
 
-namespace {
-  template <class Map> class KeyCompare
+namespace
+{
+  template <class Map>
+  class KeyCompare
   {
    public:
     typedef typename Map::iterator Iterator;
@@ -81,8 +84,7 @@ namespace {
     {
       Key vala = a->first;
       Key valb = b->first;
-      return ((vala.first < valb.first)
-          || ((vala.first == valb.first) && (vala.second < valb.second)));
+      return ((vala.first < valb.first) || ((vala.first == valb.first) && (vala.second < valb.second)));
     }
   };
 } // namespace

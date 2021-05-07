@@ -26,18 +26,20 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace CompositeKernel {
+namespace CompositeKernel
+{
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
-  class ALIEN_EXPORT MultiVectorImpl : private std::tuple<std::shared_ptr<Space>>,
-                                       public Alien::MultiVectorImpl
+  class ALIEN_EXPORT MultiVectorImpl : private std::tuple<std::shared_ptr<Space>>
+  , public Alien::MultiVectorImpl
   {
    public:
     MultiVectorImpl();

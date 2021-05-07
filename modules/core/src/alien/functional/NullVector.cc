@@ -24,7 +24,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -37,8 +38,7 @@ NullVector::NullVector()
 
 /*---------------------------------------------------------------------------*/
 
-void
-NullVector::visit(ICopyOnWriteVector& v ALIEN_UNUSED_PARAM) const
+void NullVector::visit(ICopyOnWriteVector& v ALIEN_UNUSED_PARAM) const
 {
   throw FatalErrorException("NullVector can't be used in an expression");
 }

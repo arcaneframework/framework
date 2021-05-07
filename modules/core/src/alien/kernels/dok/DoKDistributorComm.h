@@ -25,7 +25,8 @@
 
 #include <alien/kernels/dok/IReverseIndexer.h>
 
-namespace Alien {
+namespace Alien
+{
 
 class MatrixDistribution;
 class RedistributorCommPlan;
@@ -53,10 +54,11 @@ class ALIEN_EXPORT DoKDistributorComm
 
   void computeCommPlan(IReverseIndexer* rev_index);
 
-  template <typename T> void exchange(ConstArrayView<T> snd, ArrayView<T> rcv)
+  template <typename T>
+  void exchange(ConstArrayView<T> snd, ArrayView<T> rcv)
   {
     Alien::RedistributionTools::exchange(
-        m_pm_super, snd, m_snd_offset.constView(), rcv, m_rcv_offset.constView());
+    m_pm_super, snd, m_snd_offset.constView(), rcv, m_rcv_offset.constView());
   }
 
   Int32 rcvSize() const { return m_rcv_offset[m_rcv_offset.size() - 1]; }

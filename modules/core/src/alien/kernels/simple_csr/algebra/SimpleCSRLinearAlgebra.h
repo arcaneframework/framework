@@ -25,7 +25,8 @@
 
 #include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
 
-namespace Alien {
+namespace Alien
+{
 
 typedef LinearAlgebra<BackEnd::tag::simplecsr> SimpleCSRLinearAlgebra;
 typedef LinearAlgebraExpr<BackEnd::tag::simplecsr> SimpleCSRLinearAlgebraExpr;

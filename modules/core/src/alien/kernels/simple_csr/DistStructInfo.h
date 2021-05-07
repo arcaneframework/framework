@@ -24,7 +24,8 @@
 #include <cstdlib>
 #include <unordered_set>
 
-namespace Alien {
+namespace Alien
+{
 
 class VBlock;
 
@@ -32,7 +33,8 @@ class VBlock;
 
 /*---------------------------------------------------------------------------*/
 
-namespace Alien::SimpleCSRInternal {
+namespace Alien::SimpleCSRInternal
+{
 
 class CSRStructInfo;
 
@@ -54,12 +56,12 @@ class ALIEN_EXPORT DistStructInfo
   }
 
   void compute(Integer nproc, ConstArrayView<Integer> offset, Integer my_rank,
-      IMessagePassingMng* parallel_mng, const CSRStructInfo& profile,
-      ITraceMng* trace = NULL);
+               IMessagePassingMng* parallel_mng, const CSRStructInfo& profile,
+               ITraceMng* trace = NULL);
 
   void compute(Integer nproc, ConstArrayView<Integer> offset, Integer my_rank,
-      IMessagePassingMng* parallel_mng, const CSRStructInfo& profile,
-      const VBlock* block_sizes, const MatrixDistribution& dist, ITraceMng* trace = NULL);
+               IMessagePassingMng* parallel_mng, const CSRStructInfo& profile,
+               const VBlock* block_sizes, const MatrixDistribution& dist, ITraceMng* trace = NULL);
 
   Integer domainId(Integer nproc, ConstArrayView<Integer> offset, Integer id)
   {

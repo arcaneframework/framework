@@ -127,7 +127,7 @@ TEST(TestVBlockMatrix, TwoSizesConstructor)
   Integer rowSize = 10;
   Integer colSize = 5;
   Alien::MatrixDistribution mdist(
-      rowSize, colSize, AlienTest::Environment::parallelMng());
+  rowSize, colSize, AlienTest::Environment::parallelMng());
   Alien::VBlock::ValuePerBlock vRow, vCol;
   for (Integer i = 0; i < rowSize; ++i)
     vRow[i] = i;

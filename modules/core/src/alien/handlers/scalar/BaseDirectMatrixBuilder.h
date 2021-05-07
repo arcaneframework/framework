@@ -34,9 +34,11 @@
 #include <alien/utils/VMap.h>
 #endif /* USE_VMAP */
 
-namespace Arccore {
+namespace Arccore
+{
 class ITraceMng;
-namespace MessagePassing {
+namespace MessagePassing
+{
   class IMessagePassingMng;
 }
 } // namespace Arccore
@@ -44,12 +46,14 @@ namespace MessagePassing {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename Scalar> class SimpleCSRMatrix;
+template <typename Scalar>
+class SimpleCSRMatrix;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -78,7 +82,8 @@ struct DirectMatrixOptions
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Common {
+namespace Common
+{
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -95,7 +100,7 @@ namespace Common {
 
    public:
     DirectMatrixBuilder(IMatrix& matrix, ResetFlag reset_flag,
-        SymmetricFlag symmetric_flag = SymmetricFlag::eSymmetric);
+                        SymmetricFlag symmetric_flag = SymmetricFlag::eSymmetric);
 
     virtual ~DirectMatrixBuilder();
 
@@ -113,21 +118,21 @@ namespace Common {
     void reserve(Arccore::Integer n, ReserveFlag flag = ReserveFlag::eResetReservation);
 
     void reserve(Arccore::ConstArrayView<Arccore::Integer> indices, Arccore::Integer n,
-        ReserveFlag flag = ReserveFlag::eResetReservation);
+                 ReserveFlag flag = ReserveFlag::eResetReservation);
 
     void allocate();
 
     void addData(Arccore::Integer iIndex, Arccore::Integer jIndex, Arccore::Real value);
 
     void addData(Arccore::Integer iIndex, Arccore::Real factor,
-        const Arccore::ConstArrayView<Arccore::Integer>& jIndexes,
-        const Arccore::ConstArrayView<Arccore::Real>& jValues);
+                 const Arccore::ConstArrayView<Arccore::Integer>& jIndexes,
+                 const Arccore::ConstArrayView<Arccore::Real>& jValues);
 
     void setData(Arccore::Integer iIndex, Arccore::Integer jIndex, Arccore::Real value);
 
     void setData(Arccore::Integer iIndex, Arccore::Real factor,
-        const Arccore::ConstArrayView<Arccore::Integer>& jIndexes,
-        const Arccore::ConstArrayView<Arccore::Real>& jValues);
+                 const Arccore::ConstArrayView<Arccore::Integer>& jIndexes,
+                 const Arccore::ConstArrayView<Arccore::Real>& jValues);
 
     void finalize();
 
@@ -168,8 +173,8 @@ namespace Common {
    private:
     void computeProfile(Arccore::ConstArrayView<Arccore::Integer> sizes);
     void updateProfile(Arccore::UniqueArray<Arccore::Integer>& row_starts,
-        Arccore::UniqueArray<Arccore::Integer>& cols,
-        Arccore::UniqueArray<Arccore::Real>& values);
+                       Arccore::UniqueArray<Arccore::Integer>& cols,
+                       Arccore::UniqueArray<Arccore::Real>& values);
 
     class IndexEnumerator;
     class FullEnumerator;

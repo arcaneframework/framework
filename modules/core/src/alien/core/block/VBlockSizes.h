@@ -31,7 +31,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -105,8 +106,8 @@ class ALIEN_EXPORT VBlockSizes final
    * \param[in] parallel_mng The parallel manager
    */
   void compute(const VBlock::ValuePerBlock& all_blocks_sizes, Arccore::Integer local_size,
-      Arccore::Integer local_offset,
-      Arccore::MessagePassing::IMessagePassingMng* parallel_mng);
+               Arccore::Integer local_offset,
+               Arccore::MessagePassing::IMessagePassingMng* parallel_mng);
 
   //! Scalarized local size
   Arccore::Integer m_local_scalarized_size;

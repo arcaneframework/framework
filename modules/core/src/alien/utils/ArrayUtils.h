@@ -26,13 +26,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! Recherche d'un �l�ment dans un tableau
-namespace ArrayScan {
+namespace ArrayScan
+{
   //! Recherche lin�aire de la valeur \a x dans un tableau non-ordonn�e \a v avec contr�le
   //! de validit�
   /*! Ce type de recherche est performante sur des tableaux de petites tailles (effet
@@ -46,7 +48,8 @@ namespace ArrayScan {
   /*! Ce type de recherche est performante sur des tableaux de petites tailles (effet
    * cache) Si plusieurs instance de la valeur \a x existe, la premi�re sera trouv�e.
    */
-  template <typename T> inline Integer linearScan(const T& x, const ConstArrayView<T>& v);
+  template <typename T>
+  inline Integer linearScan(const T& x, const ConstArrayView<T>& v);
   //! Recherche dichotomique de la valeur \a x dans un tableau ordonn�e \a v avec contr�le
   //! de validit�
   /*! Cette recherche dichotomique est hybrid�e avec une recherche lin�aire par de
@@ -99,9 +102,11 @@ namespace ArrayScan {
 
 /*---------------------------------------------------------------------------*/
 
-namespace ArrayScan {
+namespace ArrayScan
+{
 
-  template <typename T> Integer exhaustiveScan(const T& x, const ConstArrayView<T>& v)
+  template <typename T>
+  Integer exhaustiveScan(const T& x, const ConstArrayView<T>& v)
   {
     const Integer n = v.size();
     for (Integer i = 0; i < n; ++i)
@@ -110,7 +115,8 @@ namespace ArrayScan {
     return -1;
   }
 
-  template <typename T> Integer linearScan(const T& x, const ConstArrayView<T>& v)
+  template <typename T>
+  Integer linearScan(const T& x, const ConstArrayView<T>& v)
   {
     const Integer n = v.size();
     Integer index = 0;
@@ -142,7 +148,8 @@ namespace ArrayScan {
         const T& vmid = v[imid];
         if (x < vmid) {
           iright = imid;
-        } else if (x >= vmid) {
+        }
+        else if (x >= vmid) {
           ileft = imid;
         }
       } while (iright - ileft > n_linear);
@@ -161,7 +168,8 @@ namespace ArrayScan {
 
   /*---------------------------------------------------------------------------*/
 
-  template <typename T> Integer linearPositionScan(const T& x, const ConstArrayView<T>& v)
+  template <typename T>
+  Integer linearPositionScan(const T& x, const ConstArrayView<T>& v)
   {
     const Integer n = v.size();
     Integer index = 0;
@@ -192,7 +200,8 @@ namespace ArrayScan {
         const T& vmid = v[imid];
         if (x < vmid) {
           iright = imid;
-        } else if (x >= vmid) {
+        }
+        else if (x >= vmid) {
           ileft = imid;
         }
       } while (iright - ileft > n_linear);
@@ -236,7 +245,8 @@ namespace ArrayScan {
       const T& vmid = vptr[imid];
       if (x < vmid) {
         iright = imid;
-      } else {
+      }
+      else {
         ileft = imid;
       }
     }
@@ -252,7 +262,9 @@ namespace ArrayScan {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace ArrayConversion {} // end of namespace ArrayConversion
+namespace ArrayConversion
+{
+} // end of namespace ArrayConversion
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

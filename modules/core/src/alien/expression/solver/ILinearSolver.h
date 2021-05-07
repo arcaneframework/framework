@@ -28,9 +28,11 @@
 #include <cstdlib>
 #include <memory>
 
-namespace Arccore {
+namespace Arccore
+{
 class ITraceMng;
-namespace MessagePassing {
+namespace MessagePassing
+{
   class IMessagePassingMng;
 }
 } // namespace Arccore
@@ -38,7 +40,8 @@ namespace MessagePassing {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

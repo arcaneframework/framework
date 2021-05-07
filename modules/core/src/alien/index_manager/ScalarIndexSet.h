@@ -23,7 +23,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,7 +50,7 @@ class ALIEN_EXPORT ScalarIndexSet
   ScalarIndexSet(ScalarIndexSet&& en) noexcept;
 
   ScalarIndexSet(const String& name, Integer creationIndex, const IndexManager* manager,
-      Integer kind);
+                 Integer kind);
 
   ScalarIndexSet& operator=(const ScalarIndexSet& en);
 

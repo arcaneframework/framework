@@ -22,7 +22,8 @@
 
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 
@@ -37,11 +38,11 @@ template class ALIEN_IFPEN_EXPORT StreamVBlockMatrixBuilderT<double>::Inserter;
 template ALIEN_IFPEN_EXPORT StreamVBlockMatrixBuilderT<double>::Filler&
 StreamVBlockMatrixBuilderT<double>::Filler::operator++();
 template ALIEN_IFPEN_EXPORT void StreamVBlockMatrixBuilderT<double>::Filler::addBlockData(
-    ConstArray2View<double> values);
+ConstArray2View<double> values);
 template ALIEN_IFPEN_EXPORT void StreamVBlockMatrixBuilderT<double>::Filler::start();
 template ALIEN_IFPEN_EXPORT void
 StreamVBlockMatrixBuilderT<double>::Profiler::addMatrixEntry(
-    Integer row_index, Integer col_index);
+Integer row_index, Integer col_index);
 
 #endif
 

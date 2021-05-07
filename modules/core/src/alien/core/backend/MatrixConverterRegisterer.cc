@@ -29,7 +29,8 @@
 using namespace Alien;
 using namespace Arccore;
 
-namespace { // Unnamed namespace for local "global" variables
+namespace
+{ // Unnamed namespace for local "global" variables
 static std::vector<IMatrixConverter*>* matrix_converter_db = nullptr;
 }
 

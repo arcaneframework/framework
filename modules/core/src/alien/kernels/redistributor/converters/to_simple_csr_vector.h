@@ -22,9 +22,11 @@
 #include <alien/core/backend/VectorConverterRegisterer.h>
 #include <alien/utils/Precomp.h>
 
-namespace Alien {
+namespace Alien
+{
 
-template <typename T> class SimpleCSRVector;
+template <typename T>
+class SimpleCSRVector;
 class RedistributorVector;
 
 class RedistributorToSimpleCSRVectorConverter : public IVectorConverter

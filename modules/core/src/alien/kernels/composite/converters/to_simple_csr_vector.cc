@@ -47,15 +47,14 @@ class Composite_to_SimpleCSR_VectorConverter : public Alien::IVectorConverter
   }
 
   void convert(
-      const Alien::IVectorImpl* sourceImpl, Alien::IVectorImpl* targetImpl) const;
+  const Alien::IVectorImpl* sourceImpl, Alien::IVectorImpl* targetImpl) const;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-Composite_to_SimpleCSR_VectorConverter::convert(
-    const Alien::IVectorImpl* sourceImpl, Alien::IVectorImpl* targetImpl) const
+void Composite_to_SimpleCSR_VectorConverter::convert(
+const Alien::IVectorImpl* sourceImpl, Alien::IVectorImpl* targetImpl) const
 {
   const auto& v = cast<Alien::CompositeKernel::Vector>(sourceImpl, sourceBackend());
   auto& v2 = cast<Alien::SimpleCSRVector<Real>>(targetImpl, targetBackend());

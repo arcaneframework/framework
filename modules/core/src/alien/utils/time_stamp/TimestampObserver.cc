@@ -25,7 +25,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,8 +37,7 @@ TimestampObserver::TimestampObserver(Timestamp& timestamp)
 
 /*---------------------------------------------------------------------------*/
 
-void
-TimestampObserver::updateTimestamp()
+void TimestampObserver::updateTimestamp()
 {
   alien_debug([&] {
     cout() << "Update Timestamp " << &m_timestamp << " from Observer " << this;

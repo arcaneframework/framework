@@ -23,7 +23,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 using namespace Arccore;
 
@@ -38,8 +39,7 @@ RedistributedMatrix::~RedistributedMatrix() {}
 
 /*---------------------------------------------------------------------------*/
 
-void
-RedistributedMatrix::visit(ICopyOnWriteMatrix& v) const
+void RedistributedMatrix::visit(ICopyOnWriteMatrix& v) const
 {
   v.accept(m_impl);
 }
@@ -70,16 +70,14 @@ RedistributedMatrix::colSpace() const
 
 /*---------------------------------------------------------------------------*/
 
-void
-RedistributedMatrix::setUserFeature(String feature)
+void RedistributedMatrix::setUserFeature(String feature)
 {
   m_impl->setFeature(feature);
 }
 
 /*---------------------------------------------------------------------------*/
 
-bool
-RedistributedMatrix::hasUserFeature(String feature) const
+bool RedistributedMatrix::hasUserFeature(String feature) const
 {
   return m_impl->hasFeature(feature);
 }

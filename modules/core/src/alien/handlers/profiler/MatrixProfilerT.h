@@ -33,12 +33,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien {
+namespace Alien
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Common {
+namespace Common
+{
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -60,7 +62,8 @@ namespace Common {
 
     if (m_parallel_mng == nullptr) {
       m_nproc = 1;
-    } else {
+    }
+    else {
       m_nproc = m_parallel_mng->commSize();
     }
 
@@ -78,7 +81,8 @@ namespace Common {
 
   /*---------------------------------------------------------------------------*/
 
-  template <typename ValueT> MatrixProfilerT<ValueT>::~MatrixProfilerT()
+  template <typename ValueT>
+  MatrixProfilerT<ValueT>::~MatrixProfilerT()
   {
     if (!m_allocated) {
       allocate();
@@ -100,7 +104,7 @@ namespace Common {
       row_def.push_back(jIndex);
     else {
       Integer pos = ArrayScan::dichotomicPositionScan(
-          jIndex, ConstArrayView<Integer>(row_def_size, &row_def[0]));
+      jIndex, ConstArrayView<Integer>(row_def_size, &row_def[0]));
       if (pos >= row_def_size)
         row_def.push_back(jIndex);
       else if (row_def[pos] != jIndex) {
@@ -111,7 +115,8 @@ namespace Common {
 
   /*---------------------------------------------------------------------------*/
 
-  template <typename ValueT> void MatrixProfilerT<ValueT>::allocate()
+  template <typename ValueT>
+  void MatrixProfilerT<ValueT>::allocate()
   {
     if (m_allocated)
       return;
@@ -124,13 +129,14 @@ namespace Common {
 
   /*---------------------------------------------------------------------------*/
 
-  template <typename ValueT> void MatrixProfilerT<ValueT>::computeProfile()
+  template <typename ValueT>
+  void MatrixProfilerT<ValueT>::computeProfile()
   {
     UniqueArray<Integer> m_offset;
     m_offset.resize(m_nproc + 1);
     if (m_parallel_mng) {
       Arccore::MessagePassing::mpAllGather(m_parallel_mng,
-          ConstArrayView<Integer>(1, &m_local_offset), m_offset.subView(0, m_nproc));
+                                           ConstArrayView<Integer>(1, &m_local_offset), m_offset.subView(0, m_nproc));
     }
     m_offset[m_nproc] = m_global_size;
 
