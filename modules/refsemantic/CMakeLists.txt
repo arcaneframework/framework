@@ -58,33 +58,30 @@ add_library(alien_semantic_ref
         include/alien/ref/handlers/block/VBlockVectorWriter.h
         include/alien/ref/handlers/scalar/VectorReader.h
         include/alien/ref/handlers/scalar/VectorWriter.h
-        )
+        include/alien/ref/import_export/SystemInfo.h
+        src/import_export/SystemReader.cc
+        include/alien/ref/import_export/SystemReader.h
+        src/import_export/SystemWriter.cc
+        include/alien/ref/import_export/SystemWriter.h
+        src/import_export/HDF5Tools.h)
 
-if (ALIEN_USE_XML AND ALIEN_USE_HDF5)
+if (ALIEN_USE_LIBXML2)
+  find_package(LibXml2 REQUIRED)
 
-    add_library(alien_ref_import_export OBJECT
-            include/alien/ref/import_export/SystemInfo.h
-            src/import_export/SystemReader.cc
-            include/alien/ref/import_export/SystemReader.h
-            src/import_export/SystemWriter.cc
-            include/alien/ref/import_export/SystemWriter.h
-            src/import_export/HDF5Tools.h)
-
-    find_package(LibXml2 REQUIRED)
-    find_package(HDF5 REQUIRED)
-
-    target_link_libraries(alien_ref_import_export PRIVATE arccon::LibXml2 arccon::HDF5)
-    target_compile_definitions(alien_ref_import_export PRIVATE ALIEN_USE_LIBXML2 ALIEN_USE_HDF5)
-
-    target_link_libraries(alien_semantic_ref PRIVATE alien_ref_import_export)
+  target_link_libraries(alien_semantic_ref PRIVATE arccon::LibXml2)
 endif ()
 
+if (ALIEN_USE_HDF5)
+  find_package(HDF5 REQUIRED)
+
+  target_link_libraries(alien_semantic_ref PRIVATE arccon::HDF5)
+endif ()
 
 if (ALIEN_MV_EXPR)
-    target_sources(alien_semantic_ref PRIVATE
-            include/alien/ref/mv_expr/MVExpr.h
-            )
-    #TODO: check C++ features.
+  target_sources(alien_semantic_ref PRIVATE
+          include/alien/ref/mv_expr/MVExpr.h
+          )
+  #TODO: check C++ features.
 endif ()
 
 target_link_libraries(alien_semantic_ref PUBLIC alien_core)
