@@ -5,13 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AsyncQueue.cc                                               (C) 2000-2019 */
+/* AsyncQueue.cc                                               (C) 2000-2021 */
 /*                                                                           */
 /* Implémentation d'une file de messages en mémoire partagée.                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/parallel/thread/IAsyncQueue.h"
+
+#include "arcane/parallel/thread/ArcaneThreadMisc.h"
 
 #include "arcane_packages.h"
 
@@ -79,7 +81,7 @@ class TBBAsyncQueue
     void* v = 0;
     int count = 1;
     while (!m_shared_queue.try_pop(v)){
-      __TBB_Pause(count);
+      arcaneDoCPUPause(count);
       if (count<100)
         count *= 2;
     }
