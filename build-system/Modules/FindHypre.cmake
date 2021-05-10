@@ -1,6 +1,20 @@
 include (${CMAKE_CURRENT_LIST_DIR}/../commands/commands.cmake)
 arccon_return_if_package_found(Hypre)
 
+# Les versions récentes de Hypre permettent d'utiliser un CMakeLists.txt
+# Tente d'utiliser le module correspondant de CMake s'il existe.
+# A noter que ce module s'appelle 'HYPRE' et pas 'Hypre'.
+
+set(_SAVED_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+unset(CMAKE_MODULE_PATH)
+find_package(HYPRE CONFIG QUIET)
+set(CMAKE_MODULE_PATH ${_SAVED_CMAKE_MODULE_PATH})
+if (TARGET HYPRE::HYPRE)
+  arccon_register_package_library(Hypre HYPRE)
+  set(ARCCON_TARGET_Hypre HYPRE::HYPRE CACHE STRING "Target for package HYPRE" FORCE)
+  return()
+endif()
+
 find_library(Hypre_LIBRARY
      NAMES HYPRE)
 
