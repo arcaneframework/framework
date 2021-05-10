@@ -947,14 +947,15 @@ void BasicWriter::
 initialize()
 {
   Int32 rank = m_parallel_mng->commRank();
+  if (m_open_mode==OpenModeTruncate && m_parallel_mng->isMasterIO())
+    platform::recursiveCreateDirectory(m_path);
+  m_parallel_mng->barrier();
   String filename = _getBasicVariableFile(m_version,m_path,rank);
   m_text_writer = makeRef(new KeyValueTextWriter(filename,m_version));
   m_text_writer->setDataCompressor(m_data_compressor);
   m_global_writer = new BasicGenericWriter(m_application,m_version,m_text_writer);
   if (m_verbose_level>0)
     info() << "** OPEN MODE = " << m_open_mode;
-  if (m_open_mode==OpenModeTruncate && m_parallel_mng->isMasterIO())
-    platform::recursiveCreateDirectory(m_path);
 }
 
 /*---------------------------------------------------------------------------*/
