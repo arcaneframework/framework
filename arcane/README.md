@@ -65,9 +65,23 @@ cmake --build .
 cmake --build . --target install
 ~~~
 
-Par défaut, l'installation se fait dans /usr/local si l'option `CMAKE_INSTALL_PREFIX` n'est
+Par défaut, l'installation se fait dans `/usr/local` si l'option `CMAKE_INSTALL_PREFIX` n'est
 pas spécifié.
 
+Par défaut, tous les packages optionnels sont détectés
+automatiquement. Il est possible de supprimer ce comportement et de
+supprimer la détection automatique des packages en ajoutant
+`-DARCANE_NO_DEFAULT_PACKAGE=TRUE` à la ligne de commande. Dans ce
+cas, il faut préciser explicitement les packages qu'on souhaite avoir
+en les spécifiant à la variable `ARCANE_REQUIRED_PACKAGE_LIST` sous
+forme de liste. Par exemple, si on souhaite avoir uniquement `HDF5` et
+`LibUnwind` de disponible, il faut utilise CMake comme suit:
+
+~~~{.sh}
+cmake -DARCANE_NO_DEFAULT_PACKAGE=TRUE -DARCANE_REQUIRED_PACKAGE_LIST="LibUnwind;HDF5"
+~~~
+
+Dans
 ### Génération de la documentation
 
 La génération de la documentation n'a été testée que sur les plateforme Linux.
