@@ -1,5 +1,5 @@
 ﻿set(PKGS MPI)
-find_package(MPI)
+arcane_find_package(MPI)
 
 if (NOT TARGET Arccore::arccore_message_passing_mpi)
   message(STATUS "Disabling 'arcane_mpi' because 'Arccore::arccore_message_passing_mpi' is not available")

@@ -1,6 +1,6 @@
 message(STATUS "ALEPH_PETSC subdirectory")
 set(PKGS PETSc MPI)
-find_package(PETSc)
+arcane_find_package(PETSc)
 if (NOT TARGET arcconpkg_PETSc)
   return()
 endif()

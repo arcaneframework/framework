@@ -5,7 +5,7 @@ if(NOT ARCCON_DOTNET_HAS_RUNTIME_coreclr)
 endif()
 
 set(PKGS CoreClrEmbed)
-find_package(CoreClrEmbed)
+arcane_find_package(CoreClrEmbed)
 if (NOT CoreClrEmbed_FOUND)
   message(STATUS "Disabling 'arcane_dotnet_coreclr' because package 'CoreClrEmbed' is not found")
   return()

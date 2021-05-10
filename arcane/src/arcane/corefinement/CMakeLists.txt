@@ -1,6 +1,6 @@
 message(STATUS "Include 'corefinement'")
 set(PKGS GeometryKernel)
-find_package(GeometryKernel)
+arcane_find_package(GeometryKernel)
 if (NOT GeometryKernel_FOUND)
   return()
 endif()

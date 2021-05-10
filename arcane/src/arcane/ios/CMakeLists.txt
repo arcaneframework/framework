@@ -1,6 +1,6 @@
 set(PKGS vtkIOXML vtkIOXdmf2)
-find_package(vtkIOXML)
-find_package(vtkIOXdmf2)
+arcane_find_package(vtkIOXML)
+arcane_find_package(vtkIOXdmf2)
 
 include(srcs.cmake)
 

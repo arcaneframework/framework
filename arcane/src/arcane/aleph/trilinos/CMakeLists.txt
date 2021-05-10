@@ -1,6 +1,6 @@
 message(STATUS "ALEPH_TRILINOS subdirectory")
 set(PKGS Trilinos MPI)
-find_package(Trilinos)
+arcane_find_package(Trilinos)
 if (NOT TARGET arcconpkg_Trilinos)
   return()
 endif()

@@ -1,5 +1,5 @@
 set(PKGS Hypre MPI)
-find_package(Hypre)
+arcane_find_package(Hypre)
 if (NOT TARGET arccon::Hypre OR NOT TARGET arccon::MPI)
   return()
 endif()

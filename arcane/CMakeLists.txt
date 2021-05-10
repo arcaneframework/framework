@@ -385,9 +385,9 @@ find_package(${ARCANE_XMLREADER_PACKAGE} REQUIRED)
 # TODO: supprimer cela et faire le find_package uniquement dans les
 # composantes qui en ont besoin.
 if (NOT ARCANE_WANT_NOMPI)
-  find_package(MPI)
+  arcane_find_package(MPI)
 endif()
-find_package(Valgrind)
+arcane_find_package(Valgrind)
 include(FindFlexLM)
 message(STATUS "----------------------------------------------------")
 

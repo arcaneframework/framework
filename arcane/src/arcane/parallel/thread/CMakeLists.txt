@@ -1,5 +1,5 @@
 set(PKGS Glib TBB)
-find_package(TBB)
+arcane_find_package(TBB)
 
 include(srcs.cmake)
 if(TBB_FOUND)
