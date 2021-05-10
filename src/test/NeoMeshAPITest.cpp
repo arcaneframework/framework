@@ -109,6 +109,33 @@ TEST(NeoMeshApiTest,AddItemTest)
   }
  }
 
+TEST(NeoMeshApiTest,MeshApiInfoTest)
+{
+  auto mesh = Neo::Mesh{"MeshTest"};
+  auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family");
+  auto& face_family = mesh.addFamily(Neo::ItemKind::IK_Face, "face_family");
+  auto& edge_family = mesh.addFamily(Neo::ItemKind::IK_Edge, "edge_family");
+  auto& node_family = mesh.addFamily(Neo::ItemKind::IK_Node, "node_family");
+  auto& dof_family  = mesh.addFamily(Neo::ItemKind::IK_Dof, "dof_family");
+  auto added_cells = Neo::FutureItemRange{};
+  mesh.scheduleAddItems(cell_family, { 0,1 }, added_cells);
+  auto added_faces = Neo::FutureItemRange{};
+  mesh.scheduleAddItems(face_family, { 0, 1, 2, 3, 4 }, added_faces);
+  auto added_edges = Neo::FutureItemRange{};
+  mesh.scheduleAddItems(edge_family, { 0, 1, 2, 3, 4 }, added_edges);
+  auto added_nodes = Neo::FutureItemRange{};
+  mesh.scheduleAddItems(node_family, { 0, 1, 2, 3 }, added_nodes);
+  auto added_dofs = Neo::FutureItemRange{};
+  mesh.scheduleAddItems(dof_family, { 0, 1 }, added_dofs);
+  mesh.applyScheduledOperations();
+  EXPECT_EQ(mesh.nbCells(),2);
+  EXPECT_EQ(mesh.nbFaces(),5);
+  EXPECT_EQ(mesh.nbFaces(),5);
+  EXPECT_EQ(mesh.nbNodes(),4);
+  EXPECT_EQ(mesh.nbDoFs(),2);
+  EXPECT_EQ(mesh.dimension(),3);
+}
+
 TEST(NeoMeshApiTest,SetNodeCoordsTest)
 {
   auto mesh = Neo::Mesh{"SetNodeCoordsTestMesh"};

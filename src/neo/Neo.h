@@ -939,6 +939,12 @@ public:
 
   Family& getFamily(ItemKind ik, std::string const& name) const { return m_families.operator()(ik,name);}
 
+  [[nodiscard]] int nbItems(ItemKind ik) const {
+    return std::accumulate(m_families.begin(),m_families.end(),0,
+                           [ik](auto const& nb_item, auto const& family_map_element){
+                             return (family_map_element.first.first == ik) ? nb_item + family_map_element.second->nbElements() : nb_item;
+    });
+  }
 
   template <typename Algorithm>
   void addAlgorithm(InProperty&& in_property, OutProperty&& out_property, Algorithm algo){// problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
@@ -978,6 +984,7 @@ public:
   std::string m_name;
   FamilyMap m_families;
   std::list<std::unique_ptr<IAlgorithm>> m_algos;
+  int m_dimension = 3;
 };
 
 } // end namespace Neo

@@ -75,6 +75,33 @@ public:
    */
   [[nodiscard]] std::string const& name() const noexcept ;
 
+  [[nodiscard]] int dimension() const noexcept {
+    return m_mesh_graph->m_dimension;
+  }
+
+  [[nodiscard]] int nbNodes() const noexcept {
+    return m_mesh_graph->nbItems(Neo::ItemKind::IK_Node);
+  }
+
+  [[nodiscard]] int nbEdges() const noexcept {
+    return m_mesh_graph->nbItems(Neo::ItemKind::IK_Edge);
+  }
+
+  [[nodiscard]] int nbFaces() const noexcept {
+    return m_mesh_graph->nbItems(Neo::ItemKind::IK_Face);
+  }
+
+  [[nodiscard]] int nbCells() const noexcept {
+    return m_mesh_graph->nbItems(Neo::ItemKind::IK_Cell);
+  }
+
+  [[nodiscard]] int nbDoFs() const noexcept {
+    return m_mesh_graph->nbItems(Neo::ItemKind::IK_Dof);
+  }
+
+  [[nodiscard]] int nbItems(Neo::ItemKind ik) const noexcept {
+    return m_mesh_graph->nbItems(ik);
+  }
   [[nodiscard]] std::string uniqueIdPropertyName(const std::string& family_name) const noexcept ;
 
   /*!
