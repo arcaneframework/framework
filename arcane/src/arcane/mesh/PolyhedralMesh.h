@@ -65,19 +65,19 @@ class ARCANE_MESH_EXPORT PolyhedralMesh : public IMeshBase {
 
   String name() const override;
 
-  Integer nbNode() override { return -1; }
+  Integer nbNode() override;
 
-  Integer nbEdge() override { return -1; }
+  Integer nbEdge() override;
 
-  Integer nbFace() override { return -1; }
+  Integer nbFace() override;
 
-  Integer nbCell() override { return -1; }
+  Integer nbCell() override;
 
-  Integer nbItem(eItemKind ik) override { return -1; }
+  Integer nbItem(eItemKind ik) override;
 
   ITraceMng* traceMng() override;
 
-  Integer dimension() override { return -1; }
+  Integer dimension() override;
 
  private:
   void _errorEmptyMesh() const;
