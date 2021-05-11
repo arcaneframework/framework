@@ -17,6 +17,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/ISubDomain.h"
 #include "arcane/IMesh.h"
+#include "arcane/IMeshBase.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -57,6 +58,15 @@ void MeshHandle::MeshHandleRef::
 _setMesh(IMesh* mesh)
 {
   m_mesh_ptr = mesh;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshHandle::MeshHandleRef::
+_setMesh(IMeshBase* mesh_base)
+{
+  m_mesh_base_ptr = mesh_base;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -120,10 +130,38 @@ hasMesh() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+bool MeshHandle::
+hasMeshBase() const
+{
+  IMeshBase* m = m_ref->meshBase();
+  return m;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 IMesh* MeshHandle::
 mesh() const
 {
   IMesh* m = m_ref->mesh();
+  if (m)
+    return m;
+  // A terme, faire un fatal si le maillage est nul. Pour des raisons de
+  // compatibilité avec l'existant, on retourne 'nullptr'.
+  bool do_fatal = false;
+  if (do_fatal)
+    ARCANE_FATAL("Invalid call for null mesh. Call MeshHandle::hasMesh() before to make sure mesh is valid");
+  return nullptr;
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMeshBase* MeshHandle::
+meshBase() const
+{
+  auto* m = m_ref->meshBase();
   if (m)
     return m;
   // A terme, faire un fatal si le maillage est nul. Pour des raisons de

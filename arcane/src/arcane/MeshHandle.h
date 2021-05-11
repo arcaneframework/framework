@@ -32,6 +32,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 class IMesh;
+class IMeshBase;
 class IMeshMng;
 class ISubDomain;
 class IUserDataList;
@@ -67,6 +68,7 @@ class ARCANE_CORE_EXPORT MeshHandle
     const String& meshName() const { return m_mesh_name; }
     bool isNull() const { return m_is_null; }
     IMesh* mesh() const { return m_mesh_ptr; }
+    IMeshBase* meshBase() const {return m_mesh_base_ptr;}
     ISubDomain* subDomain() const { return m_sub_domain; }
     IMeshMng* meshMng() const { return m_mesh_mng; }
     ITraceMng* traceMng() const { return m_trace_mng; }
@@ -74,9 +76,11 @@ class ARCANE_CORE_EXPORT MeshHandle
    public:
     void _destroyMesh();
     void _setMesh(IMesh* mesh);
+    void _setMesh(IMeshBase* mesh_base);
    private:
     String m_mesh_name;
     IMesh* m_mesh_ptr = nullptr;
+    IMeshBase* m_mesh_base_ptr = nullptr;
     // Pour l'instant on en a besoin mais il faudrait le supprimer
     ISubDomain* m_sub_domain = nullptr;
     IUserDataList* m_user_data_list = nullptr;
@@ -110,8 +114,23 @@ class ARCANE_CORE_EXPORT MeshHandle
    */
   IMesh* mesh() const;
 
+  /*!
+   * \brief Interface de base du maillage associé
+   *
+   * Cette interface est temporaire, afin d'intégrer progressivement un nouveau type de maillage
+   * Il est interdit d'appeler cette méthode si le maillage n'a pas encore été
+   * créé. A terme, une exception sera levée dans ce cas.
+   *
+   * Si on n'est pas certain que le maillage existe, on peut tester son
+   * existence via hasMesh().
+   *
+   * \pre hasMesh() == true
+   */
+  IMeshBase* meshBase() const;
+
   //! Indique si le maillage associé a déjà été créé (i.e: mesh() est valide)
   bool hasMesh() const;
+  bool hasMeshBase() const;
 
  public:
 
@@ -141,6 +160,7 @@ class ARCANE_CORE_EXPORT MeshHandle
 
   //! \internal
   void _setMesh(IMesh* mesh) { m_ref->_setMesh(mesh); }
+  void _setMesh(IMeshBase* mesh) { m_ref->_setMesh(mesh); }
 
   //! \internal
   void _destroyMesh() { m_ref->_destroyMesh(); }

@@ -657,6 +657,7 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    MeshPartialVariableArrayRefT.H
    PrivateVariableScalarT.H
    PrivateVariableArrayT.H
+   IMeshBase.h
    datatype/ArrayVariant.h
    datatype/BadVariantTypeException.h
    datatype/DataTracer.h

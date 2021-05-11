@@ -10,19 +10,27 @@
 /* Polyhedral mesh impl using Neo data structure                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANEFRAMEWORK_POLYHEDRALMESH_H
-#define ARCANEFRAMEWORK_POLYHEDRALMESH_H
+#ifndef ARCANE_POLYHEDRALMESH_H
+#define ARCANE_POLYHEDRALMESH_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include <memory>
 #include "arcane/utils/ArcaneGlobal.h"
 #include "arcane/utils/String.h"
-#include "arcane/utils/ITraceMng.h"
-#include "arcane/ISubDomain.h"
+#include "arcane/MeshHandle.h"
+#include "arcane/IMeshBase.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+namespace Arcane {
+class ISubDomain;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 
 namespace Arcane::mesh {
 
@@ -30,9 +38,11 @@ class PolyhedralMeshImpl;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_MESH_EXPORT PolyhedralMesh{
+class ARCANE_MESH_EXPORT PolyhedralMesh : public IMeshBase {
  public :
   ISubDomain* m_subdomain;
+  inline static const String m_mesh_handle_name = "polyhedral_mesh_handle";
+  MeshHandle m_mesh_handle;
 
   std::unique_ptr<PolyhedralMeshImpl> m_mesh; // using pimpl to limit dependency to neo lib to cc file
 
@@ -43,10 +53,34 @@ class ARCANE_MESH_EXPORT PolyhedralMesh{
  public:
   void read(String const& filename);
 
+  // IMeshBase interface
+ public:
+
+  static String handleName() { return m_mesh_handle_name; }
+
+  //! Handle sur ce maillage
+  const MeshHandle& handle() const override;
+
+ public:
+
+  String name() const override;
+
+  Integer nbNode() override;
+
+  Integer nbEdge() override;
+
+  Integer nbFace() override;
+
+  Integer nbCell() override;
+
+  Integer nbItem(eItemKind ik) override;
+
+  ITraceMng* traceMng() override;
+
+  Integer dimension() override;
+
  private:
-  void _errorEmptyMesh() {
-    m_subdomain->traceMng()->fatal() << "Cannot use PolyhedralMesh if Arcane is not linked with lib Neo";
-  }
+  void _errorEmptyMesh() const;
 
 };
 
@@ -58,4 +92,4 @@ class ARCANE_MESH_EXPORT PolyhedralMesh{
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif //ARCANEFRAMEWORK_POLYHEDRALMESH_H
+#endif //ARCANE_POLYHEDRALMESH_H

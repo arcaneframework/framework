@@ -11,11 +11,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/mesh/PolyhedralMesh.h"
+#include "arcane/IMeshMng.h"
+#include "arcane/MeshHandle.h"
+#include "arcane/ISubDomain.h"
+#include "arcane/utils/ITraceMng.h"
 
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 #include "neo/Mesh.h"
 #endif
+
+#include "arcane/mesh/PolyhedralMesh.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,10 +39,37 @@ namespace mesh
   class PolyhedralMeshImpl
   {
     ISubDomain* m_subdomain;
-    Neo::Mesh m_mesh{"Test"};
+    Neo::Mesh m_mesh{ "Test" };
 
-   public:
-    PolyhedralMeshImpl(ISubDomain* subDomain) : m_subdomain(subDomain){}
+    template <eItemKind IK>
+    class ItemKindTraits {static const Neo::ItemKind item_kind = Neo::ItemKind::IK_None;};
+
+    static Neo::ItemKind itemKindArcaneToNeo(eItemKind ik)
+    {
+      switch (ik) {
+      case (IK_Cell):
+        return Neo::ItemKind::IK_Cell;
+      case (IK_Face):
+        return Neo::ItemKind::IK_Face;
+      case (IK_Edge):
+        return Neo::ItemKind::IK_Edge;
+      case (IK_Node):
+        return Neo::ItemKind::IK_Node;
+      case (IK_DoF):
+        return Neo::ItemKind::IK_Dof;
+      case (IK_Unknown):
+      case (IK_DualNode):
+      case (IK_Link):
+      case (IK_Particle):
+        return Neo::ItemKind::IK_None;
+      }
+      return Neo::ItemKind::IK_Node;
+    }
+
+    public:
+    PolyhedralMeshImpl(ISubDomain* subDomain)
+    : m_subdomain(subDomain)
+    {}
 
    public:
     void read(const String& filename)
@@ -46,38 +78,84 @@ namespace mesh
       // First step create a single cell
       _createSingleCellTest();
     }
+
+    String name() const { return m_mesh.name(); }
+
+    Integer dimension() const { return m_mesh.dimension(); }
+
+    Integer nbNode() const { return m_mesh.nbNodes(); }
+    Integer nbEdge() const { return m_mesh.nbEdges(); }
+    Integer nbFace() const { return m_mesh.nbFaces(); }
+    Integer nbCell() const { return m_mesh.nbCells(); }
+    Integer nbItem(eItemKind ik) const { return m_mesh.nbItems(itemKindArcaneToNeo(ik)); }
+
    private:
-    void _createSingleCellTest(){
-      auto cell_family = m_mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family");
-      auto node_family = m_mesh.addFamily(Neo::ItemKind::IK_Node, "node_family");
+    void _createSingleCellTest()
+    {
+      auto& cell_family = m_mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family");
+      auto& node_family = m_mesh.addFamily(Neo::ItemKind::IK_Node, "node_family");
       auto added_cells = Neo::FutureItemRange{};
-      m_mesh.scheduleAddItems(cell_family, {0}, added_cells);
+      m_mesh.scheduleAddItems(cell_family, { 0 }, added_cells);
       auto added_nodes = Neo::FutureItemRange{};
       m_mesh.scheduleAddItems(node_family, { 0, 1, 2, 3, 4, 5 }, added_nodes);
       m_mesh.applyScheduledOperations();
     }
   };
 
-}
+  template <> class PolyhedralMeshImpl::ItemKindTraits<IK_Cell> {static const Neo::ItemKind item_kind = Neo::ItemKind::IK_Cell;};
+  template <> class PolyhedralMeshImpl::ItemKindTraits<IK_Face> {static const Neo::ItemKind item_kind = Neo::ItemKind::IK_Face;};
+  template <> class PolyhedralMeshImpl::ItemKindTraits<IK_Edge> {static const Neo::ItemKind item_kind = Neo::ItemKind::IK_Edge;};
+  template <> class PolyhedralMeshImpl::ItemKindTraits<IK_Node> {static const Neo::ItemKind item_kind = Neo::ItemKind::IK_Node;};
+  template <> class PolyhedralMeshImpl::ItemKindTraits<IK_DoF> {static const Neo::ItemKind item_kind = Neo::ItemKind::IK_Dof;};
 
+} // End namespace mesh
 #endif // End ARCANE_HAS_CUSTOM_MESH_TOOLS
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Arcane::mesh::PolyhedralMesh::~PolyhedralMesh() = default;
+mesh::PolyhedralMesh::~PolyhedralMesh() = default;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+ITraceMng* mesh::PolyhedralMesh::
+traceMng()
+{
+  return m_subdomain->traceMng();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+const MeshHandle& mesh::PolyhedralMesh::handle() const
+{
+  return m_mesh_handle;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::
+_errorEmptyMesh() const {
+  m_subdomain->traceMng()->fatal() << "Cannot use PolyhedralMesh if Arcane is not linked with lib Neo";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 // All PolyhedralMesh methods must be defined twice (emtpy in the second case)
 
-Arcane::mesh::PolyhedralMesh::
+mesh::PolyhedralMesh::
 PolyhedralMesh(ISubDomain* subdomain)
 : m_subdomain{subdomain}
+, m_mesh_handle{m_subdomain->meshMng()->createMeshHandle(m_mesh_handle_name)}
 , m_mesh{ std::make_unique<mesh::PolyhedralMeshImpl>(m_subdomain) }
-{}
+{
+  m_mesh_handle._setMesh(this);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -87,8 +165,72 @@ read(const String& filename)
 {
   m_mesh->read(filename);
 }
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+String Arcane::mesh::PolyhedralMesh::
+name() const
+{
+  return m_mesh->name();
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer Arcane::mesh::PolyhedralMesh::
+dimension()
+{
+  return m_mesh->dimension();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer Arcane::mesh::PolyhedralMesh::
+nbNode()
+{
+  return m_mesh->nbNode();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer Arcane::mesh::PolyhedralMesh::
+nbEdge()
+{
+  return m_mesh->nbEdge();
+}
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer Arcane::mesh::PolyhedralMesh::
+nbFace()
+{
+  return m_mesh->nbFace();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer Arcane::mesh::PolyhedralMesh::
+nbCell()
+{
+  return m_mesh->nbCell();
+}
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer Arcane::mesh::PolyhedralMesh::
+nbItem(eItemKind ik)
+{
+  return m_mesh->nbItem(ik);
+}
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+
 
 #else // ARCANE_HAS_CUSTOM_MESH_TOOLS : empty class for compilation
 
@@ -112,6 +254,76 @@ read([[maybe_unused]] const String& filename)
   _errorEmptyMesh();
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+
+String Arcane::mesh::PolyhedralMesh::
+name() const
+{
+  _errorEmptyMesh();
+  return String{};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer Arcane::mesh::PolyhedralMesh::
+dimension()
+{
+  _errorEmptyMesh();
+  return -1;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer Arcane::mesh::PolyhedralMesh::
+nbNode()
+{
+  _errorEmptyMesh();
+  return -1;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer Arcane::mesh::PolyhedralMesh::
+nbEdge()
+{
+  _errorEmptyMesh();
+  return -1;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer Arcane::mesh::PolyhedralMesh::
+nbFace()
+{
+  _errorEmptyMesh();
+  return -1;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer Arcane::mesh::PolyhedralMesh::
+nbCell()
+{
+  _errorEmptyMesh();
+  return -1;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer Arcane::mesh::PolyhedralMesh::
+nbItem(eItemKind ik)
+{
+  _errorEmptyMesh();
+  return -1;
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
