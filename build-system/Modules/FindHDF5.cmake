@@ -18,26 +18,33 @@ set(CMAKE_MODULE_PATH ${_SAVED_CMAKE_MODULE_PATH})
 
 # Note: à partir de HDF5 1.10, il faudrait toujours
 # utiliser le mode configuration de HDF5 ce qui
-# permettrait de supprimer tout le code ci-dessous.
+# permettrait de supprimer tout le code qui n'utilise
+# pas de target
 if (TARGET hdf5::hdf5-shared)
-  message(STATUS "Found HDF5 via configuration")
+  set(_ARCCON_HDF5_TARGET hdf5::hdf5-shared)
+elseif(TARGET hdf5::hdf5-static)
+  set(_ARCCON_HDF5_TARGET hdf5::hdf5-static)
+endif()
+
+if (TARGET ${_ARCCON_HDF5_TARGET})
+  message(STATUS "Found HDF5 via configuration target=${_ARCCON_HDF5_TARGET}")
 
   # NOTE: il existe deux bibliothèques suivant si on
   # est en débug ou release. On les récupère via les
   # propriétés IMPORTED_LOCATION_{DEBUG|RELEASE|RELWITHDEBINFO}
 
   if (WIN32)
-    get_target_property(HDF5_LIBRARIES_DEBUG hdf5::hdf5-shared IMPORTED_IMPLIB_DEBUG)
-    get_target_property(HDF5_LIBRARIES_RELEASE hdf5::hdf5-shared IMPORTED_IMPLIB_RELEASE)
-    get_target_property(HDF5_LIBRARIES_RELWITHDEBINFO hdf5::hdf5-shared IMPORTED_IMPLIB_RELWITHDEBINFO)
+    get_target_property(HDF5_LIBRARIES_DEBUG ${_ARCCON_HDF5_TARGET} IMPORTED_IMPLIB_DEBUG)
+    get_target_property(HDF5_LIBRARIES_RELEASE ${_ARCCON_HDF5_TARGET} IMPORTED_IMPLIB_RELEASE)
+    get_target_property(HDF5_LIBRARIES_RELWITHDEBINFO ${_ARCCON_HDF5_TARGET} IMPORTED_IMPLIB_RELWITHDEBINFO)
   else()
-    get_target_property(HDF5_LIBRARIES_DEBUG hdf5::hdf5-shared IMPORTED_LOCATION_DEBUG)
-    get_target_property(HDF5_LIBRARIES_RELEASE hdf5::hdf5-shared IMPORTED_LOCATION_RELEASE)
-    get_target_property(HDF5_LIBRARIES_RELWITHDEBINFO hdf5::hdf5-shared IMPORTED_LOCATION_RELWITHDEBINFO)
+    get_target_property(HDF5_LIBRARIES_DEBUG ${_ARCCON_HDF5_TARGET} IMPORTED_LOCATION_DEBUG)
+    get_target_property(HDF5_LIBRARIES_RELEASE ${_ARCCON_HDF5_TARGET} IMPORTED_LOCATION_RELEASE)
+    get_target_property(HDF5_LIBRARIES_RELWITHDEBINFO ${_ARCCON_HDF5_TARGET} IMPORTED_LOCATION_RELWITHDEBINFO)
   endif()
 
-  get_target_property(HDF5_INCLUDE_DIRS hdf5::hdf5-shared INTERFACE_INCLUDE_DIRECTORIES)
-  get_target_property(HDF5_COMPILE_DEFINITIONS hdf5::hdf5-shared INTERFACE_COMPILE_DEFINITIONS)
+  get_target_property(HDF5_INCLUDE_DIRS ${_ARCCON_HDF5_TARGET} INTERFACE_INCLUDE_DIRECTORIES)
+  get_target_property(HDF5_COMPILE_DEFINITIONS ${_ARCCON_HDF5_TARGET} INTERFACE_COMPILE_DEFINITIONS)
   message(STATUS "HDF5_LIBRARIES_DEBUG = ${HDF5_LIBRARIES_DEBUG}")
   message(STATUS "HDF5_LIBRARIES_RELEASE = ${HDF5_LIBRARIES_RELEASE}")
   message(STATUS "HDF5_LIBRARIES_RELWITHDEBINFO = ${HDF5_LIBRARIES_RELWITHDEBINFO}")
@@ -66,6 +73,7 @@ if (TARGET hdf5::hdf5-shared)
     endif()
 
     arccon_register_package_library(HDF5 HDF5)
+    set(ARCCON_TARGET_HDF5 ${_ARCCON_HDF5_TARGET} CACHE STRING "Target for package HDF5" FORCE)
     set_property(TARGET arcconpkg_HDF5 PROPERTY INTERFACE_COMPILE_DEFINITIONS ${HDF5_COMPILE_DEFINITIONS})
   endif()
   return()
