@@ -64,4 +64,7 @@
    </refinement>
  </a-m-r-cartesian-mesh-tester>
 
+ <arcane-protections-reprises>
+   <service-protection name="ArcaneBasic2CheckpointWriter" />
+ </arcane-protections-reprises>
 </cas>
