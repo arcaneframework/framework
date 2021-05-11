@@ -222,7 +222,11 @@ extern "C++" ARCCORE_BASE_EXPORT String Platform::
 getCurrentDirectory()
 {
   char buf[4096];
-  ::getcwd(buf,4095);
+  char* c = ::getcwd(buf,4095);
+  if (!c){
+    std::cerr << "ERROR: Arccore::getCurrentDirectory() can not get current directory\n";
+    return std::string_view(".");
+  }
   return std::string_view(buf);
 }
 
