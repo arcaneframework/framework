@@ -158,6 +158,7 @@ add_executable({{code_name}} {{module_name}}Module.cc main.cc {{module_name}}_ax
 arcane_generate_axl({{module_name}})
 arcane_add_arcane_libraries_to_target({{code_name}})
 target_include_directories({{code_name}} PUBLIC . ${CMAKE_CURRENT_BINARY_DIR})
+configure_file({{code_name}}.config ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 ";
 
     static void ApplyTemplate(string string_template,TemplateContext context,string dirname,string filename)

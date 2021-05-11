@@ -1,8 +1,8 @@
 message(STATUS "Parsing '${CMAKE_CURRENT_SOURCE_DIR}' binary='${CMAKE_CURRENT_BINARY_DIR}'")
 
 set(PKGS MPI Lima)
-find_package(MPI)
-find_package(Lima)
+arcane_find_package(MPI)
+arcane_find_package(Lima)
 
 include(srcs.cmake)
 

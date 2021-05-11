@@ -1,5 +1,7 @@
 set(ARCANE_SOURCES
   ArcaneThread.h
+  ArcaneThreadMisc.h
+
   GlibThreadImplementation.cc
   GlibThreadMng.h
 

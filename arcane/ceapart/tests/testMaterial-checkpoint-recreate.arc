@@ -87,6 +87,7 @@
 
  <arcane-protections-reprises>
   <en-fin-de-calcul>true</en-fin-de-calcul>
+  <service-protection name="ArcaneBasic2CheckpointWriter" />
  </arcane-protections-reprises>
 
 </cas>

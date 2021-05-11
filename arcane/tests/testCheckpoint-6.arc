@@ -21,8 +21,7 @@
  </module-maitre>
 
  <arcane-protections-reprises>
-  <!-- <service-protection name="ArcaneBasicCheckpointWriter" /> -->
-  <service-protection name="ArcaneHdf5Checkpoint2" />
+  <service-protection name="ArcaneBasic2CheckpointWriter" />
   <periode>3</periode>
   <en-fin-de-calcul>false</en-fin-de-calcul>
  </arcane-protections-reprises>

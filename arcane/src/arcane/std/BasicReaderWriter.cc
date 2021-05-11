@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicReaderWriter.cc                                        (C) 2000-2019 */
+/* BasicReaderWriter.cc                                        (C) 2000-2021 */
 /*                                                                           */
 /* Lecture/Ecriture simple.                                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/ScopedPtr.h"
@@ -22,6 +20,9 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/IOException.h"
 #include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/JSONWriter.h"
+#include "arcane/utils/JSONReader.h"
+#include "arcane/utils/IDataCompressor.h"
 
 #include "arcane/XmlNode.h"
 #include "arcane/IXmlDocumentHolder.h"
@@ -43,9 +44,7 @@
 #include "arcane/VariableCollection.h"
 #include "arcane/IParallelReplication.h"
 #include "arcane/IVariableUtilities.h"
-
-#include "arcane/IDeflateService.h"
-#include "arcane/ServiceFinder2.h"
+#include "arcane/ServiceBuilder.h"
 
 #include "arcane/VerifierService.h"
 #include "arcane/IVariableMng.h"
@@ -66,6 +65,9 @@
 
 #include "arcane/std/TextReader.h"
 #include "arcane/std/TextWriter.h"
+#include "arcane/std/BasicReaderWriterDatabase.h"
+
+#include "arcane/std/ArcaneBasicCheckpoint_axl.h"
 
 #include <map>
 #include <set>
@@ -73,7 +75,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
+using impl::KeyValueTextReader;
+using impl::KeyValueTextWriter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -214,9 +219,37 @@ class BasicVariableMetaData
 
 namespace
 {
-String
-_getBasicVariableFile(const String& path,Int32 rank)
+String _getArcaneDBTag()
 {
+  return "ArcaneCheckpointRestartDataBase";
+}
+
+String
+_getOwnMetatadaFile(const String& path,Int32 rank)
+{
+  StringBuilder filename = path;
+  filename += "/own_metadata_";
+  filename += rank;
+  filename += ".txt";
+  return filename;
+}
+
+String
+_getArcaneDBFile(const String& path,Int32 rank)
+{
+  StringBuilder filename = path;
+  filename += "/arcane_db_n";
+  filename += rank;
+  filename += ".acr";
+  return filename;
+}
+
+String
+_getBasicVariableFile(Int32 version,const String& path,Int32 rank)
+{
+  if (version>=3){
+    return _getArcaneDBFile(path,rank);
+  }
   StringBuilder filename = path;
   filename += "/var___MAIN___";
   filename += rank;
@@ -236,11 +269,11 @@ _getBasicGroupFile(const String& path,const String& name,Int32 rank)
   return filename;
 }
 
-IDeflateService*
+Ref<IDataCompressor>
 _createDeflater(IApplication* app,const String& name)
 {
-  ServiceFinder2T<IDeflateService,IApplication> sf(app,app);
-  IDeflateService* bc = sf.create(name);
+  ServiceBuilder<IDataCompressor> sf(app);
+  Ref<IDataCompressor> bc = sf.createReference(app,name);
   return bc;
 }
 
@@ -285,18 +318,18 @@ class BasicGenericReader
 , public IGenericReader
 {
  public:
-  BasicGenericReader(IApplication* app,bool is_binary)
+  // Si 'version==-1', alors cela sera déterminé lors de
+  // l'initialisation.
+  BasicGenericReader(IApplication* app,Int32 version,Ref<KeyValueTextReader> text_reader)
   : TraceAccessor(app->traceMng()),
     m_application(app),
-    m_text_reader(nullptr),
-    m_is_binary(is_binary),
+    m_text_reader(text_reader),
     m_rank(A_NULL_RANK),
-    m_version(-1)
+    m_version(version)
   {
   }
   ~BasicGenericReader() override
   {
-    delete m_text_reader;
     for (auto x : m_variables_data_info )
       delete x.second;
   }
@@ -307,8 +340,7 @@ class BasicGenericReader
                      Int64Array& wanted_unique_ids) override;
  private:
   IApplication* m_application;
-  TextReader* m_text_reader;
-  bool m_is_binary;
+  Ref<KeyValueTextReader> m_text_reader;
   String m_path;
   Int32 m_rank;
   Int32 m_version;
@@ -324,18 +356,38 @@ class BasicGenericReader
 void BasicGenericReader::
 initialize(const String& path,Int32 rank)
 {
+  // Dans le cas de la version 1 ou 2, on ne peut pas créer le KeyValueTextReader
+  // avant de lire les 'OwnMetaData' car ce sont ces dernières qui contiennent
+  // le numéro de version.
+
   m_path = path;
   m_rank = rank;
 
-  StringBuilder filename = m_path;
-  filename += "/own_metadata_";
-  filename += rank;
-  filename += ".txt";
+  info(4) << "BasicGenericReader::initialize known_version=" << m_version;
 
-  info(4) << "Reading own metadata rank=" << rank << " file=" << filename;
+  ScopedPtrT<IXmlDocumentHolder> xdoc;
 
-  IApplication* app = m_application;
-  ScopedPtrT<IXmlDocumentHolder> xdoc(app->ioMng()->parseXmlFile(filename));
+  if (m_version>=3){
+    if (!m_text_reader.get())
+      ARCANE_FATAL("Null text reader");
+    // Si on connait déjà la version et qu'elle est supérieure ou égale à 3
+    // alors les informations sont dans la base de données. Dans ce cas on lit
+    // directement les infos depuis cette base.
+    String main_filename = _getBasicVariableFile(m_version,m_path,rank);
+    Int64 meta_data_size = 0;
+    String key_name = "Global:OwnMetadata";
+    m_text_reader->getExtents(key_name,Int64ArrayView(1,&meta_data_size));
+    UniqueArray<Byte> bytes(meta_data_size);
+    m_text_reader->read(key_name,bytes);
+    info(4) << "Reading own metadata rank=" << rank << " from database";
+    xdoc = IXmlDocumentHolder::loadFromBuffer(bytes,"OwnMetadata",traceMng());
+  }
+  else{
+    StringBuilder filename = _getOwnMetatadaFile(m_path,m_rank);
+    info(4) << "Reading own metadata rank=" << rank << " file=" << filename;
+    IApplication* app = m_application;
+    xdoc = app->ioMng()->parseXmlFile(filename);
+  }
   XmlNode root = xdoc->documentNode().documentElement();
   XmlNodeList variables_elem = root.children("variable-data");
   String deflater_name = root.attrValue("deflater-service");
@@ -348,13 +400,18 @@ initialize(const String& path,Int32 rank)
     // Version 2:
     // - taille des dimensions sur 64 bits
     m_version = 2;
+  else if (version_id=="3")
+    // Version 3:
+    // - taille des dimensions sur 64 bits
+    // - 1 seul fichier pour toutes les meta-données
+    m_version = 3;
   else
-    ARCANE_FATAL("Unsupported version '{0}' (max=2)",version_id);
+    ARCANE_FATAL("Unsupported version '{0}' (max=3)",version_id);
 
-  IDeflateService* deflater = nullptr;
-  if (!deflater_name.null()){
+  Ref<IDataCompressor> deflater;
+  if (!deflater_name.null())
     deflater = _createDeflater(m_application,deflater_name);
-  }
+
   for( Integer i=0, is=variables_elem.size(); i<is; ++i ){
     XmlNode n = variables_elem[i];
     String var_full_name = n.attrValue("full-name");
@@ -362,10 +419,16 @@ initialize(const String& path,Int32 rank)
     m_variables_data_info.insert(std::make_pair(var_full_name,vdi));
   }
 
-  String main_filename = _getBasicVariableFile(m_path,rank);
-  auto reader = new TextReader(main_filename,m_is_binary);
-  m_text_reader = reader;
-  reader->setDeflater(deflater);
+  if (!m_text_reader.get()){
+    String main_filename = _getBasicVariableFile(m_version,m_path,rank);
+    m_text_reader = makeRef(new KeyValueTextReader(main_filename,m_version));
+  }
+
+  // Il est possible qu'il y ait déjà un algorithme de compression spécifié.
+  // Il ne faut pas l'écraser si aucun n'est spécifié dans 'OwnMetadata'.
+  // (Normalement cela ne devrait pas arriver sauf incohérence).
+  if (deflater.get())
+    m_text_reader->setDataCompressor(deflater);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -388,10 +451,11 @@ _getVarInfo(const String& full_name)
 void BasicGenericReader::
 readData(const String& var_full_name,IData* data)
 {
-  TextReader* reader = m_text_reader;
+  KeyValueTextReader* reader = m_text_reader.get();
   String vname = var_full_name;
   VariableDataInfo* vdi = _getVarInfo(vname);
-  reader->setFileOffset(vdi->fileOffset());
+  if (m_version<3)
+    reader->setFileOffset(vdi->fileOffset());
 
   eDataType data_type = vdi->baseDataType();
   Int64 memory_size = vdi->memorySize();
@@ -400,24 +464,9 @@ readData(const String& var_full_name,IData* data)
   Integer nb_dimension = vdi->nbDimension();
   Int64 nb_base_element = vdi->nbBaseElement();
   bool is_multi_size = vdi->isMultiSize();
-  Int64UniqueArray extents;
-  if (m_version==1){
-    // Dans la version 1, les dimensions sont des 'Int32'
-    IntegerUniqueArray dims;
-    if (dimension_array_size>0){
-      dims.resize(dimension_array_size);
-      extents.resize(dimension_array_size);
-      reader->read(dims);
-    }
-    for( Integer i=0; i<dimension_array_size; ++i )
-      extents[i] = dims[i];
-  }
-  else{
-    if (dimension_array_size>0){
-      extents.resize(dimension_array_size);
-      reader->read(extents);
-    }
-  }
+  Int64UniqueArray extents(dimension_array_size);
+  reader->getExtents(var_full_name,extents);
+
   IDataFactoryMng* df = m_application->dataFactoryMng();
   Ref<ISerializedData> sd(df->createSerializedDataRef(data_type,memory_size,nb_dimension,nb_element,
                                                       nb_base_element,is_multi_size,extents));
@@ -430,11 +479,12 @@ readData(const String& var_full_name,IData* data)
   void* ptr = sd->bytes().data();
 
   bool print_values = false;
+  String key_name = var_full_name;
   if (storage_size!=0){
     eDataType base_data_type = sd->baseDataType();
     Real* real_ptr = (Real*)ptr;
     if (base_data_type==DT_Real){
-      reader->read(Span<Real>(real_ptr,nb_base_element));
+      reader->read(key_name,Span<Real>(real_ptr,nb_base_element));
       if (print_values){
         if (nb_base_element>1){
           info() << "VAR=" << var_full_name << " offset=" << vdi->fileOffset()
@@ -447,28 +497,28 @@ readData(const String& var_full_name,IData* data)
       }
     }
     else if (base_data_type==DT_Real2){
-      reader->read(Span<Real>(real_ptr,nb_base_element*2));
+      reader->read(key_name,Span<Real>(real_ptr,nb_base_element*2));
     }
     else if (base_data_type==DT_Real3){
-      reader->read(Span<Real>(real_ptr,nb_base_element*3));
+      reader->read(key_name,Span<Real>(real_ptr,nb_base_element*3));
     }
     else if (base_data_type==DT_Real2x2){
-      reader->read(Span<Real>(real_ptr,nb_base_element*4));
+      reader->read(key_name,Span<Real>(real_ptr,nb_base_element*4));
     }
     else if (base_data_type==DT_Real3x3){
-      reader->read(Span<Real>(real_ptr,nb_base_element*9));
+      reader->read(key_name,Span<Real>(real_ptr,nb_base_element*9));
     }
     else if (base_data_type==DT_Int16){
-      reader->read(Span<Int16>((Int16*)ptr,nb_base_element));
+      reader->read(key_name,Span<Int16>((Int16*)ptr,nb_base_element));
     }
     else if (base_data_type==DT_Int32){
-      reader->read(Span<Int32>((Int32*)ptr,nb_base_element));
+      reader->read(key_name,Span<Int32>((Int32*)ptr,nb_base_element));
     }
     else if (base_data_type==DT_Int64){
-      reader->read(Span<Int64>((Int64*)ptr,nb_base_element));
+      reader->read(key_name,Span<Int64>((Int64*)ptr,nb_base_element));
     }
     else if (base_data_type==DT_Byte){
-      reader->read(Span<Byte>((Byte*)ptr,storage_size));
+      reader->read(key_name,Span<Byte>((Byte*)ptr,storage_size));
     }
     else
       ARCANE_THROW(NotSupportedException,"Bad datatype {0}",base_data_type);
@@ -484,9 +534,26 @@ void BasicGenericReader::
 readItemGroup(const String& group_full_name,Int64Array& written_unique_ids,
               Int64Array& wanted_unique_ids)
 {
+  if (m_version>=3){
+    {
+      String written_uid_name = String("GroupWrittenUid:")+group_full_name;
+      Int64 nb_written_uid = 0;
+      m_text_reader->getExtents(written_uid_name,Int64ArrayView(1,&nb_written_uid));
+      written_unique_ids.resize(nb_written_uid);
+      m_text_reader->read(written_uid_name,written_unique_ids);
+    }
+    {
+      String wanted_uid_name = String("GroupWantedUid:")+group_full_name;
+      Int64 nb_wanted_uid = 0;
+      m_text_reader->getExtents(wanted_uid_name,Int64ArrayView(1,&nb_wanted_uid));
+      wanted_unique_ids.resize(nb_wanted_uid);
+      m_text_reader->read(wanted_uid_name,wanted_unique_ids);
+    }
+    return;
+  }
   info(5) << "READ GROUP " << group_full_name;
   String filename = _getBasicGroupFile(m_path,group_full_name,m_rank);
-  TextReader reader(filename,m_is_binary);
+  impl::TextReader reader(filename);
 
   {
     Integer nb_unique_id = 0;
@@ -535,12 +602,13 @@ class BasicGenericWriter
 , public IGenericWriter
 {
  public:
-  BasicGenericWriter(IApplication* app,bool is_binary,Int32 version)
+  BasicGenericWriter(IApplication* app,Int32 version,
+                     Ref<KeyValueTextWriter> text_writer)
   : TraceAccessor(app->traceMng()),
     m_application(app),
-    m_is_binary(is_binary),
     m_version(version),
-    m_rank(A_NULL_RANK)
+    m_rank(A_NULL_RANK),
+    m_text_writer(text_writer)
   {
   }
   ~BasicGenericWriter()
@@ -552,17 +620,19 @@ class BasicGenericWriter
  public:
   void initialize(const String& path,Int32 rank) override
   {
+    if (!m_text_writer)
+      ARCANE_FATAL("Null text writer");
     m_path = path;
     m_rank = rank;
-    String deflater_name = platform::getEnvironmentVariable("ARCANE_DEFLATER");
-    if (!deflater_name.null()){
-      m_write_deflater_name = deflater_name;
-      IDeflateService* bc = _createDeflater(m_application,m_write_deflater_name);
-      info() << "Use deflater name=" << deflater_name << " ptr=" << bc;
-      m_text_writer.setDeflater(bc);
+    // Permet de surcharger le service utilisé pour la compression
+    String data_compressor_name = platform::getEnvironmentVariable("ARCANE_DEFLATER");
+    if (!data_compressor_name.null()){
+      data_compressor_name = data_compressor_name + "DataCompressor";
+      auto bc = _createDeflater(m_application,data_compressor_name);
+      info() << "Use data_compressor name=" << data_compressor_name;
+      m_deflater = bc;
+      m_text_writer->setDataCompressor(bc);
     }
-    String filename = _getBasicVariableFile(path,rank);
-    m_text_writer.open(filename,m_is_binary);
   }
   void writeData(const String& var_full_name,const ISerializedData* sdata) override;
   void writeItemGroup(const String& group_full_name,Int64ConstArrayView written_unique_ids,
@@ -570,12 +640,11 @@ class BasicGenericWriter
   void endWrite() override;
  private:
   IApplication* m_application;
-  bool m_is_binary;
   Int32 m_version;
-  String m_write_deflater_name;
   String m_path;
   Int32 m_rank;
-  TextWriter m_text_writer;
+  Ref<IDataCompressor> m_deflater;
+  Ref<KeyValueTextWriter> m_text_writer;
   typedef std::map<String,VariableDataInfo*> VariableDataInfoMap;
   VariableDataInfoMap m_variables_data_info;
 };
@@ -588,7 +657,7 @@ writeData(const String& var_full_name,const ISerializedData* sdata)
 {
   //TODO: Verifier que initialize() a bien été appelé.
   auto var_data_info = new VariableDataInfo(var_full_name,sdata);
-  TextWriter* writer = &m_text_writer;
+  KeyValueTextWriter* writer = m_text_writer.get();
   var_data_info->setFileOffset(writer->fileOffset());
   m_variables_data_info.insert(std::make_pair(var_full_name,var_data_info));
   info(4) << " SDATA name=" << var_full_name << " nb_element=" << sdata->nbElement()
@@ -603,54 +672,40 @@ writeData(const String& var_full_name,const ISerializedData* sdata)
 
   // Si la variable est de type tableau à deux dimensions, sauve les
   // tailles de la deuxième dimension par élément.
-  {
-    Int64ConstArrayView extents = sdata->extents();
-    Integer dimension_array_size = extents.size();
-    if (dimension_array_size!=0){
-      String comment = String::format("Writing Dim1Size for '{0}'",var_full_name);
-      if (m_version==1){
-        UniqueArray<Integer> dims(dimension_array_size);
-        for( Integer i=0; i<dimension_array_size; ++i )
-          dims[i] = CheckedConvert::toInteger(extents[i]);
-        writer->write(comment,dims);
-      }
-      else
-        writer->write(comment,extents);
-    }
-  }
+  Int64ConstArrayView extents = sdata->extents();
+  writer->setExtents(var_full_name,extents);
 
   // Maintenant, sauve les valeurs si necessaire
   Int64 nb_base_element = sdata->nbBaseElement();
   if (nb_base_element!=0 && ptr){
-
-    String comment = String::format("Write Values for '{0}'",var_full_name);
+    String key_name = var_full_name;
     eDataType base_data_type = sdata->baseDataType();
     if (base_data_type==DT_Real){
-      writer->write(comment,Span<const Real>((const Real*)ptr,nb_base_element));
+      writer->write(key_name,Span<const Real>((const Real*)ptr,nb_base_element));
     }
     else if (base_data_type==DT_Real2){
-      writer->write(comment,Span<const Real>((const Real*)ptr,nb_base_element*2));
+      writer->write(key_name,Span<const Real>((const Real*)ptr,nb_base_element*2));
     }
     else if (base_data_type==DT_Real3){
-      writer->write(comment,Span<const Real>((const Real*)ptr,nb_base_element*3));
+      writer->write(key_name,Span<const Real>((const Real*)ptr,nb_base_element*3));
     }
     else if (base_data_type==DT_Real2x2){
-      writer->write(comment,Span<const Real>((const Real*)ptr,nb_base_element*4));
+      writer->write(key_name,Span<const Real>((const Real*)ptr,nb_base_element*4));
     }
     else if (base_data_type==DT_Real3x3){
-      writer->write(comment,Span<const Real>((const Real*)ptr,nb_base_element*9));
+      writer->write(key_name,Span<const Real>((const Real*)ptr,nb_base_element*9));
     }
     else if (base_data_type==DT_Int16){
-      writer->write(comment,Span<const Int16>((const Int16*)ptr,nb_base_element));
+      writer->write(key_name,Span<const Int16>((const Int16*)ptr,nb_base_element));
     }
     else if (base_data_type==DT_Int32){
-      writer->write(comment,Span<const Int32>((const Int32*)ptr,nb_base_element));
+      writer->write(key_name,Span<const Int32>((const Int32*)ptr,nb_base_element));
     }
     else if (base_data_type==DT_Int64){
-      writer->write(comment,Span<const Int64>((const Int64*)ptr,nb_base_element));
+      writer->write(key_name,Span<const Int64>((const Int64*)ptr,nb_base_element));
     }
     else if (base_data_type==DT_Byte){
-      writer->write(comment,Span<const Byte>((const Byte*)ptr,nb_base_element));
+      writer->write(key_name,Span<const Byte>((const Byte*)ptr,nb_base_element));
     }
     else
       ARCANE_THROW(NotSupportedException,"Bad datatype {0}",base_data_type);
@@ -664,21 +719,38 @@ void BasicGenericWriter::
 writeItemGroup(const String& group_full_name,Int64ConstArrayView written_unique_ids,
                Int64ConstArrayView wanted_unique_ids)
 {
+  if (m_version>=3){
+    // Sauve les informations du groupe la base de données (clé,valeur)
+    {
+      String written_uid_name = String("GroupWrittenUid:")+group_full_name;
+      Int64 nb_written_uid = written_unique_ids.size();
+      m_text_writer->setExtents(written_uid_name,Int64ConstArrayView(1,&nb_written_uid));
+      m_text_writer->write(written_uid_name,written_unique_ids);
+    }
+    {
+      String wanted_uid_name = String("GroupWantedUid:")+group_full_name;
+      Int64 nb_wanted_uid = wanted_unique_ids.size();
+      m_text_writer->setExtents(wanted_uid_name,Int64ConstArrayView(1,&nb_wanted_uid));
+      m_text_writer->write(wanted_uid_name,wanted_unique_ids);
+    }
+    return;
+  }
+
   String filename = _getBasicGroupFile(m_path,group_full_name,m_rank);
-  TextWriter writer(filename,m_is_binary);
+  impl::TextWriter writer(filename);
 
   // Sauve la liste des unique_ids écrits
   {
     Integer nb_unique_id = written_unique_ids.size();
-    writer.write("Nb written uniqueIds",IntegerConstArrayView(1,&nb_unique_id));
-    writer.write("Written UniqueIds",written_unique_ids);
+    writer.write(IntegerConstArrayView(1,&nb_unique_id));
+    writer.write(written_unique_ids);
   }
 
   // Sauve la liste des unique_ids souhaités par ce sous-domaine
   {
     Integer nb_unique_id = wanted_unique_ids.size();
-    writer.write("Nb wanted uniqueIds",IntegerConstArrayView(1,&nb_unique_id));
-    writer.write("Writing Wanted UniqueIds",wanted_unique_ids);
+    writer.write(IntegerConstArrayView(1,&nb_unique_id));
+    writer.write(wanted_unique_ids);
   }
 }
 
@@ -688,19 +760,15 @@ writeItemGroup(const String& group_full_name,Int64ConstArrayView written_unique_
 void BasicGenericWriter::
 endWrite()
 {
-  Int32 rank = m_rank;
-
-  StringBuilder filename = m_path;
-  filename += "/own_metadata_";
-  filename += rank;
-  filename += ".txt";
-
   IApplication* app = m_application;
   ScopedPtrT<IXmlDocumentHolder> xdoc(app->ressourceMng()->createXmlDocument());
   XmlNode doc = xdoc->documentNode();
   XmlElement root(doc,"variables-data");
-  if (!m_write_deflater_name.null())
-    root.setAttrValue("deflater-service",m_write_deflater_name);
+  IDataCompressor* dc = m_deflater.get();
+  if (dc){
+    root.setAttrValue("deflater-service",dc->name());
+    root.setAttrValue("min-compress-size",String::fromNumber(dc->minCompressSize()));
+  }
   root.setAttrValue("version",String::fromNumber(m_version));
   for( auto i : m_variables_data_info ){
     VariableDataInfo* vdi = i.second;
@@ -708,9 +776,19 @@ endWrite()
     e.setAttrValue("full-name",vdi->fullName());
     vdi->write(e);
   }
-  String fn = filename.toString();
-  ofstream ofile(fn.localstr());
-  app->ioMng()->writeXmlFile(xdoc.get(),filename);
+  if (m_version>=3){
+    // Sauve les méta-données dans la base de données.
+    UniqueArray<Byte> bytes;
+    xdoc->save(bytes);
+    Int64 length = bytes.length();
+    String key_name = "Global:OwnMetadata";
+    m_text_writer->setExtents(key_name,Int64ConstArrayView(1,&length));
+    m_text_writer->write(key_name,bytes);
+  }
+  else{
+    String filename = _getOwnMetatadaFile(m_path,m_rank);
+    app->ioMng()->writeXmlFile(xdoc.get(),filename);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -802,6 +880,11 @@ class BasicWriter
 
  public:
 
+  //! Positionne le service de compression. Doit être appelé avant initialize()
+  void setDataCompressor(Ref<IDataCompressor> data_compressor)
+  {
+    m_data_compressor = data_compressor;
+  }
   void initialize();
 
   void beginWrite(const VariableCollection& vars) override;
@@ -814,18 +897,21 @@ class BasicWriter
  private:
 
   bool m_want_parallel;
-  bool m_is_binary;
   bool m_is_gather;
+  Int32 m_version;
+
+  Ref<IDataCompressor> m_data_compressor;
+  Ref<KeyValueTextWriter> m_text_writer;
 
   std::map<ItemGroup,ParallelDataWriter*> m_parallel_data_writers;
   std::set<ItemGroup> m_written_groups;
 
-  IGenericWriter* m_global_writer;
+  ScopedPtrT<IGenericWriter> m_global_writer;
 
  private:
 
   void _directWriteVal(IVariable* v,IData* data);
-  void _writeVal(TextWriter* writer,VariableDataInfo* data_info,
+  void _writeVal(impl::TextWriter* writer,VariableDataInfo* data_info,
                  const ISerializedData* sdata);
 
   ParallelDataWriter* _getWriter(IVariable* var);
@@ -839,11 +925,9 @@ BasicWriter(IApplication* app,IParallelMng* pm,const String& path,
             eOpenMode open_mode,Integer version,bool want_parallel)
 : BasicReaderWriterCommon(app,pm,path,open_mode)
 , m_want_parallel(want_parallel)
-, m_is_binary(true)
 , m_is_gather(false)
-, m_global_writer(nullptr)
+, m_version(version)
 {
-  m_global_writer = new BasicGenericWriter(app,m_is_binary,version);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -852,7 +936,6 @@ BasicWriter(IApplication* app,IParallelMng* pm,const String& path,
 BasicWriter::
 ~BasicWriter()
 {
-  delete m_global_writer;
   for( auto i : m_parallel_data_writers )
     delete i.second;
 }
@@ -863,10 +946,16 @@ BasicWriter::
 void BasicWriter::
 initialize()
 {
-  if (m_verbose_level>0)
-    info() << "** OPEN MODE = " << m_open_mode;
+  Int32 rank = m_parallel_mng->commRank();
   if (m_open_mode==OpenModeTruncate && m_parallel_mng->isMasterIO())
     platform::recursiveCreateDirectory(m_path);
+  m_parallel_mng->barrier();
+  String filename = _getBasicVariableFile(m_version,m_path,rank);
+  m_text_writer = makeRef(new KeyValueTextWriter(filename,m_version));
+  m_text_writer->setDataCompressor(m_data_compressor);
+  m_global_writer = new BasicGenericWriter(m_application,m_version,m_text_writer);
+  if (m_verbose_level>0)
+    info() << "** OPEN MODE = " << m_open_mode;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -939,7 +1028,7 @@ void BasicWriter::
 write(IVariable* var,IData* data)
 {
   if (var->isPartial()){
-    info() << "** WARNING: partial variable not implemented in BasicReaderWriter";
+    info() << "** WARNING: partial variable not implemented in BasicWriter";
     return;
   }
   _directWriteVal(var,data);
@@ -951,10 +1040,21 @@ write(IVariable* var,IData* data)
 void BasicWriter::
 setMetaData(const String& meta_data)
 {
-  Int32 my_rank = m_parallel_mng->commRank();
-  String filename = _getMetaDataFileName(my_rank);
-  ofstream ofile(filename.localstr());
-  meta_data.writeBytes(ofile);
+  // Dans la version 3, les méta-données de la protection sont dans la
+  // base de données.
+  if (m_version>=3){
+    Span<const Byte> bytes = meta_data.utf8();
+    Int64 length = bytes.length();
+    String key_name = "Global:CheckpointMetadata";
+    m_text_writer->setExtents(key_name,Int64ConstArrayView(1,&length));
+    m_text_writer->write(key_name,bytes);
+  }
+  else{
+    Int32 my_rank = m_parallel_mng->commRank();
+    String filename = _getMetaDataFileName(my_rank);
+    ofstream ofile(filename.localstr());
+    meta_data.writeBytes(ofile);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -976,11 +1076,33 @@ endWrite()
 {
   IParallelMng* pm = m_parallel_mng;
   if (pm->isMasterIO()){
-    StringBuilder filename = m_path;
-    filename += "/infos.txt";
-    String fn = filename.toString();
-    ofstream ofile(fn.localstr());
-    ofile << pm->commSize() << '\n';
+    Int64 nb_part = pm->commSize();
+    if (m_version>=3){
+      // Sauvegarde les informations au format JSON
+      JSONWriter jsw;
+      {
+        JSONWriter::Object main_object(jsw);
+        jsw.writeKey(_getArcaneDBTag());
+        {
+          JSONWriter::Object db_object(jsw);
+          jsw.write("Version",(Int64)m_version);
+          jsw.write("NbPart",nb_part);
+          jsw.write("DataCompressor",(m_data_compressor.get()) ? m_data_compressor->name() : String());
+        }
+      }
+      StringBuilder filename = m_path;
+      filename += "/arcane_acr_db.json";
+      String fn = filename.toString();
+      ofstream ofile(fn.localstr());
+      ofile << jsw.getBuffer();
+    }
+    else{
+      StringBuilder filename = m_path;
+      filename += "/infos.txt";
+      String fn = filename.toString();
+      ofstream ofile(fn.localstr());
+      ofile << nb_part << '\n';
+    }
   }
   m_global_writer->endWrite();
 }
@@ -1037,7 +1159,7 @@ class BasicReader
 
   bool m_want_parallel;
   Integer m_nb_written_part;
-  bool m_is_binary;
+  Int32 m_version;
 
   Int32 m_first_rank_to_read;
   Int32 m_nb_rank_to_read;
@@ -1046,6 +1168,8 @@ class BasicReader
   std::map<String,ParallelDataReader*> m_parallel_data_readers;
   UniqueArray<IGenericReader*> m_global_readers;
   IItemGroupFinder* m_item_group_finder;
+  Ref<KeyValueTextReader> m_forced_rank_to_read_text_reader; //!< Lecteur pour le premier rang à lire.
+  Ref<IDataCompressor> m_data_compressor;
 
  private:
 
@@ -1065,7 +1189,7 @@ BasicReader(IApplication* app,IParallelMng* pm,Int32 forced_rank_to_read,
 : BasicReaderWriterCommon(app,pm,path,BasicReaderWriterCommon::OpenModeRead)
 , m_want_parallel(want_parallel)
 , m_nb_written_part(0)
-, m_is_binary(true)
+, m_version(-1)
 , m_first_rank_to_read(0)
 , m_nb_rank_to_read(0)
 , m_forced_rank_to_read(forced_rank_to_read)
@@ -1079,6 +1203,56 @@ BasicReader(IApplication* app,IParallelMng* pm,Int32 forced_rank_to_read,
 void BasicReader::
 initialize()
 {
+  IParallelMng* pm = m_parallel_mng;
+  // Si un fichier 'arcane_acr_db.json' existe alors on lit les informations
+  // de ce fichier pour détecter entre autre le numéro de version. Il faut
+  // le faire avant de lire les informations telles que les méta-données
+  // de la protection car l'emplacement des ces dernières dépend de la version
+  String db_filename = String::concat(m_path,"/arcane_acr_db.json");
+  Int32 has_db_file = 0;
+  {
+    if (pm->isMasterIO())
+      has_db_file = platform::isFileReadable(db_filename) ? 1 : 0;
+    pm->broadcast(Int32ArrayView(1,&has_db_file),pm->masterIORank());
+  }
+  String data_compressor_name;
+  if (has_db_file){
+    UniqueArray<Byte> bytes;
+    pm->ioMng()->collectiveRead(db_filename,bytes,false);
+    JSONDocument json_doc;
+    json_doc.parse(bytes,db_filename);
+    JSONValue root = json_doc.root();
+    JSONValue jv_arcane_db = root.expectedChild(_getArcaneDBTag());
+    m_version = jv_arcane_db.expectedChild("Version").valueAsInt32();
+    m_nb_written_part = jv_arcane_db.expectedChild("NbPart").valueAsInt32();
+    data_compressor_name = jv_arcane_db.expectedChild("DataCompressor").valueAsString();
+    info() << "Begin read using database version=" << m_version
+           << " nb_part=" << m_nb_written_part
+           << " compressor=" << data_compressor_name;
+  }
+  else{
+    // Ancien format
+    // Le proc maitre lit le fichier 'infos.txt' et envoie les informations
+    // aux autres. Ce format ne permet d'avoir que le nombre de parties
+    // comme information.
+    if (pm->isMasterIO()){
+      Integer nb_part = 0;
+      String filename = String::concat(m_path,"/infos.txt");
+      ifstream ifile(filename.localstr());
+      ifile >> nb_part;
+      info(4) << "** NB PART=" << nb_part;
+      m_nb_written_part = nb_part;
+    }
+    pm->broadcast(Int32ArrayView(1,&m_nb_written_part),pm->masterIORank());
+  }
+  if (m_version>=3){
+    String main_filename = _getBasicVariableFile(m_version,m_path,m_forced_rank_to_read);
+    m_forced_rank_to_read_text_reader = makeRef(new KeyValueTextReader(main_filename,m_version));
+    if (!data_compressor_name.empty()){
+      Ref<IDataCompressor> dc = _createDeflater(m_application,data_compressor_name);
+      m_forced_rank_to_read_text_reader->setDataCompressor(dc);
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1271,12 +1445,19 @@ fillMetaData(ByteArray& bytes)
   Int32 rank = m_parallel_mng->commRank();
   if (m_forced_rank_to_read>=0)
     rank = m_forced_rank_to_read;
-  String filename = _getMetaDataFileName(rank);
-  info(4) << "Reading metadata file=" << filename;
-  ifstream ifile(filename.localstr());
-  Int64 file_length = platform::getFileLength(filename);
-  bytes.resize(file_length);
-  ifile.read((char*)bytes.data(),file_length);
+  if (m_version>=3){
+    Int64 meta_data_size = 0;
+    String key_name = "Global:CheckpointMetadata";
+    info(4) << "Reading checkpoint metadata from database";
+    m_forced_rank_to_read_text_reader->getExtents(key_name,Int64ArrayView(1,&meta_data_size));
+    bytes.resize(meta_data_size);
+    m_forced_rank_to_read_text_reader->read(key_name,bytes);
+  }
+  else{
+    String filename = _getMetaDataFileName(rank);
+    info(4) << "Reading checkpoint metadata file=" << filename;
+    platform::readAllFile(filename,false,bytes);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1336,7 +1517,18 @@ _setRanksToRead()
 IGenericReader* BasicReader::
 _readOwnMetaDataAndCreateReader(Int32 rank)
 {
-  auto r = new BasicGenericReader(m_application,m_is_binary);
+  String main_filename = _getBasicVariableFile(m_version,m_path,rank);
+  Ref<KeyValueTextReader> text_reader;
+  if (m_version>=3){
+    // Si le rang est le même que m_forced_rank_to_read, alors peut réutiliser
+    // le lecteur déjà créé.
+    if (rank==m_forced_rank_to_read)
+      text_reader = m_forced_rank_to_read_text_reader;
+    else
+      text_reader = makeRef(new KeyValueTextReader(main_filename,m_version));
+  }
+
+  auto r = new BasicGenericReader(m_application,m_version,text_reader);
   r->initialize(m_path,rank);
   return r;
 }
@@ -1358,21 +1550,11 @@ void BasicReader::
 beginRead(const DataReaderInfo& infos)
 {
   ARCANE_UNUSED(infos);
-  info() << "** ** BEGIN READ";
-  IParallelMng* pm = m_parallel_mng;
-  if (pm->isMasterIO()){
-    String filename = String::concat(m_path,"/infos.txt");
-    ifstream ifile(filename.localstr());
-    Integer nb_part = 0;
-    ifile >> nb_part;
-    info() << "** NB PART=" << nb_part;
-    m_nb_written_part = nb_part;
-  }
-  pm->broadcast(IntegerArrayView(1,&m_nb_written_part),pm->masterIORank());
+  info(4) << "** ** BEGIN READ";
 
   _setRanksToRead();
   info(4) << "RanksToRead: FIRST TO READ =" << m_first_rank_to_read
-          << " nb=" << m_nb_rank_to_read;
+          << " nb=" << m_nb_rank_to_read << " version=" << m_version;
   m_global_readers.resize(m_nb_rank_to_read);
   for( Integer i=0; i<m_nb_rank_to_read; ++i )
     m_global_readers[i] = _readOwnMetaDataAndCreateReader(i+m_first_rank_to_read);
@@ -1383,16 +1565,36 @@ beginRead(const DataReaderInfo& infos)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Protection/reprise basique (version 1).
  */
 class ArcaneBasicCheckpointService
-: public CheckpointService
+: public ArcaneArcaneBasicCheckpointObject
 {
+ public:
+  struct MetaData
+  {
+    int m_version = -1;
+    static MetaData parse(const String& meta_data,ITraceMng* tm)
+    {
+      auto doc_ptr = IXmlDocumentHolder::loadFromBuffer(meta_data.bytes(),"MetaData",tm);
+      ScopedPtrT<IXmlDocumentHolder> xml_doc(doc_ptr);
+      XmlNode root = xml_doc->documentNode().documentElement();
+      Integer version = root.attr("version").valueAsInteger();
+      if (version!=1)
+        ARCANE_THROW(ReaderWriterException,"Bad checkpoint metadata version '{0}' (expected 1)",version);
+      MetaData md;
+      md.m_version = version;
+      return md;
+    }
+  };
  public:
 
   explicit ArcaneBasicCheckpointService(const ServiceBuildInfo& sbi)
-  : CheckpointService(sbi), m_write_index(0), m_writer(nullptr), m_reader(nullptr)
+  : ArcaneArcaneBasicCheckpointObject(sbi), m_write_index(0), m_writer(nullptr), m_reader(nullptr)
   { }
   IDataWriter* dataWriter() override { return m_writer; }
   IDataReader* dataReader() override { return m_reader; }
@@ -1429,7 +1631,6 @@ class ArcaneBasicCheckpointService
   {
     return Directory(baseDirectoryName());
   }
-  void _parseMetaData(const String& meta_data);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -1455,27 +1656,13 @@ class ArcaneBasic2CheckpointService
 /*---------------------------------------------------------------------------*/
 
 void ArcaneBasicCheckpointService::
-_parseMetaData(const String& meta_data)
-{
-  IIOMng* io_mng = subDomain()->ioMng();
-  ScopedPtrT<IXmlDocumentHolder> xml_doc(io_mng->parseXmlBuffer(meta_data.utf8(),"MetaData"));
-  XmlNode root = xml_doc->documentNode().documentElement();
-  Integer version = root.attr("version").valueAsInteger();
-  if (version!=1){
-    ARCANE_THROW(ReaderWriterException,"Bad version '{0}' (expected 1)",version);
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ArcaneBasicCheckpointService::
 notifyBeginRead()
 {
-  String meta_data = readerMetaData();
-  _parseMetaData(meta_data);
+  String meta_data_str = readerMetaData();
+  MetaData md = MetaData::parse(meta_data_str,traceMng());
 
   info() << " GET META DATA READER " << readerMetaData()
+         << " version=" << md.m_version
          << " filename=" << fileName();
 
   String filename = fileName();
@@ -1523,13 +1710,29 @@ notifyBeginWrite()
   }
   filename = filename + "_n" + write_index;
 
+  Int32 version = 2;
+  Ref<IDataCompressor> data_compressor;
+  if (options()){
+    version = options()->formatVersion();
+    // N'utilise la compression qu'à partir de la version 3 car cela est
+    // incompatible avec les anciennes versions
+    if (version>=3){
+      data_compressor = options()->dataCompressor.instanceRef();
+    }
+  }
+
+  info() << "Writing checkpoint with 'ArcaneBasicCheckpointService'"
+         << " version=" << version
+         << " filename='" << filename << "'\n";
+
   platform::recursiveCreateDirectory(filename);
 
   IParallelMng* pm = subDomain()->parallelMng();
   IApplication* app = subDomain()->application();
   bool want_parallel = pm->isParallel();
   want_parallel = false;
-  m_writer = new BasicWriter(app,pm,filename,open_mode,2,want_parallel);
+  m_writer = new BasicWriter(app,pm,filename,open_mode,version,want_parallel);
+  m_writer->setDataCompressor(data_compressor);
   m_writer->initialize();
 }
 
@@ -1540,8 +1743,10 @@ void ArcaneBasicCheckpointService::
 notifyEndWrite()
 {
   OStringStream ostr;
-  ostr() << "<infos version='1'>\n";
-  ostr() << "</infos>\n";
+  ostr() << "<infos";
+  const int meta_data_version = 1;
+  ostr() << " version='" << meta_data_version << "'";
+  ostr() << "/>\n";
   setReaderMetaData(ostr.str());
   ++m_write_index;
   delete m_writer;
@@ -1589,23 +1794,7 @@ class ArcaneBasic2CheckpointReaderService
     info() << "FILE_NAME is " << buf;
     return buf;
   }
-  void _parseMetaData(const String& meta_data);
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ArcaneBasic2CheckpointReaderService::
-_parseMetaData(const String& meta_data)
-{
-  auto doc_ptr = IXmlDocumentHolder::loadFromBuffer(meta_data.bytes(),"MetaData",traceMng());
-  ScopedPtrT<IXmlDocumentHolder> xml_doc(doc_ptr);
-  XmlNode root = xml_doc->documentNode().documentElement();
-  Integer version = root.attr("version").valueAsInteger();
-  if (version!=1){
-    ARCANE_THROW(ReaderWriterException,"Bad version '{0}' (expected 1)",version);
-  }
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1614,10 +1803,12 @@ void ArcaneBasic2CheckpointReaderService::
 notifyBeginRead(const CheckpointReadInfo& cri)
 {
   const CheckpointInfo& ci = cri.checkpointInfo();
-  String reader_meta_data = ci.readerMetaData();
-  _parseMetaData(reader_meta_data);
+  String reader_meta_data_str = ci.readerMetaData();
+  auto md = ArcaneBasicCheckpointService::MetaData::parse(reader_meta_data_str,traceMng());
 
-  info() << "Basic2CheckpointReader GET META DATA READER " << reader_meta_data;
+  info() << "Basic2CheckpointReader GET META DATA READER " << reader_meta_data_str
+         << " version=" << md.m_version;
+
 
   Directory dump_dir(ci.directory());
   String filename = dump_dir.file(_defaultFileName(ci));
@@ -1795,7 +1986,7 @@ ARCANE_REGISTER_SERVICE(ArcaneBasicVerifierService2,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

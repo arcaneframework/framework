@@ -56,10 +56,14 @@ class ARCANE_UTILS_EXPORT JSONValue
   StringView valueAsString() const;
   Real valueAsReal() const;
   Int64 valueAsInt64() const;
+  Int32 valueAsInt32() const;
   JSONValueList valueAsArray() const;
  public:
   JSONKeyValue keyValueChild(StringView name) const;
+  //! Valeur fille de nom \a name. Retourne une valeur nulle si non trouvé.
   JSONValue child(StringView name) const;
+  //! Valeur fille de nom \a name. Lance une exception si non trouvé.
+  JSONValue expectedChild(StringView name) const;
   // Liste des objects fils de cet objet. L'instance doit être un objet
   JSONValueList children() const;
   JSONKeyValueList keyValueChildren() const;
@@ -173,6 +177,10 @@ class ARCANE_UTILS_EXPORT JSONDocument
   void parse(Span<const Byte> bytes);
   //! Lit le fichier au format UTF-8.
   void parse(Span<const std::byte> bytes);
+  //! Lit le fichier au format UTF-8.
+  void parse(Span<const Byte> bytes,StringView file_name);
+  //! Lit le fichier au format UTF-8.
+  void parse(Span<const std::byte> bytes,StringView file_name);
   //! Elément racine
   JSONValue root() const;
  private:

@@ -2,7 +2,7 @@
 <cas codename="ArcaneTest" xml:lang="fr" codeversion="1.0">
  <arcane>
   <titre>Test Protections/Reprises</titre>
-  <description>Test des protections/reprise avec le interne Arcane (Version 2)</description>
+  <description>Test des protections/reprise avec le interne Arcane (Version 1)</description>
   <boucle-en-temps>BasicLoop</boucle-en-temps>
   <modules>
    <module name="ArcaneCheckpoint" actif="true" />
@@ -22,7 +22,8 @@
 
  <arcane-protections-reprises>
    <service-protection name="ArcaneBasic2CheckpointWriter">
-     <format-version>2</format-version>
+     <format-version>3</format-version>
+     <data-compressor name="LZ4DataCompressor" />
    </service-protection>
    <periode>3</periode>
    <en-fin-de-calcul>false</en-fin-de-calcul>

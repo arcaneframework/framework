@@ -6,7 +6,7 @@ if(NOT ARCANE_USE_MPC)
 endif()
 
 foreach(package ${PKGS})
-  find_package(${package})
+  arcane_find_package(${package})
 endforeach()
 
 # Pour MEDFile, il faut HDF5 mais le find_package fait planter CMake (avec MED 4.0.0)
@@ -14,7 +14,7 @@ endforeach()
 # est trouvé
 if(HDF5_FOUND)
   list(APPEND PKGS MEDFile)
-  find_package(MEDFile QUIET)
+  arcane_find_package(MEDFile QUIET)
 endif()
 
 include(srcs.cmake)

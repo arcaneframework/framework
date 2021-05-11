@@ -2,6 +2,8 @@ set(ARCANE_SOURCES
   ArcaneStdRegisterer.cc
   ArcaneStdRegisterer.h
   BasicReaderWriter.cc
+  BasicReaderWriterDatabase.cc
+  BasicReaderWriterDatabase.h
   ParallelDataReader.cc
   ParallelDataReader.h
   ParallelDataWriter.cc
@@ -78,6 +80,7 @@ set(AXL_FILES
   Hdf5VariableWriter
   Hdf5MpiReaderWriter
   EnsightHdfPostProcessor
+  ArcaneBasicCheckpoint
   ArcaneLoadBalance
   Ensight7PostProcessor
   ArcaneVerifier

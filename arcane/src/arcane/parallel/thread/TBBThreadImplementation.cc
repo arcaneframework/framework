@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TBBThreadImplementation.cc                                  (C) 2000-2020 */
+/* TBBThreadImplementation.cc                                  (C) 2000-2021 */
 /*                                                                           */
 /* Implémentation des threads utilisant TBB (Intel Threads Building Blocks). */
 /*---------------------------------------------------------------------------*/
@@ -20,6 +20,8 @@
 
 #include "arcane/FactoryService.h"
 #include "arcane/Concurrency.h"
+
+#include "arcane/parallel/thread/ArcaneThreadMisc.h"
 
 #include <tbb/tbb_stddef.h>
 #include <tbb/spin_mutex.h>
@@ -167,7 +169,7 @@ class TBBBarrier
 
       int count = 1;
       while (m_timestamp==ts){
-        __TBB_Pause(count);
+        arcaneDoCPUPause(count);
         if (count<200)
           count *= 2;
         else{

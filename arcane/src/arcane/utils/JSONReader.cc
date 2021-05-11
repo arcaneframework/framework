@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* JSONReader.cc                                               (C) 2000-2019 */
+/* JSONReader.cc                                               (C) 2000-2021 */
 /*                                                                           */
 /* Lecteur au format JSON.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -14,6 +14,7 @@
 #include "arcane/utils/JSONReader.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/CheckedConvert.h"
 
 #define RAPIDJSON_HAS_STDSTRING 1
 #include "arcane/utils/internal/json/rapidjson/document.h"
@@ -135,6 +136,16 @@ valueAsInt64() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Int32 JSONValue::
+valueAsInt32() const
+{
+  Int64 v = valueAsInt64();
+  return CheckedConvert::toInt32(v);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Real JSONValue::
 valueAsReal() const
 {
@@ -176,6 +187,18 @@ JSONValue JSONValue::
 child(StringView name) const
 {
   return keyValueChild(name).value();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+JSONValue JSONValue::
+expectedChild(StringView name) const
+{
+  JSONKeyValue k = keyValueChild(name);
+  if (!k)
+    ARCANE_FATAL("No key '{0}' found in json document",name);
+  return k.value();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -290,18 +313,63 @@ JSONDocument::
   delete m_p;
 }
 
+namespace
+{
+using namespace rapidjson;
+
+const char*
+_getErrorCodeString(ParseErrorCode c)
+{
+  switch(c) {
+  case kParseErrorNone: return "No error";
+  case kParseErrorDocumentEmpty: return "The document is empty";
+  case kParseErrorDocumentRootNotSingular: return "The document root must not follow by other values";
+  case kParseErrorValueInvalid: return "Invalid value";
+  case kParseErrorObjectMissName: return "Missing a name for object member";
+  case kParseErrorObjectMissColon:  return "Missing a colon after a name of object member";
+  case kParseErrorObjectMissCommaOrCurlyBracket: return "Missing a comma or '}' after an object member";
+  case kParseErrorArrayMissCommaOrSquareBracket: return "Missing a comma or ']' after an array element";
+  case kParseErrorStringUnicodeEscapeInvalidHex: return "Incorrect hex digit after \\u escape in string";
+  case kParseErrorStringUnicodeSurrogateInvalid: return "The surrogate pair in string is invalid";
+  case kParseErrorStringEscapeInvalid: return "Invalid escape character in string";
+  case kParseErrorStringMissQuotationMark: return "Missing a closing quotation mark in string";
+  case kParseErrorStringInvalidEncoding: return "Invalid encoding in string";
+  case kParseErrorNumberTooBig: return "Number too big to be stored in double";
+  case kParseErrorNumberMissFraction: return "Miss fraction part in number";
+  case kParseErrorNumberMissExponent: return "Miss exponent in number";
+  case kParseErrorTermination: return "Parsing was terminated";
+  case kParseErrorUnspecificSyntaxError: return "Unspecific syntax error";
+  default:
+    return "Unknown";
+  }
+  return "Unknown";
+}
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void JSONDocument::
+parse(Span<const std::byte> bytes,StringView filename)
+{
+  using namespace rapidjson;
+  Document& d = m_p->m_document;
+  ParseResult r = d.Parse((const char*)bytes.data(),bytes.size());
+  if (d.HasParseError()){
+    std::cout << "ERROR: " << d.GetParseError() << "\n";
+    ARCANE_FATAL("Parsing error file='{0}' ret={1} position={2} message='{3}'",
+                 filename,d.GetParseError(),
+                 r.Offset(),_getErrorCodeString(r.Code()));
+  }
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void JSONDocument::
 parse(Span<const std::byte> bytes)
 {
-  rapidjson::Document& d = m_p->m_document;
-  d.Parse((const char*)bytes.data(),bytes.size());
-  if (d.HasParseError()){
-    std::cout << "ERROR: " << d.GetParseError() << "\n";
-    ARCANE_FATAL("Parsing error ret={0}",d.GetParseError());
-  }
+  parse(bytes,"(Unknown)");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -311,6 +379,15 @@ void JSONDocument::
 parse(Span<const Byte> bytes)
 {
   parse(asBytes(bytes));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void JSONDocument::
+parse(Span<const Byte> bytes,StringView filename)
+{
+  parse(asBytes(bytes),filename);
 }
 
 /*---------------------------------------------------------------------------*/

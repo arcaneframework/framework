@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TextReader.h                                                (C) 2000-2018 */
+/* TextReader.h                                                (C) 2000-2021 */
 /*                                                                           */
 /* Ecrivain de données.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -17,24 +17,32 @@
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/String.h"
 
-#include <fstream>
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-class IDeflateService;
+class IDataCompressor;
+}
+
+namespace Arcane::impl
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \internal
+ * \brief Classe d'écriture d'un fichier texte pour les protections/reprises
+ */
 class TextReader
 {
+  class Impl;
  public:
 
-  explicit TextReader(const String& filename,bool is_binary);
+  explicit TextReader(const String& filename);
+  TextReader(const TextReader& rhs) = delete;
   ~TextReader();
+  TextReader& operator=(const TextReader& rhs) = delete;
 
  public:
 
@@ -47,15 +55,14 @@ class TextReader
   void read(Span<Byte> values);
 
  public:
-  const String& fileName() const { return m_filename; }
-  void setFileOffset(Int64 v) { m_istream.seekg(v,ios::beg); }
-  void setDeflater(IDeflateService* ds) { m_deflater = ds; }
+  String fileName() const;
+  void setFileOffset(Int64 v);
+  void setDataCompressor(Ref<IDataCompressor> ds);
+  Ref<IDataCompressor> dataCompressor() const;
+  ifstream& stream();
+  Int64 fileLength() const;
  private:
-  String m_filename;
-  ifstream m_istream;
-  Integer m_current_line;
-  bool m_is_binary;
-  IDeflateService* m_deflater;
+  Impl* m_p;
  private:
   void _removeComments();
   Integer _getInteger();
@@ -70,7 +77,7 @@ class TextReader
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // End namespace Arcane::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

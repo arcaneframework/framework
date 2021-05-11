@@ -1,4 +1,44 @@
-﻿
+﻿# Ce fichier contient un ensemble de fonctions et macros pour Arcane
+
+# ----------------------------------------------------------------------------
+# Macro pour faire un find_package() de manière optionnel.
+#
+# Le but est de pouvoir désactiver automatiquement tous les packages
+# optionnel si demandé. Cela est utile par exemple si on veut garantir
+# qu'on ne va pas ajouter des packages trouvés automatiquement mais
+# non demandés.
+#
+# Si la variable ARCANE_NO_DEFAULT_PACKAGE vaut TRUE, alors les packages
+# non requis seront indisponibles par défaut. Pour que ces packages
+# soient trouvés, il faut qu'ils soient dans la liste
+# ARCANE_REQUIRED_PACKAGE_LIST et dans ce cas le package est requis.
+#
+# NOTE: il faut que ce soit une macro et pas une fonction sinon les
+# résultats du find_package() ne sont pas transmis à l'appelant.
+macro(arcane_find_package package_name)
+  set(__arcane_disable_package false)
+  set(__arcane_required_package false)
+  if (ARCANE_NO_DEFAULT_PACKAGE)
+    # Si pas de package par défaut, alors il faut explicitement lister
+    # tous les packages dans la variable ARCANE_REQUIRED_PACKAGE_LIST
+    if (${package_name} IN_LIST ARCANE_REQUIRED_PACKAGE_LIST)
+      set(__arcane_required_package true)
+    else()
+      message(STATUS "Disabling package '${package_name}' because variable ARCANE_NO_DEFAULT_PACKAGE is set")
+      set(__arcane_disable_package true)
+    endif()
+  endif()
+  if(__arcane_disable_package)
+    set(CMAKE_DISABLE_FIND_PACKAGE_${package_name} TRUE)
+  endif()
+  find_package(${package_name} ${ARGN})
+  if(__arcane_required_package)
+    if(NOT ${package_name}_FOUND)
+      message(FATAL_ERROR "Required package '${package_name}' is not available")
+    endif()
+  endif()
+endmacro()
+
 # ----------------------------------------------------------------------------
 # Macro pour ajouter des fichiers 'axl' à la cible \a target.
 #
@@ -223,7 +263,11 @@ function(arcane_add_arccon_packages target visibility)
   # _RPATH_LIST contiendra la liste des répertoires contenant les bibliothèques des packages
   set(_RPATH_LIST)
   foreach(package ${ARGN})
-    set(_PKG arccon::${package})
+    if (DEFINED ARCCON_TARGET_${package})
+      set(_PKG ${ARCCON_TARGET_${package}})
+    else()
+      set(_PKG arccon::${package})
+    endif()
     #message(STATUS "Check add package '${_PKG}'")
     if (TARGET ${_PKG})
       #message(STATUS "Add package '${_PKG}'")

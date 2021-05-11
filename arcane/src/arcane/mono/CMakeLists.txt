@@ -1,5 +1,5 @@
 set(PKGS MonoEmbed)
-find_package(MonoEmbed)
+arcane_find_package(MonoEmbed)
 if(NOT TARGET arcane::MonoEmbed)
   message(STATUS "Disabling 'arcane_mono' because MonoEmbed is not found")
   return()

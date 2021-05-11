@@ -95,6 +95,11 @@ class CaseOptionServiceContainer
     return m_services[i];
   }
 
+  Ref<InterfaceType> childRef(Integer i) const
+  {
+    return m_services_reference[i];
+  }
+
  public:
   //! Supprime les instances des services
   void removeInstances()
@@ -191,6 +196,7 @@ class CaseOptionServiceT
  public:
   InterfaceType* operator()() const { return _instance(); }
   InterfaceType* instance() const { return _instance(); }
+  Ref<InterfaceType> instanceRef() const { return _instanceRef(); }
  private:
   CaseOptionServiceContainer<InterfaceType> m_container;
  private:
@@ -199,6 +205,12 @@ class CaseOptionServiceT
     if (m_container.nbElem()==1)
       return m_container.child(0);
     return nullptr;
+  }
+  Ref<InterfaceType> _instanceRef() const
+  {
+    if (m_container.nbElem()==1)
+      return m_container.childRef(0);
+    return {};
   }
 };
 

@@ -1,6 +1,6 @@
 # NOTE: le package CUDA est obsol�te (CMake 3.11) car CUDA est maintenant directement
 # support� comme langage par CMake
-find_package(CUDA)
+arcane_find_package(CUDA)
 if (NOT TARGET arcane::CUDA)
   return()
 endif()

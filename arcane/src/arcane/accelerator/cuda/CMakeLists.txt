@@ -7,7 +7,7 @@ set(ARCANE_SOURCES
   CudaAccelerator.h
   )
 
-find_package(CUDAToolkit REQUIRED)
+arcane_find_package(CUDAToolkit REQUIRED)
 
 # Créé une cible interface pour propager les options de compilation
 # communes pour la compilation CUDA

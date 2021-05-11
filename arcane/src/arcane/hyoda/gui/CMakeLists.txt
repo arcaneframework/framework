@@ -1,4 +1,4 @@
-find_package(Qt5 5.7.0 QUIET COMPONENTS Core OpenGL Network Widgets)
+arcane_find_package(Qt5 5.7.0 QUIET COMPONENTS Core OpenGL Network Widgets)
 
 message(STATUS "HYODA: Qt5Core_DIR is ${Qt5Core_DIR}")
 

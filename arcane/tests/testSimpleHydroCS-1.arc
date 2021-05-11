@@ -18,6 +18,10 @@
     </output>
   </arcane-post-processing>
 
+  <arcane-checkpoint>
+    <checkpoint-service name="ArcaneBasic2CheckpointWriter" />
+  </arcane-checkpoint>
+
   <mesh>
     <meshgenerator>
       <sod>

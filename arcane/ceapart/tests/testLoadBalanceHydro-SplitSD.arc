@@ -51,6 +51,7 @@
  <arcane-checkpoint>
   <!--<period>1</period>  -->
   <!-- <checkpoint-service name="ArcaneHdf5MultiCheckpointWriter" /> -->
+  <checkpoint-service name="ArcaneBasic2CheckpointWriter" />
   <do-dump-at-end>true</do-dump-at-end>
  </arcane-checkpoint>
 

@@ -60,14 +60,28 @@ Si `${INSTALL_PATH}` est le répertoire d'installation, les commandes suivantes 
 ~~~{.sh}
 mkdir ${BUILD_DIR}
 cd ${BUILD_DIR}
-cmake -S ${SOURCE_DIR} -DCMAKE_PREFIX_PATH=${INSTALL_PATH} -DArccon_ROOT:PATH=... -DAxlstar_ROOT:PATH=... -DArccore_ROOT:PATH=...
+cmake -S ${SOURCE_DIR} -DCMAKE_INSTALL_PREFIX=${INSTALL_PATH} -DArccon_ROOT:PATH=... -DAxlstar_ROOT:PATH=... -DArccore_ROOT:PATH=...
 cmake --build .
 cmake --build . --target install
 ~~~
 
-Par défaut, l'installation se fait dans /usr/local si l'option `CMAKE_PREFIX_PATH` n'est
+Par défaut, l'installation se fait dans `/usr/local` si l'option `CMAKE_INSTALL_PREFIX` n'est
 pas spécifié.
 
+Par défaut, tous les packages optionnels sont détectés
+automatiquement. Il est possible de supprimer ce comportement et de
+supprimer la détection automatique des packages en ajoutant
+`-DARCANE_NO_DEFAULT_PACKAGE=TRUE` à la ligne de commande. Dans ce
+cas, il faut préciser explicitement les packages qu'on souhaite avoir
+en les spécifiant à la variable `ARCANE_REQUIRED_PACKAGE_LIST` sous
+forme de liste. Par exemple, si on souhaite avoir uniquement `HDF5` et
+`LibUnwind` de disponible, il faut utilise CMake comme suit:
+
+~~~{.sh}
+cmake -DARCANE_NO_DEFAULT_PACKAGE=TRUE -DARCANE_REQUIRED_PACKAGE_LIST="LibUnwind;HDF5"
+~~~
+
+Dans
 ### Génération de la documentation
 
 La génération de la documentation n'a été testée que sur les plateforme Linux.
@@ -77,13 +91,13 @@ Une fois la configuration terminée, il suffit de lancer:
 Pour la documentation utilisateur:
 
 ~~~{.sh}
-cmake --build . --target userdoc
+cmake --build ${BUILD_DIR} --target userdoc
 ~~~
 
 Pour la documentation développeur
 
 ~~~{.sh}
-cmake --build . --target devdoc
+cmake --build ${BUILD_DIR} --target devdoc
 ~~~
 
 La documentation utilisateur ne contient les infos que des classes

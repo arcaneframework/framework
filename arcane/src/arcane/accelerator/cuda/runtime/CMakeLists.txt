@@ -6,7 +6,7 @@ set(ARCANE_SOURCES
   CudaAcceleratorRuntime.cc
   )
 
-find_package(CUDAToolkit REQUIRED)
+arcane_find_package(CUDAToolkit REQUIRED)
 
 arcane_add_library(arcane_accelerator_cuda_runtime
   INPUT_PATH ${Arcane_SOURCE_DIR}/src
