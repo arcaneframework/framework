@@ -15,7 +15,6 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/ArcaneTypes.h"
-#include "arcane/ItemTypes.h"
 #include "arcane/VariableTypedef.h"
 #include "arcane/IMeshBase.h"
 
@@ -130,33 +129,6 @@ class IMesh : public IMeshBase
   //! Descripteur de connectivité
   /*! Cet objet permet de lire/modifier la connectivité */
   virtual VariableScalarInteger connectivity() = 0;
-
-  //! Groupe de tous les noeuds
-  virtual NodeGroup allNodes() =0;
-
-  //! Groupe de toutes les arêtes
-  virtual EdgeGroup allEdges() =0;
-
-  //! Groupe de toutes les faces
-  virtual FaceGroup allFaces() =0;
-
-  //! Groupe de toutes les mailles
-  virtual CellGroup allCells() =0;
-
-  //! Groupe de tous les noeuds propres au domaine
-  virtual NodeGroup ownNodes() =0;
-
-  //! Groupe de toutes les arêtes propres au domaine
-  virtual EdgeGroup ownEdges() =0;
-
-  //! Groupe de toutes les faces propres au domaine
-  virtual FaceGroup ownFaces() =0;
-
-  //! Groupe de toutes les mailles propres au domaine
-  virtual CellGroup ownCells() =0;
-
-  //! Groupe de toutes les faces sur la frontière.
-  virtual FaceGroup outerFaces() =0;
 
 //! AMR
   //! Groupe de toutes les mailles actives
