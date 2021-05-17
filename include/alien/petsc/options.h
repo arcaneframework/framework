@@ -1,18 +1,18 @@
 /*
  * Copyright 2020 IFPEN-CEA
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -86,19 +86,22 @@ struct Options
 class OptionsUtils
 {
  public:
-  static OptionTypes::eSolver stringToSolverEnum(std::string solver_s)
-  {
-    if (solver_s.compare("cg") == 0)
-      return OptionTypes::CG;
-    else if (solver_s.compare("gmres") == 0)
-      return OptionTypes::GMRES;
-    else if (solver_s.compare("bicg") == 0)
-      return OptionTypes::BiCG;
-    else
-      throw Arccore::FatalErrorException(A_FUNCINFO, Arccore::String::format("solver enum name: {0} is not consistent with axl definition", solver_s));
-  }
+   static OptionTypes::eSolver stringToSolverEnum(const std::string &solver_s) {
+     if (solver_s.compare("cg") == 0)
+       return OptionTypes::CG;
+     else if (solver_s.compare("gmres") == 0)
+       return OptionTypes::GMRES;
+     else if (solver_s.compare("bicg") == 0)
+       return OptionTypes::BiCG;
+     else
+       throw Arccore::FatalErrorException(
+           A_FUNCINFO,
+           Arccore::String::format(
+               "solver enum name: {0} is not consistent with axl definition",
+               solver_s));
+   }
 
-  static std::string solverEnumToString(OptionTypes::eSolver solver)
+   static std::string solverEnumToString(OptionTypes::eSolver solver)
   {
     switch (solver) {
     case OptionTypes::CG:
@@ -112,14 +115,18 @@ class OptionsUtils
     }
   }
 
-  static OptionTypes::ePreconditioner stringToPreconditionerEnum(std::string preconditioner_s)
-  {
+  static OptionTypes::ePreconditioner
+  stringToPreconditionerEnum(const std::string &preconditioner_s) {
     if (preconditioner_s.compare("none") == 0)
       return OptionTypes::NoPC;
     else if (preconditioner_s.compare("jacobi") == 0)
       return OptionTypes::Jacobi;
     else
-      throw Arccore::FatalErrorException(A_FUNCINFO, Arccore::String::format("preconditioner enum name: {0} is not consistent with axl definition", preconditioner_s));
+      throw Arccore::FatalErrorException(
+          A_FUNCINFO,
+          Arccore::String::format("preconditioner enum name: {0} is not "
+                                  "consistent with axl definition",
+                                  preconditioner_s));
   }
 
   static std::string preconditionerEnumToString(OptionTypes::ePreconditioner preconditioner)

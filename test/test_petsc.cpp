@@ -1,31 +1,29 @@
 /*
  * Copyright 2020 IFPEN-CEA
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <alien/petsc/backend.h>
 #include <alien/petsc/options.h>
 
-#include <iostream>
-
 #include <arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h>
 
 #include <alien/ref/AlienRefSemantic.h>
 
-#include "petscsys.h"  
+#include "petscsys.h"
 
 int test()
 {
@@ -108,9 +106,9 @@ int test()
     tm->info() << "t = Ax";
     algebra.mult(A, x, tmp);
     tm->info() << "r = t";
-    algebra.copy(tmp, r); 
+    algebra.copy(tmp, r);
     tm->info() << "r -= b";
-    algebra.axpy(-1., b, r); 
+    algebra.axpy(-1., b, r);
   }
 
   auto norm = algebra.norm2(r);
@@ -121,9 +119,9 @@ int test()
 
   {
     tm->info() << "r = x";
-    algebra.copy(x, r); 
+    algebra.copy(x, r);
     tm->info() << "r -= xe";
-    algebra.axpy(-1., xe, r); 
+    algebra.axpy(-1., xe, r);
   }
 
   tm->info() << " => ||r|| = " << norm;
@@ -134,34 +132,34 @@ int test()
   return 0;
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
 
   MPI_Init(&argc, &argv);
-  
+
   PetscErrorCode ierr;
-  ierr = PetscInitialize(&argc,&argv,(char*)0,"");if (ierr) return ierr;
-  
+  ierr = PetscInitialize(&argc, &argv, (char *)nullptr, "");
+  if (ierr)
+    return ierr;
 
   auto ret = 0;
 
   try {
     ret = test();
-  }
-  catch (const Arccore::Exception& ex) {
+  } catch (const Arccore::Exception &ex) {
     std::cerr << "Exception: " << ex << '\n';
     ret = 3;
-  }
-  catch (const std::exception& ex) {
+  } catch (const std::exception &ex) {
     std::cerr << "** A standard exception occured: " << ex.what() << ".\n";
     ret = 2;
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "** An unknown exception has occured...\n";
     ret = 1;
   }
 
   ierr = PetscFinalize();
+  if (ierr)
+    return ierr;
+
   MPI_Finalize();
 
   return ret;

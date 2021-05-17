@@ -20,11 +20,8 @@
 
 #include <alien/petsc/backend.h>
 #include <alien/core/impl/MultiMatrixImpl.h>
-#include <alien/data/ISpace.h>
 
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
-
-#include <petscmat.h>
 
 namespace Alien::PETSc
 {
@@ -44,10 +41,9 @@ Matrix::~Matrix()
     MatDestroy(&m_mat);
 }
 
-void Matrix::setProfile(int ilower, int iupper,
-                        int jlower, int jupper,
-                        Arccore::ConstArrayView<int> row_sizes)
-{
+void Matrix::setProfile(
+    int ilower, int iupper, int jlower, int jupper,
+    [[maybe_unused]] Arccore::ConstArrayView<int> row_sizes) {
   if (m_mat) {
     MatDestroy(&m_mat);
   }
@@ -62,7 +58,7 @@ void Matrix::setProfile(int ilower, int iupper,
   ierr |= MatSetType(m_mat, MATMPIAIJ);
   ierr |= MatAssemblyBegin(m_mat, MAT_FINAL_ASSEMBLY);
   ierr |= MatSetUp(m_mat);
-  
+
   if (ierr) {
     throw Arccore::FatalErrorException(A_FUNCINFO, "PETSc Initialisation failed");
   }
@@ -84,7 +80,7 @@ void Matrix::setRowValues(int row, Arccore::ConstArrayView<int> cols, Arccore::C
   if (ncols != values.size()) {
     throw Arccore::FatalErrorException(A_FUNCINFO, "sizes are not equal");
   }
-  
+
   auto ierr = MatSetValues(m_mat, 1, &row, ncols, cols.data(), values.data(), INSERT_VALUES);
 
   if (ierr) {

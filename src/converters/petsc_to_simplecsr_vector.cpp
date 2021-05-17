@@ -27,20 +27,21 @@
 
 class PETSc_to_SimpleCSR_VectorConverter : public Alien::IVectorConverter {
 public:
-  PETSc_to_SimpleCSR_VectorConverter() {}
+  PETSc_to_SimpleCSR_VectorConverter() = default;
 
-  virtual ~PETSc_to_SimpleCSR_VectorConverter() {}
+  ~PETSc_to_SimpleCSR_VectorConverter() override = default;
 
 public:
-  Alien::BackEndId sourceBackend() const {
+  Alien::BackEndId sourceBackend() const override {
     return Alien::AlgebraTraits<Alien::BackEnd::tag::petsc>::name();
   }
 
-  Alien::BackEndId targetBackend() const {
+  Alien::BackEndId targetBackend() const override {
     return Alien::AlgebraTraits<Alien::BackEnd::tag::simplecsr>::name();
   }
 
-  void convert(const Alien::IVectorImpl* sourceImpl, Alien::IVectorImpl* targetImpl) const;
+  void convert(const Alien::IVectorImpl *sourceImpl,
+               Alien::IVectorImpl *targetImpl) const override;
 };
 
 void PETSc_to_SimpleCSR_VectorConverter::convert(

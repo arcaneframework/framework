@@ -1,18 +1,18 @@
 /*
  * Copyright 2020 IFPEN-CEA
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -30,27 +30,28 @@
 class SimpleCSR_to_Petsc_MatrixConverter : public Alien::IMatrixConverter
 {
  public:
-  SimpleCSR_to_Petsc_MatrixConverter() {}
+   SimpleCSR_to_Petsc_MatrixConverter() = default;
 
-  virtual ~SimpleCSR_to_Petsc_MatrixConverter() {}
+   ~SimpleCSR_to_Petsc_MatrixConverter() override = default;
 
  public:
-  BackEndId sourceBackend() const
-  {
-    return Alien::AlgebraTraits<Alien::BackEnd::tag::simplecsr>::name();
-  }
+   BackEndId sourceBackend() const override {
+     return Alien::AlgebraTraits<Alien::BackEnd::tag::simplecsr>::name();
+   }
 
-  BackEndId targetBackend() const { return Alien::AlgebraTraits<Alien::BackEnd::tag::petsc>::name(); }
+   BackEndId targetBackend() const override {
+     return Alien::AlgebraTraits<Alien::BackEnd::tag::petsc>::name();
+   }
 
-  void convert(const Alien::IMatrixImpl* sourceImpl, Alien::IMatrixImpl* targetImpl) const;
+   void convert(const Alien::IMatrixImpl *sourceImpl,
+                Alien::IMatrixImpl *targetImpl) const override;
 
-  void _build(const Alien::SimpleCSRMatrix<Arccore::Real>& sourceImpl, Alien::PETSc::Matrix& targetImpl) const;
+   void _build(const Alien::SimpleCSRMatrix<Arccore::Real>& sourceImpl, Alien::PETSc::Matrix& targetImpl) const;
 
   void _buildBlock(const Alien::SimpleCSRMatrix<Arccore::Real>& sourceImpl, Alien::PETSc::Matrix& targetImpl) const;
 };
 
-void SimpleCSR_to_Petsc_MatrixConverter::convert(const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const
-{  
+void SimpleCSR_to_Petsc_MatrixConverter::convert(const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const {
   const auto& v = cast<Alien::SimpleCSRMatrix<Arccore::Real>>(sourceImpl, sourceBackend());
   auto& v2 = cast<Alien::PETSc::Matrix>(targetImpl, targetBackend());
 
@@ -98,7 +99,7 @@ void SimpleCSR_to_Petsc_MatrixConverter::_build(const Alien::SimpleCSRMatrix<Arc
   auto icount = 0;
   for (auto irow = 0; irow < localSize; ++irow) {
     const auto row = localOffset + irow;
-    const auto ncols = profile.getRowSize(irow);    
+    const auto ncols = profile.getRowSize(irow);
     targetImpl.setRowValues(row, cols.subConstView(icount, ncols), values.subConstView(icount, ncols));
     icount += ncols;
   }
