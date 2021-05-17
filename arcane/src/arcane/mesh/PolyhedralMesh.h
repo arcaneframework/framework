@@ -20,6 +20,7 @@
 #include "arcane/utils/String.h"
 #include "arcane/MeshHandle.h"
 #include "arcane/IMeshBase.h"
+#include "arcane/ItemGroup.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -78,6 +79,24 @@ class ARCANE_MESH_EXPORT PolyhedralMesh : public IMeshBase {
   ITraceMng* traceMng() override;
 
   Integer dimension() override;
+
+  NodeGroup allNodes() override { return ItemGroup{}; }
+
+  EdgeGroup allEdges() override { return ItemGroup{}; }
+
+  FaceGroup allFaces() override { return ItemGroup{}; }
+
+  CellGroup allCells() override { return ItemGroup{}; }
+
+  NodeGroup ownNodes() override { return ItemGroup{}; }
+
+  EdgeGroup ownEdges() override { return ItemGroup{}; }
+
+  FaceGroup ownFaces() override { return ItemGroup{}; }
+
+  CellGroup ownCells() override { return ItemGroup{}; }
+
+  FaceGroup outerFaces() override { return ItemGroup{}; }
 
  private:
   [[noreturn]] void _errorEmptyMesh() const;
