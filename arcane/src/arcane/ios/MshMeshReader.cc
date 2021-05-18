@@ -103,9 +103,9 @@ class MshMeshReader
   {
     Integer index = 0; //!< Index du bloc dans la liste
     Integer nb_entity = 0; //!< Nombre d'entités du bloc
-    Integer cell_type = -1; //!< Type Arcane de l'entité
+    Integer item_type = -1; //!< Type Arcane de l'entité
     Integer dimension = -1; //!< Dimension de l'entité
-    Integer cell_nb_node = 0; //!< Nombre de noeuds de l'entité.
+    Integer item_nb_node = 0; //!< Nombre de noeuds de l'entité.
     UniqueArray<Int64> connectivity;
   };
 
@@ -153,6 +153,8 @@ class MshMeshReader
   Integer _switchMshType(Integer, Integer&);
   eReturnType _readMeshFromMshFile(IMesh* mesh, const XmlNode& mesh_node,
                                    const String& file_name, bool use_internal_partition);
+  void _readPhysicalNames(IosFile& ios_file);
+  void _readEntitiesV4(IosFile& ios_file);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -310,7 +312,7 @@ _readNodesFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
     Integer nb_node2 = ios_file.getInteger();
     ios_file.getNextLine();
 
-    info(4) << "[Nodes] entity_dim=" << entity_dim << " entity_tag=" << entity_tag
+    info(4) << "[Nodes] index=" << i_entity << " entity_dim=" << entity_dim << " entity_tag=" << entity_tag
             << " parametric=" << parametric_coordinates
             << " nb_node2=" << nb_node2;
     if (parametric_coordinates!=0)
@@ -453,24 +455,24 @@ _readElementsFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
     Integer entity_type = ios_file.getInteger();
     Integer nb_entity_in_block = ios_file.getInteger();
 
-    Integer cell_nb_node = 0;
-    Integer cell_type = _switchMshType(entity_type, cell_nb_node);
+    Integer item_nb_node = 0;
+    Integer item_type = _switchMshType(entity_type, item_nb_node);
 
     info(4) << "[Elements] index=" << block.index << " entity_dim=" << entity_dim
             << " entity_tag=" << entity_tag
             << " entity_type=" << entity_type << " nb_in_block=" << nb_entity_in_block
-            << " cell_type=" << cell_type << " cell_nb_node=" << cell_nb_node;
+            << " item_type=" << item_type << " item_nb_node=" << item_nb_node;
 
     block.nb_entity = nb_entity_in_block;
-    block.cell_type = cell_type;
-    block.cell_nb_node = cell_nb_node;
+    block.item_type = item_type;
+    block.item_nb_node = item_nb_node;
     block.dimension = entity_dim;
 
     for (Integer i = 0; i < nb_entity_in_block; ++i) {
       // TODO: a utiliser
       [[maybe_unused]] Integer cell_unique_id = ios_file.getInteger();
 
-      for ( Integer j = 0; j < cell_nb_node; ++j )
+      for ( Integer j = 0; j < item_nb_node; ++j )
         block.connectivity.add(ios_file.getInteger());
     }
     ios_file.getNextLine(); // Skip current \n\r
@@ -493,13 +495,13 @@ _readElementsFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
 
     info(4) << "Keeping block index=" << block.index;
 
-    Integer cell_type = block.cell_type;
-    Integer cell_nb_node = block.cell_nb_node;
+    Integer item_type = block.item_type;
+    Integer item_nb_node = block.item_nb_node;
 
     for (Integer i = 0; i < block.nb_entity; ++i) {
-      mesh_info.cells_type.add(cell_type);
-      mesh_info.cells_nb_node.add(cell_nb_node);
-      auto v = block.connectivity.subView(i*cell_nb_node,cell_nb_node);
+      mesh_info.cells_type.add(item_type);
+      mesh_info.cells_nb_node.add(item_nb_node);
+      auto v = block.connectivity.subView(i*item_nb_node,item_nb_node);
       mesh_info.cells_connectivity.addRange(v);
     }
   }
@@ -593,7 +595,124 @@ _createMeshFrom(IMesh* mesh, MeshInfo& mesh_info)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*
+ * $PhysicalNames // same as MSH version 2
+ *    numPhysicalNames(ASCII int)
+ *    dimension(ASCII int) physicalTag(ASCII int) "name"(127 characters max)
+ *    ...
+ * $EndPhysicalNames
+ */
+void MshMeshReader::
+_readPhysicalNames(IosFile& ios_file)
+{
+  Int32 nb_name = ios_file.getInteger();
+  info() << "nb_physical_name=" << nb_name;
+  ios_file.getNextLine();
+  for( Int32 i=0; i<nb_name; ++i ){
+    Int32 dim = ios_file.getInteger();
+    Int32 tag = ios_file.getInteger();
+    StringView s = ios_file.getNextLine();
+    info(4) << "[PhysicalName] index=" << i << " dim=" << dim << " tag=" << tag << " name=" << s;
+  }
+  StringView s = ios_file.getNextLine();
+  if (s!="$EndPhysicalNames")
+    ARCANE_FATAL("found '{0}' and expected '$EndPhysicalNames'",s);
+}
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
+ * \brief Lecture des entités.
+ *
+ * Le format est:
+ *
+ * \verbatim
+ *    $Entities
+ *      numPoints(size_t) numCurves(size_t)
+ *        numSurfaces(size_t) numVolumes(size_t)
+ *      pointTag(int) X(double) Y(double) Z(double)
+ *        numPhysicalTags(size_t) physicalTag(int) ...
+ *      ...
+ *      curveTag(int) minX(double) minY(double) minZ(double)
+ *        maxX(double) maxY(double) maxZ(double)
+ *        numPhysicalTags(size_t) physicalTag(int) ...
+ *        numBoundingPoints(size_t) pointTag(int) ...
+ *      ...
+ *      surfaceTag(int) minX(double) minY(double) minZ(double)
+ *        maxX(double) maxY(double) maxZ(double)
+ *        numPhysicalTags(size_t) physicalTag(int) ...
+ *        numBoundingCurves(size_t) curveTag(int) ...
+ *      ...
+ *      volumeTag(int) minX(double) minY(double) minZ(double)
+ *        maxX(double) maxY(double) maxZ(double)
+ *        numPhysicalTags(size_t) physicalTag(int) ...
+ *        numBoundngSurfaces(size_t) surfaceTag(int) ...
+ *      ...
+ *    $EndEntities
+ * \endverbatim
+ */
+void MshMeshReader::
+_readEntitiesV4(IosFile& ios_file)
+{
+  Int32 nb_dim_item[4];
+  nb_dim_item[0]= ios_file.getInteger();
+  nb_dim_item[1] = ios_file.getInteger();
+  nb_dim_item[2] = ios_file.getInteger();
+  nb_dim_item[3] = ios_file.getInteger();
+  info(4) << "[Entities] nb_0d=" << nb_dim_item[0] << " nb_1d=" << nb_dim_item[1]
+          << " nb_2d=" << nb_dim_item[2] << " nb_3d=" << nb_dim_item[3];
+  // Après le format, on peut avoir les entités mais cela est optionnel
+  // Si elles sont présentes, on lit le fichier jusqu'à la fin de cette section.
+  StringView next_line = ios_file.getNextLine();
+  for( Int32 i=0; i<nb_dim_item[0]; ++i ){
+    Int32 tag = ios_file.getInteger();
+    Real x = ios_file.getReal();
+    Real y = ios_file.getReal();
+    Real z = ios_file.getReal();
+    Int32 num_physical_tag = ios_file.getInteger();
+    if (num_physical_tag>1)
+      ARCANE_FATAL("NotImplemented numPhysicalTag>1 (n={0})",num_physical_tag);
+    Int32 physical_tag = -1;
+    if (num_physical_tag==1)
+      physical_tag = ios_file.getInteger();
+    info(4) << "[Entities] point tag=" << tag << " x=" << x << " y=" << y << " z=" << z << " phys_tag=" << physical_tag;
+    next_line = ios_file.getNextLine();
+  }
+
+  for( Int32 dim=1; dim<=3; ++dim ){
+    for( Int32 i=0; i<nb_dim_item[dim]; ++i ){
+      Int32 tag = ios_file.getInteger();
+      Real min_x = ios_file.getReal();
+      Real min_y = ios_file.getReal();
+      Real min_z = ios_file.getReal();
+      Real max_x = ios_file.getReal();
+      Real max_y = ios_file.getReal();
+      Real max_z = ios_file.getReal();
+      Int32 num_physical_tag = ios_file.getInteger();
+      if (num_physical_tag>1)
+        ARCANE_FATAL("NotImplemented numPhysicalTag>1 (n={0})",num_physical_tag);
+      Int32 physical_tag = -1;
+      if (num_physical_tag==1)
+        physical_tag = ios_file.getInteger();
+      Int32 num_bounding_group = ios_file.getInteger();
+      for( Int32 k=0; k<num_bounding_group; ++k ){
+        [[maybe_unused]] Int32 group_tag = ios_file.getInteger();
+      }
+      info(4) << "[Entities] dim=" << dim << " tag=" << tag
+              << " min_x=" << min_x << " min_y=" << min_y << " min_z=" << min_z
+              << " max_x=" << max_x << " max_y=" << max_y << " max_z=" << max_z
+              << " phys_tag=" << physical_tag;
+      next_line = ios_file.getNextLine();
+    }
+  }
+  StringView s = ios_file.getNextLine();
+  if (s!="$EndEntities")
+    ARCANE_FATAL("found '{0}' and expected '$EndEntities'",s);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  *
  The version 2.0 of the '.msh' file format is Gmsh's new native mesh file format. It is very
@@ -631,10 +750,6 @@ _readMeshFromNewMshFile(IMesh* mesh, IosFile& ios_file)
   const char* func_name = "MshMeshReader::_readMeshFromNewMshFile()";
   info() << "[_readMeshFromNewMshFile] New native mesh file format detected";
   MeshInfo mesh_info;
-  //UniqueArray<Int64> cells_infos;
-  //UniqueArray<Integer> cells_nb_node;
-  //UniqueArray<Int64> cells_connectivity;
-  //UniqueArray<Integer> cells_type;
 #define MSH_BINARY_TYPE 1
 
   Real version = ios_file.getReal();
@@ -665,11 +780,16 @@ _readMeshFromNewMshFile(IMesh* mesh, IosFile& ios_file)
   // être dans n'importe quel ordre (à part $Nodes qui doit être avant $Elements)
   // Faire un méthode qui gère cela.
 
+  StringView next_line = ios_file.getNextLine();
+  // Noms des groupes
+  if (next_line=="$PhysicalNames"){
+    _readPhysicalNames(ios_file);
+    next_line = ios_file.getNextLine();
+  }
   // Après le format, on peut avoir les entités mais cela est optionnel
   // Si elles sont présentes, on lit le fichier jusqu'à la fin de cette section.
-  StringView next_line = ios_file.getNextLine();
   if (next_line=="$Entities"){
-    do { next_line = ios_file.getNextLine(); } while (next_line != "$EndEntities");
+    _readEntitiesV4(ios_file);
     next_line = ios_file.getNextLine();
   }
   // $Nodes
