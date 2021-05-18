@@ -87,6 +87,7 @@ namespace mesh
     Integer nbFace() const { return m_mesh.nbFaces(); }
     Integer nbCell() const { return m_mesh.nbCells(); }
     Integer nbItem(eItemKind ik) const { return m_mesh.nbItems(itemKindArcaneToNeo(ik)); }
+    ItemGroup allCells() { return ItemGroup{}; }
 
    private:
     void _createSingleCellTest()
@@ -145,6 +146,7 @@ _errorEmptyMesh() const
 /*---------------------------------------------------------------------------*/
 
 
+
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 // All PolyhedralMesh methods must be defined twice (emtpy in the second case)
 
@@ -175,7 +177,6 @@ name() const
   return m_mesh->name();
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -202,6 +203,7 @@ nbEdge()
 {
   return m_mesh->nbEdge();
 }
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -219,6 +221,7 @@ nbCell()
 {
   return m_mesh->nbCell();
 }
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -227,9 +230,18 @@ nbItem(eItemKind ik)
 {
   return m_mesh->nbItem(ik);
 }
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+CellGroup mesh::PolyhedralMesh::
+allCells()
+{
+  return m_mesh->allCells();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 
 #else // ARCANE_HAS_CUSTOM_MESH_TOOLS : empty class for compilation
@@ -320,6 +332,17 @@ nbItem([[maybe_unused]] eItemKind ik)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+CellGroup mesh::PolyhedralMesh::
+allCells()
+{
+  _errorEmptyMesh();
+  return ItemGroup{};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 
 #endif // ARCANE_HAS_CUSTOM_MESH_TOOLS
 
