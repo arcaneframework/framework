@@ -1247,8 +1247,12 @@ initialize()
   }
   if (m_version>=3){
     Int32 rank_to_read = m_forced_rank_to_read;
-    if (rank_to_read<0)
-      rank_to_read = pm->commRank();
+    if (rank_to_read<0){
+      if (m_nb_written_part>1)
+        rank_to_read = pm->commRank();
+      else
+        rank_to_read = 0;
+    }
     String main_filename = _getBasicVariableFile(m_version,m_path,rank_to_read);
     m_forced_rank_to_read_text_reader = makeRef(new KeyValueTextReader(main_filename,m_version));
     if (!data_compressor_name.empty()){
