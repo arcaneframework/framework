@@ -215,12 +215,17 @@ arcane_dotnet_configure_script(${ARCANE_EXECDRIVER_SOURCE_DIR}/Arcane.ExecDriver
 arcane_dotnet_configure_script(${ARCANE_EXECDRIVER_SOURCE_DIR}/Arcane.ExecDrivers.MeshUtilsDriver arcane_convert_mesh bin)
 arcane_dotnet_configure_script(${ARCANE_EXECDRIVER_SOURCE_DIR}/Arcane.ExecDrivers.CurveUtilsDriver arcane_curves bin)
 arcane_dotnet_configure_script(${CMAKE_CURRENT_SOURCE_DIR}/Arcane.Templates arcane_templates bin)
+set(_SCRIPT_EXTENSION "")
+if (WIN32)
+  set(_SCRIPT_EXTENSION ".bat")
+endif()
 install(PROGRAMS
-  ${ARCANEBUILDROOT}/bin_install/arcane_partition_mesh
-  ${ARCANEBUILDROOT}/bin_install/arcane_convert_mesh
-  ${ARCANEBUILDROOT}/bin_install/arcane_curves
-  ${ARCANEBUILDROOT}/bin_install/arcane_templates
-  ${ARCANEBUILDROOT}/bin_install/arcane_run DESTINATION bin)
+  ${ARCANEBUILDROOT}/bin_install/arcane_partition_mesh${_SCRIPT_EXTENSION}
+  ${ARCANEBUILDROOT}/bin_install/arcane_convert_mesh${_SCRIPT_EXTENSION}
+  ${ARCANEBUILDROOT}/bin_install/arcane_curves${_SCRIPT_EXTENSION}
+  ${ARCANEBUILDROOT}/bin_install/arcane_templates${_SCRIPT_EXTENSION}
+  ${ARCANEBUILDROOT}/bin_install/arcane_run${_SCRIPT_EXTENSION}
+  DESTINATION bin)
 arcane_dotnet_configure_script(${ARCANE_EXECDRIVER_SOURCE_DIR}/Arcane.ExecDrivers.TestDriver arcane_test_driver bin)
 arcane_dotnet_configure_script(${ARCANE_EXECDRIVER_SOURCE_DIR}/Arcane.ExecDrivers.Launcher arcane_run bin)
 
