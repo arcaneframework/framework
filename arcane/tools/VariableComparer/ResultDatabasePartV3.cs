@@ -81,6 +81,7 @@ namespace Arcane.VariableComparer
     BasicReaderWriterDatabaseEpilogFormat m_epilog;
     ACRDataBaseJSON m_json_database;
     internal ACRDataBaseJSON JSONDataBase { get { return m_json_database; } }
+    internal IDeflater Deflater { get; set; }
     public ACRDataBase(string filename)
     {
       m_filename = filename;
@@ -121,9 +122,10 @@ namespace Arcane.VariableComparer
         throw new ApplicationException($"extents for '{key_name}' should be of dimension 1 (v={ex_length}");
       return vinfo;
     }
-    public byte[] ReadPartAsBytes(string key_name)
+
+    //! Lit les octests associés à la clé 'key_name' sans prendre en compte une éventuelle compression
+    byte[] _ReadDirectPartAsBytes(string key_name)
     {
-      // TODO: gérer la compression éventuelle
       ACRDataBaseVariableInfo vinfo = _GetAndCheckDimension1(key_name);
       m_file_stream.Seek(vinfo.FileOffset, SeekOrigin.Begin);
       Int64 length = vinfo.Extents[0];
@@ -131,15 +133,44 @@ namespace Arcane.VariableComparer
       m_file_stream.Read(bytes, 0, (int)length);
       return bytes;
     }
+    public byte[] ReadPartAsBytes(string key_name)
+    {
+      ACRDataBaseVariableInfo vinfo = _GetAndCheckDimension1(key_name);
+      m_file_stream.Seek(vinfo.FileOffset, SeekOrigin.Begin);
+      Int64 length = vinfo.Extents[0];
+      byte[] out_bytes = new byte[length];
+
+      if (Deflater!=null && length>Deflater.MinCompressSize){
+        Console.WriteLine($"Reading compressed byte array for key {key_name}");
+        Int64 binary_len = m_file_binary_reader.ReadInt64();
+        Byte[] input_buffer = new Byte[binary_len];
+        m_file_stream.Read(input_buffer,0,input_buffer.Length);
+        Deflater.Decompress(input_buffer,out_bytes);
+      }
+      else
+        m_file_stream.Read(out_bytes, 0, (int)length);
+      return out_bytes;
+    }
+
     public double[] ReadPartAsReal(string key_name)
     {
-      // TODO: gérer la compression éventuelle
       ACRDataBaseVariableInfo vinfo = _GetAndCheckDimension1(key_name);
       m_file_stream.Seek(vinfo.FileOffset, SeekOrigin.Begin);
       Int64 length = vinfo.Extents[0];
       double[] v = new double[length];
+      Int64 buf_out_len = length * sizeof(double);
+      BinaryReader reader = m_file_binary_reader;
+      if (Deflater!=null && length>Deflater.MinCompressSize){
+        Int64 binary_len = m_file_binary_reader.ReadInt64();
+        Byte[] input_buffer = new Byte[binary_len];
+        Byte[] output_buffer = new Byte[buf_out_len];
+        m_file_stream.Read(input_buffer,0,input_buffer.Length);
+        Deflater.Decompress(input_buffer,output_buffer);
+        reader = new BinaryReader(new MemoryStream(output_buffer));
+      }
+
       for (int i = 0; i < length; ++i )
-        v[i] = m_file_binary_reader.ReadDouble();
+        v[i] = reader.ReadDouble();
       return v;
     }
   }
@@ -162,13 +193,15 @@ namespace Arcane.VariableComparer
     int m_version = 1;
 
     ACRDataBase m_acr_database;
+    ArcaneJSONDataBaseInfo m_arcane_main_db_info;
     /// <summary>
     /// Cree le bloc numero \a part de la base \a database
     /// </summary>
-    public ResultDatabasePartV3(ResultDatabase database,int part)
+    public ResultDatabasePartV3(ResultDatabase database,int part,ArcaneJSONDataBaseInfo arcane_db_info)
     {
       m_database = database;
       m_part = part;
+      m_arcane_main_db_info = arcane_db_info;
     }
     public void ReadVariableAsRealArray(string varname,double[] values,int array_index)
     {
@@ -182,7 +215,11 @@ namespace Arcane.VariableComparer
       string acr_file_path = Path.Combine(base_path,String.Format("arcane_db_n{0}.acr",m_part));
       m_acr_database = new ACRDataBase(acr_file_path);
       m_acr_database.OpenRead();
-      
+      if (!String.IsNullOrEmpty(m_arcane_main_db_info.DataCompressor)){
+        IDeflater d = Utils.CreateDeflater(m_arcane_main_db_info.DataCompressor);
+        d.MinCompressSize = m_arcane_main_db_info.DataCompressorMinSize;
+        m_acr_database.Deflater = d;
+      }
       byte[] metadata_bytes = m_acr_database.ReadPartAsBytes("Global:CheckpointMetadata");
       string metadata_string = System.Text.Encoding.UTF8.GetString(metadata_bytes);
       // Supprime un éventuel '\0' terminal.

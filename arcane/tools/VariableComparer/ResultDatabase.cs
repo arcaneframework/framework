@@ -24,6 +24,7 @@ namespace Arcane.VariableComparer
     public int Version;
     public int NbPart;
     public string DataCompressor;
+    public int DataCompressorMinSize = 512;
   }
   
   public class ResultDatabase
@@ -65,7 +66,7 @@ namespace Arcane.VariableComparer
       for (int i = 0; i < m_nb_part; ++i) {
         IResultDatabasePart rpart = null;
         if (use_v3)
-          rpart = new ResultDatabasePartV3(this, i);
+          rpart = new ResultDatabasePartV3(this, i, m_arcane_db_info);
         else
           rpart = new ResultDatabasePart(this, i);
         rpart.Read();
@@ -172,5 +173,7 @@ namespace Arcane.VariableComparer
       }
       Console.WriteLine("TOTAL='{0}' '{1}'",total,m_item_variables.Count);
     }
+
+    
   }
 }

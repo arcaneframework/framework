@@ -11,6 +11,7 @@ using System.Collections.Generic;
 interface IDeflater
 {
   void Decompress(Byte[] input_buffer,Byte[] output_buffer);
+  int MinCompressSize { get; set; }
 }
 
 /// <summary>
@@ -26,6 +27,7 @@ class Bzip2Deflater : IDeflater
     System.IO.Stream outstream = new MemoryStream(output_buffer,true);
     ICSharpCode.SharpZipLib.BZip2.BZip2.Decompress(instream,outstream,true);
   }
+  public int MinCompressSize { get; set; }
 }
 
 /// <summary>
@@ -41,6 +43,7 @@ class LZ4Deflater : IDeflater
     System.IO.Stream outstream = new MemoryStream(output_buffer, true);
     K4os.Compression.LZ4.LZ4Codec.Decode(input_buffer, 0, input_buffer.Length, output_buffer, 0, output_buffer.Length);
   }
+  public int MinCompressSize { get; set; }
 }
 
 namespace Arcane.VariableComparer
@@ -58,8 +61,7 @@ namespace Arcane.VariableComparer
   /// </summary>
   public class ResultDatabasePart : IResultDatabasePart
   {
-    // Cette valeur doit etre cohérente avec celle dans BasicReaderWriter.cc
-    int DEFLATE_MIN_SIZE = 512;
+    
     ResultDatabase m_database;
     int m_part;
     public int Part { get { return m_part; } }
@@ -118,11 +120,11 @@ namespace Arcane.VariableComparer
       m_value_stream.Seek(file_offset,SeekOrigin.Begin);
       BinaryReader reader = new BinaryReader(m_value_stream);
       int out_len = nb_value * sizeof(double);
-      // Il n'y a compression que si la taille est superieure a DEFLATE_MIN_SIZE
-      // En cas de compression, il faut d'abord lire un Int64 qui contiend
+      // Il n'y a compression que si la taille est supérieure à une certaine valeur
+      // En cas de compression, il faut d'abord lire un Int64 qui contient
       // la taille en byte des donnees compressees. On lit ces valeurs
       // qu'on envoie au decompresseur.
-      if (m_deflater!=null && out_len>DEFLATE_MIN_SIZE){
+      if (m_deflater!=null && out_len>m_deflater.MinCompressSize){
         Int64 binary_len = reader.ReadInt64();
         Byte[] input_buffer = new Byte[binary_len];
         Byte[] output_buffer = new Byte[out_len];
@@ -152,27 +154,14 @@ namespace Arcane.VariableComparer
     void _ReadVariablesDataInfo()
     {
       string base_path = m_database.BasePath;
-      string metadata_path = Path.Combine(base_path,String.Format("own_metadata_{0}.txt",m_part));
+      string metadata_path = Path.Combine(base_path, String.Format("own_metadata_{0}.txt", m_part));
       //string metadata_str = File.ReadAllText(metadata_path);
       XmlDocument doc = new XmlDocument();
       doc.Load(metadata_path);
       XmlElement doc_element = doc.DocumentElement;
-      string deflater_service = doc_element.GetAttribute("deflater-service");
-      if (!String.IsNullOrEmpty(deflater_service)){
-        if (deflater_service=="Bzip2" || deflater_service=="Bzip2DataCompressor"){
-          m_deflater = new Bzip2Deflater();
-        }
-        else if (deflater_service == "LZ4" || deflater_service == "LZ4DataCompressor") {
-          m_deflater = new LZ4Deflater();
-        }
-        else
-          throw new ApplicationException("Can only handle 'Bzip2', 'LZ4', 'Bzip2DataCompressor' or 'LZ4DataCompressor' deflater-service");
-      }
-      // Cette valeur n'est disponible qu'à partir de la version 3.0 de Arcane
-      // et si elle existe, elle remplace DEFLATE_MIN_SIZE.
-      string min_compress_size_str = doc_element.GetAttribute("min-compress-size");
-      if (!String.IsNullOrEmpty(min_compress_size_str))
-        DEFLATE_MIN_SIZE = int.Parse(min_compress_size_str);
+
+      m_deflater = Utils.CreateOptionalDeflater(doc_element);
+      
       // Récupère le numéro de version. Si absent, il s'agit de la version 1.
       string version_str = doc_element.GetAttribute("version");
       if (!String.IsNullOrEmpty(version_str))
