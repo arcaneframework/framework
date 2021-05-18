@@ -86,7 +86,7 @@ class ARCANE_MESH_EXPORT PolyhedralMesh : public IMeshBase {
 
   FaceGroup allFaces() override { return ItemGroup{}; }
 
-  CellGroup allCells() override { return ItemGroup{}; }
+  CellGroup allCells() override;
 
   NodeGroup ownNodes() override { return ItemGroup{}; }
 
