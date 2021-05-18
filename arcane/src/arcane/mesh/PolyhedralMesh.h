@@ -18,6 +18,7 @@
 #include <memory>
 #include "arcane/utils/ArcaneGlobal.h"
 #include "arcane/utils/String.h"
+#include "arcane/utils/Collection.h"
 #include "arcane/MeshHandle.h"
 #include "arcane/IMeshBase.h"
 #include "arcane/ItemGroup.h"
@@ -97,6 +98,21 @@ class ARCANE_MESH_EXPORT PolyhedralMesh : public IMeshBase {
   CellGroup ownCells() override { return ItemGroup{}; }
 
   FaceGroup outerFaces() override { return ItemGroup{}; }
+
+  IItemFamily* createItemFamily(eItemKind ik,const String& name) override {return nullptr;}
+
+  IItemFamily* findItemFamily(eItemKind ik,const String& name,bool create_if_needed=false) override { return nullptr; }
+  IItemFamily* findItemFamily(const String& name,bool throw_exception=false) override { return nullptr; }
+
+  IItemFamilyModifier* findItemFamilyModifier(eItemKind ik,const String& name) override { return nullptr; }
+  IItemFamily* itemFamily(eItemKind ik) override { return nullptr; }
+
+  IItemFamily* nodeFamily() override { return nullptr; }
+  IItemFamily* edgeFamily() override { return nullptr; }
+  IItemFamily* faceFamily() override { return nullptr; }
+  IItemFamily* cellFamily() override { return nullptr; }
+
+  IItemFamilyCollection itemFamilies() override { return IItemFamilyCollection{}; }
 
  private:
   [[noreturn]] void _errorEmptyMesh() const;

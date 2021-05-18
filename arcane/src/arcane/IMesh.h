@@ -44,7 +44,6 @@ class IMeshChecker;
 class IMeshCompactMng;
 class MeshPartInfo;
 class IItemFamilyNetwork;
-class IItemFamilyModifier;
 class MeshHandle;
 class IVariableMng;
 class ItemTypeMng;
@@ -170,9 +169,6 @@ class IMesh : public IMeshBase
   virtual void destroyGroups() =0;
 
  public:
- 
-  //! Créé une famille de particule de nom \a name
-  virtual IItemFamily* createItemFamily(eItemKind ik,const String& name) =0;
 
   /*!
    * \brief Retourne la famille de nom \a name.
