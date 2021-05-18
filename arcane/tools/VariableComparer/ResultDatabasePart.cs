@@ -45,11 +45,18 @@ class LZ4Deflater : IDeflater
 
 namespace Arcane.VariableComparer
 {
-  
+  public interface IResultDatabasePart
+  {
+    void Read();
+    int Part { get; }
+    IDictionary<string,VariableDataInfo> VariablesDataInfo { get; }
+    MetaData MetaData { get; }
+    void ReadVariableAsRealArray(string varname, double[] values, int array_index);
+  }
   /// <summary>
   /// Valeurs d'un bloc de la base de resultats
   /// </summary>
-  public class ResultDatabasePart
+  public class ResultDatabasePart : IResultDatabasePart
   {
     // Cette valeur doit etre cohérente avec celle dans BasicReaderWriter.cc
     int DEFLATE_MIN_SIZE = 512;
@@ -173,7 +180,7 @@ namespace Arcane.VariableComparer
       Console.WriteLine("MetaDataVersion = {0}", m_version);
       m_variables_info = new Dictionary<string,VariableDataInfo>();
       if (m_version>=3)
-        throw new ApplicationException("Unsupported version '{0}'. Valid values are '1' or '2'");
+        throw new ApplicationException($"Unsupported version '{m_version}'. Valid values are '1' or '2'");
 
       foreach (XmlNode node in doc_element){
         if (node.Name != "variable-data")
