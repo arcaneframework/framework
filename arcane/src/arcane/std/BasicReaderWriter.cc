@@ -1246,7 +1246,10 @@ initialize()
     pm->broadcast(Int32ArrayView(1,&m_nb_written_part),pm->masterIORank());
   }
   if (m_version>=3){
-    String main_filename = _getBasicVariableFile(m_version,m_path,m_forced_rank_to_read);
+    Int32 rank_to_read = m_forced_rank_to_read;
+    if (rank_to_read<0)
+      rank_to_read = pm->commRank();
+    String main_filename = _getBasicVariableFile(m_version,m_path,rank_to_read);
     m_forced_rank_to_read_text_reader = makeRef(new KeyValueTextReader(main_filename,m_version));
     if (!data_compressor_name.empty()){
       Ref<IDataCompressor> dc = _createDeflater(m_application,data_compressor_name);
@@ -1855,7 +1858,7 @@ ARCANE_REGISTER_SERVICE(ArcaneBasic2CheckpointReaderService,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ArcaneBasicVerifierService2
+class ArcaneBasicVerifierService
 : public VerifierService
 {
   class GroupFinder
@@ -1877,11 +1880,8 @@ class ArcaneBasicVerifierService2
 
  public:
 
-  explicit ArcaneBasicVerifierService2(const ServiceBuildInfo& sbi)
+  explicit ArcaneBasicVerifierService(const ServiceBuildInfo& sbi)
   : VerifierService(sbi)
-  {
-  }
-  ~ArcaneBasicVerifierService2()
   {
   }
     
@@ -1901,7 +1901,7 @@ class ArcaneBasicVerifierService2
     // Pour l'instant utilise la version 1
     // A partir de janvier 2019, il est possible d'utiliser la version 2
     // car le comparateur C# supporte cette version.
-    Int32 version = 1;
+    Int32 version = m_wanted_format_version;
     bool want_parallel = pm->isParallel();
     ScopedPtrT<BasicWriter> verif(new BasicWriter(sd->application(),pm,m_full_file_name,
                                                   open_mode,version,want_parallel));
@@ -1953,9 +1953,17 @@ class ArcaneBasicVerifierService2
     reader->endRead();
   }
 
+ protected:
+
+  void _setFormatVersion(Int32 v)
+  {
+    m_wanted_format_version = v;
+  }
+
  private:
 
   String m_full_file_name;
+  Int32 m_wanted_format_version = 1;
 
  private:
 
@@ -1976,8 +1984,42 @@ class ArcaneBasicVerifierService2
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ArcaneBasicVerifierService2
+: public ArcaneBasicVerifierService
+{
+ public:
+  explicit ArcaneBasicVerifierService2(const ServiceBuildInfo& sbi)
+  : ArcaneBasicVerifierService(sbi)
+  {
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ArcaneBasicVerifierServiceV3
+: public ArcaneBasicVerifierService
+{
+ public:
+  explicit ArcaneBasicVerifierServiceV3(const ServiceBuildInfo& sbi)
+  : ArcaneBasicVerifierService(sbi)
+  {
+    _setFormatVersion(3);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 ARCANE_REGISTER_SERVICE(ArcaneBasicVerifierService2,
                         ServiceProperty("ArcaneBasicVerifier2",ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IVerifierService));
+
+ARCANE_REGISTER_SERVICE(ArcaneBasicVerifierServiceV3,
+                        ServiceProperty("ArcaneBasicVerifier3",ST_SubDomain),
                         ARCANE_SERVICE_INTERFACE(IVerifierService));
 
 /*---------------------------------------------------------------------------*/
