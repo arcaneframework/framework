@@ -1,0 +1,1 @@
+call "@DOTNET_EXEC@" "@_ARCANE_DOTNET_PUBLISH_DIR@/Arcane.UnifiedDriver.dll" @_ARCANE_TOOL_NAME@ %*

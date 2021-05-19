@@ -153,15 +153,66 @@ macro(arcane_dotnet_configure_script path name lib_or_bin)
       message(STATUS "WIN32! name=${_final_name}")
     endif()
   endif()
-  #if(VERBOSE)
+
   message(STATUS "Configure name=${_final_name} path=${path} lib_or_bin=${lib_or_bin}")
-  #endif()
   arcane_configure_script2(${path} ${_final_name} ${lib_or_bin})
 
   set(ARCANE_INSTALL_PATH ${CMAKE_INSTALL_PREFIX})
   set(ARCANE_INSTALL_SHR ${CMAKE_INSTALL_PREFIX}/share)
   set(ARCANE_INSTALL_LIB ${CMAKE_INSTALL_PREFIX}/lib)
   set(ARCANE_INSTALL_BIN ${CMAKE_INSTALL_PREFIX}/bin)
+endmacro()
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
+# Macro pour configurer un script pour encapsuler un appel 'dotnet'
+# 'name' est le nom du script
+# 'tool_name' est le nom de la commande (premier argument du script)
+macro(arcane_dotnet_configure_exe_script name tool_name)
+  message(STATUS "Configure name=${_final_name} path=${path}")
+  set(_final_name ${name})
+  if (WIN32)
+    # Sous windows, ajoute l'extension '.bat' pour les exécutables
+    set(_final_name ${name}.bat)
+    message(STATUS "WIN32! name=${_final_name}")
+  endif()
+
+  set(subdir_bin bin)
+  set(subdir_lib lib)
+  set(__locpath ${subdir_bin})
+  if(VERBOSE)
+    message(STATUS "Configure2 name=${name} tool_name=${tool_name} __locpath=${__locpath} '${lib_or_bin}'")
+  endif()
+  set(__shell_name arcane_tool_generic_shell.in)
+  if (WIN32)
+    set(__shell_name arcane_tool_generic_shell.bat.in)
+  endif()
+  set(_ARCANE_TOOL_NAME ${tool_name})
+
+  # On génère deux scripts. Un pour l'espace de compilation et un pour
+  # l'espace d'installation
+  set(ARCANE_INSTALL_PATH ${CMAKE_BINARY_DIR})
+  set(ARCANE_INSTALL_SHR ${CMAKE_BINARY_DIR}/share)
+  set(ARCANE_INSTALL_LIB ${CMAKE_BINARY_DIR}/${subdir_lib})
+  set(ARCANE_INSTALL_BIN ${CMAKE_BINARY_DIR}/${subdir_bin})
+  set(_ARCANE_DOTNET_PUBLISH_DIR ${ARCANE_DOTNET_PUBLISH_BUILD_DIR})
+  configure_file(${__shell_name} ${CMAKE_BINARY_DIR}/${__locpath}/${_final_name} @ONLY)
+
+  set(ARCANE_INSTALL_PATH ${CMAKE_INSTALL_PREFIX})
+  set(ARCANE_INSTALL_SHR ${CMAKE_INSTALL_PREFIX}/share)
+  set(ARCANE_INSTALL_LIB ${CMAKE_INSTALL_PREFIX}/${subdir_lib})
+  set(ARCANE_INSTALL_BIN ${CMAKE_INSTALL_PREFIX}/${subdir_bin})
+  set(_ARCANE_DOTNET_PUBLISH_DIR ${CMAKE_INSTALL_PREFIX}/${ARCANE_DOTNET_PUBLISH_RELATIVE_DIR})
+  configure_file(${__shell_name} ${CMAKE_BINARY_DIR}/${__locpath}_install/${_final_name} @ONLY)
+
+  set(ARCANE_INSTALL_PATH ${CMAKE_INSTALL_PREFIX})
+  set(ARCANE_INSTALL_SHR ${CMAKE_INSTALL_PREFIX}/share)
+  set(ARCANE_INSTALL_LIB ${CMAKE_INSTALL_PREFIX}/lib)
+  set(ARCANE_INSTALL_BIN ${CMAKE_INSTALL_PREFIX}/bin)
+
+  unset(_ARCANE_DOTNET_PUBLISH_DIR)
+  unset(_ARCANE_TOOL_NAME)
 endmacro()
 
 # ----------------------------------------------------------------------------
@@ -211,10 +262,14 @@ arccon_dotnet_install_publish_directory(DIRECTORY ${CMAKE_BINARY_DIR}/nupkgs
 # ----------------------------------------------------------------------------
 set(ARCANE_EXECDRIVER_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Arcane.ExecDrivers)
 arcane_dotnet_configure_script(${ARCANE_EXECDRIVER_SOURCE_DIR}/Arcane.ExecDrivers.Common Arcane.ExecDrivers.Common.dll.config.json lib)
-arcane_dotnet_configure_script(${ARCANE_EXECDRIVER_SOURCE_DIR}/Arcane.ExecDrivers.MeshUtilsDriver arcane_partition_mesh bin)
-arcane_dotnet_configure_script(${ARCANE_EXECDRIVER_SOURCE_DIR}/Arcane.ExecDrivers.MeshUtilsDriver arcane_convert_mesh bin)
-arcane_dotnet_configure_script(${ARCANE_EXECDRIVER_SOURCE_DIR}/Arcane.ExecDrivers.CurveUtilsDriver arcane_curves bin)
-arcane_dotnet_configure_script(${CMAKE_CURRENT_SOURCE_DIR}/Arcane.Templates arcane_templates bin)
+
+arcane_dotnet_configure_exe_script(arcane_partition_mesh "mesh_utils partition")
+arcane_dotnet_configure_exe_script(arcane_convert_mesh "mesh_utils convert")
+arcane_dotnet_configure_exe_script(arcane_curves "curve_utils")
+arcane_dotnet_configure_exe_script(arcane_templates "template")
+arcane_dotnet_configure_exe_script(arcane_test_driver "test_driver")
+arcane_dotnet_configure_exe_script(arcane_run "launcher")
+
 set(_SCRIPT_EXTENSION "")
 if (WIN32)
   set(_SCRIPT_EXTENSION ".bat")
@@ -226,8 +281,6 @@ install(PROGRAMS
   ${ARCANEBUILDROOT}/bin_install/arcane_templates${_SCRIPT_EXTENSION}
   ${ARCANEBUILDROOT}/bin_install/arcane_run${_SCRIPT_EXTENSION}
   DESTINATION bin)
-arcane_dotnet_configure_script(${ARCANE_EXECDRIVER_SOURCE_DIR}/Arcane.ExecDrivers.TestDriver arcane_test_driver bin)
-arcane_dotnet_configure_script(${ARCANE_EXECDRIVER_SOURCE_DIR}/Arcane.ExecDrivers.Launcher arcane_run bin)
 
 # A revoir pour Win32
 install(FILES ${CMAKE_BINARY_DIR}/${ARCANE_DOTNET_PUBLISH_RELATIVE_DIR}_install/Arcane.ExecDrivers.Common.dll.config.json
