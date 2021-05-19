@@ -228,7 +228,7 @@ arccon_add_csharp_target(dotnet_arcane_utils
 arccon_add_csharp_target(dotnet_xbuild
   DOTNET_RUNTIME ${ARCANE_DOTNET_RUNTIME}
   BUILD_DIR ${ARCANE_DOTNET_PUBLISH_BUILD_DIR}
-  ASSEMBLY_NAME Arcane.ExecDrivers.Common.dll
+  ASSEMBLY_NAME Arcane.ExecDrivers.dll
   PROJECT_PATH ${CMAKE_CURRENT_SOURCE_DIR}
   PROJECT_NAME AllTools.sln
   MSBUILD_ARGS ${ARCANE_MSBUILD_ARGS}
