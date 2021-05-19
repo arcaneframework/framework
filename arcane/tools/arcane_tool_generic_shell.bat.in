@@ -1,1 +1,5 @@
-call "@DOTNET_EXEC@" "@_ARCANE_DOTNET_PUBLISH_DIR@/Arcane.UnifiedDriver.dll" @_ARCANE_TOOL_NAME@ %*
+@echo off
+setlocal enableextensions enabledelayedexpansion
+set filename=%~dp0\.
+for %%F in ("%filename%") do set ARCANE_ROOT=%%~dpF
+call "@ARCANE_DOTNET_RUNNER_EXEC@" @ARCANE_DOTNET_RUNNER_ARGS@ "%ARCANE_ROOT%/@ARCANE_DOTNET_PUBLISH_RELATIVE_DIR@/Arcane.UnifiedDriver.dll" @_ARCANE_TOOL_NAME@ %*
