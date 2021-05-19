@@ -23,6 +23,7 @@
 #include "arcane/utils/Enumerator.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/Real3.h"
+#include "arcane/utils/OStringStream.h"
 
 #include "arcane/AbstractService.h"
 #include "arcane/FactoryService.h"
@@ -46,6 +47,7 @@
 #include "arcane/BasicService.h"
 #include "arcane/MeshPartInfo.h"
 #include "arcane/ios/IosFile.h"
+#include "arcane/MeshUtils.h"
 
 // Element types in .msh file format, found in gmsh-2.0.4/Common/GmshDefines.h
 #include "arcane/ios/IosGmsh.h"
@@ -225,6 +227,8 @@ class MshMeshReader
   Integer _readElementsFromAsciiMshV4File(IosFile&, MeshInfo& mesh_info);
   eReturnType _readMeshFromNewMshFile(IMesh*, IosFile&);
   void _allocateCells(IMesh* mesh, MeshInfo& mesh_info);
+  void _allocateGroups(IMesh* mesh, MeshInfo& mesh_info);
+  void _allocateFaceGroup(IMesh* mesh, MeshInfo& mesh_info, MeshV4ElementsBlock& block);
   Integer _switchMshType(Integer, Integer&);
   eReturnType _readMeshFromMshFile(IMesh* mesh, const XmlNode& mesh_node,
                                    const String& file_name, bool use_internal_partition);
@@ -672,6 +676,117 @@ _allocateCells(IMesh* mesh, MeshInfo& mesh_info)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+void MshMeshReader::
+_allocateGroups(IMesh* mesh, MeshInfo& mesh_info)
+{
+  Int32 mesh_dim = mesh->dimension();
+  Int32 face_dim = mesh_dim - 1;
+  for( MeshV4ElementsBlock& block : mesh_info.blocks ){
+    Int32 block_index = block.index;
+    Int32 block_dim = block.dimension;
+    // On alloue un groupe s'il a un nom physique associé.
+    // Pour cela, il faut déjà qu'il soit associé à une entité.
+    Int32 block_entity_tag = block.entity_tag;
+    if (block_entity_tag<0){
+      info(5) << "[Groups] Skipping block index=" << block_index << " because it has no entity";
+      continue;
+    }
+    // Pour l'instant on ne traite pas les nuages
+    if (block_dim==0){
+      info(5) << "[Groups] Skipping block index=" << block_index << " because NodeGroup is not yet supported for this format";
+      continue;
+    }
+    MeshV4EntitiesWithNodes* entity = mesh_info.findEntities(block_dim,block_entity_tag);
+    if (!entity){
+      info(5) << "[Groups] Skipping block index=" << block_index << " because entity tag is invalid";
+      continue;
+    }
+    Int32 entity_physical_tag = entity->physical_tag;
+    MeshPhysicalName physical_name = mesh_info.physical_name_list.find(block_dim,entity_physical_tag);
+    if (physical_name.isNull()){
+      info(5) << "[Groups] Skipping block index=" << block_index << " because entity physical tag is invalid";
+      continue;
+    }
+    info() << "PhysicalName for block index=" << block_index << " is '" << physical_name.name << "'";
+    if (block_dim==face_dim){
+      _allocateFaceGroup(mesh,mesh_info,block);
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MshMeshReader::
+_allocateFaceGroup(IMesh* mesh, MeshInfo& mesh_info, MeshV4ElementsBlock& block)
+{
+  const Int32 nb_entity = block.nb_entity;
+  info(4) << "ALLOCATE_FACE_GROUP block=" << block.index << " nb_entity=" << nb_entity;
+  String name = String("FaceGroupTest") + String::fromNumber(block.index);
+
+  // Il peut y avoir plusieurs blocs pour le même groupe.
+  // On récupère le groupe s'il existe déjà.
+  FaceGroup face_group = mesh->faceFamily()->findGroup(name,true);
+
+  UniqueArray<Int32> faces_id(nb_entity); // Numéro de la face dans le maillage \a mesh
+
+  const Int32 item_nb_node = block.item_nb_node;
+  const Int32 face_nb_node = nb_entity * item_nb_node;
+
+  UniqueArray<Int64> faces_first_node_unique_id(nb_entity);
+  UniqueArray<Int32> faces_first_node_local_id(nb_entity);
+  UniqueArray<Int64> faces_nodes_unique_id(face_nb_node);
+  Integer faces_nodes_unique_id_index = 0;
+
+  UniqueArray<Int64> orig_nodes_id(item_nb_node);
+  UniqueArray<Integer> face_nodes_index(item_nb_node);
+
+  IItemFamily* node_family = mesh->nodeFamily();
+  ItemInternalList mesh_nodes(node_family->itemsInternal());
+
+  // Réordonne les identifiants des faces pour se conformer à Arcane et retrouver
+  // la face dans le maillage
+  for( Integer i_face=0; i_face<nb_entity; ++i_face ){
+    for( Integer z=0; z<item_nb_node; ++z )
+      orig_nodes_id[z] = block.connectivity[faces_nodes_unique_id_index+z];
+
+    mesh_utils::reorderNodesOfFace2(orig_nodes_id,face_nodes_index);
+    for( Integer z=0; z<item_nb_node; ++z )
+      faces_nodes_unique_id[faces_nodes_unique_id_index+z] = orig_nodes_id[face_nodes_index[z]];
+    faces_first_node_unique_id[i_face] = orig_nodes_id[face_nodes_index[0]];
+    faces_nodes_unique_id_index += item_nb_node;
+  }
+
+  node_family->itemsUniqueIdToLocalId(faces_first_node_local_id,faces_first_node_unique_id);
+
+  faces_nodes_unique_id_index = 0;
+  for( Integer i_face=0; i_face<nb_entity; ++i_face ){
+    const Integer n = item_nb_node;
+    Int64ConstArrayView face_nodes_id(item_nb_node,&faces_nodes_unique_id[faces_nodes_unique_id_index]);
+    Node current_node(mesh_nodes[faces_first_node_local_id[i_face]]);
+    Face face = mesh_utils::getFaceFromNodesUnique(current_node,face_nodes_id);
+
+    if (face.null()){
+      OStringStream ostr;
+      ostr() << "(Nodes:";
+      for( Integer z=0; z<n; ++z )
+        ostr() << ' ' << face_nodes_id[z];
+      ostr() << " - " << current_node.localId() << ")";
+      ARCANE_FATAL("INTERNAL: MeshMeshReader face index={0} with nodes '{1}' is not in node/face connectivity",
+                   i_face,ostr.str());
+    }
+    faces_id[i_face] = face.localId();
+
+    faces_nodes_unique_id_index += n;
+  }
+  info(4) << "Adding " << faces_id.size() << " faces from block index=" << block.index
+          << " to group '" << face_group.name() << "'";
+  face_group.addItems(faces_id);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*
  * $PhysicalNames // same as MSH version 2
  *    numPhysicalNames(ASCII int)
@@ -920,6 +1035,7 @@ _readMeshFromNewMshFile(IMesh* mesh, IosFile& ios_file)
   pmesh->setDimension(mesh_dimension);
 
   _allocateCells(mesh, mesh_info);
+  _allocateGroups(mesh, mesh_info);
   return RTOk;
 }
 
