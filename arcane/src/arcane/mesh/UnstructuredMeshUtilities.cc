@@ -637,7 +637,10 @@ writeToFile(const String& file_name,const String& service_name)
   auto mesh_writer = sb.createReference(service_name,SB_AllowNull);
   
   if (!mesh_writer){
-    warning() << "The speicifed service '{0}' to write the mesh is not available";
+    UniqueArray<String> available_names;
+    sb.getServicesNames(available_names);
+    warning() << String::format("The speicified service '{0}' to write the mesh is not available."
+                                " Valid names are {1}",service_name,available_names);
     return true;
   }
   mesh_writer->writeMeshToFile(m_mesh,file_name);
