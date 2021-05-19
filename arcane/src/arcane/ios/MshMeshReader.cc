@@ -110,6 +110,7 @@ class MshMeshReader
     Int32 dimension = -1; //!< Dimension de l'entité
     Int32 item_nb_node = 0; //!< Nombre de noeuds de l'entité.
     Int32 entity_tag = -1;
+    UniqueArray<Int64> uids;
     UniqueArray<Int64> connectivity;
   };
 
@@ -183,9 +184,10 @@ class MshMeshReader
    public:
     Integer nb_elements = 0;
     Integer nb_cell_node = 0;
-    UniqueArray<Integer> cells_nb_node;
+    UniqueArray<Int32> cells_nb_node;
+    UniqueArray<Int32> cells_type;
+    UniqueArray<Int64> cells_uid;
     UniqueArray<Int64> cells_connectivity;
-    UniqueArray<Integer> cells_type;
     UniqueArray<Real3> node_coords;
     HashTableMapT<Int64, Real3> node_coords_map;
     MeshPhysicalNameList physical_name_list;
@@ -454,6 +456,7 @@ _readElementsFromAsciiMshV2File(IosFile& ios_file, MeshInfo& mesh_info)
 
     mesh_info.cells_type.add(cell_type);
     mesh_info.cells_nb_node.add(number_of_nodes);
+    mesh_info.cells_uid.add(i);
     info() << elm_number << " " << elm_type << " " << number_of_tags << " number_of_nodes=" << number_of_nodes;
     //		printf("%i %i %i %i %i (", elm_number, elm_type, reg_phys, reg_elem, number_of_nodes);
     for (Integer j = 0; j < number_of_nodes; ++j) {
@@ -543,11 +546,11 @@ _readElementsFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
     block.entity_tag = entity_tag;
 
     for (Integer i = 0; i < nb_entity_in_block; ++i) {
-      // TODO: a utiliser
-      [[maybe_unused]] Integer cell_unique_id = ios_file.getInteger();
+      Int64 item_unique_id = ios_file.getInt64();
+      block.uids.add(item_unique_id);
 
       for ( Integer j = 0; j < item_nb_node; ++j )
-        block.connectivity.add(ios_file.getInteger());
+        block.connectivity.add(ios_file.getInt64());
     }
     ios_file.getNextLine(); // Skip current \n\r
   }
@@ -576,6 +579,7 @@ _readElementsFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
     for (Integer i = 0; i < block.nb_entity; ++i) {
       mesh_info.cells_type.add(item_type);
       mesh_info.cells_nb_node.add(item_nb_node);
+      mesh_info.cells_uid.add(block.uids[i]);
       auto v = block.connectivity.subView(i*item_nb_node,item_nb_node);
       mesh_info.cells_connectivity.addRange(v);
     }
@@ -624,9 +628,9 @@ _allocateCells(IMesh* mesh, MeshInfo& mesh_info)
   Integer connectivity_index = 0;
   UniqueArray<Real3> local_coords;
   for (Integer i = 0; i < nb_elements; ++i) {
-    Integer current_cell_nb_node = mesh_info.cells_nb_node.item(i);
-    Integer cell_type = mesh_info.cells_type.item(i);
-    Int64 cell_uid = i;
+    Integer current_cell_nb_node = mesh_info.cells_nb_node[i];
+    Integer cell_type = mesh_info.cells_type[i];
+    Int64 cell_uid = mesh_info.cells_uid[i];
     cells_infos.add(cell_type);
     cells_infos.add(cell_uid); //cell_unique_id
 
