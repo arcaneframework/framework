@@ -18,6 +18,9 @@
 macro(arcane_find_package package_name)
   set(__arcane_disable_package false)
   set(__arcane_required_package false)
+  if (${package_name} IN_LIST ARCANE_REQUIRED_PACKAGE_LIST)
+    set(__arcane_required_package true)
+  endif()
   if (ARCANE_NO_DEFAULT_PACKAGE)
     # Si pas de package par défaut, alors il faut explicitement lister
     # tous les packages dans la variable ARCANE_REQUIRED_PACKAGE_LIST
