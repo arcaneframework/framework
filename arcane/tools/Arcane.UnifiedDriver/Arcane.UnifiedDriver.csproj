@@ -1,14 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="../CommonExe.props" />
   <ItemGroup>
-    <PackageReference Include="Scriban" Version="3.3.2" />
-    <PackageReference Include="Mono.Options" Version="6.*" />
-</ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Arcane.Templates\Arcane.Templates.csproj" />
-    <ProjectReference Include="..\Arcane.ExecDrivers\Arcane.ExecDrivers.MeshUtilsDriver\Arcane.ExecDrivers.MeshUtilsDriver.csproj" />
-    <ProjectReference Include="..\Arcane.ExecDrivers\Arcane.ExecDrivers.CurveUtilsDriver\Arcane.ExecDrivers.CurveUtilsDriver.csproj" />
-    <ProjectReference Include="..\Arcane.ExecDrivers\Arcane.ExecDrivers.TestDriver\Arcane.ExecDrivers.TestDriver.csproj" />
-    <ProjectReference Include="..\Arcane.ExecDrivers\Arcane.ExecDrivers.Launcher\Arcane.ExecDrivers.Launcher.csproj" />
+    <ProjectReference Include="..\Arcane.ExecDrivers\Arcane.ExecDrivers.csproj" />
   </ItemGroup>
 </Project>

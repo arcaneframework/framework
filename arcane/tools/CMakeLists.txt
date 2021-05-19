@@ -261,7 +261,7 @@ arccon_dotnet_install_publish_directory(DIRECTORY ${CMAKE_BINARY_DIR}/nupkgs
 
 # ----------------------------------------------------------------------------
 set(ARCANE_EXECDRIVER_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Arcane.ExecDrivers)
-arcane_dotnet_configure_script(${ARCANE_EXECDRIVER_SOURCE_DIR}/Arcane.ExecDrivers.Common Arcane.ExecDrivers.Common.dll.config.json lib)
+arcane_dotnet_configure_script(${ARCANE_EXECDRIVER_SOURCE_DIR} Arcane.ExecDrivers.dll.config.json lib)
 
 arcane_dotnet_configure_exe_script(arcane_partition_mesh "mesh_utils partition")
 arcane_dotnet_configure_exe_script(arcane_convert_mesh "mesh_utils convert")
@@ -283,7 +283,7 @@ install(PROGRAMS
   DESTINATION bin)
 
 # A revoir pour Win32
-install(FILES ${CMAKE_BINARY_DIR}/${ARCANE_DOTNET_PUBLISH_RELATIVE_DIR}_install/Arcane.ExecDrivers.Common.dll.config.json
+install(FILES ${CMAKE_BINARY_DIR}/${ARCANE_DOTNET_PUBLISH_RELATIVE_DIR}_install/Arcane.ExecDrivers.dll.config.json
   DESTINATION ${ARCANE_DOTNET_PUBLISH_RELATIVE_DIR})
 
 # ----------------------------------------------------------------------------
