@@ -1,2 +1,0 @@
-#!/bin/sh
-@ARCANE_DOTNET_RUNNER_EXEC@ @ARCANE_DOTNET_RUNNER_ARGS@ @_ARCANE_DOTNET_PUBLISH_DIR@/Arcane.UnifiedDriver.dll test_driver "$@"
