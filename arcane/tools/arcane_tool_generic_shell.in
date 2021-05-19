@@ -1,3 +1,8 @@
 #!/bin/sh
-LD_LIBRARY_PATH=@ARCANE_INSTALL_LIB@:${LD_LIBRARY_PATH}
-@ARCANE_DOTNET_RUNNER_EXEC@ @ARCANE_DOTNET_RUNNER_ARGS@ @_ARCANE_DOTNET_PUBLISH_DIR@/Arcane.UnifiedDriver.dll @_ARCANE_TOOL_NAME@ "$@"
+# This script is in the subdirectory 'bin' of the Arcane root path
+# Parent directory of that directory is the root path of Arcane
+THAT_DIR=$(X= cd -- "$(dirname -- "$0")" && pwd -P)
+ARCANE_ROOT=$(dirname ${THAT_DIR})
+export ARCANE_ROOT
+LD_LIBRARY_PATH=${ARCANE_ROOT}/@ARCANE_RELATIVE_LIB@:${LD_LIBRARY_PATH}
+@ARCANE_DOTNET_RUNNER_EXEC@ @ARCANE_DOTNET_RUNNER_ARGS@ ${ARCANE_ROOT}/@ARCANE_DOTNET_PUBLISH_RELATIVE_DIR@/Arcane.UnifiedDriver.dll @_ARCANE_TOOL_NAME@ "$@"

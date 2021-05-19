@@ -199,6 +199,7 @@ macro(arcane_dotnet_configure_exe_script name tool_name)
   set(_ARCANE_DOTNET_PUBLISH_DIR ${ARCANE_DOTNET_PUBLISH_BUILD_DIR})
   configure_file(${__shell_name} ${CMAKE_BINARY_DIR}/${__locpath}/${_final_name} @ONLY)
 
+  set(ARCANE_RELATIVE_LIB ${subdir_lib})
   set(ARCANE_INSTALL_PATH ${CMAKE_INSTALL_PREFIX})
   set(ARCANE_INSTALL_SHR ${CMAKE_INSTALL_PREFIX}/share)
   set(ARCANE_INSTALL_LIB ${CMAKE_INSTALL_PREFIX}/${subdir_lib})
