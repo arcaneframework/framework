@@ -63,9 +63,9 @@
  *   l'option '-save-all' pour sauver un fichier '.msh' à partir d'un '.geo'
  *
  * TODO:
- * - lire les tags des entités (uniqueId())
+ * - lire les tags des noeuds(uniqueId())
  * - supporter les partitions
- * - supporter les groupes pour les conditions aux limites
+ * - supporter les groupes de maillage et noeuds (actuellement seulement les faces).
  * - pouvoir utiliser la bibliothèque 'gmsh' directement.
  * - supporter ce format avec le nouveau mécanisme des services de maillage.
  */
@@ -228,7 +228,7 @@ class MshMeshReader
   eReturnType _readMeshFromNewMshFile(IMesh*, IosFile&);
   void _allocateCells(IMesh* mesh, MeshInfo& mesh_info);
   void _allocateGroups(IMesh* mesh, MeshInfo& mesh_info);
-  void _allocateFaceGroup(IMesh* mesh, MeshInfo& mesh_info, MeshV4ElementsBlock& block);
+  void _allocateFaceGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name);
   Integer _switchMshType(Integer, Integer&);
   eReturnType _readMeshFromMshFile(IMesh* mesh, const XmlNode& mesh_node,
                                    const String& file_name, bool use_internal_partition);
@@ -694,23 +694,31 @@ _allocateGroups(IMesh* mesh, MeshInfo& mesh_info)
     }
     // Pour l'instant on ne traite pas les nuages
     if (block_dim==0){
-      info(5) << "[Groups] Skipping block index=" << block_index << " because NodeGroup is not yet supported for this format";
+      info(5) << "[Groups] Skipping block index=" << block_index
+              << " because NodeGroup is not yet supported for this format";
       continue;
     }
     MeshV4EntitiesWithNodes* entity = mesh_info.findEntities(block_dim,block_entity_tag);
     if (!entity){
-      info(5) << "[Groups] Skipping block index=" << block_index << " because entity tag is invalid";
+      info(5) << "[Groups] Skipping block index=" << block_index
+              << " because entity tag is invalid";
       continue;
     }
     Int32 entity_physical_tag = entity->physical_tag;
     MeshPhysicalName physical_name = mesh_info.physical_name_list.find(block_dim,entity_physical_tag);
     if (physical_name.isNull()){
-      info(5) << "[Groups] Skipping block index=" << block_index << " because entity physical tag is invalid";
+      info(5) << "[Groups] Skipping block index=" << block_index
+              << " because entity physical tag is invalid";
       continue;
     }
-    info() << "PhysicalName for block index=" << block_index << " is '" << physical_name.name << "'";
+    info(4) << "[Groups] Block index=" << block_index << " dim=" << block_dim
+            << " name='" << physical_name.name << "'";
     if (block_dim==face_dim){
-      _allocateFaceGroup(mesh,mesh_info,block);
+      _allocateFaceGroup(mesh,block,physical_name.name);
+    }
+    else{
+      info(4) << "[Groups] Skipping block index=" << block_index
+              << " because its dimension is not yet supported";
     }
   }
 }
@@ -719,15 +727,13 @@ _allocateGroups(IMesh* mesh, MeshInfo& mesh_info)
 /*---------------------------------------------------------------------------*/
 
 void MshMeshReader::
-_allocateFaceGroup(IMesh* mesh, MeshInfo& mesh_info, MeshV4ElementsBlock& block)
+_allocateFaceGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name)
 {
   const Int32 nb_entity = block.nb_entity;
-  info(4) << "ALLOCATE_FACE_GROUP block=" << block.index << " nb_entity=" << nb_entity;
-  String name = String("FaceGroupTest") + String::fromNumber(block.index);
 
   // Il peut y avoir plusieurs blocs pour le même groupe.
   // On récupère le groupe s'il existe déjà.
-  FaceGroup face_group = mesh->faceFamily()->findGroup(name,true);
+  FaceGroup face_group = mesh->faceFamily()->findGroup(group_name,true);
 
   UniqueArray<Int32> faces_id(nb_entity); // Numéro de la face dans le maillage \a mesh
 
@@ -797,18 +803,25 @@ _allocateFaceGroup(IMesh* mesh, MeshInfo& mesh_info, MeshV4ElementsBlock& block)
 void MshMeshReader::
 _readPhysicalNames(IosFile& ios_file,MeshInfo& mesh_info)
 {
+  String quote_mark = "\"";
   Int32 nb_name = ios_file.getInteger();
   info() << "nb_physical_name=" << nb_name;
   ios_file.getNextLine();
   for( Int32 i=0; i<nb_name; ++i ){
     Int32 dim = ios_file.getInteger();
     Int32 tag = ios_file.getInteger();
-    StringView s = ios_file.getNextLine();
+    String s = ios_file.getNextLine();
     if (dim<0 || dim>3)
       ARCANE_FATAL("Invalid value for physical name dimension dim={0}",dim);
+    // Les noms des groupes peuvent commencer par des espaces et contiennent
+    // des guillemets qu'il faut supprimer.
+    s = String::collapseWhiteSpace(s);
+    if (s.startsWith(quote_mark))
+      s = s.substring(1);
+    if (s.endsWith(quote_mark))
+      s = s.substring(0,s.length()-1);
     mesh_info.physical_name_list.add(dim,tag,s);
-    // TODO: supprimer les espaces et les '"' du nom.
-    info(4) << "[PhysicalName] index=" << i << " dim=" << dim << " tag=" << tag << " name=" << s;
+    info(4) << "[PhysicalName] index=" << i << " dim=" << dim << " tag=" << tag << " name='" << s << "'";
   }
   StringView s = ios_file.getNextLine();
   if (s!="$EndPhysicalNames")
