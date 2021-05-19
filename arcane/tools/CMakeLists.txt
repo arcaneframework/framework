@@ -170,49 +170,32 @@ endmacro()
 # 'name' est le nom du script
 # 'tool_name' est le nom de la commande (premier argument du script)
 macro(arcane_dotnet_configure_exe_script name tool_name)
-  message(STATUS "Configure name=${_final_name} path=${path}")
+  message(STATUS "Configure name=${name} tool_name=${tool_name}")
   set(_final_name ${name})
   if (WIN32)
     # Sous windows, ajoute l'extension '.bat' pour les exécutables
     set(_final_name ${name}.bat)
-    message(STATUS "WIN32! name=${_final_name}")
   endif()
 
-  set(subdir_bin bin)
-  set(subdir_lib lib)
-  set(__locpath ${subdir_bin})
+  set(__locpath bin)
   if(VERBOSE)
-    message(STATUS "Configure2 name=${name} tool_name=${tool_name} __locpath=${__locpath} '${lib_or_bin}'")
+    message(STATUS "Configure2 name=${name} tool_name=${tool_name} __locpath=${__locpath}")
   endif()
   set(__shell_name arcane_tool_generic_shell.in)
   if (WIN32)
     set(__shell_name arcane_tool_generic_shell.bat.in)
   endif()
   set(_ARCANE_TOOL_NAME ${tool_name})
-
+  # Le script utilise les variables suivantes:
+  # - ARCANE_DOTNET_PUBLISH_RELATIVE_DIR
+  # - ARCANE_DOTNET_RUNNER_EXEC
+  # - ARCANE_DOTNET_RUNNER_ARGS
+  # - ARCANE_RELATIVE_LIB
   # On génère deux scripts. Un pour l'espace de compilation et un pour
-  # l'espace d'installation
-  set(ARCANE_INSTALL_PATH ${CMAKE_BINARY_DIR})
-  set(ARCANE_INSTALL_SHR ${CMAKE_BINARY_DIR}/share)
-  set(ARCANE_INSTALL_LIB ${CMAKE_BINARY_DIR}/${subdir_lib})
-  set(ARCANE_INSTALL_BIN ${CMAKE_BINARY_DIR}/${subdir_bin})
-  set(_ARCANE_DOTNET_PUBLISH_DIR ${ARCANE_DOTNET_PUBLISH_BUILD_DIR})
+  # l'espace d'installation mais les deux sont identiques.
+  set(ARCANE_RELATIVE_LIB lib)
   configure_file(${__shell_name} ${CMAKE_BINARY_DIR}/${__locpath}/${_final_name} @ONLY)
-
-  set(ARCANE_RELATIVE_LIB ${subdir_lib})
-  set(ARCANE_INSTALL_PATH ${CMAKE_INSTALL_PREFIX})
-  set(ARCANE_INSTALL_SHR ${CMAKE_INSTALL_PREFIX}/share)
-  set(ARCANE_INSTALL_LIB ${CMAKE_INSTALL_PREFIX}/${subdir_lib})
-  set(ARCANE_INSTALL_BIN ${CMAKE_INSTALL_PREFIX}/${subdir_bin})
-  set(_ARCANE_DOTNET_PUBLISH_DIR ${CMAKE_INSTALL_PREFIX}/${ARCANE_DOTNET_PUBLISH_RELATIVE_DIR})
   configure_file(${__shell_name} ${CMAKE_BINARY_DIR}/${__locpath}_install/${_final_name} @ONLY)
-
-  set(ARCANE_INSTALL_PATH ${CMAKE_INSTALL_PREFIX})
-  set(ARCANE_INSTALL_SHR ${CMAKE_INSTALL_PREFIX}/share)
-  set(ARCANE_INSTALL_LIB ${CMAKE_INSTALL_PREFIX}/lib)
-  set(ARCANE_INSTALL_BIN ${CMAKE_INSTALL_PREFIX}/bin)
-
-  unset(_ARCANE_DOTNET_PUBLISH_DIR)
   unset(_ARCANE_TOOL_NAME)
 endmacro()
 
