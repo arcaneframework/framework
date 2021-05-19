@@ -1,1 +1,1 @@
-call "@DOTNET_EXEC@" "@_ARCANE_DOTNET_PUBLISH_DIR@/Arcane.Templates.dll" %*
+call "@DOTNET_EXEC@" "@_ARCANE_DOTNET_PUBLISH_DIR@/Arcane.UnifiedDriver.dll" template %*

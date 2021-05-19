@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arcane.ExecDrivers.Launcher
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arcane.Templates", "Arcane.Templates\Arcane.Templates.csproj", "{89A0CEE3-B9F4-47C9-9ECA-357F8B255571}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arcane.UnifiedDriver", "Arcane.UnifiedDriver\Arcane.UnifiedDriver.csproj", "{6F30281B-6A66-491C-8ED5-9728E75CA08B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -107,6 +109,14 @@ Global
 		{89A0CEE3-B9F4-47C9-9ECA-357F8B255571}.Debug_64|Any CPU.Build.0 = Debug|Any CPU
 		{89A0CEE3-B9F4-47C9-9ECA-357F8B255571}.Release_64|Any CPU.ActiveCfg = Debug|Any CPU
 		{89A0CEE3-B9F4-47C9-9ECA-357F8B255571}.Release_64|Any CPU.Build.0 = Debug|Any CPU
+		{6F30281B-6A66-491C-8ED5-9728E75CA08B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F30281B-6A66-491C-8ED5-9728E75CA08B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F30281B-6A66-491C-8ED5-9728E75CA08B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F30281B-6A66-491C-8ED5-9728E75CA08B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F30281B-6A66-491C-8ED5-9728E75CA08B}.Debug_64|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F30281B-6A66-491C-8ED5-9728E75CA08B}.Debug_64|Any CPU.Build.0 = Debug|Any CPU
+		{6F30281B-6A66-491C-8ED5-9728E75CA08B}.Release_64|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F30281B-6A66-491C-8ED5-9728E75CA08B}.Release_64|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = Arcane.ExecDrivers\Arcane.ExecDrivers.TestDriver\Arcane.ExecDrivers.TestDriver.csproj

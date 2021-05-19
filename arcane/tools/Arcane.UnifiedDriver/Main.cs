@@ -6,11 +6,11 @@
 using System;
 using System.Collections.Generic;
 
-namespace Arcane.Templates
+namespace Arcane.UnifiedDriver
 {
-  public class MainClass
+  class MainClass
   {
-    static public int MainExec(string[] args)
+    static int Main(string[] args)
     {
       int nb_arg = args.Length;
       bool do_help = false;
@@ -20,21 +20,21 @@ namespace Arcane.Templates
           do_help = true;
       }
       if (nb_arg==0 || do_help){
-        Console.WriteLine("Usage: arcane_templates generate-application [options]");
+        Console.WriteLine("Usage: program command [options]");
         return (-1);
       }
       List<string> l_remaining_args = new List<string>();
-
+      // Le premier argument indique le nom de la commande
       for( int i=1; i<nb_arg; ++i )
         l_remaining_args.Add(args[i]);
+      var remaining_args = l_remaining_args.ToArray();
       int r = 0;
       switch(args[0]){
-      case "generate-application":
-        var e = new GenerateApplication();
-        r = e.Execute(l_remaining_args.ToArray());
-        break;
+      case "template":
+          return Arcane.Templates.MainClass.MainExec(remaining_args);
+          break;
       default:
-        throw new ApplicationException(String.Format("Bad option '{0}' for driver. Valid value is 'generate-application'",args[0]));
+        throw new ApplicationException(String.Format("Bad option '{0}' for driver",args[0]));
       }
       return r;
     }
