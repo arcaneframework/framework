@@ -10,8 +10,8 @@ using Arcane.ExecDrivers.Common;
 
 namespace Arcane.ExecDrivers.MeshUtilsDriver
 {
-	class MeshUtilsDriver
-	{
+  public class MeshUtilsDriver
+  {
     internal class CasePartitionDriver
     {
       void _ErrorArg(string msg)
@@ -107,7 +107,7 @@ namespace Arcane.ExecDrivers.MeshUtilsDriver
       }
     }
 
-    public static int Main (string[] args)
+    public static int MainExec (string[] args)
     {
       Arcane.ExecDrivers.Common.Utils.Init();
       

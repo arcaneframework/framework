@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="../../CommonExe.props" />
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../Arcane.ExecDrivers.Common/Arcane.ExecDrivers.Common.csproj" />
     <ProjectReference Include="../../VariableComparer/VariableComparer.csproj" />

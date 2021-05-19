@@ -6,5 +6,9 @@
 </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Arcane.Templates\Arcane.Templates.csproj" />
+    <ProjectReference Include="..\Arcane.ExecDrivers\Arcane.ExecDrivers.MeshUtilsDriver\Arcane.ExecDrivers.MeshUtilsDriver.csproj" />
+    <ProjectReference Include="..\Arcane.ExecDrivers\Arcane.ExecDrivers.CurveUtilsDriver\Arcane.ExecDrivers.CurveUtilsDriver.csproj" />
+    <ProjectReference Include="..\Arcane.ExecDrivers\Arcane.ExecDrivers.TestDriver\Arcane.ExecDrivers.TestDriver.csproj" />
+    <ProjectReference Include="..\Arcane.ExecDrivers\Arcane.ExecDrivers.Launcher\Arcane.ExecDrivers.Launcher.csproj" />
   </ItemGroup>
 </Project>

@@ -4,13 +4,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 using System;
-using System.Reflection;
 
 namespace Arcane.ExecDrivers.Launcher
 {
   public class Launcher
   {
-    public static int Main(string[] args)
+    public static int MainExec(string[] args)
     {
       Arcane.ExecDrivers.Common.Utils.Init();
 

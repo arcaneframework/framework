@@ -29,12 +29,19 @@ namespace Arcane.UnifiedDriver
         l_remaining_args.Add(args[i]);
       var remaining_args = l_remaining_args.ToArray();
       int r = 0;
-      switch(args[0]){
-      case "template":
+      switch (args[0]) {
+        case "template":
           return Arcane.Templates.MainClass.MainExec(remaining_args);
-          break;
-      default:
-        throw new ApplicationException(String.Format("Bad option '{0}' for driver",args[0]));
+        case "mesh_utils":
+          return Arcane.ExecDrivers.MeshUtilsDriver.MeshUtilsDriver.MainExec(remaining_args);
+        case "launcher":
+          return Arcane.ExecDrivers.Launcher.Launcher.MainExec(remaining_args);
+        case "curve_utils":
+          return Arcane.ExecDrivers.CurveUtilsDriver.CurveUtilsDriver.MainExec(remaining_args);
+        case "test_driver":
+          return Arcane.ExecDrivers.TestDriver.TestDriverMain.MainExec(remaining_args);
+        default:
+          throw new ApplicationException(String.Format("Bad option '{0}' for driver", args[0]));
       }
       return r;
     }
