@@ -34,7 +34,6 @@ _errorEmptyMesh() const {
 #include "arcane/MeshHandle.h"
 #include "arcane/IItemFamily.h"
 #include "arcane/mesh/ItemFamily.h"
-#include "arcane/mesh/EmptyMesh.h"
 
 #include "neo/Mesh.h"
 
