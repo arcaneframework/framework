@@ -37,6 +37,7 @@
 #include "arcane/utils/IUserData.h"
 #include "arcane/MeshPartInfo.h"
 #include "arcane/IItemFamilyNetwork.h"
+#include "arcane/IItemFamily.h"
 #include "arcane/IVariableMng.h"
 #include "arcane/MeshVariableScalarRef.h"
 #include "arcane/SharedVariable.h"
@@ -63,6 +64,42 @@ class EmptyMesh : public IMesh
 
  private:
   void _error() const { m_trace_mng->fatal() << "Using EmptyMesh"; }
+
+ public:
+  virtual const MeshHandle& handle() const {  _error(); auto var = new MeshHandle{}; return *var; }
+
+ public:
+
+  virtual String name() const { _error(); return String{}; }
+  virtual Integer nbNode() { _error(); return -1; }
+  virtual Integer nbEdge() { _error(); return -1; }
+  virtual Integer nbFace() { _error(); return -1; }
+  virtual Integer nbCell() { _error(); return -1; }
+  virtual Integer nbItem(eItemKind ik) { _error(); return -1; }
+  virtual ITraceMng* traceMng() { _error(); return nullptr; }
+  virtual Integer dimension()   { _error(); return -1; }
+  virtual NodeGroup allNodes() { _error(); return NodeGroup{}; }
+  virtual EdgeGroup allEdges() { _error(); return EdgeGroup{}; }
+  virtual FaceGroup allFaces() { _error(); return FaceGroup{}; }
+  virtual CellGroup allCells() { _error(); return CellGroup{}; }
+  virtual NodeGroup ownNodes() { _error(); return NodeGroup{}; }
+  virtual EdgeGroup ownEdges() { _error(); return EdgeGroup{}; }
+  virtual FaceGroup ownFaces() { _error(); return FaceGroup{}; }
+  virtual CellGroup ownCells() { _error(); return CellGroup{}; }
+  virtual FaceGroup outerFaces() { _error(); return FaceGroup{}; }
+
+ public:
+
+  virtual IItemFamily* createItemFamily(eItemKind ik,const String& name) { _error(); return nullptr; }
+  virtual IItemFamily* findItemFamily(eItemKind ik,const String& name,bool create_if_needed=false) { _error(); return nullptr; }
+  virtual IItemFamily* findItemFamily(const String& name,bool throw_exception=false) { _error(); return nullptr; }
+  virtual IItemFamilyModifier* findItemFamilyModifier(eItemKind ik,const String& name) { _error(); return nullptr; }
+  virtual IItemFamily* itemFamily(eItemKind ik) { _error(); return nullptr; }
+  virtual IItemFamily* nodeFamily() { _error(); return nullptr; }
+  virtual IItemFamily* edgeFamily() { _error(); return nullptr; }
+  virtual IItemFamily* faceFamily() { _error(); return nullptr; }
+  virtual IItemFamily* cellFamily() { _error(); return nullptr; }
+  virtual IItemFamilyCollection itemFamilies() { _error(); return IItemFamilyCollection{}; }
 
  public:
 
