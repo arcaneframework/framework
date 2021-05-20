@@ -20,8 +20,8 @@
 #include "arcane/utils/String.h"
 #include "arcane/utils/Collection.h"
 #include "arcane/MeshHandle.h"
-#include "arcane/IMeshBase.h"
 #include "arcane/ItemGroup.h"
+#include "arcane/mesh/EmptyMesh.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,7 +40,7 @@ class PolyhedralMeshImpl;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_MESH_EXPORT PolyhedralMesh : public IMeshBase {
+class ARCANE_MESH_EXPORT PolyhedralMesh : public EmptyMesh {
  public :
   ISubDomain* m_subdomain;
   inline static const String m_mesh_handle_name = "polyhedral_mesh_handle";
