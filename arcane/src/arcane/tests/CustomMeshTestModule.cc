@@ -35,8 +35,8 @@ class CustomMeshTestModule : public ArcaneCustomMeshTestObject {
   void init() {
     info() << "-- INIT CUSTOM MESH MODULE";
     auto mesh_handle = subDomain()->meshMng()->findMeshHandle(mesh::PolyhedralMesh::handleName());
-    if (mesh_handle.hasMeshBase()) {
-      auto mesh = mesh_handle.meshBase();
+    if (mesh_handle.hasMesh()) {
+      auto mesh = mesh_handle.mesh();
       info() << "- Polyhedral mesh test -";
       info() << "- Mesh dimension " << mesh->dimension();
       info() << "- Mesh nb cells  " << mesh->nbItem(IK_Cell) << " or " << mesh->nbCell();
