@@ -40,7 +40,7 @@ class PolyhedralMeshImpl;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_MESH_EXPORT PolyhedralMesh : public EmptyMesh {
+class PolyhedralMesh : public EmptyMesh {
  public :
   ISubDomain* m_subdomain;
   inline static const String m_mesh_handle_name = "polyhedral_mesh_handle";
