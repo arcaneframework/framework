@@ -53,14 +53,15 @@ class PolyhedralMesh : public EmptyMesh {
   ~PolyhedralMesh(); // for pimpl idiom
 
  public:
+  static String handleName() { return m_mesh_handle_name; }
+
   void read(String const& filename);
+
+#ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 
   // IMeshBase interface
  public:
 
-  static String handleName() { return m_mesh_handle_name; }
-
-  //! Handle sur ce maillage
   const MeshHandle& handle() const override;
 
  public:
@@ -113,6 +114,8 @@ class PolyhedralMesh : public EmptyMesh {
   IItemFamily* cellFamily() override { return nullptr; }
 
   IItemFamilyCollection itemFamilies() override { return IItemFamilyCollection{}; }
+
+#endif // ARCANE_HAS_CUSTOM_MESH_TOOLS
 
  private:
   [[noreturn]] void _errorEmptyMesh() const;
