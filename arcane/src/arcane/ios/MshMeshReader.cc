@@ -228,7 +228,8 @@ class MshMeshReader
   eReturnType _readMeshFromNewMshFile(IMesh*, IosFile&);
   void _allocateCells(IMesh* mesh, MeshInfo& mesh_info);
   void _allocateGroups(IMesh* mesh, MeshInfo& mesh_info);
-  void _allocateFaceGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name);
+  void _addFaceGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name);
+  void _addCellGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name);
   Integer _switchMshType(Integer, Integer&);
   eReturnType _readMeshFromMshFile(IMesh* mesh, const XmlNode& mesh_node,
                                    const String& file_name, bool use_internal_partition);
@@ -713,8 +714,11 @@ _allocateGroups(IMesh* mesh, MeshInfo& mesh_info)
     }
     info(4) << "[Groups] Block index=" << block_index << " dim=" << block_dim
             << " name='" << physical_name.name << "'";
-    if (block_dim==face_dim){
-      _allocateFaceGroup(mesh,block,physical_name.name);
+    if (block_dim==mesh_dim){
+      _addCellGroup(mesh,block,physical_name.name);
+    }
+    else if (block_dim==face_dim){
+      _addFaceGroup(mesh,block,physical_name.name);
     }
     else{
       info(4) << "[Groups] Skipping block index=" << block_index
@@ -727,7 +731,7 @@ _allocateGroups(IMesh* mesh, MeshInfo& mesh_info)
 /*---------------------------------------------------------------------------*/
 
 void MshMeshReader::
-_allocateFaceGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name)
+_addFaceGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name)
 {
   const Int32 nb_entity = block.nb_entity;
 
@@ -789,6 +793,28 @@ _allocateFaceGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_
   info(4) << "Adding " << faces_id.size() << " faces from block index=" << block.index
           << " to group '" << face_group.name() << "'";
   face_group.addItems(faces_id);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MshMeshReader::
+_addCellGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name)
+{
+  const Int32 nb_entity = block.nb_entity;
+
+  // Il peut y avoir plusieurs blocs pour le même groupe.
+  // On récupère le groupe s'il existe déjà.
+  IItemFamily* cell_family = mesh->cellFamily();
+  CellGroup cell_group = cell_family->findGroup(group_name,true);
+
+  UniqueArray<Int32> cells_id(nb_entity); // Numéro de la face dans le maillage \a mesh
+
+  cell_family->itemsUniqueIdToLocalId(cells_id,block.uids);
+
+  info(4) << "Adding " << cells_id.size() << " cells from block index=" << block.index
+          << " to group '" << cell_group.name() << "'";
+  cell_group.addItems(cells_id);
 }
 
 /*---------------------------------------------------------------------------*/
