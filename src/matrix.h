@@ -27,16 +27,15 @@ namespace Alien::PETSc
 class Matrix : public IMatrixImpl
 {
  public:
-  Matrix(const MultiMatrixImpl* multi_impl);
+   explicit Matrix(const MultiMatrixImpl *multi_impl);
 
-  virtual ~Matrix();
+   ~Matrix() override;
 
  public:
-  void setProfile(int ilower, int iupper,
-                  int jlower, int jupper,
-                  Arccore::ConstArrayView<int> row_sizes);
+   void setProfile(int ilower, int iupper, int jlower, int jupper,
+                   [[maybe_unused]] Arccore::ConstArrayView<int> row_sizes);
 
-  void setRowValues(int rows,
+   void setRowValues(int rows,
                     Arccore::ConstArrayView<int> cols,
                     Arccore::ConstArrayView<double> values);
 
@@ -45,8 +44,8 @@ class Matrix : public IMatrixImpl
   Mat internal() const { return m_mat; }
 
  private:
-  Mat m_mat;
-  MPI_Comm m_comm;
+   Mat m_mat;
+   MPI_Comm m_comm{};
 };
 
 } // namespace Alien::PETSc

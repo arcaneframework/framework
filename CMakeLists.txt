@@ -61,6 +61,11 @@ add_library(alien_petsc
   src/matrix.cpp
   src/vector.h
   src/vector.cpp
+  src/petsc_linear_algebra.cpp
+  src/petsc_linear_solver.cpp
+  src/converters/simplecsr_to_petsc_matrix.cpp
+  src/converters/simplecsr_to_petsc_vector.cpp
+  src/converters/petsc_to_simplecsr_vector.cpp
   )
 
 target_link_libraries(alien_petsc PUBLIC
@@ -88,9 +93,9 @@ generate_export_header(alien_petsc
 
 # Tests
 
-#enable_testing()
+enable_testing()
 
-#add_subdirectory(test)
+add_subdirectory(test)
 
 # Install
 

@@ -24,34 +24,23 @@
 
 namespace Alien::PETSc
 {
+// Forward declarations
 class Matrix;
-
 class Vector;
-
 class Options;
 
-extern IInternalLinearSolver<Matrix, Vector>* InternalLinearSolverFactory(const Options& options);
-
-extern IInternalLinearSolver<Matrix, Vector>* InternalLinearSolverFactory();
-
-extern IInternalLinearAlgebra<Matrix, Vector>* InternalLinearAlgebraFactory();
+extern IInternalLinearSolver<Matrix, Vector> *
+InternalLinearSolverFactory(const Options &options);
+extern IInternalLinearSolver<Matrix, Vector> *InternalLinearSolverFactory();
+extern IInternalLinearAlgebra<Matrix, Vector> *InternalLinearAlgebraFactory();
 } // namespace Alien::PETSc
 
-namespace Alien
-{
-namespace BackEnd
-{
-  namespace tag
-  {
-    struct petsc
-    {
-    };
-  } // namespace tag
-} // namespace BackEnd
+namespace Alien::BackEnd::tag {
+struct petsc {};
+} // namespace Alien::BackEnd::tag
 
-template <>
-struct AlgebraTraits<BackEnd::tag::petsc>
-{
+namespace Alien {
+template <> struct AlgebraTraits<BackEnd::tag::petsc> {
   // types
   using matrix_type = PETSc::Matrix;
   using vector_type = PETSc::Vector;
@@ -60,22 +49,17 @@ struct AlgebraTraits<BackEnd::tag::petsc>
   using solver_type = IInternalLinearSolver<matrix_type, vector_type>;
 
   // factory to build algebra
-  static auto* algebra_factory()
-  {
+  static auto algebra_factory() {
     return PETSc::InternalLinearAlgebraFactory();
   }
 
   // factories to build solver
-  static auto* solver_factory(const options_type& options)
-  {
+  static auto solver_factory(const options_type &options) {
     return PETSc::InternalLinearSolverFactory(options);
   }
 
   // factories to build default solver
-  static auto* solver_factory()
-  {
-    return PETSc::InternalLinearSolverFactory();
-  }
+  static auto solver_factory() { return PETSc::InternalLinearSolverFactory(); }
 
   static BackEndId name() { return "petsc"; }
 };

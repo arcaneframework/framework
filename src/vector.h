@@ -24,14 +24,13 @@
 
 namespace Alien::PETSc
 {
-class VectorInternal;
 
 class Vector : public IVectorImpl
 {
  public:
-  Vector(const MultiVectorImpl* multi_impl);
+   explicit Vector(const MultiVectorImpl *multi_impl);
 
-  virtual ~Vector();
+   ~Vector() override;
 
  public:
   void setProfile(int ilower, int iupper);

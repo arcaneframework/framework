@@ -20,11 +20,8 @@
 
 #include <alien/petsc/backend.h>
 #include <alien/core/impl/MultiMatrixImpl.h>
-#include <alien/data/ISpace.h>
 
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
-
-#include <petscmat.h>
 
 namespace Alien::PETSc
 {
@@ -35,7 +32,7 @@ Matrix::Matrix(const MultiMatrixImpl* multi_impl)
   const auto& row_space = multi_impl->rowSpace();
   const auto& col_space = multi_impl->colSpace();
   if (row_space.size() != col_space.size())
-    throw Arccore::FatalErrorException("Hypre matrix must be square");
+    throw Arccore::FatalErrorException("Petsc matrix must be square"); // est ce le cas pour petsc ?
 }
 
 Matrix::~Matrix()
@@ -44,10 +41,9 @@ Matrix::~Matrix()
     MatDestroy(&m_mat);
 }
 
-void Matrix::setProfile(int ilower, int iupper,
-                        int jlower, int jupper,
-                        Arccore::ConstArrayView<int> row_sizes)
-{
+void Matrix::setProfile(
+    int ilower, int iupper, int jlower, int jupper,
+    [[maybe_unused]] Arccore::ConstArrayView<int> row_sizes) {
   if (m_mat) {
     MatDestroy(&m_mat);
   }
@@ -55,11 +51,13 @@ void Matrix::setProfile(int ilower, int iupper,
   auto* pm = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(distribution().parallelMng());
   m_comm = pm ? (*pm->getMPIComm()) : MPI_COMM_WORLD;
 
+
   auto ierr = MatCreate(m_comm, &m_mat);
   ierr |= MatSetSizes(m_mat, iupper - ilower + 1, jupper - jlower + 1,
                       PETSC_DETERMINE, PETSC_DETERMINE);
   ierr |= MatSetType(m_mat, MATMPIAIJ);
   ierr |= MatAssemblyBegin(m_mat, MAT_FINAL_ASSEMBLY);
+  ierr |= MatSetUp(m_mat);
 
   if (ierr) {
     throw Arccore::FatalErrorException(A_FUNCINFO, "PETSc Initialisation failed");
@@ -71,7 +69,7 @@ void Matrix::assemble()
   auto ierr = MatAssemblyEnd(m_mat, MAT_FINAL_ASSEMBLY);
 
   if (ierr) {
-    throw Arccore::FatalErrorException(A_FUNCINFO, "Hypre assembling failed");
+    throw Arccore::FatalErrorException(A_FUNCINFO, "PETSc assembling failed");
   }
 }
 
@@ -86,7 +84,7 @@ void Matrix::setRowValues(int row, Arccore::ConstArrayView<int> cols, Arccore::C
   auto ierr = MatSetValues(m_mat, 1, &row, ncols, cols.data(), values.data(), INSERT_VALUES);
 
   if (ierr) {
-    auto msg = Arccore::String::format("Cannot set Hypre Matrix Values for row {0}", row);
+    auto msg = Arccore::String::format("Cannot set PETSc Matrix Values for row {0}", row);
     throw Arccore::FatalErrorException(A_FUNCINFO, msg);
   }
 }
