@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MathUtils.h                                                 (C) 2000-2014 */
+/* MathUtils.h                                                 (C) 2000-2021 */
 /*                                                                           */
 /* Fonctions mathématiques diverses.                                         */
 /*---------------------------------------------------------------------------*/
@@ -47,7 +47,7 @@ namespace math
  *
  * \deprecated Utiliser cross() à la place.
  */
-inline Real3
+ARCCORE_HOST_DEVICE inline Real3
 vecMul(Real3 u,Real3 v)
 {
   return Real3(
@@ -65,7 +65,7 @@ vecMul(Real3 u,Real3 v)
  *
  * \deprecated Utiliser cross2D() à la place.
  */
-inline Real
+ARCCORE_HOST_DEVICE inline Real
 vecMul2D(Real3 u,Real3 v)
 {
   return Real(u.x * v.y  - u.y * v.x);
@@ -77,7 +77,7 @@ vecMul2D(Real3 u,Real3 v)
  * \ingroup GroupMathUtils
  * \brief Produit vectoriel de \a u par \a v dans \f$R^2\f$.
  */
-inline Real
+ARCCORE_HOST_DEVICE inline Real
 cross2D(Real3 u,Real3 v)
 {
   return Real(u.x * v.y  - u.y * v.x);
@@ -91,7 +91,7 @@ cross2D(Real3 u,Real3 v)
  *
  * Il s'agit de: \f$u{\cdot}v\f$
  */
-inline Real
+ARCCORE_HOST_DEVICE inline Real
 dot(Real2 u,Real2 v)
 {
   return (u.x * v.x  +  u.y * v.y );
@@ -108,7 +108,7 @@ dot(Real2 u,Real2 v)
  *
  * \deprecated Utiliser dot(Real2,Real2) à la place
  */
-inline Real
+ARCCORE_HOST_DEVICE inline Real
 scaMul(Real2 u,Real2 v)
 {
   return (u.x * v.x  +  u.y * v.y );
@@ -123,7 +123,7 @@ scaMul(Real2 u,Real2 v)
  *
  * Il s'agit de: \f$u{\cdot}v\f$.
  */
-inline Real
+ARCCORE_HOST_DEVICE inline Real
 dot(Real3 u,Real3 v)
 {
   return (u.x * v.x  +  u.y * v.y  +  u.z * v.z);
@@ -140,7 +140,7 @@ dot(Real3 u,Real3 v)
  *
  * \deprecated Utiliser dot(Real2,Real2) à la place
  */
-inline Real
+ARCCORE_HOST_DEVICE inline Real
 scaMul(Real3 u,Real3 v)
 {
   return (u.x * v.x  +  u.y * v.y  +  u.z * v.z);
@@ -154,7 +154,7 @@ scaMul(Real3 u,Real3 v)
  * \ingroup GroupMathUtils
  *
  */
-inline Real
+ARCCORE_HOST_DEVICE inline Real
 mixteMul(Real3 u,Real3 v,Real3 w)
 {
   return dot(u,vecMul(v,w));
@@ -165,7 +165,7 @@ mixteMul(Real3 u,Real3 v,Real3 w)
 /*!
  * \brief Déterminant de la matrice u,v,w
  */
-inline Real
+ARCCORE_HOST_DEVICE inline Real
 matDet(Real3 u,Real3 v,Real3 w)
 {
   return (
@@ -218,12 +218,12 @@ prodTensScal(Real3x3 t,Real a)
  * \ingroup GroupMathUtils
  *
  */
-inline Real3
+ARCCORE_HOST_DEVICE inline Real3
 prodTensVec(Real3x3 t,Real3 v)
 {
   return Real3(dot(t.x,v),dot(t.y,v),dot(t.z,v));
 }
-inline Real2
+ARCCORE_HOST_DEVICE inline Real2
 prodTensVec(Real2x2 t,Real2 v)
 {
   return Real2(dot(t.x,v),dot(t.y,v));
@@ -237,7 +237,7 @@ prodTensVec(Real2x2 t,Real2 v)
  *
  * Retourne le vecteur transposé du résultat.
  */
-inline Real3
+ARCCORE_HOST_DEVICE inline Real3
 prodVecTens(Real3 v,Real3x3 t)
 {
   return Real3(dot(v,Real3(t.x.x,t.y.x,t.z.x)),dot(v,Real3(t.x.y,t.y.y,t.z.y)),dot(v,Real3(t.x.z,t.y.z,t.z.z)));
@@ -272,7 +272,7 @@ prodTensTens(Real3x3 t,Real3x3 v)
  * \ingroup GroupMathUtils
  * \brief Produit matrice matrice entre deux tenseurs.
  */
-inline Real3x3
+ARCCORE_HOST_DEVICE inline Real3x3
 matrixProduct(Real3x3 t,Real3x3 v)
 {
   return Real3x3::fromLines(t.x.x*v.x.x+t.x.y*v.y.x+t.x.z*v.z.x,
@@ -322,7 +322,7 @@ matrixTranspose(Real3x3 t)
  *
  * U:V = sum_{i,j \in \{x,y,z \}} U_{i,j}V_{i,j} 
  */
-inline Real
+ARCCORE_HOST_DEVICE inline Real
 doubleContraction(Real3x3 u,Real3x3 v)
 {
   Real x1 = u.x.x * v.x.x;
@@ -348,7 +348,7 @@ doubleContraction(Real3x3 u,Real3x3 v)
  *
  * U:V = sum_{i,j \in \{x,y,z \}} U_{i,j}V_{i,j} 
  */
-inline Real
+ARCCORE_HOST_DEVICE inline Real
 doubleContraction(Real2x2 u,Real2x2 v)
 {
   Real x1 = u.x.x * v.x.x;
@@ -370,7 +370,7 @@ doubleContraction(Real2x2 u,Real2x2 v)
  * \brief Retourne le minimum de deux Real2
  * \ingroup GroupMathUtils
  */
-inline Real2
+ARCCORE_HOST_DEVICE inline Real2
 min(Real2 a,Real2 b)
 {
   return Real2( math::min(a.x,b.x), math::min(a.y,b.y) );
@@ -379,7 +379,7 @@ min(Real2 a,Real2 b)
  * \brief Retourne le minimum de deux Real2
  * \ingroup GroupMathUtils
  */
-inline Real3
+ARCCORE_HOST_DEVICE inline Real3
 min(Real3 a,Real3 b)
 {
   return Real3( math::min(a.x,b.x), math::min(a.y,b.y), math::min(a.z,b.z) );
@@ -439,7 +439,7 @@ max(const T& a,const T& b,const T& c)
  * \brief Retourne le maximum de deux Real2
  * \ingroup GroupMathUtils
  */
-inline Real2
+ARCCORE_HOST_DEVICE inline Real2
 max(Real2 a,Real2 b)
 {
   return Real2( math::max(a.x,b.x), math::max(a.y,b.y) );
@@ -448,7 +448,7 @@ max(Real2 a,Real2 b)
  * \brief Retourne le maximum de deux Real2
  * \ingroup GroupMathUtils
  */
-inline Real3
+ARCCORE_HOST_DEVICE inline Real3
 max(Real3 a,Real3 b)
 {
   return Real3( math::max(a.x,b.x), math::max(a.y,b.y), math::max(a.z,b.z) );
@@ -480,7 +480,8 @@ max(Real3x3 a,Real3x3 b)
 /*!
  * \brief retourne le min de quatre Real
  */
-inline Real min4Real(Real a,Real b,Real c,Real d)
+ARCCORE_HOST_DEVICE inline Real
+min4Real(Real a,Real b,Real c,Real d)
 {
   return min(min(a,b),min(c,d));
 }
@@ -490,7 +491,8 @@ inline Real min4Real(Real a,Real b,Real c,Real d)
 /*!
  * \brief retourne le max de quatre Real
  */
-inline Real max4Real(Real a,Real b,Real c,Real d)
+ARCCORE_HOST_DEVICE inline Real
+max4Real(Real a,Real b,Real c,Real d)
 {
   return max(max(a,b),max(c,d));
 }
@@ -500,7 +502,8 @@ inline Real max4Real(Real a,Real b,Real c,Real d)
 /*!
  * \brief retourne le min de huit <tt>Real</tt>
  */
-inline Real min8Real(const Real a[8])
+ARCCORE_HOST_DEVICE inline Real
+min8Real(const Real a[8])
 {
   return min( min4Real(a[0],a[1],a[2],a[3]), min4Real(a[4],a[5],a[6],a[7]) );
 }
@@ -522,7 +525,7 @@ inline Real max8Real(const Real a[8])
  * \brief retourne le Min mod de quatre Real
  *
  */
-inline Real
+ARCCORE_HOST_DEVICE inline Real
 minMod(Real a,Real b,Real c,Real d)
 {
   Real zero = 0.;
@@ -536,7 +539,7 @@ minMod(Real a,Real b,Real c,Real d)
  * \brief retourne le Min mod de deux Reals
  *
  */
-inline Real
+ARCCORE_HOST_DEVICE inline Real
 minMod2(Real a,Real b)
 {
   Real zero = 0.;
@@ -550,7 +553,7 @@ minMod2(Real a,Real b)
  * \brief retourne le Max mod de deux Reals
  *
  */
-inline Real
+ARCCORE_HOST_DEVICE inline Real
 maxMod2(Real a,Real b)
 {
   Real zero = 0.;
@@ -837,7 +840,8 @@ inline Real3 crossProduct3(Real3 v1, Real3 v2)
  * \ingroup GroupMathUtils 
  * \brief Produit vectoriel de deux vecteurs à 3 composantes.
  */
-inline Real3 cross(Real3 v1, Real3 v2)
+ARCCORE_HOST_DEVICE inline Real3
+cross(Real3 v1, Real3 v2)
 {
   Real3 v;
   v.x = v1.y*v2.z - v1.z*v2.y;
