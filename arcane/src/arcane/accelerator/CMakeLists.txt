@@ -18,6 +18,8 @@ target_link_libraries(arcane_accelerator PUBLIC
   "$<TARGET_NAME_IF_EXISTS:arcane_accelerator_cuda>"
   )
 
+arcane_register_library(arcane_accelerator)
+
 # ----------------------------------------------------------------------------
 # Local Variables:
 # tab-width: 2

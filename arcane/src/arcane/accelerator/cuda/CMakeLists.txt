@@ -5,6 +5,7 @@
 set(ARCANE_SOURCES
   CudaAccelerator.cc
   CudaAccelerator.h
+  CudaReduceImpl.h
   )
 
 arcane_find_package(CUDAToolkit REQUIRED)
@@ -17,6 +18,7 @@ target_compile_options(arcane_cuda_compile_flags INTERFACE
   "$<$<COMPILE_LANGUAGE:CUDA>:--extended-lambda>"
   "$<$<COMPILE_LANGUAGE:CUDA>:-std=c++17>"
   )
+install(TARGETS arcane_cuda_compile_flags EXPORT ArcaneTargets)
 
 arcane_add_library(arcane_accelerator_cuda
   INPUT_PATH ${Arcane_SOURCE_DIR}/src
@@ -44,6 +46,10 @@ set_target_properties(arcane_accelerator_cuda_impl PROPERTIES CUDA_SEPARABLE_COM
 set_target_properties(arcane_accelerator_cuda_impl PROPERTIES LINKER_LANGUAGE CUDA)
 target_link_libraries(arcane_accelerator_cuda_impl PUBLIC arcane_core arcane_cuda_compile_flags)
 target_link_libraries(arcane_accelerator_cuda_impl PUBLIC CUDA::cudart)
+
+# ----------------------------------------------------------------------------
+
+arcane_register_library(arcane_accelerator_cuda)
 
 # ----------------------------------------------------------------------------
 # Local Variables:
