@@ -5,7 +5,7 @@ cmake_policy(SET CMP0048 NEW)
 
 project(Arccon
   LANGUAGES NONE # No C or C++ !
-  VERSION 1.0.0)
+  VERSION 1.2.0)
 
 include(${CMAKE_CURRENT_LIST_DIR}/build-system/ArcconSetInstallDirs.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/build-system/commands/user/installDirectory.cmake)
