@@ -5,12 +5,12 @@
 
 Cette page contient les nouveautés de chaque version de %Arcane.
 
-Arcane Version 3.0.1 (...) {#arcanedoc_version301}
+Arcane Version 3.0.1 (27 mai 2021) {#arcanedoc_version301}
 ======================================
 
 [TEMPORARY]
 
-Cette version est la première version 'open source' de Arcane.
+Cette version est la première version 'open source' de %Arcane.
 
 Nouveautés/Améliorations:
 
@@ -28,7 +28,7 @@ Nouveautés/Améliorations:
 
 Changements:
 
-- Ajoute possibilité lors de la compilation de Arcane de spécifier les
+- Ajoute possibilité lors de la compilation de %Arcane de spécifier les
   packages requis et de ne pas chercher de packages par défaut.
 
 Arcane Version 2.22.0 (03 mars 2021) {#arcanedoc_version2220}
