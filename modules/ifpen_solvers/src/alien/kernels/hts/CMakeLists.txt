@@ -42,3 +42,7 @@ endif()
 if(TARGET cuda)
   linkLibraries(alien_ifpen_solvers cuda)
 endif()
+
+if(TARGET numa)
+  linkLibraries(alien_ifpen_solvers numa)
+endif()

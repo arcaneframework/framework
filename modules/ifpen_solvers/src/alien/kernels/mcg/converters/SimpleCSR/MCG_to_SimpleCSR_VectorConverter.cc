@@ -1,22 +1,21 @@
-#include "alien/core/backend/IVectorConverter.h"
-#include "alien/core/backend/VectorConverterRegisterer.h"
-
 #include <iostream>
 
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
+#include <alien/core/backend/IVectorConverter.h>
+#include <alien/core/backend/VectorConverterRegisterer.h>
+#include <alien/kernels/simple_csr/SimpleCSRVector.h>
 #include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
-#include <alien/kernels/mcg/data_structure/MCGVector.h>
 
-#include <alien/kernels/mcg/MCGBackEnd.h>
+#include "alien/kernels/mcg/data_structure/MCGVector.h"
+#include "alien/kernels/mcg/MCGBackEnd.h"
+
 using namespace Alien;
-
-/*---------------------------------------------------------------------------*/
 
 class MCG_to_SimpleCSR_VectorConverter : public IVectorConverter
 {
  public:
   MCG_to_SimpleCSR_VectorConverter();
   virtual ~MCG_to_SimpleCSR_VectorConverter() {}
+
  public:
   BackEndId sourceBackend() const
   {
@@ -29,14 +28,10 @@ class MCG_to_SimpleCSR_VectorConverter : public IVectorConverter
   void convert(const IVectorImpl* sourceImpl, IVectorImpl* targetImpl) const;
 };
 
-/*---------------------------------------------------------------------------*/
-
 MCG_to_SimpleCSR_VectorConverter::MCG_to_SimpleCSR_VectorConverter()
 {
   ;
 }
-
-/*---------------------------------------------------------------------------*/
 
 void
 MCG_to_SimpleCSR_VectorConverter::convert(
@@ -49,11 +44,7 @@ MCG_to_SimpleCSR_VectorConverter::convert(
   alien_debug(
       [&] { cout() << "Converting MCGVector: " << &v << " to SimpleCSRVector " << &v2; });
 
-  // v.getValues(space.localSize(), v2.getDataPtr());
-  ArrayView<Real> values = v2.getValuesView();
-  v.getValues(values.unguardedBasePointer());
+  v.getValues(v2.values().data());
 }
-
-/*---------------------------------------------------------------------------*/
 
 REGISTER_VECTOR_CONVERTER(MCG_to_SimpleCSR_VectorConverter);

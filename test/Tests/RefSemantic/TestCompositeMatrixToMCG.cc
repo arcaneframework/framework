@@ -3,10 +3,12 @@
 #include <alien/AlienExternalPackages.h>
 #include <alien/ref/AlienRefSemantic.h>
 #include <alien/functional/Cast.h>
+#include <alien/data/CompositeVector.h>
+#include <alien/data/CompositeMatrix.h>
 
 #ifdef ALIEN_USE_MCGSOLVER
-#include <ALIEN/Kernels/mcg/linear_solver/arcane/MCGLinearSolver.h>
-#include <ALIEN/Kernels/mcg/linear_solver/MCGOptionTypes.h>
+#include <alien/kernels/mcg/linear_solver/arcane/MCGLinearSolver.h>
+#include <alien/kernels/mcg/linear_solver/MCGOptionTypes.h>
 #include <ALIEN/axl/MCGSolver_IOptions.h>
 #include <ALIEN/axl/MCGSolver_StrongOptions.h>
 #endif

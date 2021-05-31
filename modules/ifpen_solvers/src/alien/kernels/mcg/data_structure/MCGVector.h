@@ -6,20 +6,16 @@
  */
 
 #include <alien/utils/Precomp.h>
-#include <alien/kernels/mcg/MCGPrecomp.h>
-
 #include <alien/core/impl/IVectorImpl.h>
 #include <alien/data/ISpace.h>
 
-/*---------------------------------------------------------------------------*/
+#include "alien/kernels/mcg/MCGPrecomp.h"
 
 BEGIN_MCGINTERNAL_NAMESPACE
 
 class VectorInternal;
 
 END_MCGINTERNAL_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
 
 namespace Alien {
 
@@ -56,10 +52,6 @@ class MCGVector : public IVectorImpl
   VectorInternal* m_internal = nullptr;
 };
 
-/*---------------------------------------------------------------------------*/
-
 } // namespace Alien
-
-/*---------------------------------------------------------------------------*/
 
 #endif /* ALIEN_MCGIMPL_MCGVECTOR_H */

@@ -1,15 +1,15 @@
+#include <iostream>
+
 #include "alien/core/backend/IMatrixConverter.h"
 #include "alien/core/backend/MatrixConverterRegisterer.h"
 
-#include <iostream>
+#include <alien/kernels/simple_csr/CSRStructInfo.h>
+#include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
+#include <alien/kernels/composite/CompositeMatrix.h>
+#include <alien/kernels/composite/CompositeBackEnd.h>
 
-#include <alien/kernels/simple_csr/data_structure/CSRStructInfo.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
-#include <alien/kernels/composite/data_structure/CompositeMatrix.h>
-#include <alien/kernels/mcg/data_structure/MCGVector.h>
-#include <alien/kernels/mcg/data_structure/MCGCompositeMatrix.h>
-
-#include "alien/kernels/composite/CompositeBackEnd.h"
+#include "alien/kernels/mcg/data_structure/MCGVector.h"
+#include "alien/kernels/mcg/data_structure/MCGCompositeMatrix.h"
 #include "alien/kernels/mcg/MCGBackEnd.h"
 
 using namespace Alien;
@@ -22,6 +22,7 @@ class Composite_to_MCG_MatrixConverter : public IMatrixConverter
  public:
   Composite_to_MCG_MatrixConverter();
   virtual ~Composite_to_MCG_MatrixConverter() {}
+
  public:
   BackEndId sourceBackend() const
   {

@@ -119,7 +119,7 @@ if (TARGET mcgsolver)
             --precond=ilu0
             --tol=1.e-6
             --max-iter=1000
-            --kernel=mckernel
+            --kernel=cpu_cblas_bcsr
             --output-level=1
     )
 endif ()

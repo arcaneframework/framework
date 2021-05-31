@@ -169,7 +169,7 @@ foreach (REFMVTESTS
                 --precond=none
                 --tol=1.e-10
                 --max-iter=100
-                --kernel=mckernel
+                --kernel=cpu_cblas_bcsr
                 --block-size=3
                 --output-level=1
         )

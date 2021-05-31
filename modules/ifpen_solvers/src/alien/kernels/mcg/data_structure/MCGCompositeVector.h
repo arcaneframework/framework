@@ -2,13 +2,11 @@
 #ifndef ALIEN_MCGIMPL_MCGCOMPOSITEVECTOR_H
 #define ALIEN_MCGIMPL_MCGCOMPOSITEVECTOR_H
 
-#include <ALIEN/Utils/Precomp.h>
-#include <ALIEN/Kernels/MCG/MCGPrecomp.h>
+#include <alien/utils/Precomp.h>
+#include <alien/core/impl/IVectorImpl.h>
+#include <alien/data/ISpace.h>
 
-#include <ALIEN/Core/Impl/IVectorImpl.h>
-#include <ALIEN/Data/ISpace.h>
-
-/*---------------------------------------------------------------------------*/
+#include "alien/kernels/mcg/MCGPrecomp.h"
 
 BEGIN_MCGINTERNAL_NAMESPACE
 
@@ -16,11 +14,7 @@ class CompositeVectorInternal;
 
 END_MCGINTERNAL_NAMESPACE
 
-/*---------------------------------------------------------------------------*/
-
-BEGIN_NAMESPACE(Alien)
-
-/*---------------------------------------------------------------------------*/
+namespace Alien {
 
 class MCGCompositeVector : public IVectorImpl
 {
@@ -56,10 +50,6 @@ class MCGCompositeVector : public IVectorImpl
   VectorInternal* m_internal = nullptr;
 };
 
-/*---------------------------------------------------------------------------*/
-
-END_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
+} // namespace Alien
 
 #endif /* ALIEN_MCGIMPL_MCGCOMPOSITEVECTOR_H */

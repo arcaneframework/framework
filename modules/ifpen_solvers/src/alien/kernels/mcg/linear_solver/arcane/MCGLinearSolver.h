@@ -5,42 +5,42 @@
 #include "Appli/IInfoModel.h"
 #endif
 
-#include <ALIEN/Kernels/MCG/MCGPrecomp.h>
-#include <ALIEN/Utils/Precomp.h>
-#include <ALIEN/Alien-ExternalPackagesPrecomp.h>
-#include <ALIEN/Kernels/MCG/MCGBackEnd.h>
-#include <ALIEN/Core/Backend/LinearSolver.h>
-#include <ALIEN/Kernels/MCG/LinearSolver/MCGInternalLinearSolver.h>
-#include <ALIEN/Kernels/MCG/LinearSolver/MCGOptionTypes.h>
-#include <ALIEN/axl/MCGSolver_axl.h>
+#include <alien/utils/Precomp.h>
+#include <alien/core/backend/LinearSolver.h>
+
+#include "alien/AlienIFPENSolversPrecomp.h"
+#include "alien/kernels/mcg/MCGPrecomp.h"
+#include "alien/kernels/mcg/MCGBackEnd.h"
+#include "alien/kernels/mcg/linear_solver/MCGInternalLinearSolver.h"
+#include "alien/kernels/mcg/linear_solver/MCGOptionTypes.h"
+#include "ALIEN/axl/MCGSolver_axl.h"
 
 /**
  * Interface du service de résolution de système linéaire
  */
 
-BEGIN_NAMESPACE(Alien)
+namespace Alien {
 
-class ALIEN_EXTERNALPACKAGES_EXPORT MCGLinearSolver
-    : public ArcaneMCGSolverObject,
-      public Alien::MCGInternalLinearSolver
+class ALIEN_IFPEN_SOLVERS_EXPORT MCGLinearSolver : public ArcaneMCGSolverObject,
+                                                   public MCGInternalLinearSolver
 #ifdef ARCGEOSIM_COMP
-      ,
-      public IInfoModel
+,
+                                                   public IInfoModel
 #endif
 {
  public:
-/** Constructeur de la classe */
+  /** Constructeur de la classe */
 
 #ifdef ALIEN_USE_ARCANE
   MCGLinearSolver(const Arcane::ServiceBuildInfo& sbi);
 #endif
 
-  MCGLinearSolver(
-      IParallelMng* parallel_mng, std::shared_ptr<IOptionsMCGSolver> _options);
+  MCGLinearSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+      std::shared_ptr<IOptionsMCGSolver> _options);
 
   /** Destructeur de la classe */
   virtual ~MCGLinearSolver(){};
 };
+} // namespace Alien
 
-END_NAMESPACE
 #endif /* MCGSOLVERIMPL_H */

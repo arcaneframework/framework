@@ -4,23 +4,23 @@
  *  Created on: 22 dec. 2014
  *      Author: gratienj
  */
-
 #ifndef ALIEN_KERNELS_MCG_LINEARSOLVER_MCGINTERNALLINEARSOLVER_H
 #define ALIEN_KERNELS_MCG_LINEARSOLVER_MCGINTERNALLINEARSOLVER_H
 
+#include <chrono>
+
 #include <alien/utils/Precomp.h>
 #include <alien/core/backend/IInternalLinearSolverT.h>
-#include <alien/kernels/mcg/linear_solver/GPUInternal.h>
-#include <alien/kernels/mcg/data_structure/MCGVector.h>
-#include <alien/kernels/mcg/data_structure/MCGMatrix.h>
-#include <alien/kernels/mcg/data_structure/MCGInternal.h>
-#include <alien/kernels/mcg/linear_solver/GPUOptionTypes.h>
-#include <alien/expression/solver/solver_stats/SolverStater.h>
-#include <alien/core/backend/IInternalLinearSolverT.h>
-#include <alien/utils/trace/ObjectWithTrace.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRVector.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
-#include <alien/AlienIFPENSolversPrecomp.h>
+#include <alien/expression/solver/SolverStater.h>
+#include <alien/utils/ObjectWithTrace.h>
+#include <alien/kernels/simple_csr/SimpleCSRVector.h>
+#include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
+
+#include "alien/AlienIFPENSolversPrecomp.h"
+#include "alien/kernels/mcg/data_structure/MCGVector.h"
+#include "alien/kernels/mcg/data_structure/MCGMatrix.h"
+#include "alien/kernels/mcg/data_structure/MCGInternal.h"
+#include "alien/kernels/mcg/linear_solver/MCGOptionTypes.h"
 
 class IOptionsMCGSolver;
 
@@ -28,10 +28,64 @@ namespace Alien {
 
 class SolverStater;
 
-class ALIEN_EXTERNALPACKAGES_EXPORT MCGInternalLinearSolver : public ILinearSolver,
-                                                              public ObjectWithTrace
+class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
+                                                           public ObjectWithTrace
 {
  private:
+  class AlienKOpt2MCGKOpt : public ObjectWithTrace
+  {
+   public:
+    typedef std::tuple<MCGOptionTypes::eKernelType, bool, bool> KConfigType;
+
+    AlienKOpt2MCGKOpt(const AlienKOpt2MCGKOpt&) = delete;
+
+    static MCGSolver::eKernelType getKernelOption(const KConfigType& kernel_type);
+
+   private:
+    static std::unique_ptr<AlienKOpt2MCGKOpt> m_instance;
+
+    std::map<KConfigType, MCGSolver::eKernelType> m_option_translate;
+
+    AlienKOpt2MCGKOpt();
+  };
+
+  class AlienPrecOpt2MCGPrecOpt : public ObjectWithTrace
+  {
+   public:
+    static MCGSolver::ePrecondType getPrecondOption(
+        const MCGOptionTypes::ePreconditioner& prec);
+
+   private:
+    static std::unique_ptr<AlienPrecOpt2MCGPrecOpt> m_instance;
+
+    std::map<MCGOptionTypes::ePreconditioner, MCGSolver::ePrecondType> m_option_translate;
+
+    AlienPrecOpt2MCGPrecOpt();
+  };
+
+  class Timer
+  {
+   private:
+    std::chrono::time_point<std::chrono::system_clock> m_start;
+    std::chrono::time_point<std::chrono::system_clock> m_end;
+    std::chrono::duration<double> m_elapse;
+
+   public:
+    Timer()
+    : m_elapse(0)
+    {}
+
+    inline void start() { m_start = std::chrono::system_clock::now(); }
+
+    inline void stop()
+    {
+      m_end = std::chrono::system_clock::now();
+      m_elapse += m_end - m_start;
+    }
+
+    const double getElapse() const { return m_elapse.count(); }
+  };
+
   typedef SolverStatus Status;
   typedef MCGMatrix MatrixType;
   typedef MCGVector VectorType;
@@ -50,7 +104,8 @@ class ALIEN_EXTERNALPACKAGES_EXPORT MCGInternalLinearSolver : public ILinearSolv
 
   /** Constructeur de la classe */
   MCGInternalLinearSolver(
-      IParallelMng* parallel_mng = nullptr, IOptionsMCGSolver* options = nullptr);
+      Arccore::MessagePassing::IMessagePassingMng* parallel_mng = nullptr,
+      IOptionsMCGSolver* options = nullptr);
 
   /** Destructeur de la classe */
   virtual ~MCGInternalLinearSolver();
@@ -59,7 +114,7 @@ class ALIEN_EXTERNALPACKAGES_EXPORT MCGInternalLinearSolver : public ILinearSolv
   //! Initialisation
   // void init(int argv,char const** argc);
   void init();
-  void updateParallelMng(IParallelMng* pm);
+  void updateParallelMng(Arccore::MessagePassing::IMessagePassingMng* pm);
   void updateParameters();
 
   // void setDiagScal(double* Diag, int size);
@@ -81,11 +136,7 @@ class ALIEN_EXTERNALPACKAGES_EXPORT MCGInternalLinearSolver : public ILinearSolv
 
   const SolverStat& getSolverStat() const { return m_stat; }
 
-  String getName() const { return "gpusolver"; }
-
-  //! R�solution du syst�me lin�aire
-
-  bool solve();
+  String getName() const { return "mcgsolver"; }
 
   //! Etat du solveur
   void setNullSpaceConstantOption(bool flag)
@@ -93,38 +144,37 @@ class ALIEN_EXTERNALPACKAGES_EXPORT MCGInternalLinearSolver : public ILinearSolv
     alien_warning([&] { cout() << "Null Space Constant Option not yet implemented"; });
   }
 
+  virtual void setEdgeWeight(const IMatrix& E) final;
+
   void printInfo() const;
-  void printInfo();
-  void printCurrentTimeInfo() {}
 
  private:
-  bool _solve(const MCGMatrixType& A, const MCGVectorType& b, MCGVectorType& x,
+  Integer _solve(const MCGMatrixType& A, const MCGVectorType& b, MCGVectorType& x,
       MCGSolver::PartitionInfo* part_info = nullptr);
-  bool _solve(const MCGMatrixType& A, const MCGVectorType& b, const MCGVectorType& x0,
+  Integer _solve(const MCGMatrixType& A, const MCGVectorType& b, const MCGVectorType& x0,
       MCGVectorType& x, MCGSolver::PartitionInfo* part_info = nullptr);
 
-  bool _solve(const MCGMatrixType& A, const MCGCompositeVectorType& b,
+  Integer _solve(const MCGMatrixType& A, const MCGCompositeVectorType& b,
       MCGCompositeVectorType& x, MCGSolver::PartitionInfo* part_info = nullptr);
-  bool _solve(const MCGMatrixType& A, const MCGCompositeVectorType& b,
+  Integer _solve(const MCGMatrixType& A, const MCGCompositeVectorType& b,
       const MCGCompositeVectorType& x0, MCGCompositeVectorType& x,
       MCGSolver::PartitionInfo* part_info = nullptr);
 
-  void updateLinearSystem();
-  inline void _startPerfCount();
-  inline void _endPerfCount();
+  // void updateLinearSystem();
 
-  MCGSolver::LinearSystem* _createSystem(const MCGMatrixType& A, const MCGVectorType& b,
-      MCGVectorType& x, MCGSolver::PartitionInfo* part_info = nullptr);
-
-  MCGSolver::LinearSystem* _createSystem(const MCGMatrixType& A, const MCGVectorType& b,
-      const MCGVectorType& x0, MCGVectorType& x,
+  MCGSolver::LinearSystem<double>* _createSystem(const MCGMatrixType& A,
+      const MCGVectorType& b, MCGVectorType& x,
       MCGSolver::PartitionInfo* part_info = nullptr);
 
-  MCGSolver::LinearSystem* _createSystem(const MCGMatrixType& A,
+  MCGSolver::LinearSystem<double>* _createSystem(const MCGMatrixType& A,
+      const MCGVectorType& b, const MCGVectorType& x0, MCGVectorType& x,
+      MCGSolver::PartitionInfo* part_info = nullptr);
+
+  MCGSolver::LinearSystem<double>* _createSystem(const MCGMatrixType& A,
       const MCGCompositeVectorType& b, MCGCompositeVectorType& x,
       MCGSolver::PartitionInfo* part_info = nullptr);
 
-  MCGSolver::LinearSystem* _createSystem(const MCGMatrixType& A,
+  MCGSolver::LinearSystem<double>* _createSystem(const MCGMatrixType& A,
       const MCGCompositeVectorType& b, const MCGCompositeVectorType& x0,
       MCGCompositeVectorType& x, MCGSolver::PartitionInfo* part_info = nullptr);
 
@@ -134,9 +184,9 @@ class ALIEN_EXTERNALPACKAGES_EXPORT MCGInternalLinearSolver : public ILinearSolv
  private:
   //! Structure interne du solveur
   bool m_use_mpi = false;
-  IParallelMng* m_parallel_mng = nullptr;
+  Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng = nullptr;
   MCGSolver::MachineInfo* m_machine_info = nullptr;
-  MCGSolver::MPIInfo* m_mpi_info = nullptr;
+  mpi::MPIInfo* m_mpi_info = nullptr;
 
   MCGSolver::Status m_mcg_status;
   Alien::SolverStatus m_status;
@@ -168,24 +218,31 @@ class ALIEN_EXTERNALPACKAGES_EXPORT MCGInternalLinearSolver : public ILinearSolv
 
   Integer m_solve_num = 0;
   Integer m_total_iter_num = 0;
-  Real m_current_solve_time = 0;
-  Real m_total_solve_time = 0;
-  Real m_current_system_time = 0;
-  Real m_total_system_time = 0;
+
+  Timer m_init_timer;
+  Timer m_prepare_timer;
+  Timer m_system_timer;
+  Timer m_solve_timer;
+
+  // From internal MCGSolver timing
   Real m_int_total_solve_time = 0;
   Real m_int_total_setup_time = 0;
   Real m_int_total_finish_time = 0;
+  Real m_int_total_allocate_time = 0;
+  Real m_int_total_init_time = 0;
+  Real m_int_total_update_time = 0;
 
   SolverStat m_stat;
-  SolverStater m_stater;
 
   IOptionsMCGSolver* m_options = nullptr;
   std::vector<double> m_pressure_diag;
 
   std::string m_dir;
   std::map<std::string, int> m_dir_enum;
+
+  MCGSolver::LinearSystem<double>* m_system = nullptr;
+  std::vector<int> m_edge_weight;
 };
 
 } // namespace Alien
-
-#endif /* PETSCLINEARSOLVER_H_ */
+#endif /* ALIEN_KERNELS_MCG_LINEARSOLVER_MCGINTERNALLINEARSOLVER_H */

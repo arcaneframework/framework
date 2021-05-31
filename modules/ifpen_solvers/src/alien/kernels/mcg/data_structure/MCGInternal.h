@@ -8,13 +8,11 @@
 /*! Separate data from header;
  *  can be only included by LinearSystem and LinearSolver
  */
-#include <alien/kernels/mcg/MCGPrecomp.h>
 #include <MCGS.h>
-/*---------------------------------------------------------------------------*/
+
+#include <alien/kernels/mcg/MCGPrecomp.h>
 
 BEGIN_MCGINTERNAL_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
 
 //! Check parallel feature for MCG
 inline void
@@ -23,42 +21,29 @@ checkParallel(bool)
   // This behaviour may be changed when Parallel MCG will be plugged
 }
 
-/*---------------------------------------------------------------------------*/
-
 class MatrixInternal
 {
  public:
   typedef MCGSolver::CSRProfile ProfileType;
   typedef MCGSolver::BCSRMatrix<double> MatrixType;
 
-  // MatrixType *m_matrix = nullptr;
-  MatrixType* m_matrix[2][2] = { { nullptr, nullptr }, { nullptr, nullptr } };
+  std::shared_ptr<MatrixType> m_matrix[2][2] = { { nullptr, nullptr },
+    { nullptr, nullptr } };
 
   MatrixInternal() {}
 
-  ~MatrixInternal()
-  {
-    delete m_matrix[0][0];
-    delete m_matrix[0][1];
-    delete m_matrix[1][0];
-    delete m_matrix[1][1];
-  }
+  ~MatrixInternal() {}
 };
-
-/*---------------------------------------------------------------------------*/
 
 class VectorInternal
 {
  public:
   VectorInternal(int nrow, int block_size)
   : m_bvector(nrow, block_size)
-  {
-  }
+  {}
 
   MCGSolver::BVector<double> m_bvector;
 };
-
-/*---------------------------------------------------------------------------*/
 
 class CompositeVectorInternal
 {
@@ -75,9 +60,6 @@ class CompositeVectorInternal
   std::vector<MCGSolver::BVector<double>> m_bvector;
 };
 
-/*---------------------------------------------------------------------------*/
-
 END_MCGINTERNAL_NAMESPACE
 
-/*---------------------------------------------------------------------------*/
 #endif /* ALIEN_MCGIMPL_MCGINTERNAL_H */

@@ -1,19 +1,17 @@
 #include "mpi.h"
-#include "MCGCompositeVector.h"
 
-#include <ALIEN/Kernels/MCG/MCGBackEnd.h>
-#include <ALIEN/Kernels/MCG/DataStructure/MCGInternal.h>
-#include <ALIEN/Kernels/SimpleCSR/SimpleCSRBackEnd.h>
-#include <ALIEN/Data/CompositeVector.h>
-#include <ALIEN/Core/Impl/MultiVectorImpl.h>
-#include <ALIEN/Kernels/Composite/CompositeBackEnd.h>
-#include <ALIEN/Kernels/Composite/DataStructure/CompositeVector.h>
+#include <alien/core/impl/MultiVectorImpl.h>
+#include <alien/data/CompositeVector.h>
+#include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
+#include <alien/kernels/composite/CompositeBackEnd.h>
+#include <alien/kernels/composite/CompositeVector.h>
 
-/*---------------------------------------------------------------------------*/
+#include "alien/kernels/mcg/MCGBackEnd.h"
+#include "alien/kernels/mcg/data_structure/MCGInternal.h"
+#include "alien/kernels/mcg/data_structure/MCGCompositeVector.h"
 
-BEGIN_NAMESPACE(Alien)
+namespace Alien {
 
-/*---------------------------------------------------------------------------*/
 MCGCompositeVector::MCGCompositeVector(const MultiVectorImpl* multi_impl)
 : IVectorImpl(multi_impl, AlgebraTraits<BackEnd::tag::mcgsolver_composite>::name())
 {
@@ -36,14 +34,10 @@ MCGCompositeVector::MCGCompositeVector(const MultiVectorImpl* multi_impl)
   m_internal = new VectorInternal(composite_info);
 }
 
-/*---------------------------------------------------------------------------*/
-
 MCGCompositeVector::~MCGCompositeVector()
 {
   delete m_internal;
 }
-
-/*---------------------------------------------------------------------------*/
 
 void
 MCGCompositeVector::init(const VectorDistribution& dist, const bool need_allocate)
@@ -52,14 +46,9 @@ MCGCompositeVector::init(const VectorDistribution& dist, const bool need_allocat
     allocate();
 }
 
-/*---------------------------------------------------------------------------*/
-
 void
 MCGCompositeVector::allocate()
-{
-}
-
-/*---------------------------------------------------------------------------*/
+{}
 
 void
 MCGCompositeVector::setValues(const int part, const double* values)
@@ -71,7 +60,7 @@ MCGCompositeVector::setValues(const int part, const double* values)
   for (int i = 0; i < n; ++i)
     data[i] = values[i];
 }
-/*---------------------------------------------------------------------------*/
+
 void
 MCGCompositeVector::getValues(const int part, double* values) const
 {
@@ -92,7 +81,6 @@ MCGCompositeVector::getValues(const int part, double* values) const
 #endif
 }
 
-/*---------------------------------------------------------------------------*/
 void
 MCGCompositeVector::update(const MCGCompositeVector& v)
 {
@@ -100,10 +88,4 @@ MCGCompositeVector::update(const MCGCompositeVector& v)
   ALIEN_ASSERT((this == &v), ("Unexpected error"));
 }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-END_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+} // namespace Alien

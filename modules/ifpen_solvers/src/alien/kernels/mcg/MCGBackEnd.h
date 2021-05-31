@@ -7,13 +7,9 @@
 #include <alien/utils/Precomp.h>
 #include <alien/core/backend/BackEnd.h>
 
-/*---------------------------------------------------------------------------*/
-
 class IOptionsMCGSolver;
 
 namespace Alien {
-
-/*---------------------------------------------------------------------------*/
 
 class MultiVectorImpl;
 class MCGMatrix;
@@ -31,18 +27,16 @@ class ILinearAlgebra;
 extern ILinearAlgebra* MCGInternalLinearAlgebraFactory();
 
 extern ILinearSolver* MCGInternalLinearSolverFactory(
-    IParallelMng* p_mng, IOptionsMCGSolver* options);
+    Arccore::MessagePassing::IMessagePassingMng* p_mng, IOptionsMCGSolver* options);
 
 /*---------------------------------------------------------------------------*/
 
 namespace BackEnd {
   namespace tag {
     struct mcgsolver
-    {
-    };
+    {};
     struct mcgsolver_composite
-    {
-    };
+    {};
   }
 }
 
@@ -57,7 +51,8 @@ template <> struct AlgebraTraits<BackEnd::tag::mcgsolver>
 
   static algebra_type* algebra_factory() { return MCGInternalLinearAlgebraFactory(); }
 
-  static solver_type* solver_factory(IParallelMng* p_mng, options_type* options)
+  static solver_type* solver_factory(
+      Arccore::MessagePassing::IMessagePassingMng* p_mng, options_type* options)
   {
     return MCGInternalLinearSolverFactory(p_mng, options);
   }
@@ -76,18 +71,15 @@ template <> struct AlgebraTraits<BackEnd::tag::mcgsolver_composite>
 
   static algebra_type* algebra_factory() { return MCGInternalLinearAlgebraFactory(); }
 
-  static solver_type* solver_factory(IParallelMng* p_mng, options_type* options)
+  static solver_type* solver_factory(
+      Arccore::MessagePassing::IMessagePassingMng* p_mng, options_type* options)
   {
     return MCGInternalLinearSolverFactory(p_mng, options);
   }
 
   static BackEndId name() { return "mcgsolver_composite"; }
 };
-
-/*---------------------------------------------------------------------------*/
-
 } // namespace Alien
 
-/*---------------------------------------------------------------------------*/
-
 #endif /* ALIEN_MCGIMPL_MCGBACKEND_H */
+

@@ -31,7 +31,7 @@ loadPackage(NAME OpenBLAS)
 
 loadPackage(NAME LibXml2)
 loadPackage(NAME Metis)
-loadPackage(NAME Hdf5)
+loadPackage(NAME HDF5)
 loadPackage(NAME HWLoc)
 loadPackage(NAME Numa)
 loadPackage(NAME TBB)
@@ -39,6 +39,7 @@ loadPackage(NAME HARTS)
 loadPackage(NAME Cuda)
 loadPackage(NAME NvAMG)
 loadPackage(NAME FFTW3)
+loadPackage(NAME MPIFort)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------

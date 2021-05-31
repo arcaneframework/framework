@@ -14,14 +14,14 @@
     <simple name="test-id" type="integer" default="-1">
       <description>export iter</description>
     </simple>
-    <simple name="matrix-file-name" type="string" default="TestMatrix.txt">
-      <description>matrix file name</description>
-    </simple>
     <simple name="export-iter" type="integer" default="-1">
       <description>export iter</description>
     </simple>
-    <simple name="export-opt" type="bool" default="false">
-      <description>export option</description>
+    <simple name="export-system" type="bool" default="false">
+      <description>activate linear system export</description>
+    </simple>
+    <simple name="export-system-file-name" type="string" default="mcgs_linear_system">
+      <description>File name for linear system export</description>
     </simple>
     <simple name="import-opt" type="bool" default="false">
       <description>import option</description>
@@ -29,24 +29,47 @@
     <!--simple name="parameter" type="string" minOccurs="0" maxOccurs="unbounded">
       <description>parameter</description>
     <simple-->
+
     <simple name="poly-factor" type="real" default="0.">
-      <description>unit diag options</description>
+      <description>polynomial factor</description>
     </simple>
-    <simple name="poly-order" type="integer" default="3">
-      <description>unit diag options</description>
+    <simple name="poly-factor-num-iter" type="integer" default="3">
+      <description>polynomial factor</description>
     </simple>
+    <simple name="poly-order" type="integer" default="2">
+      <description>polynomial degree</description>
+    </simple>
+
+    <simple name="bj-num-iter" type="integer" default="1">
+      <description>Number of iterations for Block Jacobi</description>
+    </simple>
+    <enumeration name="bj-local-precond" type="MCGOptionTypes::ePreconditioner" default="ILU0">
+      <enumvalue name="ILU0" genvalue="MCGOptionTypes::ILU0PC"/>
+      <enumvalue name="FPILU0" genvalue="MCGOptionTypes::FixpILU0PC"/>
+      <enumvalue name="BlockILU0" genvalue="MCGOptionTypes::BlockILU0PC"/>
+    </enumeration>
+
+    <simple name="fpilu0-facto-num-iter" type="integer" default="1">
+      <description>Number of iterations for FixedPoint ILU0 factorization</description>
+    </simple>
+    <simple name="fpilu0-solve-num-iter" type="integer" default="1">
+      <description>Number of iterations for FixedPoint ILU0 solve</description>
+    </simple>
+
     <simple name="bssor-num-iter" type="integer" default="3">
       <description>Block SSOR Num iter</description>
     </simple>
     <simple name="bssor-relax-factor" type="real" default="0.">
       <description>Block SSOR relax Factor</description>
     </simple>
+
     <simple name="colorilu0-dir" type="string" default="+Z">
       <description>ILU(0) coloring preferential direction</description>
     </simple>
     <simple name="colorilu0-algo" type="string" default="greeddir">
       <description>ILU(0) coloring algorithm</description>
     </simple>
+
     <simple name="use-unit-diag" type="bool" default="true">
       <description>unit diag options</description>
     </simple>
@@ -84,7 +107,13 @@
       </enumvalue>
       <enumvalue name="CPU_AVX_BCSR" genvalue="MCGOptionTypes::CPU_AVX_BCSR">
         <description>CPU AVX kernel with block CSR matrix</description>
-      </enumvalue> 
+      </enumvalue>
+      <enumvalue name="CPU_AVX2_BCSP" genvalue="MCGOptionTypes::CPU_AVX2_BCSP">
+        <description>CPU AVX2 kernel with BCSP matrix</description>
+      </enumvalue>
+      <enumvalue name="CPU_AVX512_BCSP" genvalue="MCGOptionTypes::CPU_AVX512_BCSP">
+        <description>CPU AVX512 kernel with BCSP matrix</description>
+      </enumvalue>
       <enumvalue name="GPU_CUBLAS_BELL" genvalue="MCGOptionTypes::GPU_CUBLAS_BELL">
         <description>GPU CUBLAS kernel with block Ellpack matrix</description>
       </enumvalue>       
@@ -92,6 +121,7 @@
         <description>GPU CUBLAS kernel with block CSP matrix</description>
       </enumvalue>
     </enumeration>
+
     <enumeration name="solver" type="MCGOptionTypes::eSolver" default="BiCGStab">
       <description>Solveur type</description>
       <enumvalue name="BiCGStab" genvalue="MCGOptionTypes::BiCGStab">
@@ -101,6 +131,7 @@
         <description>Gmres Solver</description>
       </enumvalue>     
     </enumeration>
+
     <enumeration name="preconditioner" type="MCGOptionTypes::ePreconditioner" default="None">
       <description>type def preconditionnement</description>
       <enumvalue name="None" genvalue="MCGOptionTypes::NonePC">
@@ -109,21 +140,30 @@
       <enumvalue name="ILU0" genvalue="MCGOptionTypes::ILU0PC">
         <description>0th order ILU preconditioner (only for CPU kernels)</description>
       </enumvalue>
+      <enumvalue name="FPILU0" genvalue="MCGOptionTypes::FixpILU0PC">
+        <description>0th order Fixed point ILU preconditioner (only for CPU kernels)</description>
+      </enumvalue>
+      <enumvalue name="ColorILU0" genvalue="MCGOptionTypes::ColorILU0PC">
+        <description>0th order Multi Coloring ILU preconditioner</description>
+      </enumvalue>
+      <enumvalue name="BlockJacobi" genvalue="MCGOptionTypes::BlockJacobiPC">
+        <description>Block Jacobi preconditioner for MPI</description>
+      </enumvalue>
+      <enumvalue name="BlockILU0" genvalue="MCGOptionTypes::BlockILU0PC"/>
+      <enumvalue name="Poly" genvalue="MCGOptionTypes::PolyPC"/>
+      <enumvalue name="AMGX" genvalue="MCGOptionTypes::AMGX"/>
+      <enumvalue name="HypreAMG" genvalue="MCGOptionTypes::HypreAMG"/>
     </enumeration>
+
+
     <simple name="sp-prec" type="bool" default="false">
       <description>simple precision preconditioner flag</description>
-    </simple>
-    <simple name="verbose" type="bool" default="false">
-      <description>Verbosity flag</description>
     </simple>
     <simple name="use-thread" type="bool" default="false">
       <description>use multithreaded solver</description>
     </simple>
     <simple name="num-thread" type="integer" default="1">
-      <description>number of thread for multithreaded solver</description>
-    </simple>
-    <simple name="dump-mat-file-name" type="string" default="">
-      <description>File name for matrix dump</description>
+      <description>number of thread for multithreaded solver [deprecated]</description>
     </simple>
   </options>
 </service>

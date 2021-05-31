@@ -1,34 +1,35 @@
 
-#include <ALIEN/Kernels/MCG/LinearSolver/Arcane/MCGLinearSolver.h>
-#include <ALIEN/axl/MCGSolver_StrongOptions.h>
+#include "alien/kernels/mcg/linear_solver/arcane/MCGLinearSolver.h"
+#include "ALIEN/axl/MCGSolver_StrongOptions.h"
 
 /**
  * Interface du service de résolution de système linéaire
  */
 
-BEGIN_NAMESPACE(Alien)
+namespace Alien {
 
 /** Constructeur de la classe */
 
 #ifdef ALIEN_USE_ARCANE
 MCGLinearSolver::MCGLinearSolver(const Arcane::ServiceBuildInfo& sbi)
-: ArcaneGPUSolverObject(sbi)
+: ArcaneMCGSolverObject(sbi)
 , Alien::MCGInternalLinearSolver(sbi.subDomain()->parallelMng(), options())
 {
+  Alien::setTraceMng(sbi.subDomain()->traceMng());
 }
 #endif
 
 MCGLinearSolver::MCGLinearSolver(
-    IParallelMng* parallel_mng, std::shared_ptr<IOptionsMCGSolver> _options)
+    Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+    std::shared_ptr<IOptionsMCGSolver> _options)
 : ArcaneMCGSolverObject(_options)
 , Alien::MCGInternalLinearSolver(parallel_mng, options())
-{
-}
+{}
 
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE_MCGSOLVER(MCGSolver, MCGLinearSolver);
 
-END_NAMESPACE
+} // namespace Alien
 
 REGISTER_STRONG_OPTIONS_MCGSOLVER();

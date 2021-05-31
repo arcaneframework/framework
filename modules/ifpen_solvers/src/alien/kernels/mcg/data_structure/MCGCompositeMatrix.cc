@@ -1,19 +1,11 @@
 #include "mpi.h"
-#include "MCGCompositeMatrix.h"
 
-#include <ALIEN/Kernels/MCG/DataStructure/MCGInternal.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
 
-#include <ALIEN/Core/Impl/MultiMatrixImpl.h>
+#include "alien/kernels/mcg/data_structure/MCGInternal.h"
+#include "alien/kernels/mcg/data_structure/MCGCompositeMatrix.h"
 
-/*---------------------------------------------------------------------------*/
-
-BEGIN_MCGINTERNAL_NAMESPACE
-
-END_MCGINTERNAL_NAMESPACE
-
-BEGIN_NAMESPACE(Alien)
-
-/*---------------------------------------------------------------------------*/
+namespace Alien {
 
 MCGCompositeMatrix::MCGCompositeMatrix(const MultiMatrixImpl* multi_impl)
 : IMatrixImpl(multi_impl, AlgebraTraits<BackEnd::tag::mcgsolver_composite>::name())
@@ -21,14 +13,10 @@ MCGCompositeMatrix::MCGCompositeMatrix(const MultiMatrixImpl* multi_impl)
   m_internal = new MatrixInternal();
 }
 
-/*---------------------------------------------------------------------------*/
-
 MCGCompositeMatrix::~MCGCompositeMatrix()
 {
   delete m_internal;
 }
-
-/*---------------------------------------------------------------------------*/
 
 bool
 MCGCompositeMatrix::initDiagMatrix(const int i, const int block_size, const int nrow,
@@ -94,8 +82,8 @@ MCGCompositeMatrix::_initMatrix(const int i, const int j, const int block_size,
     dst_cols[i] = cols[i];
   }
 
-  m_internal->m_matrix[i][j] =
-      new MCGInternal::MatrixInternal::MatrixType(block_size, block_size2, profile);
+  m_internal->m_matrix[i][j].reset(
+      new MCGInternal::MatrixInternal::MatrixType(block_size, block_size2, profile));
 
   return true;
 }
@@ -128,8 +116,8 @@ MCGCompositeMatrix::_initTransMatrix(const int i, const int j, const int block_s
   std::vector<int> elem_perm;
 
   trans_profile->transposeInit(*profile, elem_perm);
-  m_internal->m_matrix[i][j] =
-      new MCGInternal::MatrixInternal::MatrixType(block_size2, block_size, trans_profile);
+  m_internal->m_matrix[i][j].reset(new MCGInternal::MatrixInternal::MatrixType(
+      block_size2, block_size, trans_profile));
 
   return true;
 }
@@ -144,9 +132,4 @@ MCGCompositeMatrix::initMatrixValues(const int i, const int j, Real const* value
   return true;
 }
 
-/*---------------------------------------------------------------------------*/
-
-END_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+} // namespace Alien

@@ -2,13 +2,12 @@
 #ifndef ALIEN_MCGIMPL_MCGCOMPOSITEMATRIX_H
 #define ALIEN_MCGIMPL_MCGCOMPOSITEMATRIX_H
 
-#include <ALIEN/Kernels/MCG/MCGPrecomp.h>
-#include <ALIEN/Kernels/MCG/MCGBackEnd.h>
-#include <ALIEN/Core/Impl/IMatrixImpl.h>
-#include <ALIEN/Core/Block/Block.h>
-#include <ALIEN/Data/Space.h>
+#include <alien/core/impl/IMatrixImpl.h>
+#include <alien/core/block/Block.h>
+#include <alien/data/Space.h>
 
-/*---------------------------------------------------------------------------*/
+#include "alien/kernels/mcg/MCGPrecomp.h"
+#include "alien/kernels/mcg/MCGBackEnd.h"
 
 BEGIN_MCGINTERNAL_NAMESPACE
 
@@ -16,11 +15,7 @@ class MatrixInternal;
 
 END_MCGINTERNAL_NAMESPACE
 
-/*---------------------------------------------------------------------------*/
-
-BEGIN_NAMESPACE(Alien)
-
-/*---------------------------------------------------------------------------*/
+namespace Alien {
 
 class MCGCompositeMatrix : public IMatrixImpl
 {
@@ -90,11 +85,6 @@ class MCGCompositeMatrix : public IMatrixImpl
       const int block_size2, const int nrow, const int ncol, const int* row_offset,
       const int* cols);
 };
-
-/*---------------------------------------------------------------------------*/
-
-END_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
+} // namespace Alien
 
 #endif /* ALIEN_MCGIMPL_MCGCOMPOSITEMATRIX_H */

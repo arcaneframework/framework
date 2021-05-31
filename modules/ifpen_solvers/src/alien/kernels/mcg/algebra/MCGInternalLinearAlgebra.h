@@ -11,13 +11,7 @@
 #include <alien/core/backend/IInternalLinearAlgebraT.h>
 #include <alien/expression/solver/ILinearAlgebra.h>
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 namespace Alien {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 class MCGInternalLinearAlgebra : public ILinearAlgebra
 {
@@ -50,13 +44,6 @@ class MCGInternalLinearAlgebra : public ILinearAlgebra
   void copy(const VectorImpl& x, VectorImpl& r) const;
   Real dot(const VectorImpl& x, const VectorImpl& y) const;
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 } // namespace Alien
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#endif /* ALIEN_MCGIMPL_MCGLINEARALGEBRA_H */
+#endif /* ALIEN_KERNELS_MCG_ALGEBRA_MCGINTERNALLINEARALGEBRA_H */

@@ -374,8 +374,11 @@ namespace ArcaneTools {
 
     //! Demande de dé-indexation d'une partie d'une entrée
     /*! Utilisable uniquement avant prepare */
-    // virtual void removeIndex(const ScalarIndexSet & entry, const Arcane::ItemGroup &
-    // itemGroup) = 0;
+    virtual void removeIndex(const ScalarIndexSet & entry,
+                             const Arcane::ItemGroup & itemGroup) = 0;
+
+    virtual void removeIndex(const VectorIndexSet & entry, const Arccore::Integer icomponent,
+                             const Arcane::ItemGroup & itemGroup) = 0;
 
     // virtual Integer getIndex(const Entry & entry, const Item & item) const = 0 ;
 

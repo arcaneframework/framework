@@ -8,5 +8,5 @@
 #endif
 
 #ifdef ALIEN_USE_MCGSOLVER
-#include <alien/kernels/mcg/linear_solver/arcane/GPULinearSolver.h>
+#include <alien/kernels/mcg/linear_solver/arcane/MCGLinearSolver.h>
 #endif

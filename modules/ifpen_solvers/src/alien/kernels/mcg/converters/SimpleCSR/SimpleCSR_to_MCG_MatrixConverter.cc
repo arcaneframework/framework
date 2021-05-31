@@ -1,27 +1,22 @@
-#include "alien/core/backend/IMatrixConverter.h"
-#include "alien/core/backend/MatrixConverterRegisterer.h"
-
 #include <iostream>
 
-#include <alien/kernels/simple_csr/data_structure/CSRStructInfo.h>
-#include <alien/kernels/simple_csr/data_structure/SimpleCSRMatrix.h>
+#include <alien/core/backend/IMatrixConverter.h>
+#include <alien/core/backend/MatrixConverterRegisterer.h>
+#include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
 #include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
-#include <alien/kernels/mcg/data_structure/MCGVector.h>
-#include <alien/kernels/mcg/data_structure/MCGMatrix.h>
 
-#include <alien/kernels/mcg/MCGBackEnd.h>
+#include "alien/kernels/mcg/data_structure/MCGMatrix.h"
+#include "alien/kernels/mcg/MCGBackEnd.h"
 
 using namespace Alien;
 using namespace Alien::SimpleCSRInternal;
 
-/*---------------------------------------------------------------------------*/
-
 class SimpleCSR_to_MCG_MatrixConverter : public IMatrixConverter
-//: public ICompositeMatrixConverter<2>
 {
  public:
   SimpleCSR_to_MCG_MatrixConverter();
   virtual ~SimpleCSR_to_MCG_MatrixConverter() {}
+
  public:
   BackEndId sourceBackend() const
   {
@@ -38,14 +33,10 @@ class SimpleCSR_to_MCG_MatrixConverter : public IMatrixConverter
   void _build(const SimpleCSRMatrix<Real>& sourceImpl, MCGMatrix& targetImpl) const;
 };
 
-/*---------------------------------------------------------------------------*/
-
 SimpleCSR_to_MCG_MatrixConverter::SimpleCSR_to_MCG_MatrixConverter()
 {
   ;
 }
-
-/*---------------------------------------------------------------------------*/
 
 void
 SimpleCSR_to_MCG_MatrixConverter::convert(
@@ -71,8 +62,6 @@ SimpleCSR_to_MCG_MatrixConverter::_build(
 {
   const CSRStructInfo& profile = sourceImpl.getCSRProfile();
   const Integer local_size = profile.getNRow();
-  const Integer block_size = sourceImpl.block()->size();
-  targetImpl.setBlockSize(block_size, block_size);
   ConstArrayView<Integer> row_offset = profile.getRowOffset();
   ConstArrayView<Integer> cols = profile.getCols();
 
@@ -84,9 +73,12 @@ SimpleCSR_to_MCG_MatrixConverter::_build(
     block_size = sourceImpl.block()->sizeX();
     block_size2 = sourceImpl.block()->sizeY();
   }
-  if (not targetImpl.initMatrix(block_size, block_size2, local_size,
-          row_offset.unguardedBasePointer(), cols.unguardedBasePointer())) {
-    throw FatalErrorException(A_FUNCINFO, "MCGSolver Initialisation failed");
+
+  if (!targetImpl.isInit()) {
+    if (not targetImpl.initMatrix(block_size, block_size2, local_size,
+            row_offset.unguardedBasePointer(), cols.unguardedBasePointer())) {
+      throw FatalErrorException(A_FUNCINFO, "MCGSolver Initialisation failed");
+    }
   }
 
   const bool success = targetImpl.initMatrixValues(values.unguardedBasePointer());
@@ -95,7 +87,5 @@ SimpleCSR_to_MCG_MatrixConverter::_build(
     throw FatalErrorException(A_FUNCINFO, "Cannot set MCGSolver Matrix Values");
   }
 }
-
-/*---------------------------------------------------------------------------*/
 
 REGISTER_MATRIX_CONVERTER(SimpleCSR_to_MCG_MatrixConverter);

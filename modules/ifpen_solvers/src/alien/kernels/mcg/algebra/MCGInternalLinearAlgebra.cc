@@ -1,25 +1,17 @@
+#include "mpi.h"
 
-#include "MCGS.h"
+#include <MCGS.h>
 
-#include "MCGInternalLinearAlgebra.h"
-
-#include <alien/kernels/mcg/data_structure/MCGMatrix.h>
-#include <alien/kernels/mcg/data_structure/MCGVector.h>
-#include <alien/kernels/mcg/data_structure/MCGInternal.h>
 #include <alien/core/impl/MultiMatrixImpl.h>
 #include <alien/core/impl/MultiVectorImpl.h>
-
 #include <alien/core/backend/LinearAlgebraT.h>
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+#include "alien/kernels/mcg/data_structure/MCGMatrix.h"
+#include "alien/kernels/mcg/data_structure/MCGVector.h"
+#include "alien/kernels/mcg/data_structure/MCGInternal.h"
+#include "alien/kernels/mcg/algebra/MCGInternalLinearAlgebra.h"
 
 namespace Alien {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-// template class LinearAlgebra<BackEnd::tag::mcgsolver>;
 
 ILinearAlgebra*
 MCGInternalLinearAlgebraFactory()
@@ -37,9 +29,7 @@ MCGInternalLinearAlgebra::MCGInternalLinearAlgebra()
 
 /*---------------------------------------------------------------------------*/
 
-MCGInternalLinearAlgebra::~MCGInternalLinearAlgebra()
-{
-}
+MCGInternalLinearAlgebra::~MCGInternalLinearAlgebra() {}
 
 /*---------------------------------------------------------------------------*/
 
@@ -183,10 +173,4 @@ MCGInternalLinearAlgebra::dot(const VectorImpl& vx, const VectorImpl& vy) const
   return result;
 }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 } // namespace Alien
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/

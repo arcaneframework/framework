@@ -1290,7 +1290,7 @@ namespace ArcaneTools {
       family.reset(new ItemAbstractFamily(item_family));
     for (Integer i = 0; i < n; ++i) {
       ens[i] = buildEntry(
-          String::format("{0}[{1}]", name, i), family.get(), itemGroup.itemKind());
+          String::format("{0}[{1}]", name, i), family.get(), kind);
       defineIndex(ens[i], localIds);
     }
     return ens;

@@ -337,7 +337,7 @@ foreach (REFMVTESTS
                 --precond=ilu0
                 --tol=1.e-10
                 --max-iter=100
-                --kernel=mckernel
+                --kernel=cpu_cblas_bcsr
                 --output-level=1
         )
     endif ()
