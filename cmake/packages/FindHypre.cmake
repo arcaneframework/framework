@@ -28,7 +28,7 @@ if(NOT HYPRE_FOUND)
     find_library(HYPRE_LIBRARY
       NAMES HYPRE
       HINTS ${HYPRE_ROOT} 
-		  PATH_SUFFIXES lib
+      PATH_SUFFIXES lib lib64
       ${_HYPRE_SEARCH_OPTS}
       )
     mark_as_advanced(HYPRE_LIBRARY)
@@ -38,7 +38,7 @@ if(NOT HYPRE_FOUND)
     find_library(HYPRE_LIBRARY
       NAMES libHYPRE
       HINTS ${HYPRE_ROOT} 
-		  PATH_SUFFIXES lib
+      PATH_SUFFIXES lib lib64
       ${_HYPRE_SEARCH_OPTS}
       )
     mark_as_advanced(HYPRE_LIBRARY)
@@ -47,7 +47,7 @@ if(NOT HYPRE_FOUND)
  
   find_path(HYPRE_INCLUDE_DIR HYPRE.h
     HINTS ${HYPRE_ROOT} 
-		PATH_SUFFIXES include
+    PATH_SUFFIXES include
     ${_HYPRE_SEARCH_OPTS}
     )
   mark_as_advanced(HYPRE_INCLUDE_DIR)

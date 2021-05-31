@@ -388,6 +388,7 @@ endif()
 # OU
 # ifpsolver_ifort ET ifpsolver_mpifort
 
+if(IFPSOLVER_FOUND)
 if(TARGET ifpsolver_intel AND TARGET ifpsolver_ifort)
   logFatalError("ifpsolver_intel and ifpsolver_ifort defined at same time : dont use INTEL_ROOT and IFORT_ROOT")
 endif()
@@ -399,5 +400,6 @@ if(NOT TARGET ifpsolver_ifort AND TARGET ifpsolver_mpifort)
 endif()
 if(TARGET ifpsolver_ifort AND NOT TARGET ifpsolver_mpifort)
   logFatalError("ifpsolver_mpifort and ifpsolver_ifort not defined at same time : use IFORT_ROOT and MPI_ROOT")
+endif()
 endif()
 

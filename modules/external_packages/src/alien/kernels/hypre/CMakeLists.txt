@@ -9,8 +9,7 @@ addSources(alien_external_packages
         data_structure/HypreMatrix.cc
         )
 
-include(${AXLSTAR_CMAKE_COMMANDS})
-
+if(USE_AXLSTAR)
 generateAxl(alien_external_packages
         linear_solver/arcane/HypreSolver.axl
         AXL_OPTION_GENERATION_MODE ${AXL_OPTION_GENERATION_TYPE}
@@ -19,6 +18,7 @@ generateAxl(alien_external_packages
         ${IS_WITH_MESH}
         INSTALL_GENERATED_FILES
         )
+endif()
 
 addSources(alien_external_packages
         linear_solver/arcane/HypreLinearSolver.cc

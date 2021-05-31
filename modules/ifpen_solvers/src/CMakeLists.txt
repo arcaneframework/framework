@@ -22,8 +22,9 @@ else ()
 endif ()
 
 
+if(USE_AXLSTAR)
 include(${AXLSTAR_CMAKE_COMMANDS})
-
+endif()
 if(TARGET mcgsolver)
   addDirectory(alien/kernels/mcg)
 endif()

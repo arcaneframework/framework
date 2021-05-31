@@ -3,6 +3,18 @@
 
 #include <memory> // for std::shared_ptr.
 #include <vector>
+
+
+#include <arcane/ArcaneVersion.h>
+#include <arcane/IMesh.h>
+#include <arcane/IItemFamily.h>
+#include <arcane/ItemGroup.h>
+#include <arcane/ItemInternal.h>
+#include <arcane/IParallelMng.h>
+#include <arcane/utils/Collection.h>
+#include <arcane/utils/Enumerator.h>
+#include <arcane/utils/Math.h>
+
 #include <alien/AlienArcaneToolsPrecomp.h>
 namespace Arccore {
 class ITraceMng;

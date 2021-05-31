@@ -133,6 +133,11 @@ namespace ArcaneTools {
     /*! Utilisable uniquement avant prepare */
     void removeIndex(const ScalarIndexSet& entry, const Arcane::ItemGroup& itemGroup);
 
+    void removeIndex(const VectorIndexSet& entry, const Arccore::Integer component, const Arcane::ItemGroup& itemGroup)
+    {
+      removeIndex(entry[component],itemGroup) ;
+    }
+
     Arccore::Integer getIndex(const Entry& entry, const Arcane::Item& item) const;
 
     //! Consultation vectorielle d'indexation d'une entrée (après prepare)

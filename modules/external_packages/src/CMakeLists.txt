@@ -21,7 +21,9 @@ else ()
     set(IS_WITH_MESH "NO_MESH")
 endif ()
 
+if(USE_AXLSTAR)
 include(${AXLSTAR_CMAKE_COMMANDS})
+endif()
 
 if(TARGET hypre)
     addDirectory(alien/kernels/hypre)

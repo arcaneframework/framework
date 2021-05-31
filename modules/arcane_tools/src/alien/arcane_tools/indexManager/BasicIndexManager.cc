@@ -277,6 +277,7 @@ namespace ArcaneTools {
           m_defined_indexes[i] = m_defined_indexes.back();
           m_defined_indexes.resize(m_defined_lids.size() - 1);
 #endif /* SPLIT_CONTAINER */
+          return ;
         }
       }
       throw FatalErrorException(

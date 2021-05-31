@@ -10,6 +10,7 @@ addSources(alien_interface_fortran.exe
 
 
 linkLibraries(alien_interface_fortran.exe
+        mpifort
         Boost::boost
         Alien::alien_core
         Alien::alien_semantic_ref

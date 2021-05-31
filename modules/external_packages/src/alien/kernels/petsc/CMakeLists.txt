@@ -13,7 +13,14 @@
           )
 
   linkLibraries(alien_external_packages petsc)
+  
+  if(PETSc_USE_PKGCONFIG)
+    if(PKG_PETSC_FOUND) 
+      target_link_options(alien_external_packages PRIVATE ${PKG_PETSC_STATIC_LDFLAGS})
+     endif()
+  endif()  
 
+  if(USE_AXLSTAR)
   generateAxl(alien_external_packages
           linear_solver/spai/PETScPrecConfigSPAI.axl
           linear_solver/arcane/PETScSolverConfigBiCGStab.axl
@@ -38,7 +45,7 @@
           ${IS_WITH_MESH}
           INSTALL_GENERATED_FILES
           )
-
+  endif()
   addSources(alien_external_packages
           linear_solver/spai/PETScPrecConfigSPAIService.cc
           linear_solver/arcane/PETScSolverConfigBiCGStabService.cc
@@ -60,6 +67,7 @@
           )
 
   if (TARGET slepc)
+      if(USE_AXLSTAR)
       generateAxl(alien_external_packages
               eigen_solver/arcane/SLEPcEigenSolver.axl
               AXL_OPTION_GENERATION_MODE ${AXL_OPTION_GENERATION_TYPE}
@@ -68,6 +76,7 @@
               ${IS_WITH_MESH}
               INSTALL_GENERATED_FILES
               )
+      endif()
       addSources(alien_external_packages
               eigen_solver/SLEPcInternalEigenSolver.cc
               eigen_solver/arcane/SLEPcEigenSolver.cc)
@@ -76,6 +85,7 @@
   endif (TARGET slepc)
 
   if (TARGET hypre)
+      if(USE_AXLSTAR)
       generateAxl(alien_external_packages
               linear_solver/hypre/PETScPrecConfigHypreEuclid.axl
               linear_solver/hypre/PETScPrecConfigHypre.axl
@@ -85,6 +95,7 @@
               ${IS_WITH_MESH}
               INSTALL_GENERATED_FILES
               )
+      endif()
       addSources(alien_external_packages
               linear_solver/hypre/PETScPrecConfigHypreEuclidService.cc
               linear_solver/hypre/PETScPrecConfigHypreService.cc
@@ -92,6 +103,7 @@
   endif (TARGET hypre)
 
   if (TARGET superlu)
+      if(USE_AXLSTAR)
       generateAxl(alien_external_packages
               linear_solver/super_lu/PETScSolverConfigSuperLU.axl
               linear_solver/super_lu/PETScPrecConfigSuperLU.axl
@@ -101,6 +113,7 @@
               ${IS_WITH_MESH}
               INSTALL_GENERATED_FILES
               )
+      endif()
       addSources(alien_external_packages
               linear_solver/super_lu/PETScSolverConfigSuperLUService.cc
               linear_solver/super_lu/PETScPrecConfigSuperLUService.cc
