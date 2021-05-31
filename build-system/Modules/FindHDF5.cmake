@@ -20,13 +20,15 @@ set(CMAKE_MODULE_PATH ${_SAVED_CMAKE_MODULE_PATH})
 # utiliser le mode configuration de HDF5 ce qui
 # permettrait de supprimer tout le code qui n'utilise
 # pas de target
+unset(_ARCCON_HDF5_TARGET)
+
 if (TARGET hdf5::hdf5-shared)
   set(_ARCCON_HDF5_TARGET hdf5::hdf5-shared)
 elseif(TARGET hdf5::hdf5-static)
   set(_ARCCON_HDF5_TARGET hdf5::hdf5-static)
 endif()
 
-if (TARGET ${_ARCCON_HDF5_TARGET})
+if (_ARCCON_HDF5_TARGET)
   message(STATUS "Found HDF5 via configuration target=${_ARCCON_HDF5_TARGET}")
 
   # NOTE: il existe deux bibliothèques suivant si on
