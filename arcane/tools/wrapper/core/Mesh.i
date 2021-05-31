@@ -6,6 +6,8 @@
 %ignore Arcane::IMesh::serializeCells;
 %ignore Arcane::IMesh::meshItemInternalList;
 
+
+%include arcane/IMeshBase.h
 %include arcane/MeshHandle.h
 %include arcane/IMesh.h
 %include arcane/IPrimaryMesh.h
