@@ -1,0 +1,3 @@
+[submodule "build-system-cmake"]
+	path = build-system-cmake
+	url = https://gitlab.ifpen.fr/Arcane/ifpen-tools/build-system.git
