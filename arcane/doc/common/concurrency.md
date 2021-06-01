@@ -5,10 +5,12 @@ Concurrence et multi-threading {#arcanedoc_concurrency}
 
 La notion de concurrence est implémentée dans %Arcane via la notion de tâche.
 
-Cette notion de tâche permet l'exécution concurrente de plusieurs opérations via les threads.
+Cette notion de tâche permet l'exécution concurrente de plusieurs
+opérations via les threads.
 
-Cette notion est complémentaire de la notion de décomposition de domaine utilisée par le IParallelMng.
-Il est donc tout à fait possible de mélanger décomposition de domaine et les thread.
+Cette notion est complémentaire de la notion de décomposition de
+domaine utilisée par le Arcane::IParallelMng. Il est donc tout à fait
+possible de mélanger décomposition de domaine et les thread.
 
 \warning Néanmoins, si l'implémentation de Arcane::IParallelMng se fait via
 MPI, il est déconseillé de faire des appels au Arcane::IParallelMng lorsque
@@ -35,9 +37,9 @@ Activation {#arcanedoc_concurrency_activation}
 
 Par défaut, le support de la concurrence est désactivé. L'activation
 se fait **avant** le lancement du code, en spécifiant le
-nombre de tâches pouvant s'exécuter de manière concurrentes. Cela se
-fait en positionnant la variable d'environnement ARCANE_NB_TASK à la
-valeur souhaitée, par exemple 4.
+nombre de tâches pouvant s'exécuter de manière concurrentes lors de la
+ligne de commande (se reporter à la page \ref arcanedoc_launcher pour
+savoir comment faire cela).
  
 Il est possible de savoir dans le code si la concurrence est active en
 appelant la méthode Arcane::TaskFactory::isActive().
@@ -72,7 +74,7 @@ void func()
 La parallélisation se fait comme suit: il faut d'abord écrire une
 classe fonctor qui représente l'opération que l'on souhaite effectuée
 sur un interval d'itération. Ensuite, il faut utiliser l'opération
-Parallel::For() en spécifiant ce fonctor en argument comme suit:
+ParallelFor() en spécifiant ce fonctor en argument comme suit:
 
 ~~~{.cpp}
 class Func
@@ -88,7 +90,7 @@ class Func
 void func()
 {
   Func my_functor;
-  Arcane::Parallel::For(0,n,&my_functor,&Func::exec);
+  Arcane::ParallelFor(0,n,&my_functor,&Func::exec);
 }
 ~~~
 
@@ -98,7 +100,7 @@ C++11, il est possible d'utiliser les lambda function pour simplifier l'écritur
 ~~~{.cpp}
 void func()
 {
-  Arcane::Parallel::For(0,n,[&](Integer begin,Integer size){
+  Arcane::ParallelFor(0,n,[&](Integer begin,Integer size){
      for( Integer i=begin; i<(begin+size); ++i )
        p[i] = (gamma[i]-1.0) * rho[i] * e[i];
   });
@@ -135,7 +137,7 @@ class Func
 void func()
 {
   Func my_functor;
-  Parallel::Foreach(my_group,&my_functor,&Func::exec);
+  ParallelForeach(my_group,&my_functor,&Func::exec);
 }
 ~~~
 
@@ -145,7 +147,7 @@ De même, avec le support du C++11, on peut simplifier:
 using namespace Arcane;
 void func()
 {
-  Parallel::Foreach(my_group,[&](CellVectorView cells){
+  ParallelForeach(my_group,[&](CellVectorView cells){
     ENUMERATE_CELL(icell,cells){
       p[icell] = (gamma[icell]-1.0) * rho[icell] * e[icell];
     }
@@ -153,7 +155,7 @@ void func()
 }
 ~~~
 
-Pour les boucles Arcane::Parallel::For et Arcane::Parallel::Foreach, il est possible
+Pour les boucles Arcane::ParallelFor() et Arcane::ParallelForeach(), il est possible
 de passer en argument une instance de ParallelLoopOptions pour
 configurer la boucle parallèle. Par exemple, il est possible de
 spécifier la taille de l'intervalle pour découper la boucle:
@@ -164,7 +166,7 @@ void func()
   Arcane::ParallelLoopOptions options;
   // Exécute la boucle par parties d'environ 50 mailles.
   options.setGrainSize(50);
-  Arcane::Parallel::Foreach(my_group,[&](Arcane::CellVectorView cells){
+  Arcane::ParallelForeach(my_group,[&](Arcane::CellVectorView cells){
     ENUMERATE_CELL(icell,cells){
       p[icell] = (gamma[icell]-1.0) * rho[icell] * e[icell];
     }
