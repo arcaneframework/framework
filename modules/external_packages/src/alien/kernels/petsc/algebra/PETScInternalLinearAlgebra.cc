@@ -91,7 +91,7 @@ PETScInternalLinearAlgebra::mult(
 
 void
 PETScInternalLinearAlgebra::axpy(
-    const Arccore::Real& alpha, const PETScVector& vx, PETScVector& vr) const
+    Real alpha, const PETScVector& vx, PETScVector& vr) const
 {
   VecAXPY(vr.internal()->m_internal, alpha, vx.internal()->m_internal);
 }
@@ -100,7 +100,7 @@ PETScInternalLinearAlgebra::axpy(
 
 void
 PETScInternalLinearAlgebra::aypx(
-    const Arccore::Real& alpha, PETScVector& vy, const PETScVector& vx) const
+    Real alpha, PETScVector& vy, const PETScVector& vx) const
 {
   VecAYPX(vy.internal()->m_internal, alpha, vx.internal()->m_internal);
 }
@@ -126,7 +126,7 @@ PETScInternalLinearAlgebra::dot(const PETScVector& vx, const PETScVector& vy) co
 /*---------------------------------------------------------------------------*/
 
 void
-PETScInternalLinearAlgebra::scal(const Arccore::Real& alpha, PETScVector& vx) const
+PETScInternalLinearAlgebra::scal(Real alpha, PETScVector& vx) const
 {
   VecScale(vx.internal()->m_internal, alpha);
 }
@@ -167,13 +167,13 @@ PETScInternalLinearAlgebra::mult(
 }
 void
 PETScInternalLinearAlgebra::axpy(
-    const Real& alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+    Real alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
 {
   throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::axpy not implemented");
 }
 void
 PETScInternalLinearAlgebra::aypx(
-    const Real& alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const
+    Real alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const
 {
   throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::aypx not implemented");
 }
@@ -190,7 +190,7 @@ PETScInternalLinearAlgebra::dot(
   return Real();
 }
 void
-PETScInternalLinearAlgebra::scal(const Real& alpha, UniqueArray<Real>& x) const
+PETScInternalLinearAlgebra::scal(Real alpha, UniqueArray<Real>& x) const
 {
   throw NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::scal not implemented");
 }

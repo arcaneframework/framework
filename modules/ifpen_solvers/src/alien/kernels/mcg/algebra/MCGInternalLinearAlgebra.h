@@ -31,7 +31,7 @@ class MCGInternalLinearAlgebra : public ILinearAlgebra
   Real norm1(const VectorType& x) const;
   Real norm2(const VectorType& x) const;
   void mult(const MatrixType& a, const VectorType& x, VectorType& r) const;
-  void axpy(const Real& alpha, const VectorType& x, VectorType& r) const;
+  void axpy(Real alpha, const VectorType& x, VectorType& r) const;
   void copy(const VectorType& x, VectorType& r) const;
   Real dot(const VectorType& x, const VectorType& y) const;
 
@@ -40,7 +40,7 @@ class MCGInternalLinearAlgebra : public ILinearAlgebra
   Real norm1(const VectorImpl& x) const;
   Real norm2(const VectorImpl& x) const;
   void mult(const MatrixImpl& a, const VectorImpl& x, VectorImpl& r) const;
-  void axpy(const Real& alpha, const VectorImpl& x, VectorImpl& r) const;
+  void axpy(Real alpha, const VectorImpl& x, VectorImpl& r) const;
   void copy(const VectorImpl& x, VectorImpl& r) const;
   Real dot(const VectorImpl& x, const VectorImpl& y) const;
 };
