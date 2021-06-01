@@ -686,8 +686,6 @@ ParallelFor(Integer i0,Integer size,const LambdaType& lambda_function)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \ingroup Concurrency
- *
  * \brief Implémentation de la concurrence.
  *
  * Les méthodes de ce namespace sont obsolètes et doivent être remplacées
@@ -698,11 +696,11 @@ ParallelFor(Integer i0,Integer size,const LambdaType& lambda_function)
 namespace Parallel
 { 
   /*!
-   * \brief Applique en concurrence la méthode \a function de l'instance
-   * \a instance sur la vue \a items_view avec les options \a options
-   * \ingroup Concurrency
-   */
-  template<typename InstanceType,typename ItemType> static void
+   * \deprecated Use Arcane::ParallelForeach() instead.
+   */  
+  template<typename InstanceType,typename ItemType>
+  [[deprecated("Year2021: Use Arcane::ParallelForeach() instead")]]
+  inline void
   Foreach(const ItemVectorView& items_view,const ParallelLoopOptions& options,
           InstanceType* instance,void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
   {
@@ -714,11 +712,11 @@ namespace Parallel
   }
 
   /*!
-   * \brief Applique en concurrence la méthode \a function de l'instance
-   * \a instance sur le groupe \a items avec les options \a options
-   * \ingroup Concurrency
+   * \deprecated Use Arcane::ParallelForeach() instead.
    */
-  template<typename InstanceType,typename ItemType> static void
+  template<typename InstanceType,typename ItemType>
+  [[deprecated("Year2021: Use Arcane::ParallelForeach() instead")]]
+  inline void
   Foreach(const ItemGroup& items,const ParallelLoopOptions& options,InstanceType* instance,
           void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
   {
@@ -726,11 +724,11 @@ namespace Parallel
   }
 
   /*!
-   * \brief Applique en concurrence la méthode \a function de l'instance
-   * \a instance sur la vue \a items_view.
-   * \ingroup Concurrency
+   * \deprecated Use Arcane::ParallelForeach() instead.
    */
-  template<typename InstanceType,typename ItemType> static void
+  template<typename InstanceType,typename ItemType>
+  [[deprecated("Year2021: Use Arcane::ParallelForeach() instead")]]
+  inline void
   Foreach(const ItemVectorView& items_view,InstanceType* instance,void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
   {
     ItemRangeFunctorT<InstanceType,ItemType> ipf(items_view,instance,function);
@@ -738,11 +736,11 @@ namespace Parallel
   }
 
   /*!
-   * \brief Applique en concurrence la méthode \a function de l'instance
-   * \a instance sur le groupe \a items.
-   * \ingroup Concurrency
+   * \deprecated Use Arcane::ParallelForeach() instead.
    */
-  template<typename InstanceType,typename ItemType> static void
+  template<typename InstanceType,typename ItemType>
+  [[deprecated("Year2021: Use Arcane::ParallelForeach() instead")]]
+  inline void
   Foreach(const ItemGroup& items,InstanceType* instance,void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
   {
     Foreach(items.view(),instance,function);
@@ -750,11 +748,11 @@ namespace Parallel
 
 
   /*!
-   * \brief Applique en concurrence la fonction lambda \a lambda_function
-   * \a instance sur la vue \a items_view avec les options \a options
-   * \ingroup Concurrency
+   * \deprecated Use Arcane::ParallelForeach() instead.
    */
-  template<typename LambdaType> static void
+  template<typename LambdaType>
+  [[deprecated("Year2021: Use Arcane::ParallelForeach() instead")]]
+  inline void
   Foreach(const ItemVectorView& items_view,const ParallelLoopOptions& options,const LambdaType& lambda_function)
   {
     LambdaItemRangeFunctorT<LambdaType> ipf(items_view,lambda_function,options.grainSize());
@@ -765,22 +763,22 @@ namespace Parallel
   }
 
   /*!
-   * \brief Applique en concurrence la fonction lambda \a lambda_function
-   * sur le groupe \a items avec les options \a options
-   * \ingroup Concurrency
+   * \deprecated Use Arcane::ParallelForeach() instead.
    */
-  template<typename LambdaType> static void
+  template<typename LambdaType>
+  [[deprecated("Year2021: Use Arcane::ParallelForeach() instead")]]
+  inline void
   Foreach(const ItemGroup& items,const ParallelLoopOptions& options,const LambdaType& lambda_function)
   {
     Foreach(items.view(),options,lambda_function);
   }
 
   /*!
-   * \brief Applique en concurrence la fonction lambda \a lambda_function
-   * \a instance sur la vue \a items_view.
-   * \ingroup Concurrency
+   * \deprecated Use Arcane::ParallelForeach() instead.
    */
-  template<typename LambdaType> static void
+  template<typename LambdaType>
+  [[deprecated("Year2021: Use Arcane::ParallelForeach() instead")]]
+  inline void
   Foreach(const ItemVectorView& items_view,const LambdaType& lambda_function)
   {
     LambdaItemRangeFunctorT<LambdaType> ipf(items_view,lambda_function);
@@ -788,23 +786,20 @@ namespace Parallel
   }
 
   /*!
-   * \brief Applique en concurrence la fonction lambda \a lambda_function
-   * sur le groupe \a items.
-   * \ingroup Concurrency
+   * \deprecated Use Arcane::ParallelForeach() instead.
    */
-  template<typename LambdaType> static void
+  template<typename LambdaType>
+  [[deprecated("Year2021: Use Arcane::ParallelForeach() instead")]]
+  inline void
   Foreach(const ItemGroup& items,const LambdaType& lambda_function)
   {
     Foreach(items.view(),lambda_function);
   }
 
   /*!
-   * \brief Applique en concurrence la fonction lambda \a lambda_function
-   * sur l'intervalle d'itération [i0,i0+size].
-   * \ingroup Concurrency
    * \deprecated Utiliser la surcharge For avec ParallelLoopOptions en argument.
    */
-  template<typename InstanceType> ARCANE_DEPRECATED_122 static void
+  template<typename InstanceType> ARCANE_DEPRECATED_122 inline void
   For(Integer i0,Integer size,Integer grain_size,InstanceType* itype,
       void (InstanceType::*lambda_function)(Integer i0,Integer size))
   {
@@ -813,12 +808,11 @@ namespace Parallel
   }
 
   /*!
-   * \brief Applique en concurrence la fonction lambda \a lambda_function
-   * sur l'intervalle d'itération [i0,i0+size].
-   * \ingroup Concurrency
-   * \deprecated Utiliser la surcharge For avec ParallelLoopOptions en argument.
+   * \deprecated Use Arcane::ParallelFor() instead.
    */
-  template<typename InstanceType> static void
+  template<typename InstanceType>
+  [[deprecated("Year2021: Use Arcane::ParallelFor() instead")]]
+  inline void
   For(Integer i0,Integer size,const ParallelLoopOptions& options,InstanceType* itype,
       void (InstanceType::*lambda_function)(Integer i0,Integer size))
   {
@@ -827,12 +821,9 @@ namespace Parallel
   }
 
   /*!
-   * \brief Applique en concurrence la fonction lambda \a lambda_function
-   * sur l'intervalle d'itération [i0,i0+size].
-   * \ingroup Concurrency
    * \deprecated Utiliser la surcharge For avec ParallelLoopOptions en argument.
    */
-  template<typename LambdaType> ARCANE_DEPRECATED_122 static void
+  template<typename LambdaType> ARCANE_DEPRECATED_122 inline void
   For(Integer i0,Integer size,Integer grain_size,const LambdaType& lambda_function)
   {
     LambdaRangeFunctorT<LambdaType> ipf(lambda_function);
@@ -840,11 +831,11 @@ namespace Parallel
   }
 
   /*!
-   * \brief Applique en concurrence la fonction lambda \a lambda_function
-   * sur l'intervalle d'itération [i0,i0+size].
-   * \ingroup Concurrency
+   * \deprecated Use Arcane::ParallelFor() instead.
    */
-  template<typename InstanceType> static void
+  template<typename InstanceType>
+  [[deprecated("Year2021: Use Arcane::ParallelFor() instead")]]
+  inline void
   For(Integer i0,Integer size,InstanceType* itype,
       void (InstanceType::*lambda_function)(Integer i0,Integer size))
   {
@@ -853,11 +844,11 @@ namespace Parallel
   }
 
   /*!
-   * \brief Applique en concurrence la fonction lambda \a lambda_function
-   * sur l'intervalle d'itération [i0,i0+size] avec les options \a options.
-   * \ingroup Concurrency
+   * \deprecated Use Arcane::ParallelFor() instead.
    */
-  template<typename LambdaType> static void
+  template<typename LambdaType>
+  [[deprecated("Year2021: Use Arcane::ParallelFor() instead")]]
+  inline void
   For(Integer i0,Integer size,const ParallelLoopOptions& options,const LambdaType& lambda_function)
   {
     LambdaRangeFunctorT<LambdaType> ipf(lambda_function);
@@ -865,11 +856,11 @@ namespace Parallel
   }
 
   /*!
-   * \ingroup Concurrency
-   * \brief Applique en concurrence la fonction lambda \a lambda_function
-   * sur l'intervalle d'itération [i0,i0+size]
+   * \deprecated Use Arcane::ParallelFor() instead.
    */
-  template<typename LambdaType> static void
+  template<typename LambdaType>
+  [[deprecated("Year2021: Use Arcane::ParallelFor() instead")]]
+  inline void
   For(Integer i0,Integer size,const LambdaType& lambda_function)
   {
     LambdaRangeFunctorT<LambdaType> ipf(lambda_function);
