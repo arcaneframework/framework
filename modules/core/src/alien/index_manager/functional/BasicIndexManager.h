@@ -66,7 +66,7 @@ class ALIEN_EXPORT BasicIndexManager : public IIndexManager
 
   //! Construit une nouvelle entrée scalaire sur un ensemble d'entités abstraites
   ScalarIndexSet buildScalarIndexSet(const Arccore::String& name,
-                                     const Arccore::IntegerConstArrayView& localIds,
+                                     Arccore::IntegerConstArrayView localIds,
                                      const IAbstractFamily& family) override;
 
   //! Construit une nouvelle entrée scalaire sur l'ensemble des entités d'une familles
@@ -77,7 +77,8 @@ class ALIEN_EXPORT BasicIndexManager : public IIndexManager
   //! Construit une nouvelle entrée vectoriellesur un ensemble d'entités abstraites
   /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
   VectorIndexSet buildVectorIndexSet(const Arccore::String& name,
-                                     const Arccore::IntegerConstArrayView& localIds, const IAbstractFamily& family,
+                                     Arccore::IntegerConstArrayView localIds, 
+                                     const IAbstractFamily& family,
                                      Arccore::Integer n) override;
 
   //! Construit une nouvelle entrée scalaire sur l'ensemble des entités d'une familles
@@ -204,7 +205,7 @@ class ALIEN_EXPORT BasicIndexManager : public IIndexManager
  private:
   Entry buildEntry(const Arccore::String& name, const IAbstractFamily* itemFamily,
                    Arccore::Integer kind);
-  void defineIndex(const Entry& entry, const Arccore::IntegerConstArrayView& localIds);
+  void defineIndex(const Entry& entry, Arccore::IntegerConstArrayView localIds);
   void parallel_prepare(EntryIndexMap& entry_index);
   void sequential_prepare(EntryIndexMap& entry_index);
   [[nodiscard]] inline bool isOwn(const IAbstractFamily::Item& item) const

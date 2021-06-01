@@ -67,7 +67,7 @@ class MatrixElementT
    * \brief Add and set operator
    * \param[in] value The value to add
    */
-  void operator+=(const Arccore::Real& value)
+  void operator+=(Real value)
   {
     m_parent.addData(m_iIndex, m_jIndex, value);
   }
@@ -76,7 +76,7 @@ class MatrixElementT
    * \brief Minus and set operator
    * \param[in] value The value to substract
    */
-  void operator-=(const Arccore::Real& value)
+  void operator-=(Real value)
   {
     m_parent.addData(m_iIndex, m_jIndex, -value);
   }
@@ -85,7 +85,7 @@ class MatrixElementT
    * \brief Assignment operator
    * \param[in] value The value to set
    */
-  void operator=(const Arccore::Real& value)
+  void operator=(Real value)
   {
     m_parent.setData(m_iIndex, m_jIndex, value);
   }

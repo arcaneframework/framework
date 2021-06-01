@@ -80,7 +80,9 @@ void VBlockSizes::compute(const VBlock::ValuePerBlock& all_blocks_sizes, Integer
       m_scalarized_offset += local_sizes[i];
   }
   else
+  {
     m_global_scalarized_size = m_local_scalarized_size;
+  }
 }
 
 /*---------------------------------------------------------------------------*/

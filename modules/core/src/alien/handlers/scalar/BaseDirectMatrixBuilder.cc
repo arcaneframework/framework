@@ -264,7 +264,7 @@ namespace Common
   /*---------------------------------------------------------------------------*/
 
   void DirectMatrixBuilder::addData(const Integer iIndex, const Real factor,
-                                    const ConstArrayView<Integer>& jIndexes, const ConstArrayView<Real>& jValues)
+                                    ConstArrayView<Integer> jIndexes, ConstArrayView<Real> jValues)
   {
     _startTimer();
     ALIEN_ASSERT((m_allocated), ("Not allocated matrix"));
@@ -340,7 +340,7 @@ namespace Common
   /*---------------------------------------------------------------------------*/
 
   void DirectMatrixBuilder::setData(const Integer iIndex, const Real factor,
-                                    const ConstArrayView<Integer>& jIndexes, const ConstArrayView<Real>& jValues)
+                                    ConstArrayView<Integer> jIndexes, ConstArrayView<Real> jValues)
   {
     _startTimer();
     ALIEN_ASSERT((m_allocated), ("Not allocated matrix"));
@@ -400,7 +400,7 @@ namespace Common
     class Finder
     {
      public:
-      Finder(const ConstArrayView<Integer>& indexes, const Integer offset)
+      Finder(ConstArrayView<Integer> indexes, const Integer offset)
       {
         for (Integer i = 0, is = indexes.size(); i < is; ++i)
           m_index_set.insert(indexes[i] - offset);
@@ -415,7 +415,7 @@ namespace Common
     };
 
    public:
-    IndexEnumerator(const ConstArrayView<Integer>& indexes, const Integer offset)
+    IndexEnumerator(ConstArrayView<Integer> indexes, const Integer offset)
     : m_i(0)
     , m_offset(offset)
     , m_indexes(indexes)

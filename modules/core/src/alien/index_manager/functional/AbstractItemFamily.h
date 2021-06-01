@@ -45,8 +45,9 @@ class ALIEN_EXPORT AbstractItemFamily : public IAbstractFamily
    * @param owners Array of item owners
    * @param parallel_mng Parallel Manager.
    */
-  AbstractItemFamily(const ConstArrayView<Int64>& uniqueIds,
-                     const ConstArrayView<Integer>& owners, IMessagePassingMng* parallel_mng,
+  AbstractItemFamily(ConstArrayView<Int64> uniqueIds,
+                     ConstArrayView<Integer> owners,
+                     IMessagePassingMng* parallel_mng,
                      ITraceMng* trace_mng = nullptr);
 
   /*! Build a family for locally known unique ids.
@@ -56,9 +57,10 @@ class ALIEN_EXPORT AbstractItemFamily : public IAbstractFamily
    * @param ghost_owners Array of ghost item owners
    * @param parallel_mng Parallel Manager.
    */
-  AbstractItemFamily(const ConstArrayView<Int64>& uniqueIds,
-                     const ConstArrayView<Int64>& ghost_uniqueIds,
-                     const ConstArrayView<Integer>& ghost_owners, IMessagePassingMng* parallel_mng,
+  AbstractItemFamily(ConstArrayView<Int64> uniqueIds,
+                     ConstArrayView<Int64> ghost_uniqueIds,
+                     ConstArrayView<Integer> ghost_owners,
+                     IMessagePassingMng* parallel_mng,
                      ITraceMng* trace_mng = nullptr);
 
   /*! Build a family for locally owned unique ids.
@@ -66,8 +68,9 @@ class ALIEN_EXPORT AbstractItemFamily : public IAbstractFamily
    * @param uniqueIds Array of locally owned uniqueIds.
    * @param parallel_mng Parallel Manager.
    */
-  AbstractItemFamily(const ConstArrayView<Int64>& uniqueIds,
-                     IMessagePassingMng* parallel_mng, [[maybe_unused]] ITraceMng* trace_mng = nullptr);
+  AbstractItemFamily(ConstArrayView<Int64> uniqueIds,
+                     IMessagePassingMng* parallel_mng,
+                     [[maybe_unused]] ITraceMng* trace_mng = nullptr);
 
   ~AbstractItemFamily() override = default;
 
@@ -107,8 +110,9 @@ class ALIEN_EXPORT AbstractFamily : public IIndexManager::IAbstractFamily
    * @param owners Array of item owners
    * @param parallel_mng Parallel Manager.
    */
-  AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
-                 const ConstArrayView<Integer>& owners, IMessagePassingMng* parallel_mng,
+  AbstractFamily(ConstArrayView<Int64> uniqueIds,
+                 ConstArrayView<Integer> owners,
+                 IMessagePassingMng* parallel_mng,
                  ITraceMng* trace_mng = nullptr);
 
   /*! Build a family for locally known unique ids.
@@ -118,9 +122,10 @@ class ALIEN_EXPORT AbstractFamily : public IIndexManager::IAbstractFamily
    * @param ghost_owners Array of ghost item owners
    * @param parallel_mng Parallel Manager.
    */
-  AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
-                 const ConstArrayView<Int64>& ghost_uniqueIds,
-                 const ConstArrayView<Integer>& ghost_owners, IMessagePassingMng* parallel_mng,
+  AbstractFamily(ConstArrayView<Int64> uniqueIds,
+                 ConstArrayView<Int64> ghost_uniqueIds,
+                 ConstArrayView<Integer> ghost_owners,
+                 IMessagePassingMng* parallel_mng,
                  ITraceMng* trace_mng = nullptr);
 
   /*! Build a family for locally owned unique ids.
@@ -129,7 +134,8 @@ class ALIEN_EXPORT AbstractFamily : public IIndexManager::IAbstractFamily
    * @param parallel_mng Parallel Manager.
    */
 
-  AbstractFamily(const ConstArrayView<Int64>& uniqueIds, IMessagePassingMng* parallel_mng,
+  AbstractFamily(ConstArrayView<Int64> uniqueIds,
+                 IMessagePassingMng* parallel_mng,
                  ITraceMng* trace_mng = nullptr);
 
   ~AbstractFamily() override = default;

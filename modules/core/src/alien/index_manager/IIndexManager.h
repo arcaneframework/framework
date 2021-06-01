@@ -314,7 +314,7 @@ class IIndexManager
 
   //! Construit une nouvelle entrée scalaire sur un ensemble d'entités abstraites
   virtual ScalarIndexSet buildScalarIndexSet(const Arccore::String& name,
-                                             const Arccore::ConstArrayView<Arccore::Integer>& localIds,
+                                             Arccore::ConstArrayView<Arccore::Integer> localIds,
                                              const IAbstractFamily& family) = 0;
 
   //! Construit une nouvelle entrée scalaire sur l'ensemble des entités d'une familles
@@ -330,8 +330,9 @@ class IIndexManager
   //! Construit une nouvelle entrée vectoriellesur un ensemble d'entités abstraites
   /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
   virtual VectorIndexSet buildVectorIndexSet(const Arccore::String& name,
-                                             const Arccore::ConstArrayView<Arccore::Integer>& localIds,
-                                             const IAbstractFamily& family, Arccore::Integer n) = 0;
+                                             Arccore::ConstArrayView<Arccore::Integer> localIds,
+                                             const IAbstractFamily& family, 
+                                             Arccore::Integer n) = 0;
 
   //! Construit une nouvelle entrée scalaire sur l'ensemble des entités d'une familles
   //! abstraite

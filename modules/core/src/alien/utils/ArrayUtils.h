@@ -41,7 +41,7 @@ namespace ArrayScan
    * cache) Si plusieurs instance de la valeur \a x existe, la premi�re sera trouv�e.
    */
   template <typename T>
-  inline Integer exhaustiveScan(const T& x, const ConstArrayView<T>& v);
+  inline Integer exhaustiveScan(const T& x, ConstArrayView<T> v);
 
   //! Recherche lin�aire de la valeur \a x dans un tableau ordonn�e \a v avec contr�le de
   //! validit�
@@ -49,7 +49,7 @@ namespace ArrayScan
    * cache) Si plusieurs instance de la valeur \a x existe, la premi�re sera trouv�e.
    */
   template <typename T>
-  inline Integer linearScan(const T& x, const ConstArrayView<T>& v);
+  inline Integer linearScan(const T& x, ConstArrayView<T> v);
   //! Recherche dichotomique de la valeur \a x dans un tableau ordonn�e \a v avec contr�le
   //! de validit�
   /*! Cette recherche dichotomique est hybrid�e avec une recherche lin�aire par de
@@ -59,7 +59,7 @@ namespace ArrayScan
    * trouv�e.
    */
   template <typename T>
-  inline Integer dichotomicScan(const T& x, const ConstArrayView<T>& v);
+  inline Integer dichotomicScan(const T& x, ConstArrayView<T> v);
 
   //! Recherche lin�aire de la position d'insertion de la valeur \a x dans un tableau
   //! ordonn�e \a v avec contr�le de validit�
@@ -67,7 +67,7 @@ namespace ArrayScan
    * cache) Si plusieurs instance de la valeur \a x existe, la premi�re sera trouv�e.
    */
   template <typename T>
-  inline Integer linearPositionScan(const T& x, const ConstArrayView<T>& v);
+  inline Integer linearPositionScan(const T& x, ConstArrayView<T> v);
   //! Recherche dichotomique de la  position d'insertion de la valeur \a x dans un tableau
   //! ordonn�e \a v avec contr�le de validit�
   /*! Cette recherche dichotomique est hybrid�e avec une recherche lin�aire par de
@@ -77,7 +77,7 @@ namespace ArrayScan
    * trouv�e.
    */
   template <typename T>
-  inline Integer dichotomicPositionScan(const T& x, const ConstArrayView<T>& v);
+  inline Integer dichotomicPositionScan(const T& x, ConstArrayView<T> v);
 
   //! Recherche lin�aire de la borne inf�rieur de l'intervalle contenant la valeur \a x
   //! dans un tableau ordonn�e \a v sans contr�le de validit�
@@ -106,7 +106,7 @@ namespace ArrayScan
 {
 
   template <typename T>
-  Integer exhaustiveScan(const T& x, const ConstArrayView<T>& v)
+  Integer exhaustiveScan(const T& x, ConstArrayView<T> v)
   {
     const Integer n = v.size();
     for (Integer i = 0; i < n; ++i)
@@ -116,7 +116,7 @@ namespace ArrayScan
   }
 
   template <typename T>
-  Integer linearScan(const T& x, const ConstArrayView<T>& v)
+  Integer linearScan(const T& x, ConstArrayView<T> v)
   {
     const Integer n = v.size();
     Integer index = 0;
@@ -130,7 +130,7 @@ namespace ArrayScan
   }
 
   template <typename T>
-  inline Integer dichotomicScan(const T& x, const ConstArrayView<T>& v)
+  inline Integer dichotomicScan(const T& x, ConstArrayView<T> v)
   {
     const Integer n = v.size();
 
@@ -169,7 +169,7 @@ namespace ArrayScan
   /*---------------------------------------------------------------------------*/
 
   template <typename T>
-  Integer linearPositionScan(const T& x, const ConstArrayView<T>& v)
+  Integer linearPositionScan(const T& x, ConstArrayView<T> v)
   {
     const Integer n = v.size();
     Integer index = 0;
@@ -180,7 +180,7 @@ namespace ArrayScan
   }
 
   template <typename T>
-  inline Integer dichotomicPositionScan(const T& x, const ConstArrayView<T>& v)
+  inline Integer dichotomicPositionScan(const T& x, ConstArrayView<T> v)
   {
     const Integer n = v.size();
 

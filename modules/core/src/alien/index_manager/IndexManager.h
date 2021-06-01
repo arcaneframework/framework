@@ -143,7 +143,8 @@ class ALIEN_EXPORT IndexManager
    * @return
    */
   ScalarIndexSet buildScalarIndexSet(const String& name,
-                                     const ConstArrayView<Integer>& localIds, const IAbstractFamily& family,
+                                     ConstArrayView<Integer> localIds,
+                                     const IAbstractFamily& family,
                                      Integer kind, eKeepAlive alive = DontClone);
 
   /*! New scalar entry, on elements of a family.
@@ -169,8 +170,10 @@ class ALIEN_EXPORT IndexManager
    * Current implementation handles multi-scalar entries as vector.
    */
   VectorIndexSet buildVectorIndexSet(const String& name,
-                                     const ConstArrayView<Integer>& localIds, const IAbstractFamily& family,
-                                     const UniqueArray<Integer>& kind, eKeepAlive alive = DontClone);
+                                     ConstArrayView<Integer> localIds,
+                                     const IAbstractFamily& family,
+                                     const UniqueArray<Integer>& kind,
+                                     eKeepAlive alive = DontClone);
   /*! New vector entry, on elements of a family.
    *
    * @param name
@@ -181,8 +184,10 @@ class ALIEN_EXPORT IndexManager
    *
    * Current implementation handles multi-scalar entries as vector.
    */
-  VectorIndexSet buildVectorIndexSet(const String& name, const IAbstractFamily& family,
-                                     const UniqueArray<Integer>& kind, eKeepAlive alive = DontClone);
+  VectorIndexSet buildVectorIndexSet(const String& name, 
+                                     const IAbstractFamily& family,
+                                     const UniqueArray<Integer>& kind, 
+                                     eKeepAlive alive = DontClone);
   /*! }@ */
 
   /*! Remove a entities from the index.
@@ -192,7 +197,7 @@ class ALIEN_EXPORT IndexManager
    *
    * Must be called before prepare.
    */
-  void removeIndex(const ScalarIndexSet& entry, const ConstArrayView<Integer>& localIds);
+  void removeIndex(const ScalarIndexSet& entry, ConstArrayView<Integer> localIds);
 
   //! Give a translation table, indexed by items.
   UniqueArray<Integer> getIndexes(const ScalarIndexSet& entry) const;
@@ -224,7 +229,7 @@ class ALIEN_EXPORT IndexManager
   ScalarIndexSet buildEntry(
   const String& name, const IAbstractFamily* itemFamily, Integer kind);
 
-  void defineIndex(const ScalarIndexSet& entry, const ConstArrayView<Integer>& localIds);
+  void defineIndex(const ScalarIndexSet& entry, ConstArrayView<Integer> localIds);
 
   typedef std::vector<InternalEntryIndex> EntryIndexMap;
 

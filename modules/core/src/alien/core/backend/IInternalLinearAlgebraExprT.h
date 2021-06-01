@@ -104,7 +104,7 @@ class IInternalLinearAlgebraExpr
    * \param[in] x The vector to be scaled
    * \param[in,out] y The resulting vector
    */
-  virtual void axpy(const Real& alpha, const Vector& x, Vector& y) const = 0;
+  virtual void axpy(Real alpha, const Vector& x, Vector& y) const = 0;
 
   /*!
    * \brief Scale a vector by a factor and adds the result to another vector
@@ -115,7 +115,7 @@ class IInternalLinearAlgebraExpr
    * \param[in,out] y The vector to be scaled
    * \param[in] x The vector to add
    */
-  virtual void aypx(const Real& alpha, Vector& y, const Vector& x) const = 0;
+  virtual void aypx(Real alpha, Vector& y, const Vector& x) const = 0;
 
   /*!
    * \brief Copy a vector in another one
@@ -138,7 +138,7 @@ class IInternalLinearAlgebraExpr
    * \param[in] alpha The real value to scale with
    * \param[in,out] x The vector to be scaled
    */
-  virtual void scal(const Real& alpha, Vector& x) const = 0;
+  virtual void scal(Real alpha, Vector& x) const = 0;
 
   /*!
    * \brief Extract the diagonal of a matrix in a vector
@@ -208,8 +208,7 @@ class IInternalLinearAlgebraExpr
    * \param[in] x The vector to be scaled
    * \param[in,out] y The resulting vector
    */
-  virtual void axpy(
-  const Real& alpha, const UniqueArray<Real>& x, UniqueArray<Real>& y) const = 0;
+  virtual void axpy(Real alpha, const UniqueArray<Real>& x, UniqueArray<Real>& y) const = 0;
 
   /*!
    * \brief Scale a vector by a factor and adds the result to another vector
@@ -220,8 +219,7 @@ class IInternalLinearAlgebraExpr
    * \param[in,out] y The vector to be scaled
    * \param[in] x The vector to add
    */
-  virtual void aypx(
-  const Real& alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const = 0;
+  virtual void aypx(Real alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const = 0;
 
   /*!
    * \brief Copy a vector in another one
@@ -246,7 +244,7 @@ class IInternalLinearAlgebraExpr
    * \param[in] alpha The real value to scale with
    * \param[in,out] x The vector to be scaled
    */
-  virtual void scal(const Real& alpha, UniqueArray<Real>& x) const = 0;
+  virtual void scal(Real alpha, UniqueArray<Real>& x) const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

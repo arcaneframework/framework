@@ -86,7 +86,7 @@ class ILinearAlgebra
    * \param[in] x The vector to scale
    * \param[in, out] y The vector to store the result
    */
-  virtual void axpy(const Arccore::Real& alpha, const IVector& x, IVector& y) const = 0;
+  virtual void axpy(Real alpha, const IVector& x, IVector& y) const = 0;
 
   /*!
    * \brief Copy a vector

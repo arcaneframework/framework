@@ -44,11 +44,11 @@ class SimpleCSRInternalLinearAlgebra : public IInternalLinearAlgebra<CSRMatrix, 
   Real norm1(const Vector& x) const;
   Real norm2(const Vector& x) const;
   void mult(const Matrix& a, const Vector& x, Vector& r) const;
-  void axpy(const Real& alpha, const Vector& x, Vector& r) const;
-  void aypx(const Real& alpha, Vector& y, const Vector& x) const;
+  void axpy(Real alpha, const Vector& x, Vector& r) const;
+  void aypx(Real alpha, Vector& y, const Vector& x) const;
   void copy(const Vector& x, Vector& r) const;
   Real dot(const Vector& x, const Vector& y) const;
-  void scal(const Real& alpha, Vector& x) const;
+  void scal(Real alpha, Vector& x) const;
   void diagonal(const Matrix& a, Vector& x) const;
   void reciprocal(Vector& x) const;
   void pointwiseMult(const Vector& x, const Vector& y, Vector& w) const;
@@ -70,11 +70,11 @@ class SimpleCSRInternalLinearAlgebraExpr
   Real norm1(const Vector& x) const;
   Real norm2(const Vector& x) const;
   void mult(const Matrix& a, const Vector& x, Vector& r) const;
-  void axpy(const Real& alpha, const Vector& x, Vector& r) const;
-  void aypx(const Real& alpha, Vector& y, const Vector& x) const;
+  void axpy(Real alpha, const Vector& x, Vector& r) const;
+  void aypx(Real alpha, Vector& y, const Vector& x) const;
   void copy(const Vector& x, Vector& r) const;
   Real dot(const Vector& x, const Vector& y) const;
-  void scal(const Real& alpha, Vector& x) const;
+  void scal(Real alpha, Vector& x) const;
   void diagonal(const Matrix& a, Vector& x) const;
   void reciprocal(Vector& x) const;
   void pointwiseMult(const Vector& x, const Vector& y, Vector& w) const;
@@ -82,13 +82,13 @@ class SimpleCSRInternalLinearAlgebraExpr
   // IInternalLinearAlgebra interface.
 
   void mult(const Matrix& a, const UniqueArray<Real>& x, UniqueArray<Real>& r) const;
-  void axpy(const Real& alpha, UniqueArray<Real> const& x, UniqueArray<Real>& r) const;
-  void aypx(const Real& alpha, UniqueArray<Real>& y, UniqueArray<Real> const& x) const;
+  void axpy(Real alpha, UniqueArray<Real> const& x, UniqueArray<Real>& r) const;
+  void aypx(Real alpha, UniqueArray<Real>& y, UniqueArray<Real> const& x) const;
   void copy(const UniqueArray<Real>& x, UniqueArray<Real>& r) const;
   Real dot(
   Integer local_size, const UniqueArray<Real>& x, const UniqueArray<Real>& y) const;
 
-  void scal(const Real& alpha, UniqueArray<Real>& x) const;
+  void scal(Real alpha, UniqueArray<Real>& x) const;
 
  private:
   // No member.

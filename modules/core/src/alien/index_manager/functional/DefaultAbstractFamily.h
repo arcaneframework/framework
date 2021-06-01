@@ -42,16 +42,17 @@ class ALIEN_EXPORT DefaultAbstractFamily : public IAbstractFamily
    * @param owners Array of item owners
    * @param parallel_mng Parallel Manager.
    */
-  DefaultAbstractFamily(const ConstArrayView<Int64>& uniqueIds,
-                        const ConstArrayView<Integer>& owners, IMessagePassingMng* parallel_mng);
+  DefaultAbstractFamily(ConstArrayView<Int64> uniqueIds,
+                        ConstArrayView<Integer> owners,
+                        IMessagePassingMng* parallel_mng);
 
   /*! Build a family for locally owned unique ids.
    *
    * @param uniqueIds Array of locally owned uniqueIds.
    * @param parallel_mng Parallel Manager.
    */
-  DefaultAbstractFamily(
-  const ConstArrayView<Int64>& uniqueIds, IMessagePassingMng* parallel_mng);
+  DefaultAbstractFamily(ConstArrayView<Int64> uniqueIds, 
+                        IMessagePassingMng* parallel_mng);
 
   ~DefaultAbstractFamily() override = default;
 

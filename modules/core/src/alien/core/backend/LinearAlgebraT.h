@@ -92,8 +92,7 @@ void LinearAlgebra<Tag, TagV>::mult(const IMatrix& a, const IVector& x, IVector&
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void LinearAlgebra<Tag, TagV>::axpy(
-const Arccore::Real& alpha, const IVector& x, IVector& r) const
+void LinearAlgebra<Tag, TagV>::axpy(Real alpha, const IVector& x, IVector& r) const
 {
   const auto& vx = x.impl()->get<TagV>();
   auto& vr = r.impl()->get<TagV>(true);
@@ -105,8 +104,7 @@ const Arccore::Real& alpha, const IVector& x, IVector& r) const
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void LinearAlgebra<Tag, TagV>::aypx(
-const Arccore::Real& alpha, IVector& y, const IVector& x) const
+void LinearAlgebra<Tag, TagV>::aypx(Real alpha, IVector& y, const IVector& x) const
 {
   const auto& vx = x.impl()->get<TagV>();
   auto& vy = y.impl()->get<TagV>(true);
@@ -162,7 +160,7 @@ void LinearAlgebra<Tag, TagV>::reciprocal(IVector& x) const
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void LinearAlgebra<Tag, TagV>::scal(const Real& alpha, IVector& x) const
+void LinearAlgebra<Tag, TagV>::scal(Real alpha, IVector& x) const
 {
   auto& vx = x.impl()->get<TagV>(true);
   m_algebra->scal(alpha, vx);
