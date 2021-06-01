@@ -95,13 +95,13 @@ HTSInternalLinearAlgebra::mult(
 /*---------------------------------------------------------------------------*/
 void
 HTSInternalLinearAlgebra::axpy(
-    const Real& alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+    Real alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
 {
   cblas::axpy(x.size(), alpha, dataPtr(x), 1, dataPtr(r), 1);
 }
 
 void
-HTSInternalLinearAlgebra::axpy(const Real& alpha, const Vector& x, Vector& r) const
+HTSInternalLinearAlgebra::axpy(Real alpha, const Vector& x, Vector& r) const
 {
   CBLASMPIKernel::axpy(x.distribution(), alpha, x, r);
 }
@@ -109,14 +109,14 @@ HTSInternalLinearAlgebra::axpy(const Real& alpha, const Vector& x, Vector& r) co
 /*---------------------------------------------------------------------------*/
 void
 HTSInternalLinearAlgebra::aypx(
-    const Real& alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const
+    Real alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const
 {
   throw NotImplementedException(
       A_FUNCINFO, "HTSInternalLinearAlgebra::aypx not implemented");
 }
 
 void
-HTSInternalLinearAlgebra::aypx(const Real& alpha, Vector& y, const Vector& x) const
+HTSInternalLinearAlgebra::aypx(Real alpha, Vector& y, const Vector& x) const
 {
   throw NotImplementedException(
       A_FUNCINFO, "HTSInternalLinearAlgebra::aypx not implemented");
@@ -153,14 +153,14 @@ HTSInternalLinearAlgebra::dot(const Vector& x, const Vector& y) const
 
 void
 HTSInternalLinearAlgebra::scal(
-    const Real& alpha ALIEN_UNUSED_PARAM, UniqueArray<Real>& x ALIEN_UNUSED_PARAM) const
+    Real alpha ALIEN_UNUSED_PARAM, UniqueArray<Real>& x ALIEN_UNUSED_PARAM) const
 {
   throw NotImplementedException(
       A_FUNCINFO, "HTSInternalLinearAlgebra::scal not implemented");
 }
 
 void
-HTSInternalLinearAlgebra::scal(const Real& alpha, Vector& x) const
+HTSInternalLinearAlgebra::scal(Real alpha, Vector& x) const
 {
   throw NotImplementedException(
       A_FUNCINFO, "HTSInternalLinearAlgebra::scal not implemented");

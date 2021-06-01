@@ -111,7 +111,7 @@ HypreInternalLinearAlgebra::mult(
 /*---------------------------------------------------------------------------*/
 
 void
-HypreInternalLinearAlgebra::axpy(const Arccore::Real& alpha ALIEN_UNUSED_PARAM,
+HypreInternalLinearAlgebra::axpy(Real alpha ALIEN_UNUSED_PARAM,
     const HypreVector& vx ALIEN_UNUSED_PARAM, HypreVector& vr ALIEN_UNUSED_PARAM) const
 {
   throw Arccore::NotImplementedException(
@@ -157,7 +157,7 @@ HypreInternalLinearAlgebra::reciprocal(HypreVector& v ALIEN_UNUSED_PARAM) const
 /*---------------------------------------------------------------------------*/
 
 void
-HypreInternalLinearAlgebra::aypx(const double& alpha ALIEN_UNUSED_PARAM,
+HypreInternalLinearAlgebra::aypx(Real alpha ALIEN_UNUSED_PARAM,
     HypreVector& y ALIEN_UNUSED_PARAM, const HypreVector& x ALIEN_UNUSED_PARAM) const
 {
   throw Arccore::NotImplementedException(
@@ -177,7 +177,7 @@ HypreInternalLinearAlgebra::pointwiseMult(const HypreVector& x ALIEN_UNUSED_PARA
 /*---------------------------------------------------------------------------*/
 
 void
-HypreInternalLinearAlgebra::scal(const Arccore::Real& alpha, HypreVector& x) const
+HypreInternalLinearAlgebra::scal(Real alpha, HypreVector& x) const
 {
   HYPRE_ParVectorScale(static_cast<double>(alpha), hypre_implem(x));
 }
@@ -193,14 +193,14 @@ HypreInternalLinearAlgebra::mult(
 
 void
 HypreInternalLinearAlgebra::axpy(
-    const Real& alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+    Real alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
 {
   throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::norm0 not implemented");
 }
 
 void
 HypreInternalLinearAlgebra::aypx(
-    const Real& alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const
+    Real alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const
 {
   throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::axpy not implemented");
 }
@@ -217,7 +217,7 @@ HypreInternalLinearAlgebra::dot(
   return Real();
 }
 void
-HypreInternalLinearAlgebra::scal(const Real& alpha, UniqueArray<Real>& x) const
+HypreInternalLinearAlgebra::scal(Real alpha, UniqueArray<Real>& x) const
 {
   throw NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::scal not implemented");
 }

@@ -101,13 +101,13 @@ TrilinosInternalLinearAlgebra::mult(
 /*---------------------------------------------------------------------------*/
 void
 TrilinosInternalLinearAlgebra::axpy(
-    const Real& alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+    Real alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
 {
   cblas::axpy(x.size(), alpha, dataPtr(x), 1, dataPtr(r), 1);
 }
 
 void
-TrilinosInternalLinearAlgebra::axpy(const Real& alpha, const Vector& x, Vector& r) const
+TrilinosInternalLinearAlgebra::axpy(Real alpha, const Vector& x, Vector& r) const
 {
   throw NotImplementedException(
       A_FUNCINFO, "TrilinosInternalLinearAlgebra::aypx not implemented");
@@ -116,14 +116,14 @@ TrilinosInternalLinearAlgebra::axpy(const Real& alpha, const Vector& x, Vector& 
 /*---------------------------------------------------------------------------*/
 void
 TrilinosInternalLinearAlgebra::aypx(
-    const Real& alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const
+    Real alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const
 {
   throw NotImplementedException(
       A_FUNCINFO, "TrilinosInternalLinearAlgebra::aypx not implemented");
 }
 
 void
-TrilinosInternalLinearAlgebra::aypx(const Real& alpha, Vector& y, const Vector& x) const
+TrilinosInternalLinearAlgebra::aypx(Real alpha, Vector& y, const Vector& x) const
 {
   throw NotImplementedException(
       A_FUNCINFO, "TrilinosInternalLinearAlgebra::aypx not implemented");
@@ -159,14 +159,14 @@ TrilinosInternalLinearAlgebra::dot(const Vector& x, const Vector& y) const
 
 /*---------------------------------------------------------------------------*/
 void
-TrilinosInternalLinearAlgebra::scal(const Real& alpha, UniqueArray<Real>& x) const
+TrilinosInternalLinearAlgebra::scal(Real alpha, UniqueArray<Real>& x) const
 {
   throw NotImplementedException(
       A_FUNCINFO, "TrilinosInternalLinearAlgebra::scal not implemented");
 }
 
 void
-TrilinosInternalLinearAlgebra::scal(const Real& alpha, Vector& x) const
+TrilinosInternalLinearAlgebra::scal(Real alpha, Vector& x) const
 {
   throw NotImplementedException(
       A_FUNCINFO, "TrilinosInternalLinearAlgebra::scal not implemented");

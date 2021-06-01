@@ -76,7 +76,7 @@ MCGInternalLinearAlgebra::mult(
 
 void
 MCGInternalLinearAlgebra::axpy(
-    const Real& alpha, const VectorType& x, VectorType& r) const
+    Real alpha, const VectorType& x, VectorType& r) const
 {
   const MCGVector& vx = x.impl()->get<BackEnd::tag::mcgsolver>();
   MCGVector& vr = r.impl()->get<BackEnd::tag::mcgsolver>(true);
@@ -150,7 +150,7 @@ MCGInternalLinearAlgebra::mult(
 
 void
 MCGInternalLinearAlgebra::axpy(
-    const Real& alpha, const VectorImpl& vx, VectorImpl& vr) const
+    Real alpha, const VectorImpl& vx, VectorImpl& vr) const
 {
   // vr.internal()->m_internal += alpha*vx.internal()->m_internal;
 }

@@ -80,7 +80,7 @@ MTLInternalLinearAlgebra::mult(const Matrix& a, const Vector& x, Vector& r) cons
 
 void
 MTLInternalLinearAlgebra::axpy(
-    const Arccore::Real& alpha, const Vector& x, Vector& r) const
+    Real alpha, const Vector& x, Vector& r) const
 {
   r.internal()->m_internal += alpha * x.internal()->m_internal;
 }
@@ -89,7 +89,7 @@ MTLInternalLinearAlgebra::axpy(
 
 void
 MTLInternalLinearAlgebra::aypx(
-    const Arccore::Real& alpha, Vector& y, const Vector& x) const
+    Real alpha, Vector& y, const Vector& x) const
 {
   throw Arccore::NotImplementedException(
       A_FUNCINFO, "MTLInternalLinearAlgebra::aypx not implemented");
@@ -114,7 +114,7 @@ MTLInternalLinearAlgebra::dot(const Vector& x, const Vector& y) const
 /*---------------------------------------------------------------------------*/
 
 void
-MTLInternalLinearAlgebra::scal(const Arccore::Real& alpha, Vector& x) const
+MTLInternalLinearAlgebra::scal(Real alpha, Vector& x) const
 {
   throw Arccore::NotImplementedException(
       A_FUNCINFO, "MTLInternalLinearAlgebra::scal not implemented");
@@ -158,13 +158,13 @@ MTLInternalLinearAlgebra::mult(
 }
 void
 MTLInternalLinearAlgebra::axpy(
-    const Real& alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+    Real alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
 {
   throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::axpy not implemented");
 }
 void
 MTLInternalLinearAlgebra::aypx(
-    const Real& alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const
+    Real alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const
 {
   throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::aypx not implemented");
 }
@@ -181,7 +181,7 @@ MTLInternalLinearAlgebra::dot(
   return Real();
 }
 void
-MTLInternalLinearAlgebra::scal(const Real& alpha, UniqueArray<Real>& x) const
+MTLInternalLinearAlgebra::scal(Real alpha, UniqueArray<Real>& x) const
 {
   throw NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::scal not implemented");
 }
