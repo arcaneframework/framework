@@ -41,7 +41,7 @@ class SafeConstArrayView : private ConstArrayView<T>
   SafeConstArrayView() {}
 
   //! Constructeur � partir d'une vue
-  SafeConstArrayView(const ConstArrayView<T>& view)
+  SafeConstArrayView(ConstArrayView<T> view)
   : BaseArrayView(view)
   {}
 
@@ -59,7 +59,7 @@ class SafeConstArrayView : private ConstArrayView<T>
   virtual ~SafeConstArrayView() {}
 
   //! Egalit� avec une vue (on lib�re le array)
-  SafeConstArrayView& operator=(const ConstArrayView<T>& view)
+  SafeConstArrayView& operator=(ConstArrayView<T> view)
   {
     m_array = SharedArray<T>();
     BaseArrayView::operator=(view);

@@ -119,7 +119,7 @@ class LinearAlgebra : public ILinearAlgebra
    * \param[in] x The vector to be scaled
    * \param[in,out] y The resulting vector
    */
-  void axpy(const Real& alpha, const IVector& x, IVector& y) const;
+  void axpy(Real alpha, const IVector& x, IVector& y) const;
 
   /*!
    * \brief Scale a vector by a factor and adds the result to another vector
@@ -130,7 +130,7 @@ class LinearAlgebra : public ILinearAlgebra
    * \param[in,out] y The vector to be scaled
    * \param[in] x The vector to add
    */
-  void aypx(const Real& alpha, IVector& y, const IVector& x) const;
+  void aypx(Real alpha, IVector& y, const IVector& x) const;
 
   /*!
    * \brief Copy a vector in another one
@@ -153,7 +153,7 @@ class LinearAlgebra : public ILinearAlgebra
    * \param[in] alpha The real value to scale with
    * \param[in,out] x The vector to be scaled
    */
-  void scal(const Real& alpha, IVector& x) const;
+  void scal(Real alpha, IVector& x) const;
 
   /*!
    * \brief Extract the diagonal of a matrix in a vector
@@ -209,7 +209,7 @@ class LinearAlgebra : public ILinearAlgebra
    * \param[in,out] y The vector to be scaled
    * \param[in] x The vector to add
    */
-  void aypx(const Real& alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const;
+  void aypx(Real alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const;
 
   /*!
    * \brief Copy a vector in another one
@@ -234,7 +234,7 @@ class LinearAlgebra : public ILinearAlgebra
    * \param[in] alpha The real value to scale with
    * \param[in,out] x The vector to be scaled
    */
-  void scal(const Real& alpha, UniqueArray<Real>& x) const;
+  void scal(Real alpha, UniqueArray<Real>& x) const;
 
   /*!
    * \brief Dumps a matrix to a file

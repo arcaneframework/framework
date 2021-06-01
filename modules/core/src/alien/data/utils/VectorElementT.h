@@ -33,8 +33,8 @@ namespace Alien
 /*---------------------------------------------------------------------------*/
 
 template <typename T, typename Indexer>
-VectorElementT<T, Indexer>::VectorElementT(Arccore::ArrayView<T>& values,
-                                           const Arccore::ConstArrayView<Arccore::Integer>& indexes,
+VectorElementT<T, Indexer>::VectorElementT(Arccore::ArrayView<T> values,
+                                           Arccore::ConstArrayView<Arccore::Integer> indexes,
                                            const Arccore::Integer local_offset)
 : m_values(values)
 , m_indexes(indexes)
@@ -45,7 +45,8 @@ VectorElementT<T, Indexer>::VectorElementT(Arccore::ArrayView<T>& values,
 /*---------------------------------------------------------------------------*/
 
 template <typename T, typename Indexer>
-void VectorElementT<T, Indexer>::operator=(const Arccore::ConstArrayView<T>& values)
+void
+VectorElementT<T, Indexer>::operator=(Arccore::ConstArrayView<T> values)
 {
   ALIEN_ASSERT((m_indexes.size() == values.size()), ("Invalid size"));
   for (Arccore::Integer i = 0; i < m_indexes.size(); ++i) {
@@ -58,7 +59,8 @@ void VectorElementT<T, Indexer>::operator=(const Arccore::ConstArrayView<T>& val
 /*---------------------------------------------------------------------------*/
 
 template <typename T, typename Indexer>
-void VectorElementT<T, Indexer>::operator+=(const Arccore::ConstArrayView<T>& values)
+void
+VectorElementT<T, Indexer>::operator+=(Arccore::ConstArrayView<T> values)
 {
   ALIEN_ASSERT((m_indexes.size() == values.size()), ("Invalid size"));
   for (Arccore::Integer i = 0; i < m_indexes.size(); ++i) {
@@ -71,7 +73,8 @@ void VectorElementT<T, Indexer>::operator+=(const Arccore::ConstArrayView<T>& va
 /*---------------------------------------------------------------------------*/
 
 template <typename T, typename Indexer>
-void VectorElementT<T, Indexer>::operator-=(const Arccore::ConstArrayView<T>& values)
+void
+VectorElementT<T, Indexer>::operator-=(Arccore::ConstArrayView<T> values)
 {
   ALIEN_ASSERT((m_indexes.size() == values.size()), ("Invalid size"));
   for (Arccore::Integer i = 0; i < m_indexes.size(); ++i) {
@@ -84,8 +87,9 @@ void VectorElementT<T, Indexer>::operator-=(const Arccore::ConstArrayView<T>& va
 /*---------------------------------------------------------------------------*/
 
 template <typename T, typename Indexer>
-MultVectorElementT<T, Indexer>::MultVectorElementT(Arccore::ArrayView<T>& values,
-                                                   T factor, const Arccore::ConstArrayView<Arccore::Integer>& indexes,
+MultVectorElementT<T, Indexer>::MultVectorElementT(Arccore::ArrayView<T> values,
+                                                   T factor, 
+                                                   Arccore::ConstArrayView<Arccore::Integer> indexes,
                                                    const Arccore::Integer local_offset)
 : m_values(values)
 , m_factor(factor)
@@ -97,7 +101,8 @@ MultVectorElementT<T, Indexer>::MultVectorElementT(Arccore::ArrayView<T>& values
 /*---------------------------------------------------------------------------*/
 
 template <typename T, typename Indexer>
-void MultVectorElementT<T, Indexer>::operator=(const Arccore::ConstArrayView<T>& values)
+void
+MultVectorElementT<T, Indexer>::operator=(Arccore::ConstArrayView<T> values)
 {
   ALIEN_ASSERT((m_indexes.size() == values.size()), ("Invalid size"));
   for (Arccore::Integer i = 0; i < m_indexes.size(); ++i) {
@@ -110,7 +115,8 @@ void MultVectorElementT<T, Indexer>::operator=(const Arccore::ConstArrayView<T>&
 /*---------------------------------------------------------------------------*/
 
 template <typename T, typename Indexer>
-void MultVectorElementT<T, Indexer>::operator+=(const Arccore::ConstArrayView<T>& values)
+void
+MultVectorElementT<T, Indexer>::operator+=(Arccore::ConstArrayView<T> values)
 {
   ALIEN_ASSERT((m_indexes.size() == values.size()), ("Invalid size"));
   for (Arccore::Integer i = 0; i < m_indexes.size(); ++i) {
@@ -123,7 +129,8 @@ void MultVectorElementT<T, Indexer>::operator+=(const Arccore::ConstArrayView<T>
 /*---------------------------------------------------------------------------*/
 
 template <typename T, typename Indexer>
-void MultVectorElementT<T, Indexer>::operator-=(const Arccore::ConstArrayView<T>& values)
+void
+MultVectorElementT<T, Indexer>::operator-=(Arccore::ConstArrayView<T> values)
 {
   ALIEN_ASSERT((m_indexes.size() == values.size()), ("Invalid size"));
   for (Arccore::Integer i = 0; i < m_indexes.size(); ++i) {
@@ -136,9 +143,11 @@ void MultVectorElementT<T, Indexer>::operator-=(const Arccore::ConstArrayView<T>
 /*---------------------------------------------------------------------------*/
 
 template <typename T, typename Indexer>
-MultVectorElement2T<T, Indexer>::MultVectorElement2T(Arccore::ArrayView<T>& values,
-                                                     T factor, const Arccore::ConstArray2View<Arccore::Integer>& indexes,
-                                                     Arccore::Integer i, const Arccore::Integer local_offset)
+MultVectorElement2T<T, Indexer>::MultVectorElement2T(Arccore::ArrayView<T> values,
+                                                     T factor, 
+                                                     Arccore::ConstArray2View<Arccore::Integer> indexes,
+                                                     Arccore::Integer i,
+                                                     const Arccore::Integer local_offset)
 : m_values(values)
 , m_factor(factor)
 , m_indexes(indexes)
@@ -150,7 +159,8 @@ MultVectorElement2T<T, Indexer>::MultVectorElement2T(Arccore::ArrayView<T>& valu
 /*---------------------------------------------------------------------------*/
 
 template <typename T, typename Indexer>
-void MultVectorElement2T<T, Indexer>::operator=(const Arccore::ConstArray2View<T>& values)
+void
+MultVectorElement2T<T, Indexer>::operator=(Arccore::ConstArray2View<T> values)
 {
   ALIEN_ASSERT((m_indexes.dim1Size() == values.dim1Size()), ("Invalid size"));
   for (Arccore::Integer i = 0; i < m_indexes.dim1Size(); ++i) {
@@ -163,7 +173,8 @@ void MultVectorElement2T<T, Indexer>::operator=(const Arccore::ConstArray2View<T
 /*---------------------------------------------------------------------------*/
 
 template <typename T, typename Indexer>
-void MultVectorElement2T<T, Indexer>::operator+=(const Arccore::ConstArray2View<T>& values)
+void
+MultVectorElement2T<T, Indexer>::operator+=(Arccore::ConstArray2View<T> values)
 {
   ALIEN_ASSERT((m_indexes.dim1Size() == values.dim1Size()), ("Invalid size"));
   for (Arccore::Integer i = 0; i < m_indexes.dim1Size(); ++i) {
@@ -176,7 +187,8 @@ void MultVectorElement2T<T, Indexer>::operator+=(const Arccore::ConstArray2View<
 /*---------------------------------------------------------------------------*/
 
 template <typename T, typename Indexer>
-void MultVectorElement2T<T, Indexer>::operator-=(const Arccore::ConstArray2View<T>& values)
+void
+MultVectorElement2T<T, Indexer>::operator-=(Arccore::ConstArray2View<T> values)
 {
   ALIEN_ASSERT((m_indexes.dim1Size() == values.dim1Size()), ("Invalid size"));
   for (Arccore::Integer i = 0; i < m_indexes.dim1Size(); ++i) {

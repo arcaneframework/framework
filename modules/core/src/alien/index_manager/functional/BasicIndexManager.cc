@@ -431,7 +431,7 @@ BasicIndexManager::getEntry(const String& name) const
 /*---------------------------------------------------------------------------*/
 
 void BasicIndexManager::defineIndex(
-const Entry& entry, const ConstArrayView<Integer>& localIds)
+const Entry& entry, ConstArrayView<Integer> localIds)
 {
   if (m_state != Initialized)
     throw FatalErrorException(A_FUNCINFO, "Inconsistent state");
@@ -1056,7 +1056,8 @@ const BasicIndexManager::InternalEntryIndex& b) const
 
 IIndexManager::ScalarIndexSet
 BasicIndexManager::buildScalarIndexSet(const String& name,
-                                       const ConstArrayView<Integer>& localIds, const IAbstractFamily& family)
+                                       ConstArrayView<Integer> localIds, 
+                                       const IAbstractFamily& family)
 {
   ScalarIndexSet en = buildEntry(name, &family, addNewAbstractFamily(&family));
   defineIndex(en, localIds);
@@ -1078,7 +1079,8 @@ BasicIndexManager::buildScalarIndexSet(const String& name, const IAbstractFamily
 
 IIndexManager::VectorIndexSet
 BasicIndexManager::buildVectorIndexSet(const String& name,
-                                       const ConstArrayView<Integer>& localIds, const IAbstractFamily& family, Integer n)
+                                       ConstArrayView<Integer> localIds, 
+                                       const IAbstractFamily& family, Integer n)
 {
   VectorIndexSet ens(n);
   for (Integer i = 0; i < n; ++i) {

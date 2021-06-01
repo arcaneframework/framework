@@ -213,8 +213,8 @@ const String& name, const IAbstractFamily* family, const Integer kind)
 
 /*---------------------------------------------------------------------------*/
 
-void IndexManager::defineIndex(
-const ScalarIndexSet& entry, const ConstArrayView<Integer>& localIds)
+void
+IndexManager::defineIndex(const ScalarIndexSet& entry, ConstArrayView<Integer> localIds)
 {
   if (m_state != Initialized)
     throw FatalErrorException(A_FUNCINFO, "Inconsistent state");
@@ -249,8 +249,7 @@ const ScalarIndexSet& entry, const ConstArrayView<Integer>& localIds)
 
 /*---------------------------------------------------------------------------*/
 
-void IndexManager::removeIndex(
-const ScalarIndexSet& entry, const ConstArrayView<Integer>& localIds)
+void IndexManager::removeIndex(const ScalarIndexSet& entry, ConstArrayView<Integer> localIds)
 {
   if (m_state != Initialized)
     throw FatalErrorException(A_FUNCINFO, "Inconsistent state");
@@ -665,7 +664,7 @@ void IndexManager::end_parallel_prepare(EntryIndexMap& entry_index)
   {
     // Table de ré-indexation (EntryIndex->Integer)
     Alien::UniqueArray<Integer> entry_reindex(m_local_entry_count);
-    Alien::fill(entry_reindex, -42); // valeur de type Erreur par défaut
+    Alien::fill(entry_reindex, -1); // valeur de type Erreur par défaut
 
     // C'est ici et uniquement ici qu'est matérialisé l'ordre des entrées
     Integer currentEntryIndex = m_global_entry_offset; // commence par l'offset local
@@ -901,7 +900,9 @@ IndexManager::localSize() const
 
 ScalarIndexSet
 IndexManager::buildScalarIndexSet(const String& name,
-                                  const ConstArrayView<Integer>& localIds, const IAbstractFamily& family, Integer kind,
+                                  ConstArrayView<Integer> localIds,
+                                  const IAbstractFamily& family, 
+                                  Integer kind,
                                   eKeepAlive alive)
 {
   alien_debug([&] {
@@ -931,8 +932,10 @@ const String& name, const IAbstractFamily& family, Integer kind, eKeepAlive aliv
 
 IndexManager::VectorIndexSet
 IndexManager::buildVectorIndexSet(const String& name,
-                                  const ConstArrayView<Integer>& localIds, const IAbstractFamily& family,
-                                  const UniqueArray<Integer>& kind, eKeepAlive alive)
+                                  ConstArrayView<Integer> localIds,
+                                  const IAbstractFamily& family,
+                                  const UniqueArray<Integer>& kind,
+                                  eKeepAlive alive)
 {
   alien_debug([&] {
     cout() << "IndexManager: build vector index set '" << name
@@ -951,8 +954,10 @@ IndexManager::buildVectorIndexSet(const String& name,
 /*---------------------------------------------------------------------------*/
 
 IndexManager::VectorIndexSet
-IndexManager::buildVectorIndexSet(const String& name, const IAbstractFamily& family,
-                                  const UniqueArray<Integer>& kind, eKeepAlive alive)
+IndexManager::buildVectorIndexSet(const String& name, 
+                                  const IAbstractFamily& family,
+                                  const UniqueArray<Integer>& kind, 
+                                  eKeepAlive alive)
 {
   alien_debug([&] {
     cout() << "IndexManager: build vector index set '" << name

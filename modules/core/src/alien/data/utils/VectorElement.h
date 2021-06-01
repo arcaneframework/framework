@@ -53,27 +53,27 @@ class VectorElementT
    * \param[in] indexes The indexes to work on
    * \param[in] local_offset The offset
    */
-  VectorElementT(Arccore::ArrayView<T>& values,
-                 const Arccore::ConstArrayView<Arccore::Integer>& indexes,
+  VectorElementT(Arccore::ArrayView<T> values,
+                 Arccore::ConstArrayView<Arccore::Integer> indexes,
                  Arccore::Integer local_offset);
 
   /*!
    * \brief Operator equal
    * \param[in] values The values to set
    */
-  void operator=(const Arccore::ConstArrayView<T>& values);
+  void operator=(Arccore::ConstArrayView<T> values);
 
   /*!
    * \brief Plus equal operator
    * \param[in] values The values to add
    */
-  void operator+=(const Arccore::ConstArrayView<T>& values);
+  void operator+=(Arccore::ConstArrayView<T> values);
 
   /*!
    * \brief Minus equal operator
    * \param[in] values The values to substract
    */
-  void operator-=(const Arccore::ConstArrayView<T>& values);
+  void operator-=(Arccore::ConstArrayView<T> values);
 
  private:
   //! The array of values
@@ -105,27 +105,27 @@ class MultVectorElementT
    * \param[in] indexes The indexes to work on
    * \param[in] local_offset The offset
    */
-  MultVectorElementT(Arccore::ArrayView<T>& values, T factor,
-                     const Arccore::ConstArrayView<Arccore::Integer>& indexes,
+  MultVectorElementT(Arccore::ArrayView<T> values, T factor,
+                     Arccore::ConstArrayView<Arccore::Integer> indexes,
                      Arccore::Integer local_offset);
 
   /*!
    * \brief Operator equal
    * \param[in] values The values to set
    */
-  void operator=(const Arccore::ConstArrayView<T>& values);
+  void operator=(Arccore::ConstArrayView<T> values);
 
   /*!
    * \brief Operator plus equal
    * \param[in] values The values to add
    */
-  void operator+=(const Arccore::ConstArrayView<T>& values);
+  void operator+=(Arccore::ConstArrayView<T> values);
 
   /*!
    * \brief Minus equal operator
    * \param[in] values The values to substract
    */
-  void operator-=(const Arccore::ConstArrayView<T>& values);
+  void operator-=(Arccore::ConstArrayView<T> values);
 
  private:
   //! The array of values
@@ -160,27 +160,29 @@ class MultVectorElement2T
    * \param[in] i The block entry
    * \param[in] local_offset The offset
    */
-  MultVectorElement2T(Arccore::ArrayView<T>& values, T factor,
-                      const Arccore::ConstArray2View<Arccore::Integer>& indexes, Arccore::Integer i,
+  MultVectorElement2T(Arccore::ArrayView<T> values, 
+                      T factor,
+                      Arccore::ConstArray2View<Arccore::Integer> indexes, 
+                      Arccore::Integer i,
                       Arccore::Integer local_offset);
 
   /*!
    * \brief Operator equal
    * \param[in] values The values to set
    */
-  void operator=(const Arccore::ConstArray2View<T>& values);
+  void operator=(Arccore::ConstArray2View<T> values);
 
   /*!
    * \brief Operator plus equal
    * \param[in] values The values to add
    */
-  void operator+=(const Arccore::ConstArray2View<T>& values);
+  void operator+=(Arccore::ConstArray2View<T> values);
 
   /*!
    * \brief Minus equal operator
    * \param[in] values The values to substract
    */
-  void operator-=(const Arccore::ConstArray2View<T>& values);
+  void operator-=(Arccore::ConstArray2View<T> values);
 
  private:
   //! The array of values

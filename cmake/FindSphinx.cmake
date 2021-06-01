@@ -7,17 +7,17 @@ macro(_Sphinx_find_executable _exe)
             NAMES "sphinx-${_exe}" "sphinx-${_exe}.exe")
 
     if (SPHINX_${_uc}_EXECUTABLE)
-      execute_process(
-              COMMAND "${SPHINX_${_uc}_EXECUTABLE}" --version
-              RESULT_VARIABLE _result
-              OUTPUT_VARIABLE _output
-              OUTPUT_STRIP_TRAILING_WHITESPACE)
-      MESSAGE(STATUS "SPHINX_${_uc}_EXECUTABLE = ${SPHINX_${_uc}_EXECUTABLE} version ${_output}")
-      if (_result EQUAL 0 AND _output MATCHES "([0-9]+\\.[0-9]+\\.[0-9]+)$")
-        set(SPHINX_${_uc}_VERSION "${CMAKE_MATCH_1}")
-      endif ()
+        execute_process(
+                COMMAND "${SPHINX_${_uc}_EXECUTABLE}" --version
+                RESULT_VARIABLE _result
+                OUTPUT_VARIABLE _output
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
+        MESSAGE(STATUS "SPHINX_${_uc}_EXECUTABLE = ${SPHINX_${_uc}_EXECUTABLE} version ${_output}")
+        if (_result EQUAL 0 AND _output MATCHES "([0-9]+\\.[0-9]+\\.[0-9]+)$")
+            set(SPHINX_${_uc}_VERSION "${CMAKE_MATCH_1}")
+        endif ()
 
-      add_executable(Sphinx::${_exe} IMPORTED GLOBAL)
+        add_executable(Sphinx::${_exe} IMPORTED GLOBAL)
         set_target_properties(Sphinx::${_exe} PROPERTIES
                 IMPORTED_LOCATION "${SPHINX_${_uc}_EXECUTABLE}")
         set(Sphinx_${_exe}_FOUND TRUE)

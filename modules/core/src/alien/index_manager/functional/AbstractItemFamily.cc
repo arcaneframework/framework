@@ -41,8 +41,9 @@ AbstractItemFamily::AbstractItemFamily(const AbstractItemFamily& family)
 {}
 
 /*---------------------------------------------------------------------------*/
-AbstractItemFamily::AbstractItemFamily(const ConstArrayView<Int64>& uniqueIds,
-                                       const ConstArrayView<Integer>& owners, IMessagePassingMng* parallel_mng,
+AbstractItemFamily::AbstractItemFamily(ConstArrayView<Int64> uniqueIds,
+                                       ConstArrayView<Integer> owners, 
+                                       IMessagePassingMng* parallel_mng,
                                        ITraceMng* trace_mng)
 : m_parallel_mng(parallel_mng)
 , m_trace_mng(trace_mng)
@@ -55,9 +56,10 @@ AbstractItemFamily::AbstractItemFamily(const ConstArrayView<Int64>& uniqueIds,
   }
 }
 
-AbstractItemFamily::AbstractItemFamily(const ConstArrayView<Int64>& uniqueIds,
-                                       const ConstArrayView<Int64>& ghost_uniqueIds,
-                                       const ConstArrayView<Integer>& ghost_owners, IMessagePassingMng* parallel_mng,
+AbstractItemFamily::AbstractItemFamily(ConstArrayView<Int64> uniqueIds,
+                                       ConstArrayView<Int64> ghost_uniqueIds,
+                                       ConstArrayView<Integer> ghost_owners,
+                                       IMessagePassingMng* parallel_mng,
                                        ITraceMng* trace_mng)
 : m_parallel_mng(parallel_mng)
 , m_trace_mng(trace_mng)
@@ -88,7 +90,7 @@ AbstractItemFamily::AbstractItemFamily(const ConstArrayView<Int64>& uniqueIds,
 
 /*---------------------------------------------------------------------------*/
 
-AbstractItemFamily::AbstractItemFamily(const ConstArrayView<Int64>& uniqueIds,
+AbstractItemFamily::AbstractItemFamily(ConstArrayView<Int64> uniqueIds,
                                        IMessagePassingMng* parallel_mng, [[maybe_unused]] ITraceMng* trace_mng)
 {
 
@@ -172,8 +174,9 @@ AbstractFamily::AbstractFamily(const AbstractFamily& family)
 {}
 
 /*---------------------------------------------------------------------------*/
-AbstractFamily::AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
-                               const ConstArrayView<Integer>& owners, IMessagePassingMng* parallel_mng,
+AbstractFamily::AbstractFamily(ConstArrayView<Int64> uniqueIds,
+                               ConstArrayView<Integer> owners, 
+                               IMessagePassingMng* parallel_mng,
                                ITraceMng* trace_mng)
 : m_parallel_mng(parallel_mng)
 , m_trace_mng(trace_mng)
@@ -186,9 +189,10 @@ AbstractFamily::AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
   }
 }
 
-AbstractFamily::AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
-                               const ConstArrayView<Int64>& ghost_uniqueIds,
-                               const ConstArrayView<Integer>& ghost_owners, IMessagePassingMng* parallel_mng,
+AbstractFamily::AbstractFamily(ConstArrayView<Int64> uniqueIds,
+                               ConstArrayView<Int64> ghost_uniqueIds,
+                               ConstArrayView<Integer> ghost_owners,
+                               IMessagePassingMng* parallel_mng,
                                ITraceMng* trace_mng)
 : m_parallel_mng(parallel_mng)
 , m_trace_mng(trace_mng)
@@ -219,8 +223,9 @@ AbstractFamily::AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
 
 /*---------------------------------------------------------------------------*/
 
-AbstractFamily::AbstractFamily(const ConstArrayView<Int64>& uniqueIds,
-                               IMessagePassingMng* parallel_mng, ITraceMng* trace_mng)
+AbstractFamily::AbstractFamily(ConstArrayView<Int64> uniqueIds,
+                               IMessagePassingMng* parallel_mng, 
+                               ITraceMng* trace_mng)
 : m_parallel_mng(parallel_mng)
 , m_trace_mng(trace_mng)
 {

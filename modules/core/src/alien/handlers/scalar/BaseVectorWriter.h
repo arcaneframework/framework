@@ -94,19 +94,19 @@ namespace Common
 
     inline Integer size() const { return this->m_values.size(); }
 
-    inline VectorElement operator()(const ConstArrayView<Integer>& indexes)
+    inline VectorElement operator()(ConstArrayView<Integer> indexes)
     {
       return VectorElement(this->m_values, indexes, this->m_local_offset);
     }
 
     inline MultVectorElement operator()(
-    ValueType factor, const ConstArrayView<Integer>& indexes)
+    ValueType factor, ConstArrayView<Integer> indexes)
     {
       return MultVectorElement(this->m_values, factor, indexes, this->m_local_offset);
     }
 
     inline MultVectorElement2 operator()(
-    ValueType factor, const ConstArray2View<Integer>& indexes, Integer i)
+    ValueType factor, ConstArray2View<Integer> indexes, Integer i)
     {
       return MultVectorElement2(this->m_values, factor, indexes, i, this->m_local_offset);
     }

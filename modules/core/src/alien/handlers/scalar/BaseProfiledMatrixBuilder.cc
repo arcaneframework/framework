@@ -156,7 +156,7 @@ namespace Common
   /*---------------------------------------------------------------------------*/
 
   void ProfiledMatrixBuilder::addData(const Integer iIndex, const Real factor,
-                                      const ConstArrayView<Integer>& jIndexes, const ConstArrayView<Real>& jValues)
+                                      ConstArrayView<Integer> jIndexes, ConstArrayView<Real> jValues)
   {
     _startTimer();
     ALIEN_ASSERT((!m_finalized), ("Finalized matrix cannot be modified"));
@@ -224,7 +224,7 @@ namespace Common
   /*---------------------------------------------------------------------------*/
 
   void ProfiledMatrixBuilder::setData(const Integer iIndex, const Real factor,
-                                      const ConstArrayView<Integer>& jIndexes, const ConstArrayView<Real>& jValues)
+                                      ConstArrayView<Integer> jIndexes, ConstArrayView<Real> jValues)
   {
     _startTimer();
     ALIEN_ASSERT((!m_finalized), ("Finalized matrix cannot be modified"));

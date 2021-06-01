@@ -92,8 +92,7 @@ void LinearAlgebraExpr<Tag, TagV>::mult(const IMatrix& a, const IVector& x, IVec
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void LinearAlgebraExpr<Tag, TagV>::axpy(
-const Arccore::Real& alpha, const IVector& x, IVector& r) const
+void LinearAlgebraExpr<Tag, TagV>::axpy(Real alpha, const IVector& x, IVector& r) const
 {
   const auto& vx = x.impl()->get<TagV>();
   auto& vr = r.impl()->get<TagV>(true);
@@ -105,8 +104,7 @@ const Arccore::Real& alpha, const IVector& x, IVector& r) const
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void LinearAlgebraExpr<Tag, TagV>::aypx(
-const Arccore::Real& alpha, IVector& y, const IVector& x) const
+void LinearAlgebraExpr<Tag, TagV>::aypx(Real alpha, IVector& y, const IVector& x) const
 {
   const auto& vx = x.impl()->get<TagV>();
   auto& vy = y.impl()->get<TagV>(true);
@@ -162,7 +160,7 @@ void LinearAlgebraExpr<Tag, TagV>::reciprocal(IVector& x) const
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void LinearAlgebraExpr<Tag, TagV>::scal(const Real& alpha, IVector& x) const
+void LinearAlgebraExpr<Tag, TagV>::scal(Real alpha, IVector& x) const
 {
   auto& vx = x.impl()->get<TagV>(true);
   m_algebra->scal(alpha, vx);
@@ -198,8 +196,7 @@ const IMatrix& a, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void LinearAlgebraExpr<Tag, TagV>::axpy(
-const Real& alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+void LinearAlgebraExpr<Tag, TagV>::axpy(Real alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
 {
   m_algebra->axpy(alpha, x, r);
 }
@@ -208,8 +205,7 @@ const Real& alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void LinearAlgebraExpr<Tag, TagV>::aypx(
-const Real& alpha, UniqueArray<Real>& y, UniqueArray<Real> const& x) const
+void LinearAlgebraExpr<Tag, TagV>::aypx(Real alpha, UniqueArray<Real>& y, UniqueArray<Real> const& x) const
 {
   m_algebra->aypx(alpha, y, x);
 }
@@ -238,7 +234,7 @@ Integer local_size, const UniqueArray<Real>& x, const UniqueArray<Real>& y) cons
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
-void LinearAlgebraExpr<Tag, TagV>::scal(const Real& alpha, Alien::UniqueArray<Real>& x) const
+void LinearAlgebraExpr<Tag, TagV>::scal(Real alpha, Alien::UniqueArray<Real>& x) const
 {
   m_algebra->scal(alpha, x);
 }

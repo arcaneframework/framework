@@ -39,8 +39,9 @@ DefaultAbstractFamily::DefaultAbstractFamily(const DefaultAbstractFamily& family
 
 /*---------------------------------------------------------------------------*/
 
-DefaultAbstractFamily::DefaultAbstractFamily(const ConstArrayView<Int64>& uniqueIds,
-                                             const ConstArrayView<Integer>& owners, IMessagePassingMng* parallel_mng)
+DefaultAbstractFamily::DefaultAbstractFamily(ConstArrayView<Int64> uniqueIds,
+                                             ConstArrayView<Integer> owners,
+                                             IMessagePassingMng* parallel_mng)
 : m_parallel_mng(parallel_mng)
 {
   copy(m_unique_ids, uniqueIds);
@@ -49,8 +50,8 @@ DefaultAbstractFamily::DefaultAbstractFamily(const ConstArrayView<Int64>& unique
 
 /*---------------------------------------------------------------------------*/
 
-DefaultAbstractFamily::DefaultAbstractFamily(
-const ConstArrayView<Int64>& uniqueIds, IMessagePassingMng* parallel_mng)
+DefaultAbstractFamily::DefaultAbstractFamily(ConstArrayView<Int64> uniqueIds, 
+                                             IMessagePassingMng* parallel_mng)
 : m_parallel_mng(parallel_mng)
 {
   const Integer commSize = m_parallel_mng->commSize();
@@ -96,8 +97,9 @@ const ConstArrayView<Int64>& uniqueIds, IMessagePassingMng* parallel_mng)
 
 /*---------------------------------------------------------------------------*/
 
-void DefaultAbstractFamily::uniqueIdToLocalId(
-ArrayView<Int32> localIds, ConstArrayView<Int64> uniqueIds) const
+void
+DefaultAbstractFamily::uniqueIdToLocalId(ArrayView<Int32> localIds, 
+                                         ConstArrayView<Int64> uniqueIds) const
 {
   for (Integer i = 0; i < uniqueIds.size(); ++i) {
     Integer localId = -1;

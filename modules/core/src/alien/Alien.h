@@ -18,8 +18,6 @@
 
 #pragma once
 
-#warning "This file should not be used: include only what you use !"
-
 #include <alien/utils/ICopyOnWriteObject.h>
 #include <alien/utils/ObjectWithTrace.h>
 #include <alien/utils/Precomp.h>

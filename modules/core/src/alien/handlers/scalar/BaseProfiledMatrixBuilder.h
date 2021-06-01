@@ -88,14 +88,14 @@ namespace Common
     void addData(Arccore::Integer iIndex, Arccore::Integer jIndex, Arccore::Real value);
 
     void addData(Arccore::Integer iIndex, Arccore::Real factor,
-                 const Arccore::ConstArrayView<Arccore::Integer>& jIndexes,
-                 const Arccore::ConstArrayView<Arccore::Real>& jValues);
+                 Arccore::ConstArrayView<Arccore::Integer> jIndexes,
+                 Arccore::ConstArrayView<Arccore::Real> jValues);
 
     void setData(Arccore::Integer iIndex, Arccore::Integer jIndex, Arccore::Real value);
 
     void setData(Arccore::Integer iIndex, Arccore::Real factor,
-                 const Arccore::ConstArrayView<Arccore::Integer>& jIndexes,
-                 const Arccore::ConstArrayView<Arccore::Real>& jValues);
+                 Arccore::ConstArrayView<Arccore::Integer> jIndexes,
+                 Arccore::ConstArrayView<Arccore::Real> jValues);
 
     void finalize();
 
