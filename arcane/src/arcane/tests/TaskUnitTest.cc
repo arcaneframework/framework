@@ -190,7 +190,7 @@ class Test3
   {
     {
       m_total_value = 0.0;
-      Parallel::Foreach(m_mesh->allNodes(),this,&Test3::_testCallback);
+      ParallelForeach(m_mesh->allNodes(),this,&Test3::_testCallback);
       _checkValid();
     }
 
@@ -199,7 +199,7 @@ class Test3
     {
       m_total_value = 0.0;
       ParallelLoopOptions options;
-      Parallel::Foreach(nodes,options,this,&Test3::_testCallback);
+      ParallelForeach(nodes,options,this,&Test3::_testCallback);
       _checkValid();
     }
 
@@ -208,7 +208,7 @@ class Test3
       m_total_value = 0.0;
       ParallelLoopOptions options;
       options.setPartitioner(ParallelLoopOptions::Partitioner::Static);
-      Parallel::Foreach(nodes,options,this,&Test3::_testCallback);
+      ParallelForeach(nodes,options,this,&Test3::_testCallback);
       _checkValid();
       info() << "End test Static partitionner";
     }
@@ -224,7 +224,7 @@ class Test3
       ParallelLoopOptions options;
       options.setGrainSize(grain_size);
       options.setPartitioner(ParallelLoopOptions::Partitioner::Deterministic);
-      Parallel::Foreach(nodes,options,this,&Test3::_testDeterministCallback);
+      ParallelForeach(nodes,options,this,&Test3::_testDeterministCallback);
       Integer nb_thread = TaskFactory::nbAllowedThread();
       _checkNbAccess(nb_thread);
       _checkValid();
@@ -285,7 +285,7 @@ class Test3
     };
     NodeVectorView nodes = m_mesh->allNodes().view();
 
-    Parallel::Foreach(nodes,func);
+    ParallelForeach(nodes,func);
     _checkValid();
 
     // Teste avec options
@@ -293,7 +293,7 @@ class Test3
       info() << "Test ParallelLoopOptions";
       ParallelLoopOptions options;
       _reset();
-      Parallel::Foreach(nodes,options,func);
+      ParallelForeach(nodes,options,func);
       _checkValid();
     }
 
@@ -303,7 +303,7 @@ class Test3
       ParallelLoopOptions options;
       options.setGrainSize(100);
       _reset();
-      Parallel::Foreach(nodes,options,func);
+      ParallelForeach(nodes,options,func);
       _checkValid();
     }
 
@@ -322,7 +322,7 @@ class Test3
       ParallelLoopOptions options;
       options.setMaxThread(1);
       _reset();
-      Parallel::Foreach(nodes,options,seq_func);
+      ParallelForeach(nodes,options,seq_func);
       if (nb_loop!=1){
         throw FatalErrorException(A_FUNCINFO,"Not a sequential execution");
       }
@@ -336,7 +336,7 @@ class Test3
       options.setGrainSize(50);
       options.setMaxThread(x);
       _reset();
-      Parallel::Foreach(nodes,options,func);
+      ParallelForeach(nodes,options,func);
       _checkValid();
       if (m_max_thread_index>x)
         ARCANE_FATAL("Bad max thread index v={0} max_expected={1}",m_max_thread_index,x);
@@ -499,6 +499,7 @@ class Test4
     ParallelLoopOptions loop_options;
     loop_options.setGrainSize(1000);
     {
+      // Implémentation obsolète
       DoAtomic atomic_action;
       m_action = &atomic_action;
       Real v1 = platform::getRealTime();
@@ -507,6 +508,7 @@ class Test4
       _print("atomic",m_action->value(),v2-v1,n);
     }
     {
+      // Implémentation obsolète
       DoSpinLock spinlock_action;
       m_action = &spinlock_action;
       Real v1 = platform::getRealTime();
@@ -515,6 +517,7 @@ class Test4
       _print("spin",m_action->value(),v2-v1,n);
     }
     {
+      // Implémentation obsolète
       DoMutex mutex_action;
       m_action = &mutex_action;
       Real v1 = platform::getRealTime();
@@ -524,6 +527,7 @@ class Test4
     }
 #ifdef ARCANE_HAS_PACKAGE_TBB
     {
+      // Implémentation obsolète
       DoSpinLockTBB spintbb_action;
       m_action = &spintbb_action;
       Real v1 = platform::getRealTime();
@@ -533,6 +537,7 @@ class Test4
     }
 #endif
     {
+      // Implémentation obsolète
       // Test Mutex avec syntaxe des lambda fonction du C++0x
       DoMutex mutex_action;
       m_action = &mutex_action;
@@ -644,6 +649,7 @@ class Test6
 
   void exec()
   {
+    // Implémentation obsolète
     m_value = 0;
     Int64 n0 = m_first_value-1;
     Int64 nb = m_nb_value;
