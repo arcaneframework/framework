@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Concurrency.h                                               (C) 2000-2018 */
+/* Concurrency.h                                               (C) 2000-2021 */
 /*                                                                           */
 /* Classes gérant la concurrence (tâches, boucles parallèles, ...)           */
 /*---------------------------------------------------------------------------*/
@@ -25,17 +25,17 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
  * TODO:
- * - verifier les fuites memoires
- * - faire la doc d'utilisation.
+ * - Vérifier les fuites memoires
  * - BIEN INDIQUER QU'IL NE FAUT PLUS UTILISER UNE TACHE APRES LE WAIT!!!
  * - Regarder mecanisme pour les exceptions.
- * - surcharger les For et Foreach sans specifier le block_size
+ * - Surcharger les For et Foreach sans specifier le block_size
  */
 
 class ITaskImplementation;
@@ -542,8 +542,8 @@ class ARCANE_CORE_EXPORT TaskFactory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Implémentation de la concurrence.
  * \ingroup Concurrency
+ * \brief Implémentation de la concurrence.
  */
 namespace Parallel
 { 
@@ -715,9 +715,9 @@ namespace Parallel
   }
 
   /*! 
+   * \ingroup Concurrency
    * \brief Applique en concurrence la fonction lambda \a lambda_function
    * sur l'intervalle d'itération [i0,i0+size]
-   * \ingroup Concurrency
    */
   template<typename LambdaType> static void
   For(Integer i0,Integer size,const LambdaType& lambda_function)
@@ -731,10 +731,9 @@ namespace Parallel
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #endif  
-
