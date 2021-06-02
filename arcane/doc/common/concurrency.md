@@ -74,7 +74,7 @@ void func()
 La parallélisation se fait comme suit: il faut d'abord écrire une
 classe fonctor qui représente l'opération que l'on souhaite effectuée
 sur un interval d'itération. Ensuite, il faut utiliser l'opération
-ParallelFor() en spécifiant ce fonctor en argument comme suit:
+arcaneParallelFor() en spécifiant ce fonctor en argument comme suit:
 
 ~~~{.cpp}
 class Func
@@ -90,7 +90,7 @@ class Func
 void func()
 {
   Func my_functor;
-  Arcane::ParallelFor(0,n,&my_functor,&Func::exec);
+  Arcane::arcaneParallelFor(0,n,&my_functor,&Func::exec);
 }
 ~~~
 
@@ -100,7 +100,7 @@ C++11, il est possible d'utiliser les lambda function pour simplifier l'écritur
 ~~~{.cpp}
 void func()
 {
-  Arcane::ParallelFor(0,n,[&](Integer begin,Integer size){
+  Arcane::arcaneParallelFor(0,n,[&](Integer begin,Integer size){
      for( Integer i=begin; i<(begin+size); ++i )
        p[i] = (gamma[i]-1.0) * rho[i] * e[i];
   });
@@ -137,7 +137,7 @@ class Func
 void func()
 {
   Func my_functor;
-  ParallelForeach(my_group,&my_functor,&Func::exec);
+  arcaneParallelForeach(my_group,&my_functor,&Func::exec);
 }
 ~~~
 
@@ -147,7 +147,7 @@ De même, avec le support du C++11, on peut simplifier:
 using namespace Arcane;
 void func()
 {
-  ParallelForeach(my_group,[&](CellVectorView cells){
+  arcaneParallelForeach(my_group,[&](CellVectorView cells){
     ENUMERATE_CELL(icell,cells){
       p[icell] = (gamma[icell]-1.0) * rho[icell] * e[icell];
     }
@@ -155,7 +155,7 @@ void func()
 }
 ~~~
 
-Pour les boucles Arcane::ParallelFor() et Arcane::ParallelForeach(), il est possible
+Pour les boucles Arcane::arcaneParallelFor() et Arcane::arcaneParallelForeach(), il est possible
 de passer en argument une instance de ParallelLoopOptions pour
 configurer la boucle parallèle. Par exemple, il est possible de
 spécifier la taille de l'intervalle pour découper la boucle:
@@ -166,7 +166,7 @@ void func()
   Arcane::ParallelLoopOptions options;
   // Exécute la boucle par parties d'environ 50 mailles.
   options.setGrainSize(50);
-  Arcane::ParallelForeach(my_group,[&](Arcane::CellVectorView cells){
+  Arcane::arcaneParallelForeach(my_group,[&](Arcane::CellVectorView cells){
     ENUMERATE_CELL(icell,cells){
       p[icell] = (gamma[icell]-1.0) * rho[icell] * e[icell];
     }

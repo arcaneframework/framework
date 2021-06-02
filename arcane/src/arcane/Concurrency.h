@@ -549,7 +549,7 @@ class ARCANE_CORE_EXPORT TaskFactory
  * \a instance sur la vue \a items_view avec les options \a options.
  */
 template<typename InstanceType,typename ItemType> inline void
-ParallelForeach(const ItemVectorView& items_view,const ParallelLoopOptions& options,
+arcaneParallelForeach(const ItemVectorView& items_view,const ParallelLoopOptions& options,
                 InstanceType* instance,void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
 {
   ItemRangeFunctorT<InstanceType,ItemType> ipf(items_view,instance,function,options.grainSize());
@@ -566,10 +566,10 @@ ParallelForeach(const ItemVectorView& items_view,const ParallelLoopOptions& opti
  * \a instance sur le groupe \a items avec les options \a options.
  */
 template<typename InstanceType,typename ItemType> inline void
-ParallelForeach(const ItemGroup& items,const ParallelLoopOptions& options,InstanceType* instance,
+arcaneParallelForeach(const ItemGroup& items,const ParallelLoopOptions& options,InstanceType* instance,
                 void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
 {
-  ParallelForeach(items.view(),options,instance,function);
+  arcaneParallelForeach(items.view(), options, instance, function);
 }
 
 /*!
@@ -578,7 +578,7 @@ ParallelForeach(const ItemGroup& items,const ParallelLoopOptions& options,Instan
  * \a instance sur la vue \a items_view.
  */
 template<typename InstanceType,typename ItemType> inline void
-ParallelForeach(const ItemVectorView& items_view,InstanceType* instance,void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
+arcaneParallelForeach(const ItemVectorView& items_view,InstanceType* instance,void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
 {
   ItemRangeFunctorT<InstanceType,ItemType> ipf(items_view,instance,function);
   TaskFactory::executeParallelFor(0,ipf.nbBlock(),ipf.blockGrainSize(),&ipf);
@@ -590,10 +590,10 @@ ParallelForeach(const ItemVectorView& items_view,InstanceType* instance,void (In
  * \a instance sur le groupe \a items.
  */
 template<typename InstanceType,typename ItemType> inline void
-ParallelForeach(const ItemGroup& items,InstanceType* instance,
+arcaneParallelForeach(const ItemGroup& items,InstanceType* instance,
                 void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
 {
-  ParallelForeach(items.view(),instance,function);
+  arcaneParallelForeach(items.view(), instance, function);
 }
 
 /*!
@@ -602,7 +602,7 @@ ParallelForeach(const ItemGroup& items,InstanceType* instance,
  * \ingroup Concurrency
  */
 template<typename LambdaType> inline void
-ParallelForeach(const ItemVectorView& items_view,const ParallelLoopOptions& options,
+arcaneParallelForeach(const ItemVectorView& items_view,const ParallelLoopOptions& options,
                 const LambdaType& lambda_function)
 {
   LambdaItemRangeFunctorT<LambdaType> ipf(items_view,lambda_function,options.grainSize());
@@ -618,9 +618,9 @@ ParallelForeach(const ItemVectorView& items_view,const ParallelLoopOptions& opti
  * \ingroup Concurrency
  */
 template<typename LambdaType> inline void
-ParallelForeach(const ItemGroup& items,const ParallelLoopOptions& options,const LambdaType& lambda_function)
+arcaneParallelForeach(const ItemGroup& items,const ParallelLoopOptions& options,const LambdaType& lambda_function)
 {
-  ParallelForeach(items.view(),options,lambda_function);
+  arcaneParallelForeach(items.view(), options, lambda_function);
 }
 
 /*!
@@ -629,7 +629,7 @@ ParallelForeach(const ItemGroup& items,const ParallelLoopOptions& options,const 
  * \a instance sur la vue \a items_view.
  */
 template<typename LambdaType> inline void
-ParallelForeach(const ItemVectorView& items_view,const LambdaType& lambda_function)
+arcaneParallelForeach(const ItemVectorView& items_view,const LambdaType& lambda_function)
 {
   LambdaItemRangeFunctorT<LambdaType> ipf(items_view,lambda_function);
   TaskFactory::executeParallelFor(0,ipf.nbBlock(),ipf.blockGrainSize(),&ipf);
@@ -641,9 +641,9 @@ ParallelForeach(const ItemVectorView& items_view,const LambdaType& lambda_functi
  * sur le groupe \a items.
  */
 template<typename LambdaType> inline void
-ParallelForeach(const ItemGroup& items,const LambdaType& lambda_function)
+arcaneParallelForeach(const ItemGroup& items,const LambdaType& lambda_function)
 {
-  ParallelForeach(items.view(),lambda_function);
+  arcaneParallelForeach(items.view(), lambda_function);
 }
 
 /*!
@@ -652,7 +652,7 @@ ParallelForeach(const ItemGroup& items,const LambdaType& lambda_function)
  * sur l'intervalle d'itération [i0,i0+size].
  */
 template<typename InstanceType> inline void
-ParallelFor(Integer i0,Integer size,InstanceType* itype,
+arcaneParallelFor(Integer i0,Integer size,InstanceType* itype,
             void (InstanceType::*lambda_function)(Integer i0,Integer size))
 {
   RangeFunctorT<InstanceType> ipf(itype,lambda_function);
@@ -665,7 +665,7 @@ ParallelFor(Integer i0,Integer size,InstanceType* itype,
  * sur l'intervalle d'itération [i0,i0+size] avec les options \a options.
  */
 template<typename LambdaType> inline void
-ParallelFor(Integer i0,Integer size,const ParallelLoopOptions& options,
+arcaneParallelFor(Integer i0,Integer size,const ParallelLoopOptions& options,
             const LambdaType& lambda_function)
 {
   LambdaRangeFunctorT<LambdaType> ipf(lambda_function);
@@ -677,7 +677,7 @@ ParallelFor(Integer i0,Integer size,const ParallelLoopOptions& options,
  * sur l'intervalle d'itération [i0,i0+size]
  */
 template<typename LambdaType> inline void
-ParallelFor(Integer i0,Integer size,const LambdaType& lambda_function)
+arcaneParallelFor(Integer i0,Integer size,const LambdaType& lambda_function)
 {
   LambdaRangeFunctorT<LambdaType> ipf(lambda_function);
   TaskFactory::executeParallelFor(i0,size,&ipf);
@@ -690,16 +690,16 @@ ParallelFor(Integer i0,Integer size,const LambdaType& lambda_function)
  *
  * Les méthodes de ce namespace sont obsolètes et doivent être remplacées
  * par les méthodes équivalentes dans le namespace Arcane.
- * Par exemple Arcane::Parallel::For() doit être remplacé par Arcane::ParallelFor()
- * et Arcane::Parallel::Foreach() par Arcane::ParallelForeach().
+ * Par exemple Arcane::Parallel::For() doit être remplacé par Arcane::arcaneParallelFor()
+ * et Arcane::Parallel::Foreach() par Arcane::arcaneParallelForeach().
  */
 namespace Parallel
 { 
   /*!
-   * \deprecated Use Arcane::ParallelForeach() instead.
+   * \deprecated Use Arcane::arcaneParallelForeach() instead.
    */  
   template<typename InstanceType,typename ItemType>
-  [[deprecated("Year2021: Use Arcane::ParallelForeach() instead")]]
+  [[deprecated("Year2021: Use Arcane::arcaneParallelForeach() instead")]]
   inline void
   Foreach(const ItemVectorView& items_view,const ParallelLoopOptions& options,
           InstanceType* instance,void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
@@ -712,10 +712,10 @@ namespace Parallel
   }
 
   /*!
-   * \deprecated Use Arcane::ParallelForeach() instead.
+   * \deprecated Use Arcane::arcaneParallelForeach() instead.
    */
   template<typename InstanceType,typename ItemType>
-  [[deprecated("Year2021: Use Arcane::ParallelForeach() instead")]]
+  [[deprecated("Year2021: Use Arcane::arcaneParallelForeach() instead")]]
   inline void
   Foreach(const ItemGroup& items,const ParallelLoopOptions& options,InstanceType* instance,
           void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
@@ -724,10 +724,10 @@ namespace Parallel
   }
 
   /*!
-   * \deprecated Use Arcane::ParallelForeach() instead.
+   * \deprecated Use Arcane::arcaneParallelForeach() instead.
    */
   template<typename InstanceType,typename ItemType>
-  [[deprecated("Year2021: Use Arcane::ParallelForeach() instead")]]
+  [[deprecated("Year2021: Use Arcane::arcaneParallelForeach() instead")]]
   inline void
   Foreach(const ItemVectorView& items_view,InstanceType* instance,void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
   {
@@ -736,10 +736,10 @@ namespace Parallel
   }
 
   /*!
-   * \deprecated Use Arcane::ParallelForeach() instead.
+   * \deprecated Use Arcane::arcaneParallelForeach() instead.
    */
   template<typename InstanceType,typename ItemType>
-  [[deprecated("Year2021: Use Arcane::ParallelForeach() instead")]]
+  [[deprecated("Year2021: Use Arcane::arcaneParallelForeach() instead")]]
   inline void
   Foreach(const ItemGroup& items,InstanceType* instance,void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
   {
@@ -748,10 +748,10 @@ namespace Parallel
 
 
   /*!
-   * \deprecated Use Arcane::ParallelForeach() instead.
+   * \deprecated Use Arcane::arcaneParallelForeach() instead.
    */
   template<typename LambdaType>
-  [[deprecated("Year2021: Use Arcane::ParallelForeach() instead")]]
+  [[deprecated("Year2021: Use Arcane::arcaneParallelForeach() instead")]]
   inline void
   Foreach(const ItemVectorView& items_view,const ParallelLoopOptions& options,const LambdaType& lambda_function)
   {
@@ -763,10 +763,10 @@ namespace Parallel
   }
 
   /*!
-   * \deprecated Use Arcane::ParallelForeach() instead.
+   * \deprecated Use Arcane::arcaneParallelForeach() instead.
    */
   template<typename LambdaType>
-  [[deprecated("Year2021: Use Arcane::ParallelForeach() instead")]]
+  [[deprecated("Year2021: Use Arcane::arcaneParallelForeach() instead")]]
   inline void
   Foreach(const ItemGroup& items,const ParallelLoopOptions& options,const LambdaType& lambda_function)
   {
@@ -774,10 +774,10 @@ namespace Parallel
   }
 
   /*!
-   * \deprecated Use Arcane::ParallelForeach() instead.
+   * \deprecated Use Arcane::arcaneParallelForeach() instead.
    */
   template<typename LambdaType>
-  [[deprecated("Year2021: Use Arcane::ParallelForeach() instead")]]
+  [[deprecated("Year2021: Use Arcane::arcaneParallelForeach() instead")]]
   inline void
   Foreach(const ItemVectorView& items_view,const LambdaType& lambda_function)
   {
@@ -786,10 +786,10 @@ namespace Parallel
   }
 
   /*!
-   * \deprecated Use Arcane::ParallelForeach() instead.
+   * \deprecated Use Arcane::arcaneParallelForeach() instead.
    */
   template<typename LambdaType>
-  [[deprecated("Year2021: Use Arcane::ParallelForeach() instead")]]
+  [[deprecated("Year2021: Use Arcane::arcaneParallelForeach() instead")]]
   inline void
   Foreach(const ItemGroup& items,const LambdaType& lambda_function)
   {
@@ -808,10 +808,10 @@ namespace Parallel
   }
 
   /*!
-   * \deprecated Use Arcane::ParallelFor() instead.
+   * \deprecated Use Arcane::arcaneParallelFor() instead.
    */
   template<typename InstanceType>
-  [[deprecated("Year2021: Use Arcane::ParallelFor() instead")]]
+  [[deprecated("Year2021: Use Arcane::arcaneParallelFor() instead")]]
   inline void
   For(Integer i0,Integer size,const ParallelLoopOptions& options,InstanceType* itype,
       void (InstanceType::*lambda_function)(Integer i0,Integer size))
@@ -831,10 +831,10 @@ namespace Parallel
   }
 
   /*!
-   * \deprecated Use Arcane::ParallelFor() instead.
+   * \deprecated Use Arcane::arcaneParallelFor() instead.
    */
   template<typename InstanceType>
-  [[deprecated("Year2021: Use Arcane::ParallelFor() instead")]]
+  [[deprecated("Year2021: Use Arcane::arcaneParallelFor() instead")]]
   inline void
   For(Integer i0,Integer size,InstanceType* itype,
       void (InstanceType::*lambda_function)(Integer i0,Integer size))
@@ -844,10 +844,10 @@ namespace Parallel
   }
 
   /*!
-   * \deprecated Use Arcane::ParallelFor() instead.
+   * \deprecated Use Arcane::arcaneParallelFor() instead.
    */
   template<typename LambdaType>
-  [[deprecated("Year2021: Use Arcane::ParallelFor() instead")]]
+  [[deprecated("Year2021: Use Arcane::arcaneParallelFor() instead")]]
   inline void
   For(Integer i0,Integer size,const ParallelLoopOptions& options,const LambdaType& lambda_function)
   {
@@ -856,10 +856,10 @@ namespace Parallel
   }
 
   /*!
-   * \deprecated Use Arcane::ParallelFor() instead.
+   * \deprecated Use Arcane::arcaneParallelFor() instead.
    */
   template<typename LambdaType>
-  [[deprecated("Year2021: Use Arcane::ParallelFor() instead")]]
+  [[deprecated("Year2021: Use Arcane::arcaneParallelFor() instead")]]
   inline void
   For(Integer i0,Integer size,const LambdaType& lambda_function)
   {

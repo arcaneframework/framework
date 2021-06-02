@@ -190,7 +190,7 @@ class Test3
   {
     {
       m_total_value = 0.0;
-      ParallelForeach(m_mesh->allNodes(),this,&Test3::_testCallback);
+      arcaneParallelForeach(m_mesh->allNodes(), this, &Test3::_testCallback);
       _checkValid();
     }
 
@@ -199,7 +199,7 @@ class Test3
     {
       m_total_value = 0.0;
       ParallelLoopOptions options;
-      ParallelForeach(nodes,options,this,&Test3::_testCallback);
+      arcaneParallelForeach(nodes, options, this, &Test3::_testCallback);
       _checkValid();
     }
 
@@ -208,7 +208,7 @@ class Test3
       m_total_value = 0.0;
       ParallelLoopOptions options;
       options.setPartitioner(ParallelLoopOptions::Partitioner::Static);
-      ParallelForeach(nodes,options,this,&Test3::_testCallback);
+      arcaneParallelForeach(nodes, options, this, &Test3::_testCallback);
       _checkValid();
       info() << "End test Static partitionner";
     }
@@ -224,7 +224,7 @@ class Test3
       ParallelLoopOptions options;
       options.setGrainSize(grain_size);
       options.setPartitioner(ParallelLoopOptions::Partitioner::Deterministic);
-      ParallelForeach(nodes,options,this,&Test3::_testDeterministCallback);
+      arcaneParallelForeach(nodes, options, this, &Test3::_testDeterministCallback);
       Integer nb_thread = TaskFactory::nbAllowedThread();
       _checkNbAccess(nb_thread);
       _checkValid();
@@ -285,7 +285,7 @@ class Test3
     };
     NodeVectorView nodes = m_mesh->allNodes().view();
 
-    ParallelForeach(nodes,func);
+    arcaneParallelForeach(nodes, func);
     _checkValid();
 
     // Teste avec options
@@ -293,7 +293,7 @@ class Test3
       info() << "Test ParallelLoopOptions";
       ParallelLoopOptions options;
       _reset();
-      ParallelForeach(nodes,options,func);
+      arcaneParallelForeach(nodes, options, func);
       _checkValid();
     }
 
@@ -303,7 +303,7 @@ class Test3
       ParallelLoopOptions options;
       options.setGrainSize(100);
       _reset();
-      ParallelForeach(nodes,options,func);
+      arcaneParallelForeach(nodes, options, func);
       _checkValid();
     }
 
@@ -322,7 +322,7 @@ class Test3
       ParallelLoopOptions options;
       options.setMaxThread(1);
       _reset();
-      ParallelForeach(nodes,options,seq_func);
+      arcaneParallelForeach(nodes, options, seq_func);
       if (nb_loop!=1){
         throw FatalErrorException(A_FUNCINFO,"Not a sequential execution");
       }
@@ -336,7 +336,7 @@ class Test3
       options.setGrainSize(50);
       options.setMaxThread(x);
       _reset();
-      ParallelForeach(nodes,options,func);
+      arcaneParallelForeach(nodes, options, func);
       _checkValid();
       if (m_max_thread_index>x)
         ARCANE_FATAL("Bad max thread index v={0} max_expected={1}",m_max_thread_index,x);
