@@ -80,6 +80,13 @@ macro(arcane_add_axl_files target)
   if (NOT ARGS_INPUT_PATH)
     set(ARGS_INPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
   endif()
+  # Pour être sur de construire les axl avant notre cible.
+  # Cela est nécessaire car CMake ne gère pas dépendances sur les
+  # fichiers entre les sous-répertoires
+  # (utile uniquement si on compile Axlstar en même temps que Arcane)
+  if (TARGET dotnet_axl_depend)
+    add_dependencies(${target} dotnet_axl_depend)
+  endif()
   # Cette variable contient la liste des répertoires dans lesquels
   # seront générés les 'axl'.
   set(_INCLUDES_TO_ADD)
