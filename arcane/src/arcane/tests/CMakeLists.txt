@@ -122,7 +122,7 @@ if (TARGET arcane_dotnet_wrapper_services)
     MSBUILD_ARGS ${ARCANE_MSBUILD_ARGS}
     DEPENDS ${CSOUTPATH}/SimpleHydroCS_axl.cs
     ${CSOUTPATH}/PerfectGasEOS_axl.cs
-    DOTNET_TARGET_DEPENDS dotnet_wrapper_services
+    DOTNET_TARGET_DEPENDS dotnet_wrapper_services dotnet_wrapper_launcher
     )
 
   arccon_add_csharp_target(arcane_test_cs_exe
