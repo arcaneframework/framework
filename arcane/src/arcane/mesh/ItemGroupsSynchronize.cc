@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupsSynchronize.cc                                    (C) 2000-2016 */
+/* ItemGroupsSynchronize.cc                                    (C) 2000-2021 */
 /*                                                                           */
 /* Synchronisations des groupes.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/mesh/ItemGroupsSynchronize.h"
 
 #include "arcane/utils/ITraceMng.h"
 
@@ -21,17 +21,13 @@
 #include "arcane/VariableBuildInfo.h"
 #include "arcane/ItemPrinter.h"
 
-#include "arcane/mesh/ItemGroupsSynchronize.h"
+#include "arcane/mesh/CommonItemGroupFilterer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -93,7 +89,10 @@ synchronize()
 
   // Construction de la liste des groupes
   UniqueArray<ItemGroup> groups;
-  
+  bool do_filter_check = arcaneIsCheck();
+  CommonItemGroupFilterer group_filterer(m_item_family);
+  // TODO: GG: regarder pourquoi on re-filtre alors qu'on a déjà calculé les groupes
+  // dans le constructeur.
   for( ItemGroup group : m_item_family->groups() ){
     // Ne synchronise pas les groupes non synchronisables
     if (!group.internal()->needSynchronization())
@@ -102,6 +101,15 @@ synchronize()
     // NOTE GG: à quoi cela sert-il de récupérer le groupe alors qu'on l'a déjà ?
     group = m_item_family->findGroup(group.name(), true);
     groups.add(group);
+    if (do_filter_check)
+      group_filterer.addGroupToFilter(group);
+  }
+  // TODO: regarder s'il ne faudrait pas le faire à chaque fois
+  // Comme cela on serait certains que les groupes sont bien triés
+  if (do_filter_check) {
+    group_filterer.applyFiltering();
+    info() << "SynchronizeGroups nb=" << groups.size();
+    traceMng()->flush();
   }
 
   Int32UniqueArray group_items; // Tableau stockant les listes d'items en évolution
@@ -201,8 +209,7 @@ checkSynchronize()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
