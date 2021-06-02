@@ -74,20 +74,20 @@ namespace Arcane.AxlDoc
 
     static private bool m_debug = false; // TODO merge this with Config
 
-    public static void Main(string[] args)
+    public static int MainExec(string[] args)
     {
       try {
         MainAXLDOC v = new MainAXLDOC();
         v.Execute(args);
-        Environment.Exit (RTCODE_OK);
+        return RTCODE_OK;
       } catch (AxlToolExit e) {
         Console.WriteLine (e.Message);
-        Environment.Exit (RTCODE_OK);
+        return RTCODE_OK;
       } catch (Exception e) {
         Console.Error.WriteLine (String.Format ("AXLDOC: Error during generation: {0}", e.Message));
         if (m_debug)
           Console.WriteLine("Stacktrace: {0}", e.StackTrace);
-        Environment.Exit (RTCODE_ERROR);
+        return RTCODE_ERROR;
       }
     }
 

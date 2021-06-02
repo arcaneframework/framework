@@ -149,8 +149,9 @@ arccon_dotnet_install_publish_directory(DIRECTORY ${AXLSTAR_PUBLISH_DIR}
 # ----------------------------------------------------------------------------
 # Function pour configurer un script permettant de lancer une commande C#.
 # Le script préfixe la commande par le lanceur utilisé (coreclr ou mono)
-function(AXLSTAR_CONFIGURE_RUNNER_SCRIPT file_name dll_name)
-  set(DLL_NAME ${dll_name}${DLL_EXE_EXTENSION})
+function(axlstar_configure_runner_script file_name command_name)
+  set(DLL_NAME Axlstar.Driver${DLL_EXE_EXTENSION})
+  set(COMMAND_NAME ${command_name})
   set(AXLSTAR_INSTALL_BIN ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
 
   set(LAUNCHER_NAME launcher.sh.in)
@@ -169,10 +170,10 @@ endfunction()
 # ----------------------------------------------------------------------------
 
 function(axlstar_configure_runner_scripts)
-  axlstar_configure_runner_script(axl2ccT4 Axlstar.Axl2ccT4)
-  axlstar_configure_runner_script(axl2cc Axlstar.Axl2cc)
-  axlstar_configure_runner_script(axldoc Axlstar.AxlDoc)
-  axlstar_configure_runner_script(axlcopy Axlstar.AxlCopy)
+  axlstar_configure_runner_script(axl2ccT4 axl2ccT4)
+  axlstar_configure_runner_script(axl2cc axl2cc)
+  axlstar_configure_runner_script(axldoc axldoc)
+  axlstar_configure_runner_script(axlcopy axlcopy)
 endfunction()
 
 # ----------------------------------------------------------------------------

@@ -18,7 +18,7 @@ namespace Axlstar.Axl
 {
   public class MainAXL2CC
   {
-    public static int Main(string[] args)
+    public static int MainExec(string[] args)
     {
       MainAXL2CC v = new MainAXL2CC();
       return v.Execute(args);

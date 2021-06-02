@@ -19,7 +19,7 @@ namespace Arcane.Axl
     {
     }
 
-    public static int Main(string[] args)
+    public static int MainExec(string[] args)
     {
       MainAXLCOPY v = new MainAXLCOPY();
       return v.Execute(args);
