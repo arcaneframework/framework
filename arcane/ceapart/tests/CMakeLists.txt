@@ -101,9 +101,8 @@ if (LIMA_FOUND)
   ARCANE_ADD_TEST(cartesian2D-lima testCartesianMesh2D-2.arc "-m 20")
 endif()
 ARCANE_ADD_TEST_SEQUENTIAL(adiadvection-1 testAdiAdvection-1.arc "-m 20")
-# Pour l'instant on ne teste l'AMR 2D que en séquentiel
-ARCANE_ADD_TEST_SEQUENTIAL(amr-cartesian2D-1 testAMRCartesianMesh2D-1.arc "-m 20")
-ARCANE_ADD_TEST_SEQUENTIAL(amr-checkpoint-cartesian2D-1 testAMRCartesianMesh2D-1.arc -c 3 -m 5)
+arcane_add_test(amr-cartesian2D-1 testAMRCartesianMesh2D-1.arc "-m 20")
+arcane_add_test(amr-checkpoint-cartesian2D-1 testAMRCartesianMesh2D-1.arc -c 3 -m 5)
 
 
 #################################
