@@ -641,7 +641,7 @@ ParallelForeach(const ItemVectorView& items_view,const LambdaType& lambda_functi
  * sur le groupe \a items.
  */
 template<typename LambdaType> inline void
-ParalellForeach(const ItemGroup& items,const LambdaType& lambda_function)
+ParallelForeach(const ItemGroup& items,const LambdaType& lambda_function)
 {
   ParallelForeach(items.view(),lambda_function);
 }
@@ -665,7 +665,7 @@ ParallelFor(Integer i0,Integer size,InstanceType* itype,
  * sur l'intervalle d'itération [i0,i0+size] avec les options \a options.
  */
 template<typename LambdaType> inline void
-ParalellFor(Integer i0,Integer size,const ParallelLoopOptions& options,
+ParallelFor(Integer i0,Integer size,const ParallelLoopOptions& options,
             const LambdaType& lambda_function)
 {
   LambdaRangeFunctorT<LambdaType> ipf(lambda_function);
