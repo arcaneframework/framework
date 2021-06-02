@@ -180,9 +180,9 @@ if (LIMA_FOUND)
   ARCANE_CEA_COPY_MESH(sphere2.mli)
   ARCANE_CEA_COPY_MESH(sphere_multi_soudure.unf)
   ARCANE_CEA_COPY_MESH(sod_cart_lima.unf)
-  ARCANE_CEA_COPY_MESH(soudures_3.mli)
+  #ARCANE_CEA_COPY_MESH(soudures_3.mli)
   ARCANE_CEA_COPY_MESH_DIRECTORY(sphere_multi_soudure_cut_4)
-  ARCANE_CEA_COPY_MESH_DIRECTORY(soudures_3_cut_4)
+  #ARCANE_CEA_COPY_MESH_DIRECTORY(soudures_3_cut_4)
 endif()
 
 #############
