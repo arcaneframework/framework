@@ -246,8 +246,8 @@ applyLoop(RunCommand& command,Int32 loop_size,Lambda func)
     break;
   case eExecutionPolicy::Thread:
     launch_info.beginExecute();
-    Parallel::For(0,loop_size,[&](Integer begin, Integer size)
-                              { impl::doDirectThreadLambda(begin,size,func); });
+    arcaneParallelFor(0,loop_size,[&](Integer begin, Integer size)
+                                  { impl::doDirectThreadLambda(begin,size,func); });
     break;
   }
   launch_info.endExecute();
@@ -290,11 +290,11 @@ applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,Lambda func)
   case eExecutionPolicy::Thread:
     {
       launch_info.beginExecute();
-      Parallel::Foreach(items,
-                        [&](ItemVectorViewT<ItemType> sub_items)
-                        {
-                          impl::DoIndirectThreadLambda(sub_items,func);
-                        });
+      arcaneParallelForeach(items,
+                            [&](ItemVectorViewT<ItemType> sub_items)
+                            {
+                              impl::DoIndirectThreadLambda(sub_items,func);
+                            });
     }
   }
   launch_info.endExecute();
@@ -338,7 +338,7 @@ applyGenericLoop(RunCommand& command,ArrayBounds<N> bounds,const Lambda& func)
     //std::cout << "DO_PARALLEL_FOR n=" << my_size << "\n";
     // TODO: implementer en utilisant une boucle 2D ou 3D qui existe dans TBB
     // ou alors déterminer l'interval à la main
-    Parallel::For(0,my_size,loop_options,[&](Integer begin, Integer size)
+    arcaneParallelFor(0,my_size,loop_options,[&](Integer begin, Integer size)
     {
       //std::cout << "DO_PARALLEL_FOR_IMPL begin=" << begin << " size=" << size << "\n";
       impl::applyGenericLoopParallel(begin,begin+size,bounds,func);
