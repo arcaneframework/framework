@@ -11,7 +11,7 @@ if (NOT SWIG_FOUND)
   return()
 endif()
 if (SWIG_VERSION VERSION_LESS 4)
-  message(STATUS "Disabling .NET wrapper because Swig version (${SWIG_VERSION}) is too old. Version 4+ is required")
+  message(FATAL_ERROR "Found version (${SWIG_VERSION}) of Swig is too old. Version 4+ is required")
   return()
 endif()
 
