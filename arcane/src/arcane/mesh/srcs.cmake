@@ -3,6 +3,8 @@ set( ARCANE_SOURCES
   AbstractItemFamilyTopologyModifier.h
   CompactIncrementalItemConnectivity.cc
   CompactIncrementalItemConnectivity.h
+  CommonItemGroupFilterer.h
+  CommonItemGroupFilterer.cc
   DynamicMesh.cc
   DynamicMesh.h
   DynamicMeshKindInfos.cc
