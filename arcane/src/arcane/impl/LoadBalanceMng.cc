@@ -492,7 +492,7 @@ void LoadBalanceMng::
 notifyEndPartition()
 {
   IMesh* mesh = m_mesh_handle.mesh();
-  m_cell_new_owner->fill(mesh->parallelMng()->commRank(),mesh->ownCells());
+  if (m_cell_new_owner != nullptr) m_cell_new_owner->fill(mesh->parallelMng()->commRank(),mesh->ownCells());
 }
 
 /*---------------------------------------------------------------------------*/
