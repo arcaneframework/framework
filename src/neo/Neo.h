@@ -74,14 +74,14 @@ struct ItemLocalIds {
   utils::Int32 m_first_contiguous_lid = 0;
   int m_nb_contiguous_lids = 0;
 
-  int size()  const {return m_non_contiguous_lids.size()+ m_nb_contiguous_lids;}
+  int size()  const {return (int)m_non_contiguous_lids.size()+ m_nb_contiguous_lids;}
 
   int operator() (int index) const{
     if (index >= int(size())) return  size();
     if (index < 0) return -1;
     auto item_lid = 0;
-    (index >= m_non_contiguous_lids.size() || m_non_contiguous_lids.size()==0) ?
-        item_lid = m_first_contiguous_lid + (index  - m_non_contiguous_lids.size()) : // work on fluency
+    (index >= (int) m_non_contiguous_lids.size() || m_non_contiguous_lids.size()==0) ?
+        item_lid = m_first_contiguous_lid + (index  - (int)m_non_contiguous_lids.size()) : // work on fluency
         item_lid = m_non_contiguous_lids[index];
     return item_lid;
   }
@@ -428,7 +428,7 @@ public:
     auto& non_contiguous_lids = item_local_ids.m_non_contiguous_lids;
     non_contiguous_lids.resize(min_size);
     auto used_empty_lid_count = 0;
-    for(auto i = 0; i < min_size;++i){
+    for(auto i = 0; i < (int) min_size;++i){
       const auto [inserted, do_insert] = m_uid2lid.insert({uids[i],m_empty_lids[empty_lid_size-1-used_empty_lid_count]});
       non_contiguous_lids[i]= inserted->second;
       if (do_insert) ++used_empty_lid_count;
@@ -642,7 +642,7 @@ public:
     auto [iter,is_inserted] = m_properties.insert(std::make_pair(name,PropertyT<T>{name}));
     if (is_inserted) std::cout << "Add property " << name << " in Family " << m_name
                 << std::endl;
-  };
+  }
 
   Property& getProperty(const std::string& name) {
     auto found_property = m_properties.find(name);
@@ -877,7 +877,6 @@ struct FilteredFutureItemRange : public FutureItemRange {
   ItemRange& __internal__() override {
     if (!is_data_filtered) {
       std::vector<Neo::utils::Int32> filtered_lids(m_filter.size());
-      auto i = 0;
       auto local_ids = m_future_range.new_items.localIds();
       std::transform(m_filter.begin(),m_filter.end(),filtered_lids.begin(),
                      [&local_ids](auto index){
