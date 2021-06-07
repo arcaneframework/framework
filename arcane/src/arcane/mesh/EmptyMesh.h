@@ -75,7 +75,7 @@ class EmptyMesh : public IMesh
   virtual Integer nbEdge() { _error(); return -1; }
   virtual Integer nbFace() { _error(); return -1; }
   virtual Integer nbCell() { _error(); return -1; }
-  virtual Integer nbItem(eItemKind ik) { _error(); return -1; }
+  virtual Integer nbItem(eItemKind) {_error(); return -1; }
   virtual ITraceMng* traceMng() { _error(); return nullptr; }
   virtual Integer dimension()   { _error(); return -1; }
   virtual NodeGroup allNodes() { _error(); return NodeGroup{}; }
@@ -90,11 +90,11 @@ class EmptyMesh : public IMesh
 
  public:
 
-  virtual IItemFamily* createItemFamily(eItemKind ik,const String& name) { _error(); return nullptr; }
-  virtual IItemFamily* findItemFamily(eItemKind ik,const String& name,bool create_if_needed=false) { _error(); return nullptr; }
-  virtual IItemFamily* findItemFamily(const String& name,bool throw_exception=false) { _error(); return nullptr; }
-  virtual IItemFamilyModifier* findItemFamilyModifier(eItemKind ik,const String& name) { _error(); return nullptr; }
-  virtual IItemFamily* itemFamily(eItemKind ik) { _error(); return nullptr; }
+  virtual IItemFamily* createItemFamily(eItemKind, const String&) {_error(); return nullptr; }
+  virtual IItemFamily* findItemFamily(eItemKind ,const String&,bool) { _error(); return nullptr; }
+  virtual IItemFamily* findItemFamily(const String&,bool ) { _error(); return nullptr; }
+  virtual IItemFamilyModifier* findItemFamilyModifier(eItemKind,const String&) { _error(); return nullptr; }
+  virtual IItemFamily* itemFamily(eItemKind) { _error(); return nullptr; }
   virtual IItemFamily* nodeFamily() { _error(); return nullptr; }
   virtual IItemFamily* edgeFamily() { _error(); return nullptr; }
   virtual IItemFamily* faceFamily() { _error(); return nullptr; }
@@ -134,8 +134,8 @@ class EmptyMesh : public IMesh
 
   virtual CellGroup allActiveCells() override { _error(); return CellGroup{}; }
   virtual CellGroup ownActiveCells() override { _error(); return CellGroup{}; }
-  virtual CellGroup allLevelCells(const Integer& level) override { _error(); return CellGroup{}; }
-  virtual CellGroup ownLevelCells(const Integer& level) override { _error(); return CellGroup{}; }
+  virtual CellGroup allLevelCells(const Integer&) override { _error(); return CellGroup{}; }
+  virtual CellGroup ownLevelCells(const Integer&) override { _error(); return CellGroup{}; }
   virtual FaceGroup allActiveFaces() override { _error(); return FaceGroup{}; }
   virtual FaceGroup ownActiveFaces() override { _error(); return FaceGroup{}; }
   virtual FaceGroup innerActiveFaces() override { _error(); return FaceGroup{}; }
@@ -144,7 +144,7 @@ class EmptyMesh : public IMesh
  public:
 
   virtual ItemGroupCollection groups() override { _error(); return ItemGroupCollection{}; }
-  virtual ItemGroup findGroup(const String& name) override { _error(); return ItemGroup{}; }
+  virtual ItemGroup findGroup(const String&) override { _error(); return ItemGroup{}; }
   virtual void destroyGroups() override { _error();}
 
  public:
@@ -153,18 +153,18 @@ class EmptyMesh : public IMesh
 
  public:
 
-  virtual void updateGhostLayers(bool remove_old_ghost) override { _error();}
-  virtual void serializeCells(ISerializer* buffer,Int32ConstArrayView cells_local_id) override { _error();}
+  virtual void updateGhostLayers(bool) override { _error();}
+  virtual void serializeCells(ISerializer*,Int32ConstArrayView) override { _error();}
   virtual void prepareForDump() override { _error();}
-  virtual void initializeVariables(const XmlNode& init_node) override { _error();}
-  virtual void setCheckLevel(Integer level) override { _error();}
+  virtual void initializeVariables(const XmlNode&) override { _error();}
+  virtual void setCheckLevel(Integer) override { _error();}
   virtual Integer checkLevel() const override { _error(); return -1; }
   virtual bool isDynamic() const override { _error(); return false; }
   virtual bool isAmrActivated() const override { _error(); return false; }
 
  public:
 
-  virtual void computeTiedInterfaces(const XmlNode& mesh_node) override { _error();}
+  virtual void computeTiedInterfaces(const XmlNode&) override { _error();}
   virtual bool hasTiedInterface()  override { _error(); return false; }
   virtual TiedInterfaceCollection tiedInterfaces() override { _error(); return TiedInterfaceCollection{}; }
   virtual IMeshPartitionConstraintMng* partitionConstraintMng() override { _error(); return nullptr; }
@@ -180,10 +180,10 @@ class EmptyMesh : public IMesh
  public:
 
   virtual VariableNodeReal3& nodesCoordinates() override { _error(); auto var = new VariableNodeReal3{ nullptr}; return *var;}
-  virtual void defineParentForBuild(IMesh * mesh, ItemGroup group) override { _error(); }
+  virtual void defineParentForBuild(IMesh *, ItemGroup) override { _error(); }
   virtual IMesh * parentMesh() const override { _error(); return nullptr; }
   virtual ItemGroup parentGroup() const override { _error(); return ItemGroup{}; }
-  virtual void addChildMesh(IMesh * sub_mesh) override { _error(); }
+  virtual void addChildMesh(IMesh *) override { _error(); }
   virtual MeshCollection childMeshes() const override { _error(); return MeshCollection{}; }
 
  public:
