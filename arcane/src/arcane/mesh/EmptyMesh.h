@@ -60,6 +60,8 @@ class EmptyMesh : public IMesh
 
  public:
   ITraceMng* m_trace_mng;
+
+  EmptyMesh(ITraceMng* trace_mng) : m_trace_mng(trace_mng) {}
   virtual ~EmptyMesh() = default;
 
  private:
