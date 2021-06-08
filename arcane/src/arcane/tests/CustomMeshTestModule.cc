@@ -43,6 +43,8 @@ class CustomMeshTestModule : public ArcaneCustomMeshTestObject {
       info() << "- Mesh nb faces  " << mesh->nbItem(IK_Face) << " or " << mesh->nbFace();
       info() << "- Mesh nb edges  " << mesh->nbItem(IK_Edge) << " or " << mesh->nbEdge();
       info() << "- Mesh nb nodes  " << mesh->nbItem(IK_Node) << " or " << mesh->nbNode();
+      info() << "Cell family " << mesh->cellFamily()->name();
+      info() << "Node family " << mesh->nodeFamily()->name();
       auto all_cells = mesh->allCells();
       ENUMERATE_CELL (icell,all_cells) {
         info() << "cell with index " << icell.index();
@@ -54,7 +56,6 @@ class CustomMeshTestModule : public ArcaneCustomMeshTestObject {
 //    ENUMERATE_CELL (icell, all_cells){
 //      icell->localId();
 //    }
-
 
     subDomain()->timeLoopMng()->stopComputeLoop(true);
   }

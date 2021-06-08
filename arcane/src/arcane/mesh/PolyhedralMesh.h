@@ -25,9 +25,11 @@
 #include "arcane/MeshItemInternalList.h"
 #include "arcane/ISubDomain.h"
 #include "arcane/Properties.h"
+#include "arcane/ArcaneTypes.h"
 
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 #include <vector>
+#include <array>
 #include <memory>
 #endif
 
@@ -72,6 +74,7 @@ class PolyhedralMesh : public EmptyMesh {
 
  private:
   std::vector<std::unique_ptr<IItemFamily>> m_arcane_families;
+  std::array<IItemFamily*,NB_ITEM_KIND> m_default_arcane_families;
 
   // IMeshBase interface
  public:
@@ -122,6 +125,11 @@ class PolyhedralMesh : public EmptyMesh {
   Properties* properties() override { return m_properties.get(); }
 
   const MeshPartInfo& meshPartInfo() const { return m_part_info; };
+
+  IItemFamily* nodeFamily() { return m_default_arcane_families[IK_Node]; }
+  IItemFamily* edgeFamily() { return m_default_arcane_families[IK_Edge]; }
+  IItemFamily* faceFamily() { return m_default_arcane_families[IK_Face];}
+  IItemFamily* cellFamily() { return m_default_arcane_families[IK_Cell];}
 
 #endif // ARCANE_HAS_CUSTOM_MESH_TOOLS
 
