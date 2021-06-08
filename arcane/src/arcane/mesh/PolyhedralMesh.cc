@@ -37,9 +37,6 @@ _errorEmptyMesh() const {
 
 #include "neo/Mesh.h"
 
-#include <vector>
-#include <memory>
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -107,6 +104,14 @@ namespace mesh
     Integer nbItem(eItemKind ik) const { return m_mesh.nbItems(itemKindArcaneToNeo(ik)); }
     ItemGroup allCells() { return ItemGroup{}; }
 
+    void addFamily(eItemKind ik, const String& name){
+      m_mesh.addFamily(itemKindArcaneToNeo(ik),name.localstr());
+    }
+
+    void scheduleAddItems(String const& family_name, eItemKind family_kind, Int64ConstArrayView uids) noexcept {}
+
+    void applyScheduledOperations() noexcept {}
+
    private:
     void _createSingleCellTest()
     {
@@ -173,8 +178,10 @@ _errorEmptyMesh() const
 
 mesh::PolyhedralMesh::
 PolyhedralMesh(ISubDomain* subdomain)
-: m_subdomain{subdomain}
+: EmptyMesh{subdomain->traceMng()}
+, m_subdomain{subdomain}
 , m_mesh_handle{m_subdomain->meshMng()->createMeshHandle(m_mesh_handle_name)}
+, m_properties(std::make_unique<Properties>(subdomain->propertyMng(),String("ArcaneMeshProperties_")+m_name))
 , m_mesh{ std::make_unique<mesh::PolyhedralMeshImpl>(m_subdomain) }
 {
   m_mesh_handle._setMesh(this);
@@ -186,7 +193,9 @@ PolyhedralMesh(ISubDomain* subdomain)
 void Arcane::mesh::PolyhedralMesh::
 read(const String& filename)
 {
-  m_mesh->read(filename);
+  // First step: create manually a unit mesh
+  ARCANE_UNUSED(filename); // temporary
+  _createUnitMesh();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -264,13 +273,51 @@ allCells()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
-#else // ARCANE_HAS_CUSTOM_MESH_TOOLS : empty class for compilation
-
-namespace mesh
+IItemFamily* mesh::PolyhedralMesh::
+createItemFamily(eItemKind ik, const String& name)
 {
-  class PolyhedralMeshImpl{};
+  m_mesh->addFamily(ik, name);
+  m_arcane_families.push_back(std::make_unique<ItemFamily>(this,ik, name));
+  return m_arcane_families.back().get();
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::
+_createUnitMesh()
+{
+  auto cell_family = createItemFamily(IK_Cell, "CellFamily");
+  auto node_family = createItemFamily(IK_Node, "NodeFamily");
+  Int64UniqueArray cell_uids{0},node_uids{ 0, 1, 2, 3, 4, 5 };
+  m_mesh->scheduleAddItems(cell_family->name(), cell_family->itemKind(), cell_uids);
+  m_mesh->scheduleAddItems(node_family->name(), node_family->itemKind(), node_uids);
+  m_mesh->applyScheduledOperations();
+}
+
+} // End namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#else // ARCANE_HAS_CUSTOM_MESH_TOOLS
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::mesh
+{
+class PolyhedralMeshImpl{};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Arcane::mesh::PolyhedralMesh::
+~PolyhedralMesh() = default;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 Arcane::mesh::PolyhedralMesh::
 PolyhedralMesh(ISubDomain* subdomain)
@@ -281,18 +328,9 @@ PolyhedralMesh(ISubDomain* subdomain)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+
 void Arcane::mesh::PolyhedralMesh::
 read([[maybe_unused]] const String& filename)
-{
-  _errorEmptyMesh();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-
-String Arcane::mesh::PolyhedralMesh::
-name() const
 {
   _errorEmptyMesh();
 }
@@ -351,49 +389,6 @@ nbItem([[maybe_unused]] eItemKind ik)
   _errorEmptyMesh();
 }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-
-} // End namespace Arcane
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#else // ARCANE_HAS_CUSTOM_MESH_TOOLS
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane::mesh
-{
-class PolyhedralMeshImpl{};
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Arcane::mesh::PolyhedralMesh::
-~PolyhedralMesh() = default;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Arcane::mesh::PolyhedralMesh::
-PolyhedralMesh(ISubDomain* subdomain)
-: m_subdomain{subdomain}
-, m_mesh{nullptr}
-{}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-
-void Arcane::mesh::PolyhedralMesh::
-read([[maybe_unused]] const String& filename)
-{
-  _errorEmptyMesh();
-}
 
 #endif // ARCANE_HAS_CUSTOM_MESH_TOOLS
 
