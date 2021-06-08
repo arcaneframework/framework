@@ -185,6 +185,7 @@ PolyhedralMesh(ISubDomain* subdomain)
 , m_mesh{ std::make_unique<mesh::PolyhedralMeshImpl>(m_subdomain) }
 {
   m_mesh_handle._setMesh(this);
+  m_default_arcane_families.fill(nullptr);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -278,7 +279,9 @@ createItemFamily(eItemKind ik, const String& name)
 {
   m_mesh->addFamily(ik, name);
   m_arcane_families.push_back(std::make_unique<ItemFamily>(this,ik, name));
-  return m_arcane_families.back().get();
+  auto current_family = m_arcane_families.back().get();
+  if (m_default_arcane_families[ik] == nullptr) m_default_arcane_families[ik] = current_family;
+  return current_family;
 }
 
 /*---------------------------------------------------------------------------*/
