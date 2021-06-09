@@ -11,9 +11,9 @@ using Arcane.Curves;
 
 namespace Arcane.ExecDrivers.CurveUtilsDriver
 {
-  class CurveUtilsDriver
+  public class CurveUtilsDriver
   {
-    public static int Main (string[] args)
+    public static int MainExec (string[] args)
     { 
       int nb_arg = args.Length;
       if (nb_arg==0){

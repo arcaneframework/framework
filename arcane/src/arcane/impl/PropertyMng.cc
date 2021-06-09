@@ -230,7 +230,7 @@ writeTo(ByteArray& bytes)
   this->serialize(&sb);
 
   Span<const Byte> buf_bytes = sb.globalBuffer();
-  info() << "SaveProperties nb_byte=" << buf_bytes.size();
+  info(4) << "SaveProperties nb_byte=" << buf_bytes.size();
   bytes.copy(buf_bytes);
 }
 
@@ -240,7 +240,7 @@ writeTo(ByteArray& bytes)
 void PropertyMng::
 readFrom(Span<const Byte> bytes)
 {
-  info() << "ReadProperties nb_read_byte=" << bytes.size();
+  info(4) << "ReadProperties nb_read_byte=" << bytes.size();
 
   SerializeBuffer sb;
   sb.setSerializeTypeInfo(true);

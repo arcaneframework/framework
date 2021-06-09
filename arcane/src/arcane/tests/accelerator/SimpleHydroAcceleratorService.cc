@@ -202,7 +202,7 @@ class SimpleHydroAcceleratorService
   void computeGeometricValues2();
 
   void cellScalarPseudoViscosity();
-  inline void computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs);
+  ARCCORE_HOST_DEVICE inline void computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs);
 
  private:
   VariableCellInt64 m_cell_unique_id; //!< Unique ID associé à la maille

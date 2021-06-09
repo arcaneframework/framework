@@ -6,4 +6,8 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.*" />
     <PackageReference Include="Mono.Options" Version="6.*" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Arcane.Curves/Arcane.Curves.csproj" />
+    <ProjectReference Include="../VariableComparer/VariableComparer.csproj" />
+  </ItemGroup>
 </Project>

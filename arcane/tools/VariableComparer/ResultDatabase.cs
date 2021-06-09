@@ -6,7 +6,7 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
-
+using Newtonsoft.Json;
 namespace Arcane.VariableComparer
 {
   class CommonVariableInfo
@@ -19,17 +19,29 @@ namespace Arcane.VariableComparer
       NbOccurence = 1;
     }
   }
+  public class ArcaneJSONDataBaseInfo
+  {
+    public int Version;
+    public int NbPart;
+    public string DataCompressor;
+    public int DataCompressorMinSize = 512;
+  }
   
   public class ResultDatabase
   {
+    const string DB_FILENAME = "arcane_acr_db.json";
+
     string m_base_path;
     public string BasePath { get { return m_base_path; } }
-    
+
     int m_nb_part;
-    ResultDatabasePart[] m_parts;
-    
-    Dictionary<string,VariableMetaData> m_item_variables;
-    public IDictionary<string,VariableMetaData> Variables { get { return m_item_variables; } }
+    IResultDatabasePart[] m_parts;
+
+    Dictionary<string, VariableMetaData> m_item_variables;
+    public IDictionary<string, VariableMetaData> Variables { get { return m_item_variables; } }
+
+    //! Non nul si on utilise la version des comparaisons utilisant DB_FILENAME
+    ArcaneJSONDataBaseInfo m_arcane_db_info;
     
     /// <summary>
     /// Cree une reference sur une base de resultat stockee sur le chemin \a base_path
@@ -37,16 +49,28 @@ namespace Arcane.VariableComparer
     public ResultDatabase(string base_path)
     {
       m_base_path = base_path;
-      m_item_variables = new Dictionary<string,VariableMetaData>();
+      m_item_variables = new Dictionary<string, VariableMetaData>();
     }
-    
+
     public void ReadDatabase()
     {
-      _ReadNbPart();
-      m_parts = new ResultDatabasePart[m_nb_part];
-      for( int i=0; i<m_nb_part; ++i ){
-        m_parts[i] = new ResultDatabasePart(this,i);
-        m_parts[i].Read();
+      _CheckAndReadJSONDataBase();
+      bool use_v3 = false;
+      if (m_arcane_db_info != null) {
+        m_nb_part = m_arcane_db_info.NbPart;
+        use_v3 = true;
+      }
+      else
+        _ReadNbPart();
+      m_parts = new IResultDatabasePart[m_nb_part];
+      for (int i = 0; i < m_nb_part; ++i) {
+        IResultDatabasePart rpart = null;
+        if (use_v3)
+          rpart = new ResultDatabasePartV3(this, i, m_arcane_db_info);
+        else
+          rpart = new ResultDatabasePart(this, i);
+        rpart.Read();
+        m_parts[i] = rpart;
       }
       _ComputeItemVariables();
     }
@@ -54,23 +78,48 @@ namespace Arcane.VariableComparer
     public double[] ReadVariableAsRealArray(string varname)
     {
       int total_size = 0;
-      foreach(ResultDatabasePart part in m_parts){
+      foreach (var part in m_parts) {
         VariableDataInfo vdi = part.VariablesDataInfo[varname];
         total_size += vdi.NbBaseElement;
       }
-      
+
       double[] values = new double[total_size];
-      
+
       int array_index = 0;
-      foreach(ResultDatabasePart part in m_parts){
+      foreach (var part in m_parts) {
         VariableDataInfo vdi = part.VariablesDataInfo[varname];
-        part.ReadVariableAsRealArray(varname,values,array_index);
+        part.ReadVariableAsRealArray(varname, values, array_index);
         array_index += vdi.NbBaseElement;
       }
 
       return values;
     }
     
+    class JSONDataBaseObject
+    {
+      public ArcaneJSONDataBaseInfo ArcaneCheckpointRestartDataBase;
+    }
+    void _CheckAndReadJSONDataBase()
+    {
+      m_arcane_db_info = null;
+      // Regarde si le fichier décrivant la base de données est présent.
+      // Si c'est le cas, cela signifie qu'on utilise la version 3+ du format
+      // de 'BasicReaderWriter'.
+      string db_filename = Path.Combine(m_base_path, DB_FILENAME);
+      //Console.WriteLine($"Check read JSON Database {db_filename} base_path={m_base_path}");
+      if (!File.Exists(db_filename))
+        return;
+      Console.WriteLine($"Reading database file {db_filename}");
+      string s = File.ReadAllText(db_filename);
+      var o = JsonConvert.DeserializeObject<JSONDataBaseObject>(s);
+      if (o==null)
+        throw new ApplicationException($"Can not parse JSON database '{db_filename}'");
+      var oinfo = o.ArcaneCheckpointRestartDataBase;
+      if (oinfo==null)
+        throw new ApplicationException($"Can not parse JSON database (second part) '{db_filename}'");
+      Console.WriteLine($"Version={oinfo.Version} NbPart={oinfo.NbPart} DataCompressor={oinfo.DataCompressor}");
+      m_arcane_db_info = oinfo;
+    }
     private void _ReadNbPart()
     {
       string info_path = Path.Combine(m_base_path,"infos.txt");
@@ -85,7 +134,7 @@ namespace Arcane.VariableComparer
     private void _ComputeItemVariables()
     {
       Dictionary<string,CommonVariableInfo> nb_variables_occurence = new Dictionary<string,CommonVariableInfo>();
-      foreach(ResultDatabasePart data_part in m_parts){
+      foreach(IResultDatabasePart data_part in m_parts){
         Console.WriteLine("PARSING PART = {0}",data_part.Part);
         IDictionary<string,VariableDataInfo> saved_infos = data_part.VariablesDataInfo;
         foreach(VariableMetaData var_meta_data in data_part.MetaData.Variables){
@@ -124,5 +173,7 @@ namespace Arcane.VariableComparer
       }
       Console.WriteLine("TOTAL='{0}' '{1}'",total,m_item_variables.Count);
     }
+
+    
   }
 }

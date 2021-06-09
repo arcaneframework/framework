@@ -285,11 +285,11 @@ computeDirections()
   Integer nb_node = cell0.nbNode();
   Real3 cell_center = cells_center[cell0];
 
-  info() << "Cartesian mesh compute directions is_amr=" << m_is_amr;
+  info(4) << "Cartesian mesh compute directions is_amr=" << m_is_amr;
 
   for( Integer i=0; i<nb_node; ++i ){
     Node node = cell0.node(i);
-    info() << "Node I=" << i << " node=" << ItemPrinter(node) << " pos=" << nodes_coord[node];
+    info(4) << "Node I=" << i << " node=" << ItemPrinter(node) << " pos=" << nodes_coord[node];
   }
 
   // On suppose que toutes les mailles ont le même sens de numérotation dans le maillage.
@@ -415,13 +415,10 @@ computeDirections()
   for( const CellGroup& cells : m_amr_patch_cell_groups ){
     Integer patch_index = m_amr_patches.size();
     info() << "AMR Patch name=" << cells.name() << " size=" << cells.size() << " index=" << patch_index;
-    auto cdi = new CartesianMeshPatch(this,patch_index);
+    auto* cdi = new CartesianMeshPatch(this,patch_index);
     m_amr_patches.add(makeRef(cdi));
-    if (cells.empty())
-      continue;
     cdi->_internalComputeNodeCellInformations(cell0,cells_center[cell0],nodes_coord);
     auto [ patch_cells, patch_nodes ] = _buildPatchGroups(cells,patch_index);
-    //CellGroup NodeGroup cells_nodes(cells.nodeGroup());
     _computeMeshDirection(*cdi,MD_DirX,cells_center,faces_center,patch_cells,patch_nodes);
     _computeMeshDirection(*cdi,MD_DirY,cells_center,faces_center,patch_cells,patch_nodes);
     if (is_3d)
@@ -459,8 +456,8 @@ _buildPatchGroups(const CellGroup& cells,Integer patch_level)
   NodeGroup patch_nodes = node_family->createGroup(node_group_name,Int32ConstArrayView(),true);
   // Met les mêmes noeuds que \a nodes mais force le tri
   patch_nodes.setItems(nodes.view().localIds(),true);
-  info() << "PATCH_CELLS name=" << patch_cells.name() << " size=" << patch_cells.size();
-  info() << "PATCH_NODES name=" << patch_nodes.name() << " size=" << patch_nodes.size();
+  info(4) << "PATCH_CELLS name=" << patch_cells.name() << " size=" << patch_cells.size();
+  info(4) << "PATCH_NODES name=" << patch_nodes.name() << " size=" << patch_nodes.size();
   return { patch_cells, patch_nodes };
 }
 
@@ -489,7 +486,7 @@ _computeMeshDirection(CartesianMeshPatch& cdi,eMeshDirection dir,VariableCellRea
   node_dm.m_infos.resize(max_node_id);
 
   //TODO: attention à remettre à jour après changement de maillage.
-  info() << "COMPUTE DIRECTION dir=" << dir;
+  info(4) << "COMPUTE DIRECTION dir=" << dir;
 
   Int32 prev_local_face = -1;
   Int32 next_local_face = m_local_face_direction[dir];
@@ -562,12 +559,15 @@ _applyRefine(ConstArrayView<Int32> cells_local_id)
 {
   IItemFamily* cell_family = m_mesh->cellFamily();
   Integer nb_cell = cells_local_id.size();
-  info() << "NB_CELL_TO_REFINE = " << nb_cell;
+  info(4) << "Local_NbCellToRefine = " << nb_cell;
   Integer index = m_amr_patch_cell_groups.size();
   String parent_group_name = String("CartesianMeshPatchParentCells")+index;
   CellGroup parent_cells = cell_family->createGroup(parent_group_name,cells_local_id,true);
-  //m_amr_patch_cell_groups.add(parent_cells);
-  if (nb_cell==0)
+
+  IParallelMng* pm = m_mesh->parallelMng();
+  Int64 total_nb_cell = pm->reduce(Parallel::ReduceSum,nb_cell);
+  info(4) << "Global_NbCellToRefine = " << total_nb_cell;
+  if (total_nb_cell==0)
     return;
   m_mesh->modifier()->flagCellToRefine(cells_local_id);
   m_mesh->modifier()->adapt();

@@ -12,7 +12,7 @@ namespace Arcane.ExecDrivers.TestDriver
 {
   public class TestDriverMain
   {
-    public static int Main(string[] args)
+    public static int MainExec(string[] args)
     {
       Arcane.ExecDrivers.Common.Utils.Init();
 

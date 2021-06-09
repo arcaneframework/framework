@@ -5,10 +5,34 @@
 
 Cette page contient les nouveautés de chaque version de %Arcane.
 
-Arcane Version 2.22.0 (...) {#arcanedoc_version2220}
+Arcane Version 3.0.1 (27 mai 2021) {#arcanedoc_version301}
 ======================================
 
 [TEMPORARY]
+
+Cette version est la première version 'open source' de %Arcane.
+
+Nouveautés/Améliorations:
+
+- Nouvelle version du service de lecture/écriture
+  Arcane::BasicReaderWriter pour générer moins de fichier et supporter
+  la compression. Ce service peut être utilisé à la fois pour les
+  protections/reprises et la comparaison bit à bit de
+  variables. L'utilitaire C# de comparaison de variables a été mis à
+  jour pour supporter cette nouvelle version.
+- Support des fichiers de maillage au format 'msh' version 4.1. Cette
+  version permet de spécifier des groupes de faces ou de mailles dans
+  le fichier de maillage.
+- En interne, utilise un seul exécutable pour l'ensemble des
+  utilitaires C#.
+
+Changements:
+
+- Ajoute possibilité lors de la compilation de %Arcane de spécifier les
+  packages requis et de ne pas chercher de packages par défaut.
+
+Arcane Version 2.22.0 (03 mars 2021) {#arcanedoc_version2220}
+======================================
 
 Nouveautés/Améliorations:
 

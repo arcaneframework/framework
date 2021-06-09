@@ -8,9 +8,9 @@ using System.Collections.Generic;
 
 namespace Arcane.Templates
 {
-  class MainClass
+  public class MainClass
   {
-    static int Main(string[] args)
+    static public int MainExec(string[] args)
     {
       int nb_arg = args.Length;
       bool do_help = false;

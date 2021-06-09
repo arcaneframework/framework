@@ -34,6 +34,7 @@ class IosFile
 	const char* getNextLine(void);
 	Real getReal(void);
 	Integer getInteger(void);
+	Int64 getInt64(void);
 	bool lookForString(const String& str);
 	void checkString(const String& current_value,const String& expected_value);
 	void checkString(const String& current_value, const String& expected_value1, const String& expected_value2);

@@ -575,12 +575,12 @@ executeTest()
                 [&](){_computeEquationOfStateV2();});
   _applyCompare("_computeEquationOfStateV3 (simple_env_loop)",
                 [&](){_computeEquationOfStateV3();});
-#ifdef ARCANE_HAS_CXX14
+
   _applyCompare("_computeEquationOfStateV4 (lambda simple_env_loop2)",
                 [&](){_computeEquationOfStateV4();});
   _applyCompare("_computeEquationOfStateV4_noview (lambda simple_env_loop2)",
                 [&](){_computeEquationOfStateV4_noview();});
-#endif
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1345,7 +1345,6 @@ _computeEquationOfStateV2()
 void MeshMaterialSimdUnitTest::
 _computeEquationOfStateV4()
 {
-#ifdef ARCANE_HAS_CXX14
   Int32 nb_z = m_nb_z;
   auto in_adiabatic_cst = viewIn(m_mat_adiabatic_cst);
   auto in_volume = viewIn(m_mat_volume);
@@ -1376,7 +1375,6 @@ _computeEquationOfStateV4()
     };
     simple_env_loop2(*m_env1_as_vector,func);
   }
-#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1385,7 +1383,6 @@ _computeEquationOfStateV4()
 void MeshMaterialSimdUnitTest::
 _computeEquationOfStateV4_noview()
 {
-#ifdef ARCANE_HAS_CXX14
   Int32 nb_z = m_nb_z;
 
   for( Int32 iloop=0; iloop<nb_z; ++iloop){
@@ -1407,7 +1404,6 @@ _computeEquationOfStateV4_noview()
     };
     simple_env_loop2(*m_env1_as_vector,func);
   }
-#endif
 }
 
 /*---------------------------------------------------------------------------*/

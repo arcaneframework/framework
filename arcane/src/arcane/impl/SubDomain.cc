@@ -169,12 +169,12 @@ class SubDomain
    private:
     void _notifyRead()
     {
-      info() << "PropertyMngCheckpoint: READ";
+      info(4) << "PropertyMngCheckpoint: READ";
       m_sub_domain->propertyMng()->readFrom(m_property_values);
     }
     void _notifyWrite()
     {
-      info() << "PropertyMngCheckpoint: WRITE";
+      info(4) << "PropertyMngCheckpoint: WRITE";
       m_sub_domain->propertyMng()->writeTo(m_property_values.internalContainer());
       m_property_values.variable()->syncReferences();
     }

@@ -46,7 +46,8 @@ Les outils et bibliothèques suivants sont optionnels:
 
 ### Compilation
 
-La compilation d'Arcane nécessite d'avoir une version de [CMake](https://cmake.org) supérieure à `3.13`. La compilation se fait obligatoirement dans un
+La compilation d'Arcane nécessite d'avoir une version de [CMake](https://cmake.org) supérieure à `3.13`.
+La compilation se fait obligatoirement dans un
 répertoire distinct de celui des sources. On note `${SOURCE_DIR}` ce
 répertoire contenant les sources et `${BUILD_DIR}` le répertoire de compilation.
 
@@ -61,8 +62,8 @@ Si `${INSTALL_PATH}` est le répertoire d'installation, les commandes suivantes 
 mkdir ${BUILD_DIR}
 cd ${BUILD_DIR}
 cmake -S ${SOURCE_DIR} -DCMAKE_INSTALL_PREFIX=${INSTALL_PATH} -DArccon_ROOT:PATH=... -DAxlstar_ROOT:PATH=... -DArccore_ROOT:PATH=...
-cmake --build .
-cmake --build . --target install
+cmake --build ${BUILD_DIR}
+cmake --build ${BUILD_DIR} --target install
 ~~~
 
 Par défaut, l'installation se fait dans `/usr/local` si l'option `CMAKE_INSTALL_PREFIX` n'est
@@ -86,6 +87,11 @@ Dans
 
 La génération de la documentation n'a été testée que sur les plateforme Linux.
 Elle nécessite l'outil [Doxygen](https://www.doxygen.nl/index.html).
+L'outil Doxygen a besoin d'une installation de
+[LaTeX](https://www.latex-project.org/) pour générer correctement
+certaines équations. Suivant les plateformes, il peut être nécessaire
+d'installer des packages LaTeX supplémentaires (par exemple pour
+Ubuntu, le pakckage `texlive-latex-extra` est nécessaire).
 Une fois la configuration terminée, il suffit de lancer:
 
 Pour la documentation utilisateur:

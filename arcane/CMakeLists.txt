@@ -167,7 +167,7 @@ install(TARGETS arcane_build_compile_flags EXPORT ArcaneTargets)
 set(CMAKE_NO_SYSTEM_FROM_IMPORTED 1)
 
 # ----------------------------------------------------------------------------
-# Il ne faut surtout pas inclure le répertoire courante automatiquement
+# Il ne faut surtout pas inclure le répertoire courant automatiquement
 # car cela pose des problèmes avec certains fichiers tels que 'String.h' qui
 # peut être inclus à la place de 'string.h' sous windows par exemple.
 
@@ -190,18 +190,11 @@ message(STATUS "Threads are always enabled")
 
 # ----------------------------------------------------------------------------
 
-# Maintenant, on considère qu'on a toujours le support du C++11
+# Maintenant, on considère qu'on a toujours le support du C++11 et C++14
 set(ARCANE_USE_CXX11 TRUE CACHE BOOL "true if C++11 is supported and used" FORCE)
+set(ARCANE_USE_CXX14 TRUE CACHE BOOL "true if C++14 is supported and used" FORCE)
 
 # ----------------------------------------------------------------------------
-# Regarde si on a le support du C++14
-if (NOT DEFINED ARCANE_USE_CXX14)
-  message(STATUS "Try to detect C++14 features")
-  set(scratch_directory ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY})
-  try_compile(_ARCANE_USE_CXX14 ${scratch_directory} ${CMAKE_CURRENT_SOURCE_DIR}/CMake/test_cxx14.cc)
-  set(ARCANE_USE_CXX14 ${_ARCANE_USE_CXX14} CACHE BOOL "true if C++14 is supported and used" FORCE)
-endif ()
-message(STATUS "Compiler configured to support C++14 ? ${ARCANE_USE_CXX14}")
 
 # Si on utilise gcc, supprime les extensions pour forcer le '-std=c++11'
 # car sinon cmake va ajouter lui même l'option et dans ce cas il met '-std=gnu++11'.

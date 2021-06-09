@@ -370,6 +370,11 @@ initialize(const String& path,Int32 rank)
   if (m_version>=3){
     if (!m_text_reader.get())
       ARCANE_FATAL("Null text reader");
+    String dc_name;
+    if (m_text_reader->dataCompressor().get())
+      dc_name = m_text_reader->dataCompressor()->name();
+    info(4) << "BasicGenericReader::initialize data_compressor=" << dc_name;
+
     // Si on connait déjà la version et qu'elle est supérieure ou égale à 3
     // alors les informations sont dans la base de données. Dans ce cas on lit
     // directement les infos depuis cette base.
@@ -392,6 +397,8 @@ initialize(const String& path,Int32 rank)
   XmlNodeList variables_elem = root.children("variable-data");
   String deflater_name = root.attrValue("deflater-service");
   String version_id = root.attrValue("version",false);
+  info(4) << "Infos from metadata deflater-service=" << deflater_name
+          << " version=" << version_id;
   if (version_id.null() || version_id=="1")
     // Version 1:
     // - taille des dimensions sur 32 bits
@@ -624,15 +631,6 @@ class BasicGenericWriter
       ARCANE_FATAL("Null text writer");
     m_path = path;
     m_rank = rank;
-    // Permet de surcharger le service utilisé pour la compression
-    String data_compressor_name = platform::getEnvironmentVariable("ARCANE_DEFLATER");
-    if (!data_compressor_name.null()){
-      data_compressor_name = data_compressor_name + "DataCompressor";
-      auto bc = _createDeflater(m_application,data_compressor_name);
-      info() << "Use data_compressor name=" << data_compressor_name;
-      m_deflater = bc;
-      m_text_writer->setDataCompressor(bc);
-    }
   }
   void writeData(const String& var_full_name,const ISerializedData* sdata) override;
   void writeItemGroup(const String& group_full_name,Int64ConstArrayView written_unique_ids,
@@ -643,7 +641,6 @@ class BasicGenericWriter
   Int32 m_version;
   String m_path;
   Int32 m_rank;
-  Ref<IDataCompressor> m_deflater;
   Ref<KeyValueTextWriter> m_text_writer;
   typedef std::map<String,VariableDataInfo*> VariableDataInfoMap;
   VariableDataInfoMap m_variables_data_info;
@@ -764,7 +761,7 @@ endWrite()
   ScopedPtrT<IXmlDocumentHolder> xdoc(app->ressourceMng()->createXmlDocument());
   XmlNode doc = xdoc->documentNode();
   XmlElement root(doc,"variables-data");
-  IDataCompressor* dc = m_deflater.get();
+  IDataCompressor* dc = m_text_writer->dataCompressor().get();
   if (dc){
     root.setAttrValue("deflater-service",dc->name());
     root.setAttrValue("min-compress-size",String::fromNumber(dc->minCompressSize()));
@@ -953,6 +950,19 @@ initialize()
   String filename = _getBasicVariableFile(m_version,m_path,rank);
   m_text_writer = makeRef(new KeyValueTextWriter(filename,m_version));
   m_text_writer->setDataCompressor(m_data_compressor);
+
+  // Permet de surcharger le service utilisé pour la compression par une
+  // variable d'environnement si aucun n'est positionné
+  if (!m_data_compressor.get()){
+    String data_compressor_name = platform::getEnvironmentVariable("ARCANE_DEFLATER");
+    if (!data_compressor_name.null()){
+      data_compressor_name = data_compressor_name + "DataCompressor";
+      auto bc = _createDeflater(m_application,data_compressor_name);
+      info() << "Use data_compressor from environment variable ARCANE_DEFLATER name=" << data_compressor_name;
+      m_data_compressor = bc;
+      m_text_writer->setDataCompressor(bc);
+    }
+  }
   m_global_writer = new BasicGenericWriter(m_application,m_version,m_text_writer);
   if (m_verbose_level>0)
     info() << "** OPEN MODE = " << m_open_mode;
@@ -1087,7 +1097,14 @@ endWrite()
           JSONWriter::Object db_object(jsw);
           jsw.write("Version",(Int64)m_version);
           jsw.write("NbPart",nb_part);
-          jsw.write("DataCompressor",(m_data_compressor.get()) ? m_data_compressor->name() : String());
+          String data_compressor_name;
+          Int64 data_compressor_min_size =0;
+          if (m_data_compressor.get()){
+            data_compressor_name = m_data_compressor->name();
+            data_compressor_min_size = m_data_compressor->minCompressSize();
+          }
+          jsw.write("DataCompressor",data_compressor_name);
+          jsw.write("DataCompressorMinSize",String::fromNumber(data_compressor_min_size));
         }
       }
       StringBuilder filename = m_path;
@@ -1246,7 +1263,14 @@ initialize()
     pm->broadcast(Int32ArrayView(1,&m_nb_written_part),pm->masterIORank());
   }
   if (m_version>=3){
-    String main_filename = _getBasicVariableFile(m_version,m_path,m_forced_rank_to_read);
+    Int32 rank_to_read = m_forced_rank_to_read;
+    if (rank_to_read<0){
+      if (m_nb_written_part>1)
+        rank_to_read = pm->commRank();
+      else
+        rank_to_read = 0;
+    }
+    String main_filename = _getBasicVariableFile(m_version,m_path,rank_to_read);
     m_forced_rank_to_read_text_reader = makeRef(new KeyValueTextReader(main_filename,m_version));
     if (!data_compressor_name.empty()){
       Ref<IDataCompressor> dc = _createDeflater(m_application,data_compressor_name);
@@ -1520,12 +1544,16 @@ _readOwnMetaDataAndCreateReader(Int32 rank)
   String main_filename = _getBasicVariableFile(m_version,m_path,rank);
   Ref<KeyValueTextReader> text_reader;
   if (m_version>=3){
-    // Si le rang est le même que m_forced_rank_to_read, alors peut réutiliser
+    // Si le rang est le même que m_forced_rank_to_read, alors on peut réutiliser
     // le lecteur déjà créé.
     if (rank==m_forced_rank_to_read)
       text_reader = m_forced_rank_to_read_text_reader;
-    else
+    else{
       text_reader = makeRef(new KeyValueTextReader(main_filename,m_version));
+      // Il faut que ce lecteur ait le même gestionnaire de compression
+      // que celui déjà créé
+      text_reader->setDataCompressor(m_forced_rank_to_read_text_reader->dataCompressor());
+    }
   }
 
   auto r = new BasicGenericReader(m_application,m_version,text_reader);
@@ -1855,7 +1883,7 @@ ARCANE_REGISTER_SERVICE(ArcaneBasic2CheckpointReaderService,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ArcaneBasicVerifierService2
+class ArcaneBasicVerifierService
 : public VerifierService
 {
   class GroupFinder
@@ -1877,11 +1905,8 @@ class ArcaneBasicVerifierService2
 
  public:
 
-  explicit ArcaneBasicVerifierService2(const ServiceBuildInfo& sbi)
+  explicit ArcaneBasicVerifierService(const ServiceBuildInfo& sbi)
   : VerifierService(sbi)
-  {
-  }
-  ~ArcaneBasicVerifierService2()
   {
   }
     
@@ -1901,7 +1926,7 @@ class ArcaneBasicVerifierService2
     // Pour l'instant utilise la version 1
     // A partir de janvier 2019, il est possible d'utiliser la version 2
     // car le comparateur C# supporte cette version.
-    Int32 version = 1;
+    Int32 version = m_wanted_format_version;
     bool want_parallel = pm->isParallel();
     ScopedPtrT<BasicWriter> verif(new BasicWriter(sd->application(),pm,m_full_file_name,
                                                   open_mode,version,want_parallel));
@@ -1953,9 +1978,17 @@ class ArcaneBasicVerifierService2
     reader->endRead();
   }
 
+ protected:
+
+  void _setFormatVersion(Int32 v)
+  {
+    m_wanted_format_version = v;
+  }
+
  private:
 
   String m_full_file_name;
+  Int32 m_wanted_format_version = 1;
 
  private:
 
@@ -1976,8 +2009,42 @@ class ArcaneBasicVerifierService2
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ArcaneBasicVerifierService2
+: public ArcaneBasicVerifierService
+{
+ public:
+  explicit ArcaneBasicVerifierService2(const ServiceBuildInfo& sbi)
+  : ArcaneBasicVerifierService(sbi)
+  {
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ArcaneBasicVerifierServiceV3
+: public ArcaneBasicVerifierService
+{
+ public:
+  explicit ArcaneBasicVerifierServiceV3(const ServiceBuildInfo& sbi)
+  : ArcaneBasicVerifierService(sbi)
+  {
+    _setFormatVersion(3);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 ARCANE_REGISTER_SERVICE(ArcaneBasicVerifierService2,
                         ServiceProperty("ArcaneBasicVerifier2",ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IVerifierService));
+
+ARCANE_REGISTER_SERVICE(ArcaneBasicVerifierServiceV3,
+                        ServiceProperty("ArcaneBasicVerifier3",ST_SubDomain),
                         ARCANE_SERVICE_INTERFACE(IVerifierService));
 
 /*---------------------------------------------------------------------------*/

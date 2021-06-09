@@ -23,6 +23,7 @@
 #include "arcane/utils/Enumerator.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/Real3.h"
+#include "arcane/utils/OStringStream.h"
 
 #include "arcane/AbstractService.h"
 #include "arcane/FactoryService.h"
@@ -46,6 +47,7 @@
 #include "arcane/BasicService.h"
 #include "arcane/MeshPartInfo.h"
 #include "arcane/ios/IosFile.h"
+#include "arcane/MeshUtils.h"
 
 // Element types in .msh file format, found in gmsh-2.0.4/Common/GmshDefines.h
 #include "arcane/ios/IosGmsh.h"
@@ -57,12 +59,15 @@
  * NOTES:
  * - La bibliothèque `gmsh` fournit un script 'open.py' dans le répertoire
  *   'demos/api' qui permet de générer un fichier '.msh' à partir d'un '.geo'.
+ * - Il est aussi possible d'utiliser directement l'exécutable 'gmsh' avec
+ *   l'option '-save-all' pour sauver un fichier '.msh' à partir d'un '.geo'
  *
  * TODO:
+ * - lire les tags des noeuds(uniqueId())
  * - supporter les partitions
- * - supporter les groupes pour les conditions aux limites
+ * - supporter les groupes de maillage et noeuds (actuellement seulement les faces).
  * - pouvoir utiliser la bibliothèque 'gmsh' directement.
- * - supporter ce format avec les services de maillage.
+ * - supporter ce format avec le nouveau mécanisme des services de maillage.
  */
 
 /*---------------------------------------------------------------------------*/
@@ -101,24 +106,96 @@ class MshMeshReader
    */
   struct MeshV4ElementsBlock
   {
-    Integer index = 0; //!< Index du bloc dans la liste
-    Integer nb_entity = 0; //!< Nombre d'entités du bloc
-    Integer cell_type = -1; //!< Type Arcane de l'entité
-    Integer dimension = -1; //!< Dimension de l'entité
-    Integer cell_nb_node = 0; //!< Nombre de noeuds de l'entité.
+    Int32 index = 0; //!< Index du bloc dans la liste
+    Int32 nb_entity = 0; //!< Nombre d'entités du bloc
+    Integer item_type = -1; //!< Type Arcane de l'entité
+    Int32 dimension = -1; //!< Dimension de l'entité
+    Int32 item_nb_node = 0; //!< Nombre de noeuds de l'entité.
+    Int32 entity_tag = -1;
+    UniqueArray<Int64> uids;
     UniqueArray<Int64> connectivity;
+  };
+
+  /*!
+   * \brief Infos sur un nom physique.
+   *
+   */
+  struct MeshPhysicalName
+  {
+    MeshPhysicalName(Int32 _dimension,Int32 _tag,const String& _name)
+    : dimension(_dimension), tag(_tag), name(_name){}
+    MeshPhysicalName() = default;
+    bool isNull() const { return dimension==(-1); }
+    Int32 dimension = -1;
+    Int32 tag = -1;
+    String name;
+  };
+
+  /*!
+   * \brief Infos du bloc '$PhysicalNames'.
+   */
+  struct MeshPhysicalNameList
+  {
+    MeshPhysicalNameList() : m_physical_names(4){}
+    void add(Int32 dimension,Int32 tag,String name)
+    {
+      m_physical_names[dimension].add(MeshPhysicalName{dimension,tag,name});
+    }
+    MeshPhysicalName find(Int32 dimension,Int32 tag) const
+    {
+      for(auto& x : m_physical_names[dimension])
+        if (x.tag==tag)
+          return x;
+      return {};
+    }
+   private:
+    UniqueArray<UniqueArray<MeshPhysicalName>> m_physical_names;
+  };
+
+  //! Infos pour les entités 0D
+  struct MeshV4EntitiesNodes
+  {
+    MeshV4EntitiesNodes(Int32 _tag,Int32 _physical_tag)
+    : tag(_tag), physical_tag(_physical_tag){}
+    Int32 tag;
+    Int32 physical_tag;
+  };
+
+  //! Infos pour les entités 1D, 2D et 3D
+  struct MeshV4EntitiesWithNodes
+  {
+    MeshV4EntitiesWithNodes(Int32 _dim,Int32 _tag,Int32 _physical_tag)
+    : dimension(_dim), tag(_tag), physical_tag(_physical_tag){}
+    Int32 dimension;
+    Int32 tag;
+    Int32 physical_tag;
   };
 
   struct MeshInfo
   {
+   public:
     MeshInfo() : node_coords_map(5000,true){}
+   public:
+    MeshV4EntitiesWithNodes* findEntities(Int32 dimension,Int32 tag)
+    {
+      for(auto& x : entities_with_nodes_list[dimension-1])
+        if (x.tag==tag)
+          return &x;
+      return nullptr;
+    }
+   public:
     Integer nb_elements = 0;
     Integer nb_cell_node = 0;
-    UniqueArray<Integer> cells_nb_node;
+    UniqueArray<Int32> cells_nb_node;
+    UniqueArray<Int32> cells_type;
+    UniqueArray<Int64> cells_uid;
     UniqueArray<Int64> cells_connectivity;
-    UniqueArray<Integer> cells_type;
     UniqueArray<Real3> node_coords;
     HashTableMapT<Int64, Real3> node_coords_map;
+    MeshPhysicalNameList physical_name_list;
+    UniqueArray<MeshV4EntitiesNodes> entities_nodes_list;
+    UniqueArray<MeshV4EntitiesWithNodes> entities_with_nodes_list[3];
+    UniqueArray<MeshV4ElementsBlock> blocks;
   };
 
  public:
@@ -149,10 +226,15 @@ class MshMeshReader
   Integer _readElementsFromAsciiMshV2File(IosFile&, MeshInfo& mesh_info);
   Integer _readElementsFromAsciiMshV4File(IosFile&, MeshInfo& mesh_info);
   eReturnType _readMeshFromNewMshFile(IMesh*, IosFile&);
-  eReturnType _createMeshFrom(IMesh* mesh, MeshInfo& mesh_info);
+  void _allocateCells(IMesh* mesh, MeshInfo& mesh_info);
+  void _allocateGroups(IMesh* mesh, MeshInfo& mesh_info);
+  void _addFaceGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name);
+  void _addCellGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name);
   Integer _switchMshType(Integer, Integer&);
   eReturnType _readMeshFromMshFile(IMesh* mesh, const XmlNode& mesh_node,
                                    const String& file_name, bool use_internal_partition);
+  void _readPhysicalNames(IosFile& ios_file,MeshInfo& mesh_info);
+  void _readEntitiesV4(IosFile& ios_file,MeshInfo& mesh_info);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -251,8 +333,7 @@ _readNodesFromAsciiMshV2File(IosFile& ios_file, Array<Real3>& node_coords)
   info() << "[_readNodesFromAsciiMshV2File] nb_node=" << nb_node;
   for (Integer i = 0; i < nb_node; ++i) {
     // Il faut lire l'id même si on ne s'en sert pas.
-    Integer id = ios_file.getInteger();
-    ARCANE_UNUSED(id);
+    [[maybe_unused]] Int32 id = ios_file.getInteger();
     Real nx = ios_file.getReal();
     Real ny = ios_file.getReal();
     Real nz = ios_file.getReal();
@@ -310,7 +391,7 @@ _readNodesFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
     Integer nb_node2 = ios_file.getInteger();
     ios_file.getNextLine();
 
-    info(4) << "[Nodes] entity_dim=" << entity_dim << " entity_tag=" << entity_tag
+    info(4) << "[Nodes] index=" << i_entity << " entity_dim=" << entity_dim << " entity_tag=" << entity_tag
             << " parametric=" << parametric_coordinates
             << " nb_node2=" << nb_node2;
     if (parametric_coordinates!=0)
@@ -356,8 +437,7 @@ _readElementsFromAsciiMshV2File(IosFile& ios_file, MeshInfo& mesh_info)
   // bool pour voir si on est depuis 0 ou 1
   bool it_starts_at_zero = false;
   for (Integer i = 0; i < number_of_elements; ++i) {
-    Integer elm_number = ios_file.getInteger(); // Index
-    ARCANE_UNUSED(elm_number);
+    [[maybe_unused]] Integer elm_number = ios_file.getInteger(); // Index
     Integer elm_type = ios_file.getInteger(); // Type
     // info() << elm_number << " " << elm_type;
     // Now get tags in the case the number of nodes is encoded
@@ -381,6 +461,7 @@ _readElementsFromAsciiMshV2File(IosFile& ios_file, MeshInfo& mesh_info)
 
     mesh_info.cells_type.add(cell_type);
     mesh_info.cells_nb_node.add(number_of_nodes);
+    mesh_info.cells_uid.add(i);
     info() << elm_number << " " << elm_type << " " << number_of_tags << " number_of_nodes=" << number_of_nodes;
     //		printf("%i %i %i %i %i (", elm_number, elm_type, reg_phys, reg_elem, number_of_nodes);
     for (Integer j = 0; j < number_of_nodes; ++j) {
@@ -438,7 +519,9 @@ _readElementsFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
   if (number_of_elements < 0)
     ARCANE_THROW(IOException,"Invalid number of elements: {0}",number_of_elements);
 
-  UniqueArray<MeshV4ElementsBlock> blocks(nb_block);
+  UniqueArray<MeshV4ElementsBlock>& blocks = mesh_info.blocks;
+  blocks.resize(nb_block);
+
   {
     // Numérote les blocs (pour le débug)
     Integer index = 0;
@@ -453,25 +536,26 @@ _readElementsFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
     Integer entity_type = ios_file.getInteger();
     Integer nb_entity_in_block = ios_file.getInteger();
 
-    Integer cell_nb_node = 0;
-    Integer cell_type = _switchMshType(entity_type, cell_nb_node);
+    Integer item_nb_node = 0;
+    Integer item_type = _switchMshType(entity_type, item_nb_node);
 
     info(4) << "[Elements] index=" << block.index << " entity_dim=" << entity_dim
             << " entity_tag=" << entity_tag
             << " entity_type=" << entity_type << " nb_in_block=" << nb_entity_in_block
-            << " cell_type=" << cell_type << " cell_nb_node=" << cell_nb_node;
+            << " item_type=" << item_type << " item_nb_node=" << item_nb_node;
 
     block.nb_entity = nb_entity_in_block;
-    block.cell_type = cell_type;
-    block.cell_nb_node = cell_nb_node;
+    block.item_type = item_type;
+    block.item_nb_node = item_nb_node;
     block.dimension = entity_dim;
+    block.entity_tag = entity_tag;
 
     for (Integer i = 0; i < nb_entity_in_block; ++i) {
-      // TODO: a utiliser
-      [[maybe_unused]] Integer cell_unique_id = ios_file.getInteger();
+      Int64 item_unique_id = ios_file.getInt64();
+      block.uids.add(item_unique_id);
 
-      for ( Integer j = 0; j < cell_nb_node; ++j )
-        block.connectivity.add(ios_file.getInteger());
+      for ( Integer j = 0; j < item_nb_node; ++j )
+        block.connectivity.add(ios_file.getInt64());
     }
     ios_file.getNextLine(); // Skip current \n\r
   }
@@ -487,19 +571,21 @@ _readElementsFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
   info() << "Computed mesh dimension = " << mesh_dimension;
 
   // On ne conserve que les blocs de notre dimension
+  // pour créér les mailles
   for( MeshV4ElementsBlock& block : blocks ){
     if (block.dimension!=mesh_dimension)
       continue;
 
     info(4) << "Keeping block index=" << block.index;
 
-    Integer cell_type = block.cell_type;
-    Integer cell_nb_node = block.cell_nb_node;
+    Integer item_type = block.item_type;
+    Integer item_nb_node = block.item_nb_node;
 
     for (Integer i = 0; i < block.nb_entity; ++i) {
-      mesh_info.cells_type.add(cell_type);
-      mesh_info.cells_nb_node.add(cell_nb_node);
-      auto v = block.connectivity.subView(i*cell_nb_node,cell_nb_node);
+      mesh_info.cells_type.add(item_type);
+      mesh_info.cells_nb_node.add(item_nb_node);
+      mesh_info.cells_uid.add(block.uids[i]);
+      auto v = block.connectivity.subView(i*item_nb_node,item_nb_node);
       mesh_info.cells_connectivity.addRange(v);
     }
   }
@@ -526,8 +612,8 @@ _readNodesFromBinaryMshFile(IosFile& ios_file, Array<Real3>& node_coords)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IMeshReader::eReturnType MshMeshReader::
-_createMeshFrom(IMesh* mesh, MeshInfo& mesh_info)
+void MshMeshReader::
+_allocateCells(IMesh* mesh, MeshInfo& mesh_info)
 {
   Integer nb_elements = mesh_info.cells_type.size();
   info() << "nb_of_elements=cells_type.size()=" << nb_elements;
@@ -547,9 +633,9 @@ _createMeshFrom(IMesh* mesh, MeshInfo& mesh_info)
   Integer connectivity_index = 0;
   UniqueArray<Real3> local_coords;
   for (Integer i = 0; i < nb_elements; ++i) {
-    Integer current_cell_nb_node = mesh_info.cells_nb_node.item(i);
-    Integer cell_type = mesh_info.cells_type.item(i);
-    Int64 cell_uid = i;
+    Integer current_cell_nb_node = mesh_info.cells_nb_node[i];
+    Integer cell_type = mesh_info.cells_type[i];
+    Int64 cell_uid = mesh_info.cells_uid[i];
     cells_infos.add(cell_type);
     cells_infos.add(cell_uid); //cell_unique_id
 
@@ -586,14 +672,284 @@ _createMeshFrom(IMesh* mesh, MeshInfo& mesh_info)
         nodes_coord_var[node] = mesh_info.node_coords.item(node->uniqueId().asInt32());
       }
     }
-    //ENUMERATE_NODE(node,mesh->allNodes()) info() << "["<<nodes_coord_var[node].x<<","<<nodes_coord_var[node].y<<","<<nodes_coord_var[node].z<<"]";
   }
-  return RTOk;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void MshMeshReader::
+_allocateGroups(IMesh* mesh, MeshInfo& mesh_info)
+{
+  Int32 mesh_dim = mesh->dimension();
+  Int32 face_dim = mesh_dim - 1;
+  for( MeshV4ElementsBlock& block : mesh_info.blocks ){
+    Int32 block_index = block.index;
+    Int32 block_dim = block.dimension;
+    // On alloue un groupe s'il a un nom physique associé.
+    // Pour cela, il faut déjà qu'il soit associé à une entité.
+    Int32 block_entity_tag = block.entity_tag;
+    if (block_entity_tag<0){
+      info(5) << "[Groups] Skipping block index=" << block_index << " because it has no entity";
+      continue;
+    }
+    // Pour l'instant on ne traite pas les nuages
+    if (block_dim==0){
+      info(5) << "[Groups] Skipping block index=" << block_index
+              << " because NodeGroup is not yet supported for this format";
+      continue;
+    }
+    MeshV4EntitiesWithNodes* entity = mesh_info.findEntities(block_dim,block_entity_tag);
+    if (!entity){
+      info(5) << "[Groups] Skipping block index=" << block_index
+              << " because entity tag is invalid";
+      continue;
+    }
+    Int32 entity_physical_tag = entity->physical_tag;
+    MeshPhysicalName physical_name = mesh_info.physical_name_list.find(block_dim,entity_physical_tag);
+    if (physical_name.isNull()){
+      info(5) << "[Groups] Skipping block index=" << block_index
+              << " because entity physical tag is invalid";
+      continue;
+    }
+    info(4) << "[Groups] Block index=" << block_index << " dim=" << block_dim
+            << " name='" << physical_name.name << "'";
+    if (block_dim==mesh_dim){
+      _addCellGroup(mesh,block,physical_name.name);
+    }
+    else if (block_dim==face_dim){
+      _addFaceGroup(mesh,block,physical_name.name);
+    }
+    else{
+      info(4) << "[Groups] Skipping block index=" << block_index
+              << " because its dimension is not yet supported";
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MshMeshReader::
+_addFaceGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name)
+{
+  const Int32 nb_entity = block.nb_entity;
+
+  // Il peut y avoir plusieurs blocs pour le même groupe.
+  // On récupère le groupe s'il existe déjà.
+  FaceGroup face_group = mesh->faceFamily()->findGroup(group_name,true);
+
+  UniqueArray<Int32> faces_id(nb_entity); // Numéro de la face dans le maillage \a mesh
+
+  const Int32 item_nb_node = block.item_nb_node;
+  const Int32 face_nb_node = nb_entity * item_nb_node;
+
+  UniqueArray<Int64> faces_first_node_unique_id(nb_entity);
+  UniqueArray<Int32> faces_first_node_local_id(nb_entity);
+  UniqueArray<Int64> faces_nodes_unique_id(face_nb_node);
+  Integer faces_nodes_unique_id_index = 0;
+
+  UniqueArray<Int64> orig_nodes_id(item_nb_node);
+  UniqueArray<Integer> face_nodes_index(item_nb_node);
+
+  IItemFamily* node_family = mesh->nodeFamily();
+  ItemInternalList mesh_nodes(node_family->itemsInternal());
+
+  // Réordonne les identifiants des faces pour se conformer à Arcane et retrouver
+  // la face dans le maillage
+  for( Integer i_face=0; i_face<nb_entity; ++i_face ){
+    for( Integer z=0; z<item_nb_node; ++z )
+      orig_nodes_id[z] = block.connectivity[faces_nodes_unique_id_index+z];
+
+    mesh_utils::reorderNodesOfFace2(orig_nodes_id,face_nodes_index);
+    for( Integer z=0; z<item_nb_node; ++z )
+      faces_nodes_unique_id[faces_nodes_unique_id_index+z] = orig_nodes_id[face_nodes_index[z]];
+    faces_first_node_unique_id[i_face] = orig_nodes_id[face_nodes_index[0]];
+    faces_nodes_unique_id_index += item_nb_node;
+  }
+
+  node_family->itemsUniqueIdToLocalId(faces_first_node_local_id,faces_first_node_unique_id);
+
+  faces_nodes_unique_id_index = 0;
+  for( Integer i_face=0; i_face<nb_entity; ++i_face ){
+    const Integer n = item_nb_node;
+    Int64ConstArrayView face_nodes_id(item_nb_node,&faces_nodes_unique_id[faces_nodes_unique_id_index]);
+    Node current_node(mesh_nodes[faces_first_node_local_id[i_face]]);
+    Face face = mesh_utils::getFaceFromNodesUnique(current_node,face_nodes_id);
+
+    if (face.null()){
+      OStringStream ostr;
+      ostr() << "(Nodes:";
+      for( Integer z=0; z<n; ++z )
+        ostr() << ' ' << face_nodes_id[z];
+      ostr() << " - " << current_node.localId() << ")";
+      ARCANE_FATAL("INTERNAL: MeshMeshReader face index={0} with nodes '{1}' is not in node/face connectivity",
+                   i_face,ostr.str());
+    }
+    faces_id[i_face] = face.localId();
+
+    faces_nodes_unique_id_index += n;
+  }
+  info(4) << "Adding " << faces_id.size() << " faces from block index=" << block.index
+          << " to group '" << face_group.name() << "'";
+  face_group.addItems(faces_id);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MshMeshReader::
+_addCellGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name)
+{
+  const Int32 nb_entity = block.nb_entity;
+
+  // Il peut y avoir plusieurs blocs pour le même groupe.
+  // On récupère le groupe s'il existe déjà.
+  IItemFamily* cell_family = mesh->cellFamily();
+  CellGroup cell_group = cell_family->findGroup(group_name,true);
+
+  UniqueArray<Int32> cells_id(nb_entity); // Numéro de la face dans le maillage \a mesh
+
+  cell_family->itemsUniqueIdToLocalId(cells_id,block.uids);
+
+  info(4) << "Adding " << cells_id.size() << " cells from block index=" << block.index
+          << " to group '" << cell_group.name() << "'";
+  cell_group.addItems(cells_id);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*
+ * $PhysicalNames // same as MSH version 2
+ *    numPhysicalNames(ASCII int)
+ *    dimension(ASCII int) physicalTag(ASCII int) "name"(127 characters max)
+ *    ...
+ * $EndPhysicalNames
+ */
+void MshMeshReader::
+_readPhysicalNames(IosFile& ios_file,MeshInfo& mesh_info)
+{
+  String quote_mark = "\"";
+  Int32 nb_name = ios_file.getInteger();
+  info() << "nb_physical_name=" << nb_name;
+  ios_file.getNextLine();
+  for( Int32 i=0; i<nb_name; ++i ){
+    Int32 dim = ios_file.getInteger();
+    Int32 tag = ios_file.getInteger();
+    String s = ios_file.getNextLine();
+    if (dim<0 || dim>3)
+      ARCANE_FATAL("Invalid value for physical name dimension dim={0}",dim);
+    // Les noms des groupes peuvent commencer par des espaces et contiennent
+    // des guillemets qu'il faut supprimer.
+    s = String::collapseWhiteSpace(s);
+    if (s.startsWith(quote_mark))
+      s = s.substring(1);
+    if (s.endsWith(quote_mark))
+      s = s.substring(0,s.length()-1);
+    mesh_info.physical_name_list.add(dim,tag,s);
+    info(4) << "[PhysicalName] index=" << i << " dim=" << dim << " tag=" << tag << " name='" << s << "'";
+  }
+  StringView s = ios_file.getNextLine();
+  if (s!="$EndPhysicalNames")
+    ARCANE_FATAL("found '{0}' and expected '$EndPhysicalNames'",s);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
+ * \brief Lecture des entités.
+ *
+ * Le format est:
+ *
+ * \verbatim
+ *    $Entities
+ *      numPoints(size_t) numCurves(size_t)
+ *        numSurfaces(size_t) numVolumes(size_t)
+ *      pointTag(int) X(double) Y(double) Z(double)
+ *        numPhysicalTags(size_t) physicalTag(int) ...
+ *      ...
+ *      curveTag(int) minX(double) minY(double) minZ(double)
+ *        maxX(double) maxY(double) maxZ(double)
+ *        numPhysicalTags(size_t) physicalTag(int) ...
+ *        numBoundingPoints(size_t) pointTag(int) ...
+ *      ...
+ *      surfaceTag(int) minX(double) minY(double) minZ(double)
+ *        maxX(double) maxY(double) maxZ(double)
+ *        numPhysicalTags(size_t) physicalTag(int) ...
+ *        numBoundingCurves(size_t) curveTag(int) ...
+ *      ...
+ *      volumeTag(int) minX(double) minY(double) minZ(double)
+ *        maxX(double) maxY(double) maxZ(double)
+ *        numPhysicalTags(size_t) physicalTag(int) ...
+ *        numBoundngSurfaces(size_t) surfaceTag(int) ...
+ *      ...
+ *    $EndEntities
+ * \endverbatim
+ */
+void MshMeshReader::
+_readEntitiesV4(IosFile& ios_file,MeshInfo& mesh_info)
+{
+  Int32 nb_dim_item[4];
+  nb_dim_item[0]= ios_file.getInteger();
+  nb_dim_item[1] = ios_file.getInteger();
+  nb_dim_item[2] = ios_file.getInteger();
+  nb_dim_item[3] = ios_file.getInteger();
+  info(4) << "[Entities] nb_0d=" << nb_dim_item[0] << " nb_1d=" << nb_dim_item[1]
+          << " nb_2d=" << nb_dim_item[2] << " nb_3d=" << nb_dim_item[3];
+  // Après le format, on peut avoir les entités mais cela est optionnel
+  // Si elles sont présentes, on lit le fichier jusqu'à la fin de cette section.
+  StringView next_line = ios_file.getNextLine();
+  for( Int32 i=0; i<nb_dim_item[0]; ++i ){
+    Int32 tag = ios_file.getInteger();
+    Real x = ios_file.getReal();
+    Real y = ios_file.getReal();
+    Real z = ios_file.getReal();
+    Int32 num_physical_tag = ios_file.getInteger();
+    if (num_physical_tag>1)
+      ARCANE_FATAL("NotImplemented numPhysicalTag>1 (n={0})",num_physical_tag);
+    Int32 physical_tag = -1;
+    if (num_physical_tag==1)
+      physical_tag = ios_file.getInteger();
+    info(4) << "[Entities] point tag=" << tag << " x=" << x << " y=" << y << " z=" << z << " phys_tag=" << physical_tag;
+      mesh_info.entities_nodes_list.add(MeshV4EntitiesNodes(tag,physical_tag));
+    next_line = ios_file.getNextLine();
+  }
+
+  for( Int32 dim=1; dim<=3; ++dim ){
+    for( Int32 i=0; i<nb_dim_item[dim]; ++i ){
+      Int32 tag = ios_file.getInteger();
+      Real min_x = ios_file.getReal();
+      Real min_y = ios_file.getReal();
+      Real min_z = ios_file.getReal();
+      Real max_x = ios_file.getReal();
+      Real max_y = ios_file.getReal();
+      Real max_z = ios_file.getReal();
+      Int32 num_physical_tag = ios_file.getInteger();
+      if (num_physical_tag>1)
+        ARCANE_FATAL("NotImplemented numPhysicalTag>1 (n={0})",num_physical_tag);
+      Int32 physical_tag = -1;
+      if (num_physical_tag==1)
+        physical_tag = ios_file.getInteger();
+      Int32 num_bounding_group = ios_file.getInteger();
+      for( Int32 k=0; k<num_bounding_group; ++k ){
+        [[maybe_unused]] Int32 group_tag = ios_file.getInteger();
+      }
+      mesh_info.entities_with_nodes_list[dim-1].add(MeshV4EntitiesWithNodes(dim,tag,physical_tag));
+      info(4) << "[Entities] dim=" << dim << " tag=" << tag
+              << " min_x=" << min_x << " min_y=" << min_y << " min_z=" << min_z
+              << " max_x=" << max_x << " max_y=" << max_y << " max_z=" << max_z
+              << " phys_tag=" << physical_tag;
+      next_line = ios_file.getNextLine();
+    }
+  }
+  StringView s = ios_file.getNextLine();
+  if (s!="$EndEntities")
+    ARCANE_FATAL("found '{0}' and expected '$EndEntities'",s);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  *
  The version 2.0 of the '.msh' file format is Gmsh's new native mesh file format. It is very
@@ -631,10 +987,6 @@ _readMeshFromNewMshFile(IMesh* mesh, IosFile& ios_file)
   const char* func_name = "MshMeshReader::_readMeshFromNewMshFile()";
   info() << "[_readMeshFromNewMshFile] New native mesh file format detected";
   MeshInfo mesh_info;
-  //UniqueArray<Int64> cells_infos;
-  //UniqueArray<Integer> cells_nb_node;
-  //UniqueArray<Int64> cells_connectivity;
-  //UniqueArray<Integer> cells_type;
 #define MSH_BINARY_TYPE 1
 
   Real version = ios_file.getReal();
@@ -665,11 +1017,16 @@ _readMeshFromNewMshFile(IMesh* mesh, IosFile& ios_file)
   // être dans n'importe quel ordre (à part $Nodes qui doit être avant $Elements)
   // Faire un méthode qui gère cela.
 
+  StringView next_line = ios_file.getNextLine();
+  // Noms des groupes
+  if (next_line=="$PhysicalNames"){
+    _readPhysicalNames(ios_file,mesh_info);
+    next_line = ios_file.getNextLine();
+  }
   // Après le format, on peut avoir les entités mais cela est optionnel
   // Si elles sont présentes, on lit le fichier jusqu'à la fin de cette section.
-  StringView next_line = ios_file.getNextLine();
   if (next_line=="$Entities"){
-    do { next_line = ios_file.getNextLine(); } while (next_line != "$EndEntities");
+    _readEntitiesV4(ios_file,mesh_info);
     next_line = ios_file.getNextLine();
   }
   // $Nodes
@@ -716,7 +1073,9 @@ _readMeshFromNewMshFile(IMesh* mesh, IosFile& ios_file)
   IPrimaryMesh* pmesh = mesh->toPrimaryMesh();
   pmesh->setDimension(mesh_dimension);
 
-  return _createMeshFrom(mesh, mesh_info);
+  _allocateCells(mesh, mesh_info);
+  _allocateGroups(mesh, mesh_info);
+  return RTOk;
 }
 
 /*---------------------------------------------------------------------------*/

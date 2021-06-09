@@ -25,11 +25,6 @@ endif()
 # Indique que la bibliothèque des tests a besoin de celle-ci
 target_link_libraries(arcane_tests_lib PUBLIC arcane_cea_tests)
 
-# Nécessaire pour les tests Simd sur les matériaux
-if (ARCANE_USE_CXX14)
-  target_compile_features(arcane_cea_tests PRIVATE cxx_generic_lambdas)
-endif()
-
 arcane_register_library(arcane_cea_tests OPTIONAL)
 
 include(TestDotNet.cmake)

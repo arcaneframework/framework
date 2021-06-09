@@ -101,9 +101,8 @@ if (LIMA_FOUND)
   ARCANE_ADD_TEST(cartesian2D-lima testCartesianMesh2D-2.arc "-m 20")
 endif()
 ARCANE_ADD_TEST_SEQUENTIAL(adiadvection-1 testAdiAdvection-1.arc "-m 20")
-# Pour l'instant on ne teste l'AMR 2D que en séquentiel
-ARCANE_ADD_TEST_SEQUENTIAL(amr-cartesian2D-1 testAMRCartesianMesh2D-1.arc "-m 20")
-ARCANE_ADD_TEST_SEQUENTIAL(amr-checkpoint-cartesian2D-1 testAMRCartesianMesh2D-1.arc -c 3 -m 5)
+arcane_add_test(amr-cartesian2D-1 testAMRCartesianMesh2D-1.arc "-m 20")
+arcane_add_test(amr-checkpoint-cartesian2D-1 testAMRCartesianMesh2D-1.arc -c 3 -m 5)
 
 
 #################################
@@ -180,9 +179,9 @@ if (LIMA_FOUND)
   ARCANE_CEA_COPY_MESH(sphere2.mli)
   ARCANE_CEA_COPY_MESH(sphere_multi_soudure.unf)
   ARCANE_CEA_COPY_MESH(sod_cart_lima.unf)
-  ARCANE_CEA_COPY_MESH(soudures_3.mli)
+  #ARCANE_CEA_COPY_MESH(soudures_3.mli)
   ARCANE_CEA_COPY_MESH_DIRECTORY(sphere_multi_soudure_cut_4)
-  ARCANE_CEA_COPY_MESH_DIRECTORY(soudures_3_cut_4)
+  #ARCANE_CEA_COPY_MESH_DIRECTORY(soudures_3_cut_4)
 endif()
 
 #############
