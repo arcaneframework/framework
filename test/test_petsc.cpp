@@ -21,6 +21,7 @@
 
 #include <arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h>
 
+#include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
 #include <alien/ref/AlienRefSemantic.h>
 
 #include "petscsys.h"
@@ -78,7 +79,8 @@ int test()
 
   Alien::Vector b(size, pm);
 
-  Alien::PETSc::LinearAlgebra algebra;
+  //Alien::PETSc::LinearAlgebra algebra;
+  Alien::SimpleCSRLinearAlgebra algebra;
 
   algebra.mult(A, xe, b);
 
@@ -90,7 +92,7 @@ int test()
   options.numIterationsMax(100);
   options.stopCriteriaValue(1e-10);
   options.preconditioner(Alien::PETSc::OptionTypes::Jacobi);
-  options.solver(Alien::PETSc::OptionTypes::CG);
+  options.solver(Alien::PETSc::OptionTypes::BiCGstab/*CG*/);
   //
   auto solver = Alien::PETSc::LinearSolver(options);
   //auto solver = Alien::PETSc::LinearSolver();

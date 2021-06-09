@@ -135,6 +135,9 @@ namespace Alien::PETSc
       case OptionTypes::BiCG:
         solver_name = "bicg";
         break;
+      case OptionTypes::BiCGstab:
+	solver_name = "bcgs";
+	break;
       default:
         alien_fatal([&] {
           cout() << "Undefined solver option";
