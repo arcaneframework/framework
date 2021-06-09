@@ -27,7 +27,6 @@ Un compilateur supportant le C++17:
 
 Les outils et bibliothèques suivants sont optionnels mais fortement recommandés:
 
-- IntelTBB 2018+
 - MPI (implémentation MPI 3.1 nécessaire)
 
 ### Compilation
@@ -35,19 +34,19 @@ Les outils et bibliothèques suivants sont optionnels mais fortement recommandé
 La compilation de Arccore nécessite d'avoir une version de
  [CMake](https://cmake.org) supérieure à `3.13`. La compilation se
  fait obligatoirement dans un répertoire distinct de celui des
- sources. On note `${SOURCE_DIR}` ce répertoire contenant les sources
+ sources. On note `${SOURCE_DIR}` le répertoire contenant les sources
  et `${BUILD_DIR}` le répertoire de compilation.
 
 ~~~{.sh}
 mkdir ${BUILD_DIR}
 cd ${BUILD_DIR}
-cmake -S ${SOURCE_DIR} -DCMAKE_PREFIX_PATH=${INSTALL_PATH} ...
-cmake --build .
-cmake --build . --target install
+cmake -S ${SOURCE_DIR} -DCMAKE_INSTALL_PREFIX=${INSTALL_PATH} ...
+cmake --build ${BUILD_DIR}
+cmake --build ${BUILD_DIR} --target install
 ~~~
 
-Par défaut, l'installation se fait dans /usr/local si l'option `CMAKE_PREFIX_PATH` n'est
-pas spécifié.
+Par défaut, l'installation se fait dans `/usr/local` si l'option `CMAKE_INSTALL_PREFIX` n'est
+pas spécifiée.
 
 Il est possible de positioner la variable CMake `ARCCORE_BUILD_MODE`
 avec l'une des valeurs suivantes:
