@@ -31,6 +31,7 @@ struct OptionTypes
     CG,
     GMRES,
     BiCG,
+    BiCGstab
   };
 
   enum ePreconditioner
@@ -93,6 +94,8 @@ class OptionsUtils
        return OptionTypes::GMRES;
      else if (solver_s.compare("bicg") == 0)
        return OptionTypes::BiCG;
+     else if (solver_s.compare("bicgstab") == 0)
+       return OptionTypes::BiCGstab;
      else
        throw Arccore::FatalErrorException(
            A_FUNCINFO,
@@ -110,6 +113,8 @@ class OptionsUtils
       return "gmres";
     case OptionTypes::BiCG:
       return "bicg";
+    case OptionTypes::BiCGstab:
+      return "bcgs";
     default:
       throw Arccore::FatalErrorException(A_FUNCINFO, Arccore::String::format("Unmanaged PetscOptionTypes::eSolver value: {0}", solver));
     }
