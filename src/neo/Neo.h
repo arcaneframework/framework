@@ -709,7 +709,7 @@ private :
 
 class FamilyMap {
 public:
-  Family& operator()(ItemKind const & ik,std::string const& name) const
+  Family& operator()(ItemKind const & ik,std::string const& name) const noexcept (ndebug)
   {
     auto found_family = m_families.find(std::make_pair(ik,name));
     assert(("Cannot find Family ",found_family!= m_families.end()));
@@ -936,7 +936,7 @@ public:
     return m_families.push_back(ik, name);
   }
 
-  Family& getFamily(ItemKind ik, std::string const& name) const { return m_families.operator()(ik,name);}
+  Family& getFamily(ItemKind ik, std::string const& name) const noexcept(ndebug) { return m_families.operator()(ik,name);}
 
   [[nodiscard]] int nbItems(ItemKind ik) const {
     return std::accumulate(m_families.begin(),m_families.end(),0,
