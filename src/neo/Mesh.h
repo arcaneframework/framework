@@ -75,30 +75,59 @@ public:
    */
   [[nodiscard]] std::string const& name() const noexcept ;
 
+  /*!
+   * @brief mesh dimension
+   * @return the dimension of the mesh {1,2,3}
+   */
   [[nodiscard]] int dimension() const noexcept {
     return m_mesh_graph->m_dimension;
   }
 
+  /*!
+   * @brief mesh node number
+   * @return number of nodes in the mesh
+   */
   [[nodiscard]] int nbNodes() const noexcept {
     return m_mesh_graph->nbItems(Neo::ItemKind::IK_Node);
   }
 
+  /*!
+   * @brief mesh edge number
+   * @return number of edges in the mesh
+   */
   [[nodiscard]] int nbEdges() const noexcept {
     return m_mesh_graph->nbItems(Neo::ItemKind::IK_Edge);
   }
 
+  /*!
+   * @brief mesh face number
+   * @return number of faces in the mesh
+   */
   [[nodiscard]] int nbFaces() const noexcept {
     return m_mesh_graph->nbItems(Neo::ItemKind::IK_Face);
   }
 
+  /*!
+   * @brief mesh cell number
+   * @return number of cells in the mesh
+   */
   [[nodiscard]] int nbCells() const noexcept {
     return m_mesh_graph->nbItems(Neo::ItemKind::IK_Cell);
   }
 
+  /*!
+   * @brief mesh dof number
+   * @return number of dofs in the mesh
+   */
   [[nodiscard]] int nbDoFs() const noexcept {
     return m_mesh_graph->nbItems(Neo::ItemKind::IK_Dof);
   }
 
+  /*!
+   * @brief mesh item with item kind ik number
+   * @param ik : kind of the researched item
+   * @return number of item with item kind \p ik in the mesh
+   */
   [[nodiscard]] int nbItems(Neo::ItemKind ik) const noexcept {
     return m_mesh_graph->nbItems(ik);
   }
