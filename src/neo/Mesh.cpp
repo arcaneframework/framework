@@ -26,6 +26,13 @@ std::string const& Neo::Mesh::name() const noexcept {
 
 /*-----------------------------------------------------------------------------*/
 
+Neo::Family const& Neo::Mesh::findFamily(Neo::ItemKind family_kind,
+                                         std::string const& family_name) const noexcept(ndebug) {
+  return m_mesh_graph->getFamily(family_kind,family_name);
+}
+
+/*-----------------------------------------------------------------------------*/
+
 std::string Neo::Mesh::uniqueIdPropertyName(const std::string& family_name) const noexcept
 {
   return family_name+"_uids";

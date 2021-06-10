@@ -131,7 +131,22 @@ public:
   [[nodiscard]] int nbItems(Neo::ItemKind ik) const noexcept {
     return m_mesh_graph->nbItems(ik);
   }
-  [[nodiscard]] std::string uniqueIdPropertyName(const std::string& family_name) const noexcept ;
+
+  /*!
+   * @brief unique id property name for a given family \p family_name
+   * @param family_name
+   * @return the name of the unique id property for a family with name \p family_name whatever its kind.
+   */
+  [[nodiscard]] std::string uniqueIdPropertyName(std::string const& family_name) const noexcept ;
+
+  /*!
+   * @brief find an existing family given its name \p family_name and kind \p family_kind
+   * If the family does not exist
+   * @param family_name
+   * @param family_kind
+   * @return
+   */
+  Family const& findFamily(Neo::ItemKind family_kind, std::string const& family_name) const noexcept(ndebug);
 
   /*!
    * @brief Add a family of kind \p item_kind and of name \p family_name

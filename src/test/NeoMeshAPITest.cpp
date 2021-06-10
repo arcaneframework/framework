@@ -134,6 +134,21 @@ TEST(NeoMeshApiTest,MeshApiInfoTest)
   EXPECT_EQ(mesh.nbNodes(),4);
   EXPECT_EQ(mesh.nbDoFs(),2);
   EXPECT_EQ(mesh.dimension(),3);
+  auto &found_cell_family =
+      mesh.findFamily(Neo::ItemKind::IK_Cell, "cell_family");
+  EXPECT_EQ(&cell_family,&found_cell_family);
+  auto &found_face_family =
+      mesh.findFamily(Neo::ItemKind::IK_Face, "face_family");
+  EXPECT_EQ(&face_family,&found_face_family);
+  auto &found_edge_family =
+      mesh.findFamily(Neo::ItemKind::IK_Edge, "edge_family");
+  EXPECT_EQ(&edge_family,&found_edge_family);
+  auto &found_node_family =
+      mesh.findFamily(Neo::ItemKind::IK_Node, "node_family");
+  EXPECT_EQ(&node_family,&found_node_family);
+  auto &found_dof_family =
+      mesh.findFamily(Neo::ItemKind::IK_Dof, "dof_family");
+  EXPECT_EQ(&dof_family,&found_dof_family);
 }
 
 TEST(NeoMeshApiTest,SetNodeCoordsTest)
