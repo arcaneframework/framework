@@ -26,7 +26,7 @@ std::string const& Neo::Mesh::name() const noexcept {
 
 /*-----------------------------------------------------------------------------*/
 
-Neo::Family const& Neo::Mesh::findFamily(Neo::ItemKind family_kind,
+Neo::Family& Neo::Mesh::findFamily(Neo::ItemKind family_kind,
                                          std::string const& family_name) const noexcept(ndebug) {
   return m_mesh_graph->getFamily(family_kind,family_name);
 }

@@ -146,7 +146,7 @@ public:
    * @param family_kind
    * @return
    */
-  Family const& findFamily(Neo::ItemKind family_kind, std::string const& family_name) const noexcept(ndebug);
+  Family& findFamily(Neo::ItemKind family_kind, std::string const& family_name) const noexcept(ndebug);
 
   /*!
    * @brief Add a family of kind \p item_kind and of name \p family_name
@@ -165,7 +165,7 @@ public:
    */
   void scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> uids, Neo::FutureItemRange & future_added_item_range) noexcept ;
 
-    /*!
+  /*!
    * @brief Ask for a fixed-size connectivity add between \p source_family and \p target_family. Source items are scheduled but not created.
    * @param source_family The family of source items.
    * @param source_items Items to be connected. Use of a FutureItemRange means these items come from a the AddItems operation not yet applied.
