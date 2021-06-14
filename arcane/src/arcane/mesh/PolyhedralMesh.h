@@ -47,6 +47,7 @@ class ISubDomain;
 namespace Arcane::mesh {
 
 class PolyhedralMeshImpl;
+class PolyhedralFamily;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -73,8 +74,8 @@ class PolyhedralMesh : public EmptyMesh {
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 
  private:
-  std::vector<std::unique_ptr<IItemFamily>> m_arcane_families;
-  std::array<IItemFamily*,NB_ITEM_KIND> m_default_arcane_families;
+  std::vector<std::unique_ptr<PolyhedralFamily>> m_arcane_families;
+  std::array<PolyhedralFamily*,NB_ITEM_KIND> m_default_arcane_families;
 
   // IMeshBase interface
  public:
@@ -126,10 +127,10 @@ class PolyhedralMesh : public EmptyMesh {
 
   const MeshPartInfo& meshPartInfo() const { return m_part_info; };
 
-  IItemFamily* nodeFamily() { return m_default_arcane_families[IK_Node]; }
-  IItemFamily* edgeFamily() { return m_default_arcane_families[IK_Edge]; }
-  IItemFamily* faceFamily() { return m_default_arcane_families[IK_Face];}
-  IItemFamily* cellFamily() { return m_default_arcane_families[IK_Cell];}
+  IItemFamily* nodeFamily();
+  IItemFamily* edgeFamily();
+  IItemFamily* faceFamily();
+  IItemFamily* cellFamily();
 
 #endif // ARCANE_HAS_CUSTOM_MESH_TOOLS
 

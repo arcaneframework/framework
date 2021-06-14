@@ -15,6 +15,7 @@
 
 #include "arcane/ISubDomain.h"
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/mesh/ItemFamily.h"
 #include "arcane/utils/FatalErrorException.h"
 
 /*---------------------------------------------------------------------------*/
@@ -27,6 +28,39 @@ _errorEmptyMesh() const {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+namespace Arcane {
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace mesh {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class PolyhedralFamily : public ItemFamily{
+  IMesh* m_mesh;
+ public:
+  PolyhedralFamily(IMesh* mesh, eItemKind ik, String name)
+  : m_mesh(mesh)
+  , ItemFamily(mesh,ik,name){}
+
+ public:
+  void addItems(Int64ConstArrayView uids, Int32ArrayView items) {
+    m_mesh->traceMng()->info() << " PolyhedralFamily::ADDITEMS " ;
+  }
+};
+
+} // namespace mesh
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+
 
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 
@@ -115,11 +149,25 @@ namespace mesh
       m_mesh.addFamily(itemKindArcaneToNeo(ik),name.localstr());
     }
 
-    void scheduleAddItems(String const& family_name, eItemKind family_kind,
-                          Int64ConstArrayView uids, ItemLocalIds& item_local_ids) noexcept(ndebug) {
+    void scheduleAddItems(PolyhedralFamily* arcane_item_family,
+                          Int64ConstArrayView uids,
+                          ItemLocalIds& item_local_ids) noexcept(ndebug) {
       auto& added_items = item_local_ids.m_future_items;
-      auto& item_family = m_mesh.findFamily(itemKindArcaneToNeo(family_kind), family_name.localstr());
+      auto& item_family = m_mesh.findFamily(itemKindArcaneToNeo(arcane_item_family->itemKind()),
+                                            arcane_item_family->name().localstr());
       m_mesh.scheduleAddItems(item_family, std::vector<Int64>{uids.begin(), uids.end()}, added_items);
+      // add arcane items
+      auto & mesh_graph = m_mesh.internalMeshGraph();
+      String arcane_item_lids_property_name {"Arcane_Item_Lids"};
+      item_family.addProperty<Neo::utils::Int32>(arcane_item_lids_property_name.localstr());
+      mesh_graph.addAlgorithm(Neo::InProperty{item_family,item_family.lidPropName()},
+                              Neo::OutProperty{item_family,arcane_item_lids_property_name.localstr()},
+                              [arcane_item_family,uids]
+                              (Neo::ItemLidsProperty const& lids_property,
+                               Neo::PropertyT<Neo::utils::Int32> & arcane_item_lids){
+                                Int32UniqueArray arcane_items(uids.size());
+                                arcane_item_family->addItems(uids,arcane_items);
+                              });
     }
 
     void applyScheduledOperations() noexcept {
@@ -292,7 +340,7 @@ IItemFamily* mesh::PolyhedralMesh::
 createItemFamily(eItemKind ik, const String& name)
 {
   m_mesh->addFamily(ik, name);
-  m_arcane_families.push_back(std::make_unique<ItemFamily>(this,ik, name));
+  m_arcane_families.push_back(std::make_unique<PolyhedralFamily>(this,ik, name));
   auto current_family = m_arcane_families.back().get();
   if (m_default_arcane_families[ik] == nullptr) m_default_arcane_families[ik] = current_family;
   return current_family;
@@ -304,14 +352,52 @@ createItemFamily(eItemKind ik, const String& name)
 void mesh::PolyhedralMesh::
 _createUnitMesh()
 {
-  auto cell_family = createItemFamily(IK_Cell, "CellFamily");
-  auto node_family = createItemFamily(IK_Node, "NodeFamily");
+  createItemFamily(IK_Cell, "CellFamily");
+  createItemFamily(IK_Node, "NodeFamily");
+  auto cell_family = m_default_arcane_families[IK_Cell];
+  auto node_family = m_default_arcane_families[IK_Node];
   Int64UniqueArray cell_uids{0},node_uids{ 0, 1, 2, 3, 4, 5 };
   // todo add a cell_lids struct (containing future)
   PolyhedralMeshImpl::ItemLocalIds cell_lids,node_lids;
-  m_mesh->scheduleAddItems(cell_family->name(), cell_family->itemKind(), cell_uids, cell_lids);
-  m_mesh->scheduleAddItems(node_family->name(), node_family->itemKind(), node_uids, node_lids);
+  m_mesh->scheduleAddItems(cell_family, cell_uids, cell_lids);
+  m_mesh->scheduleAddItems(node_family, node_uids, node_lids);
   m_mesh->applyScheduledOperations();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IItemFamily* mesh::PolyhedralMesh::
+nodeFamily()
+{
+  return m_default_arcane_families[IK_Node];
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IItemFamily* mesh::PolyhedralMesh::
+edgeFamily()
+{
+  return m_default_arcane_families[IK_Edge];
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IItemFamily* mesh::PolyhedralMesh::
+faceFamily()
+{
+  return m_default_arcane_families[IK_Face];
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IItemFamily* mesh::PolyhedralMesh::
+cellFamily()
+{
+  return m_default_arcane_families[IK_Cell];
 }
 
 } // End namespace Arcane
