@@ -322,6 +322,12 @@ public:
    */
   std::vector<Neo::utils::Int32> localIds(Family const &item_family,const std::vector<Neo::utils::Int64> &item_uids) const noexcept ;
 
+  /*!
+   * Access to internal structure, for advanced use
+   * @return Reference toward internal structure
+   */
+  Neo::MeshBase& internalMeshGraph() noexcept { return *m_mesh_graph;}
+
 private:
 
   [[nodiscard]] std::string _itemCoordPropertyName(Family const& item_family) const {return item_family.name()+"_item_coordinates";}
