@@ -80,7 +80,14 @@ namespace mesh
       return Neo::ItemKind::IK_Node;
     }
 
-    public:
+   public:
+    class ItemLocalIds {
+      Neo::FutureItemRange m_future_items;
+     public :
+      friend class PolyhedralMeshImpl;
+    };
+
+   public:
     PolyhedralMeshImpl(ISubDomain* subDomain)
     : m_subdomain(subDomain)
     {}
@@ -108,9 +115,16 @@ namespace mesh
       m_mesh.addFamily(itemKindArcaneToNeo(ik),name.localstr());
     }
 
-    void scheduleAddItems(String const& family_name, eItemKind family_kind, Int64ConstArrayView uids) noexcept {}
+    void scheduleAddItems(String const& family_name, eItemKind family_kind,
+                          Int64ConstArrayView uids, ItemLocalIds& item_local_ids) noexcept(ndebug) {
+      auto& added_items = item_local_ids.m_future_items;
+      auto& item_family = m_mesh.findFamily(itemKindArcaneToNeo(family_kind), family_name.localstr());
+      m_mesh.scheduleAddItems(item_family, std::vector<Int64>{uids.begin(), uids.end()}, added_items);
+    }
 
-    void applyScheduledOperations() noexcept {}
+    void applyScheduledOperations() noexcept {
+      m_mesh.applyScheduledOperations();
+    }
 
    private:
     void _createSingleCellTest()
@@ -293,8 +307,10 @@ _createUnitMesh()
   auto cell_family = createItemFamily(IK_Cell, "CellFamily");
   auto node_family = createItemFamily(IK_Node, "NodeFamily");
   Int64UniqueArray cell_uids{0},node_uids{ 0, 1, 2, 3, 4, 5 };
-  m_mesh->scheduleAddItems(cell_family->name(), cell_family->itemKind(), cell_uids);
-  m_mesh->scheduleAddItems(node_family->name(), node_family->itemKind(), node_uids);
+  // todo add a cell_lids struct (containing future)
+  PolyhedralMeshImpl::ItemLocalIds cell_lids,node_lids;
+  m_mesh->scheduleAddItems(cell_family->name(), cell_family->itemKind(), cell_uids, cell_lids);
+  m_mesh->scheduleAddItems(node_family->name(), node_family->itemKind(), node_uids, node_lids);
   m_mesh->applyScheduledOperations();
 }
 
