@@ -75,7 +75,7 @@ SubMatrix::extractRange(const IMatrix& matrix, const ExtractionIndices& indices)
   Space subMatrixColSpace(colRange);
   MatrixDistribution subMatrixDistribution(
   rowRange, subMatrixLocalSize, rowRange, parallel_mng);
-  MatrixData subMatrix(subMatrixRowSpace, subMatrixColSpace, subMatrixDistribution);
+  MatrixData subMatrix(subMatrixDistribution);
   DirectMatrixBuilder builder(std::move(subMatrix), DirectMatrixOptions::eResetValues,
                               DirectMatrixOptions::eUnSymmetric);
   const Integer nnzMatrix = matrix_impl->internal().getValues().size();
