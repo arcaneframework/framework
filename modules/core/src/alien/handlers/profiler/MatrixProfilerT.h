@@ -147,7 +147,7 @@ namespace Common
     Integer offset = 0;
     for (Integer i = 0; i < m_local_size; ++i) {
       row_offsets[i] = offset;
-      offset += m_def_matrix[i].size();
+      offset += static_cast<Integer>(m_def_matrix[i].size());
     }
     row_offsets[m_local_size] = offset;
 

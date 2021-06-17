@@ -61,7 +61,7 @@ class MatrixElementT
    * \brief accessor operator
    * \return value
    */
-  const Arccore::Real operator()() const { return m_parent.getData(m_iIndex, m_jIndex); }
+  Arccore::Real operator()() const { return m_parent.getData(m_iIndex, m_jIndex); }
 
   /*!
    * \brief Add and set operator
