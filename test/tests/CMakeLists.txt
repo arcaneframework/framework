@@ -17,6 +17,11 @@
 add_subdirectory(framework)
 add_subdirectory(unit)
 
+if (ALIEN_COMPONENT_MoveSemantic)
+    add_subdirectory(move_api)
+endif ()
+
 if (ALIEN_COMPONENT_RefSemantic)
     add_subdirectory(ref_api)
 endif ()
+
