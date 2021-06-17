@@ -54,9 +54,8 @@ VectorData::VectorData(Integer size, const VectorDistribution& dist)
 /*---------------------------------------------------------------------------*/
 
 VectorData::VectorData(const VectorDistribution& dist)
-            : m_impl(new MultiVectorImpl(dist.space().clone(), dist.clone()))
-    {}
-
+: m_impl(new MultiVectorImpl(dist.space().clone(), dist.clone()))
+{}
 
 /*---------------------------------------------------------------------------*/
 

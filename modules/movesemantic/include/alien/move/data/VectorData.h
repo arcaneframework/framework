@@ -65,8 +65,7 @@ class ALIEN_MOVESEMANTIC_EXPORT VectorData : public IVector
    *
    * \see VectorData::VectorData(const VectorDistribution&).
    * */
-   [[deprecated]]
-  VectorData(const ISpace& space, const VectorDistribution& dist);
+  [[deprecated]] VectorData(const ISpace& space, const VectorDistribution& dist);
 
   /*! Build a new Vector from a size.
    *
@@ -78,10 +77,9 @@ class ALIEN_MOVESEMANTIC_EXPORT VectorData : public IVector
    *
    * \see VectorData::VectorData(const VectorDistribution&).
    */
-  [[deprecated]]
-  VectorData(Integer size, const VectorDistribution& dist);
+  [[deprecated]] VectorData(Integer size, const VectorDistribution& dist);
 
-    /*! Build a new Vector from a Space
+  /*! Build a new Vector from a Space
      *
      * \param space Definition Space of the Vector.
      * \param dist Parallel distribution.

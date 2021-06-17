@@ -25,59 +25,64 @@
 #include <Environment.h>
 
 // Tests the default c'tor.
-TEST(TestVector, DefaultConstructor) {
-    const Alien::VectorData v;
-    ASSERT_EQ(0, v.space().size());
+TEST(TestVector, DefaultConstructor)
+{
+  const Alien::VectorData v;
+  ASSERT_EQ(0, v.space().size());
 }
 
 // Tests the space c'tor.
-TEST(TestVector, SpaceConstructor) {
-    const Alien::Space s(10, "MySpace");
-    const Alien::VectorDistribution d(s, AlienTest::Environment::parallelMng());
-    const Alien::VectorData v(d);
-    ASSERT_TRUE(s == v.space());
-    ASSERT_EQ(10, v.space().size());
-    ASSERT_EQ("MySpace", v.space().name());
+TEST(TestVector, SpaceConstructor)
+{
+  const Alien::Space s(10, "MySpace");
+  const Alien::VectorDistribution d(s, AlienTest::Environment::parallelMng());
+  const Alien::VectorData v(d);
+  ASSERT_TRUE(s == v.space());
+  ASSERT_EQ(10, v.space().size());
+  ASSERT_EQ("MySpace", v.space().name());
 }
 
 // Tests the anonymous c'tor.
-TEST(TestVector, AnonymousConstructor) {
-    const Alien::VectorDistribution d(10, AlienTest::Environment::parallelMng());
-    const Alien::VectorData v(d);
-    ASSERT_TRUE(Alien::Space(10) == v.space());
-    ASSERT_EQ(10, v.space().size());
+TEST(TestVector, AnonymousConstructor)
+{
+  const Alien::VectorDistribution d(10, AlienTest::Environment::parallelMng());
+  const Alien::VectorData v(d);
+  ASSERT_TRUE(Alien::Space(10) == v.space());
+  ASSERT_EQ(10, v.space().size());
 }
 
 // Tests the rvalue c'tor.
-TEST(TestVector, RValueConstructor) {
-    const Alien::VectorDistribution d(10, AlienTest::Environment::parallelMng());
-    const Alien::VectorData v(std::move(Alien::VectorData(d)));
-    ASSERT_TRUE(Alien::Space(10) == v.space());
-    ASSERT_EQ(10, v.space().size());
+TEST(TestVector, RValueConstructor)
+{
+  const Alien::VectorDistribution d(10, AlienTest::Environment::parallelMng());
+  const Alien::VectorData v(std::move(Alien::VectorData(d)));
+  ASSERT_TRUE(Alien::Space(10) == v.space());
+  ASSERT_EQ(10, v.space().size());
 }
 
 // Tests replacement
-TEST(TestVector, Replacement) {
-    const Alien::VectorDistribution d10(10, AlienTest::Environment::parallelMng());
-    auto v = Alien::VectorData(d10);
-    ASSERT_TRUE(Alien::Space(10) == v.space());
-    ASSERT_EQ(10, v.space().size());
-    const Alien::VectorDistribution d5(5, AlienTest::Environment::parallelMng());
-    v = Alien::VectorData(d5);
-    ASSERT_TRUE(Alien::Space(5) == v.space());
-    ASSERT_EQ(5, v.space().size());
+TEST(TestVector, Replacement)
+{
+  const Alien::VectorDistribution d10(10, AlienTest::Environment::parallelMng());
+  auto v = Alien::VectorData(d10);
+  ASSERT_TRUE(Alien::Space(10) == v.space());
+  ASSERT_EQ(10, v.space().size());
+  const Alien::VectorDistribution d5(5, AlienTest::Environment::parallelMng());
+  v = Alien::VectorData(d5);
+  ASSERT_TRUE(Alien::Space(5) == v.space());
+  ASSERT_EQ(5, v.space().size());
 }
 
 // Tests replacement
-TEST(TestVector, RValueAffectation) {
-    const Alien::VectorDistribution d10(10, AlienTest::Environment::parallelMng());
-    auto v = Alien::VectorData(d10);
-    ASSERT_TRUE(Alien::Space(10) == v.space());
-    ASSERT_EQ(10, v.space().size());
-    const Alien::VectorDistribution d5(5, AlienTest::Environment::parallelMng());
-    auto v2 = Alien::VectorData(d5);
-    v = std::move(v2);
-    ASSERT_TRUE(Alien::Space(5) == v.space());
-    ASSERT_EQ(5, v.space().size());
-
+TEST(TestVector, RValueAffectation)
+{
+  const Alien::VectorDistribution d10(10, AlienTest::Environment::parallelMng());
+  auto v = Alien::VectorData(d10);
+  ASSERT_TRUE(Alien::Space(10) == v.space());
+  ASSERT_EQ(10, v.space().size());
+  const Alien::VectorDistribution d5(5, AlienTest::Environment::parallelMng());
+  auto v2 = Alien::VectorData(d5);
+  v = std::move(v2);
+  ASSERT_TRUE(Alien::Space(5) == v.space());
+  ASSERT_EQ(5, v.space().size());
 }
