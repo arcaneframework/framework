@@ -483,13 +483,21 @@ MatrixDistribution::rowSpace() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+const VectorDistribution&
+MatrixDistribution::colDistribution() const
+{
+  if (m_internal->m_col_distribution.get())
+    return *(m_internal->m_col_distribution);
+  return *(m_internal->m_row_distribution);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 const ISpace&
 MatrixDistribution::colSpace() const
 {
-  if (m_internal->m_col_distribution.get())
-    return m_internal->m_col_distribution->space();
-  else
-    return m_internal->m_row_distribution->space();
+  return colDistribution().space();
 }
 
 /*---------------------------------------------------------------------------*/
