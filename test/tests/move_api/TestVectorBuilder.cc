@@ -23,46 +23,49 @@
 #include <alien/move/handlers/scalar/VectorWriter.h>
 
 #include <Environment.h>
-//
-//TEST(TestVectorBuilder, ReleaseTest)
-//{
-//  Alien::VectorData v(3, AlienTest::Environment::parallelMng());
-//  {
-//    Alien::VectorWriter writer(std::move(v));
-//    v = writer.release();
-//  }
-//  ASSERT_EQ(3, v.space().size());
-//}
-//
-//TEST(TestVectorBuilder, WriterTest)
-//{
-//  Alien::VectorData v(3, AlienTest::Environment::parallelMng());
-//  {
-//    Alien::VectorWriter writer(std::move(v));
-//    writer[0] = 0.;
-//    writer[1] = 1.;
-//    writer[2] = 2.;
-//    v = writer.release();
-//  }
-//  ASSERT_EQ(3, v.space().size());
-//}
-//
-//TEST(TestVectorBuilder, ReaderWriterTest)
-//{
-//  Alien::VectorData v(3, AlienTest::Environment::parallelMng());
-//  {
-//    Alien::VectorWriter writer(std::move(v));
-//    writer[0] = 0.;
-//    writer[1] = 1.;
-//    writer[2] = 2.;
-//    v = writer.release();
-//  }
-//  ASSERT_EQ(3, v.space().size());
-//  {
-//    Alien::LocalVectorReader reader(v);
-//    ASSERT_EQ(0., reader[0]);
-//    ASSERT_EQ(1., reader[1]);
-//    ASSERT_EQ(2., reader[2]);
-//    ASSERT_EQ(3, reader.size());
-//  }
-//}
+
+TEST(TestVectorBuilder, ReleaseTest)
+{
+  auto d = Alien::VectorDistribution(3, AlienTest::Environment::parallelMng());
+  Alien::VectorData v(d);
+  {
+    Alien::VectorWriter writer(std::move(v));
+    v = writer.release();
+  }
+  ASSERT_EQ(3, v.space().size());
+}
+
+TEST(TestVectorBuilder, WriterTest)
+{
+  auto d = Alien::VectorDistribution(3, AlienTest::Environment::parallelMng());
+  Alien::VectorData v(d);
+  {
+    Alien::VectorWriter writer(std::move(v));
+    writer[0] = 0.;
+    writer[1] = 1.;
+    writer[2] = 2.;
+    v = writer.release();
+  }
+  ASSERT_EQ(3, v.space().size());
+}
+
+TEST(TestVectorBuilder, ReaderWriterTest)
+{
+  auto d = Alien::VectorDistribution(3, AlienTest::Environment::parallelMng());
+  Alien::VectorData v(d);
+  {
+    Alien::VectorWriter writer(std::move(v));
+    writer[0] = 0.;
+    writer[1] = 1.;
+    writer[2] = 2.;
+    v = writer.release();
+  }
+  ASSERT_EQ(3, v.space().size());
+  {
+    Alien::LocalVectorReader reader(v);
+    ASSERT_EQ(0., reader[0]);
+    ASSERT_EQ(1., reader[1]);
+    ASSERT_EQ(2., reader[2]);
+    ASSERT_EQ(3, reader.size());
+  }
+}
