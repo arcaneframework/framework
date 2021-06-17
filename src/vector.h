@@ -22,34 +22,32 @@
 
 #include <petscvec.h>
 
-namespace Alien::PETSc
-{
+namespace Alien::PETSc {
 
-class Vector : public IVectorImpl
-{
- public:
-   explicit Vector(const MultiVectorImpl *multi_impl);
+    class Vector : public IVectorImpl {
+    public:
+        explicit Vector(const MultiVectorImpl *multi_impl);
 
-   ~Vector() override;
+        ~Vector() override;
 
- public:
-  void setProfile(int ilower, int iupper);
+    public:
+        void setProfile(int ilower, int iupper);
 
-  void setValues(Arccore::ConstArrayView<double> values);
+        void setValues(Arccore::ConstArrayView<double> values);
 
-  void getValues(Arccore::ArrayView<double> values) const;
+        void getValues(Arccore::ArrayView<double> values) const;
 
-  void assemble();
+        void assemble();
 
-  Vec internal() { return m_vec; }
+        Vec internal() { return m_vec; }
 
-  Vec internal() const { return m_vec; }
+        Vec internal() const { return m_vec; }
 
- private:
-  Vec m_vec;
-  MPI_Comm m_comm;
+    private:
+        Vec m_vec;
+        MPI_Comm m_comm;
 
-  Arccore::UniqueArray<Arccore::Integer> m_rows;
-};
+        Arccore::UniqueArray<Arccore::Integer> m_rows;
+    };
 
 } // namespace Alien::PETSc

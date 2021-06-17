@@ -22,30 +22,28 @@
 
 #include <petscmat.h>
 
-namespace Alien::PETSc
-{
-class Matrix : public IMatrixImpl
-{
- public:
-   explicit Matrix(const MultiMatrixImpl *multi_impl);
+namespace Alien::PETSc {
+    class Matrix : public IMatrixImpl {
+    public:
+        explicit Matrix(const MultiMatrixImpl *multi_impl);
 
-   ~Matrix() override;
+        ~Matrix() override;
 
- public:
-   void setProfile(int ilower, int iupper, int jlower, int jupper,
-                   [[maybe_unused]] Arccore::ConstArrayView<int> row_sizes);
+    public:
+        void setProfile(int ilower, int iupper, int jlower, int jupper,
+                        [[maybe_unused]] Arccore::ConstArrayView<int> row_sizes);
 
-   void setRowValues(int rows,
-                    Arccore::ConstArrayView<int> cols,
-                    Arccore::ConstArrayView<double> values);
+        void setRowValues(int rows,
+                          Arccore::ConstArrayView<int> cols,
+                          Arccore::ConstArrayView<double> values);
 
-  void assemble();
+        void assemble();
 
-  Mat internal() const { return m_mat; }
+        Mat internal() const { return m_mat; }
 
- private:
-   Mat m_mat;
-   MPI_Comm m_comm{};
-};
+    private:
+        Mat m_mat;
+        MPI_Comm m_comm{};
+    };
 
 } // namespace Alien::PETSc
