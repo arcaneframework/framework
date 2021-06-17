@@ -67,29 +67,29 @@ class ALIEN_HYPRE_EXPORT InternalLinearAlgebra
 
  public:
   // IInternalLinearAlgebra interface.
-  Arccore::Real norm0(const Vector& x) const;
+  Arccore::Real norm0(const Vector& x) const override;
 
-  Arccore::Real norm1(const Vector& x) const;
+  Arccore::Real norm1(const Vector& x) const override;
 
-  Arccore::Real norm2(const Vector& x) const;
+  Arccore::Real norm2(const Vector& x) const override;
 
-  void mult(const Matrix& a, const Vector& x, Vector& r) const;
+  void mult(const Matrix& a, const Vector& x, Vector& r) const override;
 
-  void axpy(const Arccore::Real& alpha, const Vector& x, Vector& r) const;
+  void axpy(Arccore::Real alpha, const Vector& x, Vector& r) const override;
 
-  void aypx(const Arccore::Real& alpha, Vector& y, const Vector& x) const;
+  void aypx(Arccore::Real alpha, Vector& y, const Vector& x) const override;
 
-  void copy(const Vector& x, Vector& r) const;
+  void copy(const Vector& x, Vector& r) const override;
 
-  Arccore::Real dot(const Vector& x, const Vector& y) const;
+  Arccore::Real dot(const Vector& x, const Vector& y) const override;
 
-  void scal(const Arccore::Real& alpha, Vector& x) const;
+  void scal(Arccore::Real alpha, Vector& x) const override;
 
-  void diagonal(const Matrix& a, Vector& x) const;
+  void diagonal(const Matrix& a, Vector& x) const override;
 
-  void reciprocal(Vector& x) const;
+  void reciprocal(Vector& x) const override;
 
-  void pointwiseMult(const Vector& x, const Vector& y, Vector& w) const;
+  void pointwiseMult(const Vector& x, const Vector& y, Vector& w) const override;
 };
 
 Arccore::Real
@@ -116,7 +116,7 @@ void InternalLinearAlgebra::mult(const Matrix& ma, const Vector& vx, Vector& vr)
 }
 
 void InternalLinearAlgebra::axpy(
-const Arccore::Real& alpha ALIEN_UNUSED_PARAM, const Vector& vx ALIEN_UNUSED_PARAM, Vector& vr ALIEN_UNUSED_PARAM) const
+Arccore::Real alpha, const Vector& vx, Vector& vr) const
 {
   HYPRE_ParVectorAxpy(alpha, hypre_implem(vx), hypre_implem(vr));
 }
@@ -147,7 +147,7 @@ void InternalLinearAlgebra::reciprocal(Vector& v ALIEN_UNUSED_PARAM) const
 }
 
 void InternalLinearAlgebra::aypx(
-const double& alpha ALIEN_UNUSED_PARAM, Vector& y ALIEN_UNUSED_PARAM, const Vector& x ALIEN_UNUSED_PARAM) const
+Arccore::Real alpha ALIEN_UNUSED_PARAM, Vector& y ALIEN_UNUSED_PARAM, const Vector& x ALIEN_UNUSED_PARAM) const
 {
   throw Arccore::NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::aypx not implemented");
 }
@@ -159,7 +159,7 @@ const Vector& x ALIEN_UNUSED_PARAM, const Vector& y ALIEN_UNUSED_PARAM, Vector& 
   A_FUNCINFO, "HypreLinearAlgebra::pointwiseMult not implemented");
 }
 
-void InternalLinearAlgebra::scal(const Arccore::Real& alpha, Vector& x) const
+void InternalLinearAlgebra::scal(Arccore::Real alpha, Vector& x) const
 {
   HYPRE_ParVectorScale(static_cast<double>(alpha), hypre_implem(x));
 }
