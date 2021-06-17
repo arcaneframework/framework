@@ -61,7 +61,11 @@ class ALIEN_MOVESEMANTIC_EXPORT VectorData : public IVector
    * \param space Definition Space of the Vector.
    * \param dist Parallel distribution.
    *
-   * This vector is directly ready to use. */
+   * This vector is directly ready to use.
+   *
+   * \see VectorData::VectorData(const VectorDistribution&).
+   * */
+   [[deprecated]]
   VectorData(const ISpace& space, const VectorDistribution& dist);
 
   /*! Build a new Vector from a size.
@@ -71,8 +75,19 @@ class ALIEN_MOVESEMANTIC_EXPORT VectorData : public IVector
    * \param dist Parallel distribution.
    *
    * This vector is ready to use on an anonymous Space.
+   *
+   * \see VectorData::VectorData(const VectorDistribution&).
    */
+  [[deprecated]]
   VectorData(Integer size, const VectorDistribution& dist);
+
+    /*! Build a new Vector from a Space
+     *
+     * \param space Definition Space of the Vector.
+     * \param dist Parallel distribution.
+     *
+     * This vector is directly ready to use. */
+  VectorData(const VectorDistribution& dist);
 
   /*! Move constructor for Vector
    *
@@ -100,7 +115,6 @@ class ALIEN_MOVESEMANTIC_EXPORT VectorData : public IVector
    */
   void init(const ISpace& space, const VectorDistribution& dist);
 
- private:
   VectorData(const VectorData&) = delete;
   void operator=(const VectorData&) = delete;
 

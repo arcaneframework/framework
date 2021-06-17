@@ -22,7 +22,8 @@
 #include <alien/core/block/VBlock.h>
 #include <alien/core/impl/MultiVectorImpl.h>
 #include <alien/utils/ICopyOnWriteObject.h>
-#include <cstdlib>
+#include <alien/data/ISpace.h>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -49,6 +50,13 @@ VectorData::VectorData(const ISpace& space, const VectorDistribution& dist)
 VectorData::VectorData(Integer size, const VectorDistribution& dist)
 : m_impl(new MultiVectorImpl(std::make_shared<Space>(size), dist.clone()))
 {}
+
+/*---------------------------------------------------------------------------*/
+
+VectorData::VectorData(const VectorDistribution& dist)
+            : m_impl(new MultiVectorImpl(dist.space().clone(), dist.clone()))
+    {}
+
 
 /*---------------------------------------------------------------------------*/
 
