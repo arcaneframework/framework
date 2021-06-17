@@ -46,9 +46,8 @@ include(${ARCCON_CMAKE_COMMANDS})
 
 find_package(Arccore REQUIRED)
 
-if(NOT TARGET Alien::alien_core)
-  find_package(Alien REQUIRED)
-endif()
+find_package(Alien REQUIRED)
+
 find_package(Hypre REQUIRED)
 find_package(Boost REQUIRED) # For boost::timer.
 
