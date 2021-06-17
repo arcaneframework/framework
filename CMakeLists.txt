@@ -55,17 +55,17 @@ find_package(Boost REQUIRED) # For boost::timer.
 # ----------------------------------------------------------------------------
 
 add_library(alien_petsc
-  include/alien/petsc/backend.h
-  src/matrix.h
-  src/matrix.cpp
-  src/vector.h
-  src/vector.cpp
-  src/petsc_linear_algebra.cpp
-  src/petsc_linear_solver.cpp
-  src/converters/simplecsr_to_petsc_matrix.cpp
-  src/converters/simplecsr_to_petsc_vector.cpp
-  src/converters/petsc_to_simplecsr_vector.cpp
-  )
+        include/alien/petsc/backend.h
+        src/matrix.h
+        src/matrix.cpp
+        src/vector.h
+        src/vector.cpp
+        src/petsc_linear_algebra.cpp
+        src/petsc_linear_solver.cpp
+        src/converters/simplecsr_to_petsc_matrix.cpp
+        src/converters/simplecsr_to_petsc_vector.cpp
+        src/converters/petsc_to_simplecsr_vector.cpp
+        )
 
 target_link_libraries(alien_petsc PUBLIC
         Arccore::arccore_trace
