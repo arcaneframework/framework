@@ -52,17 +52,17 @@ class ALIEN_PETSC_EXPORT InternalLinearAlgebra
 
    void mult(const Matrix &a, const Vector &x, Vector &r) const override;
 
-   void axpy(const Arccore::Real &alpha, const Vector &x,
+   void axpy(Arccore::Real alpha, const Vector &x,
              Vector &r) const override;
 
-   void aypx(const Arccore::Real &alpha, Vector &y,
+   void aypx(Arccore::Real alpha, Vector &y,
              const Vector &x) const override;
 
    void copy(const Vector &x, Vector &r) const override;
 
    Arccore::Real dot(const Vector &x, const Vector &y) const override;
 
-   void scal(const Arccore::Real &alpha, Vector &x) const override;
+   void scal(Arccore::Real alpha, Vector &x) const override;
 
    void diagonal(const Matrix &a, Vector &x) const override;
 
@@ -79,7 +79,7 @@ InternalLinearAlgebra::norm0(const Vector& vx ALIEN_UNUSED_PARAM) const
 }
 
 Arccore::Real
-InternalLinearAlgebra::norm1(const Vector& vx ALIEN_UNUSED_PARAM) const
+InternalLinearAlgebra::norm1(const Vector& vx) const
 {
   PetscScalar norm;
   VecNorm(vx.internal(),NORM_1,&norm);
@@ -100,7 +100,7 @@ void InternalLinearAlgebra::mult(const Matrix& ma, const Vector& vx, Vector& vr)
 }
 
 void InternalLinearAlgebra::axpy(
-const Arccore::Real& alpha ALIEN_UNUSED_PARAM, const Vector& vx ALIEN_UNUSED_PARAM, Vector& vr ALIEN_UNUSED_PARAM) const {
+Arccore::Real alpha, const Vector& vx, Vector& vr) const {
   VecAXPY(vr.internal(), alpha, vx.internal()); //  vr = alpha.vx + vr
 }
 
@@ -128,19 +128,19 @@ void InternalLinearAlgebra::reciprocal(Vector& v ALIEN_UNUSED_PARAM) const
 }
 
 void InternalLinearAlgebra::aypx(
-const double& alpha ALIEN_UNUSED_PARAM, Vector& y ALIEN_UNUSED_PARAM, const Vector& x ALIEN_UNUSED_PARAM) const
+Arccore::Real alpha, Vector& y, const Vector& x) const
 {
   VecAYPX(y.internal(),alpha,x.internal()); // y = x + alpha y
 }
 
 void InternalLinearAlgebra::pointwiseMult(
-const Vector& x ALIEN_UNUSED_PARAM, const Vector& y ALIEN_UNUSED_PARAM, Vector& w ALIEN_UNUSED_PARAM) const {
+const Vector& x, const Vector& y, Vector& w) const {
   VecPointwiseMult(
       w.internal(), x.internal(),
       y.internal()); // Computes the componentwise multiplication w = x*y.
 }
 
-void InternalLinearAlgebra::scal(const Arccore::Real& alpha, Vector& x) const
+void InternalLinearAlgebra::scal(Arccore::Real alpha, Vector& x) const
 {
   VecScale(x.internal(), alpha);
 }
