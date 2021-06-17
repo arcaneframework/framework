@@ -21,6 +21,9 @@
  */
 
 #include <alien/core/impl/MultiMatrixImpl.h>
+#include <alien/data/ISpace.h>
+#include <alien/distribution/MatrixDistribution.h>
+#include <alien/distribution/VectorDistribution.h>
 
 #include <alien/move/data/MatrixData.h>
 #include <alien/utils/ICopyOnWriteObject.h>
@@ -68,6 +71,13 @@ MatrixData::MatrixData(Integer size, const MatrixDistribution& dist)
 MatrixData::MatrixData(Integer row_size, Integer col_size, const MatrixDistribution& dist)
 : m_impl(new MultiMatrixImpl(
   std::make_shared<Space>(row_size), std::make_shared<Space>(col_size), dist.clone()))
+{}
+
+/*---------------------------------------------------------------------------*/
+
+MatrixData::MatrixData(const MatrixDistribution& dist)
+: m_impl(new MultiMatrixImpl(dist.rowDistribution().space().clone(),
+                             dist.colDistribution().space().clone(), dist.clone()))
 {}
 
 /*---------------------------------------------------------------------------*/

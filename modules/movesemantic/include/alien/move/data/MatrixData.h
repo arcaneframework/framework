@@ -65,7 +65,7 @@ class ALIEN_MOVESEMANTIC_EXPORT MatrixData : public IMatrix
    * \param dist Parallel distribution.
    *
    * This matrix is directly ready to use. */
-  MatrixData(const Space& space, const MatrixDistribution& dist);
+  [[deprecated]] MatrixData(const Space& space, const MatrixDistribution& dist);
   /*!  Build a new matrix from two Spaces
    *
    * \param row_space Domain Space of the matrix.
@@ -73,7 +73,7 @@ class ALIEN_MOVESEMANTIC_EXPORT MatrixData : public IMatrix
    * \param dist Parallel distribution.
    *
    * This matrix is directly ready to use. */
-  MatrixData(
+  [[deprecated]] MatrixData(
   const Space& row_space, const Space& col_space, const MatrixDistribution& dist);
 
   /*! Build a new matrix from a size.
@@ -84,7 +84,7 @@ class ALIEN_MOVESEMANTIC_EXPORT MatrixData : public IMatrix
    *
    * This matrix is ready to use on an anonymous Space.
    */
-  MatrixData(Integer size, const MatrixDistribution& dist);
+  [[deprecated]] MatrixData(Integer size, const MatrixDistribution& dist);
   /*! Build a new matrix from two sizes.
    *
    * Matlab-like interface, matrix is defined as a [0, n-1]x[0, m-1] array.
@@ -94,7 +94,14 @@ class ALIEN_MOVESEMANTIC_EXPORT MatrixData : public IMatrix
    *
    * This matrix is ready to use on an anonymous Space.
    */
-  MatrixData(Integer row_size, Integer col_size, const MatrixDistribution& dist);
+  [[deprecated]] MatrixData(Integer row_size, Integer col_size, const MatrixDistribution& dist);
+
+  /*!  Build a new matrix on `MatrixDistribution`
+*
+* \param dist Parallel distribution.
+*
+* This matrix is directly ready to use. */
+  explicit MatrixData(const MatrixDistribution& dist);
 
   /*! Move constructor for Matrix
    *
