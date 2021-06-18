@@ -166,6 +166,18 @@ _internalComputeInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& c
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+bool FaceDirectionMng::
+_hasFace(Cell cell,Int32 face_local_id) const
+{
+  for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface ){
+    if (iface->localId()==face_local_id)
+      return true;
+  }
+  return false;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Calcule des mailles avant et après une face, dans une direction donnée.
  *
@@ -201,8 +213,6 @@ _computeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells
       if (patch_cells_set.find(back_cell.localId())==patch_cells_set.end())
         back_cell = Cell();
 
-    ItemInternal* front_cell_i = front_cell.internal();
-    ItemInternal* back_cell_i = back_cell.internal();
     bool is_inverse = false;
     if (!front_cell.null()){
       Real3 front_coord = cells_center[front_cell];
@@ -234,6 +244,24 @@ _computeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells
           is_inverse = true;
       }
     }
+    // Si la face a deux mailles connectées, regarde le niveau AMR de ces
+    // deux mailles et s'il est différent, ne conserve que la maille
+    // dont le niveau AMR est celui de la face.
+    if (!back_cell.null() && !front_cell.null()){
+      Int32 back_level = back_cell.level();
+      Int32 front_level = front_cell.level();
+      if (back_level!=front_level){
+        // La face n'a pas l'information de son niveau mais si les deux
+        // mailles ne sont pas de même niveau la face n'appartient qu'à une
+        // seule des deux mailles. On ne garde donc que cette dernière.
+        if (!_hasFace(back_cell,face_lid))
+          back_cell = Cell();
+        if (!_hasFace(front_cell,face_lid))
+          front_cell = Cell();
+      }
+    }
+    ItemInternal* front_cell_i = front_cell.internal();
+    ItemInternal* back_cell_i = back_cell.internal();
     ARCANE_CHECK_POINTER(back_cell_i);
     ARCANE_CHECK_POINTER(front_cell_i);
     if (is_inverse)

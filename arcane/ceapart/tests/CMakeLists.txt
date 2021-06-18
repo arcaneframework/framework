@@ -151,7 +151,7 @@ if (SLOOP_FOUND)
 endif ()
 
 # Pas actif pour l'instant car en échec
-# arcane_add_test_sequential(cartesianpatch1 unitCartesianPatch1.arc)
+arcane_add_test_sequential(cartesianpatch1 unitCartesianPatch1.arc)
 
 #####################
 # HyODA Mixed Cells #

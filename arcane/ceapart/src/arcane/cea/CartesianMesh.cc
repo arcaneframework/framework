@@ -506,15 +506,23 @@ _computeMeshDirection(CartesianMeshPatch& cdi,eMeshDirection dir,VariableCellRea
     cells_set.insert(icell.itemLocalId());
   }
 
+  // Calcule les mailles devant/derrière. En cas de patch AMR, il faut que ces deux mailles
+  // soient de même niveau
   ENUMERATE_CELL(icell,all_cells){
     Cell cell = *icell;
+    Int32 my_level = cell.level();
     Face next_face = cell.face(next_local_face);
     Cell next_cell = next_face.backCell()==cell ? next_face.frontCell() : next_face.backCell();
     if (cells_set.find(next_cell.localId())==cells_set.end())
       next_cell = Cell();
+    else if (next_cell.level()!=my_level)
+      next_cell = Cell();
+
     Face prev_face = cell.face(prev_local_face);
     Cell prev_cell = prev_face.backCell()==cell ? prev_face.frontCell() : prev_face.backCell();
     if (cells_set.find(prev_cell.localId())==cells_set.end())
+      prev_cell = Cell();
+    else if (prev_cell.level()!=my_level)
       prev_cell = Cell();
     cell_dm.m_infos[icell.itemLocalId()] = CellDirectionMng::ItemDirectionInfo(next_cell.internal(),prev_cell.internal());
   }

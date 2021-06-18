@@ -192,6 +192,7 @@ class ARCANE_CEA_EXPORT FaceDirectionMng
   void _computeCellInfos(const CellDirectionMng& cell_dm,
                          const VariableCellReal3& cells_center,
                          const VariableFaceReal3& faces_center);
+  bool _hasFace(Cell cell,Int32 face_local_id) const;
 };
 
 /*---------------------------------------------------------------------------*/
