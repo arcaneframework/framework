@@ -106,6 +106,15 @@ class ARCANE_CEA_EXPORT DirCellNode
   Node previousLeft() const { return m_cell.node(m_nodes_indirection[CNP_PreviousLeft]); }
 
   //! Noeud devant à gauche dans la direction
+  NodeLocalId nextLeftId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_NextLeft])); }
+  //! Noeud devant à droite dans la direction
+  NodeLocalId nextRightId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_NextRight])); }
+  //! Noeud derrière à droite dans la direction
+  NodeLocalId previousRightId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_PreviousRight])); }
+  //! Noeud derrière à gauche dans la direction
+  NodeLocalId previousLeftId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_PreviousLeft])); }
+
+  //! Noeud devant à gauche dans la direction
   Node topNextLeft() const { return m_cell.node(m_nodes_indirection[CNP_TopNextLeft]); }
   //! Noeud devant à droite dans la direction
   Node topNextRight() const { return m_cell.node(m_nodes_indirection[CNP_TopNextRight]); }
@@ -113,6 +122,15 @@ class ARCANE_CEA_EXPORT DirCellNode
   Node topPreviousRight() const { return m_cell.node(m_nodes_indirection[CNP_TopPreviousRight]); }
   //! Noeud derrière à gauche dans la direction
   Node topPreviousLeft() const { return m_cell.node(m_nodes_indirection[CNP_TopPreviousLeft]); }
+
+  //! Noeud devant à gauche dans la direction
+  NodeLocalId topNextLeftId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_TopNextLeft])); }
+  //! Noeud devant à droite dans la direction
+  NodeLocalId topNextRightId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_TopNextRight])); }
+  //! Noeud derrière à droite dans la direction
+  NodeLocalId topPreviousRightId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_TopPreviousRight])); }
+  //! Noeud derrière à gauche dans la direction
+  NodeLocalId topPreviousLeftId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_TopPreviousLeft])); }
 
  private:
   
