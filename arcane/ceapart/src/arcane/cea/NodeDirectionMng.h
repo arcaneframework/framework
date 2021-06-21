@@ -37,7 +37,9 @@ namespace Arcane
  */
 class ARCANE_CEA_EXPORT DirNode
 {
- public:
+  friend NodeDirectionMng;
+ private:
+  // Seul NodeDirectionMng à le droit de construire un DirNode.
   DirNode(Node n,Node p) : m_previous(p), m_next(n){}
  public:
   //! Maille avant

@@ -38,7 +38,8 @@ namespace Arcane
  */
 class ARCANE_CEA_EXPORT DirFace
 {
- public:
+  friend FaceDirectionMng;
+ private:
   DirFace(Cell n,Cell p) : m_previous(p), m_next(n){}
  public:
   //! Maille avant

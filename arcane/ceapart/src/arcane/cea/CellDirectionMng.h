@@ -84,7 +84,8 @@ class ARCANE_CEA_EXPORT DirCell
  */
 class ARCANE_CEA_EXPORT DirCellNode
 {
- public:
+  friend CellDirectionMng;
+ private:
 
   DirCellNode(Cell c,const Int32* nodes_indirection)
   : m_cell(c), m_nodes_indirection(nodes_indirection){}
@@ -149,7 +150,8 @@ class ARCANE_CEA_EXPORT DirCellNode
  */
 class ARCANE_CEA_EXPORT DirCellFace
 {
- public:
+  friend CellDirectionMng;
+ private:
   DirCellFace(Cell c,Int32 next_face_index,Int32 previous_face_index)
   : m_cell(c), m_next_face_index(next_face_index), m_previous_face_index(previous_face_index)
   {
