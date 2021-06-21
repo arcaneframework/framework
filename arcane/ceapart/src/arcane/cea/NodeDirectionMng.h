@@ -222,7 +222,9 @@ class ARCANE_CEA_EXPORT NodeDirectionMng
     return DirNode(next,prev,m_infos[local_id].m_cell_index);
   }
 
-  void _computeNodeCellInfos(const VariableCellReal3& cells_center);
+  void _computeNodeCellInfos(const CellDirectionMng& cell_dm,
+                             const VariableCellReal3& cells_center);
+  void _filterNodes();
 };
 
 /*---------------------------------------------------------------------------*/

@@ -26,6 +26,8 @@
 #include "arcane/cea/ICartesianMesh.h"
 #include "arcane/cea/CellDirectionMng.h"
 
+#include <set>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -165,16 +167,50 @@ _internalComputeInfos(const CellDirectionMng& cell_dm,const NodeGroup& all_nodes
   m_p->m_outer_all_items = family->createGroup(String("AllOuter")+base_group_name,outer_lids,true);
   m_p->m_all_items = all_nodes;
 
-  _computeNodeCellInfos(cells_center);
+  _filterNodes();
+  _computeNodeCellInfos(cell_dm,cells_center);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Filtre les noeuds devant/derrière pour ne garder que les
+ * noeuds de notre patch.
+ */
+void NodeDirectionMng::
+_filterNodes()
+{
+  // Ensemble contenant uniquement les noeuds de notre patch
+  std::set<NodeLocalId> nodes_set;
+  ENUMERATE_NODE(inode,allNodes()){
+    nodes_set.insert(NodeLocalId(inode.itemLocalId()));
+  }
+
+  Node null_node;
+
+  for( ItemDirectionInfo& idi : m_infos ){
+    {
+      ItemInternal* next = idi.m_next_item;
+      if (!next->null())
+        if (nodes_set.find(NodeLocalId(next->localId()))==nodes_set.end())
+          idi.m_next_item = null_node.internal();
+    }
+    {
+      ItemInternal* prev = idi.m_previous_item;
+      if (!prev->null())
+        if (nodes_set.find(NodeLocalId(prev->localId()))==nodes_set.end())
+          idi.m_previous_item = null_node.internal();
+    }
+  }
+}
+ 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Calcul des connectivités noeuds/mailles par direction.
  */
 void NodeDirectionMng::
-_computeNodeCellInfos(const VariableCellReal3& cells_center)
+_computeNodeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells_center)
 {
   // TODO: ne traiter que les mailles de notre patch.
   IndexType indexes_ptr[8];
@@ -188,6 +224,14 @@ _computeNodeCellInfos(const VariableCellReal3& cells_center)
   VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
   if (mesh_dim!=2 && mesh_dim!=3)
     ARCANE_FATAL("Invalid mesh dimension '{0}'. Valid dimensions are 2 or 3",mesh_dim);
+
+  // Ensemble contenant uniquement les mailles de notre patch
+  // Cela sert à filtrer pour ne garder que ces mailles là dans la connectivité
+  std::set<CellLocalId> inside_cells;
+  ENUMERATE_CELL(icell,cell_dm.allCells()){
+    inside_cells.insert(CellLocalId(icell.itemLocalId()));
+  }
+  
   ENUMERATE_NODE(inode,dm_all_nodes){
     Node node = *inode;
     Integer nb_cell = node.nbCell();
@@ -196,6 +240,9 @@ _computeNodeCellInfos(const VariableCellReal3& cells_center)
     for( Integer i=0; i<nb_cell; ++i ){
       const IndexType bi = (IndexType)i;
       Cell cell = node.cell(i);
+      if (inside_cells.find(CellLocalId(cell.localId()))==inside_cells.end())
+        continue;
+
       Real3 center = cells_center[cell];
       Real3 wanted_cell_pos;
       Real3 wanted_node_pos;
