@@ -60,8 +60,8 @@ class ARCANE_CEA_EXPORT DirNode
   };
  private:
   // Seul NodeDirectionMng à le droit de construire un DirNode.
-  DirNode(Node n,Node p,DirNodeCellIndex idx)
-  : m_previous(p), m_next(n), m_cell_index(idx) {}
+  DirNode(ItemInternal* current,Node next,Node prev,DirNodeCellIndex idx)
+  : m_current(current), m_previous(prev), m_next(next), m_cell_index(idx) {}
  public:
   //! Maille avant
   Node previous() const { return m_previous; }
@@ -71,8 +71,27 @@ class ARCANE_CEA_EXPORT DirNode
   Node next() const { return m_next; }
   //! Maille après
   NodeLocalId nextId() const { return NodeLocalId(m_next.localId()); }
-  Int32 cellIndex(Int32 index) const { return m_cell_index[index]; }
+  /*!
+   * \brief Indice dans la liste des mailles de ce noeud d'une
+   * maille en fonction de sa position.
+   *
+   * Les valeurs possibles pour \a position sont données par l'énumération
+   * eCellNodePosition.
+   */
+  Int32 cellIndex(Int32 position) const { return m_cell_index[position]; }
+  /*!
+   * \brief Indice local d'une maille en fonction de sa position par rapport à ce noeud.
+   *
+   * Les valeurs possibles pour \a position sont données par l'énumération
+   * eCellNodePosition.
+   */
+  CellLocalId cellId(Int32 position) const
+  {
+    Int32 x = cellIndex(position);
+    return (x==NULL_CELL) ? CellLocalId(NULL_ITEM_LOCAL_ID) : CellLocalId(m_current->cellLocalId(x));
+  }
  private:
+  ItemInternal* m_current;
   Node m_previous;
   Node m_next;
   DirNodeCellIndex m_cell_index;
@@ -210,6 +229,7 @@ class ARCANE_CEA_EXPORT NodeDirectionMng
 
   SharedArray<ItemDirectionInfo> m_infos;
   eMeshDirection m_direction;
+  ItemInternalList m_nodes;
   Impl* m_p;
 
  private:
@@ -219,7 +239,7 @@ class ARCANE_CEA_EXPORT NodeDirectionMng
   {
     Node next = Node(m_infos[local_id].m_next_item);
     Node prev = Node(m_infos[local_id].m_previous_item);
-    return DirNode(next,prev,m_infos[local_id].m_cell_index);
+    return DirNode(m_nodes[local_id],next,prev,m_infos[local_id].m_cell_index);
   }
 
   void _computeNodeCellInfos(const CellDirectionMng& cell_dm,

@@ -66,6 +66,11 @@ NodeDirectionMng(const NodeDirectionMng& rhs)
 , m_direction(rhs.m_direction)
 , m_p(rhs.m_p)
 {
+  ICartesianMesh* cm = m_p->m_cartesian_mesh;
+  if (cm){
+    IMesh* mesh = cm->mesh();
+    m_nodes = mesh->nodeFamily()->itemsInternal();
+  }
 }
 
 /*---------------------------------------------------------------------------*/

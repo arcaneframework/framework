@@ -321,7 +321,7 @@ _testDirNode()
         info() << "DirNode node= " << ItemPrinter(node) << " nb_cell=" << node_nb_cell << " pos=" << nodes_coord[node];
         for( Integer k=0; k<node_nb_cell; ++k ){
           Real3 cell_pos = m_cell_center[node.cell(k)];
-          info() << "Node k=" << k << " cell_pos=" << cell_pos;
+          info() << "Node k=" << k << " cell_pos=" << cell_pos << " cell=" << ItemPrinter(node.cell(k));
         }
         for( Integer k=0; k<8; ++k ){
           Int32 cell_index = dir_node.cellIndex(k);
@@ -331,7 +331,7 @@ _testDirNode()
               ARCANE_FATAL("Bad value for cell_index '{0}' node_nb_cell={1}",cell_index,node_nb_cell);
             cell_pos = m_cell_center[node.cell(cell_index)];
           }
-          info() << "DirNode cellIndex k=" << k << " index=" << cell_index << " pos=" << cell_pos;
+          info() << "DirNode cellIndex k=" << k << " index=" << cell_index << " pos=" << cell_pos << " cell_lid=" << dir_node.cellId(k);
         }
       }
       if (prev_node.null() && next_node.null())
