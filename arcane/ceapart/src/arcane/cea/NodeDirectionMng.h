@@ -19,6 +19,7 @@
 
 #include "arcane/Item.h"
 #include "arcane/ItemEnumerator.h"
+#include "arcane/VariableTypedef.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,8 +40,28 @@ class ARCANE_CEA_EXPORT DirNode
 {
   friend NodeDirectionMng;
  private:
+  typedef signed char IndexType;
+  static constexpr IndexType NULL_CELL = -1;
+  struct DirNodeCellIndex
+  {
+   public:
+    IndexType operator[](Int32 i) const
+    {
+      ARCANE_CHECK_AT(i,8);
+      return m_indexes[i];
+    }
+    IndexType& operator[](Int32 i)
+    {
+      ARCANE_CHECK_AT(i,8);
+      return m_indexes[i];
+    }
+   public:
+    IndexType m_indexes[8];
+  };
+ private:
   // Seul NodeDirectionMng à le droit de construire un DirNode.
-  DirNode(Node n,Node p) : m_previous(p), m_next(n){}
+  DirNode(Node n,Node p,DirNodeCellIndex idx)
+  : m_previous(p), m_next(n), m_cell_index(idx) {}
  public:
   //! Maille avant
   Node previous() const { return m_previous; }
@@ -50,9 +71,11 @@ class ARCANE_CEA_EXPORT DirNode
   Node next() const { return m_next; }
   //! Maille après
   NodeLocalId nextId() const { return NodeLocalId(m_next.localId()); }
+  Int32 cellIndex(Int32 index) const { return m_cell_index[index]; }
  private:
   Node m_previous;
   Node m_next;
+  DirNodeCellIndex m_cell_index;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -67,6 +90,8 @@ class ARCANE_CEA_EXPORT NodeDirectionMng
   friend CartesianMesh;
   friend CartesianMeshPatch;
   class Impl;
+  using IndexType = DirNode::IndexType;
+  using DirNodeCellIndex = DirNode::DirNodeCellIndex;
 
  private:
 
@@ -87,6 +112,13 @@ class ARCANE_CEA_EXPORT NodeDirectionMng
     ItemInternal* m_next_item;
     //! entité avant l'entité courante dans la direction
     ItemInternal* m_previous_item;
+   public:
+    void setCellIndexes(IndexType idx[8])
+    {
+      for( int i=0; i<8; ++i )
+        m_cell_index[i] = idx[i];
+    }
+    DirNodeCellIndex m_cell_index;
   };
  public:
   
@@ -159,7 +191,8 @@ class ARCANE_CEA_EXPORT NodeDirectionMng
    * gérées par \a cell_dm.
    * Suppose que init() a été appelé.
    */
-  void _internalComputeInfos(const CellDirectionMng& cell_dm,const NodeGroup& all_nodes);
+  void _internalComputeInfos(const CellDirectionMng& cell_dm,const NodeGroup& all_nodes,
+                             const VariableCellReal3& cells_center);
 
   /*!
    * \internal
@@ -186,8 +219,10 @@ class ARCANE_CEA_EXPORT NodeDirectionMng
   {
     Node next = Node(m_infos[local_id].m_next_item);
     Node prev = Node(m_infos[local_id].m_previous_item);
-    return DirNode(next,prev);
+    return DirNode(next,prev,m_infos[local_id].m_cell_index);
   }
+
+  void _computeNodeCellInfos(const VariableCellReal3& cells_center);
 };
 
 /*---------------------------------------------------------------------------*/

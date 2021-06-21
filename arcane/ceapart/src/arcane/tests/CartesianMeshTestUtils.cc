@@ -316,6 +316,24 @@ _testDirNode()
       Real my_coord = nodes_coord[inode][idir];
       bool is_print = (nb_print<0 || iprint<nb_print);
       ++iprint;
+      if (is_print){
+        Int32 node_nb_cell = node.nbCell();
+        info() << "DirNode node= " << ItemPrinter(node) << " nb_cell=" << node_nb_cell << " pos=" << nodes_coord[node];
+        for( Integer k=0; k<node_nb_cell; ++k ){
+          Real3 cell_pos = m_cell_center[node.cell(k)];
+          info() << "Node k=" << k << " cell_pos=" << cell_pos;
+        }
+        for( Integer k=0; k<8; ++k ){
+          Int32 cell_index = dir_node.cellIndex(k);
+          Real3 cell_pos;
+          if (cell_index!=(-1)){
+            if ((1+cell_index)>node_nb_cell)
+              ARCANE_FATAL("Bad value for cell_index '{0}' node_nb_cell={1}",cell_index,node_nb_cell);
+            cell_pos = m_cell_center[node.cell(cell_index)];
+          }
+          info() << "DirNode cellIndex k=" << k << " index=" << cell_index << " pos=" << cell_pos;
+        }
+      }
       if (prev_node.null() && next_node.null())
         ARCANE_FATAL("Null previous and next node for node {0}",ItemPrinter(node));
       //TODO: Vérifier que les coordonnées autres que celle de idir sont bien les mêmes pour next,prev et my_coord.

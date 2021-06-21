@@ -528,7 +528,7 @@ _computeMeshDirection(CartesianMeshPatch& cdi,eMeshDirection dir,VariableCellRea
   }
   cell_dm._internalComputeInnerAndOuterItems(all_cells);
   face_dm._internalComputeInfos(cell_dm,cells_center,faces_center);
-  node_dm._internalComputeInfos(cell_dm,all_nodes);
+  node_dm._internalComputeInfos(cell_dm,all_nodes,cells_center);
 }
 
 /*---------------------------------------------------------------------------*/
