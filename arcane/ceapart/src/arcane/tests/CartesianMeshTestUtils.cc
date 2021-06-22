@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshTestUtils.cc                                   (C) 2000-2020 */
+/* CartesianMeshTestUtils.cc                                   (C) 2000-2021 */
 /*                                                                           */
 /* Fonctions utilitaires pour les tests de 'CartesianMesh'.                  */
 /*---------------------------------------------------------------------------*/
@@ -28,6 +28,7 @@
 #include "arcane/IItemFamily.h"
 #include "arcane/IMeshModifier.h"
 #include "arcane/IMeshUtilities.h"
+#include "arcane/SimpleSVGMeshExporter.h"
 
 #include "arcane/cea/ICartesianMesh.h"
 #include "arcane/cea/CellDirectionMng.h"
@@ -757,87 +758,16 @@ _sample(ICartesianMesh* cartesian_mesh)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-class SVGWriter
-{
- public:
-  SVGWriter(ostream& ofile) : m_ofile(ofile){}
-  void writeText(Real x,Real y,StringView color,StringView text,double rotation,bool do_background)
-  {
-    // Affiche un fond blanc en dessous du texte.
-    if (do_background){
-      m_ofile << "<text x='" << x << "' y='" << y << "' dominant-baseline='central' text-anchor='middle'"
-              << " style='stroke:white; stroke-width:0.6em'";
-      if (rotation!=0.0)
-        m_ofile << " transform='rotate(" << rotation << "," << x << "," << y << ")'";
-      m_ofile << " font-size='" << m_font_size << "'>" << text << "</text>\n";
-    }
-    m_ofile << "<text x='" << x << "' y='" << y << "' dominant-baseline='central' text-anchor='middle'"
-            << " fill='" << color << "'";
-    if (rotation!=0.0)
-      m_ofile << " transform='rotate(" << rotation << "," << x << "," << y << ")'";
-    m_ofile << " font-size='" << m_font_size << "'>" << text << "</text>\n";
-  }
- private:
-  ostream& m_ofile;
-  double m_font_size = 3.0;
-};
 
 void CartesianMeshTestUtils::
 _saveSVG()
 {
   ICartesianMesh* cm = m_cartesian_mesh;
   IMesh* mesh = cm->mesh();
-  VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
   info() << "Saving mesh to SVG format";
   ofstream ofile("toto.svg");
-  ofile << "<?xml version=\"1.0\"?>\n";
-  ofile << "<svg viewBox=\"0 0 1000 1000\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n";
-  ofile << "<title>Mesh</title>\n";
-  ofile << "<desc>MeshExample</desc>\n";
-  Real mul_value = 100.0;
-  SVGWriter writer(ofile);
-  ENUMERATE_CELL(icell,mesh->allCells()){
-    Cell cell = *icell;
-    Real3 cell_pos = m_cell_center[cell] * mul_value;
-    Integer nb_node = cell.nbNode();
-    ofile << "<path d='";
-    for( Integer i=0; i<nb_node; ++i ){
-      Real3 node_coord = nodes_coord[cell.node(i)];
-      node_coord *= mul_value;
-      if (i==0)
-        ofile << "M ";
-      else
-        ofile << "L ";
-      Real3 coord = cell_pos + (node_coord-cell_pos) * 0.98;
-      ofile << coord.x << " " << coord.y << " ";
-    }
-    ofile << "z' fill='yellow' stroke='black' stroke-width='1'/>\n";
-    writer.writeText(cell_pos.x,cell_pos.y,"blue",String::fromNumber(cell.uniqueId().asInt64()),0.0,false);
-  }
-
-  ENUMERATE_NODE(inode,mesh->allNodes()){
-    Node node = *inode;
-    Real3 coord = nodes_coord[inode];
-    coord *= mul_value;
-    writer.writeText(coord.x,coord.y,"green",String::fromNumber(node.uniqueId().asInt64()),0.0,true);
-  }
-
-  ENUMERATE_FACE(iface,mesh->allFaces()){
-    Face face = *iface;
-    Real3 face_coord = m_face_center[iface];
-    face_coord *= mul_value;
-    Real3 direction = nodes_coord[face.node(1)] - nodes_coord[face.node(0)];
-    direction = direction.normalize();
-    // TODO: vérifier entre -1.0 et 1.0
-    // Calcule l'angle de la rotation pour que l'affichage numéro de la face soit aligné avec
-    // le trait du bord de la face.
-    double angle = math::abs(std::asin(direction.y)) / M_PI * 180.0;
-    Real3 cell_center = m_cell_center[face.cell(0)] * mul_value;
-    Real3 coord = cell_center + (face_coord-cell_center) * 0.92;
-    writer.writeText(coord.x,coord.y,"red",String::fromNumber(face.uniqueId().asInt64()),angle,true);
-  }
-
-  ofile << "</svg>\n";
+  SimpleSVGMeshExporter writer(ofile);
+  writer.write(mesh->allCells());
 }
 
 /*---------------------------------------------------------------------------*/
