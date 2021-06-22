@@ -233,7 +233,7 @@ TEST(NeoTestProperty,test_property)
    auto null_ids = {Neo::utils::NULL_ITEM_LID,Neo::utils::NULL_ITEM_LID};
    auto extracted_null_ids = property[{6,7}];
    EXPECT_TRUE(std::equal(null_ids.begin(),null_ids.end(),extracted_null_ids.begin()));
-   // Check append in empty property contiguous range
+   // Check append in empty property contiguous range not starting at 0
    Neo::PropertyT<Neo::utils::Int32> property2{"test_property2"};
    item_range = {Neo::ItemLocalIds{{},2,3}};
    values = {2,3,4};
@@ -243,11 +243,36 @@ TEST(NeoTestProperty,test_property)
    EXPECT_TRUE(std::equal(values.begin(),values.end(),extracted_values.begin()));
    extracted_null_ids = property2[{0,1}];
    EXPECT_TRUE(std::equal(null_ids.begin(),null_ids.end(),extracted_null_ids.begin()));
-
-   // Check append with holes, discontiguous range todo
-   // Check append in empty property discontiguous range todo
-   // Check append with holes, mixed range todo
-   // Check append in empty property mixed range todo
+   // Check append with holes, discontiguous range
+   item_range = {Neo::ItemLocalIds{{0,1,4,},0,0}};
+   values = {0,1,8};
+   property2.append(item_range,values,Neo::utils::NULL_ITEM_LID);
+   property2.debugPrint();
+   extracted_values = property2[{0,1,4}];
+   EXPECT_TRUE(std::equal(values.begin(),values.end(),extracted_values.begin()));
+   // Check append in empty property discontiguous range
+   Neo::PropertyT<Neo::utils::Int32> property3{"test_property3"};
+   item_range = {Neo::ItemLocalIds{{1,3,5},0,0}};
+   values = {1,3,5};
+   property3.append(item_range, values, Neo::utils::NULL_ITEM_LID);
+   property3.debugPrint();
+   extracted_values = property3[{1,3,5}];
+   EXPECT_TRUE(std::equal(values.begin(),values.end(),extracted_values.begin()));
+   // Check append with holes, mixed range
+   item_range = {Neo::ItemLocalIds{{4},0,2}};
+   values = {10,11,18};
+   property2.append(item_range,values,Neo::utils::NULL_ITEM_LID);
+   property2.debugPrint();
+   extracted_values = property2[{4,0,1}];
+   EXPECT_TRUE(std::equal(values.begin(),values.end(),extracted_values.begin()));
+   // Check append in empty property mixed range
+   Neo::PropertyT<Neo::utils::Int32> property4{"test_property3"};
+   item_range = {Neo::ItemLocalIds{{1,3,5},7,3}};
+   values = {1,3,5,7,8,9};
+   property4.append(item_range, values, Neo::utils::NULL_ITEM_LID);
+   property4.debugPrint();
+   extracted_values = property4[{1,3,5,7,8,9}];
+   EXPECT_TRUE(std::equal(values.begin(),values.end(),extracted_values.begin()));
 
 }
 
@@ -389,7 +414,40 @@ TEST(NeoTestArrayProperty,test_array_property)
   }
   EXPECT_TRUE(std::equal(values.begin(),values.end(),values_check.begin()));
 
-  // Add tests with mixed range todo
+  // Same two tests with mixed range
+  auto array_property4 = Neo::ArrayProperty<Neo::utils::Int32>{"test_array_property4"};
+  item_range = {Neo::ItemLocalIds{{4,6,7},8,3}};
+  values = {4,4,6,7,7,8,9,10,10};
+  array_property4.append(item_range,values,{2,1,2,1,1,2});
+  array_property4.debugPrint();
+  values_check.clear();
+  for (auto item : item_range) {
+    for (auto value : array_property4[item])
+      values_check.push_back(value);
+  }
+  std::cout << values_check << std::endl;
+  EXPECT_TRUE(std::equal(values.begin(),values.end(),values_check.begin()));
+  // Fill the first items
+  item_range = {Neo::ItemLocalIds{{2,3},0,2}};
+  values = {2,2,3,0,0,1};
+  array_property4.append(item_range, values, {2,1,2,1});
+  array_property4.debugPrint();
+  values_check.clear();
+  for (auto item : item_range) {
+    for (auto value : array_property4[item])
+      values_check.push_back(value);
+  }
+  EXPECT_TRUE(std::equal(values.begin(),values.end(),values_check.begin()));
+  // Check for the whole range
+  item_range = {Neo::ItemLocalIds{{},0,11}};
+  values = {0,0,1,2,2,3,4,4,6,7,7,8,9,10,10};
+  values_check.clear();
+  for (auto item : item_range) {
+    for (auto value : array_property4[item]){
+      values_check.push_back(value);
+    }
+  }
+  EXPECT_TRUE(std::equal(values.begin(),values.end(),values_check.begin()));
 }
 
 TEST(NeoTestPropertyView, test_property_view)
