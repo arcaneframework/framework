@@ -506,7 +506,7 @@ public:
    *
    * @return  the ItemRange containing the lids of the property.
    */
-  ItemRange values(){
+  ItemRange values() const {
     // TODO...; + il faut mettre en cache (dans la famille ?). ? de la mise à jour (la Propriété peut dire si la range est à jour)
     // 2 stratégies : on crée l'étendue continue avant ou après les non contigus...
     // (on estime que l'on décime les id les plus élevés ou les plus faibles), avoir le choix (avec un paramètre par défaut)
