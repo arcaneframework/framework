@@ -149,6 +149,8 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    DomLibXml2V2.cc
    SerializeBuffer.cc
    SerializeBuffer.h
+   SimpleSVGMeshExporter.h
+   SimpleSVGMeshExporter.cc
    TimeLoop.cc
    TimeLoop.h
    Timer.cc
