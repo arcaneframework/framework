@@ -8,6 +8,8 @@
 #include "arcane/cea/CartesianConnectivity.h"
 
 #include "arcane/ItemPrinter.h"
+#include "arcane/SimpleSVGMeshExporter.h"
+#include "arcane/Directory.h"
 
 #include "arcane/tests/UnitTestCartesianMeshPatch_axl.h"
 
@@ -333,6 +335,19 @@ UnitTestCartesianMeshPatchService::setUpForClass()
   m_cartesian_mesh->refinePatch2D(Real2(0.3, 0.4), Real2(0.1, 0.8));
   m_cartesian_mesh->refinePatch2D(Real2(0.3, 0.6), Real2(0.05, 0.1));
   m_cartesian_mesh->computeDirections();
+
+  // Sauvegarde chaque patch au format SVG pour les visualer
+  {
+    Integer nb_patch = m_cartesian_mesh->nbPatch();
+    Directory export_dir(subDomain()->exportDirectory());
+    for( Integer i=0; i<nb_patch; ++i ){
+      ICartesianMeshPatch* patch = m_cartesian_mesh->patch(i);
+      String filename = export_dir.file(String::format("Patch{0}.svg",i));
+      ofstream ofile(filename.localstr());
+      SimpleSVGMeshExporter writer(ofile);
+      writer.write(patch->cells());
+    }
+  }
 
   // Maillage :
   //
