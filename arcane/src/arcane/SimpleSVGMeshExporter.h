@@ -50,7 +50,7 @@ class ARCANE_CORE_EXPORT SimpleSVGMeshExporter
   /*!
    * \brief Exporte les entités du groupe \a cells.
    *
-   * Il est possible d'appeler plusieurs fois cette méthode.
+   * Actuellement, il n'est pas possible d'appeler plusieurs fois cette méthode.
    */
   void write(const CellGroup& cells);
  private:
