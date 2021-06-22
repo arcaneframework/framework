@@ -83,9 +83,9 @@ namespace ArcaneTools
       LocalSystem(SystemContributionMng& parent, Arcane::Cell const& cell, Arcane::ItemVectorView const& dof_vector)
       : m_parent(parent)
       , m_cell(cell)
-      , m_dof_vector(dof_vector)
       , m_matrix(parent.matrixBuffer().data(),dim*dof_vector.size(),dim*dof_vector.size())
       , m_rhs(parent.rhsBuffer().data(),dim*dof_vector.size())
+      , m_dof_vector(dof_vector)
       , m_null_index(parent.m_index_manager->nullIndex())
       {
         m_matrix.setZero() ;
