@@ -13,7 +13,7 @@ namespace Alien {
 #ifdef ALIEN_USE_ARCANE
 MCGLinearSolver::MCGLinearSolver(const Arcane::ServiceBuildInfo& sbi)
 : ArcaneMCGSolverObject(sbi)
-, Alien::MCGInternalLinearSolver(sbi.subDomain()->parallelMng(), options())
+, Alien::MCGInternalLinearSolver(sbi.subDomain()->parallelMng()->messagePassingMng(), options())
 {
   Alien::setTraceMng(sbi.subDomain()->traceMng());
 }
