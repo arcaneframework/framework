@@ -65,8 +65,10 @@ class VariableArrayT
   Real allocatedMemory() const override;
   Integer checkIfSync(int max_print) override;
   bool initialize(const ItemGroup& group,const String& value) override;
-  Integer nbElement() const override { return m_value->value().size(); }
-  ValueType& value() { return m_value->value(); }
+  Integer nbElement() const override { return m_value->view().size(); }
+  [[deprecated("Y2021: use valueView() instead")]]
+  ValueType& value() { return m_value->_internalDeprecatedValue(); }
+  ConstArrayView<T> valueView() const { return m_value->view(); }
   void shrinkMemory() override;
   ConstArrayView< IDataTracerT<T>* > traceInfos() const { return m_trace_infos; }
   void copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination) override;

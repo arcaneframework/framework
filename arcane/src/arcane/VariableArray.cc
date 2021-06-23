@@ -291,7 +291,7 @@ getReference(IVariable* var)
 template<typename T> void VariableArrayT<T>::
 print(std::ostream& o) const
 {
-	ConstArrayView<T> x(m_value->value().view());
+	ConstArrayView<T> x(m_value->view());
 	Integer size = x.size();
 	o << "(dimension=" << size << ") ";
 	if (size<=150){
@@ -325,7 +325,7 @@ template<typename T> Real VariableArrayT<T>::
 allocatedMemory() const
 {
   Real v1 = (Real)(sizeof(T));
-  Real v2 = (Real)(m_value->value().size());
+  Real v2 = (Real)(m_value->view().size());
   return v1 * v2;
 }
 
@@ -362,7 +362,7 @@ checkIfSame(IDataReader* reader,Integer max_print,bool compare_ghost)
   reader->read(this,ref_data.get());
 
   ArrayVariableDiff<T> csa;
-  return csa.check(this,ref_data->value(),from_array,max_print,compare_ghost);
+  return csa.check(this,ref_data->view(),from_array,max_print,compare_ghost);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -432,7 +432,7 @@ initialize(const ItemGroup& group,const String& value)
 
   bool is_ok = false;
 
-  ArrayView<T> values(m_value->value());
+  ArrayView<T> values(m_value->view());
   if (group.itemFamily()==itemFamily()){
     is_ok = true;
     // TRES IMPORTANT
@@ -485,7 +485,7 @@ copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination)
 {
   ARCANE_ASSERT(source.size()==destination.size(),
                 ("Impossible to copy: source and destination of different sizes !"));
-  ValueType& value =  m_value->value();
+  ArrayView<T> value =  m_value->view();
   const Integer size = source.size();
   for(Integer i=0; i<size; ++i )
     value[destination[i]] = value[source[i]];
@@ -502,7 +502,7 @@ copyItemsMeanValues(Int32ConstArrayView first_source,
 {
   ARCANE_ASSERT((first_source.size()==destination.size()) && (second_source.size()==destination.size()),
                 ("Impossible to copy: source and destination of different sizes !"));
-  ValueType& value =  m_value->value();
+  ArrayView<T> value =  m_value->view();
   const Integer size = first_source.size();
   for(Integer i=0; i<size; ++i ) {
     value[destination[i]] = (T)((value[first_source[i]]+value[second_source[i]])/2);
@@ -530,9 +530,9 @@ compact(Int32ConstArrayView new_to_old_ids)
   }
 
   UniqueArray<T> old_value(value());
-  ValueType& current_value = m_value->value();
   Integer new_size = new_to_old_ids.size();
-  current_value.resize(new_size);
+  m_value->resize(new_size);
+  ArrayView<T> current_value = m_value->view();
   if (arcaneIsCheck()){
     for( Integer i=0; i<new_size; ++i )
       current_value.setAt(i,old_value.at(new_to_old_ids[i]));
@@ -580,7 +580,7 @@ setIsSynchronized(const ItemGroup& group)
 template<typename T> void VariableArrayT<T>::
 _internalResize(Integer new_size,Integer nb_additional_element)
 {
-  Array<T>& container_ref = m_value->value();
+  Array<T>& container_ref = m_value->_internalDeprecatedValue();
 
   if (nb_additional_element!=0){
     Integer capacity = container_ref.capacity();
@@ -600,7 +600,7 @@ _internalResize(Integer new_size,Integer nb_additional_element)
   container_ref.resize(new_size);
   if (new_size>current_size){
     if (init_policy==DIP_InitWithDefault){
-      ValueType& values = this->value();
+      ArrayView<T> values = this->value();
       for(Integer i=current_size; i<new_size; ++i)
         values[i] = T();
     }
@@ -638,8 +638,9 @@ _internalResize(Integer new_size,Integer nb_additional_element)
   // (cela ne peut pas être 0 car la classe Array doit allouer au moins un
   // élément si on utilise un allocateur spécifique ce qui est le cas
   // pour les variables.
-  ARCANE_ASSERT((isUsed() || m_value->value().capacity()<=AlignedMemoryAllocator::simdAlignment()),
-                ("Wrong unused data size %d",m_value->value().capacity()));
+  Int64 capacity = m_value->_internalDeprecatedValue().capacity();
+  ARCANE_ASSERT((isUsed() || capacity<=AlignedMemoryAllocator::simdAlignment()),
+                ("Wrong unused data size %d",capacity));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -668,7 +669,7 @@ shrinkMemory()
 template<typename DataType> void VariableArrayT<DataType>::
 fill(const DataType& value)
 {
-  m_value->value().fill(value);
+  m_value->view().fill(value);
   if (_wantAccessInfo()){
     IMemoryAccessTrace* mt = memoryAccessTrace();
     for( Integer i=0, is=m_access_infos.size(); i<is; ++i )
@@ -717,7 +718,7 @@ copyItemsMeanValues(Int32ConstArrayView first_source,
   if (!is_ok)
 		ARCANE_FATAL("Unable to copy: source and destination of different sizes !");
 
-  ValueType& value =  m_value->value();
+  ArrayView<String> value =  m_value->view();
   const Integer size = first_source.size();
   for(Integer i=0; i<size; ++i )
     value[destination[i]] = value[first_source[i]];

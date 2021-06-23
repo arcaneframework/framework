@@ -23,7 +23,6 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/IndexOutOfRangeException.h"
 #include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/OStringStream.h"
 
 #include "arcane/datatype/DataStorageBuildInfo.h"
 #include "arcane/datatype/IDataOperation.h"
@@ -443,10 +442,10 @@ computeHash(IHashAlgorithm* algo,ByteArray& output) const
 template<typename DataType> void ArrayDataT<DataType>::
 copy(const IData* data)
 {
-  const DataInterfaceType* true_data = dynamic_cast< const DataInterfaceType* >(data);
+  auto* true_data = dynamic_cast< const DataInterfaceType* >(data);
   if (!true_data)
     ARCANE_THROW(ArgumentException,"Can not cast 'IData' to 'IArrayDataT'");
-  m_value.copy(true_data->value());
+  m_value.copy(true_data->view());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -455,7 +454,7 @@ copy(const IData* data)
 template<typename DataType> void ArrayDataT<DataType>::
 swapValues(IData* data)
 {
-  ThatClass* true_data = dynamic_cast<ThatClass*>(data);
+  auto* true_data = dynamic_cast<ThatClass*>(data);
   if (!true_data)
     ARCANE_THROW(ArgumentException,"Can not cast 'IData' to 'ArrayDataT'");
   swapValuesDirect(true_data);

@@ -57,8 +57,8 @@ class Array2VariableT
   void synchronize() override;
   Real allocatedMemory() const override;
   Integer checkIfSync(int max_print) override;
-  Integer nbElement() const override { return m_data->value().totalNbElement(); }
-  virtual ValueType& value() { return m_data->value(); }
+  Integer nbElement() const override { return m_data->view().totalNbElement(); }
+  virtual ValueType& value() { return m_data->_internalDeprecatedValue(); }
   void shrinkMemory() override;
   void copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination) override;
   void copyItemsMeanValues(Int32ConstArrayView first_source,

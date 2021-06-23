@@ -277,7 +277,7 @@ directResize(Integer s)
          << " wanted_dim1_size=" << s
          << " dim2_size=" << m_data->value().dim2Size()
          << " total=" << m_data->value().totalNbElement();*/
-  m_data->value().resize(s,m_data->value().dim2Size());
+  m_data->_internalDeprecatedValue().resize(s,m_data->view().dim2Size());
   syncReferences();
 }
 
@@ -293,7 +293,7 @@ directResize(Integer dim1_size,Integer dim2_size)
          << " total=" << m_data->value().totalNbElement()
          << " dim1_size=" << m_data->value().dim1Size()
          << " dim2_size=" << m_data->value().dim2Size();*/
-  m_data->value().resize(dim1_size,dim2_size);
+  m_data->_internalDeprecatedValue().resize(dim1_size,dim2_size);
   /*info() << "RESIZE(2) AFTER " << fullName()
          << " total=" << m_data->value().totalNbElement()
          << " dim1_size=" << m_data->value().dim1Size()
@@ -346,7 +346,7 @@ template<typename T> Real Array2VariableT<T>::
 allocatedMemory() const
 {
   Real v1 = static_cast<Real>(sizeof(T));
-  Real v2 = static_cast<Real>(m_data->value().totalNbElement());
+  Real v2 = static_cast<Real>(m_data->view().totalNbElement());
   return v1*v2;
 }
 
@@ -388,7 +388,7 @@ checkIfSame(IDataReader* reader,int max_print,bool compare_ghost)
   reader->read(this,ref_data.get());
 
   Array2VariableDiff<T> csa;
-  return csa.check(this,ref_data->value(),from_array,max_print,compare_ghost);
+  return csa.check(this,ref_data->view(),from_array,max_print,compare_ghost);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -498,7 +498,7 @@ copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination)
 
   const Integer dim2_size = value().dim2Size();
   const Integer nb_copy = source.size();
-  ValueType& value = m_data->value();
+  Array2View<T> value = m_data->view();
 
   for( Integer i=0; i<nb_copy; ++i ){
     for( Integer j=0; j<dim2_size; ++j )
@@ -520,7 +520,7 @@ copyItemsMeanValues(Int32ConstArrayView first_source,
 
   const Integer dim2_size = value().dim2Size();
   const Integer nb_copy = first_source.size();
-  ValueType& value = m_data->value();
+  Array2View<T> value = m_data->view();
 
   for( Integer i=0; i<nb_copy; ++i ){
     for( Integer j=0; j<dim2_size; ++j )
@@ -544,7 +544,7 @@ compact(Int32ConstArrayView new_to_old_ids)
   if (current_size==0)
     return;
 
-  ValueType& current_value = m_data->value();
+  ValueType& current_value = m_data->_internalDeprecatedValue();
   Integer dim2_size = current_value.dim2Size();
   if (dim2_size==0)
     return;

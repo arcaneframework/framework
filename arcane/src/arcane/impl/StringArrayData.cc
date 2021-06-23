@@ -233,7 +233,7 @@ copy(const IData* data)
   const auto* true_data = dynamic_cast<const DataInterfaceType*>(data);
   if (!true_data)
     ARCANE_THROW(ArgumentException, "Can not cast 'IData' to 'StringArrayData'");
-  m_value.copy(true_data->value());
+  m_value.copy(true_data->view());
 }
 
 /*---------------------------------------------------------------------------*/

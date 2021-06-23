@@ -64,7 +64,11 @@ class ArrayDataT
   void serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation) override;
   Array<DataType>& value() override { return m_value; }
   const Array<DataType>& value() const override { return m_value; }
+  Array<DataType>& _internalDeprecatedValue() override { return m_value; }
+  ConstArrayView<DataType> view() const override { return m_value; }
+  ArrayView<DataType> view() override { return m_value; }
   void resize(Integer new_size) override { m_value.resize(new_size); }
+  void reserve(Integer new_capacity) override { m_value.reserve(new_capacity); }
   IData* clone() override { return cloneTrue(); }
   IData* cloneEmpty() override { return cloneTrueEmpty(); }
   Ref<IData> cloneRef() override { return makeRef(cloneTrue()); }
