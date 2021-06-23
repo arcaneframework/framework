@@ -114,7 +114,7 @@ _init(ArrayView<PrivatePartType*> vars)
     // TODO: il faut pouvoir être notifié du changement de cette variable.
     // pour ensuite mettre à jour les vues (peut-être aussi faire un MyVariableRef).
     if (m_vars[i])
-      m_views[i] = m_vars[i]->value();
+      m_views[i] = m_vars[i]->valueView();
     //std::cout << "INIT_VIEW: " << i << " v=" << m_views[i].size() << '\n';
   }
 }
@@ -351,7 +351,7 @@ _copyGlobalToPartial(Int32 var_index,Int32ConstArrayView local_ids,
     // Redimensionne le tableau des valeurs multiples si besoin.
     ConstArrayView<MeshMaterialVariableIndexer*> indexers = m_p->materialMng()->variablesIndexer();
     Traits::resizeWithReserve(partial_var,indexers[var_index]->maxIndexInMultipleArray());
-    m_views[var_index+1] = partial_var->value();
+    m_views[var_index+1] = partial_var->valueView();
   }
 
   ContainerConstViewType global_view = m_vars[0]->constValueView();
@@ -393,11 +393,11 @@ _initializeNewItems(const ComponentItemListBuilder& list_builder)
 
   // Redimensionne le tableau des valeurs multiples si besoin.
   Traits::resizeWithReserve(partial_var,indexer->maxIndexInMultipleArray());
-  m_views[var_index+1] = partial_var->value();
+  m_views[var_index+1] = partial_var->valueView();
 
   bool init_with_zero = m_p->materialMng()->isDataInitialisationWithZero();
 
-  ContainerConstViewType global_view = m_vars[0]->value();
+  ContainerConstViewType global_view = m_vars[0]->valueView();
 
   ConstArrayView<MatVarIndex> partial_matvar = list_builder.partialMatVarIndexes();
 

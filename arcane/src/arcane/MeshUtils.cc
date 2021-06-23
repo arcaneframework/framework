@@ -117,7 +117,7 @@ _writeInfo(ISubDomain* mng,const VariableCollection& variables,const ItemType& i
       continue;
 
     const String& name = vp->name();
-    VariableScalarTrueType* v = dynamic_cast<VariableScalarTrueType*>(vp);
+    auto* v = dynamic_cast<VariableScalarTrueType*>(vp);
     if (v){
       ScalarDataType& values = v->value();
       if (values.size() < item.localId()){
@@ -128,9 +128,9 @@ _writeInfo(ISubDomain* mng,const VariableCollection& variables,const ItemType& i
       _writeValue(trace,name,values[item.localId()]);
     }
 
-    VariableArrayTrueType* v2 = dynamic_cast<VariableArrayTrueType*>(vp);
+    auto* v2 = dynamic_cast<VariableArrayTrueType*>(vp);
     if (v2){
-      ArrayDataType& values = v2->value();
+      Array2View<ValueType> values = v2->valueView();
       Integer lid = item.localId();
       if (values.dim1Size() < lid){
         trace->error() << "Invalid dimensions for variable '" << name << "' "

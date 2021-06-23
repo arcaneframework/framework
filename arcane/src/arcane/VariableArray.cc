@@ -342,7 +342,7 @@ checkIfSync(int max_print)
     UniqueArray<T> ref_array(constValueView());
     this->synchronize(); // fonctionne pour toutes les variables
     ArrayVariableDiff<T> csa;
-    ArrayView<T> from_array(valueView());
+    ConstArrayView<T> from_array(constValueView());
     Integer nerror = csa.check(this,ref_array,from_array,max_print,true);
     value().copy(ref_array);
     return nerror;
@@ -465,7 +465,7 @@ template<typename T> void VariableArrayT<T>::
 setTraceInfo(Integer id,eTraceType tt)
 {
   Integer s = m_trace_infos.size();
-  Integer vs = value().size();
+  Integer vs = valueView().size();
   if (vs<(id+1))
     vs = (id+1); // Au cas où le trace est fait avant que la variable ne soit dimensionnée
   if (s<vs){

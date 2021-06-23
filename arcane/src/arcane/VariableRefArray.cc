@@ -5,13 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableRefArray.cc                                         (C) 2000-2020 */
+/* VariableRefArray.cc                                         (C) 2000-2021 */
 /*                                                                           */
 /* Référence à une variable tableau 1D.                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/VariableRefArray.h"
 #include "arcane/VariableArray.h"
@@ -133,8 +134,7 @@ void
 VariableRefArrayT<DataType>::
 resize(Integer s)
 {
-  m_private_part->value().resize(s);
-  m_private_part->syncReferences();
+  m_private_part->resize(s);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -156,7 +156,7 @@ void
 VariableRefArrayT<DataType>::
 updateFromInternal()
 {
-  ArrayBase::setArray(m_private_part->value());
+  ArrayBase::setArray(m_private_part->valueView());
   BaseClass::updateFromInternal();
 }
 
@@ -180,9 +180,7 @@ VariableRefArrayT<T>::
 internalContainer()
 {
   if ( !(property() & IVariable::PPrivate) ){
-    ITraceMng* msg = subDomain()->traceMng();
-    msg->fatal() << "VariableRefArray::internalContainer(): impossible sur la "
-                 << "variable non privée '" << name() << "'";
+    ARCANE_FATAL("variable '{0}': getting internal container is only valid on private variable",name());
   }
   return m_private_part->value();
 }

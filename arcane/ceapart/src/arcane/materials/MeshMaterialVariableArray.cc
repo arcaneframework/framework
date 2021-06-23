@@ -285,7 +285,7 @@ template<typename DataType> Int32
 ItemMaterialVariableArray<DataType>::
 dataTypeSize() const
 {
-  Integer dim2_size = m_vars[0]->value().dim2Size();
+  Integer dim2_size = m_vars[0]->valueView().dim2Size();
   return (Int32)sizeof(DataType) * dim2_size;
 }
 
@@ -296,7 +296,7 @@ template<typename DataType> void
 ItemMaterialVariableArray<DataType>::
 copyToBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteArrayView bytes) const
 {
-  Integer dim2_size = m_vars[0]->value().dim2Size();
+  Integer dim2_size = m_vars[0]->valueView().dim2Size();
   Integer one_data_size = dataTypeSize();
 
   // TODO: Vérifier que la taille est un multiple de 'one_data_size' et que
@@ -315,7 +315,7 @@ template<typename DataType> void
 ItemMaterialVariableArray<DataType>::
 copyFromBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteConstArrayView bytes)
 {
-  Integer dim2_size = m_vars[0]->value().dim2Size();
+  Integer dim2_size = m_vars[0]->valueView().dim2Size();
   Integer one_data_size = dataTypeSize();
 
   // TODO: Vérifier que la taille est un multiple de 'one_data_size' et que
