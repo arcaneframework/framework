@@ -58,7 +58,11 @@ class Array2VariableT
   Real allocatedMemory() const override;
   Integer checkIfSync(int max_print) override;
   Integer nbElement() const override { return m_data->view().totalNbElement(); }
-  virtual ValueType& value() { return m_data->_internalDeprecatedValue(); }
+  ARCCORE_DEPRECATED_2021("Use valueView() instead")
+  virtual ValueType& value();
+  ConstArray2View<T> constValueView() const { return m_data->view(); }
+  ConstArray2View<T> valueView() const { return m_data->view(); }
+  Array2View<T> valueView() { return m_data->view(); }
   void shrinkMemory() override;
   void copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination) override;
   void copyItemsMeanValues(Int32ConstArrayView first_source,

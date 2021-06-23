@@ -294,14 +294,8 @@ class IArrayDataT
   //! Clone la donnée mais sans éléments.
   virtual Ref<ThatClass> cloneTrueEmptyRef() = 0;
 
-  //! Réserve de la mémoire pour \a new_capacity éléments
-  virtual void reserve(Integer new_capacity) =0;
-
-  /*!
-   * \internal
-   * \brief Conteneur associé à la donnée.
-   */
-  virtual Array<DataType>& _internalDeprecatedValue() = 0;
+  //! \internal
+  virtual IArrayDataInternalT<DataType>* _internal() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -368,14 +362,8 @@ class IArray2DataT
   //! Clone la donnée mais sans éléments.
   virtual Ref<ThatClass> cloneTrueEmptyRef() = 0;
 
-  //! Réserve de la mémoire pour \a new_capacity éléments
-  virtual void reserve(Integer new_capacity) =0;
-
-  /*!
-   * \internal
-   * \brief Conteneur associé à la donnée.
-   */
-  virtual Array2<DataType>& _internalDeprecatedValue() = 0;
+  //! \internal
+  virtual IArray2DataInternalT<DataType>* _internal() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

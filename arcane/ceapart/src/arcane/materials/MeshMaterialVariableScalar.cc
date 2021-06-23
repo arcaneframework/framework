@@ -47,6 +47,7 @@
 #include "arcane/VariableArray.h"
 #include "arcane/ItemPrinter.h"
 #include "arcane/IVariableSynchronizer.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 #include "arcane/datatype/DataTypeTraits.h"
 #include "arcane/datatype/DataStorageBuildInfo.h"
@@ -70,7 +71,7 @@ saveData(IMeshComponent* component,IData* data,
   ConstArrayView<ArrayView<DataType>> views = cviews;
   ValueDataType* true_data = dynamic_cast<ValueDataType*>(data);
   ARCANE_CHECK_POINTER(true_data);
-  ContainerType& values = true_data->_internalDeprecatedValue();
+  ContainerType& values = true_data->_internal()->_internalDeprecatedValue();
   ENUMERATE_COMPONENTCELL(icell,component){
     MatVarIndex mvi = icell._varIndex();
     values.add(views[mvi.arrayIndex()][mvi.valueIndex()]);
@@ -500,7 +501,7 @@ _synchronizeV2()
 
   ConstArrayView<MeshMaterialVariableIndexer*> indexers = material_mng->variablesIndexer();
   Integer nb_indexer = indexers.size();
-  data->_internalDeprecatedValue().resize(family->maxLocalId(),nb_indexer+1);
+  data->_internal()->_internalDeprecatedValue().resize(family->maxLocalId(),nb_indexer+1);
   Array2View<DataType> values(data->view());
 
   // Recopie les valeurs partielles dans le tableau.

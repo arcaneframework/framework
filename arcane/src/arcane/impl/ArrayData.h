@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayData.h                                                 (C) 2000-2020 */
+/* ArrayData.h                                                 (C) 2000-2021 */
 /*                                                                           */
 /* Donnée de type 'Array'.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -44,6 +44,9 @@ class ArrayDataT
 , public IArrayDataT<DataType>
 {
   ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+  class Impl;
+  friend class Impl;
+
  public:
 
   typedef ArrayDataT<DataType> ThatClass;
@@ -54,6 +57,7 @@ class ArrayDataT
   explicit ArrayDataT(ITraceMng* trace);
   explicit ArrayDataT(const DataStorageBuildInfo& dsbi);
   ArrayDataT(const ArrayDataT<DataType>& rhs);
+  ~ArrayDataT() override;
 
  public:
 
@@ -64,11 +68,9 @@ class ArrayDataT
   void serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation) override;
   Array<DataType>& value() override { return m_value; }
   const Array<DataType>& value() const override { return m_value; }
-  Array<DataType>& _internalDeprecatedValue() override { return m_value; }
   ConstArrayView<DataType> view() const override { return m_value; }
   ArrayView<DataType> view() override { return m_value; }
   void resize(Integer new_size) override { m_value.resize(new_size); }
-  void reserve(Integer new_capacity) override { m_value.reserve(new_capacity); }
   IData* clone() override { return cloneTrue(); }
   IData* cloneEmpty() override { return cloneTrueEmpty(); }
   Ref<IData> cloneRef() override { return makeRef(cloneTrue()); }
@@ -118,12 +120,17 @@ class ArrayDataT
 
  public:
 
+  IArrayDataInternalT<DataType>* _internal() override { return m_internal; }
+
+ public:
+
   static DataStorageTypeInfo staticStorageTypeInfo();
 
  private:
 
   UniqueArray<DataType> m_value; //!< Donnée
   ITraceMng* m_trace;
+  IArrayDataInternalT<DataType>* m_internal;
 
  private:
 

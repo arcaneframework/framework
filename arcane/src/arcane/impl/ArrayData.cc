@@ -29,6 +29,7 @@
 #include "arcane/datatype/DataStorageTypeInfo.h"
 
 #include "arcane/ISerializer.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 #include "arcane/impl/SerializedData.h"
 #include "arcane/impl/DataStorageFactory.h"
@@ -47,10 +48,27 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<typename DataType>
+class ArrayDataT<DataType>::Impl
+: public IArrayDataInternalT<DataType>
+{
+ public:
+  explicit Impl(ArrayDataT<DataType>* p) : m_p(p){}
+ public:
+  void reserve(Integer new_capacity) override { m_p->m_value.reserve(new_capacity); }
+  Array<DataType>& _internalDeprecatedValue() override { return m_p->m_value; }
+ private:
+  ArrayDataT<DataType>* m_p;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template<typename DataType> ArrayDataT<DataType>::
 ArrayDataT(ITraceMng* trace)
 : m_value(AlignedMemoryAllocator::Simd())
 , m_trace(trace)
+, m_internal(new Impl(this))
 {
 }
 
@@ -61,6 +79,7 @@ template<typename DataType> ArrayDataT<DataType>::
 ArrayDataT(const ArrayDataT<DataType>& rhs)
 : m_value(AlignedMemoryAllocator::Simd())
 , m_trace(rhs.m_trace)
+, m_internal(new Impl(this))
 {
   m_value = rhs.m_value.constSpan();
 }
@@ -72,7 +91,17 @@ template<typename DataType> ArrayDataT<DataType>::
 ArrayDataT(const DataStorageBuildInfo& dsbi)
 : m_value(dsbi.memoryAllocator())
 , m_trace(dsbi.traceMng())
+, m_internal(new Impl(this))
 {
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> ArrayDataT<DataType>::
+~ArrayDataT()
+{
+  delete m_internal;
 }
 
 /*---------------------------------------------------------------------------*/

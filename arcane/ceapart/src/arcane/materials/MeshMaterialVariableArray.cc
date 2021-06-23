@@ -70,12 +70,12 @@ template<typename DataType> void
 MaterialVariableArrayTraits<DataType>::
 resizeAndFillWithDefault(ValueDataType* data,ContainerType& container,Integer dim1_size)
 {
- ContainerType& values = data->_internalDeprecatedValue();
- Integer dim2_size = values.dim2Size();
+  ContainerType& values = data->_internal()->_internalDeprecatedValue();
+  Integer dim2_size = values.dim2Size();
 
- //TODO: faire une version de Array2 qui spécifie une valeur à donner
- // pour initialiser lors d'un resize() (comme pour Array::resize()).
- container.resize(dim1_size,dim2_size);
+  //TODO: faire une version de Array2 qui spécifie une valeur à donner
+  // pour initialiser lors d'un resize() (comme pour Array::resize()).
+  container.resize(dim1_size,dim2_size);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -94,7 +94,7 @@ saveData(IMeshComponent* component,IData* data,
     return;
   auto* true_data = dynamic_cast<ValueDataType*>(data);
   ARCANE_CHECK_POINTER(true_data);
-  ContainerType& values = true_data->_internalDeprecatedValue();
+  ContainerType& values = true_data->_internal()->_internalDeprecatedValue();
   ComponentItemVectorView component_view = component->view();
 
   Integer dim2_size = views[0].dim2Size();

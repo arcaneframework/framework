@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array2Variable.cc                                           (C) 2000-2020 */
+/* Array2Variable.cc                                           (C) 2000-2021 */
 /*                                                                           */
 /* Variable tableau 2D.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -33,6 +33,8 @@
 #include "arcane/ItemGroup.h"
 #include "arcane/IParallelMng.h"
 #include "arcane/IDataFactoryMng.h"
+
+#include "arcane/core/internal/IDataInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -277,7 +279,7 @@ directResize(Integer s)
          << " wanted_dim1_size=" << s
          << " dim2_size=" << m_data->value().dim2Size()
          << " total=" << m_data->value().totalNbElement();*/
-  m_data->_internalDeprecatedValue().resize(s,m_data->view().dim2Size());
+  m_data->_internal()->_internalDeprecatedValue().resize(s,m_data->view().dim2Size());
   syncReferences();
 }
 
@@ -293,7 +295,7 @@ directResize(Integer dim1_size,Integer dim2_size)
          << " total=" << m_data->value().totalNbElement()
          << " dim1_size=" << m_data->value().dim1Size()
          << " dim2_size=" << m_data->value().dim2Size();*/
-  m_data->_internalDeprecatedValue().resize(dim1_size,dim2_size);
+  m_data->_internal()->_internalDeprecatedValue().resize(dim1_size,dim2_size);
   /*info() << "RESIZE(2) AFTER " << fullName()
          << " total=" << m_data->value().totalNbElement()
          << " dim1_size=" << m_data->value().dim1Size()
@@ -363,7 +365,7 @@ checkIfSync(int max_print)
   //Integer dim2_size = value().dim2Size();
   IItemFamily* family = itemGroup().itemFamily();
   if (family){
-    UniqueArray2<T> ref_array(value());
+    UniqueArray2<T> ref_array(constValueView());
     this->synchronize(); // fonctionne pour toutes les variables
     Array2VariableDiff<T> csa;
     Array2View<T> from_array(value());
@@ -382,7 +384,7 @@ checkIfSame(IDataReader* reader,int max_print,bool compare_ghost)
 {
   if (itemKind()==IK_Particle)
     return 0;
-  ConstArray2View<T> from_array(value().constView());
+  ConstArray2View<T> from_array(valueView());
 
   Ref< IArray2DataT<T> > ref_data(m_data->cloneTrueEmptyRef());
   reader->read(this,ref_data.get());
@@ -544,7 +546,7 @@ compact(Int32ConstArrayView new_to_old_ids)
   if (current_size==0)
     return;
 
-  ValueType& current_value = m_data->_internalDeprecatedValue();
+  ValueType& current_value = m_data->_internal()->_internalDeprecatedValue();
   Integer dim2_size = current_value.dim2Size();
   if (dim2_size==0)
     return;
@@ -608,6 +610,16 @@ swapValues(ThatClass& rhs)
   // Il faut mettre à jour les références pour cette variable et \a rhs.
   syncReferences();
   rhs.syncReferences();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> auto
+Array2VariableT<DataType>::
+value() -> ValueType&
+{
+  return m_data->_internal()->_internalDeprecatedValue();
 }
 
 /*---------------------------------------------------------------------------*/

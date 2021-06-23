@@ -37,6 +37,8 @@
 #include "arcane/VariableArray.h"
 #include "arcane/RawCopy.h"
 
+#include "arcane/core/internal/IDataInternal.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -580,7 +582,7 @@ setIsSynchronized(const ItemGroup& group)
 template<typename T> void VariableArrayT<T>::
 _internalResize(Integer new_size,Integer nb_additional_element)
 {
-  Array<T>& container_ref = m_value->_internalDeprecatedValue();
+  Array<T>& container_ref = m_value->_internal()->_internalDeprecatedValue();
 
   if (nb_additional_element!=0){
     Integer capacity = container_ref.capacity();
@@ -638,7 +640,7 @@ _internalResize(Integer new_size,Integer nb_additional_element)
   // (cela ne peut pas être 0 car la classe Array doit allouer au moins un
   // élément si on utilise un allocateur spécifique ce qui est le cas
   // pour les variables.
-  Int64 capacity = m_value->_internalDeprecatedValue().capacity();
+  Int64 capacity = m_value->_internal()->_internalDeprecatedValue().capacity();
   ARCANE_ASSERT((isUsed() || capacity<=AlignedMemoryAllocator::simdAlignment()),
                 ("Wrong unused data size %d",capacity));
 }
@@ -723,6 +725,15 @@ copyItemsMeanValues(Int32ConstArrayView first_source,
   for(Integer i=0; i<size; ++i )
     value[destination[i]] = value[first_source[i]];
   syncReferences();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> auto VariableArrayT<DataType>::
+value() -> ValueType&
+{
+  return m_value->_internal()->_internalDeprecatedValue();
 }
 
 /*---------------------------------------------------------------------------*/

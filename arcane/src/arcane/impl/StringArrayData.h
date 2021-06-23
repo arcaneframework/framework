@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StringArrayData.h                                           (C) 2000-2020 */
+/* StringArrayData.h                                           (C) 2000-2021 */
 /*                                                                           */
 /* Donnée de type 'StringUniqueArray'.                                       */
 /*---------------------------------------------------------------------------*/
@@ -21,6 +21,7 @@
 
 #include "arcane/IData.h"
 #include "arcane/IDataVisitor.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 #include "arccore/base/ReferenceCounterImpl.h"
 #include "arccore/base/Ref.h"
@@ -38,6 +39,7 @@ namespace Arcane
 class StringArrayData
 : public ReferenceCounterImpl
 , public IArrayDataT<String>
+, public IArrayDataInternalT<String>
 {
   ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
 
@@ -99,6 +101,10 @@ class StringArrayData
   void visitArray(IArrayDataVisitor* visitor) override;
   void visitArray2(IArray2DataVisitor* visitor) override;
   void visitMultiArray2(IMultiArray2DataVisitor* visitor) override;
+
+ public:
+
+  IArrayDataInternalT<DataType>* _internal() override { return this; }
 
  public:
 

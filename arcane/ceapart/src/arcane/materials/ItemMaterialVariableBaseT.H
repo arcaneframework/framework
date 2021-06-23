@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemMaterialVariableBaseT.h                                 (C) 2000-2016 */
+/* ItemMaterialVariableBaseT.h                                 (C) 2000-2021 */
 /*                                                                           */
 /* Implémentation de la classe de base des variables matériaux.              */
 /*---------------------------------------------------------------------------*/
@@ -19,6 +19,7 @@
 #include "arcane/IVariable.h"
 #include "arcane/IItemFamily.h"
 #include "arcane/VariableInfo.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 #include "arcane/materials/MeshMaterialVariableRef.h"
 #include "arcane/materials/ComponentItemListBuilder.h"
@@ -208,7 +209,7 @@ _syncFromGlobalVariable()
   // Cette méthode est appelée lorsque la taille de la variable globale
   // change. Cette variable est la première variable de la liste.
   // Il faut ensuite notifier toutes les références de ce changement.
-  m_views[0] = m_vars[0]->value();
+  m_views[0] = m_vars[0]->valueView();
 
   for( MeshMaterialVariableRef::Enumerator i(this); i.hasNext(); ++i ){
     MeshMaterialVariableRef* ref = *i;
@@ -236,7 +237,7 @@ syncReferences()
   for( Integer i=0; i<nb_var; ++i ){
     m_views[i] = ContainerViewType();
     if (m_vars[i])
-      m_views[i] = m_vars[i]->value();
+      m_views[i] = m_vars[i]->valueView();
   }
 
   for( MeshMaterialVariableRef::Enumerator i(this); i.hasNext(); ++i ){
@@ -258,7 +259,7 @@ _createSaveData(Integer nb_value)
   IData* data = m_global_variable->data()->cloneEmpty();
   auto* true_data = dynamic_cast<ValueDataType*>(data);
   ARCANE_CHECK_POINTER(true_data);
-  true_data->reserve(nb_value);
+  true_data->_internal()->reserve(nb_value);
   return data;
 }
 
@@ -272,7 +273,7 @@ _internalCreateSaveDataRef(Integer nb_value)
   Ref<IData> data = m_global_variable->data()->cloneEmptyRef();
   auto* true_data = dynamic_cast<ValueDataType*>(data.get());
   ARCANE_CHECK_POINTER(true_data);
-  true_data->reserve(nb_value);
+  true_data->_internal()->reserve(nb_value);
   return data;
 }
 
@@ -313,7 +314,7 @@ _restoreData(IMeshComponent* component,IData* data,Integer data_index,
     Traits::resizeAndFillWithDefault(true_data,tmp_values,max_id);
   }
   else
-    tmp_values = global_var->value();
+    tmp_values = global_var->constValueView();
 
   if (allow_null_id){
     for( Integer i=0, n=ids.size(); i<n; ++i ){
@@ -353,8 +354,8 @@ _copyGlobalToPartial(Int32 var_index,Int32ConstArrayView local_ids,
     m_views[var_index+1] = partial_var->value();
   }
 
-  ContainerConstViewType global_view = m_vars[0]->value();
-  ContainerViewType partial_view = partial_var->value();
+  ContainerConstViewType global_view = m_vars[0]->constValueView();
+  ContainerViewType partial_view = partial_var->valueView();
 
   Traits::copyTo(global_view,local_ids,partial_view,indexes_in_multiple);
 }
@@ -371,8 +372,8 @@ _copyPartialToGlobal(Int32 var_index,Int32ConstArrayView local_ids,
   if (!partial_var)
     return;
 
-  ContainerViewType global_view = m_vars[0]->value();
-  ContainerConstViewType partial_view = partial_var->value();
+  ContainerViewType global_view = m_vars[0]->valueView();
+  ContainerConstViewType partial_view = partial_var->constValueView();
 
   Traits::copyTo(partial_view,indexes_in_multiple,global_view,local_ids);
 }
