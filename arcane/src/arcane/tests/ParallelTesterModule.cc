@@ -1342,10 +1342,10 @@ _testBitonicSort()
       serializer->setMode(ISerializer::ModeGet);
       data2->serialize(serializer,indexes_to_recv[i],0);
     }
-    IArrayDataT<Real>* true_data = dynamic_cast<IArrayDataT<Real>*>(data2.get());
+    auto* true_data = dynamic_cast<IArrayDataT<Real>*>(data2.get());
     if (!true_data)
       ARCANE_FATAL("Bad Type");
-    Array<Real>& true_array = true_data->value();
+    ConstArrayView<Real> true_array = true_data->view();
     {
       String fname(String("dump-")+pm->commRank());
       ofstream ofile(fname.localstr());

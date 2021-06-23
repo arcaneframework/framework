@@ -70,7 +70,7 @@ saveData(IMeshComponent* component,IData* data,
   ConstArrayView<ArrayView<DataType>> views = cviews;
   ValueDataType* true_data = dynamic_cast<ValueDataType*>(data);
   ARCANE_CHECK_POINTER(true_data);
-  ContainerType& values = true_data->value();
+  ContainerType& values = true_data->_internalDeprecatedValue();
   ENUMERATE_COMPONENTCELL(icell,component){
     MatVarIndex mvi = icell._varIndex();
     values.add(views[mvi.arrayIndex()][mvi.valueIndex()]);
@@ -494,14 +494,14 @@ _synchronizeV2()
   String storage_full_type = storage_type_info.fullName();
 
   Ref<IData> xdata(df->createSimpleDataRef(storage_full_type,storage_build_info));
-  IArray2DataT<DataType>* data = dynamic_cast< IArray2DataT<DataType>* >(xdata.get());
+  auto* data = dynamic_cast< IArray2DataT<DataType>* >(xdata.get());
   if (!data)
     ARCANE_FATAL("Bad type");
 
   ConstArrayView<MeshMaterialVariableIndexer*> indexers = material_mng->variablesIndexer();
   Integer nb_indexer = indexers.size();
-  data->value().resize(family->maxLocalId(),nb_indexer+1);
-  Array2View<DataType> values(data->value().view());
+  data->_internalDeprecatedValue().resize(family->maxLocalId(),nb_indexer+1);
+  Array2View<DataType> values(data->view());
 
   // Recopie les valeurs partielles dans le tableau.
   for( MeshMaterialVariableIndexer* indexer : indexers ){

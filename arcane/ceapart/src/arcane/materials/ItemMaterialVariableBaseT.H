@@ -256,9 +256,9 @@ _createSaveData(Integer nb_value)
 {
   // Obsolète
   IData* data = m_global_variable->data()->cloneEmpty();
-  ValueDataType* true_data = dynamic_cast<ValueDataType*>(data);
+  auto* true_data = dynamic_cast<ValueDataType*>(data);
   ARCANE_CHECK_POINTER(true_data);
-  true_data->value().reserve(nb_value);
+  true_data->reserve(nb_value);
   return data;
 }
 
@@ -270,9 +270,9 @@ ItemMaterialVariableBase<Traits>::
 _internalCreateSaveDataRef(Integer nb_value)
 {
   Ref<IData> data = m_global_variable->data()->cloneEmptyRef();
-  ValueDataType* true_data = dynamic_cast<ValueDataType*>(data.get());
+  auto* true_data = dynamic_cast<ValueDataType*>(data.get());
   ARCANE_CHECK_POINTER(true_data);
-  true_data->value().reserve(nb_value);
+  true_data->reserve(nb_value);
   return data;
 }
 
@@ -299,9 +299,9 @@ _restoreData(IMeshComponent* component,IData* data,Integer data_index,
   if (m_p->space()==MatVarSpace::Environment && !component->isEnvironment())
     ARCANE_FATAL("Can not restore data on material for environment only variable");
 
-  ValueDataType* true_data = dynamic_cast<ValueDataType*>(data);
+  auto* true_data = dynamic_cast<ValueDataType*>(data);
   ARCANE_CHECK_POINTER(true_data);
-  ContainerType& values = true_data->value();
+  auto values = true_data->view();
 
   PrivatePartType* global_var = this->_trueGlobalVariable();
 

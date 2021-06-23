@@ -70,7 +70,7 @@ template<typename DataType> void
 MaterialVariableArrayTraits<DataType>::
 resizeAndFillWithDefault(ValueDataType* data,ContainerType& container,Integer dim1_size)
 {
- ContainerType& values = data->value();
+ ContainerType& values = data->_internalDeprecatedValue();
  Integer dim2_size = values.dim2Size();
 
  //TODO: faire une version de Array2 qui spécifie une valeur à donner
@@ -90,11 +90,11 @@ saveData(IMeshComponent* component,IData* data,
   // \a values en ajoutant le nombre d'éléments pour notre
   // component.
   ConstArrayView<Array2View<DataType>> views = cviews;
-  ValueDataType* true_data = dynamic_cast<ValueDataType*>(data);
-  ARCANE_CHECK_POINTER(true_data);
-  ContainerType& values = true_data->value();
   if (views.empty())
     return;
+  auto* true_data = dynamic_cast<ValueDataType*>(data);
+  ARCANE_CHECK_POINTER(true_data);
+  ContainerType& values = true_data->_internalDeprecatedValue();
   ComponentItemVectorView component_view = component->view();
 
   Integer dim2_size = views[0].dim2Size();

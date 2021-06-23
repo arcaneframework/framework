@@ -167,10 +167,10 @@ _readVariable(IVariable* var,RealArray& buffer,HFile& hfile,const String& path)
   Int64UniqueArray unique_ids(buf_size);
   Int32UniqueArray local_ids(buf_size);
   IData* var_data = var->data();
-  IArrayDataT<Real>* var_true_data = dynamic_cast< IArrayDataT<Real>* >(var_data);
+  auto* var_true_data = dynamic_cast< IArrayDataT<Real>* >(var_data);
   if (!var_true_data)
     throw FatalErrorException(A_FUNCINFO,"Variable is not an array of Real");
-  RealArrayView var_value(var_true_data->value());
+  RealArrayView var_value(var_true_data->view());
   Integer nb_var_value = var_value.size();
   for( Integer z=0; z<buf_size; ++z )
     unique_ids[z] = z;
@@ -981,9 +981,9 @@ _readAndUpdateVariable(TimeVariableInfoBase* vi,Real wanted_time,HFile& hfile)
   info(4) << " BeginTime=" << begin_time << " wanted=" << wanted_time << " end_time=" << end_time
           << " ratio = " << ratio;
   {
-    ConstArrayView<DataType> begin_values_view = true_begin_data->value();
-    ConstArrayView<DataType> end_values_view = true_end_data->value();
-    ArrayView<DataType> values_view = true_data->value();
+    ConstArrayView<DataType> begin_values_view = true_begin_data->view();
+    ConstArrayView<DataType> end_values_view = true_end_data->view();
+    ArrayView<DataType> values_view = true_data->view();
     ENUMERATE_ITEM(iitem,variable->itemGroup()){
       Int32 lid = (is_partial) ? iitem.index() : iitem.itemLocalId();
       DataType begin_value = begin_values_view[lid];
