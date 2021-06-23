@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableArray.h                                             (C) 2000-2020 */
+/* VariableArray.h                                             (C) 2000-2021 */
 /*                                                                           */
 /* Variable tableau 1D.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -26,7 +26,9 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Variable sur un tableau 1D.
+ * \brief Implémentation d'une variable sur un tableau 1D.
+ *
+ * Les méthodes de cette classe sont internes à %Arcane.
  */
 template<class T>
 class VariableArrayT
@@ -71,7 +73,8 @@ class VariableArrayT
   ConstArrayView<T> constValueView() const { return m_value->view(); }
   ConstArrayView<T> valueView() const { return m_value->view(); }
   ArrayView<T> valueView() { return m_value->view(); }
-  void shrinkMemory() override;
+  ARCANE_CORE_EXPORT void shrinkMemory() override;
+  ARCANE_CORE_EXPORT Integer capacity();
   ConstArrayView< IDataTracerT<T>* > traceInfos() const { return m_trace_infos; }
   void copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination) override;
   void copyItemsMeanValues(Int32ConstArrayView first_source,

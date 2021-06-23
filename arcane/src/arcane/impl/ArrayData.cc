@@ -53,11 +53,20 @@ class ArrayDataT<DataType>::Impl
 : public IArrayDataInternalT<DataType>
 {
  public:
+
   explicit Impl(ArrayDataT<DataType>* p) : m_p(p){}
+
  public:
+
   void reserve(Integer new_capacity) override { m_p->m_value.reserve(new_capacity); }
   Array<DataType>& _internalDeprecatedValue() override { return m_p->m_value; }
+  Integer capacity() const override { return m_p->m_value.capacity(); }
+  void shrink() const override { m_p->m_value.shrink(); }
+  void resize(Integer new_size) override { m_p->m_value.resize(new_size);}
+  void dispose() override { m_p->m_value.dispose(); }
+
  private:
+
   ArrayDataT<DataType>* m_p;
 };
 

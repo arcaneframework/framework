@@ -69,7 +69,7 @@ saveData(IMeshComponent* component,IData* data,
          Array<ContainerViewType>& cviews)
 {
   ConstArrayView<ArrayView<DataType>> views = cviews;
-  ValueDataType* true_data = dynamic_cast<ValueDataType*>(data);
+  auto* true_data = dynamic_cast<ValueDataType*>(data);
   ARCANE_CHECK_POINTER(true_data);
   ContainerType& values = true_data->_internal()->_internalDeprecatedValue();
   ENUMERATE_COMPONENTCELL(icell,component){
@@ -387,7 +387,7 @@ _synchronizeV1()
   UniqueArray<DataType> saved_values;
   // Sauve les valeurs de la variable globale car on va les changer
   {
-    ConstArrayView<DataType> var_values = m_global_variable->value();
+    ConstArrayView<DataType> var_values = m_global_variable->valueView();
     saved_values.resize(var_values.size());
     saved_values.copy(var_values);
   }
@@ -398,7 +398,7 @@ _synchronizeV1()
       IMeshMaterial* mat = *imat;
       
       {
-        ArrayView<DataType> var_values = m_global_variable->value();
+        ArrayView<DataType> var_values = m_global_variable->valueView();
         // Copie valeurs du matériau dans la variable globale puis synchro
         ENUMERATE_MATCELL(imatcell,mat){
           MatCell mc = *imatcell;
@@ -409,7 +409,7 @@ _synchronizeV1()
       }
       m_global_variable->synchronize();
       {
-        ConstArrayView<DataType> var_values = m_global_variable->value();
+        ConstArrayView<DataType> var_values = m_global_variable->valueView();
         // Copie valeurs depuis la variable globale vers la partie materiau
         ENUMERATE_MATCELL(imatcell,mat){
           MatCell mc = *imatcell;
@@ -423,7 +423,7 @@ _synchronizeV1()
 
     // Effectue la même chose pour le milieu
     {
-      ArrayView<DataType> var_values = m_global_variable->value();
+      ArrayView<DataType> var_values = m_global_variable->valueView();
       // Copie valeurs du milieu dans la variable globale puis synchro
       ENUMERATE_ENVCELL(ienvcell,env){
         EnvCell ec = *ienvcell;
@@ -434,7 +434,7 @@ _synchronizeV1()
     }
     m_global_variable->synchronize();
     {
-      ConstArrayView<DataType> var_values = m_global_variable->value();
+      ConstArrayView<DataType> var_values = m_global_variable->valueView();
       // Copie valeurs depuis la variable globale vers la partie milieu
       ENUMERATE_ENVCELL(ienvcell,env){
         EnvCell ec = *ienvcell;
@@ -447,7 +447,7 @@ _synchronizeV1()
 
   // Restore les valeurs de la variable globale.
   {
-    ArrayView<DataType> var_values = m_global_variable->value();
+    ArrayView<DataType> var_values = m_global_variable->valueView();
     var_values.copy(saved_values);
   }
   m_global_variable->synchronize();

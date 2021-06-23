@@ -40,6 +40,18 @@ class IArrayDataInternalT
 
   //! Conteneur associé à la donnée.
   virtual Array<DataType>& _internalDeprecatedValue() = 0;
+
+  //! Capacité allouée par le conteneur
+  virtual Integer capacity() const =0;
+
+  //! Libère la mémoire additionnelle éventuellement allouée
+  virtual void shrink() const =0;
+
+  //! Redimensionne le conteneur.
+  virtual void resize(Integer new_size) =0;
+
+  //! Vide le conteneur et libère la mémoire alloué.
+  virtual void dispose() =0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -281,7 +281,7 @@ getReference(IVariable* var)
 {
   if (!var)
     throw ArgumentException(A_FUNCINFO,"null variable");
-  ThatClass* true_ptr = dynamic_cast<ThatClass*>(var);
+  auto* true_ptr = dynamic_cast<ThatClass*>(var);
   if (!true_ptr)
     ARCANE_FATAL("Can not build a reference from variable {0}",var->name());
   return true_ptr;
@@ -339,10 +339,10 @@ checkIfSync(int max_print)
 {
   IItemFamily* family = itemGroup().itemFamily();
   if (family){
-    UniqueArray<T> ref_array(value());
+    UniqueArray<T> ref_array(constValueView());
     this->synchronize(); // fonctionne pour toutes les variables
     ArrayVariableDiff<T> csa;
-    ArrayView<T> from_array(value());
+    ArrayView<T> from_array(valueView());
     Integer nerror = csa.check(this,ref_array,from_array,max_print,true);
     value().copy(ref_array);
     return nerror;
@@ -358,7 +358,7 @@ checkIfSame(IDataReader* reader,Integer max_print,bool compare_ghost)
 {
   if (itemKind()==IK_Particle)
     return 0;
-  Array<T>& from_array(value());
+  ArrayView<T> from_array(valueView());
 
   Ref< IArrayDataT<T> > ref_data(m_value->cloneTrueEmptyRef());
   reader->read(this,ref_data.get());
@@ -399,7 +399,7 @@ namespace
 template<typename T> Integer VariableArrayT<T>::
 _checkIfSameOnAllReplica(IParallelMng* replica_pm,Integer max_print)
 {
-  return _checkIfSameOnAllReplicaHelper(replica_pm,this,value().constView(),max_print);
+  return _checkIfSameOnAllReplicaHelper(replica_pm,this,constValueView(),max_print);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -531,7 +531,7 @@ compact(Int32ConstArrayView new_to_old_ids)
     return;
   }
 
-  UniqueArray<T> old_value(value());
+  UniqueArray<T> old_value(constValueView());
   Integer new_size = new_to_old_ids.size();
   m_value->resize(new_size);
   ArrayView<T> current_value = m_value->view();
@@ -582,41 +582,40 @@ setIsSynchronized(const ItemGroup& group)
 template<typename T> void VariableArrayT<T>::
 _internalResize(Integer new_size,Integer nb_additional_element)
 {
-  Array<T>& container_ref = m_value->_internal()->_internalDeprecatedValue();
+  auto* value_internal = m_value->_internal();
 
   if (nb_additional_element!=0){
-    Integer capacity = container_ref.capacity();
+    Integer capacity = value_internal->capacity();
     if (new_size>capacity)
-      container_ref.reserve(new_size+nb_additional_element);
+      value_internal->reserve(new_size+nb_additional_element);
   }
   eDataInitialisationPolicy init_policy = getGlobalDataInitialisationPolicy();
   // Si la nouvelle taille est supérieure à l'ancienne,
   // initialise les nouveaux éléments suivant
   // la politique voulue
-  Integer current_size = container_ref.size();
+  Integer current_size = m_value->view().size();
   if (!isUsed()){
     // Si la variable n'est plus utilisée, libérée la mémoire
     // associée.
-    container_ref.dispose();
+    value_internal->dispose();
   }
-  container_ref.resize(new_size);
+  value_internal->resize(new_size);
   if (new_size>current_size){
     if (init_policy==DIP_InitWithDefault){
-      ArrayView<T> values = this->value();
+      ArrayView<T> values = this->valueView();
       for(Integer i=current_size; i<new_size; ++i)
         values[i] = T();
     }
     else if (init_policy==DIP_InitWithNan){
-      ValueType & values = this->value();
-      ArrayView<T> view = values.view();
+      ArrayView<T> view = this->valueView();
       DataTypeTraitsT<T>::fillNan(view.subView(current_size,new_size-current_size));
     }
   }
 
   // Compacte la mémoire si demandé
   if (_wantShrink()){
-    if (container_ref.size() < container_ref.capacity()){
-      container_ref.shrink();
+    if (m_value->view().size() < value_internal->capacity()){
+      value_internal->shrink();
     }
   }
 
@@ -640,7 +639,7 @@ _internalResize(Integer new_size,Integer nb_additional_element)
   // (cela ne peut pas être 0 car la classe Array doit allouer au moins un
   // élément si on utilise un allocateur spécifique ce qui est le cas
   // pour les variables.
-  Int64 capacity = m_value->_internal()->_internalDeprecatedValue().capacity();
+  Int64 capacity = value_internal->capacity();
   ARCANE_ASSERT((isUsed() || capacity<=AlignedMemoryAllocator::simdAlignment()),
                 ("Wrong unused data size %d",capacity));
 }
@@ -661,8 +660,17 @@ resizeWithReserve(Integer n,Integer nb_additional)
 template<typename DataType> void VariableArrayT<DataType>::
 shrinkMemory()
 {
-  value().shrink();
+  m_value->_internal()->shrink();
   syncReferences();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> Integer VariableArrayT<DataType>::
+capacity()
+{
+  return m_value->_internal()->capacity();
 }
 
 /*---------------------------------------------------------------------------*/
