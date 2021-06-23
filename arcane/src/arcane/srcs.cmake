@@ -58,6 +58,8 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    Concurrency.h
    Connectivity.cc
    Connectivity.h
+   core/internal/IDataInternal.h
+   Data.cc
    DataTypeDispatchingDataVisitor.cc
    DataTypeDispatchingDataVisitor.h
    DotNetRuntimeInitialisationInfo.cc
