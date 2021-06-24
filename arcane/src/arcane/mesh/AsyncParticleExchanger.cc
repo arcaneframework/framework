@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AsyncParticleExchanger.cc                                   (C) 2019-2020 */
+/* AsyncParticleExchanger.cc                                   (C) 2000-2021 */
 /*                                                                           */
 /* Echangeur de particules asynchrone.                                       */
 /*---------------------------------------------------------------------------*/
@@ -48,6 +48,9 @@ void AsyncParticleExchanger::
 build()
 {
   m_bpe.build();
+  // Par défaut met à 0 le niveau de verbosité pour éviter trop de messages
+  // lors des phases asynchrones.
+  m_bpe.setVerboseLevel(0);
 }
 
 /*---------------------------------------------------------------------------*/
