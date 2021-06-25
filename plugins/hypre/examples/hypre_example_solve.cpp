@@ -18,8 +18,6 @@
 
 #include <alien/hypre/backend.h>
 
-#include <iostream>
-
 #include <arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h>
 
 #include <alien/ref/AlienRefSemantic.h>

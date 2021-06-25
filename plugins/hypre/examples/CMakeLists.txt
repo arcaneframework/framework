@@ -14,23 +14,20 @@
 # 
 # SPDX-License-Identifier: Apache-2.0
 
-add_executable(test_hypre test_hypre.cpp)
+add_executable(example_hypre hypre_example_solve.cpp)
 
-target_link_libraries(test_hypre PUBLIC
+target_link_libraries(example_hypre PUBLIC
         Alien::alien_hypre
         Alien::alien_semantic_ref)
 
+enable_testing()
 include(LoadAlienTest)
 
-#-----------------------------------------------------------
-# Tests
-#-----------------------------------------------------------
-
 alien_test(
-        BENCH hypre
-        NAME hypre.default
-        PROCS 4
-        COMMAND test_hypre
+    BENCH hypre
+    NAME hypre.example
+    PROCS 4
+    COMMAND example_hypre
 )
 
 #-----------------------------------------------------------

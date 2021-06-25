@@ -91,11 +91,13 @@ generate_export_header(alien_hypre
         EXPORT_FILE_NAME include/alien/hypre/export.h
         )
 
+# Examples
+
+add_subdirectory(examples)
+
 # Tests
 
-enable_testing()
-
-add_subdirectory(test)
+add_subdirectory(tests)
 
 # Install
 
