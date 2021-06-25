@@ -1,0 +1,193 @@
+﻿<#@ template language="C#" linePragmas="false" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// #WARNING#: This file has been generated automatically. Do not edit.
+// Arcane version <#= Version #> : <#= DateTime.Now #>
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#ifndef ARCANE_MODULE_<#= Xml.ClassName.ToUpper() #>_H
+#define ARCANE_MODULE_<#= Xml.ClassName.ToUpper() #>_H
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arcane/VariableTypes.h"
+#include "arcane/EntryPoint.h"
+#include "arcane/ISubDomain.h"
+#include "arcane/ModuleBuildInfo.h"
+#include "arcane/ModuleFactory.h"
+#include "arcane/ServiceRegisterer.h"
+#include "arcane/BasicModule.h"
+#include "arcane/ServiceInfo.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ARCANE_BEGIN_NAMESPACE
+class ISubDomain;
+class IModule;
+ARCANE_END_NAMESPACE
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  if (Xml.LesserThanVersionOne) { #>
+
+ARCANE_BEGIN_NAMESPACE
+ 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<# 	}
+	if(Xml.NamespaceMacroName != null) { #>
+
+<#= Xml.NamespaceMacroName #>_BEGIN_NAMESPACE
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  } 
+    if(Xml.NamespaceName != null) { #>
+
+namespace <#= Xml.NamespaceName #> {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  } #>
+
+class CaseOptions<#= Xml.ClassName #>;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Generation de la classe de base du Module
+class Arcane<#= Xml.ClassName #>Object
+  : public <#= Module.ParentName #>
+<#  foreach(var i in Module.InheritedInterfaces) { #>
+  , public <#= i.name #>
+<#  } #>
+{
+public:
+
+  static void fillServiceInfo(Arcane::ServiceInfo* si)
+  {
+    si->setCaseOptionsFileName("<#= Xml.ClassName #>_<#= Path.Replace("/","_") #>");
+    si->setAxlVersion(<#= Xml.Version #>);
+    si->setDefaultTagName(Arcane::String("<#= Xml.ClassName.ToLowerWithDash () #>"));
+    si->setAxlContent(getAxlContent());
+<#  foreach(var n in Module.Names) { #>
+    si->setTagName(Arcane::String("<#= n.Value #>"),Arcane::String("<#= n.lang #>"));
+<#  } #>
+  }
+
+public:
+
+  Arcane<#= Xml.ClassName #>Object(const Arcane::ModuleBuildInfo& mb)
+    : <#= Module.ParentName #>(mb)
+<#  if (Xml.Options.Count() > 0) { #>
+    , m_options(nullptr)
+<#  } #>
+<#  foreach(var v in Module.Variables) { #>
+    , m_<#= v.fieldname #>(Arcane::VariableBuildInfo(this, "<#= v.name #>"<#
+      if (v.HasFamilyName) { #>, "<#= v.FamilyName #>" <# } #> <#
+      if(v.NbProperty > 0) { 
+    #>, Arcane::IVariable::P<#= v.FirstProperty.ToString () #><# 
+        foreach(var p in v.OthersProperties) {
+    #>| Arcane::IVariable::P<#= p.ToString () #><#
+        } 
+      } #>))
+<#  } #>
+  {
+<#  if (Xml.Options.Count() > 0) { #>
+    m_options = new CaseOptions<#= Xml.ClassName #>(mb.subDomain()->caseMng());
+    m_options->setCaseModule(this);
+<#  }
+
+    foreach(var ep in Module.EntryPoints) { #>
+    addEntryPoint(this, "<#= ep.name #>", 
+                  &Arcane<#= Xml.ClassName #>Object::<#= ep.methodname #>,
+                  Arcane::IEntryPoint::<#= ep.@where.Name () #>,
+                  Arcane::IEntryPoint::<#= ep.property.Name () #>);
+<#  } #>
+  }
+
+  virtual ~Arcane<#= Xml.ClassName #>Object()
+  {
+<#  if (Xml.Options.Count() > 0) { #>
+    delete m_options;
+<#  } #>
+  }
+
+public:
+
+  //! points d'entrée
+<#  foreach(var ep in Module.EntryPoints) { #>
+  virtual void <#= ep.methodname #>() = 0; // <#= ep.methodname.ToClassName () #>
+<#  } #>
+
+<#  if (Xml.Options.Count() > 0) { #>
+  //! Options du jeu de données du module
+  CaseOptions<#= Xml.ClassName #>* options() const { return m_options; }
+
+private:
+
+  //! Options du jeu de données du module
+  CaseOptions<#= Xml.ClassName #>* m_options;
+<#  } #>
+
+protected:
+
+  //! Variables du module
+<#  foreach(var v in Module.Variables) { 
+      if(v.IsInFlow) { #>
+  const <#= v.QualifiedClassName #> m_<#= v.fieldname #>;
+<#    } else { #>
+  <#= v.QualifiedClassName #> m_<#= v.fieldname #>;
+<#    }
+    } #>
+    
+private:
+ static Arcane::FileContent getAxlContent()
+ {
+   const char* str_content = <#= Module.AxlContent.ContentAsMultiString()#>;
+   const Arcane::Byte* content = (const Arcane::Byte*)(str_content);
+   Arcane::Span<const Arcane::Byte> bytes(content,<#= Module.AxlContent.Length#>);
+   int file_version = 1;
+   return Arcane::FileContent(bytes,file_version,"<#= Module.AxlContent.Compression#>");
+ }
+
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#define ARCANE_REGISTER_MODULE_<#= Xml.ClassName.ToUpper() #>(class_name) \
+  ARCANE_REGISTER_AXL_MODULE(class_name,Arcane::ModuleProperty("<#= Xml.ClassName #>",<#= Module.autoload ? "true" : "false" #>))
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  if(Xml.NamespaceMacroName != null) { #>
+
+<#= Xml.NamespaceMacroName #>_END_NAMESPACE
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  } 
+    if(Xml.NamespaceName != null) { #>
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  } 
+	if (Xml.LesserThanVersionOne) { #>
+
+ARCANE_END_NAMESPACE
+ 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  } #>
+
+#endif
