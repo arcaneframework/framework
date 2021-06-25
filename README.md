@@ -61,3 +61,13 @@ It contains the following subdirectories:
    + arccore, which contains base features on which Alien is built, mainly Array and ParallelManager;
  - src, the main repository for linear algebra,
  - plugins, with different plugins for Alien, to call Hypre or SuperLU external libraries.
+
+## For developers
+
+To update `arccore` and `arccon`, use `git subtree`.
+
+For example, to upgrade `arccore` to last commit of branch `dev/cea`, run:
+```shell script
+git subtree pull --prefix=framework/arccore --squash git@github.com:arcaneframework/arccore.git de
+v/cea
+```
