@@ -77,6 +77,7 @@ class CartesianMeshTestUtils
   void _checkSameId(Face item,FaceLocalId local_id);
   void _checkSameId(Cell item,CellLocalId local_id);
   void _checkSameId(Node item,NodeLocalId local_id);
+  void _saveSVG();
 };
 
 /*---------------------------------------------------------------------------*/

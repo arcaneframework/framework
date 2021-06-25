@@ -272,7 +272,7 @@ prodTensTens(Real3x3 t,Real3x3 v)
  * \ingroup GroupMathUtils
  * \brief Produit matrice matrice entre deux tenseurs.
  */
-ARCCORE_HOST_DEVICE inline Real3x3
+inline Real3x3
 matrixProduct(Real3x3 t,Real3x3 v)
 {
   return Real3x3::fromLines(t.x.x*v.x.x+t.x.y*v.y.x+t.x.z*v.z.x,

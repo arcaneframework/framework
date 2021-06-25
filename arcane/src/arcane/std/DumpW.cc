@@ -138,8 +138,8 @@ void
 DumpW::DataVisitor::
 _applyVisitorT(IArrayDataT<T>* data) 
 { 
-  ArrayView<T> view = data->value();
-  m_dump->writeVal(*m_var,ArrayView<T>(view.size(),view.unguardedBasePointer()));
+  ArrayView<T> view = data->view();
+  m_dump->writeVal(*m_var,ArrayView<T>(view.size(),view.data()));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -149,7 +149,7 @@ void
 DumpW::DataVisitor::
 _applyVisitorT(IArray2DataT<T>* data) 
 { 
-  ConstArray2View<T> values = data->value();
+  ConstArray2View<T> values = data->view();
   m_dump->writeVal(*m_var,values);
 }
 

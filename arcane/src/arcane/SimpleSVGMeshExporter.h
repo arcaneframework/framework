@@ -5,18 +5,18 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableRefArrayLock.h                                      (C) 2000-2021 */
+/* SimpleSVGMeshExporter.h                                     (C) 2000-2021 */
 /*                                                                           */
-/* Verrou sur une variable tableau.                                          */
+/* Écrivain d'un maillage au format SVG.                                     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_VARIABLEREFARRAYLOCK_H
-#define ARCANE_VARIABLEREFARRAYLOCK_H
+#ifndef ARCANE_SIMPLESVGMESHEXPORTER_H
+#define ARCANE_SIMPLESVGMESHEXPORTER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Array.h"
+#include "arcane/ItemTypes.h"
 
-#include "arcane/IVariable.h"
+#include <iosfwd>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -27,47 +27,34 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
- * \brief Verrou sur une variable tableau.
- * \deprecated Ne plus utiliser
+ * \brief Exportation d'un maillage au format SVG.
+ *
+ * Cette classe ne fonctionne que pour les maillages 2D. Seules les composantes
+ * `x` et `y` sont considérérées. Après avoir créée une instance, il est possible
+ * d'appeler la méthode writeGroup() pour exporter les entités associées à groupe
+ * de maille (noeuds, faces et mailles).
  */
-template<typename DataType>
-class VariableRefArrayLockT
+class ARCANE_CORE_EXPORT SimpleSVGMeshExporter
 {
+  class Impl;
  public:
-
-  typedef Array<DataType> ValueType;
-  typedef VariableRefArrayLockT<DataType> ThatClass;
-
- public:
-
-  VariableRefArrayLockT(ValueType& v,IVariable* var)
-  : m_value(v), m_variable(var), m_saved_ptr(v.data()), m_saved_size(v.size())
-  {
-  }
-
-  ~VariableRefArrayLockT()
-  {
-    if (m_value.data()!=m_saved_ptr || m_value.size()!=m_saved_size)
-      m_variable->syncReferences();
-  }
-
- public:
-
-  VariableRefArrayLockT(const VariableRefArrayLockT<DataType>& rhs) = default;
-  ThatClass& operator=(const ThatClass& rhs) = default;
-
- public:
-
-  ARCCORE_DEPRECATED_2021("This class is deprecated")
-  ValueType& value() { return m_value; }
-
+ /*!
+  * \brief Créé une instance associée au flux \a ofile.
+  *
+  * Le flux \a ofile doit rester valide durant toute la durée de vie de l'instance.
+  */
+  SimpleSVGMeshExporter(std::ostream& ofile);
+  SimpleSVGMeshExporter(const SimpleSVGMeshExporter& rhs) = delete;
+  SimpleSVGMeshExporter& operator=(const SimpleSVGMeshExporter& rhs) = delete;
+  ~SimpleSVGMeshExporter();
+  /*!
+   * \brief Exporte les entités du groupe \a cells.
+   *
+   * Actuellement, il n'est pas possible d'appeler plusieurs fois cette méthode.
+   */
+  void write(const CellGroup& cells);
  private:
-
-  ValueType& m_value;
-  IVariable* m_variable;
-  DataType* m_saved_ptr;
-  Integer m_saved_size;
+  Impl* m_p;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -78,4 +65,4 @@ class VariableRefArrayLockT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

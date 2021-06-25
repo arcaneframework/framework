@@ -67,8 +67,8 @@ bool global_debug_sync = false;
 template<typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
 applyDispatch(IArrayDataT<SimpleType>* data)
 {
-  this->beginSynchronize(data->value(),m_1d_buffer);
-  this->endSynchronize(data->value(),m_1d_buffer);
+  this->beginSynchronize(data->view(),m_1d_buffer);
+  this->endSynchronize(data->view(),m_1d_buffer);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -103,8 +103,8 @@ _copyToBuffer(Int32ConstArrayView indexes,ArrayView<SimpleType> buffer,
 template<typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
 applyDispatch(IArray2DataT<SimpleType>* data)
 {
-  Array2<SimpleType>& value = data->value();
-  SimpleType* value_ptr = value.view().unguardedBasePointer();
+  Array2View<SimpleType> value = data->view();
+  SimpleType* value_ptr = value.data();
   // Cette valeur doit être la même sur tous les procs
   Integer dim2_size = value.dim2Size();
   if (dim2_size==0)

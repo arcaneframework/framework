@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array2Data.cc                                               (C) 2000-2020 */
+/* Array2Data.cc                                               (C) 2000-2021 */
 /*                                                                           */
 /* Donnée du type 'Array2'.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -27,6 +27,7 @@
 #include "arcane/datatype/DataStorageBuildInfo.h"
 
 #include "arcane/ISerializer.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 #include "arcane/impl/Array2Data.h"
 #include "arcane/impl/SerializedData.h"
@@ -46,10 +47,27 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<typename DataType>
+class Array2DataT<DataType>::Impl
+: public IArray2DataInternalT<DataType>
+{
+ public:
+  explicit Impl(Array2DataT<DataType>* p) : m_p(p){}
+ public:
+  void reserve(Integer new_capacity) override { m_p->m_value.reserve(new_capacity); }
+  Array2<DataType>& _internalDeprecatedValue() override { return m_p->m_value; }
+ private:
+  Array2DataT<DataType>* m_p;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template<typename DataType> Array2DataT<DataType>::
 Array2DataT(ITraceMng* trace)
 : m_value(AlignedMemoryAllocator::Simd())
 , m_trace(trace)
+, m_internal(new Impl(this))
 {
 }
 
@@ -60,6 +78,7 @@ template<typename DataType> Array2DataT<DataType>::
 Array2DataT(const Array2DataT<DataType>& rhs)
 : m_value(AlignedMemoryAllocator::Simd())
 , m_trace(rhs.m_trace)
+, m_internal(new Impl(this))
 {
   m_value = rhs.m_value;
 }
@@ -71,7 +90,17 @@ template<typename DataType> Array2DataT<DataType>::
 Array2DataT(const DataStorageBuildInfo& dsbi)
 : m_value(dsbi.memoryAllocator())
 , m_trace(dsbi.traceMng())
+, m_internal(new Impl(this))
 {
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> Array2DataT<DataType>::
+~Array2DataT()
+{
+  delete m_internal;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -450,10 +479,10 @@ computeHash(IHashAlgorithm* algo,ByteArray& output) const
 template<typename DataType> void Array2DataT<DataType>::
 copy(const IData* data)
 {
-  const DataInterfaceType* true_data = dynamic_cast< const DataInterfaceType* >(data);
+  auto* true_data = dynamic_cast< const DataInterfaceType* >(data);
   if (!true_data)
     throw ArgumentException(A_FUNCINFO,"Can not cast 'IData' to 'IArray2DataT'");
-  m_value.copy(true_data->value());
+  m_value.copy(true_data->view());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -462,7 +491,7 @@ copy(const IData* data)
 template<typename DataType> void Array2DataT<DataType>::
 swapValues(IData* data)
 {
-  ThatClass* true_data = dynamic_cast<ThatClass*>(data);
+  auto* true_data = dynamic_cast<ThatClass*>(data);
   if (!true_data)
     throw ArgumentException(A_FUNCINFO,"Can not cast 'IData' to 'Array2DataT'");
   swapValuesDirect(true_data);

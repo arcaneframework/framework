@@ -47,6 +47,7 @@
 #include "arcane/VariableArray.h"
 #include "arcane/ItemPrinter.h"
 #include "arcane/IVariableSynchronizer.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 #include "arcane/datatype/DataTypeTraits.h"
 #include "arcane/datatype/DataStorageBuildInfo.h"
@@ -68,9 +69,9 @@ saveData(IMeshComponent* component,IData* data,
          Array<ContainerViewType>& cviews)
 {
   ConstArrayView<ArrayView<DataType>> views = cviews;
-  ValueDataType* true_data = dynamic_cast<ValueDataType*>(data);
+  auto* true_data = dynamic_cast<ValueDataType*>(data);
   ARCANE_CHECK_POINTER(true_data);
-  ContainerType& values = true_data->value();
+  ContainerType& values = true_data->_internal()->_internalDeprecatedValue();
   ENUMERATE_COMPONENTCELL(icell,component){
     MatVarIndex mvi = icell._varIndex();
     values.add(views[mvi.arrayIndex()][mvi.valueIndex()]);
@@ -115,7 +116,7 @@ resizeWithReserve(PrivatePartType* var,Integer dim1_size)
   // Pour éviter de réallouer à chaque fois qu'il y a une augmentation du
   // nombre de mailles matériaux, alloue un petit peu plus que nécessaire.
   // Par défaut, on alloue 5% de plus.
-  Integer capacity = var->value().capacity();
+  Integer capacity = var->capacity();
   Integer reserve_size = 0;
   if (dim1_size>=capacity && reserve_size>0){
     Integer additional_size = CheckedConvert::toInteger((Real)dim1_size * 1.05);
@@ -386,7 +387,7 @@ _synchronizeV1()
   UniqueArray<DataType> saved_values;
   // Sauve les valeurs de la variable globale car on va les changer
   {
-    ConstArrayView<DataType> var_values = m_global_variable->value();
+    ConstArrayView<DataType> var_values = m_global_variable->valueView();
     saved_values.resize(var_values.size());
     saved_values.copy(var_values);
   }
@@ -397,7 +398,7 @@ _synchronizeV1()
       IMeshMaterial* mat = *imat;
       
       {
-        ArrayView<DataType> var_values = m_global_variable->value();
+        ArrayView<DataType> var_values = m_global_variable->valueView();
         // Copie valeurs du matériau dans la variable globale puis synchro
         ENUMERATE_MATCELL(imatcell,mat){
           MatCell mc = *imatcell;
@@ -408,7 +409,7 @@ _synchronizeV1()
       }
       m_global_variable->synchronize();
       {
-        ConstArrayView<DataType> var_values = m_global_variable->value();
+        ConstArrayView<DataType> var_values = m_global_variable->valueView();
         // Copie valeurs depuis la variable globale vers la partie materiau
         ENUMERATE_MATCELL(imatcell,mat){
           MatCell mc = *imatcell;
@@ -422,7 +423,7 @@ _synchronizeV1()
 
     // Effectue la même chose pour le milieu
     {
-      ArrayView<DataType> var_values = m_global_variable->value();
+      ArrayView<DataType> var_values = m_global_variable->valueView();
       // Copie valeurs du milieu dans la variable globale puis synchro
       ENUMERATE_ENVCELL(ienvcell,env){
         EnvCell ec = *ienvcell;
@@ -433,7 +434,7 @@ _synchronizeV1()
     }
     m_global_variable->synchronize();
     {
-      ConstArrayView<DataType> var_values = m_global_variable->value();
+      ConstArrayView<DataType> var_values = m_global_variable->valueView();
       // Copie valeurs depuis la variable globale vers la partie milieu
       ENUMERATE_ENVCELL(ienvcell,env){
         EnvCell ec = *ienvcell;
@@ -446,7 +447,7 @@ _synchronizeV1()
 
   // Restore les valeurs de la variable globale.
   {
-    ArrayView<DataType> var_values = m_global_variable->value();
+    ArrayView<DataType> var_values = m_global_variable->valueView();
     var_values.copy(saved_values);
   }
   m_global_variable->synchronize();
@@ -494,14 +495,14 @@ _synchronizeV2()
   String storage_full_type = storage_type_info.fullName();
 
   Ref<IData> xdata(df->createSimpleDataRef(storage_full_type,storage_build_info));
-  IArray2DataT<DataType>* data = dynamic_cast< IArray2DataT<DataType>* >(xdata.get());
+  auto* data = dynamic_cast< IArray2DataT<DataType>* >(xdata.get());
   if (!data)
     ARCANE_FATAL("Bad type");
 
   ConstArrayView<MeshMaterialVariableIndexer*> indexers = material_mng->variablesIndexer();
   Integer nb_indexer = indexers.size();
-  data->value().resize(family->maxLocalId(),nb_indexer+1);
-  Array2View<DataType> values(data->value().view());
+  data->_internal()->_internalDeprecatedValue().resize(family->maxLocalId(),nb_indexer+1);
+  Array2View<DataType> values(data->view());
 
   // Recopie les valeurs partielles dans le tableau.
   for( MeshMaterialVariableIndexer* indexer : indexers ){

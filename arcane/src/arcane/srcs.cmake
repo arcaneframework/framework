@@ -58,6 +58,8 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    Concurrency.h
    Connectivity.cc
    Connectivity.h
+   core/internal/IDataInternal.h
+   Data.cc
    DataTypeDispatchingDataVisitor.cc
    DataTypeDispatchingDataVisitor.h
    DotNetRuntimeInitialisationInfo.cc
@@ -149,6 +151,8 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    DomLibXml2V2.cc
    SerializeBuffer.cc
    SerializeBuffer.h
+   SimpleSVGMeshExporter.h
+   SimpleSVGMeshExporter.cc
    TimeLoop.cc
    TimeLoop.h
    Timer.cc

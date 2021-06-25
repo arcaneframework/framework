@@ -38,7 +38,8 @@ namespace Arcane
  */
 class ARCANE_CEA_EXPORT DirFace
 {
- public:
+  friend FaceDirectionMng;
+ private:
   DirFace(Cell n,Cell p) : m_previous(p), m_next(n){}
  public:
   //! Maille avant
@@ -189,8 +190,10 @@ class ARCANE_CEA_EXPORT FaceDirectionMng
   eMeshDirection m_direction;
   Impl* m_p;
 
-  void _computeCellInfos(const VariableCellReal3& cells_center,
+  void _computeCellInfos(const CellDirectionMng& cell_dm,
+                         const VariableCellReal3& cells_center,
                          const VariableFaceReal3& faces_center);
+  bool _hasFace(Cell cell,Int32 face_local_id) const;
 };
 
 /*---------------------------------------------------------------------------*/

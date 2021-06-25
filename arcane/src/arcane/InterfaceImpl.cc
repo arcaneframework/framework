@@ -45,13 +45,9 @@
 #include "arcane/IMeshFactory.h"
 #include "arcane/IMeshFactoryMng.h"
 #include "arcane/IMeshMng.h"
-#include "arcane/IDataFactory.h"
-#include "arcane/IDataStorageFactory.h"
 #include "arcane/IDirectExecution.h"
 #include "arcane/IDirectSubDomainExecuteFunctor.h"
 #include "arcane/ISerializer.h"
-#include "arcane/IData.h"
-#include "arcane/ISerializedData.h"
 #include "arcane/IDeflateService.h"
 #include "arcane/ItemTypes.h"
 #include "arcane/IIncrementalItemConnectivity.h"
@@ -92,8 +88,6 @@
 #include "arcane/IGhostLayerMng.h"
 #include "arcane/VariableStatusChangedEventArgs.h"
 #include "arcane/MeshPartInfo.h"
-
-#include "arccore/base/ReferenceCounterImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -158,15 +152,6 @@ decompress(Span<const Byte> compressed_values,Span<Byte> values)
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arccore
-{
-ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(Arcane::IData);
-ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(Arcane::ISerializedData);
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

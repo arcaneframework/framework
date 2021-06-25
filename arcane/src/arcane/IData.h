@@ -265,10 +265,20 @@ class IArrayDataT
  public:
 
   //! Valeur de la donnée
+  ARCCORE_DEPRECATED_2021("Use view() instead.")
   virtual Array<DataType>& value() = 0;
 
-  //! Valeur de la donnée
+  //! Valeur constante de la donnée
+  ARCCORE_DEPRECATED_2021("Use view() instead.")
   virtual const Array<DataType>& value() const = 0;
+
+ public:
+
+  //! Vue constante sur la donnée
+  virtual ConstArrayView<DataType> view() const = 0;
+
+  //! Vue sur la donnée
+  virtual ArrayView<DataType> view() = 0;
 
   //! Clone la donnée
   ARCCORE_DEPRECATED_2020("Use cloneTrueRef() instead")
@@ -283,6 +293,9 @@ class IArrayDataT
 
   //! Clone la donnée mais sans éléments.
   virtual Ref<ThatClass> cloneTrueEmptyRef() = 0;
+
+  //! \internal
+  virtual IArrayDataInternalT<DataType>* _internal() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -316,15 +329,24 @@ class IArray2DataT
 : public IArray2Data
 {
  public:
+
   typedef IArray2DataT<DataType> ThatClass;
 
- public:
-
   //! Valeur de la donnée
+  ARCCORE_DEPRECATED_2021("Use view() instead.")
   virtual Array2<DataType>& value() = 0;
 
   //! Valeur de la donnée
+  ARCCORE_DEPRECATED_2021("Use view() instead.")
   virtual const Array2<DataType>& value() const = 0;
+
+ public:
+
+  //! Vue constante sur la donnée
+  virtual ConstArray2View<DataType> view() const = 0;
+
+  //! Vue sur la donnée
+  virtual Array2View<DataType> view() = 0;
 
   //! Clone la donnée
   ARCCORE_DEPRECATED_2020("Use cloneTrueRef() instead")
@@ -339,6 +361,9 @@ class IArray2DataT
 
   //! Clone la donnée mais sans éléments.
   virtual Ref<ThatClass> cloneTrueEmptyRef() = 0;
+
+  //! \internal
+  virtual IArray2DataInternalT<DataType>* _internal() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

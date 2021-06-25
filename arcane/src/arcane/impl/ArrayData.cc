@@ -23,13 +23,13 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/IndexOutOfRangeException.h"
 #include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/OStringStream.h"
 
 #include "arcane/datatype/DataStorageBuildInfo.h"
 #include "arcane/datatype/IDataOperation.h"
 #include "arcane/datatype/DataStorageTypeInfo.h"
 
 #include "arcane/ISerializer.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 #include "arcane/impl/SerializedData.h"
 #include "arcane/impl/DataStorageFactory.h"
@@ -48,10 +48,36 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<typename DataType>
+class ArrayDataT<DataType>::Impl
+: public IArrayDataInternalT<DataType>
+{
+ public:
+
+  explicit Impl(ArrayDataT<DataType>* p) : m_p(p){}
+
+ public:
+
+  void reserve(Integer new_capacity) override { m_p->m_value.reserve(new_capacity); }
+  Array<DataType>& _internalDeprecatedValue() override { return m_p->m_value; }
+  Integer capacity() const override { return m_p->m_value.capacity(); }
+  void shrink() const override { m_p->m_value.shrink(); }
+  void resize(Integer new_size) override { m_p->m_value.resize(new_size);}
+  void dispose() override { m_p->m_value.dispose(); }
+
+ private:
+
+  ArrayDataT<DataType>* m_p;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template<typename DataType> ArrayDataT<DataType>::
 ArrayDataT(ITraceMng* trace)
 : m_value(AlignedMemoryAllocator::Simd())
 , m_trace(trace)
+, m_internal(new Impl(this))
 {
 }
 
@@ -62,6 +88,7 @@ template<typename DataType> ArrayDataT<DataType>::
 ArrayDataT(const ArrayDataT<DataType>& rhs)
 : m_value(AlignedMemoryAllocator::Simd())
 , m_trace(rhs.m_trace)
+, m_internal(new Impl(this))
 {
   m_value = rhs.m_value.constSpan();
 }
@@ -73,7 +100,17 @@ template<typename DataType> ArrayDataT<DataType>::
 ArrayDataT(const DataStorageBuildInfo& dsbi)
 : m_value(dsbi.memoryAllocator())
 , m_trace(dsbi.traceMng())
+, m_internal(new Impl(this))
 {
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> ArrayDataT<DataType>::
+~ArrayDataT()
+{
+  delete m_internal;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -443,10 +480,10 @@ computeHash(IHashAlgorithm* algo,ByteArray& output) const
 template<typename DataType> void ArrayDataT<DataType>::
 copy(const IData* data)
 {
-  const DataInterfaceType* true_data = dynamic_cast< const DataInterfaceType* >(data);
+  auto* true_data = dynamic_cast< const DataInterfaceType* >(data);
   if (!true_data)
     ARCANE_THROW(ArgumentException,"Can not cast 'IData' to 'IArrayDataT'");
-  m_value.copy(true_data->value());
+  m_value.copy(true_data->view());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -455,7 +492,7 @@ copy(const IData* data)
 template<typename DataType> void ArrayDataT<DataType>::
 swapValues(IData* data)
 {
-  ThatClass* true_data = dynamic_cast<ThatClass*>(data);
+  auto* true_data = dynamic_cast<ThatClass*>(data);
   if (!true_data)
     ARCANE_THROW(ArgumentException,"Can not cast 'IData' to 'ArrayDataT'");
   swapValuesDirect(true_data);

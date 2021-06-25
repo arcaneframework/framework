@@ -5,11 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AsyncParticleExchanger.h                                    (C) 2019-2020 */
+/* AsyncParticleExchanger.h                                    (C) 2000-2021 */
 /* Author : Hugo Taboada                                                     */
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/mesh/BasicParticleExchanger.h"
 #include "arcane/mesh/BasicParticleExchanger.h"
 
 #include "arcane/IAsyncParticleExchanger.h"
@@ -60,16 +59,17 @@ class AsyncParticleExchanger
 
   //IAsyncParticleExchanger.h interface
  public:
-  bool exchangeItemsAsync(
-  Integer nb_particle_finish_exchange,
-  Int32ConstArrayView local_ids,
-  Int32ConstArrayView sub_domains_to_send,
-  Int32Array* new_particle_local_ids,
-  IFunctor* functor,
-  bool has_local_flying_particles) override;
+
+  bool exchangeItemsAsync(Integer nb_particle_finish_exchange,
+                          Int32ConstArrayView local_ids,
+                          Int32ConstArrayView sub_domains_to_send,
+                          Int32Array* new_particle_local_ids,
+                          IFunctor* functor,
+                          bool has_local_flying_particles) override;
 
   //Private member variables including bpe that is a composition with BasicParticleExchanger class.
  private:
+
   BasicParticleExchanger m_bpe;
   Integer m_nb_particle_send_before_reduction;
   Integer m_nb_particle_send_before_reduction_tmp;

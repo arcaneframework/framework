@@ -142,7 +142,7 @@ class BasicParticleExchanger
   Integer m_last_nb_reduce = 0;
   Int64 m_nb_particle_send = 0;
 
-  Int32 m_verbose_level = 0;
+  Int32 m_verbose_level = 1;
   Int32 m_debug_exchange_items_level = 0;
   //! Numéro du message. Utile pour le débug
   Int64 m_serialize_id = 1;

@@ -70,12 +70,12 @@ template<typename DataType> void
 MaterialVariableArrayTraits<DataType>::
 resizeAndFillWithDefault(ValueDataType* data,ContainerType& container,Integer dim1_size)
 {
- ContainerType& values = data->value();
- Integer dim2_size = values.dim2Size();
+  ContainerType& values = data->_internal()->_internalDeprecatedValue();
+  Integer dim2_size = values.dim2Size();
 
- //TODO: faire une version de Array2 qui spécifie une valeur à donner
- // pour initialiser lors d'un resize() (comme pour Array::resize()).
- container.resize(dim1_size,dim2_size);
+  //TODO: faire une version de Array2 qui spécifie une valeur à donner
+  // pour initialiser lors d'un resize() (comme pour Array::resize()).
+  container.resize(dim1_size,dim2_size);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -90,11 +90,11 @@ saveData(IMeshComponent* component,IData* data,
   // \a values en ajoutant le nombre d'éléments pour notre
   // component.
   ConstArrayView<Array2View<DataType>> views = cviews;
-  ValueDataType* true_data = dynamic_cast<ValueDataType*>(data);
-  ARCANE_CHECK_POINTER(true_data);
-  ContainerType& values = true_data->value();
   if (views.empty())
     return;
+  auto* true_data = dynamic_cast<ValueDataType*>(data);
+  ARCANE_CHECK_POINTER(true_data);
+  ContainerType& values = true_data->_internal()->_internalDeprecatedValue();
   ComponentItemVectorView component_view = component->view();
 
   Integer dim2_size = views[0].dim2Size();
@@ -285,7 +285,7 @@ template<typename DataType> Int32
 ItemMaterialVariableArray<DataType>::
 dataTypeSize() const
 {
-  Integer dim2_size = m_vars[0]->value().dim2Size();
+  Integer dim2_size = m_vars[0]->valueView().dim2Size();
   return (Int32)sizeof(DataType) * dim2_size;
 }
 
@@ -296,7 +296,7 @@ template<typename DataType> void
 ItemMaterialVariableArray<DataType>::
 copyToBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteArrayView bytes) const
 {
-  Integer dim2_size = m_vars[0]->value().dim2Size();
+  Integer dim2_size = m_vars[0]->valueView().dim2Size();
   Integer one_data_size = dataTypeSize();
 
   // TODO: Vérifier que la taille est un multiple de 'one_data_size' et que
@@ -315,7 +315,7 @@ template<typename DataType> void
 ItemMaterialVariableArray<DataType>::
 copyFromBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteConstArrayView bytes)
 {
-  Integer dim2_size = m_vars[0]->value().dim2Size();
+  Integer dim2_size = m_vars[0]->valueView().dim2Size();
   Integer one_data_size = dataTypeSize();
 
   // TODO: Vérifier que la taille est un multiple de 'one_data_size' et que

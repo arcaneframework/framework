@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array2Data.h                                                (C) 2000-2020 */
+/* Array2Data.h                                                (C) 2000-2021 */
 /*                                                                           */
 /* Donnée du type 'Array2'.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -42,6 +42,8 @@ class Array2DataT
 , public IArray2DataT<DataType>
 {
   ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+  class Impl;
+  friend Impl;
 
  public:
 
@@ -53,8 +55,10 @@ class Array2DataT
   explicit Array2DataT(ITraceMng* trace);
   explicit Array2DataT(const DataStorageBuildInfo& dsbi);
   Array2DataT(const Array2DataT<DataType>& rhs);
+  ~Array2DataT() override;
 
  public:
+
   Integer dimension() const override { return 2; }
   Integer multiTag() const override { return 0; }
   eDataType dataType() const override { return DataTypeTraitsT<DataType>::type(); }
@@ -62,6 +66,8 @@ class Array2DataT
   void serialize(ISerializer* sbuf, Int32ConstArrayView ids, IDataOperation* operation) override;
   Array2<DataType>& value() override { return m_value; }
   const Array2<DataType>& value() const override { return m_value; }
+  Array2View<DataType> view() override { return m_value; }
+  ConstArray2View<DataType> view() const override { return m_value; }
   void resize(Integer new_size) override;
   IData* clone() override { return cloneTrue(); }
   IData* cloneEmpty() override { return cloneTrueEmpty(); }
@@ -112,12 +118,17 @@ class Array2DataT
 
  public:
 
+  IArray2DataInternalT<DataType>* _internal() override { return m_internal; }
+
+ public:
+
   static DataStorageTypeInfo staticStorageTypeInfo();
 
  private:
 
   UniqueArray2<DataType> m_value; //!< Donnée
   ITraceMng* m_trace;
+  IArray2DataInternalT<DataType>* m_internal;
 
  private:
 

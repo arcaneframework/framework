@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StringArrayData.h                                           (C) 2000-2020 */
+/* StringArrayData.h                                           (C) 2000-2021 */
 /*                                                                           */
 /* Donnée de type 'StringUniqueArray'.                                       */
 /*---------------------------------------------------------------------------*/
@@ -40,22 +40,20 @@ class StringArrayData
 , public IArrayDataT<String>
 {
   ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+  class Impl;
+  friend class Impl;
 
- public:
+public:
 
   typedef String DataType;
   typedef StringArrayData ThatClass;
   typedef IArrayDataT<String> DataInterfaceType;
 
  public:
-  explicit StringArrayData(ITraceMng* trace)
-  : m_trace(trace) {}
+  explicit StringArrayData(ITraceMng* trace);
   explicit StringArrayData(const DataStorageBuildInfo& dsbi);
-  StringArrayData(const StringArrayData& rhs)
-  : m_value(rhs.m_value)
-  , m_trace(rhs.m_trace)
-  {}
-
+  StringArrayData(const StringArrayData& rhs);
+  ~StringArrayData() override;
  public:
   Integer dimension() const override { return 1; }
   Integer multiTag() const override { return 0; }
@@ -64,6 +62,8 @@ class StringArrayData
   void serialize(ISerializer* sbuf, Int32ConstArrayView ids, IDataOperation* operation) override;
   Array<DataType>& value() override { return m_value; }
   const Array<DataType>& value() const override { return m_value; }
+  ConstArrayView<DataType> view() const override { return m_value; }
+  ArrayView<DataType> view() override { return m_value; }
   void resize(Integer new_size) override { m_value.resize(new_size); }
   IData* clone() override { return cloneTrue(); }
   IData* cloneEmpty() override { return cloneTrueEmpty(); }
@@ -98,12 +98,17 @@ class StringArrayData
 
  public:
 
+  IArrayDataInternalT<DataType>* _internal() override { return m_internal; }
+
+ public:
+
   static DataStorageTypeInfo staticStorageTypeInfo();
 
  private:
 
   UniqueArray<DataType> m_value; //!< Donnée
   ITraceMng* m_trace;
+  IArrayDataInternalT<String>* m_internal;
 
  private:
 

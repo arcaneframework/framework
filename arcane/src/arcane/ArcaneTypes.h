@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneTypes.h                                               (C) 2000-2020 */
+/* ArcaneTypes.h                                               (C) 2000-2021 */
 /*                                                                           */
 /* Définition des types généraux de Arcane.                                  */
 /*---------------------------------------------------------------------------*/
@@ -452,6 +452,8 @@ class IDataFactoryMng;
 class IDataStorageFactory;
 class DataStorageBuildInfo;
 class CaseDatasetSource;
+template<typename DataType> class IArrayDataInternalT;
+template<typename DataType> class IArray2DataInternalT;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

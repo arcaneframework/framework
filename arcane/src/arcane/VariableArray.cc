@@ -37,6 +37,8 @@
 #include "arcane/VariableArray.h"
 #include "arcane/RawCopy.h"
 
+#include "arcane/core/internal/IDataInternal.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -239,6 +241,7 @@ VariableArrayT(const VariableBuildInfo& vb,const VariableInfo& info)
   String storage_full_type = info.storageTypeInfo().fullName();
   Ref<IData> data = df->createSimpleDataRef(storage_full_type,storage_build_info);
   m_value = dynamic_cast<ValueDataType*>(data.get());
+  ARCANE_CHECK_POINTER(m_value);
   _setData(makeRef(m_value));
 }
 
@@ -279,7 +282,7 @@ getReference(IVariable* var)
 {
   if (!var)
     throw ArgumentException(A_FUNCINFO,"null variable");
-  ThatClass* true_ptr = dynamic_cast<ThatClass*>(var);
+  auto* true_ptr = dynamic_cast<ThatClass*>(var);
   if (!true_ptr)
     ARCANE_FATAL("Can not build a reference from variable {0}",var->name());
   return true_ptr;
@@ -291,7 +294,7 @@ getReference(IVariable* var)
 template<typename T> void VariableArrayT<T>::
 print(std::ostream& o) const
 {
-	ConstArrayView<T> x(m_value->value().view());
+	ConstArrayView<T> x(m_value->view());
 	Integer size = x.size();
 	o << "(dimension=" << size << ") ";
 	if (size<=150){
@@ -325,7 +328,7 @@ template<typename T> Real VariableArrayT<T>::
 allocatedMemory() const
 {
   Real v1 = (Real)(sizeof(T));
-  Real v2 = (Real)(m_value->value().size());
+  Real v2 = (Real)(m_value->view().size());
   return v1 * v2;
 }
 
@@ -337,10 +340,10 @@ checkIfSync(int max_print)
 {
   IItemFamily* family = itemGroup().itemFamily();
   if (family){
-    UniqueArray<T> ref_array(value());
+    UniqueArray<T> ref_array(constValueView());
     this->synchronize(); // fonctionne pour toutes les variables
     ArrayVariableDiff<T> csa;
-    ArrayView<T> from_array(value());
+    ConstArrayView<T> from_array(constValueView());
     Integer nerror = csa.check(this,ref_array,from_array,max_print,true);
     value().copy(ref_array);
     return nerror;
@@ -356,13 +359,13 @@ checkIfSame(IDataReader* reader,Integer max_print,bool compare_ghost)
 {
   if (itemKind()==IK_Particle)
     return 0;
-  Array<T>& from_array(value());
+  ArrayView<T> from_array(valueView());
 
   Ref< IArrayDataT<T> > ref_data(m_value->cloneTrueEmptyRef());
   reader->read(this,ref_data.get());
 
   ArrayVariableDiff<T> csa;
-  return csa.check(this,ref_data->value(),from_array,max_print,compare_ghost);
+  return csa.check(this,ref_data->view(),from_array,max_print,compare_ghost);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -397,7 +400,7 @@ namespace
 template<typename T> Integer VariableArrayT<T>::
 _checkIfSameOnAllReplica(IParallelMng* replica_pm,Integer max_print)
 {
-  return _checkIfSameOnAllReplicaHelper(replica_pm,this,value().constView(),max_print);
+  return _checkIfSameOnAllReplicaHelper(replica_pm,this,constValueView(),max_print);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -432,7 +435,7 @@ initialize(const ItemGroup& group,const String& value)
 
   bool is_ok = false;
 
-  ArrayView<T> values(m_value->value());
+  ArrayView<T> values(m_value->view());
   if (group.itemFamily()==itemFamily()){
     is_ok = true;
     // TRES IMPORTANT
@@ -463,7 +466,7 @@ template<typename T> void VariableArrayT<T>::
 setTraceInfo(Integer id,eTraceType tt)
 {
   Integer s = m_trace_infos.size();
-  Integer vs = value().size();
+  Integer vs = valueView().size();
   if (vs<(id+1))
     vs = (id+1); // Au cas où le trace est fait avant que la variable ne soit dimensionnée
   if (s<vs){
@@ -485,7 +488,7 @@ copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination)
 {
   ARCANE_ASSERT(source.size()==destination.size(),
                 ("Impossible to copy: source and destination of different sizes !"));
-  ValueType& value =  m_value->value();
+  ArrayView<T> value =  m_value->view();
   const Integer size = source.size();
   for(Integer i=0; i<size; ++i )
     value[destination[i]] = value[source[i]];
@@ -502,7 +505,7 @@ copyItemsMeanValues(Int32ConstArrayView first_source,
 {
   ARCANE_ASSERT((first_source.size()==destination.size()) && (second_source.size()==destination.size()),
                 ("Impossible to copy: source and destination of different sizes !"));
-  ValueType& value =  m_value->value();
+  ArrayView<T> value =  m_value->view();
   const Integer size = first_source.size();
   for(Integer i=0; i<size; ++i ) {
     value[destination[i]] = (T)((value[first_source[i]]+value[second_source[i]])/2);
@@ -529,10 +532,10 @@ compact(Int32ConstArrayView new_to_old_ids)
     return;
   }
 
-  UniqueArray<T> old_value(value());
-  ValueType& current_value = m_value->value();
+  UniqueArray<T> old_value(constValueView());
   Integer new_size = new_to_old_ids.size();
-  current_value.resize(new_size);
+  m_value->resize(new_size);
+  ArrayView<T> current_value = m_value->view();
   if (arcaneIsCheck()){
     for( Integer i=0; i<new_size; ++i )
       current_value.setAt(i,old_value.at(new_to_old_ids[i]));
@@ -580,41 +583,40 @@ setIsSynchronized(const ItemGroup& group)
 template<typename T> void VariableArrayT<T>::
 _internalResize(Integer new_size,Integer nb_additional_element)
 {
-  Array<T>& container_ref = m_value->value();
+  auto* value_internal = m_value->_internal();
 
   if (nb_additional_element!=0){
-    Integer capacity = container_ref.capacity();
+    Integer capacity = value_internal->capacity();
     if (new_size>capacity)
-      container_ref.reserve(new_size+nb_additional_element);
+      value_internal->reserve(new_size+nb_additional_element);
   }
   eDataInitialisationPolicy init_policy = getGlobalDataInitialisationPolicy();
   // Si la nouvelle taille est supérieure à l'ancienne,
   // initialise les nouveaux éléments suivant
   // la politique voulue
-  Integer current_size = container_ref.size();
+  Integer current_size = m_value->view().size();
   if (!isUsed()){
     // Si la variable n'est plus utilisée, libérée la mémoire
     // associée.
-    container_ref.dispose();
+    value_internal->dispose();
   }
-  container_ref.resize(new_size);
+  value_internal->resize(new_size);
   if (new_size>current_size){
     if (init_policy==DIP_InitWithDefault){
-      ValueType& values = this->value();
+      ArrayView<T> values = this->valueView();
       for(Integer i=current_size; i<new_size; ++i)
         values[i] = T();
     }
     else if (init_policy==DIP_InitWithNan){
-      ValueType & values = this->value();
-      ArrayView<T> view = values.view();
+      ArrayView<T> view = this->valueView();
       DataTypeTraitsT<T>::fillNan(view.subView(current_size,new_size-current_size));
     }
   }
 
   // Compacte la mémoire si demandé
   if (_wantShrink()){
-    if (container_ref.size() < container_ref.capacity()){
-      container_ref.shrink();
+    if (m_value->view().size() < value_internal->capacity()){
+      value_internal->shrink();
     }
   }
 
@@ -638,8 +640,9 @@ _internalResize(Integer new_size,Integer nb_additional_element)
   // (cela ne peut pas être 0 car la classe Array doit allouer au moins un
   // élément si on utilise un allocateur spécifique ce qui est le cas
   // pour les variables.
-  ARCANE_ASSERT((isUsed() || m_value->value().capacity()<=AlignedMemoryAllocator::simdAlignment()),
-                ("Wrong unused data size %d",m_value->value().capacity()));
+  Int64 capacity = value_internal->capacity();
+  ARCANE_ASSERT((isUsed() || capacity<=AlignedMemoryAllocator::simdAlignment()),
+                ("Wrong unused data size %d",capacity));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -658,8 +661,17 @@ resizeWithReserve(Integer n,Integer nb_additional)
 template<typename DataType> void VariableArrayT<DataType>::
 shrinkMemory()
 {
-  value().shrink();
+  m_value->_internal()->shrink();
   syncReferences();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> Integer VariableArrayT<DataType>::
+capacity()
+{
+  return m_value->_internal()->capacity();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -668,7 +680,7 @@ shrinkMemory()
 template<typename DataType> void VariableArrayT<DataType>::
 fill(const DataType& value)
 {
-  m_value->value().fill(value);
+  m_value->view().fill(value);
   if (_wantAccessInfo()){
     IMemoryAccessTrace* mt = memoryAccessTrace();
     for( Integer i=0, is=m_access_infos.size(); i<is; ++i )
@@ -717,11 +729,20 @@ copyItemsMeanValues(Int32ConstArrayView first_source,
   if (!is_ok)
 		ARCANE_FATAL("Unable to copy: source and destination of different sizes !");
 
-  ValueType& value =  m_value->value();
+  ArrayView<String> value =  m_value->view();
   const Integer size = first_source.size();
   for(Integer i=0; i<size; ++i )
     value[destination[i]] = value[first_source[i]];
   syncReferences();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> auto VariableArrayT<DataType>::
+value() -> ValueType&
+{
+  return m_value->_internal()->_internalDeprecatedValue();
 }
 
 /*---------------------------------------------------------------------------*/

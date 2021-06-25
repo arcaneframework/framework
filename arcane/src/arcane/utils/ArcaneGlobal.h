@@ -539,6 +539,10 @@ extern "C++" ARCANE_UTILS_EXPORT bool _checkDebug(size_t);
 #define ARCANE_DEPRECATED_2018 ARCANE_DEPRECATED
 #define ARCANE_DEPRECATED_2018_R(reason) [[deprecated(reason)]]
 
+#ifndef ARCCORE_DEPRECATED_2021
+#define ARCCORE_DEPRECATED_2021(reason) [[deprecated(reason)]]
+#endif
+
 // Définir cette macro si on souhaite supprimer de la compilation les
 // méthodes et types obsolètes.
 #define ARCANE_NO_DEPRECATED

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IncrementalItemConnectivity.cc                              (C) 2000-2017 */
+/* IncrementalItemConnectivity.cc                              (C) 2000-2021 */
 /*                                                                           */
 /* Connectivité incrémentale des entités.                                    */
 /*---------------------------------------------------------------------------*/
@@ -21,6 +21,7 @@
 #include "arcane/MeshUtils.h"
 #include "arcane/ObserverPool.h"
 #include "arcane/Properties.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 #include "arcane/mesh/IncrementalItemConnectivity.h"
 
@@ -78,9 +79,9 @@ class IncrementalItemConnectivityContainer
     m_connectivity_nb_item_variable(VariableBuildInfo(mesh,var_name+"Nb",IVariable::PPrivate)),
     m_connectivity_index_variable(VariableBuildInfo(mesh,var_name+"Index",IVariable::PPrivate)),
     m_connectivity_list_variable(VariableBuildInfo(mesh,var_name+"List",IVariable::PPrivate)),
-    m_connectivity_nb_item_array(m_connectivity_nb_item_variable.internalContainer()),
-    m_connectivity_index_array(m_connectivity_index_variable.internalContainer()),
-    m_connectivity_list_array(m_connectivity_list_variable.internalContainer())
+    m_connectivity_nb_item_array(m_connectivity_nb_item_variable._internalTrueData()->_internalDeprecatedValue()),
+    m_connectivity_index_array(m_connectivity_index_variable._internalTrueData()->_internalDeprecatedValue()),
+    m_connectivity_list_array(m_connectivity_list_variable._internalTrueData()->_internalDeprecatedValue())
   {
     // Ajoute un tag pour indiquer que ce sont des variables associées à la connectivité.
     // Pour l'instant cela n'est utilisé que pour les statistiques d'affichage.

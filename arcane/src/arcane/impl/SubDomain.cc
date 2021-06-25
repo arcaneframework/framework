@@ -86,6 +86,7 @@
 #include "arcane/MeshHandle.h"
 #include "arcane/ObserverPool.h"
 #include "arcane/ConfigurationPropertyReader.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 #include "arcane/impl/ConfigurationReader.h"
 #include "arcane/impl/internal/MeshMng.h"
@@ -175,7 +176,7 @@ class SubDomain
     void _notifyWrite()
     {
       info(4) << "PropertyMngCheckpoint: WRITE";
-      m_sub_domain->propertyMng()->writeTo(m_property_values.internalContainer());
+      m_sub_domain->propertyMng()->writeTo(m_property_values._internalTrueData()->_internalDeprecatedValue());
       m_property_values.variable()->syncReferences();
     }
    private:

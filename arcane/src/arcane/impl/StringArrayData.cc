@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StringArrayData.cc                                          (C) 2000-2020 */
+/* StringArrayData.cc                                          (C) 2000-2021 */
 /*                                                                           */
 /* Donnée de type 'UniqueArray<String>'.                                     */
 /*---------------------------------------------------------------------------*/
@@ -26,6 +26,7 @@
 #include "arcane/impl/SerializedData.h"
 
 #include "arcane/ISerializer.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,11 +36,57 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+// TODO: à fusionner avec l'implémentation commune dans ArrayData.
+class StringArrayData::Impl
+: public IArrayDataInternalT<String>
+{
+ public:
+
+  using String = DataType;
+
+  explicit Impl(StringArrayData* p) : m_p(p){}
+
+ public:
+
+  void reserve(Integer new_capacity) override { m_p->m_value.reserve(new_capacity); }
+  Array<DataType>& _internalDeprecatedValue() override { return m_p->m_value; }
+  Integer capacity() const override { return m_p->m_value.capacity(); }
+  void shrink() const override { m_p->m_value.shrink(); }
+  void resize(Integer new_size) override { m_p->m_value.resize(new_size);}
+  void dispose() override { m_p->m_value.dispose(); }
+
+ private:
+
+  StringArrayData* m_p;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 StringArrayData::
 StringArrayData(const DataStorageBuildInfo& dsbi)
 : m_trace(dsbi.traceMng())
+, m_internal(new Impl(this))
 {
+}
+
+StringArrayData::
+StringArrayData(ITraceMng* trace)
+: m_trace(trace)
+, m_internal(new Impl(this))
+{}
+
+StringArrayData::
+StringArrayData(const StringArrayData& rhs)
+: m_value(rhs.m_value)
+, m_trace(rhs.m_trace)
+, m_internal(new Impl(this))
+{}
+
+StringArrayData::
+~StringArrayData()
+{
+  delete m_internal;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -233,7 +280,7 @@ copy(const IData* data)
   const auto* true_data = dynamic_cast<const DataInterfaceType*>(data);
   if (!true_data)
     ARCANE_THROW(ArgumentException, "Can not cast 'IData' to 'StringArrayData'");
-  m_value.copy(true_data->value());
+  m_value.copy(true_data->view());
 }
 
 /*---------------------------------------------------------------------------*/
