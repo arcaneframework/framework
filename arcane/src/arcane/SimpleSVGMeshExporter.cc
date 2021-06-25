@@ -11,6 +11,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// Il faut mettre cela en premier pour MSVC sinon on n'a pas 'M_PI'
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include "arcane/SimpleSVGMeshExporter.h"
 
 #include "arcane/utils/Iostream.h"
