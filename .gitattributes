@@ -1,0 +1,8 @@
+# exclude .gitignore and similar from the generated tarball
+.git*           export-ignore
+
+# exclude utilities from the release tarball
+_clang_format   export-ignore
+
+# Exclude framework dependencies from tarball
+/framework      export-ignore
