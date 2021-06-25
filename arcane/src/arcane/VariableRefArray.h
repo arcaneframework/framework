@@ -94,6 +94,7 @@ class VariableRefArrayT
 
  public:
 
+  ARCCORE_DEPRECATED_2021("This method is internal to Arcane")
   LockType ARCANE_CORE_EXPORT lock();
 
  public:
