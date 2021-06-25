@@ -53,3 +53,5 @@ release*
 debug*
 Release*
 Debug*
+
+.vscode

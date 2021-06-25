@@ -1,6 +1,20 @@
 ﻿[//]: <> (Comment: -*- coding: utf-8-with-signature -*-)
-Compilation
-===========
+<img src="https://www.cea.fr/PublishingImages/cea.jpg" height="50" align="right" />
+<img src="https://www.ifpenergiesnouvelles.fr/sites/ifpen.fr/files/logo_ifpen_2.jpg" height="50" align="right"/>
+
+Written by CEA/IFPEN and Contributors
+
+(C) Copyright 2000-2021 CEA/IFPEN. All rights reserved.
+
+All content is the property of the respective authors or their employers.
+
+For more information regarding authorship of content, please consult the listed source code repository logs.
+
+## Introduction
+
+Arcane est une platforme de développement pour les codes de calcul parallèles non structurés 2D ou 3D.
+
+## Compilation
 
 Ce dépôt permet de compiler directement Arcane et ses dépendances
 (Arrcon, Axlstar et Arccore)
