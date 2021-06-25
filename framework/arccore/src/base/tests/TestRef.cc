@@ -1,0 +1,220 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2020 IFPEN-CEA
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+#include <gtest/gtest.h>
+
+#include "arccore/base/Ref.h"
+#include "arccore/base/ReferenceCounterImpl.h"
+
+#include <string>
+
+using namespace Arccore;
+
+namespace MyTest
+{
+
+//! Classe de test utilisant le compteur de référence interne
+class TestRefOwn;
+class TestBaseType;
+}
+
+ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(MyTest::TestBaseType)
+
+namespace MyTest
+{
+int global_nb_create = 0;
+int global_nb_destroy = 0;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class TestBaseType
+: public ReferenceCounterImpl
+{
+ public:
+  typedef ReferenceCounterTag ReferenceCounterTagType;
+ public:
+  TestBaseType(int a,std::string b) : m_a(a), m_b(b)
+  {
+    std::cout << "CREATE ME this=" << this << "\n";
+    ++global_nb_create;
+  }
+  TestBaseType(const TestBaseType& x) : m_a(x.m_a), m_b(x.m_b)
+  {
+    std::cout << "CREATE ME (copy) this=" << this << "\n";
+  }
+  virtual ~TestBaseType()
+  {
+    std::cout << "DELETE ME this=" << this << "\n";
+    ++global_nb_destroy;
+  }
+ public:
+  int pa() const { return m_a; }
+  const std::string& pb() const { return m_b; }
+  void print(const std::string& x) const
+  {
+    std::cout << x << " A=" << pa() << " B=" << pb()
+              << " this=" << this << "\n";
+  }
+ private:
+  int m_a;
+  std::string m_b;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class TestBaseTypeNoRef
+{
+ public:
+  TestBaseTypeNoRef(int a,std::string b) : m_a(a), m_b(b)
+  {
+    std::cout << "CREATE ME this=" << this << "\n";
+    ++global_nb_create;
+  }
+  virtual ~TestBaseTypeNoRef()
+  {
+    std::cout << "DELETE ME this=" << this << "\n";
+    ++global_nb_destroy;
+  }
+ public:
+  int pa() const { return m_a; }
+  const std::string& pb() const { return m_b; }
+  void print(const std::string& x) const
+  {
+    std::cout << x << " A=" << pa() << " B=" << pb()
+              << " this=" << this << "\n";
+  }
+ private:
+  int m_a;
+  std::string m_b;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class TestRefOwn
+: public TestBaseType
+{
+ public:
+  typedef TestBaseType BaseType;
+ public:
+  TestRefOwn(int a,std::string b) : TestBaseType(a,b){}
+  ~TestRefOwn() override
+  {
+    std::cout << "DELETE ME (TestRefOwn) this=" << this << "\n";
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Classe de test utilisant un shared_ptr
+class TestRefSharedPtr
+: public TestBaseTypeNoRef
+{
+ public:
+  typedef TestBaseTypeNoRef BaseType;
+ public:
+  TestRefSharedPtr(int a,std::string b) : TestBaseTypeNoRef(a,b){}
+};
+}
+
+using namespace MyTest;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename ClassType,int id> void
+_doTest1Helper()
+{
+  std::cout << "** ** BEGIN_TEST\n";
+
+  typedef Ref<ClassType> RefType;
+  typedef typename ClassType::BaseType BaseType;
+  int a = 3;
+  std::string b = "XYZ";
+
+  {
+    RefType ref0(makeRef(new ClassType(a,b)));
+    ref0->print("X0");
+  }
+
+  RefType ref1(RefType::template createRef<ClassType>(a,b));
+  ref1->print("X1");
+  {
+    RefType ref2(ref1);
+    ref2->print("X2");
+    Ref<BaseType> ref3(ref1);
+    ref3->print("X3");
+  }
+  if constexpr (id == 1){
+    ClassType* ct = ref1.get();
+    auto z = makeRefFromInstance<TestBaseType>(ct);
+  }
+  {
+    RefType null_ref_type;
+    ASSERT_EQ(null_ref_type.get(),nullptr);
+    if constexpr (id==0){
+      ClassType* ct2 = null_ref_type._release();
+      ASSERT_EQ(ct2,nullptr);
+    }
+  }
+  {
+    ClassType* ct = nullptr;
+    RefType null_ref_type(makeRef(ct));
+    ASSERT_EQ(null_ref_type.get(),nullptr);
+    if constexpr (id==0){
+      ClassType* ct2 = null_ref_type._release();
+      ASSERT_EQ(ct2,nullptr);
+    }
+  }
+  std::cout << "** ** END_TEST\n";
+}
+
+template<typename ClassType,int id> void
+_doTest1()
+{
+  global_nb_create = global_nb_destroy = 0;
+  _doTest1Helper<ClassType,id>();
+  ASSERT_EQ(global_nb_create,2);
+  ASSERT_EQ(global_nb_create,global_nb_destroy);
+}
+
+void
+_doTest2()
+{
+  TestRefOwn* x1 = new TestRefOwn(1,"ZXB");
+  delete x1;
+}
+
+namespace Arccore
+{
+ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(MyTest::TestBaseType);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// Teste si le compteur de référence détruit bien l'instance.
+TEST(Ref, Misc)
+{
+  _doTest1<TestRefOwn,1>();
+  _doTest1<TestRefSharedPtr,0>();
+  _doTest2();
+}
