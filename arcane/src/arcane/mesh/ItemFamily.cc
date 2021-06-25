@@ -5,23 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamily.cc                                               (C) 2000-2020 */
+/* ItemFamily.cc                                               (C) 2000-2021 */
 /*                                                                           */
 /* Infos de maillage pour un genre d'entité donnée.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/Collection.h"
 #include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/Enumerator.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/ScopedPtr.h"
-#include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/ArgumentException.h"
-#include "arcane/utils/OStringStream.h"
 
 #include "arcane/IParallelMng.h"
 #include "arcane/ISubDomain.h"
@@ -30,7 +26,6 @@
 #include "arcane/IVariable.h"
 #include "arcane/IMesh.h"
 #include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/Timer.h"
 #include "arcane/IApplication.h"
 #include "arcane/IDataFactory.h"
 #include "arcane/ItemPairGroup.h"
@@ -43,6 +38,7 @@
 #include "arcane/IMeshCompacter.h"
 #include "arcane/IMeshCompactMng.h"
 #include "arcane/MeshPartInfo.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 #include "arcane/datatype/IDataOperation.h"
 
@@ -146,23 +142,23 @@ ItemFamily(IMesh* mesh,eItemKind ik,const String& name)
 , m_name(name)
 , m_mesh(mesh)
 , m_sub_domain(mesh->subDomain())
-, m_parent_family(0)
+, m_parent_family(nullptr)
 , m_parent_family_depth(0)
 , m_infos(mesh,ik,name)
 , m_need_prepare_dump(true)
 , m_item_internal_list(mesh->meshItemInternalList())
 , m_item_shared_infos(new ItemSharedInfoList(this))
-, m_variable_synchronizer(0)
+, m_variable_synchronizer(nullptr)
 , m_current_variable_item_size(0)
-, m_item_sort_function(0)
-, m_local_connectivity_info(0)
-, m_global_connectivity_info(0)
+, m_item_sort_function(nullptr)
+, m_local_connectivity_info(nullptr)
+, m_global_connectivity_info(nullptr)
 , m_properties(new Properties(*mesh->properties(),name))
 , m_connectivity_mng(nullptr)
 , m_policy_mng(nullptr)
-, m_items_data(0)
-, m_items_unique_id(0)
-, m_internal_variables(0)
+, m_items_data(nullptr)
+, m_items_unique_id(nullptr)
+, m_internal_variables(nullptr)
 , m_default_sub_domain_owner(NULL_SUB_DOMAIN_ID)
 , m_sub_domain_id(mesh->meshPartInfo().partRank())
 , m_is_parallel(false)
@@ -184,7 +180,7 @@ ItemFamily(IMesh* mesh,eItemKind ik,const String& name)
 ItemFamily::
 ~ItemFamily()
 {
-  info(4) << "Family name=" << fullName()
+  info(4) << "Family name=" << m_full_name
           << " nb_access_v2=" << m_item_connectivity_list.nbAccess()
           << " nb_access_all_v2=" << m_item_connectivity_list.nbAccessAll();
 
@@ -278,9 +274,9 @@ build()
                                          var_parent_family_depth_name,
                                          var_child_meshes_name,
                                          var_child_families_name);
-    m_items_data = &m_internal_variables->m_items_data.internalContainer();
+    m_items_data = &m_internal_variables->m_items_data._internalTrueData()->_internalDeprecatedValue();
     m_items_data->reserve(1000);
-    m_items_unique_id = &m_internal_variables->m_items_unique_id.internalContainer();
+    m_items_unique_id = &m_internal_variables->m_items_unique_id._internalTrueData()->_internalDeprecatedValue();
     m_items_unique_id_view = m_items_unique_id->view();
     //m_items_unique_ids->reserve(1000);
     //m_variables->m_current_id = 0;
@@ -449,7 +445,7 @@ endAllocate()
 {
   // La variable n'est pas "used" par défaut car la famille n'est pas encore prête.
   // Sur les sous-familles, il suffit donc de filtrer setUsed au moment du endAllocate
-  if (m_parent_family == 0) {
+  if (!m_parent_family) {
     m_internal_variables->setUsed();
   }
 }
@@ -478,7 +474,7 @@ _partialEndUpdate()
   m_local_connectivity_info->fill(m_item_shared_infos);
   ++m_current_id;
   m_internal_variables->m_items_data.variable()->syncReferences();
-  m_items_data = &m_internal_variables->m_items_data.internalContainer();
+  m_items_data = &m_internal_variables->m_items_data._internalTrueData()->_internalDeprecatedValue();
 
   // Update "external" connectivities
   if (m_connectivity_mng)
@@ -1562,7 +1558,7 @@ _checkValid()
   // sont les mêmes
   {
     Int32* i1 = m_items_data->data();
-    Int32* i2 = m_internal_variables->m_items_data.internalContainer().data();
+    Int32* i2 = m_internal_variables->m_items_data._internalTrueData()->_internalDeprecatedValue().data();
     if (i1!=i2){
       fatal() << "ItemFamily: " << m_name
               << ": items_data invalid ptr1=" << i1 << " ptr2=" << i2;
@@ -1608,9 +1604,8 @@ _reserveInfosMemory(Integer memory)
     info(4) << "RESIZE_ONE1 Size=" << m_items_data->size() << " capacity=" << m_items_data->capacity()
             << " ptr=" << new_ptr << " name=" << m_name
             << " var_size=" << m_internal_variables->m_items_data.size()
-            << " var_capacity=" << m_internal_variables->m_items_data.internalContainer().capacity()
-            << " ptr=" << m_internal_variables->m_items_data.data()
-            << " ptr2=" << m_internal_variables->m_items_data.internalContainer().data();
+            << " var_capacity=" << m_internal_variables->m_items_data._internalTrueData()->capacity()
+            << " ptr=" << m_internal_variables->m_items_data.data();
     _setSharedInfosBasePtr();
     _checkValid();
   }
@@ -1640,9 +1635,8 @@ _resizeInfos(Integer new_size)
             << " capacity=" << m_items_data->capacity()
             << " ptr=" << new_ptr << " name=" << m_name
             << " var_size=" << m_internal_variables->m_items_data.size()
-            << " var_capacity=" << m_internal_variables->m_items_data.internalContainer().capacity()
+            << " var_capacity=" << m_internal_variables->m_items_data._internalTrueData()->capacity()
             << " ptr=" << m_internal_variables->m_items_data.data()
-            << " ptr2=" << m_internal_variables->m_items_data.internalContainer().data()
             << " old_size=" << old_size
             << " nb_item=" << m_infos.nbItem()
             << " max_local_id=" << maxLocalId();

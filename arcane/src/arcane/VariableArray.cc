@@ -241,6 +241,7 @@ VariableArrayT(const VariableBuildInfo& vb,const VariableInfo& info)
   String storage_full_type = info.storageTypeInfo().fullName();
   Ref<IData> data = df->createSimpleDataRef(storage_full_type,storage_build_info);
   m_value = dynamic_cast<ValueDataType*>(data.get());
+  ARCANE_CHECK_POINTER(m_value);
   _setData(makeRef(m_value));
 }
 

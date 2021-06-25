@@ -92,6 +92,7 @@ class VariableArrayT
  public:
 
   ARCANE_CORE_EXPORT void swapValues(ThatClass& rhs);
+  ValueDataType* trueData() { return m_value; }
 
  protected:
 
@@ -118,4 +119,3 @@ class VariableArrayT
 /*---------------------------------------------------------------------------*/
 
 #endif  
-
