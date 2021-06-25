@@ -23,6 +23,7 @@
 #include "arcane/VariableDataTypeTraits.h"
 #include "arcane/ISubDomain.h"
 #include "arcane/VariableFactoryRegisterer.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -172,7 +173,7 @@ typename VariableRefArrayT<DataType>::LockType
 VariableRefArrayT<DataType>::
 lock()
 {
-  return LockType(m_private_part->value(), m_private_part);
+  return LockType(m_private_part->trueData()->_internal()->_internalDeprecatedValue(), m_private_part);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -183,9 +184,7 @@ typename VariableRefArrayT<T>::ContainerType&
 VariableRefArrayT<T>::
 internalContainer()
 {
-  if (!(property() & IVariable::PPrivate))
-    ARCANE_FATAL("variable '{0}': getting internal container is only valid on private variable", name());
-  return m_private_part->value();
+  return _internalTrueData()->_internalDeprecatedValue();
 }
 
 /*---------------------------------------------------------------------------*/
