@@ -292,9 +292,17 @@ public:
 
 template <typename DataType>
 class ArrayProperty : public PropertyBase {
+
+public:
+  std::vector<DataType> m_data;
+  std::vector<int> m_offsets;
+  std::vector<int> m_indexes;
+  int m_size;
+
 public:
   void resize(std::vector<int> sizes){ // only 2 moves if a rvalue is passed. One copy + one move if lvalue
     m_offsets = std::move(sizes);
+    _updateIndexes();
   }
   bool isInitializableFrom(const ItemRange& item_range){return item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty() ;}
   void init(const ItemRange& item_range, std::vector<DataType> values){
@@ -320,15 +328,18 @@ public:
     for (auto item : item_range) {
       new_offsets[item] = nb_connected_item_per_item[index++];
     }
+    // Compute new indexes
+    std::vector<int> new_indexes;
+    _computeIndexesFromOffsets(new_indexes, new_offsets);
     // Compute new values
-    auto new_data_size = std::accumulate(new_offsets.begin(), new_offsets.end(),0);
+    auto new_data_size = _computeSizeFromOffsets(new_offsets);
     std::vector<DataType> new_data(new_data_size);
     // copy new_values
     auto global_index = 0;
     std::vector<bool> marked_items(new_offsets.size(),false);
     for (auto item : item_range) {
       marked_items[item] = true;
-      auto item_index = _getItemIndexInData(item, new_offsets);
+      auto item_index = new_indexes[item];
       for (auto connected_item_index = item_index; connected_item_index < item_index + new_offsets[item]; ++connected_item_index) {
         new_data[connected_item_index] = values[global_index++];
       }
@@ -338,14 +349,13 @@ public:
     for (auto item : old_values_range) {
       if (!marked_items[item]) {
         auto connected_items = (*this)[item];
-        auto connected_item_index = _getItemIndexInData(item,new_offsets);
-        for (auto connected_item : connected_items){
-          new_data[connected_item_index++] = connected_item;
-        }
+        std::copy(connected_items.begin(),connected_items.end(),&new_data[new_indexes[item]]);
       }
     }
     m_offsets = std::move(new_offsets);
+    m_indexes = std::move(new_indexes);
     m_data    = std::move(new_data);
+    m_size = new_data_size;
   }
 
   void _appendByBackInsertion(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_connected_item_per_item){
@@ -360,6 +370,7 @@ public:
                 nb_connected_item_per_item.end(),
                 std::back_inserter(m_offsets));
       std::copy(values.begin(), values.end(), std::back_inserter(m_data));
+      _updateIndexes();
     }
     else {
       std::cout << "Append in ArrayProperty by back insertion, non contiguous range" << std::endl;
@@ -367,10 +378,10 @@ public:
       auto index = 0;
       for (auto item : item_range) m_offsets[item] = nb_connected_item_per_item[index++];
       m_data.resize(m_data.size()+values.size(),DataType());
+      _updateIndexes();
       index = 0;
       for (auto item : item_range) {
         auto connected_items = (*this)[item];
-//        std::cout << " item " << item << " index in data " << _getItemIndexInData(item) << std::endl;
         for (auto& connected_item : connected_items) {
           connected_item = values[index++];
         }
@@ -379,11 +390,13 @@ public:
   }
 
   utils::ArrayView<DataType> operator[](const utils::Int32 item) {
-    return utils::ArrayView<DataType>{m_offsets[item],&m_data[_getItemIndexInData(item)]};
+    assert(("item local id must be >0 in ArrayProperty::[item_lid]]",item >= 0));
+    return utils::ArrayView<DataType>{m_offsets[item],&m_data[m_indexes[item]]};
   }
 
   utils::ConstArrayView<DataType> operator[](const utils::Int32 item) const {
-    return utils::ConstArrayView<DataType>{m_offsets[item],&m_data[_getItemIndexInData(item)]};
+    assert(("item local id must be >0 in ArrayProperty::[item_lid]]",item >= 0));
+    return utils::ConstArrayView<DataType>{m_offsets[item],&m_data[m_indexes[item]]};
   }
 
   void debugPrint() const {
@@ -393,26 +406,34 @@ public:
     }
     std::cout << std::endl;
     Neo::utils::printContainer(m_offsets, "Offsets ");
+    Neo::utils::printContainer(m_indexes, "Indexes");
   }
 
-  // todo should be computed only when m_offsets is updated, at least implement an array version
-  utils::Int32 _getItemIndexInData(const utils::Int32 item) const{
-    return std::accumulate(m_offsets.begin(),m_offsets.begin()+item,0);
+   int size() const {
+    return m_size;
   }
 
-  utils::Int32 _getItemIndexInData(const utils::Int32 item, const std::vector<int>& offsets) const{
-    return std::accumulate(offsets.begin(),offsets.begin()+item,0);
+private:
+
+  void _updateIndexes(){
+    _computeIndexesFromOffsets(m_indexes, m_offsets);
+    m_size = _computeSizeFromOffsets(m_offsets);
   }
 
-  int size() const {
-    return std::accumulate(m_offsets.begin(), m_offsets.end(), 0);
+  void _computeIndexesFromOffsets(std::vector<int>& new_indexes, std::vector<int> const& new_offsets){
+    new_indexes.resize(new_offsets.size());
+    auto i = 0, offset_sum = 0;
+    for (auto &index : new_indexes) {
+      index = offset_sum;
+      offset_sum += new_offsets[i++];
+    }
+    // todo use algo version instead with more recent compilers (gcc >=9, clang >=5)
+    //std::exclusive_scan(new_offsets.begin(),new_offsets.end(),new_indexes.begin(),0);
   }
 
-
-//  private:
-  std::vector<DataType> m_data;
-  std::vector<int> m_offsets;
-
+  int _computeSizeFromOffsets(std::vector<int> const& new_offsets) {
+    return std::accumulate(new_offsets.begin(), new_offsets.end(), 0);
+  }
 };
 
 // special case of local ids property
