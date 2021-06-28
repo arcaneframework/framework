@@ -66,8 +66,13 @@ It contains the following subdirectories:
 
 To update `arccore` and `arccon`, use `git subtree`.
 
-For example, to upgrade `arccore` to last commit of branch `dev/cea`, run:
+For example, to upgrade `arccore` to last commit of branch `main` of `framework` repository, run:
 ```shell script
-git subtree pull --prefix=framework/arccore --squash git@github.com:arcaneframework/arccore.git de
+cd ..
+git clone git@github.com:arcaneframework/framework
+cd framework
+git subtree split -P arccore -b arccore
+cd ../alien
+git subtree pull --prefix=framework/arccore --squash ../framework arccore
 v/cea
 ```
