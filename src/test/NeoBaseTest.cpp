@@ -168,9 +168,6 @@ TEST(NeoTestItemRange,test_item_range){
     auto filtered_range_lids = filtered_range.localIds();
     EXPECT_TRUE(std::equal(value_subset.begin(),value_subset.end(),filtered_range_lids.begin()));
   }
-
-
-
 }
 
 TEST(NeoTestProperty,test_property)
@@ -279,6 +276,7 @@ TEST(NeoTestProperty,test_property)
 TEST(NeoTestArrayProperty,test_array_property)
 {
   auto array_property = Neo::ArrayProperty<Neo::utils::Int32>{"test_array_property"};
+  EXPECT_DEATH(array_property[Neo::utils::NULL_ITEM_LID],".*item local id must be >0.*");
   // add elements: 5 items with one value
   Neo::ItemRange item_range{Neo::ItemLocalIds{{},0,5}};
   std::vector<Neo::utils::Int32> values{0,1,2,3,4};
@@ -286,6 +284,8 @@ TEST(NeoTestArrayProperty,test_array_property)
   array_property.init(item_range,values);
   array_property.debugPrint();
   EXPECT_EQ(values.size(),array_property.size());
+  std::vector<int> indexes {0,1,2,3,4}; // to check indexes
+  EXPECT_TRUE(std::equal(indexes.begin(),indexes.end(),array_property.m_indexes.begin()));
   // Add 3 items
   std::vector<int> nb_element_per_item{0,3,1};
   item_range = {Neo::ItemLocalIds{{5,6,7}}};
@@ -295,6 +295,8 @@ TEST(NeoTestArrayProperty,test_array_property)
   EXPECT_EQ(values.size()+values_added.size(),array_property.size());
   auto ref_values ={0,1,2,3,4,6,6,6,7};
   EXPECT_TRUE(std::equal(ref_values.begin(),ref_values.end(),array_property.m_data.begin()));
+  indexes = {0,1,2,3,4,5,5,8};
+  EXPECT_TRUE(std::equal(indexes.begin(),indexes.end(),array_property.m_indexes.begin()));
   // Add three more items
   item_range = {Neo::ItemLocalIds{{},8,3}};
   std::for_each(values_added.begin(), values_added.end(), [](auto &elt) {return elt += 2;});
@@ -303,6 +305,8 @@ TEST(NeoTestArrayProperty,test_array_property)
   EXPECT_EQ(values.size()+2*values_added.size(),array_property.size());
   ref_values = {0,1,2,3,4,6,6,6,7,8,8,8,9};
   EXPECT_TRUE(std::equal(ref_values.begin(),ref_values.end(),array_property.m_data.begin()));
+  indexes = {0,1,2,3,4,5,5,8,9,9,12};
+  EXPECT_TRUE(std::equal(indexes.begin(),indexes.end(),array_property.m_indexes.begin()));
   // Add items and modify existing item
   item_range = {Neo::ItemLocalIds{{0,8,5},11,1}};
   nb_element_per_item = {3,3,2,1};
@@ -312,6 +316,8 @@ TEST(NeoTestArrayProperty,test_array_property)
   EXPECT_EQ(21,array_property.size());
   ref_values = {10,10,10,1,2,3,4,12,12,6,6,6,7,11,11,11,8,8,8,9,13};
   EXPECT_TRUE(std::equal(ref_values.begin(),ref_values.end(),array_property.m_data.begin()));
+  indexes = {0,3,4,5,6,7,9,12,13,16,19,20};
+  EXPECT_TRUE(std::equal(indexes.begin(),indexes.end(),array_property.m_indexes.begin()));
 
   // Check add non 0-starting contiguous range in an empty array property
   auto array_property2 = Neo::ArrayProperty<Neo::utils::Int32>{"test_array_property2"};
@@ -326,6 +332,8 @@ TEST(NeoTestArrayProperty,test_array_property)
   }
   std::cout << values_check << std::endl;
   EXPECT_TRUE(std::equal(values.begin(),values.end(),values_check.begin()));
+  indexes = {0,0,0,0,1,3,4};
+  EXPECT_TRUE(std::equal(indexes.begin(),indexes.end(),array_property2.m_indexes.begin()));
   item_range = {Neo::ItemLocalIds{{},0,2}};
   values = {0,1,1};
   array_property2.append(item_range, values, {1, 2});
@@ -336,6 +344,8 @@ TEST(NeoTestArrayProperty,test_array_property)
       values_check.push_back(value);
   }
   EXPECT_TRUE(std::equal(values.begin(),values.end(),values_check.begin()));
+  indexes = {0,1,3,3,4,6,7};
+  EXPECT_TRUE(std::equal(indexes.begin(),indexes.end(),array_property2.m_indexes.begin()));
   // Check for the whole range
   item_range = {Neo::ItemLocalIds{{},0,7}};
   values = {0,1,1,3,4,4,5,6,6};
@@ -346,6 +356,7 @@ TEST(NeoTestArrayProperty,test_array_property)
     }
   }
   EXPECT_TRUE(std::equal(values.begin(),values.end(),values_check.begin()));
+
   // Check with existing property but insertion past the last element
   item_range = {Neo::ItemLocalIds{{},8,3}}; // lids {8,9,10}
   values = {8,9,9,10};
@@ -357,6 +368,8 @@ TEST(NeoTestArrayProperty,test_array_property)
       values_check.push_back(value);
   }
   EXPECT_TRUE(std::equal(values.begin(),values.end(),values_check.begin()));
+  indexes = {0,1,3,3,4,6,7,9,9,10,12};
+  EXPECT_TRUE(std::equal(indexes.begin(),indexes.end(),array_property2.m_indexes.begin()));
 
   // Same two tests with discontiguous range
   auto array_property3 = Neo::ArrayProperty<Neo::utils::Int32>{"test_array_property3"};
@@ -371,6 +384,8 @@ TEST(NeoTestArrayProperty,test_array_property)
   }
   std::cout << values_check << std::endl;
   EXPECT_TRUE(std::equal(values.begin(),values.end(),values_check.begin()));
+  indexes = {0,0,0,0,2,2,3};
+  EXPECT_TRUE(std::equal(indexes.begin(),indexes.end(),array_property3.m_indexes.begin()));
   // Fill the first items
   item_range = {Neo::ItemLocalIds{{0,2}}};
   values = {0,2,2};
@@ -382,6 +397,8 @@ TEST(NeoTestArrayProperty,test_array_property)
       values_check.push_back(value);
   }
   EXPECT_TRUE(std::equal(values.begin(),values.end(),values_check.begin()));
+  indexes = {0,1,1,3,5,5,6};
+  EXPECT_TRUE(std::equal(indexes.begin(),indexes.end(),array_property3.m_indexes.begin()));
   // Check for the whole range
   item_range = {Neo::ItemLocalIds{{},0,7}};
   values = {0,2,2,3,3,5,6,6};
@@ -403,6 +420,8 @@ TEST(NeoTestArrayProperty,test_array_property)
       values_check.push_back(value);
   }
   EXPECT_TRUE(std::equal(values.begin(),values.end(),values_check.begin()));
+  indexes = {0,1,1,3,5,5,6,8,8,9,9,11,11};
+  EXPECT_TRUE(std::equal(indexes.begin(),indexes.end(),array_property3.m_indexes.begin()));
   // Check for the whole range
   item_range = {Neo::ItemLocalIds{{},0,13}};
   values = {0,2,2,3,3,5,6,6,8,10,10,12};
@@ -427,6 +446,8 @@ TEST(NeoTestArrayProperty,test_array_property)
   }
   std::cout << values_check << std::endl;
   EXPECT_TRUE(std::equal(values.begin(),values.end(),values_check.begin()));
+  indexes = {0,0,0,0,0,2,2,3,5,6,7};
+  EXPECT_TRUE(std::equal(indexes.begin(),indexes.end(),array_property4.m_indexes.begin()));
   // Fill the first items
   item_range = {Neo::ItemLocalIds{{2,3},0,2}};
   values = {2,2,3,0,0,1};
@@ -438,6 +459,8 @@ TEST(NeoTestArrayProperty,test_array_property)
       values_check.push_back(value);
   }
   EXPECT_TRUE(std::equal(values.begin(),values.end(),values_check.begin()));
+  indexes = {0,2,3,5,6,8,8,9,11,12,13};
+  EXPECT_TRUE(std::equal(indexes.begin(),indexes.end(),array_property4.m_indexes.begin()));
   // Check for the whole range
   item_range = {Neo::ItemLocalIds{{},0,11}};
   values = {0,0,1,2,2,3,4,4,6,7,7,8,9,10,10};
