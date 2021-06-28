@@ -249,7 +249,7 @@ public:
   std::vector<DataType> _arrayAccessor (ArrayType items) const {
     // check bounds
     assert(("Max input item lid > max local id, In PropertyT[]",
-               *(std::max_element(items.begin(),items.end()))< m_data.size()));
+               *(std::max_element(items.begin(),items.end()))< (int)m_data.size()));
 
     std::vector<DataType> values;
     values.reserve(items.size());
@@ -578,7 +578,7 @@ template <typename... T> struct VisitorOverload : public T... {
 
 template <typename Func, typename Variant>
 void apply(Func &func, Variant &arg) {
-  auto default_func = [](auto arg) {
+  auto default_func = []([[maybe_unused]] auto arg) {
     std::cout << "Wrong Property Type" << std::endl;
   }; // todo: prevent this behavior (statically ?)
   std::visit(VisitorOverload{default_func, func}, arg);
@@ -588,7 +588,7 @@ template <typename Func, typename Variant>
 void apply(Func &func, Variant& arg1, Variant& arg2) {
   std::visit([&arg2, &func](auto& concrete_arg1) {
     std::visit([&concrete_arg1, &func](auto& concrete_arg2){
-      auto functor = VisitorOverload{[](const auto& arg1, const auto& arg2) {std::cout << "Wrong one." << std::endl;},func}; // todo: prevent this behavior (statically ?)
+      auto functor = VisitorOverload{[]([[maybe_unused]] const auto& arg1,[[maybe_unused]] const auto& arg2) {std::cout << "Wrong one." << std::endl;},func}; // todo: prevent this behavior (statically ?)
       functor(concrete_arg1,concrete_arg2);// arg1 & arg2 are variants, concrete_arg* are concrete arguments
     },arg2);
   },arg1);
@@ -599,7 +599,7 @@ void apply(Func& func, Variant& arg1, Variant& arg2, Variant& arg3) {
   std::visit([&arg2, &arg3, &func](auto& concrete_arg1) {
     std::visit([&concrete_arg1, &arg3, &func](auto &concrete_arg2) {
       std::visit([&concrete_arg1, &concrete_arg2, &func](auto &concrete_arg3) {
-        auto functor = VisitorOverload{[](const auto &arg1, const auto &arg2, const auto &arg3) {std::cout << "Wrong one." << std::endl;},func}; // todo: prevent this behavior (statically ?)
+        auto functor = VisitorOverload{[]([[maybe_unused]] const auto &arg1,[[maybe_unused]] const auto &arg2, [[maybe_unused]]const auto &arg3) {std::cout << "Wrong one." << std::endl;},func}; // todo: prevent this behavior (statically ?)
         functor(concrete_arg1, concrete_arg2,concrete_arg3); // arg1 & arg2 are variants, concrete_arg* are concrete arguments
       }, arg3);
     }, arg2);
