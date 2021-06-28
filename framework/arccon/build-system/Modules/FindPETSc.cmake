@@ -2,6 +2,10 @@ arccon_return_if_package_found(PETSc)
 
 find_path(PETSC_INCLUDE_DIRS petsc.h)
 
+# On debian/ubuntu, headers can be found in a /usr/include/"pkg"
+find_path(PETSC_INCLUDE_DIRS petsc.h
+	PATH_SUFFIXES petsc)
+
 find_library(PETSC_LIB petsc)
 find_library(PETSC_KSP_LIB petscksp)
 find_library(PETSC_MAT_LIB petscmat)

@@ -20,10 +20,22 @@ find_library(GLIB_GLIB_LIBRARIES NAMES glib-2.0 HINTS ${PKG_GLIB_LIBDIR} ${PKG_G
 find_library(GLIB_GTHREAD_LIBRARIES NAMES gthread-2.0 HINTS ${PKG_GLIB_LIBDIR} ${PKG_GLIB_LIBRARY_DIRS})
 find_library(GLIB_GMODULE_LIBRARIES NAMES gmodule-2.0 HINTS ${PKG_GLIB_LIBDIR} ${PKG_GLIB_LIBRARY_DIRS})
 
+# Si on ne trouve pas via 'pkg-config' (par exemple parce que ce dernier n'est pas disponible),
+# alors il faut ajouter directement le répertoire contenant la bibliothèque 'glib-2.0' car
+# le fichier 'glibconfig.h' se trouve en général dans ce répertoire.
+if (GLIB_GLIB_LIBRARIES)
+  get_filename_component(_GLIB_LIB_DIR ${GLIB_GLIB_LIBRARIES} DIRECTORY)
+endif()
+
+message(STATUS "GLIB_GLIB_LIBRARIES     = ${GLIB_GLIB_LIBRARIES}")
+message(STATUS "GLIB_GTHREAD_LIBRARIES  = ${GLIB_GTHREAD_LIBRARIES}")
+message(STATUS "GLIB_GMODULE_LIBRARIES  = ${GLIB_GMODULE_LIBRARIES}")
+message(STATUS "_GLIB_LIB_DIR           = ${_GLIB_LIB_DIR}")
+
 # On a besoin de 'glib.h' et 'glibconfig.h' qui peuvent être dans des répertoires différents
 find_path(GLIBCONFIG_INCLUDE_DIR
   NAMES glibconfig.h
-  HINTS ${PKG_GLIB_LIBDIR} ${PKG_GLIB_LIBRARY_DIRS} ${PKG_GLIB_INCLUDE_DIRS}
+  HINTS ${PKG_GLIB_LIBDIR} ${PKG_GLIB_LIBRARY_DIRS} ${PKG_GLIB_INCLUDE_DIRS} ${_GLIB_LIB_DIR}
   PATH_SUFFIXES glib-2.0/include
 )
 
