@@ -9,7 +9,7 @@ target_include_directories(Neo SYSTEM INTERFACE
 
 target_compile_definitions(Neo INTERFACE HAS_NEO)
 
-target_compile_options(Neo PRIVATE -Wall -Wextra -Wpedantic -pedantic -Wconversion -Wsign-conversion -pedantic-errors)
+target_compile_options(Neo PRIVATE -Wall -Wextra -Wpedantic -pedantic -Wconversion -pedantic-errors)
 
 install(TARGETS Neo EXPORT NeoConfig PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/neo INCLUDES DESTINATION include)
 
