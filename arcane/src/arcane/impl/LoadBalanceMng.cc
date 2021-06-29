@@ -253,7 +253,7 @@ computeMemory()
       if (var->dataType()!=DT_String)
         memory = dataTypeSize(var->dataType());
     }
-    catch (const ArgumentException& ex) {
+    catch (const ArgumentException&) {
       memory = 0; // Cannot know memory used for that ...
       continue;
     }

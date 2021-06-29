@@ -179,7 +179,7 @@ public:
   const ItemData& operator[] (const Integer family_id) const {
     try {
       return m_item_infos_list.at(family_id);
-    } catch (const std::out_of_range& e) {
+    } catch (const std::out_of_range&) {
       ARCANE_FATAL("Cannot return family with id {0}, not inserted in current ItemDataList",family_id);
     }
   }
