@@ -5,10 +5,42 @@
 
 Cette page contient les nouveautés de chaque version de %Arcane.
 
-Arcane Version 3.0.1 (27 mai 2021) {#arcanedoc_version301}
+Arcane Version 3.0.3 (... 2021) {#arcanedoc_version303}
 ======================================
 
 [TEMPORARY]
+
+Nouveautés/Améliorations:
+
+- Support de l'AMR par patch en parallèle
+- Ajout d'une classe Arcane::SimpleSVGMeshExporter pour exporter au
+  format SVG un ensemble de mailles
+- Support dans l'AMR par patch dans la classe Arcane::DirNode des
+  mailles voisines par direction.  
+- Lors de la synchronisation des groupes, s'assure que tous les
+  sous-domaines ont les mêmes groupes et que la synchronisation se
+  fait dans le même ordre.
+
+Changements:
+
+- Rend obsolète les méthodes Arcane::IArrayDataT::value() et
+  Arcane::IArray2DataT::value(). On peut à la place utiliser les
+  méthodes Arcane::IArrayDataT::view() et
+  Arcane::IArray2DataT::view(). Le but de ces changements est de
+  pouvoir masquer le conteneur utilisé pour l'implémentation
+- Ajoute méthodes Arcane::arcaneParallelFor() et
+  Arcane::arcaneParallelForeach() pour remplacer les
+  différentes méthodes Arcane::Parallel::For() et Arcane::Parallel::Foreach().  
+
+Corrections:
+
+- Dans l'AMR par patch, s'assure que les entités voisines par
+  direction sont toujours dans le même niveau de patch.
+- Corrige quelques dépendances manquantes lors de la compilation qui
+  pouvaient entrainer des erreurs de compilation dans certains cas.
+
+Arcane Version 3.0.1 (27 mai 2021) {#arcanedoc_version301}
+======================================
 
 Cette version est la première version 'open source' de %Arcane.
 
