@@ -257,6 +257,12 @@ namespace Arcane
 %rename("$ignore", fullname=1) "Arcane::IItemFamily::getMergedItemLID";
 %rename("$ignore", fullname=1) "Arcane::ISerializedData::dimensions";
 %rename("$ignore", fullname=1) "Arcane::CaseOptionBase::subDomain";
+%rename("$ignore", regextarget=1, fullname=1) "Arcane::IArrayDataT<.*>::value";
+%rename("$ignore", regextarget=1, fullname=1) "Arcane::IArrayDataT<.*>::cloneTrue";
+%rename("$ignore", regextarget=1, fullname=1) "Arcane::IArrayDataT<.*>::cloneTrueEmpty";
+%rename("$ignore", regextarget=1, fullname=1) "Arcane::IArray2DataT<.*>::value";
+%rename("$ignore", regextarget=1, fullname=1) "Arcane::IArray2DataT<.*>::cloneTrue";
+%rename("$ignore", regextarget=1, fullname=1) "Arcane::IArray2DataT<.*>::cloneTrueEmpty";
 
 // Les méthodes suivantes sont obsolètes mais utilisées par des exemples
 // donc il ne faut pas encore les supprimer
