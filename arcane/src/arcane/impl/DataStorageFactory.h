@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataStorageFactory.h                                        (C) 2000-2020 */
+/* DataStorageFactory.h                                        (C) 2000-2021 */
 /*                                                                           */
 /* Fabrique de conteneur d'une donnée.                                       */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,8 @@
 
 #include "arcane/IDataStorageFactory.h"
 #include "arcane/IData.h"
+#include "arcane/IDataFactory.h"
+#include "arcane/IDataFactoryMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -66,6 +68,26 @@ template<typename DataType> class DataStorageFactory
   {
     IData* d = new DataType(dsbi);
     return makeRef(d);
+  }
+
+  //! Enregistre dans \a dfm une fabrique pour la donnée \a DataType
+  static void registerDataFactory(IDataFactoryMng* dfm)
+  {
+    using DataContainerType = DataType;
+    IDataFactory* df = dfm->deprecatedOldFactory();
+    ITraceMng* trace = dfm->traceMng();
+    df->registerData(new DataContainerType(trace));
+    DataStorageTypeInfo t = DataContainerType::staticStorageTypeInfo();
+    bool print_info = false;
+    if (print_info)
+      std::cout << "TYPE=" << t.basicDataType()
+                << " nb_basic=" << t.nbBasicElement()
+                << " dimension=" << t.dimension()
+                << " multi_tag=" << t.multiTag()
+                << " full_name=" << t.fullName()
+                << "\n";
+    IDataStorageFactory* sf = new DataStorageFactory<DataContainerType>(t);
+    dfm->registerDataStorageFactory(makeRef(sf));
   }
 };
 

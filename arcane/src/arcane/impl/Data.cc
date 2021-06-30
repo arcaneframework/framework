@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Data.cc                                                     (C) 2000-2020 */
+/* Data.cc                                                     (C) 2000-2021 */
 /*                                                                           */
 /* Classes de base d'une donnée.                                             */
 /*---------------------------------------------------------------------------*/
@@ -42,20 +42,7 @@ namespace Arcane
 template<typename DataContainerType> inline void
 _registerOneData(IDataFactoryMng* dfm)
 {
-  IDataFactory* df = dfm->deprecatedOldFactory();
-  ITraceMng* trace = df->application()->traceMng();
-  df->registerData(new DataContainerType(trace));
-  DataStorageTypeInfo t = DataContainerType::staticStorageTypeInfo();
-  bool print_info = false;
-  if (print_info)
-    std::cout << "TYPE=" << t.basicDataType()
-              << " nb_basic=" << t.nbBasicElement()
-              << " dimension=" << t.dimension()
-              << " multi_tag=" << t.multiTag()
-              << " full_name=" << t.fullName()
-              << "\n";
-  IDataStorageFactory* sf = new DataStorageFactory<DataContainerType>(t);
-  dfm->registerDataStorageFactory(makeRef(sf));
+  DataStorageFactory<DataContainerType>::registerDataFactory(dfm);
 }
 
 namespace
