@@ -310,7 +310,7 @@ directResize(Integer dim1_size,Integer dim2_size)
 template<typename DataType> void Array2VariableT<DataType>::
 shrinkMemory()
 {
-  value().shrink();
+  m_data->_internal()->shrink();
   syncReferences();
 }
 
@@ -358,7 +358,9 @@ allocatedMemory() const
 template<typename T> Integer Array2VariableT<T>::
 checkIfSync(int max_print)
 {
-  Integer dim1_size = value().dim1Size();
+  ValueType& data_values = m_data->_internal()->_internalDeprecatedValue();
+
+  Integer dim1_size = valueView().dim1Size();
   if (dim1_size==0)
     return 0;
 
@@ -368,9 +370,9 @@ checkIfSync(int max_print)
     UniqueArray2<T> ref_array(constValueView());
     this->synchronize(); // fonctionne pour toutes les variables
     Array2VariableDiff<T> csa;
-    Array2View<T> from_array(value());
+    Array2View<T> from_array(valueView());
     Integer nerror = csa.check(this,ref_array,from_array,max_print,true);
-    value().copy(ref_array);
+    data_values.copy(ref_array);
     return nerror;
   }
   return 0;
@@ -430,7 +432,7 @@ namespace
 template<typename T> Integer Array2VariableT<T>::
 _checkIfSameOnAllReplica(IParallelMng* replica_pm,Integer max_print)
 {
-  return _checkIfSameOnAllReplicaHelper(replica_pm,this,value().constView(),max_print);
+  return _checkIfSameOnAllReplicaHelper(replica_pm,this,constValueView(),max_print);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -445,7 +447,7 @@ _internalResize(Integer new_size,Integer nb_additional_element)
   //   if (isPartial() && new_size < value().dim1Size())
   //     throw NotSupportedException(A_FUNCINFO,"Cannot remove items to group with partial variables");
 
-  ValueType& data_values = this->value();
+  ValueType& data_values = m_data->_internal()->_internalDeprecatedValue();
   ValueType& container_ref = data_values;
 
   Integer dim2_size = data_values.dim2Size();
@@ -498,7 +500,7 @@ copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination)
   ARCANE_ASSERT(source.size()==destination.size(),
 		("Unable to copy: source and destination have different sizes !"));
 
-  const Integer dim2_size = value().dim2Size();
+  const Integer dim2_size = valueView().dim2Size();
   const Integer nb_copy = source.size();
   Array2View<T> value = m_data->view();
 
@@ -520,7 +522,7 @@ copyItemsMeanValues(Int32ConstArrayView first_source,
   ARCANE_ASSERT((first_source.size()==destination.size()) && (second_source.size()==destination.size()),
                 ("Unable to copy: source and destination have different sizes !"));
 
-  const Integer dim2_size = value().dim2Size();
+  const Integer dim2_size = valueView().dim2Size();
   const Integer nb_copy = first_source.size();
   Array2View<T> value = m_data->view();
 
@@ -542,11 +544,11 @@ compact(Int32ConstArrayView new_to_old_ids)
     return;
   }
 
-  Integer current_size = value().dim1Size();
+  ValueType& current_value = m_data->_internal()->_internalDeprecatedValue();
+  Integer current_size = current_value.dim1Size();
   if (current_size==0)
     return;
 
-  ValueType& current_value = m_data->_internal()->_internalDeprecatedValue();
   Integer dim2_size = current_value.dim2Size();
   if (dim2_size==0)
     return;

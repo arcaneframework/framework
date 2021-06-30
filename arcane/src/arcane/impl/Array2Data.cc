@@ -56,6 +56,7 @@ class Array2DataT<DataType>::Impl
  public:
   void reserve(Integer new_capacity) override { m_p->m_value.reserve(new_capacity); }
   Array2<DataType>& _internalDeprecatedValue() override { return m_p->m_value; }
+  void shrink() const override { m_p->m_value.shrink(); }
  private:
   Array2DataT<DataType>* m_p;
 };

@@ -79,6 +79,7 @@ class Array2VariableT
   ARCANE_CORE_EXPORT void directResize(Integer dim1);
   ARCANE_CORE_EXPORT void directResize(Integer dim1,Integer dim2);
   ARCANE_CORE_EXPORT void swapValues(ThatClass& rhs);
+  ValueDataType* trueData() { return m_data; }
 
  protected:
   

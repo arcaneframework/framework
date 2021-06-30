@@ -158,7 +158,7 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids)
   typedef typename DataTypeTraitsT<DataType>::BasicType BasicType;
   const eDataType data_type = DataTypeTraitsT<BasicType>::type();
   ItemVectorView ids_view(family->itemsInternal(),ids);
-  Int64 dim2_size = m_global_variable->value().dim2Size();
+  Int64 dim2_size = m_global_variable->valueView().dim2Size();
   bool has_mat = this->space()!=MatVarSpace::Environment;
   switch(sbuf->mode()){
   case ISerializer::ModeReserve:
@@ -264,7 +264,7 @@ resize(Integer dim2_size)
 {
   for( PrivatePartType* pvar : m_vars.range() ){
     if (pvar){
-      Integer dim1_size = pvar->value().dim1Size();
+      Integer dim1_size = pvar->valueView().dim1Size();
       pvar->directResize(dim1_size,dim2_size);
     }
   }

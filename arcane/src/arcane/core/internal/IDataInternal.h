@@ -72,6 +72,9 @@ class IArray2DataInternalT
 
   //! Conteneur associé à la donnée.
   virtual Array2<DataType>& _internalDeprecatedValue() = 0;
+
+  //! Libère la mémoire additionnelle éventuellement allouée
+  virtual void shrink() const =0;
 };
 
 /*---------------------------------------------------------------------------*/

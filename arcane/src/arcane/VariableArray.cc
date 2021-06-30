@@ -340,12 +340,13 @@ checkIfSync(int max_print)
 {
   IItemFamily* family = itemGroup().itemFamily();
   if (family){
+    ValueType& data_values = m_value->_internal()->_internalDeprecatedValue();
     UniqueArray<T> ref_array(constValueView());
     this->synchronize(); // fonctionne pour toutes les variables
     ArrayVariableDiff<T> csa;
     ConstArrayView<T> from_array(constValueView());
     Integer nerror = csa.check(this,ref_array,from_array,max_print,true);
-    value().copy(ref_array);
+    data_values.copy(ref_array);
     return nerror;
   }
   return 0;
