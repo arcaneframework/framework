@@ -1,10 +1,18 @@
-﻿cmake_minimum_required(VERSION 3.11)
+﻿cmake_minimum_required(VERSION 3.15)
 
 # ----------------------------------------------------------------------------
 # Indique que le projet n'a pas de language
 # Cela est indispensable pour que CMake ne recherche pas les
 # compilateurs avant d'avoir inclus les fichiers de configuration.
-Project(ArcaneFramework LANGUAGES NONE)
+Project(ArcaneFrameworkFull LANGUAGES NONE)
+
+if(POLICY CMP0074)
+  cmake_policy(SET CMP0074 NEW)
+endif()
+
+if(POLICY CMP0111)
+  cmake_policy(SET CMP0111 NEW)
+endif()
 
 # ----------------------------------------------------------------------------
 # Macro pour positionner la variable 'var_name' dans le cache
