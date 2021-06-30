@@ -24,6 +24,7 @@
 #include "arcane/datatype/DataStorageBuildInfo.h"
 
 #include "arcane/impl/SerializedData.h"
+#include "arcane/impl/DataStorageFactory.h"
 
 #include "arcane/ISerializer.h"
 #include "arcane/core/internal/IDataInternal.h"
@@ -329,6 +330,15 @@ void StringArrayData::
 visitMultiArray2(IMultiArray2DataVisitor*)
 {
   ARCANE_THROW(NotSupportedException, "Can not visit multiarray2 data with array data");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" void
+registerStringArrayDataFactory(IDataFactoryMng* dfm)
+{
+  DataStorageFactory<StringArrayData>::registerDataFactory(dfm);
 }
 
 /*---------------------------------------------------------------------------*/

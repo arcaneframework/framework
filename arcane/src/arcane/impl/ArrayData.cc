@@ -510,6 +510,23 @@ swapValuesDirect(ThatClass* true_data)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+extern "C++" void
+registerArrayDataFactory(IDataFactoryMng* dfm)
+{
+  DataStorageFactory<ArrayDataT<Byte>>::registerDataFactory(dfm);
+  DataStorageFactory<ArrayDataT<Real>>::registerDataFactory(dfm);
+  DataStorageFactory<ArrayDataT<Int16>>::registerDataFactory(dfm);
+  DataStorageFactory<ArrayDataT<Int32>>::registerDataFactory(dfm);
+  DataStorageFactory<ArrayDataT<Int64>>::registerDataFactory(dfm);
+  DataStorageFactory<ArrayDataT<Real2>>::registerDataFactory(dfm);
+  DataStorageFactory<ArrayDataT<Real3>>::registerDataFactory(dfm);
+  DataStorageFactory<ArrayDataT<Real2x2>>::registerDataFactory(dfm);
+  DataStorageFactory<ArrayDataT<Real3x3>>::registerDataFactory(dfm);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template class ArrayDataT<Byte>;
 template class ArrayDataT<Real>;
 template class ArrayDataT<Int16>;

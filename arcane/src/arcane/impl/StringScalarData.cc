@@ -23,6 +23,7 @@
 #include "arcane/datatype/DataStorageBuildInfo.h"
 
 #include "arcane/impl/SerializedData.h"
+#include "arcane/impl/DataStorageFactory.h"
 
 #include "arcane/ISerializer.h"
 
@@ -243,6 +244,15 @@ void StringScalarData::
 visitMultiArray2(IMultiArray2DataVisitor*)
 {
   throw NotSupportedException(A_FUNCINFO, "Can not visit multiarray2 data with array data");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" void
+registerStringScalarDataFactory(IDataFactoryMng* dfm)
+{
+  DataStorageFactory<StringScalarData>::registerDataFactory(dfm);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -14,6 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/Ref.h"
+
 #include "arcane/IDataStorageFactory.h"
 #include "arcane/IData.h"
 #include "arcane/IDataFactory.h"
