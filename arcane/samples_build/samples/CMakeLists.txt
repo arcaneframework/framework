@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
+﻿cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 set(BUILD_SHARED_LIBS TRUE)
 if (NOT Arcane_DIR)
   include(ArcaneCompilerConfig.cmake)
@@ -9,6 +9,13 @@ if (NOT Arcane_DIR)
 endif()
 project(ArcaneSamples LANGUAGES CXX)
 
+# Si le répertoire d'installation est différent du répertoire
+# des sources, il faut recopier les infos pour Nuget.
+if(NOT CMAKE_BINARY_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  configure_file(nuget.config ${CMAKE_BINARY_DIR}/nuget.config)
+  file(COPY _nuget_fallback DESTINATION ${CMAKE_BINARY_DIR})
+endif()
+
 enable_testing()
 
 add_subdirectory(helloworld)
@@ -18,3 +25,10 @@ add_subdirectory(eos)
 add_subdirectory(geometry)
 add_subdirectory(print_meshinfo)
 add_subdirectory(direct_cartesian)
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:
