@@ -16,11 +16,6 @@
 
 cmake_minimum_required(VERSION 3.11)
 
-find_program(CCACHE_PROGRAM ccache)
-if (CCACHE_PROGRAM)
-    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
-endif ()
-
 # MUST be done before call to 'project'
 get_cmake_property(vars CACHE_VARIABLES)
 foreach(var ${vars})
