@@ -28,6 +28,7 @@ jobs:
     # Checkout v2 does not include files listed in .gitattributes
     - uses: actions/checkout@v1
 
+    # Setting up ccache from github cached files
     - name: Prepare ccache timestamp
       id: ccache_timestamp
       shell: cmake -P {0}
