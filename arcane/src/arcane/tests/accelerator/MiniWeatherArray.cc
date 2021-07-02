@@ -45,10 +45,9 @@
 #include "arcane/BasicService.h"
 #include "arcane/ServiceFactory.h"
 #include "arcane/tests/MiniWeatherTypes.h"
-#include "arcane/accelerator/NumArray.h"
-#include "arcane/accelerator/NumArrayViews.h"
 
-#include "arcane/accelerator/Runner.h"
+#include "arcane/accelerator/NumArray.h"
+#include "arcane/accelerator/Accelerator.h"
 
 #include <math.h>
 

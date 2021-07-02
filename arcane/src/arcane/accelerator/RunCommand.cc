@@ -13,8 +13,12 @@
 
 #include "arcane/accelerator/RunCommand.h"
 
+#include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/IMemoryAllocator.h"
+
 #include "arcane/accelerator/RunQueueImpl.h"
-#include "arcane/accelerator/Runner.h"
+#include "arcane/accelerator/RunQueue.h"
 #include "arcane/accelerator/IReduceMemoryImpl.h"
 
 /*---------------------------------------------------------------------------*/

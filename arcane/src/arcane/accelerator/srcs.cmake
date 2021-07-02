@@ -1,5 +1,6 @@
 set( ARCANE_SOURCES
   Accelerator.cc
+  Accelerator.h
   AcceleratorGlobal.h
   Reduce.h
   Runner.h

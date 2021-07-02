@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleHydroAcceleratorService.cc                            (C) 2000-2020 */
+/* SimpleHydroAcceleratorService.cc                            (C) 2000-2021 */
 /*                                                                           */
 /* Hydrodynamique simplifiée utilisant les accélerateurs.                    */
 /*---------------------------------------------------------------------------*/
@@ -47,8 +47,7 @@
 #include "arcane/UnstructuredMeshConnectivity.h"
 
 #include "arcane/accelerator/Reduce.h"
-#include "arcane/accelerator/Runner.h"
-#include "arcane/accelerator/Views.h"
+#include "arcane/accelerator/Accelerator.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
