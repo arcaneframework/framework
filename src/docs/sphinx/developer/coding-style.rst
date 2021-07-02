@@ -1,3 +1,5 @@
+.. _developer_doxygen:
+
 Alien's Coding Style
 ====================
 

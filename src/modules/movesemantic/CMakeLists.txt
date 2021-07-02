@@ -14,7 +14,7 @@
 # 
 # SPDX-License-Identifier: Apache-2.0
 
-add_library(alien_semantic_move
+set(alien_semantic_public_header
         include/alien/move/handlers/block/BlockVectorReader.h
         include/alien/move/handlers/block/BlockVectorWriter.h
         include/alien/move/handlers/scalar/VectorReader.h
@@ -25,13 +25,25 @@ add_library(alien_semantic_move
         include/alien/move/handlers/scalar/DirectMatrixBuilder.h
         include/alien/move/handlers/scalar/MatrixProfiler.h
         include/alien/move/handlers/scalar/ProfiledMatrixBuilder.h
-        src/Extraction.cc
         include/alien/move/handlers/sub_matrix/Extraction.h
-        src/MatrixData.cc
         include/alien/move/data/MatrixData.h
-        src/VectorData.cc
         include/alien/move/data/VectorData.h
         )
+
+add_library(alien_semantic_move
+        ${alien_semantic_public_header}
+        src/Extraction.cc
+        src/MatrixData.cc
+        src/VectorData.cc
+        )
+
+if (ALIEN_GENERATE_DOCUMENTATION)
+  doxygen_add_docs(doxygen_api_docs_movesemantic
+          ${alien_semantic_public_header}
+          USE_STAMP_FILE
+          COMMENT "Generate API-documents for Alien."
+          )
+endif(ALIEN_GENERATE_DOCUMENTATION)
 
 target_link_libraries(alien_semantic_move PUBLIC alien_core)
 
