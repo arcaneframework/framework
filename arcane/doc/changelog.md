@@ -16,7 +16,7 @@ Nouveautés/Améliorations:
 - Ajout d'une classe Arcane::SimpleSVGMeshExporter pour exporter au
   format SVG un ensemble de mailles
 - Support dans l'AMR par patch dans la classe Arcane::DirNode des
-  mailles voisines par direction.  
+  mailles voisines par direction.
 - Lors de la synchronisation des groupes, s'assure que tous les
   sous-domaines ont les mêmes groupes et que la synchronisation se
   fait dans le même ordre.
@@ -30,7 +30,7 @@ Changements:
   pouvoir masquer le conteneur utilisé pour l'implémentation
 - Ajoute méthodes Arcane::arcaneParallelFor() et
   Arcane::arcaneParallelForeach() pour remplacer les
-  différentes méthodes Arcane::Parallel::For() et Arcane::Parallel::Foreach().  
+  différentes méthodes Arcane::Parallel::For() et Arcane::Parallel::Foreach().
 
 Corrections:
 
@@ -38,6 +38,8 @@ Corrections:
   direction sont toujours dans le même niveau de patch.
 - Corrige quelques dépendances manquantes lors de la compilation qui
   pouvaient entrainer des erreurs de compilation dans certains cas.
+- Corrige erreurs de compilation des exemples en dehors du répertoire
+  des sources.
 
 Arcane Version 3.0.1 (27 mai 2021) {#arcanedoc_version301}
 ======================================
