@@ -90,6 +90,54 @@ class ARCANE_CEA_EXPORT DirNode
     Int32 x = cellIndex(position);
     return (x==NULL_CELL) ? CellLocalId(NULL_ITEM_LOCAL_ID) : CellLocalId(m_current->cellLocalId(x));
   }
+  /*!
+   * \brief Maille en fonction de sa position par rapport à ce noeud.
+   *
+   * Les valeurs possibles pour \a position sont données par l'énumération
+   * eCellNodePosition.
+   */
+  Cell cell(Int32 position) const
+  {
+    Int32 x = cellIndex(position);
+    return (x==NULL_CELL) ? Cell() : Cell(m_current->internalCell(x));
+  }
+
+  //! Noeud devant à gauche dans la direction
+  Cell nextLeftCell() const { return cell(CNP_NextLeft); }
+  //! Noeud devant à droite dans la direction
+  Cell nextRightCell() const { return cell(CNP_NextRight); }
+  //! Noeud derrière à droite dans la direction
+  Cell previousRightCell() const { return cell(CNP_PreviousRight); }
+  //! Noeud derrière à gauche dans la direction
+  Cell previousLeftCell() const { return cell(CNP_PreviousLeft); }
+
+  //! Noeud devant à gauche dans la direction
+  CellLocalId nextLeftCellId() const { return cellId(CNP_NextLeft); }
+  //! Noeud devant à droite dans la direction
+  CellLocalId nextRightCellId() const { return cellId(CNP_NextRight); }
+  //! Noeud derrière à droite dans la direction
+  CellLocalId previousRightCellId() const { return cellId(CNP_PreviousRight); }
+  //! Noeud derrière à gauche dans la direction
+  CellLocalId previousLeftCellId() const { return cellId(CNP_PreviousLeft); }
+
+  //! Noeud devant à gauche dans la direction
+  Cell topNextLeftCell() const { return cell(CNP_TopNextLeft); }
+  //! Noeud devant à droite dans la direction
+  Cell topNextRightCell() const { return cell(CNP_TopNextRight); }
+  //! Noeud derrière à droite dans la direction
+  Cell topPreviousRightCell() const { return cell(CNP_TopPreviousRight); }
+  //! Noeud derrière à gauche dans la direction
+  Cell topPreviousLeftCell() const { return cell(CNP_TopPreviousLeft); }
+
+  //! Noeud devant à gauche dans la direction
+  CellLocalId topNextLeftCellId() const { return cellId(CNP_TopNextLeft); }
+  //! Noeud devant à droite dans la direction
+  CellLocalId topNextRightCellId() const { return cellId(CNP_TopNextRight); }
+  //! Noeud derrière à droite dans la direction
+  CellLocalId topPreviousRightCellId() const { return cellId(CNP_TopPreviousRight); }
+  //! Noeud derrière à gauche dans la direction
+  CellLocalId topPreviousLeftCellId() const { return cellId(CNP_TopPreviousLeft); }
+
  private:
   ItemInternal* m_current;
   Node m_previous;

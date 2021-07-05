@@ -38,6 +38,26 @@ class ICartesianMesh;
 class ICartesianMeshPatch;
 class CartesianMeshPatch;
 class CartesianConnectivity;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Position des noeuds de la maille par direction pour les maillages
+ * cartésiens.
+ */
+enum eCellNodePosition
+{
+  CNP_NextLeft = 0,
+  CNP_NextRight = 1,
+  CNP_PreviousRight = 2,
+  CNP_PreviousLeft = 3,
+
+  CNP_TopNextLeft = 4,
+  CNP_TopNextRight = 5,
+  CNP_TopPreviousRight = 6,
+  CNP_TopPreviousLeft = 7
+};
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/

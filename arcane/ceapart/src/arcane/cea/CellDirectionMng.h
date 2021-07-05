@@ -30,25 +30,6 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Position des noeuds de la maille par direction pour les maillages
- * cartésiens.
- */
-enum eCellNodePosition
-{
-  CNP_NextLeft = 0,
-  CNP_NextRight = 1,
-  CNP_PreviousRight = 2,
-  CNP_PreviousLeft = 3,
-
-  CNP_TopNextLeft = 4,
-  CNP_TopNextRight = 5,
-  CNP_TopPreviousRight = 6,
-  CNP_TopPreviousLeft = 7
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
  * \ingroup ArcaneCartesianMesh
  * \brief Maille avant et après une maille suivant une direction.
  *

@@ -333,8 +333,28 @@ _testDirNode()
               ARCANE_FATAL("Bad value for cell_index '{0}' node_nb_cell={1}",cell_index,node_nb_cell);
             cell_pos = m_cell_center[node.cell(cell_index)];
           }
-          info() << "DirNode cellIndex k=" << k << " index=" << cell_index << " pos=" << cell_pos << " cell_lid=" << dir_node.cellId(k);
+          info() << "DirNode cellIndex k=" << k << " index=" << cell_index << " pos=" << cell_pos
+                 << " cell_lid=" << dir_node.cellId(k)
+                 << " cell=" << dir_node.cell(k);
         }
+        info() << "DirNode direct "
+               << " " << dir_node.nextLeftCellId()
+               << " " << dir_node.nextRightCellId()
+               << " " << dir_node.previousRightCellId()
+               << " " << dir_node.previousLeftCellId()
+               << " " << dir_node.topNextLeftCellId()
+               << " " << dir_node.topNextRightCellId()
+               << " " << dir_node.topPreviousRightCellId()
+               << " " << dir_node.topPreviousLeftCellId();
+        info() << "DirNode direct "
+               << " " << ItemPrinter(dir_node.nextLeftCell())
+               << " " << ItemPrinter(dir_node.nextRightCell())
+               << " " << ItemPrinter(dir_node.previousRightCell())
+               << " " << ItemPrinter(dir_node.previousLeftCell())
+               << " " << ItemPrinter(dir_node.topNextLeftCell())
+               << " " << ItemPrinter(dir_node.topNextRightCell())
+               << " " << ItemPrinter(dir_node.topPreviousRightCell())
+               << " " << ItemPrinter(dir_node.topPreviousLeftCell());
       }
       if (prev_node.null() && next_node.null())
         ARCANE_FATAL("Null previous and next node for node {0}",ItemPrinter(node));
