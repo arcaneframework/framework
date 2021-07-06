@@ -61,6 +61,7 @@ class PolyhedralMesh : public EmptyMesh {
   std::unique_ptr<Properties> m_properties;
   std::unique_ptr<PolyhedralMeshImpl> m_mesh; // using pimpl to limit dependency to neo lib to cc file
   MeshPartInfo m_part_info;
+  bool m_is_allocated = false;
 
  public:
   PolyhedralMesh(ISubDomain* subDomain);
@@ -100,11 +101,11 @@ class PolyhedralMesh : public EmptyMesh {
 
   Integer dimension() override;
 
-  NodeGroup allNodes() override { return ItemGroup{}; }
+  NodeGroup allNodes() override;
 
-  EdgeGroup allEdges() override { return ItemGroup{}; }
+  EdgeGroup allEdges() override;
 
-  FaceGroup allFaces() override { return ItemGroup{}; }
+  FaceGroup allFaces() override;
 
   CellGroup allCells() override;
 
@@ -127,10 +128,20 @@ class PolyhedralMesh : public EmptyMesh {
 
   const MeshPartInfo& meshPartInfo() const { return m_part_info; };
 
-  IItemFamily* nodeFamily();
-  IItemFamily* edgeFamily();
-  IItemFamily* faceFamily();
-  IItemFamily* cellFamily();
+  IItemFamily* nodeFamily() override;
+  IItemFamily* edgeFamily() override;
+  IItemFamily* faceFamily() override;
+  IItemFamily* cellFamily() override;
+
+  InternalConnectivityPolicy _connectivityPolicy() const override { return InternalConnectivityPolicy::NewOnly; }
+
+  IParallelMng* parallelMng() override { return m_subdomain->parallelMng(); }
+
+  bool isAllocated() override { return m_is_allocated; }
+
+  bool isAmrActivated() const override { return false; }
+
+  IItemFamily* itemFamily(eItemKind ik) override;
 
 #endif // ARCANE_HAS_CUSTOM_MESH_TOOLS
 
@@ -138,6 +149,7 @@ class PolyhedralMesh : public EmptyMesh {
   [[noreturn]] void _errorEmptyMesh() const;
 
   void _createUnitMesh();
+  void _updateMeshInternalList(eItemKind kind);
 };
 
 /*---------------------------------------------------------------------------*/
