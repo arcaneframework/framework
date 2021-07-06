@@ -60,7 +60,7 @@ class PolyhedralFamily : public ItemFamily{
     ItemTypeMng* itm = ItemTypeMng::singleton();
     ItemTypeInfo* dof_type_info = itm->typeFromId(IT_NullType);
     m_shared_info = _findSharedInfo(dof_type_info,0,0,1);
-    _initializeEmptyConnectivity();
+    _updateEmptyConnectivity();
   }
 
  public:
@@ -76,6 +76,7 @@ class PolyhedralFamily : public ItemFamily{
     _reserveInfosMemory(mem);
     m_empty_connectivity_indexes.resize(nb_item + nbItem(),0);
     m_empty_connectivity_nb_item.resize(nb_item + nbItem(), 0);
+    _updateEmptyConnectivity();
   }
 
   ItemInternal* _allocItem(const Int64 uid)
@@ -129,7 +130,7 @@ class PolyhedralFamily : public ItemFamily{
     }
   }
 
-  void _initializeEmptyConnectivity() {
+  void _updateEmptyConnectivity() {
     auto item_internal_connectivity_list = itemInternalConnectivityList();
     for (auto item_kind = 0 ; item_kind < ItemInternalConnectivityList::MAX_ITEM_KIND; ++item_kind){
       item_internal_connectivity_list->setConnectivityList(item_kind,m_empty_connectivity);
