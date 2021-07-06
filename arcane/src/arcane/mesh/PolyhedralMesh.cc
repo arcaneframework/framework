@@ -465,7 +465,10 @@ nbItem(eItemKind ik)
 NodeGroup mesh::PolyhedralMesh::
 allNodes()
 {
-  return m_default_arcane_families[IK_Node]->allItems();
+  if (m_default_arcane_families[IK_Node])
+    return m_default_arcane_families[IK_Node]->allItems();
+  else
+    return NodeGroup{};
 }
 
 /*---------------------------------------------------------------------------*/
@@ -474,7 +477,10 @@ allNodes()
 EdgeGroup mesh::PolyhedralMesh::
 allEdges()
 {
-  return m_default_arcane_families[IK_Edge]->allItems();
+  if (m_default_arcane_families[IK_Edge])
+    return m_default_arcane_families[IK_Edge]->allItems();
+  else
+    return EdgeGroup{};
 }
 
 /*---------------------------------------------------------------------------*/
@@ -483,7 +489,10 @@ allEdges()
 FaceGroup mesh::PolyhedralMesh::
 allFaces()
 {
-  return m_default_arcane_families[IK_Face]->allItems();
+  if (m_default_arcane_families[IK_Face])
+    return m_default_arcane_families[IK_Face]->allItems();
+  else
+    return FaceGroup{};
 }
 
 /*---------------------------------------------------------------------------*/
@@ -492,7 +501,10 @@ allFaces()
 CellGroup mesh::PolyhedralMesh::
 allCells()
 {
-  return m_default_arcane_families[IK_Cell]->allItems();
+  if (m_default_arcane_families[IK_Cell])
+    return m_default_arcane_families[IK_Cell]->allItems();
+  else
+    return CellGroup{};
 }
 
 /*---------------------------------------------------------------------------*/
