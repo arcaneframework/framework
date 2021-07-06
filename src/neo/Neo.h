@@ -213,7 +213,7 @@ struct PropertyViewIterator {
   bool operator!=(PropertyViewIteratorType const& prop_view_iterator) const noexcept{
     return !(*this==prop_view_iterator);
   }
-  
+
   PropertyViewIteratorType& operator++() noexcept {
     _increment_iterator();
     return *this;
@@ -803,9 +803,9 @@ void apply(Func &func, Variant& arg1, Variant& arg2) {
   std::visit([&arg2, &func](auto& concrete_arg1) {
     std::visit([&concrete_arg1, &func](auto& concrete_arg2){
 #ifdef _MSC_VER // incomplete maybe_unused support on visual (v 19.29)
-        auto functor = VisitorOverload{[](const auto&  arg1,const auto& arg2) {std::cout << "Wrong one." << std::endl;},func}; // todo: prevent this behavior (statically ?)
+        auto functor = VisitorOverload{[](const auto&  arg1,const auto& arg2) {std::cout << "### WARNING: Algorithm not found. You may have missed its signature ###" << std::endl;},func}; // todo: prevent this behavior (statically ?)
 #else
-        auto functor = VisitorOverload{[]([[maybe_unused]] const auto&  arg1,[[maybe_unused]] const auto& arg2) {std::cout << "Wrong one." << std::endl;},func}; // todo: prevent this behavior (statically ?)
+        auto functor = VisitorOverload{[]([[maybe_unused]] const auto&  arg1,[[maybe_unused]] const auto& arg2) {std::cout << "### WARNING: Algorithm not found. You may have missed its signature ###" << std::endl;},func}; // todo: prevent this behavior (statically ?)
 #endif
       functor(concrete_arg1,concrete_arg2);// arg1 & arg2 are variants, concrete_arg* are concrete arguments
     },arg2);
@@ -818,9 +818,9 @@ void apply(Func& func, Variant& arg1, Variant& arg2, Variant& arg3) {
     std::visit([&concrete_arg1, &arg3, &func](auto &concrete_arg2) {
       std::visit([&concrete_arg1, &concrete_arg2, &func](auto &concrete_arg3) {
 #ifdef _MSC_VER
-        auto functor = VisitorOverload{[](const auto &arg1,const auto &arg2,const auto &arg3) {std::cout << "Wrong one." << std::endl;},func}; // todo: prevent this behavior (statically ?)
+        auto functor = VisitorOverload{[](const auto &arg1,const auto &arg2,const auto &arg3) {std::cout << "### WARNING: Algorithm not found. You may have missed its signature ###" << std::endl;},func}; // todo: prevent this behavior (statically ?)
 #else
-        auto functor = VisitorOverload{[]([[maybe_unused]] const auto &arg1,[[maybe_unused]] const auto &arg2, [[maybe_unused]]const auto &arg3) {std::cout << "Wrong one." << std::endl;},func}; // todo: prevent this behavior (statically ?)
+        auto functor = VisitorOverload{[]([[maybe_unused]] const auto &arg1,[[maybe_unused]] const auto &arg2, [[maybe_unused]]const auto &arg3) {std::cout << "### WARNING: Algorithm not found. You may have missed its signature ###" << std::endl;},func}; // todo: prevent this behavior (statically ?)
 #endif
         functor(concrete_arg1, concrete_arg2,concrete_arg3); // arg1 & arg2 are variants, concrete_arg* are concrete arguments
       }, arg3);
