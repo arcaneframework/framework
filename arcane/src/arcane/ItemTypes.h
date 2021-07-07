@@ -59,6 +59,7 @@ class FaceLocalId;
 class DualNodeLocalId;
 class LinkLocalId;
 class ParticleLocalId;
+class IndexedItemConnectivityViewBase;
 
 class ItemGroup;
 template<typename T> class ItemGroupT;

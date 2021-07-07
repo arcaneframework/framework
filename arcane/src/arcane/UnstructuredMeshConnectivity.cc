@@ -40,15 +40,16 @@ _internalInit(ConnectivityView& cview,IMesh* mesh)
   using ItemType1 = typename ConnectivityView::ItemType1Type;
   using ItemType2 = typename ConnectivityView::ItemType2Type;
 
-  eItemKind ik = ItemTraitsT<ItemType1>::kind();
+  eItemKind ik1 = ItemTraitsT<ItemType1>::kind();
+  eItemKind ik2 = ItemTraitsT<ItemType2>::kind();
 
-  IItemFamily* family = mesh->itemFamily(ik);
+  IItemFamily* family = mesh->itemFamily(ik1);
   ItemInternalConnectivityList* clist = family->_unstructuredItemInternalConnectivityList();
   auto item_index_type = _IDX((ItemType2*)nullptr);
   auto indexes = clist->connectivityIndex(item_index_type);
   auto list_type = clist->connectivityList(item_index_type);
   auto nb_item = clist->connectivityNbItem(item_index_type);
-  cview.init(nb_item,indexes,list_type);
+  cview.init(nb_item,indexes,list_type,ik1,ik2);
 }
 }
 
