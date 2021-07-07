@@ -11,6 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/mesh/IncrementalItemConnectivity.h"
+
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/ArgumentException.h"
 
@@ -21,19 +23,15 @@
 #include "arcane/MeshUtils.h"
 #include "arcane/ObserverPool.h"
 #include "arcane/Properties.h"
+#include "arcane/IndexedItemConnectivityView.h"
+
 #include "arcane/core/internal/IDataInternal.h"
 
-#include "arcane/mesh/IncrementalItemConnectivity.h"
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -264,6 +262,18 @@ ItemVectorView IncrementalItemConnectivityBase::
 _connectedItems(ItemLocalId item,ConnectivityItemVector& con_items) const
 {
   return con_items.resizeAndCopy(_connectedItemsLocalId(item));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IndexedItemConnectivityViewBase IncrementalItemConnectivityBase::
+connectivityView() const
+{
+  IndexedItemConnectivityViewBase view;
+  view.init(m_connectivity_nb_item,m_connectivity_index,m_connectivity_list,
+            _sourceFamily()->itemKind(), _targetFamily()->itemKind());
+  return view;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -882,8 +892,7 @@ compactConnectivityList()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

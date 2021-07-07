@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUnitTest.cc                                             (C) 2000-2020 */
+/* MeshUnitTest.cc                                             (C) 2000-2021 */
 /*                                                                           */
 /* Service du test du maillage.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/Array.h"
 #include "arcane/utils/StringBuilder.h"
@@ -44,6 +42,7 @@
 #include "arcane/VariableCollection.h"
 #include "arcane/ServiceBuilder.h"
 #include "arcane/IParallelReplication.h"
+#include "arcane/IndexedItemConnectivityView.h"
 
 #include "arcane/ServiceFinder2.h"
 #include "arcane/SerializeBuffer.h"
@@ -1201,9 +1200,10 @@ _testAdditionnalConnectivity()
   // deux mailles connectées.
   IItemFamily* cell_family = mesh()->cellFamily();
   IItemFamily* face_family = mesh()->faceFamily();
+  CellGroup cells = cell_family->allItems();
   // NOTE: l'objet est automatiquement détruit par le maillage
   auto* cn = new mesh::IncrementalItemConnectivity(cell_family,face_family,"CellNoBoundaryFace");
-  ENUMERATE_CELL(icell,cell_family->allItems()){
+  ENUMERATE_CELL(icell,cells){
     Cell cell = *icell;
     Integer nb_face = cell.nbFace();
     cn->notifySourceItemAdded(cell);
@@ -1214,6 +1214,13 @@ _testAdditionnalConnectivity()
     }
   }
 
+  IndexedCellFaceConnectivityView cn_view(cn->connectivityView());
+  Int64 total_face_lid = 0;
+  ENUMERATE_(Cell,icell,cells){
+    for( FaceLocalId face : cn_view.faces(icell) )
+      total_face_lid += face.localId();
+  }
+  info() << "TOTAL_NB_FACE = " << total_face_lid;
 }
 
 /*---------------------------------------------------------------------------*/
