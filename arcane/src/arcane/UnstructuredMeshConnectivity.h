@@ -22,6 +22,9 @@
 namespace Arcane
 {
 
+template<typename ItemType1,typename ItemType2>
+class UnstructuredItemConnectivityView;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -74,7 +77,7 @@ class ARCANE_CORE_EXPORT UnstructuredItemConnectivityBaseView
  * \brief Vue sur une connectivité non structurée entre deux entités.
  */
 template<typename ItemType1,typename ItemType2>
-class UnstructuredItemConnectivityView
+class UnstructuredItemConnectivityGenericView
 : public UnstructuredItemConnectivityBaseView
 {
  public:
@@ -83,8 +86,6 @@ class UnstructuredItemConnectivityView
   using ItemLocalId1 = typename ItemType1::LocalIdType;
   using ItemLocalId2 = typename ItemType2::LocalIdType;
   using ItemLocalIdViewType = ItemLocalIdView<ItemType2>;
- public:
-  UnstructuredItemConnectivityView() = default;
  public:
   void init(SmallSpan<const Int32> nb_item,SmallSpan<const Int32> indexes,
             SmallSpan<const Int32> list_data)
@@ -108,15 +109,13 @@ class UnstructuredItemConnectivityView
  * \brief Vue sur une connectivité ItemType->Node.
  */
 template<typename ItemType>
-class UnstructuredItemNodeConnectivityView
-: public UnstructuredItemConnectivityView<ItemType,Node>
+class UnstructuredItemConnectivityView<ItemType,Node>
+: public UnstructuredItemConnectivityGenericView<ItemType,Node>
 {
  public:
-  using BaseClass = UnstructuredItemConnectivityView<ItemType,Node>;
+  using BaseClass = UnstructuredItemConnectivityGenericView<ItemType,Node>;
   using ItemLocalIdType = typename ItemType::LocalIdType;
   using ItemLocalIdViewType = typename BaseClass::ItemLocalIdViewType;
- public:
-  UnstructuredItemNodeConnectivityView() = default;
  public:
   ARCCORE_HOST_DEVICE Int32 nbNode(ItemLocalIdType lid) const { return BaseClass::nbItem(lid); }
   ARCCORE_HOST_DEVICE ItemLocalIdViewType nodes(ItemLocalIdType lid) const { return BaseClass::items(lid); }
@@ -128,15 +127,13 @@ class UnstructuredItemNodeConnectivityView
  * \brief Vue sur une connectivité ItemType->Edge.
  */
 template<typename ItemType>
-class UnstructuredItemEdgeConnectivityView
-: public UnstructuredItemConnectivityView<ItemType,Edge>
+class UnstructuredItemConnectivityView<ItemType,Edge>
+: public UnstructuredItemConnectivityGenericView<ItemType,Edge>
 {
  public:
-  using BaseClass = UnstructuredItemConnectivityView<ItemType,Edge>;
+  using BaseClass = UnstructuredItemConnectivityGenericView<ItemType,Edge>;
   using ItemLocalIdType = typename ItemType::LocalIdType;
   using ItemLocalIdViewType = typename BaseClass::ItemLocalIdViewType;
- public:
-  UnstructuredItemEdgeConnectivityView() = default;
  public:
   ARCCORE_HOST_DEVICE Int32 nbEdge(ItemLocalIdType lid) const { return BaseClass::nbItem(lid); }
   ARCCORE_HOST_DEVICE ItemLocalIdViewType edges(ItemLocalIdType lid) const { return BaseClass::items(lid); }
@@ -148,15 +145,13 @@ class UnstructuredItemEdgeConnectivityView
  * \brief Vue sur une connectivité ItemType->Face.
  */
 template<typename ItemType>
-class UnstructuredItemFaceConnectivityView
-: public UnstructuredItemConnectivityView<ItemType,Face>
+class UnstructuredItemConnectivityView<ItemType,Face>
+: public UnstructuredItemConnectivityGenericView<ItemType,Face>
 {
  public:
-  using BaseClass = UnstructuredItemConnectivityView<ItemType,Face>;
+  using BaseClass = UnstructuredItemConnectivityGenericView<ItemType,Face>;
   using ItemLocalIdType = typename ItemType::LocalIdType;
   using ItemLocalIdViewType = typename BaseClass::ItemLocalIdViewType;
- public:
-  UnstructuredItemFaceConnectivityView() = default;
  public:
   ARCCORE_HOST_DEVICE Int32 nbFace(ItemLocalIdType lid) const { return BaseClass::nbItem(lid); }
   ARCCORE_HOST_DEVICE ItemLocalIdViewType faces(ItemLocalIdType lid) const { return BaseClass::items(lid); }
@@ -168,15 +163,13 @@ class UnstructuredItemFaceConnectivityView
  * \brief Vue sur une connectivité ItemType->Cell.
  */
 template<typename ItemType>
-class UnstructuredItemCellConnectivityView
-: public UnstructuredItemConnectivityView<ItemType,Cell>
+class UnstructuredItemConnectivityView<ItemType,Cell>
+: public UnstructuredItemConnectivityGenericView<ItemType,Cell>
 {
  public:
-  using BaseClass = UnstructuredItemConnectivityView<ItemType,Cell>;
+  using BaseClass = UnstructuredItemConnectivityGenericView<ItemType,Cell>;
   using ItemLocalIdType = typename ItemType::LocalIdType;
   using ItemLocalIdViewType = typename BaseClass::ItemLocalIdViewType;
- public:
-  UnstructuredItemCellConnectivityView() = default;
  public:
   ARCCORE_HOST_DEVICE Int32 nbCell(ItemLocalIdType lid) const { return BaseClass::nbItem(lid); }
   ARCCORE_HOST_DEVICE ItemLocalIdViewType cells(ItemLocalIdType lid) const { return BaseClass::items(lid); }
@@ -185,51 +178,17 @@ class UnstructuredItemCellConnectivityView
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class UnstructuredCellNodeConnectivityView
-: public UnstructuredItemNodeConnectivityView<Cell>
-{
-};
-class UnstructuredCellEdgeConnectivityView
-: public UnstructuredItemEdgeConnectivityView<Cell>
-{
-};
-class UnstructuredCellFaceConnectivityView
-: public UnstructuredItemFaceConnectivityView<Cell>
-{
-};
+using UnstructuredCellNodeConnectivityView = UnstructuredItemConnectivityView<Cell,Node>;
+using UnstructuredCellEdgeConnectivityView = UnstructuredItemConnectivityView<Cell,Edge>;
+using UnstructuredCellFaceConnectivityView = UnstructuredItemConnectivityView<Cell,Face>;
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+using UnstructuredFaceNodeConnectivityView = UnstructuredItemConnectivityView<Face,Node>;
+using UnstructuredFaceEdgeConnectivityView = UnstructuredItemConnectivityView<Face,Edge>;
+using UnstructuredFaceCellConnectivityView = UnstructuredItemConnectivityView<Face,Cell>;
 
-class UnstructuredFaceNodeConnectivityView
-: public UnstructuredItemNodeConnectivityView<Face>
-{
-};
-class UnstructuredFaceEdgeConnectivityView
-: public UnstructuredItemEdgeConnectivityView<Face>
-{
-};
-class UnstructuredFaceCellConnectivityView
-: public UnstructuredItemCellConnectivityView<Face>
-{
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class UnstructuredNodeEdgeConnectivityView
-: public UnstructuredItemEdgeConnectivityView<Node>
-{
-};
-class UnstructuredNodeFaceConnectivityView
-: public UnstructuredItemFaceConnectivityView<Node>
-{
-};
-class UnstructuredNodeCellConnectivityView
-: public UnstructuredItemCellConnectivityView<Node>
-{
-};
-
+using UnstructuredNodeEdgeConnectivityView = UnstructuredItemConnectivityView<Node,Edge>;
+using UnstructuredNodeFaceConnectivityView = UnstructuredItemConnectivityView<Node,Face>;
+using UnstructuredNodeCellConnectivityView = UnstructuredItemConnectivityView<Node,Cell>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
