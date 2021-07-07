@@ -541,6 +541,8 @@ _createUnitMesh()
   m_mesh->scheduleAddItems(node_family, node_uids, node_lids);
   int nb_node = 6;
   m_mesh->scheduleAddConnectivity(cell_family,cell_lids,nb_node,node_family,node_uids,String{"CellToNodes"});
+  m_mesh->scheduleAddConnectivity(node_family,node_lids,1,cell_family,
+                                  Int64UniqueArray{0,0,0,0,0,0},String{"NodeToCells"});
   m_mesh->applyScheduledOperations();
   cell_family->endUpdate();
   node_family->endUpdate();
