@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMesh.h                                                     (C) 2000-2020 */
+/* UnstructuredMeshConnectivity.h                              (C) 2000-2021 */
 /*                                                                           */
 /* Informations de connectivité d'un maillage non structuré.                 */
 /*---------------------------------------------------------------------------*/
@@ -24,7 +24,6 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Vue sur une liste d'entités d'une connectivité.
  */
@@ -55,49 +54,6 @@ class ItemLocalIdView
   SpanType m_ids;
 };
 
-template <typename ItemType>
-class UnstructuredMeshConnectivityViewTraits;
-
-template <>
-class UnstructuredMeshConnectivityViewTraits<Node>
-{
- public:
-  using LocalIdType = NodeLocalId;
- public:
-  static ARCANE_CORE_EXPORT IItemFamily* family(IMesh* m);
-  static constexpr Int32 IDX() { return ItemInternalConnectivityList::NODE_IDX; }
-};
-
-template <>
-class UnstructuredMeshConnectivityViewTraits<Edge>
-{
- public:
-  using LocalIdType = EdgeLocalId;
- public:
-  static ARCANE_CORE_EXPORT IItemFamily* family(IMesh* m);
-  static constexpr Int32 IDX() { return ItemInternalConnectivityList::EDGE_IDX; }
-};
-
-template <>
-class UnstructuredMeshConnectivityViewTraits<Face>
-{
- public:
-  using LocalIdType = FaceLocalId;
- public:
-  static ARCANE_CORE_EXPORT IItemFamily* family(IMesh* m);
-  static constexpr Int32 IDX() { return ItemInternalConnectivityList::FACE_IDX; }
-};
-
-template <>
-class UnstructuredMeshConnectivityViewTraits<Cell>
-{
- public:
-  using LocalIdType = CellLocalId;
- public:
-  static ARCANE_CORE_EXPORT IItemFamily* family(IMesh* m);
-  static constexpr Int32 IDX() { return ItemInternalConnectivityList::CELL_IDX; }
-};
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -107,8 +63,6 @@ class ARCANE_CORE_EXPORT UnstructuredItemConnectivityBaseView
 {
  public:
   ARCCORE_HOST_DEVICE Int32 nbItem(ItemLocalId lid) const { return m_nb_item[lid]; }
- protected:
-  ItemInternalConnectivityList* _getConnectivityList(IItemFamily* f);
  protected:
   SmallSpan<const Int32> m_nb_item;
   SmallSpan<const Int32> m_indexes;
@@ -124,26 +78,22 @@ class UnstructuredItemConnectivityView
 : public UnstructuredItemConnectivityBaseView
 {
  public:
-  using Traits1 = UnstructuredMeshConnectivityViewTraits<ItemType1>;
-  using Traits2 = UnstructuredMeshConnectivityViewTraits<ItemType2>;
-  using ItemLocalId1 = typename Traits1::LocalIdType;
-  using ItemLocalId2 = typename Traits2::LocalIdType;
+  using ItemType1Type = ItemType1;
+  using ItemType2Type = ItemType2;
+  using ItemLocalId1 = typename ItemType1::LocalIdType;
+  using ItemLocalId2 = typename ItemType2::LocalIdType;
   using ItemLocalIdViewType = ItemLocalIdView<ItemType2>;
  public:
   UnstructuredItemConnectivityView() = default;
  public:
-  void init(IMesh* mesh)
+  void init(SmallSpan<const Int32> nb_item,SmallSpan<const Int32> indexes,
+            SmallSpan<const Int32> list_data)
   {
-    IItemFamily* family = Traits1::family(mesh);
-    ItemInternalConnectivityList* clist = _getConnectivityList(family);
-    auto item_index_type = Traits2::IDX();
-    m_indexes = clist->connectivityIndex(item_index_type);
-    auto list_type = clist->connectivityList(item_index_type);
-    m_list = { reinterpret_cast<const ItemLocalId2*>(list_type.data()), list_type.size() };
-    m_nb_item = clist->connectivityNbItem(item_index_type);
+    m_indexes = indexes;
+    m_nb_item = nb_item;
+    m_list = { reinterpret_cast<const ItemLocalId2*>(list_data.data()), list_data.size() };
   }
  public:
-  ARCCORE_HOST_DEVICE Int32 nbItem(ItemLocalId1 lid) const { return m_nb_item[lid]; }
   ARCCORE_HOST_DEVICE ItemLocalIdViewType items(ItemLocalId1 lid) const
   {
     return { m_list.data() + m_indexes[lid], m_nb_item[lid] };
@@ -155,7 +105,7 @@ class UnstructuredItemConnectivityView
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vue sur une connectivité Item->Node.
+ * \brief Vue sur une connectivité ItemType->Node.
  */
 template<typename ItemType>
 class UnstructuredItemNodeConnectivityView
@@ -175,7 +125,7 @@ class UnstructuredItemNodeConnectivityView
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vue sur une connectivité Item->Edge.
+ * \brief Vue sur une connectivité ItemType->Edge.
  */
 template<typename ItemType>
 class UnstructuredItemEdgeConnectivityView
@@ -195,7 +145,7 @@ class UnstructuredItemEdgeConnectivityView
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vue sur une connectivité Item->Face.
+ * \brief Vue sur une connectivité ItemType->Face.
  */
 template<typename ItemType>
 class UnstructuredItemFaceConnectivityView
@@ -215,7 +165,7 @@ class UnstructuredItemFaceConnectivityView
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vue sur une connectivité Item->Cell.
+ * \brief Vue sur une connectivité ItemType->Cell.
  */
 template<typename ItemType>
 class UnstructuredItemCellConnectivityView
