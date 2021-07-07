@@ -73,6 +73,7 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    GroupIndexTable.cc
    GroupIndexTable.h
    InterfaceImpl.cc
+   IndexedItemConnectivityView.h
    Item.cc
    Item.h
    ItemEnumerator.cc

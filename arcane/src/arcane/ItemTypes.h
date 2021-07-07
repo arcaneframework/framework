@@ -60,7 +60,6 @@ class DualNodeLocalId;
 class LinkLocalId;
 class ParticleLocalId;
 
-
 class ItemGroup;
 template<typename T> class ItemGroupT;
 
@@ -69,6 +68,12 @@ template<typename ItemKind,typename SubItemKind> class ItemPairGroupT;
 
 class ItemVector;
 template<typename T> class ItemVectorT;
+
+template <typename ItemType>
+class ItemLocalIdView;
+
+template<typename ItemType1,typename ItemType2>
+class IndexedItemConnectivityView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
