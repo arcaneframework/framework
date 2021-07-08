@@ -381,8 +381,8 @@ PolyhedralMesh(ISubDomain* subdomain)
 , m_mesh{ std::make_unique<mesh::PolyhedralMeshImpl>(m_subdomain) }
 {
   m_mesh_handle._setMesh(this);
-  m_default_arcane_families.fill(nullptr);
   m_mesh_item_internal_list.mesh = this;
+  m_default_arcane_families.fill(nullptr);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -546,6 +546,26 @@ _createUnitMesh()
   m_mesh->applyScheduledOperations();
   cell_family->endUpdate();
   node_family->endUpdate();
+  endUpdate();
+  // Mimic what IMeshModifier::endUpdate would do => default families are completed.
+  // Families created after a first endUpdate call are not default families
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::
+endUpdate()
+{
+  // create empty default families not already created
+  for (auto ik = 0; ik < NB_ITEM_KIND; ++ik) {
+    if (m_default_arcane_families[ik] == nullptr && ik != eItemKind::IK_DoF) {
+      String name = String::concat(itemKindName((eItemKind)ik),"EmptyFamily" );
+      m_empty_arcane_families[ik] = std::make_unique<mesh::PolyhedralFamily>(this,(eItemKind)ik,name);
+      m_default_arcane_families[ik] = m_empty_arcane_families[ik].get();
+      m_subdomain->traceMng()->info() << " Create empty family " << itemKindName((eItemKind)ik);
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
