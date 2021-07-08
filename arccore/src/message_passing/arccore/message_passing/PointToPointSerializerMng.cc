@@ -65,6 +65,7 @@ class PointToPointSerializerMng::Impl
   }
   Integer waitMessages(eWaitType wt,std::function<void(ISerializeMessage*)> functor)
   {
+    processPendingMessages();
     Integer n = m_message_list->waitMessages(wt);
     UniqueArray<Ref<ISerializeMessage>> new_waiting_messages;
     for( auto& x : m_waiting_messages ){
@@ -74,6 +75,8 @@ class PointToPointSerializerMng::Impl
       else
         new_waiting_messages.add(x);
     }
+    m_waiting_messages.clear();
+    m_waiting_messages.copy(new_waiting_messages);
     return n;
   }
   bool hasMessages() const { return !m_pending_messages.empty() || !m_waiting_messages.empty(); }
