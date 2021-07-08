@@ -17,6 +17,7 @@
 #include "arcane/IMeshMng.h"
 #include "arcane/mesh/PolyhedralMesh.h"
 
+#include "arcane/ItemGroup.h"
 #include "CustomMeshTest_axl.h"
 
 /*---------------------------------------------------------------------------*/
@@ -37,7 +38,8 @@ class CustomMeshTestModule : public ArcaneCustomMeshTestObject {
     auto mesh_handle = subDomain()->meshMng()->findMeshHandle(mesh::PolyhedralMesh::handleName());
     if (mesh_handle.hasMesh()) {
       _testEnumerationAndConnectivities(mesh_handle.mesh());
-      _testVariableAndGroups(mesh_handle.mesh());
+      _testVariables(mesh_handle.mesh());
+      _testGroups(mesh_handle.mesh());
     }
     else info() << "No Mesh";
 
@@ -46,7 +48,11 @@ class CustomMeshTestModule : public ArcaneCustomMeshTestObject {
 
  private:
   void _testEnumerationAndConnectivities(IMesh* mesh);
-  void _testVariableAndGroups(IMesh* mesh);
+  void _testVariables(IMesh* mesh);
+  void _testGroups(IMesh* mesh);
+  void _buildGroup(IItemFamily* family, String const& group_name);
+  template <typename VariableRefType>
+  void _checkVariable(VariableRefType variable, ItemGroup item_group);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -141,48 +147,84 @@ _testEnumerationAndConnectivities(IMesh* mesh)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void CustomMeshTestModule::_testVariableAndGroups(IMesh* mesh)
+void CustomMeshTestModule::_testVariables(IMesh* mesh)
 {
   // test variables
   info() << " -- test variables -- ";
   // cell variable
   VariableCellInt32 cell_var{ VariableBuildInfo{ mesh, "cellvariable", mesh->cellFamily()->name() } };
-  cell_var.fill(1);
-  auto cell_var_sum = 0;
-  ENUMERATE_CELL (icell,mesh->allCells()) {
-    info() << "cell_variable at cell " << icell.localId() << " " << cell_var[icell];
-    cell_var_sum += cell_var[icell];
-  }
-  if (cell_var_sum != mesh->allCells().size()) fatal() << "Error on cell variables";
+  _checkVariable(cell_var, mesh->allCells());
   // node variable
   VariableNodeInt32 node_var{ VariableBuildInfo{ mesh, "nodevariable", mesh->nodeFamily()->name() } };
-  node_var.fill(1);
-  auto node_var_sum = 0;
-  ENUMERATE_NODE(inode,mesh->allNodes()) {
-    info() << "node_var at node " << inode.localId() << " " << node_var[inode];
-    node_var_sum += node_var[inode];
-  }
-  if (node_var_sum != mesh->allNodes().size()) fatal() << "Error on node variables";
+  _checkVariable(node_var, mesh->allNodes());
   // face variable
   VariableFaceInt32 face_var{ VariableBuildInfo{ mesh, "facevariable", mesh->faceFamily()->name() } };
-  face_var.fill(1);
-  auto face_var_sum = 0;
-  ENUMERATE_FACE(iface,mesh->allFaces()) {
-    info() << "face_var at face " << iface.localId() << " " << face_var[iface];
-    face_var_sum += face_var[iface];
-  }
-  if (face_var_sum != mesh->allFaces().size()) fatal() << "Error on face variables";
+  _checkVariable(face_var, mesh->allFaces());
   // edge variable
   VariableEdgeInt32 edge_var{ VariableBuildInfo{ mesh, "edgevariable", mesh->edgeFamily()->name() } };
-  edge_var.fill(1);
-  auto edge_var_sum = 0;
-  ENUMERATE_EDGE(iedge,mesh->allEdges()) {
-    info() << "edge_var at edge " << iedge.localId() << " " << edge_var[iedge];
-    edge_var_sum += edge_var[iedge];
-  }
-  if (edge_var_sum != mesh->allEdges().size()) fatal() << "Error on edge variables";
+  _checkVariable(edge_var, mesh->allEdges());
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CustomMeshTestModule::
+_testGroups(IMesh* mesh)
+{
+  // Cell group
+  String group_name = "my_cell_group";
+  _buildGroup(mesh->cellFamily(),group_name);
+  PartialVariableCellInt32 partial_cell_var({mesh, "partial_cell_variable", mesh->cellFamily()->name(), group_name});
+  _checkVariable(partial_cell_var, partial_cell_var.itemGroup());
+  // Node group
+  group_name = "my_node_group";
+  _buildGroup(mesh->nodeFamily(),group_name);
+  PartialVariableNodeInt32 partial_node_var({mesh, "partial_node_variable", mesh->nodeFamily()->name(), group_name});
+  _checkVariable(partial_node_var, partial_node_var.itemGroup());
+  // Face group
+  group_name = "my_face_group";
+  _buildGroup(mesh->faceFamily(),group_name);
+  PartialVariableFaceInt32 partial_face_var({mesh, "partial_face_variable", mesh->faceFamily()->name(), group_name});
+  _checkVariable(partial_face_var, partial_face_var.itemGroup());
+  // Edge group
+  group_name = "my_edge_group";
+  _buildGroup(mesh->edgeFamily(),group_name);
+  PartialVariableEdgeInt32 partial_edge_var({mesh, "partial_edge_variable", mesh->edgeFamily()->name(), group_name});
+  _checkVariable(partial_edge_var, partial_edge_var.itemGroup());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CustomMeshTestModule::
+_buildGroup(IItemFamily* family, String const& group_name)
+{
+  auto group = family->findGroup(group_name,true);
+  Int32UniqueArray item_lids;
+  item_lids.reserve(family->nbItem());
+  ENUMERATE_ITEM (iitem, family->allItems()) {
+    if (iitem.localId()%2 ==0)
+      item_lids.add(iitem.localId());
+  }
+  group.addItems(item_lids);
+  info() << itemKindName(family->itemKind()) <<" group size " << group.size();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename VariableRefType>
+void CustomMeshTestModule::
+_checkVariable(VariableRefType variable_ref, ItemGroup item_group)
+{
+  variable_ref.fill(1);
+  auto variable_sum = 0;
+  ENUMERATE_ITEM (iitem, item_group) {
+    info() << variable_ref.name() << " at item " << iitem.localId() << " " << variable_ref[iitem];
+    variable_sum += variable_ref[iitem];
+  }
+  if (variable_sum != item_group.size()) fatal() << "Error on variable " << variable_ref.name();
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
