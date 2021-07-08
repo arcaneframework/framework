@@ -27,14 +27,24 @@ Pour les prérequis, voir les répertoires [Arcane](arcane/README.md) et [Arccor
 Pour récuperer les sources:
 
 ~~~{.sh}
-git clone /path/to/git
-git submodule update --init --recursive
+git clone --recurse-submodules /path/to/git
 ~~~
 
-**ATTENTION: Pour des raisons de compatibilité, le fichier `CMakeLists.txt` à la
-racine du projet compile uniquement Arcane**. La commande suivante permet de
-configurer et compiler Arcane en supposant que les composantes
-`arccon`, `arccore` et `Axlstar` sont déjà installées:
+Il existe deux modes de compilations:
+1. soit on compile Arcane et les projets associées (Arccon, Axlstar et
+   Arccore) en même temps
+2. soit on ne compile qu'un seul composant.
+
+Le défaut est de tout compiler. La variable cmake
+`FRAMEWORK_BUILD_COMPONENT` permet de choisir le mode de
+compilation. Par défaut, la valeur est `all` et cela signifie qu'on
+compile tout. Si la valeur est `arcane`, `arccon`, `arccore` ou
+`axlstar` alors on ne compile que ces derniers. Il faut donc dans ce
+cas que les dépendences éventuelles soient déjà installées (par
+exemple pour Arcane il faut que Arccore soit déjà installé et
+spécifier son chemin via CMAKE_PREFIX_PATH par exemple).
+
+Pour compiler Arcane et ses dépendances:
 
 ~~~{.sh}
 mkdir /path/to/build
@@ -42,12 +52,11 @@ cmake -S /path/to/sources -B /path/to/build
 cmake --build /path/to/build
 ~~~
 
-Si on souhaite compiler l'ensemble des composantes en une seule fois,
-il faut utiliser le fichier `CMakeLists.txt` qui est dans
-`_common/build_all`. Par exemple:
+Pour compiler uniquement Arcane en considérant que les dépendances
+sont déjà installées:
 
 ~~~{.sh}
 mkdir /path/to/build
-cmake -S /path/to/sources/_common/build_all -B /path/to/build
+cmake -S /path/to/sources -B /path/to/build -DFRAMEWORK_BUILD_COMPONENT=arcane -DArccon_ROOT=... -DArccore_ROOT=...
 cmake --build /path/to/build
 ~~~

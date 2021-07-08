@@ -7,9 +7,27 @@
 Project(ArcaneRepo LANGUAGES NONE)
 
 # ----------------------------------------------------------------------------
-# Le vrai projet se trouve dans un sous-répertoire.
-# A terme, on déplacera le CMakeLists.txt de ce sous-répertoire ici
-add_subdirectory(arcane)
+
+if (NOT FRAMEWORK_BUILD_COMPONENT)
+  set (FRAMEWORK_BUILD_COMPONENT all)
+endif()
+
+if (FRAMEWORK_BUILD_COMPONENT STREQUAL all)
+  # Compile Arcane et ses composantes en même temps
+  add_subdirectory(_common/build_all)
+elseif (FRAMEWORK_BUILD_COMPONENT STREQUAL arcane)
+  # Compile uniquement Arcane.
+  add_subdirectory(arcane)
+elseif (FRAMEWORK_BUILD_COMPONENT STREQUAL arccon)
+  add_subdirectory(arccon)
+elseif (FRAMEWORK_BUILD_COMPONENT STREQUAL arccore)
+  add_subdirectory(arccore)
+elseif (FRAMEWORK_BUILD_COMPONENT STREQUAL axlstar)
+  add_subdirectory(axlstar)
+else()
+  message(FATAL_ERROR "Invalid value '${FRAMEWORK_BUILD_COMPONENT}' for FRAMEWORK_BUILD_COMPONENT"
+    "Valid values are: { 'all', 'arcane', 'arccore', 'arccon', 'axlstar' }")
+endif()
 
 # ----------------------------------------------------------------------------
 # Local Variables:
