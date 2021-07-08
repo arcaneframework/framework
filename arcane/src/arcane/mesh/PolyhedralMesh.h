@@ -72,10 +72,13 @@ class PolyhedralMesh : public EmptyMesh {
 
   void read(String const& filename);
 
+  void endUpdate();
+
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 
  private:
   std::vector<std::unique_ptr<PolyhedralFamily>> m_arcane_families;
+  std::array<std::unique_ptr<PolyhedralFamily>,NB_ITEM_KIND> m_empty_arcane_families;
   std::array<PolyhedralFamily*,NB_ITEM_KIND> m_default_arcane_families;
 
   // IMeshBase interface
