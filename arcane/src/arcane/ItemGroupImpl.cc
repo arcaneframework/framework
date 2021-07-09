@@ -202,7 +202,7 @@ class ItemGroupImplPrivate
   void notifyInvalidateObservers();
 
  private:
-  UniqueArray<Int32> m_local_buffer = UniqueArray<Int32>(arcaneDefaultDataAllocator());
+  UniqueArray<Int32> m_local_buffer = UniqueArray<Int32>(platform::getDefaultDataAllocator());
   Array<Int32>* m_items_local_id = &m_local_buffer; //!< Liste des numéros locaux des entités de ce groupe
   VariableArrayInt32* m_variable_items_local_id = nullptr;
  private:

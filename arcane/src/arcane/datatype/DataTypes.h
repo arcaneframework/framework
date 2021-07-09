@@ -63,21 +63,6 @@ dataTypeFromName(const char* name);
 extern "C++" ARCANE_CORE_EXPORT Integer
 dataTypeSize(eDataType type);
 
-/*!
- * \brief Allocateur par défaut pour les données.
- *
- * Cette allocateur utilise celui platform::getAcceleratorHostMemoryAllocator()
- * s'il est disponible, sinon il utilise un allocateur aligné.
- *
- * Il est garanti que l'allocateur retourné permettra d'utiliser la donnée
- * sur accélerateur si cela est disponible.
- *
- * Il est garanti que l'alignement est au moins celui retourné par
- * AlignedMemoryAllocator::Simd().
- */
-extern "C++" ARCANE_CORE_EXPORT IMemoryAllocator*
-arcaneDefaultDataAllocator();
-
 //! Opérateur de sortie sur un flot
 extern "C++" ARCANE_CORE_EXPORT std::ostream&
 operator<< (std::ostream& ostr,eDataType data_type);

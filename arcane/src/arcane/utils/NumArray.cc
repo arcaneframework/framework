@@ -11,20 +11,18 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/NumArray.h"
-
-#include "arcane/accelerator/NumArrayViews.h"
+#include "arcane/utils/NumArray.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_ACCELERATOR_EXPORT void
+extern "C++" ARCANE_UTILS_EXPORT void
 _arcaneInternalNumArrayTest1()
 {
   std::cout << "TEST_NUMARRAY\n";

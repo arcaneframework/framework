@@ -212,6 +212,19 @@ setAcceleratorHostMemoryAllocator(IMemoryAllocator* a)
   return old;
 }
 
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator* platform::
+getDefaultDataAllocator()
+{
+  IMemoryAllocator* a = platform::getAcceleratorHostMemoryAllocator();
+  if (!a)
+    a = AlignedMemoryAllocator::Simd();
+  return a;
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

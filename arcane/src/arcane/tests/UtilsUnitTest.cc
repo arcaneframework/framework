@@ -42,11 +42,8 @@ namespace Arcane
 {
 extern "C++" ARCANE_UTILS_EXPORT void
 _internalTestEvent();
-namespace Accelerator
-{
-extern "C++" ARCANE_IMPORT void
+extern "C++" ARCANE_UTILS_EXPORT void
 _arcaneInternalNumArrayTest1();
-}
 }
 
 ARCANETEST_BEGIN_NAMESPACE
@@ -537,7 +534,7 @@ _testUserData()
       ARCANE_FATAL("AutoDestroy failed");
   }
 
-  Accelerator::_arcaneInternalNumArrayTest1();
+  _arcaneInternalNumArrayTest1();
 }
 
 /*---------------------------------------------------------------------------*/
