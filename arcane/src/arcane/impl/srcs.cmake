@@ -44,6 +44,7 @@ set( ARCANE_SOURCES
   Array2Data.h
   MemoryDataReaderWriter.cc
   MemoryDataReaderWriter.h
+  NumArrayData.cc
   DefaultBackwardMng.cc
   DefaultBackwardMng.h
   LoadBalanceMng.cc
