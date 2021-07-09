@@ -32,8 +32,12 @@ T fastmod(T a , T b)
 }
 }
 
-template<int N> class ArrayBounds;
-template<int N> class ArrayBoundsIndex;
+template<int RankValue> class ArrayBounds;
+template<int RankValue> class ArrayBoundsIndex;
+template<int RankValue> class ArrayExtents;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 template<>
 class ArrayBoundsIndex<1>
@@ -77,22 +81,57 @@ class ArrayBoundsIndex<3>
   Int64 id2;
 };
 
-template<int N>
-class ArrayBoundsBase
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<int RankValue>
+class ArrayExtentsBase
 {
+ public:
+  //! Nombre d'élément de la \a i-ème dimension.
+  Int64 extent(int i) { return m_extents[i]; }
+ protected:
+  Int64 m_extents[RankValue];
+};
+
+template<>
+class ArrayExtents<1>
+: public ArrayExtentsBase<1>
+{
+};
+
+template<>
+class ArrayExtents<2>
+: public ArrayExtentsBase<2>
+{
+};
+
+template<>
+class ArrayExtents<3>
+: public ArrayExtentsBase<3>
+{
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<int RankValue>
+class ArrayBoundsBase
+: protected ArrayExtents<RankValue>
+{
+ public:
+  using ArrayExtents<RankValue>::extent;
  public:
   ARCCORE_HOST_DEVICE Int64 nbElement() const { return m_nb_element; }
  protected:
   void _computeNbElement()
   {
     m_nb_element = 1;
-    for (int i=0; i<N; i++)
-      m_nb_element *=dims[i];
+    for (int i=0; i<RankValue; i++)
+      m_nb_element *= this->m_extents[i];
   }
  protected:
   Int64 m_nb_element = 0;
- public:
-  Int64 dims[N];
 };
 
 template<>
@@ -101,10 +140,10 @@ class ArrayBounds<1>
 {
  public:
   using IndexType = ArrayBoundsIndex<1>;
-  using ArrayBoundsBase<1>::dims;
+  using ArrayBoundsBase<1>::m_extents;
   explicit ArrayBounds(Int64 dim1)
   {
-    dims[0] = dim1;
+    m_extents[0] = dim1;
     _computeNbElement();
   }
   ARCCORE_HOST_DEVICE IndexType getIndices(Int64 i) const
@@ -119,17 +158,17 @@ class ArrayBounds<2>
 {
  public:
   using IndexType = ArrayBoundsIndex<2>;
-  using ArrayBoundsBase<2>::dims;
+  using ArrayBoundsBase<2>::m_extents;
   ArrayBounds(Int64 dim1,Int64 dim2)
   {
-    dims[0] = dim1;
-    dims[1] = dim2;
+    m_extents[0] = dim1;
+    m_extents[1] = dim2;
     _computeNbElement();
   }
   ARCCORE_HOST_DEVICE IndexType getIndices(Int64 i) const
   {
-    Int64 i1 = impl::fastmod(i,dims[1]);
-    Int64 i0 = i / dims[1];
+    Int64 i1 = impl::fastmod(i,m_extents[1]);
+    Int64 i0 = i / m_extents[1];
     return { i0, i1 };
   }
 };
@@ -140,20 +179,20 @@ class ArrayBounds<3>
 {
  public:
   using IndexType = ArrayBoundsIndex<3>;
-  using ArrayBoundsBase<3>::dims;
+  using ArrayBoundsBase<3>::m_extents;
   ArrayBounds(Int64 dim1,Int64 dim2,Int64 dim3)
   {
-    dims[0] = dim1;
-    dims[1] = dim2;
-    dims[2] = dim3;
+    m_extents[0] = dim1;
+    m_extents[1] = dim2;
+    m_extents[2] = dim3;
     _computeNbElement();
   }
   ARCCORE_HOST_DEVICE IndexType getIndices(Int64 i) const
   {
-    Int64 i2 = impl::fastmod(i,dims[2]);
-    Int64 fac = dims[2];
-    Int64 i1 = impl::fastmod(i / fac,dims[1]);
-    fac *= dims[1];
+    Int64 i2 = impl::fastmod(i,m_extents[2]);
+    Int64 fac = m_extents[2];
+    Int64 i1 = impl::fastmod(i / fac,m_extents[1]);
+    fac *= m_extents[1];
     Int64 i0 = i / fac;
     return { i0, i1, i2 };
   }
@@ -169,7 +208,7 @@ class ArrayBounds<3>
  *
  * \warning API en cours de définition.
  */
-template<typename DataType,int rank>
+template<typename DataType,int RankValue>
 class MDSpanBase
 {
  public:
@@ -177,7 +216,7 @@ class MDSpanBase
   ARCCORE_HOST_DEVICE const DataType* _internalData() const { return m_ptr; }
  protected:
   DataType* m_ptr = nullptr;
-  Int64 m_dimensions[rank];
+  Int64 m_dimensions[RankValue];
 };
 
 /*---------------------------------------------------------------------------*/
@@ -211,6 +250,11 @@ class MDSpan<DataType,1>
   //! Valeur de la première dimension
   ARCCORE_HOST_DEVICE Int64 dim1Size() const { return m_dimensions[0]; }
  public:
+  ARCCORE_HOST_DEVICE Int64 offset(Int64 i) const
+  {
+    ARCCORE_CHECK_AT(i,m_dimensions[0]);
+    return i;
+  }
   //! Valeur pour l'élément \a i
   ARCCORE_HOST_DEVICE DataType& operator()(Int64 i) const
   {
@@ -253,19 +297,21 @@ class MDSpan<DataType,2>
   //! Valeur de la deuxième dimension
   ARCCORE_HOST_DEVICE Int64 dim2Size() const { return m_dimensions[1]; }
  public:
-  //! Valeur pour l'élément \a i,j
-  ARCCORE_HOST_DEVICE DataType& operator()(Int64 i,Int64 j) const
+  ARCCORE_HOST_DEVICE Int64 offset(Int64 i,Int64 j) const
   {
     ARCCORE_CHECK_AT(i,m_dimensions[0]);
     ARCCORE_CHECK_AT(j,m_dimensions[1]);
-    return m_ptr[m_dimensions[1]*i + j];
+    return m_dimensions[1]*i + j;
+  }
+  //! Valeur pour l'élément \a i,j
+  ARCCORE_HOST_DEVICE DataType& operator()(Int64 i,Int64 j) const
+  {
+    return m_ptr[offset(i,j)];
   }
   //! Pointeur sur la valeur pour l'élément \a i,j
   ARCCORE_HOST_DEVICE DataType* ptrAt(Int64 i,Int64 j) const
   {
-    ARCCORE_CHECK_AT(i,m_dimensions[0]);
-    ARCCORE_CHECK_AT(j,m_dimensions[1]);
-    return m_ptr + (m_dimensions[1]*i + j);
+    return m_ptr + offset(i,j);
   }
 };
 
@@ -306,21 +352,23 @@ class MDSpan<DataType,3>
   //! Valeur de la troisième dimension
   ARCCORE_HOST_DEVICE Int64 dim3Size() const { return m_dimensions[2]; }
  public:
-  //! Valeur pour l'élément \a i,j,k
-  ARCCORE_HOST_DEVICE DataType& operator()(Int64 i,Int64 j,Int64 k) const
+  ARCCORE_HOST_DEVICE Int64 offset(Int64 i,Int64 j,Int64 k) const
   {
     ARCCORE_CHECK_AT(i,m_dimensions[0]);
     ARCCORE_CHECK_AT(j,m_dimensions[1]);
     ARCCORE_CHECK_AT(k,m_dimensions[2]);
-    return m_ptr[(m_dim23_size*i) + m_dimensions[2]*j + k];
+    return (m_dim23_size*i) + m_dimensions[2]*j + k;
+  }
+
+  //! Valeur pour l'élément \a i,j,k
+  ARCCORE_HOST_DEVICE DataType& operator()(Int64 i,Int64 j,Int64 k) const
+  {
+    return m_ptr[offset(i,j,k)];
   }
   //! Pointeur sur la valeur pour l'élément \a i,j,k
   ARCCORE_HOST_DEVICE DataType* ptrAt(Int64 i,Int64 j,Int64 k) const
   {
-    ARCCORE_CHECK_AT(i,m_dimensions[0]);
-    ARCCORE_CHECK_AT(j,m_dimensions[1]);
-    ARCCORE_CHECK_AT(k,m_dimensions[2]);
-    return m_ptr+((m_dim23_size*i) + m_dimensions[2]*j + k);
+    return m_ptr+offset(i,j,k);
   }
  private:
   Int64 m_dim23_size = 0; //!< dim2 * dim3
@@ -368,23 +416,24 @@ class MDSpan<DataType,4>
   //! Valeur de la quatrième dimension
   Int64 dim4Size() const { return m_dimensions[3]; }
  public:
-  //! Valeur pour l'élément \a i,j,k,l
-  ARCCORE_HOST_DEVICE DataType& operator()(Int64 i,Int64 j,Int64 k,Int64 l) const
+  ARCCORE_HOST_DEVICE Int64 offset(Int64 i,Int64 j,Int64 k,Int64 l) const
   {
     ARCCORE_CHECK_AT(i,m_dimensions[0]);
     ARCCORE_CHECK_AT(j,m_dimensions[1]);
     ARCCORE_CHECK_AT(k,m_dimensions[2]);
     ARCCORE_CHECK_AT(l,m_dimensions[3]);
-    return m_ptr[(m_dim234_size*i) + m_dim34_size*j + m_dimensions[3]*k + l];
+    return (m_dim234_size*i) + m_dim34_size*j + m_dimensions[3]*k + l;
+  }
+ public:
+  //! Valeur pour l'élément \a i,j,k,l
+  ARCCORE_HOST_DEVICE DataType& operator()(Int64 i,Int64 j,Int64 k,Int64 l) const
+  {
+    return m_ptr[offset(i,j,k,l)];
   }
   //! Pointeur sur la valeur pour l'élément \a i,j,k
   ARCCORE_HOST_DEVICE DataType* ptrAt(Int64 i,Int64 j,Int64 k,Int64 l) const
   {
-    ARCCORE_CHECK_AT(i,m_dimensions[0]);
-    ARCCORE_CHECK_AT(j,m_dimensions[1]);
-    ARCCORE_CHECK_AT(k,m_dimensions[2]);
-    ARCCORE_CHECK_AT(l,m_dimensions[3]);
-    return m_ptr + ((m_dim234_size*i) + m_dim34_size*j + m_dimensions[3]*k + l);
+    return m_ptr + offset(i,j,k,l);
   }
  private:
   Int64 m_dim34_size = 0; //!< dim3 * dim4
@@ -401,7 +450,7 @@ class MDSpan<DataType,4>
  *
  * \warning API en cours de définition.
  */
-template<typename DataType,int rank>
+template<typename DataType,int RankValue>
 class NumArrayBase
 {
  public:
@@ -413,7 +462,7 @@ class NumArrayBase
   {
     Int64 full_size = m_dimensions[0];
     // TODO: vérifier débordement.
-    for (int i=1; i<rank; ++i )
+    for (int i=1; i<RankValue; ++i )
       full_size *= m_dimensions[i];
     m_total_nb_element = full_size;
     m_data.resize(full_size);
@@ -422,11 +471,13 @@ class NumArrayBase
  public:
   void fill(const DataType& v) { m_data.fill(v); }
   DataType* _internalData() { return m_ptr; }
+  Int32 nbDimension() const { return RankValue; }
+  Span<const Int64> extents() const { return { m_dimensions, RankValue }; }
  protected:
   DataType* m_ptr = nullptr;
   UniqueArray<DataType> m_data;
   Int64 m_total_nb_element = 0;
-  Int64 m_dimensions[rank];
+  Int64 m_dimensions[RankValue];
 };
 
 /*---------------------------------------------------------------------------*/
