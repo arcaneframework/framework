@@ -74,5 +74,4 @@ cd framework
 git subtree split -P arccore -b arccore
 cd ../alien
 git subtree pull --prefix=framework/arccore --squash ../framework arccore
-v/cea
 ```
