@@ -82,6 +82,24 @@ class ArrayBoundsIndex<3>
   Int64 id2;
 };
 
+template<>
+class ArrayBoundsIndex<4>
+{
+ public:
+  ARCCORE_HOST_DEVICE ArrayBoundsIndex(Int64 _id0,Int64 _id1,Int64 _id2,Int64 _id3)
+  {
+    id0 = _id0;
+    id1 = _id1;
+    id2 = _id2;
+    id3 = _id3;
+  }
+ public:
+  Int64 id0;
+  Int64 id1;
+  Int64 id2;
+  Int64 id3;
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -92,9 +110,9 @@ class ArrayExtentsBase
 {
  public:
   //! Nombre d'élément de la \a i-ème dimension.
-  Int64 extent(int i) const { return m_extents[i]; }
-  Int64 operator()(int i) const { return m_extents[i]; }
-  Span<const Int64> extentsAsSpan() const { return { m_extents, RankValue }; }
+  ARCCORE_HOST_DEVICE Int64 extent(int i) const { return m_extents[i]; }
+  ARCCORE_HOST_DEVICE Int64 operator()(int i) const { return m_extents[i]; }
+  ARCCORE_HOST_DEVICE Span<const Int64> extentsAsSpan() const { return { m_extents, RankValue }; }
   ARCCORE_HOST_DEVICE Int64 totalNbElement() const
   {
     Int64 nb_element = 1;
@@ -112,11 +130,11 @@ class ArrayExtents<1>
 {
  public:
   ArrayExtents() = default;
-  explicit ArrayExtents(Int64 dim1_size)
+  ARCCORE_HOST_DEVICE explicit ArrayExtents(Int64 dim1_size)
   {
     setSize(dim1_size);
   }
-  void setSize(Int64 dim1_size)
+  ARCCORE_HOST_DEVICE void setSize(Int64 dim1_size)
   {
     m_extents[0] = dim1_size;
   }
@@ -128,11 +146,11 @@ class ArrayExtents<2>
 {
  public:
   ArrayExtents() = default;
-  explicit ArrayExtents(Int64 dim1_size,Int64 dim2_size)
+  ARCCORE_HOST_DEVICE explicit ArrayExtents(Int64 dim1_size,Int64 dim2_size)
   {
     setSize(dim1_size,dim2_size);
   }
-  void setSize(Int64 dim1_size,Int64 dim2_size)
+  ARCCORE_HOST_DEVICE void setSize(Int64 dim1_size,Int64 dim2_size)
   {
     m_extents[0] = dim1_size;
     m_extents[1] = dim2_size;
@@ -145,11 +163,11 @@ class ArrayExtents<3>
 {
  public:
   ArrayExtents() = default;
-  explicit ArrayExtents(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
+  ARCCORE_HOST_DEVICE explicit ArrayExtents(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
   {
     setSize(dim1_size,dim2_size,dim3_size);
   }
-  void setSize(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
+  ARCCORE_HOST_DEVICE void setSize(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
   {
     m_extents[0] = dim1_size;
     m_extents[1] = dim2_size;
@@ -163,11 +181,11 @@ class ArrayExtents<4>
 {
  public:
   ArrayExtents() = default;
-  explicit ArrayExtents(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size,Int64 dim4_size)
+  ARCCORE_HOST_DEVICE explicit ArrayExtents(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size,Int64 dim4_size)
   {
     setSize(dim1_size,dim2_size,dim3_size,dim4_size);
   }
-  void setSize(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size,Int64 dim4_size)
+  ARCCORE_HOST_DEVICE void setSize(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size,Int64 dim4_size)
   {
     m_extents[0] = dim1_size;
     m_extents[1] = dim2_size;
@@ -190,12 +208,22 @@ class ArrayExtentsWithOffset<1>
   using BaseClass::extentsAsSpan;
   using BaseClass::totalNbElement;
  public:
+  ArrayExtentsWithOffset() = default;
+  ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<1> rhs)
+  : BaseClass(rhs)
+  {
+  }
   ARCCORE_HOST_DEVICE Int64 offset(Int64 i) const
   {
     ARCCORE_CHECK_AT(i,m_extents[0]);
     return i;
   }
-  void setSize(Int64 dim1_size)
+  ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<1> idx) const
+  {
+    ARCCORE_CHECK_AT(idx.id0,m_extents[0]);
+    return idx.id0;
+  }
+  ARCCORE_HOST_DEVICE void setSize(Int64 dim1_size)
   {
     BaseClass::setSize(dim1_size);
   }
@@ -215,17 +243,28 @@ class ArrayExtentsWithOffset<2>
   using BaseClass::extentsAsSpan;
   using BaseClass::totalNbElement;
  public:
+  ArrayExtentsWithOffset() = default;
+  ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<2> rhs)
+  : BaseClass(rhs)
+  {
+  }
   ARCCORE_HOST_DEVICE Int64 offset(Int64 i,Int64 j) const
   {
     ARCCORE_CHECK_AT(i,m_extents[0]);
     ARCCORE_CHECK_AT(j,m_extents[1]);
     return m_extents[1]*i + j;
   }
-  void setSize(Int64 dim1_size,Int64 dim2_size)
+  ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<3> idx) const
+  {
+    ARCCORE_CHECK_AT(idx.id0,m_extents[0]);
+    ARCCORE_CHECK_AT(idx.id1,m_extents[1]);
+    return m_extents[1]*idx.id0 + idx.id1;
+  }
+  ARCCORE_HOST_DEVICE void setSize(Int64 dim1_size,Int64 dim2_size)
   {
     BaseClass::setSize(dim1_size,dim2_size);
   }
-  void setSize(ArrayExtents<2> dims)
+  ARCCORE_HOST_DEVICE void setSize(ArrayExtents<2> dims)
   {
     this->setSize(dims(0),dims(1));
   }
@@ -245,6 +284,12 @@ class ArrayExtentsWithOffset<3>
   using BaseClass::extentsAsSpan;
   using BaseClass::totalNbElement;
  public:
+  ArrayExtentsWithOffset() = default;
+  ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<3> rhs)
+  : BaseClass(rhs)
+  {
+    _computeOffsets();
+  }
   ARCCORE_HOST_DEVICE Int64 offset(Int64 i,Int64 j,Int64 k) const
   {
     ARCCORE_CHECK_AT(i,m_extents[0]);
@@ -252,14 +297,26 @@ class ArrayExtentsWithOffset<3>
     ARCCORE_CHECK_AT(k,m_extents[2]);
     return (m_dim23_size*i) + m_extents[2]*j + k;
   }
+  ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<3> idx) const
+  {
+    ARCCORE_CHECK_AT(idx.id0,m_extents[0]);
+    ARCCORE_CHECK_AT(idx.id1,m_extents[1]);
+    ARCCORE_CHECK_AT(idx.id2,m_extents[2]);
+    return (m_dim23_size*idx.id0) + m_extents[2]*idx.id1 + idx.id2;
+  }
   void setSize(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
   {
-    m_dim23_size = dim2_size * dim3_size;
     BaseClass::setSize(dim1_size,dim2_size,dim3_size);
+    _computeOffsets();
   }
   void setSize(ArrayExtents<3> dims)
   {
     this->setSize(dims(0),dims(1),dims(2));
+  }
+ protected:
+  ARCCORE_HOST_DEVICE void _computeOffsets()
+  {
+    m_dim23_size = m_extents[1] * m_extents[2];
   }
  private:
   Int64 m_dim23_size = 0;
@@ -279,6 +336,12 @@ class ArrayExtentsWithOffset<4>
   using BaseClass::extentsAsSpan;
   using BaseClass::totalNbElement;
  public:
+  ArrayExtentsWithOffset() = default;
+  ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<4> rhs)
+  : BaseClass(rhs)
+  {
+    _computeOffsets();
+  }
   ARCCORE_HOST_DEVICE Int64 offset(Int64 i,Int64 j,Int64 k,Int64 l) const
   {
     ARCCORE_CHECK_AT(i,m_extents[0]);
@@ -287,15 +350,28 @@ class ArrayExtentsWithOffset<4>
     ARCCORE_CHECK_AT(l,m_extents[3]);
     return (m_dim234_size*i) + m_dim34_size*j + m_extents[3]*k + l;
   }
+  ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<4> idx) const
+  {
+    ARCCORE_CHECK_AT(idx.id0,m_extents[0]);
+    ARCCORE_CHECK_AT(idx.id1,m_extents[1]);
+    ARCCORE_CHECK_AT(idx.id2,m_extents[2]);
+    ARCCORE_CHECK_AT(idx.id3,m_extents[3]);
+    return (m_dim234_size*idx.id0) + m_dim34_size*idx.id1 + m_extents[3]*idx.id2 + idx.id3;
+  }
   void setSize(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size,Int64 dim4_size)
   {
-    m_dim34_size = dim3_size*dim4_size;
-    m_dim234_size = m_dim34_size*dim2_size;
     BaseClass::setSize(dim1_size,dim2_size,dim3_size,dim4_size);
+    _computeOffsets();
   }
   void setSize(ArrayExtents<4> dims)
   {
     this->setSize(dims(0),dims(1),dims(2),dims(3));
+  }
+ protected:
+  ARCCORE_HOST_DEVICE void _computeOffsets()
+  {
+    m_dim34_size = m_extents[2] * m_extents[3];
+    m_dim234_size = m_dim34_size * m_extents[1];
   }
  private:
   Int64 m_dim34_size = 0; //!< dim3 * dim4
@@ -403,15 +479,30 @@ class MDSpanBase
  public:
   ARCCORE_HOST_DEVICE DataType* _internalData() { return m_ptr; }
   ARCCORE_HOST_DEVICE const DataType* _internalData() const { return m_ptr; }
+ public:
+  ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<RankValue> idx) const
+  {
+    return m_extents.offset(idx);
+  }
+  //! Valeur pour l'élément \a i
+  ARCCORE_HOST_DEVICE DataType& operator()(ArrayBoundsIndex<RankValue> idx) const
+  {
+    return m_ptr[offset(idx)];
+  }
+  //! Pointeur sur la valeur pour l'élément \a i
+  ARCCORE_HOST_DEVICE DataType* ptrAt(ArrayBoundsIndex<RankValue> idx) const
+  {
+    return m_ptr+offset(idx);
+  }
  protected:
   DataType* m_ptr = nullptr;
-  Int64 m_dimensions[RankValue];
+  ArrayExtentsWithOffset<RankValue> m_extents;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType,int rank>
+template<class DataType,int RankValue>
 class MDSpan;
 
 /*---------------------------------------------------------------------------*/
@@ -423,38 +514,39 @@ class MDSpan<DataType,1>
 : public MDSpanBase<DataType,1>
 {
   using BaseClass = MDSpanBase<DataType,1>;
-  using BaseClass::m_dimensions;
+  using BaseClass::m_extents;
   using BaseClass::m_ptr;
+ public:
+  using BaseClass::offset;
+  using BaseClass::ptrAt;
+  using BaseClass::operator();
  public:
   //! Construit un tableau vide
   MDSpan() : MDSpan(nullptr,0){}
   //! Construit un tableau
   MDSpan(DataType* ptr,Int64 dim1_size)
   {
-    m_dimensions[0] = dim1_size;
+    m_extents.setSize(dim1_size);
     m_ptr = ptr;
   }
 
  public:
   //! Valeur de la première dimension
-  ARCCORE_HOST_DEVICE Int64 dim1Size() const { return m_dimensions[0]; }
+  ARCCORE_HOST_DEVICE Int64 dim1Size() const { return m_extents(0); }
  public:
   ARCCORE_HOST_DEVICE Int64 offset(Int64 i) const
   {
-    ARCCORE_CHECK_AT(i,m_dimensions[0]);
-    return i;
+    return m_extents.offset(i);
   }
   //! Valeur pour l'élément \a i
   ARCCORE_HOST_DEVICE DataType& operator()(Int64 i) const
   {
-    ARCCORE_CHECK_AT(i,m_dimensions[0]);
-    return m_ptr[i];
+    return m_ptr[offset(i)];
   }
   //! Pointeur sur la valeur pour l'élément \a i
   ARCCORE_HOST_DEVICE DataType* ptrAt(Int64 i) const
   {
-    ARCCORE_CHECK_AT(i,m_dimensions[0]);
-    return m_ptr+i;
+    return m_ptr+offset(i);
   }
 };
 
@@ -467,30 +559,31 @@ class MDSpan<DataType,2>
 : public MDSpanBase<DataType,2>
 {
   using BaseClass = MDSpanBase<DataType,2>;
-  using BaseClass::m_dimensions;
+  using BaseClass::m_extents;
   using BaseClass::m_ptr;
+ public:
+  using BaseClass::offset;
+  using BaseClass::ptrAt;
+  using BaseClass::operator();
  public:
   //! Construit un tableau vide
   MDSpan() : MDSpan(nullptr,0,0){}
   //! Construit une vue
   MDSpan(DataType* ptr,Int64 dim1_size,Int64 dim2_size)
   {
-    m_dimensions[0] = dim1_size;
-    m_dimensions[1] = dim2_size;
+    m_extents.setSize(dim1_size,dim2_size);
     m_ptr = ptr;
   }
 
  public:
   //! Valeur de la première dimension
-  ARCCORE_HOST_DEVICE Int64 dim1Size() const { return m_dimensions[0]; }
+  ARCCORE_HOST_DEVICE Int64 dim1Size() const { return m_extents(0); }
   //! Valeur de la deuxième dimension
-  ARCCORE_HOST_DEVICE Int64 dim2Size() const { return m_dimensions[1]; }
+  ARCCORE_HOST_DEVICE Int64 dim2Size() const { return m_extents(1); }
  public:
   ARCCORE_HOST_DEVICE Int64 offset(Int64 i,Int64 j) const
   {
-    ARCCORE_CHECK_AT(i,m_dimensions[0]);
-    ARCCORE_CHECK_AT(j,m_dimensions[1]);
-    return m_dimensions[1]*i + j;
+    return m_extents.offset(i,j);
   }
   //! Valeur pour l'élément \a i,j
   ARCCORE_HOST_DEVICE DataType& operator()(Int64 i,Int64 j) const
@@ -513,8 +606,12 @@ class MDSpan<DataType,3>
 : public MDSpanBase<DataType,3>
 {
   using BaseClass = MDSpanBase<DataType,3>;
-  using BaseClass::m_dimensions;
+  using BaseClass::m_extents;
   using BaseClass::m_ptr;
+ public:
+  using BaseClass::offset;
+  using BaseClass::ptrAt;
+  using BaseClass::operator();
  public:
   //! Construit un tableau vide
   MDSpan() : MDSpan(0,0,0){}
@@ -526,29 +623,21 @@ class MDSpan<DataType,3>
  private:
   void _setSize(DataType* ptr,Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
   {
-    m_dim23_size = dim2_size * dim3_size;
-
-    m_dimensions[0] = dim1_size;
-    m_dimensions[1] = dim2_size;
-    m_dimensions[2] = dim3_size;
+    m_extents.setSize(dim1_size,dim2_size,dim3_size);
     m_ptr = ptr;
   }
  public:
   //! Valeur de la première dimension
-  ARCCORE_HOST_DEVICE Int64 dim1Size() const { return m_dimensions[0]; }
+  ARCCORE_HOST_DEVICE Int64 dim1Size() const { return m_extents(0); }
   //! Valeur de la deuxième dimension
-  ARCCORE_HOST_DEVICE Int64 dim2Size() const { return m_dimensions[1]; }
+  ARCCORE_HOST_DEVICE Int64 dim2Size() const { return m_extents(1); }
   //! Valeur de la troisième dimension
-  ARCCORE_HOST_DEVICE Int64 dim3Size() const { return m_dimensions[2]; }
+  ARCCORE_HOST_DEVICE Int64 dim3Size() const { return m_extents(2); }
  public:
   ARCCORE_HOST_DEVICE Int64 offset(Int64 i,Int64 j,Int64 k) const
   {
-    ARCCORE_CHECK_AT(i,m_dimensions[0]);
-    ARCCORE_CHECK_AT(j,m_dimensions[1]);
-    ARCCORE_CHECK_AT(k,m_dimensions[2]);
-    return (m_dim23_size*i) + m_dimensions[2]*j + k;
+    return m_extents.offset(i,j,k);
   }
- 
   //! Valeur pour l'élément \a i,j,k
   ARCCORE_HOST_DEVICE DataType& operator()(Int64 i,Int64 j,Int64 k) const
   {
@@ -560,7 +649,6 @@ class MDSpan<DataType,3>
     return m_ptr+offset(i,j,k);
   }
  private:
-  Int64 m_dim23_size = 0; //!< dim2 * dim3
 };
 
 /*---------------------------------------------------------------------------*/
@@ -572,8 +660,12 @@ class MDSpan<DataType,4>
 : public MDSpanBase<DataType,4>
 {
   using BaseClass = MDSpanBase<DataType,4>;
-  using BaseClass::m_dimensions;
+  using BaseClass::m_extents;
   using BaseClass::m_ptr;
+ public:
+  using BaseClass::offset;
+  using BaseClass::ptrAt;
+  using BaseClass::operator();
  public:
   //! Construit un tableau vide
   MDSpan() : MDSpan(nullptr,0,0,0,0){}
@@ -586,32 +678,23 @@ class MDSpan<DataType,4>
  private:
   void _setSize(DataType* ptr,Int64 dim1_size,Int64 dim2_size,Int64 dim3_size,Int64 dim4_size)
   {
-    m_dim34_size = dim3_size*dim4_size;
-    m_dim234_size = m_dim34_size*dim2_size;
-    m_dimensions[0] = dim1_size;
-    m_dimensions[1] = dim2_size;
-    m_dimensions[2] = dim3_size;
-    m_dimensions[3] = dim4_size;
+    m_extents.setSize(dim1_size,dim2_size,dim3_size,dim4_size);
     m_ptr = ptr;
   }
 
  public:
   //! Valeur de la première dimension
-  Int64 dim1Size() const { return m_dimensions[0]; }
+  Int64 dim1Size() const { return m_extents(0); }
   //! Valeur de la deuxième dimension
-  Int64 dim2Size() const { return m_dimensions[1]; }
+  Int64 dim2Size() const { return m_extents(1); }
   //! Valeur de la troisième dimension
-  Int64 dim3Size() const { return m_dimensions[2]; }
+  Int64 dim3Size() const { return m_extents(2); }
   //! Valeur de la quatrième dimension
-  Int64 dim4Size() const { return m_dimensions[3]; }
+  Int64 dim4Size() const { return m_extents(3); }
  public:
   ARCCORE_HOST_DEVICE Int64 offset(Int64 i,Int64 j,Int64 k,Int64 l) const
   {
-    ARCCORE_CHECK_AT(i,m_dimensions[0]);
-    ARCCORE_CHECK_AT(j,m_dimensions[1]);
-    ARCCORE_CHECK_AT(k,m_dimensions[2]);
-    ARCCORE_CHECK_AT(l,m_dimensions[3]);
-    return (m_dim234_size*i) + m_dim34_size*j + m_dimensions[3]*k + l;
+    return m_extents.offset(i,j,k,l);
   }
  public:
   //! Valeur pour l'élément \a i,j,k,l
@@ -624,9 +707,6 @@ class MDSpan<DataType,4>
   {
     return m_ptr + offset(i,j,k,l);
   }
- private:
-  Int64 m_dim34_size = 0; //!< dim3 * dim4
-  Int64 m_dim234_size = 0; //!< dim2 * dim3 * dim4
 };
 
 /*---------------------------------------------------------------------------*/
