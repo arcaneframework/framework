@@ -93,7 +93,15 @@ class ArrayExtentsBase
  public:
   //! Nombre d'élément de la \a i-ème dimension.
   Int64 extent(int i) const { return m_extents[i]; }
-  Span<const Int64> extents() const { return { m_extents, RankValue }; }
+  Int64 operator()(int i) const { return m_extents[i]; }
+  Span<const Int64> extentsAsSpan() const { return { m_extents, RankValue }; }
+  ARCCORE_HOST_DEVICE Int64 totalNbElement() const
+  {
+    Int64 nb_element = 1;
+    for (int i=0; i<RankValue; i++)
+      nb_element *= m_extents[i];
+    return nb_element;
+  }
  protected:
   Int64 m_extents[RankValue];
 };
@@ -102,24 +110,70 @@ template<>
 class ArrayExtents<1>
 : public ArrayExtentsBase<1>
 {
+ public:
+  ArrayExtents() = default;
+  explicit ArrayExtents(Int64 dim1_size)
+  {
+    setSize(dim1_size);
+  }
+  void setSize(Int64 dim1_size)
+  {
+    m_extents[0] = dim1_size;
+  }
 };
 
 template<>
 class ArrayExtents<2>
 : public ArrayExtentsBase<2>
 {
+ public:
+  ArrayExtents() = default;
+  explicit ArrayExtents(Int64 dim1_size,Int64 dim2_size)
+  {
+    setSize(dim1_size,dim2_size);
+  }
+  void setSize(Int64 dim1_size,Int64 dim2_size)
+  {
+    m_extents[0] = dim1_size;
+    m_extents[1] = dim2_size;
+  }
 };
 
 template<>
 class ArrayExtents<3>
 : public ArrayExtentsBase<3>
 {
+ public:
+  ArrayExtents() = default;
+  explicit ArrayExtents(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
+  {
+    setSize(dim1_size,dim2_size,dim3_size);
+  }
+  void setSize(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
+  {
+    m_extents[0] = dim1_size;
+    m_extents[1] = dim2_size;
+    m_extents[2] = dim3_size;
+  }
 };
 
 template<>
 class ArrayExtents<4>
 : public ArrayExtentsBase<4>
 {
+ public:
+  ArrayExtents() = default;
+  explicit ArrayExtents(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size,Int64 dim4_size)
+  {
+    setSize(dim1_size,dim2_size,dim3_size,dim4_size);
+  }
+  void setSize(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size,Int64 dim4_size)
+  {
+    m_extents[0] = dim1_size;
+    m_extents[1] = dim2_size;
+    m_extents[2] = dim3_size;
+    m_extents[3] = dim4_size;
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -127,8 +181,14 @@ class ArrayExtents<4>
 
 template<>
 class ArrayExtentsWithOffset<1>
-: public ArrayExtents<1>
+: private ArrayExtents<1>
 {
+ public:
+  using BaseClass = ArrayExtents<1>;
+  using BaseClass::extent;
+  using BaseClass::operator();
+  using BaseClass::extentsAsSpan;
+  using BaseClass::totalNbElement;
  public:
   ARCCORE_HOST_DEVICE Int64 offset(Int64 i) const
   {
@@ -137,7 +197,7 @@ class ArrayExtentsWithOffset<1>
   }
   void setSize(Int64 dim1_size)
   {
-    m_extents[0] = dim1_size;
+    BaseClass::setSize(dim1_size);
   }
 };
 
@@ -146,8 +206,14 @@ class ArrayExtentsWithOffset<1>
 
 template<>
 class ArrayExtentsWithOffset<2>
-: public ArrayExtents<2>
+: private ArrayExtents<2>
 {
+ public:
+  using BaseClass = ArrayExtents<2>;
+  using BaseClass::extent;
+  using BaseClass::operator();
+  using BaseClass::extentsAsSpan;
+  using BaseClass::totalNbElement;
  public:
   ARCCORE_HOST_DEVICE Int64 offset(Int64 i,Int64 j) const
   {
@@ -157,8 +223,11 @@ class ArrayExtentsWithOffset<2>
   }
   void setSize(Int64 dim1_size,Int64 dim2_size)
   {
-    m_extents[0] = dim1_size;
-    m_extents[1] = dim2_size;
+    BaseClass::setSize(dim1_size,dim2_size);
+  }
+  void setSize(ArrayExtents<2> dims)
+  {
+    this->setSize(dims(0),dims(1));
   }
 };
 
@@ -167,8 +236,14 @@ class ArrayExtentsWithOffset<2>
 
 template<>
 class ArrayExtentsWithOffset<3>
-: public ArrayExtents<3>
+: private ArrayExtents<3>
 {
+ public:
+  using BaseClass = ArrayExtents<3>;
+  using BaseClass::extent;
+  using BaseClass::operator();
+  using BaseClass::extentsAsSpan;
+  using BaseClass::totalNbElement;
  public:
   ARCCORE_HOST_DEVICE Int64 offset(Int64 i,Int64 j,Int64 k) const
   {
@@ -180,10 +255,11 @@ class ArrayExtentsWithOffset<3>
   void setSize(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
   {
     m_dim23_size = dim2_size * dim3_size;
-
-    m_extents[0] = dim1_size;
-    m_extents[1] = dim2_size;
-    m_extents[2] = dim3_size;
+    BaseClass::setSize(dim1_size,dim2_size,dim3_size);
+  }
+  void setSize(ArrayExtents<3> dims)
+  {
+    this->setSize(dims(0),dims(1),dims(2));
   }
  private:
   Int64 m_dim23_size = 0;
@@ -194,8 +270,14 @@ class ArrayExtentsWithOffset<3>
 
 template<>
 class ArrayExtentsWithOffset<4>
-: public ArrayExtents<4>
+: private ArrayExtents<4>
 {
+ public:
+  using BaseClass = ArrayExtents<4>;
+  using BaseClass::extent;
+  using BaseClass::operator();
+  using BaseClass::extentsAsSpan;
+  using BaseClass::totalNbElement;
  public:
   ARCCORE_HOST_DEVICE Int64 offset(Int64 i,Int64 j,Int64 k,Int64 l) const
   {
@@ -209,10 +291,11 @@ class ArrayExtentsWithOffset<4>
   {
     m_dim34_size = dim3_size*dim4_size;
     m_dim234_size = m_dim34_size*dim2_size;
-    m_extents[0] = dim1_size;
-    m_extents[1] = dim2_size;
-    m_extents[2] = dim3_size;
-    m_extents[3] = dim4_size;
+    BaseClass::setSize(dim1_size,dim2_size,dim3_size,dim4_size);
+  }
+  void setSize(ArrayExtents<4> dims)
+  {
+    this->setSize(dims(0),dims(1),dims(2),dims(3));
   }
  private:
   Int64 m_dim34_size = 0; //!< dim3 * dim4
@@ -224,7 +307,7 @@ class ArrayExtentsWithOffset<4>
 
 template<int RankValue>
 class ArrayBoundsBase
-: protected ArrayExtents<RankValue>
+: private ArrayExtents<RankValue>
 {
  public:
   using ArrayExtents<RankValue>::extent;
@@ -233,11 +316,10 @@ class ArrayBoundsBase
  protected:
   void _computeNbElement()
   {
-    m_nb_element = 1;
-    for (int i=0; i<RankValue; i++)
-      m_nb_element *= this->m_extents[i];
+    m_nb_element = this->totalNbElement();
   }
  protected:
+  using ArrayExtents<RankValue>::m_extents;
   Int64 m_nb_element = 0;
 };
 
@@ -499,7 +581,7 @@ class MDSpan<DataType,4>
   MDSpan(DataType* ptr,Int64 dim1_size,Int64 dim2_size,
          Int64 dim3_size,Int64 dim4_size)
   {
-    setSize(ptr,dim1_size,dim2_size,dim3_size,dim4_size);
+    _setSize(ptr,dim1_size,dim2_size,dim3_size,dim4_size);
   }
  private:
   void _setSize(DataType* ptr,Int64 dim1_size,Int64 dim2_size,Int64 dim3_size,Int64 dim4_size)
@@ -563,7 +645,7 @@ class NumArrayBase
  public:
   //! Nombre total d'éléments du tableau
   Int64 totalNbElement() const { return m_total_nb_element; }
-  Int64 extent(int i) const { return m_extents.extent(i); }
+  Int64 extent(int i) const { return m_extents(i); }
  protected:
   NumArrayBase() : m_data(platform::getDefaultDataAllocator()){}
   void _resize()
