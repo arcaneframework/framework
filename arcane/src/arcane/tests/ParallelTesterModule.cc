@@ -620,9 +620,9 @@ _testSynchronize()
 
   // Positionne les valeurs
   {
-    m_nodes.setValues(current_iteration,mesh->ownNodes());
-    m_faces.setValues(current_iteration,mesh->ownFaces());
-    m_cells.setValues(current_iteration,mesh->ownCells());
+    m_nodes.setValuesWithViews(current_iteration,mesh->ownNodes());
+    m_faces.setValuesWithViews(current_iteration,mesh->ownFaces());
+    m_cells.setValuesWithViews(current_iteration,mesh->ownCells());
     m_array_nodes.setValues(current_iteration,mesh->ownNodes());
     m_array_faces.setValues(current_iteration,mesh->ownFaces());
     m_array_cells.setValues(current_iteration,mesh->ownCells());

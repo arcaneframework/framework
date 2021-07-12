@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableUnitTest.cc                                         (C) 2000-2017 */
+/* VariableUnitTest.cc                                         (C) 2000-2021 */
 /*                                                                           */
 /* Service de test des variables.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/Event.h"
@@ -21,6 +19,7 @@
 #include "arcane/IMesh.h"
 #include "arcane/IVariableMng.h"
 #include "arcane/VariableStatusChangedEventArgs.h"
+#include "arcane/VariableView.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/StdScalarMeshVariables.h"
@@ -98,6 +97,7 @@ class VariableUnitTest
   void _testReferences(Integer nb_ref);
   void _testUsed();
   void _testRefersTo();
+  void _testSimpleView();
   void _checkException(Integer i);
   void _testAlignment();
   void _testSwap();
@@ -139,6 +139,7 @@ void VariableUnitTest::
 executeTest()
 {
   _testRefersTo();
+  _testSimpleView();
   _testUsed();
   _testSwap();
   _testAlignment();
@@ -266,6 +267,34 @@ _testRefersTo()
     vc.areEqual(var1.arraySize(),3,"Bad size");
     //vc.areEqualArray(var1.asArray().constView(),var2.asArray().constView(),"Bad values");
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*
+ * \brief Teste un accès simple aux vues.
+ */
+void VariableUnitTest::
+_testSimpleView()
+{
+  ValueChecker vc(A_FUNCINFO);
+
+  VariableCellReal var1(VariableBuildInfo(mesh(),"CellRealTest1"));
+  VariableCellReal var2(VariableBuildInfo(mesh(),"CellRealTest2"));
+  ENUMERATE_CELL(icell,allCells()){
+    var1[icell] = icell.itemLocalId()+1;
+  }
+  {
+    auto v1 = viewIn(var1);
+    // TODO: pouvoir tester que le code suivante ne compile pas
+    // auto v1 = viewOut(var1);
+    auto v2 = viewOut(var2);
+    ENUMERATE_CELL(icell,allCells()){
+      v2[icell] = v1[icell];
+    }
+  }
+
+  vc.areEqualArray(var1.asArray().constView(),var2.asArray().constView(),"Bad values");
 }
 
 /*---------------------------------------------------------------------------*/
