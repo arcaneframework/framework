@@ -109,6 +109,11 @@ template<int RankValue>
 class ArrayExtentsBase
 {
  public:
+  ARCCORE_HOST_DEVICE ArrayExtentsBase()
+  {
+    for( int i=0; i<RankValue; ++i )
+      m_extents[i] = 0;
+  }
   //! Nombre d'élément de la \a i-ème dimension.
   ARCCORE_HOST_DEVICE Int64 extent(int i) const { return m_extents[i]; }
   ARCCORE_HOST_DEVICE Int64 operator()(int i) const { return m_extents[i]; }
@@ -146,7 +151,7 @@ class ArrayExtents<2>
 {
  public:
   ArrayExtents() = default;
-  ARCCORE_HOST_DEVICE explicit ArrayExtents(Int64 dim1_size,Int64 dim2_size)
+  ARCCORE_HOST_DEVICE ArrayExtents(Int64 dim1_size,Int64 dim2_size)
   {
     setSize(dim1_size,dim2_size);
   }
@@ -163,7 +168,7 @@ class ArrayExtents<3>
 {
  public:
   ArrayExtents() = default;
-  ARCCORE_HOST_DEVICE explicit ArrayExtents(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
+  ARCCORE_HOST_DEVICE ArrayExtents(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
   {
     setSize(dim1_size,dim2_size,dim3_size);
   }
@@ -181,7 +186,7 @@ class ArrayExtents<4>
 {
  public:
   ArrayExtents() = default;
-  ARCCORE_HOST_DEVICE explicit ArrayExtents(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size,Int64 dim4_size)
+  ARCCORE_HOST_DEVICE ArrayExtents(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size,Int64 dim4_size)
   {
     setSize(dim1_size,dim2_size,dim3_size,dim4_size);
   }
@@ -226,6 +231,10 @@ class ArrayExtentsWithOffset<1>
   ARCCORE_HOST_DEVICE void setSize(Int64 dim1_size)
   {
     BaseClass::setSize(dim1_size);
+  }
+  ARCCORE_HOST_DEVICE void setSize(ArrayExtents<1> extents)
+  {
+    BaseClass::setSize(extents(0));
   }
 };
 
@@ -477,6 +486,12 @@ template<typename DataType,int RankValue>
 class MDSpanBase
 {
  public:
+  MDSpanBase() = default;
+  ARCCORE_HOST_DEVICE MDSpanBase(DataType* ptr,ArrayExtentsWithOffset<RankValue> extents)
+  : m_ptr(ptr), m_extents(extents)
+  {
+  }
+ public:
   ARCCORE_HOST_DEVICE DataType* _internalData() { return m_ptr; }
   ARCCORE_HOST_DEVICE const DataType* _internalData() const { return m_ptr; }
  public:
@@ -522,13 +537,15 @@ class MDSpan<DataType,1>
   using BaseClass::operator();
  public:
   //! Construit un tableau vide
-  MDSpan() : MDSpan(nullptr,0){}
+  MDSpan() = default;
   //! Construit un tableau
-  MDSpan(DataType* ptr,Int64 dim1_size)
+  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,Int64 dim1_size)
   {
     m_extents.setSize(dim1_size);
     m_ptr = ptr;
   }
+  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<1> extents_and_offset)
+  : BaseClass(ptr,extents_and_offset) {}
 
  public:
   //! Valeur de la première dimension
@@ -569,11 +586,13 @@ class MDSpan<DataType,2>
   //! Construit un tableau vide
   MDSpan() : MDSpan(nullptr,0,0){}
   //! Construit une vue
-  MDSpan(DataType* ptr,Int64 dim1_size,Int64 dim2_size)
+  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,Int64 dim1_size,Int64 dim2_size)
   {
     m_extents.setSize(dim1_size,dim2_size);
     m_ptr = ptr;
   }
+  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<2> extents_and_offset)
+  : BaseClass(ptr,extents_and_offset) {}
 
  public:
   //! Valeur de la première dimension
@@ -614,12 +633,14 @@ class MDSpan<DataType,3>
   using BaseClass::operator();
  public:
   //! Construit un tableau vide
-  MDSpan() : MDSpan(0,0,0){}
+  MDSpan() = default;
   //! Construit une vue
-  MDSpan(DataType* ptr,Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
+  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
   {
     _setSize(ptr,dim1_size,dim2_size,dim3_size);
   }
+  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<3> extents_and_offset)
+  : BaseClass(ptr,extents_and_offset) {}
  private:
   void _setSize(DataType* ptr,Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
   {
@@ -668,13 +689,15 @@ class MDSpan<DataType,4>
   using BaseClass::operator();
  public:
   //! Construit un tableau vide
-  MDSpan() : MDSpan(nullptr,0,0,0,0){}
+  MDSpan() = default;
   //! Construit une vue
-  MDSpan(DataType* ptr,Int64 dim1_size,Int64 dim2_size,
-         Int64 dim3_size,Int64 dim4_size)
+  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,Int64 dim1_size,Int64 dim2_size,
+                             Int64 dim3_size,Int64 dim4_size)
   {
     _setSize(ptr,dim1_size,dim2_size,dim3_size,dim4_size);
   }
+  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<4> extents_and_offset)
+  : BaseClass(ptr,extents_and_offset) {}
  private:
   void _setSize(DataType* ptr,Int64 dim1_size,Int64 dim2_size,Int64 dim3_size,Int64 dim4_size)
   {
@@ -726,8 +749,19 @@ class NumArrayBase
   //! Nombre total d'éléments du tableau
   Int64 totalNbElement() const { return m_total_nb_element; }
   Int64 extent(int i) const { return m_extents(i); }
+  void resize(ArrayExtents<RankValue> extents)
+  {
+    m_extents.setSize(extents);
+    _resize();
+  }
  protected:
   NumArrayBase() : m_data(platform::getDefaultDataAllocator()){}
+  explicit NumArrayBase(ArrayExtents<RankValue> extents)
+  : m_data(platform::getDefaultDataAllocator())
+  {
+    resize(extents);
+  }
+ private:
   void _resize()
   {
     Int64 full_size = extent(0);
@@ -743,6 +777,12 @@ class NumArrayBase
   DataType* _internalData() { return m_ptr; }
   Int32 nbDimension() const { return RankValue; }
   Span<const Int64> extents() const { return m_extents.extents(); }
+ public:
+  MDSpan<DataType,RankValue> span()
+  { return MDSpan<DataType,RankValue>(m_ptr,m_extents); }
+  MDSpan<const DataType,RankValue> span() const { return this->constSpan(); }
+  MDSpan<const DataType,RankValue> constSpan() const
+  { return MDSpan<const DataType,RankValue>(m_ptr,m_extents); }
  protected:
   DataType* m_ptr = nullptr;
   ArrayExtentsWithOffset<RankValue> m_extents;
@@ -753,7 +793,7 @@ class NumArrayBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType,int rank>
+template<class DataType,int RankValue>
 class NumArray;
 
 /*---------------------------------------------------------------------------*/
@@ -764,24 +804,22 @@ template<class DataType>
 class NumArray<DataType,1>
 : public NumArrayBase<DataType,1>
 {
+ public:
   using BaseClass = NumArrayBase<DataType,1>;
-  using BaseClass::m_ptr;
   using BaseClass::extent;
+  using BaseClass::resize;
+ private:
+  using BaseClass::m_ptr;
   using BaseClass::m_extents;
  public:
   //! Construit un tableau vide
   NumArray() : NumArray(0){}
-  //! Construit un tableau en le recopiant
-  NumArray(const NumArray<DataType,1>& rhs) : BaseClass(rhs){}
   //! Construit un tableau
-  NumArray(Int64 dim1_size)
-  {
-    resize(dim1_size);
-  }
+  NumArray(Int64 dim1_size) : BaseClass(ArrayExtents<1>(dim1_size)){}
+ public:
   void resize(Int64 dim1_size)
   {
-    m_extents.setSize(dim1_size);
-    this->_resize();
+    this->resize(ArrayExtents<1>(dim1_size));
   }
  public:
   //! Valeur de la première dimension
@@ -798,14 +836,8 @@ class NumArray<DataType,1>
     return m_ptr[m_extents.offset(i)];
   }
  public:
-  operator MDSpan<DataType,1> () { return span(); }
-  operator MDSpan<const DataType,1> () const { return constSpan(); }
- public:
-  MDSpan<DataType,1> span()
-  { return MDSpan<DataType,1>(m_ptr,extent(0)); }
-  MDSpan<const DataType,1> span() const { return this->constSpan(); }
-  MDSpan<const DataType,1> constSpan() const
-  { return MDSpan<const DataType,1>(m_ptr,extent(0)); }
+  operator MDSpan<DataType,1> () { return this->span(); }
+  operator MDSpan<const DataType,1> () const { return this->constSpan(); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -816,24 +848,23 @@ template<class DataType>
 class NumArray<DataType,2>
 : public NumArrayBase<DataType,2>
 {
+ public:
   using BaseClass = NumArrayBase<DataType,2>;
-  using BaseClass::m_ptr;
   using BaseClass::extent;
+  using BaseClass::resize;
+ private:
+  using BaseClass::m_ptr;
   using BaseClass::m_extents;
  public:
   //! Construit un tableau vide
-  NumArray() : NumArray(0,0){}
-  //! Construit un tableau en le recopiant
-  NumArray(const NumArray<DataType,2>& rhs) : BaseClass(rhs){}
+  NumArray() = default;
   //! Construit une vue
   NumArray(Int64 dim1_size,Int64 dim2_size)
-  {
-    resize(dim1_size,dim2_size);
-  }
+  : BaseClass(ArrayExtents<2>(dim1_size,dim2_size)){}
+ public:
   void resize(Int64 dim1_size,Int64 dim2_size)
   {
-    m_extents.setSize(dim1_size,dim2_size);
-    this->_resize();
+    this->resize(ArrayExtents<2>(dim1_size,dim2_size));
   }
 
  public:
@@ -852,12 +883,6 @@ class NumArray<DataType,2>
   {
     return m_ptr[m_extents.offset(i,j)];
   }
- public:
-  MDSpan<DataType,2> span()
-  { return MDSpan<DataType,2>(m_ptr,extent(0),extent(1)); }
-  MDSpan<const DataType,2> span() const { return this->constSpan(); }
-  MDSpan<const DataType,2> constSpan() const
-  { return MDSpan<const DataType,2>(m_ptr,extent(0),extent(1)); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -868,24 +893,23 @@ template<class DataType>
 class NumArray<DataType,3>
 : public NumArrayBase<DataType,3>
 {
+ public:
   using BaseClass = NumArrayBase<DataType,3>;
-  using BaseClass::m_ptr;
   using BaseClass::extent;
+  using BaseClass::resize;
+ private:
+  using BaseClass::m_ptr;
   using BaseClass::m_extents;
  public:
   //! Construit un tableau vide
-  NumArray() : NumArray(0,0,0){}
-  //! Construit un tableau en le recopiant
-  NumArray(const NumArray<DataType,3>& rhs) : BaseClass(rhs){}
+  NumArray() = default;
   //! Construit une vue
   NumArray(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
-  {
-    resize(dim1_size,dim2_size,dim3_size);
-  }
+  : BaseClass(ArrayExtents<3>(dim1_size,dim2_size,dim3_size)){}
+ public:
   void resize(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
   {
-    m_extents.setSize(dim1_size,dim2_size,dim3_size);
-    this->_resize();
+    this->resize(ArrayExtents<3>(dim1_size,dim2_size,dim3_size));
   }
  public:
   //! Valeur de la première dimension
@@ -905,12 +929,6 @@ class NumArray<DataType,3>
   {
     return m_ptr[m_extents.offset(i,j,k)];
   }
- public:
-  MDSpan<DataType,3> span()
-  { return MDSpan<DataType,3>(m_ptr,extent(0),extent(1),extent(2)); }
-  MDSpan<const DataType,3> span() const { return this->constSpan(); }
-  MDSpan<const DataType,3> constSpan() const
-  { return MDSpan<const DataType,3>(m_ptr,extent(0),extent(1),extent(2)); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -921,23 +939,24 @@ template<class DataType>
 class NumArray<DataType,4>
 : public NumArrayBase<DataType,4>
 {
+ public:
   using BaseClass = NumArrayBase<DataType,4>;
-  using BaseClass::m_ptr;
   using BaseClass::extent;
+  using BaseClass::resize;
+ private:
+  using BaseClass::m_ptr;
   using BaseClass::m_extents;
  public:
   //! Construit un tableau vide
-  NumArray() : NumArray(0,0,0,0){}
+  NumArray() = default;
   //! Construit une vue
   NumArray(Int64 dim1_size,Int64 dim2_size,
            Int64 dim3_size,Int64 dim4_size)
-  {
-    resize(dim1_size,dim2_size,dim3_size,dim4_size);
-  }
+  : BaseClass(ArrayExtents<4>(dim1_size,dim2_size,dim3_size,dim4_size)){}
+ public:
   void resize(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size,Int64 dim4_size)
   {
-    m_extents.setSize(dim1_size,dim2_size,dim3_size,dim4_size);
-    this->_resize();
+    this->resize(ArrayExtents<4>(dim1_size,dim2_size,dim3_size,dim4_size));
   }
 
  public:
