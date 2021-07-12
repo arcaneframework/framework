@@ -388,7 +388,7 @@ semi_discrete_step(NumArray<double,3>& nstate_init, NumArray<double,3>& nstate_f
   command << RUNCOMMAND_LOOP3(iter,NUM_VARS,nz(),nx())
   {
     auto [ll, k, i] = iter;
-    state_out(ll,k+hs,i+hs) = state_init(ll,k+hs,i+hs) + dt * in_tend(ll,k,i);
+    state_out(ll,k+hs,i+hs) = state_init(ll,k+hs,i+hs) + dt * in_tend(iter);
   };
 }
 
@@ -452,7 +452,7 @@ compute_tendencies_x(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumAr
   command << RUNCOMMAND_LOOPN(iter,3,NUM_VARS,nz,nx)
   {
     auto [ll, k, i] = iter;
-    out_tend(ll,k,i) = -(in_flux(ll,k,i+1) - in_flux(ll,k,i)) / dx;
+    out_tend(ll,k,i) = -(in_flux(ll,k,i+1) - in_flux(iter)) / dx;
   };
 }
 
@@ -519,10 +519,10 @@ compute_tendencies_z(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumAr
   command << RUNCOMMAND_LOOP(iter,ArrayBounds<3>(NUM_VARS,nz,nx))
   {
     auto [ll, k, i] = iter;
-    Real t = -(in_flux(ll,k+1,i) - in_flux(ll,k,i)) / dz;
+    Real t = -(in_flux(ll,k+1,i) - in_flux(iter)) / dz;
     if (ll == ID_WMOM)
       t  = t - state(ID_DENS,k+hs,i+hs) * grav;
-    out_tend(ll,k,i) = t;
+    out_tend(iter) = t;
   };
 }
 
