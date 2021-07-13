@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableRefArray.h                                          (C) 2000-2020 */
+/* VariableRefArray.h                                          (C) 2000-2021 */
 /*                                                                           */
 /* Classe gérant une référence sur une variable tableau 1D.                  */
 /*---------------------------------------------------------------------------*/
@@ -62,7 +62,7 @@ class VariableRefArrayT
  public:
 
   //! Construit une référence à une variable tableau spécifiée dans \a vb
-  ARCANE_CORE_EXPORT VariableRefArrayT(const VariableBuildInfo& vb);
+  ARCANE_CORE_EXPORT explicit VariableRefArrayT(const VariableBuildInfo& vb);
   //! Construit une référence à partir de \a rhs
   ARCANE_CORE_EXPORT VariableRefArrayT(const VariableRefArrayT<DataType>& rhs);
   //! Construit une référence à partir de \a var
@@ -71,7 +71,7 @@ class VariableRefArrayT
   //! Positionne la référence de l'instance à la variable \a rhs.
   ARCANE_CORE_EXPORT void refersTo(const VariableRefArrayT<DataType>& rhs);
 
-  virtual ARCANE_CORE_EXPORT ~VariableRefArrayT(); //!< Libère les ressources
+  ARCANE_CORE_EXPORT ~VariableRefArrayT() override; //!< Libère les ressources
 
  public:
 
@@ -94,6 +94,7 @@ class VariableRefArrayT
 
  public:
 
+  ARCCORE_DEPRECATED_2021("This method is internal to Arcane")
   LockType ARCANE_CORE_EXPORT lock();
 
  public:
@@ -105,7 +106,13 @@ class VariableRefArrayT
     privées (propriété PPrivate). Pour les autres, une exception est
     levée (il faut utiliser lock()).
     */
+  ARCCORE_DEPRECATED_2021("Use _internalTrueData() instead.")
   ARCANE_CORE_EXPORT ContainerType& internalContainer();
+
+ public:
+
+  //! \internal
+  ARCANE_CORE_EXPORT IArrayDataInternalT<T>* _internalTrueData();
 
  public:
 

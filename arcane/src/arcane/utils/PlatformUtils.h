@@ -243,6 +243,21 @@ getAcceleratorHostMemoryAllocator();
 extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator*
 setAcceleratorHostMemoryAllocator(IMemoryAllocator* a);
 
+/*!
+ * \brief Allocateur par défaut pour les données.
+ *
+ * Cette allocateur utilise celui getAcceleratorHostMemoryAllocator()
+ * s'il est disponible, sinon il utilise un allocateur aligné.
+ *
+ * Il est garanti que l'allocateur retourné permettra d'utiliser la donnée
+ * sur accélerateur si cela est disponible.
+ *
+ * Il est garanti que l'alignement est au moins celui retourné par
+ * AlignedMemoryAllocator::Simd().
+ */
+extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator*
+getDefaultDataAllocator();
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!

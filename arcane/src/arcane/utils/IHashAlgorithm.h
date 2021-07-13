@@ -55,6 +55,18 @@ class ARCANE_UTILS_EXPORT IHashAlgorithm
     computeHash(input.smallView(),output);
   }
 
+  /*!
+   * \brief Calcule la fonction de hashage sur le tableau \a input.
+   *
+   * La fonction de hashage est <strong>ajoutée</string> dans \a output.
+   * La longueur dépend de l'algorithme utilisé.
+   */
+  virtual void computeHash64(Span<const std::byte> input,ByteArray& output)
+  {
+    const Byte* x = reinterpret_cast<const Byte*>(input.data());
+    computeHash64(Span<const Byte>(x,input.size()),output);
+  }
+
  private:
 };
 

@@ -73,7 +73,7 @@ createSimpleDataRef(const String& storage_type,const DataStorageBuildInfo& build
   // initialisées.
   DataStorageBuildInfo b = build_info;
   if (!b.memoryAllocator())
-    b.setMemoryAllocator(arcaneDefaultDataAllocator());
+    b.setMemoryAllocator(platform::getDefaultDataAllocator());
 
   return x->second->createSimpleDataRef(b);
 }
@@ -107,6 +107,15 @@ void DataFactoryMng::
 build()
 {
   arcaneRegisterSimpleData(this);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ITraceMng* DataFactoryMng::
+traceMng() const
+{
+  return m_application->traceMng();
 }
 
 /*---------------------------------------------------------------------------*/

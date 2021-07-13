@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableRefArrayLock.h                                      (C) 2000-2007 */
+/* VariableRefArrayLock.h                                      (C) 2000-2021 */
 /*                                                                           */
 /* Verrou sur une variable tableau.                                          */
 /*---------------------------------------------------------------------------*/
@@ -21,13 +21,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
  * \brief Verrou sur une variable tableau.
+ * \deprecated Ne plus utiliser
  */
 template<typename DataType>
 class VariableRefArrayLockT
@@ -40,13 +42,13 @@ class VariableRefArrayLockT
  public:
 
   VariableRefArrayLockT(ValueType& v,IVariable* var)
-  : m_value(v), m_variable(var), m_saved_ptr(v.unguardedBasePointer()), m_saved_size(v.size())
+  : m_value(v), m_variable(var), m_saved_ptr(v.data()), m_saved_size(v.size())
   {
   }
 
   ~VariableRefArrayLockT()
   {
-    if (m_value.unguardedBasePointer()!=m_saved_ptr || m_value.size()!=m_saved_size)
+    if (m_value.data()!=m_saved_ptr || m_value.size()!=m_saved_size)
       m_variable->syncReferences();
   }
 
@@ -57,8 +59,8 @@ class VariableRefArrayLockT
 
  public:
 
-  ValueType& value()
-    { return m_value; }
+  ARCCORE_DEPRECATED_2021("This class is deprecated")
+  ValueType& value() { return m_value; }
 
  private:
 
@@ -71,7 +73,7 @@ class VariableRefArrayLockT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

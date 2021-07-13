@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUtils.cc                                                (C) 2000-2019 */
+/* MeshUtils.cc                                                (C) 2000-2021 */
 /*                                                                           */
 /* Fonctions diverses sur les éléments du maillage.                          */
 /*---------------------------------------------------------------------------*/
@@ -98,10 +98,7 @@ template<class ItemType,class ValueType> inline void
 _writeInfo(ISubDomain* mng,const VariableCollection& variables,const ItemType& item)
 {
   typedef typename MeshVariableInfoT<ItemType,ValueType,0>::PrivateType VariableScalarTrueType;
-  typedef typename VariableScalarTrueType::ValueType ScalarDataType;
-
   typedef typename MeshVariableInfoT<ItemType,ValueType,1>::PrivateType VariableArrayTrueType;
-  typedef typename VariableArrayTrueType::ValueType ArrayDataType;
 
   ITraceMng* trace = mng->traceMng();
   eItemKind item_kind = ItemTraitsT<ItemType>::kind();
@@ -117,9 +114,9 @@ _writeInfo(ISubDomain* mng,const VariableCollection& variables,const ItemType& i
       continue;
 
     const String& name = vp->name();
-    VariableScalarTrueType* v = dynamic_cast<VariableScalarTrueType*>(vp);
+    auto* v = dynamic_cast<VariableScalarTrueType*>(vp);
     if (v){
-      ScalarDataType& values = v->value();
+      ConstArrayView<ValueType> values = v->valueView();
       if (values.size() < item.localId()){
         trace->error() << "Invalid dimensions for variable '" << name << "' "
                        << "(size=" << values.size() << " index=" << item.localId();
@@ -128,9 +125,9 @@ _writeInfo(ISubDomain* mng,const VariableCollection& variables,const ItemType& i
       _writeValue(trace,name,values[item.localId()]);
     }
 
-    VariableArrayTrueType* v2 = dynamic_cast<VariableArrayTrueType*>(vp);
+    auto* v2 = dynamic_cast<VariableArrayTrueType*>(vp);
     if (v2){
-      ArrayDataType& values = v2->value();
+      Array2View<ValueType> values = v2->valueView();
       Integer lid = item.localId();
       if (values.dim1Size() < lid){
         trace->error() << "Invalid dimensions for variable '" << name << "' "

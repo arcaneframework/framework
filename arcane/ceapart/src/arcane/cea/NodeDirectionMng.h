@@ -19,6 +19,7 @@
 
 #include "arcane/Item.h"
 #include "arcane/ItemEnumerator.h"
+#include "arcane/VariableTypedef.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,8 +38,30 @@ namespace Arcane
  */
 class ARCANE_CEA_EXPORT DirNode
 {
- public:
-  DirNode(Node n,Node p) : m_previous(p), m_next(n){}
+  friend NodeDirectionMng;
+ private:
+  typedef signed char IndexType;
+  static constexpr IndexType NULL_CELL = -1;
+  struct DirNodeCellIndex
+  {
+   public:
+    IndexType operator[](Int32 i) const
+    {
+      ARCANE_CHECK_AT(i,8);
+      return m_indexes[i];
+    }
+    IndexType& operator[](Int32 i)
+    {
+      ARCANE_CHECK_AT(i,8);
+      return m_indexes[i];
+    }
+   public:
+    IndexType m_indexes[8];
+  };
+ private:
+  // Seul NodeDirectionMng à le droit de construire un DirNode.
+  DirNode(ItemInternal* current,Node next,Node prev,DirNodeCellIndex idx)
+  : m_current(current), m_previous(prev), m_next(next), m_cell_index(idx) {}
  public:
   //! Maille avant
   Node previous() const { return m_previous; }
@@ -48,9 +71,78 @@ class ARCANE_CEA_EXPORT DirNode
   Node next() const { return m_next; }
   //! Maille après
   NodeLocalId nextId() const { return NodeLocalId(m_next.localId()); }
+  /*!
+   * \brief Indice dans la liste des mailles de ce noeud d'une
+   * maille en fonction de sa position.
+   *
+   * Les valeurs possibles pour \a position sont données par l'énumération
+   * eCellNodePosition.
+   */
+  Int32 cellIndex(Int32 position) const { return m_cell_index[position]; }
+  /*!
+   * \brief Indice local d'une maille en fonction de sa position par rapport à ce noeud.
+   *
+   * Les valeurs possibles pour \a position sont données par l'énumération
+   * eCellNodePosition.
+   */
+  CellLocalId cellId(Int32 position) const
+  {
+    Int32 x = cellIndex(position);
+    return (x==NULL_CELL) ? CellLocalId(NULL_ITEM_LOCAL_ID) : CellLocalId(m_current->cellLocalId(x));
+  }
+  /*!
+   * \brief Maille en fonction de sa position par rapport à ce noeud.
+   *
+   * Les valeurs possibles pour \a position sont données par l'énumération
+   * eCellNodePosition.
+   */
+  Cell cell(Int32 position) const
+  {
+    Int32 x = cellIndex(position);
+    return (x==NULL_CELL) ? Cell() : Cell(m_current->internalCell(x));
+  }
+
+  //! Noeud devant à gauche dans la direction
+  Cell nextLeftCell() const { return cell(CNP_NextLeft); }
+  //! Noeud devant à droite dans la direction
+  Cell nextRightCell() const { return cell(CNP_NextRight); }
+  //! Noeud derrière à droite dans la direction
+  Cell previousRightCell() const { return cell(CNP_PreviousRight); }
+  //! Noeud derrière à gauche dans la direction
+  Cell previousLeftCell() const { return cell(CNP_PreviousLeft); }
+
+  //! Noeud devant à gauche dans la direction
+  CellLocalId nextLeftCellId() const { return cellId(CNP_NextLeft); }
+  //! Noeud devant à droite dans la direction
+  CellLocalId nextRightCellId() const { return cellId(CNP_NextRight); }
+  //! Noeud derrière à droite dans la direction
+  CellLocalId previousRightCellId() const { return cellId(CNP_PreviousRight); }
+  //! Noeud derrière à gauche dans la direction
+  CellLocalId previousLeftCellId() const { return cellId(CNP_PreviousLeft); }
+
+  //! Noeud devant à gauche dans la direction
+  Cell topNextLeftCell() const { return cell(CNP_TopNextLeft); }
+  //! Noeud devant à droite dans la direction
+  Cell topNextRightCell() const { return cell(CNP_TopNextRight); }
+  //! Noeud derrière à droite dans la direction
+  Cell topPreviousRightCell() const { return cell(CNP_TopPreviousRight); }
+  //! Noeud derrière à gauche dans la direction
+  Cell topPreviousLeftCell() const { return cell(CNP_TopPreviousLeft); }
+
+  //! Noeud devant à gauche dans la direction
+  CellLocalId topNextLeftCellId() const { return cellId(CNP_TopNextLeft); }
+  //! Noeud devant à droite dans la direction
+  CellLocalId topNextRightCellId() const { return cellId(CNP_TopNextRight); }
+  //! Noeud derrière à droite dans la direction
+  CellLocalId topPreviousRightCellId() const { return cellId(CNP_TopPreviousRight); }
+  //! Noeud derrière à gauche dans la direction
+  CellLocalId topPreviousLeftCellId() const { return cellId(CNP_TopPreviousLeft); }
+
  private:
+  ItemInternal* m_current;
   Node m_previous;
   Node m_next;
+  DirNodeCellIndex m_cell_index;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -65,6 +157,8 @@ class ARCANE_CEA_EXPORT NodeDirectionMng
   friend CartesianMesh;
   friend CartesianMeshPatch;
   class Impl;
+  using IndexType = DirNode::IndexType;
+  using DirNodeCellIndex = DirNode::DirNodeCellIndex;
 
  private:
 
@@ -85,6 +179,13 @@ class ARCANE_CEA_EXPORT NodeDirectionMng
     ItemInternal* m_next_item;
     //! entité avant l'entité courante dans la direction
     ItemInternal* m_previous_item;
+   public:
+    void setCellIndexes(IndexType idx[8])
+    {
+      for( int i=0; i<8; ++i )
+        m_cell_index[i] = idx[i];
+    }
+    DirNodeCellIndex m_cell_index;
   };
  public:
   
@@ -157,7 +258,8 @@ class ARCANE_CEA_EXPORT NodeDirectionMng
    * gérées par \a cell_dm.
    * Suppose que init() a été appelé.
    */
-  void _internalComputeInfos(const CellDirectionMng& cell_dm,const NodeGroup& all_nodes);
+  void _internalComputeInfos(const CellDirectionMng& cell_dm,const NodeGroup& all_nodes,
+                             const VariableCellReal3& cells_center);
 
   /*!
    * \internal
@@ -175,6 +277,7 @@ class ARCANE_CEA_EXPORT NodeDirectionMng
 
   SharedArray<ItemDirectionInfo> m_infos;
   eMeshDirection m_direction;
+  ItemInternalList m_nodes;
   Impl* m_p;
 
  private:
@@ -184,8 +287,12 @@ class ARCANE_CEA_EXPORT NodeDirectionMng
   {
     Node next = Node(m_infos[local_id].m_next_item);
     Node prev = Node(m_infos[local_id].m_previous_item);
-    return DirNode(next,prev);
+    return DirNode(m_nodes[local_id],next,prev,m_infos[local_id].m_cell_index);
   }
+
+  void _computeNodeCellInfos(const CellDirectionMng& cell_dm,
+                             const VariableCellReal3& cells_center);
+  void _filterNodes();
 };
 
 /*---------------------------------------------------------------------------*/

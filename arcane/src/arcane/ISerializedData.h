@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ISerializedData.h                                           (C) 2000-2020 */
+/* ISerializedData.h                                           (C) 2000-2021 */
 /*                                                                           */
 /* Interface d'une donnée sérialisée.                                        */
 /*---------------------------------------------------------------------------*/
@@ -88,14 +88,6 @@ class ARCANE_CORE_EXPORT ISerializedData
   //! Indique le nombre d'octets qu'il faut allouer pour stocker ou lire les données
   virtual Int64 memorySize() const =0;
 
-  /*!
-   * \brief Tableau contenant les dimensions.
-   *
-   * \deprecated Utiliser extents() à la place
-   */
-  ARCANE_DEPRECATED_2018_R("Use method 'extents()' instead")
-  virtual Int32ConstArrayView dimensions() const =0;
-
   //! Tableau contenant le nombre d'éléments pour chaque dimension
   virtual Int64ConstArrayView extents() const =0;
 
@@ -152,18 +144,6 @@ class ARCANE_CORE_EXPORT ISerializedData
    * tant que cette instance est utilisée.
    */
   virtual void setBytes(Span<const Byte> bytes) =0;
-
-  /*!
-   * \brief Positionne les valeurs de sérialisation.
-   *
-   * l'instance garde une référence sur le tableau. Il ne doit donc
-   * pas être modifié tant que l'instance est utilisée.
-   *
-   * \deprecated Il faut utiliser allocateMemory() à la place
-   * et ensuite récupérer la vue via bytes() et modifier les valeurs.
-   */
-  ARCANE_DEPRECATED_2018_R("Use allocateMemory() instead")
-  virtual void setBuffer(SharedArray<Byte>& buffer) =0;
 
   /*!
    * \brief Alloue un tableaux pour contenir les éléments sérialisés.

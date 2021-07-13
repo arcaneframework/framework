@@ -274,6 +274,23 @@ visitMultiArray2(IMultiArray2DataVisitor*)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+extern "C++" void
+registerScalarDataFactory(IDataFactoryMng* dfm)
+{
+  DataStorageFactory<ScalarDataT<Byte>>::registerDataFactory(dfm);
+  DataStorageFactory<ScalarDataT<Real>>::registerDataFactory(dfm);
+  DataStorageFactory<ScalarDataT<Int16>>::registerDataFactory(dfm);
+  DataStorageFactory<ScalarDataT<Int32>>::registerDataFactory(dfm);
+  DataStorageFactory<ScalarDataT<Int64>>::registerDataFactory(dfm);
+  DataStorageFactory<ScalarDataT<Real2>>::registerDataFactory(dfm);
+  DataStorageFactory<ScalarDataT<Real3>>::registerDataFactory(dfm);
+  DataStorageFactory<ScalarDataT<Real2x2>>::registerDataFactory(dfm);
+  DataStorageFactory<ScalarDataT<Real3x3>>::registerDataFactory(dfm);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template class ScalarDataT<Byte>;
 template class ScalarDataT<Real>;
 template class ScalarDataT<Int16>;

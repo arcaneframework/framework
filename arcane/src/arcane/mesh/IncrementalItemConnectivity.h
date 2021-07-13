@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IncrementalItemConnectivity.h                               (C) 2000-2017 */
+/* IncrementalItemConnectivity.h                               (C) 2000-2021 */
 /*                                                                           */
 /* Connectivité incrémentale des entités.                                    */
 /*---------------------------------------------------------------------------*/
@@ -27,8 +27,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -105,7 +105,11 @@ public:
   {
     return m_connectivity_list[ m_connectivity_index[lid] + index ];
   }
+
+  IndexedItemConnectivityViewBase connectivityView() const;
+
  public:
+
   Int32ConstArrayView _connectedItemsLocalId(ItemLocalId lid) const
   {
     Int32 nb = m_connectivity_nb_item[lid];
@@ -258,8 +262,7 @@ class ARCANE_MESH_EXPORT OneItemIncrementalItemConnectivity
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

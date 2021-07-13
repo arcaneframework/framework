@@ -620,9 +620,9 @@ _testSynchronize()
 
   // Positionne les valeurs
   {
-    m_nodes.setValues(current_iteration,mesh->ownNodes());
-    m_faces.setValues(current_iteration,mesh->ownFaces());
-    m_cells.setValues(current_iteration,mesh->ownCells());
+    m_nodes.setValuesWithViews(current_iteration,mesh->ownNodes());
+    m_faces.setValuesWithViews(current_iteration,mesh->ownFaces());
+    m_cells.setValuesWithViews(current_iteration,mesh->ownCells());
     m_array_nodes.setValues(current_iteration,mesh->ownNodes());
     m_array_faces.setValues(current_iteration,mesh->ownFaces());
     m_array_cells.setValues(current_iteration,mesh->ownCells());
@@ -1122,6 +1122,14 @@ _testTransferValues()
     send_real[i] = (Real)(my_rank + 2*r);
   }
 
+  // Calcule combien je dois recevoir de valeurs
+  Integer nb_expected_recv = 0;
+  UniqueArray<Int32> all_send_ranks;
+  pm->allGatherVariable(send_ranks,all_send_ranks);
+  for( Int32 x : all_send_ranks )
+    if (x==my_rank)
+      ++nb_expected_recv;
+
   SharedArray<Int32> recv_int32_1;
   SharedArray<Int32> recv_int32_2;
   SharedArray<Int64> recv_int64;
@@ -1138,7 +1146,9 @@ _testTransferValues()
 
   Integer nb_error = 0;
   Integer recv_nb = recv_int32_1.size();
-  info() << "** - ** NB RECEIVE = " << recv_nb;
+  info() << "** - ** NB RECEIVE = " << recv_nb << " expected=" << nb_expected_recv;
+  if (recv_nb!=nb_expected_recv)
+    ARCANE_FATAL("Bad number of received element n={0} expected={1}",recv_nb,nb_expected_recv);
   for( Integer i=0; i<recv_nb; ++i ){
     Int64 v32_1 = recv_int32_1[i];
     Int64 v32_2 = recv_int32_2[i];
@@ -1342,10 +1352,10 @@ _testBitonicSort()
       serializer->setMode(ISerializer::ModeGet);
       data2->serialize(serializer,indexes_to_recv[i],0);
     }
-    IArrayDataT<Real>* true_data = dynamic_cast<IArrayDataT<Real>*>(data2.get());
+    auto* true_data = dynamic_cast<IArrayDataT<Real>*>(data2.get());
     if (!true_data)
       ARCANE_FATAL("Bad Type");
-    Array<Real>& true_array = true_data->value();
+    ConstArrayView<Real> true_array = true_data->view();
     {
       String fname(String("dump-")+pm->commRank());
       ofstream ofile(fname.localstr());

@@ -406,7 +406,7 @@ readVariable(Hdf5Utils::HFile& hfile,const String& filename,
     const char* n = typeid(var_data).name();
     throw FatalErrorException(A_FUNCINFO,String::format("Bad type for IData '{0}'",n));
   }
-  ArrayView<DataType> var_value = data_array->value();
+  ArrayView<DataType> var_value = data_array->view();
   IVariable* var = m_variable.variable();
   ISubDomain* sd = var->subDomain();
   ITraceMng* tm = sd->traceMng();

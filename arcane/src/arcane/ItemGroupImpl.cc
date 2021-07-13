@@ -35,6 +35,7 @@
 #include "arcane/ItemGroupComputeFunctor.h"
 #include "arcane/IVariableSynchronizer.h"
 #include "arcane/MeshPartInfo.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 #include <algorithm>
 #include <set>
@@ -201,7 +202,7 @@ class ItemGroupImplPrivate
   void notifyInvalidateObservers();
 
  private:
-  UniqueArray<Int32> m_local_buffer = UniqueArray<Int32>(arcaneDefaultDataAllocator());
+  UniqueArray<Int32> m_local_buffer = UniqueArray<Int32>(platform::getDefaultDataAllocator());
   Array<Int32>* m_items_local_id = &m_local_buffer; //!< Liste des numéros locaux des entités de ce groupe
   VariableArrayInt32* m_variable_items_local_id = nullptr;
  private:
@@ -287,7 +288,7 @@ _init()
     int property = IVariable::PSubDomainDepend | IVariable::PPrivate;
     VariableBuildInfo vbi(m_mesh,m_variable_name,property);
     m_variable_items_local_id = new VariableArrayInt32(vbi);
-    m_items_local_id = &m_variable_items_local_id->internalContainer();
+    m_items_local_id = &m_variable_items_local_id->_internalTrueData()->_internalDeprecatedValue();
     updateTimestamp();
   }
 }

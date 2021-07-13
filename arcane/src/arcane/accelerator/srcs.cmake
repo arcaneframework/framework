@@ -1,5 +1,6 @@
 set( ARCANE_SOURCES
   Accelerator.cc
+  Accelerator.h
   AcceleratorGlobal.h
   Reduce.h
   Runner.h
@@ -18,6 +19,5 @@ set( ARCANE_SOURCES
   Views.h
   ViewsCommon.h
   NumArray.h
-  NumArray.cc
   NumArrayViews.h
 )

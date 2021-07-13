@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshTestUtils.cc                                   (C) 2000-2020 */
+/* CartesianMeshTestUtils.cc                                   (C) 2000-2021 */
 /*                                                                           */
 /* Fonctions utilitaires pour les tests de 'CartesianMesh'.                  */
 /*---------------------------------------------------------------------------*/
@@ -28,6 +28,7 @@
 #include "arcane/IItemFamily.h"
 #include "arcane/IMeshModifier.h"
 #include "arcane/IMeshUtilities.h"
+#include "arcane/SimpleSVGMeshExporter.h"
 
 #include "arcane/cea/ICartesianMesh.h"
 #include "arcane/cea/CellDirectionMng.h"
@@ -84,6 +85,7 @@ testAll()
   else{
     _testNodeToCellConnectivity2D();
     _testCellToNodeConnectivity2D();
+    _saveSVG();
   }
 }
 
@@ -316,6 +318,44 @@ _testDirNode()
       Real my_coord = nodes_coord[inode][idir];
       bool is_print = (nb_print<0 || iprint<nb_print);
       ++iprint;
+      if (is_print){
+        Int32 node_nb_cell = node.nbCell();
+        info() << "DirNode node= " << ItemPrinter(node) << " nb_cell=" << node_nb_cell << " pos=" << nodes_coord[node];
+        for( Integer k=0; k<node_nb_cell; ++k ){
+          Real3 cell_pos = m_cell_center[node.cell(k)];
+          info() << "Node k=" << k << " cell_pos=" << cell_pos << " cell=" << ItemPrinter(node.cell(k));
+        }
+        for( Integer k=0; k<8; ++k ){
+          Int32 cell_index = dir_node.cellIndex(k);
+          Real3 cell_pos;
+          if (cell_index!=(-1)){
+            if ((1+cell_index)>node_nb_cell)
+              ARCANE_FATAL("Bad value for cell_index '{0}' node_nb_cell={1}",cell_index,node_nb_cell);
+            cell_pos = m_cell_center[node.cell(cell_index)];
+          }
+          info() << "DirNode cellIndex k=" << k << " index=" << cell_index << " pos=" << cell_pos
+                 << " cell_lid=" << dir_node.cellId(k)
+                 << " cell=" << dir_node.cell(k);
+        }
+        info() << "DirNode direct "
+               << " " << dir_node.nextLeftCellId()
+               << " " << dir_node.nextRightCellId()
+               << " " << dir_node.previousRightCellId()
+               << " " << dir_node.previousLeftCellId()
+               << " " << dir_node.topNextLeftCellId()
+               << " " << dir_node.topNextRightCellId()
+               << " " << dir_node.topPreviousRightCellId()
+               << " " << dir_node.topPreviousLeftCellId();
+        info() << "DirNode direct "
+               << " " << ItemPrinter(dir_node.nextLeftCell())
+               << " " << ItemPrinter(dir_node.nextRightCell())
+               << " " << ItemPrinter(dir_node.previousRightCell())
+               << " " << ItemPrinter(dir_node.previousLeftCell())
+               << " " << ItemPrinter(dir_node.topNextLeftCell())
+               << " " << ItemPrinter(dir_node.topNextRightCell())
+               << " " << ItemPrinter(dir_node.topPreviousRightCell())
+               << " " << ItemPrinter(dir_node.topPreviousLeftCell());
+      }
       if (prev_node.null() && next_node.null())
         ARCANE_FATAL("Null previous and next node for node {0}",ItemPrinter(node));
       //TODO: Vérifier que les coordonnées autres que celle de idir sont bien les mêmes pour next,prev et my_coord.
@@ -734,6 +774,20 @@ _sample(ICartesianMesh* cartesian_mesh)
             << " C3=" << ItemPrinter(c3) << " C4=" << ItemPrinter(c4);
   }
   //! [SampleNodeToCell]
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshTestUtils::
+_saveSVG()
+{
+  ICartesianMesh* cm = m_cartesian_mesh;
+  IMesh* mesh = cm->mesh();
+  info() << "Saving mesh to SVG format";
+  ofstream ofile("toto.svg");
+  SimpleSVGMeshExporter writer(ofile);
+  writer.write(mesh->allCells());
 }
 
 /*---------------------------------------------------------------------------*/

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableRefArray2.cc                                        (C) 2000-2020 */
+/* VariableRefArray2.cc                                        (C) 2000-2021 */
 /*                                                                           */
 /* Classe gérant une référence sur une variable tableau 2D.                  */
 /*---------------------------------------------------------------------------*/
@@ -21,6 +21,7 @@
 #include "arcane/VariableDataTypeTraits.h"
 #include "arcane/IParallelMng.h"
 #include "arcane/VariableFactoryRegisterer.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -150,7 +151,7 @@ template<typename DataType> void
 VariableRefArray2T<DataType>::
 fill(const DataType& value)
 {
-  m_private_part->value().fill(value);
+  _internalTrueData()->_internalDeprecatedValue().fill(value);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -159,7 +160,7 @@ fill(const DataType& value)
 template<typename DataType> void VariableRefArray2T<DataType>::
 updateFromInternal()
 {
-  ArrayBase::operator=(m_private_part->value());
+  ArrayBase::operator=(m_private_part->valueView());
   BaseClass::updateFromInternal();
 }
 
@@ -169,10 +170,19 @@ updateFromInternal()
 template<typename T> auto VariableRefArray2T<T>::
 internalContainer() -> ContainerType&
 {
-  if ( !(property() & IVariable::PPrivate) ){
-    ARCANE_FATAL("invalid call: property PPrivate of variable '{0}' is not set",name());
-  }
-  return m_private_part->value();
+  return _internalTrueData()->_internalDeprecatedValue();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename T> IArray2DataInternalT<T>*
+VariableRefArray2T<T>::
+_internalTrueData()
+{
+  if (!(property() & IVariable::PPrivate))
+    ARCANE_FATAL("variable '{0}': getting internal data container is only valid on private variable", name());
+  return m_private_part->trueData()->_internal();
 }
 
 /*---------------------------------------------------------------------------*/

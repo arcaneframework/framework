@@ -5,20 +5,20 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SerializedData.cc                                           (C) 2000-2020 */
+/* SerializedData.cc                                           (C) 2000-2021 */
 /*                                                                           */
 /* Donnée sérialisée.                                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/impl/SerializedData.h"
+
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/IHashAlgorithm.h"
 #include "arcane/utils/CheckedConvert.h"
 
 #include "arcane/ISerializer.h"
-#include "arcane/impl/SerializedData.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -47,25 +47,6 @@ SerializedData()
 SerializedData::
 SerializedData(eDataType base_data_type,Int64 memory_size,
                Integer nb_dimension,Int64 nb_element,Int64 nb_base_element,
-               bool is_multi_size,IntegerConstArrayView dimensions)
-: m_base_data_type(base_data_type)
-, m_memory_size(memory_size)
-, m_nb_dimension(nb_dimension)
-, m_nb_element(nb_element)
-, m_nb_base_element(nb_base_element)
-, m_is_multi_size(is_multi_size)
-, m_dimensions(dimensions)
-, m_element_size(dataTypeSize(m_base_data_type))
-{
-  _copyDimensionsToExtents();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-SerializedData::
-SerializedData(eDataType base_data_type,Int64 memory_size,
-               Integer nb_dimension,Int64 nb_element,Int64 nb_base_element,
                bool is_multi_size,Int64ConstArrayView extents)
 : m_base_data_type(base_data_type)
 , m_memory_size(memory_size)
@@ -83,25 +64,15 @@ SerializedData(eDataType base_data_type,Int64 memory_size,
 /*---------------------------------------------------------------------------*/
 
 void SerializedData::
-_copyDimensionsToExtents()
-{
-  Integer n = m_dimensions.size();
-  m_extents.resize(n);
-  for( Integer i=0; i<n; ++i )
-    m_extents[i] = m_dimensions[i];
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void SerializedData::
 _copyExtentsToDimensions()
 {
   Integer n = m_extents.size();
   m_dimensions.resize(n);
   // Il ne faut pas lever d'exceptions si on dépasse les bornes sinon
   // le code lèvera une exception dès que le nombre d'éléments du tableau
-  // dépasse 32 bits
+  // dépasse 32 bits. Cela n'est pas très grave si les valeurs de 'm_dimensions'
+  // ne sont pas valide car ce n'est plus utilisé que dans computeHash() pour
+  // garder la valeur compatible.
   for( Integer i=0; i<n; ++i )
     m_dimensions[i] = static_cast<Int32>(m_extents[i]);
 }
@@ -152,21 +123,9 @@ setBytes(Span<const Byte> buffer)
 /*---------------------------------------------------------------------------*/
 
 void SerializedData::
-setBuffer(SharedArray<Byte>& buffer)
-{
-  m_stored_buffer = buffer;
-  m_buffer = m_stored_buffer;
-  m_const_buffer = m_stored_buffer.view();
-  m_memory_size = buffer.size();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void SerializedData::
 allocateMemory(Int64 size)
 {
-  m_stored_buffer = SharedArray<Byte>(size);
+  m_stored_buffer = UniqueArray<Byte>(size);
   m_buffer = m_stored_buffer;
   m_const_buffer = m_stored_buffer.view();
   m_memory_size = size;
@@ -240,7 +199,7 @@ serialize(ISerializer* sbuf)
       }
       break;
     case ISerializer::ReadAdd:
-      throw NotImplementedException("SerializedData::serialize()","ReadAdd");
+      ARCANE_THROW(NotImplementedException,"ReadAdd");
       break;
     }
     break;

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Item.cc                                                     (C) 2000-2020 */
+/* Item.cc                                                     (C) 2000-2021 */
 /*                                                                           */
 /* Classe de base d'un élément du maillage.                                  */
 /*---------------------------------------------------------------------------*/
@@ -19,6 +19,7 @@
 #include "arcane/ItemCompare.h"
 #include "arcane/ItemPrinter.h"
 #include "arcane/MeshItemInternalList.h"
+#include "arcane/IndexedItemConnectivityView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -58,9 +59,9 @@ void Item::
 _badConversion() const
 {
 #ifdef ARCANE_DEBUG
-  throw FatalErrorException("Item::_badConversion",String("Bad conversion from ")+itemKindName(kind()));
+  ARCANE_FATAL("Bad conversion from {0}",kind());
 #else /* ARCANE_DEBUG */
-  throw FatalErrorException("Item::_badConversion","Bad conversion");
+  ARCANE_FATAL("Bad conversion");
 #endif /* ARCANE_DEBUG */
 }
 
@@ -73,6 +74,19 @@ setDualItem(const Item& item)
 {
   ARCANE_UNUSED(item);
   ARCANE_THROW(NotSupportedException,"");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IndexedItemConnectivityViewBase::
+_badConversion(eItemKind k1,eItemKind k2) const
+{
+  ARCANE_FATAL("Can not convert connectivity view ({0},{1}) to ({2},{3})",
+               m_source_kind,m_target_kind,k1,k2);
 }
 
 /*---------------------------------------------------------------------------*/

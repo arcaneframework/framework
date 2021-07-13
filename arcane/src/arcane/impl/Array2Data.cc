@@ -5,12 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array2Data.cc                                               (C) 2000-2020 */
+/* Array2Data.cc                                               (C) 2000-2021 */
 /*                                                                           */
 /* Donnée du type 'Array2'.                                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arccore/base/ReferenceCounterImpl.h"
+#include "arccore/base/Ref.h"
+
+#include "arcane/utils/Array2.h"
+#include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/Real2.h"
 #include "arcane/utils/Real2x2.h"
 #include "arcane/utils/Real3.h"
@@ -25,10 +30,14 @@
 #include "arcane/datatype/IDataOperation.h"
 #include "arcane/datatype/DataStorageTypeInfo.h"
 #include "arcane/datatype/DataStorageBuildInfo.h"
+#include "arcane/datatype/DataTypeTraits.h"
 
 #include "arcane/ISerializer.h"
+#include "arcane/IData.h"
+#include "arcane/IDataVisitor.h"
 
-#include "arcane/impl/Array2Data.h"
+#include "arcane/core/internal/IDataInternal.h"
+
 #include "arcane/impl/SerializedData.h"
 #include "arcane/impl/DataStorageFactory.h"
 
@@ -43,6 +52,129 @@ namespace
   const Int64 SERIALIZE2_MAGIC_NUMBER = 0x12ff7789;
 }
 
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Donnée tableau bi-dimensionnel d'un type \a DataType
+ */
+template <class DataType>
+class Array2DataT
+: public ReferenceCounterImpl
+, public IArray2DataT<DataType>
+{
+  ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+  class Impl;
+  friend Impl;
+
+ public:
+
+  typedef Array2DataT<DataType> ThatClass;
+  typedef IArray2DataT<DataType> DataInterfaceType;
+
+ public:
+
+  explicit Array2DataT(ITraceMng* trace);
+  explicit Array2DataT(const DataStorageBuildInfo& dsbi);
+  Array2DataT(const Array2DataT<DataType>& rhs);
+  ~Array2DataT() override;
+
+ public:
+
+  Integer dimension() const override { return 2; }
+  Integer multiTag() const override { return 0; }
+  eDataType dataType() const override { return DataTypeTraitsT<DataType>::type(); }
+  void serialize(ISerializer* sbuf, IDataOperation* operation) override;
+  void serialize(ISerializer* sbuf, Int32ConstArrayView ids, IDataOperation* operation) override;
+  Array2<DataType>& value() override { return m_value; }
+  const Array2<DataType>& value() const override { return m_value; }
+  Array2View<DataType> view() override { return m_value; }
+  ConstArray2View<DataType> view() const override { return m_value; }
+  void resize(Integer new_size) override;
+  IData* clone() override { return cloneTrue(); }
+  IData* cloneEmpty() override { return cloneTrueEmpty(); }
+  Ref<IData> cloneRef() override { return makeRef(cloneTrue()); }
+  Ref<IData> cloneEmptyRef() override { return makeRef(cloneTrueEmpty()); }
+  DataStorageTypeInfo storageTypeInfo() const override;
+  DataInterfaceType* cloneTrue() override { return _cloneTrue(); }
+  DataInterfaceType* cloneTrueEmpty() override { return _cloneTrueEmpty(); }
+  Ref<DataInterfaceType> cloneTrueRef() override { auto* d = _cloneTrue(); return makeRef(d); }
+  Ref<DataInterfaceType> cloneTrueEmptyRef() override { auto* d = _cloneTrueEmpty(); return makeRef(d); }
+  void fillDefault() override;
+  void setName(const String& name) override;
+  const ISerializedData* createSerializedData(bool use_basic_type) const override;
+  Ref<ISerializedData> createSerializedDataRef(bool use_basic_type) const override;
+  void allocateBufferForSerializedData(ISerializedData* sdata) override;
+  void assignSerializedData(const ISerializedData* sdata) override;
+  void copy(const IData* data) override;
+  void swapValues(IData* data) override;
+  void computeHash(IHashAlgorithm* algo, ByteArray& output) const override;
+  void visit(IArray2DataVisitor* visitor)
+  {
+    visitor->applyVisitor(this);
+  }
+  void visit(IDataVisitor* visitor) override
+  {
+    visitor->applyDataVisitor(this);
+  }
+  void visitScalar(IScalarDataVisitor*) override
+  {
+    ARCANE_THROW(NotSupportedException, "Can not visit scalar data with array2 data");
+  }
+  void visitArray(IArrayDataVisitor*) override
+  {
+    ARCANE_THROW(NotSupportedException, "Can not visit array data with array2 data");
+  }
+  void visitArray2(IArray2DataVisitor* visitor) override
+  {
+    visitor->applyVisitor(this);
+  }
+  void visitMultiArray2(IMultiArray2DataVisitor*) override
+  {
+    ARCANE_THROW(NotSupportedException, "Can not visit multiarray2 data with array data");
+  }
+
+ public:
+
+  void swapValuesDirect(ThatClass* true_data);
+
+ public:
+
+  IArray2DataInternalT<DataType>* _internal() override { return m_internal; }
+
+ public:
+
+  static DataStorageTypeInfo staticStorageTypeInfo();
+
+ private:
+
+  UniqueArray2<DataType> m_value; //!< Donnée
+  ITraceMng* m_trace;
+  IArray2DataInternalT<DataType>* m_internal;
+
+ private:
+
+  IArray2DataT<DataType>* _cloneTrue() const { return new ThatClass(*this); }
+  IArray2DataT<DataType>* _cloneTrueEmpty() const { return new ThatClass(m_trace); }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType>
+class Array2DataT<DataType>::Impl
+: public IArray2DataInternalT<DataType>
+{
+ public:
+  explicit Impl(Array2DataT<DataType>* p) : m_p(p){}
+ public:
+  void reserve(Integer new_capacity) override { m_p->m_value.reserve(new_capacity); }
+  Array2<DataType>& _internalDeprecatedValue() override { return m_p->m_value; }
+  void shrink() const override { m_p->m_value.shrink(); }
+ private:
+  Array2DataT<DataType>* m_p;
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -50,6 +182,7 @@ template<typename DataType> Array2DataT<DataType>::
 Array2DataT(ITraceMng* trace)
 : m_value(AlignedMemoryAllocator::Simd())
 , m_trace(trace)
+, m_internal(new Impl(this))
 {
 }
 
@@ -60,6 +193,7 @@ template<typename DataType> Array2DataT<DataType>::
 Array2DataT(const Array2DataT<DataType>& rhs)
 : m_value(AlignedMemoryAllocator::Simd())
 , m_trace(rhs.m_trace)
+, m_internal(new Impl(this))
 {
   m_value = rhs.m_value;
 }
@@ -71,7 +205,17 @@ template<typename DataType> Array2DataT<DataType>::
 Array2DataT(const DataStorageBuildInfo& dsbi)
 : m_value(dsbi.memoryAllocator())
 , m_trace(dsbi.traceMng())
+, m_internal(new Impl(this))
 {
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> Array2DataT<DataType>::
+~Array2DataT()
+{
+  delete m_internal;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -450,10 +594,10 @@ computeHash(IHashAlgorithm* algo,ByteArray& output) const
 template<typename DataType> void Array2DataT<DataType>::
 copy(const IData* data)
 {
-  const DataInterfaceType* true_data = dynamic_cast< const DataInterfaceType* >(data);
+  auto* true_data = dynamic_cast< const DataInterfaceType* >(data);
   if (!true_data)
     throw ArgumentException(A_FUNCINFO,"Can not cast 'IData' to 'IArray2DataT'");
-  m_value.copy(true_data->value());
+  m_value.copy(true_data->view());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -462,7 +606,7 @@ copy(const IData* data)
 template<typename DataType> void Array2DataT<DataType>::
 swapValues(IData* data)
 {
-  ThatClass* true_data = dynamic_cast<ThatClass*>(data);
+  auto* true_data = dynamic_cast<ThatClass*>(data);
   if (!true_data)
     throw ArgumentException(A_FUNCINFO,"Can not cast 'IData' to 'Array2DataT'");
   swapValuesDirect(true_data);
@@ -475,6 +619,23 @@ template<typename DataType> void Array2DataT<DataType>::
 swapValuesDirect(ThatClass* true_data)
 {
   m_value.swap(true_data->m_value);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" void
+registerArray2DataFactory(IDataFactoryMng* dfm)
+{
+  DataStorageFactory<Array2DataT<Byte>>::registerDataFactory(dfm);
+  DataStorageFactory<Array2DataT<Real>>::registerDataFactory(dfm);
+  DataStorageFactory<Array2DataT<Int16>>::registerDataFactory(dfm);
+  DataStorageFactory<Array2DataT<Int32>>::registerDataFactory(dfm);
+  DataStorageFactory<Array2DataT<Int64>>::registerDataFactory(dfm);
+  DataStorageFactory<Array2DataT<Real2>>::registerDataFactory(dfm);
+  DataStorageFactory<Array2DataT<Real3>>::registerDataFactory(dfm);
+  DataStorageFactory<Array2DataT<Real2x2>>::registerDataFactory(dfm);
+  DataStorageFactory<Array2DataT<Real3x3>>::registerDataFactory(dfm);
 }
 
 /*---------------------------------------------------------------------------*/

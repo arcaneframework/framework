@@ -8,7 +8,7 @@ find_package(Arcane)
 include(${Arcane_DIR}/ArcaneDotNet.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/samples.utils.cmake)
 
-add_executable(${EXAMPLE_NAME} ${EXAMPLE_NAME}Module.cc main ${EXAMPLE_NAME}_axl.h)
+add_executable(${EXAMPLE_NAME} ${EXAMPLE_NAME}Module.cc main ${CMAKE_CURRENT_BINARY_DIR}/${EXAMPLE_NAME}_axl.h)
 
 arcane_generate_axl(${EXAMPLE_NAME})
 configure_file(${EXAMPLE_NAME}.config ${CMAKE_CURRENT_BINARY_DIR} @ONLY)

@@ -1,0 +1,5 @@
+if (NOT AXLSTAR_ROOT)
+   message(FATAL_ERROR "Variable 'AXLSTAR_ROOT' is not set")
+endif()
+add_subdirectory(${AXLSTAR_ROOT} axlstar)
+set(Axlstar_FOUND YES)

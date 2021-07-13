@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianConnectivity.h                                     (C) 2000-2014 */
+/* CartesianConnectivity.h                                     (C) 2000-2021 */
 /*                                                                           */
 /* Informations de connectivité d'un maillage cartésien.                     */
 /*---------------------------------------------------------------------------*/
@@ -22,7 +22,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -101,6 +102,15 @@ class ARCANE_CEA_EXPORT CartesianConnectivity
   //! Maille en bas à gauche du noeud \a n
   Cell lowerLeft(Node n) const { return m_nodes_to_cell[n.localId()].v[P_LowerLeft]; }
 
+  //! Maille en haut à gauche du noeud \a n
+  CellLocalId upperLeftId(NodeLocalId n) const { return CellLocalId(m_nodes_to_cell[n.localId()].v[P_UpperLeft]); }
+  //! Maille en haut à droite du noeud \a n
+  CellLocalId upperRightId(NodeLocalId n) const { return CellLocalId(m_nodes_to_cell[n.localId()].v[P_UpperRight]); }
+  //! Maille en bas à droite du noeud \a n
+  CellLocalId lowerRightId(NodeLocalId n) const { return CellLocalId(m_nodes_to_cell[n.localId()].v[P_LowerRight]); }
+  //! Maille en bas à gauche du noeud \a n
+  CellLocalId lowerLeftId(NodeLocalId n) const { return CellLocalId(m_nodes_to_cell[n.localId()].v[P_LowerLeft]); }
+
   //! En 3D, maille en haut à gauche du noeud \a n
   Cell topZUpperLeft(Node n) const { return m_nodes_to_cell[n.localId()].v[P_TopZUpperLeft]; }
   //! En 3D, maille en haut à droite du noeud \a n
@@ -109,6 +119,15 @@ class ARCANE_CEA_EXPORT CartesianConnectivity
   Cell topZLowerRight(Node n) const { return m_nodes_to_cell[n.localId()].v[P_TopZLowerRight]; }
   //! En 3D, maille en bas à gauche du noeud \a n
   Cell topZLowerLeft(Node n) const { return m_nodes_to_cell[n.localId()].v[P_TopZLowerLeft]; }
+
+  //! En 3D, maille en haut à gauche du noeud \a n
+  CellLocalId topZUpperLeftId(NodeLocalId n) const { return CellLocalId(m_nodes_to_cell[n.localId()].v[P_TopZUpperLeft]); }
+  //! En 3D, maille en haut à droite du noeud \a n
+  CellLocalId topZUpperRightId(NodeLocalId n) const { return CellLocalId(m_nodes_to_cell[n.localId()].v[P_TopZUpperRight]); }
+  //! En 3D, maille en bas à droite du noeud \a n
+  CellLocalId topZLowerRightId(NodeLocalId n) const { return CellLocalId(m_nodes_to_cell[n.localId()].v[P_TopZLowerRight]); }
+  //! En 3D, maille en bas à gauche du noeud \a n
+  CellLocalId topZLowerLeftId(NodeLocalId n) const { return CellLocalId(m_nodes_to_cell[n.localId()].v[P_TopZLowerLeft]); }
 
   //! Noeud en haut à gauche de la maille \a c
   Node upperLeft(Cell c) const { return m_cells_to_node[c.localId()].v[P_UpperLeft]; }
@@ -119,6 +138,15 @@ class ARCANE_CEA_EXPORT CartesianConnectivity
   //! Noeud en bad à gauche de la maille \a c
   Node lowerLeft(Cell c) const { return m_cells_to_node[c.localId()].v[P_LowerLeft]; }
 
+  //! Noeud en haut à gauche de la maille \a c
+  NodeLocalId upperLeftId(CellLocalId c) const { return NodeLocalId(m_cells_to_node[c.localId()].v[P_UpperLeft]); }
+  //! Noeud en haut à droite de la maille \a c
+  NodeLocalId upperRightId(CellLocalId c) const { return NodeLocalId(m_cells_to_node[c.localId()].v[P_UpperRight]); }
+  //! Noeud en bas à droite de la maille \a c
+  NodeLocalId lowerRightId(CellLocalId c) const { return NodeLocalId(m_cells_to_node[c.localId()].v[P_LowerRight]); }
+  //! Noeud en bad à gauche de la maille \a c
+  NodeLocalId lowerLeftId(CellLocalId c) const { return NodeLocalId(m_cells_to_node[c.localId()].v[P_LowerLeft]); }
+
   //! En 3D, noeud au dessus en haut à gauche de la maille \a c
   Node topZUpperLeft(Cell c) const { return m_cells_to_node[c.localId()].v[P_TopZUpperLeft]; }
   //! En 3D, noeud au dessus en haut à droite de la maille \a c
@@ -127,6 +155,15 @@ class ARCANE_CEA_EXPORT CartesianConnectivity
   Node topZLowerRight(Cell c) const { return m_cells_to_node[c.localId()].v[P_TopZLowerRight]; }
   //! En 3D, noeud au dessus en bas à gauche de la maille \a c
   Node topZLowerLeft(Cell c) const { return m_cells_to_node[c.localId()].v[P_TopZLowerLeft]; }
+
+  //! En 3D, noeud au dessus en haut à gauche de la maille \a c
+  NodeLocalId topZUpperLeftId(CellLocalId c) const { return NodeLocalId(m_cells_to_node[c.localId()].v[P_TopZUpperLeft]); }
+  //! En 3D, noeud au dessus en haut à droite de la maille \a c
+  NodeLocalId topZUpperRightId(CellLocalId c) const { return NodeLocalId(m_cells_to_node[c.localId()].v[P_TopZUpperRight]); }
+  //! En 3D, noeud au dessus en bas à droite de la maille \a c
+  NodeLocalId topZLowerRightId(CellLocalId c) const { return NodeLocalId(m_cells_to_node[c.localId()].v[P_TopZLowerRight]); }
+  //! En 3D, noeud au dessus en bas à gauche de la maille \a c
+  NodeLocalId topZLowerLeftId(CellLocalId c) const { return NodeLocalId(m_cells_to_node[c.localId()].v[P_TopZLowerLeft]); }
 
  public:
 
@@ -157,7 +194,7 @@ class ARCANE_CEA_EXPORT CartesianConnectivity
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

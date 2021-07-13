@@ -79,6 +79,10 @@ class NumArrayView<Accessor,1>
   {
     return Accessor::build(m_values.ptrAt(i));
   }
+  ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayBoundsIndex<1> idx) const
+  {
+    return Accessor::build(m_values.ptrAt(idx));
+  }
 
  private:
 
@@ -109,6 +113,10 @@ class NumArrayView<Accessor,2>
   {
     return Accessor::build(m_values.ptrAt(i,j));
   }
+  ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayBoundsIndex<2> idx) const
+  {
+    return Accessor::build(m_values.ptrAt(idx));
+  }
 
  private:
 
@@ -138,6 +146,10 @@ class NumArrayView<Accessor,3>
   ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int64 i,Int64 j,Int64 k) const
   {
     return Accessor::build(m_values.ptrAt(i,j,k));
+  }
+  ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayBoundsIndex<3> idx) const
+  {
+    return Accessor::build(m_values.ptrAt(idx));
   }
 
  private:

@@ -65,6 +65,8 @@ set(ARCANE_SOURCES
   MemoryInfo.h
   Numeric.cc
   Numeric.h
+  NumArray.h
+  NumArray.cc
   OStringStream.cc
   OStringStream.h
   ParallelFatalErrorException.cc

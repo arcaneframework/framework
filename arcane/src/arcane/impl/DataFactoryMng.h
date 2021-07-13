@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataFactoryMng.h                                            (C) 2000-2020 */
+/* DataFactoryMng.h                                            (C) 2000-2021 */
 /*                                                                           */
 /* Gestionnaire de fabriques de données.                                     */
 /*---------------------------------------------------------------------------*/
@@ -43,6 +43,7 @@ class DataFactoryMng
 
   void build() override;
   IApplication* application() override { return m_application; }
+  ITraceMng* traceMng() const override;
   void registerDataStorageFactory(Ref<IDataStorageFactory> factory) override;
   Ref<IData> createSimpleDataRef(const String& storage_type,const DataStorageBuildInfo& build_info) override;
   Ref<ISerializedData>

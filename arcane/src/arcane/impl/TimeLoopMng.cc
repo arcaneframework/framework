@@ -943,7 +943,7 @@ doOneIteration()
       }
       try{
         _execOneEntryPoint(*i, index, true);
-      } catch(const GoBackwardException& ex){
+      } catch(const GoBackwardException&){
         m_backward_mng->goBackward();
       } catch(...){ // On remonte toute autre exception
         throw;

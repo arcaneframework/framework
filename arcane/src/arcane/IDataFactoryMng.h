@@ -49,6 +49,9 @@ class IDataFactoryMng
   //! Application associée
   virtual IApplication* application() =0;
 
+  //! Gestionnaire de trace associé
+  virtual ITraceMng* traceMng() const =0;
+
   //! Enregistre la fabrique \a factory.
   virtual void registerDataStorageFactory(Ref<IDataStorageFactory> factory) =0;
 

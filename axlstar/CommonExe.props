@@ -1,0 +1,26 @@
+<Project>
+  <!--
+      Positionne les propriétés communes aux projets C# qui génèrent un exécutable.
+
+      Notamment, cela permet de spécifier le 'TargetFramework' par défaut.
+
+      Normalement, $(BundledNETCoreAppTargetFrameworkVersion) est toujours défini sauf si
+      on utilise le `msbuild` d'une veille version de mono (inférieure à la 6.0). Avec 'dotnet', les packages
+      de référence sont inclus dans le SDK. Avec mono, ce n'est pas le cas. Dans ce cas, il
+      faut avoir le git 'dependencies' lié à Arcane qui contient les packages nuget nécessaires.
+
+      A terme, on ne supportera plus que la compilation via 'dotnet'. L'exécution par 'mono' sera
+      toujours disponible.
+
+      Il est toujours possible de spécifier explicitement le `TargetFramework` en ligne de commande si
+      nécessaire
+  -->
+  <PropertyGroup>
+    <TargetFramework
+        Condition="'$(TargetFramework)'=='' and '$(BundledNETCoreAppTargetFrameworkVersion)'!=''"
+        >netcoreapp$(BundledNETCoreAppTargetFrameworkVersion)</TargetFramework>
+    <TargetFramework Condition="'$(TargetFramework)'==''">net461</TargetFramework>
+    <TargetExt>.dll</TargetExt>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+</Project>

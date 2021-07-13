@@ -145,6 +145,38 @@ class ARCANE_CORE_EXPORT LinkLocalId
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue typée sur une liste d'entités d'une connectivité.
+ */
+template <typename ItemType>
+class ItemLocalIdView
+{
+ public:
+  using LocalIdType = typename ItemType::LocalIdType;
+  using SpanType = SmallSpan<const LocalIdType>;
+  using iterator = typename SpanType::iterator;
+  using const_iterator = typename SpanType::const_iterator;
+ public:
+  ARCCORE_HOST_DEVICE ItemLocalIdView(SpanType ids) : m_ids(ids){}
+  ARCCORE_HOST_DEVICE ItemLocalIdView(const LocalIdType* ids,Int32 s) : m_ids(ids,s){}
+  ItemLocalIdView() = default;
+  ARCCORE_HOST_DEVICE operator SpanType() const { return m_ids; }
+ public:
+  ARCCORE_HOST_DEVICE SpanType ids() const { return m_ids; }
+  ARCCORE_HOST_DEVICE LocalIdType operator[](Int32 i) const { return m_ids[i]; }
+  ARCCORE_HOST_DEVICE Int32 size() const { return m_ids.size(); }
+  ARCCORE_HOST_DEVICE iterator begin() { return m_ids.begin(); }
+  ARCCORE_HOST_DEVICE iterator end() { return m_ids.end(); }
+  ARCCORE_HOST_DEVICE const_iterator begin() const { return m_ids.begin(); }
+  ARCCORE_HOST_DEVICE const_iterator end() const { return m_ids.end(); }
+ public:
+  ARCCORE_HOST_DEVICE const LocalIdType* data() const { return m_ids.data(); }
+ private:
+  SpanType m_ids;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane
 

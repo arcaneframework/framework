@@ -102,7 +102,13 @@ class VariableRefArray2T
     L'appel à cette méthode n'est possible que pour les variables
     privées (propriété PPrivate).
     */
+  ARCCORE_DEPRECATED_2021("Use _internalTrueData() instead.")
   ARCANE_CORE_EXPORT ContainerType& internalContainer();
+
+ public:
+
+  //! \internal
+  ARCANE_CORE_EXPORT IArray2DataInternalT<T>* _internalTrueData();
 
  public:
 

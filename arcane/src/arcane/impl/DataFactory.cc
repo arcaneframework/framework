@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataFactory.cc                                              (C) 2000-2018 */
+/* DataFactory.cc                                              (C) 2000-2021 */
 /*                                                                           */
 /* Fabrique de données.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -28,7 +28,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -127,24 +128,15 @@ registerData(IData* data)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IData* DataFactory::
-createSimpleData(eDataType data_type,Integer dimension,Integer multi_tag)
+Ref<IData> DataFactory::
+createSimpleDataRef(eDataType data_type,Integer dimension,Integer multi_tag)
 {
   for( DataArray::Enumerator i(m_data); ++i; ){
     IData* d = *i;
     if (d->dataType()==data_type && d->dimension()==dimension && d->multiTag()==multi_tag)
-      return d->clone();
+      return d->cloneRef();
   }
-  return 0;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Ref<IData> DataFactory::
-createSimpleDataRef(eDataType data_type,Integer dimension,Integer multi_tag)
-{
-  return Arccore::makeRef(createSimpleData(data_type,dimension,multi_tag));
+  return {};
 }
 
 /*---------------------------------------------------------------------------*/
@@ -170,39 +162,6 @@ createDataOperation(Parallel::eReduceType rt)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ISerializedData* DataFactory::
-createSerializedData(eDataType data_type,Integer memory_size,
-                     Integer nb_dim,Integer nb_element,Integer nb_base_element,
-                     bool is_multi_size,IntegerConstArrayView dimensions)
-{
-  return new SerializedData(data_type,memory_size,nb_dim,nb_element,
-                            nb_base_element,is_multi_size,dimensions);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ISerializedData* DataFactory::
-createSerializedData(eDataType data_type,Int64 memory_size,
-                     Integer nb_dim,Int64 nb_element,Int64 nb_base_element,
-                     bool is_multi_size,Int64ConstArrayView dimensions)
-{
-  return new SerializedData(data_type,memory_size,nb_dim,nb_element,
-                            nb_base_element,is_multi_size,dimensions);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ISerializedData* DataFactory::
-createSerializedData()
-{
-  return new SerializedData();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void DataFactory::
 build()
 {
@@ -222,7 +181,7 @@ arcaneCreateDataFactory(IApplication* sm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

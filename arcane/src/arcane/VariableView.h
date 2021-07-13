@@ -67,6 +67,7 @@ class ViewSetter
  public:
   ViewSetter(DataType* ptr)
   : m_ptr(ptr){}
+  ViewSetter<DataType>& operator=(const ViewSetter<DataType>&) = delete;
   void operator=(const DataType& v)
   {
     *m_ptr = v;

@@ -5,15 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableRefArray.cc                                         (C) 2000-2020 */
+/* VariableRefArray.cc                                         (C) 2000-2021 */
 /*                                                                           */
 /* Référence à une variable tableau 1D.                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ITraceMng.h"
-
 #include "arcane/VariableRefArray.h"
+
+#include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/FatalErrorException.h"
+
 #include "arcane/VariableArray.h"
 #include "arcane/VariableRefArrayLock.h"
 #include "arcane/VariableBuildInfo.h"
@@ -21,6 +23,7 @@
 #include "arcane/VariableDataTypeTraits.h"
 #include "arcane/ISubDomain.h"
 #include "arcane/VariableFactoryRegisterer.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,36 +34,40 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> VariableFactoryRegisterer
+template <typename DataType>
+VariableFactoryRegisterer
 VariableRefArrayT<DataType>::
-m_auto_registerer(_autoCreate,_internalVariableTypeInfo());
+m_auto_registerer(_autoCreate, _internalVariableTypeInfo());
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> VariableTypeInfo
+template <typename DataType>
+VariableTypeInfo
 VariableRefArrayT<DataType>::
 _internalVariableTypeInfo()
 {
-  return VariableTypeInfo(IK_Unknown,VariableDataTypeTraitsT<DataType>::type(),1,0,false);
+  return VariableTypeInfo(IK_Unknown, VariableDataTypeTraitsT<DataType>::type(), 1, 0, false);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> VariableInfo
+template <typename DataType>
+VariableInfo
 VariableRefArrayT<DataType>::
 _internalVariableInfo(const VariableBuildInfo& vbi)
 {
   VariableTypeInfo vti = _internalVariableTypeInfo();
   DataStorageTypeInfo sti = vti._internalDefaultDataStorage();
-  return VariableInfo(vbi.name(),vbi.itemFamilyName(),vbi.itemGroupName(),vbi.meshName(),vti,sti);
+  return VariableInfo(vbi.name(), vbi.itemFamilyName(), vbi.itemGroupName(), vbi.meshName(), vti, sti);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> VariableRef*
+template <typename DataType>
+VariableRef*
 VariableRefArrayT<DataType>::
 _autoCreate(const VariableBuildInfo& vb)
 {
@@ -70,11 +77,11 @@ _autoCreate(const VariableBuildInfo& vb)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> 
+template <typename DataType>
 VariableRefArrayT<DataType>::
 VariableRefArrayT(const VariableBuildInfo& vbi)
 : VariableRef(vbi)
-, m_private_part(PrivatePartType::getReference(vbi,_internalVariableInfo(vbi)))
+, m_private_part(PrivatePartType::getReference(vbi, _internalVariableInfo(vbi)))
 {
   this->_internalInit(m_private_part);
 }
@@ -82,7 +89,7 @@ VariableRefArrayT(const VariableBuildInfo& vbi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> 
+template <class DataType>
 VariableRefArrayT<DataType>::
 VariableRefArrayT(const VariableRefArrayT<DataType>& rhs)
 : VariableRef(rhs)
@@ -95,7 +102,8 @@ VariableRefArrayT(const VariableRefArrayT<DataType>& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> VariableRefArrayT<DataType>::
+template <class DataType>
+VariableRefArrayT<DataType>::
 VariableRefArrayT(IVariable* var)
 : VariableRef(var)
 , m_private_part(PrivatePartType::getReference(var))
@@ -106,7 +114,8 @@ VariableRefArrayT(IVariable* var)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> void VariableRefArrayT<DataType>::
+template <class DataType>
+void VariableRefArrayT<DataType>::
 refersTo(const VariableRefArrayT<DataType>& rhs)
 {
   VariableRef::operator=(rhs);
@@ -119,7 +128,7 @@ refersTo(const VariableRefArrayT<DataType>& rhs)
 /*!
  * Libère la mémoire allouée.
  */
-template<typename DataType> 
+template <typename DataType>
 VariableRefArrayT<DataType>::
 ~VariableRefArrayT()
 {
@@ -128,63 +137,66 @@ VariableRefArrayT<DataType>::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> 
-void 
-VariableRefArrayT<DataType>::
+template <typename DataType>
+void VariableRefArrayT<DataType>::
 resize(Integer s)
 {
-  m_private_part->value().resize(s);
-  m_private_part->syncReferences();
+  m_private_part->resize(s);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> 
-void 
-VariableRefArrayT<DataType>::
-resizeWithReserve(Integer s,Integer nb_additional)
+template <typename DataType>
+void VariableRefArrayT<DataType>::
+resizeWithReserve(Integer s, Integer nb_additional)
 {
-  m_private_part->resizeWithReserve(s,nb_additional);
+  m_private_part->resizeWithReserve(s, nb_additional);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> 
-void 
-VariableRefArrayT<DataType>::
+template <typename DataType>
+void VariableRefArrayT<DataType>::
 updateFromInternal()
 {
-  ArrayBase::setArray(m_private_part->value());
+  ArrayBase::setArray(m_private_part->valueView());
   BaseClass::updateFromInternal();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> 
-typename VariableRefArrayT<DataType>::LockType 
+template <typename DataType>
+typename VariableRefArrayT<DataType>::LockType
 VariableRefArrayT<DataType>::
 lock()
 {
-  return LockType(m_private_part->value(),m_private_part);
+  return LockType(m_private_part->trueData()->_internal()->_internalDeprecatedValue(), m_private_part);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> 
+template <typename T>
 typename VariableRefArrayT<T>::ContainerType&
 VariableRefArrayT<T>::
 internalContainer()
 {
-  if ( !(property() & IVariable::PPrivate) ){
-    ITraceMng* msg = subDomain()->traceMng();
-    msg->fatal() << "VariableRefArray::internalContainer(): impossible sur la "
-                 << "variable non privée '" << name() << "'";
-  }
-  return m_private_part->value();
+  return _internalTrueData()->_internalDeprecatedValue();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename T> IArrayDataInternalT<T>*
+VariableRefArrayT<T>::
+_internalTrueData()
+{
+  if (!(property() & IVariable::PPrivate))
+    ARCANE_FATAL("variable '{0}': getting internal data container is only valid on private variable", name());
+  return m_private_part->trueData()->_internal();
 }
 
 /*---------------------------------------------------------------------------*/

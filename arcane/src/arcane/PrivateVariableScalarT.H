@@ -91,7 +91,7 @@ updateFromInternal()
 {
   arcaneCheckNull(m_private_part);
 
-  m_view.setArray(m_private_part->value());
+  m_view.setArray(m_private_part->valueView());
   m_memory_trace = m_private_part->memoryAccessTrace();
 #ifdef ARCANE_TRACE 
   m_access_infos = m_private_part->memoryAccessInfos(); 

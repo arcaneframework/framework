@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUnitTest.cc                                             (C) 2000-2020 */
+/* MeshUnitTest.cc                                             (C) 2000-2021 */
 /*                                                                           */
 /* Service du test du maillage.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/Array.h"
 #include "arcane/utils/StringBuilder.h"
@@ -44,6 +42,7 @@
 #include "arcane/VariableCollection.h"
 #include "arcane/ServiceBuilder.h"
 #include "arcane/IParallelReplication.h"
+#include "arcane/IndexedItemConnectivityView.h"
 
 #include "arcane/ServiceFinder2.h"
 #include "arcane/SerializeBuffer.h"
@@ -70,6 +69,8 @@
 #include "arcane/IXmlDocumentHolder.h"
 #include "arcane/IIOMng.h"
 #include "arcane/MeshReaderMng.h"
+
+#include "arcane/mesh/IncrementalItemConnectivity.h"
 
 #include <set>
 
@@ -191,6 +192,7 @@ public:
   void _testAdditionalMeshes();
   void _testNullItem();
   void _testCustomMeshTools();
+  void _testAdditionnalConnectivity();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -274,6 +276,7 @@ executeTest()
   _testUsedVariables();
   _testAdditionalMeshes();
   _testCustomMeshTools();
+  _testAdditionnalConnectivity();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1183,6 +1186,41 @@ _testCustomMeshTools()
   Neo::Mesh mesh{"test_mesh"};
   info() << "Neo::Mesh{" << mesh.name() << "}";
 #endif
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUnitTest::
+_testAdditionnalConnectivity()
+{
+  info() << A_FUNCINFO;
+  // Créé une connectivité maille->face contenant pour chaque mailles la liste
+  // des faces n'étant pas à la frontière: il s'agit donc des faces qui ont
+  // deux mailles connectées.
+  IItemFamily* cell_family = mesh()->cellFamily();
+  IItemFamily* face_family = mesh()->faceFamily();
+  CellGroup cells = cell_family->allItems();
+  // NOTE: l'objet est automatiquement détruit par le maillage
+  auto* cn = new mesh::IncrementalItemConnectivity(cell_family,face_family,"CellNoBoundaryFace");
+  ENUMERATE_CELL(icell,cells){
+    Cell cell = *icell;
+    Integer nb_face = cell.nbFace();
+    cn->notifySourceItemAdded(cell);
+    for( Integer i=0; i<nb_face; ++i ){
+      Face face = cell.face(i);
+      if (face.nbCell()==2)
+        cn->addConnectedItem(cell,face);
+    }
+  }
+
+  IndexedCellFaceConnectivityView cn_view(cn->connectivityView());
+  Int64 total_face_lid = 0;
+  ENUMERATE_(Cell,icell,cells){
+    for( FaceLocalId face : cn_view.faces(icell) )
+      total_face_lid += face.localId();
+  }
+  info() << "TOTAL_NB_FACE = " << total_face_lid;
 }
 
 /*---------------------------------------------------------------------------*/

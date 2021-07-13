@@ -16,7 +16,7 @@
 
 #include "arcane/accelerator/RunQueue.h"
 
-#include "arcane/accelerator/RunQueueInternal.h"
+//#include "arcane/accelerator/RunQueueInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

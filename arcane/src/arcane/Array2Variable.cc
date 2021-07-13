@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array2Variable.cc                                           (C) 2000-2020 */
+/* Array2Variable.cc                                           (C) 2000-2021 */
 /*                                                                           */
 /* Variable tableau 2D.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -33,6 +33,8 @@
 #include "arcane/ItemGroup.h"
 #include "arcane/IParallelMng.h"
 #include "arcane/IDataFactoryMng.h"
+
+#include "arcane/core/internal/IDataInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -277,7 +279,7 @@ directResize(Integer s)
          << " wanted_dim1_size=" << s
          << " dim2_size=" << m_data->value().dim2Size()
          << " total=" << m_data->value().totalNbElement();*/
-  m_data->value().resize(s,m_data->value().dim2Size());
+  m_data->_internal()->_internalDeprecatedValue().resize(s,m_data->view().dim2Size());
   syncReferences();
 }
 
@@ -293,7 +295,7 @@ directResize(Integer dim1_size,Integer dim2_size)
          << " total=" << m_data->value().totalNbElement()
          << " dim1_size=" << m_data->value().dim1Size()
          << " dim2_size=" << m_data->value().dim2Size();*/
-  m_data->value().resize(dim1_size,dim2_size);
+  m_data->_internal()->_internalDeprecatedValue().resize(dim1_size,dim2_size);
   /*info() << "RESIZE(2) AFTER " << fullName()
          << " total=" << m_data->value().totalNbElement()
          << " dim1_size=" << m_data->value().dim1Size()
@@ -308,7 +310,7 @@ directResize(Integer dim1_size,Integer dim2_size)
 template<typename DataType> void Array2VariableT<DataType>::
 shrinkMemory()
 {
-  value().shrink();
+  m_data->_internal()->shrink();
   syncReferences();
 }
 
@@ -346,7 +348,7 @@ template<typename T> Real Array2VariableT<T>::
 allocatedMemory() const
 {
   Real v1 = static_cast<Real>(sizeof(T));
-  Real v2 = static_cast<Real>(m_data->value().totalNbElement());
+  Real v2 = static_cast<Real>(m_data->view().totalNbElement());
   return v1*v2;
 }
 
@@ -356,19 +358,21 @@ allocatedMemory() const
 template<typename T> Integer Array2VariableT<T>::
 checkIfSync(int max_print)
 {
-  Integer dim1_size = value().dim1Size();
+  ValueType& data_values = m_data->_internal()->_internalDeprecatedValue();
+
+  Integer dim1_size = valueView().dim1Size();
   if (dim1_size==0)
     return 0;
 
   //Integer dim2_size = value().dim2Size();
   IItemFamily* family = itemGroup().itemFamily();
   if (family){
-    UniqueArray2<T> ref_array(value());
+    UniqueArray2<T> ref_array(constValueView());
     this->synchronize(); // fonctionne pour toutes les variables
     Array2VariableDiff<T> csa;
-    Array2View<T> from_array(value());
+    Array2View<T> from_array(valueView());
     Integer nerror = csa.check(this,ref_array,from_array,max_print,true);
-    value().copy(ref_array);
+    data_values.copy(ref_array);
     return nerror;
   }
   return 0;
@@ -382,13 +386,13 @@ checkIfSame(IDataReader* reader,int max_print,bool compare_ghost)
 {
   if (itemKind()==IK_Particle)
     return 0;
-  ConstArray2View<T> from_array(value().constView());
+  ConstArray2View<T> from_array(valueView());
 
   Ref< IArray2DataT<T> > ref_data(m_data->cloneTrueEmptyRef());
   reader->read(this,ref_data.get());
 
   Array2VariableDiff<T> csa;
-  return csa.check(this,ref_data->value(),from_array,max_print,compare_ghost);
+  return csa.check(this,ref_data->view(),from_array,max_print,compare_ghost);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -428,7 +432,7 @@ namespace
 template<typename T> Integer Array2VariableT<T>::
 _checkIfSameOnAllReplica(IParallelMng* replica_pm,Integer max_print)
 {
-  return _checkIfSameOnAllReplicaHelper(replica_pm,this,value().constView(),max_print);
+  return _checkIfSameOnAllReplicaHelper(replica_pm,this,constValueView(),max_print);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -443,7 +447,7 @@ _internalResize(Integer new_size,Integer nb_additional_element)
   //   if (isPartial() && new_size < value().dim1Size())
   //     throw NotSupportedException(A_FUNCINFO,"Cannot remove items to group with partial variables");
 
-  ValueType& data_values = this->value();
+  ValueType& data_values = m_data->_internal()->_internalDeprecatedValue();
   ValueType& container_ref = data_values;
 
   Integer dim2_size = data_values.dim2Size();
@@ -496,9 +500,9 @@ copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination)
   ARCANE_ASSERT(source.size()==destination.size(),
 		("Unable to copy: source and destination have different sizes !"));
 
-  const Integer dim2_size = value().dim2Size();
+  const Integer dim2_size = valueView().dim2Size();
   const Integer nb_copy = source.size();
-  ValueType& value = m_data->value();
+  Array2View<T> value = m_data->view();
 
   for( Integer i=0; i<nb_copy; ++i ){
     for( Integer j=0; j<dim2_size; ++j )
@@ -518,9 +522,9 @@ copyItemsMeanValues(Int32ConstArrayView first_source,
   ARCANE_ASSERT((first_source.size()==destination.size()) && (second_source.size()==destination.size()),
                 ("Unable to copy: source and destination have different sizes !"));
 
-  const Integer dim2_size = value().dim2Size();
+  const Integer dim2_size = valueView().dim2Size();
   const Integer nb_copy = first_source.size();
-  ValueType& value = m_data->value();
+  Array2View<T> value = m_data->view();
 
   for( Integer i=0; i<nb_copy; ++i ){
     for( Integer j=0; j<dim2_size; ++j )
@@ -540,11 +544,11 @@ compact(Int32ConstArrayView new_to_old_ids)
     return;
   }
 
-  Integer current_size = value().dim1Size();
+  ValueType& current_value = m_data->_internal()->_internalDeprecatedValue();
+  Integer current_size = current_value.dim1Size();
   if (current_size==0)
     return;
 
-  ValueType& current_value = m_data->value();
   Integer dim2_size = current_value.dim2Size();
   if (dim2_size==0)
     return;
@@ -608,6 +612,16 @@ swapValues(ThatClass& rhs)
   // Il faut mettre à jour les références pour cette variable et \a rhs.
   syncReferences();
   rhs.syncReferences();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> auto
+Array2VariableT<DataType>::
+value() -> ValueType&
+{
+  return m_data->_internal()->_internalDeprecatedValue();
 }
 
 /*---------------------------------------------------------------------------*/

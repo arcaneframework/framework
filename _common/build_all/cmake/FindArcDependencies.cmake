@@ -1,0 +1,5 @@
+if (NOT ARCDEPENDENCIES_ROOT)
+   message(FATAL_ERROR "Variable 'ARCDEPENDENCIES_ROOT' is not set")
+endif()
+add_subdirectory(${ARCDEPENDENCIES_ROOT} dependencies)
+set(ArcDependencies_FOUND YES)

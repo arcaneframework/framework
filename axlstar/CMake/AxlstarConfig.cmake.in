@@ -1,0 +1,14 @@
+set(Axlstar_VERSION @Axlstar_VERSION@)
+
+@PACKAGE_INIT@
+
+set_and_check(AXLSTAR_EXE_DIR "@PACKAGE_EXE_DIR@")
+set_and_check(AXLSTAR_AXL2CC "@PACKAGE_EXE_AXLSTAR_AXL2CC@")
+set_and_check(AXLSTAR_CMAKE_COMMANDS "@PACKAGE_CMAKE_COMMANDS@")
+
+set_and_check(AXLSTAR_TARGETS @PACKAGE_config_install_dir@/AxlstarTargets.cmake)
+
+include(${AXLSTAR_TARGETS})
+check_required_components(axlstar_options)
+
+set(Axlstar_FOUND YES)

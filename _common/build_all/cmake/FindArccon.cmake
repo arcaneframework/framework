@@ -1,0 +1,13 @@
+if (NOT Arccon_ROOT)
+  # Pour compatibilité
+  set(Arccon_ROOT "${ARCCON_ROOT}")
+endif()
+if (NOT Arccon_ROOT)
+   message(FATAL_ERROR "Variable 'Arccon_ROOT' is not set")
+endif()
+if (NOT ARCCON_EXPORT_TARGET)
+  set(ARCCON_EXPORT_TARGET ${ARCCORE_EXPORT_TARGET})
+endif()
+set(ARCCON_CMAKE_COMMANDS ${Arccon_ROOT}/Arccon.cmake)
+add_subdirectory(${Arccon_ROOT} arccon)
+set(Arccon_FOUND YES)

@@ -57,6 +57,7 @@ namespace Arcane
 #define ARCANE_DEPRECATED_2018_R(a)
 #define ARCCORE_DEPRECATED_2019(a)
 #define ARCCORE_DEPRECATED_2020(a)
+#define ARCCORE_DEPRECATED_2021(a)
 #define ARCANE_NOEXCEPT
 
 #define ARCANE_EXPR_EXPORT
@@ -212,6 +213,9 @@ namespace Arcane
 %rename("$ignore", regextarget=1, fullname=1) "Arcane::VariableCollection::(clear|add)";
 %rename("_count", fullname=1) "Arcane::VariableCollection::count";
 
+// Les types 'Array2View' et 'ConstArray2View' ne sont pas wrappés
+%rename("$ignore", regextarget=1, fullname=1) "Arcane::IArray2DataT<.*>::view";
+
 %rename("_value", regextarget=1, fullname=1) "Arcane::VariableRefScalarT<.*>::value$";
 %rename("_asArray", regextarget=1, fullname=1) "Arcane::ItemVariable.*::asArray";
 %rename("_finalize", fullname=1) "Arcane::IArcaneMain::finalize";
@@ -253,6 +257,12 @@ namespace Arcane
 %rename("$ignore", fullname=1) "Arcane::IItemFamily::getMergedItemLID";
 %rename("$ignore", fullname=1) "Arcane::ISerializedData::dimensions";
 %rename("$ignore", fullname=1) "Arcane::CaseOptionBase::subDomain";
+%rename("$ignore", regextarget=1, fullname=1) "Arcane::IArrayDataT<.*>::value";
+%rename("$ignore", regextarget=1, fullname=1) "Arcane::IArrayDataT<.*>::cloneTrue";
+%rename("$ignore", regextarget=1, fullname=1) "Arcane::IArrayDataT<.*>::cloneTrueEmpty";
+%rename("$ignore", regextarget=1, fullname=1) "Arcane::IArray2DataT<.*>::value";
+%rename("$ignore", regextarget=1, fullname=1) "Arcane::IArray2DataT<.*>::cloneTrue";
+%rename("$ignore", regextarget=1, fullname=1) "Arcane::IArray2DataT<.*>::cloneTrueEmpty";
 
 // Les méthodes suivantes sont obsolètes mais utilisées par des exemples
 // donc il ne faut pas encore les supprimer

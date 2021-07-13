@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableArray.h                                             (C) 2000-2020 */
+/* VariableArray.h                                             (C) 2000-2021 */
 /*                                                                           */
 /* Variable tableau 1D.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -26,7 +26,9 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Variable sur un tableau 1D.
+ * \brief Implémentation d'une variable sur un tableau 1D.
+ *
+ * Les méthodes de cette classe sont internes à %Arcane.
  */
 template<class T>
 class VariableArrayT
@@ -65,9 +67,14 @@ class VariableArrayT
   Real allocatedMemory() const override;
   Integer checkIfSync(int max_print) override;
   bool initialize(const ItemGroup& group,const String& value) override;
-  Integer nbElement() const override { return m_value->value().size(); }
-  ValueType& value() { return m_value->value(); }
-  void shrinkMemory() override;
+  Integer nbElement() const override { return m_value->view().size(); }
+  ARCCORE_DEPRECATED_2021("use valueView() instead")
+  ARCANE_CORE_EXPORT ValueType& value();
+  ConstArrayView<T> constValueView() const { return m_value->view(); }
+  ConstArrayView<T> valueView() const { return m_value->view(); }
+  ArrayView<T> valueView() { return m_value->view(); }
+  ARCANE_CORE_EXPORT void shrinkMemory() override;
+  ARCANE_CORE_EXPORT Integer capacity();
   ConstArrayView< IDataTracerT<T>* > traceInfos() const { return m_trace_infos; }
   void copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination) override;
   void copyItemsMeanValues(Int32ConstArrayView first_source,
@@ -85,6 +92,7 @@ class VariableArrayT
  public:
 
   ARCANE_CORE_EXPORT void swapValues(ThatClass& rhs);
+  ValueDataType* trueData() { return m_value; }
 
  protected:
 
@@ -111,4 +119,3 @@ class VariableArrayT
 /*---------------------------------------------------------------------------*/
 
 #endif  
-

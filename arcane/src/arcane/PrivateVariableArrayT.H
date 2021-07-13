@@ -75,7 +75,7 @@ template<class DataType> void
 PrivateVariableArrayT<DataType>::
 updateFromInternal()
 { 
-  m_view = m_private_part->value();
+  m_view = m_private_part->valueView();
   MeshVariableRef::updateFromInternal();
   _executeUpdateFunctors();
 }
@@ -87,7 +87,7 @@ template<class DataType> void
 PrivateVariableArrayT<DataType>::
 resize(Integer dim2_size)
 {
-  m_private_part->directResize(m_private_part->value().dim1Size(),dim2_size);
+  m_private_part->directResize(m_private_part->valueView().dim1Size(),dim2_size);
   updateFromInternal();
 }
 

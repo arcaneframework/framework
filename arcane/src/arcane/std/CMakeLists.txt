@@ -82,17 +82,22 @@ endif()
 if(OTF2_FOUND)
   if (TARGET Arccore::arccore_message_passing_mpi)
     # Récupère le numéro de version de Otf2 et vérifie qu'il s'agit
-    # de la version 2.2.
+    # de la version 2.1.
     # TODO: à terme mettre cette détection dans Arccon.
     find_file(_OTF_GEN_DEF NAMES otf2/OTF2_GeneralDefinitions.h HINTS ${OTF2_INCLUDE_DIRS})
 	  if (_OTF_GEN_DEF)
-      set(OTF2_REQUIRED_VERSION "2.2")
+      set(OTF2_REQUIRED_VERSION "2.1")
       file(STRINGS ${_OTF_GEN_DEF} _OTF_GEN_DEF_CONTENT REGEX "OTF2_VERSION")
       string(REGEX MATCH "OTF2_VERSION_MAJOR[ ]+([0-9]+).*OTF2_VERSION_MINOR[ ]+([0-9]+)" OTF2_VERSION_MATCH ${_OTF_GEN_DEF_CONTENT})
       set(OTF2_VERSION "${CMAKE_MATCH_1}.${CMAKE_MATCH_2}")
       message(STATUS "[Otf2] Found version '${OTF2_VERSION}' (required=${OTF2_REQUIRED_VERSION})")
       if (OTF2_VERSION VERSION_LESS ${OTF2_REQUIRED_VERSION})
-        message(FATAL_ERROR "[Otf2] Found version (${OTF2_VERSION}) of Otf2 is too old. Version '${OTF2_REQUIRED_VERSION}' is required")
+        message(FATAL_ERROR
+          "[Otf2] Found version (${OTF2_VERSION}) of Otf2 is too old."
+          " Version '${OTF2_REQUIRED_VERSION}+' is required."
+          " You may disable 'Otf2' if you add '-DCMAKE_DISABLE_FIND_PACKAGE_Otf2=TRUE'"
+          " to CMmake arguments during configuration"
+          )
       endif()
     else()
       message(FATAL_ERROR "Can not determine OTF2 Version")

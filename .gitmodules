@@ -1,0 +1,4 @@
+[submodule "dependencies"]
+	path = dependencies
+	url = ../dependencies.git
+        branch = .

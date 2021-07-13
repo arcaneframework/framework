@@ -5,11 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IncrementalItemConnectivity.cc                              (C) 2000-2017 */
+/* IncrementalItemConnectivity.cc                              (C) 2000-2021 */
 /*                                                                           */
 /* Connectivité incrémentale des entités.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arcane/mesh/IncrementalItemConnectivity.h"
 
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/ArgumentException.h"
@@ -21,18 +23,15 @@
 #include "arcane/MeshUtils.h"
 #include "arcane/ObserverPool.h"
 #include "arcane/Properties.h"
+#include "arcane/IndexedItemConnectivityView.h"
 
-#include "arcane/mesh/IncrementalItemConnectivity.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/internal/IDataInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -78,9 +77,9 @@ class IncrementalItemConnectivityContainer
     m_connectivity_nb_item_variable(VariableBuildInfo(mesh,var_name+"Nb",IVariable::PPrivate)),
     m_connectivity_index_variable(VariableBuildInfo(mesh,var_name+"Index",IVariable::PPrivate)),
     m_connectivity_list_variable(VariableBuildInfo(mesh,var_name+"List",IVariable::PPrivate)),
-    m_connectivity_nb_item_array(m_connectivity_nb_item_variable.internalContainer()),
-    m_connectivity_index_array(m_connectivity_index_variable.internalContainer()),
-    m_connectivity_list_array(m_connectivity_list_variable.internalContainer())
+    m_connectivity_nb_item_array(m_connectivity_nb_item_variable._internalTrueData()->_internalDeprecatedValue()),
+    m_connectivity_index_array(m_connectivity_index_variable._internalTrueData()->_internalDeprecatedValue()),
+    m_connectivity_list_array(m_connectivity_list_variable._internalTrueData()->_internalDeprecatedValue())
   {
     // Ajoute un tag pour indiquer que ce sont des variables associées à la connectivité.
     // Pour l'instant cela n'est utilisé que pour les statistiques d'affichage.
@@ -263,6 +262,18 @@ ItemVectorView IncrementalItemConnectivityBase::
 _connectedItems(ItemLocalId item,ConnectivityItemVector& con_items) const
 {
   return con_items.resizeAndCopy(_connectedItemsLocalId(item));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IndexedItemConnectivityViewBase IncrementalItemConnectivityBase::
+connectivityView() const
+{
+  IndexedItemConnectivityViewBase view;
+  view.init(m_connectivity_nb_item,m_connectivity_index,m_connectivity_list,
+            _sourceFamily()->itemKind(), _targetFamily()->itemKind());
+  return view;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -881,8 +892,7 @@ compactConnectivityList()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

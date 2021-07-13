@@ -5,7 +5,7 @@
 # Pour Swig, il faut vérifier la taille du type C 'long' pour que le wrapping soit
 # cohérent avec la définition dans arcane/utils/ArcaneGlobal.h
 find_package(SWIG)
-message(STATUS "SWIG_EXECUTABLE = ${SWIG_EXECUTABLE} (found=${SWIG_FOUND})")
+message(STATUS "SWIG_EXECUTABLE = ${SWIG_EXECUTABLE} (found=${SWIG_FOUND} version=${SWIG_VERSION})")
 if (NOT SWIG_FOUND)
   message(STATUS "Disabling .NET wrapper because Swig is not available")
   return()

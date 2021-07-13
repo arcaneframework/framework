@@ -12,11 +12,14 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/accelerator/Runner.h"
-#include "arcane/accelerator/RunQueueImpl.h"
 
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/AcceleratorRuntimeInitialisationInfo.h"
+#include "arcane/Concurrency.h"
+
+#include "arcane/accelerator/RunQueueImpl.h"
 
 #include <stack>
 #include <map>

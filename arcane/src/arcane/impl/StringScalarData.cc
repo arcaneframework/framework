@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StringScalarData.cc                                         (C) 2000-2020 */
+/* StringScalarData.cc                                         (C) 2000-2021 */
 /*                                                                           */
 /* Donnée scalaire de type 'String'.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/impl/StringScalarData.h"
 
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/NotSupportedException.h"
@@ -23,14 +21,97 @@
 #include "arcane/datatype/DataStorageBuildInfo.h"
 
 #include "arcane/impl/SerializedData.h"
+#include "arcane/impl/DataStorageFactory.h"
 
 #include "arcane/ISerializer.h"
+#include "arcane/IDataVisitor.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Donnée scalaire d'une chaîne de caractères unicode.
+ */
+class StringScalarData
+: public ReferenceCounterImpl
+, public IScalarDataT<String>
+{
+  ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+
+ public:
+
+  typedef String DataType;
+  typedef StringScalarData ThatClass;
+  typedef IScalarDataT<String> DataInterfaceType;
+
+ public:
+  explicit StringScalarData(ITraceMng* trace)
+  : m_trace(trace) {}
+  explicit StringScalarData(const DataStorageBuildInfo& dsbi);
+  StringScalarData(const StringScalarData& rhs)
+  : m_value(rhs.m_value)
+  , m_trace(rhs.m_trace)
+  {}
+
+ public:
+
+  Integer dimension() const override { return 0; }
+  Integer multiTag() const override { return 0; }
+  eDataType dataType() const override { return DataTypeTraitsT<DataType>::type(); }
+  void serialize(ISerializer* sbuf, IDataOperation* operation) override;
+  void serialize(ISerializer* sbuf, Int32ConstArrayView ids, IDataOperation* operation) override;
+  DataType& value() override { return m_value; }
+  const DataType& value() const override { return m_value; }
+  void resize(Integer) override {}
+  IData* clone() override { return cloneTrue(); }
+  IData* cloneEmpty() override { return cloneTrueEmpty(); }
+  Ref<IData> cloneRef() override { return makeRef(cloneTrue()); }
+  Ref<IData> cloneEmptyRef() override { return makeRef(cloneTrueEmpty()); }
+  DataStorageTypeInfo storageTypeInfo() const override;
+  StringScalarData* cloneTrue() override { return new ThatClass(*this); }
+  StringScalarData* cloneTrueEmpty() override { return new ThatClass(m_trace); }
+  Ref<DataInterfaceType> cloneTrueRef() override { DataInterfaceType* d = new ThatClass(*this); return makeRef(d); }
+  Ref<DataInterfaceType> cloneTrueEmptyRef() override { DataInterfaceType* d = new ThatClass(m_trace); return makeRef(d); }
+  void fillDefault() override
+  {
+    m_value = String();
+  }
+  void setName(const String& name) override;
+  const ISerializedData* createSerializedData(bool use_basic_type) const override;
+  Ref<ISerializedData> createSerializedDataRef(bool use_basic_type) const override;
+  void allocateBufferForSerializedData(ISerializedData* sdata) override;
+  void assignSerializedData(const ISerializedData* sdata) override;
+  void copy(const IData* data) override;
+  void swapValues(IData* data) override;
+  void computeHash(IHashAlgorithm* algo, ByteArray& output) const override;
+  void visit(IScalarDataVisitor* visitor) override
+  {
+    visitor->applyVisitor(this);
+  }
+  void visit(IDataVisitor* visitor) override
+  {
+    visitor->applyDataVisitor(this);
+  }
+  void visitScalar(IScalarDataVisitor* visitor) override;
+  void visitArray(IArrayDataVisitor* visitor) override;
+  void visitArray2(IArray2DataVisitor* visitor) override;
+  void visitMultiArray2(IMultiArray2DataVisitor* visitor) override;
+
+ public:
+
+  static DataStorageTypeInfo staticStorageTypeInfo();
+
+ private:
+
+  DataType m_value; //!< Donnée
+  ITraceMng* m_trace;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -243,6 +324,15 @@ void StringScalarData::
 visitMultiArray2(IMultiArray2DataVisitor*)
 {
   throw NotSupportedException(A_FUNCINFO, "Can not visit multiarray2 data with array data");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" void
+registerStringScalarDataFactory(IDataFactoryMng* dfm)
+{
+  DataStorageFactory<StringScalarData>::registerDataFactory(dfm);
 }
 
 /*---------------------------------------------------------------------------*/
