@@ -120,13 +120,21 @@ class ArrayExtentsBase
   //! Nombre d'élément de la \a i-ème dimension.
   ARCCORE_HOST_DEVICE Int64 extent(int i) const { return m_extents[i]; }
   ARCCORE_HOST_DEVICE Int64 operator()(int i) const { return m_extents[i]; }
-  ARCCORE_HOST_DEVICE Span<const Int64> extentsAsSpan() const { return { m_extents, RankValue }; }
+  ARCCORE_HOST_DEVICE SmallSpan<const Int64> extentsAsSpan() const { return { m_extents, RankValue }; }
   ARCCORE_HOST_DEVICE Int64 totalNbElement() const
   {
     Int64 nb_element = 1;
     for (int i=0; i<RankValue; i++)
       nb_element *= m_extents[i];
     return nb_element;
+  }
+  ARCCORE_HOST_DEVICE static ArrayExtentsBase<RankValue> fromSpan(Span<const Int64> extents)
+  {
+    ArrayExtentsBase<RankValue> v;
+    // TODO: vérifier la taille
+    for( int i=0; i<RankValue; ++i )
+      v.m_extents[i] = extents[i];
+    return v;
   }
  protected:
   Int64 m_extents[RankValue];
@@ -137,7 +145,10 @@ class ArrayExtents<1>
 : public ArrayExtentsBase<1>
 {
  public:
+  using BaseClass = ArrayExtentsBase<1>;
+ public:
   ArrayExtents() = default;
+  ArrayExtents(BaseClass rhs) : BaseClass(rhs){}
   ARCCORE_HOST_DEVICE explicit ArrayExtents(Int64 dim1_size)
   {
     setSize(dim1_size);
@@ -153,7 +164,10 @@ class ArrayExtents<2>
 : public ArrayExtentsBase<2>
 {
  public:
+  using BaseClass = ArrayExtentsBase<2>;
+ public:
   ArrayExtents() = default;
+  ArrayExtents(BaseClass rhs) : BaseClass(rhs){}
   ARCCORE_HOST_DEVICE ArrayExtents(Int64 dim1_size,Int64 dim2_size)
   {
     setSize(dim1_size,dim2_size);
@@ -170,7 +184,10 @@ class ArrayExtents<3>
 : public ArrayExtentsBase<3>
 {
  public:
+  using BaseClass = ArrayExtentsBase<3>;
+ public:
   ArrayExtents() = default;
+  ArrayExtents(BaseClass rhs) : BaseClass(rhs){}
   ARCCORE_HOST_DEVICE ArrayExtents(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
   {
     setSize(dim1_size,dim2_size,dim3_size);
@@ -188,7 +205,10 @@ class ArrayExtents<4>
 : public ArrayExtentsBase<4>
 {
  public:
+  using BaseClass = ArrayExtentsBase<4>;
+ public:
   ArrayExtents() = default;
+  ArrayExtents(BaseClass rhs) : BaseClass(rhs){}
   ARCCORE_HOST_DEVICE ArrayExtents(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size,Int64 dim4_size)
   {
     setSize(dim1_size,dim2_size,dim3_size,dim4_size);
@@ -498,7 +518,7 @@ class MDSpanBase
   ARCCORE_HOST_DEVICE DataType* _internalData() { return m_ptr; }
   ARCCORE_HOST_DEVICE const DataType* _internalData() const { return m_ptr; }
  public:
-  SmallSpan<const Int64> extents() const { return m_extents.extents(); }
+  SmallSpan<const Int64> extents() const { return m_extents.extentsAsSpan(); }
   Int64 extent(int i) const { return m_extents(i); }
  public:
   ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<RankValue> idx) const
@@ -805,6 +825,9 @@ class NumArrayBase
   MDSpan<DataType,RankValue> span() { return m_span; }
   MDSpan<const DataType,RankValue> span() const { return m_span.constSpan(); }
   MDSpan<const DataType,RankValue> constSpan() const { return m_span.constSpan(); }
+ public:
+  Span<const DataType> to1DSpan() const { return m_data.constSpan(); }
+  Span<DataType> to1DSpan() { return m_data.span(); }
  protected:
   MDSpan<DataType,RankValue> m_span;
   UniqueArray<DataType> m_data;
