@@ -23,6 +23,9 @@
 namespace Arcane
 {
 
+template<typename DataType,int RankValue>
+class NumArrayBase;
+
 namespace impl
 {
 template <class T> ARCCORE_HOST_DEVICE
@@ -495,6 +498,9 @@ class MDSpanBase
   ARCCORE_HOST_DEVICE DataType* _internalData() { return m_ptr; }
   ARCCORE_HOST_DEVICE const DataType* _internalData() const { return m_ptr; }
  public:
+  SmallSpan<const Int64> extents() const { return m_extents.extents(); }
+  Int64 extent(int i) const { return m_extents(i); }
+ public:
   ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<RankValue> idx) const
   {
     return m_extents.offset(idx);
@@ -509,6 +515,9 @@ class MDSpanBase
   {
     return m_ptr+offset(idx);
   }
+ public:
+  MDSpanBase<const DataType,RankValue> constSpan() const
+  { return MDSpanBase<const DataType,RankValue>(m_ptr,m_extents); }
  protected:
   DataType* m_ptr = nullptr;
   ArrayExtentsWithOffset<RankValue> m_extents;
@@ -528,6 +537,7 @@ template<class DataType>
 class MDSpan<DataType,1>
 : public MDSpanBase<DataType,1>
 {
+  friend class NumArrayBase<DataType,1>;
   using BaseClass = MDSpanBase<DataType,1>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
@@ -565,6 +575,9 @@ class MDSpan<DataType,1>
   {
     return m_ptr+offset(i);
   }
+ public:
+  MDSpan<const DataType,1> constSpan() const
+  { return MDSpan<const DataType,1>(m_ptr,m_extents); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -575,6 +588,7 @@ template<class DataType>
 class MDSpan<DataType,2>
 : public MDSpanBase<DataType,2>
 {
+  friend class NumArrayBase<DataType,2>;
   using BaseClass = MDSpanBase<DataType,2>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
@@ -614,6 +628,9 @@ class MDSpan<DataType,2>
   {
     return m_ptr + offset(i,j);
   }
+ public:
+  MDSpan<const DataType,2> constSpan() const
+  { return MDSpan<const DataType,2>(m_ptr,m_extents); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -624,6 +641,7 @@ template<class DataType>
 class MDSpan<DataType,3>
 : public MDSpanBase<DataType,3>
 {
+  friend class NumArrayBase<DataType,3>;
   using BaseClass = MDSpanBase<DataType,3>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
@@ -669,7 +687,9 @@ class MDSpan<DataType,3>
   {
     return m_ptr+offset(i,j,k);
   }
- private:
+ public:
+  MDSpan<const DataType,3> constSpan() const
+  { return MDSpan<const DataType,3>(m_ptr,m_extents); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -680,6 +700,7 @@ template<class DataType>
 class MDSpan<DataType,4>
 : public MDSpanBase<DataType,4>
 {
+  friend class NumArrayBase<DataType,4>;
   using BaseClass = MDSpanBase<DataType,4>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
@@ -730,6 +751,9 @@ class MDSpan<DataType,4>
   {
     return m_ptr + offset(i,j,k,l);
   }
+ public:
+  MDSpan<const DataType,4> constSpan() const
+  { return MDSpan<const DataType,4>(m_ptr,m_extents); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -748,10 +772,10 @@ class NumArrayBase
  public:
   //! Nombre total d'éléments du tableau
   Int64 totalNbElement() const { return m_total_nb_element; }
-  Int64 extent(int i) const { return m_extents(i); }
+  Int64 extent(int i) const { return m_span.extent(i); }
   void resize(ArrayExtents<RankValue> extents)
   {
-    m_extents.setSize(extents);
+    m_span.m_extents.setSize(extents);
     _resize();
   }
  protected:
@@ -770,22 +794,19 @@ class NumArrayBase
       full_size *= extent(i);
     m_total_nb_element = full_size;
     m_data.resize(full_size);
-    m_ptr = m_data.data();
+    m_span.m_ptr = m_data.data();
   }
  public:
   void fill(const DataType& v) { m_data.fill(v); }
-  DataType* _internalData() { return m_ptr; }
+  DataType* _internalData() { return m_span._internalData(); }
   Int32 nbDimension() const { return RankValue; }
-  Span<const Int64> extents() const { return m_extents.extents(); }
+  SmallSpan<const Int64> extents() const { return m_span.extents(); }
  public:
-  MDSpan<DataType,RankValue> span()
-  { return MDSpan<DataType,RankValue>(m_ptr,m_extents); }
-  MDSpan<const DataType,RankValue> span() const { return this->constSpan(); }
-  MDSpan<const DataType,RankValue> constSpan() const
-  { return MDSpan<const DataType,RankValue>(m_ptr,m_extents); }
+  MDSpan<DataType,RankValue> span() { return m_span; }
+  MDSpan<const DataType,RankValue> span() const { return m_span.constSpan(); }
+  MDSpan<const DataType,RankValue> constSpan() const { return m_span.constSpan(); }
  protected:
-  DataType* m_ptr = nullptr;
-  ArrayExtentsWithOffset<RankValue> m_extents;
+  MDSpan<DataType,RankValue> m_span;
   UniqueArray<DataType> m_data;
   Int64 m_total_nb_element = 0;
 };
@@ -809,8 +830,7 @@ class NumArray<DataType,1>
   using BaseClass::extent;
   using BaseClass::resize;
  private:
-  using BaseClass::m_ptr;
-  using BaseClass::m_extents;
+  using BaseClass::m_span;
  public:
   //! Construit un tableau vide
   NumArray() : NumArray(0){}
@@ -828,12 +848,12 @@ class NumArray<DataType,1>
   //! Valeur pour l'élément \a i
   DataType operator()(Int64 i) const
   {
-    return m_ptr[m_extents.offset(i)];
+    return m_span(i);
   }
   //! Positionne la valeur pour l'élément \a i
   DataType& s(Int64 i)
   {
-    return m_ptr[m_extents.offset(i)];
+    return m_span(i);
   }
  public:
   operator MDSpan<DataType,1> () { return this->span(); }
@@ -853,8 +873,7 @@ class NumArray<DataType,2>
   using BaseClass::extent;
   using BaseClass::resize;
  private:
-  using BaseClass::m_ptr;
-  using BaseClass::m_extents;
+  using BaseClass::m_span;
  public:
   //! Construit un tableau vide
   NumArray() = default;
@@ -876,12 +895,12 @@ class NumArray<DataType,2>
   //! Valeur pour l'élément \a i,j
   DataType operator()(Int64 i,Int64 j) const
   {
-    return m_ptr[m_extents.offset(i,j)];
+    return m_span(i,j);
   }
   //! Positionne la valeur pour l'élément \a i,j
   DataType& s(Int64 i,Int64 j)
   {
-    return m_ptr[m_extents.offset(i,j)];
+    return m_span(i,j);
   }
 };
 
@@ -898,8 +917,7 @@ class NumArray<DataType,3>
   using BaseClass::extent;
   using BaseClass::resize;
  private:
-  using BaseClass::m_ptr;
-  using BaseClass::m_extents;
+  using BaseClass::m_span;
  public:
   //! Construit un tableau vide
   NumArray() = default;
@@ -922,12 +940,12 @@ class NumArray<DataType,3>
   //! Valeur pour l'élément \a i,j,k
   DataType operator()(Int64 i,Int64 j,Int64 k) const
   {
-    return m_ptr[m_extents.offset(i,j,k)];
+    return m_span(i,j,k);
   }
   //! Positionne la valeur pour l'élément \a i,j,k
   DataType& s(Int64 i,Int64 j,Int64 k)
   {
-    return m_ptr[m_extents.offset(i,j,k)];
+    return m_span(i,j,k);
   }
 };
 
@@ -944,8 +962,7 @@ class NumArray<DataType,4>
   using BaseClass::extent;
   using BaseClass::resize;
  private:
-  using BaseClass::m_ptr;
-  using BaseClass::m_extents;
+  using BaseClass::m_span;
  public:
   //! Construit un tableau vide
   NumArray() = default;
@@ -972,12 +989,12 @@ class NumArray<DataType,4>
   //! Valeur pour l'élément \a i,j,k,l
   DataType operator()(Int64 i,Int64 j,Int64 k,Int64 l) const
   {
-    return m_ptr[m_extents.offset(i,j,k,l)];
+    return m_span(i,j,k,l);
   }
   //! Positionne la valeur pour l'élément \a i,j,k,l
   DataType& s(Int64 i,Int64 j,Int64 k,Integer l)
   {
-    return m_ptr[m_extents.offset(i,j,k,l)];
+    return m_span(i,j,k,l);
   }
 };
 
