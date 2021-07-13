@@ -54,21 +54,21 @@ namespace
 /*!
  * \brief Interface d'un 'IData' dont le conteneur repose sur un 'NumArray'.
  */
-template <class DataType,int Rank>
+template <class DataType,int RankValue>
 class INumArrayDataT
 : public IData
 {
  public:
 
-  typedef INumArrayDataT<DataType,Rank> ThatClass;
+  typedef INumArrayDataT<DataType,RankValue> ThatClass;
 
  public:
 
   //! Vue constante sur la donnée
-  virtual MDSpan<const DataType,Rank> view() const = 0;
+  virtual MDSpan<const DataType,RankValue> view() const = 0;
 
   //! Vue sur la donnée
-  virtual MDSpan<DataType,Rank> view() = 0;
+  virtual MDSpan<DataType,RankValue> view() = 0;
 
   //! Clone la donnée
   virtual Ref<ThatClass> cloneTrueRef() = 0;
@@ -82,10 +82,10 @@ class INumArrayDataT
 /*!
  * \brief Implémentation d'un 'IData' dont le conteneur repose sur un 'NumArray'.
  */
-template <class DataType,int Rank>
+template <class DataType,int RankValue>
 class NumArrayDataT
 : public ReferenceCounterImpl
-, public INumArrayDataT<DataType,Rank>
+, public INumArrayDataT<DataType,RankValue>
 {
   ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
   class Impl;
@@ -93,14 +93,14 @@ class NumArrayDataT
 
  public:
 
-  typedef NumArrayDataT<DataType,Rank> ThatClass;
-  typedef INumArrayDataT<DataType,Rank> DataInterfaceType;
+  typedef NumArrayDataT<DataType,RankValue> ThatClass;
+  typedef INumArrayDataT<DataType,RankValue> DataInterfaceType;
 
  public:
 
   explicit NumArrayDataT(ITraceMng* trace);
   explicit NumArrayDataT(const DataStorageBuildInfo& dsbi);
-  NumArrayDataT(const NumArrayDataT<DataType,Rank>& rhs);
+  NumArrayDataT(const NumArrayDataT<DataType,RankValue>& rhs);
   ~NumArrayDataT() override;
 
  public:
@@ -110,10 +110,10 @@ class NumArrayDataT
   eDataType dataType() const override { return DataTypeTraitsT<DataType>::type(); }
   void serialize(ISerializer* sbuf, IDataOperation* operation) override;
   void serialize(ISerializer* sbuf, Int32ConstArrayView ids, IDataOperation* operation) override;
-  //NumArray<DataType,Rank>& value() override { return m_value; }
-  //const NumArray<DataType,Rank>& value() const override { return m_value; }
-  MDSpan<DataType,Rank> view() override { return m_value.span(); }
-  MDSpan<const DataType,Rank> view() const override { return m_value.span(); }
+  //NumArray<DataType,RankValue>& value() override { return m_value; }
+  //const NumArray<DataType,RankValue>& value() const override { return m_value; }
+  MDSpan<DataType,RankValue> view() override { return m_value.span(); }
+  MDSpan<const DataType,RankValue> view() const override { return m_value.span(); }
   void resize(Integer new_size) override;
   IData* clone() override { return _cloneTrue(); }
   IData* cloneEmpty() override { return _cloneTrueEmpty(); }
@@ -168,19 +168,19 @@ class NumArrayDataT
 
  private:
 
-  NumArray<DataType,Rank> m_value; //!< Donnée
+  NumArray<DataType,RankValue> m_value; //!< Donnée
   ITraceMng* m_trace;
 
  private:
 
-  INumArrayDataT<DataType,Rank>* _cloneTrue() const { return new ThatClass(*this); }
-  INumArrayDataT<DataType,Rank>* _cloneTrueEmpty() const { return new ThatClass(m_trace); }
+  INumArrayDataT<DataType,RankValue>* _cloneTrue() const { return new ThatClass(*this); }
+  INumArrayDataT<DataType,RankValue>* _cloneTrueEmpty() const { return new ThatClass(m_trace); }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,int Rank> NumArrayDataT<DataType,Rank>::
+template<typename DataType,int RankValue> NumArrayDataT<DataType,RankValue>::
 NumArrayDataT(ITraceMng* trace)
 : m_trace(trace)
 {
@@ -189,8 +189,8 @@ NumArrayDataT(ITraceMng* trace)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,int Rank> NumArrayDataT<DataType,Rank>::
-NumArrayDataT(const NumArrayDataT<DataType,Rank>& rhs)
+template<typename DataType,int RankValue> NumArrayDataT<DataType,RankValue>::
+NumArrayDataT(const NumArrayDataT<DataType,RankValue>& rhs)
 : m_value(rhs.m_value)
 , m_trace(rhs.m_trace)
 {
@@ -199,7 +199,7 @@ NumArrayDataT(const NumArrayDataT<DataType,Rank>& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,int Rank> NumArrayDataT<DataType,Rank>::
+template<typename DataType,int RankValue> NumArrayDataT<DataType,RankValue>::
 NumArrayDataT(const DataStorageBuildInfo& dsbi)
 : m_trace(dsbi.traceMng())
 {
@@ -208,7 +208,7 @@ NumArrayDataT(const DataStorageBuildInfo& dsbi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,int Rank> NumArrayDataT<DataType,Rank>::
+template<typename DataType,int RankValue> NumArrayDataT<DataType,RankValue>::
 ~NumArrayDataT()
 {
 }
@@ -219,7 +219,7 @@ template<typename DataType,int Rank> NumArrayDataT<DataType,Rank>::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,int Rank> DataStorageTypeInfo NumArrayDataT<DataType,Rank>::
+template<typename DataType,int RankValue> DataStorageTypeInfo NumArrayDataT<DataType,RankValue>::
 staticStorageTypeInfo()
 {
   typedef DataTypeTraitsT<DataType> TraitsType;
@@ -233,7 +233,7 @@ staticStorageTypeInfo()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,int Rank> DataStorageTypeInfo NumArrayDataT<DataType,Rank>::
+template<typename DataType,int RankValue> DataStorageTypeInfo NumArrayDataT<DataType,RankValue>::
 storageTypeInfo() const
 {
   return staticStorageTypeInfo();
@@ -242,7 +242,7 @@ storageTypeInfo() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,int Rank> void NumArrayDataT<DataType,Rank>::
+template<typename DataType,int RankValue> void NumArrayDataT<DataType,RankValue>::
 resize(Integer new_size)
 {
   ARCANE_UNUSED(new_size);
@@ -255,7 +255,7 @@ resize(Integer new_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,int Rank> Ref<ISerializedData> NumArrayDataT<DataType,Rank>::
+template<typename DataType,int RankValue> Ref<ISerializedData> NumArrayDataT<DataType,RankValue>::
 createSerializedDataRef(bool use_basic_type) const
 {
   return makeRef(const_cast<ISerializedData*>(createSerializedData(use_basic_type)));
@@ -264,20 +264,17 @@ createSerializedDataRef(bool use_basic_type) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,int Rank> const ISerializedData* NumArrayDataT<DataType,Rank>::
+template<typename DataType,int RankValue> const ISerializedData* NumArrayDataT<DataType,RankValue>::
 createSerializedData(bool use_basic_type) const
 {
-  ARCANE_UNUSED(use_basic_type);
-  ARCANE_THROW(NotImplementedException,"createSerializedData()");
-#if 0
-  typedef typename DataTypeTraitsT<DataType>::BasicType BasicType;
+  using BasicType = typename DataTypeTraitsT<DataType>::BasicType;
 
   Int64 nb_count = 1;
   eDataType data_type = dataType();
   Int64 type_size = sizeof(DataType);
 
   if (use_basic_type){
-    nb_count = DataTypeTraitsT<DataType>::nbBasicType();
+    nb_count = 1; //DataTypeTraitsT<DataType>::nbBasicType();
     data_type = DataTypeTraitsT<BasicType>::type();
     type_size = sizeof(BasicType);
   }
@@ -287,56 +284,44 @@ createSerializedData(bool use_basic_type) const
   Int64 full_size = nb_base_element * type_size;
   const Byte* bt = reinterpret_cast<const Byte*>(m_value.to1DSpan().data());
   Span<const Byte> base_values(bt,full_size);
-  UniqueArray<Int64> dimensions;
-  dimensions.resize(2);
-  dimensions[0] = m_value.dim1Size();
-  dimensions[1] = m_value.dim2Size();
+  UniqueArray<Int64> dimensions(m_value.extents());
     
-  ISerializedData* sd = new SerializedData(data_type,base_values.size(),2,nb_element,
+  ISerializedData* sd = new SerializedData(data_type,base_values.size(),RankValue,nb_element,
                                            nb_base_element,false,dimensions);
   sd->setBytes(base_values);
   return sd;
-#endif
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,int Rank> void NumArrayDataT<DataType,Rank>::
+template<typename DataType,int RankValue> void NumArrayDataT<DataType,RankValue>::
 allocateBufferForSerializedData(ISerializedData* sdata)
 {
-  ARCANE_UNUSED(sdata);
-  ARCANE_THROW(NotImplementedException,"allocateBufferForSerializedData()");
-#if 0
-  typedef typename DataTypeTraitsT<DataType>::BasicType BasicType;
+  using BasicType = typename DataTypeTraitsT<DataType>::BasicType;
 
   eDataType data_type = sdata->baseDataType();
   eDataType base_data_type = DataTypeTraitsT<BasicType>::type();
 
   if (data_type!=dataType() && data_type==base_data_type)
     ARCANE_FATAL("Bad serialized type");
+
   bool is_multi_size = sdata->isMultiSize();
   if (is_multi_size)
     ARCANE_FATAL("Can not allocate multi-size array");
 
-  Int64 dim1_size = sdata->extents()[0];
-  Int64 dim2_size = sdata->extents()[1];
-  //m_trace->info() << " ASSIGN DATA dim1=" << dim1_size
-  //                << " dim2=" << dim2_size
-  //                << " addr=" << m_value.viewAsArray().unguardedBasePointer();
-
-  m_value.resize(dim1_size,dim2_size);
+  ArrayExtents<RankValue> extents = ArrayExtents<RankValue>::fromSpan(sdata->extents());
+  m_value.resize(extents);
 
   Byte* byte_data = reinterpret_cast<Byte*>(m_value.to1DSpan().data());
   Span<Byte> bytes_view(byte_data,sdata->memorySize());
   sdata->setBytes(bytes_view);
-#endif
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,int Rank> void NumArrayDataT<DataType,Rank>::
+template<typename DataType,int RankValue> void NumArrayDataT<DataType,RankValue>::
 assignSerializedData(const ISerializedData* sdata)
 {
   ARCANE_UNUSED(sdata);
@@ -346,7 +331,7 @@ assignSerializedData(const ISerializedData* sdata)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,int Rank> void NumArrayDataT<DataType,Rank>::
+template<typename DataType,int RankValue> void NumArrayDataT<DataType,RankValue>::
 serialize(ISerializer* sbuf,IDataOperation* operation)
 {
   ARCANE_UNUSED(sbuf);
@@ -427,7 +412,7 @@ serialize(ISerializer* sbuf,IDataOperation* operation)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,int Rank> void NumArrayDataT<DataType,Rank>::
+template<typename DataType,int RankValue> void NumArrayDataT<DataType,RankValue>::
 serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation)
 {
   ARCANE_UNUSED(sbuf);
@@ -517,9 +502,9 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation)
 
         sbuf->getSpan(base_value);
 
-        MDSpan<DataType,Rank> data_value(reinterpret_cast<DataType*>(base_value.data()),nb_value*dim2_size);
+        MDSpan<DataType,RankValue> data_value(reinterpret_cast<DataType*>(base_value.data()),nb_value*dim2_size);
         UniqueArray<DataType> current_value;
-        MDSpan<DataType,Rank> transformed_value;
+        MDSpan<DataType,RankValue> transformed_value;
 
         // Si on applique une transformantion, effectue la transformation dans un
         // tableau temporaire 'current_value'.
@@ -545,7 +530,7 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation)
         {
           Int64 index = 0;
           for( Int32 i=0, n=count; i<n; ++i ){
-            MDSpan<DataType,Rank> a(m_value[ids[i]]);
+            MDSpan<DataType,RankValue> a(m_value[ids[i]]);
             for( Int64 z=0, iz=dim2_size; z<iz; ++z ){
               a[z] = transformed_value[index];
               ++index;
@@ -565,7 +550,7 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,int Rank> void NumArrayDataT<DataType,Rank>::
+template<typename DataType,int RankValue> void NumArrayDataT<DataType,RankValue>::
 fillDefault()
 {
   m_value.fill(DataType());
@@ -574,7 +559,7 @@ fillDefault()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,int Rank> void NumArrayDataT<DataType,Rank>::
+template<typename DataType,int RankValue> void NumArrayDataT<DataType,RankValue>::
 setName(const String& name)
 {
   ARCANE_UNUSED(name);
@@ -583,38 +568,30 @@ setName(const String& name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,int Rank> void NumArrayDataT<DataType,Rank>::
+template<typename DataType,int RankValue> void NumArrayDataT<DataType,RankValue>::
 computeHash(IHashAlgorithm* algo,ByteArray& output) const
 {
-  ARCANE_UNUSED(algo);
-  ARCANE_UNUSED(output);
-  ARCANE_THROW(NotImplementedException,"computeHash()");
-#if 0
-  //TODO: passer en 64 bits
-  Span<const DataType> values = m_value.to1DSpan();
 
   // Calcule la fonction de hashage pour les valeurs
-  Int64 type_size = sizeof(DataType);
-  Int64 nb_element = values.size();
-  const Byte* ptr = reinterpret_cast<const Byte*>(values.data());
-  Span<const Byte> input(ptr,type_size*nb_element);
-  algo->computeHash64(input,output);
+  {
+    Span<const DataType> values = m_value.to1DSpan();
+    Int64 type_size = sizeof(DataType);
+    Int64 nb_element = values.size();
+    const Byte* ptr = reinterpret_cast<const Byte*>(values.data());
+    Span<const Byte> input(ptr,type_size*nb_element);
+    algo->computeHash64(input,output);
+  }
 
-  // Calcule la fonction de hashage pour les tailles
-  UniqueArray<Int64> dimensions(2);
-  dimensions[0] = m_value.dim1Size();
-  dimensions[1] = m_value.dim2Size();
-  ptr = reinterpret_cast<const Byte*>(dimensions.data());
-  Int64 array_len = dimensions.size() * sizeof(Int64);
-  input = Span<const Byte>(ptr,array_len);
-  algo->computeHash64(input,output);
-#endif
+  {// Calcule la fonction de hashage pour les tailles
+    auto input = asBytes(m_value.extents());
+    algo->computeHash64(input,output);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,int Rank> void NumArrayDataT<DataType,Rank>::
+template<typename DataType,int RankValue> void NumArrayDataT<DataType,RankValue>::
 copy(const IData* data)
 {
   ARCANE_UNUSED(data);
@@ -630,7 +607,7 @@ copy(const IData* data)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,int Rank> void NumArrayDataT<DataType,Rank>::
+template<typename DataType,int RankValue> void NumArrayDataT<DataType,RankValue>::
 swapValues(IData* data)
 {
   auto* true_data = dynamic_cast<ThatClass*>(data);
@@ -642,7 +619,7 @@ swapValues(IData* data)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,int Rank> void NumArrayDataT<DataType,Rank>::
+template<typename DataType,int RankValue> void NumArrayDataT<DataType,RankValue>::
 swapValuesDirect(ThatClass* true_data)
 {
   ARCANE_UNUSED(true_data);
@@ -667,6 +644,16 @@ registerNumArrayDataFactory(IDataFactoryMng* dfm)
   //DataStorageFactory<NumArrayDataT<Int16,2>>::registerDataFactory(dfm);
   //DataStorageFactory<NumArrayDataT<Int32,2>>::registerDataFactory(dfm);
   DataStorageFactory<NumArrayDataT<Int64,2>>::registerDataFactory(dfm);
+
+  DataStorageFactory<NumArrayDataT<Real,3>>::registerDataFactory(dfm);
+  //DataStorageFactory<NumArrayDataT<Int16,2>>::registerDataFactory(dfm);
+  //DataStorageFactory<NumArrayDataT<Int32,2>>::registerDataFactory(dfm);
+  DataStorageFactory<NumArrayDataT<Int64,3>>::registerDataFactory(dfm);
+
+  DataStorageFactory<NumArrayDataT<Real,4>>::registerDataFactory(dfm);
+  //DataStorageFactory<NumArrayDataT<Int16,2>>::registerDataFactory(dfm);
+  //DataStorageFactory<NumArrayDataT<Int32,2>>::registerDataFactory(dfm);
+  DataStorageFactory<NumArrayDataT<Int64,4>>::registerDataFactory(dfm);
 }
 
 /*---------------------------------------------------------------------------*/
