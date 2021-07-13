@@ -37,6 +37,7 @@ T fastmod(T a , T b)
 
 template<int RankValue> class ArrayBounds;
 template<int RankValue> class ArrayBoundsIndex;
+template<int RankValue> class ArrayExtentsBase;
 template<int RankValue> class ArrayExtents;
 template<int RankValue> class ArrayExtentsWithOffset;
 
@@ -106,6 +107,27 @@ class ArrayBoundsIndex<4>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Spécialisation de ArrayExtentsBase pour les tableaux de dimension 0 (les scalaires)
+ */
+template<>
+class ArrayExtentsBase<0>
+{
+ public:
+  ArrayExtentsBase() = default;
+  //! Nombre d'élément de la \a i-ème dimension.
+  ARCCORE_HOST_DEVICE SmallSpan<const Int64> asSpan() const { return {}; }
+  //! Nombre total d'eléments
+  ARCCORE_HOST_DEVICE Int64 totalNbElement() const { return 1; }
+  ARCCORE_HOST_DEVICE static ArrayExtentsBase<0> fromSpan([[maybe_unused]] Span<const Int64> extents)
+  {
+    // TODO: vérifier la taille de \a extents
+    return {};
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Classe pour conserver le nombre d'éléments dans chaque dimension.
  */
 template<int RankValue>
@@ -120,7 +142,8 @@ class ArrayExtentsBase
   //! Nombre d'élément de la \a i-ème dimension.
   ARCCORE_HOST_DEVICE Int64 extent(int i) const { return m_extents[i]; }
   ARCCORE_HOST_DEVICE Int64 operator()(int i) const { return m_extents[i]; }
-  ARCCORE_HOST_DEVICE SmallSpan<const Int64> extentsAsSpan() const { return { m_extents, RankValue }; }
+  ARCCORE_HOST_DEVICE SmallSpan<const Int64> asSpan() const { return { m_extents, RankValue }; }
+  //! Nombre total d'eléments
   ARCCORE_HOST_DEVICE Int64 totalNbElement() const
   {
     Int64 nb_element = 1;
@@ -128,6 +151,15 @@ class ArrayExtentsBase
       nb_element *= m_extents[i];
     return nb_element;
   }
+  // Instance contenant les dimensions après la première
+  ARCCORE_HOST_DEVICE ArrayExtentsBase<RankValue-1> removeFirstExtent() const
+  {
+    return ArrayExtentsBase<RankValue-1>::fromSpan({m_extents+1,RankValue-1});
+  }
+  /*!
+   * \brief Construit une instance à partir des valeurs données dans \a extents.
+   * \pre extents.size() == RankValue.
+   */
   ARCCORE_HOST_DEVICE static ArrayExtentsBase<RankValue> fromSpan(Span<const Int64> extents)
   {
     ArrayExtentsBase<RankValue> v;
@@ -233,7 +265,7 @@ class ArrayExtentsWithOffset<1>
   using BaseClass = ArrayExtents<1>;
   using BaseClass::extent;
   using BaseClass::operator();
-  using BaseClass::extentsAsSpan;
+  using BaseClass::asSpan;
   using BaseClass::totalNbElement;
  public:
   ArrayExtentsWithOffset() = default;
@@ -259,6 +291,7 @@ class ArrayExtentsWithOffset<1>
   {
     BaseClass::setSize(extents(0));
   }
+  BaseClass extents() const { const BaseClass* b = this; return *b; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -272,7 +305,7 @@ class ArrayExtentsWithOffset<2>
   using BaseClass = ArrayExtents<2>;
   using BaseClass::extent;
   using BaseClass::operator();
-  using BaseClass::extentsAsSpan;
+  using BaseClass::asSpan;
   using BaseClass::totalNbElement;
  public:
   ArrayExtentsWithOffset() = default;
@@ -300,6 +333,7 @@ class ArrayExtentsWithOffset<2>
   {
     this->setSize(dims(0),dims(1));
   }
+  BaseClass extents() const { const BaseClass* b = this; return *b; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -313,7 +347,7 @@ class ArrayExtentsWithOffset<3>
   using BaseClass = ArrayExtents<3>;
   using BaseClass::extent;
   using BaseClass::operator();
-  using BaseClass::extentsAsSpan;
+  using BaseClass::asSpan;
   using BaseClass::totalNbElement;
  public:
   ArrayExtentsWithOffset() = default;
@@ -345,6 +379,7 @@ class ArrayExtentsWithOffset<3>
   {
     this->setSize(dims(0),dims(1),dims(2));
   }
+  BaseClass extents() const { const BaseClass* b = this; return *b; }
  protected:
   ARCCORE_HOST_DEVICE void _computeOffsets()
   {
@@ -365,7 +400,7 @@ class ArrayExtentsWithOffset<4>
   using BaseClass = ArrayExtents<4>;
   using BaseClass::extent;
   using BaseClass::operator();
-  using BaseClass::extentsAsSpan;
+  using BaseClass::asSpan;
   using BaseClass::totalNbElement;
  public:
   ArrayExtentsWithOffset() = default;
@@ -399,6 +434,7 @@ class ArrayExtentsWithOffset<4>
   {
     this->setSize(dims(0),dims(1),dims(2),dims(3));
   }
+  BaseClass extents() const { const BaseClass* b = this; return *b; }
  protected:
   ARCCORE_HOST_DEVICE void _computeOffsets()
   {
@@ -518,7 +554,10 @@ class MDSpanBase
   ARCCORE_HOST_DEVICE DataType* _internalData() { return m_ptr; }
   ARCCORE_HOST_DEVICE const DataType* _internalData() const { return m_ptr; }
  public:
-  SmallSpan<const Int64> extents() const { return m_extents.extentsAsSpan(); }
+  ArrayExtents<RankValue> extents() const
+  {
+    return m_extents.extents();
+  }
   Int64 extent(int i) const { return m_extents(i); }
  public:
   ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<RankValue> idx) const
@@ -538,6 +577,8 @@ class MDSpanBase
  public:
   MDSpanBase<const DataType,RankValue> constSpan() const
   { return MDSpanBase<const DataType,RankValue>(m_ptr,m_extents); }
+  Span<DataType> to1DSpan() { return { m_ptr, m_extents.totalNbElement() }; }
+  Span<const DataType> to1DSpan() const { return { m_ptr, m_extents.totalNbElement() }; }
  protected:
   DataType* m_ptr = nullptr;
   ArrayExtentsWithOffset<RankValue> m_extents;
@@ -790,6 +831,10 @@ template<typename DataType,int RankValue>
 class NumArrayBase
 {
  public:
+  using ConstSpanType = MDSpan<const DataType,RankValue>;
+  using SpanType = MDSpan<DataType,RankValue>;
+
+ public:
   //! Nombre total d'éléments du tableau
   Int64 totalNbElement() const { return m_total_nb_element; }
   Int64 extent(int i) const { return m_span.extent(i); }
@@ -820,14 +865,21 @@ class NumArrayBase
   void fill(const DataType& v) { m_data.fill(v); }
   DataType* _internalData() { return m_span._internalData(); }
   Int32 nbDimension() const { return RankValue; }
-  SmallSpan<const Int64> extents() const { return m_span.extents(); }
+  ArrayExtents<RankValue> extents() const { return m_span.extents(); }
  public:
-  MDSpan<DataType,RankValue> span() { return m_span; }
-  MDSpan<const DataType,RankValue> span() const { return m_span.constSpan(); }
-  MDSpan<const DataType,RankValue> constSpan() const { return m_span.constSpan(); }
+  SpanType span() { return m_span; }
+  ConstSpanType span() const { return m_span.constSpan(); }
+  ConstSpanType constSpan() const { return m_span.constSpan(); }
  public:
   Span<const DataType> to1DSpan() const { return m_data.constSpan(); }
   Span<DataType> to1DSpan() { return m_data.span(); }
+  void copy(ConstSpanType rhs) { m_data.copy(rhs.to1DSpan()); }
+  void swap(NumArrayBase<DataType,RankValue>& rhs)
+  {
+    m_data.swap(rhs.m_data);
+    std::swap(m_span,rhs.m_span);
+    std::swap(m_total_nb_element,rhs.m_total_nb_element);
+  }
  protected:
   MDSpan<DataType,RankValue> m_span;
   UniqueArray<DataType> m_data;
