@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataFactory.h                                               (C) 2000-2020 */
+/* DataFactory.h                                               (C) 2000-2021 */
 /*                                                                           */
 /* Fabrique de donnée.                                                       */
 /*---------------------------------------------------------------------------*/
@@ -50,24 +50,9 @@ class DataFactory
    */
   IData* registerData(IData* data) override;
 
-  IData* createSimpleData(eDataType data_type,Integer dimension,Integer multi_tag) override;
-  
   Ref<IData> createSimpleDataRef(eDataType data_type,Integer dimension,Integer multi_tag) override;
 
   IDataOperation* createDataOperation(Parallel::eReduceType rt) override;
-
-  ARCCORE_DEPRECATED_2019("Use overload with extents")
-  ISerializedData* createSerializedData(eDataType data_type,Integer memory_size,
-                                        Integer nb_dim,Integer nb_element,
-                                        Integer nb_base_element,bool is_multi_size,
-                                        IntegerConstArrayView dimensions) override;
-
-  ISerializedData* createSerializedData(eDataType data_type,Int64 memory_size,
-                                        Integer nb_dim,Int64 nb_element,
-                                        Int64 nb_base_element,bool is_multi_size,
-                                        Int64ConstArrayView extents) override;
-
-  ISerializedData* createSerializedData() override;
 
  private:
 

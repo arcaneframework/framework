@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IDataFactory.h                                              (C) 2000-2020 */
+/* IDataFactory.h                                              (C) 2000-2021 */
 /*                                                                           */
 /* Interface d'une fabrique de donnée.                                       */
 /*---------------------------------------------------------------------------*/
@@ -67,16 +67,6 @@ class IDataFactory
    * \return la donnée ou zéro si aucune donnée de ce type ne peut
    * être fabriquée.
    */
-  ARCCORE_DEPRECATED_2020("Use createSimpleDataRef() instead")
-  virtual IData* createSimpleData(eDataType data_type,Integer dimension,Integer multi_tag) =0;
-
-  /*
-   * \brief Créé une donnée d'un type simple.
-   * \param data_type Type de la donnée à créer
-   * \param dimension Dimension de la donnée
-   * \return la donnée ou zéro si aucune donnée de ce type ne peut
-   * être fabriquée.
-   */
   virtual Ref<IData> createSimpleDataRef(eDataType data_type,Integer dimension,Integer multi_tag) =0;
 
   /*!
@@ -84,48 +74,6 @@ class IDataFactory
    * \todo mettre dans une autre interface.
    */
   virtual IDataOperation* createDataOperation(Parallel::eReduceType rt) =0;
-
-  /*!
-   * \brief Créé des données sérialisées.
-   *
-   * les tableaux \a dimensions et \a values ne sont pas dupliqués et ne doivent
-   * pas être modifiés tant que l'objet sérialisé est utilisé.
-   *
-   * Le type \a data_type doit être un type parmi \a DT_Byte, \a DT_Int32,
-   * \a DT_Int64 ou DT_Real.
-   *
-   * \deprecated Utiliser la version 64 bits de createSerializedData().
-   */
-  ARCCORE_DEPRECATED_2020("Use IDataFactoryMng::createSimpleDataRef() instead")
-  virtual ISerializedData*
-  createSerializedData(eDataType data_type,Integer memory_size,
-                       Integer nb_dim,Integer nb_element,
-                       Integer nb_base_element,bool is_multi_size,
-                       IntegerConstArrayView dimensions) =0;
-
-  /*!
-   * \brief Créé des données sérialisées.
-   *
-   * les tableaux \a dimensions et \a values ne sont pas dupliqués et ne doivent
-   * pas être modifiés tant que l'objet sérialisé est utilisé.
-   *
-   * Le type \a data_type doit être un type parmi \a DT_Byte, \a DT_Int32,
-   * \a DT_Int64 ou DT_Real.
-   */
-   ARCCORE_DEPRECATED_2020("Use IDataFactoryMng::createSimpleDataRef() instead")
-   virtual ISerializedData* createSerializedData(eDataType data_type,Int64 memory_size,
-                                                 Integer nb_dim,Int64 nb_element,
-                                                 Int64 nb_base_element,bool is_multi_size,
-                                                 Int64ConstArrayView dimensions) =0;
-
-  /*!
-   * \brief Créé des données sérialisées.
-   *
-   * la donnée sérialisée est vide. Elle ne pourra être utilisée qu'après un
-   * appel à ISerializedData::serialize() en mode ISerializer::ModePut.
-   */
-  ARCCORE_DEPRECATED_2020("Use IDataFactoryMng::createEmptySimpleDataRef() instead")
-  virtual ISerializedData* createSerializedData() =0;
 };
 
 /*---------------------------------------------------------------------------*/
