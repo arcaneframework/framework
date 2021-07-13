@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SerializedData.h                                            (C) 2000-2020 */
+/* SerializedData.h                                            (C) 2000-2021 */
 /*                                                                           */
 /* Donnée sérialisée.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -44,10 +44,6 @@ class SerializedData
  public:
   
   SerializedData();
-  ARCANE_DEPRECATED_2018_R("Use constructor using extents")
-  SerializedData(eDataType base_data_type,Int64 memory_size,
-                 Integer nb_dimension,Int64 nb_element,Int64 nb_base_element,
-                 bool is_multi_size,Int32ConstArrayView dimensions);
   SerializedData(eDataType base_data_type,Int64 memory_size,
                  Integer nb_dimension,Int64 nb_element,Int64 nb_base_element,
                  bool is_multi_size,Int64ConstArrayView extents);
@@ -59,7 +55,6 @@ class SerializedData
   Int64 nbElement() const override { return m_nb_element; }
   bool isMultiSize() const override { return m_is_multi_size; }
   Int64 memorySize() const override { return m_memory_size; }
-  IntegerConstArrayView dimensions() const override { return m_dimensions; }
   Int64ConstArrayView extents() const override { return m_extents; }
   Int64 nbBaseElement() const override { return m_nb_base_element; }
   ByteConstArrayView buffer() const override { return m_const_buffer.constSmallView(); }
@@ -70,7 +65,6 @@ class SerializedData
   void setBuffer(ByteConstArrayView buffer) override;
   void setBytes(Span<Byte> bytes) override;
   void setBytes(Span<const Byte> bytes) override;
-  void setBuffer(SharedArray<Byte>& buffer) override;
   void allocateMemory(Int64 size) override;
 
  public:
@@ -90,19 +84,19 @@ class SerializedData
   Int64 m_nb_element;
   Int64 m_nb_base_element;
   bool m_is_multi_size;
+  // TODO: supprimer le champs 'm_dimensions' mais cela implique de
+  // changer la valeur de computeHash() donc à voir le meilleur moment
+  // pour le faire.
   UniqueArray<Int32> m_dimensions;
   UniqueArray<Int64> m_extents;
   Int64 m_element_size;
   Span<Byte> m_buffer;
   Span<const Byte> m_const_buffer;
-  // Une fois que les méthodes obsolètes setBuffer() auront été supprimées on
-  // pourra transformer cela en UniqueArray.
-  SharedArray<Byte> m_stored_buffer;
+  UniqueArray<Byte> m_stored_buffer;
 
  private:
   
   void _serialize(ISerializer* sbuf) const;
-  void _copyDimensionsToExtents();
   void _copyExtentsToDimensions();
 };
 
