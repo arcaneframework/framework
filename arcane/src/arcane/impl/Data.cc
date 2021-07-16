@@ -29,6 +29,8 @@ extern "C++" void
 registerArrayDataFactory(IDataFactoryMng* dfm);
 extern "C++" void
 registerArray2DataFactory(IDataFactoryMng* dfm);
+extern "C++" void
+registerNumArrayDataFactory(IDataFactoryMng* dfm);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,6 +44,7 @@ arcaneRegisterSimpleData(IDataFactoryMng* dfm)
   registerScalarDataFactory(dfm);
   registerArrayDataFactory(dfm);
   registerArray2DataFactory(dfm);
+  registerNumArrayDataFactory(dfm);
 }
 
 /*---------------------------------------------------------------------------*/

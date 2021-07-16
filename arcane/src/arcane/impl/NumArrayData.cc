@@ -225,9 +225,10 @@ staticStorageTypeInfo()
   typedef DataTypeTraitsT<DataType> TraitsType;
   eBasicDataType bdt = TraitsType::basicDataType();
   Int32 nb_basic_type = TraitsType::nbBasicType();
-  Int32 dimension = 2;
+  Int32 dimension = RankValue;
   Int32 multi_tag = 0;
-  return DataStorageTypeInfo(bdt,nb_basic_type,dimension,multi_tag);
+  String impl_name = "NumArray";
+  return DataStorageTypeInfo(bdt,nb_basic_type,dimension,multi_tag,impl_name);
 }
 
 /*---------------------------------------------------------------------------*/
