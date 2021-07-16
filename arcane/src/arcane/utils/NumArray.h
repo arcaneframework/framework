@@ -39,6 +39,7 @@ template<int RankValue> class ArrayBounds;
 template<int RankValue> class ArrayBoundsIndex;
 template<int RankValue> class ArrayExtentsBase;
 template<int RankValue> class ArrayExtents;
+template<int RankValue> class ArrayStridesBase;
 template<int RankValue> class ArrayExtentsWithOffset;
 
 /*---------------------------------------------------------------------------*/
@@ -103,6 +104,85 @@ class ArrayBoundsIndex<4>
   Int64 id2;
   Int64 id3;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Spécialisation de ArrayStrideBase pour les tableaux de dimension 0 (les scalaires)
+ */
+template<>
+class ArrayStridesBase<0>
+{
+ public:
+  ArrayStridesBase() = default;
+  //! Valeur du pas de la \a i-ème dimension.
+  ARCCORE_HOST_DEVICE SmallSpan<const Int64> asSpan() const { return {}; }
+  //! Value totale du pas
+  ARCCORE_HOST_DEVICE Int64 totalStride() const { return 1; }
+  ARCCORE_HOST_DEVICE static ArrayStridesBase<0> fromSpan([[maybe_unused]] Span<const Int64> strides)
+  {
+    // TODO: vérifier la taille de \a strides
+    return {};
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe pour conserver le pas dans chaque dimension.
+ *
+ * Le pas pour une dimension est la distance en mémoire entre deux éléments
+ * du tableau pour cette dimension. En général le pas est égal au nombre
+ * d'éléments dans la dimension sauf si on utilise des marges (padding) par
+ * exemple pour aligner certaines dimensions.
+ */
+template<int RankValue>
+class ArrayStridesBase
+{
+ public:
+  ARCCORE_HOST_DEVICE ArrayStridesBase()
+  {
+    for( int i=0; i<RankValue; ++i )
+      m_strides[i] = 0;
+  }
+  //! Valeur du pas de la \a i-ème dimension.
+  ARCCORE_HOST_DEVICE Int64 stride(int i) const { return m_strides[i]; }
+  ARCCORE_HOST_DEVICE Int64 operator()(int i) const { return m_strides[i]; }
+  ARCCORE_HOST_DEVICE SmallSpan<const Int64> asSpan() const { return { m_strides, RankValue }; }
+  //! Valeur totale du pas
+  ARCCORE_HOST_DEVICE Int64 totalStride() const
+  {
+    Int64 nb_element = 1;
+    for (int i=0; i<RankValue; i++)
+      nb_element *= m_strides[i];
+    return nb_element;
+  }
+  // Instance contenant les dimensions après la première
+  ARCCORE_HOST_DEVICE ArrayStridesBase<RankValue-1> removeFirstStride() const
+  {
+    return ArrayStridesBase<RankValue-1>::fromSpan({m_strides+1,RankValue-1});
+  }
+  /*!
+   * \brief Construit une instance à partir des valeurs données dans \a stride.
+   * \pre stride.size() == RankValue.
+   */
+  ARCCORE_HOST_DEVICE static ArrayStridesBase<RankValue> fromSpan(Span<const Int64> strides)
+  {
+    ArrayStridesBase<RankValue> v;
+    // TODO: vérifier la taille
+    for( int i=0; i<RankValue; ++i )
+      v.m_strides[i] = strides[i];
+    return v;
+  }
+ protected:
+  Int64 m_strides[RankValue];
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -171,6 +251,9 @@ class ArrayExtentsBase
  protected:
   Int64 m_extents[RankValue];
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 template<>
 class ArrayExtents<1>
