@@ -32,11 +32,9 @@ namespace Arcane
 class ARCANE_DATATYPE_EXPORT DataStorageTypeInfo
 {
  public:
-  /*!
-   * \brief Constructeur.
-   */
+  //! Constructeur.
   DataStorageTypeInfo(eBasicDataType basic_data_type, Int32 nb_basic_element,
-                      Int32 dimension, Int32 multi_tag);
+                      Int32 dimension, Int32 multi_tag,const String& impl_name = String());
   DataStorageTypeInfo() = default;
 
  public:
@@ -53,6 +51,7 @@ class ARCANE_DATATYPE_EXPORT DataStorageTypeInfo
   Int32 m_nb_basic_element = 0;
   Int32 m_dimension = 0;
   Int32 m_multi_tag = 0;
+  String m_impl_name;
 
  private:
 
