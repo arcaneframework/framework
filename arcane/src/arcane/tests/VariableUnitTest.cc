@@ -307,10 +307,11 @@ _testSimpleView()
 
   VariableCellReal var1(VariableBuildInfo(mesh(),"CellRealTest1"));
   VariableCellReal var2(VariableBuildInfo(mesh(),"CellRealTest2"));
-  ENUMERATE_CELL(icell,allCells()){
-    var1[icell] = icell.itemLocalId()+1;
-  }
   {
+    info() << A_FUNCINFO << " Test simple view In/Out";
+    ENUMERATE_CELL(icell,allCells()){
+      var1[icell] = icell.itemLocalId()+1;
+    }
     auto v1 = viewIn(var1);
     // TODO: pouvoir tester que le code suivante ne compile pas
     // auto v1 = viewOut(var1);
@@ -318,9 +319,47 @@ _testSimpleView()
     ENUMERATE_CELL(icell,allCells()){
       v2[icell] = v1[icell];
     }
+    vc.areEqualArray(var1.asArray().constView(),var2.asArray().constView(),"Bad values (1)");
   }
 
-  vc.areEqualArray(var1.asArray().constView(),var2.asArray().constView(),"Bad values");
+  {
+    info() << A_FUNCINFO << " Test simple view InOut/Out";
+    ENUMERATE_CELL(icell,allCells()){
+      var1[icell] = icell.itemLocalId()+2;
+    }
+    auto v1 = viewInOut(var1);
+    auto v2 = viewOut(var2);
+    ENUMERATE_CELL(icell,allCells()){
+      v2[icell] = v1[icell];
+    }
+    vc.areEqualArray(var1.asArray().constView(),var2.asArray().constView(),"Bad values (2)");
+  }
+
+  {
+    info() << A_FUNCINFO << " Test simple view InOut/InOut";
+    ENUMERATE_CELL(icell,allCells()){
+      var1[icell] = icell.itemLocalId()+3;
+    }
+    auto v1 = viewInOut(var1);
+    auto v2 = viewInOut(var2);
+    ENUMERATE_CELL(icell,allCells()){
+      v2[icell] = v1[icell];
+    }
+    vc.areEqualArray(var1.asArray().constView(),var2.asArray().constView(),"Bad values (3)");
+  }
+
+  {
+    info() << A_FUNCINFO << " Test simple view InOut/InOut";
+    ENUMERATE_CELL(icell,allCells()){
+      var1[icell] = icell.itemLocalId()+4;
+    }
+    auto v1 = viewInOut(var1);
+    auto v2 = viewOut(var2);
+    ENUMERATE_CELL(icell,allCells()){
+      v2[icell] = v1[icell];
+    }
+    vc.areEqualArray(var1.asArray().constView(),var2.asArray().constView(),"Bad values (4)");
+  }
 }
 
 /*---------------------------------------------------------------------------*/

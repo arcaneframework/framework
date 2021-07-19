@@ -89,6 +89,11 @@ class ViewGetterSetter
  public:
   ViewGetterSetter(DataType* ptr)
   : m_ptr(ptr){}
+  ViewGetterSetter<DataType>& operator=(const ViewGetterSetter<DataType>& rhs)
+  {
+    *m_ptr = *rhs.m_ptr;
+    return (*this);
+  }
   void operator=(const DataType& v)
   {
     *m_ptr = v;
