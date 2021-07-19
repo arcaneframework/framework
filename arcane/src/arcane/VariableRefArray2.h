@@ -63,7 +63,11 @@ class VariableRefArray2T
   ARCANE_CORE_EXPORT VariableRefArray2T(const VariableRefArray2T<DataType>& rhs);
   //! Construit une référence à partir de \a var
   explicit ARCANE_CORE_EXPORT VariableRefArray2T(IVariable* var);
-  //! Opérateur de recopie
+  /*!
+   * \brief Opérateur de recopie.
+   * \deprecated Utiliser refersTo() à la place.
+   */
+  ARCCORE_DEPRECATED_2021("Use refersTo() instead.")
   ARCANE_CORE_EXPORT void operator=(const VariableRefArray2T<DataType>& rhs);
   virtual ARCANE_CORE_EXPORT ~VariableRefArray2T(); //!< Libère les ressources
 
@@ -88,6 +92,9 @@ class VariableRefArray2T
 
   //! Remplit la variable avev la valeur \a value
   ARCANE_CORE_EXPORT void fill(const DataType& value);
+
+  //! Positionne la référence de l'instance à la variable \a rhs.
+  ARCANE_CORE_EXPORT void refersTo(const VariableRefArray2T<DataType>& rhs);
 
  public:
 

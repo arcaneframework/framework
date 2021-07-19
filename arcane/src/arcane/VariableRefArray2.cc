@@ -127,6 +127,18 @@ template<typename DataType> VariableRefArray2T<DataType>::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<class DataType> void
+VariableRefArray2T<DataType>::
+refersTo(const VariableRefArray2T<DataType>& rhs)
+{
+  VariableRef::operator=(rhs);
+  m_private_part = rhs.m_private_part;
+  updateFromInternal();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template<typename DataType> void
 VariableRefArray2T<DataType>::
 resize(Integer s)
