@@ -151,7 +151,7 @@ template<typename DataType> void
 VariableRefArray2T<DataType>::
 fill(const DataType& value)
 {
-  _internalTrueData()->_internalDeprecatedValue().fill(value);
+  m_private_part->trueData()->_internal()->_internalDeprecatedValue().fill(value);
 }
 
 /*---------------------------------------------------------------------------*/

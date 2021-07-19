@@ -240,6 +240,8 @@ _testUsed()
 void VariableUnitTest::
 _testRefersTo()
 {
+  info() << "Test " << A_FUNCINFO;
+
   ValueChecker vc(A_FUNCINFO);
 
   {
@@ -256,15 +258,39 @@ _testRefersTo()
 
   {
     VariableCellArrayReal var1(VariableBuildInfo(mesh(),"CellRealTest1"));
+    VariableCellArrayReal var1_bis(VariableBuildInfo(mesh(),"CellRealTest1"));
     var1.resize(5);
+    var1.fill(4.2);
     VariableCellArrayReal var2(VariableBuildInfo(mesh(),"CellRealTest2"));
     var2.resize(3);
+    var1.fill(7.5);
 
     var1.refersTo(var2);
 
     // Vérifie que ce sont les mêmes variables.
     vc.areEqual(var1.variable(),var2.variable(),"Bad refersTo() for Array");
     vc.areEqual(var1.arraySize(),3,"Bad size");
+    //vc.areEqualArray(var1.asArray().constView(),var2.asArray().constView(),"Bad values");
+  }
+
+  {
+    const Real fill_value = 4.2;
+    const Real fill_value2 = fill_value+1.0;
+    VariableArray2Real var1(VariableBuildInfo(mesh(),"Array2RealTest1"));
+    VariableArray2Real var1_bis(VariableBuildInfo(mesh(),"Array2RealTest1"));
+    var1.resize(2,5);
+    var1.fill(fill_value);
+    VariableArray2Real var2(VariableBuildInfo(mesh(),"Array2RealTest2"));
+    var2.resize(12,3);
+    var1.fill(fill_value2);
+
+    //var1.refersTo(var2);
+    for( Integer i=0, n1=var1.dim1Size(); i<n1; ++i )
+      for( Integer j=0, n2=var1.dim2Size(); j<n2; ++j )
+        vc.areEqual(var1[i][j],fill_value2,"Array2RealCompare");
+    // Vérifie que ce sont les mêmes variables.
+    //vc.areEqual(var1.variable(),var2.variable(),"Bad refersTo() for VariableArray2Real");
+    //vc.areEqual(var1.arraySize(),3,"Bad size");
     //vc.areEqualArray(var1.asArray().constView(),var2.asArray().constView(),"Bad values");
   }
 }
