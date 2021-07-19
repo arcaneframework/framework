@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ValueChecker.h                                              (C) 2000-2016 */
+/* ValueChecker.h                                              (C) 2000-2021 */
 /*                                                                           */
 /* Vérification de la validité de certaines valeurs.                         */
 /*---------------------------------------------------------------------------*/
@@ -21,7 +21,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -82,6 +83,28 @@ class ARCANE_UTILS_EXPORT ValueChecker
         _addError(String::format("{0} index={1} value={2} expected={3}",message,i,v,e));
       }
     }
+  }
+
+  /*!
+   * \brief Vérifie que les deux tableaux 2D \a values et \a expected_values
+   * ont les mêmes valeurs.
+   */
+  template<typename T>
+  void areEqualArray(Span2<const T> values,Span2<const T> expected_values,
+                     const String& message)
+  {
+    Int64 nb_value = values.dim1Size();
+    Int64 nb_expected = expected_values.dim1Size();
+    if (nb_value!=nb_expected){
+      _addError(String::format("{0} bad array size n={1} expected={2}",
+                               message,nb_value,nb_expected));
+      // Ne compare pas les éléments du tableau si les tailles
+      // sont différentes.
+      return;
+    }
+
+    for( Int64 i=0; i<nb_value; ++i )
+      areEqualArray(values[i],expected_values[i],message);
   }
 
   /*!
@@ -151,7 +174,7 @@ class ARCANE_UTILS_EXPORT ValueChecker
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
