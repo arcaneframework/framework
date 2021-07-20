@@ -1,16 +1,4 @@
-﻿# TODO: a supprimer lorsqu'on n'utilisera plus 'arcane.pc'.
-macro(arcane_set_external_includes)
- SET(_PKGCONFIG_INCLUDE_DIRS "")
- foreach(_my_var ${ARGN})
-  message(STATUS "Including extra path for next component parsing: ${_my_var}")
-  SET(_PKGCONFIG_INCLUDE_DIRS "${_PKGCONFIG_INCLUDE_DIRS} -I${_my_var}")
- endforeach(_my_var)
- # MESSAGE(STATUS "MY_INC ${_PKGCONFIG_INCLUDE_DIRS}")
-endmacro(arcane_set_external_includes)
-
-arcane_set_external_includes(${ARCANE_SRC_PATH} ${GLIB_INCLUDE_DIRS})
-
-include(srcs.cmake)
+﻿include(srcs.cmake)
 
 arcane_add_library(arcane_utils
   INPUT_PATH ${Arcane_SOURCE_DIR}/src
@@ -33,16 +21,8 @@ target_link_libraries(arcane_utils PUBLIC $<BUILD_INTERFACE:arcane_build_compile
 target_link_libraries(arcane_utils PUBLIC Arccore::arccore_trace Arccore::arccore_concurrency Arccore::arccore_collections Arccore::arccore_base arccon::Glib)
 
 # ----------------------------------------------------------------------------
-# Liste des fonctionnalités du C++11 utilisées.
-# Cette liste est un sous-ensemble de la variable CMAKE_CXX_KNOWN_FEATURES
-# GG NOTE: Actuellement (version 3.2), on utilise les fonctionnalités suivantes
-# du C++11: cxx_inline_namespaces, cxx_deleted_functions.
-# Cependant, avec cmake 3.3.2, ces features sont considérées comme
-# non supportées par Visual Studio 2013 alors que ce n'est pas le cas
-# (avec VS2013 Update 4, cela fonctionne). On les enlève donc provisoirement
-# de la liste. A noter qu'avec VS2015, ces fonctionnalités sont correctement
-# reconnuees.
-target_compile_features(arcane_utils PUBLIC cxx_std_14 cxx_lambdas cxx_auto_type cxx_nullptr cxx_rvalue_references)
+# Indique qu'il faut le C++17.
+target_compile_features(arcane_utils PUBLIC cxx_std_17)
 
 arcane_register_library(arcane_utils)
 
