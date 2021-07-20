@@ -8,6 +8,8 @@ Project(ArcaneRepo LANGUAGES NONE)
 
 # ----------------------------------------------------------------------------
 
+enable_testing()
+
 if (NOT FRAMEWORK_BUILD_COMPONENT)
   set (FRAMEWORK_BUILD_COMPONENT all)
 endif()
