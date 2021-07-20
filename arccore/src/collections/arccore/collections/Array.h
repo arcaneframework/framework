@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2020 IFPEN-CEA
+// Copyright 2000-2021 IFPEN-CEA
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array.h                                                     (C) 2000-2019 */
+/* Array.h                                                     (C) 2000-2021 */
 /*                                                                           */
 /* Tableau 1D.                                                               */
 /*---------------------------------------------------------------------------*/
@@ -33,9 +33,6 @@
 #include <memory>
 #include <initializer_list>
 #include <cstring>
-
-// Définir cette macro si on souhaite empêcher la construction de Array.
-#define ARCCORE_AVOID_DEPRECATED_ARRAY_CONSTRUCTOR
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -818,52 +815,6 @@ class Array
   using typename BaseClassType::const_reference;
   using typename BaseClassType::size_type;
   using typename BaseClassType::difference_type;
-#ifndef ARCCORE_AVOID_DEPRECATED_ARRAY_CONSTRUCTOR
- public:
-#else
- protected:
-#endif
-  ARCCORE_DEPRECATED_2018 Array() : AbstractArray<T>() {}
-  //! Créé un tableau vide avec un allocateur spécifique.
-  ARCCORE_DEPRECATED_2018 Array(Int64 asize,ConstReferenceType value) : AbstractArray<T>()
-  {
-    this->_resize(asize,value);
-  }
-  //! Constructeur avec liste d'initialisation.
-  ARCCORE_DEPRECATED_2018 Array(std::initializer_list<T> alist) : AbstractArray<T>()
-  {
-    Integer nsize = arccoreCheckArraySize(alist.size());
-    this->_reserve(nsize);
-    for( auto x : alist )
-      this->add(x);
-  }
-  ARCCORE_DEPRECATED_2018 explicit Array(Int64 asize) : AbstractArray<T>()
-  {
-    this->_resize(asize);
-  }
-  ARCCORE_DEPRECATED_2018 Array(const ConstArrayView<T>& aview) : AbstractArray<T>(Span<const T>(aview))
-  {
-  }
-  ARCCORE_DEPRECATED_2018 Array(const Span<const T>& aview) : AbstractArray<T>(aview)
-  {
-  }
-  ARCCORE_DEPRECATED_2018 Array(const ArrayView<T>& aview) : AbstractArray<T>(Span<const T>(aview))
-  {
-  }
-  ARCCORE_DEPRECATED_2018 Array(const Span<T>& aview) : AbstractArray<T>(aview)
-  {
-  }
-  /*!
-   * \brief Créé un tableau de \a asize éléments avec un allocateur spécifique.
-   *
-   * Si ArrayTraits<T>::IsPODType vaut TrueType, les éléments ne sont pas
-   * initialisés. Sinon, c'est le constructeur par défaut de T qui est utilisé.
-   */
-  ARCCORE_DEPRECATED_2018 Array(IMemoryAllocator* allocator,Int64 asize)
-  : AbstractArray<T>(allocator,asize)
-  {
-    this->_resize(asize);
-  }
  protected:
   Array(BuildDeprecated) : AbstractArray<T>() {}
   Array(Int64 asize,ConstReferenceType value,BuildDeprecated) : AbstractArray<T>()
