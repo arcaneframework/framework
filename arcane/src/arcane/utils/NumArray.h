@@ -25,6 +25,8 @@ namespace Arcane
 
 template<typename DataType,int RankValue>
 class NumArrayBase;
+template<class DataType,int RankValue>
+class NumArray;
 
 namespace impl
 {
@@ -957,6 +959,14 @@ class NumArrayBase
   Span<const DataType> to1DSpan() const { return m_data.constSpan(); }
   Span<DataType> to1DSpan() { return m_data.span(); }
   void copy(ConstSpanType rhs) { m_data.copy(rhs.to1DSpan()); }
+  const DataType& operator()(ArrayBoundsIndex<RankValue> idx) const
+  {
+    return m_span(idx);
+  }
+  DataType& s(ArrayBoundsIndex<RankValue> idx)
+  {
+    return m_span(idx);
+  }
   void swap(NumArrayBase<DataType,RankValue>& rhs)
   {
     m_data.swap(rhs.m_data);
@@ -972,9 +982,6 @@ class NumArrayBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType,int RankValue>
-class NumArray;
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -987,6 +994,8 @@ class NumArray<DataType,1>
   using BaseClass = NumArrayBase<DataType,1>;
   using BaseClass::extent;
   using BaseClass::resize;
+  using BaseClass::operator();
+  using BaseClass::s;
  private:
   using BaseClass::m_span;
  public:
@@ -1030,6 +1039,8 @@ class NumArray<DataType,2>
   using BaseClass = NumArrayBase<DataType,2>;
   using BaseClass::extent;
   using BaseClass::resize;
+  using BaseClass::operator();
+  using BaseClass::s;
  private:
   using BaseClass::m_span;
  public:
@@ -1074,6 +1085,8 @@ class NumArray<DataType,3>
   using BaseClass = NumArrayBase<DataType,3>;
   using BaseClass::extent;
   using BaseClass::resize;
+  using BaseClass::operator();
+  using BaseClass::s;
  private:
   using BaseClass::m_span;
  public:
@@ -1119,6 +1132,8 @@ class NumArray<DataType,4>
   using BaseClass = NumArrayBase<DataType,4>;
   using BaseClass::extent;
   using BaseClass::resize;
+  using BaseClass::operator();
+  using BaseClass::s;
  private:
   using BaseClass::m_span;
  public:
