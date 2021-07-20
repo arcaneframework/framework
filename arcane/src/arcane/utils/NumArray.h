@@ -38,6 +38,7 @@ T fastmod(T a , T b)
 }
 
 template<int RankValue> class ArrayBounds;
+template<int RankValue> class ArrayBoundsIndexBase;
 template<int RankValue> class ArrayBoundsIndex;
 template<int RankValue> class ArrayExtentsBase;
 template<int RankValue> class ArrayExtents;
@@ -47,64 +48,83 @@ template<int RankValue> class ArrayExtentsWithOffset;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<int RankValue>
+class ArrayBoundsIndexBase
+{
+ public:
+  ARCCORE_HOST_DEVICE std::array<Int64,RankValue> operator()() const { return m_indexes; }
+ protected:
+  ARCCORE_HOST_DEVICE ArrayBoundsIndexBase()
+  {
+    for( int i=0; i<RankValue; ++i )
+      m_indexes[i] = 0;
+  }
+ protected:
+  std::array<Int64,RankValue> m_indexes;
+};
+
 template<>
 class ArrayBoundsIndex<1>
+: public ArrayBoundsIndexBase<1>
 {
  public:
   ARCCORE_HOST_DEVICE ArrayBoundsIndex(Int64 _id0)
   {
-    id0 = _id0;
+    m_indexes[0] = _id0;
   }
  public:
-  Int64 id0;
+  ARCCORE_HOST_DEVICE Int64 id0() const { return m_indexes[0]; }
 };
 
 template<>
 class ArrayBoundsIndex<2>
+: public ArrayBoundsIndexBase<2>
 {
  public:
   ARCCORE_HOST_DEVICE ArrayBoundsIndex(Int64 _id0,Int64 _id1)
   {
-    id0 = _id0;
-    id1 = _id1;
+    m_indexes[0] = _id0;
+    m_indexes[1] = _id1;
   }
  public:
-  Int64 id0;
-  Int64 id1;
+  ARCCORE_HOST_DEVICE Int64 id0() const { return m_indexes[0]; }
+  ARCCORE_HOST_DEVICE Int64 id1() const { return m_indexes[1]; }
 };
 
 template<>
 class ArrayBoundsIndex<3>
+: public ArrayBoundsIndexBase<3>
 {
  public:
   ARCCORE_HOST_DEVICE ArrayBoundsIndex(Int64 _id0,Int64 _id1,Int64 _id2)
   {
-    id0 = _id0;
-    id1 = _id1;
-    id2 = _id2;
+    m_indexes[0] = _id0;
+    m_indexes[1] = _id1;
+    m_indexes[2] = _id2;
   }
  public:
-  Int64 id0;
-  Int64 id1;
-  Int64 id2;
+  ARCCORE_HOST_DEVICE Int64 id0() const { return m_indexes[0]; }
+  ARCCORE_HOST_DEVICE Int64 id1() const { return m_indexes[1]; }
+  ARCCORE_HOST_DEVICE Int64 id2() const { return m_indexes[2]; }
 };
 
 template<>
 class ArrayBoundsIndex<4>
+: public ArrayBoundsIndexBase<4>
 {
  public:
   ARCCORE_HOST_DEVICE ArrayBoundsIndex(Int64 _id0,Int64 _id1,Int64 _id2,Int64 _id3)
   {
-    id0 = _id0;
-    id1 = _id1;
-    id2 = _id2;
-    id3 = _id3;
+    m_indexes[0] = _id0;
+    m_indexes[1] = _id1;
+    m_indexes[2] = _id2;
+    m_indexes[3] = _id3;
   }
  public:
-  Int64 id0;
-  Int64 id1;
-  Int64 id2;
-  Int64 id3;
+  ARCCORE_HOST_DEVICE Int64 id0() const { return m_indexes[0]; }
+  ARCCORE_HOST_DEVICE Int64 id1() const { return m_indexes[1]; }
+  ARCCORE_HOST_DEVICE Int64 id2() const { return m_indexes[2]; }
+  ARCCORE_HOST_DEVICE Int64 id3() const { return m_indexes[3]; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -223,6 +243,8 @@ class ArrayExtentsBase
   }
   //! Nombre d'élément de la \a i-ème dimension.
   ARCCORE_HOST_DEVICE Int64 extent(int i) const { return m_extents[i]; }
+  //! Positionne à \a v le nombre d'éléments de la i-ème dimension
+  ARCCORE_HOST_DEVICE void setExtent(int i,Int64 v) { m_extents[i] = v; }
   ARCCORE_HOST_DEVICE Int64 operator()(int i) const { return m_extents[i]; }
   ARCCORE_HOST_DEVICE SmallSpan<const Int64> asSpan() const { return { m_extents, RankValue }; }
   //! Nombre total d'eléments
@@ -365,8 +387,8 @@ class ArrayExtentsWithOffset<1>
   }
   ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<1> idx) const
   {
-    ARCCORE_CHECK_AT(idx.id0,m_extents[0]);
-    return idx.id0;
+    ARCCORE_CHECK_AT(idx.id0(),m_extents[0]);
+    return idx.id0();
   }
   ARCCORE_HOST_DEVICE void setSize(Int64 dim1_size)
   {
@@ -406,9 +428,9 @@ class ArrayExtentsWithOffset<2>
   }
   ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<3> idx) const
   {
-    ARCCORE_CHECK_AT(idx.id0,m_extents[0]);
-    ARCCORE_CHECK_AT(idx.id1,m_extents[1]);
-    return m_extents[1]*idx.id0 + idx.id1;
+    ARCCORE_CHECK_AT(idx.id0(),m_extents[0]);
+    ARCCORE_CHECK_AT(idx.id1(),m_extents[1]);
+    return m_extents[1]*idx.id0() + idx.id1();
   }
   ARCCORE_HOST_DEVICE void setSize(Int64 dim1_size,Int64 dim2_size)
   {
@@ -450,10 +472,10 @@ class ArrayExtentsWithOffset<3>
   }
   ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<3> idx) const
   {
-    ARCCORE_CHECK_AT(idx.id0,m_extents[0]);
-    ARCCORE_CHECK_AT(idx.id1,m_extents[1]);
-    ARCCORE_CHECK_AT(idx.id2,m_extents[2]);
-    return (m_dim23_size*idx.id0) + m_extents[2]*idx.id1 + idx.id2;
+    ARCCORE_CHECK_AT(idx.id0(),m_extents[0]);
+    ARCCORE_CHECK_AT(idx.id1(),m_extents[1]);
+    ARCCORE_CHECK_AT(idx.id2(),m_extents[2]);
+    return (m_dim23_size*idx.id0()) + m_extents[2]*idx.id1() + idx.id2();
   }
   void setSize(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
   {
@@ -504,11 +526,11 @@ class ArrayExtentsWithOffset<4>
   }
   ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<4> idx) const
   {
-    ARCCORE_CHECK_AT(idx.id0,m_extents[0]);
-    ARCCORE_CHECK_AT(idx.id1,m_extents[1]);
-    ARCCORE_CHECK_AT(idx.id2,m_extents[2]);
-    ARCCORE_CHECK_AT(idx.id3,m_extents[3]);
-    return (m_dim234_size*idx.id0) + m_dim34_size*idx.id1 + m_extents[3]*idx.id2 + idx.id3;
+    ARCCORE_CHECK_AT(idx.id0(),m_extents[0]);
+    ARCCORE_CHECK_AT(idx.id1(),m_extents[1]);
+    ARCCORE_CHECK_AT(idx.id2(),m_extents[2]);
+    ARCCORE_CHECK_AT(idx.id3(),m_extents[3]);
+    return (m_dim234_size*idx.id0()) + m_dim34_size*idx.id1() + m_extents[3]*idx.id2() + idx.id3();
   }
   void setSize(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size,Int64 dim4_size)
   {

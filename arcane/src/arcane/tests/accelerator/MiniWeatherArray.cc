@@ -387,7 +387,7 @@ semi_discrete_step(NumArray<double,3>& nstate_init, NumArray<double,3>& nstate_f
 
   command << RUNCOMMAND_LOOP3(iter,NUM_VARS,nz(),nx())
   {
-    auto [ll, k, i] = iter;
+    auto [ll, k, i] = iter();
     state_out(ll,k+hs,i+hs) = state_init(ll,k+hs,i+hs) + dt * in_tend(iter);
   };
 }
@@ -419,7 +419,7 @@ compute_tendencies_x(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumAr
   auto out_flux = ax::viewOut(command,flux);
   command.addKernelName("compute_tendencies_x") << RUNCOMMAND_LOOP2(iter,nz,nx+1)
   {
-    auto [k, i] = iter;
+    auto [k, i] = iter();
     double r, u, w, t, p, stencil[4], d3_vals[NUM_VARS], vals[NUM_VARS];
     //Use fourth-order interpolation from four cell averages to compute the value at the interface in question
     for ( int ll = 0; ll < NUM_VARS; ll++){
@@ -451,7 +451,7 @@ compute_tendencies_x(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumAr
   // Use the fluxes to compute tendencies for each cell
   command << RUNCOMMAND_LOOPN(iter,3,NUM_VARS,nz,nx)
   {
-    auto [ll, k, i] = iter;
+    auto [ll, k, i] = iter();
     out_tend(ll,k,i) = -(in_flux(ll,k,i+1) - in_flux(iter)) / dx;
   };
 }
@@ -485,7 +485,7 @@ compute_tendencies_z(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumAr
   auto out_flux = ax::viewOut(command,flux);
   command << RUNCOMMAND_LOOPN(iter,2,nz+1,nx)
   {
-    auto [k,i] = iter;
+    auto [k,i] = iter();
 
     double r, u, w, t, p, stencil[4], d3_vals[NUM_VARS], vals[NUM_VARS];
     //Use fourth-order interpolation from four cell averages to compute the value at the interface in question
@@ -518,7 +518,7 @@ compute_tendencies_z(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumAr
   auto out_tend = ax::viewOut(command,tend);
   command << RUNCOMMAND_LOOP(iter,ArrayBounds<3>(NUM_VARS,nz,nx))
   {
-    auto [ll, k, i] = iter;
+    auto [ll, k, i] = iter();
     Real t = -(in_flux(ll,k+1,i) - in_flux(iter)) / dz;
     if (ll == ID_WMOM)
       t  = t - state(ID_DENS,k+hs,i+hs) * grav;
@@ -546,7 +546,7 @@ set_halo_values_x(NumArray<double,3>& nstate)
 
   command << RUNCOMMAND_LOOP(iter,ArrayBounds<2>(NUM_VARS,nz))
   {
-    auto [ll, k] = iter;
+    auto [ll, k] = iter();
     state_in_out(ll,k+hs,0) = state_in_out(ll,k+hs,nx+hs-2);
     state_in_out(ll,k+hs,1) = state_in_out(ll,k+hs,nx+hs-1);
     state_in_out(ll,k+hs,nx+hs) = state_in_out(ll,k+hs,hs);
@@ -556,7 +556,7 @@ set_halo_values_x(NumArray<double,3>& nstate)
   if (m_const.myrank == 0){
     command << RUNCOMMAND_LOOP(iter,ArrayBounds<2>(nz,hs))
     {
-      auto [k, i] = iter;
+      auto [k, i] = iter();
       double z = ((double)(k_beg + k) + 0.5) * dz;
       if (abs(z - 3 * zlen / 4) <= zlen / 16){
         state_in_out(ID_UMOM,k+hs,i) = (state_in_out(ID_DENS,k+hs,i) + in_hy_dens_cell(k + hs)) * 50.;
@@ -584,7 +584,7 @@ set_halo_values_z(NumArray<double,3>& nstate)
 
   command << RUNCOMMAND_LOOP(iter,ArrayBounds<2>(NUM_VARS,nx+2*hs))
   {
-    auto [ll,i] = iter;
+    auto [ll,i] = iter();
     if (ll == ID_WMOM){
       state_in_out(ll,0,i) = 0.0;
       state_in_out(ll,1,i) = 0.0;
@@ -689,7 +689,7 @@ init()
 
   command << RUNCOMMAND_LOOP(iter,ArrayBounds<2>(nz+2*hs,nx+2*hs))
   {
-    auto [k,i] = iter;
+    auto [k,i] = iter();
     double r, u, w, t, hr, ht;
     for (int ll = 0; ll < NUM_VARS; ll++)
       in_out_state(ll,k,i) = 0.0;

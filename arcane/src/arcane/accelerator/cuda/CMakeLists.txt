@@ -16,6 +16,7 @@ arcane_find_package(CUDAToolkit REQUIRED)
 add_library(arcane_cuda_compile_flags INTERFACE)
 target_compile_options(arcane_cuda_compile_flags INTERFACE
   "$<$<COMPILE_LANGUAGE:CUDA>:--extended-lambda>"
+  "$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>"
   "$<$<COMPILE_LANGUAGE:CUDA>:-std=c++17>"
   )
 install(TARGETS arcane_cuda_compile_flags EXPORT ArcaneTargets)
