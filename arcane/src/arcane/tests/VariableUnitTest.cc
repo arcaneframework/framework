@@ -244,6 +244,7 @@ _testRefersTo()
 
   ValueChecker vc(A_FUNCINFO);
 
+  // Teste refersTo() pour les variables 0D sur les entités du maillage
   {
     VariableCellReal var1(VariableBuildInfo(mesh(),"CellRealTest1"));
     VariableCellReal var2(VariableBuildInfo(mesh(),"CellRealTest2"));
@@ -256,6 +257,7 @@ _testRefersTo()
     vc.areEqualArray(var1.asArray().constView(),var2.asArray().constView(),"Bad values");
   }
 
+  // Teste refersTo() pour les variables 1D sur les entités du maillage
   {
     VariableCellArrayReal var1(VariableBuildInfo(mesh(),"CellRealTest1"));
     VariableCellArrayReal var1_bis(VariableBuildInfo(mesh(),"CellRealTest1"));
@@ -269,10 +271,11 @@ _testRefersTo()
 
     // Vérifie que ce sont les mêmes variables.
     vc.areEqual(var1.variable(),var2.variable(),"Bad refersTo() for Array");
-    vc.areEqual(var1.arraySize(),3,"Bad size");
+    vc.areEqual(var1.arraySize(),3,"Bad size (2)");
     //vc.areEqualArray(var1.asArray().constView(),var2.asArray().constView(),"Bad values");
   }
 
+  // Teste refersTo() pour les variables 2D
   {
     const Real fill_value = 4.2;
     const Real fill_value2 = fill_value+1.0;
@@ -284,15 +287,15 @@ _testRefersTo()
     var2.resize(12,3);
     var1.fill(fill_value2);
 
-    var1.refersTo(var2);
-
     for( Integer i=0, n1=var1.dim1Size(); i<n1; ++i )
       for( Integer j=0, n2=var1.dim2Size(); j<n2; ++j )
         vc.areEqual(var1[i][j],fill_value2,"Array2RealCompare");
 
+    var1.refersTo(var2);
+
     // Vérifie que ce sont les mêmes variables.
     vc.areEqual(var1.variable(),var2.variable(),"Bad refersTo() for VariableArray2Real");
-    vc.areEqual(var1.arraySize(),3,"Bad size");
+    vc.areEqual(var1.arraySize(),12,"Bad size (3)");
     Span2<const Real> var1_view(var1);
     Span2<const Real> var2_view(var2);
     vc.areEqualArray(var1_view,var2_view,"Bad values");
