@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AMRCartesianMeshTesterModule.cc                             (C) 2000-2020 */
+/* AMRCartesianMeshTesterModule.cc                             (C) 2000-2021 */
 /*                                                                           */
 /* Module de test du gestionnaire de maillages cartésiens AMR.               */
 /*---------------------------------------------------------------------------*/
@@ -36,6 +36,7 @@
 #include "arcane/MeshStats.h"
 #include "arcane/IPostProcessorWriter.h"
 #include "arcane/IVariableMng.h"
+#include "arcane/SimpleSVGMeshExporter.h"
 
 #include "arcane/cea/ICartesianMesh.h"
 #include "arcane/cea/CellDirectionMng.h"
@@ -303,6 +304,19 @@ _processPatches()
     ENUMERATE_CELL(icell,patch_cells){
       (*cellv)[icell] = 2.0;
     }
+
+    CellGroup patch_own_cell = patch_cells.own();
+    ENUMERATE_(Cell,icell,patch_own_cell){
+      info() << "Patch i=" << i << " cell=" << ItemPrinter(*icell);
+    }
+    // Exporte le patch au format SVG
+    IParallelMng* pm = parallelMng();
+    String filename = String::format("Patch{0}-{1}-{2}.svg",i,pm->commRank(),pm->commSize());
+    Directory directory = subDomain()->exportDirectory();
+    String full_filename = directory.file(filename);
+    ofstream ofile(full_filename.localstr());
+    SimpleSVGMeshExporter exporter(ofile);
+    exporter.write(patch_own_cell);
   }
 }
 
