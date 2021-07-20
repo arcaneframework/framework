@@ -175,6 +175,10 @@ class NumArrayDataT
 
   INumArrayDataT<DataType,RankValue>* _cloneTrue() const { return new ThatClass(*this); }
   INumArrayDataT<DataType,RankValue>* _cloneTrueEmpty() const { return new ThatClass(m_trace); }
+  void _resizeDim1(Int64 dim1_size);
+  Int64 _getDim2Size() const;
+  Span2<DataType> _valueAsSpan2();
+  Span2<const DataType> _valueAsConstSpan2();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -244,13 +248,67 @@ storageTypeInfo() const
 /*---------------------------------------------------------------------------*/
 
 template<typename DataType,int RankValue> void NumArrayDataT<DataType,RankValue>::
+_resizeDim1(Int64 dim1_size)
+{
+  // Récupère les dimensions du 'NumArray' et ne modifie que la première
+  auto extents = m_value.extents();
+  extents.setExtent(0,dim1_size);
+  m_value.resize(extents);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType,int RankValue> Int64
+NumArrayDataT<DataType,RankValue>::
+_getDim2Size() const
+{
+  // Récupère les dimensions du 'NumArray' et considère que 'dim2_size' est
+  // le produits du nombre d'éléments des dimensions après la première.
+  auto extents = m_value.extents();
+  Int64 dim2_size = 1;
+  for( Integer i=0; i<RankValue; ++i )
+    dim2_size *= extents(i);
+  return dim2_size;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// ATTENTION: Ne fonctionnera pas s'il y a des 'strides'
+template<typename DataType,int RankValue> Span2<DataType>
+NumArrayDataT<DataType,RankValue>::
+_valueAsSpan2()
+{
+  Int64 dim1_size = m_value.extent(0);
+  Int64 dim2_size = _getDim2Size();
+  Span2<DataType> value_as_span2(m_value.to1DSpan().data(),dim1_size,dim2_size);
+  return value_as_span2;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// ATTENTION: Ne fonctionnera pas s'il y a des 'strides'
+// TODO: a supprimer mais pour cela il faut pouvoir convertir un Span<T> en
+// un Span<const T> et cela n'est pas encore possible avec arccore.
+template<typename DataType,int RankValue> Span2<const DataType>
+NumArrayDataT<DataType,RankValue>::
+_valueAsConstSpan2()
+{
+  Int64 dim1_size = m_value.extent(0);
+  Int64 dim2_size = _getDim2Size();
+  Span2<const DataType> value_as_span2(m_value.to1DSpan().data(),dim1_size,dim2_size);
+  return value_as_span2;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType,int RankValue> void NumArrayDataT<DataType,RankValue>::
 resize(Integer new_size)
 {
-  ARCANE_UNUSED(new_size);
-  ARCANE_THROW(NotImplementedException,"resize()");
-#if 0
-  m_value.resize(new_size);
-#endif
+  _resizeDim1(new_size);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -370,6 +428,7 @@ serialize(ISerializer* sbuf,IDataOperation* operation)
     Int64 extents_buf[RankValue];
     Span<Int64> extents_span(extents_buf,RankValue);
     sbuf->getSpan(extents_span);
+    Int64 count = extents_span[0];
     switch(sbuf->readMode()){
     case ISerializer::ReadReplace:
       {
@@ -384,21 +443,20 @@ serialize(ISerializer* sbuf,IDataOperation* operation)
       break;
     case ISerializer::ReadAdd:
       {
-        ARCANE_THROW(NotImplementedException,"serialize(ReadAdd)");
-#if 0
-        Int64 current_size = m_value.dim1Size();
+        Int64 current_size = m_value.extent(0);
+        // TODO: vérifier que dim2_size a la même valeur qu'en entrée.
+        // Int64 dim2_size = _getDim2Size();
         Int64 current_total = m_value.totalNbElement();
         //m_trace->info() << "READ ADD NEW_SIZE=" << current_size << " COUNT=" << count
         //                << " dim2_size=" << dim2_size << " current_dim2_size=" << m_value.dim2Size()
         //                << " current_total=" << current_total << " read_elem=" << (total*nb_count);
-        m_value.resize(current_size + count,dim2_size);
+        _resizeDim1(current_size + count);
         if (operation)
           throw NotImplementedException(A_FUNCINFO,"serialize(ReadAdd) with IDataOperation");
         BasicType* bt = reinterpret_cast<BasicType*>(m_value.to1DSpan().data()+current_total);
         //m_trace->info() << "GET array nb_elem=" << (total*nb_count) << " sizeof=" << sizeof(BasicType);
         Span<BasicType> v(bt,total*nb_count);
         sbuf->getSpan(v);
-#endif
       }
       break;
     }
@@ -414,7 +472,7 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation)
   ARCANE_UNUSED(operation);
   // TODO: mutualiser avec serialize(sbuf,ids);
 
-  [[maybe_unused]] Integer nb_count = 1; //
+  [[maybe_unused]] Integer nb_count = 1;
   typedef typename DataTypeTraitsT<DataType>::BasicType BasicType;
   eDataType data_type = DataTypeTraitsT<BasicType>::type();
   ISerializer::eMode mode = sbuf->mode();
@@ -422,7 +480,8 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation)
     // Réserve la mémoire pour
     // - le nombre magique pour verification
     // - le nombre d'éléments de ids.
-    sbuf->reserveSpan(DT_Int64,2);
+    // - 
+    sbuf->reserveSpan(DT_Int64,3);
     // Réserve la mémoire pour le nombre d'éléments de chaque dimension (soit RankValue)
     sbuf->reserveSpan(DT_Int64,RankValue);
     // Réserve la mémoire pour les valeurs
@@ -431,46 +490,48 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation)
   }
   else if (mode==ISerializer::ModePut){
     Int32 count = ids.size();
-    //Int64 dim2_size =  m_value.dim2Size();
-    //Int64 total_nb_value = count * dim2_size;
-    //Int64 total = total_nb_value;
+    Int64 dim2_size = _getDim2Size();
+    Int64 total_nb_value = count * dim2_size;
+    Int64 total = total_nb_value;
 
-    Int64 n[2];
+    Int64 n[3];
     n[0] = SERIALIZE2_MAGIC_NUMBER;
     n[1] = count;
+    n[2] = dim2_size;
     /*m_trace->info() << "PUT COUNT = " << count << " total=" << total
                     << " dim1 (n[0])=" << n[0]
                     << " dim2 (n[1])=" << n[1]
                     << " count (n[2])=" << n[2]
                     << " magic=" << n[3]
                     << " this=" << this;*/
-    sbuf->putSpan(Span<const Int64>(n,2));
-    //UniqueArray<BasicType> v(total*nb_count);
-    ARCANE_THROW(NotImplementedException,"ModePut");
-#if 0
+    sbuf->putSpan(Span<const Int64>(n,3));
+
+    sbuf->putSpan(m_value.extents().asSpan());
+
+    UniqueArray<BasicType> v(total*nb_count);
+    Span2<const DataType> value_as_span2(_valueAsConstSpan2());
     {
       Integer index = 0;
-      for( Int32 i=0, is=count; i<is; ++i ){
-        const BasicType* sub_a = reinterpret_cast<const BasicType*>(m_value[ids[i]].data());
+      for( Int32 i=0, n=count; i<n; ++i ){
+        const BasicType* sub_a = reinterpret_cast<const BasicType*>(value_as_span2[ids[i]].data());
         for( Int64 z=0, iz=dim2_size*nb_count; z<iz; ++z ){
           v[index] = sub_a[z];
           ++index;
         }
       }
     }
+
     sbuf->putSpan(v);
-#endif
   }
   else if (mode==ISerializer::ModeGet){
     switch(sbuf->readMode()){
     case ISerializer::ReadReplace:
       {
-        Int64 n[4] = { 0, 0, 0, 0 };
-        sbuf->getSpan(Span<Int64>(n,4));
-        //Integer dim1_size = n[0];
-        [[maybe_unused]] Int64 dim2_size = n[1];
-        [[maybe_unused]] Int32 count = CheckedConvert::toInt32(n[2]);
-        //Int64 total = count * dim2_size;
+        Int64 n[3] = { 0, 0, 0 };
+        sbuf->getSpan(Span<Int64>(n,3));
+        Int32 count = CheckedConvert::toInt32(n[1]);
+        Int64 dim2_size = n[2];
+        Int64 total = count * dim2_size;
         // One dim
         /*m_trace->info() << "COUNT = " << count << " total=" << total
                         << " dim1 (n[0])=" << n[0]
@@ -480,18 +541,23 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation)
                         << " count (n[2])=" << n[2]
                         << " magic=" << n[3]
                         << " this=" << this;*/
-        if (n[3]!=SERIALIZE2_MAGIC_NUMBER)
+        if (n[1]!=SERIALIZE2_MAGIC_NUMBER)
           ARCANE_FATAL("Bad magic number");
-        //Int64 current_dim2_size = m_value.dim2Size();
-        ARCANE_THROW(NotImplementedException,"ModeGet - ReadReplace");
 
-#if 0
+        Int64 extents_buf[RankValue];
+        Span<Int64> extents_span(extents_buf,RankValue);
+        sbuf->getSpan(extents_span);
+
+        // TODO: utiliser extent pour vérifier que le tableau recu à le
+        // même nombre d'éléments dans les dimensions 2+.
+        Int64 current_dim2_size = _getDim2Size();
+
         if (dim2_size!=current_dim2_size){
           if (current_dim2_size!=0 && dim2_size!=0)
             ARCANE_FATAL("serialized data should have the same dim2Size current={0} found={1}",
                          current_dim2_size,dim2_size);
           else
-            m_value.resize(m_value.dim1Size(),dim2_size);
+            _resizeDim1(m_value.dim1Size());
         }
         Int64 nb_value = count;
         //Array<BasicType> v(total*nb_count);
@@ -499,10 +565,11 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation)
 
         sbuf->getSpan(base_value);
 
-        MDSpan<DataType,RankValue> data_value(reinterpret_cast<DataType*>(base_value.data()),nb_value*dim2_size);
+        Span<DataType> data_value(reinterpret_cast<DataType*>(base_value.data()),nb_value*dim2_size);
         UniqueArray<DataType> current_value;
-        MDSpan<DataType,RankValue> transformed_value;
+        Span<DataType> transformed_value;
 
+        Span2<DataType> value_as_span2(_valueAsSpan2());
         // Si on applique une transformantion, effectue la transformation dans un
         // tableau temporaire 'current_value'.
         if (operation && nb_value!=0) {
@@ -510,7 +577,7 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation)
 
           Int64 index = 0;
           for( Int32 i=0, n=count; i<n; ++i ){
-            Span<const DataType> a(m_value[ids[i]]);
+            Span<const DataType> a(value_as_span2[ids[i]]);
             for( Int64 z=0, iz=dim2_size; z<iz; ++z ){
               current_value[index] = a[z];
               ++index;
@@ -527,14 +594,13 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation)
         {
           Int64 index = 0;
           for( Int32 i=0, n=count; i<n; ++i ){
-            MDSpan<DataType,RankValue> a(m_value[ids[i]]);
+            Span<DataType> a(value_as_span2[ids[i]]);
             for( Int64 z=0, iz=dim2_size; z<iz; ++z ){
               a[z] = transformed_value[index];
               ++index;
             }
           }
         }
-#endif
       }
       break;
     case ISerializer::ReadAdd:
@@ -568,7 +634,6 @@ setName(const String& name)
 template<typename DataType,int RankValue> void NumArrayDataT<DataType,RankValue>::
 computeHash(IHashAlgorithm* algo,ByteArray& output) const
 {
-
   // Calcule la fonction de hashage pour les valeurs
   {
     Span<const DataType> values = m_value.to1DSpan();
@@ -579,7 +644,8 @@ computeHash(IHashAlgorithm* algo,ByteArray& output) const
     algo->computeHash64(input,output);
   }
 
-  {// Calcule la fonction de hashage pour les tailles
+  {
+    // Calcule la fonction de hashage pour les nombres d'éléments
     auto input = asBytes(m_value.extents().asSpan());
     algo->computeHash64(input,output);
   }
