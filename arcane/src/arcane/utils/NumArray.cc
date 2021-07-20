@@ -22,37 +22,11 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_UTILS_EXPORT void
-_arcaneInternalNumArrayTest1()
-{
-  std::cout << "TEST_NUMARRAY\n";
-
-  NumArray<Real,1> array1(2);
-  array1.s(1) = 5.0;
-  std::cout << " V=" << array1(1) << "\n";
-
-  NumArray<Real,2> array2(2,3);
-  array2.s(1,2) = 5.0;
-  std::cout << " V=" << array2(1,2) << "\n";
-
-  NumArray<Real,3> array3(2,3,4);
-  array3.s(1,2,3) = 5.0;
-  std::cout << " V=" << array3(1,2,3) << "\n";
-
-  NumArray<Real,4> array4(2,3,4,5);
-  array4.s(1,2,3,4) = 5.0;
-  std::cout << " V=" << array4(1,2,3,4) << "\n";
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 template class NumArray<Real,4>;
 template class NumArray<Real,3>;
 template class NumArray<Real,2>;
 template class NumArray<Real,1>;
 
-template class ArrayStridesBase<0>;
 template class ArrayStridesBase<1>;
 template class ArrayStridesBase<2>;
 template class ArrayStridesBase<3>;

@@ -12,9 +12,66 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+using namespace Arcane;
+
+TEST(NumArray,Basic)
+{
+  std::cout << "TEST_NUMARRAY Basic\n";
+
+  NumArray<Real,1> array1(2);
+  array1.s(1) = 5.0;
+  std::cout << " V=" << array1(1) << "\n";
+  array1.resize(7);
+
+  NumArray<Real,2> array2(2,3);
+  array2.s(1,2) = 5.0;
+  std::cout << " V=" << array2(1,2) << "\n";
+  array2.resize(7,5);
+
+  NumArray<Real,3> array3(2,3,4);
+  array3.s(1,2,3) = 5.0;
+  std::cout << " V=" << array3(1,2,3) << "\n";
+  array3.resize(12,4,6);
+
+  NumArray<Real,4> array4(2,3,4,5);
+  array4.s(1,2,3,4) = 5.0;
+  std::cout << " V=" << array4(1,2,3,4) << "\n";
+  array4.resize(8,3,7,5);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(NumArray,Basic2)
+{
+  std::cout << "TEST_NUMARRAY Basic2\n";
+
+  NumArray<Real,1> array1;
+  array1.resize(2);
+  array1.s(1) = 5.0;
+  std::cout << " V=" << array1(1) << "\n";
+
+  NumArray<Real,2> array2;
+  array2.resize(2,3);
+  array2.s(1,2) = 5.0;
+  std::cout << " V=" << array2(1,2) << "\n";
+
+  NumArray<Real,3> array3(2,3,4);
+  array3.resize(2,3,4);
+  array3.s(1,2,3) = 5.0;
+  std::cout << " V=" << array3(1,2,3) << "\n";
+
+  NumArray<Real,4> array4(2,3,4,5);
+  array4.resize(2,3,4,5);
+  array4.s(1,2,3,4) = 5.0;
+  std::cout << " V=" << array4(1,2,3,4) << "\n";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 TEST(NumArray3,Misc)
 {
-  using namespace Arcane;
   int nb_x = 3;
   int nb_y = 4;
   int nb_z = 5;
@@ -40,4 +97,34 @@ TEST(NumArray3,Misc)
       }
     }
   }
+
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(NumArray3,Copy)
+{
+  int nb_x = 3;
+  int nb_y = 4;
+  int nb_z = 5;
+  NumArray<Real,3> v(nb_x,nb_y,nb_z);
+  v.fill(3.2);
+  NumArray<Real,3> v2(nb_x*2,nb_y/2,nb_z*3);
+
+  v.copy(v2.constSpan());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+template class NumArray<float,4>;
+template class NumArray<float,3>;
+template class NumArray<float,2>;
+template class NumArray<float,1>;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
