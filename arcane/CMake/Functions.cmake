@@ -337,6 +337,49 @@ macro(arcane_register_library lib_name)
 endmacro()
 
 # ----------------------------------------------------------------------------
+# Fonction pour créér l'exécutable de test d'un composant 'Arcane'
+#
+# arcane_add_component_test_executable(component_name
+#   FILES ...
+# )
+#
+# Par exemple:
+#
+# arcane_add_component_test_executable(utils
+#   FILES Test1.cc Test2.cc
+# )
+#
+function(arcane_add_component_test_executable component_name)
+  set(options)
+  set(oneValueArgs)
+  set(multiValueArgs FILES)
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  set(_EXE_NAME arcane_${component_name}.tests)
+  add_executable(${_EXE_NAME} ${ARGS_FILES})
+
+  # Génère les exécutables dans le répertoire 'lib' du projet.
+  # Cela permet sous windows de trouver automatiquement les dll des composantes
+
+  set(_exepath ${CMAKE_BINARY_DIR}/lib)
+  if (WIN32)
+    set_target_properties(${_EXE_NAME}
+      PROPERTIES
+      RUNTIME_OUTPUT_DIRECTORY_DEBUG ${_exepath}
+      RUNTIME_OUTPUT_DIRECTORY_RELEASE ${_exepath}
+      RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${_exepath}
+      )
+  else()
+    set_target_properties(${_EXE_NAME}
+      PROPERTIES
+      RUNTIME_OUTPUT_DIRECTORY ${_exepath}
+      )
+  endif()
+
+endfunction()
+
+# ----------------------------------------------------------------------------
 # Local Variables:
 # tab-width: 2
 # indent-tabs-mode: nil

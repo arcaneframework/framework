@@ -144,6 +144,10 @@ endif()
 
 # Autorise les tests
 enable_testing()
+find_package(GTest)
+if (GTEST_FOUND)
+  include(GoogleTest)
+endif()
 
 # autorise d'ajouter une cible à une autre définie dans un autre répertoire
 if(POLICY CMP0079)
