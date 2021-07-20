@@ -592,6 +592,8 @@ class AbstractArray
   }
   void _destroyRange(Int64 abegin,Int64 aend,FalseType)
   {
+    if (abegin<0)
+      abegin = 0;
     for( Int64 i=abegin; i<aend; ++i )
       m_p->ptr[i].~T();
   }
@@ -600,21 +602,29 @@ class AbstractArray
   }
   void _createRangeDefault(Int64 abegin,Int64 aend,FalseType)
   {
+    if (abegin<0)
+      abegin = 0;
     for( Int64 i=abegin; i<aend; ++i )
       new (m_p->ptr+i) T();
   }
   void _createRange(Int64 abegin,Int64 aend,ConstReferenceType value,TrueType)
   {
+    if (abegin<0)
+      abegin = 0;
     for( Int64 i=abegin; i<aend; ++i )
       m_p->ptr[i] = value;
   }
   void _createRange(Int64 abegin,Int64 aend,ConstReferenceType value,FalseType)
   {
+    if (abegin<0)
+      abegin = 0;
     for( Int64 i=abegin; i<aend; ++i )
       new (m_p->ptr+i) T(value);
   }
   void _createRange(Int64 abegin,Int64 aend,const T* values)
   {
+    if (abegin<0)
+      abegin = 0;
     for( Int64 i=abegin; i<aend; ++i ){
       new (m_p->ptr+i) T(*values);
       ++values;
