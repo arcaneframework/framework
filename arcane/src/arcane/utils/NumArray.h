@@ -629,13 +629,20 @@ class ArrayBounds<3>
 template<typename DataType,int RankValue>
 class MDSpanBase
 {
-  friend class NumArrayBase<std::remove_cv_t<DataType>,RankValue>;
+  using UnqualifiedValueType = std::remove_cv_t<DataType>;
+  friend class NumArrayBase<UnqualifiedValueType,RankValue>;
+  // Pour que MDSpan<const T> ait accès à MDSpan<T>
+  friend class MDSpanBase<const UnqualifiedValueType,RankValue>;
  public:
   MDSpanBase() = default;
   ARCCORE_HOST_DEVICE MDSpanBase(DataType* ptr,ArrayExtentsWithOffset<RankValue> extents)
   : m_ptr(ptr), m_extents(extents)
   {
   }
+  // Constructeur MDSpan<const T> à partir d'un MDSpan<T>
+  template<typename X,typename = std::enable_if_t<std::is_same_v<X,UnqualifiedValueType>>>
+  ARCCORE_HOST_DEVICE MDSpanBase(const MDSpanBase<X,RankValue>& rhs)
+  : m_ptr(rhs.m_ptr), m_extents(rhs.m_extents){}
  public:
   ARCCORE_HOST_DEVICE DataType* _internalData() { return m_ptr; }
   ARCCORE_HOST_DEVICE const DataType* _internalData() const { return m_ptr; }
@@ -694,7 +701,8 @@ template<class DataType>
 class MDSpan<DataType,1>
 : public MDSpanBase<DataType,1>
 {
-  friend class NumArrayBase<std::remove_cv_t<DataType>,1>;
+  using UnqualifiedValueType = std::remove_cv_t<DataType>;
+  friend class NumArrayBase<UnqualifiedValueType,1>;
   using BaseClass = MDSpanBase<DataType,1>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
@@ -745,7 +753,8 @@ template<class DataType>
 class MDSpan<DataType,2>
 : public MDSpanBase<DataType,2>
 {
-  friend class NumArrayBase<std::remove_cv_t<DataType>,2>;
+  using UnqualifiedValueType = std::remove_cv_t<DataType>;
+  friend class NumArrayBase<UnqualifiedValueType,2>;
   using BaseClass = MDSpanBase<DataType,2>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
@@ -798,10 +807,12 @@ template<class DataType>
 class MDSpan<DataType,3>
 : public MDSpanBase<DataType,3>
 {
-  friend class NumArrayBase<std::remove_cv_t<DataType>,3>;
+  using UnqualifiedValueType = std::remove_cv_t<DataType>;
+  friend class NumArrayBase<UnqualifiedValueType,3>;
   using BaseClass = MDSpanBase<DataType,3>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
+  using value_type = typename std::remove_cv<DataType>::type;
  public:
   using BaseClass::offset;
   using BaseClass::ptrAt;
@@ -816,6 +827,8 @@ class MDSpan<DataType,3>
   }
   ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<3> extents_and_offset)
   : BaseClass(ptr,extents_and_offset) {}
+  template<typename X,typename = std::enable_if_t<std::is_same_v<X,UnqualifiedValueType>>>
+  ARCCORE_HOST_DEVICE MDSpan(const MDSpan<X,3>& rhs) : BaseClass(rhs){}
  private:
   void _setSize(DataType* ptr,Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
   {
@@ -857,7 +870,8 @@ template<class DataType>
 class MDSpan<DataType,4>
 : public MDSpanBase<DataType,4>
 {
-  friend class NumArrayBase<std::remove_cv_t<DataType>,4>;
+  using UnqualifiedValueType = std::remove_cv_t<DataType>;
+  friend class NumArrayBase<UnqualifiedValueType,4>;
   using BaseClass = MDSpanBase<DataType,4>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;

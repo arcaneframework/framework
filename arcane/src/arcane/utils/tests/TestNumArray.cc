@@ -112,7 +112,7 @@ TEST(NumArray3,Copy)
   v.fill(3.2);
   NumArray<Real,3> v2(nb_x*2,nb_y/2,nb_z*3);
 
-  v.copy(v2.constSpan());
+  v.copy(v2.span());
 }
 
 /*---------------------------------------------------------------------------*/
