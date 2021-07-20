@@ -46,8 +46,11 @@ target_compile_features(arcane_utils PUBLIC cxx_std_14 cxx_lambdas cxx_auto_type
 
 arcane_register_library(arcane_utils)
 
-message(STATUS "END OF PARSE UTILS")
-message(STATUS $<TARGET_PROPERTY:arcane_utils,INTERFACE_INCLUDE_DIRECTORIES>)
+# ----------------------------------------------------------------------------
+
+if (GTEST_FOUND)
+  add_subdirectory(tests)
+endif()
 
 # ----------------------------------------------------------------------------
 # Local Variables:
