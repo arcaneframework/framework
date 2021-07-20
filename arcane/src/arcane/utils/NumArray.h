@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Array.h"
+#include "arcane/utils/Array2.h"
 #include "arcane/utils/PlatformUtils.h"
 
 /*---------------------------------------------------------------------------*/
@@ -629,6 +629,7 @@ class ArrayBounds<3>
 template<typename DataType,int RankValue>
 class MDSpanBase
 {
+  friend class NumArrayBase<std::remove_cv_t<DataType>,RankValue>;
  public:
   MDSpanBase() = default;
   ARCCORE_HOST_DEVICE MDSpanBase(DataType* ptr,ArrayExtentsWithOffset<RankValue> extents)
@@ -664,6 +665,16 @@ class MDSpanBase
   { return MDSpanBase<const DataType,RankValue>(m_ptr,m_extents); }
   Span<DataType> to1DSpan() { return { m_ptr, m_extents.totalNbElement() }; }
   Span<const DataType> to1DSpan() const { return { m_ptr, m_extents.totalNbElement() }; }
+ private:
+  // Utilisé uniquement par NumArrayBase pour la copie
+  Span2<const DataType> _internalTo2DSpan() const
+  {
+    Int64 dim1_size = m_extents(0);
+    Int64 dim2_size = 1;
+    for (int i=1; i<RankValue; ++i )
+      dim2_size *= m_extents(i);
+    return { m_ptr, dim1_size, dim2_size };
+  }
  protected:
   DataType* m_ptr = nullptr;
   ArrayExtentsWithOffset<RankValue> m_extents;
@@ -683,7 +694,7 @@ template<class DataType>
 class MDSpan<DataType,1>
 : public MDSpanBase<DataType,1>
 {
-  friend class NumArrayBase<DataType,1>;
+  friend class NumArrayBase<std::remove_cv_t<DataType>,1>;
   using BaseClass = MDSpanBase<DataType,1>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
@@ -734,7 +745,7 @@ template<class DataType>
 class MDSpan<DataType,2>
 : public MDSpanBase<DataType,2>
 {
-  friend class NumArrayBase<DataType,2>;
+  friend class NumArrayBase<std::remove_cv_t<DataType>,2>;
   using BaseClass = MDSpanBase<DataType,2>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
@@ -787,7 +798,7 @@ template<class DataType>
 class MDSpan<DataType,3>
 : public MDSpanBase<DataType,3>
 {
-  friend class NumArrayBase<DataType,3>;
+  friend class NumArrayBase<std::remove_cv_t<DataType>,3>;
   using BaseClass = MDSpanBase<DataType,3>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
@@ -846,7 +857,7 @@ template<class DataType>
 class MDSpan<DataType,4>
 : public MDSpanBase<DataType,4>
 {
-  friend class NumArrayBase<DataType,4>;
+  friend class NumArrayBase<std::remove_cv_t<DataType>,4>;
   using BaseClass = MDSpanBase<DataType,4>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
@@ -911,6 +922,12 @@ class MDSpan<DataType,4>
  * \brief Tableaux multi-dimensionnel pour les types numériques sur accélérateur.
  *
  * \warning API en cours de définition.
+ *
+ * On utilise pour l'instant un UniqueArray2 pour conserver les valeurs.
+ * La première dimension du UniqueArray2 correspond à extent(0) et la
+ * deuxième dimension au dimensions restantes. Par exemple pour un NumArray<Int32,3>
+ * ayant comme nombre d'éléments dans chaque dimension (5,9,3), cela
+ * correspond à un 'UniqueArray2' dont le nombre d'éléments est (5,9*3).
  */
 template<typename DataType,int RankValue>
 class NumArrayBase
@@ -938,13 +955,14 @@ class NumArrayBase
  private:
   void _resize()
   {
-    Int64 full_size = extent(0);
+    Int64 dim1_size = extent(0);
+    Int64 dim2_size = 1;
     // TODO: vérifier débordement.
     for (int i=1; i<RankValue; ++i )
-      full_size *= extent(i);
-    m_total_nb_element = full_size;
-    m_data.resize(full_size);
-    m_span.m_ptr = m_data.data();
+      dim2_size *= extent(i);
+    m_total_nb_element = dim1_size * dim2_size;
+    m_data.resize(dim1_size,dim2_size);
+    m_span.m_ptr = m_data.to1DSpan().data();
   }
  public:
   void fill(const DataType& v) { m_data.fill(v); }
@@ -956,9 +974,9 @@ class NumArrayBase
   ConstSpanType span() const { return m_span.constSpan(); }
   ConstSpanType constSpan() const { return m_span.constSpan(); }
  public:
-  Span<const DataType> to1DSpan() const { return m_data.constSpan(); }
-  Span<DataType> to1DSpan() { return m_data.span(); }
-  void copy(ConstSpanType rhs) { m_data.copy(rhs.to1DSpan()); }
+  Span<const DataType> to1DSpan() const { return m_data.to1DSpan(); }
+  Span<DataType> to1DSpan() { return m_data.to1DSpan(); }
+  void copy(ConstSpanType rhs) { m_data.copy(rhs._internalTo2DSpan()); }
   const DataType& operator()(ArrayBoundsIndex<RankValue> idx) const
   {
     return m_span(idx);
@@ -975,7 +993,7 @@ class NumArrayBase
   }
  protected:
   MDSpan<DataType,RankValue> m_span;
-  UniqueArray<DataType> m_data;
+  UniqueArray2<DataType> m_data;
   Int64 m_total_nb_element = 0;
 };
 
