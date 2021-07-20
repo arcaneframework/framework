@@ -279,52 +279,6 @@ class Array2UnitTest
       _check(array.dim1Size()==0,"Bad size (5)");
       _check(array.dim2Size()==0,"Bad dim2size (5)");
     }
-#ifndef ARCCORE_AVOID_DEPRECATED_ARRAY_CONSTRUCTOR
-    {
-      info() << "Test 6";
-      Array2<DataType> array;
-      info() << array.dim2Size();
-      array.resizeNoInit(0,5);
-      _check(array.dim1Size()==0,"Bad size (3)");
-      _check(array.dim2Size()==5,"Bad dim2size (3)");
-      array.resizeNoInit(3,5);
-      _printArray(array);
-      array.add(DataType(6.3));
-      _printArray(array);
-      for( Integer j=0; j<5; ++j ){
-        info() << "j=" << j << " v=" << array[3][j];
-        _check(array[3][j]==ARCANE_REAL(6.3),"Bad value (4)");
-      }
-    }
-#endif
-    // Test clone
-#ifdef ARCANE_ALLOW_DEPRECATED_ARRAY2_COPY
-    {
-      UniqueArray2<DataType> array;
-      array.resize(3,5);
-      _fill(array);
-      {
-        UniqueArray2<DataType> cloned_array(array.clone());
-        _checkSame(array,cloned_array);
-      }
-      array = UniqueArray2<DataType>();
-      info() << "ARRAY SIZE=" << array.dim1Size() << " " << array.dim2Size();
-      UniqueArray2<DataType> new_array;
-      info() << "NEW ARRAY SIZE=" << new_array.dim1Size() << " " << new_array.dim2Size();
-      _check(array.dim1Size()==0,"Bad size (test clone)");
-    }
-    // Test copy
-    {
-      UniqueArray2<DataType> array;
-      array.resize(3,5);
-      _fill(array);
-      {
-        UniqueArray2<DataType> copy_array;
-        copy_array.copy(array);
-        _checkSame(array,copy_array);
-      }
-    }
-#endif
   }
   void _fill(Array2<DataType>& array)
   {
