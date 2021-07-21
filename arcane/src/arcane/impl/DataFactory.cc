@@ -97,47 +97,10 @@ DataFactory(IApplication* sm)
 DataFactory::
 ~DataFactory()
 {
-  m_data.each(Deleter());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-IData* DataFactory::
-registerData(IData* data)
-{
-  ITraceMng* trace = m_application->traceMng();
-  // Recherche si une donnée de même type est déjà enregistrée et
-  // la stocke dans \a old_data
-  IData* old_data = 0;
-  for( DataArray::Enumerator i(m_data); ++i; ){
-    IData* d = *i;
-    if (d->dataType()==data->dataType() && d->dimension()==data->dimension()
-        && d->multiTag()==data->multiTag()){
-      old_data = d;
-      trace->debug() << "Fabrique déjà présente (" << d << ") supprimée";
-      break;
-    }
-  }
-  if (old_data)
-    m_data.remove(old_data);
-  m_data.add(data);
-  return old_data;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Ref<IData> DataFactory::
-createSimpleDataRef(eDataType data_type,Integer dimension,Integer multi_tag)
-{
-  for( DataArray::Enumerator i(m_data); ++i; ){
-    IData* d = *i;
-    if (d->dataType()==data_type && d->dimension()==dimension && d->multiTag()==multi_tag)
-      return d->cloneRef();
-  }
-  return {};
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

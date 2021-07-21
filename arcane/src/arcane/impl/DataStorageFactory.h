@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Ref.h"
+#include "arcane/utils/ITraceMng.h"
 
 #include "arcane/IDataStorageFactory.h"
 #include "arcane/IData.h"
@@ -76,18 +77,16 @@ template<typename DataType> class DataStorageFactory
   static void registerDataFactory(IDataFactoryMng* dfm)
   {
     using DataContainerType = DataType;
-    IDataFactory* df = dfm->deprecatedOldFactory();
     ITraceMng* trace = dfm->traceMng();
-    df->registerData(new DataContainerType(trace));
     DataStorageTypeInfo t = DataContainerType::staticStorageTypeInfo();
     bool print_info = false;
-    if (print_info)
-      std::cout << "TYPE=" << t.basicDataType()
-                << " nb_basic=" << t.nbBasicElement()
-                << " dimension=" << t.dimension()
-                << " multi_tag=" << t.multiTag()
-                << " full_name=" << t.fullName()
-                << "\n";
+    if (print_info && trace)
+      trace->info() << "TYPE=" << t.basicDataType()
+                    << " nb_basic=" << t.nbBasicElement()
+                    << " dimension=" << t.dimension()
+                    << " multi_tag=" << t.multiTag()
+                    << " full_name=" << t.fullName()
+                    << "\n";
     IDataStorageFactory* sf = new DataStorageFactory<DataContainerType>(t);
     dfm->registerDataStorageFactory(makeRef(sf));
   }

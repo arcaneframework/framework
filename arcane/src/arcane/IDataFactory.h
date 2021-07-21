@@ -47,31 +47,6 @@ class IDataFactory
   virtual IApplication* application() =0;
 
   /*!
-   * \brief Enregistre dans la fabrique la donnée \a data.
-   * La donnée \a data enregistrée servira à créer des données
-   * de même type (par appel à IData::clone()) lors de l'appel
-   * à la méthode createSimpleData().
-   * Si une donnée de même type est déjà enregistrée, la
-   * nouvelle remplace l'ancienne qui est retournée.
-   * Les données enregistrées deviennent la propriété de cette
-   * instance et sont libérées lors de la desctruction par l'appel
-   * à l'opérateur delete.
-   * \return l'ancienne donnée correspondante ou 0 si aucune.
-   */
-  ARCCORE_DEPRECATED_2021("Do not use deprecated interface 'IDataFactory'. Use 'IDataFactoryMng' instead")
-  virtual IData* registerData(IData* data) =0;
-
-  /*
-   * \brief Créé une donnée d'un type simple.
-   * \param data_type Type de la donnée à créer
-   * \param dimension Dimension de la donnée
-   * \return la donnée ou zéro si aucune donnée de ce type ne peut
-   * être fabriquée.
-   */
-  ARCCORE_DEPRECATED_2021("Do not use deprecated interface 'IDataFactory'. Use 'IDataFactoryMng' instead")
-  virtual Ref<IData> createSimpleDataRef(eDataType data_type,Integer dimension,Integer multi_tag) =0;
-
-  /*!
    * \brief Créé une opération effectuant une réduction de type \a rt.
    * \todo mettre dans une autre interface.
    */
