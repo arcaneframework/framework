@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IDataFactoryMng.h                                           (C) 2000-2020 */
+/* IDataFactoryMng.h                                           (C) 2000-2021 */
 /*                                                                           */
 /* Interface du gestionnaire de fabrique de données.                         */
 /*---------------------------------------------------------------------------*/
@@ -69,7 +69,10 @@ class IDataFactoryMng
    *
    * Le type \a data_type doit être un type parmi \a DT_Byte, \a DT_Int16, \a DT_Int32,
    * \a DT_Int64 ou DT_Real.
+   *
+   * \deprecated Utiliser arcaneCreateSerializedDataRef() à la place
    */
+  ARCCORE_DEPRECATED_2021("Use global method arcaneCreateSerializedDataRef() instead")
   virtual Ref<ISerializedData>
   createSerializedDataRef(eDataType data_type,Int64 memory_size,
                           Integer nb_dim,Int64 nb_element,
@@ -81,10 +84,14 @@ class IDataFactoryMng
    *
    * la donnée sérialisée est vide. Elle ne pourra être utilisée qu'après un
    * appel à ISerializedData::serialize() en mode ISerializer::ModePut.
+   *
+   * \deprecated Utiliser arcaneCreateEmptySerializedDataRef() à la place.
    */
+  ARCCORE_DEPRECATED_2021("Use global method arcaneCreateEmptySerializedDataRef() instead")
   virtual Ref<ISerializedData> createEmptySerializedDataRef() =0;
 
   //! Récupère l'ancienne fabrique (obsolète)
+  ARCCORE_DEPRECATED_2021("Do not use deprecated interface 'IDataFactory'")
   virtual IDataFactory* deprecatedOldFactory() const =0;
 };
 
