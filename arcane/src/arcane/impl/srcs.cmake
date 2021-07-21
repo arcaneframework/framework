@@ -60,7 +60,6 @@ set( ARCANE_SOURCES
   PropertyMng.cc
   SequentialParallelMng.cc
   SequentialParallelMng.h
-  SerializedData.cc
   SerializedData.h
   StringScalarData.cc
   StringScalarData.h

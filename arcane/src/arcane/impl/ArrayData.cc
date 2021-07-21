@@ -25,6 +25,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/IndexOutOfRangeException.h"
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/Array.h"
 
 #include "arcane/datatype/DataStorageBuildInfo.h"
 #include "arcane/datatype/IDataOperation.h"

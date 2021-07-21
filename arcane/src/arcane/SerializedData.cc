@@ -11,12 +11,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/impl/SerializedData.h"
+#include "arcane/ISerializedData.h"
 
+#include "arccore/base/ReferenceCounterImpl.h"
+
+#include "arcane/utils/Ref.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/IHashAlgorithm.h"
 #include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/Array.h"
 
 #include "arcane/ISerializer.h"
 
@@ -331,7 +335,7 @@ _serialize(ISerializer* sbuf) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_IMPL_EXPORT
+extern "C++" ARCANE_CORE_EXPORT
 Ref<ISerializedData>
 arcaneCreateSerializedDataRef(eDataType data_type,Int64 memory_size,
                               Integer nb_dim,Int64 nb_element,Int64 nb_base_element,
@@ -345,7 +349,7 @@ arcaneCreateSerializedDataRef(eDataType data_type,Int64 memory_size,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_IMPL_EXPORT
+extern "C++" ARCANE_CORE_EXPORT
 Ref<ISerializedData>
 arcaneCreateEmptySerializedDataRef()
 {

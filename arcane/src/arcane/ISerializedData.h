@@ -47,13 +47,11 @@ namespace Arcane
  *
  * Pour sérialiser une donnée \a data en lecture:
  * \code
- * // Récupére le IDataFactory à partir d'un \a IApplication:
- * IApplication* app = ...
- * IDataFactory* df = app->dataFactory();
+ * IData* data = ...
  * // Créé une instance d'un ISerializedData.
- * ISerializedData* sdata = sf->createSerializedData(...);
+ * Ref<ISerializedData> sdata = arcaneCreateSerializedDataRef(...);
  * data->allocateBufferForSerializedData(sdata);
- * // remplir le sdata->buffer(0 à partir de votre source
+ * // remplir le sdata->buffer() à partir de votre source
  * ...
  * // assigner la valeur à \a data
  * data->assignSerializedData(sd);
@@ -173,6 +171,35 @@ class ARCANE_CORE_EXPORT ISerializedData
    */
   virtual void computeHash(IHashAlgorithm* algo,ByteArray& output) const =0;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Créé des données sérialisées.
+ *
+ * les tableaux \a dimensions et \a values ne sont pas dupliqués et ne doivent
+ * pas être modifiés tant que l'objet sérialisé est utilisé.
+ *
+ * Le type \a data_type doit être un type parmi \a DT_Byte, \a DT_Int16, \a DT_Int32,
+ * \a DT_Int64 ou DT_Real.
+ */
+extern "C++" ARCANE_CORE_EXPORT
+Ref<ISerializedData>
+arcaneCreateSerializedDataRef(eDataType data_type,Int64 memory_size,
+                              Integer nb_dim,Int64 nb_element,Int64 nb_base_element,
+                              bool is_multi_size,Int64ConstArrayView dimensions);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Créé des données sérialisées.
+ *
+ * la donnée sérialisée est vide. Elle ne pourra être utilisée qu'après un
+ * appel à ISerializedData::serialize() en mode ISerializer::ModePut.
+ */
+extern "C++" ARCANE_CORE_EXPORT
+Ref<ISerializedData>
+arcaneCreateEmptySerializedDataRef();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

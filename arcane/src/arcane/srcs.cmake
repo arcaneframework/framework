@@ -150,6 +150,7 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    DomUtils.cc
    DomUtils.h
    DomLibXml2V2.cc
+   SerializedData.cc
    SerializeBuffer.cc
    SerializeBuffer.h
    SimpleSVGMeshExporter.h

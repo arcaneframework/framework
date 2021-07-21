@@ -11,15 +11,19 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arccore/base/ReferenceCounterImpl.h"
+
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/IHashAlgorithm.h"
+#include "arcane/utils/Array.h"
 
 #include "arcane/datatype/DataStorageTypeInfo.h"
 #include "arcane/datatype/DataStorageBuildInfo.h"
+#include "arcane/datatype/DataTypeTraits.h"
 
 #include "arcane/impl/SerializedData.h"
 #include "arcane/impl/DataStorageFactory.h"
