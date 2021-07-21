@@ -74,18 +74,9 @@ storageTypeInfo() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> Ref<ISerializedData> ScalarDataT<DataType>::
-createSerializedDataRef(bool use_basic_type) const
-{
-  return makeRef(const_cast<ISerializedData*>(createSerializedData(use_basic_type)));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 template <typename DataType>
-const ISerializedData* ScalarDataT<DataType>::
-createSerializedData(bool use_basic_type) const
+Ref<ISerializedData> ScalarDataT<DataType>::
+createSerializedDataRef(bool use_basic_type) const
 {
   typedef typename DataTypeTraitsT<DataType>::BasicType BasicType;
 
@@ -105,8 +96,8 @@ createSerializedData(bool use_basic_type) const
   ByteConstArrayView base_values(full_size, reinterpret_cast<const Byte*>(&m_value));
   UniqueArray<Int64> dimensions;
   dimensions.add(nb_element);
-  ISerializedData* sd = new SerializedData(data_type, base_values.size(), 0, nb_element,
-                                           nb_base_element, false, dimensions);
+  auto sd = arcaneCreateSerializedDataRef(data_type, base_values.size(), 0, nb_element,
+                                          nb_base_element, false, dimensions);
   sd->setBuffer(base_values);
   return sd;
 }

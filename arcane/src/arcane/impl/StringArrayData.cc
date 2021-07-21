@@ -81,7 +81,6 @@ public:
   DataStorageTypeInfo storageTypeInfo() const override;
   void fillDefault() override { m_value.fill(String()); }
   void setName(const String& name) override;
-  const ISerializedData* createSerializedData(bool use_basic_type) const override;
   Ref<ISerializedData> createSerializedDataRef(bool use_basic_type) const override;
   void allocateBufferForSerializedData(ISerializedData* sdata) override;
   void assignSerializedData(const ISerializedData* sdata) override;
@@ -207,15 +206,6 @@ storageTypeInfo() const
 Ref<ISerializedData> StringArrayData::
 createSerializedDataRef(bool use_basic_type) const
 {
-  return makeRef(const_cast<ISerializedData*>(createSerializedData(use_basic_type)));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-const ISerializedData* StringArrayData::
-createSerializedData(bool use_basic_type) const
-{
   ARCANE_UNUSED(use_basic_type);
 
   // Positionne les dimensions et calcule la taille nécessaire pour sérialiser
@@ -230,8 +220,8 @@ createSerializedData(bool use_basic_type) const
     dimensions[i] = len;
   }
   Int64 nb_base_element = needed_memory;
-  ISerializedData* sd = new SerializedData(DT_Byte, needed_memory, 2, nb_element,
-                                           nb_base_element, true, dimensions);
+  auto sd = arcaneCreateSerializedDataRef(DT_Byte, needed_memory, 2, nb_element,
+                                          nb_base_element, true, dimensions);
   sd->allocateMemory(needed_memory);
 
   // Recopie les valeurs dans le tableau alloué

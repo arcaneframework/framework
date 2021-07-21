@@ -103,10 +103,8 @@ class ARCANE_CORE_EXPORT IData
    * le type peut être un POD, à savoir #DT_Byte, #DT_Int32, #DT_Int64,
    * #DT_Real, #DT_Real2, #DT_Real3, #DT_Real2x2, #DT_Real3x3.
    */
-  ARCCORE_DEPRECATED_2020("Use createSerializedDataRef() instead")
-  virtual const ISerializedData* createSerializedData(bool use_basic_type) const = 0;
-
   virtual Ref<ISerializedData> createSerializedDataRef(bool use_basic_type) const = 0;
+
   /*!
    * \brief Assigne à la donnée les valeurs sérialisées \a sdata.
    *

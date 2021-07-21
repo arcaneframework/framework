@@ -83,7 +83,6 @@ class StringScalarData
     m_value = String();
   }
   void setName(const String& name) override;
-  const ISerializedData* createSerializedData(bool use_basic_type) const override;
   Ref<ISerializedData> createSerializedDataRef(bool use_basic_type) const override;
   void allocateBufferForSerializedData(ISerializedData* sdata) override;
   void assignSerializedData(const ISerializedData* sdata) override;
@@ -150,15 +149,6 @@ storageTypeInfo() const
 Ref<ISerializedData> StringScalarData::
 createSerializedDataRef(bool use_basic_type) const
 {
-  return makeRef(const_cast<ISerializedData*>(createSerializedData(use_basic_type)));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-const ISerializedData* StringScalarData::
-createSerializedData(bool use_basic_type) const
-{
   ARCANE_UNUSED(use_basic_type);
 
   ByteConstArrayView local_values(m_value.utf8());
@@ -168,8 +158,8 @@ createSerializedData(bool use_basic_type) const
   Int64UniqueArray extents;
   extents.add(nb_element);
   Span<const Byte> base_values = local_values;
-  ISerializedData* sd = new SerializedData(DT_Byte, base_values.size(), 1, nb_element,
-                                           nb_base_element, false, extents);
+  auto sd = arcaneCreateSerializedDataRef(DT_Byte, base_values.size(), 1, nb_element,
+                                          nb_base_element, false, extents);
   sd->setBytes(base_values);
   //m_trace->info() << " WRITE STRING " << m_value << " len=" << len;
   return sd;

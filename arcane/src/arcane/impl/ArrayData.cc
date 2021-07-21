@@ -100,7 +100,6 @@ class ArrayDataT
   Ref<DataInterfaceType> cloneTrueEmptyRef() override { auto* d = _cloneTrueEmpty(); return makeRef(d); }
   void fillDefault() override;
   void setName(const String& name) override;
-  const ISerializedData* createSerializedData(bool use_basic_type) const override;
   Ref<ISerializedData> createSerializedDataRef(bool use_basic_type) const override;
   void allocateBufferForSerializedData(ISerializedData* sdata) override;
   void assignSerializedData(const ISerializedData* sdata) override;
@@ -257,15 +256,6 @@ storageTypeInfo() const
 template<typename DataType> Ref<ISerializedData> ArrayDataT<DataType>::
 createSerializedDataRef(bool use_basic_type) const
 {
-  return makeRef(const_cast<ISerializedData*>(createSerializedData(use_basic_type)));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename DataType> const ISerializedData* ArrayDataT<DataType>::
-createSerializedData(bool use_basic_type) const
-{
   typedef typename DataTypeTraitsT<DataType>::BasicType BasicType;
 
   Integer nb_count = 1;
@@ -284,8 +274,8 @@ createSerializedData(bool use_basic_type) const
   Span<const Byte> base_values(reinterpret_cast<const Byte*>(m_value.data()),full_size);
   UniqueArray<Int64> extents;
   extents.add(nb_element);
-  ISerializedData* sd = new SerializedData(data_type,base_values.size(),1,nb_element,
-                                           nb_base_element,false,extents);
+  auto sd = arcaneCreateSerializedDataRef(data_type,base_values.size(),1,nb_element,
+                                          nb_base_element,false,extents);
   sd->setBytes(base_values);
   return sd;
 }

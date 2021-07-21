@@ -87,9 +87,8 @@ createSerializedDataRef(eDataType data_type,Int64 memory_size,
                         Integer nb_dim,Int64 nb_element,Int64 nb_base_element,
                         bool is_multi_size,Int64ConstArrayView dimensions)
 {
-  auto* x = new SerializedData(data_type,memory_size,nb_dim,nb_element,
-                               nb_base_element,is_multi_size,dimensions);
-  return makeRef(x);
+  return arcaneCreateSerializedDataRef(data_type,memory_size,nb_dim,nb_element,
+                                       nb_base_element,is_multi_size,dimensions);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -98,7 +97,7 @@ createSerializedDataRef(eDataType data_type,Int64 memory_size,
 Ref<ISerializedData> DataFactoryMng::
 createEmptySerializedDataRef()
 {
-  return makeRef(new SerializedData());
+  return arcaneCreateEmptySerializedDataRef();
 }
 
 /*---------------------------------------------------------------------------*/

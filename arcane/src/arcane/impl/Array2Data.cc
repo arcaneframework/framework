@@ -102,7 +102,6 @@ class Array2DataT
   Ref<DataInterfaceType> cloneTrueEmptyRef() override { auto* d = _cloneTrueEmpty(); return makeRef(d); }
   void fillDefault() override;
   void setName(const String& name) override;
-  const ISerializedData* createSerializedData(bool use_basic_type) const override;
   Ref<ISerializedData> createSerializedDataRef(bool use_basic_type) const override;
   void allocateBufferForSerializedData(ISerializedData* sdata) override;
   void assignSerializedData(const ISerializedData* sdata) override;
@@ -259,15 +258,6 @@ resize(Integer new_size)
 template<typename DataType> Ref<ISerializedData> Array2DataT<DataType>::
 createSerializedDataRef(bool use_basic_type) const
 {
-  return makeRef(const_cast<ISerializedData*>(createSerializedData(use_basic_type)));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename DataType> const ISerializedData* Array2DataT<DataType>::
-createSerializedData(bool use_basic_type) const
-{
   typedef typename DataTypeTraitsT<DataType>::BasicType BasicType;
 
   Int64 nb_count = 1;
@@ -290,8 +280,8 @@ createSerializedData(bool use_basic_type) const
   dimensions[0] = m_value.dim1Size();
   dimensions[1] = m_value.dim2Size();
     
-  ISerializedData* sd = new SerializedData(data_type,base_values.size(),2,nb_element,
-                                           nb_base_element,false,dimensions);
+  auto sd = arcaneCreateSerializedDataRef(data_type,base_values.size(),2,nb_element,
+                                          nb_base_element,false,dimensions);
   sd->setBytes(base_values);
   return sd;
 }

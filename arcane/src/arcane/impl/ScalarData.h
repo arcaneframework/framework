@@ -81,7 +81,6 @@ class ScalarDataT
   Ref<DataInterfaceType> cloneTrueEmptyRef() override { auto* d = _cloneTrueEmpty(); return makeRef(d); }
   void fillDefault() override;
   void setName(const String& name) override;
-  const ISerializedData* createSerializedData(bool use_basic_type) const override;
   Ref<ISerializedData> createSerializedDataRef(bool use_basic_type) const override;
   void allocateBufferForSerializedData(ISerializedData* sdata) override;
   void assignSerializedData(const ISerializedData* sdata) override;

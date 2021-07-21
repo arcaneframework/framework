@@ -124,7 +124,6 @@ class NumArrayDataT
   Ref<DataInterfaceType> cloneTrueEmptyRef() override { auto* d = _cloneTrueEmpty(); return makeRef(d); }
   void fillDefault() override;
   void setName(const String& name) override;
-  const ISerializedData* createSerializedData(bool use_basic_type) const override;
   Ref<ISerializedData> createSerializedDataRef(bool use_basic_type) const override;
   void allocateBufferForSerializedData(ISerializedData* sdata) override;
   void assignSerializedData(const ISerializedData* sdata) override;
@@ -314,17 +313,9 @@ resize(Integer new_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,int RankValue> Ref<ISerializedData> NumArrayDataT<DataType,RankValue>::
+template<typename DataType,int RankValue> Ref<ISerializedData>
+NumArrayDataT<DataType,RankValue>::
 createSerializedDataRef(bool use_basic_type) const
-{
-  return makeRef(const_cast<ISerializedData*>(createSerializedData(use_basic_type)));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename DataType,int RankValue> const ISerializedData* NumArrayDataT<DataType,RankValue>::
-createSerializedData(bool use_basic_type) const
 {
   using BasicType = typename DataTypeTraitsT<DataType>::BasicType;
 
@@ -345,8 +336,8 @@ createSerializedData(bool use_basic_type) const
   Span<const Byte> base_values(bt,full_size);
   UniqueArray<Int64> dimensions(m_value.extents().asSpan());
     
-  ISerializedData* sd = new SerializedData(data_type,base_values.size(),RankValue,nb_element,
-                                           nb_base_element,false,dimensions);
+  auto sd = arcaneCreateSerializedDataRef(data_type,base_values.size(),RankValue,nb_element,
+                                          nb_base_element,false,dimensions);
   sd->setBytes(base_values);
   return sd;
 }
