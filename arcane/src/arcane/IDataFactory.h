@@ -58,6 +58,7 @@ class IDataFactory
    * à l'opérateur delete.
    * \return l'ancienne donnée correspondante ou 0 si aucune.
    */
+  ARCCORE_DEPRECATED_2021("Do not use deprecated interface 'IDataFactory'. Use 'IDataFactoryMng' instead")
   virtual IData* registerData(IData* data) =0;
 
   /*
@@ -67,12 +68,14 @@ class IDataFactory
    * \return la donnée ou zéro si aucune donnée de ce type ne peut
    * être fabriquée.
    */
+  ARCCORE_DEPRECATED_2021("Do not use deprecated interface 'IDataFactory'. Use 'IDataFactoryMng' instead")
   virtual Ref<IData> createSimpleDataRef(eDataType data_type,Integer dimension,Integer multi_tag) =0;
 
   /*!
    * \brief Créé une opération effectuant une réduction de type \a rt.
    * \todo mettre dans une autre interface.
    */
+  ARCCORE_DEPRECATED_2021("Do not use deprecated interface 'IDataFactory'. Use 'IDataFactoryMng' instead")
   virtual IDataOperation* createDataOperation(Parallel::eReduceType rt) =0;
 };
 

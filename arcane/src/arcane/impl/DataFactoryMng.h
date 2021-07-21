@@ -55,6 +55,7 @@ class DataFactoryMng
   ITraceMng* traceMng() const override;
   void registerDataStorageFactory(Ref<IDataStorageFactory> factory) override;
   Ref<IData> createSimpleDataRef(const String& storage_type,const DataStorageBuildInfo& build_info) override;
+  IDataOperation* createDataOperation(Parallel::eReduceType rt) override;
   Ref<ISerializedData>
   createSerializedDataRef(eDataType data_type,Int64 memory_size,
                           Integer nb_dim,Int64 nb_element,

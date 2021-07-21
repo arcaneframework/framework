@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/ArcaneTypes.h"
+#include "arcane/Parallel.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -60,6 +61,11 @@ class IDataFactoryMng
    */
   virtual Ref<IData>
   createSimpleDataRef(const String& storage_type,const DataStorageBuildInfo& build_info) =0;
+
+  /*!
+   * \brief Créé une opération effectuant une réduction de type \a rt.
+   */
+  virtual IDataOperation* createDataOperation(Parallel::eReduceType rt) =0;
 
   /*!
    * \brief Créé des données sérialisées.

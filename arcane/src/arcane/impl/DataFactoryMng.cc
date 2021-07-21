@@ -82,6 +82,15 @@ createSimpleDataRef(const String& storage_type,const DataStorageBuildInfo& build
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+IDataOperation* DataFactoryMng::
+createDataOperation(Parallel::eReduceType rt)
+{
+  return m_old_factory->createDataOperation(rt);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Ref<ISerializedData> DataFactoryMng::
 createSerializedDataRef(eDataType data_type,Int64 memory_size,
                         Integer nb_dim,Int64 nb_element,Int64 nb_base_element,
