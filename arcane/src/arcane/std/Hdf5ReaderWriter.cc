@@ -37,7 +37,6 @@
 #include "arcane/VerifierService.h"
 #include "arcane/IVariableMng.h"
 #include "arcane/FactoryService.h"
-#include "arcane/IDataFactoryMng.h"
 #include "arcane/IData.h"
 #include "arcane/Timer.h"
 #include "arcane/ISerializedData.h"
@@ -533,9 +532,8 @@ _readDim2(IVariable* var)
     if (herr<0)
       ARCANE_THROW(ReaderWriterException,"Wrong dataset read for variable '{0}'",vname);
   }
-  IDataFactoryMng* df = m_sub_domain->application()->dataFactoryMng();
-  Ref<ISerializedData> sdata = df->createSerializedDataRef(data_type,memory_size,nb_dimension,nb_element,
-                                                           nb_base_element,is_multi_size,dims);
+  Ref<ISerializedData> sdata = arcaneCreateSerializedDataRef(data_type,memory_size,nb_dimension,nb_element,
+                                                             nb_base_element,is_multi_size,dims);
   return sdata;
 }
 
@@ -760,8 +758,7 @@ _writeRemoteVariable(ISerializer* sb)
   sb->get(group_name);
   Int32 rank = sb->getInt32();
   //warning()<<"[\33[46;30m_writeRemoteVariable\33[m] rank="<<rank;
-  IDataFactoryMng* df = m_sub_domain->application()->dataFactoryMng();
-  Ref<ISerializedData> sdata = df->createEmptySerializedDataRef();
+  Ref<ISerializedData> sdata = arcaneCreateEmptySerializedDataRef();
   sb->setReadMode(ISerializer::ReadReplace);
   sdata->serialize(sb);
   _writeVal(var_name,group_name,sdata.get(),rank);

@@ -38,7 +38,6 @@
 #include "arcane/VerifierService.h"
 #include "arcane/IVariableMng.h"
 #include "arcane/FactoryService.h"
-#include "arcane/IDataFactoryMng.h"
 #include "arcane/IData.h"
 #include "arcane/Timer.h"
 #include "arcane/ISerializedData.h"
@@ -815,9 +814,8 @@ _readDim2(IVariable* var)
     }
   }
 
-  IDataFactoryMng* df = m_sub_domain->application()->dataFactoryMng();
-  Ref<ISerializedData> sdata = df->createSerializedDataRef(data_type,memory_size,nb_dimension,nb_element,
-                                                           nb_base_element,is_multi_size,dims);
+  Ref<ISerializedData> sdata = arcaneCreateSerializedDataRef(data_type,memory_size,nb_dimension,nb_element,
+                                                             nb_base_element,is_multi_size,dims);
   return sdata;
 }
 
@@ -1081,9 +1079,7 @@ _writeRemoteVariable(ISerializer* sb)
   //Integer dim = sb->getInteger();
   //info() << " REMOTE VAR = name=" << var_name << " data_type=" << data_type
   //       << " dim=" << dim << " group=" << group_name;
-  IDataFactoryMng* df = m_sub_domain->application()->dataFactoryMng();
-  //IData* data = df->createSimpleData(data_type,dim);
-  Ref<ISerializedData> sdata = df->createEmptySerializedDataRef();
+  Ref<ISerializedData> sdata = arcaneCreateEmptySerializedDataRef();
   sb->setReadMode(ISerializer::ReadReplace);
   sdata->serialize(sb);
   _writeVal(var_name,group_name,sdata.get());

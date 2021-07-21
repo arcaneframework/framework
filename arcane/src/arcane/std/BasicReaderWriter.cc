@@ -32,7 +32,6 @@
 #include "arcane/IDataReader.h"
 #include "arcane/IDataReader2.h"
 #include "arcane/IDataWriter.h"
-#include "arcane/IDataFactoryMng.h"
 #include "arcane/CheckpointService.h"
 #include "arcane/Directory.h"
 #include "arcane/ArcaneException.h"
@@ -474,9 +473,8 @@ readData(const String& var_full_name,IData* data)
   Int64UniqueArray extents(dimension_array_size);
   reader->getExtents(var_full_name,extents);
 
-  IDataFactoryMng* df = m_application->dataFactoryMng();
-  Ref<ISerializedData> sd(df->createSerializedDataRef(data_type,memory_size,nb_dimension,nb_element,
-                                                      nb_base_element,is_multi_size,extents));
+  Ref<ISerializedData> sd(arcaneCreateSerializedDataRef(data_type,memory_size,nb_dimension,nb_element,
+                                                        nb_base_element,is_multi_size,extents));
 
   Int64 storage_size = sd->memorySize();
   info(4) << " READ DATA storage_size=" << storage_size << " DATA=" << data;

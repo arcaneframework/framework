@@ -27,7 +27,7 @@
 #include "arcane/IMesh.h"
 #include "arcane/IMeshSubMeshTransition.h"
 #include "arcane/IApplication.h"
-#include "arcane/IDataFactory.h"
+#include "arcane/IDataFactoryMng.h"
 #include "arcane/ItemPairGroup.h"
 #include "arcane/ItemPairGroupImpl.h"
 #include "arcane/IMeshUtilities.h"
@@ -2046,7 +2046,7 @@ computeSynchronizeInfos()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+// TODO déplacer cette méthode en dehors de ItemFamily
 void ItemFamily::
 reduceFromGhostItems(IVariable* v,IDataOperation* operation)
 {
@@ -2062,12 +2062,12 @@ reduceFromGhostItems(IVariable* v,IDataOperation* operation)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+// TODO déplacer cette méthode en dehors de ItemFamily
 void ItemFamily::
 reduceFromGhostItems(IVariable* v,Parallel::eReduceType reduction)
 {
   ScopedPtrT<IDataOperation> operation;
-  operation = subDomain()->application()->dataFactory()->createDataOperation(reduction);
+  operation = v->dataFactoryMng()->createDataOperation(reduction);
   reduceFromGhostItems(v,operation.get());
 }
 
