@@ -488,7 +488,7 @@ _synchronizeV2()
   ItemGroup all_items = family->allItems();
   ITraceMng* tm = pm->traceMng();
   tm->info(4) << "MAT_SYNCHRONIZE_V2 name=" << this->name();
-  IDataFactoryMng* df = mesh->subDomain()->application()->dataFactoryMng();
+  IDataFactoryMng* df = m_global_variable->dataFactoryMng();
 
   DataStorageTypeInfo storage_type_info(VariableInfo::_internalGetStorageTypeInfo(m_global_variable->dataType(),2,0));
   DataStorageBuildInfo storage_build_info(tm);
@@ -705,7 +705,7 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids)
       Int64 nb_value = sbuf->getInt64();
       basic_values.resize(nb_value*nb_count);
       sbuf->getSpan(basic_values);
-      ArrayView<DataType> data_values(nb_value,reinterpret_cast<DataType*>(basic_values.data()));
+      Span<const DataType> data_values(reinterpret_cast<DataType*>(basic_values.data()),nb_value);
       Integer index = 0;
       ENUMERATE_ALLENVCELL(iallenvcell,mat_mng,ids_view){
         ENUMERATE_CELL_ENVCELL(ienvcell,(*iallenvcell)){

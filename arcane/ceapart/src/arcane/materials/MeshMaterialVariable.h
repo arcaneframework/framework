@@ -258,7 +258,6 @@ class ItemMaterialVariableBase
   ARCANE_MATERIALS_EXPORT IVariable* globalVariable() const override;
   ARCANE_MATERIALS_EXPORT void buildFromManager(bool is_continue) override;
 
-  ARCANE_MATERIALS_EXPORT IData* _createSaveData(Integer nb_value) override;
   ARCANE_MATERIALS_EXPORT Ref<IData> _internalCreateSaveDataRef(Integer nb_value) override;
   ARCANE_MATERIALS_EXPORT void _saveData(IMeshComponent* env,IData* data) override;
   ARCANE_MATERIALS_EXPORT

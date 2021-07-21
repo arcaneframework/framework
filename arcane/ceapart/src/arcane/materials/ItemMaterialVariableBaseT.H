@@ -251,21 +251,6 @@ syncReferences()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Traits> IData*
-ItemMaterialVariableBase<Traits>::
-_createSaveData(Integer nb_value)
-{
-  // Obsolète
-  IData* data = m_global_variable->data()->cloneEmpty();
-  auto* true_data = dynamic_cast<ValueDataType*>(data);
-  ARCANE_CHECK_POINTER(true_data);
-  true_data->_internal()->reserve(nb_value);
-  return data;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 template<typename Traits> Ref<IData>
 ItemMaterialVariableBase<Traits>::
 _internalCreateSaveDataRef(Integer nb_value)
@@ -488,7 +473,6 @@ getReference(const VariableBuildInfo& v,IMeshMaterialMng* mm,MatVarSpace mvs)
 {
   typedef typename VariableTrueType::PrivatePartType PrivatePartType;
   typedef typename VariableTrueType::VariableRefType VariableRefType;
-  typedef typename VariableTrueType::ItemTypeTemplate ItemType;
 
   MeshHandle mesh_handle = v.meshHandle();
   if (mesh_handle.isNull())

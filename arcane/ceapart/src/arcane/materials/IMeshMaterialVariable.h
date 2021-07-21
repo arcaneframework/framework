@@ -74,9 +74,6 @@ class IMeshMaterialVariable
   virtual void buildFromManager(bool is_continue) =0;
 
   //! \internal
-  virtual IData* _createSaveData(Integer nb_value) =0;
-
-  //! \internal
   virtual Ref<IData> _internalCreateSaveDataRef(Integer nb_value) =0;
 
   //! \internal
