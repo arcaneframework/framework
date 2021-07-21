@@ -154,6 +154,7 @@ class ARCANE_CORE_EXPORT Variable
   eDataType dataType() const override;
   bool initialize(const ItemGroup& /*group*/,const String& /*value*/) override { return true; }
 
+  IDataFactoryMng* dataFactoryMng() const final;
   void serialize(ISerializer* sbuffer,IDataOperation* operation) override;
   void serialize(ISerializer* sbuffer,Int32ConstArrayView ids,IDataOperation* operation) override;
 

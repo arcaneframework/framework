@@ -83,6 +83,7 @@ class VariablePrivate
  public:
 
   ISubDomain* m_sub_domain = nullptr;
+  IDataFactoryMng* m_data_factory_mng = nullptr;
   MeshHandle m_mesh_handle; //!< Maillage (peut être nul)
   Ref<IData> m_data; //!< Données de la variable
   ItemGroup m_item_group; //!< Groupe d'entité sur lequel est associé la variable
@@ -194,6 +195,7 @@ incrementModifiedTime()
 VariablePrivate::
 VariablePrivate(const VariableBuildInfo& v,const VariableInfo& vi)
 : m_sub_domain(v._subDomain())
+, m_data_factory_mng(v.dataFactoryMng())
 , m_mesh_handle(v.meshHandle())
 , m_item_family(nullptr)
 , m_infos(vi)
@@ -926,6 +928,15 @@ void Variable::
 _setProperty(int property)
 {
   m_p->m_property |= property;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IDataFactoryMng* Variable::
+dataFactoryMng() const
+{
+  return m_p->m_data_factory_mng;
 }
 
 /*---------------------------------------------------------------------------*/

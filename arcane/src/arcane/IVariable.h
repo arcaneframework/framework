@@ -538,7 +538,10 @@ class ARCANE_CORE_EXPORT IVariable
   //! Données associées à la variable
   virtual IData* data() =0;
   
-  //! @name Opérations de sérialisation
+  //! Fabrique de données associées à la variable
+  virtual IDataFactoryMng* dataFactoryMng() const =0;
+
+ //! @name Opérations de sérialisation
   //@{
   /*! Sérialize la variable.
    *
