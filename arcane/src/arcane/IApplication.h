@@ -71,6 +71,7 @@ class ARCANE_CORE_EXPORT IApplication
   virtual IConfigurationMng* configurationMng() const =0;
 
   //! Fabrique de donnée
+  ARCCORE_DEPRECATED_2021("Use dataFactoryMng() instead")
   virtual IDataFactory* dataFactory() =0;
 
   //! Fabrique de donnée
