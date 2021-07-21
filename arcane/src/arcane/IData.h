@@ -47,15 +47,7 @@ class ARCANE_CORE_EXPORT IData
   virtual Integer multiTag() const = 0;
 
   //! Clone la donnée
-  ARCCORE_DEPRECATED_2020("Use cloneRef() instead")
-  virtual IData* clone() = 0;
-
-  //! Clone la donnée
   virtual Ref<IData> cloneRef() = 0;
-
-  //! Clone la donnée mais sans éléments.
-  ARCCORE_DEPRECATED_2020("Use cloneEmptyRef() instead")
-  virtual IData* cloneEmpty() = 0;
 
   //! Clone la donnée mais sans éléments.
   virtual Ref<IData> cloneEmptyRef() = 0;

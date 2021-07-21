@@ -90,8 +90,6 @@ class ArrayDataT
   ConstArrayView<DataType> view() const override { return m_value; }
   ArrayView<DataType> view() override { return m_value; }
   void resize(Integer new_size) override { m_value.resize(new_size); }
-  IData* clone() override { return cloneTrue(); }
-  IData* cloneEmpty() override { return cloneTrueEmpty(); }
   Ref<IData> cloneRef() override { return makeRef(cloneTrue()); }
   Ref<IData> cloneEmptyRef() override { return makeRef(cloneTrueEmpty()); }
   DataStorageTypeInfo storageTypeInfo() const override;

@@ -70,8 +70,6 @@ class ScalarDataT
   DataType& value() override { return m_value; }
   const DataType& value() const override { return m_value; }
   void resize(Integer) override {}
-  IData* clone() override { return cloneTrue(); }
-  IData* cloneEmpty() override { return cloneTrueEmpty(); }
   Ref<IData> cloneRef() override { return makeRef(cloneTrue()); }
   Ref<IData> cloneEmptyRef() override { return makeRef(cloneTrueEmpty()); }
   DataStorageTypeInfo storageTypeInfo() const override;

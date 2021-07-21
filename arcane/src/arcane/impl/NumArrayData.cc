@@ -115,8 +115,6 @@ class NumArrayDataT
   MDSpan<DataType,RankValue> view() override { return m_value.span(); }
   MDSpan<const DataType,RankValue> view() const override { return m_value.span(); }
   void resize(Integer new_size) override;
-  IData* clone() override { return _cloneTrue(); }
-  IData* cloneEmpty() override { return _cloneTrueEmpty(); }
   Ref<IData> cloneRef() override { return makeRef(_cloneTrue()); }
   Ref<IData> cloneEmptyRef() override { return makeRef(_cloneTrueEmpty()); }
   DataStorageTypeInfo storageTypeInfo() const override;
