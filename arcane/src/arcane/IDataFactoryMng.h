@@ -46,9 +46,6 @@ class IDataFactoryMng
   //! Construit l'instance
   virtual void build() =0;
 
-  //! Application associée
-  virtual IApplication* application() =0;
-
   //! Gestionnaire de trace associé
   virtual ITraceMng* traceMng() const =0;
 

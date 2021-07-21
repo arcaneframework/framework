@@ -14,6 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/TraceAccessor.h"
+
 #include "arcane/IDataFactoryMng.h"
 
 #include <map>
@@ -29,10 +31,17 @@ class DataFactory;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \internal
  * \brief Gestionnaire de fabrique d'une donnée.
+ *
+ * Les fabriques s'enregistrent via la méthode registerDataStorageFactory().
+ *
+ * TODO: supprimer l'utilisation de 'IApplication' lorqu'on n'aura plus
+ * besoin de 'm_old_factory'.
  */
 class DataFactoryMng
-: public IDataFactoryMng
+: public TraceAccessor
+, public IDataFactoryMng
 {
  public:
   
@@ -42,7 +51,7 @@ class DataFactoryMng
  public:
 
   void build() override;
-  IApplication* application() override { return m_application; }
+  IApplication* application() { return m_application; }
   ITraceMng* traceMng() const override;
   void registerDataStorageFactory(Ref<IDataStorageFactory> factory) override;
   Ref<IData> createSimpleDataRef(const String& storage_type,const DataStorageBuildInfo& build_info) override;

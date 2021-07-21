@@ -46,7 +46,8 @@ arcaneRegisterSimpleData(IDataFactoryMng* df);
 
 DataFactoryMng::
 DataFactoryMng(IApplication* app)
-: m_application(app)
+: TraceAccessor(app->traceMng())
+, m_application(app)
 , m_old_factory(new DataFactory(app))
 {
 }
@@ -115,7 +116,7 @@ build()
 ITraceMng* DataFactoryMng::
 traceMng() const
 {
-  return m_application->traceMng();
+  return TraceAccessor::traceMng();
 }
 
 /*---------------------------------------------------------------------------*/
