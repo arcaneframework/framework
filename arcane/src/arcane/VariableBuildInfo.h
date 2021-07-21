@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableBuildInfo.h                                         (C) 2000-2019 */
+/* VariableBuildInfo.h                                         (C) 2000-2021 */
 /*                                                                           */
 /* Informations pour construire une variable.                                */
 /*---------------------------------------------------------------------------*/
@@ -31,7 +31,6 @@ class ISubDomain;
 class IMesh;
 class IItemFamily;
 class IVariableMng;
-class IDataFactory;
 class VariablePrivate;
 class IDataFactoryMng;
 
@@ -207,8 +206,6 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
   ISubDomain* subDomain() const { return m_sub_domain; }
  public:
   IVariableMng* variableMng() const;
-  ARCCORE_DEPRECATED_2020("use dataFactoryMng() instead")
-  IDataFactory* dataFactory() const;
   IDataFactoryMng* dataFactoryMng() const;
   ITraceMng* traceMng() const;
   IModule* module() const { return m_module; }
