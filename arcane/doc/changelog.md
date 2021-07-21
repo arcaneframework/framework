@@ -5,6 +5,54 @@
 
 Cette page contient les nouveautés de chaque version de %Arcane.
 
+Arcane Version 3.0.4 (... 2021) {#arcanedoc_version304}
+======================================
+
+Nouveautés/Améliorations:
+
+- Déplacement de la classe Arcane::NumArray dans la composante
+  `utils`. Cela permet de la rendre accessible en dehors de son
+  usage pour les accélérateurs
+- Modifications diverses dans Arcane::NumArray et les classes
+  associées (notamment Arcane::MDSpan) pour les rendre plus génériques
+  et pour leur usage future dans les variables %Arcane.
+- Simplifie et étend l'utilisation de Arcane::UnstructuredMeshConnectivityView
+- Ajoute méthode 'IVariable::dataFactoryMng()' pour récupérer le
+  Arcane::IDataFactoryMng àssocié aux données de la variable.
+
+Changements:
+
+- Rend obsolète la classe interne Arcane::IDataFactory et les méthodes
+  correspondantes
+- Rend obsolète les méthodes
+  Arcane::IDataFactoryMng::createEmptySerializedDataRef() et
+  Arcane::IDataFactoryMng::createSerializedDataRef()
+- Supprime les méthodes obsolète Arcane::IData::clone() et
+  Arcane::IData::cloneTrue().
+
+Corrections:
+
+- Corrige l'opérateur de recopie lorsqu'on utilise deux vues du même
+  type. Comme l'opérateur de recopie n'était pas surchargé, seule la
+  référence était modifiée et pas la valeur. Cela se produisait dans
+  le cas suivant:
+~~~{.cpp}
+using namespace Arcane;
+auto v1 = viewInOut(var1);
+auto v2 = viewInOut(var2);
+ENUMERATE_CELL(icell,allCells()){
+  v2[icell] = v1[icell]; // ERREUR: v2 faisait ensuite référence à v1.
+}
+~~~
+- Corrige erreur de compilation dans le constructeur Span<const T> à
+  partir d'un 'ConstArrayView'.
+- [arccore] Corrige envoi de message manquant lors de l'appel à
+  Arccore::MessagePassing::PointToPointSerializerMng::waitMessages(). Il manquait
+  l'appel à Arccore::MessagePassing::PointToPointSerializerMng::processPendingMessages(). 
+  A cause de ce bug, la classe Arcane::TransferValuesParallelOperation
+  ne fonctionnait pas et par conséquent la méthode
+  Arcane::IItemFamily::reduceFromGhostItems() non plus.
+
 Arcane Version 3.0.3 (... 2021) {#arcanedoc_version303}
 ======================================
 
