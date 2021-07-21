@@ -71,10 +71,6 @@ class ViewTypeT<const T>
 template<typename T,typename SizeType>
 class SpanImpl
 {
-  // Pour le cas où on ne supporte pas le C++14.
-  template< bool B, class XX = void >
-  using Span_enable_if_t = typename std::enable_if<B,XX>::type;
-
  public:
 
   using ThatClass = SpanImpl<T,SizeType>;
@@ -98,7 +94,7 @@ class SpanImpl
   ARCCORE_HOST_DEVICE SpanImpl() : m_ptr(nullptr), m_size(0) {}
   //! Constructeur de recopie depuis une autre vue
   // Pour un Span<const T>, on a le droit de construire depuis un Span<T>
-  template<typename X,typename = Span_enable_if_t<std::is_same<X,value_type>::value> >
+  template<typename X,typename = std::enable_if_t<std::is_same_v<X,value_type>> >
   ARCCORE_HOST_DEVICE SpanImpl(const SpanImpl<X,SizeType>& from)
   : m_ptr(from.data()), m_size(from.size()) {}
   //! Construit une vue sur une zone mémoire commencant par \a ptr et
@@ -404,10 +400,6 @@ template<typename T>
 class Span
 : public SpanImpl<T,Int64>
 {
-  // Pour le cas où on ne supporte pas le C++14.
-  template< bool B, class XX = void >
-  using Span_enable_if_t = typename std::enable_if<B,XX>::type;
-
  public:
 
   using BaseClass = SpanImpl<T,Int64>;
@@ -422,11 +414,11 @@ class Span
   : BaseClass(from.m_ptr,from.m_size) {}
   // Constructeur à partir d'un ConstArrayView. Cela n'est autorisé que
   // si T est const.
-  template<typename X,typename = Span_enable_if_t<std::is_same<X,value_type>::value> >
+  template<typename X,typename = std::enable_if_t<std::is_same_v<X,value_type>> >
   ARCCORE_HOST_DEVICE Span(const ConstArrayView<X>& from)
-  : BaseClass(from.m_ptr,from.m_size) {}
+  : BaseClass(from.data(),from.size()) {}
   // Pour un Span<const T>, on a le droit de construire depuis un Span<T>
-  template<typename X,typename = Span_enable_if_t<std::is_same<X,value_type>::value> >
+  template<typename X,typename = std::enable_if_t<std::is_same_v<X,value_type>> >
   ARCCORE_HOST_DEVICE Span(const Span<X>& from)
   : BaseClass(from) {}
   ARCCORE_HOST_DEVICE Span(const SpanImpl<T,Int64>& from)

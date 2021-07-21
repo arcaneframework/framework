@@ -69,10 +69,6 @@ class View2TypeT<const T>
 template<class T>
 class Span2
 {
-  // Pour le cas où on ne supporte pas le C++14.
-  template< bool B, class XX = void >
-  using Span_enable_if_t = typename std::enable_if<B,XX>::type;
-
  public:
 
   using ElementType = T;
@@ -96,11 +92,11 @@ class Span2
   : m_ptr(from.m_ptr), m_dim1_size(from.dim1Size()),m_dim2_size(from.dim2Size()) {}
   // Constructeur à partir d'un ConstArrayView. Cela n'est autorisé que
   // si T est const.
-  template<typename X,typename = Span_enable_if_t<std::is_same<X,value_type>::value> >
+  template<typename X,typename = std::enable_if_t<std::is_same_v<X,value_type>> >
   Span2(const ConstArray2View<X>& from)
   : m_ptr(from.data()), m_dim1_size(from.dim1Size()),m_dim2_size(from.dim2Size()) {}
   // Pour un Span<const T>, on a le droit de construire depuis un Span<T>
-  template<typename X,typename = Span_enable_if_t<std::is_same<X,value_type>::value> >
+  template<typename X,typename = std::enable_if_t<std::is_same_v<X,value_type>> >
   ARCCORE_HOST_DEVICE Span2(const Span2<X>& from)
   : m_ptr(from.data()), m_dim1_size(from.dim1Size()),m_dim2_size(from.dim2Size()) {}
   //! Construit une vue sur une zone mémoire commencant par \a ptr et
@@ -161,6 +157,10 @@ class Span2
    * \brief Pointeur sur la mémoire allouée.
    */
   ARCCORE_HOST_DEVICE inline ElementType* data() { return m_ptr; }
+  /*!
+   * \brief Pointeur constant sur la mémoire allouée.
+   */
+  ARCCORE_HOST_DEVICE inline const ElementType* data() const { return m_ptr; }
  private:
   ElementType* m_ptr;
   Int64 m_dim1_size;
