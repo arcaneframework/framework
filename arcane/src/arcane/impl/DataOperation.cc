@@ -5,17 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataFactory.cc                                              (C) 2000-2021 */
+/* DataOperation.cc                                            (C) 2000-2021 */
 /*                                                                           */
-/* Fabrique de données.                                                      */
+/* Opération sur une donnée.                                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/FatalErrorException.h"
-
-#include "arcane/impl/DataFactory.h"
 #include "arcane/impl/DataOperation.h"
+
+#include "arcane/utils/FatalErrorException.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,55 +24,64 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" IDataFactory*
-arcaneCreateDataFactory(IApplication* sm);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-DataFactory::
-DataFactory(IApplication* sm)
-: m_application(sm)
+class SumDataOperator
 {
-}
+public:
+  template<typename DataType>
+  DataType operator()(const DataType& input1,const DataType& input2)
+  {
+    return (DataType)(input1 + input2);
+  }
+};
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-DataFactory::
-~DataFactory()
+class MinusDataOperator
 {
-}
+public:
+  template<typename DataType>
+  DataType operator()(const DataType& input1,const DataType& input2)
+  {
+    return input1 - input2;
+  }
+};
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-IDataOperation* DataFactory::
-createDataOperation(Parallel::eReduceType rt)
+class MaxDataOperator
 {
-  return arcaneCreateDataOperation(rt);
-}
+public:
+  template<typename DataType>
+  DataType operator()(const DataType& input1,const DataType& input2)
+  {
+    return math::max(input1,input2);
+  }
+};
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void DataFactory::
-build()
+class MinDataOperator
 {
-}
+public:
+  template<typename DataType>
+  DataType operator()(const DataType& input1,const DataType& input2)
+  {
+    return math::min(input1,input2);
+  }
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IDataFactory*
-arcaneCreateDataFactory(IApplication* sm)
+extern "C++" ARCANE_IMPL_EXPORT IDataOperation*
+arcaneCreateDataOperation(Parallel::eReduceType rt)
 {
-  IDataFactory* df = new DataFactory(sm);
-  df->build();
-  return df;
+  switch(rt){
+  case Parallel::ReduceSum:
+    return new DataOperationT< SumDataOperator >();
+    break;
+  case Parallel::ReduceMax:
+    return new DataOperationT< MaxDataOperator >();
+    break;
+  case Parallel::ReduceMin:
+    return new DataOperationT< MinDataOperator >();
+    break;
+  }
+  ARCANE_FATAL("Operation not found");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -84,4 +91,3 @@ arcaneCreateDataFactory(IApplication* sm)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

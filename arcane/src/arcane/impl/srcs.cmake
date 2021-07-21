@@ -120,6 +120,7 @@ set( ARCANE_SOURCES
   VariableUtilities.h
   VariableSynchronizer.h
   DataOperation.h
+  DataOperation.cc
   SequentialParallelSuperMng.h
   internal/ArcaneMainExecInfo.h
   internal/LegacyMeshBuilder.h

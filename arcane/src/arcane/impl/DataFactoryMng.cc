@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataFactoryMng.cc                                           (C) 2000-2020 */
+/* DataFactoryMng.cc                                           (C) 2000-2021 */
 /*                                                                           */
 /* Gestionnaire de fabriques de données.                                     */
 /*---------------------------------------------------------------------------*/
@@ -28,6 +28,7 @@
 
 #include "arcane/impl/SerializedData.h"
 #include "arcane/impl/DataFactory.h"
+#include "arcane/impl/DataOperation.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -85,7 +86,7 @@ createSimpleDataRef(const String& storage_type,const DataStorageBuildInfo& build
 IDataOperation* DataFactoryMng::
 createDataOperation(Parallel::eReduceType rt)
 {
-  return m_old_factory->createDataOperation(rt);
+  return arcaneCreateDataOperation(rt);
 }
 
 /*---------------------------------------------------------------------------*/
