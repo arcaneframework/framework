@@ -17,7 +17,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicSerializer.cc                                          (C) 2000-2020 */
+/* BasicSerializer.cc                                          (C) 2000-2021 */
 /*                                                                           */
 /* Implémentation simple de 'ISerializer'.                                   */
 /*---------------------------------------------------------------------------*/
@@ -36,9 +36,6 @@
 
 namespace Arccore
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -63,43 +60,43 @@ class BasicSerializerNewImpl
 : public BasicSerializer::Impl
 {
   //! Index du tag pour identifier qu'il s'agit d'une sérialisation
-  static const int IDX_TAG = 0;
+  static constexpr int IDX_TAG = 0;
   //! Tag identifiant la sérialisation
-  static const Int64 SERIALIZE_TAG = 0x7a9b3cd0;
+  static constexpr Int64 SERIALIZE_TAG = 0x7a9b3cd0;
   //! Version de la sérialisation
-  static const int IDX_VERSION = 1;
+  static constexpr int IDX_VERSION = 1;
   //! Champ réservé pour des informations supplémentaires (par exemple compression)
-  static const int IDX_RESERVED1 = 2;
+  static constexpr int IDX_RESERVED1 = 2;
 
   //! Position du champs indiquant la taille totale de la sérialisation
-  static const int IDX_TOTAL_SIZE = 3;
+  static constexpr int IDX_TOTAL_SIZE = 3;
 
-  static const int IDX_NB_BYTE = 4;
-  static const int IDX_NB_FLOAT16 = 5;
-  static const int IDX_NB_FLOAT32 = 6;
-  static const int IDX_NB_FLOAT64 = 7;
-  static const int IDX_NB_FLOAT128 = 8;
-  static const int IDX_NB_INT16 = 9;
-  static const int IDX_NB_INT32 = 10;
-  static const int IDX_NB_INT64 = 11;
-  static const int IDX_NB_INT128 = 12;
+  static constexpr int IDX_NB_BYTE = 4;
+  static constexpr int IDX_NB_FLOAT16 = 5;
+  static constexpr int IDX_NB_FLOAT32 = 6;
+  static constexpr int IDX_NB_FLOAT64 = 7;
+  static constexpr int IDX_NB_FLOAT128 = 8;
+  static constexpr int IDX_NB_INT16 = 9;
+  static constexpr int IDX_NB_INT32 = 10;
+  static constexpr int IDX_NB_INT64 = 11;
+  static constexpr int IDX_NB_INT128 = 12;
 
   // Laisse de la place pour de nouveaux types.
-  static const int IDX_POS_BYTE = 32;
-  static const int IDX_POS_FLOAT16 = 33;
-  static const int IDX_POS_FLOAT32 = 34;
-  static const int IDX_POS_FLOAT64 = 35;
-  static const int IDX_POS_FLOAT128 = 36;
-  static const int IDX_POS_INT16 = 37;
-  static const int IDX_POS_INT32 = 38;
-  static const int IDX_POS_INT64 = 39;
-  static const int IDX_POS_INT128 = 40;
+  static constexpr int IDX_POS_BYTE = 32;
+  static constexpr int IDX_POS_FLOAT16 = 33;
+  static constexpr int IDX_POS_FLOAT32 = 34;
+  static constexpr int IDX_POS_FLOAT64 = 35;
+  static constexpr int IDX_POS_FLOAT128 = 36;
+  static constexpr int IDX_POS_INT16 = 37;
+  static constexpr int IDX_POS_INT32 = 38;
+  static constexpr int IDX_POS_INT64 = 39;
+  static constexpr int IDX_POS_INT128 = 40;
 
-  static const Integer NB_SIZE_ELEM = 128;
+  static constexpr Integer NB_SIZE_ELEM = 128;
   // La taille de l'alignement est aussi un diviseur de la mémoire
   // allouée pour le message. Elle ne doit pas être modifiée sans modifier
   // la gestion MPI de la sérialisation.
-  static const Integer ALIGN_SIZE = BasicSerializer::paddingSize();
+  static constexpr Integer ALIGN_SIZE = BasicSerializer::paddingSize();
 
  public:
 
@@ -222,10 +219,12 @@ class BasicSerializerNewImpl
   {
     Int64 tag_id = m_sizes_view[IDX_TAG];
     if (tag_id!=SERIALIZE_TAG)
-      ARCCORE_FATAL("Bad tag id for serializer. The data are not from a BasicSerializer");
+      ARCCORE_FATAL("Bad tag id '{0}' for serializer (expected={1})."
+                    "The data are not from a BasicSerializer. SizeView={2}",
+                    tag_id,SERIALIZE_TAG,m_sizes_view);
     Int64 version_id = m_sizes_view[IDX_VERSION];
     if (version_id!=1)
-      ARCCORE_FATAL("Bad version {0} for serializer. Only version 1 is allowed",version_id);
+      ARCCORE_FATAL("Bad version '{0}' for serializer. Only version 1 is allowed",version_id);
 
     Int64 nb_real = m_sizes_view[IDX_NB_FLOAT64];
     Int64 nb_int64 = m_sizes_view[IDX_NB_INT64];
