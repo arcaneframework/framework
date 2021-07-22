@@ -758,14 +758,14 @@ class ARCANE_CORE_EXPORT IParallelMng
   virtual void freeRequests(ArrayView<Parallel::Request> requests) =0;
 
   /*! @name opérations d'envoie de messages non bloquants
-  *
-  * \brief Envoie un tableau de valeurs à un sous-domaine.
+   *
+   * \brief Envoie un tableau de valeurs à un rang \a rank.
    *
    * Envoie les valeurs du tableau \a values à l'instance de rang \a rank.
    * Le destinataire doit effectuer une réception correspondante (dont le
    * rang doit être celui de ce gestionnaire et le type et la
    * taille du tableau doit correspondre) avec la fonction recvValues().
-   * L'envoie est bloquant si \a is_blocking vaut \a false, non bloquant s'il vaut \a true.
+   * L'envoie est bloquant si \a is_blocking vaut \a true, non bloquant s'il vaut \a false.
    * Dans ce dernier cas, la requête retournée doit être utilisée dans waitAllRequests()
    * ou libérée par freeRequests().
    */
