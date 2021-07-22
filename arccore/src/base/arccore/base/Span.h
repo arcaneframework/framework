@@ -416,7 +416,7 @@ class Span
   // si T est const.
   template<typename X,typename = std::enable_if_t<std::is_same_v<X,value_type>> >
   ARCCORE_HOST_DEVICE Span(const ConstArrayView<X>& from)
-  : BaseClass(from.data(),from.size()) {}
+  : BaseClass(from.m_ptr,from.m_size) {}
   // Pour un Span<const T>, on a le droit de construire depuis un Span<T>
   template<typename X,typename = std::enable_if_t<std::is_same_v<X,value_type>> >
   ARCCORE_HOST_DEVICE Span(const Span<X>& from)
