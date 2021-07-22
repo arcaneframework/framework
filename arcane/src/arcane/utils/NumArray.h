@@ -18,7 +18,12 @@
 #include "arcane/utils/PlatformUtils.h"
 
 #include <array>
-
+/*
+ * ATTENTION:
+ *
+ * Toutes les classes de ce fichier sont expérimentales et l'API n'est pas
+ * figée. A NE PAS UTILISER EN DEHORS DE ARCANE.
+ */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -675,6 +680,10 @@ class MDSpanBase
   {
     return m_extents.extents();
   }
+  ArrayExtentsWithOffset<RankValue> extentsWithOffset() const
+  {
+    return m_extents;
+  }
   Int64 extent(int i) const { return m_extents(i); }
  public:
   ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<RankValue> idx) const
@@ -1004,9 +1013,12 @@ class NumArrayBase
   }
  public:
   void fill(const DataType& v) { m_data.fill(v); }
-  DataType* _internalData() { return m_span._internalData(); }
   Int32 nbDimension() const { return RankValue; }
   ArrayExtents<RankValue> extents() const { return m_span.extents(); }
+  ArrayExtentsWithOffset<RankValue> extentsWithOffset() const
+  {
+    return m_span.extentsWithOffset();
+  }
  public:
   SpanType span() { return m_span; }
   ConstSpanType span() const { return m_span.constSpan(); }
@@ -1029,6 +1041,10 @@ class NumArrayBase
     std::swap(m_span,rhs.m_span);
     std::swap(m_total_nb_element,rhs.m_total_nb_element);
   }
+  Int64 capacity() const { return m_data.capacity(); }
+ public:
+  //! \internal
+  DataType* _internalData() { return m_span._internalData(); }
  protected:
   MDSpan<DataType,RankValue> m_span;
   UniqueArray2<DataType> m_data;
