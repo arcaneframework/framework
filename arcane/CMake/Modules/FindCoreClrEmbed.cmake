@@ -40,18 +40,48 @@ endif()
 # de version qu'on cherche (6.0.0-preview.2.21080.7) et ce qui est ensuite entre les [] permet de récupérer le
 # chemin de l'installation (en enlevant '/shared/Microsoft.NETCore.App').
 
-execute_process(COMMAND ${DOTNET_EXEC} "--list-runtimes" OUTPUT_VARIABLE CORECLR_LIST_RUNTIMES_OUTPUT OUTPUT_STRIP_TRAILING_WHITESPACE)
-message(STATUS "[.Net]: CORECLR_LIST_RUNTIMES_OUTPUT = ${CORECLR_LIST_RUNTIMES_OUTPUT}")
-string(REGEX MATCH "Microsoft\.NETCore\.App ([0-9]+)\.([0-9]+)\.([a-zA-Z0-9.-]+) [\[](.*)/shared/Microsoft\.NETCore\.App[\]]"
-  CORECLR_VERSION_REGEX_MATCH ${CORECLR_LIST_RUNTIMES_OUTPUT})
-message(STATUS "[.Net]: MATCH_1 ${CMAKE_MATCH_1}") # Numéro de version majeur
-message(STATUS "[.Net]: MATCH_2 ${CMAKE_MATCH_2}") # Numéro de version mineur
-message(STATUS "[.Net]: MATCH_3 ${CMAKE_MATCH_3}") # Reste du numéro de version
-message(STATUS "[.Net]: MATCH_4 ${CMAKE_MATCH_4}") # Chemin de l'installation
+# TODO: Gérer le cas ou il y a plusieurs runtimes et dans ce cas
+# prendre uniquement le dernier runtime disponible
 
-set(CORECLR_RUNTIME_VERSION ${CMAKE_MATCH_1}.${CMAKE_MATCH_2})
-set(CORECLR_RUNTIME_VERSION_FULL ${CORECLR_VERSION}.${CMAKE_MATCH_3})
-set(CORECLR_RUNTIME_ROOT_PATH ${CMAKE_MATCH_4})
+# Il peut y avoir plusieurs SDK et runtimes installés
+# Dans ce cas, la commande 'dotnet --list-runtimes' va afficher plusieurs ligne avec pour chaque ligne
+# un runtime. On parcours donc ces lignes et on regarde le runtime qui nous correspond
+
+execute_process(COMMAND ${DOTNET_EXEC} "--list-runtimes" OUTPUT_VARIABLE CORECLR_LIST_RUNTIMES_OUTPUT OUTPUT_STRIP_TRAILING_WHITESPACE)
+#execute_process(COMMAND "/bin/cat" "${CMAKE_CURRENT_LIST_DIR}/do_win.txt" OUTPUT_VARIABLE CORECLR_LIST_RUNTIMES_OUTPUT OUTPUT_STRIP_TRAILING_WHITESPACE)
+message(STATUS "[.Net]: CORECLR_LIST_RUNTIMES_OUTPUT = ${CORECLR_LIST_RUNTIMES_OUTPUT}")
+set(XV ${CORECLR_LIST_RUNTIMES_OUTPUT})
+string(REPLACE "\n" ";" XV_ALL ${XV})
+message(STATUS XV_ALL "${XV_ALL}" )
+foreach(X ${XV_ALL})
+  # NOTE: la variable CORECLR_VERSION contient le numéro de version du runtime
+  # utilisé. Il faudrait prendre la version du SDK associée à ce runtime.
+  # C'est normalement le cas si 'CORECLR_VERSION==CORECLR_RUNTIME_VERSION'
+  # Il faudrait vérifier cela.
+  string(REGEX MATCH "Microsoft\.NETCore\.App ([0-9]+)\.([0-9]+)\.([a-zA-Z0-9.-]+) [\[](.*)Microsoft\.NETCore\.App[\]]"
+    CORECLR_VERSION_REGEX_MATCH ${X})
+  # MATCH:
+  # 1: Numéro de version majeur
+  # 2: Numéro de version mineur
+  # 3: Reste du numéro de version
+  # 4: Chemin de l'installation
+  message(STATUS "[.Net]: MATCH '${CMAKE_MATCH_1}' '${CMAKE_MATCH_2}' '${CMAKE_MATCH_3}' '${CMAKE_MATCH_4}'")
+  set(_RUNTIME_VERSION ${CMAKE_MATCH_1}.${CMAKE_MATCH_2})
+  if (CMAKE_MATCH_1 AND CMAKE_MATCH_4)
+    if (${_RUNTIME_VERSION} STREQUAL ${CORECLR_VERSION})
+      set(CORECLR_RUNTIME_VERSION ${_RUNTIME_VERSION})
+      set(CORECLR_RUNTIME_VERSION_FULL ${CORECLR_VERSION}.${CMAKE_MATCH_3})
+      set(CORECLR_RUNTIME_ROOT_PATH ${CMAKE_MATCH_4})
+      message(STATUS "[.Net]: Found matching runtime version '${CORECLR_RUNTIME_VERSION_FULL}' path='${CORECLR_RUNTIME_ROOT_PATH}'")
+    endif()
+  endif()
+endforeach()
+# Enlève 'shared' CORECLR_RUNTIME_ROOT_PATH.
+# Il faut le faire avec les commandes CMake car sous windows le séparateur
+# de fichier n'est pas '/'
+if (CORECLR_RUNTIME_ROOT_PATH)
+  get_filename_component(CORECLR_RUNTIME_ROOT_PATH ${CORECLR_RUNTIME_ROOT_PATH} DIRECTORY)
+endif()
 set(CoreClrEmbed_ROOT_PATH "${CORECLR_RUNTIME_ROOT_PATH}")
 
 message(STATUS "[.Net]: CORECLR_RUNTIME_VERSION ${CORECLR_RUNTIME_VERSION}")
