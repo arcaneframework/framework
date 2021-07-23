@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MatConcurrency.h                                            (C) 2000-2014 */
+/* MatConcurrency.h                                            (C) 2000-2021 */
 /*                                                                           */
 /* Classes gérant la concurrence pour les matériaux.                         */
 /*---------------------------------------------------------------------------*/
@@ -26,12 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -67,22 +63,21 @@ class LambdaMatItemRangeFunctorT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Parallel
-{ 
+namespace Arcane
+{
   using namespace Materials;
-
   /*! 
    * \brief Applique en concurrence la fonction lambda \a lambda_function
    * \a instance sur la vue du composant \a items_view.
    * \ingroup Concurrency
    */
-  template<typename LambdaType> static void
-  Foreach(const ComponentItemVectorView& items_view,const LambdaType& lambda_function)
+  template<typename LambdaType> inline void
+  arcaneParallelForeach(const ComponentItemVectorView& items_view,const LambdaType& lambda_function)
   {
     LambdaMatItemRangeFunctorT<ComponentItemVectorView,LambdaType> ipf(items_view,lambda_function);
     TaskFactory::executeParallelFor(0,items_view.nbItem(),&ipf);
@@ -93,9 +88,9 @@ namespace Parallel
    * \a instance sur la vue du composant \a items_view avec les options \a options.
    * \ingroup Concurrency
    */
-  template<typename LambdaType> static void
-  Foreach(const ComponentItemVectorView& items_view,const ParallelLoopOptions& options,
-          const LambdaType& lambda_function)
+  template<typename LambdaType> inline void
+  arcaneParallelForeach(const ComponentItemVectorView& items_view,const ParallelLoopOptions& options,
+                       const LambdaType& lambda_function)
   {
     LambdaMatItemRangeFunctorT<ComponentItemVectorView,LambdaType> ipf(items_view,lambda_function);
     TaskFactory::executeParallelFor(0,items_view.nbItem(),options,&ipf);
@@ -106,8 +101,8 @@ namespace Parallel
    * \a instance sur la vue milieux \a items_view.
    * \ingroup Concurrency
    */
-  template<typename LambdaType> static void
-  Foreach(const EnvItemVectorView& items_view,const LambdaType& lambda_function)
+  template<typename LambdaType> inline void
+  arcaneParallelForeach(const EnvItemVectorView& items_view,const LambdaType& lambda_function)
   {
     LambdaMatItemRangeFunctorT<EnvItemVectorView,LambdaType> ipf(items_view,lambda_function);
     TaskFactory::executeParallelFor(0,items_view.nbItem(),&ipf);
@@ -118,9 +113,9 @@ namespace Parallel
    * \a instance sur la vue milieux \a items_view avec les options \a options.
    * \ingroup Concurrency
    */
-  template<typename LambdaType> static void
-  Foreach(const EnvItemVectorView& items_view,const ParallelLoopOptions& options,
-          const LambdaType& lambda_function)
+  template<typename LambdaType> inline void
+  arcaneParallelForeach(const EnvItemVectorView& items_view,const ParallelLoopOptions& options,
+                       const LambdaType& lambda_function)
   {
     LambdaMatItemRangeFunctorT<EnvItemVectorView,LambdaType> ipf(items_view,lambda_function);
     TaskFactory::executeParallelFor(0,items_view.nbItem(),options,&ipf);
@@ -131,8 +126,8 @@ namespace Parallel
    * \a instance sur la vue matériaux \a items_view.
    * \ingroup Concurrency
    */
-  template<typename LambdaType> static void
-  Foreach(const MatItemVectorView& items_view,const LambdaType& lambda_function)
+  template<typename LambdaType> inline void
+  arcaneParallelForeach(const MatItemVectorView& items_view,const LambdaType& lambda_function)
   {
     LambdaMatItemRangeFunctorT<MatItemVectorView,LambdaType> ipf(items_view,lambda_function);
     TaskFactory::executeParallelFor(0,items_view.nbItem(),&ipf);
@@ -143,19 +138,93 @@ namespace Parallel
    * \a instance sur la vue matériaux \a items_view avec les options \a options.
    * \ingroup Concurrency
    */
-  template<typename LambdaType> static void
-  Foreach(const MatItemVectorView& items_view,const ParallelLoopOptions& options,
+  template<typename LambdaType> inline void
+  arcaneParallelForeach(const MatItemVectorView& items_view,const ParallelLoopOptions& options,
           const LambdaType& lambda_function)
   {
     LambdaMatItemRangeFunctorT<MatItemVectorView,LambdaType> ipf(items_view,lambda_function);
     TaskFactory::executeParallelFor(0,items_view.nbItem(),options,&ipf);
   }
-}
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+namespace Arcane::Parallel
+{
+  using namespace Materials;
+  using namespace Arcane;
+
+  /*! 
+   * \brief Applique en concurrence la fonction lambda \a lambda_function
+   * \a instance sur la vue du composant \a items_view.
+   * \ingroup Concurrency
+   */
+  template<typename LambdaType> inline void
+  Foreach(const ComponentItemVectorView& items_view,const LambdaType& lambda_function)
+  {
+    arcaneParallelForeach(items_view,lambda_function);
+  }
+
+  /*! 
+   * \brief Applique en concurrence la fonction lambda \a lambda_function
+   * \a instance sur la vue du composant \a items_view avec les options \a options.
+   * \ingroup Concurrency
+   */
+  template<typename LambdaType> inline void
+  Foreach(const ComponentItemVectorView& items_view,const ParallelLoopOptions& options,
+          const LambdaType& lambda_function)
+  {
+    arcaneParallelForeach(items_view,options,lambda_function);
+  }
+
+  /*!
+   * \brief Applique en concurrence la fonction lambda \a lambda_function
+   * \a instance sur la vue milieux \a items_view.
+   * \ingroup Concurrency
+   */
+  template<typename LambdaType> inline void
+  Foreach(const EnvItemVectorView& items_view,const LambdaType& lambda_function)
+  {
+    arcaneParallelForeach(items_view,lambda_function);
+  }
+
+  /*! 
+   * \brief Applique en concurrence la fonction lambda \a lambda_function
+   * \a instance sur la vue milieux \a items_view avec les options \a options.
+   * \ingroup Concurrency
+   */
+  template<typename LambdaType> inline void
+  Foreach(const EnvItemVectorView& items_view,const ParallelLoopOptions& options,
+          const LambdaType& lambda_function)
+  {
+    arcaneParallelForeach(items_view,options,lambda_function);
+  }
+
+  /*!
+   * \brief Applique en concurrence la fonction lambda \a lambda_function
+   * \a instance sur la vue matériaux \a items_view.
+   * \ingroup Concurrency
+   */
+  template<typename LambdaType> inline void
+  Foreach(const MatItemVectorView& items_view,const LambdaType& lambda_function)
+  {
+    arcaneParallelForeach(items_view,lambda_function);
+  }
+
+  /*! 
+   * \brief Applique en concurrence la fonction lambda \a lambda_function
+   * \a instance sur la vue matériaux \a items_view avec les options \a options.
+   * \ingroup Concurrency
+   */
+  template<typename LambdaType> inline void
+  Foreach(const MatItemVectorView& items_view,const ParallelLoopOptions& options,
+          const LambdaType& lambda_function)
+  {
+    arcaneParallelForeach(items_view,options,lambda_function);
+  }
+
+} // End namespace Arcane::Parallel
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
