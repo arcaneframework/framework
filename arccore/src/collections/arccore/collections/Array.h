@@ -798,11 +798,7 @@ class Array
  protected:
 
   using AbstractArray<T>::m_p;
-  enum CloneBehaviour
-    {
-      CB_Clone,
-      CB_Shared
-    };
+
  public:
 
   typedef AbstractArray<T> BaseClassType;
@@ -835,7 +831,7 @@ class Array
     for( auto x : alist )
       this->add(x);
   }
-  Array(Int64 asize) : AbstractArray<T>()
+  explicit Array(Int64 asize) : AbstractArray<T>()
   {
     this->_resize(asize);
   }
@@ -860,8 +856,8 @@ class Array
   //! Constructeur par déplacement (uniquement pour UniqueArray)
   Array(Array<T>&& rhs) ARCCORE_NOEXCEPT : AbstractArray<T>(std::move(rhs)) {}
  private:
-  Array(const Array<T>& rhs);
-  void operator=(const Array<T>& rhs);
+  Array(const Array<T>& rhs) = delete;
+  void operator=(const Array<T>& rhs) = delete;
 
  public:
   ~Array()
