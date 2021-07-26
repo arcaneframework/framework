@@ -12,7 +12,7 @@ RUN addgroup --gid $GID user \
 # see https://github.com/JetBrains/clion-remote
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
-    openssh-server \
+    openssh-server rsync\
     gdb valgrind \
     && apt-get clean
 
