@@ -49,33 +49,46 @@ option(ALIEN_PLUGIN_PETSC "Whether or not to compile PETSc backend" OFF)
 option(ALIEN_PLUGIN_SUPERLU "Whether or not to compile SuperLU backend" OFF)
 option(ALIEN_PLUGIN_TRILINOS "Whether or not to compile Trilinos backend" OFF)
 
+option(ALIENDEV_FORCE_COMPILE_FRAMEWORK "[dev] Use compile Arccon and Arccore" OFF)
+
 # Make this conditional.
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # For shared libs, needed for Arccore
 set(BUILD_SHARED_LIBS ON)
 
-# ----------------------------------------------------------------------------
-# Macro pour positionner la variable 'var_name' dans le cache
-# avec sa valeur actuelle ou la valeur 'var_value' si elle n'a
-# pas de valeur.
-macro(alienframework_set_if_unset var_name var_value var_type description)
-    if (NOT DEFINED ${var_name})
-        set(${var_name} ${var_value})
-    endif ()
-    set(${var_name} ${${var_name}} CACHE BOOL "${description}" FORCE)
-endmacro()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-
-alienframework_set_if_unset(ARCCON_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/framework/arccon PATH "Arccon root path")
-alienframework_set_if_unset(ARCCORE_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/framework/arccore PATH "Arccore root")
 
 set(ALIEN_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
 
-set(FRAMEWORK_EXPORT_NAME AlienFrameworkTargets)
+# First we try to use external arccon and arccore
+if (NOT ALIENDEV_FORCE_COMPILE_FRAMEWORK)
+    find_package(Arccon QUIET)
+    find_package(Arccore QUIET)
+endif(NOT ALIENDEV_FORCE_COMPILE_FRAMEWORK)
+
+# In devel source tree, we can build with embedded arccon and arccore
+if (ALIENDEV_FORCE_COMPILE_FRAMEWORK OR NOT Arccon_FOUND OR NOT Arccore_FOUND)
+    if (NOT DEFINED ARCCON_SRC_DIR)
+        set(ARCCON_SRC_DIR ${PROJECT_SOURCE_DIR}/framework/arccon)
+    endif()
+
+    if (NOT DEFINED ARCCORE_SRC_DIR)
+        set(ARCCORE_SRC_DIR ${PROJECT_SOURCE_DIR}/framework/arccore)
+    endif()
+
+    set(FRAMEWORK_EXPORT_NAME AlienFrameworkTargets)
+
+    get_filename_component(_fp_framework "framework/CMake" REALPATH)
+    if (EXISTS ${_fp_framework})
+        list(APPEND CMAKE_MODULE_PATH ${_fp_framework})
+    endif()
+endif()
+
+
 
 add_subdirectory(docs)
 
