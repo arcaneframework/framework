@@ -14,47 +14,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-cmake_minimum_required(VERSION 3.7.2)
-
-# To properly handle VERSION directive in PROJECT
-cmake_policy(SET CMP0048 NEW)
-cmake_policy(SET CMP0023 NEW)
-
-# To export dependencies
-cmake_policy(SET CMP0022 NEW)
-
-# for find_package with Foo_ROOT
-cmake_policy(SET CMP0074 NEW)
-
-# target_link_libraries for out of directory targets.
-cmake_policy(SET CMP0079 NEW)
-
-
-# ----------------------------------------------------------------------------
-# ----------------------------------------------------------------------------
-
-project(Alien
-        LANGUAGES C CXX
-        VERSION 1.0.2)
-
-# ----------------------------------------------------------------------------
-# ----------------------------------------------------------------------------
-
-option(ALIEN_COMPONENT_RefSemantic "Whether or not to compile RefSemantic package" ON)
-option(ALIEN_COMPONENT_MoveSemantic "Whether or not to compile MoveSemantic package" ON)
-option(ALIEN_UNIT_TESTS "Whether or not to enable unit tests" ON)
-
-option(ALIEN_USE_HDF5 "Enable HDF5 export" OFF)
-option(ALIEN_USE_LIBXML2 "Enable xml export" ON)
-
-option(ALIEN_GENERATE_DOCUMENTATION "Generate API documentation" OFF)
-option(ALIEN_GENERATE_TUTORIAL "Compile examples of Alien" ON)
-
-# Make this conditional.
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
 # Use Arccon functions and macros
 find_package(Arccon REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
@@ -84,10 +43,6 @@ endif(ALIEN_GENERATE_DOCUMENTATION)
 
 find_package(Arccore 2 REQUIRED)
 
-# ----------------------------------------------------------------------------
-# ----------------------------------------------------------------------------
-
-include(LoadAlienConfigFile)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -95,6 +50,16 @@ include(LoadAlienConfigFile)
 if (NOT ALIEN_EXPORT_TARGET)
     set(ALIEN_EXPORT_TARGET ${PROJECT_NAME}Targets)
 endif ()
+
+configure_file(
+        AlienConfig.h.in
+        ${PROJECT_BINARY_DIR}/alien/AlienConfig.h
+)
+
+install(
+        FILES ${PROJECT_BINARY_DIR}/alien/AlienConfig.h
+        DESTINATION include/alien
+)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -123,23 +88,6 @@ if (ALIEN_GENERATE_TUTORIAL)
     add_subdirectory(tutorial)
 endif (ALIEN_GENERATE_TUTORIAL)
 
-# ----------------------------------------------------------------------------
-# ----------------------------------------------------------------------------
-
-# plugins
-if (PLUGIN_DIR)
-    message(STATUS "plugin directory is ${PLUGIN_DIR}")
-    file(GLOB plugins RELATIVE ${PLUGIN_DIR} ${PLUGIN_DIR}/*)
-    foreach (plugin ${plugins})
-        message(STATUS "** plugin detected : ${plugin}")
-        add_subdirectory(${PLUGIN_DIR}/${plugin} ${plugin})
-    endforeach ()
-else ()
-    message(STATUS "no plugin detected")
-endif ()
-
-# ----------------------------------------------------------------------------
-# ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
 # Configure installation layout.
@@ -192,7 +140,7 @@ install(EXPORT ${ALIEN_EXPORT_TARGET}
         NAMESPACE ${namespace}
         DESTINATION ${config_install_dir})
 
-install(FILES cmake/LoadAlienTest.cmake
+install(FILES ../CMake/LoadAlienTest.cmake
         DESTINATION ${config_install_dir})
 
 # ----------------------------------------------------------------------------
