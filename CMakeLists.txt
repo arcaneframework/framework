@@ -77,19 +77,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
 
 set(FRAMEWORK_EXPORT_NAME AlienFrameworkTargets)
 
-if(ALIEN_GENERATE_DOCUMENTATION)
-    find_package(Doxygen REQUIRED)
-
-    # doxygen settings can be set here, prefixed with "DOXYGEN_"
-    set(DOXYGEN_SOURCE_BROWSER YES)
-    set(DOXYGEN_EXTRACT_PRIVATE YES)
-    set(DOXYGEN_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
-
-    # For sphinx
-    set(DOXYGEN_GENERATE_HTML NO)
-    set(DOXYGEN_GENERATE_XML YES)
-    add_subdirectory(docs)
-endif(ALIEN_GENERATE_DOCUMENTATION)
+add_subdirectory(docs)
 
 add_subdirectory(src)
 

@@ -1,3 +1,14 @@
+if(ALIEN_GENERATE_DOCUMENTATION)
+    find_package(Doxygen REQUIRED)
+
+    # doxygen settings can be set here, prefixed with "DOXYGEN_"
+    set(DOXYGEN_SOURCE_BROWSER YES)
+    set(DOXYGEN_EXTRACT_PRIVATE YES)
+    set(DOXYGEN_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+
+    # For sphinx
+    set(DOXYGEN_GENERATE_HTML NO)
+    set(DOXYGEN_GENERATE_XML YES)
 find_package(Sphinx REQUIRED breathe)
 
 set(SPHINX_COPYRIGHT "CEA, IFPEN")
@@ -17,3 +28,11 @@ sphinx_add_docs(
         SOURCE_DIRECTORY sphinx
         OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/alien_doc"
 )
+endif(ALIEN_GENERATE_DOCUMENTATION)
+
+#-----------------------------------------------------------
+# Tutorial
+#-----------------------------------------------------------
+if (ALIEN_GENERATE_TUTORIAL)
+    add_subdirectory(tutorial)
+endif (ALIEN_GENERATE_TUTORIAL)

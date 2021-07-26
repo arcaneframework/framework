@@ -65,13 +65,6 @@ if (ALIEN_UNIT_TESTS)
     add_subdirectory(test)
 endif ()
 
-#-----------------------------------------------------------
-# Tutorial
-#-----------------------------------------------------------
-if (ALIEN_GENERATE_TUTORIAL)
-    add_subdirectory(tutorial)
-endif (ALIEN_GENERATE_TUTORIAL)
-
 
 # ----------------------------------------------------------------------------
 # Configure installation layout.
