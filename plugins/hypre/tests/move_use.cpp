@@ -37,9 +37,9 @@ class SimpleLinearProblemFixtureMove : public ::testing::Test
 
     m_distribution = Alien::MatrixDistribution(size, size, m_pm.get());
 
-    m_matrix = Alien::MatrixData(m_distribution);
+    m_matrix = Alien::Move::MatrixData(m_distribution);
 
-    m_rhs = Alien::VectorData(m_distribution.rowDistribution());
+    m_rhs = Alien::Move::VectorData(m_distribution.rowDistribution());
   }
 
   void SetUp() override
@@ -50,7 +50,7 @@ class SimpleLinearProblemFixtureMove : public ::testing::Test
     int gsize = dist.globalRowSize();
 
     {
-      Alien::DirectMatrixBuilder builder(
+      Alien::Move::DirectMatrixBuilder builder(
           std::move(m_matrix), Alien::DirectMatrixOptions::eResetAllocation);
       builder.reserve(3); // Réservation de 3 coefficients par ligne
       builder.allocate(); // Allocation de l'espace mémoire réservé
@@ -67,7 +67,7 @@ class SimpleLinearProblemFixtureMove : public ::testing::Test
     }
 
     {
-      Alien::LocalVectorWriter v_build(std::move(m_rhs));
+      Alien::Move::LocalVectorWriter v_build(std::move(m_rhs));
       for (int i = 0 ; i < v_build.size() ; i++) {
         v_build[i] = 1.0;
       }
@@ -77,8 +77,8 @@ class SimpleLinearProblemFixtureMove : public ::testing::Test
 
  public:
   Alien::MatrixDistribution m_distribution;
-  Alien::MatrixData m_matrix;
-  Alien::VectorData m_rhs;
+  Alien::Move::MatrixData m_matrix;
+  Alien::Move::VectorData m_rhs;
 
  private:
   std::unique_ptr<Arccore::MessagePassing::IMessagePassingMng> m_pm;
@@ -86,7 +86,7 @@ class SimpleLinearProblemFixtureMove : public ::testing::Test
 
 TEST_F(SimpleLinearProblemFixtureMove, SimpleSolve)
 {
-  Alien::VectorData x(m_matrix.distribution().rowDistribution());
+  Alien::Move::VectorData x(m_matrix.distribution().rowDistribution());
 
   auto solver = Alien::Hypre::LinearSolver();
 
@@ -95,7 +95,7 @@ TEST_F(SimpleLinearProblemFixtureMove, SimpleSolve)
 
 TEST_F(SimpleLinearProblemFixtureMove, ParametrizedSolve)
 {
-  Alien::VectorData x(m_matrix.distribution().rowDistribution());
+  Alien::Move::VectorData x(m_matrix.distribution().rowDistribution());
 
   auto options = Alien::Hypre::Options()
                      .numIterationsMax(10)
@@ -110,11 +110,11 @@ TEST_F(SimpleLinearProblemFixtureMove, ParametrizedSolve)
 
 TEST_F(SimpleLinearProblemFixtureMove, MultipleSolve)
 {
-  Alien::VectorData x(m_matrix.distribution().rowDistribution());
+  Alien::Move::VectorData x(m_matrix.distribution().rowDistribution());
 
   {
     // First call, should fail
-    Alien::LocalVectorWriter w(std::move(x));
+    Alien::Move::LocalVectorWriter w(std::move(x));
     for (int i = 0 ; i < w.size() ; i++) {
       w[i] = 1.0;
     }

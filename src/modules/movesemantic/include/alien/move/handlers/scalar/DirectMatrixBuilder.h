@@ -26,7 +26,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Alien
+namespace Alien::Move
 {
 
 /*---------------------------------------------------------------------------*/
@@ -39,7 +39,7 @@ class DirectMatrixBuilder : protected MoveObject<MatrixData>
   using Common::DirectMatrixBuilder::ReserveFlag;
   using Common::DirectMatrixBuilder::ResetFlag;
   using Common::DirectMatrixBuilder::SymmetricFlag;
-  
+
   DirectMatrixBuilder(MatrixData&& matrix, const ResetFlag reset_flag,
                       const SymmetricFlag symmetric_flag = SymmetricFlag::eSymmetric)
   : MoveObject<MatrixData>(std::move(matrix))

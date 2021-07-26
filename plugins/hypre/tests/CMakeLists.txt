@@ -1,36 +1,22 @@
 enable_testing()
 find_package(GTest REQUIRED)
 
-add_executable(hypre_gtest_move main.cpp
-        move_use.cpp)
-
-target_link_libraries(hypre_gtest_move
-        PRIVATE GTest::GTest
-        PRIVATE Alien::alien_core Alien::alien_semantic_move
-        Alien::alien_hypre
-        )
-
-add_executable(hypre_gtest_ref main.cpp
+add_executable(hypre_gtest main.cpp
+        move_use.cpp
         ref_use.cpp)
 
-target_link_libraries(hypre_gtest_ref
+target_link_libraries(hypre_gtest
         PRIVATE GTest::GTest
-        PRIVATE Alien::alien_core Alien::alien_semantic_ref
+        PRIVATE Alien::alien_core Alien::alien_semantic_move
+        Alien::alien_semantic_ref
         Alien::alien_hypre
         )
 
 include(LoadAlienTest)
 
 alien_test(
-        BENCH hypre_gtest_move
-        NAME use_solve_move
+        BENCH hypre_gtest
+        NAME use_solve
         PROCS 2
-        COMMAND hypre_gtest_move
-)
-
-alien_test(
-        BENCH hypre_gtest_ref
-        NAME use_solve_ref
-        PROCS 2
-        COMMAND hypre_gtest_ref
+        COMMAND hypre_gtest
 )

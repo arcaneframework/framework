@@ -38,12 +38,12 @@ TEST(TestMatrixDirectBuilder, Functional)
   Alien::MatrixDistribution mdist(
   row_space, col_space, AlienTest::Environment::parallelMng());
   Alien::VectorDistribution vdist(col_space, AlienTest::Environment::parallelMng());
-  Alien::MatrixData A(mdist);
+  Alien::Move::MatrixData A(mdist);
   ASSERT_EQ(A.rowSpace(), row_space);
   ASSERT_EQ(A.colSpace(), col_space);
   auto tag = Alien::DirectMatrixOptions::eResetValues;
   {
-    Alien::DirectMatrixBuilder builder(
+    Alien::Move::DirectMatrixBuilder builder(
     std::move(A), tag, Alien::DirectMatrixOptions::SymmetricFlag::eUnSymmetric);
     builder.reserve(5);
     builder.allocate();
@@ -55,9 +55,9 @@ TEST(TestMatrixDirectBuilder, Functional)
   }
   // check with spmv
   Alien::LinearAlgebra<Alien::BackEnd::tag::simplecsr> Alg(vdist.parallelMng());
-  Alien::VectorData X(vdist);
+  Alien::Move::VectorData X(vdist);
   {
-    Alien::LocalVectorWriter writer(std::move(X));
+    Alien::Move::LocalVectorWriter writer(std::move(X));
     writer[0] = 1.;
     writer[1] = 2.;
     writer[2] = 3.;
@@ -65,10 +65,10 @@ TEST(TestMatrixDirectBuilder, Functional)
     X = writer.release();
   }
   Alien::VectorDistribution vdist2(row_space, AlienTest::Environment::parallelMng());
-  Alien::VectorData R(vdist2);
+  Alien::Move::VectorData R(vdist2);
   Alg.mult(A, X, R);
   {
-    Alien::LocalVectorReader reader(std::move(R));
+    Alien::Move::LocalVectorReader reader(std::move(R));
     std::cout << reader[0] << std::endl;
     std::cout << reader[1] << std::endl;
     std::cout << reader[2] << std::endl;
