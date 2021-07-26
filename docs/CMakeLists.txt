@@ -1,4 +1,4 @@
-if(ALIEN_GENERATE_DOCUMENTATION)
+if (ALIEN_GENERATE_DOCUMENTATION)
     find_package(Doxygen REQUIRED)
 
     # doxygen settings can be set here, prefixed with "DOXYGEN_"
@@ -9,26 +9,26 @@ if(ALIEN_GENERATE_DOCUMENTATION)
     # For sphinx
     set(DOXYGEN_GENERATE_HTML NO)
     set(DOXYGEN_GENERATE_XML YES)
-find_package(Sphinx REQUIRED breathe)
+    find_package(Sphinx REQUIRED breathe)
 
-set(SPHINX_COPYRIGHT "CEA, IFPEN")
-set(SPHINX_AUTHOR "CEA, IFPEN")
+    set(SPHINX_COPYRIGHT "CEA, IFPEN")
+    set(SPHINX_AUTHOR "CEA, IFPEN")
 
-# this target will only be built if specifically asked to.
-# run "make api-docs" to create the doxygen documentation
-#doxygen_add_docs(alien_api_docs_doxygen
-#        ${PROJECT_SOURCE_DIR}/modules
-#        COMMENT "Generate API-documents for Alien."
-#        )
+    # this target will only be built if specifically asked to.
+    # run "make api-docs" to create the doxygen documentation
+    #doxygen_add_docs(alien_api_docs_doxygen
+    #        ${PROJECT_SOURCE_DIR}/modules
+    #        COMMENT "Generate API-documents for Alien."
+    #        )
 
-sphinx_add_docs(
-        alien_doc
-        BREATHE_PROJECTS doxygen_api_docs_movesemantic
-        BUILDER html
-        SOURCE_DIRECTORY sphinx
-        OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/alien_doc"
-)
-endif(ALIEN_GENERATE_DOCUMENTATION)
+    sphinx_add_docs(
+            alien_doc
+            BREATHE_PROJECTS doxygen_api_docs_movesemantic
+            BUILDER html
+            SOURCE_DIRECTORY sphinx
+            OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/alien_doc"
+    )
+endif (ALIEN_GENERATE_DOCUMENTATION)
 
 #-----------------------------------------------------------
 # Tutorial
