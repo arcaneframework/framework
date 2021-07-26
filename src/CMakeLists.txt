@@ -24,18 +24,6 @@ include(ArcconSetInstallDirs)
 
 include(GenerateExportHeader)
 
-if(ALIEN_GENERATE_DOCUMENTATION)
-  find_package(Doxygen REQUIRED)
-  
-  # doxygen settings can be set here, prefixed with "DOXYGEN_"
-  set(DOXYGEN_SOURCE_BROWSER YES)
-  set(DOXYGEN_EXTRACT_PRIVATE YES)
-  set(DOXYGEN_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
-
-  # For sphinx
-  set(DOXYGEN_GENERATE_HTML NO)
-  set(DOXYGEN_GENERATE_XML YES)
-endif(ALIEN_GENERATE_DOCUMENTATION)  
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -76,10 +64,6 @@ if (ALIEN_UNIT_TESTS)
     enable_testing()
     add_subdirectory(test)
 endif ()
-
-if (ALIEN_GENERATE_DOCUMENTATION)
-    add_subdirectory(docs)
-endif (ALIEN_GENERATE_DOCUMENTATION)
 
 #-----------------------------------------------------------
 # Tutorial
