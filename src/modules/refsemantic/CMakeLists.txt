@@ -106,6 +106,8 @@ install(TARGETS alien_semantic_ref
 
 add_library(Alien::alien_semantic_ref ALIAS alien_semantic_ref)
 
+enable_sanitizers(alien_semantic_ref)
+
 install(DIRECTORY include/alien/ref
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/alien/
         )

@@ -56,13 +56,14 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # For shared libs, needed for Arccore
 set(BUILD_SHARED_LIBS ON)
 
-
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
 set(ALIEN_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
+
+include(sanitizers)
 
 # First we try to use external arccon and arccore
 if (NOT ALIENDEV_FORCE_COMPILE_FRAMEWORK)

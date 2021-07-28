@@ -67,6 +67,8 @@ install(TARGETS alien_semantic_move
 
 add_library(Alien::alien_semantic_move ALIAS alien_semantic_move)
 
+enable_sanitizers(alien_semantic_move)
+
 install(DIRECTORY include/alien/move
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/alien
         )
