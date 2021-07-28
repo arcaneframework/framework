@@ -52,7 +52,7 @@ jobs:
             container: "arcaneframework/alien-base:ubuntu20.04",
             build_type: "Debug",
             build_options: "",
-            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=OFF -DALIEN_EMBEDDED=OFF -DCMAKE_PREFIX_PATH=\"/opt/arccon;/opt/arccore\"",
+            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=OFF -DALIENDEV_EMBEDDED=OFF -DCMAKE_PREFIX_PATH=\"/opt/arccon;/opt/arccore\"",
           }
     steps:
       # Checkout v2 does not include files listed in .gitattributes
