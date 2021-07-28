@@ -50,7 +50,12 @@ option(ALIEN_PLUGIN_PETSC "Whether or not to compile PETSc backend" OFF)
 option(ALIEN_PLUGIN_SUPERLU "Whether or not to compile SuperLU backend" OFF)
 option(ALIEN_PLUGIN_TRILINOS "Whether or not to compile Trilinos backend" OFF)
 
-option(ALIENDEV_FORCE_COMPILE_FRAMEWORK "[dev] Use compile Arccon and Arccore" OFF)
+set(DEFAULT_EMBEDDED OFF)
+get_filename_component(_fp_framework "framework/CMake" REALPATH)
+if (EXISTS ${_fp_framework})
+    set(DEFAULT_EMBEDDED OFF)
+endif()
+option(ALIENDEV_EMBEDDED "[dev] forbid to compile Arcon and Arccore" ${DEFAULT_EMBEDDED})
 
 # Make this conditional.
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -67,13 +72,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
 include(sanitizers)
 
 # First we try to use external arccon and arccore
-if (NOT ALIENDEV_FORCE_COMPILE_FRAMEWORK)
-    find_package(Arccon QUIET)
-    find_package(Arccore QUIET)
-endif(NOT ALIENDEV_FORCE_COMPILE_FRAMEWORK)
-
-# In devel source tree, we can build with embedded arccon and arccore
-if (ALIENDEV_FORCE_COMPILE_FRAMEWORK OR NOT Arccon_FOUND OR NOT Arccore_FOUND)
+if (ALIENDEV_EMBEDDED)
     if (NOT DEFINED ARCCON_SRC_DIR)
         set(ARCCON_SRC_DIR ${PROJECT_SOURCE_DIR}/framework/arccon)
     endif()
@@ -88,6 +87,11 @@ if (ALIENDEV_FORCE_COMPILE_FRAMEWORK OR NOT Arccon_FOUND OR NOT Arccore_FOUND)
     if (EXISTS ${_fp_framework})
         list(APPEND CMAKE_MODULE_PATH ${_fp_framework})
     endif()
+else(ALIENDEV_EMBEDDED)
+    find_package(Arccon REQUIRED)
+    list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
+
+    find_package(Arccore REQUIRED)
 endif()
 
 if (ALIEN_DEFAULT_OPTIONS)
