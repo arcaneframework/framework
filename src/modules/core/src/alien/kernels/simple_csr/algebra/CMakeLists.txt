@@ -18,8 +18,6 @@ find_package(BLAS REQUIRED)
 target_link_libraries(alien_kernel_simplecsr INTERFACE ${BLAS_LIBRARIES})
 
 SET(ALIEN_CBLAS_HEADER)
-SET(HEADER_INSTALL_PATH include/alien/kernels/simple_csr/algebra)
-# CC: TODO find the correct names for blas calls.
 
 SET(ALIEN_BLAS_SDOT "sdot")
 SET(ALIEN_BLAS_DDOT "ddot")
@@ -56,16 +54,6 @@ ELSE (ALIEN_CBLAS_HEADER)
         CONFIGURE_FILE(alien_cblas.h.in ${ALIEN_CBLAS_NAME} @ONLY)
     ENDIF (BLAS_HAVE_CBLAS)
     SET(ALIEN_CBLAS_HEADER "\"${ALIEN_CBLAS_NAME}\"")
-    install(
-            FILES ${PROJECT_BINARY_DIR}/modules/core/src/alien/kernels/simple_csr/algebra/${ALIEN_CBLAS_NAME}
-            DESTINATION ${HEADER_INSTALL_PATH}
-    )
 ENDIF (ALIEN_CBLAS_HEADER)
 
 CONFIGURE_FILE(CBLAS.h.in CBLAS.h @ONLY)
-
-install(
-        FILES ${PROJECT_BINARY_DIR}/modules/core/src/alien/kernels/simple_csr/algebra/CBLAS.h
-        DESTINATION ${HEADER_INSTALL_PATH}
-)
-

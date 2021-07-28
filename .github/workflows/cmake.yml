@@ -9,7 +9,7 @@ on:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: RelWithDebInfo
-  CCACHE_BASEDIR: ${{GITHUB.WORKSPACE}}
+  CCACHE_BASEDIR: ${{github.workspace}}
   CCACHE_DIR: /ccache
   CCACHE_COMPRESS: true
   CCACHE_COMPRESSLEVEL: 6
@@ -32,12 +32,16 @@ jobs:
     - name: Prepare ccache timestamp
       id: ccache_timestamp
       shell: cmake -P {0}
+      # Disabled for `act`
+      if: ${{ !env.ACT }}
       run: |
         string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
         message("::set-output name=timestamp::${current_date}")
 
     - name: ccache files
       uses: actions/cache@v2
+      # Disabled for `act`
+      if: ${{ !env.ACT }}
       with:
         path: ${{env.CCACHE_DIR}}
         key: alien-ccache-${{ steps.ccache_timestamp.outputs.timestamp }}
@@ -45,9 +49,9 @@ jobs:
           alien-ccache-
 
     - name: Configure CMake
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # Configure CMake in a 'build' subdirectory. `C MAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B /build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DALIEN_PLUGIN_HYPRE:BOOL=ON -DALIEN_PLUGIN_PETSC:BOOL=ON -DALIEN_USE_HDF5:BOOL=ON -DALIEN_USE_LIBXML2:BOOL=ON -G Ninja
+      run: cmake -B /build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DALIEN_PLUGIN_HYPRE:BOOL=ON -DALIEN_PLUGIN_PETSC:BOOL=ON -DALIEN_USE_HDF5:BOOL=ON -DALIEN_USE_LIBXML2:BOOL=ON -G Ninja -DCMAKE_INSTALL_PREFIX=/opt/alien
 
     - name: Build
       # Build your program with the given configuration
@@ -59,7 +63,13 @@ jobs:
     - name: Test
       # Execute tests defined by the CMake configuration.
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: cd /build && ctest -V -C ${{env.BUILD_TYPE}}
-      env:
-        OMPI_ALLOW_RUN_AS_ROOT: 1
-        OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
+      # OMPI_ALLOW_RUN_AS_ROOT are set in script to allow `act` to work (env section was not working)
+      run: |
+        cd /build
+        export OMPI_ALLOW_RUN_AS_ROOT=1
+        export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+        ctest -V -C ${{env.BUILD_TYPE}}
+
+    - name: Install
+      run: |
+        cd /build && cmake --install /build

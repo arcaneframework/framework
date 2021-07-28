@@ -92,6 +92,8 @@ endif()
 
 add_subdirectory(docs)
 
+enable_testing()
+
 add_subdirectory(src)
 
 if (ALIEN_PLUGIN_HYPRE)

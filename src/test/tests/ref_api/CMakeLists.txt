@@ -24,6 +24,7 @@ set(TEST_LIST
         CompositeMatrix
         BlockMatrix
         VBlockMatrix
+        Redistributor
         )
 
 if (ALIEN_MV_EXPR)
