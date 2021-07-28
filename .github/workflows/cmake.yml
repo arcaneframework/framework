@@ -30,13 +30,15 @@ jobs:
             name: "ubuntu20.04 release",
             container: "arcaneframework/alien-base:ubuntu20.04",
             build_type: "RelWithDebInfo",
-            build_options: ""
+            build_options: "",
+            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON",
           }
           - {
             name: "ubuntu20.04 debug",
             container: "arcaneframework/alien-base:ubuntu20.04",
             build_type: "Debug",
-            build_options: "-DENABLE_SANITIZER_ADDRESS:BOOL=ON -DENABLE_SANITIZER_UNDEFINED_BEHAVIOR:BOOL=ON"
+            build_options: "-DENABLE_SANITIZER_ADDRESS:BOOL=ON -DENABLE_SANITIZER_UNDEFINED_BEHAVIOR:BOOL=ON",
+            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON",
           }
           - {
             name: "ubuntu20.04 debug memory",
@@ -79,7 +81,7 @@ jobs:
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `C MAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-        run: cmake -B /build -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DALIEN_PLUGIN_HYPRE:BOOL=ON -DALIEN_PLUGIN_PETSC:BOOL=ON -DALIEN_USE_HDF5:BOOL=ON -DALIEN_USE_LIBXML2:BOOL=ON -G Ninja -DCMAKE_INSTALL_PREFIX=/opt/alien ${{matrix.config.build_options}}
+        run: cmake -B /build -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DALIEN_PLUGIN_HYPRE:BOOL=ON -DALIEN_PLUGIN_PETSC:BOOL=ON ${{matrix.config.alien_options}} -G Ninja -DCMAKE_INSTALL_PREFIX=/opt/alien ${{matrix.config.build_options}}
 
       - name: Build
         # Build your program with the given configuration

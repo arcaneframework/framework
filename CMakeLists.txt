@@ -39,7 +39,8 @@ option(ALIEN_COMPONENT_MoveSemantic "Whether or not to compile MoveSemantic pack
 option(ALIEN_UNIT_TESTS "Whether or not to enable unit tests" ON)
 
 option(ALIEN_USE_HDF5 "Enable HDF5 export" OFF)
-option(ALIEN_USE_LIBXML2 "Enable xml export" ON)
+option(ALIEN_USE_LIBXML2 "Enable xml export" OFF)
+option(ALIEN_DEFAULT_OPTIONS "Enable best effort to find optional dependencies" ON)
 
 option(ALIEN_GENERATE_DOCUMENTATION "Generate API documentation" OFF)
 option(ALIEN_GENERATE_TUTORIAL "Compile examples of Alien" ON)
@@ -89,7 +90,13 @@ if (ALIENDEV_FORCE_COMPILE_FRAMEWORK OR NOT Arccon_FOUND OR NOT Arccore_FOUND)
     endif()
 endif()
 
+if (ALIEN_DEFAULT_OPTIONS)
+    find_package(HDF5 QUIET)
+    set(ALIEN_USE_HDF5 ${HDF5_FOUND})
 
+    find_package(LibXml2 QUIET)
+    set(ALIEN_USE_LIBXML2 ${LibXml2_FOUND})
+endif ()
 
 add_subdirectory(docs)
 
