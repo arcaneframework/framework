@@ -103,6 +103,7 @@ class SimpleCSRVector : public IVectorImpl
 
   ValueType const& operator[](Integer index) const { return m_values[index]; }
 
+  // FIXME: not implemented !
   template <typename E>
   SimpleCSRVector& operator=(E const& expr);
 

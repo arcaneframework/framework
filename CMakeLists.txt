@@ -26,13 +26,18 @@ foreach (var ${vars})
     endif ()
 endforeach ()
 
+file(READ "version" ALIEN_VERSION_STR_FULL)
+string(REPLACE "_dev" "" ALIEN_VERSION ${ALIEN_VERSION_STR_FULL})
+string(STRIP "${ALIEN_VERSION}" ALIEN_VERSION)  # In case of \n
+message(STATUS "AlienVersion = ${ALIEN_VERSION}")
+
 # ----------------------------------------------------------------------------
 # Indique que le projet n'a pas de language
 # Cela est indispensable pour que CMake ne recherche pas les
 # compilateurs avant d'avoir inclus les fichiers de configuration.
 Project(Alien
         LANGUAGES C CXX
-        VERSION 1.0.3)
+        VERSION ${ALIEN_VERSION})
 
 option(ALIEN_COMPONENT_RefSemantic "Whether or not to compile RefSemantic package" ON)
 option(ALIEN_COMPONENT_MoveSemantic "Whether or not to compile MoveSemantic package" ON)

@@ -49,6 +49,7 @@ class StreamVBlockMatrixBuilderT<ValueT>::BaseInserter
   //! Termine l'inserter (déallocation des données)
   void end();
 
+  // FIXME: not implemented !
   //! Retourne si le filler est au début
   bool isBegin();
   //! Retourn true, le filler est à la fin
