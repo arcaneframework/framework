@@ -468,8 +468,11 @@ class ArrayView
 template<class T>
 class ConstArrayView
 {
+  friend class Span<T>;
   friend class Span<const T>;
+  friend class SmallSpan<T>;
   friend class SmallSpan<const T>;
+
  public:
 
   //! Type des éléments du tableau

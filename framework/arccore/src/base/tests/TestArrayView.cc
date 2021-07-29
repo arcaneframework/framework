@@ -139,12 +139,36 @@ TEST(Span,Convert)
 {
   using namespace Arccore;
   std::vector<Int64> vector_values = { 5, 7, 11 };
+  Int32 vector_size = static_cast<Int32>(vector_values.size());
+  ArrayView<Int64> a_view(vector_size,vector_values.data());
+  ASSERT_EQ(a_view.size(),vector_size) << "Bad a_view size";
+  ASSERT_EQ(a_view[0],vector_values[0]) << "Bad a_view[0]";
+  ASSERT_EQ(a_view[1],vector_values[1]) << "Bad a_view[1]";
+  ASSERT_EQ(a_view[2],vector_values[2]) << "Bad a_view[2]";
+
+  ConstArrayView<Int64> a_const_view(vector_size,vector_values.data());
+  ASSERT_EQ(a_const_view.size(),vector_size) << "Bad a_const_view size";
+  ASSERT_EQ(a_const_view[0],vector_values[0]) << "Bad a_const_view[0]";
+  ASSERT_EQ(a_const_view[1],vector_values[1]) << "Bad a_const_view[1]";
+  ASSERT_EQ(a_const_view[2],vector_values[2]) << "Bad a_const_view[2]";
+
   Span<const Int64> a_const_span(vector_values.data(),vector_values.size());
   Span<Int64> a_span(vector_values.data(),vector_values.size());
   ByteConstSpan a_const_bytes = asBytes(a_const_span);
   ByteSpan a_bytes = asWritableBytes(a_span);
   ASSERT_EQ(a_const_bytes.size(),24) << "Bad a_const_bytes_size (1)";
   ASSERT_EQ(a_bytes.size(),24) << "Bad a_bytes_size (2)";
+  Span<Int64> span2(a_view);
+  Span<const Int64> span3(a_view);
+  Span<const Int64> span4(a_const_view);
+  ASSERT_EQ(span2.size(),a_view.size()) << "Bad span2 size";
+  ASSERT_EQ(span3.size(),a_view.size()) << "Bad span3 size";
+  ASSERT_EQ(span4.size(),a_const_view.size()) << "Bad span4 size";
+  span3 = a_const_view;
+  span3 = a_view;
+  span2 = a_view;
+  ASSERT_EQ(span2.size(),a_view.size()) << "Bad span2 (2) size";
+  ASSERT_EQ(span3.size(),a_view.size()) << "Bad span3 (2) size";
 }
 
 /*---------------------------------------------------------------------------*/

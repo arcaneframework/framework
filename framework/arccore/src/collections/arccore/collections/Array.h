@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2020 IFPEN-CEA
+// Copyright 2000-2021 IFPEN-CEA
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array.h                                                     (C) 2000-2019 */
+/* Array.h                                                     (C) 2000-2021 */
 /*                                                                           */
 /* Tableau 1D.                                                               */
 /*---------------------------------------------------------------------------*/
@@ -33,9 +33,6 @@
 #include <memory>
 #include <initializer_list>
 #include <cstring>
-
-// Définir cette macro si on souhaite empêcher la construction de Array.
-#define ARCCORE_AVOID_DEPRECATED_ARRAY_CONSTRUCTOR
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -595,6 +592,8 @@ class AbstractArray
   }
   void _destroyRange(Int64 abegin,Int64 aend,FalseType)
   {
+    if (abegin<0)
+      abegin = 0;
     for( Int64 i=abegin; i<aend; ++i )
       m_p->ptr[i].~T();
   }
@@ -603,21 +602,29 @@ class AbstractArray
   }
   void _createRangeDefault(Int64 abegin,Int64 aend,FalseType)
   {
+    if (abegin<0)
+      abegin = 0;
     for( Int64 i=abegin; i<aend; ++i )
       new (m_p->ptr+i) T();
   }
   void _createRange(Int64 abegin,Int64 aend,ConstReferenceType value,TrueType)
   {
+    if (abegin<0)
+      abegin = 0;
     for( Int64 i=abegin; i<aend; ++i )
       m_p->ptr[i] = value;
   }
   void _createRange(Int64 abegin,Int64 aend,ConstReferenceType value,FalseType)
   {
+    if (abegin<0)
+      abegin = 0;
     for( Int64 i=abegin; i<aend; ++i )
       new (m_p->ptr+i) T(value);
   }
   void _createRange(Int64 abegin,Int64 aend,const T* values)
   {
+    if (abegin<0)
+      abegin = 0;
     for( Int64 i=abegin; i<aend; ++i ){
       new (m_p->ptr+i) T(*values);
       ++values;
@@ -791,15 +798,7 @@ class Array
  protected:
 
   using AbstractArray<T>::m_p;
-  enum CloneBehaviour
-    {
-      CB_Clone,
-      CB_Shared
-    };
-  enum BuildDeprecated
-    {
-      BD_NoWarning
-    };
+
  public:
 
   typedef AbstractArray<T> BaseClassType;
@@ -818,74 +817,28 @@ class Array
   using typename BaseClassType::const_reference;
   using typename BaseClassType::size_type;
   using typename BaseClassType::difference_type;
-#ifndef ARCCORE_AVOID_DEPRECATED_ARRAY_CONSTRUCTOR
- public:
-#else
  protected:
-#endif
-  ARCCORE_DEPRECATED_2018 Array() : AbstractArray<T>() {}
-  //! Créé un tableau vide avec un allocateur spécifique.
-  ARCCORE_DEPRECATED_2018 Array(Int64 asize,ConstReferenceType value) : AbstractArray<T>()
+  Array() {}
+  Array(Int64 asize,ConstReferenceType value) : AbstractArray<T>()
   {
     this->_resize(asize,value);
   }
   //! Constructeur avec liste d'initialisation.
-  ARCCORE_DEPRECATED_2018 Array(std::initializer_list<T> alist) : AbstractArray<T>()
-  {
-    Integer nsize = arccoreCheckArraySize(alist.size());
-    this->_reserve(nsize);
-    for( auto x : alist )
-      this->add(x);
-  }
-  ARCCORE_DEPRECATED_2018 explicit Array(Int64 asize) : AbstractArray<T>()
-  {
-    this->_resize(asize);
-  }
-  ARCCORE_DEPRECATED_2018 Array(const ConstArrayView<T>& aview) : AbstractArray<T>(Span<const T>(aview))
-  {
-  }
-  ARCCORE_DEPRECATED_2018 Array(const Span<const T>& aview) : AbstractArray<T>(aview)
-  {
-  }
-  ARCCORE_DEPRECATED_2018 Array(const ArrayView<T>& aview) : AbstractArray<T>(Span<const T>(aview))
-  {
-  }
-  ARCCORE_DEPRECATED_2018 Array(const Span<T>& aview) : AbstractArray<T>(aview)
-  {
-  }
-  /*!
-   * \brief Créé un tableau de \a asize éléments avec un allocateur spécifique.
-   *
-   * Si ArrayTraits<T>::IsPODType vaut TrueType, les éléments ne sont pas
-   * initialisés. Sinon, c'est le constructeur par défaut de T qui est utilisé.
-   */
-  ARCCORE_DEPRECATED_2018 Array(IMemoryAllocator* allocator,Int64 asize)
-  : AbstractArray<T>(allocator,asize)
-  {
-    this->_resize(asize);
-  }
- protected:
-  Array(BuildDeprecated) : AbstractArray<T>() {}
-  Array(Int64 asize,ConstReferenceType value,BuildDeprecated) : AbstractArray<T>()
-  {
-    this->_resize(asize,value);
-  }
-  //! Constructeur avec liste d'initialisation.
-  Array(std::initializer_list<T> alist,BuildDeprecated) : AbstractArray<T>()
+  Array(std::initializer_list<T> alist) : AbstractArray<T>()
   {
     Int64 nsize = arccoreCheckArraySize(alist.size());
     this->_reserve(nsize);
     for( auto x : alist )
       this->add(x);
   }
-  Array(Int64 asize,BuildDeprecated) : AbstractArray<T>()
+  explicit Array(Int64 asize) : AbstractArray<T>()
   {
     this->_resize(asize);
   }
-  Array(const ConstArrayView<T>& aview,BuildDeprecated) : AbstractArray<T>(aview)
+  Array(const ConstArrayView<T>& aview) : AbstractArray<T>(aview)
   {
   }
-  Array(const Span<const T>& aview,BuildDeprecated) : AbstractArray<T>(aview)
+  Array(const Span<const T>& aview) : AbstractArray<T>(aview)
   {
   }
   /*!
@@ -894,7 +847,7 @@ class Array
    * Si ArrayTraits<T>::IsPODType vaut TrueType, les éléments ne sont pas
    * initialisés. Sinon, c'est le constructeur par défaut de T qui est utilisé.
    */
-  Array(IMemoryAllocator* allocator,Int64 asize,BuildDeprecated)
+  Array(IMemoryAllocator* allocator,Int64 asize)
   : AbstractArray<T>(allocator,asize)
   {
     this->_resize(asize);
@@ -903,8 +856,8 @@ class Array
   //! Constructeur par déplacement (uniquement pour UniqueArray)
   Array(Array<T>&& rhs) ARCCORE_NOEXCEPT : AbstractArray<T>(std::move(rhs)) {}
  private:
-  Array(const Array<T>& rhs);
-  void operator=(const Array<T>& rhs);
+  Array(const Array<T>& rhs) = delete;
+  void operator=(const Array<T>& rhs) = delete;
 
  public:
   ~Array()
@@ -1297,7 +1250,6 @@ class SharedArray
  protected:
 
   using AbstractArray<T>::m_p;
-  using Array<T>::BD_NoWarning;
 
  public:
 
@@ -1309,58 +1261,58 @@ class SharedArray
 
  public:
   //! Créé un tableau vide
-  SharedArray() : Array<T>(BD_NoWarning), m_next(nullptr), m_prev(nullptr) {}
+  SharedArray() : Array<T>(), m_next(nullptr), m_prev(nullptr) {}
   //! Créé un tableau de \a size éléments contenant la valeur \a value.
   SharedArray(Int64 asize,ConstReferenceType value)
-  : Array<T>(BD_NoWarning), m_next(nullptr), m_prev(nullptr)
+  : m_next(nullptr), m_prev(nullptr)
   {
     this->_resize(asize,value);
   }
   //! Créé un tableau de \a size éléments contenant la valeur par défaut du type T()
   explicit SharedArray(Int64 asize)
-  : Array<T>(BD_NoWarning), m_next(nullptr), m_prev(nullptr)
+  : m_next(nullptr), m_prev(nullptr)
   {
     this->_resize(asize);
   }
   //! Créé un tableau de \a size éléments contenant la valeur par défaut du type T()
   explicit SharedArray(Int32 asize)
-  : Array<T>(BD_NoWarning), m_next(nullptr), m_prev(nullptr)
+  : m_next(nullptr), m_prev(nullptr)
   {
     this->_resize(asize);
   }
   //! Créé un tableau de \a size éléments contenant la valeur par défaut du type T()
   explicit SharedArray(size_t asize)
-  : Array<T>(BD_NoWarning), m_next(nullptr), m_prev(nullptr)
+  : m_next(nullptr), m_prev(nullptr)
   {
     this->_resize((Int64)asize);
   }
   //! Créé un tableau en recopiant les valeurs de la value \a view.
   SharedArray(const ConstArrayView<T>& aview)
-  : Array<T>(aview,BD_NoWarning), m_next(nullptr), m_prev(nullptr)
+  : Array<T>(aview), m_next(nullptr), m_prev(nullptr)
   {
   }
   //! Créé un tableau en recopiant les valeurs de la value \a view.
   SharedArray(const Span<const T>& aview)
-  : Array<T>(aview,BD_NoWarning), m_next(nullptr), m_prev(nullptr)
+  : Array<T>(aview), m_next(nullptr), m_prev(nullptr)
   {
   }
   //! Créé un tableau en recopiant les valeurs de la value \a view.
   SharedArray(const ArrayView<T>& aview)
-  : Array<T>(Span<const T>(aview),BD_NoWarning), m_next(nullptr), m_prev(nullptr)
+  : Array<T>(Span<const T>(aview)), m_next(nullptr), m_prev(nullptr)
   {
   }
   //! Créé un tableau en recopiant les valeurs de la value \a view.
   SharedArray(const Span<T>& aview)
-  : Array<T>(aview,BD_NoWarning), m_next(nullptr), m_prev(nullptr)
+  : Array<T>(aview), m_next(nullptr), m_prev(nullptr)
   {
   }
   SharedArray(std::initializer_list<T> alist)
-  : Array<T>(alist,BD_NoWarning), m_next(nullptr), m_prev(nullptr)
+  : Array<T>(alist), m_next(nullptr), m_prev(nullptr)
   {
   }
   //! Créé un tableau faisant référence à \a rhs.
   SharedArray(const SharedArray<T>& rhs)
-  : Array<T>(BD_NoWarning), m_next(nullptr), m_prev(nullptr)
+  : Array<T>(),  m_next(nullptr), m_prev(nullptr)
   {
     _initReference(rhs);
   }
@@ -1522,7 +1474,6 @@ class UniqueArray
  protected:
 
   using AbstractArray<T>::m_p;
-  using Array<T>::BD_NoWarning;
 
  public:
 
@@ -1533,62 +1484,62 @@ class UniqueArray
 
  public:
   //! Créé un tableau vide
-  UniqueArray() : Array<T>(BD_NoWarning) {}
+  UniqueArray() {}
   //! Créé un tableau de \a size éléments contenant la valeur \a value.
-  UniqueArray(Int64 req_size,ConstReferenceType value) : Array<T>(BD_NoWarning)
+  UniqueArray(Int64 req_size,ConstReferenceType value)
   {
     this->_resize(req_size,value);
   }
   //! Créé un tableau de \a asize éléments contenant la valeur par défaut du type T()
-  explicit UniqueArray(Int64 asize) : Array<T>(BD_NoWarning)
+  explicit UniqueArray(Int64 asize)
   {
     this->_resize(asize);
   }
   //! Créé un tableau de \a asize éléments contenant la valeur par défaut du type T()
-  explicit UniqueArray(Int32 asize) : Array<T>(BD_NoWarning)
+  explicit UniqueArray(Int32 asize)
   {
     this->_resize(asize);
   }
   //! Créé un tableau de \a asize éléments contenant la valeur par défaut du type T()
-  explicit UniqueArray(size_t asize) : Array<T>(BD_NoWarning)
+  explicit UniqueArray(size_t asize)
   {
     this->_resize((Int64)asize);
   }
   //! Créé un tableau en recopiant les valeurs de la value \a aview.
-  UniqueArray(const ConstArrayView<T>& aview) : Array<T>(Span<const T>(aview),BD_NoWarning)
+  UniqueArray(const ConstArrayView<T>& aview) : Array<T>(Span<const T>(aview))
   {
   }
   //! Créé un tableau en recopiant les valeurs de la value \a aview.
-  UniqueArray(const Span<const T>& aview) : Array<T>(aview,BD_NoWarning)
+  UniqueArray(const Span<const T>& aview) : Array<T>(aview)
   {
   }
   //! Créé un tableau en recopiant les valeurs de la value \a aview.
-  UniqueArray(const ArrayView<T>& aview) : Array<T>(Span<const T>(aview),BD_NoWarning)
+  UniqueArray(const ArrayView<T>& aview) : Array<T>(Span<const T>(aview))
   {
   }
   //! Créé un tableau en recopiant les valeurs de la value \a aview.
-  UniqueArray(const Span<T>& aview) : Array<T>(aview,BD_NoWarning)
+  UniqueArray(const Span<T>& aview) : Array<T>(aview)
   {
   }
-  UniqueArray(std::initializer_list<T> alist) : Array<T>(alist,BD_NoWarning)
-  {
-  }
-  //! Créé un tableau en recopiant les valeurs \a rhs.
-  UniqueArray(const Array<T>& rhs) : Array<T>(rhs.constView(),BD_NoWarning)
+  UniqueArray(std::initializer_list<T> alist) : Array<T>(alist)
   {
   }
   //! Créé un tableau en recopiant les valeurs \a rhs.
-  UniqueArray(const UniqueArray<T>& rhs) : Array<T>(rhs.constView(),BD_NoWarning)
+  UniqueArray(const Array<T>& rhs) : Array<T>(rhs.constView())
   {
   }
   //! Créé un tableau en recopiant les valeurs \a rhs.
-  UniqueArray(const SharedArray<T>& rhs) : Array<T>(rhs.constView(),BD_NoWarning)
+  UniqueArray(const UniqueArray<T>& rhs) : Array<T>(rhs.constView())
+  {
+  }
+  //! Créé un tableau en recopiant les valeurs \a rhs.
+  UniqueArray(const SharedArray<T>& rhs) : Array<T>(rhs.constView())
   {
   }
   //! Constructeur par déplacement. \a rhs est invalidé après cet appel
   UniqueArray(UniqueArray<T>&& rhs) ARCCORE_NOEXCEPT : Array<T>(std::move(rhs)) {}
   //! Créé un tableau vide avec un allocateur spécifique \a allocator
-  explicit UniqueArray(IMemoryAllocator* allocator) : Array<T>(allocator,0,BD_NoWarning) {}
+  explicit UniqueArray(IMemoryAllocator* allocator) : Array<T>(allocator,0) {}
   /*!
    * \brief Créé un tableau de \a asize éléments avec un
    * allocateur spécifique \a allocator.
@@ -1597,7 +1548,7 @@ class UniqueArray
    * initialisés. Sinon, c'est le constructeur par défaut de T qui est utilisé.
    */
   UniqueArray(IMemoryAllocator* allocator,Int64 asize)
-  : Array<T>(allocator,asize,BD_NoWarning) { }
+  : Array<T>(allocator,asize) { }
   //! Copie les valeurs de \a rhs dans cette instance.
   void operator=(const Array<T>& rhs)
   {
@@ -1672,7 +1623,7 @@ swap(UniqueArray<T>& v1,UniqueArray<T>& v2)
 
 template<typename T> inline SharedArray<T>::
 SharedArray(const UniqueArray<T>& rhs)
-: Array<T>(rhs.constView(),BD_NoWarning)
+: Array<T>(rhs.constView())
 , m_next(nullptr)
 , m_prev(nullptr)
 {

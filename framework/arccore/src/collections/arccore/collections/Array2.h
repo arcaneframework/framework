@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2020 IFPEN-CEA
+// Copyright 2000-2021 IFPEN-CEA
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array2.h                                                    (C) 2000-2018 */
+/* Array2.h                                                    (C) 2000-2021 */
 /*                                                                           */
 /* Tableau 2D classique.                                                     */
 /*---------------------------------------------------------------------------*/
@@ -73,11 +73,7 @@ class Array2
   using AbstractArray<DataType>::_setMP;
   using AbstractArray<DataType>::_destroy;
   using AbstractArray<DataType>::_internalDeallocate;
-#ifndef ARCCORE_AVOID_DEPRECATED_ARRAY_CONSTRUCTOR
- public:
-#else
  protected:
-#endif
   Array2() : AbstractArray<DataType>() {}
   //! Créé un tableau de \a size1 * \a size2 éléments.
   Array2(Int64 size1,Int64 size2)

@@ -351,7 +351,7 @@ _testArrayNewInternal()
   {
     UniqueArray<IntPtrSubClass> vx;
     vx.add(IntPtrSubClass(5));
-    auto range = vx.range();
+    [[maybe_unused]] auto range = vx.range();
     UniqueArray<IntPtrSubClass>::iterator i = vx.begin();
     UniqueArray<IntPtrSubClass>::const_iterator ci = i;
     std::cout << "V=" << i->m_v << " " << ci->m_v << '\n';
@@ -362,7 +362,7 @@ _testArrayNewInternal()
   {
     UniqueArray<IntPtrSubClass> vx;
     vx.add(IntPtrSubClass(5));
-    auto r = vx.range();
+    [[maybe_unused]] auto r = vx.range();
     UniqueArray<IntPtrSubClass>::iterator i = std::begin(vx);
     UniqueArray<IntPtrSubClass>::iterator iend = std::end(vx);
     UniqueArray<IntPtrSubClass>::const_iterator ci = i;
