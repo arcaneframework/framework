@@ -1,4 +1,4 @@
-add_library(Neo SHARED Utils.h Neo.h Mesh.h Mesh.cpp)
+add_library(Neo SHARED Utils.h Neo.h Mesh.h Mesh.cpp GraphBase.h DirectedGraph.h)
 add_library(Neo::Neo ALIAS Neo)
 
 set_target_properties(Neo PROPERTIES PUBLIC_HEADER "Utils.h;Neo.h;Mesh.h")
@@ -9,7 +9,12 @@ target_include_directories(Neo SYSTEM INTERFACE
 
 target_compile_definitions(Neo INTERFACE HAS_NEO)
 
-target_compile_options(Neo PRIVATE -Wall -Wextra -Wpedantic -pedantic -Wconversion -pedantic-errors)
+if(WIN32)
+    target_compile_options(Neo PRIVATE -Wall)
+else()
+    target_compile_options(Neo PRIVATE -Wall -Wextra -Wpedantic -pedantic -Wconversion -pedantic-errors)
+endif()
+
 
 install(TARGETS Neo EXPORT NeoConfig PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/neo INCLUDES DESTINATION include)
 
