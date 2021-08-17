@@ -48,6 +48,7 @@
 
 #include "arcane/accelerator/NumArray.h"
 #include "arcane/accelerator/Accelerator.h"
+#include "arcane/accelerator/RunCommandLoop.h"
 
 #include <math.h>
 
@@ -60,50 +61,6 @@
  * sur le GPU cela provoque un plantage car on essaie d'adresser la
  * mémoire où se trouve 'this'.
  */
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane::Accelerator
-{
-
-template<int N>
-class ArrayBoundRunCommand
-{
- public:
-  ArrayBoundRunCommand(RunCommand& command,const ArrayBounds<N>& bounds)
-  : m_command(command), m_bounds(bounds)
-  {
-  }
-  RunCommand& m_command;
-  const ArrayBounds<N>& m_bounds;
-};
-
-template<int N> ArrayBoundRunCommand<N>
-operator<<(RunCommand& command,const ArrayBounds<N>& bounds)
-{
-  return ArrayBoundRunCommand<N>(command,bounds);
-}
-
-template<int N,typename Lambda>
-void operator<<(ArrayBoundRunCommand<N>&& nr,const Lambda& f)
-{
-  run(nr.m_command,nr.m_bounds,f);
-}
-
-}
-
-#define RUNCOMMAND_LOOP(iter_name, bounds) \
-  A_FUNCINFO << bounds << [=] ARCCORE_HOST_DEVICE (decltype(bounds) :: IndexType iter_name )
-
-#define RUNCOMMAND_LOOPN(iter_name, N, ...)                           \
-  A_FUNCINFO << ArrayBounds<N>(__VA_ARGS__) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<N> iter_name )
-
-#define RUNCOMMAND_LOOP2(iter_name, x1, x2)                             \
-  A_FUNCINFO << ArrayBounds<2>(x1,x2) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<2> iter_name )
-
-#define RUNCOMMAND_LOOP3(iter_name, x1, x2, x3) \
-  A_FUNCINFO << ArrayBounds<3>(x1,x2,x3) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<3> iter_name )
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

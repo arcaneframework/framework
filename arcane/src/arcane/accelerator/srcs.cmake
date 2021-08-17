@@ -5,6 +5,7 @@ set( ARCANE_SOURCES
   Reduce.h
   Runner.h
   Runner.cc
+  RunCommandLoop.h
   RunCommand.h
   RunCommand.cc
   IReduceMemoryImpl.h
