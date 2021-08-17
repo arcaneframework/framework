@@ -40,9 +40,6 @@ endif()
 # de version qu'on cherche (6.0.0-preview.2.21080.7) et ce qui est ensuite entre les [] permet de récupérer le
 # chemin de l'installation (en enlevant '/shared/Microsoft.NETCore.App').
 
-# TODO: Gérer le cas ou il y a plusieurs runtimes et dans ce cas
-# prendre uniquement le dernier runtime disponible
-
 # Il peut y avoir plusieurs SDK et runtimes installés
 # Dans ce cas, la commande 'dotnet --list-runtimes' va afficher plusieurs ligne avec pour chaque ligne
 # un runtime. On parcours donc ces lignes et on regarde le runtime qui nous correspond
@@ -50,14 +47,9 @@ endif()
 execute_process(COMMAND ${DOTNET_EXEC} "--list-runtimes" OUTPUT_VARIABLE CORECLR_LIST_RUNTIMES_OUTPUT OUTPUT_STRIP_TRAILING_WHITESPACE)
 #execute_process(COMMAND "/bin/cat" "${CMAKE_CURRENT_LIST_DIR}/do_win.txt" OUTPUT_VARIABLE CORECLR_LIST_RUNTIMES_OUTPUT OUTPUT_STRIP_TRAILING_WHITESPACE)
 message(STATUS "[.Net]: CORECLR_LIST_RUNTIMES_OUTPUT = ${CORECLR_LIST_RUNTIMES_OUTPUT}")
-set(XV ${CORECLR_LIST_RUNTIMES_OUTPUT})
-string(REPLACE "\n" ";" XV_ALL ${XV})
-message(STATUS XV_ALL "${XV_ALL}" )
-foreach(X ${XV_ALL})
-  # NOTE: la variable CORECLR_VERSION contient le numéro de version du runtime
-  # utilisé. Il faudrait prendre la version du SDK associée à ce runtime.
-  # C'est normalement le cas si 'CORECLR_VERSION==CORECLR_RUNTIME_VERSION'
-  # Il faudrait vérifier cela.
+set(_ALL_RUNTIMES ${CORECLR_LIST_RUNTIMES_OUTPUT})
+string(REPLACE "\n" ";" _ALL_RUNTIMES_LIST ${_ALL_RUNTIMES})
+foreach(X ${_ALL_RUNTIMES_LIST})
   string(REGEX MATCH "Microsoft\.NETCore\.App ([0-9]+)\.([0-9]+)\.([a-zA-Z0-9.-]+) [\[](.*)Microsoft\.NETCore\.App[\]]"
     CORECLR_VERSION_REGEX_MATCH ${X})
   # MATCH:
@@ -67,7 +59,12 @@ foreach(X ${XV_ALL})
   # 4: Chemin de l'installation
   message(STATUS "[.Net]: MATCH '${CMAKE_MATCH_1}' '${CMAKE_MATCH_2}' '${CMAKE_MATCH_3}' '${CMAKE_MATCH_4}'")
   set(_RUNTIME_VERSION ${CMAKE_MATCH_1}.${CMAKE_MATCH_2})
+  # On ne teste pas '2' et '3' car ils peuvent valoir '0' ce qui fait
+  # échouer le test.
   if (CMAKE_MATCH_1 AND CMAKE_MATCH_4)
+    # NOTE: la variable CORECLR_VERSION contient le numéro de version du runtime
+    # utilisé. Il faut prendre la version du SDK associée à ce runtime.
+    # C'est normalement le cas si 'CORECLR_VERSION==_RUNTIME_VERSION'
     if (${_RUNTIME_VERSION} STREQUAL ${CORECLR_VERSION})
       set(CORECLR_RUNTIME_VERSION ${_RUNTIME_VERSION})
       set(CORECLR_RUNTIME_VERSION_FULL ${CORECLR_VERSION}.${CMAKE_MATCH_3})
