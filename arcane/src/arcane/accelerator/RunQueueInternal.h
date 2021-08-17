@@ -180,6 +180,13 @@ void doDirectThreadLambda(Integer begin,Integer size,Lambda func)
 /*---------------------------------------------------------------------------*/
 
 template<typename Lambda> inline void
+applyGenericLoopSequential(ArrayBounds<1> bounds,const Lambda& func)
+{
+  for( Int64 i0 = 0; i0 < bounds.extent(0); ++i0 )
+    func(ArrayBoundsIndex<1>(i0));
+}
+
+template<typename Lambda> inline void
 applyGenericLoopSequential(ArrayBounds<2> bounds,const Lambda& func)
 {
   for( Int64 i0 = 0; i0 < bounds.extent(0); ++i0 )
@@ -194,6 +201,13 @@ applyGenericLoopSequential(ArrayBounds<3> bounds,const Lambda& func)
     for( Int64 i1 = 0; i1 < bounds.extent(1); ++i1 )
       for( Int64 i2 = 0; i2 < bounds.extent(2); ++i2 )
         func(ArrayBoundsIndex<3>(i0,i1,i2));
+}
+
+template<typename Lambda> inline void
+applyGenericLoopParallel(Int64 begin,Int64 end,[[maybe_unused]] ArrayBounds<1> bounds,const Lambda& func)
+{
+  for( Int64 i0 = begin; i0 < end; ++i0 )
+    func(ArrayBoundsIndex<1>(i0));
 }
 
 template<typename Lambda> inline void
