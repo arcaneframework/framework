@@ -103,6 +103,35 @@ function(arccon_register_package_library lib_name var_name)
 endfunction()
 
 # ----------------------------------------------------------------------------
+# Fonction pour créer une bibliothèque interface pour référencer
+# une cible importée à partir d'un fichier de configuration CMake
+
+# TODO: comme on utilise des cibles importées, il faut ajouter
+# les find_dependency qui vont bien dans le fichier de *Config.cmake
+
+function(arccon_register_cmake_config_target lib_name)
+
+  set(options        )
+  set(oneValueArgs   CONFIG_TARGET_NAME PACKAGE_NAME)
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  if (NOT ARGS_CONFIG_TARGET_NAME)
+    message(FATAL_ERROR "Missing argument CONFIG_TARGET_NAME")
+  endif()
+
+  if (NOT ARGS_PACKAGE_NAME)
+    message(FATAL_ERROR "Missing argument PACKAGE_NAME")
+  endif()
+
+  set(_TARGET_NAME ${ARGS_CONFIG_TARGET_NAME})
+  set(_ALIAS_NAME arccon::${lib_name})
+  add_library(${_ALIAS_NAME} ALIAS ${_TARGET_NAME})
+  message(STATUS "Registering CMake imported target '${_TARGET_NAME}'")
+  set(${lib_name}_FOUND TRUE CACHE BOOL "Is Package '${lib_name}' Found" FORCE)
+endfunction()
+
+# ----------------------------------------------------------------------------
 # Macro permettant de ne pas lire le reste du fichier si un package référencé
 # par 'Arccon' existe déjà.
 #
