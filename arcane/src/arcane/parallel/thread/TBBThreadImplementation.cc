@@ -23,8 +23,7 @@
 
 #include "arcane/parallel/thread/ArcaneThreadMisc.h"
 
-#include <tbb/tbb_stddef.h>
-#include <tbb/spin_mutex.h>
+#include <tbb/tbb.h>
 #if TBB_VERSION_MAJOR >= 2020
 #define ARCANE_TBB_USE_STDTHREAD
 #include <thread>
@@ -164,7 +163,7 @@ class TBBBarrier
   virtual bool wait()
   {
     Int32 ts = m_timestamp;
-    int remaining_thread = m_nb_thread - m_nb_thread_finished.fetch_and_increment() - 1;
+    int remaining_thread = m_nb_thread - m_nb_thread_finished.fetch_add(1) - 1;
     if (remaining_thread > 0) {
 
       int count = 1;
@@ -188,8 +187,8 @@ class TBBBarrier
   }
  private:
   Int32 m_nb_thread;
-  tbb::atomic<Int32> m_nb_thread_finished;
-  tbb::atomic<Int32> m_timestamp;
+  std::atomic<Int32> m_nb_thread_finished;
+  std::atomic<Int32> m_timestamp;
 };
 
 /*---------------------------------------------------------------------------*/
