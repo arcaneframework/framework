@@ -2,7 +2,15 @@ set(PKGS Glib TBB)
 arcane_find_package(TBB)
 
 include(srcs.cmake)
-if(TBB_FOUND)
+
+set(ARCANE_TBB_SOURCES ${ARCANE_SOURCES} TBBThreadImplementation.cc TBBTaskImplementation.cc)
+
+if(TBB_VERSION)
+  # Si TBB_VERSION est définie, on est sur que TBB est présent.
+  # TODO: Vérifier la version
+  message(STATUS "TBB_VERSION=${TBB_VERSION}")
+  list(APPEND ARCANE_SOURCES ${ARCANE_TBB_SOURCES})
+elseif(TBB_FOUND)
   # Il faut une version récente de TBB (2018+).
   # Pour cela, on regarde si le fichier 'tbb_stddef.h' existe car ce dernier a été
   # ajouté à partir de la version 2018. De plus, il contient des macros permettant de
@@ -10,7 +18,7 @@ if(TBB_FOUND)
   find_path(_TBB_STDDEF_HEADER NAMES tbb/tbb_stddef.h PATHS ${TBB_INCLUDE_DIRS})
   if (_TBB_STDDEF_HEADER)
     message(STATUS "[arcane_thread] Adding TBB implementation")
-    set(ARCANE_SOURCES ${ARCANE_SOURCES} TBBThreadImplementation.cc TBBTaskImplementation.cc)
+    list(APPEND ARCANE_SOURCES ${ARCANE_TBB_SOURCES})
   else()
     message(STATUS "[arcane_thread] Remove TBB support because your version of TBB is too old (doesn't have 'tbb_stddef.h' header)")
   endif()
