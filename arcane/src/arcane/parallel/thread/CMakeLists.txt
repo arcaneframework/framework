@@ -28,7 +28,10 @@ elseif(TBB_FOUND)
     message(STATUS "[arcane_thread] Adding TBB implementation")
     list(APPEND ARCANE_SOURCES ${ARCANE_TBB_SOURCES})
   else()
-    message(STATUS "[arcane_thread] Remove TBB support because your version of TBB is too old (doesn't have 'tbb_stddef.h' header)")
+    message(FATAL_ERROR
+      "[arcane_thread] Your version of TBB is too old (need version 2018 or superior)"
+      "To disable TBB, pass the flag -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE to 'cmake' command"
+      )
   endif()
 endif()
 
