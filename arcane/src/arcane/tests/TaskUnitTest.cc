@@ -5,18 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TaskUnitTest.cc                                             (C) 2000-2017 */
+/* TaskUnitTest.cc                                             (C) 2000-2021 */
 /*                                                                           */
 /* Service de test des tâches.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/SpinLock.h"
 #include "arcane/utils/Mutex.h"
+#include "arcane/utils/ValueChecker.h"
 
 #include "arcane/BasicUnitTest.h"
 #include "arcane/IMesh.h"
@@ -30,6 +29,8 @@
 
 #include "arcane_packages.h"
 
+#include <thread>
+
 #ifdef ARCANE_HAS_PACKAGE_TBB
 #include <tbb/tbb.h>
 using namespace tbb;
@@ -42,51 +43,11 @@ long SerialFib( long n ) {
     return SerialFib(n-1)+SerialFib(n-2);
 }
 
-#ifdef ARCANE_HAS_PACKAGE_TBB
-class FibTask
-: public task
-{
- public:
-  const long n;
-  long* const sum;
-  FibTask( long n_, long* sum_ ) :
-  n(n_), sum(sum_)
-  {}
-  task* execute()
-  {
-    // Overrides virtual function task::execute
-    if( n<10 ) {
-      *sum = SerialFib(n);
-    } else {
-      long x, y;
-      FibTask& a = *new( allocate_child() ) FibTask(n-1,&x);
-      FibTask& b = *new( allocate_child() ) FibTask(n-2,&y);
-      // Set ref_count to "two children plus one for the wait".
-      set_ref_count(3);
-      // Start b running.
-      spawn( b );
-      // Start a running and wait for all children (a and b).
-      spawn_and_wait_for_all(a);
-      // Do the sum
-      *sum = x+y;
-    }
-    return 0;
-  }
-};
-
-long ParallelFib( long n )
-{
-  long sum;
-  FibTask& a = *new(task::allocate_root()) FibTask(n,&sum);
-  task::spawn_root_and_wait(a);
-  return sum;
-}
-#endif
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -95,22 +56,6 @@ using namespace Arcane;
 
 namespace TaskTest
 {
-class Test1
-{
- public:
-  Test1(ITraceMng* tm) : m_tm(tm){}
- public:
-  void exec()
-  {
-#ifdef ARCANE_HAS_PACKAGE_TBB
-    long z1 = ParallelFib(25);
-    m_tm->info() << "Z1=" << z1;
-    long z2 = ParallelFib(35);
-    m_tm->info() << "Z2=" << z2;
-#endif
-  }
-  ITraceMng* m_tm;
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -669,9 +614,7 @@ class Test6
   {
     info() << "TEST6-HI begin=" << begin << " size=" << size
            << " thread_index=" << TaskFactory::currentTaskThreadIndex()
-#ifdef ARCANE_HAS_PACKAGE_TBB
-           << " thread_id=" << tbb::this_tbb_thread::get_id()
-#endif
+           << " thread_id=" << std::this_thread::get_id()
     ;
     for( Integer i=begin; i<(begin+size); ++i ){
       SpinLock::ScopedLock sl(m_lock);
@@ -747,10 +690,7 @@ TaskUnitTest::
 void TaskUnitTest::
 executeTest()
 {
-  {
-    TaskTest::Test1 t1(traceMng());
-    t1.exec();
-  }
+  ValueChecker vc(A_FUNCINFO);
   {
     TaskTest::Test2 t2(traceMng());
     t2.exec();
@@ -771,31 +711,18 @@ executeTest()
     for( Integer i=0; i<nb_loop; ++i ){
       long z1 = TaskTest::Test5Fibonnaci::ParallelFib(25);
       info() << "F[25] =" << z1;
+      vc.areEqual(z1,75025L,"F[25]");
       long z2 = TaskTest::Test5Fibonnaci::ParallelFib(35);
       info() << "F[35] =" << z2;
+      vc.areEqual(z2,9227465L,"F[35]");
       long z3 = TaskTest::Test5Fibonnaci::ParallelFib(40);
       info() << "F[40] =" << z3;
+      vc.areEqual(z3,102334155L,"F[45]");
       info() << "NB_EXEC=" << TaskTest::Test5Fibonnaci::m_nb_exec.value();
     }
     Real v2 = platform::getRealTime();
     info() << "TIME=" << (v2-v1);
   }
-
-#ifdef ARCANE_HAS_PACKAGE_TBB
-  {
-    Real v1 = platform::getRealTime();
-    for( Integer i=0; i<nb_loop; ++i ){
-      long z1 = ParallelFib(25);
-      info() << "F[25] =" << z1;
-      long z2 = ParallelFib(35);
-      info() << "F[35] =" << z2;
-      long z3 = ParallelFib(40);
-      info() << "F[40] =" << z3;
-    }
-    Real v2 = platform::getRealTime();
-    info() << "TIME=" << (v2-v1);
-  }
-#endif
 
   { TaskTest::Test6 t6(traceMng(),50,1000); t6.exec(); }
   { TaskTest::Test6 t6(traceMng(),0,1500); t6.exec(); }
@@ -842,7 +769,7 @@ initializeTest()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+} // End namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
