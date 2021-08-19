@@ -35,6 +35,7 @@ set(ARCANE_ACCELERATOR_SOURCES
   accelerator/SimpleHydroAcceleratorService.cc
   accelerator/MiniWeatherArray.cc
   accelerator/NumArrayUnitTest.cc
+  accelerator/AcceleratorViewsUnitTest.cc
   )
 list(APPEND ARCANE_SOURCES ${ARCANE_ACCELERATOR_SOURCES})
 
@@ -456,10 +457,17 @@ if(TARGET arccon::HDF5)
   ARCANE_ADD_TEST_SEQUENTIAL(hydro6_checkpoint testHydro-6.arc -c 2 -m 25)
   ARCANE_ADD_TEST_PARALLEL(hydro1_checkpoint_3proc_rep4 testHydro-1-checkpoint.arc 12 -c 2 -m 25 -R 4)
 endif()
+
 arcane_add_test_sequential(numarray1 testNumArray-1.arc)
 arcane_add_test_sequential(numarray1_task4 testNumArray-1.arc -K 4)
 if (ARCANE_WANT_CUDA)
   arcane_add_test_sequential(numarray1_cuda testNumArray-1.arc -A,AcceleratorRuntime=cuda)
+endif()
+
+arcane_add_test_sequential(acceleratorviews1 testAcceleratorViews-1.arc)
+arcane_add_test_sequential(acceleratorviews1_task4 testAcceleratorViews-1.arc -K 4)
+if (ARCANE_WANT_CUDA)
+  arcane_add_test_sequential(acceleratorviews1_cuda testAcceleratorViews-1.arc -A,AcceleratorRuntime=cuda)
 endif()
 
 arcane_add_test_sequential(miniweather_orig1 testMiniWeatherOriginal.arc)
