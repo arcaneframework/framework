@@ -17,7 +17,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Span.h                                                      (C) 2000-2020 */
+/* Span.h                                                      (C) 2000-2021 */
 /*                                                                           */
 /* Vues sur des tableaux C.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -147,59 +147,35 @@ class SpanImpl
   /*!
    * \brief Itérateur sur le premier élément du tableau.
    */
-  ARCCORE_HOST_DEVICE iterator begin() { return iterator(m_ptr); }
+  ARCCORE_HOST_DEVICE iterator begin() const { return iterator(m_ptr); }
   /*!
    * \brief Itérateur sur le premier élément après la fin du tableau.
    */
-  ARCCORE_HOST_DEVICE iterator end() { return iterator(m_ptr+m_size); }
-  /*!
-   * \brief Itérateur constant sur le premier élément du tableau.
-   */
-  ARCCORE_HOST_DEVICE const_iterator begin() const { return iterator(m_ptr); }
-  /*!
-   * \brief Itérateur constant sur le premier élément après la fin du tableau.
-   */
-  ARCCORE_HOST_DEVICE const_iterator end() const { return iterator(m_ptr+m_size); }
+  ARCCORE_HOST_DEVICE iterator end() const { return iterator(m_ptr+m_size); }
   //! Itérateur inverse sur le premier élément du tableau.
-  ARCCORE_HOST_DEVICE reverse_iterator rbegin() { return std::make_reverse_iterator(end()); }
-  //! Itérateur inverse sur le premier élément du tableau.
-  ARCCORE_HOST_DEVICE const_reverse_iterator rbegin() const { return std::make_reverse_iterator(end()); }
+  ARCCORE_HOST_DEVICE reverse_iterator rbegin() const { return std::make_reverse_iterator(end()); }
   //! Itérateur inverse sur le premier élément après la fin du tableau.
-  ARCCORE_HOST_DEVICE reverse_iterator rend() { return std::make_reverse_iterator(begin()); }
-  //! Itérateur inverse sur le premier élément après la fin du tableau.
-  ARCCORE_HOST_DEVICE const_reverse_iterator rend() const { return std::make_reverse_iterator(begin()); }
+  ARCCORE_HOST_DEVICE reverse_iterator rend() const { return std::make_reverse_iterator(begin()); }
 
  public:
 
   //! Intervalle d'itération du premier au dernièr élément.
-  ArrayRange<pointer> range()
+  ArrayRange<pointer> range() const
   {
     return ArrayRange<pointer>(m_ptr,m_ptr+m_size);
   }
-  //! Intervalle d'itération du premier au dernièr élément.
-  ArrayRange<const_pointer> range() const
-  {
-    return ArrayRange<const_pointer>(m_ptr,m_ptr+m_size);
-  }
 
  public:
 
   //! Addresse du index-ème élément
-  ARCCORE_HOST_DEVICE inline T* ptrAt(SizeType index)
-  {
-    ARCCORE_CHECK_AT(index,m_size);
-    return m_ptr+index;
-  }
-
-  //! Addresse du index-ème élément
-  ARCCORE_HOST_DEVICE inline const T* ptrAt(SizeType index) const
+  ARCCORE_HOST_DEVICE inline T* ptrAt(SizeType index) const
   {
     ARCCORE_CHECK_AT(index,m_size);
     return m_ptr+index;
   }
 
   // Elément d'indice \a i. Vérifie toujours les débordements
-  ARCCORE_HOST_DEVICE const T& at(SizeType i) const
+  ARCCORE_HOST_DEVICE reference at(SizeType i) const
   {
     arccoreCheckAt(i,m_size);
     return m_ptr[i];
@@ -284,7 +260,7 @@ class SpanImpl
    * nombre d'éléments courant. S'il est inférieur, les éléments du
    * tableau courant situés à la fin du tableau sont inchangés
    */
-  template<class U>
+  template<class U> ARCCORE_HOST_DEVICE
   inline void copy(const U& copy_array)
   {
     Int64 n = copy_array.size();
@@ -332,17 +308,7 @@ class SpanImpl
    * operator[](): aucune vérification de dépassement n'est possible,
    * même en mode vérification.
    */
-  ARCCORE_HOST_DEVICE const_pointer data() const { return m_ptr; }
-
-  /*!
-   * \brief Pointeur constant sur le début de la vue.
-   *
-   * \warning Les accès via le pointeur retourné ne pourront pas être
-   * pas vérifiés par Arcane à la différence des accès via
-   * operator[](): aucune vérification de dépassement n'est possible,
-   * même en mode vérification.
-   */
-  ARCCORE_HOST_DEVICE pointer data() { return m_ptr; }
+  ARCCORE_HOST_DEVICE pointer data() const { return m_ptr; }
 
  protected:
   
@@ -451,29 +417,15 @@ class Span
    * Si `(abegin+asize)` est supérieur à la taille du tableau,
    * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
    */
-  Span<T> subView(Int64 abegin,Int64 asize) const
+  ARCCORE_HOST_DEVICE Span<T> subView(Int64 abegin,Int64 asize) const
   {
     return subspan(abegin,asize);
   }
 
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
-  Span<T> subViewInterval(Int64 index,Int64 nb_interval) const
+  ARCCORE_HOST_DEVICE Span<T> subViewInterval(Int64 index,Int64 nb_interval) const
   {
     return BaseClass::subViewInternal(index,nb_interval);
-  }
-
-  /*!
-   * \brief Recopie le tableau \a copy_array dans l'instance.
-   *
-   * Comme aucune allocation mémoire n'est effectuée, le
-   * nombre d'éléments de \a copy_array doit être inférieur ou égal au
-   * nombre d'éléments courant. S'il est inférieur, les éléments du
-   * tableau courant situés à la fin du tableau sont inchangés
-   */
-  template<class U>
-  inline void copy(const U& copy_array)
-  {
-    BaseClass::copy(copy_array);
   }
 };
 
@@ -545,29 +497,15 @@ class SmallSpan
    * Si `(abegin+asize)` est supérieur à la taille du tableau,
    * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
    */
-  Span<T> subView(Int64 abegin,Int64 asize) const
+  ARCCORE_HOST_DEVICE Span<T> subView(Int64 abegin,Int64 asize) const
   {
     return subspan(abegin,asize);
   }
 
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
-  Span<T> subViewInterval(Int64 index,Int64 nb_interval) const
+  ARCCORE_HOST_DEVICE Span<T> subViewInterval(Int64 index,Int64 nb_interval) const
   {
     return BaseClass::subViewInternal(index,nb_interval);
-  }
-
-  /*!
-   * \brief Recopie le tableau \a copy_array dans l'instance.
-   *
-   * Comme aucune allocation mémoire n'est effectuée, le
-   * nombre d'éléments de \a copy_array doit être inférieur ou égal au
-   * nombre d'éléments courant. S'il est inférieur, les éléments du
-   * tableau courant situés à la fin du tableau sont inchangés
-   */
-  template<class U>
-  inline void copy(const U& copy_array)
-  {
-    BaseClass::copy(copy_array);
   }
 };
 
