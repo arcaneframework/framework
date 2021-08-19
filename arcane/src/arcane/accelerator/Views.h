@@ -65,7 +65,26 @@ class View1DGetterSetter
 {
  public:
   using ValueType = DataType;
-  using DataTypeReturnReference = Span<DataType>;
+  using DataTypeReturnReference = View1DGetterSetter<DataType>;
+ public:
+  explicit ARCCORE_HOST_DEVICE View1DGetterSetter(Span<DataType> data) : m_data(data){}
+  DataTypeReturnReference& operator=(const View1DGetterSetter<DataType>& rhs) = delete;
+ public:
+  ARCCORE_HOST_DEVICE DataViewGetterSetter<DataType> operator[](Int64 index) const
+  {
+    return DataViewGetterSetter<DataType>(m_data.ptrAt(index));
+  }
+ public:
+  ARCCORE_HOST_DEVICE void copy(Span<const DataType> rhs)
+  {
+    m_data.copy(rhs);
+  }
+ public:
+  ARCCORE_HOST_DEVICE Span<DataType> value() const { return m_data; }
+  ARCCORE_HOST_DEVICE operator Span<DataType>() { return m_data; }
+  ARCCORE_HOST_DEVICE operator Span<const DataType>() const { return m_data; }
+ private:
+  Span<DataType> m_data;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -79,10 +98,16 @@ class View1DSetter
  public:
   using ValueType = DataType;
   using DataTypeReturnReference = View1DSetter<DataType>;
-  ARCCORE_HOST_DEVICE View1DSetter(Span<DataType> data) : m_data(data){}
+  explicit ARCCORE_HOST_DEVICE View1DSetter(Span<DataType> data) : m_data(data){}
   ARCCORE_HOST_DEVICE DataViewSetter<DataType> operator[](Int64 index) const
   {
     return DataViewSetter<DataType>(m_data.ptrAt(index));
+  }
+  DataTypeReturnReference& operator=(const View1DSetter<DataType>& rhs) = delete;
+ public:
+  ARCCORE_HOST_DEVICE void copy(Span<const DataType> rhs)
+  {
+    m_data.copy(rhs);
   }
  private:
   Span<DataType> m_data;
@@ -216,13 +241,13 @@ class ItemVariableArrayInViewT
   : VariableViewBase(command,var), m_values(v){}
 
   //! Opérateur d'accès pour l'entité \a item
-  ARCCORE_HOST_DEVICE Span<const DataType> operator[](ItemIndexType i) const
+  ARCCORE_HOST_DEVICE const Span<const DataType> operator[](ItemIndexType i) const
   {
     return this->m_values[i.localId()];
   }
 
   //! Opérateur d'accès pour l'entité \a item
-  ARCCORE_HOST_DEVICE Span<const DataType> value(ItemIndexType i) const
+  ARCCORE_HOST_DEVICE const Span<const DataType> value(ItemIndexType i) const
   {
     return this->m_values[i.localId()];
   }
