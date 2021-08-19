@@ -204,6 +204,8 @@ class TBBTaskImplementation
     return m_default_loop_options;
   }
 
+  void printInfos(ostream& o) const final;
+
  public:
 
   /*!
@@ -585,6 +587,17 @@ Int32 TBBTaskImplementation::
 nbAllowedThread() const
 {
   return m_p->nbAllowedThread();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void TBBTaskImplementation::
+printInfos(ostream& o) const
+{
+  o << "TBBTaskImplementation"
+    << " version=" << TBB_VERSION_MAJOR << "." << TBB_VERSION_MINOR
+    << " interface=" << TBB_INTERFACE_VERSION;
 }
 
 /*---------------------------------------------------------------------------*/

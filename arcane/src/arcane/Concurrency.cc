@@ -129,6 +129,11 @@ class NullTaskImplementation
     return m_default_loop_options;
   }
 
+  void printInfos(std::ostream& o) const final
+  {
+    o << "NullTaskImplementation";
+ }
+
  private:
   ParallelLoopOptions m_default_loop_options;
 };

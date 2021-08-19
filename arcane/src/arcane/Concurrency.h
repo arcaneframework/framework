@@ -353,6 +353,8 @@ class ARCANE_CORE_EXPORT ITaskImplementation
 
   //! Valeurs par défaut d'exécution d'une boucle parallèle
   virtual const ParallelLoopOptions& defaultParallelLoopOptions() =0;
+
+  virtual void printInfos(std::ostream& o) const =0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -492,6 +494,17 @@ class ARCANE_CORE_EXPORT TaskFactory
   static bool isActive()
   {
     return m_impl->isActive();
+  }
+
+  /*!
+   * \brief Affiche les informations sur l'implémentation.
+   *
+   * Les informations sont par exemple le numéro de version ou le nom
+   * de l'implémentation.
+   */
+  static void printInfos(std::ostream& o)
+  {
+    return m_impl->printInfos(o);
   }
 
   /*!

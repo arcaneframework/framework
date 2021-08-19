@@ -659,6 +659,9 @@ initialize()
     if (!m_used_task_service_name.null()){
       m_trace->info() << "Service used for task management : '" << m_used_task_service_name
                       << "' (max_task_thread=" << TaskFactory::nbAllowedThread() << ")";
+      std::ostringstream ostr;
+      TaskFactory::printInfos(ostr);
+      m_trace->info() << "TaskManagement infos:" << ostr.str();
     }
     else
       m_trace->info() << "No task management active";
