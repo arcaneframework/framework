@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* OneTBBTaskImplementation.cc                                    (C) 2000-2021 */
+/* OneTBBTaskImplementation.cc                                 (C) 2000-2021 */
 /*                                                                           */
 /* Implémentation des tâches utilisant OneTBB version 2021+.                 */
 /*---------------------------------------------------------------------------*/
@@ -21,7 +21,10 @@
 #include "arcane/FactoryService.h"
 #include "arcane/Concurrency.h"
 
+// Nécessaire pour avoir accès à task_scheduler_handle
+#define TBB_PREVIEW_WAITING_FOR_WORKERS 1
 #include <tbb/tbb.h>
+#include <oneapi/tbb/global_control.h>
 
 #include <new>
 #include <stack>
@@ -31,6 +34,10 @@
 
 namespace Arcane
 {
+// TODO: utiliser un pool mémoire spécifique pour gérer les
+// OneTBBTask pour optimiser les new/delete des instances de cette classe.
+// Auparavant avec les anciennes versions de TBB cela était géré avec
+// la méthode 'tbb::task::allocate_child()'.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -244,13 +251,17 @@ class OneTBBTaskImplementation::Impl
   };
 
  public:
-  Impl() : m_task_observer(this), m_thread_task_infos(AlignedMemoryAllocator::CacheLine())
+  Impl()
+  : m_task_scheduler_handle(tbb::task_scheduler_handle::get()),
+    m_task_observer(this),
+    m_thread_task_infos(AlignedMemoryAllocator::CacheLine())
   {
     m_nb_allowed_thread = tbb::info::default_concurrency();
     _init();
   }
   Impl(Int32 nb_thread)
-  : m_main_arena(nb_thread),
+  : m_task_scheduler_handle(tbb::task_scheduler_handle::get()),
+    m_main_arena(nb_thread),
     m_task_observer(this), m_thread_task_infos(AlignedMemoryAllocator::CacheLine())
   {
     m_nb_allowed_thread = nb_thread;
@@ -273,6 +284,7 @@ class OneTBBTaskImplementation::Impl
     m_sub_arena_list.clear();
     m_main_arena.terminate();
     m_task_observer.observe(false);
+    oneapi::tbb::finalize(m_task_scheduler_handle);
   }
  public:
   void notifyThreadCreated()
@@ -308,6 +320,8 @@ class OneTBBTaskImplementation::Impl
     }
     TaskFactory::destroyThreadObservable()->notifyAllObservers();
   }
+ private:
+  oneapi::tbb::task_scheduler_handle m_task_scheduler_handle;
  public:
   tbb::task_arena m_main_arena;
   //! Tableau dont le i-ème élément contient la tbb::task_arena pour \a i thread.
