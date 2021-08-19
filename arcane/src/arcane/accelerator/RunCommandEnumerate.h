@@ -5,17 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandLoop.h                                            (C) 2000-2021 */
+/* RunCommandEnumerate.h                                       (C) 2000-2021 */
 /*                                                                           */
-/* Macros pour exécuter une boucle sur une commande.                         */
+/* Macros pour exécuter une boucle sur une liste d'entités.                  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_RUNCOMMANDLOOP_H
-#define ARCANE_ACCELERATOR_RUNCOMMANDLOOP_H
+#ifndef ARCANE_ACCELERATOR_RUNCOMMANDENUMERATE_H
+#define ARCANE_ACCELERATOR_RUNCOMMANDENUMERATE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/accelerator/RunCommand.h"
 #include "arcane/accelerator/RunQueueInternal.h"
+
+#include "arcane/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,28 +28,39 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<int N>
-class ArrayBoundRunCommand
+template<typename ItemType>
+class ItemRunCommand
 {
  public:
-  ArrayBoundRunCommand(RunCommand& command,const ArrayBounds<N>& bounds)
-  : m_command(command), m_bounds(bounds)
+  ItemRunCommand(RunCommand& command,const ItemVectorViewT<ItemType>& items)
+  : m_command(command), m_items(items)
   {
   }
   RunCommand& m_command;
-  const ArrayBounds<N>& m_bounds;
+  ItemVectorViewT<ItemType> m_items;
 };
 
-template<int N> ArrayBoundRunCommand<N>
-operator<<(RunCommand& command,const ArrayBounds<N>& bounds)
+template<typename ItemType> ItemRunCommand<ItemType>
+operator<<(RunCommand& command,const ItemGroupT<ItemType>& items)
 {
-  return ArrayBoundRunCommand<N>(command,bounds);
+  return ItemRunCommand<ItemType>(command,items.view());
 }
 
-template<int N,typename Lambda>
-void operator<<(ArrayBoundRunCommand<N>&& nr,const Lambda& f)
+template<typename ItemType> ItemRunCommand<ItemType>
+operator<<(RunCommand& command,const ItemVectorViewT<ItemType>& items)
 {
-  run(nr.m_command,nr.m_bounds,f);
+  return ItemRunCommand<ItemType>(command,items);
+}
+
+template<typename ItemType,typename Lambda>
+void operator<<(ItemRunCommand<ItemType>&& nr,Lambda f)
+{
+  run(nr.m_command,nr.m_items,std::forward<Lambda>(f));
+}
+template<typename ItemType,typename Lambda>
+void operator<<(ItemRunCommand<ItemType>& nr,Lambda f)
+{
+  run(nr.m_command,nr.m_items,std::forward<Lambda>(f));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -58,20 +71,9 @@ void operator<<(ArrayBoundRunCommand<N>&& nr,const Lambda& f)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define RUNCOMMAND_LOOP(iter_name, bounds)                              \
-  A_FUNCINFO << bounds << [=] ARCCORE_HOST_DEVICE (decltype(bounds) :: IndexType iter_name )
-
-#define RUNCOMMAND_LOOPN(iter_name, N, ...)                           \
-  A_FUNCINFO << ArrayBounds<N>(__VA_ARGS__) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<N> iter_name )
-
-#define RUNCOMMAND_LOOP1(iter_name, x1)                             \
-  A_FUNCINFO << ArrayBounds<1>(x1) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<1> iter_name )
-
-#define RUNCOMMAND_LOOP2(iter_name, x1, x2)                             \
-  A_FUNCINFO << ArrayBounds<2>(x1,x2) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<2> iter_name )
-
-#define RUNCOMMAND_LOOP3(iter_name, x1, x2, x3) \
-  A_FUNCINFO << ArrayBounds<3>(x1,x2,x3) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<3> iter_name )
+//! Macro pour itérer un groupe d'entités
+#define RUNCOMMAND_ENUMERATE(ItemNameType,iter_name,item_group)         \
+  item_group << [=] ARCCORE_HOST_DEVICE (ItemNameType##LocalId iter_name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

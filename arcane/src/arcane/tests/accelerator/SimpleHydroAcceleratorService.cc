@@ -48,6 +48,7 @@
 
 #include "arcane/accelerator/Reduce.h"
 #include "arcane/accelerator/Accelerator.h"
+#include "arcane/accelerator/RunCommandEnumerate.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -57,49 +58,6 @@ namespace SimpleHydro
 
 namespace ax = Arcane::Accelerator;
 using namespace Arcane;
-
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename ItemType>
-class ItemRunCommand
-{
- public:
-  ItemRunCommand(ax::RunCommand& command,const ItemVectorViewT<ItemType>& items)
-  : m_command(command), m_items(items)
-  {
-  }
-  ax::RunCommand& m_command;
-  ItemVectorViewT<ItemType> m_items;
-};
-
-template<typename ItemType> ItemRunCommand<ItemType>
-operator<<(ax::RunCommand& command,const ItemGroupT<ItemType>& items)
-{
-  return ItemRunCommand<ItemType>(command,items.view());
-}
-
-template<typename ItemType> ItemRunCommand<ItemType>
-operator<<(ax::RunCommand& command,const ItemVectorViewT<ItemType>& items)
-{
-  return ItemRunCommand<ItemType>(command,items);
-}
-
-template<typename ItemType,typename Lambda>
-void operator<<(ItemRunCommand<ItemType>&& nr,Lambda f)
-{
-  run(nr.m_command,nr.m_items,std::forward<Lambda>(f));
-}
-template<typename ItemType,typename Lambda>
-void operator<<(ItemRunCommand<ItemType>& nr,Lambda f)
-{
-  run(nr.m_command,nr.m_items,std::forward<Lambda>(f));
-}
-
-#define RUNCOMMAND_ENUMERATE(ItemNameType,iter_name,item_group)  \
-  item_group << [=] ARCCORE_HOST_DEVICE (ItemNameType##LocalId iter_name)
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
