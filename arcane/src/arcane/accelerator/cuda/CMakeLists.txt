@@ -50,7 +50,7 @@ target_link_libraries(arcane_accelerator_cuda_impl PUBLIC CUDA::cudart)
 
 # ----------------------------------------------------------------------------
 
-arcane_register_library(arcane_accelerator_cuda)
+arcane_register_library(arcane_accelerator_cuda  OPTIONAL)
 
 # ----------------------------------------------------------------------------
 # Local Variables:

@@ -28,7 +28,7 @@ target_link_libraries(arcane_accelerator_cuda_testlib PUBLIC arcane_core arcane_
 add_executable(arcane_accelerator_cuda_test TestMain.cc)
 target_link_libraries(arcane_accelerator_cuda_test PUBLIC arcane_accelerator_cuda_testlib arcane_accelerator_cuda_runtime)
 
-arcane_register_library(arcane_accelerator_cuda_runtime)
+arcane_register_library(arcane_accelerator_cuda_runtime OPTIONAL)
 
 # ----------------------------------------------------------------------------
 # Local Variables:
