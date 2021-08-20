@@ -1138,7 +1138,7 @@ endif ()
 
 include(GenerateExportHeader)
 include(CMakePackageConfigHelpers)
-configure_package_config_file(ArcaneConfig.cmake.in
+configure_package_config_file(cmake/ArcaneConfig.cmake.in
   ${generated_config_dir}/ArcaneConfig.cmake
   INSTALL_DESTINATION ${ARCANE_CMAKE_CONFIG_DIR}
   INSTALL_PREFIX ${_CONFIGURE_INSTALL_PREFIX}
