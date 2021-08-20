@@ -15,32 +15,31 @@ file(MAKE_DIRECTORY ${ARCANEBUILDROOT}/share/axl)
 # A supprimer mais en attendant permet de compiler avec IntelMPI
 if (ARCANE_WANT_MPI_DISTRIB MATCHES "intelmpi")
   set(DISABLE_SLOOP_AND_TRILINOS YES)
-  include(CMake/FindItac.cmake)
+  include(cmake/FindItac.cmake)
 endif ()
 if(ARCANE_USE_MPC)
   set(DISABLE_SLOOP_AND_TRILINOS YES)
 endif()
 
 # ----------------------------------------------------------------------------
-# Ajoute 'CMake/Modules' à la CMAKE_MODULE_PATH pour la recherche de packages
+# Ajoute 'cmake/Modules' à la CMAKE_MODULE_PATH pour la recherche de packages
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake/Modules)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 
 # ----------------------------------------------------------------------------
 
-include(CMake/VT100.cmake)
+include(cmake/VT100.cmake)
 if(NOT WIN32)
   # Lima a besoin de LM et F90 donc il faut qu'ils soient
   # recherchés avan lui
-  include(CMake/FindF90.cmake)
-  include(CMake/FindLM.cmake)
-  #include(CMake/FindLima.cmake)
-  include(CMake/FindItac.cmake)
-  include(CMake/FindMathlink.cmake)
+  include(cmake/FindF90.cmake)
+  include(cmake/FindLM.cmake)
+  include(cmake/FindItac.cmake)
+  include(cmake/FindMathlink.cmake)
 
   if(NOT DISABLE_SLOOP_AND_TRILINOS)
-    include(CMake/FindSuperLU.cmake)
-    #include(CMake/FindSloop.cmake)
+    include(cmake/FindSuperLU.cmake)
+    #include(cmake/FindSloop.cmake)
   endif()
 endif()
 
