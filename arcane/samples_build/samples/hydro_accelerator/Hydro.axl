@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<module name="Hydro" version="1.0">
+  <description>Descripteur du module Hydro</description>
+  <entry-points>
+    <entry-point method-name="compute" name="Compute" where="compute-loop" property="none" />
+    <entry-point method-name="startInit" name="StartInit" where="start-init" property="none" />
+  </entry-points>
+</module>
