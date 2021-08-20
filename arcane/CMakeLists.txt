@@ -175,9 +175,9 @@ if(ARCANE_PACKAGE_FILE)
 endif()
 
 # ----------------------------------------------------------------------------
-# Ajoute 'CMake/Modules' à la CMAKE_MODULE_PATH pour la recherche de packages
+# Ajoute 'cmake/Modules' à la CMAKE_MODULE_PATH pour la recherche de packages
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake/Modules)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 
 # ----------------------------------------------------------------------------
 # Affiche les infos sur le compilateur
@@ -311,7 +311,7 @@ set(ARCANE_INT64_MAX ${ARCCORE_INT64_MAX})
 
 # ----------------------------------------------------------------------------
 
-include(${CMAKE_CURRENT_LIST_DIR}/CMake/Functions.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/Functions.cmake)
 
 # ----------------------------------------------------------------------------
 
@@ -444,7 +444,7 @@ if (NOT ARCANE_WANT_NOMPI)
   arcane_find_package(MPI)
 endif()
 arcane_find_package(Valgrind)
-include(FindFlexLM)
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/FindFlexLM.cmake)
 message(STATUS "----------------------------------------------------")
 
 # default package list
@@ -1084,7 +1084,7 @@ file(APPEND ${ARCANE_COPY_DLLS_CONFIG_FILE} "list(APPEND EXE_LIST \"$<TARGET_FIL
 set(ARCANE_COPY_DLL_GENERATED_FILE ${CMAKE_CURRENT_BINARY_DIR}/copy_dlls_config.$<CONFIG>.cmake)
 file(GENERATE OUTPUT ${ARCANE_COPY_DLL_GENERATED_FILE} INPUT ${ARCANE_COPY_DLLS_CONFIG_FILE})
 add_custom_target(copy_dlls
-  COMMAND ${CMAKE_COMMAND} -D CONFIG_INCLUDE_FILE=${ARCANE_COPY_DLL_GENERATED_FILE} -P ${CMAKE_CURRENT_SOURCE_DIR}/CMake/ArcaneCopyDLLs.cmake )
+  COMMAND ${CMAKE_COMMAND} -D CONFIG_INCLUDE_FILE=${ARCANE_COPY_DLL_GENERATED_FILE} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArcaneCopyDLLs.cmake )
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -1118,9 +1118,9 @@ message(STATUS "ARCANE_OPTIONAL_LIBRARIES: ${ARCANE_OPTIONAL_LIBRARIES}")
 # n'est pas définie, on prend comme répertoire d'installation
 # ${CMAKE_CURRENT_BINARY_DIR}/install
 
-configure_file(CMake/ArcaneConfigCache.cmake.in ${generated_config_dir}/ArcaneConfigCache.cmake @ONLY)
-configure_file(CMake/ArcanePathHints.cmake.in ${generated_config_dir}/ArcanePathHints.cmake @ONLY)
-configure_file(CMake/ArcanePathHints-install.cmake.in ${generated_config_dir}/install/ArcanePathHints.cmake @ONLY)
+configure_file(cmake/ArcaneConfigCache.cmake.in ${generated_config_dir}/ArcaneConfigCache.cmake @ONLY)
+configure_file(cmake/ArcanePathHints.cmake.in ${generated_config_dir}/ArcanePathHints.cmake @ONLY)
+configure_file(cmake/ArcanePathHints-install.cmake.in ${generated_config_dir}/install/ArcanePathHints.cmake @ONLY)
 install(FILES ${generated_config_dir}/install/ArcanePathHints.cmake DESTINATION ${ARCANE_CMAKE_CONFIG_DIR})
 
 install(EXPORT ArcaneTargets DESTINATION ${ARCANE_CMAKE_CONFIG_DIR})
