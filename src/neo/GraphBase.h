@@ -14,8 +14,6 @@
 #include <vector>
 #include <numeric>
 
-#include "neo/Utils.h"
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -237,7 +235,7 @@ namespace Neo {
         // c'est contagieux...
         int _getConnectedVertexIndex(typename AdjacencyListType::iterator vertex_map_entry, Vertex connected_vertex) {
             VertexTypeRefArray &vertex_array = vertex_map_entry->second.first;
-            std::vector<Neo::utils::Int32> indexes(vertex_array.size());
+            std::vector<int> indexes(vertex_array.size());
             std::iota(indexes.begin(), indexes.end(), 0);
             auto connected_vertex_index = std::find_if(indexes.begin(), indexes.end(),
                                                        [&](const int index) {
