@@ -188,7 +188,7 @@ class Test3
       info() << "ITER N=" << nodes.size() << " FIRST_ID=" << nodes.localIds()[0] << " THREAD_IDX=" << thread_index
              << " TASK_IDX = " << task_index;
     ENUMERATE_NODE(inode,nodes){
-      local_total_coord += m_node_coord[inode].abs2();
+      local_total_coord += m_node_coord[inode].squareNormL2();
       m_node_nb_access[inode] = m_node_nb_access[inode] + 1;
       m_node_task_access[inode] = task_index;
     }
@@ -218,7 +218,7 @@ class Test3
       info() << "PARALLEL_LOOP size=" << nodes.size()
              << " thread_index=" << thread_index;
       ENUMERATE_NODE(inode,nodes){
-        local_total_coord += m_node_coord[inode].abs2();
+        local_total_coord += m_node_coord[inode].squareNormL2();
       }
 
       {
@@ -261,7 +261,7 @@ class Test3
         ++nb_loop;
         info() << "SEQUENTIAL LOOP";
         ENUMERATE_NODE(inode,nodes){
-          m_total_value += m_node_coord[inode].abs2();
+          m_total_value += m_node_coord[inode].squareNormL2();
         }
       };
       ParallelLoopOptions options;
@@ -333,7 +333,7 @@ class Test3
   {
     Real local_total_coord = 0.0;
     ENUMERATE_NODE(inode,nodes){
-      local_total_coord += m_node_coord[inode].abs2();
+      local_total_coord += m_node_coord[inode].squareNormL2();
     }
 
     {

@@ -143,7 +143,7 @@ class StandardFuncTest
   }
   virtual Real apply(Real r,Real3 r3)
   {
-    return r + r3.abs();
+    return r + r3.normL2();
   }
 };
 

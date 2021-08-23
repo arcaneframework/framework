@@ -107,7 +107,7 @@ initHMin()
     for (Integer i=0; i<item->nbNode(); i++)
       for (Integer j=i+1; j<item->nbNode(); j++){
         Real3 diff = (m_orig_nodes_coords[item->node(i)] - m_orig_nodes_coords[item->node(j)]) ;
-        h_min = std::min(h_min,diff.abs());
+        h_min = std::min(h_min,diff.normL2());
       }
     m_cell_hmin[item] =  h_min;
   }
@@ -127,7 +127,7 @@ updateChildHMin(ArrayView<ItemInternal*> refine_cells)
       for (Integer i=0; i<item.nbNode(); i++)
         for (Integer j=i+1; j<item.nbNode(); j++){
           Real3 diff = (m_orig_nodes_coords[item.node(i)] - m_orig_nodes_coords[item.node(j)]) ;
-          h_min = std::min(h_min,diff.abs());
+          h_min = std::min(h_min,diff.normL2());
         }
       m_cell_hmin[item] =  h_min;
     }
@@ -144,7 +144,7 @@ hmin(Cell item) const
   for (Integer i=0; i<item.nbNode(); i++)
     for (Integer j=i+1; j<item.nbNode(); j++){
       Real3 diff = (m_orig_nodes_coords[item.node(i)] - m_orig_nodes_coords[item.node(j)]) ;
-      h_min = std::min(h_min,diff.abs());
+      h_min = std::min(h_min,diff.normL2());
     }
 
   return h_min;

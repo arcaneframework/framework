@@ -416,11 +416,11 @@ computeNormal(const FaceGroup& face_group,const VariableNodeReal3& nodes_coord)
           return;
         if (math::isNearlyEqual(coord,s1))
           return;
-        Real distance = (coord - barycentre).abs2();
+        Real distance = (coord - barycentre).squareNormL2();
         if (distance>max_distance){
           Real3 normal = math::cross(coord-s0, s1-s0);
           // On ne prend le noeud que s'il n'est pas aligné avec les deux autres.
-          if (!math::isNearlyZero(normal.abs2())){
+          if (!math::isNearlyZero(normal.squareNormL2())){
             max_distance = distance;
             farthest_node = node;
           }
@@ -472,16 +472,16 @@ computeNormal(const FaceGroup& face_group,const VariableNodeReal3& nodes_coord)
       full_normal += normal;
       info() << " FULL: " << full_normal;
     }
-    if (math::isNearlyZero(full_normal.abs2()))
+    if (math::isNearlyZero(full_normal.squareNormL2()))
       full_normal = first_normal;
   }
   else
     ARCANE_FATAL("invalid mesh dimension (should be 2 or 3)");
-  Real a = full_normal.abs();
+  Real a = full_normal.normL2();
   if (math::isZero(a))
     ARCANE_FATAL("invalid value for normal");
   full_normal /= a;
-  Real b = total_global_normal.abs();
+  Real b = total_global_normal.normL2();
   Real dir = 0.0;
   info() << " Normal is " << full_normal;
   if (!math::isZero(b)){
@@ -536,7 +536,7 @@ computeDirection(const NodeGroup& node_group,
     ENUMERATE_NODE(inode,node_group.own()){
       Node node = *inode;
       Real3 coord = nodes_coord[node];
-      Real distance = (coord - barycentre).abs2();
+      Real distance = (coord - barycentre).squareNormL2();
       if (distance>max_distance){
         max_distance = distance;
         farthest_node = node;
@@ -553,7 +553,7 @@ computeDirection(const NodeGroup& node_group,
     ENUMERATE_NODE(inode,node_group.own()){
       Node node = *inode;
       Real3 coord = nodes_coord[node];
-      Real distance = (coord - first_boundary_coord).abs2();
+      Real distance = (coord - first_boundary_coord).squareNormL2();
       if (distance>max_distance){
         max_distance = distance;
         farthest_node = node;
@@ -564,7 +564,7 @@ computeDirection(const NodeGroup& node_group,
       *n2 = second_boundary_coord;
   }
   Real3 direction = second_boundary_coord - first_boundary_coord;
-  Real norm = direction.abs();
+  Real norm = direction.normL2();
   if (math::isZero(norm)){
     ARCANE_FATAL("Direction is null for group '{0}' first_coord={1} second_coord={2}",
                  node_group.name(),first_boundary_coord,second_boundary_coord);

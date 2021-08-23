@@ -1011,7 +1011,7 @@ _testLoadBalance()
       const Cell& cell = *icell;
       for( Integer i=0, iz=m_cell_loop[cell]; i<iz; ++i ){
         for( NodeEnumerator inode(cell.nodes()); inode(); ++inode )
-          z += Convert::toInteger(node_coord[inode].abs());
+          z += Convert::toInteger(node_coord[inode].normL2());
       }
       m_cell_value[icell] = z;
       total += z;

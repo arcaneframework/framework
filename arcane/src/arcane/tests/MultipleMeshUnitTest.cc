@@ -179,7 +179,7 @@ _testMesh(const String& mesh_name,bool do_output)
     new_mesh->checkValidMesh();
     ENUMERATE_CELL(icell,new_mesh->allCells()){
       Cell cell = *icell;
-      cell_coord[icell] = new_mesh_coords[cell.node(0)].abs2();
+      cell_coord[icell] = new_mesh_coords[cell.node(0)].squareNormL2();
     }
   }
 

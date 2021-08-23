@@ -853,7 +853,7 @@ _createCorrespondance(IVariable* var,CorrespondanceInfo* ci,Int64ConstArrayView 
     Real min_dist = FloatInfo<Real>::maxValue();
     Integer min_index = -1;
     for( Integer z=0; z<nb_orig_item; ++z ){
-      Real d = (item_center - saved_centers[z]).abs2();
+      Real d = (item_center - saved_centers[z]).squareNormL2();
       if (d<min_dist){
         min_dist = d;
         min_index = z;

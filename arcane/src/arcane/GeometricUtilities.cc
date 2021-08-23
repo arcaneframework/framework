@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GeometricUtilities.cc                                       (C) 2000-2007 */
+/* GeometricUtilities.cc                                       (C) 2000-2021 */
 /*                                                                           */
 /* Fonctions utilitaires sur la géométrie.                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/ITraceMng.h"
@@ -22,10 +20,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -451,12 +447,12 @@ projection(Real3 v1,Real3 v2,Real3 v3,Real3 point)
   Real3 kDiff = v1 - point;
   Real3 edge0 = v2 - v1;
   Real3 edge1 = v3 - v1;
-  Real fA00 = edge0.abs2();
+  Real fA00 = edge0.squareNormL2();
   Real fA01 = math::dot(edge0,edge1);
-  Real fA11 = edge1.abs2();
+  Real fA11 = edge1.squareNormL2();
   Real fB0 = math::dot(kDiff,edge0);
   Real fB1 = math::dot(kDiff,edge1);
-  Real fC = kDiff.abs2();
+  Real fC = kDiff.squareNormL2();
   Real fDet = math::abs(fA00*fA11-fA01*fA01);
   Real alpha = fA01*fB1-fA11*fB0;
   Real beta = fA01*fB0-fA00*fB1;
@@ -651,21 +647,21 @@ projection(Real3 v1,Real3 v2,Real3 point)
   Real3 edge0 = v2 - v1;
   Real3 edge1 = point - v1;
   Real dot_product = math::dot(edge0,edge1);
-  Real norm = edge0.abs2();
+  Real norm = edge0.squareNormL2();
   Real alpha = dot_product / norm;
   int region = -1;
   Real distance = 0.;
   if (alpha<0.){
     region = 1;
-    distance = edge1.abs2();
+    distance = edge1.squareNormL2();
   }
   else if (alpha>1.){
     region = 2;
-    distance = (point-v2).abs2();
+    distance = (point-v2).squareNormL2();
   }
   else{
     region = 0;
-    distance = (point - (v1 + alpha*edge0)).abs2();
+    distance = (point - (v1 + alpha*edge0)).squareNormL2();
   }
   Real3 projection = v1 + alpha*edge0;
 #if 0
@@ -687,9 +683,9 @@ isInside(Real3 v1,Real3 v2,Real3 v3,Real3 point)
   Real3 kDiff = v1 - point;
   Real3 edge0 = v2 - v1;
   Real3 edge1 = v3 - v1;
-  Real fA00 = edge0.abs2();
+  Real fA00 = edge0.squareNormL2();
   Real fA01 = math::dot(edge0,edge1);
-  Real fA11 = edge1.abs2();
+  Real fA11 = edge1.squareNormL2();
   Real fB0 = math::dot(kDiff,edge0);
   Real fB1 = math::dot(kDiff,edge1);
 
@@ -721,7 +717,7 @@ isInside(Real3 v1,Real3 v2,Real3 point)
   Real3 edge0 = v2 - v1;
   Real3 edge1 = point - v1;
   Real dot_product = math::dot(edge0,edge1);
-  Real norm = edge0.abs2();
+  Real norm = edge0.squareNormL2();
   //cout << "Infos: v1=" << v1 << " v2=" << v2 << " point="
   //<< point << " dot=" << dot_product << " norm2=" << norm << '\n';
   if (dot_product>0. && dot_product<norm)
@@ -732,8 +728,7 @@ isInside(Real3 v1,Real3 v2,Real3 point)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

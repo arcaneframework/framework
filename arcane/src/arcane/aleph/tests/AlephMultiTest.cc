@@ -229,12 +229,12 @@ class AlephSolver
       const Real3 xyz0 = nodes_coords[face.node(0)];
       const Real3 xyz1 = nodes_coords[face.node(1)];
       const Real3 xyz3 = nodes_coords[face.node(3)];
-      return (xyz0 - xyz1).abs() * (xyz0 - xyz3).abs();
+      return (xyz0 - xyz1).normL2() * (xyz0 - xyz3).normL2();
     }
     if (face.nbNode() == 2) {
       const Real3 xyz0 = nodes_coords[face.node(0)];
       const Real3 xyz1 = nodes_coords[face.node(1)];
-      return (xyz0 - xyz1).abs();
+      return (xyz0 - xyz1).normL2();
     }
     throw FatalErrorException("geoFace", "Nb nodes != 4 !=2");
   }

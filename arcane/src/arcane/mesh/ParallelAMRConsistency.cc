@@ -279,7 +279,7 @@ makeNewItemsConsistent(NodeMapCoordToUid& node_finder, FaceMapCoordToUid& face_f
             Real3 Xi = m_nodes_coord[node_i] ;
             for(Integer j=0;j<edges.size();++j){
               Real3 n = Xi-edges[j].first ;
-              Real sinteta = math::vecMul(edges[j].second,n).abs2() ;
+              Real sinteta = math::cross(edges[j].second,n).squareNormL2() ;
               if (math::isZero(sinteta)){
                 node_i.internal()->addFlags(ItemInternal::II_Shared | ItemInternal::II_SubDomainBoundary);
                 //active_nodes_set.insert(node_i);

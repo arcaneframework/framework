@@ -987,10 +987,10 @@ inline ARCANE_DEPRECATED Real3
 planarSymetric(const Real3 u, const Real3 n) 
 {
   Real3 u_tilde;
-  if (n.abs()==0){
-    arcaneMathError(Convert::toDouble(n.abs()),"planarSymetric");
+  if (n.normL2()==0){
+    arcaneMathError(n.normL2(),"planarSymetric");
   }	
-  Real3 norm = n / n.abs();
+  Real3 norm = n / n.normL2();
   u_tilde = u - 2.0 * dot(norm,u) * norm;
   return u_tilde;
 }
@@ -1006,11 +1006,11 @@ planarSymmetric(Real3 u,Real3 n)
 {
   Real3 u_tilde;
 #ifdef ARCANE_CHECK
-  if (n.abs()==0){
-    arcaneMathError(Convert::toDouble(n.abs()),"planarSymetric");
+  if (n.normL2()==0){
+    arcaneMathError(Convert::toDouble(n.normL2()),"planarSymetric");
   }	
 #endif
-  Real3 norm = n / n.abs();
+  Real3 norm = n / n.normL2();
   u_tilde = u - 2.0 * dot(norm,u) * norm;
   return u_tilde;
 }
@@ -1026,10 +1026,10 @@ inline ARCANE_DEPRECATED_118 Real3
 axisSymetric(const Real3 u, const Real3 a)
 {
   Real3 u_tilde;
-  if (a.abs()==0){
-    arcaneMathError(Convert::toDouble(a.abs()),"axisSymetric");
+  if (a.normL2()==0){
+    arcaneMathError(Convert::toDouble(a.normL2()),"axisSymetric");
   }	
-  Real3 norm = a / a.abs();    
+  Real3 norm = a / a.normL2();    
   u_tilde = 2.0 * dot(u,norm) * norm - u;
   return u_tilde;	
 } 
@@ -1045,11 +1045,11 @@ axisSymmetric(Real3 u,Real3 a)
 {
   Real3 u_tilde;
 #ifdef ARCANE_CHECK
-  if (a.abs()==0){
-    arcaneMathError(Convert::toDouble(a.abs()),"axisSymetric");
+  if (a.normL2()==0){
+    arcaneMathError(Convert::toDouble(a.normL2()),"axisSymetric");
   }	
 #endif
-  Real3 norm = a / a.abs();    
+  Real3 norm = a / a.normL2();    
   u_tilde = 2.0 * dot(u,norm) * norm - u;
   return u_tilde;	
 } 

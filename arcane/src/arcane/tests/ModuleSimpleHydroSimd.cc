@@ -746,9 +746,9 @@ computeGeometricValues()
         SimdReal3 median1 = face_coord[0]-face_coord[3];
         SimdReal3 median2 = face_coord[2]-face_coord[5];
         SimdReal3 median3 = face_coord[1]-face_coord[4];
-        SimdReal d1 = math::abs(median1);
-        SimdReal d2 = math::abs(median2);
-        SimdReal d3 = math::abs(median3);
+        SimdReal d1 = math::normL2(median1);
+        SimdReal d2 = math::normL2(median2);
+        SimdReal d3 = math::normL2(median3);
           
         SimdReal dx_numerator   = d1*d2*d3;
         SimdReal dx_denominator = d1*d2 + d1*d3 + d2*d3;

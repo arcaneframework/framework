@@ -197,7 +197,7 @@ public:
       m_interface_distance[cell][0]=((nodesCoordinates()[cell->node(0)]-(nodesCoordinates()[cell->node(0)]+
                                                                          nodesCoordinates()[cell->node(1)]+
                                                                          nodesCoordinates()[cell->node(2)]+
-                                                                         nodesCoordinates()[cell->node(3)])/4.0).abs())/2.0;
+                                                                         nodesCoordinates()[cell->node(3)])/4.0).normL2())/2.0;
       //info()<<"\t[onTimeLoopStartInit] m_interface_distance2="<<m_interface_distance2[cell][0];
       //m_concentration[cell]=1.0/(1.0+((Real)cell->uniqueId().asInt32()));
     }

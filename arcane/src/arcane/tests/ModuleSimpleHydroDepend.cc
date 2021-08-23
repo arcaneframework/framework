@@ -887,9 +887,9 @@ computeGeometricValues()
       Real3 median1 = face_coord[0]-face_coord[3];
       Real3 median2 = face_coord[2]-face_coord[5];
       Real3 median3 = face_coord[1]-face_coord[4];
-      Real d1 = median1.abs();
-      Real d2 = median2.abs();
-      Real d3 = median3.abs();
+      Real d1 = median1.normL2();
+      Real d2 = median2.normL2();
+      Real d3 = median3.normL2();
 
       Real dx_numerator   = d1*d2*d3;
       Real dx_denominator = d1*d2 + d1*d3 + d2*d3;
