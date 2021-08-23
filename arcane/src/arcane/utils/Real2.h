@@ -123,9 +123,18 @@ class ARCANE_UTILS_EXPORT Real2
   }
 
   //! Retourne la norme au carré du couple \f$x^2+y^2+z^2\f$
+  ARCCORE_HOST_DEVICE Real squareNormL2() const { return x*x + y*y; }
+  //! Retourne la norme du couple \f$\sqrt{x^2+y^2+z^2}\f$
+  ARCCORE_HOST_DEVICE Real normL2() const { return _sqrt(squareNormL2()); }
+
+  //! Retourne la norme au carré du couple \f$x^2+y^2+z^2\f$
+  ARCCORE_DEPRECATED_2021("Use squareNormL2() instead")
   ARCCORE_HOST_DEVICE Real abs2() const { return x*x + y*y; }
   //! Retourne la norme du couple \f$\sqrt{x^2+y^2+z^2}\f$
-  ARCCORE_HOST_DEVICE Real abs() const { return _sqrt(abs2()); }
+  ARCCORE_DEPRECATED_2021("Use normL2() instead")
+  ARCCORE_HOST_DEVICE Real abs() const { return _sqrt(squareNormL2()); }
+  //! Valeur absolue composante par composante.
+  ARCCORE_HOST_DEVICE Real2 absolute() const { return Real2(math::abs(x),math::abs(y)); }
 
   /*!
    * \brief Lit un couple sur le flot \a i
@@ -191,7 +200,7 @@ class ARCANE_UTILS_EXPORT Real2
    */
   Real2& normalize()
   {
-    Real d = abs();
+    Real d = normL2();
     if (!math::isZero(d))
       divSame(d);
     return (*this);

@@ -60,24 +60,48 @@ dot(const SimdReal2& u,const SimdReal2& v)
   return SimdReal(u.x*v.x + u.y*v.y);
 }
 
+ARCCORE_DEPRECATED_2021("Use normL2() instead")
 inline SimdReal
 abs(const SimdReal3& sr)
 {
   SimdReal vr;
   ENUMERATE_SIMD_REAL(si){
     Real3 r(sr.x[si],sr.y[si],sr.z[si]);
-    vr[si] = r.abs();
+    vr[si] = r.normL2();
   }
   return vr;
 }
 
+ARCCORE_DEPRECATED_2021("Use normL2() instead")
 inline SimdReal
 abs(const SimdReal2& sr)
 {
   SimdReal vr;
   ENUMERATE_SIMD_REAL(si){
     Real2 r(sr.x[si],sr.y[si]);
-    vr[si] = r.abs();
+    vr[si] = r.normL2();
+  }
+  return vr;
+}
+
+inline SimdReal
+normL2(const SimdReal3& sr)
+{
+  SimdReal vr;
+  ENUMERATE_SIMD_REAL(si){
+    Real3 r(sr.x[si],sr.y[si],sr.z[si]);
+    vr[si] = r.normL2();
+  }
+  return vr;
+}
+
+inline SimdReal
+normL2(const SimdReal2& sr)
+{
+  SimdReal vr;
+  ENUMERATE_SIMD_REAL(si){
+    Real2 r(sr.x[si],sr.y[si]);
+    vr[si] = r.normL2();
   }
   return vr;
 }

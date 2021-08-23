@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Real3.h                                                     (C) 2000-2020 */
+/* Real3.h                                                     (C) 2000-2021 */
 /*                                                                           */
 /* Vecteur à 3 dimensions.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -140,10 +140,18 @@ class ARCANE_UTILS_EXPORT Real3
   {
     return math::isNearlyZero(x) && math::isNearlyZero(y) && math::isNearlyZero(z);
   }
+  //! Retourne la norme L2 du triplet \f$\sqrt{x^2+y^2+z^2}\f$
+  ARCCORE_HOST_DEVICE Real squareNormL2() const { return x*x + y*y + z*z; }
+  //! Retourne la norme L2 du triplet \f$\sqrt{x^2+y^2+z^2}\f$
+  ARCCORE_HOST_DEVICE Real normL2() const { return _sqrt(squareNormL2()); }
   //! Retourne la norme au carré du triplet \f$x^2+y^2+z^2\f$
+  ARCCORE_DEPRECATED_2021("Use squareNormL2() instead")
   ARCCORE_HOST_DEVICE Real abs2() const { return x*x + y*y + z*z; }
   //! Retourne la norme du triplet \f$\sqrt{x^2+y^2+z^2}\f$
-  ARCCORE_HOST_DEVICE Real abs() const { return _sqrt(abs2()); }
+  ARCCORE_DEPRECATED_2021("Use normL2() instead")
+  ARCCORE_HOST_DEVICE Real abs() const { return _sqrt(squareNormL2()); }
+  //! Valeur absolue composante par composante.
+  ARCCORE_HOST_DEVICE Real3 absolute() const { return Real3(math::abs(x),math::abs(y),math::abs(z)); }
 
   /*!
    * \brief Lit un triplet sur le flot \a i
@@ -204,12 +212,12 @@ class ARCANE_UTILS_EXPORT Real3
    * \brief Normalise le triplet.
    * 
    * Si le triplet est non nul, divise chaque composante par la norme du triplet
-   * (abs()), de telle sorte qu'après l'appel à cette méthode, abs() valent \a 1.
+   * (abs()), de telle sorte qu'après l'appel à cette méthode, normL2() vaux \a 1.
    * Si le triplet est nul, ne fait rien.
    */
   Real3& normalize()
   {
-    Real d = abs();
+    Real d = normL2();
     if (!math::isZero(d))
       divSame(d);
     return (*this);
