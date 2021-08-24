@@ -19,6 +19,14 @@ Nouveautés/Améliorations:
 - Simplifie et étend l'utilisation de Arcane::UnstructuredMeshConnectivityView
 - Ajoute méthode 'IVariable::dataFactoryMng()' pour récupérer le
   Arcane::IDataFactoryMng àssocié aux données de la variable.
+- Ajoute méthodes Arcane::Real2::normL2(), Arcane::Real3::normL2(),
+  Arcane::Real2::squareNormL2() et Arcane::Real3::squareNormL3() pour
+  remplacer les méthode 'abs()' et 'abs2()' de ces deux classes.
+- Ajoute méthodes Arcane::Real2::absolute(), Arcane::Real3::absolute(),
+  pour retourner un vecteur avec les valeurs absolues par composante.
+- Ajoute support pour la version OneTBB 2021.
+- Ajoute macros RUNCOMMAND_ENUMERATE() et RUNCOMMAND_LOOP() pour
+  itérer sur les accélérateurs
 
 Changements:
 
@@ -48,10 +56,12 @@ ENUMERATE_CELL(icell,allCells()){
   partir d'un 'ConstArrayView'.
 - [arccore] Corrige envoi de message manquant lors de l'appel à
   Arccore::MessagePassing::PointToPointSerializerMng::waitMessages(). Il manquait
-  l'appel à Arccore::MessagePassing::PointToPointSerializerMng::processPendingMessages(). 
+  l'appel à Arccore::MessagePassing::PointToPointSerializerMng::processPendingMessages().
   A cause de ce bug, la classe Arcane::TransferValuesParallelOperation
   ne fonctionnait pas et par conséquent la méthode
   Arcane::IItemFamily::reduceFromGhostItems() non plus.
+- [config] Supporte le cas où plusieurs versions du SDK pour 'dotnet'
+  sont installées. Dans ce cas la version la plus récente est utilisée.
 
 Arcane Version 3.0.3 (... 2021) {#arcanedoc_version303}
 ======================================
