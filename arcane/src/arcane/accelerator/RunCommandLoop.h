@@ -58,18 +58,23 @@ void operator<<(ArrayBoundRunCommand<N>&& nr,const Lambda& f)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP(iter_name, bounds)                              \
   A_FUNCINFO << bounds << [=] ARCCORE_HOST_DEVICE (decltype(bounds) :: IndexType iter_name )
 
+//! Boucle sur accélérateur
 #define RUNCOMMAND_LOOPN(iter_name, N, ...)                           \
   A_FUNCINFO << ArrayBounds<N>(__VA_ARGS__) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<N> iter_name )
 
+//! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP1(iter_name, x1)                             \
   A_FUNCINFO << ArrayBounds<1>(x1) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<1> iter_name )
 
+//! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP2(iter_name, x1, x2)                             \
   A_FUNCINFO << ArrayBounds<2>(x1,x2) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<2> iter_name )
 
+//! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP3(iter_name, x1, x2, x3) \
   A_FUNCINFO << ArrayBounds<3>(x1,x2,x3) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<3> iter_name )
 

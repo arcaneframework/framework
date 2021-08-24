@@ -23,7 +23,17 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \file RunCommandLoop.h
+ *
+ * \brief Types et macros pour gérer les boucles sur les accélérateurs
+ */
 
+/*!
+ * \file RunCommandEnumerate.h
+ *
+ * \brief Types et macros pour gérer les énumérations des entités sur les accélérateurs
+ */
 namespace Arcane::Accelerator
 {
 
