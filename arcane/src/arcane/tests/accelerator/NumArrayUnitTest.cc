@@ -76,6 +76,9 @@ class NumArrayUnitTest
     Accelerator::impl::applyGenericLoopSequential(bounds,[&](ArrayBoundsIndex<Rank> idx){ total += values(idx); });
     return total;
   }
+ public:
+  void _executeTest1();
+  void _executeTest2();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -119,6 +122,18 @@ initializeTest()
 
 void NumArrayUnitTest::
 executeTest()
+{
+  _executeTest1();
+
+  // Appelle deux fois _executeTest2() pour vérifier l'utilisation des pools
+  // de RunQueue.
+  _executeTest2();
+  _executeTest2();
+}
+
+
+void NumArrayUnitTest::
+_executeTest1()
 {
   ValueChecker vc(A_FUNCINFO);
 
@@ -198,6 +213,80 @@ executeTest()
     info() << "SUM4 = " << s4;
     vc.areEqual(s4,expected_sum4,"SUM4");
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void NumArrayUnitTest::
+_executeTest2()
+{
+  // Teste plusieurs queues simultanément.
+  ValueChecker vc(A_FUNCINFO);
+
+  // Ne pas changer les dimensions du tableau sinon
+  // il faut aussi changer le calcul des sommes
+  constexpr int n1 = 1000;
+  constexpr int n2 = 3;
+  constexpr int n3 = 4;
+  constexpr int n4 = 13;
+
+  constexpr double expected_sum4 = 164736000.0;
+
+  auto queue1 = makeQueue(m_runner);
+  queue1.setAsync(true);
+  auto queue2 = makeQueue(m_runner);
+  queue2.setAsync(true);
+  auto queue3 = makeQueue(m_runner);
+  queue3.setAsync(true);
+
+  NumArray<double,4> t1(n1,n2,n3,n4);
+
+  // NOTE: Normalement il ne devrait pas être autorisé d'accéder au
+  // même tableau depuis plusieurs commandes sur des files différentes
+  // mais cela fonctionne avec la mémoire unifiée.
+
+  // Utilise 3 files asynchrones pour positionner les valeurs du tableau,
+  // chaque file gérant une partie du tableau.
+  {
+    auto command = makeCommand(queue1);
+    auto out_t1 = ax::viewOut(command,t1);
+    Int64 s1 = 300;
+    command << RUNCOMMAND_LOOP4(iter,s1,n2,n3,n4)
+    {
+      auto [i, j, k, l] = iter();
+      out_t1(i,j,k,l) = _getValue(i,j,k,l);
+    };
+  }
+  {
+    auto command = makeCommand(queue2);
+    auto out_t1 = ax::viewOut(command,t1);
+    Int64 base = 300;
+    Int64 s1 = 400;
+    command << RUNCOMMAND_LOOP4(iter,s1,n2,n3,n4)
+    {
+      auto [i, j, k, l] = iter();
+      out_t1(base+i,j,k,l) = _getValue(base+i,j,k,l);
+    };
+  }
+  {
+    auto command = makeCommand(queue3);
+    auto out_t1 = ax::viewOut(command,t1);
+    Int64 base = 700;
+    Int64 s1 = 300;
+    command << RUNCOMMAND_LOOP4(iter,s1,n2,n3,n4)
+    {
+      auto [i, j, k, l] = iter();
+      out_t1(base+i,j,k,l) = _getValue(base+i,j,k,l);
+    };
+  }
+  queue1.barrier();
+  queue2.barrier();
+  queue3.barrier();
+
+  double s4 = _doSum(t1,{n1,n2,n3,n4});
+  info() << "SUM4_ASYNC = " << s4;
+  vc.areEqual(s4,expected_sum4,"SUM4_ASYNC");
 }
 
 /*---------------------------------------------------------------------------*/
