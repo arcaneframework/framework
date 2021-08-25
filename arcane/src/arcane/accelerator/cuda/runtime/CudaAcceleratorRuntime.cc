@@ -91,6 +91,10 @@ class CudaRunQueueRuntime
   {
     ARCANE_CHECK_CUDA(cudaDeviceSynchronize());
   }
+  eExecutionPolicy executionPolicy() const override
+  {
+    return eExecutionPolicy::CUDA;
+  }
  private:
   Int64 m_nb_kernel_launched = 0;
   bool m_is_verbose = false;

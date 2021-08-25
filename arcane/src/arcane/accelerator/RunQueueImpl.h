@@ -38,7 +38,7 @@ class ARCANE_ACCELERATOR_EXPORT RunQueueImpl
   friend class RunQueue;
   friend class RunCommandImpl;
  private:
-  RunQueueImpl(Runner* runner,eExecutionPolicy exec_policy,Int32 id,IRunQueueRuntime* runtime);
+  RunQueueImpl(Runner* runner,Int32 id,IRunQueueRuntime* runtime);
   ~RunQueueImpl();
   RunQueueImpl(const RunQueueImpl&) = delete;
   RunQueueImpl& operator=(const RunQueueImpl&) = delete;

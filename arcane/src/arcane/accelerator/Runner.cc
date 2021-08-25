@@ -36,11 +36,14 @@ inline IRunQueueRuntime*
 _getRuntime(eExecutionPolicy p)
 {
   IRunQueueRuntime* runtime = nullptr;
-  if (p==eExecutionPolicy::CUDA){
-    runtime = getCUDARunQueueRuntime();
+  switch(p){
+  case eExecutionPolicy::CUDA:
+    return getCUDARunQueueRuntime();
+  case eExecutionPolicy::Sequential:
+    return getSequentialRunQueueRuntime();
+  case eExecutionPolicy::Thread:
+    return getThreadRunQueueRuntime();;
   }
-  else
-    runtime = getSequentialRunQueueRuntime();
   return runtime;
 }
 }
@@ -73,7 +76,7 @@ class Runner::Impl
         ARCANE_FATAL("Can not create RunQueue for execution policy '{0}' "
                      "because no RunQueueRuntime is available for this policy",m_exec_policy);
       Int32 x = ++m_nb_created;
-      return new RunQueueImpl(m_runner,m_exec_policy,x,m_runtime);
+      return new RunQueueImpl(m_runner,x,m_runtime);
     }
    private:
     std::stack<RunQueueImpl*> m_stack;

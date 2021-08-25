@@ -91,6 +91,10 @@ void setCUDARunQueueRuntime(IRunQueueRuntime* v);
 extern "C++" ARCANE_ACCELERATOR_EXPORT
 IRunQueueRuntime* getSequentialRunQueueRuntime();
 
+//! Récupère l'implémentation Thread de RunQueue
+extern "C++" ARCANE_ACCELERATOR_EXPORT
+IRunQueueRuntime* getThreadRunQueueRuntime();
+
 namespace impl
 {
 extern "C++" ARCANE_ACCELERATOR_EXPORT IReduceMemoryImpl*

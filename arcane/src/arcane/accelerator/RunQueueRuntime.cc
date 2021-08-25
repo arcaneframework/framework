@@ -31,11 +31,25 @@ class ARCANE_ACCELERATOR_EXPORT SequentialRunQueueRuntime
   void notifyBeginKernel() override {}
   void notifyEndKernel() override {}
   void barrier() override {}
+  eExecutionPolicy executionPolicy() const override { return eExecutionPolicy::Sequential; }
+};
+
+class ARCANE_ACCELERATOR_EXPORT ThreadRunQueueRuntime
+: public IRunQueueRuntime
+{
+ public:
+  ~ThreadRunQueueRuntime() override = default;
+ public:
+  void notifyBeginKernel() override {}
+  void notifyEndKernel() override {}
+  void barrier() override {}
+  eExecutionPolicy executionPolicy() const override { return eExecutionPolicy::Thread; }
 };
 
 namespace
 {
 SequentialRunQueueRuntime global_sequential_runqueue_runtime;
+ThreadRunQueueRuntime global_thread_runqueue_runtime;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -46,6 +60,13 @@ extern "C++" ARCANE_ACCELERATOR_EXPORT
 IRunQueueRuntime* getSequentialRunQueueRuntime()
 {
   return &global_sequential_runqueue_runtime;
+}
+
+//! Récupère l'implémentation séquentielle de RunQueue
+extern "C++" ARCANE_ACCELERATOR_EXPORT
+IRunQueueRuntime* getThreadRunQueueRuntime()
+{
+  return &global_thread_runqueue_runtime;
 }
 
 /*---------------------------------------------------------------------------*/

@@ -35,6 +35,7 @@ class ARCANE_ACCELERATOR_EXPORT IRunQueueRuntime
   virtual void notifyBeginKernel() =0;
   virtual void notifyEndKernel() =0;
   virtual void barrier() =0;
+  virtual eExecutionPolicy executionPolicy() const =0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -14,7 +14,9 @@
 #include "arcane/accelerator/RunQueueImpl.h"
 
 #include "arcane/utils/FatalErrorException.h"
+
 #include "arcane/accelerator/Runner.h"
+#include "arcane/accelerator/IRunQueueRuntime.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,9 +28,9 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 
 RunQueueImpl::
-RunQueueImpl(Runner* runner,eExecutionPolicy exec_policy,Int32 id,IRunQueueRuntime* runtime)
+RunQueueImpl(Runner* runner,Int32 id,IRunQueueRuntime* runtime)
 : m_runner(runner)
-, m_execution_policy(exec_policy)
+, m_execution_policy(runtime->executionPolicy())
 , m_runtime(runtime)
 , m_id(id)
 {
