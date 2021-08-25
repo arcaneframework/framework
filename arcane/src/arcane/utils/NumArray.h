@@ -258,7 +258,7 @@ class ArrayExtentsBase
   ARCCORE_HOST_DEVICE Int64 operator()(int i) const { return m_extents[i]; }
   ARCCORE_HOST_DEVICE SmallSpan<const Int64> asSpan() const { return { m_extents, RankValue }; }
   //! Nombre total d'eléments
-  ARCCORE_HOST_DEVICE Int64 totalNbElement() const
+  ARCCORE_HOST_DEVICE constexpr Int64 totalNbElement() const
   {
     Int64 nb_element = 1;
     for (int i=0; i<RankValue; i++)
@@ -575,9 +575,9 @@ class ArrayBoundsBase
  public:
   constexpr ArrayBoundsBase() : m_nb_element(0) {}
  public:
-  ARCCORE_HOST_DEVICE Int64 nbElement() const { return m_nb_element; }
+  ARCCORE_HOST_DEVICE constexpr Int64 nbElement() const { return m_nb_element; }
  protected:
-  void _computeNbElement()
+  constexpr void _computeNbElement()
   {
     m_nb_element = this->totalNbElement();
   }
