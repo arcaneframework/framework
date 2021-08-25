@@ -38,7 +38,7 @@ class NumArray;
 namespace impl
 {
 template <class T> ARCCORE_HOST_DEVICE
-T fastmod(T a , T b)
+constexpr T fastmod(T a , T b)
 {
   return a < b ? a : a-b*(a/b);
 }
@@ -61,7 +61,7 @@ class ArrayBoundsIndexBase
  public:
   ARCCORE_HOST_DEVICE std::array<Int64,RankValue> operator()() const { return m_indexes; }
  protected:
-  ARCCORE_HOST_DEVICE ArrayBoundsIndexBase()
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndexBase()
   {
     for( int i=0; i<RankValue; ++i )
       m_indexes[i] = 0;
@@ -75,7 +75,7 @@ class ArrayBoundsIndex<1>
 : public ArrayBoundsIndexBase<1>
 {
  public:
-  ARCCORE_HOST_DEVICE ArrayBoundsIndex(Int64 _id0)
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(Int64 _id0) : ArrayBoundsIndexBase<1>()
   {
     m_indexes[0] = _id0;
   }
@@ -88,7 +88,8 @@ class ArrayBoundsIndex<2>
 : public ArrayBoundsIndexBase<2>
 {
  public:
-  ARCCORE_HOST_DEVICE ArrayBoundsIndex(Int64 _id0,Int64 _id1)
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(Int64 _id0,Int64 _id1)
+  : ArrayBoundsIndexBase<2>()
   {
     m_indexes[0] = _id0;
     m_indexes[1] = _id1;
@@ -103,7 +104,8 @@ class ArrayBoundsIndex<3>
 : public ArrayBoundsIndexBase<3>
 {
  public:
-  ARCCORE_HOST_DEVICE ArrayBoundsIndex(Int64 _id0,Int64 _id1,Int64 _id2)
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(Int64 _id0,Int64 _id1,Int64 _id2)
+  : ArrayBoundsIndexBase<3>()
   {
     m_indexes[0] = _id0;
     m_indexes[1] = _id1;
@@ -120,7 +122,8 @@ class ArrayBoundsIndex<4>
 : public ArrayBoundsIndexBase<4>
 {
  public:
-  ARCCORE_HOST_DEVICE ArrayBoundsIndex(Int64 _id0,Int64 _id1,Int64 _id2,Int64 _id3)
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(Int64 _id0,Int64 _id1,Int64 _id2,Int64 _id3)
+  : ArrayBoundsIndexBase<4>()
   {
     m_indexes[0] = _id0;
     m_indexes[1] = _id1;
@@ -243,7 +246,7 @@ template<int RankValue>
 class ArrayExtentsBase
 {
  public:
-  ARCCORE_HOST_DEVICE ArrayExtentsBase()
+  ARCCORE_HOST_DEVICE constexpr ArrayExtentsBase()
   {
     for( int i=0; i<RankValue; ++i )
       m_extents[i] = 0;
@@ -570,6 +573,8 @@ class ArrayBoundsBase
  public:
   using ArrayExtents<RankValue>::extent;
  public:
+  constexpr ArrayBoundsBase() : m_nb_element(0) {}
+ public:
   ARCCORE_HOST_DEVICE Int64 nbElement() const { return m_nb_element; }
  protected:
   void _computeNbElement()
@@ -578,7 +583,7 @@ class ArrayBoundsBase
   }
  protected:
   using ArrayExtents<RankValue>::m_extents;
-  Int64 m_nb_element = 0;
+  Int64 m_nb_element;
 };
 
 template<>
@@ -588,12 +593,13 @@ class ArrayBounds<1>
  public:
   using IndexType = ArrayBoundsIndex<1>;
   using ArrayBoundsBase<1>::m_extents;
-  explicit ArrayBounds(Int64 dim1)
+  explicit constexpr ArrayBounds(Int64 dim1)
+  : ArrayBoundsBase<1>()
   {
     m_extents[0] = dim1;
     _computeNbElement();
   }
-  ARCCORE_HOST_DEVICE IndexType getIndices(Int64 i) const
+  ARCCORE_HOST_DEVICE constexpr IndexType getIndices(Int64 i) const
   {
     return { i };
   }
@@ -606,13 +612,14 @@ class ArrayBounds<2>
  public:
   using IndexType = ArrayBoundsIndex<2>;
   using ArrayBoundsBase<2>::m_extents;
-  ArrayBounds(Int64 dim1,Int64 dim2)
+  constexpr ArrayBounds(Int64 dim1,Int64 dim2)
+  : ArrayBoundsBase<2>()
   {
     m_extents[0] = dim1;
     m_extents[1] = dim2;
     _computeNbElement();
   }
-  ARCCORE_HOST_DEVICE IndexType getIndices(Int64 i) const
+  ARCCORE_HOST_DEVICE constexpr IndexType getIndices(Int64 i) const
   {
     Int64 i1 = impl::fastmod(i,m_extents[1]);
     Int64 i0 = i / m_extents[1];
@@ -627,14 +634,15 @@ class ArrayBounds<3>
  public:
   using IndexType = ArrayBoundsIndex<3>;
   using ArrayBoundsBase<3>::m_extents;
-  ArrayBounds(Int64 dim1,Int64 dim2,Int64 dim3)
+  constexpr ArrayBounds(Int64 dim1,Int64 dim2,Int64 dim3)
+  : ArrayBoundsBase<3>()
   {
     m_extents[0] = dim1;
     m_extents[1] = dim2;
     m_extents[2] = dim3;
     _computeNbElement();
   }
-  ARCCORE_HOST_DEVICE IndexType getIndices(Int64 i) const
+  ARCCORE_HOST_DEVICE constexpr IndexType getIndices(Int64 i) const
   {
     Int64 i2 = impl::fastmod(i,m_extents[2]);
     Int64 fac = m_extents[2];
@@ -642,6 +650,36 @@ class ArrayBounds<3>
     fac *= m_extents[1];
     Int64 i0 = i / fac;
     return { i0, i1, i2 };
+  }
+};
+
+template<>
+class ArrayBounds<4>
+: public ArrayBoundsBase<4>
+{
+ public:
+  using IndexType = ArrayBoundsIndex<4>;
+  using ArrayBoundsBase<4>::m_extents;
+  constexpr ArrayBounds(Int64 dim1,Int64 dim2,Int64 dim3,Int64 dim4)
+  : ArrayBoundsBase<4>()
+  {
+    m_extents[0] = dim1;
+    m_extents[1] = dim2;
+    m_extents[2] = dim3;
+    m_extents[3] = dim4;
+    _computeNbElement();
+  }
+  ARCCORE_HOST_DEVICE constexpr IndexType getIndices(Int64 i) const
+  {
+    // Compute base indices
+    Int64 i3 = impl::fastmod(i,m_extents[3]);
+    Int64 fac = m_extents[3];
+    Int64 i2 = impl::fastmod(i/fac,m_extents[2]);
+    fac *= m_extents[2];
+    Int64 i1 = impl::fastmod(i/fac,m_extents[1]);
+    fac *= m_extents[1];
+    Int64 i0 = i /fac;
+    return { i0, i1, i2, i3 };
   }
 };
 
