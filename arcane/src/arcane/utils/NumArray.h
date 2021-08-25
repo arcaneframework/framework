@@ -436,7 +436,7 @@ class ArrayExtentsWithOffset<2>
     ARCCORE_CHECK_AT(j,m_extents[1]);
     return m_extents[1]*i + j;
   }
-  ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<3> idx) const
+  ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<2> idx) const
   {
     ARCCORE_CHECK_AT(idx.id0(),m_extents[0]);
     ARCCORE_CHECK_AT(idx.id1(),m_extents[1]);
