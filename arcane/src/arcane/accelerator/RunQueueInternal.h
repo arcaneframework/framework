@@ -235,45 +235,6 @@ applyGenericLoopParallel(Int64 begin,Int64 end,ArrayBounds<3> bounds,const Lambd
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Applique la lambda \a func sur une boucle de \a vsize itérations
- */
-template<typename Lambda> void
-applyLoop(RunCommand& command,Int32 loop_size,Lambda func)
-{
-  Int32 vsize = loop_size;
-  if (vsize==0)
-    return;
-  impl::RunCommandLaunchInfo launch_info(command);
-  switch(launch_info.executionPolicy()){
-  case eExecutionPolicy::CUDA:
-#if defined(ARCANE_COMPILING_CUDA)
-    {
-      launch_info.beginExecute();
-      auto [b,t] = launch_info.computeThreadBlockInfo(vsize);
-      cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
-      // TODO: utiliser cudaLaunchKernel() à la place.
-      impl::doDirectCUDALambda<Lambda> <<<b,t,0,*s>>>(vsize,std::forward<Lambda>(func));
-    }
-#endif
-    break;
-  case eExecutionPolicy::Sequential:
-    launch_info.beginExecute();
-    for( Int32 i=0; i<vsize; ++i ){
-      func(i);
-    }
-    break;
-  case eExecutionPolicy::Thread:
-    launch_info.beginExecute();
-    arcaneParallelFor(0,loop_size,[&](Integer begin, Integer size)
-                                  { impl::doDirectThreadLambda(begin,size,func); });
-    break;
-  }
-  launch_info.endExecute();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
  * \brief Applique l'enumération \a func sur la liste d'entité \a items.
  */
 template<typename ItemType,typename Lambda> void
@@ -370,15 +331,6 @@ applyGenericLoop(RunCommand& command,ArrayBounds<N> bounds,const Lambda& func)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename Lambda> void
-run(RunCommand& command,Int32 loop_size,Lambda func)
-{
-  applyLoop(command,loop_size,std::forward<Lambda>(func));
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

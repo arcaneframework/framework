@@ -479,8 +479,9 @@ void arcaneTestCudaReductionX(int vsize,ax::RunQueue& queue)
   ReducerMin<double> min_double_reducer(command);
   Span<const int> xa = d_a.span();
   Span<int> xout = d_out.span();
-  auto func2 = [=] ARCCORE_HOST_DEVICE (int i)
+  auto func2 = [=] ARCCORE_HOST_DEVICE (Arcane::ArrayBoundsIndex<1> idx)
   {
+    auto [i] = idx();
     double vxa = (double)(xa[i]);
     xout[i] = xa[i];
     sum_reducer.add(xa[i]);
@@ -492,7 +493,7 @@ void arcaneTestCudaReductionX(int vsize,ax::RunQueue& queue)
     //if (i<10)
     //printf("Do Reduce i=%d v=%d %lf\n",i,xa[i],vxa);
   };
-  run(command,vsize,func2);
+  run(command,ArrayBounds<1>(vsize),func2);
   std::cout << "SumReducer v_int=" << sum_reducer.reduce()
             << " v_double=" << sum_double_reducer.reduce()
             << "\n";
