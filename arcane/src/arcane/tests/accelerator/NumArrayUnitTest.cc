@@ -13,6 +13,8 @@
 
 #include "arcane/utils/NumArray.h"
 
+#include "arcane/utils/ValueChecker.h"
+
 #include "arcane/BasicUnitTest.h"
 #include "arcane/ServiceFactory.h"
 
@@ -49,6 +51,31 @@ class NumArrayUnitTest
  private:
 
   ax::Runner m_runner;
+
+  static constexpr double _getValue(Int64 i)
+  {
+    return static_cast<double>(i*2);
+  }
+  static constexpr double _getValue(Int64 i,Int64 j)
+  {
+    return static_cast<double>(i*2 + j*3);
+  }
+  static constexpr double _getValue(Int64 i,Int64 j,Int64 k)
+  {
+    return static_cast<double>(i*2 + j*3 + k*4);
+  }
+  static constexpr double _getValue(Int64 i,Int64 j,Int64 k,Int64 l)
+  {
+    return static_cast<double>(i*2 + j*3 + k*4 + l*8);
+  }
+
+  template<int Rank> double
+  _doSum(NumArray<double,Rank> values,ArrayBounds<Rank> bounds)
+  {
+    double total = 0.0;
+    Accelerator::impl::applyGenericLoopSequential(bounds,[&](ArrayBoundsIndex<Rank> idx){ total += values(idx); });
+    return total;
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -93,13 +120,22 @@ initializeTest()
 void NumArrayUnitTest::
 executeTest()
 {
+  ValueChecker vc(A_FUNCINFO);
+
   auto queue = makeQueue(m_runner);
   auto command = makeCommand(queue);
 
+  // Ne pas changer les dimensions du tableau sinon
+  // il faut aussi changer le calcul des sommes
   constexpr int n1 = 1000;
   constexpr int n2 = 3;
   constexpr int n3 = 4;
   constexpr int n4 = 13;
+
+  constexpr double expected_sum1 = 999000.0;
+  constexpr double expected_sum2 = 3006000.0;
+  constexpr double expected_sum3 = 12096000.0;
+  constexpr double expected_sum4 = 164736000.0;
 
   // TODO: vérifier le calcul.
 
@@ -111,8 +147,11 @@ executeTest()
     command << RUNCOMMAND_LOOP1(iter,n1)
     {
       auto [i] = iter();
-      out_t1(i) = static_cast<double>(i*2);
+      out_t1(i) = _getValue(i);
     };
+    double s1 = _doSum(t1,ArrayBounds<1>(n1));
+    info() << "SUM1 = " << s1;
+    vc.areEqual(s1,expected_sum1,"SUM1");
   }
 
   {
@@ -123,8 +162,11 @@ executeTest()
     command << RUNCOMMAND_LOOP2(iter,n1,n2)
     {
       auto [i, j] = iter();
-      out_t1(i,j) = static_cast<double>(i*2 + j*3);
+      out_t1(i,j) = _getValue(i,j);
     };
+    double s2 = _doSum(t1,{n1,n2});
+    info() << "SUM2 = " << s2;
+    vc.areEqual(s2,expected_sum2,"SUM2");
   }
 
   {
@@ -135,8 +177,11 @@ executeTest()
     command << RUNCOMMAND_LOOP3(iter,n1,n2,n3)
     {
       auto [i, j, k] = iter();
-      out_t1(i,j,k) = static_cast<double>(i*2 + j*3 + k*4);
+      out_t1(i,j,k) = _getValue(i,j,k);
     };
+    double s3 = _doSum(t1,{n1,n2,n3});
+    info() << "SUM3 = " << s3;
+    vc.areEqual(s3,expected_sum3,"SUM3");
   }
 
   {
@@ -147,8 +192,11 @@ executeTest()
     command << RUNCOMMAND_LOOP4(iter,n1,n2,n3,n4)
     {
       auto [i, j, k, l] = iter();
-      out_t1(i,j,k,l) = static_cast<double>(i*2 + j*3 + k*4 + l*8);
+      out_t1(i,j,k,l) = _getValue(i,j,k,l);
     };
+    double s4 = _doSum(t1,{n1,n2,n3,n4});
+    info() << "SUM4 = " << s4;
+    vc.areEqual(s4,expected_sum4,"SUM4");
   }
 }
 
