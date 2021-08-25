@@ -23,6 +23,7 @@
 
 #include <stack>
 #include <map>
+#include <atomic>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,20 +33,43 @@ namespace Arcane::Accelerator
 
 class Runner::Impl
 {
-  using RunQueueImplStack = std::stack<RunQueueImpl*>;
- public:
-  Impl()
+  class RunQueueImplStack
   {
-    _add(eExecutionPolicy::Sequential);
-    _add(eExecutionPolicy::Thread);
-    _add(eExecutionPolicy::CUDA);
-  }
+   public:
+    RunQueueImplStack(Runner* runner,eExecutionPolicy exec_policy)
+    : m_runner(runner), m_exec_policy(exec_policy){}
+   public:
+    bool empty() const { return m_stack.empty(); }
+    void pop() { m_stack.pop(); }
+    RunQueueImpl* top() { return m_stack.top(); }
+    void push(RunQueueImpl* v) { m_stack.push(v); }
+   public:
+    RunQueueImpl* createRunQueue()
+    {
+      Int32 x = ++m_nb_created;
+      return new RunQueueImpl(m_runner,m_exec_policy,x);
+    }
+   private:
+    std::stack<RunQueueImpl*> m_stack;
+    std::atomic<Int32> m_nb_created = -1;
+    Runner* m_runner;
+    eExecutionPolicy m_exec_policy;
+  };
+
+ public:
   ~Impl()
   {
     for( auto& x : m_run_queue_pool_map ){
       _freePool(x.second);
       delete x.second;
     }
+  }
+ public:
+  void build(Runner* runner)
+  {
+    _add(runner,eExecutionPolicy::Sequential);
+    _add(runner,eExecutionPolicy::Thread);
+    _add(runner,eExecutionPolicy::CUDA);
   }
  public:
   RunQueueImplStack* getPool(eExecutionPolicy exec_policy)
@@ -67,9 +91,10 @@ class Runner::Impl
       s->pop();
     }
   }
-  void _add(eExecutionPolicy exec_policy)
+  void _add(Runner* runner,eExecutionPolicy exec_policy)
   {
-    m_run_queue_pool_map.insert(make_pair(exec_policy,new RunQueueImplStack()));
+    auto* q = new RunQueueImplStack(runner,exec_policy);
+    m_run_queue_pool_map.insert(std::make_pair(exec_policy,q));
   }
 };
 
@@ -80,6 +105,7 @@ Runner::
 Runner()
 : m_p(new Impl())
 {
+  m_p->build(this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -106,7 +132,7 @@ _internalCreateOrGetRunQueueImpl(eExecutionPolicy exec_policy)
     return p;
   }
   
-  return new RunQueueImpl(this,exec_policy);
+  return pool->createRunQueue();
 }
 
 /*---------------------------------------------------------------------------*/

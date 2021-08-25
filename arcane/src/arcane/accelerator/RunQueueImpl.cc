@@ -26,10 +26,11 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 
 RunQueueImpl::
-RunQueueImpl(Runner* runner,eExecutionPolicy exec_policy)
+RunQueueImpl(Runner* runner,eExecutionPolicy exec_policy,Int32 id)
 : m_runner(runner)
 , m_execution_policy(exec_policy)
 , m_runtime(nullptr)
+, m_id(id)
 {
   _init();
 }
