@@ -75,6 +75,21 @@ void setCUDARunQueueRuntime(IRunQueueRuntime* v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Affiche le nom de la politique d'exécution
+extern "C++" ARCANE_ACCELERATOR_EXPORT
+ostream& operator<<(ostream& o,eExecutionPolicy exec_policy)
+{
+  switch(exec_policy){
+  case eExecutionPolicy::Sequential: o << "Sequential"; break;
+  case eExecutionPolicy::Thread: o << "Thread"; break;
+  case eExecutionPolicy::CUDA: o << "CUDA"; break;
+  }
+  return o;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/

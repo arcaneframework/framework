@@ -67,6 +67,10 @@ isAcceleratorPolicy(eExecutionPolicy exec_policy)
   return exec_policy==eExecutionPolicy::CUDA;
 }
 
+//! Affiche le nom de la politique d'exécution
+extern "C++" ARCANE_ACCELERATOR_EXPORT
+ostream& operator<<(ostream& o,eExecutionPolicy exec_policy);
+
 //! Indique si on utilise le runtime CUDA
 extern "C++" ARCANE_ACCELERATOR_EXPORT
 bool isUsingCUDARuntime();

@@ -38,7 +38,7 @@ class ARCANE_ACCELERATOR_EXPORT RunQueueImpl
   friend class RunQueue;
   friend class RunCommandImpl;
  private:
-  RunQueueImpl(Runner* runner,eExecutionPolicy exec_policy,Int32 id);
+  RunQueueImpl(Runner* runner,eExecutionPolicy exec_policy,Int32 id,IRunQueueRuntime* runtime);
   ~RunQueueImpl();
   RunQueueImpl(const RunQueueImpl&) = delete;
   RunQueueImpl& operator=(const RunQueueImpl&) = delete;
@@ -56,11 +56,9 @@ class ARCANE_ACCELERATOR_EXPORT RunQueueImpl
  private:
   Runner* m_runner;
   eExecutionPolicy m_execution_policy;
-  IRunQueueRuntime* m_runtime = nullptr;
+  IRunQueueRuntime* m_runtime;
   std::stack<RunCommandImpl*> m_run_command_pool;
   Int32 m_id = 0;
- private:
-  void _init();
 };
 
 /*---------------------------------------------------------------------------*/

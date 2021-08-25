@@ -31,13 +31,30 @@
 namespace Arcane::Accelerator
 {
 
+namespace {
+inline IRunQueueRuntime*
+_getRuntime(eExecutionPolicy p)
+{
+  IRunQueueRuntime* runtime = nullptr;
+  if (p==eExecutionPolicy::CUDA){
+    runtime = getCUDARunQueueRuntime();
+  }
+  else
+    runtime = getSequentialRunQueueRuntime();
+  return runtime;
+}
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class Runner::Impl
 {
   class RunQueueImplStack
   {
    public:
-    RunQueueImplStack(Runner* runner,eExecutionPolicy exec_policy)
-    : m_runner(runner), m_exec_policy(exec_policy){}
+    RunQueueImplStack(Runner* runner,eExecutionPolicy exec_policy,IRunQueueRuntime* runtime)
+    : m_runner(runner), m_exec_policy(exec_policy), m_runtime(runtime){}
    public:
     bool empty() const { return m_stack.empty(); }
     void pop() { m_stack.pop(); }
@@ -46,14 +63,24 @@ class Runner::Impl
    public:
     RunQueueImpl* createRunQueue()
     {
+      // Si pas de runtime, essaie de le récupérer. On le fait ici et aussi
+      // lors de la création de l'instance car l'utilisateur a pu ajouter une
+      // implémentation de runtime entre-temps (par exemple si l'instance de Runner
+      // a été créée avant l'initialisation du runtime).
+      if (!m_runtime)
+        m_runtime = _getRuntime(m_exec_policy);
+      if (!m_runtime)
+        ARCANE_FATAL("Can not create RunQueue for execution policy '{0}' "
+                     "because no RunQueueRuntime is available for this policy",m_exec_policy);
       Int32 x = ++m_nb_created;
-      return new RunQueueImpl(m_runner,m_exec_policy,x);
+      return new RunQueueImpl(m_runner,m_exec_policy,x,m_runtime);
     }
    private:
     std::stack<RunQueueImpl*> m_stack;
     std::atomic<Int32> m_nb_created = -1;
     Runner* m_runner;
     eExecutionPolicy m_exec_policy;
+    IRunQueueRuntime* m_runtime;
   };
 
  public:
@@ -93,7 +120,8 @@ class Runner::Impl
   }
   void _add(Runner* runner,eExecutionPolicy exec_policy)
   {
-    auto* q = new RunQueueImplStack(runner,exec_policy);
+    IRunQueueRuntime* r = _getRuntime(exec_policy);
+    auto* q = new RunQueueImplStack(runner,exec_policy,r);
     m_run_queue_pool_map.insert(std::make_pair(exec_policy,q));
   }
 };

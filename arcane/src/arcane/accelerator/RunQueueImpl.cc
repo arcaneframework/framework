@@ -26,13 +26,12 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 
 RunQueueImpl::
-RunQueueImpl(Runner* runner,eExecutionPolicy exec_policy,Int32 id)
+RunQueueImpl(Runner* runner,eExecutionPolicy exec_policy,Int32 id,IRunQueueRuntime* runtime)
 : m_runner(runner)
 , m_execution_policy(exec_policy)
-, m_runtime(nullptr)
+, m_runtime(runtime)
 , m_id(id)
 {
-  _init();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -45,22 +44,6 @@ RunQueueImpl::
     RunCommand::_internalDestroyImpl(m_run_command_pool.top());
     m_run_command_pool.pop();
   }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void RunQueueImpl::
-_init()
-{
-  eExecutionPolicy p = executionPolicy();
-  if (p==eExecutionPolicy::CUDA){
-    m_runtime = getCUDARunQueueRuntime();
-    if (!m_runtime)
-      ARCANE_FATAL("Can not set execution policy to CUDA because no CUDARunQueueRuntime is available");
-  }
-  else
-    m_runtime = getSequentialRunQueueRuntime();
 }
 
 /*---------------------------------------------------------------------------*/
