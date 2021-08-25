@@ -40,6 +40,8 @@ class Runner;
 class RunQueue;
 class RunCommand;
 class IRunQueueRuntime;
+class IRunQueueStream;
+
 namespace impl
 {
 class IReduceMemoryImpl;

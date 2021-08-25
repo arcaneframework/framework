@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CudaAcceleratorRuntime.cc                                   (C) 2000-2020 */
+/* CudaAcceleratorRuntime.cc                                   (C) 2000-2021 */
 /*                                                                           */
 /* Runtime pour 'Cuda'.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -21,6 +21,7 @@
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/IRunQueueRuntime.h"
+#include "arcane/accelerator/IRunQueueStream.h"
 
 #include <iostream>
 
@@ -69,6 +70,32 @@ void checkDevices()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class CudaRunQueueStream
+: public IRunQueueStream
+{
+ public:
+  CudaRunQueueStream(IRunQueueRuntime* runtime)
+  : m_runtime(runtime)
+  {
+    ARCANE_CHECK_CUDA(cudaStreamCreate(&m_cuda_stream));
+  }
+  ~CudaRunQueueStream() noexcept(false) override
+  {
+    ARCANE_CHECK_CUDA(cudaStreamDestroy(m_cuda_stream));
+  }
+ public:
+  void notifyBeginKernel() override { return m_runtime->notifyBeginKernel(); }
+  void notifyEndKernel() override { return m_runtime->notifyEndKernel(); }
+  void barrier() override { return m_runtime->barrier(); }
+  void* _internalImpl() override { return &m_cuda_stream; }
+ private:
+  IRunQueueRuntime* m_runtime;
+  cudaStream_t m_cuda_stream;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class CudaRunQueueRuntime
 : public IRunQueueRuntime
 {
@@ -94,6 +121,10 @@ class CudaRunQueueRuntime
   eExecutionPolicy executionPolicy() const override
   {
     return eExecutionPolicy::CUDA;
+  }
+  IRunQueueStream* createStream() override
+  {
+    return new CudaRunQueueStream(this);
   }
  private:
   Int64 m_nb_kernel_launched = 0;

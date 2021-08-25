@@ -12,6 +12,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/accelerator/IRunQueueRuntime.h"
+#include "arcane/accelerator/IRunQueueStream.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -21,6 +22,20 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+class ARCANE_ACCELERATOR_EXPORT HostRunQueueStream
+: public IRunQueueStream
+{
+ public:
+  HostRunQueueStream(IRunQueueRuntime* runtime): m_runtime(runtime){}
+ public:
+  void notifyBeginKernel() override { return m_runtime->notifyBeginKernel(); }
+  void notifyEndKernel() override { return m_runtime->notifyEndKernel(); }
+  void barrier() override { return m_runtime->barrier(); }
+  void* _internalImpl() override { return nullptr; }
+ private:
+  IRunQueueRuntime* m_runtime;
+};
 
 class ARCANE_ACCELERATOR_EXPORT SequentialRunQueueRuntime
 : public IRunQueueRuntime
@@ -32,6 +47,7 @@ class ARCANE_ACCELERATOR_EXPORT SequentialRunQueueRuntime
   void notifyEndKernel() override {}
   void barrier() override {}
   eExecutionPolicy executionPolicy() const override { return eExecutionPolicy::Sequential; }
+  IRunQueueStream* createStream() override { return new HostRunQueueStream(this); }
 };
 
 class ARCANE_ACCELERATOR_EXPORT ThreadRunQueueRuntime
@@ -44,6 +60,7 @@ class ARCANE_ACCELERATOR_EXPORT ThreadRunQueueRuntime
   void notifyEndKernel() override {}
   void barrier() override {}
   eExecutionPolicy executionPolicy() const override { return eExecutionPolicy::Thread; }
+  IRunQueueStream* createStream() override { return new HostRunQueueStream(this); }
 };
 
 namespace

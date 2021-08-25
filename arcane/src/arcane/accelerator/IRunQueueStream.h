@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IRunQueueRuntime.h                                          (C) 2000-2021 */
+/* IRunQueueStream.h                                           (C) 2000-2021 */
 /*                                                                           */
-/* Interface du runtime associé à une RunQueue.                              */
+/* Interface d'un flux d'exécution pour une RunQueue.                        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_IRUNQUEUERUNTIME_H
-#define ARCANE_ACCELERATOR_IRUNQUEUERUNTIME_H
+#ifndef ARCANE_ACCELERATOR_IRUNQUEUESTREAM_H
+#define ARCANE_ACCELERATOR_IRUNQUEUESTREAM_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -26,18 +26,17 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Interface du runtime associé à une RunQueue.
+ * \brief Interface d'un flux d'exécution pour une RunQueue.
  */
-class ARCANE_ACCELERATOR_EXPORT IRunQueueRuntime
+class ARCANE_ACCELERATOR_EXPORT IRunQueueStream
 {
  public:
-  virtual ~IRunQueueRuntime() = default;
+ virtual ~IRunQueueStream() noexcept(false) {}
  public:
   virtual void notifyBeginKernel() =0;
   virtual void notifyEndKernel() =0;
   virtual void barrier() =0;
-  virtual eExecutionPolicy executionPolicy() const =0;
-  virtual IRunQueueStream* createStream() =0;
+  virtual void* _internalImpl() =0;
 };
 
 /*---------------------------------------------------------------------------*/

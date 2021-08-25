@@ -11,6 +11,7 @@ set( ARCANE_SOURCES
   RunCommand.cc
   IReduceMemoryImpl.h
   IRunQueueRuntime.h
+  IRunQueueStream.h
   RunQueueRuntime.cc
   RunQueueInternal.h
   RunQueueInternal.cc
