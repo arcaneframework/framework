@@ -78,6 +78,10 @@ void operator<<(ArrayBoundRunCommand<N>&& nr,const Lambda& f)
 #define RUNCOMMAND_LOOP3(iter_name, x1, x2, x3) \
   A_FUNCINFO << ArrayBounds<3>(x1,x2,x3) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<3> iter_name )
 
+//! Boucle sur accélérateur
+#define RUNCOMMAND_LOOP4(iter_name, x1, x2, x3, x4)                        \
+  A_FUNCINFO << ArrayBounds<4>(x1,x2,x3,x4) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<4> iter_name )
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

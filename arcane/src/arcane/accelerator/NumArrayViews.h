@@ -160,6 +160,40 @@ class NumArrayView<Accessor,3>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Vue en lecture, écriture ou lecture/écriture sur un 'NumArray' 2D.
+ */
+template<typename Accessor>
+class NumArrayView<Accessor,4>
+: public NumArrayViewBase
+{
+ public:
+
+  using DataType = typename Accessor::ValueType;
+  using SpanType = MDSpan<DataType,4>;
+  using AccessorReturnType = typename Accessor::AccessorReturnType;
+
+ public:
+
+  NumArrayView(RunCommand& command,SpanType v)
+  : NumArrayViewBase(command), m_values(v){}
+
+  ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int64 i,Int64 j,Int64 k,Int64 l) const
+  {
+    return Accessor::build(m_values.ptrAt(i,j,k,l));
+  }
+  ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayBoundsIndex<4> idx) const
+  {
+    return Accessor::build(m_values.ptrAt(idx));
+  }
+
+ private:
+
+  SpanType m_values;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Vue en écriture.
  */
 template<typename DataType,int N> auto

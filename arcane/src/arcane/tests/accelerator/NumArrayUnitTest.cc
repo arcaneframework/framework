@@ -98,6 +98,10 @@ executeTest()
 
   constexpr int n1 = 1000;
   constexpr int n2 = 3;
+  constexpr int n3 = 4;
+  constexpr int n4 = 13;
+
+  // TODO: vérifier le calcul.
 
   {
     NumArray<double,1> t1(n1);
@@ -120,6 +124,30 @@ executeTest()
     {
       auto [i, j] = iter();
       out_t1(i,j) = static_cast<double>(i*2 + j*3);
+    };
+  }
+
+  {
+    NumArray<double,3> t1(n1,n2,n3);
+
+    auto out_t1 = ax::viewOut(command,t1);
+
+    command << RUNCOMMAND_LOOP3(iter,n1,n2,n3)
+    {
+      auto [i, j, k] = iter();
+      out_t1(i,j,k) = static_cast<double>(i*2 + j*3 + k*4);
+    };
+  }
+
+  {
+    NumArray<double,4> t1(n1,n2,n3,n4);
+
+    auto out_t1 = ax::viewOut(command,t1);
+
+    command << RUNCOMMAND_LOOP4(iter,n1,n2,n3,n4)
+    {
+      auto [i, j, k, l] = iter();
+      out_t1(i,j,k,l) = static_cast<double>(i*2 + j*3 + k*4 + l*8);
     };
   }
 }

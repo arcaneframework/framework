@@ -207,6 +207,16 @@ applyGenericLoopSequential(ArrayBounds<3> bounds,const Lambda& func)
 }
 
 template<typename Lambda> inline void
+applyGenericLoopSequential(ArrayBounds<4> bounds,const Lambda& func)
+{
+  for( Int64 i0 = 0; i0 < bounds.extent(0); ++i0 )
+    for( Int64 i1 = 0; i1 < bounds.extent(1); ++i1 )
+      for( Int64 i2 = 0; i2 < bounds.extent(2); ++i2 )
+        for( Int64 i3 = 0; i3 < bounds.extent(3); ++i3 )
+          func(ArrayBoundsIndex<4>(i0,i1,i2,i3));
+}
+
+template<typename Lambda> inline void
 applyGenericLoopParallel(Int64 begin,Int64 end,[[maybe_unused]] ArrayBounds<1> bounds,const Lambda& func)
 {
   for( Int64 i0 = begin; i0 < end; ++i0 )
@@ -228,6 +238,16 @@ applyGenericLoopParallel(Int64 begin,Int64 end,ArrayBounds<3> bounds,const Lambd
     for( Int64 i1 = 0; i1 < bounds.extent(1); ++i1 )
       for( Int64 i2 = 0; i2 < bounds.extent(2); ++i2 )
         func(ArrayBoundsIndex<3>(i0,i1,i2));
+}
+
+template<typename Lambda> inline void
+applyGenericLoopParallel(Int64 begin,Int64 end,ArrayBounds<4> bounds,const Lambda& func)
+{
+  for( Int64 i0 = begin; i0 < end; ++i0 )
+    for( Int64 i1 = 0; i1 < bounds.extent(1); ++i1 )
+      for( Int64 i2 = 0; i2 < bounds.extent(2); ++i2 )
+        for( Int64 i3 = 0; i3 < bounds.extent(3); ++i3 )
+          func(ArrayBoundsIndex<4>(i0,i1,i2,i3));
 }
 
 } // End namespace impl
