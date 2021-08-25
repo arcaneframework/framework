@@ -57,6 +57,7 @@ ARCCORE_HOST_DEVICE auto privatize(const T& item) -> Privatizer<T>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \internal
  * \brief Object temporaire pour conserver les informations d'exécution d'une
  * commande et regrouper les tests.
  */
@@ -84,6 +85,7 @@ class ARCANE_ACCELERATOR_EXPORT RunCommandLaunchInfo
   void beginExecute() { m_has_exec_begun = true; }
   void endExecute();
   ThreadBlockInfo computeThreadBlockInfo(Int64 full_size) const;
+  void* _internalStreamImpl();
  private:
   void _begin();
   void _checkHasExecBegun();
@@ -92,6 +94,7 @@ class ARCANE_ACCELERATOR_EXPORT RunCommandLaunchInfo
   bool m_has_exec_begun = false;
   bool m_is_notify_end_kernel_done = false;
   IRunQueueRuntime* m_runtime = nullptr;
+  IRunQueueStream* m_queue_stream = nullptr;
   eExecutionPolicy m_exec_policy = eExecutionPolicy::Sequential;
 };
 
@@ -247,8 +250,9 @@ applyLoop(RunCommand& command,Int32 loop_size,Lambda func)
     {
       launch_info.beginExecute();
       auto [b,t] = launch_info.computeThreadBlockInfo(vsize);
+      cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
       // TODO: utiliser cudaLaunchKernel() à la place.
-      impl::doDirectCUDALambda<Lambda> <<<b,t>>>(vsize,std::forward<Lambda>(func));
+      impl::doDirectCUDALambda<Lambda> <<<b,t,0,*s>>>(vsize,std::forward<Lambda>(func));
     }
 #endif
     break;
@@ -288,8 +292,9 @@ applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,Lambda func)
       launch_info.beginExecute();
       Span<const Int32> local_ids = items.localIds();
       auto [b,t] = launch_info.computeThreadBlockInfo(vsize);
+      cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
       // TODO: utiliser cudaLaunchKernel() à la place.
-      impl::doIndirectCUDALambda<ItemType,Lambda> <<<b,t>>>(local_ids,std::forward<Lambda>(func));
+      impl::doIndirectCUDALambda<ItemType,Lambda> <<<b,t,0,*s>>>(local_ids,std::forward<Lambda>(func));
     }
 #endif
     break;
@@ -332,8 +337,9 @@ applyGenericLoop(RunCommand& command,ArrayBounds<N> bounds,const Lambda& func)
     {
       launch_info.beginExecute();
       auto [b,t] = launch_info.computeThreadBlockInfo(vsize);
+      cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
       // TODO: utiliser cudaLaunchKernel() à la place.
-      impl::doDirectCUDALambdaArrayBounds<N,Lambda> <<<b, t>>>(bounds,func);
+      impl::doDirectCUDALambdaArrayBounds<N,Lambda> <<<b, t, 0, *s>>>(bounds,func);
     }
 #endif
     break;

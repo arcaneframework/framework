@@ -46,6 +46,7 @@ class ARCANE_ACCELERATOR_EXPORT RunQueue
   void barrier();
  public:
   IRunQueueRuntime* _internalRuntime() const;
+  IRunQueueStream* _internalStream() const;
  private:
   RunCommandImpl* _getCommandImpl();
  private:

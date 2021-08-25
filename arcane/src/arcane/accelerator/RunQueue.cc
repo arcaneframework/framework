@@ -15,6 +15,7 @@
 #include "arcane/accelerator/Runner.h"
 #include "arcane/accelerator/RunQueueImpl.h"
 #include "arcane/accelerator/IRunQueueRuntime.h"
+#include "arcane/accelerator/IRunQueueStream.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -61,7 +62,7 @@ RunQueue::
 void RunQueue::
 barrier()
 {
-  _internalRuntime()->barrier();
+  _internalStream()->barrier();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -80,6 +81,15 @@ IRunQueueRuntime* RunQueue::
 _internalRuntime() const
 {
   return m_p->_internalRuntime();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IRunQueueStream* RunQueue::
+_internalStream() const
+{
+  return m_p->_internalStream();
 }
 
 /*---------------------------------------------------------------------------*/

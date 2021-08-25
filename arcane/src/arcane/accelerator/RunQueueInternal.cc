@@ -13,6 +13,7 @@
 
 #include "arcane/accelerator/RunQueueInternal.h"
 #include "arcane/accelerator/RunQueue.h"
+#include "arcane/accelerator/IRunQueueStream.h"
 
 #include "arcane/utils/CheckedConvert.h"
 
@@ -41,7 +42,7 @@ RunCommandLaunchInfo::
   // Normalement ce test est toujours faux sauf s'il y a eu une exception
   // pendant le lancement du noyau de calcul.
   if (!m_is_notify_end_kernel_done)
-    m_runtime->notifyEndKernel();
+    m_queue_stream->notifyEndKernel();
   _checkHasExecBegun();
   m_command.resetInfos();
 }
@@ -54,8 +55,9 @@ _begin()
 {
   RunQueue& queue = m_command._internalQueue();
   m_exec_policy = queue.executionPolicy();
+  m_queue_stream = queue._internalStream();
   m_runtime = queue._internalRuntime();
-  m_runtime->notifyBeginKernel();
+  m_queue_stream->notifyBeginKernel();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -66,10 +68,10 @@ endExecute()
 {
   _checkHasExecBegun();
   m_is_notify_end_kernel_done = true;
-  m_runtime->notifyEndKernel();
+  m_queue_stream->notifyEndKernel();
   RunQueue& queue = m_command._internalQueue();
   if (!queue.isAsync())
-    m_runtime->barrier();
+    m_queue_stream->barrier();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -82,6 +84,15 @@ _checkHasExecBegun()
   // signifie que le runtime demandé n'est pas disponible)
   if (!m_has_exec_begun)
     ARCANE_FATAL("No runtime available for execution policy {0}",(int)m_exec_policy);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void* RunCommandLaunchInfo::
+_internalStreamImpl()
+{
+  return m_queue_stream->_internalImpl();
 }
 
 /*---------------------------------------------------------------------------*/

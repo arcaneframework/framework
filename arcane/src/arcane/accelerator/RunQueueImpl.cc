@@ -17,6 +17,7 @@
 
 #include "arcane/accelerator/Runner.h"
 #include "arcane/accelerator/IRunQueueRuntime.h"
+#include "arcane/accelerator/IRunQueueStream.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,6 +33,7 @@ RunQueueImpl(Runner* runner,Int32 id,IRunQueueRuntime* runtime)
 : m_runner(runner)
 , m_execution_policy(runtime->executionPolicy())
 , m_runtime(runtime)
+, m_queue_stream(runtime->createStream())
 , m_id(id)
 {
 }
@@ -46,6 +48,7 @@ RunQueueImpl::
     RunCommand::_internalDestroyImpl(m_run_command_pool.top());
     m_run_command_pool.pop();
   }
+  delete m_queue_stream;
 }
 
 /*---------------------------------------------------------------------------*/

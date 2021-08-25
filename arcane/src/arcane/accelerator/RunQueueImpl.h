@@ -53,10 +53,12 @@ class ARCANE_ACCELERATOR_EXPORT RunQueueImpl
   RunCommandImpl* _internalCreateOrGetRunCommandImpl();
   void _internalFreeRunCommandImpl(RunCommandImpl*);
   IRunQueueRuntime* _internalRuntime() const { return m_runtime; }
+  IRunQueueStream* _internalStream() const { return m_queue_stream; }
  private:
   Runner* m_runner;
   eExecutionPolicy m_execution_policy;
   IRunQueueRuntime* m_runtime;
+  IRunQueueStream* m_queue_stream;
   std::stack<RunCommandImpl*> m_run_command_pool;
   Int32 m_id = 0;
 };

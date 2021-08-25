@@ -86,7 +86,10 @@ class CudaRunQueueStream
  public:
   void notifyBeginKernel() override { return m_runtime->notifyBeginKernel(); }
   void notifyEndKernel() override { return m_runtime->notifyEndKernel(); }
-  void barrier() override { return m_runtime->barrier(); }
+  void barrier() override
+  {
+    ARCANE_CHECK_CUDA(cudaStreamSynchronize(m_cuda_stream));
+  }
   void* _internalImpl() override { return &m_cuda_stream; }
  private:
   IRunQueueRuntime* m_runtime;
