@@ -75,7 +75,78 @@ public:
    */
   [[nodiscard]] std::string const& name() const noexcept ;
 
-  [[nodiscard]] std::string uniqueIdPropertyName(const std::string& family_name) const noexcept ;
+  /*!
+   * @brief mesh dimension
+   * @return the dimension of the mesh {1,2,3}
+   */
+  [[nodiscard]] int dimension() const noexcept {
+    return m_mesh_graph->m_dimension;
+  }
+
+  /*!
+   * @brief mesh node number
+   * @return number of nodes in the mesh
+   */
+  [[nodiscard]] int nbNodes() const noexcept {
+    return m_mesh_graph->nbItems(Neo::ItemKind::IK_Node);
+  }
+
+  /*!
+   * @brief mesh edge number
+   * @return number of edges in the mesh
+   */
+  [[nodiscard]] int nbEdges() const noexcept {
+    return m_mesh_graph->nbItems(Neo::ItemKind::IK_Edge);
+  }
+
+  /*!
+   * @brief mesh face number
+   * @return number of faces in the mesh
+   */
+  [[nodiscard]] int nbFaces() const noexcept {
+    return m_mesh_graph->nbItems(Neo::ItemKind::IK_Face);
+  }
+
+  /*!
+   * @brief mesh cell number
+   * @return number of cells in the mesh
+   */
+  [[nodiscard]] int nbCells() const noexcept {
+    return m_mesh_graph->nbItems(Neo::ItemKind::IK_Cell);
+  }
+
+  /*!
+   * @brief mesh dof number
+   * @return number of dofs in the mesh
+   */
+  [[nodiscard]] int nbDoFs() const noexcept {
+    return m_mesh_graph->nbItems(Neo::ItemKind::IK_Dof);
+  }
+
+  /*!
+   * @brief mesh item with item kind ik number
+   * @param ik : kind of the researched item
+   * @return number of item with item kind \p ik in the mesh
+   */
+  [[nodiscard]] int nbItems(Neo::ItemKind ik) const noexcept {
+    return m_mesh_graph->nbItems(ik);
+  }
+
+  /*!
+   * @brief unique id property name for a given family \p family_name
+   * @param family_name
+   * @return the name of the unique id property for a family with name \p family_name whatever its kind.
+   */
+  [[nodiscard]] std::string uniqueIdPropertyName(std::string const& family_name) const noexcept ;
+
+  /*!
+   * @brief find an existing family given its name \p family_name and kind \p family_kind
+   * If the family does not exist
+   * @param family_name
+   * @param family_kind
+   * @return
+   */
+  Family& findFamily(Neo::ItemKind family_kind, std::string const& family_name) const noexcept(ndebug);
 
   /*!
    * @brief Add a family of kind \p item_kind and of name \p family_name
@@ -94,7 +165,7 @@ public:
    */
   void scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> uids, Neo::FutureItemRange & future_added_item_range) noexcept ;
 
-    /*!
+  /*!
    * @brief Ask for a fixed-size connectivity add between \p source_family and \p target_family. Source items are scheduled but not created.
    * @param source_family The family of source items.
    * @param source_items Items to be connected. Use of a FutureItemRange means these items come from a the AddItems operation not yet applied.
@@ -250,6 +321,12 @@ public:
    * @return Given item local ids
    */
   std::vector<Neo::utils::Int32> localIds(Family const &item_family,const std::vector<Neo::utils::Int64> &item_uids) const noexcept ;
+
+  /*!
+   * Access to internal structure, for advanced use
+   * @return Reference toward internal structure
+   */
+  Neo::MeshBase& internalMeshGraph() noexcept { return *m_mesh_graph;}
 
 private:
 

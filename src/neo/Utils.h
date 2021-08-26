@@ -17,6 +17,12 @@
 #include <cassert>
 #include <cstdint>
 
+#ifdef NDEBUG
+  static constexpr bool ndebug = true;
+#else
+  static constexpr bool ndebug = false;
+#endif
+
 namespace Neo {
 namespace utils {
   using Int64 = std::int64_t;

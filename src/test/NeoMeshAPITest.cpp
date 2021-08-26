@@ -109,6 +109,48 @@ TEST(NeoMeshApiTest,AddItemTest)
   }
  }
 
+TEST(NeoMeshApiTest,MeshApiInfoTest)
+{
+  auto mesh = Neo::Mesh{"MeshTest"};
+  auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family");
+  auto& face_family = mesh.addFamily(Neo::ItemKind::IK_Face, "face_family");
+  auto& edge_family = mesh.addFamily(Neo::ItemKind::IK_Edge, "edge_family");
+  auto& node_family = mesh.addFamily(Neo::ItemKind::IK_Node, "node_family");
+  auto& dof_family  = mesh.addFamily(Neo::ItemKind::IK_Dof, "dof_family");
+  auto added_cells = Neo::FutureItemRange{};
+  mesh.scheduleAddItems(cell_family, { 0,1 }, added_cells);
+  auto added_faces = Neo::FutureItemRange{};
+  mesh.scheduleAddItems(face_family, { 0, 1, 2, 3, 4 }, added_faces);
+  auto added_edges = Neo::FutureItemRange{};
+  mesh.scheduleAddItems(edge_family, { 0, 1, 2, 3, 4 }, added_edges);
+  auto added_nodes = Neo::FutureItemRange{};
+  mesh.scheduleAddItems(node_family, { 0, 1, 2, 3 }, added_nodes);
+  auto added_dofs = Neo::FutureItemRange{};
+  mesh.scheduleAddItems(dof_family, { 0, 1 }, added_dofs);
+  mesh.applyScheduledOperations();
+  EXPECT_EQ(mesh.nbCells(),2);
+  EXPECT_EQ(mesh.nbFaces(),5);
+  EXPECT_EQ(mesh.nbFaces(),5);
+  EXPECT_EQ(mesh.nbNodes(),4);
+  EXPECT_EQ(mesh.nbDoFs(),2);
+  EXPECT_EQ(mesh.dimension(),3);
+  auto &found_cell_family =
+      mesh.findFamily(Neo::ItemKind::IK_Cell, "cell_family");
+  EXPECT_EQ(&cell_family,&found_cell_family);
+  auto &found_face_family =
+      mesh.findFamily(Neo::ItemKind::IK_Face, "face_family");
+  EXPECT_EQ(&face_family,&found_face_family);
+  auto &found_edge_family =
+      mesh.findFamily(Neo::ItemKind::IK_Edge, "edge_family");
+  EXPECT_EQ(&edge_family,&found_edge_family);
+  auto &found_node_family =
+      mesh.findFamily(Neo::ItemKind::IK_Node, "node_family");
+  EXPECT_EQ(&node_family,&found_node_family);
+  auto &found_dof_family =
+      mesh.findFamily(Neo::ItemKind::IK_Dof, "dof_family");
+  EXPECT_EQ(&dof_family,&found_dof_family);
+}
+
 TEST(NeoMeshApiTest,SetNodeCoordsTest)
 {
   auto mesh = Neo::Mesh{"SetNodeCoordsTestMesh"};

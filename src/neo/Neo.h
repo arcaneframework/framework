@@ -74,14 +74,14 @@ struct ItemLocalIds {
   utils::Int32 m_first_contiguous_lid = 0;
   int m_nb_contiguous_lids = 0;
 
-  int size()  const {return m_non_contiguous_lids.size()+ m_nb_contiguous_lids;}
+  int size()  const {return (int)m_non_contiguous_lids.size()+ m_nb_contiguous_lids;}
 
   int operator() (int index) const{
     if (index >= int(size())) return  size();
     if (index < 0) return -1;
     auto item_lid = 0;
-    (index >= m_non_contiguous_lids.size() || m_non_contiguous_lids.size()==0) ?
-        item_lid = m_first_contiguous_lid + (index  - m_non_contiguous_lids.size()) : // work on fluency
+    (index >= (int) m_non_contiguous_lids.size() || m_non_contiguous_lids.size()==0) ?
+        item_lid = m_first_contiguous_lid + (index  - (int)m_non_contiguous_lids.size()) : // work on fluency
         item_lid = m_non_contiguous_lids[index];
     return item_lid;
   }
@@ -249,7 +249,7 @@ public:
   std::vector<DataType> _arrayAccessor (ArrayType items) const {
     // check bounds
     assert(("Max input item lid > max local id, In PropertyT[]",
-               *(std::max_element(items.begin(),items.end()))< m_data.size()));
+               *(std::max_element(items.begin(),items.end()))< (int)m_data.size()));
 
     std::vector<DataType> values;
     values.reserve(items.size());
@@ -292,9 +292,17 @@ public:
 
 template <typename DataType>
 class ArrayProperty : public PropertyBase {
+
+public:
+  std::vector<DataType> m_data;
+  std::vector<int> m_offsets;
+  std::vector<int> m_indexes;
+  int m_size;
+
 public:
   void resize(std::vector<int> sizes){ // only 2 moves if a rvalue is passed. One copy + one move if lvalue
     m_offsets = std::move(sizes);
+    _updateIndexes();
   }
   bool isInitializableFrom(const ItemRange& item_range){return item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty() ;}
   void init(const ItemRange& item_range, std::vector<DataType> values){
@@ -320,15 +328,18 @@ public:
     for (auto item : item_range) {
       new_offsets[item] = nb_connected_item_per_item[index++];
     }
+    // Compute new indexes
+    std::vector<int> new_indexes;
+    _computeIndexesFromOffsets(new_indexes, new_offsets);
     // Compute new values
-    auto new_data_size = std::accumulate(new_offsets.begin(), new_offsets.end(),0);
+    auto new_data_size = _computeSizeFromOffsets(new_offsets);
     std::vector<DataType> new_data(new_data_size);
     // copy new_values
     auto global_index = 0;
     std::vector<bool> marked_items(new_offsets.size(),false);
     for (auto item : item_range) {
       marked_items[item] = true;
-      auto item_index = _getItemIndexInData(item, new_offsets);
+      auto item_index = new_indexes[item];
       for (auto connected_item_index = item_index; connected_item_index < item_index + new_offsets[item]; ++connected_item_index) {
         new_data[connected_item_index] = values[global_index++];
       }
@@ -338,14 +349,13 @@ public:
     for (auto item : old_values_range) {
       if (!marked_items[item]) {
         auto connected_items = (*this)[item];
-        auto connected_item_index = _getItemIndexInData(item,new_offsets);
-        for (auto connected_item : connected_items){
-          new_data[connected_item_index++] = connected_item;
-        }
+        std::copy(connected_items.begin(),connected_items.end(),&new_data[new_indexes[item]]);
       }
     }
     m_offsets = std::move(new_offsets);
+    m_indexes = std::move(new_indexes);
     m_data    = std::move(new_data);
+    m_size = new_data_size;
   }
 
   void _appendByBackInsertion(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_connected_item_per_item){
@@ -360,6 +370,7 @@ public:
                 nb_connected_item_per_item.end(),
                 std::back_inserter(m_offsets));
       std::copy(values.begin(), values.end(), std::back_inserter(m_data));
+      _updateIndexes();
     }
     else {
       std::cout << "Append in ArrayProperty by back insertion, non contiguous range" << std::endl;
@@ -367,10 +378,10 @@ public:
       auto index = 0;
       for (auto item : item_range) m_offsets[item] = nb_connected_item_per_item[index++];
       m_data.resize(m_data.size()+values.size(),DataType());
+      _updateIndexes();
       index = 0;
       for (auto item : item_range) {
         auto connected_items = (*this)[item];
-//        std::cout << " item " << item << " index in data " << _getItemIndexInData(item) << std::endl;
         for (auto& connected_item : connected_items) {
           connected_item = values[index++];
         }
@@ -379,11 +390,13 @@ public:
   }
 
   utils::ArrayView<DataType> operator[](const utils::Int32 item) {
-    return utils::ArrayView<DataType>{m_offsets[item],&m_data[_getItemIndexInData(item)]};
+    assert(("item local id must be >0 in ArrayProperty::[item_lid]]",item >= 0));
+    return utils::ArrayView<DataType>{m_offsets[item],&m_data[m_indexes[item]]};
   }
 
   utils::ConstArrayView<DataType> operator[](const utils::Int32 item) const {
-    return utils::ConstArrayView<DataType>{m_offsets[item],&m_data[_getItemIndexInData(item)]};
+    assert(("item local id must be >0 in ArrayProperty::[item_lid]]",item >= 0));
+    return utils::ConstArrayView<DataType>{m_offsets[item],&m_data[m_indexes[item]]};
   }
 
   void debugPrint() const {
@@ -393,26 +406,34 @@ public:
     }
     std::cout << std::endl;
     Neo::utils::printContainer(m_offsets, "Offsets ");
+    Neo::utils::printContainer(m_indexes, "Indexes");
   }
 
-  // todo should be computed only when m_offsets is updated, at least implement an array version
-  utils::Int32 _getItemIndexInData(const utils::Int32 item) const{
-    return std::accumulate(m_offsets.begin(),m_offsets.begin()+item,0);
+   int size() const {
+    return m_size;
   }
 
-  utils::Int32 _getItemIndexInData(const utils::Int32 item, const std::vector<int>& offsets) const{
-    return std::accumulate(offsets.begin(),offsets.begin()+item,0);
+private:
+
+  void _updateIndexes(){
+    _computeIndexesFromOffsets(m_indexes, m_offsets);
+    m_size = _computeSizeFromOffsets(m_offsets);
   }
 
-  int size() const {
-    return std::accumulate(m_offsets.begin(), m_offsets.end(), 0);
+  void _computeIndexesFromOffsets(std::vector<int>& new_indexes, std::vector<int> const& new_offsets){
+    new_indexes.resize(new_offsets.size());
+    auto i = 0, offset_sum = 0;
+    for (auto &index : new_indexes) {
+      index = offset_sum;
+      offset_sum += new_offsets[i++];
+    }
+    // todo use algo version instead with more recent compilers (gcc >=9, clang >=5)
+    //std::exclusive_scan(new_offsets.begin(),new_offsets.end(),new_indexes.begin(),0);
   }
 
-
-//  private:
-  std::vector<DataType> m_data;
-  std::vector<int> m_offsets;
-
+  int _computeSizeFromOffsets(std::vector<int> const& new_offsets) {
+    return std::accumulate(new_offsets.begin(), new_offsets.end(), 0);
+  }
 };
 
 // special case of local ids property
@@ -428,7 +449,7 @@ public:
     auto& non_contiguous_lids = item_local_ids.m_non_contiguous_lids;
     non_contiguous_lids.resize(min_size);
     auto used_empty_lid_count = 0;
-    for(auto i = 0; i < min_size;++i){
+    for(auto i = 0; i < (int) min_size;++i){
       const auto [inserted, do_insert] = m_uid2lid.insert({uids[i],m_empty_lids[empty_lid_size-1-used_empty_lid_count]});
       non_contiguous_lids[i]= inserted->second;
       if (do_insert) ++used_empty_lid_count;
@@ -506,7 +527,7 @@ public:
    *
    * @return  the ItemRange containing the lids of the property.
    */
-  ItemRange values(){
+  ItemRange values() const {
     // TODO...; + il faut mettre en cache (dans la famille ?). ? de la mise à jour (la Propriété peut dire si la range est à jour)
     // 2 stratégies : on crée l'étendue continue avant ou après les non contigus...
     // (on estime que l'on décime les id les plus élevés ou les plus faibles), avoir le choix (avec un paramètre par défaut)
@@ -578,7 +599,7 @@ template <typename... T> struct VisitorOverload : public T... {
 
 template <typename Func, typename Variant>
 void apply(Func &func, Variant &arg) {
-  auto default_func = [](auto arg) {
+  auto default_func = []([[maybe_unused]] auto arg) {
     std::cout << "Wrong Property Type" << std::endl;
   }; // todo: prevent this behavior (statically ?)
   std::visit(VisitorOverload{default_func, func}, arg);
@@ -588,7 +609,7 @@ template <typename Func, typename Variant>
 void apply(Func &func, Variant& arg1, Variant& arg2) {
   std::visit([&arg2, &func](auto& concrete_arg1) {
     std::visit([&concrete_arg1, &func](auto& concrete_arg2){
-      auto functor = VisitorOverload{[](const auto& arg1, const auto& arg2) {std::cout << "Wrong one." << std::endl;},func}; // todo: prevent this behavior (statically ?)
+      auto functor = VisitorOverload{[]([[maybe_unused]] const auto& arg1,[[maybe_unused]] const auto& arg2) {std::cout << "Wrong one." << std::endl;},func}; // todo: prevent this behavior (statically ?)
       functor(concrete_arg1,concrete_arg2);// arg1 & arg2 are variants, concrete_arg* are concrete arguments
     },arg2);
   },arg1);
@@ -599,7 +620,7 @@ void apply(Func& func, Variant& arg1, Variant& arg2, Variant& arg3) {
   std::visit([&arg2, &arg3, &func](auto& concrete_arg1) {
     std::visit([&concrete_arg1, &arg3, &func](auto &concrete_arg2) {
       std::visit([&concrete_arg1, &concrete_arg2, &func](auto &concrete_arg3) {
-        auto functor = VisitorOverload{[](const auto &arg1, const auto &arg2, const auto &arg3) {std::cout << "Wrong one." << std::endl;},func}; // todo: prevent this behavior (statically ?)
+        auto functor = VisitorOverload{[]([[maybe_unused]] const auto &arg1,[[maybe_unused]] const auto &arg2, [[maybe_unused]]const auto &arg3) {std::cout << "Wrong one." << std::endl;},func}; // todo: prevent this behavior (statically ?)
         functor(concrete_arg1, concrete_arg2,concrete_arg3); // arg1 & arg2 are variants, concrete_arg* are concrete arguments
       }, arg3);
     }, arg2);
@@ -642,7 +663,7 @@ public:
     auto [iter,is_inserted] = m_properties.insert(std::make_pair(name,PropertyT<T>{name}));
     if (is_inserted) std::cout << "Add property " << name << " in Family " << m_name
                 << std::endl;
-  };
+  }
 
   Property& getProperty(const std::string& name) {
     auto found_property = m_properties.find(name);
@@ -709,7 +730,7 @@ private :
 
 class FamilyMap {
 public:
-  Family& operator()(ItemKind const & ik,std::string const& name) const
+  Family& operator()(ItemKind const & ik,std::string const& name) const noexcept (ndebug)
   {
     auto found_family = m_families.find(std::make_pair(ik,name));
     assert(("Cannot find Family ",found_family!= m_families.end()));
@@ -877,7 +898,6 @@ struct FilteredFutureItemRange : public FutureItemRange {
   ItemRange& __internal__() override {
     if (!is_data_filtered) {
       std::vector<Neo::utils::Int32> filtered_lids(m_filter.size());
-      auto i = 0;
       auto local_ids = m_future_range.new_items.localIds();
       std::transform(m_filter.begin(),m_filter.end(),filtered_lids.begin(),
                      [&local_ids](auto index){
@@ -937,8 +957,14 @@ public:
     return m_families.push_back(ik, name);
   }
 
-  Family& getFamily(ItemKind ik, std::string const& name) const { return m_families.operator()(ik,name);}
+  Family& getFamily(ItemKind ik, std::string const& name) const noexcept(ndebug) { return m_families.operator()(ik,name);}
 
+  [[nodiscard]] int nbItems(ItemKind ik) const {
+    return std::accumulate(m_families.begin(),m_families.end(),0,
+                           [ik](auto const& nb_item, auto const& family_map_element){
+                             return (family_map_element.first.first == ik) ? nb_item + family_map_element.second->nbElements() : nb_item;
+    });
+  }
 
   template <typename Algorithm>
   void addAlgorithm(InProperty&& in_property, OutProperty&& out_property, Algorithm algo){// problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
@@ -978,6 +1004,7 @@ public:
   std::string m_name;
   FamilyMap m_families;
   std::list<std::unique_ptr<IAlgorithm>> m_algos;
+  int m_dimension = 3;
 };
 
 } // end namespace Neo
