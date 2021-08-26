@@ -9,6 +9,27 @@ target_include_directories(Neo INTERFACE
 
 target_compile_definitions(Neo INTERFACE HAS_NEO)
 
+include(GNUInstallDirs)
+
+set(_libpath ${CMAKE_BINARY_DIR}/lib)
+if (WIN32)
+    set_target_properties(Neo
+            PROPERTIES
+            LIBRARY_OUTPUT_DIRECTORY_DEBUG ${_libpath}
+            RUNTIME_OUTPUT_DIRECTORY_DEBUG ${_libpath}
+            LIBRARY_OUTPUT_DIRECTORY_RELEASE ${_libpath}
+            RUNTIME_OUTPUT_DIRECTORY_RELEASE ${_libpath}
+            LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${_libpath}
+            RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${_libpath}
+            )
+else()
+    set_target_properties(Neo
+            PROPERTIES
+            LIBRARY_OUTPUT_DIRECTORY ${_libpath}
+            RUNTIME_OUTPUT_DIRECTORY ${_libpath}
+            )
+endif()
+
 install(TARGETS Neo EXPORT NeoConfig PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/neo INCLUDES DESTINATION include)
 
 export (TARGETS Neo FILE ${CMAKE_BINARY_DIR}/cmake/NeoConfig.cmake)
