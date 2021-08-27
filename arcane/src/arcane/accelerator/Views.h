@@ -37,6 +37,7 @@
 
 namespace Arcane::Accelerator
 {
+template<typename DataType> class View1DGetterSetter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -61,40 +62,10 @@ class VariableViewBase
  * \brief Classe pour accéder à un tableau 1D d'une vue en lecture/écriture.
  */
 template<typename DataType>
-class View1DGetterSetter
-{
- public:
-  using ValueType = DataType;
-  using DataTypeReturnReference = View1DGetterSetter<DataType>;
- public:
-  explicit ARCCORE_HOST_DEVICE View1DGetterSetter(Span<DataType> data) : m_data(data){}
-  DataTypeReturnReference& operator=(const View1DGetterSetter<DataType>& rhs) = delete;
- public:
-  ARCCORE_HOST_DEVICE DataViewGetterSetter<DataType> operator[](Int64 index) const
-  {
-    return DataViewGetterSetter<DataType>(m_data.ptrAt(index));
-  }
- public:
-  ARCCORE_HOST_DEVICE void copy(Span<const DataType> rhs)
-  {
-    m_data.copy(rhs);
-  }
- public:
-  ARCCORE_HOST_DEVICE Span<DataType> value() const { return m_data; }
-  ARCCORE_HOST_DEVICE operator Span<DataType>() { return m_data; }
-  ARCCORE_HOST_DEVICE operator Span<const DataType>() const { return m_data; }
- private:
-  Span<DataType> m_data;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Classe pour accéder à un tableau 1D d'une vue en lecture/écriture.
- */
-template<typename DataType>
 class View1DSetter
 {
+  // Pour accéder à m_data;
+  friend class View1DGetterSetter<DataType>;
  public:
   using ValueType = DataType;
   using DataTypeReturnReference = View1DSetter<DataType>;
@@ -111,6 +82,34 @@ class View1DSetter
   }
  private:
   Span<DataType> m_data;
+};
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe pour accéder à un tableau 1D d'une vue en lecture/écriture.
+ */
+template<typename DataType>
+class View1DGetterSetter
+: public View1DSetter<DataType>
+{
+  using View1DSetter<DataType>::m_data;
+ public:
+  using ValueType = DataType;
+  using DataTypeReturnReference = View1DGetterSetter<DataType>;
+ public:
+  explicit ARCCORE_HOST_DEVICE View1DGetterSetter(Span<DataType> data) : View1DSetter<DataType>(data){}
+  DataTypeReturnReference& operator=(const View1DGetterSetter<DataType>& rhs) = delete;
+ public:
+  ARCCORE_HOST_DEVICE DataViewGetterSetter<DataType> operator[](Int64 index) const
+  {
+    return DataViewGetterSetter<DataType>(m_data.ptrAt(index));
+  }
+ public:
+  ARCCORE_HOST_DEVICE Span<DataType> value() const { return m_data; }
+  ARCCORE_HOST_DEVICE operator Span<DataType>() { return m_data; }
+  ARCCORE_HOST_DEVICE operator Span<const DataType>() const { return m_data; }
 };
 
 /*---------------------------------------------------------------------------*/
