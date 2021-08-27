@@ -579,14 +579,12 @@ applyBoundaryCondition()
     command << RUNCOMMAND_ENUMERATE(Node,node,view)
     {
       // boucle sur les noeuds de la face
-      Real3 v = in_out_velocity[node];
       switch(type) {
-      case TypesSimpleHydro::VelocityX: v.x = value; break;
-      case TypesSimpleHydro::VelocityY: v.y = value; break;
-      case TypesSimpleHydro::VelocityZ: v.z = value; break;
+      case TypesSimpleHydro::VelocityX: in_out_velocity[node].setX(value); break;
+      case TypesSimpleHydro::VelocityY: in_out_velocity[node].setY(value); break;
+      case TypesSimpleHydro::VelocityZ: in_out_velocity[node].setZ(value); break;
       case TypesSimpleHydro::Unknown: break;
       }
-      in_out_velocity[node] = v;
     };
   }
   queue.barrier();

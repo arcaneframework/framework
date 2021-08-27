@@ -52,11 +52,18 @@ class AcceleratorViewsUnitTest
   ax::Runner m_runner;
   VariableCellArrayReal m_cell_array1;
   VariableCellArrayReal m_cell_array2;
+  VariableCellReal2 m_cell1_real2;
+  VariableCellReal3 m_cell1_real3;
 
  private:
 
   void _setCellArrayValue(Integer seed);
   void _checkCellArrayValue(const String& message) const;
+
+ public:
+
+  void _executeTest1();
+  void _executeTest2();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -73,6 +80,8 @@ AcceleratorViewsUnitTest(const ServiceBuildInfo& sb)
 : BasicUnitTest(sb)
 , m_cell_array1(VariableBuildInfo(sb.mesh(),"CellArray1"))
 , m_cell_array2(VariableBuildInfo(sb.mesh(),"CellArray2"))
+, m_cell1_real2(VariableBuildInfo(sb.mesh(),"Cell1Real2"))
+, m_cell1_real3(VariableBuildInfo(sb.mesh(),"Cell1Real3"))
 {
 }
 
@@ -135,6 +144,16 @@ _checkCellArrayValue(const String& message) const
 
 void AcceleratorViewsUnitTest::
 executeTest()
+{
+  _executeTest1();
+  _executeTest2();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AcceleratorViewsUnitTest::
+_executeTest1()
 {
   auto queue = makeQueue(m_runner);
   auto command = makeCommand(queue);
@@ -214,6 +233,61 @@ executeTest()
     };
 
     _checkCellArrayValue("View5");
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AcceleratorViewsUnitTest::
+_executeTest2()
+{
+  ValueChecker vc(A_FUNCINFO);
+  {
+    auto queue = makeQueue(m_runner);
+    auto command = makeCommand(queue);
+    auto inout_cell1_real2 = ax::viewInOut(command,m_cell1_real2);
+
+    command << RUNCOMMAND_ENUMERATE(Cell,vi,allCells())
+    {
+      Real v = static_cast<Real>(vi.localId());
+      inout_cell1_real2[vi].setX(2.0+v);
+      inout_cell1_real2[vi].setY(3.0+v);
+    };
+  }
+  {
+    ENUMERATE_(Cell,vi,allCells()){
+      Real v = static_cast<Real>(vi.itemLocalId());
+      Real rx = 2.0+v;
+      Real ry = 3.0+v;
+      vc.areEqual(rx,m_cell1_real2[vi].x,"CheckX");
+      vc.areEqual(ry,m_cell1_real2[vi].y,"CheckY");
+    }
+  }
+
+  {
+    auto queue = makeQueue(m_runner);
+    auto command = makeCommand(queue);
+    auto inout_cell1_real3 = ax::viewInOut(command,m_cell1_real3);
+
+    command << RUNCOMMAND_ENUMERATE(Cell,vi,allCells())
+    {
+      Real v = static_cast<Real>(vi.localId());
+      inout_cell1_real3[vi].setX(2.0+v);
+      inout_cell1_real3[vi].setY(3.0+v);
+      inout_cell1_real3[vi].setZ(4.0+v);
+    };
+  }
+  {
+    ENUMERATE_(Cell,vi,allCells()){
+      Real v = static_cast<Real>(vi.itemLocalId());
+      Real rx = 2.0+v;
+      Real ry = 3.0+v;
+      Real rz = 4.0+v;
+      vc.areEqual(rx,m_cell1_real3[vi].x,"CheckX");
+      vc.areEqual(ry,m_cell1_real3[vi].y,"CheckY");
+      vc.areEqual(rz,m_cell1_real3[vi].z,"CheckZ");
+    }
   }
 }
 

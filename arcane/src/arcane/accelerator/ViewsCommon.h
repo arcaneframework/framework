@@ -16,6 +16,8 @@
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
 
+#include "arcane/datatype/DataTypeTraits.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -97,6 +99,23 @@ class DataViewSetter
   ARCCORE_HOST_DEVICE void operator+=(const DataType& v)
   {
     *m_ptr = (*m_ptr) + v;
+  }
+ public:
+  // TODO: étendre ces concepts à Real3x3 et Real2x2
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentX()> >
+  ARCCORE_HOST_DEVICE void setX(Real value)
+  {
+    m_ptr->x = value;
+  }
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentY()> >
+  ARCCORE_HOST_DEVICE void setY(Real value)
+  {
+    m_ptr->y = value;
+  }
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentZ()> >
+  ARCCORE_HOST_DEVICE void setZ(Real value)
+  {
+    m_ptr->z = value;
   }
  private:
   DataType* m_ptr;
