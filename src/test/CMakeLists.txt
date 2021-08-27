@@ -16,8 +16,29 @@ endif(Xdmf_FOUND)
 
 target_link_libraries(Neo.tests GTest::GTest GTest::Main Neo)
 
-gtest_discover_tests(Neo.tests)
-
 file( COPY meshes DESTINATION ${CMAKE_BINARY_DIR}/src/test)
 
+include(GNUInstallDirs)
+
+set(_exepath ${CMAKE_BINARY_DIR}/lib)
+if (WIN32)
+    set_target_properties(Neo.tests
+            PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY_DEBUG ${_exepath}
+            RUNTIME_OUTPUT_DIRECTORY_RELEASE ${_exepath}
+            RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${_exepath}
+            )
+else()
+    set_target_properties(Neo.tests
+            PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY ${_exepath}
+            )
+endif()
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    # using Clang
+    target_compile_options(Neo.tests PRIVATE -EHsc) # need to activate exception on clang-cl from Visual...?
+endif()
+
+gtest_discover_tests(Neo.tests)
 

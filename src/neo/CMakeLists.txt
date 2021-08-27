@@ -9,10 +9,18 @@ target_include_directories(Neo SYSTEM INTERFACE
 
 target_compile_definitions(Neo INTERFACE HAS_NEO)
 
-if(WIN32)
-    target_compile_options(Neo PRIVATE -Wall)
-else()
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    # using Clang
+    target_compile_options(Neo PRIVATE -EHsc) # need to activate exception on clang-cl from Visual...?
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # using GCC
     target_compile_options(Neo PRIVATE -Wall -Wextra -Wpedantic -pedantic -Wconversion -pedantic-errors)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
+    # using Intel C++ (not tested)
+    target_compile_options(Neo PRIVATE)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    # using Visual Studio C++
+    target_compile_options(Neo PRIVATE -Wall)
 endif()
 
 
