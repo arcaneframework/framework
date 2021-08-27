@@ -353,6 +353,11 @@ class DataTypeTraitsT<Real2>
 
   //! Valeur par défaut.
   static ARCANE_CORE_EXPORT Type defaultValue();
+
+ public:
+
+  static constexpr bool HasComponentX() { return true; }
+  static constexpr bool HasComponentY() { return true; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -392,6 +397,10 @@ class DataTypeTraitsT<Real3>
 
   //! Valeur par défaut.
   static ARCANE_CORE_EXPORT Type defaultValue();
+
+  static constexpr bool HasComponentX() { return true; }
+  static constexpr bool HasComponentY() { return true; }
+  static constexpr bool HasComponentZ() { return true; }
 };
 
 /*---------------------------------------------------------------------------*/
