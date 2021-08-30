@@ -96,5 +96,6 @@ set(AXL_FILES
   inout/InOutTester
   geometry/GeometryUnitTest
   CustomMeshTest
+  accelerator/SimpleHydroAccelerator
   )
 

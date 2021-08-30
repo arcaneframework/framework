@@ -448,12 +448,12 @@
     </simple>
 
     <!-- - - - - - viscosity-linear-coef - - - - -->
-    <simple name="generic-service-name" type="string" default="" >
+    <service-instance name="generic-service" type="SimpleHydro::ISimpleHydroService" optional="true">
       <description>
         Pour le module hydro générique, spécifie le nom du service implémentant
         l'hydro.
       </description>
-    </simple>
+    </service-instance>
 
     <!-- - - - - - viscosity-linear-coef - - - - -->
     <simple name="check-numerical-result" type="bool" default="false" >

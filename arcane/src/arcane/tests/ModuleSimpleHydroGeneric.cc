@@ -93,7 +93,7 @@ class ModuleSimpleHydroGeneric
 
  private:
 
-  Ref<ISimpleHydroService> m_service;
+  ISimpleHydroService* m_service = nullptr;
   ITimeStats* m_time_stats;
   Timer m_elapsed_timer;
 
@@ -127,11 +127,10 @@ hydroBuild()
 {
   _setHydroOptions(options());
   ServiceBuilder<ISimpleHydroService> sb(subDomain());
-  String service_name = options()->genericServiceName();
-  if (service_name.empty())
-    ARCANE_FATAL("Null or empty <generic-service-name> option");
-  info() << "Creating hydro service name=" << service_name;
-  m_service = sb.createReference(service_name);
+  ISimpleHydroService* service = options()->genericService();
+  if (!service)
+    ARCANE_FATAL("Null or empty <generic-service> option");
+  m_service = service;
   m_service->setModule(this);
   m_service->hydroBuild();
 }
@@ -171,7 +170,7 @@ _doCall(const char* func_name,std::function<void()> func)
 void ModuleSimpleHydroGeneric::
 doOneIteration()
 {
-  ISimpleHydroService* s = m_service.get();
+  ISimpleHydroService* s = m_service;
   DO_CALL(computeForces);
   DO_CALL(computeVelocity);
   DO_CALL(computeViscosityWork);

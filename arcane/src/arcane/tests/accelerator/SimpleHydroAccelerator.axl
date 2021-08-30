@@ -1,0 +1,5 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<!-- Options du jeu de données pour le service de 'SimpleHydroAccelerator' -->
+<service name="SimpleHydroAccelerator" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="SimpleHydro">
+ <interface name="SimpleHydro::ISimpleHydroService" />
+</service>

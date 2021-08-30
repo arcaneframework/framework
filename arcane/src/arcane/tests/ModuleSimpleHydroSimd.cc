@@ -815,15 +815,15 @@ hydroInit()
          << " DTmax="<< m_module->getDeltatMax()
          << " DT="<< m_global_deltat();
   if (m_global_deltat() > m_module->getDeltatMax())
-    fatal() << "DeltaT > DTMax";
+    ARCANE_FATAL("DeltaT > DTMax");
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE(SimpleHydroSimdService,
-                        ServiceProperty("StdHydroSimdService",ST_SubDomain),
-                        ARCANE_SERVICE_INTERFACE(ISimpleHydroService));
+                        ServiceProperty("StdHydroSimdService",ST_CaseOption),
+                        ARCANE_SERVICE_INTERFACE(SimpleHydro::ISimpleHydroService));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

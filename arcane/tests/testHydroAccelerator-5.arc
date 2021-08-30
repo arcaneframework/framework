@@ -29,7 +29,7 @@
  <!-- Configuration du module hydrodynamique -->
  <simple-hydro>
    <check-numerical-result>true</check-numerical-result>
-   <generic-service-name>SimpleHydroAcceleratorService</generic-service-name>
+   <generic-service name="SimpleHydroAcceleratorService" />
    <deltat-init>0.001</deltat-init>
    <deltat-min>0.0001</deltat-min>
    <deltat-max>0.01</deltat-max>

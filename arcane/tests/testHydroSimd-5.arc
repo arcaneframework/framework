@@ -25,32 +25,9 @@
  </initialisation>
  </mesh>
 
- <arcane-post-processing>
-   <output-period>0</output-period>
-   <!-- <format name="EnsightHdfPostProcessor" /> -->
-   <output>
-    <variable>CellMass</variable>
-    <variable>CellVolume</variable>
-    <variable>Pressure</variable>
-    <variable>Density</variable>
-    <variable>Velocity</variable>
-    <variable>NodeMass</variable>
-    <variable>InternalEnergy</variable>
-    <group>ZG</group>
-    <group>ZD</group>
-    <group>AllFaces</group>
-    <group>XMIN</group>
-    <group>XMAX</group>
-    <group>YMIN</group>
-    <group>YMAX</group>
-    <group>ZMIN</group>
-    <group>ZMAX</group>
-   </output>
- </arcane-post-processing>
-
  <!-- Configuration du module hydrodynamique -->
  <simple-hydro>
-   <generic-service-name>StdHydroSimdService</generic-service-name>
+   <generic-service name="StdHydroSimdService" />
    <!-- <deltat-init>   0.0000001   </deltat-init>
    <deltat-min>    0.00000001   </deltat-min>
    <deltat-max>    0.000001   </deltat-max> -->
@@ -64,26 +41,22 @@
   <viscosity-quadratic-coef> .6    </viscosity-quadratic-coef>
 
   <boundary-condition>
-    <surface>XMIN</surface><type>Vx</type><value>0.</value>
+    <surface>XMIN</surface><type>Vx</type><value>0.0</value>
   </boundary-condition>
   <boundary-condition>
-    <surface>XMAX</surface><type>Vx</type><value>0.</value>
+    <surface>XMAX</surface><type>Vx</type><value>0.0</value>
   </boundary-condition>
   <boundary-condition>
-    <surface>YMIN</surface><type>Vy</type><value>0.</value>
+    <surface>YMIN</surface><type>Vy</type><value>0.0</value>
   </boundary-condition>
   <boundary-condition>
-    <surface>YMAX</surface><type>Vy</type><value>0.</value>
+    <surface>YMAX</surface><type>Vy</type><value>0.0</value>
   </boundary-condition>
   <boundary-condition>
-    <surface>ZMIN</surface><type>Vz</type><value>0.</value>
+    <surface>ZMIN</surface><type>Vz</type><value>0.0</value>
   </boundary-condition>
   <boundary-condition>
-    <surface>ZMAX</surface><type>Vz</type><value>0.</value>
+    <surface>ZMAX</surface><type>Vz</type><value>0.0</value>
   </boundary-condition>
  </simple-hydro>
-
- <arcane-checkpoint>
-  <do-dump-at-end>false</do-dump-at-end>
- </arcane-checkpoint>
 </case>

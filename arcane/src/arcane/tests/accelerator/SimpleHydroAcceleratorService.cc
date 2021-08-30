@@ -35,6 +35,7 @@
 #include "arcane/ServiceBuilder.h"
 #include "arcane/FactoryService.h"
 #include "arcane/AcceleratorRuntimeInitialisationInfo.h"
+#include "arcane/BasicUnitTest.h"
 
 #include "arcane/IMainFactory.h"
 
@@ -49,6 +50,8 @@
 #include "arcane/accelerator/Reduce.h"
 #include "arcane/accelerator/Accelerator.h"
 #include "arcane/accelerator/RunCommandEnumerate.h"
+
+#include "arcane/tests/accelerator/SimpleHydroAccelerator_axl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -103,8 +106,7 @@ double reference_global_deltat[50] =
  * les classes de vectorisation fournies par Arcane.
  */
 class SimpleHydroAcceleratorService
-: public BasicService
-, public ISimpleHydroService
+: public ArcaneSimpleHydroAcceleratorObject
 {
  public:
 
@@ -210,7 +212,7 @@ class SimpleHydroAcceleratorService
 
 SimpleHydroAcceleratorService::
 SimpleHydroAcceleratorService(const ServiceBuildInfo& sbi)
-: BasicService(sbi)
+: ArcaneSimpleHydroAcceleratorObject(sbi)
 , m_cell_unique_id (VariableBuildInfo(sbi.mesh(),"UniqueId"))
 , m_sub_domain_id (VariableBuildInfo(sbi.mesh(),"SubDomainId"))
 , m_density (VariableBuildInfo(sbi.mesh(),"Density"))
@@ -998,9 +1000,8 @@ _computeNodeIndexInCells()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE(SimpleHydroAcceleratorService,
-                        ServiceProperty("SimpleHydroAcceleratorService",ST_SubDomain),
-                        ARCANE_SERVICE_INTERFACE(ISimpleHydroService));
+ARCANE_REGISTER_SERVICE_SIMPLEHYDROACCELERATOR(SimpleHydroAcceleratorService,
+                                               SimpleHydroAcceleratorService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
