@@ -3,9 +3,12 @@ cmake_minimum_required(VERSION 3.7.2)
 # For support of VERSION
 cmake_policy(SET CMP0048 NEW)
 
+file(READ "version" ARCCON_VERSION)
+message(STATUS "ArcconVersion = ${ARCCON_VERSION}")
+
 project(Arccon
   LANGUAGES NONE # No C or C++ !
-  VERSION 1.2.0)
+  VERSION ${ARCCON_VERSION})
 
 include(${CMAKE_CURRENT_LIST_DIR}/build-system/ArcconSetInstallDirs.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/build-system/commands/user/installDirectory.cmake)
