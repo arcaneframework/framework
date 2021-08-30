@@ -1,5 +1,10 @@
 <?xml version="1.0" ?><!-- -*- SGML -*- -->
 <!-- Options du jeu de données pour le service de 'SimpleHydroAccelerator' -->
 <service name="SimpleHydroAccelerator" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="SimpleHydro">
- <interface name="SimpleHydro::ISimpleHydroService" />
+  <interface name="SimpleHydro::ISimpleHydroService" />
+  <options>
+    <simple name = "use-multiple-queue-for-boundary-conditions" type="bool" default="false" >
+      <description>Indique si on utilise plusieurs une file d'exécution par condition aux limites</description>
+    </simple>
+  </options>
 </service>

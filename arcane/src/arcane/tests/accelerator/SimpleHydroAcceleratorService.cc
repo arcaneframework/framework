@@ -116,6 +116,7 @@ class SimpleHydroAcceleratorService
     NodeVectorView view;
     Real value;
     TypesSimpleHydro::eBoundaryCondition type;
+    Ref<ax::RunQueue> queue_ref;
   };
 
   // Note: il faut mettre ce champs statique si on veut que sa valeur
@@ -368,6 +369,8 @@ hydroStartInit()
   // Cela permet de garantir avec les accélérateurs qu'on pourra accéder
   // de manière concurrente aux données.
   {
+    bool use_multiple_queue = options()->useMultipleQueueForBoundaryConditions;
+    info() << "Using multiple queue for boundary conditions ? = " << use_multiple_queue;
     m_boundary_conditions.clear();
     for( auto bc : m_module->getBoundaryConditions() ){
       FaceGroup face_group = bc->getSurface();
@@ -377,6 +380,10 @@ hydroStartInit()
       bcn.nodes = face_group.nodeGroup();
       bcn.value = value;
       bcn.type = type;
+      if (use_multiple_queue){
+        bcn.queue_ref = makeQueueRef(m_runner);
+        bcn.queue_ref->setAsync(true);
+      }
       m_boundary_conditions.add(bcn);
     }
   }
@@ -566,6 +573,7 @@ applyBoundaryCondition()
   // indépendants (ou alors avec la même valeur si c'est sur les mêmes noeuds),
   // on peut exécuter les noyaux en asynchrone.
   queue.setAsync(true);
+  bool use_one_queue = !options()->useMultipleQueueForBoundaryConditions;
 
   // Repositionne les vues si les groupes associés ont été modifiés
   for( auto& bc : m_boundary_conditions )
@@ -575,7 +583,8 @@ applyBoundaryCondition()
     TypesSimpleHydro::eBoundaryCondition type = bc.type;
     NodeVectorView view = bc.view;
 
-    auto command = makeCommand(queue);
+    ax::RunQueue& used_queue = (use_one_queue) ? queue : *(bc.queue_ref.get());
+    auto command = makeCommand(used_queue);
     auto in_out_velocity = ax::viewInOut(command,m_velocity);
     // boucle sur les faces de la surface
     command << RUNCOMMAND_ENUMERATE(Node,node,view)
@@ -589,7 +598,12 @@ applyBoundaryCondition()
       }
     };
   }
-  queue.barrier();
+  if (use_one_queue)
+    queue.barrier();
+  else
+    for( auto bc : m_boundary_conditions ){
+      bc.queue_ref->barrier();
+    }
 }
 
 /*---------------------------------------------------------------------------*/
