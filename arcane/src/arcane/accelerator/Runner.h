@@ -14,6 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/Ref.h"
 #include "arcane/accelerator/RunQueue.h"
 
 /*---------------------------------------------------------------------------*/
@@ -77,6 +78,36 @@ inline RunQueue
 makeQueue(Runner& runner,eExecutionPolicy exec_policy)
 {
   return RunQueue(runner,exec_policy);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
+ * \brief Créé une référence sur file avec la politique d'exécution par défaut de \a runner.
+ *
+ * Si la file est temporaire, il est préférable d'utiliser makeQueue() à la place
+ * pour éviter une allocation inutile.
+ */
+inline Ref<RunQueue>
+makeQueueRef(Runner& runner)
+{
+  return makeRef(new RunQueue(runner));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
+ * \brief Créé une référence sur une file avec la politique d'exécution \a exec_policy.
+ *
+ * Si la file est temporaire, il est préférable d'utiliser makeQueue() à la place
+ * pour éviter une allocation inutile.
+ */
+inline Ref<RunQueue>
+makeQueueRef(Runner& runner,eExecutionPolicy exec_policy)
+{
+  return makeRef(new RunQueue(runner,exec_policy));
 }
 
 /*---------------------------------------------------------------------------*/
