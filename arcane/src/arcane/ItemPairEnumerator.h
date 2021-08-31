@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemPairEnumerator.h                                        (C) 2000-2018 */
+/* ItemPairEnumerator.h                                        (C) 2000-2021 */
 /*                                                                           */
 /* Enumérateur sur un tableau de tableau d'entités du maillage.              */
 /*---------------------------------------------------------------------------*/
@@ -17,12 +17,11 @@
 #include "arcane/ItemInternalEnumerator.h"
 #include "arcane/Item.h"
 
-//#include "arcane/ItemArrayEnumerator.h"
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -47,27 +46,27 @@ class ARCANE_CORE_EXPORT ItemPairEnumerator
   { ++m_current; }
   inline bool hasNext() const
   { return m_current<m_end; }
-  inline Integer itemLocalId() const
+  inline Int32 itemLocalId() const
   { return m_items_local_id[m_current]; }
-  inline Integer index() const
+  inline Int32 index() const
   { return m_current; }
   inline ItemInternalEnumerator subItems() const
   {
     return ItemInternalEnumerator(m_sub_items_internal.data(),
                                   m_sub_items_local_id.data()+m_indexes[m_current],
-                                  m_indexes[m_current+1]-m_indexes[m_current]
+                                  static_cast<Int32>(m_indexes[m_current+1]-m_indexes[m_current])
                                   );
   }
   inline Item operator*() const
   { return Item(m_items_internal.data(),m_items_local_id[m_current]); }
   inline Integer nbSubItem() const
-  { return m_indexes[m_current+1]-m_indexes[m_current]; }
+  { return static_cast<Int32>(m_indexes[m_current+1]-m_indexes[m_current]); }
  protected:
-  Integer m_current;
-  Integer m_end;
-  IntegerConstArrayView m_indexes;
+  Int32 m_current;
+  Int32 m_end;
+  Int64ConstArrayView m_indexes;
   Int32ConstArrayView m_items_local_id;
-  Int32ConstArrayView m_sub_items_local_id;
+  Span<const Int32> m_sub_items_local_id;
   ItemInternalList m_items_internal;
   ItemInternalList m_sub_items_internal;
 };
@@ -119,7 +118,7 @@ class ItemPairEnumeratorT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

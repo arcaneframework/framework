@@ -111,21 +111,21 @@ class ARCANE_CORE_EXPORT ItemPairGroupImpl
   /*!
    * \internal
    */
-  IntegerArray& unguardedIndexes() const;
+  Array<Int64>& unguardedIndexes() const;
 
   /*!
    * \internal
    */
-  Int32Array& unguardedLocalIds() const;
+  Array<Int32>& unguardedLocalIds() const;
 
   /*!
    * \internal
    */
   void setComputeFunctor(IFunctor* functor);
 
-  IntegerArrayView indexes();
+  Int64ArrayView indexes();
 
-  Int32ArrayView subItemsLocalId();
+  Span<const Int32> subItemsLocalId();
 
  private:
 

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemPairGroupImpl.cc                                        (C) 2000-2016 */
+/* ItemPairGroupImpl.cc                                        (C) 2000-2021 */
 /*                                                                           */
 /* Implémentation d'un tableau de listes d'entités.                          */
 /*---------------------------------------------------------------------------*/
@@ -26,8 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
+namespace Arcane
+{
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -78,8 +78,8 @@ class ItemPairGroupImplPrivate
   eItemKind m_sub_kind;
   bool m_need_recompute; //!< Vrai si le groupe doit être recalculé
   
-  IntegerUniqueArray m_indexes;
-  Int32UniqueArray m_sub_items_local_id;
+  UniqueArray<Int64> m_indexes;
+  UniqueArray<Int32> m_sub_items_local_id;
   IFunctor* m_compute_functor;
 
  public:
@@ -337,7 +337,7 @@ checkNeedUpdate()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IntegerArray& ItemPairGroupImpl::
+Array<Int64>& ItemPairGroupImpl::
 unguardedIndexes() const
 {
   return m_p->m_indexes;
@@ -346,7 +346,7 @@ unguardedIndexes() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32Array& ItemPairGroupImpl::
+Array<Int32>& ItemPairGroupImpl::
 unguardedLocalIds() const
 {
   return m_p->m_sub_items_local_id;
@@ -355,7 +355,7 @@ unguardedLocalIds() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IntegerArrayView ItemPairGroupImpl::
+ArrayView<Int64> ItemPairGroupImpl::
 indexes()
 {
   checkNeedUpdate();
@@ -365,7 +365,7 @@ indexes()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32ArrayView ItemPairGroupImpl::
+Span<const Int32> ItemPairGroupImpl::
 subItemsLocalId()
 {
   checkNeedUpdate();
@@ -385,7 +385,7 @@ setComputeFunctor(IFunctor* functor)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

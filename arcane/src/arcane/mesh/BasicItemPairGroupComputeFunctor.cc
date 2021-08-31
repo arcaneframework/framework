@@ -108,9 +108,9 @@ _computeAdjency(ItemPairGroupImpl* array,
 {
   const ItemGroup& group = array->itemGroup();
   const ItemGroup& sub_group = array->subItemGroup();
-  IntegerArray& indexes = array->unguardedIndexes();
+  auto& indexes = array->unguardedIndexes();
   indexes.clear();
-  Int32Array& sub_items_local_id = array->unguardedLocalIds();
+  auto& sub_items_local_id = array->unguardedLocalIds();
   sub_items_local_id.clear();
 
   IItemFamily* sub_family = sub_group.itemFamily();
@@ -145,7 +145,7 @@ _computeAdjency(ItemPairGroupImpl* array,
         sub_items_local_id.add(sub_local_id);
       }
     }
-    indexes.add(sub_items_local_id.size());
+    indexes.add(sub_items_local_id.largeSize());
   }
   info() << " NB_ITEM=" << indexes.size() << " NB_ADJACENT=" << sub_items_local_id.size();
 }
@@ -158,9 +158,9 @@ _computeCellCellFaceAdjency(ItemPairGroupImpl* array)
 {
   const ItemGroup& group = array->itemGroup();
   const ItemGroup& sub_group = array->subItemGroup();
-  IntegerArray& indexes = array->unguardedIndexes();
+  auto& indexes = array->unguardedIndexes();
   indexes.clear();
-  Int32Array& sub_items_local_id = array->unguardedLocalIds();
+  auto& sub_items_local_id = array->unguardedLocalIds();
   sub_items_local_id.clear();
 
   IItemFamily* sub_family = sub_group.itemFamily();
@@ -195,7 +195,7 @@ _computeCellCellFaceAdjency(ItemPairGroupImpl* array)
         continue;
       sub_items_local_id.add(sub_local_id);
     }
-    indexes.add(sub_items_local_id.size());
+    indexes.add(sub_items_local_id.largeSize());
   }
   info() << " NB CELL=" << indexes.size()-1 << " NB ADJACENT=" << sub_items_local_id.size(); 
 }
@@ -208,9 +208,9 @@ _computeFaceCellNodeAdjency(ItemPairGroupImpl* array)
 {
   const ItemGroup& group = array->itemGroup();
   const ItemGroup& sub_group = array->subItemGroup();
-  IntegerArray& indexes = array->unguardedIndexes();
+  auto& indexes = array->unguardedIndexes();
   indexes.clear();
-  Int32Array& sub_items_local_id = array->unguardedLocalIds();
+  auto& sub_items_local_id = array->unguardedLocalIds();
   sub_items_local_id.clear();
 
   IItemFamily* sub_family = sub_group.itemFamily();
@@ -242,7 +242,7 @@ _computeFaceCellNodeAdjency(ItemPairGroupImpl* array)
         sub_items_local_id.add(sub_local_id);
       }
     }
-    indexes.add(sub_items_local_id.size());
+    indexes.add(sub_items_local_id.largeSize());
   }
   info() << " NB FACE=" << indexes.size() << " NB ADJACENT=" << sub_items_local_id.size(); 
 }
@@ -255,9 +255,9 @@ _computeCellFaceFaceAdjency(ItemPairGroupImpl* array)
 {
   const ItemGroup& group = array->itemGroup();
   const ItemGroup& sub_group = array->subItemGroup();
-  Int32Array& indexes = array->unguardedIndexes();
+  auto& indexes = array->unguardedIndexes();
   indexes.clear();
-  IntegerArray& sub_items_local_id = array->unguardedLocalIds();
+  auto& sub_items_local_id = array->unguardedLocalIds();
   sub_items_local_id.clear();
 
   IItemFamily* sub_family = sub_group.itemFamily();
@@ -287,7 +287,7 @@ _computeCellFaceFaceAdjency(ItemPairGroupImpl* array)
       // items_list[sub_local_id] = local_id;
       sub_items_local_id.add(sub_local_id);
     }
-    indexes.add(sub_items_local_id.size());
+    indexes.add(sub_items_local_id.largeSize());
   }
   info() << " NB CELL=" << indexes.size()-1 << " NB ADJACENT=" << sub_items_local_id.size();
 }
