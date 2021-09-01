@@ -43,9 +43,9 @@ struct Real3POD
    * 
    * @return (&x)[i]
    */
-  Real operator[](Integer i) const
+  ARCCORE_HOST_DEVICE Real operator[](Integer i) const
   {
-    ARCANE_ASSERT(((i>=0)&&(i<3)),("Trying to use an index different than 0, 1 or 2 on a Real3"));
+    ARCCORE_CHECK_AT(i,3);
     return (&x)[i];
   }
 
@@ -58,9 +58,9 @@ struct Real3POD
    * 
    * @return (&x)[i]
    */
-  Real& operator[](Integer i)
+  ARCCORE_HOST_DEVICE Real& operator[](Integer i)
   {
-    ARCANE_ASSERT(((i>=0)&&(i<3)),("Trying to use an index different than 0, 1 or 2 on a Real3"));
+    ARCCORE_CHECK_AT(i,3);
     return (&x)[i];
   }
 };

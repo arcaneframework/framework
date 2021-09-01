@@ -41,9 +41,9 @@ struct Real2POD
    *
    * @return (&x)[i]
    */
-  const Real& operator[](const Integer& i) const
+  ARCCORE_HOST_DEVICE Real operator[](Integer i) const
   {
-    ARCANE_ASSERT(((i>=0)&&(i<2)),("Trying to use an index different than 0 or 1 on a Real2"));
+    ARCCORE_CHECK_AT(i,2);
     return (&x)[i];
   }
 
@@ -56,9 +56,9 @@ struct Real2POD
    *
    * @return (&x)[i]
    */
-  Real& operator[](const Integer& i)
+  ARCCORE_HOST_DEVICE Real& operator[](Integer i)
   {
-    ARCANE_ASSERT(((i>=0)&&(i<2)),("Trying to use an index different than 0 or 1 on a Real2"));
+    ARCCORE_CHECK_AT(i,2);
     return (&x)[i];
   }
 
@@ -224,27 +224,6 @@ class ARCANE_UTILS_EXPORT Real2
    * \retval false sinon.
    */
   ARCCORE_HOST_DEVICE bool operator!=(Real2 b) const { return !operator==(b); }
-
-
-  /** 
-    * Accès à la @a i eme composante du Real3POD
-    * @note ne fonctionne que pour x, y et z ordonnées dans le POD
-    * 
-    * @param i numéro de la composante à retourner
-    * 
-    * @return (&x)[i]
-    */
-  Real operator[](Integer i) const
-  {
-    ARCANE_ASSERT(((i>=0)&&(i<2)),("Trying to use an index different than 0 or 1 on a Real2"));
-    return (&x)[i];
-  }
-  
-  Real& operator[](Integer i)
-  {
-    ARCANE_ASSERT(((i>=0)&&(i<2)),("Trying to use an index different than 0 or 1 on a Real2"));
-    return (&x)[i];
-  }
 
  private:
 
