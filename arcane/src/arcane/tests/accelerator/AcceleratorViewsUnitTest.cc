@@ -251,8 +251,11 @@ _executeTest2()
     command << RUNCOMMAND_ENUMERATE(Cell,vi,allCells())
     {
       Real v = static_cast<Real>(vi.localId());
-      inout_cell1_real2[vi].setX(2.0+v);
-      inout_cell1_real2[vi].setY(3.0+v);
+      Real2 ref_v;
+      ref_v[0] = 2.0+v;
+      ref_v[1] = 3.0+v;
+      inout_cell1_real2[vi].setX(ref_v[0]);
+      inout_cell1_real2[vi].setY(ref_v[1]);
     };
   }
   {
@@ -273,9 +276,13 @@ _executeTest2()
     command << RUNCOMMAND_ENUMERATE(Cell,vi,allCells())
     {
       Real v = static_cast<Real>(vi.localId());
-      inout_cell1_real3[vi].setX(2.0+v);
-      inout_cell1_real3[vi].setY(3.0+v);
-      inout_cell1_real3[vi].setZ(4.0+v);
+      Real3 ref_v;
+      ref_v[0] = 2.0+v;
+      ref_v[1] = 3.0+v;
+      ref_v[2] = 4.0+v;
+      inout_cell1_real3[vi].setX(ref_v[0]);
+      inout_cell1_real3[vi].setY(ref_v[1]);
+      inout_cell1_real3[vi].setZ(ref_v[2]);
     };
   }
   {
