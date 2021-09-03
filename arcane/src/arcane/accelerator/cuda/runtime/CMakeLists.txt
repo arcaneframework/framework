@@ -18,6 +18,11 @@ target_link_libraries(arcane_accelerator_cuda_runtime PUBLIC
   arcane_accelerator arcane_cuda_compile_flags CUDA::cudart
   )
 
+if (TARGET CUDA::nvToolsExt)
+  target_compile_definitions(arcane_accelerator_cuda_runtime PRIVATE ARCANE_HAS_CUDA_NVTOOLSEXT)
+  target_link_libraries(arcane_accelerator_cuda_runtime PRIVATE CUDA::nvToolsExt)
+endif()
+
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 

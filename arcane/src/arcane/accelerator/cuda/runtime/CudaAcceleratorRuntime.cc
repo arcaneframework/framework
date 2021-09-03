@@ -22,8 +22,13 @@
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/IRunQueueRuntime.h"
 #include "arcane/accelerator/IRunQueueStream.h"
+#include "arcane/accelerator/RunCommand.h"
 
 #include <iostream>
+
+#ifdef ARCANE_HAS_CUDA_NVTOOLSEXT
+#include <nvToolsExt.h>
+#endif
 
 using namespace Arccore;
 
@@ -84,8 +89,24 @@ class CudaRunQueueStream
     ARCANE_CHECK_CUDA(cudaStreamDestroy(m_cuda_stream));
   }
  public:
-  void notifyBeginKernel() override { return m_runtime->notifyBeginKernel(); }
-  void notifyEndKernel() override { return m_runtime->notifyEndKernel(); }
+  void notifyBeginKernel([[maybe_unused]] RunCommand& c) override
+  {
+#ifdef ARCANE_HAS_CUDA_NVTOOLSEXT
+    auto kname = c.kernelName();
+    if (kname.empty())
+      nvtxRangePush(c.traceInfo().name());
+    else
+      nvtxRangePush(kname.localstr());
+#endif
+    return m_runtime->notifyBeginKernel();
+  }
+  void notifyEndKernel(RunCommand&) override
+  {
+#ifdef ARCANE_HAS_CUDA_NVTOOLSEXT
+    nvtxRangePop();
+#endif
+    return m_runtime->notifyEndKernel();
+  }
   void barrier() override
   {
     ARCANE_CHECK_CUDA(cudaStreamSynchronize(m_cuda_stream));
