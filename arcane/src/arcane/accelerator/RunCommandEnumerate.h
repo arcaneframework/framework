@@ -73,7 +73,7 @@ void operator<<(ItemRunCommand<ItemType>& nr,Lambda f)
 
 //! Macro pour itérer un groupe d'entités
 #define RUNCOMMAND_ENUMERATE(ItemNameType,iter_name,item_group)         \
-  item_group << [=] ARCCORE_HOST_DEVICE (ItemNameType##LocalId iter_name)
+  A_FUNCINFO << item_group << [=] ARCCORE_HOST_DEVICE (ItemNameType##LocalId iter_name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
