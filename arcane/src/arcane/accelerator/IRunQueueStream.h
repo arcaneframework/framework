@@ -33,8 +33,8 @@ class ARCANE_ACCELERATOR_EXPORT IRunQueueStream
  public:
  virtual ~IRunQueueStream() noexcept(false) {}
  public:
-  virtual void notifyBeginKernel() =0;
-  virtual void notifyEndKernel() =0;
+  virtual void notifyBeginKernel(RunCommand& command) =0;
+  virtual void notifyEndKernel(RunCommand& command) =0;
   virtual void barrier() =0;
   virtual void* _internalImpl() =0;
 };

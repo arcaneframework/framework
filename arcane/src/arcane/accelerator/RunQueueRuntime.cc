@@ -29,8 +29,8 @@ class ARCANE_ACCELERATOR_EXPORT HostRunQueueStream
  public:
   HostRunQueueStream(IRunQueueRuntime* runtime): m_runtime(runtime){}
  public:
-  void notifyBeginKernel() override { return m_runtime->notifyBeginKernel(); }
-  void notifyEndKernel() override { return m_runtime->notifyEndKernel(); }
+  void notifyBeginKernel(RunCommand&) override { return m_runtime->notifyBeginKernel(); }
+  void notifyEndKernel(RunCommand&) override { return m_runtime->notifyEndKernel(); }
   void barrier() override { return m_runtime->barrier(); }
   void* _internalImpl() override { return nullptr; }
  private:

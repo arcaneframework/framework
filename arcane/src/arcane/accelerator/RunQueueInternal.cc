@@ -42,7 +42,7 @@ RunCommandLaunchInfo::
   // Normalement ce test est toujours faux sauf s'il y a eu une exception
   // pendant le lancement du noyau de calcul.
   if (!m_is_notify_end_kernel_done)
-    m_queue_stream->notifyEndKernel();
+    m_queue_stream->notifyEndKernel(m_command);
   _checkHasExecBegun();
   m_command.resetInfos();
 }
@@ -57,7 +57,7 @@ _begin()
   m_exec_policy = queue.executionPolicy();
   m_queue_stream = queue._internalStream();
   m_runtime = queue._internalRuntime();
-  m_queue_stream->notifyBeginKernel();
+  m_queue_stream->notifyBeginKernel(m_command);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -68,7 +68,7 @@ endExecute()
 {
   _checkHasExecBegun();
   m_is_notify_end_kernel_done = true;
-  m_queue_stream->notifyEndKernel();
+  m_queue_stream->notifyEndKernel(m_command);
   RunQueue& queue = m_command._internalQueue();
   if (!queue.isAsync())
     m_queue_stream->barrier();
