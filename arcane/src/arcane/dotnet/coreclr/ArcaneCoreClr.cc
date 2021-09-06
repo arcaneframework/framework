@@ -88,6 +88,10 @@ const char* arcane_dotnet_root = ARCANE_DOTNET_ROOT;
 #else
 const char* arcane_dotnet_root = nullptr;
 #endif
+// Utile pour conserver la valeur de la variable d'environnement
+// DOTNET_ROOT
+std::string arcane_dotnet_root_env_variable;
+
 // Globals to hold hostfxr exports
 hostfxr_initialize_for_runtime_config_fn init_fptr;
 hostfxr_initialize_for_dotnet_command_line_fn init_command_line_fptr;
@@ -197,8 +201,11 @@ arcane_dotnet_coreclr_main(const Arcane::CommandLineArguments& cmd_args,
   // les appels avec la version configurée lors de la compilation.
   // Le runtime 'coreclr' se charge d'utiliser cette variable d'environnement.
 
-  if (!platform::getEnvironmentVariable("DOTNET_ROOT").null())
-    arcane_dotnet_root = nullptr;
+  String dotnet_root_env = platform::getEnvironmentVariable("DOTNET_ROOT");
+  if (!dotnet_root_env.null()){
+    arcane_dotnet_root_env_variable = dotnet_root_env.toStdStringView();
+    arcane_dotnet_root = arcane_dotnet_root_env_variable.c_str();
+  }
 
   // TODO: trouver un moyen d'utiliser 'cmd_args'
   PRINT_FORMAT(1,"ARCANE_DOTNET_CORECLR_MAIN assembly_name={0}",orig_assembly_name);
