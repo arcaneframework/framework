@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Limits.h                                                    (C) 2000-2020 */
+/* Limits.h                                                    (C) 2000-2021 */
 /*                                                                           */
 /* Fichiers encapsulant <limits> et associés.                                */
 /*---------------------------------------------------------------------------*/
@@ -63,12 +63,12 @@ class FloatInfo<float>
   //! Indique que l'instantiation est pour un type flottant.
   typedef TrueType  _IsFloatType;
  public:
-  ARCCORE_HOST_DEVICE static unsigned int precision() { return 1; }
-  ARCCORE_HOST_DEVICE static unsigned int maxDigit() { return FLT_DIG; }
-  ARCCORE_HOST_DEVICE static float epsilon() { return FLT_EPSILON; }
-  ARCCORE_HOST_DEVICE static float nearlyEpsilon() { return FLT_EPSILON*10.; }
-  ARCCORE_HOST_DEVICE static float maxValue() { return FLT_MAX; }
-  ARCCORE_HOST_DEVICE static float zero() { return 0.0f; }
+  ARCCORE_HOST_DEVICE static constexpr unsigned int precision() { return 1; }
+  ARCCORE_HOST_DEVICE static constexpr unsigned int maxDigit() { return FLT_DIG; }
+  ARCCORE_HOST_DEVICE static constexpr float epsilon() { return FLT_EPSILON; }
+  ARCCORE_HOST_DEVICE static constexpr float nearlyEpsilon() { return FLT_EPSILON*10.; }
+  ARCCORE_HOST_DEVICE static constexpr float maxValue() { return FLT_MAX; }
+  ARCCORE_HOST_DEVICE static constexpr float zero() { return 0.0f; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -83,12 +83,12 @@ class FloatInfo<double>
   //! Indique que l'instantiation est pour un type flottant.
   typedef TrueType  _IsFloatType;
  public:
-  ARCCORE_HOST_DEVICE static unsigned int precision() { return 2; }
-  ARCCORE_HOST_DEVICE static unsigned int maxDigit() { return DBL_DIG; }
-  ARCCORE_HOST_DEVICE static double epsilon() { return DBL_EPSILON; }
-  ARCCORE_HOST_DEVICE static double nearlyEpsilon() { return DBL_EPSILON*10.0; }
-  ARCCORE_HOST_DEVICE static double maxValue() { return DBL_MAX; }
-  ARCCORE_HOST_DEVICE static double zero() { return 0.0; }
+  ARCCORE_HOST_DEVICE static constexpr unsigned int precision() { return 2; }
+  ARCCORE_HOST_DEVICE static constexpr unsigned int maxDigit() { return DBL_DIG; }
+  ARCCORE_HOST_DEVICE static constexpr double epsilon() { return DBL_EPSILON; }
+  ARCCORE_HOST_DEVICE static constexpr double nearlyEpsilon() { return DBL_EPSILON*10.0; }
+  ARCCORE_HOST_DEVICE static constexpr double maxValue() { return DBL_MAX; }
+  ARCCORE_HOST_DEVICE static constexpr double zero() { return 0.0; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -106,12 +106,12 @@ class FloatInfo<long double>
   //! Indique que l'instantiation est pour un type flottant.
   typedef TrueType  _IsFloatType;
  public:
-  ARCCORE_HOST_DEVICE static unsigned int precision() { return 3; }
-  ARCCORE_HOST_DEVICE static unsigned int maxDigit() { return LDBL_DIG; }
-  ARCCORE_HOST_DEVICE static long double epsilon() { return LDBL_EPSILON; }
-  ARCCORE_HOST_DEVICE static long double nearlyEpsilon() { return LDBL_EPSILON*10.0; }
-  ARCCORE_HOST_DEVICE static long double maxValue() { return LDBL_MAX; }
-  ARCCORE_HOST_DEVICE static long double zero() { return 0.0l; }
+  ARCCORE_HOST_DEVICE static constexpr unsigned int precision() { return 3; }
+  ARCCORE_HOST_DEVICE static constexpr unsigned int maxDigit() { return LDBL_DIG; }
+  ARCCORE_HOST_DEVICE static constexpr long double epsilon() { return LDBL_EPSILON; }
+  ARCCORE_HOST_DEVICE static constexpr long double nearlyEpsilon() { return LDBL_EPSILON*10.0; }
+  ARCCORE_HOST_DEVICE static constexpr long double maxValue() { return LDBL_MAX; }
+  ARCCORE_HOST_DEVICE static constexpr long double zero() { return 0.0l; }
 };
 
 #ifdef ARCANE_REAL_USE_APFLOAT
@@ -130,12 +130,12 @@ class FloatInfo<apfloat>
   //! Indique que l'instantiation est pour un type flottant.
   typedef TrueType  _IsFloatType;
  public:
-  ARCCORE_HOST_DEVICE static unsigned int precision() { return 3; }
-  ARCCORE_HOST_DEVICE static unsigned int maxDigit() { return 35; }
-  ARCCORE_HOST_DEVICE static apfloat epsilon() { return 1e-30; }
-  ARCCORE_HOST_DEVICE static apfloat nearlyEpsilon() { return 1e-28; }
-  ARCCORE_HOST_DEVICE static apfloat maxValue() { return apfloat("1e1000"); }
-  ARCCORE_HOST_DEVICE static apfloat zero() { return apfloat("0.0"); }
+  ARCCORE_HOST_DEVICE static constexpr unsigned int precision() { return 3; }
+  ARCCORE_HOST_DEVICE static constexpr unsigned int maxDigit() { return 35; }
+  ARCCORE_HOST_DEVICE static constexpr apfloat epsilon() { return 1e-30; }
+  ARCCORE_HOST_DEVICE static constexpr apfloat nearlyEpsilon() { return 1e-28; }
+  ARCCORE_HOST_DEVICE static constexpr apfloat maxValue() { return apfloat("1e1000"); }
+  ARCCORE_HOST_DEVICE static constexpr apfloat zero() { return apfloat("0.0"); }
 };
 #endif
 
