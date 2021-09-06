@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DumpWUCD.cc                                                 (C) 2000-2016 */
+/* DumpWUCD.cc                                                 (C) 2000-2021 */
 /*                                                                           */
 /* Exportations des fichiers au format UCD.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/String.h"
 #include "arcane/utils/Enumerator.h"
@@ -45,7 +43,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
+// NOTE: Ce format ne fonctionne que en séquentiel
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -69,61 +69,61 @@ class DumpWUCD
 {
  public:
 
-  DumpWUCD(IMesh* mesh, const String& filename,
+  DumpWUCD(ISubDomain* sd,IMesh* mesh, const String& filename,
            RealConstArrayView times, VariableCollection variables);
   ~DumpWUCD();
 
-  virtual void setMetaData(const String& meta_data)
+  void setMetaData(const String& meta_data) override
   {
     ARCANE_UNUSED(meta_data);
   }
-  virtual String metaData() const { return String(); }
+  String metaData() const { return String(); }
 
-  virtual void writeVal(IVariable&,ConstArrayView<Byte>) {}
-  virtual void writeVal(IVariable&,ConstArrayView<Real>);
-  virtual void writeVal(IVariable&,ConstArrayView<Real2>) {}
-  virtual void writeVal(IVariable&,ConstArrayView<Real3>);
-  virtual void writeVal(IVariable&,ConstArrayView<Int64>) {}
-  virtual void writeVal(IVariable&,ConstArrayView<Int32>) {}
-  virtual void writeVal(IVariable&,ConstArrayView<Real2x2>) {}
-  virtual void writeVal(IVariable&,ConstArrayView<Real3x3>) {}
-  virtual void writeVal(IVariable&,ConstArrayView<String>) {}
+  void writeVal(IVariable&,ConstArrayView<Byte>) override {}
+  void writeVal(IVariable&,ConstArrayView<Real>) override;
+  void writeVal(IVariable&,ConstArrayView<Real2>) override {}
+  void writeVal(IVariable&,ConstArrayView<Real3>) override;
+  void writeVal(IVariable&,ConstArrayView<Int64>) override {}
+  void writeVal(IVariable&,ConstArrayView<Int32>) override {}
+  void writeVal(IVariable&,ConstArrayView<Real2x2>) override {}
+  void writeVal(IVariable&,ConstArrayView<Real3x3>) override {}
+  void writeVal(IVariable&,ConstArrayView<String>) override {}
 
-  virtual void writeVal(IVariable&,ConstArray2View<Byte>) {}
-  virtual void writeVal(IVariable&,ConstArray2View<Real>) {}
-  virtual void writeVal(IVariable&,ConstArray2View<Int64>) {}
-  virtual void writeVal(IVariable&,ConstArray2View<Int32>) {}
-  virtual void writeVal(IVariable&,ConstArray2View<Real2>) {}
-  virtual void writeVal(IVariable&,ConstArray2View<Real3>) {}
-  virtual void writeVal(IVariable&,ConstArray2View<Real2x2>) {}
-  virtual void writeVal(IVariable&,ConstArray2View<Real3x3>) {}
-  virtual void writeVal(IVariable&,ConstArray2View<String>) {}
+  void writeVal(IVariable&,ConstArray2View<Byte>) override {}
+  void writeVal(IVariable&,ConstArray2View<Real>) override {}
+  void writeVal(IVariable&,ConstArray2View<Int64>) override {}
+  void writeVal(IVariable&,ConstArray2View<Int32>) override {}
+  void writeVal(IVariable&,ConstArray2View<Real2>) override {}
+  void writeVal(IVariable&,ConstArray2View<Real3>) override {}
+  void writeVal(IVariable&,ConstArray2View<Real2x2>) override {}
+  void writeVal(IVariable&,ConstArray2View<Real3x3>) override {}
 
-  virtual void writeVal(IVariable&,ConstMultiArray2View<Byte>) {}
-  virtual void writeVal(IVariable&,ConstMultiArray2View<Real>) {}
-  virtual void writeVal(IVariable&,ConstMultiArray2View<Int64>) {}
-  virtual void writeVal(IVariable&,ConstMultiArray2View<Int32>) {}
-  virtual void writeVal(IVariable&,ConstMultiArray2View<Real2>) {}
-  virtual void writeVal(IVariable&,ConstMultiArray2View<Real3>) {}
-  virtual void writeVal(IVariable&,ConstMultiArray2View<Real2x2>) {}
-  virtual void writeVal(IVariable&,ConstMultiArray2View<Real3x3>) {}
-  virtual void writeVal(IVariable&,ConstMultiArray2View<String>) {}
+  void writeVal(IVariable&,ConstMultiArray2View<Byte>) override {}
+  void writeVal(IVariable&,ConstMultiArray2View<Real>) override {}
+  void writeVal(IVariable&,ConstMultiArray2View<Int64>) override {}
+  void writeVal(IVariable&,ConstMultiArray2View<Int32>) override {}
+  void writeVal(IVariable&,ConstMultiArray2View<Real2>) override {}
+  void writeVal(IVariable&,ConstMultiArray2View<Real3>) override {}
+  void writeVal(IVariable&,ConstMultiArray2View<Real2x2>) override {}
+  void writeVal(IVariable&,ConstMultiArray2View<Real3x3>) override {}
 
-  virtual void beginWrite();
-  virtual void endWrite();
-  virtual ISubDomain* subDomain() const { return m_mesh->subDomain(); }
+  void beginWrite() override;
+  void endWrite() override;
 	
  private:
 
-  static const Integer m_max_digit = 5;
+  static constexpr Integer m_max_digit = 5;
+  // Nombre de chiffres significatifs pour les afficher les réels.
+  static constexpr Integer MAX_FLOAT_DIGIT = FloatInfo<Real>::maxDigit()+1;
 
+  ISubDomain* m_sub_domain;
   IMesh* m_mesh; //!< Maillage
   Directory m_base_directory; //!< Nom du répertoire de stockage
   RealUniqueArray m_times; //!< Liste des instants de temps
   VariableList m_save_variables; //!< Liste des variables a exporter
 
-  OStringStream* m_cell_streams; //!< Valeur des var. aux mailles
-  OStringStream* m_node_streams; //!< Valeur des var. aux noeuds
+  UniqueArray<Ref<OStringStream>> m_cell_streams; //!< Valeur des var. aux mailles
+  UniqueArray<Ref<OStringStream>> m_node_streams; //!< Valeur des var. aux noeuds
   UniqueArray<Cell> m_managed_cells; //!< Liste des mailles gerees
 };
 
@@ -131,20 +131,21 @@ class DumpWUCD
 /*---------------------------------------------------------------------------*/
 
 DumpWUCD::
-DumpWUCD(IMesh* mesh,const String& filename,RealConstArrayView times,
+DumpWUCD(ISubDomain* sd,IMesh* mesh,const String& filename,RealConstArrayView times,
          VariableCollection variables)
 : TraceAccessor(mesh->traceMng())
+, m_sub_domain(sd)
 , m_mesh(mesh)
 , m_base_directory(filename)
 , m_times(times)
-  , m_save_variables(variables.clone())
+, m_save_variables(variables.clone())
 {
   m_base_directory.createDirectory();
 
   // filtrage des cellules
   // ne sont gardees que les mailles dont le type est reconnue dans UCD
   ENUMERATE_CELL(it,m_mesh->allCells()){
-    const Cell& cell = *it;
+    Cell cell = *it;
     const int type = cell.type();
     if (type==IT_Vertex || type==IT_Line2 || type==IT_Triangle3
         || type== IT_Quad4 || type==IT_Hexaedron8 || type==IT_Pyramid5
@@ -155,8 +156,20 @@ DumpWUCD(IMesh* mesh,const String& filename,RealConstArrayView times,
              << " is unknown in UCD format. Cell will be ignored.";
   }
 
-  m_cell_streams = new OStringStream[m_managed_cells.size()];
-  m_node_streams = new OStringStream[m_mesh->nbNode()];
+  Integer nb_cell_var = m_managed_cells.size();
+  Integer nb_node_var = m_mesh->nbNode();
+  m_cell_streams.resize(nb_cell_var);
+  m_node_streams.resize(nb_node_var);
+  for( Integer i=0; i<nb_cell_var; ++i ){
+    m_cell_streams[i] = makeRef(new OStringStream());
+    m_cell_streams[i]->stream().precision(MAX_FLOAT_DIGIT);
+    m_cell_streams[i]->stream().flags(ios::scientific);
+  }
+  for( Integer i=0; i<nb_node_var; ++i ){
+    m_node_streams[i] = makeRef(new OStringStream());
+    m_node_streams[i]->stream().precision(MAX_FLOAT_DIGIT);
+    m_node_streams[i]->stream().flags(ios::scientific);
+  }
 
   debug() << "DumpWUCD::DumpWUCD - " 
           << m_mesh->nbCell() << " cells among which " 
@@ -169,8 +182,6 @@ DumpWUCD(IMesh* mesh,const String& filename,RealConstArrayView times,
 DumpWUCD::
 ~DumpWUCD()
 {
-  delete [] m_cell_streams;
-  delete [] m_node_streams;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -191,14 +202,13 @@ writeVal(IVariable& v,ConstArrayView<Real> ptr)
   case (IK_Node):
     size = ptr.size();
     for( Integer i=0 ; i<size ; i++)
-      m_node_streams[i]() << " " << ptr[i];
+      m_node_streams[i]->stream() << " " << ptr[i];
     break;
   case (IK_Cell):
     size = m_managed_cells.size();
-    for( Integer i=0 ; i<size ; i++)
-    {
+    for( Integer i=0 ; i<size ; i++){
       const Cell& cell = m_managed_cells[i];
-      m_cell_streams[i]() << " " << ptr[cell.localId()];
+      m_cell_streams[i]->stream() << " " << ptr[cell.localId()];
     }
     break;
   default:
@@ -224,20 +234,19 @@ writeVal(IVariable& v,ConstArrayView<Real3> ptr)
   case (IK_Node):
     size = ptr.size();
     for( Integer i=0 ; i<size ; i++) {
-      m_node_streams[i]() << " " << ptr[i].x
-                          << " " << ptr[i].y
-                          << " " << ptr[i].z;
+      m_node_streams[i]->stream() << " " << ptr[i].x
+                                  << " " << ptr[i].y
+                                  << " " << ptr[i].z;
     }
     break;
   case (IK_Cell):
     size = m_managed_cells.size();
-    for( Integer i=0 ; i<size ; i++)
-    {
+    for( Integer i=0 ; i<size ; i++){
       const Cell cell = m_managed_cells[i];
       Integer id = cell.localId();
-      m_cell_streams[i]() << " " << ptr[id].x
-                          << " " << ptr[id].y
-                          << " " << ptr[id].z;
+      m_cell_streams[i]->stream() << " " << ptr[id].x
+                                  << " " << ptr[id].y
+                                  << " " << ptr[id].z;
     }
     break;
   default:
@@ -298,19 +307,25 @@ endWrite()
   Integer comp_cell_data_size = 0;
   OStringStream ndata_size_stream, cdata_size_stream;
   OStringStream ndata_name_stream, cdata_name_stream;
-  for(VariableList::Enumerator i(m_save_variables); ++i; )
-  {
+  ndata_size_stream().precision(MAX_FLOAT_DIGIT);
+  ndata_name_stream().precision(MAX_FLOAT_DIGIT);
+  cdata_size_stream().precision(MAX_FLOAT_DIGIT);
+  cdata_name_stream().precision(MAX_FLOAT_DIGIT);
+
+  ndata_size_stream().flags(ios::scientific);
+  ndata_name_stream().flags(ios::scientific);
+  cdata_size_stream().flags(ios::scientific);
+  cdata_name_stream().flags(ios::scientific);
+
+  for(VariableList::Enumerator i(m_save_variables); ++i; ){
     IVariable* var = *i;
 
-    if (var->dimension() == 1)
-    {
+    if (var->dimension() == 1){
       eDataType type = var->dataType();
       eItemKind kind = var->itemKind();
       String name = var->name();
-      if (type == DT_Real)
-      {
-        if (kind == IK_Node)
-        {
+      if (type == DT_Real){
+        if (kind == IK_Node){
           debug() << "  Variable " << name 
                 << " kind = IK_Node, type = DT_Real";
           nb_comp_node_data++;
@@ -318,8 +333,7 @@ endWrite()
           ndata_size_stream() << " 1";  // 1 = taille du Real
           ndata_name_stream() << name << ", Unknown" << '\n';
         }
-        else if (kind == IK_Cell)
-        {
+        else if (kind == IK_Cell){
           debug() << "  Variable " << name 
                 << " kind = IK_Cell, type = DT_Real";
           nb_comp_cell_data++;
@@ -328,10 +342,8 @@ endWrite()
           cdata_name_stream() << name << ", Unknown" << '\n';
         }
       }
-      else if (type == DT_Real3)
-      {
-        if (kind == IK_Node)
-        {
+      else if (type == DT_Real3){
+        if (kind == IK_Node){
           debug() << "  Variable " << name
                 << " kind = IK_Node, type = DT_Real3";
           nb_comp_node_data++;
@@ -339,8 +351,7 @@ endWrite()
           ndata_size_stream() << " 3";  // 3 = taille du Real3
           ndata_name_stream() << name << ", Unknown" << '\n';
         }
-        else if (kind == IK_Cell)
-        {
+        else if (kind == IK_Cell){
           debug() << "  Variable " << name
                 << " kind = IK_Cell, type = DT_Real3";
           nb_comp_cell_data++;
@@ -361,8 +372,7 @@ endWrite()
 
   // ajout des coordonnees des noeuds
   ConstArrayView<Real3> node_coords = mesh->toPrimaryMesh()->nodesCoordinates().asArray();
-  for( Integer i=0 ; i<nb_node ; i++)
-  {
+  for( Integer i=0 ; i<nb_node ; i++){
     const Real3 node_coord = node_coords[i];
     ucd_file << i+1 << " " 
              << node_coord.x << " " 
@@ -371,14 +381,12 @@ endWrite()
   }
 
   // ajout de la description des mailles
-  for( Integer iz=0 ; iz<nb_managed_cell ; ++iz )
-  {
+  for( Integer iz=0 ; iz<nb_managed_cell ; ++iz ){
     const Cell cell = m_managed_cells[iz];
     Integer id = cell.localId();
     ucd_file << id+1 << " 1 ";
     Integer nb_cell_node=cell.nbNode();
-    switch(cell.type())
-    {
+    switch(cell.type()){
     case(IT_Vertex):
       ucd_file << "pt";
       ucd_file << " " << cell.node(0).localId()+1;
@@ -428,31 +436,27 @@ endWrite()
 
   // ajout du nombre de donnees aux noeuds, de leur taille, de leur nom
   // et des valeurs des variables
-  if (nb_comp_node_data)
-  {
+  if (nb_comp_node_data){
     ucd_file << nb_comp_node_data 
              << ndata_size_stream.str() 
              << '\n'
              << ndata_name_stream.str();
     for( Integer i=0 ; i<nb_node ; i++)
-      ucd_file << i+1 << m_node_streams[i].str() << '\n';
+      ucd_file << i+1 << m_node_streams[i]->str() << '\n';
   }
 
   // idem pour les mailles
-  if (nb_comp_cell_data)
-  {
+  if (nb_comp_cell_data){
     ucd_file << nb_comp_cell_data 
              << cdata_size_stream.str() 
              << '\n'
              << cdata_name_stream.str();
-    for( Integer i=0 ; i<nb_managed_cell ; i++)
-    {
+    for( Integer i=0 ; i<nb_managed_cell ; i++){
       const Cell& cell = m_managed_cells[i];
-      ucd_file << cell.localId()+1 << m_cell_streams[i].str() << '\n';
+      ucd_file << cell.localId()+1 << m_cell_streams[i]->str() << '\n';
     }
   }
 
-  // creation du fichier complementaire promethee nomme U_<no_iteration>
   OStringStream code_ostr;
   code_ostr() << "U_";
   code_ostr().fill('0');
@@ -461,7 +465,7 @@ endWrite()
   code_ostr() << '\0';
   buf = m_base_directory.file(code_ostr.str());
   ofstream code_file(buf.localstr());
-  code_file << subDomain()->commonVariables().globalIteration() << '\n'
+  code_file << m_sub_domain->commonVariables().globalIteration() << '\n'
                  << m_times[m_times.size()-1] << '\n'
                  << "3" << '\n' << "1" << '\n'
                  << "7" << '\n' << "Unknown" << '\n'
@@ -484,14 +488,12 @@ class UCDPostProcessorService
 : public PostProcessorWriterBase
 {
  public:
-  UCDPostProcessorService(const ServiceBuildInfo& sbi)
-  : PostProcessorWriterBase(sbi), m_writer(0)
-    {
-    }
-  virtual IDataWriter* dataWriter() { return m_writer; }
-  virtual void notifyBeginWrite();
-  virtual void notifyEndWrite();
-  virtual void close() {}
+  explicit UCDPostProcessorService(const ServiceBuildInfo& sbi)
+  : PostProcessorWriterBase(sbi), m_writer(nullptr) {}
+  IDataWriter* dataWriter() override { return m_writer; }
+  void notifyBeginWrite() override;
+  void notifyEndWrite() override;
+  void close() override {}
  private:
   DumpW* m_writer;
 };
@@ -502,7 +504,8 @@ class UCDPostProcessorService
 void UCDPostProcessorService::
 notifyBeginWrite()
 {
-  m_writer = new DumpWUCD(subDomain()->defaultMesh(),baseDirectoryName(),times(),variables());
+  m_writer = new DumpWUCD(subDomain(),subDomain()->defaultMesh(),
+                          baseDirectoryName(),times(),variables());
 }
 
 void UCDPostProcessorService::
@@ -522,7 +525,7 @@ ARCANE_REGISTER_SUB_DOMAIN_FACTORY(UCDPostProcessorService,IPostProcessorWriter,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
