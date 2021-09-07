@@ -66,6 +66,18 @@ class ArrayBoundsIndexBase
     for( int i=0; i<RankValue; ++i )
       m_indexes[i] = 0;
   }
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndexBase(std::array<Int64,RankValue> _id) : m_indexes(_id){}
+ public:
+  ARCCORE_HOST_DEVICE constexpr Int64 operator[](int i) const
+  {
+    ARCCORE_CHECK_AT(i,RankValue);
+    return m_indexes[i];
+  }
+  ARCCORE_HOST_DEVICE constexpr void add(const ArrayBoundsIndexBase<RankValue>& rhs)
+  {
+    for( int i=0; i<RankValue; ++i )
+      m_indexes[i] += rhs[i];
+  }
  protected:
   std::array<Int64,RankValue> m_indexes;
 };
@@ -79,6 +91,8 @@ class ArrayBoundsIndex<1>
   {
     m_indexes[0] = _id0;
   }
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(std::array<Int64,1> _id)
+  : ArrayBoundsIndexBase<1>(_id) {}
  public:
   ARCCORE_HOST_DEVICE Int64 id0() const { return m_indexes[0]; }
 };
@@ -94,6 +108,8 @@ class ArrayBoundsIndex<2>
     m_indexes[0] = _id0;
     m_indexes[1] = _id1;
   }
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(std::array<Int64,2> _id)
+  : ArrayBoundsIndexBase<2>(_id) {}
  public:
   ARCCORE_HOST_DEVICE Int64 id0() const { return m_indexes[0]; }
   ARCCORE_HOST_DEVICE Int64 id1() const { return m_indexes[1]; }
@@ -111,6 +127,8 @@ class ArrayBoundsIndex<3>
     m_indexes[1] = _id1;
     m_indexes[2] = _id2;
   }
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(std::array<Int64,3> _id)
+  : ArrayBoundsIndexBase<3>(_id) {}
  public:
   ARCCORE_HOST_DEVICE Int64 id0() const { return m_indexes[0]; }
   ARCCORE_HOST_DEVICE Int64 id1() const { return m_indexes[1]; }
@@ -130,6 +148,8 @@ class ArrayBoundsIndex<4>
     m_indexes[2] = _id2;
     m_indexes[3] = _id3;
   }
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(std::array<Int64,4> _id)
+  : ArrayBoundsIndexBase<4>(_id) {}
  public:
   ARCCORE_HOST_DEVICE Int64 id0() const { return m_indexes[0]; }
   ARCCORE_HOST_DEVICE Int64 id1() const { return m_indexes[1]; }
@@ -256,7 +276,8 @@ class ArrayExtentsBase
   //! Positionne à \a v le nombre d'éléments de la i-ème dimension
   ARCCORE_HOST_DEVICE void setExtent(int i,Int64 v) { m_extents[i] = v; }
   ARCCORE_HOST_DEVICE Int64 operator()(int i) const { return m_extents[i]; }
-  ARCCORE_HOST_DEVICE SmallSpan<const Int64> asSpan() const { return { m_extents, RankValue }; }
+  ARCCORE_HOST_DEVICE SmallSpan<const Int64> asSpan() const { return { m_extents.data(), RankValue }; }
+  ARCCORE_HOST_DEVICE std::array<Int64,RankValue> asStdArray() const { return m_extents; }
   //! Nombre total d'eléments
   ARCCORE_HOST_DEVICE constexpr Int64 totalNbElement() const
   {
@@ -268,7 +289,7 @@ class ArrayExtentsBase
   // Instance contenant les dimensions après la première
   ARCCORE_HOST_DEVICE ArrayExtentsBase<RankValue-1> removeFirstExtent() const
   {
-    return ArrayExtentsBase<RankValue-1>::fromSpan({m_extents+1,RankValue-1});
+    return ArrayExtentsBase<RankValue-1>::fromSpan({m_extents.data()+1,RankValue-1});
   }
   /*!
    * \brief Construit une instance à partir des valeurs données dans \a extents.
@@ -283,7 +304,7 @@ class ArrayExtentsBase
     return v;
   }
  protected:
-  Int64 m_extents[RankValue];
+  std::array<Int64,RankValue> m_extents;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -383,6 +404,7 @@ class ArrayExtentsWithOffset<1>
   using BaseClass::extent;
   using BaseClass::operator();
   using BaseClass::asSpan;
+  using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
  public:
   ArrayExtentsWithOffset() = default;
@@ -423,6 +445,7 @@ class ArrayExtentsWithOffset<2>
   using BaseClass::extent;
   using BaseClass::operator();
   using BaseClass::asSpan;
+  using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
  public:
   ArrayExtentsWithOffset() = default;
@@ -465,6 +488,7 @@ class ArrayExtentsWithOffset<3>
   using BaseClass::extent;
   using BaseClass::operator();
   using BaseClass::asSpan;
+  using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
  public:
   ArrayExtentsWithOffset() = default;
@@ -518,6 +542,7 @@ class ArrayExtentsWithOffset<4>
   using BaseClass::extent;
   using BaseClass::operator();
   using BaseClass::asSpan;
+  using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
  public:
   ArrayExtentsWithOffset() = default;
@@ -576,6 +601,7 @@ class ArrayBoundsBase
   constexpr ArrayBoundsBase() : m_nb_element(0) {}
  public:
   ARCCORE_HOST_DEVICE constexpr Int64 nbElement() const { return m_nb_element; }
+  ARCCORE_HOST_DEVICE constexpr std::array<Int64,RankValue> asStdArray() const { return ArrayExtents<RankValue>::asStdArray(); }
  protected:
   constexpr void _computeNbElement()
   {
@@ -593,7 +619,9 @@ class ArrayBounds<1>
  public:
   using IndexType = ArrayBoundsIndex<1>;
   using ArrayBoundsBase<1>::m_extents;
-  explicit constexpr ArrayBounds(Int64 dim1)
+  // Note: le constructeur ne doit pas être explicite pour permettre la conversion
+  // à partir d'un entier.
+  constexpr ArrayBounds(Int64 dim1)
   : ArrayBoundsBase<1>()
   {
     m_extents[0] = dim1;
