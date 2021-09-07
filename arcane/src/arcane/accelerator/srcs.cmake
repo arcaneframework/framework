@@ -9,6 +9,7 @@ set( ARCANE_SOURCES
   RunCommandEnumerate.h
   RunCommand.h
   RunCommand.cc
+  RunCommandLaunchInfo.cc
   IReduceMemoryImpl.h
   IRunQueueRuntime.h
   IRunQueueStream.h

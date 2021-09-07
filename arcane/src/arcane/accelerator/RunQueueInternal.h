@@ -19,6 +19,7 @@
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/IRunQueueRuntime.h"
 #include "arcane/accelerator/NumArray.h"
+#include "arcane/accelerator/RunCommandLaunchInfo.h"
 
 #include "arcane/ItemGroup.h"
 #include "arcane/Concurrency.h"
@@ -53,50 +54,6 @@ ARCCORE_HOST_DEVICE auto privatize(const T& item) -> Privatizer<T>
 {
   return Privatizer<T>{item};
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Object temporaire pour conserver les informations d'exécution d'une
- * commande et regrouper les tests.
- */
-class ARCANE_ACCELERATOR_EXPORT RunCommandLaunchInfo
-{
- public:
-  struct ThreadBlockInfo
-  {
-    int nb_block_per_grid;
-    int nb_thread_per_block;
-  };
- public:
-  RunCommandLaunchInfo(RunCommand& command);
-  ~RunCommandLaunchInfo() ARCANE_NOEXCEPT_FALSE;
-  RunCommandLaunchInfo(const RunCommandLaunchInfo&) = delete;
-  RunCommandLaunchInfo operator=(const RunCommandLaunchInfo&) = delete;
- public:
-  eExecutionPolicy executionPolicy() const { return m_exec_policy; }
-  /*!
-   * \brief Indique qu'on commence l'exécution de la commande.
-   *
-   * Doit toujours être appelé avant de lancer la commande pour être
-   * sur que cette méthode est appelée en cas d'exception.
-   */
-  void beginExecute() { m_has_exec_begun = true; }
-  void endExecute();
-  ThreadBlockInfo computeThreadBlockInfo(Int64 full_size) const;
-  void* _internalStreamImpl();
- private:
-  void _begin();
-  void _checkHasExecBegun();
- private:
-  RunCommand& m_command;
-  bool m_has_exec_begun = false;
-  bool m_is_notify_end_kernel_done = false;
-  IRunQueueRuntime* m_runtime = nullptr;
-  IRunQueueStream* m_queue_stream = nullptr;
-  eExecutionPolicy m_exec_policy = eExecutionPolicy::Sequential;
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
