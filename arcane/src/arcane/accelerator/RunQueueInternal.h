@@ -57,6 +57,63 @@ ARCCORE_HOST_DEVICE auto privatize(const T& item) -> Privatizer<T>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Interval d'itération simple.
+ *
+ * Les indices de début pour chaque dimension commencent à 0.
+ */
+template <int N>
+class SimpleLoopBounds
+{
+ public:
+  typedef typename ArrayBounds<N>::IndexType IndexType;
+ public:
+  SimpleLoopBounds(ArrayBounds<N> b) : m_bounds(b){}
+ public:
+  constexpr Int64 lowerBound(int) const { return 0; }
+  constexpr Int64 upperBound(int i) const { return m_bounds.extent(i); }
+  constexpr Int64 extent(int i) const { return m_bounds.extent(i); }
+  constexpr Int64 nbElement() const { return m_bounds.nbElement(); }
+  constexpr ArrayBoundsIndex<N> getIndices(Int64 i) const { return m_bounds.getIndices(i); }
+ private:
+  ArrayBounds<N> m_bounds;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Interval d'itération complexe.
+ *
+ * Les indices de début pour chaque dimension sont spécifiés \a lower et
+ * le nombre d'éléments dans chaque dimension par \a extents.
+ */
+template <int N>
+class ComplexLoopBounds
+{
+ public:
+  typedef typename ArrayBounds<N>::IndexType IndexType;
+ public:
+  ComplexLoopBounds(ArrayBounds<N> lower,ArrayBounds<N> extents)
+  : m_lower_bounds(lower.asStdArray()), m_extents(extents){}
+ public:
+  constexpr Int64 lowerBound(int i) const { return m_lower_bounds[i]; }
+  constexpr Int64 upperBound(int i) const { return m_lower_bounds[i]+m_extents.extent(i); }
+  constexpr Int64 extent(int i) const { return m_extents.extent(i); }
+  constexpr Int64 nbElement() const { return m_extents.nbElement(); }
+  constexpr ArrayBoundsIndex<N> getIndices(Int64 i) const
+  {
+    auto x = m_extents.getIndices(i);
+    x.add(m_lower_bounds);
+    return x;
+  }
+ private:
+  ArrayBoundsIndex<N> m_lower_bounds;
+  ArrayBounds<N> m_extents;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #if defined(ARCANE_COMPILING_CUDA)
 
@@ -91,8 +148,8 @@ void doDirectCUDALambda(Int64 vsize,Lambda func)
   }
 }
 
-template<int N,typename Lambda> __global__
-void doDirectCUDALambdaArrayBounds(ArrayBounds<N> bounds,Lambda func)
+template<typename LoopBoundType,typename Lambda> __global__
+void doDirectCUDALambdaArrayBounds(LoopBoundType bounds,Lambda func)
 {
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
@@ -139,57 +196,57 @@ void doDirectThreadLambda(Integer begin,Integer size,Lambda func)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Lambda> inline void
-applyGenericLoopSequential(ArrayBounds<1> bounds,const Lambda& func)
+template<template<int T> class LoopBoundType,typename Lambda> inline void
+applyGenericLoopSequential(LoopBoundType<1> bounds,const Lambda& func)
 {
-  for( Int64 i0 = 0; i0 < bounds.extent(0); ++i0 )
+  for( Int64 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
     func(ArrayBoundsIndex<1>(i0));
 }
 
-template<typename Lambda> inline void
-applyGenericLoopSequential(ArrayBounds<2> bounds,const Lambda& func)
+template<template<int T> class LoopBoundType,typename Lambda> inline void
+applyGenericLoopSequential(LoopBoundType<2> bounds,const Lambda& func)
 {
-  for( Int64 i0 = 0; i0 < bounds.extent(0); ++i0 )
-    for( Int64 i1 = 0; i1 < bounds.extent(1); ++i1 )
+  for( Int64 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
+    for( Int64 i1 = bounds.lowerBound(1); i1 < bounds.upperBound(1); ++i1 )
       func(ArrayBoundsIndex<2>(i0,i1));
 }
 
-template<typename Lambda> inline void
-applyGenericLoopSequential(ArrayBounds<3> bounds,const Lambda& func)
+template<template<int T> class LoopBoundType,typename Lambda> inline void
+applyGenericLoopSequential(LoopBoundType<3> bounds,const Lambda& func)
 {
-  for( Int64 i0 = 0; i0 < bounds.extent(0); ++i0 )
-    for( Int64 i1 = 0; i1 < bounds.extent(1); ++i1 )
-      for( Int64 i2 = 0; i2 < bounds.extent(2); ++i2 )
+  for( Int64 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
+    for( Int64 i1 = bounds.lowerBound(1); i1 < bounds.upperBound(1); ++i1 )
+      for( Int64 i2 = bounds.lowerBound(2); i2 < bounds.upperBound(2); ++i2 )
         func(ArrayBoundsIndex<3>(i0,i1,i2));
 }
 
-template<typename Lambda> inline void
-applyGenericLoopSequential(ArrayBounds<4> bounds,const Lambda& func)
+template<template<int> class LoopBoundType,typename Lambda> inline void
+applyGenericLoopSequential(LoopBoundType<4> bounds,const Lambda& func)
 {
-  for( Int64 i0 = 0; i0 < bounds.extent(0); ++i0 )
-    for( Int64 i1 = 0; i1 < bounds.extent(1); ++i1 )
-      for( Int64 i2 = 0; i2 < bounds.extent(2); ++i2 )
-        for( Int64 i3 = 0; i3 < bounds.extent(3); ++i3 )
+  for( Int64 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
+    for( Int64 i1 = bounds.lowerBound(1); i1 < bounds.upperBound(1); ++i1 )
+      for( Int64 i2 = bounds.lowerBound(2); i2 < bounds.upperBound(2); ++i2 )
+        for( Int64 i3 = bounds.lowerBound(3); i3 < bounds.upperBound(3); ++i3 )
           func(ArrayBoundsIndex<4>(i0,i1,i2,i3));
 }
 
-template<typename Lambda> inline void
-applyGenericLoopParallel(Int64 begin,Int64 end,[[maybe_unused]] ArrayBounds<1> bounds,const Lambda& func)
+template<template<int> class LoopBoundType,typename Lambda> inline void
+applyGenericLoopParallel(Int64 begin,Int64 end,[[maybe_unused]] LoopBoundType<1> bounds,const Lambda& func)
 {
   for( Int64 i0 = begin; i0 < end; ++i0 )
     func(ArrayBoundsIndex<1>(i0));
 }
 
-template<typename Lambda> inline void
-applyGenericLoopParallel(Int64 begin,Int64 end,ArrayBounds<2> bounds,const Lambda& func)
+template<template<int> class LoopBoundType,typename Lambda> inline void
+applyGenericLoopParallel(Int64 begin,Int64 end,LoopBoundType<2> bounds,const Lambda& func)
 {
   for( Int64 i0 = begin; i0 < end; ++i0 )
     for( Int64 i1 = 0; i1 < bounds.extent(1); ++i1 )
       func(ArrayBoundsIndex<2>(i0,i1));
 }
 
-template<typename Lambda> inline void
-applyGenericLoopParallel(Int64 begin,Int64 end,ArrayBounds<3> bounds,const Lambda& func)
+template<template<int> class LoopBoundType,typename Lambda> inline void
+applyGenericLoopParallel(Int64 begin,Int64 end,LoopBoundType<3> bounds,const Lambda& func)
 {
   for( Int64 i0 = begin; i0 < end; ++i0 )
     for( Int64 i1 = 0; i1 < bounds.extent(1); ++i1 )
@@ -197,13 +254,13 @@ applyGenericLoopParallel(Int64 begin,Int64 end,ArrayBounds<3> bounds,const Lambd
         func(ArrayBoundsIndex<3>(i0,i1,i2));
 }
 
-template<typename Lambda> inline void
-applyGenericLoopParallel(Int64 begin,Int64 end,ArrayBounds<4> bounds,const Lambda& func)
+template<template<int> class LoopBoundType,typename Lambda> inline void
+applyGenericLoopParallel(Int64 begin,Int64 end,LoopBoundType<4> bounds,const Lambda& func)
 {
   for( Int64 i0 = begin; i0 < end; ++i0 )
-    for( Int64 i1 = 0; i1 < bounds.extent(1); ++i1 )
-      for( Int64 i2 = 0; i2 < bounds.extent(2); ++i2 )
-        for( Int64 i3 = 0; i3 < bounds.extent(3); ++i3 )
+    for( Int64 i1 = bounds.lowerBound(1); i1 < bounds.upperBound(1); ++i1 )
+      for( Int64 i2 = bounds.lowerBound(2); i2 < bounds.upperBound(2); ++i2 )
+        for( Int64 i3 = bounds.lowerBound(3); i3 < bounds.upperBound(3); ++i3 )
           func(ArrayBoundsIndex<4>(i0,i1,i2,i3));
 }
 
@@ -262,8 +319,8 @@ applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,Lambda func)
 /*!
  * \brief Applique la lambda \a func sur une boucle de \a vsize itérations
  */
-template<int N,typename Lambda> void
-applyGenericLoop(RunCommand& command,ArrayBounds<N> bounds,const Lambda& func)
+template<int N,template<int T> class LoopBoundType,typename Lambda> void
+_applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func)
 {
   Int64 vsize = bounds.nbElement();
   if (vsize==0)
@@ -277,7 +334,7 @@ applyGenericLoop(RunCommand& command,ArrayBounds<N> bounds,const Lambda& func)
       auto [b,t] = launch_info.computeThreadBlockInfo(vsize);
       cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
       // TODO: utiliser cudaLaunchKernel() à la place.
-      impl::doDirectCUDALambdaArrayBounds<N,Lambda> <<<b, t, 0, *s>>>(bounds,func);
+      impl::doDirectCUDALambdaArrayBounds<LoopBoundType<N>,Lambda> <<<b, t, 0, *s>>>(bounds,func);
     }
 #endif
     break;
@@ -288,6 +345,7 @@ applyGenericLoop(RunCommand& command,ArrayBounds<N> bounds,const Lambda& func)
   case eExecutionPolicy::Thread:
     launch_info.beginExecute();
     Integer my_size = CheckedConvert::toInteger(bounds.extent(0));
+    Integer lower_bound = CheckedConvert::toInteger(bounds.lowerBound(0));
     ParallelLoopOptions loop_options;
     Integer nb_thread = TaskFactory::nbAllowedThread();
     if (nb_thread==0)
@@ -296,7 +354,7 @@ applyGenericLoop(RunCommand& command,ArrayBounds<N> bounds,const Lambda& func)
     //std::cout << "DO_PARALLEL_FOR n=" << my_size << "\n";
     // TODO: implementer en utilisant une boucle 2D ou 3D qui existe dans TBB
     // ou alors déterminer l'interval à la main
-    arcaneParallelFor(0,my_size,loop_options,[&](Integer begin, Integer size)
+    arcaneParallelFor(lower_bound,my_size,loop_options,[&](Integer begin, Integer size)
     {
       //std::cout << "DO_PARALLEL_FOR_IMPL begin=" << begin << " size=" << size << "\n";
       impl::applyGenericLoopParallel(begin,begin+size,bounds,func);
@@ -309,11 +367,44 @@ applyGenericLoop(RunCommand& command,ArrayBounds<N> bounds,const Lambda& func)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<int N,typename Lambda> void
+applyGenericLoop(RunCommand& command,ArrayBounds<N> bounds,const Lambda& func)
+{
+  _applyGenericLoop(command,impl::SimpleLoopBounds(bounds),func);
+}
+
+template<int N,typename Lambda> void
+applyGenericLoop(RunCommand& command,impl::SimpleLoopBounds<N> bounds,const Lambda& func)
+{
+  _applyGenericLoop(command,bounds,func);
+}
+
+template<int N,typename Lambda> void
+applyGenericLoop(RunCommand& command,impl::ComplexLoopBounds<N> bounds,const Lambda& func)
+{
+  _applyGenericLoop(command,bounds,func);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template<int N,typename Lambda> void
 run(RunCommand& command,ArrayBounds<N> bounds,const Lambda& func)
+{
+  applyGenericLoop(command,bounds,func);
+}
+
+template<int N,typename Lambda> void
+run(RunCommand& command,impl::SimpleLoopBounds<N> bounds,const Lambda& func)
+{
+  applyGenericLoop(command,bounds,func);
+}
+
+template<int N,typename Lambda> void
+run(RunCommand& command,impl::ComplexLoopBounds<N> bounds,const Lambda& func)
 {
   applyGenericLoop(command,bounds,func);
 }

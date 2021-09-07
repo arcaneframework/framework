@@ -26,26 +26,38 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<int N>
+template<int N,typename LoopBoundType>
 class ArrayBoundRunCommand
 {
  public:
-  ArrayBoundRunCommand(RunCommand& command,const ArrayBounds<N>& bounds)
+  ArrayBoundRunCommand(RunCommand& command,const LoopBoundType& bounds)
   : m_command(command), m_bounds(bounds)
   {
   }
   RunCommand& m_command;
-  const ArrayBounds<N>& m_bounds;
+  LoopBoundType m_bounds;
 };
 
-template<int N> ArrayBoundRunCommand<N>
+template<int N> ArrayBoundRunCommand<N,impl::SimpleLoopBounds<N>>
 operator<<(RunCommand& command,const ArrayBounds<N>& bounds)
 {
-  return ArrayBoundRunCommand<N>(command,bounds);
+  return {command,bounds};
 }
 
-template<int N,typename Lambda>
-void operator<<(ArrayBoundRunCommand<N>&& nr,const Lambda& f)
+template<int N> ArrayBoundRunCommand<N,impl::SimpleLoopBounds<N>>
+operator<<(RunCommand& command,const impl::SimpleLoopBounds<N>& bounds)
+{
+  return {command,bounds};
+}
+
+template<int N> ArrayBoundRunCommand<N,impl::ComplexLoopBounds<N>>
+operator<<(RunCommand& command,const impl::ComplexLoopBounds<N>& bounds)
+{
+  return {command,bounds};
+}
+
+template<int N,template<int> class LoopBoundType,typename Lambda>
+void operator<<(ArrayBoundRunCommand<N,LoopBoundType<N>>&& nr,const Lambda& f)
 {
   run(nr.m_command,nr.m_bounds,f);
 }
