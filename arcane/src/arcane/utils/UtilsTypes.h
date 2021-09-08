@@ -187,6 +187,9 @@ template<int RankValue> class ArrayExtentsBase;
 template<int RankValue> class ArrayExtents;
 template<int RankValue> class ArrayStridesBase;
 template<int RankValue> class ArrayExtentsWithOffset;
+class LoopRange;
+template<int RankValue> class SimpleLoopRanges;
+template<int RankValue> class ComplexLoopRanges;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

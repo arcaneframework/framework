@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/LoopRanges.h"
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/IRunQueueRuntime.h"
@@ -37,6 +38,8 @@ namespace Arcane::Accelerator
 
 namespace impl
 {
+using Arcane::SimpleLoopRanges;
+using Arcane::ComplexLoopRanges;
 
 template <typename T>
 struct Privatizer
@@ -54,63 +57,6 @@ ARCCORE_HOST_DEVICE auto privatize(const T& item) -> Privatizer<T>
 {
   return Privatizer<T>{item};
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Interval d'itération simple.
- *
- * Les indices de début pour chaque dimension commencent à 0.
- */
-template <int N>
-class SimpleLoopRanges
-{
- public:
-  typedef typename ArrayBounds<N>::IndexType IndexType;
- public:
-  SimpleLoopRanges(ArrayBounds<N> b) : m_bounds(b){}
- public:
-  constexpr Int64 lowerBound(int) const { return 0; }
-  constexpr Int64 upperBound(int i) const { return m_bounds.extent(i); }
-  constexpr Int64 extent(int i) const { return m_bounds.extent(i); }
-  constexpr Int64 nbElement() const { return m_bounds.nbElement(); }
-  constexpr ArrayBoundsIndex<N> getIndices(Int64 i) const { return m_bounds.getIndices(i); }
- private:
-  ArrayBounds<N> m_bounds;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Interval d'itération complexe.
- *
- * Les indices de début pour chaque dimension sont spécifiés \a lower et
- * le nombre d'éléments dans chaque dimension par \a extents.
- */
-template <int N>
-class ComplexLoopRanges
-{
- public:
-  typedef typename ArrayBounds<N>::IndexType IndexType;
- public:
-  ComplexLoopRanges(ArrayBounds<N> lower,ArrayBounds<N> extents)
-  : m_lower_bounds(lower.asStdArray()), m_extents(extents){}
- public:
-  constexpr Int64 lowerBound(int i) const { return m_lower_bounds[i]; }
-  constexpr Int64 upperBound(int i) const { return m_lower_bounds[i]+m_extents.extent(i); }
-  constexpr Int64 extent(int i) const { return m_extents.extent(i); }
-  constexpr Int64 nbElement() const { return m_extents.nbElement(); }
-  constexpr ArrayBoundsIndex<N> getIndices(Int64 i) const
-  {
-    auto x = m_extents.getIndices(i);
-    x.add(m_lower_bounds);
-    return x;
-  }
- private:
-  ArrayBoundsIndex<N> m_lower_bounds;
-  ArrayBounds<N> m_extents;
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
