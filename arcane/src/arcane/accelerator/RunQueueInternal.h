@@ -208,8 +208,6 @@ applyGenericLoopParallel(Int64 begin,Int64 end,LoopBoundType<4> bounds,const Lam
           func(ArrayBoundsIndex<4>(i0,i1,i2,i3));
 }
 
-} // End namespace impl
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -261,10 +259,10 @@ applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,Lambda func)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Applique la lambda \a func sur une boucle de \a vsize itérations
+ * \brief Applique la lambda \a func sur une boucle \a bounds
  */
 template<int N,template<int T> class LoopBoundType,typename Lambda> void
-_applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func)
+applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func)
 {
   Int64 vsize = bounds.nbElement();
   if (vsize==0)
@@ -311,23 +309,7 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<int N,typename Lambda> void
-applyGenericLoop(RunCommand& command,ArrayBounds<N> bounds,const Lambda& func)
-{
-  _applyGenericLoop(command,SimpleLoopRanges(bounds),func);
-}
-
-template<int N,typename Lambda> void
-applyGenericLoop(RunCommand& command,SimpleLoopRanges<N> bounds,const Lambda& func)
-{
-  _applyGenericLoop(command,bounds,func);
-}
-
-template<int N,typename Lambda> void
-applyGenericLoop(RunCommand& command,ComplexLoopRanges<N> bounds,const Lambda& func)
-{
-  _applyGenericLoop(command,bounds,func);
-}
+} // End namespace impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -335,31 +317,41 @@ applyGenericLoop(RunCommand& command,ComplexLoopRanges<N> bounds,const Lambda& f
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
 template<int N,typename Lambda> void
 run(RunCommand& command,ArrayBounds<N> bounds,const Lambda& func)
 {
-  applyGenericLoop(command,bounds,func);
+  impl::applyGenericLoop(command,SimpleLoopRanges(bounds),func);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
 template<int N,typename Lambda> void
 run(RunCommand& command,SimpleLoopRanges<N> bounds,const Lambda& func)
 {
-  applyGenericLoop(command,bounds,func);
+  impl::applyGenericLoop(command,bounds,func);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
 template<int N,typename Lambda> void
 run(RunCommand& command,ComplexLoopRanges<N> bounds,const Lambda& func)
 {
-  applyGenericLoop(command,bounds,func);
+  impl::applyGenericLoop(command,bounds,func);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
 template<typename ItemType,typename Lambda> void
 run(RunCommand& command,const ItemGroupT<ItemType>& items,Lambda func)
 {
-  applyItems<ItemType>(command,items.view(),std::forward<Lambda>(func));
+  impl::applyItems<ItemType>(command,items.view(),std::forward<Lambda>(func));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -368,7 +360,7 @@ run(RunCommand& command,const ItemGroupT<ItemType>& items,Lambda func)
 template<typename ItemType,typename Lambda> void
 run(RunCommand& command,ItemVectorViewT<ItemType> items,Lambda func)
 {
-  applyItems<ItemType>(command,items,std::forward<Lambda>(func));
+  impl::applyItems<ItemType>(command,items,std::forward<Lambda>(func));
 }
 
 /*---------------------------------------------------------------------------*/
