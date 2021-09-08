@@ -22,8 +22,6 @@
 
 namespace Arcane::Accelerator
 {
-using Arcane::LoopRange;
-using Arcane::makeLoopRanges;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,20 +38,20 @@ class ArrayBoundRunCommand
   LoopBoundType m_bounds;
 };
 
-template<int N> ArrayBoundRunCommand<N,impl::SimpleLoopRanges<N>>
+template<int N> ArrayBoundRunCommand<N,SimpleLoopRanges<N>>
 operator<<(RunCommand& command,const ArrayBounds<N>& bounds)
 {
   return {command,bounds};
 }
 
-template<int N> ArrayBoundRunCommand<N,impl::SimpleLoopRanges<N>>
-operator<<(RunCommand& command,const impl::SimpleLoopRanges<N>& bounds)
+template<int N> ArrayBoundRunCommand<N,SimpleLoopRanges<N>>
+operator<<(RunCommand& command,const SimpleLoopRanges<N>& bounds)
 {
   return {command,bounds};
 }
 
-template<int N> ArrayBoundRunCommand<N,impl::ComplexLoopRanges<N>>
-operator<<(RunCommand& command,const impl::ComplexLoopRanges<N>& bounds)
+template<int N> ArrayBoundRunCommand<N,ComplexLoopRanges<N>>
+operator<<(RunCommand& command,const ComplexLoopRanges<N>& bounds)
 {
   return {command,bounds};
 }

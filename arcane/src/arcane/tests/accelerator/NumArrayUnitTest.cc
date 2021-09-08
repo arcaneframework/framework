@@ -73,7 +73,7 @@ class NumArrayUnitTest
   _doSum(NumArray<double,Rank> values,ArrayBounds<Rank> bounds)
   {
     double total = 0.0;
-    Accelerator::impl::SimpleLoopRanges<Rank> lb(bounds);
+    SimpleLoopRanges<Rank> lb(bounds);
     Accelerator::impl::applyGenericLoopSequential(lb,[&](ArrayBoundsIndex<Rank> idx){ total += values(idx); });
     return total;
   }
@@ -250,7 +250,7 @@ _executeTest2()
     auto command = makeCommand(queue1);
     auto out_t1 = ax::viewOut(command,t1);
     Int64 s1 = 300;
-    auto b = ax::makeLoopRanges(s1,n2,n3,n4);
+    auto b = makeLoopRanges(s1,n2,n3,n4);
     command << RUNCOMMAND_LOOP(iter,b)
     {
       auto [i, j, k, l] = iter();
@@ -262,7 +262,7 @@ _executeTest2()
     auto out_t1 = ax::viewOut(command,t1);
     Int64 base = 300;
     Int64 s1 = 400;
-    auto b = ax::makeLoopRanges({base,s1},n2,n3,n4);
+    auto b = makeLoopRanges({base,s1},n2,n3,n4);
     command << RUNCOMMAND_LOOP(iter,b)
     {
       auto [i, j, k, l] = iter();
@@ -274,7 +274,7 @@ _executeTest2()
     auto out_t1 = ax::viewOut(command,t1);
     Int64 base = 700;
     Int64 s1 = 300;
-    auto b = ax::makeLoopRanges({base,s1},n2,n3,n4);
+    auto b = makeLoopRanges({base,s1},n2,n3,n4);
     command << RUNCOMMAND_LOOP(iter,b)
     {
       auto [i, j, k, l] = iter();

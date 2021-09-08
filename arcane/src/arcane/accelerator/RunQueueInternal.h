@@ -38,8 +38,6 @@ namespace Arcane::Accelerator
 
 namespace impl
 {
-using Arcane::SimpleLoopRanges;
-using Arcane::ComplexLoopRanges;
 
 template <typename T>
 struct Privatizer
@@ -316,17 +314,17 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
 template<int N,typename Lambda> void
 applyGenericLoop(RunCommand& command,ArrayBounds<N> bounds,const Lambda& func)
 {
-  _applyGenericLoop(command,impl::SimpleLoopRanges(bounds),func);
+  _applyGenericLoop(command,SimpleLoopRanges(bounds),func);
 }
 
 template<int N,typename Lambda> void
-applyGenericLoop(RunCommand& command,impl::SimpleLoopRanges<N> bounds,const Lambda& func)
+applyGenericLoop(RunCommand& command,SimpleLoopRanges<N> bounds,const Lambda& func)
 {
   _applyGenericLoop(command,bounds,func);
 }
 
 template<int N,typename Lambda> void
-applyGenericLoop(RunCommand& command,impl::ComplexLoopRanges<N> bounds,const Lambda& func)
+applyGenericLoop(RunCommand& command,ComplexLoopRanges<N> bounds,const Lambda& func)
 {
   _applyGenericLoop(command,bounds,func);
 }
@@ -344,13 +342,13 @@ run(RunCommand& command,ArrayBounds<N> bounds,const Lambda& func)
 }
 
 template<int N,typename Lambda> void
-run(RunCommand& command,impl::SimpleLoopRanges<N> bounds,const Lambda& func)
+run(RunCommand& command,SimpleLoopRanges<N> bounds,const Lambda& func)
 {
   applyGenericLoop(command,bounds,func);
 }
 
 template<int N,typename Lambda> void
-run(RunCommand& command,impl::ComplexLoopRanges<N> bounds,const Lambda& func)
+run(RunCommand& command,ComplexLoopRanges<N> bounds,const Lambda& func)
 {
   applyGenericLoop(command,bounds,func);
 }
