@@ -106,6 +106,8 @@ set(ARCANE_SOURCES
   VersionInfo.h
   ApplicationInfo.h
   ArcaneGlobal.h
+  ArrayExtents.h
+  ArrayBounds.h
   ArithmeticException.h
   Array.h
   Atomic.h

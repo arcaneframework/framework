@@ -176,6 +176,21 @@ class VersionInfo;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<typename DataType,int RankValue>
+class NumArrayBase;
+template<class DataType,int RankValue>
+class NumArray;
+template<int RankValue> class ArrayBounds;
+template<int RankValue> class ArrayBoundsIndexBase;
+template<int RankValue> class ArrayBoundsIndex;
+template<int RankValue> class ArrayExtentsBase;
+template<int RankValue> class ArrayExtents;
+template<int RankValue> class ArrayStridesBase;
+template<int RankValue> class ArrayExtentsWithOffset;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 //! Tableau dynamique à une dimension de pointeurs
 typedef Array<Pointer> PointerArray;
 //! Tableau dynamique à une dimension de caractères
