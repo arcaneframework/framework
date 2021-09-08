@@ -38,20 +38,20 @@ class ArrayBoundRunCommand
   LoopBoundType m_bounds;
 };
 
-template<int N> ArrayBoundRunCommand<N,impl::SimpleLoopBounds<N>>
+template<int N> ArrayBoundRunCommand<N,impl::SimpleLoopRanges<N>>
 operator<<(RunCommand& command,const ArrayBounds<N>& bounds)
 {
   return {command,bounds};
 }
 
-template<int N> ArrayBoundRunCommand<N,impl::SimpleLoopBounds<N>>
-operator<<(RunCommand& command,const impl::SimpleLoopBounds<N>& bounds)
+template<int N> ArrayBoundRunCommand<N,impl::SimpleLoopRanges<N>>
+operator<<(RunCommand& command,const impl::SimpleLoopRanges<N>& bounds)
 {
   return {command,bounds};
 }
 
-template<int N> ArrayBoundRunCommand<N,impl::ComplexLoopBounds<N>>
-operator<<(RunCommand& command,const impl::ComplexLoopBounds<N>& bounds)
+template<int N> ArrayBoundRunCommand<N,impl::ComplexLoopRanges<N>>
+operator<<(RunCommand& command,const impl::ComplexLoopRanges<N>& bounds)
 {
   return {command,bounds};
 }
@@ -60,6 +60,89 @@ template<int N,template<int> class LoopBoundType,typename Lambda>
 void operator<<(ArrayBoundRunCommand<N,LoopBoundType<N>>&& nr,const Lambda& f)
 {
   run(nr.m_command,nr.m_bounds,f);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Intervalle d'itération pour une boucle.
+ */
+struct LoopRange
+{
+ public:
+  //! Créé un interval entre *[lower_bound,lower_bound+size[*
+  LoopRange(Int64 lower_bound,Int64 size)
+  : m_lower_bound(lower_bound), m_size(size){}
+  //! Créé un interval entre *[0,size[*
+  LoopRange(Int64 size)
+  : m_lower_bound(0), m_size(size){}
+ public:
+  constexpr Int64 lowerBound() const { return m_lower_bound; }
+  constexpr Int64 size() const { return m_size; }
+  constexpr Int64 upperBound() const { return m_lower_bound+m_size; }
+ private:
+  Int64 m_lower_bound;
+  Int64 m_size;
+};
+
+inline impl::SimpleLoopRanges<1>
+makeLoopRanges(Int64 n1)
+{
+  ArrayBounds<1> bounds(n1);
+  return bounds;
+}
+
+inline impl::SimpleLoopRanges<2>
+makeLoopRanges(Int64 n1,Int64 n2)
+{
+  ArrayBounds<2> bounds(n1,n2);
+  return bounds;
+}
+
+inline impl::SimpleLoopRanges<3>
+makeLoopRanges(Int64 n1,Int64 n2,Int64 n3)
+{
+  ArrayBounds<3> bounds(n1,n2,n3);
+  return bounds;
+}
+
+inline impl::SimpleLoopRanges<4>
+makeLoopRanges(Int64 n1,Int64 n2,Int64 n3,Int64 n4)
+{
+  ArrayBounds<4> bounds(n1,n2,n3,n4);
+  return bounds;
+}
+
+inline impl::ComplexLoopRanges<1>
+makeLoopRanges(LoopRange n1)
+{
+  ArrayBounds<1> lower_bounds(n1.lowerBound());
+  ArrayBounds<1> sizes(n1.size());
+  return {lower_bounds,sizes};
+}
+
+inline impl::ComplexLoopRanges<2>
+makeLoopRanges(LoopRange n1,LoopRange n2)
+{
+  ArrayBounds<2> lower_bounds(n1.lowerBound(),n2.lowerBound());
+  ArrayBounds<2> sizes(n1.size(),n2.size());
+  return {lower_bounds,sizes};
+}
+
+inline impl::ComplexLoopRanges<3>
+makeLoopRanges(LoopRange n1,LoopRange n2,LoopRange n3)
+{
+  ArrayBounds<3> lower_bounds(n1.lowerBound(),n2.lowerBound(),n3.lowerBound());
+  ArrayBounds<3> sizes(n1.size(),n2.size(),n3.size());
+  return {lower_bounds,sizes};
+}
+
+inline impl::ComplexLoopRanges<4>
+makeLoopRanges(LoopRange n1,LoopRange n2,LoopRange n3,LoopRange n4)
+{
+  ArrayBounds<4> lower_bounds(n1.lowerBound(),n2.lowerBound(),n3.lowerBound(),n4.lowerBound());
+  ArrayBounds<4> sizes(n1.size(),n2.size(),n3.size(),n4.size());
+  return {lower_bounds,sizes};
 }
 
 /*---------------------------------------------------------------------------*/

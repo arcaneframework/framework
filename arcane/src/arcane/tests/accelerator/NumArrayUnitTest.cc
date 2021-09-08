@@ -73,7 +73,7 @@ class NumArrayUnitTest
   _doSum(NumArray<double,Rank> values,ArrayBounds<Rank> bounds)
   {
     double total = 0.0;
-    Accelerator::impl::SimpleLoopBounds<Rank> lb(bounds);
+    Accelerator::impl::SimpleLoopRanges<Rank> lb(bounds);
     Accelerator::impl::applyGenericLoopSequential(lb,[&](ArrayBoundsIndex<Rank> idx){ total += values(idx); });
     return total;
   }
@@ -130,37 +130,6 @@ executeTest()
   // de RunQueue.
   _executeTest2();
   _executeTest2();
-}
-
-namespace
-{
-
-struct MyBound
-{
- public:
-  MyBound(Int64 lower_bound,Int64 upper_bound)
-  : m_lower_bound(lower_bound), m_upper_bound(upper_bound){}
-  MyBound(Int64 upper_bound)
-  : m_lower_bound(0), m_upper_bound(upper_bound){}
- public:
-  Int64 m_lower_bound;
-  Int64 m_upper_bound;
-};
-
-inline ax::impl::SimpleLoopBounds<4>
-makeBounds(Int64 n1,Int64 n2,Int64 n3,Int64 n4)
-{
-  ArrayBounds<4> bounds(n1,n2,n3,n4);
-  return bounds;
-}
-
-inline ax::impl::ComplexLoopBounds<4>
-makeBounds(MyBound n1,MyBound n2,MyBound n3,MyBound n4)
-{
-  ArrayBounds<4> lower_bounds(n1.m_lower_bound,n2.m_lower_bound,n3.m_lower_bound,n4.m_lower_bound);
-  ArrayBounds<4> upper_bounds(n1.m_upper_bound,n2.m_upper_bound,n3.m_upper_bound,n4.m_upper_bound);
-  return {lower_bounds,upper_bounds};
-}
 }
 
 void NumArrayUnitTest::
@@ -281,7 +250,7 @@ _executeTest2()
     auto command = makeCommand(queue1);
     auto out_t1 = ax::viewOut(command,t1);
     Int64 s1 = 300;
-    auto b = makeBounds(s1,n2,n3,n4);
+    auto b = ax::makeLoopRanges(s1,n2,n3,n4);
     command << RUNCOMMAND_LOOP(iter,b)
     {
       auto [i, j, k, l] = iter();
@@ -293,7 +262,7 @@ _executeTest2()
     auto out_t1 = ax::viewOut(command,t1);
     Int64 base = 300;
     Int64 s1 = 400;
-    auto b = makeBounds({base,s1},n2,n3,n4);
+    auto b = ax::makeLoopRanges({base,s1},n2,n3,n4);
     command << RUNCOMMAND_LOOP(iter,b)
     {
       auto [i, j, k, l] = iter();
@@ -305,7 +274,7 @@ _executeTest2()
     auto out_t1 = ax::viewOut(command,t1);
     Int64 base = 700;
     Int64 s1 = 300;
-    auto b = makeBounds({base,s1},n2,n3,n4);
+    auto b = ax::makeLoopRanges({base,s1},n2,n3,n4);
     command << RUNCOMMAND_LOOP(iter,b)
     {
       auto [i, j, k, l] = iter();

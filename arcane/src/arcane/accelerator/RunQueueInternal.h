@@ -63,12 +63,12 @@ ARCCORE_HOST_DEVICE auto privatize(const T& item) -> Privatizer<T>
  * Les indices de début pour chaque dimension commencent à 0.
  */
 template <int N>
-class SimpleLoopBounds
+class SimpleLoopRanges
 {
  public:
   typedef typename ArrayBounds<N>::IndexType IndexType;
  public:
-  SimpleLoopBounds(ArrayBounds<N> b) : m_bounds(b){}
+  SimpleLoopRanges(ArrayBounds<N> b) : m_bounds(b){}
  public:
   constexpr Int64 lowerBound(int) const { return 0; }
   constexpr Int64 upperBound(int i) const { return m_bounds.extent(i); }
@@ -89,12 +89,12 @@ class SimpleLoopBounds
  * le nombre d'éléments dans chaque dimension par \a extents.
  */
 template <int N>
-class ComplexLoopBounds
+class ComplexLoopRanges
 {
  public:
   typedef typename ArrayBounds<N>::IndexType IndexType;
  public:
-  ComplexLoopBounds(ArrayBounds<N> lower,ArrayBounds<N> extents)
+  ComplexLoopRanges(ArrayBounds<N> lower,ArrayBounds<N> extents)
   : m_lower_bounds(lower.asStdArray()), m_extents(extents){}
  public:
   constexpr Int64 lowerBound(int i) const { return m_lower_bounds[i]; }
@@ -370,17 +370,17 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
 template<int N,typename Lambda> void
 applyGenericLoop(RunCommand& command,ArrayBounds<N> bounds,const Lambda& func)
 {
-  _applyGenericLoop(command,impl::SimpleLoopBounds(bounds),func);
+  _applyGenericLoop(command,impl::SimpleLoopRanges(bounds),func);
 }
 
 template<int N,typename Lambda> void
-applyGenericLoop(RunCommand& command,impl::SimpleLoopBounds<N> bounds,const Lambda& func)
+applyGenericLoop(RunCommand& command,impl::SimpleLoopRanges<N> bounds,const Lambda& func)
 {
   _applyGenericLoop(command,bounds,func);
 }
 
 template<int N,typename Lambda> void
-applyGenericLoop(RunCommand& command,impl::ComplexLoopBounds<N> bounds,const Lambda& func)
+applyGenericLoop(RunCommand& command,impl::ComplexLoopRanges<N> bounds,const Lambda& func)
 {
   _applyGenericLoop(command,bounds,func);
 }
@@ -398,13 +398,13 @@ run(RunCommand& command,ArrayBounds<N> bounds,const Lambda& func)
 }
 
 template<int N,typename Lambda> void
-run(RunCommand& command,impl::SimpleLoopBounds<N> bounds,const Lambda& func)
+run(RunCommand& command,impl::SimpleLoopRanges<N> bounds,const Lambda& func)
 {
   applyGenericLoop(command,bounds,func);
 }
 
 template<int N,typename Lambda> void
-run(RunCommand& command,impl::ComplexLoopBounds<N> bounds,const Lambda& func)
+run(RunCommand& command,impl::ComplexLoopRanges<N> bounds,const Lambda& func)
 {
   applyGenericLoop(command,bounds,func);
 }
