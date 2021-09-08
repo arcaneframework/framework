@@ -12,7 +12,7 @@
 #include "arcane/accelerator/cuda/CudaAccelerator.h"
 #include "arcane/accelerator/Runner.h"
 #include "arcane/accelerator/RunQueue.h"
-#include "arcane/accelerator/RunQueueInternal.h"
+#include "arcane/accelerator/RunCommandLoop.h"
 #include "arcane/accelerator/NumArray.h"
 
 using namespace Arccore;

@@ -22,7 +22,6 @@
 #include "arcane/accelerator/NumArray.h"
 #include "arcane/accelerator/RunCommandLaunchInfo.h"
 
-#include "arcane/ItemGroup.h"
 #include "arcane/Concurrency.h"
 
 /*---------------------------------------------------------------------------*/
@@ -112,19 +111,6 @@ void doDirectCUDALambdaArrayBounds(LoopBoundType bounds,Lambda func)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ItemType,typename Lambda>
-void DoIndirectThreadLambda(ItemVectorViewT<ItemType> sub_items,Lambda func)
-{
-  typedef typename ItemType::LocalIdType LocalIdType;
-
-  auto privatizer = privatize(func);
-  auto& body = privatizer.privateCopy();
-
-  ENUMERATE_ITEM(iitem,sub_items){
-    body(LocalIdType(iitem.itemLocalId()));
-  }
-}
-
 template<typename Lambda>
 void doDirectThreadLambda(Integer begin,Integer size,Lambda func)
 {
@@ -210,158 +196,11 @@ applyGenericLoopParallel(Int64 begin,Int64 end,LoopBoundType<4> bounds,const Lam
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Applique l'enumération \a func sur la liste d'entité \a items.
- */
-template<typename ItemType,typename Lambda> void
-applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,Lambda func)
-{
-  // TODO: fusionner la partie commune avec 'applyLoop'
-  Integer vsize = items.size();
-  if (vsize==0)
-    return;
-  typedef typename ItemType::LocalIdType LocalIdType;
-  impl::RunCommandLaunchInfo launch_info(command);
-  switch(launch_info.executionPolicy()){
-  case eExecutionPolicy::CUDA:
-#if defined(ARCANE_COMPILING_CUDA)
-    {
-      launch_info.beginExecute();
-      Span<const Int32> local_ids = items.localIds();
-      auto [b,t] = launch_info.computeThreadBlockInfo(vsize);
-      cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
-      // TODO: utiliser cudaLaunchKernel() à la place.
-      impl::doIndirectCUDALambda<ItemType,Lambda> <<<b,t,0,*s>>>(local_ids,std::forward<Lambda>(func));
-    }
-#endif
-    break;
-  case eExecutionPolicy::Sequential:
-    {
-      launch_info.beginExecute();
-      ENUMERATE_ITEM(iitem,items){
-        func(LocalIdType(iitem.itemLocalId()));
-      }
-    }
-    break;
-  case eExecutionPolicy::Thread:
-    {
-      launch_info.beginExecute();
-      arcaneParallelForeach(items,
-                            [&](ItemVectorViewT<ItemType> sub_items)
-                            {
-                              impl::DoIndirectThreadLambda(sub_items,func);
-                            });
-    }
-  }
-  launch_info.endExecute();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Applique la lambda \a func sur une boucle \a bounds
- */
-template<int N,template<int T> class LoopBoundType,typename Lambda> void
-applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func)
-{
-  Int64 vsize = bounds.nbElement();
-  if (vsize==0)
-    return;
-  impl::RunCommandLaunchInfo launch_info(command);
-  switch(launch_info.executionPolicy()){
-  case eExecutionPolicy::CUDA:
-#if defined(ARCANE_COMPILING_CUDA)
-    {
-      launch_info.beginExecute();
-      auto [b,t] = launch_info.computeThreadBlockInfo(vsize);
-      cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
-      // TODO: utiliser cudaLaunchKernel() à la place.
-      impl::doDirectCUDALambdaArrayBounds<LoopBoundType<N>,Lambda> <<<b, t, 0, *s>>>(bounds,func);
-    }
-#endif
-    break;
-  case eExecutionPolicy::Sequential:
-    launch_info.beginExecute();
-    impl::applyGenericLoopSequential(bounds,func);
-    break;
-  case eExecutionPolicy::Thread:
-    launch_info.beginExecute();
-    Integer my_size = CheckedConvert::toInteger(bounds.extent(0));
-    Integer lower_bound = CheckedConvert::toInteger(bounds.lowerBound(0));
-    ParallelLoopOptions loop_options;
-    Integer nb_thread = TaskFactory::nbAllowedThread();
-    if (nb_thread==0)
-      nb_thread = 1;
-    loop_options.setGrainSize(my_size/nb_thread);
-    //std::cout << "DO_PARALLEL_FOR n=" << my_size << "\n";
-    // TODO: implementer en utilisant une boucle 2D ou 3D qui existe dans TBB
-    // ou alors déterminer l'interval à la main
-    arcaneParallelFor(lower_bound,my_size,loop_options,[&](Integer begin, Integer size)
-    {
-      //std::cout << "DO_PARALLEL_FOR_IMPL begin=" << begin << " size=" << size << "\n";
-      impl::applyGenericLoopParallel(begin,begin+size,bounds,func);
-    });
-    break;
-  }
-  launch_info.endExecute();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 } // End namespace impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
-template<int N,typename Lambda> void
-run(RunCommand& command,ArrayBounds<N> bounds,const Lambda& func)
-{
-  impl::applyGenericLoop(command,SimpleLoopRanges(bounds),func);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
-template<int N,typename Lambda> void
-run(RunCommand& command,SimpleLoopRanges<N> bounds,const Lambda& func)
-{
-  impl::applyGenericLoop(command,bounds,func);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
-template<int N,typename Lambda> void
-run(RunCommand& command,ComplexLoopRanges<N> bounds,const Lambda& func)
-{
-  impl::applyGenericLoop(command,bounds,func);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
-template<typename ItemType,typename Lambda> void
-run(RunCommand& command,const ItemGroupT<ItemType>& items,Lambda func)
-{
-  impl::applyItems<ItemType>(command,items.view(),std::forward<Lambda>(func));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename ItemType,typename Lambda> void
-run(RunCommand& command,ItemVectorViewT<ItemType> items,Lambda func)
-{
-  impl::applyItems<ItemType>(command,items,std::forward<Lambda>(func));
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
