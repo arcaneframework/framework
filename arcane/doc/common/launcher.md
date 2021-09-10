@@ -163,7 +163,7 @@ Les options disponibles sont:
 
 <tr>
 <td>S</td>
-<td>ARCANE_NB_THREAD (obsolète)</td>
+<td>ARCANE_NB_THREAD **(obsolète)**</td>
 <td>Int32</td>
 <td></td>
 <td>Nombre de sous-domaines en mémoire partagée</td>
@@ -171,7 +171,7 @@ Les options disponibles sont:
 
 <tr>
 <td>R</td>
-<td>ARCANE_NB_REPLICATION (obsolète)</td>
+<td>ARCANE_NB_REPLICATION **(obsolète)**</td>
 <td>Int32</td>
 <td>1</td>
 <td>Nombre de sous-domaines répliqués</td>
@@ -179,7 +179,7 @@ Les options disponibles sont:
 
 <tr>
 <td>P</td>
-<td>ARCANE_NB_SUB_DOMAIN (obsolète)</td>
+<td>ARCANE_NB_SUB_DOMAIN **(obsolète)**</td>
 <td>Int32</td>
 <td></td>
 <td>Nombre de processus à utiliser pour les sous-domaines. Cette
