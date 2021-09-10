@@ -25,4 +25,6 @@ addSources(alien_ifpen_solvers
     linear_solver/arcane/MCGLinearSolver.cc
     )
 
+add_definitions(-DUSE_HWLOC)
+
 linkLibraries(alien_ifpen_solvers mcgsolver nvamg hwloc metis hdf5 cuda)
