@@ -355,11 +355,11 @@ Cette version comporte les développements suivants:
   équilibrage de charge et retour-arrière.
 - Possibilité de détruire les maillages additionnels via un la classe
   Arcane::IMeshMng:
-  ~~~~~~~~~~~~~~~~~~~~~{.cpp}
-Arcane::ISubDomain* sd = ...;
-Arcane::IMesh* mesh_to_destroy = ...;
-sd->meshMng()->destroyMesh(mesh_to_destroy);
-~~~~~~~~~~~~~~~~~~~~~
+  ~~~~~~~~~~~~~~~~~~~~{.cpp}
+  Arcane::ISubDomain* sd = ...;
+  Arcane::IMesh* mesh_to_destroy = ...;
+  sd->meshMng()->destroyMesh(mesh_to_destroy);
+  ~~~~~~~~~~~~~~~~~~~~
   Le pointeur `mesh_to_destroy` ne doit plus être utilisé après appel
   à la méthode de destruction.
 - Support dans Arcane::mesh::BasicParticleExchanger des particules qui
@@ -380,6 +380,7 @@ Arcane Version 2.16.0 (18 juillet 2019) {#arcanedoc_version2160}
 ======================================
 
 Cette version comporte les développements suivants:
+
 - Ajout du profiling interne pour les points d'entrée et les appels
   MPI. Le format des traces dépend de la valeur de la variable
   d'environnement qui active cette fonctionnalité :
@@ -397,6 +398,7 @@ Arcane Version 2.15.0 (13 juin 2019) {#arcanedoc_version2150}
 ======================================
 
 Cette version comporte les développements suivants:
+
 - Support pour les messages MPI de plus de 2Go. Cela ne concerne que
   les message de type MPI_Send/MPI_Recv et uniquement si on passe
   par Arcane::ISerializer.
@@ -434,6 +436,7 @@ Arcane Version 2.14.0 (04 mars 2019) {#arcanedoc_version2140}
 ======================================
 
 Cette version comporte les développements suivants:
+
 - intégration des développements IFPEN concernant les entités de type
   *degré de liberté* (classe Arcane::DoF).
 - possibilité de rediriger les sorties listing à la fois sur le flot
@@ -455,6 +458,7 @@ Arcane Version 2.13.0 (21 janvier 2019) {#arcanedoc_version2130}
 ======================================
 
 Cette version comporte les développements suivants:
+
 - **[INCOMPATIBILITÉ]** Modification des méthodes *begin()* et *end()* pour les
   classes tableaux et vues sur les tableaux (Arccore::ArrayView,
   Arccore::ConstArrayView, Arccore::Span, Arccore::Array) afin de
@@ -476,6 +480,7 @@ Arcane Version 2.12.0 (11 décembre 2018) {#arcanedoc_version2120}
 ======================================
 
 Cette version comporte les développements suivants:
+
 - amélioration de la visualisation des variables avec les dernières
   versions de totalview et ajout de la visualisation pour les
   variables scalaires
@@ -488,6 +493,7 @@ Arcane Version 2.11.0 (18 octobre 2018) {#arcanedoc_version2110}
 ======================================
 
 Cette version comporte les développements suivants:
+
 - Support des tableaux (Arccore::Array) et chaînes de caractères
   (Arccore::String) dépassant 2Go. En interne, le nombre d'éléments
   est maintenant stocké sur 64bits au lieu de 32bits.
@@ -499,6 +505,7 @@ Arcane Version 2.10.1 (04 octobre 2018) {#arcanedoc_version2101}
 ======================================
 
 Cette version comporte les développements suivants:
+
 - Possibilité de spécifier plusieurs interfaces pour les services via
   la macro ARCANE_REGISTER_SERVICE(). Auparavant cela n'était possible
   que via les fichiers 'axl'.
@@ -523,6 +530,7 @@ Arcane Version 2.10.0 (septembre 2018) {#arcanedoc_version2100}
 ======================================
 
 Cette version comporte les développements suivants:
+
 - Création d'une nouvelle composante '%Arccore' regroupant la partie de
   %Arcane commune avec Alien. Cette composante contient une partie de
   'arcane_utils' et 'arcane_mpi'. Par conséquent, les classes de base
@@ -569,6 +577,7 @@ for( A* a : array_of_b){
   est du type std::random_iterator.
   Suivant les cas d'utilisation, le code actuel peut-être changé comme
   suit:
+  
   - Utilisation de begin() pour récupérer un pointeur sur le début du
     tableau: utiliser data() à la place:
 ~~~~~~~~~~~~~~~~~~~~~{.cpp}
