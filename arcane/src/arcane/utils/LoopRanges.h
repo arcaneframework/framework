@@ -108,7 +108,7 @@ class ComplexLoopRanges
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+//! Créé un intervalle d'itération [0,n1[
 inline SimpleLoopRanges<1>
 makeLoopRanges(Int64 n1)
 {
@@ -116,6 +116,7 @@ makeLoopRanges(Int64 n1)
   return bounds;
 }
 
+//! Créé un intervalle d'itération [0,n1[,[0,n2[
 inline SimpleLoopRanges<2>
 makeLoopRanges(Int64 n1,Int64 n2)
 {
@@ -123,6 +124,7 @@ makeLoopRanges(Int64 n1,Int64 n2)
   return bounds;
 }
 
+//! Créé un intervalle d'itération [0,n1[,[0,n2[,[0,n3[
 inline SimpleLoopRanges<3>
 makeLoopRanges(Int64 n1,Int64 n2,Int64 n3)
 {
@@ -130,6 +132,7 @@ makeLoopRanges(Int64 n1,Int64 n2,Int64 n3)
   return bounds;
 }
 
+//! Créé un intervalle d'itération [0,n1[,[0,n2[,[0,n3[,[0,n4[
 inline SimpleLoopRanges<4>
 makeLoopRanges(Int64 n1,Int64 n2,Int64 n3,Int64 n4)
 {
@@ -137,6 +140,7 @@ makeLoopRanges(Int64 n1,Int64 n2,Int64 n3,Int64 n4)
   return bounds;
 }
 
+//! Créé un intervalle d'itération dans ℕ.
 inline ComplexLoopRanges<1>
 makeLoopRanges(LoopRange n1)
 {
@@ -145,6 +149,7 @@ makeLoopRanges(LoopRange n1)
   return {lower_bounds,sizes};
 }
 
+//! Créé un intervalle d'itération dans ℕ².
 inline ComplexLoopRanges<2>
 makeLoopRanges(LoopRange n1,LoopRange n2)
 {
@@ -153,6 +158,7 @@ makeLoopRanges(LoopRange n1,LoopRange n2)
   return {lower_bounds,sizes};
 }
 
+//! Créé un intervalle d'itération dans ℕ³.
 inline ComplexLoopRanges<3>
 makeLoopRanges(LoopRange n1,LoopRange n2,LoopRange n3)
 {
@@ -161,6 +167,7 @@ makeLoopRanges(LoopRange n1,LoopRange n2,LoopRange n3)
   return {lower_bounds,sizes};
 }
 
+//! Créé un intervalle d'itération dans ℕ⁴.
 inline ComplexLoopRanges<4>
 makeLoopRanges(LoopRange n1,LoopRange n2,LoopRange n3,LoopRange n4)
 {
