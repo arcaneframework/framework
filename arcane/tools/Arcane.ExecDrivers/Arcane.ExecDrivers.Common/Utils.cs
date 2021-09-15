@@ -93,7 +93,10 @@ namespace Arcane.ExecDrivers.Common
       Assembly a = Assembly.GetExecutingAssembly();
       string path = a.Location;
 
-      string config_path = path + ".config.json";
+      // Regarde si la version 'install' existe et si c'est le cas prend ce fichier de configuration
+      string config_path = path + ".install.config.json";
+      if (!File.Exists(config_path))
+        config_path = path + ".config.json";
       var settings =_ReadConfigJSON(config_path);
       m_settings = settings;
 

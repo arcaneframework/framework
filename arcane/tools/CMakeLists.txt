@@ -267,8 +267,9 @@ install(PROGRAMS
   DESTINATION bin)
 
 # A revoir pour Win32
+message(STATUS "TEST WHERE INSTALL: ${CMAKE_BINARY_DIR}/${ARCANE_DOTNET_PUBLISH_RELATIVE_DIR}_install/Arcane.ExecDrivers.dll.config.json")
 install(FILES ${CMAKE_BINARY_DIR}/${ARCANE_DOTNET_PUBLISH_RELATIVE_DIR}_install/Arcane.ExecDrivers.dll.config.json
-  DESTINATION ${ARCANE_DOTNET_PUBLISH_RELATIVE_DIR})
+  DESTINATION ${ARCANE_DOTNET_PUBLISH_RELATIVE_DIR} RENAME Arcane.ExecDrivers.dll.install.config.json)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
