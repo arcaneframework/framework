@@ -55,12 +55,12 @@ option(ALIEN_PLUGIN_PETSC "Whether or not to compile PETSc backend" OFF)
 option(ALIEN_PLUGIN_SUPERLU "Whether or not to compile SuperLU backend" OFF)
 option(ALIEN_PLUGIN_TRILINOS "Whether or not to compile Trilinos backend" OFF)
 
-set(DEFAULT_EMBEDDED OFF)
 get_filename_component(_fp_framework "framework/CMake" REALPATH)
 if (EXISTS ${_fp_framework})
-    set(DEFAULT_EMBEDDED ON)
+  option(ALIENDEV_EMBEDDED "[dev] forbid to compile Arcon and Arccore" ${ALIEN_DEFAULT_OPTIONS})
+else()
+  set(ALIENDEV_EMBEDDED OFF)
 endif()
-option(ALIENDEV_EMBEDDED "[dev] forbid to compile Arcon and Arccore" ${DEFAULT_EMBEDDED})
 
 # Make this conditional.
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
