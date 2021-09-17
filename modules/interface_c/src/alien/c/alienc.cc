@@ -15,7 +15,7 @@
 
 #include <unordered_map>
 
-
+#include <arccore/base/StringBuilder.h>
 #include <alien/AlienLegacyConfig.h>
 #include <alien/data/Universe.h>
 #include <alien/index_manager/IndexManager.h>
@@ -229,8 +229,9 @@ private :
   std::vector<std::unique_ptr<LinearSolver> > m_linear_solvers ;
 
 
-  Arccore::ITraceMng*                          m_trace_mng    = nullptr;
-  Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng = nullptr;
+  Arccore::ITraceMng*                              m_trace_mng    = nullptr;
+  Arccore::ReferenceCounter<Arccore::ITraceStream> m_ofile ;
+  Arccore::MessagePassing::IMessagePassingMng*     m_parallel_mng = nullptr;
 };
 
 
@@ -241,6 +242,15 @@ AlienManager::AlienManager()
 
   // Gestionnaire de trace
   m_trace_mng = Arccore::arccoreCreateDefaultTraceMng();
+  Arccore::StringBuilder filename("alien.log") ;
+  if(m_parallel_mng->commSize()>1)
+  {
+    filename += m_parallel_mng->commRank() ;
+    m_ofile = Arccore::ITraceStream::createFileStream(filename.toString()) ;
+    m_trace_mng->setRedirectStream(m_ofile.get());
+  }
+  m_trace_mng->finishInitialize() ;
+  m_trace_mng->info()<<"INFO INIT ALIEN MANAGER";
 }
 
 void AlienManager::LinearSystem::
