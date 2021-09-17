@@ -80,16 +80,16 @@ static xmlElementPtr impl(ElementPrv* p) { return (xmlElementPtr)p; }
 static xmlNamedNodeMapPtr impl(NamedNodeMapPrv* p) { return (xmlNamedNodeMapPtr)p; }
 static xmlDocPtr impl(DocumentPrv* p) { return (xmlDocPtr)p; }
 static xmlDocTypePtr impl(DocumentTypePrv* p) { return (xmlDocTypePtr)p; }
-static LibXml2_DOMImplementation* impl(ImplementationPrv* p) { return (LibXml2_DOMImplementation*)p; }
+[[maybe_unused]] static LibXml2_DOMImplementation* impl(ImplementationPrv* p) { return (LibXml2_DOMImplementation*)p; }
 static xmlCharacterDataPtr impl(CharacterDataPrv* p) { return (xmlCharacterDataPtr)p; }
 static xmlTextPtr impl(TextPrv* p) { return (xmlTextPtr)p; }
-static xmlNodeListPtr impl(NodeListPrv* p) { return (xmlNodeListPtr)p; }
+[[maybe_unused]] static xmlNodeListPtr impl(NodeListPrv* p) { return (xmlNodeListPtr)p; }
 static xmlDocumentFragmentPtr impl(DocumentFragmentPrv* p) { return (xmlDocumentFragmentPtr)p; }
 static xmlCDATAPtr impl(CDATASectionPrv* p) { return (xmlCDATAPtr)p; }
 static xmlProcessingInstructionPtr impl(ProcessingInstructionPrv* p) { return (xmlProcessingInstructionPtr)p; }
 static xmlEntityReferencePtr impl(EntityReferencePrv* p) { return (xmlEntityReferencePtr)p; }
-static xmlEntityPtr impl(EntityPrv* p) { return (xmlEntityPtr)p; }
-static xmlNotationPtr impl(NotationPrv* p) { return (xmlNotationPtr)p; }
+[[maybe_unused]] static xmlEntityPtr impl(EntityPrv* p) { return (xmlEntityPtr)p; }
+[[maybe_unused]] static xmlNotationPtr impl(NotationPrv* p) { return (xmlNotationPtr)p; }
 //static ::DOMError* impl(DOMErrorPrv* p) { return (::DOMError*)p; }
 //static ::DOMLocator* impl(DOMLocatorPrv* p) { return (::DOMLocator*)p; }
 
@@ -102,12 +102,12 @@ static DocumentTypePrv* cvt(xmlDocTypePtr p) { return (DocumentTypePrv*)p; }
 static ImplementationPrv* cvt(LibXml2_DOMImplementation* p) { return (ImplementationPrv*)p; }
 static CharacterDataPrv* cvt(xmlCharacterDataPtr p) { return (CharacterDataPrv*)p; }
 static TextPrv* cvt(xmlTextPtr p) { return (TextPrv*)p; }
-static NodeListPrv* cvt(xmlNodeListPtr p) { return (NodeListPrv*)p; }
-static DocumentFragmentPrv* cvt(xmlDocumentFragmentPtr p) { return (DocumentFragmentPrv*)p; }
-static CommentPrv* cvt(xmlCommentPtr p) { return (CommentPrv*)p; }
-static CDATASectionPrv* cvt(xmlCDATAPtr p) { return (CDATASectionPrv*)p; }
+[[maybe_unused]] static NodeListPrv* cvt(xmlNodeListPtr p) { return (NodeListPrv*)p; }
+[[maybe_unused]] static DocumentFragmentPrv* cvt(xmlDocumentFragmentPtr p) { return (DocumentFragmentPrv*)p; }
+[[maybe_unused]] static CommentPrv* cvt(xmlCommentPtr p) { return (CommentPrv*)p; }
+[[maybe_unused]] static CDATASectionPrv* cvt(xmlCDATAPtr p) { return (CDATASectionPrv*)p; }
 static ProcessingInstructionPrv* cvt(xmlProcessingInstructionPtr p) { return (ProcessingInstructionPrv*)p; }
-static EntityReferencePrv* cvt(xmlEntityReferencePtr p) { return (EntityReferencePrv*)p; }
+[[maybe_unused]] static EntityReferencePrv* cvt(xmlEntityReferencePtr p) { return (EntityReferencePrv*)p; }
 static EntityPrv* cvt(xmlEntityPtr p) { return (EntityPrv*)p; }
 static NotationPrv* cvt(xmlNotationPtr p) { return (NotationPrv*)p; }
 //static DOMLocatorPrv* cvt(::DOMLocator* p) { return (DOMLocatorPrv*)p; }
@@ -1663,9 +1663,10 @@ DOMString Element::
 getAttribute(const DOMString& name) const
 {
   _checkValid();
-  ARCANE_UNUSED(name);
-  TNIE;
-  //return fromChar(impl(_impl())->getAttribute(toChar(name)));
+  Attr a = getAttributeNode(name);
+  if (a._null())
+    return String();
+  return fromChar(::xmlGetProp(impl(m_p),toChar(name)));
 }
 void Element::
 setAttribute(const DOMString& name,const DOMString& value) const

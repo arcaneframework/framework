@@ -178,6 +178,17 @@ _doDoc(Integer i)
   test.createAndAppendElement("iteration2",String::fromNumber(i+1));
   test.createAndAppendElement("iteration3",String::fromNumber(i+2));
   test.setAttrValue("attr1","value1");
+  XmlNode attr = test.attr("attr1");
+  if (attr.null())
+    ARCANE_FATAL("Unexpected null attribute");
+  String attr_value = attr.value();
+  if (attr_value!="value1")
+    ARCANE_FATAL("Bad value for attribute");
+  dom::Element dom_element{test.domNode()};
+  String attr_value2 = dom_element.getAttribute("attr1");
+  if (attr_value2!=attr_value)
+    ARCANE_FATAL("Bad value for attribute (2)");
+    
   test.clear();
   test.createAndAppendElement("iteration4",String::fromNumber(i+4));
   test.createAndAppendElement("iteration5","TestIteration5");
