@@ -768,6 +768,7 @@ if (ARCANE_WANT_CUDA)
   add_subdirectory(src/arcane/accelerator/cuda)
 endif()
 
+add_subdirectory(src/arcane/accelerator/core)
 add_subdirectory(src/arcane/accelerator)
 
 if (ARCANE_WANT_CUDA)

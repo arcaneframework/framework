@@ -15,6 +15,7 @@ arcane_add_library(arcane_accelerator
 
 target_link_libraries(arcane_accelerator PUBLIC
   arcane_core
+  arcane_accelerator_core
   "$<TARGET_NAME_IF_EXISTS:arcane_accelerator_cuda>"
   )
 
