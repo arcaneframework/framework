@@ -77,10 +77,10 @@ main(int argc, char** argv)
 
     Alien::Space space(nrows, "TestSpace");
 
-    Alien::VectorData vectorB(space, vdist);
-    Alien::VectorData vectorX(space, vdist);
+    Alien::Move::VectorData vectorB(space, vdist);
+    Alien::Move::VectorData vectorX(space, vdist);
 
-    Alien::MatrixData matrixA(space, mdist);
+    Alien::Move::MatrixData matrixA(space, mdist);
 
     int bd = 2;
     double fii = 1;
@@ -91,7 +91,7 @@ main(int argc, char** argv)
     int local_size = vdist.localSize();
     switch (builder_type) {
     case 0: {
-      Alien::DirectMatrixBuilder builder(
+      Alien::Move::DirectMatrixBuilder builder(
           std::move(matrixA), Alien::DirectMatrixOptions::eResetValues);
       builder.reserve(5);
       builder.allocate();
@@ -110,7 +110,7 @@ main(int argc, char** argv)
     case 1:
     default: {
       // DEFINE MATRIX PROFILE
-      Alien::MatrixProfiler profile(std::move(matrixA));
+      Alien::Move::MatrixProfiler profile(std::move(matrixA));
       for (int irow = offset; irow < offset + local_size; ++irow) {
         profile.addMatrixEntry(irow, irow);
         for (int j = 1; j < bd; ++j) {
@@ -124,7 +124,7 @@ main(int argc, char** argv)
       matrixA = profile.release();
 
       // FILL MATRIX
-      Alien::ProfiledMatrixBuilder matrix(
+      Alien::Move::ProfiledMatrixBuilder matrix(
           std::move(matrixA), Alien::ProfiledMatrixOptions::eResetValues);
       for (int irow = offset; irow < offset + local_size; ++irow) {
         matrix(irow, irow) = diag;
@@ -141,7 +141,7 @@ main(int argc, char** argv)
     }
 
     {
-      Alien::LocalVectorWriter v(std::move(vectorX));
+      Alien::Move::LocalVectorWriter v(std::move(vectorX));
       for (int i = 0; i < vdist.localSize(); ++i)
         v[i] = 1;
       vectorX = v.release();
@@ -162,14 +162,14 @@ main(int argc, char** argv)
       }
       assert(std::abs(normb - 30.2324) < 1.e-4);
     } else {
-      Alien::LocalVectorWriter v(std::move(vectorB));
+      Alien::Move::LocalVectorWriter v(std::move(vectorB));
       for (int i = 0; i < vdist.localSize(); ++i)
         v[i] = 1;
       vectorB = v.release();
     }
 
     {
-      Alien::LocalVectorWriter v(std::move(vectorX));
+      Alien::Move::LocalVectorWriter v(std::move(vectorX));
       for (int i = 0; i < vdist.localSize(); ++i)
         v[i] = 0;
       vectorX = v.release();
@@ -198,7 +198,7 @@ main(int argc, char** argv)
             std::cout << "Norme de X : " << normx << std::endl;
           }
 
-          Alien::LocalVectorWriter v(std::move(vectorX));
+          Alien::Move::LocalVectorWriter v(std::move(vectorX));
           for (int i = 0; i < vdist.localSize(); ++i)
             v[i] -= 1.;
           vectorX = v.release();
