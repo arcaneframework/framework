@@ -13,12 +13,34 @@
 # limitations under the License.
 # 
 # SPDX-License-Identifier: Apache-2.0
+cmake_minimum_required(VERSION 3.13)
+
+# To properly handle VERSION directive in PROJECT
+cmake_policy(SET CMP0048 NEW)
+cmake_policy(SET CMP0023 NEW)
+
+# To export dependencies
+cmake_policy(SET CMP0022 NEW)
+
+# for find_package with Foo_ROOT
+cmake_policy(SET CMP0074 NEW)
+
+project(AlienHypreExample VERSION 1.0 LANGUAGES CXX)
+
+find_package(Alien REQUIRED)
+find_package(AlienHypre REQUIRED)
 
 add_executable(example_hypre hypre_example_solve.cpp)
 
 target_link_libraries(example_hypre PUBLIC
         Alien::alien_hypre
         Alien::alien_semantic_ref)
+
+add_executable(example_hypre_move hypre_example_solve_move.cpp)
+
+target_link_libraries(example_hypre_move PUBLIC
+        Alien::alien_hypre
+        Alien::alien_semantic_move)
 
 enable_testing()
 include(LoadAlienTest)
@@ -29,6 +51,14 @@ alien_test(
     PROCS 4
     COMMAND example_hypre
 )
+
+alien_test(
+        BENCH hypre
+        NAME hypre.example.move
+        PROCS 4
+        COMMAND example_hypre_move
+)
+
 
 #-----------------------------------------------------------
 # Bench recap

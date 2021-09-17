@@ -35,4 +35,5 @@ endif (ALIEN_GENERATE_DOCUMENTATION)
 #-----------------------------------------------------------
 if (ALIEN_GENERATE_TUTORIAL)
     add_subdirectory(tutorial)
+    install(DIRECTORY tutorial DESTINATION ${CMAKE_INSTALL_DOCDIR})
 endif (ALIEN_GENERATE_TUTORIAL)

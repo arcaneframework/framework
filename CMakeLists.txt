@@ -67,6 +67,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # For shared libs, needed for Arccore
 set(BUILD_SHARED_LIBS ON)
 
+include(GNUInstallDirs)
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 

@@ -44,11 +44,6 @@ target_link_libraries(gtest.movesemantic PRIVATE
         alien_test_framework
         )
 
-install(
-        TARGETS gtest.movesemantic
-        RUNTIME DESTINATION bin/movesemantic/unitary
-)
-
 foreach (test_name ${TEST_LIST})
     alien_test(
             BENCH movesemantic.gtest

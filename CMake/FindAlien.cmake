@@ -10,7 +10,7 @@ endif()
 
 # add directory only once !
 if (NOT TARGET Alien::alien_core)
-  add_subdirectory(${ALIEN_ROOT})
+  #add_subdirectory(${ALIEN_ROOT})
   # For LoadAlienTest
   list(APPEND CMAKE_MODULE_PATH ${ALIEN_ROOT}/cmake)
 else(NOT TARGET Alien::alien_core)

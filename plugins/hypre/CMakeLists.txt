@@ -37,6 +37,8 @@ project(AlienHypre
 
 set(BUILD_SHARED_LIBS True)
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
+
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
@@ -132,7 +134,7 @@ set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
 set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
 
 configure_package_config_file(
-        "${PROJECT_NAME}Config.cmake.in"
+        CMake/${PROJECT_NAME}Config.cmake.in
         "${project_config}"
         INSTALL_DESTINATION "${config_install_dir}"
 )
@@ -141,5 +143,6 @@ install(FILES "${project_config}"
         DESTINATION "${config_install_dir}"
         )
 
+install(DIRECTORY examples DESTINATION ${CMAKE_INSTALL_DOCDIR})
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------

@@ -56,11 +56,6 @@ target_link_libraries(gtest.refsemantic PRIVATE
         alien_test_framework
         )
 
-install(
-        TARGETS gtest.refsemantic
-        RUNTIME DESTINATION bin/refsemantic/unitary
-)
-
 foreach (test_name ${TEST_LIST})
     alien_test(
             BENCH refsemantic.gtest

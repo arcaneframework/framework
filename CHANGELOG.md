@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+**Changes:**
+
+- install tutorials and examples sources
+
 ## 1.1.0
 
 **Fixed bugs:**

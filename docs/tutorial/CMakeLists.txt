@@ -13,7 +13,22 @@
 # limitations under the License.
 #
 # SPDX-License-Identifier: Apache-2.0
+cmake_minimum_required(VERSION 3.13)
 
+# To properly handle VERSION directive in PROJECT
+cmake_policy(SET CMP0048 NEW)
+cmake_policy(SET CMP0023 NEW)
+
+# To export dependencies
+cmake_policy(SET CMP0022 NEW)
+
+# for find_package with Foo_ROOT
+cmake_policy(SET CMP0074 NEW)
+
+project(AlienTutorials VERSION 1.0 LANGUAGES CXX)
+
+find_package(Alien REQUIRED)
+find_package(Arccore REQUIRED)
 
 add_executable(tuto_dist_space.exe dist_space.cpp)
 target_link_libraries(tuto_dist_space.exe
@@ -21,12 +36,6 @@ target_link_libraries(tuto_dist_space.exe
         Arccore::arccore_message_passing_mpi
         Arccore::arccore_trace
         )
-
-install(
-        TARGETS tuto_dist_space.exe
-        RUNTIME DESTINATION bin
-)
-
 
 add_executable(tuto_dist_matrix.exe dist_matrix.cpp)
 
@@ -37,12 +46,6 @@ target_link_libraries(tuto_dist_matrix.exe PRIVATE
         Alien::alien_semantic_ref
         )
 
-install(
-        TARGETS tuto_dist_matrix.exe
-        RUNTIME DESTINATION
-)
-
-
 add_executable(tuto_dist_vector.exe dist_vector.cpp)
 
 target_link_libraries(tuto_dist_vector.exe PRIVATE
@@ -52,11 +55,6 @@ target_link_libraries(tuto_dist_vector.exe PRIVATE
         Alien::alien_semantic_ref
         )
 
-install(
-        TARGETS tuto_dist_vector.exe
-        RUNTIME DESTINATION
-)
-
 add_executable(tuto_dist_linear_system.exe dist_linear_system.cpp)
 
 target_link_libraries(tuto_dist_linear_system.exe PRIVATE
@@ -65,8 +63,3 @@ target_link_libraries(tuto_dist_linear_system.exe PRIVATE
         Alien::alien_core
         Alien::alien_semantic_ref
         )
-
-install(
-        TARGETS tuto_dist_linear_system.exe
-        RUNTIME DESTINATION
-)

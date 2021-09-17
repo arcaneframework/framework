@@ -48,11 +48,6 @@ target_link_libraries(gtest.unitary
         alien_test_framework
         )
 
-install(
-        TARGETS gtest.unitary
-        RUNTIME DESTINATION bin
-)
-
 foreach (test_name ${SEQ_TEST_LIST})
     alien_test(
             BENCH gtest
