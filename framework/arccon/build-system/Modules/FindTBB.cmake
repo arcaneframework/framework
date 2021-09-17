@@ -8,6 +8,26 @@
 
 arccon_return_if_package_found(TBB)
 
+# A partir des versions OneTBB (2020+), il existe un fichier de configuration
+# CMake pour TBB. On tente de l'utiliser si possible
+
+# Tente d'utiliser le module correspondant de CMake
+set(_SAVED_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+unset(CMAKE_MODULE_PATH)
+find_package(TBB CONFIG QUIET COMPONENTS tbb)
+set(CMAKE_MODULE_PATH ${_SAVED_CMAKE_MODULE_PATH})
+
+if (TBB_tbb_FOUND)
+  message(STATUS "[TBB] TBB_DIR = ${TBB_DIR}")
+  message(STATUS "[TBB] TBB_IMPORTED_TARGETS = ${TBB_IMPORTED_TARGETS}")
+  foreach(_component ${TBB_IMPORTED_TARGETS})
+    get_target_property(_INC_DIRS ${_component} INTERFACE_INCLUDE_DIRECTORIES)
+    message(STATUS "[TBB] INCLUDE_DIR: ${_component} : ${_INC_DIRS}")
+  endforeach()
+  arccon_register_cmake_config_target(TBB CONFIG_TARGET_NAME ${TBB_IMPORTED_TARGETS} PACKAGE_NAME TBB)
+  return()
+endif()
+
 find_library(TBB_LIBRARY_DEBUG NAMES tbb_debug)
 find_library(TBB_LIBRARY_RELEASE NAMES tbb)
 message(STATUS "TBB DEBUG ${TBB_LIBRARY_DEBUG}")
