@@ -103,7 +103,7 @@ class RunCommandImpl
   {
     // Pas besoin d'allouer de la mémoire spécifique si on n'est pas
     // sur un accélérateur
-    if (!isAcceleratorPolicy(m_queue->executionPolicy()))
+    if (!impl::isAcceleratorPolicy(m_queue->executionPolicy()))
       return nullptr;
 
     auto& pool = m_reduce_memory_pool;

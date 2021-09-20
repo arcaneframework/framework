@@ -74,14 +74,16 @@ ThreadRunQueueRuntime global_thread_runqueue_runtime;
 
 //! Récupère l'implémentation séquentielle de RunQueue
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-IRunQueueRuntime* getSequentialRunQueueRuntime()
+IRunQueueRuntime* impl::
+getSequentialRunQueueRuntime()
 {
   return &global_sequential_runqueue_runtime;
 }
 
 //! Récupère l'implémentation séquentielle de RunQueue
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-IRunQueueRuntime* getThreadRunQueueRuntime()
+IRunQueueRuntime* impl::
+getThreadRunQueueRuntime()
 {
   return &global_thread_runqueue_runtime;
 }

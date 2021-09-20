@@ -35,11 +35,11 @@ _getRuntime(eExecutionPolicy p)
   IRunQueueRuntime* runtime = nullptr;
   switch(p){
   case eExecutionPolicy::CUDA:
-    return getCUDARunQueueRuntime();
+    return impl::getCUDARunQueueRuntime();
   case eExecutionPolicy::Sequential:
-    return getSequentialRunQueueRuntime();
+    return impl::getSequentialRunQueueRuntime();
   case eExecutionPolicy::Thread:
-    return getThreadRunQueueRuntime();;
+    return impl::getThreadRunQueueRuntime();;
   }
   return runtime;
 }
