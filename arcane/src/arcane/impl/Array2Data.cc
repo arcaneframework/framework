@@ -275,7 +275,6 @@ createSerializedDataRef(bool use_basic_type) const
   Int64 full_size = nb_base_element * type_size;
   const Byte* bt = reinterpret_cast<const Byte*>(m_value.to1DSpan().data());
   Span<const Byte> base_values(bt,full_size);
-  std::cout<<"CREATE ARRY2DATA"<<bt<<" full size"<<full_size<<" size="<<base_values.size()<<std::endl ;
   UniqueArray<Int64> dimensions;
   dimensions.resize(2);
   dimensions[0] = m_value.dim1Size();
@@ -283,9 +282,7 @@ createSerializedDataRef(bool use_basic_type) const
     
   auto sd = arcaneCreateSerializedDataRef(data_type,base_values.size(),2,nb_element,
                                           nb_base_element,false,dimensions);
-  std::cout<<" CREATE SB"<<sd.get()<<std::endl ;
   sd->setBytes(base_values);
-  std::cout<<" AFTER CREATE SB"<<sd->bytes().size()<<" "<<base_values.size()<<std::endl ;
   return sd;
 }
 

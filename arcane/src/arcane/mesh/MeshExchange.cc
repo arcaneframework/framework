@@ -963,11 +963,8 @@ _propagatesToChildConnectivities(IItemFamily* family)
       case IK_Edge:
         ENUMERATE_EDGE(item, family->allItems())
         {
-          info()<<"      ITEM : lid="<<item->localId()<<" uid="<<item->uniqueId() ;
-          info()<<"                 NB CONN ITEMS : "<<item->nbCell();
           ENUMERATE_CELL(icell,item->cells())
           {
-            info()<<"                           CONN CELL : "<<icell->uniqueId() ;
             _addDestRank(*icell,m_cell_family,*item,family);
           }
         }
@@ -976,11 +973,8 @@ _propagatesToChildConnectivities(IItemFamily* family)
       {
         ENUMERATE_NODE(item, family->allItems())
         {
-          info()<<"      NODE : lid="<<item->localId()<<" uid="<<item->uniqueId() ;
-          info()<<"                 NB CONN ITEMS : "<<item->nbCell();
           ENUMERATE_CELL(icell,item->cells())
           {
-            info()<<"                           CONN CELL : "<<icell->uniqueId() ;
             _addDestRank(*icell,m_cell_family,*item,family);
           }
         }
@@ -990,7 +984,6 @@ _propagatesToChildConnectivities(IItemFamily* family)
       }
     }
   }
-  info()<<"FIN :: _propagatesToChildConnectivities : "<<family->name() ;
 }
 
 /*---------------------------------------------------------------------------*/

@@ -134,7 +134,6 @@ build()
         if(value.second)
         {
           sorted_families.add(family) ;
-          info()<<" ADD SORTED FAMILY : "<<family->name();
         }
       }
 
@@ -146,7 +145,6 @@ build()
       std::map<IItemFamily*,IItemFamilyExchanger*> family_exchanger_map;
       for( IItemFamily* family : sorted_families )
       {
-        info()<<"ADD EXCHANGER : "<<family->name();
         IItemFamilyExchanger* exchanger = family->policyMng()->createExchanger();
         m_family_exchangers.add(exchanger);
         m_family_exchanger_map.insert(std::make_pair(family,exchanger));

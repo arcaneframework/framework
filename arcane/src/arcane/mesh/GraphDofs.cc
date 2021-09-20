@@ -54,7 +54,6 @@ _allocateGraph()
 {
   if(m_graph_allocated) return ;
 
-  traceMng()->info()<<"ALLOCATE GRAPH";
   auto connectivity_index = 0;
   m_connectivity_indexes_per_type.resize(NB_BASIC_ITEM_TYPE,-1);
   m_connectivity_indexes_per_type[IT_DualNode] = connectivity_index++;
@@ -69,7 +68,6 @@ _allocateGraph()
   if(m_item_family_network==nullptr)
     traceMng()->fatal()<<"ARCANE_GRAPH_CONNECTIVITY_POLICY need to be activated" ;
 
-  traceMng()->info()<<"CREATE CONNECTIVITY : "<<mesh::connectivityName(linkFamily(),dualNodeFamily());
   /*
   auto dual2links_incremental_connectivity =
       new IncrementalItemConnectivity ( dualNodeFamily(),
@@ -95,7 +93,6 @@ _allocateGraph()
     IItemFamily* dual_item_family = _dualItemFamily(dualItemKind(dual_node_kind)) ;
     if(dual_item_family)
     {
-      traceMng()->info()<<"CREATE CONNECTIVITY : "<<mesh::connectivityName(dualNodeFamily(),dual_item_family);
       /*
       auto dual2dof_incremental_connectivity =
               new IncrementalItemConnectivity ( dual_item_family,
@@ -395,7 +392,6 @@ endUpdate()
   m_ghost_layer_computers.reserve(m_connectivities.size()) ;
   for( auto& connectivity : m_connectivities)
   {
-      traceMng()->info()<<"CONNECTIVITY"<<connectivity.name();
       if(connectivity.sourceFamily())
       {
         auto ghost_builder = new Arcane::GhostLayerFromConnectivityComputer(&connectivity) ;
@@ -422,12 +418,13 @@ endUpdate()
 
 void GraphDofs::updateAfterMeshChanged()
 {
-  traceMng()->info()<<"updateAfterMeshChanged()";
+
+  if(!m_graph_allocated) return ;
+
 #ifdef GRAPH_USE_LEGACY_CONNECTIVITY
   Integer index = 0 ;
   for( auto& connectivity : m_connectivities)
   {
-      traceMng()->info()<<"CONNECTIVITY"<<connectivity.name();
       if (connectivity.sourceFamily() && !m_connectivity_mng.isUpToDate(&connectivity))
       {
         // Handle added nodes : create a dof for each own node added
