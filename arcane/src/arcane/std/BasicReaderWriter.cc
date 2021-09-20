@@ -663,7 +663,7 @@ writeData(const String& var_full_name,const ISerializedData* sdata)
           << " memory_size=" << sdata->memorySize()
           << " bytes_size=" << sdata->bytes().size();
 
-  const void* ptr = sdata->bytes().data();
+  const void* ptr = sdata->constBytes().data();
 
   // Si la variable est de type tableau à deux dimensions, sauve les
   // tailles de la deuxième dimension par élément.

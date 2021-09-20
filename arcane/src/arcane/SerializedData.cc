@@ -61,6 +61,7 @@ class SerializedData
   ByteConstArrayView buffer() const override { return m_const_buffer.constSmallView(); }
   ByteArrayView buffer() override { return m_buffer.smallView(); }
   Span<const Byte> bytes() const override { return m_const_buffer; }
+  Span<const Byte> constBytes() const override { return m_const_buffer; }
   Span<Byte> bytes() override { return m_buffer; }
   void setBuffer(ByteArrayView buffer) override;
   void setBuffer(ByteConstArrayView buffer) override;

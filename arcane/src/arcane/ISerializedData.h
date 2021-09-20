@@ -40,8 +40,8 @@ namespace Arcane
  * \code
  * IData* data = ...;
  * ISerializedData* sdata = data->createSerializedData();
- * // sdata->buffer() contient la donnée sérialisée.
- * // Écrire via sdata->buffer().
+ * // sdata->bytes() contient la donnée sérialisée.
+ * // Écrire via sdata->bytes().
  * ...
  * \endcode
  *
@@ -51,7 +51,7 @@ namespace Arcane
  * // Créé une instance d'un ISerializedData.
  * Ref<ISerializedData> sdata = arcaneCreateSerializedDataRef(...);
  * data->allocateBufferForSerializedData(sdata);
- * // remplir le sdata->buffer() à partir de votre source
+ * // remplir le sdata->bytes() à partir de votre source
  * ...
  * // assigner la valeur à \a data
  * data->assignSerializedData(sd);
@@ -103,10 +103,18 @@ class ARCANE_CORE_EXPORT ISerializedData
   ARCANE_DEPRECATED_2018_R("Use method 'bytes()' instead")
   virtual ByteArrayView buffer() =0;
 
-  //! Valeurs sérialisées
+  //! Valeurs sérialisées.
   virtual Span<const Byte> bytes() const =0;
 
-  //! Valeurs sérialisées
+  //! Valeurs sérialisées.
+  virtual Span<const Byte> constBytes() const =0;
+
+  /*!
+   * \brief Valeurs sérialisées
+   *
+   * \warning Cette méthode renvoie une vue non vide uniquement si on
+   * a appelé setBytes(Span<Byte>) ou allocateMemory().
+   */
   virtual Span<Byte> bytes() =0;
 
   /*!
