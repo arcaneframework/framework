@@ -14,6 +14,10 @@ For more information regarding authorship of content, please consult the listed 
 
 Arcane est une platforme de développement pour les codes de calcul parallèles non structurés 2D ou 3D.
 
+La documentation en ligne est accessible depuis internet via lien suivant: [Documentation](https://arcaneframework.github.io/html/)
+
+Les dernières modifications sont dans le fichier suivant: [Changelog](arcane/doc/changelog.md)
+
 ## Compilation
 
 Ce dépôt permet de compiler directement Arcane et ses dépendances
@@ -22,12 +26,21 @@ Ce dépôt permet de compiler directement Arcane et ses dépendances
 La compilation doit se faire dans un répertoire différent de celui
 contenant les sources.
 
-Pour les prérequis, voir les répertoires [Arcane](arcane/README.md) et [Arccore](arccore/README.md).
+Pour les prérequis, voir les répertoires [Arcane](arcane/README.md) et [Arccore](arccore/README.md):
+
+- [Linux](#linux)
 
 Pour récuperer les sources:
 
 ~~~{.sh}
 git clone --recurse-submodules /path/to/git
+~~~
+
+ou
+
+~~~{.sh}
+git clone /path/to/git
+cd framework && git submodule update --init --recursive
 ~~~
 
 Il existe deux modes de compilations:
@@ -59,4 +72,17 @@ sont déjà installées:
 mkdir /path/to/build
 cmake -S /path/to/sources -B /path/to/build -DFRAMEWORK_BUILD_COMPONENT=arcane -DArccon_ROOT=... -DArccore_ROOT=...
 cmake --build /path/to/build
+~~~
+
+## Linux
+
+### Ubuntu 20.04
+
+~~~{.sh}
+sudo apt-get update
+sudo apt-get install -y apt-utils iputils-ping cmake g++ python3 git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev libparmetis-dev wget
+wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+sudo apt-get update
+sudo apt-get install -y apt-transport-https dotnet-sdk-5.0
 ~~~
