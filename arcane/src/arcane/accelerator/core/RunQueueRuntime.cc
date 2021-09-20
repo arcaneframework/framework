@@ -5,14 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IRunQueueRuntime.cc                                         (C) 2000-2020 */
+/* RunQueueRuntime.cc                                          (C) 2000-2021 */
 /*                                                                           */
 /* Implémentation d'un RunQueue pour une cible donnée.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/IRunQueueRuntime.h"
-#include "arcane/accelerator/IRunQueueStream.h"
+#include "arcane/accelerator/core/IRunQueueRuntime.h"
+#include "arcane/accelerator/core/IRunQueueStream.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -23,7 +23,7 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_ACCELERATOR_EXPORT HostRunQueueStream
+class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueStream
 : public IRunQueueStream
 {
  public:
@@ -37,7 +37,7 @@ class ARCANE_ACCELERATOR_EXPORT HostRunQueueStream
   IRunQueueRuntime* m_runtime;
 };
 
-class ARCANE_ACCELERATOR_EXPORT SequentialRunQueueRuntime
+class ARCANE_ACCELERATOR_CORE_EXPORT SequentialRunQueueRuntime
 : public IRunQueueRuntime
 {
  public:
@@ -50,7 +50,7 @@ class ARCANE_ACCELERATOR_EXPORT SequentialRunQueueRuntime
   IRunQueueStream* createStream() override { return new HostRunQueueStream(this); }
 };
 
-class ARCANE_ACCELERATOR_EXPORT ThreadRunQueueRuntime
+class ARCANE_ACCELERATOR_CORE_EXPORT ThreadRunQueueRuntime
 : public IRunQueueRuntime
 {
  public:
@@ -73,14 +73,14 @@ ThreadRunQueueRuntime global_thread_runqueue_runtime;
 /*---------------------------------------------------------------------------*/
 
 //! Récupère l'implémentation séquentielle de RunQueue
-extern "C++" ARCANE_ACCELERATOR_EXPORT
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
 IRunQueueRuntime* getSequentialRunQueueRuntime()
 {
   return &global_sequential_runqueue_runtime;
 }
 
 //! Récupère l'implémentation séquentielle de RunQueue
-extern "C++" ARCANE_ACCELERATOR_EXPORT
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
 IRunQueueRuntime* getThreadRunQueueRuntime()
 {
   return &global_thread_runqueue_runtime;

@@ -5,55 +5,54 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorGlobal.h                                         (C) 2000-2020 */
+/* IReduceMemoryImpl.h                                         (C) 2000-2021 */
 /*                                                                           */
-/* Déclarations générales pour le support des accélérateurs.                 */
+/* Interface de la gestion mémoire pour les réductions.                      */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_ACCELERATORGLOBAL_H
-#define ARCANE_ACCELERATOR_ACCELERATORGLOBAL_H
+#ifndef ARCANE_ACCELERATOR_IREDUCEMEMORYIMPL_H
+#define ARCANE_ACCELERATOR_IREDUCEMEMROYIMPL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/UtilsTypes.h"
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 
-#include <iosfwd>
+#include <stack>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifdef ARCANE_COMPONENT_arcane_accelerator
-#define ARCANE_ACCELERATOR_EXPORT ARCANE_EXPORT
-#else
-#define ARCANE_ACCELERATOR_EXPORT ARCANE_IMPORT
-#endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane
+namespace Arcane::Accelerator::impl
 {
-class AcceleratorRuntimeInitialisationInfo;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Interface de la gestion mémoire pour les réductions.
+ * \warning API en cours de définition.
+ */
+class ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl
+{
+ public:
+  virtual ~IReduceMemoryImpl() = default;
+ public:
+  virtual void* allocateMemory(Int64 size) = 0;
+  virtual void release() =0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> T*
+allocateReduceMemory(IReduceMemoryImpl* p)
+{
+  return reinterpret_cast<T*>(p->allocateMemory(sizeof(T)));
 }
 
-namespace Arcane::Accelerator
-{
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*!
- * \brief Initialise \a runner en fonction de
- * la valeur de \a acc_info.
- */
-extern "C++" ARCANE_ACCELERATOR_EXPORT void
-initializeRunner(Runner& runner,ITraceMng* tm,
-                 const AcceleratorRuntimeInitialisationInfo& acc_info);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace Arcane::Accelerator
+} // End namespace Arcane::Accelerator::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

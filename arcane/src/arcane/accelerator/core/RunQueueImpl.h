@@ -5,50 +5,65 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorGlobal.h                                         (C) 2000-2020 */
+/* RunQueueImpl.h                                              (C) 2000-2021 */
 /*                                                                           */
-/* Déclarations générales pour le support des accélérateurs.                 */
+/* Implémentation d'une 'RunQueue'.                                          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_ACCELERATORGLOBAL_H
-#define ARCANE_ACCELERATOR_ACCELERATORGLOBAL_H
+#ifndef ARCANE_ACCELERATOR_CORE_RUNQUEUEIMPL_H
+#define ARCANE_ACCELERATOR_CORE_RUNQUEUEIMPL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/UtilsTypes.h"
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 
-#include <iosfwd>
+#include <stack>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#ifdef ARCANE_COMPONENT_arcane_accelerator
-#define ARCANE_ACCELERATOR_EXPORT ARCANE_EXPORT
-#else
-#define ARCANE_ACCELERATOR_EXPORT ARCANE_IMPORT
-#endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane
-{
-class AcceleratorRuntimeInitialisationInfo;
-}
 
 namespace Arcane::Accelerator
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
- * \brief Initialise \a runner en fonction de
- * la valeur de \a acc_info.
+ * \internal
+ * \brief File d'exécution  pour accélérateur.
+ * \warning API en cours de définition.
  */
-extern "C++" ARCANE_ACCELERATOR_EXPORT void
-initializeRunner(Runner& runner,ITraceMng* tm,
-                 const AcceleratorRuntimeInitialisationInfo& acc_info);
+class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
+{
+  friend class Runner;
+  friend class RunQueue;
+  friend class RunCommandImpl;
+ private:
+  RunQueueImpl(Runner* runner,Int32 id,IRunQueueRuntime* runtime);
+  ~RunQueueImpl();
+  RunQueueImpl(const RunQueueImpl&) = delete;
+  RunQueueImpl& operator=(const RunQueueImpl&) = delete;
+ public:
+  static RunQueueImpl* create(Runner* r,eExecutionPolicy exec_policy);
+ public:
+  eExecutionPolicy executionPolicy() const { return m_execution_policy; }
+ public:
+  void release();
+  void reset();
+ private:
+  RunCommandImpl* _internalCreateOrGetRunCommandImpl();
+  void _internalFreeRunCommandImpl(RunCommandImpl*);
+  IRunQueueRuntime* _internalRuntime() const { return m_runtime; }
+  IRunQueueStream* _internalStream() const { return m_queue_stream; }
+ private:
+  Runner* m_runner;
+  eExecutionPolicy m_execution_policy;
+  IRunQueueRuntime* m_runtime;
+  IRunQueueStream* m_queue_stream;
+  std::stack<RunCommandImpl*> m_run_command_pool;
+  Int32 m_id = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -11,15 +11,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/RunCommand.h"
+#include "arcane/accelerator/core/RunCommand.h"
 
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/IMemoryAllocator.h"
 
-#include "arcane/accelerator/RunQueueImpl.h"
-#include "arcane/accelerator/RunQueue.h"
-#include "arcane/accelerator/IReduceMemoryImpl.h"
+#include "arcane/accelerator/core/RunQueueImpl.h"
+#include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/core/IReduceMemoryImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -274,7 +274,7 @@ addKernelName(const String& v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_ACCELERATOR_EXPORT
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
 RunCommand& operator<<(RunCommand& command,const TraceInfo& trace_info)
 {
   return command.addTraceInfo(trace_info);

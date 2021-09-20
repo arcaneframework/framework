@@ -5,19 +5,27 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueueImpl.cc                                             (C) 2000-2021 */
+/* AcceleratorCore.cc                                          (C) 2000-2021 */
 /*                                                                           */
-/* Gestion d'une file d'exécution sur accélérateur.                          */
+/* Déclarations générales pour le support des accélérateurs.                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/RunQueueImpl.h"
+#include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 
-#include "arcane/utils/FatalErrorException.h"
+#include <iostream>
 
-#include "arcane/accelerator/Runner.h"
-#include "arcane/accelerator/IRunQueueRuntime.h"
-#include "arcane/accelerator/IRunQueueStream.h"
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
+ * \namespace Arcane::Accelerator
+ *
+ * \brief Espace de nom pour l'utilisation des accélérateurs.
+ *
+ * Toutes les classes et types utilisés pour la gestion des accélérateurs
+ * sont dans ce namespace.
+ */
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,84 +36,63 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-RunQueueImpl::
-RunQueueImpl(Runner* runner,Int32 id,IRunQueueRuntime* runtime)
-: m_runner(runner)
-, m_execution_policy(runtime->executionPolicy())
-, m_runtime(runtime)
-, m_queue_stream(runtime->createStream())
-, m_id(id)
+namespace
 {
+bool global_is_using_cuda_runtime = false;
+IRunQueueRuntime* global_cuda_runqueue_runtime = nullptr;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-RunQueueImpl::
-~RunQueueImpl()
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
+bool isUsingCUDARuntime()
 {
-  while (!m_run_command_pool.empty()){
-    RunCommand::_internalDestroyImpl(m_run_command_pool.top());
-    m_run_command_pool.pop();
+  return global_is_using_cuda_runtime;
+}
+
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
+void setUsingCUDARuntime(bool v)
+{
+  global_is_using_cuda_runtime = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Récupère l'implémentation CUDA de RunQueue
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
+IRunQueueRuntime* getCUDARunQueueRuntime()
+{
+  return global_cuda_runqueue_runtime;
+}
+
+//! Positionne l'implémentation CUDA de RunQueue.
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
+void setCUDARunQueueRuntime(IRunQueueRuntime* v)
+{
+  global_cuda_runqueue_runtime = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Affiche le nom de la politique d'exécution
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
+ostream& operator<<(ostream& o,eExecutionPolicy exec_policy)
+{
+  switch(exec_policy){
+  case eExecutionPolicy::Sequential: o << "Sequential"; break;
+  case eExecutionPolicy::Thread: o << "Thread"; break;
+  case eExecutionPolicy::CUDA: o << "CUDA"; break;
   }
-  delete m_queue_stream;
+  return o;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void RunQueueImpl::
-release()
-{
-  m_runner->_internalFreeRunQueueImpl(this);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-RunQueueImpl* RunQueueImpl::
-create(Runner* r,eExecutionPolicy exec_policy)
-{
-  return r->_internalCreateOrGetRunQueueImpl(exec_policy);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-RunCommandImpl* RunQueueImpl::
-_internalCreateOrGetRunCommandImpl()
-{
-  auto& pool = m_run_command_pool;
-  RunCommandImpl* p = nullptr;
-
-  // TODO: rendre thread-safe
-  if (!pool.empty()){
-    p = pool.top();
-    pool.pop();
-  }
-  else{
-    p = RunCommand::_internalCreateImpl(this);
-  }
-  return p;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void RunQueueImpl::
-_internalFreeRunCommandImpl(RunCommandImpl* p)
-{
-  // TODO: rendre thread-safe
-  m_run_command_pool.push(p);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace Arcane::Accelerator
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

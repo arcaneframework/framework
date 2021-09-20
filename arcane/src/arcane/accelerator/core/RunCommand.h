@@ -5,50 +5,66 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorGlobal.h                                         (C) 2000-2020 */
+/* RunCommand.h                                                (C) 2000-2021 */
 /*                                                                           */
-/* Déclarations générales pour le support des accélérateurs.                 */
+/* Gestion d'une commande sur accélérateur.                                  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_ACCELERATORGLOBAL_H
-#define ARCANE_ACCELERATOR_ACCELERATORGLOBAL_H
+#ifndef ARCANE_ACCELERATOR_CORE_RUNCOMMAND_H
+#define ARCANE_ACCELERATOR_CORE_RUNCOMMAND_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/UtilsTypes.h"
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 
-#include <iosfwd>
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#ifdef ARCANE_COMPONENT_arcane_accelerator
-#define ARCANE_ACCELERATOR_EXPORT ARCANE_EXPORT
-#else
-#define ARCANE_ACCELERATOR_EXPORT ARCANE_IMPORT
-#endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane
-{
-class AcceleratorRuntimeInitialisationInfo;
-}
 
 namespace Arcane::Accelerator
 {
+class RunCommandImpl;
+class RunQueueImpl;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
- * \brief Initialise \a runner en fonction de
- * la valeur de \a acc_info.
+ * \brief Gestion d'une commande sur accélérateur.
+ *
+ * Une commande est associée à une file d'exécution (RunQueue) et sa durée
+ * de vie ne doit pas excéder celle de cette dernière.
+ *
+ * \warning API en cours de définition.
  */
-extern "C++" ARCANE_ACCELERATOR_EXPORT void
-initializeRunner(Runner& runner,ITraceMng* tm,
-                 const AcceleratorRuntimeInitialisationInfo& acc_info);
+class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
+{
+  friend impl::IReduceMemoryImpl* impl::internalGetOrCreateReduceMemoryImpl(RunCommand* command);
+ public:
+
+  RunCommand(RunQueue& run_queue);
+  RunCommand(const RunCommand&) = delete;
+  RunCommand& operator=(const RunCommand&) = delete;
+  ~RunCommand();
+
+ public:
+
+  RunCommand& addTraceInfo(const TraceInfo& ti);
+  RunCommand& addKernelName(const String& v);
+  const TraceInfo& traceInfo() const;
+  const String& kernelName() const;
+  friend ARCANE_ACCELERATOR_CORE_EXPORT RunCommand& operator<<(RunCommand& command,const TraceInfo& trace_info);
+  void resetInfos();
+
+ public:
+
+  //! \internal
+  RunQueue& _internalQueue() { return m_run_queue; }
+  static RunCommandImpl* _internalCreateImpl(RunQueueImpl* queue);
+  static void _internalDestroyImpl(RunCommandImpl* p);
+
+ private:
+
+  RunQueue& m_run_queue;
+  RunCommandImpl* m_p;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

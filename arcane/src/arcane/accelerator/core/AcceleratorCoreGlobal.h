@@ -37,6 +37,71 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 
 class IAcceleratorMng;
+class Runner;
+class RunQueue;
+class RunCommand;
+class IRunQueueRuntime;
+class IRunQueueStream;
+class RunCommandImpl;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Politique d'exécution.
+ */
+enum class eExecutionPolicy
+{
+  Sequential,
+  Thread,
+  CUDA,
+};
+
+
+namespace impl
+{
+class IReduceMemoryImpl;
+
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl*
+internalGetOrCreateReduceMemoryImpl(RunCommand* command);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Indique si \a exec_policy correspond à un accélérateur
+inline bool
+isAcceleratorPolicy(eExecutionPolicy exec_policy)
+{
+  return exec_policy==eExecutionPolicy::CUDA;
+}
+
+//! Affiche le nom de la politique d'exécution
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
+ostream& operator<<(ostream& o,eExecutionPolicy exec_policy);
+
+//! Indique si on utilise le runtime CUDA
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
+bool isUsingCUDARuntime();
+
+//! Positionne l'utilisation du runtime CUDA
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
+void setUsingCUDARuntime(bool v);
+
+//! Récupère l'implémentation CUDA de RunQueue (peut être nulle)
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
+IRunQueueRuntime* getCUDARunQueueRuntime();
+
+//! Positionne l'implémentation CUDA de RunQueue.
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
+void setCUDARunQueueRuntime(IRunQueueRuntime* v);
+
+//! Récupère l'implémentation Séquentielle de RunQueue
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
+IRunQueueRuntime* getSequentialRunQueueRuntime();
+
+//! Récupère l'implémentation Thread de RunQueue
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
+IRunQueueRuntime* getThreadRunQueueRuntime();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -5,50 +5,68 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorGlobal.h                                         (C) 2000-2020 */
+/* RunQueue.h                                                  (C) 2000-2021 */
 /*                                                                           */
-/* Déclarations générales pour le support des accélérateurs.                 */
+/* Gestion d'une file d'exécution sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_ACCELERATORGLOBAL_H
-#define ARCANE_ACCELERATOR_ACCELERATORGLOBAL_H
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/UtilsTypes.h"
-#include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
-
-#include <iosfwd>
-
+#ifndef ARCANE_ACCELERATOR_CORE_RUNQUEUE_H
+#define ARCANE_ACCELERATOR_CORE_RUNQUEUE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifdef ARCANE_COMPONENT_arcane_accelerator
-#define ARCANE_ACCELERATOR_EXPORT ARCANE_EXPORT
-#else
-#define ARCANE_ACCELERATOR_EXPORT ARCANE_IMPORT
-#endif
+#include "arcane/accelerator/core/RunCommand.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-namespace Arcane
-{
-class AcceleratorRuntimeInitialisationInfo;
-}
 
 namespace Arcane::Accelerator
 {
+class RunQueueImpl;
+class RunCommandImpl;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
- * \brief Initialise \a runner en fonction de
- * la valeur de \a acc_info.
+ * \brief File d'exécution  pour accélérateur.
+ * \warning API en cours de définition.
  */
-extern "C++" ARCANE_ACCELERATOR_EXPORT void
-initializeRunner(Runner& runner,ITraceMng* tm,
-                 const AcceleratorRuntimeInitialisationInfo& acc_info);
+class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
+{
+  friend class RunCommand;
+ public:
+  RunQueue(Runner& runner);
+  RunQueue(Runner& runner,eExecutionPolicy policy);
+  ~RunQueue();
+  RunQueue(const RunQueue&) = delete;
+  RunQueue& operator=(const RunQueue&) = delete;
+ public:
+  eExecutionPolicy executionPolicy() const;
+  void setAsync(bool v) { m_is_async = v; }
+  bool isAsync() const { return m_is_async; }
+  void barrier();
+ public:
+  IRunQueueRuntime* _internalRuntime() const;
+  IRunQueueStream* _internalStream() const;
+ private:
+  RunCommandImpl* _getCommandImpl();
+ private:
+  RunQueueImpl* m_p;
+  bool m_is_async = false;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Créé une commande associée à la file \a run_queue.
+ */
+inline RunCommand
+makeCommand(RunQueue& run_queue)
+{
+  return RunCommand(run_queue);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

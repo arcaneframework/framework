@@ -5,100 +5,109 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueue.cc                                                 (C) 2000-2021 */
+/* Runner.h                                                    (C) 2000-2021 */
 /*                                                                           */
-/* Gestion d'une file d'exécution sur accélérateur.                          */
+/* Gestion de l'exécution sur accélérateur.                                  */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_ACCELERATOR_CORE_RUNNER_H
+#define ARCANE_ACCELERATOR_CORE_RUNNER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/RunQueue.h"
-#include "arcane/accelerator/Runner.h"
-#include "arcane/accelerator/RunQueueImpl.h"
-#include "arcane/accelerator/IRunQueueRuntime.h"
-#include "arcane/accelerator/IRunQueueStream.h"
+#include "arcane/utils/Ref.h"
+#include "arcane/accelerator/core/RunQueue.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+class AcceleratorRuntimeInitialisationInfo;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::Accelerator
 {
+class RunQueueImpl;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-RunQueue::
-RunQueue(Runner& runner)
-: RunQueue(runner,runner.executionPolicy())
+/*!
+ * \brief Gestionnaire d'exécution pour accélérateur.
+ * \warning API en cours de définition.
+ */
+class ARCANE_ACCELERATOR_CORE_EXPORT Runner
 {
+  friend class RunQueueImpl;
+  class Impl;
+ public:
+  Runner();
+  ~Runner();
+  Runner(const Runner&) = delete;
+  Runner& operator=(const Runner&) = delete;
+ public:
+  eExecutionPolicy executionPolicy() const;
+  void setExecutionPolicy(eExecutionPolicy v);
+ private:
+  RunQueueImpl* _internalCreateOrGetRunQueueImpl(eExecutionPolicy exec_policy);
+  void _internalFreeRunQueueImpl(RunQueueImpl*);
+ private:
+  Impl* m_p;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Créé une file avec la politique d'exécution par défaut de \a runner.
+inline RunQueue
+makeQueue(Runner& runner)
+{
+  return RunQueue(runner);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-RunQueue::
-RunQueue(Runner& runner,eExecutionPolicy exec_policy)
-: m_p(RunQueueImpl::create(&runner,exec_policy))
+//! Créé une file avec la politique d'exécution \a exec_policy
+inline RunQueue
+makeQueue(Runner& runner,eExecutionPolicy exec_policy)
 {
+  return RunQueue(runner,exec_policy);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-RunQueue::
-~RunQueue()
+/*!
+ * \brief Créé une référence sur file avec la politique d'exécution par défaut de \a runner.
+ *
+ * Si la file est temporaire, il est préférable d'utiliser makeQueue() à la place
+ * pour éviter une allocation inutile.
+ */
+inline Ref<RunQueue>
+makeQueueRef(Runner& runner)
 {
-  m_p->release();
+  return makeRef(new RunQueue(runner));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void RunQueue::
-barrier()
+/*!
+ * \brief Créé une référence sur une file avec la politique d'exécution \a exec_policy.
+ *
+ * Si la file est temporaire, il est préférable d'utiliser makeQueue() à la place
+ * pour éviter une allocation inutile.
+ */
+inline Ref<RunQueue>
+makeQueueRef(Runner& runner,eExecutionPolicy exec_policy)
 {
-  _internalStream()->barrier();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-eExecutionPolicy RunQueue::
-executionPolicy() const
-{
-  return m_p->executionPolicy();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-IRunQueueRuntime* RunQueue::
-_internalRuntime() const
-{
-  return m_p->_internalRuntime();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-IRunQueueStream* RunQueue::
-_internalStream() const
-{
-  return m_p->_internalStream();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-RunCommandImpl* RunQueue::
-_getCommandImpl()
-{
-  return m_p->_internalCreateOrGetRunCommandImpl();
+  return makeRef(new RunQueue(runner,exec_policy));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -108,3 +117,5 @@ _getCommandImpl()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#endif  

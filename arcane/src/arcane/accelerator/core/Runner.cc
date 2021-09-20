@@ -11,15 +11,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/Runner.h"
+#include "arcane/accelerator/core/Runner.h"
 
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/AcceleratorRuntimeInitialisationInfo.h"
-#include "arcane/Concurrency.h"
-
-#include "arcane/accelerator/RunQueueImpl.h"
+#include "arcane/accelerator/core/RunQueueImpl.h"
 
 #include <stack>
 #include <map>
@@ -189,29 +186,6 @@ void Runner::
 setExecutionPolicy(eExecutionPolicy v)
 {
   m_p->m_execution_policy = v;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" ARCANE_ACCELERATOR_EXPORT void
-initializeRunner(Runner& runner,ITraceMng* tm,
-                 const AcceleratorRuntimeInitialisationInfo& acc_info)
-{
-  String accelerator_runtime = acc_info.acceleratorRuntime();
-  tm->info() << "AcceleratorRuntime=" << accelerator_runtime;
-  if (accelerator_runtime=="cuda"){
-    tm->info() << "Using CUDA runtime";
-    runner.setExecutionPolicy(eExecutionPolicy::CUDA);
-  }
-  else if (TaskFactory::isActive()){
-    tm->info() << "Using Task runtime";
-    runner.setExecutionPolicy(eExecutionPolicy::Thread);
-  }
-  else{
-    tm->info() << "Using Sequential runtime";
-    runner.setExecutionPolicy(eExecutionPolicy::Sequential);
-  }
 }
 
 /*---------------------------------------------------------------------------*/

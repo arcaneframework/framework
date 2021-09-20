@@ -5,50 +5,39 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorGlobal.h                                         (C) 2000-2020 */
+/* IRunQueueStream.h                                           (C) 2000-2021 */
 /*                                                                           */
-/* Déclarations générales pour le support des accélérateurs.                 */
+/* Interface d'un flux d'exécution pour une RunQueue.                        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_ACCELERATORGLOBAL_H
-#define ARCANE_ACCELERATOR_ACCELERATORGLOBAL_H
+#ifndef ARCANE_ACCELERATOR_IRUNQUEUESTREAM_H
+#define ARCANE_ACCELERATOR_IRUNQUEUESTREAM_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/UtilsTypes.h"
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 
-#include <iosfwd>
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#ifdef ARCANE_COMPONENT_arcane_accelerator
-#define ARCANE_ACCELERATOR_EXPORT ARCANE_EXPORT
-#else
-#define ARCANE_ACCELERATOR_EXPORT ARCANE_IMPORT
-#endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane
-{
-class AcceleratorRuntimeInitialisationInfo;
-}
 
 namespace Arcane::Accelerator
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
- * \brief Initialise \a runner en fonction de
- * la valeur de \a acc_info.
+ * \internal
+ * \brief Interface d'un flux d'exécution pour une RunQueue.
  */
-extern "C++" ARCANE_ACCELERATOR_EXPORT void
-initializeRunner(Runner& runner,ITraceMng* tm,
-                 const AcceleratorRuntimeInitialisationInfo& acc_info);
+class ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueStream
+{
+ public:
+ virtual ~IRunQueueStream() noexcept(false) {}
+ public:
+  virtual void notifyBeginKernel(RunCommand& command) =0;
+  virtual void notifyEndKernel(RunCommand& command) =0;
+  virtual void barrier() =0;
+  virtual void* _internalImpl() =0;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
