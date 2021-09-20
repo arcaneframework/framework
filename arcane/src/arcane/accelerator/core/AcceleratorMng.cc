@@ -5,75 +5,49 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueue.h                                                  (C) 2000-2021 */
+/* AcceleratorMng.cc                                           (C) 2000-2021 */
 /*                                                                           */
-/* Gestion d'une file d'exécution sur accélérateur.                          */
-/*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_RUNQUEUE_H
-#define ARCANE_ACCELERATOR_RUNQUEUE_H
+/* Implémentation de 'IAcceleratorMng'                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/RunCommand.h"
+#include "arcane/accelerator/core/IAcceleratorMng.h"
+
+#include "arcane/utils/TraceAccessor.h"
+#include "arcane/utils/Ref.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::Accelerator
 {
-class RunQueueImpl;
-class RunCommandImpl;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief File d'exécution  pour accélérateur.
- * \warning API en cours de définition.
+ * \brief Gestionnaire des modules.
  */
-class ARCANE_ACCELERATOR_EXPORT RunQueue
+class AcceleratorMng
+: public TraceAccessor
+, public IAcceleratorMng
 {
-  friend class RunCommand;
  public:
-  RunQueue(Runner& runner);
-  RunQueue(Runner& runner,eExecutionPolicy policy);
-  ~RunQueue();
-  RunQueue(const RunQueue&) = delete;
-  RunQueue& operator=(const RunQueue&) = delete;
- public:
-  eExecutionPolicy executionPolicy() const;
-  void setAsync(bool v) { m_is_async = v; }
-  bool isAsync() const { return m_is_async; }
-  void barrier();
- public:
-  IRunQueueRuntime* _internalRuntime() const;
-  IRunQueueStream* _internalStream() const;
- private:
-  RunCommandImpl* _getCommandImpl();
- private:
-  RunQueueImpl* m_p;
-  bool m_is_async = false;
+  AcceleratorMng(ITraceMng* tm) : TraceAccessor(tm){}
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Créé une commande associée à la file \a run_queue.
- */
-inline RunCommand
-makeCommand(RunQueue& run_queue)
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT Ref<IAcceleratorMng>
+createAcceleratorMngRef(ITraceMng* tm)
 {
-  return RunCommand(run_queue);
+  return makeRef<IAcceleratorMng>(new AcceleratorMng(tm));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Accelerator
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#endif  

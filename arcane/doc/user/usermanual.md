@@ -29,7 +29,7 @@ Les documents disponibles sont:
 - \subpage arcanedoc_codingrules : présente les règles de codage utilisées
    dans %Arcane. Pour que les modules développés sur la plate-forme aient
    une certaine homogénéité, il est intéressant de suivre ces règles.
-- \subpage arcanedoc_launcher : Lancement d'un calcul
+- **[NEW]** \subpage arcanedoc_launcher : explique l'initilisation et le lancement d'un calcul
 - \subpage arcanedoc_caseoptions : explique comment paramètrer les modules
    avec des options utilisateurs fournies dans le jeu de données.
 - \subpage arcanedoc_codeconfig : présente le fichier de configuration d'un exécutable
@@ -42,6 +42,7 @@ Les documents disponibles sont:
 - \subpage arcanedoc_simd : décrit l'utilisation de la vectorisation (SIMD).
 - \subpage arcanedoc_traces : décrit comment afficher des traces pendant les
    exécutions et comment paramétrer leur affichage.
+- **[NEW]** \subpage arcanedoc_accelerator : présente briévement l'utilisation des accélérateurs dans %Arcane.
 - \subpage arcanedoc_dotnet : décrit comment utiliser et étendre les fonctionnalités de %Arcane en `C#`.
 - \subpage arcanedoc_user_unit_tests : décrit comment réaliser des tests unitaires pour les modules et services
 - \subpage arcanedoc_material

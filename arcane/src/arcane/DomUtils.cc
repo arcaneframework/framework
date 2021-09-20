@@ -166,7 +166,8 @@ createElement(const dom::Node& parent,const String& name,const String& value)
 String domutils::
 attrValue(const dom::Node& node,const String& attr_name)
 {
-  // TODO: UTILISER DIRECTEMENT LES METHODES DU DOM QUE SONT GETATTRIBUTE
+  // TODO: Utiliser directement les méthodes du DOM que sont getAttribute()
+  // mais il faut pour cela gérer les namespace.
   String str;
   if (node._null())
     return str;
@@ -177,6 +178,17 @@ attrValue(const dom::Node& node,const String& attr_name)
   if (n._null())
     return str;
   str = n.nodeValue();
+
+#if 0
+  // A activer lorsque l'implémentation via getAttribute() sera effective.
+  {
+    dom::Element element{node};
+    String str2 = element.getAttribute(attr_name);
+    if (str2!=str)
+      ARCANE_FATAL("Bad new value for attribute '{0}' new={1} current={2}",attr_name,str2,str);
+  }
+#endif
+
   return str;
 }
 

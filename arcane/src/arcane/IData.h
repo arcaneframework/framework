@@ -46,6 +46,14 @@ class ARCANE_CORE_EXPORT IData
   //! Tag multiple. 0 si non multiple, 1 si multiple, 2 si multiple obsolete
   virtual Integer multiTag() const = 0;
 
+  //! Clone la donnée. L'instance créée doit être détruite par l'opérateur 'delete'
+  ARCCORE_DEPRECATED_2020("Use cloneRef() instead")
+  virtual IData* clone() =0;
+
+  //! Clone la donnée mais sans éléments. L'instance créée doit être détruite par l'opérateur 'delete'
+  ARCCORE_DEPRECATED_2020("Use cloneEmptyRef() instead")
+  virtual IData* cloneEmpty() = 0;
+
   //! Clone la donnée
   virtual Ref<IData> cloneRef() = 0;
 
