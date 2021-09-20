@@ -111,7 +111,9 @@ endif()
 # trouvés par 'Arccon'.
 option(ARCANE_WANT_ARCCON_EXPORT_TARGET "Export arccon targets in arcane." ON)
 if(ARCANE_WANT_ARCCON_EXPORT_TARGET)
-  set(ARCCON_EXPORT_TARGET ArcaneTargets)
+  if(NOT FRAMEWORK_NO_EXPORT_PACKAGES)
+    set(ARCCON_EXPORT_TARGET ArcaneTargets)
+  endif()
 endif()
 
 find_package(Arccon REQUIRED)

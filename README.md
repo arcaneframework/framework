@@ -57,13 +57,20 @@ cas que les dépendences éventuelles soient déjà installées (par
 exemple pour Arcane il faut que Arccore soit déjà installé et
 spécifier son chemin via CMAKE_PREFIX_PATH par exemple).
 
-Pour compiler Arcane et ses dépendances:
+Pour compiler Arcane et les composantes dont il dépend (arccore, axlstar, arccon)::
 
 ~~~{.sh}
 mkdir /path/to/build
 cmake -S /path/to/sources -B /path/to/build
 cmake --build /path/to/build
 ~~~
+
+A noter que dans ce mode où on compile tout à la fois le fichier
+`ArcaneTargets.cmake` définira des cibles pour les packages trouvés
+par Arccon (par exemple la Glib ou MPI). Cela peut poser problème si
+on mélange cette installation avec une autre qui exporte les même
+cibles. Pour éviter cela, il est possible de mettre à `TRUE` la variable
+CMake `FRAMEWORK_NO_EXPORT_PACKAGES`.
 
 Pour compiler uniquement Arcane en considérant que les dépendances
 sont déjà installées:
