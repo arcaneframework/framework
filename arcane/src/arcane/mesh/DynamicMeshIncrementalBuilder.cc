@@ -37,6 +37,7 @@
 #include "arcane/mesh/FaceUniqueIdBuilder.h"
 #include "arcane/mesh/EdgeUniqueIdBuilder.h"
 #include "arcane/mesh/CellFamily.h"
+#include "arcane/mesh/GraphDofs.h"
 
 #include "arcane/Connectivity.h"
 #include "arcane/MeshToMeshTransposer.h"
@@ -1075,6 +1076,8 @@ addFamilyItems(ItemData& item_data)
   Int64 item_uid;
   Int64ConstArrayView item_infos = item_data.itemInfos();
   Integer nb_connected_family = item_infos[0];
+  if(nb_connected_family == 0)
+    return ;
   Int64UniqueArray connectivity_info;
   Integer nb_item_info = 0;
   Integer item_index = 0;
@@ -1681,8 +1684,23 @@ _removeNeedRemoveMarkedItems(ItemInternalMap& map)
 void DynamicMeshIncrementalBuilder::
 removeNeedRemoveMarkedItems()
 { 
-  if (!m_mesh->itemFamilyNetwork() || !IItemFamilyNetwork::plug_serializer) {
+  if(!m_mesh->useMeshItemFamilyDependencies())
+  {
 
+    IItemFamily* links_family = m_mesh->findItemFamily(IK_DoF, GraphDofs::linkFamilyName(), false, false);
+    if(links_family)
+    {
+      info() << "Remove Items for family : "<<links_family->name() ;
+      links_family->removeNeedRemoveMarkedItems() ;
+    }
+
+    for( IItemFamily* family : m_mesh->itemFamilies() )
+    {
+      if (family->itemKind()!=IK_DoF || family->name()==GraphDofs::linkFamilyName())
+        continue;
+      info() << "Remove Items for family : "<<family->name() ;
+      family->removeNeedRemoveMarkedItems() ;
+    }
     // Supression des particules de la famille Particle
 
     for( IItemFamilyCollection::Enumerator i(m_mesh->itemFamilies()); ++i; ){
@@ -1729,7 +1747,8 @@ removeNeedRemoveMarkedItems()
       cell_family.removeCell(cells_to_remove[i]);
   }
   // With ItemFamilyNetwork
-  else {
+  else
+  {
     // handle families already in the network
     m_mesh->itemFamilyNetwork()->schedule([](IItemFamily* family){
                                             family->removeNeedRemoveMarkedItems();

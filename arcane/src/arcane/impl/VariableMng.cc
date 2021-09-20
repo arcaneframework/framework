@@ -1841,8 +1841,6 @@ dumpStats(ostream& ostr,bool is_verbose)
     case IK_Edge:
     case IK_Face:
     case IK_Cell:
-    case IK_DualNode:
-    case IK_Link:
     case IK_DoF:
       mem_used[ik] += mem;
       ++nb_var[ik];

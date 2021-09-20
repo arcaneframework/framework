@@ -103,6 +103,15 @@ class IncrementalItemConnectivityContainer
   ObserverPool m_observers;
 
  public:
+  Integer size() const {
+    return m_connectivity_nb_item_array.size() ;
+  }
+
+  bool isAllocated() const {
+    return size() > 0 ;
+  }
+
+
 
   void _checkResize(Int32 lid)
   {
@@ -236,10 +245,13 @@ setItemConnectivityList(ItemInternalConnectivityList* ilist,Int32 index)
 void IncrementalItemConnectivityBase::
 notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids)
 {
-  m_p->m_connectivity_nb_item_variable.variable()->compact(new_to_old_ids);
-  m_p->m_connectivity_index_variable.variable()->compact(new_to_old_ids);
-  _notifyConnectivityNbItemChanged();
-  _notifyConnectivityIndexChanged();
+  if(m_p->isAllocated())
+  {
+    m_p->m_connectivity_nb_item_variable.variable()->compact(new_to_old_ids);
+    m_p->m_connectivity_index_variable.variable()->compact(new_to_old_ids);
+    _notifyConnectivityNbItemChanged();
+    _notifyConnectivityIndexChanged();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -416,6 +428,7 @@ addConnectedItem(ItemLocalId source_item,ItemLocalId target_item)
     }
   }
   ++(m_connectivity_nb_item[lid]);
+  m_is_empty = false ;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -450,6 +463,7 @@ addConnectedItems(ItemLocalId source_item,Integer nb_item)
   Integer new_pos_in_list = _increaseConnectivityList(NULL_ITEM_LOCAL_ID,alloc_size);
   m_connectivity_index[lid] = new_pos_in_list;
   m_connectivity_nb_item[lid] += nb_item;
+  m_is_empty = false ;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -718,6 +732,7 @@ addConnectedItem(ItemLocalId source_item,ItemLocalId target_item)
   Int32 target_lid = target_item.localId();
   m_connectivity_list[lid] = target_lid;
   m_connectivity_nb_item[lid] = 1;
+  m_is_empty = false ;
 }
 
 /*---------------------------------------------------------------------------*/

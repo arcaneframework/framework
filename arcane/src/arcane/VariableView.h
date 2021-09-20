@@ -505,56 +505,42 @@ typedef ItemVariableScalarInViewT<Edge,Byte> VariableEdgeByteInView;
 typedef ItemVariableScalarInViewT<Face,Byte> VariableFaceByteInView;
 typedef ItemVariableScalarInViewT<Cell,Byte> VariableCellByteInView;
 typedef ItemVariableScalarInViewT<Particle,Byte> VariableParticleByteInView;
-typedef ItemVariableScalarInViewT<DualNode,Byte> VariableDualNodeByteInView;
-typedef ItemVariableScalarInViewT<Link,Byte> VariableLinkByteInView;
 
 typedef ItemVariableScalarInViewT<Node,Int16> VariableNodeInt16InView;
 typedef ItemVariableScalarInViewT<Edge,Int16> VariableEdgeInt16InView;
 typedef ItemVariableScalarInViewT<Face,Int16> VariableFaceInt16InView;
 typedef ItemVariableScalarInViewT<Cell,Int16> VariableCellInt16InView;
 typedef ItemVariableScalarInViewT<Particle,Int16> VariableParticleInt16InView;
-typedef ItemVariableScalarInViewT<DualNode,Int16> VariableDualNodeInt16InView;
-typedef ItemVariableScalarInViewT<Link,Int16> VariableLinkInt16InView;
 
 typedef ItemVariableScalarInViewT<Node,Int32> VariableNodeInt32InView;
 typedef ItemVariableScalarInViewT<Edge,Int32> VariableEdgeInt32InView;
 typedef ItemVariableScalarInViewT<Face,Int32> VariableFaceInt32InView;
 typedef ItemVariableScalarInViewT<Cell,Int32> VariableCellInt32InView;
 typedef ItemVariableScalarInViewT<Particle,Int32> VariableParticleInt32InView;
-typedef ItemVariableScalarInViewT<DualNode,Int32> VariableDualNodeInt32InView;
-typedef ItemVariableScalarInViewT<Link,Int32> VariableLinkInt32InView;
 
 typedef ItemVariableScalarInViewT<Node,Int64> VariableNodeInt64InView;
 typedef ItemVariableScalarInViewT<Edge,Int64> VariableEdgeInt64InView;
 typedef ItemVariableScalarInViewT<Face,Int64> VariableFaceInt64InView;
 typedef ItemVariableScalarInViewT<Cell,Int64> VariableCellInt64InView;
 typedef ItemVariableScalarInViewT<Particle,Int64> VariableParticleInt64InView;
-typedef ItemVariableScalarInViewT<DualNode,Int64> VariableDualNodeInt64InView;
-typedef ItemVariableScalarInViewT<Link,Int64> VariableLinkInt64InView;
 
 typedef ItemVariableScalarInViewT<Node,Real> VariableNodeRealInView;
 typedef ItemVariableScalarInViewT<Edge,Real> VariableEdgeRealInView;
 typedef ItemVariableScalarInViewT<Face,Real> VariableFaceRealInView;
 typedef ItemVariableScalarInViewT<Cell,Real> VariableCellRealInView;
 typedef ItemVariableScalarInViewT<Particle,Real> VariableParticleRealInView;
-typedef ItemVariableScalarInViewT<DualNode,Real> VariableDualNodeRealInView;
-typedef ItemVariableScalarInViewT<Link,Real> VariableLinkRealInView;
 
 typedef ItemVariableScalarInViewT<Node,Real2> VariableNodeReal2InView;
 typedef ItemVariableScalarInViewT<Edge,Real2> VariableEdgeReal2InView;
 typedef ItemVariableScalarInViewT<Face,Real2> VariableFaceReal2InView;
 typedef ItemVariableScalarInViewT<Cell,Real2> VariableCellReal2InView;
 typedef ItemVariableScalarInViewT<Particle,Real2> VariableParticleReal2InView;
-typedef ItemVariableScalarInViewT<DualNode,Real2> VariableDualNodeReal2InView;
-typedef ItemVariableScalarInViewT<Link,Real2> VariableLinkReal2InView;
 
 typedef ItemVariableScalarInViewT<Node,Real3> VariableNodeReal3InView;
 typedef ItemVariableScalarInViewT<Edge,Real3> VariableEdgeReal3InView;
 typedef ItemVariableScalarInViewT<Face,Real3> VariableFaceReal3InView;
 typedef ItemVariableScalarInViewT<Cell,Real3> VariableCellReal3InView;
 typedef ItemVariableScalarInViewT<Particle,Real3> VariableParticleReal3InView;
-typedef ItemVariableScalarInViewT<DualNode,Real3> VariableDualNodeReal3InView;
-typedef ItemVariableScalarInViewT<Link,Real3> VariableLinkReal3InView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -564,56 +550,42 @@ typedef ItemVariableScalarOutViewT<Edge,ViewSetter<Byte>> VariableEdgeByteOutVie
 typedef ItemVariableScalarOutViewT<Face,ViewSetter<Byte>> VariableFaceByteOutView;
 typedef ItemVariableScalarOutViewT<Cell,ViewSetter<Byte>> VariableCellByteOutView;
 typedef ItemVariableScalarOutViewT<Particle,ViewSetter<Byte>> VariableParticleByteOutView;
-typedef ItemVariableScalarOutViewT<DualNode,ViewSetter<Byte>> VariableDualNodeByteOutView;
-typedef ItemVariableScalarOutViewT<Link,ViewSetter<Byte>> VariableLinkByteOutView;
 
 typedef ItemVariableScalarOutViewT<Node,ViewSetter<Int16>> VariableNodeInt16OutView;
 typedef ItemVariableScalarOutViewT<Edge,ViewSetter<Int16>> VariableEdgeInt16OutView;
 typedef ItemVariableScalarOutViewT<Face,ViewSetter<Int16>> VariableFaceInt16OutView;
 typedef ItemVariableScalarOutViewT<Cell,ViewSetter<Int16>> VariableCellInt16OutView;
 typedef ItemVariableScalarOutViewT<Particle,ViewSetter<Int16>> VariableParticleInt16OutView;
-typedef ItemVariableScalarOutViewT<DualNode,ViewSetter<Int16>> VariableDualNodeInt16OutView;
-typedef ItemVariableScalarOutViewT<Link,ViewSetter<Int16>> VariableLinkInt16OutView;
 
 typedef ItemVariableScalarOutViewT<Node,ViewSetter<Int32>> VariableNodeInt32OutView;
 typedef ItemVariableScalarOutViewT<Edge,ViewSetter<Int32>> VariableEdgeInt32OutView;
 typedef ItemVariableScalarOutViewT<Face,ViewSetter<Int32>> VariableFaceInt32OutView;
 typedef ItemVariableScalarOutViewT<Cell,ViewSetter<Int32>> VariableCellInt32OutView;
 typedef ItemVariableScalarOutViewT<Particle,ViewSetter<Int32>> VariableParticleInt32OutView;
-typedef ItemVariableScalarOutViewT<DualNode,ViewSetter<Int32>> VariableDualNodeInt32OutView;
-typedef ItemVariableScalarOutViewT<Link,ViewSetter<Int32>> VariableLinkInt32OutView;
 
 typedef ItemVariableScalarOutViewT<Node,ViewSetter<Int64>> VariableNodeInt64OutView;
 typedef ItemVariableScalarOutViewT<Edge,ViewSetter<Int64>> VariableEdgeInt64OutView;
 typedef ItemVariableScalarOutViewT<Face,ViewSetter<Int64>> VariableFaceInt64OutView;
 typedef ItemVariableScalarOutViewT<Cell,ViewSetter<Int64>> VariableCellInt64OutView;
 typedef ItemVariableScalarOutViewT<Particle,ViewSetter<Int64>> VariableParticleInt64OutView;
-typedef ItemVariableScalarOutViewT<DualNode,ViewSetter<Int64>> VariableDualNodeInt64OutView;
-typedef ItemVariableScalarOutViewT<Link,ViewSetter<Int64>> VariableLinkInt64OutView;
 
 typedef ItemVariableScalarOutViewT<Node,ViewSetter<Real>> VariableNodeRealOutView;
 typedef ItemVariableScalarOutViewT<Edge,ViewSetter<Real>> VariableEdgeRealOutView;
 typedef ItemVariableScalarOutViewT<Face,ViewSetter<Real>> VariableFaceRealOutView;
 typedef ItemVariableScalarOutViewT<Cell,ViewSetter<Real>> VariableCellRealOutView;
 typedef ItemVariableScalarOutViewT<Particle,ViewSetter<Real>> VariableParticleRealOutView;
-typedef ItemVariableScalarOutViewT<DualNode,ViewSetter<Real>> VariableDualNodeRealOutView;
-typedef ItemVariableScalarOutViewT<Link,ViewSetter<Real>> VariableLinkRealOutView;
 
 typedef ItemVariableRealNScalarOutViewT<Node,ViewSetter<Real2>> VariableNodeReal2OutView;
 typedef ItemVariableRealNScalarOutViewT<Edge,ViewSetter<Real2>> VariableEdgeReal2OutView;
 typedef ItemVariableRealNScalarOutViewT<Face,ViewSetter<Real2>> VariableFaceReal2OutView;
 typedef ItemVariableRealNScalarOutViewT<Cell,ViewSetter<Real2>> VariableCellReal2OutView;
 typedef ItemVariableRealNScalarOutViewT<Particle,ViewSetter<Real2>> VariableParticleReal2OutView;
-typedef ItemVariableRealNScalarOutViewT<DualNode,ViewSetter<Real2>> VariableDualNodeReal2OutView;
-typedef ItemVariableRealNScalarOutViewT<Link,ViewSetter<Real2>> VariableLinkReal2OutView;
 
 typedef ItemVariableRealNScalarOutViewT<Node,ViewSetter<Real3>> VariableNodeReal3OutView;
 typedef ItemVariableRealNScalarOutViewT<Edge,ViewSetter<Real3>> VariableEdgeReal3OutView;
 typedef ItemVariableRealNScalarOutViewT<Face,ViewSetter<Real3>> VariableFaceReal3OutView;
 typedef ItemVariableRealNScalarOutViewT<Cell,ViewSetter<Real3>> VariableCellReal3OutView;
 typedef ItemVariableRealNScalarOutViewT<Particle,ViewSetter<Real3>> VariableParticleReal3OutView;
-typedef ItemVariableRealNScalarOutViewT<DualNode,ViewSetter<Real3>> VariableDualNodeReal3OutView;
-typedef ItemVariableRealNScalarOutViewT<Link,ViewSetter<Real3>> VariableLinkReal3OutView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

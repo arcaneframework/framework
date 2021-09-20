@@ -29,13 +29,18 @@ ARCANE_MESH_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 
 void ItemFamilyNetwork::
-addDependency(IItemFamily* master_family, IItemFamily* slave_family, IIncrementalItemConnectivity* master_to_slave_connectivity)
+addDependency(IItemFamily* master_family, IItemFamily* slave_family, IIncrementalItemConnectivity* master_to_slave_connectivity, bool is_deep_connectivity)
 {
   m_dependency_graph.addEdge(master_family,slave_family,master_to_slave_connectivity);
-  m_connectivity_list.add(master_to_slave_connectivity);
-  m_connectivity_status[master_to_slave_connectivity] = false; // connectivity not stored by default
+  if(master_to_slave_connectivity)
+  {
+    m_connectivity_list.add(master_to_slave_connectivity);
+    m_connectivity_status[master_to_slave_connectivity] = std::make_pair(false,is_deep_connectivity); // connectivity not stored by default
+  }
   m_families.insert(master_family);
   m_families.insert(slave_family);
+
+  m_is_activated = true ;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -46,9 +51,11 @@ addRelation(IItemFamily* source_family, IItemFamily* target_family, IIncremental
 {
   m_relation_graph.addEdge(source_family,target_family,source_to_target_connectivity);
   m_connectivity_list.add(source_to_target_connectivity);
-  m_connectivity_status[source_to_target_connectivity] = false; // connectivity not stored by default
+  if(m_connectivity_status.find(source_to_target_connectivity)==m_connectivity_status.end())
+    m_connectivity_status[source_to_target_connectivity] = std::make_pair(false,true); // connectivity not stored by default
   m_families.insert(source_family);
   m_families.insert(target_family);
+  m_is_activated = true ;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -208,7 +215,7 @@ _getConnectivitiesFromGraph(const ConnectivityGraph::ConnectedEdgeSet& connectiv
 void ItemFamilyNetwork::
 setIsStored(IIncrementalItemConnectivity* connectivity)
 {
-  _getConnectivityStatus(connectivity).second = true;
+  _getConnectivityStatus(connectivity).second.first = true;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -217,9 +224,14 @@ setIsStored(IIncrementalItemConnectivity* connectivity)
 bool ItemFamilyNetwork::
 isStored(IIncrementalItemConnectivity* connectivity)
 {
-  return _getConnectivityStatus(connectivity).second;
+  return _getConnectivityStatus(connectivity).second.first;
 }
 
+bool ItemFamilyNetwork::
+isDeep(IIncrementalItemConnectivity* connectivity)
+{
+  return _getConnectivityStatus(connectivity).second.second;
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -231,6 +243,32 @@ _checkConnectivityName(IIncrementalItemConnectivity* connectivity, const String&
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+SharedArray<IItemFamily*> ItemFamilyNetwork::
+getFamilies(eSchedulingOrder order) const
+{
+  SharedArray<IItemFamily*> families;
+
+  switch (order)
+  {
+    case TopologicalOrder:
+      for (auto family : m_dependency_graph.topologicalSort())
+      {
+        families.add(family) ;
+      }
+      break;
+    case InverseTopologicalOrder:
+      for (auto family : m_dependency_graph.topologicalSort().reverseOrder())
+      {
+        families.add(family) ;
+      }
+      break;
+    case Unknown:
+      throw m_trace_mng->fatal() << "Cannot schedule task, scheduling order is unkwnown. Set Scheduling order";
+      break;
+  }
+  return families ;
+}
 
 void ItemFamilyNetwork::
 schedule(IItemFamilyNetworkTask task, eSchedulingOrder scheduling_order)
@@ -257,7 +295,7 @@ schedule(IItemFamilyNetworkTask task, eSchedulingOrder scheduling_order)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-std::pair<IIncrementalItemConnectivity* const,bool>& ItemFamilyNetwork::
+std::pair<IIncrementalItemConnectivity* const,std::pair<bool,bool>>& ItemFamilyNetwork::
 _getConnectivityStatus(IIncrementalItemConnectivity* connectivity)
 {
   auto connectivity_iterator = m_connectivity_status.find(connectivity);

@@ -605,8 +605,6 @@ checkVariablesSynchronization()
     case IK_Edge:
     case IK_Face:
     case IK_Cell:
-    case IK_DualNode:
-    case IK_Link:
     case IK_DoF:
       nb_diff += var->checkIfSync(10);
       break;

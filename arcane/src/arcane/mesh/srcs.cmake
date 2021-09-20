@@ -229,6 +229,9 @@ set( ARCANE_SOURCES
   PolyhedralMesh.cc
   PolyhedralMesh.h
   PolyhedralMeshService.cc
+  GraphBuilder.h
+  GraphDofs.h
+  GraphDofs.cc
   )
 
 set(AXL_FILES 

@@ -79,7 +79,9 @@ public:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_MESH_EXPORT DoFFamily : public ItemFamily
+class ARCANE_MESH_EXPORT DoFFamily
+  : public ItemFamily
+  , public IItemFamilyModifier
 {
 
   /** Constructeur de la classe  */
@@ -93,6 +95,30 @@ public:
   virtual ~DoFFamily() {}
 
 public:
+  ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type, MeshInfos& mesh_info) override
+  {
+    return _allocDoF(uid);
+  }
+
+  ItemInternal* allocOne(Int64 uid)
+  {
+    return _allocDoF(uid);
+  }
+
+  // IItemFamilyModifier interface
+  ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type,MeshInfos& mesh_info, bool& is_alloc) override
+  {
+    auto dof = _findOrAllocDoF(uid,is_alloc);
+    return dof;
+  }
+
+  ItemInternal* findOrAllocOne(Int64 uid,bool& is_alloc)
+  {
+    return _findOrAllocDoF(uid,is_alloc);
+  }
+
+  // IItemFamilyModifier interface
+  IItemFamily* family() override {return this;}
 
   //! En entree les uids des dofs et on recupere leurs lids
   DoFVectorView addDoFs(Int64ConstArrayView dof_uids, Int32ArrayView dof_lids);
@@ -127,6 +153,7 @@ private:
   void preAllocate(Integer nb_item);
   ItemInternal* _allocDoF(const Int64 uid);
   ItemInternal* _allocDoFGhost(const Int64 uid, const Int32 owner);
+  ItemInternal* _findOrAllocDoF(const Int64 uid,bool is_alloc);
 
   ItemSharedInfo* m_shared_info;
 

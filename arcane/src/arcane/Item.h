@@ -210,10 +210,6 @@ class ARCANE_CORE_EXPORT Item
   inline Face toFace() const;
   //! Converti l'entité en le genre \a Particle.
   inline Particle toParticle() const;
-  //! Converti l'entité en le genre \a DualNode.
-  inline DualNode toDualNode() const;
-  //! Converti l'entité en le genre \a Link.
-  inline Link toLink() const;
 
   //! Nombre de parents
   inline Integer nbParent() const
@@ -231,19 +227,19 @@ class ARCANE_CORE_EXPORT Item
   inline bool isItemWithNodes() const
     {
       eItemKind ik = kind();
-      return (ik==IK_Unknown || ik==IK_Edge || ik==IK_Face || ik==IK_Cell || ik==IK_Link);
+      return (ik==IK_Unknown || ik==IK_Edge || ik==IK_Face || ik==IK_Cell );
     }
   //! \a true si l'entité est du genre \a Node.
   inline bool isNode() const
     {
       eItemKind ik = kind();
-      return (ik==IK_Unknown || ik==IK_DualNode || ik==IK_Node);
+      return (ik==IK_Unknown || ik==IK_Node);
     }
   //! \a true si l'entité est du genre \a Cell.
   inline bool isCell() const
     {
       eItemKind ik = kind();
-      return (ik==IK_Unknown || ik==IK_Link || ik==IK_Cell);
+      return (ik==IK_Unknown || ik==IK_Cell);
     }
   //! \a true si l'entité est du genre \a Edge.
   inline bool isEdge() const
@@ -262,18 +258,6 @@ class ARCANE_CORE_EXPORT Item
     {
       eItemKind ik = kind();
       return (ik==IK_Unknown || ik==IK_Particle);
-    }
-  //! \a true is l'entité est du genre \a DualNode
-  inline bool isDualNode() const
-    {
-      eItemKind ik = kind();
-      return (ik==IK_Unknown || ik==IK_DualNode);
-    }
-  //! \a true is l'entité est du genre \a Link
-  inline bool isLink() const
-    {
-      eItemKind ik = kind();
-      return (ik==IK_Unknown || ik==IK_Link);
     }
   //! \a true is l'entité est du genre \a DoF
   inline bool isDoF() const
@@ -1052,134 +1036,6 @@ class Particle
   const Particle* operator->() const { return this; }
 };
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Noeud d'un graphe.
- *
- * \ingroup Mesh
- *
- */
-class DualNode
-: public Item
-{
- public:
-  
-  //! Type du localId()
-  typedef DualNodeLocalId LocalIdType;
-
-  //! Constructeur d'un noeud non connectée
-  DualNode() : Item() {}
-
-  //! Constructeur de recopie
-  DualNode(const DualNode& rhs) : Item(rhs) {}
-
-  //! Construit une référence à l'entité \a internal
-  DualNode(ItemInternal* ainternal) : Item(ainternal)
-  { ARCANE_CHECK_KIND(isDualNode); }
-
-  //! Construit une référence à l'entité \a internal
-  DualNode(const ItemInternalPtr* internals,Integer local_id)
-  : Item(internals,local_id)
-  { ARCANE_CHECK_KIND(isDualNode); }
-
-  //! Opérateur de copie
-  const DualNode& operator=(ItemInternal* ainternal)
-  {
-    _set(ainternal);
-    return (*this);
-  }
-
-  //! Opérateur de copie
-  const DualNode& operator=(const DualNode& from)
-  {
-    _set(from);
-    return (*this);
-  }
-
- public:
-
-  //! Enumère les liaisons connectés au noeud dual
-  inline LinkVectorView links() const { return LinkVectorView(); }
-  
-  //! item dont le noeud est dual
-  Item dualItem() const { return Item(); }
-
-  //! Positionne l'item dual dont le noeud est dual
-  void setDualItem(const Item& item);
-
- public:
-
-  //! Nombre de liens connectés au noeud
-  inline Integer nbLink() const { return 0; }
-
-  //! i-ème lien connecté au noeud
-  inline Link link(Integer i) const;
-
-  DualNode* operator->() { return this; }
-  const DualNode* operator->() const { return this; }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
-*
-* \brief Lien d'un graphe.
- *
- * \ingroup Mesh
- *
- * \note Cette classe n'est pas encore opérationnelle et ne doit pas être utilisée.
- */
-class Link
-: public Item
-{
- public:
-  
-  //! Type du localId()
-  typedef LinkLocalId LocalIdType;
-
-  //! Constructeur d'une maille non connectée
-  Link() : Item() {}
-
-  //! Constructeur de recopie
-  Link(const Link& rhs) : Item(rhs) {}
-
-  //! Construit une référence à l'entité \a internal
-  Link(ItemInternal* ainternal) : Item(ainternal)
-  { ARCANE_CHECK_KIND(isLink); }
-
-  //! Construit une référence à l'entité \a internal
-  Link(const ItemInternalPtr* internals,Integer local_id)
-  : Item(internals,local_id)
-  { ARCANE_CHECK_KIND(isLink); }
-
-  //! Opérateur de copie
-  const Link& operator=(ItemInternal* ainternal)
-  {
-    _set(ainternal);
-    return (*this);
-  }
-
-  //! Opérateur de copie
-  const Link& operator=(const Link& from)
-  {
-    _set(from);
-    return (*this);
-  }
-
-  //! Enumère les noeuds dual constituant la liaison
-  inline DualNodeVectorView dualNodes() const { return {}; }
-
-  //! Nombre de dual items connectés au lien
-  inline Integer nbDualNode() const { return 0; }
-  
-  //! i-ème dual node connecté au noeud
-  inline DualNode dualNode(Integer index) const
-  { ARCANE_UNUSED(index); return DualNode(); }
-
-  Link* operator->() { return this; }
-  const Link* operator->() const { return this; }
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1344,30 +1200,6 @@ toParticle() const
   return Particle(m_internal);
 }
 
-inline DualNode Item::
-toDualNode() const
-{
-  ARCANE_CHECK_KIND(isDualNode);
-  return DualNode(m_internal);
-}
-
-inline Link Item::
-toLink() const
-{
-  ARCANE_CHECK_KIND(isLink);
-  return Link(m_internal);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-inline Link DualNode::
-link(Integer i) const
-{
-  ARCANE_UNUSED(i);
-  return Link();
-}
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -1377,8 +1209,6 @@ EdgeLocalId::EdgeLocalId(Edge item) : ItemLocalId(item.localId()){}
 FaceLocalId::FaceLocalId(Face item) : ItemLocalId(item.localId()){}
 CellLocalId::CellLocalId(Cell item) : ItemLocalId(item.localId()){}
 ParticleLocalId::ParticleLocalId(Particle item) : ItemLocalId(item.localId()){}
-DualNodeLocalId::DualNodeLocalId(DualNode item) : ItemLocalId(item.localId()){}
-LinkLocalId::LinkLocalId(Link item) : ItemLocalId(item.localId()){}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

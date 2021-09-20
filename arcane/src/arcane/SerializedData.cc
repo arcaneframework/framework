@@ -176,10 +176,13 @@ setBuffer(ByteConstArrayView buffer)
 void SerializedData::
 setBytes(Span<Byte> buffer)
 {
+  std::cout<<"SET BYTES : "<<buffer.size()<<std::endl;
   m_buffer = buffer;
   m_const_buffer = buffer;
   m_stored_buffer.clear();
   m_memory_size = buffer.size();
+  std::cout<<"MEMROY SIZE : "<<m_memory_size<<std::endl;
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -188,10 +191,12 @@ setBytes(Span<Byte> buffer)
 void SerializedData::
 setBytes(Span<const Byte> buffer)
 {
+  std::cout<<"SET BYTES : "<<buffer.size()<<std::endl;
   m_const_buffer = buffer;
   m_buffer = Span<Byte>();
   m_stored_buffer.clear();
   m_memory_size = buffer.size();
+  std::cout<<"MEMROY SIZE : "<<m_memory_size<<std::endl;
 }
 
 /*---------------------------------------------------------------------------*/

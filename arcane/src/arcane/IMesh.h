@@ -212,7 +212,7 @@ class IMesh : public IMeshBase
    *
    * Si \a create_if_needed est vrai, la famille est créé si elle n'existait pas.
    */
-  virtual IItemFamily* findItemFamily(eItemKind ik,const String& name,bool create_if_needed=false) =0;
+  virtual IItemFamily* findItemFamily(eItemKind ik,const String& name,bool create_if_needed=false,bool register_modifier_if_created=false) =0;
 
   /*!
    * \brief Retourne la famille de nom \a name.
@@ -376,6 +376,9 @@ class IMesh : public IMeshBase
 
   //! Informations sur les parties du maillage
   virtual const MeshPartInfo& meshPartInfo() const =0;
+
+  //! check if the network itemFamily dependencies is activated
+  virtual bool useMeshItemFamilyDependencies() const =0;
 
   //! Interface du réseau de familles (familles connectées)
   virtual IItemFamilyNetwork* itemFamilyNetwork() =0;

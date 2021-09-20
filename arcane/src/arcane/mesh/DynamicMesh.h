@@ -414,9 +414,10 @@ public:
 
   IItemFamily* createItemFamily(eItemKind ik,const String& name) override;
 
-  IItemFamily* findItemFamily(eItemKind ik,const String& name,bool create_if_needed) override;
+  IItemFamily* findItemFamily(eItemKind ik,const String& name,bool create_if_needed,bool register_modifier_if_created) override;
   IItemFamily* findItemFamily(const String& name,bool throw_exception=true) override;
   IItemFamilyModifier* findItemFamilyModifier(eItemKind ik,const String& name) override;
+  void addItemFamilyModifier(IItemFamilyModifier*) ;
 
   IItemFamily* itemFamily(eItemKind ik) override
   {
@@ -487,6 +488,7 @@ public:
 
  public:
 
+  bool useMeshItemFamilyDependencies() const override  {return m_use_mesh_item_family_dependencies; }
   IItemFamilyNetwork* itemFamilyNetwork() override {return m_item_family_network;}
 
  public:
@@ -542,7 +544,8 @@ public:
   InternalConnectivityPolicy m_connectivity_policy;
   MeshPartInfo m_mesh_part_info;
 
-  IItemFamilyNetwork* m_item_family_network;
+  bool m_use_mesh_item_family_dependencies  = false ;
+  IItemFamilyNetwork* m_item_family_network = nullptr;
 
  private:
 

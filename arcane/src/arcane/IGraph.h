@@ -51,7 +51,7 @@ public:
   virtual Integer nbLink() =0;
   
 public:
-  
+#ifdef GRAPH_ITEM_ARCTIVATED
   //! Groupe de tous les noeuds duaux
   virtual DualNodeGroup allDualNodes() =0;
 
@@ -63,7 +63,7 @@ public:
 
   //! Groupe de toutes les liaisons propres au domaine
   virtual LinkGroup ownLinks() =0;
-
+#endif
   //! Retourne la famille des noeuds duaux
   virtual IItemFamily* dualNodeFamily() =0;
   

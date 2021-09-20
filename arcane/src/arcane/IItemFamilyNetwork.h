@@ -51,11 +51,12 @@ public:
   static constexpr bool plug_serializer = true;
 
 public:
+  virtual bool isActivated() const = 0 ;
 
   /*! Ajoute une dépendance entre deux familles ; un élément de \a master_family est constitué d'éléments de \a slave_family.
    *  La responsabilité de la mémoire de \a master_to_slave_connectivity est prise en charge par ItemFamilyNetwork
    */
-  virtual void addDependency(IItemFamily* master_family, IItemFamily* slave_family, IIncrementalItemConnectivity* master_to_slave_connectivity) =0;
+  virtual void addDependency(IItemFamily* master_family, IItemFamily* slave_family, IIncrementalItemConnectivity* slave_to_master_connectivity, bool is_deep_connectivity=true) =0;
 
   /*! Ajoute une relation entre deux familles ; un élément de \a source_family est connecté à un ou plusieurs éléments de \a target_family
    *  La responsabilité de la mémoire de \a source_to_target_connectivity est prise en charge par ItemFamilyNetwork
@@ -86,7 +87,9 @@ public:
   virtual SharedArray<IIncrementalItemConnectivity*> getParentRelations(IItemFamily* source_family) = 0;
 
   //! Obtenir la liste de toutes les familles
-  virtual std::set<IItemFamily*> getFamilies() =0;
+  virtual std::set<IItemFamily*> const& getFamilies() const =0;
+
+  virtual SharedArray<IItemFamily*> getFamilies(eSchedulingOrder order) const =0;
 
   //! Ordonnance l'exécution d'une tâche, dans l'ordre topologique ou topologique inverse du graphe de dépendance des familles
   virtual void schedule(IItemFamilyNetworkTask task, eSchedulingOrder order = TopologicalOrder) =0;
@@ -96,6 +99,9 @@ public:
 
   //! Récupère l'information relative au stockage de la connectivité
   virtual bool isStored(IIncrementalItemConnectivity* connectivity) = 0;
+
+  //! Récupère l'information relative au stockage de la connectivité
+  virtual bool isDeep(IIncrementalItemConnectivity* connectivity) = 0;
 
 };
 

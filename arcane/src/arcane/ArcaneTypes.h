@@ -117,15 +117,13 @@ enum eItemKind
   IK_Edge     = 1, //!< Entité de maillage de genre arête
   IK_Face     = 2, //!< Entité de maillage de genre face
   IK_Cell     = 3, //!< Entité de maillage de genre maille
-  IK_DualNode = 4, //!< Entité de maillage de genre noeuds dual d'un graphe
-  IK_Link     = 5, //!< Entité de maillage de genre lien d'un graphe
-  IK_DoF      = 6, //!< Entité de maillage de genre degre de liberte
-  IK_Particle = 7, //!< Entité de maillage de genre particule
-  IK_Unknown  = 8  //!< Entité de maillage de genre inconnu ou non initialisé
+  IK_DoF      = 4, //!< Entité de maillage de genre degre de liberte
+  IK_Particle = 5, //!< Entité de maillage de genre particule
+  IK_Unknown  = 6  //!< Entité de maillage de genre inconnu ou non initialisé
 };
 
 //! Nombre de genre d'entités de maillage.
-static const Integer NB_ITEM_KIND = 7;
+static const Integer NB_ITEM_KIND = 6;
 
 //! Nom du genre d'entité.
 extern "C++" ARCANE_CORE_EXPORT const char*

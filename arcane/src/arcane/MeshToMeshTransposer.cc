@@ -126,7 +126,7 @@ _transpose(IItemFamily * familyA, IItemFamily * familyB, const ItemVectorView & 
     return ItemVector(familyB,lidsB,false);
   } else if (parent_familyB == familyA) {
     // meshB est sous-maillage de meshA
-    if (kindB==IK_Node || kindB==IK_Face || kindB==IK_Edge || kindB==IK_Cell || kindB==IK_DualNode) {
+    if (kindB==IK_Node || kindB==IK_Face || kindB==IK_Edge || kindB==IK_Cell ) {
       // Actuellement les uids sont les mêmes entre sous-maillages et maillage parent 
       // Par transitivité, cela revient à chercher les uids de itemsA dans meshB
       UniqueArray<Int64> uidsA(itemsA.size());
