@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AbstractModule.h                                            (C) 2000-2019 */
+/* AbstractModule.h                                            (C) 2000-2021 */
 /*                                                                           */
 /* Classe abstraite de base d'un module.                                     */
 /*---------------------------------------------------------------------------*/
@@ -18,6 +18,7 @@
 #include "arcane/utils/VersionInfo.h"
 #include "arcane/utils/TraceAccessor.h"
 
+#include "arcane/ArcaneTypes.h"
 #include "arcane/IModule.h"
 #include "arcane/ModuleBuildInfo.h"
 
@@ -134,6 +135,7 @@ class ARCANE_CORE_EXPORT AbstractModule
   bool m_used; //!< \a true si le module est utilisé
   bool m_disabled; //!< Etat d'activation du module
   VersionInfo m_version_info; //!< Version du module
+  IAcceleratorMng* m_accelerator_mng; //!< Gestionnaire des accélérateurs
 };
 
 /*---------------------------------------------------------------------------*/
