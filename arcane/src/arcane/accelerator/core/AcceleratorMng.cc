@@ -52,6 +52,7 @@ class AcceleratorMng
 
   Ref<Runner> m_default_runner;
   Ref<RunQueue> m_default_queue;
+  bool m_has_init = false;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -60,7 +61,10 @@ class AcceleratorMng
 void AcceleratorMng::
 initialize()
 {
+  if (m_has_init)
+    return;
   m_default_queue = makeQueueRef(*(m_default_runner.get()));
+  m_has_init = true;
 }
 
 /*---------------------------------------------------------------------------*/

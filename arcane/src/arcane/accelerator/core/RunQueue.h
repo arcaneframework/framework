@@ -74,6 +74,7 @@ makeCommand(RunQueue& run_queue)
 inline RunCommand
 makeCommand(RunQueue* run_queue)
 {
+  ARCANE_CHECK_POINTER(run_queue);
   return RunCommand(*run_queue);
 }
 

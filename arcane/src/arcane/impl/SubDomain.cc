@@ -474,6 +474,7 @@ initialize()
     IApplication* app = application();
     auto* runner = m_accelerator_mng->defaultRunner();
     arcaneInitializeRunner(*runner,traceMng(),app->acceleratorRuntimeInitialisationInfo());
+    m_accelerator_mng->initialize();
   }
 
   IMainFactory* mf = m_application->mainFactory();
