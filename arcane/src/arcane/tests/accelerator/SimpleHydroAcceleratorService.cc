@@ -47,6 +47,8 @@
 
 #include "arcane/UnstructuredMeshConnectivity.h"
 
+#include "arcane/accelerator/core/IAcceleratorMng.h"
+
 #include "arcane/accelerator/Reduce.h"
 #include "arcane/accelerator/Accelerator.h"
 #include "arcane/accelerator/RunCommandEnumerate.h"
@@ -193,7 +195,7 @@ class SimpleHydroAcceleratorService
   //! Indice de chaque noeud dans la maille
   UniqueArray<Int16> m_node_index_in_cells;
 
-  ax::Runner m_runner;
+  ax::Runner* m_runner;
 
   UnstructuredMeshConnectivityView m_connectivity_view;
   UniqueArray<BoundaryCondition> m_boundary_conditions;
@@ -238,10 +240,8 @@ SimpleHydroAcceleratorService(const ServiceBuildInfo& sbi)
 , m_old_dt_f(VariableBuildInfo(sbi.mesh(),"OldDTf"))
 , m_module(nullptr)
 , m_node_index_in_cells(platform::getAcceleratorHostMemoryAllocator())
+, m_runner(sbi.subDomain()->acceleratorMng()->defaultRunner())
 {
-  if (TaskFactory::isActive()){
-    info() << "USE CONCURRENCY!!!!!";
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -259,8 +259,6 @@ void SimpleHydroAcceleratorService::
 hydroBuild()
 {
   info() << "Using hydro with accelerator";
-  IApplication* app = subDomain()->application();
-  initializeRunner(m_runner,traceMng(),app->acceleratorRuntimeInitialisationInfo());
 }
 
 /*---------------------------------------------------------------------------*/
