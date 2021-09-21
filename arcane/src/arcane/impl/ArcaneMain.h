@@ -78,6 +78,7 @@ class ARCANE_IMPL_EXPORT ArcaneMain
 {
   friend class ArcaneMainExecInfo;
   friend class ArcaneLauncher;
+  friend class ArcaneMainAutoDetectRuntimeHelper;
   class Impl;
 
  public:
@@ -347,6 +348,7 @@ class ARCANE_IMPL_EXPORT ArcaneMain
   static void _checkAutoDetectMPI();
   static int _checkAutoDetectAccelerator();
   static void _setArcaneLibraryPath();
+  static int _initRuntimes();
 };
 
 /*---------------------------------------------------------------------------*/
