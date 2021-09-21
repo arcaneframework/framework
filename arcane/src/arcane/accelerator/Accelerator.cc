@@ -13,15 +13,9 @@
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
 
-#include "arcane/utils/String.h"
-#include "arcane/utils/ITraceMng.h"
-
-#include "arcane/accelerator/core/Runner.h"
-
 #include "arcane/accelerator/Reduce.h"
 
 #include "arcane/AcceleratorRuntimeInitialisationInfo.h"
-#include "arcane/Concurrency.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,20 +24,7 @@ extern "C++" ARCANE_ACCELERATOR_EXPORT void Arcane::Accelerator::
 initializeRunner(Runner& runner,ITraceMng* tm,
                  const AcceleratorRuntimeInitialisationInfo& acc_info)
 {
-  String accelerator_runtime = acc_info.acceleratorRuntime();
-  tm->info() << "AcceleratorRuntime=" << accelerator_runtime;
-  if (accelerator_runtime=="cuda"){
-    tm->info() << "Using CUDA runtime";
-    runner.setExecutionPolicy(eExecutionPolicy::CUDA);
-  }
-  else if (TaskFactory::isActive()){
-    tm->info() << "Using Task runtime";
-    runner.setExecutionPolicy(eExecutionPolicy::Thread);
-  }
-  else{
-    tm->info() << "Using Sequential runtime";
-    runner.setExecutionPolicy(eExecutionPolicy::Sequential);
-  }
+  arcaneInitializeRunner(runner,tm,acc_info);
 }
 
 /*---------------------------------------------------------------------------*/

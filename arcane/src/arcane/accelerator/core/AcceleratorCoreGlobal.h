@@ -59,7 +59,7 @@ enum class eExecutionPolicy
 
 //! Affiche le nom de la politique d'exécution
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-ostream& operator<<(ostream& o,eExecutionPolicy exec_policy);
+std::ostream& operator<<(std::ostream& o,eExecutionPolicy exec_policy);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

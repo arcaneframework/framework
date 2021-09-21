@@ -17,6 +17,8 @@
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/PropertyDeclarations.h"
 
+#include "arcane/ArcaneTypes.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -53,6 +55,13 @@ class ARCANE_CORE_EXPORT AcceleratorRuntimeInitialisationInfo
 
   Impl* m_p;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_CORE_EXPORT void
+arcaneInitializeRunner(Accelerator::Runner& runner,ITraceMng* tm,
+                       const AcceleratorRuntimeInitialisationInfo& acc_info);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

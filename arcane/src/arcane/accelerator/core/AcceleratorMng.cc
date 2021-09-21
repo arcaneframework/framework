@@ -16,6 +16,9 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/Ref.h"
 
+#include "arcane/accelerator/Runner.h"
+#include "arcane/accelerator/RunQueue.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,8 +35,33 @@ class AcceleratorMng
 , public IAcceleratorMng
 {
  public:
-  AcceleratorMng(ITraceMng* tm) : TraceAccessor(tm){}
+
+  AcceleratorMng(ITraceMng* tm)
+  : TraceAccessor(tm)
+  {
+    m_default_runner = makeRef(new Runner());
+  }
+
+ public:
+
+  void initialize() override;
+  Runner* defaultRunner() override { return m_default_runner.get(); }
+  RunQueue* defaultQueue() override { return m_default_queue.get(); }
+
+ private:
+
+  Ref<Runner> m_default_runner;
+  Ref<RunQueue> m_default_queue;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AcceleratorMng::
+initialize()
+{
+  m_default_queue = makeQueueRef(*(m_default_runner.get()));
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

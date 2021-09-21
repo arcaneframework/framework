@@ -473,8 +473,12 @@ typedef VariableRef* (*VariableFactoryVariableRefCreateFunc)(const VariableBuild
 namespace Accelerator
 {
 class IAcceleratorMng;
+class Runner;
+class RunQueue;
 }
 using Accelerator::IAcceleratorMng;
+using Accelerator::Runner;
+using Accelerator::RunQueue;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -96,6 +96,7 @@
 #include "arcane/CaseOptionBuildInfo.h"
 
 #include "arcane/accelerator/core/IAcceleratorMng.h"
+#include "arcane/AcceleratorRuntimeInitialisationInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -466,6 +467,14 @@ initialize()
   // Initialisation du module parallèle
   // TODO: a supprimer car plus utile
   m_parallel_mng->initialize();
+
+  {
+    // Initialise le runner par défaut en fonction des paramètres donnés par
+    // l'utilisateur.
+    IApplication* app = application();
+    auto* runner = m_accelerator_mng->defaultRunner();
+    arcaneInitializeRunner(*runner,traceMng(),app->acceleratorRuntimeInitialisationInfo());
+  }
 
   IMainFactory* mf = m_application->mainFactory();
 

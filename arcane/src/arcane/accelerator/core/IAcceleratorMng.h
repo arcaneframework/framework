@@ -26,6 +26,9 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Interface du gestionnaire des accélérateurs.
+ *
+ * Avant l'appel à initialize(), seule la méthode defaultRunner() peut être
+ * appelée.
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT IAcceleratorMng
 {
@@ -34,6 +37,23 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IAcceleratorMng
   virtual ~IAcceleratorMng() = default;
 
  public:
+
+  //! Initialize l'instance
+  virtual void initialize() =0;
+
+  /*!
+   * \brief Exécuteur par défaut.
+   *
+   * Le pointeur retourné reste la propriété de cette instance.
+   */
+  virtual Runner* defaultRunner() =0;
+
+  /*!
+   * \brief File d'exécution par défaut.
+   *
+   * L'instance retournée est nulle si initialize() n'a pas encore été appelé.
+   */
+  virtual RunQueue* defaultQueue() =0;
 };
 
 /*---------------------------------------------------------------------------*/

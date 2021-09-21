@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorRuntimeInitialisationInfo.cc                     (C) 2000-2020 */
+/* AcceleratorRuntimeInitialisationInfo.cc                     (C) 2000-2021 */
 /*                                                                           */
 /* Informations pour l'initialisation du runtime des accélérateurs.          */
 /*---------------------------------------------------------------------------*/
@@ -13,8 +13,14 @@
 
 #include "arcane/AcceleratorRuntimeInitialisationInfo.h"
 
+#include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/String.h"
 #include "arcane/utils/Property.h"
+
+#include "arcane/accelerator/core/Runner.h"
+#include "arcane/Concurrency.h"
+
+// TODO: Déplacer cette classe dans arcane/utils
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -122,6 +128,31 @@ setAcceleratorRuntime(StringView v)
   m_p->m_accelerator_runtime = v;
   if (!v.empty())
     setIsUsingAcceleratorRuntime(true);
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_CORE_EXPORT void
+arcaneInitializeRunner(Accelerator::Runner& runner,ITraceMng* tm,
+                       const AcceleratorRuntimeInitialisationInfo& acc_info)
+{
+  using namespace Accelerator;
+  String accelerator_runtime = acc_info.acceleratorRuntime();
+  tm->info() << "AcceleratorRuntime=" << accelerator_runtime;
+  if (accelerator_runtime=="cuda"){
+    tm->info() << "Using CUDA runtime";
+    runner.setExecutionPolicy(eExecutionPolicy::CUDA);
+  }
+  else if (TaskFactory::isActive()){
+    tm->info() << "Using Task runtime";
+    runner.setExecutionPolicy(eExecutionPolicy::Thread);
+  }
+  else{
+    tm->info() << "Using Sequential runtime";
+    runner.setExecutionPolicy(eExecutionPolicy::Sequential);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
