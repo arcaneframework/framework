@@ -78,10 +78,18 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
    * Cette méthode remplit les valeurs non initialisées
    * de applicationInfo() et dotNetRuntimeInitialisationInfo() avec
    * les paramètres spécifiés dans \a args.
+   *
+   * Il ne faut appeler cette méthode qu'une seule fois. Les appels supplémentaires
+   * génèrent une exception FatalErrorException.
    */
   static void init(const CommandLineArguments& args);
 
- /*!
+  /*!
+   * \brief Indique si init() a déjà été appelé.
+   */
+  static bool isInitialized();
+
+  /*!
    * \brief Point d'entrée de l'exécutable dans Arcane.
    *
    * Cette méthode appelle initialise l'application, lit le jeu de données
