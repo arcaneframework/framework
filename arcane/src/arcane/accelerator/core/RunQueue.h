@@ -68,6 +68,15 @@ makeCommand(RunQueue& run_queue)
   return RunCommand(run_queue);
 }
 
+/*!
+ * \brief Créé une commande associée à la file \a run_queue.
+ */
+inline RunCommand
+makeCommand(RunQueue* run_queue)
+{
+  return RunCommand(*run_queue);
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
