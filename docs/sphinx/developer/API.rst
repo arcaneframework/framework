@@ -12,7 +12,7 @@ Alien User API aims at:
     - performing *algebraic* operations,
     - performing *computer related* operations.
 
-Alien's design allows to create new APIs to give access to previously listed functiunalities.
+Alien's design allows to create new APIs to give access to previously listed functionalities.
 
 
 Alien layout for header files

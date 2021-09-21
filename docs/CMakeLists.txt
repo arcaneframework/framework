@@ -1,15 +1,5 @@
 if (ALIEN_GENERATE_DOCUMENTATION)
-    find_package(Doxygen REQUIRED)
-
-    # doxygen settings can be set here, prefixed with "DOXYGEN_"
-    set(DOXYGEN_SOURCE_BROWSER YES)
-    set(DOXYGEN_EXTRACT_PRIVATE YES)
-    set(DOXYGEN_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
-
-    # For sphinx
-    set(DOXYGEN_GENERATE_HTML NO)
-    set(DOXYGEN_GENERATE_XML YES)
-    find_package(Sphinx REQUIRED breathe)
+    find_package(Sphinx REQUIRED breathe exhale)
 
     set(SPHINX_COPYRIGHT "CEA, IFPEN")
     set(SPHINX_AUTHOR "CEA, IFPEN")
@@ -23,7 +13,7 @@ if (ALIEN_GENERATE_DOCUMENTATION)
 
     sphinx_add_docs(
             alien_doc
-            BREATHE_PROJECTS doxygen_api_docs_movesemantic
+            BREATHE_PROJECTS doxygen_api_docs_movesemantic doxygen_api_docs_core_data
             BUILDER html
             SOURCE_DIRECTORY sphinx
             OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/alien_doc"

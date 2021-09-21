@@ -14,20 +14,23 @@
 # 
 # SPDX-License-Identifier: Apache-2.0
 
-add_library(alien_data OBJECT
-        CompositeMatrix.cc
+set(alien_core_data_public_headers
         CompositeMatrix.h
-        CompositeVector.cc
         CompositeVector.h
         IMatrix.h
-        ISpace.h
         IVector.h
-        Space.cc
         Space.h
         Universal.h
-        Universe.cc
-        UniverseDataBase.h
         Universe.h
+        UniverseDataBase.h
+        )
+
+add_library(alien_data OBJECT
+        ${alien_core_data_public_headers}
+        CompositeMatrix.cc
+        CompositeVector.cc
+        Space.cc
+        Universe.cc
         utils/ExtractionIndices.cc
         utils/ExtractionIndices.h
         utils/MatrixElement.h
@@ -36,6 +39,15 @@ add_library(alien_data OBJECT
         utils/VectorElement.h
         utils/VectorElementT.h
         )
+
+if (ALIEN_GENERATE_DOCUMENTATION)
+    set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    doxygen_add_docs(doxygen_api_docs_core_data
+            ${alien_core_data_public_headers}
+            USE_STAMP_FILE
+            COMMENT "Generate API-documents for Alien."
+            )
+endif(ALIEN_GENERATE_DOCUMENTATION)
 
 target_include_directories(alien_data PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../..)
 target_include_directories(alien_data PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../..)

@@ -38,6 +38,7 @@ add_library(alien_semantic_move
         )
 
 if (ALIEN_GENERATE_DOCUMENTATION)
+  set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
   doxygen_add_docs(doxygen_api_docs_movesemantic
           ${alien_semantic_public_header}
           USE_STAMP_FILE
