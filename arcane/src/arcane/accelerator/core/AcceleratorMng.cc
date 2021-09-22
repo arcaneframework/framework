@@ -71,7 +71,7 @@ initialize()
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT Ref<IAcceleratorMng>
-createAcceleratorMngRef(ITraceMng* tm)
+arcaneCreateAcceleratorMngRef(ITraceMng* tm)
 {
   return makeRef<IAcceleratorMng>(new AcceleratorMng(tm));
 }

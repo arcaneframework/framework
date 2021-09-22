@@ -104,13 +104,6 @@
 namespace Arcane
 {
 
-// TODO: à mettre dans IMainFactory
-namespace Accelerator
-{
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT Ref<IAcceleratorMng>
-createAcceleratorMngRef(ITraceMng* tm);
-}
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -441,7 +434,7 @@ build()
   m_physical_unit_system = m_application->getPhysicalUnitSystemService()->createStandardUnitSystem();
   m_configuration = m_application->configurationMng()->defaultConfiguration()->clone();
 
-  m_accelerator_mng = Accelerator::createAcceleratorMngRef(traceMng());
+  m_accelerator_mng = mf->createAcceleratorMngRef(traceMng());
   m_property_mng = mf->createPropertyMngReference(this);
   m_io_mng = mf->createIOMng(parallelMng());
   m_variable_mng = mf->createVariableMng(this);

@@ -231,6 +231,9 @@ class IMainFactory
   //! Créé un gestionnaire de fabrique pour les données
   virtual Ref<IDataFactoryMng> createDataFactoryMngRef(IApplication*) =0;
 
+  //! Créé un gestionnaire pour les accélérateurs
+  virtual Ref<IAcceleratorMng> createAcceleratorMngRef(ITraceMng* tm) =0;
+
   /*!
    * \brief Créé un gestionnaire de trace.
    *

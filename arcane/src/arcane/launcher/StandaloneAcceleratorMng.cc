@@ -30,13 +30,6 @@
 namespace Arcane
 {
 
-// TODO: à mettre dans IMainFactory
-namespace Accelerator
-{
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT Ref<IAcceleratorMng>
-createAcceleratorMngRef(ITraceMng* tm);
-}
-
 class StandaloneAcceleratorMng::Impl
 {
  public:
@@ -44,7 +37,7 @@ class StandaloneAcceleratorMng::Impl
   {
     MainFactory main_factory;
     m_trace_mng = makeRef<ITraceMng>(main_factory.createTraceMng());
-    m_accelerator_mng = Accelerator::createAcceleratorMngRef(m_trace_mng.get());
+    m_accelerator_mng = main_factory.createAcceleratorMngRef(m_trace_mng.get());
   }
  public:
   Ref<ITraceMng> m_trace_mng;
