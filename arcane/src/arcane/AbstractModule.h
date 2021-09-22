@@ -90,8 +90,10 @@ class ARCANE_CORE_EXPORT AbstractModule
   IMesh* defaultMesh() const override { return m_default_mesh_handle.mesh(); }
   //! Maillage par défaut pour ce module
   MeshHandle defaultMeshHandle() const override { return m_default_mesh_handle; }
-  //! Gestionnaire parallèle
+  //! Gestionnaire du parallélisme par échange de message
   IParallelMng* parallelMng() const override;
+  //! Gestionnaire des accélérateurs.
+  IAcceleratorMng* acceleratorMng() const override;
   //! Gestionnaire de traces
   ITraceMng* traceMng() const override;
   //! Positionne le flag d'utilisation du module
