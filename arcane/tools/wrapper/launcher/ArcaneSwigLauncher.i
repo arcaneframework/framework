@@ -12,6 +12,7 @@ using namespace Arcane;
 
 %ignore Arcane::ArcaneLauncher::runDirect;
 %ignore Arcane::ArcaneLauncher::setCommandLineArguments;
+%ignore Arcane::ArcaneLauncher::createStandaloneAcceleratorMng;
 %rename Arcane::ArcaneLauncher ArcaneLauncher_INTERNAL;
 
 ARCANE_STD_EXHANDLER
