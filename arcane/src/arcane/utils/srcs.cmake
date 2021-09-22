@@ -22,6 +22,8 @@ set(ARCANE_SOURCES
   CommandLineArguments.cc
   Convert.cc
   Convert.h
+  ConcurrencyUtils.cc
+  ConcurrencyUtils.h
   CStringUtils.cc
   CStringUtils.h
   DataVector1D.cc
