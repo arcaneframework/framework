@@ -67,6 +67,10 @@ set(ARCANE_SOURCES
   Numeric.h
   NumArray.h
   NumArray.cc
+  Observable.cc
+  Observer.cc
+  Observable.h
+  Observer.h
   OStringStream.cc
   OStringStream.h
   ParallelFatalErrorException.cc
@@ -196,6 +200,8 @@ set(ARCANE_SOURCES
   IFunctorWithArgument.h
   IHashAlgorithm.h
   IAllocator.h
+  IObserver.h
+  IObservable.h
   Iterator.h
   IMemoryAllocator.h
   IRangeFunctor.h

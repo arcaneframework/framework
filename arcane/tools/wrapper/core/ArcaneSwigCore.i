@@ -410,9 +410,9 @@ class IEntryPoint
 %include arcane/ItemGroupImpl.h
 %include arcane/expr/IExpressionImpl.h
 %include arcane/SharedReference.h
-%include arcane/IObserver.h
-%include arcane/Observer.h
-%include arcane/IObservable.h
+%include arcane/utils/IObserver.h
+%include arcane/utils/Observer.h
+%include arcane/utils/IObservable.h
 %include arcane/IMainFactory.h
 %include arcane/ApplicationBuildInfo.h
 %include arcane/DotNetRuntimeInitialisationInfo.h

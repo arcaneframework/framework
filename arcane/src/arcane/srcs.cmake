@@ -125,9 +125,7 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    ModuleFactory.cc
    ModuleFactory.h
    NullXmlDocumentHolder.cc
-   Observable.cc
    Observable.h
-   Observer.cc
    Observer.h
    ObserverPool.cc
    ObserverPool.h
