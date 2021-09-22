@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneMain.h                                                (C) 2000-2021 */
+/* ArcaneLauncher.h                                            (C) 2000-2021 */
 /*                                                                           */
 /* Classe gérant l'exécution.                                                */
 /*---------------------------------------------------------------------------*/
@@ -27,6 +27,7 @@
 #include "arcane/launcher/DirectExecutionContext.h"
 #include "arcane/launcher/DirectSubDomainExecutionContext.h"
 #include "arcane/launcher/IDirectExecutionContext.h"
+#include "arcane/launcher/StandaloneAcceleratorMng.h"
 
 #include <functional>
 
@@ -168,6 +169,13 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
 
   //! Nom complet du répertoire où se trouve l'exécutable
   static String getExeDirectory();
+
+  /*!
+   * \brief Créé une implémentation autonome pour gérer les accélérateurs.
+   *
+   * Il faut appeler init() avant d'appeler cette méthode.
+   */
+ static StandaloneAcceleratorMng createStandaloneAcceleratorMng();
 
  public:
 

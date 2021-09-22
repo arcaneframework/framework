@@ -352,6 +352,20 @@ setDefaultMainFactory(IMainFactory* mf)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+StandaloneAcceleratorMng ArcaneLauncher::
+createStandaloneAcceleratorMng()
+{
+  if (!global_has_init_done)
+    ARCANE_FATAL("ArcaneLauncher::init() has to be called before");
+  // Cela est nécessaire pour éventuellement charger dynamiquement le runtime
+  // associé aux accélérateurs
+  ArcaneMain::_initRuntimes();
+  return {};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
