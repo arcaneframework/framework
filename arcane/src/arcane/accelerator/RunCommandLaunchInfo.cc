@@ -37,13 +37,12 @@ RunCommandLaunchInfo(RunCommand& command)
 /*---------------------------------------------------------------------------*/
 
 RunCommandLaunchInfo::
-~RunCommandLaunchInfo() ARCANE_NOEXCEPT_FALSE
+~RunCommandLaunchInfo()
 {
   // Normalement ce test est toujours faux sauf s'il y a eu une exception
   // pendant le lancement du noyau de calcul.
   if (!m_is_notify_end_kernel_done)
     m_queue_stream->notifyEndKernel(m_command);
-  _checkHasExecBegun();
   m_command.resetInfos();
 }
 
@@ -66,24 +65,13 @@ _begin()
 void RunCommandLaunchInfo::
 endExecute()
 {
-  _checkHasExecBegun();
+  if (!m_has_exec_begun)
+    ARCANE_FATAL("beginExecute() has to be called before endExecute()");
   m_is_notify_end_kernel_done = true;
   m_queue_stream->notifyEndKernel(m_command);
   RunQueue& queue = m_command._internalQueue();
   if (!queue.isAsync())
     m_queue_stream->barrier();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void RunCommandLaunchInfo::
-_checkHasExecBegun()
-{
-  // Envoie un fatal si aucune exécution n'a eu lieu (ce qui
-  // signifie que le runtime demandé n'est pas disponible)
-  if (!m_has_exec_begun)
-    ARCANE_FATAL("No runtime available for execution policy {0}",(int)m_exec_policy);
 }
 
 /*---------------------------------------------------------------------------*/

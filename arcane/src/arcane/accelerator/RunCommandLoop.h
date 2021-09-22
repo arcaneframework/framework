@@ -51,6 +51,8 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
       // TODO: utiliser cudaLaunchKernel() à la place.
       impl::doDirectCUDALambdaArrayBounds<LoopBoundType<N>,Lambda> <<<b, t, 0, *s>>>(bounds,func);
     }
+#else
+    ARCANE_FATAL("Requesting CUDA kernel execution but the kernel is not compiled with CUDA compiler");
 #endif
     break;
   case eExecutionPolicy::Sequential:
