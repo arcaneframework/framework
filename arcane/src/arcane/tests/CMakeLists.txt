@@ -36,6 +36,7 @@ set(ARCANE_ACCELERATOR_SOURCES
   accelerator/MiniWeatherArray.cc
   accelerator/NumArrayUnitTest.cc
   accelerator/AcceleratorViewsUnitTest.cc
+  accelerator/ArcaneTestStandaloneAcceleratorMng.cc
   )
 list(APPEND ARCANE_SOURCES ${ARCANE_ACCELERATOR_SOURCES})
 
@@ -259,9 +260,17 @@ add_test(
 arcane_add_test_sequential(direct_exec_cartesian_sequential testRunDirect-1.arc -D TestRunDirectCartesianSequential)
 arcane_add_test(direct_exec_hello_world testRunDirect-1.arc -D TestRunDirectHelloWorld)
 arcane_add_test(direct_exec_cartesian testRunDirect-1.arc -D TestRunDirectCartesian)
+
 ADD_TEST(dump_all_internal ${ARCANE_TEST_DRIVER} launch -We,STDENV_CODE_NAME,Arcane -arcane_opt arcane_all_internal)
 ADD_TEST(dump_internal ${ARCANE_TEST_DRIVER} launch -We,STDENV_CODE_NAME,Arcane -arcane_opt arcane_internal)
 ADD_TEST(dump_database ${ARCANE_TEST_DRIVER} launch -We,STDENV_CODE_NAME,Arcane -arcane_opt arcane_database)
+
+# ----------------------------------------------------------------------------
+
+add_test(standalone_accelerator_testsum ${ARCANE_TEST_DRIVER} launch -A,StandaloneAcceleratorMethod=TestSum)
+if (ARCANE_WANT_CUDA)
+  add_test(standalone_accelerator_testsum_cuda ${ARCANE_TEST_DRIVER} launch -A,StandaloneAcceleratorMethod=TestSum -A,AcceleratorRuntime=cuda)
+endif()
 
 # ----------------------------------------------------------------------------
 
