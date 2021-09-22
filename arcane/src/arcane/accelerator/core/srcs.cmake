@@ -1,6 +1,8 @@
 set( ARCANE_SOURCES
   AcceleratorCoreGlobal.h
   AcceleratorCore.cc
+  AcceleratorRuntimeInitialisationInfo.cc
+  AcceleratorRuntimeInitialisationInfo.h
   IAcceleratorMng.h
   AcceleratorMng.cc
   IReduceMemoryImpl.h

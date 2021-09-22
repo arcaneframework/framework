@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IArcaneMain.h                                               (C) 2000-2018 */
+/* IArcaneMain.h                                               (C) 2000-2021 */
 /*                                                                           */
 /* Interface de la classe ArcaneMain.                                        */
 /*---------------------------------------------------------------------------*/
@@ -29,7 +29,6 @@ class ApplicationInfo;
 class ApplicationBuildInfo;
 class IMainFactory;
 class DotNetRuntimeInitialisationInfo;
-class AcceleratorRuntimeInitialisationInfo;
 class IDirectSubDomainExecuteFunctor;
 
 /*---------------------------------------------------------------------------*/

@@ -43,6 +43,7 @@ class RunCommand;
 class IRunQueueRuntime;
 class IRunQueueStream;
 class RunCommandImpl;
+class AcceleratorRuntimeInitialisationInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

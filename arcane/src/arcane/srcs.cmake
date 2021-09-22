@@ -9,7 +9,6 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    AbstractService.h
    AbstractItemOperationByBasicType.cc
    AbstractItemOperationByBasicType.h
-   AcceleratorRuntimeInitialisationInfo.cc
    AcceleratorRuntimeInitialisationInfo.h
    ArcaneTypes.cc
    ArcaneTypes.h

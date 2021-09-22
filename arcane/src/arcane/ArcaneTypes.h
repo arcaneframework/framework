@@ -475,10 +475,12 @@ namespace Accelerator
 class IAcceleratorMng;
 class Runner;
 class RunQueue;
+class AcceleratorRuntimeInitialisationInfo;
 }
 using Accelerator::IAcceleratorMng;
 using Accelerator::Runner;
 using Accelerator::RunQueue;
+using Accelerator::AcceleratorRuntimeInitialisationInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

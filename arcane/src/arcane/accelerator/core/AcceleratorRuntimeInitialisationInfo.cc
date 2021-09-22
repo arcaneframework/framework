@@ -11,25 +11,20 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/AcceleratorRuntimeInitialisationInfo.h"
+#include "arcane/accelerator/core/AcceleratorRuntimeInitialisationInfo.h"
 
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/String.h"
 #include "arcane/utils/Property.h"
 
 #include "arcane/accelerator/core/Runner.h"
-#include "arcane/Concurrency.h"
-
-// TODO: Déplacer cette classe dans arcane/utils
+#include "arcane/utils/ConcurrencyUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
+namespace Arcane::Accelerator
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -134,7 +129,7 @@ setAcceleratorRuntime(StringView v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_CORE_EXPORT void
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void
 arcaneInitializeRunner(Accelerator::Runner& runner,ITraceMng* tm,
                        const AcceleratorRuntimeInitialisationInfo& acc_info)
 {
@@ -163,7 +158,7 @@ ARCANE_REGISTER_PROPERTY_CLASS(AcceleratorRuntimeInitialisationInfo,());
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // End namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

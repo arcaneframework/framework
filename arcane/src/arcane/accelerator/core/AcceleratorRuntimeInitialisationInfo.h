@@ -5,28 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorGlobal.h                                         (C) 2000-2021 */
+/* AcceleratorRuntimeInitialisationInfo.h                      (C) 2000-2021 */
 /*                                                                           */
-/* Déclarations générales pour le support des accélérateurs.                 */
+/* Informations pour l'initialisation du runtime des accélérateurs.          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_ACCELERATORGLOBAL_H
-#define ARCANE_ACCELERATOR_ACCELERATORGLOBAL_H
+#ifndef ARCANE_ACCELERATOR_CORE_ACCELERATORRUNTIMEINITIALISATIONINFO_H
+#define ARCANE_ACCELERATOR_CORE_ACCELERATORRUNTIMEINITIALISATIONINFO_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
+#include "arcane/utils/PropertyDeclarations.h"
+
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
-
-#include <iosfwd>
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#ifdef ARCANE_COMPONENT_arcane_accelerator
-#define ARCANE_ACCELERATOR_EXPORT ARCANE_EXPORT
-#else
-#define ARCANE_ACCELERATOR_EXPORT ARCANE_IMPORT
-#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,14 +27,41 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
- * \brief Initialise \a runner en fonction de
- * la valeur de \a acc_info.
+ * \brief Informations pour l'initialisation des accélérateurs.
  */
-extern "C++" ARCANE_ACCELERATOR_EXPORT void
-initializeRunner(Runner& runner,ITraceMng* tm,
-                 const AcceleratorRuntimeInitialisationInfo& acc_info);
+class ARCANE_ACCELERATOR_CORE_EXPORT AcceleratorRuntimeInitialisationInfo
+{
+  ARCANE_DECLARE_PROPERTY_CLASS(AcceleratorRuntimeInitialisationInfo);
+ private:
+  class Impl;
+ public:
+
+  AcceleratorRuntimeInitialisationInfo();
+  AcceleratorRuntimeInitialisationInfo(const AcceleratorRuntimeInitialisationInfo& rhs);
+  ~AcceleratorRuntimeInitialisationInfo();
+  AcceleratorRuntimeInitialisationInfo& operator=(const AcceleratorRuntimeInitialisationInfo& rhs);
+
+ public:
+
+  void setIsUsingAcceleratorRuntime(bool v);
+  bool isUsingAcceleratorRuntime() const;
+
+  //! Nom du runtime utilisé (pour l'instant uniquement 'cuda')
+  void setAcceleratorRuntime(StringView name);
+  String acceleratorRuntime() const;
+
+ private:
+
+  Impl* m_p;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void
+arcaneInitializeRunner(Accelerator::Runner& runner,ITraceMng* tm,
+                       const AcceleratorRuntimeInitialisationInfo& acc_info);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -54,3 +72,4 @@ initializeRunner(Runner& runner,ITraceMng* tm,
 /*---------------------------------------------------------------------------*/
 
 #endif  
+
