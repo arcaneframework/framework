@@ -415,7 +415,7 @@ computeVelocity()
 void SimpleHydroSimdService::
 computeViscosityWork()
 {
-  Parallel::Foreach(allCells(),[this](CellVectorView cells){
+  arcaneParallelForeach(allCells(),[this](CellVectorView cells){
 
       auto in_cell_viscosity_force = viewIn(m_cell_viscosity_force);
       auto out_viscosity_work = viewOut(m_viscosity_work);
@@ -535,7 +535,7 @@ applyEquationOfState()
   auto out_pressure = viewOut(m_pressure);
 
   // Calcul de l'énergie interne
-  Parallel::Foreach(allCells(),[&](CellVectorView cells){
+  arcaneParallelForeach(allCells(),[&](CellVectorView cells){
       ENUMERATE_SIMD_CELL(icell,cells){
         SimdCell vi = *icell;
         SimdReal adiabatic_cst = in_adiabatic_cst[vi];
@@ -712,7 +712,7 @@ void SimpleHydroSimdService::
 computeGeometricValues()
 {
   auto out_caracteristic_length = viewOut(m_caracteristic_length);
-  Parallel::Foreach(allCells(),[&](CellVectorView cells){
+  arcaneParallelForeach(allCells(),[&](CellVectorView cells){
       // Copie locale des coordonnées des sommets d'une maille
       SimdReal3 coord[8];
       // Coordonnées des centres des faces
