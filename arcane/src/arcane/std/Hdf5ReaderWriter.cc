@@ -328,14 +328,14 @@ _writeVal(const String& var_group_name,
           << " is_multi=" << sdata->isMultiSize()
           << " dimensions_size=" << sdata->extents().size()
           << " memory_size=" << sdata->memorySize()
-          << " bytes_size=" << sdata->bytes().size();
+          << " bytes_size=" << sdata->constBytes().size();
 
   Integer nb_dimension = sdata->nbDimension();
   Int64ConstArrayView dimensions = sdata->extents();
 
   hid_t save_typeid = m_types.saveType(sdata->baseDataType());
   hid_t trueid = m_types.nativeType(sdata->baseDataType());
-  const void* ptr = sdata->bytes().data();
+  const void* ptr = sdata->constBytes().data();
   Int64 nb_base_element = sdata->nbBaseElement();
 
   HGroup var_base_group;
@@ -572,7 +572,7 @@ _readVal(IVariable* v,IData* data)
     dataset_id.open(group_id,"Values");
     if (dataset_id.isBad())
       ARCANE_THROW(ReaderWriterException,"Wrong dataset for variable '{0}'",var_group_name);
-    void* ptr = sd->bytes().data();
+    void* ptr = sd->writableBytes().data();
     info() << "READ Variable " << var_group_name << " ptr=" << ptr;;
     hid_t trueid = m_types.nativeType(sd->baseDataType());
     dataset_id.read(trueid,ptr);

@@ -1568,7 +1568,7 @@ _checkHashFunction(const VariableMetaDataList& vmd_list)
               << " ref=" << reference_hash
               << " current=" << hash_str;
       Ref<ISerializedData> sdata(data->createSerializedDataRef(false));
-      Span<const Byte> buf(sdata->bytes());
+      Span<const Byte> buf(sdata->constBytes());
       String fname = listing_dir.file(String::format("dump-{0}-sid_{1}",var->fullName(),sid));
       ofstream ofile(fname.localstr());
       ofile.write(reinterpret_cast<const char*>(buf.data()),buf.size());

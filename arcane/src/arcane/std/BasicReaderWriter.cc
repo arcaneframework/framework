@@ -481,7 +481,7 @@ readData(const String& var_full_name,IData* data)
 
   data->allocateBufferForSerializedData(sd.get());
 
-  void* ptr = sd->bytes().data();
+  void* ptr = sd->writableBytes().data();
 
   bool print_values = false;
   String key_name = var_full_name;
@@ -661,7 +661,7 @@ writeData(const String& var_full_name,const ISerializedData* sdata)
           << " is_multi=" << sdata->isMultiSize()
           << " dimensions_size=" << sdata->extents().size()
           << " memory_size=" << sdata->memorySize()
-          << " bytes_size=" << sdata->bytes().size();
+          << " bytes_size=" << sdata->constBytes().size();
 
   const void* ptr = sdata->constBytes().data();
 

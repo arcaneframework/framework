@@ -518,7 +518,7 @@ _saveVariableOnGroup(IVariable* var,IData* data,const ItemGroup& group,
   if (sdata->baseDataType()!=DT_Real)
     ARCANE_FATAL("Bad datatype (only DT_Real is allowed)");
 
-  Span<const Byte> sbuffer = sdata->bytes();
+  Span<const Byte> sbuffer = sdata->constBytes();
   const Real* ptr = reinterpret_cast<const Real*>(sbuffer.data());
   Span<const Real> true_values(ptr,sdata->nbBaseElement());
   RealUniqueArray values;
