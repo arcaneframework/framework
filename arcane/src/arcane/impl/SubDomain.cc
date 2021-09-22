@@ -465,9 +465,7 @@ initialize()
     // Initialise le runner par défaut en fonction des paramètres donnés par
     // l'utilisateur.
     IApplication* app = application();
-    auto* runner = m_accelerator_mng->defaultRunner();
-    arcaneInitializeRunner(*runner,traceMng(),app->acceleratorRuntimeInitialisationInfo());
-    m_accelerator_mng->initialize();
+    m_accelerator_mng->initialize(app->acceleratorRuntimeInitialisationInfo());
   }
 
   IMainFactory* mf = m_application->mainFactory();

@@ -51,11 +51,7 @@ StandaloneAcceleratorMng::
 StandaloneAcceleratorMng()
 : m_p(new Impl())
 {
-  {
-    auto* runner = m_p->m_accelerator_mng->defaultRunner();
-    arcaneInitializeRunner(*runner,m_p->m_trace_mng.get(),ArcaneLauncher::acceleratorRuntimeInitialisationInfo());
-    m_p->m_accelerator_mng->initialize();
-  }
+  m_p->m_accelerator_mng->initialize(ArcaneLauncher::acceleratorRuntimeInitialisationInfo());
 }
 
 /*---------------------------------------------------------------------------*/
