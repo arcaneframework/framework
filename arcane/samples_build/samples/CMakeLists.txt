@@ -26,6 +26,7 @@ add_subdirectory(geometry)
 add_subdirectory(print_meshinfo)
 add_subdirectory(direct_cartesian)
 add_subdirectory(hydro_accelerator)
+add_subdirectory(standalone_accelerator)
 
 # ----------------------------------------------------------------------------
 # Local Variables:
