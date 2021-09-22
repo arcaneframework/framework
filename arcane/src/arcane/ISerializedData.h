@@ -40,9 +40,9 @@ namespace Arcane
  * \code
  * IData* data = ...;
  * ISerializedData* sdata = data->createSerializedData();
- * // sdata->bytes() contient la donnée sérialisée.
- * // Écrire via sdata->bytes().
- * ...
+ * // sdata->constBytes() contient la donnée sérialisée.
+ * Span<const Byte> buf(sdata->constBytes());
+ * std::cout.write(reinterpret_cast<const char*>(buf.data()),buf.size());
  * \endcode
  *
  * Pour sérialiser une donnée \a data en lecture:
@@ -51,10 +51,11 @@ namespace Arcane
  * // Créé une instance d'un ISerializedData.
  * Ref<ISerializedData> sdata = arcaneCreateSerializedDataRef(...);
  * data->allocateBufferForSerializedData(sdata);
- * // remplir le sdata->bytes() à partir de votre source
- * ...
- * // assigner la valeur à \a data
- * data->assignSerializedData(sd);
+ * // Remplit sdata->writableBytes() à partir de votre source
+ * Span<Byte> buf(sdata->writableBytes());
+ * std::cin.read(reinterpret_cast<char*>(buf.data()),buf.size());
+ * // Assigne la valeur à \a data
+ * data->assignSerializedData(sdata);
  * \endcode
  */
 class ARCANE_CORE_EXPORT ISerializedData
@@ -89,71 +90,37 @@ class ARCANE_CORE_EXPORT ISerializedData
   //! Tableau contenant le nombre d'éléments pour chaque dimension
   virtual Int64ConstArrayView extents() const =0;
 
-  /*!
-   * \brief Valeurs sérialisées.
-   * \deprecated Utiliser bytes() à la place.
-   */
-  ARCANE_DEPRECATED_2018_R("Use method 'bytes() const' instead")
-  virtual ByteConstArrayView buffer() const =0;
-
-  /*!
-   * \brief Valeurs sérialisées.
-   * \deprecated Utiliser bytes() à la place.
-   */
-  ARCANE_DEPRECATED_2018_R("Use method 'bytes()' instead")
-  virtual ByteArrayView buffer() =0;
-
-  //! Valeurs sérialisées.
-  virtual Span<const Byte> bytes() const =0;
 
   //! Valeurs sérialisées.
   virtual Span<const Byte> constBytes() const =0;
 
   /*!
-   * \brief Valeurs sérialisées
+   * \brief Vue sur les valeurs sérialisées
    *
    * \warning Cette méthode renvoie une vue non vide uniquement si on
-   * a appelé setBytes(Span<Byte>) ou allocateMemory().
+   * a appelé allocateMemory() ou setWritableBytes(Span<Byte>) avant.
    */
-  virtual Span<Byte> bytes() =0;
+  virtual Span<Byte> writableBytes() =0;
 
   /*!
    * \brief Positionne les valeurs de sérialisation.
    *
-   * Le tableau \a buffer ne doit pas être modifié
-   * tant que cette instance est utilisée.
-   * \deprecated Utiliser setBytes() à la place.
+   * La vue \a bytes doit rester valide tant que cette instance est utilisée.
    */
-  virtual void setBuffer(ByteArrayView buffer) =0;
+  virtual void setWritableBytes(Span<Byte> bytes) =0;
 
   /*!
-   * \brief Positionne les valeurs de sérialisation.
+   * \brief Positionne les valeurs de sérialisation pour la lecture
    *
-   * Le tableau \a buffer ne doit pas être modifié
-   * tant que cette instance est utilisée.
-   * \deprecated Utiliser setBytes() à la place.
+   * La vue \a bytes doit rester valide tant que cette instance est utilisée.
    */
-  virtual void setBuffer(ByteConstArrayView buffer) =0;
-
-  /*!
-   * \brief Positionne les valeurs de sérialisation.
-   *
-   * Le tableau \a bytes ne doit pas être modifié
-   * tant que cette instance est utilisée.
-   */
-  virtual void setBytes(Span<Byte> bytes) =0;
-
-  /*!
-   * \brief Positionne les valeurs de sérialisation.
-   *
-   * Le tableau \a bytes ne doit pas être modifié
-   * tant que cette instance est utilisée.
-   */
-  virtual void setBytes(Span<const Byte> bytes) =0;
+  virtual void setConstBytes(Span<const Byte> bytes) =0;
 
   /*!
    * \brief Alloue un tableaux pour contenir les éléments sérialisés.
    *
+   * Après appel à cette méthode, il est possible de récupérer une
+   * vue sur les valeurs sérialisées via writableBytes() ou constBytes().
    */
   virtual void allocateMemory(Int64 size) =0;
 
@@ -178,6 +145,73 @@ class ARCANE_CORE_EXPORT ISerializedData
    * de l'algorithme utilisé.
    */
   virtual void computeHash(IHashAlgorithm* algo,ByteArray& output) const =0;
+
+ public:
+
+  /*!
+   * \brief Valeurs sérialisées.
+   * \deprecated Utiliser bytes() à la place.
+   */
+  ARCANE_DEPRECATED_2018_R("Use method 'writableBytes()' or 'constBytes()' instead")
+  virtual ByteConstArrayView buffer() const =0;
+
+  /*!
+   * \brief Valeurs sérialisées.
+   * \deprecated Utiliser bytes() à la place.
+   */
+  ARCANE_DEPRECATED_2018_R("Use method 'writableBytes()' or 'constBytes()' instead")
+  virtual ByteArrayView buffer() =0;
+
+  //! Valeurs sérialisées.
+  ARCCORE_DEPRECATED_2021("Use method 'writableBytes()' or 'constBytes()' instead")
+  virtual Span<const Byte> bytes() const =0;
+
+  /*!
+   * \brief Positionne les valeurs de sérialisation.
+   *
+   * Le tableau \a buffer ne doit pas être modifié
+   * tant que cette instance est utilisée.
+   * \deprecated Utiliser setBytes() à la place.
+   */
+  ARCCORE_DEPRECATED_2021("Use method 'setWritableBytes()' instead")
+  virtual void setBuffer(ByteArrayView buffer) =0;
+
+  /*!
+   * \brief Positionne les valeurs de sérialisation.
+   *
+   * Le tableau \a buffer ne doit pas être modifié
+   * tant que cette instance est utilisée.
+   * \deprecated Utiliser setBytes() à la place.
+   */
+  ARCCORE_DEPRECATED_2021("Use method 'setConstBytes()' instead")
+  virtual void setBuffer(ByteConstArrayView buffer) =0;
+
+  /*!
+   * \brief Positionne les valeurs de sérialisation.
+   *
+   * Le tableau \a bytes ne doit pas être modifié
+   * tant que cette instance est utilisée.
+   */
+  ARCCORE_DEPRECATED_2021("Use method 'setWritableBytes()' instead")
+  virtual void setBytes(Span<Byte> bytes) =0;
+
+  /*!
+   * \brief Positionne les valeurs de sérialisation.
+   *
+   * Le tableau \a bytes ne doit pas être modifié
+   * tant que cette instance est utilisée.
+   */
+  ARCCORE_DEPRECATED_2021("Use method 'setConstBytes()' instead")
+  virtual void setBytes(Span<const Byte> bytes) =0;
+
+  /*!
+   * \brief Valeurs sérialisées
+   *
+   * \warning Cette méthode renvoie une vue non vide uniquement si on
+   * a appelé setBytes(Span<Byte>) ou allocateMemory().
+   */
+  ARCCORE_DEPRECATED_2021("Use method 'writableBytes()' or 'constBytes()' instead")
+  virtual Span<Byte> bytes() =0;
 };
 
 /*---------------------------------------------------------------------------*/

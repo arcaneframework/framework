@@ -98,7 +98,7 @@ createSerializedDataRef(bool use_basic_type) const
   dimensions.add(nb_element);
   auto sd = arcaneCreateSerializedDataRef(data_type, base_values.size(), 0, nb_element,
                                           nb_base_element, false, dimensions);
-  sd->setBuffer(base_values);
+  sd->setConstBytes(base_values);
   return sd;
 }
 
@@ -118,7 +118,7 @@ allocateBufferForSerializedData(ISerializedData* sdata)
     throw ArgumentException(A_FUNCINFO, "Bad serialized type");
 
   Span<Byte> byte_values(reinterpret_cast<Byte*>(&m_value), sdata->memorySize());
-  sdata->setBytes(byte_values);
+  sdata->setWritableBytes(byte_values);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -65,8 +65,11 @@ class SerializedData
   Span<Byte> bytes() override { return m_buffer; }
   void setBuffer(ByteArrayView buffer) override;
   void setBuffer(ByteConstArrayView buffer) override;
-  void setBytes(Span<Byte> bytes) override;
-  void setBytes(Span<const Byte> bytes) override;
+  void setBytes(Span<Byte> bytes) override { setWritableBytes(bytes); }
+  void setBytes(Span<const Byte> bytes) override { setConstBytes(bytes); }
+  Span<Byte> writableBytes() override { return m_buffer; }
+  void setWritableBytes(Span<Byte> bytes) override;
+  void setConstBytes(Span<const Byte> bytes) override;
   void allocateMemory(Int64 size) override;
 
  public:
@@ -175,7 +178,7 @@ setBuffer(ByteConstArrayView buffer)
 /*---------------------------------------------------------------------------*/
 
 void SerializedData::
-setBytes(Span<Byte> buffer)
+setWritableBytes(Span<Byte> buffer)
 {
   m_buffer = buffer;
   m_const_buffer = buffer;
@@ -187,7 +190,7 @@ setBytes(Span<Byte> buffer)
 /*---------------------------------------------------------------------------*/
 
 void SerializedData::
-setBytes(Span<const Byte> buffer)
+setConstBytes(Span<const Byte> buffer)
 {
   m_const_buffer = buffer;
   m_buffer = Span<Byte>();
