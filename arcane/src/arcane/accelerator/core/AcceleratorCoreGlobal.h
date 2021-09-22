@@ -52,8 +52,11 @@ class AcceleratorRuntimeInitialisationInfo;
  */
 enum class eExecutionPolicy
 {
+  //! Politique d'exécution séquentielle
   Sequential,
+  //! Politique d'exécution multi-thread
   Thread,
+  //! Politique d'exécution utilisant l'environnement CUDA
   CUDA,
 };
 

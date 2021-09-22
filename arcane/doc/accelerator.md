@@ -32,7 +32,20 @@ déport se fait via des appels spécifiques.
 ## Utilisation dans Arcane
 
 L´ensemble des types utilisés pour la gestion des accélérateurs est
-dans l'espace de nom Arcane::Accelerator
+dans l'espace de nom Arcane::Accelerator. Les classes principales
+sont:
+
+- Arcane::Accelerator::IAcceleratorMng qui permet d'accéder à
+  l'environnement d'exécution par défaut.
+- Arcane::Accelerator::Runner qui représente un environnement d'exécution
+- Arcane::Accelerator::RunQueue qui représente une file d'exécution
+- Arcane::Accelerator::RunCommand qui représente une commande (un
+  noyau de calcul) associée à une file d'exécution.
+
+L'interface principale est Arcane::Accelerator::IAcceleratorMng. Une
+implémentation de cette interface est créé lors de l'initialisation et
+est disponible pour les modules via la méthode
+Arcane::AbstractModule::acceleratorMng().
 
 L'objet principal est la classe Arcane::Accelerator::Runner. Il est
 possible de créér plusieurs instances de cet objet.
@@ -67,13 +80,14 @@ persistantes mais ne peuvent pas être copiées. La méthode
 Arcane::Accelerator::makeQueueRef() permet de créer une référence à
 une file qui peut être copiée.
 
-TODO Exemple itération
+## Exemple d'utilisation
 
 ~~~{.cpp}
 using namespace Arcane;
 using namespace Arcane::Accelerator;
 {
-  auto queue = makeQueue(m_runner);
+  Runner runner = ...;
+  auto queue = makeQueue(runner);
   auto command = makeCommand(queue);
   auto out_t1 = viewOut(command,t1);
   Int64 base = 300;
@@ -87,8 +101,50 @@ using namespace Arcane::Accelerator;
 }
 ~~~
 
+## Compilation
 
-TODO: utilisation via CMake.
+Pour pouvoir utiliser des noyaux de calcul sur accélérateur, il faut
+en général utiliser un compilateur spécifique. L'implémentation
+actuelle de %Arcane via CUDA utilise le compilateur `nvcc` de NVIDIA
+pour cela. Ce compilateur se charge de compiler la partie associée à
+l'accélérateur. La partie associée au CPU est compilée avec le même
+compilateur que le reste du code.
+
+Il est nécessaire de spécifier dans le `CMakeLists.txt` qu'on souhaite
+utiliser les accélérateurs ainsi que les fichiers qui seront compilés
+pour les accélérateurs. Seuls les fichiers utilisant des commandes
+(RUNCOMMAND_LOOP ou RUNCOMMAND_ENUMERATE) ont besoin d'être compilés
+pour les accélérateurs. Pour cela, %Arcane définit les fonctions
+CMake suivantes:
+
+- **arcane_accelerator_enable()** qui doit être appeler vant les autres
+  fonctions pour détecter l'environnement de compilation pour accélérateur
+- **arcane_accelerator_add_source_files(file1.cc [file2.cc] ...)** pour
+  indiquer les fichiers sources qui doivent être compilés sur accélérateurs
+- **arcane_accelerator_add_to_target(mytarget)** pour indiquer que la
+  cible `mytarget` a besoin de l'environnement accélérateur.
+
+Si %Arcane est compilé en environnement CUDA, la variable CMake
+`ARCANE_HAS_CUDA` est définie.
+
+## Exécution
+
+Le choix de l'environnement d'exécution par défaut
+(Arcane::Accelerator::IAcceleratorMng::defaultRunner()) est déterminé
+par la ligne de commande:
+
+- Si l'option `AcceleratorRuntime` est spécifiée, on utilise ce
+  runtime. Actuellement la seule valeur possible est `cuda`. Par
+  exemple:
+  ~~~{.sh}
+  MyExec -A,AcceleratorRuntime=cuda data.arc
+  ~~~
+- Sinon, si le multi-threading est activé via l'option `-T` (voir \ref
+  arcanedoc_launcher), alors les noyaux de calcul sont répartis sur
+  plusieurs threads,
+- Sinon, les noyaux de calcul sont exécutés en séquentiel.
+
+## TODO
 
 TODO: expliquer la capture des lambda avec le 'this'
 

@@ -37,9 +37,21 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Tableaux multi-dimensionnel pour les types numériques sur accélérateur.
+ * \brief Classe de base des vues multi-dimensionnelles.
  *
  * \warning API en cours de définition.
+ *
+ * Cette classe s'inspire la classe std::mdspan en cours de définition
+ * (voir http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0009r12.html)
+ *
+ * Cette classe est utilisée pour gérer les vues sur les tableaux des types
+ * numériques qui sont accessibles sur accélérateur. \a RankValue est le
+ * rang du tableau (nombre de dimensions) et \a DataType le type de données
+ * associé.
+ *
+ * En général cette classe n'est pas utilisée directement mais par l'intermédiaire
+ * d'une de ses spécialisations suivant le rang comme MDSpan<DataType,1>,
+ * MDSpan<DataType,2>, MDSpan<DataType,3> ou MDSpan<DataType,4>.
  */
 template<typename DataType,int RankValue>
 class MDSpanBase
@@ -114,8 +126,9 @@ class MDSpan;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-//! Tableaux 1D.
+/*!
+ * \brief Vue multi-dimensionnelle à 1 dimension.
+ */
 template<class DataType>
 class MDSpan<DataType,1>
 : public MDSpanBase<DataType,1>
@@ -166,8 +179,9 @@ class MDSpan<DataType,1>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-//! Tableaux 2D.
+/*!
+ * \brief Vue multi-dimensionnelle à 2 dimensions.
+ */
 template<class DataType>
 class MDSpan<DataType,2>
 : public MDSpanBase<DataType,2>
@@ -220,8 +234,9 @@ class MDSpan<DataType,2>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-//! Tableaux 3D.
+/*!
+ * \brief Vue multi-dimensionnelle à 3 dimensions.
+ */
 template<class DataType>
 class MDSpan<DataType,3>
 : public MDSpanBase<DataType,3>
@@ -283,8 +298,9 @@ class MDSpan<DataType,3>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-//! Tableaux 4D.
+/*!
+ * \brief Vue multi-dimensionnelle à 4 dimensions.
+ */
 template<class DataType>
 class MDSpan<DataType,4>
 : public MDSpanBase<DataType,4>
@@ -352,19 +368,35 @@ class MDSpan<DataType,4>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Tableaux multi-dimensionnel pour les types numériques sur accélérateur.
+ * \brief Classe de base des tableaux multi-dimensionnels pour les types
+ * numériques sur accélérateur.
  *
  * \warning API en cours de définition.
  *
- * On utilise pour l'instant un UniqueArray2 pour conserver les valeurs.
- * La première dimension du UniqueArray2 correspond à extent(0) et la
- * deuxième dimension au dimensions restantes. Par exemple pour un NumArray<Int32,3>
- * ayant comme nombre d'éléments dans chaque dimension (5,9,3), cela
- * correspond à un 'UniqueArray2' dont le nombre d'éléments est (5,9*3).
+ * En général cette classe n'est pas utilisée directement mais par l'intermédiaire
+ * d'une de ses spécialisations suivant le rang comme NumArray<DataType,1>,
+ * NumArray<DataType,2>, NumArray<DataType,3> ou NumArray<DataType,4>.
+ *
+ * Cette classe contient un nombre minimal de méthodes. Notamment, l'accès aux
+ * valeurs du tableau se fait normalement via des vues (MDSpanBase).
+ * Afin de faciliter l'utilisation sur CPU, l'opérateur 'operator()'
+ * permet de retourner la valeur en lecture d'un élément. Pour modifier un élément,
+ * il faut utiliser la méthode s().
+ *
+ * \warning Cette classe utilise par défaut un allocateur spécifique qui permet de
+ * rendre accessible ces valeurs à la fois sur l'hôte (CPU) et l'accélérateur.
+ * Néanmoins, il faut pour cela que le runtime associé à l'accélérateur ait été
+ * initialisé (\ref arcanedoc_accelerator). C'est pourquoi il ne faut pas
+ * utiliser de variables globales de cette classe ou d'une classe dérivée.
  */
 template<typename DataType,int RankValue>
 class NumArrayBase
 {
+  // On utilise pour l'instant un UniqueArray2 pour conserver les valeurs.
+  // La première dimension du UniqueArray2 correspond à extent(0) et la
+  // deuxième dimension au dimensions restantes. Par exemple pour un NumArray<Int32,3>
+  // ayant comme nombre d'éléments dans chaque dimension (5,9,3), cela
+  // correspond à un 'UniqueArray2' dont le nombre d'éléments est (5,9*3).
  public:
   using ConstSpanType = MDSpan<const DataType,RankValue>;
   using SpanType = MDSpan<DataType,RankValue>;
@@ -372,7 +404,12 @@ class NumArrayBase
  public:
   //! Nombre total d'éléments du tableau
   Int64 totalNbElement() const { return m_total_nb_element; }
+  //! Nombre d'éléments du rang \a i
   Int64 extent(int i) const { return m_span.extent(i); }
+  /*!
+   * \brief Modifie la taille du tableau.
+   * \warning Les valeurs actuelles ne sont pas conservées lors de cette opération
+   */
   void resize(ArrayExtents<RankValue> extents)
   {
     m_span.m_extents.setSize(extents);
@@ -442,8 +479,11 @@ class NumArrayBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-//! Tableaux 1D.
+/*!
+ * \brief Tableau à 1 dimension pour les types numériques.
+ *
+ * \sa NumArrayBase
+ */
 template<class DataType>
 class NumArray<DataType,1>
 : public NumArrayBase<DataType,1>
@@ -487,8 +527,11 @@ class NumArray<DataType,1>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-//! Tableaux 2D.
+/*!
+ * \brief Tableau à 2 dimensions pour les types numériques.
+ *
+ * \sa NumArrayBase
+ */
 template<class DataType>
 class NumArray<DataType,2>
 : public NumArrayBase<DataType,2>
@@ -533,8 +576,11 @@ class NumArray<DataType,2>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-//! Tableaux 3D.
+/*!
+ * \brief Tableau à 3 dimensions pour les types numériques.
+ *
+ * \sa NumArrayBase
+ */
 template<class DataType>
 class NumArray<DataType,3>
 : public NumArrayBase<DataType,3>
@@ -580,8 +626,11 @@ class NumArray<DataType,3>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-//! Tableaux 4D.
+/*!
+ * \brief Tableau à 4 dimensions pour les types numériques.
+ *
+ * \sa NumArrayBase
+ */
 template<class DataType>
 class NumArray<DataType,4>
 : public NumArrayBase<DataType,4>
