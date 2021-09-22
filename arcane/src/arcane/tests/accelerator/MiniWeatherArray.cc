@@ -45,8 +45,9 @@
 #include "arcane/BasicService.h"
 #include "arcane/ServiceFactory.h"
 #include "arcane/tests/MiniWeatherTypes.h"
+#include "arcane/utils/NumArray.h"
 
-#include "arcane/accelerator/NumArray.h"
+#include "arcane/accelerator/core/IAcceleratorMng.h"
 #include "arcane/accelerator/Accelerator.h"
 #include "arcane/accelerator/RunCommandLoop.h"
 
@@ -114,8 +115,8 @@ class MiniWeatherArray
 {
  public:
 
-  MiniWeatherArray(const AcceleratorRuntimeInitialisationInfo& acc_info,
-                   ITraceMng* tm,int nb_cell_x,int nb_cell_z,double final_time);
+  MiniWeatherArray(IAcceleratorMng* am,ITraceMng* tm,int nb_cell_x,int nb_cell_z,
+                   double final_time);
   
  public:
   
@@ -186,16 +187,17 @@ class MiniWeatherArray
   NumArray<double,3> ntend; // Fluid state tendencies.  Dimensions: (nx,nz,NUM_VARS)
   int num_out = 0;   // The number of outputs performed so far
   int direction_switch = 1;
-  ax::Runner m_runner;
+  ax::Runner* m_runner = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 MiniWeatherArray::
-MiniWeatherArray(const AcceleratorRuntimeInitialisationInfo& acc_info,
-                 ITraceMng* tm,int nb_cell_x,int nb_cell_z,double final_time)
+MiniWeatherArray(IAcceleratorMng* am,ITraceMng* tm,int nb_cell_x,int nb_cell_z,
+                 double final_time)
 : TraceAccessor(tm)
+, m_runner(am->defaultRunner())
 {
   m_const.nx_glob = nb_cell_x;     //Number of total cells in the x-dirction
   m_const.nz_glob = nb_cell_z;     //Number of total cells in the z-dirction
@@ -203,7 +205,6 @@ MiniWeatherArray(const AcceleratorRuntimeInitialisationInfo& acc_info,
   m_const.dz = zlen / m_const.nz_glob;
 
   info() << "Using 'MiniWeather' with accelerator";
-  initializeRunner(m_runner,tm,acc_info);
 
   m_const.sim_time = final_time;   //How many seconds to run the simulation
   m_const.output_freq = 100; //How frequently to output data to file (in seconds)
@@ -805,11 +806,9 @@ class MiniWeatherArrayService
     delete m_p;
   }
  public:
-  void init(Int32 nb_x,Int32 nb_z,Real final_time) override
+  void init(IAcceleratorMng* am,Int32 nb_x,Int32 nb_z,Real final_time) override
   {
-    IApplication* app = subDomain()->application();
-    const auto& acc_info = app->acceleratorRuntimeInitialisationInfo();
-    m_p = new MiniWeatherArray(acc_info,traceMng(),nb_x,nb_z,final_time);
+    m_p = new MiniWeatherArray(am,traceMng(),nb_x,nb_z,final_time);
   }
   bool loop() override
   {

@@ -126,7 +126,7 @@ void MiniWeatherModule::
 init()
 {
   info() << "Begin of init";
-  options()->implementation()->init(options()->nbCellX(),
+  options()->implementation()->init(acceleratorMng(),options()->nbCellX(),
                                     options()->nbCellZ(),options()->finalTime());
 }
 
