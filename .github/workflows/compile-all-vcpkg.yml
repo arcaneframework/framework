@@ -1,0 +1,119 @@
+# CI to compile in all components (Arccon/Arccore/Axlstar/Arcane) together using 'vcpkg'
+name: compile-all-vcpkg
+
+on:
+  push:
+    branches:
+       - main
+       - dev/cea
+       - dev/ifpen
+    pull_request:
+      branches:
+        - main
+
+jobs:
+  job:
+    name: ${{ matrix.os }}-ci-direct
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-20.04
+            triplet: x64-linux
+            vcpkg_os: ubuntu-20.04
+          - os: 'windows-2019'
+            triplet: x64-windows
+            vcpkg_os: windows-2019
+          - os: 'windows-2022'
+            triplet: x64-windows
+            vcpkg_os: windows-2019
+
+    env:
+      # Indicates the CMake build directory where project files and binaries are being produced.
+      CMAKE_BUILD_DIR: ${{ github.workspace }}/builddir/
+      # Indicates the location of the vcpkg as a Git submodule of the project repository.
+      FRAMEWORKCI_ROOT_PATH: '${{ github.workspace }}/../../build_base'
+      VCPKG_ROOT: '${{ github.workspace }}/../../build_base/framework-ci/vcpkg'
+      VCPKG_BUILD_DIR: '${{ github.workspace }}/../../build_base/framework-ci/vcpkg'
+      BUILD_COMMANDS_ROOT: '${{ github.workspace }}/../../build_base/framework-ci/_build'
+      VCPKG_INSTALL_HASH_PACKAGE_NAME: '1.0.12-${{ matrix.vcpkg_os }}-${{ matrix.triplet }}'
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+      FRAMEWORKCI_BRANCH: dev/cea
+
+    steps:
+      - name: Checkout actions
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Checkout framework-ci
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.repository_owner }}/framework-ci
+          path: framework-ci
+          ref: ${{ env.FRAMEWORKCI_BRANCH }}
+          submodules: true
+
+      - name: Move framework-ci
+        shell: 'bash'
+        run: |
+          mkdir -p '${{ env.FRAMEWORKCI_ROOT_PATH }}'
+          ls -lart '${{ github.workspace }}/framework-ci'
+          cd '${{ github.workspace }}' && mv framework-ci '${{ env.FRAMEWORKCI_ROOT_PATH }}'
+          ls -lart '${{ env.FRAMEWORKCI_ROOT_PATH }}'
+
+      - name: Setup environment
+        shell: 'bash'
+        run: |
+          echo "${RUNNER_TEMP}/local_bin_dir/bin" >> $GITHUB_PATH
+          echo "${RUNNER_TEMP}/local_bin_dir/cmake/bin" >> $GITHUB_PATH
+          echo Path variable is: ${PATH}
+          echo CMake path is: `which cmake`
+          cmake --version
+          cmake -DNUGET_PASSWORD="${{ secrets.GITHUB_TOKEN }}" -P '${{ env.BUILD_COMMANDS_ROOT }}/Setup.cmake'
+      
+      - name: 'Display environment after setup'
+        shell: 'bash'
+        continue-on-error: true
+        run: |
+          echo 'VCPKG_BUILD_DIR=${VCPKG_BUILD_DIR}'
+          echo 'Content of local_bin_dir'
+          ls -lart "${RUNNER_TEMP}/local_bin_dir"
+          echo 'Content of local_bin_dir/bin'
+          ls -lart "${RUNNER_TEMP}/local_bin_dir/bin"
+          echo 'Content of local_bin_dir/cmake'
+          ls -lart "${RUNNER_TEMP}/local_bin_dir/cmake"
+          echo Path variable is: ${PATH}
+          echo CMake path is: `which cmake`
+          echo Ninja path is: `which ninja`
+          cmake --version
+
+      - name: 'Untar vcpkg bootstrap cache'
+        shell: 'bash'
+        run: |
+          cmake -DHASH_PACKAGE_NAME="${{ env.VCPKG_INSTALL_HASH_PACKAGE_NAME }}" -DVCPKG_BUILD_DIR='${{ env.VCPKG_BUILD_DIR }}' -P '${{ env.BUILD_COMMANDS_ROOT }}/vcpkg_cache/DoUntar.cmake'
+          ls -lart '${{ env.VCPKG_BUILD_DIR }}'
+
+      - name: Show content of workspace after cache has been restored
+        shell: bash
+        run: find $RUNNER_WORKSPACE
+
+      - uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Configure build script
+        shell: bash
+        run: |
+          cmake -S "${{ github.workspace }}/_common/build_all" -B "${{ env.CMAKE_BUILD_DIR }}" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DCMAKE_BUILD_TYPE=Debug -DVCPKG_INSTALLED_DIR="${{ env.VCPKG_BUILD_DIR }}/installed" -DBUILD_SHARED_LIBS=TRUE -DARCANE_DEFAULT_PARTITIONER=Metis -DARCCON_REGISTER_PACKAGE_VERSION=2 -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" -DCMAKE_DISABLE_FIND_PACKAGE_Hypre=TRUE -GNinja
+
+      - name: Build arcane
+        shell: bash
+        run: |
+          cmake --build "${{ env.CMAKE_BUILD_DIR }}"
+
+      - name: Test arcane
+        continue-on-error: true
+        shell: bash
+        run: |
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest -I 1,20
