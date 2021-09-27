@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TBBTaskImplementation.cc                                    (C) 2000-2019 */
+/* TBBTaskImplementation.cc                                    (C) 2000-2021 */
 /*                                                                           */
 /* Implémentation des tâches utilisant TBB (Intel Threads Building Blocks).  */
 /*---------------------------------------------------------------------------*/
@@ -25,6 +25,11 @@
 
 #include <new>
 #include <stack>
+
+// la macro 'ARCANE_USE_ONETBB' est définie dans le CMakeLists.txt
+// si on compile avec la version OneTBB version 2021+
+// (https://github.com/oneapi-src/oneTBB.git)
+// A terme ce sera la seule version supportée par Arcane.
 
 #ifdef ARCANE_USE_ONETBB
 
@@ -270,6 +275,22 @@ class TBBTaskImplementation
   void executeParallelFor(Integer begin,Integer size,IRangeFunctor* f) final
   {
     executeParallelFor(begin,size,m_default_loop_options,f);
+  }
+  void executeParallelFor(const ComplexLoopRanges<1>& loop_ranges,IMDRangeFunctor<1>* functor) final
+  {
+    ARCANE_THROW(NotImplementedException,"");
+  }
+  void executeParallelFor(const ComplexLoopRanges<2>& loop_ranges,IMDRangeFunctor<2>* functor) final
+  {
+    ARCANE_THROW(NotImplementedException,"");
+  }
+  void executeParallelFor(const ComplexLoopRanges<3>& loop_ranges,IMDRangeFunctor<3>* functor) final
+  {
+    ARCANE_THROW(NotImplementedException,"");
+  }
+  void executeParallelFor(const ComplexLoopRanges<4>& loop_ranges,IMDRangeFunctor<4>* functor) final
+  {
+    ARCANE_THROW(NotImplementedException,"");
   }
 
   bool isActive() const final

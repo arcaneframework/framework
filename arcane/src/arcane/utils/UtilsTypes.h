@@ -195,6 +195,7 @@ template<int RankValue> class ArrayExtentsWithOffset;
 class LoopRange;
 template<int RankValue> class SimpleLoopRanges;
 template<int RankValue> class ComplexLoopRanges;
+template<int RankValue> class IMDRangeFunctor;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

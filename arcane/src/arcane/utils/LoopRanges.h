@@ -59,6 +59,7 @@ struct LoopRange
 template <int N>
 class SimpleLoopRanges
 {
+  friend class ComplexLoopRanges<N>;
  public:
   typedef typename ArrayBounds<N>::IndexType IndexType;
  public:
@@ -90,6 +91,8 @@ class ComplexLoopRanges
  public:
   ComplexLoopRanges(ArrayBounds<N> lower,ArrayBounds<N> extents)
   : m_lower_bounds(lower.asStdArray()), m_extents(extents){}
+  ComplexLoopRanges(const SimpleLoopRanges<N>& bounds)
+  : m_extents(bounds.m_bounds){}
  public:
   constexpr Int64 lowerBound(int i) const { return m_lower_bounds[i]; }
   constexpr Int64 upperBound(int i) const { return m_lower_bounds[i]+m_extents.extent(i); }

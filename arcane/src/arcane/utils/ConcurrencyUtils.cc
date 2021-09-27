@@ -103,6 +103,22 @@ class NullTaskImplementation
   {
     f->executeFunctor(begin,size);
   }
+  void executeParallelFor(const ComplexLoopRanges<1>& loop_ranges,IMDRangeFunctor<1>* functor) override
+  {
+    functor->executeFunctor(loop_ranges);
+  }
+  void executeParallelFor(const ComplexLoopRanges<2>& loop_ranges,IMDRangeFunctor<2>* functor) override
+  {
+    functor->executeFunctor(loop_ranges);
+  }
+  void executeParallelFor(const ComplexLoopRanges<3>& loop_ranges,IMDRangeFunctor<3>* functor) override
+  {
+    functor->executeFunctor(loop_ranges);
+  }
+  void executeParallelFor(const ComplexLoopRanges<4>& loop_ranges,IMDRangeFunctor<4>* functor) override
+  {
+    functor->executeFunctor(loop_ranges);
+  }
   bool isActive() const override
   {
     return false;

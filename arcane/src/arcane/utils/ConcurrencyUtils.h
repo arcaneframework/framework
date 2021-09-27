@@ -332,6 +332,12 @@ class ARCANE_UTILS_EXPORT ITaskImplementation
   //! Exécute le fonctor \a f en concurrence.
   virtual void executeParallelFor(Integer begin,Integer size,IRangeFunctor* f) =0;
 
+  //! Exécute le fonctor \a f en concurrence.
+  virtual void executeParallelFor(const ComplexLoopRanges<1>& loop_ranges,IMDRangeFunctor<1>* functor) =0;
+  virtual void executeParallelFor(const ComplexLoopRanges<2>& loop_ranges,IMDRangeFunctor<2>* functor) =0;
+  virtual void executeParallelFor(const ComplexLoopRanges<3>& loop_ranges,IMDRangeFunctor<3>* functor) =0;
+  virtual void executeParallelFor(const ComplexLoopRanges<4>& loop_ranges,IMDRangeFunctor<4>* functor) =0;
+
   //! Indique si l'implémentation est active.
   virtual bool isActive() const =0;
 
@@ -434,7 +440,24 @@ class ARCANE_UTILS_EXPORT TaskFactory
     return m_impl->executeParallelFor(begin,size,f);
   }
 
-  //! Nombre de threads utilisés au maximum pour gérer les tâches.
+  static void executeParallelFor(const ComplexLoopRanges<1>& loop_ranges,IMDRangeFunctor<1>* functor)
+  {
+    return m_impl->executeParallelFor(loop_ranges,functor);
+  }
+  static void executeParallelFor(const ComplexLoopRanges<2>& loop_ranges,IMDRangeFunctor<2>* functor)
+  {
+    return m_impl->executeParallelFor(loop_ranges,functor);
+  }
+  static void executeParallelFor(const ComplexLoopRanges<3>& loop_ranges,IMDRangeFunctor<3>* functor)
+  {
+    return m_impl->executeParallelFor(loop_ranges,functor);
+  }
+  static void executeParallelFor(const ComplexLoopRanges<4>& loop_ranges,IMDRangeFunctor<4>* functor)
+  {
+    return m_impl->executeParallelFor(loop_ranges,functor);
+  }
+
+ //! Nombre de threads utilisés au maximum pour gérer les tâches.
   static Int32 nbAllowedThread()
   {
     return m_impl->nbAllowedThread();
