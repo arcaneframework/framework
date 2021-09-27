@@ -14,7 +14,7 @@ env:
   # Arcane
   ARCANE_BUILD_DIR: /__w/framework/framework/arcane_build
   ARCANE_INSTALL_DIR: /__w/framework/framework/arcane_install
-  ARCANE_SOURCE_DIR: /__w/framework/framework/arcane
+  ARCANE_SOURCE_DIR: /__w/framework/framework/arcane/arcane
   # Arccon
   ARCCON_BUILD_DIR: /__w/framework/framework/arccon_build
   ARCCON_INSTALL_DIR: /__w/framework/framework/arccon_install
@@ -34,7 +34,7 @@ env:
   # CMake
   CM_BUILD_TYPE: Debug
   # CTest
-  CT_OPTS: --output-on-failure
+  CT_OPTS: "--output-on-failure -V"
 
 jobs:
   arccon-install:
