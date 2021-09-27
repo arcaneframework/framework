@@ -69,12 +69,16 @@ jobs:
         run: |
           source /env.sh
           cmake --install ${{ env.ARCCON_BUILD_DIR }}
+      - name: tar install
+        shell: bash
+        run: |          
+          tar vcf arccon-install-artifact.tar ${{ env.ARCCON_INSTALL_DIR }}
       - name: Upload install artifact
         uses: actions/upload-artifact@v2
         with:
           name: arccon-install-artifact
           path: |
-            ${{ env.ARCCON_INSTALL_DIR }}
+            arccon-install-artifact.tar
           retention-days: 1
 
   arccore-install:
@@ -100,7 +104,11 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: arccon-install-artifact
-          path: ${{ env.ARCCON_INSTALL_DIR }}
+          path: arccon-install-artifact.tar
+      - name: Untar arccon install artifact
+        shell: bash
+        run: |          
+          tar xf arccon-install-artifact.tar -C ${{ env.ARCCON_INSTALL_DIR }}
       - name: Configure
         shell: bash
         run: |          
