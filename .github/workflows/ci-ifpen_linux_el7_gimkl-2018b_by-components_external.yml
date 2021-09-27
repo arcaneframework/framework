@@ -179,7 +179,7 @@ jobs:
 
   axlstar-install-el7:
     needs:
-      - ardependencies-install-el7
+      - arcdependencies-install-el7
     name: axlstar-install-el7
     runs-on: ubuntu-latest
     container:
