@@ -66,14 +66,17 @@ jobs:
       - name: Configure
         shell: bash
         run: |
+          source /root/.bashrc
           cmake -S ${{ env.ARCCON_SOURCE_DIR }} -B ${{ env.ARCCON_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCCON_INSTALL_DIR }}
       - name: Build
         shell: bash
         run: |
+          source /root/.bashrc
           cmake --build ${{ env.ARCCON_BUILD_DIR }}
       - name: Install
         shell: bash
         run: |
+          source /root/.bashrc
           cmake --install ${{ env.ARCCON_BUILD_DIR }}
       - name: Upload install artifact
         uses: actions/upload-artifact@v2
@@ -83,281 +86,328 @@ jobs:
             ${{ env.ARCCON_INSTALL_DIR }}
           retention-days: 1
 
-#  arccore-install:
-#    needs: [arccon-install-${{matrix.config.name}}]
-#    name: arccore-install-${{matrix.config.name}}
-#    runs-on: ubuntu-latest
-#    container: ${{matrix.config.container}}
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        config:
-#          - {
-#            name: "el7",
-#            container: "arcaneframework/centos-gimkl-2018b-arcane:7-latest",
-#          }
-#          - {
-#            name: "el8",
-#            container: "arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest",
-#          }
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v2
-#        with:
-#          repository: ${{ github.repository_owner }}/arccore
-#          path: arccore
-#          ref: main
-#          submodules: true
-#      - name: Download arccon install artifact
-#        uses: actions/download-artifact@v2
-#        with:
-#          name: arccon-install-artifact
-#      - name: Configure
-#        shell: bash
-#        run: |
-#          cmake -S ${{ env.ARCCORE_SOURCE_DIR }} -B ${{ env.ARCCORE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCCORE_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DBUILD_SHARED_LIBS=ON
-#      - name: Build
-#        shell: bash
-#        run: |
-#          cmake --build ${{ env.ARCCORE_BUILD_DIR }}
-#      - name: Install
-#        shell: bash
-#        run: |
-#          cmake --install ${{ env.ARCCORE_BUILD_DIR }}
-#      - name: Upload build artifact
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: arccore-build-artifact
-#          path: |
-#            ${{ env.ARCCORE_BUILD_DIR }}
-#            !${{ env.ARCCORE_BUILD_DIR }}/**/*.dir
-#          retention-days: 1
-#      - name: Upload install artifact
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: arccore-install-artifact
-#          path: |
-#            ${{ env.ARCCORE_INSTALL_DIR }}
-#          retention-days: 1
-#
-#  arcdependencies-install:
-#    needs: [arccon-install-${{matrix.config.name}}]
-#    name: arcdependencies-install-${{matrix.config.name}}
-#    runs-on: ubuntu-latest
-#    container: ${{matrix.config.container}}
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        config:
-#          - {
-#            name: "el7",
-#            container: "arcaneframework/centos-gimkl-2018b-arcane:7-latest",
-#          }
-#          - {
-#            name: "el8",
-#            container: "arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest",
-#          }
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v2
-#        with:
-#          repository: ${{ github.repository_owner }}/arcdependencies
-#          path: arcdependencies
-#          ref: main
-#          submodules: true
-#      - name: Download arccon install artifact
-#        uses: actions/download-artifact@v2
-#        with:
-#          name: arccon-install-artifact
-#      - name: Configure
-#        shell: bash
-#        run: |
-#          cmake -S ${{ env.ARCDEPENDENCIES_SOURCE_DIR }} -B ${{ env.ARCDEPENDENCIES_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCDEPENDENCIES_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon
-#      - name: Build
-#        shell: bash
-#        run: |
-#          cmake --build ${{ env.ARCDEPENDENCIES_BUILD_DIR }}
-#      - name: Install
-#        shell: bash
-#        run: |
-#          cmake --install ${{ env.ARCDEPENDENCIES_BUILD_DIR }}
-#      - name: Upload install artifact
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: arcdependencies-install-artifact
-#          path: |
-#            ${{ env.ARCDEPENDENCIES_INSTALL_DIR }}
-#          retention-days: 1
-#
-#  axlstar-install:
-#    needs: [ardependencies-install-${{matrix.config.name}}]
-#    name: axlstar-install-${{matrix.config.name}}
-#    runs-on: ubuntu-latest
-#    container: ${{matrix.config.container}}
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        config:
-#          - {
-#            name: "el7",
-#            container: "arcaneframework/centos-gimkl-2018b-arcane:7-latest",
-#          }
-#          - {
-#            name: "el8",
-#            container: "arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest",
-#          }
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v2
-#        with:
-#          repository: ${{ github.repository_owner }}/axlstar
-#          path: axlstar
-#          ref: main
-#          submodules: true
-#      - name: Download arcdependencies install artifact
-#        uses: actions/download-artifact@v2
-#        with:
-#          name: arcdependencies-install-artifact
-#      - name: Configure
-#        shell: bash
-#        run: |
-#          cmake -S ${{ env.AXLSTAR_SOURCE_DIR }} -B ${{ env.AXLSTAR_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.AXLSTAR_INSTALL_DIR }} -DArcDependencies_DIR=${{ env.ARCDEPENDENCIES_INSTALL_DIR }}/share/cmake/ArcDependencies
-#      - name: Build
-#        shell: bash
-#        run: |
-#          cmake --build ${{ env.AXLSTAR_BUILD_DIR }}
-#      - name: Install
-#        shell: bash
-#        run: |
-#          cmake --install ${{ env.AXLSTAR_BUILD_DIR }}
-#      - name: Upload install artifact
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: axlstar-install-artifact
-#          path: |
-#            ${{ env.AXLSTAR_INSTALL_DIR }}
-#          retention-days: 1
-#
-#  arcane-install:
-#    needs: [arccon-install-${{matrix.config.name}}, arccore-install-${{matrix.config.name}}, arcdependencies-install-${{matrix.config.name}}, axlstar-install-${{matrix.config.name}}]
-#    name: arcane-install-${{matrix.config.name}}
-#    runs-on: ubuntu-latest
-#    container: ${{matrix.config.container}}
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        config:
-#          - {
-#            name: "el7",
-#            container: "arcaneframework/centos-gimkl-2018b-arcane:7-latest",
-#          }
-#          - {
-#            name: "el8",
-#            container: "arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest",
-#          }
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v2
-#        with:
-#          path: arcane
-#          submodules: true
-#      - name: Download arccon install artifact
-#        uses: actions/download-artifact@v2
-#        with:
-#          name: arccon-install-artifact
-#      - name: Download arccore install artifact
-#        uses: actions/download-artifact@v2
-#        with:
-#          name: arccore-install-artifact
-#      - name: Download arcdependencies install artifact
-#        uses: actions/download-artifact@v2
-#        with:
-#          name: arcdependencies-install-artifact
-#      - name: Download axlstar install artifact
-#        uses: actions/download-artifact@v2
-#        with:
-#          name: axlstar-install-artifact
-#      - name: Configure
-#        shell: bash
-#        run: |
-#          cmake -S ${{ env.ARCANE_SOURCE_DIR }} -B ${{ env.ARCANE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCANE_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArccore_DIR=${{ env.ARCCORE_INSTALL_DIR }}/lib/cmake/Arccore -DAxlstar_DIR=${{ env.AXLSTAR_INSTALL_DIR }}/share/cmake/Axlstar -DArcDependencies_DIR=${{ env.ARCDEPENDENCIES_INSTALL_DIR }}/share/cmake/ArcDependencies -DBUILD_SHARED_LIBS=ON -DARCANE_DEFAULT_PARTITIONER=Metis -DARCANE_WANT_TOTALVIEW=ON -DARCANE_WANT_LIBXML2=ON -DARCANE_WANT_LEGACY_CONNECTIVITY=OFF -DARCANE_WANT_CHECK=OFF -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF
-#      - name: Build
-#        shell: bash
-#        run: |
-#          cmake --build ${{ env.ARCANE_BUILD_DIR }}
-#      - name: Install
-#        shell: bash
-#        run: |
-#          cmake --install ${{ env.ARCANE_BUILD_DIR }}
-#      - name: Upload build artifact
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: arcane-build-artifact
-#          path: |
-#            ${{ env.ARCANE_BUILD_DIR }}
-#            !${{ env.ARCANE_BUILD_DIR }}/**/*.dir
-#          retention-days: 1
-#
-#  arccore-test:
-#    needs: [arccore-install-${{matrix.config.name}}]
-#    name: arccore-test-${{matrix.config.name}}
-#    runs-on: ubuntu-latest
-#    container: ${{matrix.config.container}}
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        config:
-#          - {
-#            name: "el7",
-#            container: "arcaneframework/centos-gimkl-2018b-arcane:7-latest",
-#          }
-#          - {
-#            name: "el8",
-#            container: "arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest",
-#          }
-#    steps:
-#      - name: Download arccore build artifact
-#        uses: actions/download-artifact@v2
-#        with:
-#          name: arccore-build-artifact
-#      - name: Test
-#        shell: bash
-#        run: |
-#          cd ${{ env.ARCCORE_BUILD_DIR }}
-#          ctest ${{ env.CT_OPTS }}
-#
-#  arcane-test:
-#    needs: [arcane-install-${{matrix.config.name}}]
-#    name: arcane-test-${{matrix.config.name}}
-#    runs-on: ubuntu-latest
-#    container: ${{matrix.config.container}}
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        config:
-#          - {
-#            name: "el7",
-#            container: "arcaneframework/centos-gimkl-2018b-arcane:7-latest",
-#          }
-#          - {
-#            name: "el8",
-#            container: "arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest",
-#          }
-#    steps:
-#      - name: Download arcane build artifact
-#        uses: actions/download-artifact@v2
-#        with:
-#          name: arcane-build-artifact
-#      - name: Download arccore install artifact
-#        uses: actions/download-artifact@v2
-#        with:
-#          name: arccore-install-artifact
-#      - name: Download axlstar install artifact
-#        uses: actions/download-artifact@v2
-#        with:
-#          name: axlstar-install-artifact
-#      - name: Test
-#        shell: bash
-#        run: |
-#          cd ${{ env.ARCANE_BUILD_DIR }}
-#          ctest ${{ env.CT_OPTS }}
+  arccore-install:
+    needs:
+      - arccon-install-${{matrix.config.name}}
+    name: arccore-install-${{matrix.config.name}}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.config.container }}
+      credentials:
+        username: ${{ secrets.ci_ifpen_read_packages_username }}
+        password: ${{ secrets.ci_ifpen_read_packages_password }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {
+            name: "el7",
+            container: "arcaneframework/centos-gimkl-2018b-arcane:7-latest",
+          }
+          - {
+            name: "el8",
+            container: "arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest",
+          }
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.repository_owner }}/arccore
+          path: arccore
+          ref: main
+          submodules: true
+      - name: Download arccon install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arccon-install-artifact
+      - name: Configure
+        shell: bash
+        run: |
+          source /root/.bashrc
+          cmake -S ${{ env.ARCCORE_SOURCE_DIR }} -B ${{ env.ARCCORE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCCORE_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DBUILD_SHARED_LIBS=ON
+      - name: Build
+        shell: bash
+        run: |
+          source /root/.bashrc
+          cmake --build ${{ env.ARCCORE_BUILD_DIR }}
+      - name: Install
+        shell: bash
+        run: |
+          source /root/.bashrc
+          cmake --install ${{ env.ARCCORE_BUILD_DIR }}
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: arccore-build-artifact
+          path: |
+            ${{ env.ARCCORE_BUILD_DIR }}
+            !${{ env.ARCCORE_BUILD_DIR }}/**/*.dir
+          retention-days: 1
+      - name: Upload install artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: arccore-install-artifact
+          path: |
+            ${{ env.ARCCORE_INSTALL_DIR }}
+          retention-days: 1
+
+  arcdependencies-install:
+    needs:
+      - arccon-install-${{matrix.config.name}}
+    name: arcdependencies-install-${{matrix.config.name}}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.config.container }}
+      credentials:
+        username: ${{ secrets.ci_ifpen_read_packages_username }}
+        password: ${{ secrets.ci_ifpen_read_packages_password }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {
+            name: "el7",
+            container: "arcaneframework/centos-gimkl-2018b-arcane:7-latest",
+          }
+          - {
+            name: "el8",
+            container: "arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest",
+          }
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.repository_owner }}/arcdependencies
+          path: arcdependencies
+          ref: main
+          submodules: true
+      - name: Download arccon install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arccon-install-artifact
+      - name: Configure
+        shell: bash
+        run: |
+          source /root/.bashrc
+          cmake -S ${{ env.ARCDEPENDENCIES_SOURCE_DIR }} -B ${{ env.ARCDEPENDENCIES_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCDEPENDENCIES_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon
+      - name: Build
+        shell: bash
+        run: |
+          source /root/.bashrc
+          cmake --build ${{ env.ARCDEPENDENCIES_BUILD_DIR }}
+      - name: Install
+        shell: bash
+        run: |
+          source /root/.bashrc
+          cmake --install ${{ env.ARCDEPENDENCIES_BUILD_DIR }}
+      - name: Upload install artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: arcdependencies-install-artifact
+          path: |
+            ${{ env.ARCDEPENDENCIES_INSTALL_DIR }}
+          retention-days: 1
+
+  axlstar-install:
+    needs:
+      - ardependencies-install-${{matrix.config.name}}
+    name: axlstar-install-${{matrix.config.name}}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.config.container }}
+      credentials:
+        username: ${{ secrets.ci_ifpen_read_packages_username }}
+        password: ${{ secrets.ci_ifpen_read_packages_password }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {
+            name: "el7",
+            container: "arcaneframework/centos-gimkl-2018b-arcane:7-latest",
+          }
+          - {
+            name: "el8",
+            container: "arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest",
+          }
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.repository_owner }}/axlstar
+          path: axlstar
+          ref: main
+          submodules: true
+      - name: Download arcdependencies install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arcdependencies-install-artifact
+      - name: Configure
+        shell: bash
+        run: |
+          source /root/.bashrc
+          cmake -S ${{ env.AXLSTAR_SOURCE_DIR }} -B ${{ env.AXLSTAR_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.AXLSTAR_INSTALL_DIR }} -DArcDependencies_DIR=${{ env.ARCDEPENDENCIES_INSTALL_DIR }}/share/cmake/ArcDependencies
+      - name: Build
+        shell: bash
+        run: |
+          source /root/.bashrc
+          cmake --build ${{ env.AXLSTAR_BUILD_DIR }}
+      - name: Install
+        shell: bash
+        run: |
+          source /root/.bashrc
+          cmake --install ${{ env.AXLSTAR_BUILD_DIR }}
+      - name: Upload install artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: axlstar-install-artifact
+          path: |
+            ${{ env.AXLSTAR_INSTALL_DIR }}
+          retention-days: 1
+
+  arcane-install:
+    needs:
+      - arccon-install-${{matrix.config.name}}
+      - arccore-install-${{matrix.config.name}}
+      - arcdependencies-install-${{matrix.config.name}}
+      - axlstar-install-${{matrix.config.name}}
+    name: arcane-install-${{matrix.config.name}}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.config.container }}
+      credentials:
+        username: ${{ secrets.ci_ifpen_read_packages_username }}
+        password: ${{ secrets.ci_ifpen_read_packages_password }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {
+            name: "el7",
+            container: "arcaneframework/centos-gimkl-2018b-arcane:7-latest",
+          }
+          - {
+            name: "el8",
+            container: "arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest",
+          }
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: arcane
+          submodules: true
+      - name: Download arccon install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arccon-install-artifact
+      - name: Download arccore install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arccore-install-artifact
+      - name: Download arcdependencies install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arcdependencies-install-artifact
+      - name: Download axlstar install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: axlstar-install-artifact
+      - name: Configure
+        shell: bash
+        run: |
+          source /root/.bashrc
+          cmake -S ${{ env.ARCANE_SOURCE_DIR }} -B ${{ env.ARCANE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCANE_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArccore_DIR=${{ env.ARCCORE_INSTALL_DIR }}/lib/cmake/Arccore -DAxlstar_DIR=${{ env.AXLSTAR_INSTALL_DIR }}/share/cmake/Axlstar -DArcDependencies_DIR=${{ env.ARCDEPENDENCIES_INSTALL_DIR }}/share/cmake/ArcDependencies -DBUILD_SHARED_LIBS=ON -DARCANE_DEFAULT_PARTITIONER=Metis -DARCANE_WANT_TOTALVIEW=ON -DARCANE_WANT_LIBXML2=ON -DARCANE_WANT_LEGACY_CONNECTIVITY=OFF -DARCANE_WANT_CHECK=OFF -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF
+      - name: Build
+        shell: bash
+        run: |
+          source /root/.bashrc
+          cmake --build ${{ env.ARCANE_BUILD_DIR }}
+      - name: Install
+        shell: bash
+        run: |
+          source /root/.bashrc
+          cmake --install ${{ env.ARCANE_BUILD_DIR }}
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: arcane-build-artifact
+          path: |
+            ${{ env.ARCANE_BUILD_DIR }}
+            !${{ env.ARCANE_BUILD_DIR }}/**/*.dir
+          retention-days: 1
+
+  arccore-test:
+    needs:
+      - arccore-install-${{matrix.config.name}}
+    name: arccore-test-${{matrix.config.name}}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.config.container }}
+      credentials:
+        username: ${{ secrets.ci_ifpen_read_packages_username }}
+        password: ${{ secrets.ci_ifpen_read_packages_password }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {
+            name: "el7",
+            container: "arcaneframework/centos-gimkl-2018b-arcane:7-latest",
+          }
+          - {
+            name: "el8",
+            container: "arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest",
+          }
+    steps:
+      - name: Download arccore build artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arccore-build-artifact
+      - name: Test
+        shell: bash
+        run: |
+          source /root/.bashrc
+          cd ${{ env.ARCCORE_BUILD_DIR }}
+          ctest ${{ env.CT_OPTS }}
+
+  arcane-test:
+    needs:
+      - arcane-install-${{matrix.config.name}}
+    name: arcane-test-${{matrix.config.name}}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.config.container }}
+      credentials:
+        username: ${{ secrets.ci_ifpen_read_packages_username }}
+        password: ${{ secrets.ci_ifpen_read_packages_password }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {
+            name: "el7",
+            container: "arcaneframework/centos-gimkl-2018b-arcane:7-latest",
+          }
+          - {
+            name: "el8",
+            container: "arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest",
+          }
+    steps:
+      - name: Download arcane build artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arcane-build-artifact
+      - name: Download arccore install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arccore-install-artifact
+      - name: Download axlstar install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: axlstar-install-artifact
+      - name: Test
+        shell: bash
+        run: |
+          source /root/.bashrc
+          cd ${{ env.ARCANE_BUILD_DIR }}
+          ctest ${{ env.CT_OPTS }}
