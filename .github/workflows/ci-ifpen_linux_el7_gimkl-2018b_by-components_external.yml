@@ -222,7 +222,7 @@ jobs:
         shell: bash
         run: |
           source /env.sh
-          cmake --install ${{ env.AXLSTAR_B${{UILD_DIR }}
+          cmake --install ${{ env.AXLSTAR_BUILD_DIR }}
       - name: Upload install artifact
         uses: actions/upload-artifact@v2
         with:
