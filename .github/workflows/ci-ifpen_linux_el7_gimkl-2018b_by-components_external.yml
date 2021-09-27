@@ -34,14 +34,16 @@ env:
   # CMake
   CM_BUILD_TYPE: Debug
   # CTest
-  CT_OPTS: "--output-on-failure"
+  CT_OPTS: --output-on-failure
+  # Docker
+  DOCKER_IMAGE: ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest
 
 jobs:
   arccon-install:
     name: arccon-install
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest
+      image: ${{ env.DOCKER_IMAGE }}
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -72,7 +74,7 @@ jobs:
       - name: Tar install artifact
         shell: bash
         run: |          
-          tar vcf arccon-install-artifact.tar ${{ env.ARCCON_INSTALL_DIR }}
+          tar cf arccon-install-artifact.tar ${{ env.ARCCON_INSTALL_DIR }}
       - name: Upload install artifact
         uses: actions/upload-artifact@v2
         with:
@@ -87,7 +89,7 @@ jobs:
     name: arccore-install
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest
+      image: ${{ env.DOCKER_IMAGE }}
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -107,7 +109,6 @@ jobs:
       - name: Untar arccon install artifact
         shell: bash
         run: |
-          tar tf arccon-install-artifact.tar
           tar xf arccon-install-artifact.tar -C /
       - name: Configure
         shell: bash
@@ -127,11 +128,7 @@ jobs:
       - name: Tar build artifact
         shell: bash
         run: |          
-          tar vcf arccore-build-artifact.tar ${{ env.ARCCORE_BUILD_DIR }}
-      - name: Tar install artifact
-        shell: bash
-        run: |          
-          tar vcf arccore-install-artifact.tar ${{ env.ARCCORE_INSTALL_DIR }}
+          tar cf arccore-build-artifact.tar ${{ env.ARCCORE_BUILD_DIR }}
       - name: Upload build artifact
         uses: actions/upload-artifact@v2
         with:
@@ -139,6 +136,10 @@ jobs:
           path: |
             arccore-build-artifact.tar
           retention-days: 1
+      - name: Tar install artifact
+        shell: bash
+        run: |          
+          tar cf arccore-install-artifact.tar ${{ env.ARCCORE_INSTALL_DIR }}
       - name: Upload install artifact
         uses: actions/upload-artifact@v2
         with:
@@ -153,7 +154,7 @@ jobs:
     name: arcdependencies-install
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest
+      image: ${{ env.DOCKER_IMAGE }}
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -193,7 +194,7 @@ jobs:
       - name: Tar install ariftact
         shell: bash
         run: |          
-          tar vcf arcdependencies-install-artifact.tar ${{ env.ARCDEPENDENCIES_INSTALL_DIR }}
+          tar cf arcdependencies-install-artifact.tar ${{ env.ARCDEPENDENCIES_INSTALL_DIR }}
       - name: Upload install artifact
         uses: actions/upload-artifact@v2
         with:
@@ -208,7 +209,7 @@ jobs:
     name: axlstar-install
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest
+      image: ${{ env.DOCKER_IMAGE }}
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -225,15 +226,14 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: arccon-install-artifact
-      - name: Download arcdependencies install artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: arcdependencies-install-artifact
-          path: ${{ env.ARCDEPENDENCIES_INSTALL_DIR }}
       - name: Untar arccon install artifact
         shell: bash
         run: |
           tar xf arccon-install-artifact.tar -C /
+      - name: Download arcdependencies install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arcdependencies-install-artifact
       - name: Untar arcdependencies install artifact
         shell: bash
         run: |
@@ -256,7 +256,7 @@ jobs:
       - name: Tar install artifact
         shell: bash
         run: |          
-          tar vcf axlstar-install-artifact.tar ${{ env.AXLSTAR_INSTALL_DIR }}
+          tar cf axlstar-install-artifact.tar ${{ env.AXLSTAR_INSTALL_DIR }}
       - name: Upload install artifact
         uses: actions/upload-artifact@v2
         with:
@@ -274,7 +274,7 @@ jobs:
     name: arcane-install
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest
+      image: ${{ env.DOCKER_IMAGE }}
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -289,31 +289,30 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: arccon-install-artifact
-          path: ${{ env.ARCCON_INSTALL_DIR }}
-      - name: Download arccore install artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: arccore-install-artifact
-      - name: Download arcdependencies install artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: arcdependencies-install-artifact
-      - name: Download axlstar install artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: axlstar-install-artifact
       - name: Untar arccon install artifact
         shell: bash
         run: |
           tar xf arccon-install-artifact.tar -C /
+      - name: Download arccore install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arccore-install-artifact
       - name: Untar arccore install artifact
         shell: bash
         run: |
           tar xf arccore-install-artifact.tar -C /
+      - name: Download arcdependencies install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arcdependencies-install-artifact
       - name: Untar arcdependencies install artifact
         shell: bash
         run: |
           tar xf arcdependencies-install-artifact.tar -C /
+      - name: Download axlstar install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: axlstar-install-artifact
       - name: Untar axlstar install artifact
         shell: bash
         run: |
@@ -348,7 +347,7 @@ jobs:
     name: arccore-test
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest
+      image: ${{ env.DOCKER_IMAGE }}
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -377,7 +376,7 @@ jobs:
     name: arcane-test
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest
+      image: ${{ env.DOCKER_IMAGE }}
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -388,22 +387,22 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: arcane-build-artifact
-      - name: Download arccore install artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: arccore-install-artifact
-      - name: Download axlstar install artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: axlstar-install-artifact
       - name: Untar arcane build artifact
         shell: bash
         run: |
           tar xf arcane-build-artifact.tar -C /
+      - name: Download arccore install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arccore-install-artifact
       - name: Untar arccore install artifact
         shell: bash
         run: |
           tar xf arccore-install-artifact.tar -C /
+      - name: Download axlstar install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: axlstar-install-artifact
       - name: Untar axlstar install artifact
         shell: bash
         run: |
