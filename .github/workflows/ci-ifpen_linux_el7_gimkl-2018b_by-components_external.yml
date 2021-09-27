@@ -108,7 +108,7 @@ jobs:
       - name: Untar arccon install artifact
         shell: bash
         run: |
-          ls -l
+          ls -lR
           tar xf arccon-install-artifact.tar ${{ env.ARCCON_INSTALL_DIR }}
       - name: Configure
         shell: bash
