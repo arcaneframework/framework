@@ -104,11 +104,10 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: arccon-install-artifact
-          path: arccon-install-artifact.tar
       - name: Untar arccon install artifact
         shell: bash
         run: |
-          ls -lR
+          ls -Rl
           tar xf arccon-install-artifact.tar ${{ env.ARCCON_INSTALL_DIR }}
       - name: Configure
         shell: bash
@@ -171,7 +170,11 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: arccon-install-artifact
-          path: ${{ env.ARCCON_INSTALL_DIR }}
+          path: arccon-install-artifact.tar
+      - name: Untar arccon install artifact
+        shell: bash
+        run: |
+          tar xf arccon-install-artifact.tar ${{ env.ARCCON_INSTALL_DIR }}
       - name: Configure
         shell: bash
         run: |
@@ -187,12 +190,16 @@ jobs:
         run: |
           source /env.sh
           cmake --install ${{ env.ARCDEPENDENCIES_BUILD_DIR }}
+      - name: Tar install
+        shell: bash
+        run: |          
+          tar vcf arcdependencies-install-artifact.tar ${{ env.ARCDEPENDENCIES_INSTALL_DIR }}
       - name: Upload install artifact
         uses: actions/upload-artifact@v2
         with:
           name: arcdependencies-install-artifact
           path: |
-            ${{ env.ARCDEPENDENCIES_INSTALL_DIR }}
+            arcdependencies-install-artifact.tar
           retention-days: 1
 
   axlstar-install:
@@ -218,17 +225,20 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: arccon-install-artifact
-          path: ${{ env.ARCCON_INSTALL_DIR }}
-      - name: Untar arccon install artifact
-        shell: bash
-        run: |          
-          tar xf arccon-install-artifact.tar -C ${{ env.ARCCON_INSTALL_DIR }}
-
+          path: arccon-install-artifact.tar
       - name: Download arcdependencies install artifact
         uses: actions/download-artifact@v2
         with:
           name: arcdependencies-install-artifact
           path: ${{ env.ARCDEPENDENCIES_INSTALL_DIR }}
+      - name: Untar arccon install artifact
+        shell: bash
+        run: |
+          tar xf arccon-install-artifact.tar ${{ env.ARCCON_INSTALL_DIR }}
+      - name: Untar arcdependencies install artifact
+        shell: bash
+        run: |
+          tar xf arcdependencies-install-artifact.tar ${{ env.ARCDEPENDENCIES_INSTALL_DIR }}
       - name: Configure
         shell: bash
         run: |
