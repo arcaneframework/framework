@@ -328,13 +328,16 @@ jobs:
         run: |
           source /env.sh
           cmake --install ${{ env.ARCANE_BUILD_DIR }}
+      - name: Tar build artifact
+        shell: bash
+        run: |          
+          tar cf arcane-build-artifact.tar ${{ env.ARCANE_BUILD_DIR }}
       - name: Upload build artifact
         uses: actions/upload-artifact@v2
         with:
           name: arcane-build-artifact
           path: |
-            ${{ env.ARCANE_BUILD_DIR }}
-            !${{ env.ARCANE_BUILD_DIR }}/**/*.dir
+            arcane-build-artifact.tar
           retention-days: 1
 
   arccore-test:
