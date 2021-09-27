@@ -316,6 +316,7 @@ jobs:
       - name: Test
         shell: bash
         run: |
+          chmod +x ${{ env.ARCCORE_BUILD_DIR }}/lib/*
           source /env.sh
           cd ${{ env.ARCCORE_BUILD_DIR }}
           ctest ${{ env.CT_OPTS }}
