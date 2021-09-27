@@ -51,8 +51,7 @@ jobs:
         with:
           repository: ${{ github.repository_owner }}/arccon
           path: ${{ env.ARCCON_SOURCE_DIR }}
-          ref: main
-          submodules: true
+          ref: main          
       - name: Configure
         shell: bash
         run: |
@@ -94,8 +93,7 @@ jobs:
         with:
           repository: ${{ github.repository_owner }}/arccore
           path: ${{ env.ARCCORE_SOURCE_DIR }}
-          ref: main
-          submodules: true
+          ref: main          
       - name: Download arccon install artifact
         uses: actions/download-artifact@v2
         with:
@@ -103,8 +101,7 @@ jobs:
           path: ${{ env.ARCCON_INSTALL_DIR }}
       - name: Configure
         shell: bash
-        run: |
-          ls -R
+        run: |          
           source /env.sh
           cmake -S ${{ env.ARCCORE_SOURCE_DIR }} -B ${{ env.ARCCORE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCCORE_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DBUILD_SHARED_LIBS=ON
       - name: Build
@@ -151,8 +148,7 @@ jobs:
         with:
           repository: ${{ github.repository_owner }}/dependencies
           path: ${{ env.ARCDEPENDENCIES_SOURCE_DIR }}
-          ref: main
-          submodules: true
+          ref: main          
       - name: Download arccon install artifact
         uses: actions/download-artifact@v2
         with:
@@ -199,8 +195,12 @@ jobs:
         with:
           repository: ${{ github.repository_owner }}/axlstar
           path: ${{ env.AXLSTAR_SOURCE_DIR }}
-          ref: main
-          submodules: true
+          ref: main          
+      - name: Download arccon install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arccon-install-artifact
+          path: ${{ env.ARCCON_INSTALL_DIR }}
       - name: Download arcdependencies install artifact
         uses: actions/download-artifact@v2
         with:
@@ -247,8 +247,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          path: ${{ env.ARCANE_SOURCE_DIR }}
-          submodules: true
+          path: ${{ env.ARCANE_SOURCE_DIR }}          
       - name: Download arccon install artifact
         uses: actions/download-artifact@v2
         with:
