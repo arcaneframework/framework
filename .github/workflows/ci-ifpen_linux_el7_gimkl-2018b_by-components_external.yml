@@ -6,6 +6,7 @@ on:
   pull_request:
     branches: [ main, dev/ci_ifpen ]
   workflow_dispatch:
+    branches: [ main, dev/ci_ifpen ]
 
 env:
   # Arcane
