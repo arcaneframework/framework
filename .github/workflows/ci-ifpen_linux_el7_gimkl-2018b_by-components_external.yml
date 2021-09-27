@@ -1,5 +1,3 @@
-# Test 2
-
 name: ci-ifpen_linux_el7_gimkl-2018b_by-components_external
 
 on:
@@ -363,7 +361,6 @@ jobs:
       - name: Test
         shell: bash
         run: |
-          chmod +x ${{ env.ARCCORE_BUILD_DIR }}/lib/*
           source /env.sh
           cd ${{ env.ARCCORE_BUILD_DIR }}
           ctest ${{ env.CT_OPTS }}
