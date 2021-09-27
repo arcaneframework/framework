@@ -45,11 +45,11 @@ jobs:
         config:
           - {
             name: "el7",
-            container: "arcaneframework/centos-gimkl-2018b-arcane:7-latest",
+            container: "ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest",
           }
           - {
             name: "el8",
-            container: "arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest",
+            container: "ghcr.io/arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest",
           }
     steps:
       - name: Checkout
