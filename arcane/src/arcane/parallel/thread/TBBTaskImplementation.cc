@@ -24,7 +24,7 @@
 #include <new>
 #include <stack>
 
-// Il faut définir cette macro pour que la classe 'blocked_rangeNd soit disponible
+// Il faut définir cette macro pour que la classe 'blocked_rangeNd' soit disponible
 
 #define TBB_PREVIEW_BLOCKED_RANGE_ND 1
 
@@ -275,6 +275,8 @@ class TBBTaskImplementation
 {
   class Impl;
   class ParallelForExecute;
+  template<int RankValue>
+  class MDParallelForExecute;
 
  public:
   // Pour des raisons de performance, s'aligne sur une ligne de cache
@@ -616,6 +618,45 @@ class TBBParallelFor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+template<int RankValue>
+class TBBMDParallelFor
+{
+ public:
+  TBBMDParallelFor(IMDRangeFunctor<RankValue>* f,Int32 nb_allowed_thread)
+  : m_functor(f), m_nb_allowed_thread(nb_allowed_thread){}
+ public:
+
+  void operator()(tbb::blocked_rangeNd<Int64,RankValue>& range) const
+  {
+#ifdef ARCANE_CHECK
+    if (TaskFactory::verboseLevel()>=3){
+      ostringstream o;
+      o << "TBB: INDEX=" << TaskFactory::currentTaskThreadIndex()
+        << " id=" << std::this_thread::get_id()
+        << " MAX_ALLOWED=" << m_nb_allowed_thread
+      //<< " range_begin=" << range.begin() << " range_size=" << range.size()
+        << "\n";
+      std::cout << o.str();
+      std::cout.flush();
+    }
+
+    int tbb_index = _currentTaskTreadIndex();
+    if (tbb_index<0 || tbb_index>=m_nb_allowed_thread)
+      ARCANE_FATAL("Invalid index for thread idx={0} valid_interval=[0..{1}[",
+                   tbb_index,m_nb_allowed_thread);
+#endif
+
+    m_functor->executeFunctor(_fromTBBRange(range));
+  }
+
+ private:
+  IMDRangeFunctor<RankValue>* m_functor;
+  Int32 m_nb_allowed_thread;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Implémentation déterministe de ParallelFor.
  *
@@ -777,6 +818,55 @@ class TBBTaskImplementation::ParallelForExecute
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<int RankValue>
+class TBBTaskImplementation::MDParallelForExecute
+{
+ public:
+  MDParallelForExecute(TBBTaskImplementation* impl,
+                       const ParallelLoopOptions& options,
+                       const ComplexLoopRanges<RankValue>& range,
+                       IMDRangeFunctor<RankValue>* f)
+  : m_impl(impl), m_tbb_range(_toTBBRange(range)), m_functor(f), m_options(options)
+  {
+#if 0
+    // TODO: pouvoir positionner la taille du grain.
+    Integer gsize = m_options.grainSize();
+    if (gsize>0){
+      // Modifie la taille du grain pour la première dimension.
+      auto orig_range = m_tbb_range.dim(0);
+      m_tbb_range.dim(0) = tbb::blocked_range<Int64>(orig_range.begin(),orig_range.end(),gsize);
+    }
+#endif
+  }
+ public:
+  void operator()() const
+  {
+    Integer nb_thread = m_options.maxThread();
+    TBBMDParallelFor<RankValue> pf(m_functor,nb_thread);
+
+    if (m_options.partitioner()==ParallelLoopOptions::Partitioner::Static){
+      tbb::parallel_for(m_tbb_range,pf,tbb::static_partitioner());
+    }
+    else if (m_options.partitioner()==ParallelLoopOptions::Partitioner::Deterministic){
+      // TODO: implémenter le mode déterministe
+      ARCANE_THROW(NotImplementedException,"ParallelLoopOptions::Partitioner::Deterministic for multi-dimensionnal loops");
+      //tbb::blocked_range<Integer> range2(0,nb_thread,1);
+      //TBBDeterministicParallelFor dpf(m_impl,pf,m_begin,m_size,gsize,nb_thread);
+      //tbb::parallel_for(range2,dpf);
+    }
+    else
+      tbb::parallel_for(m_tbb_range,pf);
+  }
+ private:
+  TBBTaskImplementation* m_impl;
+  tbb::blocked_rangeNd<Int64,RankValue> m_tbb_range;
+  IMDRangeFunctor<RankValue>* m_functor;
+  ParallelLoopOptions m_options;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 TBBTaskImplementation::
 ~TBBTaskImplementation()
 {
@@ -892,13 +982,6 @@ _executeMDParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
   ParallelLoopOptions true_options(options);
   true_options.mergeUnsetValues(m_default_loop_options);
 
-  tbb::blocked_rangeNd<Int64,RankValue> tbb_range(_toTBBRange(loop_ranges));
-  tbb::parallel_for(tbb_range,[&](const tbb::blocked_rangeNd<Int64,RankValue>& r)
-                              {
-                                functor->executeFunctor(_fromTBBRange(r));
-                              });
-
-#if 0
   Integer nb_allowed_thread = m_p->nbAllowedThread();
   if (max_thread<0)
     max_thread = nb_allowed_thread;
@@ -907,8 +990,21 @@ _executeMDParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
     used_arena = m_p->m_sub_arena_list[max_thread];
   if (!used_arena)
     used_arena = &(m_p->m_main_arena);
-  used_arena->execute(pfe);
-#endif
+  // Pour l'instant pour la dimension 1, utilise le 'ParallelForExecute' historique
+  if constexpr (RankValue==1){
+    auto range_1d = _toTBBRange(loop_ranges);
+    auto x1 = [&](Integer begin,Integer size)
+              {
+                functor->executeFunctor(ComplexLoopRanges<1>(begin,size));
+              };
+    LambdaRangeFunctorT<decltype(x1)> functor_1d(x1);
+    ParallelForExecute pfe(this,true_options,range_1d.dim(0).begin(),range_1d.dim(0).size(),&functor_1d);
+    used_arena->execute(pfe);
+  }
+  else{
+    MDParallelForExecute<RankValue> pfe(this,true_options,loop_ranges,functor);
+    used_arena->execute(pfe);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
