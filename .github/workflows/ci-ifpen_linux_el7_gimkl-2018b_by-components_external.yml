@@ -35,8 +35,8 @@ env:
   CT_OPTS: --output-on-failure
 
 jobs:
-  arccon-install-el7:
-    name: arccon-install-el7
+  arccon-install:
+    name: arccon-install
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest
@@ -56,6 +56,9 @@ jobs:
       - name: Configure
         shell: bash
         run: |
+          pwd
+          ls -l
+          exit 1
           source /env.sh
           cmake -S ${{ env.ARCCON_SOURCE_DIR }} -B ${{ env.ARCCON_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCCON_INSTALL_DIR }}
       - name: Build
@@ -76,10 +79,10 @@ jobs:
             ${{ env.ARCCON_INSTALL_DIR }}
           retention-days: 1
 
-  arccore-install-el7:
+  arccore-install:
     needs:
-      - arccon-install-el7
-    name: arccore-install-el7
+      - arccon-install
+    name: arccore-install
     runs-on: ubuntu-latest
     container:
       image: arcaneframework/centos-gimkl-2018b-arcane:7-latest
@@ -131,10 +134,10 @@ jobs:
             ${{ env.ARCCORE_INSTALL_DIR }}
           retention-days: 1
 
-  arcdependencies-install-el7:
+  arcdependencies-install:
     needs:
-      - arccon-install-el7
-    name: arcdependencies-install-el7
+      - arccon-install
+    name: arcdependencies-install
     runs-on: ubuntu-latest
     container:
       image: arcaneframework/centos-gimkl-2018b-arcane:7-latest
@@ -178,10 +181,10 @@ jobs:
             ${{ env.ARCDEPENDENCIES_INSTALL_DIR }}
           retention-days: 1
 
-  axlstar-install-el7:
+  axlstar-install:
     needs:
-      - arcdependencies-install-el7
-    name: axlstar-install-el7
+      - arcdependencies-install
+    name: axlstar-install
     runs-on: ubuntu-latest
     container:
       image: arcaneframework/centos-gimkl-2018b-arcane:7-latest
@@ -224,13 +227,13 @@ jobs:
             ${{ env.AXLSTAR_INSTALL_DIR }}
           retention-days: 1
 
-  arcane-install-el7:
+  arcane-install:
     needs:
-      - arccon-install-el7
-      - arccore-install-el7
-      - arcdependencies-install-el7
-      - axlstar-install-el7
-    name: arcane-install-el7
+      - arccon-install
+      - arccore-install
+      - arcdependencies-install
+      - axlstar-install
+    name: arcane-install
     runs-on: ubuntu-latest
     container:
       image: arcaneframework/centos-gimkl-2018b-arcane:7-latest
@@ -285,10 +288,10 @@ jobs:
             !${{ env.ARCANE_BUILD_DIR }}/**/*.dir
           retention-days: 1
 
-  arccore-test-el7:
+  arccore-test:
     needs:
-      - arccore-install-el7
-    name: arccore-test-el7
+      - arccore-install
+    name: arccore-test
     runs-on: ubuntu-latest
     container:
       image: arcaneframework/centos-gimkl-2018b-arcane:7-latest
@@ -309,10 +312,10 @@ jobs:
           cd ${{ env.ARCCORE_BUILD_DIR }}
           ctest ${{ env.CT_OPTS }}
 
-  arcane-test-el7:
+  arcane-test:
     needs:
-      - arcane-install-el7
-    name: arcane-test-el7
+      - arcane-install
+    name: arcane-test
     runs-on: ubuntu-latest
     container:
       image: arcaneframework/centos-gimkl-2018b-arcane:7-latest
