@@ -14,7 +14,7 @@ env:
   # Arcane
   ARCANE_BUILD_DIR: /__w/framework/framework/arcane_build
   ARCANE_INSTALL_DIR: /__w/framework/framework/arcane_install
-  ARCANE_SOURCE_DIR: /__w/framework/framework/arcane/arcane
+  ARCANE_SOURCE_DIR: /__w/framework/framework/arcane
   # Arccon
   ARCCON_BUILD_DIR: /__w/framework/framework/arccon_build
   ARCCON_INSTALL_DIR: /__w/framework/framework/arccon_install
@@ -274,9 +274,8 @@ jobs:
       - name: Configure
         shell: bash
         run: |
-          export ARCDEPENDENCIES_ROOT=${{ env.ARCDEPENDENCIES_INSTALL_DIR }}
           source /env.sh
-          cmake -S ${{ env.ARCANE_SOURCE_DIR }} -B ${{ env.ARCANE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCANE_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArccore_DIR=${{ env.ARCCORE_INSTALL_DIR }}/lib/cmake/Arccore -DAxlstar_DIR=${{ env.AXLSTAR_INSTALL_DIR }}/share/cmake/Axlstar -DArcDependencies_DIR=/share/cmake/ArcDependencies -DBUILD_SHARED_LIBS=ON -DARCANE_DEFAULT_PARTITIONER=Metis -DARCANE_WANT_TOTALVIEW=ON -DARCANE_WANT_LIBXML2=ON -DARCANE_WANT_LEGACY_CONNECTIVITY=OFF -DARCANE_WANT_CHECK=OFF -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF
+          cmake -S ${{ env.ARCANE_SOURCE_DIR }}/arcane -B ${{ env.ARCANE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCANE_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArccore_DIR=${{ env.ARCCORE_INSTALL_DIR }}/lib/cmake/Arccore -DAxlstar_DIR=${{ env.AXLSTAR_INSTALL_DIR }}/share/cmake/Axlstar -DArcDependencies_DIR=/share/cmake/ArcDependencies -DBUILD_SHARED_LIBS=ON -DARCANE_DEFAULT_PARTITIONER=Metis -DARCANE_WANT_TOTALVIEW=ON -DARCANE_WANT_LIBXML2=ON -DARCANE_WANT_LEGACY_CONNECTIVITY=OFF -DARCANE_WANT_CHECK=OFF -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF
       - name: Build
         shell: bash
         run: |
@@ -355,4 +354,4 @@ jobs:
         run: |
           source /env.sh
           cd ${{ env.ARCANE_BUILD_DIR }}
-          ctest ${{ env.CT_OPTS }}
+          ctest ${{ env.CT_OPTS }} -V
