@@ -82,7 +82,7 @@ jobs:
     name: arccore-install
     runs-on: ubuntu-latest
     container:
-      image: arcaneframework/centos-gimkl-2018b-arcane:7-latest
+      image: ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -137,7 +137,7 @@ jobs:
     name: arcdependencies-install
     runs-on: ubuntu-latest
     container:
-      image: arcaneframework/centos-gimkl-2018b-arcane:7-latest
+      image: ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -184,7 +184,7 @@ jobs:
     name: axlstar-install
     runs-on: ubuntu-latest
     container:
-      image: arcaneframework/centos-gimkl-2018b-arcane:7-latest
+      image: ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -233,7 +233,7 @@ jobs:
     name: arcane-install
     runs-on: ubuntu-latest
     container:
-      image: arcaneframework/centos-gimkl-2018b-arcane:7-latest
+      image: ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -291,7 +291,7 @@ jobs:
     name: arccore-test
     runs-on: ubuntu-latest
     container:
-      image: arcaneframework/centos-gimkl-2018b-arcane:7-latest
+      image: ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -315,7 +315,7 @@ jobs:
     name: arcane-test
     runs-on: ubuntu-latest
     container:
-      image: arcaneframework/centos-gimkl-2018b-arcane:7-latest
+      image: ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
