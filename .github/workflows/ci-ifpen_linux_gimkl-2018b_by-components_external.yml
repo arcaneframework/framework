@@ -38,7 +38,11 @@ jobs:
   arccon-install:
     name: arccon-install-${{matrix.config.name}}
     runs-on: ubuntu-latest
-    container: ${{matrix.config.container}}
+    container:
+      image: ${{matrix.config.container}}
+      credentials:
+        username: ${{ secrets.ci_ifpen_read_packages_username }}
+        password: ${{ secrets.ci_ifpen_read_packages_password }}
     strategy:
       fail-fast: false
       matrix:
