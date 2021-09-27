@@ -34,16 +34,14 @@ env:
   # CMake
   CM_BUILD_TYPE: Debug
   # CTest
-  CT_OPTS: --output-on-failure
-  # Docker
-  DOCKER_IMAGE: ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest
+  CT_OPTS: "--output-on-failure"
 
 jobs:
   arccon-install:
     name: arccon-install
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DOCKER_IMAGE }}
+      image: ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -89,7 +87,7 @@ jobs:
     name: arccore-install
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DOCKER_IMAGE }}
+      image: ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -154,7 +152,7 @@ jobs:
     name: arcdependencies-install
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DOCKER_IMAGE }}
+      image: ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -209,7 +207,7 @@ jobs:
     name: axlstar-install
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DOCKER_IMAGE }}
+      image: ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -274,7 +272,7 @@ jobs:
     name: arcane-install
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DOCKER_IMAGE }}
+      image: ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -347,7 +345,7 @@ jobs:
     name: arccore-test
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DOCKER_IMAGE }}
+      image: ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -376,7 +374,7 @@ jobs:
     name: arcane-test
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DOCKER_IMAGE }}
+      image: ghcr.io/arcaneframework/centos-gimkl-2018b-arcane:7-latest
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
