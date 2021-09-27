@@ -148,7 +148,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          repository: arcaneframework//dependencies
+          repository: arcaneframework/dependencies
           path: ${{ env.ARCDEPENDENCIES_SOURCE_DIR }}
           ref: main          
       - name: Download arccon install artifact
