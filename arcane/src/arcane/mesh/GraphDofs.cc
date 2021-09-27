@@ -93,22 +93,12 @@ _allocateGraph()
     IItemFamily* dual_item_family = _dualItemFamily(dualItemKind(dual_node_kind)) ;
     if(dual_item_family)
     {
-      /*
-      auto dual2dof_incremental_connectivity =
-              new IncrementalItemConnectivity ( dual_item_family,
-                                                dualNodeFamily (),
-                                                mesh::connectivityName(dual_item_family,dualNodeFamily()));
-      if(m_item_family_network)
-      m_item_family_network->addDependency(dual_item_family,dualNodeFamily(),dual2dof_incremental_connectivity);
-      //m_item_family_network->addDependency(dual_item_family,dualNodeFamily(),dual_item_incremental_connectivity,false);
-      */
       auto dof2dual_incremental_connectivity =
               new IncrementalItemConnectivity ( dualNodeFamily (),
                                                 dual_item_family,
                                                 mesh::connectivityName(dualNodeFamily(),dual_item_family));
       m_incremental_connectivities[_connectivityIndex(dual_node_kind)] = dof2dual_incremental_connectivity ;
       if(m_item_family_network)
-        //m_item_family_network->addRelation(dualNodeFamily(),dual_item_family,dof2dual_incremental_connectivity);
         m_item_family_network->addDependency(dualNodeFamily(),dual_item_family,dof2dual_incremental_connectivity,false);
     }
   }
@@ -414,6 +404,12 @@ endUpdate()
     m_connectivity_mng.registerConnectivity(&m_links_connectivity);
   }
 #endif
+
+#ifdef GRAPH_USE_INCREMENTAL_CONNECTIVITY
+  m_graph_connectivity.reset( new GraphIncrementalConnectivity(m_links_incremental_connectivity,
+                                                               m_incremental_connectivities,
+                                                               m_dual_node_to_connectivity_index)) ;
+#endif
 }
 
 void GraphDofs::updateAfterMeshChanged()
@@ -584,16 +580,18 @@ void GraphDofs::
 printDualNodes() const
 {
 #ifdef GRAPH_USE_INCREMENTAL_CONNECTIVITY
-    ENUMERATE_DOF(idualnode,dualNodeFamily()->allItems())
-    {
-      debug() << "DualNode : lid = " << idualnode->localId();
-      debug() << "           uid = " << idualnode->uniqueId();
-        auto dual_item = m_graph_connectivity->dualItem(*idualnode);
-        debug() << "           DualItem : lid = "<<dual_item.localId();
-        debug() << "                      uid = "<<dual_item.uniqueId();
-    }
+  auto graph_connectivity = GraphIncrementalConnectivity(m_links_incremental_connectivity,
+                                                         m_incremental_connectivities,
+                                                         m_dual_node_to_connectivity_index) ;
+  ENUMERATE_DOF(idualnode,dualNodeFamily()->allItems())
+  {
+    info() << "DualNode : lid = " << idualnode->localId();
+    info() << "           uid = " << idualnode->uniqueId();
+    auto dual_item = graph_connectivity.dualItem(*idualnode);
+    info() << "           DualItem : lid = "<<dual_item.localId();
+    info() << "                      uid = "<<dual_item.uniqueId();
+  }
 #endif
-
 }
 void GraphDofs::
 printLinks() const
@@ -616,14 +614,20 @@ printLinks() const
 
 #ifdef GRAPH_USE_INCREMENTAL_CONNECTIVITY
     ConnectivityItemVector dual_nodes(m_links_incremental_connectivity);
+    auto graph_connectivity = GraphIncrementalConnectivity(m_links_incremental_connectivity,
+                                                           m_incremental_connectivities,
+                                                           m_dual_node_to_connectivity_index) ;
     ENUMERATE_DOF(ilink,linkFamily()->allItems())
     {
-        debug() << "Link       : LID   = "  <<  ilink.localId() << "UID = "<<ilink->uniqueId();
-        ENUMERATE_DOF(idual_node,dual_nodes.connectedItems(ilink) ) {
-          debug() << "     Dof : index = "<< idual_node.index();
-          debug() << "     Dof : lid   = "<< idual_node->localId();
-          debug() << "           uid   = " <<idual_node->uniqueId();
-          //info() << "           dual uid = " << dualItem(*idual_node).uniqueId();
+        info() << "Link       :         LID = "  <<  ilink.localId();
+        info() << "                     UID = "<<ilink->uniqueId();
+        ENUMERATE_DOF(idual_node,dual_nodes.connectedItems(ilink) )
+        {
+          info() << "     Dof :       index = "<< idual_node.index();
+          info() << "     Dof :         LID = "<< idual_node->localId();
+          info() << "                   UID = " <<idual_node->uniqueId();
+          auto dual_item = graph_connectivity.dualItem(*idual_node);
+          info() << "         dual item UID = " << dual_item.uniqueId();
         }
     }
 #endif

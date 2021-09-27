@@ -182,6 +182,9 @@ void  GraphUnitTest::
 _createGraphOfDof() {
 
     String particle_family_name = "ArcaneParticles";
+    //  particles
+    IItemFamily* particle_family = m_mesh->createItemFamily(IK_Particle,particle_family_name);
+
     auto graphdofs = mesh::GraphBuilder::createGraph(m_mesh,particle_family_name);
     
     IGraphModifier2* graph_modifier = graphdofs->modifier();
@@ -244,11 +247,6 @@ _createGraphOfDof() {
             face_to_dual_node_property[face] = dual_node_uid;
     }
 
-    //  particles
-    IItemFamily* m_particle_family;
-
-    m_particle_family = m_mesh->createItemFamily(IK_Particle,particle_family_name);
-
     Int64UniqueArray uids;
 
     IParallelMng* pm = subDomain()->parallelMng();
@@ -274,15 +272,15 @@ _createGraphOfDof() {
 
     Int32UniqueArray particles_lid(m_mesh->allCells().size());
 
-    m_particle_family->toParticleFamily()->addParticles(uids,cell_lids,particles_lid);
+    particle_family->toParticleFamily()->addParticles(uids,cell_lids,particles_lid);
 
-    m_particle_family->endUpdate();
+    particle_family->endUpdate();
 
-    graph_nb_dual_node = m_particle_family->allItems().size();
+    graph_nb_dual_node = particle_family->allItems().size();
     dual_node_kind = IT_DualParticle;
     Int64UniqueArray particle_dual_nodes_infos(graph_nb_dual_node*2);
 
-    ParticleGroup all_particles(m_particle_family->allItems());
+    ParticleGroup all_particles(particle_family->allItems());
 
     infos_index = 0;
     ENUMERATE_PARTICLE(i_part,all_particles){
@@ -480,33 +478,48 @@ _createGraphOfDof() {
   graph_modifier->addLinks(nb_link,2,links_infos4);
 
   graph_modifier->endUpdate();
+  info()<<"==================================================";
+  info()<<"Print DualNodes" ;
+  graphdofs->printDualNodes();
 
+  info()<<"==================================================";
+  info()<<"Print Links" ;
   graphdofs->printLinks();
 
-
+  info()<<"==================================================";
+  info()<<"Check Connectivities" ;
   _checkGraphDofConnectivity(graphdofs);
 }
 
 void GraphUnitTest::
 _checkGraphDofConnectivity(IGraph2* graph_dof)
 {
-  graph_dof->printLinks() ;
-
-  auto graph_connectivity = graph_dof->connectivity();
+  auto const& graph_connectivity = graph_dof->connectivity();
 
   auto connectivity_vector = graph_connectivity->dualNodesConnectivityVector();
   // Pointwise access
 
+  //ConnectivityItemVector dual_nodes(m_links_incremental_connectivity);
   ENUMERATE_DOF(i_link,graph_dof->linkFamily()->allItems())
   {
     const DoF link =  *i_link;
     info() << "Link = "  <<  link.localId();
-    ENUMERATE_DOF(i_dual_node,graph_connectivity->dualNodes(link) )
-    {
-      info() << "       Connected item to dof dual_node.uniqueId() "<<i_dual_node->uniqueId();
+    info() <<"          NB DUAL NODES : "<<graph_connectivity->dualNodes(link).size();
 
-      auto dual_item = graph_connectivity->dualItem(*i_dual_node);
-      info() << "item kind " << dual_item.kind()<<" dual_item.localId "<<dual_item.localId();
+    //ENUMERATE_DOF(idual_node,dual_nodes.connectedItems(link) )
+    //auto dual_nodes = graph_connectivity->dualNodes(link) ;
+    //for(Integer index=0;index<dual_nodes.size();++index)
+    ENUMERATE_DOF(idual_node,graph_connectivity->dualNodes(link) )
+    {
+      //DoF const& dual_node = dual_nodes[index] ;
+      DoF const& dual_node = *idual_node ;
+      info() << "     Dof : index = "<< idual_node.index();
+      info() << "     Dof : lid   = "<< dual_node.localId();
+      info() << "           uid   = " <<dual_node.uniqueId();
+      auto dual_item = graph_connectivity->dualItem(dual_node);
+      info() << "           dual item : kind = " << dual_item.kind();
+      info() << "                       lid  = " << dual_item.localId();
+      info() << "                       uid  = " << dual_item.uniqueId();
     }
   }
   // Access connectivity vector
