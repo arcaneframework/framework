@@ -23,13 +23,21 @@
 #include "arcane/FactoryService.h"
 #include "arcane/Concurrency.h"
 
-// NOTE GG: depuis mars 2019, la version 2018+ des TBB est obligatoire.
-
-#include <tbb/tbb.h>
-
 #include <new>
 #include <stack>
 
+#ifdef ARCANE_USE_ONETBB
+
+// Nécessaire pour avoir accès à task_scheduler_handle
+#define TBB_PREVIEW_WAITING_FOR_WORKERS 1
+#include <tbb/tbb.h>
+#include <oneapi/tbb/global_control.h>
+
+#else // ARCANE_USE_ONETBB
+
+// NOTE GG: depuis mars 2019, la version 2018+ des TBB est obligatoire.
+
+#include <tbb/tbb.h>
 /*
  * Maintenant vérifie que la version est au moins 2018.
  */
@@ -43,13 +51,23 @@
 
 #ifdef ARCANE_OLD_TBB
 #error "Your version of TBB is tool old. TBB 2018+ is required. Please disable TBB in configuration"
-#else
+#endif
+
+#include <thread>
+#include <mutex>
+
+#endif // ARCANE_USE_ONETBB
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
+
+// TODO: utiliser un pool mémoire spécifique pour gérer les
+// OneTBBTask pour optimiser les new/delete des instances de cette classe.
+// Auparavant avec les anciennes versions de TBB cela était géré avec
+// la méthode 'tbb::task::allocate_child()'.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -60,6 +78,10 @@ namespace
 {
 inline int _currentTaskTreadIndex()
 {
+  // NOTE: Avec OneTBB 2021, la valeur n'est plus '0' si on appelle cette méthode
+  // depuis un thread en dehors d'un task_arena. Avec la version 2021,
+  // la valeur est 65535.
+  // NOTE: Il semble que cela soit un bug de la 2021.3.
   return tbb::this_task_arena::current_thread_index();
 }
 }
@@ -67,14 +89,74 @@ inline int _currentTaskTreadIndex()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class TBBTask
+#ifdef ARCANE_USE_ONETBB
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class OneTBBTaskFunctor
+{
+ public:
+  OneTBBTaskFunctor(ITaskFunctor* functor,ITask* task)
+  : m_functor(functor), m_task(task) {}
+ public:
+  void operator()() const
+  {
+    if (m_functor){
+      ITaskFunctor* tf = m_functor;
+      m_functor = 0;
+      TaskContext task_context(m_task);
+      //cerr << "FUNC=" << typeid(*tf).name();
+      tf->executeFunctor(task_context);
+    }
+  }
+ public:
+  mutable ITaskFunctor* m_functor;
+  ITask* m_task;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class OneTBBTask
+: public ITask
+{
+ public:
+  static const int FUNCTOR_CLASS_SIZE = 32;
+ public:
+  OneTBBTask(ITaskFunctor* f)
+  : m_functor(f)
+  {
+    m_functor = f->clone(functor_buf,FUNCTOR_CLASS_SIZE);
+  }
+ public:
+  OneTBBTaskFunctor taskFunctor() { return OneTBBTaskFunctor(m_functor,this); }
+  void launchAndWait() override;
+  void launchAndWait(ConstArrayView<ITask*> tasks) override;
+ protected:
+  virtual ITask* _createChildTask(ITaskFunctor* functor) override;
+ public:
+  ITaskFunctor* m_functor;
+  char functor_buf[FUNCTOR_CLASS_SIZE];
+};
+using TBBTask = OneTBBTask;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#else // ARCANE_USE_ONETBB
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class LegacyTBBTask
 : public tbb::task
 , public ITask
 {
  public:
   static const int FUNCTOR_CLASS_SIZE = 32;
  public:
-  TBBTask(ITaskFunctor* f)
+  LegacyTBBTask(ITaskFunctor* f)
   : m_functor(f)
   {
     m_functor = f->clone(functor_buf,FUNCTOR_CLASS_SIZE);
@@ -99,7 +181,12 @@ class TBBTask
   ITaskFunctor* m_functor;
   char functor_buf[FUNCTOR_CLASS_SIZE];
 };
+using TBBTask = LegacyTBBTask;
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif // ARCANE_USE_ONETBB
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -170,7 +257,11 @@ class TBBTaskImplementation
 
   ITask* createRootTask(ITaskFunctor* f) override
   {
-    TBBTask* t = new(tbb::task::allocate_root()) TBBTask(f);
+#ifdef ARCANE_USE_ONETBB
+    OneTBBTask* t = new OneTBBTask(f);
+#else
+    LegacyTBBTask* t = new(tbb::task::allocate_root()) LegacyTBBTask(f);
+#endif
     return t;
   }
 
@@ -233,7 +324,11 @@ class TBBTaskImplementation::Impl
   {
    public:
     TaskObserver(TBBTaskImplementation::Impl* p)
-    : m_p(p)
+    :
+#ifdef ARCANE_USE_ONETBB
+    tbb::task_scheduler_observer(p->m_main_arena),
+#endif
+    m_p(p)
     {
     }
     void on_scheduler_entry(bool is_worker) override
@@ -250,14 +345,28 @@ class TBBTaskImplementation::Impl
   };
 
  public:
-  Impl() : m_task_observer(this), m_thread_task_infos(AlignedMemoryAllocator::CacheLine())
+  Impl() :
+#ifdef ARCANE_USE_ONETBB
+  m_task_scheduler_handle(tbb::task_scheduler_handle::get()),
+#endif
+  m_task_observer(this), m_thread_task_infos(AlignedMemoryAllocator::CacheLine())
   {
+#ifdef ARCANE_USE_ONETBB
+    m_nb_allowed_thread = tbb::info::default_concurrency();
+#else
     m_nb_allowed_thread = tbb::task_scheduler_init::default_num_threads();
+#endif
     _init();
   }
   Impl(Int32 nb_thread)
-  : m_scheduler_init(nb_thread), m_main_arena(nb_thread),
-    m_task_observer(this), m_thread_task_infos(AlignedMemoryAllocator::CacheLine())
+  :
+#ifdef ARCANE_USE_ONETBB
+  m_task_scheduler_handle(tbb::task_scheduler_handle::get()),
+#else
+  m_scheduler_init(nb_thread),
+#endif
+  m_main_arena(nb_thread),
+  m_task_observer(this), m_thread_task_infos(AlignedMemoryAllocator::CacheLine())
   {
     m_nb_allowed_thread = nb_thread;
     _init();
@@ -278,8 +387,13 @@ class TBBTaskImplementation::Impl
     }
     m_sub_arena_list.clear();
     m_main_arena.terminate();
+#ifdef ARCANE_USE_ONETBB
+    m_task_observer.observe(false);
+    oneapi::tbb::finalize(m_task_scheduler_handle);
+#else
     m_scheduler_init.terminate();
     m_task_observer.observe(false);
+#endif
   }
  public:
   void notifyThreadCreated()
@@ -288,12 +402,16 @@ class TBBTaskImplementation::Impl
     // les méthodes appelées par l'observable soient thread-safe
     // (et aussi TaskFactory::createThreadObservable() ne l'est pas)
     {
-      tbb::mutex::scoped_lock sl(m_thread_created_mutex);
+      std::scoped_lock sl(m_thread_created_mutex);
       if (TaskFactory::verboseLevel()>=1){
         std::cout << "TBB: CREATE THREAD"
                   << " nb_allowed=" << m_nb_allowed_thread
+#ifdef ARCANE_USE_ONETBB
+                  << " tbb_default_allowed=" << tbb::info::default_concurrency()
+#else
                   << " tbb_default_allowed=" << tbb::task_scheduler_init::default_num_threads()
-                  << " id=" << tbb::this_tbb_thread::get_id()
+#endif
+                  << " id=" << std::this_thread::get_id()
                   << " arena_id=" << _currentTaskTreadIndex()
                   << "\n";
       }
@@ -306,31 +424,35 @@ class TBBTaskImplementation::Impl
     // Il faut toujours un verrou car on n'est pas certain que
     // les méthodes appelées par l'observable soient thread-safe
     // (et aussi TaskFactory::createThreadObservable() ne l'est pas)
-    tbb::mutex::scoped_lock sl(m_thread_created_mutex);
+    std::scoped_lock sl(m_thread_created_mutex);
     if (TaskFactory::verboseLevel()>=1){
       std::cout << "TBB: DESTROY THREAD"
-                << " id=" << tbb::this_tbb_thread::get_id()
+                << " id=" << std::this_thread::get_id()
                 << " arena_id=" << _currentTaskTreadIndex()
                 << '\n';
     }
     TaskFactory::destroyThreadObservable()->notifyAllObservers();
   }
  private:
+#ifdef ARCANE_USE_ONETBB
+  oneapi::tbb::task_scheduler_handle m_task_scheduler_handle;
+#else
   tbb::task_scheduler_init m_scheduler_init;
+#endif
  public:
   tbb::task_arena m_main_arena;
   //! Tableau dont le i-ème élément contient la tbb::task_arena pour \a i thread.
   std::vector<tbb::task_arena*> m_sub_arena_list;
  private:
   TaskObserver m_task_observer;
-  tbb::mutex m_thread_created_mutex;
+  std::mutex m_thread_created_mutex;
   UniqueArray<TaskThreadInfo> m_thread_task_infos;
 
   void _init()
   {
     if (TaskFactory::verboseLevel()>=1){
       std::cout << "TBB: TBBTaskImplementationInit nb_allowed_thread=" << m_nb_allowed_thread
-                << " id=" << tbb::this_tbb_thread::get_id()
+                << " id=" << std::this_thread::get_id()
                 << " version=" << TBB_VERSION_MAJOR << "." << TBB_VERSION_MINOR
                 << "\n";
     }
@@ -364,7 +486,7 @@ class TBBParallelFor
     if (TaskFactory::verboseLevel()>=3){
       ostringstream o;
       o << "TBB: INDEX=" << TaskFactory::currentTaskThreadIndex()
-        << " id=" << tbb::this_tbb_thread::get_id()
+        << " id=" << std::this_thread::get_id()
         << " MAX_ALLOWED=" << m_nb_allowed_thread
         << " range_begin=" << range.begin() << " range_size=" << range.size()
         << "\n";
@@ -595,9 +717,16 @@ nbAllowedThread() const
 void TBBTaskImplementation::
 printInfos(ostream& o) const
 {
+#ifdef ARCANE_USE_ONETBB
+  o << "OneTBBTaskImplementation"
+    << " version=" << TBB_VERSION_STRING
+    << " interface=" << TBB_INTERFACE_VERSION
+    << " runtime_interface=" << TBB_runtime_interface_version();
+#else
   o << "TBBTaskImplementation"
     << " version=" << TBB_VERSION_MAJOR << "." << TBB_VERSION_MINOR
     << " interface=" << TBB_INTERFACE_VERSION;
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -662,6 +791,10 @@ Int32 TBBTaskImplementation::
 currentTaskIndex() const
 {
   Int32 thread_id = currentTaskThreadIndex();
+#ifdef ARCANE_USE_ONETBB
+  if (thread_id<0 || thread_id>=m_p->nbAllowedThread())
+    return 0;
+#endif
   TBBTaskImplementation::TaskThreadInfo* tti = currentTaskThreadInfo();
   if (tti){
     Int32 task_index = tti->taskIndex();
@@ -674,10 +807,62 @@ currentTaskIndex() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#ifdef ARCANE_USE_ONETBB
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void TBBTask::
+void OneTBBTask::
+launchAndWait()
+{
+  tbb::task_group task_group;
+  task_group.run(taskFunctor());
+  task_group.wait();
+  delete this;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void OneTBBTask::
+launchAndWait(ConstArrayView<ITask*> tasks)
+{
+  tbb::task_group task_group;
+  Integer n = tasks.size();
+  if (n==0)
+    return;
+
+  //set_ref_count(n+1);
+  for( Integer i=0; i<n; ++i ){
+    OneTBBTask* t = static_cast<OneTBBTask*>(tasks[i]);
+    task_group.run(t->taskFunctor());
+  }
+  task_group.wait();
+  for( Integer i=0; i<n; ++i ){
+    OneTBBTask* t = static_cast<OneTBBTask*>(tasks[i]);
+    delete t;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ITask* OneTBBTask::
+_createChildTask(ITaskFunctor* functor)
+{
+  OneTBBTask* t = new OneTBBTask(functor);
+  return t;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#else // ARCANE_USE_ONETBB
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void LegacyTBBTask::
 launchAndWait()
 {
   task::spawn_root_and_wait(*this);
@@ -686,7 +871,7 @@ launchAndWait()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void TBBTask::
+void LegacyTBBTask::
 launchAndWait(ConstArrayView<ITask*> tasks)
 {
   Integer n = tasks.size();
@@ -704,12 +889,17 @@ launchAndWait(ConstArrayView<ITask*> tasks)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ITask* TBBTask::
+ITask* LegacyTBBTask::
 _createChildTask(ITaskFunctor* functor)
 {
   TBBTask* t = new(allocate_child()) TBBTask(functor);
   return t;
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif // ARCANE_USE_ONETBB
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -724,5 +914,3 @@ ARCANE_REGISTER_APPLICATION_FACTORY(TBBTaskImplementation,ITaskImplementation,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#endif
