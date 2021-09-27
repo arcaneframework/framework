@@ -86,71 +86,71 @@ jobs:
             ${{ env.ARCCON_INSTALL_DIR }}
           retention-days: 1
 
-#  arccore-install:
-#    needs:
-#      - arccon-install-${{matrix.config.name}}
-#    name: arccore-install-${{matrix.config.name}}
-#    runs-on: ubuntu-latest
-#    container:
-#      image: ${{ matrix.config.container }}
-#      credentials:
-#        username: ${{ secrets.ci_ifpen_read_packages_username }}
-#        password: ${{ secrets.ci_ifpen_read_packages_password }}
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        config:
-#          - {
-#            name: "el7",
-#            container: "arcaneframework/centos-gimkl-2018b-arcane:7-latest",
-#          }
-#          - {
-#            name: "el8",
-#            container: "arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest",
-#          }
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v2
-#        with:
-#          repository: ${{ github.repository_owner }}/arccore
-#          path: arccore
-#          ref: main
-#          submodules: true
-#      - name: Download arccon install artifact
-#        uses: actions/download-artifact@v2
-#        with:
-#          name: arccon-install-artifact
-#      - name: Configure
-#        shell: bash
-#        run: |
-#          source /root/.bashrc
-#          cmake -S ${{ env.ARCCORE_SOURCE_DIR }} -B ${{ env.ARCCORE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCCORE_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DBUILD_SHARED_LIBS=ON
-#      - name: Build
-#        shell: bash
-#        run: |
-#          source /root/.bashrc
-#          cmake --build ${{ env.ARCCORE_BUILD_DIR }}
-#      - name: Install
-#        shell: bash
-#        run: |
-#          source /root/.bashrc
-#          cmake --install ${{ env.ARCCORE_BUILD_DIR }}
-#      - name: Upload build artifact
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: arccore-build-artifact
-#          path: |
-#            ${{ env.ARCCORE_BUILD_DIR }}
-#            !${{ env.ARCCORE_BUILD_DIR }}/**/*.dir
-#          retention-days: 1
-#      - name: Upload install artifact
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: arccore-install-artifact
-#          path: |
-#            ${{ env.ARCCORE_INSTALL_DIR }}
-#          retention-days: 1
-#
+  arccore-install:
+    needs:
+      - arccon-install-${{ matrix.config.name }}
+    name: arccore-install-${{ matrix.config.name }}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.config.container }}
+      credentials:
+        username: ${{ secrets.ci_ifpen_read_packages_username }}
+        password: ${{ secrets.ci_ifpen_read_packages_password }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {
+            name: "el7",
+            container: "arcaneframework/centos-gimkl-2018b-arcane:7-latest",
+          }
+          - {
+            name: "el8",
+            container: "arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest",
+          }
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.repository_owner }}/arccore
+          path: arccore
+          ref: main
+          submodules: true
+      - name: Download arccon install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arccon-install-artifact
+      - name: Configure
+        shell: bash
+        run: |
+          source /root/.bashrc
+          cmake -S ${{ env.ARCCORE_SOURCE_DIR }} -B ${{ env.ARCCORE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCCORE_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DBUILD_SHARED_LIBS=ON
+      - name: Build
+        shell: bash
+        run: |
+          source /root/.bashrc
+          cmake --build ${{ env.ARCCORE_BUILD_DIR }}
+      - name: Install
+        shell: bash
+        run: |
+          source /root/.bashrc
+          cmake --install ${{ env.ARCCORE_BUILD_DIR }}
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: arccore-build-artifact
+          path: |
+            ${{ env.ARCCORE_BUILD_DIR }}
+            !${{ env.ARCCORE_BUILD_DIR }}/**/*.dir
+          retention-days: 1
+      - name: Upload install artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: arccore-install-artifact
+          path: |
+            ${{ env.ARCCORE_INSTALL_DIR }}
+          retention-days: 1
+
 #  arcdependencies-install:
 #    needs:
 #      - arccon-install-${{matrix.config.name}}
