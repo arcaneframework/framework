@@ -56,9 +56,6 @@ jobs:
       - name: Configure
         shell: bash
         run: |
-          pwd
-          ls -l
-          exit 1
           source /env.sh
           cmake -S ${{ env.ARCCON_SOURCE_DIR }} -B ${{ env.ARCCON_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCCON_INSTALL_DIR }}
       - name: Build
