@@ -11,13 +11,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-
 #include "arcane/utils/IThreadImplementation.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/IFunctor.h"
-#include "arcane/utils/Mutex.h"
 #include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/LoopRanges.h"
 
 #include "arcane/IObservable.h"
 #include "arcane/FactoryService.h"
@@ -25,6 +23,10 @@
 
 #include <new>
 #include <stack>
+
+// Il faut définir cette macro pour que la classe 'blocked_rangeNd soit disponible
+
+#define TBB_PREVIEW_BLOCKED_RANGE_ND 1
 
 // la macro 'ARCANE_USE_ONETBB' est définie dans le CMakeLists.txt
 // si on compile avec la version OneTBB version 2021+
@@ -81,6 +83,7 @@ class TBBTaskImplementation;
 
 namespace
 {
+
 inline int _currentTaskTreadIndex()
 {
   // NOTE: Avec OneTBB 2021, la valeur n'est plus '0' si on appelle cette méthode
@@ -89,6 +92,73 @@ inline int _currentTaskTreadIndex()
   // NOTE: Il semble que cela soit un bug de la 2021.3.
   return tbb::this_task_arena::current_thread_index();
 }
+
+inline tbb::blocked_rangeNd<Int64,1>
+_toTBBRange(const ComplexLoopRanges<1>& r)
+{
+  return {{r.lowerBound(0), r.upperBound(0)}};
+}
+
+inline tbb::blocked_rangeNd<Int64,2>
+_toTBBRange(const ComplexLoopRanges<2>& r)
+{
+  return {{r.lowerBound(0), r.upperBound(0)},
+          {r.lowerBound(1), r.upperBound(1)}};
+
+}
+
+inline tbb::blocked_rangeNd<Int64,3>
+_toTBBRange(const ComplexLoopRanges<3>& r)
+{
+  return {{r.lowerBound(0), r.upperBound(0)},
+          {r.lowerBound(1), r.upperBound(1)},
+          {r.lowerBound(2), r.upperBound(2)}};
+}
+
+inline tbb::blocked_rangeNd<Int64,4>
+_toTBBRange(const ComplexLoopRanges<4>& r)
+{
+  return {{r.lowerBound(0), r.upperBound(0)},
+          {r.lowerBound(1), r.upperBound(1)},
+          {r.lowerBound(2), r.upperBound(2)},
+          {r.lowerBound(3), r.upperBound(3)}};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline ComplexLoopRanges<1>
+_fromTBBRange(const tbb::blocked_rangeNd<Int64,1> & r)
+{
+  ArrayBounds<1> lower_bounds(r.dim(0).begin());
+  ArrayBounds<1> sizes(r.dim(0).size());
+  return { lower_bounds, sizes };
+}
+
+inline ComplexLoopRanges<2>
+_fromTBBRange(const tbb::blocked_rangeNd<Int64,2>& r)
+{
+  ArrayBounds<2> lower_bounds(r.dim(0).begin(),r.dim(1).begin());
+  ArrayBounds<2> sizes(r.dim(0).size(),r.dim(1).size());
+  return { lower_bounds, sizes };
+}
+
+inline ComplexLoopRanges<3>
+_fromTBBRange(const tbb::blocked_rangeNd<Int64,3> & r)
+{
+  ArrayBounds<3> lower_bounds(r.dim(0).begin(),r.dim(1).begin(),r.dim(2).begin());
+  ArrayBounds<3> sizes(r.dim(0).size(),r.dim(1).size(),r.dim(2).size());
+  return { lower_bounds, sizes };
+}
+
+inline ComplexLoopRanges<4>
+_fromTBBRange(const tbb::blocked_rangeNd<Int64,4>& r)
+{
+  ArrayBounds<4> lower_bounds(r.dim(0).begin(),r.dim(1).begin(),r.dim(2).begin(),r.dim(3).begin());
+  ArrayBounds<4> sizes(r.dim(0).size(),r.dim(1).size(),r.dim(2).size(),r.dim(3).size());
+  return { lower_bounds, sizes };
+}
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -278,19 +348,19 @@ class TBBTaskImplementation
   }
   void executeParallelFor(const ComplexLoopRanges<1>& loop_ranges,IMDRangeFunctor<1>* functor) final
   {
-    ARCANE_THROW(NotImplementedException,"");
+    _executeMDParallelFor<1>(loop_ranges,functor,{});
   }
   void executeParallelFor(const ComplexLoopRanges<2>& loop_ranges,IMDRangeFunctor<2>* functor) final
   {
-    ARCANE_THROW(NotImplementedException,"");
+    _executeMDParallelFor<2>(loop_ranges,functor,{});
   }
   void executeParallelFor(const ComplexLoopRanges<3>& loop_ranges,IMDRangeFunctor<3>* functor) final
   {
-    ARCANE_THROW(NotImplementedException,"");
+    _executeMDParallelFor<3>(loop_ranges,functor,{});
   }
   void executeParallelFor(const ComplexLoopRanges<4>& loop_ranges,IMDRangeFunctor<4>* functor) final
   {
-    ARCANE_THROW(NotImplementedException,"");
+    _executeMDParallelFor<4>(loop_ranges,functor,{});
   }
 
   bool isActive() const final
@@ -333,6 +403,13 @@ class TBBTaskImplementation
   bool m_is_active;
   Impl* m_p;
   ParallelLoopOptions m_default_loop_options;
+
+ private:
+
+  template<int RankValue> void
+  _executeMDParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
+                        IMDRangeFunctor<RankValue>* functor,
+                        const ParallelLoopOptions& options);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -780,6 +857,50 @@ executeParallelFor(Integer begin,Integer size,const ParallelLoopOptions& options
   if (!used_arena)
     used_arena = &(m_p->m_main_arena);
   used_arena->execute(pfe);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Exécution d'une boucle N-dimensions.
+ *
+ * \warning L'implémentation actuelle ne tient pas compte de \a options
+ */
+template<int RankValue> void TBBTaskImplementation::
+_executeMDParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
+                      IMDRangeFunctor<RankValue>* functor,
+                      const ParallelLoopOptions& options)
+{
+  if (TaskFactory::verboseLevel()>=1)
+    std::cout << "TBB: TBBTaskImplementation executeMDParallelFor nb_dim=" << RankValue << '\n';
+  Integer max_thread = options.maxThread();
+  // En exécution séquentielle, appelle directement la méthode \a f.
+  if (max_thread==1 || max_thread==0){
+    functor->executeFunctor(loop_ranges);
+    return;
+  }
+
+  // Remplace les valeurs non initialisées de \a options par celles de \a m_default_loop_options
+  ParallelLoopOptions true_options(options);
+  true_options.mergeUnsetValues(m_default_loop_options);
+
+  tbb::blocked_rangeNd<Int64,RankValue> tbb_range(_toTBBRange(loop_ranges));
+  tbb::parallel_for(tbb_range,[&](const tbb::blocked_rangeNd<Int64,RankValue>& r)
+                              {
+                                functor->executeFunctor(_fromTBBRange(r));
+                              });
+
+#if 0
+  Integer nb_allowed_thread = m_p->nbAllowedThread();
+  if (max_thread<0)
+    max_thread = nb_allowed_thread;
+  tbb::task_arena* used_arena = nullptr;
+  if (max_thread<nb_allowed_thread)
+    used_arena = m_p->m_sub_arena_list[max_thread];
+  if (!used_arena)
+    used_arena = &(m_p->m_main_arena);
+  used_arena->execute(pfe);
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
