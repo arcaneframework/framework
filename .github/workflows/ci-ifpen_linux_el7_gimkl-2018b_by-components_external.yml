@@ -49,7 +49,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          repository: ${{ github.repository_owner }}/arccon
+          repository: arcaneframework/arccon
           path: ${{ env.ARCCON_SOURCE_DIR }}
           ref: main          
       - name: Configure
@@ -91,7 +91,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          repository: ${{ github.repository_owner }}/arccore
+          repository: arcaneframework/arccore
           path: ${{ env.ARCCORE_SOURCE_DIR }}
           ref: main          
       - name: Download arccon install artifact
@@ -146,7 +146,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          repository: ${{ github.repository_owner }}/dependencies
+          repository: arcaneframework//dependencies
           path: ${{ env.ARCDEPENDENCIES_SOURCE_DIR }}
           ref: main          
       - name: Download arccon install artifact
@@ -193,7 +193,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          repository: ${{ github.repository_owner }}/axlstar
+          repository: arcaneframework/axlstar
           path: ${{ env.AXLSTAR_SOURCE_DIR }}
           ref: main          
       - name: Download arccon install artifact
