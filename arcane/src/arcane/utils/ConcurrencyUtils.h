@@ -332,11 +332,22 @@ class ARCANE_UTILS_EXPORT ITaskImplementation
   //! Exécute le fonctor \a f en concurrence.
   virtual void executeParallelFor(Integer begin,Integer size,IRangeFunctor* f) =0;
 
-  //! Exécute le fonctor \a f en concurrence.
-  virtual void executeParallelFor(const ComplexLoopRanges<1>& loop_ranges,IMDRangeFunctor<1>* functor) =0;
-  virtual void executeParallelFor(const ComplexLoopRanges<2>& loop_ranges,IMDRangeFunctor<2>* functor) =0;
-  virtual void executeParallelFor(const ComplexLoopRanges<3>& loop_ranges,IMDRangeFunctor<3>* functor) =0;
-  virtual void executeParallelFor(const ComplexLoopRanges<4>& loop_ranges,IMDRangeFunctor<4>* functor) =0;
+  //! Exécute une boucle 1D en concurrence
+  virtual void executeParallelFor(const ComplexLoopRanges<1>& loop_ranges,
+                                  const ParallelLoopOptions& options,
+                                  IMDRangeFunctor<1>* functor) =0;
+  //! Exécute une boucle 2D en concurrence
+  virtual void executeParallelFor(const ComplexLoopRanges<2>& loop_ranges,
+                                  const ParallelLoopOptions& options,
+                                  IMDRangeFunctor<2>* functor) =0;
+  //! Exécute une boucle 3D en concurrence
+  virtual void executeParallelFor(const ComplexLoopRanges<3>& loop_ranges,
+                                  const ParallelLoopOptions& options,
+                                  IMDRangeFunctor<3>* functor) =0;
+  //! Exécute une boucle 4D en concurrence
+  virtual void executeParallelFor(const ComplexLoopRanges<4>& loop_ranges,
+                                  const ParallelLoopOptions& options,
+                                  IMDRangeFunctor<4>* functor) =0;
 
   //! Indique si l'implémentation est active.
   virtual bool isActive() const =0;
@@ -425,36 +436,51 @@ class ARCANE_UTILS_EXPORT TaskFactory
   //! Exécute le fonctor \a f en concurrence.
   static void executeParallelFor(Integer begin,Integer size,const ParallelLoopOptions& options,IRangeFunctor* f)
   {
-    return m_impl->executeParallelFor(begin,size,options,f);
+    m_impl->executeParallelFor(begin,size,options,f);
   }
 
   //! Exécute le fonctor \a f en concurrence.
   static void executeParallelFor(Integer begin,Integer size,Integer block_size,IRangeFunctor* f)
   {
-    return m_impl->executeParallelFor(begin,size,block_size,f);
+    m_impl->executeParallelFor(begin,size,block_size,f);
   }
 
   //! Exécute le fonctor \a f en concurrence.
   static void executeParallelFor(Integer begin,Integer size,IRangeFunctor* f)
   {
-    return m_impl->executeParallelFor(begin,size,f);
+    m_impl->executeParallelFor(begin,size,f);
   }
 
-  static void executeParallelFor(const ComplexLoopRanges<1>& loop_ranges,IMDRangeFunctor<1>* functor)
+  //! Exécute une boucle simple
+  static void executeParallelFor(const ComplexLoopRanges<1>& loop_ranges,
+                                 const ParallelLoopOptions& options,
+                                 IMDRangeFunctor<1>* functor)
   {
-    return m_impl->executeParallelFor(loop_ranges,functor);
+    m_impl->executeParallelFor(loop_ranges,options,functor);
   }
-  static void executeParallelFor(const ComplexLoopRanges<2>& loop_ranges,IMDRangeFunctor<2>* functor)
+
+  //! Exécute une boucle 2D
+  static void executeParallelFor(const ComplexLoopRanges<2>& loop_ranges,
+                                 const ParallelLoopOptions& options,
+                                 IMDRangeFunctor<2>* functor)
   {
-    return m_impl->executeParallelFor(loop_ranges,functor);
+    m_impl->executeParallelFor(loop_ranges,options,functor);
   }
-  static void executeParallelFor(const ComplexLoopRanges<3>& loop_ranges,IMDRangeFunctor<3>* functor)
+
+  //! Exécute une boucle 3D
+  static void executeParallelFor(const ComplexLoopRanges<3>& loop_ranges,
+                                 const ParallelLoopOptions& options,
+                                 IMDRangeFunctor<3>* functor)
   {
-    return m_impl->executeParallelFor(loop_ranges,functor);
+    m_impl->executeParallelFor(loop_ranges,options,functor);
   }
-  static void executeParallelFor(const ComplexLoopRanges<4>& loop_ranges,IMDRangeFunctor<4>* functor)
+
+  //! Exécute une boucle 4D
+  static void executeParallelFor(const ComplexLoopRanges<4>& loop_ranges,
+                                 const ParallelLoopOptions& options,
+                                 IMDRangeFunctor<4>* functor)
   {
-    return m_impl->executeParallelFor(loop_ranges,functor);
+    m_impl->executeParallelFor(loop_ranges,options,functor);
   }
 
  //! Nombre de threads utilisés au maximum pour gérer les tâches.

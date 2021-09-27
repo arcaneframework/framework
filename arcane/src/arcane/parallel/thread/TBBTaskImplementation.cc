@@ -346,21 +346,29 @@ class TBBTaskImplementation
   {
     executeParallelFor(begin,size,m_default_loop_options,f);
   }
-  void executeParallelFor(const ComplexLoopRanges<1>& loop_ranges,IMDRangeFunctor<1>* functor) final
+  void executeParallelFor(const ComplexLoopRanges<1>& loop_ranges,
+                          const ParallelLoopOptions& options,
+                          IMDRangeFunctor<1>* functor) final
   {
-    _executeMDParallelFor<1>(loop_ranges,functor,{});
+    _executeMDParallelFor<1>(loop_ranges,functor,options);
   }
-  void executeParallelFor(const ComplexLoopRanges<2>& loop_ranges,IMDRangeFunctor<2>* functor) final
+  void executeParallelFor(const ComplexLoopRanges<2>& loop_ranges,
+                          const ParallelLoopOptions& options,
+                          IMDRangeFunctor<2>* functor) final
   {
-    _executeMDParallelFor<2>(loop_ranges,functor,{});
+    _executeMDParallelFor<2>(loop_ranges,functor,options);
   }
-  void executeParallelFor(const ComplexLoopRanges<3>& loop_ranges,IMDRangeFunctor<3>* functor) final
+  void executeParallelFor(const ComplexLoopRanges<3>& loop_ranges,
+                          const ParallelLoopOptions& options,
+                          IMDRangeFunctor<3>* functor) final
   {
-    _executeMDParallelFor<3>(loop_ranges,functor,{});
+    _executeMDParallelFor<3>(loop_ranges,functor,options);
   }
-  void executeParallelFor(const ComplexLoopRanges<4>& loop_ranges,IMDRangeFunctor<4>* functor) final
+  void executeParallelFor(const ComplexLoopRanges<4>& loop_ranges,
+                          const ParallelLoopOptions& options,
+                          IMDRangeFunctor<4>* functor) final
   {
-    _executeMDParallelFor<4>(loop_ranges,functor,{});
+    _executeMDParallelFor<4>(loop_ranges,functor,options);
   }
 
   bool isActive() const final

@@ -61,10 +61,10 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
     break;
   case eExecutionPolicy::Thread:
     launch_info.beginExecute();
+    ParallelLoopOptions loop_options;
     if constexpr (N==1){
       Integer my_size = CheckedConvert::toInteger(bounds.extent(0));
       Integer lower_bound = CheckedConvert::toInteger(bounds.lowerBound(0));
-      ParallelLoopOptions loop_options;
       Integer nb_thread = TaskFactory::nbAllowedThread();
       if (nb_thread==0)
         nb_thread = 1;
@@ -79,12 +79,12 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
       });
     }
     else{
-      auto xfunc = [&] (const ComplexLoopRanges<N>& sub_bounds)
+      auto xfunc = [=] (const ComplexLoopRanges<N>& sub_bounds)
                    {
                      impl::applyGenericLoopSequential(sub_bounds,func);
                    };
       LambdaMDRangeFunctor<N,decltype(xfunc)> ipf(xfunc);
-      TaskFactory::executeParallelFor(bounds,&ipf);
+      TaskFactory::executeParallelFor(bounds,loop_options,&ipf);
     }
     break;
   }
