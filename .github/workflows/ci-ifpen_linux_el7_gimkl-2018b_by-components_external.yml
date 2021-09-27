@@ -2,11 +2,11 @@ name: ci-ifpen_linux_el7_gimkl-2018b_by-components_external
 
 on:
   push:
-    branches: [ main, dev/ci_ifpen ]
+    branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
   pull_request:
-    branches: [ main, dev/ci_ifpen ]
+    branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
   workflow_dispatch:
-    branches: [ main, dev/ci_ifpen ]
+    branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
 
 env:
   # Arcane
