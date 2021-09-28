@@ -61,13 +61,7 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
     break;
   case eExecutionPolicy::Thread:
     launch_info.beginExecute();
-    ParallelLoopOptions loop_options;
-    auto xfunc = [=] (const ComplexLoopRanges<N>& sub_bounds)
-    {
-      arcaneSequentialFor(sub_bounds,func);
-    };
-    LambdaMDRangeFunctor<N,decltype(xfunc)> ipf(xfunc);
-    TaskFactory::executeParallelFor(bounds,loop_options,&ipf);
+    arcaneParallelFor(bounds,func);
     break;
   }
   launch_info.endExecute();

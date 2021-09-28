@@ -16,10 +16,10 @@
 #include "arcane/utils/IFunctor.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/LoopRanges.h"
+#include "arcane/utils/ConcurrencyUtils.h"
+#include "arcane/utils/IObservable.h"
 
-#include "arcane/IObservable.h"
 #include "arcane/FactoryService.h"
-#include "arcane/Concurrency.h"
 
 #include <new>
 #include <stack>

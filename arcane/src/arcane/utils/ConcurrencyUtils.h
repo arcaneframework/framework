@@ -53,37 +53,40 @@ class ARCANE_UTILS_EXPORT ParallelLoopOptions
  private:
   //! Drapeau pour indiquer quels champs ont été positionnés.
   enum SetFlags
-    {
-      SF_MaxThread = 1,
-      SF_GrainSize = 2,
-      SF_Partitioner = 4
-    };
+  {
+    SF_MaxThread = 1,
+    SF_GrainSize = 2,
+    SF_Partitioner = 4
+  };
  public:
   //! Type du partitionneur
   enum class Partitioner
-    {
-      //! Laisse le partitionneur géré le partitionnement et l'ordonnancement (défaut)
-      Auto = 0,
-      /*!
-       * \brief Utilise un partitionnement statique.
-       *
-       * Dans ce mode, grainSize() n'est pas utilisé et le partitionnement ne
-       * dépend que du nombre de threads et de l'intervalle d'itération.
-       *
-       * A noter que l'ordonnencement reste dynamique et donc du exécution à
-       * l'autre ce n'est pas forcément le même thread qui va exécuter
-       * le même bloc d'itération.
-       */
-      Static = 1,
-      /*!
-       * \brief Utilise un partitionnement et un ordonnancement statique.
-       *
-       * Ce mode est similaire à Partitioner::Static mais l'ordonnancement
-       * est déterministe pour l'attribution des tâches: la valeur
-       * renvoyée par TaskFactory::currentTaskIndex() est déterministe.
-       */
-      Deterministic = 2
-    };
+  {
+    //! Laisse le partitionneur géré le partitionnement et l'ordonnancement (défaut)
+    Auto = 0,
+    /*!
+     * \brief Utilise un partitionnement statique.
+     *
+     * Dans ce mode, grainSize() n'est pas utilisé et le partitionnement ne
+     * dépend que du nombre de threads et de l'intervalle d'itération.
+     *
+     * A noter que l'ordonnencement reste dynamique et donc du exécution à
+     * l'autre ce n'est pas forcément le même thread qui va exécuter
+     * le même bloc d'itération.
+     */
+    Static = 1,
+    /*!
+     * \brief Utilise un partitionnement et un ordonnancement statique.
+     *
+     * Ce mode est similaire à Partitioner::Static mais l'ordonnancement
+     * est déterministe pour l'attribution des tâches: la valeur
+     * renvoyée par TaskFactory::currentTaskIndex() est déterministe.
+     *
+     * \note Actuellement ce mode de partitionnement n'est disponible que
+     * pour la parallélisation des boucles 1D.
+     */
+    Deterministic = 2
+  };
  public:
 
   ParallelLoopOptions()
@@ -596,6 +599,70 @@ class ARCANE_UTILS_EXPORT TaskFactory
   static IObservable* m_destroyed_thread_observable;
   static Integer m_verbose_level;
 };
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Applique en concurrence la fonction lambda \a lambda_function
+ * sur l'intervalle d'itération donné par \a loop_ranges.
+ */
+template<int RankValue,typename LambdaType> inline void
+arcaneParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
+                  const ParallelLoopOptions& options,
+                  const LambdaType& lambda_function)
+{
+  auto xfunc = [=] (const ComplexLoopRanges<RankValue>& sub_bounds)
+  {
+    arcaneSequentialFor(sub_bounds,lambda_function);
+  };
+  LambdaMDRangeFunctor<RankValue,decltype(xfunc)> ipf(xfunc);
+  TaskFactory::executeParallelFor(loop_ranges,options,&ipf);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Applique en concurrence la fonction lambda \a lambda_function
+ * sur l'intervalle d'itération donné par \a loop_ranges.
+ */
+template<int RankValue,typename LambdaType> inline void
+arcaneParallelFor(const SimpleLoopRanges<RankValue>& loop_ranges,
+                  const ParallelLoopOptions& options,
+                  const LambdaType& lambda_function)
+{
+  ComplexLoopRanges<RankValue> complex_loop_ranges{loop_ranges};
+  arcaneParallelFor(complex_loop_ranges,options,lambda_function);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Applique en concurrence la fonction lambda \a lambda_function
+ * sur l'intervalle d'itération donné par \a loop_ranges.
+ */
+template<int RankValue,typename LambdaType> inline void
+arcaneParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
+                  const LambdaType& lambda_function)
+{
+  ParallelLoopOptions options;
+  arcaneParallelFor(loop_ranges,options,lambda_function);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Applique en concurrence la fonction lambda \a lambda_function
+ * sur l'intervalle d'itération donné par \a loop_ranges.
+ */
+template<int RankValue,typename LambdaType> inline void
+arcaneParallelFor(const SimpleLoopRanges<RankValue>& loop_ranges,
+                  const LambdaType& lambda_function)
+{
+  ParallelLoopOptions options;
+  ComplexLoopRanges<RankValue> complex_loop_ranges{loop_ranges};
+  arcaneParallelFor(complex_loop_ranges,options,lambda_function);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
