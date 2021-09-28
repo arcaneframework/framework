@@ -56,6 +56,7 @@ class EdgeLocalId;
 class FaceLocalId;
 class ParticleLocalId;
 class IndexedItemConnectivityViewBase;
+class IndexedItemConnectivityAccessor;
 
 class ItemGroup;
 template<typename T> class ItemGroupT;

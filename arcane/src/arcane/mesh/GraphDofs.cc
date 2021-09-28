@@ -102,7 +102,9 @@ _allocateGraph()
         m_item_family_network->addDependency(dualNodeFamily(),dual_item_family,dof2dual_incremental_connectivity,false);
     }
   }
-  m_graph_connectivity.reset( new GraphIncrementalConnectivity(m_links_incremental_connectivity,
+  m_graph_connectivity.reset( new GraphIncrementalConnectivity(dualNodeFamily(),
+                                                               linkFamily(),
+                                                               m_links_incremental_connectivity,
                                                                m_incremental_connectivities,
                                                                m_dual_node_to_connectivity_index)) ;
 #endif
@@ -406,7 +408,9 @@ endUpdate()
 #endif
 
 #ifdef GRAPH_USE_INCREMENTAL_CONNECTIVITY
-  m_graph_connectivity.reset( new GraphIncrementalConnectivity(m_links_incremental_connectivity,
+  m_graph_connectivity.reset( new GraphIncrementalConnectivity(dualNodeFamily(),
+                                                               linkFamily(),
+                                                               m_links_incremental_connectivity,
                                                                m_incremental_connectivities,
                                                                m_dual_node_to_connectivity_index)) ;
 #endif
@@ -567,7 +571,9 @@ void GraphDofs::updateAfterMeshChanged()
     }
   }
 
-  m_graph_connectivity.reset( new GraphIncrementalConnectivity(m_links_incremental_connectivity,
+  m_graph_connectivity.reset( new GraphIncrementalConnectivity(dualNodeFamily(),
+                                                               linkFamily(),
+                                                               m_links_incremental_connectivity,
                                                                m_incremental_connectivities,
                                                                m_dual_node_to_connectivity_index)) ;
 #endif
@@ -580,7 +586,9 @@ void GraphDofs::
 printDualNodes() const
 {
 #ifdef GRAPH_USE_INCREMENTAL_CONNECTIVITY
-  auto graph_connectivity = GraphIncrementalConnectivity(m_links_incremental_connectivity,
+  auto graph_connectivity = GraphIncrementalConnectivity(dualNodeFamily(),
+                                                         linkFamily(),
+                                                         m_links_incremental_connectivity,
                                                          m_incremental_connectivities,
                                                          m_dual_node_to_connectivity_index) ;
   ENUMERATE_DOF(idualnode,dualNodeFamily()->allItems())
@@ -614,7 +622,9 @@ printLinks() const
 
 #ifdef GRAPH_USE_INCREMENTAL_CONNECTIVITY
     ConnectivityItemVector dual_nodes(m_links_incremental_connectivity);
-    auto graph_connectivity = GraphIncrementalConnectivity(m_links_incremental_connectivity,
+    auto graph_connectivity = GraphIncrementalConnectivity(dualNodeFamily(),
+                                                           linkFamily(),
+                                                           m_links_incremental_connectivity,
                                                            m_incremental_connectivities,
                                                            m_dual_node_to_connectivity_index) ;
     ENUMERATE_DOF(ilink,linkFamily()->allItems())

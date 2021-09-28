@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/Item.h"
+#include "arcane/IItemFamily.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -22,6 +23,7 @@
 namespace Arcane
 {
 
+  class IIncrementalItemConnectivity ;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -54,6 +56,15 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
     m_source_kind = source_kind;
     m_target_kind = target_kind;
   }
+
+  void set(IndexedItemConnectivityViewBase view)
+  {
+    m_indexes = view.m_indexes;
+    m_nb_item = view.m_nb_item;
+    m_list_data = view.m_list_data;
+    m_source_kind = view.m_source_kind;
+    m_target_kind = view.m_target_kind;
+  }
  protected:
   SmallSpan<const Int32> m_nb_item;
   SmallSpan<const Int32> m_indexes;
@@ -67,6 +78,44 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
     if (k1!=m_source_kind || k2!=m_target_kind)
       _badConversion(k1,k2);
   }
+};
+
+class ARCANE_CORE_EXPORT IndexedItemConnectivityAccessor
+: public IndexedItemConnectivityViewBase
+{
+ public:
+  IndexedItemConnectivityAccessor(IndexedItemConnectivityViewBase view, IItemFamily* target_item_family)
+  : IndexedItemConnectivityViewBase(view)
+  , m_target_item_family(target_item_family)
+  {}
+
+
+  IndexedItemConnectivityAccessor(IIncrementalItemConnectivity* connectivity) ;
+
+  IndexedItemConnectivityAccessor() = default;
+
+  void init(SmallSpan<const Int32> nb_item,
+            SmallSpan<const Int32> indexes,
+            SmallSpan<const Int32> list_data,
+            IItemFamily* source_item_family,
+            IItemFamily* target_item_family)
+  {
+    IndexedItemConnectivityViewBase::init(nb_item,
+                                          indexes,
+                                          list_data,
+                                          source_item_family->itemKind(),
+                                          target_item_family->itemKind()) ;
+    m_target_item_family = target_item_family ;
+  }
+
+  ItemVectorView operator()(ItemLocalId lid) const
+  {
+    //assert(m_target_item_family) ;
+    const Integer* ptr = & m_list_data[m_indexes[lid]];
+    return const_cast<IItemFamily*>(m_target_item_family)->view(ConstArrayView<Integer>( m_nb_item[lid], ptr )) ;
+  }
+ private :
+  IItemFamily* m_target_item_family = nullptr ;
 };
 
 /*---------------------------------------------------------------------------*/

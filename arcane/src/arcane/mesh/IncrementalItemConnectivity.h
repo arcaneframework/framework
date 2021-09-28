@@ -111,6 +111,7 @@ public:
   }
 
   IndexedItemConnectivityViewBase connectivityView() const;
+  IndexedItemConnectivityAccessor connectivityAccessor() const ;
 
  public:
 

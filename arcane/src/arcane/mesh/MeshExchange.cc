@@ -29,6 +29,7 @@
 #include "arcane/IParticleFamily.h"
 
 #include "arcane/ConnectivityItemVector.h"
+#include "arcane/IndexedItemConnectivityView.h"
 #include "arcane/mesh/MeshExchange.h"
 #include "arcane/mesh/NewItemOwnerBuilder.h"
 
@@ -935,13 +936,14 @@ _propagatesToChildConnectivities(IItemFamily* family)
   {
     if(!child_connectivity->isEmpty())
     {
-      ConnectivityItemVector accessor(child_connectivity);
+      auto accessor = IndexedItemConnectivityAccessor(child_connectivity) ;
       ENUMERATE_ITEM(item, family->allItems())
       {
         // Parse child relations
         _addDestRank(*item,family,item_new_owner[item]);
 
-        ENUMERATE_ITEM(connected_item,accessor.connectedItems(ItemLocalId(item))){
+        ENUMERATE_ITEM(connected_item,accessor(ItemLocalId(item)))
+        {
           _addDestRank(*connected_item,child_connectivity->targetFamily(),*item,family);
         }
       }
@@ -1003,11 +1005,11 @@ _propagatesToChildDependencies(IItemFamily* family)
   {
     if(!child_dependency->isEmpty())
     {
-      ConnectivityItemVector accessor(child_dependency);
+      auto accessor = IndexedItemConnectivityAccessor(child_dependency) ;
       ENUMERATE_ITEM(item, family->allItems())
       {
         // Parse child dependencies
-          ENUMERATE_ITEM(connected_item,accessor.connectedItems(ItemLocalId(item)))
+          ENUMERATE_ITEM(connected_item,accessor(ItemLocalId(item)))
           {
             _addDestRank(*connected_item,child_dependency->targetFamily(),*item, family); // as simple as that ??
           }
@@ -1456,9 +1458,10 @@ _checkSubItemsDestRanks()
   m_mesh->itemFamilyNetwork()->schedule([this](IItemFamily* family){
     ENUMERATE_ITEM(item, family->allItems().own()) {
       const auto& item_dest_ranks = m_item_dest_ranks_map[family]->at(item.localId());
-      for (auto child_dependency : m_mesh->itemFamilyNetwork()->getChildDependencies(family)) {
-        ConnectivityItemVector accessor(child_dependency);
-        ENUMERATE_ITEM(connected_item,accessor.connectedItems(ItemLocalId(item))){
+      for (auto child_dependency : m_mesh->itemFamilyNetwork()->getChildDependencies(family))
+      {
+        auto accessor = IndexedItemConnectivityAccessor(child_dependency);
+        ENUMERATE_ITEM(connected_item,accessor(ItemLocalId(item))){
           Int32ConstArrayView subitem_dest_ranks;
           // test can only be done for own subitems, otherwise their dest_ranks are only partially known => to see
           if (connected_item->isOwn()) {

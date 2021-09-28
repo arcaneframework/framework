@@ -29,6 +29,17 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+namespace Arcane
+{
+
+  IndexedItemConnectivityAccessor::IndexedItemConnectivityAccessor(IIncrementalItemConnectivity* connectivity)
+  : m_target_item_family(connectivity->targetFamily())
+  {
+    mesh::IncrementalItemConnectivityBase* ptr = dynamic_cast<mesh::IncrementalItemConnectivityBase*>(connectivity) ;
+    if(ptr)
+      IndexedItemConnectivityViewBase::set(ptr->connectivityView()) ;
+  }
+}
 
 namespace Arcane::mesh
 {
@@ -286,6 +297,19 @@ connectivityView() const
   view.init(m_connectivity_nb_item,m_connectivity_index,m_connectivity_list,
             _sourceFamily()->itemKind(), _targetFamily()->itemKind());
   return view;
+}
+
+
+IndexedItemConnectivityAccessor IncrementalItemConnectivityBase::
+connectivityAccessor() const
+{
+  IndexedItemConnectivityAccessor accessor;
+  accessor.init(m_connectivity_nb_item,
+            m_connectivity_index,
+            m_connectivity_list,
+            _sourceFamily(),
+            _targetFamily());
+  return accessor;
 }
 
 /*---------------------------------------------------------------------------*/

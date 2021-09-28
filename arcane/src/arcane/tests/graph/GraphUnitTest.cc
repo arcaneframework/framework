@@ -496,7 +496,6 @@ _checkGraphDofConnectivity(IGraph2* graph_dof)
 {
   auto const& graph_connectivity = graph_dof->connectivity();
 
-  auto connectivity_vector = graph_connectivity->dualNodesConnectivityVector();
   // Pointwise access
 
   //ConnectivityItemVector dual_nodes(m_links_incremental_connectivity);
@@ -520,14 +519,6 @@ _checkGraphDofConnectivity(IGraph2* graph_dof)
       info() << "           dual item : kind = " << dual_item.kind();
       info() << "                       lid  = " << dual_item.localId();
       info() << "                       uid  = " << dual_item.uniqueId();
-    }
-  }
-  // Access connectivity vector
-  if (graph_dof->nbLink() > 0)
-  {
-    ENUMERATE_DOF(idual_node, connectivity_vector.connectedItems(ItemLocalId(0)))
-    {
-      info() << "Dual node connected to link (id 0) " << idual_node.localId();
     }
   }
 
