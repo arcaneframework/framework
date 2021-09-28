@@ -57,15 +57,15 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
     break;
   case eExecutionPolicy::Sequential:
     launch_info.beginExecute();
-    impl::applyGenericLoopSequential(bounds,func);
+    arcaneSequentialFor(bounds,func);
     break;
   case eExecutionPolicy::Thread:
     launch_info.beginExecute();
     ParallelLoopOptions loop_options;
     auto xfunc = [=] (const ComplexLoopRanges<N>& sub_bounds)
-                 {
-                   impl::applyGenericLoopSequential(sub_bounds,func);
-                 };
+    {
+      arcaneSequentialFor(sub_bounds,func);
+    };
     LambdaMDRangeFunctor<N,decltype(xfunc)> ipf(xfunc);
     TaskFactory::executeParallelFor(bounds,loop_options,&ipf);
     break;

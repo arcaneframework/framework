@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Intervalles d'itérations pour les boucles.                                */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_LOOPRANGE_H
-#define ARCANE_UTILS_LOOPRANGE_H
+#ifndef ARCANE_UTILS_LOOPRANGES_H
+#define ARCANE_UTILS_LOOPRANGES_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -21,10 +21,6 @@
 
 namespace Arcane
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -177,6 +173,46 @@ makeLoopRanges(LoopRange n1,LoopRange n2,LoopRange n3,LoopRange n4)
   ArrayBounds<4> lower_bounds(n1.lowerBound(),n2.lowerBound(),n3.lowerBound(),n4.lowerBound());
   ArrayBounds<4> sizes(n1.size(),n2.size(),n3.size(),n4.size());
   return {lower_bounds,sizes};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+//! Applique le fonctor \a func sur une boucle 1D.
+template<template<int T> class LoopBoundType,typename Lambda> inline void
+arcaneSequentialFor(LoopBoundType<1> bounds,const Lambda& func)
+{
+  for( Int64 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
+    func(ArrayBoundsIndex<1>(i0));
+}
+
+//! Applique le fonctor \a func sur une boucle 2D.
+template<template<int T> class LoopBoundType,typename Lambda> inline void
+arcaneSequentialFor(LoopBoundType<2> bounds,const Lambda& func)
+{
+  for( Int64 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
+    for( Int64 i1 = bounds.lowerBound(1); i1 < bounds.upperBound(1); ++i1 )
+      func(ArrayBoundsIndex<2>(i0,i1));
+}
+
+//! Applique le fonctor \a func sur une boucle 3D.
+template<template<int T> class LoopBoundType,typename Lambda> inline void
+arcaneSequentialFor(LoopBoundType<3> bounds,const Lambda& func)
+{
+  for( Int64 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
+    for( Int64 i1 = bounds.lowerBound(1); i1 < bounds.upperBound(1); ++i1 )
+      for( Int64 i2 = bounds.lowerBound(2); i2 < bounds.upperBound(2); ++i2 )
+        func(ArrayBoundsIndex<3>(i0,i1,i2));
+}
+
+//! Applique le fonctor \a func sur une boucle 4D.
+template<template<int> class LoopBoundType,typename Lambda> inline void
+arcaneSequentialFor(LoopBoundType<4> bounds,const Lambda& func)
+{
+  for( Int64 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
+    for( Int64 i1 = bounds.lowerBound(1); i1 < bounds.upperBound(1); ++i1 )
+      for( Int64 i2 = bounds.lowerBound(2); i2 < bounds.upperBound(2); ++i2 )
+        for( Int64 i3 = bounds.lowerBound(3); i3 < bounds.upperBound(3); ++i3 )
+          func(ArrayBoundsIndex<4>(i0,i1,i2,i3));
 }
 
 /*---------------------------------------------------------------------------*/
