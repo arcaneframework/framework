@@ -418,8 +418,6 @@ jobs:
       - name: Test
         shell: bash
         run: |
-          export OMPI_ALLOW_RUN_AS_ROOT=1
-          export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
           source /env.sh
           cd ${{ env.ARCANE_BUILD_DIR }}
           ctest ${{ env.CT_OPTS }} --exclude-regex '^hydro5_4proc_3sd_4proc$'
