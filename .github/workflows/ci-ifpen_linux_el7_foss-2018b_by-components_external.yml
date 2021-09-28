@@ -420,4 +420,4 @@ jobs:
         run: |
           source /env.sh
           cd ${{ env.ARCANE_BUILD_DIR }}
-          ctest ${{ env.CT_OPTS }} --exclude-regex '^hydro5_4proc_3sd_4proc$'
+          ctest ${{ env.CT_OPTS }} --exclude-regex '^mesh_quadratic3d_vtk_4proc$'
