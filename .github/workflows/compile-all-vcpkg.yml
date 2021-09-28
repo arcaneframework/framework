@@ -2,11 +2,11 @@
 name: compile-all-vcpkg
 
 on:
+  workflow_dispatch:
   push:
     branches:
        - main
-       - dev/cea
-       - dev/ifpen
+       - dev/*
     pull_request:
       branches:
         - main
