@@ -51,7 +51,7 @@ jobs:
         with:
           repository: arcaneframework/arccon
           path: ${{ env.ARCCON_SOURCE_DIR }}
-          ref: main          
+          ref: main
       - name: Configure
         shell: bash
         run: |
@@ -69,7 +69,7 @@ jobs:
           cmake --install ${{ env.ARCCON_BUILD_DIR }}
       - name: Tar install artifact
         shell: bash
-        run: |          
+        run: |
           tar cf arccon-install-artifact.tar ${{ env.ARCCON_INSTALL_DIR }}
       - name: Upload install artifact
         uses: actions/upload-artifact@v2
@@ -97,7 +97,7 @@ jobs:
         with:
           repository: arcaneframework/arccore
           path: ${{ env.ARCCORE_SOURCE_DIR }}
-          ref: main          
+          ref: main
       - name: Download arccon install artifact
         uses: actions/download-artifact@v2
         with:
@@ -108,7 +108,7 @@ jobs:
           tar xf arccon-install-artifact.tar -C /
       - name: Configure
         shell: bash
-        run: |          
+        run: |
           source /env.sh
           cmake -S ${{ env.ARCCORE_SOURCE_DIR }} -B ${{ env.ARCCORE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCCORE_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DBUILD_SHARED_LIBS=ON
       - name: Build
@@ -123,7 +123,7 @@ jobs:
           cmake --install ${{ env.ARCCORE_BUILD_DIR }}
       - name: Tar build artifact
         shell: bash
-        run: |          
+        run: |
           tar cf arccore-build-artifact.tar ${{ env.ARCCORE_BUILD_DIR }}
       - name: Upload build artifact
         uses: actions/upload-artifact@v2
@@ -134,7 +134,7 @@ jobs:
           retention-days: 1
       - name: Tar install artifact
         shell: bash
-        run: |          
+        run: |
           tar cf arccore-install-artifact.tar ${{ env.ARCCORE_INSTALL_DIR }}
       - name: Upload install artifact
         uses: actions/upload-artifact@v2
@@ -162,7 +162,7 @@ jobs:
         with:
           repository: arcaneframework/dependencies
           path: ${{ env.ARCDEPENDENCIES_SOURCE_DIR }}
-          ref: main          
+          ref: main
       - name: Download arccon install artifact
         uses: actions/download-artifact@v2
         with:
@@ -189,7 +189,7 @@ jobs:
           cmake --install ${{ env.ARCDEPENDENCIES_BUILD_DIR }}
       - name: Tar install ariftact
         shell: bash
-        run: |          
+        run: |
           tar cf arcdependencies-install-artifact.tar ${{ env.ARCDEPENDENCIES_INSTALL_DIR }}
       - name: Upload install artifact
         uses: actions/upload-artifact@v2
@@ -201,6 +201,7 @@ jobs:
 
   axlstar-install:
     needs:
+      - arccon-install
       - arcdependencies-install
     name: axlstar-install
     runs-on: ubuntu-latest
@@ -217,7 +218,7 @@ jobs:
         with:
           repository: arcaneframework/axlstar
           path: ${{ env.AXLSTAR_SOURCE_DIR }}
-          ref: main          
+          ref: main
       - name: Download arccon install artifact
         uses: actions/download-artifact@v2
         with:
@@ -251,7 +252,7 @@ jobs:
           cmake --install ${{ env.AXLSTAR_BUILD_DIR }}
       - name: Tar install artifact
         shell: bash
-        run: |          
+        run: |
           tar cf axlstar-install-artifact.tar ${{ env.AXLSTAR_INSTALL_DIR }}
       - name: Upload install artifact
         uses: actions/upload-artifact@v2
@@ -280,7 +281,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          path: ${{ env.ARCANE_SOURCE_DIR }}          
+          path: ${{ env.ARCANE_SOURCE_DIR }}
       - name: Download arccon install artifact
         uses: actions/download-artifact@v2
         with:
@@ -315,7 +316,7 @@ jobs:
           tar xf axlstar-install-artifact.tar -C /
       - name: Configure
         shell: bash
-        run: |          
+        run: |
           source /env.sh
           cmake -S ${{ env.ARCANE_SOURCE_DIR }}/arcane -B ${{ env.ARCANE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCANE_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArccore_DIR=${{ env.ARCCORE_INSTALL_DIR }}/lib/cmake/Arccore -DAxlstar_DIR=${{ env.AXLSTAR_INSTALL_DIR }}/share/cmake/Axlstar -DArcDependencies_DIR=${{ env.ARCDEPENDENCIES_INSTALL_DIR }}/share/cmake/ArcDependencies -DBUILD_SHARED_LIBS=ON -DARCANE_DEFAULT_PARTITIONER=Metis -DARCANE_WANT_TOTALVIEW=ON -DARCANE_WANT_LIBXML2=ON -DARCANE_WANT_LEGACY_CONNECTIVITY=OFF -DARCANE_WANT_CHECK=OFF -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF
       - name: Build
@@ -330,7 +331,7 @@ jobs:
           cmake --install ${{ env.ARCANE_BUILD_DIR }}
       - name: Tar build artifact
         shell: bash
-        run: |          
+        run: |
           tar cf arcane-build-artifact.tar ${{ env.ARCANE_BUILD_DIR }}
       - name: Upload build artifact
         uses: actions/upload-artifact@v2
@@ -342,6 +343,7 @@ jobs:
 
   arccore-test:
     needs:
+      - arccon-install
       - arccore-install
     name: arccore-test
     runs-on: ubuntu-latest
@@ -370,6 +372,10 @@ jobs:
 
   arcane-test:
     needs:
+      - arccon-install
+      - arccore-install
+      - arcdependencies-install
+      - axlstar-install
       - arcane-install
     name: arcane-test
     runs-on: ubuntu-latest
@@ -381,6 +387,10 @@ jobs:
     strategy:
       fail-fast: false
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: ${{ env.ARCANE_SOURCE_DIR }}
       - name: Download arcane build artifact
         uses: actions/download-artifact@v2
         with:
