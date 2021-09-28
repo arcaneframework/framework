@@ -27,10 +27,10 @@ jobs:
             triplet: x64-windows
             vcpkg_os: windows-2019
             cmake_specific_args : '-DCMAKE_CXX_COMPILER_LAUNCHER="ccache"'
-          - os: 'windows-2022'
-            triplet: x64-windows
-            vcpkg_os: windows-2019
-            cmake_specific_args : '-DCMAKE_CXX_COMPILER_LAUNCHER="ccache"'
+#          - os: 'windows-2022'
+#            triplet: x64-windows
+#            vcpkg_os: windows-2019
+#            cmake_specific_args : '-DCMAKE_CXX_COMPILER_LAUNCHER="ccache"'
 
     env:
       CCACHE_BASEDIR: ${{github.workspace}}
