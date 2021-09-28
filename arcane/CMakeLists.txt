@@ -686,7 +686,9 @@ if (UNIX)
   target_compile_options(arcane_build_compile_flags INTERFACE -g)
 endif ()
 if (MSVC)
-  target_compile_options(arcane_build_compile_flags INTERFACE /Zi)
+  # '/Zi' permet de créér des fichiers '.pdb' mais n'est pas compatible avec 'ccache'.
+  # On utilise donc '/Z7' qui place les informations de debug dans les '.obj'.
+  target_compile_options(arcane_build_compile_flags INTERFACE /Z7)
   target_link_options(arcane_build_compile_flags INTERFACE /debug)
 endif()
 
