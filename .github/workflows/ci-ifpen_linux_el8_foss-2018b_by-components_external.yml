@@ -32,7 +32,7 @@ env:
   # CMake
   CM_BUILD_TYPE: Debug
   # CTest
-  CT_OPTS: "--output-on-failure --timeout 500"
+  CT_OPTS: "--timeout 500"
 
 jobs:
   arccon-install:
@@ -378,7 +378,7 @@ jobs:
       - axlstar-install
       - arcane-install
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     container:
       image: ghcr.io/arcaneframework/rockylinux-foss-2018b-arcane:8-latest
       credentials:
