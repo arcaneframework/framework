@@ -127,6 +127,39 @@ _toTBBRange(const ComplexLoopRanges<4>& r)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+inline tbb::blocked_rangeNd<Int64,1>
+_toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int64,1>& r,std::size_t grain_size)
+{
+  return {{r.dim(0).begin(), r.dim(0).end(), grain_size}};
+}
+
+inline tbb::blocked_rangeNd<Int64,2>
+_toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int64,2>& r,std::size_t grain_size)
+{
+  return {{r.dim(0).begin(), r.dim(0).end(), grain_size},
+          {r.dim(1).begin(), r.dim(1).end()}};
+}
+
+inline tbb::blocked_rangeNd<Int64,3>
+_toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int64,3>& r,std::size_t grain_size)
+{
+  return {{r.dim(0).begin(), r.dim(0).end(), grain_size},
+          {r.dim(1).begin(), r.dim(0).end()},
+          {r.dim(2).begin(), r.dim(0).end()}};
+}
+
+inline tbb::blocked_rangeNd<Int64,4>
+_toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int64,4>& r,std::size_t grain_size)
+{
+  return {{r.dim(0).begin(), r.dim(0).end(), grain_size},
+          {r.dim(1).begin(), r.dim(1).end()},
+          {r.dim(2).begin(), r.dim(2).end()},
+          {r.dim(3).begin(), r.dim(3).end()}};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 inline ComplexLoopRanges<1>
 _fromTBBRange(const tbb::blocked_rangeNd<Int64,1> & r)
 {
@@ -669,7 +702,7 @@ class TBBMDParallelFor
  * en plusieurs blocs et chaque bloc est assigné à une tâche en fonction
  * d'un algorithme round-robin.
  * Pour déterminer le nombre de blocs, deux cas sont possibles:
- * - si \a m_grain_size n'est pas spécifié, on découpe le l'intervalle
+ * - si \a m_grain_size n'est pas spécifié, on découpe l'intervalle
  * d'itération en un nombre de blocs équivalent au nombre de threads utilisés.
  * - si \a m_grain_size est spécifié, le nombre de blocs sera égal
  * à \a m_size divisé par \a m_grain_size.
@@ -828,15 +861,15 @@ class TBBTaskImplementation::MDParallelForExecute
                        IMDRangeFunctor<RankValue>* f)
   : m_impl(impl), m_tbb_range(_toTBBRange(range)), m_functor(f), m_options(options)
   {
-#if 0
-    // TODO: pouvoir positionner la taille du grain.
+    // On ne peut pas modifier les valeurs d'une instance de tbb::blocked_rangeNd.
+    // Il faut donc en reconstruire une complètement.
+
     Integer gsize = m_options.grainSize();
     if (gsize>0){
       // Modifie la taille du grain pour la première dimension.
-      auto orig_range = m_tbb_range.dim(0);
-      m_tbb_range.dim(0) = tbb::blocked_range<Int64>(orig_range.begin(),orig_range.end(),gsize);
+      // TODO: pouvoir aussi modifier la valeur de 'grain_size' pour les autres dimensions.
+      m_tbb_range = _toTBBRangeWithGrain(m_tbb_range,gsize);
     }
-#endif
   }
  public:
   void operator()() const
@@ -998,7 +1031,9 @@ _executeMDParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
                 functor->executeFunctor(ComplexLoopRanges<1>(begin,size));
               };
     LambdaRangeFunctorT<decltype(x1)> functor_1d(x1);
-    ParallelForExecute pfe(this,true_options,range_1d.dim(0).begin(),range_1d.dim(0).size(),&functor_1d);
+    Integer begin1 = CheckedConvert::toInteger(range_1d.dim(0).begin());
+    Integer size1 = CheckedConvert::toInteger(range_1d.dim(0).size());
+    ParallelForExecute pfe(this,true_options,begin1,size1,&functor_1d);
     used_arena->execute(pfe);
   }
   else{
