@@ -10,25 +10,25 @@ on:
 
 env:
   # Arcane
-  ARCANE_BUILD_DIR: /home/user/arcane_build
-  ARCANE_INSTALL_DIR: /home/user/arcane_install
-  ARCANE_SOURCE_DIR: /home/user/arcane
+  ARCANE_BUILD_DIR: /__w/framework/framework/arcane_build
+  ARCANE_INSTALL_DIR: /__w/framework/framework/arcane_install
+  ARCANE_SOURCE_DIR: /__w/framework/framework/arcane
   # Arccon
-  ARCCON_BUILD_DIR: /home/user/arccon_build
-  ARCCON_INSTALL_DIR: /home/user/arccon_install
-  ARCCON_SOURCE_DIR: /home/user/arccon
+  ARCCON_BUILD_DIR: /__w/framework/framework/arccon_build
+  ARCCON_INSTALL_DIR: /__w/framework/framework/arccon_install
+  ARCCON_SOURCE_DIR: /__w/framework/framework/arccon
   # Arccore
-  ARCCORE_BUILD_DIR: /home/user/arccore_build
-  ARCCORE_INSTALL_DIR: /home/user/arccore_install
-  ARCCORE_SOURCE_DIR: /home/user/arccore
+  ARCCORE_BUILD_DIR: /__w/framework/framework/arccore_build
+  ARCCORE_INSTALL_DIR: /__w/framework/framework/arccore_install
+  ARCCORE_SOURCE_DIR: /__w/framework/framework/arccore
   # ArcDependencies
-  ARCDEPENDENCIES_BUILD_DIR: /home/user/arcdependencies_build
-  ARCDEPENDENCIES_INSTALL_DIR: /home/user/arcdependencies_install
-  ARCDEPENDENCIES_SOURCE_DIR: /home/user/arcdependencies
+  ARCDEPENDENCIES_BUILD_DIR: /__w/framework/framework/arcdependencies_build
+  ARCDEPENDENCIES_INSTALL_DIR: /__w/framework/framework/arcdependencies_install
+  ARCDEPENDENCIES_SOURCE_DIR: /__w/framework/framework/arcdependencies
   # Axlstar
-  AXLSTAR_BUILD_DIR: /home/user/axlstar_build
-  AXLSTAR_INSTALL_DIR: /home/user/axlstar_install
-  AXLSTAR_SOURCE_DIR: /home/user/axlstar
+  AXLSTAR_BUILD_DIR: /__w/framework/framework/axlstar_build
+  AXLSTAR_INSTALL_DIR: /__w/framework/framework/axlstar_install
+  AXLSTAR_SOURCE_DIR: /__w/framework/framework/axlstar
   # CMake
   CM_BUILD_TYPE: Debug
   # CTest
