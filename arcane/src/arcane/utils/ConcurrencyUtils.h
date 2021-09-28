@@ -53,37 +53,40 @@ class ARCANE_UTILS_EXPORT ParallelLoopOptions
  private:
   //! Drapeau pour indiquer quels champs ont été positionnés.
   enum SetFlags
-    {
-      SF_MaxThread = 1,
-      SF_GrainSize = 2,
-      SF_Partitioner = 4
-    };
+  {
+    SF_MaxThread = 1,
+    SF_GrainSize = 2,
+    SF_Partitioner = 4
+  };
  public:
   //! Type du partitionneur
   enum class Partitioner
-    {
-      //! Laisse le partitionneur géré le partitionnement et l'ordonnancement (défaut)
-      Auto = 0,
-      /*!
-       * \brief Utilise un partitionnement statique.
-       *
-       * Dans ce mode, grainSize() n'est pas utilisé et le partitionnement ne
-       * dépend que du nombre de threads et de l'intervalle d'itération.
-       *
-       * A noter que l'ordonnencement reste dynamique et donc du exécution à
-       * l'autre ce n'est pas forcément le même thread qui va exécuter
-       * le même bloc d'itération.
-       */
-      Static = 1,
-      /*!
-       * \brief Utilise un partitionnement et un ordonnancement statique.
-       *
-       * Ce mode est similaire à Partitioner::Static mais l'ordonnancement
-       * est déterministe pour l'attribution des tâches: la valeur
-       * renvoyée par TaskFactory::currentTaskIndex() est déterministe.
-       */
-      Deterministic = 2
-    };
+  {
+    //! Laisse le partitionneur géré le partitionnement et l'ordonnancement (défaut)
+    Auto = 0,
+    /*!
+     * \brief Utilise un partitionnement statique.
+     *
+     * Dans ce mode, grainSize() n'est pas utilisé et le partitionnement ne
+     * dépend que du nombre de threads et de l'intervalle d'itération.
+     *
+     * A noter que l'ordonnencement reste dynamique et donc du exécution à
+     * l'autre ce n'est pas forcément le même thread qui va exécuter
+     * le même bloc d'itération.
+     */
+    Static = 1,
+    /*!
+     * \brief Utilise un partitionnement et un ordonnancement statique.
+     *
+     * Ce mode est similaire à Partitioner::Static mais l'ordonnancement
+     * est déterministe pour l'attribution des tâches: la valeur
+     * renvoyée par TaskFactory::currentTaskIndex() est déterministe.
+     *
+     * \note Actuellement ce mode de partitionnement n'est disponible que
+     * pour la parallélisation des boucles 1D.
+     */
+    Deterministic = 2
+  };
  public:
 
   ParallelLoopOptions()
@@ -332,6 +335,23 @@ class ARCANE_UTILS_EXPORT ITaskImplementation
   //! Exécute le fonctor \a f en concurrence.
   virtual void executeParallelFor(Integer begin,Integer size,IRangeFunctor* f) =0;
 
+  //! Exécute une boucle 1D en concurrence
+  virtual void executeParallelFor(const ComplexLoopRanges<1>& loop_ranges,
+                                  const ParallelLoopOptions& options,
+                                  IMDRangeFunctor<1>* functor) =0;
+  //! Exécute une boucle 2D en concurrence
+  virtual void executeParallelFor(const ComplexLoopRanges<2>& loop_ranges,
+                                  const ParallelLoopOptions& options,
+                                  IMDRangeFunctor<2>* functor) =0;
+  //! Exécute une boucle 3D en concurrence
+  virtual void executeParallelFor(const ComplexLoopRanges<3>& loop_ranges,
+                                  const ParallelLoopOptions& options,
+                                  IMDRangeFunctor<3>* functor) =0;
+  //! Exécute une boucle 4D en concurrence
+  virtual void executeParallelFor(const ComplexLoopRanges<4>& loop_ranges,
+                                  const ParallelLoopOptions& options,
+                                  IMDRangeFunctor<4>* functor) =0;
+
   //! Indique si l'implémentation est active.
   virtual bool isActive() const =0;
 
@@ -419,22 +439,54 @@ class ARCANE_UTILS_EXPORT TaskFactory
   //! Exécute le fonctor \a f en concurrence.
   static void executeParallelFor(Integer begin,Integer size,const ParallelLoopOptions& options,IRangeFunctor* f)
   {
-    return m_impl->executeParallelFor(begin,size,options,f);
+    m_impl->executeParallelFor(begin,size,options,f);
   }
 
   //! Exécute le fonctor \a f en concurrence.
   static void executeParallelFor(Integer begin,Integer size,Integer block_size,IRangeFunctor* f)
   {
-    return m_impl->executeParallelFor(begin,size,block_size,f);
+    m_impl->executeParallelFor(begin,size,block_size,f);
   }
 
   //! Exécute le fonctor \a f en concurrence.
   static void executeParallelFor(Integer begin,Integer size,IRangeFunctor* f)
   {
-    return m_impl->executeParallelFor(begin,size,f);
+    m_impl->executeParallelFor(begin,size,f);
   }
 
-  //! Nombre de threads utilisés au maximum pour gérer les tâches.
+  //! Exécute une boucle simple
+  static void executeParallelFor(const ComplexLoopRanges<1>& loop_ranges,
+                                 const ParallelLoopOptions& options,
+                                 IMDRangeFunctor<1>* functor)
+  {
+    m_impl->executeParallelFor(loop_ranges,options,functor);
+  }
+
+  //! Exécute une boucle 2D
+  static void executeParallelFor(const ComplexLoopRanges<2>& loop_ranges,
+                                 const ParallelLoopOptions& options,
+                                 IMDRangeFunctor<2>* functor)
+  {
+    m_impl->executeParallelFor(loop_ranges,options,functor);
+  }
+
+  //! Exécute une boucle 3D
+  static void executeParallelFor(const ComplexLoopRanges<3>& loop_ranges,
+                                 const ParallelLoopOptions& options,
+                                 IMDRangeFunctor<3>* functor)
+  {
+    m_impl->executeParallelFor(loop_ranges,options,functor);
+  }
+
+  //! Exécute une boucle 4D
+  static void executeParallelFor(const ComplexLoopRanges<4>& loop_ranges,
+                                 const ParallelLoopOptions& options,
+                                 IMDRangeFunctor<4>* functor)
+  {
+    m_impl->executeParallelFor(loop_ranges,options,functor);
+  }
+
+ //! Nombre de threads utilisés au maximum pour gérer les tâches.
   static Int32 nbAllowedThread()
   {
     return m_impl->nbAllowedThread();
@@ -547,6 +599,70 @@ class ARCANE_UTILS_EXPORT TaskFactory
   static IObservable* m_destroyed_thread_observable;
   static Integer m_verbose_level;
 };
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Applique en concurrence la fonction lambda \a lambda_function
+ * sur l'intervalle d'itération donné par \a loop_ranges.
+ */
+template<int RankValue,typename LambdaType> inline void
+arcaneParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
+                  const ParallelLoopOptions& options,
+                  const LambdaType& lambda_function)
+{
+  auto xfunc = [=] (const ComplexLoopRanges<RankValue>& sub_bounds)
+  {
+    arcaneSequentialFor(sub_bounds,lambda_function);
+  };
+  LambdaMDRangeFunctor<RankValue,decltype(xfunc)> ipf(xfunc);
+  TaskFactory::executeParallelFor(loop_ranges,options,&ipf);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Applique en concurrence la fonction lambda \a lambda_function
+ * sur l'intervalle d'itération donné par \a loop_ranges.
+ */
+template<int RankValue,typename LambdaType> inline void
+arcaneParallelFor(const SimpleLoopRanges<RankValue>& loop_ranges,
+                  const ParallelLoopOptions& options,
+                  const LambdaType& lambda_function)
+{
+  ComplexLoopRanges<RankValue> complex_loop_ranges{loop_ranges};
+  arcaneParallelFor(complex_loop_ranges,options,lambda_function);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Applique en concurrence la fonction lambda \a lambda_function
+ * sur l'intervalle d'itération donné par \a loop_ranges.
+ */
+template<int RankValue,typename LambdaType> inline void
+arcaneParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
+                  const LambdaType& lambda_function)
+{
+  ParallelLoopOptions options;
+  arcaneParallelFor(loop_ranges,options,lambda_function);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Applique en concurrence la fonction lambda \a lambda_function
+ * sur l'intervalle d'itération donné par \a loop_ranges.
+ */
+template<int RankValue,typename LambdaType> inline void
+arcaneParallelFor(const SimpleLoopRanges<RankValue>& loop_ranges,
+                  const LambdaType& lambda_function)
+{
+  ParallelLoopOptions options;
+  ComplexLoopRanges<RankValue> complex_loop_ranges{loop_ranges};
+  arcaneParallelFor(complex_loop_ranges,options,lambda_function);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

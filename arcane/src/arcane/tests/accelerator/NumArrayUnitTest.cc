@@ -74,7 +74,7 @@ class NumArrayUnitTest
   {
     double total = 0.0;
     SimpleLoopRanges<Rank> lb(bounds);
-    Accelerator::impl::applyGenericLoopSequential(lb,[&](ArrayBoundsIndex<Rank> idx){ total += values(idx); });
+    arcaneSequentialFor(lb,[&](ArrayBoundsIndex<Rank> idx){ total += values(idx); });
     return total;
   }
  public:

@@ -78,9 +78,8 @@ class NullTaskImplementation
  public:
   static NullTaskImplementation singleton;
  public:
-  void initialize(Int32 nb_thread) override
+  void initialize([[maybe_unused]] Int32 nb_thread) override
   {
-    ARCANE_UNUSED(nb_thread);
   }
   void terminate() override
   {
@@ -89,19 +88,41 @@ class NullTaskImplementation
   {
     return new SerialTask(f);
   }
-  void executeParallelFor(Integer begin,Integer size,Integer block_size,IRangeFunctor* f) override
+  void executeParallelFor(Integer begin,Integer size,[[maybe_unused]] Integer block_size,IRangeFunctor* f) override
   {
-    ARCANE_UNUSED(block_size);
     f->executeFunctor(begin,size);
   }
-  void executeParallelFor(Integer begin,Integer size,const ParallelLoopOptions& options,IRangeFunctor* f) override
+  void executeParallelFor(Integer begin,Integer size,[[maybe_unused]] const ParallelLoopOptions& options,IRangeFunctor* f) override
   {
-    ARCANE_UNUSED(options);
     f->executeFunctor(begin,size);
   }
   void executeParallelFor(Integer begin,Integer size,IRangeFunctor* f) override
   {
     f->executeFunctor(begin,size);
+  }
+  void executeParallelFor(const ComplexLoopRanges<1>& loop_ranges,
+                          [[maybe_unused]] const ParallelLoopOptions& options,
+                          IMDRangeFunctor<1>* functor) override
+  {
+    functor->executeFunctor(loop_ranges);
+  }
+  void executeParallelFor(const ComplexLoopRanges<2>& loop_ranges,
+                          [[maybe_unused]] const ParallelLoopOptions& options,
+                          IMDRangeFunctor<2>* functor) override
+  {
+    functor->executeFunctor(loop_ranges);
+  }
+  void executeParallelFor(const ComplexLoopRanges<3>& loop_ranges,
+                          [[maybe_unused]] const ParallelLoopOptions& options,
+                          IMDRangeFunctor<3>* functor) override
+  {
+    functor->executeFunctor(loop_ranges);
+  }
+  void executeParallelFor(const ComplexLoopRanges<4>& loop_ranges,
+                          [[maybe_unused]] const ParallelLoopOptions& options,
+                          IMDRangeFunctor<4>* functor) override
+  {
+    functor->executeFunctor(loop_ranges);
   }
   bool isActive() const override
   {
