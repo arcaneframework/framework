@@ -43,12 +43,20 @@ extern "C++" ARCANE_EXPORT int
 arcaneTestDirectExecution(const CommandLineArguments& cmd_line_args,
                           const String& direct_execution_method);
 
+extern "C++" ARCANE_EXPORT int
+arcaneTestStandaloneLauncher(const CommandLineArguments& cmd_line_args,
+                             const String& standalone_method);
+
 int
 main(int argc,char* argv[])
 {
   CommandLineArguments cmd_line_args(&argc,&argv);
-  _initDefaultApplicationInfo(cmd_line_args);
 
+  String standalone_method = cmd_line_args.getParameter("StandaloneAcceleratorMethod");
+  if (!standalone_method.null())
+    return arcaneTestStandaloneLauncher(cmd_line_args,standalone_method);
+
+  _initDefaultApplicationInfo(cmd_line_args);
   String direct_exec_method = cmd_line_args.getParameter("DirectExecutionMethod");
   bool use_direct = !direct_exec_method.null();
   if (use_direct)

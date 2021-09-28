@@ -11,86 +11,21 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/accelerator/AcceleratorGlobal.h"
+
 #include "arcane/accelerator/Reduce.h"
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*!
- * \namespace Arcane::Accelerator
- *
- * \brief Espace de nom pour l'utilisation des accélérateurs.
- *
- * Toutes les classes et types utilisés pour la gestion des accélérateurs
- * sont dans ce namespace.
- */
+#include "arcane/AcceleratorRuntimeInitialisationInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator
+extern "C++" ARCANE_ACCELERATOR_EXPORT void Arcane::Accelerator::
+initializeRunner(Runner& runner,ITraceMng* tm,
+                 const AcceleratorRuntimeInitialisationInfo& acc_info)
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace
-{
-bool global_is_using_cuda_runtime = false;
-IRunQueueRuntime* global_cuda_runqueue_runtime = nullptr;
+  arcaneInitializeRunner(runner,tm,acc_info);
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" ARCANE_ACCELERATOR_EXPORT
-bool isUsingCUDARuntime()
-{
-  return global_is_using_cuda_runtime;
-}
-
-extern "C++" ARCANE_ACCELERATOR_EXPORT
-void setUsingCUDARuntime(bool v)
-{
-  global_is_using_cuda_runtime = v;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Récupère l'implémentation CUDA de RunQueue
-extern "C++" ARCANE_ACCELERATOR_EXPORT
-IRunQueueRuntime* getCUDARunQueueRuntime()
-{
-  return global_cuda_runqueue_runtime;
-}
-
-//! Positionne l'implémentation CUDA de RunQueue.
-extern "C++" ARCANE_ACCELERATOR_EXPORT
-void setCUDARunQueueRuntime(IRunQueueRuntime* v)
-{
-  global_cuda_runqueue_runtime = v;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Affiche le nom de la politique d'exécution
-extern "C++" ARCANE_ACCELERATOR_EXPORT
-ostream& operator<<(ostream& o,eExecutionPolicy exec_policy)
-{
-  switch(exec_policy){
-  case eExecutionPolicy::Sequential: o << "Sequential"; break;
-  case eExecutionPolicy::Thread: o << "Thread"; break;
-  case eExecutionPolicy::CUDA: o << "CUDA"; break;
-  }
-  return o;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

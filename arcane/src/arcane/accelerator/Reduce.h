@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Reduce.h                                                    (C) 2000-2020 */
+/* Reduce.h                                                    (C) 2000-2021 */
 /*                                                                           */
 /* Gestion des réductions pour les accélérateurs.                            */
 /*---------------------------------------------------------------------------*/
@@ -14,7 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/IReduceMemoryImpl.h"
+#include "arcane/accelerator/core/IReduceMemoryImpl.h"
+#include "arcane/accelerator/AcceleratorGlobal.h"
 
 #include <limits.h>
 #include <float.h>

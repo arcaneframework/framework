@@ -38,6 +38,20 @@
 
 namespace Arcane
 {
+
+namespace
+{
+bool global_has_init_done = false;
+bool _checkInitCalled()
+{
+  if (!global_has_init_done){
+    std::cerr << "ArcaneLauncher::init() has to be called before";
+    return true;
+  }
+  return false;
+}
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -183,6 +197,8 @@ class DirectCodeFunctor
 int ArcaneLauncher::
 runDirect(std::function<int(IDirectExecutionContext* c)> func)
 {
+  if (_checkInitCalled())
+    return (-1);
   int final_return = 0;
   {
     ArcaneSimpleExecutor simple_exec;
@@ -205,6 +221,9 @@ runDirect(std::function<int(IDirectExecutionContext* c)> func)
 int ArcaneLauncher::
 run(std::function<int(DirectExecutionContext&)> func)
 {
+  if (_checkInitCalled())
+    return (-1);
+
   int final_return = 0;
   {
     ArcaneSimpleExecutor simple_exec;
@@ -251,6 +270,9 @@ class ArcaneLauncherDirectExecuteFunctor
 int ArcaneLauncher::
 run(std::function<int(DirectSubDomainExecutionContext&)> func)
 {
+  if (_checkInitCalled())
+    return (-1);
+
   ArcaneLauncherDirectExecuteFunctor direct_exec(func);
   // En exécution directe, par défaut il n'y a pas de fichier de configuration
   // du code. Si l'utilisateur n'a pas positionné de fichier de configuration,
@@ -295,6 +317,9 @@ void ArcaneLauncher::
 init(const CommandLineArguments& args)
 {
   try{
+    if (global_has_init_done)
+      ARCANE_FATAL("ArcaneLauncher::init() has already been called");
+    global_has_init_done = true;
     applicationInfo().setCommandLineArguments(args);
     bool do_list = false;
     if (do_list)
@@ -318,10 +343,33 @@ init(const CommandLineArguments& args)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+bool ArcaneLauncher::
+isInitialized()
+{
+  return global_has_init_done;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void ArcaneLauncher::
 setDefaultMainFactory(IMainFactory* mf)
 {
   ArcaneMain::setDefaultMainFactory(mf);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+StandaloneAcceleratorMng ArcaneLauncher::
+createStandaloneAcceleratorMng()
+{
+  if (!global_has_init_done)
+    ARCANE_FATAL("ArcaneLauncher::init() has to be called before");
+  // Cela est nécessaire pour éventuellement charger dynamiquement le runtime
+  // associé aux accélérateurs
+  ArcaneMain::_initRuntimes();
+  return {};
 }
 
 /*---------------------------------------------------------------------------*/

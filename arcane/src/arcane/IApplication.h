@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IApplication.h                                              (C) 2000-2020 */
+/* IApplication.h                                              (C) 2000-2021 */
 /*                                                                           */
 /* Interface de l'application.                                               */
 /*---------------------------------------------------------------------------*/
@@ -42,7 +42,6 @@ class ITraceMngPolicy;
 class IConfigurationMng;
 class ApplicationBuildInfo;
 class DotNetRuntimeInitialisationInfo;
-class AcceleratorRuntimeInitialisationInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -496,7 +496,7 @@ computeVelocity()
 void ModuleSimpleHydro::
 computeViscosityWork()
 {
-  Parallel::Foreach(allCells(),this,&ModuleSimpleHydro::_computeViscosityWork);
+  arcaneParallelForeach(allCells(),this,&ModuleSimpleHydro::_computeViscosityWork);
 }
 
 void ModuleSimpleHydro::
@@ -601,7 +601,7 @@ updateDensity()
 void ModuleSimpleHydro::
 applyEquationOfState()
 {
-  Parallel::Foreach(allCells(),this,&ModuleSimpleHydro::_applyEquationOfState);
+  arcaneParallelForeach(allCells(),this,&ModuleSimpleHydro::_applyEquationOfState);
 }
 
 void ModuleSimpleHydro::
@@ -807,7 +807,7 @@ computeCQs(Real3 node_coord[8],Real3 face_coord[6],const Cell& cell)
 void ModuleSimpleHydro::
 computeGeometricValues()
 {
-  Parallel::Foreach(allCells(),this,&ModuleSimpleHydro::_computeGeometricValues);
+  arcaneParallelForeach(allCells(),this,&ModuleSimpleHydro::_computeGeometricValues);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -164,7 +164,7 @@ createSerializedDataRef(bool use_basic_type) const
   Span<const Byte> base_values = local_values;
   auto sd = arcaneCreateSerializedDataRef(DT_Byte, base_values.size(), 1, nb_element,
                                           nb_base_element, false, extents);
-  sd->setBytes(base_values);
+  sd->setConstBytes(base_values);
   //m_trace->info() << " WRITE STRING " << m_value << " len=" << len;
   return sd;
 }
@@ -190,7 +190,7 @@ assignSerializedData(const ISerializedData* sdata)
   if (sdata->baseDataType() != DT_Byte)
     throw ArgumentException(A_FUNCINFO, "Bad serialized type");
 
-  Span<const Byte> byte_values = sdata->bytes();
+  Span<const Byte> byte_values = sdata->constBytes();
   Int64 len = sdata->nbBaseElement();
   //m_trace->info() << " ASSIGN STRING n=" << len
   //                << " ptr=" << (void*)byte_values.begin();

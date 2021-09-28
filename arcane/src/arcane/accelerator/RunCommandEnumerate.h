@@ -73,6 +73,8 @@ _applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,Lambda func)
       // TODO: utiliser cudaLaunchKernel() à la place.
       impl::doIndirectCUDALambda<ItemType,Lambda> <<<b,t,0,*s>>>(local_ids,std::forward<Lambda>(func));
     }
+#else
+    ARCANE_FATAL("Requesting CUDA kernel execution but the kernel is not compiled with CUDA compiler");
 #endif
     break;
   case eExecutionPolicy::Sequential:

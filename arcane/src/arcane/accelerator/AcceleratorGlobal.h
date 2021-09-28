@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorGlobal.h                                         (C) 2000-2020 */
+/* AcceleratorGlobal.h                                         (C) 2000-2021 */
 /*                                                                           */
 /* Déclarations générales pour le support des accélérateurs.                 */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
+#include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 
 #include <iosfwd>
 
@@ -36,72 +37,13 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class Runner;
-class RunQueue;
-class RunCommand;
-class IRunQueueRuntime;
-class IRunQueueStream;
-
-namespace impl
-{
-class IReduceMemoryImpl;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
- * \brief Politique d'exécution.
+ * \brief Initialise \a runner en fonction de
+ * la valeur de \a acc_info.
  */
-enum class eExecutionPolicy
-{
-  Sequential,
-  Thread,
-  CUDA,
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Indique si \a exec_policy correspond à un accélérateur
-inline bool
-isAcceleratorPolicy(eExecutionPolicy exec_policy)
-{
-  return exec_policy==eExecutionPolicy::CUDA;
-}
-
-//! Affiche le nom de la politique d'exécution
-extern "C++" ARCANE_ACCELERATOR_EXPORT
-ostream& operator<<(ostream& o,eExecutionPolicy exec_policy);
-
-//! Indique si on utilise le runtime CUDA
-extern "C++" ARCANE_ACCELERATOR_EXPORT
-bool isUsingCUDARuntime();
-
-//! Positionne l'utilisation du runtime CUDA
-extern "C++" ARCANE_ACCELERATOR_EXPORT
-void setUsingCUDARuntime(bool v);
-
-//! Récupère l'implémentation CUDA de RunQueue (peut être nulle)
-extern "C++" ARCANE_ACCELERATOR_EXPORT
-IRunQueueRuntime* getCUDARunQueueRuntime();
-
-//! Positionne l'implémentation CUDA de RunQueue.
-extern "C++" ARCANE_ACCELERATOR_EXPORT
-void setCUDARunQueueRuntime(IRunQueueRuntime* v);
-
-//! Récupère l'implémentation Séquentielle de RunQueue
-extern "C++" ARCANE_ACCELERATOR_EXPORT
-IRunQueueRuntime* getSequentialRunQueueRuntime();
-
-//! Récupère l'implémentation Thread de RunQueue
-extern "C++" ARCANE_ACCELERATOR_EXPORT
-IRunQueueRuntime* getThreadRunQueueRuntime();
-
-namespace impl
-{
-extern "C++" ARCANE_ACCELERATOR_EXPORT IReduceMemoryImpl*
-internalGetOrCreateReduceMemoryImpl(RunCommand* command);
-}
+extern "C++" ARCANE_ACCELERATOR_EXPORT void
+initializeRunner(Runner& runner,ITraceMng* tm,
+                 const AcceleratorRuntimeInitialisationInfo& acc_info);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

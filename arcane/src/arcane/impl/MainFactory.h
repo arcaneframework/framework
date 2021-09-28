@@ -92,6 +92,7 @@ class ARCANE_IMPL_EXPORT MainFactory
   IMesh* createSubMesh(IMesh* mesh, const ItemGroup& group, const String& name) override;
   IDataFactory* createDataFactory(IApplication*) override;
   Ref<IDataFactoryMng> createDataFactoryMngRef(IApplication*) override;
+  Ref<IAcceleratorMng> createAcceleratorMngRef(ITraceMng* tm) override;
   ITraceMng* createTraceMng() override;
   ITraceMngPolicy* createTraceMngPolicy(IApplication* app) override;
   IModuleMaster* createModuleMaster(ISubDomain* sd) override;

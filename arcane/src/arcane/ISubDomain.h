@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ISubDomain.h                                                (C) 2000-2018 */
+/* ISubDomain.h                                                (C) 2000-2021 */
 /*                                                                           */
 /* Interface d'un sous-domaine.                                              */
 /*---------------------------------------------------------------------------*/
@@ -160,6 +160,9 @@ class ARCANE_CORE_EXPORT ISubDomain
 
   //! Configuration associée.
   virtual IConfiguration* configuration() =0;
+
+  //! Gestionnaire de l'accélérateur associé
+  virtual IAcceleratorMng* acceleratorMng() =0;
 
  public:
 

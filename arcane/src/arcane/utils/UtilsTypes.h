@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* UtilsTypes.h                                                (C) 2000-2020 */
+/* UtilsTypes.h                                                (C) 2000-2021 */
 /*                                                                           */
 /* Définition des types généraux des classes utilitaires de Arcane.          */
 /*---------------------------------------------------------------------------*/
@@ -173,6 +173,11 @@ class CommandLineArguments;
 class ApplicationInfo;
 class VersionInfo;
 
+class IObservable;
+class IObserver;
+class Observable;
+class Observer;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -190,6 +195,7 @@ template<int RankValue> class ArrayExtentsWithOffset;
 class LoopRange;
 template<int RankValue> class SimpleLoopRanges;
 template<int RankValue> class ComplexLoopRanges;
+template<int RankValue> class IMDRangeFunctor;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

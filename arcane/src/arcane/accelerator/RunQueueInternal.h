@@ -26,16 +26,8 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// TODO: fusionner les parties communes des fonctions applyItems(),
-// applyLoop() et applyGenericLoop()
 
-namespace Arcane::Accelerator
-{
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace impl
+namespace Arcane::Accelerator::impl
 {
 
 template <typename T>
@@ -122,90 +114,10 @@ void doDirectThreadLambda(Integer begin,Integer size,Lambda func)
   }
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<template<int T> class LoopBoundType,typename Lambda> inline void
-applyGenericLoopSequential(LoopBoundType<1> bounds,const Lambda& func)
-{
-  for( Int64 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
-    func(ArrayBoundsIndex<1>(i0));
-}
-
-template<template<int T> class LoopBoundType,typename Lambda> inline void
-applyGenericLoopSequential(LoopBoundType<2> bounds,const Lambda& func)
-{
-  for( Int64 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
-    for( Int64 i1 = bounds.lowerBound(1); i1 < bounds.upperBound(1); ++i1 )
-      func(ArrayBoundsIndex<2>(i0,i1));
-}
-
-template<template<int T> class LoopBoundType,typename Lambda> inline void
-applyGenericLoopSequential(LoopBoundType<3> bounds,const Lambda& func)
-{
-  for( Int64 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
-    for( Int64 i1 = bounds.lowerBound(1); i1 < bounds.upperBound(1); ++i1 )
-      for( Int64 i2 = bounds.lowerBound(2); i2 < bounds.upperBound(2); ++i2 )
-        func(ArrayBoundsIndex<3>(i0,i1,i2));
-}
-
-template<template<int> class LoopBoundType,typename Lambda> inline void
-applyGenericLoopSequential(LoopBoundType<4> bounds,const Lambda& func)
-{
-  for( Int64 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
-    for( Int64 i1 = bounds.lowerBound(1); i1 < bounds.upperBound(1); ++i1 )
-      for( Int64 i2 = bounds.lowerBound(2); i2 < bounds.upperBound(2); ++i2 )
-        for( Int64 i3 = bounds.lowerBound(3); i3 < bounds.upperBound(3); ++i3 )
-          func(ArrayBoundsIndex<4>(i0,i1,i2,i3));
-}
-
-template<template<int> class LoopBoundType,typename Lambda> inline void
-applyGenericLoopParallel(Int64 begin,Int64 end,[[maybe_unused]] LoopBoundType<1> bounds,const Lambda& func)
-{
-  for( Int64 i0 = begin; i0 < end; ++i0 )
-    func(ArrayBoundsIndex<1>(i0));
-}
-
-template<template<int> class LoopBoundType,typename Lambda> inline void
-applyGenericLoopParallel(Int64 begin,Int64 end,LoopBoundType<2> bounds,const Lambda& func)
-{
-  for( Int64 i0 = begin; i0 < end; ++i0 )
-    for( Int64 i1 = 0; i1 < bounds.extent(1); ++i1 )
-      func(ArrayBoundsIndex<2>(i0,i1));
-}
-
-template<template<int> class LoopBoundType,typename Lambda> inline void
-applyGenericLoopParallel(Int64 begin,Int64 end,LoopBoundType<3> bounds,const Lambda& func)
-{
-  for( Int64 i0 = begin; i0 < end; ++i0 )
-    for( Int64 i1 = 0; i1 < bounds.extent(1); ++i1 )
-      for( Int64 i2 = 0; i2 < bounds.extent(2); ++i2 )
-        func(ArrayBoundsIndex<3>(i0,i1,i2));
-}
-
-template<template<int> class LoopBoundType,typename Lambda> inline void
-applyGenericLoopParallel(Int64 begin,Int64 end,LoopBoundType<4> bounds,const Lambda& func)
-{
-  for( Int64 i0 = begin; i0 < end; ++i0 )
-    for( Int64 i1 = bounds.lowerBound(1); i1 < bounds.upperBound(1); ++i1 )
-      for( Int64 i2 = bounds.lowerBound(2); i2 < bounds.upperBound(2); ++i2 )
-        for( Int64 i3 = bounds.lowerBound(3); i3 < bounds.upperBound(3); ++i3 )
-          func(ArrayBoundsIndex<4>(i0,i1,i2,i3));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace impl
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace Arcane::Accelerator
+} // End namespace Arcane::Accelerator::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

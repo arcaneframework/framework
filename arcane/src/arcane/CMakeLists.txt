@@ -12,7 +12,7 @@ arcane_add_arccon_packages(arcane_core PRIVATE LibXml2)
 
 target_compile_definitions(arcane_core PRIVATE ARCANE_COMPONENT_arcane_core)
 
-target_link_libraries(arcane_core PUBLIC arcane_utils)
+target_link_libraries(arcane_core PUBLIC arcane_accelerator_core arcane_utils)
 target_link_libraries(arcane_core PUBLIC Arccore::arccore_message_passing Arccore::arccore_serialize)
 
 arcane_register_library(arcane_core)

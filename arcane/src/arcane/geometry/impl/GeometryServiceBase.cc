@@ -165,14 +165,14 @@ getReal3VariableProperty(ItemGroup group, IGeometryProperty::eProperty property)
 
 void 
 GeometryServiceBase::
-update(ItemGroup group, Integer property)
+update(ItemGroup group, [[maybe_unused]] Integer property)
 {
   update(group);
 }
 
 void 
 GeometryServiceBase::
-reset(ItemGroup group, Integer property)
+reset(ItemGroup group, [[maybe_unused]] Integer property)
 {
   reset(group);
 }
@@ -379,7 +379,7 @@ GeometryServiceBase::_checkItemGroupUsage()
             traceMng()->warning() << "Geometric property " << IGeometryProperty::name(property) << " on group " << igroup->first->name() << " with Variable storage never used since last update";
 
           // Check non shared extern Variable storage
-          if (info.realVar || info.real3Var && (info.externStorage & IGeometryProperty::PVariable)) {
+          if (info.realVar || (info.real3Var && (info.externStorage & IGeometryProperty::PVariable))) {
             IVariable * check_variable = NULL;
             if (info.realVar) {
               check_variable = info.realVar->variable();

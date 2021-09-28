@@ -95,6 +95,9 @@
 #include "arcane/CaseOptionService.h"
 #include "arcane/CaseOptionBuildInfo.h"
 
+#include "arcane/accelerator/core/IAcceleratorMng.h"
+#include "arcane/AcceleratorRuntimeInitialisationInfo.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -230,6 +233,7 @@ class SubDomain
   IModuleMaster* moduleMaster() const override { return m_module_master; }
   const IConfiguration* configuration() const override { return m_configuration.get(); }
   IConfiguration* configuration() override { return m_configuration.get(); }
+  IAcceleratorMng* acceleratorMng() override { return m_accelerator_mng.get(); }
 
   Int32 subDomainId() const override { return m_parallel_mng->commRank(); }
   Int32 nbSubDomain() const override { return m_parallel_mng->commSize(); }
@@ -339,6 +343,7 @@ class SubDomain
   bool m_has_mesh_service = false;
   Ref<ICaseMeshMasterService> m_case_mesh_master_service;
   ObserverPool m_observers;
+  Ref<IAcceleratorMng> m_accelerator_mng;
 
  private:
 
@@ -429,6 +434,7 @@ build()
   m_physical_unit_system = m_application->getPhysicalUnitSystemService()->createStandardUnitSystem();
   m_configuration = m_application->configurationMng()->defaultConfiguration()->clone();
 
+  m_accelerator_mng = mf->createAcceleratorMngRef(traceMng());
   m_property_mng = mf->createPropertyMngReference(this);
   m_io_mng = mf->createIOMng(parallelMng());
   m_variable_mng = mf->createVariableMng(this);
@@ -454,6 +460,13 @@ initialize()
   // Initialisation du module parallèle
   // TODO: a supprimer car plus utile
   m_parallel_mng->initialize();
+
+  {
+    // Initialise le runner par défaut en fonction des paramètres donnés par
+    // l'utilisateur.
+    IApplication* app = application();
+    m_accelerator_mng->initialize(app->acceleratorRuntimeInitialisationInfo());
+  }
 
   IMainFactory* mf = m_application->mainFactory();
 

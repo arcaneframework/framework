@@ -311,10 +311,10 @@ public:
     		int reindex = (*m_idx)[index];
         if (reindex<0)
           ARCANE_FATAL("Invalid index");
-        m_dw.writeFileDouble(m_ofile,Convert::toDouble(m_ptr[reindex]));
+        m_dw.writeFileDouble(m_ofile,Convert::toDouble(Convert::toReal(m_ptr[reindex])));
     	}
       else
-        m_dw.writeFileDouble(m_ofile,Convert::toDouble(m_ptr[index]));
+        m_dw.writeFileDouble(m_ofile,Convert::toDouble(Convert::toReal(m_ptr[index])));
     }
 
     virtual void write(ConstArrayView<Item> items)
@@ -353,10 +353,10 @@ public:
         int reindex = (*m_idx)[index];
         if (reindex<0)
           ARCANE_FATAL("Invalid index");
-        m_dw.writeFileDouble(m_ofile,Convert::toDouble(m_ptr[reindex][m_idim2]));
+        m_dw.writeFileDouble(m_ofile,Convert::toDouble(Convert::toReal(m_ptr[reindex][m_idim2])));
       }
       else
-        m_dw.writeFileDouble(m_ofile,Convert::toDouble(m_ptr[index][m_idim2]));
+        m_dw.writeFileDouble(m_ofile,Convert::toDouble(Convert::toReal(m_ptr[index][m_idim2])));
 		}
 
     virtual void write(ConstArrayView<Item> items)

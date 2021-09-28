@@ -5,59 +5,86 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Observer.cc                                                 (C) 2000-2009 */
+/* StandaloneArcaneLauncher.cc                                 (C) 2000-2021 */
 /*                                                                           */
-/* Observateur.                                                              */
+/* Classe gérant une exécution simplifiée (sans sous-domaine).               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/launcher/StandaloneAcceleratorMng.h"
 
-#include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/TraceInfo.h"
+#include "arcane/utils/Ref.h"
+#include "arcane/utils/ITraceMng.h"
 
-#include "arcane/Observer.h"
+#include "arcane/impl/MainFactory.h"
+
+#include "arcane/accelerator/core/IAcceleratorMng.h"
+
+#include "arcane/AcceleratorRuntimeInitialisationInfo.h"
+
+#include "arcane/launcher/ArcaneLauncher.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-AbstractObserver::
-~AbstractObserver()
+namespace Arcane
 {
-  if (m_observable)
-    m_observable->detachObserver(this);
+
+class StandaloneAcceleratorMng::Impl
+{
+ public:
+  Impl()
+  {
+    MainFactory main_factory;
+    m_trace_mng = makeRef<ITraceMng>(main_factory.createTraceMng());
+    m_accelerator_mng = main_factory.createAcceleratorMngRef(m_trace_mng.get());
+  }
+ public:
+  Ref<ITraceMng> m_trace_mng;
+  Ref<IAcceleratorMng> m_accelerator_mng;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+StandaloneAcceleratorMng::
+StandaloneAcceleratorMng()
+: m_p(new Impl())
+{
+  m_p->m_accelerator_mng->initialize(ArcaneLauncher::acceleratorRuntimeInitialisationInfo());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void AbstractObserver::
-attachToObservable(IObservable* obs)
+StandaloneAcceleratorMng::
+~StandaloneAcceleratorMng()
 {
-  if (m_observable)
-    throw FatalErrorException(A_FUNCINFO,"Observer is already attached");
-  m_observable = obs;
+  delete m_p;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void AbstractObserver::
-detach()
+ITraceMng* StandaloneAcceleratorMng::
+traceMng()
 {
-  m_observable = 0;
+  return m_p->m_trace_mng.get();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+IAcceleratorMng* StandaloneAcceleratorMng::
+acceleratorMng()
+{
+  return m_p->m_accelerator_mng.get();
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+} // End namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

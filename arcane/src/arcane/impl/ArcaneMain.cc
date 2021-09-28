@@ -107,6 +107,7 @@ class ArcaneMainStaticInfo
   String m_dotnet_assembly;
   String m_arcane_lib_path;
   IDirectSubDomainExecuteFunctor* m_direct_exec_functor = nullptr;
+  std::atomic<Int32> m_nb_autodetect = 0;
 };
 }
 
@@ -314,6 +315,36 @@ class ArcaneMainExecFunctor
  private:
   const ApplicationInfo& m_app_info;
   IArcaneMain* m_exec_main;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe pour gérer les appels aux mécanismes d'auto-détection des runtimes (MPI,Accélérateurs).
+ *
+ * Cette classe permet de garantir que les mécanismes d'auto-détection ne sont
+ * appelés qu'une fois. L'auto-détection se fait lors de l'appel à check().
+ */
+class ArcaneMainAutoDetectRuntimeHelper
+{
+ public:
+  Int32 check()
+  {
+    auto* x = _staticInfo();
+    if (x->m_nb_autodetect>0)
+      return m_return_value;
+
+    // TODO: rendre thread-safe
+    {
+      ArcaneMain::_checkAutoDetectMPI();
+
+      m_return_value = ArcaneMain::_checkAutoDetectAccelerator();
+      ++x->m_nb_autodetect;
+    }
+    return m_return_value;
+  }
+ public:
+  Int32 m_return_value = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -886,14 +917,23 @@ _internalRun(IDirectSubDomainExecuteFunctor* func)
   return run();
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+int ArcaneMain::
+_initRuntimes()
+{
+  ArcaneMainAutoDetectRuntimeHelper auto_detect_helper;
+  return auto_detect_helper.check();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 int ArcaneMain::
 run()
 {
-  int r = 0;
-
-  _checkAutoDetectMPI();
-
-  r = _checkAutoDetectAccelerator();
+  int r = _initRuntimes();
   if (r!=0)
     return r;
 
@@ -990,12 +1030,11 @@ _runDotNet()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+// Ne pas appeler directement mais passer par ArcaneMainAutoDetectHelper.
 void ArcaneMain::
 _checkAutoDetectMPI()
 {
   auto si = _staticInfo();
-  // TODO: vérifier que l'init n'a pas été faite.
 
   // Pour pouvoir automatiquement enregisrer MPI, il faut
   // appeler la méthode 'arcaneAutoDetectMessagePassingServiceMPI' qui se trouve
@@ -1030,17 +1069,18 @@ _checkAutoDetectMPI()
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Détecte et charge la gestion du runtime des accélérateurs.
+ *
+ * \note Ne pas appeler directement mais passer par ArcaneMainAutoDetectHelper.
  */
 int ArcaneMain::
 _checkAutoDetectAccelerator()
 {
-  // TODO: vérifier que l'init n'a pas été faite.
   auto si = _staticInfo();
   AcceleratorRuntimeInitialisationInfo& init_info = si->m_accelerator_init_info;
   if (!init_info.isUsingAcceleratorRuntime())
     return 0;
   String runtime_name = init_info.acceleratorRuntime();
-  std::cout << "RUNTIME=" << runtime_name << "\n";
+  //std::cout << "RUNTIME=" << runtime_name << "\n";
   if (runtime_name.empty())
     return 0;
 

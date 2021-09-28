@@ -80,6 +80,12 @@ arcaneCreateIOMng(IParallelSuperMng*);
 extern "C++" ARCANE_IMPL_EXPORT IIOMng*
 arcaneCreateIOMng(IParallelMng*);
 
+namespace Accelerator
+{
+extern "C++" ARCANE_IMPORT Ref<IAcceleratorMng>
+arcaneCreateAcceleratorMngRef(ITraceMng* tm);
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -376,6 +382,15 @@ Ref<IDataFactoryMng> MainFactory::
 createDataFactoryMngRef(IApplication* app)
 {
   return arcaneCreateDataFactoryMngRef(app);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IAcceleratorMng> MainFactory::
+createAcceleratorMngRef(ITraceMng* tm)
+{
+  return Accelerator::arcaneCreateAcceleratorMngRef(tm);
 }
 
 /*---------------------------------------------------------------------------*/

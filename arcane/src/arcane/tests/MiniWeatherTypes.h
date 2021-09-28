@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcaneGlobal.h"
+#include "arcane/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,7 +34,7 @@ class IMiniWeatherService
 
  public:
 
-  virtual void init(Int32 nb_x,Int32 nb_z,Real final_time) = 0;
+  virtual void init(IAcceleratorMng* am,Int32 nb_x,Int32 nb_z,Real final_time) = 0;
   virtual bool loop() = 0;
   /*!
    * \brief Point d'entrée de fin d'exécution.

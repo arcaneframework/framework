@@ -51,29 +51,17 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
       // TODO: utiliser cudaLaunchKernel() à la place.
       impl::doDirectCUDALambdaArrayBounds<LoopBoundType<N>,Lambda> <<<b, t, 0, *s>>>(bounds,func);
     }
+#else
+    ARCANE_FATAL("Requesting CUDA kernel execution but the kernel is not compiled with CUDA compiler");
 #endif
     break;
   case eExecutionPolicy::Sequential:
     launch_info.beginExecute();
-    impl::applyGenericLoopSequential(bounds,func);
+    arcaneSequentialFor(bounds,func);
     break;
   case eExecutionPolicy::Thread:
     launch_info.beginExecute();
-    Integer my_size = CheckedConvert::toInteger(bounds.extent(0));
-    Integer lower_bound = CheckedConvert::toInteger(bounds.lowerBound(0));
-    ParallelLoopOptions loop_options;
-    Integer nb_thread = TaskFactory::nbAllowedThread();
-    if (nb_thread==0)
-      nb_thread = 1;
-    loop_options.setGrainSize(my_size/nb_thread);
-    //std::cout << "DO_PARALLEL_FOR n=" << my_size << "\n";
-    // TODO: implementer en utilisant une boucle 2D ou 3D qui existe dans TBB
-    // ou alors déterminer l'interval à la main
-    arcaneParallelFor(lower_bound,my_size,loop_options,[&](Integer begin, Integer size)
-    {
-      //std::cout << "DO_PARALLEL_FOR_IMPL begin=" << begin << " size=" << size << "\n";
-      impl::applyGenericLoopParallel(begin,begin+size,bounds,func);
-    });
+    arcaneParallelFor(bounds,func);
     break;
   }
   launch_info.endExecute();

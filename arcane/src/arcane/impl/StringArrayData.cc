@@ -229,7 +229,7 @@ createSerializedDataRef(bool use_basic_type) const
   sd->allocateMemory(needed_memory);
 
   // Recopie les valeurs dans le tableau alloué
-  Span<Byte> svalues = sd->bytes();
+  Span<Byte> svalues = sd->writableBytes();
   {
     Int64 index = 0;
     for (Integer i = 0; i < nb_element; ++i) {
@@ -266,7 +266,7 @@ assignSerializedData(const ISerializedData* sdata)
   if (sdata->baseDataType() != DT_Byte)
     throw ArgumentException(A_FUNCINFO, "Bad serialized type");
 
-  Span<const Byte> byte_values = sdata->bytes();
+  Span<const Byte> byte_values = sdata->constBytes();
   //m_trace->info() << " ASSIGN ARRAY STRING ptr=" << (void*)byte_values.begin();
   Int64ConstArrayView dimensions = sdata->extents();
   Integer nb_element = dimensions.size();

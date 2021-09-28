@@ -174,8 +174,8 @@ extern "C" ARCANE_EXPORT void
 arcaneRegisterAcceleratorRuntimecuda()
 {
   using namespace Arcane::Accelerator::Cuda;
-  Arcane::Accelerator::setUsingCUDARuntime(true);
-  Arcane::Accelerator::setCUDARunQueueRuntime(&global_cuda_runtime);
+  Arcane::Accelerator::impl::setUsingCUDARuntime(true);
+  Arcane::Accelerator::impl::setCUDARunQueueRuntime(&global_cuda_runtime);
   Arcane::platform::setAcceleratorHostMemoryAllocator(getCudaMemoryAllocator());
   checkDevices();
 }

@@ -282,7 +282,7 @@ createSerializedDataRef(bool use_basic_type) const
     
   auto sd = arcaneCreateSerializedDataRef(data_type,base_values.size(),2,nb_element,
                                           nb_base_element,false,dimensions);
-  sd->setBytes(base_values);
+  sd->setConstBytes(base_values);
   return sd;
 }
 
@@ -313,7 +313,7 @@ allocateBufferForSerializedData(ISerializedData* sdata)
 
   Byte* byte_data = reinterpret_cast<Byte*>(m_value.to1DSpan().data());
   Span<Byte> bytes_view(byte_data,sdata->memorySize());
-  sdata->setBytes(bytes_view);
+  sdata->setWritableBytes(bytes_view);
 }
 
 /*---------------------------------------------------------------------------*/

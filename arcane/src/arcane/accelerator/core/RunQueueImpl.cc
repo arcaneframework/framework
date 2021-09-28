@@ -5,17 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueue.cc                                                 (C) 2000-2021 */
+/* RunQueueImpl.cc                                             (C) 2000-2021 */
 /*                                                                           */
 /* Gestion d'une file d'exécution sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/RunQueue.h"
-#include "arcane/accelerator/Runner.h"
-#include "arcane/accelerator/RunQueueImpl.h"
-#include "arcane/accelerator/IRunQueueRuntime.h"
-#include "arcane/accelerator/IRunQueueStream.h"
+#include "arcane/accelerator/core/RunQueueImpl.h"
+
+#include "arcane/utils/FatalErrorException.h"
+
+#include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/IRunQueueRuntime.h"
+#include "arcane/accelerator/core/IRunQueueStream.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,79 +28,78 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-RunQueue::
-RunQueue(Runner& runner)
-: RunQueue(runner,runner.executionPolicy())
+RunQueueImpl::
+RunQueueImpl(Runner* runner,Int32 id,IRunQueueRuntime* runtime)
+: m_runner(runner)
+, m_execution_policy(runtime->executionPolicy())
+, m_runtime(runtime)
+, m_queue_stream(runtime->createStream())
+, m_id(id)
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-RunQueue::
-RunQueue(Runner& runner,eExecutionPolicy exec_policy)
-: m_p(RunQueueImpl::create(&runner,exec_policy))
+RunQueueImpl::
+~RunQueueImpl()
 {
+  while (!m_run_command_pool.empty()){
+    RunCommand::_internalDestroyImpl(m_run_command_pool.top());
+    m_run_command_pool.pop();
+  }
+  delete m_queue_stream;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-RunQueue::
-~RunQueue()
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunQueueImpl::
+release()
 {
-  m_p->release();
+  m_runner->_internalFreeRunQueueImpl(this);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void RunQueue::
-barrier()
+RunQueueImpl* RunQueueImpl::
+create(Runner* r,eExecutionPolicy exec_policy)
 {
-  _internalStream()->barrier();
+  return r->_internalCreateOrGetRunQueueImpl(exec_policy);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-eExecutionPolicy RunQueue::
-executionPolicy() const
+RunCommandImpl* RunQueueImpl::
+_internalCreateOrGetRunCommandImpl()
 {
-  return m_p->executionPolicy();
+  auto& pool = m_run_command_pool;
+  RunCommandImpl* p = nullptr;
+
+  // TODO: rendre thread-safe
+  if (!pool.empty()){
+    p = pool.top();
+    pool.pop();
+  }
+  else{
+    p = RunCommand::_internalCreateImpl(this);
+  }
+  return p;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IRunQueueRuntime* RunQueue::
-_internalRuntime() const
+void RunQueueImpl::
+_internalFreeRunCommandImpl(RunCommandImpl* p)
 {
-  return m_p->_internalRuntime();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-IRunQueueStream* RunQueue::
-_internalStream() const
-{
-  return m_p->_internalStream();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-RunCommandImpl* RunQueue::
-_getCommandImpl()
-{
-  return m_p->_internalCreateOrGetRunCommandImpl();
+  // TODO: rendre thread-safe
+  m_run_command_pool.push(p);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneMain.h                                                (C) 2000-2021 */
+/* ArcaneLauncher.h                                            (C) 2000-2021 */
 /*                                                                           */
 /* Classe gérant l'exécution.                                                */
 /*---------------------------------------------------------------------------*/
@@ -27,6 +27,7 @@
 #include "arcane/launcher/DirectExecutionContext.h"
 #include "arcane/launcher/DirectSubDomainExecutionContext.h"
 #include "arcane/launcher/IDirectExecutionContext.h"
+#include "arcane/launcher/StandaloneAcceleratorMng.h"
 
 #include <functional>
 
@@ -78,10 +79,18 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
    * Cette méthode remplit les valeurs non initialisées
    * de applicationInfo() et dotNetRuntimeInitialisationInfo() avec
    * les paramètres spécifiés dans \a args.
+   *
+   * Il ne faut appeler cette méthode qu'une seule fois. Les appels supplémentaires
+   * génèrent une exception FatalErrorException.
    */
   static void init(const CommandLineArguments& args);
 
- /*!
+  /*!
+   * \brief Indique si init() a déjà été appelé.
+   */
+  static bool isInitialized();
+
+  /*!
    * \brief Point d'entrée de l'exécutable dans Arcane.
    *
    * Cette méthode appelle initialise l'application, lit le jeu de données
@@ -160,6 +169,13 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
 
   //! Nom complet du répertoire où se trouve l'exécutable
   static String getExeDirectory();
+
+  /*!
+   * \brief Créé une implémentation autonome pour gérer les accélérateurs.
+   *
+   * Il faut appeler init() avant d'appeler cette méthode.
+   */
+ static StandaloneAcceleratorMng createStandaloneAcceleratorMng();
 
  public:
 

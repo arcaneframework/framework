@@ -9,7 +9,6 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    AbstractService.h
    AbstractItemOperationByBasicType.cc
    AbstractItemOperationByBasicType.h
-   AcceleratorRuntimeInitialisationInfo.cc
    AcceleratorRuntimeInitialisationInfo.h
    ArcaneTypes.cc
    ArcaneTypes.h
@@ -125,9 +124,7 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    ModuleFactory.cc
    ModuleFactory.h
    NullXmlDocumentHolder.cc
-   Observable.cc
    Observable.h
-   Observer.cc
    Observer.h
    ObserverPool.cc
    ObserverPool.h

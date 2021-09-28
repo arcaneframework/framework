@@ -5,88 +5,49 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorRuntimeInitialisationInfo.cc                     (C) 2000-2020 */
+/* RunQueue.cc                                                 (C) 2000-2021 */
 /*                                                                           */
-/* Informations pour l'initialisation du runtime des accélérateurs.          */
+/* Gestion d'une file d'exécution sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/AcceleratorRuntimeInitialisationInfo.h"
-
-#include "arcane/utils/String.h"
-#include "arcane/utils/Property.h"
+#include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/RunQueueImpl.h"
+#include "arcane/accelerator/core/IRunQueueRuntime.h"
+#include "arcane/accelerator/core/IRunQueueStream.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
+namespace Arcane::Accelerator
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class AcceleratorRuntimeInitialisationInfo::Impl
-{
- public:
-  bool m_is_using_accelerator_runtime = false;
-  String m_accelerator_runtime;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename V> void AcceleratorRuntimeInitialisationInfo::
-_applyPropertyVisitor(V& p)
-{
-  auto b = p.builder();
-  p << b.addString("AcceleratorRuntime")
-        .addDescription("Name of the accelerator runtime (currently only 'cuda') to use")
-        .addCommandLineArgument("AcceleratorRuntime")
-        .addGetter([](auto a) { return a.x.acceleratorRuntime(); })
-        .addSetter([](auto a) { a.x.setAcceleratorRuntime(a.v); });
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-AcceleratorRuntimeInitialisationInfo::
-AcceleratorRuntimeInitialisationInfo()
-: m_p(new Impl())
+RunQueue::
+RunQueue(Runner& runner)
+: RunQueue(runner,runner.executionPolicy())
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-AcceleratorRuntimeInitialisationInfo::
-AcceleratorRuntimeInitialisationInfo(const AcceleratorRuntimeInitialisationInfo& rhs)
-: m_p(new Impl(*rhs.m_p))
+RunQueue::
+RunQueue(Runner& runner,eExecutionPolicy exec_policy)
+: m_p(RunQueueImpl::create(&runner,exec_policy))
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-AcceleratorRuntimeInitialisationInfo& AcceleratorRuntimeInitialisationInfo::
-operator=(const AcceleratorRuntimeInitialisationInfo& rhs)
+RunQueue::
+~RunQueue()
 {
-  if (&rhs!=this){
-    delete m_p;
-    m_p = new Impl(*(rhs.m_p));
-  }
-  return (*this);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-AcceleratorRuntimeInitialisationInfo::
-~AcceleratorRuntimeInitialisationInfo()
-{
-  delete m_p;
+  m_p->release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -95,45 +56,55 @@ AcceleratorRuntimeInitialisationInfo::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool AcceleratorRuntimeInitialisationInfo::
-isUsingAcceleratorRuntime() const
-{
-  return m_p->m_is_using_accelerator_runtime;
-}
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-void AcceleratorRuntimeInitialisationInfo::
-setIsUsingAcceleratorRuntime(bool v)
+void RunQueue::
+barrier()
 {
-  m_p->m_is_using_accelerator_runtime = v;
+  _internalStream()->barrier();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-String AcceleratorRuntimeInitialisationInfo::
-acceleratorRuntime() const
+eExecutionPolicy RunQueue::
+executionPolicy() const
 {
-  return m_p->m_accelerator_runtime;
-}
-
-void AcceleratorRuntimeInitialisationInfo::
-setAcceleratorRuntime(StringView v)
-{
-  m_p->m_accelerator_runtime = v;
-  if (!v.empty())
-    setIsUsingAcceleratorRuntime(true);
+  return m_p->executionPolicy();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_PROPERTY_CLASS(AcceleratorRuntimeInitialisationInfo,());
+IRunQueueRuntime* RunQueue::
+_internalRuntime() const
+{
+  return m_p->_internalRuntime();
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+IRunQueueStream* RunQueue::
+_internalStream() const
+{
+  return m_p->_internalStream();
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+RunCommandImpl* RunQueue::
+_getCommandImpl()
+{
+  return m_p->_internalCreateOrGetRunCommandImpl();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane::Accelerator
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

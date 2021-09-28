@@ -46,7 +46,7 @@ class ARCANE_ACCELERATOR_EXPORT RunCommandLaunchInfo
   };
  public:
   RunCommandLaunchInfo(RunCommand& command);
-  ~RunCommandLaunchInfo() ARCANE_NOEXCEPT_FALSE;
+  ~RunCommandLaunchInfo();
   RunCommandLaunchInfo(const RunCommandLaunchInfo&) = delete;
   RunCommandLaunchInfo operator=(const RunCommandLaunchInfo&) = delete;
  public:
@@ -62,15 +62,14 @@ class ARCANE_ACCELERATOR_EXPORT RunCommandLaunchInfo
   ThreadBlockInfo computeThreadBlockInfo(Int64 full_size) const;
   void* _internalStreamImpl();
  private:
-  void _begin();
-  void _checkHasExecBegun();
- private:
   RunCommand& m_command;
   bool m_has_exec_begun = false;
   bool m_is_notify_end_kernel_done = false;
   IRunQueueRuntime* m_runtime = nullptr;
   IRunQueueStream* m_queue_stream = nullptr;
   eExecutionPolicy m_exec_policy = eExecutionPolicy::Sequential;
+ private:
+  void _begin();
 };
 
 /*---------------------------------------------------------------------------*/

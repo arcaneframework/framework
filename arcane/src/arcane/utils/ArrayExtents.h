@@ -65,6 +65,7 @@ class ArrayBoundsIndex<1>
 : public ArrayBoundsIndexBase<1>
 {
  public:
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex() : ArrayBoundsIndexBase<1>(){}
   ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(Int64 _id0) : ArrayBoundsIndexBase<1>()
   {
     m_indexes[0] = _id0;
@@ -80,6 +81,7 @@ class ArrayBoundsIndex<2>
 : public ArrayBoundsIndexBase<2>
 {
  public:
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex() : ArrayBoundsIndexBase<2>(){}
   ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(Int64 _id0,Int64 _id1)
   : ArrayBoundsIndexBase<2>()
   {
@@ -98,6 +100,7 @@ class ArrayBoundsIndex<3>
 : public ArrayBoundsIndexBase<3>
 {
  public:
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex() : ArrayBoundsIndexBase<3>(){}
   ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(Int64 _id0,Int64 _id1,Int64 _id2)
   : ArrayBoundsIndexBase<3>()
   {
@@ -118,6 +121,7 @@ class ArrayBoundsIndex<4>
 : public ArrayBoundsIndexBase<4>
 {
  public:
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex() : ArrayBoundsIndexBase<4>(){}
   ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(Int64 _id0,Int64 _id1,Int64 _id2,Int64 _id3)
   : ArrayBoundsIndexBase<4>()
   {
