@@ -32,12 +32,12 @@ env:
   # CMake
   CM_BUILD_TYPE: Debug
   # CTest
-  CT_OPTS: "--output-on-failure"
+  CT_OPTS: "--output-on-failure --timeout 500"
 
 jobs:
   arccon-install:
-    name: arccon-install
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     container:
       image: ghcr.io/arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest
       credentials:
@@ -82,8 +82,8 @@ jobs:
   arccore-install:
     needs:
       - arccon-install
-    name: arccore-install
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     container:
       image: ghcr.io/arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest
       credentials:
@@ -147,8 +147,8 @@ jobs:
   arcdependencies-install:
     needs:
       - arccon-install
-    name: arcdependencies-install
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     container:
       image: ghcr.io/arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest
       credentials:
@@ -203,8 +203,8 @@ jobs:
     needs:
       - arccon-install
       - arcdependencies-install
-    name: axlstar-install
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     container:
       image: ghcr.io/arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest
       credentials:
@@ -268,8 +268,8 @@ jobs:
       - arccore-install
       - arcdependencies-install
       - axlstar-install
-    name: arcane-install
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     container:
       image: ghcr.io/arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest
       credentials:
@@ -345,8 +345,8 @@ jobs:
     needs:
       - arccon-install
       - arccore-install
-    name: arccore-test
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     container:
       image: ghcr.io/arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest
       credentials:
@@ -377,8 +377,8 @@ jobs:
       - arcdependencies-install
       - axlstar-install
       - arcane-install
-    name: arcane-test
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     container:
       image: ghcr.io/arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest
       credentials:
@@ -420,4 +420,4 @@ jobs:
         run: |
           source /env.sh
           cd ${{ env.ARCANE_BUILD_DIR }}
-          ctest ${{ env.CT_OPTS }} --exclude-regex '^hydro5_4proc_3sd_4proc$'
+          ctest ${{ env.CT_OPTS }}
