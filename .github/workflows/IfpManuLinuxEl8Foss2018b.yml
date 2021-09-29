@@ -3,20 +3,8 @@ name: IFP Manu Linux El8 Foss/2018b
 on:
   workflow_dispatch:
     inputs:
-      arccon_branch:
-        description: 'Arccon branch'
-        required: true
-        default: 'main'
-      arccore_branch:
-        description: 'Arccore branch'
-        required: true
-        default: 'main'
       dependencies_branch:
         description: 'Dependencies branch'
-        required: true
-        default: 'main'
-      axlstar_branch:
-        description: 'Axlstar branch'
         required: true
         default: 'main'
 
@@ -28,11 +16,11 @@ env:
   # Arccon
   ARCCON_BUILD_DIR: /__w/framework/framework/arccon_build
   ARCCON_INSTALL_DIR: /__w/framework/framework/arccon_install
-  ARCCON_SOURCE_DIR: /__w/framework/framework/arccon
+  ARCCON_SOURCE_DIR: /__w/framework/framework/arcane
   # Arccore
   ARCCORE_BUILD_DIR: /__w/framework/framework/arccore_build
   ARCCORE_INSTALL_DIR: /__w/framework/framework/arccore_install
-  ARCCORE_SOURCE_DIR: /__w/framework/framework/arccore
+  ARCCORE_SOURCE_DIR: /__w/framework/framework/arcane
   # Dependencies
   DEPENDENCIES_BUILD_DIR: /__w/framework/framework/dependencies_build
   DEPENDENCIES_INSTALL_DIR: /__w/framework/framework/dependencies_install
@@ -40,7 +28,7 @@ env:
   # Axlstar
   AXLSTAR_BUILD_DIR: /__w/framework/framework/axlstar_build
   AXLSTAR_INSTALL_DIR: /__w/framework/framework/axlstar_install
-  AXLSTAR_SOURCE_DIR: /__w/framework/framework/axlstar
+  AXLSTAR_SOURCE_DIR: /__w/framework/framework/arcane
   # CMake
   CM_BUILD_TYPE: Debug
   # CTest
@@ -48,7 +36,7 @@ env:
 
 jobs:
   arccon-install:
-    name: arccon-install-${{ github.event.inputs.arccon_branch }}
+    name: arccon-install
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
@@ -62,14 +50,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          repository: arcaneframework/arccon
           path: ${{ env.ARCCON_SOURCE_DIR }}
-          ref: ${{ github.event.inputs.arccon_branch }}
       - name: Configure
         shell: bash
         run: |
           source /env.sh
-          cmake -S ${{ env.ARCCON_SOURCE_DIR }} -B ${{ env.ARCCON_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCCON_INSTALL_DIR }}
+          cmake -S ${{ env.ARCCON_SOURCE_DIR }}/arccon -B ${{ env.ARCCON_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCCON_INSTALL_DIR }}
       - name: Build
         shell: bash
         run: |
@@ -91,7 +77,7 @@ jobs:
           retention-days: 1
 
   arccore-install:
-    name: arccore-install-${{ github.event.inputs.arccore_branch }}
+    name: arccore-install
     needs:
       - arccon-install
     runs-on: ubuntu-latest
@@ -107,9 +93,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          repository: arcaneframework/arccore
           path: ${{ env.ARCCORE_SOURCE_DIR }}
-          ref: ${{ github.event.inputs.arccore_branch }}
       - name: Download arccon install artifact
         uses: actions/download-artifact@v2
         with:
@@ -121,7 +105,7 @@ jobs:
         shell: bash
         run: |
           source /env.sh
-          cmake -S ${{ env.ARCCORE_SOURCE_DIR }} -B ${{ env.ARCCORE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCCORE_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DBUILD_SHARED_LIBS=ON
+          cmake -S ${{ env.ARCCORE_SOURCE_DIR }}/arccore -B ${{ env.ARCCORE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCCORE_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DBUILD_SHARED_LIBS=ON
       - name: Build
         shell: bash
         run: |
@@ -204,7 +188,7 @@ jobs:
           retention-days: 1
 
   axlstar-install:
-    name: axlstar-install-${{ github.event.inputs.axlstar_branch }}
+    name: axlstar-install
     needs:
       - arccon-install
       - dependencies-install
@@ -221,9 +205,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          repository: arcaneframework/axlstar
           path: ${{ env.AXLSTAR_SOURCE_DIR }}
-          ref: ${{ github.event.inputs.axlstar_branch }}
       - name: Download arccon install artifact
         uses: actions/download-artifact@v2
         with:
@@ -242,7 +224,7 @@ jobs:
         shell: bash
         run: |
           source /env.sh
-          cmake -S ${{ env.AXLSTAR_SOURCE_DIR }} -B ${{ env.AXLSTAR_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.AXLSTAR_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArcDependencies_DIR=${{ env.DEPENDENCIES_INSTALL_DIR }}/share/cmake/ArcDependencies
+          cmake -S ${{ env.AXLSTAR_SOURCE_DIR }}/axlstar -B ${{ env.AXLSTAR_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.AXLSTAR_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArcDependencies_DIR=${{ env.DEPENDENCIES_INSTALL_DIR }}/share/cmake/ArcDependencies
       - name: Build
         shell: bash
         run: |
@@ -338,7 +320,7 @@ jobs:
           retention-days: 1
 
   arccore-test:
-    name: arccore-test-${{ github.event.inputs.arccore_branch }}
+    name: arccore-test
     needs:
       - arccore-install
     runs-on: ubuntu-latest

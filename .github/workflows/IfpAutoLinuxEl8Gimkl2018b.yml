@@ -16,11 +16,11 @@ env:
   # Arccon
   ARCCON_BUILD_DIR: /__w/framework/framework/arccon_build
   ARCCON_INSTALL_DIR: /__w/framework/framework/arccon_install
-  ARCCON_SOURCE_DIR: /__w/framework/framework/arccon
+  ARCCON_SOURCE_DIR: /__w/framework/framework/arcane
   # Arccore
   ARCCORE_BUILD_DIR: /__w/framework/framework/arccore_build
   ARCCORE_INSTALL_DIR: /__w/framework/framework/arccore_install
-  ARCCORE_SOURCE_DIR: /__w/framework/framework/arccore
+  ARCCORE_SOURCE_DIR: /__w/framework/framework/arcane
   # Dependencies
   DEPENDENCIES_BUILD_DIR: /__w/framework/framework/dependencies_build
   DEPENDENCIES_INSTALL_DIR: /__w/framework/framework/dependencies_install
@@ -28,7 +28,7 @@ env:
   # Axlstar
   AXLSTAR_BUILD_DIR: /__w/framework/framework/axlstar_build
   AXLSTAR_INSTALL_DIR: /__w/framework/framework/axlstar_install
-  AXLSTAR_SOURCE_DIR: /__w/framework/framework/axlstar
+  AXLSTAR_SOURCE_DIR: /__w/framework/framework/arcane
   # CMake
   CM_BUILD_TYPE: Debug
   # CTest
@@ -50,14 +50,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          repository: arcaneframework/arccon
           path: ${{ env.ARCCON_SOURCE_DIR }}
-          ref: main
       - name: Configure
         shell: bash
         run: |
           source /env.sh
-          cmake -S ${{ env.ARCCON_SOURCE_DIR }} -B ${{ env.ARCCON_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCCON_INSTALL_DIR }}
+          cmake -S ${{ env.ARCCON_SOURCE_DIR }}/arccon -B ${{ env.ARCCON_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCCON_INSTALL_DIR }}
       - name: Build
         shell: bash
         run: |
@@ -95,9 +93,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          repository: arcaneframework/arccore
           path: ${{ env.ARCCORE_SOURCE_DIR }}
-          ref: main
       - name: Download arccon install artifact
         uses: actions/download-artifact@v2
         with:
@@ -109,7 +105,7 @@ jobs:
         shell: bash
         run: |
           source /env.sh
-          cmake -S ${{ env.ARCCORE_SOURCE_DIR }} -B ${{ env.ARCCORE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCCORE_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DBUILD_SHARED_LIBS=ON
+          cmake -S ${{ env.ARCCORE_SOURCE_DIR }}/arccore -B ${{ env.ARCCORE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCCORE_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DBUILD_SHARED_LIBS=ON
       - name: Build
         shell: bash
         run: |
@@ -209,9 +205,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          repository: arcaneframework/axlstar
           path: ${{ env.AXLSTAR_SOURCE_DIR }}
-          ref: main
       - name: Download arccon install artifact
         uses: actions/download-artifact@v2
         with:
@@ -230,7 +224,7 @@ jobs:
         shell: bash
         run: |
           source /env.sh
-          cmake -S ${{ env.AXLSTAR_SOURCE_DIR }} -B ${{ env.AXLSTAR_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.AXLSTAR_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArcDependencies_DIR=${{ env.DEPENDENCIES_INSTALL_DIR }}/share/cmake/ArcDependencies
+          cmake -S ${{ env.AXLSTAR_SOURCE_DIR }}/axlstar -B ${{ env.AXLSTAR_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.AXLSTAR_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArcDependencies_DIR=${{ env.DEPENDENCIES_INSTALL_DIR }}/share/cmake/ArcDependencies
       - name: Build
         shell: bash
         run: |
