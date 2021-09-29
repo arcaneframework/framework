@@ -48,7 +48,7 @@ jobs:
           name: "Install packages"
           command: |
             sudo apt-get update
-            sudo apt-get install -y apt-utils iputils-ping g++ python3 git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev libparmetis-dev wget libtbb-dev rsync ninja-build ccache
+            sudo apt-get install -y apt-utils iputils-ping g++ python3 git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev libparmetis-dev wget libtbb-dev rsync swig4.0 libhypre-dev ninja-build ccache
             wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
             sudo dpkg -i packages-microsoft-prod.deb
             sudo apt-get update
