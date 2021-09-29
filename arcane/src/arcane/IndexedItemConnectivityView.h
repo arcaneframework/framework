@@ -80,43 +80,6 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
   }
 };
 
-class ARCANE_CORE_EXPORT IndexedItemConnectivityAccessor
-: public IndexedItemConnectivityViewBase
-{
- public:
-  IndexedItemConnectivityAccessor(IndexedItemConnectivityViewBase view, IItemFamily* target_item_family)
-  : IndexedItemConnectivityViewBase(view)
-  , m_target_item_family(target_item_family)
-  {}
-
-
-  IndexedItemConnectivityAccessor(IIncrementalItemConnectivity* connectivity) ;
-
-  IndexedItemConnectivityAccessor() = default;
-
-  void init(SmallSpan<const Int32> nb_item,
-            SmallSpan<const Int32> indexes,
-            SmallSpan<const Int32> list_data,
-            IItemFamily* source_item_family,
-            IItemFamily* target_item_family)
-  {
-    IndexedItemConnectivityViewBase::init(nb_item,
-                                          indexes,
-                                          list_data,
-                                          source_item_family->itemKind(),
-                                          target_item_family->itemKind()) ;
-    m_target_item_family = target_item_family ;
-  }
-
-  ItemVectorView operator()(ItemLocalId lid) const
-  {
-    //assert(m_target_item_family) ;
-    const Integer* ptr = & m_list_data[m_indexes[lid]];
-    return const_cast<IItemFamily*>(m_target_item_family)->view(ConstArrayView<Integer>( m_nb_item[lid], ptr )) ;
-  }
- private :
-  IItemFamily* m_target_item_family = nullptr ;
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

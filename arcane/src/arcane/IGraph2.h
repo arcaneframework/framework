@@ -1,3 +1,9 @@
+/// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IGraph2.h                                                    (C) 2011-2011 */
 /*                                                                           */
@@ -15,6 +21,7 @@
 #include "arcane/IndexedItemConnectivityView.h"
 #include "arcane/mesh/ItemConnectivity.h"
 #include "arcane/mesh/IncrementalItemConnectivity.h"
+#include "arcane/mesh/IndexedItemConnectivityAccessor.h"
 //#include <typeinfo>
 
 /*---------------------------------------------------------------------------*/
@@ -123,13 +130,13 @@ class ARCANE_CORE_EXPORT GraphIncrementalConnectivity
   }
 
  private :
-  IItemFamily const*                         m_dualnode_family   = nullptr ;
-  IItemFamily const*                         m_link_family       = nullptr ;
-  Arcane::mesh::IncrementalItemConnectivity* m_link_connectivity = nullptr;
-  IndexedItemConnectivityAccessor                                 m_link_connectivity_accessor ;
-  UniqueArray<Arcane::mesh::IncrementalItemConnectivity*> const & m_dualitem_connectivities;
-  UniqueArray<IndexedItemConnectivityAccessor>                    m_dualitem_connectivity_accessors ;
-  ItemScalarProperty<Integer> const& m_dualnode_to_connectivity_index;
+  IItemFamily const*                                              m_dualnode_family   = nullptr ;
+  IItemFamily const*                                              m_link_family       = nullptr ;
+  Arcane::mesh::IncrementalItemConnectivity*                      m_link_connectivity = nullptr;
+  Arcane::mesh::IndexedItemConnectivityAccessor                   m_link_connectivity_accessor ;
+  UniqueArray<Arcane::mesh::IncrementalItemConnectivity*> const&  m_dualitem_connectivities;
+  UniqueArray<Arcane::mesh::IndexedItemConnectivityAccessor>      m_dualitem_connectivity_accessors ;
+  ItemScalarProperty<Integer> const&                              m_dualnode_to_connectivity_index;
 
 };
 
@@ -149,22 +156,9 @@ public:
 
   virtual IGraphModifier2* modifier() =0;
 
-//#define GRAPH_USE LEGACY_CONNECTIVITY
-#define GRAPH_USE_INCREMENTAL_CONNECTIVITY
-#ifdef GRAPH_USE_LEGACY_CONNECTIVITY
-  typedef GraphConnectivity GraphConnectivityType ;
-  GraphConnectivity const* connectivity() const {
-    return legacyConnectivity() ;
-  }
-  virtual GraphConnectivity const* legacyConnectivity() const =0;
-#endif
-#ifdef GRAPH_USE_INCREMENTAL_CONNECTIVITY
   typedef GraphIncrementalConnectivity GraphConnectivityType ;
-  GraphIncrementalConnectivity const* connectivity() const {
-    return incrementalConnectivity() ;
-  }
-  virtual GraphIncrementalConnectivity const* incrementalConnectivity() const =0;
-#endif
+  virtual GraphIncrementalConnectivity const* connectivity() const = 0 ;
+
 
 public:
 

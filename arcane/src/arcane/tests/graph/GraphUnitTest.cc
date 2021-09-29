@@ -1,3 +1,9 @@
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* GraphUnitTest.cc                                            (C) 2000-2006 */
 /*                                                                           */
@@ -11,8 +17,6 @@
 
 #include "arcane/IItemOperationByBasicType.h"
 #include "arcane/IParallelMng.h"
-#include "arcane/IGraph.h"
-#include "arcane/IGraphModifier.h"
 #include "arcane/IMesh.h"
 #include "arcane/IMeshStats.h"
 #include "arcane/IItemFamily.h"
@@ -28,7 +32,7 @@
 #include "arcane/mesh/ItemConnectivityMng.h"
 #include "arcane/mesh/GhostLayerFromConnectivityComputer.h"
 
-#include "arcane/mesh/GraphDofs.h"
+#include "arcane/mesh/GraphDoFs.h"
 #include "arcane/mesh/GraphBuilder.h"
 
 #include "arcane/IItemConnectivitySynchronizer.h"

@@ -37,7 +37,7 @@
 #include "arcane/mesh/FaceUniqueIdBuilder.h"
 #include "arcane/mesh/EdgeUniqueIdBuilder.h"
 #include "arcane/mesh/CellFamily.h"
-#include "arcane/mesh/GraphDofs.h"
+#include "arcane/mesh/GraphDoFs.h"
 
 #include "arcane/Connectivity.h"
 #include "arcane/MeshToMeshTransposer.h"
@@ -1687,7 +1687,7 @@ removeNeedRemoveMarkedItems()
   if(!m_mesh->useMeshItemFamilyDependencies())
   {
 
-    IItemFamily* links_family = m_mesh->findItemFamily(IK_DoF, GraphDofs::linkFamilyName(), false, false);
+    IItemFamily* links_family = m_mesh->findItemFamily(IK_DoF, GraphDoFs::linkFamilyName(), false, false);
     if(links_family)
     {
       info() << "Remove Items for family : "<<links_family->name() ;
@@ -1696,7 +1696,7 @@ removeNeedRemoveMarkedItems()
 
     for( IItemFamily* family : m_mesh->itemFamilies() )
     {
-      if (family->itemKind()!=IK_DoF || family->name()==GraphDofs::linkFamilyName())
+      if (family->itemKind()!=IK_DoF || family->name()==GraphDoFs::linkFamilyName())
         continue;
       info() << "Remove Items for family : "<<family->name() ;
       family->removeNeedRemoveMarkedItems() ;

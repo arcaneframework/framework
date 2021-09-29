@@ -30,6 +30,7 @@
 
 #include "arcane/ConnectivityItemVector.h"
 #include "arcane/IndexedItemConnectivityView.h"
+#include "arcane/mesh/IndexedItemConnectivityAccessor.h"
 #include "arcane/mesh/MeshExchange.h"
 #include "arcane/mesh/NewItemOwnerBuilder.h"
 
@@ -934,7 +935,7 @@ _propagatesToChildConnectivities(IItemFamily* family)
   auto child_connectivities = m_mesh->itemFamilyNetwork()->getChildConnectivities(family);
   for (auto child_connectivity : child_connectivities)
   {
-    if(!child_connectivity->isEmpty())
+    //if(!child_connectivity->isEmpty())
     {
       auto accessor = IndexedItemConnectivityAccessor(child_connectivity) ;
       ENUMERATE_ITEM(item, family->allItems())
@@ -1003,7 +1004,7 @@ _propagatesToChildDependencies(IItemFamily* family)
   auto child_dependencies =  m_mesh->itemFamilyNetwork()->getChildDependencies(family);
   for (auto child_dependency :child_dependencies)
   {
-    if(!child_dependency->isEmpty())
+    //if(!child_dependency->isEmpty())
     {
       auto accessor = IndexedItemConnectivityAccessor(child_dependency) ;
       ENUMERATE_ITEM(item, family->allItems())

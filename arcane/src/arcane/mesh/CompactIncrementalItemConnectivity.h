@@ -67,10 +67,6 @@ class ARCANE_MESH_EXPORT CompactIncrementalItemConnectivity
 
  public:
 
-  bool isEmpty() const override {
-    return false ;
-  }
-
   void notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids) override
   {
     // Pour l'instant ne fait rien car c'est la famille source qui gère cela directement

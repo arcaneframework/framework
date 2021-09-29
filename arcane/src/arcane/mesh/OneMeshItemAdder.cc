@@ -28,7 +28,7 @@
 #include "arcane/utils/NotSupportedException.h"
 
 #include "arcane/mesh/ConnectivityNewWithDependenciesTypes.h"
-#include "arcane/mesh/GraphDofs.h"
+#include "arcane/mesh/GraphDoFs.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -415,10 +415,10 @@ addOneItem2(IItemFamily* family,
         connected_family = m_mesh->findItemFamily(family_kind, ParticleFamily::defaultFamilyName(), false,false);
         break ;
       case IK_DoF:
-        if(family->name()==GraphDofs::dualNodeFamilyName())
-          connected_family = m_mesh->findItemFamily(family_kind, GraphDofs::linkFamilyName(), false,false);
+        if(family->name()==GraphDoFs::dualNodeFamilyName())
+          connected_family = m_mesh->findItemFamily(family_kind, GraphDoFs::linkFamilyName(), false,false);
         else
-          connected_family = m_mesh->findItemFamily(family_kind, GraphDofs::dualNodeFamilyName(), false,false);
+          connected_family = m_mesh->findItemFamily(family_kind, GraphDoFs::dualNodeFamilyName(), false,false);
         break ;
       default:
         connected_family = m_mesh->itemFamily(family_kind);

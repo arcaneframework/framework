@@ -1,9 +1,13 @@
-/*
- * GraphDofs.h
- *
- *  Created on: 7 mai 2020
- *      Author: pajon
- */
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* GraphDoFs.h                                                 (C) 2000-2013 */
+/*                                                                           */
+/*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_SRC_ARCANE_MESH_GRAPHDOFS_H_
 #define ARCANE_SRC_ARCANE_MESH_GRAPHDOFS_H_
@@ -40,7 +44,7 @@ ARCANE_MESH_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_MESH_EXPORT GraphDofs
+class ARCANE_MESH_EXPORT GraphDoFs
   : public TraceAccessor
   , public IGraph2
   , public IGraphModifier2
@@ -54,25 +58,17 @@ public:
 
 public:
 
-  GraphDofs(IMesh* mesh, String particle_family_name=ParticleFamily::defaultFamilyName());
+  GraphDoFs(IMesh* mesh, String particle_family_name=ParticleFamily::defaultFamilyName());
 
 public:
 
   IGraphModifier2* modifier() override { return this; }
 
-#ifdef GRAPH_USE_LEGACY_CONNECTIVITY
-  GraphConnectivity const* legacyConnectivity() const override {
-    return m_graph_connectivity.get() ;
-    //return GraphConnectivity{ &m_links_connectivity,m_connectivities,m_dual_node_to_connectivity_index };
-  }
-#endif
 
-#ifdef GRAPH_USE_INCREMENTAL_CONNECTIVITY
-  GraphIncrementalConnectivity const* incrementalConnectivity() const override {
+  GraphIncrementalConnectivity const* connectivity() const override {
     return m_graph_connectivity.get() ;
-    //return GraphIncrementalConnectivity{ m_links_incremental_connectivity,m_incremental_connectivities,m_dual_node_to_connectivity_index };
   }
-#endif
+
   IItemFamily* dualNodeFamily() override { return &m_dual_node_family;}
   const IItemFamily* dualNodeFamily() const override { return &m_dual_node_family;}
 
@@ -106,7 +102,7 @@ public:
 
 private:
 
-  String _className() const { return "GraphDofs"; }
+  String _className() const { return "GraphDoFs"; }
   inline Integer _connectivityIndex(Integer dual_node_IT) const {
     ARCANE_ASSERT((dual_node_IT < NB_BASIC_ITEM_TYPE),
                   ("dual node item type must be IT_DualNode, IT_DualEdge, IT_DualFace, IT_DualCell or IT_DualParticle"));
@@ -156,16 +152,11 @@ private:
   DoFFamily& m_dual_node_family;
   DoFFamily& m_link_family;
 
-#ifdef GRAPH_USE_LEGACY_CONNECTIVITY
-  UniqueArray<ItemConnectivity> m_connectivities;
-  mutable ItemMultiArrayConnectivity m_links_connectivity;
-#endif
-#ifdef GRAPH_USE_INCREMENTAL_CONNECTIVITY
   UniqueArray<Arcane::mesh::IncrementalItemConnectivity*> m_incremental_connectivities;
   UniqueArray<Arcane::mesh::IncrementalItemConnectivity*> m_dual2dof_incremental_connectivities;
   Arcane::mesh::IncrementalItemConnectivity* m_links_incremental_connectivity = nullptr;
   std::unique_ptr<GraphIncrementalConnectivity> m_graph_connectivity ;
-#endif
+
   std::vector<std::unique_ptr<Arcane::GhostLayerFromConnectivityComputer>> m_ghost_layer_computers ;
   Int32UniqueArray m_connectivity_indexes_per_type;
   std::array<Integer,NB_BASIC_ITEM_TYPE> m_dualnode_kinds = {IT_DualNode, IT_DualEdge, IT_DualFace, IT_DualCell, IT_DualParticle } ;

@@ -1,15 +1,19 @@
-/*
- * GraphDofs.h
- *
- *  Created on: 15 fev 2021
- *      Author: delhom
- */
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* GraphBuilder.h                                              (C) 2000-2013 */
+/*                                                                           */
+/*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_SRC_ARCANE_MESH_GRAPHBUILDER_H_
 #define ARCANE_SRC_ARCANE_MESH_GRAPHBUILDER_H_
 
 #include "arcane/IGraph2.h"
-#include "arcane/mesh/GraphDofs.h"
+#include "arcane/mesh/GraphDoFs.h"
 #include "arcane/mesh/ParticleFamily.h"
 #include "arcane/IMesh.h"
 
@@ -30,7 +34,7 @@ class GraphBuilder {
 public :
  static IGraph2* createGraph(IMesh* mesh, String const& particle_family_name=ParticleFamily::defaultFamilyName())
  {
-   return new mesh::GraphDofs(mesh,particle_family_name);
+   return new mesh::GraphDoFs(mesh,particle_family_name);
  };
 
 };

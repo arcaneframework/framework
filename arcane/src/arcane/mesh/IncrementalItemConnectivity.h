@@ -34,6 +34,8 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 
 class IncrementalItemConnectivityContainer;
+class IndexedItemConnectivityAccessor ;
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -96,9 +98,6 @@ public:
   ~IncrementalItemConnectivityBase();
  public:
 
-  bool isEmpty() const override {
-    return m_is_empty ;
-  }
   void notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids) override;
   void notifyTargetFamilyLocalIdChanged(Int32ConstArrayView old_to_new_ids) override;
   Integer nbConnectedItem(ItemLocalId lid) const final
@@ -117,31 +116,17 @@ public:
 
   Int32ConstArrayView _connectedItemsLocalId(ItemLocalId lid) const
   {
-    if(m_connectivity_nb_item.size()>0)
-    {
-      Int32 nb = m_connectivity_nb_item[lid];
-      if(nb>0)
-      {
-        Int32 index = m_connectivity_index[lid];
-        return Int32ConstArrayView(nb,&m_connectivity_list[index]);
-      }
-    }
-    return Int32ArrayView() ;
+    Int32 nb = m_connectivity_nb_item[lid];
+    Int32 index = m_connectivity_index[lid];
+    return Int32ConstArrayView(nb,&m_connectivity_list[index]);
   }
   
   // TODO: voir si on garde cette méthode. A utiliser le moins possible.
   Int32ArrayView _connectedItemsLocalId(ItemLocalId lid)
   {
-    if(m_connectivity_nb_item.size()>0)
-    {
-      Int32 nb = m_connectivity_nb_item[lid];
-      if(nb>0)
-      {
-        Int32 index = m_connectivity_index[lid];
-        return Int32ArrayView(nb,&m_connectivity_list[index]);
-      }
-    }
-    return Int32ArrayView() ;
+     Int32 nb = m_connectivity_nb_item[lid];
+     Int32 index = m_connectivity_index[lid];
+     return Int32ArrayView(nb,&m_connectivity_list[index]);
   }
 
  public:
@@ -254,9 +239,6 @@ class ARCANE_MESH_EXPORT OneItemIncrementalItemConnectivity
   ~OneItemIncrementalItemConnectivity();
 
  public:
-  bool isEmpty() const override {
-    return m_is_empty ;
-  }
 
   void notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids) override;
   void removeConnectedItems(ItemLocalId source_item) override;

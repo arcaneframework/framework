@@ -127,7 +127,7 @@ _fillItemDependenciesData(ItemData& item_data, Int32ConstArrayView local_ids)
     item_owners[item.index()] = item->owner();
     for (auto out_connectivity : out_connectivities)
     {
-      if(!out_connectivity->isEmpty())
+      if(out_connectivity)
       {
         item_infos.add(out_connectivity->targetFamily()->itemKind());
         item_infos.add(out_connectivity->nbConnectedItem(ItemLocalId(item)));
@@ -135,11 +135,6 @@ _fillItemDependenciesData(ItemData& item_data, Int32ConstArrayView local_ids)
         ENUMERATE_ITEM(connected_item, connectivity_accessor.connectedItems(ItemLocalId(item))) {
           item_infos.add(connected_item->uniqueId().asInt64());
         }
-      }
-      else
-      {
-        item_infos.add(out_connectivity->sourceFamily()->itemKind());
-        item_infos.add(0) ;
       }
     }
   }

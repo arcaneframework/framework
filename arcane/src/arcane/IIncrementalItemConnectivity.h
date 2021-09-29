@@ -58,8 +58,6 @@ class ARCANE_CORE_EXPORT IIncrementalItemConnectivity
   //! Famille cible
   virtual IItemFamily* targetFamily() const =0;
 
-  virtual bool isEmpty() const = 0 ;
-
   //! Ajoute l'entité de localId() \a target_local_id à la connectivité de \a source_item
   virtual void addConnectedItem(ItemLocalId source_item,ItemLocalId target_local_id) =0;
 

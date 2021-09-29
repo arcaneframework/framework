@@ -47,7 +47,7 @@
 #include "arcane/ConnectivityItemVector.h"
 #include "arcane/mesh/NewItemOwnerBuilder.h"
 #include "arcane/mesh/ParticleFamily.h"
-#include "arcane/mesh/GraphDofs.h"
+#include "arcane/mesh/GraphDoFs.h"
 #include "arcane/mesh/BasicItemPairGroupComputeFunctor.h"
 #include "arcane/mesh/MeshNodeMerger.h"
 #include "arcane/mesh/ConnectivityNewWithDependenciesTypes.h"
@@ -179,7 +179,7 @@ changeOwnersFromCells()
     // Dof with Mesh Item connectivity
     for( IItemFamily* family : m_mesh->itemFamilies() )
     {
-      if (family->itemKind()!=IK_DoF || family->name()==mesh::GraphDofs::linkFamilyName())
+      if (family->itemKind()!=IK_DoF || family->name()==mesh::GraphDoFs::linkFamilyName())
         continue;
       VariableItemInt32& dofs_new_owner(family->itemsNewOwner());
       std::array<Arcane::eItemKind,5> dualitem_kinds = {IK_Cell,IK_Face,IK_Edge,IK_Node,IK_Particle} ;
@@ -229,11 +229,11 @@ changeOwnersFromCells()
       }
     }
     // Dof with DoF connectivity
-    IItemFamily* links_family = m_mesh->findItemFamily(IK_DoF, mesh::GraphDofs::linkFamilyName(), false);
+    IItemFamily* links_family = m_mesh->findItemFamily(IK_DoF, mesh::GraphDoFs::linkFamilyName(), false);
     if(links_family)
     {
       VariableItemInt32& links_new_owner(links_family->itemsNewOwner());
-      IItemFamily* dualnodes_family = m_mesh->findItemFamily(IK_DoF, mesh::GraphDofs::dualNodeFamilyName(), false);
+      IItemFamily* dualnodes_family = m_mesh->findItemFamily(IK_DoF, mesh::GraphDoFs::dualNodeFamilyName(), false);
       if(dualnodes_family)
       {
         VariableItemInt32& dualnodes_new_owner(dualnodes_family->itemsNewOwner());

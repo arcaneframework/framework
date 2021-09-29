@@ -5,51 +5,63 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IGraph.h                                                    (C) 2011-2011 */
+/* IndexedItemConnectivityAccessor.h                               (C) 2000-2021 */
 /*                                                                           */
-/* Interface d'un graphe d'un maillage    .                                  */
+/* Connectivité incrémentale des entités.                                    */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IGRAPH_H
-#define ARCANE_IGRAPH_H
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#include "arcane/ArcaneTypes.h"
-#include "arcane/ItemTypes.h"
-
+#pragma once
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/utils/TraceAccessor.h"
+
+#include "arcane/IItemFamily.h"
+#include "arcane/ItemVector.h"
+#include "arcane/VariableTypes.h"
+//#include "arcane/ItemInternal.h"
+#include "arcane/IIncrementalItemConnectivity.h"
+
+#include "arcane/mesh/MeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class IGraphModifier;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Interface d'un graphe du maillage
- */
-class IGraph
+namespace Arcane::mesh
 {
-public:
 
-  virtual ~IGraph() {} //<! Libère les ressources
-  
-public:
-  
-  virtual IGraphModifier* modifier() =0;
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
+class ARCANE_MESH_EXPORT IndexedItemConnectivityAccessor
+: public IndexedItemConnectivityViewBase
+{
+ public:
+  IndexedItemConnectivityAccessor(IndexedItemConnectivityViewBase view, IItemFamily* target_item_family) ;
+
+  IndexedItemConnectivityAccessor(IIncrementalItemConnectivity* connectivity) ;
+
+  IndexedItemConnectivityAccessor() = default;
+
+  void init(SmallSpan<const Int32> nb_item,
+            SmallSpan<const Int32> indexes,
+            SmallSpan<const Int32> list_data,
+            IItemFamily* source_item_family,
+            IItemFamily* target_item_family) ;
+
+  ItemVectorView operator()(ItemLocalId lid) const
+  {
+    //assert(m_target_item_family) ;
+    const Integer* ptr = & m_list_data[m_indexes[lid]];
+    return const_cast<IItemFamily*>(m_target_item_family)->view(ConstArrayView<Integer>( m_nb_item[lid], ptr )) ;
+  }
+ private :
+  IItemFamily* m_target_item_family = nullptr ;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  

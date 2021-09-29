@@ -211,6 +211,7 @@ class IMesh : public IMeshBase
    * \brief Retourne la famille de nom \a name.
    *
    * Si \a create_if_needed est vrai, la famille est créé si elle n'existait pas.
+   * Si \a register_modifier_if_created est vrai, le modifier de la famille est enregistré
    */
   virtual IItemFamily* findItemFamily(eItemKind ik,const String& name,bool create_if_needed=false,bool register_modifier_if_created=false) =0;
 

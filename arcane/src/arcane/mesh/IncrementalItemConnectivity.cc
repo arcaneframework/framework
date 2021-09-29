@@ -24,25 +24,43 @@
 #include "arcane/ObserverPool.h"
 #include "arcane/Properties.h"
 #include "arcane/IndexedItemConnectivityView.h"
+#include "arcane/mesh/IndexedItemConnectivityAccessor.h"
 
 #include "arcane/core/internal/IDataInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-namespace Arcane
+namespace Arcane::mesh
 {
+  IndexedItemConnectivityAccessor::IndexedItemConnectivityAccessor(IndexedItemConnectivityViewBase view, IItemFamily* target_item_family)
+  : IndexedItemConnectivityViewBase(view)
+  , m_target_item_family(target_item_family)
+  {}
 
   IndexedItemConnectivityAccessor::IndexedItemConnectivityAccessor(IIncrementalItemConnectivity* connectivity)
   : m_target_item_family(connectivity->targetFamily())
   {
     mesh::IncrementalItemConnectivityBase* ptr = dynamic_cast<mesh::IncrementalItemConnectivityBase*>(connectivity) ;
     if(ptr)
+    {
       IndexedItemConnectivityViewBase::set(ptr->connectivityView()) ;
+      //(*this) = ptr->connectivityView() ;
+    }
   }
-}
 
-namespace Arcane::mesh
-{
+  void IndexedItemConnectivityAccessor::init(SmallSpan<const Int32> nb_item,
+            SmallSpan<const Int32> indexes,
+            SmallSpan<const Int32> list_data,
+            IItemFamily* source_item_family,
+            IItemFamily* target_item_family)
+  {
+    IndexedItemConnectivityViewBase::init(nb_item,
+                                          indexes,
+                                          list_data,
+                                          source_item_family->itemKind(),
+                                          target_item_family->itemKind()) ;
+    m_target_item_family = target_item_family ;
+  }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -452,7 +470,6 @@ addConnectedItem(ItemLocalId source_item,ItemLocalId target_item)
     }
   }
   ++(m_connectivity_nb_item[lid]);
-  m_is_empty = false ;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -487,7 +504,6 @@ addConnectedItems(ItemLocalId source_item,Integer nb_item)
   Integer new_pos_in_list = _increaseConnectivityList(NULL_ITEM_LOCAL_ID,alloc_size);
   m_connectivity_index[lid] = new_pos_in_list;
   m_connectivity_nb_item[lid] += nb_item;
-  m_is_empty = false ;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -756,7 +772,6 @@ addConnectedItem(ItemLocalId source_item,ItemLocalId target_item)
   Int32 target_lid = target_item.localId();
   m_connectivity_list[lid] = target_lid;
   m_connectivity_nb_item[lid] = 1;
-  m_is_empty = false ;
 }
 
 /*---------------------------------------------------------------------------*/

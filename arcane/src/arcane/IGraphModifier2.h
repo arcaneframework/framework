@@ -1,5 +1,11 @@
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IGraphModifier.h                                            (C) 2011-2011 */
+/* IGraphModifier2.h                                            (C) 2011-2011 */
 /*                                                                           */
 /* Interface d'un outil de modification du graphe d'un maillage              */
 /*---------------------------------------------------------------------------*/
