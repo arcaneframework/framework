@@ -46,7 +46,6 @@ class ItemInternal;
 
 class IMesh;
 class IPrimaryMesh;
-class IGraph;
 class IItemFamily;
 
 class ItemLocalId;

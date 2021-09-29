@@ -20,7 +20,6 @@ using namespace Arcane::Numerics;
 
 #include "arcane/IItemOperationByBasicType.h"
 #include "arcane/IParallelMng.h"
-#include "arcane/IGraph.h"
 #include "arcane/MeshStats.h"
 #include "arcane/mesh/DynamicMesh.h"
 

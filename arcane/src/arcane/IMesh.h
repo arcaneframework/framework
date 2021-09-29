@@ -37,7 +37,6 @@ class IMeshModifier;
 class IMeshMng;
 class Properties;
 class IMeshPartitionConstraintMng;
-class IGraph;
 class IExtraGhostCellsBuilder;
 class IUserData;
 class IUserDataList;
@@ -124,12 +123,6 @@ class IMesh : public IMeshBase
   //! Gestionnaire de parallèlisme
   virtual IParallelMng* parallelMng() =0;
 
- public:
-
-  //! Graphe associé
-  ARCCORE_DEPRECATED_2020("Graph is no longer available. always return nullptr")
-  virtual IGraph* graph() { return nullptr; }
-  
  public:
 
   //! Descripteur de connectivité

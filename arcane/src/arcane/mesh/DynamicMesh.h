@@ -23,8 +23,6 @@
 #include "arcane/IPrimaryMesh.h"
 #include "arcane/IItemFamily.h"
 #include "arcane/IItemFamilyModifier.h"
-#include "arcane/IGraph.h"
-#include "arcane/IGraphModifier.h"
 #include "arcane/ObserverPool.h"
 #include "arcane/MeshPartInfo.h"
 #include "arcane/IItemFamilyNetwork.h"
