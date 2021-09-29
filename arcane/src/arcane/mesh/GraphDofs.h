@@ -9,6 +9,7 @@
 #define ARCANE_SRC_ARCANE_MESH_GRAPHDOFS_H_
 
 #include <memory>
+#include <array>
 
 #include "arcane/IGraph2.h"
 #include "arcane/IGraphModifier2.h"

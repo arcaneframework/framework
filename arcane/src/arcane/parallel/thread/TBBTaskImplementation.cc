@@ -45,6 +45,7 @@
 // NOTE GG: depuis mars 2019, la version 2018+ des TBB est obligatoire.
 
 #include <tbb/tbb.h>
+#include <tbb/blocked_rangeNd.h>
 /*
  * Maintenant vérifie que la version est au moins 2018.
  */
