@@ -343,7 +343,6 @@ jobs:
 
   arccore-test:
     needs:
-      - arccon-install
       - arccore-install
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -372,7 +371,6 @@ jobs:
 
   arcane-test:
     needs:
-      - arccon-install
       - arccore-install
       - arcdependencies-install
       - axlstar-install
