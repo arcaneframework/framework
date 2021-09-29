@@ -4,22 +4,104 @@ version: 2.1
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
-  say-hello:
+  build-and-test:
     # Specify the execution environment.
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
     docker:
       - image: cimg/base:stable
+
+    environment:
+      CCACHE_COMPRESS: true
+      CCACHE_COMPRESSLEVEL: 6
+      CCACHE_MAXSIZE: 450M
+
+    resource_class: large
+
     # Add steps to the job
     # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     steps:
       - checkout
       - run:
-          name: "Say hello"
-          command: "echo Hello, World!"
+          name: "Pull Submodules"
+          command: |
+            git submodule update --init
+
+      - run:
+          name: "Save environment"
+          command: |
+            echo CIRCLE_WORKING_DIRECTORY = ${CIRCLE_WORKING_DIRECTORY}
+            echo export CCACHE_DIR="${CIRCLE_WORKING_DIRECTORY}/ccache" >> $BASH_ENV
+
+      - run:
+          name: "Print environment"
+          command: |
+            echo 'export MY_ENV_VAR="FOO"' >> $BASH_ENV
+            echo CCACHE_DIR = ${CCACHE_DIR}
+            mkdir -p ${CCACHE_DIR}
+
+      - restore_cache:
+          keys:
+            - framework-ccache-{{ epoch }}
+            - framework-ccache-
+
+      - run:
+          name: "Install packages"
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y apt-utils iputils-ping g++ python3 git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev libparmetis-dev wget libtbb-dev rsync ninja-build ccache
+            wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+            sudo dpkg -i packages-microsoft-prod.deb
+            sudo apt-get update
+            sudo apt-get install -y apt-transport-https dotnet-sdk-5.0
+            wget https://github.com/Kitware/CMake/releases/download/v3.21.3/cmake-3.21.3-Linux-x86_64.tar.gz
+            cp cmake-3.21.3-Linux-x86_64.tar.gz /tmp
+            cd /tmp && tar xf cmake-3.21.3-Linux-x86_64.tar.gz
+            echo "Listing of /tmp"
+            ls -lart /tmp
+            echo "Listing of /tmp/cmake-3.21.3-linux-x86_64"
+            ls -lart /tmp/cmake-3.21.3-linux-x86_64
+            cd /tmp/cmake-3.21.3-linux-x86_64/ && sudo rsync -au . /usr/local
+            ls -lart /usr/local/bin
+
+      - run:
+          name: "Print tools versions"
+          command: |
+            echo 'CMake version:'
+            cmake --version
+            echo 'ccache version:'
+            ccache --version
+            ccache -z
+
+      - run:
+          name: Configure 'framework'
+          command: |
+            cmake -S "_common/build_all" -B build -DCMAKE_CXX_FLAGS_RELEASE="-O2" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=TRUE -DARCANE_DEFAULT_PARTITIONER=Metis -DARCCON_REGISTER_PACKAGE_VERSION=2 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -GNinja
+
+      - run:
+          name: Build 'framework'
+          command: |
+            cmake --build build
+
+      - run:
+          name: Get 'ccache' status
+          command: |
+            ccache -s
+
+      - save_cache:
+          key: framework-ccache-{{ epoch }}
+          when: always
+          paths:
+            - ccache
+
+# On ne lance pas les tests qui utilisent 'mpithread' car ils ont besoin de 12 coeurs
+# sur les machines à 4 coeurs cela pose problème.
+      - run:
+          name: Test 'framework'
+          command: |
+            cd build && ctest --output-on-failure -E mpithread
 
 # Invoke jobs via workflows
-# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
-  say-hello-workflow:
+  ubuntu-workflow:
     jobs:
-      - say-hello
+      - build-and-test
