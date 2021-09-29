@@ -52,6 +52,7 @@ env:
 
 jobs:
   arccon-install:
+    name: arccon-install-${{ github.event.inputs.arccon_branch }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
@@ -94,6 +95,7 @@ jobs:
           retention-days: 1
 
   arccore-install:
+    name: arccore-install-${{ github.event.inputs.arccore_branch }}
     needs:
       - arccon-install
     runs-on: ubuntu-latest
@@ -154,6 +156,7 @@ jobs:
           retention-days: 1
 
   arcdependencies-install:
+    name: arcdependencies-install-${{ github.event.inputs.arcdependencies_branch }}
     needs:
       - arccon-install
     runs-on: ubuntu-latest
@@ -205,6 +208,7 @@ jobs:
           retention-days: 1
 
   axlstar-install:
+    name: axlstar-install-${{ github.event.inputs.axlstar_branch }}
     needs:
       - arccon-install
       - arcdependencies-install
@@ -264,6 +268,7 @@ jobs:
           retention-days: 1
 
   arcane-install:
+    name: arcane-install-${{ github.event.inputs.arcane_branch }}
     needs:
       - arccon-install
       - arccore-install
@@ -283,6 +288,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: ${{ env.ARCANE_SOURCE_DIR }}
+          ref: ${{ github.event.inputs.arcane_branch }}
       - name: Download arccon install artifact
         uses: actions/download-artifact@v2
         with:
@@ -337,6 +343,7 @@ jobs:
           retention-days: 1
 
   arccore-test:
+    name: arccore-test-${{ github.event.inputs.arccore_branch }}
     needs:
       - arccore-install
     runs-on: ubuntu-latest
@@ -371,6 +378,7 @@ jobs:
           retention-days: 1
 
   arcane-test:
+    name: arcane-test-${{ github.event.inputs.arcane_branch }}
     needs:
       - arccore-install
       - arcdependencies-install
@@ -390,6 +398,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: ${{ env.ARCANE_SOURCE_DIR }}
+          ref: ${{ github.event.inputs.arcane_branch }}
       - name: Download arcane build artifact
         uses: actions/download-artifact@v2
         with:
