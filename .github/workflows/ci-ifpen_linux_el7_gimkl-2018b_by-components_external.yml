@@ -69,14 +69,12 @@ jobs:
           cmake --install ${{ env.ARCCON_BUILD_DIR }}
       - name: Tar install artifact
         shell: bash
-        run: |
-          tar cf arccon-install-artifact.tar ${{ env.ARCCON_INSTALL_DIR }}
+        run: tar cf arccon-install-artifact.tar ${{ env.ARCCON_INSTALL_DIR }}
       - name: Upload install artifact
         uses: actions/upload-artifact@v2
         with:
           name: arccon-install-artifact
-          path: |
-            arccon-install-artifact.tar
+          path: arccon-install-artifact.tar
           retention-days: 1
 
   arccore-install:
@@ -104,8 +102,7 @@ jobs:
           name: arccon-install-artifact
       - name: Untar arccon install artifact
         shell: bash
-        run: |
-          tar xf arccon-install-artifact.tar -C /
+        run: tar xf arccon-install-artifact.tar -C /
       - name: Configure
         shell: bash
         run: |
@@ -123,25 +120,21 @@ jobs:
           cmake --install ${{ env.ARCCORE_BUILD_DIR }}
       - name: Tar build artifact
         shell: bash
-        run: |
-          tar cf arccore-build-artifact.tar ${{ env.ARCCORE_BUILD_DIR }}
+        run: tar cf arccore-build-artifact.tar ${{ env.ARCCORE_BUILD_DIR }}
       - name: Upload build artifact
         uses: actions/upload-artifact@v2
         with:
           name: arccore-build-artifact
-          path: |
-            arccore-build-artifact.tar
+          path: arccore-build-artifact.tar
           retention-days: 1
       - name: Tar install artifact
         shell: bash
-        run: |
-          tar cf arccore-install-artifact.tar ${{ env.ARCCORE_INSTALL_DIR }}
+        run: tar cf arccore-install-artifact.tar ${{ env.ARCCORE_INSTALL_DIR }}
       - name: Upload install artifact
         uses: actions/upload-artifact@v2
         with:
           name: arccore-install-artifact
-          path: |
-            arccore-install-artifact.tar
+          path: arccore-install-artifact.tar
           retention-days: 1
 
   arcdependencies-install:
@@ -169,9 +162,7 @@ jobs:
           name: arccon-install-artifact
       - name: Untar arccon install artifact
         shell: bash
-        run: |
-          tar tf arccon-install-artifact.tar
-          tar xf arccon-install-artifact.tar -C /
+        run: tar xf arccon-install-artifact.tar -C /
       - name: Configure
         shell: bash
         run: |
@@ -189,14 +180,12 @@ jobs:
           cmake --install ${{ env.ARCDEPENDENCIES_BUILD_DIR }}
       - name: Tar install ariftact
         shell: bash
-        run: |
-          tar cf arcdependencies-install-artifact.tar ${{ env.ARCDEPENDENCIES_INSTALL_DIR }}
+        run: tar cf arcdependencies-install-artifact.tar ${{ env.ARCDEPENDENCIES_INSTALL_DIR }}
       - name: Upload install artifact
         uses: actions/upload-artifact@v2
         with:
           name: arcdependencies-install-artifact
-          path: |
-            arcdependencies-install-artifact.tar
+          path: arcdependencies-install-artifact.tar
           retention-days: 1
 
   axlstar-install:
@@ -225,16 +214,14 @@ jobs:
           name: arccon-install-artifact
       - name: Untar arccon install artifact
         shell: bash
-        run: |
-          tar xf arccon-install-artifact.tar -C /
+        run: tar xf arccon-install-artifact.tar -C /
       - name: Download arcdependencies install artifact
         uses: actions/download-artifact@v2
         with:
           name: arcdependencies-install-artifact
       - name: Untar arcdependencies install artifact
         shell: bash
-        run: |
-          tar xf arcdependencies-install-artifact.tar -C /
+        run: tar xf arcdependencies-install-artifact.tar -C /
       - name: Configure
         shell: bash
         run: |
@@ -252,14 +239,12 @@ jobs:
           cmake --install ${{ env.AXLSTAR_BUILD_DIR }}
       - name: Tar install artifact
         shell: bash
-        run: |
-          tar cf axlstar-install-artifact.tar ${{ env.AXLSTAR_INSTALL_DIR }}
+        run: tar cf axlstar-install-artifact.tar ${{ env.AXLSTAR_INSTALL_DIR }}
       - name: Upload install artifact
         uses: actions/upload-artifact@v2
         with:
           name: axlstar-install-artifact
-          path: |
-            axlstar-install-artifact.tar
+          path: axlstar-install-artifact.tar
           retention-days: 1
 
   arcane-install:
@@ -288,32 +273,28 @@ jobs:
           name: arccon-install-artifact
       - name: Untar arccon install artifact
         shell: bash
-        run: |
-          tar xf arccon-install-artifact.tar -C /
+        run: tar xf arccon-install-artifact.tar -C /
       - name: Download arccore install artifact
         uses: actions/download-artifact@v2
         with:
           name: arccore-install-artifact
       - name: Untar arccore install artifact
         shell: bash
-        run: |
-          tar xf arccore-install-artifact.tar -C /
+        run: tar xf arccore-install-artifact.tar -C /
       - name: Download arcdependencies install artifact
         uses: actions/download-artifact@v2
         with:
           name: arcdependencies-install-artifact
       - name: Untar arcdependencies install artifact
         shell: bash
-        run: |
-          tar xf arcdependencies-install-artifact.tar -C /
+        run: tar xf arcdependencies-install-artifact.tar -C /
       - name: Download axlstar install artifact
         uses: actions/download-artifact@v2
         with:
           name: axlstar-install-artifact
       - name: Untar axlstar install artifact
         shell: bash
-        run: |
-          tar xf axlstar-install-artifact.tar -C /
+        run: tar xf axlstar-install-artifact.tar -C /
       - name: Configure
         shell: bash
         run: |
@@ -331,14 +312,12 @@ jobs:
           cmake --install ${{ env.ARCANE_BUILD_DIR }}
       - name: Tar build artifact
         shell: bash
-        run: |
-          tar cf arcane-build-artifact.tar ${{ env.ARCANE_BUILD_DIR }}
+        run: tar cf arcane-build-artifact.tar ${{ env.ARCANE_BUILD_DIR }}
       - name: Upload build artifact
         uses: actions/upload-artifact@v2
         with:
           name: arcane-build-artifact
-          path: |
-            arcane-build-artifact.tar
+          path: arcane-build-artifact.tar
           retention-days: 1
 
   arccore-test:
@@ -360,14 +339,20 @@ jobs:
           name: arccore-build-artifact
       - name: Untar arccore build artifact
         shell: bash
-        run: |
-          tar xf arccore-build-artifact.tar -C /
+        run: tar xf arccore-build-artifact.tar -C /
       - name: Test
         shell: bash
         run: |
           source /env.sh
           cd ${{ env.ARCCORE_BUILD_DIR }}
           ctest ${{ env.CT_OPTS }}
+      - name: Upload test artifact
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: arccore-test-artifact
+          path: ${{ env.ARCCORE_BUILD_DIR }}/Testing
+          retention-days: 1
 
   arcane-test:
     needs:
@@ -395,27 +380,31 @@ jobs:
           name: arcane-build-artifact
       - name: Untar arcane build artifact
         shell: bash
-        run: |
-          tar xf arcane-build-artifact.tar -C /
+        run: tar xf arcane-build-artifact.tar -C /
       - name: Download arccore install artifact
         uses: actions/download-artifact@v2
         with:
           name: arccore-install-artifact
       - name: Untar arccore install artifact
         shell: bash
-        run: |
-          tar xf arccore-install-artifact.tar -C /
+        run: tar xf arccore-install-artifact.tar -C /
       - name: Download axlstar install artifact
         uses: actions/download-artifact@v2
         with:
           name: axlstar-install-artifact
       - name: Untar axlstar install artifact
         shell: bash
-        run: |
-          tar xf axlstar-install-artifact.tar -C /
+        run: tar xf axlstar-install-artifact.tar -C /
       - name: Test
         shell: bash
         run: |
           source /env.sh
           cd ${{ env.ARCANE_BUILD_DIR }}
           ctest ${{ env.CT_OPTS }}
+      - name: Upload test artifact
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: arcane-test-artifact
+          path: ${{ env.ARCANE_BUILD_DIR }}/Testing
+          retention-days: 1
