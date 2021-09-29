@@ -11,8 +11,8 @@ on:
         description: 'Arccore branch'
         required: true
         default: 'main'
-      arcdependencies_branch:
-        description: 'ArcDependencies branch'
+      dependencies_branch:
+        description: 'Dependencies branch'
         required: true
         default: 'main'
       axlstar_branch:
@@ -37,10 +37,10 @@ env:
   ARCCORE_BUILD_DIR: /__w/framework/framework/arccore_build
   ARCCORE_INSTALL_DIR: /__w/framework/framework/arccore_install
   ARCCORE_SOURCE_DIR: /__w/framework/framework/arccore
-  # ArcDependencies
-  ARCDEPENDENCIES_BUILD_DIR: /__w/framework/framework/arcdependencies_build
-  ARCDEPENDENCIES_INSTALL_DIR: /__w/framework/framework/arcdependencies_install
-  ARCDEPENDENCIES_SOURCE_DIR: /__w/framework/framework/arcdependencies
+  # Dependencies
+  DEPENDENCIES_BUILD_DIR: /__w/framework/framework/dependencies_build
+  DEPENDENCIES_INSTALL_DIR: /__w/framework/framework/dependencies_install
+  DEPENDENCIES_SOURCE_DIR: /__w/framework/framework/dependencies
   # Axlstar
   AXLSTAR_BUILD_DIR: /__w/framework/framework/axlstar_build
   AXLSTAR_INSTALL_DIR: /__w/framework/framework/axlstar_install
@@ -155,8 +155,8 @@ jobs:
           path: arccore-install-artifact.tar
           retention-days: 1
 
-  arcdependencies-install:
-    name: arcdependencies-install-${{ github.event.inputs.arcdependencies_branch }}
+  dependencies-install:
+    name: dependencies-install-${{ github.event.inputs.dependencies_branch }}
     needs:
       - arccon-install
     runs-on: ubuntu-latest
@@ -173,8 +173,8 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: arcaneframework/dependencies
-          path: ${{ env.ARCDEPENDENCIES_SOURCE_DIR }}
-          ref: ${{ github.event.inputs.arcdependencies_branch }}
+          path: ${{ env.DEPENDENCIES_SOURCE_DIR }}
+          ref: ${{ github.event.inputs.dependencies_branch }}
       - name: Download arccon install artifact
         uses: actions/download-artifact@v2
         with:
@@ -186,32 +186,32 @@ jobs:
         shell: bash
         run: |
           source /env.sh
-          cmake -S ${{ env.ARCDEPENDENCIES_SOURCE_DIR }} -B ${{ env.ARCDEPENDENCIES_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCDEPENDENCIES_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon
+          cmake -S ${{ env.DEPENDENCIES_SOURCE_DIR }} -B ${{ env.DEPENDENCIES_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.DEPENDENCIES_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon
       - name: Build
         shell: bash
         run: |
           source /env.sh
-          cmake --build ${{ env.ARCDEPENDENCIES_BUILD_DIR }}
+          cmake --build ${{ env.DEPENDENCIES_BUILD_DIR }}
       - name: Install
         shell: bash
         run: |
           source /env.sh
-          cmake --install ${{ env.ARCDEPENDENCIES_BUILD_DIR }}
+          cmake --install ${{ env.DEPENDENCIES_BUILD_DIR }}
       - name: Tar install ariftact
         shell: bash
-        run: tar cf arcdependencies-install-artifact.tar ${{ env.ARCDEPENDENCIES_INSTALL_DIR }}
+        run: tar cf dependencies-install-artifact.tar ${{ env.DEPENDENCIES_INSTALL_DIR }}
       - name: Upload install artifact
         uses: actions/upload-artifact@v2
         with:
-          name: arcdependencies-install-artifact
-          path: arcdependencies-install-artifact.tar
+          name: dependencies-install-artifact
+          path: dependencies-install-artifact.tar
           retention-days: 1
 
   axlstar-install:
     name: axlstar-install-${{ github.event.inputs.axlstar_branch }}
     needs:
       - arccon-install
-      - arcdependencies-install
+      - dependencies-install
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
@@ -235,18 +235,18 @@ jobs:
       - name: Untar arccon install artifact
         shell: bash
         run: tar xf arccon-install-artifact.tar -C /
-      - name: Download arcdependencies install artifact
+      - name: Download dependencies install artifact
         uses: actions/download-artifact@v2
         with:
-          name: arcdependencies-install-artifact
-      - name: Untar arcdependencies install artifact
+          name: dependencies-install-artifact
+      - name: Untar dependencies install artifact
         shell: bash
-        run: tar xf arcdependencies-install-artifact.tar -C /
+        run: tar xf dependencies-install-artifact.tar -C /
       - name: Configure
         shell: bash
         run: |
           source /env.sh
-          cmake -S ${{ env.AXLSTAR_SOURCE_DIR }} -B ${{ env.AXLSTAR_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.AXLSTAR_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArcDependencies_DIR=${{ env.ARCDEPENDENCIES_INSTALL_DIR }}/share/cmake/ArcDependencies
+          cmake -S ${{ env.AXLSTAR_SOURCE_DIR }} -B ${{ env.AXLSTAR_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.AXLSTAR_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArcDependencies_DIR=${{ env.DEPENDENCIES_INSTALL_DIR }}/share/cmake/ArcDependencies
       - name: Build
         shell: bash
         run: |
@@ -272,7 +272,7 @@ jobs:
     needs:
       - arccon-install
       - arccore-install
-      - arcdependencies-install
+      - dependencies-install
       - axlstar-install
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -303,13 +303,13 @@ jobs:
       - name: Untar arccore install artifact
         shell: bash
         run: tar xf arccore-install-artifact.tar -C /
-      - name: Download arcdependencies install artifact
+      - name: Download dependencies install artifact
         uses: actions/download-artifact@v2
         with:
-          name: arcdependencies-install-artifact
-      - name: Untar arcdependencies install artifact
+          name: dependencies-install-artifact
+      - name: Untar dependencies install artifact
         shell: bash
-        run: tar xf arcdependencies-install-artifact.tar -C /
+        run: tar xf dependencies-install-artifact.tar -C /
       - name: Download axlstar install artifact
         uses: actions/download-artifact@v2
         with:
@@ -321,7 +321,7 @@ jobs:
         shell: bash
         run: |
           source /env.sh
-          cmake -S ${{ env.ARCANE_SOURCE_DIR }}/arcane -B ${{ env.ARCANE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCANE_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArccore_DIR=${{ env.ARCCORE_INSTALL_DIR }}/lib/cmake/Arccore -DAxlstar_DIR=${{ env.AXLSTAR_INSTALL_DIR }}/share/cmake/Axlstar -DArcDependencies_DIR=${{ env.ARCDEPENDENCIES_INSTALL_DIR }}/share/cmake/ArcDependencies -DBUILD_SHARED_LIBS=ON -DARCANE_DEFAULT_PARTITIONER=Metis -DARCANE_WANT_TOTALVIEW=ON -DARCANE_WANT_LIBXML2=ON -DARCANE_WANT_LEGACY_CONNECTIVITY=OFF -DARCANE_WANT_CHECK=OFF -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF
+          cmake -S ${{ env.ARCANE_SOURCE_DIR }}/arcane -B ${{ env.ARCANE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCANE_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArccore_DIR=${{ env.ARCCORE_INSTALL_DIR }}/lib/cmake/Arccore -DAxlstar_DIR=${{ env.AXLSTAR_INSTALL_DIR }}/share/cmake/Axlstar -DArcDependencies_DIR=${{ env.DEPENDENCIES_INSTALL_DIR }}/share/cmake/ArcDependencies -DBUILD_SHARED_LIBS=ON -DARCANE_DEFAULT_PARTITIONER=Metis -DARCANE_WANT_TOTALVIEW=ON -DARCANE_WANT_LIBXML2=ON -DARCANE_WANT_LEGACY_CONNECTIVITY=OFF -DARCANE_WANT_CHECK=OFF -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF
       - name: Build
         shell: bash
         run: |
@@ -381,7 +381,7 @@ jobs:
     name: arcane-test-${{ github.event.inputs.arcane_branch }}
     needs:
       - arccore-install
-      - arcdependencies-install
+      - dependencies-install
       - axlstar-install
       - arcane-install
     runs-on: ubuntu-latest
