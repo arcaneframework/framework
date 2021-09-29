@@ -1,4 +1,4 @@
-name: ci-ifpen_linux_el8_foss-2018b_by-components_external
+name: IFP Auto Linux El8 Foss/2018b
 
 on:
   push:

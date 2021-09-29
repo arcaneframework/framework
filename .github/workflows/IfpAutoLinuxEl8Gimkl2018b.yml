@@ -1,4 +1,4 @@
-name: ci-ifpen_linux_el7_foss-2018b_by-components_external
+name: IFP Auto Linux El8 Gimkl/2018b
 
 on:
   push:
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
-      image: ghcr.io/arcaneframework/centos-foss-2018b-arcane:7-latest
+      image: ghcr.io/arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -83,7 +83,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
-      image: ghcr.io/arcaneframework/centos-foss-2018b-arcane:7-latest
+      image: ghcr.io/arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -143,7 +143,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
-      image: ghcr.io/arcaneframework/centos-foss-2018b-arcane:7-latest
+      image: ghcr.io/arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -195,7 +195,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
-      image: ghcr.io/arcaneframework/centos-foss-2018b-arcane:7-latest
+      image: ghcr.io/arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -256,7 +256,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     container:
-      image: ghcr.io/arcaneframework/centos-foss-2018b-arcane:7-latest
+      image: ghcr.io/arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -326,7 +326,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
-      image: ghcr.io/arcaneframework/centos-foss-2018b-arcane:7-latest
+      image: ghcr.io/arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -363,7 +363,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 180
     container:
-      image: ghcr.io/arcaneframework/centos-foss-2018b-arcane:7-latest
+      image: ghcr.io/arcaneframework/rockylinux-gimkl-2018b-arcane:8-latest
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
