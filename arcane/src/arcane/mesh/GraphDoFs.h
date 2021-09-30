@@ -92,6 +92,8 @@ class ARCANE_MESH_EXPORT GraphIncrementalConnectivity
 
   GraphIncrementalConnectivity(GraphDoFs* graph) ;
 
+  virtual ~GraphIncrementalConnectivity() {}
+
   inline Item dualItem(const DoF& dualNode) const
   {
     return m_dualitem_connectivity_accessors[m_dualnode_to_connectivity_index[dualNode]](ItemLocalId(dualNode))[0];
@@ -132,6 +134,8 @@ public:
 public:
 
   GraphDoFs(IMesh* mesh, String particle_family_name=ParticleFamily::defaultFamilyName());
+
+  virtual ~GraphDoFs() {}
 
 public:
 
