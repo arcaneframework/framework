@@ -197,8 +197,10 @@ ARCANE_ADD_TEST_SEQUENTIAL(geometric1 testGeometric-1.arc)
 ###################
 if (TARGET arcanecea_test_cs)
   message(STATUS "Adding '.Net' tests")
-  ARCANE_ADD_TEST_SEQUENTIAL(material2_cs testMaterial-2-opt7-cs.arc -We,ARCANE_USE_DOTNET_WRAPPER,1 --dotnet-assembly=${ARCANE_TEST_DOTNET_ASSEMBLY} -m 4)
-  ARCANE_ADD_TEST_SEQUENTIAL(material2_cs_coreclr testMaterial-2-opt7-cs.arc -We,ARCANE_USE_DOTNET_WRAPPER,1 --dotnet-assembly=${ARCANE_TEST_DOTNET_ASSEMBLY} --dotnet-runtime=coreclr -m 4)
+  if (MONO_EXEC)
+    arcane_add_test_sequential(material2_cs testMaterial-2-opt7-cs.arc -We,ARCANE_USE_DOTNET_WRAPPER,1 --dotnet-assembly=${ARCANE_TEST_DOTNET_ASSEMBLY} -m 4)
+  endif()
+  arcane_add_test_sequential(material2_cs_coreclr testMaterial-2-opt7-cs.arc -We,ARCANE_USE_DOTNET_WRAPPER,1 --dotnet-assembly=${ARCANE_TEST_DOTNET_ASSEMBLY} --dotnet-runtime=coreclr -m 4)
   arcane_add_csharp_test_sequential(material3_cs testMaterial-2-opt7-cs.arc -m 4)
 endif()
 
