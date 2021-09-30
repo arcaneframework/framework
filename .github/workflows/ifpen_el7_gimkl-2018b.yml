@@ -1,4 +1,4 @@
-name: IFP Auto Linux El7 Gimkl/2018b
+name: IFPEN el7 gimkl/2018b
 
 on:
   push:

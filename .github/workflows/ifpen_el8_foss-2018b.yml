@@ -1,12 +1,12 @@
-name: IFP Manu Linux El8 Foss/2018b
+name: IFPEN el8 foss/2018b
 
 on:
+  push:
+    branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
+  pull_request:
+    branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
   workflow_dispatch:
-    inputs:
-      dependencies_branch:
-        description: 'Dependencies branch'
-        required: true
-        default: 'main'
+    branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
 
 env:
   # Arcane
@@ -136,7 +136,7 @@ jobs:
           retention-days: 1
 
   dependencies-install:
-    name: dependencies-install-${{ github.event.inputs.dependencies_branch }}
+    name: dependencies-install
     needs:
       - arccon-install
     runs-on: ubuntu-latest
@@ -154,7 +154,7 @@ jobs:
         with:
           repository: arcaneframework/dependencies
           path: ${{ env.DEPENDENCIES_SOURCE_DIR }}
-          ref: ${{ github.event.inputs.dependencies_branch }}
+          ref: main
       - name: Download arccon install artifact
         uses: actions/download-artifact@v2
         with:

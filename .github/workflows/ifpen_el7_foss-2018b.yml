@@ -1,4 +1,4 @@
-name: IFP Auto Linux El7 Foss/2018b
+name: IFPEN el7 foss/2018b
 
 on:
   push:
