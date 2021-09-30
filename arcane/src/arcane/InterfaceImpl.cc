@@ -88,6 +88,8 @@
 #include "arcane/IGhostLayerMng.h"
 #include "arcane/VariableStatusChangedEventArgs.h"
 #include "arcane/MeshPartInfo.h"
+#include "arcane/IGraph2.h"
+#include "arcane/IGraphModifier2.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

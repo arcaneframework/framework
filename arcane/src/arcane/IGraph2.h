@@ -9,8 +9,7 @@
 /*                                                                           */
 /* Interface d'un graphe d'un maillage    .                                  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IGRAPH2_H
-#define ARCANE_IGRAPH2_H
+#pragma once
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,10 +18,6 @@
 #include "arcane/ItemTypes.h"
 #include "arcane/IItemConnectivity.h"
 #include "arcane/IndexedItemConnectivityView.h"
-#include "arcane/mesh/ItemConnectivity.h"
-#include "arcane/mesh/IncrementalItemConnectivity.h"
-#include "arcane/mesh/IndexedItemConnectivityAccessor.h"
-//#include <typeinfo>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,7 +47,7 @@ class IGraph2 ;
 /*!
  * \brief Interface du gestionnaire de connectivité d'un graphe
  */
-class ARCANE_CORE_EXPORT IGraphConnectivity
+class IGraphConnectivity
 {
  public :
   virtual ~IGraphConnectivity() {} //<! Lib�re les ressources
@@ -70,7 +65,7 @@ class ARCANE_CORE_EXPORT IGraphConnectivity
 /*!
  * \brief Interface d'un graphe du maillage
  */
-class ARCANE_CORE_EXPORT IGraph2
+class IGraph2
 {
 public:
 
