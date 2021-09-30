@@ -9,8 +9,7 @@
 /*                                                                           */
 /* Interface d'un outil de modification du graphe d'un maillage              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IGRAPHMODIFIER2_H
-#define ARCANE_IGRAPHMODIFIER2_H
+#pragma once
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -26,7 +25,7 @@ ARCANE_BEGIN_NAMESPACE
 /*!
  * \brief Interface d'un graphe du maillage
  */
-class IGraphModifier2
+class ARCANE_CORE_EXPORT IGraphModifier2
 {
  public:
 
@@ -70,4 +69,3 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  

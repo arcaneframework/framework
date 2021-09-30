@@ -47,7 +47,7 @@ class IGraph2 ;
 /*!
  * \brief Interface du gestionnaire de connectivité d'un graphe
  */
-class IGraphConnectivity
+class ARCANE_CORE_EXPORT IGraphConnectivity
 {
  public :
   virtual ~IGraphConnectivity() {} //<! Lib�re les ressources
@@ -65,7 +65,7 @@ class IGraphConnectivity
 /*!
  * \brief Interface d'un graphe du maillage
  */
-class IGraph2
+class ARCANE_CORE_EXPORT IGraph2
 {
 public:
 
@@ -110,4 +110,3 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif
