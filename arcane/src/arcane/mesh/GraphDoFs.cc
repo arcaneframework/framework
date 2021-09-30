@@ -29,17 +29,24 @@ ARCANE_MESH_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+GraphIncrementalConnectivity::GraphIncrementalConnectivity(GraphDoFs* graph)
+: m_dualnode_family(graph->dualNodeFamily())
+, m_link_family(graph->linkFamily())
+, m_link_connectivity(graph->m_links_incremental_connectivity)
+, m_dualitem_connectivities(graph->m_incremental_connectivities)
+, m_dualnode_to_connectivity_index(graph->m_dual_node_to_connectivity_index)
+{}
 
 GraphDoFs::
 GraphDoFs(IMesh* mesh, String particle_family_name)
-  : TraceAccessor(mesh->traceMng())
-  , m_mesh(mesh)
-  , m_connectivity_mng(mesh->traceMng())
-  , m_dof_mng(mesh,&m_connectivity_mng)
-  , m_dual_node_family(m_dof_mng.family(GraphDoFs::dualNodeFamilyName(),true))
-  , m_link_family(m_dof_mng.family(GraphDoFs::linkFamilyName(),true))
-  , m_update_sync_info(false)
-  , m_particle_family_name(particle_family_name)
+: TraceAccessor(mesh->traceMng())
+, m_mesh(mesh)
+, m_connectivity_mng(mesh->traceMng())
+, m_dof_mng(mesh,&m_connectivity_mng)
+, m_dual_node_family(m_dof_mng.family(GraphDoFs::dualNodeFamilyName(),true))
+, m_link_family(m_dof_mng.family(GraphDoFs::linkFamilyName(),true))
+, m_update_sync_info(false)
+, m_particle_family_name(particle_family_name)
 {
 }
 

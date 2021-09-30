@@ -44,12 +44,85 @@ ARCANE_MESH_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class GraphDoFs ;
+
+class ARCANE_MESH_EXPORT GraphIncrementalConnectivity
+: public IGraphConnectivity
+{
+ public :
+  GraphIncrementalConnectivity(IItemFamily const* dualnode_family,
+                               IItemFamily const* link_family,
+                               Arcane::mesh::IncrementalItemConnectivity* link_connectivity,
+                               UniqueArray<Arcane::mesh::IncrementalItemConnectivity*> const& dualitem_connectivities,
+                               ItemScalarProperty<Integer> const& dualnode_to_connectivity)
+  : m_dualnode_family(dualnode_family)
+  , m_link_family(link_family)
+  , m_link_connectivity(link_connectivity)
+  , m_link_connectivity_accessor(link_connectivity->connectivityAccessor())
+  , m_dualitem_connectivities(dualitem_connectivities)
+  , m_dualnode_to_connectivity_index(dualnode_to_connectivity)
+  {
+    m_dualitem_connectivity_accessors.resize(m_dualitem_connectivities.size()) ;
+    for(Integer i=0;i<m_dualitem_connectivities.size();++i)
+    {
+      if(m_dualitem_connectivities[i])
+      {
+        m_dualitem_connectivity_accessors[i] = m_dualitem_connectivities[i]->connectivityAccessor() ;
+      }
+    }
+  }
+
+  GraphIncrementalConnectivity(GraphIncrementalConnectivity const& rhs)
+  : m_dualnode_family(rhs.m_dualnode_family)
+  , m_link_family(rhs.m_link_family)
+  , m_link_connectivity(rhs.m_link_connectivity)
+  , m_dualitem_connectivities(rhs.m_dualitem_connectivities)
+  , m_dualnode_to_connectivity_index(rhs.m_dualnode_to_connectivity_index)
+  , m_link_connectivity_accessor(m_link_connectivity->connectivityAccessor())
+  {
+    m_dualitem_connectivity_accessors.resize(m_dualitem_connectivities.size()) ;
+    for(Integer i=0;i<m_dualitem_connectivities.size();++i)
+    {
+      if(m_dualitem_connectivities[i])
+      {
+        m_dualitem_connectivity_accessors[i] = m_dualitem_connectivities[i]->connectivityAccessor() ;
+      }
+    }
+  }
+
+  GraphIncrementalConnectivity(GraphDoFs* graph) ;
+
+  inline Item dualItem(const DoF& dualNode) const
+  {
+    return m_dualitem_connectivity_accessors[m_dualnode_to_connectivity_index[dualNode]](ItemLocalId(dualNode))[0];
+  }
+
+  inline DoFVectorView dualNodes(const DoF& link) const
+  {
+    return m_link_connectivity_accessor(ItemLocalId(link));
+  }
+
+
+ private :
+  IItemFamily const*                                              m_dualnode_family   = nullptr ;
+  IItemFamily const*                                              m_link_family       = nullptr ;
+  Arcane::mesh::IncrementalItemConnectivity*                      m_link_connectivity = nullptr;
+  UniqueArray<Arcane::mesh::IncrementalItemConnectivity*> const&  m_dualitem_connectivities;
+  ItemScalarProperty<Integer> const&                              m_dualnode_to_connectivity_index;
+
+  Arcane::mesh::IndexedItemConnectivityAccessor                   m_link_connectivity_accessor ;
+  UniqueArray<Arcane::mesh::IndexedItemConnectivityAccessor>      m_dualitem_connectivity_accessors ;
+
+};
+
 class ARCANE_MESH_EXPORT GraphDoFs
   : public TraceAccessor
   , public IGraph2
   , public IGraphModifier2
 {
 public:
+
+  friend class GraphIncrementalConnectivity ;
 
   typedef DynamicMeshKindInfos::ItemInternalMap ItemInternalMap;
 
@@ -65,7 +138,7 @@ public:
   IGraphModifier2* modifier() override { return this; }
 
 
-  GraphIncrementalConnectivity const* connectivity() const override {
+  IGraphConnectivity const* connectivity() const override {
     return m_graph_connectivity.get() ;
   }
 
