@@ -9,6 +9,10 @@ on:
     branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
 
 env:
+  # Alien
+  ALIEN_BUILD_DIR: /__w/framework/framework/alien_build
+  ALIEN_INSTALL_DIR: /__w/framework/framework/alien_install
+  ALIEN_SOURCE_DIR: /__w/framework/framework/alien
   # Arcane
   ARCANE_BUILD_DIR: /__w/framework/framework/arcane_build
   ARCANE_INSTALL_DIR: /__w/framework/framework/arcane_install
@@ -319,6 +323,64 @@ jobs:
           path: arcane-build-artifact.tar
           retention-days: 1
 
+  alien-install:
+    name: alien-install
+    needs:
+      - arccon-install
+      - arccore-install
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    container:
+      image: ghcr.io/arcaneframework/centos-foss-2018b-alien:7-latest
+      credentials:
+        username: ${{ secrets.ci_ifpen_read_packages_username }}
+        password: ${{ secrets.ci_ifpen_read_packages_password }}
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: ${{ env.ALIEN_SOURCE_DIR }}
+      - name: Download arccon install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arccon-install-artifact
+      - name: Untar arccon install artifact
+        shell: bash
+        run: tar xf arccon-install-artifact.tar -C /
+      - name: Download arccore install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arccore-install-artifact
+      - name: Untar arccore install artifact
+        shell: bash
+        run: tar xf arccore-install-artifact.tar -C /
+      - name: Configure
+        shell: bash
+        run: |
+          source /env.sh
+          cmake -S ${{ env.ALIEN_SOURCE_DIR }} -B ${{ env.ALIEN_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ALIEN_INSTALL_DIR }} -DALIENDEV_EMBEDDED=OFF -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArccore_DIR=${{ env.ARCCORE_INSTALL_DIR }}/lib/cmake/Arccore -DCMAKE_FIND_DEBUG_MODE=1 -DVerbose=ON -DBoost_NO_BOOST_CMAKE=ON -DBUILD_SHARED_LIBS=ON -DALIEN_USE_HDF5=ON -DCMAKE_CXX_FLAGS="-L${EBROOTLIBXML2} -lxml2"
+      - name: Build
+        shell: bash
+        run: |
+          source /env.sh
+          cmake --build ${{ env.ALIEN_BUILD_DIR }}
+      - name: Install
+        shell: bash
+        run: |
+          source /env.sh
+          cmake --install ${{ env.ALIEN_BUILD_DIR }}
+      - name: Tar build artifact
+        shell: bash
+        run: tar cf alien-build-artifact.tar ${{ env.ALIEN_BUILD_DIR }}
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: alien-build-artifact
+          path: alien-build-artifact.tar
+          retention-days: 1
+
   arccore-test:
     name: arccore-test
     needs:
@@ -408,4 +470,51 @@ jobs:
         with:
           name: arcane-test-artifact
           path: ${{ env.ARCANE_BUILD_DIR }}/Testing
+          retention-days: 1
+
+  alien-test:
+    name: alien-test
+    needs:
+      - arccore-install
+      - alien-install
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    container:
+      image: ghcr.io/arcaneframework/centos-foss-2018b-alien:7-latest
+      credentials:
+        username: ${{ secrets.ci_ifpen_read_packages_username }}
+        password: ${{ secrets.ci_ifpen_read_packages_password }}
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: ${{ env.ALIEN_SOURCE_DIR }}
+      - name: Download alien build artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: alien-build-artifact
+      - name: Untar alien build artifact
+        shell: bash
+        run: tar xf alien-build-artifact.tar -C /
+      - name: Download arccore install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arccore-install-artifact
+      - name: Untar arccore install artifact
+        shell: bash
+        run: tar xf arccore-install-artifact.tar -C /
+      - name: Test
+        shell: bash
+        run: |
+          source /env.sh
+          cd ${{ env.ALIEN_BUILD_DIR }}
+          ctest ${{ env.CT_OPTS }}
+      - name: Upload test artifact
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: alien-test-artifact
+          path: ${{ env.ALIEN_BUILD_DIR }}/Testing
           retention-days: 1
