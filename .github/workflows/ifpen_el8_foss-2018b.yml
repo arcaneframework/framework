@@ -331,7 +331,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     container:
-      image: ghcr.io/arcaneframework/centos-foss-2018b-alien:7-latest
+      image: ghcr.io/arcaneframework/rockylinux-foss-2018b-alien:8-latest
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
@@ -482,7 +482,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 180
     container:
-      image: ghcr.io/arcaneframework/centos-foss-2018b-alien:7-latest
+      image: ghcr.io/arcaneframework/rockylinux-foss-2018b-alien:8-latest
       credentials:
         username: ${{ secrets.ci_ifpen_read_packages_username }}
         password: ${{ secrets.ci_ifpen_read_packages_password }}
