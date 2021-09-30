@@ -319,19 +319,6 @@ void GraphDoFs::updateAfterMeshChanged()
     }
   }
 
-  {
-
-    ConnectivityItemVector accessor(m_links_incremental_connectivity) ;
-    ENUMERATE_DOF(ilink,m_link_family.allItems())
-    {
-      auto dof_view = accessor.connectedItems(*ilink) ;
-      for(Integer i=0;i<dof_view.size();++i)
-      {
-        auto index = m_dual_node_to_connectivity_index[dof_view[i]] ;
-      }
-    }
-  }
-
   m_graph_connectivity.reset( new GraphIncrementalConnectivity(dualNodeFamily(),
                                                                linkFamily(),
                                                                m_links_incremental_connectivity,

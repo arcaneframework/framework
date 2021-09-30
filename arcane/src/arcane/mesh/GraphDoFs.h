@@ -30,6 +30,7 @@
 #include "arcane/mesh/GhostLayerFromConnectivityComputer.h"
 #include "arcane/utils/DualUniqueIdMng.h"
 #include "arcane/mesh/ParticleFamily.h"
+#include "arcane/mesh/IndexedItemConnectivityAccessor.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -58,9 +59,9 @@ class ARCANE_MESH_EXPORT GraphIncrementalConnectivity
   : m_dualnode_family(dualnode_family)
   , m_link_family(link_family)
   , m_link_connectivity(link_connectivity)
-  , m_link_connectivity_accessor(link_connectivity->connectivityAccessor())
   , m_dualitem_connectivities(dualitem_connectivities)
   , m_dualnode_to_connectivity_index(dualnode_to_connectivity)
+  , m_link_connectivity_accessor(link_connectivity->connectivityAccessor())
   {
     m_dualitem_connectivity_accessors.resize(m_dualitem_connectivities.size()) ;
     for(Integer i=0;i<m_dualitem_connectivities.size();++i)
