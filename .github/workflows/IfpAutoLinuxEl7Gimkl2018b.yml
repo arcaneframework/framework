@@ -16,11 +16,11 @@ env:
   # Arccon
   ARCCON_BUILD_DIR: /__w/framework/framework/arccon_build
   ARCCON_INSTALL_DIR: /__w/framework/framework/arccon_install
-  ARCCON_SOURCE_DIR: /__w/framework/framework/arcane
+  ARCCON_SOURCE_DIR: /__w/framework/framework/arccon
   # Arccore
   ARCCORE_BUILD_DIR: /__w/framework/framework/arccore_build
   ARCCORE_INSTALL_DIR: /__w/framework/framework/arccore_install
-  ARCCORE_SOURCE_DIR: /__w/framework/framework/arcane
+  ARCCORE_SOURCE_DIR: /__w/framework/framework/arccore
   # Dependencies
   DEPENDENCIES_BUILD_DIR: /__w/framework/framework/dependencies_build
   DEPENDENCIES_INSTALL_DIR: /__w/framework/framework/dependencies_install
@@ -28,7 +28,7 @@ env:
   # Axlstar
   AXLSTAR_BUILD_DIR: /__w/framework/framework/axlstar_build
   AXLSTAR_INSTALL_DIR: /__w/framework/framework/axlstar_install
-  AXLSTAR_SOURCE_DIR: /__w/framework/framework/arcane
+  AXLSTAR_SOURCE_DIR: /__w/framework/framework/axlstar
   # CMake
   CM_BUILD_TYPE: Debug
   # CTest
