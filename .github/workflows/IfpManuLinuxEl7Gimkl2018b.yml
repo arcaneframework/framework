@@ -30,9 +30,9 @@ env:
   AXLSTAR_INSTALL_DIR: /__w/framework/framework/axlstar_install
   AXLSTAR_SOURCE_DIR: /__w/framework/framework/axlstar
   # CMake
-  CM_BUILD_TYPE: Debug
+  CM_BUILD_TYPE: Release
   # CTest
-  CT_OPTS: "--timeout 500"
+  CT_OPTS: "--timeout 300"
 
 jobs:
   arccon-install:
