@@ -1,9 +1,21 @@
-//
-// Created by dechaiss on 23/12/2020.
-//
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* GrapheBase                                     (C) 2000-2021             */
+/*                                                                           */
+/* Base class for a simple template graph                                    */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-#ifndef NEO_GRAPHBASE_H
-#define NEO_GRAPHBASE_H
+#ifndef SGRAPH_GRAPHBASE_H
+#define SGRAPH_GRAPHBASE_H
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #include <map>
 #include <set>
@@ -26,7 +38,10 @@
 // TODO EdgeType = void (default)
 // TODO add a template argument Comparator = std::less
 
-namespace Neo {
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace SGraph {
 
     template<class VertexType, class EdgeType>
     class GraphBase {
@@ -47,7 +62,7 @@ namespace Neo {
 
             virtual ~IterableEnsembleT() { if (m_empty_container) delete m_empty_container; }
 
-            typedef typename ContainerT::iterator iterator;
+            using  iterator = typename ContainerT::iterator;
             typedef typename ContainerT::const_iterator const_iterator;
 
             iterator begin() { return m_elements.begin(); }
@@ -78,9 +93,13 @@ namespace Neo {
         using VertexTypeConstRefArray = std::vector<VertexTypeConstRef>;
         using EdgeTypeRefArray = std::vector<EdgeTypeRef>;
         using EdgeTypeConstRefArray = std::vector<EdgeTypeConstRef>;
-        using AdjacencyListType = std::map<VertexTypeConstRef, std::pair<VertexTypeRefArray, EdgeTypeRefArray>>;
+        static inline auto m_vertex_comparator = [](VertexTypeConstRef const& a, VertexTypeConstRef const& b) {return a.get() < b.get();};
+        using VertexComparator = decltype(m_vertex_comparator);
+        using AdjacencyListType = std::map<VertexTypeConstRef, std::pair<VertexTypeRefArray, EdgeTypeRefArray>,VertexComparator>;
         using VertexPair = std::pair<VertexTypeRef, VertexTypeRef>;
-        using EdgeToVertexMap = std::map<EdgeTypeConstRef, VertexPair> ;
+        static inline auto m_edge_comparator = [](EdgeTypeConstRef const& a, EdgeTypeConstRef const& b) {return a.get() < b.get();};
+        using EdgeComparator = decltype(m_edge_comparator);
+        using EdgeToVertexMap = std::map<EdgeTypeConstRef, VertexPair,EdgeComparator> ;
 
         using VertexSet = IterableEnsembleT<VertexList>;
         using EdgeSet   =  IterableEnsembleT<EdgeList>;
@@ -91,17 +110,21 @@ namespace Neo {
         using VertexRef = VertexType;
         using EdgeRef = EdgeType;
 
-        // TODO Array de reference_wrapper ne fonctionne pas ...car il fait des T()...voir avec std::vector...
+        /*---------------------------------------------------------------------------*/
 
-        //! Les arêtes multiples (constituées des mêmes noeuds source et target) ne sont pas autorisées (throw FatalErrorException)
+        //! multiple edge (between same nodes) are not allowed
         void addEdge(const VertexType &source_vertex, const VertexType &target_vertex,
                      const EdgeType &source_to_target_edge) {
             _addEdge(source_vertex, target_vertex, source_to_target_edge);
         }
 
+        /*---------------------------------------------------------------------------*/
+
         void addEdge(VertexType &&source_vertex, VertexType &&target_vertex, EdgeType &&source_to_target_edge) {
             _addEdge(source_vertex, target_vertex, source_to_target_edge);
         }
+
+        /*---------------------------------------------------------------------------*/
 
         template<class Vertex, class Edge>
         void _addEdge(Vertex source_vertex, Vertex target_vertex, Edge source_to_target_edge) {
@@ -114,46 +137,58 @@ namespace Neo {
             VertexType &inserted_source_vertex = _addVertex(source_vertex);
             VertexType &inserted_target_vertex = _addVertex(target_vertex);
             // Fill adjacency map [source_vertex] = pair<TargetVertexArray,EdgeArray>
-            auto adjacency_entry = m_adjacency_list[inserted_source_vertex];
+            auto& adjacency_entry = m_adjacency_list[inserted_source_vertex];
             adjacency_entry.first.push_back(inserted_target_vertex);
             adjacency_entry.second.push_back(inserted_edge);
             // Fill transposed adjacency map [target_vertex] = pair<SourceVertexArray,EdgeArray>
-            auto transposed_adjacency_entry = m_adjacency_list_transposed[inserted_target_vertex];
+            auto& transposed_adjacency_entry = m_adjacency_list_transposed[inserted_target_vertex];
             transposed_adjacency_entry.first.push_back(inserted_source_vertex);
             transposed_adjacency_entry.second.push_back(inserted_edge);
             // Fill edge map [edge] = pair <Vertex,Vertex>
             m_edge_to_vertex_map.insert(std::make_pair(std::ref(inserted_edge),
                                                        std::make_pair(std::ref(inserted_source_vertex),
                                                                       std::ref(inserted_target_vertex))));
-            // c'est moche mais on ne peut pas utiliser [] de la map avec reference_wrapper (not default constructible) ni utiliser emplace (pas supporté dans gcc 4.7.2
-//    m_edge_to_vertex_map.emplace(std::cref(inserted_edge),std::make_pair(inserted_source_vertex,inserted_target_vertex)); // No Gcc 4,7,2
+            // Todo use emplace (ok with recent gcc)
+            //    m_edge_to_vertex_map.emplace(std::cref(inserted_edge),std::make_pair(inserted_source_vertex,inserted_target_vertex)); // No Gcc 4,7,2
         }
+
+        /*---------------------------------------------------------------------------*/
 
         //! Renvoie un pointeur vers l'instance d'EdgeType stockée dans le graphe ou nullptr si non trouvé.
         EdgeType *getEdge(const VertexType &source_vertex, const VertexType &target_vertex) {
             return _getEdge(source_vertex, target_vertex);
         }
 
+        /*---------------------------------------------------------------------------*/
+
         //! Renvoie un pointeur vers l'instance d'EdgeType stockée dans le graphe ou nullptr si non trouvé.
         const EdgeType *getEdge(const VertexType &source_vertex, const VertexType &target_vertex) const {
             return _getEdge(source_vertex, target_vertex);
         }
 
+        /*---------------------------------------------------------------------------*/
+
         EdgeType *_getEdge(const VertexType &source_vertex, const VertexType &target_vertex) {
             int edge_index;
             EdgeTypeRefArray edge_array;
             std::tie(edge_index, edge_array) = _getEdgeIndex(source_vertex, target_vertex);
+            //std::cout << " edge_index " << edge_index << std::endl;
             if (edge_index == -1) return nullptr;
             else return &edge_array[edge_index].get();
         }
 
-        // Implémenter in_edges(vertex) et out_edges(vertex) avec un itérateur...puis edges() et vertices()
+        /*---------------------------------------------------------------------------*/
+
+        // future : implement  in_edges(vertex) and out_edges(vertex) with an iterator
+        // same for  edges() and vertices()
 
         VertexType *getSourceVertex(const EdgeType &edge) {
-            typename EdgeToVertexMap::iterator edge_entry = m_edge_to_vertex_map.find(edge);
+            auto edge_entry = m_edge_to_vertex_map.find(edge);
             if (edge_entry != m_edge_to_vertex_map.end()) return &(edge_entry->second.first.get());
             else return nullptr;
         }
+
+        /*---------------------------------------------------------------------------*/
 
         const VertexType *getSourceVertex(const EdgeType &edge) const {
             auto edge_entry = m_edge_to_vertex_map.find(edge);
@@ -161,11 +196,15 @@ namespace Neo {
             else return nullptr;
         }
 
+        /*---------------------------------------------------------------------------*/
+
         VertexType *getTargetVertex(const EdgeType &edge) {
             auto edge_entry = m_edge_to_vertex_map.find(edge);
             if (edge_entry != m_edge_to_vertex_map.end()) return &edge_entry->second.second.get();
             else return nullptr;
         }
+
+        /*---------------------------------------------------------------------------*/
 
         const VertexType *getTargetVertex(const EdgeType &edge) const {
             auto edge_entry = m_edge_to_vertex_map.find(edge);
@@ -173,9 +212,15 @@ namespace Neo {
             else return nullptr;
         }
 
+        /*---------------------------------------------------------------------------*/
+
         VertexSet vertices() { return VertexSet(m_vertices); }
 
+        /*---------------------------------------------------------------------------*/
+
         EdgeSet edges() { return EdgeSet(m_edges); }
+
+        /*---------------------------------------------------------------------------*/
 
         ConnectedEdgeSet inEdges(const VertexType &vertex) {
             auto found_vertex = m_adjacency_list_transposed.find(vertex);
@@ -184,6 +229,8 @@ namespace Neo {
             } else return ConnectedEdgeSet(found_vertex->second.second); // map <vertex, pair <VertexArray, EdgeArray> >
         }
 
+        /*---------------------------------------------------------------------------*/
+
         ConnectedEdgeSet outEdges(const VertexType &vertex) {
             auto found_vertex = m_adjacency_list.find(vertex);
             if (found_vertex == m_adjacency_list.end()) {
@@ -191,12 +238,22 @@ namespace Neo {
             } else return ConnectedEdgeSet(found_vertex->second.second); // map <vertex, pair <VertexArray, EdgeArray> >
         }
 
+        /*---------------------------------------------------------------------------*/
+
+        void print() {
+            std::cout << "--- Directed Graph ---" << std::endl;
+            for (auto [edge,vertexes] : m_edge_to_vertex_map){
+                std::cout << " -- edge " << edge.get()<< " from vertex " << vertexes.first.get() << " to vertex " << vertexes.second.get() << std::endl;
+
+            }
+        }
+
     protected:
         VertexList m_vertices;
         EdgeList m_edges;
-        AdjacencyListType m_adjacency_list; //! source_vertex -> target_vertices
-        AdjacencyListType m_adjacency_list_transposed; //! target_vertex -> source_vertices
-        EdgeToVertexMap m_edge_to_vertex_map;
+        AdjacencyListType m_adjacency_list = AdjacencyListType{m_vertex_comparator}; //! source_vertex -> target_vertices
+        AdjacencyListType m_adjacency_list_transposed = AdjacencyListType{m_vertex_comparator};//! target_vertex -> source_vertices
+        EdgeToVertexMap m_edge_to_vertex_map = EdgeToVertexMap{m_edge_comparator};
 
     private:
 
@@ -214,25 +271,31 @@ namespace Neo {
             } else return *found_vertex;
         }
 
+        /*---------------------------------------------------------------------------*/
+
         template<class Vertex>
         // to handle Vertex&& et Vertex& = another way to do so ?
         std::pair<int, EdgeTypeRefArray> _getEdgeIndex(Vertex source_vertex, Vertex target_vertex) {
-            typename AdjacencyListType::iterator found_source_vertex = m_adjacency_list.find(source_vertex);
-            if (found_source_vertex == m_adjacency_list.end()) return std::make_pair(-1, EdgeTypeRefArray());
+            auto found_source_vertex = m_adjacency_list.find(std::cref(source_vertex));
+            if (found_source_vertex == m_adjacency_list.end()) return std::make_pair(-1, EdgeTypeRefArray{});
             int target_vertex_index = _getTargetVertexIndex(found_source_vertex, target_vertex);
             return std::make_pair(target_vertex_index,
                                   found_source_vertex->second.second); // pair < u, pair <[u], [u_v] > >...Use get<T> with pair when available to improve readability
         }
 
+        /*---------------------------------------------------------------------------*/
+
         template<class Vertex>
-        // c'est contagieux...
+        // idem
         int _getTargetVertexIndex(typename AdjacencyListType::iterator source_vertex_map_entry, Vertex target_vertex) {
             if (source_vertex_map_entry == m_adjacency_list.end()) return -1;
             return _getConnectedVertexIndex(source_vertex_map_entry, target_vertex);
         }
 
+        /*---------------------------------------------------------------------------*/
+
         template<class Vertex>
-        // c'est contagieux...
+        // idem...
         int _getConnectedVertexIndex(typename AdjacencyListType::iterator vertex_map_entry, Vertex connected_vertex) {
             VertexTypeRefArray &vertex_array = vertex_map_entry->second.first;
             std::vector<int> indexes(vertex_array.size());
@@ -248,10 +311,14 @@ namespace Neo {
 
     };
 
-} // namespace Nep
+} // namespace SGraph
+
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#endif //SGRAPH_GRAPHBASE_H
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-#endif //NEO_GRAPHBASE_H
