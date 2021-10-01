@@ -5,7 +5,7 @@ set_target_properties(Neo PROPERTIES PUBLIC_HEADER "Utils.h;Neo.h;Mesh.h")
 
 target_include_directories(Neo SYSTEM INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-        $<INSTALL_INTERFACE:include>)
+        $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include/>)
 
 target_compile_definitions(Neo INTERFACE HAS_NEO)
 
