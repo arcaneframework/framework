@@ -10,7 +10,7 @@
 /* Interface de la gestion mémoire pour les réductions.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ACCELERATOR_IREDUCEMEMORYIMPL_H
-#define ARCANE_ACCELERATOR_IREDUCEMEMROYIMPL_H
+#define ARCANE_ACCELERATOR_IREDUCEMEMORYIMPL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
