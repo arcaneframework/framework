@@ -45,10 +45,6 @@ class ARCANE_UTILS_EXPORT AbstractObserver
   //! Se détache de l'observable
   void detach() override;
 
- public:
-
-  virtual void observerUpdate(IObservable* iob) =0;
-
  private:
 
   IObservable* m_observable;
