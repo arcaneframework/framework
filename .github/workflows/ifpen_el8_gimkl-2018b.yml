@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
   workflow_dispatch:
-    branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
 
 env:
   # Alien
