@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
   workflow_dispatch:
-    branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
 
 env:
   # Alien
@@ -33,9 +32,6 @@ jobs:
     timeout-minutes: 30
     container:
       image: ghcr.io/arcaneframework/centos-gimkl-2018b-alien:7-latest
-      credentials:
-        username: ${{ secrets.ci_ifpen_read_packages_username }}
-        password: ${{ secrets.ci_ifpen_read_packages_password }}
     strategy:
       fail-fast: false
     steps:
@@ -78,9 +74,6 @@ jobs:
     timeout-minutes: 30
     container:
       image: ghcr.io/arcaneframework/centos-gimkl-2018b-alien:7-latest
-      credentials:
-        username: ${{ secrets.ci_ifpen_read_packages_username }}
-        password: ${{ secrets.ci_ifpen_read_packages_password }}
     strategy:
       fail-fast: false
     steps:
@@ -140,9 +133,6 @@ jobs:
     timeout-minutes: 60
     container:
       image: ghcr.io/arcaneframework/centos-gimkl-2018b-alien:7-latest
-      credentials:
-        username: ${{ secrets.ci_ifpen_read_packages_username }}
-        password: ${{ secrets.ci_ifpen_read_packages_password }}
     strategy:
       fail-fast: false
     steps:
@@ -197,9 +187,6 @@ jobs:
     timeout-minutes: 30
     container:
       image: ghcr.io/arcaneframework/centos-gimkl-2018b-alien:7-latest
-      credentials:
-        username: ${{ secrets.ci_ifpen_read_packages_username }}
-        password: ${{ secrets.ci_ifpen_read_packages_password }}
     strategy:
       fail-fast: false
     steps:
@@ -233,9 +220,6 @@ jobs:
     timeout-minutes: 180
     container:
       image: ghcr.io/arcaneframework/centos-gimkl-2018b-alien:7-latest
-      credentials:
-        username: ${{ secrets.ci_ifpen_read_packages_username }}
-        password: ${{ secrets.ci_ifpen_read_packages_password }}
     strategy:
       fail-fast: false
     steps:
