@@ -1,5 +1,5 @@
 FROM arcaneframework/alien-base:ubuntu20.04
-LABEL maintener.email=<cedric.chevalier@cea.fr>
+LABEL maintainer.email=<cedric.chevalier@cea.fr>
 
 ARG UID=1000
 ARG GID=100

@@ -1,7 +1,7 @@
 # Ubuntu 20.04 dependencies for Alien
 FROM ubuntu:20.04
 
-LABEL maintener.email=<cedric.chevalier@cea.fr>
+LABEL maintainer.email=<cedric.chevalier@cea.fr>
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TZ=Europe/Paris
