@@ -9,7 +9,8 @@
 /*                                                                           */
 /* Interface d'un graphe d'un maillage    .                                  */
 /*---------------------------------------------------------------------------*/
-#pragma once
+#ifndef ARCANE_IGRAPH2_H
+#define ARCANE_IGRAPG2_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -27,7 +28,7 @@ ARCANE_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Nombre de type d'entit�s duales
+//! Nombre de type d'entités duales
 static const Integer NB_DUAL_ITEM_TYPE = 5;
 
 extern "C++" ARCANE_CORE_EXPORT eItemKind
@@ -38,7 +39,7 @@ class IGraph2 ;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Outillage de connectivit� d'un graphe
+ * \brief Outillage de connectivité d'un graphe
  */
 
 
@@ -50,7 +51,7 @@ class IGraph2 ;
 class ARCANE_CORE_EXPORT IGraphConnectivity
 {
  public :
-  virtual ~IGraphConnectivity() {} //<! Lib�re les ressources
+  virtual ~IGraphConnectivity() {} //<! Libère les ressources
 
   //! accès à l'Item dual d'un DualNode (detype DoF)
   virtual Item dualItem(const DoF& dualNode) const = 0 ;
@@ -69,7 +70,7 @@ class ARCANE_CORE_EXPORT IGraph2
 {
 public:
 
-  virtual ~IGraph2() {} //<! Lib�re les ressources
+  virtual ~IGraph2() {} //<! Libère les ressources
 
 public:
 
@@ -109,4 +110,5 @@ ARCANE_END_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+#endif
 

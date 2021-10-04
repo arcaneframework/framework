@@ -87,7 +87,7 @@ public:
   virtual SharedArray<IIncrementalItemConnectivity*> getParentRelations(IItemFamily* source_family) = 0;
 
   //! Obtenir la liste de toutes les familles
-  virtual std::set<IItemFamily*> const& getFamilies() const =0;
+  virtual const std::set<IItemFamily*>& getFamilies() const =0;
 
   virtual SharedArray<IItemFamily*> getFamilies(eSchedulingOrder order) const =0;
 

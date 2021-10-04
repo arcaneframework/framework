@@ -98,7 +98,7 @@ public:
   SharedArray<IIncrementalItemConnectivity*> getParentRelations(IItemFamily* target_family) override;
 
   //! Obtenir la liste de toutes les familles
-  std::set<IItemFamily*> const& getFamilies() const override {return m_families;}
+  const std::set<IItemFamily*>& getFamilies() const override {return m_families;}
 
   SharedArray<IItemFamily*> getFamilies(eSchedulingOrder order) const override;
 
