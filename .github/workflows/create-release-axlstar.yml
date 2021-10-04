@@ -1,24 +1,24 @@
-# Il faut que le tag soit de la forme 'arccore-v2.3.4'
+# Il faut que le tag soit de la forme 'axlstar-v2.3.4'
 
 on:
   push:
     # Sequence of patterns matched against refs/tags
     tags:
-      - 'arccore-v*'
+      - 'axlstar-v*'
 
-name: Create Release Arccore
+name: Create Release Axlstar
 
 # TODO: Vérifier que le numéro de version du tag correspond
 # au fichier 'version' dans le composant correspondant
-# (par exemple si 'arccore-v2.3.2' alors le fichier 'framework/arccore/version'
+# (par exemple si 'axlstar-v2.3.2' alors le fichier 'framework/axlstar/version'
 # doit valoir cela aussi)
 
 jobs:
   build:
     env:
-      COMPONENT_NAME: arccore
-      COMPONENT_NAME_UPPER: Arccore
-    name: Create Release Arccore
+      COMPONENT_NAME: axlstar
+      COMPONENT_NAME_UPPER: Axlstar
+    name: Create Release Axlstar
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

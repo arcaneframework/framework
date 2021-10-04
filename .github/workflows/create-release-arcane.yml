@@ -6,7 +6,7 @@ on:
     tags:
       - 'arcane-v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
-name: Create Release
+name: Create Release Arcane
 
 
 # TODO: Vérifier que le numéro de version du tag correspond
@@ -18,7 +18,8 @@ jobs:
   build:
     env:
       COMPONENT_NAME: arcane
-    name: Create Release
+      COMPONENT_NAME_UPPER: Arcane
+    name: Create Release Arcane
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -29,7 +30,7 @@ jobs:
 
       - name: Get the version
         id: get_tag_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\/arcane-v/}
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\/${COMPONENT_NAME}-v/}
 
       - name: Export tag version
         shell: 'bash'
@@ -59,7 +60,7 @@ jobs:
       - name: Make 'framework-base' tar
         shell: 'bash'
         run: |
-          tar cfz framework.tar.gz --transform "s,^framework/,framework-${FRAMEWORK_TAG_VERSION}/," framework
+          tar cfz framework.tar.gz --transform "s,^framework,framework-${FRAMEWORK_TAG_VERSION}," framework
           ls -lart .
           tar tvf framework.tar.gz
 
@@ -67,19 +68,19 @@ jobs:
         shell: 'bash'
         run: |
           echo Creating tar file for arcane
-          tar cfz arcane.tar.gz --transform "s,^arcane/,arcane-${FRAMEWORK_TAG_VERSION}/," -C framework arcane
+          tar cfz ${COMPONENT_NAME}.tar.gz --transform "s,^${COMPONENT_NAME},${COMPONENT_NAME}-${FRAMEWORK_TAG_VERSION}," -C framework arcane
           ls -lart .
-          tar tvf arcane.tar.gz
+          tar tvf ${COMPONENT_NAME}.tar.gz
 
 
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: Arcane Version ${{ env.FRAMEWORK_TAG_VERSION }}
+          release_name: ${{ env.COMPONENT_NAME_UPPER }} Version ${{ env.FRAMEWORK_TAG_VERSION }}
           body: |
             Release ${{ env.FRAMEWORK_TAG_VERSION }}
           draft: false
@@ -91,8 +92,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./arcane.tar.gz
-          asset_name: arcane-${{ env.FRAMEWORK_TAG_VERSION }}.src.tar.gz
+          asset_path: ./${{ env.COMPONENT_NAME }}.tar.gz
+          asset_name: ${{ env.COMPONENT_NAME }}-${{ env.FRAMEWORK_TAG_VERSION }}.src.tar.gz
           asset_content_type: application/gzip
 
       - name: Upload asset 2 to GitHub release

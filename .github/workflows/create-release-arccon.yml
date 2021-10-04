@@ -1,24 +1,24 @@
-# Il faut que le tag soit de la forme 'arccore-v2.3.4'
+# Il faut que le tag soit de la forme 'arccon-v2.3.4'
 
 on:
   push:
     # Sequence of patterns matched against refs/tags
     tags:
-      - 'arccore-v*'
+      - 'arccon-v*'
 
-name: Create Release Arccore
+name: Create Release Arccon
 
 # TODO: Vérifier que le numéro de version du tag correspond
 # au fichier 'version' dans le composant correspondant
-# (par exemple si 'arccore-v2.3.2' alors le fichier 'framework/arccore/version'
+# (par exemple si 'arccon-v2.3.2' alors le fichier 'framework/arccon/version'
 # doit valoir cela aussi)
 
 jobs:
   build:
     env:
-      COMPONENT_NAME: arccore
-      COMPONENT_NAME_UPPER: Arccore
-    name: Create Release Arccore
+      COMPONENT_NAME: arccon
+      COMPONENT_NAME_UPPER: Arccon
+    name: Create Release Arccon
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
