@@ -2486,8 +2486,13 @@ ownerElement() const
 void DOMImplementation::
 initialize()
 {
-  // On peut appeler ::xmlInitParser() mais ce n'est pas nécessaire
-  // donc on ne le fait pas.
+  // Appelle explicitement xmlInitParser(). Cela n'est en théorie pas
+  // indispensable mais cette méthode peut générer des exceptions flottante
+  // car à un momement il y a un appel explicite à une division par zéro pour
+  // générer un Nan (dans xmlXPathInit()). Comme DOMImplementation::initialize()
+  // est appelé avant d'activer les exception flottantes il faut faire
+  // explicitement l'appel à l'initialisation du parseur ici.
+  ::xmlInitParser();
 }
 
 /*---------------------------------------------------------------------------*/

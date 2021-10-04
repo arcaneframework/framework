@@ -34,7 +34,7 @@ class ICodeService;
 class ServiceFactoryInfo;
 class ArcaneMainExecInfo;
 class DotNetRuntimeInitialisationInfo;
-class AcceleratorRuntimeInitialisationInfo;
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
