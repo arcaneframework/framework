@@ -5,7 +5,7 @@
 
 Cette page contient les nouveautés de chaque version de %Arcane.
 
-Arcane Version 3.0.4 (... 2021) {#arcanedoc_version304}
+Arcane Version 3.0.5 (30 septembre 2021) {#arcanedoc_version304}
 ======================================
 
 Nouveautés/Améliorations:
@@ -27,6 +27,14 @@ Nouveautés/Améliorations:
 - Ajoute support pour la version OneTBB 2021.
 - Ajoute macros RUNCOMMAND_ENUMERATE() et RUNCOMMAND_LOOP() pour
   itérer sur les accélérateurs
+- Ajoute classe Arcane::Accelerator::IAcceleratorMng pour récupérer
+  les informations pour utiliser les accélérateurs. Cette interface
+  permet de récupérer l'environnement d'exécution par défaut et la
+  file d'exécution par défaut.
+- Ajoute classe Arcane::StandaloneAcceleratorMng pour utiliser les
+  accélérateurs sans initialiser une application.
+- Ajoute support pour paralléliser en multi-thread les boucles
+  imbriquées jusqu'à 4 niveaux (PR #10)
 
 Changements:
 
@@ -63,10 +71,8 @@ ENUMERATE_CELL(icell,allCells()){
 - [config] Supporte le cas où plusieurs versions du SDK pour 'dotnet'
   sont installées. Dans ce cas la version la plus récente est utilisée.
 
-Arcane Version 3.0.3 (... 2021) {#arcanedoc_version303}
+Arcane Version 3.0.3 (Not released) {#arcanedoc_version303}
 ======================================
-
-[TEMPORARY]
 
 Nouveautés/Améliorations:
 
