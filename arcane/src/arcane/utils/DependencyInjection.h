@@ -21,6 +21,8 @@
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/ExternalRef.h"
 
+#include "arccore/base/ReferenceCounterImpl.h"
+
 #include <functional>
 #include <atomic>
 
@@ -31,13 +33,23 @@ namespace Arcane::DependencyInjection
 {
 
 class Injector;
-class FactoryInfo;
 namespace impl
 {
+class FactoryInfo;
 class IInstanceFactory;
 template<typename InterfaceType>
 class IConcreteFactory;
 }
+
+}
+
+ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::DependencyInjection::impl::IInstanceFactory)
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::DependencyInjection
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -59,25 +71,6 @@ class ARCANE_UTILS_EXPORT ProviderProperty
   ProviderProperty(const char* name) : m_name(name){}
  public:
   const char* m_name;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class ARCANE_UTILS_EXPORT FactoryInfo
-{
- private:
-  FactoryInfo(const ProviderProperty& property) : m_property(property){}
- public:
-  static FactoryInfo* create(const ProviderProperty& property,const char* file_name,int line_number)
-  {
-    ARCANE_UNUSED(file_name);
-    ARCANE_UNUSED(line_number);
-    return new FactoryInfo(property);
-  }
-  void addFactory(impl::IInstanceFactory* f){}
- private:
-  ProviderProperty m_property;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -161,23 +154,17 @@ class ARCANE_UTILS_EXPORT InjectedInstanceRef
  */
 class ARCANE_UTILS_EXPORT IInstanceFactory
 {
+  ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
+
  protected:
 
   virtual ~IInstanceFactory() = default;
 
  public:
 
-  virtual InjectedInstanceRef createReference(Injector&) =0;
+  virtual InjectedInstanceRef createGenericReference(Injector&) =0;
 
   virtual const FactoryInfo* factoryInfo() const =0;
-
- public:
-
-  //! Ajoute une référence.
-  virtual void addReference() =0;
-
-  //! Supprime une référence.
-  virtual void removeReference() =0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -189,20 +176,10 @@ class ARCANE_UTILS_EXPORT IInstanceFactory
  * Cette classe s'utiliser via un ReferenceCounter pour gérer sa destruction.
  */
 class ARCANE_CORE_EXPORT AbstractInstanceFactory
-: public IInstanceFactory
+: public ReferenceCounterImpl
+, public IInstanceFactory
 {
- protected:
-  AbstractInstanceFactory() : m_nb_ref(0){}
- public:
-  void addReference() override { ++m_nb_ref; }
-  void removeReference() override
-  {
-    Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
-    if (v==1)
-      delete this;
-  }
- private:
-  std::atomic<Int32> m_nb_ref;
+  ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -224,9 +201,14 @@ class InstanceFactory
     delete m_sub_factory;
   }
 
-  InjectedInstanceRef createReference(Injector& injector) override
+  InjectedInstanceRef createGenericReference(Injector& injector) override
   {
     return _create(_createReference(injector));
+  }
+
+  Ref<InterfaceType> createReference(Injector& injector)
+  {
+    return _createReference(injector);
   }
 
   const FactoryInfo* factoryInfo() const override
@@ -292,69 +274,28 @@ class ConcreteFactory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace impl
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- */
-class ARCANE_UTILS_EXPORT Injector
+class ARCANE_UTILS_EXPORT FactoryInfo
 {
+  friend class Arcane::DependencyInjection::Injector;
   class Impl;
-
  public:
-
-  Injector();
-  Injector(const Injector&) = delete;
-  Injector& operator=(const Injector&) = delete;
-  ~Injector() = default;
-
- public:
-
-  template<typename InterfaceType> void
-  bind(Ref<InterfaceType> iref)
-  {
-    auto* x = new impl::InjectedInstance<InterfaceType>(iref);
-    _add(x);
-  }
-
-  template<typename InterfaceType> Ref<InterfaceType>
-  get()
-  {
-    using InjectedInstanceType = impl::IInjectedInstanceT<InterfaceType>;
-    InjectedInstanceType* t = nullptr;
-    auto f = [&](IInjectedInstance* v) -> bool
-             {
-               t = dynamic_cast<InjectedInstanceType*>(v);
-               return t;
-             };
-    _iterate(f);
-    if (t)
-      return t->instance();
-    // TODO: faire un fatal ou créér l'instance
-    return {};
-  }
-
+  FactoryInfo(const FactoryInfo&) = delete;
+  FactoryInfo& operator=(const FactoryInfo&) = delete;
+  ~FactoryInfo();
  private:
-
+  FactoryInfo(const ProviderProperty& property);
+ public:
+  static FactoryInfo* create(const ProviderProperty& property,const char* file_name,int line_number)
+  {
+    ARCANE_UNUSED(file_name);
+    ARCANE_UNUSED(line_number);
+    return new FactoryInfo(property);
+  }
+  void addFactory(Ref<IInstanceFactory> f);
+ private:
   Impl* m_p = nullptr;
-
- private:
-
-  void _add(IInjectedInstance* instance);
-  // Itère sur la lambda et s'arrête dès que cette dernière retourne \a true
-  template<typename Lambda> void
-  _iterate(const Lambda& lambda)
-  {
-    Integer n = _nbValue();
-    for (Integer i=0; i<n; ++i ){
-      if (lambda(_value(i)))
-        return;
-    }
-  }
-  Integer _nbValue() const;
-  IInjectedInstance* _value(Integer i) const;
 };
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -418,6 +359,7 @@ class ARCANE_UTILS_EXPORT GlobalRegisterer
   void _setNextService(GlobalRegisterer* s) { m_next = s; }
 };
 
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -448,7 +390,7 @@ class ServiceInterfaceRegisterer
   template<typename ServiceType> void
   registerToFactoryInfo(FactoryInfo* si) const
   {
-    impl::IConcreteFactory<InterfaceType>* factory = new impl::ConcreteFactory<ServiceType,InterfaceType>();
+    IConcreteFactory<InterfaceType>* factory = new ConcreteFactory<ServiceType,InterfaceType>();
 #if 0
     if (m_namespace_name)
       si->addImplementedInterface(String(m_namespace_name)+String("::")+String(m_name));
@@ -456,7 +398,7 @@ class ServiceInterfaceRegisterer
       si->addImplementedInterface(m_name);
     //si->addFactory(new ServiceFactory2TV2<InterfaceType>(si,factory));
 #endif
-    si->addFactory(new impl::InstanceFactory<InterfaceType>(si,factory));
+    si->addFactory(makeRef<IInstanceFactory>(new InstanceFactory<InterfaceType>(si,factory)));
   }
 
  private:
@@ -505,26 +447,132 @@ class ServiceAllInterfaceRegisterer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+} // End namespace impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ */
+class ARCANE_UTILS_EXPORT Injector
+{
+  class Impl;
+
+ public:
+
+  Injector();
+  Injector(const Injector&) = delete;
+  Injector& operator=(const Injector&) = delete;
+  ~Injector() = default;
+
+ public:
+
+  template<typename InterfaceType> void
+  bind(Ref<InterfaceType> iref)
+  {
+    auto* x = new impl::InjectedInstance<InterfaceType>(iref);
+    _add(x);
+  }
+
+  template<typename InterfaceType> Ref<InterfaceType>
+  get()
+  {
+    using InjectedInstanceType = impl::IInjectedInstanceT<InterfaceType>;
+    InjectedInstanceType* t = nullptr;
+    auto f = [&](IInjectedInstance* v) -> bool
+             {
+               t = dynamic_cast<InjectedInstanceType*>(v);
+               return t;
+             };
+    _iterateInstances(f);
+    if (t)
+      return t->instance();
+    // TODO: faire un fatal ou créér l'instance
+    return {};
+  }
+
+  template<typename InterfaceType> Ref<InterfaceType>
+  createInstance()
+  {
+    using FactoryType = impl::InstanceFactory<InterfaceType>;
+    Ref<InterfaceType> instance;
+    auto f = [&](impl::IInstanceFactory* v) -> bool
+             {
+               auto* t = dynamic_cast<FactoryType*>(v);
+               if (t){
+                 Ref<InterfaceType> x = t->createReference(*this);
+                 if (x.get()){
+                   instance = x;
+                   return true;
+                 }
+               }
+               return false;
+             };
+    _iterateFactories(f);
+    if (instance.get())
+      return instance;
+    // TODO: faire un fatal
+    return instance;
+  }
+
+  void fillWithGlobalFactories();
+
+ private:
+
+  Impl* m_p = nullptr;
+
+ private:
+
+  void _add(IInjectedInstance* instance);
+  // Itère sur la lambda et s'arrête dès que cette dernière retourne \a true
+  template<typename Lambda> void
+  _iterateInstances(const Lambda& lambda)
+  {
+    Integer n = _nbValue();
+    for (Integer i=0; i<n; ++i ){
+      if (lambda(_value(i)))
+        return;
+    }
+  }
+  Integer _nbValue() const;
+  IInjectedInstance* _value(Integer i) const;
+
+  // Itère sur la lambda et s'arrête dès que cette dernière retourne \a true
+  template<typename Lambda> void
+  _iterateFactories(const Lambda& lambda)
+  {
+    Integer n = _nbFactory();
+    for (Integer i=0; i<n; ++i ){
+      if (lambda(_factory(i)))
+        return;
+    }
+  }
+  Integer _nbFactory() const;
+  impl::IInstanceFactory* _factory(Integer i) const;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 #define ARCANE_DI_SERVICE_INTERFACE(ainterface)\
-  ::Arcane::DependencyInjection::ServiceInterfaceRegisterer< ainterface >(#ainterface)
+  ::Arcane::DependencyInjection::impl::ServiceInterfaceRegisterer< ainterface >(#ainterface)
 
 #define ARCANE_DI_SERVICE_INTERFACE_NS(ainterface_ns,ainterface) \
-  ::Arcane::DependencyInjection::ServiceInterfaceRegisterer<ainterface_ns :: ainterface>(#ainterface_ns,#ainterface)
+  ::Arcane::DependencyInjection::impl::ServiceInterfaceRegisterer<ainterface_ns :: ainterface>(#ainterface_ns,#ainterface)
 
 // TODO: garantir au moins une interface
 
 #define ARCANE_DI_REGISTER_PROVIDER(t_class,t_provider_property,...)  \
 namespace\
 {\
-  Arcane::DependencyInjection::FactoryInfo*                            \
+  Arcane::DependencyInjection::impl::FactoryInfo*                       \
   ARCANE_JOIN_WITH_LINE(arcaneCreateDependencyInjectionProviderInfo##t_class) (const Arcane::DependencyInjection::ProviderProperty& property) \
   {\
-    auto* si = Arcane::DependencyInjection::FactoryInfo::create(property,__FILE__,__LINE__); \
-    Arcane::DependencyInjection::ServiceAllInterfaceRegisterer<t_class> :: registerProviderInfo(si,__VA_ARGS__); \
+    auto* si = Arcane::DependencyInjection::impl::FactoryInfo::create(property,__FILE__,__LINE__); \
+    Arcane::DependencyInjection::impl::ServiceAllInterfaceRegisterer<t_class> :: registerProviderInfo(si,__VA_ARGS__); \
     return si;\
   }\
 }\
-Arcane::DependencyInjection::GlobalRegisterer ARCANE_EXPORT ARCANE_JOIN_WITH_LINE(globalServiceRegisterer##aclass) \
+ Arcane::DependencyInjection::impl::GlobalRegisterer ARCANE_EXPORT ARCANE_JOIN_WITH_LINE(globalServiceRegisterer##aclass) \
   (& ARCANE_JOIN_WITH_LINE(arcaneCreateDependencyInjectionProviderInfo##t_class),t_provider_property)
 
 /*---------------------------------------------------------------------------*/

@@ -24,12 +24,26 @@ class IA
 {
  public:
   virtual ~IA() = default;
+  virtual int value() const =0;
 };
 
 class IB
 {
  public:
   virtual ~IB() = default;
+  virtual int value() const =0;
+};
+
+class IC
+{
+ public:
+  virtual ~IC() = default;
+};
+
+class ID
+{
+ public:
+  virtual ~ID() = default;
 };
 
 class AImpl
@@ -37,6 +51,7 @@ class AImpl
 {
  public:
   AImpl(const Injector&){}
+  int value() const override { return 5; }
 };
 
 class BImpl
@@ -44,14 +59,15 @@ class BImpl
 {
  public:
   BImpl(const Injector&){}
+  int value() const override { return 12; }
 };
 
-class ABImpl
-: public IB
-, public IA
+class CDImpl
+: public ID
+, public IC
 {
  public:
-  ABImpl(const Injector&){}
+  CDImpl(const Injector&){}
 };
 
 ARCANE_DI_REGISTER_PROVIDER(AImpl,
@@ -62,10 +78,10 @@ ARCANE_DI_REGISTER_PROVIDER(BImpl,
                             ProviderProperty("BImplProvider"),
                             ARCANE_DI_SERVICE_INTERFACE(IB));
 
-ARCANE_DI_REGISTER_PROVIDER(ABImpl,
-                            ProviderProperty("ABImplProvider"),
-                            ARCANE_DI_SERVICE_INTERFACE(IA),
-                            ARCANE_DI_SERVICE_INTERFACE(IB)
+ARCANE_DI_REGISTER_PROVIDER(CDImpl,
+                            ProviderProperty("CDImplProvider"),
+                            ARCANE_DI_SERVICE_INTERFACE(IC),
+                            ARCANE_DI_SERVICE_INTERFACE(ID)
                             );
 
 }
@@ -86,13 +102,16 @@ TEST(DependencyInjection,TestBind1)
 TEST(DependencyInjection,ProcessGlobalProviders)
 {
   using namespace Arcane::DependencyInjection;
-  GlobalRegisterer* g = GlobalRegisterer::firstService();
-  Integer i = 0;
-  while (g){
-    std::cout << "G=" << g << "\n";
-    g = g->nextService();
-    ++i;
-    if (i>100000)
-      break;
-  }
+  using namespace DI_Test;
+
+  Injector injector;
+  injector.fillWithGlobalFactories();
+
+  Ref<IA> ia = injector.createInstance<IA>();
+  EXPECT_TRUE(ia.get());
+  ASSERT_EQ(ia->value(),5);
+
+  Ref<IB> ib = injector.createInstance<IB>();
+  EXPECT_TRUE(ib.get());
+  ASSERT_EQ(ib->value(),12);
 }
