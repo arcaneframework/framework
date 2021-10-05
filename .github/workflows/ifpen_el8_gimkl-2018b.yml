@@ -134,7 +134,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          repository: arcaneframework/dependencies
+          repository: ${{ github.repository_owner }}/dependencies
           path: ${{ env.DEPENDENCIES_SOURCE_DIR }}
           ref: main
       - name: Download arccon install artifact
@@ -292,7 +292,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          repository: arcaneframework/alien
+          repository: ${{ github.repository_owner }}/alien
           path: ${{ env.ALIEN_SOURCE_DIR }}
           ref: main
       - name: Download arccon install artifact
