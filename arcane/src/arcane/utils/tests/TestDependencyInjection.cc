@@ -14,6 +14,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#define ARCANE_DI_INJECT(Signature)                                                                                    \
+  using Inject = Signature;                                                                                            \
+                                                                                                                       \
+  Signature
+
 using namespace Arcane;
 
 namespace DI_Test
@@ -68,6 +73,19 @@ class CDImpl
 {
  public:
   CDImpl(const Injector&){}
+};
+
+class A2Impl
+: public IA
+{
+ public:
+  ARCANE_DI_INJECT(A2Impl(int a,IB* ib)) : m_a(a), m_ib(ib) {}
+ public:
+  //AImpl(const Injector&){}
+  int value() const override { return 23; }
+ private:
+  int m_a;
+  IB* m_ib;
 };
 
 ARCANE_DI_REGISTER_PROVIDER(AImpl,
