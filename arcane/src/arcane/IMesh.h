@@ -37,7 +37,6 @@ class IMeshModifier;
 class IMeshMng;
 class Properties;
 class IMeshPartitionConstraintMng;
-class IGraph;
 class IExtraGhostCellsBuilder;
 class IUserData;
 class IUserDataList;
@@ -126,12 +125,6 @@ class IMesh : public IMeshBase
 
  public:
 
-  //! Graphe associé
-  ARCCORE_DEPRECATED_2020("Graph is no longer available. always return nullptr")
-  virtual IGraph* graph() { return nullptr; }
-  
- public:
-
   //! Descripteur de connectivité
   /*! Cet objet permet de lire/modifier la connectivité */
   virtual VariableScalarInteger connectivity() = 0;
@@ -211,8 +204,9 @@ class IMesh : public IMeshBase
    * \brief Retourne la famille de nom \a name.
    *
    * Si \a create_if_needed est vrai, la famille est créé si elle n'existait pas.
+   * Si \a register_modifier_if_created est vrai, le modifier de la famille est enregistré
    */
-  virtual IItemFamily* findItemFamily(eItemKind ik,const String& name,bool create_if_needed=false) =0;
+  virtual IItemFamily* findItemFamily(eItemKind ik,const String& name,bool create_if_needed=false,bool register_modifier_if_created=false) =0;
 
   /*!
    * \brief Retourne la famille de nom \a name.
@@ -376,6 +370,9 @@ class IMesh : public IMeshBase
 
   //! Informations sur les parties du maillage
   virtual const MeshPartInfo& meshPartInfo() const =0;
+
+  //! check if the network itemFamily dependencies is activated
+  virtual bool useMeshItemFamilyDependencies() const =0;
 
   //! Interface du réseau de familles (familles connectées)
   virtual IItemFamilyNetwork* itemFamilyNetwork() =0;

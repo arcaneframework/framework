@@ -32,8 +32,6 @@
 #include "arcane/VariableCollection.h"
 
 #include "arcane/IItemOperationByBasicType.h"
-#include "arcane/IGraph.h"
-#include "arcane/IGraphModifier.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 

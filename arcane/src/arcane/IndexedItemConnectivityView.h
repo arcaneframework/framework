@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/Item.h"
+#include "arcane/IItemFamily.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -22,6 +23,7 @@
 namespace Arcane
 {
 
+  class IIncrementalItemConnectivity ;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -54,6 +56,15 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
     m_source_kind = source_kind;
     m_target_kind = target_kind;
   }
+
+  void set(IndexedItemConnectivityViewBase view)
+  {
+    m_indexes = view.m_indexes;
+    m_nb_item = view.m_nb_item;
+    m_list_data = view.m_list_data;
+    m_source_kind = view.m_source_kind;
+    m_target_kind = view.m_target_kind;
+  }
  protected:
   SmallSpan<const Int32> m_nb_item;
   SmallSpan<const Int32> m_indexes;
@@ -68,6 +79,7 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
       _badConversion(k1,k2);
   }
 };
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

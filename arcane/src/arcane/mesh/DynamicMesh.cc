@@ -183,7 +183,6 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh, bo
 , m_mesh_compact_mng(new MeshCompactMng(this))
 , m_connectivity_policy(InternalConnectivityPolicy::Legacy)
 , m_mesh_part_info(makeMeshPartInfoFromParallelMng(m_parallel_mng))
-, m_item_family_network(nullptr)
 {
   m_node_family = new NodeFamily(this,"Node");
   m_edge_family = new EdgeFamily(this,"Edge");
@@ -213,6 +212,7 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh, bo
 
   // Adding the family dependencies if asked
   if (_connectivityPolicy() == InternalConnectivityPolicy::NewWithDependenciesAndLegacy && !is_submesh && !m_is_amr_activated) {
+      m_use_mesh_item_family_dependencies = true ;
       m_item_family_network = new ItemFamilyNetwork(traceMng());
       _addDependency(m_cell_family,m_node_family);
       _addDependency(m_cell_family,m_face_family);
@@ -237,6 +237,20 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh, bo
       m_family_modifiers.add(m_node_family);
       m_family_modifiers.add(m_edge_family);
   }
+
+  {
+    String s = platform::getEnvironmentVariable("ARCANE_GRAPH_CONNECTIVITY_POLICY");
+    if (s=="1")
+    {
+      m_item_family_network = new ItemFamilyNetwork(traceMng());
+      info()<<"Graph connectivity is activated";
+      m_family_modifiers.add(m_cell_family);
+      m_family_modifiers.add(m_face_family);
+      m_family_modifiers.add(m_node_family);
+      m_family_modifiers.add(m_edge_family);
+    }
+  }
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -736,7 +750,7 @@ _allocateCells(Integer mesh_nb_cell,
   _checkDimension();
   _checkConnectivity();
   Int32 rank = meshRank();
-  if (m_item_family_network)
+  if (m_use_mesh_item_family_dependencies)
     m_mesh_builder->addCells3(mesh_nb_cell,cells_infos,rank,cells,allow_build_face);
   else
     m_mesh_builder->addCells(mesh_nb_cell,cells_infos,rank,cells,allow_build_face);
@@ -781,7 +795,9 @@ _addCells(ISerializer* buffer,Int32Array* cells_local_id)
   Trace::Setter mci(traceMng(),_className());
   _checkDimension();
   _checkConnectivity();
-  if (!itemFamilyNetwork() || !IItemFamilyNetwork::plug_serializer) {
+  if (!itemFamilyNetwork() ||
+      !(itemFamilyNetwork() && itemFamilyNetwork()->isActivated()) ||
+      !IItemFamilyNetwork::plug_serializer) {
     buffer->setMode(ISerializer::ModeGet);
     ScopedPtrT<IItemFamilySerializer> cell_serializer(m_cell_family->policyMng()->createSerializer());
     cell_serializer->deserializeItems(buffer,cells_local_id);
@@ -800,7 +816,9 @@ serializeCells(ISerializer* buffer,Int32ConstArrayView cells_local_id)
   Trace::Setter mci(traceMng(),_className());
   _checkDimension();
   _checkConnectivity();
-  if (!itemFamilyNetwork() || !IItemFamilyNetwork::plug_serializer) {
+  if ( !itemFamilyNetwork() ||
+       !(itemFamilyNetwork() && itemFamilyNetwork()->isActivated()) ||
+       !IItemFamilyNetwork::plug_serializer) {
     ScopedPtrT<IItemFamilySerializer> cell_serializer(m_cell_family->policyMng()->createSerializer());
     buffer->setMode(ISerializer::ModeReserve);
     cell_serializer->serializeItems(buffer,cells_local_id);
@@ -914,7 +932,7 @@ addFaces(Integer nb_face,Int64ConstArrayView face_infos,Int32ArrayView faces)
   _checkDimension();
   _checkConnectivity();
   Int32 rank = meshRank();
-  if (m_item_family_network)
+  if (m_use_mesh_item_family_dependencies)
     m_mesh_builder->addFaces3(nb_face,face_infos,rank,faces);
   else
     m_mesh_builder->addFaces(nb_face,face_infos,rank,faces);
@@ -929,7 +947,7 @@ addEdges(Integer nb_edge,Int64ConstArrayView edge_infos,Int32ArrayView edges)
   _checkDimension();
   _checkConnectivity();
   Int32 rank = meshRank();
-  if (m_item_family_network)
+  if (m_use_mesh_item_family_dependencies)
     m_mesh_builder->addEdges3(nb_edge,edge_infos,rank,edges);
   else
     m_mesh_builder->addEdges(nb_edge,edge_infos,rank,edges);
@@ -944,7 +962,7 @@ addNodes(Int64ConstArrayView nodes_uid,Int32ArrayView nodes)
   _checkDimension();
   _checkConnectivity();
   Int32 rank = meshRank();
-  if (m_item_family_network)
+  if (m_use_mesh_item_family_dependencies)
     m_mesh_builder->addNodes2(nodes_uid,rank,nodes);
   else
     m_mesh_builder->addNodes(nodes_uid,rank,nodes);
@@ -970,7 +988,7 @@ removeCells(Int32ConstArrayView cells_local_id,bool update_graph)
 {
   ARCANE_UNUSED(update_graph);
   Trace::Setter mci(traceMng(),_className());
-  if (m_item_family_network)
+  if (m_use_mesh_item_family_dependencies)
     removeItems(m_cell_family,cells_local_id);
   else
     m_cell_family->removeItems(cells_local_id);  
@@ -1007,7 +1025,7 @@ void DynamicMesh::
 detachCells(Int32ConstArrayView cells_local_id)
 {
   Trace::Setter mci(traceMng(),_className());
-  if (m_item_family_network)
+  if (m_use_mesh_item_family_dependencies)
     m_cell_family->detachCells2(cells_local_id);
   else {
     ItemInternalList cells = m_cell_family->itemsInternal();
@@ -1023,7 +1041,7 @@ void DynamicMesh::
 removeDetachedCells(Int32ConstArrayView cells_local_id)
 {
   Trace::Setter mci(traceMng(),_className());
-  if (m_item_family_network)
+  if (m_use_mesh_item_family_dependencies)
     removeItems(m_cell_family,cells_local_id);
   else {
     ItemInternalList cells = m_cell_family->itemsInternal();
@@ -1351,7 +1369,7 @@ _prepareForDump()
 IItemFamily* DynamicMesh::
 createItemFamily(eItemKind ik,const String& name)
 {
-  IItemFamily* xfamily = findItemFamily(ik,name,false);
+  IItemFamily* xfamily = findItemFamily(ik,name,false,false);
   if (xfamily)
     ARCANE_FATAL("Attempting to create a family that already exists '{0}'",name);
 
@@ -1386,8 +1404,6 @@ _createNewFamily(eItemKind kind, const String& name)
     case IK_DoF:
       return new DoFFamily(this,name);
     case IK_Unknown:
-    case IK_Link:
-    case IK_DualNode:
       ARCANE_FATAL("Attempting to create an ItemFamily with an unknown item kind.");
   }
   ARCANE_FATAL("Invalid ItemKind");
@@ -1413,8 +1429,6 @@ _createFamilyPolicyMng(ItemFamily* family)
       return createParticleFamilyPolicyMng(family);
     case IK_DoF:
       return createDoFFamilyPolicyMng(family);
-    case IK_Link:
-    case IK_DualNode:
     case IK_Unknown:
       ARCANE_FATAL("Attempting to create an ItemFamily with an unknown item kind.");
   }
@@ -1447,13 +1461,22 @@ _addFamily(ItemFamily* family)
 /*---------------------------------------------------------------------------*/
 
 IItemFamily* DynamicMesh::
-findItemFamily(eItemKind ik,const String& name,bool create_if_needed)
+findItemFamily(eItemKind ik,const String& name,bool create_if_needed, bool register_modifier_if_created)
 {
   for( IItemFamily* family : m_item_families)
     if (family->name()==name && family->itemKind()==ik)
       return family;
   if (create_if_needed)
-    return createItemFamily(ik,name);
+  {
+    IItemFamily* family = createItemFamily(ik,name);
+    if(register_modifier_if_created)
+    {
+      IItemFamilyModifier* modifier = dynamic_cast<IItemFamilyModifier*>(family) ;
+      if(modifier)
+        m_family_modifiers.add(modifier) ;
+    }
+    return family ;
+  }
   return nullptr;
 }
 
@@ -1478,7 +1501,7 @@ findItemFamily(const String& name,bool throw_exception)
 IItemFamilyModifier* DynamicMesh::
 findItemFamilyModifier(eItemKind ik,const String& name)
 {
-  IItemFamily* family = findItemFamily(ik, name, false);
+  IItemFamily* family = findItemFamily(ik, name, false,false);
   if (!family) return nullptr;
   auto find_iterator = std::find_if(m_family_modifiers.begin(),m_family_modifiers.end(),[&family](IItemFamilyModifier* modifier){return modifier->family() == family;});
   if (find_iterator == m_family_modifiers.end()) return nullptr;
@@ -2364,8 +2387,6 @@ _synchronizeVariables()
     case IK_Edge:
     case IK_Face:
     case IK_Cell: 
-    case IK_Link:
-    case IK_DualNode:
     case IK_DoF:{
       IVariableSynchronizer * synchronizer = 0;
       if (var->isPartial())
@@ -2554,7 +2575,7 @@ _readFromDump()
   {
     Integer nb_item_family = m_item_families_name.size();
     for( Integer i=0; i<nb_item_family; ++i ){
-      findItemFamily((eItemKind)m_item_families_kind[i],m_item_families_name[i],true);
+      findItemFamily((eItemKind)m_item_families_kind[i],m_item_families_name[i],true,false);
     }
   }
 

@@ -49,16 +49,12 @@ template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Edge,datatype>; \
 template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Face,datatype>; \
 template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Cell,datatype>; \
 template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Particle,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<DualNode,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Link,datatype>; \
 template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<DoF,datatype>; \
 template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Node,datatype>; \
 template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Edge,datatype>; \
 template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Face,datatype>; \
 template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Cell,datatype>; \
 template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Particle,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<DualNode,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Link,datatype>; \
 template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<DoF,datatype>
 
 /*---------------------------------------------------------------------------*/

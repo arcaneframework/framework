@@ -28,6 +28,9 @@
 #include "arcane/MeshVariable.h"
 #include "arcane/IParticleFamily.h"
 
+#include "arcane/ConnectivityItemVector.h"
+#include "arcane/IndexedItemConnectivityView.h"
+#include "arcane/mesh/IndexedItemConnectivityAccessor.h"
 #include "arcane/mesh/MeshExchange.h"
 #include "arcane/mesh/NewItemOwnerBuilder.h"
 
@@ -151,7 +154,7 @@ public:
     m_data[id].add(data);
   }
   
-  inline Array<T>& at(Integer id) {
+  inline UniqueArray<T>& at(Integer id) {
     return m_data[id];
   }
   
@@ -162,7 +165,7 @@ public:
 
 private:
   
-  UniqueArray< SharedArray<T> > m_data;
+  UniqueArray< UniqueArray<T> > m_data;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -246,18 +249,45 @@ computeInfos()
     _computeMeshConnectivityInfos2(cells_new_owner);
     _computeGraphConnectivityInfos();
     _exchangeCellDataInfos(cells_new_owner,true);
+    _markRemovableCells(cells_new_owner,true);
+    _markRemovableParticles();
     _computeItemsToSend2();
-  } else if (m_mesh->itemFamilyNetwork()) {
-    _computeMeshConnectivityInfos3();
-    _computeGraphConnectivityInfos();
-    _exchangeCellDataInfos3(); // todo renommer itemDataInfo
-    _exchangeGhostItemDataInfos();
-    _markRemovableItems();
-    _computeItemsToSend3();
-  } else {
+  }
+  else if (m_mesh->itemFamilyNetwork() && m_mesh->itemFamilyNetwork()->isActivated() > 0)
+  {
+    if(m_mesh->useMeshItemFamilyDependencies())
+    {
+      _computeMeshConnectivityInfos3();
+      _computeGraphConnectivityInfos();
+      _exchangeCellDataInfos3(); // todo renommer itemDataInfo
+      _exchangeGhostItemDataInfos();
+      _markRemovableItems();
+      _markRemovableParticles();
+      _computeItemsToSend3();
+    }
+    else
+    {
+      //Manage Mesh item_families in standard way
+      _computeMeshConnectivityInfos(cells_new_owner);
+      _computeMeshConnectivityInfos3();
+      _computeGraphConnectivityInfos();
+      _exchangeCellDataInfos(cells_new_owner,false);
+      _exchangeCellDataInfos3();
+      //_exchangeGhostItemDataInfos();
+      //_markRemovableItems();
+      _markRemovableDoFs();
+      _markRemovableCells(cells_new_owner,false);
+      _markRemovableParticles();
+      _computeItemsToSend(true);
+    }
+  }
+  else
+  {
     _computeMeshConnectivityInfos(cells_new_owner);
     _computeGraphConnectivityInfos();
     _exchangeCellDataInfos(cells_new_owner,false);
+    _markRemovableCells(cells_new_owner,false);
+    _markRemovableParticles();
     _computeItemsToSend();
   } //! AMR END
 }
@@ -285,7 +315,8 @@ _computeGraphConnectivityInfos()
   m_neighbour_extra_cells_owner     = new DynamicMultiArray<Int32>(cell_variable_size);
   m_neighbour_extra_cells_new_owner = new DynamicMultiArray<Int32>(cell_variable_size);
   
-  if (m_mesh->itemFamilyNetwork()) {
+  if (m_mesh->itemFamilyNetwork() && m_mesh->itemFamilyNetwork()->isActivated() > 0 )
+  {
       _addGraphConnectivityToNewConnectivityInfo();
   }
 }
@@ -496,47 +527,6 @@ _exchangeCellDataInfos(Int32ConstArrayView cells_new_owner,bool use_active_cells
       m_neighbour_cells_new_owner->endIncrement();
     }
   }
-
-  // Ce test n'est plus représentatif avec le concept extraghost
-  // Faut il trouver une alternative ??
-  // // Vérifie que toutes les mailles ont eues leur voisines calculées
-  // ENUMERATE_CELL(icell,m_cell_family->allItems()){
-  //   const Cell& cell = *icell;
-  //   Integer cell_local_id = cell.localId();
-  //   if (m_neighbour_cells_owner->index(cell_local_id) == -1 && 
-  //       m_neighbour_extra_cells_owner->at(cell_local_id).size() == 0 )
-  //     fatal() << ItemPrinter(cell) << " has no neighbours! (no owner)";
-  //   if (m_neighbour_cells_new_owner->index(cell_local_id)==(-1))
-  //     fatal() << ItemPrinter(cell) << " has no neighbours! (no new owner index)";
-  // }
-  
-  // Détermine les mailles qui peuvent être supprimées.
-  // Une maille peut-être supprimée si la liste de ses nouveaux propriétaires ne
-  // contient pas ce sous-domaine.
-  ENUMERATE_CELL(icell,all_items){
-    Cell cell = *icell;
-    Integer cell_local_id = cell.localId();
-    if (cells_new_owner[cell_local_id]==m_rank)
-      continue;
-    
-    Int32ConstArrayView new_owners = m_neighbour_cells_new_owner->at(cell_local_id);
-    bool keep_cell = new_owners.contains(m_rank);
-    if (!keep_cell){
-      Int32ConstArrayView extra_new_owners = m_neighbour_extra_cells_new_owner->at(cell_local_id);
-      keep_cell = extra_new_owners.contains(m_rank);
-    }
-    if (!keep_cell){
-      cell.internal()->setFlags(cell.internal()->flags() | ItemInternal::II_NeedRemove);
-    }
-  }
-  
-  _markRemovableParticles();
-
-  // SDC DEBUG PRINT
-//  _printItemToRemove(m_cell_family);
-//  _printItemToRemove(m_mesh->faceFamily());
-//  _printItemToRemove(m_mesh->edgeFamily());
-//  _printItemToRemove(m_mesh->nodeFamily());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -544,7 +534,8 @@ _exchangeCellDataInfos(Int32ConstArrayView cells_new_owner,bool use_active_cells
 
 void MeshExchange::
 _addItemToSend(ArrayView< std::set<Int32> > items_to_send,
-               Int32 local_id,Int32 cell_local_id)
+               Int32 local_id,Int32 cell_local_id,
+               bool use_itemfamily_network)
 {
   Int32ConstArrayView new_owners = m_neighbour_cells_new_owner->at(cell_local_id);
   for( Integer zz=0, nb_new_owner = new_owners.size(); zz<nb_new_owner; ++zz )
@@ -553,13 +544,22 @@ _addItemToSend(ArrayView< std::set<Int32> > items_to_send,
   Int32ConstArrayView extra_new_owners = m_neighbour_extra_cells_new_owner->at(cell_local_id);
   for( Integer zz=0, nb_extra_new_owner = extra_new_owners.size(); zz<nb_extra_new_owner; ++zz )
     items_to_send[extra_new_owners[zz]].insert(local_id);
+
+  if(use_itemfamily_network)
+  {
+    Int32ConstArrayView network_new_owners = m_item_dest_ranks_map[m_cell_family]->at(cell_local_id);
+    for( Integer zz=0, nb_network_new_owner = network_new_owners.size(); zz<nb_network_new_owner; ++zz )
+    {
+      items_to_send[network_new_owners[zz]].insert(local_id);
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MeshExchange::
-_computeItemsToSend()
+_computeItemsToSend(bool send_dof)
 {
   for( auto iter : m_items_to_send )
     iter.second->resize(m_nb_rank);
@@ -576,40 +576,46 @@ _computeItemsToSend()
 
   Int32ConstArrayView cells_new_owner(cell_family->itemsNewOwner().asArray());
   Int32ConstArrayView faces_new_owner(face_family->itemsNewOwner().asArray());
+  bool use_itemfamily_network = m_mesh->itemFamilyNetwork() && m_mesh->itemFamilyNetwork()->isActivated() ;
   ENUMERATE_CELL(icell,cell_family->allItems().own()){
-    _addItemToSend(cells_to_send,icell.itemLocalId(),icell.itemLocalId());
+    _addItemToSend(cells_to_send,icell.itemLocalId(),icell.itemLocalId(),use_itemfamily_network);
   }
 
   ENUMERATE_NODE(inode,node_family->allItems().own()){
     Node node = *inode;
     Integer node_local_id = node.localId();
     for( CellEnumerator icell(node.cells()); icell.hasNext(); ++icell )
-      _addItemToSend(nodes_to_send,node_local_id,icell.localId());
+      _addItemToSend(nodes_to_send,node_local_id,icell.localId(),use_itemfamily_network);
   }
 
   ENUMERATE_EDGE(iedge,edge_family->allItems().own()){
     Edge edge = *iedge;
     Integer edge_local_id = edge.localId();
     for( CellEnumerator icell(edge.cells()); icell.hasNext(); ++icell )
-      _addItemToSend(edges_to_send,edge_local_id,icell.localId());
+      _addItemToSend(edges_to_send,edge_local_id,icell.localId(),use_itemfamily_network);
   }
 
   ENUMERATE_FACE(iface,face_family->allItems().own()){
     Face face = *iface;
     Integer face_local_id = face.localId();
     for( CellEnumerator icell(face.cells()); icell.hasNext(); ++icell ){
-      _addItemToSend(faces_to_send,face_local_id,icell.localId());
+      _addItemToSend(faces_to_send,face_local_id,icell.localId(),use_itemfamily_network);
     }
   }
   
   {
-    for( IItemFamily* family : m_mesh->itemFamilies()){
+    for( IItemFamily* family : m_mesh->itemFamilies())
+    {
       IParticleFamily* particle_family = family->toParticleFamily();
       if (particle_family && particle_family->getEnableGhostItems()==true){
         ArrayView<std::set<Int32>> to_send = _getItemsToSend(family);
         ENUMERATE_PARTICLE(iparticle,particle_family->allItems().own()){
-          _addItemToSend(to_send,iparticle->localId(),iparticle->cell().localId());
+          _addItemToSend(to_send,iparticle->localId(),iparticle->cell().localId(),use_itemfamily_network);
         }
+      }
+      if(send_dof && family->itemKind()==IK_DoF)
+      {
+        _setItemsToSend(family);
       }
     }
   }
@@ -896,16 +902,18 @@ _computeMeshConnectivityInfos3()
   //    This is done for all family, parsing the family graph from head to leaves
   // 2- For all items add new dest ranks to its depending child (move with your downward dependencies)
   if (!m_mesh->ghostLayerMng()) info() << "Should have a IGhostLayerMng. Exiting";
-  for (int ghost_layer_index = 0; ghost_layer_index < m_mesh->ghostLayerMng()->nbGhostLayer(); ++ghost_layer_index) {
+  for (int ghost_layer_index = 0; ghost_layer_index < m_mesh->ghostLayerMng()->nbGhostLayer(); ++ghost_layer_index)
+  {
     //2-Diffuse destination rank info to connected items
     m_mesh->itemFamilyNetwork()->schedule([&](IItemFamily* family){
       _propagatesToChildConnectivities(family);
     },
     IItemFamilyNetwork::TopologicalOrder);
-    m_mesh->itemFamilyNetwork()->schedule([&](IItemFamily* family){
-      _propagatesToChildDependencies(family);
-    },
-    IItemFamilyNetwork::TopologicalOrder);
+
+    //m_mesh->itemFamilyNetwork()->schedule([&](IItemFamily* family){
+    //  _propagatesToChildDependencies(family);
+    //},
+    //IItemFamilyNetwork::TopologicalOrder);
   }
 }
 
@@ -925,13 +933,57 @@ _propagatesToChildConnectivities(IItemFamily* family)
    * }
    */
   auto child_connectivities = m_mesh->itemFamilyNetwork()->getChildConnectivities(family);
-  ENUMERATE_ITEM(item, family->allItems()) {
-    // Parse child relations
-    _addDestRank(*item,family,item_new_owner[item]);
-    for (auto child_connectivity : child_connectivities) {
-      ConnectivityItemVector accessor(child_connectivity);
-      ENUMERATE_ITEM(connected_item,accessor.connectedItems(ItemLocalId(item))){
-        _addDestRank(*connected_item,child_connectivity->targetFamily(),*item,family);
+  for (auto child_connectivity : child_connectivities)
+  {
+    //if(!child_connectivity->isEmpty())
+    {
+      auto accessor = IndexedItemConnectivityAccessor(child_connectivity) ;
+      ENUMERATE_ITEM(item, family->allItems())
+      {
+        // Parse child relations
+        _addDestRank(*item,family,item_new_owner[item]);
+
+        ENUMERATE_ITEM(connected_item,accessor(ItemLocalId(item)))
+        {
+          _addDestRank(*connected_item,child_connectivity->targetFamily(),*item,family);
+        }
+      }
+    }
+  }
+  if(!m_mesh->useMeshItemFamilyDependencies())
+  {
+    switch(family->itemKind())
+    {
+      case IK_Face:
+        ENUMERATE_FACE(item, family->allItems())
+        {
+          ENUMERATE_CELL(icell,item->cells())
+          {
+            _addDestRank(*icell,m_cell_family,*item,family);
+          }
+        }
+        break ;
+      case IK_Edge:
+        ENUMERATE_EDGE(item, family->allItems())
+        {
+          ENUMERATE_CELL(icell,item->cells())
+          {
+            _addDestRank(*icell,m_cell_family,*item,family);
+          }
+        }
+        break ;
+      case IK_Node:
+      {
+        ENUMERATE_NODE(item, family->allItems())
+        {
+          ENUMERATE_CELL(icell,item->cells())
+          {
+            _addDestRank(*icell,m_cell_family,*item,family);
+          }
+        }
+        break ;
+      default:
+        break ;
       }
     }
   }
@@ -950,12 +1002,18 @@ _propagatesToChildDependencies(IItemFamily* family)
   //    would contain the immediate children (FirstRankChildren) would be an EdgeSet or smthg near
   //    => thus we would need to add to the DAG a method children(const Edge&) (see for the name firstRankChildren ??)
   auto child_dependencies =  m_mesh->itemFamilyNetwork()->getChildDependencies(family);
-  ENUMERATE_ITEM(item, family->allItems()) {
-    // Parse child dependencies
-    for (auto child_dependency :child_dependencies) {
-      ConnectivityItemVector accessor(child_dependency);
-      ENUMERATE_ITEM(connected_item,accessor.connectedItems(ItemLocalId(item))){
-        _addDestRank(*connected_item,child_dependency->targetFamily(),*item, family); // as simple as that ??
+  for (auto child_dependency :child_dependencies)
+  {
+    //if(!child_dependency->isEmpty())
+    {
+      auto accessor = IndexedItemConnectivityAccessor(child_dependency) ;
+      ENUMERATE_ITEM(item, family->allItems())
+      {
+        // Parse child dependencies
+          ENUMERATE_ITEM(connected_item,accessor(ItemLocalId(item)))
+          {
+            _addDestRank(*connected_item,child_dependency->targetFamily(),*item, family); // as simple as that ??
+          }
       }
     }
   }
@@ -968,10 +1026,12 @@ void MeshExchange::
 _addDestRank(const Item& item, IItemFamily* item_family, const Integer new_owner) // take an ItemInternal* ?
 {
   ItemDestRankArray* item_dest_ranks = nullptr;
-  if (item->owner() == m_rank) {
+  if (item->owner() == m_rank)
+  {
     item_dest_ranks = m_item_dest_ranks_map[item_family];// this search could be written outside the enumerate (but the enumerate is cheap : on connected items)
   }
-  else {
+  else
+  {
     item_dest_ranks= m_ghost_item_dest_ranks_map[item->owner()][item_family];
   }
   // Insert element only if not present
@@ -987,10 +1047,12 @@ _addDestRank(const Item& item, IItemFamily* item_family, const Item& followed_it
 {
   // todo : a getDestRank method
   ItemDestRankArray* item_dest_ranks = nullptr;
-  if (item.owner() == m_rank) {
+  if (item.owner() == m_rank)
+  {
     item_dest_ranks = m_item_dest_ranks_map[item_family];// this search could be written outside the enumerate (but the enumerate is cheap : on connected items)
   }
-  else {
+  else
+  {
     item_dest_ranks= m_ghost_item_dest_ranks_map[item.owner()][item_family];
   }
   ItemDestRankArray* followed_item_dest_ranks = nullptr;
@@ -1003,7 +1065,8 @@ _addDestRank(const Item& item, IItemFamily* item_family, const Item& followed_it
   auto& current_dest_ranks = item_dest_ranks->at(item.localId());
   IntegerUniqueArray new_dest_rank_to_add;
   new_dest_rank_to_add.reserve((new_dest_ranks.size()));
-  for (auto& new_dest_rank : new_dest_ranks) {
+  for (auto& new_dest_rank : new_dest_ranks)
+  {
     if (!current_dest_ranks.contains(new_dest_rank)) new_dest_rank_to_add.add(new_dest_rank);
   }
   current_dest_ranks.addRange(new_dest_rank_to_add);
@@ -1062,7 +1125,8 @@ _exchangeCellDataInfos3()
   Int32UniqueArray family_nb_items;
   Int64UniqueArray item_uids;
 
-  for( Integer i=0, is=recv_sub_domains.size(); i<is; ++i ){
+  for( Integer i=0, is=recv_sub_domains.size(); i<is; ++i )
+  {
       ISerializeMessage* comm = sd_exchange->messageToSend(i);
       Int32 dest_sub_domain = comm->destination().value();
       ISerializer* sbuf = comm->serializer();
@@ -1075,7 +1139,8 @@ _exchangeCellDataInfos3()
         Integer family_nb_item = 0;
         item_lids.clear();
         item_families.add(family_ghost_item_dest_ranks.first);
-        for (Integer item_lid = 0; item_lid < family_ghost_item_dest_ranks.second->size(); ++item_lid){
+        for (Integer item_lid = 0; item_lid < family_ghost_item_dest_ranks.second->size(); ++item_lid)
+        {
           if (family_ghost_item_dest_ranks.second->at(item_lid).size() == 0) continue;
           item_lids.add(item_lid);
           item_dest_ranks.addRange(family_ghost_item_dest_ranks.second->at(item_lid));
@@ -1083,7 +1148,8 @@ _exchangeCellDataInfos3()
           family_nb_item++;
         }
         family_nb_items.add(family_nb_item);
-        ENUMERATE_ITEM(item, family_ghost_item_dest_ranks.first->view(item_lids)) {
+        ENUMERATE_ITEM(item, family_ghost_item_dest_ranks.first->view(item_lids))
+        {
           item_uids.add(item->uniqueId().asInt64());
         }
       }
@@ -1130,13 +1196,15 @@ _exchangeCellDataInfos3()
     Integer item_uid_index = 0;
     Integer item_nb_dest_rank_index = 0;
     Integer item_dest_rank_index = 0;
-    for (int family_index = 0; family_index < nb_families; ++family_index) {
+    for (int family_index = 0; family_index < nb_families; ++family_index)
+    {
       IItemFamily* family = m_mesh->findItemFamily(eItemKind(item_family_kinds[family_index]),
                                                    item_family_names[family_index],false);
       Int64ArrayView family_item_uids = item_uids.subView(item_uid_index,family_nb_items[family_index]);
       item_lids.resize(family_item_uids.size());
       family->itemsUniqueIdToLocalId(item_lids,family_item_uids,true);
-      for (auto item_lid : item_lids) {
+      for (auto item_lid : item_lids)
+      {
         auto sub_view = item_dest_ranks.subView(item_dest_rank_index,item_nb_dest_ranks[item_nb_dest_rank_index]);
         m_item_dest_ranks_map[family]->at(item_lid).addRange(sub_view);
         item_dest_rank_index+= item_nb_dest_ranks[item_nb_dest_rank_index++];
@@ -1201,8 +1269,10 @@ _setItemsToSend(IItemFamily* family)
   if (iter==m_items_to_send.end())
     ARCANE_FATAL("No items to send for family '{0}'",family->name());
   ArrayView<std::set<Int32>> items_to_send = iter->second->view();
-  for (Integer item_lid = 0 ; item_lid < m_item_dest_ranks_map[family]->size(); ++item_lid) {
-    for (auto dest_rank : m_item_dest_ranks_map[family]->at(item_lid)) {
+  for (Integer item_lid = 0 ; item_lid < m_item_dest_ranks_map[family]->size(); ++item_lid)
+  {
+    for (auto dest_rank : m_item_dest_ranks_map[family]->at(item_lid))
+    {
       items_to_send[dest_rank].insert(item_lid);
     }
   }
@@ -1244,27 +1314,120 @@ _printItemToRemove(IItemFamily* family)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 void MeshExchange::
-_markRemovableItems()
+_markRemovableDoFs()
 {
-  for (auto item_dest_ranks_iter : m_item_dest_ranks_map) { // todo use C++17 structured bindings
+  for (auto item_dest_ranks_iter : m_item_dest_ranks_map)
+  { // todo use C++17 structured bindings
     IItemFamily* family = item_dest_ranks_iter.first;
-    auto & item_new_owners = family->itemsNewOwner();
-    ENUMERATE_ITEM(item, family->allItems()) {
-      Int32ArrayView item_dest_ranks;
-      // Get destination rank for item (depending if it's ghost or own)
-      if (item->isOwn()) item_dest_ranks = item_dest_ranks_iter.second->at(item.localId()).view();
-      else item_dest_ranks = m_ghost_item_dest_ranks_map[item->owner()][family]->at(item.localId()).view();
-      // Check if the item must stay on the subdomain (ie dest_rank or new_owner contain the subdomain)
-      if (!item_dest_ranks.contains(m_rank) && item_new_owners[item] != m_rank) item.internal()->setFlags(item.internal()->flags() | ItemInternal::II_NeedRemove);
+    if(family->itemKind() == IK_DoF )
+    {
+      auto & item_new_owners = family->itemsNewOwner();
+      ENUMERATE_ITEM(item, family->allItems())
+      {
+        Int32ArrayView item_dest_ranks;
+        // Get destination rank for item (depending if it's ghost or own)
+        if (item->isOwn())
+          item_dest_ranks = item_dest_ranks_iter.second->at(item->localId()).view();
+        else
+          item_dest_ranks = m_ghost_item_dest_ranks_map[item->owner()][family]->at(item->localId()).view();
+        // Check if the item must stay on the subdomain (ie dest_rank or new_owner contain the subdomain)
+        if (!item_dest_ranks.contains(m_rank) && item_new_owners[item] != m_rank)
+        {
+          item.internal()->setFlags(item.internal()->flags() | ItemInternal::II_NeedRemove);
+        }
+      }
     }
 //    _printItemToRemove(item_dest_ranks_iter.first); // SDC DEBUG
   }
-
-  _markRemovableParticles(); // Todo should be included in previous loop (add ParticleFamily in ItemFamilyNetwork)
 }
 
+void MeshExchange::
+_markRemovableItems(bool with_cell_family)
+{
+  for (auto item_dest_ranks_iter : m_item_dest_ranks_map)
+  { // todo use C++17 structured bindings
+    IItemFamily* family = item_dest_ranks_iter.first;
+    if(with_cell_family || family->name()!=m_cell_family->name() )
+    {
+      auto & item_new_owners = family->itemsNewOwner();
+      ENUMERATE_ITEM(item, family->allItems())
+      {
+        Int32ArrayView item_dest_ranks;
+        // Get destination rank for item (depending if it's ghost or own)
+        if (item->isOwn())
+          item_dest_ranks = item_dest_ranks_iter.second->at(item.localId()).view();
+        else
+          item_dest_ranks = m_ghost_item_dest_ranks_map[item->owner()][family]->at(item.localId()).view();
+        // Check if the item must stay on the subdomain (ie dest_rank or new_owner contain the subdomain)
+        if (!item_dest_ranks.contains(m_rank) && item_new_owners[item] != m_rank)
+        {
+          item.internal()->setFlags(item.internal()->flags() | ItemInternal::II_NeedRemove);
+        }
+      }
+    }
+//    _printItemToRemove(item_dest_ranks_iter.first); // SDC DEBUG
+  }
+}
+
+void MeshExchange::
+_markRemovableCells(Int32ConstArrayView cells_new_owner,bool  use_active_cells)
+{
+  // Ce test n'est plus représentatif avec le concept extraghost
+  // Faut il trouver une alternative ??
+  // // Vérifie que toutes les mailles ont eues leur voisines calculées
+  // ENUMERATE_CELL(icell,m_cell_family->allItems()){
+  //   const Cell& cell = *icell;
+  //   Integer cell_local_id = cell.localId();
+  //   if (m_neighbour_cells_owner->index(cell_local_id) == -1 &&
+  //       m_neighbour_extra_cells_owner->at(cell_local_id).size() == 0 )
+  //     fatal() << ItemPrinter(cell) << " has no neighbours! (no owner)";
+  //   if (m_neighbour_cells_new_owner->index(cell_local_id)==(-1))
+  //     fatal() << ItemPrinter(cell) << " has no neighbours! (no new owner index)";
+  // }
+
+  // Détermine les mailles qui peuvent être supprimées.
+  // Une maille peut-être supprimée si la liste de ses nouveaux propriétaires ne
+  // contient pas ce sous-domaine.
+
+  ItemGroup all_items = m_cell_family->allItems();
+
+  auto itemfamily_network = m_mesh->itemFamilyNetwork() ;
+  bool use_itemfamily_network = ( itemfamily_network!= nullptr && itemfamily_network->isActivated() );
+
+  // Avec l'AMR, on utilise les mailles actives et pas toutes les mailles.
+  if (use_active_cells)
+    all_items = m_cell_family->allItems().activeCellGroup();
+
+  ENUMERATE_CELL(icell,all_items){
+    Cell cell = *icell;
+    Integer cell_local_id = cell.localId();
+    if (cells_new_owner[cell_local_id]==m_rank)
+      continue;
+
+    Int32ConstArrayView new_owners = m_neighbour_cells_new_owner->at(cell_local_id);
+    bool keep_cell = new_owners.contains(m_rank);
+    if (!keep_cell){
+      Int32ConstArrayView extra_new_owners = m_neighbour_extra_cells_new_owner->at(cell_local_id);
+      keep_cell = extra_new_owners.contains(m_rank);
+    }
+    if(!keep_cell && use_itemfamily_network)
+    {
+      Int32ArrayView item_dest_ranks;
+      // Get destination rank for item (depending if it's ghost or own)
+      if (icell->isOwn())
+        item_dest_ranks = m_item_dest_ranks_map[m_cell_family]->at(icell->localId()).view();
+      else
+        item_dest_ranks = m_ghost_item_dest_ranks_map[icell->owner()][m_cell_family]->at(icell->localId()).view();
+      // Check if the item must stay on the subdomain (ie dest_rank or new_owner contain the subdomain)
+      keep_cell = item_dest_ranks.contains(m_rank) ;
+    }
+    if (!keep_cell)
+    {
+      cell.internal()->setFlags(cell.internal()->flags() | ItemInternal::II_NeedRemove);
+    }
+  }
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -1296,9 +1459,10 @@ _checkSubItemsDestRanks()
   m_mesh->itemFamilyNetwork()->schedule([this](IItemFamily* family){
     ENUMERATE_ITEM(item, family->allItems().own()) {
       const auto& item_dest_ranks = m_item_dest_ranks_map[family]->at(item.localId());
-      for (auto child_dependency : m_mesh->itemFamilyNetwork()->getChildDependencies(family)) {
-        ConnectivityItemVector accessor(child_dependency);
-        ENUMERATE_ITEM(connected_item,accessor.connectedItems(ItemLocalId(item))){
+      for (auto child_dependency : m_mesh->itemFamilyNetwork()->getChildDependencies(family))
+      {
+        auto accessor = IndexedItemConnectivityAccessor(child_dependency);
+        ENUMERATE_ITEM(connected_item,accessor(ItemLocalId(item))){
           Int32ConstArrayView subitem_dest_ranks;
           // test can only be done for own subitems, otherwise their dest_ranks are only partially known => to see
           if (connected_item->isOwn()) {
@@ -1358,7 +1522,8 @@ _exchangeGhostItemDataInfos()
     item_nb_dest_ranks.clear();
     family_nb_items.clear();
     item_uids.clear();
-    for (auto family_item_dest_ranks : m_item_dest_ranks_map) {
+    for (auto family_item_dest_ranks : m_item_dest_ranks_map)
+    {
       Integer family_nb_item = 0;
       IItemFamily* family = family_item_dest_ranks.first;
       if (family->nbItem() == 0) continue; // skip empty family

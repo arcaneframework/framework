@@ -48,8 +48,10 @@ class ARCANE_MESH_EXPORT CellFamilyPolicyMng
     IMesh* mesh = m_family->mesh();
     DynamicMesh* dmesh = ARCANE_CHECK_POINTER(dynamic_cast<DynamicMesh*>(mesh));
     // Todo use unique_ptr ?
-    if (mesh->itemFamilyNetwork() && IItemFamilyNetwork::plug_serializer) return new ItemFamilySerializer(m_family, m_family, dmesh->incrementalBuilder());
-    else return new CellFamilySerializer(m_family,use_flags,dmesh->incrementalBuilder());
+    if(mesh->useMeshItemFamilyDependencies())
+      return new ItemFamilySerializer(m_family, m_family, dmesh->incrementalBuilder());
+    else
+      return new CellFamilySerializer(m_family,use_flags,dmesh->incrementalBuilder());
 
   }
  private:

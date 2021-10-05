@@ -115,33 +115,6 @@ class ARCANE_CORE_EXPORT ParticleLocalId
   inline ParticleLocalId(Particle item);
 };
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \ingroup Mesh
- * \brief Index d'un DualNode dans une variable.
- */
-class ARCANE_CORE_EXPORT DualNodeLocalId
-: public ItemLocalId
-{
- public:
-  explicit DualNodeLocalId(Int32 id) : ItemLocalId(id){}
-  inline DualNodeLocalId(DualNode item);
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \ingroup Mesh
- * \brief Index d'un Link dans une variable.
- */
-class ARCANE_CORE_EXPORT LinkLocalId
-: public ItemLocalId
-{
- public:
-  explicit LinkLocalId(Int32 id) : ItemLocalId(id){}
-  inline LinkLocalId(Link item);
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

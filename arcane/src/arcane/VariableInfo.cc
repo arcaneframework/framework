@@ -145,12 +145,6 @@ _defaultFamilyName()
   case IK_Cell:
     family_name = ItemTraitsT<Cell>::defaultFamilyName();
     break;
-  case IK_DualNode:
-    family_name = ItemTraitsT<DualNode>::defaultFamilyName();
-    break;
-  case IK_Link:
-    family_name = ItemTraitsT<Link>::defaultFamilyName();
-    break;
   case IK_Unknown:
     break;
   }

@@ -30,7 +30,6 @@
 #include "arcane/IMeshReader.h"
 #include "arcane/ISubDomain.h"
 #include "arcane/IMesh.h"
-#include "arcane/IGraph.h"
 #include "arcane/IMeshSubMeshTransition.h"
 #include "arcane/IItemFamily.h"
 #include "arcane/Item.h"

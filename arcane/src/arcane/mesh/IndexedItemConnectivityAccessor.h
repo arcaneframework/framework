@@ -5,62 +5,63 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DoFManager.h                                                (C) 2000-2015 */
+/* IndexedItemConnectivityAccessor.h                               (C) 2000-2021 */
 /*                                                                           */
-/* Comment on file content.                                                  */
+/* Connectivité incrémentale des entités.                                    */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_DOFMANAGER_H
-#define ARCANE_DOFMANAGER_H
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcaneGlobal.h"
-#include "arcane/IMesh.h"
-#include "arcane/mesh/DoFFamily.h"
-
-ARCANE_BEGIN_NAMESPACE
-
+#pragma once
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/TraceAccessor.h"
+
+#include "arcane/IItemFamily.h"
+#include "arcane/ItemVector.h"
+#include "arcane/VariableTypes.h"
+//#include "arcane/ItemInternal.h"
+#include "arcane/IIncrementalItemConnectivity.h"
+
+#include "arcane/mesh/MeshGlobal.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+namespace Arcane::mesh
+{
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//TODO: renommer en DofMng
-class DoFManager
+class ARCANE_MESH_EXPORT IndexedItemConnectivityAccessor
+: public IndexedItemConnectivityViewBase
 {
  public:
+  IndexedItemConnectivityAccessor(IndexedItemConnectivityViewBase view, IItemFamily* target_item_family) ;
 
-  /** Constructeur de la classe */
-  DoFManager(IMesh* mesh, IItemConnectivityMng* connectivity_mng)
-  : m_mesh(mesh) , m_connectivity_mng(connectivity_mng){}
+  IndexedItemConnectivityAccessor(IIncrementalItemConnectivity* connectivity) ;
 
-  /** Destructeur de la classe */
-  virtual ~DoFManager() {}
+  IndexedItemConnectivityAccessor() = default;
 
- public:
+  void init(SmallSpan<const Int32> nb_item,
+            SmallSpan<const Int32> indexes,
+            SmallSpan<const Int32> list_data,
+            IItemFamily* source_item_family,
+            IItemFamily* target_item_family) ;
 
-  mesh::DoFFamily & family(const Arcane::String& family_name,bool register_modifier_if_created=false)
+  ItemVectorView operator()(ItemLocalId lid) const
   {
-    bool create_if_needed = true;
-    Arcane::IItemFamily* item_family = m_mesh->findItemFamily(Arcane::IK_DoF,family_name,create_if_needed,register_modifier_if_created);
-    mesh::DoFFamily* dof_family = static_cast<mesh::DoFFamily*>(item_family);
-    return *dof_family;
+    //assert(m_target_item_family) ;
+    const Integer* ptr = & m_list_data[m_indexes[lid]];
+    return const_cast<IItemFamily*>(m_target_item_family)->view(ConstArrayView<Integer>( m_nb_item[lid], ptr )) ;
   }
-  IItemConnectivityMng* connectivityMng() const { return m_connectivity_mng; }
-
- private:
-
-  Arcane::IMesh* m_mesh;
-  IItemConnectivityMng* m_connectivity_mng;
+ private :
+  IItemFamily* m_target_item_family = nullptr ;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif /* DOFMANAGER_H_ */

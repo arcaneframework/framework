@@ -24,14 +24,43 @@
 #include "arcane/ObserverPool.h"
 #include "arcane/Properties.h"
 #include "arcane/IndexedItemConnectivityView.h"
+#include "arcane/mesh/IndexedItemConnectivityAccessor.h"
 
 #include "arcane/core/internal/IDataInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 namespace Arcane::mesh
 {
+  IndexedItemConnectivityAccessor::IndexedItemConnectivityAccessor(IndexedItemConnectivityViewBase view, IItemFamily* target_item_family)
+  : IndexedItemConnectivityViewBase(view)
+  , m_target_item_family(target_item_family)
+  {}
+
+  IndexedItemConnectivityAccessor::IndexedItemConnectivityAccessor(IIncrementalItemConnectivity* connectivity)
+  : m_target_item_family(connectivity->targetFamily())
+  {
+    mesh::IncrementalItemConnectivityBase* ptr = dynamic_cast<mesh::IncrementalItemConnectivityBase*>(connectivity) ;
+    if(ptr)
+    {
+      IndexedItemConnectivityViewBase::set(ptr->connectivityView()) ;
+      //(*this) = ptr->connectivityView() ;
+    }
+  }
+
+  void IndexedItemConnectivityAccessor::init(SmallSpan<const Int32> nb_item,
+            SmallSpan<const Int32> indexes,
+            SmallSpan<const Int32> list_data,
+            IItemFamily* source_item_family,
+            IItemFamily* target_item_family)
+  {
+    IndexedItemConnectivityViewBase::init(nb_item,
+                                          indexes,
+                                          list_data,
+                                          source_item_family->itemKind(),
+                                          target_item_family->itemKind()) ;
+    m_target_item_family = target_item_family ;
+  }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -103,6 +132,15 @@ class IncrementalItemConnectivityContainer
   ObserverPool m_observers;
 
  public:
+  Integer size() const {
+    return m_connectivity_nb_item_array.size() ;
+  }
+
+  bool isAllocated() const {
+    return size() > 0 ;
+  }
+
+
 
   void _checkResize(Int32 lid)
   {
@@ -236,10 +274,13 @@ setItemConnectivityList(ItemInternalConnectivityList* ilist,Int32 index)
 void IncrementalItemConnectivityBase::
 notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids)
 {
-  m_p->m_connectivity_nb_item_variable.variable()->compact(new_to_old_ids);
-  m_p->m_connectivity_index_variable.variable()->compact(new_to_old_ids);
-  _notifyConnectivityNbItemChanged();
-  _notifyConnectivityIndexChanged();
+  if(m_p->isAllocated())
+  {
+    m_p->m_connectivity_nb_item_variable.variable()->compact(new_to_old_ids);
+    m_p->m_connectivity_index_variable.variable()->compact(new_to_old_ids);
+    _notifyConnectivityNbItemChanged();
+    _notifyConnectivityIndexChanged();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -274,6 +315,19 @@ connectivityView() const
   view.init(m_connectivity_nb_item,m_connectivity_index,m_connectivity_list,
             _sourceFamily()->itemKind(), _targetFamily()->itemKind());
   return view;
+}
+
+
+IndexedItemConnectivityAccessor IncrementalItemConnectivityBase::
+connectivityAccessor() const
+{
+  IndexedItemConnectivityAccessor accessor;
+  accessor.init(m_connectivity_nb_item,
+            m_connectivity_index,
+            m_connectivity_list,
+            _sourceFamily(),
+            _targetFamily());
+  return accessor;
 }
 
 /*---------------------------------------------------------------------------*/

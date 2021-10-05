@@ -66,7 +66,8 @@ MeshExchanger::
 void MeshExchanger::
 build()
 {
-  if (!m_mesh->itemFamilyNetwork() || !IItemFamilyNetwork::plug_serializer) { // handle family order by hand
+  if ( !m_mesh->itemFamilyNetwork() || !IItemFamilyNetwork::plug_serializer )
+  { // handle family order by hand
     // Liste ordonnée des familles triée spécifiquement pour garantir un certain ordre
     // dans les échanges. Pour l'instant l'ordre est déterminé comme suit:
     // - d'abord Cell, puis Face, Edge et Node
@@ -78,7 +79,8 @@ build()
     sorted_families.add(m_mesh->faceFamily());
     sorted_families.add(m_mesh->edgeFamily());
     sorted_families.add(m_mesh->nodeFamily());
-    for( IItemFamily* family : families ){
+    for( IItemFamily* family : families )
+    {
       IParticleFamily* particle_family = family->toParticleFamily();
       if (particle_family)
         sorted_families.add(family);
@@ -96,8 +98,58 @@ build()
       m_family_exchanger_map.insert(std::make_pair(family,exchanger));
     }
   }
-  else {
-    _buildWithItemFamilyNetwork();
+  else
+  {
+    if(m_mesh->useMeshItemFamilyDependencies())
+    {
+      _buildWithItemFamilyNetwork();
+    }
+    else
+    {
+      std::set<String> family_set ;
+      UniqueArray<IItemFamily*> sorted_families;
+      IItemFamilyCollection families(m_mesh->itemFamilies());
+      sorted_families.reserve(families.count());
+      sorted_families.add(m_mesh->cellFamily());
+      family_set.insert(m_mesh->cellFamily()->name()) ;
+      sorted_families.add(m_mesh->faceFamily());
+      family_set.insert(m_mesh->faceFamily()->name()) ;
+      sorted_families.add(m_mesh->edgeFamily());
+      family_set.insert(m_mesh->edgeFamily()->name()) ;
+      sorted_families.add(m_mesh->nodeFamily());
+      family_set.insert(m_mesh->nodeFamily()->name()) ;
+      for( IItemFamily* family : families )
+      {
+        IParticleFamily* particle_family = family->toParticleFamily();
+        if (particle_family)
+        {
+          sorted_families.add(family);
+          family_set.insert(family->name()) ;
+        }
+      }
+
+      for( auto family : m_mesh->itemFamilyNetwork()->getFamilies(IItemFamilyNetwork::InverseTopologicalOrder) )
+      {
+        auto value = family_set.insert(family->name()) ;
+        if(value.second)
+        {
+          sorted_families.add(family) ;
+        }
+      }
+
+      // Liste des instances gérant les échanges d'une famille.
+      // ATTENTION: il faut garantir la libération des pointeurs associés.
+      //m_family_exchangers.reserve(families.count());
+
+      // Création de chaque échangeur associé à une famille.
+      std::map<IItemFamily*,IItemFamilyExchanger*> family_exchanger_map;
+      for( IItemFamily* family : sorted_families )
+      {
+        IItemFamilyExchanger* exchanger = family->policyMng()->createExchanger();
+        m_family_exchangers.add(exchanger);
+        m_family_exchanger_map.insert(std::make_pair(family,exchanger));
+      }
+    }
   }
   m_phase = ePhase::ComputeInfos;
 }
@@ -291,7 +343,8 @@ allocateReceivedItems()
     }
     // Build item relations (only dependencies are build in readAndAllocItems)
     // only for families registered in the graph
-    if (m_mesh->itemFamilyNetwork()) {
+    if (m_mesh->itemFamilyNetwork() && m_mesh->itemFamilyNetwork()->isActivated())
+    {
       auto family_set = m_mesh->itemFamilyNetwork()->getFamilies();
       for (auto family : family_set) {
         m_family_exchanger_map[family]->readAndAllocItemRelations();

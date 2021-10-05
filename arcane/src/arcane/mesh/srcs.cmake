@@ -141,6 +141,7 @@ set( ARCANE_SOURCES
   DoFFamily.h
   GhostLayerFromConnectivityComputer.cc
   GhostLayerFromConnectivityComputer.h
+  IndexedItemConnectivityAccessor.h
   IncrementalItemConnectivity.cc
   IncrementalItemConnectivity.h
   ItemConnectivity.cc
@@ -229,6 +230,9 @@ set( ARCANE_SOURCES
   PolyhedralMesh.cc
   PolyhedralMesh.h
   PolyhedralMeshService.cc
+  GraphBuilder.h
+  GraphDoFs.h
+  GraphDoFs.cc
   )
 
 set(AXL_FILES 

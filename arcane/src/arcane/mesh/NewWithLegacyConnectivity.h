@@ -60,7 +60,11 @@ public:
 
   typedef ItemConnectivitySelectorT<LegacyType,CustomType> Base;
 
-    const String& name() const override {return Base::trueCustomConnectivity()->name();}
+  const String& name() const override {return Base::trueCustomConnectivity()->name();}
+
+  bool isEmpty() const {
+    return false ;
+  }
 
   //! Liste des familles (sourceFamily() + targetFamily())
   ConstArrayView<IItemFamily*> families() const override {return Base::trueCustomConnectivity()->families();}

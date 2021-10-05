@@ -22,7 +22,6 @@
 #include "arcane/ItemGroup.h"
 #include "arcane/ItemEnumerator.h"
 #include "arcane/IMesh.h"
-#include "arcane/IGraph.h"
 #include "arcane/IItemFamily.h"
 #include "arcane/IParallelMng.h"
 #include "arcane/IVariable.h"
@@ -127,12 +126,6 @@ _statLabel<IMesh>(String name)
          << "    FOR " << m_mesh->name();
 }
   
-template<> void MeshStats::
-_statLabel<IGraph>(String name)
-{
-  info() << " -- GRAPH STATISTICS " << Trace::Width(8) << name 
-         << "    FOR GRAPH FROM " << m_mesh->name();
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

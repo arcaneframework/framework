@@ -28,6 +28,7 @@
 #include "arcane/utils/NotSupportedException.h"
 
 #include "arcane/mesh/ConnectivityNewWithDependenciesTypes.h"
+#include "arcane/mesh/GraphDoFs.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -406,24 +407,42 @@ addOneItem2(IItemFamily* family,
     // get connected family
     eItemKind family_kind = static_cast<eItemKind>(connectivity_info[info_index++]); // another way ?
     Int32 nb_connected_item = CheckedConvert::toInt32(connectivity_info[info_index++]);
-    IItemFamily* connected_family = m_mesh->itemFamily(family_kind);
+    if (nb_connected_item == 0) continue;
+    IItemFamily* connected_family = nullptr ;
+    switch(family_kind)
+    {
+      case IK_Particle:
+        connected_family = m_mesh->findItemFamily(family_kind, ParticleFamily::defaultFamilyName(), false,false);
+        break ;
+      case IK_DoF:
+        if(family->name()==GraphDoFs::dualNodeFamilyName())
+          connected_family = m_mesh->findItemFamily(family_kind, GraphDoFs::linkFamilyName(), false,false);
+        else
+          connected_family = m_mesh->findItemFamily(family_kind, GraphDoFs::dualNodeFamilyName(), false,false);
+        break ;
+      default:
+        connected_family = m_mesh->itemFamily(family_kind);
+        break ;
+    }
     // get connectivities family -> connected_family and reverse
     String connectivity_name = mesh::connectivityName(family,connected_family);
     bool is_dependency = false;
     IIncrementalItemConnectivity* family_to_connected_family = m_mesh->itemFamilyNetwork()->getConnectivity(family,connected_family,connectivity_name,is_dependency);
     if (!family_to_connected_family)
       fatal() << "Cannot find connectivity " << connectivity_name;
-    bool is_relation = !is_dependency;
+    bool is_deep_connectivity = m_mesh->itemFamilyNetwork()->isDeep(family_to_connected_family) ;
+    bool is_relation = !(is_dependency && is_deep_connectivity);
     // Build connection
-    if (nb_connected_item == 0) continue;
     // get connected item lids
     Int32UniqueArray connected_item_lids(nb_connected_item);
     bool do_fatal = is_relation ? false : true; // for relations, connected items may not be present and will be skipped.
     connected_family->itemsUniqueIdToLocalId(connected_item_lids,connectivity_info.subView(info_index,nb_connected_item),do_fatal);
     // if connection is relation, connected item not necessarily present: remove absent (ie null) items
     Integer nb_connected_item_found = nb_connected_item;
-    if (is_relation) {
-      for (Integer index = 0; index < connected_item_lids.size(); ) {
+    if (is_relation)
+    {
+      for (Integer index = 0; index < connected_item_lids.size(); )
+      {
         if (connected_item_lids[index] == NULL_ITEM_LOCAL_ID) {
           connected_item_lids.remove(index);
           --nb_connected_item_found;
@@ -431,15 +450,23 @@ addOneItem2(IItemFamily* family,
         else ++index;
       }
     }
-    for (Integer connected_item_index = 0; connected_item_index < nb_connected_item_found; ++connected_item_index) {
-      if (family_to_connected_family) {
+    for (Integer connected_item_index = 0; connected_item_index < nb_connected_item_found; ++connected_item_index)
+    {
+      if (family_to_connected_family)
+      {
         // Only strategy : check and add
         auto connected_item_lid = ItemLocalId{connected_item_lids[connected_item_index]};
-        if (is_relation) {
+        if (is_relation)
+        {
           if (!family_to_connected_family->hasConnectedItem(ItemLocalId(item),connected_item_lid))
+          {
             family_to_connected_family->addConnectedItem(ItemLocalId(item),connected_item_lid);
+          }
         }
-        else family_to_connected_family->replaceConnectedItem(ItemLocalId(item),connected_item_index,connected_item_lid);
+        else
+        {
+          family_to_connected_family->replaceConnectedItem(ItemLocalId(item),connected_item_index,connected_item_lid);
+        }
       }
     }
     info_index+= nb_connected_item;
