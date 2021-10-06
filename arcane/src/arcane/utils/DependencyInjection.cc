@@ -109,10 +109,15 @@ namespace impl
 class FactoryInfo::Impl
 {
  public:
-  Impl(const ProviderProperty& property) : m_property(property){}
+  Impl(const ProviderProperty& property)
+  : m_property(property),
+    m_name(property.name())
+  {
+  }
  public:
-  ProviderProperty m_property;
+  const ProviderProperty m_property;
   UniqueArray<Ref<IInstanceFactory>> m_factories;
+  String m_name;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -140,6 +145,15 @@ void FactoryInfo::
 addFactory(Ref<IInstanceFactory> f)
 {
   m_p->m_factories.add(f);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool FactoryInfo::
+hasName(const String& str) const
+{
+  return str == m_p->m_name;
 }
 
 /*---------------------------------------------------------------------------*/

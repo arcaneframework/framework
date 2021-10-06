@@ -27,9 +27,6 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include <functional>
-#include <atomic>
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -63,17 +60,24 @@ class ARCANE_UTILS_EXPORT IInjectedInstance
  public:
 
   virtual ~IInjectedInstance() = default;
+  virtual bool hasName(const String& str) const =0;
 };
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \internal
+ * \warning Cette classe est utilisées dans des constructeurs/destructeurs
+ * globaux et ne doit pas faire d'allocation/désallocation ni utiliser de
+ * types qui en font.
+ */
 class ARCANE_UTILS_EXPORT ProviderProperty
 {
  public:
   ProviderProperty(const char* name) : m_name(name){}
  public:
+  const char* name() const { return m_name; }
+ private:
   const char* m_name;
 };
 
@@ -109,11 +113,14 @@ class InjectedInstance
 : public IInjectedInstanceT<InterfaceType>
 {
  public:
-  InjectedInstance(Ref<InterfaceType> t_instance) : m_instance(t_instance){}
+  InjectedInstance(Ref<InterfaceType> t_instance,const String& t_name)
+  : m_instance(t_instance), m_name(t_name){}
  public:
   Ref<InterfaceType> instance() override { return m_instance; }
+  bool hasName(const String& str) const override { return m_name==str; }
  private:
   Ref<InterfaceType> m_instance;
+  String m_name;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -142,11 +149,14 @@ class InjectedValueInstance
 : public IInjectedValueInstance<Type>
 {
  public:
-  InjectedValueInstance(Type t_instance) : m_instance(t_instance){}
+  InjectedValueInstance(Type t_instance,const String& t_name)
+  : m_instance(t_instance), m_name(t_name){}
  public:
   Type instance() override { return m_instance; }
+  bool hasName(const String& str) const override { return m_name==str; }
  private:
   Type m_instance;
+  String m_name;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -188,6 +198,7 @@ class ARCANE_UTILS_EXPORT InjectedInstanceRef
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
+ * \brief Fabrique pour une instance encapsulée par une référence (i.e Ref<T>).
  */
 class ARCANE_UTILS_EXPORT IInstanceFactory
 {
@@ -199,7 +210,7 @@ class ARCANE_UTILS_EXPORT IInstanceFactory
 
  public:
 
-  virtual InjectedInstanceRef createGenericReference(Injector&) =0;
+  virtual InjectedInstanceRef createGenericReference(Injector& injector,const String& name) =0;
 
   virtual const FactoryInfo* factoryInfo() const =0;
 };
@@ -208,7 +219,7 @@ class ARCANE_UTILS_EXPORT IInstanceFactory
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief internal.
- * \brief Classe de base pour une fabrique pour un service.
+ * \brief Classe de base pour une fabrique.
  *
  * Cette classe s'utiliser via un ReferenceCounter pour gérer sa destruction.
  */
@@ -238,9 +249,9 @@ class InstanceFactory
     delete m_sub_factory;
   }
 
-  InjectedInstanceRef createGenericReference(Injector& injector) override
+  InjectedInstanceRef createGenericReference(Injector& injector,const String& name) override
   {
-    return _create(_createReference(injector));
+    return _create(_createReference(injector),name);
   }
 
   Ref<InterfaceType> createReference(Injector& injector)
@@ -265,9 +276,9 @@ class InstanceFactory
     return m_sub_factory->createReference(injector);
   }
 
-  InjectedInstanceRef _create(Ref<InterfaceType> it)
+  InjectedInstanceRef _create(Ref<InterfaceType> it,const String& name)
   {
-    IInjectedInstance* x = (!it) ? nullptr : new InjectedInstance<InterfaceType>(it);
+    IInjectedInstance* x = (!it) ? nullptr : new InjectedInstance<InterfaceType>(it,name);
     return InjectedInstanceRef::createRef(x);
   }
 };
@@ -310,7 +321,10 @@ class ConcreteFactory
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \internal
+ * \brief Informations pour une fabrique.
+ */
 class ARCANE_UTILS_EXPORT FactoryInfo
 {
   friend class Arcane::DependencyInjection::Injector;
@@ -329,6 +343,7 @@ class ARCANE_UTILS_EXPORT FactoryInfo
     return new FactoryInfo(property);
   }
   void addFactory(Ref<IInstanceFactory> f);
+  bool hasName(const String& str) const;
  private:
   Impl* m_p = nullptr;
 };
@@ -497,52 +512,53 @@ class ARCANE_UTILS_EXPORT Injector
  public:
 
   template<typename InterfaceType> void
-  bind(Ref<InterfaceType> iref)
+  bind(Ref<InterfaceType> iref,const String& name = String())
   {
-    auto* x = new impl::InjectedInstance<InterfaceType>(iref);
+    auto* x = new impl::InjectedInstance<InterfaceType>(iref,name);
     _add(x);
   }
 
   template<typename Type> void
-  bind(Type iref)
+  bind(Type iref,const String& name = String())
   {
-    auto* x = new impl::InjectedValueInstance<Type>(iref);
+    auto* x = new impl::InjectedValueInstance<Type>(iref,name);
     _add(x);
   }
 
   template<typename Type> Type
-  get()
+  get(const String& name = String())
   {
-    return _getValue<Type>();
+    return _getValue<Type>(name);
   }
 
   template<typename InterfaceType> Ref<InterfaceType>
-  getRef()
+  getRef(const String& name = String())
   {
-    return _getRef<InterfaceType>();
+    return _getRef<InterfaceType>(name);
   }
 
   template<typename InterfaceType> Ref<InterfaceType>
-  createInstance()
+  createInstance(const String& service_name = String())
   {
     using FactoryType = impl::InstanceFactory<InterfaceType>;
     Ref<InterfaceType> instance;
     auto f = [&](impl::IInstanceFactory* v) -> bool
-             {
-               auto* t = dynamic_cast<FactoryType*>(v);
-               if (t){
-                 Ref<InterfaceType> x = t->createReference(*this);
-                 if (x.get()){
-                   instance = x;
-                   return true;
-                 }
-               }
-               return false;
-             };
-    _iterateFactories(f);
+    {
+      auto* t = dynamic_cast<FactoryType*>(v);
+      if (t){
+        Ref<InterfaceType> x = t->createReference(*this);
+        if (x.get()){
+          instance = x;
+          return true;
+        }
+      }
+      return false;
+    };
+    _iterateFactories(service_name,f);
     if (instance.get())
       return instance;
-    // TODO: faire un fatal
+    // TODO: améliorer le message
+    ARCANE_FATAL("Can not create instance");
     return instance;
   }
 
@@ -555,27 +571,38 @@ class ARCANE_UTILS_EXPORT Injector
  private:
 
   void _add(IInjectedInstance* instance);
+
   // Itère sur la lambda et s'arrête dès que cette dernière retourne \a true
   template<typename Lambda> void
-  _iterateInstances(const Lambda& lambda)
+  _iterateInstances(const String& instance_name,const Lambda& lambda)
   {
+    bool has_no_name = instance_name.empty();
     Integer n = _nbValue();
     for (Integer i=0; i<n; ++i ){
-      if (lambda(_value(i)))
-        return;
+      IInjectedInstance* ii = _value(i);
+      if (has_no_name || ii->hasName(instance_name))
+        if (lambda(ii))
+          return;
     }
   }
   Integer _nbValue() const;
   IInjectedInstance* _value(Integer i) const;
 
-  // Itère sur la lambda et s'arrête dès que cette dernière retourne \a true
+  /*!
+   * \brief Itère sur la lambda et s'arrête dès que cette dernière retourne \a true.
+   * Si \a factory_name n'est pas nul, seules les fabriques pour lequelles
+   * FactoryInfo::hasName(factory_name) est vrai sont utilisées.
+   */
   template<typename Lambda> void
-  _iterateFactories(const Lambda& lambda)
+  _iterateFactories(const String& factory_name,const Lambda& lambda)
   {
+    bool has_no_name = factory_name.empty();
     Integer n = _nbFactory();
     for (Integer i=0; i<n; ++i ){
-      if (lambda(_factory(i)))
-        return;
+      impl::IInstanceFactory* f = _factory(i);
+      if (has_no_name || f->factoryInfo()->hasName(factory_name))
+        if (lambda(f))
+          return;
     }
   }
   Integer _nbFactory() const;
@@ -583,7 +610,7 @@ class ARCANE_UTILS_EXPORT Injector
 
   // Spécialisation pour les références
   template<typename InterfaceType> Ref<InterfaceType>
-  _getRef()
+  _getRef(const String& instance_name)
   {
     using InjectedType = impl::IInjectedInstanceT<InterfaceType>;
     InjectedType* t = nullptr;
@@ -592,7 +619,7 @@ class ARCANE_UTILS_EXPORT Injector
                t = dynamic_cast<InjectedType*>(v);
                return t;
              };
-    _iterateInstances(f);
+    _iterateInstances(instance_name,f);
     if (t)
       return t->instance();
     // TODO: faire un fatal ou créer l'instance
@@ -600,7 +627,7 @@ class ARCANE_UTILS_EXPORT Injector
   }
 
   template<typename Type> Type
-  _getValue()
+  _getValue(const String& instance_name)
   {
     using InjectedType = impl::IInjectedValueInstance<Type>;
     InjectedType* t = nullptr;
@@ -609,7 +636,7 @@ class ARCANE_UTILS_EXPORT Injector
                t = dynamic_cast<InjectedType*>(v);
                return t;
              };
-    _iterateInstances(f);
+    _iterateInstances(instance_name,f);
     if (t)
       return t->instance();
     ARCANE_FATAL("Can not find value for type");

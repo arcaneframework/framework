@@ -60,6 +60,14 @@ class ID
   virtual ~ID() = default;
 };
 
+class IE
+{
+ public:
+  virtual ~IE() = default;
+  virtual int intValue() const =0;
+  virtual String stringValue() const =0;
+};
+
 class AImpl
 : public IA
 {
@@ -85,6 +93,22 @@ class B2Impl
   String stringValue() const override { return m_test; }
  private:
   String m_test;
+};
+
+class EImpl
+: public IE
+{
+ public:
+  EImpl(Injector& x)
+  : m_string_value(x.get<String>("Name")),
+    m_int_value(x.get<Int32>("Value"))
+  {
+  }
+  int intValue() const override { return m_int_value; }
+  String stringValue() const override { return m_string_value; }
+ private:
+  String m_string_value;
+  Int32 m_int_value;
 };
 
 class CDImpl
@@ -126,6 +150,10 @@ ARCANE_DI_REGISTER_PROVIDER(CDImpl,
                             ARCANE_DI_SERVICE_INTERFACE(ID)
                             );
 
+ARCANE_DI_REGISTER_PROVIDER(EImpl,
+                            ProviderProperty("EImplProvider"),
+                            ARCANE_DI_SERVICE_INTERFACE(IE));
+
 }
 
 TEST(DependencyInjection,TestBind1)
@@ -153,6 +181,10 @@ TEST(DependencyInjection,ProcessGlobalProviders)
   EXPECT_TRUE(ia.get());
   ASSERT_EQ(ia->value(),5);
 
+  Ref<IA> ia2 = injector.createInstance<IA>("AImplProvider");
+  EXPECT_TRUE(ia2.get());
+  ASSERT_EQ(ia2->value(),5);
+
   Ref<IB> ib = injector.createInstance<IB>();
   EXPECT_TRUE(ib.get());
   ASSERT_EQ(ib->value(),12);
@@ -163,14 +195,37 @@ TEST(DependencyInjection,TestBindValue)
   using namespace Arcane::DependencyInjection;
   using namespace DI_Test;
 
-  Injector injector;
-  injector.fillWithGlobalFactories();
-  String wanted_string("Toto");
+  {
+    Injector injector;
+    injector.fillWithGlobalFactories();
+    String wanted_string("Toto");
 
-  injector.bind(wanted_string);
+    injector.bind(wanted_string);
 
-  Ref<IB2> ib = injector.createInstance<IB2>();
-  EXPECT_TRUE(ib.get());
-  ASSERT_EQ(ib->value(),32);
-  ASSERT_EQ(ib->stringValue(),wanted_string);
+    Ref<IB2> ib = injector.createInstance<IB2>();
+    EXPECT_TRUE(ib.get());
+    ASSERT_EQ(ib->value(),32);
+    ASSERT_EQ(ib->stringValue(),wanted_string);
+  }
+
+  {
+    Injector injector;
+    injector.fillWithGlobalFactories();
+    String wanted_string{"Tata"};
+    Int32 wanted_int{25};
+
+    //! Injecte les valeurs souhaitées
+    injector.bind(wanted_string,"Name");
+    injector.bind(wanted_int,"Value");
+
+    //! Injecte des valeurs non utilisées pour tester.
+    injector.bind("FalseString","AnyName");
+    injector.bind(38,"SomeName");
+    injector.bind(3.2,"DoubleName");
+
+    Ref<IE> ie = injector.createInstance<IE>("EImplProvider");
+    EXPECT_TRUE(ie.get());
+    ASSERT_EQ(ie->intValue(),wanted_int);
+    ASSERT_EQ(ie->stringValue(),wanted_string);
+  }
 }
