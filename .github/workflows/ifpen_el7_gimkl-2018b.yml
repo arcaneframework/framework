@@ -33,6 +33,7 @@ env:
   AXLSTAR_INSTALL_DIR: /__w/framework/framework/axlstar_install
   AXLSTAR_SOURCE_DIR: /__w/framework/framework/axlstar
   # CMake
+  CM_BUILD_OPTS: "-j2"
   CM_BUILD_TYPE: Release
   # CTest
   CT_OPTS: "--timeout 300"
@@ -56,7 +57,7 @@ jobs:
         run: cmake -S ${{ env.ARCCON_SOURCE_DIR }}/arccon -B ${{ env.ARCCON_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCCON_INSTALL_DIR }}
       - name: Build
         shell: bash
-        run: cmake --build ${{ env.ARCCON_BUILD_DIR }}
+        run: cmake --build ${{ env.ARCCON_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
       - name: Install
         shell: bash
         run: cmake --install ${{ env.ARCCON_BUILD_DIR }}
@@ -97,7 +98,7 @@ jobs:
         run: cmake -S ${{ env.ARCCORE_SOURCE_DIR }}/arccore -B ${{ env.ARCCORE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCCORE_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DBUILD_SHARED_LIBS=ON
       - name: Build
         shell: bash
-        run: cmake --build ${{ env.ARCCORE_BUILD_DIR }}
+        run: cmake --build ${{ env.ARCCORE_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
       - name: Install
         shell: bash
         run: cmake --install ${{ env.ARCCORE_BUILD_DIR }}
@@ -149,7 +150,7 @@ jobs:
         run: cmake -S ${{ env.DEPENDENCIES_SOURCE_DIR }} -B ${{ env.DEPENDENCIES_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.DEPENDENCIES_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon
       - name: Build
         shell: bash
-        run: cmake --build ${{ env.DEPENDENCIES_BUILD_DIR }}
+        run: cmake --build ${{ env.DEPENDENCIES_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
       - name: Install
         shell: bash
         run: cmake --install ${{ env.DEPENDENCIES_BUILD_DIR }}
@@ -198,7 +199,7 @@ jobs:
         run: cmake -S ${{ env.AXLSTAR_SOURCE_DIR }}/axlstar -B ${{ env.AXLSTAR_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.AXLSTAR_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArcDependencies_DIR=${{ env.DEPENDENCIES_INSTALL_DIR }}/share/cmake/ArcDependencies
       - name: Build
         shell: bash
-        run: cmake --build ${{ env.AXLSTAR_BUILD_DIR }}
+        run: cmake --build ${{ env.AXLSTAR_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
       - name: Install
         shell: bash
         run: cmake --install ${{ env.AXLSTAR_BUILD_DIR }}
@@ -263,7 +264,7 @@ jobs:
         run: cmake -S ${{ env.ARCANE_SOURCE_DIR }}/arcane -B ${{ env.ARCANE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCANE_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArccore_DIR=${{ env.ARCCORE_INSTALL_DIR }}/lib/cmake/Arccore -DAxlstar_DIR=${{ env.AXLSTAR_INSTALL_DIR }}/share/cmake/Axlstar -DArcDependencies_DIR=${{ env.DEPENDENCIES_INSTALL_DIR }}/share/cmake/ArcDependencies -DBUILD_SHARED_LIBS=ON -DARCANE_DEFAULT_PARTITIONER=Metis -DARCANE_WANT_TOTALVIEW=ON -DARCANE_WANT_LIBXML2=ON -DARCANE_WANT_LEGACY_CONNECTIVITY=OFF -DARCANE_WANT_CHECK=OFF -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF
       - name: Build
         shell: bash
-        run: cmake --build ${{ env.ARCANE_BUILD_DIR }}
+        run: cmake --build ${{ env.ARCANE_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
       - name: Install
         shell: bash
         run: cmake --install ${{ env.ARCANE_BUILD_DIR }}
@@ -314,7 +315,7 @@ jobs:
         run: cmake -S ${{ env.ALIEN_SOURCE_DIR }} -B ${{ env.ALIEN_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ALIEN_INSTALL_DIR }} -DALIENDEV_EMBEDDED=OFF -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArccore_DIR=${{ env.ARCCORE_INSTALL_DIR }}/lib/cmake/Arccore -DCMAKE_FIND_DEBUG_MODE=1 -DVerbose=ON -DBoost_NO_BOOST_CMAKE=ON -DBUILD_SHARED_LIBS=ON -DALIEN_USE_HDF5=ON -DCMAKE_CXX_FLAGS="-L${EBROOTLIBXML2} -lxml2"
       - name: Build
         shell: bash
-        run: cmake --build ${{ env.ALIEN_BUILD_DIR }}
+        run: cmake --build ${{ env.ALIEN_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
       - name: Install
         shell: bash
         run: cmake --install ${{ env.ALIEN_BUILD_DIR }}
