@@ -36,7 +36,7 @@ env:
   CM_BUILD_OPTS: "-j2"
   CM_BUILD_TYPE: Release
   # CTest
-  CT_OPTS: "--timeout 300"
+  CT_OPTS: "--timeout 300 --output-on-failure"
 
 jobs:
   arccon-install:
