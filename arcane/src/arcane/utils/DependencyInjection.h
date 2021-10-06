@@ -23,6 +23,10 @@
 
 #include "arccore/base/ReferenceCounterImpl.h"
 
+//TODO Mettre le lancement des exceptions dans le '.cc'
+#include "arcane/utils/NotImplementedException.h"
+#include "arcane/utils/FatalErrorException.h"
+
 #include <functional>
 #include <atomic>
 
@@ -110,6 +114,39 @@ class InjectedInstance
   Ref<InterfaceType> instance() override { return m_instance; }
  private:
   Ref<InterfaceType> m_instance;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Interface typée gérant une instance
+ */
+template<typename Type>
+class IInjectedValueInstance
+: public IInjectedInstance
+{
+ public:
+  virtual Type instance() =0;
+ private:
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Interface typée gérant l'instance d'un service.
+ */
+template<typename Type>
+class InjectedValueInstance
+: public IInjectedValueInstance<Type>
+{
+ public:
+  InjectedValueInstance(Type t_instance) : m_instance(t_instance){}
+ public:
+  Type instance() override { return m_instance; }
+ private:
+  Type m_instance;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -391,13 +428,6 @@ class ServiceInterfaceRegisterer
   registerToFactoryInfo(FactoryInfo* si) const
   {
     IConcreteFactory<InterfaceType>* factory = new ConcreteFactory<ServiceType,InterfaceType>();
-#if 0
-    if (m_namespace_name)
-      si->addImplementedInterface(String(m_namespace_name)+String("::")+String(m_name));
-    else
-      si->addImplementedInterface(m_name);
-    //si->addFactory(new ServiceFactory2TV2<InterfaceType>(si,factory));
-#endif
     si->addFactory(makeRef<IInstanceFactory>(new InstanceFactory<InterfaceType>(si,factory)));
   }
 
@@ -473,21 +503,23 @@ class ARCANE_UTILS_EXPORT Injector
     _add(x);
   }
 
-  template<typename InterfaceType> Ref<InterfaceType>
+  template<typename Type> void
+  bind(Type iref)
+  {
+    auto* x = new impl::InjectedValueInstance<Type>(iref);
+    _add(x);
+  }
+
+  template<typename Type> Type
   get()
   {
-    using InjectedInstanceType = impl::IInjectedInstanceT<InterfaceType>;
-    InjectedInstanceType* t = nullptr;
-    auto f = [&](IInjectedInstance* v) -> bool
-             {
-               t = dynamic_cast<InjectedInstanceType*>(v);
-               return t;
-             };
-    _iterateInstances(f);
-    if (t)
-      return t->instance();
-    // TODO: faire un fatal ou créér l'instance
-    return {};
+    return _getValue<Type>();
+  }
+
+  template<typename InterfaceType> Ref<InterfaceType>
+  getRef()
+  {
+    return _getRef<InterfaceType>();
   }
 
   template<typename InterfaceType> Ref<InterfaceType>
@@ -548,6 +580,40 @@ class ARCANE_UTILS_EXPORT Injector
   }
   Integer _nbFactory() const;
   impl::IInstanceFactory* _factory(Integer i) const;
+
+  // Spécialisation pour les références
+  template<typename InterfaceType> Ref<InterfaceType>
+  _getRef()
+  {
+    using InjectedType = impl::IInjectedInstanceT<InterfaceType>;
+    InjectedType* t = nullptr;
+    auto f = [&](IInjectedInstance* v) -> bool
+             {
+               t = dynamic_cast<InjectedType*>(v);
+               return t;
+             };
+    _iterateInstances(f);
+    if (t)
+      return t->instance();
+    // TODO: faire un fatal ou créer l'instance
+    ARCANE_THROW(NotImplementedException,"Create Ref<InterfaceType> from factory");
+  }
+
+  template<typename Type> Type
+  _getValue()
+  {
+    using InjectedType = impl::IInjectedValueInstance<Type>;
+    InjectedType* t = nullptr;
+    auto f = [&](IInjectedInstance* v) -> bool
+             {
+               t = dynamic_cast<InjectedType*>(v);
+               return t;
+             };
+    _iterateInstances(f);
+    if (t)
+      return t->instance();
+    ARCANE_FATAL("Can not find value for type");
+  }
 };
 
 /*---------------------------------------------------------------------------*/

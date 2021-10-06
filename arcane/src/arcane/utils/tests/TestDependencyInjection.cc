@@ -39,6 +39,15 @@ class IB
   virtual int value() const =0;
 };
 
+
+class IB2
+{
+ public:
+  virtual ~IB2() = default;
+  virtual int value() const =0;
+  virtual String stringValue() const =0;
+};
+
 class IC
 {
  public:
@@ -65,6 +74,17 @@ class BImpl
  public:
   BImpl(const Injector&){}
   int value() const override { return 12; }
+};
+
+class B2Impl
+: public IB2
+{
+ public:
+  B2Impl(Injector& x): m_test(x.get<String>()) { }
+  int value() const override { return 32; }
+  String stringValue() const override { return m_test; }
+ private:
+  String m_test;
 };
 
 class CDImpl
@@ -96,6 +116,10 @@ ARCANE_DI_REGISTER_PROVIDER(BImpl,
                             ProviderProperty("BImplProvider"),
                             ARCANE_DI_SERVICE_INTERFACE(IB));
 
+ARCANE_DI_REGISTER_PROVIDER(B2Impl,
+                            ProviderProperty("B2ImplProvider"),
+                            ARCANE_DI_SERVICE_INTERFACE(IB2));
+
 ARCANE_DI_REGISTER_PROVIDER(CDImpl,
                             ProviderProperty("CDImplProvider"),
                             ARCANE_DI_SERVICE_INTERFACE(IC),
@@ -112,7 +136,7 @@ TEST(DependencyInjection,TestBind1)
   ITraceMng* tm = Arccore::arccoreCreateDefaultTraceMng();
   Ref<ITraceMng> ref_tm = makeRefFromInstance<ITraceMng>(tm);
   injector.bind<ITraceMng>(ref_tm);
-  Ref<ITraceMng> tm2 = injector.get<ITraceMng>();
+  Ref<ITraceMng> tm2 = injector.getRef<ITraceMng>();
   std::cout << "TM=" << tm << "TM2=" << tm2.get() << "\n";
   ASSERT_EQ(tm,tm2.get()) << "Bad Get Reference";
 }
@@ -132,4 +156,21 @@ TEST(DependencyInjection,ProcessGlobalProviders)
   Ref<IB> ib = injector.createInstance<IB>();
   EXPECT_TRUE(ib.get());
   ASSERT_EQ(ib->value(),12);
+}
+
+TEST(DependencyInjection,TestBindValue)
+{
+  using namespace Arcane::DependencyInjection;
+  using namespace DI_Test;
+
+  Injector injector;
+  injector.fillWithGlobalFactories();
+  String wanted_string("Toto");
+
+  injector.bind(wanted_string);
+
+  Ref<IB2> ib = injector.createInstance<IB2>();
+  EXPECT_TRUE(ib.get());
+  ASSERT_EQ(ib->value(),32);
+  ASSERT_EQ(ib->stringValue(),wanted_string);
 }
