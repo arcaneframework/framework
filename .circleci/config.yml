@@ -98,7 +98,17 @@ jobs:
       - run:
           name: Test 'framework'
           command: |
-            cd build && ctest --output-on-failure -E mpithread
+            mkdir test_results
+            echo BEFORE_PWD = `pwd`
+            cd build && ctest --output-junit ../test_results/results.xml --output-on-failure -E mpithread
+            echo AFTER_PWD = `pwd`
+            ls -al ../test_results
+
+      - store_test_results:
+          path: test_results
+
+      - store_artifacts:
+          path: test_results
 
 # Invoke jobs via workflows
 workflows:
