@@ -176,8 +176,8 @@ TEST(DependencyInjection,TestBind1)
   Injector injector;
   ITraceMng* tm = Arccore::arccoreCreateDefaultTraceMng();
   Ref<ITraceMng> ref_tm = makeRefFromInstance<ITraceMng>(tm);
-  injector.bind<ITraceMng>(ref_tm);
-  Ref<ITraceMng> tm2 = injector.getRef<ITraceMng>();
+  injector.bind(ref_tm);
+  Ref<ITraceMng> tm2 = injector.get<Ref<ITraceMng>>();
   std::cout << "TM=" << tm << "TM2=" << tm2.get() << "\n";
   ASSERT_EQ(tm,tm2.get()) << "Bad Get Reference";
 }
@@ -250,7 +250,7 @@ TEST(DependencyInjection,ConstructorCall)
   using ConstructorType = di::impl::ConstructorRegisterer<std::tuple<int,IB*>>;
 
   di::impl::Concrete2Factory<A2Impl,ConstructorType>  c2f;
-  ConstructorType::printArgs();
+
   int x = 3;
   IB* b = nullptr;
   {

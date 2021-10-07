@@ -469,6 +469,38 @@ class ARCANE_UTILS_EXPORT Injector
 {
   class Impl;
 
+  template <class Type>
+  class InjectorHelper
+  {
+   public:
+    static IInjectedInstance* bind(const Type& t, const String& name)
+    {
+      return new impl::InjectedValueInstance<Type>(t, name);
+    }
+    static Type get(Injector& i, const String& name)
+    {
+      return i._getValue<Type>(name);
+    }
+  };
+
+  //! Spécialisation pour les 'Ref'.
+  template <class PointerType>
+  class InjectorHelper<Ref<PointerType>>
+  {
+   public:
+    using ThatType = Ref<PointerType>;
+
+   public:
+    static IInjectedInstance* bind(const ThatType& t, const String& name)
+    {
+      return new impl::InjectedInstance<PointerType>(t, name);
+    }
+    static ThatType get(Injector& i, const String& name)
+    {
+      return i._getRef<PointerType>(name);
+    }
+  };
+
  public:
   Injector();
   Injector(const Injector&) = delete;
@@ -476,30 +508,16 @@ class ARCANE_UTILS_EXPORT Injector
   ~Injector() = default;
 
  public:
-  template <typename InterfaceType> void
-  bind(Ref<InterfaceType> iref, const String& name = String())
-  {
-    auto* x = new impl::InjectedInstance<InterfaceType>(iref, name);
-    _add(x);
-  }
-
   template <typename Type> void
   bind(Type iref, const String& name = String())
   {
-    auto* x = new impl::InjectedValueInstance<Type>(iref, name);
-    _add(x);
+    _add(InjectorHelper<Type>::bind(iref, name));
   }
 
   template <typename Type> Type
   get(const String& name = String())
   {
-    return _getValue<Type>(name);
-  }
-
-  template <typename InterfaceType> Ref<InterfaceType>
-  getRef(const String& name = String())
-  {
-    return _getRef<InterfaceType>(name);
+    return InjectorHelper<Type>::get(*this, name);
   }
 
   template <typename InterfaceType> Ref<InterfaceType>
@@ -613,7 +631,8 @@ namespace impl
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Classe permettant d'enregistrer un constructeur pour créer un service.
+ * \brief Classe permettant d'enregistrer un constructeur pour créer un objet
+ * via un Injector.
  */
 template<typename ConstructorArgsType>
 class ConstructorRegisterer
@@ -641,15 +660,9 @@ class ConstructorRegisterer
     return i.get<SelectedType>(); //SelectedType{};
   }
 
-  static void printArgs()
-  {
-    std::cout << "SIZE=" << sizeof(ArgsType) << "\n";
-    printTypeAtIndex<0>();
-    printTypeAtIndex<1>();
-  }
-
   ArgsType createTuple(Injector& i)
   {
+    // TODO: supporter plus d'arguments ou passer à des 'variadic templates'
     constexpr int tuple_size = std::tuple_size<ArgsType>();
     static_assert(tuple_size < 3, "Too many arguments for createTuple (max=2)");
     if constexpr (tuple_size == 0) {
@@ -671,23 +684,23 @@ class ConstructorRegisterer
 /*!
  * \internal
  */
-template<typename ServiceType,typename ConstructorType>
+template <typename ServiceType, typename ConstructorType>
 class Concrete2Factory
 {
+  using Args = typename ConstructorType::ArgsType;
+
  public:
-
-  template<typename Args>
-  ServiceType* create(const Args& tuple_args)
-  {
-    ServiceType* st = std::apply([](auto &&... args) -> ServiceType* { return new ServiceType(args...); }, tuple_args);
-    return st;
-  }
-
   ServiceType* createFromInjector(Injector& i)
   {
     ConstructorType ct;
     auto x = ct.createTuple(i);
     return create(x);
+  }
+
+  ServiceType* create(const Args& tuple_args)
+  {
+    ServiceType* st = std::apply([](auto&&... args) -> ServiceType* { return new ServiceType(args...); }, tuple_args);
+    return st;
   }
 };
 
