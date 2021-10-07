@@ -84,8 +84,8 @@ TEST(TestCompositeMatrixToMCG, CompositeMCGTest)
   std::shared_ptr<IOptionsMCGSolver> options(new StrongOptionsMCGSolver{ _output = 1,
       _maxIterationNum = 1000, _stopCriteriaValue = 1e-6,
       _kernel = MCGOptionTypes::eKernelType::CPU_CBLAS_BCSR,
-      _solver = MCGOptionTypes::eSolver::BiCGStab,
-      _preconditioner = MCGOptionTypes::ePreconditioner::ILU0PC });
+      _solver = MCGSolver::LinearSolver::BiCGS,
+      _preconditioner = MCGSolver::PrecILU0 });
   auto* solver = new Alien::MCGLinearSolver(Environment::parallelMng(), options);
   //
   solver->init();

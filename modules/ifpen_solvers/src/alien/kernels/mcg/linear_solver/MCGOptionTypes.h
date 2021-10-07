@@ -3,25 +3,6 @@
 
 struct MCGOptionTypes
 {
-  enum eSolver
-  {
-    BiCGStab,
-    Gmres
-  };
-
-  enum ePreconditioner
-  {
-    NonePC,
-    ILU0PC,
-    PolyPC,
-    FixpILU0PC,
-    ColorILU0PC,
-    BlockJacobiPC,
-    BlockILU0PC,
-    AMGX,
-    HypreAMG
-  };
-
   enum eKernelType
   {
     CPU_CBLAS_BCSR,
@@ -33,4 +14,4 @@ struct MCGOptionTypes
   };
 };
 
-#endif /* GPU_OPTION_TYPES */
+#endif /* MCG_OPTION_TYPES */
