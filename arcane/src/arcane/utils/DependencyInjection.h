@@ -319,6 +319,25 @@ class ConcreteFactory
   }
 };
 
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ */
+template<typename ServiceType,typename ConstructorType>
+class Concrete2Factory
+{
+ public:
+
+  template<typename Args>
+  ServiceType* create(const Args& tuple_args)
+  {
+    ServiceType* st = std::apply([](auto &&... args) -> ServiceType* { return new ServiceType(args...); }, tuple_args);
+    return st;
+  }
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -424,6 +443,8 @@ class ServiceInterfaceRegisterer
 {
  public:
 
+  static constexpr bool isConstructor() { return false; }
+
   typedef InterfaceType Interface;
 
   explicit ServiceInterfaceRegisterer(const char* name)
@@ -456,6 +477,24 @@ class ServiceInterfaceRegisterer
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
+ * \brief Classe permettant d'enregistrer un constructeur pour créer un service.
+ */
+template<typename InterfaceType>
+class ConstructorRegisterer
+{
+ public:
+
+  static constexpr bool isConstructor() { return true; }
+
+  ConstructorRegisterer()
+  {
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
  * \brief Classe permettant de créer et d'enregistrer les fabriques pour un service.
  */
 template<typename ServiceType>
@@ -464,11 +503,18 @@ class ServiceAllInterfaceRegisterer
  private:
 
   //! Surcharge pour 1 interface
-  template<typename InterfaceType> static void
-  _create(FactoryInfo* si,const InterfaceType& i1)
+  template <typename InterfaceType> static void
+  _create(FactoryInfo* si, const InterfaceType& i1)
   {
-    i1.template registerToFactoryInfo<ServiceType>(si);
+    if constexpr (InterfaceType::isConstructor()) {
+      Concrete2Factory<ServiceType, InterfaceType> c2f;
+      ARCANE_UNUSED(si);
+      ARCANE_UNUSED(c2f);
+    }
+    else
+      i1.template registerToFactoryInfo<ServiceType>(si);
   }
+
   //! Surcharge pour 2 interfaces ou plus
   template<typename I1,typename I2,typename ... OtherInterfaces>
   static void _create(FactoryInfo* si,const I1& i1,const I2& i2,const OtherInterfaces& ... args)
@@ -503,58 +549,55 @@ class ARCANE_UTILS_EXPORT Injector
   class Impl;
 
  public:
-
   Injector();
   Injector(const Injector&) = delete;
   Injector& operator=(const Injector&) = delete;
   ~Injector() = default;
 
  public:
-
-  template<typename InterfaceType> void
-  bind(Ref<InterfaceType> iref,const String& name = String())
+  template <typename InterfaceType> void
+  bind(Ref<InterfaceType> iref, const String& name = String())
   {
-    auto* x = new impl::InjectedInstance<InterfaceType>(iref,name);
+    auto* x = new impl::InjectedInstance<InterfaceType>(iref, name);
     _add(x);
   }
 
-  template<typename Type> void
-  bind(Type iref,const String& name = String())
+  template <typename Type> void
+  bind(Type iref, const String& name = String())
   {
-    auto* x = new impl::InjectedValueInstance<Type>(iref,name);
+    auto* x = new impl::InjectedValueInstance<Type>(iref, name);
     _add(x);
   }
 
-  template<typename Type> Type
+  template <typename Type> Type
   get(const String& name = String())
   {
     return _getValue<Type>(name);
   }
 
-  template<typename InterfaceType> Ref<InterfaceType>
+  template <typename InterfaceType> Ref<InterfaceType>
   getRef(const String& name = String())
   {
     return _getRef<InterfaceType>(name);
   }
 
-  template<typename InterfaceType> Ref<InterfaceType>
+  template <typename InterfaceType> Ref<InterfaceType>
   createInstance(const String& service_name = String())
   {
     using FactoryType = impl::InstanceFactory<InterfaceType>;
     Ref<InterfaceType> instance;
-    auto f = [&](impl::IInstanceFactory* v) -> bool
-    {
+    auto f = [&](impl::IInstanceFactory* v) -> bool {
       auto* t = dynamic_cast<FactoryType*>(v);
-      if (t){
+      if (t) {
         Ref<InterfaceType> x = t->createReference(*this);
-        if (x.get()){
+        if (x.get()) {
           instance = x;
           return true;
         }
       }
       return false;
     };
-    _iterateFactories(service_name,f);
+    _iterateFactories(service_name, f);
     if (instance.get())
       return instance;
     // TODO: améliorer le message
@@ -565,20 +608,18 @@ class ARCANE_UTILS_EXPORT Injector
   void fillWithGlobalFactories();
 
  private:
-
   Impl* m_p = nullptr;
 
  private:
-
   void _add(IInjectedInstance* instance);
 
   // Itère sur la lambda et s'arrête dès que cette dernière retourne \a true
-  template<typename Lambda> void
-  _iterateInstances(const String& instance_name,const Lambda& lambda)
+  template <typename Lambda> void
+  _iterateInstances(const String& instance_name, const Lambda& lambda)
   {
     bool has_no_name = instance_name.empty();
     Integer n = _nbValue();
-    for (Integer i=0; i<n; ++i ){
+    for (Integer i = 0; i < n; ++i) {
       IInjectedInstance* ii = _value(i);
       if (has_no_name || ii->hasName(instance_name))
         if (lambda(ii))
@@ -593,12 +634,12 @@ class ARCANE_UTILS_EXPORT Injector
    * Si \a factory_name n'est pas nul, seules les fabriques pour lequelles
    * FactoryInfo::hasName(factory_name) est vrai sont utilisées.
    */
-  template<typename Lambda> void
-  _iterateFactories(const String& factory_name,const Lambda& lambda)
+  template <typename Lambda> void
+  _iterateFactories(const String& factory_name, const Lambda& lambda)
   {
     bool has_no_name = factory_name.empty();
     Integer n = _nbFactory();
-    for (Integer i=0; i<n; ++i ){
+    for (Integer i = 0; i < n; ++i) {
       impl::IInstanceFactory* f = _factory(i);
       if (has_no_name || f->factoryInfo()->hasName(factory_name))
         if (lambda(f))
@@ -609,34 +650,32 @@ class ARCANE_UTILS_EXPORT Injector
   impl::IInstanceFactory* _factory(Integer i) const;
 
   // Spécialisation pour les références
-  template<typename InterfaceType> Ref<InterfaceType>
+  template <typename InterfaceType> Ref<InterfaceType>
   _getRef(const String& instance_name)
   {
     using InjectedType = impl::IInjectedInstanceT<InterfaceType>;
     InjectedType* t = nullptr;
-    auto f = [&](IInjectedInstance* v) -> bool
-             {
-               t = dynamic_cast<InjectedType*>(v);
-               return t;
-             };
-    _iterateInstances(instance_name,f);
+    auto f = [&](IInjectedInstance* v) -> bool {
+      t = dynamic_cast<InjectedType*>(v);
+      return t;
+    };
+    _iterateInstances(instance_name, f);
     if (t)
       return t->instance();
     // TODO: faire un fatal ou créer l'instance
-    ARCANE_THROW(NotImplementedException,"Create Ref<InterfaceType> from factory");
+    ARCANE_THROW(NotImplementedException, "Create Ref<InterfaceType> from factory");
   }
 
-  template<typename Type> Type
+  template <typename Type> Type
   _getValue(const String& instance_name)
   {
     using InjectedType = impl::IInjectedValueInstance<Type>;
     InjectedType* t = nullptr;
-    auto f = [&](IInjectedInstance* v) -> bool
-             {
-               t = dynamic_cast<InjectedType*>(v);
-               return t;
-             };
-    _iterateInstances(instance_name,f);
+    auto f = [&](IInjectedInstance* v) -> bool {
+      t = dynamic_cast<InjectedType*>(v);
+      return t;
+    };
+    _iterateInstances(instance_name, f);
     if (t)
       return t->instance();
     ARCANE_FATAL("Can not find value for type");
@@ -646,7 +685,10 @@ class ARCANE_UTILS_EXPORT Injector
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define ARCANE_DI_SERVICE_INTERFACE(ainterface)\
+#define ARCANE_DI_CONSTRUCTOR(args)\
+  ::Arcane::DependencyInjection::impl::ConstructorRegisterer< void args >()
+
+#define ARCANE_DI_SERVICE_INTERFACE(ainterface)                         \
   ::Arcane::DependencyInjection::impl::ServiceInterfaceRegisterer< ainterface >(#ainterface)
 
 #define ARCANE_DI_SERVICE_INTERFACE_NS(ainterface_ns,ainterface) \

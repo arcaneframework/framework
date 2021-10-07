@@ -32,6 +32,13 @@ class IA
   virtual int value() const =0;
 };
 
+class IA2
+{
+ public:
+  virtual ~IA2() = default;
+  virtual int value() const =0;
+};
+
 class IB
 {
  public:
@@ -120,13 +127,14 @@ class CDImpl
 };
 
 class A2Impl
-: public IA
+: public IA2
 {
  public:
-  ARCANE_DI_INJECT(A2Impl(int a,IB* ib)) : m_a(a), m_ib(ib) {}
+  A2Impl(int a,IB* ib) : m_a(a), m_ib(ib) {}
+  A2Impl(Injector&) : m_a(0), m_ib(nullptr) {}
  public:
   //AImpl(const Injector&){}
-  int value() const override { return 23; }
+  int value() const override { return m_a; }
  private:
   int m_a;
   IB* m_ib;
@@ -152,7 +160,15 @@ ARCANE_DI_REGISTER_PROVIDER(CDImpl,
 
 ARCANE_DI_REGISTER_PROVIDER(EImpl,
                             ProviderProperty("EImplProvider"),
-                            ARCANE_DI_SERVICE_INTERFACE(IE));
+                            ARCANE_DI_SERVICE_INTERFACE(IE),
+                            ARCANE_DI_CONSTRUCTOR((int a,IB* ib))
+                            );
+
+ARCANE_DI_REGISTER_PROVIDER(A2Impl,
+                            ProviderProperty("A2ImplProvider"),
+                            ARCANE_DI_SERVICE_INTERFACE(IA2),
+                            ARCANE_DI_CONSTRUCTOR((int a,IB* ib))
+                            );
 
 }
 
@@ -228,4 +244,18 @@ TEST(DependencyInjection,TestBindValue)
     ASSERT_EQ(ie->intValue(),wanted_int);
     ASSERT_EQ(ie->stringValue(),wanted_string);
   }
+}
+
+TEST(DependencyInjection,ConstructorCall)
+{
+  using namespace DI_Test;
+  namespace di = Arcane::DependencyInjection;
+  using ConstructorType = di::impl::ConstructorRegisterer<A2Impl>;
+
+  di::impl::Concrete2Factory<A2Impl,ConstructorType>  c2f;
+  int x = 3;
+  IB* b = nullptr;
+  A2Impl* a2 = c2f.create(std::make_tuple(x,b));
+  ARCANE_CHECK_POINTER(a2);
+  ASSERT_EQ(a2->value(),3);
 }
