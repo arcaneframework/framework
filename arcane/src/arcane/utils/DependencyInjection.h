@@ -27,6 +27,9 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/FatalErrorException.h"
 
+#include <tuple>
+#include <typeinfo>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -319,25 +322,6 @@ class ConcreteFactory
   }
 };
 
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \internal
- */
-template<typename ServiceType,typename ConstructorType>
-class Concrete2Factory
-{
- public:
-
-  template<typename Args>
-  ServiceType* create(const Args& tuple_args)
-  {
-    ServiceType* st = std::apply([](auto &&... args) -> ServiceType* { return new ServiceType(args...); }, tuple_args);
-    return st;
-  }
-};
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -430,7 +414,6 @@ class ARCANE_UTILS_EXPORT GlobalRegisterer
   void _setNextService(GlobalRegisterer* s) { m_next = s; }
 };
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -471,68 +454,6 @@ class ServiceInterfaceRegisterer
 
   const char* m_name;
   const char* m_namespace_name;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Classe permettant d'enregistrer un constructeur pour créer un service.
- */
-template<typename InterfaceType>
-class ConstructorRegisterer
-{
- public:
-
-  static constexpr bool isConstructor() { return true; }
-
-  ConstructorRegisterer()
-  {
-  }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Classe permettant de créer et d'enregistrer les fabriques pour un service.
- */
-template<typename ServiceType>
-class ServiceAllInterfaceRegisterer
-{
- private:
-
-  //! Surcharge pour 1 interface
-  template <typename InterfaceType> static void
-  _create(FactoryInfo* si, const InterfaceType& i1)
-  {
-    if constexpr (InterfaceType::isConstructor()) {
-      Concrete2Factory<ServiceType, InterfaceType> c2f;
-      ARCANE_UNUSED(si);
-      ARCANE_UNUSED(c2f);
-    }
-    else
-      i1.template registerToFactoryInfo<ServiceType>(si);
-  }
-
-  //! Surcharge pour 2 interfaces ou plus
-  template<typename I1,typename I2,typename ... OtherInterfaces>
-  static void _create(FactoryInfo* si,const I1& i1,const I2& i2,const OtherInterfaces& ... args)
-  {
-    _create<I1>(si,i1);
-    // Applique la récursivité sur les types restants
-    _create<I2,OtherInterfaces...>(si,i2,args...);
-  }
-
- public:
-
-  //! Enregistre dans le service les fabriques pour les interfacs \a Interfaces
-  template<typename ... Interfaces> static void
-  registerProviderInfo(FactoryInfo* si, const Interfaces& ... args)
-  {
-    //si->setSingletonFactory(new Internal::SingletonServiceFactory<ServiceType,typename Interfaces::Interface ... >(si));
-    _create(si,args...);
-  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -685,8 +606,148 @@ class ARCANE_UTILS_EXPORT Injector
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define ARCANE_DI_CONSTRUCTOR(args)\
-  ::Arcane::DependencyInjection::impl::ConstructorRegisterer< void args >()
+namespace impl
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Classe permettant d'enregistrer un constructeur pour créer un service.
+ */
+template<typename ConstructorArgsType>
+class ConstructorRegisterer
+{
+ public:
+
+  using ArgsType = ConstructorArgsType;
+
+  static constexpr bool isConstructor() { return true; }
+
+  ConstructorRegisterer() {}
+
+  template <std::size_t I>
+  static void printTypeAtIndex()
+  {
+    using SelectedType = std::tuple_element_t<I, ArgsType>;
+    std::cout << "index " << I << " has type: " << typeid(SelectedType).name() << "\n";
+  }
+
+  template <std::size_t I>
+  static auto _get(Injector& i) -> std::tuple_element_t<I, ArgsType>
+  {
+    using SelectedType = std::tuple_element_t<I, ArgsType>;
+    std::cout << "RETURN _GET(I=" << I << ")\n";
+    return i.get<SelectedType>(); //SelectedType{};
+  }
+
+  static void printArgs()
+  {
+    std::cout << "SIZE=" << sizeof(ArgsType) << "\n";
+    printTypeAtIndex<0>();
+    printTypeAtIndex<1>();
+  }
+
+  ArgsType createTuple(Injector& i)
+  {
+    constexpr int tuple_size = std::tuple_size<ArgsType>();
+    static_assert(tuple_size < 3, "Too many arguments for createTuple (max=2)");
+    if constexpr (tuple_size == 0) {
+      return ArgsType();
+    }
+    else if constexpr (tuple_size == 1) {
+      return ArgsType(_get<0>(i));
+    }
+    else if constexpr (tuple_size == 2) {
+      return ArgsType(_get<0>(i), _get<1>(i));
+    }
+    // Ne devrait pas arriver mais on ne sais jamais.
+    ARCANE_FATAL("Too many arguments for createTuple n={0} max=2", tuple_size);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ */
+template<typename ServiceType,typename ConstructorType>
+class Concrete2Factory
+{
+ public:
+
+  template<typename Args>
+  ServiceType* create(const Args& tuple_args)
+  {
+    ServiceType* st = std::apply([](auto &&... args) -> ServiceType* { return new ServiceType(args...); }, tuple_args);
+    return st;
+  }
+
+  ServiceType* createFromInjector(Injector& i)
+  {
+    ConstructorType ct;
+    auto x = ct.createTuple(i);
+    return create(x);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Classe permettant de créer et d'enregistrer les fabriques pour un service.
+ */
+template<typename ServiceType>
+class ServiceAllInterfaceRegisterer
+{
+ private:
+
+  //! Surcharge pour 1 interface
+  template <typename InterfaceType> static void
+  _create(FactoryInfo* si, const InterfaceType& i1)
+  {
+    if constexpr (InterfaceType::isConstructor()) {
+      Concrete2Factory<ServiceType, InterfaceType> c2f;
+      ARCANE_UNUSED(si);
+      ARCANE_UNUSED(c2f);
+    }
+    else
+      i1.template registerToFactoryInfo<ServiceType>(si);
+  }
+
+  //! Surcharge pour 2 interfaces ou plus
+  template<typename I1,typename I2,typename ... OtherInterfaces>
+  static void _create(FactoryInfo* si,const I1& i1,const I2& i2,const OtherInterfaces& ... args)
+  {
+    _create<I1>(si,i1);
+    // Applique la récursivité sur les types restants
+    _create<I2,OtherInterfaces...>(si,i2,args...);
+  }
+
+ public:
+
+  //! Enregistre dans le service les fabriques pour les interfacs \a Interfaces
+  template<typename ... Interfaces> static void
+  registerProviderInfo(FactoryInfo* si, const Interfaces& ... args)
+  {
+    //si->setSingletonFactory(new Internal::SingletonServiceFactory<ServiceType,typename Interfaces::Interface ... >(si));
+    _create(si,args...);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#define ARCANE_DI_CONSTRUCTOR2(arg1,...)                                    \
+  ::Arcane::DependencyInjection::impl::ConstructorRegisterer< void ( arg1, __VA_ARGS__ ) >()
+
+#define ARCANE_DI_CONSTRUCTOR(arg1,...)                                    \
+  ::Arcane::DependencyInjection::impl::ConstructorRegisterer< std::tuple < arg1, __VA_ARGS__ > >()
 
 #define ARCANE_DI_SERVICE_INTERFACE(ainterface)                         \
   ::Arcane::DependencyInjection::impl::ServiceInterfaceRegisterer< ainterface >(#ainterface)

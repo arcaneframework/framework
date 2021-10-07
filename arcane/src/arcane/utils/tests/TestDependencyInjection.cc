@@ -14,11 +14,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define ARCANE_DI_INJECT(Signature)                                                                                    \
-  using Inject = Signature;                                                                                            \
-                                                                                                                       \
-  Signature
-
 using namespace Arcane;
 
 namespace DI_Test
@@ -32,13 +27,6 @@ class IA
   virtual int value() const =0;
 };
 
-class IA2
-{
- public:
-  virtual ~IA2() = default;
-  virtual int value() const =0;
-};
-
 class IB
 {
  public:
@@ -46,6 +34,14 @@ class IB
   virtual int value() const =0;
 };
 
+
+class IA2
+{
+ public:
+  virtual ~IA2() = default;
+  virtual int value() const =0;
+  virtual IB* bValue() const =0;
+};
 
 class IB2
 {
@@ -130,11 +126,13 @@ class A2Impl
 : public IA2
 {
  public:
+  A2Impl(int a,IB* ib,IA*) : m_a(a), m_ib(ib) {}
   A2Impl(int a,IB* ib) : m_a(a), m_ib(ib) {}
   A2Impl(Injector&) : m_a(0), m_ib(nullptr) {}
  public:
   //AImpl(const Injector&){}
   int value() const override { return m_a; }
+  IB* bValue() const override { return m_ib; }
  private:
   int m_a;
   IB* m_ib;
@@ -160,14 +158,13 @@ ARCANE_DI_REGISTER_PROVIDER(CDImpl,
 
 ARCANE_DI_REGISTER_PROVIDER(EImpl,
                             ProviderProperty("EImplProvider"),
-                            ARCANE_DI_SERVICE_INTERFACE(IE),
-                            ARCANE_DI_CONSTRUCTOR((int a,IB* ib))
+                            ARCANE_DI_SERVICE_INTERFACE(IE)
                             );
 
 ARCANE_DI_REGISTER_PROVIDER(A2Impl,
                             ProviderProperty("A2ImplProvider"),
                             ARCANE_DI_SERVICE_INTERFACE(IA2),
-                            ARCANE_DI_CONSTRUCTOR((int a,IB* ib))
+                            ARCANE_DI_CONSTRUCTOR(int,IB*)
                             );
 
 }
@@ -250,12 +247,30 @@ TEST(DependencyInjection,ConstructorCall)
 {
   using namespace DI_Test;
   namespace di = Arcane::DependencyInjection;
-  using ConstructorType = di::impl::ConstructorRegisterer<A2Impl>;
+  using ConstructorType = di::impl::ConstructorRegisterer<std::tuple<int,IB*>>;
 
   di::impl::Concrete2Factory<A2Impl,ConstructorType>  c2f;
+  ConstructorType::printArgs();
   int x = 3;
   IB* b = nullptr;
-  A2Impl* a2 = c2f.create(std::make_tuple(x,b));
-  ARCANE_CHECK_POINTER(a2);
-  ASSERT_EQ(a2->value(),3);
+  {
+    A2Impl* a2 = c2f.create(std::make_tuple(x,b));
+    ARCANE_CHECK_POINTER(a2);
+    ASSERT_EQ(a2->value(),3);
+  }
+
+  try{
+    Injector injector;
+    IB* ib{new BImpl(injector)};
+    injector.bind(ib);
+    injector.bind(x);
+    A2Impl* a2 = c2f.createFromInjector(injector);
+    ARCANE_CHECK_POINTER(a2);
+    ASSERT_EQ(a2->value(),3);
+    ASSERT_EQ(a2->bValue(),ib);
+  }
+  catch(const Exception& ex){
+    std::cerr << "ERROR=" << ex << "\n";
+    throw;
+  }
 }
