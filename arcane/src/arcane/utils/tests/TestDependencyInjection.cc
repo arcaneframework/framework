@@ -121,6 +121,7 @@ class CDImpl
 {
  public:
   CDImpl(int a) : m_int_value(a){}
+  CDImpl() : m_int_value(2){}
   int value() const override { return m_int_value; }
  private:
   int m_int_value;
@@ -166,13 +167,15 @@ ARCANE_DI_REGISTER_PROVIDER(A2Impl,
 
 
 ARCANE_DI_REGISTER_PROVIDER2(CDImpl,
-                             ProviderProperty("CDImplProvider"),
+                             ProviderProperty("CDImplProvider2"),
                              ARCANE_DI_INTERFACES(IC,ID),
                              ARCANE_DI_CONSTRUCTOR(int));
+
 ARCANE_DI_REGISTER_PROVIDER2(CDImpl,
-                             ProviderProperty("CDImplProvider2"),
+                             ProviderProperty("CDImplProvider3"),
                              ARCANE_DI_INTERFACES(IC),
-                             ARCANE_DI_CONSTRUCTOR(int));
+                             ARCANE_DI_EMPTY_CONSTRUCTOR()
+                             );
 }
 
 TEST(DependencyInjection,TestBind1)
@@ -253,7 +256,7 @@ TEST(DependencyInjection,ConstructorCall)
 {
   using namespace DI_Test;
   namespace di = Arcane::DependencyInjection;
-  using ConstructorType = di::impl::ConstructorRegisterer<std::tuple<int,IB*>>;
+  using ConstructorType = di::impl::ConstructorRegisterer<int,IB*>;
 
   di::impl::Concrete2Factory<A2Impl,ConstructorType>  c2f;
 
@@ -287,13 +290,26 @@ TEST(DependencyInjection,Impl2)
   namespace di = Arcane::DependencyInjection;
 
   try{
-    Injector injector;
-    injector.fillWithGlobalFactories();
+    {
+      // Test avec le constructeur CDImpl(int)
+      Injector injector;
+      injector.fillWithGlobalFactories();
 
-    injector.bind<int>(25);
-    Ref<IC> ic = injector.createInstance<IC>("CDImplProvider2");
-    ARCANE_CHECK_POINTER(ic.get());
-    ASSERT_EQ(ic->value(),25);
+      injector.bind<int>(25);
+      Ref<IC> ic = injector.createInstance<IC>("CDImplProvider2");
+      ARCANE_CHECK_POINTER(ic.get());
+      ASSERT_EQ(ic->value(),25);
+    }
+    {
+      // Test avec le constructeur sans arguments (CDImpl())
+      // Dans ce cas la valeur IC::value() doit valoir 2
+      // (voir constructeur de CDImpl)
+      Injector injector;
+      injector.fillWithGlobalFactories();
+      Ref<IC> ic = injector.createInstance<IC>("CDImplProvider3");
+      ARCANE_CHECK_POINTER(ic.get());
+      ASSERT_EQ(ic->value(),2);
+    }
   }
   catch(const Exception& ex){
     std::cerr << "ERROR=" << ex << "\n";

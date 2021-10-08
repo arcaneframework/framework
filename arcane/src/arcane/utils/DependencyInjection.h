@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Types et fonctions pour gérer le pattern 'DependencyInjection'.           */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_DEPENDENCYINJECTION_H
-#define ARCANE_DEPENDENCYINJECTION_H
+#ifndef ARCANE_UTILS_DEPENDENCYINJECTION_H
+#define ARCANE_UTILS_DEPENDENCYINJECTION_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,6 +30,14 @@
 #include <tuple>
 #include <typeinfo>
 
+// TODO: Améliorer les messages d'erreurs en cas d'échec de l'injection
+// TOOD: Mettre les méthodes qui lancent les exception dans 'DependencyInjection.cc'
+// TODO: Ajouter méthodes pour afficher le type en cas d'erreur (utiliser A_FUNC_INFO)
+// TODO: Ajouter mode verbose
+// TODO: Supporter plusieurs constructeurs et ne pas échouer si le premier
+// ne fonctionne pas
+// TODO: Supporter des instances externes (comme par exemple celles créées en C#).
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -41,11 +49,11 @@ namespace impl
 {
 class FactoryInfo;
 class IInstanceFactory;
-template<typename InterfaceType>
+template <typename InterfaceType>
 class IConcreteFactory;
-}
+} // namespace impl
 
-}
+} // namespace Arcane::DependencyInjection
 
 ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::DependencyInjection::impl::IInstanceFactory)
 
@@ -559,9 +567,10 @@ class ARCANE_UTILS_EXPORT Injector
     Integer n = _nbValue();
     for (Integer i = 0; i < n; ++i) {
       IInjectedInstance* ii = _value(i);
-      if (has_no_name || ii->hasName(instance_name))
+      if (has_no_name || ii->hasName(instance_name)) {
         if (lambda(ii))
           return;
+      }
     }
   }
   Integer _nbValue() const;
@@ -579,9 +588,10 @@ class ARCANE_UTILS_EXPORT Injector
     Integer n = _nbFactory();
     for (Integer i = 0; i < n; ++i) {
       impl::IInstanceFactory* f = _factory(i);
-      if (has_no_name || f->factoryInfo()->hasName(factory_name))
+      if (has_no_name || f->factoryInfo()->hasName(factory_name)) {
         if (lambda(f))
           return;
+      }
     }
   }
   Integer _nbFactory() const;
@@ -634,29 +644,25 @@ namespace impl
  * via un Injector.
  * \a ConstructorArgsType est un `std::tuple` des arguments du constructeur
  */
-template <typename ConstructorArgsType>
+template <typename... Args>
 class ConstructorRegisterer
 {
  public:
-  using ArgsType = ConstructorArgsType;
+  using ArgsType = std::tuple<Args...>;
 
-  static constexpr bool isConstructor() { return true; }
+  static constexpr bool isConstructor()
+  {
+    return true;
+  }
 
   ConstructorRegisterer() {}
-
-  template <std::size_t I>
-  static void printTypeAtIndex()
-  {
-    using SelectedType = std::tuple_element_t<I, ArgsType>;
-    std::cout << "index " << I << " has type: " << typeid(SelectedType).name() << "\n";
-  }
 
   template <std::size_t I>
   static auto _get(Injector& i) -> std::tuple_element_t<I, ArgsType>
   {
     using SelectedType = std::tuple_element_t<I, ArgsType>;
     std::cout << "RETURN _GET(I=" << I << ")\n";
-    return i.get<SelectedType>(); //SelectedType{};
+    return i.get<SelectedType>();
   }
 
   ArgsType createTuple(Injector& i)
@@ -693,19 +699,18 @@ class Concrete3Factory
  public:
   Ref<InterfaceType> createReference(Injector& injector) override
   {
-    ServiceType* st = createFromInjector(injector);
+    ConstructorType ct;
+    ServiceType* st = _create(ct.createTuple(injector));
     return makeRef<InterfaceType>(st);
   }
 
- public:
-  ServiceType* createFromInjector(Injector& i)
-  {
-    ConstructorType ct;
-    auto x = ct.createTuple(i);
-    return create(x);
-  }
-
-  ServiceType* create(const Args& tuple_args)
+ private:
+  /*!
+   * Créé une instance du service à partir des arguments sous forme d'un std::tuple.
+   *
+   * \todo Regarder si on ne peut pas utiliser std::make_from_tuple()
+   */
+  ServiceType* _create(const Args&& tuple_args)
   {
     ServiceType* st = std::apply([](auto&&... args) -> ServiceType* { return new ServiceType(args...); }, tuple_args);
     return st;
@@ -714,45 +719,38 @@ class Concrete3Factory
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template <typename ServiceType, typename ConstructorType, typename... Args>
-class MyTuple
-{
- public:
-  template <typename InterfaceType, typename... OtherArgs> static void
-  _registerFactory(FactoryInfo* fi)
-  {
-    std::cout << "REGISTER_FACTORY\n";
-
-    IConcreteFactory<InterfaceType>* factory = new Concrete3Factory<InterfaceType, ServiceType, ConstructorType>();
-    fi->addFactory(makeRef<IInstanceFactory>(new InstanceFactory<InterfaceType>(fi, factory)));
-
-    if constexpr (sizeof...(OtherArgs) > 0)
-      _registerFactory<OtherArgs...>(fi);
-  }
-  void registerFactory(FactoryInfo* fi)
-  {
-    std::cout << "REGISTER_ALL_FACTORY_N=" << sizeof...(Args) << "\n";
-    _registerFactory<Args...>(fi);
-  }
-};
-
 /*!
  * \internal
  * \brief Classe permettant d'enregistrer la liste des interfaces d'un service.
+ * \a Interfaces contient la liste des interfaces implémentées par le service
  */
 template <typename... Interfaces>
 class InterfaceListRegisterer
 {
  public:
-  template <typename ServiceType, typename T> static void
-  registerFactory(FactoryInfo* si, const ConstructorRegisterer<T>&)
+  /*!
+   * \brief Enregistre une fabrique.
+   *
+   * Enregistre une pour chaque interface de \a Interfaces une fabrique pour
+   * créer une instance de \a ServiceType via le constructeur \a ConstructorType
+   */
+  template <typename ServiceType, typename ConstructorType> void
+  registerFactory(FactoryInfo* si)
   {
-    //InterfaceListTuple* t = nullptr;
-    //auto x = _tupleToParameters<ServiceType>(c, t);
-    //x.registerFactory(si);
-    MyTuple<ServiceType, ConstructorRegisterer<T>, Interfaces...> x;
-    x.registerFactory(si);
+    _registerFactory<ServiceType, ConstructorType, Interfaces...>(si);
+  }
+
+ private:
+  template <typename ServiceType, typename ConstructorType,
+            typename InterfaceType, typename... OtherInterfaces>
+  void
+  _registerFactory(FactoryInfo* fi)
+  {
+    auto* factory = new Concrete3Factory<InterfaceType, ServiceType, ConstructorType>();
+    fi->addFactory(makeRef<IInstanceFactory>(new InstanceFactory<InterfaceType>(fi, factory)));
+    // Applique récursivement pour les autres interfaces si nécessaire
+    if constexpr (sizeof...(OtherInterfaces) > 0)
+      _registerFactory<ServiceType, ConstructorType, OtherInterfaces...>(fi);
   }
 };
 
@@ -833,30 +831,33 @@ class ServiceAllInterfaceRegisterer
 template <typename ServiceType, typename InterfaceList>
 class InjectionRegisterer
 {
-  // TODO: Créér l'instance de 'FactoryInfo' dans le constructeur
- private:
-  //! Surcharge pour 1 interface
-  template <typename InterfaceType> static void
-  _create(FactoryInfo* si, const InterfaceType& i1)
-  {
-    InterfaceList::template registerFactory<ServiceType>(si, i1);
-  }
-
-  //! Surcharge pour 2 interfaces ou plus
-  template <typename I1, typename I2, typename... OtherConstructors>
-  static void _create(FactoryInfo* si, const I1& i1, const I2& i2, const OtherConstructors&... args)
-  {
-    _create<I1>(si, i1);
-    // Applique la récursivité sur les types restants
-    _create<I2, OtherConstructors...>(si, i2, args...);
-  }
-
  public:
   //! Enregistre dans le service les fabriques pour les interfacs \a Constructors
-  template <typename... Constructors> static void
+  template <typename... Constructors> void
   registerProviderInfo(FactoryInfo* si, const Constructors&... args)
   {
     _create(si, args...);
+  }
+
+ private:
+  // TODO: Créér l'instance de 'FactoryInfo' dans le constructeur
+  InterfaceList m_interface_list;
+
+ private:
+  //! Surcharge pour 1 constructeur
+  template <typename ConstructorType> void
+  _create(FactoryInfo* si, const ConstructorType&)
+  {
+    m_interface_list.template registerFactory<ServiceType, ConstructorType>(si);
+  }
+
+  //! Surcharge pour 2 constructeurs ou plus
+  template <typename C1, typename C2, typename... OtherConstructors>
+  void _create(FactoryInfo* si, const C1& c1, const C2& c2, const OtherConstructors&... args)
+  {
+    _create<C1>(si, c1);
+    // Applique la récursivité sur les types restants
+    _create<C2, OtherConstructors...>(si, c2, args...);
   }
 };
 
@@ -868,11 +869,11 @@ class InjectionRegisterer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define ARCANE_DI_CONSTRUCTOR2(arg1, ...) \
-  ::Arcane::DependencyInjection::impl::ConstructorRegisterer<void(arg1, __VA_ARGS__)>()
-
 #define ARCANE_DI_CONSTRUCTOR(...) \
-  ::Arcane::DependencyInjection::impl::ConstructorRegisterer<std::tuple<__VA_ARGS__>>()
+  ::Arcane::DependencyInjection::impl::ConstructorRegisterer<__VA_ARGS__>()
+
+#define ARCANE_DI_EMPTY_CONSTRUCTOR(...) \
+  ::Arcane::DependencyInjection::impl::ConstructorRegisterer()
 
 #define ARCANE_DI_SERVICE_INTERFACE(ainterface) \
   ::Arcane::DependencyInjection::impl::ServiceInterfaceRegisterer<ainterface>(#ainterface)
@@ -905,7 +906,8 @@ class InjectionRegisterer
   ARCANE_JOIN_WITH_LINE(arcaneCreateDependencyInjectionProviderInfo##t_class)(const Arcane::DependencyInjection::ProviderProperty& property) \
   { \
     auto* si = Arcane::DependencyInjection::impl::FactoryInfo::create(property, __FILE__, __LINE__); \
-    Arcane::DependencyInjection::impl::InjectionRegisterer<t_class, t_interfaces>::registerProviderInfo(si, __VA_ARGS__); \
+    Arcane::DependencyInjection::impl::InjectionRegisterer<t_class, t_interfaces> injection_registerer; \
+    injection_registerer.registerProviderInfo(si, __VA_ARGS__); \
     return si; \
   } \
   } \
