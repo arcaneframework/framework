@@ -9,10 +9,12 @@
 /*                                                                           */
 /* Routines des Lecture/Ecriture d'un fichier.                               */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IOS_FILE_SERVICES_H
-#define ARCANE_IOS_FILE_SERVICES_H
+#ifndef ARCANE_STD_FILE_SERVICES_H
+#define ARCANE_STD_FILE_SERVICES_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arcane/utils/Iostream.h"
 
 namespace Arcane
 {
@@ -29,7 +31,7 @@ class IosFile
  public:
 	static const int IOS_BFR_SZE = 8192;
  public:
-	IosFile(istream* stream) : m_stream(stream) {}
+	IosFile(std::istream* stream) : m_stream(stream) {}
 	const char* getNextLine(const char *);
 	const char* getNextLine(void);
 	Real getReal(void);
@@ -41,7 +43,7 @@ class IosFile
 	static bool isEqualString(const String& current_value,const String& expected_value);
 	bool isEnd(void);
  private:
-	istream* m_stream;
+  std::istream* m_stream;
 	char m_buf[IOS_BFR_SZE];
 };
 
