@@ -55,6 +55,7 @@ class IC
 {
  public:
   virtual ~IC() = default;
+  virtual int value() const =0;
 };
 
 class ID
@@ -119,7 +120,10 @@ class CDImpl
 , public IC
 {
  public:
-  CDImpl(const Injector&){}
+  CDImpl(int a) : m_int_value(a){}
+  int value() const override { return m_int_value; }
+ private:
+  int m_int_value;
 };
 
 class A2Impl
@@ -130,7 +134,6 @@ class A2Impl
   A2Impl(int a,IB* ib) : m_a(a), m_ib(ib) {}
   A2Impl(Injector&) : m_a(0), m_ib(nullptr) {}
  public:
-  //AImpl(const Injector&){}
   int value() const override { return m_a; }
   IB* bValue() const override { return m_ib; }
  private:
@@ -150,12 +153,6 @@ ARCANE_DI_REGISTER_PROVIDER(B2Impl,
                             ProviderProperty("B2ImplProvider"),
                             ARCANE_DI_SERVICE_INTERFACE(IB2));
 
-ARCANE_DI_REGISTER_PROVIDER(CDImpl,
-                            ProviderProperty("CDImplProvider"),
-                            ARCANE_DI_SERVICE_INTERFACE(IC),
-                            ARCANE_DI_SERVICE_INTERFACE(ID)
-                            );
-
 ARCANE_DI_REGISTER_PROVIDER(EImpl,
                             ProviderProperty("EImplProvider"),
                             ARCANE_DI_SERVICE_INTERFACE(IE)
@@ -167,6 +164,15 @@ ARCANE_DI_REGISTER_PROVIDER(A2Impl,
                             ARCANE_DI_CONSTRUCTOR(int,IB*)
                             );
 
+
+ARCANE_DI_REGISTER_PROVIDER2(CDImpl,
+                             ProviderProperty("CDImplProvider"),
+                             ARCANE_DI_INTERFACES(IC,ID),
+                             ARCANE_DI_CONSTRUCTOR(int));
+ARCANE_DI_REGISTER_PROVIDER2(CDImpl,
+                             ProviderProperty("CDImplProvider2"),
+                             ARCANE_DI_INTERFACES(IC),
+                             ARCANE_DI_CONSTRUCTOR(int));
 }
 
 TEST(DependencyInjection,TestBind1)
@@ -268,6 +274,26 @@ TEST(DependencyInjection,ConstructorCall)
     ARCANE_CHECK_POINTER(a2);
     ASSERT_EQ(a2->value(),3);
     ASSERT_EQ(a2->bValue(),ib);
+  }
+  catch(const Exception& ex){
+    std::cerr << "ERROR=" << ex << "\n";
+    throw;
+  }
+}
+
+TEST(DependencyInjection,Impl2)
+{
+  using namespace DI_Test;
+  namespace di = Arcane::DependencyInjection;
+
+  try{
+    Injector injector;
+    injector.fillWithGlobalFactories();
+
+    injector.bind<int>(25);
+    Ref<IC> ic = injector.createInstance<IC>("CDImplProvider2");
+    ARCANE_CHECK_POINTER(ic.get());
+    ASSERT_EQ(ic->value(),25);
   }
   catch(const Exception& ex){
     std::cerr << "ERROR=" << ex << "\n";
