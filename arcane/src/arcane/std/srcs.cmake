@@ -70,6 +70,13 @@ set(ARCANE_SOURCES
   SodMeshGenerator.h
   SimpleMeshGenerator.h
   CartesianMeshGenerator.h
+
+  MshMeshReader.cc
+  MshMeshWriter.cc
+  internal/IosFile.cc
+  internal/IosFile.h
+  internal/IosGmsh.h
+
   internal/SodStandardGroupsBuilder.h
   internal/SodStandardGroupsBuilder.cc
   )
