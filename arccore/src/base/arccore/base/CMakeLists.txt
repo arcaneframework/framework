@@ -1,4 +1,4 @@
-﻿find_package(Glib REQUIRED)
+﻿find_package(Glib 2.32 REQUIRED)
 
 set(SOURCES
   ArccoreGlobal.h
