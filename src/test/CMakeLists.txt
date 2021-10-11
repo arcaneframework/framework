@@ -22,13 +22,9 @@ find_package(MPI REQUIRED)
 # Tests
 #-----------------------------------------------------------
 
-find_package(GTest)
+find_package(GTest REQUIRED)
 
-if (GTest_FOUND)
-    add_subdirectory(tests)
-else ()
-    message(WARNING "Tests are disabled because 'GTest' is not available")
-endif ()
+add_subdirectory(tests)
 
 #-----------------------------------------------------------
 # Bench recap

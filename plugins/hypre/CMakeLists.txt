@@ -35,6 +35,8 @@ project(AlienHypre
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
+option(ALIEN_HYPRE_UNIT_TESTS "Enable Hypre wrapper tests" ${ALIEN_UNIT_TESTS})
+
 set(BUILD_SHARED_LIBS True)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
@@ -98,8 +100,9 @@ generate_export_header(alien_hypre
 add_subdirectory(examples)
 
 # Tests
-
-add_subdirectory(tests)
+if (ALIEN_HYPRE_UNIT_TESTS)
+  add_subdirectory(tests)
+endif(ALIEN_HYPRE_UNIT_TESTS)
 
 # Install
 

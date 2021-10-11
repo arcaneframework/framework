@@ -35,6 +35,9 @@ project(AlienPETSc
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
+
+option(ALIEN_PETSC_UNIT_TESTS "Enable Hypre wrapper tests" ${ALIEN_UNIT_TESTS})
+
 set(BUILD_SHARED_LIBS True)
 
 # ----------------------------------------------------------------------------
@@ -91,10 +94,10 @@ generate_export_header(alien_petsc
         )
 
 # Tests
-
-enable_testing()
-
-add_subdirectory(test)
+if (ALIEN_PETSC_UNIT_TESTS)
+  enable_testing()
+  add_subdirectory(test)
+endif (ALIEN_PETSC_UNIT_TESTS)
 
 # Install
 
