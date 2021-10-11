@@ -553,7 +553,7 @@ _checkValidItemOwner(IItemFamily* family)
       ItemInternal* item = (*iitem).internal();
       Int32 owner = item->owner();
       bool is_ok = false;
-      ItemInternalVectorView cells = item->A_INTERNAL_ACCESS(cells)();
+      ItemInternalVectorView cells = item->internalCells();
       for( ItemInternal* cell : cells ){
         if (cell->owner()==owner){
           is_ok = true;

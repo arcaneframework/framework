@@ -62,27 +62,6 @@ class ParticleFamilyCompactPolicy
   }
   void updateInternalReferences(IMeshCompacter* compacter) override
   {
-    // NOTE: Cette méthode ne doit mettre à jour que les anciennes connectivités.
-    // Pour les nouvelles, cela est fait automatiquement.
-    const ItemFamilyCompactInfos* cell_infos = compacter->findCompactInfos(m_cell_family);
-    if (!cell_infos)
-      return;
-    // Ne met pas à jour si les anciennes connectivités ne sont pas actives
-    InternalConnectivityPolicy icp = m_cell_family->mesh()->_connectivityPolicy();
-    bool has_legacy_connectivity = InternalConnectivityInfo::hasLegacyConnectivity(icp);
-    if (!has_legacy_connectivity)
-      return;
-    Int32ConstArrayView cells_old_to_new_lid(cell_infos->oldToNewLocalIds());
-    // Les particules sont associées à une seule maille mais cette
-    // maille peut-être nulle.
-    ENUMERATE_ITEM(iitem,m_family->allItems()){
-      ItemInternal* item = (*iitem).internal();
-      Integer cell_local_id = item->_cellLocalIdOld(0);
-      if (cell_local_id!=NULL_ITEM_LOCAL_ID){
-        cell_local_id = cells_old_to_new_lid[cell_local_id];
-        item->_setCell(0,cell_local_id);
-      }
-    }
   }
   void endCompact(ItemFamilyCompactInfos& compact_infos) override
   {

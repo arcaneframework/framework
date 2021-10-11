@@ -35,41 +35,9 @@
  */
 #define ARCANE_USE_SHAREDINFO_CONNECTIVITY
 
-//#ifdef ARCANE_USE_LEGACY_CONNECTIVITY
-//#define ARCANE_USE_LEGACY_ITEMINTERNAL_CONNECTIVITY
-
-#define A_INTERNAL_ACCESS(method)  _ ## method ## V2
-
-// Cette macro est définie pour indiquer que
-// les méthodes d'accès aux nombres d'entités connectées
-// sont inlinés pour des raisons de performance.
-// Par défaut c'est le cas mais pour tester l'utilisation
-// des nouvelles connectivités de manière dynamique sans
-// avoir besoin de recompiler tout Arcane on peut ne pas
-// la définir.
-#define ARCANE_INLINE_ITEMINTERNAL_CONNECTIVITY_ACCESS
-
-// Cette macro est définie pour indiquer qu'on utilise les
-// ItemSharedInfo pour accéder aux nombre d'entités connectées.
-#if ARCANE_ITEM_CONNECTIVITY_SIZE_MODE==ARCANE_ITEM_CONNECTIVITY_SIZE_MODE_LEGACY
-#define ARCANE_USE_LEGACY_ITEMINTERNAL_CONNECTIVITY_SIZE
-#elif ARCANE_ITEM_CONNECTIVITY_SIZE_MODE==ARCANE_ITEM_CONNECTIVITY_SIZE_MODE_NEW
-// Pour test développement, force à ne pas rendre inline les méthodes
-// d'accès au nombre d'éléments. Dans ce cas le choix de la méthode
-// se fait dynamiquement en fonction de la valeur de
-// InternalConnectivityPolicy. Comme ces méthodes ne sont plus inlinées,
-// cela dégrade les performances et c'est pourquoi on ne l'utilise que
-// pour le développement.
-#elif ARCANE_ITEM_CONNECTIVITY_SIZE_MODE==ARCANE_ITEM_CONNECTIVITY_SIZE_MODE_DYNAMIC
-#ifdef ARCANE_INLINE_ITEMINTERNAL_CONNECTIVITY_ACCESS
-#undef ARCANE_INLINE_ITEMINTERNAL_CONNECTIVITY_ACCESS
-#endif
-#else
+#if ARCANE_ITEM_CONNECTIVITY_SIZE_MODE!=ARCANE_ITEM_CONNECTIVITY_SIZE_MODE_NEW
 #error "Invalid configuration for ARCANE_ITEM_CONNECTIVITY_SIZE_MODE"
 #endif
-
-// Positionne la méthode d'accès en fonction des macros spécifiées
-#define A_NB_INTERNAL_ACCESS(method)  _ ## method ## V2()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -474,33 +442,18 @@ class ARCANE_CORE_EXPORT ItemInternal
     this->setFlags(f);
   }
 
-#ifdef ARCANE_INLINE_ITEMINTERNAL_CONNECTIVITY_ACCESS
   //! Nombre de noeuds de l'entité
-  Integer nbNode() const { return A_NB_INTERNAL_ACCESS(nbNode); }
+  Integer nbNode() const { return _connectivity()->_nbNodeV2(m_local_id); }
   //! Nombre d'arêtes de l'entité ou nombre d'arêtes connectés à l'entités (pour les noeuds)
-  Integer nbEdge() const { return A_NB_INTERNAL_ACCESS(nbEdge); }
+  Integer nbEdge() const { return _connectivity()->_nbEdgeV2(m_local_id); }
   //! Nombre de faces de l'entité ou nombre de faces connectés à l'entités (pour les noeuds et arêtes)
-  Integer nbFace() const { return A_NB_INTERNAL_ACCESS(nbFace); }
+  Integer nbFace() const { return _connectivity()->_nbFaceV2(m_local_id); }
   //! Nombre de mailles connectées à l'entité (pour les noeuds, arêtes et faces)
-  Integer nbCell() const { return A_NB_INTERNAL_ACCESS(nbCell); }
+  Integer nbCell() const { return _connectivity()->_nbCellV2(m_local_id); }
   //! Nombre de parent
-  Int32 nbHParent() const { return A_NB_INTERNAL_ACCESS(nbHParent); }
+  Int32 nbHParent() const { return _connectivity()->_nbHParentV2(m_local_id); }
   //! Nombre d' enfants
-  Int32 nbHChildren() const { return A_NB_INTERNAL_ACCESS(nbHChildren); }
-#else
-  //! Nombre de noeuds de l'entité
- Integer nbNode() const;
-  //! Nombre d'arêtes de l'entité ou nombre d'arêtes connectés à l'entités (pour les noeuds)
- Integer nbEdge() const;
-  //! Nombre de faces de l'entité ou nombre de faces connectés à l'entités (pour les noeuds et arêtes)
- Integer nbFace() const;
-  //! Nombre de mailles connectées à l'entité (pour les noeuds, arêtes et faces)
- Integer nbCell() const;
-  //! Nombre de parent
- Int32 nbHParent() const;
-  //! Nombre d' enfants
- Int32 nbHChildren() const;
-#endif
+  Int32 nbHChildren() const { return _connectivity()->_nbHChildrenV2(m_local_id); }
   //! Nombre de parent
   Integer nbParent() const { return m_shared_info->nbParent(); }
 
@@ -526,7 +479,7 @@ class ARCANE_CORE_EXPORT ItemInternal
 	  if (this->nbHParent() == 0)
 		  return 0;
 	  //! sinon je suis au niveau supérieur que celui de mon parent
-	  return (this->A_INTERNAL_ACCESS(hParent)(0)->level() + 1);
+	  return (this->internalHParent(0)->level() + 1);
   }
 
   //! @returns \p true si l'item est un ancetre (i.e. a un
@@ -537,9 +490,9 @@ class ARCANE_CORE_EXPORT ItemInternal
       return false;
     if (!this->hasHChildren())
       return false;
-    if (this->A_INTERNAL_ACCESS(hChild)(0)->isActive())
+    if (this->internalHChild(0)->isActive())
       return true;
-    return this->A_INTERNAL_ACCESS(hChild)(0)->isAncestor();
+    return this->internalHChild(0)->isAncestor();
   }
   //! @returns \p true si l'item a des enfants (actifs ou non),
   //! \p false  sinon. Renvoie toujours \p false si l'AMR est désactivé.
@@ -558,7 +511,7 @@ class ARCANE_CORE_EXPORT ItemInternal
       return false;
     if (!this->hasHChildren())
       return true;
-    return this->A_INTERNAL_ACCESS(hChild)(0)->isSubactive();
+    return this->internalHChild(0)->isSubactive();
   }
   //! Numéro du type de l'entité
   Integer typeId() const { return m_shared_info->typeId(); }
@@ -599,25 +552,25 @@ class ARCANE_CORE_EXPORT ItemInternal
   //! \a true si l'entité est sur la frontière
   bool isBoundary() const { return (flags() & II_Boundary)!=0; }
   //! Maille connectée à l'entité si l'entité est une entité sur la frontière (0 si aucune)
-  ItemInternal* boundaryCell() const { return (flags() & II_Boundary) ? A_INTERNAL_ACCESS(cell)(0) : nullItem(); }
+  ItemInternal* boundaryCell() const { return (flags() & II_Boundary) ? internalCell(0) : nullItem(); }
   //! Maille derrière l'entité (0 si aucune)
   ItemInternal* backCell() const
   {
     if (flags() & II_HasBackCell)
-      return A_INTERNAL_ACCESS(cell)((flags() & II_BackCellIsFirst) ? 0 : 1);
+      return internalCell((flags() & II_BackCellIsFirst) ? 0 : 1);
     return nullItem();
   }
   //! Maille devant l'entité (0 si aucune)
   ItemInternal* frontCell() const
   {
     if (flags() & II_HasFrontCell)
-      return A_INTERNAL_ACCESS(cell)((flags() & II_FrontCellIsFirst) ? 0 : 1);
+      return internalCell((flags() & II_FrontCellIsFirst) ? 0 : 1);
     return nullItem();
   }
   ItemInternal* masterFace() const
   {
     if (flags() & II_SlaveFace)
-      return A_INTERNAL_ACCESS(face)(0);
+      return internalFace(0);
     return nullItem();
   }
   //! \a true s'il s'agit de la face maître d'une interface
@@ -636,28 +589,6 @@ class ARCANE_CORE_EXPORT ItemInternal
 
  public:
 
-  //! Liste des noeuds (ancien mécanisme)
-  ItemInternalVectorView _nodesOld() const { return m_shared_info->nodes(m_data_index); }
-  //! Liste des arêtes (ancien mécanisme)
-  ItemInternalVectorView _edgesOld() const { return m_shared_info->edges(m_data_index); }
-  //! Liste des faces (ancien mécanisme)
-  ItemInternalVectorView _facesOld() const { return m_shared_info->faces(m_data_index); }
-  //! Liste des mailles (ancien mécanisme)
-  ItemInternalVectorView _cellsOld() const { return m_shared_info->cells(m_data_index); }
-
- public:
-
-  //! Liste des noeuds
-  ItemInternalVectorView _nodesV2() const { return _connectivity()->nodesV2(m_local_id); }
-  //! Liste des arêtes
-  ItemInternalVectorView _edgesV2() const { return _connectivity()->edgesV2(m_local_id); }
-  //! Liste des faces
-  ItemInternalVectorView _facesV2() const { return _connectivity()->facesV2(m_local_id); }
-  //! Liste des mailles
-  ItemInternalVectorView _cellsV2() const { return _connectivity()->cellsV2(m_local_id); }
-
- public:
-
   ItemInternalVectorView internalItems(Node*) const { return internalNodes(); }
   ItemInternalVectorView internalItems(Edge*) const { return internalEdges(); }
   ItemInternalVectorView internalItems(Face*) const { return internalFaces(); }
@@ -670,54 +601,16 @@ class ARCANE_CORE_EXPORT ItemInternal
 
  public:
 
-  ItemInternal* internalNode(Int32 index) const { return A_INTERNAL_ACCESS(node)(index); }
-  ItemInternal* internalEdge(Int32 index) const { return A_INTERNAL_ACCESS(edge)(index); }
-  ItemInternal* internalFace(Int32 index) const { return A_INTERNAL_ACCESS(face)(index); }
-  ItemInternal* internalCell(Int32 index) const { return A_INTERNAL_ACCESS(cell)(index); }
-  ItemInternal* internalHParent(Int32 index) const { return A_INTERNAL_ACCESS(hParent)(index); }
-  ItemInternal* internalHChild(Int32 index) const { return A_INTERNAL_ACCESS(hChild)(index); }
-
- private:
-
-  ItemInternal* _nodeOld(Int32 index) const { return m_shared_info->node(m_data_index,index); }
-  ItemInternal* _edgeOld(Int32 index) const { return m_shared_info->edge(m_data_index,index); }
-  ItemInternal* _faceOld(Int32 index) const { return m_shared_info->face(m_data_index,index); }
-  ItemInternal* _cellOld(Int32 index) const { return m_shared_info->cell(m_data_index,index); }
-  ItemInternal* _hParentOld(Int32 index) const { return m_shared_info->hParent(m_data_index,index); }
-  ItemInternal* _hChildOld(Int32 index) const { return m_shared_info->hChild(m_data_index,index); }
-
-  ItemInternal* _nodeV2(Int32 index) const { return _connectivity()->nodeV2(m_local_id,index); }
-  ItemInternal* _edgeV2(Int32 index) const { return _connectivity()->edgeV2(m_local_id,index); }
-  ItemInternal* _faceV2(Int32 index) const { return _connectivity()->faceV2(m_local_id,index); }
-  ItemInternal* _cellV2(Int32 index) const { return _connectivity()->cellV2(m_local_id,index); }
-  ItemInternal* _hParentV2(Int32 index) const { return _connectivity()->hParentV2(m_local_id,index); }
-  ItemInternal* _hChildV2(Int32 index) const { return _connectivity()->hChildV2(m_local_id,index); }
+  ItemInternal* internalNode(Int32 index) const { return _connectivity()->nodeV2(m_local_id,index); }
+  ItemInternal* internalEdge(Int32 index) const { return _connectivity()->edgeV2(m_local_id,index); }
+  ItemInternal* internalFace(Int32 index) const { return _connectivity()->faceV2(m_local_id,index); }
+  ItemInternal* internalCell(Int32 index) const { return _connectivity()->cellV2(m_local_id,index); }
+  ItemInternal* internalHParent(Int32 index) const { return _connectivity()->hParentV2(m_local_id,index); }
+  ItemInternal* internalHChild(Int32 index) const { return _connectivity()->hChildV2(m_local_id,index); }
 
  public:
 
   ItemInternal* parent(Integer index) const { return m_shared_info->parent(m_data_index,index); }
-
- private:
-
-  //! Nombre de noeuds de l'entité
-  Integer _nbNodeOld() const { return m_shared_info->nbNode(); }
-  //! Nombre d'arêtes de l'entité ou nombre d'arêtes connectés à l'entités (pour les noeuds)
-  Integer _nbEdgeOld() const { return m_shared_info->nbEdge(); }
-  //! Nombre de faces de l'entité ou nombre de faces connectés à l'entités (pour les noeuds et arêtes)
-  Integer _nbFaceOld() const { return m_shared_info->nbFace(); }
-  //! Nombre de mailles connectées à l'entité (pour les noeuds, arêtes et faces)
-  Integer _nbCellOld() const { return m_shared_info->nbCell(); }
-  //! Nombre de parent
-  Int32 _nbHParentOld() const { return m_shared_info->nbHParent(); }
-  //! Nombre d'enfants
-  Int32 _nbHChildrenOld() const { return m_shared_info->nbHChildren(); }
-
-  Int32 _nbNodeV2() const { return _connectivity()->_nbNodeV2(m_local_id); }
-  Int32 _nbEdgeV2() const { return _connectivity()->_nbEdgeV2(m_local_id); }
-  Int32 _nbFaceV2() const { return _connectivity()->_nbFaceV2(m_local_id); }
-  Int32 _nbCellV2() const { return _connectivity()->_nbCellV2(m_local_id); }
-  Int32 _nbHParentV2() const { return _connectivity()->_nbHParentV2(m_local_id); }
-  Int32 _nbHChildrenV2() const { return _connectivity()->_nbHChildrenV2(m_local_id); }
 
  public:
 
@@ -731,12 +624,6 @@ class ARCANE_CORE_EXPORT ItemInternal
  private:
 
   Int32* dataPtr() { return m_shared_info->m_infos + m_data_index; }
-  const Int32* nodesPtr() { return m_shared_info->m_infos + m_data_index + m_shared_info->firstNode(); }
-  const Int32* edgesPtr() { return m_shared_info->m_infos + m_data_index + m_shared_info->firstEdge(); }
-  const Int32* facesPtr() { return m_shared_info->m_infos + m_data_index + m_shared_info->firstFace(); }
-  const Int32* cellsPtr() { return m_shared_info->m_infos + m_data_index + m_shared_info->firstCell(); }
-  const Int32* hParentPtr() { return m_shared_info->m_infos + m_data_index + m_shared_info->firstHParent(); }
-  const Int32* hChildPtr() const { return m_shared_info->m_infos + m_data_index + m_shared_info->firstHChild(); }
 
  public:
 
@@ -752,7 +639,9 @@ class ARCANE_CORE_EXPORT ItemInternal
 
   //! AMR
   void setParent(Integer aindex,Int32 local_id)
-  { m_shared_info->setParent(m_data_index,aindex,local_id); }
+  {
+    m_shared_info->setParent(m_data_index,aindex,local_id);
+  }
 
   //! Mémoire nécessaire pour stocker les infos de l'entité
   Integer neededMemory() const { return m_shared_info->neededMemory(); }
@@ -761,22 +650,19 @@ class ARCANE_CORE_EXPORT ItemInternal
 
  public:
 
-  Int32 nodeLocalId(Integer index) { return A_INTERNAL_ACCESS(nodeLocalId)(index); }
-  Int32 edgeLocalId(Integer index) { return A_INTERNAL_ACCESS(edgeLocalId)(index); }
-  Int32 faceLocalId(Integer index) { return A_INTERNAL_ACCESS(faceLocalId)(index); }
-  Int32 cellLocalId(Integer index) { return A_INTERNAL_ACCESS(cellLocalId)(index); }
+  Int32 nodeLocalId(Integer index) { return _connectivity()->_nodeLocalIdV2(m_local_id,index); }
+  Int32 edgeLocalId(Integer index) { return _connectivity()->_edgeLocalIdV2(m_local_id,index); }
+  Int32 faceLocalId(Integer index) { return _connectivity()->_faceLocalIdV2(m_local_id,index); }
+  Int32 cellLocalId(Integer index) { return _connectivity()->_cellLocalIdV2(m_local_id,index); }
 
+#if 1
  private:
-
-  Int32 _nodeLocalIdOld(Integer index) { return m_shared_info->nodeLocalId(m_data_index,index); }
-  Int32 _edgeLocalIdOld(Integer index) { return m_shared_info->edgeLocalId(m_data_index,index); }
-  Int32 _faceLocalIdOld(Integer index) { return m_shared_info->faceLocalId(m_data_index,index); }
-  Int32 _cellLocalIdOld(Integer index) { return m_shared_info->cellLocalId(m_data_index,index); }
 
   Int32 _nodeLocalIdV2(Integer index) { return _connectivity()->_nodeLocalIdV2(m_local_id,index); }
   Int32 _edgeLocalIdV2(Integer index) { return _connectivity()->_edgeLocalIdV2(m_local_id,index); }
   Int32 _faceLocalIdV2(Integer index) { return _connectivity()->_faceLocalIdV2(m_local_id,index); }
   Int32 _cellLocalIdV2(Integer index) { return _connectivity()->_cellLocalIdV2(m_local_id,index); }
+#endif
 
  public:
 
@@ -805,10 +691,10 @@ class ARCANE_CORE_EXPORT ItemInternal
    * 
    */
   //@{
-  ItemInternalVectorView internalNodes() const { return A_INTERNAL_ACCESS(nodes)(); }
-  ItemInternalVectorView internalEdges() const { return A_INTERNAL_ACCESS(edges)(); }
-  ItemInternalVectorView internalFaces() const { return A_INTERNAL_ACCESS(faces)(); }
-  ItemInternalVectorView internalCells() const { return A_INTERNAL_ACCESS(cells)(); }
+  ItemInternalVectorView internalNodes() const { return _connectivity()->nodesV2(m_local_id); }
+  ItemInternalVectorView internalEdges() const { return _connectivity()->edgesV2(m_local_id); }
+  ItemInternalVectorView internalFaces() const { return _connectivity()->facesV2(m_local_id); }
+  ItemInternalVectorView internalCells() const { return _connectivity()->cellsV2(m_local_id); }
 
  public:
 
