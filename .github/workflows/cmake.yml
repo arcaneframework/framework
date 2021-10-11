@@ -8,10 +8,12 @@ on:
 
 env:
   CCACHE_BASEDIR: ${{github.workspace}}
-  CCACHE_DIR: /ccache
+  CCACHE_DIR: /tmp/ccache
   CCACHE_COMPRESS: true
   CCACHE_COMPRESSLEVEL: 6
   CCACHE_MAXSIZE: 400M
+  BUILD_DIR: /tmp/build
+  INSTALL_DIR: /tmp/install
 
 jobs:
   build:
@@ -29,30 +31,58 @@ jobs:
           - {
             name: "ubuntu20.04 release",
             container: "arcaneframework/alien-base:ubuntu20.04",
+            precommand: "",
             build_type: "RelWithDebInfo",
-            build_options: "",
+            build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja",
             alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON",
           }
           - {
             name: "ubuntu20.04 debug",
             container: "arcaneframework/alien-base:ubuntu20.04",
+            precommand: "",
             build_type: "Debug",
-            build_options: "-DENABLE_SANITIZER_ADDRESS:BOOL=ON -DENABLE_SANITIZER_UNDEFINED_BEHAVIOR:BOOL=ON",
+            build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja -DENABLE_SANITIZER_ADDRESS:BOOL=ON -DENABLE_SANITIZER_UNDEFINED_BEHAVIOR:BOOL=ON",
             alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON",
           }
           - {
             name: "ubuntu20.04 debug memory",
             container: "arcaneframework/alien-base:ubuntu20.04",
+            precommand: "",
             build_type: "Debug",
-            build_options: "-DENABLE_SANITIZER_MEMORY:BOOL=ON",
+            build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja -DENABLE_SANITIZER_MEMORY:BOOL=ON",
             alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON",
           }
           - {
             name: "ubuntu20.04 debug minimal",
             container: "arcaneframework/alien-base:ubuntu20.04",
+            precommand: "",
             build_type: "Debug",
-            build_options: "",
+            build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja",
             alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=OFF -DALIENDEV_EMBEDDED=OFF -DCMAKE_PREFIX_PATH=\"/opt/arccon;/opt/arccore\"",
+          }
+          - {
+            name: "centos7 gimkl 2018b release",
+            container: "ghcr.io/arcaneframework/centos-gimkl-2018b-alien:7-ccache",
+            precommand: ". /env.sh",
+            build_type: "RelWithDebInfo",
+            build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_FLAGS='-L${EBROOTLIBXML2} -lxml2'",
+            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON -DVerbose=ON -DBoost_NO_BOOST_CMAKE=ON -DBUILD_SHARED_LIBS=ON -DALIEN_USE_HDF5=ON",
+          }
+          - {
+            name: "rocky8 gimkl 2018b release",
+            container: "ghcr.io/arcaneframework/rockylinux-gimkl-2018b-alien:8-latest",
+            precommand: ". /env.sh",
+            build_type: "RelWithDebInfo",
+            build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_FLAGS='-L${EBROOTLIBXML2} -lxml2'",
+            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON -DVerbose=ON -DBoost_NO_BOOST_CMAKE=ON -DBUILD_SHARED_LIBS=ON -DALIEN_USE_HDF5=ON",
+          }
+          - {
+            name: "rhel8 spack release",
+            container: "ghcr.io/arcaneframework/spack-rhel8:latest",
+            precommand: ". /spack/share/spack/setup-env.sh && spack env activate /recipes/envs/alien",
+            build_type: "RelWithDebInfo",
+            build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIEN_PLUGIN_HYPRE:BOOL=ON -DALIEN_PLUGIN_PETSC:BOOL=ON",
           }
     steps:
       # Checkout v2 does not include files listed in .gitattributes
@@ -61,12 +91,9 @@ jobs:
       # Setting up ccache from github cached files
       - name: Prepare ccache timestamp
         id: ccache_timestamp
-        shell: cmake -P {0}
         # Disabled for `act`
         if: ${{ !env.ACT }}
-        run: |
-          string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
-          message("::set-output name=timestamp::${current_date}")
+        run: echo "::set-output name=timestamp::$(date +'%Y-%m-%d-%H;%M;%S')"
 
       - name: ccache files
         uses: actions/cache@v2
@@ -81,15 +108,18 @@ jobs:
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `C MAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-        run:
-          cmake -B /build -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DALIEN_PLUGIN_HYPRE:BOOL=ON -DALIEN_PLUGIN_PETSC:BOOL=ON ${{matrix.config.alien_options}} -G Ninja -DCMAKE_INSTALL_PREFIX=/opt/alien ${{matrix.config.build_options}}
+        run: |
+          ${{matrix.config.precommand}}
+          cmake -B ${{env.BUILD_DIR}} -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DALIEN_PLUGIN_HYPRE:BOOL=ON -DALIEN_PLUGIN_PETSC:BOOL=ON ${{matrix.config.alien_options}} -DCMAKE_INSTALL_PREFIX=${{env.INSTALL_DIR}} ${{matrix.config.build_options}}
 
       - name: Build
         # Build your program with the given configuration
-        run: cmake --build /build --config ${{matrix.config.build_type}}
+        run: |
+          ${{matrix.config.precommand}}
+          cmake --build ${{env.BUILD_DIR}} --config ${{matrix.config.build_type}} -j $(nproc)
 
-      - name: ccache status
-        run: ccache -s
+#      - name: ccache status
+#        run: ccache -s
 
       - name: Test
         # Execute tests defined by the CMake configuration.
@@ -97,7 +127,8 @@ jobs:
         # OMPI_ALLOW_RUN_AS_ROOT are set in script to allow `act` to work (env section was not working)
         # ASAN_OPTIONS=detect_leaks=0 to disable memory leak detection for now
         run: |
-          cd /build
+          ${{matrix.config.precommand}}
+          cd ${{env.BUILD_DIR}}
           export OMPI_ALLOW_RUN_AS_ROOT=1
           export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
           export ASAN_OPTIONS=detect_leaks=0
@@ -105,4 +136,5 @@ jobs:
 
       - name: Install
         run: |
-          cd /build && cmake --install /build
+          ${{matrix.config.precommand}}
+          cd ${{env.BUILD_DIR}} && cmake --install ${{env.BUILD_DIR}}
