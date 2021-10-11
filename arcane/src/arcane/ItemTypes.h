@@ -329,14 +329,14 @@ class ARCANE_CORE_EXPORT InternalConnectivityInfo
 {
  public:
   //! Vrai si les anciennes connectivités sont actives
-  static bool hasLegacyConnectivity(InternalConnectivityPolicy p);
+  static constexpr bool hasLegacyConnectivity(InternalConnectivityPolicy) { return false; }
   //! Vrai si les nouvelles connectivités sont actives
-  static bool hasNewConnectivity(InternalConnectivityPolicy p);
+  static constexpr bool hasNewConnectivity(InternalConnectivityPolicy) { return true; }
   /*!
    * \brief Indique si on utilise les nouvelles connectivités pour accéder
    * aux entités dans ItemInternal.
    */
-  static bool useNewConnectivityAccessor(InternalConnectivityPolicy p);
+  static constexpr bool useNewConnectivityAccessor(InternalConnectivityPolicy) { return true; }
 };
 
 /*---------------------------------------------------------------------------*/

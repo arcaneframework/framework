@@ -115,7 +115,8 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
   Int32 neededMemory() const { return m_needed_memory; }
   Int32 minimumNeededMemory() const { return m_minimum_needed_memory; }
-  bool hasLegacyConnectivity() const { return m_has_legacy_connectivity!=0; }
+  ARCCORE_DEPRECATED_2021("This method always return 'false'")
+  constexpr bool hasLegacyConnectivity() const { return false; }
  public:
   void print(std::ostream& o) const;
  public:
@@ -234,9 +235,6 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   Int32 m_type_id = IT_NullType;
   Int32 m_index = NULL_INDEX;
   Int32 m_nb_reference = 0;
-  // Indique si les anciennes connectivités sont actives
-  // (utilise un Int32 pour être certain de la taille pour le C#)
-  Int32 m_has_legacy_connectivity = 1;
  public:
   Int32 index() const { return m_index; }
   void setIndex(Int32 aindex) { m_index = aindex; }

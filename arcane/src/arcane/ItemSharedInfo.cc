@@ -320,12 +320,6 @@ _init(eItemKind ik)
   //! AMR
   if(ItemSharedInfo::m_is_amr_activated)
    	m_minimum_needed_memory +=	m_nb_hParent + m_nb_hChildren;
-
-  //! Indique si on active ou pas les anciennes connectivités
-  if (m_item_family){
-    InternalConnectivityPolicy icp = m_item_family->mesh()->_connectivityPolicy();
-    m_has_legacy_connectivity = InternalConnectivityInfo::hasLegacyConnectivity(icp);
-  }
 }
 
 /*---------------------------------------------------------------------------*/

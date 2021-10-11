@@ -327,10 +327,6 @@ _setFaceInfos(Int32 cell0,Int32 cell1,Int32 mod_flags)
   face_flags &= ~II_InterfaceFlags;
   face_flags |= mod_flags;
   setFlags(face_flags);
-  if (m_shared_info->hasLegacyConnectivity()){
-    _setCell(0,cell0);
-    _setCell(1,cell1);
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -422,9 +418,6 @@ _checkValidConnectivity(ItemInternal* item,Int32 nb_sub_item,
 void ItemInternal::
 _internalCheckValidConnectivityAccessor(ItemInternalConnectivityList* iicl)
 {
-  if (m_shared_info->hasLegacyConnectivity())
-    return;
-
   ItemInternal* item = this;
   ItemLocalId lid(item->localId());
   Integer nb_sub_node = item->nbNode();
@@ -460,38 +453,6 @@ _internalCheckValidConnectivityAccessor(ItemInternalConnectivityList* iicl)
                             iicl->_hChildLocalIdsV2(lid),
                             ItemInternalConnectivityList::HCHILD_IDX);
   }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-bool InternalConnectivityInfo::
-hasLegacyConnectivity(InternalConnectivityPolicy p)
-{
-  return p != InternalConnectivityPolicy::NewOnly;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-bool InternalConnectivityInfo::
-hasNewConnectivity(InternalConnectivityPolicy p)
-{
-  return p != InternalConnectivityPolicy::Legacy;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-bool InternalConnectivityInfo::
-useNewConnectivityAccessor(InternalConnectivityPolicy p)
-{
-  return (p == InternalConnectivityPolicy::NewAndLegacy ||
-          p == InternalConnectivityPolicy::NewWithDependenciesAndLegacy ||
-          p == InternalConnectivityPolicy::NewOnly);
 }
 
 /*---------------------------------------------------------------------------*/
