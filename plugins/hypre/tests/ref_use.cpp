@@ -32,7 +32,7 @@ class SimpleLinearProblemFixtureRef : public ::testing::Test
   SimpleLinearProblemFixtureRef()
   {
     m_pm.reset(Arccore::MessagePassing::Mpi::StandaloneMpiMessagePassingMng::create(
-        MPI_COMM_WORLD));
+    MPI_COMM_WORLD));
 
     auto size = 100;
 
@@ -50,7 +50,7 @@ class SimpleLinearProblemFixtureRef : public ::testing::Test
 
     {
       Alien::DirectMatrixBuilder builder(
-          m_matrix, Alien::DirectMatrixOptions::eResetValues);
+      m_matrix, Alien::DirectMatrixOptions::eResetValues);
       builder.reserve(3); // Réservation de 3 coefficients par ligne
       builder.allocate(); // Allocation de l'espace mémoire réservé
 
@@ -86,10 +86,10 @@ TEST_F(SimpleLinearProblemFixtureRef, ParametrizedSolve)
   Alien::Vector x(m_matrix.distribution().rowDistribution());
 
   auto options = Alien::Hypre::Options()
-                     .numIterationsMax(10)
-                     .stopCriteriaValue(1e-10)
-                     .preconditioner(Alien::Hypre::OptionTypes::AMGPC)
-                     .solver(Alien::Hypre::OptionTypes::GMRES);
+                 .numIterationsMax(10)
+                 .stopCriteriaValue(1e-10)
+                 .preconditioner(Alien::Hypre::OptionTypes::AMGPC)
+                 .solver(Alien::Hypre::OptionTypes::GMRES);
 
   auto solver = Alien::Hypre::LinearSolver(options);
 
@@ -109,10 +109,10 @@ TEST_F(SimpleLinearProblemFixtureRef, MultipleSolve)
   {
     // First call, should fail
     auto options = Alien::Hypre::Options()
-                       .numIterationsMax(1)
-                       .stopCriteriaValue(1e-20)
-                       .preconditioner(Alien::Hypre::OptionTypes::NoPC)
-                       .solver(Alien::Hypre::OptionTypes::CG);
+                   .numIterationsMax(1)
+                   .stopCriteriaValue(1e-20)
+                   .preconditioner(Alien::Hypre::OptionTypes::NoPC)
+                   .solver(Alien::Hypre::OptionTypes::CG);
 
     auto solver = Alien::Hypre::LinearSolver(options);
     EXPECT_FALSE(solver.solve(m_matrix, m_rhs, x));

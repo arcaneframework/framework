@@ -80,7 +80,7 @@ class ALIEN_EXPORT VectorDistribution
    * \param[in] global_size The global size of the vector
    * \param[in] parallel_mng The parallel manager
    */
-   // FIXME: not implemented !
+  // FIXME: not implemented !
   VectorDistribution(Arccore::Integer global_size,
                      std::shared_ptr<Arccore::MessagePassing::IMessagePassingMng> parallel_mng);
 

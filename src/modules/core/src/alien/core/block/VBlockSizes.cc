@@ -79,8 +79,7 @@ void VBlockSizes::compute(const VBlock::ValuePerBlock& all_blocks_sizes, Integer
     for (Integer i = 0; i < parallel_mng->commRank(); ++i)
       m_scalarized_offset += local_sizes[i];
   }
-  else
-  {
+  else {
     m_global_scalarized_size = m_local_scalarized_size;
   }
 }

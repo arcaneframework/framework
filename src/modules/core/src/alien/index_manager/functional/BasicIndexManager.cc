@@ -1056,7 +1056,7 @@ const BasicIndexManager::InternalEntryIndex& b) const
 
 IIndexManager::ScalarIndexSet
 BasicIndexManager::buildScalarIndexSet(const String& name,
-                                       ConstArrayView<Integer> localIds, 
+                                       ConstArrayView<Integer> localIds,
                                        const IAbstractFamily& family)
 {
   ScalarIndexSet en = buildEntry(name, &family, addNewAbstractFamily(&family));
@@ -1079,7 +1079,7 @@ BasicIndexManager::buildScalarIndexSet(const String& name, const IAbstractFamily
 
 IIndexManager::VectorIndexSet
 BasicIndexManager::buildVectorIndexSet(const String& name,
-                                       ConstArrayView<Integer> localIds, 
+                                       ConstArrayView<Integer> localIds,
                                        const IAbstractFamily& family, Integer n)
 {
   VectorIndexSet ens(n);

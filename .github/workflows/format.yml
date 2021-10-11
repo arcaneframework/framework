@@ -5,11 +5,22 @@ on:
   push:
     branches: [main]
 jobs:
-  clang-format-checking:
+  formatting-check:
+    name: Formatting Check
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        path:
+          - 'src'
+          - 'plugins'
+          - 'docs/tutorial'
     steps:
       - uses: actions/checkout@v2
-      - uses: RafikFarhad/clang-format-github-action@v1.0.1
+      - name: Run clang-format style check for C/C++ programs.
+        uses: jidicula/clang-format-action@v4.2.0
         with:
-          sources: "src/**/*.h,src/**/*.cpp,src/**/*.cc"
-          style: file
+          clang-format-version: '13'
+          check-path: ${{ matrix.path }}
+          fallback-style: 'Mozilla' # optional
+
+# See https://github.com/marketplace/actions/clang-format-check for more details

@@ -50,7 +50,7 @@ DefaultAbstractFamily::DefaultAbstractFamily(ConstArrayView<Int64> uniqueIds,
 
 /*---------------------------------------------------------------------------*/
 
-DefaultAbstractFamily::DefaultAbstractFamily(ConstArrayView<Int64> uniqueIds, 
+DefaultAbstractFamily::DefaultAbstractFamily(ConstArrayView<Int64> uniqueIds,
                                              IMessagePassingMng* parallel_mng)
 : m_parallel_mng(parallel_mng)
 {
@@ -97,9 +97,8 @@ DefaultAbstractFamily::DefaultAbstractFamily(ConstArrayView<Int64> uniqueIds,
 
 /*---------------------------------------------------------------------------*/
 
-void
-DefaultAbstractFamily::uniqueIdToLocalId(ArrayView<Int32> localIds, 
-                                         ConstArrayView<Int64> uniqueIds) const
+void DefaultAbstractFamily::uniqueIdToLocalId(ArrayView<Int32> localIds,
+                                              ConstArrayView<Int64> uniqueIds) const
 {
   for (Integer i = 0; i < uniqueIds.size(); ++i) {
     Integer localId = -1;

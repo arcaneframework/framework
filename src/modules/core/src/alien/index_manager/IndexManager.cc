@@ -213,8 +213,7 @@ const String& name, const IAbstractFamily* family, const Integer kind)
 
 /*---------------------------------------------------------------------------*/
 
-void
-IndexManager::defineIndex(const ScalarIndexSet& entry, ConstArrayView<Integer> localIds)
+void IndexManager::defineIndex(const ScalarIndexSet& entry, ConstArrayView<Integer> localIds)
 {
   if (m_state != Initialized)
     throw FatalErrorException(A_FUNCINFO, "Inconsistent state");
@@ -901,7 +900,7 @@ IndexManager::localSize() const
 ScalarIndexSet
 IndexManager::buildScalarIndexSet(const String& name,
                                   ConstArrayView<Integer> localIds,
-                                  const IAbstractFamily& family, 
+                                  const IAbstractFamily& family,
                                   Integer kind,
                                   eKeepAlive alive)
 {
@@ -954,9 +953,9 @@ IndexManager::buildVectorIndexSet(const String& name,
 /*---------------------------------------------------------------------------*/
 
 IndexManager::VectorIndexSet
-IndexManager::buildVectorIndexSet(const String& name, 
+IndexManager::buildVectorIndexSet(const String& name,
                                   const IAbstractFamily& family,
-                                  const UniqueArray<Integer>& kind, 
+                                  const UniqueArray<Integer>& kind,
                                   eKeepAlive alive)
 {
   alien_debug([&] {

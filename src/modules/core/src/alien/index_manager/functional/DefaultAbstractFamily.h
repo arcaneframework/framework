@@ -51,7 +51,7 @@ class ALIEN_EXPORT DefaultAbstractFamily : public IAbstractFamily
    * @param uniqueIds Array of locally owned uniqueIds.
    * @param parallel_mng Parallel Manager.
    */
-  DefaultAbstractFamily(ConstArrayView<Int64> uniqueIds, 
+  DefaultAbstractFamily(ConstArrayView<Int64> uniqueIds,
                         IMessagePassingMng* parallel_mng);
 
   ~DefaultAbstractFamily() override = default;

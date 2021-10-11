@@ -33,15 +33,17 @@
 #include <alien/hypre/export.h>
 #include <alien/hypre/options.h>
 
-namespace Alien {
+namespace Alien
+{
 // Compile HypreLinearSolver.
 template class ALIEN_HYPRE_EXPORT LinearSolver<BackEnd::tag::hypre>;
 
 } // namespace Alien
 
-namespace Alien::Hypre {
-class InternalLinearSolver : public IInternalLinearSolver<Matrix, Vector>,
-                             public ObjectWithTrace
+namespace Alien::Hypre
+{
+class InternalLinearSolver : public IInternalLinearSolver<Matrix, Vector>
+, public ObjectWithTrace
 {
  public:
   typedef SolverStatus Status;
@@ -95,9 +97,8 @@ InternalLinearSolver::InternalLinearSolver(const Options& options)
   m_init_time += tinit.elapsed();
 }
 
-void
-InternalLinearSolver::checkError(
-    const Arccore::String& msg, int ierr, int skipError) const
+void InternalLinearSolver::checkError(
+const Arccore::String& msg, int ierr, int skipError) const
 {
   if (ierr != 0 and (ierr & ~skipError) != 0) {
     char hypre_error_msg[256];
@@ -108,8 +109,7 @@ InternalLinearSolver::checkError(
   }
 }
 
-bool
-InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
+bool InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
 {
   auto ij_matrix = A.internal();
   auto bij_vector = b.internal();
@@ -133,7 +133,7 @@ InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
 
   MPI_Comm comm = MPI_COMM_WORLD;
   auto* mpi_comm_mng = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(
-      A.distribution().parallelMng());
+  A.distribution().parallelMng());
   if (mpi_comm_mng)
     comm = *(mpi_comm_mng->getMPIComm());
 
@@ -159,7 +159,7 @@ InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
   case OptionTypes::ParaSailsPC:
     precond_name = "parasails";
     checkError(
-        "Hypre ParaSails preconditioner", HYPRE_ParaSailsCreate(comm, &preconditioner));
+    "Hypre ParaSails preconditioner", HYPRE_ParaSailsCreate(comm, &preconditioner));
     precond_solve_function = HYPRE_ParaSailsSolve;
     precond_setup_function = HYPRE_ParaSailsSetup;
     precond_destroy_function = HYPRE_ParaSailsDestroy;
@@ -181,11 +181,11 @@ InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
   int (*solver_set_print_level_function)(HYPRE_Solver, int) = nullptr;
   int (*solver_set_tol_function)(HYPRE_Solver, double) = nullptr;
   int (*solver_set_precond_function)(HYPRE_Solver, HYPRE_PtrToParSolverFcn,
-      HYPRE_PtrToParSolverFcn, HYPRE_Solver) = nullptr;
+                                     HYPRE_PtrToParSolverFcn, HYPRE_Solver) = nullptr;
   int (*solver_setup_function)(
-      HYPRE_Solver, HYPRE_ParCSRMatrix, HYPRE_ParVector, HYPRE_ParVector) = nullptr;
+  HYPRE_Solver, HYPRE_ParCSRMatrix, HYPRE_ParVector, HYPRE_ParVector) = nullptr;
   int (*solver_solve_function)(
-      HYPRE_Solver, HYPRE_ParCSRMatrix, HYPRE_ParVector, HYPRE_ParVector) = nullptr;
+  HYPRE_Solver, HYPRE_ParCSRMatrix, HYPRE_ParVector, HYPRE_ParVector) = nullptr;
   int (*solver_get_num_iterations_function)(HYPRE_Solver, int*) = nullptr;
   int (*solver_get_final_relative_residual_function)(HYPRE_Solver, double*) = nullptr;
   int (*solver_destroy_function)(HYPRE_Solver) = nullptr;
@@ -209,14 +209,14 @@ InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
     solver_solve_function = HYPRE_BoomerAMGSolve;
     solver_get_num_iterations_function = HYPRE_BoomerAMGGetNumIterations;
     solver_get_final_relative_residual_function =
-        HYPRE_BoomerAMGGetFinalRelativeResidualNorm;
+    HYPRE_BoomerAMGGetFinalRelativeResidualNorm;
     solver_destroy_function = HYPRE_BoomerAMGDestroy;
     break;
   case OptionTypes::GMRES:
     solver_name = "gmres";
     checkError("Hypre GMRES solver", HYPRE_ParCSRGMRESCreate(comm, &solver));
     checkError(
-        "Hypre GMRES solver SetMaxIter", HYPRE_ParCSRGMRESSetMaxIter(solver, max_it));
+    "Hypre GMRES solver SetMaxIter", HYPRE_ParCSRGMRESSetMaxIter(solver, max_it));
     // solver_set_logging_function = HYPRE_ParCSRGMRESSetLogging;
     solver_set_print_level_function = HYPRE_ParCSRGMRESSetPrintLevel;
     solver_set_tol_function = HYPRE_ParCSRGMRESSetTol;
@@ -225,14 +225,14 @@ InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
     solver_solve_function = HYPRE_ParCSRGMRESSolve;
     solver_get_num_iterations_function = HYPRE_ParCSRGMRESGetNumIterations;
     solver_get_final_relative_residual_function =
-        HYPRE_ParCSRGMRESGetFinalRelativeResidualNorm;
+    HYPRE_ParCSRGMRESGetFinalRelativeResidualNorm;
     solver_destroy_function = HYPRE_ParCSRGMRESDestroy;
     break;
   case OptionTypes::CG:
     solver_name = "cg";
     checkError("Hypre CG solver", HYPRE_ParCSRPCGCreate(comm, &solver));
     checkError(
-        "Hypre BiCGStab solver SetMaxIter", HYPRE_ParCSRPCGSetMaxIter(solver, max_it));
+    "Hypre BiCGStab solver SetMaxIter", HYPRE_ParCSRPCGSetMaxIter(solver, max_it));
     // solver_set_logging_function = HYPRE_ParCSRPCGSetLogging;
     solver_set_print_level_function = HYPRE_ParCSRPCGSetPrintLevel;
     solver_set_tol_function = HYPRE_ParCSRPCGSetTol;
@@ -241,14 +241,14 @@ InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
     solver_solve_function = HYPRE_ParCSRPCGSolve;
     solver_get_num_iterations_function = HYPRE_ParCSRPCGGetNumIterations;
     solver_get_final_relative_residual_function =
-        HYPRE_ParCSRPCGGetFinalRelativeResidualNorm;
+    HYPRE_ParCSRPCGGetFinalRelativeResidualNorm;
     solver_destroy_function = HYPRE_ParCSRPCGDestroy;
     break;
   case OptionTypes::BiCGStab:
     solver_name = "bicgs";
     checkError("Hypre BiCGStab solver", HYPRE_ParCSRBiCGSTABCreate(comm, &solver));
     checkError("Hypre BiCGStab solver SetMaxIter",
-        HYPRE_ParCSRBiCGSTABSetMaxIter(solver, max_it));
+               HYPRE_ParCSRBiCGSTABSetMaxIter(solver, max_it));
     // solver_set_logging_function = HYPRE_ParCSRBiCGSTABSetLogging;
     solver_set_print_level_function = HYPRE_ParCSRBiCGSTABSetPrintLevel;
     solver_set_tol_function = HYPRE_ParCSRBiCGSTABSetTol;
@@ -257,7 +257,7 @@ InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
     solver_solve_function = HYPRE_ParCSRBiCGSTABSolve;
     solver_get_num_iterations_function = HYPRE_ParCSRBiCGSTABGetNumIterations;
     solver_get_final_relative_residual_function =
-        HYPRE_ParCSRBiCGSTABGetFinalRelativeResidualNorm;
+    HYPRE_ParCSRBiCGSTABGetFinalRelativeResidualNorm;
     solver_destroy_function = HYPRE_ParCSRBiCGSTABDestroy;
     break;
   case OptionTypes::Hybrid:
@@ -266,23 +266,23 @@ InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
     // checkError("Hypre Hybrid solver
     // SetSolverType",HYPRE_ParCSRHybridSetSolverType(solver,1)); // PCG
     checkError("Hypre Hybrid solver SetSolverType",
-        HYPRE_ParCSRHybridSetSolverType(solver, 2)); // GMRES
+               HYPRE_ParCSRHybridSetSolverType(solver, 2)); // GMRES
     // checkError("Hypre Hybrid solver
     // SetSolverType",HYPRE_ParCSRHybridSetSolverType(solver,3)); // BiCGSTab
     checkError("Hypre Hybrid solver SetDiagMaxIter",
-        HYPRE_ParCSRHybridSetDSCGMaxIter(solver, max_it));
+               HYPRE_ParCSRHybridSetDSCGMaxIter(solver, max_it));
     checkError("Hypre Hybrid solver SetPCMaxIter",
-        HYPRE_ParCSRHybridSetPCGMaxIter(solver, max_it));
+               HYPRE_ParCSRHybridSetPCGMaxIter(solver, max_it));
     // solver_set_logging_function = HYPRE_ParCSRHybridSetLogging;
     solver_set_print_level_function = HYPRE_ParCSRHybridSetPrintLevel;
     solver_set_tol_function = HYPRE_ParCSRHybridSetTol;
     solver_set_precond_function = nullptr; // HYPRE_ParCSRHybridSetPrecond; // SegFault si
-                                           // utilise un préconditionneur !
+    // utilise un préconditionneur !
     solver_setup_function = HYPRE_ParCSRHybridSetup;
     solver_solve_function = HYPRE_ParCSRHybridSolve;
     solver_get_num_iterations_function = HYPRE_ParCSRHybridGetNumIterations;
     solver_get_final_relative_residual_function =
-        HYPRE_ParCSRHybridGetFinalRelativeResidualNorm;
+    HYPRE_ParCSRHybridGetFinalRelativeResidualNorm;
     solver_destroy_function = HYPRE_ParCSRHybridDestroy;
     break;
   default:
@@ -293,10 +293,11 @@ InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
   if (solver_set_precond_function) {
     if (precond_solve_function) {
       checkError("Hypre " + solver_name + " solver SetPreconditioner",
-          (*solver_set_precond_function)(
-              solver, precond_solve_function, precond_setup_function, preconditioner));
+                 (*solver_set_precond_function)(
+                 solver, precond_solve_function, precond_setup_function, preconditioner));
     }
-  } else {
+  }
+  else {
     if (precond_solve_function) {
       alien_fatal([&] {
         cout() << "Hypre " << solver_name << " solver cannot accept preconditioner";
@@ -305,46 +306,46 @@ InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
   }
 
   checkError("Hypre " + solver_name + " solver SetStopCriteria",
-      (*solver_set_tol_function)(solver, rtol));
+             (*solver_set_tol_function)(solver, rtol));
 
   if (output_level > 0) {
     checkError("Hypre " + solver_name + " solver Setlogging",
-        (*solver_set_print_level_function)(solver, 1));
+               (*solver_set_print_level_function)(solver, 1));
     checkError("Hypre " + solver_name + " solver SetPrintLevel",
-        (*solver_set_print_level_function)(solver, 3));
+               (*solver_set_print_level_function)(solver, 3));
   }
 
   HYPRE_ParCSRMatrix par_a;
   HYPRE_ParVector par_rhs, par_x;
   checkError(
-      "Hypre Matrix GetObject", HYPRE_IJMatrixGetObject(ij_matrix, (void**)&par_a));
+  "Hypre Matrix GetObject", HYPRE_IJMatrixGetObject(ij_matrix, (void**)&par_a));
   checkError("Hypre RHS Vector GetObject",
-      HYPRE_IJVectorGetObject(bij_vector, (void**)&par_rhs));
+             HYPRE_IJVectorGetObject(bij_vector, (void**)&par_rhs));
   checkError("Hypre Unknown Vector GetObject",
-      HYPRE_IJVectorGetObject(xij_vector, (void**)&par_x));
+             HYPRE_IJVectorGetObject(xij_vector, (void**)&par_x));
 
   checkError("Hypre " + solver_name + " solver Setup",
-      (*solver_setup_function)(solver, par_a, par_rhs, par_x));
+             (*solver_setup_function)(solver, par_a, par_rhs, par_x));
   m_status.succeeded = ((*solver_solve_function)(solver, par_a, par_rhs, par_x) == 0);
 
   if (m_status.succeeded) {
-      checkError("Hypre " + solver_name + " solver GetNumIterations",
-                 (*solver_get_num_iterations_function)(solver, &m_status.iteration_count));
-      checkError("Hypre " + solver_name + " solver GetFinalResidual",
-                 (*solver_get_final_relative_residual_function)(solver, &m_status.residual));
+    checkError("Hypre " + solver_name + " solver GetNumIterations",
+               (*solver_get_num_iterations_function)(solver, &m_status.iteration_count));
+    checkError("Hypre " + solver_name + " solver GetFinalResidual",
+               (*solver_get_final_relative_residual_function)(solver, &m_status.residual));
 
-      m_status.succeeded = (m_status.iteration_count < max_it)
-        || (m_status.succeeded == max_it && m_status.residual <= rtol);
-  } else {
-      // Solver is not converged. Clear Hypre errors for subsequent calls.
-      HYPRE_ClearAllErrors();
+    m_status.succeeded = (m_status.iteration_count < max_it) || (m_status.succeeded == max_it && m_status.residual <= rtol);
+  }
+  else {
+    // Solver is not converged. Clear Hypre errors for subsequent calls.
+    HYPRE_ClearAllErrors();
   }
 
   checkError(
-      "Hypre " + solver_name + " solver Destroy", (*solver_destroy_function)(solver));
+  "Hypre " + solver_name + " solver Destroy", (*solver_destroy_function)(solver));
   if (precond_destroy_function)
     checkError("Hypre " + precond_name + " preconditioner Destroy",
-        (*precond_destroy_function)(preconditioner));
+               (*precond_destroy_function)(preconditioner));
 
   ++m_solve_num;
   m_total_iter_num += m_status.iteration_count;

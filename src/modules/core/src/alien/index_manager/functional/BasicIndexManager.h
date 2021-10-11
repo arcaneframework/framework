@@ -77,7 +77,7 @@ class ALIEN_EXPORT BasicIndexManager : public IIndexManager
   //! Construit une nouvelle entrée vectoriellesur un ensemble d'entités abstraites
   /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
   VectorIndexSet buildVectorIndexSet(const Arccore::String& name,
-                                     Arccore::IntegerConstArrayView localIds, 
+                                     Arccore::IntegerConstArrayView localIds,
                                      const IAbstractFamily& family,
                                      Arccore::Integer n) override;
 

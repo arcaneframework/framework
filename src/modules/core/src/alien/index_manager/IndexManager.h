@@ -184,9 +184,9 @@ class ALIEN_EXPORT IndexManager
    *
    * Current implementation handles multi-scalar entries as vector.
    */
-  VectorIndexSet buildVectorIndexSet(const String& name, 
+  VectorIndexSet buildVectorIndexSet(const String& name,
                                      const IAbstractFamily& family,
-                                     const UniqueArray<Integer>& kind, 
+                                     const UniqueArray<Integer>& kind,
                                      eKeepAlive alive = DontClone);
   /*! }@ */
 

@@ -23,64 +23,70 @@
 
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 
-namespace Alien::PETSc {
-    Matrix::Matrix(const MultiMatrixImpl *multi_impl)
-            : IMatrixImpl(multi_impl, AlgebraTraits<BackEnd::tag::petsc>::name()), m_mat(nullptr) {
-        const auto &row_space = multi_impl->rowSpace();
-        const auto &col_space = multi_impl->colSpace();
-        if (row_space.size() != col_space.size())
-            throw Arccore::FatalErrorException("Petsc matrix must be square"); // est ce le cas pour petsc ?
-    }
+namespace Alien::PETSc
+{
+Matrix::Matrix(const MultiMatrixImpl* multi_impl)
+: IMatrixImpl(multi_impl, AlgebraTraits<BackEnd::tag::petsc>::name())
+, m_mat(nullptr)
+{
+  const auto& row_space = multi_impl->rowSpace();
+  const auto& col_space = multi_impl->colSpace();
+  if (row_space.size() != col_space.size())
+    throw Arccore::FatalErrorException("Petsc matrix must be square"); // est ce le cas pour petsc ?
+}
 
-    Matrix::~Matrix() {
-        if (m_mat)
-            MatDestroy(&m_mat);
-    }
+Matrix::~Matrix()
+{
+  if (m_mat)
+    MatDestroy(&m_mat);
+}
 
-    void Matrix::setProfile(
-            int ilower, int iupper, int jlower, int jupper,
-            [[maybe_unused]] Arccore::ConstArrayView<int> row_sizes) {
-        if (m_mat) {
-            MatDestroy(&m_mat);
-        }
+void Matrix::setProfile(
+int ilower, int iupper, int jlower, int jupper,
+[[maybe_unused]] Arccore::ConstArrayView<int> row_sizes)
+{
+  if (m_mat) {
+    MatDestroy(&m_mat);
+  }
 
-        auto *pm = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng *>(distribution().parallelMng());
-        m_comm = pm ? (*pm->getMPIComm()) : MPI_COMM_WORLD;
+  auto* pm = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(distribution().parallelMng());
+  m_comm = pm ? (*pm->getMPIComm()) : MPI_COMM_WORLD;
 
+  auto ierr = MatCreate(m_comm, &m_mat);
+  ierr |= MatSetSizes(m_mat, iupper - ilower + 1, jupper - jlower + 1,
+                      PETSC_DETERMINE, PETSC_DETERMINE);
+  ierr |= MatSetType(m_mat, MATMPIAIJ);
+  ierr |= MatAssemblyBegin(m_mat, MAT_FINAL_ASSEMBLY);
+  ierr |= MatSetUp(m_mat);
 
-        auto ierr = MatCreate(m_comm, &m_mat);
-        ierr |= MatSetSizes(m_mat, iupper - ilower + 1, jupper - jlower + 1,
-                            PETSC_DETERMINE, PETSC_DETERMINE);
-        ierr |= MatSetType(m_mat, MATMPIAIJ);
-        ierr |= MatAssemblyBegin(m_mat, MAT_FINAL_ASSEMBLY);
-        ierr |= MatSetUp(m_mat);
+  if (ierr) {
+    throw Arccore::FatalErrorException(A_FUNCINFO, "PETSc Initialisation failed");
+  }
+}
 
-        if (ierr) {
-            throw Arccore::FatalErrorException(A_FUNCINFO, "PETSc Initialisation failed");
-        }
-    }
+void Matrix::assemble()
+{
+  auto ierr = MatAssemblyEnd(m_mat, MAT_FINAL_ASSEMBLY);
 
-    void Matrix::assemble() {
-        auto ierr = MatAssemblyEnd(m_mat, MAT_FINAL_ASSEMBLY);
+  if (ierr) {
+    throw Arccore::FatalErrorException(A_FUNCINFO, "PETSc assembling failed");
+  }
+}
 
-        if (ierr) {
-            throw Arccore::FatalErrorException(A_FUNCINFO, "PETSc assembling failed");
-        }
-    }
+void Matrix::setRowValues(int row, Arccore::ConstArrayView<int> cols, Arccore::ConstArrayView<double> values)
+{
+  auto ncols = cols.size();
 
-    void Matrix::setRowValues(int row, Arccore::ConstArrayView<int> cols, Arccore::ConstArrayView<double> values) {
-        auto ncols = cols.size();
+  if (ncols != values.size()) {
+    throw Arccore::FatalErrorException(A_FUNCINFO, "sizes are not equal");
+  }
 
-        if (ncols != values.size()) {
-            throw Arccore::FatalErrorException(A_FUNCINFO, "sizes are not equal");
-        }
+  auto ierr = MatSetValues(m_mat, 1, &row, ncols, cols.data(), values.data(), INSERT_VALUES);
 
-        auto ierr = MatSetValues(m_mat, 1, &row, ncols, cols.data(), values.data(), INSERT_VALUES);
-
-        if (ierr) {
-            auto msg = Arccore::String::format("Cannot set PETSc Matrix Values for row {0}", row);
-            throw Arccore::FatalErrorException(A_FUNCINFO, msg);
-        }
-    }
+  if (ierr) {
+    auto msg = Arccore::String::format("Cannot set PETSc Matrix Values for row {0}", row);
+    throw Arccore::FatalErrorException(A_FUNCINFO, msg);
+  }
+}
 
 } // namespace Alien::PETSc

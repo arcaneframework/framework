@@ -331,19 +331,15 @@ VectorDistribution::Internal::Internal(Integer global_size, Integer local_size,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool
-VectorDistribution::Internal::operator==(const Internal& dist) const
+bool VectorDistribution::Internal::operator==(const Internal& dist) const
 {
-  return ((dist.m_parallel_mng == m_parallel_mng) && (dist.m_rank == m_rank)
-      && (dist.m_global_size == m_global_size) && (dist.m_local_size == m_local_size)
-      && (dist.m_offset == m_offset));
+  return ((dist.m_parallel_mng == m_parallel_mng) && (dist.m_rank == m_rank) && (dist.m_global_size == m_global_size) && (dist.m_local_size == m_local_size) && (dist.m_offset == m_offset));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool
-VectorDistribution::Internal::isParallel() const
+bool VectorDistribution::Internal::isParallel() const
 {
   return (m_parallel_mng != nullptr) && (m_parallel_mng->commSize() > 1);
 }
@@ -523,8 +519,7 @@ VectorDistribution::operator=(VectorDistribution&& dist)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool
-VectorDistribution::operator==(const VectorDistribution& dist) const
+bool VectorDistribution::operator==(const VectorDistribution& dist) const
 {
   return *m_internal == *dist.m_internal;
 }
@@ -532,8 +527,7 @@ VectorDistribution::operator==(const VectorDistribution& dist) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool
-VectorDistribution::isParallel() const
+bool VectorDistribution::isParallel() const
 {
   return m_internal->isParallel();
 }

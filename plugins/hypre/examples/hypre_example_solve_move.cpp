@@ -24,141 +24,143 @@
 #include <alien/hypre/backend.h>
 #include <alien/hypre/options.h>
 
-int test() {
-    auto *pm = Arccore::MessagePassing::Mpi::StandaloneMpiMessagePassingMng::create(MPI_COMM_WORLD);
-    auto *tm = Arccore::arccoreCreateDefaultTraceMng();
+int test()
+{
+  auto* pm = Arccore::MessagePassing::Mpi::StandaloneMpiMessagePassingMng::create(MPI_COMM_WORLD);
+  auto* tm = Arccore::arccoreCreateDefaultTraceMng();
 
-    Alien::setTraceMng(tm);
-    Alien::setVerbosityLevel(Alien::Verbosity::Debug);
+  Alien::setTraceMng(tm);
+  Alien::setVerbosityLevel(Alien::Verbosity::Debug);
 
-    auto size = 100;
+  auto size = 100;
 
-    tm->info() << "Example Alien :";
-    tm->info() << "Use of scalar builder (RefSemantic API) for Laplacian problem";
-    tm->info() << " => solving linear system Ax = b";
-    tm->info() << " * problem size = " << size;
-    tm->info() << " ";
-    tm->info() << "Start example...";
-    tm->info() << " ";
+  tm->info() << "Example Alien :";
+  tm->info() << "Use of scalar builder (RefSemantic API) for Laplacian problem";
+  tm->info() << " => solving linear system Ax = b";
+  tm->info() << " * problem size = " << size;
+  tm->info() << " ";
+  tm->info() << "Start example...";
+  tm->info() << " ";
 
-    auto distribution = Alien::MatrixDistribution(size, size, pm);
+  auto distribution = Alien::MatrixDistribution(size, size, pm);
 
-    Alien::Move::MatrixData A(distribution);
+  Alien::Move::MatrixData A(distribution);
 
-    // Distributions calculée
-    const auto &dist = A.distribution();
-    int offset = dist.rowOffset();
-    int lsize = dist.localRowSize();
-    int gsize = dist.globalRowSize();
+  // Distributions calculée
+  const auto& dist = A.distribution();
+  int offset = dist.rowOffset();
+  int lsize = dist.localRowSize();
+  int gsize = dist.globalRowSize();
 
-    tm->info() << "build matrix with direct matrix builder";
-    {
-        Alien::Move::DirectMatrixBuilder builder(std::move(A), Alien::DirectMatrixOptions::eResetValues);
-        builder.reserve(3); // Réservation de 3 coefficients par ligne
-        builder.allocate(); // Allocation de l'espace mémoire réservé
+  tm->info() << "build matrix with direct matrix builder";
+  {
+    Alien::Move::DirectMatrixBuilder builder(std::move(A), Alien::DirectMatrixOptions::eResetValues);
+    builder.reserve(3); // Réservation de 3 coefficients par ligne
+    builder.allocate(); // Allocation de l'espace mémoire réservé
 
-        for (int irow = offset; irow < offset + lsize; ++irow) {
-            builder(irow, irow) = 2.;
-            if (irow - 1 >= 0)
-                builder(irow, irow - 1) = -1.;
-            if (irow + 1 < gsize)
-                builder(irow, irow + 1) = -1.;
-        }
-        A = builder.release();
+    for (int irow = offset; irow < offset + lsize; ++irow) {
+      builder(irow, irow) = 2.;
+      if (irow - 1 >= 0)
+        builder(irow, irow - 1) = -1.;
+      if (irow + 1 < gsize)
+        builder(irow, irow + 1) = -1.;
     }
+    A = builder.release();
+  }
 
-    tm->info() << "* xe = 1";
+  tm->info() << "* xe = 1";
 
-    auto xe = Alien::Move::VectorData(distribution.colDistribution());
-    {
-        Alien::Move::LocalVectorWriter v_build(std::move(xe));
-        for (int i = 0 ; i < v_build.size() ; i++) {
-            v_build[i] = 1.0;
-        }
-        xe = v_build.release();
+  auto xe = Alien::Move::VectorData(distribution.colDistribution());
+  {
+    Alien::Move::LocalVectorWriter v_build(std::move(xe));
+    for (int i = 0; i < v_build.size(); i++) {
+      v_build[i] = 1.0;
     }
+    xe = v_build.release();
+  }
 
-    tm->info() << "=> Vector Distribution : " << xe.distribution();
+  tm->info() << "=> Vector Distribution : " << xe.distribution();
 
-    tm->info() << "* b = A * xe";
+  tm->info() << "* b = A * xe";
 
-    Alien::Move::VectorData b(distribution.rowDistribution());
+  Alien::Move::VectorData b(distribution.rowDistribution());
 
-    Alien::Hypre::LinearAlgebra algebra;
+  Alien::Hypre::LinearAlgebra algebra;
 
-    algebra.mult(A, xe, b);
+  algebra.mult(A, xe, b);
 
-    Alien::Move::VectorData x(distribution.colDistribution());
+  Alien::Move::VectorData x(distribution.colDistribution());
 
-    tm->info() << "* x = A^-1 b";
+  tm->info() << "* x = A^-1 b";
 
-    auto options = Alien::Hypre::Options()
-            .numIterationsMax(100)
-            .stopCriteriaValue(1e-10)
-            .preconditioner(Alien::Hypre::OptionTypes::AMGPC)
-            .solver(Alien::Hypre::OptionTypes::GMRES);
+  auto options = Alien::Hypre::Options()
+                 .numIterationsMax(100)
+                 .stopCriteriaValue(1e-10)
+                 .preconditioner(Alien::Hypre::OptionTypes::AMGPC)
+                 .solver(Alien::Hypre::OptionTypes::GMRES);
 
-    auto solver = Alien::Hypre::LinearSolver(options);
+  auto solver = Alien::Hypre::LinearSolver(options);
 
-    solver.solve(A, b, x);
+  solver.solve(A, b, x);
 
-    tm->info() << "* r = Ax - b";
+  tm->info() << "* r = Ax - b";
 
-    Alien::Move::VectorData r(distribution.colDistribution());
+  Alien::Move::VectorData r(distribution.colDistribution());
 
-    {
-        Alien::Move::VectorData tmp(distribution.colDistribution());
-        tm->info() << "t = Ax";
-        algebra.mult(A, x, tmp);
-        tm->info() << "r = t";
-        algebra.copy(tmp, r);
-        tm->info() << "r -= b";
-        algebra.axpy(-1., b, r);
-    }
+  {
+    Alien::Move::VectorData tmp(distribution.colDistribution());
+    tm->info() << "t = Ax";
+    algebra.mult(A, x, tmp);
+    tm->info() << "r = t";
+    algebra.copy(tmp, r);
+    tm->info() << "r -= b";
+    algebra.axpy(-1., b, r);
+  }
 
-    auto norm = algebra.norm2(r);
+  auto norm = algebra.norm2(r);
 
-    tm->info() << " => ||r|| = " << norm;
+  tm->info() << " => ||r|| = " << norm;
 
-    tm->info() << "* r = || x - xe ||";
+  tm->info() << "* r = || x - xe ||";
 
-    {
-        tm->info() << "r = x";
-        algebra.copy(x, r);
-        tm->info() << "r -= xe";
-        algebra.axpy(-1., xe, r);
-    }
+  {
+    tm->info() << "r = x";
+    algebra.copy(x, r);
+    tm->info() << "r -= xe";
+    algebra.axpy(-1., xe, r);
+  }
 
-    tm->info() << " => ||r|| = " << norm;
+  tm->info() << " => ||r|| = " << norm;
 
-    tm->info() << " ";
-    tm->info() << "... example finished !!!";
+  tm->info() << " ";
+  tm->info() << "... example finished !!!";
 
-    return 0;
+  return 0;
 }
 
-int main(int argc, char **argv) {
-    MPI_Init(&argc, &argv);
+int main(int argc, char** argv)
+{
+  MPI_Init(&argc, &argv);
 
-    auto ret = 0;
+  auto ret = 0;
 
-    try {
-        ret = test();
-    }
-    catch (const Arccore::Exception &ex) {
-        std::cerr << "Exception: " << ex << '\n';
-        ret = 3;
-    }
-    catch (const std::exception &ex) {
-        std::cerr << "** A standard exception occured: " << ex.what() << ".\n";
-        ret = 2;
-    }
-    catch (...) {
-        std::cerr << "** An unknown exception has occured...\n";
-        ret = 1;
-    }
+  try {
+    ret = test();
+  }
+  catch (const Arccore::Exception& ex) {
+    std::cerr << "Exception: " << ex << '\n';
+    ret = 3;
+  }
+  catch (const std::exception& ex) {
+    std::cerr << "** A standard exception occured: " << ex.what() << ".\n";
+    ret = 2;
+  }
+  catch (...) {
+    std::cerr << "** An unknown exception has occured...\n";
+    ret = 1;
+  }
 
-    MPI_Finalize();
+  MPI_Finalize();
 
-    return ret;
+  return ret;
 }

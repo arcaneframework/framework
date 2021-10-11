@@ -27,86 +27,92 @@
 
 #include <alien/petsc/backend.h>
 
-class SimpleCSR_to_Petsc_MatrixConverter : public Alien::IMatrixConverter {
-public:
-    SimpleCSR_to_Petsc_MatrixConverter() = default;
+class SimpleCSR_to_Petsc_MatrixConverter : public Alien::IMatrixConverter
+{
+ public:
+  SimpleCSR_to_Petsc_MatrixConverter() = default;
 
-    ~SimpleCSR_to_Petsc_MatrixConverter() override = default;
+  ~SimpleCSR_to_Petsc_MatrixConverter() override = default;
 
-public:
-    BackEndId sourceBackend() const override {
-        return Alien::AlgebraTraits<Alien::BackEnd::tag::simplecsr>::name();
-    }
+ public:
+  BackEndId sourceBackend() const override
+  {
+    return Alien::AlgebraTraits<Alien::BackEnd::tag::simplecsr>::name();
+  }
 
-    BackEndId targetBackend() const override {
-        return Alien::AlgebraTraits<Alien::BackEnd::tag::petsc>::name();
-    }
+  BackEndId targetBackend() const override
+  {
+    return Alien::AlgebraTraits<Alien::BackEnd::tag::petsc>::name();
+  }
 
-    void convert(const Alien::IMatrixImpl *sourceImpl,
-                 Alien::IMatrixImpl *targetImpl) const override;
+  void convert(const Alien::IMatrixImpl* sourceImpl,
+               Alien::IMatrixImpl* targetImpl) const override;
 
-    void _build(const Alien::SimpleCSRMatrix<Arccore::Real> &sourceImpl, Alien::PETSc::Matrix &targetImpl) const;
+  void _build(const Alien::SimpleCSRMatrix<Arccore::Real>& sourceImpl, Alien::PETSc::Matrix& targetImpl) const;
 
-    void _buildBlock(const Alien::SimpleCSRMatrix<Arccore::Real> &sourceImpl, Alien::PETSc::Matrix &targetImpl) const;
+  void _buildBlock(const Alien::SimpleCSRMatrix<Arccore::Real>& sourceImpl, Alien::PETSc::Matrix& targetImpl) const;
 };
 
-void SimpleCSR_to_Petsc_MatrixConverter::convert(const IMatrixImpl *sourceImpl, IMatrixImpl *targetImpl) const {
-    const auto &v = cast<Alien::SimpleCSRMatrix<Arccore::Real>>(sourceImpl, sourceBackend());
-    auto &v2 = cast<Alien::PETSc::Matrix>(targetImpl, targetBackend());
+void SimpleCSR_to_Petsc_MatrixConverter::convert(const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const
+{
+  const auto& v = cast<Alien::SimpleCSRMatrix<Arccore::Real>>(sourceImpl, sourceBackend());
+  auto& v2 = cast<Alien::PETSc::Matrix>(targetImpl, targetBackend());
 
-    alien_debug([&] {
-        cout() << "Converting Alien::SimpleCSRMatrix: " << &v << " to Petsc::Matrix " << &v2;
-    });
+  alien_debug([&] {
+    cout() << "Converting Alien::SimpleCSRMatrix: " << &v << " to Petsc::Matrix " << &v2;
+  });
 
-    if (targetImpl->block())
-        _buildBlock(v, v2);
-    else if (targetImpl->vblock())
-        throw Arccore::FatalErrorException(A_FUNCINFO, "Block sizes are variable - builds not yet implemented");
-    else
-        _build(v, v2);
+  if (targetImpl->block())
+    _buildBlock(v, v2);
+  else if (targetImpl->vblock())
+    throw Arccore::FatalErrorException(A_FUNCINFO, "Block sizes are variable - builds not yet implemented");
+  else
+    _build(v, v2);
 }
 
-void SimpleCSR_to_Petsc_MatrixConverter::_build(const Alien::SimpleCSRMatrix<Arccore::Real> &sourceImpl,
-                                                Alien::PETSc::Matrix &targetImpl) const {
-    const auto &dist = sourceImpl.distribution();
-    const auto &profile = sourceImpl.getCSRProfile();
-    const auto localSize = profile.getNRow();
-    const auto localOffset = dist.rowOffset();
+void SimpleCSR_to_Petsc_MatrixConverter::_build(const Alien::SimpleCSRMatrix<Arccore::Real>& sourceImpl,
+                                                Alien::PETSc::Matrix& targetImpl) const
+{
+  const auto& dist = sourceImpl.distribution();
+  const auto& profile = sourceImpl.getCSRProfile();
+  const auto localSize = profile.getNRow();
+  const auto localOffset = dist.rowOffset();
 
-    const auto ilower = localOffset;
-    const auto iupper = localOffset + localSize - 1;
-    const auto jlower = ilower;
-    const auto jupper = iupper;
+  const auto ilower = localOffset;
+  const auto iupper = localOffset + localSize - 1;
+  const auto jlower = ilower;
+  const auto jupper = iupper;
 
-    alien_debug([&] {
-        cout() << "Matrix range : "
-               << "[" << ilower << ":" << iupper << "]"
-               << "x"
-               << "[" << jlower << ":" << jupper << "]";
-    });
+  alien_debug([&] {
+    cout() << "Matrix range : "
+           << "[" << ilower << ":" << iupper << "]"
+           << "x"
+           << "[" << jlower << ":" << jupper << "]";
+  });
 
-    auto sizes = Arccore::UniqueArray<int>(localSize);
-    for (auto row = 0; row < localSize; ++row) {
-        sizes[row] = profile.getRowSize(row);
-    }
+  auto sizes = Arccore::UniqueArray<int>(localSize);
+  for (auto row = 0; row < localSize; ++row) {
+    sizes[row] = profile.getRowSize(row);
+  }
 
-    targetImpl.setProfile(ilower, iupper, jlower, jupper, sizes);
+  targetImpl.setProfile(ilower, iupper, jlower, jupper, sizes);
 
-    auto values = sourceImpl.internal().getValues();
-    auto cols = profile.getCols();
-    auto icount = 0;
-    for (auto irow = 0; irow < localSize; ++irow) {
-        const auto row = localOffset + irow;
-        const auto ncols = profile.getRowSize(irow);
-        targetImpl.setRowValues(row, cols.subConstView(icount, ncols), values.subConstView(icount, ncols));
-        icount += ncols;
-    }
+  auto values = sourceImpl.internal().getValues();
+  auto cols = profile.getCols();
+  auto icount = 0;
+  for (auto irow = 0; irow < localSize; ++irow) {
+    const auto row = localOffset + irow;
+    const auto ncols = profile.getRowSize(irow);
+    targetImpl.setRowValues(row, cols.subConstView(icount, ncols), values.subConstView(icount, ncols));
+    icount += ncols;
+  }
 
-    targetImpl.assemble();
+  targetImpl.assemble();
 }
 
-void SimpleCSR_to_Petsc_MatrixConverter::_buildBlock(const Alien::SimpleCSRMatrix<Arccore::Real> &sourceImpl,
-                                                     Alien::PETSc::Matrix &targetImpl) const {/*
+void SimpleCSR_to_Petsc_MatrixConverter::_buildBlock(const Alien::SimpleCSRMatrix<Arccore::Real>& sourceImpl,
+                                                     Alien::PETSc::Matrix& targetImpl) const
+{ /*
   const auto& dist = sourceImpl.distribution();
   const auto& profile = sourceImpl.getCSRProfile();
   const auto localSize = profile.getNRow();
@@ -175,6 +181,5 @@ void SimpleCSR_to_Petsc_MatrixConverter::_buildBlock(const Alien::SimpleCSRMatri
 
   targetImpl.assemble();*/
 }
-
 
 REGISTER_MATRIX_CONVERTER(SimpleCSR_to_Petsc_MatrixConverter);

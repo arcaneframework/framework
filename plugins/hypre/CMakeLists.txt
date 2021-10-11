@@ -101,8 +101,8 @@ add_subdirectory(examples)
 
 # Tests
 if (ALIEN_HYPRE_UNIT_TESTS)
-  add_subdirectory(tests)
-endif(ALIEN_HYPRE_UNIT_TESTS)
+    add_subdirectory(tests)
+endif (ALIEN_HYPRE_UNIT_TESTS)
 
 # Install
 

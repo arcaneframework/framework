@@ -100,18 +100,16 @@ const CSRMatrix& ma, const CSRVector& vx, CSRVector& vr) const
 
 /*---------------------------------------------------------------------------*/
 
-void
-SimpleCSRInternalLinearAlgebra::axpy(Real alpha, const CSRVector& vx, CSRVector& vr) const
+void SimpleCSRInternalLinearAlgebra::axpy(Real alpha, const CSRVector& vx, CSRVector& vr) const
 {
   CBLASMPIKernel::axpy(vx.distribution(), alpha, vx, vr);
 }
 
 /*---------------------------------------------------------------------------*/
 
-void
-SimpleCSRInternalLinearAlgebra::aypx(Real alpha ALIEN_UNUSED_PARAM,
-                                     CSRVector& y ALIEN_UNUSED_PARAM, 
-                                     const CSRVector& x ALIEN_UNUSED_PARAM) const
+void SimpleCSRInternalLinearAlgebra::aypx(Real alpha ALIEN_UNUSED_PARAM,
+                                          CSRVector& y ALIEN_UNUSED_PARAM,
+                                          const CSRVector& x ALIEN_UNUSED_PARAM) const
 {
   throw NotImplementedException(
   A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");

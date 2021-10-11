@@ -160,9 +160,9 @@ class MultVectorElement2T
    * \param[in] i The block entry
    * \param[in] local_offset The offset
    */
-  MultVectorElement2T(Arccore::ArrayView<T> values, 
+  MultVectorElement2T(Arccore::ArrayView<T> values,
                       T factor,
-                      Arccore::ConstArray2View<Arccore::Integer> indexes, 
+                      Arccore::ConstArray2View<Arccore::Integer> indexes,
                       Arccore::Integer i,
                       Arccore::Integer local_offset);
 

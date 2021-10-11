@@ -43,42 +43,44 @@ class MatrixDistribution;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Move {
+namespace Move
+{
 
-//! Algebraic Matrix with internal multi-representation object.
-    class ALIEN_MOVESEMANTIC_EXPORT MatrixData : public IMatrix {
-    public:
-        typedef Real ValueType;
+  //! Algebraic Matrix with internal multi-representation object.
+  class ALIEN_MOVESEMANTIC_EXPORT MatrixData : public IMatrix
+  {
+   public:
+    typedef Real ValueType;
 
-    public:
-        /*! @defgroup constructor Matrix Constructor
+   public:
+    /*! @defgroup constructor Matrix Constructor
          * @{
          */
-        /*! Empty constructor
+    /*! Empty constructor
          *
          * This matrix must be associated with a \r Space before use.
          */
-        MatrixData();
+    MatrixData();
 
-        /*! Build a new matrix from a Space
+    /*! Build a new matrix from a Space
          *
          * \param space Domain (and Codomain) Space of the matrix.
          * \param dist Parallel distribution.
          *
          * This matrix is directly ready to use. */
-        [[deprecated]] MatrixData(const Space &space, const MatrixDistribution &dist);
+    [[deprecated]] MatrixData(const Space& space, const MatrixDistribution& dist);
 
-        /*!  Build a new matrix from two Spaces
+    /*!  Build a new matrix from two Spaces
          *
          * \param row_space Domain Space of the matrix.
          * \param col_space Codomain Space of the matrix.
          * \param dist Parallel distribution.
          *
          * This matrix is directly ready to use. */
-        [[deprecated]] MatrixData(
-                const Space &row_space, const Space &col_space, const MatrixDistribution &dist);
+    [[deprecated]] MatrixData(
+    const Space& row_space, const Space& col_space, const MatrixDistribution& dist);
 
-        /*! Build a new matrix from a size.
+    /*! Build a new matrix from a size.
          *
          * Matlab-like interface, matrix is defined as a [0, n-1]x[0, n-1] array.
          * \param size Number of rows and columns of the matrix.
@@ -86,9 +88,9 @@ namespace Move {
          *
          * This matrix is ready to use on an anonymous Space.
          */
-        [[deprecated]] MatrixData(Integer size, const MatrixDistribution &dist);
+    [[deprecated]] MatrixData(Integer size, const MatrixDistribution& dist);
 
-        /*! Build a new matrix from two sizes.
+    /*! Build a new matrix from two sizes.
          *
          * Matlab-like interface, matrix is defined as a [0, n-1]x[0, m-1] array.
          * \param row_size Number of rows of the matrix.
@@ -97,147 +99,147 @@ namespace Move {
          *
          * This matrix is ready to use on an anonymous Space.
          */
-        [[deprecated]] MatrixData(Integer row_size, Integer col_size, const MatrixDistribution &dist);
+    [[deprecated]] MatrixData(Integer row_size, Integer col_size, const MatrixDistribution& dist);
 
-        /*!  Build a new matrix on `MatrixDistribution`
+    /*!  Build a new matrix on `MatrixDistribution`
       *
       * \param dist Parallel distribution.
       *
       * This matrix is directly ready to use. */
-        explicit MatrixData(const MatrixDistribution &dist);
+    explicit MatrixData(const MatrixDistribution& dist);
 
-        /*! Move constructor for Matrix
+    /*! Move constructor for Matrix
          *
          * @param matrix Matrix to move from.
          */
-        MatrixData(MatrixData &&matrix);
-        //! }@
+    MatrixData(MatrixData&& matrix);
+    //! }@
 
-        /*! Destructor
+    /*! Destructor
          * All internal data structures will be deleted.
          */
-        virtual ~MatrixData() {}
+    virtual ~MatrixData() {}
 
-        /*! Move assignment
+    /*! Move assignment
          * \brief Move from Matrix
          *
          * @param matrix Matrix to move from.
          */
-        void operator=(MatrixData &&matrix);
+    void operator=(MatrixData&& matrix);
 
-        /*! Initialize a Matrix with a Space.
+    /*! Initialize a Matrix with a Space.
          *
          * @param space Domain and Codomain Space for the Matrix.
          * @param dist Parallel Distribution.
          */
-        void init(const Space &space, const MatrixDistribution &dist);
+    void init(const Space& space, const MatrixDistribution& dist);
 
-    private:
-        MatrixData(const MatrixData &) = delete;
+   private:
+    MatrixData(const MatrixData&) = delete;
 
-        void operator=(const MatrixData &) = delete;
+    void operator=(const MatrixData&) = delete;
 
-    public:
-    public:
-        /*! @defgroup block Block related API
+   public:
+   public:
+    /*! @defgroup block Block related API
          * @{ */
 
-        void setBlockInfos(const Integer block_size);
+    void setBlockInfos(const Integer block_size);
 
-        void setBlockInfos(const Block *block);
+    void setBlockInfos(const Block* block);
 
-        void setBlockInfos(const VBlock *block);
+    void setBlockInfos(const VBlock* block);
 
-        Block const *block() const;
+    Block const* block() const;
 
-        VBlock const *vblock() const;
-        /*! }@ */
+    VBlock const* vblock() const;
+    /*! }@ */
 
-        /*! Delete all internal data structures */
-        void free();
+    /*! Delete all internal data structures */
+    void free();
 
-        /*! Clean all internal data structures.
+    /*! Clean all internal data structures.
          *
          * Internal data are cleared, not deleted.
          */
-        void clear();
+    void clear();
 
-        /*! Handle for visitor pattern */
-        void visit(ICopyOnWriteMatrix &) const;
+    /*! Handle for visitor pattern */
+    void visit(ICopyOnWriteMatrix&) const;
 
-        /*! @defgroup space Space related functions.
+    /*! @defgroup space Space related functions.
          * @{
          */
-        /*! Domain Space of the current matrix
+    /*! Domain Space of the current matrix
          * @return Domain Space.
          * @throw FatalException if uninitialized.
          * Call isNull before to avoid any problem.
          */
-        const ISpace &rowSpace() const;
+    const ISpace& rowSpace() const;
 
-        /*! CoDomain Space of the current matrix
+    /*! CoDomain Space of the current matrix
          * @return CoDomain Space.
          * @throw FatalException if uninitialized.
          * Call isNull before to avoid any problem.
          */
-        const ISpace &colSpace() const;
-        /*! }@ */
+    const ISpace& colSpace() const;
+    /*! }@ */
 
-        /*! Parallel distribution of the Matrix.
+    /*! Parallel distribution of the Matrix.
          *
          * @return Parallel distribution of the Matrix.
          */
-        const MatrixDistribution &distribution() const;
+    const MatrixDistribution& distribution() const;
 
-        /*! @defgroup lock Protection functions.
+    /*! @defgroup lock Protection functions.
          * @{
          */
-        /*! Lock Matrix with the caller. */
-        void lock() {}
+    /*! Lock Matrix with the caller. */
+    void lock() {}
 
-        /*! Unlock Matrix, making it available for others. */
-        void unlock() {}
+    /*! Unlock Matrix, making it available for others. */
+    void unlock() {}
 
-        /*! Test if a Matrix is locked.
+    /*! Test if a Matrix is locked.
          *
          * @return whether of not a matrix is already locked by someone.
          */
-        bool isLocked() const { return false; }
-        /*! }@ */
+    bool isLocked() const { return false; }
+    /*! }@ */
 
-        /*! @defgroup properties Algebraic properties management.
+    /*! @defgroup properties Algebraic properties management.
          *
          * Algebraic properties are designed to propagate high level information of matrix
          * object. These properties can be passed to external solvers but are not designed to
          * overload Alien's solver parameters.
          * @{ */
-        /*! Add a new property on this matrix */
-        void setUserFeature(String feature);
+    /*! Add a new property on this matrix */
+    void setUserFeature(String feature);
 
-        /*! Check if a property is set. */
-        bool hasUserFeature(String feature) const;
+    /*! Check if a property is set. */
+    bool hasUserFeature(String feature) const;
 
-        /*! Alias on property "transposed" */
-        bool isTransposed() const { return hasUserFeature("transposed"); }
+    /*! Alias on property "transposed" */
+    bool isTransposed() const { return hasUserFeature("transposed"); }
 
-        /*! Is this matrix composite ? */
-        bool isComposite() const;
-        /* }@ */
+    /*! Is this matrix composite ? */
+    bool isComposite() const;
+    /* }@ */
 
-    public:
-        /*! @defgroup impl Internal data structure access.
+   public:
+    /*! @defgroup impl Internal data structure access.
          *
          * Access multi-representation object.
          * @{
          */
-        MultiMatrixImpl *impl();
+    MultiMatrixImpl* impl();
 
-        const MultiMatrixImpl *impl() const;
-        /*! } @ */
+    const MultiMatrixImpl* impl() const;
+    /*! } @ */
 
-    private:
-        std::shared_ptr<MultiMatrixImpl> m_impl;
-    };
+   private:
+    std::shared_ptr<MultiMatrixImpl> m_impl;
+  };
 
 } // namespace Move
 /*---------------------------------------------------------------------------*/

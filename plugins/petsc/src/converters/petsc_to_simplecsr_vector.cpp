@@ -25,39 +25,43 @@
 
 #include <alien/petsc/backend.h>
 
-class PETSc_to_SimpleCSR_VectorConverter : public Alien::IVectorConverter {
-public:
-    PETSc_to_SimpleCSR_VectorConverter() = default;
+class PETSc_to_SimpleCSR_VectorConverter : public Alien::IVectorConverter
+{
+ public:
+  PETSc_to_SimpleCSR_VectorConverter() = default;
 
-    ~PETSc_to_SimpleCSR_VectorConverter() override = default;
+  ~PETSc_to_SimpleCSR_VectorConverter() override = default;
 
-public:
-    Alien::BackEndId sourceBackend() const override {
-        return Alien::AlgebraTraits<Alien::BackEnd::tag::petsc>::name();
-    }
+ public:
+  Alien::BackEndId sourceBackend() const override
+  {
+    return Alien::AlgebraTraits<Alien::BackEnd::tag::petsc>::name();
+  }
 
-    Alien::BackEndId targetBackend() const override {
-        return Alien::AlgebraTraits<Alien::BackEnd::tag::simplecsr>::name();
-    }
+  Alien::BackEndId targetBackend() const override
+  {
+    return Alien::AlgebraTraits<Alien::BackEnd::tag::simplecsr>::name();
+  }
 
-    void convert(const Alien::IVectorImpl *sourceImpl,
-                 Alien::IVectorImpl *targetImpl) const override;
+  void convert(const Alien::IVectorImpl* sourceImpl,
+               Alien::IVectorImpl* targetImpl) const override;
 };
 
 void PETSc_to_SimpleCSR_VectorConverter::convert(
-        const Alien::IVectorImpl *sourceImpl,
-        Alien::IVectorImpl *targetImpl) const {
-    const auto &v = cast<Alien::PETSc::Vector>(sourceImpl, sourceBackend());
-    auto &v2 =
-            cast<Alien::SimpleCSRVector<Arccore::Real>>(targetImpl, targetBackend());
+const Alien::IVectorImpl* sourceImpl,
+Alien::IVectorImpl* targetImpl) const
+{
+  const auto& v = cast<Alien::PETSc::Vector>(sourceImpl, sourceBackend());
+  auto& v2 =
+  cast<Alien::SimpleCSRVector<Arccore::Real>>(targetImpl, targetBackend());
 
-    alien_debug([&] {
-        cout() << "Converting PETSc::Vector: " << &v
-               << " to Alien::SimpleCSRVector " << &v2;
-    });
-    auto values = v2.values();
+  alien_debug([&] {
+    cout() << "Converting PETSc::Vector: " << &v
+           << " to Alien::SimpleCSRVector " << &v2;
+  });
+  auto values = v2.values();
 
-    v.getValues(values);
+  v.getValues(values);
 }
 
 REGISTER_VECTOR_CONVERTER(PETSc_to_SimpleCSR_VectorConverter);

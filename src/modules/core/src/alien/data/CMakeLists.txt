@@ -47,7 +47,7 @@ if (ALIEN_GENERATE_DOCUMENTATION)
             USE_STAMP_FILE
             COMMENT "Generate API-documents for Alien."
             )
-endif(ALIEN_GENERATE_DOCUMENTATION)
+endif (ALIEN_GENERATE_DOCUMENTATION)
 
 target_include_directories(alien_data PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../..)
 target_include_directories(alien_data PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../..)

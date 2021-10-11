@@ -37,20 +37,22 @@ class IMatrix;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Move {
+namespace Move
+{
 
-    class ALIEN_EXPORT SubMatrix {
-    public:
-        static MatrixData Extract(const IMatrix &matrix, const ExtractionIndices &indices);
+  class ALIEN_EXPORT SubMatrix
+  {
+   public:
+    static MatrixData Extract(const IMatrix& matrix, const ExtractionIndices& indices);
 
-    private:
-        static MatrixData extractRange(const IMatrix &matrix, const ExtractionIndices &indices);
+   private:
+    static MatrixData extractRange(const IMatrix& matrix, const ExtractionIndices& indices);
 
-        static MatrixData extractIndices(
-                const IMatrix &matrix, const ExtractionIndices &indices);
-    };
+    static MatrixData extractIndices(
+    const IMatrix& matrix, const ExtractionIndices& indices);
+  };
 
-}
+} // namespace Move
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

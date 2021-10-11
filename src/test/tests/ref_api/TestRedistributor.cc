@@ -28,7 +28,6 @@
 #include <alien/ref/data/scalar/RedistributedMatrix.h>
 #include <alien/ref/data/scalar/RedistributedVector.h>
 
-
 #include <alien/ref/handlers/scalar/DirectMatrixBuilder.h>
 
 #include <alien/ref/handlers/scalar/VectorWriter.h>
@@ -40,52 +39,53 @@
 using namespace Arccore;
 
 // This test requires RefSemantic API.
-TEST(TestRedistributorRef, Redistributor) {
-    int size = 12;
-    Alien::Space row_space(size, "Space");
-    Alien::Space col_space(size, "Space");
+TEST(TestRedistributorRef, Redistributor)
+{
+  int size = 12;
+  Alien::Space row_space(size, "Space");
+  Alien::Space col_space(size, "Space");
 
-    Alien::MatrixDistribution mdist(row_space, col_space, AlienTest::Environment::parallelMng());
-    int offset = mdist.rowOffset();
-    int lsize = mdist.localRowSize();
-    int gsize = mdist.globalRowSize();
+  Alien::MatrixDistribution mdist(row_space, col_space, AlienTest::Environment::parallelMng());
+  int offset = mdist.rowOffset();
+  int lsize = mdist.localRowSize();
+  int gsize = mdist.globalRowSize();
 
-    Alien::Matrix A(mdist);
-    ASSERT_EQ(A.rowSpace(), row_space);
-    ASSERT_EQ(A.colSpace(), col_space);
+  Alien::Matrix A(mdist);
+  ASSERT_EQ(A.rowSpace(), row_space);
+  ASSERT_EQ(A.colSpace(), col_space);
 
-    Alien::DirectMatrixBuilder builder(A, Alien::DirectMatrixOptions::ResetFlag::eResetAllocation);
-    builder.allocate(); // FIXME Important, else inserting leads to segfault
-    for (int irow = offset; irow < offset + lsize; ++irow) {
-        builder(irow, irow) = 2.;
-        if (irow - 1 >= 0)
-            builder(irow, irow - 1) = -1.;
-        if (irow + 1 < gsize)
-            builder(irow, irow + 1) = -1.;
-    }
-    builder.finalize();
+  Alien::DirectMatrixBuilder builder(A, Alien::DirectMatrixOptions::ResetFlag::eResetAllocation);
+  builder.allocate(); // FIXME Important, else inserting leads to segfault
+  for (int irow = offset; irow < offset + lsize; ++irow) {
+    builder(irow, irow) = 2.;
+    if (irow - 1 >= 0)
+      builder(irow, irow - 1) = -1.;
+    if (irow + 1 < gsize)
+      builder(irow, irow + 1) = -1.;
+  }
+  builder.finalize();
 
-    Alien::Redistributor redist(mdist.globalRowSize(), AlienTest::Environment::parallelMng(),
-                                (AlienTest::Environment::parallelMng()->commRank() % 2) == 0);
+  Alien::Redistributor redist(mdist.globalRowSize(), AlienTest::Environment::parallelMng(),
+                              (AlienTest::Environment::parallelMng()->commRank() % 2) == 0);
 
-    Alien::RedistributedMatrix Aa(A, redist);
+  Alien::RedistributedMatrix Aa(A, redist);
 
-    Alien::Vector b(gsize, AlienTest::Environment::parallelMng());
-    Alien::Vector x(gsize, AlienTest::Environment::parallelMng());
-    // Builder du vecteur
-    Alien::VectorWriter writerB(b);
-    Alien::VectorWriter writerX(x);
+  Alien::Vector b(gsize, AlienTest::Environment::parallelMng());
+  Alien::Vector x(gsize, AlienTest::Environment::parallelMng());
+  // Builder du vecteur
+  Alien::VectorWriter writerB(b);
+  Alien::VectorWriter writerX(x);
 
-    // On remplit le vecteur
-    for (int i = 0; i < lsize; ++i) {
-        writerB[i + offset] = 1;//i+offset;
-        writerX[i + offset] = 1;//i+offset;
-    }
+  // On remplit le vecteur
+  for (int i = 0; i < lsize; ++i) {
+    writerB[i + offset] = 1; //i+offset;
+    writerX[i + offset] = 1; //i+offset;
+  }
 
-    Alien::RedistributedVector bb(b, redist);
-    Alien::RedistributedVector xx(x, redist);
+  Alien::RedistributedVector bb(b, redist);
+  Alien::RedistributedVector xx(x, redist);
 
-    Alien::SimpleCSRLinearAlgebra algebra;
-    algebra.axpy(2., bb, xx);
-    algebra.mult(Aa, xx, bb);
+  Alien::SimpleCSRLinearAlgebra algebra;
+  algebra.axpy(2., bb, xx);
+  algebra.mult(Aa, xx, bb);
 }

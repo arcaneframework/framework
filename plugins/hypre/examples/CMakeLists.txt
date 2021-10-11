@@ -46,10 +46,10 @@ enable_testing()
 include(LoadAlienTest)
 
 alien_test(
-    BENCH hypre
-    NAME hypre.example
-    PROCS 4
-    COMMAND example_hypre
+        BENCH hypre
+        NAME hypre.example
+        PROCS 4
+        COMMAND example_hypre
 )
 
 alien_test(

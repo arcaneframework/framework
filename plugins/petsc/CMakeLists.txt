@@ -95,8 +95,8 @@ generate_export_header(alien_petsc
 
 # Tests
 if (ALIEN_PETSC_UNIT_TESTS)
-  enable_testing()
-  add_subdirectory(test)
+    enable_testing()
+    add_subdirectory(test)
 endif (ALIEN_PETSC_UNIT_TESTS)
 
 # Install

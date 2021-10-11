@@ -60,7 +60,7 @@ class IOptions;
  * \tparam Tag The type of kernel used to compute eigen values
  * \tparam VectorT The type of kernel used to store eigen vectors
  */
- // FIXME: not implemented !
+// FIXME: not implemented !
 template <class Tag, typename VectorT>
 class EigenProblemT : public EigenProblem
 {
