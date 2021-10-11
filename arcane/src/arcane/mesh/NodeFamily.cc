@@ -402,13 +402,6 @@ sortInternalReferences()
   // la reproductibilité.
   ItemCompare2 ic_cell;
   ic_cell.m_items = mesh()->cellFamily()->itemsInternal();
-  if (m_cell_connectivity->legacyConnectivity()){
-    ENUMERATE_ITEM(iitem,allItems()){
-      ItemInternal* it = (*iitem).internal();
-      Int32* ptr = it->_cellsPtr();
-      std::sort(ptr,ptr+it->nbCell(),ic_cell);
-    }
-  }
   auto new_connectivity = m_cell_connectivity->trueCustomConnectivity();
   if (new_connectivity){
     ENUMERATE_ITEM(iitem,allItems()){

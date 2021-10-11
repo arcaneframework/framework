@@ -714,40 +714,9 @@ class ARCANE_CORE_EXPORT ItemInternal
    */
   void _setFaceBackAndFrontCells(Int32 back_cell_lid,Int32 front_cell_lid);
 
- private:
-  void _setNode(Integer aindex,Int32 lid)
-  { m_shared_info->setNode(m_data_index,aindex,lid); }
-  void _setEdge(Integer aindex,Int32 lid)
-  { m_shared_info->setEdge(m_data_index,aindex,lid); }
-  void _setFace(Integer aindex,Int32 lid)
-  { m_shared_info->setFace(m_data_index,aindex,lid); }
-  void _setCell(Integer aindex,Int32 lid)
-  { m_shared_info->setCell(m_data_index,aindex,lid); }
-  void _setHParent(Integer aindex,Int32 local_id)
-  { m_shared_info->setHParent(m_data_index,aindex,local_id); }
-  void _setHChild(Integer aindex,Int32 local_id)
-  { m_shared_info->setHChild(m_data_index,aindex,local_id); }
- private:
-  Int32* _nodesPtr()
-  { return m_shared_info->m_infos + m_data_index + m_shared_info->firstNode(); }
-  Int32* _edgesPtr()
-  { return m_shared_info->m_infos + m_data_index + m_shared_info->firstEdge(); }
-  Int32* _facesPtr()
-  { return m_shared_info->m_infos + m_data_index + m_shared_info->firstFace(); }
-  Int32* _cellsPtr()
-  { return m_shared_info->m_infos + m_data_index + m_shared_info->firstCell(); }
-  Int32* _hParentPtr()
-  { return m_shared_info->m_infos + m_data_index + m_shared_info->firstHParent(); }
-  Int32* _hChildPtr() const
-  { return m_shared_info->m_infos + m_data_index + m_shared_info->firstHChild(); }
-  Int32 _hParentLocalId(Integer index)
-  { return _hParentPtr()[index]; }
-  Int32 _hChildLocalId(Integer index)
-  { return _hChildPtr()[index]; }
  public:
   void _internalCopyAndChangeSharedInfos(ItemSharedInfo* old_isi,ItemSharedInfo* new_isi,Integer new_data_index);
   void _internalCopyAndSetDataIndex(Int32* data_ptr,Int32 data_index);
-  void _internalCheckValidConnectivityAccessor(ItemInternalConnectivityList* iicl);
   //@}
 
  private:
@@ -784,13 +753,6 @@ class ARCANE_CORE_EXPORT ItemInternal
     return m_connectivity;
 #endif
   }
-  void _setNodeWithLocalId(Integer index,Int32 new_local_id);
-  void _setEdgeWithLocalId(Integer index,Int32 new_local_id);
-  void _setFaceWithLocalId(Integer index,Int32 new_local_id);
-  void _setCellWithLocalId(Integer index,Int32 new_local_id);
-  void _setHParentWithLocalId(Integer index,Int32 new_local_id);
-  void _setHChildWithLocalId(Integer index,Int32 new_local_id);
-
  void _checkValidConnectivity(ItemInternal* item,Int32 nb_sub_item,
                               const Int32* ref_ptr,const Int32* new_ptr,
                               Int32 sub_item_kind);

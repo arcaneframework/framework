@@ -2768,16 +2768,6 @@ _checkValidConnectivity()
   }
   for( auto  ics : m_connectivity_selector_list )
     ics->checkValidConnectivityList();
-  // Vérifie que les nouveaux accesseurs contiennent les mêmes valeurs
-  // que les anciens.
-  if (mesh()->_connectivityPolicy()!=InternalConnectivityPolicy::Legacy && m_has_legacy_connectivity){
-    ItemInternalList items(_itemsInternal());
-    ItemInternalConnectivityList* iicl = &m_item_connectivity_list;
-    for( Integer i=0, n=items.size(); i<n; ++i ){
-      ItemInternal* item = items[i];
-      item->_internalCheckValidConnectivityAccessor(iicl);
-    }
-  }
 }
 
 /*---------------------------------------------------------------------------*/

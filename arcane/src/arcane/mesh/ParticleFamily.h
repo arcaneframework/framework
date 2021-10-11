@@ -41,7 +41,7 @@ class ARCANE_MESH_EXPORT ParticleFamily
 {
  private:
 
-  typedef ItemConnectivitySelectorT<ParticleCellCompactIncrementalItemConnectivity,OneItemIncrementalItemConnectivity> CellConnectivity;
+  typedef ItemConnectivitySelectorT<CellCompactIncrementalItemConnectivity,OneItemIncrementalItemConnectivity> CellConnectivity;
   friend ParticleCellCompactIncrementalItemConnectivity;
   typedef ItemFamily BaseClass;
 
