@@ -181,7 +181,7 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh, bo
 , m_ghost_layer_mng(new GhostLayerMng(m_parallel_mng->traceMng()))
 , m_mesh_exchange_mng(new MeshExchangeMng(this))
 , m_mesh_compact_mng(new MeshCompactMng(this))
-, m_connectivity_policy(InternalConnectivityPolicy::Legacy)
+, m_connectivity_policy(InternalConnectivityPolicy::NewOnly)
 , m_mesh_part_info(makeMeshPartInfoFromParallelMng(m_parallel_mng))
 {
   m_node_family = new NodeFamily(this,"Node");
@@ -208,7 +208,7 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh, bo
 //  if(m_is_amr_activated)
 //    m_mesh_refinement = new MeshRefinement(this);
 
-  _setConnectivityPolicy();
+  _printConnectivityPolicy();
 
   // Adding the family dependencies if asked
   if (_connectivityPolicy() == InternalConnectivityPolicy::NewWithDependenciesAndLegacy && !is_submesh && !m_is_amr_activated) {
@@ -3149,56 +3149,9 @@ mergeMeshes(ConstArrayView<IMesh*> meshes)
 /*---------------------------------------------------------------------------*/
 
 void DynamicMesh::
-_setConnectivityPolicy()
+_printConnectivityPolicy()
 {
-  // Par défaut si on utilise les nouvelles connectivités pour accéder au
-  // nombre d'éléments alors on utilise la politique 'NewOnly' car c'est la
-  // seule valeur valide pour ce mode pour l'instant.
-#if ARCANE_ITEM_CONNECTIVITY_SIZE_MODE == ARCANE_ITEM_CONNECTIVITY_SIZE_MODE_NEW
-  m_connectivity_policy = InternalConnectivityPolicy::NewOnly;
-#endif
-  // Récupère la politique de connectivité utilisée.
-  {
-    String s = platform::getEnvironmentVariable("ARCANE_CONNECTIVITY_POLICY");
-    if (s=="0")
-      m_connectivity_policy = InternalConnectivityPolicy::Legacy;
-    else if (s=="1")
-      m_connectivity_policy = InternalConnectivityPolicy::LegacyAndAllocAccessor;
-    else if (s=="2")
-      m_connectivity_policy = InternalConnectivityPolicy::LegacyAndNew;
-    else if (s=="3")
-      m_connectivity_policy = InternalConnectivityPolicy::NewAndLegacy;
-    else if (s=="4")
-      m_connectivity_policy = InternalConnectivityPolicy::NewWithDependenciesAndLegacy;
-    else if (s=="5")
-      m_connectivity_policy = InternalConnectivityPolicy::NewOnly;
-    else if (!s.empty())
-      ARCANE_FATAL("Invalid value for environment variable ARCANE_CONNECTIVITY_POLICY");
-  }
-
-  if (m_connectivity_policy == InternalConnectivityPolicy::LegacyAndAllocAccessor)
-    ARCANE_FATAL("connectivity policy 'LegacyAndAllocAccessor' is no longer supported");
-  if (m_connectivity_policy == InternalConnectivityPolicy::LegacyAndNew)
-    ARCANE_FATAL("connectivity policy 'LegacyAndNew' is no longer supported");
-
-  // Teste les politiques autorisées en fonction de la configuration
-  // de Arcane.
-#ifdef ARCANE_USE_LEGACY_ITEMINTERNAL_CONNECTIVITY
-  info() << "Using legacy connectivity accessor in ItemInternal";
-  if (m_connectivity_policy==InternalConnectivityPolicy::NewAndLegacy ||
-      m_connectivity_policy==InternalConnectivityPolicy::NewWithDependenciesAndLegacy){
-    info() << "WARNING: forcing LegacyAndNew connectivity policy because"
-           << " Arcane is configured with legacy connectivity";
-    m_connectivity_policy = InternalConnectivityPolicy::LegacyAndNew;
-  }
-#else
   info() << "Using new connectivity accessor in ItemInternal";
-  if (m_connectivity_policy==InternalConnectivityPolicy::Legacy){
-    info() << "WARNING: forcing NewAndLegacy connectivity policy because"
-           << " Arcane is configured without legacy connectivity";
-    m_connectivity_policy = InternalConnectivityPolicy::NewAndLegacy;
-  }
-#endif
 
   info() << "Connectivity policy=" << (int)m_connectivity_policy
          << " connectivity_size_policy=" << ARCANE_ITEM_CONNECTIVITY_SIZE_MODE
@@ -3206,21 +3159,9 @@ _setConnectivityPolicy()
          << " sizeof(ItemInternalConnectivityList)=" << sizeof(ItemInternalConnectivityList)
          << " sizeof(ItemSharedInfo)=" << sizeof(ItemSharedInfo);
 
-#if ARCANE_ITEM_CONNECTIVITY_SIZE_MODE == ARCANE_ITEM_CONNECTIVITY_SIZE_MODE_LEGACY
-  if (m_connectivity_policy == InternalConnectivityPolicy::NewOnly)
-    ARCANE_FATAL("connectivity policy '{0}' is not available when macro"
-                 " ARCANE_ITEM_CONNECTIVITY_SIZE_MODE == ARCANE_ITEM_CONNECTIVITY_SIZE_MODE_LEGACY",
-                 (int)m_connectivity_policy);
-#elif ARCANE_ITEM_CONNECTIVITY_SIZE_MODE == ARCANE_ITEM_CONNECTIVITY_SIZE_MODE_NEW
   if (m_connectivity_policy != InternalConnectivityPolicy::NewOnly)
-    ARCANE_FATAL("connectivity policy '{0}' is not available when macro"
-                 " ARCANE_ITEM_CONNECTIVITY_SIZE_MODE == ARCANE_ITEM_CONNECTIVITY_SIZE_MODE_NEW",
-                 (int)m_connectivity_policy);
-#elif ARCANE_ITEM_CONNECTIVITY_SIZE_MODE == ARCANE_ITEM_CONNECTIVITY_SIZE_MODE_DYNAMIC
-  ;
-#else
-#error "Invalid configuration for ARCANE_ITEM_CONNECTIVITY_SIZE_MODE"
-#endif
+    ARCANE_FATAL("Invalid value '{0}' for InternalConnectivityPolicy. Only '{1}' is allowed",
+                 (int)m_connectivity_policy,(int)InternalConnectivityPolicy::NewOnly);
 }
 
 /*---------------------------------------------------------------------------*/

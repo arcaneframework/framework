@@ -35,29 +35,10 @@
  */
 #define ARCANE_USE_SHAREDINFO_CONNECTIVITY
 
-#ifdef ARCANE_USE_LEGACY_CONNECTIVITY
-/*!
- * \brief Macro indiquant si les connectivités accessibles via
- * ItemInternal utilisent l'ancien ou le nouveau mécanisme.
- *
- * Le choix du mécanisme se fait lors de la configuration de %Arcane via
- * les options '--with-legacy-connectivity' ou '--without-legacy-connectivity'.
- *
- * Les nouvelles connectivités ne sont accessibles qu'avec le nouveau
- * mécanisme.
- *
- * Le nouveau mécanisme permet d'utiliser les anciennes
- * ou les nouvelles connectivités. Le choix se fait par maillage en
- * fonction de la valeur de IMesh::_connectivityPolicy().
- */
-#define ARCANE_USE_LEGACY_ITEMINTERNAL_CONNECTIVITY
-#endif
+//#ifdef ARCANE_USE_LEGACY_CONNECTIVITY
+//#define ARCANE_USE_LEGACY_ITEMINTERNAL_CONNECTIVITY
 
-#ifdef ARCANE_USE_LEGACY_ITEMINTERNAL_CONNECTIVITY
-#define A_INTERNAL_ACCESS(method)  _ ## method ## Old
-#else
 #define A_INTERNAL_ACCESS(method)  _ ## method ## V2
-#endif
 
 // Cette macro est définie pour indiquer que
 // les méthodes d'accès aux nombres d'entités connectées
@@ -88,11 +69,7 @@
 #endif
 
 // Positionne la méthode d'accès en fonction des macros spécifiées
-#ifdef ARCANE_USE_LEGACY_ITEMINTERNAL_CONNECTIVITY_SIZE
-#define A_NB_INTERNAL_ACCESS(method)  _ ## method ## Old()
-#else
 #define A_NB_INTERNAL_ACCESS(method)  _ ## method ## V2()
-#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

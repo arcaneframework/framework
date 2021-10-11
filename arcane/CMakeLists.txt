@@ -886,27 +886,10 @@ message(STATUS "RELEASE FLAGS TYPE ${CMAKE_CXX_FLAGS_RELEASE}")
 # ----------------------------------------------------------------------------
 # Configuration pour les connectivités.
 #
-# Il existe deux variables pour la configuration:
-# 1. ARCANE_WANT_LEGACY_CONNECTIVITY: si vrai, indique qu'on utilise uniquement
-#    les anciennes connectivités. A priori cela n'est plus utilisé
-# 2. ARCANE_ITEM_CONNECTIVITY_SIZE_MODE: indique le mode utilisé pour retourner
-#    le nombre d'éléments pour une connectivité (par exemple dans cell.nbNode()).
-#    Les trois valeurs possibles sont:
-#    1. 'Legacy' (le défaut): indique qu'on utilise ItemSharedInfo
-#    2. 'New': indique qu'on utilise le nombre d'élément géré par les nouvelles connectivités
-#    3. 'Dynamic': indique que le choix se fait lors de l'exécution. Cela
-#       implique que les méthodes retournant le nombre d'entités ne soit
-#       par inlinés. Pour des raisons de performance, cela ne doit être utilisé
-#       que pour les développements.
-#    Ces valeurs doivent être cohérentes avec cell définies dans 'arcane_core_config.h'
-if (NOT ARCANE_ITEM_CONNECTIVITY_SIZE_MODE)
-  set(ARCANE_ITEM_CONNECTIVITY_SIZE_MODE 2)
-endif()
-if (ARCANE_WANT_LEGACY_CONNECTIVITY AND ARCANE_ITEM_CONNECTIVITY_SIZE_MODE EQUAL 2)
-  message(FATAL_ERROR "Invalid configuration ARCANE_WANT_LEGACY_CONNECTIVITY with ARCANE_ITEM_CONNECTIVITY_SIZE_MODE==2")
-endif()
-set(ARCANE_ITEM_CONNECTIVITY_SIZE_MODE
-  ${ARCANE_ITEM_CONNECTIVITY_SIZE_MODE} CACHE STRING "Item connectivity size mode")
+# Il n'existe plus qu'un seul mode pour les connectivités:
+# ARCANE_ITEM_CONNECTIVITY_SIZE_MODE = 2
+# A terme il faudra supprimer cette variable
+set(ARCANE_ITEM_CONNECTIVITY_SIZE_MODE 2 CACHE STRING "Item connectivity size mode")
 
 # ----------------------------------------------------------------------------
 
@@ -959,7 +942,6 @@ function(ARCANE_GEN_CORE_CONFIG_FILE filename)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_AVX ARCANE_HAS_AVX)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_AVX512 ARCANE_HAS_AVX512)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_LIBXML2 ARCANE_USE_LIBXML2)
-  ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_LEGACY_CONNECTIVITY ARCANE_USE_LEGACY_CONNECTIVITY)
   ARCANE_WRITE_ONE_CONFIG_VALUE(ARCANE_ITEM_CONNECTIVITY_SIZE_MODE ARCANE_ITEM_CONNECTIVITY_SIZE_MODE)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_USE_MPC ARCANE_USE_MPC)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_USE_HIDDEN_VISIBILITY ARCANE_USE_HIDDEN_VISIBILITY)
