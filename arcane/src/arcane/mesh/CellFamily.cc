@@ -114,7 +114,7 @@ build()
   m_face_family = ARCANE_CHECK_POINTER(dynamic_cast<FaceFamily*>(m_mesh->faceFamily()));
 
   IItemFamilyNetwork* network = m_mesh->itemFamilyNetwork();
-  if (network) { // temporary to fill legacy, even with family dependencies
+  if (m_mesh->useMeshItemFamilyDependencies()) { // temporary to fill legacy, even with family dependencies
     auto* nc = network->getConnectivity(this,m_node_family,connectivityName(this,m_node_family));
     using NodeNetwork = NewWithLegacyConnectivityType<CellFamily,NodeFamily>::type;
     m_node_connectivity = ARCANE_CHECK_POINTER(dynamic_cast<NodeNetwork*>(nc));

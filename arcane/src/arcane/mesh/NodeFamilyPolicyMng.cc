@@ -52,8 +52,10 @@ class ARCANE_MESH_EXPORT NodeFamilyPolicyMng
       throw NotSupportedException(A_FUNCINFO,"serialisation with 'use_flags==true'");
     IMesh* mesh = m_family->mesh();
     DynamicMesh* dmesh = ARCANE_CHECK_POINTER(dynamic_cast<DynamicMesh*>(mesh));
-    if (m_family->mesh()->itemFamilyNetwork() && IItemFamilyNetwork::plug_serializer) return new ItemFamilySerializer(m_family, m_family, dmesh->incrementalBuilder());
-    else return new IndirectItemFamilySerializer(m_family);
+    if(m_family->mesh()->useMeshItemFamilyDependencies())
+      return new ItemFamilySerializer(m_family, m_family, dmesh->incrementalBuilder());
+    else
+      return new IndirectItemFamilySerializer(m_family);
   }
  private:
   NodeFamily* m_family;

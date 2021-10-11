@@ -30,7 +30,6 @@ ModuleBuildInfo::
 ModuleBuildInfo(ISubDomain* sd,IMesh* mesh,const String& name)
 : m_sub_domain(sd)
 , m_mesh_handle(mesh->handle())
-, m_graph(nullptr)
 , m_name(name)
 {
 }
@@ -42,7 +41,6 @@ ModuleBuildInfo::
 ModuleBuildInfo(ISubDomain* sd,const MeshHandle& mesh_handle,const String& name)
 : m_sub_domain(sd)
 , m_mesh_handle(mesh_handle)
-, m_graph(nullptr)
 , m_name(name)
 {
 }
@@ -54,7 +52,6 @@ ModuleBuildInfo::
 ModuleBuildInfo(ISubDomain* sd,const String& name)
 : m_sub_domain(sd)
 , m_mesh_handle(sd->defaultMeshHandle())
-, m_graph(nullptr)
 , m_name(name)
 {
 }
@@ -62,11 +59,6 @@ ModuleBuildInfo(ISubDomain* sd,const String& name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IGraph* ModuleBuildInfo::
-graph() const 
-{
-  return nullptr;
-}
   
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

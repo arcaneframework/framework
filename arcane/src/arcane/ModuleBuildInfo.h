@@ -28,7 +28,6 @@ namespace Arcane
 
 class ISubDomain;
 class IMesh;
-class IGraph;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -67,8 +66,6 @@ class ARCANE_CORE_EXPORT ModuleBuildInfo
   IMesh* mesh() const { return m_mesh_handle.mesh(); }
   //! Accès au maillage associé
   const MeshHandle& meshHandle() const { return m_mesh_handle; }
-  //! Accès au graphe associé au maillage
-  IGraph* graph() const;
   //! Nom de l'implémentation recherchée
   const String& name() const { return m_name; }
 
@@ -77,9 +74,6 @@ class ARCANE_CORE_EXPORT ModuleBuildInfo
   ISubDomain* m_sub_domain;
   //! Maillage associé
   MeshHandle m_mesh_handle;
-  //! Graphe associé
-  /*! \warning toujours defaultGraph() pour l'instant */
-  IGraph* m_graph;
   //! Nom de l'implémentation recherchée
   String m_name;
 };

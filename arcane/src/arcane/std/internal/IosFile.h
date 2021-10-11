@@ -5,28 +5,54 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
+/* IosFile.h             					                             (C) 2000-2021 */
 /*                                                                           */
-/* Interface de la classe de gestion d'un maillage.                          */
+/* Routines des Lecture/Ecriture d'un fichier.                               */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_STD_FILE_SERVICES_H
+#define ARCANE_STD_FILE_SERVICES_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/utils/Iostream.h"
 
-#include "arcane/IGraph.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+/*!
+ * \internal
+ * \brief Routines des Lecture/Ecriture d'un fichier.
+ */
+class IosFile
+{
+ public:
+	static const int IOS_BFR_SZE = 8192;
+ public:
+	IosFile(std::istream* stream) : m_stream(stream) {}
+	const char* getNextLine(const char *);
+	const char* getNextLine(void);
+	Real getReal(void);
+	Integer getInteger(void);
+	Int64 getInt64(void);
+	bool lookForString(const String& str);
+	void checkString(const String& current_value,const String& expected_value);
+	void checkString(const String& current_value, const String& expected_value1, const String& expected_value2);
+	static bool isEqualString(const String& current_value,const String& expected_value);
+	bool isEnd(void);
+ private:
+  std::istream* m_stream;
+	char m_buf[IOS_BFR_SZE];
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif  

@@ -184,6 +184,7 @@ setWritableBytes(Span<Byte> buffer)
   m_const_buffer = buffer;
   m_stored_buffer.clear();
   m_memory_size = buffer.size();
+
 }
 
 /*---------------------------------------------------------------------------*/

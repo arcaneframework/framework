@@ -1,21 +1,20 @@
-﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
 // Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IGraph.h                                                    (C) 2011-2011 */
+/* IGraphModifier2.h                                            (C) 2011-2011 */
 /*                                                                           */
-/* Interface d'un graphe d'un maillage    .                                  */
+/* Interface d'un outil de modification du graphe d'un maillage              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IGRAPH_H
-#define ARCANE_IGRAPH_H
+#ifndef ARCANE_IGRAPHMODIFIER2_H
+#define ARCANE_IGRAPGMODIFIER2_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/ArcaneTypes.h"
-#include "arcane/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -24,51 +23,43 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class IGraphModifier;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Interface d'un graphe du maillage
  */
-class IGraph
+class ARCANE_CORE_EXPORT IGraphModifier2
 {
-public:
+ public:
 
-  virtual ~IGraph() {} //<! Libère les ressources
+  virtual ~IGraphModifier2() {} //<! Lib�re les ressources
+    
+ public:
   
-public:
-  
-  virtual IGraphModifier* modifier() =0;
+ 
+  //! Ajout de liaisons dans le graphe avec un nombre fixe de noeuds dual par liaison
+  virtual void addLinks(Integer nb_link,
+                        Integer nb_dual_nodes_per_link,
+                        Int64ConstArrayView links_infos) =0;
 
-public:
-  
-  //! Nombre de noeuds duaux du graphe
-  virtual Integer nbDualNode() =0;
-  
-  //! Nombre de liaisons du graphe
-  virtual Integer nbLink() =0;
-  
-public:
-  
-  //! Groupe de tous les noeuds duaux
-  virtual DualNodeGroup allDualNodes() =0;
+  //! Ajout de noeuds duaux dans le graphe avec un type fixe d'item dual par noeud
+  virtual void addDualNodes(Integer graph_nb_dual_node,
+                            Integer dual_node_kind,
+                            Int64ConstArrayView dual_nodes_infos) = 0;
 
-  //! Groupe de toutes les liaisons
-  virtual LinkGroup allLinks() =0;
+  //! Ajout de noeuds duaux dans le graphe avec le type du noeud dans le tableau infos
+  virtual void addDualNodes(Integer graph_nb_dual_node,
+                            Int64ConstArrayView dual_nodes_infos) = 0;
 
-  //! Groupe de tous les noeuds duaux propres au domaine
-  virtual DualNodeGroup ownDualNodes() =0;
+  //! Suppression de noeuds duaux dans le graphe
+  virtual void removeDualNodes(Int32ConstArrayView dual_node_local_ids) =0;
 
-  //! Groupe de toutes les liaisons propres au domaine
-  virtual LinkGroup ownLinks() =0;
-
-  //! Retourne la famille des noeuds duaux
-  virtual IItemFamily* dualNodeFamily() =0;
+  //! Suppression de liaisons duaux dans le graphe
+  virtual void removeLinks(Int32ConstArrayView link_local_ids) =0;
   
-  //! Retourne la famille des liaisons
-  virtual IItemFamily* linkFamily() =0;
+
+  virtual void endUpdate() =0;
+
+  virtual void updateAfterMeshChanged() =0;
+
 };
 
 /*---------------------------------------------------------------------------*/
@@ -78,5 +69,5 @@ ARCANE_END_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+#endif
 
-#endif  

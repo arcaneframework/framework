@@ -97,9 +97,10 @@ class MeshExchange
   void _computeMeshConnectivityInfos(Int32ConstArrayView cells_new_owner);
   void _computeGraphConnectivityInfos();
   void _exchangeCellDataInfos(Int32ConstArrayView cells_new_owner,bool use_active_cells);
-  void _computeItemsToSend();
+  void _computeItemsToSend(bool send_dof=false);
   void _addItemToSend(ArrayView< std::set<Int32> > items_to_send,
-                      Int32 item_local_id,Int32 cell_local_id);
+                      Int32 item_local_id,Int32 cell_local_id,
+                      bool use_itemfamily_network=false);
 
   // Version based on ItemFamilyNetwork
   void _computeMeshConnectivityInfos3();
@@ -132,8 +133,10 @@ class MeshExchange
   void _printItemToSend(IItemFamily* family);// Debug print SDC
   void _printItemToRemove(IItemFamily* family);// Debug print SDC
 
-  void _markRemovableItems();
+  void _markRemovableItems(bool with_cell_family=true);
+  void _markRemovableDoFs();
   void _markRemovableParticles();
+  void _markRemovableCells(Int32ConstArrayView cells_new_owner,bool use_active_cells);
 
   //  using ItemDestRankArray = IncrementalUnorderedMultiArray<Int32>; // l'un ou l'autre ?
   using ItemDestRankArray = DynamicMultiArray<Int32>;

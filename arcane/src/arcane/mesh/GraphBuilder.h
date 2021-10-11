@@ -5,52 +5,41 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IosFile.h             					                             (C) 2000-2021 */
+/* GraphBuilder.h                                              (C) 2000-2021 */
 /*                                                                           */
-/* Routines des Lecture/Ecriture d'un fichier.                               */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IOS_FILE_SERVICES_H
-#define ARCANE_IOS_FILE_SERVICES_H
+#ifndef ARCANE_MESH_GRAPHBUILDER_H
+#define ARCANE_MESH_GRAPHBUILDER_H
+
+#include "arcane/IGraph2.h"
+#include "arcane/mesh/GraphDoFs.h"
+#include "arcane/mesh/ParticleFamily.h"
+#include "arcane/IMesh.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
+namespace Arcane::mesh
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*!
- * \internal
- * \brief Routines des Lecture/Ecriture d'un fichier.
- */
-class IosFile
+class GraphBuilder
 {
  public:
-	static const int IOS_BFR_SZE = 8192;
- public:
-	IosFile(istream* stream) : m_stream(stream) {}
-	const char* getNextLine(const char *);
-	const char* getNextLine(void);
-	Real getReal(void);
-	Integer getInteger(void);
-	Int64 getInt64(void);
-	bool lookForString(const String& str);
-	void checkString(const String& current_value,const String& expected_value);
-	void checkString(const String& current_value, const String& expected_value1, const String& expected_value2);
-	static bool isEqualString(const String& current_value,const String& expected_value);
-	bool isEnd(void);
- private:
-	istream* m_stream;
-	char m_buf[IOS_BFR_SZE];
+  static IGraph2* createGraph(IMesh* mesh, String const& particle_family_name = ParticleFamily::defaultFamilyName())
+  {
+    return new mesh::GraphDoFs(mesh, particle_family_name);
+  };
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

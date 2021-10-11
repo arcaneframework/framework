@@ -46,11 +46,11 @@
 #include "arcane/IMeshWriter.h"
 #include "arcane/BasicService.h"
 #include "arcane/MeshPartInfo.h"
-#include "arcane/ios/IosFile.h"
 #include "arcane/MeshUtils.h"
 
 // Element types in .msh file format, found in gmsh-2.0.4/Common/GmshDefines.h
-#include "arcane/ios/IosGmsh.h"
+#include "arcane/std/internal/IosFile.h"
+#include "arcane/std/internal/IosGmsh.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

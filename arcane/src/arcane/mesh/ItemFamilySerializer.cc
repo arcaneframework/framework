@@ -120,16 +120,21 @@ _fillItemDependenciesData(ItemData& item_data, Int32ConstArrayView local_ids)
   IItemFamilyNetwork* family_network = m_family->mesh()->itemFamilyNetwork();
   auto out_connectivities = family_network->getChildDependencies(m_family); // Only dependencies are needed to create item. Relations are treated separately
   item_infos.add(out_connectivities.size());
-  ENUMERATE_ITEM(item, m_family->view(local_ids)){
+  ENUMERATE_ITEM(item, m_family->view(local_ids))
+  {
     item_infos.add(item->type());
     item_infos.add(item->uniqueId().asInt64());
     item_owners[item.index()] = item->owner();
-    for (auto out_connectivity : out_connectivities){
-      item_infos.add(out_connectivity->targetFamily()->itemKind());
-      item_infos.add(out_connectivity->nbConnectedItem(ItemLocalId(item)));
-      ConnectivityItemVector connectivity_accessor(out_connectivity);
-      ENUMERATE_ITEM(connected_item, connectivity_accessor.connectedItems(ItemLocalId(item))) {
-        item_infos.add(connected_item->uniqueId().asInt64());
+    for (auto out_connectivity : out_connectivities)
+    {
+      if(out_connectivity)
+      {
+        item_infos.add(out_connectivity->targetFamily()->itemKind());
+        item_infos.add(out_connectivity->nbConnectedItem(ItemLocalId(item)));
+        ConnectivityItemVector connectivity_accessor(out_connectivity);
+        ENUMERATE_ITEM(connected_item, connectivity_accessor.connectedItems(ItemLocalId(item))) {
+          item_infos.add(connected_item->uniqueId().asInt64());
+        }
       }
     }
   }
@@ -152,11 +157,13 @@ _fillItemRelationsData(ItemData& item_data, Int32ConstArrayView local_ids)
     item_infos.add(item->type());
     item_infos.add(item->uniqueId().asInt64());
     item_owners[item.index()] = item->owner();
-    for (auto out_connectivity : out_connectivities){
+    for (auto out_connectivity : out_connectivities)
+    {
       item_infos.add(out_connectivity->targetFamily()->itemKind());
       item_infos.add(out_connectivity->nbConnectedItem(ItemLocalId(item)));
       ConnectivityItemVector connectivity_accessor(out_connectivity);
-      ENUMERATE_ITEM(connected_item, connectivity_accessor.connectedItems(ItemLocalId(item))) {
+      ENUMERATE_ITEM(connected_item, connectivity_accessor.connectedItems(ItemLocalId(item)))
+      {
         item_infos.add(connected_item->uniqueId().asInt64());
       }
     }

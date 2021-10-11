@@ -307,7 +307,7 @@ void
 Connectivity::
 _checkValid(const Integer c)
 {
-  if (c & ~CT_FullConnectivity3D)
+  if ((c & ~CT_FullConnectivity3D) && (c & ~CT_GraphConnectivity))
     throw FatalErrorException(A_FUNCINFO,"Illegal connectivity flag");
 }
 
@@ -332,6 +332,7 @@ kindsToConnectivity(eItemKind kindA, eItemKind kindB)
   case IK_Edge:
   case IK_Face:
   case IK_Cell:
+  case IK_DoF:
     break;
   default:
     throw FatalErrorException(A_FUNCINFO,String::format("Connectivity from kind {0} not supported",kindA));
@@ -341,12 +342,32 @@ kindsToConnectivity(eItemKind kindA, eItemKind kindB)
   case IK_Edge:
   case IK_Face:
   case IK_Cell:
+  case IK_DoF:
+  case IK_Particle:
     break;
   default:
     throw FatalErrorException(A_FUNCINFO,String::format("Connectivity to kind {0} not supported",kindB));
   }
-  
-  return 1<<(4*kindA+kindB+1);
+  if(kindA== IK_DoF)
+  {
+    switch(kindB)
+    {
+      case IK_Node:
+        return CT_DoFToNode ;
+      case IK_Edge:
+        return CT_DoFToEdge ;
+      case IK_Face:
+        return CT_DoFToFace ;
+      case IK_Cell:
+        return CT_DoFToCell ;
+      case IK_DoF:
+        return CT_DoFToDoF ;
+      case IK_Particle:
+        return CT_DoFToParticle ;
+    }
+  }
+  else
+    return 1<<(4*kindA+kindB+1);
 }
 
 /*---------------------------------------------------------------------------*/

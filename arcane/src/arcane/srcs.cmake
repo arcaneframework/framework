@@ -645,8 +645,8 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    TiedNode.h
    TiedFace.h
    IMesh.h
-   IGraph.h
-   IGraphModifier.h
+   IGraph2.h
+   IGraphModifier2.h
    IPrimaryMesh.h
    IMeshSubMeshTransition.h
    SharedVariable.h

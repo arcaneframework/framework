@@ -96,8 +96,6 @@ Integer MeshArea::nbItem(eItemKind ik)
   case IK_Face: return nbFace();
   case IK_Cell: return nbCell();
   case IK_Particle:
-  case IK_DualNode:
-  case IK_Link:
   case IK_DoF:
   case IK_Unknown:
     break;
@@ -120,8 +118,6 @@ ItemGroup MeshArea::allItems(eItemKind ik)
   case IK_Face: return allFaces();
   case IK_Cell: return allCells();
   case IK_Particle:
-  case IK_Link:
-  case IK_DualNode:
   case IK_DoF:
   case IK_Unknown:
     break;
@@ -144,8 +140,6 @@ ItemGroup MeshArea::ownItems(eItemKind ik)
   case IK_Face: return ownFaces();
   case IK_Cell: return ownCells();
   case IK_Particle:
-  case IK_DualNode:
-  case IK_Link:
   case IK_DoF:
   case IK_Unknown:
     break;

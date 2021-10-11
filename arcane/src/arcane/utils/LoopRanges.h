@@ -27,7 +27,7 @@ namespace Arcane
 /*!
  * \brief Intervalle d'itération pour une boucle.
  */
-struct LoopRange
+class LoopRange
 {
  public:
   //! Créé un interval entre *[lower_bound,lower_bound+size[*

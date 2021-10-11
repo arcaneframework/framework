@@ -5,56 +5,63 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IReduceMemoryImpl.h                                         (C) 2000-2021 */
+/* IndexedItemConnectivityAccessor.h                               (C) 2000-2021 */
 /*                                                                           */
-/* Interface de la gestion mémoire pour les réductions.                      */
+/* Connectivité incrémentale des entités.                                    */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_IREDUCEMEMORYIMPL_H
-#define ARCANE_ACCELERATOR_IREDUCEMEMORYIMPL_H
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
-
-#include <stack>
-
+#pragma once
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+#include "arcane/utils/TraceAccessor.h"
+
+#include "arcane/IItemFamily.h"
+#include "arcane/ItemVector.h"
+#include "arcane/VariableTypes.h"
+//#include "arcane/ItemInternal.h"
+#include "arcane/IIncrementalItemConnectivity.h"
+
+#include "arcane/mesh/MeshGlobal.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+namespace Arcane::mesh
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Interface de la gestion mémoire pour les réductions.
- * \warning API en cours de définition.
- */
-class ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl
+
+class ARCANE_MESH_EXPORT IndexedItemConnectivityAccessor
+: public IndexedItemConnectivityViewBase
 {
  public:
-  virtual ~IReduceMemoryImpl() = default;
- public:
-  virtual void* allocateMemory(Int64 size) = 0;
-  virtual void release() =0;
+  IndexedItemConnectivityAccessor(IndexedItemConnectivityViewBase view, IItemFamily* target_item_family) ;
+
+  IndexedItemConnectivityAccessor(IIncrementalItemConnectivity* connectivity) ;
+
+  IndexedItemConnectivityAccessor() = default;
+
+  void init(SmallSpan<const Int32> nb_item,
+            SmallSpan<const Int32> indexes,
+            SmallSpan<const Int32> list_data,
+            IItemFamily* source_item_family,
+            IItemFamily* target_item_family) ;
+
+  ItemVectorView operator()(ItemLocalId lid) const
+  {
+    //assert(m_target_item_family) ;
+    const Integer* ptr = & m_list_data[m_indexes[lid]];
+    return const_cast<IItemFamily*>(m_target_item_family)->view(ConstArrayView<Integer>( m_nb_item[lid], ptr )) ;
+  }
+ private :
+  IItemFamily* m_target_item_family = nullptr ;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> T*
-allocateReduceMemory(IReduceMemoryImpl* p)
-{
-  return reinterpret_cast<T*>(p->allocateMemory(sizeof(T)));
-}
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Accelerator::impl
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#endif  

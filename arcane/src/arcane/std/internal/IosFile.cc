@@ -5,21 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IosFile.cc                 	                              (C) 2000-2009 */
+/* IosFile.cc                 	                               (C) 2000-2021 */
 /*                                                                           */
-/* Routines des Lecture/Ecriture d'un fichier.							 			  */
+/* Routines des Lecture/Ecriture d'un fichier.		                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/std/internal/IosFile.h"
 
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/IOException.h"
-
-#include "arcane/ios/IosFile.h"
 #include "arcane/utils/ITraceMng.h"
-
-#include "arcane/BasicService.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
