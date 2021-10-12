@@ -55,28 +55,28 @@ template <>
 class LegacyConnectivityTraitsT<NodeFamily>
 {
 public:
-  typedef NodeCompactItemConnectivityAccessor type;
+  typedef NodeInternalConnectivityIndex type;
 };
 
 template <>
 class LegacyConnectivityTraitsT<FaceFamily>
 {
 public:
-  typedef FaceCompactItemConnectivityAccessor type;
+  typedef FaceInternalConnectivityIndex type;
 };
 
 template <>
 class LegacyConnectivityTraitsT<EdgeFamily>
 {
 public:
-  typedef EdgeCompactItemConnectivityAccessor type;
+  typedef EdgeInternalConnectivityIndex type;
 };
 
 template <>
 class LegacyConnectivityTraitsT<CellFamily>
 {
 public:
-  typedef CellCompactItemConnectivityAccessor type;
+  typedef CellInternalConnectivityIndex type;
 };
 
 
@@ -84,7 +84,7 @@ template <class SourceFamily, class TargetFamily>
 class ARCANE_MESH_EXPORT LegacyConnectivity
 {
 public:
-  typedef CompactIncrementalItemConnectivityT<typename LegacyConnectivityTraitsT<TargetFamily>::type> type;
+  typedef typename LegacyConnectivityTraitsT<TargetFamily>::type type;
 };
 
 

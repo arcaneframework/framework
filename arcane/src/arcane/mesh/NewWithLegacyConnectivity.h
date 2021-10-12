@@ -53,7 +53,8 @@ public:
 
 public:
   NewWithLegacyConnectivity(ItemFamily* source_family, IItemFamily* target_family, const String& name)
-  : ItemConnectivitySelectorT<LegacyType,CustomType>(source_family,target_family,name){
+  : ItemConnectivitySelectorT<LegacyType,CustomType>(source_family,target_family,name)
+  {
     //build selector
     Base::template build<SourceFamily,TargetFamily>(); // Create adapted custom connectivity
   }
@@ -139,8 +140,7 @@ template <class SourceFamily, class TargetFamily>
 class ARCANE_MESH_EXPORT NewWithLegacyConnectivityType
 {
 public:
-  typedef typename LegacyConnectivity<SourceFamily,TargetFamily>::type LegacyType;
-  typedef NewWithLegacyConnectivity<SourceFamily,TargetFamily,CompactIncrementalItemConnectivityT<typename LegacyConnectivityTraitsT<TargetFamily>::type>> type;
+  typedef NewWithLegacyConnectivity<SourceFamily,TargetFamily,typename LegacyConnectivityTraitsT<TargetFamily>::type> type;
 };
 
 

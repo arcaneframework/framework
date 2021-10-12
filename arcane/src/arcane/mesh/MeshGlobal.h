@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshGlobal.h                                                (C) 2000-2017 */
+/* MeshGlobal.h                                                (C) 2000-2021 */
 /*                                                                           */
 /* Déclarations générales de la composante Maillage de Arcane.               */
 /*---------------------------------------------------------------------------*/
@@ -25,8 +25,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -38,43 +38,15 @@ class FaceFamily;
 class CellFamily;
 
 class IncrementalItemConnectivity;
-template<typename ItemType>
-class CompactIncrementalItemConnectivityT;
 
 class ItemConnectivitySelector;
 template<typename LeagcyType,typename CustomType>
 class ItemConnectivitySelectorT;
 
-class NodeCompactItemConnectivityAccessor;
-class EdgeCompactItemConnectivityAccessor;
-class FaceCompactItemConnectivityAccessor;
-class CellCompactItemConnectivityAccessor;
-class HParentCompactItemConnectivityAccessor;
-class HChildCompactItemConnectivityAccessor;
-
-typedef CompactIncrementalItemConnectivityT<NodeCompactItemConnectivityAccessor>
-NodeCompactIncrementalItemConnectivity;
-
-typedef CompactIncrementalItemConnectivityT<EdgeCompactItemConnectivityAccessor>
-EdgeCompactIncrementalItemConnectivity;
-
-typedef CompactIncrementalItemConnectivityT<FaceCompactItemConnectivityAccessor>
-FaceCompactIncrementalItemConnectivity;
-
-typedef CompactIncrementalItemConnectivityT<CellCompactItemConnectivityAccessor>
-CellCompactIncrementalItemConnectivity;
-
-typedef CompactIncrementalItemConnectivityT<HParentCompactItemConnectivityAccessor>
-HParentCompactIncrementalItemConnectivity;
-
-typedef CompactIncrementalItemConnectivityT<HChildCompactItemConnectivityAccessor>
-HChildCompactIncrementalItemConnectivity;
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

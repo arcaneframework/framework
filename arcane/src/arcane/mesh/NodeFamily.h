@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NodeFamily.h                                                (C) 2000-2017 */
+/* NodeFamily.h                                                (C) 2000-2021 */
 /*                                                                           */
 /* Famille de noeuds.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -17,12 +17,13 @@
 #include "arcane/mesh/ItemFamily.h"
 #include "arcane/IItemFamilyModifier.h"
 #include "arcane/mesh/MeshInfos.h"
+#include "arcane/mesh/ItemInternalConnectivityIndex.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,9 +38,9 @@ class ARCANE_MESH_EXPORT NodeFamily
   class ItemCompare3;
   class TopologyModifier;
 
-  typedef ItemConnectivitySelectorT<EdgeCompactIncrementalItemConnectivity,IncrementalItemConnectivity> EdgeConnectivity;
-  typedef ItemConnectivitySelectorT<FaceCompactIncrementalItemConnectivity,IncrementalItemConnectivity> FaceConnectivity;
-  typedef ItemConnectivitySelectorT<CellCompactIncrementalItemConnectivity,IncrementalItemConnectivity> CellConnectivity;
+  typedef ItemConnectivitySelectorT<EdgeInternalConnectivityIndex,IncrementalItemConnectivity> EdgeConnectivity;
+  typedef ItemConnectivitySelectorT<FaceInternalConnectivityIndex,IncrementalItemConnectivity> FaceConnectivity;
+  typedef ItemConnectivitySelectorT<CellInternalConnectivityIndex,IncrementalItemConnectivity> CellConnectivity;
 
  public:
 
@@ -156,8 +157,7 @@ class ARCANE_MESH_EXPORT NodeFamily
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

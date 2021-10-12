@@ -100,7 +100,7 @@ class ARCANE_MESH_EXPORT ItemConnectivitySelector
 /*!
  * \brief Sélection entre les connectivités historiques et à la demande.
  */
-template<typename LegacyType,typename CustomType>
+template<typename ConnectivityIndexType,typename CustomType>
 class ARCANE_MESH_EXPORT ItemConnectivitySelectorT
 : public ItemConnectivitySelector
 {
@@ -108,7 +108,7 @@ class ARCANE_MESH_EXPORT ItemConnectivitySelectorT
 
   ItemConnectivitySelectorT(ItemFamily* source_family,IItemFamily* target_family,
                             const String& connectivity_name)
-  : ItemConnectivitySelector(source_family,target_family,connectivity_name,LegacyType::connectivityIndex())
+  : ItemConnectivitySelector(source_family,target_family,connectivity_name,ConnectivityIndexType::connectivityIndex())
   , m_custom_connectivity(nullptr)
   {
   }
@@ -133,14 +133,14 @@ class ARCANE_MESH_EXPORT ItemConnectivitySelectorT
     auto ref_list = m_custom_connectivity->connectivityList();
     auto current_indexes = x->connectivityIndex(m_item_connectivity_index);
     auto ref_indexes = m_custom_connectivity->connectivityIndex();
-    auto current_list_ptr = current_list.data();
-    auto ref_list_ptr = ref_list.data();
+    auto* current_list_ptr = current_list.data();
+    auto* ref_list_ptr = ref_list.data();
     if (current_list_ptr!=ref_list_ptr)
       ARCANE_FATAL("Bad list base pointer current={0} ref={1}",current_list_ptr,ref_list_ptr);
     if (current_list.size()!=ref_list.size())
       ARCANE_FATAL("Bad list size current={0} ref={1}",current_list.size(),ref_list.size());
-    auto current_indexes_ptr = current_indexes.unguardedBasePointer();
-    auto ref_indexes_ptr = ref_indexes.unguardedBasePointer();
+    auto* current_indexes_ptr = current_indexes.data();
+    auto* ref_indexes_ptr = ref_indexes.data();
     if (current_indexes_ptr!=ref_indexes_ptr)
       ARCANE_FATAL("Bad indexes base pointer current={0} ref={1}",current_indexes_ptr,ref_indexes_ptr);
     if (current_indexes.size()!=ref_indexes.size())

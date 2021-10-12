@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceFamily.h                                                (C) 2000-2017 */
+/* FaceFamily.h                                                (C) 2000-2021 */
 /*                                                                           */
 /* Famille de faces.                                                         */
 /*---------------------------------------------------------------------------*/
@@ -14,19 +14,18 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/mesh/ItemFamily.h"
 #include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/IItemFamilyModifier.h"
+
+#include "arcane/mesh/ItemFamily.h"
+#include "arcane/mesh/ItemInternalConnectivityIndex.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -53,10 +52,10 @@ class ARCANE_MESH_EXPORT FaceFamily
 , public IItemFamilyModifier
 {
   class TopologyModifier;
-  typedef ItemConnectivitySelectorT<NodeCompactIncrementalItemConnectivity,IncrementalItemConnectivity> NodeConnectivity;
-  typedef ItemConnectivitySelectorT<EdgeCompactIncrementalItemConnectivity,IncrementalItemConnectivity> EdgeConnectivity;
-  typedef ItemConnectivitySelectorT<FaceCompactIncrementalItemConnectivity,IncrementalItemConnectivity> FaceConnectivity;
-  typedef ItemConnectivitySelectorT<CellCompactIncrementalItemConnectivity,IncrementalItemConnectivity> CellConnectivity;
+  typedef ItemConnectivitySelectorT<NodeInternalConnectivityIndex,IncrementalItemConnectivity> NodeConnectivity;
+  typedef ItemConnectivitySelectorT<EdgeInternalConnectivityIndex,IncrementalItemConnectivity> EdgeConnectivity;
+  typedef ItemConnectivitySelectorT<FaceInternalConnectivityIndex,IncrementalItemConnectivity> FaceConnectivity;
+  typedef ItemConnectivitySelectorT<CellInternalConnectivityIndex,IncrementalItemConnectivity> CellConnectivity;
 
  public:
 
@@ -71,8 +70,8 @@ class ARCANE_MESH_EXPORT FaceFamily
  public:
 
   // IItemFamilyModifier Interface
-  ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type, MeshInfos& mesh_info) override;
-  ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type,MeshInfos& mesh_info, bool& is_alloc) override;
+  ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type, MeshInfos& mesh_info);
+  ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type,MeshInfos& mesh_info, bool& is_alloc);
   IItemFamily*  family() override {return this;}
 
   ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type);
@@ -187,8 +186,7 @@ class ARCANE_MESH_EXPORT FaceFamily
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

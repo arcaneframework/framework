@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcaneGlobal.h"
+#include "arcane/ArcaneTypes.h"
 
 #include "arcane/mesh/MeshInfos.h"
 

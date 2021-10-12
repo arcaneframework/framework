@@ -54,14 +54,6 @@
  */
 namespace Arcane::mesh
 {
-class NodeCompactItemConnectivityAccessor;
-class EdgeCompactItemConnectivityAccessor;
-class FaceCompactItemConnectivityAccessor;
-class CellCompactItemConnectivityAccessor;
-class HParentCompactItemConnectivityAccessor;
-class HChildCompactItemConnectivityAccessor;
-class FaceToCellCompactIncrementalConnectivity;
-class ParticleCellCompactIncrementalItemConnectivity;
 class StandardItemFamilyCompactPolicy;
 class ParticleFamilyCompactPolicy;
 class NodeFamily;
@@ -314,14 +306,6 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
  */
 class ARCANE_CORE_EXPORT ItemInternal
 {
-  friend class Arcane::mesh::NodeCompactItemConnectivityAccessor;
-  friend class Arcane::mesh::EdgeCompactItemConnectivityAccessor;
-  friend class Arcane::mesh::FaceCompactItemConnectivityAccessor;
-  friend class Arcane::mesh::CellCompactItemConnectivityAccessor;
-  friend class Arcane::mesh::HParentCompactItemConnectivityAccessor;
-  friend class Arcane::mesh::HChildCompactItemConnectivityAccessor;
-  friend class Arcane::mesh::FaceToCellCompactIncrementalConnectivity;
-  friend class Arcane::mesh::ParticleCellCompactIncrementalItemConnectivity;
   friend class Arcane::mesh::StandardItemFamilyCompactPolicy;
   friend class Arcane::mesh::ParticleFamilyCompactPolicy;
   friend class Arcane::mesh::NodeFamily;
