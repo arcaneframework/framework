@@ -113,21 +113,21 @@ class ItemSharedInfoList
   Integer maxLocalEdgePerItemType();
   Integer maxLocalFacePerItemType();
  public:
-  ItemSharedInfo* findSharedInfo(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell)
+  ItemSharedInfo* findSharedInfo4(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell)
   {
-    return findSharedInfo(type,nb_edge,nb_face,nb_cell,nb_edge,nb_face,nb_cell);
+    return findSharedInfo7(type,nb_edge,nb_face,nb_cell,nb_edge,nb_face,nb_cell);
   }
-  ItemSharedInfo* findSharedInfo(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,
+  ItemSharedInfo* findSharedInfo7(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,
                                  Integer nb_cell,Integer edge_allocated,
                                  Integer face_allocated,Integer cell_allocated);
   //! AMR
-  ItemSharedInfo* findSharedInfo(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
+  ItemSharedInfo* findSharedInfo6(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
                                  Integer nb_hParent,Integer nb_hChildren)
   {
-    return findSharedInfo(type,nb_edge,nb_face,nb_cell,nb_hParent,nb_hChildren,
+    return findSharedInfo11(type,nb_edge,nb_face,nb_cell,nb_hParent,nb_hChildren,
                           nb_edge,nb_face,nb_cell,nb_hParent,nb_hChildren);
   }
-  ItemSharedInfo* findSharedInfo(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
+  ItemSharedInfo* findSharedInfo11(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
                                  Integer nb_hParent,Integer nb_hChildren,
                                  Integer edge_allocated,Integer face_allocated,Integer cell_allocated,
                                  Integer hParent_allocated, Integer hChild_allocated);
@@ -135,8 +135,6 @@ class ItemSharedInfoList
  public:
 
   void setSharedInfosPtr(Int32* ptr);
-  void setHasLegacyConnectivity(bool v) { m_has_legacy_connectivity = v; }
-  bool hasLegacyConnectivity() const { return m_has_legacy_connectivity; }
 
  private:
 
@@ -174,7 +172,6 @@ class ItemSharedInfoList
   Variables* m_variables;
   bool m_list_changed;
   bool m_connectivity_info_changed;
-  bool m_has_legacy_connectivity = true;
   Integer m_max_node_per_item;
   Integer m_max_edge_per_item;
   Integer m_max_face_per_item;

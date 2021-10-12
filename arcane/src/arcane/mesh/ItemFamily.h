@@ -499,10 +499,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   IItemFamilyTopologyModifier* m_topology_modifier;
   //! Accesseur pour les connectités via Item et ItemInternal
   ItemInternalConnectivityList m_item_connectivity_list;
-  //! \a true si on utilise les anciens mécanismes pour accéder aux connectivités
-  bool m_use_legacy_connectivity_policy;
-  ///! \a true si les anciennes connectivités sont créées
-  bool m_has_legacy_connectivity;
+
   UniqueArray<ItemConnectivitySelector*> m_connectivity_selector_list_by_item_kind;
 
  protected:
@@ -511,16 +508,16 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _reserveInfosMemory(Integer memory);
   void _resizeInfos(Integer memory);
 
-  ItemSharedInfo* _findSharedInfo(ItemTypeInfo* type,Integer nb_edge,
+  ItemSharedInfo* _findSharedInfo4(ItemTypeInfo* type,Integer nb_edge,
                                   Integer nb_face,Integer nb_cell);
-  ItemSharedInfo* _findSharedInfo(ItemTypeInfo* type,Integer nb_edge,
+  ItemSharedInfo* _findSharedInfo7(ItemTypeInfo* type,Integer nb_edge,
                                   Integer nb_face,Integer nb_cell,
                                   Integer edge_allocated,Integer face_allocated,
                                   Integer cell_allocated);
   //! AMR
-  ItemSharedInfo* _findSharedInfo(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
+  ItemSharedInfo* _findSharedInfo6(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
                                       Integer nb_hParent, Integer nb_hChildren);
-  ItemSharedInfo* _findSharedInfo(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
+  ItemSharedInfo* _findSharedInfo11(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
                                     Integer nb_hParent, Integer nb_hChildren,
                                     Integer edge_allocated,Integer face_allocated,Integer cell_allocated,
                                     Integer hParent_allocated, Integer hChild_allocated);
@@ -544,7 +541,6 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _checkSameConnectivity(IIncrementalItemConnectivity* ref,
                               IIncrementalItemConnectivity* c);
   void _setTopologyModifier(IItemFamilyTopologyModifier* tm);
-  bool _hasLegacyConnectivity() const { return m_has_legacy_connectivity; }
 
  private:
   

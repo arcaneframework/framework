@@ -358,18 +358,17 @@ checkValid()
 /*---------------------------------------------------------------------------*/
 
 ItemSharedInfo* ItemSharedInfoList::
-findSharedInfo(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
+findSharedInfo7(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
                Integer edge_allocated,Integer face_allocated,Integer cell_allocated)
 {
   // Vérifie que le nombre d'entités vaut 0
-  if (!m_has_legacy_connectivity){
-    if (nb_edge!=0)
-      ARCANE_FATAL("Bad number of edges {0}",nb_edge);
-    if (nb_face!=0)
-      ARCANE_FATAL("Bad number of faces {0}",nb_face);
-    if (nb_cell!=0)
-      ARCANE_FATAL("Bad number of cells {0}",nb_cell);
-  }
+  if (nb_edge!=0)
+    ARCANE_FATAL("Bad number of edges {0}",nb_edge);
+  if (nb_face!=0)
+    ARCANE_FATAL("Bad number of faces {0}",nb_face);
+  if (nb_cell!=0)
+    ARCANE_FATAL("Bad number of cells {0}",nb_cell);
+
   ItemNumElements ine(type->typeId(),nb_edge,nb_face,nb_cell,
                       edge_allocated,face_allocated,cell_allocated);
   auto i = m_infos_map->find(ine);
@@ -416,24 +415,23 @@ findSharedInfo(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cel
 /*---------------------------------------------------------------------------*/
 
 ItemSharedInfo* ItemSharedInfoList::
-findSharedInfo(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
+findSharedInfo11(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
                Integer nb_parent,Integer nb_children,
                Integer edge_allocated,Integer face_allocated,Integer cell_allocated,
                Integer parent_allocated, Integer child_allocated)
 {
   // Vérifie que le nombre d'entités vaut 0
-  if (!m_has_legacy_connectivity){
-    if (nb_edge!=0)
-      ARCANE_FATAL("Bad number of edges {0}",nb_edge);
-    if (nb_face!=0)
-      ARCANE_FATAL("Bad number of faces {0}",nb_face);
-    if (nb_cell!=0)
-      ARCANE_FATAL("Bad number of cells {0}",nb_cell);
-    if (nb_parent!=0)
-      ARCANE_FATAL("Bad number of parents {0}",nb_parent);
-    if (nb_children!=0)
-      ARCANE_FATAL("Bad number of childrens {0}",nb_children);
-  }
+  if (nb_edge!=0)
+    ARCANE_FATAL("Bad number of edges {0}",nb_edge);
+  if (nb_face!=0)
+    ARCANE_FATAL("Bad number of faces {0}",nb_face);
+  if (nb_cell!=0)
+    ARCANE_FATAL("Bad number of cells {0}",nb_cell);
+  if (nb_parent!=0)
+    ARCANE_FATAL("Bad number of parents {0}",nb_parent);
+  if (nb_children!=0)
+    ARCANE_FATAL("Bad number of childrens {0}",nb_children);
+
   ItemNumElements ine(type->typeId(),nb_edge,nb_face,nb_cell,
                       nb_parent,nb_children,
                       edge_allocated,face_allocated,cell_allocated,

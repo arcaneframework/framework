@@ -455,7 +455,7 @@ hasUniqueIdMap() const
 void ParticleFamily::
 _setSharedInfo()
 {
-  m_particle_shared_info = _findSharedInfo(m_particle_type_info,0,0,1);
+  m_particle_shared_info = _findSharedInfo4(m_particle_type_info,0,0,1);
 }
 
 /*---------------------------------------------------------------------------*/

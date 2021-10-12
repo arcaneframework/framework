@@ -50,7 +50,7 @@ build()
   m_sub_domain_id = subDomain()->subDomainId();
   ItemTypeMng* itm = ItemTypeMng::singleton();
   ItemTypeInfo* dof_type_info = itm->typeFromId(IT_NullType);
-  m_shared_info = _findSharedInfo(dof_type_info,0,0,1);
+  m_shared_info = _findSharedInfo4(dof_type_info,0,0,1);
 }
 
 /*---------------------------------------------------------------------------*/
