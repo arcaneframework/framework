@@ -1,4 +1,4 @@
-set(Arccore_VERSION @Arccore_VERSION@)
+﻿set(Arccore_VERSION @Arccore_VERSION@)
 
 @PACKAGE_INIT@
 
@@ -7,6 +7,7 @@ include(${PACKAGE_PREFIX_DIR}/@config_install_dir@/@ARCCORE_EXPORT_TARGET@.cmake
 include(CMakeFindDependencyMacro)
 
 if(NOT ARCCORE_NO_FIND_DEPENDENCY)
+  find_dependency(Arccon)
   if (@ARCCORE_USE_MPI@)
     find_dependency(MPI)
   endif()
@@ -42,3 +43,10 @@ set(ARCCORE_BUILD_MODE @ARCCORE_BUILD_MODE@)
 check_required_components(Arccore)
 
 set(Arccore_FOUND YES)
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:
