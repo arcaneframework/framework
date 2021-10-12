@@ -358,16 +358,14 @@ checkValid()
 /*---------------------------------------------------------------------------*/
 
 ItemSharedInfo* ItemSharedInfoList::
-findSharedInfo7(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
-               Integer edge_allocated,Integer face_allocated,Integer cell_allocated)
+findSharedInfo7(ItemTypeInfo* type)
 {
-  // Vérifie que le nombre d'entités vaut 0
-  if (nb_edge!=0)
-    ARCANE_FATAL("Bad number of edges {0}",nb_edge);
-  if (nb_face!=0)
-    ARCANE_FATAL("Bad number of faces {0}",nb_face);
-  if (nb_cell!=0)
-    ARCANE_FATAL("Bad number of cells {0}",nb_cell);
+  Integer nb_edge = 0;
+  Integer nb_face = 0;
+  Integer nb_cell = 0;
+  Integer edge_allocated = 0;
+  Integer face_allocated = 0;
+  Integer cell_allocated = 0;
 
   ItemNumElements ine(type->typeId(),nb_edge,nb_face,nb_cell,
                       edge_allocated,face_allocated,cell_allocated);
@@ -415,22 +413,18 @@ findSharedInfo7(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_ce
 /*---------------------------------------------------------------------------*/
 
 ItemSharedInfo* ItemSharedInfoList::
-findSharedInfo11(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
-               Integer nb_parent,Integer nb_children,
-               Integer edge_allocated,Integer face_allocated,Integer cell_allocated,
-               Integer parent_allocated, Integer child_allocated)
+findSharedInfo11(ItemTypeInfo* type)
 {
-  // Vérifie que le nombre d'entités vaut 0
-  if (nb_edge!=0)
-    ARCANE_FATAL("Bad number of edges {0}",nb_edge);
-  if (nb_face!=0)
-    ARCANE_FATAL("Bad number of faces {0}",nb_face);
-  if (nb_cell!=0)
-    ARCANE_FATAL("Bad number of cells {0}",nb_cell);
-  if (nb_parent!=0)
-    ARCANE_FATAL("Bad number of parents {0}",nb_parent);
-  if (nb_children!=0)
-    ARCANE_FATAL("Bad number of childrens {0}",nb_children);
+  Integer nb_edge = 0;
+  Integer nb_face = 0;
+  Integer nb_cell = 0;
+  Integer nb_parent = 0;
+  Integer nb_children = 0;
+  Integer edge_allocated = 0;
+  Integer face_allocated = 0;
+  Integer cell_allocated = 0;
+  Integer parent_allocated = 0;
+  Integer child_allocated = 0;
 
   ItemNumElements ine(type->typeId(),nb_edge,nb_face,nb_cell,
                       nb_parent,nb_children,

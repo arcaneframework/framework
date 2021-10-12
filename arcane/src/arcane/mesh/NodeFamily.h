@@ -82,7 +82,7 @@ class ARCANE_MESH_EXPORT NodeFamily
   {
     ItemInternal* item = _allocOne(uid);
     m_item_internal_list->nodes = _itemsInternal();
-    _allocateInfos(item,uid,m_node_type,0,0,0,m_edge_prealloc,m_face_prealloc,m_cell_prealloc);
+    _allocateInfos9(item,uid,m_node_type);
     return item;
   }
 
@@ -101,7 +101,7 @@ class ARCANE_MESH_EXPORT NodeFamily
     ItemInternal* item = _findOrAllocOne(uid,is_alloc);
     if (is_alloc){
       m_item_internal_list->nodes = _itemsInternal();
-      _allocateInfos(item,uid,m_node_type,0,0,0,m_edge_prealloc,m_face_prealloc,m_cell_prealloc);
+      _allocateInfos9(item,uid,m_node_type);
     }
     return item;
   }

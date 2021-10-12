@@ -144,7 +144,7 @@ inline void FaceFamily::
 _createOne(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
 {
   m_item_internal_list->faces = _itemsInternal();
-  _allocateInfos(item,uid,type,0,0,0,m_edge_prealloc,0,m_cell_prealloc);
+  _allocateInfos9(item,uid,type);
   auto nc = m_node_connectivity->trueCustomConnectivity();
   if (nc)
     nc->addConnectedItems(ItemLocalId(item),type->nbLocalNode());
@@ -359,7 +359,7 @@ addBackCellToFace(ItemInternal* face,ItemInternal* new_cell)
   if (nb_cell>=2)
     ARCANE_FATAL("face '{0}' already has two cells",FullItemPrinter(face));
 
-  _updateSharedInfoAdded(face,0,0,1);
+  _updateSharedInfoAdded4(face);
 
   // Si on a déjà une maille, il s'agit de la front cell.
   Int32 front_cell_lid = (nb_cell==1) ? face->cellLocalId(0) : NULL_ITEM_LOCAL_ID;
@@ -392,12 +392,11 @@ addFrontCellToFace(ItemInternal* face,ItemInternal* new_cell)
   if (nb_cell>=2)
     ARCANE_FATAL("face '{0}' already has two cells",FullItemPrinter(face));
 
-  _updateSharedInfoAdded(face,0,0,1);
+  _updateSharedInfoAdded4(face);
 
   // Si on a déjà une maille, il s'agit de la back cell.
   Int32 back_cell_lid = (nb_cell==1) ? face->cellLocalId(0) : NULL_ITEM_LOCAL_ID;
   setBackAndFrontCells(face,back_cell_lid,new_cell->localId());
-
 }
 
 //! AMR
@@ -829,7 +828,7 @@ removeCellFromFace(ItemInternal* face,ItemLocalId cell_to_remove_lid)
           // Reste la back cell
           setBackAndFrontCells(face,cell0,null_cell_lid);
         }
-        _updateSharedInfoRemoved(face2,0,0,1,0,0);
+        _updateSharedInfoRemoved7(face2);
       }
     }
   }
@@ -852,7 +851,7 @@ removeCellFromFace(ItemInternal* face,ItemLocalId cell_to_remove_lid)
     setBackAndFrontCells(face,null_cell_lid,null_cell_lid);
   }
 
-  _updateSharedInfoRemoved(face,0,0,nb_cell-nb_cell_after);
+  _updateSharedInfoRemoved4(face);
 }
 
 /*---------------------------------------------------------------------------*/

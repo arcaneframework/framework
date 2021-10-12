@@ -50,7 +50,7 @@ build()
   m_sub_domain_id = subDomain()->subDomainId();
   ItemTypeMng* itm = ItemTypeMng::singleton();
   ItemTypeInfo* dof_type_info = itm->typeFromId(IT_NullType);
-  m_shared_info = _findSharedInfo4(dof_type_info,0,0,1);
+  m_shared_info = _findSharedInfo4(dof_type_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -201,7 +201,7 @@ _allocDoF(const Int64 uid)
   if (!need_alloc)
     item_internal->setUniqueId(uid);
   else{
-    _allocateInfos(item_internal,uid,m_shared_info);
+    _allocateInfos3(item_internal,uid,m_shared_info);
   }
   // Un dof appartient de base au sous-domaine qui l'a créé (sauf ghost)
   item_internal->setOwner(m_sub_domain_id,m_sub_domain_id);
@@ -220,7 +220,7 @@ _allocDoFGhost(const Int64 uid, const Int32 owner)
   if (!need_alloc)
     item_internal->setUniqueId(uid);
   else{
-    _allocateInfos(item_internal,uid,m_shared_info);
+    _allocateInfos3(item_internal,uid,m_shared_info);
   }
   // Une particule appartient toujours au sous-domaine qui l'a créée
   item_internal->setOwner(owner,m_sub_domain_id);
@@ -240,7 +240,7 @@ _findOrAllocDoF(const Int64 uid,bool is_alloc)
   }
   else
   {
-    _allocateInfos(item_internal,uid,m_shared_info);
+    _allocateInfos3(item_internal,uid,m_shared_info);
     // Un dof appartient de base au sous-domaine qui l'a créé (sauf ghost)
     item_internal->setOwner(m_sub_domain_id,m_sub_domain_id);
     is_alloc = true ;

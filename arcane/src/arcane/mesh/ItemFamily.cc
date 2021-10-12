@@ -393,9 +393,6 @@ void ItemFamily::
 checkValidConnectivity()
 {
   _checkValidConnectivity();
-  for( ItemConnectivitySelector* ics : m_connectivity_selector_list ){
-    _checkSameConnectivity(ics->legacyConnectivity(),ics->customConnectivity());
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1649,55 +1646,30 @@ _allocMany(Integer memory)
 /*---------------------------------------------------------------------------*/
 
 ItemSharedInfo* ItemFamily::
-_findSharedInfo4(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell)
+_findSharedInfo4(ItemTypeInfo* type)
 {
-  return _findSharedInfo7(type,nb_edge,nb_face,nb_cell,nb_edge,nb_face,nb_cell);
+  return _findSharedInfo7(type);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ItemSharedInfo* ItemFamily::
-_findSharedInfo7(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
-                Integer edge_allocated,Integer face_allocated,Integer cell_allocated)
+_findSharedInfo7(ItemTypeInfo* type)
 {
-  nb_edge = nb_face = nb_cell = 0;
-  edge_allocated = face_allocated = cell_allocated = 0;
-  ItemSharedInfo* isi = m_item_shared_infos->findSharedInfo7(type,nb_edge,nb_face,nb_cell,
-                                                             edge_allocated,face_allocated,cell_allocated);
+  ItemSharedInfo* isi = m_item_shared_infos->findSharedInfo7(type);
   isi->_setInfos(m_items_data->data());
   return isi;
 }
-//! AMR
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ItemSharedInfo* ItemFamily::
-_findSharedInfo6(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
-                 Integer nb_hParent, Integer nb_hChildren)
-{
-  return _findSharedInfo11(type,nb_edge,nb_face,nb_cell,nb_hParent,nb_hChildren,
-                           nb_edge,nb_face,nb_cell,nb_hParent,nb_hChildren);
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ItemSharedInfo* ItemFamily::
-_findSharedInfo11(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
-                Integer nb_hParent, Integer nb_hChildren,
-                Integer edge_allocated,Integer face_allocated,Integer cell_allocated,
-                Integer hParent_allocated,Integer hChild_allocated)
+_findSharedInfo11(ItemTypeInfo* type)
 {
-  nb_edge = nb_face = nb_cell = 0;
-  edge_allocated = face_allocated = cell_allocated = 0;
-  nb_hParent = nb_hChildren = 0;
-  hParent_allocated = hChild_allocated = 0;
-
   auto x = m_item_shared_infos;
-  auto* isi = x->findSharedInfo11(type,nb_edge,nb_face,nb_cell,nb_hParent,nb_hChildren,
-                                  edge_allocated,face_allocated,cell_allocated,
-                                  hParent_allocated, hChild_allocated);
+  auto* isi = x->findSharedInfo11(type);
   isi->_setInfos(m_items_data->data());
   return isi;
 }
@@ -1719,45 +1691,13 @@ _copyInfos(ItemInternal* item,ItemSharedInfo* old_isi,ItemSharedInfo* new_isi)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_updateSharedInfoAdded(ItemInternal* item,Integer nb_added_edge,Integer nb_added_face,
-                       Integer nb_added_cell)
+_updateSharedInfoAdded4(ItemInternal* item)
 {
+  // TODO: regarder fusion possible avec les autres surcharges de _updateSharedInfo
   ItemSharedInfo* old_isi = item->sharedInfo();
-  Integer nb_edge = old_isi->nbEdge();
-  Integer nb_face = old_isi->nbFace();
-  Integer nb_cell = old_isi->nbCell();
-  Integer edge_allocated = old_isi->edgeAllocated();
-  Integer face_allocated = old_isi->faceAllocated();
-  Integer cell_allocated = old_isi->cellAllocated();
-  Integer new_nb_edge = nb_edge + nb_added_edge;
-  Integer new_nb_face = nb_face + nb_added_face;
-  Integer new_nb_cell = nb_cell + nb_added_cell;
-  bool need_copy = false;
-  if (new_nb_edge>edge_allocated){
-    edge_allocated += edge_allocated / 2;
-    if (edge_allocated<new_nb_edge)
-      edge_allocated = new_nb_edge;
-    need_copy = true;
-  }
-  if (new_nb_face>face_allocated){
-    face_allocated += face_allocated / 2;
-    if (face_allocated<new_nb_face)
-      face_allocated = new_nb_face;
-    need_copy = true;
-  }
-  if (new_nb_cell>cell_allocated){
-    cell_allocated += cell_allocated / 2;
-    if (cell_allocated<new_nb_cell)
-      cell_allocated = new_nb_cell;
-    need_copy = true;
-  }
 
-  ItemSharedInfo* new_isi = _findSharedInfo7(old_isi->m_item_type,new_nb_edge,new_nb_face,new_nb_cell,
-                                             edge_allocated,face_allocated,cell_allocated);
-  if (need_copy)
-    _copyInfos(item,old_isi,new_isi);
-  else
-    _setSharedInfosNoCopy(item,new_isi);
+  ItemSharedInfo* new_isi = _findSharedInfo7(old_isi->m_item_type);
+  _setSharedInfosNoCopy(item,new_isi);
 
   m_need_prepare_dump = true;
   new_isi->addReference();
@@ -1768,27 +1708,13 @@ _updateSharedInfoAdded(ItemInternal* item,Integer nb_added_edge,Integer nb_added
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_updateSharedInfoRemoved(ItemInternal* item,Integer nb_removed_edge,
-                         Integer nb_removed_face,Integer nb_removed_cell)
+_updateSharedInfoRemoved4(ItemInternal* item)
 {
+  // TODO: regarder fusion possible avec les autres surcharges de _updateSharedInfo
   m_need_prepare_dump = true;
-  nb_removed_edge = nb_removed_face = nb_removed_cell = 0;
 
   ItemSharedInfo* old_isi = item->sharedInfo();
-  Integer nb_edge = old_isi->nbEdge();
-  Integer nb_face = old_isi->nbFace();
-  Integer nb_cell = old_isi->nbCell();
-  Integer edge_allocated = old_isi->edgeAllocated();
-  Integer face_allocated = old_isi->faceAllocated();
-  Integer cell_allocated = old_isi->cellAllocated();
-  Integer new_nb_edge = nb_edge - nb_removed_edge;
-  ARCANE_ASSERT((new_nb_edge >= 0),("Inconsistence new edge number"));
-  Integer new_nb_face = nb_face - nb_removed_face;
-  ARCANE_ASSERT((new_nb_face >= 0),("Inconsistence new face number"));
-  Integer new_nb_cell = nb_cell - nb_removed_cell;
-  ARCANE_ASSERT((new_nb_cell >= 0),("Inconsistence new cell number"));
-  ItemSharedInfo* new_isi = _findSharedInfo7(old_isi->m_item_type,new_nb_edge,new_nb_face,new_nb_cell,
-                                             edge_allocated,face_allocated,cell_allocated);
+  ItemSharedInfo* new_isi = _findSharedInfo7(old_isi->m_item_type);
   _setSharedInfosNoCopy(item,new_isi);
 
   new_isi->addReference();
@@ -1797,64 +1723,14 @@ _updateSharedInfoRemoved(ItemInternal* item,Integer nb_removed_edge,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! AMR
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_updateSharedInfoAdded(ItemInternal* item,Integer nb_added_edge,Integer nb_added_face,
-                       Integer nb_added_cell,Integer nb_added_parent,Integer nb_added_children)
+_updateSharedInfoAdded7(ItemInternal* item)
 {
-  nb_added_edge = nb_added_face = nb_added_cell = 0;
-  nb_added_parent = nb_added_children = 0;
+  // TODO: regarder fusion possible avec les autres surcharges de _updateSharedInfo
   ItemSharedInfo* old_isi = item->sharedInfo();
-  Integer nb_edge = old_isi->nbEdge();
-  Integer nb_face = old_isi->nbFace();
-  Integer nb_cell = old_isi->nbCell();
-  Integer nb_hParent = old_isi->nbHParent();
-  Integer nb_hChildren = old_isi->nbHChildren();
-  Integer edge_allocated = old_isi->edgeAllocated();
-  Integer face_allocated = old_isi->faceAllocated();
-  Integer cell_allocated = old_isi->cellAllocated();
-  Integer hParent_allocated = old_isi->hParentAllocated();
-  Integer hChild_allocated = old_isi->hChildAllocated();
-
-  Integer new_nb_edge = nb_edge + nb_added_edge;
-  Integer new_nb_face = nb_face + nb_added_face;
-  Integer new_nb_cell = nb_cell + nb_added_cell;
-  Integer new_nb_hParent = nb_hParent + nb_added_parent;
-  Integer new_nb_hChildren = nb_hChildren + nb_added_children;
-  bool need_copy = false;
-  if (new_nb_edge>edge_allocated){
-    edge_allocated += edge_allocated / 2;
-    if (edge_allocated<new_nb_edge)
-      edge_allocated = new_nb_edge;
-  }
-  if (new_nb_face>face_allocated){
-    face_allocated += face_allocated / 2;
-    if (face_allocated<new_nb_face)
-      face_allocated = new_nb_face;
-  }
-  if (new_nb_hParent>hParent_allocated){
-    hParent_allocated += hParent_allocated / 2;
-    if (hParent_allocated<new_nb_hParent)
-      hParent_allocated = new_nb_hParent;
-  }
-  if (new_nb_hChildren>hChild_allocated){
-    hChild_allocated += hChild_allocated / 2;
-    if (hChild_allocated<new_nb_hChildren)
-      hChild_allocated = new_nb_hChildren;
-  }
-  need_copy = true;
-
-  ItemSharedInfo* new_isi = _findSharedInfo11(old_isi->m_item_type,new_nb_edge,new_nb_face,new_nb_cell,
-                                              new_nb_hParent,new_nb_hChildren,
-                                              edge_allocated,face_allocated,cell_allocated,
-                                              hParent_allocated, hChild_allocated);
-  if (need_copy)
-    _copyInfos(item,old_isi,new_isi);
-  else
-    _setSharedInfosNoCopy(item,new_isi);
+  ItemSharedInfo* new_isi = _findSharedInfo11(old_isi->m_item_type);
+  _copyInfos(item,old_isi,new_isi);
 
   m_need_prepare_dump = true;
   new_isi->addReference();
@@ -1865,10 +1741,9 @@ _updateSharedInfoAdded(ItemInternal* item,Integer nb_added_edge,Integer nb_added
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_updateSharedInfoRemoved(ItemInternal* item,Integer nb_removed_edge,
-                         Integer nb_removed_face,Integer nb_removed_cell,
-                         Integer nb_removed_parent, Integer nb_removed_children)
+_updateSharedInfoRemoved7(ItemInternal*)
 {
+  // TODO: regarder fusion possible avec les autres surcharges de _updateSharedInfo
   m_need_prepare_dump = true;
 }
 
@@ -1913,32 +1788,26 @@ _setUniqueId(Int32 lid,Int64 uid)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_allocateInfos(ItemInternal* item,Int64 uid,ItemTypeInfo* type,
-               Integer nb_edge,Integer nb_face,Integer nb_cell,
-               Integer edge_allocated,Integer face_allocated,Integer cell_allocated)
+_allocateInfos9(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
 {
-  ItemSharedInfo* isi = _findSharedInfo7(type,nb_edge,nb_face,nb_cell,
-                                         edge_allocated,face_allocated,cell_allocated);
-  _allocateInfos(item,uid,isi);
+  ItemSharedInfo* isi = _findSharedInfo7(type);
+  _allocateInfos3(item,uid,isi);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_allocateInfos(ItemInternal* item,Int64 uid,ItemTypeInfo* type,
-               Integer nb_edge,Integer nb_face,Integer nb_cell)
+_allocateInfos6(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
 {
-  _allocateInfos(item,uid,type,nb_edge,nb_face,nb_cell,
-                 nb_edge,nb_face,nb_cell);
+  _allocateInfos9(item,uid,type);
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfo* isi)
+_allocateInfos3(ItemInternal* item,Int64 uid,ItemSharedInfo* isi)
 {
   // TODO: faire en même temps que le réalloc de la variable uniqueId()
   //  le réalloc des m_source_incremental_item_connectivities.
@@ -2630,68 +2499,6 @@ void ItemFamily::
 addTargetConnectivity(IIncrementalItemConnectivity* c)
 {
   m_target_incremental_item_connectivities.add(c);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Vérifie que deux connectivités sont les mêmes.
- *
- * Cette méthode permet de vérifier que \a ref et \a c ont les mêmes
- * connectivités. Elle est utilisée notamment pour s'assurer
- * que les nouvelles connectivités à la demande ont bien les mêmes
- * valeurs que l'ancien mécanisme de connectivité.
- * \a ref est la connectivité dite de référence et \a c la connectivité
- * à vérifier.
- */
-void ItemFamily::
-_checkSameConnectivity(IIncrementalItemConnectivity* ref,
-                       IIncrementalItemConnectivity* c)
-{
-  if (!ref || !c)
-    return;
-  info() << "Checking same connectivity ref=" << ref->name()
-         << " compare=" << c->name();
-  // Vérifie deux choses:
-  // - que la connectivité \a c est la même que \a ref
-  // - que pour \a c et \a ref les accès via
-  // IItemIncrementalConnectivity::connectedItemLocalId() et
-  // ConnectivityItemVector::connectedItems() sont cohérents.
-  ItemInternalList items(_itemsInternal());
-  ConnectivityItemVector ref_con_vector(ref);
-  ConnectivityItemVector new_con_vector(c);
-  for( Integer i=0, n=items.size(); i<n; ++i ){
-    ItemInternal* item = items[i];
-    ItemLocalId lid(item->localId());
-    Integer nb_ref_sub_item = ref->nbConnectedItem(lid);
-    Integer nb_sub_item = c->nbConnectedItem(lid);
-    if (nb_ref_sub_item!=nb_sub_item)
-      ARCANE_FATAL("Connectivity '{0}' : bad number of connected items n={1} expected={2} item={3}",
-                   c->name(),nb_sub_item,nb_ref_sub_item,ItemPrinter(item));
-
-    ItemVectorView new_con_view = new_con_vector.connectedItems(lid);
-    ItemVectorView ref_con_view = ref_con_vector.connectedItems(lid);
-
-    // NOTE: Comme les entités dans les connectivités peuvent être nulles
-    // dans certains cas (par exemple particle->maille), il ne faut
-    // pas tester via l'opérateur operator[] de ItemVectorView mais
-    // via le tableau des localId().
-    for( Integer z=0; z<nb_ref_sub_item; ++z ){
-      Int32 new_lid1 = c->connectedItemLocalId(lid,z);
-      Int32 new_lid2 = new_con_view.localIds()[z];
-      Int32 ref_lid1 = ref->connectedItemLocalId(lid,z);
-      Int32 ref_lid2 = ref_con_view.localIds()[z];
-      if (new_lid1!=new_lid2)
-        ARCANE_FATAL("Incoherent connected items index={0} x1={1} x2={2} item={3}",
-                     z,new_lid1,new_lid2,ItemPrinter(item));
-      if (ref_lid1!=ref_lid2)
-        ARCANE_FATAL("Incoherent connected items for reference index={0} x1={1} x2={2} item={3}",
-                     z,ref_lid1,ref_lid2,ItemPrinter(item));
-      if (new_lid1!=ref_lid1)
-        ARCANE_FATAL("Bad sub item localId() index={0} lid={1} expected={2} item={3}",
-                     z,new_lid1,ref_lid1,ItemPrinter(item));
-    }
-  }
 }
 
 /*---------------------------------------------------------------------------*/

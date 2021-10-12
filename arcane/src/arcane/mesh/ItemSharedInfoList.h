@@ -113,24 +113,9 @@ class ItemSharedInfoList
   Integer maxLocalEdgePerItemType();
   Integer maxLocalFacePerItemType();
  public:
-  ItemSharedInfo* findSharedInfo4(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell)
-  {
-    return findSharedInfo7(type,nb_edge,nb_face,nb_cell,nb_edge,nb_face,nb_cell);
-  }
-  ItemSharedInfo* findSharedInfo7(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,
-                                 Integer nb_cell,Integer edge_allocated,
-                                 Integer face_allocated,Integer cell_allocated);
-  //! AMR
-  ItemSharedInfo* findSharedInfo6(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
-                                 Integer nb_hParent,Integer nb_hChildren)
-  {
-    return findSharedInfo11(type,nb_edge,nb_face,nb_cell,nb_hParent,nb_hChildren,
-                          nb_edge,nb_face,nb_cell,nb_hParent,nb_hChildren);
-  }
-  ItemSharedInfo* findSharedInfo11(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
-                                 Integer nb_hParent,Integer nb_hChildren,
-                                 Integer edge_allocated,Integer face_allocated,Integer cell_allocated,
-                                 Integer hParent_allocated, Integer hChild_allocated);
+
+  ItemSharedInfo* findSharedInfo7(ItemTypeInfo* type);
+  ItemSharedInfo* findSharedInfo11(ItemTypeInfo* type);
 
  public:
 
