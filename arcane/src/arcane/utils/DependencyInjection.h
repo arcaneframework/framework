@@ -312,6 +312,8 @@ class ARCANE_UTILS_EXPORT IInstanceFactory
   virtual const FactoryInfo* factoryInfo() const = 0;
 
   virtual ConcreteFactoryTypeInfo concreteFactoryInfo() const = 0;
+
+  virtual Int32 nbConstructorArg() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -368,6 +370,11 @@ class InstanceFactory
     return m_sub_factory->concreteFactoryInfo();
   }
 
+  Int32 nbConstructorArg() const override
+  {
+    return m_sub_factory->nbConstructorArg();
+  }
+
  protected:
   FactoryInfo* m_factory_info;
   IConcreteFactory<InterfaceType>* m_sub_factory;
@@ -395,6 +402,7 @@ class ARCANE_UTILS_EXPORT IConcreteFactoryBase
 
  public:
   virtual ConcreteFactoryTypeInfo concreteFactoryInfo() const = 0;
+  virtual Int32 nbConstructorArg() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -436,6 +444,8 @@ class ConcreteFactory
   {
     return ConcreteFactoryTypeInfo::create<InterfaceType, ServiceType, std::tuple<>>();
   }
+  // Pour indiquer qu'on n'utilise pas le nombre d'arguments, on met (-1).
+  Int32 nbConstructorArg() const override { return -1; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -640,8 +650,17 @@ class ARCANE_UTILS_EXPORT Injector
   {
     using FactoryType = impl::InstanceFactory<InterfaceType>;
     Ref<InterfaceType> instance;
+    Integer nb_instance = _nbValue();
+    //std::cout << "NB_INSTANCE=" << nb_instance << "\n";
+    // Il faut trouver un constructeur qui ait le même nombre d'arguments que le nombre d'instances
+    // enregistrées
     auto f = [&](impl::IInstanceFactory* v) -> bool {
+      //std::cout << "TRY DYNAMIC_CAST FACTORY v=" << v << " n=" << v->nbConstructorArg() << "\n";
+      Int32 nb_constructor_arg = v->nbConstructorArg();
+      if (nb_constructor_arg >= 0 && nb_constructor_arg != nb_instance)
+        return false;
       auto* t = dynamic_cast<FactoryType*>(v);
+      //std::cout << "TRY DYNAMIC_CAST FACTORY v=" << v << " t=" << t << "\n";
       if (t) {
         Ref<InterfaceType> x = t->createReference(*this);
         if (x.get()) {
@@ -822,6 +841,10 @@ class Concrete3Factory
   {
     return ConcreteFactoryTypeInfo::create<InterfaceType, ConcreteType, ConstructorType>();
   }
+  Int32 nbConstructorArg() const override
+  {
+    return std::tuple_size<Args>();
+  }
 
  private:
   /*!
@@ -833,8 +856,8 @@ class Concrete3Factory
   {
     ConcreteType* st = std::apply([](auto&&... args) -> ConcreteType* { return new ConcreteType(args...); }, tuple_args);
     return st;
-  }
-};
+    }
+  };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
