@@ -313,9 +313,36 @@ printFactories() const
     ++index;
     return false;
   };
-  _iterateFactories(String(), f);
+  FactoryFunctor ff(f);
+  _iterateFactories2(String(), &ff);
   String s = ostr.str();
   return s;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Injector::
+_iterateFactories2(const String& factory_name, IFactoryFunctor* functor) const
+{
+  // TODO: utiliser le std::type_info de l'instance qu'on souhaite pour limiter
+  // les itérations
+
+  // Il faut trouver un constructeur qui ait le même nombre d'arguments
+  // que le nombre d'instances enregistrées
+  bool has_no_name = factory_name.empty();
+  Integer n = _nbFactory();
+  Integer nb_instance = _nbValue();
+  for (Integer i = 0; i < n; ++i) {
+    impl::IInstanceFactory* f = _factory(i);
+    Int32 nb_constructor_arg = f->nbConstructorArg();
+    if (nb_constructor_arg >= 0 && nb_constructor_arg != nb_instance)
+      continue;
+    if (has_no_name || f->factoryInfo()->hasName(factory_name)) {
+      if (functor->execute(f))
+        return;
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/

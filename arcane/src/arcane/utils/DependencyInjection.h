@@ -625,6 +625,30 @@ class ARCANE_UTILS_EXPORT Injector
       return i._getRef<PointerType>(name);
     }
   };
+  /*!
+   * \brief Interface d'un fonctor pour appliqué à chaque fabrique.
+   */
+  class IFactoryFunctor
+  {
+   public:
+    virtual ~IFactoryFunctor() = default;
+    virtual bool execute(impl::IInstanceFactory* f) = 0;
+  };
+
+  template <typename Lambda> class FactoryFunctor
+  : public IFactoryFunctor
+  {
+   public:
+    FactoryFunctor(Lambda& lambda)
+    : m_lambda(lambda)
+    {}
+
+   public:
+    virtual bool execute(impl::IInstanceFactory* f) { return m_lambda(f); }
+
+   private:
+    Lambda& m_lambda;
+  };
 
  public:
   Injector();
@@ -650,15 +674,7 @@ class ARCANE_UTILS_EXPORT Injector
   {
     using FactoryType = impl::InstanceFactory<InterfaceType>;
     Ref<InterfaceType> instance;
-    Integer nb_instance = _nbValue();
-    //std::cout << "NB_INSTANCE=" << nb_instance << "\n";
-    // Il faut trouver un constructeur qui ait le même nombre d'arguments que le nombre d'instances
-    // enregistrées
     auto f = [&](impl::IInstanceFactory* v) -> bool {
-      //std::cout << "TRY DYNAMIC_CAST FACTORY v=" << v << " n=" << v->nbConstructorArg() << "\n";
-      Int32 nb_constructor_arg = v->nbConstructorArg();
-      if (nb_constructor_arg >= 0 && nb_constructor_arg != nb_instance)
-        return false;
       auto* t = dynamic_cast<FactoryType*>(v);
       //std::cout << "TRY DYNAMIC_CAST FACTORY v=" << v << " t=" << t << "\n";
       if (t) {
@@ -670,7 +686,8 @@ class ARCANE_UTILS_EXPORT Injector
       }
       return false;
     };
-    _iterateFactories(service_name, f);
+    FactoryFunctor ff(f);
+    _iterateFactories2(service_name, &ff);
     if (instance.get())
       return instance;
     // TODO: améliorer le message
@@ -708,23 +725,14 @@ class ARCANE_UTILS_EXPORT Injector
   IInjectedInstance* _value(Integer i) const;
 
   /*!
-   * \brief Itère sur la lambda et s'arrête dès que cette dernière retourne \a true.
+   * \brief Itère sur les fabriques et applique le fonctor \a functor.
+   *
+   * On s'arrête dès qu'un appel à functor retourne \a true.
+   *
    * Si \a factory_name n'est pas nul, seules les fabriques pour lequelles
    * FactoryInfo::hasName(factory_name) est vrai sont utilisées.
    */
-  template <typename Lambda> void
-  _iterateFactories(const String& factory_name, const Lambda& lambda) const
-  {
-    bool has_no_name = factory_name.empty();
-    Integer n = _nbFactory();
-    for (Integer i = 0; i < n; ++i) {
-      impl::IInstanceFactory* f = _factory(i);
-      if (has_no_name || f->factoryInfo()->hasName(factory_name)) {
-        if (lambda(f))
-          return;
-      }
-    }
-  }
+  void _iterateFactories2(const String& factory_name, IFactoryFunctor* functor) const;
   Integer _nbFactory() const;
   impl::IInstanceFactory* _factory(Integer i) const;
 
