@@ -144,7 +144,7 @@ inline void FaceFamily::
 _createOne(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
 {
   m_item_internal_list->faces = _itemsInternal();
-  _allocateInfos9(item,uid,type);
+  _allocateInfos(item,uid,type);
   auto nc = m_node_connectivity->trueCustomConnectivity();
   if (nc)
     nc->addConnectedItems(ItemLocalId(item),type->nbLocalNode());
@@ -359,7 +359,7 @@ addBackCellToFace(ItemInternal* face,ItemInternal* new_cell)
   if (nb_cell>=2)
     ARCANE_FATAL("face '{0}' already has two cells",FullItemPrinter(face));
 
-  _updateSharedInfoAdded4(face);
+  _updateSharedInfoAdded(face);
 
   // Si on a déjà une maille, il s'agit de la front cell.
   Int32 front_cell_lid = (nb_cell==1) ? face->cellLocalId(0) : NULL_ITEM_LOCAL_ID;
@@ -392,7 +392,7 @@ addFrontCellToFace(ItemInternal* face,ItemInternal* new_cell)
   if (nb_cell>=2)
     ARCANE_FATAL("face '{0}' already has two cells",FullItemPrinter(face));
 
-  _updateSharedInfoAdded4(face);
+  _updateSharedInfoAdded(face);
 
   // Si on a déjà une maille, il s'agit de la back cell.
   Int32 back_cell_lid = (nb_cell==1) ? face->cellLocalId(0) : NULL_ITEM_LOCAL_ID;

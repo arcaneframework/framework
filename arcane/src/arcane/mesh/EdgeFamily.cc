@@ -118,7 +118,7 @@ inline void EdgeFamily::
 _createOne(ItemInternal* item,Int64 uid)
 {
   m_item_internal_list->edges = _itemsInternal();
-  _allocateInfos9(item,uid,m_edge_type);
+  _allocateInfos(item,uid,m_edge_type);
   auto nc = m_node_connectivity->trueCustomConnectivity();
   if (nc)
     nc->addConnectedItems(ItemLocalId(item),2);

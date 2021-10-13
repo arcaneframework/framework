@@ -1646,30 +1646,9 @@ _allocMany(Integer memory)
 /*---------------------------------------------------------------------------*/
 
 ItemSharedInfo* ItemFamily::
-_findSharedInfo4(ItemTypeInfo* type)
+_findSharedInfo(ItemTypeInfo* type)
 {
-  return _findSharedInfo7(type);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ItemSharedInfo* ItemFamily::
-_findSharedInfo7(ItemTypeInfo* type)
-{
-  ItemSharedInfo* isi = m_item_shared_infos->findSharedInfo7(type);
-  isi->_setInfos(m_items_data->data());
-  return isi;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ItemSharedInfo* ItemFamily::
-_findSharedInfo11(ItemTypeInfo* type)
-{
-  auto x = m_item_shared_infos;
-  auto* isi = x->findSharedInfo11(type);
+  ItemSharedInfo* isi = m_item_shared_infos->findSharedInfo(type);
   isi->_setInfos(m_items_data->data());
   return isi;
 }
@@ -1691,12 +1670,10 @@ _copyInfos(ItemInternal* item,ItemSharedInfo* old_isi,ItemSharedInfo* new_isi)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_updateSharedInfoAdded4(ItemInternal* item)
+_updateSharedInfoAdded(ItemInternal* item)
 {
-  // TODO: regarder fusion possible avec les autres surcharges de _updateSharedInfo
   ItemSharedInfo* old_isi = item->sharedInfo();
-
-  ItemSharedInfo* new_isi = _findSharedInfo7(old_isi->m_item_type);
+  ItemSharedInfo* new_isi = _findSharedInfo(old_isi->m_item_type);
   _setSharedInfosNoCopy(item,new_isi);
 
   m_need_prepare_dump = true;
@@ -1710,29 +1687,13 @@ _updateSharedInfoAdded4(ItemInternal* item)
 void ItemFamily::
 _updateSharedInfoRemoved4(ItemInternal* item)
 {
-  // TODO: regarder fusion possible avec les autres surcharges de _updateSharedInfo
+  // TODO: regarder pourquoi _updateSharedInfoRemoved7() n'a pas le même code.
   m_need_prepare_dump = true;
 
   ItemSharedInfo* old_isi = item->sharedInfo();
-  ItemSharedInfo* new_isi = _findSharedInfo7(old_isi->m_item_type);
+  ItemSharedInfo* new_isi = _findSharedInfo(old_isi->m_item_type);
   _setSharedInfosNoCopy(item,new_isi);
 
-  new_isi->addReference();
-  old_isi->removeReference();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
-_updateSharedInfoAdded7(ItemInternal* item)
-{
-  // TODO: regarder fusion possible avec les autres surcharges de _updateSharedInfo
-  ItemSharedInfo* old_isi = item->sharedInfo();
-  ItemSharedInfo* new_isi = _findSharedInfo11(old_isi->m_item_type);
-  _copyInfos(item,old_isi,new_isi);
-
-  m_need_prepare_dump = true;
   new_isi->addReference();
   old_isi->removeReference();
 }
@@ -1746,9 +1707,6 @@ _updateSharedInfoRemoved7(ItemInternal*)
   // TODO: regarder fusion possible avec les autres surcharges de _updateSharedInfo
   m_need_prepare_dump = true;
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1788,26 +1746,17 @@ _setUniqueId(Int32 lid,Int64 uid)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_allocateInfos9(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
+_allocateInfos(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
 {
-  ItemSharedInfo* isi = _findSharedInfo7(type);
-  _allocateInfos3(item,uid,isi);
+  ItemSharedInfo* isi = _findSharedInfo(type);
+  _allocateInfos(item,uid,isi);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_allocateInfos6(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
-{
-  _allocateInfos9(item,uid,type);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
-_allocateInfos3(ItemInternal* item,Int64 uid,ItemSharedInfo* isi)
+_allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfo* isi)
 {
   // TODO: faire en même temps que le réalloc de la variable uniqueId()
   //  le réalloc des m_source_incremental_item_connectivities.

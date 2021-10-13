@@ -92,8 +92,6 @@ class ItemSharedInfoList
   //! Vérifie si les structures internes de l'instance sont valides
   void checkValid();
 
-  ISubDomain* subDomain();
-
   Integer nbItemSharedInfo() const { return m_nb_item_shared_info; }
 
   void prepareForDump();
@@ -112,10 +110,10 @@ class ItemSharedInfoList
   Integer maxLocalNodePerItemType();
   Integer maxLocalEdgePerItemType();
   Integer maxLocalFacePerItemType();
+
  public:
 
-  ItemSharedInfo* findSharedInfo7(ItemTypeInfo* type);
-  ItemSharedInfo* findSharedInfo11(ItemTypeInfo* type);
+  ItemSharedInfo* findSharedInfo(ItemTypeInfo* type);
 
  public:
 
@@ -147,7 +145,6 @@ class ItemSharedInfoList
  private:
 
   ItemFamily* m_family;
-  ISubDomain* m_sub_domain; //!< Sous-domaine associé
   Integer m_nb_item_shared_info; //!< Nombre d'objets alloués
   eItemKind m_item_kind;
   UniqueArray<ItemSharedInfo*> m_item_shared_infos;

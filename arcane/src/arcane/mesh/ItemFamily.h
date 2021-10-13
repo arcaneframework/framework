@@ -398,15 +398,12 @@ class ARCANE_MESH_EXPORT ItemFamily
  protected:
 
   void _checkNeedEndUpdate() const;
-  void _updateSharedInfoAdded4(ItemInternal* item);
+  void _updateSharedInfoAdded(ItemInternal* item);
   void _updateSharedInfoRemoved4(ItemInternal* item);
-//! AMR
-  void _updateSharedInfoAdded7(ItemInternal* item);
   void _updateSharedInfoRemoved7(ItemInternal* item);
 
-  void _allocateInfos3(ItemInternal* item,Int64 uid,ItemSharedInfo* isi);
-  void _allocateInfos6(ItemInternal* item,Int64 uid,ItemTypeInfo* type);
-  void _allocateInfos9(ItemInternal* item,Int64 uid,ItemTypeInfo* type);
+  void _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfo* isi);
+  void _allocateInfos(ItemInternal* item,Int64 uid,ItemTypeInfo* type);
   void _endUpdate(bool need_check_remove);
   bool _partialEndUpdate();
   //void _partialEndUpdateGroup(const ItemGroup& group);
@@ -457,10 +454,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _reserveInfosMemory(Integer memory);
   void _resizeInfos(Integer memory);
 
-  ItemSharedInfo* _findSharedInfo4(ItemTypeInfo* type);
-  ItemSharedInfo* _findSharedInfo7(ItemTypeInfo* type);
-  //! AMR
-  ItemSharedInfo* _findSharedInfo11(ItemTypeInfo* type);
+  ItemSharedInfo* _findSharedInfo(ItemTypeInfo* type);
 
   Integer _allocMany(Integer memory);
   void _setSharedInfosPtr(Integer* ptr);

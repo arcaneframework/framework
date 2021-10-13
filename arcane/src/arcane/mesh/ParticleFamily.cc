@@ -104,7 +104,7 @@ build()
 inline void ParticleFamily::
 _initializeNewlyAllocatedParticle(ItemInternal* particle,Int64 uid)
 {
-  _allocateInfos3(particle,uid,m_particle_shared_info);
+  _allocateInfos(particle,uid,m_particle_shared_info);
   m_cell_connectivity->addConnectedItem(ItemLocalId(particle),ItemLocalId(NULL_ITEM_LOCAL_ID));
 }
 
@@ -455,7 +455,7 @@ hasUniqueIdMap() const
 void ParticleFamily::
 _setSharedInfo()
 {
-  m_particle_shared_info = _findSharedInfo4(m_particle_type_info);
+  m_particle_shared_info = _findSharedInfo(m_particle_type_info);
 }
 
 /*---------------------------------------------------------------------------*/

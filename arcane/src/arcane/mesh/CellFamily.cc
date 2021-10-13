@@ -150,7 +150,7 @@ _createOne(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
 {
   ItemLocalId item_lid(item);
   m_item_internal_list->cells = _itemsInternal();
-  _allocateInfos6(item,uid,type);
+  _allocateInfos(item,uid,type);
   auto nc = m_node_connectivity->trueCustomConnectivity();
   if (nc)
     nc->addConnectedItems(item_lid,type->nbLocalNode());
@@ -505,7 +505,7 @@ _addChildrenCellsToCell(ItemInternal* parent_cell,Int32ConstArrayView children_c
     ItemLocalId item_lid(parent_cell);
     c->addConnectedItems(item_lid,nb_children);
   }
-  _updateSharedInfoAdded7(parent_cell);
+  _updateSharedInfoAdded(parent_cell);
 
   auto x = _topologyModifier();
   for( Integer i=0; i<nb_children; ++i )
