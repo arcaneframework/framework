@@ -8,10 +8,14 @@ include(CMakeFindDependencyMacro)
 
 if(NOT ARCCORE_NO_FIND_DEPENDENCY)
   find_dependency(Arccon)
+  # Add FindPackage from Arccon
+  list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
   if (@ARCCORE_USE_MPI@)
     find_dependency(MPI)
   endif()
   find_dependency(Glib)
+  # Remove FindPackage Arccon paths
+  list(REMOVE_AT CMAKE_MODULE_PATH -1)
 endif()
 
 get_target_property(_AFULL @namespace@arccore_full INTERFACE_LINK_LIBRARIES)
