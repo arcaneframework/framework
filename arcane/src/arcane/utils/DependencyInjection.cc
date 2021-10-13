@@ -29,14 +29,33 @@ namespace Arcane::DependencyInjection
 class Injector::Impl
 {
  public:
+  class InstanceInfo
+  {
+   public:
+    InstanceInfo(IInjectedInstance* instance,Int32 index)
+    : m_instance(instance), m_index(index){}
+   public:
+    IInjectedInstance* m_instance = nullptr;
+    Int32 m_index = 0;
+  };
+ public:
   ~Impl()
   {
     for( Integer i=0, n= m_instance_list.size(); i<n; ++i )
-      delete m_instance_list[i];
+      delete m_instance_list[i].m_instance;
     m_instance_list.clear();
   }
  public:
-  UniqueArray<IInjectedInstance*> m_instance_list;
+  void addInstance(IInjectedInstance* instance)
+  {
+    Int32 index = m_instance_list.size();
+    m_instance_list.add(InstanceInfo{instance,index});
+  }
+  IInjectedInstance* instance(Int32 index) const { return m_instance_list[index].m_instance; }
+  Int32 nbInstance() const { return m_instance_list.size(); }
+ private:
+  UniqueArray<InstanceInfo> m_instance_list;
+ public:
   UniqueArray<Ref<impl::IInstanceFactory>> m_factories;
 };
 
@@ -55,7 +74,7 @@ Injector()
 void Injector::
 _add(IInjectedInstance* instance)
 {
-  m_p->m_instance_list.add(instance);
+  m_p->addInstance(instance);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -64,7 +83,7 @@ _add(IInjectedInstance* instance)
 Integer Injector::
 _nbValue() const
 {
-  return m_p->m_instance_list.size();
+  return m_p->nbInstance();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -73,7 +92,7 @@ _nbValue() const
 IInjectedInstance* Injector::
 _value(Integer i) const
 {
-  return m_p->m_instance_list[i];
+  return m_p->instance(i);
 }
 
 /*---------------------------------------------------------------------------*/

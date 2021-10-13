@@ -43,17 +43,16 @@
 
 namespace Arcane::DependencyInjection
 {
-
 class Injector;
-namespace impl
+}
+
+namespace Arcane::DependencyInjection::impl
 {
 class FactoryInfo;
 class IInstanceFactory;
 template <typename InterfaceType>
 class IConcreteFactory;
-} // namespace impl
-
-} // namespace Arcane::DependencyInjection
+}
 
 ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::DependencyInjection::impl::IInstanceFactory)
 
@@ -69,9 +68,9 @@ namespace Arcane::DependencyInjection
 class ARCANE_UTILS_EXPORT IInjectedInstance
 {
  public:
-
   virtual ~IInjectedInstance() = default;
-  virtual bool hasName(const String& str) const =0;
+  virtual bool hasName(const String& str) const = 0;
+  virtual bool hasTypeInfo(const std::type_info& tinfo) const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -85,9 +84,13 @@ class ARCANE_UTILS_EXPORT IInjectedInstance
 class ARCANE_UTILS_EXPORT ProviderProperty
 {
  public:
-  ProviderProperty(const char* name) : m_name(name){}
+  ProviderProperty(const char* name)
+  : m_name(name)
+  {}
+
  public:
   const char* name() const { return m_name; }
+
  private:
   const char* m_name;
 };
@@ -95,7 +98,9 @@ class ARCANE_UTILS_EXPORT ProviderProperty
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace impl
+}
+
+namespace Arcane::DependencyInjection::impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -104,12 +109,13 @@ namespace impl
  * \internal
  * \brief Interface typée gérant l'instance d'un service.
  */
-template<typename InterfaceType>
+template <typename InterfaceType>
 class IInjectedInstanceT
 : public IInjectedInstance
 {
  public:
-  virtual Ref<InterfaceType> instance() =0;
+  virtual Ref<InterfaceType> instance() = 0;
+
  private:
 };
 
@@ -119,18 +125,26 @@ class IInjectedInstanceT
  * \internal
  * \brief Interface typée gérant l'instance d'un service.
  */
-template<typename InterfaceType>
-class InjectedInstance
+template <typename InterfaceType>
+class InjectedRefInstance
 : public IInjectedInstanceT<InterfaceType>
 {
  public:
-  InjectedInstance(Ref<InterfaceType> t_instance,const String& t_name)
-  : m_instance(t_instance), m_name(t_name){}
+  using InstanceType = Ref<InterfaceType>;
+
+ public:
+  InjectedRefInstance(InstanceType t_instance, const String& t_name)
+  : m_instance(t_instance)
+  , m_name(t_name)
+  {}
+
  public:
   Ref<InterfaceType> instance() override { return m_instance; }
-  bool hasName(const String& str) const override { return m_name==str; }
+  bool hasName(const String& str) const override { return m_name == str; }
+  bool hasTypeInfo(const std::type_info& tinfo) const override { return typeid(InstanceType) == tinfo; }
+
  private:
-  Ref<InterfaceType> m_instance;
+  InstanceType m_instance;
   String m_name;
 };
 
@@ -140,12 +154,13 @@ class InjectedInstance
  * \internal
  * \brief Interface typée gérant une instance
  */
-template<typename Type>
+template <typename Type>
 class IInjectedValueInstance
 : public IInjectedInstance
 {
  public:
-  virtual Type instance() =0;
+  virtual Type instance() = 0;
+
  private:
 };
 
@@ -155,16 +170,24 @@ class IInjectedValueInstance
  * \internal
  * \brief Interface typée gérant l'instance d'un service.
  */
-template<typename Type>
+template <typename Type>
 class InjectedValueInstance
 : public IInjectedValueInstance<Type>
 {
  public:
-  InjectedValueInstance(Type t_instance,const String& t_name)
-  : m_instance(t_instance), m_name(t_name){}
+  using InstanceType = Type;
+
+ public:
+  InjectedValueInstance(Type t_instance, const String& t_name)
+  : m_instance(t_instance)
+  , m_name(t_name)
+  {}
+
  public:
   Type instance() override { return m_instance; }
-  bool hasName(const String& str) const override { return m_name==str; }
+  bool hasName(const String& str) const override { return m_name == str; }
+  bool hasTypeInfo(const std::type_info& tinfo) const override { return typeid(InstanceType) == tinfo; }
+
  private:
   Type m_instance;
   String m_name;
@@ -181,10 +204,15 @@ class InjectedValueInstance
 class ARCANE_UTILS_EXPORT InjectedInstanceRef
 {
   typedef Ref<IInjectedInstance> RefType;
+
  private:
-  InjectedInstanceRef(const RefType& r) : m_instance(r){}
+  InjectedInstanceRef(const RefType& r)
+  : m_instance(r)
+  {}
+
  public:
   InjectedInstanceRef() = default;
+
  public:
   static InjectedInstanceRef createRef(IInjectedInstance* p)
   {
@@ -194,13 +222,15 @@ class ARCANE_UTILS_EXPORT InjectedInstanceRef
   {
     return InjectedInstanceRef(RefType::_createNoDestroy(p));
   }
-  static InjectedInstanceRef createWithHandle(IInjectedInstance* p,Internal::ExternalRef handle)
+  static InjectedInstanceRef createWithHandle(IInjectedInstance* p, Internal::ExternalRef handle)
   {
-    return InjectedInstanceRef(RefType::createWithHandle(p,handle));
+    return InjectedInstanceRef(RefType::createWithHandle(p, handle));
   }
+
  public:
   IInjectedInstance* get() const { return m_instance.get(); }
   void reset() { m_instance.reset(); }
+
  private:
   RefType m_instance;
 };
@@ -216,14 +246,12 @@ class ARCANE_UTILS_EXPORT IInstanceFactory
   ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
 
  protected:
-
   virtual ~IInstanceFactory() = default;
 
  public:
+  virtual InjectedInstanceRef createGenericReference(Injector& injector, const String& name) = 0;
 
-  virtual InjectedInstanceRef createGenericReference(Injector& injector,const String& name) =0;
-
-  virtual const FactoryInfo* factoryInfo() const =0;
+  virtual const FactoryInfo* factoryInfo() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -244,14 +272,14 @@ class ARCANE_UTILS_EXPORT AbstractInstanceFactory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename InterfaceType>
+template <typename InterfaceType>
 class InstanceFactory
 : public AbstractInstanceFactory
 {
  public:
-
-  InstanceFactory(FactoryInfo* si,IConcreteFactory<InterfaceType>* sub_factory)
-  : m_factory_info(si), m_sub_factory(sub_factory)
+  InstanceFactory(FactoryInfo* si, IConcreteFactory<InterfaceType>* sub_factory)
+  : m_factory_info(si)
+  , m_sub_factory(sub_factory)
   {
   }
 
@@ -260,9 +288,9 @@ class InstanceFactory
     delete m_sub_factory;
   }
 
-  InjectedInstanceRef createGenericReference(Injector& injector,const String& name) override
+  InjectedInstanceRef createGenericReference(Injector& injector, const String& name) override
   {
-    return _create(_createReference(injector),name);
+    return _create(_createReference(injector), name);
   }
 
   Ref<InterfaceType> createReference(Injector& injector)
@@ -276,20 +304,18 @@ class InstanceFactory
   }
 
  protected:
-
   FactoryInfo* m_factory_info;
   IConcreteFactory<InterfaceType>* m_sub_factory;
 
  private:
-
   Ref<InterfaceType> _createReference(Injector& injector)
   {
     return m_sub_factory->createReference(injector);
   }
 
-  InjectedInstanceRef _create(Ref<InterfaceType> it,const String& name)
+  InjectedInstanceRef _create(Ref<InterfaceType> it, const String& name)
   {
-    IInjectedInstance* x = (!it) ? nullptr : new InjectedInstance<InterfaceType>(it,name);
+    IInjectedInstance* x = (!it) ? nullptr : new InjectedRefInstance<InterfaceType>(it, name);
     return InjectedInstanceRef::createRef(x);
   }
 };
@@ -301,14 +327,15 @@ class InstanceFactory
  * \brief Interface d'un fonctor de création d'une instance de service
  * correspondant à l'interface \a InterfaceType.
  */
-template<typename InterfaceType>
+template <typename InterfaceType>
 class IConcreteFactory
 {
  public:
   virtual ~IConcreteFactory() = default;
+
  public:
   //! Créé une instance du service .
-  virtual Ref<InterfaceType> createReference(Injector&) =0;
+  virtual Ref<InterfaceType> createReference(Injector&) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -317,12 +344,11 @@ class IConcreteFactory
  * \internal
  * \brief Fabrique pour le service \a ServiceType pour l'interface \a InterfaceType.
  */
-template<typename ServiceType,typename InterfaceType>
+template <typename ServiceType, typename InterfaceType>
 class ConcreteFactory
 : public IConcreteFactory<InterfaceType>
 {
  public:
-
   Ref<InterfaceType> createReference(Injector& injector) override
   {
     ServiceType* st = new ServiceType(injector);
@@ -340,14 +366,17 @@ class ARCANE_UTILS_EXPORT FactoryInfo
 {
   friend class Arcane::DependencyInjection::Injector;
   class Impl;
+
  public:
   FactoryInfo(const FactoryInfo&) = delete;
   FactoryInfo& operator=(const FactoryInfo&) = delete;
   ~FactoryInfo();
+
  private:
   FactoryInfo(const ProviderProperty& property);
+
  public:
-  static FactoryInfo* create(const ProviderProperty& property,const char* file_name,int line_number)
+  static FactoryInfo* create(const ProviderProperty& property, const char* file_name, int line_number)
   {
     ARCANE_UNUSED(file_name);
     ARCANE_UNUSED(line_number);
@@ -355,10 +384,10 @@ class ARCANE_UTILS_EXPORT FactoryInfo
   }
   void addFactory(Ref<IInstanceFactory> f);
   bool hasName(const String& str) const;
+
  private:
   Impl* m_p = nullptr;
 };
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -366,20 +395,17 @@ class ARCANE_UTILS_EXPORT FactoryInfo
 class ARCANE_UTILS_EXPORT GlobalRegisterer
 {
  public:
-
   typedef FactoryInfo* (*FactoryCreateFunc)(const ProviderProperty& property);
 
  public:
-
   /*!
    * \brief Crée en enregistreur pour le service \a name et la fonction \a func.
    *
    * Ce constructeur est utilisé pour enregistrer un service.
    */
- GlobalRegisterer(FactoryCreateFunc func,const ProviderProperty& property) ARCANE_NOEXCEPT;
+  GlobalRegisterer(FactoryCreateFunc func, const ProviderProperty& property) ARCANE_NOEXCEPT;
 
  public:
-
   FactoryCreateFunc infoCreatorWithPropertyFunction() { return m_factory_create_func; }
 
   //! Nom du service
@@ -394,7 +420,6 @@ class ARCANE_UTILS_EXPORT GlobalRegisterer
   GlobalRegisterer* nextService() const { return m_next; }
 
  public:
-
   //! Accès au premier élément de la chaine d'enregistreur de service
   static GlobalRegisterer* firstService();
 
@@ -402,7 +427,6 @@ class ARCANE_UTILS_EXPORT GlobalRegisterer
   static Integer nbService();
 
  private:
-
   FactoryCreateFunc m_factory_create_func = nullptr;
   const char* m_name = nullptr;
   ProviderProperty m_factory_property;
@@ -410,7 +434,6 @@ class ARCANE_UTILS_EXPORT GlobalRegisterer
   GlobalRegisterer* m_next = nullptr;
 
  private:
-
   void _init();
 
   //! Positionne le service précédent
@@ -466,7 +489,10 @@ class ServiceInterfaceRegisterer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace impl
+} // namespace Arcane::DependencyInjection::impl
+
+namespace Arcane::DependencyInjection
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -500,7 +526,7 @@ class ARCANE_UTILS_EXPORT Injector
    public:
     static IInjectedInstance* bind(const ThatType& t, const String& name)
     {
-      return new impl::InjectedInstance<PointerType>(t, name);
+      return new impl::InjectedRefInstance<PointerType>(t, name);
     }
     static ThatType get(Injector& i, const String& name)
     {
@@ -561,12 +587,14 @@ class ARCANE_UTILS_EXPORT Injector
 
   // Itère sur la lambda et s'arrête dès que cette dernière retourne \a true
   template <typename Lambda> void
-  _iterateInstances(const String& instance_name, const Lambda& lambda)
+  _iterateInstances(const std::type_info& t_info, const String& instance_name, const Lambda& lambda)
   {
     bool has_no_name = instance_name.empty();
     Integer n = _nbValue();
     for (Integer i = 0; i < n; ++i) {
       IInjectedInstance* ii = _value(i);
+      if (!ii->hasTypeInfo(t_info))
+        continue;
       if (has_no_name || ii->hasName(instance_name)) {
         if (lambda(ii))
           return;
@@ -607,7 +635,7 @@ class ARCANE_UTILS_EXPORT Injector
       t = dynamic_cast<InjectedType*>(v);
       return t;
     };
-    _iterateInstances(instance_name, f);
+    _iterateInstances(typeid(Ref<InterfaceType>), instance_name, f);
     if (t)
       return t->instance();
     // TODO: faire un fatal ou créer l'instance
@@ -623,7 +651,7 @@ class ARCANE_UTILS_EXPORT Injector
       t = dynamic_cast<InjectedType*>(v);
       return t;
     };
-    _iterateInstances(instance_name, f);
+    _iterateInstances(typeid(Type), instance_name, f);
     if (t)
       return t->instance();
     ARCANE_FATAL("Can not find value for type");
@@ -633,7 +661,9 @@ class ARCANE_UTILS_EXPORT Injector
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace impl
+} // namespace Arcane::DependencyInjection
+
+namespace Arcane::DependencyInjection::impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -864,7 +894,7 @@ class InjectionRegisterer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace impl
+} // End namespace Arcane::DependencyInjection::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -889,34 +919,29 @@ class InjectionRegisterer
 #define ARCANE_DI_REGISTER_PROVIDER(t_class, t_provider_property, ...) \
   namespace \
   { \
-  Arcane::DependencyInjection::impl::FactoryInfo* \
-  ARCANE_JOIN_WITH_LINE(arcaneCreateDependencyInjectionProviderInfo##t_class)(const Arcane::DependencyInjection::ProviderProperty& property) \
-  { \
-    auto* si = Arcane::DependencyInjection::impl::FactoryInfo::create(property, __FILE__, __LINE__); \
-    Arcane::DependencyInjection::impl::ServiceAllInterfaceRegisterer<t_class>::registerProviderInfo(si, __VA_ARGS__); \
-    return si; \
-  } \
+    Arcane::DependencyInjection::impl::FactoryInfo* \
+    ARCANE_JOIN_WITH_LINE(arcaneCreateDependencyInjectionProviderInfo##t_class)(const Arcane::DependencyInjection::ProviderProperty& property) \
+    { \
+      auto* si = Arcane::DependencyInjection::impl::FactoryInfo::create(property, __FILE__, __LINE__); \
+      Arcane::DependencyInjection::impl::ServiceAllInterfaceRegisterer<t_class>::registerProviderInfo(si, __VA_ARGS__); \
+      return si; \
+    } \
   } \
   Arcane::DependencyInjection::impl::GlobalRegisterer ARCANE_EXPORT ARCANE_JOIN_WITH_LINE(globalServiceRegisterer##aclass)(&ARCANE_JOIN_WITH_LINE(arcaneCreateDependencyInjectionProviderInfo##t_class), t_provider_property)
 
 #define ARCANE_DI_REGISTER_PROVIDER2(t_class, t_provider_property, t_interfaces, ...) \
   namespace \
   { \
-  Arcane::DependencyInjection::impl::FactoryInfo* \
-  ARCANE_JOIN_WITH_LINE(arcaneCreateDependencyInjectionProviderInfo##t_class)(const Arcane::DependencyInjection::ProviderProperty& property) \
-  { \
-    auto* si = Arcane::DependencyInjection::impl::FactoryInfo::create(property, __FILE__, __LINE__); \
-    Arcane::DependencyInjection::impl::InjectionRegisterer<t_class, t_interfaces> injection_registerer; \
-    injection_registerer.registerProviderInfo(si, __VA_ARGS__); \
-    return si; \
-  } \
+    Arcane::DependencyInjection::impl::FactoryInfo* \
+    ARCANE_JOIN_WITH_LINE(arcaneCreateDependencyInjectionProviderInfo##t_class)(const Arcane::DependencyInjection::ProviderProperty& property) \
+    { \
+      auto* si = Arcane::DependencyInjection::impl::FactoryInfo::create(property, __FILE__, __LINE__); \
+      Arcane::DependencyInjection::impl::InjectionRegisterer<t_class, t_interfaces> injection_registerer; \
+      injection_registerer.registerProviderInfo(si, __VA_ARGS__); \
+      return si; \
+    } \
   } \
   Arcane::DependencyInjection::impl::GlobalRegisterer ARCANE_EXPORT ARCANE_JOIN_WITH_LINE(globalServiceRegisterer##aclass)(&ARCANE_JOIN_WITH_LINE(arcaneCreateDependencyInjectionProviderInfo##t_class), t_provider_property)
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace Arcane::DependencyInjection
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -120,6 +120,7 @@ class CDImpl
 , public IC
 {
  public:
+CDImpl(int a,int b) : m_int_value(a+b){}
   CDImpl(int a) : m_int_value(a){}
   CDImpl() : m_int_value(2){}
   int value() const override { return m_int_value; }
@@ -174,6 +175,14 @@ ARCANE_DI_REGISTER_PROVIDER2(CDImpl,
 ARCANE_DI_REGISTER_PROVIDER2(CDImpl,
                              ProviderProperty("CDImplProvider3"),
                              ARCANE_DI_INTERFACES(IC),
+                             ARCANE_DI_EMPTY_CONSTRUCTOR()
+                             );
+
+ARCANE_DI_REGISTER_PROVIDER2(CDImpl,
+                             ProviderProperty("CDImplProvider4"),
+                             ARCANE_DI_INTERFACES(IC,ID),
+                             ARCANE_DI_CONSTRUCTOR(int),
+                             ARCANE_DI_CONSTRUCTOR(int,int),
                              ARCANE_DI_EMPTY_CONSTRUCTOR()
                              );
 }
@@ -309,6 +318,19 @@ TEST(DependencyInjection,Impl2)
       Ref<IC> ic = injector.createInstance<IC>("CDImplProvider3");
       ARCANE_CHECK_POINTER(ic.get());
       ASSERT_EQ(ic->value(),2);
+    }
+    bool do_test_4 = false;
+    if (do_test_4){
+      // Test avec le constructeur avec 2 arguments de CDImpl()
+      // Dans ce cas la valeur IC::value() doit valoir 25+12
+      // (voir constructeur de CDImpl)
+      Injector injector;
+      injector.fillWithGlobalFactories();
+      injector.bind<int>(25);
+      injector.bind<int>(12);
+      Ref<IC> ic = injector.createInstance<IC>("CDImplProvider4");
+      ARCANE_CHECK_POINTER(ic.get());
+      ASSERT_EQ(ic->value(),37);
     }
   }
   catch(const Exception& ex){
