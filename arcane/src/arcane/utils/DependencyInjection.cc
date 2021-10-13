@@ -32,29 +32,36 @@ class Injector::Impl
   class InstanceInfo
   {
    public:
-    InstanceInfo(IInjectedInstance* instance,Int32 index)
-    : m_instance(instance), m_index(index){}
+    InstanceInfo(IInjectedInstance* instance, Int32 index)
+    : m_instance(instance)
+    , m_index(index)
+    {}
+
    public:
     IInjectedInstance* m_instance = nullptr;
     Int32 m_index = 0;
   };
+
  public:
   ~Impl()
   {
-    for( Integer i=0, n= m_instance_list.size(); i<n; ++i )
+    for (Integer i = 0, n = m_instance_list.size(); i < n; ++i)
       delete m_instance_list[i].m_instance;
     m_instance_list.clear();
   }
+
  public:
   void addInstance(IInjectedInstance* instance)
   {
     Int32 index = m_instance_list.size();
-    m_instance_list.add(InstanceInfo{instance,index});
+    m_instance_list.add(InstanceInfo{ instance, index });
   }
   IInjectedInstance* instance(Int32 index) const { return m_instance_list[index].m_instance; }
   Int32 nbInstance() const { return m_instance_list.size(); }
+
  private:
   UniqueArray<InstanceInfo> m_instance_list;
+
  public:
   UniqueArray<Ref<impl::IInstanceFactory>> m_factories;
 };
@@ -116,10 +123,12 @@ _factory(Integer i) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace impl
+namespace Arcane::DependencyInjection::impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -129,10 +138,11 @@ class FactoryInfo::Impl
 {
  public:
   Impl(const ProviderProperty& property)
-  : m_property(property),
-    m_name(property.name())
+  : m_property(property)
+  , m_name(property.name())
   {
   }
+
  public:
   const ProviderProperty m_property;
   UniqueArray<Ref<IInstanceFactory>> m_factories;
@@ -144,7 +154,7 @@ class FactoryInfo::Impl
 
 FactoryInfo::
 FactoryInfo(const ProviderProperty& property)
-: m_p{new Impl(property)}
+: m_p{ new Impl(property) }
 {
 }
 
@@ -182,7 +192,7 @@ hasName(const String& str) const
 /*---------------------------------------------------------------------------*/
 
 GlobalRegisterer::
-GlobalRegisterer(FactoryCreateFunc func,const ProviderProperty& property)  ARCANE_NOEXCEPT
+GlobalRegisterer(FactoryCreateFunc func, const ProviderProperty& property) ARCANE_NOEXCEPT
 : m_factory_create_func(func)
 , m_factory_property(property)
 {
@@ -194,8 +204,8 @@ GlobalRegisterer(FactoryCreateFunc func,const ProviderProperty& property)  ARCAN
 
 namespace
 {
-GlobalRegisterer* global_arcane_first_service = nullptr;
-Integer global_arcane_nb_service = 0;
+  GlobalRegisterer* global_arcane_first_service = nullptr;
+  Integer global_arcane_nb_service = 0;
 }
 
 void GlobalRegisterer::
@@ -203,12 +213,12 @@ _init()
 {
   // ATTENTION: Cette méthode est appelée depuis un constructeur global
   // (donc avant le main()) et il ne faut pas faire d'exception dans ce code.
-  if (!global_arcane_first_service){
+  if (!global_arcane_first_service) {
     global_arcane_first_service = this;
     _setPreviousService(nullptr);
     _setNextService(nullptr);
   }
-  else{
+  else {
     GlobalRegisterer* next = global_arcane_first_service->nextService();
     _setNextService(global_arcane_first_service);
     global_arcane_first_service = this;
@@ -219,7 +229,7 @@ _init()
 
   {
     // Check integrity
-    GlobalRegisterer * p = global_arcane_first_service;
+    GlobalRegisterer* p = global_arcane_first_service;
     Integer count = global_arcane_nb_service;
     while (p && count > 0) {
       p = p->nextService();
@@ -228,13 +238,13 @@ _init()
     if (p) {
       cout << "Arcane Fatal Error: Service '" << m_name << "' conflict in service registration" << std::endl;
       exit(1);
-    } else if (count > 0) {
+    }
+    else if (count > 0) {
       cout << "Arcane Fatal Error: Service '" << m_name << "' breaks service registration (inconsistent shortcut)" << std::endl;
       exit(1);
     }
   }
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -257,10 +267,10 @@ nbService()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 } // End namespace impl
+
+namespace Arcane::DependencyInjection
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -270,7 +280,7 @@ fillWithGlobalFactories()
 {
   impl::GlobalRegisterer* g = impl::GlobalRegisterer::firstService();
   Integer i = 0;
-  while (g){
+  while (g) {
     auto func = g->infoCreatorWithPropertyFunction();
     impl::FactoryInfo* fi = nullptr;
     if (func)
@@ -280,7 +290,7 @@ fillWithGlobalFactories()
 
     g = g->nextService();
     ++i;
-    if (i>100000)
+    if (i > 100000)
       ARCANE_FATAL("Infinite loop in DependencyInjection global factories");
   }
 }
@@ -288,7 +298,30 @@ fillWithGlobalFactories()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::DependencyInjection
+String Injector::
+printFactories() const
+{
+  std::ostringstream ostr;
+  Integer index = 0;
+  auto f = [&](impl::IInstanceFactory* v) -> bool {
+    const impl::ConcreteFactoryTypeInfo& cfi = v->concreteFactoryInfo();
+    ostr << "I=" << index << " " << typeid(v).name()
+         << "\n  interface=" << cfi.interfaceTypeInfo().traceInfo()
+         << "\n  concrete=" << cfi.concreteTypeInfo().traceInfo()
+         << "\n  constructor=" << cfi.constructorTypeInfo().traceInfo()
+         << "\n";
+    ++index;
+    return false;
+  };
+  _iterateFactories(String(), f);
+  String s = ostr.str();
+  return s;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::DependencyInjection
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

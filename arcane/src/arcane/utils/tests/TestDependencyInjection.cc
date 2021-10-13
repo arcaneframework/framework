@@ -187,6 +187,15 @@ ARCANE_DI_REGISTER_PROVIDER2(CDImpl,
                              );
 }
 
+TEST(DependencyInjection,TestPrintFactories)
+{
+  using namespace Arcane::DependencyInjection;
+  Injector injector;
+  injector.fillWithGlobalFactories();
+
+  std::cout << "FACTORIES=" << injector.printFactories() << "\n";
+}
+
 TEST(DependencyInjection,TestBind1)
 {
   using namespace Arcane::DependencyInjection;
