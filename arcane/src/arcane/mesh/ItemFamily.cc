@@ -18,6 +18,7 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/ArgumentException.h"
+#include "arcane/utils/CheckedConvert.h"
 
 #include "arcane/IParallelMng.h"
 #include "arcane/ISubDomain.h"
@@ -35,6 +36,7 @@
 #include "arcane/ItemInternalSortFunction.h"
 #include "arcane/Properties.h"
 #include "arcane/ItemFamilyCompactInfos.h"
+#include "arcane/IMeshMng.h"
 #include "arcane/IMeshCompacter.h"
 #include "arcane/IMeshCompactMng.h"
 #include "arcane/MeshPartInfo.h"
@@ -1063,8 +1065,9 @@ readFromDump()
 
   // Données de liaison de famille
   {
+    IMeshMng* mesh_mng = m_mesh->meshMng();
     if (!m_internal_variables->m_parent_mesh_name().null()) {
-      IMesh * parent_mesh = subDomain()->findMesh(m_internal_variables->m_parent_mesh_name());
+      IMesh* parent_mesh = mesh_mng->findMeshHandle(m_internal_variables->m_parent_mesh_name()).mesh();
       m_parent_family = parent_mesh->findItemFamily(m_internal_variables->m_parent_family_name(),true); // true=> fatal si non trouvé
     }
     m_parent_family_depth = m_internal_variables->m_parent_family_depth();
@@ -1072,7 +1075,7 @@ readFromDump()
                   ("Incompatible child mesh/family sizes"));
     Integer child_count = m_internal_variables->m_child_families_name.size();
     for(Integer i=0;i<child_count;++i) {
-      IMesh * child_mesh = subDomain()->findMesh(m_internal_variables->m_child_meshes_name[i]);
+      IMesh* child_mesh = mesh_mng->findMeshHandle(m_internal_variables->m_child_meshes_name[i]).mesh();
       IItemFamily * child_family = child_mesh->findItemFamily(m_internal_variables->m_child_families_name[i],true); // true=> fatal si non trouvé
       m_child_families.add(dynamic_cast<ItemFamily*>(child_family));
     }
@@ -2172,17 +2175,18 @@ removeItems2(ItemDataList& item_data_list)
   }
   // 2-Propagates item removal to child families
   Int64ArrayView removed_item_lids = item_data.itemInfos().view(); // Todo change ItemData to store removed item lids in Int32
-  for (auto removed_item_lid : removed_item_lids) {
+  for (auto removed_item_lid_int64 : removed_item_lids) {
+    Int32 removed_item_lid = CheckedConvert::toInt32(removed_item_lid_int64);
     index = 0;
     for (auto child_connectivity : child_connectivities) {
       ConnectivityItemVector child_con_accessor(child_connectivity);
       ENUMERATE_ITEM(connected_item, child_con_accessor.connectedItems(ItemLocalId(removed_item_lid))) {
         if (!this->itemsInternal()[removed_item_lid]->isDetached()) {// test necessary when doing removeDetached (the relations are already deleted).
-            child_families_to_current_family[index]->removeConnectedItem(ItemLocalId(connected_item),ItemLocalId(removed_item_lid));
+          child_families_to_current_family[index]->removeConnectedItem(ItemLocalId(connected_item),ItemLocalId(removed_item_lid));
         }
         // Check if connected item is to remove
         if (! child_families_has_extra_parent_properties[index][connected_item] && child_families_to_current_family[index]->nbConnectedItem(ItemLocalId(connected_item)) == 0) {
-            item_data_list[child_connectivity->targetFamily()->itemKind()].itemInfos().add((Int64) connected_item.localId());
+          item_data_list[child_connectivity->targetFamily()->itemKind()].itemInfos().add((Int64) connected_item.localId());
         }
       }
       index++;
@@ -2190,7 +2194,8 @@ removeItems2(ItemDataList& item_data_list)
   }
   // => merge this loop with previous one ?
   // 3-1 Remove relations for child relations
-  for (auto removed_item_lid : removed_item_lids) {
+  for (auto removed_item_lid_int64 : removed_item_lids) {
+    Int32 removed_item_lid = CheckedConvert::toInt32(removed_item_lid_int64);
     for (auto child_relation : m_mesh->itemFamilyNetwork()->getChildRelations(this)) {
       ConnectivityItemVector connectivity_accessor(child_relation);
       ENUMERATE_ITEM(connected_item, connectivity_accessor.connectedItems(ItemLocalId(removed_item_lid))) {
@@ -2201,7 +2206,8 @@ removeItems2(ItemDataList& item_data_list)
   // 3-2 Remove relations for parent relations
   ItemScalarProperty<bool> is_removed_item;
   is_removed_item.resize(this,false);
-  for (auto removed_item_lid : removed_item_lids) {
+  for (auto removed_item_lid_int64 : removed_item_lids) {
+    Int32 removed_item_lid = CheckedConvert::toInt32(removed_item_lid_int64);
     is_removed_item[*(this->itemsInternal()[removed_item_lid])] = true;
   }
   for (auto parent_relation : m_mesh->itemFamilyNetwork()->getParentRelations(this)) {
@@ -2215,7 +2221,8 @@ removeItems2(ItemDataList& item_data_list)
     }
   }
   // 4-Remove items. Child items will be removed by an automatic call of removeItems2 on their family...
-  for (auto removed_item_lid : removed_item_lids) {
+  for (auto removed_item_lid_int64 : removed_item_lids) {
+    Int32 removed_item_lid = CheckedConvert::toInt32(removed_item_lid_int64);
     ItemInternal* removed_item = m_infos.itemInternal(removed_item_lid);
     if (removed_item->isDetached()) {
       m_infos.removeDetachedOne(removed_item);
