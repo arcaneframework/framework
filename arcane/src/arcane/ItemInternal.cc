@@ -25,14 +25,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Détermine dynamiquement si on récupère le nombre d'éléments via les
-// anciennes ou nouvelles connectivités
-#define A_NB_INTERNAL_ACCESS_DYNAMIC(method) \
-  (m_shared_info->hasLegacyConnectivity() ? _ ## method ## Old() : _ ## method ## V2())
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 namespace Arcane
 {
 
@@ -40,15 +32,6 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 ItemInternalConnectivityList ItemInternalConnectivityList::nullInstance;
-
-#ifndef ARCANE_INLINE_ITEMINTERNAL_CONNECTIVITY_ACCESS
-Integer ItemInternal::nbNode() const { return A_NB_INTERNAL_ACCESS_DYNAMIC(nbNode); }
-Integer ItemInternal::nbEdge() const { return A_NB_INTERNAL_ACCESS_DYNAMIC(nbEdge); }
-Integer ItemInternal::nbFace() const { return A_NB_INTERNAL_ACCESS_DYNAMIC(nbFace); }
-Integer ItemInternal::nbCell() const { return A_NB_INTERNAL_ACCESS_DYNAMIC(nbCell); }
-Int32 ItemInternal::nbHParent() const { return A_NB_INTERNAL_ACCESS_DYNAMIC(nbHParent); }
-Int32 ItemInternal::nbHChildren() const { return A_NB_INTERNAL_ACCESS_DYNAMIC(nbHChildren); }
-#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -135,7 +118,7 @@ topHParent() const
 {
   const ItemInternal* top_it = this;
   while (top_it->nbHParent())
-    top_it = top_it->A_INTERNAL_ACCESS(hParent)(0);
+    top_it = top_it->internalHParent(0);
   ARCANE_ASSERT((!top_it->null()),("topHParent Problem!"));
   ARCANE_ASSERT((top_it->level() == 0),("topHParent Problem"));
   return top_it;
@@ -149,7 +132,7 @@ topHParent()
 {
   ItemInternal* top_it = this;
   while (top_it->nbHParent())
-    top_it = top_it->A_INTERNAL_ACCESS(hParent)(0);
+    top_it = top_it->internalHParent(0);
   ARCANE_ASSERT((!top_it->null()),("topHParent Problem!"));
   ARCANE_ASSERT((top_it->level() == 0),("topHParent Problem"));
   return top_it;
@@ -163,7 +146,7 @@ whichChildAmI(const ItemInternal *iitem) const
 {
   ARCANE_ASSERT((this->hasHChildren()), ("item has non-child!"));
   for (Integer c=0; c<this->nbHChildren(); c++)
-    if (this->A_INTERNAL_ACCESS(hChild)(c) == iitem)
+    if (this->internalHChild(c) == iitem)
       return c;
   return -1;
 }
@@ -175,7 +158,7 @@ activeCells(Int32Array& local_ids) const
 {
 	const Integer nbcell = this->nbCell();
 	for(Integer icell = 0 ; icell < nbcell ; ++icell) {
-    ItemInternal* cell   = this->A_INTERNAL_ACCESS(cell)(icell);
+    ItemInternal* cell   = this->internalCell(icell);
     if (cell->isActive()){
       const Int32 local_id= cell->localId();
       local_ids.add(local_id);
@@ -192,7 +175,7 @@ activeFaces(Int32Array& local_ids) const
 {
 	const Integer nbface = this->nbFace();
 	for(Integer iface = 0 ; iface < nbface ; ++iface) {
-		ItemInternal* face   = this->A_INTERNAL_ACCESS(face)(iface);
+		ItemInternal* face   = this->internalFace(iface);
 		if (!face->isBoundary()){
 			ItemInternal* bcell = face->backCell();
       ItemInternal* fcell = face->frontCell();
@@ -234,103 +217,12 @@ _useTopologyModifier() const
 /*---------------------------------------------------------------------------*/
 
 void ItemInternal::
-_setNodeWithLocalId(Integer aindex,Int32 new_local_id)
-{
-  if (_useTopologyModifier()){
-    auto x = m_shared_info->itemFamily()->_topologyModifier();
-    x->replaceNode(ItemLocalId(m_local_id),aindex,ItemLocalId(new_local_id));
-  }
-  else
-    _setNode(aindex,new_local_id);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemInternal::
-_setEdgeWithLocalId(Integer aindex,Int32 new_local_id)
-{
-  if (_useTopologyModifier()){
-    auto x = m_shared_info->itemFamily()->_topologyModifier();
-    x->replaceEdge(ItemLocalId(m_local_id),aindex,ItemLocalId(new_local_id));
-  }
-  else
-    _setEdge(aindex,new_local_id);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemInternal::
-_setFaceWithLocalId(Integer aindex,Int32 new_local_id)
-{
-  if (_useTopologyModifier()){
-    auto x = m_shared_info->itemFamily()->_topologyModifier();
-    x->replaceFace(ItemLocalId(m_local_id),aindex,ItemLocalId(new_local_id));
-  }
-  else
-    _setFace(aindex,new_local_id);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemInternal::
-_setCellWithLocalId(Integer aindex,Int32 new_local_id)
-{
-  if (_useTopologyModifier()){
-    auto x = m_shared_info->itemFamily()->_topologyModifier();
-    x->replaceCell(ItemLocalId(m_local_id),aindex,ItemLocalId(new_local_id));
-  }
-  else{
-    _setCell(aindex,new_local_id);
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemInternal::
-_setHParentWithLocalId(Integer aindex,Int32 new_local_id)
-{
-  if (_useTopologyModifier()){
-    auto x = m_shared_info->itemFamily()->_topologyModifier();
-    x->replaceHParent(ItemLocalId(m_local_id),aindex,ItemLocalId(new_local_id));
-  }
-  else{
-    _setHParent(aindex,new_local_id);
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemInternal::
-_setHChildWithLocalId(Integer aindex,Int32 new_local_id)
-{
-  if (_useTopologyModifier()){
-    auto x = m_shared_info->itemFamily()->_topologyModifier();
-    x->replaceHChild(ItemLocalId(m_local_id),aindex,ItemLocalId(new_local_id));
-  }
-  else{
-    _setHChild(aindex,new_local_id);
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemInternal::
 _setFaceInfos(Int32 cell0,Int32 cell1,Int32 mod_flags)
 {
   Int32 face_flags = flags();
   face_flags &= ~II_InterfaceFlags;
   face_flags |= mod_flags;
   setFlags(face_flags);
-  if (m_shared_info->hasLegacyConnectivity()){
-    _setCell(0,cell0);
-    _setCell(1,cell1);
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -414,84 +306,6 @@ _checkValidConnectivity(ItemInternal* item,Int32 nb_sub_item,
                    " item={3} sub_item_kind={4}",
                    z,ref_lid,new_lid,ItemPrinter(item),sub_item_kind);
   }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemInternal::
-_internalCheckValidConnectivityAccessor(ItemInternalConnectivityList* iicl)
-{
-  if (m_shared_info->hasLegacyConnectivity())
-    return;
-
-  ItemInternal* item = this;
-  ItemLocalId lid(item->localId());
-  Integer nb_sub_node = item->nbNode();
-  if (nb_sub_node!=0)
-    _checkValidConnectivity(item,nb_sub_node,item->_nodesPtr(),
-                            iicl->_nodeLocalIdsV2(lid),
-                            ItemInternalConnectivityList::NODE_IDX);
-  Integer nb_sub_edge = item->nbEdge();
-  if (nb_sub_edge!=0)
-    _checkValidConnectivity(item,nb_sub_edge,item->_edgesPtr(),
-                            iicl->_edgeLocalIdsV2(lid),
-                            ItemInternalConnectivityList::EDGE_IDX);
-  Integer nb_sub_face = item->nbFace();
-  if (nb_sub_face!=0)
-    _checkValidConnectivity(item,nb_sub_face,item->_facesPtr(),
-                            iicl->_faceLocalIdsV2(lid),
-                            ItemInternalConnectivityList::FACE_IDX);
-  Integer nb_sub_cell = item->nbCell();
-  if (nb_sub_cell!=0){
-    _checkValidConnectivity(item,nb_sub_cell,item->_cellsPtr(),
-                            iicl->_cellLocalIdsV2(lid),
-                            ItemInternalConnectivityList::CELL_IDX);
-  }
-  Integer nb_sub_hparent = item->nbHParent();
-  if (nb_sub_hparent!=0){
-    _checkValidConnectivity(item,nb_sub_hparent,item->_hParentPtr(),
-                            iicl->_hParentLocalIdsV2(lid),
-                            ItemInternalConnectivityList::HPARENT_IDX);
-  }
-  Integer nb_sub_hchild = item->nbHChildren();
-  if (nb_sub_hchild!=0){
-    _checkValidConnectivity(item,nb_sub_hchild,item->_hChildPtr(),
-                            iicl->_hChildLocalIdsV2(lid),
-                            ItemInternalConnectivityList::HCHILD_IDX);
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-bool InternalConnectivityInfo::
-hasLegacyConnectivity(InternalConnectivityPolicy p)
-{
-  return p != InternalConnectivityPolicy::NewOnly;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-bool InternalConnectivityInfo::
-hasNewConnectivity(InternalConnectivityPolicy p)
-{
-  return p != InternalConnectivityPolicy::Legacy;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-bool InternalConnectivityInfo::
-useNewConnectivityAccessor(InternalConnectivityPolicy p)
-{
-  return (p == InternalConnectivityPolicy::NewAndLegacy ||
-          p == InternalConnectivityPolicy::NewWithDependenciesAndLegacy ||
-          p == InternalConnectivityPolicy::NewOnly);
 }
 
 /*---------------------------------------------------------------------------*/

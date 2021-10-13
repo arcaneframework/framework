@@ -618,7 +618,7 @@ public:
   void _applyCompactPolicy(const String& timer_name,
                            std::function<void(IItemFamilyCompactPolicy*)> functor);
   void _updateGroupsAfterRemove();
-  void _setConnectivityPolicy();
+  void _printConnectivityPolicy();
 
   // Add a dependency (downward adjacencies only) between two family: ie the source family
   // is built on the target family (ex a cell is build owns its nodes)

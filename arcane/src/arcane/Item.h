@@ -445,15 +445,15 @@ class ARCANE_CORE_EXPORT Node
 
   //! Enumére les arêtes connectées au noeud
   inline EdgeVectorView edges() const
-  { return m_internal-> A_INTERNAL_ACCESS(edges)(); }
+  { return m_internal-> internalEdges(); }
 
   //! Enumére les faces connectées au noeud
   inline FaceVectorView faces() const
-  { return m_internal-> A_INTERNAL_ACCESS(faces)(); }
+  { return m_internal-> internalFaces(); }
 
   //! Enumére les mailles connectées au noeud
   inline CellVectorView cells() const
-  { return m_internal-> A_INTERNAL_ACCESS(cells)(); }
+  { return m_internal-> internalCells(); }
 
 //! AMR
 
@@ -694,7 +694,7 @@ class ARCANE_CORE_EXPORT Face
 
   //! Enumére les mailles connectées à la face
   inline CellVectorView cells() const
-  { return m_internal-> A_INTERNAL_ACCESS(cells)(); }
+  { return m_internal-> internalCells(); }
 
   /*!
    * \brief Indique si la face est au bord du sous-domaine (i.e nbCell()==1)
@@ -780,8 +780,7 @@ class ARCANE_CORE_EXPORT Face
   Edge edge(Integer i) const { return Edge(m_internal->internalEdge(i)); }
 
   //! Enumére les arêtes connectées à la face
-  inline EdgeVectorView edges() const
-  { return m_internal-> A_INTERNAL_ACCESS(edges)(); }
+  inline EdgeVectorView edges() const { return m_internal->internalEdges(); }
 
   //! Nombre d'arêtes de la face
   Integer nbEdge() const { return m_internal->nbEdge(); }

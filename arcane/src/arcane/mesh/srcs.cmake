@@ -1,7 +1,6 @@
 set( ARCANE_SOURCES
   AbstractItemFamilyTopologyModifier.cc
   AbstractItemFamilyTopologyModifier.h
-  CompactIncrementalItemConnectivity.cc
   CompactIncrementalItemConnectivity.h
   CommonItemGroupFilterer.h
   CommonItemGroupFilterer.cc
@@ -45,6 +44,7 @@ set( ARCANE_SOURCES
   ItemsExchangeInfo2.h
   ItemGroupDynamicMeshObserver.cc
   ItemGroupDynamicMeshObserver.h
+  ItemInternalConnectivityIndex.h
   BasicItemPairGroupComputeFunctor.cc
   BasicItemPairGroupComputeFunctor.h
   ItemFamily.cc

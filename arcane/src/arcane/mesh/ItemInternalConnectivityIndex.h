@@ -5,111 +5,91 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamilyCompactPolicy.cc                                  (C) 2000-2016 */
+/* ItemInternalConnectivityIndex.h                             (C) 2000-2021 */
 /*                                                                           */
-/* Politique de compactage des entités.                                      */
+/* Indice d'une famille dans la connectivité accessible via ItemInternal.    */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_MESH_ITEMINTERNALCONNECTIVITYINDEX_H
+#define ARCANE_MESH_ITEMINTERNALCONNECTIVITYINDEX_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IMesh.h"
-#include "arcane/IMeshCompacter.h"
-#include "arcane/ItemFamilyCompactInfos.h"
+#include "arcane/MeshUtils.h"
 
-#include "arcane/mesh/ItemFamilyCompactPolicy.h"
-#include "arcane/mesh/ItemFamily.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
+#include "arcane/mesh/MeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemFamilyCompactPolicy::
-ItemFamilyCompactPolicy(ItemFamily* family)
-: TraceAccessor(family->traceMng())
-, m_family(family)
+namespace Arcane::mesh
 {
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemFamilyCompactPolicy::
-beginCompact(ItemFamilyCompactInfos& compact_infos)
+//! Spécialisation de \a CompactItemItemInternalIndexT pour accéder aux noeuds
+class NodeInternalConnectivityIndex
 {
-  m_family->beginCompactItems(compact_infos);
-}
+ public:
+  static Integer connectivityIndex() { return ItemInternalConnectivityList::NODE_IDX; }
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemFamilyCompactPolicy::
-compactVariablesAndGroups(const ItemFamilyCompactInfos& compact_infos)
+//! Spécialisation de \a CompactItemItemInternalConnectivityIndexT pour accéder aux arêtes
+class EdgeInternalConnectivityIndex
 {
-  m_family->compactVariablesAndGroups(compact_infos);
-}
+ public:
+  static Integer connectivityIndex() { return ItemInternalConnectivityList::EDGE_IDX; }
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemFamilyCompactPolicy::
-endCompact(ItemFamilyCompactInfos& compact_infos)
+//! Spécialisation de \a CompactItemItemInternalConnectivityIndexT pour accéder aux faces
+class FaceInternalConnectivityIndex
 {
-  m_family->finishCompactItems(compact_infos);
-}
+ public:
+  static Integer connectivityIndex() { return ItemInternalConnectivityList::FACE_IDX; }
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemFamilyCompactPolicy::
-compactConnectivityData()
+//! Spécialisation de \a CompactItemItemInternalConnectivityIndexT pour accéder aux mailles
+class CellInternalConnectivityIndex
 {
-  m_family->compactReferences();
-}
+ public:
+  static Integer connectivityIndex() { return ItemInternalConnectivityList::CELL_IDX; }
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IItemFamily* ItemFamilyCompactPolicy::
-family() const
+//! Spécialisation de \a CompactItemItemInternalConnectivityIndexT pour accéder aux HParent
+class HParentInternalConnectivityIndex
 {
-  return m_family;
-}
+ public:
+  static Integer connectivityIndex() { return ItemInternalConnectivityList::HPARENT_IDX; }
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-StandardItemFamilyCompactPolicy::
-StandardItemFamilyCompactPolicy(ItemFamily* family)
-: ItemFamilyCompactPolicy(family)
+//! Spécialisation de \a CompactItemItemInternalConnectivityIndexT pour accéder aux HParent
+class HChildInternalConnectivityIndex
 {
-  IMesh* mesh = family->mesh();
-
-  m_node_family = mesh->nodeFamily();
-  m_edge_family = mesh->edgeFamily();
-  m_face_family = mesh->faceFamily();
-  m_cell_family = mesh->cellFamily();
-}
+ public:
+  static Integer connectivityIndex() { return ItemInternalConnectivityList::HCHILD_IDX; }
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void StandardItemFamilyCompactPolicy::
-updateInternalReferences(IMeshCompacter* compacter)
-{
-}
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+#endif

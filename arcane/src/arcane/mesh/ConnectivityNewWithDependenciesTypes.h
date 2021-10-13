@@ -32,9 +32,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -56,28 +55,28 @@ template <>
 class LegacyConnectivityTraitsT<NodeFamily>
 {
 public:
-  typedef NodeCompactItemConnectivityAccessor type;
+  typedef NodeInternalConnectivityIndex type;
 };
 
 template <>
 class LegacyConnectivityTraitsT<FaceFamily>
 {
 public:
-  typedef FaceCompactItemConnectivityAccessor type;
+  typedef FaceInternalConnectivityIndex type;
 };
 
 template <>
 class LegacyConnectivityTraitsT<EdgeFamily>
 {
 public:
-  typedef EdgeCompactItemConnectivityAccessor type;
+  typedef EdgeInternalConnectivityIndex type;
 };
 
 template <>
 class LegacyConnectivityTraitsT<CellFamily>
 {
 public:
-  typedef CellCompactItemConnectivityAccessor type;
+  typedef CellInternalConnectivityIndex type;
 };
 
 
@@ -85,7 +84,7 @@ template <class SourceFamily, class TargetFamily>
 class ARCANE_MESH_EXPORT LegacyConnectivity
 {
 public:
-  typedef CompactIncrementalItemConnectivityT<typename LegacyConnectivityTraitsT<TargetFamily>::type> type;
+  typedef typename LegacyConnectivityTraitsT<TargetFamily>::type type;
 };
 
 
@@ -321,18 +320,17 @@ private:
     // Code taken from FaceFamily::removeCellFromFace where new and legacy are separated.
     // Here only for new connectivity.
     // This duplication allows to reach the specificity of Cell/Face connectivity through the unique interface removeConnectedItem (instead of removeCellFromFace)
-
     _checkValidSourceTargetItems(face,m_cell_family->itemsInternal()[cell_to_remove_lid]);
 
     Integer nb_cell = nbConnectedItem(ItemLocalId(face));
 
-  #ifdef ARCANE_CHECK
+#ifdef ARCANE_CHECK
     if (face->isSuppressed())
       ARCANE_FATAL("Can not remove cell from destroyed face={0}",ItemPrinter(face));
     if (nb_cell==0)
       ARCANE_FATAL("Can not remove cell lid={0} from face uid={1} with no cell connected",
                    cell_to_remove_lid, face->uniqueId());
-  #endif /* ARCANE_CHECK */
+#endif /* ARCANE_CHECK */
 
     Integer nb_cell_after = nb_cell-1;
     const Int32 null_cell_lid = NULL_ITEM_LOCAL_ID;
@@ -369,154 +367,8 @@ public:
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Surcharge du type Legacy CompactIncrementalItemConnectivity pour gérer les connectivités Face -> BackCell et FrontCell.
- */
-class ARCANE_MESH_EXPORT FaceToCellCompactIncrementalConnectivity
-: public FaceToCellConnectivity
-, public CompactIncrementalItemConnectivityT<CellCompactItemConnectivityAccessor>
-{
-public:
-  FaceToCellCompactIncrementalConnectivity(ItemFamily* source_family,
-                                           IItemFamily* target_family,
-                                           const String& aname)
-    : FaceToCellConnectivity(source_family,target_family)
-    , CompactIncrementalItemConnectivityT<CellCompactItemConnectivityAccessor>(source_family,target_family,aname){}
 
-  void addConnectedItem(ItemLocalId source_item,ItemLocalId target_item) override
-  {
-    if (isFrontCell(source_item,target_item))
-      _addFrontCellToFace(m_face_family->itemsInternal()[source_item.localId()],m_cell_family->itemsInternal()[target_item.localId()]);
-    else
-      _addBackCellToFace(m_face_family->itemsInternal()[source_item.localId()],m_cell_family->itemsInternal()[target_item.localId()]);
-  }
-
-  void removeConnectedItem(ItemLocalId source_item,ItemLocalId target_item) override
-  {
-    _removeConnectedItem(m_face_family->itemsInternal()[source_item.localId()],target_item);
-  }
-
-private:
-
-  void _addFrontCellToFace(ItemInternal* face, ItemInternal* cell){
-    _checkValidSourceTargetItems(face,cell);
-
-    Integer nb_cell = face->nbCell();
-
-    // SDP: les tests suivants sont imcompatibles avec le raffinement
-    // par couches
-    bool check_orientation = true;
-    if (check_orientation){
-      ItemInternal* current_cell = face->frontCell();
-      if (face->flags() & ItemInternal::II_HasFrontCell){
-        ARCANE_FATAL("Face already having a front cell."
-                     " This is most probably due to the fact that the face"
-                     " is connected to a reverse cell with a negative volume."
-                     " Face={0}. new_cell={1} current_cell={2}",face->uniqueId().asInt64(),
-                     cell->uniqueId().asInt64(),current_cell->uniqueId().asInt64()); // FullItemPrinter cannot be used here, the connectivities are not entirely set;
-      }
-    }
-
-    if (nb_cell>=2)
-      ARCANE_FATAL("face '{0}' already has two cells",face->uniqueId().asInt64());
-
-    CellCompactItemConnectivityAccessor::updateSharedInfoAdded(m_true_source_family,face,1);
-
-    // Si on a déjà une maille, il s'agit de la back cell.
-    Int32 back_cell_lid = (nb_cell==1) ? face->cellLocalId(0) : NULL_ITEM_LOCAL_ID;
-    face->_setFaceBackAndFrontCells(back_cell_lid,cell->localId());
-
-  }
-  void _addBackCellToFace(ItemInternal* face, ItemInternal* cell){
-    _checkValidSourceTargetItems(face,cell);
-
-    ItemSharedInfo* isi = face->sharedInfo();
-    Integer nb_cell = isi->nbCell();
-
-    bool check_orientation = true;
-    // SDP: les tests suivants sont imcompatibles avec le raffinement
-    // par couches
-    if (check_orientation){
-      ItemInternal* current_cell = face->backCell();
-      if (face->flags() & ItemInternal::II_HasBackCell){
-        ARCANE_FATAL("Face already having a back cell."
-            " This is most probably due to the fact that the face"
-            " is connected to a reverse cell with a negative volume.",
-            " Face={0}. new_cell={1} current_cell={2}",face->uniqueId().asInt64(),
-            cell->uniqueId().asInt64(),current_cell->uniqueId().asInt64()); // FullItemPrinter cannot be used here, the connectivities are not entirely set
-      }
-    }
-
-    if (nb_cell>=2)
-      ARCANE_FATAL("face '{0}' already has two cells",face->uniqueId().asInt64());
-
-    CellCompactItemConnectivityAccessor::updateSharedInfoAdded(m_true_source_family,face,1);
-
-
-    // Si on a déjà une maille, il s'agit de la front cell.
-    Int32 front_cell_lid = (nb_cell==1) ? face->cellLocalId(0) : NULL_ITEM_LOCAL_ID;
-    face->_setFaceBackAndFrontCells(cell->localId(),front_cell_lid);
-  }
-
-  void _removeConnectedItem(ItemInternal* face,ItemLocalId cell_to_remove_lid)
-  {
-    // Code taken from FaceFamily::removeCellFromFace where new and legacy are separated.
-    // Here only for legacy connectivity.
-    // This duplication allows to reach the specificity of Cell/Face connectivity through the unique interface removeConnectedItem (instead of removeCellFromFace)
-
-    _checkValidSourceTargetItems(face,m_cell_family->itemsInternal()[cell_to_remove_lid]);
-
-    Integer nb_cell = face->nbCell(); // use legacy accessor
-
-  #ifdef ARCANE_CHECK
-    if (face->isSuppressed())
-      ARCANE_FATAL("Can not remove cell from destroyed face={0}",ItemPrinter(face));
-    if (nb_cell==0)
-      ARCANE_FATAL("Can not remove cell lid={0} from face uid={1} with no cell connected",
-                   cell_to_remove_lid, face->uniqueId());
-  #endif /* ARCANE_CHECK */
-
-    Integer nb_cell_after = nb_cell-1;
-    const Int32 null_cell_lid = NULL_ITEM_LOCAL_ID;
-    //! AMR : todo later (go back to FaceFamily::removeCellFromFace)
-
-    // OFF AMR
-    if (nb_cell_after!=0){
-      Int32 cell0 = face->_cellLocalIdOld(0);// use legacy accessor
-      Int32 cell1 = face->_cellLocalIdOld(1);// use legacy accessor
-      // On avait obligatoirement deux mailles connectées avant,
-      // donc la back_cell est la maille 0, la front cell la maille 1
-      if (cell0==cell_to_remove_lid){
-        // Reste la front cell
-        face->_setFaceBackAndFrontCells(null_cell_lid,cell1);// todo sdc check this set does the remove...
-      }
-      else{
-        // Reste la back cell
-        face->_setFaceBackAndFrontCells(cell0,null_cell_lid);// todo sdc check this set does the remove...
-      }
-    }
-    else{
-        face->_setFaceBackAndFrontCells(null_cell_lid,null_cell_lid);// todo sdc check this set does the remove...
-    }
-
-    CellCompactItemConnectivityAccessor::updateSharedInfoRemoved(m_true_source_family,face,1);
-  }
-};
-
-template<>
-class ARCANE_MESH_EXPORT LegacyConnectivity<FaceFamily,CellFamily>
-{
-public:
-  typedef FaceToCellCompactIncrementalConnectivity type;
-};
-
-
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

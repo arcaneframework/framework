@@ -92,8 +92,6 @@ class ItemSharedInfoList
   //! Vérifie si les structures internes de l'instance sont valides
   void checkValid();
 
-  ISubDomain* subDomain();
-
   Integer nbItemSharedInfo() const { return m_nb_item_shared_info; }
 
   void prepareForDump();
@@ -112,31 +110,14 @@ class ItemSharedInfoList
   Integer maxLocalNodePerItemType();
   Integer maxLocalEdgePerItemType();
   Integer maxLocalFacePerItemType();
+
  public:
-  ItemSharedInfo* findSharedInfo(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell)
-  {
-    return findSharedInfo(type,nb_edge,nb_face,nb_cell,nb_edge,nb_face,nb_cell);
-  }
-  ItemSharedInfo* findSharedInfo(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,
-                                 Integer nb_cell,Integer edge_allocated,
-                                 Integer face_allocated,Integer cell_allocated);
-  //! AMR
-  ItemSharedInfo* findSharedInfo(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
-                                 Integer nb_hParent,Integer nb_hChildren)
-  {
-    return findSharedInfo(type,nb_edge,nb_face,nb_cell,nb_hParent,nb_hChildren,
-                          nb_edge,nb_face,nb_cell,nb_hParent,nb_hChildren);
-  }
-  ItemSharedInfo* findSharedInfo(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
-                                 Integer nb_hParent,Integer nb_hChildren,
-                                 Integer edge_allocated,Integer face_allocated,Integer cell_allocated,
-                                 Integer hParent_allocated, Integer hChild_allocated);
+
+  ItemSharedInfo* findSharedInfo(ItemTypeInfo* type);
 
  public:
 
   void setSharedInfosPtr(Int32* ptr);
-  void setHasLegacyConnectivity(bool v) { m_has_legacy_connectivity = v; }
-  bool hasLegacyConnectivity() const { return m_has_legacy_connectivity; }
 
  private:
 
@@ -164,7 +145,6 @@ class ItemSharedInfoList
  private:
 
   ItemFamily* m_family;
-  ISubDomain* m_sub_domain; //!< Sous-domaine associé
   Integer m_nb_item_shared_info; //!< Nombre d'objets alloués
   eItemKind m_item_kind;
   UniqueArray<ItemSharedInfo*> m_item_shared_infos;
@@ -174,7 +154,6 @@ class ItemSharedInfoList
   Variables* m_variables;
   bool m_list_changed;
   bool m_connectivity_info_changed;
-  bool m_has_legacy_connectivity = true;
   Integer m_max_node_per_item;
   Integer m_max_edge_per_item;
   Integer m_max_face_per_item;

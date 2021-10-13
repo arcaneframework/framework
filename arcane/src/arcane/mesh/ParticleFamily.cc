@@ -42,37 +42,6 @@ ARCANE_MESH_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Implémentation de la connectivité noeud->face.
- */
-class ParticleCellCompactIncrementalItemConnectivity
-: public CellCompactIncrementalItemConnectivity
-{
- public:
-  ParticleCellCompactIncrementalItemConnectivity(ItemFamily* source_family,
-                                                 IItemFamily* target_family,
-                                                 const String& aname)
-  : CellCompactIncrementalItemConnectivity(source_family,target_family,aname){}
- public:
-  void addConnectedItem(ItemLocalId item_lid,ItemLocalId new_lid) final
-  {
-    ItemInternal* item = m_true_source_family.itemInternal(item_lid);
-    // Il y a juste à positionner la maille car le ItemSharedInfo est
-    // correctement positionné à la création.
-    item->_setCell(0,new_lid);
-  }
-  void removeConnectedItem(ItemLocalId item_lid,ItemLocalId lid_to_remove) final
-  {
-    ARCANE_UNUSED(item_lid);
-    ARCANE_UNUSED(lid_to_remove);
-    // On ne doit jamais appeler cette méthode car on supprime jamais de
-    // mailles d'une particule.
-    throw NotSupportedException(A_FUNCINFO);
-  }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 ParticleFamily::
 ParticleFamily(IMesh* mesh,const String& name)
@@ -486,7 +455,7 @@ hasUniqueIdMap() const
 void ParticleFamily::
 _setSharedInfo()
 {
-  m_particle_shared_info = _findSharedInfo(m_particle_type_info,0,0,1);
+  m_particle_shared_info = _findSharedInfo(m_particle_type_info);
 }
 
 /*---------------------------------------------------------------------------*/

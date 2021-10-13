@@ -275,8 +275,7 @@ class IItemOperationByBasicType;
  * Cette énumération sert à faire la transition entre les connectivités
  * historiques et la nouvelle implémentation.
  *
- * Si la macro ARCANE_USE_LEGACY_CONNECTIVITY est définie, seules les
- * valeurs Legacy et LegacyAndAllocAccessor sont valides.
+ * Actuellement, seule la valeur InternalConnectivityPolicy::NewOnly est utilisée
  */
 enum class InternalConnectivityPolicy
 {
@@ -286,6 +285,7 @@ enum class InternalConnectivityPolicy
    * Ce mode est identique au mode d'avant l'incorporation des nouvelles
    * connectivités. Son empreinte mémoire est la plus faible de tous les modes
    * disponibles.
+   * \warning Ce mode n'est plus opérationnel.
    */
   Legacy,
   /*!
@@ -303,12 +303,14 @@ enum class InternalConnectivityPolicy
   /*!
    * \brief Alloue les anciennes et les nouvelles connectivités
    * et utilise les nouvelles via les nouveaux accesseurs dans ItemInternal.
+   * \warning Ce mode n'est plus opérationnel.
    */
   NewAndLegacy,
   /*!
    * \brief Alloue les anciennes et les nouvelles connectivités
    * utilise les nouvelles via les nouveaux accesseurs dans ItemInternal
    * et s'appuie sur un graphe de dépendances des familles (Familles,Connectivités).
+   * \warning Ce mode n'est plus opérationnel.
    */
   NewWithDependenciesAndLegacy,
   /*!
@@ -327,14 +329,14 @@ class ARCANE_CORE_EXPORT InternalConnectivityInfo
 {
  public:
   //! Vrai si les anciennes connectivités sont actives
-  static bool hasLegacyConnectivity(InternalConnectivityPolicy p);
+  static constexpr bool hasLegacyConnectivity(InternalConnectivityPolicy) { return false; }
   //! Vrai si les nouvelles connectivités sont actives
-  static bool hasNewConnectivity(InternalConnectivityPolicy p);
+  static constexpr bool hasNewConnectivity(InternalConnectivityPolicy) { return true; }
   /*!
    * \brief Indique si on utilise les nouvelles connectivités pour accéder
    * aux entités dans ItemInternal.
    */
-  static bool useNewConnectivityAccessor(InternalConnectivityPolicy p);
+  static constexpr bool useNewConnectivityAccessor(InternalConnectivityPolicy) { return true; }
 };
 
 /*---------------------------------------------------------------------------*/
