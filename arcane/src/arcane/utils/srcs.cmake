@@ -24,6 +24,8 @@ set(ARCANE_SOURCES
   Convert.h
   ConcurrencyUtils.cc
   ConcurrencyUtils.h
+  CppNameDemangler.h
+  CppNameDemangler.cc
   CStringUtils.cc
   CStringUtils.h
   DataVector1D.cc
