@@ -67,7 +67,7 @@
 
     <simple name="ghost-layer-builder-version"
             type="int32"
-            default = "2"
+            default = "3"
             >
       <description>
         Version du gestionnaire de mailles fantôme à utiliser.
