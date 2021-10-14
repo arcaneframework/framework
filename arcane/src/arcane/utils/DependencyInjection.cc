@@ -379,9 +379,9 @@ _iterateInstances(const std::type_info& t_info, const String& instance_name,
 /*---------------------------------------------------------------------------*/
 
 void Injector::
-_doError(const String& message)
+_doError(const TraceInfo& ti, const String& message)
 {
-  ARCANE_FATAL(message);
+  ARCANE_FATAL("Function: {0} : {1}", ti, message);
 }
 
 /*---------------------------------------------------------------------------*/

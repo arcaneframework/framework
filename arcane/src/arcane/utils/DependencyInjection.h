@@ -30,7 +30,6 @@
 #include <typeinfo>
 
 // TODO: Améliorer les messages d'erreurs en cas d'échec de l'injection
-// TOOD: Mettre les méthodes qui lancent les exception dans 'DependencyInjection.cc'
 // TODO: Ajouter méthodes pour afficher le type en cas d'erreur (utiliser A_FUNC_INFO)
 // TODO: Ajouter mode verbose
 // TODO: Supporter plusieurs constructeurs et ne pas échouer si le premier
@@ -132,7 +131,13 @@ class TypeInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Informations sur les types d'une fabrique.
+ *
+ * Cela permet d'afficher par exemple en cas d'erreur les informations sur
+ * l'interface concernée, le type concret qu'on souhaité créer et les
+ * paramètres du constructeur.
+ */
 class ARCANE_UTILS_EXPORT ConcreteFactoryTypeInfo
 {
  private:
@@ -427,30 +432,6 @@ class IConcreteFactory
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Fabrique pour le service \a ServiceType pour l'interface \a InterfaceType.
- */
-template <typename ServiceType, typename InterfaceType>
-class ConcreteFactory
-: public IConcreteFactory<InterfaceType>
-{
- public:
-  Ref<InterfaceType> createReference(Injector& injector) override
-  {
-    ServiceType* st = new ServiceType(injector);
-    return makeRef<InterfaceType>(st);
-  }
-  ConcreteFactoryTypeInfo concreteFactoryInfo() const override
-  {
-    return ConcreteFactoryTypeInfo::create<InterfaceType, ServiceType, std::tuple<>>();
-  }
-  // Pour indiquer qu'on n'utilise pas le nombre d'arguments, on met (-1).
-  Int32 nbConstructorArg() const override { return -1; }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \internal
  * \brief Informations pour une fabrique.
  */
 class ARCANE_UTILS_EXPORT FactoryInfo
@@ -534,47 +515,6 @@ class ARCANE_UTILS_EXPORT GlobalRegisterer
   //! Positionne le service suivant
   /*! Utilisé en interne pour construire la chaine de service */
   void _setNextService(GlobalRegisterer* s) { m_next = s; }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Classe permettant d'enregistrer une fabrique pour un service
- * implémentant l'interface \a InterfaceType.
- */
-template <typename InterfaceType>
-class ServiceInterfaceRegisterer
-{
- public:
-  static constexpr bool isConstructor() { return false; }
-
-  typedef InterfaceType Interface;
-
-  explicit ServiceInterfaceRegisterer(const char* name)
-  : m_name(name)
-  , m_namespace_name(nullptr)
-  {
-  }
-
-  ServiceInterfaceRegisterer(const char* namespace_name, const char* name)
-  : m_name(name)
-  , m_namespace_name(namespace_name)
-  {
-  }
-
- public:
-  //! Enregistre dans \a si une fabrique pour créer une instance du service \a ServiceType
-  template <typename ServiceType> void
-  registerToFactoryInfo(FactoryInfo* si) const
-  {
-    IConcreteFactory<InterfaceType>* factory = new ConcreteFactory<ServiceType, InterfaceType>();
-    si->addFactory(makeRef<IInstanceFactory>(new InstanceFactory<InterfaceType>(si, factory)));
-  }
-
- private:
-  const char* m_name;
-  const char* m_namespace_name;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -716,7 +656,7 @@ class ARCANE_UTILS_EXPORT Injector
     if (instance.get())
       return instance;
     // TODO: améliorer le message
-    _doError("Can not create instance");
+    _doError(A_FUNCINFO, "Can not create instance");
   }
 
   String printFactories() const;
@@ -778,9 +718,9 @@ class ARCANE_UTILS_EXPORT Injector
     _iterateInstances(typeid(Type), instance_name, &ff);
     if (t)
       return t->instance();
-    _doError("Can not find value for type");
+    _doError(A_FUNCINFO, "Can not find value for type");
   }
-  [[noreturn]] void _doError(const String& message);
+  [[noreturn]] void _doError(const TraceInfo& ti, const String& message);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -813,18 +753,14 @@ class ConstructorRegisterer
  public:
   using ArgsType = std::tuple<Args...>;
 
-  static constexpr bool isConstructor()
-  {
-    return true;
-  }
-
   ConstructorRegisterer() {}
 
+  // Permet de récupérer via l'injecteur \a i le I-ème argument du tuple.
   template <std::size_t I>
   static auto _get(Injector& i) -> std::tuple_element_t<I, ArgsType>
   {
     using SelectedType = std::tuple_element_t<I, ArgsType>;
-    std::cout << "RETURN _GET(I=" << I << ")\n";
+    //std::cout << "RETURN _GET(I=" << I << ")\n";
     return i.get<SelectedType>();
   }
 
@@ -855,7 +791,7 @@ class ConstructorRegisterer
  * via le constructeur \a ConstructorType.
  */
 template <typename InterfaceType, typename ConcreteType, typename ConstructorType>
-class Concrete3Factory
+class ConcreteFactory
 : public IConcreteFactory<InterfaceType>
 {
   using Args = typename ConstructorType::ArgsType;
@@ -886,8 +822,8 @@ class Concrete3Factory
   {
     ConcreteType* st = std::apply([](auto&&... args) -> ConcreteType* { return new ConcreteType(args...); }, tuple_args);
     return st;
-    }
-  };
+  }
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -918,7 +854,7 @@ class InterfaceListRegisterer
   void
   _registerFactory(FactoryInfo* fi)
   {
-    auto* factory = new Concrete3Factory<InterfaceType, ConcreteType, ConstructorType>();
+    auto* factory = new ConcreteFactory<InterfaceType, ConcreteType, ConstructorType>();
     fi->addFactory(makeRef<IInstanceFactory>(new InstanceFactory<InterfaceType>(fi, factory)));
     // Applique récursivement pour les autres interfaces si nécessaire
     if constexpr (sizeof...(OtherInterfaces) > 0)
@@ -930,81 +866,15 @@ class InterfaceListRegisterer
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- */
-template <typename ServiceType, typename ConstructorType>
-class Concrete2Factory
-{
-  using Args = typename ConstructorType::ArgsType;
-
- public:
-  ServiceType* createFromInjector(Injector& i)
-  {
-    ConstructorType ct;
-    auto x = ct.createTuple(i);
-    return create(x);
-  }
-
-  ServiceType* create(const Args& tuple_args)
-  {
-    ServiceType* st = std::apply([](auto&&... args) -> ServiceType* { return new ServiceType(args...); }, tuple_args);
-    return st;
-  }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Classe permettant de créer et d'enregistrer les fabriques pour un service.
- */
-template <typename ServiceType>
-class ServiceAllInterfaceRegisterer
-{
- private:
-  //! Surcharge pour 1 interface
-  template <typename InterfaceType> static void
-  _create(FactoryInfo* si, const InterfaceType& i1)
-  {
-    if constexpr (InterfaceType::isConstructor()) {
-      Concrete2Factory<ServiceType, InterfaceType> c2f;
-      ARCANE_UNUSED(si);
-      ARCANE_UNUSED(c2f);
-    }
-    else
-      i1.template registerToFactoryInfo<ServiceType>(si);
-  }
-
-  //! Surcharge pour 2 interfaces ou plus
-  template <typename I1, typename I2, typename... OtherInterfaces>
-  static void _create(FactoryInfo* si, const I1& i1, const I2& i2, const OtherInterfaces&... args)
-  {
-    _create<I1>(si, i1);
-    // Applique la récursivité sur les types restants
-    _create<I2, OtherInterfaces...>(si, i2, args...);
-  }
-
- public:
-  //! Enregistre dans le service les fabriques pour les interfacs \a Interfaces
-  template <typename... Interfaces> static void
-  registerProviderInfo(FactoryInfo* si, const Interfaces&... args)
-  {
-    //si->setSingletonFactory(new Internal::SingletonServiceFactory<ServiceType,typename Interfaces::Interface ... >(si));
-    _create(si, args...);
-  }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \a ServiceType type de l'instance à créér
- * \a InterfaceList listes des interfaces qu'implémente \a ServiceType
+ * \brief Classe permettant d'enregistrer des constructeurs pour créer un
+ * type \a ConcreteType implémentant les interfaces de \a InterfaceList (qui
+ * doit être du type InterfaceListRegisterer).
  */
 template <typename ConcreteType, typename InterfaceList>
 class InjectionRegisterer
 {
  public:
-  //! Enregistre dans le service les fabriques correspondentesd aux constructeurs \a Constructors
+  //! Enregistre dans \a si les fabriques correspondentes aux constructeurs \a Constructors
   template <typename... Constructors> void
   registerProviderInfo(FactoryInfo* si, const Constructors&... args)
   {
@@ -1047,31 +917,12 @@ class InjectionRegisterer
 #define ARCANE_DI_EMPTY_CONSTRUCTOR(...) \
   ::Arcane::DependencyInjection::impl::ConstructorRegisterer()
 
-#define ARCANE_DI_SERVICE_INTERFACE(ainterface) \
-  ::Arcane::DependencyInjection::impl::ServiceInterfaceRegisterer<ainterface>(#ainterface)
-
-#define ARCANE_DI_SERVICE_INTERFACE_NS(ainterface_ns, ainterface) \
-  ::Arcane::DependencyInjection::impl::ServiceInterfaceRegisterer<ainterface_ns ::ainterface>(#ainterface_ns, #ainterface)
-
 // TODO: garantir au moins une interface
 
 #define ARCANE_DI_INTERFACES(...) \
   ::Arcane::DependencyInjection::impl::InterfaceListRegisterer<__VA_ARGS__>
 
-#define ARCANE_DI_REGISTER_PROVIDER(t_class, t_provider_property, ...) \
-  namespace \
-  { \
-    Arcane::DependencyInjection::impl::FactoryInfo* \
-    ARCANE_JOIN_WITH_LINE(arcaneCreateDependencyInjectionProviderInfo##t_class)(const Arcane::DependencyInjection::ProviderProperty& property) \
-    { \
-      auto* si = Arcane::DependencyInjection::impl::FactoryInfo::create(property, __FILE__, __LINE__); \
-      Arcane::DependencyInjection::impl::ServiceAllInterfaceRegisterer<t_class>::registerProviderInfo(si, __VA_ARGS__); \
-      return si; \
-    } \
-  } \
-  Arcane::DependencyInjection::impl::GlobalRegisterer ARCANE_EXPORT ARCANE_JOIN_WITH_LINE(globalServiceRegisterer##aclass)(&ARCANE_JOIN_WITH_LINE(arcaneCreateDependencyInjectionProviderInfo##t_class), t_provider_property)
-
-#define ARCANE_DI_REGISTER_PROVIDER2(t_class, t_provider_property, t_interfaces, ...) \
+#define ARCANE_DI_REGISTER_PROVIDER(t_class, t_provider_property, t_interfaces, ...) \
   namespace \
   { \
     Arcane::DependencyInjection::impl::FactoryInfo* \
