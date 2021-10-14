@@ -915,7 +915,7 @@ class InjectionRegisterer
   ::Arcane::DependencyInjection::impl::ConstructorRegisterer<__VA_ARGS__>()
 
 #define ARCANE_DI_EMPTY_CONSTRUCTOR(...) \
-  ::Arcane::DependencyInjection::impl::ConstructorRegisterer()
+  ::Arcane::DependencyInjection::impl::ConstructorRegisterer<>()
 
 // TODO: garantir au moins une interface
 
