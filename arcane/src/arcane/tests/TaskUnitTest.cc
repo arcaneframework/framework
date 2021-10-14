@@ -32,7 +32,7 @@
 #include <thread>
 
 #ifdef ARCANE_HAS_PACKAGE_TBB
-#include <tbb/tbb.h>
+#include <tbb/spin_mutex.h>
 using namespace tbb;
 #endif
 

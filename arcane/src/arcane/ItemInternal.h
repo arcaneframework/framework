@@ -722,13 +722,9 @@ class ARCANE_CORE_EXPORT ItemInternal
 
  private:
 
-  void _replaceItem(Int32* items,Integer nb_item,Int32 old_local_id,
-                    Int32 new_local_id,eItemKind item_kind);
   void _checkUniqueId(Int64 new_uid) const;
 
-  inline void _setFaceInfos(Int32 cell0,Int32 cell1,Int32 mod_flags);
-  inline bool _useTopologyModifier() const;
-  inline Integer _getItemIndex(const Int32* items,Integer nb_item,Int32 local_id);
+  inline void _setFaceInfos(Int32 mod_flags);
   inline ItemInternalConnectivityList* _connectivity() const
   {
 #ifdef ARCANE_USE_SHAREDINFO_CONNECTIVITY
@@ -737,9 +733,6 @@ class ARCANE_CORE_EXPORT ItemInternal
     return m_connectivity;
 #endif
   }
- void _checkValidConnectivity(ItemInternal* item,Int32 nb_sub_item,
-                              const Int32* ref_ptr,const Int32* new_ptr,
-                              Int32 sub_item_kind);
 };
 
 /*---------------------------------------------------------------------------*/

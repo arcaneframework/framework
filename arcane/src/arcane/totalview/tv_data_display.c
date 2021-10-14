@@ -159,7 +159,7 @@ marshal_unsigned_body ( char *buffer, size_t len, size_t val, int base,
   char   *my_buffer  = buffer;
   size_t  my_len     = len;
 
-  if ( val < base ){
+  if ( (int)val < base ){
     r = val;
   }
   else{
@@ -183,7 +183,7 @@ marshal_unsigned ( char *buffer, size_t len, size_t val, int base,
 
   if ( 0 == base )
     base = 10;
-  if ( base < base_bound )
+  if ( base < (int)base_bound )
     ret_val = marshal_unsigned_body ( buffer, len, val, base, nbuffer, nlen );
   else
     ret_val = -1;

@@ -95,7 +95,7 @@ public:
   virtual ~DoFFamily() {}
 
 public:
-  ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type, MeshInfos& mesh_info) override
+  ItemInternal* allocOne(Int64 uid,ItemTypeInfo*, MeshInfos&) override
   {
     return _allocDoF(uid);
   }
@@ -106,7 +106,7 @@ public:
   }
 
   // IItemFamilyModifier interface
-  ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type,MeshInfos& mesh_info, bool& is_alloc) override
+  ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo*,MeshInfos&, bool& is_alloc) override
   {
     auto dof = _findOrAllocDoF(uid,is_alloc);
     return dof;

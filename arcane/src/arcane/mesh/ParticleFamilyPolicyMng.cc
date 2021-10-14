@@ -60,7 +60,7 @@ class ParticleFamilyCompactPolicy
     if (_checkWantCompact(compact_infos))
       m_family->compactVariablesAndGroups(compact_infos);
   }
-  void updateInternalReferences(IMeshCompacter* compacter) override
+  void updateInternalReferences(IMeshCompacter*) override
   {
   }
   void endCompact(ItemFamilyCompactInfos& compact_infos) override

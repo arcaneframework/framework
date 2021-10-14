@@ -383,14 +383,15 @@ _fillNodeInfo(Integer& nb_node, Integer nb_face,Int64Array& nodes_infos, Int64Co
   std::set<Int64> nodes_set;
   ItemTypeMng* itm = ItemTypeMng::singleton();
   for (Integer i_face = 0; i_face < nb_face; ++i_face) {
-    Integer current_face_nb_node = itm->typeFromId(faces_infos[faces_infos_index++])->nbLocalNode(); // face type
+    Int32 type_id = CheckedConvert::toInt32(faces_infos[faces_infos_index++]);
+    Integer current_face_nb_node = itm->typeFromId(type_id)->nbLocalNode(); // face type
     ++faces_infos_index;//face_uid (unused)
     for (auto node_uid : faces_infos.subConstView(faces_infos_index,current_face_nb_node)) {
         nodes_set.insert(node_uid);
     }
     faces_infos_index+=current_face_nb_node;
   }
-  nb_node = nodes_set.size();
+  nb_node = CheckedConvert::toInteger(nodes_set.size());
   for (auto node_uid : nodes_set) {
     nodes_infos.add(node_uid);
   }
@@ -409,7 +410,7 @@ _fillNodeInfoFromEdge(Integer& nb_node, Integer nb_edge, Int64Array& nodes_infos
     nodes_set.insert(edges_infos[edges_infos_index++]);
     nodes_set.insert(edges_infos[edges_infos_index++]);
   }
-  nb_node = nodes_set.size();
+  nb_node = CheckedConvert::toInteger(nodes_set.size());
   for (auto node_uid : nodes_set) {
     nodes_infos.add(node_uid);
   }
@@ -568,7 +569,8 @@ _fillFaceRelationInfo(ItemData& source_item_relation_data, const ItemData& targe
   for (Integer face_info_index = 0; face_info_index < faces_info.size();) {
     face_uids_and_types.add(faces_info[face_info_index+1]); // face_uid
     face_uids_and_types.add(faces_info[face_info_index]); // face_type
-    face_info_index+=(2+itm->typeFromId(face_uids_and_types.back())->nbLocalNode());// increment and skip info (first & second_node_uid)
+    Integer type_id = CheckedConvert::toInteger(face_uids_and_types.back());
+    face_info_index += (2+itm->typeFromId(type_id)->nbLocalNode());// increment and skip info (first & second_node_uid)
   }
   _fillItemRelationInfo(source_item_relation_data,target_item_dependencies_data,face_uids_and_types, is_source_relation_data_empty);
 }
@@ -656,8 +658,9 @@ _fillItemRelationInfo(ItemData& source_item_relation_data, const ItemData& targe
   auto target_family = target_item_dependencies_data.itemFamily();
   if (! source_family || !target_family) return;
   std::map<Int64, Int64SharedArray> source_to_target_uids;
-  Integer nb_families_connected_to_target = target_dependencies_info[0];
+  Integer nb_families_connected_to_target = CheckedConvert::toInteger(target_dependencies_info[0]);
   Integer target_info_index = 1; // 0 is nb_connected_families
+
   // Fill map source to target traversing target_item_dependencies_data
   for (; target_info_index < target_dependencies_info.size();) {
     target_info_index++; // current target item_type
@@ -665,16 +668,16 @@ _fillItemRelationInfo(ItemData& source_item_relation_data, const ItemData& targe
     for (Integer family_connected_to_target = 0; family_connected_to_target < nb_families_connected_to_target; ++family_connected_to_target) {
       Int64 family_connected_to_target_kind = target_dependencies_info[target_info_index++];// current target item connected family kind
       if (family_connected_to_target_kind != source_family->itemKind()) {//this connection info does not concern source family. Skip
-        Integer nb_non_read_values = target_dependencies_info[target_info_index++]; // nb_connected_item on this other family (/= to source family)
+        Integer nb_non_read_values = CheckedConvert::toInteger(target_dependencies_info[target_info_index++]); // nb_connected_item on this other family (/= to source family)
         target_info_index+= nb_non_read_values;
         continue;
       }
       else {
-        Int64 nb_source_item_connected_to_target_item = target_dependencies_info[target_info_index++];
+        Int32 nb_source_item_connected_to_target_item = CheckedConvert::toInt32(target_dependencies_info[target_info_index++]);
         for (Integer source_item_index = 0; source_item_index < nb_source_item_connected_to_target_item; ++source_item_index) {
           source_to_target_uids[target_dependencies_info[source_item_index+target_info_index]].add(target_item_uid);
         }
-        target_info_index+= nb_source_item_connected_to_target_item;
+        target_info_index += nb_source_item_connected_to_target_item;
       }
     }
   }
@@ -720,7 +723,7 @@ _appendInitializedRelationInfo(Int64Array& source_relation_info, std::map<Int64,
   source_relation_info_wrk_copy.reserve(source_relation_info.size()+approx_relation_size);
   std::set<Int64> treated_items;// To detect eventual source_items not already present in source_relation_info
   Integer source_relation_info_index = 0;
-  Integer nb_connected_family = source_relation_info[source_relation_info_index++];
+  Integer nb_connected_family = CheckedConvert::toInteger(source_relation_info[source_relation_info_index++]);
   source_relation_info_wrk_copy.add(nb_connected_family+1); // adding a new connected family
   for(; source_relation_info_index < source_relation_info.size() ;){
     source_relation_info_wrk_copy.add(source_relation_info[source_relation_info_index++]); // item type
@@ -729,7 +732,7 @@ _appendInitializedRelationInfo(Int64Array& source_relation_info, std::map<Int64,
     treated_items.insert(source_item_uid);
     for (Integer connected_family_index = 0; connected_family_index < nb_connected_family; ++connected_family_index) {
       source_relation_info_wrk_copy.add(source_relation_info[source_relation_info_index++]); // family kind
-      Integer nb_connected_elements = source_relation_info[source_relation_info_index++]; // nb connected elements
+      Integer nb_connected_elements = CheckedConvert::toInteger(source_relation_info[source_relation_info_index++]); // nb connected elements
       source_relation_info_wrk_copy.add(nb_connected_elements);
       source_relation_info_wrk_copy.addRange(source_relation_info.subConstView(source_relation_info_index,nb_connected_elements));
       source_relation_info_index += nb_connected_elements;
@@ -1075,36 +1078,36 @@ addFamilyItems(ItemData& item_data)
   ItemTypeMng* itm = ItemTypeMng::singleton();
   Int64 item_uid;
   Int64ConstArrayView item_infos = item_data.itemInfos();
-  Integer nb_connected_family = item_infos[0];
+  Integer nb_connected_family = CheckedConvert::toInteger(item_infos[0]);
   if(nb_connected_family == 0)
     return ;
   Int64UniqueArray connectivity_info;
   Integer nb_item_info = 0;
   Integer item_index = 0;
   ItemTypeInfo* it = nullptr;
-  for (Integer info_index = 1; info_index < item_data.itemInfos().size();)
-    {
-      Integer item_type_id = (Integer)item_infos[info_index++]; // item_type
-      if (item_type_id != -1) it = itm->typeFromId(item_type_id); // todo : test needed ?
-      item_uid = item_infos[info_index++]; // item_uid
-      Integer item_info_begin_index = info_index;
-      for (Integer connected_family_index = 0;connected_family_index < nb_connected_family; ++connected_family_index)
-        {
-          Integer nb_item_info_increment = 2 + item_infos[info_index+1];
-          nb_item_info += nb_item_info_increment; // family_id , nb_connected_elements
-          info_index+= nb_item_info_increment; // pointing on next family id
-        }
-      ItemInternal* item = m_one_mesh_item_adder->addOneItem2(item_data.itemFamily(),
-                                                             item_data.itemFamilyModifier(),
-                                                             it,
-                                                             item_uid,
-                                                             item_data.itemOwners()[item_index],
-                                                             item_data.subDomainId(),
-                                                             nb_connected_family,
-                                                             item_infos.subView(item_info_begin_index,nb_item_info));
-      if (add_to_items) item_data.itemLids()[item_index++] = item->localId();
-      nb_item_info = 0;
+  for (Integer info_index = 1; info_index < item_data.itemInfos().size();){
+    Integer item_type_id = (Integer)item_infos[info_index++]; // item_type
+    if (item_type_id != -1) it = itm->typeFromId(item_type_id); // todo : test needed ?
+    item_uid = item_infos[info_index++]; // item_uid
+    Integer item_info_begin_index = info_index;
+    for (Integer connected_family_index = 0;connected_family_index < nb_connected_family; ++connected_family_index) {
+      Integer current_index = CheckedConvert::toInteger(item_infos[info_index+1]);
+      Integer nb_item_info_increment = 2 + current_index;
+      nb_item_info += nb_item_info_increment; // family_id , nb_connected_elements
+      info_index+= nb_item_info_increment; // pointing on next family id
     }
+    ItemInternal* item = m_one_mesh_item_adder->addOneItem2(item_data.itemFamily(),
+                                                            item_data.itemFamilyModifier(),
+                                                            it,
+                                                            item_uid,
+                                                            item_data.itemOwners()[item_index],
+                                                            item_data.subDomainId(),
+                                                            nb_connected_family,
+                                                            item_infos.subView(item_info_begin_index,nb_item_info));
+    if (add_to_items)
+      item_data.itemLids()[item_index++] = item->localId();
+    nb_item_info = 0;
+  }
 }
 
 /*---------------------------------------------------------------------------*/

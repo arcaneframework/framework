@@ -228,22 +228,17 @@ _allocDoFGhost(const Int64 uid, const Int32 owner)
 }
 
 ItemInternal* DoFFamily::
-_findOrAllocDoF(const Int64 uid,bool is_alloc)
+_findOrAllocDoF(const Int64 uid,[[maybe_unused]] bool is_alloc)
 {
-
   bool need_alloc; // given by alloc
   ItemInternal* item_internal = ItemFamily::_findOrAllocOne(uid,need_alloc);
-  if (!need_alloc)
-  {
+  if (!need_alloc) {
     item_internal->setUniqueId(uid);
-    is_alloc = false ;
   }
-  else
-  {
+  else {
     _allocateInfos(item_internal,uid,m_shared_info);
     // Un dof appartient de base au sous-domaine qui l'a créé (sauf ghost)
     item_internal->setOwner(m_sub_domain_id,m_sub_domain_id);
-    is_alloc = true ;
   }
   return item_internal;
 }

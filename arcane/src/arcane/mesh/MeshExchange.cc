@@ -393,7 +393,7 @@ _computeMeshConnectivityInfos(Int32ConstArrayView cells_new_owner)
 /*---------------------------------------------------------------------------*/
 
 void MeshExchange::
-_exchangeCellDataInfos(Int32ConstArrayView cells_new_owner,bool use_active_cells)
+_exchangeCellDataInfos([[maybe_unused]] Int32ConstArrayView cells_new_owner,bool use_active_cells)
 {
   ScopedPtrT<IParallelExchanger> sd_exchange(m_parallel_mng->createExchanger());
 
