@@ -28,6 +28,8 @@ set(ARCANE_SOURCES
   CStringUtils.h
   DataVector1D.cc
   DataVector1D.h
+  DependencyInjection.h
+  DependencyInjection.cc
   Enumerator.cc
   Enumerator.h
   ExternalRef.h
