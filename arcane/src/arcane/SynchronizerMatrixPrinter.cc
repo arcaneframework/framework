@@ -10,10 +10,9 @@
 /* Affiche la matrix de synchronization.                                     */
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
 #include "arcane/utils/Array.h"
-
 #include "arcane/utils/String.h"
+#include "arcane/utils/CheckedConvert.h"
 
 #include "arcane/IParallelMng.h"
 #include "arcane/MathUtils.h"
@@ -24,7 +23,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -76,7 +76,7 @@ print(std::ostream & o) const
     for(Integer i=0;i<all_shared_counts.size();++i)
       text_width0 = math::max(text_width0,String::format("{0} / {1}",all_shared_counts[i], all_ghost_counts[i]).length());
     text_width0 = math::max(6,text_width0);
-    Int32 text_width  = Convert::toInt32(text_width0);
+    Int32 text_width  = CheckedConvert::toInt32(text_width0);
       
     o << "\n" << std::setw(text_width) << "" << "   ";
     for(Integer j=0;j<parallel_mng->commSize();++j)
@@ -104,7 +104,7 @@ print(std::ostream & o) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

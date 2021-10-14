@@ -354,7 +354,6 @@ initAmrRefineMesh(Integer nb_to_refine)
   Int32UniqueArray cells_local_id;
   ENUMERATE_CELL (iCell, allCells()) {
     Cell cell = *iCell;
-    ItemInternal* iItem = cell.internal();
     if ((cell.type() == IT_Hexaedron8) || (cell.type() == IT_Quad4)) {
       if (nb_to_refine-- <= 0)
         break;

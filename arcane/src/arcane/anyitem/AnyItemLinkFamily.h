@@ -159,14 +159,14 @@ private:
    * \brief Enumérateur de liens
    */
   class Enumerator 
-    : public LinkIndex
+  : public LinkIndex
   {
   public:
     Enumerator(const Arcane::Array<LinkData>& sources, 
                const Arcane::Array<LinkData>& targets) 
-      : m_sources(sources), m_targets(targets) {}
+    : LinkIndex(), m_sources(sources), m_targets(targets) {}
     Enumerator(const Enumerator& e) 
-      : m_sources(e.m_sources), m_targets(e.m_targets) {}
+    : LinkIndex(), m_sources(e.m_sources), m_targets(e.m_targets) {}
     inline bool hasNext() const { return m_sources.size() != m_index; }
     inline void operator++() { m_index++; }
     //! Données du lien back

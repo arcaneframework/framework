@@ -35,37 +35,6 @@ ItemInternalConnectivityList ItemInternalConnectivityList::nullInstance;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Recherche l'index de l'entité de localid() \a local_id dans
- * la connectivité.
- */
-inline Integer ItemInternal::
-_getItemIndex(const Int32* items,Integer nb_item,Int32 local_id)
-{
-  for( Integer i=0; i<nb_item; ++i )
-    if (items[i] == local_id)
-      return i;
-  ARCANE_FATAL("Can not find item to replace local_id={0}",local_id);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-inline void ItemInternal::
-_replaceItem(Int32* items,Integer nb_item,
-             Int32 old_local_id,Int32 new_local_id,eItemKind item_kind)
-{
-  for( Integer i=0; i<nb_item; ++i )
-    if (items[i] == old_local_id){
-      items[i] = new_local_id;
-      return;
-    }
-  ARCANE_FATAL("Can not find item to replace kind={0} local_id={1}",
-               itemKindName(item_kind),old_local_id);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 void ItemInternal::
 _checkUniqueId(Int64 new_uid) const
@@ -204,20 +173,8 @@ activeEdges() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Indique si le genre \a item_kind utilise IItemFamilyTopologyModifier
-inline bool ItemInternal::
-_useTopologyModifier() const
-{
-  eItemKind item_kind = this->sharedInfo()->itemKind();
-  return (item_kind==IK_Node || item_kind==IK_Edge || item_kind==IK_Face ||
-          item_kind==IK_Cell);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void ItemInternal::
-_setFaceInfos(Int32 cell0,Int32 cell1,Int32 mod_flags)
+_setFaceInfos(Int32 mod_flags)
 {
   Int32 face_flags = flags();
   face_flags &= ~II_InterfaceFlags;
@@ -234,17 +191,15 @@ _setFaceBackAndFrontCells(Int32 back_cell_lid,Int32 front_cell_lid)
   if (front_cell_lid==NULL_ITEM_LOCAL_ID){
     // Reste uniquement la back_cell ou aucune maille.
     Int32 mod_flags = (back_cell_lid!=NULL_ITEM_LOCAL_ID) ? (II_Boundary | II_HasBackCell | II_BackCellIsFirst) : 0;
-    _setFaceInfos(back_cell_lid,NULL_ITEM_LOCAL_ID,mod_flags);
+    _setFaceInfos(mod_flags);
   }
   else if (back_cell_lid==NULL_ITEM_LOCAL_ID){
     // Reste uniquement la front cell
-    _setFaceInfos(front_cell_lid,NULL_ITEM_LOCAL_ID,
-                  II_Boundary | II_HasFrontCell | II_FrontCellIsFirst);
+    _setFaceInfos(II_Boundary | II_HasFrontCell | II_FrontCellIsFirst);
   }
   else{
     // Il y a deux mailles connectées.
-    _setFaceInfos(back_cell_lid,front_cell_lid,
-                  II_HasFrontCell | II_HasBackCell | II_BackCellIsFirst);
+    _setFaceInfos(II_HasFrontCell | II_HasBackCell | II_BackCellIsFirst);
   }
 }
 
@@ -288,24 +243,6 @@ _internalCopyAndSetDataIndex(Int32* data_ptr,Int32 data_index)
   Integer nb = neededMemory();
   ::memcpy(data_ptr + data_index,this->dataPtr(),nb*sizeof(Int32));
   setDataIndex(data_index);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemInternal::
-_checkValidConnectivity(ItemInternal* item,Int32 nb_sub_item,
-                        const Int32* ref_ptr,const Int32* new_ptr,
-                        Int32 sub_item_kind)
-{
-  for( Integer z=0; z<nb_sub_item; ++z ){
-    Int32 ref_lid = ref_ptr[z];
-    Int32 new_lid = new_ptr[z];
-    if (ref_lid!=new_lid)
-      ARCANE_FATAL("Incoherent connected items index={0} ref_lid={1} new_lid={2}"
-                   " item={3} sub_item_kind={4}",
-                   z,ref_lid,new_lid,ItemPrinter(item),sub_item_kind);
-  }
 }
 
 /*---------------------------------------------------------------------------*/

@@ -111,7 +111,7 @@ class TimeHistoryTestModule
     void writeCurve(const TimeHistoryCurveInfo& infos) override
     {
       info() << "MY_CURVE=" << infos.name();
-      if (infos.name().len()==6){
+      if (infos.name().length()==6){
         String new_name = String("New") + infos.name();
         info() << "ADD_NEW_CURVE: " << new_name;
         m_thm->addValue(new_name,1.0);

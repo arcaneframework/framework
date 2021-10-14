@@ -179,7 +179,7 @@ class AlephSolver
   // * setValues for a matrix
   // ****************************************************************************
   void setValues(VariableCellReal& cell_temperature,
-                 VariableFaceReal& face_temperature,
+                 [[maybe_unused]] VariableFaceReal& face_temperature,
                  const Real deltaT, AlephMatrix* aleph_mat)
   {
     VariableCellReal coefs(VariableBuildInfo(m_sub_domain->defaultMesh(), "cellCoefs"));

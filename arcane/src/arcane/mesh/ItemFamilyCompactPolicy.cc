@@ -101,7 +101,7 @@ StandardItemFamilyCompactPolicy(ItemFamily* family)
 /*---------------------------------------------------------------------------*/
 
 void StandardItemFamilyCompactPolicy::
-updateInternalReferences(IMeshCompacter* compacter)
+updateInternalReferences(IMeshCompacter*)
 {
 }
 

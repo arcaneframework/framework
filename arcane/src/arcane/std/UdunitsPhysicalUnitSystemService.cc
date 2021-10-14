@@ -59,7 +59,7 @@ class UdunitsPhysicalUnit
   }
 
   UdunitsPhysicalUnit(::ut_unit* unit)
-  : m_unit_system(nullptr), m_unit(nullptr)
+  : m_unit_system(nullptr), m_unit(unit)
   {
   }
 

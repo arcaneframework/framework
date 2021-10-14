@@ -175,7 +175,7 @@ public:
       bool has_cycle = false;
       try {
           _computeVertexLevels();
-      } catch (FatalErrorException e) {
+      } catch (const FatalErrorException& e) {
           has_cycle = true;
       }
       return has_cycle;

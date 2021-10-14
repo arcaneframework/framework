@@ -5,16 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneCurveWriter.cc                                        (C) 2000-2013 */
+/* ArcaneCurveWriter.cc                                        (C) 2000-2021 */
 /*                                                                           */
 /* Ecriture des courbes au format Arcane.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/ScopedPtr.h"
+#include "arcane/utils/CheckedConvert.h"
 
 #include "arcane/ITimeHistoryCurveWriter2.h"
 #include "arcane/BasicService.h"
@@ -27,7 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -174,21 +174,19 @@ endWrite()
   if (m_version==2){
     Int64 write_info[2];
     write_info[0] = _write(bytes.constView());
-    write_info[1] = bytes.size();
+    write_info[1] = bytes.largeSize();
     // Doit toujours être la dernière écriture du fichier
     _write(Int64ConstArrayView(2,write_info));
   }
   else if (m_version==1){
     Int32 write_info[2];
-    write_info[0] = _write(bytes.constView());
-    write_info[1] = (Int32)bytes.size();
+    write_info[0] = CheckedConvert::toInt32(_write(bytes.constView()));
+    write_info[1] = bytes.size();
     // Doit toujours être la dernière écriture du fichier
     _write(Int32ConstArrayView(2,write_info));
   }
   else
-    throw FatalErrorException(A_FUNCINFO,
-                              String::format("Invalid version {0} (valid values are '1' or '2')",
-                                             m_version));
+    ARCANE_FATAL("Invalid version {0} (valid values are '1' or '2')",m_version);
 
   info(4) << "End writing curves";
 
@@ -244,7 +242,7 @@ ARCANE_REGISTER_SUB_DOMAIN_FACTORY(ArcaneCurveWriter,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
