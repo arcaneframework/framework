@@ -25,7 +25,6 @@
 
 //TODO Mettre le lancement des exceptions dans le '.cc'
 #include "arcane/utils/NotImplementedException.h"
-#include "arcane/utils/FatalErrorException.h"
 
 #include <tuple>
 #include <typeinfo>
@@ -589,6 +588,7 @@ namespace Arcane::DependencyInjection
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Injecteur
  */
 class ARCANE_UTILS_EXPORT Injector
 {
@@ -628,23 +628,48 @@ class ARCANE_UTILS_EXPORT Injector
   /*!
    * \brief Interface d'un fonctor pour appliqué à chaque fabrique.
    */
-  class IFactoryFunctor
+  class IFactoryVisitorFunctor
   {
    public:
-    virtual ~IFactoryFunctor() = default;
+    virtual ~IFactoryVisitorFunctor() = default;
     virtual bool execute(impl::IInstanceFactory* f) = 0;
   };
 
-  template <typename Lambda> class FactoryFunctor
-  : public IFactoryFunctor
+  template <typename Lambda> class FactoryVisitorFunctor
+  : public IFactoryVisitorFunctor
   {
    public:
-    FactoryFunctor(Lambda& lambda)
+    FactoryVisitorFunctor(Lambda& lambda)
     : m_lambda(lambda)
     {}
 
    public:
     virtual bool execute(impl::IInstanceFactory* f) { return m_lambda(f); }
+
+   private:
+    Lambda& m_lambda;
+  };
+
+  /*!
+   * \brief Interface d'un fonctor pour appliqué à chaque fabrique.
+   */
+  class IInstanceVisitorFunctor
+  {
+   public:
+    virtual ~IInstanceVisitorFunctor() = default;
+    virtual bool execute(IInjectedInstance* v) = 0;
+  };
+
+  template <typename Lambda> class InstanceVisitorFunctor
+  : public IInstanceVisitorFunctor
+  {
+   public:
+    InstanceVisitorFunctor(Lambda& lambda)
+    : m_lambda(lambda)
+    {}
+
+   public:
+    virtual bool execute(IInjectedInstance* v) { return m_lambda(v); }
 
    private:
     Lambda& m_lambda;
@@ -686,13 +711,12 @@ class ARCANE_UTILS_EXPORT Injector
       }
       return false;
     };
-    FactoryFunctor ff(f);
-    _iterateFactories2(service_name, &ff);
+    FactoryVisitorFunctor ff(f);
+    _iterateFactories(service_name, &ff);
     if (instance.get())
       return instance;
     // TODO: améliorer le message
-    ARCANE_FATAL("Can not create instance");
-    return instance;
+    _doError("Can not create instance");
   }
 
   String printFactories() const;
@@ -706,21 +730,8 @@ class ARCANE_UTILS_EXPORT Injector
   void _add(IInjectedInstance* instance);
 
   // Itère sur la lambda et s'arrête dès que cette dernière retourne \a true
-  template <typename Lambda> void
-  _iterateInstances(const std::type_info& t_info, const String& instance_name, const Lambda& lambda)
-  {
-    bool has_no_name = instance_name.empty();
-    Integer n = _nbValue();
-    for (Integer i = 0; i < n; ++i) {
-      IInjectedInstance* ii = _value(i);
-      if (!ii->hasTypeInfo(t_info))
-        continue;
-      if (has_no_name || ii->hasName(instance_name)) {
-        if (lambda(ii))
-          return;
-      }
-    }
-  }
+  void _iterateInstances(const std::type_info& t_info, const String& instance_name,
+                         IInstanceVisitorFunctor* lambda);
   Integer _nbValue() const;
   IInjectedInstance* _value(Integer i) const;
 
@@ -732,7 +743,7 @@ class ARCANE_UTILS_EXPORT Injector
    * Si \a factory_name n'est pas nul, seules les fabriques pour lequelles
    * FactoryInfo::hasName(factory_name) est vrai sont utilisées.
    */
-  void _iterateFactories2(const String& factory_name, IFactoryFunctor* functor) const;
+  void _iterateFactories(const String& factory_name, IFactoryVisitorFunctor* functor) const;
   Integer _nbFactory() const;
   impl::IInstanceFactory* _factory(Integer i) const;
 
@@ -746,7 +757,8 @@ class ARCANE_UTILS_EXPORT Injector
       t = dynamic_cast<InjectedType*>(v);
       return t;
     };
-    _iterateInstances(typeid(Ref<InterfaceType>), instance_name, f);
+    InstanceVisitorFunctor ff(f);
+    _iterateInstances(typeid(Ref<InterfaceType>), instance_name, &ff);
     if (t)
       return t->instance();
     // TODO: faire un fatal ou créer l'instance
@@ -762,11 +774,13 @@ class ARCANE_UTILS_EXPORT Injector
       t = dynamic_cast<InjectedType*>(v);
       return t;
     };
-    _iterateInstances(typeid(Type), instance_name, f);
+    InstanceVisitorFunctor ff(f);
+    _iterateInstances(typeid(Type), instance_name, &ff);
     if (t)
       return t->instance();
-    ARCANE_FATAL("Can not find value for type");
+    _doError("Can not find value for type");
   }
+  [[noreturn]] void _doError(const String& message);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -779,6 +793,13 @@ namespace Arcane::DependencyInjection::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+class ARCANE_UTILS_EXPORT ConstructorRegistererBase
+{
+ protected:
+  [[noreturn]] void _doError1(const String& message, int nb_value);
+};
+
 /*!
  * \internal
  * \brief Classe permettant d'enregistrer un constructeur pour créer un objet
@@ -787,6 +808,7 @@ namespace Arcane::DependencyInjection::impl
  */
 template <typename... Args>
 class ConstructorRegisterer
+: public ConstructorRegistererBase
 {
  public:
   using ArgsType = std::tuple<Args...>;
@@ -821,7 +843,7 @@ class ConstructorRegisterer
       return ArgsType(_get<0>(i), _get<1>(i));
     }
     // Ne devrait pas arriver mais on ne sais jamais.
-    ARCANE_FATAL("Too many arguments for createTuple n={0} max=2", tuple_size);
+    _doError1("Too many arguments for createTuple n={0} max=2", tuple_size);
   }
 };
 

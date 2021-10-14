@@ -134,6 +134,15 @@ namespace Arcane::DependencyInjection::impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void ConstructorRegistererBase::
+_doError1(const String& message, int nb_value)
+{
+  ARCANE_FATAL(message,nb_value);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class FactoryInfo::Impl
 {
  public:
@@ -313,8 +322,8 @@ printFactories() const
     ++index;
     return false;
   };
-  FactoryFunctor ff(f);
-  _iterateFactories2(String(), &ff);
+  FactoryVisitorFunctor ff(f);
+  _iterateFactories(String(), &ff);
   String s = ostr.str();
   return s;
 }
@@ -323,7 +332,7 @@ printFactories() const
 /*---------------------------------------------------------------------------*/
 
 void Injector::
-_iterateFactories2(const String& factory_name, IFactoryFunctor* functor) const
+_iterateFactories(const String& factory_name, IFactoryVisitorFunctor* functor) const
 {
   // TODO: utiliser le std::type_info de l'instance qu'on souhaite pour limiter
   // les itérations
@@ -343,6 +352,36 @@ _iterateFactories2(const String& factory_name, IFactoryFunctor* functor) const
         return;
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// Itère sur la lambda et s'arrête dès que cette dernière retourne \a true
+void Injector::
+_iterateInstances(const std::type_info& t_info, const String& instance_name,
+                  IInstanceVisitorFunctor* lambda)
+{
+  bool has_no_name = instance_name.empty();
+  Integer n = _nbValue();
+  for (Integer i = 0; i < n; ++i) {
+    IInjectedInstance* ii = _value(i);
+    if (!ii->hasTypeInfo(t_info))
+      continue;
+    if (has_no_name || ii->hasName(instance_name)) {
+      if (lambda->execute(ii))
+        return;
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Injector::
+_doError(const String& message)
+{
+  ARCANE_FATAL(message);
 }
 
 /*---------------------------------------------------------------------------*/
