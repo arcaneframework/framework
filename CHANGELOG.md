@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+**Fixed bugs:**
+
+- [core, hypre, petsc]: fix Cmake export files
+
 **Changes:**
 
 - install tutorials and examples sources
