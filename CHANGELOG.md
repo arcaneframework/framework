@@ -6,7 +6,8 @@ All notable changes to this project will be documented in this file.
 
 **Fixed bugs:**
 
-- [core, hypre, petsc]: fix Cmake export files
+- [core, hypre, petsc]: fix CMake export files
+- [petsc]: internal call to PetscInitialize (fixes #14)
 
 **Changes:**
 

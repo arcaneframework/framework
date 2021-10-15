@@ -22,6 +22,8 @@
 
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 
+#include "petsc_instance.h"
+
 #include <petscvec.h>
 
 namespace Alien::PETSc
@@ -30,6 +32,8 @@ Vector::Vector(const MultiVectorImpl* multi_impl)
 : IVectorImpl(multi_impl, AlgebraTraits<BackEnd::tag::petsc>::name())
 , m_vec(nullptr)
 {
+  petsc_init_if_needed();
+
   auto block_size = 1;
   const auto* block = this->block();
   if (block)

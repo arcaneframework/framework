@@ -26,6 +26,8 @@
 #include <alien/petsc/backend.h>
 #include <alien/petsc/export.h>
 
+#include "petsc_instance.h"
+
 namespace Alien
 {
 template class ALIEN_PETSC_EXPORT LinearAlgebra<BackEnd::tag::petsc>;
@@ -37,7 +39,10 @@ class ALIEN_PETSC_EXPORT InternalLinearAlgebra
 : public IInternalLinearAlgebra<Matrix, Vector>
 {
  public:
-  InternalLinearAlgebra() = default;
+  InternalLinearAlgebra()
+  {
+    petsc_init_if_needed();
+  }
 
   ~InternalLinearAlgebra() override = default;
 

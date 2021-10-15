@@ -32,6 +32,8 @@
 #include <alien/petsc/options.h>
 #include <alien/petsc/export.h>
 
+#include "petsc_instance.h"
+
 namespace Alien
 {
 // Compile PetscLinearSolver.
@@ -88,6 +90,7 @@ class InternalLinearSolver
 
 InternalLinearSolver::InternalLinearSolver()
 {
+  petsc_init_if_needed();
   boost::timer tinit;
   m_init_time += tinit.elapsed();
 }
@@ -95,6 +98,7 @@ InternalLinearSolver::InternalLinearSolver()
 InternalLinearSolver::InternalLinearSolver(const Options& options)
 : m_options(options)
 {
+  petsc_init_if_needed();
   boost::timer tinit;
   m_init_time += tinit.elapsed();
 }

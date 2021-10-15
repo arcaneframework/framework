@@ -23,12 +23,15 @@
 
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 
+#include "petsc_instance.h"
+
 namespace Alien::PETSc
 {
 Matrix::Matrix(const MultiMatrixImpl* multi_impl)
 : IMatrixImpl(multi_impl, AlgebraTraits<BackEnd::tag::petsc>::name())
 , m_mat(nullptr)
 {
+  petsc_init_if_needed();
   const auto& row_space = multi_impl->rowSpace();
   const auto& col_space = multi_impl->colSpace();
   if (row_space.size() != col_space.size())

@@ -68,7 +68,7 @@ add_library(alien_petsc
         src/converters/simplecsr_to_petsc_matrix.cpp
         src/converters/simplecsr_to_petsc_vector.cpp
         src/converters/petsc_to_simplecsr_vector.cpp
-        )
+        src/petsc_instance.cpp src/petsc_instance.h)
 
 target_link_libraries(alien_petsc PUBLIC
         Arccore::arccore_trace

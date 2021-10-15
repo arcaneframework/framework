@@ -139,11 +139,6 @@ int main(int argc, char** argv)
 
   MPI_Init(&argc, &argv);
 
-  PetscErrorCode ierr;
-  ierr = PetscInitialize(&argc, &argv, (char*)nullptr, "");
-  if (ierr)
-    return ierr;
-
   auto ret = 0;
 
   try {
@@ -161,10 +156,6 @@ int main(int argc, char** argv)
     std::cerr << "** An unknown exception has occured...\n";
     ret = 1;
   }
-
-  ierr = PetscFinalize();
-  if (ierr)
-    return ierr;
 
   MPI_Finalize();
 
