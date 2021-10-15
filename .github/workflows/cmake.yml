@@ -30,7 +30,7 @@ jobs:
         config:
           - {
             name: "ubuntu20.04 release",
-            container: "arcaneframework/alien-base:ubuntu20.04",
+            container: "ghcr.io/arcaneframework/alien-base:ubuntu20.04",
             precommand: "",
             build_type: "RelWithDebInfo",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja",
@@ -38,7 +38,7 @@ jobs:
           }
           - {
             name: "ubuntu20.04 debug",
-            container: "arcaneframework/alien-base:ubuntu20.04",
+            container: "ghcr.io/arcaneframework/alien-base:ubuntu20.04",
             precommand: "",
             build_type: "Debug",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja -DENABLE_SANITIZER_ADDRESS:BOOL=ON -DENABLE_SANITIZER_UNDEFINED_BEHAVIOR:BOOL=ON",
@@ -46,7 +46,7 @@ jobs:
           }
           - {
             name: "ubuntu20.04 debug memory",
-            container: "arcaneframework/alien-base:ubuntu20.04",
+            container: "ghcr.io/arcaneframework/alien-base:ubuntu20.04",
             precommand: "",
             build_type: "Debug",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja -DENABLE_SANITIZER_MEMORY:BOOL=ON",
@@ -54,11 +54,11 @@ jobs:
           }
           - {
             name: "ubuntu20.04 debug minimal",
-            container: "arcaneframework/alien-base:ubuntu20.04",
+            container: "ghcr.io/arcaneframework/alien-base:ubuntu20.04",
             precommand: "",
             build_type: "Debug",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja",
-            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=OFF -DALIENDEV_EMBEDDED=OFF -DCMAKE_PREFIX_PATH=\"/opt/arccon;/opt/arccore\"",
+            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=OFF -DALIENDEV_EMBEDDED:BOOL=ON",
           }
           - {
             name: "centos7 gimkl 2018b release",
