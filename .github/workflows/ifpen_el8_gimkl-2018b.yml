@@ -2,9 +2,7 @@ name: IFPEN el8 gimkl/2018b
 
 on:
   push:
-    branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
-  pull_request:
-    branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
+    branches: [ main ]
   workflow_dispatch:
 
 env:
