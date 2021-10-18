@@ -96,8 +96,7 @@ class MeshMaterialTesterModule
 {
  public:
 
-
-  MeshMaterialTesterModule(const ModuleBuildInfo& mbi);
+  explicit MeshMaterialTesterModule(const ModuleBuildInfo& mbi);
   ~MeshMaterialTesterModule();
 
  public:
@@ -106,7 +105,7 @@ class MeshMaterialTesterModule
 
  public:
   
-  virtual void buildInit();
+  virtual void buildInit() override;
   virtual void compute();
   virtual void startInit();
   virtual void continueInit();
@@ -121,6 +120,8 @@ class MeshMaterialTesterModule
   MaterialVariableCellReal m_mat_nodump_real;
   VariableCellInt32 m_present_material;
   MaterialVariableCellInt32 m_mat_int32;
+  //! Variable pour tester la bonne prise en compte de setUsed(false)
+  MaterialVariableCellReal m_mat_not_used_real;
   VariableScalarInt64 m_nb_starting_cell; //<! Nombre de mailles au démarrage
   IMeshMaterial* m_mat1;
   IMeshMaterial* m_mat2;
@@ -193,6 +194,7 @@ MeshMaterialTesterModule(const ModuleBuildInfo& mbi)
 , m_mat_nodump_real(VariableBuildInfo(this,"NoDumpReal",IVariable::PNoDump))
 , m_present_material(VariableBuildInfo(this,"PresentMaterial"))
 , m_mat_int32(VariableBuildInfo(this,"PresentMaterial"))
+, m_mat_not_used_real(VariableBuildInfo(this,"NotUsedRealVariable"))
 , m_nb_starting_cell(VariableBuildInfo(this,"NbStartingCell"))
 , m_mat1(nullptr)
 , m_mat2(nullptr)
@@ -280,8 +282,6 @@ buildInit()
     mm->recreateFromDump();
   }
   else{
-
-
     // Lit les infos des matériaux du JDD et les enregistre dans le gestionnaire
     for( Integer i=0,n=options()->material().size(); i<n; ++i ){
       String mat_name = options()->material[i].name;
@@ -382,6 +382,8 @@ applyGeneric(const ContainerType& container,MaterialVariableCellReal& var,Real v
 void MeshMaterialTesterModule::
 startInit()
 {
+  m_mat_not_used_real.globalVariable().setUsed(false);
+
   info() << "MESH_MATERIAL_TESTER :: startInit()";
   m_material_mng->forceRecompute();
 
@@ -1450,6 +1452,10 @@ compute()
     _setOrCheckSpectralValues(m_check_spectral_values_iteration,true);
     m_check_spectral_values_iteration = 0;
   }
+
+  // Active la variable une itération sur deux pour tester l'activation et désactivation
+  // au cours du temps.
+  m_mat_not_used_real.globalVariable().setUsed((m_global_iteration()%2)==0);
 
   _dumpAverageValues();
   _doDependencies();

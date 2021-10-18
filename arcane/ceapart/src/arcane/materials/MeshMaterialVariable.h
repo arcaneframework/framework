@@ -312,6 +312,9 @@ class ItemMaterialVariableBase
   //! Variables pour les différents matériaux.
   UniqueArray<PrivatePartType*> m_vars;
   UniqueArray<ContainerViewType> m_views;
+
+ private:
+  bool _isValidAndUsedAndGlobalUsed(PrivatePartType* partial_var);
 };
 
 /*---------------------------------------------------------------------------*/

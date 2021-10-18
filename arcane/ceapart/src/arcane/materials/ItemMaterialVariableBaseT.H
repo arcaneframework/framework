@@ -28,17 +28,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -323,13 +314,27 @@ _restoreData(IMeshComponent* component,IData* data,Integer data_index,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<typename Traits> bool
+ItemMaterialVariableBase<Traits>::
+_isValidAndUsedAndGlobalUsed(PrivatePartType* partial_var)
+{
+  if (!partial_var)
+    return false;
+  if (!m_global_variable->isUsed() || !partial_var->isUsed())
+    return false;
+  return true;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template<typename Traits> void
 ItemMaterialVariableBase<Traits>::
 _copyGlobalToPartial(Int32 var_index,Int32ConstArrayView local_ids,
                      Int32ConstArrayView indexes_in_multiple)
 {
   PrivatePartType* partial_var = m_vars[var_index+1];
-  if (!partial_var)
+  if (!_isValidAndUsedAndGlobalUsed(partial_var))
     return;
 
   {
@@ -354,7 +359,7 @@ _copyPartialToGlobal(Int32 var_index,Int32ConstArrayView local_ids,
                      Int32ConstArrayView indexes_in_multiple)
 {
   PrivatePartType* partial_var = m_vars[var_index+1];
-  if (!partial_var)
+  if (!_isValidAndUsedAndGlobalUsed(partial_var))
     return;
 
   ContainerViewType global_view = m_vars[0]->valueView();
@@ -373,7 +378,7 @@ _initializeNewItems(const ComponentItemListBuilder& list_builder)
   MeshMaterialVariableIndexer* indexer = list_builder.indexer();
   Integer var_index = indexer->index();
   PrivatePartType* partial_var = m_vars[var_index+1];
-  if (!partial_var)
+  if (!_isValidAndUsedAndGlobalUsed(partial_var))
     return;
 
   // Redimensionne le tableau des valeurs multiples si besoin.
@@ -547,8 +552,7 @@ getReference(const VariableBuildInfo& v,IMeshMaterialMng* mm,MatVarSpace mvs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
