@@ -52,8 +52,9 @@ find_package(Arccore REQUIRED)
 
 find_package(Alien REQUIRED)
 
+find_package(MPI REQUIRED)
+
 find_package(Hypre REQUIRED)
-find_package(Boost REQUIRED) # For boost::timer.
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -73,11 +74,15 @@ add_library(alien_hypre
         )
 
 target_link_libraries(alien_hypre PUBLIC
+        Alien::alien_core
+        )
+
+target_link_libraries(alien_hypre PRIVATE
+        MPI::MPI_CXX
         Arccore::arccore_trace
         Arccore::arccore_collections
         Arccore::arccore_base
         Arccore::arccore_message_passing_mpi
-        Alien::alien_core
         arccon::Hypre
         )
 

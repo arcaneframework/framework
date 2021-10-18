@@ -129,7 +129,7 @@ target_link_libraries(alien_core PUBLIC
 
 find_package(Boost COMPONENTS program_options REQUIRED)
 
-target_link_libraries(alien_core PUBLIC arccon::MPI ${BLAS_LIBRARIES})
+target_link_libraries(alien_core PRIVATE arccon::MPI)
 target_link_libraries(alien_core PUBLIC Boost::boost)
 
 generate_export_header(alien_core

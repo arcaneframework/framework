@@ -50,9 +50,9 @@ include(${ARCCON_CMAKE_COMMANDS})
 find_package(Arccore REQUIRED)
 
 find_package(Alien REQUIRED)
+find_package(MPI REQUIRED)
 
 find_package(PETSc REQUIRED)
-find_package(Boost REQUIRED) # For boost::timer.
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -71,11 +71,15 @@ add_library(alien_petsc
         src/petsc_instance.cpp src/petsc_instance.h)
 
 target_link_libraries(alien_petsc PUBLIC
+        Alien::alien_core
+        )
+
+target_link_libraries(alien_petsc PRIVATE
+        MPI::MPI_CXX
         Arccore::arccore_trace
         Arccore::arccore_collections
         Arccore::arccore_base
         Arccore::arccore_message_passing_mpi
-        Alien::alien_core
         arccon::PETSc
         )
 

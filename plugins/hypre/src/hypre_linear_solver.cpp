@@ -19,8 +19,6 @@
 #include "hypre_matrix.h"
 #include "hypre_vector.h"
 
-#include <boost/timer.hpp>
-
 #include <HYPRE_parcsr_ls.h>
 #include <HYPRE_parcsr_mv.h>
 
@@ -86,15 +84,11 @@ class InternalLinearSolver : public IInternalLinearSolver<Matrix, Vector>
 
 InternalLinearSolver::InternalLinearSolver()
 {
-  boost::timer tinit;
-  m_init_time += tinit.elapsed();
 }
 
 InternalLinearSolver::InternalLinearSolver(const Options& options)
 : m_options(options)
 {
-  boost::timer tinit;
-  m_init_time += tinit.elapsed();
 }
 
 void InternalLinearSolver::checkError(
@@ -119,7 +113,7 @@ bool InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
   HYPRE_ClearAllErrors();
 
   // Macro "pratique" en attendant de trouver mieux
-  boost::timer tsolve;
+  auto tsolve = MPI_Wtime();
 
   int output_level = m_options.verbose() ? 1 : 0;
 
@@ -349,7 +343,8 @@ bool InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
 
   ++m_solve_num;
   m_total_iter_num += m_status.iteration_count;
-  m_total_solve_time += tsolve.elapsed();
+  tsolve = MPI_Wtime() - tsolve;
+  m_total_solve_time += tsolve;
   return m_status.succeeded;
 }
 

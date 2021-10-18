@@ -41,6 +41,9 @@ target_include_directories(alien_kernel_simplecsr PRIVATE ${CMAKE_CURRENT_SOURCE
 target_include_directories(alien_kernel_simplecsr PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../../..)
 target_include_directories(alien_kernel_simplecsr PRIVATE ${PROJECT_BINARY_DIR})
 
+find_package(BLAS REQUIRED)
+target_link_libraries(alien_kernel_simplecsr PUBLIC ${BLAS_LIBRARIES})
+
 target_link_libraries(alien_kernel_simplecsr PUBLIC
         Arccore::arccore_trace
         Arccore::arccore_collections

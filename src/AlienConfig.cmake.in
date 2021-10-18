@@ -11,15 +11,10 @@ find_dependency(Arccon)
 # Add FindPackage from Arccon
 list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
 find_dependency(Arccore)
-find_dependency(MPI)
-find_dependency(Boost)
+
 find_dependency(BLAS)
-if (@ALIEN_USE_HDF5@)
-find_dependency(HDF5)
-endif()
-if (@ALIEN_USE_XML@)
-find_dependency(LibXml2)
-endif()
+find_dependency(Boost)
+
 # Remove FindPackage Arccon paths
 list(REMOVE_AT CMAKE_MODULE_PATH -1)
 

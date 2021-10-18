@@ -24,8 +24,6 @@
 #include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
 #include <alien/ref/AlienRefSemantic.h>
 
-#include "petscsys.h"
-
 int test()
 {
   auto* pm = Arccore::MessagePassing::Mpi::StandaloneMpiMessagePassingMng::create(MPI_COMM_WORLD);

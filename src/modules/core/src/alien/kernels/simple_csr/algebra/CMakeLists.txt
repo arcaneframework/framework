@@ -14,9 +14,6 @@
 # 
 # SPDX-License-Identifier: Apache-2.0
 
-find_package(BLAS REQUIRED)
-target_link_libraries(alien_kernel_simplecsr INTERFACE ${BLAS_LIBRARIES})
-
 SET(ALIEN_CBLAS_HEADER)
 
 SET(ALIEN_BLAS_SDOT "sdot")

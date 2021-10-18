@@ -19,8 +19,6 @@
 #include "matrix.h"
 #include "vector.h"
 
-#include <boost/timer.hpp>
-
 #include <petscksp.h>
 
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
@@ -91,16 +89,12 @@ class InternalLinearSolver
 InternalLinearSolver::InternalLinearSolver()
 {
   petsc_init_if_needed();
-  boost::timer tinit;
-  m_init_time += tinit.elapsed();
 }
 
 InternalLinearSolver::InternalLinearSolver(const Options& options)
 : m_options(options)
 {
   petsc_init_if_needed();
-  boost::timer tinit;
-  m_init_time += tinit.elapsed();
 }
 
 void InternalLinearSolver::checkError(const Arccore::String& msg, int ierr, int skipError) const
@@ -115,8 +109,7 @@ void InternalLinearSolver::checkError(const Arccore::String& msg, int ierr, int 
 
 bool InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
 {
-  // Macro "pratique" en attendant de trouver mieux
-  boost::timer tsolve;
+  auto tsolve = MPI_Wtime();
 
   int output_level = m_options.verbose() ? 1 : 0;
 
@@ -199,7 +192,8 @@ bool InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
   // update the counters
   ++m_solve_num;
   m_total_iter_num += m_status.iteration_count;
-  m_total_solve_time += tsolve.elapsed();
+  tsolve = MPI_Wtime() - tsolve;
+  m_total_solve_time += tsolve;
 
   return m_status.succeeded;
 }
