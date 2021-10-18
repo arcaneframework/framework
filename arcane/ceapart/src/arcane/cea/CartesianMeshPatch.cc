@@ -84,6 +84,9 @@ _computeNodeCellInformations2D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& n
   Int32ArrayView nodes_indirection(CellDirectionMng::MAX_NB_NODE,nodes_indirection_i);
   Integer nb_node = cell0.nbNode();
   Real3 cell_coord = cell0_coord;
+  bool is_2d = m_mesh->mesh()->dimension()==2;
+  if (!is_2d)
+    ARCANE_FATAL("Invalid call. This mesh is not a 2D mesh");
 
   // Direction X
   nodes_indirection.fill(-1);
@@ -140,6 +143,8 @@ _computeNodeCellInformations3D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& n
   Integer nb_node = cell0.nbNode();
   Real3 cell_coord = cell0_coord;
   bool is_3d = m_mesh->mesh()->dimension()==3;
+  if (!is_3d)
+    ARCANE_FATAL("Invalid call. This mesh is not a 3D mesh");
 
   // Direction X
   nodes_indirection.fill(-1);
@@ -213,42 +218,40 @@ _computeNodeCellInformations3D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& n
   }
   cellDirection(MD_DirY).setNodesIndirection(nodes_indirection);
 
-  if (is_3d){
-    nodes_indirection.fill(-1);
-    for( Integer i=0; i<nb_node; ++i ){
-      Node node = cell0.node(i);
-      Real3 node_coord = nodes_coord[node];
-      if (node_coord.y>cell_coord.y){
-        if (node_coord.z>cell_coord.z){
-          if (node_coord.x>cell_coord.x)
-            nodes_indirection[CNP_TopNextRight] = i;
-          else
-            nodes_indirection[CNP_TopNextLeft] = i;
-        }
-        else{
-          if (node_coord.x>cell_coord.x)
-            nodes_indirection[CNP_TopPreviousRight] = i;
-          else
-            nodes_indirection[CNP_TopPreviousLeft] = i;
-        }
+  nodes_indirection.fill(-1);
+  for( Integer i=0; i<nb_node; ++i ){
+    Node node = cell0.node(i);
+    Real3 node_coord = nodes_coord[node];
+    if (node_coord.y>cell_coord.y){
+      if (node_coord.z>cell_coord.z){
+        if (node_coord.x>cell_coord.x)
+          nodes_indirection[CNP_TopNextRight] = i;
+        else
+          nodes_indirection[CNP_TopNextLeft] = i;
       }
       else{
-        if (node_coord.z>cell_coord.z){
-          if (node_coord.x>cell_coord.x)
-            nodes_indirection[CNP_NextRight] = i;
-          else
-            nodes_indirection[CNP_NextLeft] = i;
-        }
-        else{
-          if (node_coord.x>cell_coord.x)
-            nodes_indirection[CNP_PreviousRight] = i;
-          else
-            nodes_indirection[CNP_PreviousLeft] = i;
-        }
+        if (node_coord.x>cell_coord.x)
+          nodes_indirection[CNP_TopPreviousRight] = i;
+        else
+          nodes_indirection[CNP_TopPreviousLeft] = i;
       }
     }
-    cellDirection(MD_DirZ).setNodesIndirection(nodes_indirection);
+    else{
+      if (node_coord.z>cell_coord.z){
+        if (node_coord.x>cell_coord.x)
+          nodes_indirection[CNP_NextRight] = i;
+        else
+          nodes_indirection[CNP_NextLeft] = i;
+      }
+      else{
+        if (node_coord.x>cell_coord.x)
+          nodes_indirection[CNP_PreviousRight] = i;
+        else
+          nodes_indirection[CNP_PreviousLeft] = i;
+      }
+    }
   }
+  cellDirection(MD_DirZ).setNodesIndirection(nodes_indirection);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -257,13 +260,15 @@ _computeNodeCellInformations3D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& n
 void CartesianMeshPatch::
 _internalComputeNodeCellInformations(Cell cell0,Real3 cell0_coord,VariableNodeReal3& nodes_coord)
 {
+  int dim = m_mesh->mesh()->dimension();
   bool is_3d = m_mesh->mesh()->dimension()==3;
-  if (is_3d)
+  if (dim==3)
     _computeNodeCellInformations3D(cell0,cell0_coord,nodes_coord);
-  else
+  else if (dim==2)
     _computeNodeCellInformations2D(cell0,cell0_coord,nodes_coord);
+  else
+    ARCANE_THROW(NotImplementedException,"this method is implemented only for 2D and 3D mesh (dim={0})",dim);
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
