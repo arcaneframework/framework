@@ -2,12 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## 1.1.1
 
 **Fixed bugs:**
 
 - [core, hypre, petsc]: fix CMake export files
-- [petsc]: internal call to PetscInitialize (fixes #14)
+- [petsc]: internal call to PetscInitialize (fixes [issue#14](https://github.com/arcaneframework/alien/issues/14))
 
 **Changes:**
 
