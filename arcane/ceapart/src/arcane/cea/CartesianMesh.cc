@@ -31,6 +31,8 @@
 #include "arcane/cea/CartesianConnectivity.h"
 #include "arcane/cea/internal/CartesianMeshPatch.h"
 
+#include "arcane/core/internal/ICartesianMeshGenerationInfo.h"
+
 #include <set>
 
 /*---------------------------------------------------------------------------*/
@@ -334,38 +336,13 @@ computeDirections()
   m_all_items_direction_info->_internalComputeNodeCellInformations(cell0,cells_center[cell0],nodes_coord);
 
   info() << "Informations from IMesh properties:";
-  Properties* mesh_properties = mesh()->properties();
-  Int64 global_nb_cell_x = mesh_properties->getInt64WithDefault("GlobalNbCellX",-1);
-  Int64 global_nb_cell_y = mesh_properties->getInt64WithDefault("GlobalNbCellY",-1);
-  Int64 global_nb_cell_z = mesh_properties->getInt64WithDefault("GlobalNbCellZ",-1);
-  info() << "GlobalNbCell: "
-         << " X=" << global_nb_cell_x
-         << " Y=" << global_nb_cell_y
-         << " Z=" << global_nb_cell_z;
 
-  Int32 own_nb_cell_x = mesh_properties->getInt32WithDefault("OwnNbCellX",-1);
-  Int32 own_nb_cell_y = mesh_properties->getInt32WithDefault("OwnNbCellY",-1);
-  Int32 own_nb_cell_z = mesh_properties->getInt32WithDefault("OwnNbCellZ",-1);
-  info() << "OwnNbCell: "
-         << " X=" << own_nb_cell_x
-         << " Y=" << own_nb_cell_y
-         << " Z=" << own_nb_cell_z;
+  auto* cmgi = ICartesianMeshGenerationInfo::getReference(m_mesh,true);
 
-  Int32 sub_domain_offset_x = mesh_properties->getInt32WithDefault("SubDomainOffsetX",-1);
-  Int32 sub_domain_offset_y = mesh_properties->getInt32WithDefault("SubDomainOffsetY",-1);
-  Int32 sub_domain_offset_z = mesh_properties->getInt32WithDefault("SubDomainOffsetZ",-1);
-  info() << "SubDomainOffset: "
-         << " X=" << sub_domain_offset_x
-         << " Y=" << sub_domain_offset_y
-         << " Z=" << sub_domain_offset_z;
-
-  Int64 own_cell_offset_x = mesh_properties->getInt64WithDefault("OwnCellOffsetX",-1);
-  Int64 own_cell_offset_y = mesh_properties->getInt64WithDefault("OwnCellOffsetY",-1);
-  Int64 own_cell_offset_z = mesh_properties->getInt64WithDefault("OwnCellOffsetZ",-1);
-  info() << "OwnCellOffset: "
-         << " X=" << own_cell_offset_x
-         << " Y=" << own_cell_offset_y
-         << " Z=" << own_cell_offset_z;
+  info() << "GlobalNbCell = " << cmgi->globalNbCell();
+  info() << "OwnNbCell: " << cmgi->ownNbCell();
+  info() << "SubDomainOffset: " << cmgi->subDomainOffset();
+  info() << "OwnCellOffset: " << cmgi->ownCellOffset();
 
   CellGroup all_cells = cell_family->allItems();
   NodeGroup all_nodes = node_family->allItems();
@@ -379,28 +356,28 @@ computeDirections()
     m_local_face_direction[MD_DirX] = next_face_x;
     _computeMeshDirection(*m_all_items_direction_info.get(),MD_DirX,cells_center,faces_center,all_cells,all_nodes);
     CellDirectionMng& cdm = m_all_items_direction_info->cellDirection(MD_DirX);
-    cdm.m_global_nb_cell = global_nb_cell_x;
-    cdm.m_own_nb_cell = own_nb_cell_x;
-    cdm.m_sub_domain_offset = sub_domain_offset_x;
-    cdm.m_own_cell_offset = own_cell_offset_x;
+    cdm.m_global_nb_cell = cmgi->globalNbCell()[MD_DirX];
+    cdm.m_own_nb_cell = cmgi->ownNbCell()[MD_DirX];
+    cdm.m_sub_domain_offset = cmgi->subDomainOffset()[MD_DirX];
+    cdm.m_own_cell_offset = cmgi->ownCellOffset()[MD_DirX];
   }
   if (next_face_y!=(-1)){
     m_local_face_direction[MD_DirY] = next_face_y;
     _computeMeshDirection(*m_all_items_direction_info.get(),MD_DirY,cells_center,faces_center,all_cells,all_nodes);
     CellDirectionMng& cdm = m_all_items_direction_info->cellDirection(MD_DirY);
-    cdm.m_global_nb_cell = global_nb_cell_y;
-    cdm.m_own_nb_cell = own_nb_cell_y;
-    cdm.m_sub_domain_offset = sub_domain_offset_y;
-    cdm.m_own_cell_offset = own_cell_offset_y;
+    cdm.m_global_nb_cell = cmgi->globalNbCell()[MD_DirY];
+    cdm.m_own_nb_cell = cmgi->ownNbCell()[MD_DirY];
+    cdm.m_sub_domain_offset = cmgi->subDomainOffset()[MD_DirY];
+    cdm.m_own_cell_offset = cmgi->ownCellOffset()[MD_DirY];
   }
   if (next_face_z!=(-1)){
     m_local_face_direction[MD_DirZ] = next_face_z;
     _computeMeshDirection(*m_all_items_direction_info.get(),MD_DirZ,cells_center,faces_center,all_cells,all_nodes);
     CellDirectionMng& cdm = m_all_items_direction_info->cellDirection(MD_DirZ);
-    cdm.m_global_nb_cell = global_nb_cell_z;
-    cdm.m_own_nb_cell = own_nb_cell_z;
-    cdm.m_sub_domain_offset = sub_domain_offset_z;
-    cdm.m_own_cell_offset = own_cell_offset_z;
+    cdm.m_global_nb_cell = cmgi->globalNbCell()[MD_DirZ];
+    cdm.m_own_nb_cell = cmgi->ownNbCell()[MD_DirZ];
+    cdm.m_sub_domain_offset = cmgi->subDomainOffset()[MD_DirZ];
+    cdm.m_own_cell_offset = cmgi->ownCellOffset()[MD_DirZ];
   }
 
   info() << "Compute cartesian connectivity";

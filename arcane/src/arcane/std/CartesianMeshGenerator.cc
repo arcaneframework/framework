@@ -47,6 +47,7 @@
 #include "arcane/std/Cartesian3DMeshGenerator_axl.h"
 
 #include "arcane/std/internal/SodStandardGroupsBuilder.h"
+#include "arcane/core/internal/ICartesianMeshGenerationInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -579,6 +580,9 @@ generateMesh()
 {
   Trace::Setter mci(traceMng(),"CartesianMeshGenerator");
   IPrimaryMesh* mesh = m_mesh;
+
+  m_generation_info = ICartesianMeshGenerationInfo::getReference(mesh,true);
+
   info() << "sub domain offset @ " << sdXOffset() << "x" << sdYOffset() << "x" << sdZOffset();
   // All Cells Setup
   Integer all_nb_cell_x = m_nx;
@@ -587,13 +591,9 @@ generateMesh()
   // Positionne des propriétés sur le maillage pour qu'il puisse connaître
   // le nombre de mailles dans chaque direction ainsi que l'offset du sous-domaine.
   // Cela est utilisé notammement par CartesianMesh.
-  Properties* mesh_properties = mesh->properties();
-  mesh_properties->setInt64("GlobalNbCellX", all_nb_cell_x);
-  mesh_properties->setInt64("GlobalNbCellY", all_nb_cell_y);
-  mesh_properties->setInt64("GlobalNbCellZ", all_nb_cell_z);
-  mesh_properties->setInt32("SubDomainOffsetX", sdXOffset());
-  mesh_properties->setInt32("SubDomainOffsetY", sdYOffset());
-  mesh_properties->setInt32("SubDomainOffsetZ", sdZOffset());
+  //Properties* mesh_properties = mesh->properties();
+  m_generation_info->setGlobalNbCell(all_nb_cell_x,all_nb_cell_y,all_nb_cell_z);
+  m_generation_info->setSubDomainOffset(sdXOffset(),sdYOffset(),sdZOffset());
 
   Integer all_nb_cell_xy = CheckedConvert::multiply(all_nb_cell_x, all_nb_cell_y);
   Int64 all_nb_cell_xyz = ((Int64)all_nb_cell_xy) * ((Int64)all_nb_cell_z);
@@ -604,9 +604,7 @@ generateMesh()
   Int32 own_nb_cell_x = ownXNbCell();
   Int32 own_nb_cell_y = ownYNbCell();
   Int32 own_nb_cell_z = ownZNbCell();
-  mesh_properties->setInt32("OwnNbCellX", own_nb_cell_x);
-  mesh_properties->setInt32("OwnNbCellY", own_nb_cell_y);
-  mesh_properties->setInt32("OwnNbCellZ", own_nb_cell_z);
+  m_generation_info->setOwnNbCell(own_nb_cell_x,own_nb_cell_y,own_nb_cell_z);
   Integer own_nb_cell_xy = CheckedConvert::multiply(own_nb_cell_x, own_nb_cell_y);
   Integer own_nb_cell_xyz = CheckedConvert::multiply(own_nb_cell_xy, own_nb_cell_z);
   info() << " own cells: " << own_nb_cell_x << "x" << own_nb_cell_y << "y"
@@ -673,9 +671,7 @@ generateMesh()
       cell_offset_z = sd_z_cell_offset[sdZOffset()] / all_nb_cell_xy;
     }
     info() << "OwnCellOffset info X=" << cell_offset_x << " Y=" << cell_offset_y << " Z=" << cell_offset_z;
-    mesh_properties->setInt64("OwnCellOffsetX", cell_offset_x);
-    mesh_properties->setInt64("OwnCellOffsetY", cell_offset_y);
-    mesh_properties->setInt64("OwnCellOffsetZ", cell_offset_z);
+    m_generation_info->setOwnCellOffset(cell_offset_x,cell_offset_y,cell_offset_z);
   }
   // IBL, NBL
   info() << " sd_x_ibl=" << sd_x_ibl;
