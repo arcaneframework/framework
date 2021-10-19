@@ -166,9 +166,8 @@ createSolver(boost::program_options::variables_map& vm)
   if (solver_package.compare("mcgsolver") == 0) {
 #ifdef ALIEN_USE_MCGSOLVER
     std::string precond_type_s = vm["precond"].as<std::string>();
-    MCGOptionTypes::ePreconditioner precond_type =
-        OptionsMCGSolverUtils::stringToPreconditionerEnum(precond_type_s);
-    std::string kernel_type_s = vm["kernel"].as<std::string>();
+    MCGSolver::ePrecondType precond_type =
+        OptionsMCGSolverUtils::stringToPreconditionerEnum(precond_type_s);    std::string kernel_type_s = vm["kernel"].as<std::string>();
     MCGOptionTypes::eKernelType kernel_type =
         OptionsMCGSolverUtils::stringToKernelEnum(kernel_type_s);
     // options

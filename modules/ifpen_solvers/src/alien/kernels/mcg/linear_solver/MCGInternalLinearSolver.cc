@@ -5,6 +5,7 @@
 #include "mpi.h"
 #include <tuple>
 #include <iomanip>
+#include <regex>
 
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 
@@ -50,7 +51,8 @@ MCGInternalLinearSolver::AlienKOpt2MCGKOpt::AlienKOpt2MCGKOpt()
   m_option_translate[{ MCGOptionTypes::CPU_CBLAS_BCSR, true, true }] =
       MCGSolver::MPI_OMP_CPUCBLAS;
 
-  m_option_translate[{ MCGOptionTypes::CPU_AVX_BCSR, false, false }] = MCGSolver::CPUAVX;
+  m_option_translate[{ MCGOptionTypes::CPU_AVX_BCSR, false, false }] =
+      MCGSolver::CPUAVX;
   m_option_translate[{ MCGOptionTypes::CPU_AVX_BCSR, true, false }] =
       MCGSolver::MPI_CPUAVX;
   m_option_translate[{ MCGOptionTypes::CPU_AVX_BCSR, false, true }] =
@@ -105,39 +107,6 @@ MCGInternalLinearSolver::AlienKOpt2MCGKOpt::getKernelOption(
   }
 }
 
-std::unique_ptr<MCGInternalLinearSolver::AlienPrecOpt2MCGPrecOpt>
-    MCGInternalLinearSolver::AlienPrecOpt2MCGPrecOpt::m_instance;
-
-MCGInternalLinearSolver::AlienPrecOpt2MCGPrecOpt::AlienPrecOpt2MCGPrecOpt()
-{
-  m_option_translate[MCGOptionTypes::NonePC] = MCGSolver::PrecNone;
-  m_option_translate[MCGOptionTypes::ILU0PC] = MCGSolver::PrecILU0;
-  m_option_translate[MCGOptionTypes::FixpILU0PC] = MCGSolver::PrecFixPointILU0;
-  m_option_translate[MCGOptionTypes::ColorILU0PC] = MCGSolver::PrecColorILU0;
-  m_option_translate[MCGOptionTypes::BlockILU0PC] = MCGSolver::PrecBlockILU0;
-  m_option_translate[MCGOptionTypes::AMGX] = MCGSolver::PrecAMGX;
-  m_option_translate[MCGOptionTypes::HypreAMG] = MCGSolver::PrecHypreAMG;
-}
-
-MCGSolver::ePrecondType
-MCGInternalLinearSolver::AlienPrecOpt2MCGPrecOpt::getPrecondOption(
-    const MCGOptionTypes::ePreconditioner& prec)
-{
-  if (!m_instance) {
-    m_instance.reset(new AlienPrecOpt2MCGPrecOpt);
-  }
-
-  const auto& p = m_instance->m_option_translate.find(prec);
-
-  if (p != m_instance->m_option_translate.cend()) {
-    return p->second;
-  } else {
-    m_instance->alien_fatal(
-        [&] { m_instance->cout() << "Unknow Precond configuration"; });
-    throw FatalErrorException(__PRETTY_FUNCTION__); // just build for warning
-  }
-}
-
 /*---------------------------------------------------------------------------*/
 MCGInternalLinearSolver::MCGInternalLinearSolver(
     Arccore::MessagePassing::IMessagePassingMng* parallel_mng, IOptionsMCGSolver* options)
@@ -154,15 +123,17 @@ MCGInternalLinearSolver::MCGInternalLinearSolver(
   m_dir_enum[std::string("-D")] = *((int*)"-D+D");
 
   // check version
-  const std::string expected_revision("336e901");
-  const auto revision = MCGSolver::LinearSolver::getRevision();
+  const std::string expected_version("v1.2");
+  const std::regex expected_revision_regex("^"+ expected_version +".*");
+  m_version = MCGSolver::LinearSolver::getRevision();
 
-  if (revision != expected_revision) {
-    alien_info([&] {
-      cout() << "MCGSolver revisions mismatch: expect " << expected_revision << " get "
-             << revision;
-    });
+  if(!std::regex_match(m_version,expected_revision_regex))
+  {
+    alien_info([&] { cout()<<"MCGSolver version mismatch: expect " << expected_version << " get " << m_version ; });
   }
+
+  const std::regex end_regex("-[[:alnum:]]+$");
+  m_version = std::regex_replace(m_version,end_regex,"");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -192,7 +163,12 @@ MCGInternalLinearSolver::init()
     return;
 
   m_output_level = m_options->output();
-
+  if(m_output_level > 0)
+  {
+    alien_info([&]{
+        printf("MCVSolver version %s\n",MCGSolver::LinearSolver::getRevision().c_str());
+    });
+  }
   m_use_unit_diag = false;
   m_keep_diag_opt = m_options->keepDiagOpt();
   m_normalize_opt = m_options->normalizeOpt();
@@ -250,30 +226,27 @@ MCGInternalLinearSolver::init()
     m_solver->setOpt(MCGSolver::ExportSystemFileName,
         std::string(localstr(m_options->exportSystemFileName())));
 
-  switch (m_solver_opt) {
-  case MCGOptionTypes::BiCGStab:
-    m_solver->setOpt(MCGSolver::SolverType, MCGSolver::LinearSolver::BiCGS);
-    break;
-  case MCGOptionTypes::Gmres:
-    m_solver->setOpt(MCGSolver::SolverType, MCGSolver::LinearSolver::GMRes);
-    break;
-  default:;
-  }
-  m_solver->setOpt(
-      MCGSolver::PrecondOpt, AlienPrecOpt2MCGPrecOpt::getPrecondOption(m_precond_opt));
+  m_solver->setOpt(MCGSolver::SolverType,m_solver_opt);
+
+  m_solver->setOpt(MCGSolver::PrecondOpt,m_precond_opt);
 
   m_solver->setOpt(MCGSolver::PolyOrder, m_options->polyOrder());
   m_solver->setOpt(MCGSolver::PolyFactor, m_options->polyFactor());
   m_solver->setOpt(MCGSolver::PolyFactorMaxIter, m_options->polyFactorNumIter());
 
   m_solver->setOpt(MCGSolver::BlockJacobiNumOfIter, m_options->bjNumIter());
-  m_solver->setOpt(MCGSolver::BlockJacobiLocalSolverOpt,
-      AlienPrecOpt2MCGPrecOpt::getPrecondOption(m_options->bjLocalPrecond()));
+  m_solver->setOpt(MCGSolver::BlockJacobiLocalSolverOpt,m_options->bjLocalPrecond());
 
   m_solver->setOpt(MCGSolver::FPILUSolverNumIter, m_options->fpilu0SolveNumIter());
   m_solver->setOpt(MCGSolver::FPILUFactorNumIter, m_options->fpilu0FactoNumIter());
 
   m_solver->setOpt(MCGSolver::SpPrec, m_options->spPrec());
+
+  if(!m_options->ILUk().empty()){
+    m_solver->setOpt(MCGSolver::ILUkLevel, m_options->ILUk()[0]->levelOfFill());
+    // override spPrec
+    m_solver->setOpt(MCGSolver::SpPrec, m_options->ILUk()[0]->sp());
+  }
 
 #if 0
   switch (m_precond_opt) {
@@ -283,13 +256,6 @@ MCGInternalLinearSolver::init()
   case MCGOptionTypes::FixpILU0PC:
     m_solver->setOpt(MCGSolver::PrecondOpt,MCGSolver::PrecFixPointILU0);
     break;
-#if 0
-	case MCGOptionTypes::BSSORPC :
-	  m_solver->setOpt((Integer)MCGSolver::PrecondOpt,(Integer)MCGSolver::Precond::BSSOR) ;
-	  m_solver->setOpt((Integer)MCGSolver::BSSORRelaxFactor,(Real)m_options->bssorRelaxFactor()) ;
-	 m_solver->setOpt((Integer)MCGSolver::BSSORNumIter,(Integer)m_options->bssorNumIter()) ;
-	 break;
-#endif
   case MCGOptionTypes::ILU0PC:
     m_solver->setOpt(MCGSolver::PrecondOpt,MCGSolver::PrecILU0);
      break;
@@ -501,8 +467,8 @@ MCGInternalLinearSolver::printInfo() const
   double total_solve_time = m_solve_timer.getElapse() + m_system_timer.getElapse();
   alien_info([&] {
     cout() << "\n|----------------------------------------------------|\n"
-              "| Linear Solver        : MCGSolver                   |\n"
-              "|----------------------------------------------------|\n"
+                "| Linear Solver        : MCGSolver " << m_version << "\n"
+                "|----------------------------------------------------|\n"
            << std::scientific << std::setprecision(4)
            << "| total num of iter           : " << m_total_iter_num << "\n"
            << "| solve num                   : " << m_solve_num << "\n"

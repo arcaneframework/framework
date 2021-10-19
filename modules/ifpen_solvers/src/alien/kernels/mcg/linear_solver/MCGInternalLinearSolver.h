@@ -49,20 +49,6 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
     AlienKOpt2MCGKOpt();
   };
 
-  class AlienPrecOpt2MCGPrecOpt : public ObjectWithTrace
-  {
-   public:
-    static MCGSolver::ePrecondType getPrecondOption(
-        const MCGOptionTypes::ePreconditioner& prec);
-
-   private:
-    static std::unique_ptr<AlienPrecOpt2MCGPrecOpt> m_instance;
-
-    std::map<MCGOptionTypes::ePreconditioner, MCGSolver::ePrecondType> m_option_translate;
-
-    AlienPrecOpt2MCGPrecOpt();
-  };
-
   class Timer
   {
    private:
@@ -183,6 +169,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
 
  private:
   //! Structure interne du solveur
+  std::string m_version;
   bool m_use_mpi = false;
   Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng = nullptr;
   MCGSolver::MachineInfo* m_machine_info = nullptr;
@@ -192,10 +179,10 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
   Alien::SolverStatus m_status;
 
   //! Preconditioner options
-  MCGOptionTypes::ePreconditioner m_precond_opt = MCGOptionTypes::NonePC;
+  MCGSolver::ePrecondType m_precond_opt = MCGSolver::PrecNone;
 
   //! Solver parameters
-  MCGOptionTypes::eSolver m_solver_opt = MCGOptionTypes::BiCGStab;
+  MCGSolver::LinearSolver::eKrylovType m_solver_opt = MCGSolver::LinearSolver::BiCGS;
   Integer m_max_iteration = 1000;
   Real m_precision = 1e-6;
 
