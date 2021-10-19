@@ -80,13 +80,13 @@ persistantes mais ne peuvent pas être copiées. La méthode
 Arcane::Accelerator::makeQueueRef() permet de créer une référence à
 une file qui peut être copiée.
 
-## Exemple d'utilisation
+## Exemple d'utilisation d'une boucle complexe
 
 ~~~{.cpp}
 using namespace Arcane;
 using namespace Arcane::Accelerator;
 {
-  Runner runner = ...;
+  Arcane::Accelerator::Runner runner = ...;
   auto queue = makeQueue(runner);
   auto command = makeCommand(queue);
   auto out_t1 = viewOut(command,t1);
@@ -102,6 +102,10 @@ using namespace Arcane::Accelerator;
 ~~~
 
 ## Compilation
+
+%Arcane propose une intégration pour compiler avec le support des
+accélérateurs via CMake. Ceux qui utilisent un autre système de
+compilation doivent gérer aux même ce support.
 
 Pour pouvoir utiliser des noyaux de calcul sur accélérateur, il faut
 en général utiliser un compilateur spécifique. L'implémentation
@@ -153,3 +157,198 @@ TODO: expliquer mémoire unifiée ne pas utiliser le CPU en même temps que le G
 TODO: expliquer utilisation des NumArray.
 
 TODO: expliquer utilisation des vues
+
+## Utilisation des vues
+
+Les accélérateurs ont en général leur propre mémoire qui est
+différente de celle de l'hôte. Il est donc nécessaire de spécifier
+comment seront utiliser les données pour gérer les éventuels
+transferts entre les mémoire. Pour cela %Arcane fournit un mécanisme
+appelé une vue qui permet de spécifier pour une variable ou un tableau
+s'il va être utilisé en entrée, en sortie ou les deux.
+
+\warning Une vue est un objet **TEMPORAIRE** et est toujours associée
+à une commande (Arcane::Accelerator::RunCommand) et un conteneur
+(Variable %Arcane ou tableau) et ne doit pas être utilisée lorsque la commande
+associée est terminée ou le conteneur associé est modifié.
+
+%Arcane propose des vues sur les variables (Arcane::IVariable) ou sur la classe Arcane::NumArray.
+
+Quel que soit le conteneur associé, la déclaration des vues est la
+même:
+
+~~~{.cpp}
+#include "arcane/accelerator/Views.h"
+using namespace Arcane;
+using namespace Arcane::Accelerator;
+RunCommand& command = ...;
+Arcane::NumArray<Real,1> a;
+Arcane::NumArray<Real,1> b;
+Arcane::NumArray<Real,13> c;
+VariableCellReal var_c = ...;
+auto in_a = viewIn(command,a); // Vue en entrée
+auto inout_b = viewInOut(command,b); // Vue en entrée/sortie
+auto out_c = viewOut(command,var_c); // Vue en sortie.
+~~~
+
+## Utilisation des lambda
+
+Actuellement il est possible de déporter deux types de boucles sur
+accélérateurs:
+- les boucles sur les entités du maillage via la macro
+  RUNCOMMAND_ENUMERATE()
+- les boucles classiques sur des tableaux via la commande
+  RUNCOMMAND_LOOP().
+
+Il existe deux macros RUNCOMMAND_LOOP() et RUNCOMMAND_ENUMERATE() pour
+exécuter une commande sur un accélérateur. Ces deux macros permettent
+de définir un bout de code qui est une fonction lambda du C++11 (TODO:
+ajouter référence).
+
+Lorsque'un noyau de calcul est déporté sur accélérateur, il ne faut
+pas accéder à la mémoire associée aux vues pendant l'exécution sous
+peine de plantage. En général cela ne peut se produire que lorsque les
+Arcane::Accelerator::RunQueue sont asynchrones. Par exemple:
+
+~~~{.cpp}
+#include "arcane/accelerator/Views.h"
+using namespace Arcane::Accelerator;
+RunQueue& queue = ...;
+queue.setAsync(true);
+Arcane::NumArray<Real,1> a;
+Arcane::NumArray<Real,1> b;
+
+RunCommand& command = makeCommand(queue);
+auto in_a = viewIn(command,a);
+auto out_b = viewOut(command,b);
+// Copie A dans B
+command << RUNCOMMAND_LOOP1(iter,nb_value)
+{
+  auto [i] = iter();
+  out_b(i) = in_a(i);
+};
+// La commande est en cours d'exécution tant que la méthode barrier()
+// n'a pas été appelée
+
+// ICI il NE FAUT PAS utiliser 'a' ou 'b' ou 'in_a' ou 'out_b'
+
+queue.barrier();
+
+// ICI on peut utiliser 'a' ou 'b' (MAIS PAS 'in_a' ou 'out_b' car la
+// commande est terminée)
+~~~
+
+## Limitation des lambda C++ sur accélérateurs
+
+Les mécanismes de compilation et la gestion mémoire sur accélérateurs
+font qu'il y a des restrictions sur l'utilisation des lambda
+classiques du C++
+
+### Appel d'autres fonctions dans les lambda
+
+Dans une lambda prévue pour être déportée sur accélérateur, on ne peut
+appeler que:
+
+- des méthodes de classe qui sont **publiques**
+- qui fonctions qui sont `inline`
+- qui fonctions ou méthodes qui ont l'attribut ARCCORE_HOST_DEVICE ou
+  ARCCORE_DEVICE ou des méthodes `constexpr`
+
+Il n'est pas possible d'appeler des fonctions externes qui sont
+définies dans d'autres unités de compilation (par exemple d'autres
+bibliothèques)
+
+### Utilisation des champs d'une instance de classe
+
+Il ne faut pas utiliser dans les lambdas une référence à un champ
+d'une classe car ce dernier est capturé par référence. Cela provoquera
+un plantage par accès mémoire invalide sur accélérateur. Pour éviter
+ce problème, il suffit de déclarer localement à la fonction une copie
+de la valeur de l'instance de classe qu'on souhaite utiliser. Dans
+l'exemple suivant la fonction `f1()` provoquera un plantage alors que
+`f2()` fonctionnera bien.
+
+~~~{.cpp}
+class A
+{
+public:
+ void f1();
+ void f2();
+ int my_value;
+};
+void A::f1()
+{
+  Arcane::Accelerator::RunCommand& command = ...
+  Arcane::NumArray<int,1> a(100);
+  auto out_a = viewIn(command,a);
+  command << RUNCOMMAND_LOOP1(iter,100){
+    out_a(iter) = my_value+5; // BAD !!
+  };
+}
+void A::f2()
+{
+  Arcane::Accelerator::RunCommand& command = ...
+  Arcane::NumArray<int,1> a(100);
+  auto out_a = viewIn(command,a);
+  int v = my_value;
+  command << RUNCOMMAND_LOOP1(iter,100){
+    out_a(iter) = v+5; // GOOD !!
+  };
+}
+~~~
+
+## Mode Autonome
+
+Il est possible d'utiliser le mode accélérateur de %Arcane sans le
+support des objets de haut niveau tel que les maillages ou les
+sous-domaines. L'exemple 'standalone_accelerator' montre une telle
+utilisation. Par exemple, le code suivant permet de déporter sur
+accélérateur la somme de deux tableaux `a` et `b` dans un tabeau `c`.
+
+~~~{.cpp}
+int
+main(int argc,char* argv[])
+{
+  using namespace Arcane;
+
+  // Teste la somme de deux tableaux 'a' et 'b' dans un tableau 'c'.
+  try{
+    ArcaneLauncher::init(CommandLineArguments(&argc,&argv));
+    StandaloneAcceleratorMng launcher(ArcaneLauncher::createStandaloneAcceleratorMng());
+    IAcceleratorMng* acc_mng = launcher.acceleratorMng();
+
+    constexpr int nb_value = 10000;
+
+
+    // Définit 2 tableaux 'a' et 'b' et effectue leur initialisation.
+    NumArray<Int64,1> a(nb_value);
+    NumArray<Int64,1> b(nb_value);
+    for( int i=0; i<nb_value; ++i ){
+      a.s(i) = i+2;
+      b.s(i) = i+3;
+    }
+
+    // Defínit le tableau 'c' qui contiendra la somme de 'a' et 'b'
+    NumArray<Int64,1> c(nb_value);
+
+    // Noyau de calcul déporté sur accélérateur.
+    {
+      auto command = makeCommand(acc_mng->defaultQueue());
+      // Indique que 'a' et 'b' seront en entrée et 'c' en sortie
+
+      auto in_a = viewIn(command,a);
+      auto in_b = viewIn(command,b);
+      auto out_c = viewOut(command,c);
+      command << RUNCOMMAND_LOOP1(iter,nb_value)
+      {
+        out_c(iter) = in_a(iter) + in_b(iter);
+      };
+    }
+  }
+  catch(const Exception& ex){
+    std::cerr << "EXCEPTION: " << ex << "\n";
+    return 1;
+  }
+  return 0;
+}
+~~~
