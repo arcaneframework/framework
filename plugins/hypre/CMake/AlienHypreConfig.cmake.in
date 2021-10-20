@@ -1,5 +1,8 @@
 @PACKAGE_INIT@
 
+# Set and Check must go first else macro might be redefined by find_dependency ...
+set_and_check(ALIENHYPRE_TARGET_FILE "${PACKAGE_PREFIX_DIR}/@config_install_dir@/@ALIENHYPRE_EXPORT_TARGET@.cmake")
+
 include(CMakeFindDependencyMacro)
 
 find_dependency(Arccon)
@@ -11,7 +14,4 @@ find_dependency(Alien)
 # Remove FindPackage Arccon paths
 list(REMOVE_AT CMAKE_MODULE_PATH -1)
 
-include(${PACKAGE_PREFIX_DIR}/@config_install_dir@/@ALIEN_EXPORT_TARGET@.cmake)
-
-
-
+include(${ALIENHYPRE_TARGET_FILE})

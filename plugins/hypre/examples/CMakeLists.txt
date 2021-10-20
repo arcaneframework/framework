@@ -42,27 +42,27 @@ target_link_libraries(example_hypre_move PUBLIC
         Alien::alien_hypre
         Alien::alien_semantic_move)
 
-enable_testing()
-include(LoadAlienTest)
+if (ALIEN_BENCHMARK)
+    enable_testing()
+    include(LoadAlienTest)
 
-alien_test(
-        BENCH hypre
-        NAME hypre.example
-        PROCS 4
-        COMMAND example_hypre
-)
+    alien_test(
+            BENCH hypre
+            NAME hypre.example
+            PROCS 4
+            COMMAND example_hypre
+    )
 
-alien_test(
-        BENCH hypre
-        NAME hypre.example.move
-        PROCS 4
-        COMMAND example_hypre_move
-)
+    alien_test(
+            BENCH hypre
+            NAME hypre.example.move
+            PROCS 4
+            COMMAND example_hypre_move
+    )
 
+    #-----------------------------------------------------------
+    # Bench recap
+    #-----------------------------------------------------------
 
-#-----------------------------------------------------------
-# Bench recap
-#-----------------------------------------------------------
-
-print_bench_informations()
-
+    print_bench_informations()
+endif (ALIEN_BENCHMARK)

@@ -107,13 +107,13 @@ endif (ALIEN_PETSC_UNIT_TESTS)
 
 include(ArcconSetInstallDirs)
 
-set(ALIEN_EXPORT_TARGET ${PROJECT_NAME}Targets)
+set(ALIENPETSC_EXPORT_TARGET ${PROJECT_NAME}Targets)
 
 install(DIRECTORY include/alien/petsc
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/alien
         )
 
-install(TARGETS alien_petsc EXPORT ${ALIEN_EXPORT_TARGET}
+install(TARGETS alien_petsc EXPORT ${ALIENPETSC_EXPORT_TARGET}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
@@ -126,7 +126,7 @@ install(
 set(alien_install_lib "${CMAKE_INSTALL_LIBDIR}/alien")
 set(config_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 
-install(EXPORT ${ALIEN_EXPORT_TARGET}
+install(EXPORT ${ALIENPETSC_EXPORT_TARGET}
         NAMESPACE Alien::
         DESTINATION ${config_install_dir})
 

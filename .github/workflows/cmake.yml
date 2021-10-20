@@ -138,3 +138,16 @@ jobs:
         run: |
           ${{matrix.config.precommand}}
           cd ${{env.BUILD_DIR}} && cmake --install ${{env.BUILD_DIR}}
+
+      - name: Install Arccon
+        run: |
+          ${{matrix.config.precommand}}
+          cmake -B ${{env.BUILD_DIR}}/arccon -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DCMAKE_INSTALL_PREFIX=${{env.INSTALL_DIR}} framework/arccon/
+          cmake --build ${{env.BUILD_DIR}}/arccon --config ${{matrix.config.build_type}} -j $(nproc)
+          cd ${{env.BUILD_DIR}} && cmake --install ${{env.BUILD_DIR}}/arccon
+
+      - name: TestInstallHypre
+        run: |
+          ${{matrix.config.precommand}}
+          cmake -B ${{env.BUILD_DIR}}/hypre -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DCMAKE_PREFIX_PATH=${{env.INSTALL_DIR}} ${{env.INSTALL_DIR}}/share/doc/Alien/examples/hypre
+          cmake --build ${{env.BUILD_DIR}}/hypre
