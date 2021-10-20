@@ -15,8 +15,9 @@ set( ARCANE_SOURCES
   RunQueueInternal.h
   RunQueueInternal.cc
   RunQueue.h
-  Views.h
+  VariableViews.h
   ViewsCommon.h
+  Views.h
   NumArray.h
   NumArrayViews.h
 )

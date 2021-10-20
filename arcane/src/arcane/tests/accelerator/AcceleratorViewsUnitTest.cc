@@ -18,7 +18,7 @@
 
 #include "arcane/accelerator/Runner.h"
 #include "arcane/accelerator/RunCommandLoop.h"
-#include "arcane/accelerator/Views.h"
+#include "arcane/accelerator/VariableViews.h"
 #include "arcane/accelerator/RunCommandEnumerate.h"
 
 /*---------------------------------------------------------------------------*/
