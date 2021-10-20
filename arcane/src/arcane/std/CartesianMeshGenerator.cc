@@ -592,8 +592,8 @@ generateMesh()
   // le nombre de mailles dans chaque direction ainsi que l'offset du sous-domaine.
   // Cela est utilisé notammement par CartesianMesh.
   //Properties* mesh_properties = mesh->properties();
-  m_generation_info->setGlobalNbCell(all_nb_cell_x,all_nb_cell_y,all_nb_cell_z);
-  m_generation_info->setSubDomainOffset(sdXOffset(),sdYOffset(),sdZOffset());
+  m_generation_info->setGlobalNbCells(all_nb_cell_x,all_nb_cell_y,all_nb_cell_z);
+  m_generation_info->setSubDomainOffsets(sdXOffset(),sdYOffset(),sdZOffset());
 
   Integer all_nb_cell_xy = CheckedConvert::multiply(all_nb_cell_x, all_nb_cell_y);
   Int64 all_nb_cell_xyz = ((Int64)all_nb_cell_xy) * ((Int64)all_nb_cell_z);
@@ -604,7 +604,7 @@ generateMesh()
   Int32 own_nb_cell_x = ownXNbCell();
   Int32 own_nb_cell_y = ownYNbCell();
   Int32 own_nb_cell_z = ownZNbCell();
-  m_generation_info->setOwnNbCell(own_nb_cell_x,own_nb_cell_y,own_nb_cell_z);
+  m_generation_info->setOwnNbCells(own_nb_cell_x,own_nb_cell_y,own_nb_cell_z);
   Integer own_nb_cell_xy = CheckedConvert::multiply(own_nb_cell_x, own_nb_cell_y);
   Integer own_nb_cell_xyz = CheckedConvert::multiply(own_nb_cell_xy, own_nb_cell_z);
   info() << " own cells: " << own_nb_cell_x << "x" << own_nb_cell_y << "y"
@@ -671,7 +671,7 @@ generateMesh()
       cell_offset_z = sd_z_cell_offset[sdZOffset()] / all_nb_cell_xy;
     }
     info() << "OwnCellOffset info X=" << cell_offset_x << " Y=" << cell_offset_y << " Z=" << cell_offset_z;
-    m_generation_info->setOwnCellOffset(cell_offset_x,cell_offset_y,cell_offset_z);
+    m_generation_info->setOwnCellOffsets(cell_offset_x,cell_offset_y,cell_offset_z);
   }
   // IBL, NBL
   info() << " sd_x_ibl=" << sd_x_ibl;
@@ -818,6 +818,7 @@ generateMesh()
   }
   Integer cells_infos_index = 0;
   info() << "cell_unique_id_offset=" << cell_unique_id_offset;
+  m_generation_info->setFirstOwnCellUniqueId(cell_unique_id_offset);
   if (m_mesh_dimension == 3) {
     for (Integer z = 0; z < own_nb_cell_z; ++z) {
       for (Integer y = 0; y < own_nb_cell_y; ++y) {

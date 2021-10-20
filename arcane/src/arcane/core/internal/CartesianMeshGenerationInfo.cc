@@ -33,16 +33,17 @@ namespace Arcane::impl
 CartesianMeshGenerationInfo::
 CartesianMeshGenerationInfo(IMesh* mesh)
 : m_mesh(mesh)
+, m_mesh_dimension(mesh->dimension())
 {
-  m_global_nb_cell = Int64ArrayView(NB_DIM, m_global_nb_cell_ptr);
-  m_sub_domain_offset = Int32ArrayView(NB_DIM, m_sub_domain_offset_ptr);
-  m_own_nb_cell = Int32ArrayView(NB_DIM, m_own_nb_cell_ptr);
-  m_own_cell_offset = Int64ArrayView(NB_DIM, m_own_cell_offset_ptr);
+  m_global_nb_cells = Int64ArrayView(NB_DIM, m_global_nb_cell_ptr);
+  m_sub_domain_offsets = Int32ArrayView(NB_DIM, m_sub_domain_offset_ptr);
+  m_own_nb_cells = Int32ArrayView(NB_DIM, m_own_nb_cell_ptr);
+  m_own_cell_offsets = Int64ArrayView(NB_DIM, m_own_cell_offset_ptr);
 
-  m_global_nb_cell.fill(-1);
-  m_sub_domain_offset.fill(-1);
-  m_own_nb_cell.fill(-1);
-  m_own_cell_offset.fill(-1);
+  m_global_nb_cells.fill(-1);
+  m_sub_domain_offsets.fill(-1);
+  m_own_nb_cells.fill(-1);
+  m_own_cell_offsets.fill(-1);
 
   _init();
 }
@@ -51,11 +52,11 @@ CartesianMeshGenerationInfo(IMesh* mesh)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshGenerationInfo::
-setOwnCellOffset(Int64 x,Int64 y,Int64 z)
+setOwnCellOffsets(Int64 x,Int64 y,Int64 z)
 {
-  m_own_cell_offset[0] = x;
-  m_own_cell_offset[1] = y;
-  m_own_cell_offset[2] = z;
+  m_own_cell_offsets[0] = x;
+  m_own_cell_offsets[1] = y;
+  m_own_cell_offsets[2] = z;
 
   Properties* p = m_mesh->properties();
   p->setInt64("OwnCellOffsetX", x);
@@ -67,27 +68,33 @@ setOwnCellOffset(Int64 x,Int64 y,Int64 z)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshGenerationInfo::
-setGlobalNbCell(Int64 x,Int64 y,Int64 z)
+setGlobalNbCells(Int64 x, Int64 y, Int64 z)
 {
-  m_global_nb_cell[0] = x;
-  m_global_nb_cell[1] = y;
-  m_global_nb_cell[2] = z;
+  m_global_nb_cells[0] = x;
+  m_global_nb_cells[1] = y;
+  m_global_nb_cells[2] = z;
 
   Properties* p = m_mesh->properties();
   p->setInt64("GlobalNbCellX", x);
   p->setInt64("GlobalNbCellY", y);
   p->setInt64("GlobalNbCellZ", z);
+
+  m_global_nb_cell = x;
+  if (y > (-1))
+    m_global_nb_cell *= y;
+  if (z > (-1))
+    m_global_nb_cell *= z;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshGenerationInfo::
-setSubDomainOffset(Int32 x,Int32 y,Int32 z)
+setSubDomainOffsets(Int32 x, Int32 y, Int32 z)
 {
-  m_sub_domain_offset[0] = x;
-  m_sub_domain_offset[1] = y;
-  m_sub_domain_offset[2] = z;
+  m_sub_domain_offsets[0] = x;
+  m_sub_domain_offsets[1] = y;
+  m_sub_domain_offsets[2] = z;
 
   Properties* p = m_mesh->properties();
   p->setInt32("SubDomainOffsetX", x);
@@ -99,11 +106,11 @@ setSubDomainOffset(Int32 x,Int32 y,Int32 z)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshGenerationInfo::
-setOwnNbCell(Int32 x,Int32 y,Int32 z)
+setOwnNbCells(Int32 x, Int32 y, Int32 z)
 {
-  m_own_nb_cell[0] = x;
-  m_own_nb_cell[1] = y;
-  m_own_nb_cell[2] = z;
+  m_own_nb_cells[0] = x;
+  m_own_nb_cells[1] = y;
+  m_own_nb_cells[2] = z;
 
   Properties* p = m_mesh->properties();
   p->setInt32("OwnNbCellX", x);
@@ -115,24 +122,38 @@ setOwnNbCell(Int32 x,Int32 y,Int32 z)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshGenerationInfo::
+setFirstOwnCellUniqueId(Int64 uid)
+{
+  m_first_own_cell_unique_id = uid;
+
+  Properties* p = m_mesh->properties();
+  p->setInt64("CartesianFirstOnwCellUniqueId", uid);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshGenerationInfo::
 _init()
 {
   Properties* p = m_mesh->properties();
-  m_global_nb_cell[MD_DirX] = p->getInt64WithDefault("GlobalNbCellX",-1);
-  m_global_nb_cell[MD_DirY] = p->getInt64WithDefault("GlobalNbCellY",-1);
-  m_global_nb_cell[MD_DirZ] = p->getInt64WithDefault("GlobalNbCellZ",-1);
+  m_global_nb_cells[MD_DirX] = p->getInt64WithDefault("GlobalNbCellX", -1);
+  m_global_nb_cells[MD_DirY] = p->getInt64WithDefault("GlobalNbCellY", -1);
+  m_global_nb_cells[MD_DirZ] = p->getInt64WithDefault("GlobalNbCellZ", -1);
 
-  m_own_nb_cell[MD_DirX] = p->getInt32WithDefault("OwnNbCellX",-1);
-  m_own_nb_cell[MD_DirY] = p->getInt32WithDefault("OwnNbCellY",-1);
-  m_own_nb_cell[MD_DirZ] = p->getInt32WithDefault("OwnNbCellZ",-1);
+  m_own_nb_cells[MD_DirX] = p->getInt32WithDefault("OwnNbCellX", -1);
+  m_own_nb_cells[MD_DirY] = p->getInt32WithDefault("OwnNbCellY", -1);
+  m_own_nb_cells[MD_DirZ] = p->getInt32WithDefault("OwnNbCellZ", -1);
 
-  m_sub_domain_offset[MD_DirX] = p->getInt32WithDefault("SubDomainOffsetX",-1);
-  m_sub_domain_offset[MD_DirY] = p->getInt32WithDefault("SubDomainOffsetY",-1);
-  m_sub_domain_offset[MD_DirZ] = p->getInt32WithDefault("SubDomainOffsetZ",-1);
+  m_sub_domain_offsets[MD_DirX] = p->getInt32WithDefault("SubDomainOffsetX", -1);
+  m_sub_domain_offsets[MD_DirY] = p->getInt32WithDefault("SubDomainOffsetY", -1);
+  m_sub_domain_offsets[MD_DirZ] = p->getInt32WithDefault("SubDomainOffsetZ", -1);
 
-  m_own_cell_offset[MD_DirX] = p->getInt64WithDefault("OwnCellOffsetX",-1);
-  m_own_cell_offset[MD_DirY] = p->getInt64WithDefault("OwnCellOffsetY",-1);
-  m_own_cell_offset[MD_DirZ] = p->getInt64WithDefault("OwnCellOffsetZ",-1);
+  m_own_cell_offsets[MD_DirX] = p->getInt64WithDefault("OwnCellOffsetX", -1);
+  m_own_cell_offsets[MD_DirY] = p->getInt64WithDefault("OwnCellOffsetY", -1);
+  m_own_cell_offsets[MD_DirZ] = p->getInt64WithDefault("OwnCellOffsetZ", -1);
+
+  m_first_own_cell_unique_id = p->getInt64WithDefault("CartesianFirstOnwCellUniqueId", -1);
 }
 
 /*---------------------------------------------------------------------------*/

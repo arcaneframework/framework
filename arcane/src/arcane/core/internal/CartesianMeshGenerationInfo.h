@@ -41,31 +41,38 @@ class ARCANE_CORE_EXPORT CartesianMeshGenerationInfo
 
  public:
 
-  Int64ConstArrayView globalNbCell() const override { return m_global_nb_cell; }
-  Int32ConstArrayView subDomainOffset() const override { return m_sub_domain_offset; }
-  Int32ConstArrayView ownNbCell() const override { return m_own_nb_cell; };
-  Int64ConstArrayView ownCellOffset() const override { return m_own_cell_offset; };
+  Int64 globalNbCell() const override { return m_global_nb_cell; }
+  Int64ConstArrayView globalNbCells() const override { return m_global_nb_cells; }
+  Int32ConstArrayView subDomainOffsets() const override { return m_sub_domain_offsets; }
+  Int32ConstArrayView ownNbCells() const override { return m_own_nb_cells; };
+  Int64ConstArrayView ownCellOffsets() const override { return m_own_cell_offsets; };
+  Int64 firstOwnCellUniqueId() const override { return m_first_own_cell_unique_id; }
 
  public:
 
-  void setOwnCellOffset(Int64 x,Int64 y,Int64 z) override;
-  void setGlobalNbCell(Int64 x,Int64 y,Int64 z) override;
-  void setSubDomainOffset(Int32 x,Int32 y,Int32 z) override;
-  void setOwnNbCell(Int32 x,Int32 y,Int32 z) override;
+  void setOwnCellOffsets(Int64 x,Int64 y,Int64 z) override;
+  void setGlobalNbCells(Int64 x,Int64 y,Int64 z) override;
+  void setSubDomainOffsets(Int32 x,Int32 y,Int32 z) override;
+  void setOwnNbCells(Int32 x,Int32 y,Int32 z) override;
+  void setFirstOwnCellUniqueId(Int64 uid) override;
 
  private:
 
   IMesh* m_mesh;
+  Int32 m_mesh_dimension = -1;
+  Int64 m_global_nb_cell = 0;
 
-  Int64ArrayView m_global_nb_cell;
-  Int32ArrayView m_sub_domain_offset;
-  Int32ArrayView m_own_nb_cell;
-  Int64ArrayView m_own_cell_offset;
+  Int64ArrayView m_global_nb_cells;
+  Int32ArrayView m_sub_domain_offsets;
+  Int32ArrayView m_own_nb_cells;
+  Int64ArrayView m_own_cell_offsets;
 
   Int64 m_global_nb_cell_ptr[NB_DIM];
   Int32 m_sub_domain_offset_ptr[NB_DIM];
   Int32 m_own_nb_cell_ptr[NB_DIM];
   Int64 m_own_cell_offset_ptr[NB_DIM];
+
+  Int64 m_first_own_cell_unique_id = -1;
 
  private:
 

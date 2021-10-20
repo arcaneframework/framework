@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMesh.cc                                            (C) 2000-2020 */
+/* CartesianMesh.cc                                            (C) 2000-2021 */
 /*                                                                           */
 /* Maillage cartésien.                                                       */
 /*---------------------------------------------------------------------------*/
@@ -32,6 +32,7 @@
 #include "arcane/cea/internal/CartesianMeshPatch.h"
 
 #include "arcane/core/internal/ICartesianMeshGenerationInfo.h"
+#include "arcane/cea/internal/CartesianMeshUniqueIdRenumbering.h"
 
 #include <set>
 
@@ -117,6 +118,8 @@ class CartesianMesh
   ICartesianMeshPatch* patch(Integer index) const { return m_amr_patches[index].get(); }
 
   void refinePatch2D(Real2 position,Real2 length) override;
+
+  void renumberItemsUniqueIdInPatchs() override;
 
   void checkValid() const override;
 
@@ -339,10 +342,10 @@ computeDirections()
 
   auto* cmgi = ICartesianMeshGenerationInfo::getReference(m_mesh,true);
 
-  info() << "GlobalNbCell = " << cmgi->globalNbCell();
-  info() << "OwnNbCell: " << cmgi->ownNbCell();
-  info() << "SubDomainOffset: " << cmgi->subDomainOffset();
-  info() << "OwnCellOffset: " << cmgi->ownCellOffset();
+  info() << "GlobalNbCell = " << cmgi->globalNbCells();
+  info() << "OwnNbCell: " << cmgi->ownNbCells();
+  info() << "SubDomainOffset: " << cmgi->subDomainOffsets();
+  info() << "OwnCellOffset: " << cmgi->ownCellOffsets();
 
   CellGroup all_cells = cell_family->allItems();
   NodeGroup all_nodes = node_family->allItems();
@@ -356,28 +359,28 @@ computeDirections()
     m_local_face_direction[MD_DirX] = next_face_x;
     _computeMeshDirection(*m_all_items_direction_info.get(),MD_DirX,cells_center,faces_center,all_cells,all_nodes);
     CellDirectionMng& cdm = m_all_items_direction_info->cellDirection(MD_DirX);
-    cdm.m_global_nb_cell = cmgi->globalNbCell()[MD_DirX];
-    cdm.m_own_nb_cell = cmgi->ownNbCell()[MD_DirX];
-    cdm.m_sub_domain_offset = cmgi->subDomainOffset()[MD_DirX];
-    cdm.m_own_cell_offset = cmgi->ownCellOffset()[MD_DirX];
+    cdm.m_global_nb_cell = cmgi->globalNbCells()[MD_DirX];
+    cdm.m_own_nb_cell = cmgi->ownNbCells()[MD_DirX];
+    cdm.m_sub_domain_offset = cmgi->subDomainOffsets()[MD_DirX];
+    cdm.m_own_cell_offset = cmgi->ownCellOffsets()[MD_DirX];
   }
   if (next_face_y!=(-1)){
     m_local_face_direction[MD_DirY] = next_face_y;
     _computeMeshDirection(*m_all_items_direction_info.get(),MD_DirY,cells_center,faces_center,all_cells,all_nodes);
     CellDirectionMng& cdm = m_all_items_direction_info->cellDirection(MD_DirY);
-    cdm.m_global_nb_cell = cmgi->globalNbCell()[MD_DirY];
-    cdm.m_own_nb_cell = cmgi->ownNbCell()[MD_DirY];
-    cdm.m_sub_domain_offset = cmgi->subDomainOffset()[MD_DirY];
-    cdm.m_own_cell_offset = cmgi->ownCellOffset()[MD_DirY];
+    cdm.m_global_nb_cell = cmgi->globalNbCells()[MD_DirY];
+    cdm.m_own_nb_cell = cmgi->ownNbCells()[MD_DirY];
+    cdm.m_sub_domain_offset = cmgi->subDomainOffsets()[MD_DirY];
+    cdm.m_own_cell_offset = cmgi->ownCellOffsets()[MD_DirY];
   }
   if (next_face_z!=(-1)){
     m_local_face_direction[MD_DirZ] = next_face_z;
     _computeMeshDirection(*m_all_items_direction_info.get(),MD_DirZ,cells_center,faces_center,all_cells,all_nodes);
     CellDirectionMng& cdm = m_all_items_direction_info->cellDirection(MD_DirZ);
-    cdm.m_global_nb_cell = cmgi->globalNbCell()[MD_DirZ];
-    cdm.m_own_nb_cell = cmgi->ownNbCell()[MD_DirZ];
-    cdm.m_sub_domain_offset = cmgi->subDomainOffset()[MD_DirZ];
-    cdm.m_own_cell_offset = cmgi->ownCellOffset()[MD_DirZ];
+    cdm.m_global_nb_cell = cmgi->globalNbCells()[MD_DirZ];
+    cdm.m_own_nb_cell = cmgi->ownNbCells()[MD_DirZ];
+    cdm.m_sub_domain_offset = cmgi->subDomainOffsets()[MD_DirZ];
+    cdm.m_own_cell_offset = cmgi->ownCellOffsets()[MD_DirZ];
   }
 
   info() << "Compute cartesian connectivity";
@@ -589,6 +592,17 @@ checkValid() const
     ICartesianMeshPatch* p = patch(i);
     p->checkValid();
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMesh::
+renumberItemsUniqueIdInPatchs()
+{
+  auto* cmgi = ICartesianMeshGenerationInfo::getReference(m_mesh,true);
+  CartesianMeshUniqueIdRenumbering renumberer(this,cmgi);
+  renumberer.renumber();
 }
 
 /*---------------------------------------------------------------------------*/

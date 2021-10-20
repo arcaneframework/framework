@@ -40,15 +40,18 @@ class ARCANE_CORE_EXPORT ICartesianMeshGenerationInfo
 
  public:
 
-  virtual Int64ConstArrayView globalNbCell() const =0;
-  virtual Int32ConstArrayView subDomainOffset() const =0;
-  virtual Int32ConstArrayView ownNbCell() const =0;
-  virtual Int64ConstArrayView ownCellOffset() const =0;
+  virtual Int64 globalNbCell() const =0;
+  virtual Int64ConstArrayView globalNbCells() const =0;
+  virtual Int32ConstArrayView subDomainOffsets() const =0;
+  virtual Int32ConstArrayView ownNbCells() const =0;
+  virtual Int64ConstArrayView ownCellOffsets() const =0;
+  virtual Int64 firstOwnCellUniqueId() const =0;
 
-  virtual void setOwnCellOffset(Int64 x,Int64 y,Int64 z) =0;
-  virtual void setGlobalNbCell(Int64 x,Int64 y,Int64 z) =0;
-  virtual void setSubDomainOffset(Int32 x,Int32 y,Int32 z) =0;
-  virtual void setOwnNbCell(Int32 x,Int32 y,Int32 z) =0;
+  virtual void setOwnCellOffsets(Int64 x,Int64 y,Int64 z) =0;
+  virtual void setGlobalNbCells(Int64 x,Int64 y,Int64 z) =0;
+  virtual void setSubDomainOffsets(Int32 x,Int32 y,Int32 z) =0;
+  virtual void setOwnNbCells(Int32 x,Int32 y,Int32 z) =0;
+  virtual void setFirstOwnCellUniqueId(Int64 uid) =0;
 };
 
 /*---------------------------------------------------------------------------*/

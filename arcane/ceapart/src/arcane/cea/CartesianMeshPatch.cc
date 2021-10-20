@@ -261,7 +261,6 @@ void CartesianMeshPatch::
 _internalComputeNodeCellInformations(Cell cell0,Real3 cell0_coord,VariableNodeReal3& nodes_coord)
 {
   int dim = m_mesh->mesh()->dimension();
-  bool is_3d = m_mesh->mesh()->dimension()==3;
   if (dim==3)
     _computeNodeCellInformations3D(cell0,cell0_coord,nodes_coord);
   else if (dim==2)

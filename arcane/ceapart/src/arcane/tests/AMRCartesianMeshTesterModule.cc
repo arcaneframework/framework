@@ -239,6 +239,7 @@ init()
     m_cartesian_mesh->recreateFromDump();
   else{
     m_cartesian_mesh->computeDirections();
+    m_cartesian_mesh->renumberItemsUniqueIdInPatchs();
     _processPatches();
   }
 
