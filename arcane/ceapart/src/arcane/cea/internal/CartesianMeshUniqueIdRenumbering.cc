@@ -60,24 +60,24 @@ renumber()
   if (mesh->dimension() != 2)
     ARCANE_THROW(NotImplementedException, "Renumbering is only implemented for 2D mesh");
 
-  VariableCellInt32 cells_level(VariableBuildInfo(mesh, "ArcaneRenumberCellsLevel"));
+  VariableCellInt64 cells_new_uid(VariableBuildInfo(mesh, "ArcaneRenumberCellsNewUid"));
   VariableNodeInt64 nodes_new_uid(VariableBuildInfo(mesh, "ArcaneRenumberNodesNewUid"));
-  VariableFaceInt32 faces_level(VariableBuildInfo(mesh, "ArcaneRenumberFacesLevel"));
+  VariableFaceInt64 faces_new_uid(VariableBuildInfo(mesh, "ArcaneRenumberFacesNewUid"));
 
-  cells_level.fill(-1);
+  cells_new_uid.fill(-1);
   nodes_new_uid.fill(-1);
-  faces_level.fill(-1);
+  faces_new_uid.fill(-1);
 
   // Marque les entités issues du maillage cartésien comme étant de niveau 0
   // Elles ne seront pas renumérotées
   ICartesianMeshPatch* patch0 = m_cartesian_mesh->patch(0);
   ENUMERATE_ (Cell, icell, patch0->cells()) {
     Cell c{ *icell };
-    cells_level[icell] = 0;
+    cells_new_uid[icell] = c.uniqueId().asInt64();
     for (Node n : c.nodes())
       nodes_new_uid[n] = n.uniqueId();
     for (Face f : c.faces())
-      faces_level[f] = 0;
+      faces_new_uid[f] = f.uniqueId();
   }
 
   // Pour chaque maille de niveau 0, calcule son indice (i,j) dans le maillage cartésien
@@ -105,30 +105,15 @@ renumber()
     if (m_is_verbose)
       info() << "Renumbering: PARENT: cell_uid=" << cell.uniqueId() << " I=" << coord_i
              << " J=" << coord_j << " nb_cell_x=" << nb_cell_x;
-    _applyChildrenCell(cell, nodes_new_uid, coord_i, coord_j, nb_cell_x, nb_cell_y, 1);
+    _applyChildrenCell(cell, nodes_new_uid, faces_new_uid, cells_new_uid, coord_i, coord_j, nb_cell_x, nb_cell_y, 1);
   }
 
   // TODO: faire une classe pour cela.
-  info() << "Change CellFamily";
-  mesh->cellFamily()->notifyItemsUniqueIdChanged();
+  //info() << "Change CellFamily";
+  //mesh->cellFamily()->notifyItemsUniqueIdChanged();
 
-  {
-    info() << "Change NodeFamily uniqueId()";
-    IItemFamily* node_family = mesh->nodeFamily();
-    nodes_new_uid.synchronize();
-    ENUMERATE_ (Node, inode, node_family->allItems()) {
-      Node node{ *inode };
-      Int64 current_uid = node.uniqueId();
-      Int64 new_uid = nodes_new_uid[inode];
-      if (new_uid >= 0 && new_uid != current_uid) {
-        if (m_is_verbose)
-          info() << "Change NodeUID old=" << current_uid << " new=" << new_uid;
-        node.internal()->setUniqueId(new_uid);
-      }
-    }
-    node_family->notifyItemsUniqueIdChanged();
-    //node_family->compactItems(true);
-  }
+  _applyFamilyRenumbering(mesh->cellFamily(), cells_new_uid);
+  _applyFamilyRenumbering(mesh->nodeFamily(), nodes_new_uid);
   {
     // Suite au changement de numérotation des uniqueId() des noeuds,
     // il faut éventuellement réorienter les faces
@@ -137,6 +122,7 @@ renumber()
       face_reorienter.checkAndChangeOrientationAMR(*iface);
     }
   }
+  _applyFamilyRenumbering(mesh->faceFamily(), faces_new_uid);
   mesh->checkValidMesh();
 }
 
@@ -144,7 +130,31 @@ renumber()
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshUniqueIdRenumbering::
-_applyChildrenCell(Cell cell, VariableNodeInt64& nodes_new_uid, Int64 coord_i, Int64 coord_j,
+_applyFamilyRenumbering(IItemFamily* family, VariableItemInt64& items_new_uid)
+{
+  info() << "Change uniqueId() for family=" << family->name();
+  items_new_uid.synchronize();
+  ENUMERATE_ (Item, iitem, family->allItems()) {
+    Item item{ *iitem };
+    Int64 current_uid = item.uniqueId();
+    Int64 new_uid = items_new_uid[iitem];
+    if (new_uid >= 0 && new_uid != current_uid) {
+      if (m_is_verbose)
+        info() << "Change ItemUID old=" << current_uid << " new=" << new_uid;
+      item.internal()->setUniqueId(new_uid);
+    }
+  }
+  family->notifyItemsUniqueIdChanged();
+  //family->compactItems(true);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshUniqueIdRenumbering::
+_applyChildrenCell(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceInt64& faces_new_uid,
+                   VariableCellInt64& cells_new_uid,
+                   Int64 coord_i, Int64 coord_j,
                    Int64 nb_cell_x, Int64 nb_cell_y, Int32 level)
 {
   // TODO: pour pouvoir s'adapter à tous les raffinements, au lieu de 4,
@@ -158,7 +168,9 @@ _applyChildrenCell(Cell cell, VariableNodeInt64& nodes_new_uid, Int64 coord_i, I
   const Int64 nb_node_x = nb_cell_x + 1;
   const Int64 nb_node_y = nb_cell_y + 1;
   const Int64 cell_adder = nb_cell_x * nb_cell_y * level;
+  const Int64 nb_face_x = nb_cell_x + 1;
   const Int64 node_adder = nb_node_x * nb_node_y * level;
+  const Int64 face_adder = node_adder * 2;
 
   // Renumérote les noeuds de la maille courante.
   // Suppose qu'on a 4 noeuds
@@ -180,12 +192,30 @@ _applyChildrenCell(Cell cell, VariableNodeInt64& nodes_new_uid, Int64 coord_i, I
         if (m_is_verbose)
           info() << "APPLY_NODE_CHILD: uid=" << node.uniqueId() << " parent_cell=" << cell.uniqueId()
                  << " I=" << z << " new_uid=" << new_uids[z];
-        //node.internal()->setUniqueId(new_uids[z]);
         nodes_new_uid[node] = new_uids[z];
       }
     }
   }
-
+  // Renumérote les faces
+  {
+    if (cell.nbFace() != 4)
+      ARCANE_FATAL("Invalid number of faces N={0}, expected=4", cell.nbFace());
+    std::array<Int64, 4> new_uids;
+    new_uids[0] = (coord_i + 0) + ((coord_j + 0) * nb_face_x);
+    new_uids[1] = (coord_i + 1) + ((coord_j + 0) * nb_face_x);
+    new_uids[2] = (coord_i + 1) + ((coord_j + 1) * nb_face_x);
+    new_uids[3] = (coord_i + 0) + ((coord_j + 1) * nb_face_x);
+    for (Integer z = 0; z < 4; ++z) {
+      Face face = cell.face(z);
+      if (faces_new_uid[face] < 0) {
+        new_uids[z] += face_adder;
+        if (m_is_verbose)
+          info() << "APPLY_FACE_CHILD: uid=" << face.uniqueId() << " parent_cell=" << cell.uniqueId()
+                 << " I=" << z << " new_uid=" << new_uids[z];
+        faces_new_uid[face] = new_uids[z];
+      }
+    }
+  }
   // Renumérote les sous-mailles
   // Suppose qu'on a 4 mailles enfants comme suit par mailles
   // -------
@@ -203,8 +233,10 @@ _applyChildrenCell(Cell cell, VariableNodeInt64& nodes_new_uid, Int64 coord_i, I
       info() << "APPLY_CELL_CHILD: uid=" << sub_cell.uniqueId() << " I=" << my_coord_i << " J=" << my_coord_j
              << " level=" << level << " new_uid=" << new_uid << " NodeAdder=" << node_adder;
 
-    _applyChildrenCell(sub_cell, nodes_new_uid, my_coord_i, my_coord_j, nb_cell_x, nb_cell_y, level + 1);
-    sub_cell.internal()->setUniqueId(new_uid);
+    _applyChildrenCell(sub_cell, nodes_new_uid, faces_new_uid, cells_new_uid, my_coord_i, my_coord_j,
+                       nb_cell_x, nb_cell_y, level + 1);
+    if (cells_new_uid[sub_cell] < 0)
+      cells_new_uid[sub_cell] = new_uid;
   }
 }
 
