@@ -410,7 +410,7 @@ compute_tendencies_x(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumAr
   command << RUNCOMMAND_LOOPN(iter,3,NUM_VARS,nz,nx)
   {
     auto [ll, k, i] = iter();
-    out_tend(ll,k,i) = -(in_flux(ll,k,i+1) - in_flux(iter)) / dx;
+    out_tend(iter) = -(in_flux(ll,k,i+1) - in_flux(iter)) / dx;
   };
 }
 

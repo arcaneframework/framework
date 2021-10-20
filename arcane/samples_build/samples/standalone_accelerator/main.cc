@@ -45,10 +45,8 @@ _testStandaloneLauncher()
     auto in_a = viewIn(command,a);
     auto in_b = viewIn(command,b);
     auto out_c = viewOut(command,c);
-    command << RUNCOMMAND_LOOP1(iter,nb_value)
-    {
-      auto [i] = iter();
-      out_c(i) = in_a(i) + in_b(i);
+    command << RUNCOMMAND_LOOP1(iter,nb_value) {
+      out_c(iter) = in_a(iter) + in_b(iter);
     };
   }
 
