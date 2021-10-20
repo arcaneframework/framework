@@ -17,6 +17,7 @@
 #include "arcane/utils/TraceAccessor.h"
 
 #include "arcane/ItemTypes.h"
+#include "arcane/VariableTypedef.h"
 
 #include "arcane/cea/CeaGlobal.h"
 
@@ -48,8 +49,10 @@ class CartesianMeshUniqueIdRenumbering
  private:
   ICartesianMesh* m_cartesian_mesh = nullptr;
   ICartesianMeshGenerationInfo* m_generation_info = nullptr;
+  bool m_is_verbose = false;
  private:
-  void _applyChildrenCell(Cell cell,Int64 coord_i,Int64 coord_j,Int64 nb_cell_x,Int32 level,Int64 multiplier);
+  void _applyChildrenCell(Cell cell,VariableNodeInt64& nodes_new_uid,Int64 coord_i,Int64 coord_j,
+                          Int64 nb_cell_x,Int64 nb_cell_y,Int32 level);
 };
 
 /*---------------------------------------------------------------------------*/
