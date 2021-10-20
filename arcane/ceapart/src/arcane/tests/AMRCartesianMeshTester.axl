@@ -21,6 +21,13 @@
        Indique le type de bibliothèque à utiliser pour les sorties de dépouillement.
      </description>
    </service-instance>
+
+   <simple
+     name = "expected-number-of-cells-in-patchs"
+     type     = "int32[]"
+     >
+     <description>Si non vide, nombre de mailles que doit avoir chaque patch</description>
+   </simple>
  </options>
 
  <entry-points>

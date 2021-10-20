@@ -293,6 +293,14 @@ _processPatches()
   if (nb_expected_patch!=nb_patch)
     ARCANE_FATAL("Bad number of patchs expected={0} value={1}",nb_expected_patch,nb_patch);
 
+  IParallelMng* pm = parallelMng();
+  Int32 comm_rank = pm->commRank();
+  Int32 comm_size = pm->commSize();
+
+  UniqueArray<Int32> nb_cells_expected(options()->expectedNumberOfCellsInPatchs);
+  if (nb_cells_expected.size()!=nb_patch)
+    ARCANE_FATAL("Bad size for option '{0}'",options()->expectedNumberOfCellsInPatchs.name());
+
   // Affiche les informations sur les patchs
   for( Integer i=0; i<nb_patch; ++i ){
     ICartesianMeshPatch* p = m_cartesian_mesh->patch(i);
@@ -306,17 +314,39 @@ _processPatches()
     }
 
     CellGroup patch_own_cell = patch_cells.own();
+    UniqueArray<Int64> own_cells_uid;
     ENUMERATE_(Cell,icell,patch_own_cell){
+      Cell cell{*icell};
       info() << "Patch i=" << i << " cell=" << ItemPrinter(*icell);
+      own_cells_uid.add(cell.uniqueId());
     }
+
+    // Affiche la liste globales des uniqueId() des mailles.
+    {
+      UniqueArray<Int64> global_cells_uid;
+      pm->allGatherVariable(own_cells_uid,global_cells_uid);
+      std::sort(global_cells_uid.begin(),global_cells_uid.end());
+      Integer nb_global_uid = global_cells_uid.size();
+      info() << "GlobalUids Patch=" << i << " NB=" << nb_global_uid
+             << " expected=" << nb_cells_expected[i];
+      // Si disponible, vérifie que le nombre de mailles par patch est le bon.
+      if (nb_cells_expected[i]!=nb_global_uid)
+        ARCANE_FATAL("Bad number of cells for patch I={0} N={1} expected={2}",
+                     i,nb_cells_expected[i],nb_global_uid);
+
+      for( Integer c=0; c<nb_global_uid; ++c )
+        info() << "GlobalUid Patch=" << i << " I=" << c << " cell_uid=" << global_cells_uid[c];
+    }
+
     // Exporte le patch au format SVG
-    IParallelMng* pm = parallelMng();
-    String filename = String::format("Patch{0}-{1}-{2}.svg",i,pm->commRank(),pm->commSize());
-    Directory directory = subDomain()->exportDirectory();
-    String full_filename = directory.file(filename);
-    ofstream ofile(full_filename.localstr());
-    SimpleSVGMeshExporter exporter(ofile);
-    exporter.write(patch_own_cell);
+    {
+      String filename = String::format("Patch{0}-{1}-{2}.svg",i,comm_rank,comm_size);
+      Directory directory = subDomain()->exportDirectory();
+      String full_filename = directory.file(filename);
+      ofstream ofile(full_filename.localstr());
+      SimpleSVGMeshExporter exporter(ofile);
+      exporter.write(patch_own_cell);
+    }
   }
 }
 

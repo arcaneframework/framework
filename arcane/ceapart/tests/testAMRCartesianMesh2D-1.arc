@@ -62,6 +62,7 @@
      <position>5.0 7.0</position>
      <length>2.0 2.0</length>
    </refinement>
+   <expected-number-of-cells-in-patchs>153 8 4 80 128</expected-number-of-cells-in-patchs>
  </a-m-r-cartesian-mesh-tester>
 
  <arcane-protections-reprises>
