@@ -95,13 +95,13 @@ class DirectedAcyclicGraph
   using Base = GraphBase<VertexType, EdgeType>;
   using SortedEdgeSet = SortedElementSet<typename Base::EdgeTypeRefArray>;
   using SortedVertexSet = SortedElementSet<typename Base::VertexTypeRefArray>;
-  using VertexLevelMap = std::map<typename Base::VertexTypeConstRef, int, typename Base::VertexComparator>;
-  using EdgeLevelMap = std::map<typename Base::EdgeTypeConstRef, int, typename Base::EdgeComparator>;
+  using VertexLevelMap = std::map<typename Base::VertexTypeConstRef, int, typename Base::VertexLessComparator>;
+  using EdgeLevelMap = std::map<typename Base::EdgeTypeConstRef, int, typename Base::EdgeLessComparator>;
 
  private:
-  std::set<typename Base::VertexTypeConstRef, typename Base::VertexComparator> m_colored_vertices{Base::m_vertex_comparator};
-  VertexLevelMap m_vertex_level_map{ Base::m_vertex_comparator };
-  EdgeLevelMap m_edge_level_map{ Base::m_edge_comparator };
+  std::set<typename Base::VertexTypeConstRef, typename Base::VertexLessComparator> m_colored_vertices{Base::m_vertex_less_comparator };
+  VertexLevelMap m_vertex_level_map{ Base::m_vertex_less_comparator };
+  EdgeLevelMap m_edge_level_map{ Base::m_edge_less_comparator };
   bool m_compute_vertex_levels = true;
 
  public:
@@ -110,7 +110,7 @@ class DirectedAcyclicGraph
 
 /*---------------------------------------------------------------------------*/
 
-  void addEdge(const VertexType& source_vertex, const VertexType& target_vertex, const EdgeType& source_to_target_edge)
+  void addEdge(const VertexType& source_vertex, const VertexType& target_vertex, const EdgeType& source_to_target_edge) override
   {
     Base::addEdge(source_vertex, target_vertex, source_to_target_edge);
     m_compute_vertex_levels = true;
@@ -118,7 +118,7 @@ class DirectedAcyclicGraph
 
 /*---------------------------------------------------------------------------*/
 
-  void addEdge(VertexType&& source_vertex, VertexType&& target_vertex, EdgeType&& source_to_target_edge)
+  void addEdge(VertexType&& source_vertex, VertexType&& target_vertex, EdgeType&& source_to_target_edge) override
   {
     Base::addEdge(source_vertex, target_vertex, source_to_target_edge);
     m_compute_vertex_levels = true;
@@ -140,6 +140,10 @@ class DirectedAcyclicGraph
 
 /*---------------------------------------------------------------------------*/
 
+  /*!
+   * Compute a tree from the graph : only removes edge traversing more than one sorted vertex level
+   * @return A spanning tree edge set.
+   */
   SortedEdgeSet spanningTree()
   {
     if (m_compute_vertex_levels)
@@ -158,10 +162,8 @@ class DirectedAcyclicGraph
 
 /*---------------------------------------------------------------------------*/
 
-  void print()
+  void print() const
   {
-    if (m_compute_vertex_levels)
-      _computeVertexLevels();
     std::cout << "--- Directed Graph ---" << std::endl;
     for (auto vertex_entry : this->m_adjacency_list) {
       _printGraphEntry(vertex_entry);
@@ -170,11 +172,14 @@ class DirectedAcyclicGraph
     //std::ostringstream oss;
     //std::cout << oss.str() << std::endl;
 
-    for (auto vertex_level_set_entry : m_vertex_level_map) {
-      std::cout << "-- Graph has vertex "
-                << vertex_level_set_entry.first.get() << " with level "
-                << vertex_level_set_entry.second
-                << std::endl;
+    // Print levels if have been computed.
+    if (!m_compute_vertex_levels) {
+      for (auto vertex_level_set_entry : m_vertex_level_map) {
+        std::cout << "-- Graph has vertex "
+                  << Base::m_vertex_stream_converter(vertex_level_set_entry.first.get()) << " with level "
+                  << vertex_level_set_entry.second
+                  << std::endl;
+      }
     }
   }
 
@@ -258,11 +263,11 @@ class DirectedAcyclicGraph
 
 /*---------------------------------------------------------------------------*/
 
-  void _printGraphEntry(const typename Base::AdjacencyListType::value_type& vertex_entry)
+  void _printGraphEntry(const typename Base::AdjacencyListType::value_type& vertex_entry) const
   {
-    std::cout << "-- Vertex " << vertex_entry.first.get() << " depends on " << std::endl;
+    std::cout << "-- Vertex " << Base::m_vertex_stream_converter(vertex_entry.first.get()) << " points to " << std::endl;
     for (auto connected_vertex : vertex_entry.second.first) {
-      std::cout << "  - " << connected_vertex.get() << std::endl;
+      std::cout << "  - " << Base::m_vertex_stream_converter(connected_vertex.get()) << std::endl;
     }
   }
 };
