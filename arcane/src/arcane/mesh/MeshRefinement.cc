@@ -163,7 +163,7 @@ init()
     info() << "NODE_UID_INFO: MY_MAX_UID=" << max_node_uid << " GLOBAL=" << m_max_node_uid;
     m_next_node_uid = m_max_node_uid + 1 + m_mesh->parallelMng()->commRank();
   }
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_mesh->itemTypeMng();
 
   {
     Int64 max_cell_uid = 0;
@@ -217,14 +217,13 @@ init()
 }
 
 
-void
-MeshRefinement::
+void MeshRefinement::
 _updateMaxUid(ArrayView<ItemInternal*> cells)
 {
   // Recalcul le max uniqueId() des nodes/cells/faces.
   CHECKPERF( m_perf_counter.start(PerfCounter::INIT) )
   IParallelMng* pm = m_mesh->parallelMng();
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_mesh->itemTypeMng();
   {
 
     Int64 max_node_uid = m_max_node_uid;

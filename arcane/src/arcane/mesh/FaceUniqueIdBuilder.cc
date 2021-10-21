@@ -216,7 +216,7 @@ _computeFacesUniqueIdsParallel2()
   // - son indice dans sa maille
   // Cette liste sera ensuite envoyée à tous les sous-domaines.
   {
-    ItemTypeMng* itm = ItemTypeMng::singleton();
+    ItemTypeMng* itm = m_mesh->itemTypeMng();
 
     UniqueArray<ItemInternal*> faces;
 
@@ -669,7 +669,7 @@ _computeFacesUniqueIdsParallel3()
   // - le propriétaire de sa maille
   // - son indice dans sa maille
   // Cette liste sera ensuite envoyée à tous les sous-domaines.
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_mesh->itemTypeMng();
 
   // Détermine le unique id max des noeuds
   Int64 my_max_node_uid = NULL_ITEM_UNIQUE_ID;

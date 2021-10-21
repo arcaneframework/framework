@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMeshIncrementalBuilder.cc                            (C) 2000-2018 */
+/* DynamicMeshIncrementalBuilder.cc                            (C) 2000-2021 */
 /*                                                                           */
 /* Construction d'un maillage de manière incrémentale.                       */
 /*---------------------------------------------------------------------------*/
@@ -49,12 +49,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -69,6 +65,7 @@ DynamicMeshIncrementalBuilder::
 DynamicMeshIncrementalBuilder(DynamicMesh* mesh)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
+, m_item_type_mng(mesh->itemTypeMng())
 , m_connectivity(0)
 , m_has_edge(false)
 , m_has_amr(mesh->isAmrActivated())
@@ -140,14 +137,13 @@ addCells(Integer nb_cell,Int64ConstArrayView cells_infos,
          Integer sub_domain_id,Int32ArrayView cells,
          bool allow_build_face)
 {
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_item_type_mng;
 
   debug() << "[addCells] ADD CELLS mesh=" << m_mesh->name() << " nb=" << nb_cell;
   Integer cells_infos_index = 0;
   bool add_to_cells = cells.size()!=0;
   if (add_to_cells && nb_cell!=cells.size())
-    throw ArgumentException(A_FUNCINFO,
-                            "return array 'cells' has to have same size as number of cells");
+    ARCANE_THROW(ArgumentException,"return array 'cells' has to have same size as number of cells");
   for( Integer i_cell=0; i_cell<nb_cell; ++i_cell ){
     Integer item_type_id = (Integer)cells_infos[cells_infos_index];
     ++cells_infos_index;
@@ -297,7 +293,7 @@ _fillFaceInfo(Integer& nb_face, Integer nb_cell,Int64Array& faces_infos, Int64Co
   faces_infos.reserve(2*cells_infos.size());
   Int64UniqueArray work_face_sorted_nodes;
   Int64UniqueArray work_face_orig_nodes;
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_item_type_mng;
   Integer cells_infos_index = 0;
   nb_face = 0;
   NodeInFaceSet face_nodes_set;
@@ -340,10 +336,11 @@ _fillFaceInfo(Integer& nb_face, Integer nb_cell,Int64Array& faces_infos, Int64Co
 /*---------------------------------------------------------------------------*/
 
 void DynamicMeshIncrementalBuilder::
-_fillEdgeInfo(Integer& nb_edge, Integer nb_face,Int64Array& edges_infos, Int64ConstArrayView faces_infos,std::map<std::pair<Int64,Int64>, Int64>& edge_uid_map)
+_fillEdgeInfo(Integer& nb_edge, Integer nb_face,Int64Array& edges_infos,
+              Int64ConstArrayView faces_infos,std::map<std::pair<Int64,Int64>, Int64>& edge_uid_map)
 {
   edges_infos.reserve(2*faces_infos.size());
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_item_type_mng;
   Integer faces_infos_index = 0;
   nb_edge = 0;
   for (Integer i_face = 0; i_face < nb_face; ++i_face) {
@@ -381,7 +378,7 @@ _fillNodeInfo(Integer& nb_node, Integer nb_face,Int64Array& nodes_infos, Int64Co
   nodes_infos.reserve(faces_infos.size());
   Integer faces_infos_index = 0;
   std::set<Int64> nodes_set;
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_item_type_mng;
   for (Integer i_face = 0; i_face < nb_face; ++i_face) {
     Int32 type_id = CheckedConvert::toInt32(faces_infos[faces_infos_index++]);
     Integer current_face_nb_node = itm->typeFromId(type_id)->nbLocalNode(); // face type
@@ -418,11 +415,12 @@ _fillNodeInfoFromEdge(Integer& nb_node, Integer nb_edge, Int64Array& nodes_infos
 /*---------------------------------------------------------------------------*/
 
 void DynamicMeshIncrementalBuilder::
-_fillCellNewInfoNew(Integer nb_cell,Int64ConstArrayView cells_infos,Int64Array& cell_infos2, const std::map<Int64,Int64SharedArray>& cell_to_face_connectivity_info, const std::map<std::pair<Int64,Int64>, Int64>& edge_uid_map)
+_fillCellNewInfoNew(Integer nb_cell,Int64ConstArrayView cells_infos,Int64Array& cell_infos2,
+                    const std::map<Int64,Int64SharedArray>& cell_to_face_connectivity_info, const std::map<std::pair<Int64,Int64>, Int64>& edge_uid_map)
 {
   Integer cell_infos2_size_approx = 1 + 3 * (cells_infos.size()+ 2*nb_cell); // supposes as many faces as nodes as edges...
   cell_infos2.reserve(cell_infos2_size_approx);
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_item_type_mng;
   Integer cells_infos_index = 0;
   Integer nb_connected_families = hasEdge() ? 3 : 2;
   cell_infos2.add(nb_connected_families); // nb_connected_families (node and face +/- edge)
@@ -471,12 +469,13 @@ _fillCellNewInfoNew(Integer nb_cell,Int64ConstArrayView cells_infos,Int64Array& 
 /*---------------------------------------------------------------------------*/
 
 void DynamicMeshIncrementalBuilder::
-_fillCellInfo2(Integer nb_cell,Int64ConstArrayView cells_infos,Int64Array& cell_infos2, Integer& nb_face, Int64Array& faces_infos, Int64Array& node_uids, bool allow_build_face)
+_fillCellInfo2(Integer nb_cell,Int64ConstArrayView cells_infos,Int64Array& cell_infos2,
+               Integer& nb_face, Int64Array& faces_infos, Int64Array& node_uids, bool allow_build_face)
 {
   Integer cell_infos2_size_approx = 1 + 2 * (cells_infos.size()+ 2*nb_cell); // supposes as many faces as nodes...
   cell_infos2.reserve(cell_infos2_size_approx);
   // Fill infos
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_item_type_mng;
   Integer cells_infos_index = 0;
   cell_infos2.add(2); // nb_connected_families (node and face)
 
@@ -560,12 +559,13 @@ _appendFaceRelationInfo(ItemData& source_item_relation_data, const ItemData& tar
 /*---------------------------------------------------------------------------*/
 
 void DynamicMeshIncrementalBuilder::
-_fillFaceRelationInfo(ItemData& source_item_relation_data, const ItemData& target_item_dependencies_data, Int64ConstArrayView faces_info, bool is_source_relation_data_empty)
+_fillFaceRelationInfo(ItemData& source_item_relation_data, const ItemData& target_item_dependencies_data,
+                      Int64ConstArrayView faces_info, bool is_source_relation_data_empty)
 {
   // face_infos = [{face_type, face_uid, {face_node_uids}]
   Int64UniqueArray face_uids_and_types;
   face_uids_and_types.reserve(2*source_item_relation_data.nbItems());
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_item_type_mng;
   for (Integer face_info_index = 0; face_info_index < faces_info.size();) {
     face_uids_and_types.add(faces_info[face_info_index+1]); // face_uid
     face_uids_and_types.add(faces_info[face_info_index]); // face_type
@@ -596,7 +596,8 @@ _appendEdgeRelationInfo(ItemData& source_item_relation_data, const ItemData& tar
 /*---------------------------------------------------------------------------*/
 
 void DynamicMeshIncrementalBuilder::
-_fillEdgeRelationInfo(ItemData& source_item_relation_data, const ItemData& target_item_dependencies_data, Int64ConstArrayView edges_info, bool is_source_relation_data_empty)
+_fillEdgeRelationInfo(ItemData& source_item_relation_data, const ItemData& target_item_dependencies_data,
+                      Int64ConstArrayView edges_info, bool is_source_relation_data_empty)
 {
   // edge_infos = [{edge_uid, first_node_uid, second_node_uid}
   ARCANE_ASSERT((source_item_relation_data.nbItems()*3 == edges_info.size()),("source_item_relation_data and edges_info size incoherent. Exiting."));
@@ -869,7 +870,7 @@ addHChildrenCells(ItemInternal* hParent_cell,Integer nb_cell,Int64ConstArrayView
                   Integer sub_domain_id,Int32ArrayView cells,
                   bool allow_build_face)
 {
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_item_type_mng;
   CellFamily& cell_family = m_mesh->trueCellFamily();
 
   debug() << "[DynamicMeshIncrementalBuilder::addHChildrenCells] ADD CELLS mesh=" << m_mesh->name() << " nb_cell=" << nb_cell;
@@ -1075,7 +1076,7 @@ addFamilyItems(ItemData& item_data)
      throw ArgumentException(A_FUNCINFO,
                              "return array containing item lids has to have be of size number of items");
   // Prepare info and call OneMeshItemAdder->addOneItem
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_item_type_mng;
   Int64 item_uid;
   Int64ConstArrayView item_infos = item_data.itemInfos();
   Integer nb_connected_family = CheckedConvert::toInteger(item_infos[0]);
@@ -1138,7 +1139,7 @@ void DynamicMeshIncrementalBuilder::
 addFaces(Integer nb_face,Int64ConstArrayView faces_infos,
          Integer sub_domain_id,Int32ArrayView faces)
 {
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_item_type_mng;
   
   bool add_to_faces = faces.size()!=0;
   if (add_to_faces && nb_face!=faces.size())
@@ -1277,7 +1278,7 @@ addFaces3(Integer nb_face,Int64ConstArrayView faces_infos,
 void DynamicMeshIncrementalBuilder::
 _fillFaceNewInfoNew(Integer nb_face,Int64ConstArrayView faces_infos,Int64Array& face_infos2, const std::map<std::pair<Int64,Int64>, Int64>& edge_uid_map)
 {
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_item_type_mng;
   Integer nb_connected_family = hasEdge() ? 2 : 1;
   Integer face_infos2_size_approx = 1 + 2 * (faces_infos.size()+ 2*nb_face); // supposes as many faces as edges...
   face_infos2.reserve(face_infos2_size_approx);
@@ -1329,7 +1330,7 @@ _fillFaceNewInfoNew(Integer nb_face,Int64ConstArrayView faces_infos,Int64Array& 
 void DynamicMeshIncrementalBuilder::
 _fillFaceInfo2(Integer nb_face,Int64ConstArrayView faces_infos,Int64ArrayView face_infos2, Int64Array& node_uids)
 {
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_item_type_mng;
   Integer faces_infos_index = 0;
   Integer face_infos2_index = 0;
   face_infos2[face_infos2_index++] = 1; // nb_connected_families (node only)
@@ -1782,12 +1783,7 @@ setConnectivity(const Integer connectivity)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

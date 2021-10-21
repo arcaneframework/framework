@@ -41,10 +41,7 @@ namespace Arcane
 String Item::
 typeName(Integer t)
 {
-  if (t >= 0 && t < ItemTypeMng::nbBasicItemType())
-    return ItemTypeMng::singleton()->typeFromId(t)->typeName();
-  else
-    return "InvalidType";
+  return ItemTypeMng::_legacyTypeName(t);
 }
 
 /*---------------------------------------------------------------------------*/

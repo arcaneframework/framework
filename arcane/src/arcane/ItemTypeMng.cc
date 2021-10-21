@@ -1013,12 +1013,14 @@ readTypes(IParallelSuperMng * pm, const String & filename)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer ItemTypeMng::nbBasicItemType()
+Integer ItemTypeMng::
+nbBasicItemType()
 {
-  return singleton()->types().size();
+  return _singleton()->types().size();
 }
 
-Integer ItemTypeMng::nbBuiltInItemType()
+Integer ItemTypeMng::
+nbBuiltInItemType()
 {
   return m_nb_builtin_item_type;
 }
@@ -1068,7 +1070,7 @@ nbHChildrenByItemType(Integer type)
 ItemTypeMng* ItemTypeMng::singleton_instance = 0;
 
 ItemTypeMng* ItemTypeMng::
-singleton()
+_singleton()
 {
   if (!singleton_instance)
     singleton_instance = new ItemTypeMng();
@@ -1076,13 +1078,13 @@ singleton()
 }
 
 void ItemTypeMng::
-destroySingleton()
+_destroySingleton()
 {
   //GG: Ca plante avec Windows. Regarder pourquoi.
 #ifndef ARCANE_OS_WIN32
   delete singleton_instance;
 #endif
-  singleton_instance = 0;
+  singleton_instance = nullptr;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1095,6 +1097,9 @@ types() const
   return m_types;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 ItemTypeInfo* ItemTypeMng::
 typeFromId(Integer id) const
 {
@@ -1105,8 +1110,28 @@ typeFromId(Integer id) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+String ItemTypeMng::
+typeName(Integer id) const
+{
+  return typeFromId(id)->typeName();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// Recopie de la fonction obsolète Item::typeName().
+// TODO: voir pourquoi il y a un test sur nBasicItemType().
+String ItemTypeMng::
+_legacyTypeName(Integer t)
+{
+  if (t >= 0 && t < nbBasicItemType())
+    return _singleton()->typeFromId(t)->typeName();
+  return "InvalidType";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

@@ -623,7 +623,7 @@ initialize()
 
   {
     // Construction des types internes
-    ItemTypeMng::singleton()->build(m_parallel_super_mng.get(),traceMng());
+    ItemTypeMng::_singleton()->build(m_parallel_super_mng.get(),traceMng());
   }
 
   {

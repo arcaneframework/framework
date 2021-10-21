@@ -86,7 +86,7 @@ void EdgeFamily::
 build()
 {
   ItemFamily::build();
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_mesh->itemTypeMng();
   m_edge_type = itm->typeFromId(IT_Line2);
 
   m_node_family = ARCANE_CHECK_POINTER(dynamic_cast<NodeFamily*>(m_mesh->nodeFamily()));

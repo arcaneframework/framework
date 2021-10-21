@@ -125,6 +125,7 @@ class ARCANE_CORE_EXPORT Item
   static const Integer NULL_ELEMENT = NULL_ITEM_ID;
 
   //! Nom du type de maille \a cell_type
+  ARCCORE_DEPRECATED_2021("Use ItemTypeMng::typeName() instead")
   static String typeName(Integer type);
 
  public:

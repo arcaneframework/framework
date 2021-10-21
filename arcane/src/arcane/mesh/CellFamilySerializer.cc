@@ -109,8 +109,8 @@ serializeItems(ISerializer* buf,Int32ConstArrayView cells_local_id)
 void CellFamilySerializer::
 deserializeItems(ISerializer* buf,Int32Array* cells_local_id)
 {
-  ItemTypeMng* itm = ItemTypeMng::singleton();
   IMesh* mesh = m_family->mesh();
+  ItemTypeMng* itm = mesh->itemTypeMng();
   Int32 my_rank = mesh->meshPartInfo().partRank();
   Int32 orig_rank = CheckedConvert::toInt32(buf->getInt64()); // Numéro du sous-domaine source
   Int64 nb_cell = buf->getInt64();

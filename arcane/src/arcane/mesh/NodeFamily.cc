@@ -102,7 +102,7 @@ build()
 {
   ItemFamily::build();
 
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_mesh->itemTypeMng();
   m_node_type = itm->typeFromId(IT_Vertex);
   if (m_parent_family)
     m_nodes_coords = nullptr;

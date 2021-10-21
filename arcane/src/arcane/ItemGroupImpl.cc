@@ -1828,12 +1828,14 @@ hasComputeFunctor() const
 void ItemGroupImpl::
 _initChildrenByType()
 {
+  IItemFamily* family = m_p->m_item_family;
+  ItemTypeMng* type_mng = family->mesh()->itemTypeMng();
   Integer nb_basic_item_type= ItemTypeMng::nbBasicItemType(); //NB_BASIC_ITEM_TYPE
   m_p->m_children_by_type.resize(nb_basic_item_type);
   for( Integer i=0; i<nb_basic_item_type; ++i ){
     // String child_name(name()+i);
-    String child_name(Item::typeName(i));
-    ItemGroupImpl* igi = createSubGroup(child_name,m_p->m_item_family,
+    String child_name(type_mng->typeName(i));
+    ItemGroupImpl* igi = createSubGroup(child_name,family,
                                         new ItemGroupImplItemGroupComputeFunctor(this,&ItemGroupImpl::_computeChildrenByType));
     m_p->m_children_by_type[i] = igi;
   }

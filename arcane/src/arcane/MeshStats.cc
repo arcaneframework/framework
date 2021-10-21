@@ -190,6 +190,8 @@ _dumpStats()
       return;
   }
 
+  ItemTypeMng* type_mng = m_mesh->itemTypeMng();
+
   // On produit maintenant l'affichage des stats
   const Integer nb_rank = m_parallel_mng->commSize();
   for( Integer istat=0; istat<nstat; ++istat){
@@ -243,7 +245,7 @@ _dumpStats()
     }
     info() << " ";
     for( Integer i=0, s=nb_type; i<s; ++i ) {
-      _printInfo(Item::typeName(i),nb_local_type[i],
+      _printInfo(type_mng->typeName(i),nb_local_type[i],
                  nb_local_min_type[i],min_rank_type[i],
                  nb_local_max_type[i],max_rank_type[i],
                  nb_global_type[i],nb_rank);

@@ -48,6 +48,7 @@ class IItemFamilyNetwork;
 class IItemFamilyModifier;
 class MeshHandle;
 class IVariableMng;
+class ItemTypeMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -395,6 +396,9 @@ class IMesh : public IMeshBase
 
   //! Gestionnaire de variable associé
   virtual IVariableMng* variableMng() const =0;
+
+  //! Gestionnaire de types d'entités associé
+  virtual ItemTypeMng* itemTypeMng() const =0;
 };
 
 /*---------------------------------------------------------------------------*/
