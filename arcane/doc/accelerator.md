@@ -148,16 +148,6 @@ par la ligne de commande:
   plusieurs threads,
 - Sinon, les noyaux de calcul sont exécutés en séquentiel.
 
-## TODO
-
-TODO: expliquer la capture des lambda avec le 'this'
-
-TODO: expliquer mémoire unifiée ne pas utiliser le CPU en même temps que le GPU
-
-TODO: expliquer utilisation des NumArray.
-
-TODO: expliquer utilisation des vues
-
 ## Utilisation des vues
 
 Les accélérateurs ont en général leur propre mémoire qui est
@@ -178,7 +168,10 @@ Quel que soit le conteneur associé, la déclaration des vues est la
 même:
 
 ~~~{.cpp}
-#include "arcane/accelerator/Views.h"
+// Pour avoir les vues sur les variables
+#include "arcane/accelerator/VariableViews.h"
+// Pour avoir les vues sur les NumArray
+#include "arcane/accelerator/NumArrayViews.h"
 using namespace Arcane;
 using namespace Arcane::Accelerator;
 RunCommand& command = ...;
@@ -200,10 +193,40 @@ accélérateurs:
 - les boucles classiques sur des tableaux via la commande
   RUNCOMMAND_LOOP().
 
-Il existe deux macros RUNCOMMAND_LOOP() et RUNCOMMAND_ENUMERATE() pour
-exécuter une commande sur un accélérateur. Ces deux macros permettent
-de définir un bout de code qui est une fonction lambda du C++11 (TODO:
-ajouter référence).
+Ces deux macros permettent
+de définir après un bout de code qui est une fonction lambda du C++11 (TODO:
+ajouter référence) et qui sera déporté sur accélérateur. Ces macros
+s'utilisent via l'opérateur 'operator<<' sur une commande
+(Arcane::Accelerator::RunCommand). Le code après la macro est un code
+identique à celui d'une boucle C++ classique avec les modifications suivantes:
+
+- les accolades sont obligatoires
+- il faut ajouter un `;` après la dernière accolade.
+- le corps d'une lambda est une fonction et pas une boucle. Par
+  conséquent, il n'est pas possible d'utiliser les mot clés tels que
+  `continue` ou `break`. Le mot clé `return` est disponible et donc
+  aura le même effet que `continue` dans une boucle.
+
+Par exemple:
+
+~~~{.cpp}
+Arcane::Accelerator::RunCommand& command = ...
+// Boucle 1D de 'nb_value' avec 'iter' l'itérateur
+command << RUNCOMMAND_LOOP1(iter,nb_value)
+{
+  // Code exécuté sur accélérateur
+};
+~~~
+
+~~~{.cpp}
+Arcane::Accelerator::RunCommand& command = ...
+// Boucle sur les mailles du groupe 'my_group' avec 'cid' l'indice de
+// la maille courante (de type Arcane::CellLocalId)
+command << RUNCOMMAND_ENUMERATE(Cell,icell,my_group)
+{
+  // Code exécuté sur accélérateur
+};
+~~~
 
 Lorsque'un noyau de calcul est déporté sur accélérateur, il ne faut
 pas accéder à la mémoire associée aux vues pendant l'exécution sous
@@ -352,3 +375,11 @@ main(int argc,char* argv[])
   return 0;
 }
 ~~~
+
+
+## TODO
+
+TODO: expliquer utilisation des NumArray.
+
+TODO: expliquer l'utilisation des connectivités et pourquoi on ne peut
+pas accéder aux entités classiques (Cell,Node, ...) sur accélérateur.

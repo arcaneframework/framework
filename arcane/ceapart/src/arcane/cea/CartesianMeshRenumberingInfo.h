@@ -34,7 +34,7 @@ class ARCANE_CEA_EXPORT CartesianMeshRenumberingInfo
   /*!
    * \brief Méthode pour renuméroter les patchs.
    *
-   * Si 0, il n'y a pas de renumérotation. La seule valeur valide est 1. Dans ce
+   * Si 0, il n'y a pas de renumérotation. La seule autre valeur valide est 1. Dans ce
    * cas, les uniqueId() des entités (Node,Face,Cell) des patches sont renumérotées
    * pour avoir la même numérotation
    * quel que soit le découpage. La numérotation n'est pas contigue. Seules
@@ -47,7 +47,7 @@ class ARCANE_CEA_EXPORT CartesianMeshRenumberingInfo
   /*!
    * \brief Méthode pour renuméroter les faces.
    *
-   * Si 0, il n'y a pas de renumérotation. La seule valeur valide est 1.
+   * Si 0, il n'y a pas de renumérotation. La seule autre valeur valide est 1.
    * Dans ce cas la renumérotation se base sur une numérotation cartésienne.
    */
   void setRenumberFaceMethod(Int32 v) { m_renumber_faces_method = v; }

@@ -5,7 +5,40 @@
 
 Cette page contient les nouveautés de chaque version de %Arcane.
 
-Arcane Version 3.0.5 (30 septembre 2021) {#arcanedoc_version304}
+Arcane Version 3.1.2 (...) {#arcanedoc_version310}
+======================================
+
+Nouveautés/Améliorations:
+
+- Nouvelle implémentation des graphes de maillage utilisant les
+  `Arcane::DoF`.
+- Ajoute possibilité de renuméroter (via la méthode
+  Arcane::ICartesianMesh::renumberItemsUniqueId()') les entités dans les
+  maillages AMR par patch pour avoir la même numérotation quel que
+  soit le découpage.
+- Mise à jour de la documentation pour les accélérateurs
+
+Changements:
+
+- Le lecteur de maillage au format `GMSH` est maintenant dans la
+  bibliothèque `arcane_std` au lieu de `arcane_ios`. Il n'y a donc
+  plus besoin de faire l'édition de lien avec cette dernière pour
+  pouvoir lire les maillages de ce format.
+- Suppression des anciens types d'entités `Link` et `DualNode` et des
+  énumérations et classes associées
+- Suppression de certaines classes associées aux anciennes connectivités
+- Supprime le support pour le système d'exploitation RedHat 6.
+
+Corrections:
+
+- Corrige plantage lors de la mise à jour des matériaux si la variable
+  globale associée à un matériau est désallouée
+  (Arcane::IVariable::isUsed()==false)
+- Corrige exception flottante (FPE) avec les versions 2.9.9+ de
+  `libxml2`. Cette bibliothèque fait explicitement des divisions par 0
+  lors de l'initialisation.
+
+Arcane Version 3.0.5 (30 septembre 2021) {#arcanedoc_version305}
 ======================================
 
 Nouveautés/Améliorations:
