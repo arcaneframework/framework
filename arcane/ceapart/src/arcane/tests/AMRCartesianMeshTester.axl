@@ -28,7 +28,18 @@
      >
      <description>Si non vide, nombre de mailles que doit avoir chaque patch</description>
    </simple>
- </options>
+
+   <simple name = "nodes-uid-hash" type = "string" >
+     <description>Hash des uniqueId() des noeuds</description>
+   </simple>
+   <simple name = "faces-uid-hash" type = "string" >
+     <description>Hash des uniqueId() des faces</description>
+   </simple>
+   <simple name = "cells-uid-hash" type = "string" >
+     <description>Hash des uniqueId() des mailles</description>
+   </simple>
+
+</options>
 
  <entry-points>
    <entry-point method-name="compute" name="compute" where="compute-loop" property="none" />

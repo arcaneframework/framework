@@ -14,6 +14,7 @@
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/Real2.h"
+#include "arcane/utils/MD5HashAlgorithm.h"
 
 #include "arcane/MeshUtils.h"
 #include "arcane/Directory.h"
@@ -100,6 +101,8 @@ class AMRCartesianMeshTesterModule
   void _computeCenters();
   void _processPatches();
   void _writePostProcessing();
+  void _checkUniqueIds();
+  void _checkUniqueIds(IItemFamily* family,const String& expected_hash);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -244,6 +247,7 @@ init()
     renumbering_info.setRenumberPatchMethod(1);
     renumbering_info.setSortAfterRenumbering(true);
     m_cartesian_mesh->renumberItemsUniqueId(renumbering_info);
+    _checkUniqueIds();
     _processPatches();
   }
 
@@ -281,6 +285,47 @@ init()
   }
   m_utils->testAll();
   _writePostProcessing();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AMRCartesianMeshTesterModule::
+_checkUniqueIds(IItemFamily* family,const String& expected_hash)
+{
+  // Vérifie que toutes les entités ont le bon uniqueId();
+  MD5HashAlgorithm hash_algo;
+  IMesh* mesh = m_cartesian_mesh->mesh();
+  IParallelMng* pm = mesh->parallelMng();
+
+  UniqueArray<Int64> own_items_uid;
+  ENUMERATE_(Item,iitem,family->allItems().own()){
+    Item item{*iitem};
+    own_items_uid.add(item.uniqueId());
+  }
+  UniqueArray<Int64> global_items_uid;
+  pm->allGatherVariable(own_items_uid,global_items_uid);
+  std::sort(global_items_uid.begin(),global_items_uid.end());
+
+  UniqueArray<Byte> hash_result;
+  hash_algo.computeHash64(asBytes(global_items_uid.constSpan()),hash_result);
+  String hash_str = Convert::toHexaString(hash_result);
+  info() << "HASH_RESULT family=" << family->name()
+         << " v=" << hash_str << " expected=" << expected_hash;
+  if (hash_str!=expected_hash)
+    ARCANE_FATAL("Bad hash for uniqueId() for family '{0}'",family->fullName());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AMRCartesianMeshTesterModule::
+_checkUniqueIds()
+{
+  IMesh* mesh = m_cartesian_mesh->mesh();
+  _checkUniqueIds(mesh->nodeFamily(),options()->nodesUidHash());
+  _checkUniqueIds(mesh->faceFamily(),options()->facesUidHash());
+  _checkUniqueIds(mesh->cellFamily(),options()->cellsUidHash());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -334,11 +379,10 @@ _processPatches()
       Integer nb_global_uid = global_cells_uid.size();
       info() << "GlobalUids Patch=" << i << " NB=" << nb_global_uid
              << " expected=" << nb_cells_expected[i];
-      // Si disponible, vérifie que le nombre de mailles par patch est le bon.
+      // Vérifie que le nombre de mailles par patch est le bon.
       if (nb_cells_expected[i]!=nb_global_uid)
         ARCANE_FATAL("Bad number of cells for patch I={0} N={1} expected={2}",
                      i,nb_cells_expected[i],nb_global_uid);
-
       for( Integer c=0; c<nb_global_uid; ++c )
         info() << "GlobalUid Patch=" << i << " I=" << c << " cell_uid=" << global_cells_uid[c];
     }

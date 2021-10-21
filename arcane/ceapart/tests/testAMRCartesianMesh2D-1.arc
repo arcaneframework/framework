@@ -63,6 +63,9 @@
      <length>2.0 2.0</length>
    </refinement>
    <expected-number-of-cells-in-patchs>153 8 4 80 128</expected-number-of-cells-in-patchs>
+   <nodes-uid-hash>eef03075d1b1d32b63c9014bc567704e</nodes-uid-hash>
+   <faces-uid-hash>6d1b4ec0963f467f704c08f3f50dbd73</faces-uid-hash>
+   <cells-uid-hash>a577cb5e34dcbac51cec397ff7cb684e</cells-uid-hash>
  </a-m-r-cartesian-mesh-tester>
 
  <arcane-protections-reprises>
