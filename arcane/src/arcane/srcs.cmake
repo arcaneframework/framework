@@ -58,6 +58,9 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    Connectivity.cc
    Connectivity.h
    core/internal/IDataInternal.h
+   core/internal/ICartesianMeshGenerationInfo.h
+   core/internal/CartesianMeshGenerationInfo.h
+   core/internal/CartesianMeshGenerationInfo.cc
    Data.cc
    DataTypeDispatchingDataVisitor.cc
    DataTypeDispatchingDataVisitor.h

@@ -5,16 +5,20 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICartesianMeshPatch.h                                       (C) 2000-2020 */
+/* CartesianMeshUniqueIdRenumbering.h                          (C) 2000-2021 */
 /*                                                                           */
-/* Interface d'un patch AMR d'un maillage cartésien.                         */
+/* Renumérotation des uniqueId() pour les maillages cartésiens.              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CEA_ICARTESIANMESHPATCH_H
-#define ARCANE_CEA_ICARTESIANMESHPATCH_H
+#ifndef ARCANE_CEA_CARTESIANMESHUNIQUEIDRENUMBERING_H
+#define ARCANE_CEA_CARTESIANMESHUNIQUEIDRENUMBERING_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/TraceAccessor.h"
+
 #include "arcane/ItemTypes.h"
+#include "arcane/VariableTypedef.h"
+
 #include "arcane/cea/CeaGlobal.h"
 
 /*---------------------------------------------------------------------------*/
@@ -22,42 +26,36 @@
 
 namespace Arcane
 {
+class ICartesianMeshGenerationInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneCartesianMesh
- * \brief Interface d'un patch AMR d'un maillage cartésien.
+ * \brief Renumérotation des uniqueId() pour les maillages cartésiens.
+ *
+ * Renumérote les uniqueId() des noeuds, faces et mailles pour avoir la même
+ * numérotation en séquentiel et parallèle.
  */
-class ARCANE_CEA_EXPORT ICartesianMeshPatch
+class CartesianMeshUniqueIdRenumbering
+: public TraceAccessor
 {
+  friend CartesianMesh;
  public:
-
-  virtual ~ICartesianMeshPatch() {} //<! Libère les ressources
-
-  //! Groupe de mailles du patch
-  virtual CellGroup cells() =0;
-
- //! Liste des mailles dans la direction \a dir
-  virtual CellDirectionMng& cellDirection(eMeshDirection dir) =0;
-
-  //! Liste des mailles dans la direction \a dir (0, 1 ou 2)
-  virtual CellDirectionMng& cellDirection(Integer idir) =0;
-
-  //! Liste des faces dans la direction \a dir
-  virtual FaceDirectionMng& faceDirection(eMeshDirection dir) =0;
-
-  //! Liste des faces dans la direction \a dir (0, 1 ou 2)
-  virtual FaceDirectionMng& faceDirection(Integer idir) =0;
-
-  //! Liste des noeuds dans la direction \a dir
-  virtual NodeDirectionMng& nodeDirection(eMeshDirection dir) =0;
-
-  //! Liste des noeuds dans la direction \a dir (0, 1 ou 2)
-  virtual NodeDirectionMng& nodeDirection(Integer idir) =0;
-
-  //! Effectue des vérifications sur la validité de l'instance.
-  virtual void checkValid() const =0;
+  CartesianMeshUniqueIdRenumbering(ICartesianMesh* cmesh,ICartesianMeshGenerationInfo* gen_info);
+  ~CartesianMeshUniqueIdRenumbering() = default;
+ public:
+  void renumber();
+ private:
+  ICartesianMesh* m_cartesian_mesh = nullptr;
+  ICartesianMeshGenerationInfo* m_generation_info = nullptr;
+  bool m_is_verbose = false;
+ private:
+  void _applyChildrenCell(Cell cell,VariableNodeInt64& nodes_new_uid,VariableFaceInt64& faces_new_uid,
+                          VariableCellInt64& cells_new_uid,
+                          Int64 coord_i,Int64 coord_j,
+                          Int64 nb_cell_x,Int64 nb_cell_y,Int32 level);
+  void _applyFamilyRenumbering(IItemFamily* family,VariableItemInt64& items_new_uid);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -68,5 +66,4 @@ class ARCANE_CEA_EXPORT ICartesianMeshPatch
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

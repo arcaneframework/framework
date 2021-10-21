@@ -24,7 +24,7 @@
 
 namespace Arcane
 {
-
+class ICartesianMeshGenerationInfo;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -104,6 +104,7 @@ class CartesianMeshGenerator
   Int32 m_my_mesh_part;
   UniqueArray<Int32> m_communicating_sub_domains;
   int m_mesh_dimension = -1;
+  ICartesianMeshGenerationInfo* m_generation_info = nullptr;
  private:
   CartesianMeshGeneratorBuildInfo m_build_info;
   RealUniqueArray m_bloc_ox; // origine bloc en x

@@ -15,6 +15,7 @@ set( ARCANE_SOURCES
   LimaCutInfosReader.h
   SplitSDMeshPartitioner.h
   CartesianConnectivity.h
+  CartesianMeshRenumberingInfo.h
   CellDirectionMng.h
   FaceDirectionMng.h
   NodeDirectionMng.h
@@ -22,6 +23,8 @@ set( ARCANE_SOURCES
   ICartesianMeshPatch.h
   CeaGlobal.h
   internal/CartesianMeshPatch.h
+  internal/CartesianMeshUniqueIdRenumbering.h
+  internal/CartesianMeshUniqueIdRenumbering.cc
   CartesianMeshPatch.cc
   )
 

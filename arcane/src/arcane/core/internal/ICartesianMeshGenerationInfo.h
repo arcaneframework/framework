@@ -5,17 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICartesianMeshPatch.h                                       (C) 2000-2020 */
+/* ICartesianMeshGenerationInfo.h                              (C) 2000-2021 */
 /*                                                                           */
-/* Interface d'un patch AMR d'un maillage cartésien.                         */
+/* Informations sur la génération des maillages cartésiens.                  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CEA_ICARTESIANMESHPATCH_H
-#define ARCANE_CEA_ICARTESIANMESHPATCH_H
+#ifndef ARCANE_CORE_INTERNAL_ICARTESIANMESHGENERATIONINFO_H
+#define ARCANE_CORE_INTERNAL_ICARTESIANMESHGENERATIONINFO_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemTypes.h"
-#include "arcane/cea/CeaGlobal.h"
+#include "arcane/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,38 +25,33 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \ingroup ArcaneCartesianMesh
- * \brief Interface d'un patch AMR d'un maillage cartésien.
+ * \internal
+ * \brief Informations sur la génération des maillages cartésiens.
  */
-class ARCANE_CEA_EXPORT ICartesianMeshPatch
+class ARCANE_CORE_EXPORT ICartesianMeshGenerationInfo
 {
  public:
 
-  virtual ~ICartesianMeshPatch() {} //<! Libère les ressources
+  static ICartesianMeshGenerationInfo* getReference(IMesh* mesh,bool create);
 
-  //! Groupe de mailles du patch
-  virtual CellGroup cells() =0;
+ public:
 
- //! Liste des mailles dans la direction \a dir
-  virtual CellDirectionMng& cellDirection(eMeshDirection dir) =0;
+  virtual ~ICartesianMeshGenerationInfo() = default;
 
-  //! Liste des mailles dans la direction \a dir (0, 1 ou 2)
-  virtual CellDirectionMng& cellDirection(Integer idir) =0;
+ public:
 
-  //! Liste des faces dans la direction \a dir
-  virtual FaceDirectionMng& faceDirection(eMeshDirection dir) =0;
+  virtual Int64 globalNbCell() const =0;
+  virtual Int64ConstArrayView globalNbCells() const =0;
+  virtual Int32ConstArrayView subDomainOffsets() const =0;
+  virtual Int32ConstArrayView ownNbCells() const =0;
+  virtual Int64ConstArrayView ownCellOffsets() const =0;
+  virtual Int64 firstOwnCellUniqueId() const =0;
 
-  //! Liste des faces dans la direction \a dir (0, 1 ou 2)
-  virtual FaceDirectionMng& faceDirection(Integer idir) =0;
-
-  //! Liste des noeuds dans la direction \a dir
-  virtual NodeDirectionMng& nodeDirection(eMeshDirection dir) =0;
-
-  //! Liste des noeuds dans la direction \a dir (0, 1 ou 2)
-  virtual NodeDirectionMng& nodeDirection(Integer idir) =0;
-
-  //! Effectue des vérifications sur la validité de l'instance.
-  virtual void checkValid() const =0;
+  virtual void setOwnCellOffsets(Int64 x,Int64 y,Int64 z) =0;
+  virtual void setGlobalNbCells(Int64 x,Int64 y,Int64 z) =0;
+  virtual void setSubDomainOffsets(Int32 x,Int32 y,Int32 z) =0;
+  virtual void setOwnNbCells(Int32 x,Int32 y,Int32 z) =0;
+  virtual void setFirstOwnCellUniqueId(Int64 uid) =0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -68,5 +62,4 @@ class ARCANE_CEA_EXPORT ICartesianMeshPatch
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICartesianMesh.h                                            (C) 2000-2020 */
+/* ICartesianMesh.h                                            (C) 2000-2021 */
 /*                                                                           */
 /* Interface d'un maillage cartésien.                                        */
 /*---------------------------------------------------------------------------*/
@@ -22,6 +22,7 @@
 
 namespace Arcane
 {
+class CartesianMeshRenumberingInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,7 +33,6 @@ namespace Arcane
 class ARCANE_CEA_EXPORT ICartesianMesh
 {
  public:
-
   virtual ~ICartesianMesh() {} //<! Libère les ressources
 
   /*!
@@ -44,37 +44,35 @@ class ARCANE_CEA_EXPORT ICartesianMesh
    * au maillage, un pointeur nul est retourné.
    * L'instance retournée reste valide tant que le maillage \a mesh existe.
    */
-  static ICartesianMesh* getReference(IMesh* mesh,bool create=true);
+  static ICartesianMesh* getReference(IMesh* mesh, bool create = true);
 
  public:
-
-  virtual void build() =0;
+  virtual void build() = 0;
 
  public:
-
   //! Maillage associé à ce maillage cartésien
-  virtual IMesh* mesh() const =0;
+  virtual IMesh* mesh() const = 0;
 
   //! Gestionnaire de trace associé.
-  virtual ITraceMng* traceMng() const =0;
+  virtual ITraceMng* traceMng() const = 0;
 
   //! Liste des mailles dans la direction \a dir
-  virtual CellDirectionMng cellDirection(eMeshDirection dir) =0;
+  virtual CellDirectionMng cellDirection(eMeshDirection dir) = 0;
 
   //! Liste des mailles dans la direction \a dir (0, 1 ou 2)
-  virtual CellDirectionMng cellDirection(Integer idir) =0;
+  virtual CellDirectionMng cellDirection(Integer idir) = 0;
 
   //! Liste des faces dans la direction \a dir
-  virtual FaceDirectionMng faceDirection(eMeshDirection dir) =0;
+  virtual FaceDirectionMng faceDirection(eMeshDirection dir) = 0;
 
   //! Liste des faces dans la direction \a dir (0, 1 ou 2)
-  virtual FaceDirectionMng faceDirection(Integer idir) =0;
+  virtual FaceDirectionMng faceDirection(Integer idir) = 0;
 
   //! Liste des noeuds dans la direction \a dir
-  virtual NodeDirectionMng nodeDirection(eMeshDirection dir) =0;
+  virtual NodeDirectionMng nodeDirection(eMeshDirection dir) = 0;
 
   //! Liste des noeuds dans la direction \a dir (0, 1 ou 2)
-  virtual NodeDirectionMng nodeDirection(Integer idir) =0;
+  virtual NodeDirectionMng nodeDirection(Integer idir) = 0;
 
   /*!
    * \brief Calcule les infos pour les accès par direction.
@@ -85,7 +83,7 @@ class ARCANE_CEA_EXPORT ICartesianMesh
    * pour le meshgenerator).
    * - les informations de direction sont invalidées si le maillage évolue.
    */
-  virtual void computeDirections() =0;
+  virtual void computeDirections() = 0;
 
   /*!
    * \brief Recalcule les informations de cartésiennes après une reprise.
@@ -93,17 +91,17 @@ class ARCANE_CEA_EXPORT ICartesianMesh
    * Cette méthode doit être appelée à la place de computeDirections()
    * lors d'une reprise.
    */
-  virtual void recreateFromDump() =0;
+  virtual void recreateFromDump() = 0;
 
   //! Informations sur la connectivité
-  virtual CartesianConnectivity connectivity() =0;
+  virtual CartesianConnectivity connectivity() = 0;
 
   /*!
    * \brief Nombre de patchs du maillage.
    *
    * Il y a toujours au moins un patch qui représente la maillage cartésien
    */
-  virtual Integer nbPatch() const =0;
+  virtual Integer nbPatch() const = 0;
 
   /*!
    * \brief Retourne la \a index-ième patch du maillage.
@@ -112,7 +110,7 @@ class ARCANE_CEA_EXPORT ICartesianMesh
    *
    * L'instance retournée reste valide tant que cette instance n'est pas détruite.
    */
-  virtual ICartesianMeshPatch* patch(Integer index) const =0;
+  virtual ICartesianMeshPatch* patch(Integer index) const = 0;
 
   /*!
    * \brief Raffine en 2D un bloc du maillage cartésien.
@@ -126,10 +124,19 @@ class ARCANE_CEA_EXPORT ICartesianMesh
    *
    * Cette opération est collective.
    */
-  virtual void refinePatch2D(Real2 position,Real2 length) =0;
+  virtual void refinePatch2D(Real2 position, Real2 length) = 0;
 
- //! Effectue des vérifications sur la validité de l'instance.
-  virtual void checkValid() const =0;
+  /*!
+   * \brief Renumérote les uniqueId() des entités.
+   *
+   * Suivant les valeurs de \a v, on renumérote les uniqueId() des faces et/ou 
+   * des entités des patches pour avoir la même numérotation
+   * quel que soit le découpage.
+   */
+  virtual void renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v) = 0;
+
+  //! Effectue des vérifications sur la validité de l'instance.
+  virtual void checkValid() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

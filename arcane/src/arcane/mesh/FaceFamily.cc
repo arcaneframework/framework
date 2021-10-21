@@ -27,7 +27,8 @@
 #include "arcane/mesh/AbstractItemFamilyTopologyModifier.h"
 #include "arcane/mesh/ConnectivityNewWithDependenciesTypes.h"
 #include "arcane/mesh/NewWithLegacyConnectivity.h"
-#include "arcane/ISubDomain.h"
+#include "arcane/mesh/FaceReorienter.h"
+
 #include "arcane/IMesh.h"
 #include "arcane/ITiedInterface.h"
 #include "arcane/TiedFace.h"
@@ -976,6 +977,20 @@ setConnectivity(const Integer c)
           << m_node_prealloc << " by node, "
           << m_edge_prealloc << " by edge, "
           << m_cell_prealloc << " by cell.";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void FaceFamily::
+reorientFacesIfNeeded()
+{
+  // Réoriente les faces si nécessaire. Cela est le cas par exemple si on
+  // a changé la numérotation des uniqueId() des noeuds.
+  mesh::FaceReorienter face_reorienter(mesh());
+  ENUMERATE_ (Face, iface, allItems()) {
+    face_reorienter.checkAndChangeOrientationAMR(*iface);
+  }
 }
 
 /*---------------------------------------------------------------------------*/

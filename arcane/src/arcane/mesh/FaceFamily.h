@@ -146,6 +146,8 @@ class ARCANE_MESH_EXPORT FaceFamily
 
   void setConnectivity(const Integer c);
 
+  void reorientFacesIfNeeded();
+
  public:
 
   virtual void computeSynchronizeInfos() override;
