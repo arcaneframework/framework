@@ -24,8 +24,6 @@
 
 #include "arcane/core/internal/ICartesianMeshGenerationInfo.h"
 
-#include "arcane/mesh/FaceReorienter.h"
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -114,14 +112,6 @@ renumber()
 
   _applyFamilyRenumbering(mesh->cellFamily(), cells_new_uid);
   _applyFamilyRenumbering(mesh->nodeFamily(), nodes_new_uid);
-  {
-    // Suite au changement de numérotation des uniqueId() des noeuds,
-    // il faut éventuellement réorienter les faces
-    mesh::FaceReorienter face_reorienter(mesh);
-    ENUMERATE_ (Face, iface, mesh->faceFamily()->allItems()) {
-      face_reorienter.checkAndChangeOrientationAMR(*iface);
-    }
-  }
   _applyFamilyRenumbering(mesh->faceFamily(), faces_new_uid);
   mesh->checkValidMesh();
 }
@@ -145,7 +135,6 @@ _applyFamilyRenumbering(IItemFamily* family, VariableItemInt64& items_new_uid)
     }
   }
   family->notifyItemsUniqueIdChanged();
-  //family->compactItems(true);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -197,6 +186,7 @@ _applyChildrenCell(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceInt6
     }
   }
   // Renumérote les faces
+  // TODO: Vérifier la validité de cette méthode.
   {
     if (cell.nbFace() != 4)
       ARCANE_FATAL("Invalid number of faces N={0}, expected=4", cell.nbFace());

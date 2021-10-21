@@ -24,6 +24,9 @@ namespace Arcane
 {
 /*!
  * \brief Informations pour la renumérotation.
+ *
+ * Si on renumérote à la fois les uniqueId() des faces et des entités des
+ * patchs, la renumérotation des faces a lieu en premier.
  */
 class ARCANE_CEA_EXPORT CartesianMeshRenumberingInfo
 {
