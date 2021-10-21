@@ -29,7 +29,7 @@ Un compilateur supportant le C++17:
 
 Les outils et bibliothèques suivants sont requis:
 
-- [CMake 3.13+](https://cmake.org)
+- [CMake 3.18+](https://cmake.org) (3.21+ pour les plateformes Windows)
 - [.Net Core 3.0+](https://dotnet.microsoft.com/download)
 - [GLib](https://www.gtk.org/)
 - [LibXml2](http://www.xmlsoft.org/)
