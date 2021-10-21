@@ -138,19 +138,21 @@ class ARCANE_MESH_EXPORT NodeFamily
 
   void sortInternalReferences();
 
+  void notifyItemsUniqueIdChanged() override;
+
  private:
   
-  ItemTypeInfo* m_node_type; //!< Instance contenant le type des noeuds
+  ItemTypeInfo* m_node_type = nullptr; //!< Instance contenant le type des noeuds
   Integer m_edge_prealloc;
   Integer m_face_prealloc;
   Integer m_cell_prealloc;
   Integer m_mesh_connectivity;
   bool m_no_face_connectivity;
-  VariableNodeReal3* m_nodes_coords;
-  EdgeConnectivity* m_edge_connectivity;
-  FaceConnectivity* m_face_connectivity;
-  CellConnectivity* m_cell_connectivity;
-
+  VariableNodeReal3* m_nodes_coords = nullptr;
+  EdgeConnectivity* m_edge_connectivity = nullptr;
+  FaceConnectivity* m_face_connectivity = nullptr;
+  CellConnectivity* m_cell_connectivity = nullptr;
+  FaceFamily* m_face_family = nullptr;
   inline void _removeNode(ItemInternal* node);
 };
 

@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/mesh/NodeFamily.h"
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/PlatformUtils.h"
@@ -23,8 +23,6 @@
 #include "arcane/IMesh.h"
 #include "arcane/MeshUtils.h"
 
-#include "arcane/mesh/NodeFamily.h"
-
 #include "arcane/Connectivity.h"
 #include "arcane/ConnectivityItemVector.h"
 #include "arcane/mesh/IncrementalItemConnectivity.h"
@@ -33,11 +31,13 @@
 #include "arcane/mesh/AbstractItemFamilyTopologyModifier.h"
 #include "arcane/mesh/NewWithLegacyConnectivity.h"
 
+#include "arcane/mesh/FaceFamily.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -109,16 +109,18 @@ build()
   else
     m_nodes_coords = new VariableNodeReal3(VariableBuildInfo(mesh(),"NodeCoord"));
 
+  m_face_family = ARCANE_CHECK_POINTER(dynamic_cast<FaceFamily*>(mesh()->faceFamily()));
+
   if (m_mesh->useMeshItemFamilyDependencies()) // temporary to fill legacy, even with family dependencies
   {
     m_edge_connectivity = dynamic_cast<NewWithLegacyConnectivityType<NodeFamily,EdgeFamily>::type*>(m_mesh->itemFamilyNetwork()->getConnectivity(this,mesh()->edgeFamily(),connectivityName(this,mesh()->edgeFamily())));
-    m_face_connectivity = dynamic_cast<NewWithLegacyConnectivityType<NodeFamily,FaceFamily>::type*>(m_mesh->itemFamilyNetwork()->getConnectivity(this,mesh()->faceFamily(),connectivityName(this,mesh()->faceFamily())));
+    m_face_connectivity = dynamic_cast<NewWithLegacyConnectivityType<NodeFamily,FaceFamily>::type*>(m_mesh->itemFamilyNetwork()->getConnectivity(this,m_face_family,connectivityName(this,mesh()->faceFamily())));
     m_cell_connectivity = dynamic_cast<NewWithLegacyConnectivityType<NodeFamily,CellFamily>::type*>(m_mesh->itemFamilyNetwork()->getConnectivity(this,mesh()->cellFamily(),connectivityName(this,mesh()->cellFamily())));
   }
   else
   {
     m_edge_connectivity = new EdgeConnectivity(this,mesh()->edgeFamily(),"NodeEdge");
-    m_face_connectivity = new FaceConnectivity(this,mesh()->faceFamily(),"NodeFace");
+    m_face_connectivity = new FaceConnectivity(this,m_face_family,"NodeFace");
     m_cell_connectivity = new CellConnectivity(this,mesh()->cellFamily(),"NodeCell");
   }
 
@@ -415,8 +417,20 @@ sortInternalReferences()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+void NodeFamily::
+notifyItemsUniqueIdChanged()
+{
+  ItemFamily::notifyItemsUniqueIdChanged();
+  // Si les uniqueId() des noeuds changent, cela peut avoir une influence sur
+  // l'orientation des faces. Il faut donc renuméroter ces dernières
+  if (m_face_family)
+    m_face_family->reorientFacesIfNeeded();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
