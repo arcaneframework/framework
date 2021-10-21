@@ -268,7 +268,7 @@ readFromDump()
   MeshItemInternalList* miil = m_family->mesh()->meshItemInternalList();
   ItemInternalConnectivityList* iicl = m_family->itemInternalConnectivityList();
 
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_family->mesh()->itemTypeMng();
   for( Integer i=0; i<n; ++i ){
     Int32ConstArrayView buffer(m_variables->m_infos_values[i]);
     // Le premier élément du tampon contient toujours le type de l'entité

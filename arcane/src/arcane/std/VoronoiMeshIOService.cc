@@ -343,7 +343,7 @@ _readCellsHybridGrid(IMesh* mesh,VoronoiFile& voronoi_file,
     throw IOException(func_name,String::format("Invalid dimensions: nb_cell={0} nb_cell_node={1}",nb_cell,nb_cell_node));
   }
 
-  ItemTypeMng * item_type_mng = ItemTypeMng::singleton();
+  ItemTypeMng * item_type_mng = mesh->itemTypeMng();
 
   mesh_dimension = 3; // will be set to two if for all types, nb_edges == nb_faces
   bool is_mesh_2d = true;

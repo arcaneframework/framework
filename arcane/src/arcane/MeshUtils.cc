@@ -167,7 +167,7 @@ writeMeshItemInfo(ISubDomain* sd,Cell cell,bool depend_info)
   trace->pinfo() << "unique id:               " << Trace::Width(5) << cell.uniqueId();
   trace->pinfo() << "local id:                " << Trace::Width(5) << cell.localId();
   trace->pinfo() << "owner:                   " << Trace::Width(5) << cell.owner();
-  trace->pinfo() << "type:                    " << Trace::Width(5) << Item::typeName(cell.type());
+  trace->pinfo() << "type:                    " << Trace::Width(5) << cell.typeInfo()->typeName();
 
   trace->pinfo() << "number of nodes:         " << Trace::Width(5) << nb_node;
   for( Integer i=0; i<nb_node; ++i )

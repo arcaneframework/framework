@@ -975,7 +975,7 @@ _readMeshPart(ITimerMng* timer_mng, LimaMaliReader* reader, IPrimaryMesh* mesh,
     own_cells_infos.resize(nb_cells_infos[1]);
     pm->recv(own_cells_infos, master_rank);
   }
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = mesh->itemTypeMng();
 
   info() << " READ COORDINATES 1";
 

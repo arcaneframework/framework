@@ -42,13 +42,12 @@ DoFFamily(IMesh* mesh, const String& name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-DoFFamily::
+void DoFFamily::
 build()
 {
   ItemFamily::build();
   m_sub_domain_id = subDomain()->subDomainId();
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_mesh->itemTypeMng();
   ItemTypeInfo* dof_type_info = itm->typeFromId(IT_NullType);
   m_shared_info = _findSharedInfo(dof_type_info);
 }

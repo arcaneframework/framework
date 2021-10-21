@@ -69,7 +69,7 @@ void ParticleFamily::
 build()
 {
   ItemFamily::build();
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_mesh->itemTypeMng();
   m_particle_type_info = itm->typeFromId(IT_NullType);
   m_sub_domain_id = subDomain()->subDomainId();
 

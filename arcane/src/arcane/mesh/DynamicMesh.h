@@ -493,6 +493,7 @@ public:
 
   IMeshMng* meshMng() const override { return m_mesh_mng; }
   IVariableMng* variableMng() const override { return m_variable_mng; }
+  ItemTypeMng* itemTypeMng() const override { return m_item_type_mng; }
 
  private:
 
@@ -544,6 +545,7 @@ public:
 
   bool m_use_mesh_item_family_dependencies  = false ;
   IItemFamilyNetwork* m_item_family_network = nullptr;
+  ItemTypeMng* m_item_type_mng = nullptr;
 
  private:
 

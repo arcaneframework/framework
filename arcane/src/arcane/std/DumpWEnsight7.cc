@@ -168,7 +168,7 @@ public:
   private:
     void _init(bool use_degenerated_hexa)
 		{
-      ItemTypeMng * item_type_mng = ItemTypeMng::singleton();
+      ItemTypeMng* item_type_mng = m_group.mesh()->itemTypeMng();
 
 			// NOTE: il est important que les éléments de type 'nfaced'
 			// et 'nsided' soient contigues car Ensight doit sauver

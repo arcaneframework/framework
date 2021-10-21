@@ -185,7 +185,7 @@ _printBasics(std::ostream& o, ItemInternal * item)
   o << "uid="   << item->uniqueId()
     << ",lid="   << item->localId()
     << ",owner=" << item->owner()
-    << ",type="  << Item::typeName(item->typeId())
+    << ",type="  << item->typeInfo()->typeName()
     << ",kind="  << itemKindName(item->kind());
 }
 

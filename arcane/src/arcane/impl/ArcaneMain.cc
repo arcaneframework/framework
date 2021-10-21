@@ -728,7 +728,7 @@ arcaneInitialize()
     dom::DOMImplementation::initialize();
     platform::platformInitialize();
     // Crée le singleton gestionnaire des types
-    ItemTypeMng::singleton();
+    ItemTypeMng::_singleton();
     initializeStringConverter();
     arcaneInitCheckMemory();
     // Initialise le singleton du groupe vide et garde une référence dessus.
@@ -766,7 +766,7 @@ arcaneFinalize()
     arcaneExitCheckMemory();
     platform::platformTerminate();
     dom::DOMImplementation::terminate();
-    ItemTypeMng::destroySingleton();
+    ItemTypeMng::_destroySingleton();
     arcaneEndProgram();
 #ifdef ARCANE_FLEXLM
     {

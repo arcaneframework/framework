@@ -93,7 +93,7 @@ OneMeshItemAdder(DynamicMeshIncrementalBuilder* mesh_builder)
 , m_node_family(m_mesh->trueNodeFamily())
 , m_face_family(m_mesh->trueFaceFamily())
 , m_edge_family(m_mesh->trueEdgeFamily())
-, m_item_type_mng(ItemTypeMng::singleton())
+, m_item_type_mng(m_mesh->itemTypeMng())
 , m_mesh_info(m_mesh->meshPartInfo().partRank())
 , m_next_face_uid(0)
 , m_next_edge_uid(0)
@@ -134,7 +134,7 @@ addOneFace(Int64 a_face_uid, Int64ConstArrayView a_node_list, Integer a_type)
     m_work_face_orig_nodes_uid[z] = a_node_list[z];
   mesh_utils::reorderNodesOfFace(m_work_face_orig_nodes_uid, m_work_face_sorted_nodes);
 
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_mesh->itemTypeMng();
   ItemInternal *face = m_face_family.allocOne(a_face_uid,itm->typeFromId(a_type));
 	face->setOwner(m_mesh_info.rank(), m_mesh_info.rank());
 
@@ -727,7 +727,7 @@ ItemInternal* OneMeshItemAdder::
 addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fatal_on_existing_item)
 {
   //bool is_check = arcaneIsCheck();
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_mesh->itemTypeMng();
   eItemKind kind = item.kind();
   ItemTypeInfo * type = itm->typeFromId(item.type());
   if (item.type() == IT_Line2 && submesh_kind == IK_Cell)
