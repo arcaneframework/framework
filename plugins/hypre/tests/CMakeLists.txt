@@ -9,7 +9,7 @@ target_link_libraries(hypre_gtest
         PRIVATE GTest::GTest
         PRIVATE Alien::alien_core Alien::alien_semantic_move
         Alien::alien_semantic_ref
-        Alien::alien_hypre
+        Alien::hypre_wrapper
         )
 
 include(LoadAlienTest)

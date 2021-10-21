@@ -5,5 +5,6 @@ Alien user documentation
 
 .. toctree::
     :maxdepth: 2
+   build
    concepts
    move

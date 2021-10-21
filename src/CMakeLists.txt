@@ -14,14 +14,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# Use Arccon functions and macros
-find_package(Arccon REQUIRED)
-list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
-
-# use arccon commands otherwise a
-include(${ARCCON_CMAKE_COMMANDS})
-include(ArcconSetInstallDirs)
-
 include(GenerateExportHeader)
 
 
@@ -66,20 +58,6 @@ if (ALIEN_UNIT_TESTS)
 endif ()
 
 
-# ----------------------------------------------------------------------------
-# Configure installation layout.
-# Layout. This works for all platforms:
-#   * <prefix>/lib*/cmake/<PROJECT-NAME>
-#   * <prefix>/lib*/
-#   * <prefix>/include/
-set(config_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
-
-set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
-
-# Configuration
-set(version_config "${generated_dir}/${PROJECT_NAME}ConfigVersion.cmake")
-set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
-set(namespace "Alien::")
 
 # Include module with fuction 'write_basic_package_version_file'
 include(CMakePackageConfigHelpers)

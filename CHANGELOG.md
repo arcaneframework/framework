@@ -2,7 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## 1.1.2
+
+**Changes:**
+
+- plugins are now part of Alien distribution. That means that only `find_package(Alien)` is necessary.
 
 ## 1.1.1
 

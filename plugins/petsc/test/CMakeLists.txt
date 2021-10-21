@@ -17,7 +17,7 @@
 add_executable(test_petsc test_petsc.cpp)
 
 target_link_libraries(test_petsc PUBLIC
-        Alien::alien_petsc
+        Alien::petsc_wrapper
         Alien::alien_semantic_ref)
 
 include(LoadAlienTest)
