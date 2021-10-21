@@ -1,5 +1,4 @@
-﻿# Il faut au minimun cmake 3.13.0 (pour target_link options)
-cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
+﻿cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 
 message(STATUS "CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR}")
 
@@ -22,14 +21,24 @@ if (NOT BUILD_SHARED_LIBS)
 endif()
 
 # ----------------------------------------------------------------------------
-# Indique que si une variable <PackageName>_ROOT est définie, considère
-# qu'il s'agit du chemin de base du package <PackageName>.
-if(POLICY CMP0074)
-  cmake_policy(SET CMP0074 NEW)
+
+# A partir de 3.19:
+# find_program() requires permission to execute but not to read.
+if(POLICY CMP0109)
+  cmake_policy(SET CMP0109 NEW)
 endif()
 
+# A partir de 3.19:
+# An imported target missing its location property fails during generation.
 if(POLICY CMP0111)
   cmake_policy(SET CMP0111 NEW)
+endif()
+
+# La version 3.21 est nécessaire sous windows pour:
+# - avoir la commande configure_file() avec l'argument SOURCE_PERMISSION
+# - avoir la variable TARGET_RUNTIME_DLLS pour connaitre les DLLs nécessaires à une cible.
+if(WIN32)
+  cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 endif()
 
 # ----------------------------------------------------------------------------
@@ -755,20 +764,13 @@ add_subdirectory(src/arcane/driver)
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Gestion du support CUDA.
-# Comme on va utiliser find_package(CUDAToolkit), il faut obligatoirement
-# la version 3.17+ de CMake.
 
 if (ARCANE_WANT_CUDA)
   enable_language(CUDA)
-  cmake_minimum_required(VERSION 3.17 FATAL_ERROR)
   # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
-  if(POLICY CMP0104)
-    cmake_policy(SET CMP0104 NEW)
-    if (NOT CMAKE_CUDA_ARCHITECTURES)
-      set(CMAKE_CUDA_ARCHITECTURES 50 60 70 80)
-    endif()
+  if (NOT CMAKE_CUDA_ARCHITECTURES)
+    set(CMAKE_CUDA_ARCHITECTURES 50 60 70 80)
   endif()
-
   add_subdirectory(src/arcane/accelerator/cuda)
 endif()
 

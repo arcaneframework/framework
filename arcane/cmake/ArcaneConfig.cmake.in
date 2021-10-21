@@ -2,6 +2,11 @@ set(Arcane_VERSION @Arcane_VERSION@)
 
 @PACKAGE_INIT@
 
+cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
+if(WIN32)
+  cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
+endif()
+
 # ----------------------------------------------------------------------------
 # Défini une variable 'ARCANE_PREFIX_DIR' car PACKAGE_PREFIX_DIR
 # peut changer avec des includes
@@ -55,13 +60,9 @@ macro(arcane_internal_enable_cuda)
     message(STATUS "ArcaneCUDA: CMAKE_CUDA_COMPILER = ${CMAKE_CUDA_COMPILER}")
 
     enable_language(CUDA)
-    cmake_minimum_required(VERSION 3.17 FATAL_ERROR)
     # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
-    if(POLICY CMP0104)
-      cmake_policy(SET CMP0104 NEW)
-      if (NOT CMAKE_CUDA_ARCHITECTURES)
-        set(CMAKE_CUDA_ARCHITECTURES 50 60 70 80 CACHE STRING "Default architectures" FORCE)
-      endif()
+    if (NOT CMAKE_CUDA_ARCHITECTURES)
+      set(CMAKE_CUDA_ARCHITECTURES 50 60 70 80 CACHE STRING "Default architectures" FORCE)
     endif()
 
     find_package(CUDAToolkit REQUIRED)
