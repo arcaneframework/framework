@@ -29,6 +29,7 @@
 
 #include "arcane/cea/ICartesianMesh.h"
 #include "arcane/cea/CartesianConnectivity.h"
+#include "arcane/cea/CartesianMeshRenumberingInfo.h"
 #include "arcane/cea/internal/CartesianMeshPatch.h"
 
 #include "arcane/core/internal/ICartesianMeshGenerationInfo.h"
@@ -119,7 +120,7 @@ class CartesianMesh
 
   void refinePatch2D(Real2 position,Real2 length) override;
 
-  void renumberItemsUniqueIdInPatchs() override;
+  void renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v) override;
 
   void checkValid() const override;
 
@@ -598,11 +599,24 @@ checkValid() const
 /*---------------------------------------------------------------------------*/
 
 void CartesianMesh::
-renumberItemsUniqueIdInPatchs()
+renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v)
 {
   auto* cmgi = ICartesianMeshGenerationInfo::getReference(m_mesh,true);
-  CartesianMeshUniqueIdRenumbering renumberer(this,cmgi);
-  renumberer.renumber();
+  Int32 patch_method = v.renumberPatchMethod();
+  if (patch_method!=0 && patch_method!=1)
+    ARCANE_FATAL("Invalud value '{0}' for renumberPatchMethod(). Valid values are 0 or 1");
+  if (patch_method==1){
+    CartesianMeshUniqueIdRenumbering renumberer(this,cmgi);
+    renumberer.renumber();
+  }
+
+  if (v.isSortAfterRenumbering()){
+    info() << "Compacting and Sorting after renumbering";
+    m_mesh->nodeFamily()->compactItems(true);
+    m_mesh->faceFamily()->compactItems(true);
+    m_mesh->cellFamily()->compactItems(true);
+    computeDirections();
+  }
 }
 
 /*---------------------------------------------------------------------------*/

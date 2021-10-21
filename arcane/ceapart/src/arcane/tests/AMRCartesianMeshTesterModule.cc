@@ -43,6 +43,7 @@
 #include "arcane/cea/FaceDirectionMng.h"
 #include "arcane/cea/NodeDirectionMng.h"
 #include "arcane/cea/CartesianConnectivity.h"
+#include "arcane/cea/CartesianMeshRenumberingInfo.h"
 #include "arcane/cea/ICartesianMeshPatch.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
@@ -239,7 +240,10 @@ init()
     m_cartesian_mesh->recreateFromDump();
   else{
     m_cartesian_mesh->computeDirections();
-    m_cartesian_mesh->renumberItemsUniqueIdInPatchs();
+    CartesianMeshRenumberingInfo renumbering_info;
+    renumbering_info.setRenumberPatchMethod(1);
+    renumbering_info.setSortAfterRenumbering(true);
+    m_cartesian_mesh->renumberItemsUniqueId(renumbering_info);
     _processPatches();
   }
 

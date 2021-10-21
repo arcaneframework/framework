@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICartesianMesh.h                                            (C) 2000-2020 */
+/* ICartesianMesh.h                                            (C) 2000-2021 */
 /*                                                                           */
 /* Interface d'un maillage cartésien.                                        */
 /*---------------------------------------------------------------------------*/
@@ -22,6 +22,7 @@
 
 namespace Arcane
 {
+class CartesianMeshRenumberingInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -126,13 +127,13 @@ class ARCANE_CEA_EXPORT ICartesianMesh
   virtual void refinePatch2D(Real2 position, Real2 length) = 0;
 
   /*!
-   * \brief Renumérote les uniqueId() des entités des patchs.
+   * \brief Renumérote les uniqueId() des entités.
    *
-   * Renumérote les uniqueId() des entités des patches pour avoir la même numérotation
-   * quel que soit le découpage. Les uniqueId() du maillage de niveau 0
-   * ne sont pas modifiées.
+   * Suivant les valeurs de \a v, on renumérote les uniqueId() des faces et/ou 
+   * des entités des patches pour avoir la même numérotation
+   * quel que soit le découpage.
    */
-  virtual void renumberItemsUniqueIdInPatchs() = 0;
+  virtual void renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v) = 0;
 
   //! Effectue des vérifications sur la validité de l'instance.
   virtual void checkValid() const = 0;
