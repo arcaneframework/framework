@@ -32,6 +32,9 @@
 namespace Alien
 {
 
+/*!
+ * Matrix stored as Dictionary Of Keys
+ */
 class DoKMatrix : public IMatrixImpl
 {
  public:
@@ -45,17 +48,22 @@ class DoKMatrix : public IMatrixImpl
 
   DoKMatrix(const DoKMatrix&) = delete;
 
-  virtual ~DoKMatrix() {}
+  ~DoKMatrix() override {}
 
-  //! Demande la lib�ration des donn�es
   void clear() override {}
 
+  //! Set value of a matrix element, creating it if it does not exist yet.
+  //! \param row id of the row in the matrix
+  //! \param col id of the column in the matrix
+  //! \param value value of this non-zero
+  //! \return
   bool setMatrixValue(Int32 row, Int32 col, const ValueType& value)
   {
     m_data.set(row, col, value);
     return true;
   }
 
+  //! Dispatch matrix elements
   void assemble() { _distribute(); }
 
   void compact() { m_data.compact(); }

@@ -106,7 +106,8 @@ void DoKtoSimpleCSRMatrixConverter::_buildProfile(const SrcMatrix& src, TgtMatri
   ArrayView<Integer> row_offsets = profile.getRowOffset();
   row_offsets.fill(0);
   for (Integer i = 0; i < dokMatrixRIndexer->size(); ++i) {
-    const Integer localRow = (*dokMatrixRIndexer)[i].first + 1 - local_offset;
+    // FIXME: check if index is correct.
+    const Integer localRow = (*dokMatrixRIndexer)[i].value().first + 1 - local_offset;
     ++row_offsets[localRow];
   }
   for (Integer i = 0; i < local_size; ++i)
@@ -125,7 +126,8 @@ void DoKtoSimpleCSRMatrixConverter::_buildProfile(const SrcMatrix& src, TgtMatri
     //    dokMatrix.getIndexer()->find((*dokMatrixRIndexer)[i].first,
     //    (*dokMatrixRIndexer)[i].second); cols[offsetOfIJ] =
     //    (*dokMatrixRIndexer)[i].second;
-    cols[i] = (*dokMatrixRIndexer)[i].second;
+    // FIXME: check if id exists
+    cols[i] = (*dokMatrixRIndexer)[i].value().second;
   }
 
   ConstArrayView<Real> dokValues = dokMatrix.getValues();

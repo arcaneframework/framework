@@ -24,7 +24,7 @@
 
 namespace Alien
 {
-
+//! ReverseIndexer based on a HashTable
 class ALIEN_EXPORT DoKReverseIndexer : public IReverseIndexer
 {
  public:
@@ -33,7 +33,7 @@ class ALIEN_EXPORT DoKReverseIndexer : public IReverseIndexer
   {}
   virtual ~DoKReverseIndexer() {}
 
-  Index operator[](Offset off) const override;
+  std::optional<Index> operator[](Offset off) const override;
 
   void record(Offset off, Index i) override;
 

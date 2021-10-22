@@ -23,12 +23,17 @@
 #include <algorithm>
 #include <unordered_map>
 #include <utility>
+#include <optional>
 
 namespace Alien
 {
 
 class IReverseIndexer;
 
+//! Interface for a local sparse matrix indexer.
+//! The goal of this indexer is to provide a database indexed by (row,column) ids.
+//! Non-zeros are not stored here, only their position in the nnz storage array.
+//! This interface allows to use a CSRMatrix as a DoKMatrix.
 class ILocalMatrixIndexer
 {
  public:
@@ -39,10 +44,28 @@ class ILocalMatrixIndexer
  public:
   virtual ~ILocalMatrixIndexer() {}
 
+  //! Registers an offset with a matrix position (i,j)
+  //! \param i id of the row
+  //! \param j id of the column
+  //! \param offset
   virtual void associate(Integer i, Integer j, Offset offset) = 0;
-  virtual Offset find(Integer i, Integer j) = 0;
+
+  //! Finds the offset associated with a matrix position (i,j)
+  //! \param i
+  //! \param j
+  //! \return offset if found
+  virtual std::optional<Offset> find(Integer i, Integer j) = 0;
+
+  //! Creates a new offset for matrix position (i,j)
+  //! \param i
+  //! \param j
+  //! \param tentative_offset hint on what the offset should be
+  //! \return the offset (can be different from tentative_offset)
   virtual Offset create(Integer i, Integer j, Offset& tentative_offset) = 0;
 
+  //! Creates a new indexer, based on offset permutations.
+  //! \param perm
+  //! \return new indexer, used to compact matrix
   virtual IReverseIndexer* sort(ArrayView<Renumbering> perm) = 0;
 
   virtual ILocalMatrixIndexer* clone() const = 0;

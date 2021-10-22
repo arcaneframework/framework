@@ -139,8 +139,8 @@ TEST(TestDoKMatrix, Constructor)
   auto stop = builder.row_end();
   for (int i = 0; i < r_index->size(); i++) {
     auto cur = (*r_index)[i];
-    ASSERT_GE(cur.first, start);
-    ASSERT_LT(cur.first, stop);
+    ASSERT_GE(cur.value().first, start);
+    ASSERT_LT(cur.value().first, stop);
   }
 }
 

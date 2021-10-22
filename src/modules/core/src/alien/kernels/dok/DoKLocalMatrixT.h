@@ -28,6 +28,8 @@
 namespace Alien
 {
 
+//! Matrix storage using Dictionary Of Keys
+//! \tparam NNZValue Scalar type of the non-zeros of the matrix
 template <typename NNZValue>
 class DoKLocalMatrixT
 {
@@ -66,6 +68,10 @@ class DoKLocalMatrixT
 
   void setMaxNnz(Integer size) { _reallocate(size); }
 
+  //! Set a non-zero in the matrix
+  //! \param i
+  //! \param j
+  //! \param val
   void set(Int32 i, Int32 j, const NNZValue& val)
   {
     auto offset = m_indexer->create(i, j, m_offset);
@@ -77,6 +83,7 @@ class DoKLocalMatrixT
     }
   }
 
+  //! Group non-zeros according to indexer
   void compact()
   {
     UniqueArray<ILocalMatrixIndexer::Renumbering> perm(m_offset);
@@ -99,12 +106,15 @@ class DoKLocalMatrixT
       this->compact();
 
     std::cout << "Number of elements: " << m_values.size() << "\n";
-    for (int i = 0; i < m_r_indexer->size(); ++i)
+    for (int i = 0; i < m_r_indexer->size(); ++i) {
+      auto index = (*m_r_indexer)[i];
+      auto offset = m_indexer->find(index.value().first, index.value().second);
       std::cout
-      << "( " << (*m_r_indexer)[i].first << " , " << (*m_r_indexer)[i].second << " ) "
+      << "( " << index.value().first << " , " << index.value().second << " ) "
       << " = "
-      << m_values[m_indexer->find((*m_r_indexer)[i].first, (*m_r_indexer)[i].second)]
+      << m_values[offset.value()]
       << "\n";
+    }
   }
 
  private:

@@ -40,14 +40,14 @@ void DoKLocalMatrixIndexer::associate(Integer i, Integer j, Offset offset)
   m_data[Key(i, j)] = offset;
 }
 
-DoKLocalMatrixIndexer::Offset
+std::optional<ILocalMatrixIndexer::Offset>
 DoKLocalMatrixIndexer::find(Integer i, Integer j)
 {
   try {
     return m_data.at(DoKLocalMatrixIndexer::Key(i, j));
   }
   catch (std::out_of_range) {
-    return -1;
+    return std::nullopt;
   }
 }
 
@@ -55,13 +55,14 @@ DoKLocalMatrixIndexer::Offset
 DoKLocalMatrixIndexer::create(
 Integer i, Integer j, DoKLocalMatrixIndexer::Offset& tentative_offset)
 {
-  Offset o = find(i, j);
-  if (o < 0) {
+  auto o = find(i, j);
+  Offset ret = o.value_or(0);
+  if (o) {
     associate(i, j, tentative_offset);
-    o = tentative_offset;
+    ret = tentative_offset;
     tentative_offset++;
   }
-  return o;
+  return ret;
 }
 
 ILocalMatrixIndexer*

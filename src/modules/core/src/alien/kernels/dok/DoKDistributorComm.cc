@@ -49,7 +49,7 @@ void DoKDistributorComm::computeCommPlan(IReverseIndexer* rev_index)
   UniqueArray<Int32> snd_cols(size, 0);
 
   for (IReverseIndexer::Offset offset = 0; offset < size; ++offset) {
-    IReverseIndexer::Index ij = (*rev_index)[offset];
+    auto ij = (*rev_index)[offset].value();
     snd_rows[offset] = ij.first;
     snd_cols[offset] = ij.second;
   }

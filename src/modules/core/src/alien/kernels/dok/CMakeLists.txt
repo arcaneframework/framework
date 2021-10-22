@@ -46,5 +46,6 @@ target_link_libraries(alien_kernel_dok PUBLIC
         Arccore::arccore_message_passing_mpi)
 
 target_link_libraries(alien_kernel_dok PUBLIC alien_utils)
+target_compile_features(alien_kernel_dok PUBLIC cxx_std_17)  # for std::optional
 
 install(TARGETS alien_kernel_dok EXPORT ${ALIEN_EXPORT_TARGET})

@@ -21,10 +21,16 @@
 namespace Alien
 {
 
-DoKReverseIndexer::Index
+std::optional<DoKReverseIndexer::Index>
 DoKReverseIndexer::operator[](DoKReverseIndexer::Offset off) const
 {
-  return m_map.find(off)->second;
+  auto slot = m_map.find(off);
+  if (slot != m_map.end()) {
+    return slot->second;
+  }
+  else {
+    return {};
+  }
 }
 
 void DoKReverseIndexer::record(DoKReverseIndexer::Offset off, DoKReverseIndexer::Index i)

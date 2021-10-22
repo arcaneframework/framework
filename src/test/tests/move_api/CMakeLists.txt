@@ -23,7 +23,9 @@ set(TEST_LIST
         )
 
 set(PARALLEL_TEST_LIST
-        IndexManager)
+        IndexManager
+        DoKMatrix
+        )
 
 
 add_executable(gtest.movesemantic

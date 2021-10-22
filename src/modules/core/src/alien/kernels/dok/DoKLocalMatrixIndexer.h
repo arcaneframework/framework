@@ -28,6 +28,7 @@ namespace Alien
 
 class IReverseIndexer;
 
+//! Local matrix indexer using HashMap
 class ALIEN_EXPORT DoKLocalMatrixIndexer : public ILocalMatrixIndexer
 {
  public:
@@ -35,17 +36,13 @@ class ALIEN_EXPORT DoKLocalMatrixIndexer : public ILocalMatrixIndexer
   virtual ~DoKLocalMatrixIndexer() {}
 
   DoKLocalMatrixIndexer(const DoKLocalMatrixIndexer& src) = default;
-#ifndef WIN32
   DoKLocalMatrixIndexer(DoKLocalMatrixIndexer&& src) = default;
-#endif
 
   DoKLocalMatrixIndexer& operator=(const DoKLocalMatrixIndexer& src) = default;
-#ifndef WIN32
   DoKLocalMatrixIndexer& operator=(DoKLocalMatrixIndexer&& src) = default;
-#endif
 
   void associate(Integer i, Integer j, Offset offset) override;
-  Offset find(Integer i, Integer j) override;
+  std::optional<Offset> find(Integer i, Integer j) override;
   Offset create(Integer i, Integer j, Offset& tentative_offset) override;
 
   IReverseIndexer* sort(ArrayView<Renumbering> perm) override;
@@ -63,6 +60,7 @@ class ALIEN_EXPORT DoKLocalMatrixIndexer : public ILocalMatrixIndexer
     {
       size_t seed = 42;
       std::hash<Integer> h;
+      // Magic numbers from boost::hash_combine
       seed ^= h(k.first) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
       seed ^= h(k.second) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
       return seed;

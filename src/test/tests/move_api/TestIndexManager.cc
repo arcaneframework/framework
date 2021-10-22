@@ -20,7 +20,6 @@
 
 #include <alien/distribution/MatrixDistribution.h>
 #include <alien/distribution/VectorDistribution.h>
-#include <alien/index_manager/IIndexManager.h>
 #include <alien/index_manager/IndexManager.h>
 #include <alien/index_manager/functional/AbstractItemFamily.h>
 #include <alien/index_manager/functional/BasicIndexManager.h>
