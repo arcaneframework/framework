@@ -112,6 +112,7 @@ jobs:
           ${{matrix.config.precommand}}
           cmake -B ${{env.BUILD_DIR}} -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DALIEN_PLUGIN_HYPRE:BOOL=ON -DALIEN_PLUGIN_PETSC:BOOL=ON ${{matrix.config.alien_options}} -DCMAKE_INSTALL_PREFIX=${{env.INSTALL_DIR}} ${{matrix.config.build_options}}
 
+      - uses: ammaraskar/gcc-problem-matcher@master
       - name: Build
         # Build your program with the given configuration
         run: |
