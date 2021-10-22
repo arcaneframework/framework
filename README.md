@@ -83,11 +83,25 @@ cmake --build /path/to/build
 
 ## Linux
 
+Il faut au moins la version 3.18 de CMake. Si elle n'est pas présente sur votre système, la commande
+suivante permet de l'installer dans `/usr/local`. Il faudra ensuite
+ajouter le chemin correspondant dans la variable d'environnement PATH;
+
+~~~{.sh}
+# Install CMake 21.3 in /usr/local/cmake
+MY_CMAKE_INSTALL_PATH=/usr/local/cmake-3.21.3
+wget https://github.com/Kitware/CMake/releases/download/v3.21.3/cmake-3.21.3-linux-x86_64.tar.gz
+sudo mkdir ${MY_CMAKE_INSTALL_PATH}
+sudo tar -C ${MY_CMAKE_INSTALL_PATH} -x --strip-components 1 -f cmake-3.21.3-linux-x86_64.tar.gz
+PATH=${MY_CMAKE_INSTALL_PATH}/bin:${PATH}
+cmake --version
+~~~
+
 ### Ubuntu 20.04
 
 ~~~{.sh}
 sudo apt-get update
-sudo apt-get install -y apt-utils iputils-ping cmake g++ python3 git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev libparmetis-dev wget
+sudo apt-get install -y apt-utils build-essential iputils-ping python3 git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev libparmetis-dev wget
 wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
 sudo dpkg -i packages-microsoft-prod.deb
 sudo apt-get update
