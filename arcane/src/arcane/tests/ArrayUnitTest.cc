@@ -366,6 +366,7 @@ class UniqueArray2UnitTest
   {
     // Test std::move() via std::swap() (si use_own_swap==false)
     // ou UniqueArray2::swap() (si use_own_swap==true)
+    info() << "TestSwap use_own_swap=" << use_own_swap;
 
     // Normalement les pointeurs des 2 tableaux doivent juste être échangés.
     UniqueArray2<DataType> c1(7,5);

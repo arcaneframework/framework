@@ -206,6 +206,12 @@ class ArrayImplT
  public:
   ArrayImplT() {}
   T ptr[1];
+ public:
+  ArrayImplBase* _base() { return this; }
+ private:
+  using ArrayImplBase::size;
+  using ArrayImplBase::capacity;
+  using ArrayImplBase::dim1_size;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -315,11 +321,15 @@ class AbstractArray
   {
     return static_cast<TrueImpl*>(ArrayImplBase::shared_null);
   }
+  static ArrayImplBase* _sharedNullBase()
+  {
+    return ArrayImplBase::shared_null;
+  }
  protected:
 
   //! Construit un vecteur vide avec l'allocateur par défaut
   AbstractArray()
-  : m_p(_sharedNull()), m_baseptr(m_p->ptr)
+  : m_baseptr(m_p->ptr)
   {
   }
   /*!
@@ -328,7 +338,7 @@ class AbstractArray
    * contenir \a acapacity éléments (mais le tableau reste vide).
    */
   AbstractArray(IMemoryAllocator* a,Int64 acapacity)
-  : m_p(_sharedNull()), m_baseptr(m_p->ptr)
+  : m_baseptr(m_p->ptr)
   {
     // Si un allocateur spécifique est utilisé et qu'il n'est pas
     // celui par défaut, il faut toujours allouer un objet pour
@@ -341,37 +351,37 @@ class AbstractArray
   }
   //! Constructeur par déplacement. Ne doit être utilisé que par UniqueArray
   AbstractArray(ThatClassType&& rhs) ARCCORE_NOEXCEPT
-  : m_p(rhs.m_p), m_baseptr(m_p->ptr)
+  : m_p(rhs.m_p), m_md(rhs.m_md), m_baseptr(m_p->ptr)
   {
     rhs._reset();
   }
   AbstractArray(Int64 asize,const T* values)
-  : m_p(_sharedNull()), m_baseptr(m_p->ptr)
+  : m_baseptr(m_p->ptr)
   {
     if (asize!=0){
       _internalAllocate(asize);
       _createRange(0,asize,values);
-      m_p->size = asize;
+      m_md->size = asize;
     }
   }
   AbstractArray(const Span<const T>& view)
-  : m_p(_sharedNull()), m_baseptr(m_p->ptr)
+  : m_baseptr(m_p->ptr)
   {
     Int64 asize = view.size();
     if (asize!=0){
       _internalAllocate(asize);
       _createRange(0,asize,view.data());
-      m_p->size = asize;
+      m_md->size = asize;
     }
   }
   AbstractArray(const ConstArrayView<T>& view)
-  : m_p(_sharedNull()), m_baseptr(m_p->ptr)
+  : m_baseptr(m_p->ptr)
   {
     Int64 asize = view.size();
     if (asize!=0){
       _internalAllocate(asize);
       _createRange(0,asize,view.data());
-      m_p->size = asize;
+      m_md->size = asize;
     }
   }
 
@@ -405,28 +415,28 @@ class AbstractArray
   }
   operator Span<const T>() const
   {
-    return Span<const T>(m_p->ptr,m_p->size);
+    return Span<const T>(m_p->ptr,m_md->size);
   }
  public:
   //! Nombre d'éléments du vecteur
-  Integer size() const { return ARCCORE_CAST_SMALL_SIZE(m_p->size); }
+  Integer size() const { return ARCCORE_CAST_SMALL_SIZE(m_md->size); }
   //! Nombre d'éléments du vecteur
-  Integer length() const { return ARCCORE_CAST_SMALL_SIZE(m_p->size); }
+  Integer length() const { return ARCCORE_CAST_SMALL_SIZE(m_md->size); }
   //! Capacité (nombre d'éléments alloués) du vecteur
-  Integer capacity() const { return ARCCORE_CAST_SMALL_SIZE(m_p->capacity); }
+  Integer capacity() const { return ARCCORE_CAST_SMALL_SIZE(m_md->capacity); }
   //! Nombre d'éléments du vecteur (en 64 bits)
-  Int64 largeSize() const { return m_p->size; }
+  Int64 largeSize() const { return m_md->size; }
   //! Nombre d'éléments du vecteur (en 64 bits)
-  Int64 largeLength() const { return m_p->size; }
+  Int64 largeLength() const { return m_md->size; }
   //! Capacité (nombre d'éléments alloués) du vecteur (en 64 bits)
-  Int64 largeCapacity() const { return m_p->capacity; }
+  Int64 largeCapacity() const { return m_md->capacity; }
   //! Capacité (nombre d'éléments alloués) du vecteur
-  bool empty() const { return m_p->size==0; }
+  bool empty() const { return m_md->size==0; }
   //! Vrai si le tableau contient l'élément de valeur \a v
   bool contains(ConstReferenceType v) const
   {
     const T* ptr = m_p->ptr;
-    for( Int64 i=0, n=m_p->size; i<n; ++i ){
+    for( Int64 i=0, n=m_md->size; i<n; ++i ){
       if (ptr[i]==v)
         return true;
     }
@@ -436,18 +446,19 @@ class AbstractArray
   //! Elément d'indice \a i
   ConstReferenceType operator[](Int64 i) const
   {
-    ARCCORE_CHECK_AT(i,m_p->size);
+    ARCCORE_CHECK_AT(i,m_md->size);
     return m_p->ptr[i];
   }
  protected:
-  TrueImpl* m_p;
+  TrueImpl* m_p = _sharedNull();
+  ArrayImplBase* m_md = _sharedNullBase();
  private:
   T* m_baseptr;
  protected:
   //! Réserve le mémoire pour \a new_capacity éléments
   void _reserve(Int64 new_capacity)
   {
-    if (new_capacity<=m_p->capacity)
+    if (new_capacity<=m_md->capacity)
       return;
     _internalRealloc(new_capacity,false);
   }
@@ -466,14 +477,14 @@ class AbstractArray
 
     Int64 acapacity = new_capacity;
     if (compute_capacity){
-      acapacity = m_p->capacity;
+      acapacity = m_md->capacity;
       //std::cout << " REALLOC: want=" << wanted_size << " current_capacity=" << capacity << '\n';
       while (new_capacity>acapacity)
         acapacity = (acapacity==0) ? 4 : (acapacity + 1 + acapacity / 2);
       //std::cout << " REALLOC: want=" << wanted_size << " new_capacity=" << capacity << '\n';
     }
     // Si la nouvelle capacité est inférieure à la courante,ne fait rien.
-    if (acapacity<m_p->capacity)
+    if (acapacity<m_md->capacity)
       return;
     _internalReallocate(acapacity,IsPODType());
   }
@@ -482,7 +493,7 @@ class AbstractArray
   virtual void _internalReallocate(Int64 new_capacity,TrueType)
   {
     TrueImpl* old_p = m_p;
-    Int64 old_capacity = m_p->capacity;
+    Int64 old_capacity = m_md->capacity;
     _directReAllocate(new_capacity);
     bool update = (new_capacity < old_capacity) || (m_p != old_p);
     if (update){
@@ -494,7 +505,7 @@ class AbstractArray
   virtual void _internalReallocate(Int64 new_capacity,FalseType)
   {
     TrueImpl* old_p = m_p;
-    Int64 old_size = m_p->size;
+    Int64 old_size = m_md->size;
     _directAllocate(new_capacity);
     if (m_p!=old_p){
       for( Int64 i=0; i<old_size; ++i ){
@@ -525,7 +536,7 @@ class AbstractArray
     _setMP(static_cast<TrueImpl*>(ArrayImplBase::allocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p,a)));
     m_p->allocator = a;
     m_p->nb_ref = _getNbRef();
-    m_p->size = 0;
+    m_md->size = 0;
     _updateReferences();
   }
   virtual void _directAllocate(Int64 new_capacity)
@@ -539,7 +550,7 @@ class AbstractArray
  public:
   void printInfos(std::ostream& o)
   {
-    o << " Infos: size=" << m_p->size << " capacity=" << m_p->capacity << '\n';
+    o << " Infos: size=" << m_md->size << " capacity=" << m_md->capacity << '\n';
   }
  protected:
   //! Mise à jour des références
@@ -554,12 +565,12 @@ class AbstractArray
   //! Ajoute \a n élément de valeur \a val à la fin du tableau
   void _addRange(ConstReferenceType val,Int64 n)
   {
-    Int64 s = m_p->size;
-    if ((s+n) > m_p->capacity)
+    Int64 s = m_md->size;
+    if ((s+n) > m_md->capacity)
       _internalRealloc(s+n,true);
     for( Int64 i=0; i<n; ++i )
       new (m_p->ptr + s + i) T(val);
-    m_p->size += n;
+    m_md->size += n;
   }
 
   //! Ajoute \a n élément de valeur \a val à la fin du tableau
@@ -567,11 +578,11 @@ class AbstractArray
   {
     Int64 n = val.size();
     const T* ptr = val.data();
-    Int64 s = m_p->size;
-    if ((s+n) > m_p->capacity)
+    Int64 s = m_md->size;
+    if ((s+n) > m_md->capacity)
       _internalRealloc(s+n,true);
     _createRange(s,s+n,ptr);
-    m_p->size += n;
+    m_md->size += n;
   }
 
   //! Détruit l'instance si plus personne ne la référence
@@ -584,7 +595,7 @@ class AbstractArray
   }
   void _destroy()
   {
-    _destroyRange(0,m_p->size,IsPODType());
+    _destroyRange(0,m_md->size,IsPODType());
   }
   void _destroyRange(Int64,Int64,TrueType)
   {
@@ -639,49 +650,49 @@ class AbstractArray
   {
     Int64 that_size = orig_array.size();
     _internalAllocate(that_size);
-    m_p->size = that_size;
-    m_p->dim1_size = orig_array.m_p->dim1_size;
-    m_p->dim2_size = orig_array.m_p->dim2_size;
+    m_md->size = that_size;
+    m_md->dim1_size = orig_array.m_md->dim1_size;
+    m_md->dim2_size = orig_array.m_md->dim2_size;
     _createRange(0,that_size,orig_array.m_p->ptr);
   }
   void _resize(Int64 s)
   {
     if (s<0)
       s = 0;
-    if (s>m_p->size) {
+    if (s>m_md->size) {
       this->_internalRealloc(s,false);
-      this->_createRangeDefault(m_p->size,s,IsPODType());
+      this->_createRangeDefault(m_md->size,s,IsPODType());
     }
     else{
-      this->_destroyRange(s,m_p->size,IsPODType());
+      this->_destroyRange(s,m_md->size,IsPODType());
     }
-    m_p->size = s;
+    m_md->size = s;
   }
   void _clear()
   {
-    this->_destroyRange(0,m_p->size,IsPODType());
-    m_p->size = 0;
+    this->_destroyRange(0,m_md->size,IsPODType());
+    m_md->size = 0;
   }
   void _resize(Int64 s,ConstReferenceType value)
   {
     if (s<0)
       s = 0;
-    if (s>m_p->size){
+    if (s>m_md->size){
       this->_internalRealloc(s,false);
-      this->_createRange(m_p->size,s,value,IsPODType());
+      this->_createRange(m_md->size,s,value,IsPODType());
     }
     else{
-      this->_destroyRange(s,m_p->size,IsPODType());
+      this->_destroyRange(s,m_md->size,IsPODType());
     }
-    m_p->size = s;
+    m_md->size = s;
   }
   void _copy(const T* rhs_begin,TrueType)
   {
-    std::memcpy(m_p->ptr,rhs_begin,((size_t)m_p->size)*sizeof(T));
+    std::memcpy(m_p->ptr,rhs_begin,((size_t)m_md->size)*sizeof(T));
   }
   void _copy(const T* rhs_begin,FalseType)
   {
-    for( Int64 i=0, is=m_p->size; i<is; ++i )
+    for( Int64 i=0, is=m_md->size; i<is; ++i )
       m_p->ptr[i] = rhs_begin[i];
   }
   void _copy(const T* rhs_begin)
@@ -695,7 +706,7 @@ class AbstractArray
     T* abegin = m_p->ptr;
     // Vérifie que \a rhs n'est pas un élément à l'intérieur de ce tableau
     if (abegin>=rhs_begin && abegin<(rhs_begin+rhs_size))
-      ArrayImplBase::overlapError(abegin,m_p->size,rhs_begin,rhs_size);
+      ArrayImplBase::overlapError(abegin,m_md->size,rhs_begin,rhs_size);
     _resize(rhs_size);
     _copy(rhs_begin);
   }
@@ -739,6 +750,8 @@ class AbstractArray
   {
     std::swap(m_p,rhs.m_p);
     std::swap(m_baseptr,rhs.m_baseptr);
+    // TODO Regarder comment faire le swap pour m_md
+    std::swap(m_md,rhs.m_md);
   }
 
   void _shrink()
@@ -775,6 +788,7 @@ class AbstractArray
   void _setMP(TrueImpl* new_mp)
   {
     m_p = new_mp;
+    m_md = new_mp;
   }
 };
 
@@ -798,6 +812,7 @@ class Array
  protected:
 
   using AbstractArray<T>::m_p;
+  using AbstractArray<T>::m_md;
 
  public:
 
@@ -866,32 +881,32 @@ class Array
  public:
   operator ConstArrayView<T>() const
   {
-    Integer s = arccoreCheckArraySize(m_p->size);
+    Integer s = arccoreCheckArraySize(m_md->size);
     return ConstArrayView<T>(s,m_p->ptr);
   }
   operator ArrayView<T>()
   {
-    Integer s = arccoreCheckArraySize(m_p->size);
+    Integer s = arccoreCheckArraySize(m_md->size);
     return ArrayView<T>(s,m_p->ptr);
   }
   operator Span<const T>() const
   {
-    return Span<const T>(m_p->ptr,m_p->size);
+    return Span<const T>(m_p->ptr,m_md->size);
   }
   operator Span<T>()
   {
-    return Span<T>(m_p->ptr,m_p->size);
+    return Span<T>(m_p->ptr,m_md->size);
   }
   //! Vue constante sur ce tableau
   ConstArrayView<T> constView() const
   {
-    Integer s = arccoreCheckArraySize(m_p->size);
+    Integer s = arccoreCheckArraySize(m_md->size);
     return ConstArrayView<T>(s,m_p->ptr);
   }
   //! Vue constante sur ce tableau
   Span<const T> constSpan() const
   {
-    return Span<const T>(m_p->ptr,m_p->size);
+    return Span<const T>(m_p->ptr,m_md->size);
   }
   /*!
    * \brief Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments.
@@ -906,18 +921,18 @@ class Array
   //! Vue mutable sur ce tableau
   ArrayView<T> view() const
   {
-    Integer s = arccoreCheckArraySize(m_p->size);
+    Integer s = arccoreCheckArraySize(m_md->size);
     return ArrayView<T>(s,m_p->ptr);
   }
   //! Vue immutable sur ce tableau
   Span<const T> span() const
   {
-    return Span<const T>(m_p->ptr,m_p->size);
+    return Span<const T>(m_p->ptr,m_md->size);
   }
   //! Vue mutable sur ce tableau
   Span<T> span()
   {
-    return Span<T>(m_p->ptr,m_p->size);
+    return Span<T>(m_p->ptr,m_md->size);
   }
   /*!
    * \brief Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments.
@@ -938,7 +953,7 @@ class Array
   void sample(ConstArrayView<Integer> indexes,ArrayView<T> result) const
   {
     const Integer result_size = indexes.size();
-    [[maybe_unused]] const Int64 my_size = m_p->size;
+    [[maybe_unused]] const Int64 my_size = m_md->size;
     for( Integer i=0; i<result_size; ++i) {
       Int32 index = indexes[i];
       ARCCORE_CHECK_AT(index,my_size);
@@ -950,10 +965,10 @@ class Array
   //! Ajoute l'élément \a val à la fin du tableau
   void add(ConstReferenceType val)
   {
-    if (m_p->size >= m_p->capacity)
-      this->_internalRealloc(m_p->size+1,true);
-    new (m_p->ptr + m_p->size) T(val);
-    ++m_p->size;
+    if (m_md->size >= m_md->capacity)
+      this->_internalRealloc(m_md->size+1,true);
+    new (m_p->ptr + m_md->size) T(val);
+    ++m_md->size;
   }
   //! Ajoute \a n élément de valeur \a val à la fin du tableau
   void addRange(ConstReferenceType val,Int64 n)
@@ -1044,32 +1059,32 @@ class Array
    */
   void remove(Int64 index)
   {
-    Int64 s = m_p->size;
+    Int64 s = m_md->size;
     ARCCORE_CHECK_AT(index,s);
     for( Int64 i=index; i<(s-1); ++i )
       m_p->ptr[i] = m_p->ptr[i+1];
-    --m_p->size;
-    m_p->ptr[m_p->size].~T();
+    --m_md->size;
+    m_p->ptr[m_md->size].~T();
   }
   /*!
    * \brief Supprime la dernière entité du tableau.
    */
   void popBack()
   {
-    ARCCORE_CHECK_AT(0,m_p->size);
-    --m_p->size;
-    m_p->ptr[m_p->size].~T();
+    ARCCORE_CHECK_AT(0,m_md->size);
+    --m_md->size;
+    m_p->ptr[m_md->size].~T();
   }
   //! Elément d'indice \a i. Vérifie toujours les débordements
   ConstReferenceType at(Int64 i) const
   {
-    arccoreCheckAt(i,m_p->size);
+    arccoreCheckAt(i,m_md->size);
     return m_p->ptr[i];
   }
   //! Positionne l'élément d'indice \a i. Vérifie toujours les débordements
   void setAt(Int64 i,ConstReferenceType value)
   {
-    arccoreCheckAt(i,m_p->size);
+    arccoreCheckAt(i,m_md->size);
     m_p->ptr[i] = value;
   }
   //! Elément d'indice \a i
@@ -1079,35 +1094,35 @@ class Array
   //! Elément d'indice \a i
   ConstReferenceType operator[](Int64 i) const
   {
-    ARCCORE_CHECK_AT(i,m_p->size);
+    ARCCORE_CHECK_AT(i,m_md->size);
     return m_p->ptr[i];
   }
   //! Elément d'indice \a i
   T& operator[](Int64 i)
   {
-    ARCCORE_CHECK_AT(i,m_p->size);
+    ARCCORE_CHECK_AT(i,m_md->size);
     return m_p->ptr[i];
   }
   //! Dernier élément du tableau
   /*! Le tableau ne doit pas être vide */
   T& back()
   {
-    ARCCORE_CHECK_AT(m_p->size-1,m_p->size);
-    return m_p->ptr[m_p->size-1];
+    ARCCORE_CHECK_AT(m_md->size-1,m_md->size);
+    return m_p->ptr[m_md->size-1];
   }
   //! Dernier élément du tableau (const)
   /*! Le tableau ne doit pas être vide */
   ConstReferenceType back() const
   {
-    ARCCORE_CHECK_AT(m_p->size-1,m_p->size);
-    return m_p->ptr[m_p->size-1];
+    ARCCORE_CHECK_AT(m_md->size-1,m_md->size);
+    return m_p->ptr[m_md->size-1];
   }
 
   //! Premier élément du tableau
   /*! Le tableau ne doit pas être vide */
   T& front()
   {
-    ARCCORE_CHECK_AT(0,m_p->size);
+    ARCCORE_CHECK_AT(0,m_md->size);
     return m_p->ptr[0];
   }
 
@@ -1115,7 +1130,7 @@ class Array
   /*! Le tableau ne doit pas être vide */
   ConstReferenceType front() const
   {
-    ARCCORE_CHECK_AT(0,m_p->size);
+    ARCCORE_CHECK_AT(0,m_md->size);
     return m_p->ptr[0];
   }
 
@@ -1167,10 +1182,10 @@ class Array
   const_iterator begin() const { return const_iterator(m_p->ptr); }
 
   //! Itérateur sur le premier élément après la fin du tableau.
-  iterator end() { return iterator(m_p->ptr+m_p->size); }
+  iterator end() { return iterator(m_p->ptr+m_md->size); }
 
   //! Itérateur constant sur le premier élément après la fin du tableau.
-  const_iterator end() const { return const_iterator(m_p->ptr+m_p->size); }
+  const_iterator end() const { return const_iterator(m_p->ptr+m_md->size); }
 
   //! Itérateur inverse sur le premier élément du tableau.
   reverse_iterator rbegin() { return std::make_reverse_iterator(end()); }
@@ -1189,12 +1204,12 @@ class Array
   //! Intervalle d'itération du premier au dernièr élément.
   ArrayRange<pointer> range()
   {
-    return ArrayRange<pointer>(m_p->ptr,m_p->ptr+m_p->size);
+    return ArrayRange<pointer>(m_p->ptr,m_p->ptr+m_md->size);
   }
   //! Intervalle d'itération du premier au dernièr élément.
   ArrayRange<const_pointer> range() const
   {
-    return ArrayRange<const_pointer>(m_p->ptr,m_p->ptr+m_p->size);
+    return ArrayRange<const_pointer>(m_p->ptr,m_p->ptr+m_md->size);
   }
  public:
 

@@ -35,6 +35,7 @@ class IntSubClass
   IntSubClass() : m_v(0) {}
   Integer m_v;
   bool operator==(Integer iv) const { return m_v==iv; }
+  bool operator==(const IntSubClass& v) const { return m_v==v.m_v; }
 };
 }
 namespace Arccore
@@ -517,4 +518,17 @@ TEST(Array2, Misc)
     c.shrink_to_fit();
     ASSERT_EQ(c.capacity(),c.totalNbElement()) << "Bad capacity (test 3)";
   }
+}
+
+namespace Arccore
+{
+// Instancie explicitement les classes tableaux pour garantir
+// que toutes les méthodes fonctionnent
+template class UniqueArray<IntSubClass>;
+template class SharedArray<IntSubClass>;
+template class Array<IntSubClass>;
+template class AbstractArray<IntSubClass>;
+template class UniqueArray2<IntSubClass>;
+template class SharedArray2<IntSubClass>;
+template class Array2<IntSubClass>;
 }
