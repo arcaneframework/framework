@@ -43,27 +43,12 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ArrayImplBase;
+class ArrayMetaData;
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \internal
- *
- * \brief Classe de base implémentant un vecteur.
- *
- * Cette classe sert d'implémentation pour tous les types tableaux
- * de Arccore, qu'ils soient 1D (Array),  2D simple (Array2)
- * ou 2D multiples (MultiArray2).
- *
- * \note Pour garantir l'alignement pour la vectorisation, cette structure
- * (et ArrayImplT) doit avoir une taille identique (sizeof) à celle spécifiée dans
- * AlignedMemoryAllocator pour le simd et le cache.
- */  
-class ARCCORE_COLLECTIONS_EXPORT ArrayImplBase
+class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
 {
  public:
-  ArrayImplBase() : nb_ref(0), capacity(0), size(0),
+  ArrayMetaData() : nb_ref(0), capacity(0), size(0),
     dim1_size(0), dim2_size(0), mutli_dims_size(0),
     allocator(&DefaultMemoryAllocator::shared_null_instance)
  {}
@@ -73,11 +58,11 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayImplBase
   // les tests SIMD en AVX en optimisé avec gcc 4.9.3 plantent.
   // Il faudrait vérifier s'il s'agit d'un bug du compilateur ou d'un
   // problème dans Arccore.
-  ~ArrayImplBase() {}
+  ~ArrayMetaData() {}
  public:
-  static ArrayImplBase* shared_null;
+  static ArrayMetaData* shared_null;
  private:
-  static ARCCORE_ALIGNAS(64) ArrayImplBase shared_null_instance;
+  static ArrayMetaData shared_null_instance;
  public:
   //! Nombre de références sur cet objet.
   Int64 nb_ref;
@@ -96,25 +81,60 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayImplBase
   //! Padding pour que la structure ait une taille de 64 octets.
   Int64 padding1;
 
-  static ArrayImplBase* allocate(Int64 sizeof_true_impl,Int64 nb,
-                                 Int64 sizeof_true_type,ArrayImplBase* init);
-  static ArrayImplBase* allocate(Int64 sizeof_true_impl,Int64 nb,
-                                 Int64 sizeof_true_type,ArrayImplBase* init,
-                                 IMemoryAllocator* allocator);
-  static ArrayImplBase* reallocate(Int64 sizeof_true_impl,Int64 nb,
-                                   Int64 sizeof_true_type,ArrayImplBase* current);
-  static void deallocate(ArrayImplBase* current);
-  static void overlapError(const void* begin1,Int64 size1,
-                           const void* begin2,Int64 size2);
+ public:
 
   static void checkSharedNull()
   {
-    ArrayImplBase* s = shared_null;
+    ArrayMetaData* s = shared_null;
     if (s->capacity!=0 || s->size!=0 || s->dim1_size!=0 || s->dim2_size!=0
         || s->mutli_dims_size || s->allocator)
       throwBadSharedNull();
   }
   static void throwBadSharedNull ARCCORE_NORETURN ();
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ *
+ * \brief Classe de base implémentant un vecteur.
+ *
+ * Cette classe sert d'implémentation pour tous les types tableaux
+ * de Arccore, qu'ils soient 1D (Array),  2D simple (Array2)
+ * ou 2D multiples (MultiArray2).
+ *
+ * \note Pour garantir l'alignement pour la vectorisation, cette structure
+ * (et ArrayImplT) doit avoir une taille identique (sizeof) à celle spécifiée dans
+ * AlignedMemoryAllocator pour le simd et le cache.
+ */
+class ARCCORE_COLLECTIONS_EXPORT ArrayImplBase
+{
+ public:
+  ArrayImplBase() {}
+
+  // GG: note: normalement ce destructeur est inutile et on pourrait utiliser
+  // le destructeur généré par le compilateur. Cependant, si on le supprime
+  // les tests SIMD en AVX en optimisé avec gcc 4.9.3 plantent.
+  // Il faudrait vérifier s'il s'agit d'un bug du compilateur ou d'un
+  // problème dans Arccore.
+  ~ArrayImplBase() {}
+ public:
+  static ArrayImplBase* shared_null;
+ private:
+  static ARCCORE_ALIGNAS(64) ArrayImplBase shared_null_instance;
+ public:
+
+  static ArrayImplBase* allocate(Int64 sizeof_true_impl,Int64 nb,
+                                 Int64 sizeof_true_type,ArrayImplBase* init,ArrayMetaData* init_meta_data);
+  static ArrayImplBase* allocate(Int64 sizeof_true_impl,Int64 nb,
+                                 Int64 sizeof_true_type,ArrayImplBase* init,ArrayMetaData* init_meta_data,
+                                 IMemoryAllocator* allocator);
+  static ArrayImplBase* reallocate(Int64 sizeof_true_impl,Int64 nb,
+                                   Int64 sizeof_true_type,ArrayImplBase* current,ArrayMetaData* current_meta_data);
+  static void deallocate(ArrayImplBase* current,ArrayMetaData* current_meta_data);
+  static void overlapError(const void* begin1,Int64 size1,
+                           const void* begin2,Int64 size2);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -131,17 +151,6 @@ class ArrayImplT
  public:
   ArrayImplT() {}
   T ptr[1];
- public:
-  ArrayImplBase* _base() { return this; }
- private:
-  using ArrayImplBase::nb_ref;
-  using ArrayImplBase::size;
-  using ArrayImplBase::capacity;
-  using ArrayImplBase::dim1_size;
-  using ArrayImplBase::dim2_size;
-
-  using ArrayImplBase::mutli_dims_size;
-  using ArrayImplBase::allocator;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -254,6 +263,10 @@ class AbstractArray
   static ArrayImplBase* _sharedNullBase()
   {
     return ArrayImplBase::shared_null;
+  }
+  static ArrayMetaData* _sharedNullMetaData()
+  {
+    return ArrayMetaData::shared_null;
   }
  protected:
 
@@ -381,7 +394,7 @@ class AbstractArray
   }
  protected:
   TrueImpl* m_p = _sharedNull();
-  ArrayImplBase* m_md = _sharedNullBase();
+  ArrayMetaData* m_md = _sharedNullMetaData();
  private:
   T* m_baseptr;
  protected:
@@ -435,7 +448,7 @@ class AbstractArray
   virtual void _internalReallocate(Int64 new_capacity,FalseType)
   {
     TrueImpl* old_p = m_p;
-    ArrayImplBase* old_md = m_md;
+    ArrayMetaData* old_md = m_md;
     Int64 old_size = m_md->size;
     _directAllocate(new_capacity);
     if (m_p!=old_p){
@@ -444,7 +457,7 @@ class AbstractArray
         old_p->ptr[i].~T();
       }
       m_md->nb_ref = old_md->nb_ref;
-      ArrayImplBase::deallocate(old_p);
+      ArrayImplBase::deallocate(old_p,m_md);
       _updateReferences();
     }
   }
@@ -452,7 +465,7 @@ class AbstractArray
   virtual void _internalDeallocate()
   {
     if (!_isSharedNull())
-      ArrayImplBase::deallocate(m_p);
+      ArrayImplBase::deallocate(m_p,m_md);
   }
   virtual void _internalAllocate(Int64 new_capacity)
   {
@@ -464,7 +477,8 @@ class AbstractArray
   virtual void _directFirstAllocateWithAllocator(Int64 new_capacity,IMemoryAllocator* a)
   {
     //TODO: vérifier m_p vaut shared_null
-    _setMP(static_cast<TrueImpl*>(ArrayImplBase::allocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p,a)));
+    m_md = new ArrayMetaData();
+    _initMP(static_cast<TrueImpl*>(ArrayImplBase::allocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p,m_md,a)));
     m_md->allocator = a;
     m_md->nb_ref = _getNbRef();
     m_md->size = 0;
@@ -472,11 +486,13 @@ class AbstractArray
   }
   virtual void _directAllocate(Int64 new_capacity)
   {
-    _setMP(static_cast<TrueImpl*>(ArrayImplBase::allocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p)));
+    if (m_md==_sharedNullMetaData())
+      m_md = new ArrayMetaData();
+    _initMP(static_cast<TrueImpl*>(ArrayImplBase::allocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p,m_md)));
   }
   virtual void _directReAllocate(Int64 new_capacity)
   {
-    _setMP(static_cast<TrueImpl*>(ArrayImplBase::reallocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p)));
+    _setMP(static_cast<TrueImpl*>(ArrayImplBase::reallocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p,m_md)));
   }
  public:
   void printInfos(std::ostream& o)
@@ -664,7 +680,7 @@ class AbstractArray
     _internalDeallocate();
 
     // Recopie bit à bit.
-    _setMP(rhs.m_p);
+    _setMP2(rhs.m_p,rhs.m_md);
 
     // Indique que \a rhs est vide.
     rhs._reset();
@@ -716,10 +732,28 @@ class AbstractArray
 
  protected:
 
+  void _initMP(TrueImpl* new_mp)
+  {
+    m_p = new_mp;
+    //ArrayImplBase* new_md = new_mp;
+    //m_md = new ArrayImplBase();
+    //m_md->capacity = new_md->capacity;
+  }
+
   void _setMP(TrueImpl* new_mp)
   {
     m_p = new_mp;
-    m_md = new_mp;
+    //ArrayImplBase* new_md = new_mp;
+    //m_md->capacity = new_md->capacity;
+    //m_md = new_mp;
+  }
+
+  void _setMP2(TrueImpl* new_mp,ArrayMetaData* new_md)
+  {
+    m_p = new_mp;
+    m_md = new_md;//ArrayImplBase* new_md = new_mp;
+    //m_md->capacity = new_md->capacity;
+    //m_md = new_mp;
   }
 
   bool _isSharedNull()
@@ -732,7 +766,9 @@ class AbstractArray
   void _setToSharedNull()
   {
     m_p = _sharedNull();
-    m_md = _sharedNull();
+    //if (m_md!=_sharedNull())
+    //delete m_md;
+    m_md = _sharedNullMetaData();
   }
 };
 
@@ -1321,7 +1357,7 @@ class SharedArray
  protected:
   void _initReference(const ThatClassType& rhs)
   {
-    this->_setMP(rhs.m_p);
+    this->_setMP2(rhs.m_p,rhs.m_md);
     _addReference(&rhs);
     ++m_md->nb_ref;
   }
@@ -1329,9 +1365,9 @@ class SharedArray
   void _updateReferences() final
   {
     for( ThatClassType* i = m_prev; i; i = i->m_prev )
-      i->_setMP(m_p);
+      i->_setMP2(m_p,m_md);
     for( ThatClassType* i = m_next; i; i = i->m_next )
-      i->_setMP(m_p);
+      i->_setMP2(m_p,m_md);
   }
   //! Mise à jour des références
   Integer _getNbRef() final
@@ -1383,7 +1419,7 @@ class SharedArray
       ++rhs.m_md->nb_ref;
       --m_md->nb_ref;
       _checkFreeMemory();
-      this->_setMP(rhs.m_p);
+      this->_setMP2(rhs.m_p,rhs.m_md);
     }
   }
  private:

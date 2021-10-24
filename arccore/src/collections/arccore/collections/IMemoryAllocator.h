@@ -135,6 +135,7 @@ class ARCCORE_COLLECTIONS_EXPORT DefaultMemoryAllocator
 : public IMemoryAllocator
 {
   friend class ArrayImplBase;
+  friend class ArrayMetaData;
 
  private:
 

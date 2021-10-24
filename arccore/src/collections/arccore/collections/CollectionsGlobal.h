@@ -49,6 +49,7 @@ class PrintableMemoryAllocator;
 class AlignedMemoryAllocator;
 class DefaultMemoryAllocator;
 class ArrayImplBase;
+class ArrayMetaData;
 template<typename DataType> class ArrayTraits;
 template<typename DataType> class ArrayImplT;
 template<typename DataType> class Array;

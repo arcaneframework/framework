@@ -44,6 +44,9 @@ namespace Arccore
 ArrayImplBase ArrayImplBase::shared_null_instance = ArrayImplBase();
 ArrayImplBase* ArrayImplBase::shared_null = &ArrayImplBase::shared_null_instance;
 
+ArrayMetaData ArrayMetaData::shared_null_instance = ArrayMetaData();
+ArrayMetaData* ArrayMetaData::shared_null = &ArrayMetaData::shared_null_instance;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -77,20 +80,21 @@ class BadAllocException
 
 ArrayImplBase* ArrayImplBase::
 allocate(Int64 sizeof_true_impl,Int64 new_capacity,
-         Int64 sizeof_true_type,ArrayImplBase* init)
+         Int64 sizeof_true_type,ArrayImplBase* init,ArrayMetaData* init_meta_data)
 {
-  return allocate(sizeof_true_impl,new_capacity,sizeof_true_type,init,nullptr);
+  return allocate(sizeof_true_impl,new_capacity,sizeof_true_type,init,init_meta_data,nullptr);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ArrayImplBase* ArrayImplBase::
-allocate(Int64 sizeof_true_impl,Int64 new_capacity,
-         Int64 sizeof_true_type,ArrayImplBase* init,IMemoryAllocator* allocator)
+allocate(Int64 sizeof_true_impl,Int64 new_capacity,Int64 sizeof_true_type,
+         ArrayImplBase* init,ArrayMetaData* init_meta_data,
+         IMemoryAllocator* allocator)
 {
   if (!allocator)
-    allocator = init->allocator;
+    allocator = init_meta_data->allocator;
 
   size_t s_sizeof_true_impl = (size_t)sizeof_true_impl;
   size_t s_new_capacity = (size_t)new_capacity;
@@ -113,7 +117,7 @@ allocate(Int64 sizeof_true_impl,Int64 new_capacity,
 
   *p = *init;
 
-  p->capacity = (Int64)s_new_capacity;
+  init_meta_data->capacity = (Int64)s_new_capacity;
   return p;
 }
 
@@ -122,9 +126,9 @@ allocate(Int64 sizeof_true_impl,Int64 new_capacity,
 
 ArrayImplBase* ArrayImplBase::
 reallocate(Int64 sizeof_true_impl,Int64 new_capacity,Int64 sizeof_true_type,
-           ArrayImplBase* current)
+           ArrayImplBase* current,ArrayMetaData* current_meta_data)
 {
-  IMemoryAllocator* allocator = current->allocator;
+  IMemoryAllocator* allocator = current_meta_data->allocator;
   size_t s_sizeof_true_impl = (size_t)sizeof_true_impl;
   size_t s_new_capacity = (size_t)new_capacity;
   s_new_capacity = allocator->adjustCapacity(s_new_capacity,sizeof_true_type);
@@ -145,7 +149,7 @@ reallocate(Int64 sizeof_true_impl,Int64 new_capacity,Int64 sizeof_true_type,
       p = (ArrayImplBase*)(allocator->allocate(elem_size));
       //GG: TODO: regarder si 'current' peut etre nul (a priori je ne pense pas...)
       if (p && current){
-        size_t current_size = s_sizeof_true_impl + (current->size - 1) * s_sizeof_true_type;
+        size_t current_size = s_sizeof_true_impl + (current_meta_data->size - 1) * s_sizeof_true_type;
         ::memcpy(p,current,current_size);
         allocator->deallocate(current);
       }
@@ -165,7 +169,7 @@ reallocate(Int64 sizeof_true_impl,Int64 new_capacity,Int64 sizeof_true_type,
          << " old_ptr=" << current << '\n';
     throw BadAllocException(ostr.str());
   }
-  p->capacity = (Int64)s_new_capacity;
+  current_meta_data->capacity = (Int64)s_new_capacity;
   return p;
 }
 
@@ -173,9 +177,9 @@ reallocate(Int64 sizeof_true_impl,Int64 new_capacity,Int64 sizeof_true_type,
 /*---------------------------------------------------------------------------*/
 
 void ArrayImplBase::
-deallocate(ArrayImplBase* current)
+deallocate(ArrayImplBase* current,ArrayMetaData* current_meta_data)
 {
-  current->allocator->deallocate(current);
+  current_meta_data->allocator->deallocate(current);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -195,10 +199,10 @@ overlapError(const void* begin1,Int64 size1,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ArrayImplBase::
+void ArrayMetaData::
 throwBadSharedNull()
 {
-  throw BadAllocException("corrupted ArrayImplBase::shared_null");
+  throw BadAllocException("corrupted ArrayMetaData::shared_null");
 }
 
 /*---------------------------------------------------------------------------*/

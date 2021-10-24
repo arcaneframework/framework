@@ -82,8 +82,9 @@ namespace {
 class _ArrayStruct
 {
  public:
-virtual ~_ArrayStruct(){}
-Arccore::ArrayImplBase* m_p;
+  virtual ~_ArrayStruct(){}
+  Arccore::ArrayImplBase* m_p;
+  Arccore::ArrayMetaData* m_md;
 };
 }
 /*---------------------------------------------------------------------------*/
@@ -95,7 +96,7 @@ _displayArray(const Arccore::AbstractArray<type>* obj,const char* type_name)
 {
   Arccore::Span<const type> view = *obj;
   const _ArrayStruct* true_ptr = reinterpret_cast<const _ArrayStruct*>(obj);
-  Arccore::ArrayImplBase* true_obj = true_ptr->m_p;
+  Arccore::ArrayMetaData* true_obj = true_ptr->m_md;
   char strtype[1024];
   arcane_ttf_header();
   TV_ttf_add_row("size","Arcane::Int64",&true_obj->size);
