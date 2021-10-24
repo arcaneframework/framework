@@ -209,9 +209,14 @@ class ArrayImplT
  public:
   ArrayImplBase* _base() { return this; }
  private:
+  using ArrayImplBase::nb_ref;
   using ArrayImplBase::size;
   using ArrayImplBase::capacity;
   using ArrayImplBase::dim1_size;
+  using ArrayImplBase::dim2_size;
+
+  using ArrayImplBase::mutli_dims_size;
+  using ArrayImplBase::allocator;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -344,7 +349,7 @@ class AbstractArray
     // celui par défaut, il faut toujours allouer un objet pour
     // pouvoir conserver l'instance de l'allocateur. Par défaut
     // on utilise une taille de 1 élément.
-    if (a && a!=m_p->allocator){
+    if (a && a!=m_md->allocator){
       Int64 c = (acapacity>1) ? acapacity : 1;
       _directFirstAllocateWithAllocator(c,a);
     }
@@ -387,7 +392,7 @@ class AbstractArray
 
   virtual ~AbstractArray()
   {
-    --m_p->nb_ref;
+    --m_md->nb_ref;
     _checkFreeMemory();
   }
  public:
@@ -395,18 +400,18 @@ class AbstractArray
   void dispose()
   {
     _destroy();
-    IMemoryAllocator* a = m_p->allocator;
+    IMemoryAllocator* a = m_md->allocator;
     _internalDeallocate();
-    _setMP(_sharedNull());
+    _setToSharedNull();
     // Si on a un allocateur spécifique, il faut allouer un
     // bloc pour conserver cette information.
-    if (a != m_p->allocator)
+    if (a != m_md->allocator)
       _directFirstAllocateWithAllocator(1,a);
     _updateReferences();
   }
   IMemoryAllocator* allocator() const
   {
-    return m_p->allocator;
+    return m_md->allocator;
   }
  public:
   operator ConstArrayView<T>() const
@@ -469,7 +474,7 @@ class AbstractArray
    */
   virtual void _internalRealloc(Int64 new_capacity,bool compute_capacity)
   {
-    if (m_p==TrueImpl::shared_null){
+    if (_isSharedNull()){
       if (new_capacity!=0)
         _internalAllocate(new_capacity);
       return;
@@ -505,6 +510,7 @@ class AbstractArray
   virtual void _internalReallocate(Int64 new_capacity,FalseType)
   {
     TrueImpl* old_p = m_p;
+    ArrayImplBase* old_md = m_md;
     Int64 old_size = m_md->size;
     _directAllocate(new_capacity);
     if (m_p!=old_p){
@@ -512,7 +518,7 @@ class AbstractArray
         new (m_p->ptr+i) T(old_p->ptr[i]);
         old_p->ptr[i].~T();
       }
-      m_p->nb_ref = old_p->nb_ref;
+      m_md->nb_ref = old_md->nb_ref;
       ArrayImplBase::deallocate(old_p);
       _updateReferences();
     }
@@ -520,13 +526,13 @@ class AbstractArray
   // Libère la mémoire
   virtual void _internalDeallocate()
   {
-    if (m_p!=TrueImpl::shared_null)
+    if (!_isSharedNull())
       ArrayImplBase::deallocate(m_p);
   }
   virtual void _internalAllocate(Int64 new_capacity)
   {
     _directAllocate(new_capacity);
-    m_p->nb_ref = _getNbRef();
+    m_md->nb_ref = _getNbRef();
     _updateReferences();
   }
  private:
@@ -534,8 +540,8 @@ class AbstractArray
   {
     //TODO: vérifier m_p vaut shared_null
     _setMP(static_cast<TrueImpl*>(ArrayImplBase::allocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p,a)));
-    m_p->allocator = a;
-    m_p->nb_ref = _getNbRef();
+    m_md->allocator = a;
+    m_md->nb_ref = _getNbRef();
     m_md->size = 0;
     _updateReferences();
   }
@@ -588,7 +594,7 @@ class AbstractArray
   //! Détruit l'instance si plus personne ne la référence
   void _checkFreeMemory()
   {
-    if (m_p->nb_ref==0){
+    if (m_md->nb_ref==0){
       _destroy();
       _internalDeallocate();
     }
@@ -762,7 +768,7 @@ class AbstractArray
   // Réalloue la mémoire pour avoir une capacité proche de \a new_capacity
   void _shrink(Int64 new_capacity)
   {
-    if (m_p==TrueImpl::shared_null)
+    if (_isSharedNull())
       return;
     // On n'augmente pas la capacité avec cette méthode
     if (new_capacity>this->capacity())
@@ -780,7 +786,7 @@ class AbstractArray
    */
   void _reset()
   {
-    _setMP(_sharedNull());
+    _setToSharedNull();
   }
 
  protected:
@@ -789,6 +795,19 @@ class AbstractArray
   {
     m_p = new_mp;
     m_md = new_mp;
+  }
+
+  bool _isSharedNull()
+  {
+    return m_p==TrueImpl::shared_null;
+
+  }
+ private:
+
+  void _setToSharedNull()
+  {
+    m_p = _sharedNull();
+    m_md = _sharedNull();
   }
 };
 
@@ -1266,6 +1285,7 @@ class SharedArray
  protected:
 
   using AbstractArray<T>::m_p;
+  using AbstractArray<T>::m_md;
 
  public:
 
@@ -1378,7 +1398,7 @@ class SharedArray
   {
     this->_setMP(rhs.m_p);
     _addReference(&rhs);
-    ++m_p->nb_ref;
+    ++m_md->nb_ref;
   }
   //! Mise à jour des références
   void _updateReferences() final
@@ -1425,7 +1445,7 @@ class SharedArray
   //! Détruit l'instance si plus personne ne la référence
   void _checkFreeMemory()
   {
-    if (m_p->nb_ref==0){
+    if (m_md->nb_ref==0){
       this->_destroy();
       this->_internalDeallocate();
     }
@@ -1435,8 +1455,8 @@ class SharedArray
     if (&rhs!=this){
       _removeReference();
       _addReference(&rhs);
-      ++rhs.m_p->nb_ref;
-      --m_p->nb_ref;
+      ++rhs.m_md->nb_ref;
+      --m_md->nb_ref;
       _checkFreeMemory();
       this->_setMP(rhs.m_p);
     }

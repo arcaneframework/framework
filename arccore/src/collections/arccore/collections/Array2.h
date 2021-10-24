@@ -64,7 +64,7 @@ class Array2
     IB_NoInit
   };
   //TODO: verifier qu'on n'affecte pas m_p->dim1_size ou
-  // m_p->dim2_size si m_p est TrueImpl::shared_null.
+  // m_md->dim2_size si m_p est TrueImpl::shared_null.
  private:
   typedef AbstractArray<DataType> Base;
   typedef typename Base::ConstReferenceType ConstReferenceType;
@@ -120,13 +120,13 @@ class Array2
   ArrayView<DataType> operator[](Int64 i)
   {
     ARCCORE_CHECK_AT(i,m_md->dim1_size);
-    return ArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_p->dim2_size),m_p->ptr + (m_p->dim2_size*i));
+    return ArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_md->dim2_size),m_p->ptr + (m_md->dim2_size*i));
   }
   // TODO: retourner un Span
   ConstArrayView<DataType> operator[](Int64 i) const
   {
     ARCCORE_CHECK_AT(i,m_md->dim1_size);
-    return ConstArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_p->dim2_size),m_p->ptr + (m_p->dim2_size*i));
+    return ConstArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_md->dim2_size),m_p->ptr + (m_md->dim2_size*i));
   }
   DataType item(Int64 i,Int64 j)
   {
@@ -298,24 +298,24 @@ class Array2
     Int64 old_size = m_md->dim1_size;
     if (new_size==old_size)
       return;
-    _resize2(new_size,m_p->dim2_size,rb);
+    _resize2(new_size,m_md->dim2_size,rb);
     m_md->dim1_size = new_size;
     _arccoreCheckSharedNull();
   }
   //! Réalloue les deux dimensions
   void _resize(Int64 new_size1,Int64 new_size2,InitBehaviour rb)
   {
-    if (new_size2==m_p->dim2_size){
+    if (new_size2==m_md->dim2_size){
       _resize(new_size1,rb);
     }
     else if (totalNbElement()==0){
       _resizeFromEmpty(new_size1,new_size2,rb);
     }
-    else if (new_size2<m_p->dim2_size){
+    else if (new_size2<m_md->dim2_size){
       _resizeSameDim1ReduceDim2(new_size2,rb);
       _resize(new_size1,rb);
     }
-    else if (new_size2>m_p->dim2_size){
+    else if (new_size2>m_md->dim2_size){
       _resizeSameDim1IncreaseDim2(new_size2,rb);
       _resize(new_size1,rb);
     }
@@ -339,12 +339,12 @@ class Array2
         m_p->ptr[(i*new_size2)+j] = m_p->ptr[(i*n2)+j];
     }
     _resize2(n,new_size2,rb);
-    m_p->dim2_size = new_size2;
+    m_md->dim2_size = new_size2;
     _arccoreCheckSharedNull();
   }
   void _resizeSameDim1IncreaseDim2(Int64 new_size2,InitBehaviour rb)
   {
-    ARCCORE_ASSERT((new_size2>m_p->dim2_size),("Bad Size"));
+    ARCCORE_ASSERT((new_size2>m_md->dim2_size),("Bad Size"));
     Int64 n = m_md->dim1_size;
     Int64 n2 = m_md->dim2_size;
     _resize2(n,new_size2,rb);
@@ -418,6 +418,7 @@ class SharedArray2
  protected:
 
   using Array2<T>::m_p;
+  using Array2<T>::m_md;
 
  public:
 
@@ -484,7 +485,7 @@ class SharedArray2
   {
     this->_setMP(rhs.m_p);
     _addReference(&rhs);
-    ++m_p->nb_ref;
+    ++m_md->nb_ref;
   }
   //! Mise à jour des références
   void _updateReferences() override final
@@ -531,7 +532,7 @@ class SharedArray2
   //! Détruit l'instance si plus personne ne la référence
   void _checkFreeMemory()
   {
-    if (m_p->nb_ref==0){
+    if (m_md->nb_ref==0){
       this->_destroy();
       this->_internalDeallocate();
     }
@@ -541,8 +542,8 @@ class SharedArray2
     if (&rhs!=this){
       _removeReference();
       _addReference(&rhs);
-      ++rhs.m_p->nb_ref;
-      --m_p->nb_ref;
+      ++rhs.m_md->nb_ref;
+      --m_md->nb_ref;
       _checkFreeMemory();
       this->_setMP(rhs.m_p);
     }
