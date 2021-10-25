@@ -673,6 +673,8 @@ void DynamicMesh::
 endAllocate()
 {
   Trace::Setter mci(traceMng(),_className());
+  if (m_is_allocated)
+    ARCANE_FATAL("endAllocate() has already been called");
   _checkDimension();    // HP: add control if endAllocate is called
   _checkConnectivity(); // without any cell allocation
 
