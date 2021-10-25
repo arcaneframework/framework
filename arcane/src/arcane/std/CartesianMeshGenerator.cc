@@ -877,23 +877,7 @@ generateMesh()
   }
 
   mesh->setDimension(m_mesh_dimension);
-  mesh->allocateCells(own_nb_cell_xyz, cells_infos, false);
-
-  {
-    info() << " Fills the variable containing the owner node";
-    UniqueArray<Int32> nodes_local_id(nodes_unique_id.size());
-    IItemFamily* family = mesh->nodeFamily();
-    family->itemsUniqueIdToLocalId(nodes_local_id, nodes_unique_id);
-    ItemInternalList nodes_internal(family->itemsInternal());
-    for (Integer i = 0; i < node_local_id; ++i) {
-      const Node& node = nodes_internal[nodes_local_id[i]];
-      Int64 unique_id = nodes_unique_id[i];
-      Integer owner = nodes_infos.lookupValue(unique_id).m_owner;
-      node.internal()->setOwner(owner, m_my_mesh_part);
-    }
-  }
-
-  mesh->endAllocate();
+  mesh->allocateCells(own_nb_cell_xyz, cells_infos, true);
 
   VariableNodeReal3& nodes_coord_var(mesh->nodesCoordinates());
   {
