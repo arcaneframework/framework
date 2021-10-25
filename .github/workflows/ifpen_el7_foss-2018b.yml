@@ -395,93 +395,93 @@ jobs:
           path: ${{ env.ARCCORE_BUILD_DIR }}/Testing
           retention-days: 1
 
-  arcane-test:
-    name: arcane-test
-    needs:
-      - arccore-install
-      - dependencies-install
-      - axlstar-install
-      - arcane-install
-    runs-on: ubuntu-latest
-    timeout-minutes: 180
-    container:
-      image: ghcr.io/arcaneframework/centos-foss-2018b-arcane:7-latest
-    strategy:
-      fail-fast: false
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          path: ${{ env.ARCANE_SOURCE_DIR }}
-      - name: Download arcane build artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: arcane-build-artifact
-      - name: Untar arcane build artifact
-        shell: bash
-        run: tar xf arcane-build-artifact.tar -C /
-      - name: Download arccore install artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: arccore-install-artifact
-      - name: Untar arccore install artifact
-        shell: bash
-        run: tar xf arccore-install-artifact.tar -C /
-      - name: Download axlstar install artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: axlstar-install-artifact
-      - name: Untar axlstar install artifact
-        shell: bash
-        run: tar xf axlstar-install-artifact.tar -C /
-      - name: Test
-        shell: bash
-        run: ctest --test-dir ${{ env.ARCANE_BUILD_DIR }} ${{ env.CT_OPTS }}
-      - name: Upload test artifact
-        uses: actions/upload-artifact@v2
-        if: failure()
-        with:
-          name: arcane-test-artifact
-          path: ${{ env.ARCANE_BUILD_DIR }}/Testing
-          retention-days: 1
+  #arcane-test:
+  #  name: arcane-test
+  #  needs:
+  #    - arccore-install
+  #    - dependencies-install
+  #    - axlstar-install
+  #    - arcane-install
+  #  runs-on: ubuntu-latest
+  #  timeout-minutes: 180
+  #  container:
+  #    image: ghcr.io/arcaneframework/centos-foss-2018b-arcane:7-latest
+  #  strategy:
+  #    fail-fast: false
+  #  steps:
+  #    - name: Checkout
+  #      uses: actions/checkout@v2
+  #      with:
+  #        path: ${{ env.ARCANE_SOURCE_DIR }}
+  #    - name: Download arcane build artifact
+  #      uses: actions/download-artifact@v2
+  #      with:
+  #        name: arcane-build-artifact
+  #    - name: Untar arcane build artifact
+  #      shell: bash
+  #      run: tar xf arcane-build-artifact.tar -C /
+  #    - name: Download arccore install artifact
+  #      uses: actions/download-artifact@v2
+  #      with:
+  #        name: arccore-install-artifact
+  #    - name: Untar arccore install artifact
+  #      shell: bash
+  #      run: tar xf arccore-install-artifact.tar -C /
+  #    - name: Download axlstar install artifact
+  #      uses: actions/download-artifact@v2
+  #      with:
+  #        name: axlstar-install-artifact
+  #    - name: Untar axlstar install artifact
+  #      shell: bash
+  #      run: tar xf axlstar-install-artifact.tar -C /
+  #    - name: Test
+  #      shell: bash
+  #      run: ctest --test-dir ${{ env.ARCANE_BUILD_DIR }} ${{ env.CT_OPTS }}
+  #    - name: Upload test artifact
+  #      uses: actions/upload-artifact@v2
+  #      if: failure()
+  #      with:
+  #        name: arcane-test-artifact
+  #        path: ${{ env.ARCANE_BUILD_DIR }}/Testing
+  #        retention-days: 1
 
-  alien-test:
-    name: alien-test
-    needs:
-      - arccore-install
-      - alien-install
-    runs-on: ubuntu-latest
-    timeout-minutes: 180
-    container:
-      image: ghcr.io/arcaneframework/centos-foss-2018b-alien:7-latest
-    strategy:
-      fail-fast: false
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          path: ${{ env.ALIEN_SOURCE_DIR }}
-      - name: Download alien build artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: alien-build-artifact
-      - name: Untar alien build artifact
-        shell: bash
-        run: tar xf alien-build-artifact.tar -C /
-      - name: Download arccore install artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: arccore-install-artifact
-      - name: Untar arccore install artifact
-        shell: bash
-        run: tar xf arccore-install-artifact.tar -C /
-      - name: Test
-        shell: bash
-        run: ctest --test-dir ${{ env.ALIEN_BUILD_DIR }} ${{ env.CT_OPTS }}
-      - name: Upload test artifact
-        uses: actions/upload-artifact@v2
-        if: failure()
-        with:
-          name: alien-test-artifact
-          path: ${{ env.ALIEN_BUILD_DIR }}/Testing
-          retention-days: 1
+  #alien-test:
+  #  name: alien-test
+  #  needs:
+  #    - arccore-install
+  #    - alien-install
+  #  runs-on: ubuntu-latest
+  #  timeout-minutes: 180
+  #  container:
+  #    image: ghcr.io/arcaneframework/centos-foss-2018b-alien:7-latest
+  #  strategy:
+  #    fail-fast: false
+  #  steps:
+  #    - name: Checkout
+  #      uses: actions/checkout@v2
+  #      with:
+  #        path: ${{ env.ALIEN_SOURCE_DIR }}
+  #    - name: Download alien build artifact
+  #      uses: actions/download-artifact@v2
+  #      with:
+  #        name: alien-build-artifact
+  #    - name: Untar alien build artifact
+  #      shell: bash
+  #      run: tar xf alien-build-artifact.tar -C /
+  #    - name: Download arccore install artifact
+  #      uses: actions/download-artifact@v2
+  #      with:
+  #        name: arccore-install-artifact
+  #    - name: Untar arccore install artifact
+  #      shell: bash
+  #      run: tar xf arccore-install-artifact.tar -C /
+  #    - name: Test
+  #      shell: bash
+  #      run: ctest --test-dir ${{ env.ALIEN_BUILD_DIR }} ${{ env.CT_OPTS }}
+  #    - name: Upload test artifact
+  #      uses: actions/upload-artifact@v2
+  #      if: failure()
+  #      with:
+  #        name: alien-test-artifact
+  #        path: ${{ env.ALIEN_BUILD_DIR }}/Testing
+  #        retention-days: 1
