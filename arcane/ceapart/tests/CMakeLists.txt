@@ -103,6 +103,7 @@ endif()
 ARCANE_ADD_TEST_SEQUENTIAL(adiadvection-1 testAdiAdvection-1.arc "-m 20")
 arcane_add_test(amr-cartesian2D-1 testAMRCartesianMesh2D-1.arc "-m 20")
 arcane_add_test(amr-checkpoint-cartesian2D-1 testAMRCartesianMesh2D-1.arc -c 3 -m 5)
+ARCANE_ADD_TEST(cartesian_grid_partitioning testCartesianMesh-grid-partitioning.arc "-m 10")
 
 
 #################################
