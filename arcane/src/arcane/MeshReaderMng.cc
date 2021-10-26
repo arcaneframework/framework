@@ -60,6 +60,7 @@ class MeshReaderMng::Impl
   ISubDomain* m_sub_domain = nullptr;
   UniqueArray<Ref<IMeshReader>> m_mesh_readers;
   bool m_is_init = false;
+  bool m_is_use_unit = true;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -115,7 +116,8 @@ readMesh(const String& mesh_name,const String& file_name,IParallelMng* parallel_
   IPrimaryMesh* mesh = sd->mainFactory()->createMesh(sd,pm,mesh_name);
   mesh->properties()->setBool("dump", false);
 
-  String use_unit_xml = "<?xml version=\"1.0\"?><file use-unit='true' />";
+  String use_unit_str = (m_p->m_is_use_unit) ? "true" : "false";
+  String use_unit_xml = "<?xml version=\"1.0\"?><file use-unit='"+use_unit_str+"' />";
 
   ITraceMng* tm = sd->traceMng();
   ScopedPtrT<IXmlDocumentHolder> xml_doc(IXmlDocumentHolder::loadFromBuffer(use_unit_xml.bytes(), String(),tm));
@@ -145,6 +147,24 @@ readMesh(const String& mesh_name,const String& file_name,IParallelMng* parallel_
     ARCANE_FATAL("No mesh reader is available for mesh file '{0}'",file_name);
 
   return mesh;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshReaderMng::
+setUseMeshUnit(bool v)
+{
+  m_p->m_is_use_unit = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool MeshReaderMng::
+isUseMeshUnit() const
+{
+  return m_p->m_is_use_unit;
 }
 
 /*---------------------------------------------------------------------------*/

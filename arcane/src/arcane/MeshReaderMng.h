@@ -67,6 +67,14 @@ class ARCANE_CORE_EXPORT MeshReaderMng
   IMesh* readMesh(const String& mesh_name,const String& file_name,
                   IParallelMng* parallel_mng);
 
+  /*!
+   * \brief Si vrai, indique qu'on utilise le système d'unité éventuellement présent
+   * dans le format de fichier (\a true par défaut).
+   */
+  void setUseMeshUnit(bool v);
+  //! Indique si on utilise le système d'unité présent dans le fichier
+  bool isUseMeshUnit() const;
+
  private:
 
   Impl* m_p;
