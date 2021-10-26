@@ -14,9 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-
-#include "arcane/IService.h"
+#include "arcane/IMeshPartitionerBase.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,7 +37,8 @@ class ILoadBalanceMng;
  * Le partitionneur peut utiliser certaines informations comme
  * le timeRatio() ou imbalance() pour calculer un partionnement efficace.
  */
-class IMeshPartitioner
+class ARCANE_CORE_EXPORT IMeshPartitioner
+: public IMeshPartitionerBase
 {
  public:
 
@@ -51,33 +50,7 @@ class IMeshPartitioner
 
  public:
 
-  /*!
-   * Repartitionne le maillage \a mesh
-   *
-   * Cette méthode change les propriétaires des entités et
-   * remplit la variable IItemFamily::itemsNewOwner() de chaque famille d'entité
-   * du maillage \a mesh avec le numéro du nouveau sous-domaine propriétaire.
-   *
-   * L'appelant doit ensuite appeler IMesh::exchangeItems() pour échanger
-   * les entités entre les sous-domaines.
-   *
-   * Si \a initial_partition est vrai, il s'agit alors du partitionnement
-   * initial. Sinon, les valeurs données par setCellsWeight() sont utilisées
-   * pour associer un cout de calcul à chaque maille.
-   *
-   * Une fois l'échange terminé, l'appelant doit appeler
-   * la méthode notifyEndPartition().
-   *
-   * Cette méthode est collective sur le maillage mesh().
-   *
-   * \note Cette méthode est réservée aux développeurs Arcane.
-   * Si un module souhaite effectuer un repartitionnement,
-   * il est préférable d'appeler
-   * IMeshUtilities::partitionAndExchangeMeshWithReplication()
-   * qui gère à la fois le partitionnement et l'échange des
-   * informations et supporte la réplication de domaine.
-   */
-  virtual void partitionMesh(bool initial_partition) =0;
+  using IMeshPartitionerBase::partitionMesh;
 
   virtual void partitionMesh(bool initial_partition,Int32 nb_part) =0;
 
@@ -85,7 +58,11 @@ class IMeshPartitioner
   virtual void notifyEndPartition() =0;
   
   //! Maillage associé au partitionneur
+  ARCCORE_DEPRECATED_2021("Use primaryMesh() instead")
   virtual IMesh* mesh() const =0;
+
+  //! Maillage associé
+  virtual IPrimaryMesh* primaryMesh() override;
 
  public:
   

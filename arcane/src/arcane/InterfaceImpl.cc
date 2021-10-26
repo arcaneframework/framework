@@ -17,6 +17,7 @@
  */
 
 #include "arcane/utils/String.h"
+#include "arcane/utils/ArgumentException.h"
 
 #include "arcane/IArcaneMain.h"
 #include "arcane/IServiceInfo.h"
@@ -45,10 +46,12 @@
 #include "arcane/IMeshFactory.h"
 #include "arcane/IMeshFactoryMng.h"
 #include "arcane/IMeshMng.h"
+#include "arcane/IMeshPartitioner.h"
 #include "arcane/IDirectExecution.h"
 #include "arcane/IDirectSubDomainExecuteFunctor.h"
 #include "arcane/ISerializer.h"
 #include "arcane/IDeflateService.h"
+#include "arcane/IPrimaryMesh.h"
 #include "arcane/ItemTypes.h"
 #include "arcane/IIncrementalItemConnectivity.h"
 #include "arcane/IItemConnectivityAccessor.h"
@@ -148,6 +151,17 @@ void IDeflateService::
 decompress(Span<const Byte> compressed_values,Span<Byte> values)
 {
   return decompress(compressed_values.smallView(),values.smallView());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IPrimaryMesh* IMeshPartitioner::
+primaryMesh()
+{
+  IPrimaryMesh* primary_mesh = this->mesh()->toPrimaryMesh();
+  ARCANE_CHECK_POINTER(primary_mesh);
+  return primary_mesh;
 }
 
 /*---------------------------------------------------------------------------*/
