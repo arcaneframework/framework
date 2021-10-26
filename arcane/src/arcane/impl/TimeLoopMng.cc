@@ -191,7 +191,7 @@ class TimeLoopMng
   void setVerificationActive(bool is_active) override { m_verification_active = is_active; }
   void doVerification(const String& name) override;
 
-  void registerActionMeshPartition(IMeshPartitioner* service) override;
+  void registerActionMeshPartition(IMeshPartitionerBase* service) override;
 
   void timeLoopsName(StringCollection & names) const override;
   void timeLoops(TimeLoopCollection & time_loops) const override;
@@ -315,7 +315,7 @@ class TimeLoopMng
   ModuleFactoryMap m_lang_module_factory_map; //! Liste des fabriques des modules dans la langue du JDD.
 
   Ref<IVerifierService> m_verifier_service;
-  IMeshPartitioner* m_mesh_partitioner;
+  IMeshPartitionerBase* m_mesh_partitioner;
   long m_time_last_write_info_file;
   String m_message_class_name;
   Integer m_alarm_timer_value;
@@ -999,7 +999,7 @@ _doMeshPartition()
 
   Timer timer(sd,"TimeLoopMng::partitionMesh",Timer::TimerReal);
   Timer::Action ts_action(sd,"MeshLoadBalance",true);
-  IMesh* mesh = m_mesh_partitioner->mesh();
+  IMesh* mesh = m_mesh_partitioner->primaryMesh();
   {
     Timer::Sentry sentry(&timer);
     mesh->utilities()->partitionAndExchangeMeshWithReplication(m_mesh_partitioner,false);
@@ -1803,7 +1803,7 @@ stopComputeLoop(bool is_final_time,bool has_error)
 /*---------------------------------------------------------------------------*/
 
 void TimeLoopMng::
-registerActionMeshPartition(IMeshPartitioner* mesh_partitioner)
+registerActionMeshPartition(IMeshPartitionerBase* mesh_partitioner)
 {
   if (!m_backward_mng)
     _createOwnDefaultBackwardMng();

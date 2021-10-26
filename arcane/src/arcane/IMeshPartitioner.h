@@ -54,9 +54,6 @@ class ARCANE_CORE_EXPORT IMeshPartitioner
 
   virtual void partitionMesh(bool initial_partition,Int32 nb_part) =0;
 
-  //! Notification lors de la fin d'un repartionnement (après échange des entités)
-  virtual void notifyEndPartition() =0;
-  
   //! Maillage associé au partitionneur
   ARCCORE_DEPRECATED_2021("Use primaryMesh() instead")
   virtual IMesh* mesh() const =0;

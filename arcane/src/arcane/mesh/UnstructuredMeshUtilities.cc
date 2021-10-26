@@ -737,13 +737,14 @@ writeToFile(const String& file_name,const String& service_name)
 /*---------------------------------------------------------------------------*/
 
 void UnstructuredMeshUtilities::
-partitionAndExchangeMeshWithReplication(IMeshPartitioner* partitioner,bool initial_partition)
+partitionAndExchangeMeshWithReplication(IMeshPartitionerBase* partitioner,
+                                        bool initial_partition)
 {
-  IMesh* mesh = partitioner->mesh();
+  IPrimaryMesh* primary_mesh = partitioner->primaryMesh();
+  IMesh* mesh = primary_mesh;
   if (mesh!=this->m_mesh)
     throw ArgumentException(A_FUNCINFO,"partitioner->mesh() != this->m_mesh");
 
-  IPrimaryMesh* primary_mesh = mesh->toPrimaryMesh();
   IParallelMng* pm = mesh->parallelMng();
   ITimeStats* ts = pm->timeStats();
   IParallelReplication* pr = pm->replication();

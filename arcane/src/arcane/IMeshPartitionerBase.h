@@ -53,7 +53,10 @@ class IMeshPartitionerBase
 
   //! Maillage associé
   virtual IPrimaryMesh* primaryMesh() =0;
-};
+
+  //! Notification lors de la fin d'un repartionnement (après échange des entités)
+  virtual void notifyEndPartition() =0;
+  };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
