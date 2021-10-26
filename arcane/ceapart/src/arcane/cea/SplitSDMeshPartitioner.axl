@@ -8,6 +8,7 @@
     </description>
     
     <interface name="Arcane::IMeshPartitioner" inherited="false"/>
+    <interface name="Arcane::IMeshPartitionerBase" inherited="false"/>
 
     <variables>
     </variables>

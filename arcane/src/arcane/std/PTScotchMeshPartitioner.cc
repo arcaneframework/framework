@@ -463,11 +463,18 @@ partitionMesh(bool initial_partition,Int32 nb_part)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SUB_DOMAIN_FACTORY(PTScotchMeshPartitioner,IMeshPartitioner,PTScotch);
+ARCANE_REGISTER_SERVICE(PTScotchMeshPartitioner,
+                        ServiceProperty("PTScotch",ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitioner),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitionerBase));
+
 ARCANE_REGISTER_SERVICE_PTSCOTCHMESHPARTITIONER(PTScotch,PTScotchMeshPartitioner);
 
 #if ARCANE_DEFAULT_PARTITIONER == PTSCOTCH_DEFAULT_PARTITIONER
-ARCANE_REGISTER_SUB_DOMAIN_FACTORY(PTScotchMeshPartitioner,IMeshPartitioner,DefaultPartitioner);
+ARCANE_REGISTER_SERVICE(PTScotchMeshPartitioner,
+                        ServiceProperty("DefaultPartitioner",ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitioner),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitionerBase));
 ARCANE_REGISTER_SERVICE_PTSCOTCHMESHPARTITIONER(DefaultPartitioner,PTScotchMeshPartitioner);
 #endif
 

@@ -18,7 +18,7 @@
 #include "arcane/IMeshBuilder.h"
 #include "arcane/IPrimaryMesh.h"
 #include "arcane/IItemFamily.h"
-#include "arcane/IMeshPartitioner.h"
+#include "arcane/IMeshPartitionerBase.h"
 #include "arcane/IVariableMng.h"
 #include "arcane/IMeshModifier.h"
 #include "arcane/IMeshUtilities.h"
@@ -261,8 +261,10 @@ void ArcaneCaseMeshService::
 _doInitialPartition2(const String& partitioner_name)
 {
   info() << "Doing initial partitioning service=" << partitioner_name;
-
-  ServiceBuilder<IMeshPartitioner> sbuilder(m_sub_domain);
+  // NOTE: Ce service n'utilise que les partionneurs qui implémentent
+  // IMeshPartitionerBase et pas ceux (historiques) qui n'implémentent que
+  // IMeshPartitioner.
+  ServiceBuilder<IMeshPartitionerBase> sbuilder(m_sub_domain);
   auto mesh_partitioner = sbuilder.createReference(partitioner_name,m_mesh);
 
   IMesh* mesh = m_mesh;

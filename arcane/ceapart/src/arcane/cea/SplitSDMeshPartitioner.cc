@@ -43,7 +43,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -2172,15 +2173,17 @@ void SplitSDMeshPartitioner::UnpackEquil(void* TabTMP, int TailleTMP, MPI_Comm c
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-  
-ARCANE_REGISTER_SUB_DOMAIN_FACTORY(SplitSDMeshPartitioner,IMeshPartitioner,SplitSD);
+ARCANE_REGISTER_SERVICE(SplitSDMeshPartitioner,
+                        ServiceProperty("SplitSD",ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitioner),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitionerBase));
 
 ARCANE_REGISTER_SERVICE_SPLITSDMESHPARTITIONER(SplitSD,SplitSDMeshPartitioner);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
