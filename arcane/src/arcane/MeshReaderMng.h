@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshReaderMng.h                                             (C) 2000-2019 */
+/* MeshReaderMng.h                                             (C) 2000-2021 */
 /*                                                                           */
 /* Gestionnaire de lecteurs de maillage.                                     */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,7 @@
 
 #include "arcane/utils/String.h"
 #include "arcane/ArcaneTypes.h"
+#include "arcane/Parallel.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,6 +53,19 @@ class ARCANE_CORE_EXPORT MeshReaderMng
    * Cette méthode lève une exception si le maillage ne peut pas être lu.
    */
   IMesh* readMesh(const String& mesh_name,const String& file_name);
+
+  /*!
+   * \brief Lit le maillage dont le nom de fichier est \a file_name.
+   *
+   * \a file_name doit avoir une extension et le lecteur utilisé est basé
+   * sur cette extension.
+   * Le maillage créé est associé au gestionnaire de parallélisme
+   * \a parallel_mng et aura pour nom \a mesh_name.
+   *
+   * Cette méthode lève une exception si le maillage ne peut pas être lu.
+   */
+  IMesh* readMesh(const String& mesh_name,const String& file_name,
+                  IParallelMng* parallel_mng);
 
  private:
 

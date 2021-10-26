@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshReaderMng.h                                             (C) 2000-2019 */
+/* MeshReaderMng.h                                             (C) 2000-2021 */
 /*                                                                           */
 /* Gestionnaire de lecteurs de maillage.                                     */
 /*---------------------------------------------------------------------------*/
@@ -82,9 +82,20 @@ MeshReaderMng::
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// TODO: fusionner cette méthode avec cell de ISubDomain.
+
 IMesh* MeshReaderMng::
 readMesh(const String& mesh_name,const String& file_name)
+{
+  ISubDomain* sd = m_p->m_sub_domain;
+  IParallelMng* pm = sd->parallelMng()->sequentialParallelMng();
+  return readMesh(mesh_name,file_name,pm);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// TODO: fusionner cette méthode avec cell de ISubDomain.
+IMesh* MeshReaderMng::
+readMesh(const String& mesh_name,const String& file_name,IParallelMng* parallel_mng)
 {
   m_p->checkInit();
   String extension;
@@ -100,7 +111,7 @@ readMesh(const String& mesh_name,const String& file_name)
   }
   // TODO: à terme, créer le maillage par le lecteur.
   ISubDomain* sd = m_p->m_sub_domain;
-  IParallelMng* pm = sd->parallelMng()->sequentialParallelMng();
+  IParallelMng* pm = parallel_mng;
   IPrimaryMesh* mesh = sd->mainFactory()->createMesh(sd,pm,mesh_name);
   mesh->properties()->setBool("dump", false);
 
@@ -112,15 +123,15 @@ readMesh(const String& mesh_name,const String& file_name)
 
   String dir_name;
   bool is_bad = true;
+  bool use_internal_partition = pm->isParallel();
   for( auto& reader_ref : m_p->readers() ){
     IMeshReader* reader = reader_ref.get();
     if (!reader->allowExtension(extension))
       continue;
 
     auto ret = reader->readMeshFromFile(mesh,mesh_xml_node,
-                                        file_name,
-                                        dir_name,
-                                        false);
+                                        file_name,dir_name,
+                                        use_internal_partition);
     if (ret==IMeshReader::RTOk){
       is_bad = false;
       break;
