@@ -342,6 +342,8 @@ class SharedItemVariableScalarRefT;
 class CollectionBase;
 class IItemFamily;
 class IMesh;
+class IMeshPartitioner;
+class IMeshPartitionerBase;
 class IModule;
 class IService;
 class IServiceFactoryInfo;

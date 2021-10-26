@@ -797,16 +797,33 @@ _doInitialPartitionForMesh(IMesh* mesh,const String& service_name,bool is_requir
 
   String lib_name = service_name;
 
-  ServiceBuilder<IMeshPartitioner> sbuilder(this);
-  auto mesh_partitioner = sbuilder.createReference(service_name,mesh,SB_AllowNull);
+  IMeshPartitionerBase* mesh_partitioner_base = nullptr;
+  Ref<IMeshPartitionerBase> mesh_partitioner_base_ref;
+  Ref<IMeshPartitioner> mesh_partitioner_ref;
 
-  if (!mesh_partitioner.get()){
+  ServiceBuilder<IMeshPartitionerBase> sbuilder(this);
+  mesh_partitioner_base_ref = sbuilder.createReference(service_name,mesh,SB_AllowNull);
+  mesh_partitioner_base = mesh_partitioner_base_ref.get();
+
+  if (!mesh_partitioner_base){
+    // Si pas trouvé, recherche avec l'ancienne interface 'IMeshPartitioner' pour des
+    // raisons de compatibilité
+    pwarning() << "No implementation for 'IMeshPartitionerBase' interface found. "
+               << "Searching implementation for legacy 'IMeshPartitioner' interface";
+    ServiceBuilder<IMeshPartitioner> sbuilder_legacy(this);
+    mesh_partitioner_ref = sbuilder_legacy.createReference(service_name,mesh,SB_AllowNull);
+    if (mesh_partitioner_ref.get())
+      mesh_partitioner_base = mesh_partitioner_ref.get();
+  }
+
+  if (!mesh_partitioner_base){
     // Si pas trouvé, récupère la liste des valeurs possibles et les affiche.
     StringUniqueArray valid_names;
     sbuilder.getServicesNames(valid_names);
     String valid_values = String::join(", ",valid_names);
     String msg = String::format("The specified service for the initial mesh partitionment ({0}) "
-                                "is not available (valid_values={1})",
+                                "is not available (valid_values={1}). This service has to implement "
+                                "interface Arcane::IMeshPartitionerBase",
                                 lib_name,valid_values);
     if (is_required){
       pfatal() << msg;
@@ -819,7 +836,7 @@ _doInitialPartitionForMesh(IMesh* mesh,const String& service_name,bool is_requir
 
   bool is_dynamic = mesh->isDynamic();
   mesh->modifier()->setDynamic(true);
-  mesh->utilities()->partitionAndExchangeMeshWithReplication(mesh_partitioner.get(),true);
+  mesh->utilities()->partitionAndExchangeMeshWithReplication(mesh_partitioner_base,true);
   mesh->modifier()->setDynamic(is_dynamic);
 }
 

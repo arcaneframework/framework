@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MetisMeshPartitioner.cc                                     (C) 2000-2020 */
+/* MetisMeshPartitioner.cc                                     (C) 2000-2021 */
 /*                                                                           */
 /* Partitioneur de maillage utilisant la bibliothèque PARMetis.              */
 /*---------------------------------------------------------------------------*/
@@ -952,11 +952,18 @@ _writeGraph(ArrayView<idxtype> metis_vtkdist,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SUB_DOMAIN_FACTORY(MetisMeshPartitioner,IMeshPartitioner,Metis);
+ARCANE_REGISTER_SERVICE(MetisMeshPartitioner,
+                        ServiceProperty("Metis",ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitioner),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitionerBase));
+
 ARCANE_REGISTER_SERVICE_METISMESHPARTITIONER(Metis,MetisMeshPartitioner);
 
 #if ARCANE_DEFAULT_PARTITIONER == METIS_DEFAULT_PARTITIONER
-ARCANE_REGISTER_SUB_DOMAIN_FACTORY(MetisMeshPartitioner,IMeshPartitioner,DefaultPartitioner);
+ARCANE_REGISTER_SERVICE(MetisMeshPartitioner,
+                        ServiceProperty("DefaultPartitioner",ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitioner),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitionerBase));
 ARCANE_REGISTER_SERVICE_METISMESHPARTITIONER(DefaultPartitioner,MetisMeshPartitioner);
 #endif
 

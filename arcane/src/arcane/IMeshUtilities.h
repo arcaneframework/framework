@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshUtilities.h                                            (C) 2000-2014 */
+/* IMeshUtilities.h                                            (C) 2000-2021 */
 /*                                                                           */
 /* Interface d'une classe proposant des fonctions utilitaires sur maillage.  */
 /*---------------------------------------------------------------------------*/
@@ -23,13 +23,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class IMesh;
-class IMeshPartitioner;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -175,7 +170,7 @@ class ARCANE_CORE_EXPORT IMeshUtilities
    * \param partitioner Instance du partitionneur à utiliser
    * \param initial_partition Indique s'il s'agit du partitionnement initial.
    */
-  virtual void partitionAndExchangeMeshWithReplication(IMeshPartitioner* partitioner,
+  virtual void partitionAndExchangeMeshWithReplication(IMeshPartitionerBase* partitioner,
                                                        bool initial_partition) =0;
 
   /*!
@@ -199,7 +194,7 @@ class ARCANE_CORE_EXPORT IMeshUtilities
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

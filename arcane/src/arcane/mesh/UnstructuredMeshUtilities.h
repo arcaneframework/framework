@@ -85,8 +85,8 @@ class UnstructuredMeshUtilities
 
   bool writeToFile(const String& file_name,const String& service_name) override;
 
-  void partitionAndExchangeMeshWithReplication(IMeshPartitioner* partitioner,
-                                                       bool initial_partition) override;
+  void partitionAndExchangeMeshWithReplication(IMeshPartitionerBase* partitioner,
+                                               bool initial_partition) override;
 
   void mergeNodes(Int32ConstArrayView nodes_local_id,
                   Int32ConstArrayView nodes_to_merge_local_id) override;

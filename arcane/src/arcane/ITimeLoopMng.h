@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ITimeLoopMng.h                                              (C) 2000-2018 */
+/* ITimeLoopMng.h                                              (C) 2000-2021 */
 /*                                                                           */
 /* Interface du gestionnaire de la boucle en temps.                          */
 /*---------------------------------------------------------------------------*/
@@ -19,16 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class IModule;
-class IEntryPoint;
-class ITimeLoop;
-class IMeshPartitioner;
-class IObservable;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -253,7 +245,7 @@ class ITimeLoopMng
    * \warning Lors d'une exécution parallèle, cette méthode doit être
    * appelée par tous les sous-domaines.
    */
-  virtual void registerActionMeshPartition(IMeshPartitioner* mesh_partitioner) =0;
+  virtual void registerActionMeshPartition(IMeshPartitionerBase* mesh_partitioner) =0;
 
   /*!
    * \brief Positionne la période entre deux sauvegarde pour le retour arrière.

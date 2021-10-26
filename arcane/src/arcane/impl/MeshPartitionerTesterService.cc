@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshPartitionerTester.cc                                    (C) 2000-2018 */
+/* MeshPartitionerTester.cc                                    (C) 2000-2021 */
 /*                                                                           */
 /* Testeur de partitionneur de maillage.                                     */
 /*---------------------------------------------------------------------------*/
@@ -33,7 +33,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
+// TODO: a terme (mi 2022), supprimer l'implémentation de 'IMeshPartitioner' et ne
+// garder que celle de 'IMeshPartitionerBase'.
+// Cela permettra de supprimer toutes les méthodes avec des NotImplementedException.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -206,14 +210,16 @@ partitionMesh(bool initial_partition)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SUB_DOMAIN_FACTORY(MeshPartitionerTester,IMeshPartitioner,MeshPartitionerTester);
-
-ARCANE_REGISTER_CASE_OPTIONS_NOAXL_FACTORY(MeshPartitionerTester,IMeshPartitioner,MeshPartitionerTester);
+ARCANE_REGISTER_SERVICE(MeshPartitionerTester,
+                        ServiceProperty("MeshPartitionerTester",ST_SubDomain|ST_CaseOption),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitioner),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitionerBase)
+                        );
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
