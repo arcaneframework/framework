@@ -68,6 +68,7 @@ set( ARCANE_SOURCES
   ServiceLoader.cc
   ServiceMng.cc
   ServiceAndModuleFactoryMng.cc
+  SimpleGridMeshPartitioner.cc
   Session.cc
   Session.h
   SubDomain.cc
