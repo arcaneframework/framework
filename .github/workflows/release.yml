@@ -1,0 +1,32 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+        shell: bash
+      - name: Untar arccon install artifact
+        shell: bash
+        run: |
+          mv arccon arccon-${{steps.get_version.outputs.VERSION}}
+          tar zcf arccon-${{steps.get_version.outputs.VERSION}}.tar.gz arccon-${{steps.get_version.outputs.VERSION}}
+          mv arccore arccore-${{steps.get_version.outputs.VERSION}}
+          tar zcf arccore-${{steps.get_version.outputs.VERSION}}.tar.gz arccore-${{steps.get_version.outputs.VERSION}}
+          mv axlstar axlstar-${{steps.get_version.outputs.VERSION}}
+          tar zcf axlstar-${{steps.get_version.outputs.VERSION}}.tar.gz axlstar-${{steps.get_version.outputs.VERSION}}
+          mv arcane arcane-${{steps.get_version.outputs.VERSION}}
+          tar zcf arcane-${{steps.get_version.outputs.VERSION}}.tar.gz arcane-${{steps.get_version.outputs.VERSION}}
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "*-${{steps.get_version.outputs.VERSION}}.tar.gz"
+          body: "release ${{steps.get_version.outputs.VERSION}}"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: true
