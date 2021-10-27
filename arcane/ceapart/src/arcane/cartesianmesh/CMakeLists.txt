@@ -1,0 +1,16 @@
+include(srcs.cmake)
+
+arcane_add_library(arcane_cartesianmesh
+  INPUT_PATH ${ARCANECEA_SRC_PATH}
+  RELATIVE_PATH arcane/cartesianmesh
+  FILES ${ARCANE_SOURCES}
+  )
+
+arcane_add_arccon_packages(arcane_cartesianmesh PRIVATE ${PKGS})
+
+target_include_directories(arcane_cartesianmesh PUBLIC $<BUILD_INTERFACE:${ARCANEBUILDROOT}>)
+target_include_directories(arcane_cartesianmesh PUBLIC $<BUILD_INTERFACE:${ARCANECEA_SRC_PATH}> $<INSTALL_INTERFACE:include>)
+
+target_link_libraries(arcane_cartesianmesh PUBLIC arcane_std arcane_core)
+
+arcane_register_library(arcane_cartesianmesh)

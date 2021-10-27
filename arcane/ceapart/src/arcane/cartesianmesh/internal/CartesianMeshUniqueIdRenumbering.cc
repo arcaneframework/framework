@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/cea/internal/CartesianMeshUniqueIdRenumbering.h"
+#include "arcane/cartesianmesh/internal/CartesianMeshUniqueIdRenumbering.h"
 
 #include "arcane/utils/PlatformUtils.h"
 

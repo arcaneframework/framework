@@ -3,14 +3,9 @@ set( ARCANE_SOURCES
   LimaCutInfosReader.h
   SplitSDMeshPartitioner.h
   ArcaneCeaVerifierModule.cc
-  CartesianMesh.cc
-  CartesianConnectivity.cc
   CartesianConnectivity.h
-  CellDirectionMng.cc
   CellDirectionMng.h
-  FaceDirectionMng.cc
   FaceDirectionMng.h
-  NodeDirectionMng.cc
   NodeDirectionMng.h
   LimaCutInfosReader.h
   SplitSDMeshPartitioner.h
@@ -22,10 +17,6 @@ set( ARCANE_SOURCES
   ICartesianMesh.h
   ICartesianMeshPatch.h
   CeaGlobal.h
-  internal/CartesianMeshPatch.h
-  internal/CartesianMeshUniqueIdRenumbering.h
-  internal/CartesianMeshUniqueIdRenumbering.cc
-  CartesianMeshPatch.cc
   )
 
 set(AXL_FILES 

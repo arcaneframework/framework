@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/cea/FaceDirectionMng.h"
+#include "arcane/cartesianmesh/FaceDirectionMng.h"
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/Real3.h"
@@ -21,8 +21,8 @@
 #include "arcane/IMesh.h"
 #include "arcane/VariableTypes.h"
 
-#include "arcane/cea/ICartesianMesh.h"
-#include "arcane/cea/CellDirectionMng.h"
+#include "arcane/cartesianmesh/ICartesianMesh.h"
+#include "arcane/cartesianmesh/CellDirectionMng.h"
 
 #include <set>
 

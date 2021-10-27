@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CellDirectionMng.cc                                         (C) 2000-2020 */
+/* CellDirectionMng.cc                                         (C) 2000-2021 */
 /*                                                                           */
 /* Infos sur les mailles d'une direction X Y ou Z d'un maillage structuré.   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ArgumentException.h"
@@ -21,8 +19,8 @@
 #include "arcane/ItemGroup.h"
 #include "arcane/IMesh.h"
 
-#include "arcane/cea/CellDirectionMng.h"
-#include "arcane/cea/ICartesianMesh.h"
+#include "arcane/cartesianmesh/CellDirectionMng.h"
+#include "arcane/cartesianmesh/ICartesianMesh.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

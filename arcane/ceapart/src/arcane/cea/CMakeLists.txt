@@ -52,6 +52,6 @@ if(TARGET arcane::mpi)
   target_link_libraries(arcane_cea PRIVATE arcane::mpi)
 endif()
 
-target_link_libraries(arcane_cea PUBLIC arcane_std arcane_core)
+target_link_libraries(arcane_cea PUBLIC arcane_std arcane_cartesianmesh arcane_core)
 
 arcane_register_library(arcane_cea)

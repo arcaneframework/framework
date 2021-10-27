@@ -5,16 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianConnectivity.cc                                    (C) 2000-2014 */
+/* CartesianConnectivity.cc                                    (C) 2000-2021 */
 /*                                                                           */
 /* Maillage cartésien.                                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
 #include "arcane/utils/NotSupportedException.h"
 
-#include "arcane/cea/CartesianConnectivity.h"
+#include "arcane/cartesianmesh/CartesianConnectivity.h"
 
 #include "arcane/IMesh.h"
 #include "arcane/IItemFamily.h"
