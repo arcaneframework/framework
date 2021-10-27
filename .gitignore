@@ -23,16 +23,9 @@
 *.aux
 *.log
 *.toc
-/docs/X6-ApiMatrice/Specifications/rapport.pdf
 
 #emacs temporary files
 *~
-
-/arcane/src/arcane/axl/Arcane.Axl.v12.suo
-/arcane/tools/Arcane.Configure/Arcane.Configure.v12.suo
-/arcane/tools/ConfigGenerator/ConfigGenerator.v12.suo
-/arcane/tools/ConfigGenerator/ConfigGenerator.csproj.user
-/arcane/tools/AllTools.v12.suo
 
 #eclipse
 .cproject
@@ -45,15 +38,19 @@
 *.vshost.exe
 *.vshost.exe.manifest
 *.vshost.exe.config
-/arcane/tools/ConfigGenerator/ConfigGenerator.csproj.user
-/arcane/tools/ConfigGeneratorV2/ConfigGeneratorV2.csproj.user
 
-# build directories
-release*
-debug*
-Release*
-Debug*
+# Vscode
 
 .vscode
 .vs
-/build
+
+# Clion
+/.idea
+
+# build directories
+/release*
+/debug*
+/Release*
+/Debug*
+/cmake-build-*
+/build*
