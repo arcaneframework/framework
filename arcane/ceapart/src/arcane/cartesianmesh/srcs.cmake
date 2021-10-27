@@ -20,4 +20,8 @@ set( ARCANE_SOURCES
   internal/CartesianMeshUniqueIdRenumbering.h
   internal/CartesianMeshUniqueIdRenumbering.cc
   CartesianMeshPatch.cc
+
+  v2/CartesianGrid.h
+  v2/CartesianNumbering.h
+  v2/CartesianTypes.h
   )

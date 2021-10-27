@@ -154,7 +154,7 @@ class ARCANE_CARTESIANMESH_EXPORT DirNode
  */
 class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
 {
-  friend CartesianMesh;
+  friend CartesianMeshImpl;
   friend CartesianMeshPatch;
   class Impl;
   using IndexType = DirNode::IndexType;
