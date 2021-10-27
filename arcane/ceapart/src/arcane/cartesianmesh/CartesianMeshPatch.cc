@@ -11,13 +11,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/cea/internal/CartesianMeshPatch.h"
+#include "arcane/cartesianmesh/internal/CartesianMeshPatch.h"
 
 #include "arcane/IMesh.h"
 #include "arcane/ItemPrinter.h"
 
-#include "arcane/cea/ICartesianMesh.h"
-#include "arcane/cea/CartesianConnectivity.h"
+#include "arcane/cartesianmesh/ICartesianMesh.h"
+#include "arcane/cartesianmesh/CartesianConnectivity.h"
 
 #include <set>
 

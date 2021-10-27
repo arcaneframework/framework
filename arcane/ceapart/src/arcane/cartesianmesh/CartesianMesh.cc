@@ -27,13 +27,13 @@
 #include "arcane/IMeshModifier.h"
 #include "arcane/MeshStats.h"
 
-#include "arcane/cea/ICartesianMesh.h"
-#include "arcane/cea/CartesianConnectivity.h"
-#include "arcane/cea/CartesianMeshRenumberingInfo.h"
-#include "arcane/cea/internal/CartesianMeshPatch.h"
+#include "arcane/cartesianmesh/ICartesianMesh.h"
+#include "arcane/cartesianmesh/CartesianConnectivity.h"
+#include "arcane/cartesianmesh/CartesianMeshRenumberingInfo.h"
+#include "arcane/cartesianmesh/internal/CartesianMeshPatch.h"
 
 #include "arcane/core/internal/ICartesianMeshGenerationInfo.h"
-#include "arcane/cea/internal/CartesianMeshUniqueIdRenumbering.h"
+#include "arcane/cartesianmesh/internal/CartesianMeshUniqueIdRenumbering.h"
 
 #include <set>
 

@@ -5,25 +5,24 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CeaGlobal.h                                                 (C) 2000-2020 */
+/* CartesianMeshGlobal.h                                       (C) 2000-2021 */
 /*                                                                           */
-/* Déclarations générales des classes Arcane de la composante 'arcane_cea'.  */
+/* Déclarations de la composante 'arcane_cartesianmesh'.                     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CEA_CEAGLOBAL_H
-#define ARCANE_CEA_CEAGLOBAL_H
+#ifndef ARCANE_CARTESIANMESH_CARTESIANMESHGLOBAL_H
+#define ARCANE_CARTESIANMESH_CARTESIANMESHGLOBAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArcaneGlobal.h"
-#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifdef ARCANE_COMPONENT_arcane_cea
-#define ARCANE_CEA_EXPORT ARCANE_EXPORT
+#ifdef ARCANE_COMPONENT_arcane_cartesianmesh
+#define ARCANE_CARTESIANMESH_EXPORT ARCANE_EXPORT
 #else
-#define ARCANE_CEA_EXPORT ARCANE_IMPORT
+#define ARCANE_CARTESIANMESH_EXPORT ARCANE_IMPORT
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -31,6 +30,34 @@
 
 namespace Arcane
 {
+class CartesianMesh;
+class CellDirectionMng;
+class NodeDirectionMng;
+class FaceDirectionMng;
+class ICartesianMesh;
+class ICartesianMeshPatch;
+class CartesianMeshPatch;
+class CartesianConnectivity;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Position des noeuds de la maille par direction pour les maillages
+ * cartésiens.
+ */
+enum eCellNodePosition
+{
+  CNP_NextLeft = 0,
+  CNP_NextRight = 1,
+  CNP_PreviousRight = 2,
+  CNP_PreviousLeft = 3,
+
+  CNP_TopNextLeft = 4,
+  CNP_TopNextRight = 5,
+  CNP_TopPreviousRight = 6,
+  CNP_TopPreviousLeft = 7
+};
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
