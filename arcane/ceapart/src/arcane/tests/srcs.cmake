@@ -10,6 +10,8 @@ set(ARCANE_SOURCES
   AMRCartesianMeshTesterModule.cc
   CartesianMeshTestUtils.cc
   CartesianMeshTestUtils.h
+  CartesianMeshV2TestUtils.cc
+  CartesianMeshV2TestUtils.h
   UnitTestCartesianMeshPatch.cc
 )
 

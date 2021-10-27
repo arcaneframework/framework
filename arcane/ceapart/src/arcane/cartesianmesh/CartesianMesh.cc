@@ -57,14 +57,13 @@ namespace Arcane
 /*!
  * \brief Infos spécifiques à un maillage cartésien.
  */
-class CartesianMesh
+class CartesianMeshImpl
 : public TraceAccessor
 , public ICartesianMesh
 {
  public:
 
-  CartesianMesh(IMesh* mesh);
-  ~CartesianMesh() override;
+  explicit CartesianMeshImpl(IMesh* mesh);
 
  public:
 
@@ -159,7 +158,7 @@ class CartesianMesh
 extern "C++" ICartesianMesh*
 arcaneCreateCartesianMesh(IMesh* mesh)
 {
-  CartesianMesh* cm = new CartesianMesh(mesh);
+  auto* cm = new CartesianMeshImpl(mesh);
   cm->build();
   return cm;
 }
@@ -167,8 +166,8 @@ arcaneCreateCartesianMesh(IMesh* mesh)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartesianMesh::
-CartesianMesh(IMesh* mesh)
+CartesianMeshImpl::
+CartesianMeshImpl(IMesh* mesh)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
 {
@@ -183,15 +182,7 @@ CartesianMesh(IMesh* mesh)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartesianMesh::
-~CartesianMesh()
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void CartesianMesh::
+void CartesianMeshImpl::
 build()
 {
   m_properties = new Properties(*(mesh()->properties()),"CartesianMesh");
@@ -202,7 +193,7 @@ namespace
 const Int32 SERIALIZE_VERSION = 1;
 }
 
-void CartesianMesh::
+void CartesianMeshImpl::
 _saveInfosInProperties()
 {
   // Sauve le numéro de version pour être sur que c'est OK en reprise
@@ -219,7 +210,7 @@ _saveInfosInProperties()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void CartesianMesh::
+void CartesianMeshImpl::
 recreateFromDump()
 {
   info() << "Creating 'CartesianMesh' infos from dump";
@@ -249,7 +240,7 @@ recreateFromDump()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void CartesianMesh::
+void CartesianMeshImpl::
 computeDirections()
 {
   m_amr_patches.clear();
@@ -415,7 +406,7 @@ computeDirections()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-std::tuple<CellGroup,NodeGroup> CartesianMesh::
+std::tuple<CellGroup,NodeGroup> CartesianMeshImpl::
 _buildPatchGroups(const CellGroup& cells,Integer patch_level)
 {
   // On créé un groupe pour chaque patch en garantissant que l'ordre de parcours
@@ -445,7 +436,7 @@ _buildPatchGroups(const CellGroup& cells,Integer patch_level)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void CartesianMesh::
+void CartesianMeshImpl::
 _computeMeshDirection(CartesianMeshPatch& cdi,eMeshDirection dir,VariableCellReal3& cells_center,
                       VariableFaceReal3& faces_center,CellGroup all_cells,NodeGroup all_nodes)
 {
@@ -515,7 +506,7 @@ _computeMeshDirection(CartesianMeshPatch& cdi,eMeshDirection dir,VariableCellRea
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void CartesianMesh::
+void CartesianMeshImpl::
 refinePatch2D(Real2 position,Real2 length)
 {
   VariableNodeReal3& nodes_coord = m_mesh->nodesCoordinates();
@@ -543,7 +534,7 @@ refinePatch2D(Real2 position,Real2 length)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void CartesianMesh::
+void CartesianMeshImpl::
 _applyRefine(ConstArrayView<Int32> cells_local_id)
 {
   IItemFamily* cell_family = m_mesh->cellFamily();
@@ -584,7 +575,7 @@ _applyRefine(ConstArrayView<Int32> cells_local_id)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void CartesianMesh::
+void CartesianMeshImpl::
 checkValid() const
 {
   info(4) << "Check valid CartesianMesh";
@@ -598,7 +589,7 @@ checkValid() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void CartesianMesh::
+void CartesianMeshImpl::
 renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v)
 {
   auto* cmgi = ICartesianMeshGenerationInfo::getReference(m_mesh,true);

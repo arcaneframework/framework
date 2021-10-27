@@ -64,7 +64,7 @@ class ARCANE_CARTESIANMESH_EXPORT DirFace
  */
 class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
 {
-  friend CartesianMesh;
+  friend CartesianMeshImpl;
   friend CartesianMeshPatch;
   class Impl;
 

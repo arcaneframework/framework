@@ -44,6 +44,7 @@
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/CartesianMeshTester_axl.h"
 #include "arcane/tests/CartesianMeshTestUtils.h"
+#include "arcane/tests/CartesianMeshV2TestUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -87,6 +88,7 @@ class CartesianMeshTesterModule
   IInitialPartitioner* m_initial_partitioner;
   Integer m_nb_print;
   Ref<CartesianMeshTestUtils> m_utils;
+  Ref<CartesianMeshV2TestUtils> m_utils_v2;
 
  private:
 
@@ -347,6 +349,7 @@ init()
   m_cartesian_mesh->computeDirections();
 
   m_utils = makeRef(new CartesianMeshTestUtils(m_cartesian_mesh));
+  m_utils_v2 = makeRef(new CartesianMeshV2TestUtils(m_cartesian_mesh));
 
   // Initialise la densité.
   // On met une densité de 1.0 à l'intérieur
@@ -382,6 +385,7 @@ init()
   }
 
   m_utils->testAll();
+  m_utils_v2->testAll();
   _testXmlInfos();
 }
 

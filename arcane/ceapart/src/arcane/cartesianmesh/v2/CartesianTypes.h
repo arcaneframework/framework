@@ -5,62 +5,63 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshGlobal.h                                       (C) 2000-2021 */
+/* CartesianTypes.h                                            (C) 2000-2021 */
 /*                                                                           */
-/* Déclarations de la composante 'arcane_cartesianmesh'.                     */
+/* Types pour les maillage cartésiens.                                       */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CARTESIANMESH_CARTESIANMESHGLOBAL_H
-#define ARCANE_CARTESIANMESH_CARTESIANMESHGLOBAL_H
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcaneGlobal.h"
-
+#ifndef ARCANE_CARTESIANMESH_CARTESIANTYPES_H
+#define ARCANE_CARTESIANMESH_CARTESIANTYPES_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifdef ARCANE_COMPONENT_arcane_cartesianmesh
-#define ARCANE_CARTESIANMESH_EXPORT ARCANE_EXPORT
-#else
-#define ARCANE_CARTESIANMESH_EXPORT ARCANE_IMPORT
-#endif
+#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
+
+#include <array>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
+namespace Arcane::CartesianMesh::V2
 {
-class CartesianMeshImpl;
-class CellDirectionMng;
-class NodeDirectionMng;
-class FaceDirectionMng;
-class ICartesianMesh;
-class ICartesianMeshPatch;
-class CartesianMeshPatch;
-class CartesianConnectivity;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Position des noeuds de la maille par direction pour les maillages
- * cartésiens.
+ * \brief
+ * Type pour les triplets cartésiens (i,j,k) et les triplets des dimensions (ni,nj,nk)
  */
-enum eCellNodePosition
-{
-  CNP_NextLeft = 0,
-  CNP_NextRight = 1,
-  CNP_PreviousRight = 2,
-  CNP_PreviousLeft = 3,
+using LocalIdType3 = Arcane::LocalIdType[3];
 
-  CNP_TopNextLeft = 4,
-  CNP_TopNextRight = 5,
-  CNP_TopPreviousRight = 6,
-  CNP_TopPreviousLeft = 7
+using UniqueIdType3 = Arcane::UniqueIdType[3];
+
+using LocalIdType4 = Arcane::LocalIdType[4];
+
+using IdxType = std::array<Arcane::Int64, 3>;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief
+ * Type de cote (previous ou next) pour une direction donnee
+ */
+enum eMeshSide
+{
+  //! Côté précédent
+  MS_previous = 0,
+  //! Côté suivant
+  MS_next = 1,
+  //! Nb maximal de côtés valides
+  MS_max = 2,
+  //! Côté invalide ou non initialisé
+  MS_invalid = (-1)
 };
 
-} // End namespace Arcane
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::CartesianMesh::V2
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

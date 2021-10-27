@@ -199,7 +199,7 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellFace
  */
 class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
 {
-  friend CartesianMesh;
+  friend CartesianMeshImpl;
   friend CartesianMeshPatch;
   class Impl;
   static const int MAX_NB_NODE = 8;

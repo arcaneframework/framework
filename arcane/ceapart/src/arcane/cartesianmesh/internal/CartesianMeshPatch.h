@@ -44,7 +44,7 @@ class CartesianMeshPatch
 : public TraceAccessor
 , public ICartesianMeshPatch
 {
-  friend CartesianMesh;
+  friend CartesianMeshImpl;
  public:
   CartesianMeshPatch(ICartesianMesh* cmesh,Integer patch_index);
   ~CartesianMeshPatch() override;
