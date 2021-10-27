@@ -13,7 +13,7 @@ jobs:
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
         shell: bash
-      - name: Untar arccon install artifact
+      - name: Generate artifacts
         shell: bash
         run: |
           mv arccon arccon-${{steps.get_version.outputs.VERSION}}
@@ -24,9 +24,10 @@ jobs:
           tar zcf axlstar-${{steps.get_version.outputs.VERSION}}.tar.gz axlstar-${{steps.get_version.outputs.VERSION}}
           mv arcane arcane-${{steps.get_version.outputs.VERSION}}
           tar zcf arcane-${{steps.get_version.outputs.VERSION}}.tar.gz arcane-${{steps.get_version.outputs.VERSION}}
-      - uses: ncipollo/release-action@v1
+      - name: Upload artifacts
+        uses: ncipollo/release-action@v1
         with:
           artifacts: "*-${{steps.get_version.outputs.VERSION}}.tar.gz"
           body: "release ${{steps.get_version.outputs.VERSION}}"
           token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: true
+          prerelease: false
