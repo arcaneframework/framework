@@ -993,7 +993,7 @@ typedef MeshVariableArrayRefT<Particle,Int16> VariableParticleArrayInt16;
   \ingroup Variable
   \brief Grandeur de DDL de type tableau d'entiers 16 bits
 */
-typedef MeshVariableArrayRefT<DoF,Int32> VariableDoFArrayInt32;
+typedef MeshVariableArrayRefT<DoF,Int16> VariableDoFArrayInt16;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1061,11 +1061,6 @@ typedef MeshVariableArrayRefT<Particle,Int64> VariableParticleArrayInt64;
 */
 typedef MeshVariableArrayRefT<DoF,Int64> VariableDoFArrayInt64;
 
-/*!
-  \ingroup Variable
-  \brief Grandeur de DDL de type tableau d'entiers 64 bits
-*/
-typedef MeshVariableArrayRefT<DoF,Int64> VariableDoFArrayInt64;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1541,7 +1536,7 @@ typedef MeshPartialVariableScalarRefT<Particle,Int64> PartialVariableParticleInt
   \ingroup Variable partielle
   \brief Grandeur de DDL de type entier 64 bits
 */
-typedef MeshPartialVariableScalarRefT<DoF,Int64> PartialVariableDoFIn64;
+typedef MeshPartialVariableScalarRefT<DoF,Int64> PartialVariableDoFInt64;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -2163,11 +2158,6 @@ typedef SharedMeshVariableScalarRefT<Particle,Real> SharedVariableParticleReal;
 */
 typedef SharedMeshVariableScalarRefT<DoF,Real> SharedVariableDoFReal;
 
-/*!
-  \ingroup SharedVariable
-  \brief Grandeur au centre des mailles de type rel
-*/
-typedef SharedMeshVariableScalarRefT<Cell,Real> SharedVariableCellReal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

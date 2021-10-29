@@ -695,6 +695,9 @@ findVariable(const String& name)
   v = findVariableFullyQualified(String("Cell_")+name);
   if (v)
     return v;
+  v = findVariableFullyQualified(String("DoF_")+name);
+  if (v)
+    return v;
   return nullptr;
 }
 
@@ -719,6 +722,9 @@ findMeshVariable(IMesh* mesh,const String& name)
   if (v)
     return v;
   v = findVariableFullyQualified(mesh_name+"Cell_"+name);
+  if (v)
+    return v;
+  v = findVariableFullyQualified(mesh_name+"DoF_"+name);
   if (v)
     return v;
   return nullptr;

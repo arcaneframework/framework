@@ -504,42 +504,49 @@ typedef ItemVariableScalarInViewT<Node,Byte> VariableNodeByteInView;
 typedef ItemVariableScalarInViewT<Edge,Byte> VariableEdgeByteInView;
 typedef ItemVariableScalarInViewT<Face,Byte> VariableFaceByteInView;
 typedef ItemVariableScalarInViewT<Cell,Byte> VariableCellByteInView;
+typedef ItemVariableScalarInViewT<DoF,Byte> VariableDoFByteInView;
 typedef ItemVariableScalarInViewT<Particle,Byte> VariableParticleByteInView;
 
 typedef ItemVariableScalarInViewT<Node,Int16> VariableNodeInt16InView;
 typedef ItemVariableScalarInViewT<Edge,Int16> VariableEdgeInt16InView;
 typedef ItemVariableScalarInViewT<Face,Int16> VariableFaceInt16InView;
 typedef ItemVariableScalarInViewT<Cell,Int16> VariableCellInt16InView;
+typedef ItemVariableScalarInViewT<DoF,Int16> VariableDoFInt16InView;
 typedef ItemVariableScalarInViewT<Particle,Int16> VariableParticleInt16InView;
 
 typedef ItemVariableScalarInViewT<Node,Int32> VariableNodeInt32InView;
 typedef ItemVariableScalarInViewT<Edge,Int32> VariableEdgeInt32InView;
 typedef ItemVariableScalarInViewT<Face,Int32> VariableFaceInt32InView;
 typedef ItemVariableScalarInViewT<Cell,Int32> VariableCellInt32InView;
+typedef ItemVariableScalarInViewT<DoF,Int32> VariableDoFInt32InView;
 typedef ItemVariableScalarInViewT<Particle,Int32> VariableParticleInt32InView;
 
 typedef ItemVariableScalarInViewT<Node,Int64> VariableNodeInt64InView;
 typedef ItemVariableScalarInViewT<Edge,Int64> VariableEdgeInt64InView;
 typedef ItemVariableScalarInViewT<Face,Int64> VariableFaceInt64InView;
 typedef ItemVariableScalarInViewT<Cell,Int64> VariableCellInt64InView;
+typedef ItemVariableScalarInViewT<DoF,Int64> VariableDoFInt64InView;
 typedef ItemVariableScalarInViewT<Particle,Int64> VariableParticleInt64InView;
 
 typedef ItemVariableScalarInViewT<Node,Real> VariableNodeRealInView;
 typedef ItemVariableScalarInViewT<Edge,Real> VariableEdgeRealInView;
 typedef ItemVariableScalarInViewT<Face,Real> VariableFaceRealInView;
 typedef ItemVariableScalarInViewT<Cell,Real> VariableCellRealInView;
+typedef ItemVariableScalarInViewT<DoF,Real> VariableDoFRealInView;
 typedef ItemVariableScalarInViewT<Particle,Real> VariableParticleRealInView;
 
 typedef ItemVariableScalarInViewT<Node,Real2> VariableNodeReal2InView;
 typedef ItemVariableScalarInViewT<Edge,Real2> VariableEdgeReal2InView;
 typedef ItemVariableScalarInViewT<Face,Real2> VariableFaceReal2InView;
 typedef ItemVariableScalarInViewT<Cell,Real2> VariableCellReal2InView;
+typedef ItemVariableScalarInViewT<DoF,Real2> VariableDoFReal2InView;
 typedef ItemVariableScalarInViewT<Particle,Real2> VariableParticleReal2InView;
 
 typedef ItemVariableScalarInViewT<Node,Real3> VariableNodeReal3InView;
 typedef ItemVariableScalarInViewT<Edge,Real3> VariableEdgeReal3InView;
 typedef ItemVariableScalarInViewT<Face,Real3> VariableFaceReal3InView;
 typedef ItemVariableScalarInViewT<Cell,Real3> VariableCellReal3InView;
+typedef ItemVariableScalarInViewT<DoF,Real3> VariableDoFReal3InView;
 typedef ItemVariableScalarInViewT<Particle,Real3> VariableParticleReal3InView;
 
 /*---------------------------------------------------------------------------*/
@@ -549,42 +556,49 @@ typedef ItemVariableScalarOutViewT<Node,ViewSetter<Byte>> VariableNodeByteOutVie
 typedef ItemVariableScalarOutViewT<Edge,ViewSetter<Byte>> VariableEdgeByteOutView;
 typedef ItemVariableScalarOutViewT<Face,ViewSetter<Byte>> VariableFaceByteOutView;
 typedef ItemVariableScalarOutViewT<Cell,ViewSetter<Byte>> VariableCellByteOutView;
+typedef ItemVariableScalarOutViewT<DoF,ViewSetter<Byte>> VariableDoFByteOutView;
 typedef ItemVariableScalarOutViewT<Particle,ViewSetter<Byte>> VariableParticleByteOutView;
 
 typedef ItemVariableScalarOutViewT<Node,ViewSetter<Int16>> VariableNodeInt16OutView;
 typedef ItemVariableScalarOutViewT<Edge,ViewSetter<Int16>> VariableEdgeInt16OutView;
 typedef ItemVariableScalarOutViewT<Face,ViewSetter<Int16>> VariableFaceInt16OutView;
 typedef ItemVariableScalarOutViewT<Cell,ViewSetter<Int16>> VariableCellInt16OutView;
+typedef ItemVariableScalarOutViewT<DoF,ViewSetter<Int16>> VariableDoFInt16OutView;
 typedef ItemVariableScalarOutViewT<Particle,ViewSetter<Int16>> VariableParticleInt16OutView;
 
 typedef ItemVariableScalarOutViewT<Node,ViewSetter<Int32>> VariableNodeInt32OutView;
 typedef ItemVariableScalarOutViewT<Edge,ViewSetter<Int32>> VariableEdgeInt32OutView;
 typedef ItemVariableScalarOutViewT<Face,ViewSetter<Int32>> VariableFaceInt32OutView;
 typedef ItemVariableScalarOutViewT<Cell,ViewSetter<Int32>> VariableCellInt32OutView;
+typedef ItemVariableScalarOutViewT<DoF,ViewSetter<Int32>> VariableDoFInt32OutView;
 typedef ItemVariableScalarOutViewT<Particle,ViewSetter<Int32>> VariableParticleInt32OutView;
 
 typedef ItemVariableScalarOutViewT<Node,ViewSetter<Int64>> VariableNodeInt64OutView;
 typedef ItemVariableScalarOutViewT<Edge,ViewSetter<Int64>> VariableEdgeInt64OutView;
 typedef ItemVariableScalarOutViewT<Face,ViewSetter<Int64>> VariableFaceInt64OutView;
 typedef ItemVariableScalarOutViewT<Cell,ViewSetter<Int64>> VariableCellInt64OutView;
+typedef ItemVariableScalarOutViewT<DoF,ViewSetter<Int64>> VariableDoFInt64OutView;
 typedef ItemVariableScalarOutViewT<Particle,ViewSetter<Int64>> VariableParticleInt64OutView;
 
 typedef ItemVariableScalarOutViewT<Node,ViewSetter<Real>> VariableNodeRealOutView;
 typedef ItemVariableScalarOutViewT<Edge,ViewSetter<Real>> VariableEdgeRealOutView;
 typedef ItemVariableScalarOutViewT<Face,ViewSetter<Real>> VariableFaceRealOutView;
 typedef ItemVariableScalarOutViewT<Cell,ViewSetter<Real>> VariableCellRealOutView;
+typedef ItemVariableScalarOutViewT<DoF,ViewSetter<Real>> VariableDoFRealOutView;
 typedef ItemVariableScalarOutViewT<Particle,ViewSetter<Real>> VariableParticleRealOutView;
 
 typedef ItemVariableRealNScalarOutViewT<Node,ViewSetter<Real2>> VariableNodeReal2OutView;
 typedef ItemVariableRealNScalarOutViewT<Edge,ViewSetter<Real2>> VariableEdgeReal2OutView;
 typedef ItemVariableRealNScalarOutViewT<Face,ViewSetter<Real2>> VariableFaceReal2OutView;
 typedef ItemVariableRealNScalarOutViewT<Cell,ViewSetter<Real2>> VariableCellReal2OutView;
+typedef ItemVariableRealNScalarOutViewT<DoF,ViewSetter<Real2>> VariableDoFReal2OutView;
 typedef ItemVariableRealNScalarOutViewT<Particle,ViewSetter<Real2>> VariableParticleReal2OutView;
 
 typedef ItemVariableRealNScalarOutViewT<Node,ViewSetter<Real3>> VariableNodeReal3OutView;
 typedef ItemVariableRealNScalarOutViewT<Edge,ViewSetter<Real3>> VariableEdgeReal3OutView;
 typedef ItemVariableRealNScalarOutViewT<Face,ViewSetter<Real3>> VariableFaceReal3OutView;
 typedef ItemVariableRealNScalarOutViewT<Cell,ViewSetter<Real3>> VariableCellReal3OutView;
+typedef ItemVariableRealNScalarOutViewT<DoF,ViewSetter<Real3>> VariableDoFReal3OutView;
 typedef ItemVariableRealNScalarOutViewT<Particle,ViewSetter<Real3>> VariableParticleReal3OutView;
 
 /*---------------------------------------------------------------------------*/

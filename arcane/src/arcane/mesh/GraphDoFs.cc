@@ -165,32 +165,45 @@ addDualNodes(Integer graph_nb_dual_node,
 
   // Size m_connecitivities if not yet done
 
-  Int64UniqueArray dual_node_uids, dual_item_uids;
-  dual_node_uids.reserve(graph_nb_dual_node);
-  dual_item_uids.reserve(graph_nb_dual_node);
+  std::map<Int64, std::pair<Int64UniqueArray, Int64UniqueArray>> dual_info_per_kind;
   for (auto infos_index = 0; infos_index < dual_nodes_infos.size();) {
+    auto& info = dual_info_per_kind[dual_node_kind];
+    auto& dual_node_uids = info.first;
+    auto& dual_item_uids = info.second;
+    if (dual_node_uids.size() == 0) {
+      dual_node_uids.reserve(graph_nb_dual_node);
+      dual_item_uids.reserve(graph_nb_dual_node);
+    }
     dual_node_uids.add(dual_nodes_infos[infos_index++]);
     dual_item_uids.add(dual_nodes_infos[infos_index++]);
   }
 
-  Int32UniqueArray dual_node_lids(dual_node_uids.size());
-  auto& dual_node_family = m_dof_mng.family(GraphDoFs::dualNodeFamilyName());
-  dual_node_family.addDoFs(dual_node_uids, dual_node_lids);
-  dual_node_family.endUpdate();
+  for (Integer index = 0; index < NB_DUAL_ITEM_TYPE; ++index) {
+    Integer dual_node_kind = m_dualnode_kinds[index];
+    auto& info = dual_info_per_kind[dual_node_kind];
+    auto& dual_node_uids = info.first;
+    auto& dual_item_uids = info.second;
 
-  IItemFamily* dual_item_family = _dualItemFamily(dualItemKind(dual_node_kind));
+    Int32UniqueArray dual_node_lids(dual_node_uids.size());
+    auto& dual_node_family = m_dof_mng.family(GraphDoFs::dualNodeFamilyName());
+    dual_node_family.addDoFs(dual_node_uids, dual_node_lids);
+    dual_node_family.endUpdate();
 
-  auto incremental_dual_item_connectivity = m_incremental_connectivities[_connectivityIndex(dual_node_kind)];
-  Int32UniqueArray dual_item_lids(dual_item_uids.size());
-  dual_item_family->itemsUniqueIdToLocalId(dual_item_lids, dual_item_uids);
+    auto incremental_dual_item_connectivity = m_incremental_connectivities[index];
+    //auto incremental_dual_item_connectivity = m_incremental_connectivities[_connectivityIndex(dual_node_kind)];
+    IItemFamily* dual_item_family = _dualItemFamily(dualItemKind(dual_node_kind));
+    if (dual_item_family) {
+      Int32UniqueArray dual_item_lids(dual_item_uids.size());
+      dual_item_family->itemsUniqueIdToLocalId(dual_item_lids, dual_item_uids);
 
-  ENUMERATE_DOF (idual_node, dual_node_family.view(dual_node_lids)) {
-    incremental_dual_item_connectivity->notifySourceItemAdded(ItemLocalId(*idual_node));
-    incremental_dual_item_connectivity->addConnectedItem(ItemLocalId(*idual_node), ItemLocalId(dual_item_lids[idual_node.index()]));
+      ENUMERATE_DOF (idual_node, dual_node_family.view(dual_node_lids)) {
+        incremental_dual_item_connectivity->notifySourceItemAdded(ItemLocalId(*idual_node));
+        incremental_dual_item_connectivity->addConnectedItem(ItemLocalId(*idual_node), ItemLocalId(dual_item_lids[idual_node.index()]));
+      }
+
+      m_dual_node_to_connectivity_index.resize(&dual_node_family, _connectivityIndex(dual_node_kind));
+    }
   }
-
-  m_dual_node_to_connectivity_index.resize(&dual_node_family, _connectivityIndex(dual_node_kind));
-
   m_update_sync_info = true;
 }
 
@@ -229,6 +242,7 @@ addDualNodes(Integer graph_nb_dual_node,
     auto& dual_node_family = m_dof_mng.family(GraphDoFs::dualNodeFamilyName());
     dual_node_family.addDoFs(dual_node_uids, dual_node_lids);
     dual_node_family.endUpdate();
+    //dual_node_family.computeSynchronizeInfos();
 
     auto incremental_dual_item_connectivity = m_incremental_connectivities[index];
     IItemFamily* dual_item_family = _dualItemFamily(dualItemKind(dual_node_kind));
@@ -243,6 +257,7 @@ addDualNodes(Integer graph_nb_dual_node,
 
       m_dual_node_to_connectivity_index.resize(&dual_node_family, _connectivityIndex(dual_node_kind));
     }
+    //dual_item_family->computeSynchronizeInfos();
   }
   m_update_sync_info = true;
 }

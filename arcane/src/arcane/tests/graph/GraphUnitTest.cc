@@ -125,13 +125,7 @@ public:
 
 public:
 
-  GraphUnitTest(const ServiceBuildInfo& mb)
-    : ArcaneGraphUnitTestObject(mb) 
-    , m_mesh(mb.mesh())
-    , m_stats(NULL)
-    , m_connectivity_mng(mb.subDomain()->traceMng())
-    , m_dof_mng(mb.mesh(),&m_connectivity_mng)
-    , m_dualUid_mng(mb.subDomain()->traceMng()){}
+  GraphUnitTest(const ServiceBuildInfo& mb);
   
   ~GraphUnitTest() { delete m_stats; }
 
@@ -155,6 +149,7 @@ private:
   DoFManager m_dof_mng;
   DoFManager& dofMng() {return m_dof_mng;}
   DualUniqueIdMng m_dualUid_mng;
+  std::unique_ptr<Arcane ::VariableDoFInt64> m_dnode_var_ptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -164,6 +159,17 @@ ARCANE_REGISTER_SERVICE_GRAPHUNITTEST(GraphUnitTest,GraphUnitTest);
 
 /*---------------------------------------------------------------------------*/
 /*--------------------- ------------------------------------------------------*/
+
+GraphUnitTest::GraphUnitTest(const ServiceBuildInfo& mb)
+    : ArcaneGraphUnitTestObject(mb) 
+    , m_mesh(mb.mesh())
+    , m_stats(NULL)
+    , m_connectivity_mng(mb.subDomain()->traceMng())
+    , m_dof_mng(mb.mesh(),&m_connectivity_mng)
+    , m_dualUid_mng(mb.subDomain()->traceMng())
+{
+  //m_dnode_var.fill(0);
+}
 
 void GraphUnitTest::
 executeTest()
@@ -186,6 +192,7 @@ void  GraphUnitTest::
 _createGraphOfDof() {
 
     String particle_family_name = "ArcaneParticles";
+
     //  particles
     IItemFamily* particle_family = m_mesh->createItemFamily(IK_Particle,particle_family_name);
 
@@ -194,14 +201,22 @@ _createGraphOfDof() {
     IGraphModifier2* graph_modifier = graphdofs->modifier();
 
     // Cells
+    IParallelMng* pm = subDomain()->parallelMng();
+    Int32 rank = pm->commRank();
 
     Integer graph_nb_dual_node = m_mesh->nbCell();
+    //Integer graph_nb_dual_node = m_mesh->ownCells().size();
     auto dual_node_kind = IT_DualCell;
-    Int64UniqueArray cells_dual_nodes_infos(graph_nb_dual_node*2);
+    //Int64UniqueArray cells_dual_nodes_infos(graph_nb_dual_node*2);
+    Int64UniqueArray cells_dual_nodes_infos(graph_nb_dual_node*3);
 
     Integer infos_index = 0;
-    ENUMERATE_CELL(icell,ownCells()) {
+    //ENUMERATE_CELL(icell,ownCells()) {
+    ENUMERATE_CELL(icell,allCells()) {
         const Cell & cell = *icell;
+
+
+        cells_dual_nodes_infos[infos_index++] =IT_DualCell;
 
         Int64 dual_node_uid = m_dualUid_mng.uniqueIdOf(cell);
 
@@ -214,23 +229,31 @@ _createGraphOfDof() {
 
     //BD
     //graphdofs->addDualNodes(graph_nb_dual_node,dual_node_kind,cells_dual_nodes_infos);
-    graph_modifier->addDualNodes(graph_nb_dual_node,dual_node_kind,cells_dual_nodes_infos);
+    //graph_modifier->addDualNodes(graph_nb_dual_node,dual_node_kind,cells_dual_nodes_infos);
+    //pinfo()<<"rank"<<rank<<"cells_dual_nodes_infos"<<cells_dual_nodes_infos;
+    graph_modifier->addDualNodes(graph_nb_dual_node,cells_dual_nodes_infos);
 
     ItemScalarProperty<Int64> cell_to_dual_node_property;
     cell_to_dual_node_property.resize(m_mesh->cellFamily(),NULL_ITEM_LOCAL_ID);
-    ENUMERATE_CELL(icell,ownCells()) {
+    //ENUMERATE_CELL(icell,ownCells()) {
+    ENUMERATE_CELL(icell,allCells()) {
             const Cell & cell = *icell;
             cell_to_dual_node_property[cell] =  m_dualUid_mng.uniqueIdOf(cell);
     }
 
     // Faces
     graph_nb_dual_node = m_mesh->nbFace();
+    //graph_nb_dual_node = m_mesh->ownFaces().size();
     dual_node_kind = IT_DualFace;
     Int64UniqueArray dual_nodes_infos(graph_nb_dual_node*2);
+    //Int64UniqueArray dual_nodes_infos(graph_nb_dual_node*3);
 
     infos_index = 0;
-    ENUMERATE_FACE(iface,ownFaces()) {
+    //ENUMERATE_FACE(iface,ownFaces()) {
+    ENUMERATE_FACE(iface,allFaces()) {
         const Face & face = *iface;
+        
+        //dual_nodes_infos[infos_index++] = IT_DualFace;
 
         Int64 dual_node_uid = m_dualUid_mng.uniqueIdOf(face);
 
@@ -242,10 +265,12 @@ _createGraphOfDof() {
 
     //graphdofs->addDualNodes(graph_nb_dual_node,dual_node_kind,dual_nodes_infos);
     graph_modifier->addDualNodes(graph_nb_dual_node,dual_node_kind,dual_nodes_infos);
+    //graph_modifier->addDualNodes(graph_nb_dual_node,dual_nodes_infos);
 
     ItemScalarProperty<Int64> face_to_dual_node_property;
     face_to_dual_node_property.resize(m_mesh->faceFamily(),NULL_ITEM_LOCAL_ID);
-    ENUMERATE_FACE(iface,ownFaces()) {
+    //ENUMERATE_FACE(iface,ownFaces()) {
+    ENUMERATE_FACE(iface,allFaces()) {
             const Face & face = *iface;
             Int64 dual_node_uid = m_dualUid_mng.uniqueIdOf(face);
             face_to_dual_node_property[face] = dual_node_uid;
@@ -253,7 +278,7 @@ _createGraphOfDof() {
 
     Int64UniqueArray uids;
 
-    IParallelMng* pm = subDomain()->parallelMng();
+    //IParallelMng* pm = subDomain()->parallelMng();
     Integer nb_own_cell = ownCells().size();
     Integer max_own_cell = pm->reduce(Parallel::ReduceMax,nb_own_cell);
     Integer nb_own_face = ownFaces().size();
@@ -266,7 +291,8 @@ _createGraphOfDof() {
 
     Int32UniqueArray cell_lids;
 
-    ENUMERATE_CELL(icell, ownCells())
+    //ENUMERATE_CELL(icell, ownCells())
+    ENUMERATE_CELL(icell, allCells())
     {
         const Cell & cell = *icell;
         cell_lids.add(cell.localId());
@@ -298,7 +324,6 @@ _createGraphOfDof() {
           particle_dual_nodes_infos[infos_index++] = dual_item_uid;
     }
 
-    //graphdofs->addDualNodes(graph_nb_dual_node,dual_node_kind,particle_dual_nodes_infos);
     graph_modifier->addDualNodes(graph_nb_dual_node,dual_node_kind,particle_dual_nodes_infos);
 
     ItemScalarProperty<Int64> particule_to_dual_node_property;
@@ -322,8 +347,11 @@ _createGraphOfDof() {
 
     Integer links_infos_index = 0;
 
+    //pinfo()<<"rank"<<rank<<"nb_link"<<nb_link;
+
     // On remplit le tableau links_infos
     ENUMERATE_FACE(iface,ownFaces()){
+    //ENUMERATE_FACE(iface,allFaces()){
         auto const& face = *iface;
         auto const& back_cell  = iface->backCell();
         auto const& front_cell = iface->frontCell();
@@ -351,6 +379,7 @@ _createGraphOfDof() {
         links_infos_index++;
     }
     assert(links_infos_index == nb_link * (1+nb_dual_node_per_link)) ;
+    //pinfo()<<"rank"<<rank<<"nb_link apres"<<nb_link;
     info()<<"Creation des link pour back_cell et front_cell links_infos";//<<links_infos;
     //graphdofs->addLinks(nb_link,2,links_infos);
     links_infos.resize(nb_link * (1+nb_dual_node_per_link));
@@ -370,6 +399,7 @@ _createGraphOfDof() {
     links_infos_index = 0;
 
     // On remplit le tableau links_infos
+    //ENUMERATE_CELL(icell,allCells()){
     ENUMERATE_CELL(icell,ownCells()){
       const Cell & cell = *icell;
 
@@ -427,6 +457,7 @@ _createGraphOfDof() {
 
     // On remplit le tableau links_infos
     ENUMERATE_FACE(iface,ownFaces()){
+    //ENUMERATE_FACE(iface,allFaces()){
       auto const& face = *iface;
       auto const& back_cell  = iface->backCell();
       auto const& front_cell = iface->frontCell();
@@ -490,6 +521,28 @@ _createGraphOfDof() {
   info()<<"Print Links" ;
   graphdofs->printLinks();
 
+  m_dnode_var_ptr.reset(new Arcane ::VariableDoFInt64(Arcane ::VariableBuildInfo(mesh(), "DualNodeVar", Arcane::mesh::GraphDoFs::dualNodeFamilyName())));
+  Arcane ::VariableDoFInt64& dnode_var = *m_dnode_var_ptr ;
+  info()<<" Avant m_dnode_var";
+  ENUMERATE_DOF(inode,graphdofs->dualNodeFamily()->allItems()) {
+    const DoF& dof = *inode;
+    info()<<" Avant m_dnode_var 1";
+    if(dof->isOwn()) 
+    {
+      info()<<"inode->uniqueId()"<<dof->uniqueId();
+      dnode_var[dof] = dof->uniqueId();
+    } 
+    else
+    {
+      dnode_var[dof] = -1;
+    }
+  }
+  info()<<" Avant m_dnode_var synchronize";
+  dnode_var.synchronize();
+  Integer nb_check=dnode_var.checkIfSync(5);
+  //m_dnode_var.dumpList(info());
+  info()<<" Apres checkIfSync nb_check="<<nb_check;
+
   info()<<"==================================================";
   info()<<"Check Connectivities" ;
   _checkGraphDofConnectivity(graphdofs);
@@ -526,6 +579,15 @@ _checkGraphDofConnectivity(IGraph2* graph_dof)
     }
   }
 
+  Arcane ::VariableDoFInt64& dnode_var = *m_dnode_var_ptr ;
+  
+  Integer dnode_error = 0;
+  ENUMERATE_DOF(inode,graph_dof->dualNodeFamily()->allItems()) {
+    if(dnode_var[inode] != inode->uniqueId())
+      dnode_error++;
+  }
+  info() << "Number of synchronization errors for dnode_var : " << dnode_error;
+  
 }
 
 /*---------------------------------------------------------------------------*/
