@@ -32,7 +32,7 @@ GhostLayerMng::
 GhostLayerMng(ITraceMng* tm)
 : TraceAccessor(tm)
 , m_nb_ghost_layer(1)
-, m_builder_version(2)
+, m_builder_version(3)
 {
   String nb_ghost_str = platform::getEnvironmentVariable("ARCANE_NB_GHOSTLAYER");
   Integer nb_ghost = 1;
