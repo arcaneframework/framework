@@ -1,4 +1,4 @@
-include(srcs.cmake)
+﻿include(srcs.cmake)
 
 arcane_add_library(arcane_cartesianmesh
   INPUT_PATH ${ARCANECEA_SRC_PATH}
@@ -14,3 +14,16 @@ target_include_directories(arcane_cartesianmesh PUBLIC $<BUILD_INTERFACE:${ARCAN
 target_link_libraries(arcane_cartesianmesh PUBLIC arcane_std arcane_core)
 
 arcane_register_library(arcane_cartesianmesh)
+
+# ----------------------------------------------------------------------------
+
+if (GTEST_FOUND)
+  add_subdirectory(tests)
+endif()
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:

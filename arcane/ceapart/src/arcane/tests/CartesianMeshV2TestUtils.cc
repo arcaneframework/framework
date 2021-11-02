@@ -61,13 +61,3 @@ testAll()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-// Effecttue des instantiations explicites pour tester la compilation.
-template class Arcane::CartesianMesh::V2::CartesianGrid<Arcane::Int32>;
-template class Arcane::CartesianMesh::V2::CartesianGrid<Arcane::Int64>;
-
-template class Arcane::CartesianMesh::V2::CartesianNumbering<Arcane::Int32>;
-template class Arcane::CartesianMesh::V2::CartesianNumbering<Arcane::Int64>;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
