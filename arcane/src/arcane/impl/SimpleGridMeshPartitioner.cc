@@ -12,6 +12,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/NotSupportedException.h"
+#include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/IGridMeshPartitioner.h"
 #include "arcane/BasicService.h"
@@ -70,6 +71,7 @@ class SimpleGridMeshPartitioner
   std::array<Int32, 3> m_ijk_part;
   bool m_is_bounding_box_set = false;
   bool m_is_ijk_set = false;
+  bool m_is_verbose = false;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -79,6 +81,8 @@ SimpleGridMeshPartitioner::
 SimpleGridMeshPartitioner(const ServiceBuildInfo& sbi)
 : BasicService(sbi)
 {
+  if (platform::getEnvironmentVariable("ARCANE_DEBUG_SIMPLE_GRID_MESH_PARTITIONER") == "1")
+    m_is_verbose = true;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -162,16 +166,25 @@ partitionMesh([[maybe_unused]] bool initial_partition)
       Int32 nb_value = coords.size();
       // TODO: utiliser une dichotomie
       Real cc = cell_center[idir];
-      for (Int32 z = 0; z < (nb_value - 1); ++z) {
-        if (cc < coords[z + 1])
+      if (cc < coords[0]) {
+        cell_part[idir] = 0;
+      }
+      for (Int32 z = 0; z < nb_value; ++z) {
+        if (m_is_verbose)
+          info() << " Cell uid=" << cell.uniqueId() << " idir=" << idir << " z=" << z
+                 << " cc=" << cc << " coord=" << coords[z] << " part=" << cell_part[idir];
+        if (cc > coords[z])
           cell_part[idir] = z;
+        else
+          break;
       }
       if (cell_part[idir] == (-1))
         cell_part[idir] = (nb_value - 1);
     }
     Int32 new_owner = cell_part[0] + cell_part[1] * offset_y + cell_part[2] * offset_z;
-    info() << "CELL=" << ItemPrinter(cell) << " coord=" << cell_center << " new_owner=" << new_owner
-           << " dir=" << cell_part[0] << " " << cell_part[1] << " " << cell_part[2];
+    if (m_is_verbose)
+      info() << "CELL=" << ItemPrinter(cell) << " coord=" << cell_center << " new_owner=" << new_owner
+             << " dir=" << cell_part[0] << " " << cell_part[1] << " " << cell_part[2];
     if (new_owner < 0 || new_owner >= nb_rank)
       ARCANE_FATAL("Bad value for new owner cell={0} new_owner={1} (max={2})", ItemPrinter(cell), new_owner, nb_rank);
     cells_new_owner[icell] = new_owner;
