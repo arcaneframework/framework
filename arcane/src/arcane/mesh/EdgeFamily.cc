@@ -200,7 +200,7 @@ void EdgeFamily::
 preAllocate(Integer nb_item)
 {
   Integer mem = 0;
-  Integer base_mem = m_node_prealloc + m_face_prealloc + m_cell_prealloc + ItemSharedInfo::COMMON_BASE_MEMORY;
+  Integer base_mem = ItemSharedInfo::COMMON_BASE_MEMORY;
   if (m_has_edge) { // On n'alloue rien du tout si on n'a pas d'arête
     mem = base_mem * (nb_item+1);
   }
