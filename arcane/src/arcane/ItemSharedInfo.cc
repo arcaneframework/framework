@@ -113,6 +113,19 @@ ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList*
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Nombre d'informations à écrire pour les données.
+ *
+ * On sauve toujours la même quantité d'informations que le maillage soit
+ * AMR ou pas. Cela permettra à terme de supprimer 'm_is_amr_activated'.
+ * On pourra le faire dès qu'il n'y aura plus besoin de faire une reprise
+ * depuis une ancienne version de Arcane.
+ */
+Integer ItemSharedInfo::
+serializeWriteSize()
+{
+  return serializeAMRSize();
+}
 
 Integer ItemSharedInfo::
 serializeSize()

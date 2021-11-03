@@ -220,7 +220,7 @@ prepareForDump()
     return;
   m_list_changed = false;
   //Integer n = m_item_shared_infos.size();
-  Integer element_size = ItemSharedInfo::serializeSize();
+  Integer element_size = ItemSharedInfo::serializeWriteSize();
   m_variables->m_infos_values.resize(n,element_size);
   for( Integer i=0; i<n; ++i ){
     m_item_shared_infos[i]->serializeWrite(m_variables->m_infos_values[i]);

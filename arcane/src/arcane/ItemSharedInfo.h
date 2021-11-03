@@ -230,6 +230,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   void addReference(){ ++m_nb_reference; }
   void removeReference(){ --m_nb_reference; }
   void serializeWrite(Int32ArrayView buffer);
+  static Integer serializeWriteSize();
   static Integer serializeSize();
   static Integer serializeAMRSize();
   static Integer serializeNoAMRSize();
