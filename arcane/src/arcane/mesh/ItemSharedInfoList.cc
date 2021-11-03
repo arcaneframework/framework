@@ -368,10 +368,7 @@ findSharedInfo(ItemTypeInfo* type)
   // Infos pas trouvé. On en construit une nouvelle
   ItemSharedInfo* isi = allocOne();
   Integer old_index = isi->index();
-  *isi = ItemSharedInfo(m_family,type,miil,iicl,m_family->uniqueIds(),nb_edge,nb_face,nb_cell,
-                        nb_parent,nb_children,
-                        edge_allocated,face_allocated,cell_allocated,
-                        parent_allocated,child_allocated);
+  *isi = ItemSharedInfo(m_family,type,miil,iicl,m_family->uniqueIds());
   isi->setIndex(old_index);
   //isi->m_infos = m_items_infos.begin();
   std::pair<ItemSharedInfoMap::iterator,bool> old = m_infos_map->insert(std::make_pair(ine,isi));
