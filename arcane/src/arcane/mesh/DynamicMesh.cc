@@ -199,6 +199,7 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh, bo
   m_properties->setBool("compact",true);
   m_properties->setBool("dump",true);
   m_properties->setBool("display-stats",true);
+  m_properties->setInt32("mesh-version",1);
 
 #ifndef NO_USER_WARNING
 #warning "(HP) Placement ?"
@@ -1280,9 +1281,11 @@ _saveProperties()
 void DynamicMesh::
 _loadProperties()
 {
-  info(4) << "DynamicMesh::_readProperties() name=" << name();
-
   auto p = m_properties;
+
+  info(4) << "DynamicMesh::_readProperties() name=" << name()
+          << " mesh-version=" << p->getInt32WithDefault("mesh-version",-1);
+
   {
     // Relit les infos sur le gestionnaire de mailles fantômes.
     Int32 x = 0;

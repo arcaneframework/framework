@@ -137,7 +137,7 @@ build()
 void NodeFamily::
 preAllocate(Integer nb_item)
 {
-  Integer base_mem = m_edge_prealloc+m_face_prealloc+m_cell_prealloc+ItemSharedInfo::COMMON_BASE_MEMORY;
+  Integer base_mem = ItemSharedInfo::COMMON_BASE_MEMORY;
   Integer mem = base_mem * (nb_item+1);
   info() << "Nodefamily: reserve=" << mem;
   _reserveInfosMemory(mem);

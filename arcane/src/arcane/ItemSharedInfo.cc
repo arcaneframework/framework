@@ -53,103 +53,25 @@ ItemSharedInfo()
 /*---------------------------------------------------------------------------*/
 
 ItemSharedInfo::
-ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,
-               MeshItemInternalList* items,ItemInternalConnectivityList* connectivity,
-               Int64ArrayView* unique_ids)
-: m_nb_node(item_type->nbLocalNode())
-, m_nb_edge(item_type->nbLocalEdge())
-, m_nb_face(item_type->nbLocalFace())
-, m_items(items)
-, m_connectivity(connectivity)
-, m_item_family(family)
-, m_unique_ids(unique_ids)
-, m_item_type(item_type)
-, m_item_kind(family->itemKind())
-, m_type_id(item_type->typeId())
-{
-  _init(m_item_kind);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ItemSharedInfo::
 ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
-               ItemInternalConnectivityList* connectivity,Int64ArrayView* unique_ids,
-               Int32 nb_edge,Int32 nb_face,Int32 nb_cell)
+               ItemInternalConnectivityList* connectivity,Int64ArrayView* unique_ids)
 : m_nb_node(item_type->nbLocalNode())
-, m_nb_edge(nb_edge)
-, m_nb_face(nb_face)
-, m_nb_cell(nb_cell)
+, m_nb_edge(0)
+, m_nb_face(0)
+, m_nb_cell(0)
+, m_nb_hParent(0)
+, m_nb_hChildren(0)
 , m_items(items)
 , m_connectivity(connectivity)
 , m_item_family(family)
 , m_unique_ids(unique_ids)
 , m_item_type(item_type)
 , m_item_kind(family->itemKind())
-, m_edge_allocated(m_nb_edge)
-, m_face_allocated(m_nb_face)
-, m_cell_allocated(m_nb_cell)
-, m_hParent_allocated(m_nb_hParent)
-, m_hChild_allocated(m_nb_hChildren)
-, m_type_id(item_type->typeId())
-{
-  _init(m_item_kind);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ItemSharedInfo::
-ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
-               ItemInternalConnectivityList* connectivity,Int64ArrayView* unique_ids,
-               Int32 nb_edge,Int32 nb_face,Int32 nb_cell,
-               Int32 edge_allocated,Int32 face_allocated,Int32 cell_allocated)
-: m_nb_node(item_type->nbLocalNode())
-, m_nb_edge(nb_edge)
-, m_nb_face(nb_face)
-, m_nb_cell(nb_cell)
-, m_items(items)
-, m_connectivity(connectivity)
-, m_item_family(family)
-, m_unique_ids(unique_ids)
-, m_item_type(item_type)
-, m_item_kind(family->itemKind())
-, m_edge_allocated(edge_allocated)
-, m_face_allocated(face_allocated)
-, m_cell_allocated(cell_allocated)
-, m_type_id(item_type->typeId())
-{
-  _init(m_item_kind);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ItemSharedInfo::
-ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
-               ItemInternalConnectivityList* connectivity,Int64ArrayView* unique_ids,
-               Int32 nb_edge,Int32 nb_face,Int32 nb_cell,
-               Int32 nb_hParent,Int32 nb_hChildren,
-               Int32 edge_allocated,Int32 face_allocated,Int32 cell_allocated,
-               Int32 hParent_allocated,Int32 hChild_allocated)
-:  m_nb_node(item_type->nbLocalNode())
-, m_nb_edge(nb_edge)
-, m_nb_face(nb_face)
-, m_nb_cell(nb_cell)
-, m_nb_hParent(nb_hParent)
-, m_nb_hChildren(nb_hChildren)
-, m_items(items)
-, m_connectivity(connectivity)
-, m_item_family(family)
-, m_unique_ids(unique_ids)
-, m_item_type(item_type)
-, m_item_kind(family->itemKind())
-, m_edge_allocated(edge_allocated)
-, m_face_allocated(face_allocated)
-, m_cell_allocated(cell_allocated)
-, m_hParent_allocated(hParent_allocated)
-, m_hChild_allocated(hChild_allocated)
+, m_edge_allocated(0)
+, m_face_allocated(0)
+, m_cell_allocated(0)
+, m_hParent_allocated(0)
+, m_hChild_allocated(0)
 , m_type_id(item_type->typeId())
 {
   _init(m_item_kind);
@@ -191,6 +113,19 @@ ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList*
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Nombre d'informations à écrire pour les données.
+ *
+ * On sauve toujours la même quantité d'informations que le maillage soit
+ * AMR ou pas. Cela permettra à terme de supprimer 'm_is_amr_activated'.
+ * On pourra le faire dès qu'il n'y aura plus besoin de faire une reprise
+ * depuis une ancienne version de Arcane.
+ */
+Integer ItemSharedInfo::
+serializeWriteSize()
+{
+  return serializeAMRSize();
+}
 
 Integer ItemSharedInfo::
 serializeSize()
