@@ -8,6 +8,12 @@
   </description>
 
  <options>
+   <simple name="unstructured-mesh-file" type="string" optional="true" >
+     <description>
+       Nom du fichier contenant un maillage non structuré pour
+       tester le partitionnement sur une grille
+     </description>
+   </simple>
  </options>
 
  <entry-points>

@@ -47,6 +47,7 @@
 #include "arcane/IMeshFactoryMng.h"
 #include "arcane/IMeshMng.h"
 #include "arcane/IMeshPartitioner.h"
+#include "arcane/IGridMeshPartitioner.h"
 #include "arcane/IDirectExecution.h"
 #include "arcane/IDirectSubDomainExecuteFunctor.h"
 #include "arcane/ISerializer.h"

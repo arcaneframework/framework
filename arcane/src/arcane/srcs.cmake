@@ -451,6 +451,7 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    IDeflateService.h
    IServiceMng.h
    IMeshBuilder.h
+   IGridMeshPartitioner.h
    IMeshChecker.h
    IMeshPartitionerBase.h
    IModuleMng.h

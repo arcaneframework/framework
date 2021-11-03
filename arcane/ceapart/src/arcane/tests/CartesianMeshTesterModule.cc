@@ -13,8 +13,10 @@
 
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/StringBuilder.h"
 
 #include "arcane/MeshUtils.h"
+#include "arcane/MathUtils.h"
 
 #include "arcane/ITimeLoopMng.h"
 #include "arcane/ITimeLoopService.h"
@@ -24,6 +26,7 @@
 #include "arcane/IItemFamily.h"
 #include "arcane/ItemPrinter.h"
 #include "arcane/IParallelMng.h"
+#include "arcane/IMeshWriter.h"
 
 #include "arcane/ICaseDocument.h"
 #include "arcane/IInitialPartitioner.h"
@@ -33,7 +36,10 @@
 #include "arcane/IMeshUtilities.h"
 #include "arcane/ServiceBuilder.h"
 #include "arcane/ServiceFactory.h"
-#include "arcane/std/MeshPartitionerBase.h"
+#include "arcane/IMeshPartitionerBase.h"
+#include "arcane/BasicService.h"
+#include "arcane/MeshReaderMng.h"
+#include "arcane/IGridMeshPartitioner.h"
 
 #include "arcane/cea/ICartesianMesh.h"
 #include "arcane/cea/CellDirectionMng.h"
@@ -96,19 +102,23 @@ class CartesianMeshTesterModule
   void _compute2();
   void _sample(ICartesianMesh* cartesian_mesh);
   void _testXmlInfos();
+  void _testGridPartitioning();
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 class CartesianMeshPartitionerService
-: public MeshPartitionerBase
+: public BasicService
+, public IMeshPartitionerBase
 {
  public:
-  CartesianMeshPartitionerService(const ServiceBuildInfo& sbi)
-  : MeshPartitionerBase(sbi){}
+  explicit CartesianMeshPartitionerService(const ServiceBuildInfo& sbi)
+  : BasicService(sbi){}
  public:
   void build() override {}
+  void notifyEndPartition() override {}
+  IPrimaryMesh* primaryMesh() override { return mesh()->toPrimaryMesh(); }
   void partitionMesh(bool initial_partition) override
   {
     if (!initial_partition)
@@ -133,12 +143,6 @@ class CartesianMeshPartitionerService
     cells_new_owner.synchronize();
     mesh->utilities()->changeOwnersFromCells();
   }
-  void partitionMesh(bool initial_partition,Int32 nb_part) override
-  {
-    ARCANE_UNUSED(initial_partition);
-    ARCANE_UNUSED(nb_part);
-    throw NotImplementedException(A_FUNCINFO);
-  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -146,7 +150,7 @@ class CartesianMeshPartitionerService
 
 ARCANE_REGISTER_SERVICE(CartesianMeshPartitionerService,
                         Arcane::ServiceProperty("CartesianMeshPartitionerTester",Arcane::ST_SubDomain),
-                        ARCANE_SERVICE_INTERFACE(IMeshPartitioner));
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitionerBase));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -172,7 +176,7 @@ class CartesianMeshInitialPartitioner
  private:
   void _doPartition(IMesh* mesh)
   {
-    ServiceBuilder<IMeshPartitioner> sbuilder(m_sub_domain);
+    ServiceBuilder<IMeshPartitionerBase> sbuilder(m_sub_domain);
     String service_name = "CartesianMeshPartitionerTester";
     auto mesh_partitioner(sbuilder.createReference(service_name,mesh));
 
@@ -387,6 +391,7 @@ init()
   m_utils->testAll();
   m_utils_v2->testAll();
   _testXmlInfos();
+  _testGridPartitioning();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -534,6 +539,69 @@ _testXmlInfos()
     Integer nx_value = lx_node.attr("nx",true).valueAsInteger(true);
     Real px_value = lx_node.attr("prx").valueAsReal(true);
     info() << "V=" << lx_value << " nx=" << nx_value << " px=" << px_value;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshTesterModule::
+_testGridPartitioning()
+{
+  if (!options()->unstructuredMeshFile.isPresent())
+    return;
+  String file_name = options()->unstructuredMeshFile();
+  info() << "UnstructuredMeshFileName=" << file_name;
+
+  ISubDomain* sd = subDomain();
+  IMesh* current_mesh = m_cartesian_mesh->mesh();
+  IParallelMng* pm = current_mesh->parallelMng();
+
+  MeshReaderMng reader_mng(sd);
+  IMesh* new_mesh = reader_mng.readMesh("UnstructuredMesh2",file_name,pm);
+  info() << "MESH=" << new_mesh;
+
+  ServiceBuilder<IGridMeshPartitioner> sbuilder(sd);
+  auto partitioner = sbuilder.createReference("SimpleGridMeshPartitioner",new_mesh);
+  Int32 sd_x = m_cartesian_mesh->cellDirection(MD_DirX).subDomainOffset();
+  Int32 sd_y = m_cartesian_mesh->cellDirection(MD_DirY).subDomainOffset();
+  Int32 sd_z = m_cartesian_mesh->cellDirection(MD_DirZ).subDomainOffset();
+  partitioner->setPartIndex(sd_x,sd_y,sd_z);
+
+  // Positionne la bounding box
+  Real max_value = FloatInfo<Real>::maxValue();
+  Real min_value = -max_value;
+  Real3 min_box(max_value,max_value,max_value);
+  Real3 max_box(min_value,min_value,min_value);
+  VariableNodeReal3& nodes_coord = current_mesh->nodesCoordinates();
+  ENUMERATE_(Node,inode,current_mesh->allNodes().own()){
+    Real3 coord = nodes_coord[inode];
+    min_box = math::min(min_box,coord);
+    max_box = math::min(max_box,coord);
+  }
+  partitioner->setBoundingBox(min_box,max_box);
+
+  new_mesh->modifier()->setDynamic(true);
+  new_mesh->utilities()->partitionAndExchangeMeshWithReplication(partitioner.get(),true);
+
+  // Maintenant, écrit le fichier du maillage non structuré et de notre partie
+  // cartésienne.
+  const bool is_debug = false;
+  if (is_debug){
+    ServiceBuilder<IMeshWriter> sbuilder2(sd);
+    auto mesh_writer = sbuilder2.createReference("VtkLegacyMeshWriter",SB_Collective);
+    {
+      StringBuilder fname = "cut_mesh_";
+      fname += pm->commRank();
+      fname += ".vtk";
+      mesh_writer->writeMeshToFile(new_mesh,fname);
+    }
+    {
+      StringBuilder fname = "my_mesh_";
+      fname += pm->commRank();
+      fname += ".vtk";
+      mesh_writer->writeMeshToFile(current_mesh,fname);
+    }
   }
 }
 
