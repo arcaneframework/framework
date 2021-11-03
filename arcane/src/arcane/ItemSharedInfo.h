@@ -68,18 +68,10 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
  public:
   //! Pour l'entité nulle
   static ItemSharedInfo nullItemSharedInfo;
+
  public:
-  ItemSharedInfo();
-  ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
-                 ItemInternalConnectivityList* connectivity,Int64ArrayView* unique_ids);
-  ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
-                 ItemInternalConnectivityList* connectivity,Int64ArrayView* unique_ids,
-                 Int32 nb_edge,Int32 nb_face,Int32 nb_cell);
-  ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
-                 ItemInternalConnectivityList* connectivity,Int64ArrayView* unique_ids,
-                 Int32 nb_edge,Int32 nb_face,Int32 nb_cell,
-                 Int32 edge_allocated,Int32 face_allocated,Int32 cell_allocated);
-  //! AMR
+
+ ItemSharedInfo();
   ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
                  ItemInternalConnectivityList* connectivity,Int64ArrayView* unique_ids,
                  Int32 nb_edge,Int32 nb_face,Int32 nb_cell,
