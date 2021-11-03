@@ -107,6 +107,8 @@ arcane_add_test(cartesian_grid_partitioning testCartesianMesh-grid-partitioning.
 arcane_add_test_parallel(cartesian_grid_partitioning_6proc testCartesianMesh-grid-partitioning6.arc 6 "-m 10")
 arcane_add_test_parallel(cartesian_grid_partitioning_12proc testCartesianMesh-grid-partitioning12.arc 12 "-m 10")
 
+arcane_add_test_sequential(cartesian3d_grid_partitioning testCartesianMesh3D-grid-partitioning.arc "-m 10")
+arcane_add_test_parallel(cartesian3d_grid_partitioning_12proc testCartesianMesh3D-grid-partitioning.arc 12 "-m 10")
 
 #################################
 # CARTESIAN MESH GENERATOR TEST #
