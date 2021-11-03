@@ -166,7 +166,7 @@ void func()
   Arcane::ParallelLoopOptions options;
   // Exécute la boucle par parties d'environ 50 mailles.
   options.setGrainSize(50);
-  Arcane::arcaneParallelForeach(my_group,[&](Arcane::CellVectorView cells){
+  Arcane::arcaneParallelForeach(my_group,options,[&](Arcane::CellVectorView cells){
     ENUMERATE_CELL(icell,cells){
       p[icell] = (gamma[icell]-1.0) * rho[icell] * e[icell];
     }
