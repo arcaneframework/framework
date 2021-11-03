@@ -121,7 +121,7 @@ pour les accélérateurs. Seuls les fichiers utilisant des commandes
 pour les accélérateurs. Pour cela, %Arcane définit les fonctions
 CMake suivantes:
 
-- **arcane_accelerator_enable()** qui doit être appeler vant les autres
+- **arcane_accelerator_enable()** qui doit être appelé vant les autres
   fonctions pour détecter l'environnement de compilation pour accélérateur
 - **arcane_accelerator_add_source_files(file1.cc [file2.cc] ...)** pour
   indiquer les fichiers sources qui doivent être compilés sur accélérateurs
