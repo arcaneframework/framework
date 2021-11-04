@@ -355,9 +355,8 @@ _setGhostLayerInfos()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE(ArcaneCaseMeshService,
-                        ServiceProperty("ArcaneCaseMeshService",ST_CaseOption),
-                        ARCANE_SERVICE_INTERFACE(ICaseMeshService));
+ARCANE_REGISTER_SERVICE_ARCANECASEMESHSERVICE(ArcaneCaseMeshService,
+                                              ArcaneCaseMeshService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

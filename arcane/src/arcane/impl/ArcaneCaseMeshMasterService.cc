@@ -85,9 +85,8 @@ class ArcaneCaseMeshMasterService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE(ArcaneCaseMeshMasterService,
-                        ServiceProperty("ArcaneCaseMeshMasterService",ST_CaseOption),
-                        ARCANE_SERVICE_INTERFACE(ICaseMeshMasterService));
+ARCANE_REGISTER_SERVICE_ARCANECASEMESHMASTERSERVICE(ArcaneCaseMeshMasterService,
+                                                    ArcaneCaseMeshMasterService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

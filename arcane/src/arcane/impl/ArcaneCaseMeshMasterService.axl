@@ -17,6 +17,7 @@
         default = "ArcaneCaseMeshService"
         >
       <name lang='fr'>maillage</name>
+      <userclass>User</userclass>
       <description>
         Service de création/lecture de maillage
       </description>
