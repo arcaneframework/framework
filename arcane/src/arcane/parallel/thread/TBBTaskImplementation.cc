@@ -416,7 +416,7 @@ class TBBTaskImplementation
 
   Int32 currentTaskThreadIndex() const final
   {
-    return (nbAllowedThread() == 1 ) ? 0 : _currentTaskTreadIndex();
+    return (nbAllowedThread() <= 1 ) ? 0 : _currentTaskTreadIndex();
   }
 
   Int32 currentTaskIndex() const final;
