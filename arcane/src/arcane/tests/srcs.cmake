@@ -64,6 +64,7 @@ set(ARCANE_SOURCES
   accelerator/MiniWeatherOriginalSequential.cc
   accelerator/MiniWeatherArraySequential.cc
   CustomMeshTestModule.cc
+  TaskUnitTest.cc
   )
 
 set(AXL_FILES 

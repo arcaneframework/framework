@@ -99,6 +99,29 @@ macro(ARCANE_ADD_TEST_PARALLEL test_name case_file nb_proc)
   endif()
 endmacro()
 
+# Ajoute un test parallele
+macro(arcane_add_test_sequential_task test_name case_file nb_task)
+  # Si nb_task vaut 0, on utilise tous les CPU du noeud.
+  if(ARCANE_HAS_TASKS)
+    if(VERBOSE)
+      message(STATUS "    Add Test Task OPT=${test_name} ${case_file}")
+    endif()
+    set(_TEST_NAME ${test_name}_task${nb_task})
+    if (${nb_task} STREQUAL 0)
+      set(_TEST_NAME ${test_name}_taskmax)
+    endif()
+    arcane_get_case_path(${case_file})
+    arcane_add_test_direct(NAME ${_TEST_NAME}
+      COMMAND ${ARCANE_TEST_LAUNCH_COMMAND} -K ${nb_task} ${ARGN} ${full_case_file}
+      WORKING_DIRECTORY ${ARCANE_TEST_WORKDIR})
+    if (${nb_task} STREQUAL 0)
+      set_tests_properties(${_TEST_NAME} PROPERTIES RUN_SERIAL TRUE)
+    else()
+      set_tests_properties(${_TEST_NAME} PROPERTIES PROCESSORS ${nb_task})
+    endif()
+  endif()
+endmacro()
+
 # Ajoute un test parallele avec les threads
 macro(ARCANE_ADD_TEST_PARALLEL_THREAD test_name case_file nb_proc)
   if(NOT ARCANE_USE_MPC)

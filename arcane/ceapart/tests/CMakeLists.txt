@@ -59,7 +59,7 @@ if (PARMETIS_FOUND AND LIMA_FOUND)
 endif ()
 
 ARCANE_ADD_TEST(material1 testMaterial-1.arc "-m 10")
-ARCANE_ADD_TEST_SEQUENTIAL(material1_task4 testMaterial-1.arc "-K 4" "-m 10")
+arcane_add_test_sequential_task(material1 testMaterial-1.arc 4 "-m 10")
 
 # Les trois tests suivants doivent faire le même nombre d'itérations et avoir le
 # même nombre de mailles (pour test)
@@ -74,7 +74,7 @@ ARCANE_ADD_TEST_PARALLEL(material2_opt3_syncv6 testMaterial-2-opt3.arc 4 -m 13 -
 ARCANE_ADD_TEST_CHECKPOINT_SEQUENTIAL(material_checkpoint testMaterial-checkpoint.arc 3 3)
 ARCANE_ADD_TEST_CHECKPOINT_SEQUENTIAL(material_checkpoint_recreate testMaterial-checkpoint-recreate.arc 3 3)
 
-ARCANE_ADD_TEST_SEQUENTIAL(material2_task4 testMaterial-2task.arc "-K 4" "-m 1")
+arcane_add_test_sequential_task(material2 testMaterial-2task.arc 4 "-m 1")
 
 ARCANE_ADD_TEST(material_sync1 testMaterial-sync-1.arc)
 ARCANE_ADD_TEST_PARALLEL_THREAD(material_sync1 testMaterial-sync-1.arc 4)
