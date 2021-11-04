@@ -5,7 +5,47 @@
 
 Cette page contient les nouveautés de chaque version de %Arcane.
 
-Arcane Version 3.1.2 (...) {#arcanedoc_version310}
+Arcane Version 3.2.0 (...) {#arcanedoc_version320}
+======================================
+
+Nouveautés/Améliorations:
+
+- Ajoute une interface Arcane::IMeshPartitionerBase pour faire
+  uniquement le partitionnement sans support pour le
+  repartionnement. L'interface Arcane::IMeshPartitioner hérite
+  maintenant de Arcane::IMeshPartitionerBase.
+- Ajoute dans Arcane::MeshReaderMng la possibilité de créer des
+  maillages avec un Arcane::IParallelMng quelconque via la méthode
+  Arcane::MeshReaderMng::readMesh()
+- Ajoute une interface Arcane::IGridMeshPartitioner pour partitionner
+  un maillage suivant une grille. Un service de nom
+  `SimpleGridMeshPartitioner` implémente cette interface.
+
+Changements:
+
+- Passage version CMake 3.18 sur les machines Unix et CMake 3.21 sous Windows.
+- Rend obsolète dans Arcane::ItemTypeMng la méthode `singleton()`. Les
+  instances de cette classe sont attachées au maillage et peuvent être
+  récupérées via Arcane::IMesh::itemTypeMng().
+- Déplace les classes gérant le maillage cartésian dans le répertoire
+  `arcane/cartesianmesh`. Les anciens chemins dans `arcane/cea`
+  restent valides.
+- Utilise par défaut la version 3 (au lieu de 2) du service de
+  création des mailles fantômes. Cette version est plus efficace
+  lorsqu'on utilise un grand nombre de sous-domaines car elle utilise
+  des communications collectives
+- Supprime la préallocation mémoire pour les anciennes connectivités.
+- Rend privé à %Arcane les constructeurs de Arcane::ItemSharedInfo
+- Lance une exception fatale si on demande le support des tâches mais
+  qu'aucune implémentation n'est disponible. Auparavant, il y avait
+  juste un message d'avertissement.
+
+Corrections:
+
+- Corrige plantage (SEGV) lorsqu'on utilise les tâches et sous-tâches
+  en séquentiel.
+
+Arcane Version 3.1.2 (21 octobre 2021) {#arcanedoc_version310}
 ======================================
 
 Nouveautés/Améliorations:
