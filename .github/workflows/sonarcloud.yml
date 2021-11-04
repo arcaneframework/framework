@@ -1,0 +1,120 @@
+name: SonarCloud Review
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - dev/gg-test-sonarcloud
+#  pull_request:
+#    types: [opened, synchronize, reopened]
+#  schedule:                # This trigger is here only to make sure
+#    - cron: '17 0 * * SUN' # the example itself doesn't become stale
+
+jobs:
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - os: ubuntu-20.04
+            triplet: x64-linux
+            vcpkg_os: ubuntu-20.04
+
+    env:
+      # Indicates the CMake build directory where project files and binaries are being produced.
+      CMAKE_BUILD_DIR: ${{ github.workspace }}/builddir/
+      # Indicates the location of the vcpkg as a Git submodule of the project repository.
+      FRAMEWORKCI_ROOT_PATH: '${{ github.workspace }}/../../build_base'
+      VCPKG_ROOT: '${{ github.workspace }}/../../build_base/framework-ci/vcpkg'
+      VCPKG_BUILD_DIR: '${{ github.workspace }}/../../build_base/framework-ci/vcpkg'
+      BUILD_COMMANDS_ROOT: '${{ github.workspace }}/../../build_base/framework-ci/_build'
+      VCPKG_INSTALL_HASH_PACKAGE_NAME: '1.0.12-${{ matrix.vcpkg_os }}-${{ matrix.triplet }}'
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+      FRAMEWORKCI_BRANCH: main
+      SONAR_SCANNER_VERSION: 4.6.1.2450 # Find the latest version in the "Linux" link on this page:
+                                        # https://sonarcloud.io/documentation/analysis/scan/sonarscanner/
+      SONAR_SERVER_URL: "https://sonarcloud.io"
+      BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory # Directory where build-wrapper output will be placed
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
+          submodules: true
+      - name: Checkout framework-ci
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.repository_owner }}/framework-ci
+          path: framework-ci
+          ref: ${{ env.FRAMEWORKCI_BRANCH }}
+          submodules: true
+      - name: Move framework-ci
+        shell: 'bash'
+        run: |
+          mkdir -p '${{ env.FRAMEWORKCI_ROOT_PATH }}'
+          ls -lart '${{ github.workspace }}/framework-ci'
+          cd '${{ github.workspace }}' && mv framework-ci '${{ env.FRAMEWORKCI_ROOT_PATH }}'
+          ls -lart '${{ env.FRAMEWORKCI_ROOT_PATH }}'
+
+      - name: Setup environment
+        shell: 'bash'
+        run: |
+          echo "${RUNNER_TEMP}/local_bin_dir/bin" >> $GITHUB_PATH
+          echo "${RUNNER_TEMP}/local_bin_dir/cmake/bin" >> $GITHUB_PATH
+          echo Path variable is: ${PATH}
+          echo CMake path is: `which cmake`
+          cmake --version
+          cmake -DNUGET_PASSWORD="${{ secrets.GITHUB_TOKEN }}" -P '${{ env.BUILD_COMMANDS_ROOT }}/Setup.cmake'
+
+      - name: 'Untar vcpkg bootstrap cache'
+        shell: 'bash'
+        run: |
+          cmake -DHASH_PACKAGE_NAME="${{ env.VCPKG_INSTALL_HASH_PACKAGE_NAME }}" -DVCPKG_BUILD_DIR='${{ env.VCPKG_BUILD_DIR }}' -P '${{ env.BUILD_COMMANDS_ROOT }}/vcpkg_cache/DoUntar.cmake'
+          ls -lart '${{ env.VCPKG_BUILD_DIR }}'
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v1
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: Download and set up sonar-scanner
+        env:
+          SONAR_SCANNER_DOWNLOAD_URL: https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip
+        run: |
+          mkdir -p $HOME/.sonar
+          curl -sSLo $HOME/.sonar/sonar-scanner.zip ${{ env.SONAR_SCANNER_DOWNLOAD_URL }} 
+          unzip -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
+          echo "$HOME/.sonar/sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-linux/bin" >> $GITHUB_PATH
+      - name: Download and set up build-wrapper
+        env:
+          BUILD_WRAPPER_DOWNLOAD_URL: ${{ env.SONAR_SERVER_URL }}/static/cpp/build-wrapper-linux-x86.zip
+        run: |
+          curl -sSLo $HOME/.sonar/build-wrapper-linux-x86.zip ${{ env.BUILD_WRAPPER_DOWNLOAD_URL }}
+          unzip -o $HOME/.sonar/build-wrapper-linux-x86.zip -d $HOME/.sonar/
+          echo "$HOME/.sonar/build-wrapper-linux-x86" >> $GITHUB_PATH
+
+      - name: Configure build script
+        shell: bash
+        run: |
+          cmake -S "${{ github.workspace }}/_common/build_all" -B "${{ env.CMAKE_BUILD_DIR }}" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DCMAKE_BUILD_TYPE=Debug -DVCPKG_INSTALLED_DIR="${{ env.VCPKG_BUILD_DIR }}/installed" -DBUILD_SHARED_LIBS=TRUE -DARCANE_DEFAULT_PARTITIONER=Metis -DARCCON_REGISTER_PACKAGE_VERSION=2 -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" -DCMAKE_DISABLE_FIND_PACKAGE_Hypre=TRUE ${{ matrix.cmake_specific_args }} -GNinja
+
+      - name: Run build-wrapper
+        run: |
+          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build "${{ env.CMAKE_BUILD_DIR }}" --config Debug
+
+      - name: Run sonar-scanner
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          sonar-scanner -X -Dsonar.projectKey=framework_develop -Dsonar.organization=arcaneframework \
+            --define sonar.host.url="${{ env.SONAR_SERVER_URL }}" --define sonar.cfamily.build-wrapper-output="${{ env.BUILD_WRAPPER_OUT_DIR }}"
