@@ -156,7 +156,7 @@ class ARCANE_UTILS_EXPORT ParallelLoopOptions
 class ARCANE_UTILS_EXPORT TaskContext
 {
  public:
-  TaskContext(ITask* atask) : m_task(atask) {}
+  explicit TaskContext(ITask* atask) : m_task(atask) {}
  public:
   //! Tâche courante.
   ITask* task() const { return m_task; }
@@ -419,6 +419,7 @@ class ARCANE_UTILS_EXPORT TaskFactory
   template<typename InstanceType> static ITask*
   createChildTask(ITask* parent_task,InstanceType* instance,void (InstanceType::*function)(const TaskContext& tc))
   {
+    ARCANE_CHECK_POINTER(parent_task);
     TaskFunctorWithContext<InstanceType> functor(instance,function);
     return parent_task->_createChildTask(&functor);
   }
@@ -432,6 +433,7 @@ class ARCANE_UTILS_EXPORT TaskFactory
   template<typename InstanceType> static ITask*
   createChildTask(ITask* parent_task,InstanceType* instance,void (InstanceType::*function)())
   {
+    ARCANE_CHECK_POINTER(parent_task);
     TaskFunctor<InstanceType> functor(instance,function);
     return parent_task->_createChildTask(&functor);
   }

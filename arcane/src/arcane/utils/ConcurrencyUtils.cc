@@ -41,26 +41,25 @@ class SerialTask
     // d'avoir à faire une allocation sur le tas via le new
     // classique. On utilise donc le new avec placement.
 
-    TaskType* tf = (TaskType*)f;
-    m_functor = new (functor_buf) TaskType(*tf);
+    m_functor = f->clone(functor_buf,FUNCTOR_CLASS_SIZE);
   }
  public:
-  virtual void launchAndWait()
+  void launchAndWait() override
   {
     if (m_functor){
       ITaskFunctor* tmp_f = m_functor;
-      m_functor = 0;
+      m_functor = nullptr;
       TaskContext task_context(this);
       tmp_f->executeFunctor(task_context);
       delete this;
     }
   }
-  virtual void launchAndWait(ConstArrayView<ITask*> tasks)
+  void launchAndWait(ConstArrayView<ITask*> tasks) override
   {
     for( Integer i=0,n=tasks.size(); i<n; ++i )
       tasks[i]->launchAndWait();
   }
-  virtual ITask* _createChildTask(ITaskFunctor* functor)
+  ITask* _createChildTask(ITaskFunctor* functor) override
   {
     return new SerialTask(functor);
   }
