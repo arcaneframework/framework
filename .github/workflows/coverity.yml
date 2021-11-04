@@ -1,6 +1,10 @@
 name: Coverity Scan
 
-on: workflow_dispatch
+on:
+  schedule:
+    # Run each day, from Monday to Friday at 6am
+    - cron: "0 6 * * 1-5"
+  workflow_dispatch:
 
 jobs:
   build:
@@ -23,21 +27,44 @@ jobs:
           cmake -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             -DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIEN_PLUGIN_HYPRE:BOOL=ON -DALIEN_PLUGIN_PETSC:BOOL=ON
 
+      # Setting up ccache from github cached files
+      - name: Prepare coverity
+        id: coverity-hash
+        # Disabled for `act`
+        if: ${{ !env.ACT }}
+        run: |
+          mkdir coverity-tool
+          curl https://scan.coverity.com/download/linux64 -o coverity-tool/md5-new \
+            -s --data "token=$COV_TOKEN&project=arcaneframework%2Falien&md5=1"
+          echo "::set-output name=md5::$(cat coverity-tool/md5-new)"
+        env:
+          COV_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+
+      - name: restore cached files
+        uses: actions/cache@v2
+        # Disabled for `act`
+        if: ${{ !env.ACT }}
+        with:
+          path: coverity-tool
+          key: coverity-linux-${{ steps.coverity-hash.outputs.md5 }}
+
       - name: Set up coverity
         run: |
-          wget --no-verbose https://scan.coverity.com/download/linux64 \
-            --post-data "token=${COV_TOKEN}&project=arcaneframework%2Falien" \
-            -O coverity_tool.tgz
-          mkdir coverity-tool
-          tar -xzf coverity-tool.tar.gz --strip 1 -C coverity-tool
+          if cmp -s coverity-tool/md5-new coverity-tool/md5 ; then
+            echo "running from cache"
+          else
+            curl --silent https://scan.coverity.com/download/linux64 \
+              --data "token=${COV_TOKEN}&project=arcaneframework%2Falien" \
+              | tar xz -C coverity-tool --strip-components=1
+          fi
+          cp coverity-tool/md5-new coverity-tool/md5
         shell: bash
         env:
-          TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
-
+          COV_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
       - name: Build with coverity
         # Build, using cov-build and cov-int directory as output (mandatory)
         run: |
-          export PATH="${PWD}/cov-analysis/bin:${PATH}"
+          export PATH="${PWD}/coverity-tool/bin:${PATH}"
           cov-build --dir cov-int make -C build -j $(nproc)
         shell: bash
 
