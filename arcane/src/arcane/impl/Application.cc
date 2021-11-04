@@ -391,10 +391,10 @@ build()
           m_used_task_service_name = found_name;
           m_task_implementation = sv;
         }
-        else{
-          m_trace->info() << "Can not find task implementation service "
-                          << "(names: " << _stringListToArray(names) << "). Tasks are disabled.";
-        }
+        else
+          ARCANE_FATAL("Can not find task implementation service (names='{0}')."
+                       " Please check if Arcane is configured with Intel TBB library",
+                       _stringListToArray(names));
       }
     }
 
