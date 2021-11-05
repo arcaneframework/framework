@@ -176,7 +176,7 @@ Real SolverStat::lastSolveCpuTime() const
 /*---------------------------------------------------------------------------*/
 
 void SolverStat::print(
-ITraceMng* traceMng, const Alien::SolverStatus& status, String title) const
+ITraceMng* traceMng, ALIEN_UNUSED_PARAM const Alien::SolverStatus& status, ALIEN_UNUSED_PARAM String title) const
 {
   Integer prefix_size = 0;
   InternalTraceSizer sizer(prefix_size);
@@ -208,11 +208,12 @@ void SolverStat::_internalPrint(std::ostream& o, const Integer prefix_size,
     prefix[prefix_size] = 0;
   }
 
-  std::streamsize ss = o.precision();
+  auto ss = o.precision();
   o << "|--------------------------------------------------------|";
-  if (!title.null())
+  if (!title.null()) {
     o << prefix << "| " << title << prefix
       << "|--------------------------------------------------------|";
+  }
   o << prefix << "| Last convergence      : " << std::boolalpha << status.succeeded
     << prefix << "| Last iteration number : " << status.iteration_count << prefix
     << "| Last relative residual: " << status.residual << std::setprecision(5) << prefix
@@ -225,10 +226,11 @@ void SolverStat::_internalPrint(std::ostream& o, const Integer prefix_size,
     << "| Total prepare time    : wct:" << std::setw(10) << prepareTime()
     << " ; cpu:" << std::setw(10) << prepareCpuTime() << prefix
     << "| Total solve time      : wct:" << std::setw(10) << solveTime()
-    << " ; cpu:" << std::setw(10) << solveCpuTime() << std::setprecision(ss) << prefix
+    << " ; cpu:" << std::setw(10) << solveCpuTime() << prefix
     << "| Total iterations      : " << iterationCount() << prefix
     << "| Solve count           : " << solveCount() << prefix
     << "|--------------------------------------------------------|";
+  o.precision(ss);
   delete[] prefix;
 }
 

@@ -75,12 +75,12 @@ int main(int argc, char** argv)
      *              |
      *           (I,J-1)
      *
-     * TUTORIAL : LINEAR SYSTEM A.X=B DEFINITION
+     * TUTORIAL : LINEAR SYSTEM mat.X=rhs DEFINITION
      * =========================================
      */
   int Nx = 10;
   int Ny = 10;
-  int space_size = Nx * Ny;
+  // int space_size = Nx * Ny;
 
   // INITIALIZE PARALLEL ENVIRONMENT
   Environment::initialize(argc, argv);
@@ -122,7 +122,6 @@ int main(int argc, char** argv)
   std::map<UID, LID> uid2lid;
   int first_j = y_offset[comm_rank];
   int last_j = y_offset[comm_rank + 1];
-  int my_local_ny = last_j - first_j;
 
   int index = 0;
   for (int j = first_j; j < last_j; ++j) {
@@ -192,36 +191,32 @@ int main(int argc, char** argv)
 
   auto space = Alien::Space(global_size, "MySpace");
 
-  auto mdist =
+  auto matrix_dist =
   Alien::MatrixDistribution(global_size, global_size, local_size, parallel_mng);
-  auto vdist = Alien::VectorDistribution(global_size, local_size, parallel_mng);
+  auto vector_dist = Alien::VectorDistribution(global_size, local_size, parallel_mng);
 
   trace_mng->info() << "MATRIX DISTRIBUTION INFO";
-  trace_mng->info() << "GLOBAL ROW SIZE : " << mdist.globalRowSize();
-  trace_mng->info() << "LOCAL ROW SIZE  : " << mdist.localRowSize();
-  trace_mng->info() << "GLOBAL COL SIZE : " << mdist.globalColSize();
-  trace_mng->info() << "LOCAL COL SIZE  : " << mdist.localColSize();
+  trace_mng->info() << "GLOBAL ROW SIZE : " << matrix_dist.globalRowSize();
+  trace_mng->info() << "LOCAL ROW SIZE  : " << matrix_dist.localRowSize();
+  trace_mng->info() << "GLOBAL COL SIZE : " << matrix_dist.globalColSize();
+  trace_mng->info() << "LOCAL COL SIZE  : " << matrix_dist.localColSize();
 
   trace_mng->info() << "VECTOR DISTRIBUTION INFO";
-  trace_mng->info() << "GLOBAL SIZE : " << vdist.globalSize();
-  trace_mng->info() << "LOCAL SIZE  : " << vdist.localSize();
+  trace_mng->info() << "GLOBAL SIZE : " << vector_dist.globalSize();
+  trace_mng->info() << "LOCAL SIZE  : " << vector_dist.localSize();
 
   auto allUIndex = index_manager.getIndexes(indexSetU);
 
   /*
-     * CONSTRUCTION DE LA MATRIX
-     */
-  auto A = Alien::Matrix(mdist);
+   *  Assemble matrix.
+   */
+  auto mat = Alien::Matrix(matrix_dist);
 
-  /* REMPLISSAGE EN DEUX PASSE */
-
-  trace_mng->info() << "REMPLISSAGE DIRECTE EN UNE PASSE";
-
-  auto tag = Alien::DirectMatrixOptions::eResetValues;
+  /* Two passes */
 
   // PROFILE DEFINITION
   {
-    Alien::MatrixProfiler profiler(A);
+    Alien::MatrixProfiler profiler(mat);
 
     for (int j = first_j; j < last_j; ++j) {
       // BOUCLE SUIVANT AXE X
@@ -233,8 +228,8 @@ int main(int argc, char** argv)
         // DEFINE DIAGONAL
         profiler.addMatrixEntry(irow, irow);
 
-        // Remplissage OFF DIAG
-        // En Bas
+        // OFF DIAG
+        // lower
         if (j > 0) {
           auto off_uid = node_uid(i, j - 1);
           auto off_lid = uid2lid[off_uid];
@@ -242,7 +237,7 @@ int main(int argc, char** argv)
           if (jcol != -1)
             profiler.addMatrixEntry(irow, jcol);
         }
-        // A Gauche
+        // left
         if (i > 0) {
           auto off_uid = node_uid(i - 1, j);
           auto off_lid = uid2lid[off_uid];
@@ -250,7 +245,7 @@ int main(int argc, char** argv)
           if (jcol != -1)
             profiler.addMatrixEntry(irow, jcol);
         }
-        // A droite
+        // right
         if (i < Nx - 1) {
           auto off_uid = node_uid(i + 1, j);
           auto off_lid = uid2lid[off_uid];
@@ -258,7 +253,7 @@ int main(int argc, char** argv)
           if (jcol != -1)
             profiler.addMatrixEntry(irow, jcol);
         }
-        // En haut
+        // upper
         if (j < Ny - 1) {
           auto off_uid = node_uid(i, j + 1);
           auto off_lid = uid2lid[off_uid];
@@ -272,20 +267,20 @@ int main(int argc, char** argv)
 
   // SECOND STEP : MATRIX FILLING STEP
   {
-    Alien::ProfiledMatrixBuilder builder(A, Alien::ProfiledMatrixOptions::eResetValues);
-    // BOUCLE SUIVANT AXE Y
+    Alien::ProfiledMatrixBuilder builder(mat, Alien::ProfiledMatrixOptions::eResetValues);
+    // Loop on Y-axis
     for (int j = first_j; j < last_j; ++j) {
-      // BOUCLE SUIVANT AXE X
+      // Loop on X-axis
       for (int i = 0; i < Nx; ++i) {
         auto n_uid = node_uid(i, j);
         auto n_lid = uid2lid[n_uid];
         auto irow = allUIndex[n_lid];
 
-        // REMPLISSAGE DIAGONAL
+        // DIAGONAL
         builder(irow, irow) = 4;
 
-        // Remplissage OFF DIAG
-        // En Bas
+        // OFF DIAG
+        // lower
         if (j > 0) {
           auto off_uid = node_uid(i, j - 1);
           auto off_lid = uid2lid[off_uid];
@@ -293,7 +288,7 @@ int main(int argc, char** argv)
           if (jcol != -1)
             builder(irow, jcol) = -1;
         }
-        // A Gauche
+        // left
         if (i > 0) {
           auto off_uid = node_uid(i - 1, j);
           auto off_lid = uid2lid[off_uid];
@@ -301,7 +296,7 @@ int main(int argc, char** argv)
           if (jcol != -1)
             builder(irow, jcol) = -1;
         }
-        // A droite
+        // right
         if (i < Nx - 1) {
           auto off_uid = node_uid(i + 1, j);
           auto off_lid = uid2lid[off_uid];
@@ -309,7 +304,7 @@ int main(int argc, char** argv)
           if (jcol != -1)
             builder(irow, jcol) = -1;
         }
-        // En haut
+        // upper
         if (j < Ny - 1) {
           auto off_uid = node_uid(i, j + 1);
           auto off_lid = uid2lid[off_uid];
@@ -324,21 +319,20 @@ int main(int argc, char** argv)
   // FIXME: not always available.
   //  {
   //    Alien::SystemWriter writer("MatrixA.txt");
-  //    writer.dump(A);
+  //    writer.dump(mat);
   //  }
 
   /*
-     * CONSTRUCTION DU VECTEUR
-     */
-  auto B = Alien::Vector(vdist);
+   * Build rhs vector
+   */
+  auto rhs = Alien::Vector(vector_dist);
 
-  // REMPLISSAGE DU VECTEUR
   {
-    Alien::VectorWriter writer(B);
+    Alien::VectorWriter writer(rhs);
 
-    // BOUCLE SUIVANT AXE Y
+    // Loop on Y-axis
     for (int j = first_j; j < last_j; ++j) {
-      // BOUCLE SUIVANT AXE X
+      // Loop on X-axis
       for (int i = 0; i < Nx; ++i) {
         auto n_uid = node_uid(i, j);
         auto n_lid = uid2lid[n_uid];
@@ -349,7 +343,7 @@ int main(int argc, char** argv)
     }
   }
 
-  auto X = Alien::Vector(vdist);
+  auto unknown = Alien::Vector(vector_dist);
 
   Environment::finalize();
 

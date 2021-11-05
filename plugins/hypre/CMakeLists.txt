@@ -19,7 +19,7 @@ add_library(hypre_wrapper
         src/converters/hypre_to_simplecsr_vector.cpp
         src/converters/simplecsr_to_hypre_vector.cpp
         src/converters/simplecsr_to_hypre_matrix.cpp
-        )
+        src/hypre_linear_solver.h)
 
 target_link_libraries(hypre_wrapper PUBLIC
         Alien::alien_core

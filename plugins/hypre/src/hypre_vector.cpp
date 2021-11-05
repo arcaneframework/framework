@@ -1,18 +1,18 @@
 /*
- * Copyright 2020 IFPEN-CEA
- * 
+ * Copyright 2020-2021 IFPEN-CEA
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -42,6 +42,9 @@ Vector::Vector(const MultiVectorImpl* multi_impl)
   const auto ilower = localOffset * block_size;
   const auto iupper = ilower + localSize * block_size - 1;
 
+  auto* pm = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(distribution().parallelMng());
+  m_comm = pm ? (*pm->getMPIComm()) : MPI_COMM_WORLD;
+
   setProfile(ilower, iupper);
 }
 
@@ -55,9 +58,6 @@ void Vector::setProfile(int ilower, int iupper)
 {
   if (m_hypre)
     HYPRE_IJVectorDestroy(m_hypre);
-
-  auto* pm = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(distribution().parallelMng());
-  m_comm = pm ? (*pm->getMPIComm()) : MPI_COMM_WORLD;
 
   // -- B Vector --
   auto ierr = HYPRE_IJVectorCreate(m_comm, ilower, iupper, &m_hypre);

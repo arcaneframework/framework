@@ -57,10 +57,10 @@ option(ALIEN_PLUGIN_TRILINOS "Whether or not to compile Trilinos backend" OFF)
 
 get_filename_component(_fp_framework "framework/CMake" REALPATH)
 if (EXISTS ${_fp_framework})
-  option(ALIENDEV_EMBEDDED "[dev] forbid to compile Arcon and Arccore" ${ALIEN_DEFAULT_OPTIONS})
-else()
-  set(ALIENDEV_EMBEDDED OFF)
-endif()
+    option(ALIENDEV_EMBEDDED "[dev] forbid to compile Arcon and Arccore" ${ALIEN_DEFAULT_OPTIONS})
+else ()
+    set(ALIENDEV_EMBEDDED OFF)
+endif ()
 
 # Make this conditional.
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -81,24 +81,24 @@ include(sanitizers)
 if (ALIENDEV_EMBEDDED)
     if (NOT DEFINED ARCCON_SRC_DIR)
         set(ARCCON_SRC_DIR ${PROJECT_SOURCE_DIR}/framework/arccon)
-    endif()
+    endif ()
 
     if (NOT DEFINED ARCCORE_SRC_DIR)
         set(ARCCORE_SRC_DIR ${PROJECT_SOURCE_DIR}/framework/arccore)
-    endif()
+    endif ()
 
     set(FRAMEWORK_EXPORT_NAME AlienFrameworkTargets)
 
     get_filename_component(_fp_framework "framework/CMake" REALPATH)
     if (EXISTS ${_fp_framework})
         list(APPEND CMAKE_MODULE_PATH ${_fp_framework})
-    endif()
-else(ALIENDEV_EMBEDDED)
+    endif ()
+else (ALIENDEV_EMBEDDED)
     find_package(Arccon REQUIRED)
     list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
 
     find_package(Arccore REQUIRED)
-endif()
+endif ()
 
 if (ALIEN_DEFAULT_OPTIONS)
     find_package(HDF5 QUIET)
@@ -124,7 +124,7 @@ if (ALIEN_GENERATE_DOCUMENTATION)
     # For sphinx
     set(DOXYGEN_GENERATE_HTML NO)
     set(DOXYGEN_GENERATE_XML YES)
-endif(ALIEN_GENERATE_DOCUMENTATION)
+endif (ALIEN_GENERATE_DOCUMENTATION)
 
 # Use Arccon functions and macros
 find_package(Arccon REQUIRED)

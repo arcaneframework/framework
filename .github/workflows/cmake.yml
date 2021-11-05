@@ -119,8 +119,8 @@ jobs:
           ${{matrix.config.precommand}}
           cmake --build ${{env.BUILD_DIR}} --config ${{matrix.config.build_type}} -j $(nproc)
 
-#      - name: ccache status
-#        run: ccache -s
+      #      - name: ccache status
+      #        run: ccache -s
 
       - name: Test
         # Execute tests defined by the CMake configuration.

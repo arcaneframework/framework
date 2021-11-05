@@ -110,7 +110,7 @@ TEST(TestIndexManager, ConstructorWithGhosts)
 
 TEST(TestIndexManager, ConstructorWithGhosts2)
 {
-  auto trace_mng = AlienTest::Environment::traceMng(); // not yet used
+  ALIEN_UNUSED_PARAM auto trace_mng = AlienTest::Environment::traceMng(); // not yet used
 
   auto comm_size = AlienTest::Environment::parallelMng()->commSize();
   auto comm_rank = AlienTest::Environment::parallelMng()->commRank();
@@ -148,7 +148,7 @@ TEST(TestIndexManager, ConstructorWithGhosts2)
 
   Alien::BasicIndexManager index_manager(AlienTest::Environment::parallelMng());
 
-  auto indexSetU = index_manager.buildScalarIndexSet("U", family);
+  ALIEN_UNUSED_PARAM auto indexSetU = index_manager.buildScalarIndexSet("U", family);
 
   index_manager.prepare();
 

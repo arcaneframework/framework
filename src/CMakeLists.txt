@@ -58,7 +58,6 @@ if (ALIEN_UNIT_TESTS)
 endif ()
 
 
-
 # Include module with fuction 'write_basic_package_version_file'
 include(CMakePackageConfigHelpers)
 

@@ -51,10 +51,6 @@ namespace Common
     m_matrix.impl()->lock();
     m_matrix_impl = &m_matrix.impl()->get<BackEnd::tag::simplecsr>(true);
 
-    const ISpace& space = m_matrix_impl->rowSpace();
-    // if (space != m_matrix_impl->colSpace())
-    //  throw FatalErrorException(
-    //      "Profiled matrix builder must be used with square matrix");
     const MatrixDistribution& dist = m_matrix_impl->distribution();
 
     m_local_size = dist.localRowSize();

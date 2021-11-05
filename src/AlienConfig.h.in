@@ -16,8 +16,11 @@
 //Tag var as a voluntary unused variable.
 //Works with any compiler but might be improved by using attribute.
 #define ALIEN_UNUSED(var) do { (void)(var) ; } while(0)
-//#define ALIEN_UNUSED_PARAM  __attribute__((unused))
-#define ALIEN_UNUSED_PARAM
+#if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || __cplusplus >= 201703L)
+#  define ALIEN_UNUSED_PARAM [[maybe_unused]]
+#else
+#  define ALIEN_UNUSED_PARAM
+#endif
 
 // LibXml2
 #cmakedefine ALIEN_USE_LIBXML2

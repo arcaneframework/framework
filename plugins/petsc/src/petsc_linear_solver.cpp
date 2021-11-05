@@ -56,8 +56,8 @@ class InternalLinearSolver
 
  public:
   // Nothing to do
-  void updateParallelMng(
-  Arccore::MessagePassing::IMessagePassingMng* pm) override {}
+  void updateParallelMng(ALIEN_UNUSED_PARAM
+                         Arccore::MessagePassing::IMessagePassingMng* pm) override {}
 
   bool solve(const Matrix& A, const Vector& b, Vector& x) override;
 
@@ -87,12 +87,17 @@ class InternalLinearSolver
 };
 
 InternalLinearSolver::InternalLinearSolver()
+: m_status()
+, m_stat()
+, m_options()
 {
   petsc_init_if_needed();
 }
 
 InternalLinearSolver::InternalLinearSolver(const Options& options)
-: m_options(options)
+: m_status()
+, m_stat()
+, m_options(options)
 {
   petsc_init_if_needed();
 }
@@ -102,7 +107,7 @@ void InternalLinearSolver::checkError(const Arccore::String& msg, int ierr, int 
   if (ierr != 0 and (ierr & ~skipError) != 0) {
     alien_fatal([&] {
       cout() << msg << " failed. [code=" << ierr << "]";
-      CHKERRQ(ierr); // warning car macro qui appelle fx qui retourne un int
+      CHKERRV(ierr);
     });
   }
 }
@@ -111,7 +116,7 @@ bool InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
 {
   auto tsolve = MPI_Wtime();
 
-  int output_level = m_options.verbose() ? 1 : 0;
+  ALIEN_UNUSED_PARAM int output_level = m_options.verbose() ? 1 : 0;
 
   // failback if no MPI comm already defined.
   MPI_Comm comm = MPI_COMM_WORLD;

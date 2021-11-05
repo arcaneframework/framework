@@ -46,7 +46,7 @@ DoKLocalMatrixIndexer::find(Integer i, Integer j)
   try {
     return m_data.at(DoKLocalMatrixIndexer::Key(i, j));
   }
-  catch (std::out_of_range) {
+  catch (std::out_of_range&) {
     return std::nullopt;
   }
 }
@@ -104,8 +104,8 @@ DoKLocalMatrixIndexer::sort(ArrayView<DoKLocalMatrixIndexer::Renumbering> perm)
   std::sort(src.begin(), src.end(), compare);
 
   DoKReverseIndexer* indexer = new DoKReverseIndexer();
-  const Integer size = m_data.size();
-  for (Integer curs = 0; curs < size; ++curs) {
+  auto size = static_cast<Arccore::Integer>(m_data.size());
+  for (auto curs = 0; curs < size; ++curs) {
     perm[curs] = Renumbering(src[curs]->second, curs);
     indexer->record(curs, src[curs]->first);
     m_data[Key(src[curs]->first.first, src[curs]->first.second)] = curs;

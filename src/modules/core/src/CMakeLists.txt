@@ -120,6 +120,7 @@ target_link_libraries(alien_core PUBLIC
         alien_kernel_simplecsr)
 target_link_libraries(alien_core PUBLIC alien_index_manager)
 
+set_property(TARGET alien_core PROPERTY CXX_STANDARD 17)
 
 target_link_libraries(alien_core PUBLIC
         Arccore::arccore_trace
@@ -129,7 +130,9 @@ target_link_libraries(alien_core PUBLIC
 
 find_package(Boost COMPONENTS program_options REQUIRED)
 
-target_link_libraries(alien_core PRIVATE arccon::MPI)
+find_package(MPI REQUIRED)
+
+target_link_libraries(alien_core PRIVATE MPI::MPI_CXX)
 target_link_libraries(alien_core PUBLIC Boost::boost)
 
 generate_export_header(alien_core
