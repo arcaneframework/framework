@@ -49,6 +49,12 @@ class ARCANE_CORE_EXPORT IGridMeshPartitioner
 : public IMeshPartitionerBase
 {
  public:
+  /*!
+   * \brief Positionne la bounding box de notre sous-domaine.
+   *
+   * Pour que l'algorithme fonctionne, il ne faut pas de recouvrement
+   * entre les bounding box des sous-domaines.
+   */
   virtual void setBoundingBox(Real3 min_val, Real3 max_val) = 0;
   /*!
    * \brief Indice (i,j,k) de la partie.

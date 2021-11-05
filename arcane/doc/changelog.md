@@ -16,10 +16,11 @@ Nouveautés/Améliorations:
   maintenant de Arcane::IMeshPartitionerBase.
 - Ajoute dans Arcane::MeshReaderMng la possibilité de créer des
   maillages avec un Arcane::IParallelMng quelconque via la méthode
-  Arcane::MeshReaderMng::readMesh()
+  Arcane::MeshReaderMng::readMesh().
 - Ajoute une interface Arcane::IGridMeshPartitioner pour partitionner
   un maillage suivant une grille. Un service de nom
-  `SimpleGridMeshPartitioner` implémente cette interface.
+  `SimpleGridMeshPartitioner` implémente cette interface. La page
+  \ref arcanesnippet_imeshgridpartitioner1 montre un exemple d'utilisation.
 
 Changements:
 
@@ -33,7 +34,7 @@ Changements:
 - Utilise par défaut la version 3 (au lieu de 2) du service de
   création des mailles fantômes. Cette version est plus efficace
   lorsqu'on utilise un grand nombre de sous-domaines car elle utilise
-  des communications collectives
+  des communications collectives.
 - Supprime la préallocation mémoire pour les anciennes connectivités.
 - Rend privé à %Arcane les constructeurs de Arcane::ItemSharedInfo
 - Lance une exception fatale si on demande le support des tâches mais
@@ -53,7 +54,7 @@ Nouveautés/Améliorations:
 - Nouvelle implémentation des graphes de maillage utilisant les
   `Arcane::DoF`.
 - Ajoute possibilité de renuméroter (via la méthode
-  Arcane::ICartesianMesh::renumberItemsUniqueId()') les entités dans les
+  Arcane::ICartesianMesh::renumberItemsUniqueId()) les entités dans les
   maillages AMR par patch pour avoir la même numérotation quel que
   soit le découpage.
 - Mise à jour de la documentation pour les accélérateurs

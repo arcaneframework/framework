@@ -550,29 +550,42 @@ _testGridPartitioning()
 {
   if (!options()->unstructuredMeshFile.isPresent())
     return;
-  String file_name = options()->unstructuredMeshFile();
+  // NOTE: On utilise explicitement le namespace Arcane
+  // pour que la documentation générée par doxygen génère les
+  // liens correctement.
+
+  //![SampleGridMeshPartitioner]
+  // file_name est le nom du fichier de maillage non structuré
+
+  Arcane::String file_name = options()->unstructuredMeshFile();
   info() << "UnstructuredMeshFileName=" << file_name;
 
-  ISubDomain* sd = subDomain();
-  IMesh* current_mesh = m_cartesian_mesh->mesh();
-  IParallelMng* pm = current_mesh->parallelMng();
+  Arcane::ISubDomain* sd = subDomain();
+  Arcane::ICartesianMesh* cartesian_mesh = m_cartesian_mesh;
+  Arcane::IMesh* current_mesh = cartesian_mesh->mesh();
+  Arcane::IParallelMng* pm = current_mesh->parallelMng();
 
-  MeshReaderMng reader_mng(sd);
-  IMesh* new_mesh = reader_mng.readMesh("UnstructuredMesh2",file_name,pm);
+  Arcane::MeshReaderMng reader_mng(sd);
+  Arcane::IMesh* new_mesh = reader_mng.readMesh("UnstructuredMesh2",file_name,pm);
   info() << "MESH=" << new_mesh;
 
-  ServiceBuilder<IGridMeshPartitioner> sbuilder(sd);
-  auto partitioner = sbuilder.createReference("SimpleGridMeshPartitioner",new_mesh);
-  Int32 sd_x = m_cartesian_mesh->cellDirection(MD_DirX).subDomainOffset();
-  Int32 sd_y = m_cartesian_mesh->cellDirection(MD_DirY).subDomainOffset();
-  Int32 sd_z = m_cartesian_mesh->cellDirection(MD_DirZ).subDomainOffset();
+  // Création du service de partitionnement
+  Arcane::ServiceBuilder<Arcane::IGridMeshPartitioner> sbuilder(sd);
+  auto partitioner_ref = sbuilder.createReference("SimpleGridMeshPartitioner",new_mesh);
+  Arcane::IGridMeshPartitioner* partitioner = partitioner_ref.get();
+
+  // Positionne les coordonnées de notre sous-domaine dans la grille
+  Int32 sd_x = cartesian_mesh->cellDirection(MD_DirX).subDomainOffset();
+  Int32 sd_y = cartesian_mesh->cellDirection(MD_DirY).subDomainOffset();
+  Int32 sd_z = cartesian_mesh->cellDirection(MD_DirZ).subDomainOffset();
   partitioner->setPartIndex(sd_x,sd_y,sd_z);
 
-  // Positionne la bounding box
+  // Positionne la bounding box de notre sous-domaine.
+  // Pour cela, parcours uniquement nos noeuds et prend les coordonnées min et max
   Real max_value = FloatInfo<Real>::maxValue();
   Real min_value = -max_value;
-  Real3 min_box(max_value,max_value,max_value);
-  Real3 max_box(min_value,min_value,min_value);
+  Arcane::Real3 min_box(max_value,max_value,max_value);
+  Arcane::Real3 max_box(min_value,min_value,min_value);
   VariableNodeReal3& nodes_coord = current_mesh->nodesCoordinates();
   ENUMERATE_(Node,inode,current_mesh->allNodes().own()){
     Real3 coord = nodes_coord[inode];
@@ -581,8 +594,10 @@ _testGridPartitioning()
   }
   partitioner->setBoundingBox(min_box,max_box);
 
+  // Applique le partitionnement
   new_mesh->modifier()->setDynamic(true);
-  new_mesh->utilities()->partitionAndExchangeMeshWithReplication(partitioner.get(),true);
+  new_mesh->utilities()->partitionAndExchangeMeshWithReplication(partitioner,true);
+  //![SampleGridMeshPartitioner]
 
   // Maintenant, écrit le fichier du maillage non structuré et de notre partie
   // cartésienne.
