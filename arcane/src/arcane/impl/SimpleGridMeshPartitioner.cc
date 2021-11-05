@@ -136,7 +136,7 @@ partitionMesh([[maybe_unused]] bool initial_partition)
 
   // Vérifie que chaque direction de la grille est triée.
   for (Integer i = 0; i < nb_direction; ++i) {
-    ConstArrayView<Real> coords(grid_coord[0]);
+    ConstArrayView<Real> coords(grid_coord[0].view());
     Int32 nb_value = coords.size();
     if (nb_value == 0)
       continue;
@@ -162,7 +162,7 @@ partitionMesh([[maybe_unused]] bool initial_partition)
       cell_center += nodes_coord[cell.node(inode)];
     cell_center /= static_cast<Real>(nb_node);
     for (Integer idir = 0; idir < nb_direction; ++idir) {
-      ConstArrayView<Real> coords(grid_coord[idir]);
+      ConstArrayView<Real> coords(grid_coord[idir].view());
       Int32 nb_value = coords.size();
       // TODO: utiliser une dichotomie
       Real cc = cell_center[idir];
