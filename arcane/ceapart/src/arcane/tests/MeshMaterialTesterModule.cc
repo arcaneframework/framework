@@ -506,18 +506,24 @@ startInit()
   m_mat_density.fill(0.0);
   m_mat_nodump_real.fill(0.0);
 
+  constexpr IMeshMaterial* null_mat = nullptr;
+  constexpr IMeshEnvironment* null_env = nullptr;
   // Itération sur tous les milieux puis tous les matériaux
   // et toutes les mailles de ce matériau
   ENUMERATE_ENV(ienv,m_material_mng){
     IMeshEnvironment* env = *ienv;
+    info() << "ENV name=" << env->name();
     vc.areEqual(env->isEnvironment(),true,"IsEnvEnvOK");
     vc.areEqual(env->isMaterial(),false,"IsEnvMatOK");
-    info() << "ENV name=" << env->name();
+    vc.areEqual(env->asEnvironment(),env,"ToEnvEnvOK");
+    vc.areEqual(env->asMaterial(),null_mat,"ToEnvMatOK");
     ENUMERATE_MAT(imat,env){
       Materials::IMeshMaterial* mat = *imat;
+      info() << "MAT name=" << mat->name();
       vc.areEqual(mat->isEnvironment(),false,"IsMatEnvOK");
       vc.areEqual(mat->isMaterial(),true,"IsMatMatOK");
-      info() << "MAT name=" << mat->name();
+      vc.areEqual(mat->asEnvironment(),null_env,"ToMatEnvOK");
+      vc.areEqual(mat->asMaterial(),mat,"ToMatMatOK");
       ENUMERATE_MATCELL(icell,mat){
         MatCell mmcell = *icell;
         //info() << "Cell name=" << mmcell._varIndex();

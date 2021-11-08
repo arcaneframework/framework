@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshComponent.h                                            (C) 2000-2017 */
+/* IMeshComponent.h                                            (C) 2000-2021 */
 /*                                                                           */
 /* Interface d'un composant (matériau ou milieu) d'un maillage.              */
 /*---------------------------------------------------------------------------*/
@@ -20,12 +20,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -129,16 +125,26 @@ class ARCANE_MATERIALS_EXPORT IMeshComponent
 
   //! Vue sur la partie pure ou impure des entités du composant
   virtual ComponentPartItemVectorView partItems(eMatPart part) =0;
+
+  /*!
+   * \brief Retourne le composant sous la forme d'un IMeshMaterial.
+   *
+   * Si isMaterial()==false, retourne \a nullptr
+   */
+  virtual IMeshMaterial* asMaterial() =0;
+
+  /*!
+   * \brief Retourne le composant sous la forme d'un IMeshMaterial.
+   *
+   * Si isEnvironment()==false, retourne \a nullptr
+   */
+  virtual IMeshEnvironment* asEnvironment() =0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

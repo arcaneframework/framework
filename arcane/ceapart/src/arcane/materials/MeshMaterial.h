@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterial.h                                              (C) 2000-2017 */
+/* MeshMaterial.h                                              (C) 2000-2021 */
 /*                                                                           */
 /* Matériau d'un maillage.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -26,12 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -95,6 +91,8 @@ class MeshMaterial
   bool isMaterial() const override { return true; }
   bool isEnvironment() const override { return false; }
   bool hasSpace(MatVarSpace space) const override { return space==MatVarSpace::MaterialAndEnvironment; }
+  IMeshMaterial* asMaterial() override { return this; }
+  IMeshEnvironment* asEnvironment() override { return nullptr; }
 
   ComponentPurePartItemVectorView pureItems() override;
   ComponentImpurePartItemVectorView impureItems() override;
@@ -133,11 +131,7 @@ class MeshMaterial
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
