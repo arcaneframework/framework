@@ -90,7 +90,7 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   /*!
    * \brief Détruit le singleton
    *
-   * Le singleton peut ensuite être reconstruit par appel à singleton()
+   * Le singleton peut ensuite être reconstruit par appel à destroySingleton()
    */
   static void _destroySingleton();
 
@@ -103,7 +103,7 @@ class ARCANE_CORE_EXPORT ItemTypeMng
    * Il reste valide tant que destroySingleton() n'a pas été appelé
    */
   ARCCORE_DEPRECATED_2021("Use IMesh::itemTypeMng() to get an instance of ItemTypeMng")
-  static ItemTypeMng* singleton();
+  static ItemTypeMng* singleton() { return _singleton(); }
 
   /*!
    * \brief Détruit le singleton
@@ -111,7 +111,7 @@ class ARCANE_CORE_EXPORT ItemTypeMng
    * Le singleton peut ensuite être reconstruit par appel à singleton()
    */
   ARCCORE_DEPRECATED_2021("Do not use this method")
-  static void destroySingleton();
+  static void destroySingleton() { _destroySingleton(); }
 
  public:
   //! Liste des types disponibles
