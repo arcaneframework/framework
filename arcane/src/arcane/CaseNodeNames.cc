@@ -61,7 +61,7 @@ Impl(const String& lang)
     _add("modules","modules");
     _add("services","services");
     _add("mesh","maillage");
-    _add("meshes","maillages");
+    _add("meshes","meshes");
     _add("file","fichier");
     _add("partitioner","partitionneur");
     _add("userclass","userclass");

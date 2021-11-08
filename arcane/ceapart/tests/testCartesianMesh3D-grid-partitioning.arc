@@ -27,9 +27,9 @@
      X = [-1.25,1.25] et Y = [-0.5, 1.25 ].
      On prend un tout petit peu plus petit pour le maillage cartésien
  -->
- <maillages>
-   <maillage>
-     <generateur name="Cartesian3D">
+ <meshes>
+   <mesh>
+     <generator name="Cartesian3D">
        <nb-part-x>2</nb-part-x> 
        <nb-part-y>2</nb-part-y>
        <nb-part-z>3</nb-part-z>
@@ -37,9 +37,9 @@
        <x><n>30</n><length>6.0</length></x>
        <y><n>30</n><length>6.0</length></y>
        <z><n>30</n><length>6.0</length></z>
-     </generateur>
-   </maillage>
- </maillages>
+     </generator>
+   </mesh>
+ </meshes>
 
  <cartesian-mesh-tester>
    <unstructured-mesh-file>sphere.vtk</unstructured-mesh-file>

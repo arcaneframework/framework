@@ -21,9 +21,9 @@
     </depouillement>
   </arcane-post-traitement>
  
- <maillages>
-   <maillage>
-     <generateur name="Cartesian2D">
+ <meshes>
+   <mesh>
+     <generator name="Cartesian2D">
        <nb-part-x>2</nb-part-x> 
        <nb-part-y>2</nb-part-y>
        <origin>0.0 0.0</origin>
@@ -35,9 +35,9 @@
        <y><n>2</n><length>2.0</length><progression>1.0</progression></y>
        <y><n>3</n><length>3.0</length><progression>4.0</progression></y>
        <y><n>3</n><length>3.0</length><progression>8.0</progression></y>
-     </generateur>
-   </maillage>
- </maillages>
+     </generator>
+   </mesh>
+ </meshes>
 
 
  <aleph-test-module>

@@ -27,9 +27,9 @@
      X = [-1.25,1.25] et Y = [-0.5, 1.25 ].
      On prend un tout petit peu plus petit pour le maillage cartésien
  -->
- <maillages>
-   <maillage>
-     <generateur name="Cartesian2D">
+ <meshes>
+   <mesh>
+     <generator name="Cartesian2D">
        <nb-part-x>2</nb-part-x> 
        <nb-part-y>2</nb-part-y>
        <origin>-1.20 -0.45</origin>
@@ -40,9 +40,9 @@
        <y><n>6</n><length>0.5</length><progression>1.1</progression></y>
        <y><n>6</n><length>0.8</length><progression>1.2</progression></y>
        <y><n>6</n><length>0.4</length><progression>1.3</progression></y>
-     </generateur>
-   </maillage>
- </maillages>
+     </generator>
+   </mesh>
+ </meshes>
 
  <cartesian-mesh-tester>
    <unstructured-mesh-file>planar_unstructured_quad1.msh</unstructured-mesh-file>

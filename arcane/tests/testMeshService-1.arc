@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0"?>
 <cas codename="ArcaneTest" xml:lang="fr" codeversion="1.0">
  <arcane>
   <titre>Test Maillage 1</titre>
@@ -6,13 +6,13 @@
   <boucle-en-temps>UnitTest</boucle-en-temps>
  </arcane>
 
- <maillages>
-   <maillage>
-     <generateur name="Sod3D">
+ <meshes>
+   <mesh>
+     <generator name="Sod3D">
        <x>10</x><y>5</y><z>5</z>
-     </generateur>
-   </maillage>
- </maillages>
+     </generator>
+   </mesh>
+ </meshes>
 
  <module-test-unitaire>
   <test name="MeshUnitTest">
