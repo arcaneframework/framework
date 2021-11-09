@@ -83,7 +83,11 @@ class VMap
 
     const IndexT& key() const { return m_vmap.m_indexes[m_index]; }
 
-    void operator++() { ++m_index; }
+    iterator& operator++()
+    {
+      ++m_index;
+      return *this;
+    }
 
     bool operator==(const iterator& i) const { return (m_index == i.m_index); }
 
@@ -114,7 +118,11 @@ class VMap
 
     const IndexT& key() const { return m_vmap.m_indexes[m_index]; }
 
-    void operator++() { ++m_index; }
+    const_iterator& operator++()
+    {
+      ++m_index;
+      return *this;
+    }
 
     bool operator==(const const_iterator& i) const { return (m_index == i.m_index); }
 

@@ -34,8 +34,8 @@ class RedistributorCommPlan;
 class ALIEN_EXPORT DoKDistributor
 {
  public:
-  DoKDistributor(const RedistributorCommPlan* commPlan);
-  virtual ~DoKDistributor() {}
+  explicit DoKDistributor(const RedistributorCommPlan* commPlan);
+  virtual ~DoKDistributor() = default;
 
   void distribute(const DoKMatrix& src, DoKMatrix& dst);
 

@@ -31,7 +31,7 @@ class ALIEN_EXPORT DoKReverseIndexer : public IReverseIndexer
   DoKReverseIndexer()
   : m_map()
   {}
-  virtual ~DoKReverseIndexer() {}
+  virtual ~DoKReverseIndexer() = default;
 
   std::optional<Index> operator[](Offset off) const override;
 

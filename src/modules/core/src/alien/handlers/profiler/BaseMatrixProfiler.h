@@ -56,7 +56,7 @@ namespace Common
   class MatrixProfilerT
   {
    public:
-    MatrixProfilerT(IMatrix& matrix);
+    explicit MatrixProfilerT(IMatrix& matrix);
 
     virtual ~MatrixProfilerT();
 

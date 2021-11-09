@@ -46,6 +46,8 @@ class DirectMatrixBuilder : protected MoveObject<MatrixData>
   , Common::DirectMatrixBuilder(reference(), reset_flag, symmetric_flag)
   {}
 
+  virtual ~DirectMatrixBuilder() = default;
+
   MatrixData&& release()
   {
     finalize();

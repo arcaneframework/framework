@@ -32,8 +32,8 @@ class IReverseIndexer;
 class ALIEN_EXPORT DoKLocalMatrixIndexer : public ILocalMatrixIndexer
 {
  public:
-  DoKLocalMatrixIndexer() {}
-  virtual ~DoKLocalMatrixIndexer() {}
+  DoKLocalMatrixIndexer() = default;
+  virtual ~DoKLocalMatrixIndexer() = default;
 
   DoKLocalMatrixIndexer(const DoKLocalMatrixIndexer& src) = default;
   DoKLocalMatrixIndexer(DoKLocalMatrixIndexer&& src) = default;
@@ -53,8 +53,8 @@ class ALIEN_EXPORT DoKLocalMatrixIndexer : public ILocalMatrixIndexer
   class HashKey
   {
    public:
-    HashKey() {}
-    ~HashKey() {}
+    HashKey() = default;
+    ~HashKey() = default;
 
     size_t operator()(const Key& k) const
     {

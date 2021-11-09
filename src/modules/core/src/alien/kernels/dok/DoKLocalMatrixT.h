@@ -34,18 +34,15 @@ template <typename NNZValue>
 class DoKLocalMatrixT
 {
  public:
-  typedef DoKLocalMatrixT<NNZValue> ThisClass;
-
- public:
   DoKLocalMatrixT()
   : m_indexer(new DoKLocalMatrixIndexer())
   , m_offset(0)
   , m_values()
   {}
 
-  virtual ~DoKLocalMatrixT() {}
+  virtual ~DoKLocalMatrixT() = default;
 
-  ThisClass& operator=(ThisClass&& src)
+  DoKLocalMatrixT& operator=(DoKLocalMatrixT&& src) noexcept
   {
     m_indexer = std::move(src.m_indexer);
     m_r_indexer = std::move(src.m_r_indexer);
@@ -57,7 +54,7 @@ class DoKLocalMatrixT
     return *this;
   }
 
-  ThisClass& operator=(const ThisClass& src)
+  DoKLocalMatrixT& operator=(const DoKLocalMatrixT& src)
   {
     m_indexer.reset(src.m_indexer->clone());
     m_values = src.m_values;

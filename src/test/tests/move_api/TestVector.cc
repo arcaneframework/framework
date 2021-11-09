@@ -55,7 +55,7 @@ TEST(TestVector, AnonymousConstructor)
 TEST(TestVector, RValueConstructor)
 {
   const Alien::VectorDistribution d(10, AlienTest::Environment::parallelMng());
-  const Alien::Move::VectorData v(std::move(Alien::Move::VectorData(d)));
+  const Alien::Move::VectorData v = Alien::Move::VectorData(d);
   ASSERT_TRUE(Alien::Space(10) == v.space());
   ASSERT_EQ(10, v.space().size());
 }

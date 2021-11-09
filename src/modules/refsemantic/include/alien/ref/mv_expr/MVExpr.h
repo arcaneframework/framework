@@ -844,4 +844,4 @@ Vector::operator=(E const& expr)
 
 } // namespace Alien
 
-#endif /* MODULES_CORE_SRC_ALIEN_EXPRESSION_MVEXPR_MVEXPR_H_ */
+#endif /* ALIEN_EXPRESSION_MVEXPR_MVEXPR_H_ */

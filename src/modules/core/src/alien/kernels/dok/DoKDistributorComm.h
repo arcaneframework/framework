@@ -66,7 +66,7 @@ class ALIEN_EXPORT DoKDistributorComm
   Index getCoordinates(Int32 offset) const
   {
     if ((offset < 0) || (m_rcv_rows.size() <= offset))
-      FatalErrorException("Invalid offset in DoKDistributorComm");
+      throw FatalErrorException("Invalid offset in DoKDistributorComm");
     return { m_rcv_rows[offset], m_rcv_cols[offset] };
   }
 

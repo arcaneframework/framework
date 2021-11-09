@@ -103,7 +103,7 @@ DoKLocalMatrixIndexer::sort(ArrayView<DoKLocalMatrixIndexer::Renumbering> perm)
   KeyCompare<HashTable> compare;
   std::sort(src.begin(), src.end(), compare);
 
-  DoKReverseIndexer* indexer = new DoKReverseIndexer();
+  auto* indexer = new DoKReverseIndexer();
   auto size = static_cast<Arccore::Integer>(m_data.size());
   for (auto curs = 0; curs < size; ++curs) {
     perm[curs] = Renumbering(src[curs]->second, curs);

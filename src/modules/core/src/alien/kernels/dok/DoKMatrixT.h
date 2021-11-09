@@ -41,14 +41,14 @@ class DoKMatrix : public IMatrixImpl
   typedef Real ValueType;
 
  public:
-  DoKMatrix(const MultiMatrixImpl* multi_impl = nullptr)
+  explicit DoKMatrix(const MultiMatrixImpl* multi_impl = nullptr)
   : IMatrixImpl(multi_impl, "DoK")
   , m_data()
   {}
 
   DoKMatrix(const DoKMatrix&) = delete;
 
-  ~DoKMatrix() override {}
+  ~DoKMatrix() override = default;
 
   void clear() override {}
 

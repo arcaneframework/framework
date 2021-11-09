@@ -36,6 +36,8 @@ struct MoveObject
   : m_object(std::move(object))
   {}
 
+  virtual ~MoveObject() = default;
+
   virtual T&& release() { return std::move(m_object); }
 
   virtual T& reference() { return m_object; }

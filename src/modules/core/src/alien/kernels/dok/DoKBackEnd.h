@@ -44,14 +44,11 @@ IMessagePassingMng* p_mng);
 
 /*---------------------------------------------------------------------------*/
 
-namespace BackEnd
+namespace BackEnd::tag
 {
-  namespace tag
-  {
-    struct DoK
-    {};
-  } // namespace tag
-} // namespace BackEnd
+  struct DoK
+  {};
+} // namespace BackEnd::tag
 
 template <>
 struct AlgebraTraits<BackEnd::tag::DoK>

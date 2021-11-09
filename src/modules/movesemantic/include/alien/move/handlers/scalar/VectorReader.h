@@ -40,7 +40,7 @@ class VectorReader
   : Common::VectorReaderT<Arccore::Real, Parameters<GlobalIndexer>>(vector)
   {}
 
-  virtual ~VectorReader() {}
+  virtual ~VectorReader() = default;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -53,7 +53,7 @@ class LocalVectorReader
   : Common::VectorReaderT<Arccore::Real, Parameters<LocalIndexer>>(vector)
   {}
 
-  virtual ~LocalVectorReader() {}
+  virtual ~LocalVectorReader() = default;
 };
 
 /*---------------------------------------------------------------------------*/
