@@ -107,6 +107,10 @@ initialisé dans tous les cas. Il est possible de modifier ce
 comportement en spécifiant explicitement le service de parallélisme
 souhaité (TODO faire doc).
 
+\warning Il faut faire attention à bien utiliser l'exécutable
+`mpiexec` qui correspond à la version de MPI avec laquelle %Arcane a
+été compilé sinon on va lancer *N* fois l'exécution séquentielle.
+
 Exécution du code
 -----------------
 
@@ -163,7 +167,7 @@ Les options disponibles sont:
 
 <tr>
 <td>S</td>
-<td>ARCANE_NB_THREAD **(obsolète)**</td>
+<td>ARCANE_NB_THREAD (Cette variable d'environnement est obsolète)</td>
 <td>Int32</td>
 <td></td>
 <td>Nombre de sous-domaines en mémoire partagée</td>
@@ -171,7 +175,7 @@ Les options disponibles sont:
 
 <tr>
 <td>R</td>
-<td>ARCANE_NB_REPLICATION **(obsolète)**</td>
+<td>ARCANE_NB_REPLICATION (Cette variable d'environnement est obsolète)</td>
 <td>Int32</td>
 <td>1</td>
 <td>Nombre de sous-domaines répliqués</td>
@@ -179,7 +183,7 @@ Les options disponibles sont:
 
 <tr>
 <td>P</td>
-<td>ARCANE_NB_SUB_DOMAIN **(obsolète)**</td>
+<td>ARCANE_NB_SUB_DOMAIN (Cette variable d'environnement est obsolète)</td>
 <td>Int32</td>
 <td></td>
 <td>Nombre de processus à utiliser pour les sous-domaines. Cette
@@ -270,7 +274,7 @@ choisi lors du lancement du calcul.  %Arcane fournit les gestionnaires suivants:
 En général, %Arcane choisit
 automatiquement le gestionnaire en fonction des paramètres utilisés
 pour lancer le calcul mais il est possible de spécifier explicitement
-le gestionnaire à utiliser en positionnant la variable d'environnement
+le gestionnaire à utiliser en positionnant la variable d'environnement (obsolète)
 `ARCANE_PARALLEL_SERVICE` ou en spécifiant l'option
 `MessagePassingService` dans la ligne de commande avec une des valeurs
 ci-dessus (sans le suffixe `ParallelSuperMng`, donc par exemple `Mpi`,

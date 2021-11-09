@@ -51,7 +51,6 @@ La compilation se fait obligatoirement dans un
 répertoire distinct de celui des sources. On note `${SOURCE_DIR}` ce
 répertoire contenant les sources et `${BUILD_DIR}` le répertoire de compilation.
 
-
 Arcane dépend de `Arccon`, `Arccore` et `Axlstar`. Il est nécessaire d'avoir accès
 aux sources de ces produits pour compiler. Les variables CMake
 `Arccon_ROOT`, `Arccore_ROOT` et `Axlstar_ROOT doivent respectivement pointer vers les sources de ces produits.
@@ -82,7 +81,15 @@ forme de liste. Par exemple, si on souhaite avoir uniquement `HDF5` et
 cmake -DARCANE_NO_DEFAULT_PACKAGE=TRUE -DARCANE_REQUIRED_PACKAGE_LIST="LibUnwind;HDF5"
 ~~~
 
-Dans
+Si on souhaite compiler le support CUDA, il faut spécifier ajouter la
+variable `ARCANE_WANT_CUDA` et spécifier le chemin vers le compilateur
+`nvcc` via la variable CMake `CMAKE_CUDA_COMPILER` ou la variable
+d'environnement `CUDACXX`:
+
+~~~{.sh}
+cmake -DARCANE_WANT_CUDA=TRUE -DCMAKE_CUDA_COMPILER=/usr/local/cuda-11/bin/nvcc
+~~~
+
 ### Génération de la documentation
 
 La génération de la documentation n'a été testée que sur les plateforme Linux.
@@ -111,15 +118,5 @@ utiles pour le développeur.
 
 ### Compilation et tests des exemples
 
-Une fois Arcane installé dans `${INSTALL_PATH}`, il est possible de compiler les exemples:
-
-~~~{.sh}
-# Recopie les exemples dans /tmp/samples
-cp -r ${INSTALL_PATH}/samples /tmp
-cd /tmp/samples
-cmake .
-cmake --build .
-ctest
-~~~
-
-La commande `ctest` permet de lancer les tests sur les exemples.
+La page [Exemples](./samples_build/samples/README.md) explique comment
+récupérer, compiler et lancer les exemples.
