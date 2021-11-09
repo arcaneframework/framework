@@ -89,7 +89,7 @@ class Array2
   {
     this->copy(rhs);
   }
- public:
+ protected:
   //! Créé un tableau vide avec un allocateur spécifique \a allocator
   explicit Array2(IMemoryAllocator* allocator)
   : AbstractArray<DataType>(allocator,0) {}
