@@ -466,6 +466,8 @@ class AbstractArray
   {
     if (!_isSharedNull())
       ArrayImplBase::deallocate(m_p,m_md);
+    if (m_md!=_sharedNullMetaData())
+      _deallocateMetaData(m_md);
   }
   virtual void _internalAllocate(Int64 new_capacity)
   {
@@ -758,8 +760,6 @@ class AbstractArray
   void _setToSharedNull()
   {
     m_p = _sharedNull();
-    //if (m_md!=_sharedNullMetaData())
-    //_deallocateMetaData(m_md);
     m_md = _sharedNullMetaData();
   }
 
