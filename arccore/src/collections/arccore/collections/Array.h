@@ -40,18 +40,27 @@
 namespace Arccore
 {
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+// TODO: conserver l'allocateur (IMemoryAllocator) dans AbstractArray car
+// il n'est pas modifiable pour les SharedArray.
 
-class ArrayMetaData;
+// TODO: supprimer dans AbstractArray les constructeurs de copie à partir des vues
+// et faire la copie dans les constructeurs de classes dérivées. Cela est
+// nécessaire pour appeler les méthodes virtuelles des classes dérivées.
+
+// TODO: voir s'il faut supprimer ArrayImplT et directement utiliser un pointeur
+// alloué par l'allocateur à la place.
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
 {
+  template <typename> friend class AbstractArray;
+  template <typename> friend class Array2;
  public:
-  ArrayMetaData() : nb_ref(0), capacity(0), size(0),
-    dim1_size(0), dim2_size(0), mutli_dims_size(0),
-    allocator(&DefaultMemoryAllocator::shared_null_instance)
- {}
+  ArrayMetaData() : nb_ref(0), capacity(0), size(0), dim1_size(0),
+  dim2_size(0), allocator(&DefaultMemoryAllocator::shared_null_instance)
+  {}
 
   // GG: note: normalement ce destructeur est inutile et on pourrait utiliser
   // le destructeur généré par le compilateur. Cependant, si on le supprime
@@ -59,9 +68,8 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
   // Il faudrait vérifier s'il s'agit d'un bug du compilateur ou d'un
   // problème dans Arccore.
   ~ArrayMetaData() {}
- public:
-  static ArrayMetaData* shared_null;
  private:
+  static ArrayMetaData* shared_null;
   static ArrayMetaData shared_null_instance;
  public:
   //! Nombre de références sur cet objet.
@@ -74,7 +82,6 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
   Int64 dim1_size;
   //! Taille de la deuxième dimension (pour les tableaux 2D)
   Int64 dim2_size;
-  Int64* mutli_dims_size;
   //! Allocateur mémoire
   IMemoryAllocator* allocator;
   //! Indique is cette instance a été allouée par l'opérateur new.
@@ -86,7 +93,7 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
   {
     ArrayMetaData* s = shared_null;
     if (s->capacity!=0 || s->size!=0 || s->dim1_size!=0 || s->dim2_size!=0
-        || s->mutli_dims_size || s->allocator)
+        || s->allocator)
       throwBadSharedNull();
   }
   static void throwBadSharedNull ARCCORE_NORETURN ();
@@ -109,6 +116,8 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
  */
 class ARCCORE_COLLECTIONS_EXPORT ArrayImplBase
 {
+  template <typename> friend class AbstractArray;
+  template <typename> friend class Array2;
  public:
   ArrayImplBase() {}
 
@@ -118,10 +127,9 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayImplBase
   // Il faudrait vérifier s'il s'agit d'un bug du compilateur ou d'un
   // problème dans Arccore.
   ~ArrayImplBase() {}
- public:
-  static ArrayImplBase* shared_null;
  private:
-  static ARCCORE_ALIGNAS(64) ArrayImplBase shared_null_instance;
+  static ArrayImplBase* shared_null;
+  static ArrayImplBase shared_null_instance;
  public:
 
   static ArrayImplBase* allocate(Int64 sizeof_true_impl,Int64 nb,
