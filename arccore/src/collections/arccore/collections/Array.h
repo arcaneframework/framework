@@ -1142,6 +1142,7 @@ class Array
   }
 
   //! Clone le tableau
+  [[deprecated("Y2021: Use SharedArray::clone() or UniqueArray::clone()")]]
   Array<T> clone() const
   {
     return Array<T>(this->constSpan());
@@ -1602,6 +1603,11 @@ class UniqueArray
   void swap(UniqueArray<T>& rhs)
   {
     this->_swap(rhs);
+  }
+  //! Clone le tableau
+  UniqueArray<T> clone() const
+  {
+    return UniqueArray<T>(this->constSpan());
   }
 };
 
