@@ -333,7 +333,7 @@ _testArrayNewInternal()
   {
     UniqueArray<Int32> values1 = { 2, 5 };
     UniqueArray<Int32> values2 = { 4, 9, 7 };
-    // Copie les valeurs de values2 Ã  la fin de values1.
+    // Copie les valeurs de values2 à la fin de values1.
     std::copy(std::begin(values2),std::end(values2),std::back_inserter(values1));
     std::cout << "** VALUES1 = " << values1 << "\n";
     ARCCORE_UT_CHECK((values1.size()==5),"BI: Bad size");
@@ -342,6 +342,25 @@ _testArrayNewInternal()
     ARCCORE_UT_CHECK((values1[2]==4),"BI: Bad value [2]");
     ARCCORE_UT_CHECK((values1[3]==9),"BI: Bad value [3]");
     ARCCORE_UT_CHECK((values1[4]==7),"BI: Bad value [4]");
+
+    UniqueArray<IntPtrSubClass> vx;
+    vx.add(IntPtrSubClass(5));
+    UniqueArray<IntPtrSubClass>::iterator i = std::begin(vx);
+    UniqueArray<IntPtrSubClass>::const_iterator ci = i;
+    std::cout << "V=" << i->m_v << " " << ci->m_v << '\n';
+  }
+  {
+    UniqueArray<Int32> values1;
+    UniqueArray<Int32> values2 = { 4, 9, 7, 6, 3 };
+    // Copie les valeurs de values2 à la fin de values1.
+    values1.copy(values2);
+    std::cout << "** VALUES1 = " << values1 << "\n";
+    ARCCORE_UT_CHECK((values1.size()==5),"BI: Bad size");
+    ARCCORE_UT_CHECK((values1[0]==4),"BI2: Bad value [0]");
+    ARCCORE_UT_CHECK((values1[1]==9),"BI2: Bad value [1]");
+    ARCCORE_UT_CHECK((values1[2]==7),"BI2: Bad value [2]");
+    ARCCORE_UT_CHECK((values1[3]==6),"BI2: Bad value [3]");
+    ARCCORE_UT_CHECK((values1[4]==3),"BI2: Bad value [4]");
 
     UniqueArray<IntPtrSubClass> vx;
     vx.add(IntPtrSubClass(5));

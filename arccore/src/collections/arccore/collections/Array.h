@@ -477,7 +477,7 @@ class AbstractArray
   virtual void _directFirstAllocateWithAllocator(Int64 new_capacity,IMemoryAllocator* a)
   {
     //TODO: vérifier m_p vaut shared_null
-    m_md = new ArrayMetaData();
+    m_md = _allocateMetaData();
     _initMP(static_cast<TrueImpl*>(ArrayImplBase::allocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p,m_md,a)));
     m_md->allocator = a;
     m_md->nb_ref = _getNbRef();
@@ -487,7 +487,7 @@ class AbstractArray
   virtual void _directAllocate(Int64 new_capacity)
   {
     if (m_md==_sharedNullMetaData())
-      m_md = new ArrayMetaData();
+      m_md = _allocateMetaData();
     _initMP(static_cast<TrueImpl*>(ArrayImplBase::allocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p,m_md)));
   }
   virtual void _directReAllocate(Int64 new_capacity)
@@ -735,25 +735,17 @@ class AbstractArray
   void _initMP(TrueImpl* new_mp)
   {
     m_p = new_mp;
-    //ArrayImplBase* new_md = new_mp;
-    //m_md = new ArrayImplBase();
-    //m_md->capacity = new_md->capacity;
   }
 
   void _setMP(TrueImpl* new_mp)
   {
     m_p = new_mp;
-    //ArrayImplBase* new_md = new_mp;
-    //m_md->capacity = new_md->capacity;
-    //m_md = new_mp;
   }
 
   void _setMP2(TrueImpl* new_mp,ArrayMetaData* new_md)
   {
     m_p = new_mp;
-    m_md = new_md;//ArrayImplBase* new_md = new_mp;
-    //m_md->capacity = new_md->capacity;
-    //m_md = new_mp;
+    m_md = new_md;
   }
 
   bool _isSharedNull()
@@ -766,10 +758,17 @@ class AbstractArray
   void _setToSharedNull()
   {
     m_p = _sharedNull();
-    //if (m_md!=_sharedNull())
-    //delete m_md;
+    //if (m_md!=_sharedNullMetaData())
+    //_deallocateMetaData(m_md);
     m_md = _sharedNullMetaData();
   }
+
+ protected:
+
+  // TODO: A terme devrait être virtuel pure mais il faut pour cela supprimer
+  // les méthodes clone() de Array
+  virtual ArrayMetaData* _allocateMetaData() { return new ArrayMetaData(); }
+  virtual void _deallocateMetaData(ArrayMetaData* md) { delete md; }
 };
 
 /*---------------------------------------------------------------------------*/
