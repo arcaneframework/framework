@@ -38,23 +38,23 @@ configure_file(
 
 install(
         FILES ${PROJECT_BINARY_DIR}/alien/AlienConfig.h
-        DESTINATION include/alien
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/alien
 )
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-add_subdirectory(modules/core)
+add_subdirectory(core)
 if (ALIEN_COMPONENT_RefSemantic)
-    add_subdirectory(modules/refsemantic)
+    add_subdirectory(refsemantic)
 endif ()
 if (ALIEN_COMPONENT_MoveSemantic)
-    add_subdirectory(modules/movesemantic)
+    add_subdirectory(movesemantic)
 endif ()
 
 if (ALIEN_UNIT_TESTS)
     enable_testing()
-    add_subdirectory(test)
+    add_subdirectory(test_framework)
 endif ()
 
 
@@ -96,6 +96,7 @@ install(EXPORT ${ALIEN_EXPORT_TARGET}
 
 install(FILES ../CMake/LoadAlienTest.cmake
         DESTINATION ${config_install_dir})
+
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
