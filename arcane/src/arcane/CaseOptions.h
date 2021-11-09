@@ -344,7 +344,11 @@ class ARCANE_CORE_EXPORT CaseOptionMultiSimple
 template<class T>
 class CaseOptionMultiSimpleT
 : public CaseOptionMultiSimple
+#ifdef ARCANE_HAS_PRIVATE_CASEOPTIONSMULTISIMPLE_BASE_CLASS
+, private ArrayView<T>
+#else
 , public ArrayView<T>
+#endif
 {
  public:
 
@@ -376,6 +380,14 @@ class CaseOptionMultiSimpleT
     return *this;
   }
 
+  //! Conversion vers la vue constante
+  ARCCORE_DEPRECATED_2021("Use view() instead")
+  operator ArrayView<T>() { ArrayView<T>* v = this; return *v; }
+
+  //! Conversion vers la vue constante
+  ARCCORE_DEPRECATED_2021("Use view() instead")
+  operator ConstArrayView<T>() const { const ArrayView<T>* v = this; return *v; }
+
   //! Vue constante sur les éléments de l'option
   ConstArrayViewType view() const
   {
@@ -396,8 +408,7 @@ class CaseOptionMultiSimpleT
   ICaseFunction* function() const override { return 0; }
   void updateFromFunction(Real,Integer) override {}
 
-  ARCCORE_DEPRECATED_2021("Use view() instead")
-  ConstArrayView<T> values() const { return (*this); }
+  ConstArrayView<T> values() const { const ArrayView<T>* v = this; return *v; }
   const T& value(Integer index) const { return this->operator[](index); }
   Integer size() const { return ArrayView<T>::size(); }
   ARCANE_CORE_EXPORT void visit(ICaseDocumentVisitor* visitor) const override;
