@@ -74,12 +74,11 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
   Int64 dim1_size;
   //! Taille de la deuxième dimension (pour les tableaux 2D)
   Int64 dim2_size;
-  //! Tableau des dimensions pour les tableaux multiples
   Int64* mutli_dims_size;
   //! Allocateur mémoire
   IMemoryAllocator* allocator;
-  //! Padding pour que la structure ait une taille de 64 octets.
-  Int64 padding1;
+  //! Indique is cette instance a été allouée par l'opérateur new.
+  bool is_allocated_by_new = false;
 
  public:
 
@@ -294,8 +293,10 @@ class AbstractArray
   }
   //! Constructeur par déplacement. Ne doit être utilisé que par UniqueArray
   AbstractArray(ThatClassType&& rhs) ARCCORE_NOEXCEPT
-  : m_p(rhs.m_p), m_md(rhs.m_md), m_baseptr(m_p->ptr)
+  : m_p(rhs.m_p), m_md(rhs.m_md), m_baseptr(m_p->ptr), m_meta_data(rhs.m_meta_data)
   {
+    if (!m_md->is_allocated_by_new)
+      m_md = &m_meta_data;
     rhs._reset();
   }
   AbstractArray(Int64 asize,const T* values)
@@ -327,6 +328,8 @@ class AbstractArray
       m_md->size = asize;
     }
   }
+  AbstractArray(const AbstractArray<T>& rhs) = delete;
+  AbstractArray<T>& operator=(const AbstractArray<T>& rhs) = delete;
 
   virtual ~AbstractArray()
   {
@@ -397,6 +400,7 @@ class AbstractArray
   ArrayMetaData* m_md = _sharedNullMetaData();
  private:
   T* m_baseptr;
+  ArrayMetaData m_meta_data;
  protected:
   //! Réserve le mémoire pour \a new_capacity éléments
   void _reserve(Int64 new_capacity)
@@ -479,7 +483,7 @@ class AbstractArray
   virtual void _directFirstAllocateWithAllocator(Int64 new_capacity,IMemoryAllocator* a)
   {
     //TODO: vérifier m_p vaut shared_null
-    m_md = _allocateMetaData();
+    _allocateMetaData();
     _initMP(static_cast<TrueImpl*>(ArrayImplBase::allocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p,m_md,a)));
     m_md->allocator = a;
     m_md->nb_ref = _getNbRef();
@@ -489,7 +493,7 @@ class AbstractArray
   virtual void _directAllocate(Int64 new_capacity)
   {
     if (m_md==_sharedNullMetaData())
-      m_md = _allocateMetaData();
+      _allocateMetaData();
     _initMP(static_cast<TrueImpl*>(ArrayImplBase::allocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p,m_md)));
   }
   virtual void _directReAllocate(Int64 new_capacity)
@@ -681,8 +685,14 @@ class AbstractArray
     _destroy();
     _internalDeallocate();
 
-    // Recopie bit à bit.
-    _setMP2(rhs.m_p,rhs.m_md);
+    _setMP(rhs.m_p);
+
+    // Déplace les meta-données
+    m_meta_data = rhs.m_meta_data;
+    if (rhs.m_md==&rhs.m_meta_data)
+      m_md = &m_meta_data;
+    else
+      m_md = rhs.m_md;
 
     // Indique que \a rhs est vide.
     rhs._reset();
@@ -699,8 +709,8 @@ class AbstractArray
   {
     std::swap(m_p,rhs.m_p);
     std::swap(m_baseptr,rhs.m_baseptr);
-    // TODO Regarder comment faire le swap pour m_md
     std::swap(m_md,rhs.m_md);
+    std::swap(m_meta_data,rhs.m_meta_data);
   }
 
   void _shrink()
@@ -765,10 +775,28 @@ class AbstractArray
 
  protected:
 
-  // TODO: A terme devrait être virtuel pure mais il faut pour cela supprimer
-  // les méthodes clone() de Array
-  virtual ArrayMetaData* _allocateMetaData() { return new ArrayMetaData(); }
-  virtual void _deallocateMetaData(ArrayMetaData* md) { delete md; }
+  virtual bool _isUseOwnMetaData() const { return false; }
+
+ private:
+
+  void _allocateMetaData()
+  {
+    if (_isUseOwnMetaData()){
+      m_md = &m_meta_data;
+      return;
+    }
+
+    m_md = new ArrayMetaData();
+    m_md->is_allocated_by_new = true;
+  }
+
+  void _deallocateMetaData(ArrayMetaData* md)
+  {
+    if (md->is_allocated_by_new)
+      delete md;
+    else
+      *md = ArrayMetaData();
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -1604,6 +1632,8 @@ class UniqueArray
   {
     return UniqueArray<T>(this->constSpan());
   }
+ private:
+  bool _isUseOwnMetaData() const final { return true; }
 };
 
 /*---------------------------------------------------------------------------*/
