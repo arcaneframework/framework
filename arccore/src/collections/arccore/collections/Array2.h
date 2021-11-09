@@ -89,7 +89,7 @@ class Array2
   {
     this->copy(rhs);
   }
- public:
+ protected:
   //! Créé un tableau vide avec un allocateur spécifique \a allocator
   explicit Array2(IMemoryAllocator* allocator)
   : AbstractArray<DataType>(allocator,0) {}
@@ -165,6 +165,7 @@ class Array2
   {
     this->resize(0,0);
   }
+  [[deprecated("Y2021: Use SharedArray2::clone() or UniqueArray2::clone()")]]
   Array2<DataType> clone()
   {
     return Array2<DataType>(this->constSpan());
@@ -649,6 +650,11 @@ class UniqueArray2
   void swap(UniqueArray2<T>& rhs) ARCCORE_NOEXCEPT
   {
     this->_swap(rhs);
+  }
+  //! Clone le tableau
+  UniqueArray2<T> clone()
+  {
+    return UniqueArray2<T>(this->constSpan());
   }
 };
 
