@@ -76,7 +76,23 @@ show_ttf_internal_flag(Arcane::Integer flags,
     TV_ttf_add_row(strtype,TV_ttf_type_ascii_string,"on");
   }
 }
-namespace {
+namespace
+{
+// A mettre en correspondance avec Arccore::ArrayMetaData
+class _ArrayMetaData
+{
+ public:
+  //! Nombre de références sur cet objet.
+  Arccore::Int64 nb_ref;
+  //! Nombre d'éléments alloués
+  Arccore::Int64 capacity;
+  //! Nombre d'éléments du tableau (pour les tableaux 1D)
+  Arccore::Int64 size;
+  //! Taille de la première dimension (pour les tableaux 2D)
+  Arccore::Int64 dim1_size;
+  //! Taille de la deuxième dimension (pour les tableaux 2D)
+  Arccore::Int64 dim2_size;
+};
 // ATTENTION: classe qui mime la représentation de Arccore::AbstractArray.
 // A modifier si cette dernière évolue.
 class _ArrayStruct
@@ -84,19 +100,21 @@ class _ArrayStruct
  public:
   virtual ~_ArrayStruct(){}
   Arccore::ArrayImplBase* m_p;
-  Arccore::ArrayMetaData* m_md;
+  _ArrayMetaData* m_md;
 };
 }
 /*---------------------------------------------------------------------------*/
 /*                             Arcane::Array  (sur type de base)             */
 /*---------------------------------------------------------------------------*/
 
+namespace Arccore
+{
 template<typename type> int
-_displayArray(const Arccore::AbstractArray<type>* obj,const char* type_name)
+_displayArray(const AbstractArray<type>* obj,const char* type_name)
 {
   Arccore::Span<const type> view = *obj;
   const _ArrayStruct* true_ptr = reinterpret_cast<const _ArrayStruct*>(obj);
-  Arccore::ArrayMetaData* true_obj = true_ptr->m_md;
+  _ArrayMetaData* true_obj = true_ptr->m_md;
   char strtype[1024];
   arcane_ttf_header();
   TV_ttf_add_row("size","Arcane::Int64",&true_obj->size);
@@ -104,6 +122,7 @@ _displayArray(const Arccore::AbstractArray<type>* obj,const char* type_name)
   snprintf(strtype,sizeof(strtype),"%s[%ld]",type_name,view.size());
   TV_ttf_add_row("data",strtype,view.data());
   return TV_ttf_format_ok;
+}
 }
 
 #define TV_DISPLAY_ARRAY_TYPE(type)\
