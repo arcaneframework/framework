@@ -174,6 +174,121 @@ TEST(CartesianMeshV2,TestCartesianNumbering)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+template<typename IdType>
+void test_CartesianGrid(const IdType (&ncell)[3], Integer dimension, 
+    bool only_center)
+{
+  CartesianGrid<IdType> cart_grid(ncell, dimension);
+
+  ASSERT_EQ(cart_grid.dimension(),dimension) << "Incorrect dimension";
+
+  ASSERT_EQ(&cart_grid.cartNumCell(),cart_grid.cartNumCellPtr()) << "(A) Pointers not equal";
+  ASSERT_EQ(&cart_grid.cartNumNode(),cart_grid.cartNumNodePtr()) << "(B) Pointers not equal";
+  ASSERT_EQ(&cart_grid.cartNumFace3(),cart_grid.cartNumFace3Ptr()) << "(C) Pointers not equal";
+  for(Integer dir=0 ; dir<dimension ; ++dir) {
+    ASSERT_EQ(&cart_grid.cartNumFace(dir),&(cart_grid.cartNumFace3()[dir])) << "(D) Pointers not equal";
+  }
+
+  auto cell_numb = cart_grid.cartNumCell();
+  auto node_numb = cart_grid.cartNumNode();
+
+  for(Integer dir=0 ; dir<dimension ; ++dir) {
+    auto face_numb_d = cart_grid.cartNumFace3()[dir];
+
+    ASSERT_EQ(cell_numb.nbItemDir(dir),ncell[dir]) << "Incorrect nb of cells";
+    ASSERT_EQ(cell_numb.nbItemDir(dir)+1,node_numb.nbItemDir(dir)) << "Incorrect nb of cells/nodes";
+    ASSERT_EQ(cell_numb.nbItemDir(dir)+1,face_numb_d.nbItemDir(dir)) << "Incorrect nb of cells/faces dir";
+
+    for(Integer idir=1 ; idir<dimension ; ++idir) {
+      Integer dtrans=(dir+idir)%dimension;
+      ASSERT_EQ(cell_numb.nbItemDir(dtrans),face_numb_d.nbItemDir(dtrans)) << "Incorrect nb of cells/faces dtrans";
+    }
+  }
+
+  // Connectivity
+  auto lbd_c2n = [&](IdType i, IdType j, IdType k) {
+    auto cid = cell_numb.id({i,j,k});
+    auto nid = node_numb.id({i,j,k});
+
+    IdType delta_c2n = node_numb.firstId()-cell_numb.firstId() +
+      j+k*(cell_numb.nbItemDir(0)+cell_numb.nbItemDir(1)+1);
+    ASSERT_EQ(cid+delta_c2n,nid) << "Incorrect Cell/Node ids";
+  };
+  auto lbd_c2f = [&](Integer dir,
+      const CartesianNumbering<IdType>& face_numb_d,
+      IdType i, IdType j, IdType k) {
+    auto cid = cell_numb.id({i,j,k});
+    auto fid = face_numb_d.id({i,j,k});
+
+    IdType delta = face_numb_d.firstId()-cell_numb.firstId() +
+      (dir==0 ? j+k*cell_numb.nbItemDir(1) :
+       (dir==1 ? k*cell_numb.nbItemDir(0) : 0));
+    ASSERT_EQ(cid+delta,fid) << "Incorrect Cell/Face ids";
+  };
+
+  if (only_center) {
+    IdType i = cell_numb.nbItemDir(0)/2;
+    IdType j = cell_numb.nbItemDir(1)/2;
+    IdType k = cell_numb.nbItemDir(2)/2;
+    // Cell => Node
+    lbd_c2n(i,j,k);
+    // Cell => Face
+    for(Integer dir=0 ; dir<dimension ; ++dir) {
+      lbd_c2f(dir, cart_grid.cartNumFace3()[dir], i,j,k);
+    }
+  } else {
+    // Cell => Node
+    for(IdType k(0) ; k<cell_numb.nbItemDir(2) ; ++k) {
+      for(IdType j(0) ; j<cell_numb.nbItemDir(1) ; ++j) {
+	for(IdType i(0) ; i<cell_numb.nbItemDir(0) ; ++i) {
+	  lbd_c2n(i,j,k);
+	}
+      }
+    }
+    // Cell => Face
+    for(Integer dir=0 ; dir<dimension ; ++dir) {
+      auto face_numb_d = cart_grid.cartNumFace3()[dir];
+
+      for(IdType k(0) ; k<cell_numb.nbItemDir(2) ; ++k) {
+	for(IdType j(0) ; j<cell_numb.nbItemDir(1) ; ++j) {
+	  for(IdType i(0) ; i<cell_numb.nbItemDir(0) ; ++i) {
+	    lbd_c2f(dir, face_numb_d, i,j,k);
+	  }
+	}
+      }
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(CartesianMeshV2,TestCartesianGrid)
+{
+  std::cout << "TEST_CARTESIANMESHV2_CARTESIANGRID LocalIdType for dimension=2\n";
+  {
+    LocalIdType3 ncell = {5, 4, 0};
+    test_CartesianGrid<LocalIdType>(ncell, /*dim=*/2, /*only_center=*/false);
+  }
+  std::cout << "TEST_CARTESIANMESHV2_CARTESIANGRID LocalIdType for dimension=3\n";
+  {
+    LocalIdType3 ncell = {5, 4, 3};
+    test_CartesianGrid<LocalIdType>(ncell, /*dim=*/3, /*only_center=*/false);
+  }
+  std::cout << "TEST_CARTESIANMESHV2_CARTESIANGRID UniqueIdType for dimension=2\n";
+  {
+    UniqueIdType3 ncell = {150000, 75000, 0};
+    test_CartesianGrid<UniqueIdType>(ncell, /*dim=*/2, /*only_center=*/true);
+  }
+  std::cout << "TEST_CARTESIANMESHV2_CARTESIANGRID UniqueIdType for dimension=3\n";
+  {
+    UniqueIdType3 ncell = {3000, 2000, 1500};
+    test_CartesianGrid<UniqueIdType>(ncell, /*dim=*/3, /*only_center=*/true);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 // Effecttue des instantiations explicites pour tester la compilation.
 template class Arcane::CartesianMesh::V2::CartesianGrid<Arcane::Int32>;
