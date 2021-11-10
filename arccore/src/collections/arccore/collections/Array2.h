@@ -385,9 +385,9 @@ class Array2
   void _arccoreCheckSharedNull()
   {
     if (m_p==ArrayImplBase::shared_null)
-      ArrayMetaData::throwBadSharedNull();
-    if (m_md==ArrayMetaData::shared_null)
-      ArrayMetaData::throwBadSharedNull();
+      ArrayMetaData::throwNullExpected();
+    if (!m_md->is_not_null)
+      ArrayMetaData::throwNotNullExpected();
   }
  protected:
   void _copyMetaData(const Array2<DataType>& rhs)

@@ -44,9 +44,6 @@ namespace Arccore
 ArrayImplBase ArrayImplBase::shared_null_instance = ArrayImplBase();
 ArrayImplBase* ArrayImplBase::shared_null = &ArrayImplBase::shared_null_instance;
 
-ArrayMetaData ArrayMetaData::shared_null_instance = ArrayMetaData();
-ArrayMetaData* ArrayMetaData::shared_null = &ArrayMetaData::shared_null_instance;
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -200,9 +197,18 @@ overlapError(const void* begin1,Int64 size1,
 /*---------------------------------------------------------------------------*/
 
 void ArrayMetaData::
-throwBadSharedNull()
+throwNullExpected()
 {
-  throw BadAllocException("corrupted ArrayMetaData::shared_null");
+  throw BadAllocException("ArrayMetaData should be null");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ArrayMetaData::
+throwNotNullExpected()
+{
+  throw BadAllocException("ArrayMetaData should be not be null");
 }
 
 /*---------------------------------------------------------------------------*/

@@ -53,11 +53,25 @@ namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \internal
+ *
+ * \brief Meta-Données des tableaux.
+ *
+ * Cette classe sert pour contenir les meta-données communes à toutes les
+ * implémentations qui dérivent de AbstractArray.
+ */
 class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
 {
+  // NOTE: Les champs de cette classe sont utilisés pour l'affichage TTF de totalview.
+  // Si on modifie leur ordre il faut mettre à jour la copie de cette classe
+  // dans l'afficheur totalview de Arcane.
+
   template <typename> friend class AbstractArray;
   template <typename> friend class Array2;
+  template <typename> friend class Array;
+  template <typename> friend class SharedArray;
+  template <typename> friend class SharedArray2;
  public:
   ArrayMetaData() : nb_ref(0), capacity(0), size(0), dim1_size(0),
   dim2_size(0), allocator(&DefaultMemoryAllocator::shared_null_instance)
@@ -69,9 +83,6 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
   // Il faudrait vérifier s'il s'agit d'un bug du compilateur ou d'un
   // problème dans Arccore.
   ~ArrayMetaData() {}
- private:
-  static ArrayMetaData* shared_null;
-  static ArrayMetaData shared_null_instance;
  public:
   //! Nombre de références sur cet objet.
   Int64 nb_ref;
@@ -90,14 +101,8 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
   bool is_not_null = false;
  public:
 
-  static void checkSharedNull()
-  {
-    ArrayMetaData* s = shared_null;
-    if (s->capacity!=0 || s->size!=0 || s->dim1_size!=0 || s->dim2_size!=0
-        || s->allocator)
-      throwBadSharedNull();
-  }
-  static void throwBadSharedNull ARCCORE_NORETURN ();
+  static void throwNullExpected ARCCORE_NORETURN ();
+  static void throwNotNullExpected ARCCORE_NORETURN ();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -110,10 +115,6 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
  * Cette classe sert d'implémentation pour tous les types tableaux
  * de Arccore, qu'ils soient 1D (Array),  2D simple (Array2)
  * ou 2D multiples (MultiArray2).
- *
- * \note Pour garantir l'alignement pour la vectorisation, cette structure
- * (et ArrayImplT) doit avoir une taille identique (sizeof) à celle spécifiée dans
- * AlignedMemoryAllocator pour le simd et le cache.
  */
 class ARCCORE_COLLECTIONS_EXPORT ArrayImplBase
 {
@@ -272,10 +273,6 @@ class AbstractArray
   {
     return ArrayImplBase::shared_null;
   }
-  static ArrayMetaData* _sharedNullMetaData()
-  {
-    return ArrayMetaData::shared_null;
-  }
  protected:
 
   //! Construit un vecteur vide avec l'allocateur par défaut
@@ -398,6 +395,9 @@ class AbstractArray
     return m_p->ptr[i];
   }
  protected:
+  // NOTE: Ces deux champs sont utilisés pour l'affichage TTF de totalview.
+  // Si on modifie leur ordre il faut mettre à jour la partie correspondante
+  // dans l'afficheur totalview de Arcane.
   TrueImpl* m_p = _sharedNull();
   ArrayMetaData* m_md = nullptr;
  private:
@@ -804,7 +804,7 @@ class AbstractArray
   {
 #ifdef ARCANE_CHECK
     if (m_md->is_not_null)
-      ArrayMetaData::throwBadSharedNull();
+      ArrayMetaData::throwNullExpected();
 #endif
     if (_isUseOwnMetaData()){
       m_meta_data = ArrayMetaData();
