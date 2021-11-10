@@ -93,14 +93,15 @@ class Array2
  protected:
   //! Créé un tableau vide avec un allocateur spécifique \a allocator
   explicit Array2(IMemoryAllocator* allocator)
-  : AbstractArray<DataType>(allocator,0) {}
+  : AbstractArray<DataType>() { this->_initFromAllocator(allocator,0); }
   /*!
    * \brief Créé un tableau de \a size1 * \a size2 éléments avec
    * un allocateur spécifique \a allocator.
    */
   Array2(IMemoryAllocator* allocator,Int64 size1,Int64 size2)
-  : AbstractArray<DataType>(allocator,size1*size2)
+  : AbstractArray<DataType>()
   {
+    this->_initFromAllocator(allocator,size1*size2);
     resize(size1,size2);
   }
   ~Array2() = default;

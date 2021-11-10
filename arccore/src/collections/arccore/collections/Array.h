@@ -43,12 +43,13 @@ namespace Arccore
 // TODO: conserver l'allocateur (IMemoryAllocator) dans AbstractArray car
 // il n'est pas modifiable pour les SharedArray.
 
-// TODO: supprimer dans AbstractArray les constructeurs de copie à partir des vues
-// et faire la copie dans les constructeurs de classes dérivées. Cela est
-// nécessaire pour appeler les méthodes virtuelles des classes dérivées.
-
 // TODO: voir s'il faut supprimer ArrayImplT et directement utiliser un pointeur
 // alloué par l'allocateur à la place.
+
+// TODO: supprimer les méthodes virtuelles inutiles. Il ne faudrait garder que
+// _updateReference(), _getNbRef() et _isUseOwnMetaData() mais si on fait cela
+// il y a des symboles indéfinis lors de l'édition de lien (avec GCC 9).
+// A étudier...
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -282,13 +283,48 @@ class AbstractArray
   : m_baseptr(m_p->ptr)
   {
   }
+  //! Constructeur par déplacement. Ne doit être utilisé que par UniqueArray
+  AbstractArray(ThatClassType&& rhs) ARCCORE_NOEXCEPT
+  : m_p(rhs.m_p), m_baseptr(m_p->ptr)
+  {
+    _moveMetaData(rhs);
+    rhs._reset();
+  }
+  AbstractArray(const AbstractArray<T>& rhs) = delete;
+  AbstractArray<T>& operator=(const AbstractArray<T>& rhs) = delete;
+
+  virtual ~AbstractArray()
+  {
+    --m_md->nb_ref;
+    _checkFreeMemory();
+  }
+
+ protected:
+
+  /*!
+   * \brief Initialise le tableau avec la vue \a view.
+   *
+   * Cette méthode ne doit être appelée que dans un constructeur de la classe dérivée.
+   */
+  void _initFromSpan(const Span<const T>& view)
+  {
+    Int64 asize = view.size();
+    if (asize!=0){
+      _internalAllocate(asize);
+      _createRange(0,asize,view.data());
+      m_md->size = asize;
+    }
+  }
+
   /*!
    * \brief Construit un vecteur vide avec un allocateur spécifique \a a.
-   * Si \a n'est pas nul, la mémoire est allouée pour
+   *
+   * Si \a acapacity n'est pas nul, la mémoire est allouée pour
    * contenir \a acapacity éléments (mais le tableau reste vide).
+   *
+   * Cette méthode ne doit être appelée que dans un constructeur de la classe dérivée.
    */
-  AbstractArray(IMemoryAllocator* a,Int64 acapacity)
-  : m_baseptr(m_p->ptr)
+  void _initFromAllocator(IMemoryAllocator* a,Int64 acapacity)
   {
     // Si un allocateur spécifique est utilisé et qu'il n'est pas
     // celui par défaut, il faut toujours allouer un objet pour
@@ -299,52 +335,9 @@ class AbstractArray
       _directFirstAllocateWithAllocator(c,a);
     }
   }
-  //! Constructeur par déplacement. Ne doit être utilisé que par UniqueArray
-  AbstractArray(ThatClassType&& rhs) ARCCORE_NOEXCEPT
-  : m_p(rhs.m_p), m_md(rhs.m_md), m_baseptr(m_p->ptr), m_meta_data(rhs.m_meta_data)
-  {
-    if (!m_md->is_allocated_by_new)
-      m_md = &m_meta_data;
-    rhs._reset();
-  }
-  AbstractArray(Int64 asize,const T* values)
-  : m_baseptr(m_p->ptr)
-  {
-    if (asize!=0){
-      _internalAllocate(asize);
-      _createRange(0,asize,values);
-      m_md->size = asize;
-    }
-  }
-  AbstractArray(const Span<const T>& view)
-  : m_baseptr(m_p->ptr)
-  {
-    Int64 asize = view.size();
-    if (asize!=0){
-      _internalAllocate(asize);
-      _createRange(0,asize,view.data());
-      m_md->size = asize;
-    }
-  }
-  AbstractArray(const ConstArrayView<T>& view)
-  : m_baseptr(m_p->ptr)
-  {
-    Int64 asize = view.size();
-    if (asize!=0){
-      _internalAllocate(asize);
-      _createRange(0,asize,view.data());
-      m_md->size = asize;
-    }
-  }
-  AbstractArray(const AbstractArray<T>& rhs) = delete;
-  AbstractArray<T>& operator=(const AbstractArray<T>& rhs) = delete;
 
-  virtual ~AbstractArray()
-  {
-    --m_md->nb_ref;
-    _checkFreeMemory();
-  }
  public:
+
   //! Libère la mémoire utilisée par le tableau.
   void dispose()
   {
@@ -490,7 +483,6 @@ class AbstractArray
  private:
   virtual void _directFirstAllocateWithAllocator(Int64 new_capacity,IMemoryAllocator* a)
   {
-    //TODO: vérifier m_p vaut shared_null
     _allocateMetaData();
     _initMP(static_cast<TrueImpl*>(ArrayImplBase::allocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p,m_md,a)));
     m_md->allocator = a;
@@ -695,17 +687,11 @@ class AbstractArray
 
     _setMP(rhs.m_p);
 
-    // Déplace les meta-données
-    m_meta_data = rhs.m_meta_data;
-    if (rhs.m_md==&rhs.m_meta_data)
-      m_md = &m_meta_data;
-    else
-      m_md = rhs.m_md;
+    _moveMetaData(rhs);
 
     // Indique que \a rhs est vide.
     rhs._reset();
   }
-
   /*!
    * \brief Échange les valeurs de l'instance avec celles de \a rhs.
    *
@@ -719,6 +705,8 @@ class AbstractArray
     std::swap(m_baseptr,rhs.m_baseptr);
     std::swap(m_md,rhs.m_md);
     std::swap(m_meta_data,rhs.m_meta_data);
+    _checkSetUseOwnMetaData();
+    rhs._checkSetUseOwnMetaData();
   }
 
   void _shrink()
@@ -740,6 +728,24 @@ class AbstractArray
   }
 
  private:
+
+  void _moveMetaData(ThatClassType& rhs)
+  {
+    // Déplace les meta-données
+    // Attention si on utilise m_meta_data alors il
+    // faut positionner m_md pour qu'il pointe vers notre propre m_meta_data.
+    m_meta_data = rhs.m_meta_data;
+    m_md = rhs.m_md;
+    _checkSetUseOwnMetaData();
+  }
+
+  void _checkSetUseOwnMetaData()
+  {
+    if (m_md!=_sharedNullMetaData())
+      if (!m_md->is_allocated_by_new)
+        m_md = &m_meta_data;
+  }
+
   /*!
    * \brief Réinitialise le tableau à un tableau vide.
    * \warning Cette méthode n'est valide que pour les UniqueArray et pas
@@ -789,7 +795,12 @@ class AbstractArray
 
   void _allocateMetaData()
   {
+#ifdef ARCANE_CHECK
+    if (m_md!=_sharedNullMetaData())
+      ArrayMetaData::throwBadSharedNull();
+#endif
     if (_isUseOwnMetaData()){
+      m_meta_data = ArrayMetaData();
       m_md = &m_meta_data;
       return;
     }
@@ -849,42 +860,19 @@ class Array
   using typename BaseClassType::difference_type;
  protected:
   Array() {}
-  Array(Int64 asize,ConstReferenceType value) : AbstractArray<T>()
-  {
-    this->_resize(asize,value);
-  }
-  //! Constructeur avec liste d'initialisation.
-  Array(std::initializer_list<T> alist) : AbstractArray<T>()
+ protected:
+  //! Constructeur par déplacement (uniquement pour UniqueArray)
+  Array(Array<T>&& rhs) ARCCORE_NOEXCEPT : AbstractArray<T>(std::move(rhs)) {}
+
+ protected:
+
+  void _initFromInitializerList(std::initializer_list<T> alist)
   {
     Int64 nsize = arccoreCheckArraySize(alist.size());
     this->_reserve(nsize);
     for( auto x : alist )
       this->add(x);
   }
-  explicit Array(Int64 asize) : AbstractArray<T>()
-  {
-    this->_resize(asize);
-  }
-  Array(const ConstArrayView<T>& aview) : AbstractArray<T>(aview)
-  {
-  }
-  Array(const Span<const T>& aview) : AbstractArray<T>(aview)
-  {
-  }
-  /*!
-   * \brief Créé un tableau de \a asize éléments avec un allocateur spécifique.
-   *
-   * Si ArrayTraits<T>::IsPODType vaut TrueType, les éléments ne sont pas
-   * initialisés. Sinon, c'est le constructeur par défaut de T qui est utilisé.
-   */
-  Array(IMemoryAllocator* allocator,Int64 asize)
-  : AbstractArray<T>(allocator,asize)
-  {
-    this->_resize(asize);
-  }
- protected:
-  //! Constructeur par déplacement (uniquement pour UniqueArray)
-  Array(Array<T>&& rhs) ARCCORE_NOEXCEPT : AbstractArray<T>(std::move(rhs)) {}
  private:
   Array(const Array<T>& rhs) = delete;
   void operator=(const Array<T>& rhs) = delete;
@@ -1175,7 +1163,9 @@ class Array
   [[deprecated("Y2021: Use SharedArray::clone() or UniqueArray::clone()")]]
   Array<T> clone() const
   {
-    return Array<T>(this->constSpan());
+    Array<T> x;
+    x.copy(this->constSpan());
+    return x;
   }
 
   //! \internal Accès à la racine du tableau hors toute protection
@@ -1320,27 +1310,32 @@ class SharedArray
   }
   //! Créé un tableau en recopiant les valeurs de la value \a view.
   SharedArray(const ConstArrayView<T>& aview)
-  : Array<T>(aview), m_next(nullptr), m_prev(nullptr)
+  : Array<T>(), m_next(nullptr), m_prev(nullptr)
   {
+    this->_initFromSpan(Span<const T>(aview));
   }
   //! Créé un tableau en recopiant les valeurs de la value \a view.
   SharedArray(const Span<const T>& aview)
-  : Array<T>(aview), m_next(nullptr), m_prev(nullptr)
+  : Array<T>(), m_next(nullptr), m_prev(nullptr)
   {
+    this->_initFromSpan(Span<const T>(aview));
   }
   //! Créé un tableau en recopiant les valeurs de la value \a view.
   SharedArray(const ArrayView<T>& aview)
-  : Array<T>(Span<const T>(aview)), m_next(nullptr), m_prev(nullptr)
+  : Array<T>(), m_next(nullptr), m_prev(nullptr)
   {
+    this->_initFromSpan(Span<const T>(aview));
   }
   //! Créé un tableau en recopiant les valeurs de la value \a view.
   SharedArray(const Span<T>& aview)
-  : Array<T>(aview), m_next(nullptr), m_prev(nullptr)
+  : Array<T>(), m_next(nullptr), m_prev(nullptr)
   {
+    this->_initFromSpan(aview);
   }
   SharedArray(std::initializer_list<T> alist)
-  : Array<T>(alist), m_next(nullptr), m_prev(nullptr)
+  : Array<T>(), m_next(nullptr), m_prev(nullptr)
   {
+    this->_initFromInitializerList(alist);
   }
   //! Créé un tableau faisant référence à \a rhs.
   SharedArray(const SharedArray<T>& rhs)
@@ -1538,40 +1533,51 @@ class UniqueArray
     this->_resize((Int64)asize);
   }
   //! Créé un tableau en recopiant les valeurs de la value \a aview.
-  UniqueArray(const ConstArrayView<T>& aview) : Array<T>(Span<const T>(aview))
+  UniqueArray(const ConstArrayView<T>& aview)
   {
+    this->_initFromSpan(Span<const T>(aview));
   }
   //! Créé un tableau en recopiant les valeurs de la value \a aview.
-  UniqueArray(const Span<const T>& aview) : Array<T>(aview)
+  UniqueArray(const Span<const T>& aview)
   {
+    this->_initFromSpan(aview);
   }
   //! Créé un tableau en recopiant les valeurs de la value \a aview.
-  UniqueArray(const ArrayView<T>& aview) : Array<T>(Span<const T>(aview))
+  UniqueArray(const ArrayView<T>& aview)
   {
+    this->_initFromSpan(Span<const T>(aview));
   }
   //! Créé un tableau en recopiant les valeurs de la value \a aview.
-  UniqueArray(const Span<T>& aview) : Array<T>(aview)
+  UniqueArray(const Span<T>& aview)
   {
+    this->_initFromSpan(aview);
   }
-  UniqueArray(std::initializer_list<T> alist) : Array<T>(alist)
+  UniqueArray(std::initializer_list<T> alist)
   {
-  }
-  //! Créé un tableau en recopiant les valeurs \a rhs.
-  UniqueArray(const Array<T>& rhs) : Array<T>(rhs.constView())
-  {
+    this->_initFromInitializerList(alist);
   }
   //! Créé un tableau en recopiant les valeurs \a rhs.
-  UniqueArray(const UniqueArray<T>& rhs) : Array<T>(rhs.constView())
+  UniqueArray(const Array<T>& rhs)
   {
+    this->_initFromSpan(rhs.constView());
   }
   //! Créé un tableau en recopiant les valeurs \a rhs.
-  UniqueArray(const SharedArray<T>& rhs) : Array<T>(rhs.constView())
+  UniqueArray(const UniqueArray<T>& rhs) : Array<T> {}
   {
+    this->_initFromSpan(rhs.constView());
+  }
+  //! Créé un tableau en recopiant les valeurs \a rhs.
+  UniqueArray(const SharedArray<T>& rhs)
+  {
+    this->_initFromSpan(rhs.constView());
   }
   //! Constructeur par déplacement. \a rhs est invalidé après cet appel
   UniqueArray(UniqueArray<T>&& rhs) ARCCORE_NOEXCEPT : Array<T>(std::move(rhs)) {}
   //! Créé un tableau vide avec un allocateur spécifique \a allocator
-  explicit UniqueArray(IMemoryAllocator* allocator) : Array<T>(allocator,0) {}
+  explicit UniqueArray(IMemoryAllocator* allocator) : Array<T>()
+  {
+    this->_initFromAllocator(allocator,0);
+  }
   /*!
    * \brief Créé un tableau de \a asize éléments avec un
    * allocateur spécifique \a allocator.
@@ -1580,7 +1586,11 @@ class UniqueArray
    * initialisés. Sinon, c'est le constructeur par défaut de T qui est utilisé.
    */
   UniqueArray(IMemoryAllocator* allocator,Int64 asize)
-  : Array<T>(allocator,asize) { }
+  : Array<T>()
+  {
+    this->_initFromAllocator(allocator,asize);
+    this->_resize(asize);
+  }
   //! Copie les valeurs de \a rhs dans cette instance.
   void operator=(const Array<T>& rhs)
   {
@@ -1640,8 +1650,8 @@ class UniqueArray
   {
     return UniqueArray<T>(this->constSpan());
   }
- private:
-  bool _isUseOwnMetaData() const final { return true; }
+ protected:
+  bool _isUseOwnMetaData() const override { return true; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -1662,10 +1672,11 @@ swap(UniqueArray<T>& v1,UniqueArray<T>& v2)
 
 template<typename T> inline SharedArray<T>::
 SharedArray(const UniqueArray<T>& rhs)
-: Array<T>(rhs.constView())
+: Array<T>()
 , m_next(nullptr)
 , m_prev(nullptr)
 {
+  this->_initFromSpan(rhs.constSpan());
 }
 
 /*---------------------------------------------------------------------------*/
