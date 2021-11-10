@@ -384,7 +384,7 @@ class Array2
  private:
   void _arccoreCheckSharedNull()
   {
-    if (m_p==ArrayImplBase::shared_null)
+    if (!m_p)
       ArrayMetaData::throwNullExpected();
     if (!m_md->is_not_null)
       ArrayMetaData::throwNotNullExpected();

@@ -129,9 +129,6 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayImplBase
   // Il faudrait vérifier s'il s'agit d'un bug du compilateur ou d'un
   // problème dans Arccore.
   ~ArrayImplBase() {}
- private:
-  static ArrayImplBase* shared_null;
-  static ArrayImplBase shared_null_instance;
  public:
 
   static ArrayImplBase* allocate(Int64 sizeof_true_impl,Int64 nb,
@@ -265,14 +262,13 @@ class AbstractArray
 
  private:
 
+#if 0
   static TrueImpl* _sharedNull()
   {
     return static_cast<TrueImpl*>(ArrayImplBase::shared_null);
   }
-  static ArrayImplBase* _sharedNullBase()
-  {
-    return ArrayImplBase::shared_null;
-  }
+#endif
+
  protected:
 
   //! Construit un vecteur vide avec l'allocateur par défaut
@@ -398,7 +394,7 @@ class AbstractArray
   // NOTE: Ces deux champs sont utilisés pour l'affichage TTF de totalview.
   // Si on modifie leur ordre il faut mettre à jour la partie correspondante
   // dans l'afficheur totalview de Arcane.
-  TrueImpl* m_p = _sharedNull();
+  TrueImpl* m_p = nullptr;
   ArrayMetaData* m_md = nullptr;
  private:
   T* m_baseptr;
@@ -786,14 +782,14 @@ class AbstractArray
 
   bool _isSharedNull()
   {
-    return m_p==TrueImpl::shared_null;
+    return m_p==nullptr;
 
   }
  private:
 
   void _setToSharedNull()
   {
-    m_p = _sharedNull();
+    m_p = nullptr;
     m_meta_data = ArrayMetaData();
     m_md = &m_meta_data;
   }

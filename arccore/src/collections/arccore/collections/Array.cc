@@ -41,12 +41,6 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ArrayImplBase ArrayImplBase::shared_null_instance = ArrayImplBase();
-ArrayImplBase* ArrayImplBase::shared_null = &ArrayImplBase::shared_null_instance;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 class BadAllocException
 : public std::bad_alloc
 {
