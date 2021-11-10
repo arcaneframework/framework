@@ -72,6 +72,7 @@ class Array2
   using AbstractArray<DataType>::m_p;
   using AbstractArray<DataType>::m_md;
   using AbstractArray<DataType>::_setMP2;
+  using AbstractArray<DataType>::_setMP;
   using AbstractArray<DataType>::_destroy;
   using AbstractArray<DataType>::_internalDeallocate;
  protected:
@@ -388,6 +389,11 @@ class Array2
     if (m_md==ArrayMetaData::shared_null)
       ArrayMetaData::throwBadSharedNull();
   }
+ protected:
+  void _copyMetaData(const Array2<DataType>& rhs)
+  {
+    AbstractArray<DataType>::_copyMetaData(rhs);
+  }
 };
 
 
@@ -486,7 +492,8 @@ class SharedArray2
  protected:
   void _initReference(const ThatClassType& rhs)
   {
-    this->_setMP2(rhs.m_p,rhs.m_md);
+    this->_setMP(rhs.m_p);
+    this->_copyMetaData(rhs);
     _addReference(&rhs);
     ++m_md->nb_ref;
   }
@@ -507,6 +514,10 @@ class SharedArray2
     for( ThatClassType* i = m_next; i; i = i->m_next )
       ++nb_ref;
     return nb_ref;
+  }
+  bool _isUseOwnMetaData() const final
+  {
+    return false;
   }
   /*!
    * \brief Insère cette instance dans la liste chaînée.

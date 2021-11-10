@@ -87,7 +87,7 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
   IMemoryAllocator* allocator;
   //! Indique is cette instance a été allouée par l'opérateur new.
   bool is_allocated_by_new = false;
-
+  bool is_not_null = false;
  public:
 
   static void checkSharedNull()
@@ -282,12 +282,13 @@ class AbstractArray
   AbstractArray()
   : m_baseptr(m_p->ptr)
   {
+    m_md = &m_meta_data;
   }
   //! Constructeur par déplacement. Ne doit être utilisé que par UniqueArray
   AbstractArray(ThatClassType&& rhs) ARCCORE_NOEXCEPT
   : m_p(rhs.m_p), m_baseptr(m_p->ptr)
   {
-    _moveMetaData(rhs);
+    _copyMetaData(rhs);
     rhs._reset();
   }
   AbstractArray(const AbstractArray<T>& rhs) = delete;
@@ -398,7 +399,7 @@ class AbstractArray
   }
  protected:
   TrueImpl* m_p = _sharedNull();
-  ArrayMetaData* m_md = _sharedNullMetaData();
+  ArrayMetaData* m_md = nullptr;
  private:
   T* m_baseptr;
   ArrayMetaData m_meta_data;
@@ -471,7 +472,7 @@ class AbstractArray
   {
     if (!_isSharedNull())
       ArrayImplBase::deallocate(m_p,m_md);
-    if (m_md!=_sharedNullMetaData())
+    if (m_md->is_not_null)
       _deallocateMetaData(m_md);
   }
   virtual void _internalAllocate(Int64 new_capacity)
@@ -492,7 +493,7 @@ class AbstractArray
   }
   virtual void _directAllocate(Int64 new_capacity)
   {
-    if (m_md==_sharedNullMetaData())
+    if (!m_md->is_not_null)
       _allocateMetaData();
     _initMP(static_cast<TrueImpl*>(ArrayImplBase::allocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p,m_md)));
   }
@@ -514,6 +515,10 @@ class AbstractArray
   virtual Integer _getNbRef()
   {
     return 1;
+  }
+  virtual bool _isUseOwnMetaData() const
+  {
+    return true;
   }
   //! Ajoute \a n élément de valeur \a val à la fin du tableau
   void _addRange(ConstReferenceType val,Int64 n)
@@ -687,7 +692,7 @@ class AbstractArray
 
     _setMP(rhs.m_p);
 
-    _moveMetaData(rhs);
+    _copyMetaData(rhs);
 
     // Indique que \a rhs est vide.
     rhs._reset();
@@ -727,9 +732,9 @@ class AbstractArray
     _internalReallocate(new_capacity,IsPODType());
   }
 
- private:
+ protected:
 
-  void _moveMetaData(ThatClassType& rhs)
+  void _copyMetaData(const ThatClassType& rhs)
   {
     // Déplace les meta-données
     // Attention si on utilise m_meta_data alors il
@@ -739,11 +744,12 @@ class AbstractArray
     _checkSetUseOwnMetaData();
   }
 
+ private:
+
   void _checkSetUseOwnMetaData()
   {
-    if (m_md!=_sharedNullMetaData())
-      if (!m_md->is_allocated_by_new)
-        m_md = &m_meta_data;
+    if (!m_md->is_allocated_by_new)
+      m_md = &m_meta_data;
   }
 
   /*!
@@ -771,7 +777,11 @@ class AbstractArray
   void _setMP2(TrueImpl* new_mp,ArrayMetaData* new_md)
   {
     m_p = new_mp;
+    // Il ne faut garder le nouveau m_md que s'il est alloué
+    // sinon on risque d'avoir des références sur des objets temporaires
     m_md = new_md;
+    if (!m_md->is_allocated_by_new)
+      m_md = &m_meta_data;
   }
 
   bool _isSharedNull()
@@ -784,29 +794,27 @@ class AbstractArray
   void _setToSharedNull()
   {
     m_p = _sharedNull();
-    m_md = _sharedNullMetaData();
+    m_meta_data = ArrayMetaData();
+    m_md = &m_meta_data;
   }
-
- protected:
-
-  virtual bool _isUseOwnMetaData() const { return false; }
 
  private:
 
   void _allocateMetaData()
   {
 #ifdef ARCANE_CHECK
-    if (m_md!=_sharedNullMetaData())
+    if (m_md->is_not_null)
       ArrayMetaData::throwBadSharedNull();
 #endif
     if (_isUseOwnMetaData()){
       m_meta_data = ArrayMetaData();
       m_md = &m_meta_data;
-      return;
     }
-
-    m_md = new ArrayMetaData();
-    m_md->is_allocated_by_new = true;
+    else{
+      m_md = new ArrayMetaData();
+      m_md->is_allocated_by_new = true;
+    }
+    m_md->is_not_null = true;
   }
 
   void _deallocateMetaData(ArrayMetaData* md)
@@ -1339,7 +1347,7 @@ class SharedArray
   }
   //! Créé un tableau faisant référence à \a rhs.
   SharedArray(const SharedArray<T>& rhs)
-  : Array<T>(),  m_next(nullptr), m_prev(nullptr)
+  : Array<T>(), m_next(nullptr), m_prev(nullptr)
   {
     _initReference(rhs);
   }
@@ -1387,13 +1395,16 @@ class SharedArray
  protected:
   void _initReference(const ThatClassType& rhs)
   {
-    this->_setMP2(rhs.m_p,rhs.m_md);
+    // TODO fusionner avec l'implémentation de SharedArray2
+    this->_setMP(rhs.m_p);
+    this->_copyMetaData(rhs);
     _addReference(&rhs);
     ++m_md->nb_ref;
   }
   //! Mise à jour des références
   void _updateReferences() final
   {
+    // TODO fusionner avec l'implémentation de SharedArray2
     for( ThatClassType* i = m_prev; i; i = i->m_prev )
       i->_setMP2(m_p,m_md);
     for( ThatClassType* i = m_next; i; i = i->m_next )
@@ -1402,12 +1413,17 @@ class SharedArray
   //! Mise à jour des références
   Integer _getNbRef() final
   {
+    // TODO fusionner avec l'implémentation de SharedArray2
     Integer nb_ref = 1;
     for( ThatClassType* i = m_prev; i; i = i->m_prev )
       ++nb_ref;
     for( ThatClassType* i = m_next; i; i = i->m_next )
       ++nb_ref;
     return nb_ref;
+  }
+  bool _isUseOwnMetaData() const final
+  {
+    return false;
   }
   /*!
    * \brief Insère cette instance dans la liste chaînée.
@@ -1650,8 +1666,6 @@ class UniqueArray
   {
     return UniqueArray<T>(this->constSpan());
   }
- protected:
-  bool _isUseOwnMetaData() const override { return true; }
 };
 
 /*---------------------------------------------------------------------------*/
