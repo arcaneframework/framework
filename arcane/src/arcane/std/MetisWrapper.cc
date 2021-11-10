@@ -198,9 +198,22 @@ callPartKway(ITraceMng* tm, const bool print_digest, const bool gather,
   MetisCall partkway = [&](MPI_Comm& graph_comm, MetisGraphView graph,
                            ArrayView<idx_t> graph_vtxdist)
   {
+    // NOTE GG: il peut arriver que ces deux pointeurs soient nuls s'il n'y a pas
+    // de voisins. Si tout le reste est cohérent cela ne pose pas de problèmes mais ParMetis
+    // n'aime pas les tableaux vides donc si c'est le cas on met un 0.
+    // TODO: il faudrait regarder en amont s'il ne vaudrait pas mieux mettre des valeurs
+    // dans ces deux tableaux au cas où.
+    idx_t null_idx = 0;
+    idx_t* adjncy_data = graph.adjncy.data();
+    idx_t* adjwgt_data = graph.adjwgt.data();
+    if (!adjncy_data)
+      adjncy_data = &null_idx;
+    if (!adjwgt_data)
+      adjwgt_data = &null_idx;
+
     return ParMETIS_V3_PartKway(graph_vtxdist.data(), graph.xadj.data(),
-                                graph.adjncy.data(), graph.vwgt.data(), 
-                                graph.adjwgt.data(), wgtflag, numflag, ncon, nparts, tpwgts,
+                                adjncy_data, graph.vwgt.data(),
+                                adjwgt_data, wgtflag, numflag, ncon, nparts, tpwgts,
                                 ubvec, options, edgecut, graph.part.data(), &graph_comm);
   };
 
