@@ -42,6 +42,7 @@ Project(Alien
 option(ALIEN_COMPONENT_RefSemantic "Whether or not to compile RefSemantic package" ON)
 option(ALIEN_COMPONENT_MoveSemantic "Whether or not to compile MoveSemantic package" ON)
 option(ALIEN_UNIT_TESTS "Whether or not to enable unit tests" OFF)
+option(ALIEN_EXPAND_TESTS "Run unit tests one by one" OFF)
 
 option(ALIEN_USE_HDF5 "Enable HDF5 export" OFF)
 option(ALIEN_USE_LIBXML2 "Enable xml export" OFF)

@@ -14,66 +14,69 @@
 # 
 # SPDX-License-Identifier: Apache-2.0
 
-cmake_minimum_required(VERSION 3.0)
+find_package(MPI REQUIRED)
+find_package(GTest REQUIRED)
 
-set(TEST_LIST
-        Vector
-        VectorBuilder
-        MatrixDirectBuilder
-        CompositeVector
-        CompositeMatrix
-        BlockMatrix
-        VBlockMatrix
-        Redistributor
+add_executable(ref.gtest.mpi
+        main.cpp
+        TestIndexManager.cc
         )
 
-if (ALIEN_MV_EXPR)
-    set(TEST_LIST ${TEST_LIST} MVExpr)
-endif ()
-
-set(PARALLEL_TEST_LIST
-        IndexManager)
-
 if (ALIEN_USE_XML)
-    set(PARALLEL_TEST_LIST ${PARALLEL_TEST_LIST} ImportExport)
+    target_sources(ref.gtest.mpi TestImportExport.cc)
 endif ()
 
-add_executable(gtest.refsemantic
-        main.cpp)
+add_executable(ref.gtest.seq main.cpp
+        TestVector.cc
+        TestVectorBuilder.cc
+        TestMatrixDirectBuilder.cc
+        TestCompositeVector.cc
+        TestCompositeMatrix.cc
+        TestBlockMatrix.cc
+        TestVBlockMatrix.cc
+        TestRedistributor.cc)
 
-foreach (test_name ${TEST_LIST})
-    target_sources(gtest.refsemantic PRIVATE Test${test_name}.cc)
-endforeach ()
+if (ALIEN_MV_EXPR)
+    target_sources(ref.gtest.seq TestMVExpr.cc)
+endif ()
 
-foreach (test_name ${PARALLEL_TEST_LIST})
-    target_sources(gtest.refsemantic PRIVATE Test${test_name}.cc)
-endforeach ()
+target_link_libraries(ref.gtest.mpi PRIVATE
+        GTest::GTest
+        Alien::alien_core
+        Alien::alien_semantic_ref
+        alien_test_framework
+        arcconpkg_MPI
+        )
 
-target_link_libraries(gtest.refsemantic PRIVATE
+target_link_libraries(ref.gtest.seq PRIVATE
         GTest::GTest
         Alien::alien_core
         Alien::alien_semantic_ref
         alien_test_framework
         )
 
-foreach (test_name ${TEST_LIST})
+if (ALIEN_EXPAND_TESTS)
+    gtest_discover_tests(ref.gtest.seq TEST_PREFIX "ref." TEST_SUFFIX ".seq")
+    gtest_discover_tests(ref.gtest.mpi TEST_PREFIX "ref." TEST_SUFFIX ".seq")
+else (ALIEN_EXPAND_TESTS)
     alien_test(
-            BENCH refsemantic.gtest
-            NAME ${test_name}
-            COMMAND gtest.refsemantic
-            OPTIONS --gtest_filter=Test${test_name}*
+            BENCH ref
+            NAME "seq"
+            COMMAND ref.gtest.seq
     )
-endforeach ()
-
-
-foreach (test_name ${PARALLEL_TEST_LIST})
     alien_test(
-            BENCH refsemantic.gtest
-            NAME ${test_name}
-            PROCS 4
-            COMMAND gtest.refsemantic
-            OPTIONS --gtest_filter=Test${test_name}*
+            BENCH ref
+            NAME "mpi"
+            COMMAND ref.gtest.mpi
     )
-endforeach ()
+endif (ALIEN_EXPAND_TESTS)
+
+alien_test(
+        BENCH ref
+        NAME "mpi"
+        PROCS 4
+        COMMAND ref.gtest.mpi
+        PARALLEL_ONLY
+)
 
 

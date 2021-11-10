@@ -86,21 +86,21 @@ TEST(TestSpacePartition, IndicesParLabel)
 TEST(TestSpacePartiton, Partition)
 {
   Alien::Space s(10);
+  UniqueArray<String> tags(2);
+  tags[0] = "Field1";
+  tags[1] = "Field2";
   UniqueArray<Integer> indices1(3);
   indices1[0] = 0;
   indices1[1] = 1;
   indices1[2] = 2;
-  s.setField("Field1", indices1);
+  s.setField(tags[0], indices1);
   UniqueArray<Integer> indices2(3);
   indices2[0] = 6;
   indices2[1] = 7;
   indices2[2] = 8;
-  s.setField("Field2", indices2);
+  s.setField(tags[1], indices2);
   Alien::MatrixDistribution d(10, 10, AlienTest::Environment::parallelMng());
   Alien::Partition p(s, d);
-  UniqueArray<String> tags(2);
-  tags[0] = "Field1";
-  tags[1] = "Field2";
   p.create(tags);
   ASSERT_TRUE(p.hasUntaggedPart());
   ASSERT_EQ(2, p.nbTaggedParts());
@@ -110,8 +110,8 @@ TEST(TestSpacePartiton, Partition)
   const auto& i2 = p.taggedPart(1);
   for (auto i = 0; i < 3; ++i)
     ASSERT_EQ(indices2[i], i2[i]);
-  ASSERT_EQ(p.tag(0), "Field1");
-  ASSERT_EQ(p.tag(1), "Field2");
+  ASSERT_EQ(p.tag(0), tags[0]);
+  ASSERT_EQ(p.tag(1), tags[1]);
   const auto& i3 = p.untaggedPart();
   auto* pm = AlienTest::Environment::parallelMng();
   int size = i3.size();

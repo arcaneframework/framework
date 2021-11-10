@@ -14,56 +14,56 @@
 # 
 # SPDX-License-Identifier: Apache-2.0
 
-cmake_minimum_required(VERSION 3.0)
+find_package(MPI REQUIRED)
+find_package(GTest REQUIRED)
 
-set(TEST_LIST
-        Vector
-        VectorBuilder
-        MatrixDirectBuilder
+add_executable(move.gtest.mpi
+        main.cpp
+        TestIndexManager.cc
+        TestDoKMatrix.cc
         )
 
-set(PARALLEL_TEST_LIST
-        IndexManager
-        DoKMatrix
+add_executable(move.gtest.seq main.cpp
+        TestVector.cc
+        TestVectorBuilder.cc
+        TestMatrixDirectBuilder.cc
         )
 
+target_link_libraries(move.gtest.mpi PRIVATE
+        GTest::GTest
+        Alien::alien_core
+        Alien::alien_semantic_move
+        alien_test_framework
+        arcconpkg_MPI
+        )
 
-add_executable(gtest.movesemantic
-        main.cpp)
-
-foreach (test_name ${TEST_LIST})
-    target_sources(gtest.movesemantic PRIVATE Test${test_name}.cc)
-endforeach ()
-
-foreach (test_name ${PARALLEL_TEST_LIST})
-    target_sources(gtest.movesemantic PRIVATE Test${test_name}.cc)
-endforeach ()
-
-target_link_libraries(gtest.movesemantic PRIVATE
+target_link_libraries(move.gtest.seq PRIVATE
         GTest::GTest
         Alien::alien_core
         Alien::alien_semantic_move
         alien_test_framework
         )
 
-foreach (test_name ${TEST_LIST})
+if (ALIEN_EXPAND_TESTS)
+    gtest_discover_tests(move.gtest.seq TEST_PmoveIX "move." TEST_SUFFIX ".seq")
+    gtest_discover_tests(move.gtest.mpi TEST_PmoveIX "move." TEST_SUFFIX ".seq")
+else (ALIEN_EXPAND_TESTS)
     alien_test(
-            BENCH movesemantic.gtest
-            NAME ${test_name}
-            COMMAND gtest.movesemantic
-            OPTIONS --gtest_filter=Test${test_name}*
+            BENCH move
+            NAME "seq"
+            COMMAND move.gtest.seq
     )
-endforeach ()
-
-
-foreach (test_name ${PARALLEL_TEST_LIST})
     alien_test(
-            BENCH movesemantic.gtest
-            NAME ${test_name}
-            PROCS 4
-            COMMAND gtest.movesemantic
-            OPTIONS --gtest_filter=Test${test_name}*
+            BENCH move
+            NAME "mpi"
+            COMMAND move.gtest.mpi
     )
-endforeach ()
+endif (ALIEN_EXPAND_TESTS)
 
-
+alien_test(
+        BENCH move
+        NAME "mpi"
+        PROCS 4
+        COMMAND move.gtest.mpi
+        PARALLEL_ONLY
+)

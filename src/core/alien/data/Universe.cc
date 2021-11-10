@@ -60,6 +60,7 @@ struct Universe::Internal
 Universe::Internal::Internal()
 : m_trace_mng(nullptr)
 , m_level(Verbosity::Info)
+, m_data_base()
 {}
 
 /*---------------------------------------------------------------------------*/

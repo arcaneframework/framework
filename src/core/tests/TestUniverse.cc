@@ -51,13 +51,6 @@ TEST(TestUniverse, Reset)
   ASSERT_TRUE(u.traceMng() == nullptr);
 }
 
-TEST(TestUniverse, NoTraceMng)
-{
-  Alien::Universe u;
-  ASSERT_TRUE(u.traceMng() == nullptr);
-  u.reset();
-}
-
 TEST(TestUniverse, TraceMng)
 {
   auto* mng = AlienTest::Environment::traceMng();
