@@ -65,7 +65,8 @@ void DoKDistributorComm::computeCommPlan(IReverseIndexer* rev_index)
   m_snd_offset[0] = 0;
   for (IReverseIndexer::Offset i = 0; i < size; i++) {
     Int32 row_id = snd_rows[i];
-    while ((!is_mine(p, row_id)) && p < super_comm_size) {
+    while (p < super_comm_size // Check if p is valid
+           && (!is_mine(p, row_id))) {
       p++;
       m_snd_offset[p] = i;
     }

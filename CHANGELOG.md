@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+**Fixed bugs:**
+- [core]: fixed out of range access in DoKMatrix communication.
+
 ## 1.1.2
 
 **Changes:**
