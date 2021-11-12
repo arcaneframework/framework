@@ -220,6 +220,95 @@ ARCCORE_DEFINE_ARRAY_PODTYPE(long double);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Classe de base pour les tableaux.
+ *
+ * Cette classe gère uniquement les meta-données pour les tableaux comme
+ * le nombre d'éléments ou la capacité.
+ */
+class ARCCORE_COLLECTIONS_EXPORT AbstractArrayBase
+{
+ public:
+
+  AbstractArrayBase()
+  {
+    m_md = &m_meta_data;
+  }
+  virtual ~AbstractArrayBase() = default;
+
+ protected:
+
+  ArrayMetaData* m_md = nullptr;
+  ArrayMetaData m_meta_data;
+
+ protected:
+ /*!
+  * \brief Indique si \a m_md fait référence à \a m_meta_data.
+  *
+  * C'est le cas pour les UniqueArray et UniqueArray2 mais
+  * pas pour les SharedArray et SharedArray2.
+  */
+  virtual bool _isUseOwnMetaData() const
+  {
+    return true;
+  }
+
+ protected:
+
+  void _swapMetaData(AbstractArrayBase& rhs)
+  {
+    std::swap(m_md,rhs.m_md);
+    std::swap(m_meta_data,rhs.m_meta_data);
+    _checkSetUseOwnMetaData();
+    rhs._checkSetUseOwnMetaData();
+  }
+
+  void _copyMetaData(const AbstractArrayBase& rhs)
+  {
+    // Déplace les meta-données
+    // Attention si on utilise m_meta_data alors il
+    // faut positionner m_md pour qu'il pointe vers notre propre m_meta_data.
+    m_meta_data = rhs.m_meta_data;
+    m_md = rhs.m_md;
+    _checkSetUseOwnMetaData();
+  }
+
+  void _allocateMetaData()
+  {
+#ifdef ARCANE_CHECK
+    if (m_md->is_not_null)
+      ArrayMetaData::throwNullExpected();
+#endif
+    if (_isUseOwnMetaData()){
+      m_meta_data = ArrayMetaData();
+      m_md = &m_meta_data;
+    }
+    else{
+      m_md = new ArrayMetaData();
+      m_md->is_allocated_by_new = true;
+    }
+    m_md->is_not_null = true;
+  }
+
+  void _deallocateMetaData(ArrayMetaData* md)
+  {
+    if (md->is_allocated_by_new)
+      delete md;
+    else
+      *md = ArrayMetaData();
+  }
+
+ private:
+
+  void _checkSetUseOwnMetaData()
+  {
+    if (!m_md->is_allocated_by_new)
+      m_md = &m_meta_data;
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \ingroup Collection
  * \brief Classe abstraite de base d'un vecteur.
  *
@@ -228,6 +317,7 @@ ARCCORE_DEFINE_ARRAY_PODTYPE(long double);
  */
 template<typename T>
 class AbstractArray
+: public AbstractArrayBase
 {
  public:
 
@@ -265,7 +355,6 @@ class AbstractArray
   //! Construit un vecteur vide avec l'allocateur par défaut
   AbstractArray()
   {
-    m_md = &m_meta_data;
   }
   //! Constructeur par déplacement. Ne doit être utilisé que par UniqueArray
   AbstractArray(ThatClassType&& rhs) ARCCORE_NOEXCEPT
@@ -385,10 +474,9 @@ class AbstractArray
   // Si on modifie leur ordre il faut mettre à jour la partie correspondante
   // dans l'afficheur totalview de Arcane.
   TrueImpl* m_p = nullptr;
-  ArrayMetaData* m_md = nullptr;
   T* m_ptr = nullptr;
  private:
-  ArrayMetaData m_meta_data;
+  using AbstractArrayBase::m_meta_data;
  protected:
   //! Réserve le mémoire pour \a new_capacity éléments
   void _reserve(Int64 new_capacity)
@@ -502,10 +590,6 @@ class AbstractArray
   virtual Integer _getNbRef()
   {
     return 1;
-  }
-  virtual bool _isUseOwnMetaData() const
-  {
-    return true;
   }
   //! Ajoute \a n élément de valeur \a val à la fin du tableau
   void _addRange(ConstReferenceType val,Int64 n)
@@ -695,10 +779,7 @@ class AbstractArray
   {
     std::swap(m_p,rhs.m_p);
     std::swap(m_ptr,rhs.m_ptr);
-    std::swap(m_md,rhs.m_md);
-    std::swap(m_meta_data,rhs.m_meta_data);
-    _checkSetUseOwnMetaData();
-    rhs._checkSetUseOwnMetaData();
+    _swapMetaData(rhs);
   }
 
   void _shrink()
@@ -717,26 +798,6 @@ class AbstractArray
     if (new_capacity<4)
       new_capacity = 4;
     _internalReallocate(new_capacity,IsPODType());
-  }
-
- protected:
-
-  void _copyMetaData(const ThatClassType& rhs)
-  {
-    // Déplace les meta-données
-    // Attention si on utilise m_meta_data alors il
-    // faut positionner m_md pour qu'il pointe vers notre propre m_meta_data.
-    m_meta_data = rhs.m_meta_data;
-    m_md = rhs.m_md;
-    _checkSetUseOwnMetaData();
-  }
-
- private:
-
-  void _checkSetUseOwnMetaData()
-  {
-    if (!m_md->is_allocated_by_new)
-      m_md = &m_meta_data;
   }
 
   /*!
@@ -789,31 +850,6 @@ class AbstractArray
   }
 
  private:
-
-  void _allocateMetaData()
-  {
-#ifdef ARCANE_CHECK
-    if (m_md->is_not_null)
-      ArrayMetaData::throwNullExpected();
-#endif
-    if (_isUseOwnMetaData()){
-      m_meta_data = ArrayMetaData();
-      m_md = &m_meta_data;
-    }
-    else{
-      m_md = new ArrayMetaData();
-      m_md->is_allocated_by_new = true;
-    }
-    m_md->is_not_null = true;
-  }
-
-  void _deallocateMetaData(ArrayMetaData* md)
-  {
-    if (md->is_allocated_by_new)
-      delete md;
-    else
-      *md = ArrayMetaData();
-  }
 };
 
 /*---------------------------------------------------------------------------*/
