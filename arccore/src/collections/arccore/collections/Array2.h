@@ -69,7 +69,6 @@ class Array2
   typedef AbstractArray<DataType> Base;
   typedef typename Base::ConstReferenceType ConstReferenceType;
  protected:
-  using AbstractArray<DataType>::m_p;
   using AbstractArray<DataType>::m_ptr;
   using AbstractArray<DataType>::m_md;
   using AbstractArray<DataType>::_setMP2;
@@ -385,7 +384,7 @@ class Array2
  private:
   void _arccoreCheckSharedNull()
   {
-    if (!m_p)
+    if (!m_ptr)
       ArrayMetaData::throwNullExpected();
     if (!m_md->is_not_null)
       ArrayMetaData::throwNotNullExpected();
@@ -427,7 +426,7 @@ class SharedArray2
 {
  protected:
 
-  using Array2<T>::m_p;
+  using Array2<T>::m_ptr;
   using Array2<T>::m_md;
 
  public:
@@ -493,7 +492,7 @@ class SharedArray2
  protected:
   void _initReference(const ThatClassType& rhs)
   {
-    this->_setMP(rhs.m_p);
+    this->_setMP(rhs.m_ptr);
     this->_copyMetaData(rhs);
     _addReference(&rhs);
     ++m_md->nb_ref;
@@ -502,9 +501,9 @@ class SharedArray2
   void _updateReferences() override final
   {
     for( ThatClassType* i = m_prev; i; i = i->m_prev )
-      i->_setMP2(m_p,m_md);
+      i->_setMP2(m_ptr,m_md);
     for( ThatClassType* i = m_next; i; i = i->m_next )
-      i->_setMP2(m_p,m_md);
+      i->_setMP2(m_ptr,m_md);
   }
   //! Mise à jour des références
   Integer _getNbRef() override final
@@ -560,7 +559,7 @@ class SharedArray2
       ++rhs.m_md->nb_ref;
       --m_md->nb_ref;
       _checkFreeMemory();
-      this->_setMP2(rhs.m_p,rhs.m_md);
+      this->_setMP2(rhs.m_ptr,rhs.m_md);
     }
   }
  private:

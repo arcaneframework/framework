@@ -43,9 +43,6 @@ namespace Arccore
 // TODO: conserver l'allocateur (IMemoryAllocator) dans AbstractArray car
 // il n'est pas modifiable pour les SharedArray.
 
-// TODO: voir s'il faut supprimer ArrayImplT et directement utiliser un pointeur
-// alloué par l'allocateur à la place.
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -105,35 +102,17 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
 /*!
  * \internal
  *
- * \brief Classe de base implémentant un vecteur.
- *
- * Cette classe sert d'implémentation pour tous les types tableaux
- * de Arccore, qu'ils soient 1D (Array),  2D simple (Array2)
- * ou 2D multiples (MultiArray2).
+ * \brief Type opaque pour encapsuler le pointeur sur les allocations.
  */
 class ARCCORE_COLLECTIONS_EXPORT ArrayImplBase
 {
-  template <typename> friend class AbstractArray;
-  template <typename> friend class Array2;
  public:
-  ArrayImplBase() {}
+  using MemoryPointer = void*;
 
-  // GG: note: normalement ce destructeur est inutile et on pourrait utiliser
-  // le destructeur généré par le compilateur. Cependant, si on le supprime
-  // les tests SIMD en AVX en optimisé avec gcc 4.9.3 plantent.
-  // Il faudrait vérifier s'il s'agit d'un bug du compilateur ou d'un
-  // problème dans Arccore.
-  ~ArrayImplBase() {}
- public:
-
-  static ArrayImplBase* allocate(Int64 sizeof_true_impl,Int64 nb,
-                                 Int64 sizeof_true_type,ArrayImplBase* init,ArrayMetaData* init_meta_data);
-  static ArrayImplBase* allocate(Int64 sizeof_true_impl,Int64 nb,
-                                 Int64 sizeof_true_type,ArrayImplBase* init,ArrayMetaData* init_meta_data,
-                                 IMemoryAllocator* allocator);
-  static ArrayImplBase* reallocate(Int64 sizeof_true_impl,Int64 nb,
-                                   Int64 sizeof_true_type,ArrayImplBase* current,ArrayMetaData* current_meta_data);
-  static void deallocate(ArrayImplBase* current,ArrayMetaData* current_meta_data);
+  static MemoryPointer allocate(Int64 nb,Int64 sizeof_true_type,ArrayMetaData* init_meta_data);
+  static MemoryPointer reallocate(Int64 nb,Int64 sizeof_true_type,MemoryPointer current,
+                                   ArrayMetaData* current_meta_data);
+  static void deallocate(MemoryPointer current,ArrayMetaData* current_meta_data);
   static void overlapError(const void* begin1,Int64 size1,
                            const void* begin2,Int64 size2);
 };
@@ -143,15 +122,12 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayImplBase
 /*!
  * \internal
  *
- * \brief Implémentation d'un vecteur d'un type T.
+ * \brief Cette classe n'est plus utilisée.
  */  
 template <typename T>
 class ArrayImplT
 : public ArrayImplBase
 {
- public:
-  ArrayImplT() {}
-  T ptr2[1];
 };
 
 /*---------------------------------------------------------------------------*/
@@ -319,7 +295,7 @@ class AbstractArray
   typedef typename ArrayTraits<T>::ConstReferenceType ConstReferenceType;
   typedef typename ArrayTraits<T>::IsPODType IsPODType;
   typedef AbstractArray<T> ThatClassType;
-  typedef ArrayImplT<T> TrueImpl;
+  using TrueImpl = T; //typedef ArrayImplT<T> TrueImpl;
 
  public:
 	
@@ -353,7 +329,7 @@ class AbstractArray
   }
   //! Constructeur par déplacement. Ne doit être utilisé que par UniqueArray
   AbstractArray(ThatClassType&& rhs) ARCCORE_NOEXCEPT
-  : m_p(rhs.m_p), m_ptr(rhs.m_ptr)
+  : m_ptr(rhs.m_ptr)
   {
     _copyMetaData(rhs);
     rhs._reset();
@@ -464,14 +440,13 @@ class AbstractArray
     ARCCORE_CHECK_AT(i,m_md->size);
     return m_ptr[i];
   }
+ private:
+  using AbstractArrayBase::m_meta_data;
  protected:
   // NOTE: Ces deux champs sont utilisés pour l'affichage TTF de totalview.
   // Si on modifie leur ordre il faut mettre à jour la partie correspondante
   // dans l'afficheur totalview de Arcane.
-  TrueImpl* m_p = nullptr;
   T* m_ptr = nullptr;
- private:
-  using AbstractArrayBase::m_meta_data;
  protected:
   //! Réserve le mémoire pour \a new_capacity éléments
   void _reserve(Int64 new_capacity)
@@ -510,10 +485,10 @@ class AbstractArray
   //! Réallocation pour un type POD
   void _internalReallocate(Int64 new_capacity,TrueType)
   {
-    TrueImpl* old_p = m_p;
+    T* old_ptr = m_ptr;
     Int64 old_capacity = m_md->capacity;
     _directReAllocate(new_capacity);
-    bool update = (new_capacity < old_capacity) || (m_p != old_p);
+    bool update = (new_capacity < old_capacity) || (m_ptr != old_ptr);
     if (update){
       _updateReferences();
     }
@@ -522,18 +497,17 @@ class AbstractArray
   //! Réallocation pour un type complexe (non POD)
   void _internalReallocate(Int64 new_capacity,FalseType)
   {
-    TrueImpl* old_p = m_p;
     T* old_ptr = m_ptr;
     ArrayMetaData* old_md = m_md;
     Int64 old_size = m_md->size;
     _directAllocate(new_capacity);
-    if (m_p!=old_p){
+    if (m_ptr!=old_ptr){
       for( Int64 i=0; i<old_size; ++i ){
         new (m_ptr+i) T(old_ptr[i]);
         old_ptr[i].~T();
       }
       m_md->nb_ref = old_md->nb_ref;
-      ArrayImplBase::deallocate(old_p,m_md);
+      ArrayImplBase::deallocate(old_ptr,m_md);
       _updateReferences();
     }
   }
@@ -541,7 +515,7 @@ class AbstractArray
   void _internalDeallocate()
   {
     if (!_isSharedNull())
-      ArrayImplBase::deallocate(m_p,m_md);
+      ArrayImplBase::deallocate(m_ptr,m_md);
     if (m_md->is_not_null)
       _deallocateMetaData(m_md);
   }
@@ -552,24 +526,32 @@ class AbstractArray
     _updateReferences();
   }
  private:
+
   void _directFirstAllocateWithAllocator(Int64 new_capacity,IMemoryAllocator* a)
   {
     _allocateMetaData();
-    _initMP(static_cast<TrueImpl*>(ArrayImplBase::allocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p,m_md,a)));
     m_md->allocator = a;
+    _allocateMP(new_capacity);
     m_md->nb_ref = _getNbRef();
     m_md->size = 0;
     _updateReferences();
   }
+
   void _directAllocate(Int64 new_capacity)
   {
     if (!m_md->is_not_null)
       _allocateMetaData();
-    _initMP(static_cast<TrueImpl*>(ArrayImplBase::allocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p,m_md)));
+    _allocateMP(new_capacity);
   }
+
+  void _allocateMP(Int64 new_capacity)
+  {
+    _setMP(static_cast<TrueImpl*>(ArrayImplBase::allocate(new_capacity,sizeof(T),m_md)));
+  }
+
   void _directReAllocate(Int64 new_capacity)
   {
-    _setMP(static_cast<TrueImpl*>(ArrayImplBase::reallocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p,m_md)));
+    _setMP(static_cast<TrueImpl*>(ArrayImplBase::reallocate(new_capacity,sizeof(T),m_ptr,m_md)));
   }
  public:
   void printInfos(std::ostream& o)
@@ -756,7 +738,7 @@ class AbstractArray
     _destroy();
     _internalDeallocate();
 
-    _setMP(rhs.m_p);
+    _setMP(rhs.m_ptr);
 
     _copyMetaData(rhs);
 
@@ -772,7 +754,6 @@ class AbstractArray
    */
   void _swap(ThatClassType& rhs) ARCCORE_NOEXCEPT
   {
-    std::swap(m_p,rhs.m_p);
     std::swap(m_ptr,rhs.m_ptr);
     _swapMetaData(rhs);
   }
@@ -807,22 +788,14 @@ class AbstractArray
 
  protected:
 
-  void _initMP(TrueImpl* new_mp)
-  {
-    m_p = new_mp;
-    m_ptr = new_mp->ptr2;
-  }
-
   void _setMP(TrueImpl* new_mp)
   {
-    m_p = new_mp;
-    m_ptr = new_mp->ptr2;
+    m_ptr = new_mp;
   }
 
   void _setMP2(TrueImpl* new_mp,ArrayMetaData* new_md)
   {
-    m_p = new_mp;
-    m_ptr = new_mp->ptr2;
+    _setMP(new_mp);
     // Il ne faut garder le nouveau m_md que s'il est alloué
     // sinon on risque d'avoir des références sur des objets temporaires
     m_md = new_md;
@@ -832,14 +805,14 @@ class AbstractArray
 
   bool _isSharedNull()
   {
-    return m_p==nullptr;
+    return m_ptr==nullptr;
 
   }
  private:
 
   void _setToSharedNull()
   {
-    m_p = nullptr;
+    m_ptr = nullptr;
     m_meta_data = ArrayMetaData();
     m_md = &m_meta_data;
   }
@@ -866,7 +839,6 @@ class Array
 {
  protected:
 
-  using AbstractArray<T>::m_p;
   using AbstractArray<T>::m_ptr;
   using AbstractArray<T>::m_md;
 
@@ -1300,8 +1272,8 @@ class SharedArray
 {
  protected:
 
-  using AbstractArray<T>::m_p;
   using AbstractArray<T>::m_md;
+  using AbstractArray<T>::m_ptr;
 
  public:
 
@@ -1418,7 +1390,7 @@ class SharedArray
   void _initReference(const ThatClassType& rhs)
   {
     // TODO fusionner avec l'implémentation de SharedArray2
-    this->_setMP(rhs.m_p);
+    this->_setMP(rhs.m_ptr);
     this->_copyMetaData(rhs);
     _addReference(&rhs);
     ++m_md->nb_ref;
@@ -1428,9 +1400,9 @@ class SharedArray
   {
     // TODO fusionner avec l'implémentation de SharedArray2
     for( ThatClassType* i = m_prev; i; i = i->m_prev )
-      i->_setMP2(m_p,m_md);
+      i->_setMP2(m_ptr,m_md);
     for( ThatClassType* i = m_next; i; i = i->m_next )
-      i->_setMP2(m_p,m_md);
+      i->_setMP2(m_ptr,m_md);
   }
   //! Mise à jour des références
   Integer _getNbRef() final
@@ -1487,7 +1459,7 @@ class SharedArray
       ++rhs.m_md->nb_ref;
       --m_md->nb_ref;
       _checkFreeMemory();
-      this->_setMP2(rhs.m_p,rhs.m_md);
+      this->_setMP2(rhs.m_ptr,rhs.m_md);
     }
   }
  private:
@@ -1536,10 +1508,6 @@ template<typename T>
 class UniqueArray
 : public Array<T>
 {
- protected:
-
-  using AbstractArray<T>::m_p;
-
  public:
 
   typedef AbstractArray<T> BaseClassType;

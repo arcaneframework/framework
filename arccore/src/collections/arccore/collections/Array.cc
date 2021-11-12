@@ -17,7 +17,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array.cc                                                    (C) 2000-2018 */
+/* Array.cc                                                    (C) 2000-2021 */
 /*                                                                           */
 /* Vecteur de données 1D.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -69,29 +69,20 @@ class BadAllocException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ArrayImplBase* ArrayImplBase::
-allocate(Int64 sizeof_true_impl,Int64 new_capacity,
-         Int64 sizeof_true_type,ArrayImplBase* init,ArrayMetaData* init_meta_data)
+ArrayImplBase::MemoryPointer ArrayImplBase::
+allocate(Int64 new_capacity,Int64 sizeof_true_type,
+         ArrayMetaData* init_meta_data)
 {
-  return allocate(sizeof_true_impl,new_capacity,sizeof_true_type,init,init_meta_data,nullptr);
-}
+  Int64 sizeof_true_impl = 0;
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ArrayImplBase* ArrayImplBase::
-allocate(Int64 sizeof_true_impl,Int64 new_capacity,Int64 sizeof_true_type,
-         ArrayImplBase* init,ArrayMetaData* init_meta_data,
-         IMemoryAllocator* allocator)
-{
+  IMemoryAllocator* allocator = init_meta_data->allocator;
   if (!allocator)
-    allocator = init_meta_data->allocator;
+    throw BadAllocException("Null allocator");
 
-  size_t s_sizeof_true_impl = (size_t)sizeof_true_impl;
   size_t s_new_capacity = (size_t)new_capacity;
   s_new_capacity = allocator->adjustCapacity(s_new_capacity,sizeof_true_type);
   size_t s_sizeof_true_type = (size_t)sizeof_true_type;
-  size_t elem_size = s_sizeof_true_impl + (s_new_capacity - 1) * s_sizeof_true_type;
+  size_t elem_size = s_new_capacity * s_sizeof_true_type;
   ArrayImplBase* p = (ArrayImplBase*)(allocator->allocate(elem_size));
 #ifdef ARCCORE_DEBUG_ARRAY
   std::cout << "ArrayImplBase::ALLOCATE: elemsize=" << elem_size
@@ -106,25 +97,23 @@ allocate(Int64 sizeof_true_impl,Int64 new_capacity,Int64 sizeof_true_type,
     throw BadAllocException(ostr.str());
   }
 
-  *p = *init;
-
   init_meta_data->capacity = (Int64)s_new_capacity;
+
   return p;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ArrayImplBase* ArrayImplBase::
-reallocate(Int64 sizeof_true_impl,Int64 new_capacity,Int64 sizeof_true_type,
-           ArrayImplBase* current,ArrayMetaData* current_meta_data)
+ArrayImplBase::MemoryPointer ArrayImplBase::
+reallocate(Int64 new_capacity,Int64 sizeof_true_type,
+           MemoryPointer current,ArrayMetaData* current_meta_data)
 {
   IMemoryAllocator* allocator = current_meta_data->allocator;
-  size_t s_sizeof_true_impl = (size_t)sizeof_true_impl;
   size_t s_new_capacity = (size_t)new_capacity;
   s_new_capacity = allocator->adjustCapacity(s_new_capacity,sizeof_true_type);
   size_t s_sizeof_true_type = (size_t)sizeof_true_type;
-  size_t elem_size = s_sizeof_true_impl + (s_new_capacity - 1) * s_sizeof_true_type;
+  size_t elem_size = s_new_capacity * s_sizeof_true_type;
   
   ArrayImplBase* p = 0;
   {
@@ -140,7 +129,7 @@ reallocate(Int64 sizeof_true_impl,Int64 new_capacity,Int64 sizeof_true_type,
       p = (ArrayImplBase*)(allocator->allocate(elem_size));
       //GG: TODO: regarder si 'current' peut etre nul (a priori je ne pense pas...)
       if (p && current){
-        size_t current_size = s_sizeof_true_impl + (current_meta_data->size - 1) * s_sizeof_true_type;
+        size_t current_size = current_meta_data->size * s_sizeof_true_type;
         ::memcpy(p,current,current_size);
         allocator->deallocate(current);
       }
@@ -168,7 +157,7 @@ reallocate(Int64 sizeof_true_impl,Int64 new_capacity,Int64 sizeof_true_type,
 /*---------------------------------------------------------------------------*/
 
 void ArrayImplBase::
-deallocate(ArrayImplBase* current,ArrayMetaData* current_meta_data)
+deallocate(MemoryPointer current,ArrayMetaData* current_meta_data)
 {
   current_meta_data->allocator->deallocate(current);
 }
