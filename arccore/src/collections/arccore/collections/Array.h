@@ -156,7 +156,7 @@ class ArrayImplT
 {
  public:
   ArrayImplT() {}
-  T ptr[1];
+  T ptr2[1];
 };
 
 /*---------------------------------------------------------------------------*/
@@ -260,26 +260,16 @@ class AbstractArray
   typedef std::reverse_iterator<iterator> reverse_iterator;
   typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
- private:
-
-#if 0
-  static TrueImpl* _sharedNull()
-  {
-    return static_cast<TrueImpl*>(ArrayImplBase::shared_null);
-  }
-#endif
-
  protected:
 
   //! Construit un vecteur vide avec l'allocateur par défaut
   AbstractArray()
-  : m_baseptr(m_p->ptr)
   {
     m_md = &m_meta_data;
   }
   //! Constructeur par déplacement. Ne doit être utilisé que par UniqueArray
   AbstractArray(ThatClassType&& rhs) ARCCORE_NOEXCEPT
-  : m_p(rhs.m_p), m_baseptr(m_p->ptr)
+  : m_p(rhs.m_p), m_ptr(rhs.m_ptr)
   {
     _copyMetaData(rhs);
     rhs._reset();
@@ -352,11 +342,11 @@ class AbstractArray
  public:
   operator ConstArrayView<T>() const
   {
-    return ConstArrayView<T>(ARCCORE_CAST_SMALL_SIZE(size()),m_p->ptr);
+    return ConstArrayView<T>(ARCCORE_CAST_SMALL_SIZE(size()),m_ptr);
   }
   operator Span<const T>() const
   {
-    return Span<const T>(m_p->ptr,m_md->size);
+    return Span<const T>(m_ptr,m_md->size);
   }
  public:
   //! Nombre d'éléments du vecteur
@@ -376,7 +366,7 @@ class AbstractArray
   //! Vrai si le tableau contient l'élément de valeur \a v
   bool contains(ConstReferenceType v) const
   {
-    const T* ptr = m_p->ptr;
+    const T* ptr = m_ptr;
     for( Int64 i=0, n=m_md->size; i<n; ++i ){
       if (ptr[i]==v)
         return true;
@@ -388,7 +378,7 @@ class AbstractArray
   ConstReferenceType operator[](Int64 i) const
   {
     ARCCORE_CHECK_AT(i,m_md->size);
-    return m_p->ptr[i];
+    return m_ptr[i];
   }
  protected:
   // NOTE: Ces deux champs sont utilisés pour l'affichage TTF de totalview.
@@ -396,8 +386,8 @@ class AbstractArray
   // dans l'afficheur totalview de Arcane.
   TrueImpl* m_p = nullptr;
   ArrayMetaData* m_md = nullptr;
+  T* m_ptr = nullptr;
  private:
-  T* m_baseptr;
   ArrayMetaData m_meta_data;
  protected:
   //! Réserve le mémoire pour \a new_capacity éléments
@@ -450,13 +440,14 @@ class AbstractArray
   virtual void _internalReallocate(Int64 new_capacity,FalseType)
   {
     TrueImpl* old_p = m_p;
+    T* old_ptr = m_ptr;
     ArrayMetaData* old_md = m_md;
     Int64 old_size = m_md->size;
     _directAllocate(new_capacity);
     if (m_p!=old_p){
       for( Int64 i=0; i<old_size; ++i ){
-        new (m_p->ptr+i) T(old_p->ptr[i]);
-        old_p->ptr[i].~T();
+        new (m_ptr+i) T(old_ptr[i]);
+        old_ptr[i].~T();
       }
       m_md->nb_ref = old_md->nb_ref;
       ArrayImplBase::deallocate(old_p,m_md);
@@ -523,7 +514,7 @@ class AbstractArray
     if ((s+n) > m_md->capacity)
       _internalRealloc(s+n,true);
     for( Int64 i=0; i<n; ++i )
-      new (m_p->ptr + s + i) T(val);
+      new (m_ptr + s + i) T(val);
     m_md->size += n;
   }
 
@@ -560,7 +551,7 @@ class AbstractArray
     if (abegin<0)
       abegin = 0;
     for( Int64 i=abegin; i<aend; ++i )
-      m_p->ptr[i].~T();
+      m_ptr[i].~T();
   }
   void _createRangeDefault(Int64,Int64,TrueType)
   {
@@ -570,35 +561,35 @@ class AbstractArray
     if (abegin<0)
       abegin = 0;
     for( Int64 i=abegin; i<aend; ++i )
-      new (m_p->ptr+i) T();
+      new (m_ptr+i) T();
   }
   void _createRange(Int64 abegin,Int64 aend,ConstReferenceType value,TrueType)
   {
     if (abegin<0)
       abegin = 0;
     for( Int64 i=abegin; i<aend; ++i )
-      m_p->ptr[i] = value;
+      m_ptr[i] = value;
   }
   void _createRange(Int64 abegin,Int64 aend,ConstReferenceType value,FalseType)
   {
     if (abegin<0)
       abegin = 0;
     for( Int64 i=abegin; i<aend; ++i )
-      new (m_p->ptr+i) T(value);
+      new (m_ptr+i) T(value);
   }
   void _createRange(Int64 abegin,Int64 aend,const T* values)
   {
     if (abegin<0)
       abegin = 0;
     for( Int64 i=abegin; i<aend; ++i ){
-      new (m_p->ptr+i) T(*values);
+      new (m_ptr+i) T(*values);
       ++values;
     }
   }
   void _fill(ConstReferenceType value)
   {
     for( Int64 i=0, n=size(); i<n; ++i )
-      m_p->ptr[i] = value;
+      m_ptr[i] = value;
   }
   void _clone(const ThatClassType& orig_array)
   {
@@ -607,7 +598,7 @@ class AbstractArray
     m_md->size = that_size;
     m_md->dim1_size = orig_array.m_md->dim1_size;
     m_md->dim2_size = orig_array.m_md->dim2_size;
-    _createRange(0,that_size,orig_array.m_p->ptr);
+    _createRange(0,that_size,orig_array.m_ptr);
   }
   void _resize(Int64 s)
   {
@@ -642,12 +633,12 @@ class AbstractArray
   }
   void _copy(const T* rhs_begin,TrueType)
   {
-    std::memcpy(m_p->ptr,rhs_begin,((size_t)m_md->size)*sizeof(T));
+    std::memcpy(m_ptr,rhs_begin,((size_t)m_md->size)*sizeof(T));
   }
   void _copy(const T* rhs_begin,FalseType)
   {
     for( Int64 i=0, is=m_md->size; i<is; ++i )
-      m_p->ptr[i] = rhs_begin[i];
+      m_ptr[i] = rhs_begin[i];
   }
   void _copy(const T* rhs_begin)
   {
@@ -657,7 +648,7 @@ class AbstractArray
   {
     const T* rhs_begin = rhs.data();
     Int64 rhs_size = rhs.size();
-    T* abegin = m_p->ptr;
+    T* abegin = m_ptr;
     // Vérifie que \a rhs n'est pas un élément à l'intérieur de ce tableau
     if (abegin>=rhs_begin && abegin<(rhs_begin+rhs_size))
       ArrayImplBase::overlapError(abegin,m_md->size,rhs_begin,rhs_size);
@@ -703,7 +694,7 @@ class AbstractArray
   void _swap(ThatClassType& rhs) ARCCORE_NOEXCEPT
   {
     std::swap(m_p,rhs.m_p);
-    std::swap(m_baseptr,rhs.m_baseptr);
+    std::swap(m_ptr,rhs.m_ptr);
     std::swap(m_md,rhs.m_md);
     std::swap(m_meta_data,rhs.m_meta_data);
     _checkSetUseOwnMetaData();
@@ -763,16 +754,19 @@ class AbstractArray
   void _initMP(TrueImpl* new_mp)
   {
     m_p = new_mp;
+    m_ptr = new_mp->ptr2;
   }
 
   void _setMP(TrueImpl* new_mp)
   {
     m_p = new_mp;
+    m_ptr = new_mp->ptr2;
   }
 
   void _setMP2(TrueImpl* new_mp,ArrayMetaData* new_md)
   {
     m_p = new_mp;
+    m_ptr = new_mp->ptr2;
     // Il ne faut garder le nouveau m_md que s'il est alloué
     // sinon on risque d'avoir des références sur des objets temporaires
     m_md = new_md;
@@ -842,6 +836,7 @@ class Array
  protected:
 
   using AbstractArray<T>::m_p;
+  using AbstractArray<T>::m_ptr;
   using AbstractArray<T>::m_md;
 
  public:
@@ -889,31 +884,31 @@ class Array
   operator ConstArrayView<T>() const
   {
     Integer s = arccoreCheckArraySize(m_md->size);
-    return ConstArrayView<T>(s,m_p->ptr);
+    return ConstArrayView<T>(s,m_ptr);
   }
   operator ArrayView<T>()
   {
     Integer s = arccoreCheckArraySize(m_md->size);
-    return ArrayView<T>(s,m_p->ptr);
+    return ArrayView<T>(s,m_ptr);
   }
   operator Span<const T>() const
   {
-    return Span<const T>(m_p->ptr,m_md->size);
+    return Span<const T>(m_ptr,m_md->size);
   }
   operator Span<T>()
   {
-    return Span<T>(m_p->ptr,m_md->size);
+    return Span<T>(m_ptr,m_md->size);
   }
   //! Vue constante sur ce tableau
   ConstArrayView<T> constView() const
   {
     Integer s = arccoreCheckArraySize(m_md->size);
-    return ConstArrayView<T>(s,m_p->ptr);
+    return ConstArrayView<T>(s,m_ptr);
   }
   //! Vue constante sur ce tableau
   Span<const T> constSpan() const
   {
-    return Span<const T>(m_p->ptr,m_md->size);
+    return Span<const T>(m_ptr,m_md->size);
   }
   /*!
    * \brief Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments.
@@ -929,17 +924,17 @@ class Array
   ArrayView<T> view() const
   {
     Integer s = arccoreCheckArraySize(m_md->size);
-    return ArrayView<T>(s,m_p->ptr);
+    return ArrayView<T>(s,m_ptr);
   }
   //! Vue immutable sur ce tableau
   Span<const T> span() const
   {
-    return Span<const T>(m_p->ptr,m_md->size);
+    return Span<const T>(m_ptr,m_md->size);
   }
   //! Vue mutable sur ce tableau
   Span<T> span()
   {
-    return Span<T>(m_p->ptr,m_md->size);
+    return Span<T>(m_ptr,m_md->size);
   }
   /*!
    * \brief Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments.
@@ -964,7 +959,7 @@ class Array
     for( Integer i=0; i<result_size; ++i) {
       Int32 index = indexes[i];
       ARCCORE_CHECK_AT(index,my_size);
-      result[i] = m_p->ptr[index];
+      result[i] = m_ptr[index];
     }
   }
 
@@ -974,7 +969,7 @@ class Array
   {
     if (m_md->size >= m_md->capacity)
       this->_internalRealloc(m_md->size+1,true);
-    new (m_p->ptr + m_md->size) T(val);
+    new (m_ptr + m_md->size) T(val);
     ++m_md->size;
   }
   //! Ajoute \a n élément de valeur \a val à la fin du tableau
@@ -1069,9 +1064,9 @@ class Array
     Int64 s = m_md->size;
     ARCCORE_CHECK_AT(index,s);
     for( Int64 i=index; i<(s-1); ++i )
-      m_p->ptr[i] = m_p->ptr[i+1];
+      m_ptr[i] = m_ptr[i+1];
     --m_md->size;
-    m_p->ptr[m_md->size].~T();
+    m_ptr[m_md->size].~T();
   }
   /*!
    * \brief Supprime la dernière entité du tableau.
@@ -1080,49 +1075,49 @@ class Array
   {
     ARCCORE_CHECK_AT(0,m_md->size);
     --m_md->size;
-    m_p->ptr[m_md->size].~T();
+    m_ptr[m_md->size].~T();
   }
   //! Elément d'indice \a i. Vérifie toujours les débordements
   ConstReferenceType at(Int64 i) const
   {
     arccoreCheckAt(i,m_md->size);
-    return m_p->ptr[i];
+    return m_ptr[i];
   }
   //! Positionne l'élément d'indice \a i. Vérifie toujours les débordements
   void setAt(Int64 i,ConstReferenceType value)
   {
     arccoreCheckAt(i,m_md->size);
-    m_p->ptr[i] = value;
+    m_ptr[i] = value;
   }
   //! Elément d'indice \a i
-  ConstReferenceType item(Int64 i) const { return m_p->ptr[i]; }
+  ConstReferenceType item(Int64 i) const { return m_ptr[i]; }
   //! Elément d'indice \a i
-  void setItem(Int64 i,ConstReferenceType v) { m_p->ptr[i] = v; }
+  void setItem(Int64 i,ConstReferenceType v) { m_ptr[i] = v; }
   //! Elément d'indice \a i
   ConstReferenceType operator[](Int64 i) const
   {
     ARCCORE_CHECK_AT(i,m_md->size);
-    return m_p->ptr[i];
+    return m_ptr[i];
   }
   //! Elément d'indice \a i
   T& operator[](Int64 i)
   {
     ARCCORE_CHECK_AT(i,m_md->size);
-    return m_p->ptr[i];
+    return m_ptr[i];
   }
   //! Dernier élément du tableau
   /*! Le tableau ne doit pas être vide */
   T& back()
   {
     ARCCORE_CHECK_AT(m_md->size-1,m_md->size);
-    return m_p->ptr[m_md->size-1];
+    return m_ptr[m_md->size-1];
   }
   //! Dernier élément du tableau (const)
   /*! Le tableau ne doit pas être vide */
   ConstReferenceType back() const
   {
     ARCCORE_CHECK_AT(m_md->size-1,m_md->size);
-    return m_p->ptr[m_md->size-1];
+    return m_ptr[m_md->size-1];
   }
 
   //! Premier élément du tableau
@@ -1130,7 +1125,7 @@ class Array
   T& front()
   {
     ARCCORE_CHECK_AT(0,m_md->size);
-    return m_p->ptr[0];
+    return m_ptr[0];
   }
 
   //! Premier élément du tableau (const)
@@ -1138,7 +1133,7 @@ class Array
   ConstReferenceType front() const
   {
     ARCCORE_CHECK_AT(0,m_md->size);
-    return m_p->ptr[0];
+    return m_ptr[0];
   }
 
   //! Supprime les éléments du tableau
@@ -1173,28 +1168,28 @@ class Array
   }
 
   //! \internal Accès à la racine du tableau hors toute protection
-  const T* unguardedBasePointer() const { return m_p->ptr; }
+  const T* unguardedBasePointer() const { return m_ptr; }
   //! \internal Accès à la racine du tableau hors toute protection
-  T* unguardedBasePointer() { return m_p->ptr; }
+  T* unguardedBasePointer() { return m_ptr; }
 
   //! Accès à la racine du tableau hors toute protection
-  const T* data() const { return m_p->ptr; }
+  const T* data() const { return m_ptr; }
   //! \internal Accès à la racine du tableau hors toute protection
-  T* data() { return m_p->ptr; }
+  T* data() { return m_ptr; }
 
  public:
 
   //! Itérateur sur le premier élément du tableau.
-  iterator begin() { return iterator(m_p->ptr); }
+  iterator begin() { return iterator(m_ptr); }
 
   //! Itérateur constant sur le premier élément du tableau.
-  const_iterator begin() const { return const_iterator(m_p->ptr); }
+  const_iterator begin() const { return const_iterator(m_ptr); }
 
   //! Itérateur sur le premier élément après la fin du tableau.
-  iterator end() { return iterator(m_p->ptr+m_md->size); }
+  iterator end() { return iterator(m_ptr+m_md->size); }
 
   //! Itérateur constant sur le premier élément après la fin du tableau.
-  const_iterator end() const { return const_iterator(m_p->ptr+m_md->size); }
+  const_iterator end() const { return const_iterator(m_ptr+m_md->size); }
 
   //! Itérateur inverse sur le premier élément du tableau.
   reverse_iterator rbegin() { return std::make_reverse_iterator(end()); }
@@ -1213,12 +1208,12 @@ class Array
   //! Intervalle d'itération du premier au dernièr élément.
   ArrayRange<pointer> range()
   {
-    return ArrayRange<pointer>(m_p->ptr,m_p->ptr+m_md->size);
+    return ArrayRange<pointer>(m_ptr,m_ptr+m_md->size);
   }
   //! Intervalle d'itération du premier au dernièr élément.
   ArrayRange<const_pointer> range() const
   {
-    return ArrayRange<const_pointer>(m_p->ptr,m_p->ptr+m_md->size);
+    return ArrayRange<const_pointer>(m_ptr,m_ptr+m_md->size);
   }
  public:
 

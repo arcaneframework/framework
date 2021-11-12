@@ -70,6 +70,7 @@ class Array2
   typedef typename Base::ConstReferenceType ConstReferenceType;
  protected:
   using AbstractArray<DataType>::m_p;
+  using AbstractArray<DataType>::m_ptr;
   using AbstractArray<DataType>::m_md;
   using AbstractArray<DataType>::_setMP2;
   using AbstractArray<DataType>::_setMP;
@@ -122,25 +123,25 @@ class Array2
   ArrayView<DataType> operator[](Int64 i)
   {
     ARCCORE_CHECK_AT(i,m_md->dim1_size);
-    return ArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_md->dim2_size),m_p->ptr + (m_md->dim2_size*i));
+    return ArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_md->dim2_size),m_ptr + (m_md->dim2_size*i));
   }
   // TODO: retourner un Span
   ConstArrayView<DataType> operator[](Int64 i) const
   {
     ARCCORE_CHECK_AT(i,m_md->dim1_size);
-    return ConstArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_md->dim2_size),m_p->ptr + (m_md->dim2_size*i));
+    return ConstArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_md->dim2_size),m_ptr + (m_md->dim2_size*i));
   }
   DataType item(Int64 i,Int64 j)
   {
     ARCCORE_CHECK_AT(i,m_md->dim1_size);
     ARCCORE_CHECK_AT(j,m_md->dim2_size);
-    return m_p->ptr[ (m_md->dim2_size*i) + j ];
+    return m_ptr[ (m_md->dim2_size*i) + j ];
   }
   void setItem(Int64 i,Int64 j,ConstReferenceType v)
   {
     ARCCORE_CHECK_AT(i,m_md->dim1_size);
     ARCCORE_CHECK_AT(j,m_md->dim2_size);
-    m_p->ptr[ (m_md->dim2_size*i) + j ] = v;
+    m_ptr[ (m_md->dim2_size*i) + j ] = v;
   }
   //! Elément d'indice \a i. Vérifie toujours les débordements
   ConstArrayView<DataType> at(Int64 i) const
@@ -158,7 +159,7 @@ class Array2
   {
     arccoreCheckAt(i,m_md->dim1_size);
     arccoreCheckAt(j,m_md->dim1_size);
-    return m_p->ptr[ (m_md->dim2_size*i) + j ];
+    return m_ptr[ (m_md->dim2_size*i) + j ];
   }
   void fill(ConstReferenceType v)
   {
@@ -209,22 +210,22 @@ class Array2
   //! Vue du tableau sous forme de tableau 1D
   ArrayView<DataType> viewAsArray()
   {
-    return ArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_md->size),m_p->ptr);
+    return ArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_md->size),m_ptr);
   }
   //! Vue du tableau sous forme de tableau 1D
   ConstArrayView<DataType> viewAsArray() const
   {
-    return ConstArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_md->size),m_p->ptr);
+    return ConstArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_md->size),m_ptr);
   }
   //! Vue du tableau sous forme de tableau 1D
   Span<DataType> to1DSpan()
   {
-    return Span<DataType>(m_p->ptr,m_md->size);
+    return Span<DataType>(m_ptr,m_md->size);
   }
   //! Vue du tableau sous forme de tableau 1D
   Span<const DataType> to1DSpan() const
   {
-    return Span<const DataType>(m_p->ptr,m_md->size);
+    return Span<const DataType>(m_ptr,m_md->size);
   }
  public:
   operator Array2View<DataType>()
@@ -237,27 +238,27 @@ class Array2
   }
   operator Span2<const DataType>() const
   {
-    return Span2<const DataType>(m_p->ptr,m_md->dim1_size,m_md->dim2_size);
+    return Span2<const DataType>(m_ptr,m_md->dim1_size,m_md->dim2_size);
   }
   operator Span2<DataType>()
   {
-    return Span2<DataType>(m_p->ptr,m_md->dim1_size,m_md->dim2_size);
+    return Span2<DataType>(m_ptr,m_md->dim1_size,m_md->dim2_size);
   }
   Array2View<DataType> view()
   {
-    return Array2View<DataType>(m_p->ptr,ARCCORE_CAST_SMALL_SIZE(m_md->dim1_size),ARCCORE_CAST_SMALL_SIZE(m_md->dim2_size));
+    return Array2View<DataType>(m_ptr,ARCCORE_CAST_SMALL_SIZE(m_md->dim1_size),ARCCORE_CAST_SMALL_SIZE(m_md->dim2_size));
   }
   ConstArray2View<DataType> constView() const
   {
-    return ConstArray2View<DataType>(m_p->ptr,ARCCORE_CAST_SMALL_SIZE(m_md->dim1_size),ARCCORE_CAST_SMALL_SIZE(m_md->dim2_size));
+    return ConstArray2View<DataType>(m_ptr,ARCCORE_CAST_SMALL_SIZE(m_md->dim1_size),ARCCORE_CAST_SMALL_SIZE(m_md->dim2_size));
   }
   Span2<DataType> span()
   {
-    return Span2<DataType>(m_p->ptr,m_md->dim1_size,m_md->dim2_size);
+    return Span2<DataType>(m_ptr,m_md->dim1_size,m_md->dim2_size);
   }
   Span2<const DataType> constSpan() const
   {
-    return Span2<const DataType>(m_p->ptr,m_md->dim1_size,m_md->dim2_size);
+    return Span2<const DataType>(m_ptr,m_md->dim1_size,m_md->dim2_size);
   }
  public:
   Integer dim2Size() const { return ARCCORE_CAST_SMALL_SIZE(m_md->dim2_size); }
@@ -338,7 +339,7 @@ class Array2
     Int64 n2 = m_md->dim2_size;
     for( Int64 i=0; i<n; ++i ){
       for( Int64 j=0; j<new_size2; ++j )
-        m_p->ptr[(i*new_size2)+j] = m_p->ptr[(i*n2)+j];
+        m_ptr[(i*new_size2)+j] = m_ptr[(i*n2)+j];
     }
     _resize2(n,new_size2,rb);
     m_md->dim2_size = new_size2;
@@ -353,7 +354,7 @@ class Array2
     // Recopie en partant de la fin pour éviter tout écrasement
     for( Int64 i=(n-1); i>=0; --i ){
       for( Int64 j=(n2-1); j>=0; --j )
-        m_p->ptr[(i*new_size2)+j] = m_p->ptr[(i*n2)+j];
+        m_ptr[(i*new_size2)+j] = m_ptr[(i*n2)+j];
     }
     m_md->dim2_size = new_size2;
     _arccoreCheckSharedNull();
