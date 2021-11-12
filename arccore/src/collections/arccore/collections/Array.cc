@@ -57,6 +57,16 @@ class BadAllocException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void ArrayMetaData::
+_checkAllocator() const
+{
+  if (!allocator)
+    throw BadAllocException("Null allocator");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*
  * TODO: pour les allocations, faire en sorte que le
  * début du tableau soit aligné sur 16 octets dans tous les cas.
@@ -69,21 +79,16 @@ class BadAllocException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ArrayImplBase::MemoryPointer ArrayImplBase::
-allocate(Int64 new_capacity,Int64 sizeof_true_type,
-         ArrayMetaData* init_meta_data)
+ArrayMetaData::MemoryPointer ArrayMetaData::
+_allocate(Int64 new_capacity,Int64 sizeof_true_type)
 {
-  Int64 sizeof_true_impl = 0;
-
-  IMemoryAllocator* allocator = init_meta_data->allocator;
-  if (!allocator)
-    throw BadAllocException("Null allocator");
+  _checkAllocator();
 
   size_t s_new_capacity = (size_t)new_capacity;
   s_new_capacity = allocator->adjustCapacity(s_new_capacity,sizeof_true_type);
   size_t s_sizeof_true_type = (size_t)sizeof_true_type;
   size_t elem_size = s_new_capacity * s_sizeof_true_type;
-  ArrayImplBase* p = (ArrayImplBase*)(allocator->allocate(elem_size));
+  MemoryPointer p = allocator->allocate(elem_size);
 #ifdef ARCCORE_DEBUG_ARRAY
   std::cout << "ArrayImplBase::ALLOCATE: elemsize=" << elem_size
             << " typesize=" << sizeof_true_type
@@ -97,7 +102,7 @@ allocate(Int64 new_capacity,Int64 sizeof_true_type,
     throw BadAllocException(ostr.str());
   }
 
-  init_meta_data->capacity = (Int64)s_new_capacity;
+  this->capacity = (Int64)s_new_capacity;
 
   return p;
 }
@@ -105,17 +110,17 @@ allocate(Int64 new_capacity,Int64 sizeof_true_type,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ArrayImplBase::MemoryPointer ArrayImplBase::
-reallocate(Int64 new_capacity,Int64 sizeof_true_type,
-           MemoryPointer current,ArrayMetaData* current_meta_data)
+ArrayMetaData::MemoryPointer ArrayMetaData::
+_reallocate(Int64 new_capacity,Int64 sizeof_true_type,MemoryPointer current)
 {
-  IMemoryAllocator* allocator = current_meta_data->allocator;
+  _checkAllocator();
+
   size_t s_new_capacity = (size_t)new_capacity;
   s_new_capacity = allocator->adjustCapacity(s_new_capacity,sizeof_true_type);
   size_t s_sizeof_true_type = (size_t)sizeof_true_type;
   size_t elem_size = s_new_capacity * s_sizeof_true_type;
   
-  ArrayImplBase* p = 0;
+  MemoryPointer p = nullptr;
   {
     const bool use_realloc = allocator->hasRealloc();
     // Lorsqu'on voudra implémenter un realloc avec alignement, il faut passer
@@ -123,13 +128,13 @@ reallocate(Int64 new_capacity,Int64 sizeof_true_type,
     // garantissant l'alignmenent (alors que sous Win32 si :) ).
     // use_realloc = false;
     if (use_realloc){
-      p = (ArrayImplBase*)(allocator->reallocate(current,elem_size));
+      p = allocator->reallocate(current,elem_size);
     }
     else{
-      p = (ArrayImplBase*)(allocator->allocate(elem_size));
+      p = allocator->allocate(elem_size);
       //GG: TODO: regarder si 'current' peut etre nul (a priori je ne pense pas...)
       if (p && current){
-        size_t current_size = current_meta_data->size * s_sizeof_true_type;
+        size_t current_size = this->size * s_sizeof_true_type;
         ::memcpy(p,current,current_size);
         allocator->deallocate(current);
       }
@@ -149,23 +154,24 @@ reallocate(Int64 new_capacity,Int64 sizeof_true_type,
          << " old_ptr=" << current << '\n';
     throw BadAllocException(ostr.str());
   }
-  current_meta_data->capacity = (Int64)s_new_capacity;
+  this->capacity = (Int64)s_new_capacity;
   return p;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ArrayImplBase::
-deallocate(MemoryPointer current,ArrayMetaData* current_meta_data)
+void ArrayMetaData::
+_deallocate(MemoryPointer current)
 {
-  current_meta_data->allocator->deallocate(current);
+  _checkAllocator();
+  allocator->deallocate(current);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ArrayImplBase::
+void ArrayMetaData::
 overlapError(const void* begin1,Int64 size1,
              const void* begin2,Int64 size2)
 {

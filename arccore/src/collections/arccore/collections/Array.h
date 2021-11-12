@@ -40,9 +40,6 @@
 namespace Arccore
 {
 
-// TODO: conserver l'allocateur (IMemoryAllocator) dans AbstractArray car
-// il n'est pas modifiable pour les SharedArray.
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -64,18 +61,15 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
   template <typename> friend class Array;
   template <typename> friend class SharedArray;
   template <typename> friend class SharedArray2;
+  friend class AbstractArrayBase;
+
  public:
+
   ArrayMetaData() : nb_ref(0), capacity(0), size(0), dim1_size(0),
   dim2_size(0), allocator(&DefaultMemoryAllocator::shared_null_instance)
   {}
 
-  // GG: note: normalement ce destructeur est inutile et on pourrait utiliser
-  // le destructeur généré par le compilateur. Cependant, si on le supprime
-  // les tests SIMD en AVX en optimisé avec gcc 4.9.3 plantent.
-  // Il faudrait vérifier s'il s'agit d'un bug du compilateur ou d'un
-  // problème dans Arccore.
-  ~ArrayMetaData() {}
- public:
+ protected:
   //! Nombre de références sur cet objet.
   Int64 nb_ref;
   //! Nombre d'éléments alloués
@@ -91,10 +85,21 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
   //! Indique is cette instance a été allouée par l'opérateur new.
   bool is_allocated_by_new = false;
   bool is_not_null = false;
+
  public:
 
   static void throwNullExpected ARCCORE_NORETURN ();
   static void throwNotNullExpected ARCCORE_NORETURN ();
+  static void overlapError ARCCORE_NORETURN (const void* begin1,Int64 size1,
+                                             const void* begin2,Int64 size2);
+ protected:
+  using MemoryPointer = void*;
+
+  MemoryPointer _allocate(Int64 nb,Int64 sizeof_true_type);
+  MemoryPointer _reallocate(Int64 nb,Int64 sizeof_true_type,MemoryPointer current);
+  void _deallocate(MemoryPointer current);
+ private:
+  void _checkAllocator() const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -102,19 +107,10 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
 /*!
  * \internal
  *
- * \brief Type opaque pour encapsuler le pointeur sur les allocations.
+ * \brief Ce type n'est plus utilisé.
  */
 class ARCCORE_COLLECTIONS_EXPORT ArrayImplBase
 {
- public:
-  using MemoryPointer = void*;
-
-  static MemoryPointer allocate(Int64 nb,Int64 sizeof_true_type,ArrayMetaData* init_meta_data);
-  static MemoryPointer reallocate(Int64 nb,Int64 sizeof_true_type,MemoryPointer current,
-                                   ArrayMetaData* current_meta_data);
-  static void deallocate(MemoryPointer current,ArrayMetaData* current_meta_data);
-  static void overlapError(const void* begin1,Int64 size1,
-                           const void* begin2,Int64 size2);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -507,7 +503,7 @@ class AbstractArray
         old_ptr[i].~T();
       }
       m_md->nb_ref = old_md->nb_ref;
-      ArrayImplBase::deallocate(old_ptr,m_md);
+      m_md->_deallocate(old_ptr);
       _updateReferences();
     }
   }
@@ -515,7 +511,7 @@ class AbstractArray
   void _internalDeallocate()
   {
     if (!_isSharedNull())
-      ArrayImplBase::deallocate(m_ptr,m_md);
+      m_md->_deallocate(m_ptr);
     if (m_md->is_not_null)
       _deallocateMetaData(m_md);
   }
@@ -546,12 +542,12 @@ class AbstractArray
 
   void _allocateMP(Int64 new_capacity)
   {
-    _setMP(static_cast<TrueImpl*>(ArrayImplBase::allocate(new_capacity,sizeof(T),m_md)));
+    _setMP(reinterpret_cast<TrueImpl*>(m_md->_allocate(new_capacity,sizeof(T))));
   }
 
   void _directReAllocate(Int64 new_capacity)
   {
-    _setMP(static_cast<TrueImpl*>(ArrayImplBase::reallocate(new_capacity,sizeof(T),m_ptr,m_md)));
+    _setMP(reinterpret_cast<TrueImpl*>(m_md->_reallocate(new_capacity,sizeof(T),m_ptr)));
   }
  public:
   void printInfos(std::ostream& o)
@@ -712,7 +708,7 @@ class AbstractArray
     T* abegin = m_ptr;
     // Vérifie que \a rhs n'est pas un élément à l'intérieur de ce tableau
     if (abegin>=rhs_begin && abegin<(rhs_begin+rhs_size))
-      ArrayImplBase::overlapError(abegin,m_md->size,rhs_begin,rhs_size);
+      ArrayMetaData::overlapError(abegin,m_md->size,rhs_begin,rhs_size);
     _resize(rhs_size);
     _copy(rhs_begin);
   }
