@@ -46,11 +46,6 @@ namespace Arccore
 // TODO: voir s'il faut supprimer ArrayImplT et directement utiliser un pointeur
 // alloué par l'allocateur à la place.
 
-// TODO: supprimer les méthodes virtuelles inutiles. Il ne faudrait garder que
-// _updateReference(), _getNbRef() et _isUseOwnMetaData() mais si on fait cela
-// il y a des symboles indéfinis lors de l'édition de lien (avec GCC 9).
-// A étudier...
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -490,7 +485,7 @@ class AbstractArray
    *
    * Si la nouvelle capacité est inférieure à l'ancienne, rien ne se passe.
    */
-  virtual void _internalRealloc(Int64 new_capacity,bool compute_capacity)
+  void _internalRealloc(Int64 new_capacity,bool compute_capacity)
   {
     if (_isSharedNull()){
       if (new_capacity!=0)
@@ -513,7 +508,7 @@ class AbstractArray
   }
 
   //! Réallocation pour un type POD
-  virtual void _internalReallocate(Int64 new_capacity,TrueType)
+  void _internalReallocate(Int64 new_capacity,TrueType)
   {
     TrueImpl* old_p = m_p;
     Int64 old_capacity = m_md->capacity;
@@ -525,7 +520,7 @@ class AbstractArray
   }
 
   //! Réallocation pour un type complexe (non POD)
-  virtual void _internalReallocate(Int64 new_capacity,FalseType)
+  void _internalReallocate(Int64 new_capacity,FalseType)
   {
     TrueImpl* old_p = m_p;
     T* old_ptr = m_ptr;
@@ -543,21 +538,21 @@ class AbstractArray
     }
   }
   // Libère la mémoire
-  virtual void _internalDeallocate()
+  void _internalDeallocate()
   {
     if (!_isSharedNull())
       ArrayImplBase::deallocate(m_p,m_md);
     if (m_md->is_not_null)
       _deallocateMetaData(m_md);
   }
-  virtual void _internalAllocate(Int64 new_capacity)
+  void _internalAllocate(Int64 new_capacity)
   {
     _directAllocate(new_capacity);
     m_md->nb_ref = _getNbRef();
     _updateReferences();
   }
  private:
-  virtual void _directFirstAllocateWithAllocator(Int64 new_capacity,IMemoryAllocator* a)
+  void _directFirstAllocateWithAllocator(Int64 new_capacity,IMemoryAllocator* a)
   {
     _allocateMetaData();
     _initMP(static_cast<TrueImpl*>(ArrayImplBase::allocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p,m_md,a)));
@@ -566,13 +561,13 @@ class AbstractArray
     m_md->size = 0;
     _updateReferences();
   }
-  virtual void _directAllocate(Int64 new_capacity)
+  void _directAllocate(Int64 new_capacity)
   {
     if (!m_md->is_not_null)
       _allocateMetaData();
     _initMP(static_cast<TrueImpl*>(ArrayImplBase::allocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p,m_md)));
   }
-  virtual void _directReAllocate(Int64 new_capacity)
+  void _directReAllocate(Int64 new_capacity)
   {
     _setMP(static_cast<TrueImpl*>(ArrayImplBase::reallocate(sizeof(TrueImpl),new_capacity,sizeof(T),m_p,m_md)));
   }
