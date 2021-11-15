@@ -447,8 +447,8 @@ class NumArrayBase
   ConstSpanType span() const { return m_span.constSpan(); }
   ConstSpanType constSpan() const { return m_span.constSpan(); }
  public:
-  Span<const DataType> to1DSpan() const { return m_data.to1DSpan(); }
-  Span<DataType> to1DSpan() { return m_data.to1DSpan(); }
+  Span<const DataType> to1DSpan() const { return m_span.to1DSpan(); }
+  Span<DataType> to1DSpan() { return m_span.to1DSpan(); }
   void copy(ConstSpanType rhs) { m_data.copy(rhs._internalTo2DSpan()); }
   const DataType& operator()(ArrayBoundsIndex<RankValue> idx) const
   {
