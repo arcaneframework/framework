@@ -99,7 +99,7 @@ aux traces %Arcane (cf \ref arcanedoc_traces) et aux méthodes suivantes :
 <tr><td>\c allNodes() </td><td> retourne le groupe de tous les noeuds </td></tr>
 <tr><td>\c allFaces() </td><td> retourne le groupe de toutes les faces </td></tr>
 <tr><td>\c ownCells() </td><td> retourne le groupe des mailles propres au sous-domaine </td></tr>
-<tr><td>\c ownNodes() </td><td> retourne le groupe des noeuds propres au
+<tr><td>\c ownNodes() </td><td> retourne le groupe des noeuds propres au sous-domaine </td></tr>
 <tr><td>\c ownFaces() </td><td> retourne le groupe de toutes les faces propres au sous-domaine </td></tr>
 </table>
 
