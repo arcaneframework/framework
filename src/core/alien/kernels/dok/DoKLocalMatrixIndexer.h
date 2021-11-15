@@ -19,9 +19,11 @@
 #pragma once
 
 #include <algorithm>
-#include "ILocalMatrixIndexer.h"
-#include "../../utils/Precomp.h"
 #include <unordered_map>
+
+#include <alien/utils/Precomp.h>
+
+#include <alien/kernels/dok/ILocalMatrixIndexer.h>
 
 namespace Alien
 {
@@ -45,7 +47,7 @@ class ALIEN_EXPORT DoKLocalMatrixIndexer : public ILocalMatrixIndexer
   std::optional<Offset> find(Integer i, Integer j) override;
   Offset create(Integer i, Integer j, Offset& tentative_offset) override;
 
-  IReverseIndexer* sort(ArrayView<Renumbering> perm) override;
+  IReverseIndexer* sort(Arccore::Array<Renumbering>& perm) override;
 
   ILocalMatrixIndexer* clone() const override;
 

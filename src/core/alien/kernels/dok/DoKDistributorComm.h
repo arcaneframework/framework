@@ -21,9 +21,9 @@
 #include <arccore/base/FatalErrorException.h>
 #include <arccore/base/TraceInfo.h>
 
-#include "../redistributor/Utils.h"
+#include <alien/kernels/redistributor/Utils.h>
 
-#include "IReverseIndexer.h"
+#include <alien/kernels/dok/DoKReverseIndexer.h>
 
 namespace Alien
 {

@@ -56,13 +56,11 @@ DoKLocalMatrixIndexer::create(
 Integer i, Integer j, DoKLocalMatrixIndexer::Offset& tentative_offset)
 {
   auto o = find(i, j);
-  Offset ret = o.value_or(0);
-  if (o) {
-    associate(i, j, tentative_offset);
-    ret = tentative_offset;
-    tentative_offset++;
+  auto offset = o.value_or(tentative_offset);
+  if (!o.has_value()) {
+    associate(i, j, tentative_offset++);
   }
-  return ret;
+  return offset;
 }
 
 ILocalMatrixIndexer*
@@ -91,7 +89,7 @@ namespace
 } // namespace
 
 IReverseIndexer*
-DoKLocalMatrixIndexer::sort(ArrayView<DoKLocalMatrixIndexer::Renumbering> perm)
+DoKLocalMatrixIndexer::sort(Arccore::Array<DoKLocalMatrixIndexer::Renumbering>& perm)
 {
   std::vector<HashTable::iterator> src(m_data.size());
 
@@ -105,6 +103,7 @@ DoKLocalMatrixIndexer::sort(ArrayView<DoKLocalMatrixIndexer::Renumbering> perm)
 
   auto* indexer = new DoKReverseIndexer();
   auto size = static_cast<Arccore::Integer>(m_data.size());
+  perm.resize(size);
   for (auto curs = 0; curs < size; ++curs) {
     perm[curs] = Renumbering(src[curs]->second, curs);
     indexer->record(curs, src[curs]->first);

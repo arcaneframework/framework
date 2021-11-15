@@ -80,7 +80,7 @@ class TestDoKBuilder
     int lenght = sizeof(g_row) / sizeof(Arccore::Int32);
     for (int i = 0; i < lenght; i++) {
       if (g_row[i] >= row_begin() && g_row[i] < row_end())
-        mat.setMatrixValue(g_row[i], g_col[i], g_value[i]);
+        mat.setNNZ(g_row[i], g_col[i], g_value[i]);
     }
   }
 
@@ -174,7 +174,7 @@ TEST(TestDoKMatrix, ConvertToCSR)
   builder.fill(*dok_mat);
   dok_mat->compact();
 
-  dok_mat->setMatrixValue(0, 2, -5.);
+  dok_mat->setNNZ(0, 2, -5.);
 
   dok_mat->assemble();
 

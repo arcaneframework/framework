@@ -17,11 +17,15 @@
 find_package(MPI REQUIRED)
 find_package(GTest REQUIRED)
 
+configure_file(simple.mtx simple.mtx COPYONLY)
+
 add_executable(move.gtest.mpi
         main.cpp
         TestIndexManager.cc
         TestDoKMatrix.cc
-        )
+        TestDoKDirectMatrixBuilder.cc
+        TestMatrixMarket.cc
+	)
 
 add_executable(move.gtest.seq main.cpp
         TestVector.cc
@@ -45,8 +49,8 @@ target_link_libraries(move.gtest.seq PRIVATE
         )
 
 if (ALIEN_EXPAND_TESTS)
-    gtest_discover_tests(move.gtest.seq TEST_PmoveIX "move." TEST_SUFFIX ".seq")
-    gtest_discover_tests(move.gtest.mpi TEST_PmoveIX "move." TEST_SUFFIX ".seq")
+#    gtest_discover_tests(move.gtest.seq TEST_PREFIX "move." TEST_SUFFIX ".seq")
+#    gtest_discover_tests(move.gtest.mpi TEST_PREFIX "move." TEST_SUFFIX ".seq")
 else (ALIEN_EXPAND_TESTS)
     alien_test(
             BENCH move

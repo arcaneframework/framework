@@ -18,13 +18,13 @@
 
 #pragma once
 
-#include "../../core/impl/IMatrixImpl.h"
-#include "../../core/impl/MultiMatrixImpl.h"
+#include <alien/core/impl/IMatrixImpl.h>
+#include <alien/core/impl/MultiMatrixImpl.h>
 
-#include "DoKDistributor.h"
-#include "DoKLocalMatrixT.h"
+#include <alien/kernels/dok/DoKDistributor.h>
+#include <alien/kernels/dok/DoKLocalMatrixT.h>
 
-#include "../redistributor/Redistributor.h"
+#include <alien/kernels/redistributor/Redistributor.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -57,10 +57,20 @@ class DoKMatrix : public IMatrixImpl
   //! \param col id of the column in the matrix
   //! \param value value of this non-zero
   //! \return
-  bool setMatrixValue(Int32 row, Int32 col, const ValueType& value)
+  bool setNNZ(Int32 row, Int32 col, const ValueType& value)
   {
     m_data.set(row, col, value);
     return true;
+  }
+
+  //! Set value of a matrix element, creating it if it does not exist yet.
+  //! \param row id of the row in the matrix
+  //! \param col id of the column in the matrix
+  //! \param value value of this non-zero
+  //! \return
+  ValueType addNNZ(Int32 row, Int32 col, const ValueType& value)
+  {
+    return m_data.add(row, col, value);
   }
 
   //! Dispatch matrix elements

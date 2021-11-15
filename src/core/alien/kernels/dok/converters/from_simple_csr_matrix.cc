@@ -83,7 +83,7 @@ void SimpleCSRtoDoKMatrixConverter::_build(const SrcMatrix& src, TgtMatrix& tgt)
     int ncols = profile.getRowSize(irow);
     Integer icount = profile.getRowOffset()[irow];
     for (Integer k = 0; k < ncols; ++k) {
-      tgt.setMatrixValue(row, cols[icount + k], csr_values[icount + k]);
+      tgt.setNNZ(row, cols[icount + k], csr_values[icount + k]);
     }
   }
 }

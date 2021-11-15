@@ -70,13 +70,15 @@ class DoKLocalMatrixT
   //! \param val
   void set(Int32 i, Int32 j, const NNZValue& val)
   {
-    auto offset = m_indexer->create(i, j, m_offset);
-    if (offset == (Integer)m_values.size()) {
-      m_values.add(val);
-    }
-    else {
-      m_values[offset] = val;
-    }
+    auto offset = findOffset(i, j);
+    m_values[offset] = val;
+  }
+
+  NNZValue add(Int32 i, Int32 j, const NNZValue& val)
+  {
+    auto offset = findOffset(i, j);
+    m_values[offset] += val;
+    return m_values[offset];
   }
 
   //! Group non-zeros according to indexer
@@ -119,6 +121,15 @@ class DoKLocalMatrixT
     if (size || (size < m_offset + 1))
       size = m_offset + 1;
     m_values.resize(size);
+  }
+
+  ILocalMatrixIndexer::Offset findOffset(Int32 i, Int32 j)
+  {
+    auto offset = m_indexer->create(i, j, m_offset);
+    if (offset == (Integer)m_values.size()) {
+      m_values.add(0.);
+    }
+    return offset;
   }
 
  private:

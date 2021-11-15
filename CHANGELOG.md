@@ -4,8 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+**News:**
+
+- MatrixMarket file importer in \[move\] API
+
 **Fixed bugs:**
-- [core]: fixed out of range access in DoKMatrix communication.
+
+- \[core\]: fixed out of range access in DoKMatrix communication.
 
 ## 1.1.2
 
@@ -17,8 +22,8 @@ All notable changes to this project will be documented in this file.
 
 **Fixed bugs:**
 
-- [core, hypre, petsc]: fix CMake export files
-- [petsc]: internal call to PetscInitialize (fixes [issue#14](https://github.com/arcaneframework/alien/issues/14))
+- \[core, hypre, petsc\]: fix CMake export files
+- \[petsc\]: internal call to PetscInitialize (fixes [issue#14](https://github.com/arcaneframework/alien/issues/14))
 
 **Changes:**
 
@@ -28,8 +33,8 @@ All notable changes to this project will be documented in this file.
 
 **Fixed bugs:**
 
-- [hypre]: Correctly clear hypre solver errors
-- [core]: Fix name clashing between `Move` and `Ref`
+- \[hypre\]: Correctly clear hypre solver errors
+- \[core\]: Fix name clashing between `Move` and `Ref`
   APIs ([issue#12](https://github.com/arcaneframework/alien/issues/12))
 
 **Changes:**

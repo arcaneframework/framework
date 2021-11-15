@@ -18,9 +18,11 @@
 
 #pragma once
 
-#include <alien/kernels/dok/IReverseIndexer.h>
-#include <alien/utils/Precomp.h>
 #include <unordered_map>
+
+#include <alien/utils/Precomp.h>
+
+#include <alien/kernels/dok/IReverseIndexer.h>
 
 namespace Alien
 {

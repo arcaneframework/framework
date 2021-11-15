@@ -18,12 +18,12 @@
 
 #pragma once
 
-#include <alien/utils/Precomp.h>
-
 #include <algorithm>
 #include <unordered_map>
 #include <utility>
 #include <optional>
+
+#include <alien/utils/Precomp.h>
 
 namespace Alien
 {
@@ -64,9 +64,9 @@ class ILocalMatrixIndexer
   virtual Offset create(Integer i, Integer j, Offset& tentative_offset) = 0;
 
   //! Creates a new indexer, based on offset permutations.
-  //! \param perm
+  //! \param perm permutation array, to be filled by this function.
   //! \return new indexer, used to compact matrix
-  virtual IReverseIndexer* sort(ArrayView<Renumbering> perm) = 0;
+  virtual IReverseIndexer* sort(Arccore::Array<Renumbering>& perm) = 0;
 
   virtual ILocalMatrixIndexer* clone() const = 0;
 };

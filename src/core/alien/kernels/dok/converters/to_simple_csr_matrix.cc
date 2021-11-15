@@ -123,7 +123,7 @@ void DoKtoSimpleCSRMatrixConverter::_buildProfile(const SrcMatrix& src, TgtMatri
   for (Integer i = 0; i < dokMatrixRIndexer->size(); ++i) {
     // This is not useful currently. offsetOfIJ == i !
     //    const Integer offsetOfIJ =
-    //    dokMatrix.getIndexer()->find((*dokMatrixRIndexer)[i].first,
+    //    dokMatrix.getIndexer()->findOffset((*dokMatrixRIndexer)[i].first,
     //    (*dokMatrixRIndexer)[i].second); cols[offsetOfIJ] =
     //    (*dokMatrixRIndexer)[i].second;
     // FIXME: check if id exists

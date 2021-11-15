@@ -29,6 +29,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arccore::MessagePassing
+{
+class IMessagePassingMng;
+}
+
 namespace Alien
 {
 
@@ -240,6 +245,9 @@ namespace Move
    private:
     std::shared_ptr<MultiMatrixImpl> m_impl;
   };
+
+  MatrixData ALIEN_MOVESEMANTIC_EXPORT
+  readFromMatrixMarket(Arccore::MessagePassing::IMessagePassingMng* pm, const std::string& filename);
 
 } // namespace Move
 /*---------------------------------------------------------------------------*/

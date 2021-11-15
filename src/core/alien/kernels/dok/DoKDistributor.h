@@ -18,11 +18,11 @@
 
 #pragma once
 
-#include "../../distribution/MatrixDistribution.h"
-#include "../../utils/Precomp.h"
+#include <alien/utils/Precomp.h>
+#include <alien/distribution/MatrixDistribution.h>
 
-#include "DoKDistributorComm.h"
-#include "DoKLocalMatrixT.h"
+#include <alien/kernels/dok/DoKDistributorComm.h>
+#include <alien/kernels/dok/DoKLocalMatrixT.h>
 
 namespace Alien
 {

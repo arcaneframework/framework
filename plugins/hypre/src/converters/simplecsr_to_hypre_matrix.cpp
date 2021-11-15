@@ -95,12 +95,11 @@ void SimpleCSR_to_Hypre_MatrixConverter::_build(const Alien::SimpleCSRMatrix<Arc
 
   auto values = sourceImpl.internal().getValues();
   auto cols = profile.getCols();
-  auto icount = 0;
   for (auto irow = 0; irow < localSize; ++irow) {
     const auto row = localOffset + irow;
     const auto ncols = profile.getRowSize(irow);
-    targetImpl.setRowValues(row, cols.subConstView(icount, ncols), values.subConstView(icount, ncols));
-    icount += ncols;
+    const auto col_offset = profile.getRowOffset()[irow];
+    targetImpl.setRowValues(row, cols.subConstView(col_offset, ncols), values.subConstView(col_offset, ncols));
   }
 
   targetImpl.assemble();
