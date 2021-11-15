@@ -141,7 +141,7 @@ class SpanImpl
    *
    * En mode \a check, vérifie les débordements.
    */
-  ARCCORE_HOST_DEVICE inline void setItem(SizeType i,const T& v)
+  constexpr ARCCORE_HOST_DEVICE inline void setItem(SizeType i,const T& v)
   {
     ARCCORE_CHECK_AT(i,m_size);
     m_ptr[i] = v;
@@ -543,16 +543,7 @@ class SmallSpan
 template<typename T,typename SizeType> inline bool
 operator==(SpanImpl<const T,SizeType> rhs, SpanImpl<const T,SizeType> lhs)
 {
-  if (rhs.size()!=lhs.size())
-    return false;
-  SizeType s = rhs.size();
-  for( SizeType i=0; i<s; ++i ){
-    if (rhs[i]==lhs[i])
-      continue;
-    else
-      return false;
-  }
-  return true;
+  return impl::areEqual(rhs,lhs);
 }
 
 template<typename T> inline bool
@@ -613,27 +604,7 @@ operator!=(SmallSpan<T> rhs, SmallSpan<T> lhs)
 template<typename T,typename SizeType> inline void
 dumpArray(std::ostream& o,SpanImpl<const T,SizeType> val,int max_print)
 {
-  SizeType n = val.size();
-  if (max_print>0 && n>max_print){
-    // N'affiche que les (max_print/2) premiers et les (max_print/2) derniers
-    // sinon si le tableau est très grand cela peut générer des
-    // sorties listings énormes.
-    SizeType z = (max_print/2);
-    SizeType z2 = n - z;
-    o << "[0]=\"" << val[0] << '"';
-    for( SizeType i=1; i<z; ++i )
-      o << " [" << i << "]=\"" << val[i] << '"';
-    o << " ... ... (skipping indexes " << z << " to " << z2 << " ) ... ... ";
-    for( SizeType i=(z2+1); i<n; ++i )
-      o << " [" << i << "]=\"" << val[i] << '"';
-  }
-  else{
-    for( SizeType i=0; i<n; ++i ){
-      if (i!=0)
-        o << ' ';
-      o << "[" << i << "]=\"" << val[i] << '"';
-    }
-  }
+  impl::dumpArray(o,val,max_print);
 }
 
 /*---------------------------------------------------------------------------*/

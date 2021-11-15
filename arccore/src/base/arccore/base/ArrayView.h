@@ -681,16 +681,7 @@ class ConstArrayView
 template<typename T> inline bool
 operator==(ConstArrayView<T> rhs, ConstArrayView<T> lhs)
 {
-  if (rhs.size()!=lhs.size())
-    return false;
-  Integer s = rhs.size();
-  for( Integer i=0; i<s; ++i ){
-    if (rhs[i]==lhs[i])
-      continue;
-    else
-      return false;
-  }
-  return true;
+  return impl::areEqual(rhs,lhs);
 }
 
 template<typename T> inline bool
@@ -714,7 +705,6 @@ operator!=(ArrayView<T> rhs,ArrayView<T> lhs)
   return !(rhs==lhs);
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -728,27 +718,7 @@ operator!=(ArrayView<T> rhs,ArrayView<T> lhs)
 template<typename T> inline void
 dumpArray(std::ostream& o,ConstArrayView<T> val,int max_print)
 {
-  Integer n = val.size();
-  if (max_print>0 && n>max_print){
-    // N'affiche que les (max_print/2) premiers et les (max_print/2) dernièrs
-    // sinon si le tableau est très grand cela peut générer des
-    // sorties listings énormes.
-    Integer z = (max_print/2);
-    Integer z2 = n - z;
-    o << "[0]=\"" << val[0] << '"';
-    for( Integer i=1; i<z; ++i )
-      o << " [" << i << "]=\"" << val[i] << '"';
-    o << " ... ... (skipping indexes " << z << " to " << z2 << " ) ... ... ";
-    for( Integer i=(z2+1); i<n; ++i )
-      o << " [" << i << "]=\"" << val[i] << '"';
-  }
-  else{
-    for( Integer i=0; i<n; ++i ){
-      if (i!=0)
-        o << ' ';
-      o << "[" << i << "]=\"" << val[i] << '"';
-    }
-  }
+  impl::dumpArray(o,val,max_print);
 }
 
 /*---------------------------------------------------------------------------*/

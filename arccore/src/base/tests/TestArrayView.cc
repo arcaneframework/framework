@@ -172,6 +172,9 @@ TEST(Span,Convert)
   span2 = a_view;
   ASSERT_EQ(span2.size(),a_view.size()) << "Bad span2 (2) size";
   ASSERT_EQ(span3.size(),a_view.size()) << "Bad span3 (2) size";
+  std::cout << "View=" << a_view << '\n';
+  std::cout << "ConstView=" << a_const_view << '\n';
+  std::cout << "Span3=" << span3 << '\n';
 }
 
 /*---------------------------------------------------------------------------*/
