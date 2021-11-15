@@ -17,7 +17,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayView.h                                                 (C) 2000-2019 */
+/* ArrayView.h                                                 (C) 2000-2021 */
 /*                                                                           */
 /* Types définissant les vues de tableaux C.                                 */
 /*---------------------------------------------------------------------------*/
@@ -27,8 +27,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/ArrayRange.h"
+#include "arccore/base/ArrayViewCommon.h"
 
-#include <iostream>
 #include <cstddef>
 
 /*---------------------------------------------------------------------------*/
@@ -108,7 +108,10 @@ class ArrayView
   friend class Span<const T>;
   friend class SmallSpan<T>;
   friend class SmallSpan<const T>;
+
  public:
+
+  using ThatClass = ArrayView<T>;
 
   //! Type des éléments du tableau
   typedef T value_type;
@@ -139,20 +142,25 @@ class ArrayView
 
  public:
 
-
- public:
-
   //! Construit une vue vide.
-  ArrayView() : m_size(0), m_ptr(0) {}
+  ArrayView() : m_size(0), m_ptr(nullptr) {}
   //! Constructeur de recopie depuis une autre vue
   ArrayView(const ArrayView<T>& from)
   : m_size(from.m_size), m_ptr(from.m_ptr) {}
   //! Construit une vue sur une zone mémoire commencant par \a ptr et
   // contenant \a asize éléments.
-  explicit ArrayView(Integer asize,T* ptr) : m_size(asize), m_ptr(ptr) {}
+  ArrayView(Integer asize,T* ptr) : m_size(asize), m_ptr(ptr) {}
   //! Opérateur de recopie
-  const ArrayView<T>& operator=(const ArrayView<T>& from)
-    { m_size=from.m_size; m_ptr=from.m_ptr; return *this; }
+  ArrayView<T>& operator=(const ArrayView<T>& from) = default;
+
+ public:
+
+  //! Construit une vue sur une zone mémoire commencant par \a ptr et
+  // contenant \a asize éléments.
+  static ThatClass create(T* ptr,Integer asize)
+  {
+    return ThatClass(asize,ptr);
+  }
 
  public:
 
@@ -312,13 +320,7 @@ class ArrayView
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
   ArrayView<T> subViewInterval(Integer index,Integer nb_interval)
   {
-    Integer n = m_size;
-    Integer isize = n / nb_interval;
-    Integer ibegin = index * isize;
-    // Pour le dernier interval, prend les elements restants
-    if ((index+1)==nb_interval)
-      isize = n - ibegin;
-    return ArrayView<T>(isize,m_ptr+ibegin);
+    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
   }
 
   /*!
@@ -475,6 +477,8 @@ class ConstArrayView
 
  public:
 
+  using ThatClass = ConstArrayView<T>;
+
   //! Type des éléments du tableau
   typedef T value_type;
   //! Type pointeur constant d'un élément du tableau
@@ -487,6 +491,8 @@ class ConstArrayView
   typedef Integer size_type;
   //! Type d'une distance entre itérateur éléments du tableau
   typedef std::ptrdiff_t difference_type;
+
+  using const_value_type = typename std::add_const<value_type>::type ;
 
   //! Type d'un itérateur constant sur tout le tableau
   typedef ConstIterT< ConstArrayView<T> > const_iter;
@@ -505,7 +511,8 @@ class ConstArrayView
    */
   ConstArrayView(const ConstArrayView<T>& from)
   : m_size(from.m_size), m_ptr(from.m_ptr) {}
-  /*! \brief Constructeur par copie.
+  /*!
+   * \brief Constructeur par copie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
   ConstArrayView(const ArrayView<T>& from)
@@ -515,17 +522,25 @@ class ConstArrayView
    * \brief Opérateur de recopie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
-  const ConstArrayView<T>& operator=(const ConstArrayView<T>& from)
-  { m_size=from.m_size; m_ptr=from.m_ptr; return *this; }
+  ConstArrayView<T>& operator=(const ConstArrayView<T>& from) = default;
 
   /*! \brief Opérateur de recopie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
-  const ConstArrayView<T>& operator=(const ArrayView<T>& from)
+  ConstArrayView<T>& operator=(const ArrayView<T>& from)
   {
     m_size = from.size();
     m_ptr  = from.data();
     return (*this);
+  }
+
+ public:
+
+  //! Construit une vue sur une zone mémoire commencant par \a ptr et
+  // contenant \a asize éléments.
+  static ThatClass create(const T* ptr,Integer asize)
+  {
+    return ThatClass(asize,ptr);
   }
 
  public:
@@ -558,16 +573,9 @@ class ConstArrayView
   }
 
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
-  ArrayView<T> subViewInterval(Integer index,Integer nb_interval)
+  ConstArrayView<T> subViewInterval(Integer index,Integer nb_interval) const
   {
-    Integer n = m_size;
-    Integer isize = n / nb_interval;
-    Integer ibegin = index * isize;
-    // Pour le dernier interval, prend les elements restants
-    if ((index+1)==nb_interval)
-      isize = n - ibegin;
-    ARCCORE_CHECK_AT(ibegin+isize,n);
-    return ConstArrayView<T>(isize,m_ptr+ibegin);
+    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
   }
 
   //! Addresse du index-ème élément
@@ -643,8 +651,11 @@ class ConstArrayView
    * operator[](): aucune vérification de dépassement n'est possible,
    * même en mode vérification.
    */
-  const T* data() const
-  { return m_ptr; }
+  const_pointer data() const
+  {
+    return m_ptr;
+  }
+
   //! Intervalle d'itération du premier au dernièr élément.
   ArrayRange<const_pointer> range() const
   {
@@ -654,7 +665,7 @@ class ConstArrayView
  private:
 
   Integer m_size; //!< Nombre d'éléments 
-  const T* m_ptr; //!< Pointeur sur le début du tableau
+  const_pointer m_ptr; //!< Pointeur sur le début du tableau
 
  private:
 

@@ -74,6 +74,7 @@ class SpanImpl
  public:
 
   using ThatClass = SpanImpl<T,SizeType>;
+  using size_type = SizeType;
   using ElementType = T;
   using element_type = ElementType;
   using value_type = typename std::remove_cv<ElementType>::type;
@@ -97,10 +98,19 @@ class SpanImpl
   template<typename X,typename = std::enable_if_t<std::is_same_v<X,value_type>> >
   ARCCORE_HOST_DEVICE SpanImpl(const SpanImpl<X,SizeType>& from)
   : m_ptr(from.data()), m_size(from.size()) {}
-  //! Construit une vue sur une zone mémoire commencant par \a ptr et
-  // contenant \a asize éléments.
+
+  //! Construit une vue sur une zone mémoire commencant par \a ptr et contenant \a asize éléments.
   ARCCORE_HOST_DEVICE SpanImpl(T* ptr,SizeType asize)
   : m_ptr(ptr), m_size(asize) {}
+
+ public:
+
+  //! Construit une vue sur une zone mémoire commencant par \a ptr et
+  // contenant \a asize éléments.
+  static ThatClass create(pointer ptr,SizeType asize)
+  {
+    return ThatClass(ptr,asize);
+  }
 
  public:
 
@@ -243,13 +253,7 @@ class SpanImpl
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
   ThatClass subViewInterval(SizeType index,SizeType nb_interval) const
   {
-    SizeType n = m_size;
-    SizeType isize = n / nb_interval;
-    SizeType ibegin = index * isize;
-    // Pour le dernier interval, prend les elements restants
-    if ((index+1)==nb_interval)
-      isize = n - ibegin;
-    return {m_ptr+ibegin,isize};
+    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
   }
 
   /*!
@@ -368,8 +372,11 @@ class Span
 {
  public:
 
+  using ThatClass = Span<T>;
   using BaseClass = SpanImpl<T,Int64>;
+  using size_type = Int64;
   using value_type = typename BaseClass::value_type;
+  using pointer = typename BaseClass::pointer;
 
  public:
 
@@ -391,10 +398,19 @@ class Span
   : BaseClass(from) {}
   ARCCORE_HOST_DEVICE Span(const SpanImpl<T,Int32>& from)
   : BaseClass(from.data(),from.size()) {}
-  //! Construit une vue sur une zone mémoire commencant par \a ptr et
-  // contenant \a asize éléments.
+
+  //! Construit une vue sur une zone mémoire commencant par \a ptr et contenant \a asize éléments.
   ARCCORE_HOST_DEVICE Span(T* ptr,Int64 asize)
   : BaseClass(ptr,asize) {}
+
+ public:
+
+  //! Construit une vue sur une zone mémoire commencant par \a ptr et
+  // contenant \a asize éléments.
+  static ThatClass create(pointer ptr,size_type asize)
+  {
+    return ThatClass(ptr,asize);
+  }
 
  public:
 
@@ -425,7 +441,7 @@ class Span
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
   ARCCORE_HOST_DEVICE Span<T> subViewInterval(Int64 index,Int64 nb_interval) const
   {
-    return BaseClass::subViewInternal(index,nb_interval);
+    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
   }
 };
 
@@ -450,8 +466,11 @@ class SmallSpan
 
  public:
 
+  using ThatClass = SmallSpan<T>;
   using BaseClass = SpanImpl<T,Int32>;
+  using size_type = Int32;
   using value_type = typename BaseClass::value_type;
+  using pointer = typename BaseClass::pointer;
 
  public:
 
@@ -478,6 +497,15 @@ class SmallSpan
 
  public:
 
+  //! Construit une vue sur une zone mémoire commencant par \a ptr et
+  // contenant \a asize éléments.
+  static ThatClass create(pointer ptr,size_type asize)
+  {
+    return ThatClass(ptr,asize);
+  }
+
+ public:
+
   /*!
    * \brief Sous-vue à partir de l'élément \a abegin
    * et contenant \a asize éléments.
@@ -485,7 +513,7 @@ class SmallSpan
    * Si `(abegin+asize` est supérieur à la taille du tableau,
    * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
    */
-  ARCCORE_HOST_DEVICE Span<T> subspan(Int64 abegin,Int64 asize) const
+  ARCCORE_HOST_DEVICE SmallSpan<T> subspan(Int32 abegin,Int32 asize) const
   {
     return BaseClass::subspan(abegin,asize);
   }
@@ -497,15 +525,15 @@ class SmallSpan
    * Si `(abegin+asize)` est supérieur à la taille du tableau,
    * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
    */
-  ARCCORE_HOST_DEVICE Span<T> subView(Int64 abegin,Int64 asize) const
+  ARCCORE_HOST_DEVICE SmallSpan<T> subView(Int32 abegin,Int32 asize) const
   {
     return subspan(abegin,asize);
   }
 
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
-  ARCCORE_HOST_DEVICE Span<T> subViewInterval(Int64 index,Int64 nb_interval) const
+  ARCCORE_HOST_DEVICE SmallSpan<T> subViewInterval(Int32 index,Int32 nb_interval) const
   {
-    return BaseClass::subViewInternal(index,nb_interval);
+    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
   }
 };
 

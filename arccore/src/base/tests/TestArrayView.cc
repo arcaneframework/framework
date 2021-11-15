@@ -135,6 +135,9 @@ TEST(ArrayView,Iterator)
   _testIterator(values4);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 TEST(Span,Convert)
 {
   using namespace Arccore;
@@ -169,6 +172,27 @@ TEST(Span,Convert)
   span2 = a_view;
   ASSERT_EQ(span2.size(),a_view.size()) << "Bad span2 (2) size";
   ASSERT_EQ(span3.size(),a_view.size()) << "Bad span3 (2) size";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arccore
+{
+template class ArrayView<Int32>;
+template class ConstArrayView<Int32>;
+template class ArrayView<double>;
+template class ConstArrayView<double>;
+
+template class Span<Int32>;
+template class Span<const Int32>;
+template class Span<double>;
+template class Span<const double>;
+
+template class SmallSpan<Int32>;
+template class SmallSpan<const Int32>;
+template class SmallSpan<double>;
+template class SmallSpan<const double>;
 }
 
 /*---------------------------------------------------------------------------*/
