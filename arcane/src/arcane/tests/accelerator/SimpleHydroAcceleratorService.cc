@@ -396,9 +396,6 @@ hydroStartInit()
 void SimpleHydroAcceleratorService::
 computeForces()
 {
-  // Remise à zéro du vecteur des forces.
-  m_force.fill(Real3::null());
-
   // Calcul pour chaque noeud de chaque maille la contribution
   // des forces de pression et de la pseudo-viscosite si necessaire
   if (m_module->getViscosity()==TypesSimpleHydro::ViscosityCellScalar){
