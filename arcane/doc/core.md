@@ -99,7 +99,7 @@ aux traces %Arcane (cf \ref arcanedoc_traces) et aux méthodes suivantes :
 <tr><td>\c allNodes() </td><td> retourne le groupe de tous les noeuds </td></tr>
 <tr><td>\c allFaces() </td><td> retourne le groupe de toutes les faces </td></tr>
 <tr><td>\c ownCells() </td><td> retourne le groupe des mailles propres au sous-domaine </td></tr>
-<tr><td>\c ownNodes() </td><td> retourne le groupe des noeuds propres au
+<tr><td>\c ownNodes() </td><td> retourne le groupe des noeuds propres au sous-domaine </td></tr>
 <tr><td>\c ownFaces() </td><td> retourne le groupe de toutes les faces propres au sous-domaine </td></tr>
 </table>
 
@@ -402,7 +402,7 @@ en argument un itérateur sur un élément du maillage.
 
 Les grandeurs se déclarent et s'utilisent de manière similaire
 quels que soient le type d'élément du maillage. Elles sont dimensionnées
-automatiquement lors de l'initialisation aux nombre d'éléments du
+automatiquement lors de l'initialisation au nombre d'éléments du
 maillage du genre de la variable.
 
 Par exemple, avec la variable *m_volume* de type *Arcane::VariableCellReal*:
@@ -425,9 +425,9 @@ ENUMERATE_CELL(i,allCells()) {
 
 Il s'agit des variables sur les éléments du maillage (noeuds,
 faces ou mailles) avec un tableau de valeurs par éléments. Ces variables sont
-définies pas la classe template Arcane::MeshVariableArrayRefT.
+définies par la classe template Arcane::MeshVariableArrayRefT.
 
-Le fonctionnement de ces variables est identiques à celui des
+Le fonctionnement de ces variables est identique à celui des
 variables scalaires sur le maillage mais l'opérateur
 Arcane::MeshVariableArrayRefT::operator[]() retourne un tableau de valeurs
 du type de la variable.
@@ -467,7 +467,7 @@ void T::func();
 Un point d'entrée est caractérisé par:
 - un nom
 - une méthode de la classe associée.
-- l'endroit ou il peut être appelé (initialisation, boucle de calcul, ...).
+- l'endroit où il peut être appelé (initialisation, boucle de calcul, ...).
 Par défaut, un point d'entrée est appelé dans la boucle de calcul.
 
 Les points d'entrée sont déclarés dans le descripteur de module. Par exemple, pour le 
