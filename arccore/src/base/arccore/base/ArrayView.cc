@@ -45,66 +45,24 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCCORE_BASE_EXPORT Integer
-arccoreCheckArraySize(unsigned long long size)
+//! Lance une exception 'ArgumentException'
+ARCCORE_BASE_EXPORT void impl::
+arccoreThrowTooBigInteger [[noreturn]] (std::size_t size)
 {
-  if (size>=ARCCORE_INTEGER_MAX)
-    ARCCORE_THROW(ArgumentException,"value '{0}' too big for Array size",size);
-  return (Integer)size;
+  ARCCORE_THROW(ArgumentException,"value '{0}' too big for Array size",size);
 }
 
-extern "C++" ARCCORE_BASE_EXPORT Integer
-arccoreCheckArraySize(long long size)
+//! Lance une exception 'ArgumentException'
+ARCCORE_BASE_EXPORT void impl::
+arccoreThrowTooBigInt64 [[noreturn]] (std::size_t size)
 {
-  if (size>=ARCCORE_INTEGER_MAX)
-    ARCCORE_THROW(ArgumentException,"value '{0}' too big for Array size",size);
-  if (size<0)
-    ARCCORE_THROW(ArgumentException,"invalid negative value '{0}' for Array size",size);
-  return (Integer)size;
+  ARCCORE_THROW(ArgumentException,"value '{0}' too big to fit in Int64",size);
 }
 
-extern "C++" ARCCORE_BASE_EXPORT Integer
-arccoreCheckArraySize(unsigned long size)
+ARCCORE_BASE_EXPORT void impl::
+arccoreThrowNegativeSize [[noreturn]] (Int64 size)
 {
-  if (size>=ARCCORE_INTEGER_MAX)
-    ARCCORE_THROW(ArgumentException,"value '{0}' too big for Array size",size);
-  return (Integer)size;
-}
-
-extern "C++" ARCCORE_BASE_EXPORT Integer
-arccoreCheckArraySize(long size)
-{
-  if (size>=ARCCORE_INTEGER_MAX)
-    ARCCORE_THROW(ArgumentException,"value '{0}' too big for Array size",size);
-  if (size<0)
-    ARCCORE_THROW(ArgumentException,"invalid negative value '{0}' for Array size",size);
-  return (Integer)size;
-}
-
-extern "C++" ARCCORE_BASE_EXPORT Integer
-arccoreCheckArraySize(unsigned int size)
-{
-  if (size>=ARCCORE_INTEGER_MAX)
-    ARCCORE_THROW(ArgumentException,"value '{0}' too big for Array size",size);
-  return (Integer)size;
-}
-
-extern "C++" ARCCORE_BASE_EXPORT Integer
-arccoreCheckArraySize(int size)
-{
-  if (size>=ARCCORE_INTEGER_MAX)
-    ARCCORE_THROW(ArgumentException,"value '{0}' too big for Array size",size);
-  if (size<0)
-    ARCCORE_THROW(ArgumentException,"invalid negative value '{0}' for Array size",size);
-  return (Integer)size;
-}
-
-extern "C++" ARCCORE_BASE_EXPORT Int64
-arccoreCheckLargeArraySize(size_t size)
-{
-  if (size>=ARCCORE_INT64_MAX)
-    ARCCORE_THROW(ArgumentException,"value '{0}' too big to fit in Int64",size);
-  return (Int64)size;
+  ARCCORE_THROW(ArgumentException,"invalid negative value '{0}' for Array size",size);
 }
 
 /*---------------------------------------------------------------------------*/

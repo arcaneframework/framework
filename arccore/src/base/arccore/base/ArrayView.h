@@ -47,6 +47,7 @@ template<typename T> class IterT;
 template<typename T> class Span;
 template<typename T> class SmallSpan;
 
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -156,7 +157,8 @@ class ArrayView
 
   //! Construit une vue sur une zone mémoire commencant par \a ptr et contenant \a asize éléments.
   template<std::size_t N>
-  constexpr ArrayView(std::array<T,N>& v) noexcept : m_size(v.size()), m_ptr(v.data()) {}
+  constexpr ArrayView(std::array<T,N>& v) noexcept
+  : m_size(arccoreCheckArraySize(v.size())), m_ptr(v.data()) {}
 
   //! Opérateur de recopie
   ArrayView<T>& operator=(const ArrayView<T>& from) = default;
@@ -164,7 +166,7 @@ class ArrayView
   template<std::size_t N>
   constexpr ArrayView<T>& operator=(std::array<T,N>& from) noexcept
   {
-    m_size = from.size();
+    m_size = arccoreCheckArraySize(from.size());
     m_ptr = from.data();
     return (*this);
   }
@@ -537,7 +539,7 @@ class ConstArrayView
   //! Création depuis un std::array
   template<std::size_t N,typename X,typename = std::enable_if_t<std::is_same_v<X,const_value_type>> >
   constexpr ConstArrayView(const std::array<X,N>& v) noexcept
-  : m_size(v.size()), m_ptr(v.data()) {}
+  : m_size(arccoreCheckArraySize(v.size())), m_ptr(v.data()) {}
 
   /*!
    * \brief Opérateur de recopie.
@@ -560,7 +562,7 @@ class ConstArrayView
   template<std::size_t N,typename X,typename = std::enable_if_t<std::is_same_v<X,const_value_type>> >
   constexpr ConstArrayView<T>& operator=(const std::array<X,N>& from) noexcept
   {
-    m_size = from.size();
+    m_size = arccoreCheckArraySize(from.size());
     m_ptr = from.data();
     return (*this);
   }
@@ -771,74 +773,6 @@ operator<<(std::ostream& o, ArrayView<T> val)
   o << val.constView();
   return o;
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
- * de taille à un tableau.
- * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
- * une exception de type ArgumentException.
- */
-extern "C++" ARCCORE_BASE_EXPORT Integer
-arccoreCheckArraySize(unsigned long long size);
-
-/*!
- * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
- * de taille à un tableau.
- * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
- * une exception de type ArgumentException.
- */
-extern "C++" ARCCORE_BASE_EXPORT Integer
-arccoreCheckArraySize(long long size);
-
-/*!
- * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
- * de taille à un tableau.
- * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
- * une exception de type ArgumentException.
- */
-extern "C++" ARCCORE_BASE_EXPORT Integer
-arccoreCheckArraySize(unsigned long size);
-
-/*!
- * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
- * de taille à un tableau.
- * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
- * une exception de type ArgumentException.
- */
-extern "C++" ARCCORE_BASE_EXPORT Integer
-arccoreCheckArraySize(long size);
-
-/*!
- * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
- * de taille à un tableau.
- * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
- * une exception de type ArgumentException.
- */
-extern "C++" ARCCORE_BASE_EXPORT Integer
-arccoreCheckArraySize(unsigned int size);
-
-/*!
- * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
- * de taille à un tableau.
- * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
- * une exception de type ArgumentException.
- */
-extern "C++" ARCCORE_BASE_EXPORT Integer
-arccoreCheckArraySize(int size);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*!
- * \brief Vérifie que \a size peut être converti dans un 'Int64' pour servir
- * de taille à un tableau.
- * Si possible, retourne \a size convertie en un 'Int64'. Sinon, lance
- * une exception de type ArgumentException.
- */
-extern "C++" ARCCORE_BASE_EXPORT Int64
-arccoreCheckLargeArraySize(size_t size);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

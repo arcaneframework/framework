@@ -116,7 +116,164 @@ areEqual(ViewType rhs, ViewType lhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Lance une exception 'ArgumentException'
+extern "C++" ARCCORE_BASE_EXPORT void
+arccoreThrowTooBigInteger [[noreturn]] (std::size_t size);
+
+extern "C++" ARCCORE_BASE_EXPORT void
+arccoreThrowTooBigInt64 [[noreturn]] (std::size_t size);
+
+extern "C++" ARCCORE_BASE_EXPORT void
+arccoreThrowNegativeSize [[noreturn]] (Int64 size);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arccore::impl
+
+namespace Arccore
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
+ * de taille à un tableau.
+ * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
+ * une exception de type ArgumentException.
+ */
+inline constexpr Integer
+arccoreCheckArraySize(unsigned long long size)
+{
+  if (size>=ARCCORE_INTEGER_MAX)
+    impl::arccoreThrowTooBigInteger(size);
+  return static_cast<Integer>(size);
+}
+
+/*!
+ * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
+ * de taille à un tableau.
+ * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
+ * une exception de type ArgumentException.
+ */
+inline constexpr Integer
+arccoreCheckArraySize(long long size)
+{
+  if (size>=ARCCORE_INTEGER_MAX)
+    impl::arccoreThrowTooBigInteger(size);
+  if (size<0)
+    impl::arccoreThrowNegativeSize(size);
+  return static_cast<Integer>(size);
+}
+
+/*!
+ * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
+ * de taille à un tableau.
+ * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
+ * une exception de type ArgumentException.
+ */
+inline constexpr ARCCORE_BASE_EXPORT Integer
+arccoreCheckArraySize(unsigned long size)
+{
+  if (size>=ARCCORE_INTEGER_MAX)
+    impl::arccoreThrowTooBigInteger(size);
+  return static_cast<Integer>(size);
+}
+
+/*!
+ * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
+ * de taille à un tableau.
+ *
+ * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
+ * une exception de type ArgumentException.
+ */
+inline constexpr Integer
+arccoreCheckArraySize(long size)
+{
+  if (size>=ARCCORE_INTEGER_MAX)
+    impl::arccoreThrowTooBigInteger(size);
+  if (size<0)
+    impl::arccoreThrowNegativeSize(size);
+  return static_cast<Integer>(size);
+}
+
+/*!
+ * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
+ * de taille à un tableau.
+ * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
+ * une exception de type ArgumentException.
+ */
+inline constexpr Integer
+arccoreCheckArraySize(unsigned int size)
+{
+  if (size>=ARCCORE_INTEGER_MAX)
+    impl::arccoreThrowTooBigInteger(size);
+  return static_cast<Integer>(size);
+}
+
+/*!
+ * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
+ * de taille à un tableau.
+ * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
+ * une exception de type ArgumentException.
+ */
+inline constexpr Integer
+arccoreCheckArraySize(int size)
+{
+  if (size>=ARCCORE_INTEGER_MAX)
+    impl::arccoreThrowTooBigInteger(size);
+  if (size<0)
+    impl::arccoreThrowNegativeSize(size);
+  return static_cast<Integer>(size);
+}
+
+/*!
+ * \brief Vérifie que \a size peut être converti dans un 'Int64' pour servir
+ * de taille à un tableau.
+ *
+ * Si possible, retourne \a size convertie en un 'Int64'. Sinon, lance
+ * une exception de type ArgumentException.
+ */
+inline constexpr Int64
+arccoreCheckLargeArraySize(size_t size)
+{
+  if (size>=ARCCORE_INT64_MAX)
+    impl::arccoreThrowTooBigInt64(size);
+  return static_cast<Int64>(size);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename IntType> class ArraySizeChecker;
+
+//! Spécialisation pour tester la conversion en Int32
+template<>
+class ArraySizeChecker<Int32>
+{
+ public:
+  template<typename SizeType>
+  static Int32 check(SizeType size)
+  {
+    return arccoreCheckArraySize(size);
+  }
+};
+
+//! Spécialisation pour tester la conversion en Int64
+template<>
+class ArraySizeChecker<Int64>
+{
+ public:
+  static Int64 check(std::size_t size)
+  {
+    return arccoreCheckLargeArraySize(size);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

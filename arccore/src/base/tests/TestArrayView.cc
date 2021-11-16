@@ -184,9 +184,12 @@ TEST(Span,Convert)
 template<typename A1,typename A2>
 void _checkSame(A1& a1,A2& a2,const char* message)
 {
+  using namespace Arccore;
   using size_type = typename A1::size_type;
-  ASSERT_EQ(a1.size(),a2.size()) << "Bad size " << message;
-  for( size_type i=0, n=a2.size(); i<n; ++i )
+  Int64 s1 = a1.size();
+  Int64 s2 = a2.size();
+  ASSERT_EQ(s1,s2) << "Bad size " << message;
+  for( size_type i=0, n=a1.size(); i<n; ++i )
     ASSERT_EQ(a1[i],a2[i]) << "Bad value[" << i << "]" << message;
 }
 
@@ -297,7 +300,6 @@ template<typename ViewType> void
 _testSubViewInterval()
 {
   using namespace Arccore;
-  using size_type = typename ViewType::size_type;
   
   std::array<Int64,12> vlist { 9, 13, 32, 27, 43, -5, 2, -7, 8, 11, 25, 48 };
   ViewType view{vlist};

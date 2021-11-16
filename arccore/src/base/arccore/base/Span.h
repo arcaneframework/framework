@@ -113,14 +113,14 @@ class SpanImpl
   //! Construit une vue depuis un std::array
   template<std::size_t N,typename X,typename = is_same_const_type<X> >
   constexpr ARCCORE_HOST_DEVICE SpanImpl(std::array<X,N>& from) noexcept
-  : m_ptr(from.data()), m_size(from.size()) {}
+  : m_ptr(from.data()), m_size(ArraySizeChecker<SizeType>::check(from.size())) {}
 
   //! Opérateur de recopie
   template<std::size_t N,typename X,typename = is_same_const_type<X> >
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(std::array<X,N>& from) noexcept
   {
     m_ptr = from.data();
-    m_size = from.size();
+    m_size = ArraySizeChecker<SizeType>::check(from.size());
     return (*this);
   }
 
