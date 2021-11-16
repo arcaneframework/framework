@@ -6,6 +6,7 @@ set(SOURCES
   APReal.h
   ArrayIterator.h
   ArrayRange.h
+  ArrayViewCommon.h
   ArrayView.h
   ArrayView.cc
   Array2View.h
