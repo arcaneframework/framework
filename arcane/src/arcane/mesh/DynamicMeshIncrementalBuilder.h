@@ -174,8 +174,14 @@ class DynamicMeshIncrementalBuilder
       , m_face_uid(NULL_ITEM_ID){}
 //      , m_next_node_set([](const NodeInFacePtr& a, const NodeInFacePtr& b){return (*a) < (*b);}){} // Does not work (gcc 4.7.2 pb ?). Need to define NodeInFacePtr class
 
-    bool operator<(const NodeInFace & nif) const {return m_uid < nif.m_uid;}
-    bool operator==(const NodeInFace& a) {return m_uid == a.m_uid;}
+    friend bool operator<(const NodeInFace& a,const NodeInFace & nif)
+    {
+      return a.m_uid < nif.m_uid;
+    }
+    friend bool operator==(const NodeInFace& a,const NodeInFace& b)
+    {
+      return a.m_uid == b.m_uid;
+    }
 
     Int64 faceUid() const {return m_face_uid;}
     void setFaceUid(Int64 face_uid) {m_face_uid = face_uid;}

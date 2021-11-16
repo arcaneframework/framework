@@ -66,34 +66,34 @@ class ItemInternalVectorViewConstIterator
   ThatClass& operator--() { --m_index; return (*this); }
   void operator+=(difference_type v) { m_index += v; }
   void operator-=(difference_type v) { m_index -= v; }
-  Integer operator-(const ThatClass& b) const
+  friend Integer operator-(const ThatClass& a,const ThatClass& b)
   {
-    return this->m_index - b.m_index;
+    return a.m_index - b.m_index;
   }
-  ThatClass operator-(difference_type v) const
+  friend ThatClass operator-(const ThatClass& a,difference_type v)
   {
-    Integer index = m_index - v;
-    return ThatClass(m_items,m_local_ids,index);
+    Integer index = a.m_index - v;
+    return ThatClass(a.m_items,a.m_local_ids,index);
   }
-  ThatClass operator+(difference_type v) const
+  friend ThatClass operator+(const ThatClass& a,difference_type v)
   {
-    Integer index = m_index + v;
-    return ThatClass(m_items,m_local_ids,index);
+    Integer index = a.m_index + v;
+    return ThatClass(a.m_items,a.m_local_ids,index);
   }
-  bool operator<(const ThatClass& rhs) const
+  friend bool operator<(const ThatClass& lhs,const ThatClass& rhs)
   {
-    return m_index<=rhs.m_index;
+    return lhs.m_index<=rhs.m_index;
   }
-  bool operator==(const ThatClass& rhs)
+  friend bool operator==(const ThatClass& lhs,const ThatClass& rhs)
   {
     // TODO: regarder si cela ne pose pas de problemes de performance
     // de faire ces trois comparaions. Si c'est le cas on peut
     // faire uniquement la dernière.
-    return m_items==rhs.m_items && m_local_ids==rhs.m_local_ids && m_index==rhs.m_index;
+    return lhs.m_items==rhs.m_items && lhs.m_local_ids==rhs.m_local_ids && lhs.m_index==rhs.m_index;
   }
-  bool operator!=(const ThatClass& rhs)
+  friend bool operator!=(const ThatClass& lhs,const ThatClass& rhs)
   {
-    return !(this->operator==(rhs));
+    return !(lhs==rhs);
   }
  private:
   const ItemInternalPtr* m_items;

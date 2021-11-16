@@ -193,16 +193,16 @@ class ARCANE_UTILS_EXPORT Real3Proxy
    * \retval true si les deux triplets sont égaux,
    * \retval false sinon.
    */
-  bool operator==(Real3 b) const
-    { return  _eq(x,b.x) &&  _eq(y,b.y) && _eq(z,b.z); }
+  friend bool operator==(Real3Proxy a,Real3 b)
+    { return  _eq(a.x,b.x) &&  _eq(a.y,b.y) && _eq(a.z,b.z); }
   /*!
    * \brief Compare deux triplets.
    * Pour la notion d'égalité, voir operator==()
    * \retval true si les deux triplets sont différents,
    * \retval false sinon.
    */
-  bool operator!=(Real3 b) const
-    { return !operator==(b); }
+  friend bool operator!=(Real3Proxy a,Real3 b)
+    { return !(a==b); }
 
  public:
   Real3 getValue() const
