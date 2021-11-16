@@ -180,6 +180,119 @@ TEST(Span,Convert)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// Vérifie que \a a1 et \a a2 sont identiques
+template<typename A1,typename A2>
+void _checkSame(A1& a1,A2& a2,const char* message)
+{
+  ASSERT_EQ(a1.size(),a2.size()) << "Bad size " << message;
+  for( int i=0, n=a2.size(); i<n; ++i )
+    ASSERT_EQ(a1[i],a2[i]) << "Bad value[" << i << "]" << message;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(ArrayView,StdArray)
+{
+  using namespace Arccore;
+  std::array<Int64,0> v0;
+  std::array<Int64,2> v1 { 5, 7 };
+  std::array<Int64,3> v2 { 2, 4, -2 };
+  std::array<const Int64,4> v3 { 9, 13, 32, 27 };
+
+  {
+    ArrayView<Int64> view0 { v0 };
+    _checkSame(view0,v0,"view0==v0");
+
+    ArrayView<Int64> view1 { v1 };
+    _checkSame(view1,v1,"view1==v1");
+
+    view0 = v2;
+    _checkSame(view0,v2,"view0==v2");
+  }
+
+  {
+    ConstArrayView<Int64> view0 { v0 };
+    _checkSame(view0,v0,"const view0==v0");
+
+    ConstArrayView<Int64> view1 { v1 };
+    _checkSame(view1,v1,"const view1==v1");
+
+    view0 = v2;
+    _checkSame(view0,v2,"const view0==v2");
+
+    ConstArrayView<Int64> view2 { v3 };
+    _checkSame(view2,v3,"const view2==v3");
+
+    view1 = v3;
+    _checkSame(view1,v3,"const view1==v3");
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename SpanType,typename ConstSpanType>
+void
+_testSpanStdArray()
+{
+  using namespace Arccore;
+  std::array<Int64,0> v0;
+  std::array<Int64,2> v1 { 5, 7 };
+  std::array<Int64,3> v2 { 2, 4, -2 };
+  std::array<const Int64,4> v3 { 9, 13, 32, 27 };
+
+  {
+    SpanType span0 { v0 };
+    _checkSame(span0,v0,"span0==v0");
+
+    SpanType span1 { v1 };
+    _checkSame(span1,v1,"span1==v1");
+
+    span0 = v2;
+    _checkSame(span0,v2,"span0==v2");
+  }
+
+  {
+    ConstSpanType span0 { v0 };
+    _checkSame(span0,v0,"const span0==v0");
+
+    ConstSpanType span1 { v1 };
+    _checkSame(span1,v1,"const span1==v1");
+
+    span0 = v2;
+    _checkSame(span0,v2,"const span0==v2");
+
+    ConstSpanType span2 { v3 };
+    _checkSame(span2,v3,"const span2==v3");
+
+    span1 = v3;
+    _checkSame(span1,v3,"const span1==v3");
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(Span,StdArray)
+{
+  using namespace Arccore;
+  _testSpanStdArray<Span<Int64>,Span<const Int64>>();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(SmallSpan,StdArray)
+{
+  using namespace Arccore;
+  _testSpanStdArray<SmallSpan<Int64>,SmallSpan<const Int64>>();
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace Arccore
 {
 template class ArrayView<Int32>;

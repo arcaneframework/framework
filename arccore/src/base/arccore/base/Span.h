@@ -77,7 +77,8 @@ class SpanImpl
   using size_type = SizeType;
   using ElementType = T;
   using element_type = ElementType;
-  using value_type = typename std::remove_cv<ElementType>::type;
+  using value_type = typename std::remove_cv_t<ElementType>;
+  using const_value_type = typename std::add_const_t<value_type>;
   using index_type = SizeType;
   using difference_type = SizeType;
   using pointer = ElementType*;
@@ -89,6 +90,10 @@ class SpanImpl
   using view_type = typename detail::ViewTypeT<ElementType>::view_type;
   using reverse_iterator = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+
+  //! Indique si on peut convertir un 'X' ou 'const X' en un 'T'
+  template<typename X>
+  using is_same_const_type = std::enable_if_t<std::is_same_v<X,T> || std::is_same_v<std::add_const_t<X>,T>>;
 
  public:
 
@@ -104,6 +109,20 @@ class SpanImpl
   //! Construit une vue sur une zone mémoire commencant par \a ptr et contenant \a asize éléments.
   constexpr ARCCORE_HOST_DEVICE SpanImpl(pointer ptr,SizeType asize) noexcept
   : m_ptr(ptr), m_size(asize) {}
+
+  //! Construit une vue depuis un std::array
+  template<std::size_t N,typename X,typename = is_same_const_type<X> >
+  constexpr ARCCORE_HOST_DEVICE SpanImpl(std::array<X,N>& from) noexcept
+  : m_ptr(from.data()), m_size(from.size()) {}
+
+  //! Opérateur de recopie
+  template<std::size_t N,typename X,typename = is_same_const_type<X> >
+  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(std::array<X,N>& from) noexcept
+  {
+    m_ptr = from.data();
+    m_size = from.size();
+    return (*this);
+  }
 
  public:
 
@@ -379,6 +398,8 @@ class Span
   using size_type = Int64;
   using value_type = typename BaseClass::value_type;
   using pointer = typename BaseClass::pointer;
+  template<typename X>
+  using is_same_const_type = std::enable_if_t<std::is_same_v<X,T> || std::is_same_v<std::add_const_t<X>,T>>;
 
  public:
 
@@ -404,6 +425,19 @@ class Span
   //! Construit une vue sur une zone mémoire commencant par \a ptr et contenant \a asize éléments.
   constexpr ARCCORE_HOST_DEVICE Span(pointer ptr,Int64 asize) noexcept
   : BaseClass(ptr,asize) {}
+
+  //! Construit une vue à partir d'un std::array.
+  template<std::size_t N,typename X,typename = is_same_const_type<X> >
+  constexpr ARCCORE_HOST_DEVICE Span(std::array<X,N>& from) noexcept
+  : BaseClass(from) {}
+
+  //! Opérateur de recopie
+  template<std::size_t N,typename X,typename = is_same_const_type<X> >
+  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(std::array<X,N>& from) noexcept
+  {
+    BaseClass::operator=(from);
+    return (*this);
+  }
 
  public:
 
@@ -462,10 +496,6 @@ template<typename T>
 class SmallSpan
 : public SpanImpl<T,Int32>
 {
-  // Pour le cas où on ne supporte pas le C++14.
-  template< bool B, class XX = void >
-  using Span_enable_if_t = typename std::enable_if<B,XX>::type;
-
  public:
 
   using ThatClass = SmallSpan<T>;
@@ -473,29 +503,47 @@ class SmallSpan
   using size_type = Int32;
   using value_type = typename BaseClass::value_type;
   using pointer = typename BaseClass::pointer;
+  template<typename X>
+  using is_same_const_type = std::enable_if_t<std::is_same_v<X,T> || std::is_same_v<std::add_const_t<X>,T>>;
 
  public:
 
   //! Construit une vue vide.
   SmallSpan() = default;
+
   //! Constructeur de recopie depuis une autre vue
   constexpr ARCCORE_HOST_DEVICE SmallSpan(const ArrayView<value_type>& from) noexcept
   : BaseClass(from.m_ptr,from.m_size) {}
+
   // Constructeur à partir d'un ConstArrayView. Cela n'est autorisé que
   // si T est const.
-  template<typename X,typename = Span_enable_if_t<std::is_same<X,value_type>::value> >
+  template<typename X,typename = std::enable_if_t<std::is_same<X,value_type>::value> >
   constexpr ARCCORE_HOST_DEVICE SmallSpan(const ConstArrayView<X>& from) noexcept
   : BaseClass(from.m_ptr,from.m_size) {}
+
   // Pour un Span<const T>, on a le droit de construire depuis un Span<T>
-  template<typename X,typename = Span_enable_if_t<std::is_same<X,value_type>::value> >
+  template<typename X,typename = std::enable_if_t<std::is_same<X,value_type>::value> >
   constexpr ARCCORE_HOST_DEVICE SmallSpan(const SmallSpan<X>& from) noexcept
   : BaseClass(from) {}
+
   constexpr ARCCORE_HOST_DEVICE SmallSpan(const SpanImpl<T,Int32>& from) noexcept
   : BaseClass(from) {}
-  //! Construit une vue sur une zone mémoire commencant par \a ptr et
-  // contenant \a asize éléments.
+
+  //! Construit une vue sur une zone mémoire commencant par \a ptr et contenant \a asize éléments.
   constexpr ARCCORE_HOST_DEVICE SmallSpan(pointer ptr,Int32 asize) noexcept
   : BaseClass(ptr,asize) {}
+
+  template<std::size_t N,typename X,typename = is_same_const_type<X> >
+  constexpr ARCCORE_HOST_DEVICE SmallSpan(std::array<X,N>& from) noexcept
+  : BaseClass(from) {}
+
+  //! Opérateur de recopie
+  template<std::size_t N,typename X,typename = is_same_const_type<X> >
+  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(std::array<X,N>& from) noexcept
+  {
+    BaseClass::operator=(from);
+    return (*this);
+  }
 
  public:
 

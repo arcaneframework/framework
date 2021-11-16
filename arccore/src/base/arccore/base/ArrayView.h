@@ -30,6 +30,7 @@
 #include "arccore/base/ArrayViewCommon.h"
 
 #include <cstddef>
+#include <array>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -144,14 +145,29 @@ class ArrayView
 
   //! Construit une vue vide.
   constexpr ArrayView() noexcept : m_size(0), m_ptr(nullptr) {}
+
   //! Constructeur de recopie depuis une autre vue
   constexpr ArrayView(const ArrayView<T>& from) noexcept
   : m_size(from.m_size), m_ptr(from.m_ptr) {}
+
   //! Construit une vue sur une zone mémoire commencant par \a ptr et
   // contenant \a asize éléments.
   constexpr ArrayView(Integer asize,pointer ptr)  noexcept : m_size(asize), m_ptr(ptr) {}
+
+  //! Construit une vue sur une zone mémoire commencant par \a ptr et contenant \a asize éléments.
+  template<std::size_t N>
+  constexpr ArrayView(std::array<T,N>& v) noexcept : m_size(v.size()), m_ptr(v.data()) {}
+
   //! Opérateur de recopie
   ArrayView<T>& operator=(const ArrayView<T>& from) = default;
+
+  template<std::size_t N>
+  constexpr ArrayView<T>& operator=(std::array<T,N>& from) noexcept
+  {
+    m_size = from.size();
+    m_ptr = from.data();
+    return (*this);
+  }
 
  public:
 
@@ -492,7 +508,7 @@ class ConstArrayView
   //! Type d'une distance entre itérateur éléments du tableau
   typedef std::ptrdiff_t difference_type;
 
-  using const_value_type = typename std::add_const<value_type>::type ;
+  using const_value_type = typename std::add_const_t<value_type>;
 
   //! Type d'un itérateur constant sur tout le tableau
   typedef ConstIterT< ConstArrayView<T> > const_iter;
@@ -518,13 +534,19 @@ class ConstArrayView
   constexpr ConstArrayView(const ArrayView<T>& from) noexcept
   : m_size(from.size()), m_ptr(from.data()) { }
 
+  //! Création depuis un std::array
+  template<std::size_t N,typename X,typename = std::enable_if_t<std::is_same_v<X,const_value_type>> >
+  constexpr ConstArrayView(const std::array<X,N>& v) noexcept
+  : m_size(v.size()), m_ptr(v.data()) {}
+
   /*!
    * \brief Opérateur de recopie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
   ConstArrayView<T>& operator=(const ConstArrayView<T>& from) = default;
 
-  /*! \brief Opérateur de recopie.
+  /*!
+   * \brief Opérateur de recopie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
   constexpr ConstArrayView<T>& operator=(const ArrayView<T>& from)
@@ -534,6 +556,15 @@ class ConstArrayView
     return (*this);
   }
 
+  //! Opérateur de recopie
+  template<std::size_t N,typename X,typename = std::enable_if_t<std::is_same_v<X,const_value_type>> >
+  constexpr ConstArrayView<T>& operator=(const std::array<X,N>& from) noexcept
+  {
+    m_size = from.size();
+    m_ptr = from.data();
+    return (*this);
+  }
+ 
  public:
 
   //! Construit une vue sur une zone mémoire commencant par \a ptr et
