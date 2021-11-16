@@ -115,6 +115,20 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Version du standard C++ qu'on souhaite utiliser.
+# Les valeurs valides sont 17 ou 20
+if (NOT DEFINED ARCCORE_CXX_STANDARD)
+  set(ARCCORE_CXX_STANDARD 17)
+endif()
+set (ARCCORE_CXX_STANDARD_LIST 17 20)
+if (NOT ${ARCCORE_CXX_STANDARD} IN_LIST ARCCORE_CXX_STANDARD_LIST)
+  message(FATAL_ERROR "Invalid value for '${ARCCORE_CXX_STANDARD}' for ARCCORE_CXX_STANDARD."
+    " Valid values are '${ARCCORE_CXX_STANDARD_LIST}'")
+endif()
+message(STATUS "Compiling with C++ standard: ${ARCCORE_CXX_STANDARD}")
+
+# ----------------------------------------------------------------------------
 # Définit une cible fictive 'arccore_build_compile_flags' et qui contient les
 # options de compilation internes aux cibles de Arccore. Ce sont par exemple
 # les avertissements de compilation ou les options sur la visibilité des symboles.
