@@ -81,10 +81,10 @@ template <typename DataType> class ProxyItemVariable
 : public IProxyItemVariable
 {
  public:
-  ProxyItemVariable<DataType>(IVariable* var, Integer pos=0)
+  ProxyItemVariable(IVariable* var, Integer pos=0)
   : m_var(var), m_pos(pos){
   }
-  ~ProxyItemVariable<DataType>() {}
+  ~ProxyItemVariable() {}
 
   Real operator[](ItemEnumerator i) const {
     return static_cast<Real>(m_var[i]);

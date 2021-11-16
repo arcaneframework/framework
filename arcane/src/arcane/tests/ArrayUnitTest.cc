@@ -909,8 +909,9 @@ class MultiArray2UnitTest
           SharedMultiArray2<DataType> cloned_array(array.clone());
           _checkSame(array,cloned_array);
           // Modifie le clone et vérifie que l'original n'a pas changé.
-          cloned_array[2][3] = 0;
-          _check(array[2][3]!=0,"Bad value (test clone)");
+          DataType zero{0};
+          cloned_array[2][3] = zero;
+          _check(array[2][3]!=zero,"Bad value (test clone)");
         }
         array = SharedMultiArray2<DataType>();
         SharedMultiArray2<DataType> new_array;
