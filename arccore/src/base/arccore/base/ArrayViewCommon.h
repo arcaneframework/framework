@@ -46,6 +46,10 @@ auto subViewInterval(ViewType view,
                      typename ViewType::size_type nb_interval) -> ViewType
 {
   using size_type = typename ViewType::size_type;
+  if (nb_interval<=0)
+    return ViewType();
+  if (index<0 || index>=nb_interval)
+    return ViewType();
   size_type n = view.size();
   size_type isize = n / nb_interval;
   size_type ibegin = index * isize;
