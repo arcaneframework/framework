@@ -59,6 +59,8 @@ int ilower, int iupper, int jlower, int jupper,
   ierr |= MatSetSizes(m_mat, iupper - ilower + 1, jupper - jlower + 1,
                       PETSC_DETERMINE, PETSC_DETERMINE);
   ierr |= MatSetType(m_mat, MATMPIAIJ);
+  // Allocate Matrix of twice the size, as we cannot know the local and the remote columns.
+  ierr |= MatMPIAIJSetPreallocation(m_mat, 0, row_sizes.data(), 0, row_sizes.data());
   ierr |= MatAssemblyBegin(m_mat, MAT_FINAL_ASSEMBLY);
   ierr |= MatSetUp(m_mat);
 
