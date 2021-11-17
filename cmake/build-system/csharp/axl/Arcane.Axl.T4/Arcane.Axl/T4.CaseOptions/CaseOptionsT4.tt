@@ -1,0 +1,844 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// #WARNING#: This file has been generated automatically. Do not edit.
+// Arcane version <#= Version #> : <#= DateTime.Now #>
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#ifndef ARCANE_CASEOPTION_<#= Xml.ClassName.ToUpper() #>_H
+#define ARCANE_CASEOPTION_<#= Xml.ClassName.ToUpper() #>_H
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arcane/utils/String.h"
+
+#include "arcane/CaseOptions.h"
+#include "arcane/CaseOptionsMulti.h"
+#include "arcane/CaseOptionBuildInfo.h"
+#include "arcane/XmlNodeList.h"
+<#  if(Xml.FlatteningExtended.Count () > 0) { #>
+#include "arcane/ItemGroup.h"
+<#  } #>
+<#  if(Xml.ServiceInstance.Count () > 0 || ComplexContainsServiceInstance) { #>
+#include "arcane/CaseOptionService.h"
+<#  } #>
+<#  if (Xml.Script.Count () > 0) { #>
+#include "arcane/CaseOptionScript.h"
+<#  } #>
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  if(Xml.FlatteningExtended.Count() > 0) { #>
+
+ARCANE_BEGIN_NAMESPACE
+<#    foreach(var extended in Xml.FlatteningExtended) { #>
+extern "C++" bool 
+_caseOptionConvert(const Arcane::CaseOptionBase&,
+                   const Arcane::String&,
+                   <#= extended.type #> &);
+<#    } #>
+ARCANE_}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  }
+	if (Xml.LesserThanVersionOne) { #>
+
+ARCANE_BEGIN_NAMESPACE
+ 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  }
+    if(Xml.NamespaceMacroName != null) { #>
+
+<#= Xml.NamespaceMacroName #>_BEGIN_NAMESPACE
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  } 
+    if(Xml.NamespaceName != null) { #>
+
+namespace <#= Xml.NamespaceName #> {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  } #>
+
+//! Options
+class CaseOptions<#= Xml.ClassName #>
+{
+public:
+
+  /*-------------------------------------------------------------------------*/
+  /*--------------------------- Complex Options -----------------------------*/
+  /*-------------------------------------------------------------------------*/
+<#  
+    foreach(var complex in Xml.FlatteningComplex.Where( p => !p.IsRef)) { #>
+    <# if (complex.IsMulti == true) { #>
+  class CaseOption<#= complex.type #>Value
+<#    if (complex.HasInterface) { #>
+    : private <#= complex.@interface #>
+<#    } #>
+  {
+  public:
+
+    typedef CaseOption<#= complex.type #>Value ThatClass;
+
+    CaseOption<#= complex.type #>Value(Arcane::ICaseMng* cm, Arcane::ICaseOptionList* icl, const Arcane::XmlNode& element)
+      : m_element(element)
+<#	foreach(var e in complex.Xml.Simple) { #>
+      , <#= e.Name.ToFuncName () #>(Arcane::CaseOptionBuildInfo(cm, icl,
+        /* name       */ "<#= e.Name #>", m_element,
+        /* default    */ <#= e.Default #>,
+        /* min-occurs */ <#= e.MinOccurs #>,
+        /* max-occurs */ <#= e.MaxOccurs #>, 
+        /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>)<#
+      if(e.unit != null) { #>,
+        /* unit       */ "<#= e.unit #>")
+<#    } else { #>)<# } #>
+
+<#	} 
+
+    foreach(var e in complex.Xml.ServiceInstance) { 
+      if(e.IsSingle) { #>
+      , <#= e.Name.ToFuncName () #>(Arcane::CaseOptionBuildInfo(cm, icl,
+        /* name       */ "<#= e.Name #>", m_element,
+        /* default    */ <#= e.Default #>,
+        /* min-occurs */ <#= e.MinOccurs #>,
+        /* max-occurs */ <#= e.MaxOccurs #>, 
+        /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>),
+        /* allow-null */ <#= e.AllowsNull.ToString ().ToLower () #>,
+        /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>)
+<#    } else { #>
+	  , <#= e.Name.ToFuncName () #>(Arcane::CaseOptionBuildInfo(cm, icl,
+        /* name       */ "<#= e.Name #>", m_element,
+        /* default    */ <#= e.Default #>,
+        /* min-occurs */ <#= e.MinOccurs #>,
+        /* max-occurs */ <#= e.MaxOccurs #>, 
+        /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>),
+        /* allow-null */ <#= e.AllowsNull.ToString ().ToLower () #>)
+<#    }
+	}
+
+    foreach(var e in complex.Xml.Enumeration) { #>
+     , <#= e.Name.ToFuncName () #>(Arcane::CaseOptionBuildInfo(cm, icl,
+        /* name       */ "<#= e.Name #>", m_element,
+        /* default    */ <#= e.Default #>,
+        /* min-occurs */ <#= e.MinOccurs #>,
+        /* max-occurs */ <#= e.MaxOccurs #>, 
+        /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>),
+        /* type       */ "<#= e.type #>")
+<#  } 
+
+    foreach(var e in complex.Xml.Extended) { #>
+      , <#= e.Name.ToFuncName () #>(Arcane::CaseOptionBuildInfo(cm, icl,
+        /* name       */ "<#= e.Name #>", m_element,
+        /* default    */ <#= e.Default #>,
+        /* min-occurs */ <#= e.MinOccurs #>,
+        /* max-occurs */ <#= e.MaxOccurs #>, 
+        /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>),
+        /* type       */ "<#= e.type #>")
+<#  } 
+  
+    foreach(var e in complex.Xml.Script) { #>
+      , <#= e.Name.ToFuncName () #>(Arcane::CaseOptionBuildInfo(cm, icl,
+        /* name       */ "<#= e.Name #>", m_element,
+        /* default    */ <#= e.Default #>,
+        /* min-occurs */ <#= e.MinOccurs #>,
+        /* max-occurs */ <#= e.MaxOccurs #>, 
+        /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>))
+<#  }
+
+    foreach(var e in complex.Xml.Complex) {
+      if (e.Name != null) { #>
+      , <#= e.Name.ToFuncName () #>(cm, icl,
+        /* name       */ "<#= e.Name #>", m_element<#
+        if (e.IsOptional) { #>,
+        /* optional   */ true)
+<#      } else { #>)
+<#      }
+      } 
+    } #>
+    {
+<#  foreach(var e in complex.Xml.Enumeration) { 
+	  if(e.enumvalue != null) {
+        foreach(var ee in e.enumvalue) { #>
+      {
+        Arcane::CaseOptionEnumValue* x = new Arcane::CaseOptionEnumValue(
+          /* enum value name */ Arcane::String("<#= ee.Name #>"), 
+          /* enum object     */ (int)(<#= ee.genvalue #>));
+        <#= e.Name.ToFuncName () #>.addEnumValue(x,false);
+      }
+<#      }
+	  }
+    }
+     
+    foreach(var e in complex.Xml.Options.Where(p => p.name != null)) { 
+      foreach(var ee in e.name) { #>
+      <#= e.Name.ToFuncName () #>.addAlternativeNodeName(
+          /* language         */ Arcane::String("<#= ee.lang #>"),
+          /* alternative name */ Arcane::String("<#= ee.Value #>"));
+<#    }
+    } #>
+    }
+<# if (complex.HasInterface) { #>
+  public:
+
+<#  foreach(var e in complex.Xml.Simple.Where(p => p.IsMulti)) { #>
+    Arcane::ConstArrayView<  <#= e.type.QualifiedName () #> > get<#= e.Name.ToClassName () #>() 
+      { return <#= e.Name.ToFuncName () #>; }
+<#  } 
+    foreach(var e in complex.Xml.Simple.Where(p => p.IsSingle)) { #>
+    <#= e.type.QualifiedReturnName () #> get<#= e.Name.ToClassName () #>() 
+      { return <#= e.Name.ToFuncName () #>(); }
+<#  } 
+  
+    foreach(var e in complex.Xml.Extended.Where(p => p.IsMulti)) { #>
+    Arcane::ConstArrayView<  <#= e.type.ConvertType () #> > get<#= e.Name.ToClassName () #>() 
+      { return <#= e.Name.ToFuncName () #>; }
+<#  }
+    foreach(var e in complex.Xml.Extended.Where(p => p.IsSingle)) { #>
+    <#= e.type.ConvertType () #> get<#= e.Name.ToClassName () #>() 
+      { return <#= e.Name.ToFuncName () #>(); }
+<#  } 
+  
+    foreach(var e in complex.Xml.Enumeration.Where(p => p.IsMulti)) { #>
+    Arcane::ConstArrayView<  <#= e.type.ConvertType () #> > get<#= e.Name.ToClassName () #>() 
+      { return <#= e.Name.ToFuncName () #>; }
+<#  }
+    foreach(var e in complex.Xml.Enumeration.Where(p => p.IsSingle)) { #>
+    <#= e.type.ConvertType () #> get<#= e.Name.ToClassName () #>() 
+      { return <#= e.Name.ToFuncName () #>(); }
+<#  } 
+  
+    foreach(var e in complex.Xml.ServiceInstance.Where(p => p.IsMulti)) { #>
+    Arcane::ConstArrayView< <#= e.type.ConvertType () #>* > get<#= e.Name.ToClassName () #>() 
+      { return <#= e.Name.ToFuncName () #>; }
+<#  }
+    foreach(var e in complex.Xml.ServiceInstance.Where(p => p.IsSingle)) { #>
+    <#= e.type.ConvertType () #>* get<#= e.Name.ToClassName () #>() 
+      { return <#= e.Name.ToFuncName () #>(); }
+<#  }
+  
+    foreach(var e in complex.Xml.Complex.Where(p => p.HasInterface && p.IsMulti)) { #>
+    Arcane::ConstArrayView<  <#= e.@interface.ConvertType () #>* > get<#= e.Name.ToClassName () #>() 
+      { return <#= e.Name.ToFuncName () #>._interface(); }
+<#  } 
+    foreach(var e in complex.Xml.Complex.Where(p => p.HasInterface && p.IsSingle)) { #>
+    <#= e.@interface.ConvertType () #>* get<#= e.Name.ToClassName () #>() 
+      { return <#= e.Name.ToFuncName () #>._interface(); }
+<#  } 
+    foreach(var e in complex.Xml.Complex.Where(p => p.IsRef)) { 
+      var reference = complex.Xml.FlatteningComplex.FirstOrDefault(p => p.type != null && p.type == e.@ref);
+      if(reference.IsMulti) { #>
+    Arcane::ConstArrayView<  <#= reference.@interface.ConvertType () #>* > get<#= e.Name.ToClassName () #>() 
+      { return <#= e.Name.ToFuncName () #>._interface(); }
+<#    } else { #>
+    <#= reference.@interface.ConvertType () #>* get<#= e.Name.ToClassName () #>() 
+      { return <#= e.Name.ToFuncName () #>._interface(); }
+<#    }
+    }
+
+    foreach(var e in complex.Xml.Options.Where(p => p.IsOptional)) { #>
+    bool has<#= e.Name.ToClassName () #>() const 
+      { return <#= e.Name.ToFuncName () #>.isPresent(); }
+<#  } #>
+
+    <#= complex.@interface #>* _interface() { return this; }
+<# } #>
+
+  public:
+
+    const ThatClass* operator->() const { return this; }
+
+    const Arcane::XmlNode& element() const { return m_element; }
+
+  private:
+
+    Arcane::XmlNode m_element;
+
+  public:
+
+<#    foreach(var e in complex.Xml.Simple) { 
+		if(e.IsMulti) {#>
+    Arcane::CaseOptionMultiSimpleT< <#= e.type.QualifiedName () #> >   <#= e.Name.ToFuncName () #>;
+<#      } else { #>
+    Arcane::CaseOption<#= e.type.Name () #>    <#= e.Name.ToFuncName () #>;
+<#      }
+ 	  }
+
+      foreach(var e in complex.Xml.ServiceInstance) { 
+		if(e.IsMulti) { #>
+    Arcane::CaseOptionMultiServiceT< <#= e.type #>  >   <#= e.Name.ToFuncName () #>;
+<#      } else { #>
+    Arcane::CaseOptionServiceT< <#= e.type #> >   <#= e.Name.ToFuncName () #>;
+<#      }
+      }
+
+      foreach(var e in complex.Xml.Enumeration) { 
+		if(e.IsMulti) { #>
+    Arcane::CaseOptionMultiEnumT< <#= e.type #>  >   <#= e.Name.ToFuncName () #>;
+<#      } else { #>
+    Arcane::CaseOptionEnumT< <#= e.type #> >   <#= e.Name.ToFuncName () #>;
+<#      }
+      } 
+
+      foreach(var e in complex.Xml.Extended) { 
+		if(e.IsMulti) { #>
+    Arcane::CaseOptionMultiExtendedT< <#= e.type #>  >   <#= e.Name.ToFuncName () #>;
+<#      } else { #>
+    Arcane::CaseOptionExtendedT< <#= e.type #> >   <#= e.Name.ToFuncName () #>;
+<#      }
+      }
+      
+      foreach(var e in complex.Xml.Script) { #>
+    Arcane::CaseOptionScript    <#= e.Name.ToFuncName () #>;
+<#    } 
+
+      foreach(var e in complex.Xml.Complex) {  
+		if(e.IsRef) { #>
+    CaseOption<#= e.@ref #>   <#= e.Name.ToFuncName () #>;
+<#      } else { #>
+    CaseOption<#= e.type #>   <#= e.Name.ToFuncName () #>;
+<#      } 
+      } #>
+  };
+
+  class CaseOption<#= complex.type #>
+    : public Arcane::CaseOptionsMulti
+    , private Arcane::ArrayView< CaseOption<#= complex.type #>Value * >       
+  {
+  public:
+
+    typedef Arcane::ArrayView< CaseOption<#= complex.type #>Value * > BaseClass;
+
+    typedef CaseOption<#= complex.type #>Value value_type;
+
+  public:
+
+    CaseOption<#= complex.type #>(Arcane::ICaseMng* cm, Arcane::ICaseOptionList* icl,
+              const Arcane::String& s, const Arcane::XmlNode& element)
+      : Arcane::CaseOptionsMulti(cm,icl,s,element,<#= complex.MinOccurs #>,<#= complex.MaxOccurs #>) 
+    {
+<#  foreach(var n in complex.Names) { #>
+      addAlternativeNodeName(
+        /* language         */ Arcane::String("<#= n.lang #>"),
+        /* alternative name */ Arcane::String("<#= n.Value #>"));
+<#  } #>
+    }
+
+    BaseClass operator()() { return (*this); }
+
+    void multiAllocate(const Arcane::XmlNodeList& elist)
+    {
+      Arcane::Integer s = elist.size();
+      value_type** v = 0;
+      if (s!=0)
+        v = new value_type*[s];
+      _setArray(v,s);
+      v = _ptr();
+<#    if (complex.HasInterface) { #>
+      m_interfaces.resize(s);
+<#    } #>
+      for( Arcane::Integer i=0; i<s; ++i ){
+        v[i] = new value_type(caseMng(),configList(),elist[i]);
+<#    if (complex.HasInterface) { #>
+        m_interfaces[i] = v[i]->_interface();
+<#    } #>
+      }
+    }
+
+  public:
+
+    ~CaseOption<#= complex.type #>()
+    {
+      Arcane::Integer s = count();
+      if (s==0) return;
+      value_type** v = _ptr();
+      for( Arcane::Integer i=0; i<s; ++i ){
+        delete v[i];
+      }
+      delete[] v;
+    }
+
+  public:
+
+    const value_type& operator[](Arcane::Integer i) const
+      { return *(BaseClass::operator[](i)); }
+    Arcane::Integer count() const
+      { return BaseClass::size(); }
+    Arcane::Integer size() const
+      { return BaseClass::size(); }
+
+<#   if (complex.HasInterface) { #>
+  public: 
+
+    Arcane::ConstArrayView< <#= complex.@interface #>* > _interface()
+      { return m_interfaces; }
+
+  private: 
+
+    Arcane::UniqueArray< <#= complex.@interface #>* > m_interfaces;
+<#    } #>
+  };
+  
+<# } else if (complex.IsSingle == true) { #>
+  class CaseOption<#= complex.type #>
+    : public Arcane::CaseOptions
+<#    if (complex.HasInterface) { #>
+    , private <#= complex.@interface #>
+<#    } #>
+  {
+  public:
+
+    CaseOption<#= complex.type #>(Arcane::ICaseMng* cm,Arcane::ICaseOptionList* icl,
+              const Arcane::String& s, const Arcane::XmlNode& element, bool is_optional=false)
+      : Arcane::CaseOptions(icl,s,element,is_optional)
+<#	foreach(var e in complex.Xml.Simple) { #>
+      , <#= e.Name.ToFuncName () #>(Arcane::CaseOptionBuildInfo(cm, configList(),
+        /* name       */ "<#= e.Name #>", Arcane::XmlNode(0),
+        /* default    */ <#= e.Default #>,
+        /* min-occurs */ <#= e.MinOccurs #>,
+        /* max-occurs */ <#= e.MaxOccurs #>, 
+        /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>)<#
+      if(e.unit != null) { #>,
+        /* unit       */ "<#= e.unit #>")
+<#    } else { #>)<# } #>
+
+<#	} 
+
+    foreach(var e in complex.Xml.ServiceInstance) { 
+      if(e.IsSingle) { #>
+      , <#= e.Name.ToFuncName () #>(Arcane::CaseOptionBuildInfo(cm, configList(),
+        /* name       */ "<#= e.Name #>", Arcane::XmlNode(0),
+        /* default    */ <#= e.Default #>,
+        /* min-occurs */ <#= e.MinOccurs #>,
+        /* max-occurs */ <#= e.MaxOccurs #>, 
+        /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>),
+        /* allow-null */ <#= e.AllowsNull.ToString ().ToLower () #>,
+        /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>)
+<#    } else { #>
+      , <#= e.Name.ToFuncName () #>(Arcane::CaseOptionBuildInfo(cm, configList(),
+        /* name       */ "<#= e.Name #>", Arcane::XmlNode(0),
+        /* default    */ <#= e.Default #>,
+        /* min-occurs */ <#= e.MinOccurs #>,
+        /* max-occurs */ <#= e.MaxOccurs #>, 
+        /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>),
+        /* allow-null */ <#= e.AllowsNull.ToString ().ToLower () #>)
+<#    }
+	}
+
+    foreach(var e in complex.Xml.Enumeration) { #>
+      , <#= e.Name.ToFuncName () #>(Arcane::CaseOptionBuildInfo(cm, configList(),
+        /* name       */ "<#= e.Name #>", Arcane::XmlNode(0),
+        /* default    */ <#= e.Default #>,
+        /* min-occurs */ <#= e.MinOccurs #>,
+        /* max-occurs */ <#= e.MaxOccurs #>, 
+        /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>),
+        /* type       */ "<#= e.type #>")
+<#  } 
+
+    foreach(var e in complex.Xml.Extended) { #>
+      , <#= e.Name.ToFuncName () #>(Arcane::CaseOptionBuildInfo(cm, configList(),
+        /* name       */ "<#= e.Name #>", Arcane::XmlNode(0),
+        /* default    */ <#= e.Default #>,
+        /* min-occurs */ <#= e.MinOccurs #>,
+        /* max-occurs */ <#= e.MaxOccurs #>, 
+        /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>),
+        /* type       */ "<#= e.type #>")
+<#  } 
+  
+    foreach(var e in complex.Xml.Script) { #>
+      , <#= e.Name.ToFuncName () #>(Arcane::CaseOptionBuildInfo(cm, configList(),
+        /* name       */ "<#= e.Name #>", Arcane::XmlNode(0),
+        /* default    */ <#= e.Default #>,
+        /* min-occurs */ <#= e.MinOccurs #>,
+        /* max-occurs */ <#= e.MaxOccurs #>, 
+        /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>))
+<#  }
+
+    foreach(var e in complex.Xml.Complex) {
+      if (e.Name != null) { #>
+      , <#= e.Name.ToFuncName () #>(cm, configList(),
+        /* name       */ "<#= e.Name #>", Arcane::XmlNode(0)<#
+        if (e.IsOptional) { #>,
+        /* optional   */ true)
+<#      } else { #>)
+<#      }
+      } 
+    } #>
+    {
+<#  foreach(var e in complex.Xml.Enumeration) { 
+	  if(e.enumvalue!=null) { 
+      	foreach(var ee in e.enumvalue) { #>
+      {
+        Arcane::CaseOptionEnumValue* x = new Arcane::CaseOptionEnumValue(
+          /* enum value name */ Arcane::String("<#= ee.Name #>"), 
+          /* enum object     */ (int)(<#= ee.genvalue #>));
+      <#= e.Name.ToFuncName () #>.addEnumValue(x,false);
+      }
+<#   	} 
+	  }
+    } 
+
+    foreach(var e in complex.Xml.Options.Where(p => p.name != null)) { 
+      foreach(var ee in e.name) { #>
+      <#= e.Name.ToFuncName () #>.addAlternativeNodeName(
+          /* language         */ Arcane::String("<#= ee.lang #>"),
+          /* alternative name */ Arcane::String("<#= ee.Value #>"));
+<#    }
+    } 
+    
+  foreach(var n in complex.Names) { #>
+      addAlternativeNodeName(
+        /* language         */ Arcane::String("<#= n.lang #>"),
+        /* alternative name */ Arcane::String("<#= n.Value #>"));
+<#  } #>
+    }
+        
+    const CaseOption<#= complex.type #>& operator()() const { return *this; }
+
+<#    if (complex.HasInterface) { #>
+  public:
+
+    <#= complex.@interface #>* _interface() { return this; }
+
+<#    } #>
+  public:
+
+<#    foreach(var e in complex.Xml.Simple) { 
+		if(e.IsMulti) {#>
+    Arcane::CaseOptionMultiSimpleT< <#= e.type.QualifiedName () #> >   <#= e.Name.ToFuncName () #>;
+<#      } else { #>
+    Arcane::CaseOption<#= e.type.Name () #>    <#= e.Name.ToFuncName () #>;
+<#      }
+ 	  }
+
+      foreach(var e in complex.Xml.ServiceInstance) { 
+		if(e.IsMulti) { #>
+    Arcane::CaseOptionMultiServiceT< <#= e.type #>  >   <#= e.Name.ToFuncName () #>;
+<#      } else { #>
+    Arcane::CaseOptionServiceT< <#= e.type #> >   <#= e.Name.ToFuncName () #>;
+<#      }
+      }
+
+      foreach(var e in complex.Xml.Enumeration) { 
+		if(e.IsMulti) { #>
+    Arcane::CaseOptionMultiEnumT< <#= e.type #>  >   <#= e.Name.ToFuncName () #>;
+<#      } else { #>
+    Arcane::CaseOptionEnumT< <#= e.type #> >   <#= e.Name.ToFuncName () #>;
+<#      }
+      } 
+
+      foreach(var e in complex.Xml.Extended) { 
+		if(e.IsMulti) { #>
+    Arcane::CaseOptionMultiExtendedT< <#= e.type #>  >   <#= e.Name.ToFuncName () #>;
+<#      } else { #>
+    Arcane::CaseOptionExtendedT< <#= e.type #> >   <#= e.Name.ToFuncName () #>;
+<#      }
+      }
+      
+      foreach(var e in complex.Xml.Script) { #>
+    Arcane::CaseOptionScript    <#= e.Name.ToFuncName () #>;
+<#    } 
+
+      foreach(var e in complex.Xml.Complex) {  
+		if(e.IsRef) { #>
+    CaseOption<#= e.@ref #>   <#= e.Name.ToFuncName () #>;
+<#      } else { #>
+    CaseOption<#= e.type #>   <#= e.Name.ToFuncName () #>;
+<#      } 
+      } #>
+  };
+<#  } #>
+<# } #>
+
+  /*-------------------------------------------------------------------------*/
+  /*--------------------------- Non Complex Options -------------------------*/
+  /*-------------------------------------------------------------------------*/
+  
+<#  if(Xml.IsModule || Xml.IsNotCaseOption) { #>
+  CaseOptions<#= Xml.ClassName #>(Arcane::ICaseMng* cm)
+    : m_case_options(new Arcane::CaseOptions(cm,"<#= Xml.Name.ToLowerWithDash () #>"))
+<#  } else { #>
+  CaseOptions<#= Xml.ClassName #>(Arcane::ICaseMng* cm, Arcane::ICaseOptions* co)
+    : m_case_options(co)
+<#  } #>
+<#	foreach(var e in Xml.Simple) { #>
+    , <#= e.Name.ToFuncName () #>(Arcane::CaseOptionBuildInfo(cm,configList(),
+      /* name       */ "<#= e.Name #>", Arcane::XmlNode(0),
+      /* default    */ <#= e.Default #>,
+      /* min-occurs */ <#= e.MinOccurs #>,
+      /* max-occurs */ <#= e.MaxOccurs #>, 
+      /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>)<#
+      if(e.unit != null) { #>,
+      /* unit       */ "<#= e.unit #>")
+<#    } else { #>)<# } #>
+
+<#	} 
+
+    foreach(var e in Xml.ServiceInstance) { 
+      if(e.IsSingle) { #>
+    , <#= e.Name.ToFuncName () #>(Arcane::CaseOptionBuildInfo(cm,configList(),
+      /* name       */ "<#= e.Name #>", Arcane::XmlNode(0),
+      /* default    */ <#= e.Default #>,
+      /* min-occurs */ <#= e.MinOccurs #>,
+      /* max-occurs */ <#= e.MaxOccurs #>, 
+      /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>),
+      /* allow-null */ <#= e.AllowsNull.ToString ().ToLower () #>,
+      /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>)
+<#    } else { #>
+	, <#= e.Name.ToFuncName () #>(Arcane::CaseOptionBuildInfo(cm,configList(),
+      /* name       */ "<#= e.Name #>", Arcane::XmlNode(0),
+      /* default    */ <#= e.Default #>,
+      /* min-occurs */ <#= e.MinOccurs #>,
+      /* max-occurs */ <#= e.MaxOccurs #>, 
+      /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>),
+      /* allow-null */ <#= e.AllowsNull.ToString ().ToLower () #>)
+<#    }
+	}
+
+    foreach(var e in Xml.Enumeration) { #>
+    , <#= e.Name.ToFuncName () #>(Arcane::CaseOptionBuildInfo(cm,configList(),
+      /* name       */ "<#= e.Name #>", Arcane::XmlNode(0),
+      /* default    */ <#= e.Default #>,
+      /* min-occurs */ <#= e.MinOccurs #>,
+      /* max-occurs */ <#= e.MaxOccurs #>, 
+      /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>),
+      /* type       */ "<#= e.type #>")
+<#  } 
+
+    foreach(var e in Xml.Extended) { #>
+    , <#= e.Name.ToFuncName () #>(Arcane::CaseOptionBuildInfo(cm,configList(),
+      /* name       */ "<#= e.Name #>", Arcane::XmlNode(0),
+      /* default    */ <#= e.Default #>,
+      /* min-occurs */ <#= e.MinOccurs #>,
+      /* max-occurs */ <#= e.MaxOccurs #>, 
+      /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>),
+      /* type       */ "<#= e.type #>")
+<#  } 
+  
+    foreach(var e in Xml.Script) { #>
+    , <#= e.Name.ToFuncName () #>(Arcane::CaseOptionBuildInfo(cm,configList(),
+      /* name       */ "<#= e.Name #>", Arcane::XmlNode(0),
+      /* default    */ <#= e.Default #>,
+      /* min-occurs */ <#= e.MinOccurs #>,
+      /* max-occurs */ <#= e.MaxOccurs #>, 
+      /* optional   */ <#= e.IsOptional.ToString ().ToLower () #>))
+<#  }
+
+    foreach(var e in Xml.Complex) {
+      if (e.Name != null) { #>
+    , <#= e.Name.ToFuncName () #>(cm,configList(),
+      /* name       */ "<#= e.Name #>", Arcane::XmlNode(0)<#
+        if (e.IsOptional) { #>,
+      /* optional   */ true)
+<#      } else { #>)
+<#      }
+      } 
+    } #>
+  {
+<#  foreach(var e in Xml.Enumeration) { 
+	  if(e.enumvalue!=null) {
+      	foreach(var ee in e.enumvalue) { #>
+    {
+      Arcane::CaseOptionEnumValue* x = new Arcane::CaseOptionEnumValue(
+        /* enum value name */ Arcane::String("<#= ee.Name #>"), 
+        /* enum object     */ (int)(<#= ee.genvalue #>));
+      <#= e.Name.ToFuncName () #>.addEnumValue(x,false);
+    }
+<# 		}   
+	  }
+    } 
+    
+  	foreach(var e in Xml.Options.Where(p => p.name != null)) { 
+      foreach(var ee in e.name) { #>
+    <#= e.Name.ToFuncName () #>.addAlternativeNodeName(
+        /* language         */ Arcane::String("<#= ee.lang #>"),
+        /* alternative name */ Arcane::String("<#= ee.Value #>"));
+<#    }
+    } 
+    
+    foreach(var n in Base.Names) { #>
+    addAlternativeNodeName(
+      /* language         */ Arcane::String("<#= n.lang #>"),
+      /* alternative name */ Arcane::String("<#= n.Value #>"));
+<#  } #>
+  }
+
+  virtual ~CaseOptions<#= Xml.ClassName #>(){}
+
+public:
+
+<#  foreach(var e in Xml.Simple.Where(p => p.IsMulti)) { #>
+  //Arcane::ConstArrayView<  <#= e.type.QualifiedName () #> > get<#= e.Name.ToClassName () #>() 
+  //  { return <#= e.Name.ToFuncName () #>; }
+<#  } 
+    foreach(var e in Xml.Simple.Where(p => p.IsSingle)) { #>
+  //<#= e.type.QualifiedReturnName () #> get<#= e.Name.ToClassName () #>() 
+  //  { return <#= e.Name.ToFuncName () #>(); }
+<#  } 
+  
+    foreach(var e in Xml.Extended.Where(p => p.IsMulti)) { #>
+  //Arcane::ConstArrayView<  <#= e.type.ConvertType () #> > get<#= e.Name.ToClassName () #>() 
+  //  { return <#= e.Name.ToFuncName () #>; }
+<#  }
+    foreach(var e in Xml.Extended.Where(p => p.IsSingle)) { #>
+  //<#= e.type.ConvertType () #> get<#= e.Name.ToClassName () #>() 
+  //  { return <#= e.Name.ToFuncName () #>(); }
+<#  } 
+  
+    foreach(var e in Xml.Enumeration.Where(p => p.IsMulti)) { #>
+  //Arcane::ConstArrayView<  <#= e.type.ConvertType () #> > get<#= e.Name.ToClassName () #>() 
+  //  { return <#= e.Name.ToFuncName () #>; }
+<#  }
+    foreach(var e in Xml.Enumeration.Where(p => p.IsSingle)) { #>
+  //<#= e.type.ConvertType () #> get<#= e.Name.ToClassName () #>() 
+  //  { return <#= e.Name.ToFuncName () #>(); }
+<#  } 
+  
+    foreach(var e in Xml.ServiceInstance.Where(p => p.IsMulti)) { #>
+  //Arcane::ConstArrayView< <#= e.type.ConvertType () #>* > get<#= e.Name.ToClassName () #>() 
+  //  { return <#= e.Name.ToFuncName () #>; }
+<#  }
+    foreach(var e in Xml.ServiceInstance.Where(p => p.IsSingle)) { #>
+  //<#= e.type.ConvertType () #>* get<#= e.Name.ToClassName () #>() 
+  //  { return <#= e.Name.ToFuncName () #>(); }
+<#  }
+  
+    foreach(var e in Xml.Complex.Where(p => p.HasInterface && p.IsMulti)) { #>
+  Arcane::ConstArrayView<  <#= e.@interface.ConvertType () #>* > get<#= e.Name.ToClassName () #>() 
+    { return <#= e.Name.ToFuncName () #>._interface(); }
+<#  } 
+    foreach(var e in Xml.Complex.Where(p => p.HasInterface && p.IsSingle)) { #>
+  <#= e.@interface.ConvertType () #>* get<#= e.Name.ToClassName () #>() 
+    { return <#= e.Name.ToFuncName () #>._interface(); }
+<#  } 
+    foreach(var e in Xml.Complex.Where(p => p.IsRef)) { 
+      var reference = Xml.FlatteningComplex.FirstOrDefault(p => p.type != null && p.type == e.@ref);
+      if(reference.IsMulti) { #>
+  Arcane::ConstArrayView<  <#= reference.@interface.ConvertType () #>* > get<#= e.Name.ToClassName () #>() 
+    { return <#= e.Name.ToFuncName () #>._interface(); }
+<#    } else { #>
+  <#= reference.@interface.ConvertType () #>* get<#= e.Name.ToClassName () #>() 
+    { return <#= e.Name.ToFuncName () #>._interface(); }
+<#    }
+    }
+
+    foreach(var e in Xml.Options.Where(p => p.IsOptional)) { #>
+  bool has<#= e.Name.ToClassName () #>() const 
+    { return <#= e.Name.ToFuncName () #>.isPresent(); }
+<#  } #>
+
+public:
+
+  Arcane::ICaseOptions* caseOptions() const 
+  { 
+    return m_case_options; 
+  }
+  
+  Arcane::ICaseOptionList* configList() const 
+  {
+    return m_case_options->configList(); 
+  }
+  
+  void setCaseModule(Arcane::IModule* m) 
+  { 
+    m_case_options->setCaseModule(m); 
+  }
+  
+  void setCaseServiceInfo(Arcane::IServiceInfo* si) 
+  {
+    m_case_options->setCaseServiceInfo(si); 
+  }
+  
+  void addAlternativeNodeName(const Arcane::String& lang,
+                              const Arcane::String& name)
+  { 
+    m_case_options->addAlternativeNodeName(lang,name); 
+  }
+
+private:
+
+  static Arcane::ICaseOptions* _createCaseOption(Arcane::ICaseMng* cm,Arcane::ICaseOptions* co);
+
+  Arcane::ICaseOptions* m_case_options;
+
+public:
+
+<#  foreach(var e in Xml.Simple) { 
+	  if(e.IsMulti) {#>
+  Arcane::CaseOptionMultiSimpleT< <#= e.type.QualifiedName () #> >   <#= e.Name.ToFuncName () #>;
+<#    } else { #>
+  Arcane::CaseOption<#= e.type.Name () #>    <#= e.Name.ToFuncName () #>;
+<#    }
+ 	}
+
+    foreach(var e in Xml.ServiceInstance) { 
+	  if(e.IsMulti) { #>
+  Arcane::CaseOptionMultiServiceT< <#= e.type #>  >   <#= e.Name.ToFuncName () #>;
+<#    } else { #>
+  Arcane::CaseOptionServiceT< <#= e.type #> >   <#= e.Name.ToFuncName () #>;
+<#    }
+    }
+
+    foreach(var e in Xml.Enumeration) { 
+	  if(e.IsMulti) { #>
+  Arcane::CaseOptionMultiEnumT< <#= e.type #>  >   <#= e.Name.ToFuncName () #>;
+<#    } else { #>
+  Arcane::CaseOptionEnumT< <#= e.type #> >   <#= e.Name.ToFuncName () #>;
+<#    }
+    } 
+
+    foreach(var e in Xml.Extended) { 
+	  if(e.IsMulti) { #>
+  Arcane::CaseOptionMultiExtendedT< <#= e.type #>  >   <#= e.Name.ToFuncName () #>;
+<#    } else { #>
+  Arcane::CaseOptionExtendedT< <#= e.type #> >   <#= e.Name.ToFuncName () #>;
+<#    }
+    }
+      
+    foreach(var e in Xml.Script) { #>
+  Arcane::CaseOptionScript    <#= e.Name.ToFuncName () #>;
+<#  } 
+
+    foreach(var e in Xml.Complex) {  
+	  if(e.IsRef) { #>
+  CaseOption<#= e.@ref #>   <#= e.Name.ToFuncName () #>;
+<#    } else { #>
+  CaseOption<#= e.type #>   <#= e.Name.ToFuncName () #>;
+<#    } 
+    } #>
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  if(Xml.NamespaceMacroName != null) { #>
+
+<#= Xml.NamespaceMacroName #>_}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  } 
+    if(Xml.NamespaceName != null) { #>
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  }
+	if (Xml.LesserThanVersionOne) { #>
+
+ARCANE_}
+ 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  } #>
+
+#endif

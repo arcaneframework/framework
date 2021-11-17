@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<service name="TrilinosSolver" version="1.0">
+
+  <description>Service de solveur Trilinos</description>
+  <interface name="Alien::ILinearSolver" inherited="false"/>
+
+  <options>
+    <simple name="output" type="integer" default="0">
+      <description>output level</description>
+    </simple>
+    
+    <simple name="export-iter" type="integer" default="-1">
+      <description>export iter</description>
+    </simple>
+    
+    <simple name="export-opt" type="bool" default="false">
+      <description>export option</description>
+    </simple>
+    
+    <simple name="import-opt" type="bool" default="false">
+      <description>import option</description>
+    </simple>
+    
+    <complex name="iluk" type="ILUKOptType" minOccurs="0" maxOccurs="1">
+      <description> ILUK options</description>
+        <simple name="level-of-fill" type="integer" default="0">
+          <description>fixed point ilu number of factorization iterations</description>
+        </simple>
+        
+        <simple name="relax-value" type="real" default="0.0">
+          <description></description>
+        </simple>
+        
+        <simple name="absolute-threshold" type="real" default="0.">
+          <description></description>
+        </simple>
+        
+        <simple name="relative-threshold" type="real" default="1.0">
+          <description></description>
+        </simple>
+    </complex>
+    
+    <complex name="ilut" type="ILUTOptType" minOccurs="0" maxOccurs="1">
+      <description> ILUT options</description>
+        <simple name="level-of-fill" type="integer" default="1">
+          <description>fixed point ilu number of factorization iterations</description>
+        </simple>
+        
+        <simple name="drop-tolerance" type="real" default="0.0">
+          <description></description>
+        </simple>
+        
+        <simple name="absolute-threshold" type="real" default="0.">
+          <description></description>
+        </simple>
+        
+        <simple name="relative-threshold" type="real" default="1.0">
+          <description></description>
+        </simple>
+        
+        <simple name="relax-value" type="real" default="0.0">
+          <description></description>
+        </simple>
+    </complex>
+    <complex name="filu" type="FILUOptType" minOccurs="0" maxOccurs="1">
+      <description> FAST_ILU options</description>
+        <simple name="level" type="integer" default="0">
+          <description>fixed point ilu number of factorization iterations</description>
+        </simple>
+        
+        <simple name="damping-factor" type="real" default="0.0">
+          <description></description>
+        </simple>
+        
+        <simple name="solver-nb-iterations" type="integer" default="1">
+          <description></description>
+        </simple>
+        
+        <simple name="factor-nb-iterations" type="integer" default="1">
+          <description></description>
+        </simple>
+        
+    </complex>
+    
+    <complex name="relaxation" type="RelaxationOptType" minOccurs="0" maxOccurs="1">
+      <description> Relaxation options</description>
+        <simple name="type" type="string" default="Jacobi">
+           <description>Relaxation  method  to  use.   Accepted  values:   
+           “Jacobi”,  “Gauss-Seidel”,  “Symmetric  Gauss-Seidel”.
+           Default:“Jacobi”.
+           </description>
+        </simple>
+        <simple name="sweeps" type="integer" default="1">
+           <description>
+           [int]  Number  of  sweeps  of  the  relaxation. Default:1
+           </description>
+        </simple>
+        <simple name="damping-factor" type="real" default="1.0">
+           <description>
+           </description>
+        </simple>
+        <simple name="backward-mode" type="bool" default="false">
+           <description>
+           </description>
+        </simple>
+        <simple name="use-l1" type="bool" default="false">
+           <description>
+           </description>
+        </simple>
+        <simple name="l1-eta" type="real" default="1.5">
+           <description>
+           </description>
+        </simple>
+        <simple name="zero-starting-solution" type="bool" default="true">
+           <description>
+           </description>
+        </simple>
+    </complex>
+    
+    <complex name="chebyshev" type="ChebyshevOptType" minOccurs="0" maxOccurs="1">
+      <description> Chebyshev options</description>
+        <simple name="degree" type="integer" default="1">
+           <description>
+           </description>
+        </simple>
+        <simple name="max-eigenvalue" type="real" default="0">
+           <description>
+           </description>
+        </simple>
+        <simple name="min-eigenvalue" type="real" default="0">
+           <description>
+           </description>
+        </simple>
+        <simple name="ratio-eigenvalue" type="real" default="30.0">
+           <description>
+           </description>
+        </simple>
+        <simple name="eigenvalue-max-iterations" type="integer" default="10">
+           <description>
+           </description>
+        </simple>
+        <simple name="boost-factor" type="real" default="1.1">
+           <description>
+           </description>
+        </simple>
+        <simple name="zero-starting-solution" type="bool" default="true">
+           <description>
+           </description>
+        </simple>
+    </complex>
+    
+    <complex name="schwarz" type="SchwarzOptType" minOccurs="0" maxOccurs="1">
+      <description> Schwarz options</description>
+         <simple name="subdomain-solver" type="string">
+           <description></description>
+         </simple>
+         <simple name="combine-mode" type="string" default="ZERO">
+           <description>ADD ZERO INSERT REPLACE ABSMAX</description>
+         </simple>
+        <simple name="num-iterations" type="integer" default="1">
+           <description></description>
+         </simple>
+    </complex>
+    
+    <complex name="muelu" type="MueLUOptType" minOccurs="0" maxOccurs="1">
+      <description> ML options</description>
+        <simple name="verbosity" type="string" default="low">
+           <description>none low medium high extreme</description>
+         </simple>
+        <simple name="max-level" type="integer" default="10">
+           <description></description>
+         </simple>
+        <simple name="max-coarse-size" type="integer" default="10">
+           <description></description>
+        </simple>
+        <simple name="cycle-type" type="string" default="V">
+           <description></description>
+        </simple>
+        <simple name="symmetric" type="bool" default="true">
+           <description></description>
+        </simple>
+        <complex name="repartition" type="RepartitionOptType" minOccurs="0" maxOccurs="1">
+           <simple name="enable" type="bool" default="false">
+              <description></description>
+           </simple>
+           <simple name="start-level" type="integer" default="2">
+              <description></description>
+            </simple>
+           <simple name="min-rows-per-proc" type="integer" default="800">
+              <description></description>
+           </simple>
+           <simple name="algorithm" type="string" default="multijagged">
+              <description>repartition algorithm</description>
+           </simple>
+        </complex>
+        <complex name="amgx" type="AMGXOptType" minOccurs="0" maxOccurs="1">
+           <simple name="enable" type="bool" default="false">
+              <description></description>
+           </simple>
+           <simple name="parameter-file" type="string" default="amgx.json">
+                <description></description>
+           </simple>
+           <complex name="config" type="AMGXConfigOptType" minOccurs="0" maxOccurs="1">
+              <complex name="parameter" type="AMGXConfigParameterOptType" minOccurs="0" maxOccurs="unbounded">
+                 <simple name="key" type="string">
+                     <description></description>
+                  </simple>
+                  <simple name="value" type="string">
+                      <description></description>
+                  </simple>
+              </complex>
+           </complex>
+        </complex>
+        <simple name="xml-parameter-file" type="string" minOccurs="0" maxOccurs="1">
+           <description></description>
+        </simple>
+        <simple name="smoother-type" type="string" default="RELAXATION">
+           <description> RELAXATION CHEBYCHEV RILUK ILUT</description>
+        </simple>
+        <simple name="smoother-overlap" type="integer" default="0">
+           <description> </description>
+        </simple>
+        
+        <simple name="coarse-type" type="string" default="SuperLU">
+           <description> KLU KLU2 SuperLU</description>
+        </simple>
+        <simple name="coarse-overlap" type="integer" default="0">
+           <description> </description>
+        </simple>
+        
+        <simple name="aggregation-type" type="string" default="uncoupled">
+           <description> structured hybrid uncoupled coupled brick</description>
+        </simple>
+        <simple name="aggregation-mode" type="string" default="uncoupled">
+           <description> uncoupled coupled brick</description>
+        </simple>
+        <simple name="aggregation-ordering" type="string" default="natural">
+           <description>natural graph random</description>
+        </simple>
+        <simple name="aggregation-drop-scheme" type="string" default="classical">
+           <description> "classical" "distance laplacian"</description>
+        </simple>
+        <simple name="aggregation-drop-tol" type="real" default="0.0">
+           <description> "classical" "distance laplacian"</description>
+        </simple>
+        <simple name="aggregation-min-agg-size" type="integer" default="2">
+           <description> "classical" "distance laplacian"</description>
+        </simple>
+        <simple name="aggregation-max-agg-size" type="integer" default="-1">
+           <description> "classical" "distance laplacian"</description>
+        </simple>
+        <simple name="aggregation-dirichlet-threshold" type="real" default="0.0">
+           <description> "classical" "distance laplacian"</description>
+        </simple>
+        
+        <simple name="multigrid-algorithm" type="string" default="sa">
+           <description> sa unsmoothed pg emin interp semicoarsen pcoarsen</description>
+        </simple>
+        <simple name="sa-dampling-factor" type="real" default="1.33">
+           <description> sa unsmoothed pg emin interp semicoarsen pcoarsen</description>
+        </simple>
+     </complex>
+    
+    
+    <simple name="max-iteration-num" type="integer" default="1000">
+      <description>Maximal number of iterations</description>
+    </simple>
+    
+    <simple name="stop-criteria-value" type="real" default="1e-6">
+      <description>Expected accuracy</description>
+    </simple>
+    
+    <simple name="max-restart-iteration-num" type="integer" default="40">
+      <description>Maximal number of iterations</description>
+    </simple>
+    
+    <enumeration name="solver" type="TrilinosOptionTypes::eSolver" default="BiCGStab">
+      <description>Solveur type</description>
+      <enumvalue name="BiCGStab" genvalue="TrilinosOptionTypes::BiCGStab">
+        <description>BiCGStab Solver</description>
+      </enumvalue>
+      <enumvalue name="CG" genvalue="TrilinosOptionTypes::CG">
+        <description>CG Solver</description>
+      </enumvalue>
+      <enumvalue name="GMRES" genvalue="TrilinosOptionTypes::GMRES">
+        <description>CG Solver</description>
+      </enumvalue>
+      <enumvalue name="ML" genvalue="TrilinosOptionTypes::ML">
+        <description>ML Solver</description>
+      </enumvalue>
+      <enumvalue name="MueLu" genvalue="TrilinosOptionTypes::MueLu">
+        <description>MueLU Solver</description>
+      </enumvalue>
+      <enumvalue name="KLU2" genvalue="TrilinosOptionTypes::KLU2">
+        <description>Direct LU Solver</description>
+      </enumvalue>
+    </enumeration>
+    
+    <enumeration name="preconditioner" type="TrilinosOptionTypes::ePreconditioner" default="None">
+      <description>type def preconditionnement</description>
+      <enumvalue name="None" genvalue="TrilinosOptionTypes::None">
+        <description>Id preconditioner</description>
+      </enumvalue>
+      <enumvalue name="Relaxation" genvalue="TrilinosOptionTypes::Relaxation">
+        <description>Block SSOR preconditioner</description>
+      </enumvalue>
+      <enumvalue name="Chebyshev" genvalue="TrilinosOptionTypes::Chebyshev">
+        <description>Block SSOR preconditioner</description>
+      </enumvalue>
+      <enumvalue name="ILUK" genvalue="TrilinosOptionTypes::ILUK">
+        <description>0th order ILU preconditioner</description>
+      </enumvalue>
+      <enumvalue name="ILUT" genvalue="TrilinosOptionTypes::ILUT">
+        <description>0th order ILU preconditioner</description>
+      </enumvalue>
+      <enumvalue name="FILU" genvalue="TrilinosOptionTypes::FILU">
+        <description>FAST ILU preconditioner FixedPoint</description>
+      </enumvalue>
+      <enumvalue name="Schwarz" genvalue="TrilinosOptionTypes::Schwarz">
+        <description>Schwarz preconditioner</description>
+      </enumvalue>
+      <enumvalue name="ML" genvalue="TrilinosOptionTypes::MLPC">
+        <description>ML</description>
+      </enumvalue>
+      <enumvalue name="MueLu" genvalue="TrilinosOptionTypes::MueLuPC">
+        <description>AMG</description>
+      </enumvalue>
+      
+    </enumeration>
+    
+    <simple name="verbose" type="bool" default="false">
+      <description>Verbosity flag</description>
+    </simple>
+    
+    <simple name="use-thread" type="bool" default="false">
+      <description>use multithreaded solver</description>
+    </simple>
+    
+    <simple name="nb-threads" type="integer" default="1">
+      <description>number of thread for multithreaded solver</description>
+    </simple>
+    
+    
+  </options>
+</service>

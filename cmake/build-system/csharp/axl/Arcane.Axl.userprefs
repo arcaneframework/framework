@@ -1,0 +1,42 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Arcane.Axl.T4/Arcane.Axl/T4.StrongOptions/StrongOptions_h.tt">
+    <Files>
+      <File FileName="Arcane.Axl.T4/Arcane.Axl/T4.StrongOptions/StrongOptions_h.tt" Line="283" Column="9" />
+      <File FileName="Arcane.Axl.T4/Arcane.Axl/T4.Service/ServiceGenerator.cs" Line="1" Column="1" />
+      <File FileName="Arcane.Axl.T4/Arcane.Axl/T4.StrongOptions/StrongOptionsFactory.tt" Line="1" Column="1" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State expanded="True">
+          <Node name="axl2cc" expanded="True">
+            <Node name="References" expanded="True" />
+            <Node name="Arcane.Axl" expanded="True" />
+          </Node>
+          <Node name="axl2ccT4" expanded="True" selected="True">
+            <Node name="Arcane.Axl.T4" expanded="True">
+              <Node name="Arcane.Axl" expanded="True">
+                <Node name="T4.Module" expanded="True" />
+                <Node name="T4.Service" expanded="True">
+                  <Node name="ServiceT4CaseAndStrong.tt" expanded="True" />
+                  <Node name="ServiceT4Standard.tt" expanded="True" />
+                  <Node name="ServiceT4StrongOnly.tt" expanded="True" />
+                </Node>
+                <Node name="T4.StrongOptions" expanded="True">
+                  <Node name="IOptions.tt" expanded="True" />
+                  <Node name="OptionsUtils.tt" expanded="True" />
+                  <Node name="StrongOptions_h.tt" expanded="True" />
+                  <Node name="StrongOptionsFactory.tt" expanded="True" />
+                </Node>
+              </Node>
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

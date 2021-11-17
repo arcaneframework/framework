@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- use 
+	/soft/irsrvsoft1/expl/Mono/Mono_3.2.8/bin/xsd Makefile.xsd /c /l:CS /n:CMakeListGenerator
+  to generate Makefile.xsd
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:ags="http://www.ifpen.fr/ArcGeoSim">
+           
+  <xs:import namespace="http://www.ifpen.fr/ArcGeoSim" 
+             schemaLocation="Common.xsd" />
+
+  <xs:complexType name="File">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:boolean" name="header" use="optional"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:complexType name="Directories">
+    <xs:sequence>
+      <xs:element name="directory" type="ags:Directory" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="Package">
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="optional" type="xs:boolean" use="optional" />
+  </xs:complexType>
+	
+  <xs:complexType name="NeededPackages">
+    <xs:sequence>
+      <xs:element name="package" type="Package" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="Language" final="restriction" >
+    <xs:restriction base="xs:string">
+        <xs:enumeration value="c++" />
+        <xs:enumeration value="c++header" />
+        <xs:enumeration value="c" />
+        <xs:enumeration value="cheader" />
+        <xs:enumeration value="c#" />
+        <xs:enumeration value="module" />
+        <xs:enumeration value="service" />
+        <xs:enumeration value="f90" />
+        <xs:enumeration value="axl" />
+        <xs:enumeration value="service+law" />
+        <xs:enumeration value="gump" />
+    </xs:restriction>
+  </xs:simpleType>
+  
+  <xs:complexType name="Files">
+    <xs:sequence>
+      <xs:element name="file" type="File" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="language" type="Language" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="Makefile">
+    <xs:sequence>
+      <xs:element name="needed-packages" type="NeededPackages" minOccurs="0" maxOccurs="1" />
+      <xs:element name="files" type="Files" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="directories" type="Directories" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+    <xs:attribute name="depend" type="xs:string" use="optional" />
+  </xs:complexType>
+
+  <xs:element name="makefile" type="Makefile" />
+
+</xs:schema>
