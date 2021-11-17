@@ -76,11 +76,11 @@ class ALIEN_EXPORT SolverFabricRegisterer
 /*!
  * \brief Macro to register a solver fabric
  */
-#define REGISTER_SOLVER_FABRIC(fabric)                                  \
+#define REGISTER_SOLVER_FABRIC(fabric) \
   extern "C++" Alien::ISolverFabric* alienCreateSolverFabric_##fabric() \
-  {                                                                     \
-    return new fabric();                                                \
-  }                                                                     \
+  { \
+    return new fabric(); \
+  } \
   Alien::SolverFabricRegisterer globaliSolverFabricRegisterer_##fabric( \
   alienCreateSolverFabric_##fabric)
 

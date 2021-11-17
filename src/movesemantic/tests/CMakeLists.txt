@@ -25,7 +25,7 @@ add_executable(move.gtest.mpi
         TestDoKMatrix.cc
         TestDoKDirectMatrixBuilder.cc
         TestMatrixMarket.cc
-	)
+        )
 
 add_executable(move.gtest.seq main.cpp
         TestVector.cc
@@ -49,8 +49,8 @@ target_link_libraries(move.gtest.seq PRIVATE
         )
 
 if (ALIEN_EXPAND_TESTS)
-#    gtest_discover_tests(move.gtest.seq TEST_PREFIX "move." TEST_SUFFIX ".seq")
-#    gtest_discover_tests(move.gtest.mpi TEST_PREFIX "move." TEST_SUFFIX ".seq")
+    #    gtest_discover_tests(move.gtest.seq TEST_PREFIX "move." TEST_SUFFIX ".seq")
+    #    gtest_discover_tests(move.gtest.mpi TEST_PREFIX "move." TEST_SUFFIX ".seq")
 else (ALIEN_EXPAND_TESTS)
     alien_test(
             BENCH move
