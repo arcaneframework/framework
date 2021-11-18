@@ -156,7 +156,7 @@ class CartesianNumbering
   // NOTE : IdxType est un triplet de Int64 alors qu'IdType peut-être un Int32 ou un Int64
   ARCCORE_HOST_DEVICE inline IdType id(IdxType idx) const
   {
-    return id(idx[0], idx[1], idx[2]);
+    return id(static_cast<IdType>(idx[0]), static_cast<IdType>(idx[1]), static_cast<IdType>(idx[2]));
   }
 
   //! Passage de numero => (i,j,k)
