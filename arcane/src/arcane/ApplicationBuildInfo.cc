@@ -131,6 +131,7 @@ class ApplicationBuildInfo::Impl
   Property<Int32> m_minimal_verbosity_level;
   Property<bool> m_is_master_has_output_file;
   Property<String> m_output_directory;
+  Property<String> m_thread_binding_strategy;
   UniqueArray<NameValuePair> m_values;
   ApplicationInfo m_app_info;
   CaseDatasetSource m_case_dataset_source;
@@ -320,6 +321,11 @@ setDefaultValues()
                                 String() );
     if (!str.null())
       m_p->m_case_dataset_source.setFileName(str);
+  }
+  {
+    String str = m_p->getValue( { }, "ThreadBindingStrategy",
+                                String() );
+    m_p->checkSet(m_p->m_thread_binding_strategy,str);
   }
 }
 
@@ -573,6 +579,21 @@ void ApplicationBuildInfo::
 setOutputDirectory(const String& v)
 {
   m_p->m_output_directory = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String ApplicationBuildInfo::
+threadBindingStrategy() const
+{
+  return m_p->m_thread_binding_strategy;
+}
+
+void ApplicationBuildInfo::
+threadBindingStrategy(const String& v)
+{
+  m_p->m_thread_binding_strategy = v;
 }
 
 /*---------------------------------------------------------------------------*/
