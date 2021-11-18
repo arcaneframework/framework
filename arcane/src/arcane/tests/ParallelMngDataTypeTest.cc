@@ -36,6 +36,7 @@
 #include "arccore/message_passing/Messages.h"
 
 #include <cstdint>
+#include <thread>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -803,7 +804,10 @@ _testMessageProbe(Int32 rank_to_receive,Integer nb_message,
       UniqueArray<PointToPointMessageInfo> new_messages;
       for( auto p2p_msg : all_msg_info ){
         MessageId msg = pm->probe(p2p_msg);
-        info() << "I=" << iteration << " MSG=" << p2p_msg << " MSG_ID?=" << msg.isValid();
+        // Limite le nombre d'affichages
+        bool do_print = (iteration<50 || (iteration%100)==0);
+        if (do_print)
+          info() << "I=" << iteration << " MSG=" << p2p_msg << " MSG_ID?=" << msg.isValid();
         if (!msg.isValid()){
           new_messages.add(p2p_msg);
           continue;
@@ -812,8 +816,9 @@ _testMessageProbe(Int32 rank_to_receive,Integer nb_message,
         // TODO: tester avec des receives non bloquants
         MessageId::SourceInfo si = msg.sourceInfo();
         Int32 orig_rank = si.rank().value();
-        info() << "I=" << iteration << " VALID_MSG: "
-               << " rank=" << orig_rank << " tag=" << si.tag() << " size=" << si.size();
+        if (do_print)
+          info() << "I=" << iteration << " VALID_MSG: "
+                 << " rank=" << orig_rank << " tag=" << si.tag() << " size=" << si.size();
         UniqueArray<DataType> recv_buf(si.size() / sizeof(DataType));
         // Poste une réception et vérifie les valeurs
         PointToPointMessageInfo msg_info(msg);
@@ -829,6 +834,8 @@ _testMessageProbe(Int32 rank_to_receive,Integer nb_message,
         }
       }
       ++iteration;
+      // Fait une petit pause de 1ms pour éviter une boucle trop rapide.
+      std::this_thread::sleep_for(std::chrono::milliseconds(2));
       if (iteration>25000)
         ARCANE_FATAL("Too many iteration. probably a deadlock");
       all_msg_info = new_messages;
