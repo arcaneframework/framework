@@ -323,7 +323,7 @@ setDefaultValues()
       m_p->m_case_dataset_source.setFileName(str);
   }
   {
-    String str = m_p->getValue( { }, "ThreadBindingStrategy",
+    String str = m_p->getValue( { "ARCANE_THREAD_BINDING_STRATEGY" }, "ThreadBindingStrategy",
                                 String() );
     m_p->checkSet(m_p->m_thread_binding_strategy,str);
   }

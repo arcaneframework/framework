@@ -74,6 +74,7 @@
 #include "arcane/impl/MainFactory.h"
 #include "arcane/impl/InternalInfosDumper.h"
 #include "arcane/impl/internal/ArcaneMainExecInfo.h"
+#include "arcane/impl/internal/ThreadBindingMng.h"
 
 #include <signal.h>
 #include <exception>
@@ -263,7 +264,8 @@ class ArcaneMain::Impl
   ApplicationInfo m_app_info;
   ApplicationBuildInfo m_application_build_info;
   DotNetRuntimeInitialisationInfo m_dotnet_info;
-  AcceleratorRuntimeInitialisationInfo m_accelerator_info;  
+  AcceleratorRuntimeInitialisationInfo m_accelerator_info;
+  ThreadBindingMng m_thread_binding_mng;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -1181,6 +1183,8 @@ build()
 {
   _parseApplicationBuildInfoArgs();
   m_application = m_main_factory->createApplication(this);
+  m_p->m_thread_binding_mng.initialize(m_application->traceMng(),
+                                       m_p->m_application_build_info.threadBindingStrategy());
 }
 
 /*---------------------------------------------------------------------------*/
