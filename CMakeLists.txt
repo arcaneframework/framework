@@ -10,9 +10,9 @@ project(ALIEN) # Le nom est important car les axl sont générés dans <PROJECT_
 
 if(USE_BUILDSYSTEM_GIT_SUBMODULE)
   message(status "USE NEW BUILDSYSTEM")
-  set(INFRA_BUILDSYSTEM_PATH ${PROJECT_SOURCE_DIR}/build-system-cmake)
-  list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build-system-cmake/tools)
-  list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build-system-cmake/alien)
+  set(INFRA_BUILDSYSTEM_PATH ${PROJECT_SOURCE_DIR}/app-cmake-buildsystem)
+  list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/app-cmake-buildsystem/tools)
+  list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/app-cmake-buildsystem/alien)
 else()
   list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/build-system)
   list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
