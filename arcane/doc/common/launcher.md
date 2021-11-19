@@ -257,6 +257,22 @@ fichier du jeu données.
 </td>
 </tr>
 
+<tr>
+<td>ThreadBindingStrategy</td>
+<td>ARCANE_THREAD_BINDING_STRATEGY</td>
+<td>String</td>
+<td></td>
+<td>Stratégie de punaisage des threads. Cela fonctionne uniquement si
+%Arcane est compilé avec la bibliothèque 'hwloc'. Par défaut aucun
+binding n'est effectué. Le seul mode disponible est 'Simple' qui
+alloue les threads suivant un mécanisme round-robin.
+
+NOTE: ce mécanisme de punaisage est en cours de développement et il
+est possible qu'il ne fonctionne pas de manière optimale dans tous les
+cas
+</td>
+</tr>
+
 </table>
 
 Choix du gestionnaire d'échange de message

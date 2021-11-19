@@ -113,6 +113,12 @@ class ARCANE_CORE_EXPORT ApplicationBuildInfo
   //! Retourne le nom du code.
   String codeName() const;
 
+  //! Stratégie pour punaiser les threads des tâches
+  String threadBindingStrategy() const;
+
+  //! Positionne la strategie pour punaiser les threads des tâches
+  void threadBindingStrategy(const String& v);
+
   //! Source du jeu de données
   CaseDatasetSource& caseDatasetSource();
   //! Source du jeu de données
