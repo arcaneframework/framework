@@ -38,12 +38,12 @@
 // Nécessaire pour avoir accès à task_scheduler_handle
 #define TBB_PREVIEW_WAITING_FOR_WORKERS 1
 #include <tbb/tbb.h>
+#include <oneapi/tbb/concurrent_set.h>
 #include <oneapi/tbb/global_control.h>
 
 #else // ARCANE_USE_ONETBB
 
 // NOTE GG: depuis mars 2019, la version 2018+ des TBB est obligatoire.
-
 #include <tbb/tbb.h>
 #include <tbb/blocked_rangeNd.h>
 /*
@@ -475,13 +475,11 @@ class TBBTaskImplementation::Impl
     }
     void on_scheduler_entry(bool is_worker) override
     {
-      ARCANE_UNUSED(is_worker);
-      m_p->notifyThreadCreated();
+      m_p->notifyThreadCreated(is_worker);
     }
     void on_scheduler_exit(bool is_worker) override
     {
-      ARCANE_UNUSED(is_worker);
-      m_p->notifyThreadDestroyed();
+      m_p->notifyThreadDestroyed(is_worker);
     }
     TBBTaskImplementation::Impl* m_p;
   };
@@ -538,8 +536,22 @@ class TBBTaskImplementation::Impl
 #endif
   }
  public:
-  void notifyThreadCreated()
+  void notifyThreadCreated(bool is_worker)
   {
+    std::thread::id my_thread_id = std::this_thread::get_id();
+
+#ifdef ARCANE_USE_ONETBB
+    // Avec OneTBB, cette méthode est appelée à chaque fois qu'on rentre
+    // dans notre 'task_arena'. Comme il ne faut appeler qu'une seule
+    // fois la méthode de notification on utilise un ensemble pour
+    // conserver la liste des threads déjà créés.
+    // NOTE: On ne peut pas utiliser cette méthode avec la version TBB historique
+    // (2018) car cette méthode 'contains' n'existe pas
+    if (m_constructed_thread_map.contains(my_thread_id))
+      return;
+    m_constructed_thread_map.insert(my_thread_id);
+#endif
+
     // Il faut toujours un verrou car on n'est pas certain que
     // les méthodes appelées par l'observable soient thread-safe
     // (et aussi TaskFactory::createThreadObservable() ne l'est pas)
@@ -553,16 +565,24 @@ class TBBTaskImplementation::Impl
 #else
                   << " tbb_default_allowed=" << tbb::task_scheduler_init::default_num_threads()
 #endif
-                  << " id=" << std::this_thread::get_id()
+                  << " id=" << my_thread_id
                   << " arena_id=" << _currentTaskTreadIndex()
+                  << " is_worker=" << is_worker
                   << "\n";
       }
       TaskFactory::createThreadObservable()->notifyAllObservers();
     }
   }
 
-  void notifyThreadDestroyed()
+  void notifyThreadDestroyed(bool is_worker)
   {
+#ifdef ARCANE_USE_ONETBB
+    // Avec OneTBB, cette méthode est appelée à chaque fois qu'on sort
+    // de l'arène principale. Du coup elle ne correspond pas vraiment à une
+    // destruction de thread. On ne fait donc rien pour cette notification
+    // TODO: Regarder comment on peut être notifié de la destruction effective
+    // du thread.
+#else
     // Il faut toujours un verrou car on n'est pas certain que
     // les méthodes appelées par l'observable soient thread-safe
     // (et aussi TaskFactory::createThreadObservable() ne l'est pas)
@@ -571,9 +591,11 @@ class TBBTaskImplementation::Impl
       std::cout << "TBB: DESTROY THREAD"
                 << " id=" << std::this_thread::get_id()
                 << " arena_id=" << _currentTaskTreadIndex()
+                << " is_worker=" << is_worker
                 << '\n';
     }
     TaskFactory::destroyThreadObservable()->notifyAllObservers();
+#endif
   }
  private:
 #ifdef ARCANE_USE_ONETBB
@@ -589,7 +611,9 @@ class TBBTaskImplementation::Impl
   TaskObserver m_task_observer;
   std::mutex m_thread_created_mutex;
   UniqueArray<TaskThreadInfo> m_thread_task_infos;
-
+#ifdef ARCANE_USE_ONETBB
+  tbb::concurrent_set<std::thread::id> m_constructed_thread_map;
+#endif
   void _init()
   {
     if (TaskFactory::verboseLevel()>=1){
