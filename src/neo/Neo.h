@@ -988,18 +988,18 @@ public:
   void addAlgorithm(InProperty&& in_property, OutProperty&& out_property, Algorithm algo){// problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
     //?? ajout dans le graphe. recuperer les prop...à partir nom et kind…
     // mock the graph : play the action in the given order...
-    m_algos.push_back(std::make_unique<AlgoHandler<decltype(algo)>>(std::move(in_property),std::move(out_property),std::forward<Algorithm>(algo)));
+    m_algos.push_back(std::make_shared<AlgoHandler<decltype(algo)>>(std::move(in_property),std::move(out_property),std::forward<Algorithm>(algo)));
   }
   template <typename Algorithm>
   void addAlgorithm(OutProperty&& out_property, Algorithm algo) { // problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
-    m_algos.push_back(std::make_unique<NoDepsAlgoHandler<decltype(algo)>>(std::move(out_property),std::forward<Algorithm>(algo)));
+    m_algos.push_back(std::make_shared<NoDepsAlgoHandler<decltype(algo)>>(std::move(out_property),std::forward<Algorithm>(algo)));
   }
 
   template <typename Algorithm>
   void addAlgorithm(InProperty&& in_property1, InProperty&& in_property2, OutProperty&& out_property, Algorithm algo){// problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
     //?? ajout dans le graphe. recuperer les prop...à partir nom et kind…
     // mock the graph : play the action in the given order...
-    m_algos.push_back(std::make_unique<DualInAlgoHandler<decltype(algo)>>(
+    m_algos.push_back(std::make_shared<DualInAlgoHandler<decltype(algo)>>(
         std::move(in_property1),
         std::move(in_property2),
         std::move(out_property),
