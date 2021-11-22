@@ -24,6 +24,15 @@ target_link_libraries(arcane_utils PUBLIC Arccore::arccore_trace Arccore::arccor
 # Indique qu'il faut le C++17.
 target_compile_features(arcane_utils PUBLIC cxx_std_17)
 
+# ----------------------------------------------------------------------------
+# Regarde si les 'hooks' mémoire de 'malloc.h' de la glibc sous linux
+# sont disponibles
+if (${ARCANE_HAS_MALLOC_HOOKS})
+  target_compile_definitions(arcane_utils PRIVATE ARCANE_CHECK_MEMORY_USE_MALLOC_HOOK)
+endif()
+
+# ----------------------------------------------------------------------------
+
 arcane_register_library(arcane_utils)
 
 # ----------------------------------------------------------------------------

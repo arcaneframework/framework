@@ -124,6 +124,10 @@ arcane_add_library(arcane_std
 
 # ----------------------------------------------------------------------------
 
+if (${ARCANE_HAS_MALLOC_HOOKS})
+  target_compile_definitions(arcane_std PRIVATE ARCANE_USE_MALLOC_HOOK)
+endif()
+
 if (TARGET Arccore::arccore_message_passing_mpi)
   target_link_libraries(arcane_std PUBLIC Arccore::arccore_message_passing_mpi)
 endif()
