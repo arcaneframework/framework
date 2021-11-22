@@ -730,6 +730,15 @@ endif ()
 set(ARCANE_OPTIONAL_LIBRARIES)
 
 # ----------------------------------------------------------------------------
+# Regarde si les 'hooks' mémoire de 'malloc.h' de la glibc sous linux
+# sont disponibles
+if (UNIX)
+  try_compile(ARCANE_HAS_MALLOC_HOOKS ${CMAKE_CURRENT_BINARY_DIR} ${Arcane_SOURCE_DIR}/cmake/test_glibc_malloc_hooks.cc)
+  message(STATUS "Check: malloc hooks are available? = ${ARCANE_HAS_MALLOC_HOOKS}")
+  set(ARCANE_HAS_MALLOC_HOOKS ${ARCANE_HAS_MALLOC_HOOKS} CACHE BOOL "Is glibc 'malloc hooks' are availables" FORCE)
+endif()
+
+# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
 message(STATUS "ARCANE_LIBRARIES '${ARCANE_LIBRARIES}'")
