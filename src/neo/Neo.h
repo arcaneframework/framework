@@ -763,8 +763,7 @@ private:
 
 };
 
-struct InProperty{
-
+struct PropertyHolder{
   auto& operator() () {
     return m_family.getProperty(m_name);
   }
@@ -772,17 +771,9 @@ struct InProperty{
   std::string m_name;
 
 };
+struct InProperty : public PropertyHolder{};
 
-//  template <typename DataType, typename DataIndex=int> // sans doute inutile, on devrait se poser la question du type (et meme on n'en a pas besoin) dans lalgo. on auranautomatiquement le bon type
-struct OutProperty{
-
-  auto& operator() () {
-    return m_family.getProperty(m_name);
-  }
-  Family& m_family;
-  std::string m_name;
-
-}; // faut-il 2 types ?
+struct OutProperty : public PropertyHolder{};
 
 struct IAlgorithm {
   virtual void operator() () = 0;
