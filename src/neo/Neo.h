@@ -963,6 +963,12 @@ inline Neo::FilteredFutureItemRange make_future_range(FutureItemRange& future_it
 }
 
 class MeshBase {
+ public:
+  std::string m_name;
+  FamilyMap m_families;
+  std::list<std::shared_ptr<IAlgorithm>> m_algos;
+  int m_dimension = 3;
+
 public:
   Family& addFamily(ItemKind ik, std::string&& name) {
     std::cout << "Add Family " << name << " in mesh " << m_name << std::endl;
@@ -1013,10 +1019,7 @@ public:
   }
 
 
-  std::string m_name;
-  FamilyMap m_families;
-  std::list<std::unique_ptr<IAlgorithm>> m_algos;
-  int m_dimension = 3;
+
 };
 
 } // end namespace Neo
