@@ -516,7 +516,7 @@ void ItemGroupImpl::
 beginTransaction()
 {
   if (m_p->m_transaction_mode)
-    throw FatalErrorException(A_FUNCINFO,"Transaction mode already started");
+    ARCANE_FATAL("Transaction mode already started");
   m_p->m_transaction_mode = true;
 }
 
@@ -527,7 +527,7 @@ void ItemGroupImpl::
 endTransaction()
 {
   if (!m_p->m_transaction_mode)
-    throw FatalErrorException(A_FUNCINFO,"Transaction mode not started");
+    ARCANE_FATAL("Transaction mode not started");
   m_p->m_transaction_mode = false;
   if (m_p->m_need_recompute) {
     m_p->m_need_recompute = false;
@@ -543,12 +543,11 @@ Int32Array& ItemGroupImpl::
 unguardedItemsLocalId(const bool self_invalidate)
 {
   ITraceMng* trace = m_p->m_mesh->traceMng();
-  trace->debug(Trace::Medium) << "ItemGroupImpl::unguardedItemsLocalId on group " << name() << " with self_invalidate=" << self_invalidate;
+  trace->debug(Trace::Medium) << "ItemGroupImpl::unguardedItemsLocalId on group " << name()
+                              << " with self_invalidate=" << self_invalidate;
 
   if (m_p->m_compute_functor && !m_p->m_transaction_mode)
-    throw FatalErrorException(A_FUNCINFO,"Direct access for computed group in only available during a transaction");
-//   if (!m_p->m_observers.empty() && m_p->m_observer_need_info)
-//     throw FatalErrorException(A_FUNCINFO,String::format("Direct access for observed group {0}",name()));
+    ARCANE_FATAL("Direct access for computed group in only available during a transaction");
 
   _forceInvalidate(self_invalidate);
   return m_p->mutableItemsLocalId();
@@ -1026,10 +1025,10 @@ void ItemGroupImpl::
 invalidate(bool force_recompute)
 {
 #ifdef ARCANE_DEBUG
-//   if (force_recompute){
-    ITraceMng* msg = m_p->m_mesh->traceMng();
-    msg->debug(Trace::High) << "ItemGroupImpl::invalidate(force=" << force_recompute << ")"
-                            << " name=" << name();
+  //   if (force_recompute){
+  ITraceMng* msg = m_p->m_mesh->traceMng();
+  msg->debug(Trace::High) << "ItemGroupImpl::invalidate(force=" << force_recompute << ")"
+                          << " name=" << name();
 //   }
 #endif
 #ifndef NO_USER_WARNING
@@ -1083,7 +1082,7 @@ addItems(Int32ConstArrayView items_local_id,bool check_if_present)
   ARCANE_ASSERT(( (!m_p->m_need_recompute && !isAllItems()) || (m_p->m_transaction_mode && isAllItems()) ),
 		("Operation on invalid group"));
   if (m_p->m_compute_functor && !m_p->m_transaction_mode)
-    throw FatalErrorException(A_FUNCINFO, String::format("Cannot add items on computed group ({0})", name()));
+    ARCANE_FATAL("Cannot add items on computed group ({0})", name());
   IMesh* amesh = mesh();
   if (!amesh)
     throw ArgumentException(A_FUNCINFO,"null group");
@@ -1317,7 +1316,7 @@ void ItemGroupImpl::
 setItems(Int32ConstArrayView items_local_id)
 {
   if (m_p->m_compute_functor && !m_p->m_transaction_mode)
-    throw FatalErrorException(A_FUNCINFO, String::format("Cannot set items on computed group ({0})", name()));
+    ARCANE_FATAL("Cannot set items on computed group ({0})", name());
   Int32Array& buf = m_p->mutableItemsLocalId();
   buf.resize(items_local_id.size());
   Int32ArrayView buf_view(buf);
@@ -1744,8 +1743,6 @@ attachObserver(const void * ref, IItemGroupObserver * obs)
   auto finder = m_p->m_observers.find(ref);
   auto end = m_p->m_observers.end();
   if (finder != end) {
-    // (HP) TODO: check non redondant observer attachement
-    // throw FatalErrorException(A_FUNCINFO,String::format("Observer already attached by reference ({0})",ref));
     delete finder->second;
     finder->second = obs;
     return;
@@ -1767,11 +1764,8 @@ detachObserver(const void * ref)
   std::map<const void *, IItemGroupObserver *>::iterator finder = m_p->m_observers.find(ref);
   std::map<const void *, IItemGroupObserver *>::iterator end = m_p->m_observers.end();
 
-  if (finder == end) {
-    // (HP) TODO: check non redondant observer removal
-    // throw FatalErrorException(A_FUNCINFO,String::format("Cannot detach observer : reference ({0}) not registered as an attacher",ref));
+  if (finder == end)
     return;
-  }
 
   IItemGroupObserver * obs = finder->second;
   delete obs;
@@ -2093,6 +2087,34 @@ void ItemGroupImpl::
 checkLocalIdsAreContigous() const
 {
   m_p->checkIsContigous();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 ItemGroupImpl::
+capacity() const
+{
+  Int32Array& items_lid = m_p->mutableItemsLocalId();
+  return items_lid.capacity();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemGroupImpl::
+shrinkMemory()
+{
+  if (hasComputeFunctor()){
+    // Groupe calculé. On l'invalide et on supprime ses éléments
+    invalidate(false);
+    m_p->mutableItemsLocalId().clear();
+  }
+
+  if (m_p->variableItemsLocalid())
+    m_p->variableItemsLocalid()->variable()->shrinkMemory();
+  else
+    m_p->mutableItemsLocalId().shrink();
 }
 
 /*---------------------------------------------------------------------------*/
