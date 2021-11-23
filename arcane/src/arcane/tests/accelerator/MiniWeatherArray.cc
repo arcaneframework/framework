@@ -723,7 +723,7 @@ init()
 // x and z are input coordinates at which to sample
 // r,u,w,t are output density, u-wind, w-wind, and potential temperature at that location
 // hr and ht are output background hydrostatic density and potential temperature at that location
-void MiniWeatherArray::
+ARCCORE_HOST_DEVICE void MiniWeatherArray::
 injection(double x, double z, double &r, double &u, double &w, double &t, double &hr, double &ht)
 {
   ARCANE_UNUSED(x);
@@ -740,7 +740,7 @@ injection(double x, double z, double &r, double &u, double &w, double &t, double
 //Establish hydrstatic balance using constant potential temperature (thermally neutral atmosphere)
 //z is the input coordinate
 //r and t are the output background hydrostatic density and potential temperature
-void MiniWeatherArray::
+ARCCORE_HOST_DEVICE void MiniWeatherArray::
 hydro_const_theta(double z, double &r, double &t)
 {
   const double theta0 = 300.0; //Background potential temperature

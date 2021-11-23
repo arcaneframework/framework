@@ -320,6 +320,9 @@ arcaneMathError(long double arg_value,const char* func_name)
 {
 #ifndef ARCCORE_DEVICE_CODE
   _internalArcaneMathError(arg_value,func_name);
+#else
+  ARCANE_UNUSED(arg_value);
+  ARCANE_UNUSED(func_name);
 #endif
 }
 
@@ -337,6 +340,10 @@ arcaneMathError(long double arg_value1,long double arg_value2,const char* func_n
 {
 #ifndef ARCCORE_DEVICE_CODE
   _internalArcaneMathError(arg_value1,arg_value2,func_name);
+#else
+  ARCANE_UNUSED(arg_value1);
+  ARCANE_UNUSED(arg_value2);
+  ARCANE_UNUSED(func_name);
 #endif
 }
 
@@ -842,6 +849,9 @@ arcaneCheckAt(Int64 i,Int64 max_size)
 #ifndef ARCCORE_DEVICE_CODE
   if (i<0 || i>=max_size)
     arcaneRangeError(i,max_size);
+#else
+  ARCANE_UNUSED(i);
+  ARCANE_UNUSED(max_size);
 #endif
 }
 

@@ -801,7 +801,7 @@ computeDeltaT()
  *
  * La méthode utilisée est celle du découpage en quatre triangles.
  */
-inline void SimpleHydroAcceleratorService::
+ARCCORE_HOST_DEVICE inline void SimpleHydroAcceleratorService::
 computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs)
 {
   const Real3 c0 = face_coord[0];
