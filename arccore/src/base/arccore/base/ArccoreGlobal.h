@@ -132,11 +132,14 @@ typedef ARCCORE_TYPE_INT64 Int64;
    le device.
 */
 
-#if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)
 #define ARCCORE_DEVICE_CODE
+#if defined(__CUDA_ARCH__)
+#define ARCCORE_DEVICE_TARGET_CUDA
+#endif
 #endif
 
-#if defined(__CUDACC__)
+#if defined(__CUDACC__) || defined(__HIP__)
 #define ARCCORE_HOST_DEVICE __host__ __device__
 #define ARCCORE_DEVICE __device__
 #endif
@@ -506,14 +509,22 @@ arccoreRangeError ARCCORE_NORETURN (Int64 i,Int64 max_size);
 /*!
  * \brief Vérifie un éventuel débordement de tableau.
  */
-static inline ARCCORE_HOST_DEVICE void
+inline ARCCORE_HOST_DEVICE void
 arccoreCheckAt(Int64 i,Int64 max_size)
 {
 #ifndef ARCCORE_DEVICE_CODE
   if (i<0 || i>=max_size)
     arccoreRangeError(i,max_size);
 #else
+  // Code pour le device.
+  // assert() est disponible pour CUDA.
+  // TODO: regarder si une fonction similaire existe pour HIP
+#ifdef ARCCORE_DEVICE_TARGET_CUDA
   assert(i>=0 && i<max_size);
+#else
+  ARCCORE_UNUSED(i);
+  ARCCORE_UNUSED(max_size);
+#endif
 #endif
 }
 

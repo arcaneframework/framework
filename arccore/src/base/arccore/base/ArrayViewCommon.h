@@ -40,7 +40,7 @@ namespace Arccore::impl
 /*---------------------------------------------------------------------------*/
 
 //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
-template<typename ViewType>
+template<typename ViewType> ARCCORE_HOST_DEVICE
 auto subViewInterval(ViewType view,
                      typename ViewType::size_type index,
                      typename ViewType::size_type nb_interval) -> ViewType
