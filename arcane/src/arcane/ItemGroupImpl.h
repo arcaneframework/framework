@@ -171,7 +171,7 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
    */
   ItemGroupImpl* outerFaceGroup();
 
-//! AMR
+  //! AMR
   /*!
    *  \brief Groupe des mailles actives de ce groupe
    *
@@ -221,7 +221,7 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
   ItemGroupImpl* innerActiveFaceGroup();
 
   /*!
-   *  \brief Groupe des faces externes actives des éléments de ce groupe
+   * \brief Groupe des faces externes actives des éléments de ce groupe
    *
    * Ce groupe n'existe que pour un groupe de maille (itemKind()==IK_Cell).
    * Une face est externe active si elle n'est connectée qu'à une maille de ce groupe et est active.
@@ -257,15 +257,16 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
   //! Groupe parent
   ItemGroup parentGroup();
 
-  //! Recalcule les entités du groupe \a child fils de ce groupe
-  //void recomputeChild(ItemGroupImpl* child);
-
-  //! Invalide le groupe
-  /*! Opération très violente qui induit une invalidation de toutes les
-   *  dépendances autant des observers que des sous-groupes construits */
+  /*!
+   * \brief Invalide le groupe
+   *
+   * Opération très violente qui induit une invalidation de toutes les
+   * dépendances autant des observers que des sous-groupes construits.
+   */
   void invalidate(bool force_recompute);
 
-  /*! \brief  Ajoute les entités de numéros locaux \a items_local_id.
+  /*!
+   * \brief  Ajoute les entités de numéros locaux \a items_local_id.
    * \sa ItemGroup::addItems()
    */
   void addItems(Int32ConstArrayView items_local_id,bool check_if_present);
@@ -281,8 +282,8 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
  
   //! Supprime et ajoute les entités \a removed_local_id et \a added_local_id du groupe
   void removeAddItems(Int32ConstArrayView removed_local_id,
-		      Int32ConstArrayView added_local_id,
-		      bool check_if_present);
+                      Int32ConstArrayView added_local_id,
+                      bool check_if_present);
 
   /*!
    * \brief Supprime du groupe les entités dont le flag isSuppressed() est vrai
@@ -304,10 +305,12 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
   //! Liste des numéros locaux des entités de ce groupe.
   Int32ConstArrayView itemsLocalId() const;
 
-  //! Débute une transaction
-  /*! Une transaction permet d'accèder en écriture à des groupes protégés.
-   *  L'utilisation de ce mécanisme indique a Arcane que l'utilisateur 
-   *  a conscience qu'il modifie 'à ses risques' un groupe.
+  /*!
+   * \brief Débute une transaction.
+   *
+   * Une transaction permet d'accèder en écriture à des groupes protégés.
+   * L'utilisation de ce mécanisme indique a Arcane que l'utilisateur 
+   * a conscience qu'il modifie 'à ses risques' un groupe.
    */ 
   void beginTransaction();
 
@@ -399,6 +402,22 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
    * Si c'est le cas, alors \a isContigousLocalIds() retournera \a vrai.
    */
   void checkLocalIdsAreContigous() const;
+
+  /*!
+   * \brief Limite au maximum la mémoire utilisée par le groupe.
+   *
+   * Si le groupe est un groupe calculé, il est invalidé et toute sa mémoire
+   * allouée est libérée.
+   *
+   * Si le groupe est un groupe créé par l'utilisateur (donc persistant),
+   * s'assure que la mémoire consommée est minimale. Normalement %Arcane alloue
+   * un peu plus d'éléments que nécessaire pour éviter de faire des réallocations
+   * trop souvent.
+   */
+  void shrinkMemory();
+
+  //! Nombre d'éléments alloués
+  Int64 capacity() const;
 
  public:
 

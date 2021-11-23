@@ -55,6 +55,8 @@
 #include "arcane/ItemLoop.h"
 #include "arcane/ITimeHistoryMng.h"
 
+#include "arcane/MeshUtils.h"
+
 // Force la vectorisation avec GCC.
 #ifdef __GNUC__
 #  pragma GCC optimize ("-ftree-vectorize")
@@ -288,6 +290,7 @@ hydroStartInit()
   }
 #endif
 
+  mesh_utils::shrinkMeshGroups(mesh());
   allCells().internal()->checkLocalIdsAreContigous();
   allNodes().internal()->checkLocalIdsAreContigous();
 

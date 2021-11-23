@@ -43,6 +43,7 @@
 #include "arcane/VariableCollection.h"
 #include "arcane/ITiedInterface.h"
 #include "arcane/SharedVariable.h"
+#include "arcane/MeshVisitor.h"
 
 #include <algorithm>
 #include <map>
@@ -1544,6 +1545,48 @@ removeItemAndKeepOrder(Int32ArrayView items,Int32 local_id)
   }
   // TODO: Il faut activer cela mais pour l'instant cela fait planter un test.
   //ARCANE_FATAL("No entity with local_id={0} found in list {1}",local_id,items);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void mesh_utils::
+shrinkMeshGroups(IMesh* mesh)
+{
+  auto f= [&](ItemGroup& group)
+          {
+            group.internal()->shrinkMemory();
+          };
+  meshvisitor::visitGroups(mesh,f);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 mesh_utils::
+printMeshGroupsMemoryUsage(IMesh* mesh, Int32 print_level)
+{
+  ITraceMng* tm = mesh->traceMng();
+  Int64 total_capacity = 0;
+  Int64 total_computed_capacity = 0;
+  auto f = [&](ItemGroup& group) {
+    ItemGroupImpl* p = group.internal();
+    // Attention à bien prendre la taille du groupe via \a p
+    // car sinon pour un groupe calculé on le reconstruit.
+    Int64 c = p->capacity();
+    bool is_computed = p->hasComputeFunctor();
+    total_capacity += c;
+    if (is_computed)
+      total_computed_capacity += c;
+    if (print_level >= 1)
+      tm->info() << "GROUP Name=" << group.name() << " computed?=" << p->hasComputeFunctor()
+                 << " nb_ref=" << p->nbRef() << " size=" << p->size()
+                 << " capacity=" << c;
+  };
+  meshvisitor::visitGroups(mesh, f);
+  tm->info() << "MeshGroupsMemoryUsage: capacity = " << total_capacity
+             << " computed_capacity=" << total_computed_capacity;
+  return total_capacity * sizeof(Int32);
 }
 
 /*---------------------------------------------------------------------------*/
