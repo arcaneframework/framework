@@ -193,6 +193,7 @@ public:
   void _testNullItem();
   void _testCustomMeshTools();
   void _testAdditionnalConnectivity();
+  void _testShrinkGroups();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -278,6 +279,7 @@ executeTest()
   _testAdditionalMeshes();
   _testCustomMeshTools();
   _testAdditionnalConnectivity();
+  _testShrinkGroups();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1161,7 +1163,7 @@ _testAdditionalMeshes()
 {
   // Test la lecture de maillages additionnels avec un IParallelMng
   // séquentiel même si on est en parallèle.
-  ConstArrayView<String> additional_meshes = options()->additionalMesh();
+  ConstArrayView<String> additional_meshes = options()->additionalMesh.view();
   Integer nb_mesh = additional_meshes.size();
   if (nb_mesh==0)
     return;
@@ -1222,6 +1224,20 @@ _testAdditionnalConnectivity()
       total_face_lid += face.localId();
   }
   info() << "TOTAL_NB_FACE = " << total_face_lid;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUnitTest::
+_testShrinkGroups()
+{
+  info() << A_FUNCINFO;
+  mesh_utils::printMeshGroupsMemoryUsage(mesh(),1);
+  mesh_utils::shrinkMeshGroups(mesh());
+  mesh_utils::printMeshGroupsMemoryUsage(mesh(),1);
+  Int64 total = mesh_utils::printMeshGroupsMemoryUsage(mesh(),0);
+  info() << "TotalMemoryForGroups=" << total;
 }
 
 /*---------------------------------------------------------------------------*/
