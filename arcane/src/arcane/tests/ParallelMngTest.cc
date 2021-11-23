@@ -44,6 +44,7 @@
 #include "arccore/message_passing/Messages.h"
 
 #include <cstdint>
+#include <thread>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -263,12 +264,15 @@ _testSendRecvNonBlockingSome(Integer nb_message,Integer message_size,
     Integer total_nb_done = 0;
     for( ;; ) {
       UniqueArray<Int32> ready;
-      info() << "BEGIN WAIT iter=" << iteration << " nb_request=" << requests->size()
-             << " wait_mode=" << wait_mode;
+      bool do_print = (iteration<50 || (iteration%100)==0);
+      if (do_print)
+        info() << "BEGIN WAIT iter=" << iteration << " nb_request=" << requests->size()
+               << " wait_mode=" << wait_mode;
       Int32 nb_done = requests->wait(wait_mode);
       total_nb_done += nb_done;
-      info() << "END WAIT iter=" << iteration << " nb_done=" << nb_done
-             << " total=" << total_nb_done;
+      if (do_print)
+        info() << "END WAIT iter=" << iteration << " nb_done=" << nb_done
+               << " total=" << total_nb_done;
 
       if (nb_done==0){ // Plus de requêtes à attendre
         // En mode WaitSome, on sort uniquement s'il n'y a plus de requêtes
@@ -282,8 +286,10 @@ _testSendRecvNonBlockingSome(Integer nb_message,Integer message_size,
           break;
       }
       ++iteration;
-      if (iteration>10000)
-        ARCANE_FATAL("Too many iteration");
+      // Fait une petit pause de 1ms pour éviter une boucle trop rapide.
+      std::this_thread::sleep_for(std::chrono::milliseconds(2));
+      if (iteration>25000)
+        ARCANE_FATAL("Too many iteration. probably a deadlock");
       // On récupère à partir du numéro de la requête le rang d'origine et
       // le numéro du message
       for( Integer iter_val : requests->doneRequestIndexes() ) {
