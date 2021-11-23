@@ -194,6 +194,20 @@ checkMeshConnectivity(IMesh* mesh,const String& file_name,bool check_sub_domain)
 ARCANE_CORE_EXPORT void
 printItems(std::ostream& ostr,const String& name,ItemGroup item_group);
 
+/*!
+ * \brief Affiche l'utilisation mémoire des groupes du maillage.
+ *
+ * Si \a print_level vaut 0, affiche uniquement l'usage mémoire total.
+ * So \a print_level vaut 1 ou plus, affiche l'usage pour chaque groupe.
+ *
+ * En retour, indique la mémoire consommée en octets.
+ */
+ARCANE_CORE_EXPORT Int64
+printMeshGroupsMemoryUsage(IMesh* mesh,Int32 print_level);
+
+//! Limite au plus juste l'usage mémoire des groupes.
+ARCANE_CORE_EXPORT void
+shrinkMeshGroups(IMesh* mesh);
 }
 
 /*---------------------------------------------------------------------------*/
