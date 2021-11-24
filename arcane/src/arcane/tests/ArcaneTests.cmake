@@ -299,6 +299,25 @@ macro(arcane_add_csharp_test_parallel test_name case_file nb_proc)
 endmacro()
 
 # ----------------------------------------------------------------------------
+# Ajoute un test séquentiel pour accelerateur si disponible
+set(ARCANE_ACCELERATOR_RUNTIME_NAME)
+if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
+  set(ARCANE_ACCELERATOR_RUNTIME_NAME hip)
+endif()
+if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC" )
+  set(ARCANE_ACCELERATOR_RUNTIME_NAME cuda)
+endif()
+
+macro(arcane_add_accelerator_test_sequential test_name case_file)
+  if (ARCANE_ACCELERATOR_RUNTIME_NAME)
+    message(STATUS "ADD ACCELERATOR test name=${test_name}")
+    arcane_add_test_sequential(${test_name}_${ARCANE_ACCELERATOR_RUNTIME_NAME} ${case_file}
+      "-A,AcceleratorRuntime=${ARCANE_ACCELERATOR_RUNTIME_NAME}" ${ARGN}
+      )
+  endif()
+endmacro()
+
+# ----------------------------------------------------------------------------
 # Local Variables:
 # tab-width: 2
 # indent-tabs-mode: nil

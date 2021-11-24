@@ -1088,8 +1088,8 @@ _checkAutoDetectAccelerator()
 
   try{
     // Pour l'instant, seul le runtime 'cuda' est autorisé
-    if (runtime_name!="cuda")
-      ARCANE_FATAL("Invalid accelerator runtime '{0}'. Only 'cuda' is allowed",runtime_name);
+    if (runtime_name!="cuda" && runtime_name!="hip")
+      ARCANE_FATAL("Invalid accelerator runtime '{0}'. Only 'cuda' or 'hip' is allowed",runtime_name);
 
     // Pour pouvoir automatiquement enregisrer un runtime accélérateur de nom \a NAME,
     // il faut appeler la méthode 'arcaneRegisterAcceleratorRuntime${NAME}' qui se trouve

@@ -5,16 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CudaReduceImpl.h                                            (C) 2000-2020 */
+/* CommonCudaHipReduceImpl.h                                   (C) 2000-2021 */
 /*                                                                           */
-/* Implémentation CUDA des réductions.                                       */
+/* Implémentation CUDA et HIP des réductions.                                */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CUDA_CUDAREDUCEIMPL
-#define ARCANE_CUDA_CUDAREDUCEIMPL
+#ifndef ARCANE_ACCELERATOR_COMMONCUDHIPAREDUCEIMPL_H
+#define ARCANE_ACCELERATOR_COMMONCUDHIPAREDUCEIMPL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 // Ce fichier doit être inclus uniquement par 'arcane/accelerator/Reduce.h'
-// et n'est valide que compilé par le compilateur CUDA.
+// et n'est valide que compilé par le compilateur CUDA et HIP
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,14 +35,14 @@ __device__ __forceinline__ unsigned int getThreadId()
 }
 
 template<typename DataType>
-class CudaAtomicAdd;
+class CommonCudaHipAtomicAdd;
 template<typename DataType>
-class CudaAtomicMax;
+class CommonCudaHipAtomicMax;
 template<typename DataType>
-class CudaAtomicMin;
+class CommonCudaHipAtomicMin;
 
 template<>
-class CudaAtomicAdd<int>
+class CommonCudaHipAtomicAdd<int>
 {
  public:
   static ARCCORE_DEVICE void apply(int* ptr,int v)
@@ -52,7 +52,7 @@ class CudaAtomicAdd<int>
 };
 
 template<>
-class CudaAtomicMax<int>
+class CommonCudaHipAtomicMax<int>
 {
  public:
   static ARCCORE_DEVICE void apply(int* ptr,int v)
@@ -62,7 +62,7 @@ class CudaAtomicMax<int>
 };
 
 template<>
-class CudaAtomicMin<int>
+class CommonCudaHipAtomicMin<int>
 {
  public:
   static ARCCORE_DEVICE void apply(int* ptr,int v)
@@ -124,7 +124,7 @@ atomicMinDouble(double* address, double val)
 }
 
 template<>
-class CudaAtomicAdd<double>
+class CommonCudaHipAtomicAdd<double>
 {
  public:
   static ARCCORE_DEVICE void apply(double* ptr,double v)
@@ -138,7 +138,7 @@ class CudaAtomicAdd<double>
 };
 
 template<>
-class CudaAtomicMax<double>
+class CommonCudaHipAtomicMax<double>
 {
  public:
   static ARCCORE_DEVICE void apply(double* ptr,double v)
@@ -148,7 +148,7 @@ class CudaAtomicMax<double>
 };
 
 template<>
-class CudaAtomicMin<double>
+class CommonCudaHipAtomicMin<double>
 {
  public:
   static ARCCORE_DEVICE void apply(double* ptr,double v)
@@ -166,7 +166,7 @@ struct SumReduceOperator
 {
   static ARCCORE_DEVICE inline void apply(T& val, const T v)
   {
-    CudaAtomicAdd<T>::apply(&val, v);
+    CommonCudaHipAtomicAdd<T>::apply(&val, v);
   }
 };
 
@@ -197,6 +197,7 @@ struct SimpleMinReduceOperator
   }
 };
 
+#if defined(__CUDACC__)
 ARCCORE_DEVICE inline double shfl_xor_sync(double var, int laneMask)
 {
   return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
@@ -216,6 +217,28 @@ ARCCORE_DEVICE inline int shfl_sync(int var, int laneMask)
 {
   return ::__shfl_sync(0xffffffffu, var, laneMask);
 }
+#endif
+#if defined(__HIP__)
+ARCCORE_DEVICE inline double shfl_xor_sync(double var, int laneMask)
+{
+  return ::__shfl_xor(var, laneMask);
+}
+
+ARCCORE_DEVICE inline int shfl_xor_sync(int var, int laneMask)
+{
+  return ::__shfl_xor(var, laneMask);
+}
+
+ARCCORE_DEVICE inline double shfl_sync(double var, int laneMask)
+{
+  return ::__shfl(var, laneMask);
+}
+
+ARCCORE_DEVICE inline int shfl_sync(int var, int laneMask)
+{
+  return ::__shfl(var, laneMask);
+}
+#endif
 
 // Cette implémentation est celle de RAJA
 //! reduce values in block into thread 0
@@ -285,7 +308,7 @@ ARCCORE_DEVICE inline T block_reduce(T val, T identity)
   return temp;
 }
 
-template<typename DataType> ARCANE_INLINE_CUDA ARCCORE_DEVICE
+template<typename DataType> ARCANE_INLINE_REDUCE ARCCORE_DEVICE
 void ReduceFunctorSum<DataType>::
 _applyDevice(DataType* ptr,DataType v,DataType identity)
 {
@@ -297,21 +320,21 @@ _applyDevice(DataType* ptr,DataType v,DataType identity)
   // allouées sur le GPU.
   if (impl::getThreadId()==0){
     //printf("Adding value %d\n",rv);
-    impl::CudaAtomicAdd<DataType>::apply(ptr,rv);
+    impl::CommonCudaHipAtomicAdd<DataType>::apply(ptr,rv);
   }
 }
 
-template<typename DataType> ARCANE_INLINE_CUDA ARCCORE_DEVICE
+template<typename DataType> ARCANE_INLINE_REDUCE ARCCORE_DEVICE
 void ReduceFunctorMax<DataType>::
 _applyDevice(DataType* ptr,DataType v,DataType identity)
 {
   DataType rv = impl::block_reduce<impl::SimpleMaxReduceOperator<DataType>>(v,identity);
   if (impl::getThreadId()==0){
-    impl::CudaAtomicMax<DataType>::apply(ptr,rv);
+    impl::CommonCudaHipAtomicMax<DataType>::apply(ptr,rv);
   }
 }
 
-template<typename DataType> ARCANE_INLINE_CUDA ARCCORE_DEVICE
+template<typename DataType> ARCANE_INLINE_REDUCE ARCCORE_DEVICE
 void ReduceFunctorMin<DataType>::
 _applyDevice(DataType* ptr,DataType v,DataType identity)
 {
@@ -319,7 +342,7 @@ _applyDevice(DataType* ptr,DataType v,DataType identity)
   DataType rv = impl::block_reduce<impl::SimpleMinReduceOperator<DataType>>(v,identity);
   if (impl::getThreadId()==0){
     //_doPrintMin(rv,identity);
-    impl::CudaAtomicMin<DataType>::apply(ptr,rv);
+    impl::CommonCudaHipAtomicMin<DataType>::apply(ptr,rv);
     //_doPrintMin(*ptr,identity);
   }
 }

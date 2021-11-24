@@ -20,4 +20,5 @@ set( ARCANE_SOURCES
   Views.h
   NumArray.h
   NumArrayViews.h
+  CommonCudaHipReduceImpl.h
 )

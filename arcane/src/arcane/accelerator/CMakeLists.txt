@@ -3,7 +3,8 @@
 # Runtime Arcane pour les accélérateurs
 #
 # Pour l'instant seul CUDA est supporté
-# Ce fichier doit être inclus après 'arcane/accelerator/cuda'
+# Ce fichier doit être inclus après 'arcane/accelerator/cuda' ou
+# 'arcane/accelerator/hip'
 
 include(srcs.cmake)
 
@@ -17,6 +18,7 @@ target_link_libraries(arcane_accelerator PUBLIC
   arcane_core
   arcane_accelerator_core
   "$<TARGET_NAME_IF_EXISTS:arcane_accelerator_cuda>"
+  "$<TARGET_NAME_IF_EXISTS:arcane_accelerator_hip>"
   )
 
 # Cette cible est optionnelle pour éviter que le code n'utilisant

@@ -55,6 +55,19 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
     ARCANE_FATAL("Requesting CUDA kernel execution but the kernel is not compiled with CUDA compiler");
 #endif
     break;
+  case eExecutionPolicy::HIP:
+#if defined(__HIP__)
+    {
+      launch_info.beginExecute();
+      auto [b,t] = launch_info.computeThreadBlockInfo(vsize);
+      hipStream_t* s = reinterpret_cast<hipStream_t*>(launch_info._internalStreamImpl());
+      auto& loop_func = impl::doDirectCUDALambdaArrayBounds<LoopBoundType<N>,Lambda>;
+      //impl::doDirectCUDALambdaArrayBounds<LoopBoundType<N>,Lambda> <<<b, t, 0, *s>>>(bounds,func);
+      hipLaunchKernelGGL(loop_func, b, t, 0, *s, bounds, func);
+    }
+#else
+    ARCANE_FATAL("Requesting HIP kernel execution but the kernel is not compiled with HIP compiler");
+#endif
   case eExecutionPolicy::Sequential:
     launch_info.beginExecute();
     arcaneSequentialFor(bounds,func);
