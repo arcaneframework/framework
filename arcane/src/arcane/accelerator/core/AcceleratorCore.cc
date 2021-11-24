@@ -40,6 +40,8 @@ namespace
 {
 bool global_is_using_cuda_runtime = false;
 IRunQueueRuntime* global_cuda_runqueue_runtime = nullptr;
+bool global_is_using_hip_runtime = false;
+IRunQueueRuntime* global_hip_runqueue_runtime = nullptr;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -77,6 +79,38 @@ setCUDARunQueueRuntime(IRunQueueRuntime* v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT bool impl::
+isUsingHIPRuntime()
+{
+  return global_is_using_hip_runtime;
+}
+
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void impl::
+setUsingHIPRuntime(bool v)
+{
+  global_is_using_hip_runtime = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Récupère l'implémentation HIP de RunQueue
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueRuntime* impl::
+getHIPRunQueueRuntime()
+{
+  return global_hip_runqueue_runtime;
+}
+
+//! Positionne l'implémentation HIP de RunQueue.
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void impl::
+setHIPRunQueueRuntime(IRunQueueRuntime* v)
+{
+  global_hip_runqueue_runtime = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 //! Affiche le nom de la politique d'exécution
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
 ostream& operator<<(ostream& o,eExecutionPolicy exec_policy)
@@ -85,6 +119,7 @@ ostream& operator<<(ostream& o,eExecutionPolicy exec_policy)
   case eExecutionPolicy::Sequential: o << "Sequential"; break;
   case eExecutionPolicy::Thread: o << "Thread"; break;
   case eExecutionPolicy::CUDA: o << "CUDA"; break;
+  case eExecutionPolicy::HIP: o << "HIP"; break;
   }
   return o;
 }

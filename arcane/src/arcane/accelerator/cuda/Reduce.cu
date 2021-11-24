@@ -1,6 +1,6 @@
 // TODO: ne pas inclure car cela induit des dépendances circulaires
 #include "arcane/accelerator/Reduce.h"
-#include "arcane/accelerator/cuda/CudaReduceImpl.h"
+#include "arcane/accelerator/CommonCudaHipReduceImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

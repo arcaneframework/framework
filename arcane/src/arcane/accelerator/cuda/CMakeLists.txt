@@ -5,7 +5,7 @@
 set(ARCANE_SOURCES
   CudaAccelerator.cc
   CudaAccelerator.h
-  CudaReduceImpl.h
+#  CudaReduceImpl.h
   )
 
 arcane_find_package(CUDAToolkit REQUIRED)
@@ -43,7 +43,7 @@ target_link_libraries(arcane_accelerator_cuda PUBLIC
 # de cette bibliothèque
 add_library(arcane_accelerator_cuda_impl STATIC
   Reduce.cu
-  CudaReduceImpl.h
+#  CudaReduceImpl.h
   )
 set_target_properties(arcane_accelerator_cuda_impl PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 set_target_properties(arcane_accelerator_cuda_impl PROPERTIES LINKER_LANGUAGE CUDA)

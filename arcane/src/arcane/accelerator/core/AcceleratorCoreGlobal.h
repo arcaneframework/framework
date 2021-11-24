@@ -58,6 +58,8 @@ enum class eExecutionPolicy
   Thread,
   //! Politique d'exécution utilisant l'environnement CUDA
   CUDA,
+  //! Politique d'exécution utilisant l'environnement HIP
+  HIP
 };
 
 
@@ -68,7 +70,12 @@ std::ostream& operator<<(std::ostream& o,eExecutionPolicy exec_policy);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace impl
+} // End namespace Arcane::Accelerator
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator::impl
 {
 class IReduceMemoryImpl;
 
@@ -82,8 +89,11 @@ internalGetOrCreateReduceMemoryImpl(RunCommand* command);
 inline bool
 isAcceleratorPolicy(eExecutionPolicy exec_policy)
 {
-  return exec_policy==eExecutionPolicy::CUDA;
+  return exec_policy==eExecutionPolicy::CUDA || exec_policy==eExecutionPolicy::HIP;
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 //! Indique si on utilise le runtime CUDA
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
@@ -101,6 +111,28 @@ IRunQueueRuntime* getCUDARunQueueRuntime();
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
 void setCUDARunQueueRuntime(IRunQueueRuntime* v);
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Indique si on utilise le runtime HIP
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
+bool isUsingHIPRuntime();
+
+//! Positionne l'utilisation du runtime HIP
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
+void setUsingHIPRuntime(bool v);
+
+//! Récupère l'implémentation HIP de RunQueue (peut être nulle)
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
+IRunQueueRuntime* getHIPRunQueueRuntime();
+
+//! Positionne l'implémentation HIP de RunQueue.
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
+void setHIPRunQueueRuntime(IRunQueueRuntime* v);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 //! Récupère l'implémentation Séquentielle de RunQueue
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
 IRunQueueRuntime* getSequentialRunQueueRuntime();
@@ -112,12 +144,7 @@ IRunQueueRuntime* getThreadRunQueueRuntime();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace impl
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace Arcane::Accelerator
+} // End namespace Arcane::Accelerator::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
