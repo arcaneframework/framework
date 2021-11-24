@@ -12,6 +12,10 @@ env:
   ALIEN_BUILD_DIR: /__w/framework/framework/alien_build
   ALIEN_INSTALL_DIR: /__w/framework/framework/alien_install
   ALIEN_SOURCE_DIR: /__w/framework/framework/alien
+  # AlienLegacy
+  ALIENLEGACY_BUILD_DIR: /__w/framework/framework/alienlegacy_build
+  ALIENLEGACY_INSTALL_DIR: /__w/framework/framework/alienlegacy_install
+  ALIENLEGACY_SOURCE_DIR: /__w/framework/framework/alienlegacy
   # Arcane
   ARCANE_BUILD_DIR: /__w/framework/framework/arcane_build
   ARCANE_INSTALL_DIR: /__w/framework/framework/arcane_install
@@ -36,7 +40,7 @@ env:
   CC_KEY_PREFIX: ifpen-el8-gimkl-2018b
   CCACHE_COMPRESS: true
   CCACHE_COMPRESSLEVEL: 6
-  CCACHE_DIR: '/__w/framework-ci/framework-ci/ccache'
+  CCACHE_DIR: '/__w/framework/framework/ccache'
   CCACHE_MAXSIZE: 5G
   # CMake
   CM_BUILD_OPTS: "-j2"
@@ -304,6 +308,15 @@ jobs:
           name: arcane-build-artifact
           path: arcane-build-artifact.tar
           retention-days: 1
+      - name: Tar install artifact
+        shell: bash
+        run: tar cf arcane-install-artifact.tar ${{ env.ARCANE_INSTALL_DIR }}
+      - name: Upload install artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: arcane-install-artifact
+          path: arcane-install-artifact.tar
+          retention-days: 1
 
   alien-install:
     name: alien-install
@@ -364,6 +377,105 @@ jobs:
         with:
           name: alien-build-artifact
           path: alien-build-artifact.tar
+          retention-days: 1
+      - name: Upload install artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: alien-install-artifact
+          path: alien-install-artifact.tar
+          retention-days: 1
+
+  alienlegacy-install:
+    name: alienlegacy-install
+    needs:
+      - alien-install
+      - arcane-install
+      - arccon-install
+      - arccore-install
+      - axlstar-install
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    container:
+      image: ghcr.io/arcaneframework/rockylinux-gimkl-2018b-alienlegacy:8-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          repository: arcaneframework/alien_legacy_plugins
+          path: ${{ env.ALIENLEGACY_SOURCE_DIR }}
+          ref: main
+          submodules: true
+      - name: Download arcane install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arcane-install-artifact
+      - name: Untar arcane install artifact
+        shell: bash
+        run: tar xf arcane-install-artifact.tar -C /
+      - name: Download arccon install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arccon-install-artifact
+      - name: Untar arccon install artifact
+        shell: bash
+        run: tar xf arccon-install-artifact.tar -C /
+      - name: Download arccore install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arccore-install-artifact
+      - name: Untar arccore install artifact
+        shell: bash
+        run: tar xf arccore-install-artifact.tar -C /
+      - name: Download alien install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: alien-install-artifact
+      - name: Untar alien install artifact
+        shell: bash
+        run: tar xf alien-install-artifact.tar -C /
+      - name: Download axlstar install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: axlstar-install-artifact
+      - name: Untar axlstar install artifact
+        shell: bash
+        run: tar xf axlstar-install-artifact.tar -C /
+      - name: Get date
+        id: get-date
+        shell: bash
+        run: echo "::set-output name=date::$(/bin/date -u '+%Y%m%d%H%M%S')"
+      - name: Get cache for ccache tool
+        uses: actions/cache@v2
+        with:
+          path: ${{env.CCACHE_DIR}}
+          key: ${{ env.CC_KEY_PREFIX }}-alienlegacy-${{ env.CM_BUILD_TYPE }}-${{ steps.get-date.outputs.date }}-${{ github.run_number }}
+          restore-keys: ${{ env.CC_KEY_PREFIX }}-alienlegacy-${{ env.CM_BUILD_TYPE }}-
+      - name: Patch
+        shell: bash
+        run: |
+          cd ${{ env.ALIENLEGACY_SOURCE_DIR }}
+          sed -i '/loadPackage(NAME IFPSolver)/d' cmake/LoadAlienPackages.cmake
+      - name: Configure
+        shell: bash
+        run: |
+          unset CMAKE_LIBRARY_PATH
+          cmake -S ${{ env.ALIENLEGACY_SOURCE_DIR }} -B ${{ env.ALIENLEGACY_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ALIENLEGACY_INSTALL_DIR }} -DBUILD_SHARED_LIBS=ON -DMPI_LIBRARIES="${EBROOTOPENMPI}/lib/libmpi.so" -DMPI_INCLUDE_DIRS="${EBROOTOPENMPI}/include" -DBoost_NO_BOOST_CMAKE=ON -DBoost_FIND_COMPONENTS=OFF -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArccore_DIR=${{ env.ARCCORE_INSTALL_DIR }}/lib/cmake/Arccore -DAxlstar_DIR=${{ env.AXLSTAR_INSTALL_DIR }}/share/cmake/Axlstar -DArcane_DIR=${{ env.ARCANE_INSTALL_DIR }}/lib/cmake/Arcane -DAlien_DIR=${{ env.ALIEN_INSTALL_DIR }}/lib/cmake/Alien -DUSE_BUILDSYSTEM_GIT_SUBMODULE=ON -DALIEN_GENERATE_DOCUMENTATION=ON
+      - name: Build
+        shell: bash
+        run: cmake --build ${{ env.ALIENLEGACY_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
+      - name: Install
+        shell: bash
+        run: cmake --install ${{ env.ALIENLEGACY_BUILD_DIR }}
+      - name: Tar build artifact
+        shell: bash
+        run: tar cf alienlegacy-build-artifact.tar ${{ env.ALIENLEGACY_BUILD_DIR }}
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: alienlegacy-build-artifact
+          path: alienlegacy-build-artifact.tar
           retention-days: 1
 
   arccore-test:
@@ -484,4 +596,64 @@ jobs:
         with:
           name: alien-test-artifact
           path: ${{ env.ALIEN_BUILD_DIR }}/Testing
+          retention-days: 1
+
+  alienlegacy-test:
+    name: alienlegacy-test
+    needs:
+      - arccore-install
+      - arcane-install
+      - alien-install
+      - alienlegacy-install
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    container:
+      image: ghcr.io/arcaneframework/rockylinux-gimkl-2018b-alienlegacy:8-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          repository: arcaneframework/alien_legacy_plugins
+          path: ${{ env.ALIENLEGACY_SOURCE_DIR }}
+          ref: main
+          submodules: true
+      - name: Download alienlegacy build artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: alienlegacy-build-artifact
+      - name: Untar alienlegacy build artifact
+        shell: bash
+        run: tar xf alienlegacy-build-artifact.tar -C /
+      - name: Download alien install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: alien-install-artifact
+      - name: Untar alien install artifact
+        shell: bash
+        run: tar xf alien-install-artifact.tar -C /
+      - name: Download arcane install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arcane-install-artifact
+      - name: Untar arcane install artifact
+        shell: bash
+        run: tar xf arcane-install-artifact.tar -C /
+      - name: Download arccore install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arccore-install-artifact
+      - name: Untar arccore install artifact
+        shell: bash
+        run: tar xf arccore-install-artifact.tar -C /
+      - name: Test
+        shell: bash
+        run: ctest --test-dir ${{ env.ALIENLEGACY_BUILD_DIR }} ${{ env.CT_OPTS }}
+      - name: Upload test artifact
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: alienlegacy-test-artifact
+          path: ${{ env.ALIENLEGACY_BUILD_DIR }}/Testing
           retention-days: 1
