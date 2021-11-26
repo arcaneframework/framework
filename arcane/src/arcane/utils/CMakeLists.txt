@@ -21,8 +21,13 @@ target_link_libraries(arcane_utils PUBLIC $<BUILD_INTERFACE:arcane_build_compile
 target_link_libraries(arcane_utils PUBLIC Arccore::arccore_trace Arccore::arccore_concurrency Arccore::arccore_collections Arccore::arccore_base arccon::Glib)
 
 # ----------------------------------------------------------------------------
-# Indique qu'il faut le C++17.
-target_compile_features(arcane_utils PUBLIC cxx_std_17)
+# Indique qu'il faut le C++17 par défaut ou sinon celui spécifié par
+# Arccore
+if (DEFINED ARCCORE_CXX_STANDARD)
+  target_compile_features(arcane_utils PUBLIC cxx_std_${ARCCORE_CXX_STANDARD})
+else()
+  target_compile_features(arcane_utils PUBLIC cxx_std_17)
+endif()
 
 # ----------------------------------------------------------------------------
 # Regarde si les 'hooks' mémoire de 'malloc.h' de la glibc sous linux
