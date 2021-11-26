@@ -84,8 +84,8 @@ class VariableRefArrayT
  public:
 
   virtual bool isArrayVariable() const { return true; }
-  virtual Integer arraySize() const { return this->size(); }
-  virtual ARCANE_CORE_EXPORT void updateFromInternal();
+  Integer arraySize() const override { return this->size(); }
+  ARCANE_CORE_EXPORT void updateFromInternal() override;
 
  public:
 

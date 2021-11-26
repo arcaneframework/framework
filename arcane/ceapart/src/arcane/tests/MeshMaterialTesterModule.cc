@@ -105,10 +105,10 @@ class MeshMaterialTesterModule
 
  public:
   
-  virtual void buildInit() override;
-  virtual void compute();
-  virtual void startInit();
-  virtual void continueInit();
+  void buildInit() override;
+  void compute() override;
+  void startInit() override;
+  void continueInit() override;
 
  private:
 

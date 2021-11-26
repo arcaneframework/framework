@@ -121,14 +121,11 @@ class Hdf5ReaderWriter
 
  private:
 	
-  ISubDomain* m_sub_domain; //!< Gestionnaire du sous-domaine
   IParallelMng* m_parallel_mng; //!< Gestionnaire du parallélisme;
-  bool m_use_parallel;
   eOpenMode m_open_mode; //!< Mode d'ouverture
   String m_filename; //!< Nom du fichier.
   String m_sub_group_name; //!< Nom du fichier.
   bool m_is_initialized; //!< Vrai si déjà initialisé
-  bool m_do_verif;
 
   Hdf5Utils::StandardTypes m_types;
 

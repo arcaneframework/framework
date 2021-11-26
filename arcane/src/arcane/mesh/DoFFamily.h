@@ -127,7 +127,7 @@ public:
   DoFVectorView addGhostDoFs(Int64ConstArrayView dof_uids, Int32ArrayView dof_lids, Int32ConstArrayView owners);
 
   //! Operation collective
-  void computeSynchronizeInfos();
+  void computeSynchronizeInfos() override;
 
   DoFGroup allDoFs() {return allItems();}
   DoFGroup ownDoFs() {return allItems().own();}
@@ -137,11 +137,11 @@ public:
 
 private:
 
-  void build(); //! Construction de l'item Family. C'est le DoFManager qui en a la responsabilite.
-  void addItems(Int64ConstArrayView unique_ids, Int32ArrayView items);
-  void addGhostItems(Int64ConstArrayView unique_ids, Int32ArrayView items, Int32ConstArrayView owners);
-  void removeItems(Int32ConstArrayView local_ids,bool keep_ghost =false) {internalRemoveItems(local_ids,keep_ghost);};
-  void internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost=false);
+  void build() override; //! Construction de l'item Family. C'est le DoFManager qui en a la responsabilite.
+  void addItems(Int64ConstArrayView unique_ids, Int32ArrayView items) override;
+  void addGhostItems(Int64ConstArrayView unique_ids, Int32ArrayView items, Int32ConstArrayView owners) override;
+  void removeItems(Int32ConstArrayView local_ids,bool keep_ghost =false) override {internalRemoveItems(local_ids,keep_ghost);};
+  void internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost=false) override;
 //  void compactItems(bool do_sort) {m_need_prepare_dump = false;} //! Surcharge ItemFamily::compactItems car pas de compactage pour l'instant dans les DoFs.
 
 

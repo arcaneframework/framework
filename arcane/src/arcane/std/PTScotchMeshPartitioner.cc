@@ -82,8 +82,8 @@ class PTScotchMeshPartitioner
 
  public:
 
-  void partitionMesh(bool initial_partition);
-  void partitionMesh(bool initial_partition,Int32 nb_part);
+  void partitionMesh(bool initial_partition) override;
+  void partitionMesh(bool initial_partition,Int32 nb_part) override;
 
  private:
 

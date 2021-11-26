@@ -162,7 +162,7 @@ class CaseMng
   bool isTreatWarningAsError() const override { return m_treat_warning_as_error; }
 
   void setAllowUnkownRootElelement(bool v) override { m_allow_unknown_root_element = v; }
-  bool isAllowUnkownRootElelement() const { return m_allow_unknown_root_element; }
+  bool isAllowUnkownRootElelement() const override { return m_allow_unknown_root_element; }
 
   IObservable* observable(eCaseMngEventType type) override
   {

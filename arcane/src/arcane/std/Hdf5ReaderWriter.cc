@@ -77,16 +77,13 @@ Hdf5ReaderWriter::
 Hdf5ReaderWriter(ISubDomain* sd,const String& filename,
                  const String& sub_group_name,
                  Integer fileset_size, Integer currentIndex, Integer index_modulo,
-                 eOpenMode open_mode,bool do_verif)
+                 eOpenMode open_mode,[[maybe_unused]] bool do_verif)
 : TraceAccessor(sd->traceMng())
-, m_sub_domain(sd)
 , m_parallel_mng(sd->parallelMng())
-, m_use_parallel(false)
 , m_open_mode(open_mode)
 , m_filename(filename)
 , m_sub_group_name(sub_group_name)
 , m_is_initialized(false)
-, m_do_verif(do_verif)
 , m_io_timer(sd,"Hdf5Timer",Timer::TimerReal)
 , m_is_parallel(false)
 , m_my_rank(m_parallel_mng->commRank())
@@ -779,9 +776,8 @@ class ArcaneHdf5CheckpointService2
   ArcaneHdf5CheckpointService2(const ServiceBuildInfo& sbi)
   : ArcaneHdf5ReaderWriterObject(sbi),
     m_write_index(0),
-    m_writer(0),
-    m_reader(0),
-    m_use_one_file(false),
+    m_writer(nullptr),
+    m_reader(nullptr),
     m_fileset_size(1),
     m_index_modulo(0){}
   
@@ -800,7 +796,6 @@ class ArcaneHdf5CheckpointService2
   Integer m_write_index;
   Hdf5ReaderWriter* m_writer;
   Hdf5ReaderWriter* m_reader;
-  bool m_use_one_file;
   Integer m_fileset_size;
   Integer m_index_modulo;
 

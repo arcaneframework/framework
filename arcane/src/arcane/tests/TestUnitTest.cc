@@ -68,7 +68,7 @@ class TestUnitTest
  public:
 
   // le boulot normal du service
-  Real compute();
+  Real compute() override;
 
  public:
 
