@@ -94,59 +94,59 @@ class ARCANE_UTILS_EXPORT Real3
  public:
  
   //! Construit le vecteur nul.
-  ARCCORE_HOST_DEVICE Real3() { x=0.0; y=0.0; z=0.0; }
+  constexpr ARCCORE_HOST_DEVICE Real3() : Real3POD() { x=0.0; y=0.0; z=0.0; }
   //! Construit le triplet (ax,ay,az)
-  ARCCORE_HOST_DEVICE Real3(Real ax,Real ay,Real az) { x=ax; y=ay; z=az; }
+  constexpr ARCCORE_HOST_DEVICE Real3(Real ax,Real ay,Real az) : Real3POD() { x=ax; y=ay; z=az; }
   //! Construit un triplet identique à \a f
-  ARCCORE_HOST_DEVICE Real3(const Real3& f)	{ x=f.x; y=f.y; z=f.z; }
+  constexpr ARCCORE_HOST_DEVICE Real3(const Real3& f)	: Real3POD() { x=f.x; y=f.y; z=f.z; }
   //! Construit un triplet identique à \a f
-  ARCCORE_HOST_DEVICE explicit Real3(const Real3POD& f) { x=f.x; y=f.y; z=f.z; }
+  constexpr ARCCORE_HOST_DEVICE explicit Real3(const Real3POD& f) : Real3POD() { x=f.x; y=f.y; z=f.z; }
   //! Opérateur de recopie.
-  ARCCORE_HOST_DEVICE const Real3& operator=(Real3 f)
+  constexpr ARCCORE_HOST_DEVICE Real3& operator=(Real3 f)
   {
     x=f.x; y=f.y; z=f.z;
     return (*this);
   }
 
   //! Affecte à l'instance le triplet (v,v,v).
-  ARCCORE_HOST_DEVICE const Real3& operator=(Real v)
+  constexpr ARCCORE_HOST_DEVICE Real3& operator=(Real v)
   {
     x = y = z = v; return (*this);
   }
 
  public:
 
-  ARCCORE_HOST_DEVICE static Real3 null() { return Real3(0.,0.,0.); }
-  ARCCORE_HOST_DEVICE static Real3 zero() { return Real3(0.,0.,0.); }
+  constexpr ARCCORE_HOST_DEVICE static Real3 null() { return Real3(0.,0.,0.); }
+  constexpr ARCCORE_HOST_DEVICE static Real3 zero() { return Real3(0.,0.,0.); }
 
  public:
 
   //! Retourne une copie du triplet.
-  ARCCORE_HOST_DEVICE Real3 copy() const  { return (*this); }
+  constexpr ARCCORE_HOST_DEVICE Real3 copy() const  { return (*this); }
   //! Réinitialise le triplet avec les constructeurs par défaut.
-  ARCCORE_HOST_DEVICE Real3& reset() { x = y = z = 0.; return (*this); }
+  constexpr ARCCORE_HOST_DEVICE Real3& reset() { x = y = z = 0.; return (*this); }
   //! Affecte à l'instance le triplet (ax,ay,az)
-  ARCCORE_HOST_DEVICE Real3& assign(Real ax,Real ay,Real az)
+  constexpr ARCCORE_HOST_DEVICE Real3& assign(Real ax,Real ay,Real az)
   { x = ax; y = ay; z = az; return (*this); }
   //! Copie le triplet \a f
-  ARCCORE_HOST_DEVICE Real3& assign(Real3 f) { x = f.x; y = f.y; z = f.z; return (*this); }
+  constexpr ARCCORE_HOST_DEVICE Real3& assign(Real3 f) { x = f.x; y = f.y; z = f.z; return (*this); }
   /*!
    * \brief Indique si l'instance est proche de l'instance nulle.
    *
    * \retval true si math::isNearlyZero() est vrai pour chaque composante.
    * \retval false sinon.
    */
-  ARCCORE_HOST_DEVICE bool isNearlyZero() const
+  constexpr ARCCORE_HOST_DEVICE bool isNearlyZero() const
   {
     return math::isNearlyZero(x) && math::isNearlyZero(y) && math::isNearlyZero(z);
   }
   //! Retourne la norme L2 du triplet \f$\sqrt{x^2+y^2+z^2}\f$
-  ARCCORE_HOST_DEVICE Real squareNormL2() const { return x*x + y*y + z*z; }
+  constexpr ARCCORE_HOST_DEVICE Real squareNormL2() const { return x*x + y*y + z*z; }
   //! Retourne la norme L2 du triplet \f$\sqrt{x^2+y^2+z^2}\f$
   ARCCORE_HOST_DEVICE Real normL2() const { return _sqrt(squareNormL2()); }
   //! Retourne la norme au carré du triplet \f$x^2+y^2+z^2\f$
   ARCCORE_DEPRECATED_2021("Use squareNormL2() instead")
-  ARCCORE_HOST_DEVICE Real abs2() const { return x*x + y*y + z*z; }
+  constexpr ARCCORE_HOST_DEVICE Real abs2() const { return x*x + y*y + z*z; }
   //! Retourne la norme du triplet \f$\sqrt{x^2+y^2+z^2}\f$
   ARCCORE_DEPRECATED_2021("Use normL2() instead")
   ARCCORE_HOST_DEVICE Real abs() const { return _sqrt(squareNormL2()); }
@@ -164,49 +164,49 @@ class ARCANE_UTILS_EXPORT Real3
   std::ostream& printXyz(std::ostream& o) const;
 
   //! Ajoute \a b au triplet
-  ARCCORE_HOST_DEVICE Real3& add(Real3 b) { x+=b.x; y+=b.y; z+=b.z; return (*this); }
+  constexpr ARCCORE_HOST_DEVICE Real3& add(Real3 b) { x+=b.x; y+=b.y; z+=b.z; return (*this); }
   //! Soustrait \a b au triplet
-  ARCCORE_HOST_DEVICE Real3& sub(Real3 b) { x-=b.x; y-=b.y; z-=b.z; return (*this); }
+  constexpr ARCCORE_HOST_DEVICE Real3& sub(Real3 b) { x-=b.x; y-=b.y; z-=b.z; return (*this); }
   //! Multiple chaque composante du triplet par la composant correspondant de \a b
-  ARCCORE_HOST_DEVICE Real3& mul(Real3 b) { x*=b.x; y*=b.y; z*=b.z; return (*this); }
+  constexpr ARCCORE_HOST_DEVICE Real3& mul(Real3 b) { x*=b.x; y*=b.y; z*=b.z; return (*this); }
   //! Divise chaque composante du triplet par la composant correspondant de \a b
-  ARCCORE_HOST_DEVICE Real3& div(Real3 b) { x/=b.x; y/=b.y; z/=b.z; return (*this); }
+  constexpr ARCCORE_HOST_DEVICE Real3& div(Real3 b) { x/=b.x; y/=b.y; z/=b.z; return (*this); }
   //! Ajoute \a b à chaque composante du triplet
-  ARCCORE_HOST_DEVICE Real3& addSame(Real b) { x+=b; y+=b; z+=b; return (*this); }
+  constexpr ARCCORE_HOST_DEVICE Real3& addSame(Real b) { x+=b; y+=b; z+=b; return (*this); }
   //! Soustrait \a b à chaque composante du triplet
-  ARCCORE_HOST_DEVICE Real3& subSame(Real b) { x-=b; y-=b; z-=b; return (*this); }
+  constexpr ARCCORE_HOST_DEVICE Real3& subSame(Real b) { x-=b; y-=b; z-=b; return (*this); }
   //! Multiplie chaque composante du triplet par \a b
-  ARCCORE_HOST_DEVICE Real3& mulSame(Real b) { x*=b; y*=b; z*=b; return (*this); }
+  constexpr ARCCORE_HOST_DEVICE Real3& mulSame(Real b) { x*=b; y*=b; z*=b; return (*this); }
   //! Divise chaque composante du triplet par \a b
-  ARCCORE_HOST_DEVICE Real3& divSame(Real b) { x/=b; y/=b; z/=b; return (*this); }
+  constexpr ARCCORE_HOST_DEVICE Real3& divSame(Real b) { x/=b; y/=b; z/=b; return (*this); }
   //! Ajoute \a b au triplet.
-  ARCCORE_HOST_DEVICE Real3& operator+= (Real3 b) { return add(b); }
+  constexpr ARCCORE_HOST_DEVICE Real3& operator+= (Real3 b) { return add(b); }
   //! Soustrait \a b au triplet
-  ARCCORE_HOST_DEVICE Real3& operator-= (Real3 b) { return sub(b); }
+  constexpr ARCCORE_HOST_DEVICE Real3& operator-= (Real3 b) { return sub(b); }
   //! Multiple chaque composante du triplet par la composant correspondant de \a b
-  ARCCORE_HOST_DEVICE Real3& operator*= (Real3 b) { return mul(b); }
+  constexpr ARCCORE_HOST_DEVICE Real3& operator*= (Real3 b) { return mul(b); }
   //! Multiple chaque composante du triplet par le réel \a b
-  ARCCORE_HOST_DEVICE void operator*= (Real  b) { x*=b; y*=b; z*=b; }
+  constexpr ARCCORE_HOST_DEVICE void operator*= (Real  b) { x*=b; y*=b; z*=b; }
   //! Divise chaque composante du triplet par la composant correspondant de \a b
-  ARCCORE_HOST_DEVICE Real3& operator/= (Real3 b) { return div(b); }
+  constexpr ARCCORE_HOST_DEVICE Real3& operator/= (Real3 b) { return div(b); }
   //! Divise chaque composante du triplet par le réel \a b
-  ARCCORE_HOST_DEVICE void operator/= (Real  b) { x/=b; y/=b; z/=b; }
+  constexpr ARCCORE_HOST_DEVICE void operator/= (Real  b) { x/=b; y/=b; z/=b; }
   //! Créé un triplet qui vaut ce triplet ajouté à \a b
-  ARCCORE_HOST_DEVICE Real3 operator+  (Real3 b)  const { return Real3(x+b.x,y+b.y,z+b.z); }
+  constexpr ARCCORE_HOST_DEVICE Real3 operator+  (Real3 b)  const { return Real3(x+b.x,y+b.y,z+b.z); }
   //! Créé un triplet qui vaut \a b soustrait de ce triplet
-  ARCCORE_HOST_DEVICE Real3 operator-  (Real3 b)  const { return Real3(x-b.x,y-b.y,z-b.z); }
+  constexpr ARCCORE_HOST_DEVICE Real3 operator-  (Real3 b)  const { return Real3(x-b.x,y-b.y,z-b.z); }
   //! Créé un triplet opposé au triplet actuel
-  ARCCORE_HOST_DEVICE Real3 operator-() const { return Real3(-x,-y,-z); }
+  constexpr ARCCORE_HOST_DEVICE Real3 operator-() const { return Real3(-x,-y,-z); }
   /*!
    * \brief Créé un triplet qui vaut ce triplet dont chaque composant a été
    * multipliée par la composante correspondante de \a b.
    */
-  ARCCORE_HOST_DEVICE Real3 operator*(Real3 b) const { return Real3(x*b.x,y*b.y,z*b.z); }
+  constexpr ARCCORE_HOST_DEVICE Real3 operator*(Real3 b) const { return Real3(x*b.x,y*b.y,z*b.z); }
   /*!
    * \brief Créé un triplet qui vaut ce triplet dont chaque composant a été divisée
    * par la composante correspondante de \a b.
    */
-  ARCCORE_HOST_DEVICE Real3 operator/(Real3 b) const { return Real3(x/b.x,y/b.y,z/b.z); }
+  constexpr ARCCORE_HOST_DEVICE Real3 operator/(Real3 b) const { return Real3(x/b.x,y/b.y,z/b.z); }
 										
   /*!
    * \brief Normalise le triplet.
@@ -229,7 +229,7 @@ class ARCANE_UTILS_EXPORT Real3
    * \retval true si this.x==b.x et this.y==b.y et this.z==b.z.
    * \retval false sinon.
    */
-  ARCCORE_HOST_DEVICE bool operator==(Real3 b) const
+  constexpr ARCCORE_HOST_DEVICE bool operator==(Real3 b) const
   {
     return _eq(x,b.x) &&  _eq(y,b.y) && _eq(z,b.z);
   }
@@ -239,7 +239,7 @@ class ARCANE_UTILS_EXPORT Real3
    * \retval true si les deux triplets sont différents,
    * \retval false sinon.
    */
-  ARCCORE_HOST_DEVICE bool operator!=(Real3 b) const { return !operator==(b); }
+  constexpr ARCCORE_HOST_DEVICE bool operator!=(Real3 b) const { return !operator==(b); }
 
  private:
 
@@ -248,7 +248,7 @@ class ARCANE_UTILS_EXPORT Real3
    * \retval true si \a a et \a b sont égaux,
    * \retval false sinon.
    */
-  ARCCORE_HOST_DEVICE static bool _eq(Real a,Real b)
+  constexpr ARCCORE_HOST_DEVICE static bool _eq(Real a,Real b)
   {
     return math::isEqual(a,b);
   }
@@ -264,7 +264,8 @@ class ARCANE_UTILS_EXPORT Real3
 /*!
  * \brief Multiplication par un scalaire.
  */
-ARCCORE_HOST_DEVICE inline Real3 operator*(Real sca,Real3 vec)
+constexpr ARCCORE_HOST_DEVICE inline Real3
+operator*(Real sca,Real3 vec)
 {
   return Real3(vec.x*sca,vec.y*sca,vec.z*sca);
 }
@@ -274,7 +275,7 @@ ARCCORE_HOST_DEVICE inline Real3 operator*(Real sca,Real3 vec)
 /*!
  * \brief Multiplication par un scalaire.
  */
-ARCCORE_HOST_DEVICE inline Real3
+constexpr ARCCORE_HOST_DEVICE inline Real3
 operator*(Real3 vec,Real sca)
 {
   return Real3(vec.x*sca,vec.y*sca,vec.z*sca);
@@ -285,7 +286,7 @@ operator*(Real3 vec,Real sca)
 /*!
  * \brief Division par un scalaire.
  */
-ARCCORE_HOST_DEVICE inline Real3
+constexpr ARCCORE_HOST_DEVICE inline Real3
 operator/(Real3 vec,Real sca)
 {
   return Real3(vec.x/sca,vec.y/sca,vec.z/sca);
@@ -299,7 +300,7 @@ operator/(Real3 vec,Real sca)
  * Cet opérateur permet de trier les Real3 pour les utiliser par exemple
  * dans les std::set
  */
-ARCCORE_HOST_DEVICE inline bool
+constexpr ARCCORE_HOST_DEVICE inline bool
 operator<(Real3 v1,Real3 v2)
 {
   if (v1.x==v2.x){
