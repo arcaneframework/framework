@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Real3x3.h                                                   (C) 2000-2018 */
+/* Real3x3.h                                                   (C) 2000-2021 */
 /*                                                                           */
 /* Matrice 3x3 de 'Real'.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -19,7 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -63,11 +64,11 @@ class ARCANE_UTILS_EXPORT Real3x3
  public:
  
   //! Construit la matrice avec tous les coefficiants nuls.
-  Real3x3()
+  constexpr ARCCORE_HOST_DEVICE Real3x3()
   : x(Real3::zero()), y(Real3::zero()), z(Real3::zero()) {}
 
   //! Construit la matrice avec les lignes (ax,ay,az)
-  Real3x3(Real3 ax,Real3 ay,Real3 az)
+  constexpr ARCCORE_HOST_DEVICE Real3x3(Real3 ax,Real3 ay,Real3 az)
   : x(ax), y(ay), z(az) {}
 
   /*!
@@ -77,16 +78,16 @@ class ARCANE_UTILS_EXPORT Real3x3
   ARCANE_DEPRECATED_116 Real3x3(Real ax,Real ay,Real az,Real bx,Real by,Real bz,Real cx,Real cy,Real cz)
   : x(ax,bx,cx), y(ay,by,cy), z(az,bz,cz) {}
   //! Construit un triplet identique à \a f
-  Real3x3(const Real3x3& f)
+  constexpr ARCCORE_HOST_DEVICE Real3x3(const Real3x3& f)
   : x(f.x), y(f.y), z(f.z) {}
   //! Construit un triplet identique à \a f
-  explicit Real3x3(const Real3x3POD& f)
+  constexpr ARCCORE_HOST_DEVICE explicit Real3x3(const Real3x3POD& f)
   : x(f.x), y(f.y), z(f.z) {}
   //! Opérateur de recopie
-  const Real3x3&  operator=(Real3x3 f)
+  constexpr ARCCORE_HOST_DEVICE Real3x3&  operator=(Real3x3 f)
     { x=f.x; y=f.y; z=f.z; return (*this); }
   //! Affecte à l'instance le triplet (v,v,v).
-  const Real3x3&  operator= (Real v)
+  constexpr ARCCORE_HOST_DEVICE Real3x3&  operator= (Real v)
     { x = y = z = v; return (*this); }
 
  public:
@@ -98,39 +99,39 @@ class ARCANE_UTILS_EXPORT Real3x3
  public:
 
   //! Construit le tenseur nul.
-  static Real3x3 null() { return Real3x3(); }
+  constexpr ARCCORE_HOST_DEVICE static Real3x3 null() { return Real3x3(); }
 
   //! Construit la matrice nulle
-  static Real3x3 zero() { return Real3x3(); }
+  constexpr ARCCORE_HOST_DEVICE static Real3x3 zero() { return Real3x3(); }
 
   //! Construit la matrice identité
-  static Real3x3 identity() { return Real3x3(Real3(1.0,0.0,0.0),Real3(0.0,1.0,0.0),Real3(0.0,0.0,1.0)); }
+  constexpr ARCCORE_HOST_DEVICE static Real3x3 identity() { return Real3x3(Real3(1.0,0.0,0.0),Real3(0.0,1.0,0.0),Real3(0.0,0.0,1.0)); }
 
   //! Construit la matrice ((ax,bx,cx),(ay,by,cy),(az,bz,cz)).
-  static Real3x3 fromColumns(Real ax,Real ay,Real az,Real bx,Real by,Real bz,Real cx,Real cy,Real cz)
+  constexpr ARCCORE_HOST_DEVICE static Real3x3 fromColumns(Real ax,Real ay,Real az,Real bx,Real by,Real bz,Real cx,Real cy,Real cz)
   {
     return Real3x3(Real3(ax,bx,cx),Real3(ay,by,cy),Real3(az,bz,cz));
   }
 
   //! Construit la matrice ((ax,bx,cx),(ay,by,cy),(az,bz,cz)).
-  static Real3x3 fromLines(Real ax,Real bx,Real cx,Real ay,Real by,Real cy,Real az,Real bz,Real cz)
+  constexpr ARCCORE_HOST_DEVICE static Real3x3 fromLines(Real ax,Real bx,Real cx,Real ay,Real by,Real cy,Real az,Real bz,Real cz)
   {
     return Real3x3(Real3(ax,bx,cx),Real3(ay,by,cy),Real3(az,bz,cz));
   }
  public:
 
   //! Retourne une copie de la matrice
-  Real3x3 copy() const { return (*this); }
+  constexpr ARCCORE_HOST_DEVICE Real3x3 copy() const { return (*this); }
 
   //! Remet à zéro les coefficients de la matrice.
-  Real3x3& reset() { *this = zero(); return (*this); }
+  constexpr ARCCORE_HOST_DEVICE Real3x3& reset() { *this = zero(); return (*this); }
 
   //! Affecte à l'instance les lignes (ax,ay,az)
-  Real3x3& assign (Real3 ax,Real3 ay,Real3 az)
+  constexpr ARCCORE_HOST_DEVICE Real3x3& assign (Real3 ax,Real3 ay,Real3 az)
   { x = ax; y = ay; z = az; return (*this); }
 
   //! Copie la matrice \a f
-  Real3x3& assign (Real3x3 f)
+  constexpr ARCCORE_HOST_DEVICE Real3x3& assign (Real3x3 f)
   { x = f.x; y = f.y; z = f.z; return (*this); }
 
   /*!
@@ -144,7 +145,7 @@ class ARCANE_UTILS_EXPORT Real3x3
    * \retval true si la matrice est égale à la matrice nulle,
    * \retval false sinon.
    */
-  bool isNearlyZero() const
+  constexpr ARCCORE_HOST_DEVICE bool isNearlyZero() const
     { return x.isNearlyZero() && y.isNearlyZero() && z.isNearlyZero(); }
 
   /*!
@@ -158,27 +159,27 @@ class ARCANE_UTILS_EXPORT Real3x3
   std::ostream& printXyz(std::ostream& o) const;
 
   //! Ajoute \a b au triplet
-  Real3x3& add(Real3x3 b) { x+=b.x; y+=b.y; z+=b.z; return (*this); }
+  constexpr ARCCORE_HOST_DEVICE Real3x3& add(Real3x3 b) { x+=b.x; y+=b.y; z+=b.z; return (*this); }
   //! Soustrait \a b au triplet
-  Real3x3& sub(Real3x3 b) { x-=b.x; y-=b.y; z-=b.z; return (*this); }
+  constexpr ARCCORE_HOST_DEVICE Real3x3& sub(Real3x3 b) { x-=b.x; y-=b.y; z-=b.z; return (*this); }
   //! Ajoute \a b à chaque composante du triplet
-  Real3x3& addSame(Real3 b) { x+=b; y+=b; z+=b; return (*this); }
+  constexpr ARCCORE_HOST_DEVICE Real3x3& addSame(Real3 b) { x+=b; y+=b; z+=b; return (*this); }
   //! Soustrait \a b à chaque composante du triplet
-  Real3x3& subSame(Real3 b) { x-=b; y-=b; z-=b; return (*this); }
+  constexpr ARCCORE_HOST_DEVICE Real3x3& subSame(Real3 b) { x-=b; y-=b; z-=b; return (*this); }
   //! Ajoute \a b au triplet.
-  Real3x3& operator+= (Real3x3 b) { return add(b); }
+  constexpr ARCCORE_HOST_DEVICE Real3x3& operator+= (Real3x3 b) { return add(b); }
   //! Soustrait \a b au triplet
-  Real3x3& operator-= (Real3x3 b) { return sub(b); }
+  constexpr ARCCORE_HOST_DEVICE Real3x3& operator-= (Real3x3 b) { return sub(b); }
   //! Multiple chaque composante de la matrice par le réel \a b
-  void operator*= (Real b) { x*=b; y*=b; z*=b; }
+  constexpr ARCCORE_HOST_DEVICE void operator*= (Real b) { x*=b; y*=b; z*=b; }
   //! Divise chaque composante de la matrice par le réel \a b
-  void operator/= (Real b) { x/=b; y/=b; z/=b; }
+  constexpr ARCCORE_HOST_DEVICE void operator/= (Real b) { x/=b; y/=b; z/=b; }
   //! Créé un triplet qui vaut ce triplet ajouté à \a b
-  Real3x3 operator+(Real3x3 b)  const { return Real3x3(x+b.x,y+b.y,z+b.z); }
+  constexpr ARCCORE_HOST_DEVICE Real3x3 operator+(Real3x3 b)  const { return Real3x3(x+b.x,y+b.y,z+b.z); }
   //! Créé un triplet qui vaut \a b soustrait de ce triplet
-  Real3x3 operator-(Real3x3 b)  const { return Real3x3(x-b.x,y-b.y,z-b.z); }
+  constexpr ARCCORE_HOST_DEVICE Real3x3 operator-(Real3x3 b)  const { return Real3x3(x-b.x,y-b.y,z-b.z); }
   //! Créé un tenseur opposé au tenseur actuel
-  Real3x3 operator-() const { return Real3x3(-x,-y,-z); }
+  constexpr ARCCORE_HOST_DEVICE Real3x3 operator-() const { return Real3x3(-x,-y,-z); }
 
   /*!
    * \brief Compare composant pas composante l'instance courante à \a b.
@@ -186,7 +187,7 @@ class ARCANE_UTILS_EXPORT Real3x3
    * \retval true si this.x==b.x et this.y==b.y et this.z==b.z.
    * \retval false sinon.
    */
-  bool operator==(Real3x3 b) const
+  constexpr ARCCORE_HOST_DEVICE bool operator==(Real3x3 b) const
   {
     return  x==b.x && y==b.y && z==b.z;
   }
@@ -197,16 +198,16 @@ class ARCANE_UTILS_EXPORT Real3x3
    * \retval true si les deux triplets sont différents,
    * \retval false sinon.
    */
-  bool operator!=(Real3x3 b) const
+  constexpr ARCCORE_HOST_DEVICE bool operator!=(Real3x3 b) const
     { return !operator==(b); }
 
   /** 
    * Accès en lecture seule à la @a i-ème (entre 0 et 3 inclus) ligne de l'instance.
    * \param i numéro de la ligne à retourner
    */
-  Real3 operator[](Integer i) const
+  ARCCORE_HOST_DEVICE Real3 operator[](Integer i) const
   {
-    ARCANE_ASSERT(((i>=0)&&(i<3)),("Trying to use an index different than 0, 1 or 2 on a Real3x3"));
+    ARCCORE_CHECK_AT(i,3);
     return (&x)[i];
   }
 
@@ -214,14 +215,14 @@ class ARCANE_UTILS_EXPORT Real3x3
    * Accès à la @a i-ème ligne (entre 0 et 3 inclus) de l'instance.
    * \param i numéro de la ligne à retourner
    */
-  Real3& operator[](Integer i)
+  ARCCORE_HOST_DEVICE Real3& operator[](Integer i)
   {
-    ARCANE_ASSERT(((i>=0)&&(i<3)),("Trying to use an index different than 0, 1 or 2 on a Real3x3"));
+    ARCCORE_CHECK_AT(i,3);
     return (&x)[i];
   }
 
   //! Déterminant de la matrice
-  Real determinant() const
+  constexpr ARCCORE_HOST_DEVICE Real determinant() const
   {
     return (x.x * (y.y * z.z - y.z * z.y)
             + x.y * (y.z * z.x - y.x * z.z)
@@ -235,7 +236,7 @@ class ARCANE_UTILS_EXPORT Real3x3
    * \retval true si \a a et \a b sont égaux,
    * \retval false sinon.
    */
-  static bool _eq(Real a,Real b)
+  constexpr ARCCORE_HOST_DEVICE static bool _eq(Real a,Real b)
     { return TypeEqualT<Real>::isEqual(a,b); }
 };
 
@@ -263,7 +264,7 @@ operator>> (std::istream& i,Real3x3& t)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*! \brief Multiplication par un scalaire. */
-inline Real3x3
+constexpr ARCCORE_HOST_DEVICE inline Real3x3
 operator*(Real sca,Real3x3 vec)
 {
   return Real3x3(vec.x*sca,vec.y*sca,vec.z*sca);
@@ -272,7 +273,7 @@ operator*(Real sca,Real3x3 vec)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*! \brief Multiplication par un scalaire. */
-inline Real3x3
+constexpr ARCCORE_HOST_DEVICE inline Real3x3
 operator*(Real3x3 vec,Real sca)
 {
   return Real3x3(vec.x*sca,vec.y*sca,vec.z*sca);
@@ -281,7 +282,7 @@ operator*(Real3x3 vec,Real sca)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*! \brief Division par un scalaire. */
-inline Real3x3
+constexpr ARCCORE_HOST_DEVICE inline Real3x3
 operator/(Real3x3 vec,Real sca)
 {
   return Real3x3(vec.x/sca,vec.y/sca,vec.z/sca);
@@ -295,7 +296,7 @@ operator/(Real3x3 vec,Real sca)
  * Cet opérateur permet de trier les Real3 pour les utiliser par exemple
  * dans les std::set
  */
-inline bool
+constexpr ARCCORE_HOST_DEVICE inline bool
 operator<(Real3x3 v1,Real3x3 v2)
 {
   if (v1.x==v2.x){
@@ -310,7 +311,7 @@ operator<(Real3x3 v1,Real3x3 v2)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -358,6 +358,8 @@ class DataTypeTraitsT<Real2>
 
   static constexpr bool HasComponentX() { return true; }
   static constexpr bool HasComponentY() { return true; }
+
+  using ComponentType = Real;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -401,6 +403,8 @@ class DataTypeTraitsT<Real3>
   static constexpr bool HasComponentX() { return true; }
   static constexpr bool HasComponentY() { return true; }
   static constexpr bool HasComponentZ() { return true; }
+
+  using ComponentType = Real;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -440,6 +444,16 @@ class DataTypeTraitsT<Real2x2>
 
   //! Valeur par défaut.
   static ARCANE_CORE_EXPORT Type defaultValue();
+
+  static constexpr bool HasComponentXX() { return true; }
+  static constexpr bool HasComponentYX() { return true; }
+  static constexpr bool HasComponentXY() { return true; }
+  static constexpr bool HasComponentYY() { return true; }
+
+  static constexpr bool HasComponentX() { return true; }
+  static constexpr bool HasComponentY() { return true; }
+
+  using ComponentType = Real2;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -479,6 +493,22 @@ class DataTypeTraitsT<Real3x3>
 
   //! Valeur par défaut.
   static ARCANE_CORE_EXPORT Type defaultValue();
+
+  static constexpr bool HasComponentXX() { return true; }
+  static constexpr bool HasComponentYX() { return true; }
+  static constexpr bool HasComponentZX() { return true; }
+  static constexpr bool HasComponentXY() { return true; }
+  static constexpr bool HasComponentYY() { return true; }
+  static constexpr bool HasComponentZY() { return true; }
+  static constexpr bool HasComponentXZ() { return true; }
+  static constexpr bool HasComponentYZ() { return true; }
+  static constexpr bool HasComponentZZ() { return true; }
+
+  static constexpr bool HasComponentX() { return true; }
+  static constexpr bool HasComponentY() { return true; }
+  static constexpr bool HasComponentZ() { return true; }
+
+  using ComponentType = Real3;
 };
 
 /*---------------------------------------------------------------------------*/

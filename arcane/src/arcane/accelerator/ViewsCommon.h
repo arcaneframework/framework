@@ -101,22 +101,71 @@ class DataViewSetter
     *m_ptr = (*m_ptr) + v;
   }
  public:
-  // TODO: étendre ces concepts à Real3x3 et Real2x2
+
   template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentX()> >
-  ARCCORE_HOST_DEVICE void setX(Real value)
+  ARCCORE_HOST_DEVICE void setX(typename DataTypeTraitsT<X>::ComponentType value)
   {
     m_ptr->x = value;
   }
   template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentY()> >
-  ARCCORE_HOST_DEVICE void setY(Real value)
+  ARCCORE_HOST_DEVICE void setY(typename DataTypeTraitsT<X>::ComponentType value)
   {
     m_ptr->y = value;
   }
   template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentZ()> >
-  ARCCORE_HOST_DEVICE void setZ(Real value)
+  ARCCORE_HOST_DEVICE void setZ(typename DataTypeTraitsT<X>::ComponentType value)
   {
     m_ptr->z = value;
   }
+
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentXX()> >
+  ARCCORE_HOST_DEVICE void setXX(Real value)
+  {
+    m_ptr->x.x = value;
+  }
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentYX()> >
+  ARCCORE_HOST_DEVICE void setYX(Real value)
+  {
+    m_ptr->y.x = value;
+  }
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentZX()> >
+  ARCCORE_HOST_DEVICE void setZX(Real value)
+  {
+    m_ptr->z.x = value;
+  }
+
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentXY()> >
+  ARCCORE_HOST_DEVICE void setXY(Real value)
+  {
+    m_ptr->x.y = value;
+  }
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentYY()> >
+  ARCCORE_HOST_DEVICE void setYY(Real value)
+  {
+    m_ptr->y.y = value;
+  }
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentZY()> >
+  ARCCORE_HOST_DEVICE void setZY(Real value)
+  {
+    m_ptr->z.y = value;
+  }
+
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentXZ()> >
+  ARCCORE_HOST_DEVICE void setXZ(Real value)
+  {
+    m_ptr->x.z = value;
+  }
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentYZ()> >
+  ARCCORE_HOST_DEVICE void setYZ(Real value)
+  {
+    m_ptr->y.z = value;
+  }
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentZZ()> >
+  ARCCORE_HOST_DEVICE void setZZ(Real value)
+  {
+    m_ptr->z.z = value;
+  }
+
  private:
   DataType* m_ptr;
 };
