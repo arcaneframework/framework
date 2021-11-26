@@ -126,7 +126,6 @@ TEST(ReferenceCounter, Misc)
 // Teste si le compteur de référence détruit bien l'instance.
 TEST(ReferenceCounter, Ref)
 {
-  typedef Ref<Simple1> RefSimple1;
   {
     StatInfo stat_info;
     _doTest1(makeRef(new Simple1(&stat_info)));

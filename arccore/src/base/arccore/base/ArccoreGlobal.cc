@@ -202,7 +202,6 @@ typedef void (*fDoAssert)(const char*,const char*,const char*,size_t);
 typedef bool (*fCheckDebug)(unsigned int);
 
 static fDoAssert g_do_assert_func = 0;
-static fCheckDebug  g_check_debug_func = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
