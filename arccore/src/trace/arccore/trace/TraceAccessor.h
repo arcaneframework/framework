@@ -17,7 +17,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TraceAccessor.h                                             (C) 2000-2018 */
+/* TraceAccessor.h                                             (C) 2000-2021 */
 /*                                                                           */
 /* Accès aux traces.                                                         */
 /*---------------------------------------------------------------------------*/
@@ -150,6 +150,8 @@ class ARCCORE_TRACE_EXPORT TraceAccessor
   {
     return info(m_local_verbose_level+relative_level);
   }
+
+  void fatalMessage [[noreturn]] (const StandaloneTraceMessage& o) const;
 
  protected:
   

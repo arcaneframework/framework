@@ -17,7 +17,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TraceMng.cc                                                 (C) 2000-2019 */
+/* TraceMng.cc                                                 (C) 2000-2021 */
 /*                                                                           */
 /* Gestionnaire des traces.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -25,6 +25,7 @@
 
 #include "arccore/trace/ITraceMng.h"
 #include "arccore/trace/TraceClassConfig.h"
+#include "arccore/trace/StandaloneTraceMessage.h"
 
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/NotSupportedException.h"
@@ -1350,6 +1351,16 @@ removeListener(ITraceMessageListener* v)
   if (!m_listeners)
     return;
   m_listeners->erase(v);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ITraceMng::
+fatalMessage(const StandaloneTraceMessage& o)
+{
+  fatal() << o.value();
+  ARCCORE_FATAL("Should not reach this line");
 }
 
 /*---------------------------------------------------------------------------*/

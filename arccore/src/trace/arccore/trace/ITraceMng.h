@@ -17,7 +17,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ITraceMng.h                                                 (C) 2000-2020 */
+/* ITraceMng.h                                                 (C) 2000-2021 */
 /*                                                                           */
 /* Gestionnaire des traces.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -30,6 +30,8 @@
 #include "arccore/base/BaseTypes.h"
 #include "arccore/trace/TraceMessage.h"
 #include "arccore/base/RefDeclarations.h"
+
+#include <sstream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -383,6 +385,30 @@ class ARCCORE_TRACE_EXPORT ITraceMng
    * un appel à setClassConfig().
    */
   virtual void visitClassConfigs(IFunctorWithArgumentT<std::pair<String,TraceClassConfig>>* functor) =0;
+
+
+ public:
+
+  /*!
+   * \brief Effectue un fatal() sur un message déjà fabriqué.
+   *
+   * Cette méthode permet d'écrire un code équivalent à:
+   *
+   * \code
+   * fatal() << "MyMessage";
+   * \endcode
+   *
+   * comme ceci:
+   *
+   * \code
+   * fatalMessage(StandaloneTraceMessage{} << "MyMessage");
+   * \endcode
+   *
+   * Cette deuxième solution permet de signaler au compilateur que
+   * la méthode ne retournera pas et ainsi d'éviter certains avertissements
+   * de compilation.
+   */
+  void fatalMessage [[noreturn]] (const StandaloneTraceMessage& o);
 };
 
 /*---------------------------------------------------------------------------*/
