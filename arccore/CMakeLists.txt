@@ -78,6 +78,11 @@ else()
   message(FATAL_ERROR "Invalid value '${ARCCORE_BUILD_TYPE}' for 'ARCCORE_BUILD_TYPE'. Valid values are 'Debug', 'Check' or 'Release'")
 endif()
 
+# S'assure que le mode debug contient le mode check
+if(ARCCORE_DEBUG)
+  set(ARCCORE_CHECK YES)
+endif(ARCCORE_DEBUG)
+
 set(ARCCORE_BUILD_MODE ${ARCCORE_BUILD_MODE} CACHE STRING "Arccore build type (debug,check,release)" FORCE)
 set(ARCCORE_DEBUG ${ARCCORE_DEBUG} CACHE BOOL "Is Arccore in debug mode ?" FORCE)
 set(ARCCORE_CHECK ${ARCCORE_CHECK} CACHE BOOL "Is Arccore in check mode ?" FORCE)
