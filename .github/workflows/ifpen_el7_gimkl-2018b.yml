@@ -459,16 +459,9 @@ jobs:
           path: ${{env.CCACHE_DIR}}
           key: ${{ env.CC_KEY_PREFIX }}-alienlegacy-${{ env.CM_BUILD_TYPE }}-${{ steps.get-date.outputs.date }}-${{ github.run_number }}
           restore-keys: ${{ env.CC_KEY_PREFIX }}-alienlegacy-${{ env.CM_BUILD_TYPE }}-
-      - name: Patch
-        shell: bash
-        run: |
-          cd ${{ env.ALIENLEGACY_SOURCE_DIR }}
-          sed -i '/loadPackage(NAME IFPSolver)/d' cmake/LoadAlienPackages.cmake
       - name: Configure
         shell: bash
-        run: |
-          unset CMAKE_LIBRARY_PATH
-          cmake -S ${{ env.ALIENLEGACY_SOURCE_DIR }} -B ${{ env.ALIENLEGACY_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ALIENLEGACY_INSTALL_DIR }} -DBUILD_SHARED_LIBS=ON -DMPI_LIBRARIES="${EBROOTOPENMPI}/lib/libmpi.so" -DMPI_INCLUDE_DIRS="${EBROOTOPENMPI}/include" -DBoost_NO_BOOST_CMAKE=ON -DBoost_FIND_COMPONENTS=OFF -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArccore_DIR=${{ env.ARCCORE_INSTALL_DIR }}/lib/cmake/Arccore -DAxlstar_DIR=${{ env.AXLSTAR_INSTALL_DIR }}/share/cmake/Axlstar -DArcane_DIR=${{ env.ARCANE_INSTALL_DIR }}/lib/cmake/Arcane -DAlien_DIR=${{ env.ALIEN_INSTALL_DIR }}/lib/cmake/Alien -DUSE_BUILDSYSTEM_GIT_SUBMODULE=ON -DALIEN_GENERATE_DOCUMENTATION=ON
+        run: cmake -S ${{ env.ALIENLEGACY_SOURCE_DIR }} -B ${{ env.ALIENLEGACY_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ALIENLEGACY_INSTALL_DIR }} -DBUILD_SHARED_LIBS=ON -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArccore_DIR=${{ env.ARCCORE_INSTALL_DIR }}/lib/cmake/Arccore -DAxlstar_DIR=${{ env.AXLSTAR_INSTALL_DIR }}/share/cmake/Axlstar -DArcane_DIR=${{ env.ARCANE_INSTALL_DIR }}/lib/cmake/Arcane -DAlien_DIR=${{ env.ALIEN_INSTALL_DIR }}/lib/cmake/Alien -DUSE_BUILDSYSTEM_GIT_SUBMODULE=ON -DALIEN_GENERATE_DOCUMENTATION=ON
       - name: Build
         shell: bash
         run: cmake --build ${{ env.ALIENLEGACY_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
@@ -557,7 +550,7 @@ jobs:
         run: tar xf axlstar-install-artifact.tar -C /
       - name: Test
         shell: bash
-        run: ctest --test-dir ${{ env.ARCANE_BUILD_DIR }} ${{ env.CT_OPTS }}
+        run: ctest --test-dir ${{ env.ARCANE_BUILD_DIR }} ${{ env.CT_OPTS }} -E '^hydro5_4proc_3sd_4proc$'
       - name: Upload test artifact
         uses: actions/upload-artifact@v2
         if: failure()
