@@ -11,8 +11,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-
 #include "arcane/utils/Iterator.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/ScopedPtr.h"
@@ -27,6 +25,7 @@
 #include "arcane/Item.h"
 #include "arcane/MeshVariable.h"
 #include "arcane/IParticleFamily.h"
+#include "arcane/ParallelMngUtils.h"
 
 #include "arcane/ConnectivityItemVector.h"
 #include "arcane/IndexedItemConnectivityView.h"
@@ -395,7 +394,7 @@ _computeMeshConnectivityInfos(Int32ConstArrayView cells_new_owner)
 void MeshExchange::
 _exchangeCellDataInfos([[maybe_unused]] Int32ConstArrayView cells_new_owner,bool use_active_cells)
 {
-  ScopedPtrT<IParallelExchanger> sd_exchange(m_parallel_mng->createExchanger());
+  auto sd_exchange { ParallelMngUtils::createExchangerRef(m_parallel_mng) };
 
   Int32UniqueArray recv_sub_domains;
   m_cell_family->getCommunicatingSubDomains(recv_sub_domains);
@@ -1109,7 +1108,7 @@ void MeshExchange::
 _exchangeCellDataInfos3()
 {
   // Graph connectivity taken into account thanks to the call to _addGraphConnectivityToNewConnectivityInfo
-  ScopedPtrT<IParallelExchanger> sd_exchange(m_parallel_mng->createExchanger());
+  auto sd_exchange { ParallelMngUtils::createExchangerRef(m_parallel_mng) };
 
   Int32UniqueArray recv_sub_domains;
   m_cell_family->getCommunicatingSubDomains(recv_sub_domains);
@@ -1498,7 +1497,7 @@ _exchangeGhostItemDataInfos()
    */
 
   // Graph connectivity taken into account thanks to the call to _addGraphConnectivityToNewConnectivityInfo
-  ScopedPtrT<IParallelExchanger> sd_exchange(m_parallel_mng->createExchanger());
+  auto sd_exchange { ParallelMngUtils::createExchangerRef(m_parallel_mng) };
 
   Int32UniqueArray recv_sub_domains;
   m_cell_family->getCommunicatingSubDomains(recv_sub_domains);

@@ -36,6 +36,7 @@
 #include "arcane/ISerializeMessageList.h"
 #include "arcane/IParallelTopology.h"
 #include "arcane/IParallelNonBlockingCollective.h"
+#include "arcane/ParallelMngUtils.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 
@@ -919,7 +920,8 @@ _testProcessMessages()
   Int32 nb_rank = pm->commSize();
   ITraceMng* tm = pm->traceMng();
 
-  ScopedPtrT<IParallelExchanger> exchanger(pm->createExchanger());
+  auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
+
   Int32 nb_send = nb_rank;
   for( Int32 i=0; i<nb_send; ++i ){
     exchanger->addSender(i);
@@ -1065,7 +1067,7 @@ _testStandardCalls()
 void ParallelMngTest::
 _testTopology()
 {
-  ScopedPtrT<IParallelTopology> pt(m_parallel_mng->createTopology());
+  auto pt { ParallelMngUtils::createTopologyRef(m_parallel_mng) };
   ITraceMng* tm = m_parallel_mng->traceMng();
   
   Int32ConstArrayView master_machine_ranks = pt->masterMachineRanks();

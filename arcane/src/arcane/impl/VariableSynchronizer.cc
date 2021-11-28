@@ -39,6 +39,7 @@
 #include "arcane/ISerializer.h"
 #include "arcane/ISerializeMessage.h"
 #include "arcane/Timer.h"
+#include "arcane/ParallelMngUtils.h"
 #include "arcane/parallel/IStat.h"
 
 #include <algorithm>
@@ -296,7 +297,7 @@ class VariableSynchronizerMultiDispatcher
 
   void synchronize(VariableCollection vars,ConstArrayView<VariableSyncInfo> sync_infos)
   {
-    ScopedPtrT<IParallelExchanger> exchanger(m_parallel_mng->createExchanger());
+    Ref<IParallelExchanger> exchanger{ParallelMngUtils::createExchangerRef(m_parallel_mng)};
     Integer nb_rank = sync_infos.size();
     Int32UniqueArray recv_ranks(nb_rank);
     for( Integer i=0; i<nb_rank; ++i ){

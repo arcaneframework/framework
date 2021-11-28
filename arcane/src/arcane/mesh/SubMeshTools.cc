@@ -27,6 +27,7 @@
 #include "arcane/ItemPrinter.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/TemporaryVariableBuildInfo.h"
+#include "arcane/ParallelMngUtils.h"
 
 // Inlcudes spécifiques à l'implémentation à base de DynamicMesh
 #include "arcane/mesh/DynamicMesh.h"
@@ -336,7 +337,7 @@ updateGhostFamily(IItemFamily * family)
 
   debug(Trace::High) << "Process ghost on submesh " << m_mesh->name() << " with kind=" << kind;
 
-  ScopedPtrT<IParallelExchanger> exchanger(m_parallel_mng->createExchanger());
+  auto exchanger { ParallelMngUtils::createExchangerRef(m_parallel_mng) };
   IVariableSynchronizer * synchronizer = parent_family->allItemsSynchronizer();
   Int32ConstArrayView ranks = synchronizer->communicatingRanks();
   std::map<Integer, SharedArray<Int64> > to_send_items;
