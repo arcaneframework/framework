@@ -52,6 +52,8 @@ set( ARCANE_SOURCES
   NullVariableSynchronizer.cc
   ParallelExchanger.cc
   ParallelExchanger.h
+  ParallelMngUtilsFactoryBase.cc
+  ParallelMngUtilsFactoryBase.h
   ParallelReplication.cc
   ParallelReplication.h
   ParallelTopology.cc

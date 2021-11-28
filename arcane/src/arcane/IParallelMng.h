@@ -1102,7 +1102,6 @@ class ARCANE_CORE_EXPORT IParallelMng
    *
    * L'instance retournée doit être détruite par l'opérateur delete.
    */
-
   virtual IGetVariablesValuesParallelOperation* createGetVariablesValuesOperation() =0;
 
   /*!
@@ -1202,8 +1201,13 @@ class ARCANE_CORE_EXPORT IParallelMng
 
   //! Gestionnaire de message de %Arccore associé
   virtual IMessagePassingMng* messagePassingMng() const =0;
-};
 
+  /*!
+   * \internal
+   * \brief Fabrique des fonctions utilitaires.
+   */
+  virtual Ref<IParallelMngUtilsFactory> _internalUtilsFactory() const =0;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

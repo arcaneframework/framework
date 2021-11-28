@@ -33,6 +33,7 @@ namespace Arcane
 class IParallelMng;
 class IParallelMngContainer;
 class IParallelMngContainerFactory;
+class IParallelMngUtilsFactory;
 }
 
 ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::IParallelMng)

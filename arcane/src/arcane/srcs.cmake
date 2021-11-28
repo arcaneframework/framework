@@ -542,6 +542,7 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    IModule.h
    IParallelNonBlockingCollective.h
    IParallelMng.h
+   IParallelMngUtilsFactory.h
    IParallelReplication.h
    IParallelTopology.h
    IParallelSort.h
@@ -598,6 +599,7 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    ModuleProperty.h
    MultiArray2Variable.h
    MultiArray2VariableRef.h
+   ParallelMngUtils.h
    SimpleProperty.h
    ServiceUtils.h
    ServiceProperty.h

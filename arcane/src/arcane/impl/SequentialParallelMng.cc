@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SequentialParallelMng.cc                                    (C) 2000-2020 */
+/* SequentialParallelMng.cc                                    (C) 2000-2021 */
 /*                                                                           */
 /* Gestion du parallélisme dans le cas sequentiel.                           */
 /*---------------------------------------------------------------------------*/
@@ -51,6 +51,7 @@
 #include "arcane/impl/ParallelReplication.h"
 #include "arcane/impl/SequentialParallelSuperMng.h"
 #include "arcane/impl/SequentialParallelMng.h"
+#include "arcane/impl/ParallelMngUtilsFactoryBase.h"
 
 #include "arccore/message_passing/RequestListBase.h"
 
@@ -302,13 +303,31 @@ class SequentialParallelDispatchT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class SequentialParallelMngUtilsFactory
+: public ParallelMngUtilsFactoryBase
+{
+ public:
+  Ref<ITransferValuesParallelOperation> createTransferValuesOperation(IParallelMng*) override
+  {
+    throw NotImplementedException(A_FUNCINFO);
+  }
+  Ref<IVariableSynchronizer> createSynchronizer(IParallelMng* pm,IItemFamily* family) override
+  {
+    return makeRef(createNullVariableSynchronizer(pm,family->allItems()));
+  }
+  Ref<IVariableSynchronizer> createSynchronizer(IParallelMng* pm,const ItemGroup& group) override
+  {
+    return makeRef(createNullVariableSynchronizer(pm,group));
+  }
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Gestionnaire du parallélisme en mode séquentiel.
  *
- En mode séquentiel, le parallélisme n'existe pas. Ce gestionnaire ne
- fait donc rien.
+ * En mode séquentiel, le parallélisme n'existe pas. Ce gestionnaire ne
+ * fait donc rien.
 */
 class SequentialParallelMng
 : public ParallelMngDispatcher
@@ -489,6 +508,11 @@ class SequentialParallelMng
     return makeRef(r);
   }
 
+  Ref<IParallelMngUtilsFactory> _internalUtilsFactory() const override
+  {
+    return m_utils_factory;
+  }
+
   Parallel::IStat* stat() override
   {
     return m_stat;
@@ -537,6 +561,7 @@ class SequentialParallelMng
   Parallel::IStat* m_stat;
   IParallelReplication* m_replication;
   MP::Communicator m_communicator;
+  Ref<IParallelMngUtilsFactory> m_utils_factory;
 
  private:
 
