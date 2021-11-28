@@ -169,6 +169,8 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    StandardCaseFunction.h
    ParallelMngDispatcher.cc
    ParallelMngDispatcher.h
+   ParallelMngUtils.h
+   ParallelMngUtils.cc
    ParallelNonBlockingCollectiveDispatcher.cc
    ParallelNonBlockingCollectiveDispatcher.h
    ParallelSuperMngDispatcher.cc
@@ -599,7 +601,6 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    ModuleProperty.h
    MultiArray2Variable.h
    MultiArray2VariableRef.h
-   ParallelMngUtils.h
    SimpleProperty.h
    ServiceUtils.h
    ServiceProperty.h

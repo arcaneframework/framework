@@ -601,6 +601,7 @@ SequentialParallelMng(const SequentialParallelMngBuildInfo& bi)
 , m_stat(nullptr)
 , m_replication(new ParallelReplication())
 , m_communicator(bi.communicator())
+, m_utils_factory(makeRef<IParallelMngUtilsFactory>(new SequentialParallelMngUtilsFactory()))
 {
   ARCANE_CHECK_PTR(m_trace);
   ARCANE_CHECK_PTR(m_thread_mng);

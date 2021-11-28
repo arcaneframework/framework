@@ -23,14 +23,12 @@
 
 namespace Arcane
 {
-class IGetVariablesValuesParallelOperation;
-class ITransferValuesParallelOperation;
-class IParallelExchanger;
-class IVariableSynchronizer;
 class IItemFamily;
 class ItemGroup;
-class IParallelTopology;
+}
 
+namespace Arcane
+{
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -47,38 +45,44 @@ class ARCANE_CORE_EXPORT IParallelMngUtilsFactory
    * \brief Retourne une opération pour récupérer les valeurs d'une variable
    * sur les entités d'un autre sous-domaine.
    */
-  virtual Ref<IGetVariablesValuesParallelOperation> createGetVariablesValuesOperation(IParallelMng* pm) =0;
+  virtual Ref<IGetVariablesValuesParallelOperation>
+  createGetVariablesValuesOperation(IParallelMng* pm) =0;
 
   //! Retourne une opération pour transférer des valeurs entre rangs.
-  virtual Ref<ITransferValuesParallelOperation> createTransferValuesOperation(IParallelMng* pm) =0;
+  virtual Ref<ITransferValuesParallelOperation>
+  createTransferValuesOperation(IParallelMng* pm) =0;
 
   //! Retourne une interface pour transférer des messages entre rangs
-  virtual Ref<IParallelExchanger> createExchanger(IParallelMng* pm) =0;
+  virtual Ref<IParallelExchanger>
+  createExchanger(IParallelMng* pm) =0;
 
   /*!
    * \brief Retourne une interface pour synchroniser des
    * variables sur le groupe de la famille \a family
    */
-  virtual Ref<IVariableSynchronizer> createSynchronizer(IParallelMng* pm,IItemFamily* family) =0;
+  virtual Ref<IVariableSynchronizer>
+  createSynchronizer(IParallelMng* pm,IItemFamily* family) =0;
 
   /*!
    * \brief Retourne une interface pour synchroniser des
    * variables sur le groupe \a group.
    */
-  virtual Ref<IVariableSynchronizer> createSynchronizer(IParallelMng* pm,const ItemGroup& group) =0;
+  virtual Ref<IVariableSynchronizer>
+  createSynchronizer(IParallelMng* pm,const ItemGroup& group) =0;
 
   /*!
    * \brief Créé une instance contenant les infos sur la topologie des rangs de ce gestionnnaire.
    *
    * Cette opération est collective.
    */
-  virtual Ref<IParallelTopology> createTopology(IParallelMng* pm) =0;
+  virtual Ref<IParallelTopology>
+  createTopology(IParallelMng* pm) =0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // End namespace Arcane::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
