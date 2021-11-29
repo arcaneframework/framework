@@ -85,6 +85,7 @@ class MpiVariableSynchronizeDispatcher
   Ref<Parallel::IRequestList> m_send_request_list;
  private:
   void _copyReceive(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer,Integer index);
+  void _copySend(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer,Integer index);
 };
 
 /*---------------------------------------------------------------------------*/

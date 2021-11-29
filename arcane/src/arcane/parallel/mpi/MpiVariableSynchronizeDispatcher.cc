@@ -77,7 +77,6 @@ template<typename SimpleType> void
 MpiVariableSynchronizeDispatcher<SimpleType>::
 compute(ConstArrayView<VariableSyncInfo> sync_list)
 {
-  //m_mpi_parallel_mng->traceMng()->info() << "MPI COMPUTE";
   VariableSynchronizeDispatcher<SimpleType>::compute(sync_list);
 }
 
@@ -92,23 +91,18 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
     ARCANE_FATAL("Only one pending serialisation is supported");
 
   Integer nb_message = this->m_sync_list.size();
-  Integer dim2_size = sync_buffer.m_dim2_size;
 
   m_send_request_list->clear();
 
   MpiParallelMng* pm = m_mpi_parallel_mng;
   MpiDatatypeList* dtlist = pm->datatypes();
 
-  //ITraceMng* trace = pm->traceMng();
-  //trace->info() << " ** ** MPI BEGIN SYNC n=" << nb_message
-  //              << " this=" << (IVariableSynchronizeDispatcher*)this;
-  //trace->flush();
-
   MP::Mpi::MpiAdapter* mpi_adapter = m_mpi_parallel_mng->adapter();
 
   double begin_prepare_time = MPI_Wtime();
 
   constexpr int serialize_tag = 523;
+
   // Envoie les messages de réception en mode non bloquant
   m_original_recv_requests_done.resize(nb_message);
   m_original_recv_requests.resize(nb_message);
@@ -133,12 +127,14 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
     }
   }
 
-  // Envoie les messages d'envoie en mode non bloquant.
+  // Recopie les buffers d'envoi dans \a var_values
+  for( Integer i=0; i<nb_message; ++i )
+    _copySend(var_values,sync_buffer,i);
+
+  // Poste les messages d'envoie en mode non bloquant.
   for( Integer i=0; i<nb_message; ++i ){
-    const VariableSyncInfo& vsi = this->m_sync_list[i];
-    Int32ConstArrayView share_grp = vsi.m_share_ids;
     ArrayView<SimpleType> share_local_buffer = sync_buffer.m_share_locals_buffer[i];
-    this->_copyToBuffer(share_grp,share_local_buffer,var_values,dim2_size);
+    const VariableSyncInfo& vsi = this->m_sync_list[i];
     if (!share_local_buffer.empty()){
       MPI_Datatype dt = dtlist->datatype(SimpleType())->datatype();
       auto request = mpi_adapter->directSend(share_local_buffer.data(),share_local_buffer.size(),
@@ -163,6 +159,20 @@ _copyReceive(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer,Integer in
   ConstArrayView<Int32> ghost_grp = vsi.m_ghost_ids;
   ArrayView<SimpleType> ghost_local_buffer = sync_buffer.m_ghost_locals_buffer[index];
   this->_copyFromBuffer(ghost_grp,ghost_local_buffer,var_values,dim2_size);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename SimpleType> void
+MpiVariableSynchronizeDispatcher<SimpleType>::
+_copySend(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer,Integer index)
+{
+  Integer dim2_size = sync_buffer.m_dim2_size;
+  const VariableSyncInfo& vsi = this->m_sync_list[index];
+  Int32ConstArrayView share_grp = vsi.m_share_ids;
+  ArrayView<SimpleType> share_local_buffer = sync_buffer.m_share_locals_buffer[index];
+  this->_copyToBuffer(share_grp,share_local_buffer,var_values,dim2_size);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -208,7 +218,7 @@ endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
       Integer index = remaining_receive_request_indexes[mpi_request_index];
       m_original_recv_requests_done[index] = true; // Pour indiquer que c'est fini
 
-      // Recopie les valeurs
+      // Recopie les valeurs recues
       {
         TimeInterval tit(&copy_time);
         _copyReceive(var_values,sync_buffer,index);
