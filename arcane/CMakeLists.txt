@@ -1003,7 +1003,6 @@ function(ARCANE_GEN_PACKAGE_CONFIG_FILE filename)
     # S'assure que le package n'a pas de '-' dans le nom sinon cela
     # génère une macro invalide
     string(REPLACE "-" "_" package "${package}")
-    message(STATUS "ADD_PACKAGE ${package}")
     # Si une cible 'arcane::${package} existe, alors le package est disponible.
     string(TOLOWER ${package} lower_pkg_name)
     string(TOUPPER ${package} upper_pkg_name)
