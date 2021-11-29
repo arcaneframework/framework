@@ -42,6 +42,7 @@
 #include "arcane/parallel/mpi/MpiSerializeMessage.h"
 #include "arcane/parallel/mpi/MpiParallelNonBlockingCollective.h"
 #include "arcane/parallel/mpi/MpiVariableSynchronizeDispatcher.h"
+#include "arcane/parallel/mpi/MpiLegacyVariableSynchronizeDispatcher.h"
 #include "arcane/parallel/mpi/MpiDatatype.h"
 
 #include "arcane/SerializeMessage.h"
@@ -109,12 +110,25 @@ class MpiParallelMngUtilsFactory
 : public ParallelMngUtilsFactoryBase
 {
  public:
+  MpiParallelMngUtilsFactory()
+  {
+    if (platform::getEnvironmentVariable("ARCANE_USE_LEGACY_SYNCHRONIZE2")=="1")
+      m_use_legacy_synchronizer = true;
+  }
+ public:
   Ref<IVariableSynchronizer> createSynchronizer(IParallelMng* pm,IItemFamily* family) override
   {
     MpiParallelMng* mpi_pm = ARCANE_CHECK_POINTER(dynamic_cast<MpiParallelMng*>(pm));
     typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
-    MpiVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,nullptr);
-    auto vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiVariableSynchronizeDispatcher>(bi));
+    VariableSynchronizerDispatcher* vd = nullptr;
+    if (m_use_legacy_synchronizer){
+      MpiLegacyVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,nullptr);
+      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiLegacyVariableSynchronizeDispatcher>(bi));
+    }
+    else{
+      MpiVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,nullptr);
+      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiVariableSynchronizeDispatcher>(bi));
+    }
     return makeRef<IVariableSynchronizer>(new VariableSynchronizer(pm,family->allItems(),vd));
   }
 
@@ -123,10 +137,19 @@ class MpiParallelMngUtilsFactory
     MpiParallelMng* mpi_pm = ARCANE_CHECK_POINTER(dynamic_cast<MpiParallelMng*>(pm));
     typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
     SharedPtrT<GroupIndexTable> table = group.localIdToIndex();
-    MpiVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table.get());
-    auto vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiVariableSynchronizeDispatcher>(bi));
+    VariableSynchronizerDispatcher* vd = nullptr;
+    if (m_use_legacy_synchronizer){
+      MpiLegacyVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table.get());
+      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiLegacyVariableSynchronizeDispatcher>(bi));
+    }
+    else{
+      MpiVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table.get());
+      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiVariableSynchronizeDispatcher>(bi));
+    }
     return makeRef<IVariableSynchronizer>(new VariableSynchronizer(pm,group,vd));
   }
+ private:
+  bool m_use_legacy_synchronizer = false;
 };
 
 /*---------------------------------------------------------------------------*/
