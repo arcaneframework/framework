@@ -16,8 +16,9 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/CheckedConvert.h"
+
 #include "arcane/IParallelTopology.h"
-#include "arcane/utils/ScopedPtr.h"
+#include "arcane/ParallelMngUtils.h"
 
 #include <memory>
 
@@ -57,7 +58,7 @@ class GraphDistributor
     if (!m_pm_ini)
       return;
 
-    ScopedPtrT<IParallelTopology> topo(m_pm_ini->createTopology());
+    auto topo { ParallelMngUtils::createTopologyRef(m_pm_ini) };
     if (topo->isMasterMachine()) {
       m_contribute = true;
     }

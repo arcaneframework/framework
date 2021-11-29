@@ -31,6 +31,7 @@
 #include "arcane/IItemFamilyPolicyMng.h"
 #include "arcane/IItemFamilySerializer.h"
 #include "arcane/ItemFamilySerializeArgs.h"
+#include "arcane/ParallelMngUtils.h"
 
 #include "arcane/mesh/ItemsExchangeInfo2.h"
 #include "arcane/mesh/ItemGroupsSerializer2.h"
@@ -70,7 +71,7 @@ ItemsExchangeInfo2(IItemFamily* item_family)
 : TraceAccessor(item_family->traceMng())
 , m_item_family(item_family)
 , m_groups_serializers()
-, m_exchanger(item_family->parallelMng()->createExchanger())
+, m_exchanger(ParallelMngUtils::createExchangerRef(item_family->parallelMng()))
 , m_family_serializer(nullptr)
 {
   m_family_serializer = item_family->policyMng()->createSerializer();
@@ -88,7 +89,6 @@ ItemsExchangeInfo2::
   for( IItemFamilySerializeStep* step : m_serialize_steps.range() )
     delete step;
   delete m_family_serializer;
-  delete m_exchanger;
   for(Integer i=0;i<m_groups_serializers.size(); ++i)
     delete m_groups_serializers[i];
 }
@@ -128,7 +128,7 @@ computeExchangeInfos()
       // les uniqueId en localId et le serialiseur en a besoin.
       // TODO: supprimer ce besoin dans le serialiseur
       if (current_family->hasUniqueIdMap())
-        m_groups_serializers.add(new ItemGroupsSerializer2(current_family,m_exchanger));
+        m_groups_serializers.add(new ItemGroupsSerializer2(current_family,m_exchanger.get()));
     }
   }
 

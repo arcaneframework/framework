@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamily.h                                                (C) 2000-2020 */
+/* ItemFamily.h                                                (C) 2000-2021 */
 /*                                                                           */
 /* Famille d'entités.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -379,7 +379,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   MeshItemInternalList* m_item_internal_list;
   ItemSharedInfoList* m_item_shared_infos;
   ObserverPool m_observers;
-  IVariableSynchronizer* m_variable_synchronizer;
+  Ref<IVariableSynchronizer> m_variable_synchronizer;
   Integer m_current_variable_item_size;
   IItemInternalSortFunction* m_item_sort_function;
   std::set<IVariable*> m_used_variables;

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelDataReaderWriter.cc                                 (C) 2000-2020 */
+/* ParallelDataReaderWriter.cc                                 (C) 2000-2021 */
 /*                                                                           */
 /* Lecteur/Ecrivain de IData en parallèle.                                   */
 /*---------------------------------------------------------------------------*/
@@ -21,6 +21,7 @@
 #include "arcane/SerializeBuffer.h"
 #include "arcane/IData.h"
 #include "arcane/parallel/BitonicSortT.H"
+#include "arcane/ParallelMngUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -206,7 +207,8 @@ sort(Int32ConstArrayView local_ids,Int64ConstArrayView items_uid)
     UniqueArray< SharedArray<Int32> > indexes_list(pm->commSize());
     UniqueArray< SharedArray<Int32> > own_indexes_list(pm->commSize());
     //Int32UniqueArray rank_to_sends;
-    ScopedPtrT<IParallelExchanger> sd_exchange(pm->createExchanger());
+    auto sd_exchange { ParallelMngUtils::createExchangerRef(pm) };
+
     for( Integer i=0; i<nb_item; ++i ){
       Int32 index = key_indexes[i];
       Int32 rank = key_ranks[i];
@@ -307,7 +309,7 @@ getSortedValues(IData* data)
   IParallelMng* pm = m_parallel_mng;
   Ref<IData> sorted_data = data->cloneEmptyRef();
 
-  ScopedPtrT<IParallelExchanger> sd_exchange(pm->createExchanger());
+  auto sd_exchange { ParallelMngUtils::createExchangerRef(pm) };
   for( Integer i=0, is=m_ranks_to_send.size(); i<is; ++i ){
     sd_exchange->addSender(m_ranks_to_send[i]);
   }

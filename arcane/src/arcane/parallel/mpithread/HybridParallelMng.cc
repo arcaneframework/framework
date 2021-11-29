@@ -5,13 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HybridParallelMng.cc                                        (C) 2000-2020 */
+/* HybridParallelMng.cc                                        (C) 2000-2021 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant un mixte MPI/Threads.              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/parallel/mpithread/HybridParallelMng.h"
+
 #include "arcane/utils/NotImplementedException.h"
+#include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/Real2.h"
@@ -21,10 +24,10 @@
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/IThreadBarrier.h"
 #include "arcane/utils/ScopedPtr.h"
+#include "arcane/utils/ITraceMng.h"
 
 #include "arcane/parallel/IStat.h"
 
-#include "arcane/parallel/mpithread/HybridParallelMng.h"
 #include "arcane/parallel/mpithread/HybridParallelDispatch.h"
 #include "arcane/parallel/mpithread/HybridMessageQueue.h"
 #include "arcane/parallel/mpi/MpiParallelMng.h"
@@ -34,14 +37,10 @@
 #include "arcane/Timer.h"
 #include "arcane/ISerializeMessageList.h"
 
-#include "arcane/impl/GetVariablesValuesParallelOperation.h"
-#include "arcane/impl/TransferValuesParallelOperation.h"
-#include "arcane/impl/ParallelExchanger.h"
 #include "arcane/impl/TimerMng.h"
-#include "arcane/impl/VariableSynchronizer.h"
-#include "arcane/impl/ParallelTopology.h"
 #include "arcane/impl/ParallelReplication.h"
 #include "arcane/impl/SequentialParallelMng.h"
+#include "arcane/impl/ParallelMngUtilsFactoryBase.h"
 
 #include "arcane/IItemFamily.h"
 
@@ -183,6 +182,7 @@ HybridParallelMng(const HybridParallelMngBuildInfo& bi)
 //, m_parallel_mng_list(bi.parallel_mng_list)
 , m_sub_builder_factory(bi.sub_builder_factory)
 , m_parent_container_ref(bi.container)
+, m_utils_factory(makeRef<IParallelMngUtilsFactory>(new ParallelMngUtilsFactoryBase()))
 {
   if (!m_world_parallel_mng)
     m_world_parallel_mng = this;
@@ -308,19 +308,19 @@ _castSerializer(ISerializer* serializer)
 IGetVariablesValuesParallelOperation*  HybridParallelMng::
 createGetVariablesValuesOperation()
 {
-  return new GetVariablesValuesParallelOperation(this);
+  return m_utils_factory->createGetVariablesValuesOperation(this)._release();
 }
 
 ITransferValuesParallelOperation* HybridParallelMng::
 createTransferValuesOperation()
 {
-  return new TransferValuesParallelOperation(this);
+  return m_utils_factory->createTransferValuesOperation(this)._release();
 }
 
 IParallelExchanger* HybridParallelMng::
 createExchanger()
 {
-  return new ParallelExchanger(this);
+  return m_utils_factory->createExchanger(this)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -502,10 +502,7 @@ _createSerializeMessageList()
 IVariableSynchronizer* HybridParallelMng::
 createSynchronizer(IItemFamily* family)
 {
-  typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
-  VariableSynchronizeDispatcherBuildInfo bi(this,nullptr);
-  auto vd = new VariableSynchronizerDispatcher(this,DispatcherType::create<VariableSynchronizeDispatcher>(bi));
-  return new VariableSynchronizer(this,family->allItems(),vd);
+  return m_utils_factory->createSynchronizer(this,family)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -514,11 +511,7 @@ createSynchronizer(IItemFamily* family)
 IVariableSynchronizer* HybridParallelMng::
 createSynchronizer(const ItemGroup& group)
 {
-  SharedPtrT<GroupIndexTable> table = group.localIdToIndex();
-  VariableSynchronizeDispatcherBuildInfo bi(this,table.get());
-  typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
-  auto vd = new VariableSynchronizerDispatcher(this,DispatcherType::create<VariableSynchronizeDispatcher>(bi));
-  return new VariableSynchronizer(this,group,vd);
+  return m_utils_factory->createSynchronizer(this,group)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -527,9 +520,7 @@ createSynchronizer(const ItemGroup& group)
 IParallelTopology* HybridParallelMng::
 createTopology()
 {
-  auto t = new ParallelTopology(this);
-  t->initialize();
-  return t;
+  return m_utils_factory->createTopology(this)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -825,6 +816,15 @@ createSubParallelMngRef(Int32ConstArrayView kept_ranks)
   m_thread_barrier->wait();
 
   return new_parallel_mng;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IParallelMngUtilsFactory> HybridParallelMng::
+_internalUtilsFactory() const
+{
+  return m_utils_factory;
 }
 
 /*---------------------------------------------------------------------------*/

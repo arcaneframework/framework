@@ -47,6 +47,7 @@
 #include "arcane/IItemFamilyPolicyMng.h"
 #include "arcane/VariableSynchronizerEventArgs.h"
 #include "arcane/IVariableSynchronizer.h"
+#include "arcane/ParallelMngUtils.h"
 
 #include "arcane/SerializeBuffer.h"
 
@@ -1068,9 +1069,10 @@ _testGetVariableValues()
   }
 
   RealUniqueArray output_values(nb_send_item);
-  IGetVariablesValuesParallelOperation* op = pm->createGetVariablesValuesOperation();
-  op->getVariableValues(var_values,items_wanted_id,output_values);
-  delete op;
+  {
+    auto op { ParallelMngUtils::createGetVariablesValuesOperationRef(pm) };
+    op->getVariableValues(var_values,items_wanted_id,output_values);
+  }
 
   // Maintenant, vérifie que la sortie est correcte
   {
@@ -1135,14 +1137,15 @@ _testTransferValues()
   SharedArray<Int64> recv_int64;
   SharedArray<Real> recv_real;
 
-  ITransferValuesParallelOperation* op = pm->createTransferValuesOperation();
-  op->setTransferRanks(send_ranks);
-  op->addArray(send_int32_1,recv_int32_1);
-  op->addArray(send_int32_2,recv_int32_2);
-  op->addArray(send_int64,recv_int64);
-  op->addArray(send_real,recv_real);
-  op->transferValues();
-  delete op;
+  {
+    auto op { ParallelMngUtils::createTransferValuesOperationRef(pm) };
+    op->setTransferRanks(send_ranks);
+    op->addArray(send_int32_1,recv_int32_1);
+    op->addArray(send_int32_2,recv_int32_2);
+    op->addArray(send_int64,recv_int64);
+    op->addArray(send_real,recv_real);
+    op->transferValues();
+  }
 
   Integer nb_error = 0;
   Integer recv_nb = recv_int32_1.size();
@@ -1246,7 +1249,7 @@ _testBitonicSort()
     UniqueArray< SharedArray<Int32> > indexes_list(pm->commSize());
     UniqueArray< SharedArray<Int32> > own_indexes_list(pm->commSize());
     //Int32UniqueArray rank_to_sends;
-    ScopedPtrT<IParallelExchanger> sd_exchange(pm->createExchanger());
+    auto sd_exchange { ParallelMngUtils::createExchangerRef(pm) };
     for( Integer i=0; i<nb_item; ++i ){
       Int32 index = key_indexes[i];
       Int32 rank = key_ranks[i];
@@ -1313,7 +1316,8 @@ _testBitonicSort()
 
   IData* data = temperature.variable()->data();
   {
-    ScopedPtrT<IParallelExchanger> sd_exchange(pm->createExchanger());
+    auto sd_exchange { ParallelMngUtils::createExchangerRef(pm) };
+
     for( Integer i=0, is=ranks_to_send.size(); i<is; ++i ){
       sd_exchange->addSender(ranks_to_send[i]);
     }
