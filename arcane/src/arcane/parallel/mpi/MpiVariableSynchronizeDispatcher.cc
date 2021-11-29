@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiVariableSynchronizeDispatcher.cc                         (C) 2000-2016 */
+/* MpiVariableSynchronizeDispatcher.cc                         (C) 2000-2021 */
 /*                                                                           */
 /* Gestion spécifique MPI des synchronisations des variables.                */
 /*---------------------------------------------------------------------------*/
@@ -30,7 +30,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,13 +41,7 @@ MpiVariableSynchronizeDispatcher<SimpleType>::
 MpiVariableSynchronizeDispatcher(MpiVariableSynchronizeDispatcherBuildInfo& bi)
 : VariableSynchronizeDispatcher<SimpleType>(VariableSynchronizeDispatcherBuildInfo(bi.parallelMng(),bi.table()))
 , m_mpi_parallel_mng(bi.parallelMng())
-, m_use_derived_type(true)
 {
-  //NOTE: Desactive pour l'instant les types derives car cela ne fonctionne
-  // par correctement avec BullMPI.
-  // Verifier si cela vient de Arcane ou de Bull.
-  // Ca fonctionne correctement avec Mpich2 1.0.5 et OpenMpi 1.2+
-  m_use_derived_type = false;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -58,41 +53,6 @@ compute(ConstArrayView<VariableSyncInfo> sync_list)
 {
   //m_mpi_parallel_mng->traceMng()->info() << "MPI COMPUTE";
   VariableSynchronizeDispatcher<SimpleType>::compute(sync_list);
-  if (m_use_derived_type){
-    //TODO Utiliser des 'int' MPI au lieu de Int32
-    Integer nb_message = this->m_sync_list.size();
-    MpiParallelMng* pm = m_mpi_parallel_mng;
-    _destroyTypes();
-    m_share_derived_types.resize(nb_message);
-    m_ghost_derived_types.resize(nb_message);
-    //TODO Utiliser des 'int' MPI au lieu de Int32
-    pm->traceMng()->info() << "CREATE DERIVED TYPE";
-    typedef DataTypeTraitsT<SimpleType> DataTypeTraits;
-    typedef typename DataTypeTraitsT<SimpleType>::BasicType BasicType;
-    int nb_basic = DataTypeTraits::nbBasicType();
-    MPI_Datatype mpi_basetype = pm->datatypes()->datatype(BasicType())->datatype();
-    UniqueArray<int> ids;
-    for( Integer i=0; i<nb_message; ++i ){
-      const VariableSyncInfo& vsi = this->m_sync_list[i];
-      Int32ConstArrayView share_grp = vsi.m_share_ids;
-      Integer nb_share = share_grp.size();
-      ids.resize(nb_share);
-      for( Integer z=0; z<nb_share; ++z )
-        ids[z] = share_grp[z]*nb_basic;
-      MPI_Type_create_indexed_block(ids.size(),nb_basic,ids.data(),
-                                    mpi_basetype,&m_share_derived_types[i]);
-      MPI_Type_commit(&m_share_derived_types[i]);
-
-      Int32ConstArrayView ghost_grp = vsi.m_ghost_ids;
-      Integer nb_ghost = ghost_grp.size();
-      ids.resize(nb_ghost);
-      for( Integer z=0; z<nb_ghost; ++z )
-        ids[z] = ghost_grp[z]*nb_basic;
-      MPI_Type_create_indexed_block(ids.size(),nb_basic,ids.data(),
-                                    mpi_basetype,&m_ghost_derived_types[i]);
-      MPI_Type_commit(&m_ghost_derived_types[i]);
-    }
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -104,7 +64,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 {
   if (this->m_is_in_sync)
     ARCANE_FATAL("Only one pending serialisation is supported");
-  //Integer nb_elem = var_values.size();
+
   Integer nb_message = this->m_sync_list.size();
   Integer dim2_size = sync_buffer.m_dim2_size;
 
@@ -119,8 +79,6 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
   //              << " this=" << (IVariableSynchronizeDispatcher*)this;
   //trace->flush();
 
-  bool use_derived = (dim2_size==1 && m_use_derived_type);
-
   //SyncBuffer& sync_buffer = this->m_1d_buffer;
   // Envoie les messages de réception en mode non bloquant
   m_recv_requests.resize(nb_message);
@@ -131,15 +89,9 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
       ArrayView<SimpleType> ghost_local_buffer = sync_buffer.m_ghost_locals_buffer[i];
       if (!ghost_local_buffer.empty()){
         MPI_Request mpi_request;
-        if (use_derived){
-          m_mpi_parallel_mng->adapter()->getMpiProfiling()->iRecv(var_values.data(),1,m_ghost_derived_types[i],
-                                                                  vsi.m_target_rank,523,comm,&mpi_request);
-        }
-        else{
-          MPI_Datatype dt = dtlist->datatype(SimpleType())->datatype();
-          m_mpi_parallel_mng->adapter()->getMpiProfiling()->iRecv(ghost_local_buffer.data(),ghost_local_buffer.size(),
-                                                                  dt,vsi.m_target_rank,523,comm,&mpi_request);
-        }
+        MPI_Datatype dt = dtlist->datatype(SimpleType())->datatype();
+        m_mpi_parallel_mng->adapter()->getMpiProfiling()->iRecv(ghost_local_buffer.data(),ghost_local_buffer.size(),
+                                                                dt,vsi.m_target_rank,523,comm,&mpi_request);
         
         m_recv_requests[i] = mpi_request;
         m_recv_requests_done[i] = false;
@@ -158,30 +110,18 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
       const VariableSyncInfo& vsi = this->m_sync_list[i];
       Int32ConstArrayView share_grp = vsi.m_share_ids;
       ArrayView<SimpleType> share_local_buffer = sync_buffer.m_share_locals_buffer[i];
-      if (!use_derived)
-        this->_copyToBuffer(share_grp,share_local_buffer,var_values,dim2_size);
+      this->_copyToBuffer(share_grp,share_local_buffer,var_values,dim2_size);
       if (!share_local_buffer.empty()){
         MPI_Request mpi_request;
-        if (use_derived){
-          m_mpi_parallel_mng->adapter()->getMpiProfiling()->iSend(var_values.data(),1,m_share_derived_types[i],
-                                                                  vsi.m_target_rank,523,comm,&mpi_request);
-        }
-        else{
-          MPI_Datatype dt = dtlist->datatype(SimpleType())->datatype();
-          m_mpi_parallel_mng->adapter()->getMpiProfiling()->iSend(share_local_buffer.data(),share_local_buffer.size(),
-                                                                  dt,vsi.m_target_rank,523,comm,&mpi_request);
-        }
+        MPI_Datatype dt = dtlist->datatype(SimpleType())->datatype();
+        m_mpi_parallel_mng->adapter()->getMpiProfiling()->iSend(share_local_buffer.data(),share_local_buffer.size(),
+                                                                dt,vsi.m_target_rank,523,comm,&mpi_request);
         m_send_requests.add(mpi_request);
         //trace->info() << "POST SEND " << vsi.m_target_rank;
       }
     }
     double prepare_time = MPI_Wtime() - begin_prepare_time;
-    if (use_derived){
-      pm->stat()->add("SyncPrepareDerived",prepare_time,1);
-    }
-    else{
-      pm->stat()->add("SyncPrepare",prepare_time,1);
-    }
+    pm->stat()->add("SyncPrepare",prepare_time,1);
     this->m_is_in_sync = true;
   }
 
@@ -196,7 +136,6 @@ endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
     ARCANE_FATAL("endSynchronize() called but no beginSynchronize() was called before");
 
   Integer dim2_size = sync_buffer.m_dim2_size;
-  bool use_derived = (dim2_size==1 && m_use_derived_type);
 
   MpiParallelMng* pm = m_mpi_parallel_mng;
 
@@ -245,7 +184,7 @@ endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
       int mpi_request_index = completed_requests[z];
       Integer index = m_remaining_recv_request_indexes[mpi_request_index];
 
-      if (!use_derived){
+      {
         double begin_time = MPI_Wtime();
         const VariableSyncInfo& vsi = this->m_sync_list[index];
         Int32ConstArrayView ghost_grp = vsi.m_ghost_ids;
@@ -266,13 +205,8 @@ endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
                                                             mpi_status.data());
   //trace->info() << "Wait all end";
 
-  if (use_derived){
-    pm->stat()->add("SyncWaitDerived",wait_time,1);
-  }
-  else{
-    pm->stat()->add("SyncCopy",copy_time,1);
-    pm->stat()->add("SyncWait",wait_time,1);
-  }
+  pm->stat()->add("SyncCopy",copy_time,1);
+  pm->stat()->add("SyncWait",wait_time,1);
   this->m_is_in_sync = false;
 }
 
@@ -292,7 +226,7 @@ template class MpiVariableSynchronizeDispatcher<Real3x3>;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
