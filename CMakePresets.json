@@ -1,0 +1,52 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "minimal",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/minimal",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfos",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "ALIEN_DEFAULT_OPTIONS": "OFF",
+                "ALIENDEV_EMBEDDED": "ON"
+            },
+            "warnings": {
+                "uninitialized": true
+            }
+        },
+        {
+            "name": "full",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/full",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "ALIEN_DEFAULT_OPTIONS": "ON",
+                "ALIENDEV_EMBEDDED": "ON",
+                "ALIEN_PLUGIN_HYPRE": "ON",
+                "ALIEN_PLUGIN_PETSC": "ON",
+                "ALIEN_UNIT_TESTS": "ON"
+            }
+        },
+        {
+            "name": "minimal-ccache",
+            "inherits": "minimal",
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER_LAUNCHER": "ccache"
+            }
+        },
+        {
+            "name": "full-ccache",
+            "inherits": "full",
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER_LAUNCHER": "ccache"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "minimal",
+            "configurePreset": "minimal"
+        }
+    ]
+}
