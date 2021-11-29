@@ -71,11 +71,11 @@ class MpiVariableSynchronizeDispatcher
   typedef typename VariableSynchronizeDispatcher<SimpleType>::SyncBuffer SyncBuffer;
  public:
 
-  MpiVariableSynchronizeDispatcher(MpiVariableSynchronizeDispatcherBuildInfo& bi);
+  explicit MpiVariableSynchronizeDispatcher(MpiVariableSynchronizeDispatcherBuildInfo& bi);
 
-  virtual void compute(ConstArrayView<VariableSyncInfo> sync_list);
-  virtual void beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer);
-  virtual void endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer);
+  void compute(ConstArrayView<VariableSyncInfo> sync_list) override;
+  void beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer) override;
+  void endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer) override;
 
  private:
   MpiParallelMng* m_mpi_parallel_mng;

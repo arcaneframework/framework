@@ -32,6 +32,28 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace
+{
+class TimeInterval
+{
+ public:
+  TimeInterval(double* cumulative_value)
+  : m_cumulative_value(cumulative_value)
+  {
+    m_begin_time = MPI_Wtime();
+  }
+  ~TimeInterval()
+  {
+    double end_time = MPI_Wtime();
+    *m_cumulative_value = (end_time - m_begin_time);
+  }
+ private:
+  double* m_cumulative_value;
+  double m_begin_time = 0.0;
+};
+
+}
+
 namespace Arcane
 {
 
@@ -84,11 +106,12 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 
   MP::Mpi::MpiAdapter* mpi_adapter = m_mpi_parallel_mng->adapter();
 
+  double begin_prepare_time = MPI_Wtime();
+
   constexpr int serialize_tag = 523;
   // Envoie les messages de réception en mode non bloquant
   m_original_recv_requests_done.resize(nb_message);
   m_original_recv_requests.resize(nb_message);
-  double begin_prepare_time = MPI_Wtime();
 
   // Poste les messages de réception
   for( Integer i=0; i<nb_message; ++i ){
@@ -172,10 +195,8 @@ endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
       break;
 
     {
-      double begin_time = MPI_Wtime();
+      TimeInterval tit(&wait_time);
       m_receive_request_list->wait(Parallel::WaitSome);
-      double end_time = MPI_Wtime();
-      wait_time += (end_time-begin_time);
     }
 
     // Pour chaque requete terminée, effectue la copie
@@ -185,20 +206,23 @@ endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
     for( Integer z=0; z<nb_completed_request; ++z ){
       Integer mpi_request_index = done_requests[z];
       Integer index = remaining_receive_request_indexes[mpi_request_index];
-
-      double begin_time = MPI_Wtime();
-      _copyReceive(var_values,sync_buffer,index);
-      double end_time = MPI_Wtime();
-      copy_time += (end_time - begin_time);
-
       m_original_recv_requests_done[index] = true; // Pour indiquer que c'est fini
+
+      // Recopie les valeurs
+      {
+        TimeInterval tit(&copy_time);
+        _copyReceive(var_values,sync_buffer,index);
+      }
     }
   }
 
   // Attend que les envois se terminent.
   // Il faut le faire pour pouvoir libérer les requêtes même si le message
   // est arrivé.
-  m_send_request_list->wait(Parallel::WaitAll);
+  {
+    TimeInterval tit(&wait_time);
+    m_send_request_list->wait(Parallel::WaitAll);
+  }
 
   pm->stat()->add("SyncCopy",copy_time,1);
   pm->stat()->add("SyncWait",wait_time,1);
