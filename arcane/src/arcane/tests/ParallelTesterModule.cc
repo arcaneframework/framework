@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelTesterModule.cc                                     (C) 2000-2017 */
+/* ParallelTesterModule.cc                                     (C) 2000-2021 */
 /*                                                                           */
 /* Module de test du parallèlisme.                                           */
 /*---------------------------------------------------------------------------*/
@@ -70,7 +70,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -554,15 +555,13 @@ testLoop()
     _testDifferentValuesOnAllReplica();
   }
   Timer timer(subDomain(),"ParallelTesterModule::testLoop",Timer::TimerReal);
-  _testAccumulate();
-  _testGhostItemsReduceOperation();
-  //TODO: reactiver les tests suivants
-#if 1
-  _testBitonicSort();
   {
     Timer::Sentry sentry(&timer);
     switch(options()->testId){
     case TestAll:
+      _testAccumulate();
+      _testGhostItemsReduceOperation();
+      _testBitonicSort();
       _testLoadBalance();
       _testGetVariableValues();
       _testGhostItemsReduceOperation();
@@ -570,7 +569,7 @@ testLoop()
       _testPartialVariables();
       _testAccumulate();
       break;
-    case TestParallelMng:
+    case TestNone:
       break;
     case TestLoadBalance:
       _testLoadBalance();
@@ -587,7 +586,6 @@ testLoop()
     }
   }
   _testPartialVariables();
-#endif
   if (m_mesh_partitioner){
     info() << "Set mesh partitioner";
     subDomain()->timeLoopMng()->registerActionMeshPartition(m_mesh_partitioner);
@@ -1401,7 +1399,7 @@ _testPartialVariables()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+} // End namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

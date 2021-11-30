@@ -309,6 +309,8 @@ add_test_message_passing(sub_all)
 
 ARCANE_ADD_TEST_PARALLEL(parallel testParallel-1.arc 4)
 ARCANE_ADD_TEST_PARALLEL(parallel2 testParallel-2.arc 4)
+arcane_add_test_parallel(parallel2_synchronize testParallel-synchronize1.arc 4)
+arcane_add_test_parallel(parallel2_synchronize_new testParallel-synchronize1.arc 4 -We,ARCANE_SYNCHRONIZE_VERSION,2)
 ARCANE_ADD_TEST_PARALLEL(parallel2_mpiprof_json testParallel-2.arc 4 -We,ARCANE_MESSAGE_PASSING_PROFILING,JSON)
 if(Otf2_FOUND)
   ARCANE_ADD_TEST_PARALLEL(parallel2_mpiprof_otf2 testParallel-2.arc 4 -We,ARCANE_MESSAGE_PASSING_PROFILING,OTF2)
