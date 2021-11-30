@@ -645,7 +645,7 @@ jobs:
         run: tar xf arccore-install-artifact.tar -C /
       - name: Test
         shell: bash
-        run: ctest --test-dir ${{ env.ALIENLEGACY_BUILD_DIR }} ${{ env.CT_OPTS }}
+        run: ctest --test-dir ${{ env.ALIENLEGACY_BUILD_DIR }} ${{ env.CT_OPTS }} -E '^alien.interface.c.seq.mpi-1$'
       - name: Upload test artifact
         uses: actions/upload-artifact@v2
         if: failure()
