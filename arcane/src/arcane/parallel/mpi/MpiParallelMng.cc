@@ -42,17 +42,15 @@
 #include "arcane/parallel/mpi/MpiSerializeMessage.h"
 #include "arcane/parallel/mpi/MpiParallelNonBlockingCollective.h"
 #include "arcane/parallel/mpi/MpiVariableSynchronizeDispatcher.h"
+#include "arcane/parallel/mpi/MpiLegacyVariableSynchronizeDispatcher.h"
 #include "arcane/parallel/mpi/MpiDatatype.h"
 
 #include "arcane/SerializeMessage.h"
 
-#include "arcane/impl/GetVariablesValuesParallelOperation.h"
-#include "arcane/impl/TransferValuesParallelOperation.h"
-#include "arcane/impl/ParallelExchanger.h"
 #include "arcane/impl/VariableSynchronizer.h"
-#include "arcane/impl/ParallelTopology.h"
 #include "arcane/impl/ParallelReplication.h"
 #include "arcane/impl/SequentialParallelMng.h"
+#include "arcane/impl/ParallelMngUtilsFactoryBase.h"
 
 #include "arccore/message_passing_mpi/MpiMessagePassingMng.h"
 #include "arccore/message_passing_mpi/MpiRequestList.h"
@@ -108,6 +106,58 @@ MpiParallelMngBuildInfo(MPI_Comm comm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class MpiParallelMngUtilsFactory
+: public ParallelMngUtilsFactoryBase
+{
+ public:
+  MpiParallelMngUtilsFactory()
+  {
+    if (platform::getEnvironmentVariable("ARCANE_USE_LEGACY_SYNCHRONIZE2")=="1")
+      m_use_legacy_synchronizer = true;
+  }
+ public:
+  Ref<IVariableSynchronizer> createSynchronizer(IParallelMng* pm,IItemFamily* family) override
+  {
+    MpiParallelMng* mpi_pm = ARCANE_CHECK_POINTER(dynamic_cast<MpiParallelMng*>(pm));
+    typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
+    VariableSynchronizerDispatcher* vd = nullptr;
+    if (m_use_legacy_synchronizer){
+      MpiLegacyVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,nullptr);
+      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiLegacyVariableSynchronizeDispatcher>(bi));
+    }
+    else{
+      MpiVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,nullptr);
+      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiVariableSynchronizeDispatcher>(bi));
+    }
+    return makeRef<IVariableSynchronizer>(new VariableSynchronizer(pm,family->allItems(),vd));
+  }
+
+  Ref<IVariableSynchronizer> createSynchronizer(IParallelMng* pm,const ItemGroup& group) override
+  {
+    MpiParallelMng* mpi_pm = ARCANE_CHECK_POINTER(dynamic_cast<MpiParallelMng*>(pm));
+    typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
+    SharedPtrT<GroupIndexTable> table = group.localIdToIndex();
+    VariableSynchronizerDispatcher* vd = nullptr;
+    if (m_use_legacy_synchronizer){
+      MpiLegacyVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table.get());
+      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiLegacyVariableSynchronizeDispatcher>(bi));
+    }
+    else{
+      MpiVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table.get());
+      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiVariableSynchronizeDispatcher>(bi));
+    }
+    return makeRef<IVariableSynchronizer>(new VariableSynchronizer(pm,group,vd));
+  }
+ private:
+  bool m_use_legacy_synchronizer = false;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 MpiParallelMng::
 MpiParallelMng(const MpiParallelMngBuildInfo& bi)
 : ParallelMngDispatcher(ParallelMngDispatcherBuildInfo(bi.dispatchers(),bi.messagePassingMng()))
@@ -129,6 +179,7 @@ MpiParallelMng(const MpiParallelMngBuildInfo& bi)
 , m_is_communicator_owned(bi.is_mpi_comm_owned)
 , m_mpi_lock(bi.mpi_lock)
 , m_non_blocking_collective(nullptr)
+, m_utils_factory(makeRef<IParallelMngUtilsFactory>(new MpiParallelMngUtilsFactory()))
 {
   if (!m_world_parallel_mng){
     m_trace->debug()<<"[MpiParallelMng] No m_world_parallel_mng found, reverting to ourselves!";
@@ -306,30 +357,6 @@ _castSerializer(ISerializer* serializer)
     ARCANE_THROW(ArgumentException,"Can not cast 'ISerializer' to 'SerializeBuffer'");
   return sbuf;
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-IGetVariablesValuesParallelOperation* MpiParallelMng::
-createGetVariablesValuesOperation()
-{
-  return new GetVariablesValuesParallelOperation(this);
-}
-
-ITransferValuesParallelOperation* MpiParallelMng::
-createTransferValuesOperation()
-{
-  return new TransferValuesParallelOperation(this);
-}
-
-IParallelExchanger* MpiParallelMng::
-createExchanger()
-{
-  return new ParallelExchanger(this);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -552,13 +579,37 @@ _createSerializeMessageList()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+IGetVariablesValuesParallelOperation* MpiParallelMng::
+createGetVariablesValuesOperation()
+{
+  return m_utils_factory->createGetVariablesValuesOperation(this)._release();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ITransferValuesParallelOperation* MpiParallelMng::
+createTransferValuesOperation()
+{
+  return m_utils_factory->createTransferValuesOperation(this)._release();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IParallelExchanger* MpiParallelMng::
+createExchanger()
+{
+  return m_utils_factory->createExchanger(this)._release();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 IVariableSynchronizer* MpiParallelMng::
 createSynchronizer(IItemFamily* family)
 {
-  typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
-  MpiVariableSynchronizeDispatcherBuildInfo bi(this,nullptr);
-  auto vd = new VariableSynchronizerDispatcher(this,DispatcherType::create<MpiVariableSynchronizeDispatcher>(bi));
-  return new VariableSynchronizer(this,family->allItems(),vd);
+  return m_utils_factory->createSynchronizer(this,family)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -567,11 +618,7 @@ createSynchronizer(IItemFamily* family)
 IVariableSynchronizer* MpiParallelMng::
 createSynchronizer(const ItemGroup& group)
 {
-  typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
-  SharedPtrT<GroupIndexTable> table = group.localIdToIndex();
-  MpiVariableSynchronizeDispatcherBuildInfo bi(this,table.get());
-  auto vd = new VariableSynchronizerDispatcher(this,DispatcherType::create<MpiVariableSynchronizeDispatcher>(bi));
-  return new VariableSynchronizer(this,group,vd);
+  return m_utils_factory->createSynchronizer(this,group)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -580,9 +627,7 @@ createSynchronizer(const ItemGroup& group)
 IParallelTopology* MpiParallelMng::
 createTopology()
 {
-  ParallelTopology* t = new ParallelTopology(this);
-  t->initialize();
-  return t;
+  return m_utils_factory->createTopology(this)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -677,6 +722,15 @@ createRequestListRef()
 {
   IRequestList* x = new RequestList(this);
   return makeRef(x);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IParallelMngUtilsFactory> MpiParallelMng::
+_internalUtilsFactory() const
+{
+  return m_utils_factory;
 }
 
 /*---------------------------------------------------------------------------*/

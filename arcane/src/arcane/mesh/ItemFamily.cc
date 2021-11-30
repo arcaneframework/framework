@@ -40,6 +40,7 @@
 #include "arcane/IMeshCompacter.h"
 #include "arcane/IMeshCompactMng.h"
 #include "arcane/MeshPartInfo.h"
+#include "arcane/ParallelMngUtils.h"
 #include "arcane/core/internal/IDataInternal.h"
 
 #include "arcane/datatype/IDataOperation.h"
@@ -150,7 +151,6 @@ ItemFamily(IMesh* mesh,eItemKind ik,const String& name)
 , m_need_prepare_dump(true)
 , m_item_internal_list(mesh->meshItemInternalList())
 , m_item_shared_infos(new ItemSharedInfoList(this))
-, m_variable_synchronizer(nullptr)
 , m_current_variable_item_size(0)
 , m_item_sort_function(nullptr)
 , m_local_connectivity_info(nullptr)
@@ -190,7 +190,6 @@ ItemFamily::
   delete m_local_connectivity_info;
   delete m_global_connectivity_info;
   delete m_item_sort_function;
-  delete m_variable_synchronizer;
   delete m_internal_variables;
   delete m_item_shared_infos;
 
@@ -278,7 +277,7 @@ build()
                           &ItemFamily::_notifyDataIndexChanged,
                           m_internal_variables->m_items_data.variable()->readObservable());
 
-  m_variable_synchronizer = pm->createSynchronizer(this);
+  m_variable_synchronizer = ParallelMngUtils::createSynchronizerRef(pm,this);
 
   m_item_sort_function = _defaultItemSortFunction();
 }
@@ -2097,7 +2096,7 @@ usedVariables(VariableCollection collection)
 IVariableSynchronizer* ItemFamily::
 allItemsSynchronizer()
 {
-  return m_variable_synchronizer;
+  return m_variable_synchronizer.get();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2141,8 +2140,7 @@ addGhostItems(Int64ConstArrayView unique_ids, Int32ArrayView items, Int32ConstAr
   ARCANE_UNUSED(unique_ids);
   ARCANE_UNUSED(items);
   ARCANE_UNUSED(owners);
-  throw NotImplementedException(A_FUNCINFO,
-                                "this kind of family doesn't support this operation yet. Only DoF at present.");
+  ARCANE_THROW(NotImplementedException,"this kind of family doesn't support this operation yet. Only DoF at present.");
 }
 
 /*---------------------------------------------------------------------------*/

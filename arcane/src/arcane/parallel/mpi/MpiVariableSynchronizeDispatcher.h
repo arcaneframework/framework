@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiVariableSynchronizeDispatcher.h                          (C) 2000-2016 */
+/* MpiVariableSynchronizeDispatcher.h                          (C) 2000-2021 */
 /*                                                                           */
 /* Gestion spécifique MPI des synchronisations des variables.                */
 /*---------------------------------------------------------------------------*/
@@ -25,7 +25,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -58,14 +59,9 @@ class MpiVariableSynchronizeDispatcherBuildInfo
  * (au lieu d'un Waitall) et recopie dans le buffer de destination
  * dès qu'un message arrive.
  *
- * TODO: tester un type dérivé indexé pour l'entrée et la sortie
- * afin de ne pas faire la copie.
  * NOTE: cette optimisation respecte la norme MPI qui dit qu'on ne doit
  * plus toucher à la zone mémoire d'un message tant que celui-ci n'est
- * pas fini. L'optimisation proposé dans le TODO ne respecte plus
- * cette norme si on est en non bloquant, ou alors c'est au développeur
- * de module de vérifier que la variable en cours de synchronisation
- * n'est pas lue pendant la synchro non bloquante.
+ * pas fini.
  */
 template<typename SimpleType>
 class MpiVariableSynchronizeDispatcher
@@ -75,46 +71,27 @@ class MpiVariableSynchronizeDispatcher
   typedef typename VariableSynchronizeDispatcher<SimpleType>::SyncBuffer SyncBuffer;
  public:
 
-  MpiVariableSynchronizeDispatcher(MpiVariableSynchronizeDispatcherBuildInfo& bi);
+  explicit MpiVariableSynchronizeDispatcher(MpiVariableSynchronizeDispatcherBuildInfo& bi);
 
-  ~MpiVariableSynchronizeDispatcher()
-  {
-    _destroyTypes();
-  }
-
-  void _destroyTypes()
-  {
-    Integer nb_share_type = m_share_derived_types.size();
-    for( Integer i=0; i<nb_share_type; ++i ){
-      MPI_Type_free(&m_share_derived_types[i]);
-    }
-    m_share_derived_types.clear();
-
-    Integer nb_ghost_type = m_ghost_derived_types.size();
-    for( Integer i=0; i<nb_ghost_type; ++i ){
-      MPI_Type_free(&m_ghost_derived_types[i]);
-    }
-    m_ghost_derived_types.clear();
-  }
-
-  virtual void compute(ConstArrayView<VariableSyncInfo> sync_list);
-  virtual void beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer);
-  virtual void endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer);
+  void compute(ConstArrayView<VariableSyncInfo> sync_list) override;
+  void beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer) override;
+  void endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer) override;
 
  private:
   MpiParallelMng* m_mpi_parallel_mng;
-  UniqueArray<MPI_Request> m_send_requests;
-  UniqueArray<MPI_Request> m_recv_requests;
-  UniqueArray<Integer> m_recv_requests_done;
-  UniqueArray<MPI_Datatype> m_share_derived_types;
-  UniqueArray<MPI_Datatype> m_ghost_derived_types;
-  bool m_use_derived_type;
+  UniqueArray<Parallel::Request> m_original_recv_requests;
+  UniqueArray<bool> m_original_recv_requests_done;
+  Ref<Parallel::IRequestList> m_receive_request_list;
+  Ref<Parallel::IRequestList> m_send_request_list;
+ private:
+  void _copyReceive(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer,Integer index);
+  void _copySend(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer,Integer index);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

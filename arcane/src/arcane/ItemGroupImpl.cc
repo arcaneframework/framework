@@ -35,6 +35,7 @@
 #include "arcane/ItemGroupComputeFunctor.h"
 #include "arcane/IVariableSynchronizer.h"
 #include "arcane/MeshPartInfo.h"
+#include "arcane/ParallelMngUtils.h"
 #include "arcane/core/internal/IDataInternal.h"
 
 #include <algorithm>
@@ -189,7 +190,7 @@ class ItemGroupImplPrivate
   bool m_is_all_items = false; //!< Indique s'il s'agit du groupe de toutes les entités
 
   SharedPtrT<GroupIndexTable> m_group_index_table; //!< Table de hachage du local id des items vers leur position en enumeration
-  SharedPtrT<IVariableSynchronizer> m_synchronizer; //!< Synchronizer du groupe
+  Ref<IVariableSynchronizer> m_synchronizer; //!< Synchronizer du groupe
 
   // Anciennement dans DynamicMeshKindInfo
   Int32UniqueArray m_items_index_in_all_group; //! localids -> index (UNIQUEMENT ALLITEMS)
@@ -1988,10 +1989,10 @@ localIdToIndex()
 IVariableSynchronizer * ItemGroupImpl::
 synchronizer()
 { 
-  if(!m_p->m_synchronizer.isUsed()) {
+  if(!m_p->m_synchronizer.get()) {
     IParallelMng* pm = m_p->m_mesh->parallelMng();
     ItemGroup this_group(this);
-    m_p->m_synchronizer = SharedPtrT<IVariableSynchronizer>(pm->createSynchronizer(this_group));
+    m_p->m_synchronizer = ParallelMngUtils::createSynchronizerRef(pm,this_group);
     ITraceMng* trace =  m_p->m_mesh->traceMng();
     trace->debug(Trace::High) << "** CREATION OF SYNCHRONIZER OF GROUP : " << m_p->m_name;
     m_p->m_synchronizer->compute();
@@ -2005,7 +2006,7 @@ synchronizer()
 bool ItemGroupImpl::
 hasSynchronizer()
 {
-  return m_p->m_synchronizer.isUsed();
+  return m_p->m_synchronizer.get();
 }
 
 /*---------------------------------------------------------------------------*/

@@ -126,9 +126,9 @@ class MiniWeatherArray
  public:
 
   void init();
-  ARCCORE_HOST_DEVICE void injection(double x, double z, double &r, double &u,
-                                     double &w, double &t, double &hr, double &ht);
-  ARCCORE_HOST_DEVICE void hydro_const_theta(double z, double &r, double &t);
+  static ARCCORE_HOST_DEVICE void injection(double x, double z, double &r, double &u,
+                                            double &w, double &t, double &hr, double &ht);
+  static ARCCORE_HOST_DEVICE void hydro_const_theta(double z, double &r, double &t);
   void output(NumArray<double,3>& state, double etime);
   void perform_timestep(NumArray<double,3>& state, NumArray<double,3>& state_tmp,
                         NumArray<double,3>& flux, NumArray<double,3>& tend, double dt);

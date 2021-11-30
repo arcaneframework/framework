@@ -83,13 +83,10 @@ class LibUnwindStackTraceService
   {
     m_application = sbi.application();
   }
-  virtual ~LibUnwindStackTraceService()
-  {
-  }
 
  public:
 
-  virtual void build()
+  void build() override
   {
     if (!platform::getEnvironmentVariable("ARCANE_GDB_STACK").null())
       m_want_gdb_info = true;

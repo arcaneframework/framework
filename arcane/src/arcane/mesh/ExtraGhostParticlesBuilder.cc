@@ -22,6 +22,7 @@
 #include "arcane/IParallelMng.h"
 #include "arcane/ISerializeMessage.h"
 #include "arcane/SerializeBuffer.h"
+#include "arcane/ParallelMngUtils.h"
 
 #include "arcane/mesh/ParticleFamily.h"
 
@@ -79,8 +80,7 @@ _computeForFamily(ParticleFamily* particle_family)
   IParallelMng* pm = particle_family->itemFamily()->parallelMng();
   const Int32 nsd = pm->commRank();
 
-  ScopedPtrT<IParallelExchanger> exchanger(pm->createExchanger());
-
+  auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
 
   // Construction des entités à envoyer
   UniqueArray<std::set<Integer> > to_sends(nsd);

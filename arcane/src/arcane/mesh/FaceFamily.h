@@ -64,14 +64,14 @@ class ARCANE_MESH_EXPORT FaceFamily
 
  public:
 
-  virtual void build() override;
+  void build() override;
   virtual void preAllocate(Integer nb_item);
 
  public:
 
   // IItemFamilyModifier Interface
-  ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type, MeshInfos& mesh_info);
-  ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type,MeshInfos& mesh_info, bool& is_alloc);
+  ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type, MeshInfos& mesh_info) override;
+  ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type,MeshInfos& mesh_info, bool& is_alloc) override;
   IItemFamily*  family() override {return this;}
 
   ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type);

@@ -128,6 +128,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT BasicSerializeMessage
   Int32 messageNumber() const { return m_message_number; }
   void setMessageNumber(Int32 v) { m_message_number = v; }
   void setIsProcessed(bool v) { m_is_processed = v; }
+  ePointToPointMessageType _internalMessageType() const { return m_message_type; }
 
  protected:
 

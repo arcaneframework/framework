@@ -44,7 +44,7 @@ _applyPropertyVisitor(V& p)
 {
   auto b = p.builder();
   p << b.addString("AcceleratorRuntime")
-        .addDescription("Name of the accelerator runtime (currently only 'cuda') to use")
+        .addDescription("Name of the accelerator runtime (currently only 'cuda' or 'hip') to use")
         .addCommandLineArgument("AcceleratorRuntime")
         .addGetter([](auto a) { return a.x.acceleratorRuntime(); })
         .addSetter([](auto a) { a.x.setAcceleratorRuntime(a.v); });
@@ -139,6 +139,10 @@ arcaneInitializeRunner(Accelerator::Runner& runner,ITraceMng* tm,
   if (accelerator_runtime=="cuda"){
     tm->info() << "Using CUDA runtime";
     runner.setExecutionPolicy(eExecutionPolicy::CUDA);
+  }
+  else if (accelerator_runtime=="hip"){
+    tm->info() << "Using HIP runtime";
+    runner.setExecutionPolicy(eExecutionPolicy::HIP);
   }
   else if (TaskFactory::isActive()){
     tm->info() << "Using Task runtime";

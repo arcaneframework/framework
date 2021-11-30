@@ -333,15 +333,18 @@ class ReducerMin
 // changer l'implémentation sans tout recompiler) mais cela ne semble pas
 // bien fonctionner pour l'instant.
 
-#define ARCANE_INLINE_CUDA_IMPL
+#define ARCANE_INLINE_REDUCE_IMPL
 
-#ifdef ARCANE_INLINE_CUDA_IMPL
+#ifdef ARCANE_INLINE_REDUCE_IMPL
 
-#if defined(__CUDACC__)
-#  ifndef ARCANE_INLINE_CUDA
-#    define ARCANE_INLINE_CUDA inline
+#  ifndef ARCANE_INLINE_REDUCE
+#    define ARCANE_INLINE_REDUCE inline
 #  endif
-#  include "arcane/accelerator/cuda/CudaReduceImpl.h"
+
+#if defined(__CUDACC__) || defined(__HIP__)
+#  include "arcane/accelerator/CommonCudaHipReduceImpl.h"
+#else
+
 #endif
 
 #endif

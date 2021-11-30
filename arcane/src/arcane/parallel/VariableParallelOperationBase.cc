@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableParallelOperationBase.cc                            (C) 2000-2020 */
+/* VariableParallelOperationBase.cc                            (C) 2000-2021 */
 /*                                                                           */
-/* Classe de base des opérations parallèle sur des variables.                */
+/* Classe de base des opérations parallèles sur des variables.               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -25,6 +25,7 @@
 #include "arcane/IItemFamily.h"
 #include "arcane/ItemInternal.h"
 #include "arcane/ItemGroup.h"
+#include "arcane/ParallelMngUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -103,7 +104,7 @@ applyOperation(IDataOperation* operation)
   UniqueArray<ISerializeMessage*> m_messages;
   m_messages.reserve(nb_rank);
 
-  ScopedPtrT<IParallelExchanger> exchanger(pm->createExchanger());
+  auto exchanger {ParallelMngUtils::createExchangerRef(pm)};
   
   for( Integer i=0; i<nb_rank; ++i )
     if (!m_items_to_send[i].empty())

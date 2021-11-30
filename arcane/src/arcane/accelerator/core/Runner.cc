@@ -34,6 +34,8 @@ _getRuntime(eExecutionPolicy p)
 {
   IRunQueueRuntime* runtime = nullptr;
   switch(p){
+  case eExecutionPolicy::HIP:
+    return impl::getHIPRunQueueRuntime();
   case eExecutionPolicy::CUDA:
     return impl::getCUDARunQueueRuntime();
   case eExecutionPolicy::Sequential:
@@ -97,6 +99,7 @@ class Runner::Impl
     _add(runner,eExecutionPolicy::Sequential);
     _add(runner,eExecutionPolicy::Thread);
     _add(runner,eExecutionPolicy::CUDA);
+    _add(runner,eExecutionPolicy::HIP);
   }
  public:
   RunQueueImplStack* getPool(eExecutionPolicy exec_policy)

@@ -150,6 +150,7 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
   void setReplication(IParallelReplication* v) override;
   Ref<Parallel::IRequestList> createRequestListRef() override;
   Ref<IParallelMng> createSubParallelMngRef(Int32ConstArrayView kept_ranks) override;
+  Ref<IParallelMngUtilsFactory> _internalUtilsFactory() const override;
 
  protected:
 
@@ -176,6 +177,7 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
   IParallelMngContainerFactory* m_sub_builder_factory;
   Ref<IParallelMngContainer> m_parent_container_ref;
   MP::Communicator m_mpi_communicator;
+  Ref<IParallelMngUtilsFactory> m_utils_factory;
 
  private:
 

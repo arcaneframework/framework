@@ -23,8 +23,10 @@
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/trace/ITraceMng.h"
 #include "arccore/trace/TraceAccessor.h"
+#include "arccore/trace/StandaloneTraceMessage.h"
 
 #include <memory>
+#include <sstream>
 
 using namespace Arccore;
 
@@ -38,6 +40,27 @@ TEST(TraceMng, FatalMessage)
   bool is_ok = false;
   try{
     tr.fatal() << message;
+  }
+  catch(const FatalErrorException& ex)
+  {
+    new_message = ex.message();
+    is_ok = true;
+  }
+  ASSERT_TRUE(is_ok) << "Exception not caught";
+
+  ASSERT_TRUE(new_message==message) <<
+  String::format("Bad message(wanted='{0}' current='{1}'",message,new_message);
+}
+
+TEST(TraceMng, FatalMessage2)
+{
+  ReferenceCounter<ITraceMng> tm(arccoreCreateDefaultTraceMng());
+  TraceAccessor tr(tm.get());
+  String message = "TestFatalErrorMessage in utils";
+  String new_message;
+  bool is_ok = false;
+  try{
+    tr.fatalMessage(StandaloneTraceMessage{} << message);
   }
   catch(const FatalErrorException& ex)
   {

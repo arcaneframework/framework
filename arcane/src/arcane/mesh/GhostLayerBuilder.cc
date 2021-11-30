@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GhostLayerBuilder.cc                                        (C) 2000-2017 */
+/* GhostLayerBuilder.cc                                        (C) 2000-2021 */
 /*                                                                           */
 /* Construction des couches fantomes.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/Iterator.h"
 #include "arcane/utils/ArgumentException.h"
@@ -35,6 +33,7 @@
 #include "arcane/Timer.h"
 #include "arcane/IItemFamilyPolicyMng.h"
 #include "arcane/IItemFamilySerializer.h"
+#include "arcane/ParallelMngUtils.h"
 
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/GhostLayerBuilder.h"
@@ -306,8 +305,7 @@ _addOneGhostLayerV2()
 
   info() << "Number of shared faces: " << nb_sub_domain_boundary_face;
 
-  // Positionne la liste des envoies
-  ScopedPtrT<IParallelExchanger> exchanger(pm->createExchanger());
+  auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
 
   if (!platform::getEnvironmentVariable("ARCANE_COLLECTIVE_GHOST_LAYER").null())
     exchanger->setExchangeMode(IParallelExchanger::EM_Collective);
@@ -405,7 +403,7 @@ _addOneGhostLayerV2()
     }
   }
 
-  exchanger = pm->createExchanger();
+  exchanger = ParallelMngUtils::createExchangerRef(pm);
   _exchangeData(exchanger.get(),boundary_infos_to_send);
   debug() << "END OF EXCHANGE";
 
@@ -476,7 +474,7 @@ _exchangeCells(HashTableMapT<Int32,SharedArray<Int32>>& cells_to_send,bool with_
   //TODO: fusionner avec GhostLayerBuilder2::_exchangeCells().
   typedef HashTableMapT<Int32,SharedArray<Int32>> SubDomainItemMap;
   IParallelMng* pm = m_mesh->parallelMng();
-  ScopedPtrT<IParallelExchanger> exchanger(pm->createExchanger());
+  auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
   for( SubDomainItemMap::Enumerator i_map(cells_to_send); ++i_map; ){
     Int32 sd = i_map.data()->key();
     // TODO: items peut contenir des doublons et donc il faudrait les supprimer
@@ -538,7 +536,7 @@ addGhostChildFromParent()
   }
 
   // Positionne la liste des envoies
-  ScopedPtrT<IParallelExchanger> exchanger(pm->createExchanger());
+  auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
   _exchangeData(exchanger.get(),boundary_infos_to_send);
 
   traceMng()->flush();
@@ -637,7 +635,7 @@ addGhostChildFromParent2(Array<Int64>& ghost_cell_to_refine)
   }
 
   // Positionne la liste des envoies
-  ScopedPtrT<IParallelExchanger> exchanger(pm->createExchanger());
+  auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
   _exchangeData(exchanger.get(),boundary_infos_to_send);
 
   traceMng()->flush();

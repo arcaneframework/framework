@@ -285,7 +285,7 @@ class LegacyTBBTask
   void launchAndWait() override;
   void launchAndWait(ConstArrayView<ITask*> tasks) override;
  protected:
-  virtual ITask* _createChildTask(ITaskFunctor* functor);
+  ITask* _createChildTask(ITaskFunctor* functor) final;
  public:
   ITaskFunctor* m_functor;
   char functor_buf[FUNCTOR_CLASS_SIZE];
@@ -377,7 +377,7 @@ class TBBTaskImplementation
   }
 
   void executeParallelFor(Integer begin,Integer size,const ParallelLoopOptions& options,IRangeFunctor* f) final;
-  void executeParallelFor(Integer begin,Integer size,Integer grain_size,IRangeFunctor* f);
+  void executeParallelFor(Integer begin,Integer size,Integer grain_size,IRangeFunctor* f) final;
   void executeParallelFor(Integer begin,Integer size,IRangeFunctor* f) final
   {
     executeParallelFor(begin,size,m_default_loop_options,f);

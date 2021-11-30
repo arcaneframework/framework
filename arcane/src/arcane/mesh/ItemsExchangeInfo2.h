@@ -168,7 +168,7 @@ class ARCANE_MESH_EXPORT ItemsExchangeInfo2
    */
   UniqueArray<IItemFamily*> m_families_to_exchange;
 
-  IParallelExchanger* m_exchanger;
+  Ref<IParallelExchanger> m_exchanger;
 
   /*!
    * \brief Liste des numéros locaux des entités reçues.

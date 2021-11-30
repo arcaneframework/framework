@@ -772,9 +772,32 @@ add_subdirectory(src/arcane/driver)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-# Gestion du support CUDA.
+# Gestion du support des accélérateurs.
+# Les deux modes supportés sont 'CUDANVCC' et 'ROCMHIP'
+if (ARCANE_WANT_CUDA AND NOT DEFINED ARCANE_ACCELERATOR_MODE)
+  set (ARCANE_ACCELERATOR_MODE "CUDANVCC")
+endif()
 
-if (ARCANE_WANT_CUDA)
+if(DEFINED ARCANE_ACCELERATOR_MODE)
+  if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC" )
+    set (ARCANE_WANT_CUDA TRUE)
+  elseif (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
+    # TODO: vérifier qu'on utilise bien 'hipcc'
+  else()
+    message(FATAL_ERROR "Unsupported ARCANE_ACCELERATOR_MODE '${ARCANE_ACCELERATOR_MODE}'."
+      "Valid values are 'CUDANVCC' or 'ROCMHIP'")
+  endif()
+  set (ARCANE_ACCELERATOR_MODE ${ARCANE_ACCELERATOR_MODE} CACHE STRING "Accelerator Mode" FORCE)
+endif()
+
+# ----------------------------------------------------------------------------
+
+if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP")
+  # Il faut au moins CMake 3.21 pour qu'il reconnaise langage HIP
+  cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
+  enable_language(HIP)
+  add_subdirectory(src/arcane/accelerator/hip)
+elseif(ARCANE_WANT_CUDA)
   enable_language(CUDA)
   # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
   if (NOT CMAKE_CUDA_ARCHITECTURES)
@@ -786,7 +809,9 @@ endif()
 add_subdirectory(src/arcane/accelerator/core)
 add_subdirectory(src/arcane/accelerator)
 
-if (ARCANE_WANT_CUDA)
+if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
+  add_subdirectory(src/arcane/accelerator/hip/runtime)
+elseif (ARCANE_WANT_CUDA)
   add_subdirectory(src/arcane/accelerator/cuda/runtime)
 endif()
 
@@ -975,6 +1000,9 @@ function(ARCANE_GEN_PACKAGE_CONFIG_FILE filename)
   SET(_STR "// # File generated from configure. Do not edit\n")
   SET(_STR "${_STR}// # Packages list\n")
   foreach(package ${ARCANE_PACKAGE_LIST})
+    # S'assure que le package n'a pas de '-' dans le nom sinon cela
+    # génère une macro invalide
+    string(REPLACE "-" "_" package "${package}")
     # Si une cible 'arcane::${package} existe, alors le package est disponible.
     string(TOLOWER ${package} lower_pkg_name)
     string(TOUPPER ${package} upper_pkg_name)

@@ -24,6 +24,10 @@
 
 #include "arcane/Concurrency.h"
 
+#if defined(__HIP__)
+#include <hip/hip_runtime.h>
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -50,7 +54,7 @@ ARCCORE_HOST_DEVICE auto privatize(const T& item) -> Privatizer<T>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#if defined(ARCANE_COMPILING_CUDA)
+#if defined(ARCANE_COMPILING_CUDA) || defined(__HIP__)
 
 template<typename ItemType,typename Lambda> __global__
 void doIndirectCUDALambda(Span<const Int32> ids,Lambda func)
@@ -91,7 +95,7 @@ void doDirectCUDALambdaArrayBounds(LoopBoundType bounds,Lambda func)
 
   int i = blockDim.x * blockIdx.x + threadIdx.x;
   if (i<bounds.nbElement()){
-    func(bounds.getIndices(i));
+    body(bounds.getIndices(i));
   }
 }
 

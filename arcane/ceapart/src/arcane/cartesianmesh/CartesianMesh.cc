@@ -115,7 +115,7 @@ class CartesianMeshImpl
   }
 
   Integer nbPatch() const override { return m_amr_patches.size(); }
-  ICartesianMeshPatch* patch(Integer index) const { return m_amr_patches[index].get(); }
+  ICartesianMeshPatch* patch(Integer index) const override { return m_amr_patches[index].get(); }
 
   void refinePatch2D(Real2 position,Real2 length) override;
 

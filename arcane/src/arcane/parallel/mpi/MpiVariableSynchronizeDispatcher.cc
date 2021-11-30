@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiVariableSynchronizeDispatcher.cc                         (C) 2000-2016 */
+/* MpiVariableSynchronizeDispatcher.cc                         (C) 2000-2021 */
 /*                                                                           */
 /* Gestion spécifique MPI des synchronisations des variables.                */
 /*---------------------------------------------------------------------------*/
@@ -27,10 +27,35 @@
 
 #include "arcane/datatype/DataTypeTraits.h"
 
+#include "arccore/message_passing/IRequestList.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace
+{
+class TimeInterval
+{
+ public:
+  TimeInterval(double* cumulative_value)
+  : m_cumulative_value(cumulative_value)
+  {
+    m_begin_time = MPI_Wtime();
+  }
+  ~TimeInterval()
+  {
+    double end_time = MPI_Wtime();
+    *m_cumulative_value = (end_time - m_begin_time);
+  }
+ private:
+  double* m_cumulative_value;
+  double m_begin_time = 0.0;
+};
+
+}
+
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,13 +65,9 @@ MpiVariableSynchronizeDispatcher<SimpleType>::
 MpiVariableSynchronizeDispatcher(MpiVariableSynchronizeDispatcherBuildInfo& bi)
 : VariableSynchronizeDispatcher<SimpleType>(VariableSynchronizeDispatcherBuildInfo(bi.parallelMng(),bi.table()))
 , m_mpi_parallel_mng(bi.parallelMng())
-, m_use_derived_type(true)
+, m_receive_request_list(m_mpi_parallel_mng->createRequestListRef())
+, m_send_request_list(m_mpi_parallel_mng->createRequestListRef())
 {
-  //NOTE: Desactive pour l'instant les types derives car cela ne fonctionne
-  // par correctement avec BullMPI.
-  // Verifier si cela vient de Arcane ou de Bull.
-  // Ca fonctionne correctement avec Mpich2 1.0.5 et OpenMpi 1.2+
-  m_use_derived_type = false;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -56,43 +77,7 @@ template<typename SimpleType> void
 MpiVariableSynchronizeDispatcher<SimpleType>::
 compute(ConstArrayView<VariableSyncInfo> sync_list)
 {
-  //m_mpi_parallel_mng->traceMng()->info() << "MPI COMPUTE";
   VariableSynchronizeDispatcher<SimpleType>::compute(sync_list);
-  if (m_use_derived_type){
-    //TODO Utiliser des 'int' MPI au lieu de Int32
-    Integer nb_message = this->m_sync_list.size();
-    MpiParallelMng* pm = m_mpi_parallel_mng;
-    _destroyTypes();
-    m_share_derived_types.resize(nb_message);
-    m_ghost_derived_types.resize(nb_message);
-    //TODO Utiliser des 'int' MPI au lieu de Int32
-    pm->traceMng()->info() << "CREATE DERIVED TYPE";
-    typedef DataTypeTraitsT<SimpleType> DataTypeTraits;
-    typedef typename DataTypeTraitsT<SimpleType>::BasicType BasicType;
-    int nb_basic = DataTypeTraits::nbBasicType();
-    MPI_Datatype mpi_basetype = pm->datatypes()->datatype(BasicType())->datatype();
-    UniqueArray<int> ids;
-    for( Integer i=0; i<nb_message; ++i ){
-      const VariableSyncInfo& vsi = this->m_sync_list[i];
-      Int32ConstArrayView share_grp = vsi.m_share_ids;
-      Integer nb_share = share_grp.size();
-      ids.resize(nb_share);
-      for( Integer z=0; z<nb_share; ++z )
-        ids[z] = share_grp[z]*nb_basic;
-      MPI_Type_create_indexed_block(ids.size(),nb_basic,ids.data(),
-                                    mpi_basetype,&m_share_derived_types[i]);
-      MPI_Type_commit(&m_share_derived_types[i]);
-
-      Int32ConstArrayView ghost_grp = vsi.m_ghost_ids;
-      Integer nb_ghost = ghost_grp.size();
-      ids.resize(nb_ghost);
-      for( Integer z=0; z<nb_ghost; ++z )
-        ids[z] = ghost_grp[z]*nb_basic;
-      MPI_Type_create_indexed_block(ids.size(),nb_basic,ids.data(),
-                                    mpi_basetype,&m_ghost_derived_types[i]);
-      MPI_Type_commit(&m_ghost_derived_types[i]);
-    }
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -104,86 +89,91 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 {
   if (this->m_is_in_sync)
     ARCANE_FATAL("Only one pending serialisation is supported");
-  //Integer nb_elem = var_values.size();
-  Integer nb_message = this->m_sync_list.size();
-  Integer dim2_size = sync_buffer.m_dim2_size;
 
-  m_send_requests.clear();
+  Integer nb_message = this->m_sync_list.size();
+
+  m_send_request_list->clear();
 
   MpiParallelMng* pm = m_mpi_parallel_mng;
-  MPI_Comm comm = pm->communicator();
   MpiDatatypeList* dtlist = pm->datatypes();
 
-  //ITraceMng* trace = pm->traceMng();
-  //trace->info() << " ** ** MPI BEGIN SYNC n=" << nb_message
-  //              << " this=" << (IVariableSynchronizeDispatcher*)this;
-  //trace->flush();
+  MP::Mpi::MpiAdapter* mpi_adapter = m_mpi_parallel_mng->adapter();
 
-  bool use_derived = (dim2_size==1 && m_use_derived_type);
-
-  //SyncBuffer& sync_buffer = this->m_1d_buffer;
-  // Envoie les messages de réception en mode non bloquant
-  m_recv_requests.resize(nb_message);
-  m_recv_requests_done.resize(nb_message);
   double begin_prepare_time = MPI_Wtime();
+
+  constexpr int serialize_tag = 523;
+
+  // Envoie les messages de réception en mode non bloquant
+  m_original_recv_requests_done.resize(nb_message);
+  m_original_recv_requests.resize(nb_message);
+
+  // Poste les messages de réception
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = this->m_sync_list[i];
-      ArrayView<SimpleType> ghost_local_buffer = sync_buffer.m_ghost_locals_buffer[i];
-      if (!ghost_local_buffer.empty()){
-        MPI_Request mpi_request;
-        if (use_derived){
-          m_mpi_parallel_mng->adapter()->getMpiProfiling()->iRecv(var_values.data(),1,m_ghost_derived_types[i],
-                                                                  vsi.m_target_rank,523,comm,&mpi_request);
-        }
-        else{
-          MPI_Datatype dt = dtlist->datatype(SimpleType())->datatype();
-          m_mpi_parallel_mng->adapter()->getMpiProfiling()->iRecv(ghost_local_buffer.data(),ghost_local_buffer.size(),
-                                                                  dt,vsi.m_target_rank,523,comm,&mpi_request);
-        }
-        
-        m_recv_requests[i] = mpi_request;
-        m_recv_requests_done[i] = false;
-        //trace->info() << "POST RECV " << vsi.m_target_rank;
-      }
-      else{
-        // Il n'est pas nécessaire d'envoyer un message vide.
-        // Considère le message comme terminé
-        m_recv_requests[i] = MPI_Request();
-        m_recv_requests_done[i] = true;
-      }
-    }
-
-    // Envoie les messages d'envoie en mode non bloquant.
-    for( Integer i=0; i<nb_message; ++i ){
-      const VariableSyncInfo& vsi = this->m_sync_list[i];
-      Int32ConstArrayView share_grp = vsi.m_share_ids;
-      ArrayView<SimpleType> share_local_buffer = sync_buffer.m_share_locals_buffer[i];
-      if (!use_derived)
-        this->_copyToBuffer(share_grp,share_local_buffer,var_values,dim2_size);
-      if (!share_local_buffer.empty()){
-        MPI_Request mpi_request;
-        if (use_derived){
-          m_mpi_parallel_mng->adapter()->getMpiProfiling()->iSend(var_values.data(),1,m_share_derived_types[i],
-                                                                  vsi.m_target_rank,523,comm,&mpi_request);
-        }
-        else{
-          MPI_Datatype dt = dtlist->datatype(SimpleType())->datatype();
-          m_mpi_parallel_mng->adapter()->getMpiProfiling()->iSend(share_local_buffer.data(),share_local_buffer.size(),
-                                                                  dt,vsi.m_target_rank,523,comm,&mpi_request);
-        }
-        m_send_requests.add(mpi_request);
-        //trace->info() << "POST SEND " << vsi.m_target_rank;
-      }
-    }
-    double prepare_time = MPI_Wtime() - begin_prepare_time;
-    if (use_derived){
-      pm->stat()->add("SyncPrepareDerived",prepare_time,1);
+    ArrayView<SimpleType> ghost_local_buffer = sync_buffer.m_ghost_locals_buffer[i];
+    if (!ghost_local_buffer.empty()){
+      MPI_Datatype dt = dtlist->datatype(SimpleType())->datatype();
+      auto req = mpi_adapter->directRecv(ghost_local_buffer.data(),ghost_local_buffer.size(),
+                                         vsi.m_target_rank,sizeof(SimpleType),dt,serialize_tag,false);
+      m_original_recv_requests[i] = req;
+      m_original_recv_requests_done[i] = false;
+      //trace->info() << "POST RECV " << vsi.m_target_rank;
     }
     else{
-      pm->stat()->add("SyncPrepare",prepare_time,1);
+      // Il n'est pas nécessaire d'envoyer un message vide.
+      // Considère le message comme terminé
+      m_original_recv_requests[i] = Parallel::Request{};
+      m_original_recv_requests_done[i] = true;
     }
-    this->m_is_in_sync = true;
   }
+
+  // Recopie les buffers d'envoi dans \a var_values
+  for( Integer i=0; i<nb_message; ++i )
+    _copySend(var_values,sync_buffer,i);
+
+  // Poste les messages d'envoie en mode non bloquant.
+  for( Integer i=0; i<nb_message; ++i ){
+    ArrayView<SimpleType> share_local_buffer = sync_buffer.m_share_locals_buffer[i];
+    const VariableSyncInfo& vsi = this->m_sync_list[i];
+    if (!share_local_buffer.empty()){
+      MPI_Datatype dt = dtlist->datatype(SimpleType())->datatype();
+      auto request = mpi_adapter->directSend(share_local_buffer.data(),share_local_buffer.size(),
+                                             vsi.m_target_rank,sizeof(SimpleType),dt,serialize_tag,false);
+      m_send_request_list->add(request);
+    }
+  }
+  double prepare_time = MPI_Wtime() - begin_prepare_time;
+  pm->stat()->add("SyncPrepare",prepare_time,1);
+  this->m_is_in_sync = true;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename SimpleType> void
+MpiVariableSynchronizeDispatcher<SimpleType>::
+_copyReceive(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer,Integer index)
+{
+  Integer dim2_size = sync_buffer.m_dim2_size;
+  const VariableSyncInfo& vsi = this->m_sync_list[index];
+  ConstArrayView<Int32> ghost_grp = vsi.m_ghost_ids;
+  ArrayView<SimpleType> ghost_local_buffer = sync_buffer.m_ghost_locals_buffer[index];
+  this->_copyFromBuffer(ghost_grp,ghost_local_buffer,var_values,dim2_size);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename SimpleType> void
+MpiVariableSynchronizeDispatcher<SimpleType>::
+_copySend(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer,Integer index)
+{
+  Integer dim2_size = sync_buffer.m_dim2_size;
+  const VariableSyncInfo& vsi = this->m_sync_list[index];
+  Int32ConstArrayView share_grp = vsi.m_share_ids;
+  ArrayView<SimpleType> share_local_buffer = sync_buffer.m_share_locals_buffer[index];
+  this->_copyToBuffer(share_grp,share_local_buffer,var_values,dim2_size);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -195,84 +185,57 @@ endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
   if (!this->m_is_in_sync)
     ARCANE_FATAL("endSynchronize() called but no beginSynchronize() was called before");
 
-  Integer dim2_size = sync_buffer.m_dim2_size;
-  bool use_derived = (dim2_size==1 && m_use_derived_type);
-
   MpiParallelMng* pm = m_mpi_parallel_mng;
 
-  //ITraceMng* trace = pm->traceMng();
-  //trace->info() << " ** ** MPI END SYNC "
-  //              << " this=" << (IVariableSynchronizeDispatcher*)this;
-
-  UniqueArray<MPI_Request> remaining_request;
-  UniqueArray<Integer> remaining_indexes;
-
-  UniqueArray<MPI_Status> mpi_status;
-  UniqueArray<int> completed_requests;
-
-  UniqueArray<MPI_Request> m_remaining_recv_requests;
-  UniqueArray<Integer> m_remaining_recv_request_indexes;
+  UniqueArray<Integer> remaining_receive_request_indexes;
   double copy_time = 0.0;
   double wait_time = 0.0;
+
   while(1){
-    m_remaining_recv_requests.clear();
-    m_remaining_recv_request_indexes.clear();
-    for( Integer i=0; i<m_recv_requests.size(); ++i ){
-      if (!m_recv_requests_done[i]){
-        m_remaining_recv_requests.add(m_recv_requests[i]);
-        m_remaining_recv_request_indexes.add(i); //m_recv_request_indexes[i]);
+    m_receive_request_list->clear();
+    remaining_receive_request_indexes.clear();
+    for( Integer i=0, n=m_original_recv_requests_done.size(); i<n; ++i ){
+      if (!m_original_recv_requests_done[i]){
+        m_receive_request_list->add(m_original_recv_requests[i]);
+        remaining_receive_request_indexes.add(i);
       }
     }
-    Integer nb_remaining_request = m_remaining_recv_requests.size();
+    Integer nb_remaining_request = m_receive_request_list->size();
     if (nb_remaining_request==0)
       break;
-    int nb_completed_request = 0;
-    mpi_status.resize(nb_remaining_request);
-    completed_requests.resize(nb_remaining_request);
+
     {
-      double begin_time = MPI_Wtime();
-      //trace->info() << "Wait some: n=" << nb_remaining_request
-      //              << " total=" << nb_message;
-      m_mpi_parallel_mng->adapter()->getMpiProfiling()->waitSome(nb_remaining_request,m_remaining_recv_requests.data(),
-                                                                 &nb_completed_request,completed_requests.data(),
-                                                                 mpi_status.data());
-      //trace->info() << "Wait some end: nb_done=" << nb_completed_request;
-      double end_time = MPI_Wtime();
-      wait_time += (end_time-begin_time);
+      TimeInterval tit(&wait_time);
+      m_receive_request_list->wait(Parallel::WaitSome);
     }
-    // Pour chaque requete terminee, effectue la copie
-    for( int z=0; z<nb_completed_request; ++z ){
-      int mpi_request_index = completed_requests[z];
-      Integer index = m_remaining_recv_request_indexes[mpi_request_index];
 
-      if (!use_derived){
-        double begin_time = MPI_Wtime();
-        const VariableSyncInfo& vsi = this->m_sync_list[index];
-        Int32ConstArrayView ghost_grp = vsi.m_ghost_ids;
-        ArrayView<SimpleType> ghost_local_buffer = sync_buffer.m_ghost_locals_buffer[index];
-        this->_copyFromBuffer(ghost_grp,ghost_local_buffer,var_values,dim2_size);
-        double end_time = MPI_Wtime();
-        copy_time += (end_time - begin_time);
+    // Pour chaque requete terminée, effectue la copie
+    ConstArrayView<Int32> done_requests = m_receive_request_list->doneRequestIndexes();
+    Integer nb_completed_request = done_requests.size();
+
+    for( Integer z=0; z<nb_completed_request; ++z ){
+      Integer mpi_request_index = done_requests[z];
+      Integer index = remaining_receive_request_indexes[mpi_request_index];
+      m_original_recv_requests_done[index] = true; // Pour indiquer que c'est fini
+
+      // Recopie les valeurs recues
+      {
+        TimeInterval tit(&copy_time);
+        _copyReceive(var_values,sync_buffer,index);
       }
-      //trace->info() << "Mark finish index = " << index << " mpi_request_index=" << mpi_request_index;
-      m_recv_requests_done[index] = true; // Pour indiquer que c'est fini
     }
   }
 
-  //trace->info() << "Wait all begin: n=" << m_send_requests.size();
-  // Attend que les envois se terminent
-  mpi_status.resize(m_send_requests.size());
-  m_mpi_parallel_mng->adapter()->getMpiProfiling()->waitAll(m_send_requests.size(),m_send_requests.data(),
-                                                            mpi_status.data());
-  //trace->info() << "Wait all end";
+  // Attend que les envois se terminent.
+  // Il faut le faire pour pouvoir libérer les requêtes même si le message
+  // est arrivé.
+  {
+    TimeInterval tit(&wait_time);
+    m_send_request_list->wait(Parallel::WaitAll);
+  }
 
-  if (use_derived){
-    pm->stat()->add("SyncWaitDerived",wait_time,1);
-  }
-  else{
-    pm->stat()->add("SyncCopy",copy_time,1);
-    pm->stat()->add("SyncWait",wait_time,1);
-  }
+  pm->stat()->add("SyncCopy",copy_time,1);
+  pm->stat()->add("SyncWait",wait_time,1);
   this->m_is_in_sync = false;
 }
 
@@ -292,7 +255,7 @@ template class MpiVariableSynchronizeDispatcher<Real3x3>;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

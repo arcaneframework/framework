@@ -46,7 +46,7 @@ class SimpleGridMeshPartitioner
 
  public:
   void build() override {}
-  IPrimaryMesh* primaryMesh() { return mesh()->toPrimaryMesh(); }
+  IPrimaryMesh* primaryMesh() override { return mesh()->toPrimaryMesh(); }
   void partitionMesh(bool initial_partition) override;
   void notifyEndPartition() override {}
 

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceUniqueIdBuilder.cc                                      (C) 2000-2020 */
+/* FaceUniqueIdBuilder.cc                                      (C) 2000-2021 */
 /*                                                                           */
 /* Construction des indentifiants uniques des faces.                         */
 /*---------------------------------------------------------------------------*/
@@ -27,6 +27,7 @@
 #include "arcane/IParallelMng.h"
 #include "arcane/ISerializeMessage.h"
 #include "arcane/ISerializer.h"
+#include "arcane/ParallelMngUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -734,7 +735,7 @@ _computeFacesUniqueIdsParallel3()
   }
 
   // Positionne la liste des envoies
-  ScopedPtrT<IParallelExchanger> exchanger(pm->createExchanger());
+  Ref<IParallelExchanger> exchanger{ParallelMngUtils::createExchangerRef(pm)};
   _exchangeData(exchanger.get(),boundary_infos_to_send);
 
   {
@@ -823,7 +824,8 @@ _computeFacesUniqueIdsParallel3()
       my_max_face_node = math::max(node_nb_face,my_max_face_node);
     }
   }
-  exchanger = pm->createExchanger();
+  exchanger = ParallelMngUtils::createExchangerRef(pm);
+
   _exchangeData(exchanger.get(),boundary_infos_to_send);
   {
     Integer nb_receiver = exchanger->nbReceiver();

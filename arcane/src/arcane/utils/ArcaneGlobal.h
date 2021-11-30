@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneGlobal.h                                              (C) 2000-2020 */
+/* ArcaneGlobal.h                                              (C) 2000-2021 */
 /*                                                                           */
 /* Déclarations générales de Arcane.                                         */
 /*---------------------------------------------------------------------------*/
@@ -181,7 +181,8 @@ typedef ARCANE_TYPE_INT64 Int64;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -626,7 +627,7 @@ extern "C++" ARCANE_UTILS_EXPORT bool _checkDebug(size_t);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifdef ARCANE_CHECK
+#if defined(ARCANE_CHECK) || defined(ARCANE_DEBUG)
 #ifndef ARCANE_DEBUG_ASSERT
 #define ARCANE_DEBUG_ASSERT
 #endif
@@ -642,7 +643,7 @@ extern "C++" ARCANE_UTILS_EXPORT bool _checkDebug(size_t);
  * de type FatalErrorException.
  */
 extern "C++" ARCANE_UTILS_EXPORT void
-arcaneNullPointerError ARCANE_NORETURN ();
+arcaneNullPointerError [[noreturn]] ();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -658,7 +659,7 @@ arcaneNullPointerError ARCANE_NORETURN ();
  * via la macro ARCANE_CHECK_POINTER.
  */
 extern "C++" ARCANE_UTILS_EXPORT void
-arcaneThrowNullPointerError ARCANE_NORETURN (const char* ptr_name,const char* text);
+arcaneThrowNullPointerError [[noreturn]] (const char* ptr_name,const char* text);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -838,7 +839,7 @@ arcaneThrowIfNull(T* ptr,const char* ptr_name,const char* text)
  * \param max_size nombre d'éléments du tableau
  */
 extern "C++" ARCANE_UTILS_EXPORT void
-arcaneRangeError ARCANE_NORETURN (Int64 i,Int64 max_size);
+arcaneRangeError [[noreturn]] (Int64 i,Int64 max_size);
 
 /*!
  * \brief Vérifie un éventuel débordement de tableau.
@@ -855,7 +856,7 @@ arcaneCheckAt(Int64 i,Int64 max_size)
 #endif
 }
 
-#ifdef ARCANE_CHECK
+#if defined(ARCANE_CHECK) || defined(ARCANE_DEBUG)
 #define ARCANE_CHECK_AT(a,b) ::Arcane::arcaneCheckAt((a),(b))
 #else
 #define ARCANE_CHECK_AT(a,b)
@@ -864,7 +865,7 @@ arcaneCheckAt(Int64 i,Int64 max_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

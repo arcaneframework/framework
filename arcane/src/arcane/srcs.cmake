@@ -169,6 +169,8 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    StandardCaseFunction.h
    ParallelMngDispatcher.cc
    ParallelMngDispatcher.h
+   ParallelMngUtils.h
+   ParallelMngUtils.cc
    ParallelNonBlockingCollectiveDispatcher.cc
    ParallelNonBlockingCollectiveDispatcher.h
    ParallelSuperMngDispatcher.cc
@@ -542,6 +544,7 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    IModule.h
    IParallelNonBlockingCollective.h
    IParallelMng.h
+   IParallelMngUtilsFactory.h
    IParallelReplication.h
    IParallelTopology.h
    IParallelSort.h

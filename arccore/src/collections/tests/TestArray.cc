@@ -219,7 +219,7 @@ _testArrayNewInternal()
   std::cout << "** TEST VECTOR NEW\n";
 
   size_t impl_size = sizeof(ArrayImplBase);
-  size_t wanted_size = AlignedMemoryAllocator::simdAlignment();
+  std::cout << "** wanted_size = " << AlignedMemoryAllocator::simdAlignment() << "\n";
   std::cout << "** sizeof(ArrayImplBase) = " << impl_size << '\n';
   //if (impl_size!=wanted_size)
   //ARCCORE_FATAL("Bad sizeof(ArrayImplBase) v={0} expected={1}",impl_size,wanted_size);

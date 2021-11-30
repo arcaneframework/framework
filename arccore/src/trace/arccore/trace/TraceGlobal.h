@@ -52,6 +52,7 @@ class TraceMessage;
 class TraceMessageListenerArgs;
 class ITraceMessageListener;
 class TraceAccessor;
+class StandaloneTraceMessage;
 #ifdef ARCCORE_DEBUG
 typedef TraceMessage TraceMessageDbg;
 #else

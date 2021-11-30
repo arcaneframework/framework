@@ -89,23 +89,20 @@ class SimpleHydroSimdService
  public:
 
 
-  void hydroBuild();
-  void hydroStartInit();
-  void hydroInit();
-  void hydroContinueInit() {}
-  void hydroExit();
+  void hydroBuild() override;
+  void hydroStartInit() override;
+  void hydroInit() override;
+  void hydroExit() override;
 
-  void computeForces();
-  void computePressureForce(){}
-  void computePseudoViscosity(){}
-  void computeVelocity();
-  void computeViscosityWork();
-  void applyBoundaryCondition();
-  void moveNodes();
-  void computeGeometricValues();
-  void updateDensity();
-  void applyEquationOfState();
-  void computeDeltaT();
+  void computeForces() override;
+  void computeVelocity() override;
+  void computeViscosityWork() override;
+  void applyBoundaryCondition() override;
+  void moveNodes() override;
+  void computeGeometricValues() override;
+  void updateDensity() override;
+  void applyEquationOfState() override;
+  void computeDeltaT() override;
 
   void setModule(SimpleHydro::SimpleHydroModuleBase* module) override
   {

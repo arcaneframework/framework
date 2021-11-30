@@ -43,6 +43,9 @@ list(APPEND ARCANE_SOURCES ${ARCANE_ACCELERATOR_SOURCES})
 if (ARCANE_WANT_CUDA)
   set_source_files_properties(${ARCANE_ACCELERATOR_SOURCES} PROPERTIES LANGUAGE CUDA)
 endif()
+if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
+  set_source_files_properties(${ARCANE_ACCELERATOR_SOURCES} PROPERTIES LANGUAGE HIP)
+endif()
 
 set(CURRENT_SRC_PATH ${Arcane_SOURCE_DIR}/src)
 
@@ -55,10 +58,6 @@ arcane_add_library(arcane_tests_lib
   FILES ${ARCANE_SOURCES}
   AXL_FILES ${AXL_FILES}
   )
-#set_target_properties(arcane_tests_lib
-#  PROPERTIES
-#  LIBRARY_OUTPUT_DIRECTORY ${LIBRARY_OUTPUT_PATH}
-#  )
 
 arcane_add_arccon_packages(arcane_tests_lib PRIVATE ${PKGS})
 
@@ -269,6 +268,9 @@ add_test(standalone_accelerator_testsum ${ARCANE_TEST_DRIVER} launch -A,Standalo
 if (ARCANE_WANT_CUDA)
   add_test(standalone_accelerator_testsum_cuda ${ARCANE_TEST_DRIVER} launch -A,StandaloneAcceleratorMethod=TestSum -A,AcceleratorRuntime=cuda)
 endif()
+if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
+  add_test(standalone_accelerator_testsum_hip ${ARCANE_TEST_DRIVER} launch -A,StandaloneAcceleratorMethod=TestSum -A,AcceleratorRuntime=hip)
+endif()
 
 # ----------------------------------------------------------------------------
 
@@ -431,15 +433,11 @@ ARCANE_ADD_TEST(hydro5_trace testHydro-5.arc -m 50 -We,ARCANE_TRACE_ENUMERATOR,1
 ARCANE_ADD_TEST(hydrosimd5 testHydroSimd-5.arc -m 50)
 ARCANE_ADD_TEST(hydrosimd5_trace testHydroSimd-5.arc -m 50 -We,ARCANE_TRACE_ENUMERATOR,1)
 
-if (ARCANE_WANT_CUDA)
-  arcane_add_test(hydro_accelerator5_cuda testHydroAccelerator-5.arc -A,AcceleratorRuntime=cuda -m 50)
-endif()
+arcane_add_accelerator_test_sequential(hydro_accelerator5 testHydroAccelerator-5.arc -m 50)
 arcane_add_test(hydro_accelerator5 testHydroAccelerator-5.arc -m 50)
 arcane_add_test_sequential_task(hydro_accelerator5 testHydroAccelerator-5.arc 4 -m 50)
 
-if (ARCANE_WANT_CUDA)
-  arcane_add_test_sequential(hydro_accelerator5_multiple_queue_cuda testHydroAccelerator-5-multiple_queue.arc -A,AcceleratorRuntime=cuda -m 50)
-endif()
+arcane_add_accelerator_test_sequential(hydro_accelerator5_multiple_queue testHydroAccelerator-5-multiple_queue.arc -m 50)
 arcane_add_test_sequential(hydro_accelerator5_multiple_queue testHydroAccelerator-5-multiple_queue.arc -m 50)
 arcane_add_test_sequential_task(hydro_accelerator5_multiple_queue testHydroAccelerator-5-multiple_queue.arc 4 -m 50)
 
@@ -476,23 +474,17 @@ endif()
 
 arcane_add_test_sequential(numarray1 testNumArray-1.arc)
 arcane_add_test_sequential_task(numarray1 testNumArray-1.arc 4)
-if (ARCANE_WANT_CUDA)
-  arcane_add_test_sequential(numarray1_cuda testNumArray-1.arc -A,AcceleratorRuntime=cuda)
-endif()
+arcane_add_accelerator_test_sequential(numarray1 testNumArray-1.arc)
 
 arcane_add_test_sequential(acceleratorviews1 testAcceleratorViews-1.arc)
 arcane_add_test_sequential_task(acceleratorviews1 testAcceleratorViews-1.arc 4)
-if (ARCANE_WANT_CUDA)
-  arcane_add_test_sequential(acceleratorviews1_cuda testAcceleratorViews-1.arc -A,AcceleratorRuntime=cuda)
-endif()
+arcane_add_accelerator_test_sequential(acceleratorviews1 testAcceleratorViews-1.arc)
 
 arcane_add_test_sequential(miniweather_orig1 testMiniWeatherOriginal.arc)
 arcane_add_test_sequential(miniweather_array_seq1 testMiniWeatherArraySequential.arc)
 arcane_add_test_sequential(miniweather_array1 testMiniWeatherArray.arc)
 arcane_add_test_sequential_task(miniweather_array1 testMiniWeatherArray.arc 4)
-if (ARCANE_WANT_CUDA)
-  arcane_add_test_sequential(miniweather_array1_cuda testMiniWeatherArray.arc -A,AcceleratorRuntime=cuda)
-endif()
+arcane_add_accelerator_test_sequential(miniweather_array1 testMiniWeatherArray.arc)
 
 if(ARCANE_HAS_GEOMETRY)
   ARCANE_ADD_TEST(geometry testGeom.arc)

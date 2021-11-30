@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GhostLayerBuilder2.cc                                       (C) 2000-2017 */
+/* GhostLayerBuilder2.cc                                       (C) 2000-2021 */
 /*                                                                           */
 /* Construction des couches fantomes.                                        */
 /*---------------------------------------------------------------------------*/
@@ -30,6 +30,7 @@
 #include "arcane/IGhostLayerMng.h"
 #include "arcane/IItemFamilyPolicyMng.h"
 #include "arcane/IItemFamilySerializer.h"
+#include "arcane/ParallelMngUtils.h"
 
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/DynamicMeshIncrementalBuilder.h"
@@ -40,15 +41,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -702,7 +696,7 @@ _sortBoundaryNodeList(Array<BoundaryNodeInfo>& boundary_node_list)
 void GhostLayerBuilder2::
 _sendAndReceiveCells(SubDomainItemMap& cells_to_send)
 {
-  ScopedPtrT<IParallelExchanger> exchanger(m_parallel_mng->createExchanger());
+  auto exchanger { ParallelMngUtils::createExchangerRef(m_parallel_mng) };
 
   // Envoie et réceptionne les mailles fantômes
   for( SubDomainItemMap::Enumerator i_map(cells_to_send); ++i_map; ){
@@ -789,8 +783,7 @@ _buildGhostLayerNewVersion(DynamicMesh* mesh,bool is_allocate)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
