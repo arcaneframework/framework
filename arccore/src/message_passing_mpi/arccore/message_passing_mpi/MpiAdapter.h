@@ -195,6 +195,14 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   void setTraceMPIMessage(bool v) { m_is_trace = v; }
   bool isTraceMPIMessage() const { return m_is_trace; }
 
+  /*!
+   * \brief Indique si on vérifie les requêtes.
+   *
+   * Cette valeur ne doit être modifiée s'il y a des requêtes en cours.
+   */
+  void setCheckRequest(bool v);
+  bool isCheckRequest() const;
+
  public:
 
   void setMpiProfiling(IMpiProfiling* mpi_profiling);

@@ -17,7 +17,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiAdapter.cc                                               (C) 2000-2020 */
+/* MpiAdapter.cc                                               (C) 2000-2021 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant MPI.                               */
 /*---------------------------------------------------------------------------*/
@@ -68,8 +68,10 @@ class MpiAdapter::RequestSet
   RequestSet(ITraceMng* tm) : TraceAccessor(tm)
   {
     m_trace_mng_ref = makeRef(tm);
-    if (arccoreIsCheck())
+    if (arccoreIsCheck()){
+      m_no_check_request = false;
       m_request_error_is_fatal = true;
+    }
     if (Platform::getEnvironmentVariable("ARCCORE_NOREPORT_ERROR_MPIREQUEST")=="TRUE")
       m_is_report_error_in_request = false;
     if (Platform::getEnvironmentVariable("ARCCORE_MPIREQUEST_STACKTRACE")=="TRUE")
@@ -80,24 +82,32 @@ class MpiAdapter::RequestSet
  public:
   void addRequest(MPI_Request request)
   {
+    if (m_no_check_request)
+      return;
     if (m_trace_mpirequest)
       info() << "MpiAdapter: AddRequest r=" << request;
     _addRequest(request,TraceInfo());
   }
   void addRequest(MPI_Request request,const TraceInfo& ti)
   {
+    if (m_no_check_request)
+      return;
     if (m_trace_mpirequest)
       info() << "MpiAdapter: AddRequest r=" << request;
     _addRequest(request,ti);
   }
   void removeRequest(MPI_Request request)
   {
+    if (m_no_check_request)
+      return;
     if (m_trace_mpirequest)
       info() << "MpiAdapter: RemoveRequest r=" << request;
     _removeRequest(request);
   }
   void removeRequest(Iterator request_iter)
   {
+    if (m_no_check_request)
+      return;
     if (request_iter==m_allocated_requests.end()){
       if (m_trace_mpirequest)
         info() << "MpiAdapter: RemoveRequestIter null iterator";
@@ -110,6 +120,9 @@ class MpiAdapter::RequestSet
   //! Vérifie que la requête est dans la liste
   Iterator findRequest(MPI_Request request)
   {
+    if (m_no_check_request)
+      return m_allocated_requests.end();
+
     if (_isEmptyRequest(request))
       return m_allocated_requests.end();
     auto ireq = m_allocated_requests.find(request);
@@ -206,6 +219,8 @@ class MpiAdapter::RequestSet
   bool m_request_error_is_fatal = false;
   bool m_is_report_error_in_request = true;
   bool m_trace_mpirequest = false;
+  //! Vrai si on vérifie pas les requêtes
+  bool m_no_check_request = true;
  private:
   std::map<MPI_Request,RequestInfo> m_allocated_requests;
   bool m_use_trace_full_stack = false;
@@ -361,6 +376,18 @@ bool MpiAdapter::
 isPrintRequestError() const
 {
   return m_request_set->m_is_report_error_in_request;
+}
+
+void MpiAdapter::
+setCheckRequest(bool v)
+{
+  m_request_set->m_no_check_request = !v;
+}
+
+bool MpiAdapter::
+isCheckRequest() const
+{
+  return !m_request_set->m_no_check_request;
 }
 
 /*---------------------------------------------------------------------------*/
