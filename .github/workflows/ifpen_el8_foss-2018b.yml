@@ -602,59 +602,59 @@ jobs:
   #        path: ${{ env.ALIEN_BUILD_DIR }}/Testing
   #        retention-days: 1
 
-  alienlegacy-test:
-    name: alienlegacy-test
-    needs:
-      - arccore-install
-      - arcane-install
-      - alien-install
-      - alienlegacy-install
-    runs-on: ubuntu-latest
-    timeout-minutes: 180
-    container:
-      image: ghcr.io/arcaneframework/rockylinux-foss-2018b-alienlegacy:8-latest
-    strategy:
-      fail-fast: false
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          path: ${{ env.ALIENLEGACY_SOURCE_DIR }}
-      - name: Download alienlegacy build artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: alienlegacy-build-artifact
-      - name: Untar alienlegacy build artifact
-        shell: bash
-        run: tar xf alienlegacy-build-artifact.tar -C /
-      - name: Download alien install artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: alien-install-artifact
-      - name: Untar alien install artifact
-        shell: bash
-        run: tar xf alien-install-artifact.tar -C /
-      - name: Download arcane install artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: arcane-install-artifact
-      - name: Untar arcane install artifact
-        shell: bash
-        run: tar xf arcane-install-artifact.tar -C /
-      - name: Download arccore install artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: arccore-install-artifact
-      - name: Untar arccore install artifact
-        shell: bash
-        run: tar xf arccore-install-artifact.tar -C /
-      - name: Test
-        shell: bash
-        run: ctest --test-dir ${{ env.ALIENLEGACY_BUILD_DIR }} ${{ env.CT_OPTS }}
-      - name: Upload test artifact
-        uses: actions/upload-artifact@v2
-        if: failure()
-        with:
-          name: alienlegacy-test-artifact
-          path: ${{ env.ALIENLEGACY_BUILD_DIR }}/Testing
-          retention-days: 1
+  #alienlegacy-test:
+  #  name: alienlegacy-test
+  #  needs:
+  #    - arccore-install
+  #    - arcane-install
+  #    - alien-install
+  #    - alienlegacy-install
+  #  runs-on: ubuntu-latest
+  #  timeout-minutes: 180
+  #  container:
+  #    image: ghcr.io/arcaneframework/rockylinux-foss-2018b-alienlegacy:8-latest
+  #  strategy:
+  #    fail-fast: false
+  #  steps:
+  #    - name: Checkout
+  #      uses: actions/checkout@v2
+  #      with:
+  #        path: ${{ env.ALIENLEGACY_SOURCE_DIR }}
+  #    - name: Download alienlegacy build artifact
+  #      uses: actions/download-artifact@v2
+  #      with:
+  #        name: alienlegacy-build-artifact
+  #    - name: Untar alienlegacy build artifact
+  #      shell: bash
+  #      run: tar xf alienlegacy-build-artifact.tar -C /
+  #    - name: Download alien install artifact
+  #      uses: actions/download-artifact@v2
+  #      with:
+  #        name: alien-install-artifact
+  #    - name: Untar alien install artifact
+  #      shell: bash
+  #      run: tar xf alien-install-artifact.tar -C /
+  #    - name: Download arcane install artifact
+  #      uses: actions/download-artifact@v2
+  #      with:
+  #        name: arcane-install-artifact
+  #    - name: Untar arcane install artifact
+  #      shell: bash
+  #      run: tar xf arcane-install-artifact.tar -C /
+  #    - name: Download arccore install artifact
+  #      uses: actions/download-artifact@v2
+  #      with:
+  #        name: arccore-install-artifact
+  #    - name: Untar arccore install artifact
+  #      shell: bash
+  #      run: tar xf arccore-install-artifact.tar -C /
+  #    - name: Test
+  #      shell: bash
+  #      run: ctest --test-dir ${{ env.ALIENLEGACY_BUILD_DIR }} ${{ env.CT_OPTS }}
+  #    - name: Upload test artifact
+  #      uses: actions/upload-artifact@v2
+  #      if: failure()
+  #      with:
+  #        name: alienlegacy-test-artifact
+  #        path: ${{ env.ALIENLEGACY_BUILD_DIR }}/Testing
+  #        retention-days: 1
