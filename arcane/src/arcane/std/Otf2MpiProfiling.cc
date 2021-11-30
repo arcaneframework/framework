@@ -28,6 +28,7 @@ using namespace Arccore::MessagePassing::Mpi;
 // Helper sur la fonction de taille de type MPI...
 namespace
 {
+using ReturnType = Otf2MpiProfiling::ReturnType;
 
 uint64_t
 getSizeOfMpiType(MPI_Datatype datatype)
@@ -55,7 +56,7 @@ Otf2MpiProfiling(Otf2LibWrapper* otf2_wrapper)
 /*---------------------------------------------------------------------------*/
 
 //! MPI_Bcast
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 broadcast(void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm)
 {
 	// calcul des tailles des donnees echangees
@@ -66,20 +67,21 @@ broadcast(void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm com
 
 	OTF2_EvtWriter_MpiCollectiveBegin(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime());
 
-	MPI_Bcast(buffer, count, datatype, root, comm);
+	int r = MPI_Bcast(buffer, count, datatype, root, comm);
 
 	OTF2_EvtWriter_MpiCollectiveEnd(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime(),
 	                                OTF2_COLLECTIVE_OP_BCAST, 0 /* comm region */, root,
 	                                byte_send /* bytes provided */, byte_recv /* bytes obtained */);
 
   _doEventLeave(eMpiName::Bcast);
+  return _ret(r);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! MPI_Gather
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 gather(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf,
 	     int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm)
 {
@@ -91,20 +93,21 @@ gather(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf,
 
 	OTF2_EvtWriter_MpiCollectiveBegin(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime());
 
-	MPI_Gather(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, root, comm);
+	int r = MPI_Gather(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, root, comm);
 
 	OTF2_EvtWriter_MpiCollectiveEnd(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime(),
 	                                OTF2_COLLECTIVE_OP_GATHER, 0 /* comm region */, root,
 	                                byte_send /* bytes provided */, byte_recv /* bytes obtained */);
 
   _doEventLeave(eMpiName::Gather);
+  return _ret(r);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! MPI_Gatherv
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 gatherVariable(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf,
                const int *recvcounts, const int *displs, MPI_Datatype recvtype, int root, MPI_Comm comm)
 {
@@ -121,20 +124,21 @@ gatherVariable(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *
 
 	OTF2_EvtWriter_MpiCollectiveBegin(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime());
 
-  MPI_Gatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, root, comm);
+  int r = MPI_Gatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, root, comm);
 
 	OTF2_EvtWriter_MpiCollectiveEnd(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime(),
 	                                OTF2_COLLECTIVE_OP_GATHERV, 0 /* comm region */, root,
 	                                byte_send /* bytes provided */, byte_recv /* bytes obtained */);
 
   _doEventLeave(eMpiName::Gatherv);
+  return _ret(r);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! MPI_Allgather
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 allGather(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf,
           int recvcount, MPI_Datatype recvtype, MPI_Comm comm)
 {
@@ -146,20 +150,21 @@ allGather(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvb
 
 	OTF2_EvtWriter_MpiCollectiveBegin(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime());
 
-  MPI_Allgather(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, comm);
+  int r = MPI_Allgather(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, comm);
 
 	OTF2_EvtWriter_MpiCollectiveEnd(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime(),
 	                                OTF2_COLLECTIVE_OP_ALLGATHER, 0 /* comm region */, OTF2_UNDEFINED_UINT32 /* root */,
 	                                byte_send /* bytes provided */, byte_recv /* bytes obtained */);
 
   _doEventLeave(eMpiName::Allgather);
+  return _ret(r);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! MPI_Allgatherv
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 allGatherVariable(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf,
                   const int *recvcounts, const int *displs, MPI_Datatype recvtype, MPI_Comm comm)
 {
@@ -174,20 +179,21 @@ allGatherVariable(const void *sendbuf, int sendcount, MPI_Datatype sendtype, voi
 
 	OTF2_EvtWriter_MpiCollectiveBegin(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime());
 
-  MPI_Allgatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, comm);
+  int r = MPI_Allgatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, comm);
 
 	OTF2_EvtWriter_MpiCollectiveEnd(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime(),
 	                                OTF2_COLLECTIVE_OP_ALLGATHERV, 0 /* comm region */, OTF2_UNDEFINED_UINT32 /* root */,
 	                                byte_send /* bytes provided */, byte_recv /* bytes obtained */);
 
   _doEventLeave(eMpiName::Allgatherv);
+  return _ret(r);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! MPI_Scatterv
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 scatterVariable(const void *sendbuf, const int *sendcounts, const int *displs,
                 MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype,
                 int root, MPI_Comm comm)
@@ -206,20 +212,21 @@ scatterVariable(const void *sendbuf, const int *sendcounts, const int *displs,
 
 	OTF2_EvtWriter_MpiCollectiveBegin(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime());
 
-  MPI_Scatterv(sendbuf, sendcounts, displs, sendtype, recvbuf, recvcount, recvtype, root, comm);
+  int r = MPI_Scatterv(sendbuf, sendcounts, displs, sendtype, recvbuf, recvcount, recvtype, root, comm);
 
 	OTF2_EvtWriter_MpiCollectiveEnd(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime(),
 	                                OTF2_COLLECTIVE_OP_SCATTERV, 0 /* comm region */, root,
 	                                byte_send /* bytes provided */, byte_recv /* bytes obtained */);
 
   _doEventLeave(eMpiName::Scatterv);
+  return _ret(r);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! MPI_Alltoall
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 allToAll(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf,
          int recvcount, MPI_Datatype recvtype, MPI_Comm comm)
 {
@@ -227,20 +234,21 @@ allToAll(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbu
 
 	OTF2_EvtWriter_MpiCollectiveBegin(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime());
 
-	MPI_Alltoall(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, comm);
+	int r = MPI_Alltoall(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, comm);
 
 	OTF2_EvtWriter_MpiCollectiveEnd(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime(),
 	                                OTF2_COLLECTIVE_OP_ALLTOALL, 0 /* comm region */, OTF2_UNDEFINED_UINT32 /* root */,
 	                                0 /* bytes provided */, 0 /* bytes obtained */);
 
   _doEventLeave(eMpiName::Alltoall);
+  return _ret(r);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! MPI_Alltoallv
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 allToAllVariable(const void *sendbuf, const int *sendcounts, const int *sdispls,
                  MPI_Datatype sendtype, void *recvbuf, const int *recvcounts,
                  const int *rdispls, MPI_Datatype recvtype, MPI_Comm comm)
@@ -249,40 +257,42 @@ allToAllVariable(const void *sendbuf, const int *sendcounts, const int *sdispls,
 
 	OTF2_EvtWriter_MpiCollectiveBegin(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime());
 
-  MPI_Alltoallv(sendbuf, sendcounts, sdispls, sendtype, recvbuf, recvcounts, rdispls, recvtype, comm);
+  int r = MPI_Alltoallv(sendbuf, sendcounts, sdispls, sendtype, recvbuf, recvcounts, rdispls, recvtype, comm);
 
 	OTF2_EvtWriter_MpiCollectiveEnd(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime(),
 	                                OTF2_COLLECTIVE_OP_ALLTOALLV, 0 /* comm region */, OTF2_UNDEFINED_UINT32 /* root */,
 	                                0 /* bytes provided */, 0 /* bytes obtained */);
 
   _doEventLeave(eMpiName::Alltoallv);
+  return _ret(r);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! MPI_Barrier
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 barrier(MPI_Comm comm)
 {
   _doEventEnter(eMpiName::Barrier);
 
 	OTF2_EvtWriter_MpiCollectiveBegin(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime());
 
-  MPI_Barrier(comm);
+  int r = MPI_Barrier(comm);
 
 	OTF2_EvtWriter_MpiCollectiveEnd(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime(),
 	                                OTF2_COLLECTIVE_OP_BARRIER, 0 /* comm region */, OTF2_UNDEFINED_UINT32 /* root */,
 	                                0 /* bytes provided */, 0 /* bytes obtained */);
 
   _doEventLeave(eMpiName::Barrier);
+  return _ret(r);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! MPI_Reduce
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 reduce(const void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype,
 		   MPI_Op op, int root, MPI_Comm comm)
 {
@@ -290,20 +300,21 @@ reduce(const void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype,
 
 	OTF2_EvtWriter_MpiCollectiveBegin(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime());
 
-  MPI_Reduce(sendbuf, recvbuf, count, datatype, op, root, comm);
+  int r = MPI_Reduce(sendbuf, recvbuf, count, datatype, op, root, comm);
 
 	OTF2_EvtWriter_MpiCollectiveEnd(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime(),
 	                                OTF2_COLLECTIVE_OP_REDUCE, 0 /* comm region */, root,
 	                                0 /* bytes provided */, 0 /* bytes obtained */);
 
   _doEventLeave(eMpiName::Reduce);
+  return _ret(r);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! MPI_Allreduce
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 allReduce(const void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm)
 {
 	// calcul des tailles des donnees echangees
@@ -314,27 +325,28 @@ allReduce(const void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, 
 
 	OTF2_EvtWriter_MpiCollectiveBegin(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime());
 
-	MPI_Allreduce(sendbuf, recvbuf, count, datatype, op, comm);
+	int r = MPI_Allreduce(sendbuf, recvbuf, count, datatype, op, comm);
 
   OTF2_EvtWriter_MpiCollectiveEnd(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime(),
 	                                OTF2_COLLECTIVE_OP_ALLREDUCE, 0 /* comm region */, OTF2_UNDEFINED_UINT32 /* root */,
 	                                byte_send /* bytes provided */, byte_recv /* bytes obtained */);
 
   _doEventLeave(eMpiName::Allreduce);
+  return _ret(r);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! MPI_Scan
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 scan(const void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm)
 {
   _doEventEnter(eMpiName::Scan);
 
 	OTF2_EvtWriter_MpiCollectiveBegin(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime());
 
-	MPI_Scan(sendbuf, recvbuf, count, datatype, op, comm);
+	int r = MPI_Scan(sendbuf, recvbuf, count, datatype, op, comm);
 
 	int type_size;
 	MPI_Type_size(datatype, &type_size);
@@ -344,36 +356,38 @@ scan(const void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_O
 	                                size /* bytes provided */, size /* bytes obtained */);
 
   _doEventLeave(eMpiName::Scan);
+  return _ret(r);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! MPI_Sendrecv
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 sendRecv(const void *sendbuf, int sendcount, MPI_Datatype sendtype, int dest,
          int sendtag, void *recvbuf, int recvcount, MPI_Datatype recvtype,
          int source, int recvtag, MPI_Comm comm, MPI_Status *status)
 {
   _doEventEnter(eMpiName::Sendrecv);
 
-	MPI_Sendrecv(sendbuf, sendcount, sendtype, dest, sendtag, recvbuf, recvcount, recvtype,
+	int r = MPI_Sendrecv(sendbuf, sendcount, sendtype, dest, sendtag, recvbuf, recvcount, recvtype,
 			         source, recvtag, comm, status);
 
   _doEventLeave(eMpiName::Sendrecv);
+  return _ret(r);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! MPI_Isend
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 iSend(const void *buf, int count, MPI_Datatype datatype, int dest, int tag,
 	    MPI_Comm comm, MPI_Request *request)
 {
   _doEventEnter(eMpiName::Isend);
 
-	MPI_Isend(buf, count, datatype, dest, tag, comm, request);
+	int r = MPI_Isend(buf, count, datatype, dest, tag, comm, request);
   // Comme OTF2 a besoin d'un entier, utilise la valeur fortran de la requête qui
   // est garantie être un entier (contrairement à MPI_Request)
   uint64_t request_id = MPI_Request_c2f(*request);
@@ -381,64 +395,68 @@ iSend(const void *buf, int count, MPI_Datatype datatype, int dest, int tag,
 	                        dest, 0 /* comm region */, tag, getSizeOfMpiType(datatype) * count, request_id);
 
   _doEventLeave(eMpiName::Isend);
+  return _ret(r);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! MPI_Send
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 send(const void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm)
 {
   _doEventEnter(eMpiName::Send);
 
-  MPI_Send(buf, count, datatype, dest, tag, comm);
+  int r = MPI_Send(buf, count, datatype, dest, tag, comm);
 
 	OTF2_EvtWriter_MpiSend(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime(),
 	                       dest, 0 /* comm region */, tag, getSizeOfMpiType(datatype) * count);
 
   _doEventLeave(eMpiName::Send);
+  return _ret(r);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! MPI_Irecv
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 iRecv(void *buf, int count, MPI_Datatype datatype, int source, int tag,
       MPI_Comm comm, MPI_Request *request)
 {
   _doEventEnter(eMpiName::Irecv);
 
-	MPI_Irecv(buf, count, datatype, source, tag, comm, request);
+	int r = MPI_Irecv(buf, count, datatype, source, tag, comm, request);
 
 	// TODO: arriver a faire fonctionner ce truc...
 //	OTF2_EvtWriter_MpiIrecv(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime(),
 //	                        source, 0 /* comm region */, tag, getSizeOfMpiType(datatype) * count, *request);
   _doEventLeave(eMpiName::Irecv);
+  return _ret(r);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! MPI_recv
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 recv(void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Status *status)
 {
   _doEventEnter(eMpiName::Recv);
-	MPI_Recv(buf, count, datatype, source, tag, comm, status);
+	int r = MPI_Recv(buf, count, datatype, source, tag, comm, status);
 
 	OTF2_EvtWriter_MpiRecv(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime(),
 	                       source, 0 /* comm region */, tag, getSizeOfMpiType(datatype) * count);
 
   _doEventLeave(eMpiName::Recv);
+  return _ret(r);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! MPI_Test
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 test(MPI_Request *request, int *flag, MPI_Status *status)
 {
   _doEventEnter(eMpiName::Test);
@@ -447,80 +465,87 @@ test(MPI_Request *request, int *flag, MPI_Status *status)
 		OTF2_EvtWriter_MpiRequestTest(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime(), request_id);
   }
   _doEventLeave(eMpiName::Test);
+  return _ret(0);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! MPI_Probe
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 probe(int source, int tag, MPI_Comm comm, MPI_Status *status)
 {
   _doEventEnter(eMpiName::Probe);
-	MPI_Probe(source, tag, comm, status);
+	int r = MPI_Probe(source, tag, comm, status);
   _doEventLeave(eMpiName::Probe);
+  return _ret(r);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! MPI_Get_count
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 getCount(const MPI_Status *status, MPI_Datatype datatype, int *count)
 {
   _doEventEnter(eMpiName::Get_count);
-  MPI_Get_count(status, datatype, count);
+  int r = MPI_Get_count(status, datatype, count);
   _doEventLeave(eMpiName::Get_count);
+  return _ret(r);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! MPI_Wait
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 wait(MPI_Request *request, MPI_Status *status)
 {
   _doEventEnter(eMpiName::Wait);
-  MPI_Wait(request, status);
+  int r = MPI_Wait(request, status);
   _doEventLeave(eMpiName::Wait);
+  return _ret(r);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! MPI_Waitall
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 waitAll(int count, MPI_Request array_of_requests[], MPI_Status array_of_statuses[])
 {
   _doEventEnter(eMpiName::Waitall);
-	MPI_Waitall(count, array_of_requests, array_of_statuses);
+	int r = MPI_Waitall(count, array_of_requests, array_of_statuses);
   _doEventLeave(eMpiName::Waitall);
+  return _ret(r);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! MPI_Testsome
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 testSome(int incount, MPI_Request array_of_requests[], int *outcount,
          int array_of_indices[], MPI_Status array_of_statuses[])
 {
   _doEventEnter(eMpiName::Testsome);
-	MPI_Testsome(incount, array_of_requests, outcount, array_of_indices, array_of_statuses);
+	int r = MPI_Testsome(incount, array_of_requests, outcount, array_of_indices, array_of_statuses);
   _doEventLeave(eMpiName::Testsome);
+  return _ret(r);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! MPI_Waitsome
-void Otf2MpiProfiling::
+ReturnType Otf2MpiProfiling::
 waitSome(int incount, MPI_Request array_of_requests[], int *outcount,
          int array_of_indices[], MPI_Status array_of_statuses[])
 {
   _doEventEnter(eMpiName::Waitsome);
-  MPI_Waitsome(incount, array_of_requests, outcount, array_of_indices, array_of_statuses);
+  int r = MPI_Waitsome(incount, array_of_requests, outcount, array_of_indices, array_of_statuses);
   _doEventLeave(eMpiName::Waitsome);
+  return _ret(r);
 }
 
 /*---------------------------------------------------------------------------*/
