@@ -829,6 +829,24 @@ directSendRecv(const void* send_buffer,Int64 send_buffer_size,
 /*---------------------------------------------------------------------------*/
 
 Request MpiAdapter::
+sendNonBlockingNoStat(const void* send_buffer,Int64 send_buffer_size,
+                      Int32 dest_rank,MPI_Datatype data_type,int mpi_tag)
+{
+  void* v_send_buffer = const_cast<void*>(send_buffer);
+  MPI_Request mpi_request = MPI_REQUEST_NULL;
+  int sbuf_size = _checkSize(send_buffer_size);
+  int ret = 0;
+  m_mpi_prof->iSend(v_send_buffer, sbuf_size, data_type, dest_rank, mpi_tag, m_communicator, &mpi_request);
+  if (m_is_trace)
+    info() << " ISend ret=" << ret << " proc=" << dest_rank << " tag=" << mpi_tag << " request=" << mpi_request;
+  ARCCORE_ADD_REQUEST(mpi_request);
+  return buildRequest(ret,mpi_request);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Request MpiAdapter::
 directSend(const void* send_buffer,Int64 send_buffer_size,
            Int32 proc,Int64 elem_size,MPI_Datatype data_type,
            int mpi_tag,bool is_blocked
@@ -929,6 +947,21 @@ commSplit(bool keep)
     return StandaloneMpiMessagePassingMng::create(new_comm, true);
   }
   return nullptr;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Request MpiAdapter::
+receiveNonBlockingNoStat(void* recv_buffer,Int64 recv_buffer_size,
+                         Int32 source_rank,MPI_Datatype data_type,int mpi_tag)
+{
+  int rbuf_size = _checkSize(recv_buffer_size);
+  int ret = 0;
+  MPI_Request mpi_request = MPI_REQUEST_NULL;
+  m_mpi_prof->iRecv(recv_buffer, rbuf_size, data_type, source_rank, mpi_tag, m_communicator, &mpi_request);
+  ARCCORE_ADD_REQUEST(mpi_request);
+  return buildRequest(ret,mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/

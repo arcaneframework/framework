@@ -108,9 +108,17 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
                      Int32 proc,Int64 elem_size,MPI_Datatype data_type,
                      int mpi_tag,bool is_blocked);
   
+  //! Version non bloquante de send sans statistique temporelle
+  Request sendNonBlockingNoStat(const void* send_buffer,Int64 send_buffer_size,
+                                Int32 proc,MPI_Datatype data_type,int mpi_tag);
+
   Request directRecv(void* recv_buffer,Int64 recv_buffer_size,
-                     Int32 proc,Int64 elem_size,MPI_Datatype data_type,
+                     Int32 source_rank,Int64 elem_size,MPI_Datatype data_type,
                      int mpi_tag,bool is_blocked);
+
+  //! Version non bloquante de receive sans statistiques temporelles
+  Request receiveNonBlockingNoStat(void* recv_buffer,Int64 recv_buffer_size,
+                                   Int32 source_rank,MPI_Datatype data_type,int mpi_tag);
 
   Request directSendPack(const void* send_buffer,Int64 send_buffer_size,
                          Int32 proc,int mpi_tag,bool is_blocked);
@@ -126,6 +134,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
                          Int32 proc,int mpi_tag,bool is_blocking);
 
   void waitAllRequests(ArrayView<Request> requests);
+
 
  private:
   bool _waitAllRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
