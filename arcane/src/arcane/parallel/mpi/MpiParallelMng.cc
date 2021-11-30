@@ -112,8 +112,8 @@ class MpiParallelMngUtilsFactory
  public:
   MpiParallelMngUtilsFactory()
   {
-    if (platform::getEnvironmentVariable("ARCANE_USE_LEGACY_SYNCHRONIZE2")=="1")
-      m_use_legacy_synchronizer = true;
+    if (platform::getEnvironmentVariable("ARCANE_SYNCHRONIZE_VERSION")=="2")
+      m_use_legacy_synchronizer = false;
   }
  public:
   Ref<IVariableSynchronizer> createSynchronizer(IParallelMng* pm,IItemFamily* family) override
@@ -149,7 +149,7 @@ class MpiParallelMngUtilsFactory
     return makeRef<IVariableSynchronizer>(new VariableSynchronizer(pm,group,vd));
   }
  private:
-  bool m_use_legacy_synchronizer = false;
+  bool m_use_legacy_synchronizer = true;
 };
 
 /*---------------------------------------------------------------------------*/
