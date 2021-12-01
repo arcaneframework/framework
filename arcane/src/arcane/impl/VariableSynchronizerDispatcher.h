@@ -58,7 +58,7 @@ class ARCANE_IMPL_EXPORT VariableSyncInfo
 {
  public:
 
-  VariableSyncInfo() : m_target_rank(A_NULL_RANK) {}
+  VariableSyncInfo() = default;
   VariableSyncInfo(Int32ConstArrayView share_ids,Int32ConstArrayView ghost_ids,
                    Int32 rank)
   : m_share_ids(share_ids), m_ghost_ids(ghost_ids),
@@ -69,18 +69,16 @@ class ARCANE_IMPL_EXPORT VariableSyncInfo
   //! Rang du processeur cible
   Int32 targetRank() const { return m_target_rank; }
 
-  //! localIds() des entités à envoyer au processeur #m_rank
+  //! localIds() des entités à envoyer au rang targetRank()
   ConstArrayView<Int32> shareIds() const { return m_share_ids; }
-  //! localIds() des entités à réceptionner du processeur #m_rank
+  //! localIds() des entités à réceptionner du rang targetRank()
   ConstArrayView<Int32> ghostIds() const { return m_ghost_ids; }
 
   Int32 nbShare() const { return m_share_ids.size(); }
   Int32 nbGhost() const { return m_ghost_ids.size(); }
 
-  //[[deprecated("Do not use")]]
-  Array<Int32>& mutableShareIds() { return m_share_ids; }
-  //[[deprecated("Do not use")]]
-  Array<Int32>& mutableGhostIds() { return m_ghost_ids; }
+  //! Met à jour les informations lorsque les localId() des entités changent
+  void changeLocalIds(Int32ConstArrayView old_to_new_ids);
 
  private:
 
@@ -89,7 +87,11 @@ class ARCANE_IMPL_EXPORT VariableSyncInfo
   //! localIds() des entités à réceptionner du processeur #m_rank
   UniqueArray<Int32> m_ghost_ids;
   //! Rang du processeur cible
-  Int32 m_target_rank;
+  Int32 m_target_rank = A_NULL_RANK;
+
+ private:
+
+  void _changeIds(Array<Int32>& ids,Int32ConstArrayView old_to_new_ids);
 };
 
 /*---------------------------------------------------------------------------*/

@@ -698,35 +698,13 @@ void VariableSynchronizer::
 changeLocalIds(Int32ConstArrayView old_to_new_ids)
 {
   info(4) << "** VariableSynchronizer::changeLocalIds() group=" << m_item_group.name();
-  Integer nb_comm = m_sync_list.size();
-  for( Integer i=0; i<nb_comm; ++i ){
-    VariableSyncInfo& vsi = m_sync_list[i];
 
-    UniqueArray<Int32> orig_share_ids(vsi.shareIds());
-    Int32Array& share_ids = vsi.mutableShareIds();
-    share_ids.clear();
-
-    for( Integer z=0, zs=orig_share_ids.size(); z<zs; ++z ){
-      Int32 old_id = orig_share_ids[z];
-      Int32 new_id = old_to_new_ids[old_id];
-      //info() << "SHARE ID=" << old_id << " NEW=" << new_id;
-      if (new_id!=NULL_ITEM_LOCAL_ID)
-        share_ids.add(new_id);
-    }
-    info(4) << "NEW_SHARE_SIZE=" << share_ids.size() << " old=" << orig_share_ids.size();
-
-    UniqueArray<Int32> orig_ghost_ids(vsi.ghostIds());
-    Int32Array& ghost_ids = vsi.mutableGhostIds();
-    ghost_ids.clear();
-
-    for( Integer z=0, zs=orig_ghost_ids.size(); z<zs; ++z ){
-      Int32 old_id = orig_ghost_ids[z];
-      Int32 new_id = old_to_new_ids[old_id];
-      //info() << "GHOST ID=" << old_id << " NEW=" << new_id;
-      if (new_id!=NULL_ITEM_LOCAL_ID)
-        ghost_ids.add(new_id);
-    }
-    info(4) << "NEW_GHOST_SIZE=" << ghost_ids.size() << " old=" << orig_ghost_ids.size();
+  for( VariableSyncInfo& vsi : m_sync_list ){
+    Int32 old_nb_share = vsi.nbShare();
+    Int32 old_nb_ghost = vsi.nbGhost();
+    vsi.changeLocalIds(old_to_new_ids);
+    info(4) << "NEW_SHARE_SIZE=" << vsi.nbShare() << " old=" << old_nb_share;
+    info(4) << "NEW_GHOST_SIZE=" << vsi.nbGhost() << " old=" << old_nb_ghost;
   }
   m_dispatcher->compute(m_sync_list);
 }

@@ -324,6 +324,36 @@ compute(ConstArrayView<VariableSyncInfo> sync_list)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableSyncInfo::
+_changeIds(Array<Int32>& ids,Int32ConstArrayView old_to_new_ids)
+{
+  UniqueArray<Int32> orig_ids(ids);
+  ids.clear();
+
+  for( Integer z=0, zs=orig_ids.size(); z<zs; ++z ){
+    Int32 old_id = orig_ids[z];
+    Int32 new_id = old_to_new_ids[old_id];
+    if (new_id!=NULL_ITEM_LOCAL_ID)
+      ids.add(new_id);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableSyncInfo::
+changeLocalIds(Int32ConstArrayView old_to_new_ids)
+{
+  _changeIds(m_share_ids,old_to_new_ids);
+  _changeIds(m_ghost_ids,old_to_new_ids);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template class VariableSynchronizeDispatcher<Byte>;
 template class VariableSynchronizeDispatcher<Real>;
 template class VariableSynchronizeDispatcher<Int16>;
