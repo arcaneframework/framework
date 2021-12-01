@@ -104,7 +104,7 @@ template<typename SimpleType> void
 MpiLegacyVariableSynchronizeDispatcher<SimpleType>::
 beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 {
-  if (this->m_is_in_sync)
+  if (m_is_in_sync)
     ARCANE_FATAL("Only one pending serialisation is supported");
 
   auto sync_list = this->m_sync_info->infos();
@@ -186,7 +186,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
     else{
       pm->stat()->add("SyncPrepare",prepare_time,1);
     }
-    this->m_is_in_sync = true;
+    m_is_in_sync = true;
   }
 
 /*---------------------------------------------------------------------------*/

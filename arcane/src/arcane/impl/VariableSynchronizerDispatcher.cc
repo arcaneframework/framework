@@ -92,6 +92,24 @@ applyDispatch(IArray2DataT<SimpleType>* data)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+template<typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
+applyDispatch(IScalarDataT<SimpleType>*)
+{
+  throw NotSupportedException(A_FUNCINFO,"Can not synchronize scalar data");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
+applyDispatch(IMultiArray2DataT<SimpleType>*)
+{
+  throw NotSupportedException(A_FUNCINFO,"Can not synchronize multiarray2 data");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Calcul et alloue les tampons nécessaire aux envois et réceptions
  * pour les synchronisations des variables 1D.
@@ -168,18 +186,22 @@ compute(ItemGroupSynchronizeInfo* sync_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class SimpleType> void SimpleVariableSynchronizeDispatcher<SimpleType>::
 beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 {
   if (m_is_in_sync)
     ARCANE_FATAL("Only one pending serialisation is supported");
   
-  IParallelMng* pm = m_parallel_mng;
+  IParallelMng* pm = this->m_parallel_mng;
   
   //ITraceMng* trace = pm->traceMng();
   //Integer nb_elem = var_values.size();
   bool use_blocking_send = false;
-  Integer nb_message = m_sync_list.size();
+  auto sync_list = this->m_sync_info->infos();
+  Integer nb_message = sync_list.size();
   Integer dim2_size = sync_buffer.dim2Size();
 
   /*pm->traceMng()->info() << " ** ** COMMON BEGIN SYNC n=" << nb_message
@@ -189,7 +211,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
   //SyncBuffer& sync_buffer = m_1d_buffer;
   // Envoie les messages de réception non bloquant
   for( Integer i=0; i<nb_message; ++i ){
-    const VariableSyncInfo& vsi = m_sync_list[i];
+    const VariableSyncInfo& vsi = sync_list[i];
     ArrayView<SimpleType> ghost_local_buffer = sync_buffer.ghostBuffer(i);
     if (!ghost_local_buffer.empty()){
       Parallel::Request rval = pm->recv(ghost_local_buffer,vsi.targetRank(),false);
@@ -199,11 +221,11 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 
   // Envoie les messages d'envoie en mode non bloquant.
   for( Integer i=0; i<nb_message; ++i ){
-    const VariableSyncInfo& vsi = m_sync_list[i];
+    const VariableSyncInfo& vsi = sync_list[i];
     Int32ConstArrayView share_grp = vsi.shareIds();
     ArrayView<SimpleType> share_local_buffer = sync_buffer.shareBuffer(i);
       
-    _copyToBuffer(share_grp,share_local_buffer,var_values,dim2_size);
+    this->_copyToBuffer(share_grp,share_local_buffer,var_values,dim2_size);
 
     ConstArrayView<SimpleType> const_share = share_local_buffer;
     if (!share_local_buffer.empty()){
@@ -221,7 +243,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
+template<class SimpleType> void SimpleVariableSynchronizeDispatcher<SimpleType>::
 endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 {
   if (!m_is_in_sync)
@@ -229,10 +251,8 @@ endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 
   IParallelMng* pm = m_parallel_mng;
   
-  //ITraceMng* trace = pm->traceMng();
-  //Integer nb_elem = var_values.size();
-  //bool use_blocking_send = false;
-  Integer nb_message = m_sync_list.size();
+  auto sync_list = this->m_sync_info->infos();
+  Integer nb_message = sync_list.size();
   Integer dim2_size = sync_buffer.dim2Size();
 
   /*pm->traceMng()->info() << " ** ** COMMON END SYNC n=" << nb_message
@@ -246,10 +266,10 @@ endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 
   // Recopie dans la variable le message de retour.
   for( Integer i=0; i<nb_message; ++i ){
-    const VariableSyncInfo& vsi = m_sync_list[i];
+    const VariableSyncInfo& vsi = sync_list[i];
     Int32ConstArrayView ghost_grp = vsi.ghostIds();
     ArrayView<SimpleType> ghost_local_buffer = sync_buffer.ghostBuffer(i);
-    _copyFromBuffer(ghost_grp,ghost_local_buffer,var_values,dim2_size);
+    this->_copyFromBuffer(ghost_grp,ghost_local_buffer,var_values,dim2_size);
   }
 
   m_is_in_sync = false;
@@ -362,6 +382,16 @@ template class VariableSynchronizeDispatcher<Real2>;
 template class VariableSynchronizeDispatcher<Real3>;
 template class VariableSynchronizeDispatcher<Real2x2>;
 template class VariableSynchronizeDispatcher<Real3x3>;
+
+template class SimpleVariableSynchronizeDispatcher<Byte>;
+template class SimpleVariableSynchronizeDispatcher<Real>;
+template class SimpleVariableSynchronizeDispatcher<Int16>;
+template class SimpleVariableSynchronizeDispatcher<Int32>;
+template class SimpleVariableSynchronizeDispatcher<Int64>;
+template class SimpleVariableSynchronizeDispatcher<Real2>;
+template class SimpleVariableSynchronizeDispatcher<Real3>;
+template class SimpleVariableSynchronizeDispatcher<Real2x2>;
+template class SimpleVariableSynchronizeDispatcher<Real3x3>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

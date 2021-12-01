@@ -87,7 +87,7 @@ template<typename SimpleType> void
 MpiVariableSynchronizeDispatcher<SimpleType>::
 beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 {
-  if (this->m_is_in_sync)
+  if (m_is_in_sync)
     ARCANE_FATAL("Only one pending serialisation is supported");
 
   auto sync_list = this->m_sync_info->infos();
@@ -144,7 +144,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
   }
   double prepare_time = MPI_Wtime() - begin_prepare_time;
   pm->stat()->add("SyncPrepare",prepare_time,1);
-  this->m_is_in_sync = true;
+  m_is_in_sync = true;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -182,7 +182,7 @@ template<typename SimpleType> void
 MpiVariableSynchronizeDispatcher<SimpleType>::
 endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 {
-  if (!this->m_is_in_sync)
+  if (!m_is_in_sync)
     ARCANE_FATAL("endSynchronize() called but no beginSynchronize() was called before");
 
   MpiParallelMng* pm = m_mpi_parallel_mng;
@@ -236,7 +236,7 @@ endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 
   pm->stat()->add("SyncCopy",copy_time,1);
   pm->stat()->add("SyncWait",wait_time,1);
-  this->m_is_in_sync = false;
+  m_is_in_sync = false;
 }
 
 /*---------------------------------------------------------------------------*/

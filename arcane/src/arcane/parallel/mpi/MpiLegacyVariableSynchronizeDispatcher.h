@@ -112,7 +112,8 @@ class MpiLegacyVariableSynchronizeDispatcher
   UniqueArray<Integer> m_recv_requests_done;
   UniqueArray<MPI_Datatype> m_share_derived_types;
   UniqueArray<MPI_Datatype> m_ghost_derived_types;
-  bool m_use_derived_type;
+  bool m_use_derived_type = false;
+  bool m_is_in_sync = false;
 };
 
 /*---------------------------------------------------------------------------*/

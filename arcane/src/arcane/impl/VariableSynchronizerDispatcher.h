@@ -53,6 +53,10 @@ class VariableSynchronizerMultiDispatcher;
 /*!
  * \brief Informations sur la liste des entités partagées/fantômes pour
  * un rang donné pour une synchronisation.
+ *
+ * TODO: Utiliser pour toutes les VariableSyncInfo un seul tableau pour les
+ *       entités partagées et un seul tableau pour les entités fantômes qui
+ *       sera géré par ItemGroupSynchronizeInfo.
  */
 class ARCANE_IMPL_EXPORT VariableSyncInfo
 {
@@ -115,13 +119,15 @@ class ARCANE_IMPL_EXPORT ItemGroupSynchronizeInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Interface pour gérer l'envoi de la synchronisation.
+ */
 class ARCANE_IMPL_EXPORT IVariableSynchronizeDispatcher
 {
  public:
   typedef FalseType HasStringDispatch;
  public:
-  virtual ~IVariableSynchronizeDispatcher(){}
+  virtual ~IVariableSynchronizeDispatcher() = default;
  public:
   virtual void compute(ItemGroupSynchronizeInfo* sync_list) =0;
  protected:
@@ -148,7 +154,12 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherBuildInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Gestion de la synchronisation pour un type de donnée \a SimpleType.
+ *
+ * Cette classe est abstraite. La classe dérivée doit fournir une implémentation
+ * de beginSynchronize() et endSynchronize().
+ */
 template<class SimpleType>
 class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
 : public IDataTypeDataDispatcherT<SimpleType>
@@ -175,32 +186,25 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
   };
  public:
   VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
-  : m_parallel_mng(bi.parallelMng()), m_is_in_sync(false)
+  : m_parallel_mng(bi.parallelMng())
   {
     if (bi.table())
       m_buffer_copier = new TableBufferCopier<SimpleType>(bi.table());
     else
       m_buffer_copier = new DirectBufferCopier<SimpleType>();
   }
-  virtual ~VariableSynchronizeDispatcher()
+  ~VariableSynchronizeDispatcher() override
   {
     delete m_buffer_copier;
   }
-  virtual void applyDispatch(IScalarDataT<SimpleType>* data)
-  {
-    ARCANE_UNUSED(data);
-    throw NotSupportedException(A_FUNCINFO,"Can not synchronize scalar data");
-  }
-  virtual void applyDispatch(IArrayDataT<SimpleType>* data);
-  virtual void applyDispatch(IArray2DataT<SimpleType>* data);
-  virtual void applyDispatch(IMultiArray2DataT<SimpleType>* data)
-  {
-    ARCANE_UNUSED(data);
-    throw NotSupportedException(A_FUNCINFO,"Can not synchronize multiarray2 data");
-  }
-  virtual void compute(ItemGroupSynchronizeInfo* sync_list);
-  virtual void beginSynchronize(ArrayView<SimpleType> values,SyncBuffer& sync_buffer);
-  virtual void endSynchronize(ArrayView<SimpleType> values,SyncBuffer& sync_buffer);
+  void applyDispatch(IScalarDataT<SimpleType>* data) override;
+  void applyDispatch(IArrayDataT<SimpleType>* data) override;
+  void applyDispatch(IArray2DataT<SimpleType>* data) override;
+  void applyDispatch(IMultiArray2DataT<SimpleType>* data) override;
+  void compute(ItemGroupSynchronizeInfo* sync_list) override;
+
+  virtual void beginSynchronize(ArrayView<SimpleType> values,SyncBuffer& sync_buffer) =0;
+  virtual void endSynchronize(ArrayView<SimpleType> values,SyncBuffer& sync_buffer) =0;
 
  protected:
   
@@ -212,14 +216,39 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
   IParallelMng* m_parallel_mng = nullptr;
   IBufferCopier<SimpleType>* m_buffer_copier = nullptr;
   ItemGroupSynchronizeInfo* m_sync_info = nullptr;
-  //TODO: a supprimer
+  //TODO: a supprimer car l'information est dans \a m_sync_info;
   ConstArrayView<VariableSyncInfo> m_sync_list;
-  UniqueArray<Parallel::Request> m_all_requests;
   SyncBuffer m_1d_buffer;
   SyncBuffer m_2d_buffer;
-  bool m_is_in_sync;
 
  private:
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Implémentation basique de la sérialisation.
+ *
+ * Cette implémentation est faite à partir de send/receive suivi de 'wait'.
+ */
+template<class SimpleType>
+class ARCANE_IMPL_EXPORT SimpleVariableSynchronizeDispatcher
+: public VariableSynchronizeDispatcher<SimpleType>
+{
+  using BaseClass = VariableSynchronizeDispatcher<SimpleType>;
+  using SyncBuffer = typename VariableSynchronizeDispatcher<SimpleType>::SyncBuffer;
+  using BaseClass::m_parallel_mng;
+ public:
+  SimpleVariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
+  : BaseClass(bi){}
+
+  void beginSynchronize(ArrayView<SimpleType> values,SyncBuffer& sync_buffer) override;
+  void endSynchronize(ArrayView<SimpleType> values,SyncBuffer& sync_buffer) override;
+
+ private:
+
+  UniqueArray<Parallel::Request> m_all_requests;
+  bool m_is_in_sync = false;
 };
 
 /*---------------------------------------------------------------------------*/

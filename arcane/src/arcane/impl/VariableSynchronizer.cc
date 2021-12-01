@@ -71,7 +71,7 @@ VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
   typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
   if (!m_dispatcher){
     VariableSynchronizeDispatcherBuildInfo bi(pm,nullptr);
-    DispatcherType* dt = DispatcherType::create<VariableSynchronizeDispatcher>(bi);
+    DispatcherType* dt = DispatcherType::create<SimpleVariableSynchronizeDispatcher>(bi);
     m_dispatcher = new VariableSynchronizerDispatcher(pm,dt);
   }
   m_multi_dispatcher = new VariableSynchronizerMultiDispatcher(pm);
