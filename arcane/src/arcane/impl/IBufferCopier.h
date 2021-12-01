@@ -5,9 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IBufferCopier.h                                             (C) 2000-2011 */
+/* IBufferCopier.h                                             (C) 2000-2021 */
 /*                                                                           */
 /* Interface pour la copie de buffer.                                        */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_IMPL_IBUFFERCOPIER_H
+#define ARCANE_IMPL_IBUFFERCOPIER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -16,21 +20,20 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \internal
+ */
 template<typename SimpleType>
 class IBufferCopier 
 {
-protected:
+ public:
   
-  IBufferCopier() {}
-
-public:
-  
-  virtual ~IBufferCopier() {}
+  virtual ~IBufferCopier() = default;
 
   virtual void copyFromBufferOne(Int32ConstArrayView indexes,
                                  ConstArrayView<SimpleType> buffer,
@@ -55,16 +58,15 @@ public:
 /*---------------------------------------------------------------------------*/
 
 template<typename SimpleType>
-class DirectBufferCopier : public IBufferCopier<SimpleType>
+class DirectBufferCopier
+: public IBufferCopier<SimpleType>
 {
-public:
+ public:
   
-  DirectBufferCopier() {}
-  ~DirectBufferCopier() {}
-
   void copyFromBufferOne(Int32ConstArrayView indexes,
                          ConstArrayView<SimpleType> buffer,
-                         ArrayView<SimpleType> var_value) {
+                         ArrayView<SimpleType> var_value) override
+  {
     Integer n = indexes.size();
 #ifdef ARCANE_CHECK
     for( Integer i=0; i<n; ++i )
@@ -80,7 +82,8 @@ public:
   
   void copyToBufferOne(Int32ConstArrayView indexes,
                        ArrayView<SimpleType> buffer,
-                       ConstArrayView<SimpleType> var_value) { 
+                       ConstArrayView<SimpleType> var_value) override
+  { 
     Integer n = indexes.size();
 #ifdef ARCANE_CHECK
     for( Integer i=0; i<n; ++i )
@@ -97,7 +100,7 @@ public:
   void copyFromBufferMultiple(Int32ConstArrayView indexes,
                               ConstArrayView<SimpleType> buffer,
                               ArrayView<SimpleType> var_value,
-                              Integer dim2_size)
+                              Integer dim2_size) override
   {
     Integer n = indexes.size();
     for( Integer i=0; i<n; ++i ){
@@ -111,7 +114,7 @@ public:
   void copyToBufferMultiple(Int32ConstArrayView indexes,
                             ArrayView<SimpleType> buffer,
                             ConstArrayView<SimpleType> var_value,
-                            Integer dim2_size)
+                            Integer dim2_size) override
   {
     Integer n = indexes.size();
     for( Integer i=0; i<n; ++i ){
@@ -127,7 +130,8 @@ public:
 /*---------------------------------------------------------------------------*/
 
 template<typename SimpleType>
-class TableBufferCopier : public IBufferCopier<SimpleType>
+class TableBufferCopier
+: public IBufferCopier<SimpleType>
 {
 public:
   
@@ -136,7 +140,8 @@ public:
 
   void copyFromBufferOne(Int32ConstArrayView indexes,
                          ConstArrayView<SimpleType> buffer,
-                         ArrayView<SimpleType> var_value) {
+                         ArrayView<SimpleType> var_value) override
+  {
     Integer n = indexes.size();
     GroupIndexTable& table = *m_table;
     for( Integer i=0; i<n; ++i ) 
@@ -145,7 +150,8 @@ public:
   
   void copyToBufferOne(Int32ConstArrayView indexes,
                        ArrayView<SimpleType> buffer,
-                       ConstArrayView<SimpleType> var_value) { 
+                       ConstArrayView<SimpleType> var_value) override
+  { 
     Integer n = indexes.size();
     GroupIndexTable& table = *m_table;
     for( Integer i=0; i<n; ++i )
@@ -155,7 +161,7 @@ public:
   void copyFromBufferMultiple(Int32ConstArrayView indexes,
                               ConstArrayView<SimpleType> buffer,
                               ArrayView<SimpleType> var_value,
-                              Integer dim2_size)
+                              Integer dim2_size) override
   {
     Integer n = indexes.size();
     GroupIndexTable& table = *m_table;
@@ -170,7 +176,7 @@ public:
   void copyToBufferMultiple(Int32ConstArrayView indexes,
                             ArrayView<SimpleType> buffer,
                             ConstArrayView<SimpleType> var_value,
-                            Integer dim2_size)
+                            Integer dim2_size) override
   {
     Integer n = indexes.size();
     GroupIndexTable& table = *m_table;
@@ -181,14 +187,16 @@ public:
         buffer[zindex+z] = var_value[zci+z];
     }
   }
-private:
+ private:
   GroupIndexTable* m_table;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#endif  

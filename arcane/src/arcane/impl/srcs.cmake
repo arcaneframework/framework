@@ -91,6 +91,8 @@ set( ARCANE_SOURCES
   VariableUtilities.h
   VariableSynchronizer.cc
   VariableSynchronizer.h
+  VariableSynchronizerDispatcher.cc
+  VariableSynchronizerDispatcher.h
   NullPhysicalUnitSystemService.cc
   TraceMngPolicy.cc
   GlibDynamicLibraryLoader.cc
