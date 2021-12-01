@@ -110,8 +110,8 @@ compute(ConstArrayView<VariableSyncInfo> sync_list,Integer dim2_size)
   Integer total_ghost_buffer = 0;
   Integer total_share_buffer = 0;
   for( Integer i=0; i<nb_message; ++i ){
-    total_ghost_buffer += sync_list[i].m_ghost_ids.size();
-    total_share_buffer += sync_list[i].m_share_ids.size();
+    total_ghost_buffer += sync_list[i].nbGhost();
+    total_share_buffer += sync_list[i].nbShare();
   }
   m_ghost_buffer.resize(total_ghost_buffer*dim2_size);
   m_share_buffer.resize(total_share_buffer*dim2_size);
@@ -120,7 +120,7 @@ compute(ConstArrayView<VariableSyncInfo> sync_list,Integer dim2_size)
     Integer array_index = 0;
     for( Integer i=0, is=sync_list.size(); i<is; ++i ){
       const VariableSyncInfo& vsi = sync_list[i];
-      Int32ConstArrayView ghost_grp = vsi.m_ghost_ids;
+      Int32ConstArrayView ghost_grp = vsi.ghostIds();
       Integer local_size = ghost_grp.size();
       m_ghost_locals_buffer[i] = ArrayView<SimpleType>();
       if (local_size!=0)
@@ -133,7 +133,7 @@ compute(ConstArrayView<VariableSyncInfo> sync_list,Integer dim2_size)
     Integer array_index = 0;
     for( Integer i=0, is=sync_list.size(); i<is; ++i ){
       const VariableSyncInfo& vsi = sync_list[i];
-      Int32ConstArrayView share_grp = vsi.m_share_ids;
+      Int32ConstArrayView share_grp = vsi.shareIds();
       Integer local_size = share_grp.size();
       m_share_locals_buffer[i] = ArrayView<SimpleType>();
       if (local_size!=0)
@@ -190,7 +190,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
     const VariableSyncInfo& vsi = m_sync_list[i];
     ArrayView<SimpleType> ghost_local_buffer = sync_buffer.m_ghost_locals_buffer[i];
     if (!ghost_local_buffer.empty()){
-      Parallel::Request rval = pm->recv(ghost_local_buffer,vsi.m_target_rank,false);
+      Parallel::Request rval = pm->recv(ghost_local_buffer,vsi.targetRank(),false);
       m_all_requests.add(rval);
     }
   }
@@ -198,7 +198,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
   // Envoie les messages d'envoie en mode non bloquant.
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = m_sync_list[i];
-    Int32ConstArrayView share_grp = vsi.m_share_ids;
+    Int32ConstArrayView share_grp = vsi.shareIds();
     ArrayView<SimpleType> share_local_buffer = sync_buffer.m_share_locals_buffer[i];
       
     _copyToBuffer(share_grp,share_local_buffer,var_values,dim2_size);
@@ -208,7 +208,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
       //for( Integer i=0, is=share_local_buffer.size(); i<is; ++i )
       //trace->info() << "TO rank=" << vsi.m_target_rank << " I=" << i << " V=" << share_local_buffer[i]
       //                << " lid=" << share_grp[i] << " v2=" << var_values[share_grp[i]];
-      Parallel::Request rval = pm->send(const_share,vsi.m_target_rank,use_blocking_send);
+      Parallel::Request rval = pm->send(const_share,vsi.targetRank(),use_blocking_send);
       if (!use_blocking_send)
         m_all_requests.add(rval);
     }
@@ -245,7 +245,7 @@ endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
   // Recopie dans la variable le message de retour.
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = m_sync_list[i];
-    Int32ConstArrayView ghost_grp = vsi.m_ghost_ids;
+    Int32ConstArrayView ghost_grp = vsi.ghostIds();
     ArrayView<SimpleType> ghost_local_buffer = sync_buffer.m_ghost_locals_buffer[i];
     _copyFromBuffer(ghost_grp,ghost_local_buffer,var_values,dim2_size);
     //for( Integer i=0, is=ghost_local_buffer.size(); i<is; ++i )
@@ -266,7 +266,7 @@ synchronize(VariableCollection vars,ConstArrayView<VariableSyncInfo> sync_infos)
   Integer nb_rank = sync_infos.size();
   Int32UniqueArray recv_ranks(nb_rank);
   for( Integer i=0; i<nb_rank; ++i ){
-    Int32 rank = sync_infos[i].m_target_rank;
+    Int32 rank = sync_infos[i].targetRank();
     exchanger->addSender(rank);
     recv_ranks[i] = rank;
   }
@@ -274,7 +274,7 @@ synchronize(VariableCollection vars,ConstArrayView<VariableSyncInfo> sync_infos)
   for( Integer i=0; i<nb_rank; ++i ){
     ISerializeMessage* msg = exchanger->messageToSend(i);
     ISerializer* sbuf = msg->serializer();
-    Int32ConstArrayView share_ids = sync_infos[i].m_share_ids;
+    Int32ConstArrayView share_ids = sync_infos[i].shareIds();
     sbuf->setMode(ISerializer::ModeReserve);
     for( VariableCollection::Enumerator ivar(vars); ++ivar; ){
       (*ivar)->serialize(sbuf,share_ids,0);
@@ -289,12 +289,36 @@ synchronize(VariableCollection vars,ConstArrayView<VariableSyncInfo> sync_infos)
   for( Integer i=0; i<nb_rank; ++i ){
     ISerializeMessage* msg = exchanger->messageToReceive(i);
     ISerializer* sbuf = msg->serializer();
-    Int32ConstArrayView ghost_ids = sync_infos[i].m_ghost_ids;
+    Int32ConstArrayView ghost_ids = sync_infos[i].ghostIds();
     sbuf->setMode(ISerializer::ModeGet);
     for( VariableCollection::Enumerator ivar(vars); ++ivar; ){
       (*ivar)->serialize(sbuf,ghost_ids,0);
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableSynchronizerDispatcher::
+~VariableSynchronizerDispatcher()
+{
+  delete m_dispatcher;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableSynchronizerDispatcher::
+compute(ConstArrayView<VariableSyncInfo> sync_list)
+{
+  ConstArrayView<IVariableSynchronizeDispatcher*> dispatchers = m_dispatcher->dispatchers();
+  m_parallel_mng->traceMng()->info(4) << "DISPATCH RECOMPUTE";
+  for( Integer i=0, is=dispatchers.size(); i<is; ++i )
+    dispatchers[i]->compute(sync_list);
 }
 
 /*---------------------------------------------------------------------------*/

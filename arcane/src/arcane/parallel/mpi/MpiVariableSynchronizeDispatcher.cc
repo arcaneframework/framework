@@ -114,7 +114,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
     ArrayView<SimpleType> buf = sync_buffer.m_ghost_locals_buffer[i];
     if (!buf.empty()){
       auto req = mpi_adapter->receiveNonBlockingNoStat(buf.data(),buf.size(),
-                                                       vsi.m_target_rank,mpi_dt,serialize_tag);
+                                                       vsi.targetRank(),mpi_dt,serialize_tag);
       m_original_recv_requests[i] = req;
       m_original_recv_requests_done[i] = false;
     }
@@ -136,7 +136,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
     const VariableSyncInfo& vsi = this->m_sync_list[i];
     if (!buf.empty()){
       auto request = mpi_adapter->sendNonBlockingNoStat(buf.data(),buf.size(),
-                                                        vsi.m_target_rank,mpi_dt,serialize_tag);
+                                                        vsi.targetRank(),mpi_dt,serialize_tag);
       m_send_request_list->add(request);
     }
   }
@@ -154,7 +154,7 @@ _copyReceive(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer,Integer in
 {
   Integer dim2_size = sync_buffer.m_dim2_size;
   const VariableSyncInfo& vsi = this->m_sync_list[index];
-  ConstArrayView<Int32> ghost_grp = vsi.m_ghost_ids;
+  ConstArrayView<Int32> ghost_grp = vsi.ghostIds();
   ArrayView<SimpleType> ghost_local_buffer = sync_buffer.m_ghost_locals_buffer[index];
   this->_copyFromBuffer(ghost_grp,ghost_local_buffer,var_values,dim2_size);
 }
@@ -168,7 +168,7 @@ _copySend(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer,Integer index
 {
   Integer dim2_size = sync_buffer.m_dim2_size;
   const VariableSyncInfo& vsi = this->m_sync_list[index];
-  Int32ConstArrayView share_grp = vsi.m_share_ids;
+  Int32ConstArrayView share_grp = vsi.shareIds();
   ArrayView<SimpleType> share_local_buffer = sync_buffer.m_share_locals_buffer[index];
   this->_copyToBuffer(share_grp,share_local_buffer,var_values,dim2_size);
 }

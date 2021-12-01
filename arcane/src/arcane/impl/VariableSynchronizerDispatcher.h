@@ -29,7 +29,6 @@
 
 #include "arcane/DataTypeDispatchingDataVisitor.h"
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -52,32 +51,45 @@ class VariableSynchronizerMultiDispatcher;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Information pour une synchro d'une variable avec un processeur.
+ * \brief Informations sur la liste des entités partagées/fantômes pour
+ * une synchronisation.
  */
 class ARCANE_IMPL_EXPORT VariableSyncInfo
 {
  public:
 
-  VariableSyncInfo() : m_target_rank(NULL_SUB_DOMAIN_ID), m_is_send_first(false) {}
+  VariableSyncInfo() : m_target_rank(A_NULL_RANK) {}
   VariableSyncInfo(Int32ConstArrayView share_ids,Int32ConstArrayView ghost_ids,
-                   Int32 rank,bool is_send_first)
+                   Int32 rank)
   : m_share_ids(share_ids), m_ghost_ids(ghost_ids),
-    m_target_rank(rank), m_is_send_first(is_send_first) {}
+    m_target_rank(rank) {}
 	
  public:
 
+  //! Rang du processeur cible
   Int32 targetRank() const { return m_target_rank; }
 
- public:
+  //! localIds() des entités à envoyer au processeur #m_rank
+  ConstArrayView<Int32> shareIds() const { return m_share_ids; }
+  //! localIds() des entités à réceptionner du processeur #m_rank
+  ConstArrayView<Int32> ghostIds() const { return m_ghost_ids; }
+
+  Int32 nbShare() const { return m_share_ids.size(); }
+  Int32 nbGhost() const { return m_ghost_ids.size(); }
+
+  //[[deprecated("Do not use")]]
+  Array<Int32>& mutableShareIds() { return m_share_ids; }
+  //[[deprecated("Do not use")]]
+  Array<Int32>& mutableGhostIds() { return m_ghost_ids; }
+
+ private:
 
   //! localIds() des entités à envoyer au processeur #m_rank
-  SharedArray<Int32> m_share_ids;
+  UniqueArray<Int32> m_share_ids;
   //! localIds() des entités à réceptionner du processeur #m_rank
-  SharedArray<Int32> m_ghost_ids;
+  UniqueArray<Int32> m_ghost_ids;
   //! Rang du processeur cible
   Int32 m_target_rank;
-  //!< \a true si on envoie avant de recevoir
-  bool m_is_send_first;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -192,17 +204,8 @@ class VariableSynchronizerDispatcher
   : m_parallel_mng(pm), m_dispatcher(dispatcher)
   {
   }
-  ~VariableSynchronizerDispatcher()
-  {
-    delete m_dispatcher;
-  }
-  void compute(ConstArrayView<VariableSyncInfo> sync_list)
-  {
-    ConstArrayView<IVariableSynchronizeDispatcher*> dispatchers = m_dispatcher->dispatchers();
-    m_parallel_mng->traceMng()->info(4) << "DISPATCH RECOMPUTE";
-    for( Integer i=0, is=dispatchers.size(); i<is; ++i )
-      dispatchers[i]->compute(sync_list);
-  }
+  ~VariableSynchronizerDispatcher();
+  void compute(ConstArrayView<VariableSyncInfo> sync_list);
   IDataVisitor* visitor()
   {
     return m_dispatcher;
@@ -214,7 +217,10 @@ class VariableSynchronizerDispatcher
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \internal
+ * \brief Synchronisation d'une liste de variables.
+ */
 class VariableSynchronizerMultiDispatcher
 {
  public:

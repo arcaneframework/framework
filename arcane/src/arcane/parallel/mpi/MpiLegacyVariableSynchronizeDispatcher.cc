@@ -75,7 +75,7 @@ compute(ConstArrayView<VariableSyncInfo> sync_list)
     UniqueArray<int> ids;
     for( Integer i=0; i<nb_message; ++i ){
       const VariableSyncInfo& vsi = this->m_sync_list[i];
-      Int32ConstArrayView share_grp = vsi.m_share_ids;
+      Int32ConstArrayView share_grp = vsi.shareIds();
       Integer nb_share = share_grp.size();
       ids.resize(nb_share);
       for( Integer z=0; z<nb_share; ++z )
@@ -84,7 +84,7 @@ compute(ConstArrayView<VariableSyncInfo> sync_list)
                                     mpi_basetype,&m_share_derived_types[i]);
       MPI_Type_commit(&m_share_derived_types[i]);
 
-      Int32ConstArrayView ghost_grp = vsi.m_ghost_ids;
+      Int32ConstArrayView ghost_grp = vsi.ghostIds();
       Integer nb_ghost = ghost_grp.size();
       ids.resize(nb_ghost);
       for( Integer z=0; z<nb_ghost; ++z )
@@ -134,12 +134,12 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
         MPI_Request mpi_request;
         if (use_derived){
           m_mpi_parallel_mng->adapter()->getMpiProfiling()->iRecv(var_values.data(),1,m_ghost_derived_types[i],
-                                                                  vsi.m_target_rank,523,comm,&mpi_request);
+                                                                  vsi.targetRank(),523,comm,&mpi_request);
         }
         else{
           MPI_Datatype dt = dtlist->datatype(SimpleType())->datatype();
           m_mpi_parallel_mng->adapter()->getMpiProfiling()->iRecv(ghost_local_buffer.data(),ghost_local_buffer.size(),
-                                                                  dt,vsi.m_target_rank,523,comm,&mpi_request);
+                                                                  dt,vsi.targetRank(),523,comm,&mpi_request);
         }
         
         m_recv_requests[i] = mpi_request;
@@ -157,7 +157,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
     // Envoie les messages d'envoie en mode non bloquant.
     for( Integer i=0; i<nb_message; ++i ){
       const VariableSyncInfo& vsi = this->m_sync_list[i];
-      Int32ConstArrayView share_grp = vsi.m_share_ids;
+      Int32ConstArrayView share_grp = vsi.shareIds();
       ArrayView<SimpleType> share_local_buffer = sync_buffer.m_share_locals_buffer[i];
       if (!use_derived)
         this->_copyToBuffer(share_grp,share_local_buffer,var_values,dim2_size);
@@ -165,12 +165,12 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
         MPI_Request mpi_request;
         if (use_derived){
           m_mpi_parallel_mng->adapter()->getMpiProfiling()->iSend(var_values.data(),1,m_share_derived_types[i],
-                                                                  vsi.m_target_rank,523,comm,&mpi_request);
+                                                                  vsi.targetRank(),523,comm,&mpi_request);
         }
         else{
           MPI_Datatype dt = dtlist->datatype(SimpleType())->datatype();
           m_mpi_parallel_mng->adapter()->getMpiProfiling()->iSend(share_local_buffer.data(),share_local_buffer.size(),
-                                                                  dt,vsi.m_target_rank,523,comm,&mpi_request);
+                                                                  dt,vsi.targetRank(),523,comm,&mpi_request);
         }
         m_send_requests.add(mpi_request);
         //trace->info() << "POST SEND " << vsi.m_target_rank;
@@ -249,7 +249,7 @@ endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
       if (!use_derived){
         double begin_time = MPI_Wtime();
         const VariableSyncInfo& vsi = this->m_sync_list[index];
-        Int32ConstArrayView ghost_grp = vsi.m_ghost_ids;
+        Int32ConstArrayView ghost_grp = vsi.ghostIds();
         ArrayView<SimpleType> ghost_local_buffer = sync_buffer.m_ghost_locals_buffer[index];
         this->_copyFromBuffer(ghost_grp,ghost_local_buffer,var_values,dim2_size);
         double end_time = MPI_Wtime();

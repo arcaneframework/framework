@@ -469,7 +469,7 @@ _createList(UniqueArray<SharedArray<Int32> >& boundary_items)
     const VariableSyncInfo & sync_info = m_sync_list[i];
     const Integer target_rank = sync_info.targetRank();
     m_communicating_ranks.add(target_rank);
-    ARCANE_ASSERT((sync_info.m_ghost_ids.size() == boundary_items[target_rank].size()),("Inconsistent ghost count"));
+    ARCANE_ASSERT((sync_info.nbGhost() == boundary_items[target_rank].size()),("Inconsistent ghost count"));
   }
 }
 
@@ -544,11 +544,7 @@ _checkValid(ArrayView<GhostRankInfo> ghost_rank_info,
       marked_elem[elem.localId()] = true;
     }
 
-    // La synchronisation se fait de telle manière que le processeur
-    // de numéro le plus faible envoie d'abord ses informations et les
-    // recoient ensuite.
-    bool is_send_first = current_proc < my_rank;
-    m_sync_list.add( VariableSyncInfo (share_grp,ghost_grp,current_proc,is_send_first) );
+    m_sync_list.add( VariableSyncInfo (share_grp,ghost_grp,current_proc) );
   }
 
   // Vérifie que tous les éléments sont marqués
@@ -587,16 +583,18 @@ _printSyncList()
   ItemInternalList items_internal = item_family->itemsInternal();
   for( Integer i=0; i<nb_comm; ++i ){
     const VariableSyncInfo& vsi = m_sync_list[i];
-    ostr() << " TARGET=" << vsi.m_target_rank << '\n';
-    ostr() << "\t\tSHARE(lid,uid) n=" << vsi.m_share_ids.size() << " :";
-    for( Integer z=0, zs=vsi.m_share_ids.size(); z<zs; ++z ){
-      ItemInternal* item = items_internal[vsi.m_share_ids[z]];
+    ostr() << " TARGET=" << vsi.targetRank() << '\n';
+    Int32ConstArrayView share_ids = vsi.shareIds();
+    ostr() << "\t\tSHARE(lid,uid) n=" << share_ids.size() << " :";
+    for( Integer z=0, zs=share_ids.size(); z<zs; ++z ){
+      ItemInternal* item = items_internal[share_ids[z]];
       ostr() << " (" << item->localId() << "," << item->uniqueId() << ")";
     }
     ostr() << "\n";
-    ostr() << "\t\tGHOST(lid,uid) n=" << vsi.m_ghost_ids.size() << " :";
-    for( Integer z=0, zs=vsi.m_ghost_ids.size(); z<zs; ++z ){
-      ItemInternal* item = items_internal[vsi.m_ghost_ids[z]];
+    Int32ConstArrayView ghost_ids = vsi.ghostIds();
+    ostr() << "\t\tGHOST(lid,uid) n=" << ghost_ids.size() << " :";
+    for( Integer z=0, zs=ghost_ids.size(); z<zs; ++z ){
+      ItemInternal* item = items_internal[ghost_ids[z]];
       ostr() << " (" << item->localId() << "," << item->uniqueId() << ")";
     }
     ostr() << "\n";
@@ -704,8 +702,8 @@ changeLocalIds(Int32ConstArrayView old_to_new_ids)
   for( Integer i=0; i<nb_comm; ++i ){
     VariableSyncInfo& vsi = m_sync_list[i];
 
-    UniqueArray<Int32> orig_share_ids(vsi.m_share_ids);
-    Int32Array& share_ids = vsi.m_share_ids;
+    UniqueArray<Int32> orig_share_ids(vsi.shareIds());
+    Int32Array& share_ids = vsi.mutableShareIds();
     share_ids.clear();
 
     for( Integer z=0, zs=orig_share_ids.size(); z<zs; ++z ){
@@ -717,8 +715,8 @@ changeLocalIds(Int32ConstArrayView old_to_new_ids)
     }
     info(4) << "NEW_SHARE_SIZE=" << share_ids.size() << " old=" << orig_share_ids.size();
 
-    UniqueArray<Int32> orig_ghost_ids(vsi.m_ghost_ids);
-    Int32Array& ghost_ids = vsi.m_ghost_ids;
+    UniqueArray<Int32> orig_ghost_ids(vsi.ghostIds());
+    Int32Array& ghost_ids = vsi.mutableGhostIds();
     ghost_ids.clear();
 
     for( Integer z=0, zs=orig_ghost_ids.size(); z<zs; ++z ){
@@ -802,7 +800,7 @@ communicatingRanks()
 Int32ConstArrayView VariableSynchronizer::
 sharedItems(Int32 index)
 {
-  return m_sync_list[index].m_share_ids;
+  return m_sync_list[index].shareIds();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -811,7 +809,7 @@ sharedItems(Int32 index)
 Int32ConstArrayView VariableSynchronizer::
 ghostItems(Int32 index)
 {
-  return m_sync_list[index].m_ghost_ids;
+  return m_sync_list[index].ghostIds();
 }
 
 /*---------------------------------------------------------------------------*/
