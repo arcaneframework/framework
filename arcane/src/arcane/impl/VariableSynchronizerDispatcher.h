@@ -167,7 +167,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
 {
  public:
   //! Gère les buffers d'envoie et réception pour la synchronisation
-  class SyncBuffer
+  class ARCANE_IMPL_EXPORT SyncBuffer
   {
    public:
     void compute(IBufferCopier<SimpleType>* copier,ItemGroupSynchronizeInfo* sync_list,Int32 dim2_size);
@@ -260,7 +260,7 @@ class ARCANE_IMPL_EXPORT SimpleVariableSynchronizeDispatcher
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class VariableSynchronizerDispatcher
+class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
 {
  public:
   typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
@@ -286,7 +286,7 @@ class VariableSynchronizerDispatcher
  * \internal
  * \brief Synchronisation d'une liste de variables.
  */
-class VariableSynchronizerMultiDispatcher
+class ARCANE_IMPL_EXPORT VariableSynchronizerMultiDispatcher
 {
  public:
   VariableSynchronizerMultiDispatcher(IParallelMng* pm)

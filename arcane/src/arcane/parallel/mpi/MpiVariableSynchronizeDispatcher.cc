@@ -59,7 +59,7 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// TODO: Séparer le cas avec type dérivé dans une classe à part.
+
 template<typename SimpleType>
 MpiVariableSynchronizeDispatcher<SimpleType>::
 MpiVariableSynchronizeDispatcher(MpiVariableSynchronizeDispatcherBuildInfo& bi)
@@ -128,7 +128,7 @@ _beginSynchronize(SyncBuffer& sync_buffer)
   for( Integer i=0; i<nb_message; ++i )
     sync_buffer.copySend(i);
 
-  // Poste les messages d'envoie en mode non bloquant.
+  // Poste les messages d'envoi en mode non bloquant.
   for( Integer i=0; i<nb_message; ++i ){
     ArrayView<SimpleType> buf = sync_buffer.shareBuffer(i);
     const VariableSyncInfo& vsi = sync_list[i];
@@ -173,7 +173,7 @@ _endSynchronize(SyncBuffer& sync_buffer)
       m_receive_request_list->wait(Parallel::WaitSome);
     }
 
-    // Pour chaque requete terminée, effectue la copie
+    // Pour chaque requête terminée, effectue la copie
     ConstArrayView<Int32> done_requests = m_receive_request_list->doneRequestIndexes();
     Integer nb_completed_request = done_requests.size();
 
