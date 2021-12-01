@@ -287,7 +287,7 @@ if (ARCANE_WANT_CHECK)
   set(ARCCORE_CHECK TRUE)
 endif()
 
-set(ARCANE_ARCCORE_NEEDED_VERSION "2.0.4")
+set(ARCANE_ARCCORE_NEEDED_VERSION "2.0.6")
 find_package(Arccore ${ARCANE_ARCCORE_NEEDED_VERSION} REQUIRED)
 message(STATUS "Arccore_DIR = ${Arccore_DIR}")
 if (Arccore_VERSION VERSION_LESS ARCANE_ARCCORE_NEEDED_VERSION)
@@ -295,7 +295,7 @@ if (Arccore_VERSION VERSION_LESS ARCANE_ARCCORE_NEEDED_VERSION)
     " Version ${ARCANE_ARCCORE_NEEDED_VERSION} required")
 endif()
 
-# Si arccore a déjà installé, on prend le mode check de arccore
+# Si arccore a déjà été installé, on prend le mode check de arccore
 # pour garantir la cohérence avec Arcane.
 if (Arccore_DIR)
   # TODO: à terme, supprimer ces deux variables 'ARCANE_WANT_CHECK' et 'ARCANE_WANT_DEBUG'
