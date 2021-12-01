@@ -52,7 +52,7 @@ class VariableSynchronizerMultiDispatcher;
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Informations sur la liste des entités partagées/fantômes pour
- * une synchronisation.
+ * un rang donné pour une synchronisation.
  */
 class ARCANE_IMPL_EXPORT VariableSyncInfo
 {
@@ -96,6 +96,25 @@ class ARCANE_IMPL_EXPORT VariableSyncInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Informations nécessaires pour synchroniser les entités sur un groupe.
+ */
+class ARCANE_IMPL_EXPORT ItemGroupSynchronizeInfo
+{
+ public:
+  ConstArrayView<VariableSyncInfo> infos() const { return m_ranks_info; }
+  ArrayView<VariableSyncInfo> infos() { return m_ranks_info; }
+  VariableSyncInfo& operator[](Int32 i) { return m_ranks_info[i]; }
+  const VariableSyncInfo& operator[](Int32 i) const { return m_ranks_info[i]; }
+  void clear() { m_ranks_info.clear(); }
+  Int32 size() const { return m_ranks_info.size(); }
+  void add(const VariableSyncInfo& s) { m_ranks_info.add(s); }
+ private:
+  UniqueArray<VariableSyncInfo> m_ranks_info;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 class ARCANE_IMPL_EXPORT IVariableSynchronizeDispatcher
 {
@@ -104,7 +123,7 @@ class ARCANE_IMPL_EXPORT IVariableSynchronizeDispatcher
  public:
   virtual ~IVariableSynchronizeDispatcher(){}
  public:
-  virtual void compute(ConstArrayView<VariableSyncInfo> sync_list) =0;
+  virtual void compute(ItemGroupSynchronizeInfo* sync_list) =0;
  protected:
 };
 
@@ -139,7 +158,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
   class SyncBuffer
   {
    public:
-    void compute(ConstArrayView<VariableSyncInfo> sync_list,Int32 dim2_size);
+    void compute(ItemGroupSynchronizeInfo* sync_list,Int32 dim2_size);
    public:
     Int32 dim2Size() const { return m_dim2_size; }
     ArrayView<SimpleType> ghostBuffer(Int32 index) { return m_ghost_locals_buffer[index]; }
@@ -147,11 +166,12 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
     ConstArrayView<SimpleType> ghostBuffer(Int32 index) const { return m_ghost_locals_buffer[index]; }
     ConstArrayView<SimpleType> shareBuffer(Int32 index) const { return m_share_locals_buffer[index]; }
    private:
-    Integer m_dim2_size;
+    Integer m_dim2_size = 0;
     UniqueArray<SimpleType> m_ghost_buffer;
     UniqueArray<SimpleType> m_share_buffer;
     UniqueArray< ArrayView<SimpleType> > m_ghost_locals_buffer;
     UniqueArray< ArrayView<SimpleType> > m_share_locals_buffer;
+    ItemGroupSynchronizeInfo* m_sync_list = nullptr;
   };
  public:
   VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
@@ -178,7 +198,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
     ARCANE_UNUSED(data);
     throw NotSupportedException(A_FUNCINFO,"Can not synchronize multiarray2 data");
   }
-  virtual void compute(ConstArrayView<VariableSyncInfo> sync_list);
+  virtual void compute(ItemGroupSynchronizeInfo* sync_list);
   virtual void beginSynchronize(ArrayView<SimpleType> values,SyncBuffer& sync_buffer);
   virtual void endSynchronize(ArrayView<SimpleType> values,SyncBuffer& sync_buffer);
 
@@ -189,8 +209,10 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
   void _copyToBuffer(Int32ConstArrayView indexes,ArrayView<SimpleType> buffer,
                      ConstArrayView<SimpleType> var_value,Integer dim2_size);
  protected:
-  IParallelMng* m_parallel_mng;
-  IBufferCopier<SimpleType>* m_buffer_copier;
+  IParallelMng* m_parallel_mng = nullptr;
+  IBufferCopier<SimpleType>* m_buffer_copier = nullptr;
+  ItemGroupSynchronizeInfo* m_sync_info = nullptr;
+  //TODO: a supprimer
   ConstArrayView<VariableSyncInfo> m_sync_list;
   UniqueArray<Parallel::Request> m_all_requests;
   SyncBuffer m_1d_buffer;
@@ -213,7 +235,7 @@ class VariableSynchronizerDispatcher
   {
   }
   ~VariableSynchronizerDispatcher();
-  void compute(ConstArrayView<VariableSyncInfo> sync_list);
+  void compute(ItemGroupSynchronizeInfo* sync_info);
   IDataVisitor* visitor()
   {
     return m_dispatcher;

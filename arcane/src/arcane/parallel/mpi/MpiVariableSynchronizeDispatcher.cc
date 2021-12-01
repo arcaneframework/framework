@@ -75,9 +75,9 @@ MpiVariableSynchronizeDispatcher(MpiVariableSynchronizeDispatcherBuildInfo& bi)
 
 template<typename SimpleType> void
 MpiVariableSynchronizeDispatcher<SimpleType>::
-compute(ConstArrayView<VariableSyncInfo> sync_list)
+compute(ItemGroupSynchronizeInfo* sync_info)
 {
-  VariableSynchronizeDispatcher<SimpleType>::compute(sync_list);
+  VariableSynchronizeDispatcher<SimpleType>::compute(sync_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -90,7 +90,9 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
   if (this->m_is_in_sync)
     ARCANE_FATAL("Only one pending serialisation is supported");
 
-  Integer nb_message = this->m_sync_list.size();
+  auto sync_list = this->m_sync_info->infos();
+
+  Integer nb_message = sync_list.size();
 
   m_send_request_list->clear();
 
@@ -110,7 +112,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 
   // Poste les messages de réception
   for( Integer i=0; i<nb_message; ++i ){
-    const VariableSyncInfo& vsi = this->m_sync_list[i];
+    const VariableSyncInfo& vsi = sync_list[i];
     ArrayView<SimpleType> buf = sync_buffer.ghostBuffer(i);
     if (!buf.empty()){
       auto req = mpi_adapter->receiveNonBlockingNoStat(buf.data(),buf.size(),
@@ -133,7 +135,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
   // Poste les messages d'envoie en mode non bloquant.
   for( Integer i=0; i<nb_message; ++i ){
     ArrayView<SimpleType> buf = sync_buffer.shareBuffer(i);
-    const VariableSyncInfo& vsi = this->m_sync_list[i];
+    const VariableSyncInfo& vsi = sync_list[i];
     if (!buf.empty()){
       auto request = mpi_adapter->sendNonBlockingNoStat(buf.data(),buf.size(),
                                                         vsi.targetRank(),mpi_dt,serialize_tag);

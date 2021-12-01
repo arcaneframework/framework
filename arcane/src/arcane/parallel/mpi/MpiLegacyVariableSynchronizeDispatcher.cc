@@ -55,13 +55,14 @@ MpiLegacyVariableSynchronizeDispatcher(MpiLegacyVariableSynchronizeDispatcherBui
 
 template<typename SimpleType> void
 MpiLegacyVariableSynchronizeDispatcher<SimpleType>::
-compute(ConstArrayView<VariableSyncInfo> sync_list)
+compute(ItemGroupSynchronizeInfo* sync_info)
 {
   //m_mpi_parallel_mng->traceMng()->info() << "MPI COMPUTE";
-  VariableSynchronizeDispatcher<SimpleType>::compute(sync_list);
+  VariableSynchronizeDispatcher<SimpleType>::compute(sync_info);
+  auto sync_list = sync_info->infos();
   if (m_use_derived_type){
     //TODO Utiliser des 'int' MPI au lieu de Int32
-    Integer nb_message = this->m_sync_list.size();
+    Integer nb_message = sync_list.size();
     MpiParallelMng* pm = m_mpi_parallel_mng;
     _destroyTypes();
     m_share_derived_types.resize(nb_message);
@@ -74,7 +75,7 @@ compute(ConstArrayView<VariableSyncInfo> sync_list)
     MPI_Datatype mpi_basetype = pm->datatypes()->datatype(BasicType())->datatype();
     UniqueArray<int> ids;
     for( Integer i=0; i<nb_message; ++i ){
-      const VariableSyncInfo& vsi = this->m_sync_list[i];
+      const VariableSyncInfo& vsi = sync_list[i];
       Int32ConstArrayView share_grp = vsi.shareIds();
       Integer nb_share = share_grp.size();
       ids.resize(nb_share);
@@ -105,8 +106,10 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 {
   if (this->m_is_in_sync)
     ARCANE_FATAL("Only one pending serialisation is supported");
+
+  auto sync_list = this->m_sync_info->infos();
   //Integer nb_elem = var_values.size();
-  Integer nb_message = this->m_sync_list.size();
+  Integer nb_message = sync_list.size();
   Integer dim2_size = sync_buffer.dim2Size();
 
   m_send_requests.clear();
@@ -128,7 +131,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
   m_recv_requests_done.resize(nb_message);
   double begin_prepare_time = MPI_Wtime();
   for( Integer i=0; i<nb_message; ++i ){
-    const VariableSyncInfo& vsi = this->m_sync_list[i];
+    const VariableSyncInfo& vsi = sync_list[i];
     ArrayView<SimpleType> ghost_local_buffer = sync_buffer.ghostBuffer(i);
       if (!ghost_local_buffer.empty()){
         MPI_Request mpi_request;

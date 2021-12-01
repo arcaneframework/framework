@@ -101,9 +101,9 @@ class MpiLegacyVariableSynchronizeDispatcher
     m_ghost_derived_types.clear();
   }
 
-  virtual void compute(ConstArrayView<VariableSyncInfo> sync_list);
-  virtual void beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer);
-  virtual void endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer);
+  void compute(ItemGroupSynchronizeInfo* sync_list) override;
+  void beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer) override;
+  void endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer) override;
 
  private:
   MpiParallelMng* m_mpi_parallel_mng;

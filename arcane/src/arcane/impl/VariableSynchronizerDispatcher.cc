@@ -83,7 +83,7 @@ applyDispatch(IArray2DataT<SimpleType>* data)
   if (dim2_size==0)
     return;
   Integer dim1_size = value.dim1Size();
-  m_2d_buffer.compute(m_sync_list,dim2_size);
+  m_2d_buffer.compute(m_sync_info,dim2_size);
   ArrayView<SimpleType> buf(dim1_size*dim2_size,value_ptr);
   this->beginSynchronize(buf,m_2d_buffer);
   this->endSynchronize(buf,m_2d_buffer);
@@ -99,8 +99,9 @@ applyDispatch(IArray2DataT<SimpleType>* data)
  * terme de memoire.
  */
 template<typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::SyncBuffer::
-compute(ConstArrayView<VariableSyncInfo> sync_list,Integer dim2_size)
+compute(ItemGroupSynchronizeInfo* sync_info,Integer dim2_size)
 {
+  auto sync_list = sync_info->infos();
   m_dim2_size = dim2_size;
   Integer nb_message = sync_list.size();
 
@@ -151,16 +152,17 @@ compute(ConstArrayView<VariableSyncInfo> sync_list,Integer dim2_size)
  * pour les synchronisations des variables 1D.
  */
 template<typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
-compute(ConstArrayView<VariableSyncInfo> sync_list)
+compute(ItemGroupSynchronizeInfo* sync_info)
 {
   //IParallelMng* pm = m_parallel_mng;
-  m_sync_list = sync_list;
+  m_sync_info = sync_info;
+  m_sync_list = sync_info->infos();
   //Integer nb_message = sync_list.size();
   //pm->traceMng()->info() << "** RECOMPUTE SYNC LIST!!! N=" << nb_message
   //                       << " this=" << (IVariableSynchronizeDispatcher*)this
   //                       << " m_sync_list=" << &m_sync_list;
 
-  m_1d_buffer.compute(sync_list,1);
+  m_1d_buffer.compute(m_sync_info,1);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -310,12 +312,12 @@ VariableSynchronizerDispatcher::
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizerDispatcher::
-compute(ConstArrayView<VariableSyncInfo> sync_list)
+compute(ItemGroupSynchronizeInfo* sync_info)
 {
   ConstArrayView<IVariableSynchronizeDispatcher*> dispatchers = m_dispatcher->dispatchers();
   m_parallel_mng->traceMng()->info(4) << "DISPATCH RECOMPUTE";
   for( Integer i=0, is=dispatchers.size(); i<is; ++i )
-    dispatchers[i]->compute(sync_list);
+    dispatchers[i]->compute(sync_info);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -176,7 +176,7 @@ compute()
   if (m_is_verbose){
     info() << "Begin compute dispatcher Date=" << platform::getCurrentDateTime();
   }
-  m_dispatcher->compute(m_sync_list);
+  m_dispatcher->compute(&m_sync_list);
   if (m_is_verbose){
     info() << "End compute dispatcher Date=" << platform::getCurrentDateTime();
   }
@@ -699,14 +699,14 @@ changeLocalIds(Int32ConstArrayView old_to_new_ids)
 {
   info(4) << "** VariableSynchronizer::changeLocalIds() group=" << m_item_group.name();
 
-  for( VariableSyncInfo& vsi : m_sync_list ){
+  for( VariableSyncInfo& vsi : m_sync_list.infos() ){
     Int32 old_nb_share = vsi.nbShare();
     Int32 old_nb_ghost = vsi.nbGhost();
     vsi.changeLocalIds(old_to_new_ids);
     info(4) << "NEW_SHARE_SIZE=" << vsi.nbShare() << " old=" << old_nb_share;
     info(4) << "NEW_GHOST_SIZE=" << vsi.nbGhost() << " old=" << old_nb_ghost;
   }
-  m_dispatcher->compute(m_sync_list);
+  m_dispatcher->compute(&m_sync_list);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -751,7 +751,7 @@ _synchronize(VariableCollection vars)
 
   const bool use_multi = m_allow_multi_sync;
   if (use_multi && _canSynchronizeMulti(vars)){
-    m_multi_dispatcher->synchronize(vars,m_sync_list);
+    m_multi_dispatcher->synchronize(vars,m_sync_list.infos());
     for( VariableCollection::Enumerator ivar(vars); ++ivar; ){
       (*ivar)->setIsSynchronized();
     }

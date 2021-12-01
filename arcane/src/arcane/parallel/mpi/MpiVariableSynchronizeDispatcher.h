@@ -73,7 +73,7 @@ class MpiVariableSynchronizeDispatcher
 
   explicit MpiVariableSynchronizeDispatcher(MpiVariableSynchronizeDispatcherBuildInfo& bi);
 
-  void compute(ConstArrayView<VariableSyncInfo> sync_list) override;
+  void compute(ItemGroupSynchronizeInfo* sync_list) override;
   void beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer) override;
   void endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer) override;
 

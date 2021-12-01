@@ -166,7 +166,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
 
   IParallelMng* m_parallel_mng;
   ItemGroup m_item_group;
-  UniqueArray<VariableSyncInfo> m_sync_list;
+  ItemGroupSynchronizeInfo m_sync_list;
   Int32UniqueArray m_communicating_ranks;
   VariableSynchronizerDispatcher* m_dispatcher;
   VariableSynchronizerMultiDispatcher* m_multi_dispatcher;
