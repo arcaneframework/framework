@@ -129,7 +129,7 @@ beginSynchronize(SyncBuffer& sync_buffer)
 
   // Recopie les buffers d'envoi dans \a var_values
   for( Integer i=0; i<nb_message; ++i )
-    _copySend(sync_buffer,i);
+    sync_buffer.copySend(i);
 
   // Poste les messages d'envoie en mode non bloquant.
   for( Integer i=0; i<nb_message; ++i ){
@@ -144,36 +144,6 @@ beginSynchronize(SyncBuffer& sync_buffer)
   double prepare_time = MPI_Wtime() - begin_prepare_time;
   pm->stat()->add("SyncPrepare",prepare_time,1);
   m_is_in_sync = true;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename SimpleType> void
-MpiVariableSynchronizeDispatcher<SimpleType>::
-_copyReceive(SyncBuffer& sync_buffer,Integer index)
-{
-  ArrayView<SimpleType> var_values = sync_buffer.dataView();
-  Integer dim2_size = sync_buffer.dim2Size();
-  const VariableSyncInfo& vsi = this->m_sync_list[index];
-  ConstArrayView<Int32> ghost_grp = vsi.ghostIds();
-  ArrayView<SimpleType> ghost_local_buffer = sync_buffer.ghostBuffer(index);
-  this->_copyFromBuffer(ghost_grp,ghost_local_buffer,var_values,dim2_size);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename SimpleType> void
-MpiVariableSynchronizeDispatcher<SimpleType>::
-_copySend(SyncBuffer& sync_buffer,Integer index)
-{
-  ArrayView<SimpleType> var_values = sync_buffer.dataView();
-  Integer dim2_size = sync_buffer.dim2Size();
-  const VariableSyncInfo& vsi = this->m_sync_list[index];
-  Int32ConstArrayView share_grp = vsi.shareIds();
-  ArrayView<SimpleType> share_local_buffer = sync_buffer.shareBuffer(index);
-  this->_copyToBuffer(share_grp,share_local_buffer,var_values,dim2_size);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -222,7 +192,7 @@ endSynchronize(SyncBuffer& sync_buffer)
       // Recopie les valeurs recues
       {
         TimeInterval tit(&copy_time);
-        _copyReceive(sync_buffer,index);
+        sync_buffer.copyReceive(index);
       }
     }
   }

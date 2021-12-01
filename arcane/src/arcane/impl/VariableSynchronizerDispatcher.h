@@ -169,7 +169,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
   class SyncBuffer
   {
    public:
-    void compute(ItemGroupSynchronizeInfo* sync_list,Int32 dim2_size);
+    void compute(IBufferCopier<SimpleType>* copier,ItemGroupSynchronizeInfo* sync_list,Int32 dim2_size);
    public:
     Int32 dim2Size() const { return m_dim2_size; }
     ArrayView<SimpleType> ghostBuffer(Int32 index) { return m_ghost_locals_buffer[index]; }
@@ -178,15 +178,20 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
     ConstArrayView<SimpleType> shareBuffer(Int32 index) const { return m_share_locals_buffer[index]; }
     void setDataView(ArrayView<SimpleType> v) { m_data_view = v; }
     ArrayView<SimpleType> dataView() { return m_data_view; }
+    void copyReceive(Integer index);
+    void copySend(Integer index);
    private:
     Integer m_dim2_size = 0;
+    //! Buffer pour toutes les données des entités fantômes qui serviront en réception
     UniqueArray<SimpleType> m_ghost_buffer;
+    //! Buffer pour toutes les données des entités partagées qui serviront en envoi
     UniqueArray<SimpleType> m_share_buffer;
     UniqueArray< ArrayView<SimpleType> > m_ghost_locals_buffer;
     UniqueArray< ArrayView<SimpleType> > m_share_locals_buffer;
-    ItemGroupSynchronizeInfo* m_sync_list = nullptr;
+    ItemGroupSynchronizeInfo* m_sync_info = nullptr;
     //! Vue sur les données de la variable
     ArrayView<SimpleType> m_data_view;
+    IBufferCopier<SimpleType>* m_buffer_copier = nullptr;
   };
  public:
   VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
@@ -207,16 +212,13 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
   void applyDispatch(IMultiArray2DataT<SimpleType>* data) override;
   void compute(ItemGroupSynchronizeInfo* sync_list) override;
 
+ public:
+
   virtual void beginSynchronize(SyncBuffer& sync_buffer) =0;
   virtual void endSynchronize(SyncBuffer& sync_buffer) =0;
 
  protected:
-  
-  void _copyFromBuffer(Int32ConstArrayView indexes,ConstArrayView<SimpleType> buffer,
-                       ArrayView<SimpleType> var_value,Integer dim2_size);
-  void _copyToBuffer(Int32ConstArrayView indexes,ArrayView<SimpleType> buffer,
-                     ConstArrayView<SimpleType> var_value,Integer dim2_size);
- protected:
+
   IParallelMng* m_parallel_mng = nullptr;
   IBufferCopier<SimpleType>* m_buffer_copier = nullptr;
   ItemGroupSynchronizeInfo* m_sync_info = nullptr;

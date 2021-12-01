@@ -161,10 +161,9 @@ beginSynchronize(SyncBuffer& sync_buffer)
     // Envoie les messages d'envoie en mode non bloquant.
     for( Integer i=0; i<nb_message; ++i ){
       const VariableSyncInfo& vsi = this->m_sync_list[i];
-      Int32ConstArrayView share_grp = vsi.shareIds();
       ArrayView<SimpleType> share_local_buffer = sync_buffer.shareBuffer(i);
       if (!use_derived)
-        this->_copyToBuffer(share_grp,share_local_buffer,var_values,dim2_size);
+        sync_buffer.copySend(i);
       if (!share_local_buffer.empty()){
         MPI_Request mpi_request;
         if (use_derived){
@@ -199,8 +198,6 @@ endSynchronize(SyncBuffer& sync_buffer)
 {
   if (!this->m_is_in_sync)
     ARCANE_FATAL("endSynchronize() called but no beginSynchronize() was called before");
-
-  ArrayView<SimpleType> var_values = sync_buffer.dataView();
 
   Integer dim2_size = sync_buffer.dim2Size();
   bool use_derived = (dim2_size==1 && m_use_derived_type);
@@ -254,10 +251,7 @@ endSynchronize(SyncBuffer& sync_buffer)
 
       if (!use_derived){
         double begin_time = MPI_Wtime();
-        const VariableSyncInfo& vsi = this->m_sync_list[index];
-        Int32ConstArrayView ghost_grp = vsi.ghostIds();
-        ArrayView<SimpleType> ghost_local_buffer = sync_buffer.ghostBuffer(index);
-        this->_copyFromBuffer(ghost_grp,ghost_local_buffer,var_values,dim2_size);
+        sync_buffer.copyReceive(index);
         double end_time = MPI_Wtime();
         copy_time += (end_time - begin_time);
       }

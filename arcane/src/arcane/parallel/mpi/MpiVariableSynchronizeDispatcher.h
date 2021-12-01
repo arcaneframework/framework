@@ -84,9 +84,6 @@ class MpiVariableSynchronizeDispatcher
   Ref<Parallel::IRequestList> m_receive_request_list;
   Ref<Parallel::IRequestList> m_send_request_list;
   bool m_is_in_sync = false;
- private:
-  void _copyReceive(SyncBuffer& sync_buffer,Integer index);
-  void _copySend(SyncBuffer& sync_buffer,Integer index);
 };
 
 /*---------------------------------------------------------------------------*/
