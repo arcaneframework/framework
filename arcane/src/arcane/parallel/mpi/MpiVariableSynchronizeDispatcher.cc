@@ -102,6 +102,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
   double begin_prepare_time = MPI_Wtime();
 
   constexpr int serialize_tag = 523;
+  const MPI_Datatype mpi_dt = dtlist->datatype(SimpleType())->datatype();
 
   // Envoie les messages de réception en mode non bloquant
   m_original_recv_requests_done.resize(nb_message);
@@ -110,14 +111,12 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
   // Poste les messages de réception
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = this->m_sync_list[i];
-    ArrayView<SimpleType> ghost_local_buffer = sync_buffer.m_ghost_locals_buffer[i];
-    if (!ghost_local_buffer.empty()){
-      MPI_Datatype dt = dtlist->datatype(SimpleType())->datatype();
-      auto req = mpi_adapter->directRecv(ghost_local_buffer.data(),ghost_local_buffer.size(),
-                                         vsi.m_target_rank,sizeof(SimpleType),dt,serialize_tag,false);
+    ArrayView<SimpleType> buf = sync_buffer.m_ghost_locals_buffer[i];
+    if (!buf.empty()){
+      auto req = mpi_adapter->receiveNonBlockingNoStat(buf.data(),buf.size(),
+                                                       vsi.m_target_rank,mpi_dt,serialize_tag);
       m_original_recv_requests[i] = req;
       m_original_recv_requests_done[i] = false;
-      //trace->info() << "POST RECV " << vsi.m_target_rank;
     }
     else{
       // Il n'est pas nécessaire d'envoyer un message vide.
@@ -133,12 +132,11 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 
   // Poste les messages d'envoie en mode non bloquant.
   for( Integer i=0; i<nb_message; ++i ){
-    ArrayView<SimpleType> share_local_buffer = sync_buffer.m_share_locals_buffer[i];
+    ArrayView<SimpleType> buf = sync_buffer.m_share_locals_buffer[i];
     const VariableSyncInfo& vsi = this->m_sync_list[i];
-    if (!share_local_buffer.empty()){
-      MPI_Datatype dt = dtlist->datatype(SimpleType())->datatype();
-      auto request = mpi_adapter->directSend(share_local_buffer.data(),share_local_buffer.size(),
-                                             vsi.m_target_rank,sizeof(SimpleType),dt,serialize_tag,false);
+    if (!buf.empty()){
+      auto request = mpi_adapter->sendNonBlockingNoStat(buf.data(),buf.size(),
+                                                        vsi.m_target_rank,mpi_dt,serialize_tag);
       m_send_request_list->add(request);
     }
   }
