@@ -111,7 +111,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
   // Poste les messages de réception
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = this->m_sync_list[i];
-    ArrayView<SimpleType> buf = sync_buffer.m_ghost_locals_buffer[i];
+    ArrayView<SimpleType> buf = sync_buffer.ghostBuffer(i);
     if (!buf.empty()){
       auto req = mpi_adapter->receiveNonBlockingNoStat(buf.data(),buf.size(),
                                                        vsi.targetRank(),mpi_dt,serialize_tag);
@@ -132,7 +132,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 
   // Poste les messages d'envoie en mode non bloquant.
   for( Integer i=0; i<nb_message; ++i ){
-    ArrayView<SimpleType> buf = sync_buffer.m_share_locals_buffer[i];
+    ArrayView<SimpleType> buf = sync_buffer.shareBuffer(i);
     const VariableSyncInfo& vsi = this->m_sync_list[i];
     if (!buf.empty()){
       auto request = mpi_adapter->sendNonBlockingNoStat(buf.data(),buf.size(),
@@ -152,10 +152,10 @@ template<typename SimpleType> void
 MpiVariableSynchronizeDispatcher<SimpleType>::
 _copyReceive(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer,Integer index)
 {
-  Integer dim2_size = sync_buffer.m_dim2_size;
+  Integer dim2_size = sync_buffer.dim2Size();
   const VariableSyncInfo& vsi = this->m_sync_list[index];
   ConstArrayView<Int32> ghost_grp = vsi.ghostIds();
-  ArrayView<SimpleType> ghost_local_buffer = sync_buffer.m_ghost_locals_buffer[index];
+  ArrayView<SimpleType> ghost_local_buffer = sync_buffer.ghostBuffer(index);
   this->_copyFromBuffer(ghost_grp,ghost_local_buffer,var_values,dim2_size);
 }
 
@@ -166,10 +166,10 @@ template<typename SimpleType> void
 MpiVariableSynchronizeDispatcher<SimpleType>::
 _copySend(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer,Integer index)
 {
-  Integer dim2_size = sync_buffer.m_dim2_size;
+  Integer dim2_size = sync_buffer.dim2Size();
   const VariableSyncInfo& vsi = this->m_sync_list[index];
   Int32ConstArrayView share_grp = vsi.shareIds();
-  ArrayView<SimpleType> share_local_buffer = sync_buffer.m_share_locals_buffer[index];
+  ArrayView<SimpleType> share_local_buffer = sync_buffer.shareBuffer(index);
   this->_copyToBuffer(share_grp,share_local_buffer,var_values,dim2_size);
 }
 

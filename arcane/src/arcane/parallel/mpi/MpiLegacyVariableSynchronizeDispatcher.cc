@@ -107,7 +107,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
     ARCANE_FATAL("Only one pending serialisation is supported");
   //Integer nb_elem = var_values.size();
   Integer nb_message = this->m_sync_list.size();
-  Integer dim2_size = sync_buffer.m_dim2_size;
+  Integer dim2_size = sync_buffer.dim2Size();
 
   m_send_requests.clear();
 
@@ -129,7 +129,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
   double begin_prepare_time = MPI_Wtime();
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = this->m_sync_list[i];
-      ArrayView<SimpleType> ghost_local_buffer = sync_buffer.m_ghost_locals_buffer[i];
+    ArrayView<SimpleType> ghost_local_buffer = sync_buffer.ghostBuffer(i);
       if (!ghost_local_buffer.empty()){
         MPI_Request mpi_request;
         if (use_derived){
@@ -158,7 +158,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
     for( Integer i=0; i<nb_message; ++i ){
       const VariableSyncInfo& vsi = this->m_sync_list[i];
       Int32ConstArrayView share_grp = vsi.shareIds();
-      ArrayView<SimpleType> share_local_buffer = sync_buffer.m_share_locals_buffer[i];
+      ArrayView<SimpleType> share_local_buffer = sync_buffer.shareBuffer(i);
       if (!use_derived)
         this->_copyToBuffer(share_grp,share_local_buffer,var_values,dim2_size);
       if (!share_local_buffer.empty()){
@@ -196,7 +196,7 @@ endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
   if (!this->m_is_in_sync)
     ARCANE_FATAL("endSynchronize() called but no beginSynchronize() was called before");
 
-  Integer dim2_size = sync_buffer.m_dim2_size;
+  Integer dim2_size = sync_buffer.dim2Size();
   bool use_derived = (dim2_size==1 && m_use_derived_type);
 
   MpiParallelMng* pm = m_mpi_parallel_mng;
@@ -250,7 +250,7 @@ endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
         double begin_time = MPI_Wtime();
         const VariableSyncInfo& vsi = this->m_sync_list[index];
         Int32ConstArrayView ghost_grp = vsi.ghostIds();
-        ArrayView<SimpleType> ghost_local_buffer = sync_buffer.m_ghost_locals_buffer[index];
+        ArrayView<SimpleType> ghost_local_buffer = sync_buffer.ghostBuffer(index);
         this->_copyFromBuffer(ghost_grp,ghost_local_buffer,var_values,dim2_size);
         double end_time = MPI_Wtime();
         copy_time += (end_time - begin_time);

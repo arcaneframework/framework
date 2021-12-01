@@ -178,7 +178,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
   //Integer nb_elem = var_values.size();
   bool use_blocking_send = false;
   Integer nb_message = m_sync_list.size();
-  Integer dim2_size = sync_buffer.m_dim2_size;
+  Integer dim2_size = sync_buffer.dim2Size();
 
   /*pm->traceMng()->info() << " ** ** COMMON BEGIN SYNC n=" << nb_message
                          << " this=" << (IVariableSynchronizeDispatcher*)this
@@ -188,7 +188,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
   // Envoie les messages de réception non bloquant
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = m_sync_list[i];
-    ArrayView<SimpleType> ghost_local_buffer = sync_buffer.m_ghost_locals_buffer[i];
+    ArrayView<SimpleType> ghost_local_buffer = sync_buffer.ghostBuffer(i);
     if (!ghost_local_buffer.empty()){
       Parallel::Request rval = pm->recv(ghost_local_buffer,vsi.targetRank(),false);
       m_all_requests.add(rval);
@@ -199,7 +199,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = m_sync_list[i];
     Int32ConstArrayView share_grp = vsi.shareIds();
-    ArrayView<SimpleType> share_local_buffer = sync_buffer.m_share_locals_buffer[i];
+    ArrayView<SimpleType> share_local_buffer = sync_buffer.shareBuffer(i);
       
     _copyToBuffer(share_grp,share_local_buffer,var_values,dim2_size);
 
@@ -231,7 +231,7 @@ endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
   //Integer nb_elem = var_values.size();
   //bool use_blocking_send = false;
   Integer nb_message = m_sync_list.size();
-  Integer dim2_size = sync_buffer.m_dim2_size;
+  Integer dim2_size = sync_buffer.dim2Size();
 
   /*pm->traceMng()->info() << " ** ** COMMON END SYNC n=" << nb_message
                          << " this=" << (IVariableSynchronizeDispatcher*)this
@@ -246,11 +246,8 @@ endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = m_sync_list[i];
     Int32ConstArrayView ghost_grp = vsi.ghostIds();
-    ArrayView<SimpleType> ghost_local_buffer = sync_buffer.m_ghost_locals_buffer[i];
+    ArrayView<SimpleType> ghost_local_buffer = sync_buffer.ghostBuffer(i);
     _copyFromBuffer(ghost_grp,ghost_local_buffer,var_values,dim2_size);
-    //for( Integer i=0, is=ghost_local_buffer.size(); i<is; ++i )
-    //trace->info() << "RECV rank=" << vsi.m_target_rank << " I=" << i << " V=" << ghost_local_buffer[i]
-    //                << " lid=" << ghost_grp[i] << " v2=" << var_values[ghost_grp[i]];
   }
 
   m_is_in_sync = false;

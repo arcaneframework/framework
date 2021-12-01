@@ -139,8 +139,14 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
   class SyncBuffer
   {
    public:
-    void compute(ConstArrayView<VariableSyncInfo> sync_list,Integer dim2_size);
+    void compute(ConstArrayView<VariableSyncInfo> sync_list,Int32 dim2_size);
    public:
+    Int32 dim2Size() const { return m_dim2_size; }
+    ArrayView<SimpleType> ghostBuffer(Int32 index) { return m_ghost_locals_buffer[index]; }
+    ArrayView<SimpleType> shareBuffer(Int32 index) { return m_share_locals_buffer[index]; }
+    ConstArrayView<SimpleType> ghostBuffer(Int32 index) const { return m_ghost_locals_buffer[index]; }
+    ConstArrayView<SimpleType> shareBuffer(Int32 index) const { return m_share_locals_buffer[index]; }
+   private:
     Integer m_dim2_size;
     UniqueArray<SimpleType> m_ghost_buffer;
     UniqueArray<SimpleType> m_share_buffer;
