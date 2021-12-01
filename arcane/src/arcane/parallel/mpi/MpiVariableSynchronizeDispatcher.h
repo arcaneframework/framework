@@ -74,8 +74,11 @@ class MpiVariableSynchronizeDispatcher
   explicit MpiVariableSynchronizeDispatcher(MpiVariableSynchronizeDispatcherBuildInfo& bi);
 
   void compute(ItemGroupSynchronizeInfo* sync_list) override;
-  void beginSynchronize(SyncBuffer& sync_buffer) override;
-  void endSynchronize(SyncBuffer& sync_buffer) override;
+
+ protected:
+
+  void _beginSynchronize(SyncBuffer& sync_buffer) override;
+  void _endSynchronize(SyncBuffer& sync_buffer) override;
 
  private:
   MpiParallelMng* m_mpi_parallel_mng;
@@ -83,7 +86,6 @@ class MpiVariableSynchronizeDispatcher
   UniqueArray<bool> m_original_recv_requests_done;
   Ref<Parallel::IRequestList> m_receive_request_list;
   Ref<Parallel::IRequestList> m_send_request_list;
-  bool m_is_in_sync = false;
 };
 
 /*---------------------------------------------------------------------------*/

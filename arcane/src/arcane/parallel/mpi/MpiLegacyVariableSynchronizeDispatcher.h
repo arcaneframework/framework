@@ -102,8 +102,11 @@ class MpiLegacyVariableSynchronizeDispatcher
   }
 
   void compute(ItemGroupSynchronizeInfo* sync_list) override;
-  void beginSynchronize(SyncBuffer& sync_buffer) override;
-  void endSynchronize(SyncBuffer& sync_buffer) override;
+
+ protected:
+
+  void _beginSynchronize(SyncBuffer& sync_buffer) override;
+  void _endSynchronize(SyncBuffer& sync_buffer) override;
 
  private:
   MpiParallelMng* m_mpi_parallel_mng;
@@ -113,7 +116,6 @@ class MpiLegacyVariableSynchronizeDispatcher
   UniqueArray<MPI_Datatype> m_share_derived_types;
   UniqueArray<MPI_Datatype> m_ghost_derived_types;
   bool m_use_derived_type = false;
-  bool m_is_in_sync = false;
 };
 
 /*---------------------------------------------------------------------------*/

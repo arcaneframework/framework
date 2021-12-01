@@ -166,6 +166,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
 , public IVariableSynchronizeDispatcher
 {
  public:
+  //! Gère les buffers d'envoie et réception pour la synchronisation
   class SyncBuffer
   {
    public:
@@ -186,36 +187,33 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
     UniqueArray<SimpleType> m_ghost_buffer;
     //! Buffer pour toutes les données des entités partagées qui serviront en envoi
     UniqueArray<SimpleType> m_share_buffer;
+    //! Position dans \a m_ghost_buffer de chaque rang
     UniqueArray< ArrayView<SimpleType> > m_ghost_locals_buffer;
+    //! Position dans \a m_ghost_buffer de chaque rang
     UniqueArray< ArrayView<SimpleType> > m_share_locals_buffer;
     ItemGroupSynchronizeInfo* m_sync_info = nullptr;
     //! Vue sur les données de la variable
     ArrayView<SimpleType> m_data_view;
     IBufferCopier<SimpleType>* m_buffer_copier = nullptr;
   };
+
  public:
-  VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
-  : m_parallel_mng(bi.parallelMng())
-  {
-    if (bi.table())
-      m_buffer_copier = new TableBufferCopier<SimpleType>(bi.table());
-    else
-      m_buffer_copier = new DirectBufferCopier<SimpleType>();
-  }
-  ~VariableSynchronizeDispatcher() override
-  {
-    delete m_buffer_copier;
-  }
+
+  VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi);
+  ~VariableSynchronizeDispatcher() override;
+
+ public:
+
   void applyDispatch(IScalarDataT<SimpleType>* data) override;
   void applyDispatch(IArrayDataT<SimpleType>* data) override;
   void applyDispatch(IArray2DataT<SimpleType>* data) override;
   void applyDispatch(IMultiArray2DataT<SimpleType>* data) override;
   void compute(ItemGroupSynchronizeInfo* sync_list) override;
 
- public:
+ protected:
 
-  virtual void beginSynchronize(SyncBuffer& sync_buffer) =0;
-  virtual void endSynchronize(SyncBuffer& sync_buffer) =0;
+  virtual void _beginSynchronize(SyncBuffer& sync_buffer) =0;
+  virtual void _endSynchronize(SyncBuffer& sync_buffer) =0;
 
  protected:
 
@@ -226,6 +224,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
   ConstArrayView<VariableSyncInfo> m_sync_list;
   SyncBuffer m_1d_buffer;
   SyncBuffer m_2d_buffer;
+  bool m_is_in_sync = false;
 
  private:
 };
@@ -248,13 +247,14 @@ class ARCANE_IMPL_EXPORT SimpleVariableSynchronizeDispatcher
   SimpleVariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
   : BaseClass(bi){}
 
-  void beginSynchronize(SyncBuffer& sync_buffer) override;
-  void endSynchronize(SyncBuffer& sync_buffer) override;
+ protected:
+
+  void _beginSynchronize(SyncBuffer& sync_buffer) override;
+  void _endSynchronize(SyncBuffer& sync_buffer) override;
 
  private:
 
   UniqueArray<Parallel::Request> m_all_requests;
-  bool m_is_in_sync = false;
 };
 
 /*---------------------------------------------------------------------------*/

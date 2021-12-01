@@ -34,15 +34,38 @@
 namespace Arcane
 {
 
+template<typename SimpleType> VariableSynchronizeDispatcher<SimpleType>::
+VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
+: m_parallel_mng(bi.parallelMng())
+{
+  if (bi.table())
+    m_buffer_copier = new TableBufferCopier<SimpleType>(bi.table());
+  else
+    m_buffer_copier = new DirectBufferCopier<SimpleType>();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename SimpleType> VariableSynchronizeDispatcher<SimpleType>::
+~VariableSynchronizeDispatcher()
+{
+  delete m_buffer_copier;
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template<typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
 applyDispatch(IArrayDataT<SimpleType>* data)
 {
+  if (m_is_in_sync)
+    ARCANE_FATAL("Only one pending serialisation is supported");
+  m_is_in_sync = true;
   m_1d_buffer.setDataView(data->view());
-  this->beginSynchronize(m_1d_buffer);
-  this->endSynchronize(m_1d_buffer);
+  _beginSynchronize(m_1d_buffer);
+  _endSynchronize(m_1d_buffer);
+  m_is_in_sync = false;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -51,6 +74,9 @@ applyDispatch(IArrayDataT<SimpleType>* data)
 template<typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
 applyDispatch(IArray2DataT<SimpleType>* data)
 {
+  if (m_is_in_sync)
+    ARCANE_FATAL("Only one pending serialisation is supported");
+  m_is_in_sync = true;
   Array2View<SimpleType> value = data->view();
   SimpleType* value_ptr = value.data();
   // Cette valeur doit être la même sur tous les procs
@@ -61,9 +87,9 @@ applyDispatch(IArray2DataT<SimpleType>* data)
   m_2d_buffer.compute(m_buffer_copier,m_sync_info,dim2_size);
   ArrayView<SimpleType> buf(dim1_size*dim2_size,value_ptr);
   m_2d_buffer.setDataView(buf);
-  this->beginSynchronize(m_2d_buffer);
-  this->endSynchronize(m_2d_buffer);
-  //TODO: liberer la memoire si besoin ?
+  _beginSynchronize(m_2d_buffer);
+  _endSynchronize(m_2d_buffer);
+  m_is_in_sync = false;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -213,15 +239,10 @@ copySend(Integer index)
 /*---------------------------------------------------------------------------*/
 
 template<class SimpleType> void SimpleVariableSynchronizeDispatcher<SimpleType>::
-beginSynchronize(SyncBuffer& sync_buffer)
+_beginSynchronize(SyncBuffer& sync_buffer)
 {
-  if (m_is_in_sync)
-    ARCANE_FATAL("Only one pending serialisation is supported");
-
   IParallelMng* pm = this->m_parallel_mng;
   
-  //ITraceMng* trace = pm->traceMng();
-  //Integer nb_elem = var_values.size();
   bool use_blocking_send = false;
   auto sync_list = this->m_sync_info->infos();
   Integer nb_message = sync_list.size();
@@ -258,18 +279,14 @@ beginSynchronize(SyncBuffer& sync_buffer)
         m_all_requests.add(rval);
     }
   }
-  m_is_in_sync = true;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template<class SimpleType> void SimpleVariableSynchronizeDispatcher<SimpleType>::
-endSynchronize(SyncBuffer& sync_buffer)
+_endSynchronize(SyncBuffer& sync_buffer)
 {
-  if (!m_is_in_sync)
-    ARCANE_FATAL("endSynchronize() called but no beginSynchronize() was called before");
-
   IParallelMng* pm = m_parallel_mng;
   
   auto sync_list = this->m_sync_info->infos();
@@ -287,8 +304,6 @@ endSynchronize(SyncBuffer& sync_buffer)
   // Recopie dans la variable le message de retour.
   for( Integer i=0; i<nb_message; ++i )
     sync_buffer.copyReceive(i);
-
-  m_is_in_sync = false;
 }
 
 /*---------------------------------------------------------------------------*/
