@@ -102,8 +102,8 @@ class MpiLegacyVariableSynchronizeDispatcher
   }
 
   void compute(ItemGroupSynchronizeInfo* sync_list) override;
-  void beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer) override;
-  void endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer) override;
+  void beginSynchronize(SyncBuffer& sync_buffer) override;
+  void endSynchronize(SyncBuffer& sync_buffer) override;
 
  private:
   MpiParallelMng* m_mpi_parallel_mng;

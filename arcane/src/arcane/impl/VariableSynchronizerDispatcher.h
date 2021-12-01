@@ -176,6 +176,8 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
     ArrayView<SimpleType> shareBuffer(Int32 index) { return m_share_locals_buffer[index]; }
     ConstArrayView<SimpleType> ghostBuffer(Int32 index) const { return m_ghost_locals_buffer[index]; }
     ConstArrayView<SimpleType> shareBuffer(Int32 index) const { return m_share_locals_buffer[index]; }
+    void setDataView(ArrayView<SimpleType> v) { m_data_view = v; }
+    ArrayView<SimpleType> dataView() { return m_data_view; }
    private:
     Integer m_dim2_size = 0;
     UniqueArray<SimpleType> m_ghost_buffer;
@@ -183,6 +185,8 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
     UniqueArray< ArrayView<SimpleType> > m_ghost_locals_buffer;
     UniqueArray< ArrayView<SimpleType> > m_share_locals_buffer;
     ItemGroupSynchronizeInfo* m_sync_list = nullptr;
+    //! Vue sur les données de la variable
+    ArrayView<SimpleType> m_data_view;
   };
  public:
   VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
@@ -203,8 +207,8 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
   void applyDispatch(IMultiArray2DataT<SimpleType>* data) override;
   void compute(ItemGroupSynchronizeInfo* sync_list) override;
 
-  virtual void beginSynchronize(ArrayView<SimpleType> values,SyncBuffer& sync_buffer) =0;
-  virtual void endSynchronize(ArrayView<SimpleType> values,SyncBuffer& sync_buffer) =0;
+  virtual void beginSynchronize(SyncBuffer& sync_buffer) =0;
+  virtual void endSynchronize(SyncBuffer& sync_buffer) =0;
 
  protected:
   
@@ -242,8 +246,8 @@ class ARCANE_IMPL_EXPORT SimpleVariableSynchronizeDispatcher
   SimpleVariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
   : BaseClass(bi){}
 
-  void beginSynchronize(ArrayView<SimpleType> values,SyncBuffer& sync_buffer) override;
-  void endSynchronize(ArrayView<SimpleType> values,SyncBuffer& sync_buffer) override;
+  void beginSynchronize(SyncBuffer& sync_buffer) override;
+  void endSynchronize(SyncBuffer& sync_buffer) override;
 
  private:
 

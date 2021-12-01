@@ -40,8 +40,9 @@ namespace Arcane
 template<typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
 applyDispatch(IArrayDataT<SimpleType>* data)
 {
-  this->beginSynchronize(data->view(),m_1d_buffer);
-  this->endSynchronize(data->view(),m_1d_buffer);
+  m_1d_buffer.setDataView(data->view());
+  this->beginSynchronize(m_1d_buffer);
+  this->endSynchronize(m_1d_buffer);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -85,8 +86,9 @@ applyDispatch(IArray2DataT<SimpleType>* data)
   Integer dim1_size = value.dim1Size();
   m_2d_buffer.compute(m_sync_info,dim2_size);
   ArrayView<SimpleType> buf(dim1_size*dim2_size,value_ptr);
-  this->beginSynchronize(buf,m_2d_buffer);
-  this->endSynchronize(buf,m_2d_buffer);
+  m_2d_buffer.setDataView(buf);
+  this->beginSynchronize(m_2d_buffer);
+  this->endSynchronize(m_2d_buffer);
   //TODO: liberer la memoire si besoin ?
 }
 
@@ -190,11 +192,13 @@ compute(ItemGroupSynchronizeInfo* sync_info)
 /*---------------------------------------------------------------------------*/
 
 template<class SimpleType> void SimpleVariableSynchronizeDispatcher<SimpleType>::
-beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
+beginSynchronize(SyncBuffer& sync_buffer)
 {
   if (m_is_in_sync)
     ARCANE_FATAL("Only one pending serialisation is supported");
-  
+
+  ArrayView<SimpleType> var_values = sync_buffer.dataView();
+
   IParallelMng* pm = this->m_parallel_mng;
   
   //ITraceMng* trace = pm->traceMng();
@@ -244,10 +248,12 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 /*---------------------------------------------------------------------------*/
 
 template<class SimpleType> void SimpleVariableSynchronizeDispatcher<SimpleType>::
-endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
+endSynchronize(SyncBuffer& sync_buffer)
 {
   if (!m_is_in_sync)
     ARCANE_FATAL("endSynchronize() called but no beginSynchronize() was called before");
+
+  ArrayView<SimpleType> var_values = sync_buffer.dataView();
 
   IParallelMng* pm = m_parallel_mng;
   

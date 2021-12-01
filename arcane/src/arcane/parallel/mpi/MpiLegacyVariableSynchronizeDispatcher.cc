@@ -102,11 +102,12 @@ compute(ItemGroupSynchronizeInfo* sync_info)
 
 template<typename SimpleType> void
 MpiLegacyVariableSynchronizeDispatcher<SimpleType>::
-beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
+beginSynchronize(SyncBuffer& sync_buffer)
 {
   if (m_is_in_sync)
     ARCANE_FATAL("Only one pending serialisation is supported");
 
+  ArrayView<SimpleType> var_values = sync_buffer.dataView();
   auto sync_list = this->m_sync_info->infos();
   //Integer nb_elem = var_values.size();
   Integer nb_message = sync_list.size();
@@ -194,10 +195,12 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 
 template<typename SimpleType> void
 MpiLegacyVariableSynchronizeDispatcher<SimpleType>::
-endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
+endSynchronize(SyncBuffer& sync_buffer)
 {
   if (!this->m_is_in_sync)
     ARCANE_FATAL("endSynchronize() called but no beginSynchronize() was called before");
+
+  ArrayView<SimpleType> var_values = sync_buffer.dataView();
 
   Integer dim2_size = sync_buffer.dim2Size();
   bool use_derived = (dim2_size==1 && m_use_derived_type);

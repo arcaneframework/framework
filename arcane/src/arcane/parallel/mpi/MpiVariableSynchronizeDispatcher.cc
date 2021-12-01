@@ -85,13 +85,12 @@ compute(ItemGroupSynchronizeInfo* sync_info)
 
 template<typename SimpleType> void
 MpiVariableSynchronizeDispatcher<SimpleType>::
-beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
+beginSynchronize(SyncBuffer& sync_buffer)
 {
   if (m_is_in_sync)
     ARCANE_FATAL("Only one pending serialisation is supported");
 
   auto sync_list = this->m_sync_info->infos();
-
   Integer nb_message = sync_list.size();
 
   m_send_request_list->clear();
@@ -130,7 +129,7 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 
   // Recopie les buffers d'envoi dans \a var_values
   for( Integer i=0; i<nb_message; ++i )
-    _copySend(var_values,sync_buffer,i);
+    _copySend(sync_buffer,i);
 
   // Poste les messages d'envoie en mode non bloquant.
   for( Integer i=0; i<nb_message; ++i ){
@@ -152,8 +151,9 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 
 template<typename SimpleType> void
 MpiVariableSynchronizeDispatcher<SimpleType>::
-_copyReceive(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer,Integer index)
+_copyReceive(SyncBuffer& sync_buffer,Integer index)
 {
+  ArrayView<SimpleType> var_values = sync_buffer.dataView();
   Integer dim2_size = sync_buffer.dim2Size();
   const VariableSyncInfo& vsi = this->m_sync_list[index];
   ConstArrayView<Int32> ghost_grp = vsi.ghostIds();
@@ -166,8 +166,9 @@ _copyReceive(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer,Integer in
 
 template<typename SimpleType> void
 MpiVariableSynchronizeDispatcher<SimpleType>::
-_copySend(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer,Integer index)
+_copySend(SyncBuffer& sync_buffer,Integer index)
 {
+  ArrayView<SimpleType> var_values = sync_buffer.dataView();
   Integer dim2_size = sync_buffer.dim2Size();
   const VariableSyncInfo& vsi = this->m_sync_list[index];
   Int32ConstArrayView share_grp = vsi.shareIds();
@@ -180,7 +181,7 @@ _copySend(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer,Integer index
 
 template<typename SimpleType> void
 MpiVariableSynchronizeDispatcher<SimpleType>::
-endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
+endSynchronize(SyncBuffer& sync_buffer)
 {
   if (!m_is_in_sync)
     ARCANE_FATAL("endSynchronize() called but no beginSynchronize() was called before");
@@ -221,7 +222,7 @@ endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
       // Recopie les valeurs recues
       {
         TimeInterval tit(&copy_time);
-        _copyReceive(var_values,sync_buffer,index);
+        _copyReceive(sync_buffer,index);
       }
     }
   }
