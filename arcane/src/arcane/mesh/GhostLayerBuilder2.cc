@@ -99,7 +99,7 @@ GhostLayerBuilder2(DynamicMeshIncrementalBuilder* mesh_builder,bool is_allocate,
 , m_mesh(mesh_builder->mesh())
 , m_mesh_builder(mesh_builder)
 , m_parallel_mng(m_mesh->parallelMng())
-, m_is_verbose(true)
+, m_is_verbose(false)
 , m_is_allocate(is_allocate)
 , m_version(version)
 {
@@ -775,6 +775,8 @@ _sendAndReceiveCells(SubDomainItemMap& cells_to_send)
 {
   auto exchanger { ParallelMngUtils::createExchangerRef(m_parallel_mng) };
 
+  const bool is_verbose = m_is_verbose;
+
   // Envoie et réceptionne les mailles fantômes
   for( SubDomainItemMap::Enumerator i_map(cells_to_send); ++i_map; ){
     Int32 sd = i_map.data()->key();
@@ -786,7 +788,10 @@ _sendAndReceiveCells(SubDomainItemMap& cells_to_send)
     std::sort(std::begin(items),std::end(items));
     auto new_end = std::unique(std::begin(items),std::end(items));
     items.resize(CheckedConvert::toInteger(new_end-std::begin(items)));
-    info() << "CELLS TO SEND SD=" << sd << " Items=" << items;
+    if (is_verbose)
+      info(4) << "CELLS TO SEND SD=" << sd << " Items=" << items;
+    else
+      info(4) << "CELLS TO SEND SD=" << sd << " nb=" << items.size();
     exchanger->addSender(sd);
   }
   exchanger->initializeCommunicationsMessages();
