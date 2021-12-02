@@ -5,18 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FullItemInfo.h                                              (C) 2000-2020 */
+/* FullItemInfo.h                                              (C) 2000-2021 */
 /*                                                                           */
 /* Information de sérialisation d'une maille.                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arcane/mesh/FullItemInfo.h"
 
 #include "arcane/ISerializer.h"
 #include "arcane/ItemInternal.h"
 #include "arcane/ItemInternalEnumerator.h"
 
 #include "arcane/mesh/DynamicMesh.h"
-#include "arcane/mesh/FullItemInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -267,19 +268,6 @@ _setInternalInfos()
   }
   if(m_with_flags)
     m_memory_used += 1;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-  
-void FullLinkInfo::
-print(ostream& o) const
-{
-  o << "Link uid=" << uniqueId()
-    << " nb_node=" << nbDualNode()
-    << ' ';
-  for( Integer z=0, zs=nbDualNode(); z<zs; ++z )
-    o << " N" << z << "=" << dualNodeUniqueId(z);
 }
 
 /*---------------------------------------------------------------------------*/
