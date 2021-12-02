@@ -126,6 +126,7 @@ class MpiParallelMngUtilsFactory
       vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiLegacyVariableSynchronizeDispatcher>(bi));
     }
     else{
+      pm->traceMng()->info() << "Using MpiSynchronizer V2";
       MpiVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,nullptr);
       vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiVariableSynchronizeDispatcher>(bi));
     }
@@ -143,6 +144,7 @@ class MpiParallelMngUtilsFactory
       vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiLegacyVariableSynchronizeDispatcher>(bi));
     }
     else{
+      pm->traceMng()->info() << "Using MpiSynchronizer V2";
       MpiVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table.get());
       vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiVariableSynchronizeDispatcher>(bi));
     }
