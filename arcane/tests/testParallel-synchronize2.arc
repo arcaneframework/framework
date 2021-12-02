@@ -8,7 +8,7 @@
 
   <meshes>
     <mesh>
-      <ghost-layer-builder-version>2</ghost-layer-builder-version>
+      <ghost-layer-builder-version>4</ghost-layer-builder-version>
       <generator name="Cartesian3D" >
         <nb-part-x>2</nb-part-x>
         <nb-part-y>2</nb-part-y>

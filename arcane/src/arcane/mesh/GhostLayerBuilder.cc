@@ -44,18 +44,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" void
-_buildGhostLayerNewVersion(DynamicMesh* mesh,bool is_allocate);
+_buildGhostLayerNewVersion(DynamicMesh* mesh,bool is_allocate,Int32 version);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -103,9 +99,9 @@ addGhostLayers(bool is_allocate)
     info() << "Use ghost layer builder version 2";
     _addOneGhostLayerV2();
   }
-  else if (version==3){
-    info() << "Use GhostLayerBuilder with sort (version 3)";
-    _buildGhostLayerNewVersion(m_mesh,is_allocate);
+  else if (version==3 || version==4){
+    info() << "Use GhostLayerBuilder with sort (version " << version << ")";
+    _buildGhostLayerNewVersion(m_mesh,is_allocate,version);
   }
   else
     throw NotSupportedException(A_FUNCINFO,"Bad version number for addGhostLayer");
@@ -723,8 +719,7 @@ NodeUidToSubDomain(Int64 max_uid,Int32 nb_rank)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
