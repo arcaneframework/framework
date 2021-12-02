@@ -47,12 +47,12 @@ class NumArrayView;
 class NumArrayViewBase
 {
  public:
-  explicit NumArrayViewBase(RunCommand& command)
-  : m_run_command(&command)
+  // Pour l'instant n'utilise pas encore \a command
+  // mais il ne faut pas le supprimer
+  explicit NumArrayViewBase(RunCommand&)
   {
   }
  private:
-  RunCommand* m_run_command = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

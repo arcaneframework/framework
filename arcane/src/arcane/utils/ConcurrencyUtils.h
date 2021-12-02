@@ -175,6 +175,9 @@ class ARCANE_UTILS_EXPORT ITaskFunctor
 {
  public:
   virtual ~ITaskFunctor() = default;
+ protected:
+  ITaskFunctor(const ITaskFunctor&) = default;
+  ITaskFunctor() = default;
  public:
   //! Exécute la méthode associé
   virtual void executeFunctor(const TaskContext& tc) =0;
@@ -233,7 +236,7 @@ class TaskFunctorWithContext
   typedef void (InstanceType::*FunctorType)(const TaskContext& tc);
  public:
   TaskFunctorWithContext(InstanceType* instance,FunctorType func)
-  : m_instance(instance), m_function(func)
+  : ITaskFunctor(), m_instance(instance), m_function(func)
   {
   }
  public:

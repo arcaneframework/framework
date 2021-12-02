@@ -47,13 +47,12 @@ template<typename DataType> class View1DGetterSetter;
 class VariableViewBase
 {
  public:
-  VariableViewBase(RunCommand& command,IVariable* var)
-  : m_variable(var), m_run_command(&command)
+  // Pour l'instant n'utilise pas encore \a command et \a var
+  // mais il ne faut pas les supprimer
+  VariableViewBase(RunCommand&,IVariable*)
   {
   }
  private:
-  IVariable* m_variable;
-  RunCommand* m_run_command = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

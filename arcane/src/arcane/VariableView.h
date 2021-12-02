@@ -47,11 +47,9 @@ namespace Arcane
 class VariableViewBase
 {
  public:
-  VariableViewBase(IVariable* var) : m_variable(var)
-  {
-  }
- private:
-  IVariable* m_variable;
+  // Pour l'instant n'utilise pas encore \a var
+  // mais il ne faut pas le supprimer
+  VariableViewBase(IVariable*) {}
 };
 
 /*---------------------------------------------------------------------------*/
