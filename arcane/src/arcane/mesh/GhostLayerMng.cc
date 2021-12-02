@@ -22,8 +22,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -71,8 +71,8 @@ nbGhostLayer() const
 void GhostLayerMng::
 setBuilderVersion(Integer n)
 {
-  if (n<1 || n>3)
-    ARCANE_THROW(ArgumentException,"Bad value for builder version '{0}'. valid values are 2 or 3.",n);
+  if (n<2 || n>4)
+    ARCANE_THROW(ArgumentException,"Bad value for builder version '{0}'. valid values are 2, 3 or 4.",n);
   m_builder_version = n;
 }
 
@@ -85,7 +85,9 @@ _initBuilderVersion()
   // La version par défaut est la 2.
   // La version 1 n'existe plus.
   // La version 3 est opérationnelle et plus extensible que la 2.
-  // Si OK pour IFP, il faudra passer la version par défaut à la 3. Il
+  // La version 4 est comme la version 3 mais permet d'être appelée
+  // alors qu'il y a déjà des couches de mailles fantômes.
+  // Si OK pour IFP, il faudra passer la version par défaut à la 3 ou 4. Il
   // reste cependant à traiter le cas des maillages AMR
   Integer default_version = 2;
   Integer version = default_version;
@@ -94,7 +96,7 @@ _initBuilderVersion()
     if (builtInGetValue(version,version_str)){
       pwarning() << "Bad value for 'ARCANE_GHOSTLAYER_VERSION'";
     }
-    if (version<1 || version>3)
+    if (version<2 || version>4)
       version = default_version;
   }
   m_builder_version = version;
@@ -112,8 +114,7 @@ builderVersion() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
