@@ -101,9 +101,12 @@ class MpiLegacyVariableSynchronizeDispatcher
     m_ghost_derived_types.clear();
   }
 
-  virtual void compute(ConstArrayView<VariableSyncInfo> sync_list);
-  virtual void beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer);
-  virtual void endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer);
+  void compute(ItemGroupSynchronizeInfo* sync_list) override;
+
+ protected:
+
+  void _beginSynchronize(SyncBuffer& sync_buffer) override;
+  void _endSynchronize(SyncBuffer& sync_buffer) override;
 
  private:
   MpiParallelMng* m_mpi_parallel_mng;
@@ -112,7 +115,7 @@ class MpiLegacyVariableSynchronizeDispatcher
   UniqueArray<Integer> m_recv_requests_done;
   UniqueArray<MPI_Datatype> m_share_derived_types;
   UniqueArray<MPI_Datatype> m_ghost_derived_types;
-  bool m_use_derived_type;
+  bool m_use_derived_type = false;
 };
 
 /*---------------------------------------------------------------------------*/

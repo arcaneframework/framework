@@ -32,19 +32,44 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*
+ * Le fonctionnement de l'algorithme de synchronisation est le suivant. Les
+ * trois premiers points sont dans beginSynchronize() et les deux derniers dans
+ * endSynchronize(). Le code actuel ne permet qu'un synchronisation non
+ * bloquante à la fois.
+ *
+ * 1. Poste les messages de réception
+ * 2. Recopie dans les buffers d'envoi les valeurs à envoyer. On le fait après
+ *    avoir posté les messages de réception pour faire un peu de recouvrement
+ *    entre le calcul et les communications.
+ * 3. Poste les messages d'envoi.
+ * 4. Fait un WaitSome sur les messages de réception. Dès qu'un message arrive,
+ *    on recopie le buffer de réception dans le tableau de la variable. On
+ *    peut simplifier le code en faisant un WaitAll et en recopiant à la fin
+ *    toutes les valeurs.
+ * 5. Fait un WaitAll des messages d'envoi pour libérer les requêtes.
+*/
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace
 {
+inline double
+_getTime()
+{
+  return MPI_Wtime();
+}
 class TimeInterval
 {
  public:
   TimeInterval(double* cumulative_value)
   : m_cumulative_value(cumulative_value)
   {
-    m_begin_time = MPI_Wtime();
+    m_begin_time = _getTime();
   }
   ~TimeInterval()
   {
-    double end_time = MPI_Wtime();
+    double end_time = _getTime();
     *m_cumulative_value = (end_time - m_begin_time);
   }
  private:
@@ -59,7 +84,7 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// TODO: Séparer le cas avec type dérivé dans une classe à part.
+
 template<typename SimpleType>
 MpiVariableSynchronizeDispatcher<SimpleType>::
 MpiVariableSynchronizeDispatcher(MpiVariableSynchronizeDispatcherBuildInfo& bi)
@@ -75,9 +100,9 @@ MpiVariableSynchronizeDispatcher(MpiVariableSynchronizeDispatcherBuildInfo& bi)
 
 template<typename SimpleType> void
 MpiVariableSynchronizeDispatcher<SimpleType>::
-compute(ConstArrayView<VariableSyncInfo> sync_list)
+compute(ItemGroupSynchronizeInfo* sync_info)
 {
-  VariableSynchronizeDispatcher<SimpleType>::compute(sync_list);
+  VariableSynchronizeDispatcher<SimpleType>::compute(sync_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -85,23 +110,22 @@ compute(ConstArrayView<VariableSyncInfo> sync_list)
 
 template<typename SimpleType> void
 MpiVariableSynchronizeDispatcher<SimpleType>::
-beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
+_beginSynchronize(SyncBuffer& sync_buffer)
 {
-  if (this->m_is_in_sync)
-    ARCANE_FATAL("Only one pending serialisation is supported");
-
-  Integer nb_message = this->m_sync_list.size();
+  auto sync_list = this->m_sync_info->infos();
+  Integer nb_message = sync_list.size();
 
   m_send_request_list->clear();
 
   MpiParallelMng* pm = m_mpi_parallel_mng;
   MpiDatatypeList* dtlist = pm->datatypes();
 
-  MP::Mpi::MpiAdapter* mpi_adapter = m_mpi_parallel_mng->adapter();
+  MP::Mpi::MpiAdapter* mpi_adapter = pm->adapter();
 
-  double begin_prepare_time = MPI_Wtime();
+  double begin_prepare_time = _getTime();
 
   constexpr int serialize_tag = 523;
+  const MPI_Datatype mpi_dt = dtlist->datatype(SimpleType())->datatype();
 
   // Envoie les messages de réception en mode non bloquant
   m_original_recv_requests_done.resize(nb_message);
@@ -109,15 +133,13 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 
   // Poste les messages de réception
   for( Integer i=0; i<nb_message; ++i ){
-    const VariableSyncInfo& vsi = this->m_sync_list[i];
-    ArrayView<SimpleType> ghost_local_buffer = sync_buffer.m_ghost_locals_buffer[i];
-    if (!ghost_local_buffer.empty()){
-      MPI_Datatype dt = dtlist->datatype(SimpleType())->datatype();
-      auto req = mpi_adapter->directRecv(ghost_local_buffer.data(),ghost_local_buffer.size(),
-                                         vsi.m_target_rank,sizeof(SimpleType),dt,serialize_tag,false);
+    const VariableSyncInfo& vsi = sync_list[i];
+    ArrayView<SimpleType> buf = sync_buffer.ghostBuffer(i);
+    if (!buf.empty()){
+      auto req = mpi_adapter->receiveNonBlockingNoStat(buf.data(),buf.size(),
+                                                       vsi.targetRank(),mpi_dt,serialize_tag);
       m_original_recv_requests[i] = req;
       m_original_recv_requests_done[i] = false;
-      //trace->info() << "POST RECV " << vsi.m_target_rank;
     }
     else{
       // Il n'est pas nécessaire d'envoyer un message vide.
@@ -129,22 +151,20 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 
   // Recopie les buffers d'envoi dans \a var_values
   for( Integer i=0; i<nb_message; ++i )
-    _copySend(var_values,sync_buffer,i);
+    sync_buffer.copySend(i);
 
-  // Poste les messages d'envoie en mode non bloquant.
+  // Poste les messages d'envoi en mode non bloquant.
   for( Integer i=0; i<nb_message; ++i ){
-    ArrayView<SimpleType> share_local_buffer = sync_buffer.m_share_locals_buffer[i];
-    const VariableSyncInfo& vsi = this->m_sync_list[i];
-    if (!share_local_buffer.empty()){
-      MPI_Datatype dt = dtlist->datatype(SimpleType())->datatype();
-      auto request = mpi_adapter->directSend(share_local_buffer.data(),share_local_buffer.size(),
-                                             vsi.m_target_rank,sizeof(SimpleType),dt,serialize_tag,false);
+    ArrayView<SimpleType> buf = sync_buffer.shareBuffer(i);
+    const VariableSyncInfo& vsi = sync_list[i];
+    if (!buf.empty()){
+      auto request = mpi_adapter->sendNonBlockingNoStat(buf.data(),buf.size(),
+                                                        vsi.targetRank(),mpi_dt,serialize_tag);
       m_send_request_list->add(request);
     }
   }
-  double prepare_time = MPI_Wtime() - begin_prepare_time;
+  double prepare_time = _getTime() - begin_prepare_time;
   pm->stat()->add("SyncPrepare",prepare_time,1);
-  this->m_is_in_sync = true;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -152,52 +172,25 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 
 template<typename SimpleType> void
 MpiVariableSynchronizeDispatcher<SimpleType>::
-_copyReceive(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer,Integer index)
+_endSynchronize(SyncBuffer& sync_buffer)
 {
-  Integer dim2_size = sync_buffer.m_dim2_size;
-  const VariableSyncInfo& vsi = this->m_sync_list[index];
-  ConstArrayView<Int32> ghost_grp = vsi.m_ghost_ids;
-  ArrayView<SimpleType> ghost_local_buffer = sync_buffer.m_ghost_locals_buffer[index];
-  this->_copyFromBuffer(ghost_grp,ghost_local_buffer,var_values,dim2_size);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename SimpleType> void
-MpiVariableSynchronizeDispatcher<SimpleType>::
-_copySend(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer,Integer index)
-{
-  Integer dim2_size = sync_buffer.m_dim2_size;
-  const VariableSyncInfo& vsi = this->m_sync_list[index];
-  Int32ConstArrayView share_grp = vsi.m_share_ids;
-  ArrayView<SimpleType> share_local_buffer = sync_buffer.m_share_locals_buffer[index];
-  this->_copyToBuffer(share_grp,share_local_buffer,var_values,dim2_size);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename SimpleType> void
-MpiVariableSynchronizeDispatcher<SimpleType>::
-endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
-{
-  if (!this->m_is_in_sync)
-    ARCANE_FATAL("endSynchronize() called but no beginSynchronize() was called before");
-
   MpiParallelMng* pm = m_mpi_parallel_mng;
 
-  UniqueArray<Integer> remaining_receive_request_indexes;
+  // On a besoin de conserver l'indice d'origine dans 'SyncBuffer'
+  // de chaque requête pour gérer les copies.
+  UniqueArray<Integer> remaining_original_indexes;
+
   double copy_time = 0.0;
   double wait_time = 0.0;
 
   while(1){
+    // Créé la liste des requêtes encore active.
     m_receive_request_list->clear();
-    remaining_receive_request_indexes.clear();
+    remaining_original_indexes.clear();
     for( Integer i=0, n=m_original_recv_requests_done.size(); i<n; ++i ){
       if (!m_original_recv_requests_done[i]){
         m_receive_request_list->add(m_original_recv_requests[i]);
-        remaining_receive_request_indexes.add(i);
+        remaining_original_indexes.add(i);
       }
     }
     Integer nb_remaining_request = m_receive_request_list->size();
@@ -209,19 +202,19 @@ endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
       m_receive_request_list->wait(Parallel::WaitSome);
     }
 
-    // Pour chaque requete terminée, effectue la copie
+    // Pour chaque requête terminée, effectue la copie
     ConstArrayView<Int32> done_requests = m_receive_request_list->doneRequestIndexes();
-    Integer nb_completed_request = done_requests.size();
 
-    for( Integer z=0; z<nb_completed_request; ++z ){
-      Integer mpi_request_index = done_requests[z];
-      Integer index = remaining_receive_request_indexes[mpi_request_index];
-      m_original_recv_requests_done[index] = true; // Pour indiquer que c'est fini
+    for( Int32 request_index : done_requests ){
+      Int32 orig_index = remaining_original_indexes[request_index];
+
+      // Pour indiquer que c'est fini
+      m_original_recv_requests_done[orig_index] = true;
 
       // Recopie les valeurs recues
       {
         TimeInterval tit(&copy_time);
-        _copyReceive(var_values,sync_buffer,index);
+        sync_buffer.copyReceive(orig_index);
       }
     }
   }
@@ -236,7 +229,6 @@ endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 
   pm->stat()->add("SyncCopy",copy_time,1);
   pm->stat()->add("SyncWait",wait_time,1);
-  this->m_is_in_sync = false;
 }
 
 /*---------------------------------------------------------------------------*/

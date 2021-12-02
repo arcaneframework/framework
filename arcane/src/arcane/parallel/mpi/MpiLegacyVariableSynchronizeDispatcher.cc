@@ -55,13 +55,14 @@ MpiLegacyVariableSynchronizeDispatcher(MpiLegacyVariableSynchronizeDispatcherBui
 
 template<typename SimpleType> void
 MpiLegacyVariableSynchronizeDispatcher<SimpleType>::
-compute(ConstArrayView<VariableSyncInfo> sync_list)
+compute(ItemGroupSynchronizeInfo* sync_info)
 {
   //m_mpi_parallel_mng->traceMng()->info() << "MPI COMPUTE";
-  VariableSynchronizeDispatcher<SimpleType>::compute(sync_list);
+  VariableSynchronizeDispatcher<SimpleType>::compute(sync_info);
+  auto sync_list = sync_info->infos();
   if (m_use_derived_type){
     //TODO Utiliser des 'int' MPI au lieu de Int32
-    Integer nb_message = this->m_sync_list.size();
+    Integer nb_message = sync_list.size();
     MpiParallelMng* pm = m_mpi_parallel_mng;
     _destroyTypes();
     m_share_derived_types.resize(nb_message);
@@ -74,8 +75,8 @@ compute(ConstArrayView<VariableSyncInfo> sync_list)
     MPI_Datatype mpi_basetype = pm->datatypes()->datatype(BasicType())->datatype();
     UniqueArray<int> ids;
     for( Integer i=0; i<nb_message; ++i ){
-      const VariableSyncInfo& vsi = this->m_sync_list[i];
-      Int32ConstArrayView share_grp = vsi.m_share_ids;
+      const VariableSyncInfo& vsi = sync_list[i];
+      Int32ConstArrayView share_grp = vsi.shareIds();
       Integer nb_share = share_grp.size();
       ids.resize(nb_share);
       for( Integer z=0; z<nb_share; ++z )
@@ -84,7 +85,7 @@ compute(ConstArrayView<VariableSyncInfo> sync_list)
                                     mpi_basetype,&m_share_derived_types[i]);
       MPI_Type_commit(&m_share_derived_types[i]);
 
-      Int32ConstArrayView ghost_grp = vsi.m_ghost_ids;
+      Int32ConstArrayView ghost_grp = vsi.ghostIds();
       Integer nb_ghost = ghost_grp.size();
       ids.resize(nb_ghost);
       for( Integer z=0; z<nb_ghost; ++z )
@@ -101,13 +102,13 @@ compute(ConstArrayView<VariableSyncInfo> sync_list)
 
 template<typename SimpleType> void
 MpiLegacyVariableSynchronizeDispatcher<SimpleType>::
-beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
+_beginSynchronize(SyncBuffer& sync_buffer)
 {
-  if (this->m_is_in_sync)
-    ARCANE_FATAL("Only one pending serialisation is supported");
+  ArrayView<SimpleType> var_values = sync_buffer.dataView();
+  auto sync_list = this->m_sync_info->infos();
   //Integer nb_elem = var_values.size();
-  Integer nb_message = this->m_sync_list.size();
-  Integer dim2_size = sync_buffer.m_dim2_size;
+  Integer nb_message = sync_list.size();
+  Integer dim2_size = sync_buffer.dim2Size();
 
   m_send_requests.clear();
 
@@ -128,18 +129,18 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
   m_recv_requests_done.resize(nb_message);
   double begin_prepare_time = MPI_Wtime();
   for( Integer i=0; i<nb_message; ++i ){
-    const VariableSyncInfo& vsi = this->m_sync_list[i];
-      ArrayView<SimpleType> ghost_local_buffer = sync_buffer.m_ghost_locals_buffer[i];
+    const VariableSyncInfo& vsi = sync_list[i];
+    ArrayView<SimpleType> ghost_local_buffer = sync_buffer.ghostBuffer(i);
       if (!ghost_local_buffer.empty()){
         MPI_Request mpi_request;
         if (use_derived){
           m_mpi_parallel_mng->adapter()->getMpiProfiling()->iRecv(var_values.data(),1,m_ghost_derived_types[i],
-                                                                  vsi.m_target_rank,523,comm,&mpi_request);
+                                                                  vsi.targetRank(),523,comm,&mpi_request);
         }
         else{
           MPI_Datatype dt = dtlist->datatype(SimpleType())->datatype();
           m_mpi_parallel_mng->adapter()->getMpiProfiling()->iRecv(ghost_local_buffer.data(),ghost_local_buffer.size(),
-                                                                  dt,vsi.m_target_rank,523,comm,&mpi_request);
+                                                                  dt,vsi.targetRank(),523,comm,&mpi_request);
         }
         
         m_recv_requests[i] = mpi_request;
@@ -157,20 +158,19 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
     // Envoie les messages d'envoie en mode non bloquant.
     for( Integer i=0; i<nb_message; ++i ){
       const VariableSyncInfo& vsi = this->m_sync_list[i];
-      Int32ConstArrayView share_grp = vsi.m_share_ids;
-      ArrayView<SimpleType> share_local_buffer = sync_buffer.m_share_locals_buffer[i];
+      ArrayView<SimpleType> share_local_buffer = sync_buffer.shareBuffer(i);
       if (!use_derived)
-        this->_copyToBuffer(share_grp,share_local_buffer,var_values,dim2_size);
+        sync_buffer.copySend(i);
       if (!share_local_buffer.empty()){
         MPI_Request mpi_request;
         if (use_derived){
           m_mpi_parallel_mng->adapter()->getMpiProfiling()->iSend(var_values.data(),1,m_share_derived_types[i],
-                                                                  vsi.m_target_rank,523,comm,&mpi_request);
+                                                                  vsi.targetRank(),523,comm,&mpi_request);
         }
         else{
           MPI_Datatype dt = dtlist->datatype(SimpleType())->datatype();
           m_mpi_parallel_mng->adapter()->getMpiProfiling()->iSend(share_local_buffer.data(),share_local_buffer.size(),
-                                                                  dt,vsi.m_target_rank,523,comm,&mpi_request);
+                                                                  dt,vsi.targetRank(),523,comm,&mpi_request);
         }
         m_send_requests.add(mpi_request);
         //trace->info() << "POST SEND " << vsi.m_target_rank;
@@ -183,7 +183,6 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
     else{
       pm->stat()->add("SyncPrepare",prepare_time,1);
     }
-    this->m_is_in_sync = true;
   }
 
 /*---------------------------------------------------------------------------*/
@@ -191,12 +190,9 @@ beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 
 template<typename SimpleType> void
 MpiLegacyVariableSynchronizeDispatcher<SimpleType>::
-endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
+_endSynchronize(SyncBuffer& sync_buffer)
 {
-  if (!this->m_is_in_sync)
-    ARCANE_FATAL("endSynchronize() called but no beginSynchronize() was called before");
-
-  Integer dim2_size = sync_buffer.m_dim2_size;
+  Integer dim2_size = sync_buffer.dim2Size();
   bool use_derived = (dim2_size==1 && m_use_derived_type);
 
   MpiParallelMng* pm = m_mpi_parallel_mng;
@@ -248,10 +244,7 @@ endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer)
 
       if (!use_derived){
         double begin_time = MPI_Wtime();
-        const VariableSyncInfo& vsi = this->m_sync_list[index];
-        Int32ConstArrayView ghost_grp = vsi.m_ghost_ids;
-        ArrayView<SimpleType> ghost_local_buffer = sync_buffer.m_ghost_locals_buffer[index];
-        this->_copyFromBuffer(ghost_grp,ghost_local_buffer,var_values,dim2_size);
+        sync_buffer.copyReceive(index);
         double end_time = MPI_Wtime();
         copy_time += (end_time - begin_time);
       }

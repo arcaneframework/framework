@@ -73,9 +73,12 @@ class MpiVariableSynchronizeDispatcher
 
   explicit MpiVariableSynchronizeDispatcher(MpiVariableSynchronizeDispatcherBuildInfo& bi);
 
-  void compute(ConstArrayView<VariableSyncInfo> sync_list) override;
-  void beginSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer) override;
-  void endSynchronize(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer) override;
+  void compute(ItemGroupSynchronizeInfo* sync_list) override;
+
+ protected:
+
+  void _beginSynchronize(SyncBuffer& sync_buffer) override;
+  void _endSynchronize(SyncBuffer& sync_buffer) override;
 
  private:
   MpiParallelMng* m_mpi_parallel_mng;
@@ -83,9 +86,6 @@ class MpiVariableSynchronizeDispatcher
   UniqueArray<bool> m_original_recv_requests_done;
   Ref<Parallel::IRequestList> m_receive_request_list;
   Ref<Parallel::IRequestList> m_send_request_list;
- private:
-  void _copyReceive(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer,Integer index);
-  void _copySend(ArrayView<SimpleType> var_values,SyncBuffer& sync_buffer,Integer index);
 };
 
 /*---------------------------------------------------------------------------*/
