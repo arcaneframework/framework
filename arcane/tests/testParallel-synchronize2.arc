@@ -12,7 +12,7 @@
       <generator name="Cartesian3D" >
         <nb-part-x>2</nb-part-x>
         <nb-part-y>2</nb-part-y>
-        <nb-part-z>1</nb-part-z>
+        <nb-part-z>2</nb-part-z>
         <origin>0.0 0.0 0.0</origin>
         <x><n>100</n><length>1.0</length></x>
         <y><n>10</n><length>1.0</length></y>
