@@ -177,7 +177,7 @@ using namespace Arcane::Accelerator;
 RunCommand& command = ...;
 Arcane::NumArray<Real,1> a;
 Arcane::NumArray<Real,1> b;
-Arcane::NumArray<Real,13> c;
+Arcane::NumArray<Real,1> c;
 VariableCellReal var_c = ...;
 auto in_a = viewIn(command,a); // Vue en entrée
 auto inout_b = viewInOut(command,b); // Vue en entrée/sortie
