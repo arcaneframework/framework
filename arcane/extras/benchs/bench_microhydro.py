@@ -18,6 +18,7 @@ xstr = """<?xml version="1.0"?>
 
   <meshes>
     <mesh>
+      <ghost-layer-builder-version>4</ghost-layer-builder-version>
       <generator name="Cartesian3D" >
         <nb-part-x>$nb_part_x</nb-part-x> 
         <nb-part-y>$nb_part_y</nb-part-y>
@@ -130,10 +131,19 @@ nb_part_x = 8
 nb_part_y = 4
 nb_part_z = (nb_proc // 32)
 # En dessous de 32 PE, on découpe de manière spécifique
-if nb_part_z==0:
-    nb_part_x = nb_proc
-    nb_part_y = 1
-    nb_part_z = 1
+if nb_proc==24:
+    nb_part_x, nb_part_y, nb_part_z = 4, 3, 2
+elif nb_proc==16:
+    nb_part_x, nb_part_y, nb_part_z = 4, 2, 2
+elif nb_proc==12:
+    nb_part_x, nb_part_y, nb_part_z = 3, 2, 2
+elif nb_proc==8:
+    nb_part_x, nb_part_y, nb_part_z = 2, 2, 2
+elif nb_proc==4:
+    nb_part_x, nb_part_y, nb_part_z = 2, 2, 1
+elif nb_part_z==0:
+    nb_part_x, nb_part_y, nb_part_z = nb_proc, 1, 1
+
 total_nb_part = nb_part_x * nb_part_y * nb_part_z
 
 # Nombre de mailles en (X,Y,Z)
