@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PartialVariableTester.cc                                    (C) 2000-2006 */
+/* PartialVariableTester.cc                                    (C) 2000-2021 */
 /*                                                                           */
 /* Service de test des variables partielles.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-// #include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/BasicTimeLoopService.h"
 #include "arcane/IMesh.h"
@@ -20,6 +18,7 @@
 #include "arcane/ITimeLoopMng.h"
 #include "arcane/IParallelMng.h"
 #include "arcane/IVariableSynchronizer.h"
+#include "arcane/ItemPrinter.h"
 #include "arcane/tests/PartialVariableTester_axl.h"
 
 #include "arcane/random/Uniform01.h"
@@ -37,11 +36,8 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
- * \brief Lecture de variables au format HDF5.
+ * \brief Test des variables partielles.
  */
 class PartialVariableTester
 : public ArcanePartialVariableTesterObject
@@ -226,9 +222,16 @@ compute()
     fatal() << "Bad group for m_high_cell_temperature group="
             << m_high_cell_temperature.itemGroup().name();
 
-  // Opération maintenant interdite
-  //PartialVariableCellReal crc(m_cell_temperature);
-  //info() << " CV =" << crc.name();
+  // Vérifie que les valeurs partielles sont les même que les valeurs globales.
+  // Ce test permet de vérifier après un équilibrage que les valeurs sont correctes
+  ENUMERATE_CELL(icell,high_group){
+    Cell cell = *icell;
+    Real partial = m_high_cell_temperature[icell];
+    Real global =  m_cell_temperature[icell];
+    if (partial!=global)
+      ARCANE_FATAL("Bad partial temperature cell={0} partial={1} global={2}",
+                   ItemPrinter(cell),partial,global);
+  }
 
   {
     Int32UniqueArray cells_local_id;
@@ -240,15 +243,7 @@ compute()
     // Mise à jour du synchronizer car modif manuelle
     m_high_cell_temperature.itemGroup().synchronizer()->compute();
   }
-  
-  ENUMERATE_CELL(icell,m_high_cell_temperature.itemGroup()){
-    m_high_cell_temperature[icell] = m_cell_temperature[icell];
-  }
-  m_high_cell_temperature.synchronize();
 
-  if (m_high_cell_temperature.checkIfSync(10) != 0)
-    fatal() << "Not synchronized variable";
-  
   ENUMERATE_NODE(inode,allNodes()){
     Real t = 0.0;
     const Node& node = *inode;
@@ -266,7 +261,15 @@ compute()
     m_cell_temperature[icell] = t / (Real)cell.nbNode();
   }
   m_cell_temperature.synchronize();
-  
+
+  ENUMERATE_CELL(icell,m_high_cell_temperature.itemGroup()){
+    m_high_cell_temperature[icell] = m_cell_temperature[icell];
+  }
+  m_high_cell_temperature.synchronize();
+
+  if (m_high_cell_temperature.checkIfSync(10) != 0)
+    ARCANE_FATAL("Not synchronized variable");
+
   // test pour l'équilibrage
 
   const Integer rank = subDomain()->parallelMng()->commRank();
