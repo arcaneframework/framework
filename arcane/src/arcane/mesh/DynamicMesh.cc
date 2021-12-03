@@ -62,6 +62,7 @@
 #include "arcane/mesh/DynamicMeshIncrementalBuilder.h"
 #include "arcane/mesh/DynamicMeshChecker.h"
 #include "arcane/mesh/GhostLayerMng.h"
+#include "arcane/mesh/MeshUniqueIdMng.h"
 #include "arcane/mesh/ItemGroupDynamicMeshObserver.h"
 #include "arcane/mesh/ParticleFamily.h"
 #include "arcane/mesh/MeshExchange.h"
@@ -179,6 +180,7 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh, bo
 , m_tied_interface_need_prepare_dump(true)
 , m_partition_constraint_mng(nullptr)
 , m_ghost_layer_mng(new GhostLayerMng(m_parallel_mng->traceMng()))
+, m_mesh_unique_id_mng(new MeshUniqueIdMng(m_parallel_mng->traceMng()))
 , m_mesh_exchange_mng(new MeshExchangeMng(this))
 , m_mesh_compact_mng(new MeshCompactMng(this))
 , m_connectivity_policy(InternalConnectivityPolicy::NewOnly)
@@ -264,6 +266,7 @@ DynamicMesh::
   delete m_mesh_exchange_mng;
   delete m_extra_ghost_cells_builder;
   delete m_extra_ghost_particles_builder;
+  delete m_mesh_unique_id_mng;
   delete m_ghost_layer_mng;
   delete m_tied_interface_mng;
   delete m_partition_constraint_mng;

@@ -98,6 +98,8 @@ set( ARCANE_SOURCES
   MeshExchangeMng.h
   MeshNodeMerger.cc
   MeshNodeMerger.h
+  MeshUniqueIdMng.cc
+  MeshUniqueIdMng.h
   MeshVariables.cc
   MeshVariables.h
   MeshPartitionConstraintMng.cc

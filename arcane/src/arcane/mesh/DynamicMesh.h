@@ -259,6 +259,7 @@ class ARCANE_MESH_EXPORT DynamicMesh
   const IUserDataList* userDataList() const override { return m_mesh_handle.meshUserDataList(); }
 
   IGhostLayerMng* ghostLayerMng() const override { return m_ghost_layer_mng; }
+  IMeshUniqueIdMng* meshUniqueIdMng() const override { return m_mesh_unique_id_mng; }
   IMeshChecker* checker() const override;
   
 public:
@@ -533,6 +534,7 @@ public:
   
   MeshPartitionConstraintMng* m_partition_constraint_mng;
   IGhostLayerMng* m_ghost_layer_mng;
+  IMeshUniqueIdMng* m_mesh_unique_id_mng;
   IMeshExchangeMng* m_mesh_exchange_mng;
   IMeshCompactMng* m_mesh_compact_mng;
 
