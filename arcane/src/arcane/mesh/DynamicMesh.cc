@@ -1492,10 +1492,17 @@ _exchangeItems(bool do_compact)
     if (is_bad)
       nb_exchange = 1;
   }
-  info(4) << "DynamicMesh::_echangeItems() do_compact?=" << do_compact
-          << " nb_exchange=" << nb_exchange;
+  String exchange_version_str = platform::getEnvironmentVariable("ARCANE_MESH_EXCHANGE_VERSION");
+  Integer exchange_version = 1;
+  if (!exchange_version_str.null()){
+    builtInGetValue(exchange_version,exchange_version_str);
+  }
+
+  info() << "DynamicMesh::_echangeItems() do_compact?=" << do_compact
+         << " nb_exchange=" << nb_exchange << " version=" << exchange_version;
+
   if (nb_exchange>1){
-    _multipleExchangeItems(nb_exchange,do_compact);
+    _multipleExchangeItems(nb_exchange,exchange_version,do_compact);
   }
   else
     _exchangeItemsNew();
@@ -1523,17 +1530,25 @@ _exchangeItems(bool do_compact)
 /*!
  * \brief Echange les entités en plusieurs fois.
  *
- * Cela est utile pour les gros maillages avec de nombreuses variables
- * pour limiter la taille des messages envoyés.
- *
- * Le principe est de décomposer l'échange en \a nb_exchange.
- * Pour cela, on stocke la liste des mailles qui changent de sous-domaine.
- * On divise cette liste en \a nb_exchange parties et on effectue
- * l'echange par partie.
+ * Il existe deux versions pour ce mécanisme:
+ * 1. La version 1 qui est la version historique. Pour cet algorithme,
+ *    on découpe le nombre de mailles à envoyer en \a nb_exchange parties,
+ *    chaque partie ayant (nb_cell / nb_exchange) mailles. Cet algorithme
+ *    permet de limiter la taille des messages mais pas le nombre de messages
+ *    en vol.
+ * 2. La version 2 qui sépare la liste des mailles à envoyer en se basant sur
+ *    le rang de chaque partie. Cela est utile pour limiter le nombres de
+ *    messages envoyés simultanément mais ne diminuera pas la taille du message
+ *    envoyé à un rang donné. En partant du principe que les rangs consécutifs
+ *    sont sur le même noeud d'un calculateur, on sépare l'échange en
+ *    \a nb_exchange avec l'algorithme suivant:
+ *    - on note 'i' le i-ème échange (numéroté de 0 à (nb_exchange-1)),
+ *    - on ne traite pour l'échange 'i' que les mailles dont le nouveau
+ *      propriètaire modulo (nb_exchange) vaut 'i'.
  *
  * On optimise légèrement en ne faisant le compactage eventuel
  * qu'une seule fois.
- * TODO regarder s'il n'est pas possible de limiter d'autres operations.
+ *
  * TODO: optimiser encore mieux avec une fonction speciale
  * au lieu d'appeler _exchangeItems();
  * TODO: au lieu de diviser la liste des mailles en \a nb_exchange
@@ -1543,33 +1558,48 @@ _exchangeItems(bool do_compact)
  * comment.
  */
 void DynamicMesh::
-_multipleExchangeItems(Integer nb_exchange,bool do_compact)
+_multipleExchangeItems(Integer nb_exchange,Integer version,bool do_compact)
 {
-  info() << "** ** MULTIPLE EXCHANGE ITEM";
-  Int32UniqueArray cells_to_exchange_new_owner;
-  // Il faut stocker le uid car suite a un equilibrage les localId vont
-  // changer
-  Int64UniqueArray cells_to_exchange_uid;
+  if (version<1 || version>2)
+    ARCANE_FATAL("Invalid value '{0}' for version. Valid values are 1 or 2",version);
+
+  info() << "** ** MULTIPLE EXCHANGE ITEM version=" << version;
+  UniqueArray<UniqueArray<Int32>> cells_to_exchange_new_owner(nb_exchange);
+  // Il faut stocker le uid car suite a un equilibrage les localId vont changer
+  UniqueArray<UniqueArray<Int64>> cells_to_exchange_uid(nb_exchange);
+
   IItemFamily* cell_family = cellFamily();
   VariableItemInt32& cells_new_owner = cell_family->itemsNewOwner();
-  {
-    ENUMERATE_CELL(icell,ownCells()){
-      Cell cell = *icell;
-      Int32 current_owner = cell.owner();
-      Int32 new_owner = cells_new_owner[icell];
-      if (current_owner!=new_owner){
-        cells_to_exchange_new_owner.add(new_owner);
-        cells_to_exchange_uid.add(static_cast<Int64>(cell.uniqueId()));
-        cells_new_owner[icell] = current_owner;
-      }
-    }
+
+  Integer nb_cell= ownCells().size();
+  ENUMERATE_CELL(icell,ownCells()){
+    Cell cell = *icell;
+    Int32 current_owner = cell.owner();
+    Int32 new_owner = cells_new_owner[icell];
+    if (current_owner==new_owner)
+      continue;
+    Integer phase = 0;
+    if (version==2)
+      phase = (new_owner % nb_exchange);
+    else if (version==1)
+      phase = icell.index() / nb_cell;
+    cells_to_exchange_new_owner[phase].add(new_owner);
+    cells_to_exchange_uid[phase].add(cell.uniqueId().asInt64());
   }
+
+  // Remet comme si la maille ne changeait pas de propriétaire pour
+  // éviter de l'envoyer.
+  ENUMERATE_CELL(icell,ownCells()){
+    Cell cell = *icell;
+    cells_new_owner[icell] = cell.owner();
+  }
+
   // A partir d'ici, le cells_new_owner est identique au cell.owner()
   // pour chaque maille.
   Int32UniqueArray uids_to_lids;
   for( Integer i=0; i<nb_exchange; ++i ){
-    Int32ConstArrayView new_owners = cells_to_exchange_new_owner.view().subViewInterval(i,nb_exchange);
-    Int64ConstArrayView new_uids = cells_to_exchange_uid.view().subViewInterval(i,nb_exchange);
+    Int32ConstArrayView new_owners = cells_to_exchange_new_owner[i];
+    Int64ConstArrayView new_uids = cells_to_exchange_uid[i];
     Integer nb_cell = new_uids.size();
     uids_to_lids.resize(nb_cell);
     cell_family->itemsUniqueIdToLocalId(uids_to_lids,new_uids);
@@ -1582,13 +1612,13 @@ _multipleExchangeItems(Integer nb_exchange,bool do_compact)
     mesh()->utilities()->changeOwnersFromCells();
     _exchangeItemsNew();
   }
+
   if (do_compact){
     Timer::Action ts_action1(m_sub_domain,"CompactItems",true);
     bool do_sort = m_properties->getBool("sort");
     _compactItems(do_sort,true);
   }
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
