@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMesh.cc                                              (C) 2000-2020 */
+/* DynamicMesh.cc                                              (C) 2000-2021 */
 /*                                                                           */
 /* Classe de gestion d'un maillage non structuré évolutif.                   */
 /*---------------------------------------------------------------------------*/
@@ -214,36 +214,35 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh, bo
 
   // Adding the family dependencies if asked
   if (_connectivityPolicy() == InternalConnectivityPolicy::NewWithDependenciesAndLegacy && !is_submesh && !m_is_amr_activated) {
-      m_use_mesh_item_family_dependencies = true ;
-      m_item_family_network = new ItemFamilyNetwork(traceMng());
-      _addDependency(m_cell_family,m_node_family);
-      _addDependency(m_cell_family,m_face_family);
-      _addDependency(m_cell_family,m_edge_family);
-      _addDependency(m_face_family,m_node_family);
-      _addDependency(m_edge_family,m_node_family);
-      _addRelation(m_face_family,m_edge_family);// Not seen as a dependency in DynamicMesh : for example not possible to use replaceConnectedItem for Face to Edge...
-      _addRelation(m_face_family,m_face_family);
-      _addRelation(m_face_family,m_cell_family);
-      _addRelation(m_edge_family,m_cell_family);
-      _addRelation(m_edge_family,m_face_family);
-      _addRelation(m_node_family,m_cell_family);
-      _addRelation(m_node_family,m_face_family);
-      _addRelation(m_node_family,m_edge_family);
-      // The relation concerning edge family are only added when the dimension is known since they change with dimension
-      // cf. 3D Cell <-> Faces <-> Edges <-> Nodes
-      //     2D Cell <-> Faces <-> Nodes
-      //             <-> Edges <-> Nodes
-      //     1D No edge...
-      m_family_modifiers.add(m_cell_family);
-      m_family_modifiers.add(m_face_family);
-      m_family_modifiers.add(m_node_family);
-      m_family_modifiers.add(m_edge_family);
+    m_use_mesh_item_family_dependencies = true ;
+    m_item_family_network = new ItemFamilyNetwork(traceMng());
+    _addDependency(m_cell_family,m_node_family);
+    _addDependency(m_cell_family,m_face_family);
+    _addDependency(m_cell_family,m_edge_family);
+    _addDependency(m_face_family,m_node_family);
+    _addDependency(m_edge_family,m_node_family);
+    _addRelation(m_face_family,m_edge_family);// Not seen as a dependency in DynamicMesh : for example not possible to use replaceConnectedItem for Face to Edge...
+    _addRelation(m_face_family,m_face_family);
+    _addRelation(m_face_family,m_cell_family);
+    _addRelation(m_edge_family,m_cell_family);
+    _addRelation(m_edge_family,m_face_family);
+    _addRelation(m_node_family,m_cell_family);
+    _addRelation(m_node_family,m_face_family);
+    _addRelation(m_node_family,m_edge_family);
+    // The relation concerning edge family are only added when the dimension is known since they change with dimension
+    // cf. 3D Cell <-> Faces <-> Edges <-> Nodes
+    //     2D Cell <-> Faces <-> Nodes
+    //             <-> Edges <-> Nodes
+    //     1D No edge...
+    m_family_modifiers.add(m_cell_family);
+    m_family_modifiers.add(m_face_family);
+    m_family_modifiers.add(m_node_family);
+    m_family_modifiers.add(m_edge_family);
   }
 
   {
     String s = platform::getEnvironmentVariable("ARCANE_GRAPH_CONNECTIVITY_POLICY");
-    if (s=="1")
-    {
+    if (s=="1"){
       m_item_family_network = new ItemFamilyNetwork(traceMng());
       info()<<"Graph connectivity is activated";
       m_family_modifiers.add(m_cell_family);
@@ -842,7 +841,8 @@ void DynamicMesh::
 _serializeItems(ISerializer* buffer,Int32ConstArrayView item_local_ids, IItemFamily* item_family)
 {
   // 1-Get item lids for family and downard dependencies.
-  // Rk downard relations are not taken here => automatically added in addItems(ItemData) : this will change. Todo add relations when addItems has been updated
+  // Rk downard relations are not taken here => automatically added in addItems(ItemData) :
+  // this will change. Todo add relations when addItems has been updated
   using FamilyLidMap = std::map<String, Int32UniqueArray>;
   FamilyLidMap serialized_items;
   serialized_items[item_family->name()] = item_local_ids;
@@ -999,14 +999,17 @@ removeCells(Int32ConstArrayView cells_local_id,bool update_graph)
 }
 
 /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void DynamicMesh::
 removeItems(IItemFamily* item_family, Int32ConstArrayView cells_local_id)
 {
   ARCANE_UNUSED(item_family);
   ARCANE_ASSERT((itemFamilyNetwork()),("Cannot call DynamicMesh::removeItems if no ItemFamilyNetwork available"))
+
   if (cells_local_id.empty())
     return;
+
   // Create item info (to remove items)
   ItemDataList item_data_list;
   ItemData& cell_data = item_data_list.itemData(Integer(m_cell_family->itemKind()),
@@ -1014,11 +1017,13 @@ removeItems(IItemFamily* item_family, Int32ConstArrayView cells_local_id)
                                                 m_cell_family,(IItemFamilyModifier*)(m_cell_family),m_parallel_mng->commRank());
   Integer i(0);
   for (auto local_id : cells_local_id) {
-    cell_data.itemInfos()[i++] = (Int64)local_id; // TODO Find a better place in ItemData to put removed item lids (with Int32...) .
+    // TODO Find a better place in ItemData to put removed item lids (with Int32...) .
+    cell_data.itemInfos()[i++] = (Int64)local_id;
   }
   itemFamilyNetwork()->schedule([&item_data_list](IItemFamily* family){
-      family->removeItems2(item_data_list); // send the whole ItemDataList since removed items are to be added for child families
-    },
+                                  // send the whole ItemDataList since removed items are to be added for child families
+                                  family->removeItems2(item_data_list);
+                                },
     IItemFamilyNetwork::TopologicalOrder); // item destruction done from root to leaves
 }
 
@@ -1150,19 +1155,6 @@ unRegisterCallBack(IAMRTransportFunctor* f)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//void DynamicMesh::
-//readAmrActivator(const XmlNode& mesh_node)
-//{
-//  m_is_amr_activated = mesh_node.attr("amr").valueAsBoolean();
-//  info() << "Is AMR Activated? = " << m_is_amr_activated;
-//  if(m_is_amr_activated)
-//    m_mesh_refinement = new MeshRefinement(this);
-//}
-
-// OFF AMR
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void DynamicMesh::
 _allocateCells2(DynamicMeshIncrementalBuilder* mib)
 {
@@ -1178,38 +1170,6 @@ _allocateCells2(DynamicMeshIncrementalBuilder* mib)
   info() << ostr.str();
 #endif
 }
-
-
-// /*---------------------------------------------------------------------------*/
-// /*---------------------------------------------------------------------------*/
-
-// void DynamicMesh::
-// addDualNodes(Integer graph_nb_dual_node,
-//              Int64ConstArrayView dual_nodes_infos)
-// {
-//   Trace::Setter mci(traceMng(),_className());
-//   _checkDimension();
-//   m_mesh_builder->addDualNodes(graph_nb_dual_node,
-//                                dual_nodes_infos,
-//                                m_mesh_rank);
-  
-//   m_update_sync_info = true;
-// }
-
-// /*---------------------------------------------------------------------------*/
-// /*---------------------------------------------------------------------------*/
-
-// void DynamicMesh::
-// addLinks(Integer nb_link,Int64ConstArrayView links_infos)
-// {
-//   Trace::Setter mci(traceMng(),_className());
-//   _checkDimension();
-//   m_mesh_builder->addLinks(nb_link,
-//                            links_infos,
-//                            m_mesh_rank);
-
-//   m_update_sync_info = true;
-// }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1467,21 +1427,20 @@ _addFamily(ItemFamily* family)
 /*---------------------------------------------------------------------------*/
 
 IItemFamily* DynamicMesh::
-findItemFamily(eItemKind ik,const String& name,bool create_if_needed, bool register_modifier_if_created)
+findItemFamily(eItemKind ik,const String& name,bool create_if_needed,
+               bool register_modifier_if_created)
 {
   for( IItemFamily* family : m_item_families)
     if (family->name()==name && family->itemKind()==ik)
       return family;
-  if (create_if_needed)
-  {
+  if (create_if_needed){
     IItemFamily* family = createItemFamily(ik,name);
-    if(register_modifier_if_created)
-    {
+    if(register_modifier_if_created){
       IItemFamilyModifier* modifier = dynamic_cast<IItemFamilyModifier*>(family) ;
       if(modifier)
-        m_family_modifiers.add(modifier) ;
+        m_family_modifiers.add(modifier);
     }
-    return family ;
+    return family;
   }
   return nullptr;
 }
@@ -1495,9 +1454,8 @@ findItemFamily(const String& name,bool throw_exception)
   for( IItemFamily* family : m_item_families )
     if (family->name()==name)
       return family;
-  if (throw_exception){
+  if (throw_exception)
     ARCANE_FATAL("No family with name '{0}' exist",name);
-  }
   return nullptr;
 }
 
@@ -1508,10 +1466,12 @@ IItemFamilyModifier* DynamicMesh::
 findItemFamilyModifier(eItemKind ik,const String& name)
 {
   IItemFamily* family = findItemFamily(ik, name, false,false);
-  if (!family) return nullptr;
-  auto find_iterator = std::find_if(m_family_modifiers.begin(),m_family_modifiers.end(),[&family](IItemFamilyModifier* modifier){return modifier->family() == family;});
-  if (find_iterator == m_family_modifiers.end()) return nullptr;
-  else return *find_iterator;
+  if (!family)
+    return nullptr;
+  for ( IItemFamilyModifier* modifier : m_family_modifiers )
+    if (modifier->family() == family)
+      return modifier;
+  return nullptr;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2015,7 +1975,8 @@ _removeGhostChildItems2(Array<Int64>& cells_to_coarsen)
 /*---------------------------------------------------------------------------*/
 //! AMR
 void DynamicMesh::
-updateGhostLayerFromParent(Array<Int64>& ghost_cell_to_refine_uid,Array<Int64>& ghost_cell_to_coarsen_uid, bool remove_old_ghost)
+updateGhostLayerFromParent(Array<Int64>& ghost_cell_to_refine_uid,
+                           Array<Int64>& ghost_cell_to_coarsen_uid, bool remove_old_ghost)
 {
   Trace::Setter mci(traceMng(),_className());
   CHECKPERF( m_perf_counter.start(PerfCounter::UPGHOSTLAYER1) ) ;
@@ -2024,10 +1985,9 @@ updateGhostLayerFromParent(Array<Int64>& ghost_cell_to_refine_uid,Array<Int64>& 
   
   //Integer current_iteration = subDomain()->commonVariables().globalIteration();
   if (!m_is_dynamic)
-    throw FatalErrorException("DynamicMesh::exchangeItems(): property isDynamic() has to be 'true'");
+    ARCANE_FATAL("Property isDynamic() has to be 'true'");
  
-  if(remove_old_ghost)
-  {
+  if(remove_old_ghost){
     _removeGhostChildItems2(ghost_cell_to_coarsen_uid) ;
   }
 
@@ -2375,12 +2335,16 @@ void DynamicMesh::
 _synchronizeVariables()
 {
   // On ne synchronise que les variables sur les items du maillage courant
-  // - Les items de graphe ne sont pas traités ici (était déjà retiré de la version précédente du code)
+  // - Les items de graphe ne sont pas traités ici (était déjà retiré de
+  //   la version précédente du code)
   // - Les particules et ceux sans genre (Unknown) ne pas sujet à synchronisation
-  // La synchronisation est ici factorisée par collection de variables de même synchroniser (même pour les synchronisers sur groupes != famille)
-  // Pour préserver un ordre consistent de synchronisation une structure auxiliaire OrderedSyncList est utilisée.
+  // La synchronisation est ici factorisée par collection de variables de même
+  // synchroniser (même pour les synchronisers sur groupes != famille)
+  // Pour préserver un ordre consistent de synchronisation une structure
+  // auxiliaire OrderedSyncList est utilisée.
   
-  typedef UniqueArray<IVariableSynchronizer*> OrderedSyncList; // Peut on le faire avec une structure plus compacte ?
+ // Peut on le faire avec une structure plus compacte ?
+  typedef UniqueArray<IVariableSynchronizer*> OrderedSyncList;
   typedef std::map<IVariableSynchronizer*, VariableCollection> SyncList;
   OrderedSyncList ordered_sync_list;
   SyncList sync_list;
@@ -2665,7 +2629,7 @@ void DynamicMesh::
 _setDimension(Integer dim)
 {
   if (m_is_allocated)
-    fatal() << "DynamicMesh::setDimension(): mesh is already allocated";
+    ARCANE_FATAL("DynamicMesh::setDimension(): mesh is already allocated");
   info() << "Mesh name=" << name() << " set dimension = " << dim;
   m_mesh_dimension = dim;
 }
@@ -2677,8 +2641,8 @@ void DynamicMesh::
 _checkDimension() const
 {
   if (m_mesh_dimension()<0)
-    fatal() << "DynamicMesh::_checkDimension(): dimension not set."
-            << "setDimension() must be called before allocating cells";
+    ARCANE_FATAL("DynamicMesh::_checkDimension(): dimension not set."
+                 "setDimension() must be called before allocating cells");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2702,10 +2666,9 @@ _checkConnectivity()
 void DynamicMesh::
 _checkAMR() const
 {
-
   if (!m_is_amr_activated)
-    fatal() << "DynamicMesh::_checkAMR(): amr activator not set.\t"
-            << "amr='true' must be set in the .arc file";
+    ARCANE_FATAL("DynamicMesh::_checkAMR(): amr activator not set.\t"
+                 "amr='true' must be set in the .arc file");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2795,42 +2758,42 @@ _setOwnersFromCells()
   // Détermine les nouveaux propriétaires des noeuds
   {
     ENUMERATE_NODE(i_node,ownNodes()){
-      const Node& node = *i_node;
+      Node node = *i_node;
       nodes_owner[node] = m_new_item_owner_builder->ownerOfItem(node);
     }
     nodes_owner.synchronize();
   }
 
   ENUMERATE_NODE(i_node,allNodes()){
-    const Node& node = *i_node;
+    Node node = *i_node;
     node.internal()->setOwner(nodes_owner[node],sid);
   }
 
   // Détermine les nouveaux propriétaires des arêtes
   {
     ENUMERATE_EDGE(i_edge,ownEdges()){
-      const Edge& edge = *i_edge;
+      Edge edge = *i_edge;
       edges_owner[edge] = m_new_item_owner_builder->ownerOfItem(edge);
     }
     edges_owner.synchronize();
   }
 
   ENUMERATE_EDGE(i_edge,allEdges()){
-    const Edge& edge = *i_edge;
+    Edge edge = *i_edge;
     edge.internal()->setOwner(edges_owner[edge],sid);
   }
 
   // Détermine les nouveaux propriétaires des faces
   {
     ENUMERATE_FACE(i_face,ownFaces()){
-      const Face& face = *i_face;
+      Face face = *i_face;
       faces_owner[face] = m_new_item_owner_builder->ownerOfItem(face);
     }
     faces_owner.synchronize();
   }
 
   ENUMERATE_FACE(i_face,allFaces()){
-    const Face& face = *i_face;
+    Face face = *i_face;
     face.internal()->setOwner(faces_owner[face],sid);
   }
 
@@ -2940,16 +2903,16 @@ defineParentForBuild(IMesh * mesh, ItemGroup group)
 {
   Trace::Setter mci(traceMng(),_className());
   if (!mesh)
-    fatal() << "Cannot set NULL parent mesh to mesh " << name();
+    ARCANE_FATAL("Cannot set NULL parent mesh to mesh '{0}'",name());
 
   if (mesh != group.mesh())
-    fatal() << "Cannot set inconsistant mesh/group parents to mesh " << name();
+    ARCANE_FATAL("Cannot set inconsistant mesh/group parents to mesh '{0}'",name());
 
   if (m_parent_mesh) {
     if (m_parent_mesh != mesh)
-      fatal() << "Mesh " << name() << " already has parent mesh " << m_parent_mesh->name();
+      ARCANE_FATAL("Mesh '{0}' already has parent mesh '{1}'",name(),m_parent_mesh->name());
     if (m_parent_group != group.internal())
-      fatal() << "Mesh " << name() << " already has parent group " << m_parent_group->name();
+      ARCANE_FATAL("Mesh '{0}' already has parent group '{1}'",name(),m_parent_group->name());
   }
 
   m_parent_mesh = mesh;
@@ -2958,10 +2921,12 @@ defineParentForBuild(IMesh * mesh, ItemGroup group)
   Integer dimension_shift = 0;
   if (group.itemKind() == IK_Face) {
     dimension_shift = 1;
-  } else if (group.itemKind() == IK_Cell) {
+  }
+  else if (group.itemKind() == IK_Cell) {
     dimension_shift = 0;
-  } else {
-    fatal() << "Only SubMesh on FaceGroup or CellGoup is allowed";
+  }
+  else {
+    ARCANE_FATAL("Only SubMesh on FaceGroup or CellGoup is allowed");
   }
 
   _setDimension(mesh->dimension()-dimension_shift);
@@ -3015,7 +2980,7 @@ addChildMesh(IMesh * sub_mesh)
 {
   DynamicMesh * dynamic_child_mesh = dynamic_cast<DynamicMesh*>(sub_mesh);
   if (!dynamic_child_mesh)
-    throw FatalErrorException(A_FUNCINFO,"Cannot associate sub mesh from a different concrete type");
+    ARCANE_FATAL("Cannot associate sub mesh from a different concrete type");
   for(Integer i=0;i<m_child_meshes.size();++i)
     if (m_child_meshes[i] == dynamic_child_mesh)
       return;
@@ -3227,7 +3192,7 @@ class ARCANE_MESH_EXPORT DynamicMeshFactory
 : public DynamicMeshFactoryBase
 {
  public:
-  DynamicMeshFactory(const ServiceBuildInfo& sbi)
+  explicit DynamicMeshFactory(const ServiceBuildInfo& sbi)
   : DynamicMeshFactoryBase(sbi,false) {}
 };
 
@@ -3238,7 +3203,7 @@ class ARCANE_MESH_EXPORT DynamicAMRMeshFactory
 : public DynamicMeshFactoryBase
 {
  public:
-  DynamicAMRMeshFactory(const ServiceBuildInfo& sbi)
+  explicit DynamicAMRMeshFactory(const ServiceBuildInfo& sbi)
   : DynamicMeshFactoryBase(sbi,true) {}
 };
 
