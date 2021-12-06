@@ -51,6 +51,8 @@ class ARCANE_MESH_EXPORT MeshUniqueIdMng
   Integer m_edge_builder_version;
 
  private:
+
+  void _initFaceVersion();
 };
 
 /*---------------------------------------------------------------------------*/

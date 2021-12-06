@@ -44,6 +44,11 @@ class ARCANE_CORE_EXPORT IMeshUniqueIdMng
 
   /*!
    * \brief Positionne la version de la numérotation des faces.
+   *
+   * Les valeurs valides sont 0, 1, 2 et 3. La valeur par défaut est 1.
+   * Si la version vaut 0 alors il n'y a pas de renumérotation. En parallèle,
+   * il faut alors que les uniqueId() des faces soient cohérents entre
+   * les sous-domaines
    */  
   virtual void setFaceBuilderVersion(Integer n) =0;
 

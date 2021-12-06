@@ -13,7 +13,10 @@
 
 #include "arcane/mesh/MeshUniqueIdMng.h"
 
+#include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ArgumentException.h"
+
+#include "arcane/IMeshUniqueIdMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,6 +33,7 @@ MeshUniqueIdMng(ITraceMng* tm)
 , m_face_builder_version(1)
 , m_edge_builder_version(1)
 {
+  _initFaceVersion();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -52,6 +56,35 @@ setEdgeBuilderVersion(Integer n)
   if (n<0)
     ARCANE_THROW(ArgumentException,"Bad value for '{0}'<0",n);
   m_edge_builder_version = n;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUniqueIdMng::
+_initFaceVersion()
+{
+  m_face_builder_version = 1;
+
+  // Pour des raisons de compatibilité avec l'existant, on positionne les
+  // valeurs par défaut en fonction de certaines variables d'environnement.
+  // Il faudra supprimer ce comportement à terme (car de plus il s'applique
+  // à tous les maillages même ceux créés dynamiquement)
+
+  if (!platform::getEnvironmentVariable("ARCANE_NEW_MESHINIT2").null()){
+    m_face_builder_version = 3;
+    return;
+  }
+
+  if (!platform::getEnvironmentVariable("ARCANE_NO_FACE_RENUMBER").null()){
+    m_face_builder_version = 0;
+    return;
+  }
+
+  if (!platform::getEnvironmentVariable("ARCANE_NEW_MESHINIT").null()){
+    m_face_builder_version = 2;
+    return;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
