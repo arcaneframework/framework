@@ -11,8 +11,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/CheckedConvert.h"

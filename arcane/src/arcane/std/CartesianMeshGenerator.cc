@@ -855,6 +855,7 @@ generateMesh()
     for (Integer y = 0; y < own_nb_cell_y; ++y) {
       for (Integer x = 0; x < own_nb_cell_x; ++x) {
         Int64 cell_unique_id = cell_unique_id_offset + x + y * all_nb_cell_x;
+        info() << "X=" << x << " y=" << y << " UID=" << cell_unique_id;
         /*debug() << "[2;33m[CartesianMeshGenerator::generateMesh] cell @ "
           <<x<<"x"<<y<<":"<<", uid=" << cell_unique_id<< "[0m";*/
         cells_infos[cells_infos_index] = IT_Quad4;

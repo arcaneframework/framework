@@ -15,6 +15,8 @@
 
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ArgumentException.h"
+#include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/IMeshUniqueIdMng.h"
 
@@ -65,6 +67,16 @@ void MeshUniqueIdMng::
 _initFaceVersion()
 {
   m_face_builder_version = 1;
+
+  String face_version_str = platform::getEnvironmentVariable("ARCANE_FACE_UNIQUE_ID_BUILDER_VERSION");
+  if (!face_version_str.null()){
+    Integer v = 0;
+    if (builtInGetValue(v,face_version_str))
+      ARCANE_FATAL("Invalid value '{0}' for ARCANE_FACE_UNIQUE_ID_BUILDER_VERSION. Value has to be an Integer",
+                   face_version_str);
+    m_face_builder_version = v;
+    return;
+  }
 
   // Pour des raisons de compatibilité avec l'existant, on positionne les
   // valeurs par défaut en fonction de certaines variables d'environnement.

@@ -1,6 +1,7 @@
 set( ARCANE_SOURCES
   AbstractItemFamilyTopologyModifier.cc
   AbstractItemFamilyTopologyModifier.h
+  CartesianFaceUniqueIdBuilder.cc
   CompactIncrementalItemConnectivity.h
   CommonItemGroupFilterer.h
   CommonItemGroupFilterer.cc
