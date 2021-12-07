@@ -51,6 +51,7 @@ class ARCANE_IMPL_EXPORT ParallelExchanger
   bool initializeCommunicationsMessages() override;
   void initializeCommunicationsMessages(Int32ConstArrayView recv_ranks) override;
   void processExchange() override;
+  void processExchange(const ParallelExchangerOptions& options) override;
 
  public:
 

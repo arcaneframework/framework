@@ -32,7 +32,40 @@ class IItemFamily;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
+ * \brief Options pour IParallelMng::processExchange().
+ */
+class ARCANE_CORE_EXPORT ParallelExchangerOptions
+{
+ public:
+  /*!
+   * \brief Mode d'échange.
+   */
+  enum eExchangeMode
+  {
+    //! Utilise les échanges point à point (send/recv)
+    EM_Independant,
+    //! Utilise les opération collectives (allToAll)
+    EM_Collective,
+    //! Choisi automatiquement entre point à point ou collective.
+    EM_Auto
+  };
+
+ public:
+
+  //! Positionne le mode d'échange.
+  void setExchangeMode(eExchangeMode mode) { m_exchange_mode = mode; }
+  //! Mode d'échange spécifié
+  eExchangeMode exchangeMode() const { return m_exchange_mode; };
+
+ private:
+
+  //! Mode d'échange.
+  eExchangeMode m_exchange_mode = EM_Independant;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Echange d'informations entre processeurs.
  *
  * Cette classe permet d'envoyer et de recevoir des messages quelconques
@@ -62,18 +95,14 @@ class ARCANE_CORE_EXPORT IParallelExchanger
 {
  public:
 
-  /*!
-   * \brief Mode d'échange.
-   *
-   */
   enum eExchangeMode
   {
     //! Utilise les échanges point à point (send/recv)
-    EM_Independant,
+    EM_Independant = ParallelExchangerOptions::EM_Independant,
     //! Utilise les opération collectives (allToAll)
-    EM_Collective,
+    EM_Collective = ParallelExchangerOptions::EM_Collective,
     //! Choisi automatiquement entre point à point ou collective.
-    EM_Auto
+    EM_Auto = ParallelExchangerOptions::EM_Auto
   };
 
  public:
@@ -105,8 +134,11 @@ class ARCANE_CORE_EXPORT IParallelExchanger
    */
   virtual void initializeCommunicationsMessages(Int32ConstArrayView recv_ranks) =0;
 
-  //! Effectue l'échange
+  //! Effectue l'échange avec les options par défaut de ParallelExchangerOptions.
   virtual void processExchange() =0;
+
+  //! Effectue l'échange avec les options \a options
+  virtual void processExchange(const ParallelExchangerOptions& options) =0;
 
  public:
  
@@ -129,8 +161,10 @@ class ARCANE_CORE_EXPORT IParallelExchanger
   virtual ISerializeMessage* messageToReceive(Integer i) =0;
 
   //! Positionne le mode d'échange.
+  [[deprecated("Y2021: Use ParallelExchangerOptions::setExchangeMode()")]]
   virtual void setExchangeMode(eExchangeMode mode) =0;
   //! Mode d'échange spécifié
+  [[deprecated("Y2021: Use ParallelExchangerOptions::exchangeMode()")]]
   virtual eExchangeMode exchangeMode() const =0;
 
   //! Positionne le niveau de verbosité

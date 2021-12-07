@@ -145,6 +145,17 @@ _initializeCommunicationsMessages()
 void ParallelExchanger::
 processExchange()
 {
+  ParallelExchangerOptions options;
+  options.setExchangeMode(static_cast<ParallelExchangerOptions::eExchangeMode>(m_exchange_mode));
+  processExchange(options);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParallelExchanger::
+processExchange(const ParallelExchangerOptions& options)
+{
   if (m_verbosity_level>=1){
     info() << "ParallelExchanger " << m_name << " : process exchange";
     Int64 total_size = 0;
@@ -157,7 +168,7 @@ processExchange()
   }
 
   bool use_all_to_all = false;
-  if (m_exchange_mode==EM_Collective)
+  if (options.exchangeMode())
     use_all_to_all = true;
   // TODO: traiter le cas EM_Auto
 

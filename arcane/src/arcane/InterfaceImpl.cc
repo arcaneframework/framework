@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* InterfaceImpl.cc                                            (C) 2000-2020 */
+/* InterfaceImpl.cc                                            (C) 2000-2021 */
 /*                                                                           */
 /* pour les interfaces.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -79,6 +79,7 @@
 #include "arcane/IVariableFilter.h"
 #include "arcane/IAsyncParticleExchanger.h"
 #include "arcane/IParticleExchanger.h"
+#include "arcane/IParallelExchanger.h"
 #include "arcane/ITimeHistoryCurveWriter.h"
 #include "arcane/IItemOperationByBasicType.h"
 #include "arcane/IVariableSynchronizer.h"
