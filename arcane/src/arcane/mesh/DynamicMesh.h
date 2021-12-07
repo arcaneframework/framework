@@ -594,7 +594,7 @@ public:
   void _applyTiedInterfaceStructuration(TiedInterface* tied_interface);
   void _deleteTiedInterfaces();
 
-  void _multipleExchangeItems(Integer nb_exchange,bool do_compact);
+  void _multipleExchangeItems(Integer nb_exchange,Integer version,bool do_compact);
   void _addCells(ISerializer* buffer,Int32Array* cells_local_id);
   void _setSubConnectivity();
   void _setDimension(Integer dim);
