@@ -5,30 +5,30 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelExchanger.cc                                        (C) 2000-2012 */
+/* ParallelExchanger.cc                                        (C) 2000-2021 */
 /*                                                                           */
 /* Echange d'informations entre processeurs.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/impl/ParallelExchanger.h"
 
 #include "arcane/utils/NotSupportedException.h"
 
-#include "arcane/impl/ParallelExchanger.h"
-
+#include "arcane/MathUtils.h"
 #include "arcane/IParallelMng.h"
-#include "arcane/IItemFamily.h"
 #include "arcane/SerializeBuffer.h"
 #include "arcane/SerializeMessage.h"
 #include "arcane/Timer.h"
+#include "arcane/ISerializeMessageList.h"
 
 #include <algorithm>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,8 +49,8 @@ ParallelExchanger(IParallelMng* pm)
 ParallelExchanger::
 ~ParallelExchanger()
 {
-  for( Integer i=0, is=m_comms_buf.size(); i<is; ++i )
-    delete m_comms_buf[i];
+  for( auto* buf : m_comms_buf )
+    delete buf;
   m_comms_buf.clear();
   delete m_own_send_message;
   delete m_own_recv_message;
@@ -68,8 +68,7 @@ initializeCommunicationsMessages()
   std::copy(std::begin(m_send_ranks),std::end(m_send_ranks),
             std::begin(gather_input_send_ranks)+1);
 
-  debug() << "Number of subdomain to communicate with: "
-          << nb_send_rank;
+  debug() << "Number of subdomain to communicate with: " << nb_send_rank;
 
   IntegerUniqueArray gather_output_send_ranks;
   Integer nb_rank = m_parallel_mng->commSize();
@@ -119,31 +118,25 @@ initializeCommunicationsMessages(Int32ConstArrayView recv_ranks)
 void ParallelExchanger::
 _initializeCommunicationsMessages()
 {
-  debug() << "Has to send information to " << (m_send_ranks.size())
-          << " subdomains: ";
-  for( Integer i=0; i<m_send_ranks.size(); ++i ){
-    debug() << "==> subdomain " << m_send_ranks[i];
-  }
-  debug() << "Has to receive information from " << m_recv_ranks.size()
-                << " subdomains: ";
-  for( Integer i=0; i<m_recv_ranks.size(); ++i ){
-    debug() << "==> subdomain " << m_recv_ranks[i];
+  if (m_verbosity_level>=1){
+    info() << "ParallelExchanger " << m_name << " : nb_send=" << m_send_ranks.size()
+           << " nb_recv=" << m_recv_ranks.size();
+    if (m_verbosity_level>=2){
+      info() << "ParallelExchanger " << m_name << " : send=" << m_send_ranks;
+      info() << "ParallelExchanger " << m_name << " : recv=" << m_recv_ranks;
+    }
   }
 
   Int32 my_rank = m_parallel_mng->commRank();
 
-  for( Integer i=0, is=m_send_ranks.size(); i<is; ++i ){
-    Integer dest_rank = m_send_ranks[i];
-    SerializeMessage* comm = new SerializeMessage(my_rank,dest_rank,
-                                                  ISerializeMessage::MT_Send);
+  for( Int32 msg_rank : m_send_ranks ){
+    auto* comm = new SerializeMessage(my_rank,msg_rank,ISerializeMessage::MT_Send);
     // Il ne sert à rien de s'envoyer des messages.
     // (En plus ca fait planter certaines versions de MPI...)
-    if (my_rank==dest_rank){
+    if (my_rank==msg_rank)
       m_own_send_message = comm;
-    }
-    else{
+    else
       m_comms_buf.add(comm);
-    }
     m_send_serialize_infos.add(comm);
   }
 }
@@ -154,45 +147,64 @@ _initializeCommunicationsMessages()
 void ParallelExchanger::
 processExchange()
 {
+  ParallelExchangerOptions options;
+  options.setExchangeMode(static_cast<ParallelExchangerOptions::eExchangeMode>(m_exchange_mode));
+  processExchange(options);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParallelExchanger::
+processExchange(const ParallelExchangerOptions& options)
+{
+  if (m_verbosity_level>=1){
+    info() << "ParallelExchanger " << m_name << " : process exchange";
+    Int64 total_size = 0;
+    for( SerializeMessage* comm : m_send_serialize_infos ){
+      Int64 message_size = comm->trueSerializer()->totalSize();
+      total_size += message_size;
+      if (m_verbosity_level>=2)
+        info() << "Send rank=" << comm->destination() << " size=" << message_size;
+    }
+  }
+
   bool use_all_to_all = false;
-  if (m_exchange_mode==EM_Collective)
+  if (options.exchangeMode())
     use_all_to_all = true;
   // TODO: traiter le cas EM_Auto
 
   // Génère les infos pour chaque processeur de qui on va recevoir
   // des entités
   Int32 my_rank = m_parallel_mng->commRank();
-  for( Integer i=0, is=m_recv_ranks.size(); i<is; ++i ){
-    Integer dest_rank = m_recv_ranks[i];
-    SerializeMessage* comm = new SerializeMessage(my_rank,dest_rank,
-                                                  ISerializeMessage::MT_Recv);
+  for( Int32 msg_rank : m_recv_ranks ){
+    auto* comm = new SerializeMessage(my_rank,msg_rank,ISerializeMessage::MT_Recv);
     // Il ne sert à rien de s'envoyer des messages.
     // (En plus ca fait planter certaines versions de MPI...)
-    if (my_rank==dest_rank){
+    if (my_rank==msg_rank)
       m_own_recv_message = comm;
-    }
     else
       m_comms_buf.add(comm);
     m_recv_serialize_infos.add(comm);
   }
 
-  if (use_all_to_all){
+  if (use_all_to_all)
     _processExchangeCollective();
-  }
   else{
-    m_parallel_mng->processMessages(m_comms_buf);
+    Int32 max_pending = options.maxPendingMessage();
+    if (max_pending>0)
+      _processExchangeWithControl(max_pending);
+    else
+      m_parallel_mng->processMessages(m_comms_buf);
 
     if (m_own_send_message && m_own_recv_message){
-      m_own_recv_message->buffer().copy(m_own_send_message->buffer());
+      m_own_recv_message->serializer()->copy(m_own_send_message->serializer());
     }
   }
 
   // Récupère les infos de chaque receveur
-  for( Integer i=0, is=m_recv_serialize_infos.size(); i<is; ++i ){
-    SerializeMessage* comm = m_recv_serialize_infos[i];
-    SerializeBuffer& sbuf = comm->buffer();
-    sbuf.setMode(ISerializer::ModeGet);
-  }
+  for( SerializeMessage* comm : m_recv_serialize_infos )
+    comm->serializer()->setMode(ISerializer::ModeGet);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -212,10 +224,9 @@ _processExchangeCollective()
   Int32UniqueArray recv_indexes(nb_rank,0);
  
   // D'abord, détermine pour chaque proc le nombre d'octets à envoyer
-  for( Integer i=0, n=m_send_serialize_infos.size(); i<n; ++i ){
-    SerializeMessage* comm = m_send_serialize_infos[i];
-    SerializeBuffer& sbuf = comm->buffer();
-    Span<Byte> val_buf = sbuf.globalBuffer();
+  for( SerializeMessage* comm : m_send_serialize_infos ){
+    auto* sbuf = comm->trueSerializer();
+    Span<Byte> val_buf = sbuf->globalBuffer();
     Int32 rank = comm->destRank();
     send_counts[rank] = arcaneCheckArraySize(val_buf.size());
   }
@@ -253,10 +264,9 @@ _processExchangeCollective()
   }
 
   // Copie dans send_buf les infos des sérialisers.
-  for( Integer i=0, n=m_send_serialize_infos.size(); i<n; ++i ){
-    SerializeMessage* comm = m_send_serialize_infos[i];
-    SerializeBuffer& sbuf = comm->buffer();
-    Span<Byte> val_buf = sbuf.globalBuffer();
+  for( SerializeMessage* comm : m_send_serialize_infos ){
+    auto* sbuf = comm->trueSerializer();
+    Span<Byte> val_buf = sbuf->globalBuffer();
     Int32 rank = comm->destRank();
     if (is_verbose)
       info() << "SEND rank=" << rank << " size=" << send_counts[rank]
@@ -274,18 +284,17 @@ _processExchangeCollective()
     pm->allToAllVariable(send_buf,send_counts,send_indexes,recv_buf,recv_counts,recv_indexes);
   }
   // Recopie les données reçues dans le message correspondant.
-  for( Integer i=0, n=m_recv_serialize_infos.size(); i<n; ++i ){
-    SerializeMessage* comm = m_recv_serialize_infos[i];
-    SerializeBuffer& sbuf = comm->buffer();
+  for( SerializeMessage* comm : m_recv_serialize_infos ){
+    auto* sbuf = comm->trueSerializer();
     Int32 rank = comm->destRank();
     if (is_verbose)
       info() << "RECV rank=" << rank << " size=" << recv_counts[rank]
              << " idx=" << recv_indexes[rank];
     ByteArrayView orig_buf(recv_counts[rank],&recv_buf[recv_indexes[rank]]);
 
-    sbuf.preallocate(orig_buf.size());
-    sbuf.globalBuffer().copy(orig_buf);
-    sbuf.setFromSizes();
+    sbuf->preallocate(orig_buf.size());
+    sbuf->globalBuffer().copy(orig_buf);
+    sbuf->setFromSizes();
   }
 }
 
@@ -310,7 +319,120 @@ messageToReceive(Integer i)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+void ParallelExchanger::
+setVerbosityLevel(Int32 v)
+{
+  if (v<0)
+    v = 0;
+  m_verbosity_level = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParallelExchanger::
+setName(const String& name)
+{
+  m_name = name;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace
+{
+class SortFunctor
+{
+ public:
+  /*!
+   * \brief Operateur de tri des messages.
+   *
+   * Le tri se fait comme suit:
+   * - d'abord prend 1 rang sur nb_phase pour éviter que tous les messages
+   *   aillent sur les mêmes noeuds (car on suppose que les rangs consécutifs sont
+   *   sur les mêmes noeuds)
+   * - ensuite tri sur le rang de destination
+   * - enfin poste les réceptions avant les envois.
+   */
+  bool operator()(const ISerializeMessage* a,const ISerializeMessage* b)
+  {
+    const int nb_phase = 4;
+    int phase1 = a->destination().value() % nb_phase;
+    int phase2 = b->destination().value() % nb_phase;
+    if (phase1 != phase2)
+      return phase1<phase2;
+    if (a->destination() != b->destination())
+      return a->destination() < b->destination();
+    if (a->isSend() != b->isSend())
+      return (a->isSend() ? false : true);
+    return a->source() < b->source();
+  }
+};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Echange avec contrôle du nombre maximum de messages en vol.
+ */
+void ParallelExchanger::
+_processExchangeWithControl(Int32 max_pending_message)
+{
+  // L'ensemble des messages sont dans 'm_comms_buf'.
+  // On les recopie dans 'sorted_messages' pour qu'ils soient triés.
+
+  auto message_list {m_parallel_mng->createSerializeMessageListRef()};
+
+  UniqueArray<ISerializeMessage*> sorted_messages(m_comms_buf);
+  std::sort(sorted_messages.begin(),sorted_messages.end(),SortFunctor{});
+
+  Integer position = 0;
+  // Il faut au moins ajouter un minimum de messages pour ne pas avoir de blocage.
+  // A priori le minimum est 2 pour qu'il y est au moins un receive et un send
+  // mais il est préférable de mettre plus pour ne pas trop dégrader les performances.
+  max_pending_message = math::min(4,max_pending_message);
+
+  Integer nb_message = sorted_messages.size();
+  Integer nb_to_add = max_pending_message;
+
+  Int32 verbosity_level = m_verbosity_level;
+
+  if (verbosity_level>=1)
+    info() << "ParallelExchanger " << m_name << " : process exchange WITH CONTROL"
+           << " nb_message=" << nb_message << " max_pending=" << max_pending_message;
+
+  while(position<nb_message){
+    for( Integer i=0; i<nb_to_add; ++i ){
+      if (position>=nb_message)
+        break;
+      ISerializeMessage* message = sorted_messages[position];
+      if (verbosity_level>=2)
+        info() << "Add Message p=" << position << " is_send?=" << message->isSend() << " source=" << message->source()
+               << " dest=" << message->destination();
+      message_list->addMessage(message);
+      ++position;
+    }
+    // S'il ne reste plus de messages, alors on fait un WaitAll pour attendre*
+    // que les messages restants soient tous terminés.
+    if (position>=nb_message){
+      message_list->waitMessages(Parallel::WaitAll);
+      break;
+    }
+    // Le nombre de messages terminés indique combien de message il faudra
+    // ajouter à la liste pour la prochaine itération.
+    Integer nb_done = message_list->waitMessages(Parallel::WaitSome);
+    if (verbosity_level>=2)
+      info() << "Wait nb_done=" << nb_done;
+    if (nb_done==(-1))
+      nb_done = max_pending_message;
+    nb_to_add = nb_done;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

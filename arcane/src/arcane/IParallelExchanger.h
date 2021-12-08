@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IParallelExchanger.h                                        (C) 2000-2012 */
+/* IParallelExchanger.h                                        (C) 2000-2021 */
 /*                                                                           */
 /* Echange d'informations entre processeurs.                                 */
 /*---------------------------------------------------------------------------*/
@@ -20,7 +20,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,33 +32,13 @@ class IItemFamily;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
- * \brief Echange d'informations entre processeurs.
- *
- * Cette classe permet d'envoyer et de recevoir des messages quelconques
- * d'un nombre quelconque d'autre processeurs.
- *
- * Le fonctionnement est le suivant.
- * - indiquer les autres PE avec lesquels on souhaite communiquer
- * en appelant addSender(), éventuellement plusieurs fois.
- * - appeller initializeCommunicationsMessages() pour
- * déterminer la liste des PE pour lesquels on doit recevoir des infos.
- * - pour chaque message d'envoie, sérialiser les informations qu'on souhaite
- * envoyer.
- * - effectuer les envoies et les réceptions en appelant processExchange()
- * - désérialiser les messages reçus.
- *
- * Il est possible de spécifier, avant appel à processExchange(), la manière dont
- * les messages seront envoyé via setExchangeMode(). Par défaut, le mécanisme
- * utilisé est celui des communications point à point.
+ * \brief Options pour IParallelMng::processExchange().
  */
-class ARCANE_CORE_EXPORT IParallelExchanger
+class ARCANE_CORE_EXPORT ParallelExchangerOptions
 {
  public:
-
   /*!
    * \brief Mode d'échange.
-   *
    */
   enum eExchangeMode
   {
@@ -71,7 +52,70 @@ class ARCANE_CORE_EXPORT IParallelExchanger
 
  public:
 
-  virtual ~IParallelExchanger(){}
+  //! Positionne le mode d'échange.
+  void setExchangeMode(eExchangeMode mode) { m_exchange_mode = mode; }
+  //! Mode d'échange spécifié
+  eExchangeMode exchangeMode() const { return m_exchange_mode; };
+
+  //! Positionne le nombre maximal de messages en vol.
+  void setMaxPendingMessage(Int32 v) { m_max_pending_message = v; }
+  //! Nombre maximal de messages en vol
+  Int32 maxPendingMessage() const { return m_max_pending_message; };
+
+ private:
+
+  //! Mode d'échange.
+  eExchangeMode m_exchange_mode = EM_Independant;
+
+  //! Nombre maximal de messages en vol
+  Int32 m_max_pending_message = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Echange d'informations entre processeurs.
+ *
+ * Cette classe permet d'envoyer et de recevoir des messages quelconques
+ * d'un nombre quelconque d'autre processeurs.
+ *
+ * Le fonctionnement est le suivant.
+ *
+ * 1. indiquer les autres PE avec lesquels on souhaite communiquer en appelant
+ *    addSender(), éventuellement plusieurs fois.
+ * 2. appeller initializeCommunicationsMessages() pour déterminer la liste des
+ *    PE pour lesquels on doit recevoir des infos. Il existe deux surchages
+ *    pour cette méthode suivant si on connait ou non le nombre de rangs pour
+ *    lesquels on doit recevoir des informations.
+ * 3. pour chaque message d'envoi, sérialiser les informations qu'on souhaite
+ *    envoyer.
+ * 4. effectuer les envoies et les réceptions en appelant processExchange()
+ * 5. récupérer les messages recus (via messageToReceive()) et désérialiser
+ *    leurs informations.
+ *
+ * Il est possible de spécifier, avant appel à processExchange(), la manière dont
+ * les messages seront envoyés via setExchangeMode(). Par défaut, le mécanisme
+ * utilisé est celui des communications point à point (EM_Independant) mais il
+ * est possible d'utiliser un mode collectif (EM_Collective) qui utilise
+ * des messages de type 'all to all'.
+ */
+class ARCANE_CORE_EXPORT IParallelExchanger
+{
+ public:
+
+  enum eExchangeMode
+  {
+    //! Utilise les échanges point à point (send/recv)
+    EM_Independant = ParallelExchangerOptions::EM_Independant,
+    //! Utilise les opération collectives (allToAll)
+    EM_Collective = ParallelExchangerOptions::EM_Collective,
+    //! Choisi automatiquement entre point à point ou collective.
+    EM_Auto = ParallelExchangerOptions::EM_Auto
+  };
+
+ public:
+
+  virtual ~IParallelExchanger() = default;
 
  public:
 
@@ -98,8 +142,11 @@ class ARCANE_CORE_EXPORT IParallelExchanger
    */
   virtual void initializeCommunicationsMessages(Int32ConstArrayView recv_ranks) =0;
 
-  //! Effectue l'échange
+  //! Effectue l'échange avec les options par défaut de ParallelExchangerOptions.
   virtual void processExchange() =0;
+
+  //! Effectue l'échange avec les options \a options
+  virtual void processExchange(const ParallelExchangerOptions& options) =0;
 
  public:
  
@@ -121,19 +168,28 @@ class ARCANE_CORE_EXPORT IParallelExchanger
   //! Message reçu du \a ième processeur
   virtual ISerializeMessage* messageToReceive(Integer i) =0;
 
-  /*!
-   * \brief Indique le mode d'échange.
-   */
+  //! Positionne le mode d'échange.
+  [[deprecated("Y2021: Use ParallelExchangerOptions::setExchangeMode()")]]
   virtual void setExchangeMode(eExchangeMode mode) =0;
-
   //! Mode d'échange spécifié
+  [[deprecated("Y2021: Use ParallelExchangerOptions::exchangeMode()")]]
   virtual eExchangeMode exchangeMode() const =0;
+
+  //! Positionne le niveau de verbosité
+  virtual void setVerbosityLevel(Int32 v) =0;
+  //! Niveau de verbosité
+  virtual Int32 verbosityLevel() const =0;
+
+  //! Positionne le nom de l'instance. Ce nom est utilisé lors des impressions
+  virtual void setName(const String& name) =0;
+  //! Nom de l'instance
+  virtual String name() const =0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

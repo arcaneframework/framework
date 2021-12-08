@@ -112,6 +112,7 @@ class ParallelMngTest
   void _testBroadcastStringAndMemoryBuffer();
   void _testBroadcastStringAndMemoryBuffer2(const String& wanted_str);
   void _testProbeSerialize(Integer nb_value,bool use_one_message);
+  void _testProcessMessages(const ParallelExchangerOptions* exchange_options);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -915,12 +916,37 @@ _testReduce2()
 void ParallelMngTest::
 _testProcessMessages()
 {
+  info() << "Test: TestProcessMessage";
+  _testProcessMessages(nullptr);
+  {
+    ParallelExchangerOptions options;
+    info() << "Test: TestProcessMessage with collective";
+    options.setExchangeMode(ParallelExchangerOptions::EM_Collective);
+    _testProcessMessages(&options);
+  }
+ {
+    ParallelExchangerOptions options;
+    info() << "Test: TestProcessMessage with max pending";
+    options.setMaxPendingMessage(5);
+    _testProcessMessages(&options);
+  }
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParallelMngTest::
+_testProcessMessages(const ParallelExchangerOptions* exchange_options)
+{
   IParallelMng* pm = m_parallel_mng;
   Int32 rank = pm->commRank();
   Int32 nb_rank = pm->commSize();
   ITraceMng* tm = pm->traceMng();
 
   auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
+  exchanger->setVerbosityLevel(2);
+  exchanger->setName("TestProcessMessage");
 
   Int32 nb_send = nb_rank;
   for( Int32 i=0; i<nb_send; ++i ){
@@ -945,7 +971,10 @@ _testProcessMessages()
     }
     s->put(msg);
   }
-  exchanger->processExchange();
+  if (exchange_options)
+    exchanger->processExchange(*exchange_options);
+  else
+    exchanger->processExchange();
   tm->info() << "END EXCHANGE";
   {
     Integer nb_receiver = exchanger->nbReceiver();
