@@ -113,7 +113,9 @@ computeFacesUniqueIds()
   // Il faut ranger à nouveau #m_faces_map car les uniqueId() des
   // faces ont été modifiés
   m_mesh->faceFamily()->notifyItemsUniqueIdChanged();
-  if (m_mesh_builder->isVerbose()){
+  bool is_verbose = m_mesh_builder->isVerbose();
+  is_verbose = true;
+  if (is_verbose){
     info() << "NEW FACES_MAP after re-indexing";
     ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,faces_map){
       ItemInternal* face = nbid->value();

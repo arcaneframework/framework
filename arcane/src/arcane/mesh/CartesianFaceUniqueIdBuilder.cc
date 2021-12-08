@@ -15,6 +15,8 @@
 
 #include "arcane/core/internal/ICartesianMeshGenerationInfo.h"
 
+#include <array>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -33,7 +35,6 @@ class CartesianFaceUniqueIdBuilder
 
   //! Construit une instance pour le maillage \a mesh
   CartesianFaceUniqueIdBuilder(DynamicMesh* mesh);
-  virtual ~CartesianFaceUniqueIdBuilder();
 
  public:
 
@@ -63,14 +64,6 @@ CartesianFaceUniqueIdBuilder(DynamicMesh* mesh)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CartesianFaceUniqueIdBuilder::
-~CartesianFaceUniqueIdBuilder()
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -88,46 +81,109 @@ computeFacesUniqueIdAndOwner()
                  dimension);
 
   Int64ConstArrayView global_nb_cells = cmgi->globalNbCells();
-  info() << "Dim=" << dimension << " GLOBAL_NB_CELLS=" << global_nb_cells;
+  info() << "Dim=" << dimension;
   Int64 nb_cell_x = global_nb_cells[0];
   Int64 nb_cell_y = global_nb_cells[1];
   Int64 nb_cell_z = global_nb_cells[2];
+  Int64 nb_cell_xy = nb_cell_x * nb_cell_y;
 
   Int64 nb_face_x = nb_cell_x + 1;
   Int64 nb_face_y = nb_cell_y + 1;
   Int64 nb_face_z = nb_cell_z + 1;
-  Int64 nb_face_xy = nb_face_x * nb_face_y;
+  Int64 nb_face_dir_x = nb_face_x * nb_cell_y;
+  Int64 nb_face_dir_y = nb_face_y * nb_cell_x;
+  Int64 face_offset_z = nb_face_dir_x + nb_face_dir_y;
+  Int64 nb_face_xyz = face_offset_z + nb_cell_xy;
+
+  info() << "NB_Cell: X=" << nb_cell_x << " Y=" << nb_cell_y << " Z=" << nb_cell_z
+         << " XY=" << nb_cell_xy;
+  info() << "NB_Face: X=" << nb_face_x << " Y=" << nb_face_y << " Z=" << nb_face_z
+         << " NbDirX=" << nb_face_dir_x << " NbDirY=" << nb_face_dir_y
+         << " NbFaceXYZ=" << nb_face_xyz << " OffsetZ=" << face_offset_z;
 
   ItemInternalMap& cells_map = m_mesh->cellsMap();
-
+  bool is_verbose = m_is_verbose;
+  is_verbose = true;
   if (dimension==2){
+    // Les mailles sont des quadrangles
     std::array<Int64,4> face_uids;
     ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,cells_map){
-      // Récupère l'indice (I,J,K) de la maille
+      // Récupère l'indice (I,J) de la maille
       Cell cell { iid->value() };
       Int64 uid = cell.uniqueId();
       Int64 y = uid / nb_cell_x;
       Int64 x = uid % nb_cell_x;
-      info() << "UID=" << uid << " X=" << x << " Y=" << y
-             << " N0=" << cell.node(0).uniqueId()
-             << " N1=" << cell.node(1).uniqueId()
-             << " N2=" << cell.node(2).uniqueId()
-             << " N3=" << cell.node(3).uniqueId();
-      //Int64 cell_unique_id = cell_unique_id_offset + x + y * all_nb_cell_x;
-      //Int64 cell_unique_id = cell_unique_id_offset + x + y * all_nb_cell_x;
-      face_uids[0] = (x+0) + ((y+0) * nb_face_x) + nb_face_xy;
-      face_uids[2] = (x+0) + ((y+1) * nb_face_x) + nb_face_xy;
+      if (is_verbose)
+        info() << "UID=" << uid << " X=" << x << " Y=" << y
+               << " N0=" << cell.node(0).uniqueId()
+               << " N1=" << cell.node(1).uniqueId()
+               << " N2=" << cell.node(2).uniqueId()
+               << " N3=" << cell.node(3).uniqueId();
+      // Faces selon Y
+      face_uids[0] = (x+0) + ((y+0) * nb_cell_x) + nb_face_dir_x;
+      face_uids[2] = (x+0) + ((y+1) * nb_cell_x) + nb_face_dir_x;
 
+      // Faces selon X
       face_uids[1] = (x+1) + (y+0) * nb_face_x;
       face_uids[3] = (x+0) + (y+0) * nb_face_x;
+
       for( int i=0; i<4; ++i ){
-        info() << "CELL=" << uid << " Face=" << i << " p=" << cell.face(i).internal() << " uid=" << face_uids[i];
-        cell.face(i).internal()->setUniqueId(face_uids[i]);
+        Face face = cell.face(i);
+        if (is_verbose)
+          info() << "CELL=" << uid << " Face=" << i << " uid=" << face_uids[i]
+                 << " N0=" << face.node(0).uniqueId()
+                 << " N1=" << face.node(1).uniqueId();
+
+        face.internal()->setUniqueId(face_uids[i]);
       }
     }
   }
-  else if (dimension==3)
-    ARCANE_FATAL("NYI");
+  else if (dimension==3){
+    // Les mailles sont des hexaèdres
+    std::array<Int64,6> face_uids;
+    ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,cells_map){
+      // Récupère l'indice (I,J) de la maille
+      Cell cell { iid->value() };
+      Int64 uid = cell.uniqueId();
+      Int64 z = uid / nb_cell_xy;
+      Int64 v = uid - (z * nb_cell_xy);
+      Int64 y = v / nb_cell_x;
+      Int64 x = v % nb_cell_x;
+      if (is_verbose)
+        info() << "UID=" << uid << " X=" << x << " Y=" << y << " Z=" << z
+               << " N0=" << cell.node(0).uniqueId()
+               << " N1=" << cell.node(1).uniqueId()
+               << " N2=" << cell.node(2).uniqueId()
+               << " N3=" << cell.node(3).uniqueId()
+               << " N4=" << cell.node(4).uniqueId()
+               << " N5=" << cell.node(5).uniqueId()
+               << " N6=" << cell.node(6).uniqueId()
+               << " N7=" << cell.node(7).uniqueId();
+
+      // Faces selon Z
+      face_uids[0] = (x+0) + ((y+0) * nb_cell_x) + ((z+0) * nb_face_xyz) + face_offset_z;
+      face_uids[3] = (x+0) + ((y+0) * nb_cell_x) + ((z+1) * nb_face_xyz) + face_offset_z;
+
+      // Faces selon X
+      face_uids[1] = (x+0) + ((y+0) * nb_face_x) + ((z+0) * nb_face_xyz);
+      face_uids[4] = (x+1) + ((y+0) * nb_face_x) + ((z+0) * nb_face_xyz);
+
+      // Faces selon Y
+      face_uids[2] = (x+0) + ((y+0) * nb_cell_x) + ((z+0) * nb_face_xyz) + nb_face_dir_x;
+      face_uids[5] = (x+0) + ((y+1) * nb_cell_x) + ((z+0) * nb_face_xyz) + nb_face_dir_x;
+
+      for( int i=0; i<6; ++i ){
+        Face face = cell.face(i);
+        if (is_verbose)
+          info() << "CELL=" << uid << " Face=" << i << " uid=" << face_uids[i]
+                 << " N0=" << face.node(0).uniqueId()
+                 << " N1=" << face.node(1).uniqueId()
+                 << " N2=" << face.node(2).uniqueId()
+                 << " N3=" << face.node(3).uniqueId();
+        face.internal()->setUniqueId(face_uids[i]);
+      }
+    }
+  }
   else
     ARCANE_FATAL("Invalid dimension");
 }
