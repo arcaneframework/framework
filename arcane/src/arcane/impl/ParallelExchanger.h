@@ -111,6 +111,7 @@ class ARCANE_IMPL_EXPORT ParallelExchanger
 
   void _initializeCommunicationsMessages();
   void _processExchangeCollective();
+  void _processExchangeWithControl(Int32 max_pending_message);
 };
 
 /*---------------------------------------------------------------------------*/

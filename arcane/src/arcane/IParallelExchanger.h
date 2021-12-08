@@ -57,10 +57,18 @@ class ARCANE_CORE_EXPORT ParallelExchangerOptions
   //! Mode d'échange spécifié
   eExchangeMode exchangeMode() const { return m_exchange_mode; };
 
+  //! Positionne le nombre maximal de messages en vol.
+  void setMaxPendingMessage(Int32 v) { m_max_pending_message = v; }
+  //! Nombre maximal de messages en vol
+  Int32 maxPendingMessage() const { return m_max_pending_message; };
+
  private:
 
   //! Mode d'échange.
   eExchangeMode m_exchange_mode = EM_Independant;
+
+  //! Nombre maximal de messages en vol
+  Int32 m_max_pending_message = 0;
 };
 
 /*---------------------------------------------------------------------------*/

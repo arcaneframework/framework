@@ -15,10 +15,12 @@
 
 #include "arcane/utils/NotSupportedException.h"
 
+#include "arcane/MathUtils.h"
 #include "arcane/IParallelMng.h"
 #include "arcane/SerializeBuffer.h"
 #include "arcane/SerializeMessage.h"
 #include "arcane/Timer.h"
+#include "arcane/ISerializeMessageList.h"
 
 #include <algorithm>
 
@@ -189,7 +191,11 @@ processExchange(const ParallelExchangerOptions& options)
   if (use_all_to_all)
     _processExchangeCollective();
   else{
-    m_parallel_mng->processMessages(m_comms_buf);
+    Int32 max_pending = options.maxPendingMessage();
+    if (max_pending>0)
+      _processExchangeWithControl(max_pending);
+    else
+      m_parallel_mng->processMessages(m_comms_buf);
 
     if (m_own_send_message && m_own_recv_message){
       m_own_recv_message->serializer()->copy(m_own_send_message->serializer());
@@ -328,6 +334,99 @@ void ParallelExchanger::
 setName(const String& name)
 {
   m_name = name;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace
+{
+class SortFunctor
+{
+ public:
+  /*!
+   * \brief Operateur de tri des messages.
+   *
+   * Le tri se fait comme suit:
+   * - d'abord prend 1 rang sur nb_phase pour éviter que tous les messages
+   *   aillent sur les mêmes noeuds (car on suppose que les rangs consécutifs sont
+   *   sur les mêmes noeuds)
+   * - ensuite tri sur le rang de destination
+   * - enfin poste les réceptions avant les envois.
+   */
+  bool operator()(const ISerializeMessage* a,const ISerializeMessage* b)
+  {
+    const int nb_phase = 4;
+    int phase1 = a->destination().value() % nb_phase;
+    int phase2 = b->destination().value() % nb_phase;
+    if (phase1 != phase2)
+      return phase1<phase2;
+    if (a->destination() != b->destination())
+      return a->destination() < b->destination();
+    if (a->isSend() != b->isSend())
+      return (a->isSend() ? false : true);
+    return a->source() < b->source();
+  }
+};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Echange avec contrôle du nombre maximum de messages en vol.
+ */
+void ParallelExchanger::
+_processExchangeWithControl(Int32 max_pending_message)
+{
+  // L'ensemble des messages sont dans 'm_comms_buf'.
+  // On les recopie dans 'sorted_messages' pour qu'ils soient triés.
+
+  auto message_list {m_parallel_mng->createSerializeMessageListRef()};
+
+  UniqueArray<ISerializeMessage*> sorted_messages(m_comms_buf);
+  std::sort(sorted_messages.begin(),sorted_messages.end(),SortFunctor{});
+
+  Integer position = 0;
+  // Il faut au moins ajouter un minimum de messages pour ne pas avoir de blocage.
+  // A priori le minimum est 2 pour qu'il y est au moins un receive et un send
+  // mais il est préférable de mettre plus pour ne pas trop dégrader les performances.
+  max_pending_message = math::min(4,max_pending_message);
+
+  Integer nb_message = sorted_messages.size();
+  Integer nb_to_add = max_pending_message;
+
+  Int32 verbosity_level = m_verbosity_level;
+
+  if (verbosity_level>=1)
+    info() << "ParallelExchanger " << m_name << " : process exchange WITH CONTROL"
+           << " nb_message=" << nb_message << " max_pending=" << max_pending_message;
+
+  while(position<nb_message){
+    for( Integer i=0; i<nb_to_add; ++i ){
+      if (position>=nb_message)
+        break;
+      ISerializeMessage* message = sorted_messages[position];
+      if (verbosity_level>=2)
+        info() << "Add Message p=" << position << " is_send?=" << message->isSend() << " source=" << message->source()
+               << " dest=" << message->destination();
+      message_list->addMessage(message);
+      ++position;
+    }
+    // S'il ne reste plus de messages, alors on fait un WaitAll pour attendre*
+    // que les messages restants soient tous terminés.
+    if (position>=nb_message){
+      message_list->waitMessages(Parallel::WaitAll);
+      break;
+    }
+    // Le nombre de messages terminés indique combien de message il faudra
+    // ajouter à la liste pour la prochaine itération.
+    Integer nb_done = message_list->waitMessages(Parallel::WaitSome);
+    if (verbosity_level>=2)
+      info() << "Wait nb_done=" << nb_done;
+    if (nb_done==(-1))
+      nb_done = max_pending_message;
+    nb_to_add = nb_done;
+  }
 }
 
 /*---------------------------------------------------------------------------*/

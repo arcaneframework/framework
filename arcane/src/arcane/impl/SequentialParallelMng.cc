@@ -54,6 +54,7 @@
 #include "arcane/impl/ParallelMngUtilsFactoryBase.h"
 
 #include "arccore/message_passing/RequestListBase.h"
+#include "arccore/message_passing/SerializeMessageList.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -455,7 +456,7 @@ class SequentialParallelMng
 
   ISerializeMessageList* _createSerializeMessageList() override
   {
-    throw NotImplementedException(A_FUNCINFO);
+    return new Arccore::MessagePassing::internal::SerializeMessageList(messagePassingMng());
   }
   Real reduceRank(eReduceType rt,Real v,Int32* rank)
   {
