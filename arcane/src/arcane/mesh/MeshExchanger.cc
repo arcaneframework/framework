@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshExchanger.cc                                            (C) 2000-2016 */
+/* MeshExchanger.cc                                            (C) 2000-2021 */
 /*                                                                           */
 /* Gestion d'un échange de maillage entre sous-domaines.                     */
 /*---------------------------------------------------------------------------*/
@@ -29,11 +29,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -281,7 +278,9 @@ processExchange()
 {
   _checkPhase(ePhase::ProcessExchange);
 
-  info() << "ExchangeItems date=" << platform::getCurrentDateTime();
+  info() << "ExchangeItems date=" << platform::getCurrentDateTime()
+         << " MemUsed=" << platform::getMemoryUsed();
+
   Timer::Action ts_action1(m_time_stats,"MessagesExchange",true);
   for( IItemFamilyExchanger* e : m_family_exchangers ){
     // NOTE: Pour pouvoir envoyer tous les messages en même temps et les réceptions
@@ -455,8 +454,7 @@ _setNextPhase(ePhase next_phase)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

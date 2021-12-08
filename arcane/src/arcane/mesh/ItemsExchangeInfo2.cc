@@ -5,15 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemsExchangeInfo2.cc                                       (C) 2000-2018 */
+/* ItemsExchangeInfo2.cc                                       (C) 2000-2021 */
 /*                                                                           */
 /* Echange des entités et leurs variables.                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/mesh/ItemsExchangeInfo2.h"
 
 #include "arcane/utils/NotSupportedException.h"
+#include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/IMesh.h"
 #include "arcane/VariableTypes.h"
@@ -33,7 +35,6 @@
 #include "arcane/ItemFamilySerializeArgs.h"
 #include "arcane/ParallelMngUtils.h"
 
-#include "arcane/mesh/ItemsExchangeInfo2.h"
 #include "arcane/mesh/ItemGroupsSerializer2.h"
 #include "arcane/mesh/TiedInterfaceExchanger.h"
 #include "arcane/mesh/ItemFamilyVariableSerializer.h"
@@ -47,18 +48,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane
+{
 class ItemFamilyExchange;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_BEGIN_NAMESPACE
-
+namespace Arcane::mesh
+{
 namespace
 {
 const Integer GROUPS_MAGIC_NUMBER = 0x3a9e4325;
@@ -76,6 +75,19 @@ ItemsExchangeInfo2(IItemFamily* item_family)
 {
   m_family_serializer = item_family->policyMng()->createSerializer();
 
+  // Positionne infos pour l'affichage listing
+  m_exchanger->setVerbosityLevel(1);
+  m_exchanger->setName(item_family->name());
+
+  // Temporairement utilise une variable d'environnement pour spécifier le
+  // nombre maximum de messages en vol.
+  String max_pending_str = platform::getEnvironmentVariable("ARCANE_MESH_EXCHANGE_MAX_PENDING_MESSAGE");
+  if (!max_pending_str.null()){
+    Int32 max_pending = 0;
+    if (!builtInGetValue(max_pending,max_pending_str))
+      m_max_pending_message = max_pending;
+  }
+
   // Celui ci doit toujours être le premier de la phase de sérialisation des variables.
   addSerializeStep(new ItemFamilyVariableSerializer(item_family));
 }
@@ -86,7 +98,7 @@ ItemsExchangeInfo2(IItemFamily* item_family)
 ItemsExchangeInfo2::
 ~ItemsExchangeInfo2()
 {
-  for( IItemFamilySerializeStep* step : m_serialize_steps.range() )
+  for( IItemFamilySerializeStep* step : m_serialize_steps )
     delete step;
   delete m_family_serializer;
   for(Integer i=0;i<m_groups_serializers.size(); ++i)
@@ -103,8 +115,6 @@ _addItemToSend(Int32 sub_domain_id,Item item)
     // Si premier élément, ajoute le sous-domaine à la liste des
     // sous-domaines communicants
     m_exchanger->addSender(sub_domain_id);
-  debug(Trace::High) << "Add send " << ItemPrinter(item)
-                     << " to proc " << sub_domain_id;
   m_send_local_ids[sub_domain_id].add(item.localId());
 }
 
@@ -122,7 +132,7 @@ computeExchangeInfos()
     for( IItemFamily* child_family : child_families )
       m_families_to_exchange.add(child_family);
    
-    for( IItemFamily* current_family : m_families_to_exchange.range() ){
+    for( IItemFamily* current_family : m_families_to_exchange ){
       // Si la famille n'a pas de table de uniqueId, il ne faut pas
       // transferer les groupes car il n'est pas possible de convertir
       // les uniqueId en localId et le serialiseur en a besoin.
@@ -132,7 +142,7 @@ computeExchangeInfos()
     }
   }
 
-  for( IItemFamilySerializeStep* step : m_serialize_steps.range() ){
+  for( IItemFamilySerializeStep* step : m_serialize_steps ){
     step->initialize();
   }
 
@@ -215,8 +225,8 @@ computeExchangeItems()
 void ItemsExchangeInfo2::
 prepareToSend()
 {
-  debug() << "ItemsExchangeInfo2::prepareToSend() for " << itemFamily()->name();
-  debug() << "Number of groups to serialize: " << m_groups_serializers.size();
+  info(4) << "ItemsExchangeInfo2::prepareToSend() for " << itemFamily()->name();
+  info(4) << "Number of groups to serialize: " << m_groups_serializers.size();
   
   // Préparation des sérialiseurs de groupes
   for(Integer i_serializer=0;i_serializer<m_groups_serializers.size(); ++i_serializer){
@@ -246,7 +256,7 @@ prepareToSend()
   const Integer nb_send = m_exchanger->nbSender();
   {
     auto action = IItemFamilySerializeStep::eAction::AC_BeginPrepareSend;
-    for( IItemFamilySerializeStep* step : m_serialize_steps.range() )
+    for( IItemFamilySerializeStep* step : m_serialize_steps )
       step->notifyAction(IItemFamilySerializeStep::NotifyActionArgs(action,nb_send));
   }
 
@@ -255,8 +265,8 @@ prepareToSend()
     Int32 dest_sub_domain = comm->destination().value();
     // Liste des localId() des entités à envoyer
     Int32ConstArrayView dest_items_local_id = m_send_local_ids[dest_sub_domain];
-    debug(Trace::High) << "Processing message to " << dest_sub_domain 
-                       << " for family " << itemFamily()->fullName();
+    info(5) << "Processing message to " << dest_sub_domain
+            << " for family " << itemFamily()->fullName();
 
     ISerializer* sbuf = comm->serializer();
 
@@ -337,7 +347,7 @@ prepareToSend()
 
   {
     auto action = IItemFamilySerializeStep::eAction::AC_EndPrepareSend;
-    for( IItemFamilySerializeStep* step : m_serialize_steps.range() )
+    for( IItemFamilySerializeStep* step : m_serialize_steps )
       step->notifyAction(IItemFamilySerializeStep::NotifyActionArgs(action,nb_send));
   }
 }
@@ -348,7 +358,7 @@ prepareToSend()
 void ItemsExchangeInfo2::
 readAndAllocItems()
 {
-  debug() << "ItemsExchangeInfo2::readAndAllocItems() " << itemFamily()->name();
+  info(4) << "ItemsExchangeInfo2::readAndAllocItems() " << itemFamily()->name();
 
   // L'organisation des boucles et du switch n'est pas ici identiques à prepareToSend,
   // pour la lisibilité, il faudrait les rendre similaires
@@ -357,7 +367,7 @@ readAndAllocItems()
   for( Integer i=0, is=m_exchanger->nbReceiver(); i<is; ++i ){
     ISerializeMessage* comm = m_exchanger->messageToReceive(i);
     ISerializer* sbuf = comm->serializer();
-    debug() << "Processing item message from " << comm->destination()
+    info(5) << "Processing item message from " << comm->destination()
             << " for family " << itemFamily()->fullName();
     m_family_serializer->deserializeItems(sbuf,&m_receive_local_ids[i]);
   }
@@ -400,7 +410,7 @@ readAndAllocSubMeshItems()
 void ItemsExchangeInfo2::
 readAndAllocItemRelations()
 {
-  debug() << "ItemsExchangeInfo2::readAndAllocItemRelations() " << itemFamily()->name();
+  info(4) <<  "ItemsExchangeInfo2::readAndAllocItemRelations() " << itemFamily()->name();
 
   // L'organisation des boucles et du switch n'est pas ici identiques à prepareToSend,
   // pour la lisibilité, il faudrait les rendre similaires
@@ -409,7 +419,7 @@ readAndAllocItemRelations()
   for( Integer i=0, is=m_exchanger->nbReceiver(); i<is; ++i ){
     ISerializeMessage* comm = m_exchanger->messageToReceive(i);
     ISerializer* sbuf = comm->serializer();
-    debug() << "Processing item message from " << comm->destination()
+    info(5) << "Processing item message from " << comm->destination()
             << " for family " << itemFamily()->fullName();
     m_family_serializer->deserializeItemRelations(sbuf,&m_receive_local_ids[i]);
   }
@@ -421,7 +431,7 @@ readAndAllocItemRelations()
 void ItemsExchangeInfo2::
 readGroups()
 {
-  debug() << "ItemsExchangeInfo2::readGroups() for "
+  info(4) << "ItemsExchangeInfo2::readGroups() for "
           << m_item_family->name();
   
   Int64UniqueArray items_in_groups_uid;
@@ -454,14 +464,13 @@ readGroups()
 void ItemsExchangeInfo2::
 readVariables()
 {
-  debug() << "ItemsExchangeInfo2::readVariables() for "
-          << m_item_family->name();
+  info(4) << "ItemsExchangeInfo2::readVariables() for " << m_item_family->name();
 
   // Redimensionne éventuellement les données associées aux variables.
   // NOTE GG: normalement il me semble que c'est déjà fait lors
   // de l'appel à DynamicMesh::_internalEndUpdateInit() dans _exchangeItemsNew()
   // pour toutes les familles.
-  for( IItemFamily* family : m_families_to_exchange.range() )
+  for( IItemFamily* family : m_families_to_exchange )
     family->resizeVariables(true);
 
   _applyDeserializePhase(IItemFamilySerializeStep::PH_Variable);
@@ -483,7 +492,9 @@ removeSentItems()
   if (pfamily->getEnableGhostItems())
     ARCANE_FATAL("This call is only valid for ParticleFamily without ghost",
                  itemFamily()->name());
-  debug() << "ItemsExchangeInfo2::removeSentItems(): " << family->name();
+
+  info(4) << "ItemsExchangeInfo2::removeSentItems(): " << family->name();
+
   for( Integer i=0, is=m_exchanger->nbSender(); i<is; ++i ){
     ISerializeMessage* comm = m_exchanger->messageToSend(i);
     Int32 dest_rank = comm->destination().value();
@@ -491,9 +502,7 @@ removeSentItems()
     
     ItemVectorView dest_items = family->view(dest_items_local_id);
 
-#ifndef NO_USER_WARNING
-#warning "(HP) Jamais testé sur des sous-maillages avec particules"
-#endif /* NO_USER_WARNING */
+    //NOTE: (HP) Jamais testé sur des sous-maillages avec particules
     IItemFamilyCollection child_families = itemFamily()->childFamilies();
     for( IItemFamily* child_family : child_families){
       ItemVector sub_dest_items = MeshToMeshTransposer::transpose(family, child_family, dest_items);
@@ -513,7 +522,11 @@ removeSentItems()
 void ItemsExchangeInfo2::
 processExchange()
 {
-  m_exchanger->processExchange();
+  info() << "Process exchange for family=" << m_item_family->fullName();
+  ParallelExchangerOptions options;
+  if (m_max_pending_message>0)
+    options.setMaxPendingMessage(m_max_pending_message);
+  m_exchanger->processExchange(options);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -522,7 +535,7 @@ processExchange()
 void ItemsExchangeInfo2::
 finalizeExchange()
 {
-  for( IItemFamilySerializeStep* step : m_serialize_steps.range() ){
+  for( IItemFamilySerializeStep* step : m_serialize_steps ){
     step->finalize();
   }
 }
@@ -542,7 +555,7 @@ addSerializeStep(IItemFamilySerializeStep* step)
 void ItemsExchangeInfo2::
 _applySerializeStep(IItemFamilySerializeStep::ePhase phase,const ItemFamilySerializeArgs& args)
 {
-  for( IItemFamilySerializeStep* step : m_serialize_steps.range() ){
+  for( IItemFamilySerializeStep* step : m_serialize_steps ){
     if (step->phase()==phase)
       step->serialize(args);
   }
@@ -554,7 +567,7 @@ _applySerializeStep(IItemFamilySerializeStep::ePhase phase,const ItemFamilySeria
 void ItemsExchangeInfo2::
 _applyDeserializePhase(IItemFamilySerializeStep::ePhase phase)
 {
-  for( IItemFamilySerializeStep* step : m_serialize_steps.range() ){
+  for( IItemFamilySerializeStep* step : m_serialize_steps ){
     if (step->phase()!=phase)
       continue;
 
@@ -580,8 +593,7 @@ _applyDeserializePhase(IItemFamilySerializeStep::ePhase phase)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
