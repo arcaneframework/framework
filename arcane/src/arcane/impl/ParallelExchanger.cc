@@ -159,7 +159,6 @@ void ParallelExchanger::
 processExchange(const ParallelExchangerOptions& options)
 {
   if (m_verbosity_level>=1){
-    info() << "ParallelExchanger " << m_name << " : process exchange";
     Int64 total_size = 0;
     for( SerializeMessage* comm : m_send_serialize_infos ){
       Int64 message_size = comm->trueSerializer()->totalSize();
@@ -167,6 +166,8 @@ processExchange(const ParallelExchangerOptions& options)
       if (m_verbosity_level>=2)
         info() << "Send rank=" << comm->destination() << " size=" << message_size;
     }
+    info() << "ParallelExchanger " << m_name << " : process exchange"
+           << " total_size=" << total_size << " nb_message=" << m_comms_buf.size();
   }
 
   bool use_all_to_all = false;
@@ -390,7 +391,7 @@ _processExchangeWithControl(Int32 max_pending_message)
   // Il faut au moins ajouter un minimum de messages pour ne pas avoir de blocage.
   // A priori le minimum est 2 pour qu'il y est au moins un receive et un send
   // mais il est préférable de mettre plus pour ne pas trop dégrader les performances.
-  max_pending_message = math::min(4,max_pending_message);
+  max_pending_message = math::max(4,max_pending_message);
 
   Integer nb_message = sorted_messages.size();
   Integer nb_to_add = max_pending_message;
