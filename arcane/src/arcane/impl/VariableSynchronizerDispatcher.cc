@@ -76,13 +76,13 @@ applyDispatch(IArray2DataT<SimpleType>* data)
 {
   if (m_is_in_sync)
     ARCANE_FATAL("Only one pending serialisation is supported");
-  m_is_in_sync = true;
   Array2View<SimpleType> value = data->view();
   SimpleType* value_ptr = value.data();
   // Cette valeur doit être la même sur tous les procs
   Integer dim2_size = value.dim2Size();
   if (dim2_size==0)
     return;
+  m_is_in_sync = true;
   Integer dim1_size = value.dim1Size();
   m_2d_buffer.compute(m_buffer_copier,m_sync_info,dim2_size);
   ArrayView<SimpleType> buf(dim1_size*dim2_size,value_ptr);
@@ -98,7 +98,7 @@ applyDispatch(IArray2DataT<SimpleType>* data)
 template<typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
 applyDispatch(IScalarDataT<SimpleType>*)
 {
-  throw NotSupportedException(A_FUNCINFO,"Can not synchronize scalar data");
+  ARCANE_THROW(NotSupportedException,"Can not synchronize scalar data");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -107,7 +107,7 @@ applyDispatch(IScalarDataT<SimpleType>*)
 template<typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
 applyDispatch(IMultiArray2DataT<SimpleType>*)
 {
-  throw NotSupportedException(A_FUNCINFO,"Can not synchronize multiarray2 data");
+  ARCANE_THROW(NotSupportedException,"Can not synchronize multiarray2 data");
 }
 
 
