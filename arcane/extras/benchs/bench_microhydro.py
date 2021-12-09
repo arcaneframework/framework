@@ -116,6 +116,7 @@ required_arguments.add_argument("-n","--nb-proc", dest="nb_proc", action="store"
 parser.add_argument("-s","--mesh-size", dest="mesh_size", action="store", help="size of mesh", type=int, default=10)
 parser.add_argument("-l","--load-balance", dest="do_load_balance", action="store_true", help="true if load balance is activated")
 parser.add_argument("-m","--max-iteration", dest="max_iteration", action="store", help="number of iteration to do", type=int, default=100)
+parser.add_argument("-p","--arcane-driver-path", dest="arcane_driver_path", action="store", help="arcane_test_driver path", type=str, default="./bin/arcane_test_driver")
 
 args = parser.parse_args()
 nb_proc = args.nb_proc
@@ -166,7 +167,6 @@ case_file = open("test.arc",mode="w")
 case_file.write(z)
 case_file.close()
 
-arcane_driver_path = "./bin/arcane_test_driver"
-command = [ arcane_driver_path, "launch", "-n", str(nb_proc), "-m", str(args.max_iteration), "-We,ARCANE_NEW_MESHINIT,1", "test.arc" ]
+command = [ args.arcane_driver_path, "launch", "-n", str(nb_proc), "-m", str(args.max_iteration), "-We,ARCANE_NEW_MESHINIT,1", "test.arc" ]
 print(command)
 subprocess.run(command)
