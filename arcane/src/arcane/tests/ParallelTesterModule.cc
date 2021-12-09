@@ -284,6 +284,7 @@ class ParallelTesterModule
   VariableCellReal m_cell_real_values;
   VariableCellReal m_cells_nb_shared;
   VariableCellArrayReal m_cells_nb_shared_array;
+  VariableCellArrayReal m_empty_cells_array;
 
   VariableFaceReal m_face_real_values;
 
@@ -347,6 +348,7 @@ ParallelTesterModule(const ModuleBuildInfo& mb)
 , m_cell_real_values(VariableBuildInfo(this,"TestParallelCellRealValues"))
 , m_cells_nb_shared(VariableBuildInfo(this,"TestParallelCellsNbShared"))
 , m_cells_nb_shared_array(VariableBuildInfo(this,"TestParallelCellsNbSharedArray"))
+, m_empty_cells_array(VariableBuildInfo(this,"TestEmptyCellArray"))
 , m_face_real_values(VariableBuildInfo(this,"TestParallelFaceRealValues"))
 , m_accumulate_real(VariableBuildInfo(this,"TestParallelAccumulateReal"))
 , m_accumulate_real3(VariableBuildInfo(this,"TestParallelAccumulateReal3"))
@@ -617,6 +619,10 @@ _testSynchronize()
   info() << "Initialize ArrayCell nb_cell=" << nbCell();
   m_array_cells.initialize();
 
+  // Teste la synchronisation avec une variable vide
+  m_empty_cells_array.synchronize();
+  m_empty_cells_array.synchronize();
+
   // Positionne les valeurs
   {
     m_nodes.setValuesWithViews(current_iteration,mesh->ownNodes());
@@ -649,7 +655,7 @@ _testSynchronize()
     nb_error += m_array_faces.checkValues(current_iteration,mesh->allFaces());
     nb_error += m_array_cells.checkValues(current_iteration,mesh->allCells());
     if (nb_error!=0)
-      fatal() << "Error in synchronize test: n=" << nb_error;
+      ARCANE_FATAL("Error in synchronize test: n={0}",nb_error);
   }
 
   // Meme test en utilisant les vues
@@ -678,7 +684,7 @@ _testSynchronize()
       nb_error += m_cells.checkValues(iteration,mesh->allCells());
       info() << "NB ERROR_WITH_VIEW SEQ=" << nb_error;
       if (nb_error!=0)
-        fatal() << "Error in synchronize test: n=" << nb_error;
+        ARCANE_FATAL("Error in synchronize test: n={0}",nb_error);
     }
   }
 }
