@@ -124,15 +124,15 @@
       </enumvalue>
     </enumeration>
 
-    <enumeration name="solver" type="MCGSolver::LinearSolver::eKrylovType" default="BiCGStab">
+    <enumeration name="solver" type="MCGSolver::eKrylovType" default="BiCGStab">
       <description>Solveur type</description>
-      <enumvalue name="BiCGStab" genvalue="MCGSolver::LinearSolver::BiCGS">
+      <enumvalue name="BiCGStab" genvalue="MCGSolver::BiCGS">
         <description>BiCGStab Solver</description>
       </enumvalue>
-      <enumvalue name="GMRes" genvalue="MCGSolver::LinearSolver::GMRes">
+      <enumvalue name="GMRes" genvalue="MCGSolver::GMRes">
         <description>Gmres Solver</description>
       </enumvalue>
-      <enumvalue name="CG" genvalue="MCGSolver::LinearSolver::CG">
+      <enumvalue name="CG" genvalue="MCGSolver::CG">
         <description>Conjugate Gradient solver</description>
       </enumvalue>
     </enumeration>

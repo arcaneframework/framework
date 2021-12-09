@@ -8,6 +8,12 @@
 /*! Separate data from header;
  *  can be only included by LinearSystem and LinearSolver
  */
+
+#include <chrono>
+#if defined(__x86_64__) || defined(__amd64__)
+#include <x86intrin.h>
+#endif
+
 #include <MCGS.h>
 
 #include <alien/kernels/mcg/MCGPrecomp.h>
@@ -21,12 +27,44 @@ checkParallel(bool)
   // This behaviour may be changed when Parallel MCG will be plugged
 }
 
+/*---------------------------------------------------------------------------*/
+class UniqueKey
+{
+ public:
+  UniqueKey()
+  : m_rand(std::rand())
+  ,
+#if defined(__x86_64__) || defined(__amd64__)
+  m_ts(_rdtsc())
+#else
+  m_ts(std::chrono::system_clock::now())
+#endif
+
+  {}
+
+  bool operator==(const UniqueKey& k) const
+  {
+    return m_rand == k.m_rand && m_ts == k.m_ts;
+  }
+
+  bool operator!=(const UniqueKey& k) const { return !operator==(k); }
+
+ private:
+  int m_rand = 0;
+#if defined(__x86_64__) || defined(__amd64__)
+  uint64_t m_ts;
+#else
+  std::chrono::time_point<std::chrono::system_clock> m_ts;
+#endif
+};
+
 class MatrixInternal
 {
  public:
   typedef MCGSolver::CSRProfile ProfileType;
   typedef MCGSolver::BCSRMatrix<double> MatrixType;
 
+  UniqueKey m_key;
   std::shared_ptr<MatrixType> m_matrix[2][2] = { { nullptr, nullptr },
     { nullptr, nullptr } };
 
@@ -42,6 +80,7 @@ class VectorInternal
   : m_bvector(nrow, block_size)
   {}
 
+  UniqueKey m_key;
   MCGSolver::BVector<double> m_bvector;
 };
 
@@ -57,6 +96,7 @@ class CompositeVectorInternal
     }
   }
 
+  UniqueKey m_key;
   std::vector<MCGSolver::BVector<double>> m_bvector;
 };
 

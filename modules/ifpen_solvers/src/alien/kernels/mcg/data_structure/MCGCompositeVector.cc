@@ -54,7 +54,7 @@ void
 MCGCompositeVector::setValues(const int part, const double* values)
 {
   const int n =
-      m_internal->m_bvector[part].m_size * m_internal->m_bvector[part].m_block_size;
+      m_internal->m_bvector[part].size() * m_internal->m_bvector[part].blockSize();
   double* data = m_internal->m_bvector[part].data();
 
   for (int i = 0; i < n; ++i)
