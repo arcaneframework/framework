@@ -227,7 +227,10 @@ _testUsed()
     tmp_var.setUsed(true);
     
     ENUMERATE_CELL(icell,allCells()){
-      tmp_var[icell] = 2.0;
+      Cell c = *icell;
+      CellLocalId cc = c;
+      tmp_var[icell] = 1.0;
+      tmp_var[cc] = 2.0;
     }
   }
 }
@@ -273,6 +276,22 @@ _testRefersTo()
     vc.areEqual(var1.variable(),var2.variable(),"Bad refersTo() for Array");
     vc.areEqual(var1.arraySize(),3,"Bad size (2)");
     //vc.areEqualArray(var1.asArray().constView(),var2.asArray().constView(),"Bad values");
+
+    // Teste les accesseurs
+    {
+      const Integer dim2_size = var1.arraySize();
+      ENUMERATE_CELL(icell,allCells()){
+        CellLocalId id { icell.itemLocalId() };
+        for( Integer i=0; i<dim2_size; ++i )
+          var1[id][i] = i + 3 + id;
+      }
+      ENUMERATE_CELL(icell,allCells()){
+        CellLocalId id { icell.itemLocalId() };
+        for( Integer i=0; i<dim2_size; ++i )
+          if (var1[id][i] != (i + 3 + id))
+            ARCANE_FATAL("Bad value for index [{0}][{1}]",id,i);
+      }
+    }
   }
 
   // Teste refersTo() pour les variables 2D
