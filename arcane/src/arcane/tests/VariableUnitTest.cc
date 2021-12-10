@@ -229,8 +229,11 @@ _testUsed()
     ENUMERATE_CELL(icell,allCells()){
       Cell c = *icell;
       CellLocalId cc = c;
+      CellLocalId cc2 { icell.asItemLocalId() };
       tmp_var[icell] = 1.0;
       tmp_var[cc] = 2.0;
+      if (tmp_var[cc2]!=tmp_var[cc])
+        ARCANE_FATAL("Bad Value");
     }
   }
 }

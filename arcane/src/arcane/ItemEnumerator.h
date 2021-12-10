@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemEnumerator.h                                            (C) 2000-2016 */
+/* ItemEnumerator.h                                            (C) 2000-2021 */
 /*                                                                           */
 /* Enumérateur sur des groupes d'entités du maillage.                        */
 /*---------------------------------------------------------------------------*/
@@ -32,7 +32,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -75,36 +76,39 @@ class ItemEnumerator
   Item operator*() const { return m_items[ m_local_ids[m_index] ]; }
   Item operator->() const { return m_items[ m_local_ids[m_index] ]; }
 
-  inline void operator++() { ++m_index; }
-  inline bool operator()() { return m_index<m_count; }
-  inline bool hasNext() { return m_index<m_count; }
+  constexpr void operator++() { ++m_index; }
+  constexpr bool operator()() { return m_index<m_count; }
+  constexpr bool hasNext() { return m_index<m_count; }
 
   //! Nombre d'éléments de l'énumérateur
-  inline Integer count() const { return m_count; }
+  constexpr Integer count() const { return m_count; }
 
   //! Indice courant de l'énumérateur
-  inline Integer index() const { return m_index; }
+  constexpr Integer index() const { return m_index; }
 
   //! localId() de l'entité courante.
-  inline Integer itemLocalId() const { return m_local_ids[m_index]; }
+  constexpr Int32 itemLocalId() const { return m_local_ids[m_index]; }
 
   //! localId() de l'entité courante.
-  inline Integer localId() const { return m_local_ids[m_index]; }
+  constexpr Int32 localId() const { return m_local_ids[m_index]; }
 
   //! Indices locaux
-  inline const Int32* unguardedLocalIds() const { return m_local_ids; }
+  constexpr const Int32* unguardedLocalIds() const { return m_local_ids; }
 
   //! Indices locaux
-  inline const ItemInternalPtr* unguardedItems() const { return m_items; }
+  constexpr const ItemInternalPtr* unguardedItems() const { return m_items; }
 
   //! Partie interne (pour usage interne uniquement)
-  inline ItemInternal* internal() const { return m_items[m_local_ids[m_index]]; }
+  constexpr ItemInternal* internal() const { return m_items[m_local_ids[m_index]]; }
 
   //! Groupe sous-jacent s'il existe (0 sinon)
   /*! Ceci vise à pouvoir tester que les accès par ce énumérateur sur un objet partiel sont licites */
-  inline const ItemGroupImpl * group() const { return m_group_impl; }
+  constexpr const ItemGroupImpl * group() const { return m_group_impl; }
 
-  operator ItemLocalId() const
+  constexpr ItemLocalId asItemLocalId() const { return ItemLocalId{m_local_ids[m_index]}; }
+
+  //! Conversion vers un 'ItemLocalId'
+  constexpr operator ItemLocalId() const
   {
     return ItemLocalId(m_local_ids[m_index]);
   }
@@ -149,16 +153,12 @@ class ItemEnumeratorT
   {
     return ItemType(m_items,m_local_ids[m_index]);
   }
-#if OLD
-  typename ItemType::InternalType* operator->() const
-  {
-    return (typename ItemType::InternalType*) m_items[m_local_ids[m_index]];
-  }
-#endif
   ItemType operator->() const
   {
     return ItemType(m_items[m_local_ids[m_index]]);
   }
+
+  constexpr LocalIdType asItemLocalId() const { return LocalIdType{m_local_ids[m_index]}; }
 
   operator LocalIdType() const
   {
@@ -179,7 +179,7 @@ enumerator() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -275,4 +275,4 @@ for( ::Arcane::ItemInternalEnumerator _name(_parent_item.subItems()); _name.hasN
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif
