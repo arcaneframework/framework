@@ -30,6 +30,7 @@ PETScMatrix::PETScMatrix(const MultiMatrixImpl* multi_impl)
 
 PETScMatrix::~PETScMatrix()
 {
+  delete m_internal;
 }
 
 /*---------------------------------------------------------------------------*/

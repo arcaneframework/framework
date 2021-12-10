@@ -61,7 +61,7 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScMatrix : public IMatrixImpl
     return k * block_size + i * unknowns_num + j;
   }
 
-  MatrixInternal* m_internal;
+  MatrixInternal* m_internal = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
