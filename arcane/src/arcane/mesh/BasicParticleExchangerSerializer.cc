@@ -71,11 +71,13 @@ beginNewExchange()
 /*---------------------------------------------------------------------------*/
 
 void BasicParticleExchangerSerializer::
-serializeMessage(ISerializeMessage* sm,
-                 Int32ConstArrayView acc_ids,
-                 Int64Array& items_to_send_uid,
-                 Int64Array& items_to_send_cells_uid)
+serializeMessage(WorkBuffer& work_buffer,
+                 ISerializeMessage* sm,
+                 Int32ConstArrayView acc_ids)
 {
+  Int64Array& items_to_send_uid = work_buffer.items_to_send_uid;
+  Int64Array& items_to_send_cells_uid = work_buffer.items_to_send_cells_uid;
+
   ItemInternalList internal_items(m_item_family->itemsInternal());
 
   ISerializer* sbuf = sm->serializer();
@@ -138,15 +140,14 @@ serializeMessage(ISerializeMessage* sm,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void BasicParticleExchangerSerializer::
-deserializeMessage(ISerializeMessage* message,
-                   Int64Array& items_to_create_unique_id,
-                   Int64Array& items_to_create_cells_unique_id,
-                   Int32Array& items_to_create_local_id,
-                   Int32Array& items_to_create_cells_local_id,
-                   ItemGroup item_group,
-                   Int32Array* new_particle_local_ids)
+Int32 BasicParticleExchangerSerializer::
+deserializeMessage(WorkBuffer& work_buffer,ISerializeMessage* message,
+                   ItemGroup item_group, Int32Array* new_particle_local_ids)
 {
+  Int64Array& items_to_create_unique_id = work_buffer.items_to_create_unique_id;
+  Int64Array& items_to_create_cells_unique_id = work_buffer.items_to_create_cells_unique_id;
+  Int32Array& items_to_create_local_id = work_buffer.items_to_create_local_id;
+  Int32Array& items_to_create_cells_local_id = work_buffer.items_to_create_cells_local_id;
 
   IMesh* mesh = m_item_family->mesh();
   ISerializer* sbuf = message->serializer();
@@ -207,6 +208,8 @@ deserializeMessage(ISerializeMessage* message,
       var->serialize(sbuf,items_to_create_local_id);
     }
   }
+
+  return items_to_create_unique_id.size();
 }
 
 /*---------------------------------------------------------------------------*/

@@ -250,16 +250,14 @@ _generateSendItems(Int32ConstArrayView local_ids,
     }
   }
 
-  Int64UniqueArray items_to_send_uid;
-  Int64UniqueArray items_to_send_cells_uid; // Uniquement pour les particules;
+  BasicParticleExchangerSerializer::WorkBuffer work_buffer;
 
   for( Integer j=0; j<nb_connected_sub_domain; ++j ){
     ISerializeMessage* sm = m_accumulate_infos[j];
     // En mode bloquant, envoie toujours le message car le destinataire a posté
     // un message de réception. Sinon, le message n'a besoin d'être envoyé que
     // s'il contient des particules.
-    m_serializer->serializeMessage(sm,ids_to_send[j],items_to_send_uid,
-                                   items_to_send_cells_uid);
+    m_serializer->serializeMessage(work_buffer,sm,ids_to_send[j]);
 
     m_pending_messages.add(sm);
 
@@ -416,15 +414,11 @@ _waitMessages(ItemGroup item_group,Int32Array* new_particle_local_ids,IFunctor* 
   UniqueArray<ISerializeMessage*> current_messages(m_waiting_messages);
   m_waiting_messages.clear();
 
-  Int64UniqueArray items_to_create_unique_id;
-  Int64UniqueArray items_to_create_cells_unique_id;
-  Int32UniqueArray items_to_create_local_id;
-  Int32UniqueArray items_to_create_cells_local_id;
+  BasicParticleExchangerSerializer::WorkBuffer work_buffer;
+
   for( ISerializeMessage* sm : current_messages ){
     if (!sm->isSend())
-      m_serializer->deserializeMessage(sm,items_to_create_unique_id,items_to_create_cells_unique_id,
-                                       items_to_create_local_id,items_to_create_cells_local_id,
-                                       item_group,new_particle_local_ids);
+      m_serializer->deserializeMessage(work_buffer,sm,item_group,new_particle_local_ids);
     delete sm;
   }
   if (!m_waiting_messages.empty())

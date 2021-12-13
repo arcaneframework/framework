@@ -41,6 +41,18 @@ class ARCANE_MESH_EXPORT BasicParticleExchangerSerializer
 : public TraceAccessor
 {
  public:
+  //! Buffer de travail pour la sérialisation/désérialisation
+  class WorkBuffer
+  {
+    friend BasicParticleExchangerSerializer;
+    UniqueArray<Int64> items_to_send_uid;
+    UniqueArray<Int64> items_to_send_cells_uid;
+    UniqueArray<Int64> items_to_create_unique_id;
+    UniqueArray<Int64> items_to_create_cells_unique_id;
+    UniqueArray<Int32> items_to_create_local_id;
+    UniqueArray<Int32> items_to_create_cells_local_id;
+  };
+ public:
   
   BasicParticleExchangerSerializer(IItemFamily* family,Int32 my_rank);
   ~BasicParticleExchangerSerializer();
@@ -52,17 +64,12 @@ class ARCANE_MESH_EXPORT BasicParticleExchangerSerializer
   void setVerboseLevel(Integer level) { m_verbose_level = level; }
   Integer verboseLevel() const { return m_verbose_level; }
 
-  void serializeMessage(ISerializeMessage* sm,
-                        Int32ConstArrayView acc_ids,
-                        Int64Array& items_to_send_uid,
-                        Int64Array& items_to_send_cells_uid);
-  void deserializeMessage(ISerializeMessage* message,
-                          Int64Array& items_to_create_unique_id,
-                          Int64Array& items_to_create_cells_unique_id,
-                          Int32Array& items_to_create_local_id,
-                          Int32Array& items_to_create_cells_local_id,
-                          ItemGroup item_group,
-                          Int32Array* new_particle_local_ids);
+  void serializeMessage(WorkBuffer& work_buffer,ISerializeMessage* sm,
+                        Int32ConstArrayView acc_ids);
+
+  //! Désérialise le message et retourne le nombre de particules créées
+  Int32 deserializeMessage(WorkBuffer& work_buffer,ISerializeMessage* message,
+                           ItemGroup item_group,Int32Array* new_particle_local_ids);
 
  private:
 
