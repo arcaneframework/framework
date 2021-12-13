@@ -5,7 +5,48 @@
 
 Cette page contient les nouveautés de chaque version de %Arcane.
 
-Arcane Version 3.2.0 (...) {#arcanedoc_version320}
+Arcane Version 3.3.0 (...) {#arcanedoc_version330}
+======================================
+
+Nouveautés/Améliorations:
+
+- Ajoute possibilité de spécifier le nombre maximum de messages en vol
+  lors d'un équilibrage de charge. Pour l'instant cela se fait en
+  spécifiant la variable d'environnement
+  ARCANE_MESH_EXCHANGE_MAX_PENDING_MESSAGE.
+- Ajoute possibilité d'utiliser les Real2x2 et Real3x3 sur accélérateurs
+- Ajoute méthode Arcane::mesh_utils::printMeshGroupsMemoryUsage() pour
+  afficher la consommation mémoire associée aux groupes et
+  Arcane::mesh_utils::shrinkMeshGroups() pour redimensionner au plus
+  juste la mémoire utilisée par les groupes
+- Support pour punaiser les threads
+
+Changements:
+
+- Ajoute espace de nom 'ParallelMngUtils' pour contenir les fonctions
+  utilitaires de 'IParallelMng' au lieu d'utiliser les méthodes
+  virtuelles de 'IParallelMng': TODO ajouter liste des fonctions
+- Rend obsolète les accès à 'ArrayView<Array<T>>` dans
+  `Arcane::CaseOptionMultiSimpleT`. Il faut utiliser la méthode
+  'view()' à la place.
+
+Corrections:
+
+- Ajoute une version 4 pour le calcul des couches fantômes qui permet
+  d'appeler addGhostLayer() même s'il y a déjà une ou plusieurs
+  couches de mailles fantomes.
+
+Interne:
+
+- Nettoyage de la gestion des messages des synchronisations
+- Débute support accélérateurs pour la version ROCM/HIP (AMD)
+- Support pour la version 2.34 de la glibc qui ne contient plus les
+  'hooks' de gestion mémoire (ce mécanisme était obsolète depuis des
+  années).
+- Ajoute possibilité de compiler avec le standard C++20.
+- Passage version 2.0.6.0 de Arccore: TODO: expliquer
+
+Arcane Version 3.2.0 (15 novembre 2021) {#arcanedoc_version320}
 ======================================
 
 Nouveautés/Améliorations:
