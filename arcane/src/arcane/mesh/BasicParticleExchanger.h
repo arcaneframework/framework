@@ -5,41 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicParticleExchanger.h                                    (C) 2000-2020 */
+/* BasicParticleExchanger.h                                    (C) 2000-2021 */
 /*                                                                           */
+/* Echangeur de particules basique (utilise une réduction bloquante).        */
 /*---------------------------------------------------------------------------*/
-
 #ifndef ARCANE_BASICPARTICLEEXCHANGER_H
 #define ARCANE_BASICPARTICLEEXCHANGER_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/List.h"
-#include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/IFunctor.h"
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/ValueConvert.h"
-#include "arcane/utils/ScopedPtr.h"
-
 
 #include "arcane/IParticleExchanger.h"
-#include "arcane/VariableCollection.h"
-
-#include "arcane/ItemGroup.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IParticleFamily.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/IVariable.h"
-#include "arcane/IMesh.h"
-#include "arcane/Item.h"
-#include "arcane/Timer.h"
-#include "arcane/SerializeMessage.h"
-#include "arcane/ISerializeMessageList.h"
-#include "arcane/CommonVariables.h"
-#include "arcane/FactoryService.h"
 
 #include "arcane/mesh/MeshGlobal.h"
 #include "arcane/mesh/BasicParticleExchanger_axl.h"
@@ -62,7 +37,6 @@ class BasicParticleExchangerSerializer;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Echangeur de particules basique (utilise une réduction bloquante).
  */
@@ -103,7 +77,7 @@ class BasicParticleExchanger
 
   void setVerboseLevel(Integer level) override { m_verbose_level = level; }
   Integer verboseLevel() const override { return m_verbose_level; }
-  IAsyncParticleExchanger * asyncParticleExchanger() override { return nullptr; }
+  IAsyncParticleExchanger* asyncParticleExchanger() override { return nullptr; }
   BasicParticleExchangerSerializer* serializer();
 
  public:

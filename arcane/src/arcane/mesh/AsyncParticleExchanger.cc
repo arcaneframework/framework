@@ -12,9 +12,17 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/mesh/AsyncParticleExchanger.h"
+#include "arcane/mesh/BasicParticleExchanger.h"
 
 #include "arcane/mesh/BasicParticleExchangerSerializer.h"
 
+#include "arcane/IParallelMng.h"
+#include "arcane/Timer.h"
+#include "arcane/IItemFamily.h"
+#include "arcane/IMesh.h"
+#include "arcane/IParticleFamily.h"
+#include "arcane/SerializeMessage.h"
+#include "arcane/ISerializeMessageList.h"
 #include "arcane/IParallelNonBlockingCollective.h"
 
 /*---------------------------------------------------------------------------*/

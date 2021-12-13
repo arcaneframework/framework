@@ -13,6 +13,17 @@
 
 #include "arcane/mesh/BasicParticleExchanger.h"
 
+#include "arcane/utils/PlatformUtils.h"
+
+#include "arcane/Timer.h"
+#include "arcane/IItemFamily.h"
+#include "arcane/IMesh.h"
+#include "arcane/IParallelMng.h"
+#include "arcane/IParticleFamily.h"
+#include "arcane/SerializeMessage.h"
+#include "arcane/ISerializeMessageList.h"
+#include "arcane/ItemPrinter.h"
+
 #include "arcane/mesh/BasicParticleExchangerSerializer.h"
 
 /*
