@@ -58,6 +58,7 @@ class SerializeMessage;
 
 namespace Arcane::mesh
 {
+class BasicParticleExchangerSerializer;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -103,6 +104,7 @@ class BasicParticleExchanger
   void setVerboseLevel(Integer level) override { m_verbose_level = level; }
   Integer verboseLevel() const override { return m_verbose_level; }
   IAsyncParticleExchanger * asyncParticleExchanger() override { return nullptr; }
+  BasicParticleExchangerSerializer* serializer();
 
  public:
 
@@ -121,9 +123,6 @@ class BasicParticleExchanger
   Real m_total_time_functor = 0.0;
   Real m_total_time_waiting = 0.0;
 
-  //! Liste des variables à échanger
-  VariableList m_variables_to_exchange;
-  
   //! Liste des message en attente d'envoie
   UniqueArray<ISerializeMessage*> m_pending_messages;
 
@@ -131,6 +130,7 @@ class BasicParticleExchanger
   UniqueArray<ISerializeMessage*> m_waiting_messages;
 
   Ref<ISerializeMessageList> m_message_list;
+  Ref<BasicParticleExchangerSerializer> m_serializer;
 
   Int64 m_nb_total_particle_finish_exchange = 0;
 
@@ -156,17 +156,6 @@ class BasicParticleExchanger
  private:
 
   void _clearMessages();
-  void _serializeMessage(ISerializeMessage* sm,
-                         Int32ConstArrayView acc_ids,
-                         Int64Array& items_to_send_uid,
-                         Int64Array& items_to_send_cells_uid);
-  void _deserializeMessage(ISerializeMessage* message,
-                           Int64Array& items_to_create_unique_id,
-                           Int64Array& items_to_create_cells_unique_id,
-                           Int32Array& items_to_create_local_id,
-                           Int32Array& items_to_create_cells_local_id,
-                           ItemGroup item_group,
-                           Int32Array* new_particle_local_ids);
   void _addItemsToSend(Int32ConstArrayView local_ids,
                        Int32ConstArrayView sub_domains_to_send,
                        Int32ConstArrayView communicating_sub_domains,

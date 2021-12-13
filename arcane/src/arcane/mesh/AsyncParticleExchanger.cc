@@ -12,6 +12,9 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/mesh/AsyncParticleExchanger.h"
+
+#include "arcane/mesh/BasicParticleExchangerSerializer.h"
+
 #include "arcane/IParallelNonBlockingCollective.h"
 
 /*---------------------------------------------------------------------------*/
@@ -296,7 +299,7 @@ _generateSendItemsAsync(Int32ConstArrayView local_ids, Int32ConstArrayView sub_d
       auto* sm = new SerializeMessage(pm->commRank(), communicating_sub_domains[j],
                                            ISerializeMessage::MT_Send);
       m_bpe.m_accumulate_infos[j] = sm;
-      m_bpe._serializeMessage(sm, ids_to_send[j], items_to_send_uid, items_to_send_cells_uid);
+      m_bpe.serializer()->serializeMessage(sm, ids_to_send[j], items_to_send_uid, items_to_send_cells_uid);
       m_bpe.m_pending_messages.add(sm);
       m_nb_particle_send_before_reduction_tmp += ids_to_send[j].size();
     }
@@ -353,9 +356,9 @@ _waitSomeMessages(ItemGroup item_group, Int32Array* new_particle_local_ids)
     ISerializeMessage* sm = current_messages[i];
     if (sm->finished()) {
       if (!sm->isSend()) { //Si le msg est un recv
-        m_bpe._deserializeMessage(sm, items_to_create_unique_id, items_to_create_cells_unique_id,
-                                  items_to_create_local_id, items_to_create_cells_local_id,
-                                  item_group, new_particle_local_ids);
+        m_bpe.serializer()->deserializeMessage(sm, items_to_create_unique_id, items_to_create_cells_unique_id,
+                                               items_to_create_local_id, items_to_create_cells_local_id,
+                                               item_group, new_particle_local_ids);
         // Indique qu'on a recu des particules et donc il faudrait dire
         // que has_local_flying_particle est vra
         if (!items_to_create_unique_id.empty())

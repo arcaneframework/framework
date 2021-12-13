@@ -109,6 +109,8 @@ set( ARCANE_SOURCES
   ParticleFamilyPolicyMng.cc
   BasicParticleExchanger.cc
   BasicParticleExchanger.h
+  BasicParticleExchangerSerializer.cc
+  BasicParticleExchangerSerializer.h
   NonBlockingParticleExchanger.cc
   NonBlockingParticleExchanger.h
   AsyncParticleExchanger.cc
