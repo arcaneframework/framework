@@ -55,8 +55,8 @@ MCGVector::setValues(double const* values)
   else if (this->vblock())
     throw FatalErrorException(A_FUNCINFO, "Not implemented yet for vblock");
 
-  assert(block_size == m_internal->m_bvector.m_block_size);
-  assert(dist.localSize() == m_internal->m_bvector.m_size);
+  assert(block_size == m_internal->m_bvector.blockSize());
+  assert(dist.localSize() == m_internal->m_bvector.size());
 
   double* data = m_internal->m_bvector.data();
   for (int i = 0; i < dist.localSize() * block_size; ++i)
@@ -75,8 +75,8 @@ MCGVector::getValues(double* values) const
   else if (this->vblock())
     throw FatalErrorException(A_FUNCINFO, "Not implemented yet for vblock");
 
-  assert(block_size == m_internal->m_bvector.m_block_size);
-  assert(dist.localSize() == m_internal->m_bvector.m_size);
+  assert(block_size == m_internal->m_bvector.blockSize());
+  assert(dist.localSize() == m_internal->m_bvector.size());
 
   const double* data = m_internal->m_bvector.data();
   for (int i = 0; i < dist.localSize() * block_size; i++)

@@ -7,6 +7,7 @@
 #ifndef ALIEN_KERNELS_MCG_LINEARSOLVER_MCGINTERNALLINEARSOLVER_H
 #define ALIEN_KERNELS_MCG_LINEARSOLVER_MCGINTERNALLINEARSOLVER_H
 
+#include <memory>
 #include <chrono>
 
 #include <alien/utils/Precomp.h>
@@ -147,25 +148,31 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
       MCGSolver::PartitionInfo* part_info = nullptr);
 
   // void updateLinearSystem();
+  bool _systemChanged(const MCGMatrixType& A,const MCGVectorType& b,const MCGVectorType& x);
+  bool _systemChanged(const MCGMatrixType& A,const MCGVectorType& b,const MCGVectorType& x0,const MCGVectorType& x);
+  void _registerKey(const MCGMatrixType& A,const MCGVectorType& b,const MCGVectorType& x);
+  void _registerKey(const MCGMatrixType& A,const MCGVectorType& b,const MCGVectorType& x0,const MCGVectorType& x);
 
-  MCGSolver::LinearSystem<double>* _createSystem(const MCGMatrixType& A,
+  typedef MCGSolver::ILinearSystem<double,MCGSolver::LinearSystem<double>> MCGSolverLinearSystem;
+
+  MCGSolverLinearSystem* _createSystem(const MCGMatrixType& A,
       const MCGVectorType& b, MCGVectorType& x,
       MCGSolver::PartitionInfo* part_info = nullptr);
 
-  MCGSolver::LinearSystem<double>* _createSystem(const MCGMatrixType& A,
+  MCGSolverLinearSystem* _createSystem(const MCGMatrixType& A,
       const MCGVectorType& b, const MCGVectorType& x0, MCGVectorType& x,
       MCGSolver::PartitionInfo* part_info = nullptr);
 
-  MCGSolver::LinearSystem<double>* _createSystem(const MCGMatrixType& A,
+  MCGSolverLinearSystem* _createSystem(const MCGMatrixType& A,
       const MCGCompositeVectorType& b, MCGCompositeVectorType& x,
       MCGSolver::PartitionInfo* part_info = nullptr);
 
-  MCGSolver::LinearSystem<double>* _createSystem(const MCGMatrixType& A,
+  MCGSolverLinearSystem* _createSystem(const MCGMatrixType& A,
       const MCGCompositeVectorType& b, const MCGCompositeVectorType& x0,
       MCGCompositeVectorType& x, MCGSolver::PartitionInfo* part_info = nullptr);
 
  protected:
-  MCGSolver::LinearSolver* m_solver = nullptr;
+  MCGSolver::ILinearSolver<MCGSolver::LinearSolver>* m_solver = nullptr;
 
  private:
   //! Structure interne du solveur
@@ -182,7 +189,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
   MCGSolver::ePrecondType m_precond_opt = MCGSolver::PrecNone;
 
   //! Solver parameters
-  MCGSolver::LinearSolver::eKrylovType m_solver_opt = MCGSolver::LinearSolver::BiCGS;
+  MCGSolver::eKrylovType m_solver_opt = MCGSolver::BiCGS;
   Integer m_max_iteration = 1000;
   Real m_precision = 1e-6;
 
@@ -227,7 +234,12 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
   std::string m_dir;
   std::map<std::string, int> m_dir_enum;
 
-  MCGSolver::LinearSystem<double>* m_system = nullptr;
+  MCGSolverLinearSystem* m_system = nullptr;
+  MCGInternal::UniqueKey m_A_key;
+  MCGInternal::UniqueKey m_b_key;
+  MCGInternal::UniqueKey m_x_key;
+  MCGInternal::UniqueKey m_x0_key;
+
   std::vector<int> m_edge_weight;
 };
 
