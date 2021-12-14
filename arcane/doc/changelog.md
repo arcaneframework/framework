@@ -14,27 +14,32 @@ Nouveautés/Améliorations:
   lors d'un équilibrage de charge. Pour l'instant cela se fait en
   spécifiant la variable d'environnement
   ARCANE_MESH_EXCHANGE_MAX_PENDING_MESSAGE.
-- Ajoute possibilité d'utiliser les Real2x2 et Real3x3 sur accélérateurs
+- Ajoute possibilité d'utiliser les Arcane::Real2x2 et Arcane::Real3x3 sur accélérateurs
 - Ajoute méthode Arcane::mesh_utils::printMeshGroupsMemoryUsage() pour
   afficher la consommation mémoire associée aux groupes et
   Arcane::mesh_utils::shrinkMeshGroups() pour redimensionner au plus
   juste la mémoire utilisée par les groupes
-- Support pour punaiser les threads
+- Support pour punaiser les threads (voir \ref arcanedoc_launcher)
 
 Changements:
 
-- Ajoute espace de nom 'ParallelMngUtils' pour contenir les fonctions
-  utilitaires de 'IParallelMng' au lieu d'utiliser les méthodes
-  virtuelles de 'IParallelMng': TODO ajouter liste des fonctions
-- Rend obsolète les accès à 'ArrayView<Array<T>>` dans
-  `Arcane::CaseOptionMultiSimpleT`. Il faut utiliser la méthode
-  'view()' à la place.
+- Ajoute espace de nom Arcane::ParallelMngUtils pour contenir les fonctions
+  utilitaires de Arcane::IParallelMng au lieu d'utiliser les méthodes
+  virtuelles de cette interface. Les nouvelles méthodes remplacent
+  Arcane::IParallelMng::createGetVariablesValuesOperation(),
+  Arcane::IParallelMng::createTransferValuesOperation(),
+  Arcane::IParallelMng::createExchanger(),
+  Arcane::IParallelMng::createSynchronizer(),
+  Arcane::IParallelMng::createTopology().
+- Rend obsolète les accès à `Arccore::ArrayView<Array<T>>` dans
+  Arcane::CaseOptionMultiSimpleT. Il faut utiliser la méthode
+  Arcane::CaseOptionMultiSimpleT::view() à la place.
 
 Corrections:
 
 - Ajoute une version 4 pour le calcul des couches fantômes qui permet
-  d'appeler addGhostLayer() même s'il y a déjà une ou plusieurs
-  couches de mailles fantomes.
+  d'appeler Arcane::IMeshModifier::updateGhostLayers() même s'il y a
+  déjà une ou plusieurs couches de mailles fantomes.
 
 Interne:
 
@@ -44,7 +49,25 @@ Interne:
   'hooks' de gestion mémoire (ce mécanisme était obsolète depuis des
   années).
 - Ajoute possibilité de compiler avec le standard C++20.
-- Passage version 2.0.6.0 de Arccore: TODO: expliquer
+
+Passage version 2.0.6.0 de %Arccore:
+- Update Array views (#76)
+  - Add `constexpr` and `noexcept` to several methods of `Arccore::ArrayView`, `Arccore::ConstArrayView` and `Arccore::Span`
+  - Add converters from `std::array`
+- Separate metadata from data in 'Arccore::AbstractArray' (#72)
+- Deprecate `Arccore::Array::clone()`, `Arccore::Array2::clone()` and make `Arccore::Array2`
+  constructors protected (#71)
+- Add support for compilation with AMD ROCM HIP (e5d008b1b79b59)
+- Add method `Arccore::ITraceMng::fatalMessage()` to throw a
+  `Arccore::FatalErrorException` in a method marked `[[noreturn]]`
+- Add support to compile with C++20 with `ARCCORE_CXX_STANDARD`
+  optional CMake variable (665292fce)
+- [INTERNAL] Add support to change return type of `IMpiProfiling`
+  methods. These methods should return `int` instead of `void`
+- [INTERNAL] Add methods in `MpiAdapter` to send and receive messages without gathering statistics
+- [INTERNAL] Add methods in `MpiAdapter` to disable checking of requests. These
+  checks are disabled by default  if CMake variable
+  `ARCCORE_BUILD_MODE` is `Release`
 
 Arcane Version 3.2.0 (15 novembre 2021) {#arcanedoc_version320}
 ======================================
