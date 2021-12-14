@@ -147,6 +147,7 @@ protected:
   typedef Array2VariableT<DataType> PrivatePartType;
 
   typedef typename ItemTraitsT<ItemType>::ItemGroupType GroupType;
+  typedef typename ItemTypeT::LocalIdType ItemLocalIdType;
 
   typedef MeshVariableArrayRefT<ItemType,DataType> ThatClass;
 
@@ -180,6 +181,10 @@ protected:
   ConstArrayType operator[](const ItemEnumeratorT<ItemType>& i) const
   { return this->m_view[i.localId()]; }
   ArrayType operator[](const ItemEnumeratorT<ItemType>& i)
+  { return this->m_view[i.localId()]; }
+  ConstArrayType operator[](ItemLocalIdType i) const
+  { return this->m_view[i.localId()]; }
+  ArrayType operator[](ItemLocalIdType i)
   { return this->m_view[i.localId()]; }
 
  public:

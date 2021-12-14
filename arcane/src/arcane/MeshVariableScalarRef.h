@@ -282,6 +282,7 @@ public:
 protected:
 
   typedef typename ItemType::Index ItemIndexType;
+  typedef typename ItemType::LocalIdType ItemLocalIdType;
   typedef ItemVariableScalarRefT<DataTypeT> BaseClass;
   
   typedef typename ItemTraitsT<ItemType>::ItemGroupType GroupType;
@@ -474,6 +475,25 @@ public:
   }
 #else
   DataTypeReturnReference operator[](ItemIndexType i)
+  {
+    return this->_value(i.localId());
+  }
+#endif
+
+  const DataType& operator[](ItemLocalIdType i) const
+  {
+#ifdef ARCANE_PROXY
+    this->_getMemoryInfo(i.localId()).setRead();
+#endif
+    return this->_value(i.localId());
+  }
+#ifdef ARCANE_PROXY
+  ProxyType operator[](ItemLocalIdType i)
+  {
+    return this->_getProxy(i.localId());
+  }
+#else
+  DataTypeReturnReference operator[](ItemLocalIdType i)
   {
     return this->_value(i.localId());
   }

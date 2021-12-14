@@ -241,7 +241,7 @@ hydroStartInit()
     auto in_adiabatic_cst = viewIn(m_adiabatic_cst);
     VariableCellRealInView in_density = viewIn(m_density);
     ENUMERATE_CELL(icell,allCells()){
-      CellLocalId cid = *icell;
+      CellLocalId cid { icell.asItemLocalId() };
       Real pressure = in_pressure[cid];
       Real adiabatic_cst = in_adiabatic_cst[cid];
       Real density = in_density[cid];
