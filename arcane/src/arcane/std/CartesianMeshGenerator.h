@@ -93,12 +93,12 @@ class CartesianMeshGenerator
   Real yDelta(int);
   Real zDelta(int);
  private:
-  void xScan(const Integer,IntegerArray&,IntegerArray&,Int64Array&,
+  void xScan(const Int64,Int32Array&,Int32Array&,Int64Array&,
              Int64Array&,Int64Array&);
-  void yScan(const Integer, IntegerArray&,IntegerArray&,Int64Array&,
-             Int64Array&,Int64Array&,Integer,Integer);
-  void zScan(const Int64, IntegerArray&,IntegerArray&,Int64Array&,
-             Int64Array&,Int64Array&,Integer,Integer);
+  void yScan(const Integer, Int32Array&,Int32Array&,Int64Array&,
+             Int64Array&,Int64Array&,Int64,Int64);
+  void zScan(const Int64, Int32Array&,Int32Array&,Int64Array&,
+             Int64Array&,Int64Array&,Int64,Int64);
  private:
   IPrimaryMesh* m_mesh;
   Int32 m_my_mesh_part;

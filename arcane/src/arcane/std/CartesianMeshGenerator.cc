@@ -429,7 +429,7 @@ zDelta(int iBloc)
 // * X scanning
 // ******************************************************************************
 void CartesianMeshGenerator::
-xScan(const Integer all_nb_cell_x,
+xScan(const Int64 all_nb_cell_x,
       IntegerArray& sd_x_ibl,
       IntegerArray& sd_x_obl,
       Int64Array& sd_x_nbl,
@@ -491,8 +491,8 @@ yScan(const Integer all_nb_cell_y,
       Int64Array& sd_y_nbl,
       Int64Array& sd_y_node_offset,
       Int64Array& sd_y_cell_offset,
-      Integer all_nb_node_x,
-      Integer all_nb_cell_x)
+      Int64 all_nb_node_x,
+      Int64 all_nb_cell_x)
 {
   sd_y_ibl.add(0);
   sd_y_obl.add(0);
@@ -516,9 +516,9 @@ yScan(const Integer all_nb_cell_y,
       info(4) << "\t[2;33m[CartesianMeshGenerator::generateMesh] Scan hit y sub domain boundary: @ node " << nsd << "[0m";
       sd_y_ibl.add(ibl);
       sd_y_obl.add(obl);
-      sd_y_nbl.add(CheckedConvert::toInteger(nbl * all_nb_node_x));
-      sd_y_node_offset.add(CheckedConvert::toInteger(nsd * all_nb_node_x));
-      sd_y_cell_offset.add(CheckedConvert::toInteger(nsd * all_nb_cell_x));
+      sd_y_nbl.add(nbl * all_nb_node_x);
+      sd_y_node_offset.add(nsd * all_nb_node_x);
+      sd_y_cell_offset.add(nsd * all_nb_cell_x);
       isd += m_build_info.m_nsdx;
     }
     obl += 1;
@@ -537,8 +537,8 @@ zScan(const Int64 all_nb_cell_z,
       Int64Array& sd_z_nbl,
       Int64Array& sd_z_node_offset,
       Int64Array& sd_z_cell_offset,
-      Integer all_nb_node_xy,
-      Integer all_nb_cell_xy)
+      Int64 all_nb_node_xy,
+      Int64 all_nb_cell_xy)
 {
   if (m_mesh_dimension != 3)
     return;
@@ -562,9 +562,9 @@ zScan(const Int64 all_nb_cell_z,
       nsd += ownZNbCell(isd);
       sd_z_ibl.add(ibl);
       sd_z_obl.add(obl);
-      sd_z_nbl.add(CheckedConvert::toInteger(nbl * all_nb_node_xy));
-      sd_z_node_offset.add(CheckedConvert::toInteger(nsd * all_nb_node_xy));
-      sd_z_cell_offset.add(CheckedConvert::toInteger(nsd * all_nb_cell_xy));
+      sd_z_nbl.add(nbl * all_nb_node_xy);
+      sd_z_node_offset.add(nsd * all_nb_node_xy);
+      sd_z_cell_offset.add(nsd * all_nb_cell_xy);
       isd += m_build_info.m_nsdx * m_build_info.m_nsdy;
     }
     obl += 1;
@@ -595,7 +595,7 @@ generateMesh()
   m_generation_info->setGlobalNbCells(all_nb_cell_x,all_nb_cell_y,all_nb_cell_z);
   m_generation_info->setSubDomainOffsets(sdXOffset(),sdYOffset(),sdZOffset());
 
-  Integer all_nb_cell_xy = CheckedConvert::multiply(all_nb_cell_x, all_nb_cell_y);
+  Int64 all_nb_cell_xy = ((Int64)all_nb_cell_x) * ((Int64)all_nb_cell_y);
   Int64 all_nb_cell_xyz = ((Int64)all_nb_cell_xy) * ((Int64)all_nb_cell_z);
   info() << " all cells: " << all_nb_cell_x << "x" << all_nb_cell_y << "y"
          << all_nb_cell_z << "=" << all_nb_cell_xyz;
@@ -613,7 +613,7 @@ generateMesh()
   // All Nodes Setup
   Integer all_nb_node_x = all_nb_cell_x + 1;
   Integer all_nb_node_y = all_nb_cell_y + 1;
-  Integer all_nb_node_xy = CheckedConvert::multiply(all_nb_node_x, all_nb_node_y);
+  Int64 all_nb_node_xy = ((Int64)all_nb_node_x) * ((Int64)all_nb_node_y);
 
   // Own Nodes Setup
   Integer own_nb_node_x = own_nb_cell_x + 1;
