@@ -1563,7 +1563,7 @@ _multipleExchangeItems(Integer nb_exchange,Integer version,bool do_compact)
   if (version<1 || version>2)
     ARCANE_FATAL("Invalid value '{0}' for version. Valid values are 1 or 2",version);
 
-  info() << "** ** MULTIPLE EXCHANGE ITEM version=" << version;
+  info() << "** ** MULTIPLE EXCHANGE ITEM version=" << version << " nb_exchange=" << nb_exchange;
   UniqueArray<UniqueArray<Int32>> cells_to_exchange_new_owner(nb_exchange);
   // Il faut stocker le uid car suite a un equilibrage les localId vont changer
   UniqueArray<UniqueArray<Int64>> cells_to_exchange_uid(nb_exchange);
@@ -1601,6 +1601,7 @@ _multipleExchangeItems(Integer nb_exchange,Integer version,bool do_compact)
     Int32ConstArrayView new_owners = cells_to_exchange_new_owner[i];
     Int64ConstArrayView new_uids = cells_to_exchange_uid[i];
     Integer nb_cell = new_uids.size();
+    info() << "MultipleExchange current_exchange=" << i << " nb_cell=" << nb_cell;
     uids_to_lids.resize(nb_cell);
     cell_family->itemsUniqueIdToLocalId(uids_to_lids,new_uids);
     ItemInternalList cells = cell_family->itemsInternal();

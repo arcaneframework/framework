@@ -522,11 +522,16 @@ removeSentItems()
 void ItemsExchangeInfo2::
 processExchange()
 {
-  info() << "Process exchange for family=" << m_item_family->fullName();
+  info() << "ProcessExchange (begin) for family=" << m_item_family->fullName()
+         << " date=" << platform::getCurrentDateTime();
+
   ParallelExchangerOptions options;
   if (m_max_pending_message>0)
     options.setMaxPendingMessage(m_max_pending_message);
   m_exchanger->processExchange(options);
+
+  info() << "ProcessExchange (end) for family=" << m_item_family->fullName()
+         << " date=" << platform::getCurrentDateTime();
 }
 
 /*---------------------------------------------------------------------------*/
