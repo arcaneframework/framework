@@ -103,6 +103,7 @@ class CartesianMeshTesterModule
   void _sample(ICartesianMesh* cartesian_mesh);
   void _testXmlInfos();
   void _testGridPartitioning();
+  void _checkFaceUniqueIdsAreContiguous();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -390,6 +391,7 @@ init()
 
   m_utils->testAll();
   m_utils_v2->testAll();
+  _checkFaceUniqueIdsAreContiguous();
   _testXmlInfos();
   _testGridPartitioning();
 }
@@ -504,6 +506,28 @@ _sample(ICartesianMesh* cartesian_mesh)
             << " C3=" << ItemPrinter(c3) << " C4=" << ItemPrinter(c4);
   }
   //! [SampleNodeToCell]
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshTesterModule::
+_checkFaceUniqueIdsAreContiguous()
+{
+  if (!options()->checkContiguousFaceUniqueIds())
+    return;
+  info() << "Test " << A_FUNCINFO;
+  // Parcours les faces et vérifie que le uniqueId() de chaque face n'est
+  // pas supérieur au nombre total de face.
+  Int64 total_nb_face = allFaces().own().size();
+  total_nb_face = parallelMng()->reduce(Parallel::ReduceSum,total_nb_face);
+  info() << "TotalNbFace=" << total_nb_face;
+  ENUMERATE_(Face,iface,allFaces()){
+    Face face = *iface;
+    if (face.uniqueId()>=total_nb_face)
+      ARCANE_FATAL("FaceUniqueId is too big: uid={0} total_nb_face={1}",
+                   face.uniqueId(),total_nb_face);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
