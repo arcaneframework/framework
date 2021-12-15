@@ -25,13 +25,13 @@
  <meshes>
    <mesh>
      <generator name="Cartesian3D">
-       <nb-part-x>2</nb-part-x> 
+       <nb-part-x>3</nb-part-x>
        <nb-part-y>2</nb-part-y>
-       <nb-part-z>1</nb-part-z>
+       <nb-part-z>2</nb-part-z>
        <origin>0.0 0.0 0.0</origin>
-       <x><n>7</n><length>5.0</length></x>
-       <y><n>5</n><length>3.0</length></y>
-       <z><n>3</n><length>2.0</length></z>
+       <x><n>12</n><length>5.0</length></x>
+       <y><n>6</n><length>3.0</length></y>
+       <z><n>4</n><length>2.0</length></z>
      </generator>
    </mesh>
  </meshes>

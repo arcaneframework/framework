@@ -29,7 +29,7 @@
  <maillage>
    <meshgenerator>
      <cartesian>
-       <nsd>2 2</nsd>
+       <nsd>3 2</nsd>
        <origine>0.0 0.0</origine>
        <lx nx='2' prx='1.0'>2.0</lx>
        <lx nx='3' prx='4.0'>3.0</lx>
