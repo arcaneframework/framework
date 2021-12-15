@@ -37,11 +37,13 @@ CartesianMeshGenerationInfo(IMesh* mesh)
 {
   m_global_nb_cells = Int64ArrayView(NB_DIM, m_global_nb_cell_ptr);
   m_sub_domain_offsets = Int32ArrayView(NB_DIM, m_sub_domain_offset_ptr);
+  m_nb_sub_domains = Int32ArrayView(NB_DIM, m_nb_sub_domain_ptr);
   m_own_nb_cells = Int32ArrayView(NB_DIM, m_own_nb_cell_ptr);
   m_own_cell_offsets = Int64ArrayView(NB_DIM, m_own_cell_offset_ptr);
 
   m_global_nb_cells.fill(-1);
   m_sub_domain_offsets.fill(-1);
+  m_nb_sub_domains.fill(-1);
   m_own_nb_cells.fill(-1);
   m_own_cell_offsets.fill(-1);
 
@@ -106,6 +108,22 @@ setSubDomainOffsets(Int32 x, Int32 y, Int32 z)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshGenerationInfo::
+setNbSubDomains(Int32 x, Int32 y, Int32 z)
+{
+  m_nb_sub_domains[0] = x;
+  m_nb_sub_domains[1] = y;
+  m_nb_sub_domains[2] = z;
+
+  Properties* p = m_mesh->properties();
+  p->setInt32("NbSubDomainX", x);
+  p->setInt32("NbSubDomainY", y);
+  p->setInt32("NbSubDomainZ", z);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshGenerationInfo::
 setOwnNbCells(Int32 x, Int32 y, Int32 z)
 {
   m_own_nb_cells[0] = x;
@@ -152,6 +170,10 @@ _init()
   m_own_cell_offsets[MD_DirX] = p->getInt64WithDefault("OwnCellOffsetX", -1);
   m_own_cell_offsets[MD_DirY] = p->getInt64WithDefault("OwnCellOffsetY", -1);
   m_own_cell_offsets[MD_DirZ] = p->getInt64WithDefault("OwnCellOffsetZ", -1);
+
+  m_nb_sub_domains[MD_DirX] = p->getInt32WithDefault("NbSubDomainX", -1);
+  m_nb_sub_domains[MD_DirY] = p->getInt32WithDefault("NbSubDomainY", -1);
+  m_nb_sub_domains[MD_DirZ] = p->getInt32WithDefault("NbSubDomainZ", -1);
 
   m_first_own_cell_unique_id = p->getInt64WithDefault("CartesianFirstOnwCellUniqueId", -1);
 }

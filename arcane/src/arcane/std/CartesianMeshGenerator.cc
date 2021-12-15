@@ -583,6 +583,8 @@ generateMesh()
 
   m_generation_info = ICartesianMeshGenerationInfo::getReference(mesh,true);
 
+  info() << " decomposing the subdomains:" << m_build_info.m_nsdx << "x"
+         << m_build_info.m_nsdy << "x" << m_build_info.m_nsdz;
   info() << "sub domain offset @ " << sdXOffset() << "x" << sdYOffset() << "x" << sdZOffset();
   // All Cells Setup
   Integer all_nb_cell_x = m_nx;
@@ -594,6 +596,7 @@ generateMesh()
   //Properties* mesh_properties = mesh->properties();
   m_generation_info->setGlobalNbCells(all_nb_cell_x,all_nb_cell_y,all_nb_cell_z);
   m_generation_info->setSubDomainOffsets(sdXOffset(),sdYOffset(),sdZOffset());
+  m_generation_info->setNbSubDomains(m_build_info.m_nsdx,m_build_info.m_nsdy,m_build_info.m_nsdz);
 
   Int64 all_nb_cell_xy = ((Int64)all_nb_cell_x) * ((Int64)all_nb_cell_y);
   Int64 all_nb_cell_xyz = ((Int64)all_nb_cell_xy) * ((Int64)all_nb_cell_z);
