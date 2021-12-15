@@ -71,9 +71,9 @@ CartesianFaceUniqueIdBuilder(DynamicMesh* mesh)
  *
  * Pour les propriétaires, on considère que toutes les faces appartiennent
  * à ce sous-domaine sauf les faces sur les frontières inférieures qui
- * appartiennent au sous-domaine inférieur.
+ * appartiennent au sous-domaine inférieur dans chaque direction.
  * NOTE: cela n'équilibre pas forcément le nombre de faces fantômes/partagées
- * entre les sous-domaine mais c'est plus facile à calculer.
+ * entre les sous-domaines mais c'est plus facile à calculer.
  */
 void CartesianFaceUniqueIdBuilder::
 computeFacesUniqueIdAndOwner()
@@ -139,7 +139,7 @@ computeFacesUniqueIdAndOwner()
 
   ItemInternalMap& cells_map = m_mesh->cellsMap();
   bool is_verbose = m_is_verbose;
-  is_verbose = true;
+
   if (dimension==2){
     if (sub_domain_offset_x>0)
       previous_rank_x = my_rank - 1;
@@ -186,6 +186,13 @@ computeFacesUniqueIdAndOwner()
     }
   }
   else if (dimension==3){
+    if (sub_domain_offset_x>0)
+      previous_rank_x = my_rank - 1;
+    if (sub_domain_offset_y>0)
+      previous_rank_y = my_rank - nb_sub_domain_x;
+    if (sub_domain_offset_z>0)
+      previous_rank_z = my_rank - (nb_sub_domain_x * nb_sub_domain_y);
+    info() << "PreviousRank X=" << previous_rank_x << " Y=" << previous_rank_y << " Z=" << previous_rank_z;
     // Les mailles sont des hexaèdres
     std::array<Int64,6> face_uids;
     ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,cells_map){
@@ -229,13 +236,20 @@ computeFacesUniqueIdAndOwner()
                  << " N3=" << face.node(3).uniqueId();
         face.internal()->setUniqueId(face_uids[i]);
       }
+
+      // Positionne le propriétaire de la face inférieure en X
+      if (x==own_cell_offset_x && previous_rank_x!=my_rank)
+        cell.face(1).internal()->setOwner(previous_rank_x,my_rank);
+      // Positionne le propriétaire de la face inférieure en Y
+      if (y==own_cell_offset_y && previous_rank_y!=my_rank)
+        cell.face(2).internal()->setOwner(previous_rank_y,my_rank);
+      // Positionne le propriétaire de la face inférieure en Z
+      if (z==own_cell_offset_z && previous_rank_z!=my_rank)
+        cell.face(0).internal()->setOwner(previous_rank_z,my_rank);
     }
   }
   else
     ARCANE_FATAL("Invalid dimension");
-
-  // TODO: il faut maintenant calculer les propriétaires des faces
-  info() << "TODO: Need to compute face owners";
 }
 
 /*---------------------------------------------------------------------------*/

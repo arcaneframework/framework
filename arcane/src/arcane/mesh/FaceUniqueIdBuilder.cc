@@ -117,7 +117,6 @@ computeFacesUniqueIds()
   m_mesh->faceFamily()->notifyItemsUniqueIdChanged();
 
   bool is_verbose = m_mesh_builder->isVerbose();
-  is_verbose = true;
   if (is_verbose){
     info() << "NEW FACES_MAP after re-indexing";
     ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,faces_map){
