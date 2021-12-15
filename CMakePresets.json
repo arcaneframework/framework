@@ -41,12 +41,29 @@
             "cacheVariables": {
                 "CMAKE_CXX_COMPILER_LAUNCHER": "ccache"
             }
+        },
+        {
+            "name": "debug-ccache",
+            "inherits": "full-ccache",
+            "binaryDir": "${sourceDir}/build/debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "ALIEN_EXPAND_TESTS": "ON"
+            }
         }
     ],
     "buildPresets": [
         {
             "name": "minimal",
             "configurePreset": "minimal"
+        },
+        {
+            "name": "full",
+            "configurePreset": "full-ccache"
+        },
+        {
+            "name": "debug",
+            "configurePreset": "debug-ccache"
         }
     ]
 }
