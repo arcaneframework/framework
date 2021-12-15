@@ -15,6 +15,8 @@
 
 #include "arcane/core/internal/ICartesianMeshGenerationInfo.h"
 
+#include "arcane/IParallelMng.h"
+
 #include <array>
 
 /*---------------------------------------------------------------------------*/
@@ -64,7 +66,15 @@ CartesianFaceUniqueIdBuilder(DynamicMesh* mesh)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Calcule les uniqueId() et les propriétaires.
+ *
+ * Pour les propriétaires, on considère que toutes les faces appartiennent
+ * à ce sous-domaine sauf les faces sur les frontières inférieures qui
+ * appartiennent au sous-domaine inférieur.
+ * NOTE: cela n'équilibre pas forcément le nombre de faces fantômes/partagées
+ * entre les sous-domaine mais c'est plus facile à calculer.
+ */
 void CartesianFaceUniqueIdBuilder::
 computeFacesUniqueIdAndOwner()
 {
@@ -77,6 +87,7 @@ computeFacesUniqueIdAndOwner()
   if (dimension!=2 && dimension!=3)
     ARCANE_THROW(NotSupportedException,"Bad value '{0}' for dimension. Only dimensions 2 or 3 are supported",
                  dimension);
+  Int32 my_rank = m_mesh->parallelMng()->commRank();
 
   Int64ConstArrayView global_nb_cells = cmgi->globalNbCells();
   info() << "Dim=" << dimension;
@@ -103,18 +114,46 @@ computeFacesUniqueIdAndOwner()
          << " NbFaceXYZ=" << nb_face_xyz << " OffsetZ=" << face_offset_z
          << " TotalNbFaceXYZ=" << total_nb_face_xyz;
 
+  auto own_cells_offsets = cmgi->ownCellOffsets();
+  Int64 own_cell_offset_x = own_cells_offsets[0];
+  Int64 own_cell_offset_y = own_cells_offsets[1];
+  Int64 own_cell_offset_z = own_cells_offsets[2];
+  info() << "CellOffset: X=" << own_cell_offset_x << " Y=" << own_cell_offset_y << " Z=" << own_cell_offset_z;
+
+  auto sub_domain_offsets = cmgi->subDomainOffsets();
+  Int64 sub_domain_offset_x = sub_domain_offsets[0];
+  Int64 sub_domain_offset_y = sub_domain_offsets[1];
+  Int64 sub_domain_offset_z = sub_domain_offsets[2];
+  info() << "SubDomainOffset: X=" << sub_domain_offset_x << " Y=" << sub_domain_offset_y << " Z=" << sub_domain_offset_z;
+
+  auto nb_sub_domains = cmgi->nbSubDomains();
+  Int32 nb_sub_domain_x = nb_sub_domains[0];
+  Int32 nb_sub_domain_y = nb_sub_domains[1];
+  Int32 nb_sub_domain_z = nb_sub_domains[2];
+  info() << "NbSubDomain: X=" << nb_sub_domain_x << " Y=" << nb_sub_domain_y << " Z=" << nb_sub_domain_z;
+
+  // Détermine le rang inférieur dans chaque direction
+  Int32 previous_rank_x = my_rank;
+  Int32 previous_rank_y = my_rank;
+  Int32 previous_rank_z = my_rank;
+
   ItemInternalMap& cells_map = m_mesh->cellsMap();
   bool is_verbose = m_is_verbose;
   is_verbose = true;
   if (dimension==2){
+    if (sub_domain_offset_x>0)
+      previous_rank_x = my_rank - 1;
+    if (sub_domain_offset_y>0)
+      previous_rank_y = my_rank - nb_sub_domain_x;
+    info() << "PreviousRank X=" << previous_rank_x << " Y=" << previous_rank_y;
     // Les mailles sont des quadrangles
     std::array<Int64,4> face_uids;
     ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,cells_map){
       // Récupère l'indice (I,J) de la maille
       Cell cell { iid->value() };
       Int64 uid = cell.uniqueId();
-      Int64 y = uid / nb_cell_x;
-      Int64 x = uid % nb_cell_x;
+      const Int64 y = uid / nb_cell_x;
+      const Int64 x = uid % nb_cell_x;
       if (is_verbose)
         info() << "UID=" << uid << " X=" << x << " Y=" << y
                << " N0=" << cell.node(0).uniqueId()
@@ -138,6 +177,12 @@ computeFacesUniqueIdAndOwner()
 
         face.internal()->setUniqueId(face_uids[i]);
       }
+      // Positionne le propriétaire de la face inférieure en X
+      if (x==own_cell_offset_x && previous_rank_x!=my_rank)
+        cell.face(3).internal()->setOwner(previous_rank_x,my_rank);
+      // Positionne le propriétaire de la face inférieure en Y
+      if (y==own_cell_offset_y && previous_rank_y!=my_rank)
+        cell.face(0).internal()->setOwner(previous_rank_y,my_rank);
     }
   }
   else if (dimension==3){
