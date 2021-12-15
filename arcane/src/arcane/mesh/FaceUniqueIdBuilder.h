@@ -67,6 +67,7 @@ class FaceUniqueIdBuilder
   void _computeFacesUniqueIdsParallelV2();
   void _computeFacesUniqueIdsFast();
   void _exchangeData(IParallelExchanger* exchanger,BoundaryInfosMap& boundary_infos_to_send);
+  void _checkNoDuplicate();
 };
 
 /*---------------------------------------------------------------------------*/

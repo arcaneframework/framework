@@ -108,11 +108,14 @@ computeFacesUniqueIds()
   Real diff = (Real)(end_time - begin_time);
   info() << "TIME to compute face unique ids=" << diff;
 
+  _checkNoDuplicate();
+
   ItemInternalMap& faces_map = m_mesh->facesMap();
 
   // Il faut ranger à nouveau #m_faces_map car les uniqueId() des
   // faces ont été modifiés
   m_mesh->faceFamily()->notifyItemsUniqueIdChanged();
+
   bool is_verbose = m_mesh_builder->isVerbose();
   is_verbose = true;
   if (is_verbose){
@@ -121,6 +124,29 @@ computeFacesUniqueIds()
       ItemInternal* face = nbid->value();
       info() << "Face uid=" << face->uniqueId() << " lid=" << face->localId();
     }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vérifie qu'on n'a pas deux fois le même uniqueId().
+ */
+void FaceUniqueIdBuilder::
+_checkNoDuplicate()
+{
+  info() << "Check no duplicate face uniqueId";
+  ItemInternalMap& faces_map = m_mesh->facesMap();
+  std::map<ItemUniqueId,ItemInternal*> checked_faces_map;
+  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,faces_map){
+    ItemInternal* face = nbid->value();
+    ItemUniqueId uid = face->uniqueId();
+    auto p = checked_faces_map.find(uid);
+    if (p!=checked_faces_map.end()){
+      pwarning() << "Duplicate Face UniqueId=" << uid;
+      ARCANE_FATAL("Duplicate Face uniqueId={0}",uid);
+    }
+    checked_faces_map.insert(std::make_pair(uid,face));
   }
 }
 

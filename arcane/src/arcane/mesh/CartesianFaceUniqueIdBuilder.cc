@@ -39,7 +39,6 @@ class CartesianFaceUniqueIdBuilder
  public:
 
   void computeFacesUniqueIdAndOwner();
-  void checkNoDuplicate();
 
  private:
 
@@ -189,29 +188,9 @@ computeFacesUniqueIdAndOwner()
   }
   else
     ARCANE_FATAL("Invalid dimension");
-}
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Vérifie qu'on n'a pas deux fois le même uniqueId().
- */
-void CartesianFaceUniqueIdBuilder::
-checkNoDuplicate()
-{
-  info() << "Check no duplicate face uniqueId";
-  ItemInternalMap& faces_map = m_mesh->facesMap();
-  std::map<ItemUniqueId,ItemInternal*> checked_faces_map;
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,faces_map){
-    ItemInternal* face = nbid->value();
-    ItemUniqueId uid = face->uniqueId();
-    auto p = checked_faces_map.find(uid);
-    if (p!=checked_faces_map.end()){
-      pwarning() << "Duplicate Face UniqueId=" << uid;
-      ARCANE_FATAL("Duplicate Face uniqueId={0}",uid);
-    }
-    checked_faces_map.insert(std::make_pair(uid,face));
-  }
+  // TODO: il faut maintenant calculer les propriétaires des faces
+  info() << "TODO: Need to compute face owners";
 }
 
 /*---------------------------------------------------------------------------*/
@@ -222,7 +201,6 @@ arcaneComputeCartesianFaceUniqueId(DynamicMesh* mesh)
 {
   CartesianFaceUniqueIdBuilder f(mesh);
   f.computeFacesUniqueIdAndOwner();
-  f.checkNoDuplicate();
 }
 
 /*---------------------------------------------------------------------------*/
