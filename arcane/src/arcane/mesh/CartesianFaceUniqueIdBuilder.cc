@@ -39,14 +39,13 @@ class CartesianFaceUniqueIdBuilder
  public:
 
   void computeFacesUniqueIdAndOwner();
+  void checkNoDuplicate();
 
  private:
 
   DynamicMesh* m_mesh;
   IParallelMng* m_parallel_mng;
   bool m_is_verbose;
-
- private:
 };
 
 /*---------------------------------------------------------------------------*/
@@ -92,14 +91,18 @@ computeFacesUniqueIdAndOwner()
   Int64 nb_face_z = nb_cell_z + 1;
   Int64 nb_face_dir_x = nb_face_x * nb_cell_y;
   Int64 nb_face_dir_y = nb_face_y * nb_cell_x;
+  Int64 nb_face_dir_z = nb_cell_x * nb_cell_y;
   Int64 face_offset_z = nb_face_dir_x + nb_face_dir_y;
   Int64 nb_face_xyz = face_offset_z + nb_cell_xy;
+  Int64 nb_face_xy = nb_face_dir_x + nb_face_dir_y;
+  Int64 total_nb_face_xyz = (nb_face_dir_x + nb_face_dir_y) * nb_cell_z;
 
   info() << "NB_Cell: X=" << nb_cell_x << " Y=" << nb_cell_y << " Z=" << nb_cell_z
          << " XY=" << nb_cell_xy;
   info() << "NB_Face: X=" << nb_face_x << " Y=" << nb_face_y << " Z=" << nb_face_z
-         << " NbDirX=" << nb_face_dir_x << " NbDirY=" << nb_face_dir_y
-         << " NbFaceXYZ=" << nb_face_xyz << " OffsetZ=" << face_offset_z;
+         << " NbDirX=" << nb_face_dir_x << " NbDirY=" << nb_face_dir_y  << " NbDirZ=" << nb_face_dir_z
+         << " NbFaceXYZ=" << nb_face_xyz << " OffsetZ=" << face_offset_z
+         << " TotalNbFaceXYZ=" << total_nb_face_xyz;
 
   ItemInternalMap& cells_map = m_mesh->cellsMap();
   bool is_verbose = m_is_verbose;
@@ -161,16 +164,16 @@ computeFacesUniqueIdAndOwner()
                << " N7=" << cell.node(7).uniqueId();
 
       // Faces selon Z
-      face_uids[0] = (x+0) + ((y+0) * nb_cell_x) + ((z+0) * nb_face_xyz) + face_offset_z;
-      face_uids[3] = (x+0) + ((y+0) * nb_cell_x) + ((z+1) * nb_face_xyz) + face_offset_z;
+      face_uids[0] = (x+0) + ((y+0) * nb_cell_x) + ((z+0) * nb_face_dir_z) + total_nb_face_xyz;
+      face_uids[3] = (x+0) + ((y+0) * nb_cell_x) + ((z+1) * nb_face_dir_z) + total_nb_face_xyz;
 
       // Faces selon X
-      face_uids[1] = (x+0) + ((y+0) * nb_face_x) + ((z+0) * nb_face_xyz);
-      face_uids[4] = (x+1) + ((y+0) * nb_face_x) + ((z+0) * nb_face_xyz);
+      face_uids[1] = (x+0) + ((y+0) * nb_face_x) + ((z+0) * nb_face_xy);
+      face_uids[4] = (x+1) + ((y+0) * nb_face_x) + ((z+0) * nb_face_xy);
 
       // Faces selon Y
-      face_uids[2] = (x+0) + ((y+0) * nb_cell_x) + ((z+0) * nb_face_xyz) + nb_face_dir_x;
-      face_uids[5] = (x+0) + ((y+1) * nb_cell_x) + ((z+0) * nb_face_xyz) + nb_face_dir_x;
+      face_uids[2] = (x+0) + ((y+0) * nb_cell_x) + ((z+0) * nb_face_xy) + nb_face_dir_x;
+      face_uids[5] = (x+0) + ((y+1) * nb_cell_x) + ((z+0) * nb_face_xy) + nb_face_dir_x;
 
       for( int i=0; i<6; ++i ){
         Face face = cell.face(i);
@@ -190,12 +193,36 @@ computeFacesUniqueIdAndOwner()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vérifie qu'on n'a pas deux fois le même uniqueId().
+ */
+void CartesianFaceUniqueIdBuilder::
+checkNoDuplicate()
+{
+  info() << "Check no duplicate face uniqueId";
+  ItemInternalMap& faces_map = m_mesh->facesMap();
+  std::map<ItemUniqueId,ItemInternal*> checked_faces_map;
+  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,faces_map){
+    ItemInternal* face = nbid->value();
+    ItemUniqueId uid = face->uniqueId();
+    auto p = checked_faces_map.find(uid);
+    if (p!=checked_faces_map.end()){
+      pwarning() << "Duplicate Face UniqueId=" << uid;
+      ARCANE_FATAL("Duplicate Face uniqueId={0}",uid);
+    }
+    checked_faces_map.insert(std::make_pair(uid,face));
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 extern "C++" void
 arcaneComputeCartesianFaceUniqueId(DynamicMesh* mesh)
 {
   CartesianFaceUniqueIdBuilder f(mesh);
   f.computeFacesUniqueIdAndOwner();
+  f.checkNoDuplicate();
 }
 
 /*---------------------------------------------------------------------------*/
