@@ -5,7 +5,8 @@
 # Glib_INCLUDE_DIRS, where to find headers,
 # Glib_LIBRARIES, the libraries to link against to use glib.
 # Glib_FOUND, If false, do not try to use glib.
- 
+
+include(${CMAKE_CURRENT_LIST_DIR}/../commands/commands.cmake)
 arccon_return_if_package_found(Glib)
 
 find_package(PkgConfig)

@@ -1,3 +1,4 @@
+include(${CMAKE_CURRENT_LIST_DIR}/../commands/commands.cmake)
 arccon_return_if_package_found(PETSc)
 
 find_path(PETSC_INCLUDE_DIRS petsc.h)
