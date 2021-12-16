@@ -110,10 +110,10 @@ arcane_add_test(amr-checkpoint-cartesian2D-1 testAMRCartesianMesh2D-1.arc -c 3 -
 # Du coup on utilise le mode mémoire partagée au lieu de MPI pour
 # que les tests fonctionnent bien même si la machine n'a pas beaucoup
 # de coeurs.
-arcane_add_test_sequential(cartesian2d_face_renumbering testCartesianMesh2D-face-renumbering.arc "-m 10" "-We,ARCANE_FACE_UNIQUE_ID_BUILDER_VERSION,4")
-arcane_add_test_parallel_thread(cartesian2d_face_renumbering testCartesianMesh2D-face-renumbering.arc 6 "-m 10" "-We,ARCANE_FACE_UNIQUE_ID_BUILDER_VERSION,4")
-arcane_add_test_sequential(cartesian3d_face_renumbering testCartesianMesh3D-face-renumbering.arc "-m 10" "-We,ARCANE_FACE_UNIQUE_ID_BUILDER_VERSION,4")
-arcane_add_test_parallel_thread(cartesian3d_face_renumbering testCartesianMesh3D-face-renumbering.arc 12 "-m 10" "-We,ARCANE_FACE_UNIQUE_ID_BUILDER_VERSION,4")
+arcane_add_test_sequential(cartesian2d_face_renumbering testCartesianMesh2D-face-renumbering.arc "-m 10")
+arcane_add_test_parallel_thread(cartesian2d_face_renumbering testCartesianMesh2D-face-renumbering.arc 6 "-m 10")
+arcane_add_test_sequential(cartesian3d_face_renumbering testCartesianMesh3D-face-renumbering.arc "-m 10")
+arcane_add_test_parallel_thread(cartesian3d_face_renumbering testCartesianMesh3D-face-renumbering.arc 12 "-m 10")
 
 # Tests sur le partitionnement avec grille en cartésien
 arcane_add_test(cartesian_grid_partitioning testCartesianMesh-grid-partitioning.arc "-m 10")

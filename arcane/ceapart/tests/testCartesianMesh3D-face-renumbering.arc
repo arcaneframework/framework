@@ -28,6 +28,7 @@
        <nb-part-x>3</nb-part-x>
        <nb-part-y>2</nb-part-y>
        <nb-part-z>2</nb-part-z>
+       <face-numbering-version>4</face-numbering-version>
        <origin>0.0 0.0 0.0</origin>
        <x><n>12</n><length>5.0</length></x>
        <y><n>6</n><length>3.0</length></y>
