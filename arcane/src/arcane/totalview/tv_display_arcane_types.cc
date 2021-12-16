@@ -99,8 +99,8 @@ class _ArrayStruct
 {
  public:
   virtual ~_ArrayStruct(){}
-  Arccore::ArrayImplBase* m_p;
-  _ArrayMetaData* m_md;
+  _ArrayMetaData* m_md = nullptr;
+  _ArrayMetaData m_meta_data;
 };
 }
 /*---------------------------------------------------------------------------*/
