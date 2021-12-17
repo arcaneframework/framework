@@ -6,6 +6,7 @@
 # TBB_LIBRARIES, the libraries to link against to use TBB.
 # TBB_FOUND, If false, do not try to use TBB.
 
+include(${CMAKE_CURRENT_LIST_DIR}/../commands/commands.cmake)
 arccon_return_if_package_found(TBB)
 
 # A partir des versions OneTBB (2020+), il existe un fichier de configuration
