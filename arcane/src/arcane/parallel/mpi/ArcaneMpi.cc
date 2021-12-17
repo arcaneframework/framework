@@ -121,9 +121,8 @@ visit(ApplicationBuildInfo& app_build_info)
       message_passing_service = "MpiSequential";
   }
   message_passing_service = message_passing_service + "ParallelSuperMng";
-  // Change le service par défaut s'il n'a pas été positionné.
-  if (app_build_info.messagePassingService().null())
-    app_build_info.setMessagePassingService(message_passing_service);
+  // Change le service par défaut.
+  app_build_info.internalSetDefaultMessagePassingService(message_passing_service);
 }
 
 /*---------------------------------------------------------------------------*/

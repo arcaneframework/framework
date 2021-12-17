@@ -135,6 +135,7 @@ class ApplicationBuildInfo::Impl
   UniqueArray<NameValuePair> m_values;
   ApplicationInfo m_app_info;
   CaseDatasetSource m_case_dataset_source;
+  String m_default_message_passing_service;
 
  public:
   /*!
@@ -350,9 +351,16 @@ setDefaultServices()
   }
   {
     String def_name = (has_shm) ? "Thread" : "Sequential";
-    String str = m_p->getValue( { "ARCANE_PARALLEL_SERVICE" }, "MessagePassingService", def_name );
-    String service_name = str+"ParallelSuperMng";
-    m_p->checkSet(m_p->m_message_passing_service,service_name);
+    String default_service_name = def_name+"ParallelSuperMng";
+    // Positionne la valeur par défaut si ce n'est pas déjà fait.
+    if (m_p->m_default_message_passing_service.null())
+      m_p->m_default_message_passing_service = default_service_name;
+
+    String str = m_p->getValue( { "ARCANE_PARALLEL_SERVICE" }, "MessagePassingService", String() );
+    if (!str.null()){
+      String service_name = str+"ParallelSuperMng";
+      m_p->checkSet(m_p->m_message_passing_service,service_name);
+    }
   }
 }
 
@@ -706,6 +714,24 @@ void ApplicationBuildInfo::
 addDynamicLibrary(const String& lib_name)
 {
   m_p->m_app_info.addDynamicLibrary(lib_name);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ApplicationBuildInfo::
+internalSetDefaultMessagePassingService(const String& name)
+{
+  m_p->m_default_message_passing_service = name;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String ApplicationBuildInfo::
+internalDefaultMessagePassingService() const
+{
+  return m_p->m_default_message_passing_service;
 }
 
 /*---------------------------------------------------------------------------*/
