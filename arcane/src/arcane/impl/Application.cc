@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Application.cc                                              (C) 2000-2020 */
+/* Application.cc                                              (C) 2000-2021 */
 /*                                                                           */
 /* Superviseur.                                                              */
 /*---------------------------------------------------------------------------*/
@@ -435,10 +435,12 @@ build()
 
     // Recherche le service utilisé pour le parallélisme
     String message_passing_service = build_info.messagePassingService();
+    if (message_passing_service.null())
+      message_passing_service = build_info.internalDefaultMessagePassingService();
     ServiceBuilder<IParallelSuperMng> sf(this);
     auto sm = sf.createReference(message_passing_service,SB_AllowNull);
     if (!sm)
-      ARCANE_FATAL("Can not find message passing service '{0}')",message_passing_service);
+      ARCANE_FATAL("Can not find message passing service '{0}'",message_passing_service);
 
     m_parallel_super_mng = sm;
     m_parallel_super_mng->initialize();

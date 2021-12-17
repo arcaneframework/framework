@@ -127,6 +127,15 @@ class ARCANE_CORE_EXPORT ApplicationBuildInfo
  public:
 
   /*!
+   * \brief Nom du gestionnaire de message par défaut.
+   * Ne doit être modifié que par Arcane.
+   */
+  void internalSetDefaultMessagePassingService(const String& name);
+  String internalDefaultMessagePassingService() const;
+
+ public:
+
+  /*!
    * \brief Ajoute la bibliothèque \a lib_name à la liste des bibliothèques
    * chargées dynamiquements.
    *
