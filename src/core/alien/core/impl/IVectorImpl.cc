@@ -68,7 +68,7 @@ IVectorImpl::distribution() const
 const Block*
 IVectorImpl::block() const
 {
-  return m_multi_impl->block();
+  return m_multi_impl ? m_multi_impl->block() : nullptr;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -77,7 +77,7 @@ IVectorImpl::block() const
 const VBlock*
 IVectorImpl::vblock() const
 {
-  return m_multi_impl->vblock();
+  return m_multi_impl ? m_multi_impl->vblock() : nullptr;
 }
 
 /*---------------------------------------------------------------------------*/

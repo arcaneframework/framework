@@ -362,7 +362,7 @@ class NormalizeOpt::Op
     m_block_size = m_equations_num * m_unknowns_num;
     m_diag_first = m.getCSRProfile().getDiagFirstOpt();
     if (!m_diag_first)
-      m_upper_diag_index = m.getCSRProfile().getUpperDiagIndex();
+      m_upper_diag_offset = m.getCSRProfile().getUpperDiagOffset();
     m_keep_diag = true;
     if (m_sum_first_eq) {
       if (m_diag_first)
@@ -415,7 +415,7 @@ class NormalizeOpt::Op
   void sumBlockEq()
   {
     for (Integer irow = 0; irow < m_local_size; ++irow) {
-      checkNullEq(irow, (diag_first ? 0 : m_upper_diag_index[irow]));
+      checkNullEq(irow, (diag_first ? 0 : m_upper_diag_offset[irow] - m_row_offset[irow]));
       for (Integer col = m_row_offset[irow]; col < m_row_offset[irow + 1]; ++col) {
         for (Integer ieq = 1; ieq < m_equations_num; ++ieq)
           for (Integer ui = 0; ui < m_unknowns_num; ++ui)
@@ -461,7 +461,7 @@ class NormalizeOpt::Op
   //! The rows offset
   Arccore::ConstArrayView<Arccore::Integer> m_row_offset;
   //! The indices of the upper diagonal
-  Arccore::ConstArrayView<Arccore::Integer> m_upper_diag_index;
+  Arccore::ConstArrayView<Arccore::Integer> m_upper_diag_offset;
   //! The number of equations
   Arccore::Integer m_equations_num;
   //! The number of unknowns
@@ -505,7 +505,7 @@ class NormalizeOpt::Op
   m_block_size = m_equations_num*m_unknowns_num ;
   m_diag_first = m.getCSRProfile().getDiagFirstOpt() ;
   if(!m_diag_first)
-  m_upper_diag_index = m.getCSRProfile().getUpperDiagIndex() ;
+  m_upper_diag_offset = m.getCSRProfile().getUpperDiagOffset() ;
   m_keep_diag = true ;
   if(m_sum_first_eq)
   {
@@ -558,7 +558,7 @@ class NormalizeOpt::Op
   {
   for(Integer irow=0;irow<m_local_size;++irow)
   {
-  checkNullEq(irow,(diag_first?0:m_upper_diag_index[irow])) ;
+  checkNullEq(irow,(diag_first?0:m_upper_diag_offset[irow]-m_row_offset[irow])) ;
   for(Integer col= m_row_offset[irow];col<m_row_offset[irow+1];++col)
   {
   for(Integer ieq=1;ieq<m_equations_num;++ieq)
@@ -590,7 +590,7 @@ class NormalizeOpt::Op
   Integer                 m_local_offset ;
   ConstArrayView<Integer> m_cols  ;
   ConstArrayView<Integer> m_row_offset ;
-  ConstArrayView<Integer> m_upper_diag_index ;
+  ConstArrayView<Integer> m_upper_diag_offset ;
   Integer                 m_equations_num ;
   Integer                 m_unknowns_num ;
   Integer                 m_block_size ;

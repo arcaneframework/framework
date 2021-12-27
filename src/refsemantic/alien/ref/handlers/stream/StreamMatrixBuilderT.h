@@ -314,10 +314,10 @@ void StreamMatrixBuilderT<ValueT>::computeProfile()
   m_row_size.resize(m_local_size);
   m_ghost_row_size.resize(m_local_size);
   m_ghost_row_size.fill(0);
-  UniqueArray<Integer>& upper_diag_index = profile.getUpperDiagIndex();
+  UniqueArray<Integer>& upper_diag_offset = profile.getUpperDiagOffset();
   if (m_order_row_cols_opt) {
     profile.setDiagFirst(false);
-    upper_diag_index.resize(m_local_size);
+    upper_diag_offset.resize(m_local_size);
     m_row_size.fill(0);
     row_cols.resize(m_local_size);
   }
@@ -411,7 +411,7 @@ void StreamMatrixBuilderT<ValueT>::computeProfile()
         cols[offset + ordered_idx] = col_uid;
         kcols[offset + VALUE_OF(iter)] = offset + ordered_idx;
         if (col_uid == row + m_local_offset) {
-          upper_diag_index[row] = ordered_idx;
+          upper_diag_offset[row] = offset + ordered_idx;
         }
         ++ordered_idx;
         ++icount;

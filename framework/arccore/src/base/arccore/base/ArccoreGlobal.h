@@ -27,6 +27,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include <cstdint>
+#include <cassert>
 
 #include "arccore/arccore_config.h"
 

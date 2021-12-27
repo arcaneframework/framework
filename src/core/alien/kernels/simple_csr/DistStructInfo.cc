@@ -328,7 +328,7 @@ void DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Inte
   }
 
   {
-    // Il faut une map ordonn�e
+    // Il faut une map ordonn?e
     std::map<Integer, Integer> ghost_sizes;
 
     // Integer icount = 0;

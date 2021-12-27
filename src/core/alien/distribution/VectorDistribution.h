@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include "../data/ISpace.h"
+#include "alien/data/ISpace.h"
 
 namespace Arccore::MessagePassing
 {

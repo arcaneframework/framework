@@ -45,9 +45,11 @@ install(
 # ----------------------------------------------------------------------------
 
 add_subdirectory(core)
+
 if (ALIEN_COMPONENT_RefSemantic)
     add_subdirectory(refsemantic)
 endif ()
+
 if (ALIEN_COMPONENT_MoveSemantic)
     add_subdirectory(movesemantic)
 endif ()

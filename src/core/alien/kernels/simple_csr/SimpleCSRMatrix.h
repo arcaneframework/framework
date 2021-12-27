@@ -31,6 +31,7 @@
 #include <alien/kernels/simple_csr/SimpleCSRInternal.h>
 #include <alien/kernels/simple_csr/SimpleCSRPrecomp.h>
 
+#include <alien/utils/StdTimer.h>
 /*---------------------------------------------------------------------------*/
 
 namespace Alien::SimpleCSRInternal
@@ -52,16 +53,22 @@ template <typename ValueT>
 class SimpleCSRMatrix : public IMatrixImpl
 {
  public:
-  typedef ValueT ValueType;
-  typedef SimpleCSRInternal::CSRStructInfo CSRStructInfo;
-  typedef SimpleCSRInternal::CSRStructInfo ProfileType;
-  typedef SimpleCSRInternal::DistStructInfo DistStructInfo;
+  // clang-format off
+  static const bool                                    on_host_only = true ;
+  typedef ValueT                                       ValueType;
+  typedef SimpleCSRInternal::CSRStructInfo             CSRStructInfo;
+  typedef SimpleCSRInternal::CSRStructInfo             ProfileType;
+  typedef SimpleCSRInternal::DistStructInfo            DistStructInfo;
   typedef SimpleCSRInternal::MatrixInternal<ValueType> MatrixInternal;
+  typedef typename ProfileType::IndexType              IndexType ;
+  typedef Alien::StdTimer                              TimerType ;
+  typedef TimerType::Sentry                            SentryType ;
+  // clang-format on
 
  public:
   /** Constructeur de la classe */
   SimpleCSRMatrix()
-  : IMatrixImpl(NULL, AlgebraTraits<BackEnd::tag::simplecsr>::name())
+  : IMatrixImpl(nullptr, AlgebraTraits<BackEnd::tag::simplecsr>::name())
   , m_send_policy(SimpleCSRInternal::CommProperty::ASynch)
   , m_recv_policy(SimpleCSRInternal::CommProperty::ASynch)
   {}
@@ -69,13 +76,18 @@ class SimpleCSRMatrix : public IMatrixImpl
   /** Constructeur de la classe */
   SimpleCSRMatrix(const MultiMatrixImpl* multi_impl)
   : IMatrixImpl(multi_impl, AlgebraTraits<BackEnd::tag::simplecsr>::name())
-  , m_matrix(multi_impl->vblock() != nullptr)
+  , m_matrix(multi_impl ? multi_impl->vblock() != nullptr : false)
   , m_send_policy(SimpleCSRInternal::CommProperty::ASynch)
   , m_recv_policy(SimpleCSRInternal::CommProperty::ASynch)
   {}
 
   /** Destructeur de la classe */
-  virtual ~SimpleCSRMatrix() {}
+  virtual ~SimpleCSRMatrix()
+  {
+#ifdef ALIEN_USE_PERF_TIMER
+    m_timer.printInfo("SimpleCSR-MATRIX");
+#endif
+  }
 
   void setTraceMng(ITraceMng* trace_mng) { m_trace = trace_mng; }
 
@@ -119,8 +131,10 @@ class SimpleCSRMatrix : public IMatrixImpl
   }
 
   ValueType* getAddressData() { return m_matrix.getDataPtr(); }
+  ValueType* data() { return m_matrix.getDataPtr(); }
 
   ValueType const* getAddressData() const { return m_matrix.getDataPtr(); }
+  ValueType const* data() const { return m_matrix.getDataPtr(); }
 
   MatrixInternal& internal() { return m_matrix; }
 
@@ -262,6 +276,19 @@ class SimpleCSRMatrix : public IMatrixImpl
     return matrix;
   }
 
+  void notifyChanges()
+  {
+    m_matrix.notifyChanges();
+  }
+
+  void endUpdate()
+  {
+    if (m_matrix.needUpdate()) {
+      m_matrix.endUpdate();
+      this->updateTimestamp();
+    }
+  }
+
  private:
   class IsLocal
   {
@@ -294,8 +321,16 @@ class SimpleCSRMatrix : public IMatrixImpl
   Integer m_myrank = 0;
   ITraceMng* m_trace = nullptr;
 
-  // From unsuccessful try to implement multiplication.
   friend class SimpleCSRInternal::SimpleCSRMatrixMultT<ValueType>;
+
+ private:
+  mutable TimerType m_timer;
+
+ public:
+  TimerType& timer() const
+  {
+    return m_timer;
+  }
 };
 
 /*---------------------------------------------------------------------------*/

@@ -41,11 +41,17 @@ Project(Alien
 
 option(ALIEN_COMPONENT_RefSemantic "Whether or not to compile RefSemantic package" ON)
 option(ALIEN_COMPONENT_MoveSemantic "Whether or not to compile MoveSemantic package" ON)
+option(ALIEN_EXAMPLES "Whether or not to compile examples" ON)
 option(ALIEN_UNIT_TESTS "Whether or not to enable unit tests" OFF)
 option(ALIEN_EXPAND_TESTS "Run unit tests one by one" OFF)
 
 option(ALIEN_USE_HDF5 "Enable HDF5 export" OFF)
 option(ALIEN_USE_LIBXML2 "Enable xml export" OFF)
+option(ALIEN_USE_SYCL "Whether or not to compile SYCL backend" OFF)
+option(ALIEN_USE_PERF_TIMER "Whether or not to enable perf timer" OFF)
+option(ALIEN_WANT_AVX "Whether or not to enable avx flags" OFF)
+option(ALIEN_WANT_AVX2 "Whether or not to enable avx2 flags" OFF)
+option(ALIEN_WANT_AVX512 "Whether or not to enable avx512 flags" OFF)
 option(ALIEN_DEFAULT_OPTIONS "Enable best effort to find optional dependencies" ON)
 
 option(ALIEN_GENERATE_DOCUMENTATION "Generate API documentation" OFF)
@@ -150,21 +156,31 @@ set(version_config "${generated_dir}/${PROJECT_NAME}ConfigVersion.cmake")
 set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
 set(namespace "Alien::")
 
+if(ALIEN_USE_PERF_TIMER)
+  add_definitions(-DALIEN_USE_PERF_TIMER)
+endif()
 
 add_subdirectory(src)
 
 if (ALIEN_PLUGIN_HYPRE)
     add_subdirectory(plugins/hypre)
 endif (ALIEN_PLUGIN_HYPRE)
+
 if (ALIEN_PLUGIN_PETSC)
     add_subdirectory(plugins/petsc)
 endif (ALIEN_PLUGIN_PETSC)
+
 if (ALIEN_PLUGIN_SUPERLU)
     add_subdirectory(plugins/superlu)
 endif (ALIEN_PLUGIN_SUPERLU)
+
 if (ALIEN_PLUGIN_TRILINOS)
     add_subdirectory(plugins/trilinos)
 endif (ALIEN_PLUGIN_TRILINOS)
+
+if (ALIEN_EXAMPLES)
+    add_subdirectory(examples)
+endif ()
 
 add_subdirectory(docs)
 

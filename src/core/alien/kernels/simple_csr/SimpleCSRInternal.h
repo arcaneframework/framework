@@ -68,6 +68,22 @@ class MatrixInternal
     m_profile.copy(internal.getCSRProfile());
   }
 
+  bool needUpdate()
+  {
+    return m_is_update != true;
+  }
+
+  void notifyChanges()
+  {
+    m_is_update = false;
+  }
+
+  void endUpdate()
+  {
+    m_is_update = true;
+  }
+
+  bool m_is_update = false;
   UniqueArray<ValueType> m_values;
   CSRStructInfo m_profile;
 };

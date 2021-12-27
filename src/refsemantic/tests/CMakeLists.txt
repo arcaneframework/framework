@@ -22,8 +22,8 @@ add_executable(ref.gtest.mpi
         TestIndexManager.cc
         )
 
-if (ALIEN_USE_XML)
-    target_sources(ref.gtest.mpi TestImportExport.cc)
+if (ALIEN_USE_LIBXML2)
+    target_sources(ref.gtest.mpi PRIVATE TestImportExport.cc)
 endif ()
 
 add_executable(ref.gtest.seq main.cpp
@@ -34,11 +34,12 @@ add_executable(ref.gtest.seq main.cpp
         TestCompositeMatrix.cc
         TestBlockMatrix.cc
         TestVBlockMatrix.cc
-        TestRedistributor.cc)
-
-if (ALIEN_MV_EXPR)
-    target_sources(ref.gtest.seq TestMVExpr.cc)
-endif ()
+        TestRedistributor.cc
+        TestMVExpr.cc)
+        
+IF(ALIEN_USE_SYCL)
+  target_sources(ref.gtest.seq PRIVATE TestMVSYCL.cc)
+ENDIF()
 
 target_link_libraries(ref.gtest.mpi PRIVATE
         GTest::GTest

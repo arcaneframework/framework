@@ -77,12 +77,9 @@ if (ALIEN_USE_HDF5)
     target_link_libraries(alien_semantic_ref PRIVATE arccon::HDF5)
 endif ()
 
-if (ALIEN_MV_EXPR)
-    target_sources(alien_semantic_ref PRIVATE
-            alien/ref/mv_expr/MVExpr.h
-            )
-    #TODO: check C++ features.
-endif ()
+target_sources(alien_semantic_ref PRIVATE
+               alien/ref/mv_expr/MVExpr.h
+              )
 
 target_link_libraries(alien_semantic_ref PUBLIC alien_core)
 

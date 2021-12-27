@@ -57,6 +57,33 @@ class CBLASMPIKernel
   }
 
   template <typename Distribution, typename VectorT>
+  static void pointwiseMult(Distribution const& dist,
+                            VectorT const& x,
+                            VectorT const& y,
+                            VectorT& z)
+  {
+    auto local_size = x.scalarizedLocalSize();
+    auto x_ptr = x.getDataPtr();
+    auto y_ptr = y.getDataPtr();
+    auto z_ptr = z.getDataPtr();
+    for (std::size_t i = 0; i < local_size; ++i) {
+      z_ptr[i] = x_ptr[i] * y_ptr[i];
+    }
+  }
+
+  template <typename Distribution, typename VectorT>
+  static void assign(Distribution const& dist,
+                     typename VectorT::ValueType alpha,
+                     VectorT& y)
+  {
+    auto local_size = y.scalarizedLocalSize();
+    auto y_ptr = y.getDataPtr();
+    for (std::size_t i = 0; i < local_size; ++i) {
+      y_ptr[i] = alpha;
+    }
+  }
+
+  template <typename Distribution, typename VectorT>
   static typename VectorT::ValueType dot(
   Distribution const& dist, const VectorT& x, const VectorT& y)
   {

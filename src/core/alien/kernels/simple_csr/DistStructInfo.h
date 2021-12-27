@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "../../distribution/MatrixDistribution.h"
+#include "alien/distribution/MatrixDistribution.h"
 #include "SendRecvOp.h" // FIXME: remove
 #include "SimpleCSRPrecomp.h"
 #include <cstdlib>

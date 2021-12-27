@@ -154,10 +154,7 @@ void MultiMatrixImpl::clear()
 const Block*
 MultiMatrixImpl::block() const
 {
-  if (m_block)
-    return m_block.get();
-  else
-    return nullptr;
+  return m_block.get();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -166,10 +163,7 @@ MultiMatrixImpl::block() const
 const VBlock*
 MultiMatrixImpl::rowBlock() const
 {
-  if (m_rows_block)
-    return m_rows_block.get();
-  else
-    return nullptr;
+  return m_rows_block.get();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -178,7 +172,7 @@ MultiMatrixImpl::rowBlock() const
 const VBlock*
 MultiMatrixImpl::colBlock() const
 {
-  if (m_cols_block)
+  if (m_cols_block.get())
     return m_cols_block.get();
   else
     return rowBlock();
@@ -190,10 +184,7 @@ MultiMatrixImpl::colBlock() const
 const VBlock*
 MultiMatrixImpl::vblock() const
 {
-  if (m_rows_block)
-    return m_rows_block.get();
-  else
-    return nullptr;
+  return m_rows_block.get();
 }
 
 /*---------------------------------------------------------------------------*/

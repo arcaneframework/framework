@@ -195,7 +195,7 @@ void NormalizeOpt::Op::multInvDiag()
     }
     else {
       for (Integer irow = 0; irow < m_local_size; ++irow) {
-        Integer off = m_row_offset[irow] + m_upper_diag_index[irow];
+        Integer off = m_upper_diag_offset[irow];
 
         Map<MatrixType> diag(&m_matrix[off * NxN], N, N);
         if (diag.determinant() == 0) {
@@ -265,7 +265,7 @@ void NormalizeOpt::Op::multInvDiag()
     }
     else {
       for (Integer irow = 0; irow < m_local_size; ++irow) {
-        Integer off = m_row_offset[irow] + m_upper_diag_index[irow];
+        Integer off = m_upper_diag_offset[irow];
 
         Real* diag = &m_matrix[off * N * N];
         LU<N> lu(diag);
@@ -383,7 +383,7 @@ void NormalizeOpt::Op2::multInvDiag<1>()
       //
       // NORMALIZE SubMatrix00 and RHS
       for (Integer irow = 0; irow < m_local_size; ++irow) {
-        Integer off_diag = m_row_offset[irow] + m_upper_diag_index[irow];
+        Integer off_diag = m_upper_diag_offset[irow];
         Real diag = m_matrix[off_diag];
         for (Integer col = m_row_offset[irow]; col < off_diag; ++col) {
           m_matrix[col] /= diag;
@@ -403,7 +403,7 @@ void NormalizeOpt::Op2::multInvDiag<1>()
           for (Integer k = m_extra_eq_row_offset[ieq]; k < m_extra_eq_row_offset[ieq + 1];
                ++k) {
             Integer irow = m_extra_eq_cols[k];
-            Integer off = m_row_offset[irow] + m_upper_diag_index[irow];
+            Integer off = m_upper_diag_offset[irow];
             Real diag = m_matrix[off];
             m_extra_eq_matrix[k] /= diag;
           }
@@ -411,7 +411,7 @@ void NormalizeOpt::Op2::multInvDiag<1>()
       else
         for (Integer i = 0; i < m_eq_ids.size(); ++i) {
           Integer irow = m_eq_ids[i];
-          Integer off = m_row_offset[irow] + m_upper_diag_index[irow];
+          Integer off = m_upper_diag_offset[irow];
           Real diag = m_matrix[off];
           for (Integer k = m_extra_eq_row_offset[irow];
                k < m_extra_eq_row_offset[irow + 1]; ++k) {
@@ -422,7 +422,7 @@ void NormalizeOpt::Op2::multInvDiag<1>()
       //
       // SET DIAG TO Id
       for (Integer irow = 0; irow < m_local_size; ++irow) {
-        Integer off_diag = m_row_offset[irow] + m_upper_diag_index[irow];
+        Integer off_diag = m_upper_diag_offset[irow];
         m_matrix[off_diag] = m_keep_diag ? 1. : 0.;
       }
     }
@@ -524,7 +524,7 @@ void NormalizeOpt::Op2::multInvDiag()
       //
       // NORMALIZE SubMatrix01
       for (Integer irow = 0; irow < m_local_size; ++irow) {
-        Integer off = m_row_offset[irow] + m_upper_diag_index[irow];
+        Integer off = m_upper_diag_offset[irow];
 
         Real* diag = &m_matrix[off * N * N];
         LU<N> lu(diag);
@@ -550,7 +550,7 @@ void NormalizeOpt::Op2::multInvDiag()
                ++k) {
             Integer irow = m_extra_eq_cols[k] - m_local_offset;
 
-            Integer off = m_row_offset[irow] + m_upper_diag_index[irow];
+            Integer off = m_upper_diag_offset[irow];
             Real* diag = &m_matrix[off * N * N];
             LU<N> lu(diag, false);
 
@@ -560,7 +560,7 @@ void NormalizeOpt::Op2::multInvDiag()
       else {
         for (Integer i = 0; i < m_eq_ids.size(); ++i) {
           Integer irow = m_eq_ids[i];
-          Integer off = m_row_offset[irow] + m_upper_diag_index[irow];
+          Integer off = m_upper_diag_offset[irow];
           Real* diag = &m_matrix[off * N * N];
           LU<N> lu(diag, false);
           for (Integer k = m_extra_eq_row_offset[irow];
@@ -575,7 +575,7 @@ void NormalizeOpt::Op2::multInvDiag()
       // SET DIAG TO Id
       if (m_keep_diag)
         for (Integer irow = 0; irow < m_local_size; ++irow) {
-          Integer off = m_row_offset[irow] + m_upper_diag_index[irow];
+          Integer off = m_upper_diag_offset[irow];
           Real* diag = &m_matrix[off * N * N];
           LU<N> lu(diag, false);
 
@@ -583,7 +583,7 @@ void NormalizeOpt::Op2::multInvDiag()
         }
       else
         for (Integer irow = 0; irow < m_local_size; ++irow) {
-          Integer off = m_row_offset[irow] + m_upper_diag_index[irow];
+          Integer off = m_upper_diag_offset[irow];
           Real* diag = &m_matrix[off * N * N];
           LU<N> lu(diag, false);
           lu.setZero();
