@@ -37,8 +37,10 @@ class DiagPreconditioner
     typedef typename MatrixType::ValueType  ValueType;
   // clang-format on
 
-  DiagPreconditioner(MatrixType const& matrix)
-  : m_matrix(matrix)
+  DiagPreconditioner(AlgebraType& algebra,
+                     MatrixType const& matrix)
+  : m_algebra(algebra)
+  , m_matrix(matrix)
   {}
 
   virtual ~DiagPreconditioner(){};
@@ -46,6 +48,9 @@ class DiagPreconditioner
   //! operator preparation
   void init()
   {
+    m_algebra.allocate(AlgebraType::resource(m_matrix), m_inv_diag);
+    m_algebra.assign(m_inv_diag, 1.);
+    m_algebra.computeInvDiag(m_matrix, m_inv_diag);
   }
 
   void update()
@@ -58,11 +63,13 @@ class DiagPreconditioner
              VectorType const& x,
              VectorType& y) const
   {
-    algebra.copy(x, y);
+    algebra.pointwiseMult(m_inv_diag, x, y);
   }
 
  private:
+  AlgebraType& m_algebra;
   MatrixType const& m_matrix;
+  VectorType m_inv_diag;
 };
 
 } // namespace Alien

@@ -24,6 +24,8 @@
 
 #pragma once
 
+#include <alien/expression/krylov/Iteration.h>
+#include <alien/expression/krylov/CG.h>
 #include <alien/expression/krylov/BiCGStab.h>
 #include <alien/expression/krylov/DiagPreconditioner.h>
 #include <alien/expression/krylov/ChebyshevPreconditioner.h>
