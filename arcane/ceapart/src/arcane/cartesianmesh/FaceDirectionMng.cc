@@ -59,17 +59,6 @@ FaceDirectionMng()
 /*---------------------------------------------------------------------------*/
 
 FaceDirectionMng::
-FaceDirectionMng(const FaceDirectionMng& rhs)
-: m_infos(rhs.m_infos)
-, m_direction(rhs.m_direction)
-, m_p(rhs.m_p)
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-FaceDirectionMng::
 ~FaceDirectionMng()
 {
   // Ne pas détruire le m_p.

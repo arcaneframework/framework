@@ -92,7 +92,6 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
   
   //! Créé une instance vide. L'instance n'est pas valide tant que init() n'a pas été appelé.
   FaceDirectionMng();
-  FaceDirectionMng(const FaceDirectionMng& rhs);
   ~FaceDirectionMng();
 
   //! Face direction correspondant à la face \a f.

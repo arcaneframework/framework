@@ -63,26 +63,6 @@ CellDirectionMng()
 /*---------------------------------------------------------------------------*/
 
 CellDirectionMng::
-CellDirectionMng(const CellDirectionMng& rhs)
-: m_infos(rhs.m_infos)
-, m_direction(rhs.m_direction)
-, m_p(rhs.m_p)
-, m_items(rhs.m_items)
-, m_next_face_index(rhs.m_next_face_index)
-, m_previous_face_index(rhs.m_previous_face_index)
-, m_sub_domain_offset(rhs.m_sub_domain_offset)
-, m_own_nb_cell(rhs.m_own_nb_cell)
-, m_global_nb_cell(rhs.m_global_nb_cell)
-, m_own_cell_offset(rhs.m_own_cell_offset)
-{
-  for( Integer i=0; i<MAX_NB_NODE; ++i )
-    m_nodes_indirection[i] = rhs.m_nodes_indirection[i];
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-CellDirectionMng::
 ~CellDirectionMng()
 {
   // Ne pas détruire le m_p.

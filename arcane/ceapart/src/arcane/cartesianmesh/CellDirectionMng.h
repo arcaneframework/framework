@@ -228,7 +228,6 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
   
   //! Créé une instance vide. L'instance n'est pas valide tant que init() n'a pas été appelé.
   CellDirectionMng();
-  CellDirectionMng(const CellDirectionMng& rhs);
   ~CellDirectionMng();
 
   //! Maille direction correspondant à la maille \a c.
