@@ -193,6 +193,7 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
   NodeDirectionMng();
   NodeDirectionMng(const NodeDirectionMng& rhs);
   ~NodeDirectionMng();
+  NodeDirectionMng& operator=(const NodeDirectionMng& rhs);
 
   //! Noeud direction correspondant au noeud \a n
   DirNode node(Node n)
@@ -293,6 +294,7 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
   void _computeNodeCellInfos(const CellDirectionMng& cell_dm,
                              const VariableCellReal3& cells_center);
   void _filterNodes();
+  void _initNodes();
 };
 
 /*---------------------------------------------------------------------------*/

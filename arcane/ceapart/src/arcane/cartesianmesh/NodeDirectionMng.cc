@@ -66,11 +66,20 @@ NodeDirectionMng(const NodeDirectionMng& rhs)
 , m_direction(rhs.m_direction)
 , m_p(rhs.m_p)
 {
-  ICartesianMesh* cm = m_p->m_cartesian_mesh;
-  if (cm){
-    IMesh* mesh = cm->mesh();
-    m_nodes = mesh->nodeFamily()->itemsInternal();
-  }
+  _initNodes();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+NodeDirectionMng& NodeDirectionMng::
+operator=(const NodeDirectionMng& rhs)
+{
+  m_infos = rhs.m_infos;
+  m_direction = rhs.m_direction;
+  m_p = rhs.m_p;
+  _initNodes();
+  return (*this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -81,6 +90,21 @@ NodeDirectionMng::
 {
   // Ne pas détruire le m_p.
   // Le gestionnnaire le fera via destroy()
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void NodeDirectionMng::
+_initNodes()
+{
+  if (m_p){
+    ICartesianMesh* cm = m_p->m_cartesian_mesh;
+    if (cm){
+      IMesh* mesh = cm->mesh();
+      m_nodes = mesh->nodeFamily()->itemsInternal();
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
