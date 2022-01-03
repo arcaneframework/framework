@@ -92,16 +92,15 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
   
   //! Créé une instance vide. L'instance n'est pas valide tant que init() n'a pas été appelé.
   FaceDirectionMng();
-  FaceDirectionMng(const FaceDirectionMng& rhs);
   ~FaceDirectionMng();
 
   //! Face direction correspondant à la face \a f.
-  DirFace face(Face f)
+  DirFace face(Face f) const
   {
     return _face(f.localId());
   }
   //! Face direction correspondant à la face \a f.
-  DirFace face(FaceLocalId f)
+  DirFace face(FaceLocalId f) const
   {
     return _face(f.localId());
   }
@@ -127,19 +126,19 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
   FaceGroup outerFaces() const;
 
   //! Face direction correspondant à la face \a f.
-  DirFace operator[](Face f)
+  DirFace operator[](Face f) const
   {
     return _face(f.localId());
   }
 
   //! Face direction correspondant à la face \a f.
-  DirFace operator[](FaceLocalId f)
+  DirFace operator[](FaceLocalId f) const
   {
     return _face(f.localId());
   }
 
   //! Face direction correspondant à l'itérateur de la face \a iface
-  DirFace operator[](FaceEnumerator iface)
+  DirFace operator[](FaceEnumerator iface) const
   {
     return _face(iface.itemLocalId());
   }
@@ -153,7 +152,7 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
  private:
   
   //! Face direction correspondant à la face de numéro local \a local_id
-  DirFace _face(Int32 local_id)
+  DirFace _face(Int32 local_id) const
   {
     Cell next = Cell(m_infos[local_id].m_next_item);
     Cell prev = Cell(m_infos[local_id].m_previous_item);
