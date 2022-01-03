@@ -196,13 +196,13 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
   NodeDirectionMng& operator=(const NodeDirectionMng& rhs);
 
   //! Noeud direction correspondant au noeud \a n
-  DirNode node(Node n)
+  DirNode node(Node n) const
   {
     return _node(n.localId());
   }
 
   //! Noeud direction correspondant au noeud \a n
-  DirNode node(NodeLocalId n)
+  DirNode node(NodeLocalId n) const
   {
     return _node(n.localId());
   }
@@ -233,13 +233,13 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
   }
 
   //! Noeud direction correspondant au noeud \a n.
-  DirNode operator[](NodeLocalId n)
+  DirNode operator[](NodeLocalId n) const
   {
     return _node(n.localId());
   }
 
   //! Noeud direction correspondant à l'itérateur du noeud \a inode.
-  DirNode operator[](NodeEnumerator inode)
+  DirNode operator[](NodeEnumerator inode) const
   {
     return _node(inode.itemLocalId());
   }
@@ -284,7 +284,7 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
  private:
   
   //! Noeud direction correspondant au noeud de numéro local \a local_id
-  DirNode _node(Int32 local_id)
+  DirNode _node(Int32 local_id) const
   {
     Node next = Node(m_infos[local_id].m_next_item);
     Node prev = Node(m_infos[local_id].m_previous_item);

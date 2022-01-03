@@ -231,12 +231,12 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
   ~CellDirectionMng();
 
   //! Maille direction correspondant à la maille \a c.
-  DirCell cell(Cell c)
+  DirCell cell(Cell c) const
   {
     return _cell(c.localId());
   }
   //! Maille direction correspondant à la maille \a c.
-  DirCell cell(CellLocalId c)
+  DirCell cell(CellLocalId c) const
   {
     return _cell(c.localId());
   }
@@ -284,19 +284,19 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
   CellGroup outerCells() const;
 
   //! Maille direction correspondant à la maille \a c.
-  DirCell operator[](Cell c)
+  DirCell operator[](Cell c) const
   {
     return _cell(c.localId());
   }
 
   //! Maille direction correspondant à la maille \a c.
-  DirCell operator[](CellLocalId c)
+  DirCell operator[](CellLocalId c) const
   {
     return _cell(c.localId());
   }
 
   //! Maille direction correspondant à l'itérateur de la maille \a icell.
-  DirCell operator[](CellEnumerator icell)
+  DirCell operator[](CellEnumerator icell) const
   {
     return _cell(icell.itemLocalId());
   }
