@@ -108,7 +108,9 @@ class SimpleCSRVector : public IVectorImpl
   template <typename E>
   SimpleCSRVector& operator=(E const& expr);
 
-  void init(const VectorDistribution& dist, const bool need_allocate)
+  void init(const VectorDistribution& dist,
+            const bool need_allocate,
+            Integer ghost_size = 0)
   {
     alien_debug([&] { cout() << "Initializing SimpleCSRVector " << this; });
     if (this->m_multi_impl) {
@@ -123,8 +125,8 @@ class SimpleCSRVector : public IVectorImpl
       m_own_distribution = dist;
       m_local_size = m_own_distribution.localSize();
     }
-    m_values.resize(m_local_size);
     if (need_allocate) {
+      m_values.resize(m_local_size + ghost_size);
       m_values.fill(ValueT());
     }
   }

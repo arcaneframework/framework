@@ -37,13 +37,32 @@ namespace SYCLInternal
 class BaseBEllPackStructInfo
 {
  public:
- private:
+  BaseBEllPackStructInfo(std::size_t nrows,
+                         std::size_t nnz)
+  : m_nrows(nrows)
+  , m_nnz(nnz)
+  {}
+
+  std::size_t getNRows() const { return m_nrows; }
+
+  std::size_t getNnz() const { return m_nnz; }
+
+  Arccore::Int64 timestamp() const { return m_timestamp; }
+
+  void setTimestamp(Arccore::Int64 value) { m_timestamp = value; }
+
+ protected:
+  // clang-format off
+  std::size_t m_nrows       = 0 ;
+  std::size_t m_nnz         = 0 ;
+  Arccore::Int64 m_timestamp = -1;
+  // clang-format on
 };
 /*---------------------------------------------------------------------------*/
 
 template <int BlockSize, typename IndexT = int>
 class ALIEN_EXPORT BEllPackStructInfo
-: BaseBEllPackStructInfo
+: public BaseBEllPackStructInfo
 {
  public:
   // clang-format off
@@ -71,22 +90,25 @@ class ALIEN_EXPORT BEllPackStructInfo
   BEllPackStructInfo(std::size_t nrows,
                      int const* kcol,
                      int const* cols,
-                     int const* h_block_row_offset);
+                     int const* h_block_row_offset,
+                     int const* h_local_row_size);
 
-  Arccore::Int64 timestamp() const { return m_timestamp; }
-
-  void setTimestamp(Arccore::Int64 value) { m_timestamp = value; }
+  const BaseBEllPackStructInfo& base() const
+  {
+    return *this;
+  }
 
   InternalType const* internal() const
   {
     return m_internal;
   }
 
-  std::size_t getNRows() const { return m_nrows; }
-
-  std::size_t getNnz() const { return m_nnz; }
-
   std::size_t getBlockNnz() const { return m_block_nnz; }
+
+  Arccore::ConstArrayView<Integer> getRowOffset() const
+  {
+    return Arccore::ConstArrayView<Integer>((Integer)m_nrows + 1, kcol());
+  }
 
   IndexType const* kcol() const;
 
@@ -94,15 +116,18 @@ class ALIEN_EXPORT BEllPackStructInfo
 
   IndexType const* dcol() const;
 
+  int const* localRowSize() const
+  {
+    return m_h_local_row_size;
+  }
+
  protected:
   // clang-format off
-  std::size_t m_nrows       = 0 ;
-  std::size_t m_nnz         = 0 ;
-  std::size_t m_block_nrows = 0 ;
-  std::size_t m_block_nnz   = 0 ;
+  std::size_t m_block_nrows         = 0 ;
+  std::size_t m_block_nnz           = 0 ;
 
-  InternalType*  m_internal  = nullptr;
-  Arccore::Int64 m_timestamp = -1;
+  InternalType*  m_internal         = nullptr;
+  int const*     m_h_local_row_size = nullptr ;
   // clang-format on
 };
 

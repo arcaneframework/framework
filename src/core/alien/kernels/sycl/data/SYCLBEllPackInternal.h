@@ -22,6 +22,8 @@
 
 #include <CL/sycl.hpp>
 
+#include <alien/kernels/sycl/data/SendRecvOp.h>
+
 #include <alien/kernels/sycl/data/BEllPackStructInfo.h>
 
 /*---------------------------------------------------------------------------*/
@@ -46,9 +48,8 @@ struct ALIEN_EXPORT StructInfoInternal
                      std::size_t block_nnz,
                      int const* h_kcol,
                      int const* h_cols,
-                     int const* h_block_row_offset);
-
-  //IndexBufferType& getBlockRowOffset() { return m_block_row_offset ; }
+                     int const* h_block_row_offset,
+                     int const* h_local_row_size);
 
   IndexBufferType& getBlockRowOffset() const { return m_block_row_offset; }
 
@@ -115,10 +116,12 @@ class MatrixInternal
   typedef typename ProfileType::InternalType    InternalProfileType ;
   typedef typename
       InternalProfileType::IndexBufferType      IndexBufferType ;
+  typedef std::unique_ptr<IndexBufferType>      IndexBufferPtrType ;
 
   typedef cl::sycl::buffer<value_type, 1>       value_buffer_type ;
 
   typedef cl::sycl::buffer<value_type, 1>       ValueBufferType ;
+  typedef std::unique_ptr<ValueBufferType>      ValueBufferPtrType ;
 
   typedef cl::sycl::queue                       QueueType ;
   // clang-format on
@@ -136,8 +139,10 @@ class MatrixInternal
   void endUpdate();
 
   void mult(ValueBufferType& x, ValueBufferType& y) const;
-
   void mult(ValueBufferType& x, ValueBufferType& y, QueueType& queue) const;
+
+  void addExtMult(ValueBufferType& x, ValueBufferType& y) const;
+  void addExtMult(ValueBufferType& x, ValueBufferType& y, QueueType& queue) const;
 
   void addLMult(ValueType alpha, ValueBufferType& x, ValueBufferType& y) const;
   void addUMult(ValueType alpha, ValueBufferType& x, ValueBufferType& y) const;
@@ -171,13 +176,32 @@ class MatrixInternal
     return m_h_csr_values.data();
   }
 
-  // clang-format off
-  ProfileType const*      m_profile = nullptr;
+  IndexBufferType& getSendIds() const
+  {
+    return *m_send_ids;
+  }
+  IndexBufferType& getRecvIds() const
+  {
+    return *m_recv_ids;
+  }
 
-  std::vector<ValueType>  m_h_csr_values ;
-  std::vector<ValueType>  m_h_values ;
-  mutable ValueBufferType m_values ;
-  bool                    m_values_is_update = false ;
+  // clang-format off
+  ProfileType const*         m_profile     = nullptr;
+  ProfileType const*         m_ext_profile = nullptr;
+
+  std::vector<ValueType>     m_h_csr_values ;
+  std::vector<ValueType>     m_h_values ;
+  mutable ValueBufferType    m_values ;
+
+  std::vector<ValueType>     m_h_csr_ext_values ;
+  std::vector<ValueType>     m_h_ext_values ;
+  mutable ValueBufferPtrType m_ext_values ;
+  bool                       m_values_is_update = false ;
+
+  int const*                 m_h_interface_row_ids = nullptr;
+  mutable IndexBufferPtrType m_interface_row_ids ;
+  mutable IndexBufferPtrType m_send_ids ;
+  mutable IndexBufferPtrType m_recv_ids ;
   // clang-format on
 };
 

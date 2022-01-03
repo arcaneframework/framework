@@ -69,10 +69,22 @@ alien_test( BENCH krylov-simplecsr
             OPTIONS --nx 10 --ny 10 --solver bicgs --precond diag --kernel simplcsr)
             
 alien_test( BENCH krylov-simplecsr
+            NAME bicgs-diag-mpi
+            PROCS 4 
+            COMMAND krylov_example.exe
+            OPTIONS --nx 10 --ny 10 --solver bicgs --precond diag --kernel simplcsr)
+        
+alien_test( BENCH krylov-simplecsr
             NAME bicgs-cheb
             COMMAND krylov_example.exe 
             OPTIONS --nx 10 --ny 10 --solver bicgs --precond cheb --kernel simplcsr)
             
+alien_test( BENCH krylov-simplecsr
+            NAME bicgs-cheb-mpi
+            PROCS 4 
+            COMMAND krylov_example.exe 
+            OPTIONS --nx 10 --ny 10 --solver bicgs --precond cheb --kernel simplcsr)
+        
 alien_test( BENCH krylov-simplecsr
             NAME bicgs-poly
             COMMAND krylov_example.exe
@@ -108,9 +120,20 @@ if(ALIEN_USE_SYCL)
 alien_test( BENCH sycl
             NAME default
             COMMAND sycl_example.exe)
-            
+
+alien_test( BENCH sycl
+            NAME default-mpi
+            PROCS 4
+            COMMAND sycl_example.exe)
+        
 alien_test( BENCH krylov-sycl
             NAME diag-bicgs
+            COMMAND krylov_example.exe
+            OPTIONS --nx 10 --ny 10 --precond diag --kernel sycl --asynch 0)
+        
+alien_test( BENCH krylov-sycl
+            NAME diag-bicgs-mpi
+            PROCS 4
             COMMAND krylov_example.exe
             OPTIONS --nx 10 --ny 10 --precond diag --kernel sycl --asynch 0)
             
@@ -119,6 +142,12 @@ alien_test( BENCH krylov-sycl
             COMMAND krylov_example.exe
             OPTIONS --nx 10 --ny 10 --precond cheb --kernel sycl --asynch 0)
             
+alien_test( BENCH krylov-sycl
+            NAME cheb-bicgs-mpi
+            PROCS 4
+            COMMAND krylov_example.exe
+            OPTIONS --nx 10 --ny 10 --precond cheb --kernel sycl --asynch 0)
+        
 alien_test( BENCH krylov-sycl
             NAME poly-bicgs
             COMMAND krylov_example.exe
@@ -135,10 +164,22 @@ alien_test( BENCH krylov-sycl
             OPTIONS --nx 10 --ny 10 --precond diag --kernel sycl --asynch 1)
             
 alien_test( BENCH krylov-sycl
+            NAME diag-bicgs-asynch-mpi
+            PROCS 4
+            COMMAND krylov_example.exe
+            OPTIONS --nx 10 --ny 10 --precond diag --kernel sycl --asynch 1)
+        
+alien_test( BENCH krylov-sycl
             NAME cheb-bicgs-asynch
             COMMAND krylov_example.exe
             OPTIONS --nx 10 --ny 10 --precond cheb --kernel sycl --asynch 1)
             
+alien_test( BENCH krylov-sycl
+            NAME cheb-bicgs-asynch-mpi
+            PROCS 4
+            COMMAND krylov_example.exe
+            OPTIONS --nx 10 --ny 10 --precond cheb --kernel sycl --asynch 1)
+        
 alien_test( BENCH krylov-sycl
             NAME poly-bicgs-asynch
             COMMAND krylov_example.exe

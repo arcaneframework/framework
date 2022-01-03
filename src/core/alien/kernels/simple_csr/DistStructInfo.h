@@ -79,17 +79,19 @@ class ALIEN_EXPORT DistStructInfo
 
   void copy(const DistStructInfo& distStructInfo);
 
+  // clang-format off
   Arccore::UniqueArray<Arccore::Integer> m_local_row_size;
-  Arccore::Integer m_ghost_nrow = 0;
-  Arccore::Integer m_interface_nrow = 0;
-  Arccore::Integer m_first_upper_ghost_index = 0;
+  Arccore::Integer                       m_ghost_nrow = 0;
+  Arccore::Integer                       m_interface_nrow = 0;
+  Arccore::Integer                       m_first_upper_ghost_index = 0;
   Arccore::UniqueArray<Arccore::Integer> m_interface_rows;
-  std::unordered_set<int> m_interface_row_set;
+  std::unordered_set<int>                m_interface_row_set;
   Arccore::UniqueArray<Arccore::Integer> m_cols;
-  CommInfo m_recv_info;
-  CommInfo m_send_info;
+  CommInfo                               m_recv_info;
+  CommInfo                               m_send_info;
   Arccore::UniqueArray<Arccore::Integer> m_block_sizes;
   Arccore::UniqueArray<Arccore::Integer> m_block_offsets;
+  // clang-format on
 };
 
 /*---------------------------------------------------------------------------*/

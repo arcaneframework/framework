@@ -34,9 +34,10 @@ class VectorInternal
 {
  public:
   // clang-format off
-  typedef ValueT                         ValueType;
-  typedef VectorInternal<ValueType>      ThisType;
-  typedef cl::sycl::buffer<ValueType, 1> ValueBufferType ;
+  typedef ValueT                           ValueType;
+  typedef VectorInternal<ValueType>        ThisType;
+  typedef cl::sycl::buffer<ValueType, 1>   ValueBufferType;
+  typedef std::unique_ptr<ValueBufferType> ValueBufferPtrType;
   // clang-format on
 
  public:
@@ -58,6 +59,15 @@ class VectorInternal
     return m_values;
   }
 
+  ValueBufferType& ghostValues(Integer ghost_size) const
+  {
+    if (m_ghost_values.get() == nullptr || ghost_size > m_ghost_size) {
+      m_ghost_size = ghost_size;
+      m_ghost_values.reset(new ValueBufferType(m_ghost_size));
+    }
+    return *m_ghost_values;
+  }
+
   void copyValuesToHost(std::size_t size, ValueT* ptr)
   {
     auto h_values = m_values.template get_access<cl::sycl::access::mode::read>();
@@ -67,7 +77,12 @@ class VectorInternal
 
   //VectorInternal<ValueT>* clone() const { return new VectorInternal<ValueT>(*this); }
 
-  mutable ValueBufferType m_values;
+  // clang-format off
+  mutable ValueBufferType    m_values;
+
+  mutable Integer            m_ghost_size = 0 ;
+  mutable ValueBufferPtrType m_ghost_values;
+  // clang-format on
 };
 
 /*---------------------------------------------------------------------------*/

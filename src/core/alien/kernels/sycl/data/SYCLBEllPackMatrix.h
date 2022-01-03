@@ -33,8 +33,6 @@
 
 #include <alien/kernels/sycl/data/BEllPackStructInfo.h>
 #include <alien/kernels/sycl/data/DistStructInfo.h>
-#include <alien/kernels/sycl/data/SendRecvOp.h>
-//#include <alien/kernels/sycl/data/SYCLBEllPackInternal.h>
 
 #include <alien/kernels/sycl/SYCLBackEnd.h>
 
@@ -71,7 +69,7 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
   typedef ValueT                                            ValueType;
   typedef ValueT                                            value_type ;
 
-  typedef SYCLInternal::DistStructInfo                      DistStructInfo;
+  typedef SimpleCSRInternal::DistStructInfo                 DistStructInfo;
   typedef SYCLInternal::MatrixInternal<ValueType,1024>      MatrixInternal1024;
 
 
@@ -87,15 +85,15 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
   /** Constructeur de la classe */
   SYCLBEllPackMatrix()
   : IMatrixImpl(nullptr, AlgebraTraits<BackEnd::tag::sycl>::name())
-  , m_send_policy(SYCLInternal::CommProperty::ASynch)
-  , m_recv_policy(SYCLInternal::CommProperty::ASynch)
+  , m_send_policy(SimpleCSRInternal::CommProperty::ASynch)
+  , m_recv_policy(SimpleCSRInternal::CommProperty::ASynch)
   {}
 
   /** Constructeur de la classe */
   SYCLBEllPackMatrix(const MultiMatrixImpl* multi_impl)
   : IMatrixImpl(multi_impl, AlgebraTraits<BackEnd::tag::sycl>::name())
-  , m_send_policy(SYCLInternal::CommProperty::ASynch)
-  , m_recv_policy(SYCLInternal::CommProperty::ASynch)
+  , m_send_policy(SimpleCSRInternal::CommProperty::ASynch)
+  , m_recv_policy(SimpleCSRInternal::CommProperty::ASynch)
   {}
 
   /** Destructeur de la classe */
@@ -116,11 +114,26 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
 
  public:
   bool initMatrix(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
+                  Integer local_offset,
+                  Integer global_size,
                   std::size_t nrows,
                   int const* kcol,
-                  int const* cols);
+                  int const* cols,
+                  SimpleCSRInternal::DistStructInfo const& matrix_dist_info);
 
   SYCLBEllPackMatrix* cloneTo(const MultiMatrixImpl* multi) const;
+
+  bool isParallel() const { return m_is_parallel; }
+
+  Integer getLocalSize() const { return m_local_size; }
+
+  Integer getLocalOffset() const { return m_local_offset; }
+
+  Integer getGlobalSize() const { return m_global_size; }
+
+  Integer getGhostSize() const { return m_ghost_size; }
+
+  Integer getAllocSize() const { return m_local_size + m_ghost_size; }
 
   bool setMatrixValues(Arccore::Real const* values, bool only_host);
 
@@ -128,6 +141,8 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
   void endUpdate();
 
   void mult(SYCLVector<ValueType> const& x, SYCLVector<ValueType>& y) const;
+  void endDistMult(SYCLVector<ValueType> const& x, SYCLVector<ValueType>& y) const;
+
   void addLMult(ValueType alpha, SYCLVector<ValueType> const& x, SYCLVector<ValueType>& y) const;
   void addUMult(ValueType alpha, SYCLVector<ValueType> const& x, SYCLVector<ValueType>& y) const;
 
@@ -136,12 +151,12 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
 
   const DistStructInfo& getDistStructInfo() const { return m_matrix_dist_info; }
 
-  SYCLInternal::CommProperty::ePolicyType getSendPolicy() const
+  Alien::SimpleCSRInternal::CommProperty::ePolicyType getSendPolicy() const
   {
     return m_send_policy;
   }
 
-  SYCLInternal::CommProperty::ePolicyType getRecvPolicy() const
+  Alien::SimpleCSRInternal::CommProperty::ePolicyType getRecvPolicy() const
   {
     return m_recv_policy;
   }
@@ -150,25 +165,48 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
 
   MatrixInternal1024 const* internal() const { return m_matrix1024; }
 
-  bool isParallel() const { return m_is_parallel; }
+ private:
+  class IsLocal
+  {
+   public:
+    IsLocal(const ConstArrayView<Integer> offset, const Integer myrank)
+    : m_offset(offset)
+    , m_myrank(myrank)
+    {}
+    bool operator()(Arccore::Integer col) const
+    {
+      return (col >= m_offset[m_myrank]) && (col < m_offset[m_myrank + 1]);
+    }
+
+   private:
+    const ConstArrayView<Integer> m_offset;
+    const Integer m_myrank;
+  };
 
   // clang-format off
-  ProfileInternal1024*                    m_profile1024 = nullptr ;
-  MatrixInternal1024*                     m_matrix1024  = nullptr;
+  ProfileInternal1024*                    m_profile1024     = nullptr ;
+  MatrixInternal1024*                     m_matrix1024      = nullptr;
 
-  int                                     m_block_size = 1024 ;
+  ProfileInternal1024*                    m_ext_profile1024 = nullptr ;
+
+  int                                     m_block_size      = 1024 ;
   std::vector<int>                        m_block_row_offset ;
-  std::vector<int>                        m_block_cols ;
-  std::vector<ValueType>                  m_block_values ;
+  std::vector<int>                        m_ext_block_row_offset ;
 
-  bool                                    m_is_parallel = false;
+  bool                                    m_is_parallel  = false;
   IMessagePassingMng*                     m_parallel_mng = nullptr;
-  Integer                                 m_nproc = 1;
-  Integer                                 m_myrank = 0;
-  DistStructInfo                          m_matrix_dist_info;
-  SYCLInternal::CommProperty::ePolicyType m_send_policy;
-  SYCLInternal::CommProperty::ePolicyType m_recv_policy;
-  ITraceMng*                              m_trace = nullptr;
+  Integer                                 m_nproc        = 1;
+  Integer                                 m_myrank       = 0;
+
+  Integer                                 m_local_size   = 0;
+  Integer                                 m_local_offset = 0;
+  Integer                                 m_global_size  = 0;
+  Integer                                 m_ghost_size   = 0;
+
+  SimpleCSRInternal::DistStructInfo            m_matrix_dist_info;
+  SimpleCSRInternal::CommProperty::ePolicyType m_send_policy;
+  SimpleCSRInternal::CommProperty::ePolicyType m_recv_policy;
+  ITraceMng*                                   m_trace = nullptr;
   // clang-format on
 
   // From unsuccessful try to implement multiplication.

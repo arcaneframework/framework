@@ -27,406 +27,253 @@
 #include <arccore/message_passing/Messages.h>
 #include <arccore/message_passing/Request.h>
 
+#include <alien/kernels/simple_csr/SendRecvOp.h>
+
+#ifndef USE_SYCL_USM
+//#define USE_SYCL_USM
+#endif
+
 namespace Arccore
 {
 class ITraceMng;
 }
-
 namespace Alien::SYCLInternal
 {
 
-struct CommProperty
-{
-  typedef enum
-  {
-    Synch,
-    ASynch
-  } ePolicyType;
-};
-
-struct CommInfo
-{
-  CommInfo() {}
-
-  void printInfo(std::ostream& fout) const
-  {
-    fout << "Num of neighbours : " << m_num_neighbours << std::endl;
-    fout << "Ranks : ";
-    for (Integer i = 0; i < m_num_neighbours; ++i)
-      fout << m_ranks[i] << " ";
-    fout << std::endl;
-    if (m_ids.size()) {
-      for (Integer i = 0; i < m_num_neighbours; ++i) {
-        fout << "List[" << i << "] : " << m_ids_offset[i] << " " << m_ids_offset[i + 1]
-             << std::endl;
-        for (Integer k = m_ids_offset[i]; k < m_ids_offset[i + 1]; ++k)
-          fout << "        id[" << k << "]=" << m_ids[k] << std::endl;
-        if (m_block_ids_offset.size())
-          fout << "Block list[" << i << "] : " << m_block_ids_offset[i] << " "
-               << m_block_ids_offset[i + 1] << std::endl;
-      }
-    }
-    else {
-      if (m_block_ids_offset.size()) {
-        for (Integer i = 0; i < m_num_neighbours + 1; ++i)
-          fout << "offset[" << i << "]=" << m_ids_offset[i]
-               << ",block=" << m_block_ids_offset[i] << std::endl;
-      }
-      else {
-        for (Integer i = 0; i < m_num_neighbours + 1; ++i) {
-          fout << "offset[" << i << "]" << m_ids_offset[i] << std::endl;
-        }
-      }
-    }
-  }
-  inline Arccore::Integer getDomainId(Arccore::Integer id) const
-  {
-    if (id < m_ids_offset[0])
-      return -1;
-    for (Arccore::Integer ineighb = 0; ineighb < m_num_neighbours; ++ineighb) {
-      if (id < m_ids_offset[ineighb + 1])
-        return m_ranks[ineighb];
-    }
-    return -2;
-  }
-
-  inline Arccore::Integer getNeighbId(Arccore::Integer id) const
-  {
-    if (id < m_ids_offset[0])
-      return -1;
-    for (Arccore::Integer ineighb = 0; ineighb < m_num_neighbours; ++ineighb) {
-      if (id < m_ids_offset[ineighb + 1])
-        return ineighb;
-    }
-    return -2;
-  }
-
-  inline Arccore::Integer getRankNeighbId(Arccore::Integer rank) const
-  {
-    for (Arccore::Integer ineighb = 0; ineighb < m_num_neighbours; ++ineighb) {
-      if (m_ranks[ineighb] == rank)
-        return ineighb;
-    }
-    return -1;
-  }
-
-  Arccore::Integer getLocalId(Arccore::Integer ineighb, Arccore::Integer id) const
-  {
-    for (Arccore::Integer k = m_ids_offset[ineighb]; k < m_ids_offset[ineighb + 1]; ++k) {
-      if (m_ids[k] == id)
-        return k - m_ids_offset[ineighb];
-    }
-    return -1;
-  }
-
-  Arccore::Integer getLocalIdFromUid(Arccore::Integer ineighb, Arccore::Integer uid) const
-  {
-    for (Arccore::Integer k = m_ids_offset[ineighb]; k < m_ids_offset[ineighb + 1]; ++k) {
-      if (m_uids[k - m_ids_offset[0]] == uid)
-        return k;
-    }
-    return -1;
-  }
-
-  Arccore::Integer m_num_neighbours = 0;
-  Arccore::Integer m_first_upper_neighb = 0;
-  Arccore::UniqueArray<Arccore::Integer> m_ranks;
-  Arccore::UniqueArray<Arccore::Integer> m_ids;
-  Arccore::UniqueArray<Arccore::Integer> m_uids;
-  Arccore::UniqueArray<Arccore::Integer> m_rank_ids;
-  Arccore::UniqueArray<Arccore::Integer> m_ids_offset;
-  Arccore::UniqueArray<Arccore::Integer> m_block_ids_offset;
-
-  void copy(const CommInfo& commInfo)
-  {
-    m_num_neighbours = commInfo.m_num_neighbours;
-
-    m_ranks.copy(commInfo.m_ranks);
-    m_ids.copy(commInfo.m_ids);
-    m_uids.copy(commInfo.m_uids);
-    m_rank_ids.copy(commInfo.m_rank_ids);
-    m_ids_offset.copy(commInfo.m_ids_offset);
-    m_block_ids_offset.copy(commInfo.m_block_ids_offset);
-  }
-};
-
-class IASynchOp
-{
- public:
-  IASynchOp() {}
-
-  virtual ~IASynchOp() {}
-  virtual void start(bool insitu = true) = 0;
-  virtual void end(bool insitu = true) = 0;
-};
-
 template <typename ValueT>
-class SendRecvOp : public IASynchOp
+class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
 {
  public:
-  SendRecvOp(const ValueT* send_buffer, const CommInfo& send_info,
-             CommProperty::ePolicyType send_policy, ValueT* recv_buffer,
-             const CommInfo& recv_info, CommProperty::ePolicyType recv_policy,
-             IMessagePassingMng* mng, Arccore::ITraceMng* trace_mng, Integer unknowns_num = 1)
-  : m_is_variable_block(false)
-  , m_send_buffer(send_buffer)
+  // clang-format off
+  typedef ValueT                                ValueType ;
+  typedef cl::sycl::buffer<ValueType, 1>        ValueBufferType ;
+
+  typedef cl::sycl::buffer<int>                 IndexBufferType ;
+  typedef std::unique_ptr<IndexBufferType>      IndexBufferPtrType ;
+  // clang-format on
+
+  SYCLSendRecvOp(ValueBufferType& send_buffer,
+                 const Alien::SimpleCSRInternal::CommInfo& send_info,
+                 IndexBufferType& send_ids,
+                 Alien::SimpleCSRInternal::CommProperty::ePolicyType send_policy,
+                 ValueBufferType& recv_buffer,
+                 const Alien::SimpleCSRInternal::CommInfo& recv_info,
+                 IndexBufferType& recv_ids,
+                 Alien::SimpleCSRInternal::CommProperty::ePolicyType recv_policy,
+                 IMessagePassingMng* mng,
+                 Arccore::ITraceMng* trace_mng)
+  : m_send_buffer(send_buffer)
   , m_send_info(send_info)
+  , m_send_ids(send_ids)
   , m_send_policy(send_policy)
   , m_recv_buffer(recv_buffer)
   , m_recv_info(recv_info)
+  , m_recv_ids(recv_ids)
   , m_recv_policy(recv_policy)
   , m_parallel_mng(mng)
   , m_trace(trace_mng)
-  , m_unknowns_num(unknowns_num)
   {}
 
-  SendRecvOp(const ValueT* send_buffer, const CommInfo& send_info,
-             CommProperty::ePolicyType send_policy, ValueT* recv_buffer,
-             const CommInfo& recv_info, CommProperty::ePolicyType recv_policy,
-             IMessagePassingMng* mng, Arccore::ITraceMng* trace_mng,
-             ConstArrayView<Integer> block_sizes, ConstArrayView<Integer> block_offsets)
-  : m_is_variable_block(true)
-  , m_send_buffer(send_buffer)
-  , m_send_info(send_info)
-  , m_send_policy(send_policy)
-  , m_recv_buffer(recv_buffer)
-  , m_recv_info(recv_info)
-  , m_recv_policy(recv_policy)
-  , m_parallel_mng(mng)
-  , m_trace(trace_mng)
-  , m_block_sizes(block_sizes)
-  , m_block_offsets(block_offsets)
-  {}
-
-  void start(bool insitu = true)
+  virtual ~SYCLSendRecvOp()
   {
-    if (m_is_variable_block)
-      _startBlock(insitu);
-    else
-      _start(insitu);
+#ifdef USE_SYCL_USM
+    auto& queue = SYCLEnv::instance()->internal()->queue();
+    cl::sycl::free(m_rbuffer, queue);
+    cl::sycl::free(m_sbuffer, queue);
+#endif
   }
 
-  void end(bool insitu = true)
+  void start(bool insitu = false)
   {
-    if (m_is_variable_block)
-      _endBlock(insitu);
-    else
-      _end(insitu);
-  }
+    //alien_debug([&] {cout() << "SYCLSendRecvOP START "<<m_send_policy;});
+    //Universe().traceMng()->flush() ;
 
- private:
-  void _start(bool insitu)
-  {
-    if (m_recv_policy == CommProperty::ASynch) {
+    // clang-format off
+    auto env           = SYCLEnv::instance();
+    auto& queue        = env->internal()->queue();
+    auto total_threads = env->maxNumThreads() ;
+    // clang-format on
+    if (m_recv_policy == Alien::SimpleCSRInternal::CommProperty::ASynch) {
       m_recv_request.resize(m_recv_info.m_num_neighbours);
-      ValueT* rbuffer = NULL;
-      if (m_recv_info.m_ids.size() && !insitu) {
-        Integer size = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours] - m_recv_info.m_ids_offset[0];
-        m_rbuffer.resize(size * m_unknowns_num);
-        rbuffer = &m_rbuffer[0];
-      }
-      else
-        rbuffer = m_recv_buffer;
-      // alien_info([&] {cout() << "RecvInfo Nb Neighb :
-      // "<<m_recv_info.m_num_neighbours;}) ;
+      Integer total_nb_recv_ids = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours] - m_recv_info.m_ids_offset[0];
+#ifdef USE_SYCL_USM
+      m_rbuffer = cl::sycl::malloc_shared<ValueT>(total_nb_recv_ids, queue);
+#else
+      m_rbuffer.resize(total_nb_recv_ids);
+#endif
       for (Integer i = 0; i < m_recv_info.m_num_neighbours; ++i) {
-        Integer off = m_recv_info.m_ids_offset[i];
+        Integer off = m_recv_info.m_ids_offset[i] - m_recv_info.m_ids_offset[0];
         Integer size = m_recv_info.m_ids_offset[i + 1] - off;
-        ValueT* ptr = rbuffer + off * m_unknowns_num;
+#ifdef USE_SYCL_USM
+        ValueT* ptr = m_rbuffer + off;
+#else
+        ValueT* ptr = m_rbuffer.data() + off;
+#endif
         Integer rank = m_recv_info.m_ranks[i];
-        m_recv_request[i] = Arccore::MessagePassing::mpReceive(
-        m_parallel_mng, ArrayView<ValueT>(size * m_unknowns_num, ptr), rank, false);
+
+        m_recv_request[i] =
+        Arccore::MessagePassing::mpReceive(m_parallel_mng,
+                                           ArrayView<ValueT>(size, ptr),
+                                           rank,
+                                           false);
       }
     }
-    if (m_send_policy == CommProperty::ASynch)
+    if (m_send_policy == Alien::SimpleCSRInternal::CommProperty::ASynch)
       m_send_request.resize(m_send_info.m_num_neighbours);
-    ValueT const* sbuffer = m_send_buffer;
     if (m_send_info.m_ids.size()) {
-      Integer size = m_send_info.m_ids_offset[m_send_info.m_num_neighbours] - m_send_info.m_ids_offset[0];
-      m_sbuffer.resize(size * m_unknowns_num);
-      if (m_unknowns_num == 1)
-        for (Integer i = 0; i < size; ++i) {
-          m_sbuffer[i] = m_send_buffer[m_send_info.m_ids[i]];
-          // m_trace->info()<<"SEND"<<m_sbuffer[i];
-        }
-      else
-        for (Integer i = 0; i < size; ++i)
-          for (Integer ui = 0; ui < m_unknowns_num; ++ui)
-            m_sbuffer[i * m_unknowns_num + ui] =
-            m_send_buffer[m_send_info.m_ids[i] * m_unknowns_num + ui];
-      sbuffer = &m_sbuffer[0];
+      std::size_t total_nb_send_ids = m_send_info.m_ids_offset[m_send_info.m_num_neighbours] - m_send_info.m_ids_offset[0];
+#ifdef USE_SYCL_USM
+      m_sbuffer = cl::sycl::malloc_shared<ValueT>(total_nb_send_ids, queue);
+#else
+      m_sbuffer.resize(total_nb_send_ids);
+#endif
+      {
+#ifdef USE_SYCL_USM
+        cl::sycl::buffer<ValueType> sbuffer{ { cl::sycl::buffer_allocation::empty_view(m_sbuffer, queue.get_device()) }, total_nb_send_ids };
+#else
+        cl::sycl::buffer<ValueType> sbuffer(m_sbuffer.data(), total_nb_send_ids);
+#endif
+        // clang-format off
+        queue.submit([&](cl::sycl::handler& cgh)
+                     {
+                       auto access_send_buffer = m_send_buffer.template get_access<cl::sycl::access::mode::read>(cgh);
+                       auto access_ids         = m_send_ids.template get_access<cl::sycl::access::mode::read>(cgh);
+                       cl::sycl::accessor<ValueType> access_sbuffer{sbuffer, cgh,cl::sycl::write_only, cl::sycl::property::no_init{}};
+
+                       cgh.parallel_for<class vector_mult_send>(cl::sycl::range<1>{total_threads},
+                                                                [=] (cl::sycl::item<1> itemId)
+                                                                {
+                                                                   auto id = itemId.get_id(0);
+                                                                   for( auto i=id; i<total_nb_send_ids; i+=total_threads)
+                                                                     access_sbuffer[i] = access_send_buffer[access_ids[i]];
+                                                                });
+                     });
+        // clang-format on
+      }
+      //for (Integer i = 0; i < total_nb_send_ids; ++i) {
+      //  alien_debug([&] {cout() << "MPI SEND["<<i<<"]="<<m_sbuffer[i];}) ;;
+      //}
     }
-    // alien_info([&] {cout() << "SendInfo Nb Neighb : "<<m_send_info.m_num_neighbours;})
-    // ;
     for (Integer i = 0; i < m_send_info.m_num_neighbours; ++i) {
       Integer off = m_send_info.m_ids_offset[i];
-      Integer size = m_send_info.m_ids_offset[i + 1] - off;
-      ValueT const* ptr = sbuffer + off * m_unknowns_num;
+      Integer nb_send_ids = m_send_info.m_ids_offset[i + 1] - off;
+#ifdef USE_SYCL_USM
+      ValueT const* ptr = m_sbuffer + off;
+#else
+      ValueT const* ptr = m_sbuffer.data() + off;
+#endif
       Integer rank = m_send_info.m_ranks[i];
-      if (m_send_policy == CommProperty::ASynch)
+      if (m_send_policy == Alien::SimpleCSRInternal::CommProperty::ASynch)
         m_send_request[i] = Arccore::MessagePassing::mpSend(m_parallel_mng,
-                                                            ConstArrayView<ValueT>(size * m_unknowns_num, ptr), rank, false);
+                                                            ConstArrayView<ValueT>(nb_send_ids, ptr), rank, false);
       else
-        Arccore::MessagePassing::mpSend(
-        m_parallel_mng, ConstArrayView<ValueT>(size * m_unknowns_num, ptr), rank);
+        Arccore::MessagePassing::mpSend(m_parallel_mng,
+                                        ConstArrayView<ValueT>(nb_send_ids, ptr), rank);
     }
+
+    //alien_debug([&] {cout()<<"END SYCLSendRecvOP START" ; });
+    //Universe().traceMng()->flush() ;
   }
 
-  void _end(bool insitu)
+  void end(bool insitu = false)
   {
-    if (m_recv_policy == CommProperty::ASynch)
+    //alien_debug([&] {cout() << "SYCLSendRecvOP END : "<<m_recv_policy;});
+    //Universe().traceMng()->flush() ;
+
+    // clang-format off
+    auto env           = SYCLEnv::instance();
+    auto& queue        = env->internal()->queue();
+    auto total_threads = env->maxNumThreads() ;
+    // clang-format on
+    if (m_recv_policy == Alien::SimpleCSRInternal::CommProperty::ASynch) {
       Arccore::MessagePassing::mpWaitAll(m_parallel_mng, m_recv_request);
+
+      //Arccore::Integer total_recv_ids = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours] - m_recv_info.m_ids_offset[0];
+      //for (Integer i = 0; i < total_recv_ids; ++i) {
+      //  alien_debug([&] {cout() << "MPI RECV["<<i<<"]="<<m_rbuffer[i];});
+      //}
+    }
     else {
-      ValueT* rbuffer = m_recv_buffer;
-      if (m_recv_info.m_ids.size() && !insitu) {
-        Arccore::Integer size = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours];
-        m_rbuffer.resize(size * m_unknowns_num);
-        rbuffer = &m_rbuffer[0];
+      if (m_recv_info.m_ids.size()) {
+        Arccore::Integer total_recv_ids = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours] - m_recv_info.m_ids_offset[0];
+#ifdef USE_SYCL_USM
+        m_rbuffer = cl::sycl::malloc_shared<ValueT>(total_recv_ids, queue);
+#else
+        m_rbuffer.resize(total_recv_ids);
+#endif
       }
       for (Integer i = 0; i < m_recv_info.m_num_neighbours; ++i) {
         Integer off = m_recv_info.m_ids_offset[i];
         Integer size = m_recv_info.m_ids_offset[i + 1] - off;
-        ValueT* ptr = rbuffer + off * m_unknowns_num;
+#ifdef USE_SYCL_USM
+        ValueT* ptr = m_rbuffer + off;
+#else
+        ValueT* ptr = m_rbuffer.data() + off;
+#endif
         Integer rank = m_recv_info.m_ranks[i];
-        Arccore::MessagePassing::mpReceive(
-        m_parallel_mng, ArrayView<ValueT>(size * m_unknowns_num, ptr), rank);
-      }
-      if (m_recv_info.m_ids.size() && !insitu) {
-        Integer size = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours] - m_recv_info.m_ids_offset[0];
-        if (m_unknowns_num == 1)
-          for (Integer i = 0; i < size; ++i)
-            m_recv_buffer[m_recv_info.m_ids[i]] = m_rbuffer[i];
-        else
-          for (Integer i = 0; i < size; ++i)
-            for (Integer ui = 0; ui < m_unknowns_num; ++ui)
-              m_recv_buffer[m_recv_info.m_ids[i] * m_unknowns_num + ui] =
-              m_rbuffer[i * m_unknowns_num + ui];
+        Arccore::MessagePassing::mpReceive(m_parallel_mng, ArrayView<ValueT>(size, ptr), rank);
       }
     }
-    if (m_send_policy == CommProperty::ASynch)
-      Arccore::MessagePassing::mpWaitAll(m_parallel_mng, m_send_request);
-  }
+    if (m_recv_info.m_ids.size()) {
+      std::size_t total_nb_recv_ids = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours] - m_recv_info.m_ids_offset[0];
 
-  void _startBlock(bool insitu)
-  {
-    // alien_info([&] {cout() << "StartBlock "<<insitu<<" send pol"<<m_send_policy;});
-    if (m_recv_policy == CommProperty::ASynch) {
-      m_recv_request.resize(m_recv_info.m_num_neighbours);
-      ValueT* rbuffer = nullptr;
-      if (m_recv_info.m_ids.size() && !insitu) {
-        Integer size = m_recv_info.m_block_ids_offset[m_recv_info.m_num_neighbours] - m_recv_info.m_block_ids_offset[0];
-        m_rbuffer.resize(size);
-        rbuffer = &m_rbuffer[0];
-      }
-      else
-        rbuffer = m_recv_buffer;
-      // alien_info([&] {cout() << "RecvInfo Nb Neighb :
-      // "<<m_recv_info.m_num_neighbours;}) ;
-      for (Integer i = 0; i < m_recv_info.m_num_neighbours; ++i) {
-        Integer off = m_recv_info.m_block_ids_offset[i];
-        Integer size = m_recv_info.m_block_ids_offset[i + 1] - off;
-        ValueT* ptr = rbuffer + off;
-        Integer rank = m_recv_info.m_ranks[i];
-        m_recv_request[i] = Arccore::MessagePassing::mpReceive(
-        m_parallel_mng, ArrayView<ValueT>(size, ptr), rank, false);
-      }
-    }
-    if (m_send_policy == CommProperty::ASynch)
-      m_send_request.resize(m_send_info.m_num_neighbours);
-    ValueT const* sbuffer = m_send_buffer;
-    if (m_send_info.m_ids.size()) {
       {
-        Integer size = m_send_info.m_block_ids_offset[m_send_info.m_num_neighbours] - m_send_info.m_block_ids_offset[0];
-        m_sbuffer.resize(size);
-      }
-      Integer size = m_send_info.m_ids_offset[m_send_info.m_num_neighbours] - m_send_info.m_ids_offset[0];
-      Integer offset = 0;
-      for (Integer i = 0; i < size; ++i) {
-        Integer id = m_send_info.m_ids[i];
-        Integer block_size = m_block_sizes[id];
-        Integer block_offset = m_block_offsets[id];
-        for (Integer ui = 0; ui < block_size; ++ui)
-          m_sbuffer[offset + ui] = m_send_buffer[block_offset + ui];
-        offset += block_size;
-      }
-      // ARCANE_ASSERT((offset ==
-      // m_send_info.m_block_ids_offset[m_send_info.m_num_neighbours] -
-      // m_send_info.m_block_ids_offset[0]),("size error"));
-      sbuffer = &m_sbuffer[0];
-    }
-    for (Integer i = 0; i < m_send_info.m_num_neighbours; ++i) {
-      Integer off = m_send_info.m_block_ids_offset[i];
-      Integer size = m_send_info.m_block_ids_offset[i + 1] - off;
-      ValueT const* ptr = sbuffer + off;
-      Integer rank = m_send_info.m_ranks[i];
-      if (m_send_policy == CommProperty::ASynch)
-        m_send_request[i] = Arccore::MessagePassing::mpSend(
-        m_parallel_mng, ConstArrayView<ValueT>(size, ptr), rank, false);
-      else
-        Arccore::MessagePassing::mpSend(
-        m_parallel_mng, ConstArrayView<ValueT>(size, ptr), rank);
-    }
-  }
+#ifdef USE_SYCL_USM
+        cl::sycl::buffer<ValueType> rbuffer{ { cl::sycl::buffer_allocation::view(m_rbuffer, queue.get_device()) }, total_nb_recv_ids };
+#else
+        cl::sycl::buffer<ValueType> rbuffer(m_rbuffer.data(), total_nb_recv_ids);
+#endif
+        // clang-format off
+        queue.submit([&](cl::sycl::handler& cgh)
+                     {
+                       //auto access_recv_buffer = m_recv_buffer.template get_access<cl::sycl::access::mode::read_write>(cgh);
+                       //auto access_ids         = m_recv_ids.template get_access<cl::sycl::access::mode::read>(cgh);
 
-  void _endBlock(bool insitu)
-  {
-    // alien_info([&] {cout() << "EndBlock "<<insitu<<" recv pol="<<m_recv_policy;});
-    if (m_recv_policy == CommProperty::ASynch) {
-      Arccore::MessagePassing::mpWaitAll(m_parallel_mng, m_recv_request);
-    }
-    else {
-      ValueT* rbuffer = m_recv_buffer;
-      if (m_recv_info.m_ids.size() && !insitu) {
-        Arccore::Integer size =
-        m_recv_info.m_block_ids_offset[m_recv_info.m_num_neighbours];
-        m_rbuffer.resize(size);
-        rbuffer = &m_rbuffer[0];
-      }
-      for (Integer i = 0; i < m_recv_info.m_num_neighbours; ++i) {
-        Integer off = m_recv_info.m_block_ids_offset[i];
-        Integer size = m_recv_info.m_block_ids_offset[i + 1] - off;
-        ValueT* ptr = rbuffer + off;
-        Integer rank = m_recv_info.m_ranks[i];
-        Arccore::MessagePassing::mpReceive(
-        m_parallel_mng, ArrayView<ValueT>(size, ptr), rank);
-      }
-      if (m_recv_info.m_ids.size() && !insitu) {
-        Arccore::Integer size = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours] - m_recv_info.m_ids_offset[0];
-        Integer offset = 0;
-        for (Integer i = 0; i < size; ++i) {
-          Integer id = m_recv_info.m_ids[i];
-          Integer block_size = m_block_sizes[id];
-          Integer block_offset = m_block_offsets[id];
-          for (Integer ui = 0; ui < block_size; ++ui)
-            m_recv_buffer[block_offset + ui] = m_rbuffer[offset + ui];
-          offset += block_size;
-        }
-        // ARCANE_ASSERT((offset =
-        // m_recv_info.m_block_ids_offset[m_recv_info.m_num_neighbours] -
-        // m_recv_info.m_block_ids_offset[0]),("size error"));
+                       cl::sycl::accessor<ValueType> access_recv_buffer{m_recv_buffer, cgh,cl::sycl::write_only, cl::sycl::property::no_init{}};
+                       cl::sycl::accessor<ValueType> access_rbuffer{rbuffer, cgh};
+
+                       cgh.parallel_for<class vector_mult_recv>(cl::sycl::range<1>{total_threads},
+                                                                [=] (cl::sycl::item<1> itemId)
+                                                                {
+                                                                 auto id = itemId.get_id(0);
+                                                                 for(auto i=id;i<total_nb_recv_ids;i += total_threads)
+                                                                   access_recv_buffer[i] = access_rbuffer[i];
+                                                                });
+                     });
+        // clang-format on
       }
     }
-    if (m_send_policy == CommProperty::ASynch)
+    if (m_send_policy == Alien::SimpleCSRInternal::CommProperty::ASynch) {
       Arccore::MessagePassing::mpWaitAll(m_parallel_mng, m_send_request);
+    }
+
+    //alien_debug([&] {cout() << "AFTER SYCLSendRecvOP END : "<<m_recv_policy;});
+    //Universe().traceMng()->flush() ;
   }
 
  private:
-  const bool m_is_variable_block = false;
-  const ValueT* m_send_buffer = nullptr;
-  const CommInfo& m_send_info;
-  CommProperty::ePolicyType m_send_policy;
-  ValueT* m_recv_buffer = nullptr;
-  const CommInfo& m_recv_info;
-  CommProperty::ePolicyType m_recv_policy;
-  Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng = nullptr;
-  Arccore::ITraceMng* m_trace = nullptr;
-  Arccore::Integer m_unknowns_num = 0;
-  std::vector<ValueT> m_rbuffer;
-  std::vector<ValueT> m_sbuffer;
+  // clang-format off
+  ValueBufferType&                                       m_send_buffer;
+  const Alien::SimpleCSRInternal::CommInfo&              m_send_info;
+  IndexBufferType&                                       m_send_ids;
+  Alien::SimpleCSRInternal::CommProperty::ePolicyType    m_send_policy;
+
+  ValueBufferType&                                       m_recv_buffer;
+  const Alien::SimpleCSRInternal::CommInfo&              m_recv_info;
+  IndexBufferType&                                       m_recv_ids;
+  Alien::SimpleCSRInternal::CommProperty::ePolicyType    m_recv_policy;
+#ifdef USE_SYCL_USM
+  ValueT*                                                m_rbuffer      = nullptr;
+  ValueT*                                                m_sbuffer      = nullptr;
+#else
+  std::vector<ValueT>                                    m_rbuffer ;
+  std::vector<ValueT>                                    m_sbuffer ;
+#endif
+  Arccore::MessagePassing::IMessagePassingMng*           m_parallel_mng = nullptr;
+  Arccore::ITraceMng*                                    m_trace        = nullptr;
   Arccore::UniqueArray<Arccore::MessagePassing::Request> m_recv_request;
   Arccore::UniqueArray<Arccore::MessagePassing::Request> m_send_request;
-  Arccore::ConstArrayView<Arccore::Integer> m_block_sizes;
-  Arccore::ConstArrayView<Arccore::Integer> m_block_offsets;
+  // clang-format on
 };
 
 } // namespace Alien::SYCLInternal

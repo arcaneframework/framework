@@ -134,13 +134,13 @@ class ALIEN_EXPORT SimpleCSRInternalLinearAlgebra
 
   static ResourceType const& resource(Matrix const& A);
 
-  void allocate(ResourceType const& distribution, Vector& v);
+  void allocate(ResourceType const& resource, Vector& v);
 
   template <typename T0, typename... T>
-  void allocate(ResourceType const& distribution, T0& v0, T&... args)
+  void allocate(ResourceType const& resource, T0& v0, T&... args)
   {
-    allocate(distribution, v0);
-    allocate(distribution, args...);
+    allocate(resource, v0);
+    allocate(resource, args...);
   }
 
   void free(Vector& v);

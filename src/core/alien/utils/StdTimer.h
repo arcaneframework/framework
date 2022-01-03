@@ -62,6 +62,7 @@ class StdTimer
 
   void printInfo(std::ostream& out, const std::string& msg) const
   {
+    out << msg << std::endl;
     out << "================================" << std::endl;
     out << "PERF INFO : " << std::endl;
     for (auto const& iter : m_counters) {

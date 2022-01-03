@@ -16,6 +16,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include "arccore/message_passing/ITypeDispatcher.h"
+#include "arccore/message_passing/Request.h"
+#include "arccore/message_passing/IStat.h"
+#include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
+#include "arccore/message_passing_mpi/MpiAdapter.h"
+#include "arccore/message_passing_mpi/MpiLock.h"
+#include "arccore/message_passing_mpi/MpiRequest.h"
+#include "arccore/message_passing_mpi/MpiTypeDispatcher.h"
+#include "arccore/message_passing_mpi/MpiDatatype.h"
+
 #include <alien/utils/Precomp.h>
 
 #include <arccore/base/NotImplementedException.h>
@@ -93,9 +103,9 @@ SYCLInternalLinearAlgebra::resource(Matrix const& A)
   return A.distribution().rowDistribution();
 }
 
-void SYCLInternalLinearAlgebra::allocate(ResourceType const& distribution, Vector& v)
+void SYCLInternalLinearAlgebra::allocate(ResourceType const& resource, Vector& v)
 {
-  v.init(distribution, true);
+  v.init(resource, true);
 }
 
 void SYCLInternalLinearAlgebra::free(Vector& v)
@@ -220,7 +230,14 @@ Real SYCLInternalLinearAlgebra::dot(const SYCLVector<Real>& vx, const SYCLVector
 #ifdef ALIEN_USE_PERF_TIMER
   SentryType s(m_timer, "SYCL-DOT");
 #endif
-  return m_internal->dot(vx.internal()->values(), vy.internal()->values());
+  auto value = m_internal->dot(vx.internal()->values(), vy.internal()->values());
+  auto& dist = vx.distribution();
+  if (dist.isParallel()) {
+    return Arccore::MessagePassing::mpAllReduce(dist.parallelMng(),
+                                                Arccore::MessagePassing::ReduceSum,
+                                                value);
+  }
+  return value;
 }
 
 void SYCLInternalLinearAlgebra::dot(const SYCLVector<Real>& vx,
@@ -231,6 +248,22 @@ void SYCLInternalLinearAlgebra::dot(const SYCLVector<Real>& vx,
   SentryType s(m_timer, "SYCL-DOT-F");
 #endif
   m_internal->dot(vx.internal()->values(), vy.internal()->values(), res.deviceValue());
+
+  auto& dist = vx.distribution();
+  if (dist.isParallel()) {
+    using namespace Arccore::MessagePassing::Mpi;
+    res.get();
+    Real* x = &res();
+    auto pm = dist.parallelMng();
+    auto type_dispatcher = pm->dispatchers()->dispatcher(x);
+    MpiTypeDispatcher<Real>* ptr = dynamic_cast<MpiTypeDispatcher<Real>*>(type_dispatcher);
+    if (ptr) {
+      auto datatype = ptr->datatype();
+      auto op = datatype->reduceOperator(Arccore::MessagePassing::ReduceSum);
+      auto request = ptr->adapter()->nonBlockingAllReduce(x, x, 1, datatype->datatype(), op);
+      res.addRequest(pm, request);
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/

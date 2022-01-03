@@ -77,9 +77,9 @@ SimpleCSRInternalLinearAlgebra::resource(Matrix const& A)
   return A.distribution().rowDistribution();
 }
 
-void SimpleCSRInternalLinearAlgebra::allocate(ResourceType const& distribution, Vector& v)
+void SimpleCSRInternalLinearAlgebra::allocate(ResourceType const& resource, Vector& v)
 {
-  v.init(distribution, true);
+  v.init(resource, true);
 }
 
 void SimpleCSRInternalLinearAlgebra::free(Vector& v)

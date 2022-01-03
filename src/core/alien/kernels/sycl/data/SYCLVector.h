@@ -86,7 +86,7 @@ class ALIEN_EXPORT SYCLVector : public IVectorImpl
 
   void init(const VectorDistribution& dist, const bool need_allocate)
   {
-    alien_debug([&] { cout() << "Initializing SYCLVector " << this; });
+    //alien_debug([&] { cout() << "Initializing SYCLVector " << this; });
     if (this->m_multi_impl) {
       m_local_size = this->scalarizedLocalSize();
     }
@@ -98,6 +98,8 @@ class ALIEN_EXPORT SYCLVector : public IVectorImpl
     if (need_allocate) {
       allocate();
     }
+    //alien_debug([&] { cout() << "After Initializing SYCLVector " << m_local_size<<" "<<m_h_values.size(); });
+    //Universe().traceMng()->flush() ;
   }
 
   const VectorDistribution& distribution() const

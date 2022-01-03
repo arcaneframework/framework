@@ -88,14 +88,6 @@ const VectorType& x_impl, VectorType& y_impl) const
   x_impl.resize(alloc_size);
   Real* y_ptr = y_impl.getDataPtr();
   Real* x_ptr = (Real*)x_impl.getDataPtr();
-#ifdef DEBUG
-  /*
-    for(Arccore::Integer i=0;i<m_matrix_impl.m_local_size;++i)
-    {
-    m_matrix_impl.space().message()<<"X["<<i<<"]="<<x_ptr[i];
-    }
-  */
-#endif
   ConstArrayView<Real> matrix = m_matrix_impl.m_matrix.getValues();
   // ConstArrayView<Integer> cols2 =
   // m_matrix_impl.m_matrix.getCSRProfile().getCols();
@@ -113,23 +105,11 @@ const VectorType& x_impl, VectorType& y_impl) const
     Integer off2 = off + local_row_size[irow];
     Real tmpy = 0.;
     for (Integer j = off; j < off2; ++j) {
-      // Cedric: Il doit y avoir une erreur ici, cols[j] n'est pas forcement dans x_ptr
-      // en particulier si cols[j] est un fant?me !
       tmpy += matrix[j] * x_ptr[cols[j]];
-      // m_matrix_impl.space().message()<<"mat["<<cols[j]<<","<<cols2[j]<<"]="<<matrix[j]<<"*"<<x_ptr[cols[j]];
     }
     y_ptr[irow] = tmpy;
-    // m_matrix_impl.space().message()<<"Y["<<irow<<"]="<<y_ptr[irow];
   }
   op.end();
-#ifdef DEBUG
-  /*
-    for(Arccore::Integer i=m_matrix_impl.m_local_size;i<alloc_size;++i)
-    {
-    m_matrix_impl.space().message()<<"GX["<<i<<"]="<<x_ptr[i];
-    }
-  */
-#endif
 
   Integer interface_nrow = m_matrix_impl.m_matrix_dist_info.m_interface_nrow;
   ConstArrayView<Integer> row_ids = m_matrix_impl.m_matrix_dist_info.m_interface_rows;
@@ -140,19 +120,9 @@ const VectorType& x_impl, VectorType& y_impl) const
     Real tmpy = 0.;
     for (Integer j = off; j < off2; ++j) {
       tmpy += matrix[j] * x_ptr[cols[j]];
-      // m_matrix_impl.space().message()<<"mat["<<cols[j]<<","<<cols2[j]<<"]="<<matrix[j]<<"*"<<x_ptr[cols[j]];
     }
     y_ptr[irow] += tmpy;
-    // m_matrix_impl.space().message()<<"Y["<<irow<<"]="<<y_ptr[irow];
   }
-#ifdef DEBUG
-  /*
-    for(Arccore::Integer i=0;i<m_matrix_impl.m_local_size;++i)
-    {
-    m_matrix_impl.space().message()<<"Y["<<i<<"]="<<y_ptr[i];
-    }
-  */
-#endif
 }
 
 template <typename ValueT>

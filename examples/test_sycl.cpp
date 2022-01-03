@@ -16,8 +16,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-
-
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
@@ -25,6 +23,7 @@
 #include <boost/program_options/variables_map.hpp>
 
 #include <arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h>
+#include <arccore/base/StringBuilder.h>
 
 #include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
 
@@ -40,15 +39,12 @@
 
 #include <alien/ref/AlienRefSemantic.h>
 
-
 #include <alien/utils/StdTimer.h>
-
-
 
 int main(int argc, char** argv)
 {
 
-  using namespace boost::program_options ;
+  using namespace boost::program_options;
   options_description desc;
   // clang-format off
   desc.add_options()
@@ -64,28 +60,45 @@ int main(int argc, char** argv)
   notify(vm);
 
   if (vm.count("help")) {
-      std::cout << desc << "\n";
-      return 1;
+    std::cout << desc << "\n";
+    return 1;
   }
 
   MPI_Init(&argc, &argv);
   auto* pm = Arccore::MessagePassing::Mpi::StandaloneMpiMessagePassingMng::create(MPI_COMM_WORLD);
+  bool is_parallel = pm->commSize() > 1;
+
   auto* trace_mng = Arccore::arccoreCreateDefaultTraceMng();
+  Alien::Integer my_rank = pm->commRank();
+  Arccore::StringBuilder filename("sycl.log");
+  Arccore::ReferenceCounter<Arccore::ITraceStream> ofile;
+  if (pm->commSize() > 1) {
+    filename += pm->commRank();
+    ofile = Arccore::ITraceStream::createFileStream(filename.toString());
+    trace_mng->setRedirectStream(ofile.get());
+  }
+  trace_mng->finishInitialize();
 
   Alien::setTraceMng(trace_mng);
   Alien::setVerbosityLevel(Alien::Verbosity::Debug);
 
-  typedef Alien::StdTimer   TimerType ;
-  typedef TimerType::Sentry SentryType ;
+  trace_mng->info() << "INFO START SYCL TEST";
 
-  TimerType timer ;
+  // clang-format off
+  typedef Alien::StdTimer   TimerType;
+  typedef TimerType::Sentry SentryType;
+  // clang-format on
+
+  TimerType timer;
 
   using namespace Alien;
   //Alien::ITraceMng* trace_mng = AlienTest::Environment::traceMng();
 
+  // clang-format off
   std::string test    = vm["test"].as<std::string>() ;
   int nb_test         = vm["nb-test"].as<int>() ;
   Integer global_size = vm["size"].as<int>() ;
+  // clang-format on
 
   const Alien::Space s(global_size, "MySpace");
   Alien::MatrixDistribution mdist(s, s, pm);
@@ -128,7 +141,7 @@ int main(int argc, char** argv)
   {
     Alien::LocalVectorWriter writer(y);
     for (Integer i = 0; i < local_size; ++i)
-      writer[i] = i;
+      writer[i] = offset + i;
   }
 
   {
@@ -140,152 +153,159 @@ int main(int argc, char** argv)
   Alien::SimpleCSRLinearAlgebra csr_alg;
   Alien::SYCLLinearAlgebra sycl_alg;
 
-  if( (test.compare("all") == 0 ) || (test.compare("copy")==0 ))
-  {
-    trace_mng->info() <<"TEST COPY : r = y";
+  if ((test.compare("all") == 0) || (test.compare("copy") == 0)) {
+    trace_mng->info() << "TEST COPY : r = y";
     {
+      // clang-format off
       auto const& csr_y = y.impl()->get<Alien::BackEnd::tag::simplecsr>() ;
       auto&       csr_r = r.impl()->get<Alien::BackEnd::tag::simplecsr>() ;
-      for(int i=0;i<nb_test;++i)
-      {
-        SentryType s(timer,"CSR-COPY") ;
-        csr_alg.copy(y,r) ;
+      // clang-format on
+      for (int i = 0; i < nb_test; ++i) {
+        SentryType s(timer, "CSR-COPY");
+        csr_alg.copy(y, r);
       }
     }
     {
+      // clang-format off
       auto const& sycl_y = y.impl()->get<Alien::BackEnd::tag::sycl>() ;
       auto&       sycl_r = r.impl()->get<Alien::BackEnd::tag::sycl>() ;
-      for(int i=0;i<nb_test;++i)
-      {
-        SentryType s(timer,"SYLC-COPY") ;
-        sycl_alg.copy(y,r) ;
+      // clang-format on
+      for (int i = 0; i < nb_test; ++i) {
+        SentryType s(timer, "SYLC-COPY");
+        sycl_alg.copy(y, r);
       }
     }
     {
       Alien::LocalVectorReader reader(r);
-      for (Integer i = 0; i < std::min(10,local_size); ++i)
-      {
-        trace_mng->info() << "R["<<i<<"]="<<reader[i];
+      for (Integer i = 0; i < std::min(10, local_size); ++i) {
+        trace_mng->info() << "R[" << i << "]=" << reader[i];
       }
     }
   }
 
-  if( (test.compare("all") == 0 ) || (test.compare("axpy")==0 ))
-  {
-    trace_mng->info() <<"TEST AXPY : y += a*x ";
+  if ((test.compare("all") == 0) || (test.compare("axpy") == 0)) {
+    trace_mng->info() << "TEST AXPY : y += a*x ";
     {
+      // clang-format off
       auto const& csr_x = x.impl()->get<Alien::BackEnd::tag::simplecsr>() ;
       auto&       csr_y = y.impl()->get<Alien::BackEnd::tag::simplecsr>() ;
-      for(int i=0;i<nb_test;++i)
-      {
-        SentryType s(timer,"CSR-AXPY") ;
-        csr_alg.axpy(1.,x,y) ;
+      // clang-format on
+      for (int i = 0; i < nb_test; ++i) {
+        SentryType s(timer, "CSR-AXPY");
+        csr_alg.axpy(1., x, y);
       }
     }
     {
+      // clang-format off
       auto const& sycl_x = x.impl()->get<Alien::BackEnd::tag::sycl>() ;
       auto&       sycl_y = y.impl()->get<Alien::BackEnd::tag::sycl>() ;
-      for(int i=0;i<nb_test;++i)
-      {
-        SentryType s(timer,"SYCL-AXPY") ;
-        sycl_alg.axpy(1.,x,y) ;
+      // clang-format on
+      for (int i = 0; i < nb_test; ++i) {
+        SentryType s(timer, "SYCL-AXPY");
+        sycl_alg.axpy(1., x, y);
       }
     }
 
     {
       Alien::LocalVectorReader reader(y);
-      for (Integer i = 0; i < std::min(10,local_size); ++i)
-      {
-        trace_mng->info() << "Y["<<i<<"]="<<reader[i];
+      for (Integer i = 0; i < std::min(10, local_size); ++i) {
+        trace_mng->info() << "Y[" << i << "]=" << reader[i];
       }
     }
   }
 
-  if( (test.compare("all") == 0 ) || (test.compare("dot")==0 ))
-  {
-    trace_mng->info() <<"TEST DOT : dot(x,y) ";
-    Real x_dot_y_ref = 0. ;
+  if ((test.compare("all") == 0) || (test.compare("dot") == 0)) {
+    trace_mng->info() << "TEST DOT : dot(x,y) ";
+    Real x_dot_y_ref = 0.;
     {
       Alien::LocalVectorReader reader_x(x);
       Alien::LocalVectorReader reader_y(y);
       for (Integer i = 0; i < local_size; ++i)
-        x_dot_y_ref += reader_x[i]*reader_y[i] ;
+        x_dot_y_ref += reader_x[i] * reader_y[i];
+      if (is_parallel)
+        x_dot_y_ref = Arccore::MessagePassing::mpAllReduce(pm,
+                                                           Arccore::MessagePassing::ReduceSum,
+                                                           x_dot_y_ref);
     }
-    Real x_dot_y = 0. ;
-    Real x_dot_y2 = 0. ;
-    Alien::SYCLInternalLinearAlgebra::FutureType f_x_dot_y(x_dot_y2) ;
+    Real x_dot_y = 0.;
+    Real x_dot_y2 = 0.;
+    Alien::SYCLInternalLinearAlgebra::FutureType f_x_dot_y(x_dot_y2);
 
     {
-      auto const& csr_x = x.impl()->get<Alien::BackEnd::tag::simplecsr>() ;
-      auto const& csr_y = y.impl()->get<Alien::BackEnd::tag::simplecsr>() ;
+      auto const& csr_x = x.impl()->get<Alien::BackEnd::tag::simplecsr>();
+      auto const& csr_y = y.impl()->get<Alien::BackEnd::tag::simplecsr>();
 
-      for(int itest=0;itest<nb_test;++itest)
-      {
+      for (int itest = 0; itest < nb_test; ++itest) {
         //std::cout<<itest<<"*";
-        SentryType s(timer,"CSR-DOT") ;
-        x_dot_y = csr_alg.dot(x,y) ;
+        SentryType s(timer, "CSR-DOT");
+        x_dot_y = csr_alg.dot(x, y);
       }
       //std::cout<<std::endl ;
     }
     {
-      int dot_algo = vm["dot-algo"].as<int>() ;
+      int dot_algo = vm["dot-algo"].as<int>();
       Alien::SYCLInternalLinearAlgebra internal_sycl_alg;
-      internal_sycl_alg.setDotAlgo(dot_algo) ;
-      auto const& sycl_x = x.impl()->get<Alien::BackEnd::tag::sycl>() ;
-      auto const& sycl_y = y.impl()->get<Alien::BackEnd::tag::sycl>() ;
+      internal_sycl_alg.setDotAlgo(dot_algo);
+      auto const& sycl_x = x.impl()->get<Alien::BackEnd::tag::sycl>();
+      auto const& sycl_y = y.impl()->get<Alien::BackEnd::tag::sycl>();
 
-
-      for(int itest=0;itest<nb_test;++itest)
-      {
+      for (int itest = 0; itest < nb_test; ++itest) {
         //std::cout<<itest<<"*";
-        SentryType s(timer,"SYLC-DOT") ;
-        x_dot_y = internal_sycl_alg.dot(sycl_x,sycl_y) ;
+        SentryType s(timer, "SYLC-DOT");
+        x_dot_y = internal_sycl_alg.dot(sycl_x, sycl_y);
       }
-      for(int itest=0;itest<nb_test;++itest)
-      {
+      for (int itest = 0; itest < nb_test; ++itest) {
         //std::cout<<itest<<"*";
-        SentryType s(timer,"SYLC-DOT-F") ;
-        internal_sycl_alg.dot(sycl_x,sycl_y,f_x_dot_y) ;
+        SentryType s(timer, "SYLC-DOT-F");
+        internal_sycl_alg.dot(sycl_x, sycl_y, f_x_dot_y);
       }
 
       //std::cout<<std::endl ;
     }
-    trace_mng->info() <<"SYCL DOT(X,Y) = "<<x_dot_y<<", F-DOT = "<<f_x_dot_y.get()<<", REF="<<x_dot_y_ref;
+    trace_mng->info() << "SYCL DOT(X,Y) = " << x_dot_y << ", F-DOT = " << f_x_dot_y.get() << ", REF=" << x_dot_y_ref;
   }
 
-  if( (test.compare("all") == 0 ) || (test.compare("mult")==0 ))
-  {
-    trace_mng->info() <<"TEST SPMV : y = A*x ";
+  if ((test.compare("all") == 0) || (test.compare("mult") == 0)) {
+    trace_mng->info() << "TEST SPMV : y = A*x ";
     {
+      // clang-format off
       auto const& csr_A = A.impl()->get<Alien::BackEnd::tag::simplecsr>() ;
       auto const& csr_x = x.impl()->get<Alien::BackEnd::tag::simplecsr>() ;
       auto&       csr_y = y.impl()->get<Alien::BackEnd::tag::simplecsr>() ;
-      for(int i=0;i<nb_test;++i)
-      {
-        SentryType s(timer,"CSR-SPMV") ;
-        csr_alg.mult(A,x,y) ;
-      }
-    }
-    {
-      auto const& sycl_A = A.impl()->get<Alien::BackEnd::tag::sycl>() ;
-      auto const& sycl_x = x.impl()->get<Alien::BackEnd::tag::sycl>() ;
-      auto&       sycl_y = y.impl()->get<Alien::BackEnd::tag::sycl>() ;
-      for(int i=0;i<nb_test;++i)
-      {
-        SentryType s(timer,"SYLC-SPMV") ;
-        sycl_alg.mult(A,x,y) ;
+      // clang-format on
+      for (int i = 0; i < nb_test; ++i) {
+        SentryType s(timer, "CSR-SPMV");
+        csr_alg.mult(A, x, y);
       }
     }
     {
       Alien::LocalVectorReader reader(y);
-      for (Integer i = 0; i < std::min(10,local_size); ++i)
-      {
-        trace_mng->info() << "Y["<<i<<"]="<<reader[i];
+      for (Integer i = 0; i < std::min(10, local_size); ++i) {
+        trace_mng->info() << my_rank << " CSR Y[" << i << "]=" << reader[i];
+      }
+    }
+    {
+      // clang-format off
+      auto const& sycl_A = A.impl()->get<Alien::BackEnd::tag::sycl>() ;
+      auto const& sycl_x = x.impl()->get<Alien::BackEnd::tag::sycl>() ;
+      auto&       sycl_y = y.impl()->get<Alien::BackEnd::tag::sycl>() ;
+      // clang-format on
+      for (int i = 0; i < nb_test; ++i) {
+        SentryType s(timer, "SYLC-SPMV");
+        sycl_alg.mult(A, x, y);
+      }
+    }
+    {
+      Alien::LocalVectorReader reader(y);
+      for (Integer i = 0; i < std::min(10, local_size); ++i) {
+        trace_mng->info() << my_rank << " SYCL Y[" << i << "]=" << reader[i];
       }
     }
   }
 
-  timer.printInfo(trace_mng->info().file(),"SYCL-BENCH") ;
+  timer.printInfo(trace_mng->info().file(), "SYCL-BENCH");
+
+  trace_mng->info() << "INFO FINALIZE SYCL TEST";
 
   MPI_Finalize();
 

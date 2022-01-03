@@ -78,20 +78,23 @@ const SimpleCSRMatrix<Real>& sourceImpl, SYCLBEllPackMatrix<Real>& targetImpl) c
 
   const MatrixDistribution& dist = targetImpl.distribution();
   const CSRStructInfo& profile = sourceImpl.getCSRProfile();
-  //const Integer localSize = profile.getNRow();
-  //const Integer localOffset = dist.rowOffset();
+  const Integer globalSize = dist.globalRowSize();
+  const Integer localOffset = dist.rowOffset();
   auto const& matrixInternal = sourceImpl.internal();
-  //const Integer myRank = dist.parallelMng()->commRank();
-  //const Integer nProc = dist.parallelMng()->commSize();
 
   {
-
     auto const& matrix_profile = sourceImpl.internal().getCSRProfile();
     int nrows = matrix_profile.getNRow();
     int const* kcol = matrix_profile.getRowOffset().unguardedBasePointer();
     int const* cols = matrix_profile.getCols().unguardedBasePointer();
 
-    if (not targetImpl.initMatrix(dist.parallelMng(), nrows, kcol, cols)) {
+    if (not targetImpl.initMatrix(dist.parallelMng(),
+                                  localOffset,
+                                  globalSize,
+                                  nrows,
+                                  kcol,
+                                  cols,
+                                  sourceImpl.getDistStructInfo())) {
       throw FatalErrorException(A_FUNCINFO, "SYCL Initialisation failed");
     }
 
