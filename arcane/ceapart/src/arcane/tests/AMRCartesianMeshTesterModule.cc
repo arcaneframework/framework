@@ -103,6 +103,7 @@ class AMRCartesianMeshTesterModule
   void _writePostProcessing();
   void _checkUniqueIds();
   void _checkUniqueIds(IItemFamily* family,const String& expected_hash);
+  void _testDirections();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -285,6 +286,7 @@ init()
   }
   m_utils->testAll();
   _writePostProcessing();
+  _testDirections();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -618,6 +620,35 @@ _writePostProcessing()
   post_processor->setGroups(groups);
   IVariableMng* vm = subDomain()->variableMng();
   vm->writePostProcessing(post_processor);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AMRCartesianMeshTesterModule::
+_testDirections()
+{
+  Integer nb_patch = m_cartesian_mesh->nbPatch();
+  Integer nb_dir = m_cartesian_mesh->mesh()->dimension();
+  NodeDirectionMng node_dm2;
+  for( Integer ipatch=0; ipatch<nb_patch; ++ipatch ){
+    ICartesianMeshPatch* p = m_cartesian_mesh->patch(ipatch);
+    for( Integer idir=0; idir<nb_dir; ++idir ){
+      NodeDirectionMng node_dm(p->nodeDirection(idir));
+      node_dm2 = p->nodeDirection(idir);
+      NodeGroup dm_all_nodes = node_dm.allNodes();
+      ENUMERATE_NODE(inode,dm_all_nodes){
+        DirNode dir_node(node_dm[inode]);
+        DirNode dir_node2(node_dm2[inode]);
+        Node prev_node = dir_node.previous();
+        Node next_node = dir_node.next();
+        Node prev_node2 = dir_node2.previous();
+        Node next_node2 = dir_node2.next();
+        m_utils->checkSameId(prev_node,prev_node2);
+        m_utils->checkSameId(next_node,next_node2);
+      }
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/

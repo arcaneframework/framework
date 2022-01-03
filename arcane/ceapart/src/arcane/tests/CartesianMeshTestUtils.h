@@ -47,6 +47,12 @@ class CartesianMeshTestUtils
 
   void testAll();
 
+ public:
+
+  void checkSameId(Face item,FaceLocalId local_id) { _checkSameId(item,local_id); }
+  void checkSameId(Cell item,CellLocalId local_id) { _checkSameId(item,local_id); }
+  void checkSameId(Node item,NodeLocalId local_id) { _checkSameId(item,local_id); }
+
  private:
 
   ICartesianMesh* m_cartesian_mesh = nullptr;
