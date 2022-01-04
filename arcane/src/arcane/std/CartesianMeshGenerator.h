@@ -47,6 +47,8 @@ class CartesianMeshGeneratorBuildInfo
   Integer m_nsdz = 0; // nombre de sous-domaines en z
   //! Indique si on génère les groupes pour un cas test de sod
   bool m_is_generate_sod_groups = false;
+  //! Version de l'algorithme de numérotation des faces
+  Int32 m_face_numbering_version = 1;
  public:
   void readOptionsFromXml(XmlNode cartesian_node);
 };

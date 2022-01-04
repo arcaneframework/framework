@@ -1,6 +1,7 @@
 set( ARCANE_SOURCES
   AbstractItemFamilyTopologyModifier.cc
   AbstractItemFamilyTopologyModifier.h
+  CartesianFaceUniqueIdBuilder.cc
   CompactIncrementalItemConnectivity.h
   CommonItemGroupFilterer.h
   CommonItemGroupFilterer.cc
@@ -98,6 +99,8 @@ set( ARCANE_SOURCES
   MeshExchangeMng.h
   MeshNodeMerger.cc
   MeshNodeMerger.h
+  MeshUniqueIdMng.cc
+  MeshUniqueIdMng.h
   MeshVariables.cc
   MeshVariables.h
   MeshPartitionConstraintMng.cc

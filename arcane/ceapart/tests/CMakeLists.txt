@@ -103,6 +103,19 @@ endif()
 ARCANE_ADD_TEST_SEQUENTIAL(adiadvection-1 testAdiAdvection-1.arc "-m 20")
 arcane_add_test(amr-cartesian2D-1 testAMRCartesianMesh2D-1.arc "-m 20")
 arcane_add_test(amr-checkpoint-cartesian2D-1 testAMRCartesianMesh2D-1.arc -c 3 -m 5)
+
+# Tests sur le renumérotation des faces en cartésien
+# L'idéal est d'avoir pas mal de sous-domaines pour être sur que le
+# nombre de sous-domaines dans chaque direction est différent.
+# Du coup on utilise le mode mémoire partagée au lieu de MPI pour
+# que les tests fonctionnent bien même si la machine n'a pas beaucoup
+# de coeurs.
+arcane_add_test_sequential(cartesian2d_face_renumbering testCartesianMesh2D-face-renumbering.arc "-m 10")
+arcane_add_test_parallel_thread(cartesian2d_face_renumbering testCartesianMesh2D-face-renumbering.arc 6 "-m 10")
+arcane_add_test_sequential(cartesian3d_face_renumbering testCartesianMesh3D-face-renumbering.arc "-m 10")
+arcane_add_test_parallel_thread(cartesian3d_face_renumbering testCartesianMesh3D-face-renumbering.arc 12 "-m 10")
+
+# Tests sur le partitionnement avec grille en cartésien
 arcane_add_test(cartesian_grid_partitioning testCartesianMesh-grid-partitioning.arc "-m 10")
 arcane_add_test_parallel(cartesian_grid_partitioning_6proc testCartesianMesh-grid-partitioning6.arc 6 "-m 10")
 arcane_add_test_parallel(cartesian_grid_partitioning_12proc testCartesianMesh-grid-partitioning12.arc 12 "-m 10")

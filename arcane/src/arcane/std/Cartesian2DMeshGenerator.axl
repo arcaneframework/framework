@@ -35,6 +35,15 @@
       <userclass>User</userclass>
     </simple>
 
+    <simple name="face-numbering-version" type="integer" default="1">
+      <description>
+        Version de l'algorithme pour la numérotation des faces. La
+        version 1 correspond à la numérotation non structurée. La
+        version 4 correspond à la numérotation cartésienne.
+      </description>
+      <userclass>User</userclass>
+    </simple>
+
     <complex type="PartInfoX" name="x" minOccurs="1" maxOccurs="unbounded" >
       <simple name="n" type="integer" >
         <description>Nombre de mailles</description>

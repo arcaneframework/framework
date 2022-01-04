@@ -49,6 +49,7 @@ class IItemFamilyModifier;
 class MeshHandle;
 class IVariableMng;
 class ItemTypeMng;
+class IMeshUniqueIdMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -365,6 +366,9 @@ class IMesh : public IMeshBase
 
   //! Gestionnare de couche fantômes associé
   virtual IGhostLayerMng* ghostLayerMng() const =0;
+
+  //! Gestionnare de la numérotation des identifiants uniques
+  virtual IMeshUniqueIdMng* meshUniqueIdMng() const =0;
 
   //! Interface du vérificateur.
   virtual IMeshChecker* checker() const =0;

@@ -91,6 +91,7 @@
 #include "arcane/IStandardFunction.h"
 #include "arcane/IServiceAndModuleFactoryMng.h"
 #include "arcane/IGhostLayerMng.h"
+#include "arcane/IMeshUniqueIdMng.h"
 #include "arcane/VariableStatusChangedEventArgs.h"
 #include "arcane/MeshPartInfo.h"
 #include "arcane/IGraph2.h"

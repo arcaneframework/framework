@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICartesianMeshGenerationInfo.h                              (C) 2000-2021 */
+/* IMeshUniqueIdMng.h                                          (C) 2000-2021 */
 /*                                                                           */
-/* Informations sur la génération des maillages cartésiens.                  */
+/* Interface du gestionnaire de numérotation des uniqueId() d'un maillage.   */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_INTERNAL_ICARTESIANMESHGENERATIONINFO_H
-#define ARCANE_CORE_INTERNAL_ICARTESIANMESHGENERATIONINFO_H
+#ifndef ARCANE_IMESHUNIQUEIDMNG_H
+#define ARCANE_IMESHUNIQUEIDMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -26,34 +26,42 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Informations sur la génération des maillages cartésiens.
+ *
+ * Interface du gestionnaire de numérotation des uniqueId() des entités
+ * d'un maillage.
+ *
+ * Ce gestionnaire permet de gérer le calcul des uniqueId() des entités
+ * du maillages qui sont implicitement créées comme les faces ou les arêtes.
  */
-class ARCANE_CORE_EXPORT ICartesianMeshGenerationInfo
+class ARCANE_CORE_EXPORT IMeshUniqueIdMng
 {
  public:
 
-  static ICartesianMeshGenerationInfo* getReference(IMesh* mesh,bool create);
+  //! Libère les ressources
+  virtual ~IMeshUniqueIdMng() =default;
 
  public:
 
-  virtual ~ICartesianMeshGenerationInfo() = default;
+  /*!
+   * \brief Positionne la version de la numérotation des faces.
+   *
+   * Les valeurs valides sont 0, 1, 2 et 3. La valeur par défaut est 1.
+   * Si la version vaut 0 alors il n'y a pas de renumérotation. En parallèle,
+   * il faut alors que les uniqueId() des faces soient cohérents entre
+   * les sous-domaines
+   */  
+  virtual void setFaceBuilderVersion(Integer n) =0;
 
- public:
+  //! Version de la numérotation des faces.
+  virtual Integer faceBuilderVersion() const =0;
 
-  virtual Int64 globalNbCell() const =0;
-  virtual Int64ConstArrayView globalNbCells() const =0;
-  virtual Int32ConstArrayView subDomainOffsets() const =0;
-  virtual Int32ConstArrayView nbSubDomains() const =0;
-  virtual Int32ConstArrayView ownNbCells() const =0;
-  virtual Int64ConstArrayView ownCellOffsets() const =0;
-  virtual Int64 firstOwnCellUniqueId() const =0;
+  /*!
+   * \brief Positionne la version de la numérotation des arêtes.
+   */  
+  virtual void setEdgeBuilderVersion(Integer n) =0;
 
-  virtual void setOwnCellOffsets(Int64 x,Int64 y,Int64 z) =0;
-  virtual void setGlobalNbCells(Int64 x,Int64 y,Int64 z) =0;
-  virtual void setSubDomainOffsets(Int32 x,Int32 y,Int32 z) =0;
-  virtual void setNbSubDomains(Int32 x,Int32 y,Int32 z) =0;
-  virtual void setOwnNbCells(Int32 x,Int32 y,Int32 z) =0;
-  virtual void setFirstOwnCellUniqueId(Int64 uid) =0;
+  //! Version de la numérotation des arêtes
+  virtual Integer edgeBuilderVersion() const =0;
 };
 
 /*---------------------------------------------------------------------------*/

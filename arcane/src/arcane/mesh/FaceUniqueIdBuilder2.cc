@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceUniqueIdBuilder2.cc                                     (C) 2000-2019 */
+/* FaceUniqueIdBuilder2.cc                                     (C) 2000-2021 */
 /*                                                                           */
 /* Construction des indentifiants uniques des faces.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ArgumentException.h"
@@ -28,15 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -524,7 +515,7 @@ computeFacesUniqueIdAndOwner()
 void FaceUniqueIdBuilder2::
 _computeSequential()
 {
-  info() << "Compute FacesUniqueId() V3";
+  info() << "Compute FacesUniqueId() Sequential V3";
 
   //TODO: permettre de ne pas commencer a zero.
   Int64 face_unique_id_counter = 0;
@@ -570,7 +561,7 @@ _computeParallel()
 
   ItemInternalMap& cells_map = m_mesh->cellsMap();
 
-  info() << "Compute FacesUniqueId() using parallel sort";
+  info() << "Compute FacesUniqueId() V3 using parallel sort";
 
   // Calcule et trie pour les faces frontières
   UniqueArray<BoundaryFaceInfo> boundary_faces_info;
@@ -1082,8 +1073,7 @@ _FaceUiDBuilderComputeNewVersion(DynamicMesh* mesh)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

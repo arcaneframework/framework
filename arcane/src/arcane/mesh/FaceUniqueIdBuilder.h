@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceUniqueIdBuilder.h                                       (C) 2000-2020 */
+/* FaceUniqueIdBuilder.h                                       (C) 2000-2021 */
 /*                                                                           */
 /* Construction des indentifiants uniques des faces.                         */
 /*---------------------------------------------------------------------------*/
@@ -63,10 +63,11 @@ class FaceUniqueIdBuilder
  private:
   
   void _computeFacesUniqueIdsSequential();
-  void _computeFacesUniqueIdsParallel2();
-  void _computeFacesUniqueIdsParallel3();
+  void _computeFacesUniqueIdsParallelV1();
+  void _computeFacesUniqueIdsParallelV2();
   void _computeFacesUniqueIdsFast();
   void _exchangeData(IParallelExchanger* exchanger,BoundaryInfosMap& boundary_infos_to_send);
+  void _checkNoDuplicate();
 };
 
 /*---------------------------------------------------------------------------*/

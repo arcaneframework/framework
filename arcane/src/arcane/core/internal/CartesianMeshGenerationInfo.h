@@ -44,6 +44,7 @@ class ARCANE_CORE_EXPORT CartesianMeshGenerationInfo
   Int64 globalNbCell() const override { return m_global_nb_cell; }
   Int64ConstArrayView globalNbCells() const override { return m_global_nb_cells; }
   Int32ConstArrayView subDomainOffsets() const override { return m_sub_domain_offsets; }
+  Int32ConstArrayView nbSubDomains() const override { return m_nb_sub_domains; }
   Int32ConstArrayView ownNbCells() const override { return m_own_nb_cells; };
   Int64ConstArrayView ownCellOffsets() const override { return m_own_cell_offsets; };
   Int64 firstOwnCellUniqueId() const override { return m_first_own_cell_unique_id; }
@@ -53,6 +54,7 @@ class ARCANE_CORE_EXPORT CartesianMeshGenerationInfo
   void setOwnCellOffsets(Int64 x,Int64 y,Int64 z) override;
   void setGlobalNbCells(Int64 x,Int64 y,Int64 z) override;
   void setSubDomainOffsets(Int32 x,Int32 y,Int32 z) override;
+  void setNbSubDomains(Int32 x,Int32 y,Int32 z) override;
   void setOwnNbCells(Int32 x,Int32 y,Int32 z) override;
   void setFirstOwnCellUniqueId(Int64 uid) override;
 
@@ -64,11 +66,13 @@ class ARCANE_CORE_EXPORT CartesianMeshGenerationInfo
 
   Int64ArrayView m_global_nb_cells;
   Int32ArrayView m_sub_domain_offsets;
+  Int32ArrayView m_nb_sub_domains;
   Int32ArrayView m_own_nb_cells;
   Int64ArrayView m_own_cell_offsets;
 
   Int64 m_global_nb_cell_ptr[NB_DIM];
   Int32 m_sub_domain_offset_ptr[NB_DIM];
+  Int32 m_nb_sub_domain_ptr[NB_DIM];
   Int32 m_own_nb_cell_ptr[NB_DIM];
   Int64 m_own_cell_offset_ptr[NB_DIM];
 

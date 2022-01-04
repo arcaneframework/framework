@@ -19,10 +19,11 @@
 
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/OneMeshItemAdder.h"
-#include "arcane/mesh/FaceUniqueIdBuilder.h"
 #include "arcane/mesh/GhostLayerBuilder.h"
+#include "arcane/mesh/FaceUniqueIdBuilder.h"
 #include "arcane/mesh/ItemTools.h"
 
+#include "arcane/IMeshUniqueIdMng.h"
 #include "arcane/IParallelExchanger.h"
 #include "arcane/IParallelMng.h"
 #include "arcane/ISerializeMessage.h"
@@ -40,6 +41,8 @@ namespace Arcane::mesh
 
 extern "C++" void
 _FaceUiDBuilderComputeNewVersion(DynamicMesh* mesh);
+extern "C++" void
+arcaneComputeCartesianFaceUniqueId(DynamicMesh* mesh);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -68,26 +71,32 @@ computeFacesUniqueIds()
 {
   IParallelMng* pm = m_mesh->parallelMng();
   Real begin_time = platform::getRealTime();
+  Integer face_version = m_mesh->meshUniqueIdMng()->faceBuilderVersion();
+  bool is_parallel = pm->isParallel();
+  info() << "Using version=" << face_version << " to compute faces unique ids"
+         << " mesh=" << m_mesh->name() << " is_parallel=" << is_parallel;
 
-  bool use_new_algo = false;
-  if (!platform::getEnvironmentVariable("ARCANE_NEW_MESHINIT2").null())
-    use_new_algo = true;
+  if (face_version>4 || face_version<0)
+    ARCANE_FATAL("Invalid value '{0}' for compute face unique ids versions: v>=0 && v<=4");
 
-  if (use_new_algo){
+  if (face_version==4)
+    arcaneComputeCartesianFaceUniqueId(m_mesh);
+  else if (face_version==3)
     _FaceUiDBuilderComputeNewVersion(m_mesh);
-  }
   else{
-    if (pm->isParallel()){
-      if (!platform::getEnvironmentVariable("ARCANE_NEW_MESHINIT").null()){
+    if (is_parallel){
+      if (face_version==2){
         //PAS ENCORE PAR DEFAUT
         info() << "Use new mesh init in FaceUniqueIdBuilder";
-        _computeFacesUniqueIdsParallel3();
+        _computeFacesUniqueIdsParallelV2();
       }
-      else
-        _computeFacesUniqueIdsParallel2(); // Vieille version
+      else{
+        // Version par défaut.
+        _computeFacesUniqueIdsParallelV1();
+      }
     }
     else{
-      if (!platform::getEnvironmentVariable("ARCANE_NO_FACE_RENUMBER").null()){
+      if (face_version==0){
         pwarning() << "No face renumbering";
         return;
       }
@@ -99,17 +108,44 @@ computeFacesUniqueIds()
   Real diff = (Real)(end_time - begin_time);
   info() << "TIME to compute face unique ids=" << diff;
 
+  _checkNoDuplicate();
+
   ItemInternalMap& faces_map = m_mesh->facesMap();
 
   // Il faut ranger à nouveau #m_faces_map car les uniqueId() des
   // faces ont été modifiés
   m_mesh->faceFamily()->notifyItemsUniqueIdChanged();
-  if (m_mesh_builder->isVerbose()){
+
+  bool is_verbose = m_mesh_builder->isVerbose();
+  if (is_verbose){
     info() << "NEW FACES_MAP after re-indexing";
     ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,faces_map){
       ItemInternal* face = nbid->value();
       info() << "Face uid=" << face->uniqueId() << " lid=" << face->localId();
     }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vérifie qu'on n'a pas deux fois le même uniqueId().
+ */
+void FaceUniqueIdBuilder::
+_checkNoDuplicate()
+{
+  info() << "Check no duplicate face uniqueId";
+  ItemInternalMap& faces_map = m_mesh->facesMap();
+  std::map<ItemUniqueId,ItemInternal*> checked_faces_map;
+  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,faces_map){
+    ItemInternal* face = nbid->value();
+    ItemUniqueId uid = face->uniqueId();
+    auto p = checked_faces_map.find(uid);
+    if (p!=checked_faces_map.end()){
+      pwarning() << "Duplicate Face UniqueId=" << uid;
+      ARCANE_FATAL("Duplicate Face uniqueId={0}",uid);
+    }
+    checked_faces_map.insert(std::make_pair(uid,face));
   }
 }
 
@@ -169,7 +205,7 @@ class T_CellFaceInfo
   chaque face et ce pour équilibrer les coms.
 */  
 void FaceUniqueIdBuilder::
-_computeFacesUniqueIdsParallel2()
+_computeFacesUniqueIdsParallelV1()
 {
   IParallelMng* pm = m_mesh->parallelMng();
   Integer my_rank = pm->commRank();
@@ -627,7 +663,7 @@ class ItemInfoMultiList
   été mise en service et est maintenant remplacée par ...
 */ 
 void FaceUniqueIdBuilder::
-_computeFacesUniqueIdsParallel3()
+_computeFacesUniqueIdsParallelV2()
 {
   IParallelMng* pm = m_mesh->parallelMng();
   Integer my_rank = pm->commRank();
