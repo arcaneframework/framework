@@ -54,6 +54,11 @@
 
 #include <alien/core/impl/MultiVectorImpl.h>
 
+#include <alien/expression/krylov/AlienKrylov.h>
+
+#include <alien/utils/StdTimer.h>
+
+
 using namespace Arcane;
 using namespace Alien;
 

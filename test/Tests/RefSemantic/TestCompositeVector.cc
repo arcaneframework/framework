@@ -103,7 +103,7 @@ TEST(TestCompositeVector, CompositeMultipleResize)
   }
 }
 
-auto fill = [&](Alien::IVector& c, Arccore::Real shift) {
+auto fill = [](Alien::IVector& c, Arccore::Real shift) {
   auto& dist = c.impl()->distribution();
   Arccore::Integer lsize = dist.localSize();
   Arccore::Integer offset = dist.offset();
@@ -113,7 +113,7 @@ auto fill = [&](Alien::IVector& c, Arccore::Real shift) {
     writer[i] = offset + i + shift;
 };
 
-auto check = [&](Alien::IVector& c, Arccore::Real shift) {
+auto check = [](Alien::IVector& c, Arccore::Real shift) {
   auto& dist = c.impl()->distribution();
   Arccore::Integer lsize = dist.localSize();
   Arccore::Integer offset = dist.offset();

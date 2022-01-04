@@ -134,5 +134,94 @@
     <service-instance name="linear-solver" type="Alien::ILinearSolver">
        <description>Service solveur</description>
     </service-instance>
+    
+    
+    <complex name="alien-core-solver" type="AlienCoreSolverType" minOccurs="0" maxOccurs="1">
+        <description> Internal Alien Core Solver options</description>
+        
+        <simple name="output-level" type="integer" default="0">
+            <description>solver output level</description>
+        </simple>
+         
+        <enumeration name="backend" type="AlienCoreSolverOptionTypes::eBackEnd" default="SimpleCSR">
+          <description>Backend definition</description>
+          <enumvalue name="SimpleCSR" genvalue="AlienCoreSolverOptionTypes::SimpleCSR">
+            <description>SimpleCSR backend</description>
+          </enumvalue>
+          
+          <enumvalue name="SYCL" genvalue="AlienCoreSolverOptionTypes::SYCL">
+            <description>SYCL backend</description>
+          </enumvalue>
+        </enumeration>
+        
+        <enumeration name="solver" type="AlienCoreSolverOptionTypes::eSolver" default="BCGS">
+          <description>Solveur type</description>
+          
+          <enumvalue name="BCGS" genvalue="AlienCoreSolverOptionTypes::BCGS">
+            <description>BiCGStab Solver</description>
+          </enumvalue>
+          
+          <enumvalue name="CG" genvalue="AlienCoreSolverOptionTypes::CG">
+            <description>CG Solver</description>
+          </enumvalue>
+        </enumeration>
+        
+        
+        <simple name="asynch" type="integer" default="1">
+            <description>enable async mode with future</description>
+        </simple>
+       
+        <enumeration name="preconditioner" type="AlienCoreSolverOptionTypes::ePreconditioner" default="Diag">
+            <description>type def preconditionnement</description>
+            <enumvalue name="Diag" genvalue="AlienCoreSolverOptionTypes::Diag">
+                <description>Id preconditioner</description>
+            </enumvalue>
+            <enumvalue name="NeumannPoly" genvalue="AlienCoreSolverOptionTypes::NeumannPoly">
+                <description>Neunmann Polynomial preconditioner</description>
+            </enumvalue>
+            <enumvalue name="ChebyshevPoly" genvalue="AlienCoreSolverOptionTypes::ChebyshevPoly">
+                <description>Chebyshev Polynomial preconditioner</description>
+            </enumvalue>
+            <enumvalue name="ILU0" genvalue="AlienCoreSolverOptionTypes::ILU0">
+                <description>0th order ILU preconditioner</description>
+            </enumvalue>
+            <enumvalue name="FILU0" genvalue="AlienCoreSolverOptionTypes::FILU0">
+                <description>0th order ILU preconditioner FixedPoint</description>
+            </enumvalue>
+        </enumeration>
+        
+         <simple name="max-iter" type="integer" default="1000">
+           <description>nb ML iter</description>
+         </simple>
+         
+         <simple name="tol" type="real" default="1.e-6">
+           <description>Solver tolerance</description>
+         </simple>
+         
+         <simple name="poly-factor" type="real" default="0.5">
+           <description>Polynomial preconditioner factor</description>
+         </simple>
+         
+         <simple name="poly-order" type="integer" default="3">
+           <description>Polynomial preconditioner order</description>
+         </simple>
+         
+         <simple name="poly-factor-max-iter" type="integer" default="10">
+           <description>Polynomial preconditioner factor max iteration</description>
+         </simple>
+         
+         <simple name="filu-factor-niter" type="integer" default="0">
+           <description>FILU0 factorization nb iterations</description>
+         </simple>
+         
+         <simple name="filu-solver-niter" type="integer" default="3">
+           <description>FILU0 solver nb iterations</description>
+         </simple>
+         
+         <simple name="filu-tol" type="real" default="1.e-6">
+           <description>FILU0 tolerance</description>
+         </simple>
+
+     </complex>
    </options>
 </module>
