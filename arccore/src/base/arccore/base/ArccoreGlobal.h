@@ -124,6 +124,11 @@ typedef ARCCORE_TYPE_INT64 Int64;
 #define ARCCORE_DEVICE_CODE
 #if defined(__CUDA_ARCH__)
 #define ARCCORE_DEVICE_TARGET_CUDA
+#if defined(__HIPSYCL__)
+// Nécessaire pour assert() par exemple dans arccoreCheckAt()
+// TODO: regarder si cela est aussi nécessaire pour AMD HIP.
+#include <cassert>
+#endif
 #endif
 #endif
 
