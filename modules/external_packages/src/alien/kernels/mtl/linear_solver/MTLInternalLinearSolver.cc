@@ -168,6 +168,31 @@ MTLInternalLinearSolver::_solve(MatrixInternal::MTLMatrixType const& matrix,
       else
         m_status.succeeded = true;
     } break;
+    case MTLOptionTypes::CG: {
+      std::cout<<"MTL4 CG"<<std::endl ;
+      //itl::basic_iteration<double> iter(rhs, m_max_iteration, m_precision);
+      itl::noisy_iteration<double> iter(rhs,m_max_iteration,m_precision);
+      switch (m_preconditioner_option) {
+      case MTLOptionTypes::NonePC: {
+        itl::pc::identity<MatrixInternal::MTLMatrixType> P(matrix);
+        itl::cg(matrix, x, rhs, P, iter);
+      } break;
+      case MTLOptionTypes::DiagPC: {
+        itl::pc::diagonal<MatrixInternal::MTLMatrixType> P(matrix);
+        itl::cg(matrix, x, rhs, P, iter);
+      } break;
+      case MTLOptionTypes::SSORPC: {
+        alien_fatal([&] { cout() << "Preconditioner not available"; });
+      } break;
+      }
+      m_status.iteration_count = iter.iterations();
+      m_status.residual = iter.resid();
+      std::cout<<"NB ITER : "<<m_status.iteration_count<<" residual="<<m_status.residual<<std::endl;
+      if (m_status.iteration_count >= m_max_iteration)
+        m_status.succeeded = false;
+      else
+        m_status.succeeded = true;
+    } break;
 #ifdef MTL_HAS_UMFPACK
     case MTLOptionTypes::LU: {
       mtl::matrix::umfpack::solver<MatrixInternal::MTLMatrixType> solver(matrix);

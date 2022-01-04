@@ -33,6 +33,7 @@
 #include <alien/arcane_tools/data/Space.h>
 
 #include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
+#include <alien/kernels/simple_csr/algebra/SimpleCSRInternalLinearAlgebra.h>
 
 #include <alien/ref/AlienRefSemantic.h>
 
@@ -61,6 +62,7 @@
 #endif
 
 #include <alien/expression/solver/ILinearSolver.h>
+#include "AlienCoreSolverOptionTypes.h"
 
 #include "AlienBenchModule.h"
 
@@ -68,6 +70,9 @@
 #include <arcane/IMesh.h>
 
 #include <alien/core/impl/MultiVectorImpl.h>
+
+#include <alien/expression/krylov/AlienKrylov.h>
+#include <alien/utils/StdTimer.h>
 
 using namespace Arcane;
 using namespace Alien;
@@ -315,6 +320,257 @@ AlienBenchModule::test()
   //
   // RESOLUTION
   //
+  if(options()->alienCoreSolver.size()>0)
+  {
+    {
+      Alien::LocalVectorReader reader(vectorBB);
+      Alien::LocalVectorWriter vb(vectorB);
+      Alien::LocalVectorWriter vx(vectorX);
+      for (Integer i = 0; i < m_vdist.localSize(); ++i) {
+        vx[i] = 0.;
+        vb[i] = reader[i];
+      }
+    }
+    typedef Alien::SimpleCSRInternalLinearAlgebra    AlgebraType ;
+    typedef typename AlgebraType::BackEndType        BackEndType ;
+    typedef Alien::Iteration<AlgebraType>            StopCriteriaType ;
+    typedef Alien::CG<AlgebraType>                   SolverType ;
+
+    AlgebraType alg ;
+    auto const& true_A = matrixA.impl()->get<Alien::BackEnd::tag::simplecsr>() ;
+    auto const& true_b = vectorB.impl()->get<Alien::BackEnd::tag::simplecsr>() ;
+    auto&       true_x = vectorX.impl()->get<Alien::BackEnd::tag::simplecsr>(true) ;
+
+    auto const& opt           = options()->alienCoreSolver[0] ;
+    int output_level  = opt->outputLevel() ;
+    int max_iteration = opt->maxIter() ;
+    double tol        = opt->tol() ;
+
+    auto solver_opt   = opt->solver() ;
+    auto precond_opt  = opt->preconditioner() ;
+
+    auto backend      = opt->backend() ;
+    auto asynch       = opt->asynch() ;
+
+    // clang-format off
+    auto run = [&](auto& alg)
+              {
+                typedef typename
+                    boost::remove_reference<decltype(alg)>::type AlgebraType ;
+                typedef typename AlgebraType::BackEndType        BackEndType ;
+                typedef Alien::Iteration<AlgebraType>            StopCriteriaType ;
+
+
+                Timer::Sentry ts(&psolve_timer);
+
+                auto const& true_A = matrixA.impl()->get<BackEndType>() ;
+                auto const& true_b = vectorB.impl()->get<BackEndType>() ;
+                auto&       true_x = vectorX.impl()->get<BackEndType>(true) ;
+
+                StopCriteriaType stop_criteria{alg,true_b,tol,max_iteration,output_level>0?traceMng():nullptr} ;
+
+                switch(solver_opt)
+                {
+                  case AlienCoreSolverOptionTypes::CG:
+                  {
+                    typedef Alien::CG<AlgebraType> SolverType ;
+
+                    SolverType solver{alg,traceMng()} ;
+                    solver.setOutputLevel(output_level) ;
+                    switch(precond_opt)
+                    {
+                      case AlienCoreSolverOptionTypes::ChebyshevPoly:
+                      {
+                          info()<<"CHEBYSHEV PRECONDITIONER";
+                          double polynom_factor          = opt->polyFactor() ;
+                          int    polynom_order           = opt->polyOrder() ;
+                          int    polynom_factor_max_iter = opt->polyFactorMaxIter() ;
+
+                          typedef Alien::ChebyshevPreconditioner<AlgebraType> PrecondType ;
+                          PrecondType      precond{alg,true_A,polynom_factor,polynom_order,polynom_factor_max_iter,traceMng()} ;
+                          precond.setOutputLevel(output_level) ;
+                          precond.init() ;
+
+                          if(asynch==0)
+                            solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                          else
+                            solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                      }
+                      break;
+                      case AlienCoreSolverOptionTypes::NeumannPoly:
+                        {
+                          info()<<"NEUMANN PRECONDITIONER";
+                          double polynom_factor          = opt->polyFactor() ;
+                          int    polynom_order           = opt->polyOrder() ;
+                          int    polynom_factor_max_iter = opt->polyFactorMaxIter() ;
+
+                          typedef Alien::NeumannPolyPreconditioner<AlgebraType> PrecondType ;
+                          PrecondType precond{alg,true_A,polynom_factor,polynom_order,polynom_factor_max_iter,traceMng()} ;
+                          precond.init() ;
+
+                          if(asynch==0)
+                            solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                          else
+                            solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                        }
+                        case AlienCoreSolverOptionTypes::Diag:
+                        default:
+                        {
+                          info()<<"DIAG PRECONDITIONER";
+                          typedef Alien::DiagPreconditioner<AlgebraType> PrecondType ;
+                          PrecondType      precond{alg,true_A} ;
+                          precond.init() ;
+                          if(asynch==0)
+                            solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                          else
+                            solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                        }
+                        break ;
+                    }
+                }
+                break ;
+                case AlienCoreSolverOptionTypes::BCGS:
+                {
+                  typedef Alien::BiCGStab<AlgebraType> SolverType ;
+                  SolverType solver{alg,traceMng()} ;
+                  solver.setOutputLevel(output_level) ;
+                  switch(precond_opt)
+                  {
+                  case AlienCoreSolverOptionTypes::ChebyshevPoly:
+                   {
+                      info()<<"CHEBYSHEV PRECONDITIONER";
+                      double polynom_factor          = opt->polyFactor() ;
+                      int    polynom_order           = opt->polyOrder() ;
+                      int    polynom_factor_max_iter = opt->polyFactorMaxIter() ;
+
+                      typedef Alien::ChebyshevPreconditioner<AlgebraType> PrecondType ;
+                      PrecondType      precond{alg,true_A,polynom_factor,polynom_order,polynom_factor_max_iter,traceMng()} ;
+                      precond.setOutputLevel(output_level) ;
+                      precond.init() ;
+
+                      if(asynch==0)
+                        solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                      else
+                        solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                    }
+                   break ;
+                  case AlienCoreSolverOptionTypes::NeumannPoly:
+                    {
+                      info()<<"NEUMANN PRECONDITIONER";
+                      double polynom_factor          = opt->polyFactor() ;
+                      int    polynom_order           = opt->polyOrder() ;
+                      int    polynom_factor_max_iter = opt->polyFactorMaxIter() ;
+
+                      typedef Alien::NeumannPolyPreconditioner<AlgebraType> PrecondType ;
+                      PrecondType precond{alg,true_A,polynom_factor,polynom_order,polynom_factor_max_iter,traceMng()} ;
+                      precond.init() ;
+
+                      if(asynch==0)
+                        solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                      else
+                        solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                    }
+                    break ;
+                  case AlienCoreSolverOptionTypes::ILU0:
+                    {
+                      info()<<"ILU0 PRECONDITIONER";
+                      typedef Alien::ILU0Preconditioner<AlgebraType> PrecondType ;
+                      PrecondType precond{alg,true_A,traceMng()} ;
+                      precond.init() ;
+
+                      if(asynch==0)
+                        solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                      else
+                        solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                    }
+                    break ;
+                  case AlienCoreSolverOptionTypes::FILU0:
+                    {
+                      info()<<"FILU0 PRECONDITIONER";
+                      typedef Alien::FILU0Preconditioner<AlgebraType> PrecondType ;
+                      PrecondType precond{alg,true_A,traceMng()} ;
+                      precond.setParameter("nb-factor-iter",opt->filuFactorNiter()) ;
+                      precond.setParameter("nb-solver-iter",opt->filuSolverNiter()) ;
+                      precond.setParameter("tol",           opt->filuTol()) ;
+                      precond.init() ;
+
+                      if(asynch==0)
+                        solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                      else
+                        solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                    }
+                    break ;
+
+                  case AlienCoreSolverOptionTypes::Diag:
+                  default:
+                    {
+                      info()<<"DIAG PRECONDITIONER";
+                      typedef Alien::DiagPreconditioner<AlgebraType> PrecondType ;
+                      PrecondType      precond{alg,true_A} ;
+                      precond.init() ;
+                      if(asynch==0)
+                        solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                      else
+                        solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                    }
+                    break ;
+                  }
+                }
+                break ;
+                default :
+                  fatal()<<"unknown solver";
+                }
+
+                if(stop_criteria.getStatus())
+                {
+                  info()<<"Solver has converged";
+                  info()<<"Nb iterations  : "<<stop_criteria();
+                  info()<<"Criteria value : "<<stop_criteria.getValue();
+                }
+                else
+                {
+                  info()<<"Solver convergence failed";
+                }
+              } ;
+    // clang-format on
+
+    switch(backend)
+    {
+      case AlienCoreSolverOptionTypes::SimpleCSR:
+      {
+        Alien::SimpleCSRInternalLinearAlgebra alg;
+        run(alg);
+      }
+      break ;
+      case AlienCoreSolverOptionTypes::SYCL:
+      {
+#ifdef ALIEN_USE_SYCL
+        Alien::SYCLInternalLinearAlgebra alg;
+        alg.setDotAlgo(vm["dot-algo"].as<int>());
+        run(alg);
+#else
+        fatal() << "SYCL BackEnd not available";
+#endif
+      }
+      break ;
+      default:
+        fatal() << "SYCL BackEnd not available";
+        break ;
+    }
+
+
+    StopCriteriaType stop_criteria{alg,true_b,tol,max_iteration,output_level>0?traceMng():nullptr} ;
+
+    SolverType solver{alg,traceMng()};
+    solver.setOutputLevel(output_level);
+
+    typedef Alien::DiagPreconditioner<AlgebraType> PrecondType ;
+    PrecondType      precond{alg,true_A} ;
+    precond.init() ;
+    solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+
+  }
+  else
   {
     Alien::ILinearSolver* solver = options()->linearSolver();
     solver->init();
@@ -441,7 +697,7 @@ AlienBenchModule::test()
       }
       Alien::SolverStatus status = solver->getStatus();
       if (status.succeeded) {
-
+        info()<<"RESULUTION SUCCEED";
         Alien::VectorReader reader(vectorX);
         ENUMERATE_CELL (icell, areaU.own()) {
           const Integer iIndex = allUIndex[icell->localId()];
@@ -455,6 +711,8 @@ AlienBenchModule::test()
         Real res = alg.norm2(vectorR);
         info() << "RES : " << res;
       }
+      else
+        info()<<"SOLVER FAILED";
       solver->getSolverStat().print(Universe().traceMng(), status, "Linear Solver : ");
     }
     solver->end();

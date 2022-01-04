@@ -17,7 +17,7 @@ namespace Environment {
 extern Arccore::MessagePassing::IMessagePassingMng* parallelMng();
 }
 
-auto fill = [&](Alien::IVector& c, Alien::Real shift) {
+auto mcgfill = [](Alien::IVector& c, Alien::Real shift) {
   const Alien::VectorDistribution& dist = c.impl()->distribution();
   Alien::Integer lsize = dist.localSize();
   Alien::Integer offset = dist.offset();
@@ -47,10 +47,10 @@ TEST(TestCompositeMatrixToMCG, CompositeMCGTest)
   for (Alien::Integer i = 0; i < nbSubMatrices; ++i) {
     Alien::CompositeElement(vec, i) = Alien::Vector(vecDist);
     auto& vi = vec[i];
-    ::fill(vi, 1.);
+    ::mcgfill(vi, 1.);
     Alien::CompositeElement(vecSol, i) = Alien::Vector(vecDist);
     auto& vSol = vecSol[i];
-    ::fill(vSol, 0.);
+    ::mcgfill(vSol, 0.);
     for (Alien::Integer j = 0; j < nbSubMatrices; ++j) {
       Alien::CompositeElement(v, i, j) = Alien::Matrix(dist);
       auto& cij = v(i, j);
