@@ -46,6 +46,8 @@ DerivePointerAlignment: false
 PointerAlignment: Left
 DisableFormat:   false
 ExperimentalAutoDetectBinPacking: false
+EmptyLineBeforeAccessModifier: LogicalBlock
+EmptyLineAfterAccessModifier: Always
 FixNamespaceComments: true
 ForEachMacros:   [ foreach, Q_FOREACH, BOOST_FOREACH, ENUMERATE_CELL,
                  ENUMERATE_ITEM, ENUMERATE_NODE, ENUMERATE_FACE, ENUMERATE_PARTICLE, ENUMERATE_EDGE, ENUMERATE_DOF, ENUMERATE_ ]
@@ -82,6 +84,6 @@ SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
 Standard:        c++17
-SortIncludes: false
+SortIncludes: Never
 TabWidth:        2
 UseTab:          Never
