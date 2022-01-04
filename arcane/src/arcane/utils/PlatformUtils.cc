@@ -89,6 +89,7 @@ namespace platform
   IProcessorAffinityService* global_processor_affinity_service = nullptr;
   IMemoryAllocator* global_accelerator_host_memory_allocator = nullptr;
   IDynamicLibraryLoader* global_dynamic_library_loader = nullptr;
+  IMemoryRessourceMng* global_data_memory_ressource_mng = nullptr;
   bool global_has_color_console = false;
 }
 
@@ -212,7 +213,6 @@ setAcceleratorHostMemoryAllocator(IMemoryAllocator* a)
   return old;
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -223,6 +223,26 @@ getDefaultDataAllocator()
   if (!a)
     a = AlignedMemoryAllocator::Simd();
   return a;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_UTILS_EXPORT IMemoryRessourceMng* platform::
+setDataMemoryRessourceMng(IMemoryRessourceMng* mng)
+{
+  IMemoryRessourceMng* old = global_data_memory_ressource_mng;
+  global_data_memory_ressource_mng = mng;
+  return old;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_UTILS_EXPORT IMemoryRessourceMng* platform::
+getDataMemoryRessourceMng()
+{
+  return global_data_memory_ressource_mng;
 }
 
 /*---------------------------------------------------------------------------*/

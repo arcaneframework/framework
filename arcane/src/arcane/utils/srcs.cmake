@@ -44,6 +44,7 @@ set(ARCANE_SOURCES
   IDataCompressor.h
   IOException.cc
   IOException.h
+  IMemoryRessourceMng.h
   JSONPropertyReader.h
   JSONReader.cc
   JSONReader.h
@@ -67,6 +68,8 @@ set(ARCANE_SOURCES
   MemoryAccessInfo.h
   MemoryInfo.cc
   MemoryInfo.h
+  MemoryRessource.h
+  MemoryRessourceMng.cc
   Numeric.cc
   Numeric.h
   NumArray.h

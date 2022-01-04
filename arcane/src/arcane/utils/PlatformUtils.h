@@ -243,6 +243,8 @@ getAcceleratorHostMemoryAllocator();
 extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator*
 setAcceleratorHostMemoryAllocator(IMemoryAllocator* a);
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Allocateur par défaut pour les données.
  *
@@ -257,6 +259,29 @@ setAcceleratorHostMemoryAllocator(IMemoryAllocator* a);
  */
 extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator*
 getDefaultDataAllocator();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Positionne le gestionnaire de ressource mémoire pour les données.
+ *
+ * Le gestionnaire doit rester valide durant toute l'exécution du programme.
+ *
+ * Retourne l'ancien gestionnaire.
+ */
+extern "C++" ARCANE_UTILS_EXPORT IMemoryRessourceMng*
+setDataMemoryRessourceMng(IMemoryRessourceMng* mng);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Gestionnaire de ressource mémoire pour les données.
+ *
+ * Il est garanti que l'alignement est au moins celui retourné par
+ * AlignedMemoryAllocator::Simd().
+ */
+extern "C++" ARCANE_UTILS_EXPORT IMemoryRessourceMng*
+getDataMemoryRessourceMng();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
