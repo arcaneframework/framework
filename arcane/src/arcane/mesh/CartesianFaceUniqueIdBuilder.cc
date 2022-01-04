@@ -104,15 +104,15 @@ computeFacesUniqueIdAndOwner()
   Int64 nb_face_dir_z = nb_cell_x * nb_cell_y;
   Int64 face_offset_z = nb_face_dir_x + nb_face_dir_y;
   Int64 nb_face_xyz = face_offset_z + nb_cell_xy;
-  Int64 nb_face_xy = nb_face_dir_x + nb_face_dir_y;
-  Int64 total_nb_face_xyz = (nb_face_dir_x + nb_face_dir_y) * nb_cell_z;
+  Int64 total_nb_face_xy = (nb_face_dir_x + nb_face_dir_y) * nb_cell_z;
+  Int64 total_nb_face_x = (nb_face_dir_x * nb_cell_z);
 
   info() << "NB_Cell: X=" << nb_cell_x << " Y=" << nb_cell_y << " Z=" << nb_cell_z
          << " XY=" << nb_cell_xy;
   info() << "NB_Face: X=" << nb_face_x << " Y=" << nb_face_y << " Z=" << nb_face_z
          << " NbDirX=" << nb_face_dir_x << " NbDirY=" << nb_face_dir_y  << " NbDirZ=" << nb_face_dir_z
          << " NbFaceXYZ=" << nb_face_xyz << " OffsetZ=" << face_offset_z
-         << " TotalNbFaceXYZ=" << total_nb_face_xyz;
+         << " TotalNbFaceX=" << total_nb_face_x << " TotalNbFaceXY=" << total_nb_face_xy;
 
   auto own_cells_offsets = cmgi->ownCellOffsets();
   Int64 own_cell_offset_x = own_cells_offsets[0];
@@ -155,7 +155,7 @@ computeFacesUniqueIdAndOwner()
       const Int64 y = uid / nb_cell_x;
       const Int64 x = uid % nb_cell_x;
       if (is_verbose)
-        info() << "UID=" << uid << " X=" << x << " Y=" << y
+        info() << "CELL (UID=" << uid << ",XY=" << x << "," << y << ") "
                << " N0=" << cell.node(0).uniqueId()
                << " N1=" << cell.node(1).uniqueId()
                << " N2=" << cell.node(2).uniqueId()
@@ -204,7 +204,7 @@ computeFacesUniqueIdAndOwner()
       Int64 y = v / nb_cell_x;
       Int64 x = v % nb_cell_x;
       if (is_verbose)
-        info() << "UID=" << uid << " X=" << x << " Y=" << y << " Z=" << z
+        info() << "CELL (UID=" << uid << ",XYZ=" << x << "," << y << "," << z << ") "
                << " N0=" << cell.node(0).uniqueId()
                << " N1=" << cell.node(1).uniqueId()
                << " N2=" << cell.node(2).uniqueId()
@@ -215,16 +215,16 @@ computeFacesUniqueIdAndOwner()
                << " N7=" << cell.node(7).uniqueId();
 
       // Faces selon Z
-      face_uids[0] = (x+0) + ((y+0) * nb_cell_x) + ((z+0) * nb_face_dir_z) + total_nb_face_xyz;
-      face_uids[3] = (x+0) + ((y+0) * nb_cell_x) + ((z+1) * nb_face_dir_z) + total_nb_face_xyz;
+      face_uids[0] = (x+0) + ((y+0) * nb_cell_x) + ((z+0) * nb_face_dir_z) + total_nb_face_xy;
+      face_uids[3] = (x+0) + ((y+0) * nb_cell_x) + ((z+1) * nb_face_dir_z) + total_nb_face_xy;
 
       // Faces selon X
-      face_uids[1] = (x+0) + ((y+0) * nb_face_x) + ((z+0) * nb_face_xy);
-      face_uids[4] = (x+1) + ((y+0) * nb_face_x) + ((z+0) * nb_face_xy);
+      face_uids[1] = (x+0) + ((y+0) * nb_face_x) + ((z+0) * nb_face_dir_x);
+      face_uids[4] = (x+1) + ((y+0) * nb_face_x) + ((z+0) * nb_face_dir_x);
 
       // Faces selon Y
-      face_uids[2] = (x+0) + ((y+0) * nb_cell_x) + ((z+0) * nb_face_xy) + nb_face_dir_x;
-      face_uids[5] = (x+0) + ((y+1) * nb_cell_x) + ((z+0) * nb_face_xy) + nb_face_dir_x;
+      face_uids[2] = (x+0) + ((y+0) * nb_cell_x) + ((z+0) * nb_face_dir_y) + total_nb_face_x;
+      face_uids[5] = (x+0) + ((y+1) * nb_cell_x) + ((z+0) * nb_face_dir_y) + total_nb_face_x;
 
       for( int i=0; i<6; ++i ){
         Face face = cell.face(i);
