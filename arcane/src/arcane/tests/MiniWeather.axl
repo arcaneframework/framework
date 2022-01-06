@@ -30,6 +30,11 @@
         Temps final
       </description>
     </simple>
+    <simple name = "use-device-memory" type = "bool" default="false" >
+      <description>
+        Indique si on utilise la mémoire du device au lieu de la mémoire unifiée
+      </description>
+    </simple>
     <service-instance type="ArcaneTest::MiniWeather::IMiniWeatherService" name="implementation" />
   </options>
 </module>

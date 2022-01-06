@@ -181,6 +181,8 @@ class Observer;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+enum class eMemoryRessource;
+class IMemoryRessourceMng;
 template<typename DataType,int RankValue>
 class NumArrayBase;
 template<class DataType,int RankValue>

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CudaAccelerator.h                                           (C) 2000-2020 */
+/* CudaAccelerator.h                                           (C) 2000-2021 */
 /*                                                                           */
 /* Backend 'CUDA' pour les accélérateurs.                                    */
 /*---------------------------------------------------------------------------*/
@@ -51,6 +51,14 @@ arcaneCheckCudaErrors(const TraceInfo& ti,cudaError_t e);
 
 extern "C++" ARCANE_CUDA_EXPORT Arccore::IMemoryAllocator*
 getCudaMemoryAllocator();
+
+//! Allocateur spécifique sur le device
+extern "C++" ARCANE_CUDA_EXPORT Arccore::IMemoryAllocator*
+getCudaDeviceMemoryAllocator();
+
+//! Allocateur spécifique utilisant le mémoire unifiée
+extern "C++" ARCANE_CUDA_EXPORT Arccore::IMemoryAllocator*
+getCudaUnifiedMemoryAllocator();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

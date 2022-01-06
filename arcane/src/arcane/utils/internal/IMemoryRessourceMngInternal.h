@@ -5,16 +5,18 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumArray.cc                                                 (C) 2000-2022 */
+/* IMemoryRessourceMngInternal.h                               (C) 2000-2022 */
 /*                                                                           */
-/* Tableaux multi-dimensionnel pour les types numériques sur accélérateur.   */
+/* Partie interne à Arcane de 'IMemoryRessourceMng'.                         */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_UTILS_INTERNAL_IMEMORYRESSOURCEMNGINTERNAL_H
+#define ARCANE_UTILS_INTERNAL_IMEMORYRESSOURCEMNGINTERNAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/NumArray.h"
-
-#include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
+
+#include <array>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -24,34 +26,19 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-IMemoryAllocator* NumArrayBaseCommon::
-_getDefaultAllocator()
+/*!
+ * \brief Partie interne à Arcane de 'IMemoryRessourceMng'.
+ */
+class ARCANE_UTILS_EXPORT IMemoryRessourceMngInternal
 {
-  return _getDefaultAllocator(eMemoryRessource::UnifiedMemory);
-}
+ public:
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+  virtual ~IMemoryRessourceMngInternal() = default;
 
-IMemoryAllocator* NumArrayBaseCommon::
-_getDefaultAllocator(eMemoryRessource r)
-{
-  return platform::getDataMemoryRessourceMng()->getAllocator(r);
-}
+ public:
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template class NumArray<Real, 4>;
-template class NumArray<Real, 3>;
-template class NumArray<Real, 2>;
-template class NumArray<Real, 1>;
-
-template class ArrayStridesBase<1>;
-template class ArrayStridesBase<2>;
-template class ArrayStridesBase<3>;
-template class ArrayStridesBase<4>;
+  virtual void setAllocator(eMemoryRessource r, IMemoryAllocator* allocator) = 0;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -60,3 +47,5 @@ template class ArrayStridesBase<4>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#endif  

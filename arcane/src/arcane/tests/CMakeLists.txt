@@ -489,6 +489,7 @@ arcane_add_test_sequential(miniweather_array_seq1 testMiniWeatherArraySequential
 arcane_add_test_sequential(miniweather_array1 testMiniWeatherArray.arc)
 arcane_add_test_sequential_task(miniweather_array1 testMiniWeatherArray.arc 4)
 arcane_add_accelerator_test_sequential(miniweather_array1 testMiniWeatherArray.arc)
+arcane_add_accelerator_test_sequential(miniweather_array1_device testMiniWeatherArrayDevice.arc)
 
 if(ARCANE_HAS_GEOMETRY)
   ARCANE_ADD_TEST(geometry testGeom.arc)

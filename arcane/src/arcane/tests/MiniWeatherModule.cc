@@ -11,6 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/MemoryRessource.h"
+
 #include "arcane/BasicModule.h"
 #include "arcane/ModuleFactory.h"
 #include "arcane/ServiceInfo.h"
@@ -126,8 +128,15 @@ void MiniWeatherModule::
 init()
 {
   info() << "Begin of init";
+  eMemoryRessource memory = eMemoryRessource::UnifiedMemory;
+  if (options()->useDeviceMemory()){
+    info() << "Using device memory";
+    memory = eMemoryRessource::Accelerator;
+  }
+  info() << "MemoryRessource: " << memory;
+
   options()->implementation()->init(acceleratorMng(),options()->nbCellX(),
-                                    options()->nbCellZ(),options()->finalTime());
+                                    options()->nbCellZ(),options()->finalTime(),memory);
 }
 
 void MiniWeatherModule::
@@ -144,6 +153,13 @@ computeLoop()
 void MiniWeatherModule::
 exit()
 {
+  // Pour l'instant on ne peut pas tester la validité avec la mémoire du device
+  // car il faut implémenter les opérations de copie.
+  if (options()->useDeviceMemory()){
+    warning() <<  "Can not check validity of results";
+    return;
+  }
+
   constexpr int NB_VAR = 4;
   UniqueArray<Real> reduced_values(NB_VAR,0.0);
   options()->implementation()->exit(reduced_values);

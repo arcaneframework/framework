@@ -708,7 +708,7 @@ class MiniWeatherArraySequentialService
     delete m_p;
   }
  public:
-  void init(IAcceleratorMng*,Int32 nb_x,Int32 nb_z,Real final_time) override
+  void init(IAcceleratorMng*,Int32 nb_x,Int32 nb_z,Real final_time,eMemoryRessource) override
   {
     m_p = new MiniWeatherArraySequential(traceMng(),nb_x,nb_z,final_time);
   }

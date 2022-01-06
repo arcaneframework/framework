@@ -5,16 +5,18 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumArray.cc                                                 (C) 2000-2022 */
+/* MemoryRessource.h                                           (C) 2000-2022 */
 /*                                                                           */
-/* Tableaux multi-dimensionnel pour les types numériques sur accélérateur.   */
+/* Gestion des ressources mémoire pour les CPU et accélérateurs.             */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_UTILS_MEMORYRESSOURCE_H
+#define ARCANE_UTILS_MEMORYRESSOURCE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/NumArray.h"
+#include "arcane/utils/ArcaneGlobal.h"
 
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/IMemoryRessourceMng.h"
+#include <iosfwd>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -25,33 +27,23 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IMemoryAllocator* NumArrayBaseCommon::
-_getDefaultAllocator()
+//! Liste des ressources mémoire disponibles
+enum class eMemoryRessource
 {
-  return _getDefaultAllocator(eMemoryRessource::UnifiedMemory);
-}
+  Unknown = 0,
+  Host,
+  Accelerator,
+  UnifiedMemory
+};
+
+//! Nombre de valeurs valides pour eMemoryRessource
+static constexpr int NB_MEMORY_RESSOURCE = 4;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IMemoryAllocator* NumArrayBaseCommon::
-_getDefaultAllocator(eMemoryRessource r)
-{
-  return platform::getDataMemoryRessourceMng()->getAllocator(r);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template class NumArray<Real, 4>;
-template class NumArray<Real, 3>;
-template class NumArray<Real, 2>;
-template class NumArray<Real, 1>;
-
-template class ArrayStridesBase<1>;
-template class ArrayStridesBase<2>;
-template class ArrayStridesBase<3>;
-template class ArrayStridesBase<4>;
+extern "C++" ARCANE_UTILS_EXPORT std::ostream&
+operator<<(std::ostream& o,eMemoryRessource r);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -60,3 +52,5 @@ template class ArrayStridesBase<4>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#endif  

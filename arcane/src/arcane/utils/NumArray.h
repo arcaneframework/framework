@@ -18,6 +18,7 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ArrayExtents.h"
 #include "arcane/utils/ArrayBounds.h"
+#include "arcane/utils/MemoryRessource.h"
 
 /*
  * ATTENTION:
@@ -367,6 +368,16 @@ class MDSpan<DataType,4>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+class ARCANE_UTILS_EXPORT NumArrayBaseCommon
+{
+ protected:
+  static IMemoryAllocator* _getDefaultAllocator();
+  static IMemoryAllocator* _getDefaultAllocator(eMemoryRessource r);
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Classe de base des tableaux multi-dimensionnels pour les types
  * numériques sur accélérateur.
@@ -391,6 +402,8 @@ class MDSpan<DataType,4>
  */
 template<typename DataType,int RankValue>
 class NumArrayBase
+: public NumArrayBaseCommon
+
 {
   // On utilise pour l'instant un UniqueArray2 pour conserver les valeurs.
   // La première dimension du UniqueArray2 correspond à extent(0) et la
@@ -416,9 +429,10 @@ class NumArrayBase
     _resize();
   }
  protected:
-  NumArrayBase() : m_data(platform::getDefaultDataAllocator()){}
+  NumArrayBase() : m_data(_getDefaultAllocator()){}
+  NumArrayBase(eMemoryRessource r) : m_data(_getDefaultAllocator(r)){}
   explicit NumArrayBase(ArrayExtents<RankValue> extents)
-  : m_data(platform::getDefaultDataAllocator())
+  : m_data(_getDefaultAllocator())
   {
     resize(extents);
   }
@@ -431,7 +445,7 @@ class NumArrayBase
     for (int i=1; i<RankValue; ++i )
       dim2_size *= extent(i);
     m_total_nb_element = dim1_size * dim2_size;
-    m_data.resize(dim1_size,dim2_size);
+    m_data.resizeNoInit(dim1_size,dim2_size);
     m_span.m_ptr = m_data.to1DSpan().data();
   }
  public:
@@ -499,6 +513,7 @@ class NumArray<DataType,1>
  public:
   //! Construit un tableau vide
   NumArray() : NumArray(0){}
+  explicit NumArray(eMemoryRessource r) : BaseClass(r){}
   //! Construit un tableau
   NumArray(Int64 dim1_size) : BaseClass(ArrayExtents<1>(dim1_size)){}
  public:
@@ -547,6 +562,7 @@ class NumArray<DataType,2>
  public:
   //! Construit un tableau vide
   NumArray() = default;
+  explicit NumArray(eMemoryRessource r) : BaseClass(r){}
   //! Construit une vue
   NumArray(Int64 dim1_size,Int64 dim2_size)
   : BaseClass(ArrayExtents<2>(dim1_size,dim2_size)){}
@@ -596,6 +612,7 @@ class NumArray<DataType,3>
  public:
   //! Construit un tableau vide
   NumArray() = default;
+  explicit NumArray(eMemoryRessource r) : BaseClass(r){}
   //! Construit une vue
   NumArray(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
   : BaseClass(ArrayExtents<3>(dim1_size,dim2_size,dim3_size)){}
@@ -646,6 +663,7 @@ class NumArray<DataType,4>
  public:
   //! Construit un tableau vide
   NumArray() = default;
+  explicit NumArray(eMemoryRessource r) : BaseClass(r){}
   //! Construit une vue
   NumArray(Int64 dim1_size,Int64 dim2_size,
            Int64 dim3_size,Int64 dim4_size)
