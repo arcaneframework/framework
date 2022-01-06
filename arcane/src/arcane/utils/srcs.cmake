@@ -287,4 +287,6 @@ set(ARCANE_SOURCES
   GraphBaseT.h
   DirectedGraphT.h
   DirectedAcyclicGraphT.h
+  internal/MemoryRessourceMng.h
+  internal/IMemoryRessourceMngInternal.h
   )

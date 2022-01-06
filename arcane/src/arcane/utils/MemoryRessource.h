@@ -28,11 +28,14 @@ namespace Arcane
 //! Liste des ressources mémoire disponibles
 enum class eMemoryRessource
 {
-  Unknown,
+  Unknown = 0,
   Host,
   Accelerator,
   UnifiedMemory
 };
+
+//! Nombre de valeurs valides pour eMemoryRessource
+static constexpr int NB_MEMORY_RESSOURCE = 4;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

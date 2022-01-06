@@ -9,42 +9,55 @@
 /*                                                                           */
 /* Gestion des ressources mémoire pour les CPU et accélérateurs.             */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_IMEMORYRESSOURCEMNG_H
-#define ARCANE_UTILS_IMEMORYRESSOURCEMNG_H
+#ifndef ARCANE_UTILS_INTERNAL_MEMORYRESSOURCEMNG_H
+#define ARCANE_UTILS_INTERNAL_MEMORYRESSOURCEMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/MemoryRessource.h"
-#include "arcane/utils/UtilsTypes.h"
+#include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
+
+#include <array>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-class IMemoryAllocator;
-class IMemoryRessourceMngInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Gestion des ressources mémoire pour les CPU et accélérateurs.
  */
-class ARCANE_UTILS_EXPORT IMemoryRessourceMng
+class ARCANE_UTILS_EXPORT MemoryRessourceMng
+: public IMemoryRessourceMng
+, public IMemoryRessourceMngInternal
 {
  public:
 
-  virtual ~IMemoryRessourceMng() = default;
+  MemoryRessourceMng();
 
  public:
 
-  //! Allocateur mémoire pour la ressource \a r
-  virtual IMemoryAllocator* getAllocator(eMemoryRessource r) = 0;
+  IMemoryAllocator* getAllocator(eMemoryRessource r) override;
+
+ public:
+
+  void setAllocator(eMemoryRessource r, IMemoryAllocator* allocator) override;
 
  public:
 
   //! Interface interne
-  virtual IMemoryRessourceMngInternal* _internal() = 0;
+  virtual IMemoryRessourceMngInternal* _internal() { return this; }
+
+ private:
+
+  std::array<IMemoryAllocator*, NB_MEMORY_RESSOURCE> m_allocators;
+
+ private:
+
+  inline int _checkValidRessource(eMemoryRessource r);
 };
 
 /*---------------------------------------------------------------------------*/

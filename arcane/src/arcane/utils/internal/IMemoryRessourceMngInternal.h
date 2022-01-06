@@ -5,46 +5,39 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMemoryRessourceMng.h                                       (C) 2000-2022 */
+/* IMemoryRessourceMngInternal.h                               (C) 2000-2022 */
 /*                                                                           */
-/* Gestion des ressources mémoire pour les CPU et accélérateurs.             */
+/* Partie interne à Arcane de 'IMemoryRessourceMng'.                         */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_IMEMORYRESSOURCEMNG_H
-#define ARCANE_UTILS_IMEMORYRESSOURCEMNG_H
+#ifndef ARCANE_UTILS_INTERNAL_IMEMORYRESSOURCEMNGINTERNAL_H
+#define ARCANE_UTILS_INTERNAL_IMEMORYRESSOURCEMNGINTERNAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/MemoryRessource.h"
-#include "arcane/utils/UtilsTypes.h"
+#include "arcane/utils/IMemoryRessourceMng.h"
+
+#include <array>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-class IMemoryAllocator;
-class IMemoryRessourceMngInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestion des ressources mémoire pour les CPU et accélérateurs.
+ * \brief Partie interne à Arcane de 'IMemoryRessourceMng'.
  */
-class ARCANE_UTILS_EXPORT IMemoryRessourceMng
+class ARCANE_UTILS_EXPORT IMemoryRessourceMngInternal
 {
  public:
 
-  virtual ~IMemoryRessourceMng() = default;
+  virtual ~IMemoryRessourceMngInternal() = default;
 
  public:
 
-  //! Allocateur mémoire pour la ressource \a r
-  virtual IMemoryAllocator* getAllocator(eMemoryRessource r) = 0;
-
- public:
-
-  //! Interface interne
-  virtual IMemoryRessourceMngInternal* _internal() = 0;
+  virtual void setAllocator(eMemoryRessource r, IMemoryAllocator* allocator) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
