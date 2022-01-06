@@ -160,11 +160,28 @@ class CudaRunQueueRuntime
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class CudaMemoryCopier
+: public IMemoryCopier
+{
+  void copy(Span<const std::byte> from, [[maybe_unused]] eMemoryRessource from_mem,
+            Span<std::byte> to, [[maybe_unused]] eMemoryRessource to_mem) override
+  {
+    // 'cudaMemcpyDefault' CUDA sait automatiquement ce qu'il faut faire en tenant
+    // uniquement compte de la valeur des pointeurs. Il faudrait voir si
+    // utiliser \a from_mem et \a to_mem peut améliorer les performances.
+    cudaMemcpy(to.data(), from.data(), from.size(), cudaMemcpyDefault);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane::Accelerator::Cuda
 
 namespace 
 {
 Arcane::Accelerator::Cuda::CudaRunQueueRuntime global_cuda_runtime;
+Arcane::Accelerator::Cuda::CudaMemoryCopier global_cuda_memory_copier;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -183,6 +200,7 @@ arcaneRegisterAcceleratorRuntimecuda()
   IMemoryRessourceMngInternal* mrm = platform::getDataMemoryRessourceMng()->_internal();
   mrm->setAllocator(eMemoryRessource::UnifiedMemory,getCudaUnifiedMemoryAllocator());
   mrm->setAllocator(eMemoryRessource::Accelerator,getCudaDeviceMemoryAllocator());
+  mrm->setCopier(&global_cuda_memory_copier);
   checkDevices();
 }
 

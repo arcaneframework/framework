@@ -788,7 +788,12 @@ doExit(RealArrayView reduced_values)
   int k, i, ll;
   double sum_v[NUM_VARS];
 
-  auto ns = nstate.constSpan();
+  // Comme le calcul se fait toujours sur l'hôte, il faut copier la valeur
+  // de 'nstate' qui peut être sur le device.
+  NumArray<double,3> host_nstate(eMemoryRessource::Host);
+  host_nstate.copy(nstate);
+
+  auto ns = host_nstate.constSpan();
 
   for (ll = 0; ll < NUM_VARS; ll++)
     sum_v[ll] = 0.0;
