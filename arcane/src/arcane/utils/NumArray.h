@@ -445,7 +445,7 @@ class NumArrayBase
     for (int i=1; i<RankValue; ++i )
       dim2_size *= extent(i);
     m_total_nb_element = dim1_size * dim2_size;
-    m_data.resize(dim1_size,dim2_size);
+    m_data.resizeNoInit(dim1_size,dim2_size);
     m_span.m_ptr = m_data.to1DSpan().data();
   }
  public:

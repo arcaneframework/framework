@@ -79,6 +79,7 @@ TEST(NumArray3,Misc)
   constexpr int nb_z = 5;
 
   NumArray<Int64,3> v(nb_x,nb_y,nb_z);
+  v.fill(0);
   // Attention, v.extents() change si 'v' est redimensionné
   auto v_extents = v.extentsWithOffset();
   {
@@ -102,11 +103,14 @@ TEST(NumArray3,Misc)
   v.resize(3,2,6);
   std::cout << "CAPACITY V4=" << v.capacity() << "\n";
 
+  // Les valeurs ci-dessous dépendent de l'implémentation actuelle
+  // de NumArray::resize(). Je ne suis pas sur qu'il soit valide de les
+  // tester
   std::vector<Int64> valid_values =
   {
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
     20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-    0 , 0, 0, 0, 0, 0,  0 , 0, 0, 0, 0, 0
+    24 , 25, 26, 27, 28, 29, 20 , 21, 22, 23, 24, 25
   };
   ASSERT_EQ(valid_values.size(),(size_t)36);
 
