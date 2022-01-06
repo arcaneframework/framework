@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MiniWeatherTypes.h                                          (C) 2000-2021 */
+/* MiniWeatherTypes.h                                          (C) 2000-2022 */
 /*                                                                           */
 /* Types pour le test 'MiniWeather'                                          */
 /*---------------------------------------------------------------------------*/
@@ -34,7 +34,7 @@ class IMiniWeatherService
 
  public:
 
-  virtual void init(IAcceleratorMng* am,Int32 nb_x,Int32 nb_z,Real final_time) = 0;
+  virtual void init(IAcceleratorMng* am,Int32 nb_x,Int32 nb_z,Real final_time,eMemoryRessource r) = 0;
   virtual bool loop() = 0;
   /*!
    * \brief Point d'entrée de fin d'exécution.

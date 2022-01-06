@@ -116,7 +116,7 @@ class MiniWeatherArray
  public:
 
   MiniWeatherArray(IAcceleratorMng* am,ITraceMng* tm,int nb_cell_x,int nb_cell_z,
-                   double final_time);
+                   double final_time,eMemoryRessource memory);
   
  public:
   
@@ -195,12 +195,20 @@ class MiniWeatherArray
 
 MiniWeatherArray::
 MiniWeatherArray(IAcceleratorMng* am,ITraceMng* tm,int nb_cell_x,int nb_cell_z,
-                 double final_time)
+                 double final_time,eMemoryRessource memory)
 : TraceAccessor(tm)
+, hy_dens_cell(memory)
+, hy_dens_theta_cell(memory)
+, hy_dens_int(memory)
+, hy_dens_theta_int(memory)
+, nstate(memory)
+, nstate_tmp(memory)
+, nflux(memory)
+, ntend(memory)
 , m_runner(am->defaultRunner())
 {
-  m_const.nx_glob = nb_cell_x;     //Number of total cells in the x-dirction
-  m_const.nz_glob = nb_cell_z;     //Number of total cells in the z-dirction
+  m_const.nx_glob = nb_cell_x; // Number of total cells in the x-direction
+  m_const.nz_glob = nb_cell_z; // Number of total cells in the z-direction
   m_const.dx = xlen / m_const.nx_glob;
   m_const.dz = zlen / m_const.nz_glob;
 
@@ -564,8 +572,6 @@ set_halo_values_z(NumArray<double,3>& nstate)
 void MiniWeatherArray::
 init()
 {
-  int  k, kk;
-
   m_const.nranks = 1;
   m_const.myrank = 0;
 
@@ -636,55 +642,60 @@ init()
   };
 
   auto queue = makeQueue(m_runner);
-  auto command = makeCommand(queue);
 
-  auto in_out_state = ax::viewInOut(command,nstate);
-  auto out_state_tmp = ax::viewOut(command,nstate_tmp);
-
-  //////////////////////////////////////////////////////////////////////////
-  // Initialize the cell-averaged fluid state via Gauss-Legendre quadrature
-  //////////////////////////////////////////////////////////////////////////
-
-  command << RUNCOMMAND_LOOP(iter,ArrayBounds<2>(nz+2*hs,nx+2*hs))
   {
-    auto [k,i] = iter();
-    double r, u, w, t, hr, ht;
-    for (int ll = 0; ll < NUM_VARS; ll++)
-      in_out_state(ll,k,i) = 0.0;
+    auto command = makeCommand(queue);
 
-    // Use Gauss-Legendre quadrature to initialize a hydrostatic balance + temperature perturbation
-    for (int kk = 0; kk < nqpoints; kk++) {
-      for (int ii = 0; ii < nqpoints; ii++) {
-        // Compute the x,z location within the global domain based on cell and quadrature index
-        double x = ((double)(i_beg + i - hs) + 0.5) * dx + (qpoints[ii] - 0.5) * dx;
-        double z = ((double)(k_beg + k - hs) + 0.5) * dz + (qpoints[kk] - 0.5) * dz;
+    auto in_out_state = viewInOut(command,nstate);
+    auto out_state_tmp = viewOut(command,nstate_tmp);
 
-        // Set the fluid state based on the user's specification (default is injection in this example)
-        injection(x, z, r, u, w, t, hr, ht);
+    //////////////////////////////////////////////////////////////////////////
+    // Initialize the cell-averaged fluid state via Gauss-Legendre quadrature
+    //////////////////////////////////////////////////////////////////////////
 
-        // Store into the fluid state array
-        in_out_state(ID_DENS,k,i) += + r * qweights[ii] * qweights[kk];
-        in_out_state(ID_UMOM,k,i) += + (r + hr) * u * qweights[ii] * qweights[kk];
-        in_out_state(ID_WMOM,k,i) += + (r + hr) * w * qweights[ii] * qweights[kk];
-        in_out_state(ID_RHOT,k,i) += + ((r + hr) * (t + ht) - hr * ht) * qweights[ii] * qweights[kk];
+    command << RUNCOMMAND_LOOP(iter,ArrayBounds<2>(nz+2*hs,nx+2*hs))
+    {
+      auto [k,i] = iter();
+      double r, u, w, t, hr, ht;
+      for (int ll = 0; ll < NUM_VARS; ll++)
+        in_out_state(ll,k,i) = 0.0;
+
+      // Use Gauss-Legendre quadrature to initialize a hydrostatic balance + temperature perturbation
+      for (int kk = 0; kk < nqpoints; kk++) {
+        for (int ii = 0; ii < nqpoints; ii++) {
+          // Compute the x,z location within the global domain based on cell and quadrature index
+          double x = ((double)(i_beg + i - hs) + 0.5) * dx + (qpoints[ii] - 0.5) * dx;
+          double z = ((double)(k_beg + k - hs) + 0.5) * dz + (qpoints[kk] - 0.5) * dz;
+
+          // Set the fluid state based on the user's specification (default is injection in this example)
+          injection(x, z, r, u, w, t, hr, ht);
+
+          // Store into the fluid state array
+          in_out_state(ID_DENS,k,i) += + r * qweights[ii] * qweights[kk];
+          in_out_state(ID_UMOM,k,i) += + (r + hr) * u * qweights[ii] * qweights[kk];
+          in_out_state(ID_WMOM,k,i) += + (r + hr) * w * qweights[ii] * qweights[kk];
+          in_out_state(ID_RHOT,k,i) += + ((r + hr) * (t + ht) - hr * ht) * qweights[ii] * qweights[kk];
+        }
       }
-    }
 
-    for (int ll = 0; ll < NUM_VARS; ll++)
-      out_state_tmp(ll,k,i) = in_out_state(ll,k,i);
-  };
-  info() << "End init part 1\n";
+      for (int ll = 0; ll < NUM_VARS; ll++)
+        out_state_tmp(ll,k,i) = in_out_state(ll,k,i);
+    };
+    info() << "End init part 1\n";
+  }
 
   // Compute the hydrostatic background state over vertical cell averages
   {
-    double r, u, w, t, hr, ht;
-    auto out_hy_dens_cell = hy_dens_cell.span();
-    auto out_hy_dens_theta_cell = hy_dens_theta_cell.span();
-    for (k = 0; k < nz + 2 * hs; k++){
+    auto command = makeCommand(queue);
+    auto out_hy_dens_cell = viewOut(command,hy_dens_cell);
+    auto out_hy_dens_theta_cell = viewOut(command,hy_dens_theta_cell);
+    command << RUNCOMMAND_LOOP1(iter,(nz + 2 * hs)){
+      auto [k] = iter();
+      double r, u, w, t, hr, ht;
       double dens_cell = 0.0;
       double dens_theta_cell = 0.0;
-      for (kk = 0; kk < nqpoints; kk++){
-        double z = (k_beg + k - hs + 0.5) * dz;
+      for (int kk = 0; kk < nqpoints; kk++){
+        double z = (k_beg + (double)k - hs + 0.5) * dz;
 
         // Set the fluid state based on the user's specification (default is injection in this example)
         injection(0.0, z, r, u, w, t, hr, ht);
@@ -694,17 +705,19 @@ init()
       }
       out_hy_dens_cell(k) = dens_cell;
       out_hy_dens_theta_cell(k) = dens_theta_cell;
-    }
+    };
   }
 
   {
-    double r, u, w, t, hr, ht;
-    auto out_hy_dens_int = hy_dens_int.span();
-    auto out_hy_dens_theta_int = hy_dens_theta_int.span();
-    auto out_hy_pressure_int = hy_pressure_int.span();
-    // Compute the hydrostatic background state at vertical cell interfaces
-    for (k = 0; k < nz + 1; k++) {
-      double z = (k_beg + k) * dz;
+    auto command = makeCommand(queue);
+    auto out_hy_dens_int = viewOut(command,hy_dens_int);
+    auto out_hy_dens_theta_int = viewOut(command,hy_dens_theta_int);
+    auto out_hy_pressure_int = viewOut(command,hy_pressure_int);
+    command << RUNCOMMAND_LOOP1(iter,(nz + 1)){
+      auto [k] = iter();
+      double r, u, w, t, hr, ht;
+      // Compute the hydrostatic background state at vertical cell interfaces
+      double z = (k_beg + (double)k) * dz;
 
       //Set the fluid state based on the user's specification (default is injection in this example)
       injection(0.0, z, r, u, w, t, hr, ht);
@@ -712,7 +725,7 @@ init()
       out_hy_dens_int(k) = hr;
       out_hy_dens_theta_int(k) = hr * ht;
       out_hy_pressure_int(k) = C0 * pow((hr * ht), gamm);
-    }
+    };
   }
 }
 
@@ -806,9 +819,9 @@ class MiniWeatherArrayService
     delete m_p;
   }
  public:
-  void init(IAcceleratorMng* am,Int32 nb_x,Int32 nb_z,Real final_time) override
+  void init(IAcceleratorMng* am,Int32 nb_x,Int32 nb_z,Real final_time,eMemoryRessource r) override
   {
-    m_p = new MiniWeatherArray(am,traceMng(),nb_x,nb_z,final_time);
+    m_p = new MiniWeatherArray(am,traceMng(),nb_x,nb_z,final_time,r);
   }
   bool loop() override
   {
