@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CudaAcceleratorRuntime.cc                                   (C) 2000-2021 */
+/* CudaAcceleratorRuntime.cc                                   (C) 2000-2022 */
 /*                                                                           */
 /* Runtime pour 'Cuda'.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -18,6 +18,8 @@
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/IRunQueueRuntime.h"
@@ -173,10 +175,14 @@ Arcane::Accelerator::Cuda::CudaRunQueueRuntime global_cuda_runtime;
 extern "C" ARCANE_EXPORT void
 arcaneRegisterAcceleratorRuntimecuda()
 {
+  using namespace Arcane;
   using namespace Arcane::Accelerator::Cuda;
   Arcane::Accelerator::impl::setUsingCUDARuntime(true);
   Arcane::Accelerator::impl::setCUDARunQueueRuntime(&global_cuda_runtime);
   Arcane::platform::setAcceleratorHostMemoryAllocator(getCudaMemoryAllocator());
+  IMemoryRessourceMngInternal* mrm = platform::getDataMemoryRessourceMng()->_internal();
+  mrm->setAllocator(eMemoryRessource::UnifiedMemory,getCudaUnifiedMemoryAllocator());
+  mrm->setAllocator(eMemoryRessource::Accelerator,getCudaDeviceMemoryAllocator());
   checkDevices();
 }
 

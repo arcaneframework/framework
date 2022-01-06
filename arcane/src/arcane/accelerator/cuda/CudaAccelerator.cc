@@ -43,37 +43,85 @@ void arcaneCheckCudaErrors(const TraceInfo& ti,cudaError_t e)
  * Cet allocateur utilise 'cudaMallocManaged' au lieu de 'malloc'
  * pour les allocations.
  */
-class CudaMemoryAllocator
+class CudaMemoryAllocatorBase
 : public Arccore::AlignedMemoryAllocator
 {
  public:
-  CudaMemoryAllocator() : AlignedMemoryAllocator(128){}
 
-  bool hasRealloc() const override { return false; }
-  void* allocate(size_t new_size) override
+  CudaMemoryAllocatorBase()
+  : AlignedMemoryAllocator(128)
+  {}
+
+  bool hasRealloc() const final { return false; }
+  void* allocate(size_t new_size) final
   {
     void* out = nullptr;
-    ARCANE_CHECK_CUDA(::cudaMallocManaged(&out,new_size,cudaMemAttachGlobal));
+    ARCANE_CHECK_CUDA(_allocate(&out, new_size));
     Int64 a = reinterpret_cast<Int64>(out);
-    if ((a % 128)!=0)
-      ARCANE_FATAL("Bad alignment for CUDA allocator: offset={0}",(a % 128));
+    if ((a % 128) != 0)
+      ARCANE_FATAL("Bad alignment for CUDA allocator: offset={0}", (a % 128));
     return out;
   }
-  void* reallocate(void* current_ptr,size_t new_size) override
+  void* reallocate(void* current_ptr, size_t new_size) final
   {
     deallocate(current_ptr);
     return allocate(new_size);
   }
-  void deallocate(void* ptr) override
+  void deallocate(void* ptr) final
   {
-    ARCANE_CHECK_CUDA(::cudaFree(ptr));
+    ARCANE_CHECK_CUDA(_deallocate(ptr));
+  }
+
+ protected:
+
+  virtual cudaError_t _allocate(void** ptr, size_t new_size) = 0;
+  virtual cudaError_t _deallocate(void* ptr) = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class UnifiedMemoryCudaMemoryAllocator
+: public CudaMemoryAllocatorBase
+{
+ protected:
+
+  virtual cudaError_t _allocate(void** ptr, size_t new_size) override
+  {
+    return ::cudaMallocManaged(ptr, new_size, cudaMemAttachGlobal);
+  }
+  virtual cudaError_t _deallocate(void* ptr) override
+  {
+    return ::cudaFree(ptr);
   }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CudaMemoryAllocator default_cuda_memory_allocator;
+class DeviceCudaMemoryAllocator
+: public CudaMemoryAllocatorBase
+{
+ protected:
+
+  virtual cudaError_t _allocate(void** ptr, size_t new_size) override
+  {
+    return ::cudaMalloc(ptr, new_size);
+  }
+  virtual cudaError_t _deallocate(void* ptr) override
+  {
+    return ::cudaFree(ptr);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace
+{
+  UnifiedMemoryCudaMemoryAllocator unified_memory_cuda_memory_allocator;
+  DeviceCudaMemoryAllocator device_cuda_memory_allocator;
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -81,13 +129,25 @@ CudaMemoryAllocator default_cuda_memory_allocator;
 Arccore::IMemoryAllocator*
 getCudaMemoryAllocator()
 {
-  return &default_cuda_memory_allocator;
+  return &unified_memory_cuda_memory_allocator;
+}
+
+Arccore::IMemoryAllocator*
+getCudaDeviceMemoryAllocator()
+{
+  return &device_cuda_memory_allocator;
+}
+
+Arccore::IMemoryAllocator*
+getCudaUnifiedMemoryAllocator()
+{
+  return &unified_memory_cuda_memory_allocator;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::accelerator::cuda
+} // namespace Arcane::Accelerator::Cuda
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
