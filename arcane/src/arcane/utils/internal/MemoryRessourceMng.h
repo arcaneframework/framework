@@ -44,7 +44,13 @@ class ARCANE_UTILS_EXPORT MemoryRessourceMng
 
  public:
 
+  void copy(Span<const std::byte> from, eMemoryRessource from_mem,
+            Span<std::byte> to, eMemoryRessource to_mem) override;
+
+ public:
+
   void setAllocator(eMemoryRessource r, IMemoryAllocator* allocator) override;
+  void setCopier(IMemoryCopier* copier) override { m_copier = copier; }
 
  public:
 
@@ -54,6 +60,7 @@ class ARCANE_UTILS_EXPORT MemoryRessourceMng
  private:
 
   std::array<IMemoryAllocator*, NB_MEMORY_RESSOURCE> m_allocators;
+  IMemoryCopier* m_copier = nullptr;
 
  private:
 

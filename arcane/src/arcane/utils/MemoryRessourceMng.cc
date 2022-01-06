@@ -62,55 +62,98 @@ MemoryRessourceMng()
   // accélérateur
   IMemoryAllocator* a = AlignedMemoryAllocator::Simd();
   setAllocator(eMemoryRessource::Host, a);
-    }
+}
 
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-  int MemoryRessourceMng::
-  _checkValidRessource(eMemoryRessource r)
-  {
-    int x = (int)r;
-    if (x <= 0 || x >= NB_MEMORY_RESSOURCE)
-      ARCANE_FATAL("Invalid value '{0}'. Valid range is '1' to '{1}'", x, NB_MEMORY_RESSOURCE - 1);
-    return x;
-  }
+int MemoryRessourceMng::
+_checkValidRessource(eMemoryRessource r)
+{
+  int x = (int)r;
+  if (x <= 0 || x >= NB_MEMORY_RESSOURCE)
+    ARCANE_FATAL("Invalid value '{0}'. Valid range is '1' to '{1}'", x, NB_MEMORY_RESSOURCE - 1);
+  return x;
+}
 
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-  IMemoryAllocator* MemoryRessourceMng::
-  getAllocator(eMemoryRessource r)
-  {
-    int x = _checkValidRessource(r);
-    IMemoryAllocator* a = m_allocators[(int)r];
+IMemoryAllocator* MemoryRessourceMng::
+getAllocator(eMemoryRessource r)
+{
+  int x = _checkValidRessource(r);
+  IMemoryAllocator* a = m_allocators[(int)r];
 
-    // Si pas d'allocateur spécifique, utilise platform::getAcceleratorHostMemoryAllocator()
-    // pour compatibilité avec l'existant
-    if (r == eMemoryRessource::UnifiedMemory && !a) {
-      a = platform::getAcceleratorHostMemoryAllocator();
-      if (!a)
-        a = m_allocators[(int)eMemoryRessource::Host];
-    }
-
+  // Si pas d'allocateur spécifique, utilise platform::getAcceleratorHostMemoryAllocator()
+  // pour compatibilité avec l'existant
+  if (r == eMemoryRessource::UnifiedMemory && !a) {
+    a = platform::getAcceleratorHostMemoryAllocator();
     if (!a)
-      ARCANE_FATAL("Allocator for ressource '{0}' is not available", x);
-
-    return a;
+      a = m_allocators[(int)eMemoryRessource::Host];
   }
 
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
+  if (!a)
+    ARCANE_FATAL("Allocator for ressource '{0}' is not available", x);
 
-  void MemoryRessourceMng::
-  setAllocator(eMemoryRessource r, IMemoryAllocator * allocator)
+  return a;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MemoryRessourceMng::
+setAllocator(eMemoryRessource r, IMemoryAllocator* allocator)
+{
+  int x = _checkValidRessource(r);
+  m_allocators[x] = allocator;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace
+{
+  inline bool _isHost(eMemoryRessource r)
   {
-    int x = _checkValidRessource(r);
-    m_allocators[x] = allocator;
+    return r == eMemoryRessource::Host || r == eMemoryRessource::UnifiedMemory;
+  }
+} // namespace
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MemoryRessourceMng::
+copy(Span<const std::byte> from, eMemoryRessource from_mem,
+     Span<std::byte> to, eMemoryRessource to_mem)
+{
+  Int64 from_size = from.size();
+  Int64 to_size = to.size();
+  if (from_size > to_size)
+    ARCANE_FATAL("Destination copy is too small (to_size={0} from_size={1})", to_size, from_size);
+
+  // Utilise l'instance spécifique si elle disponible
+  if (m_copier) {
+    m_copier->copy(from, from_mem, to, to_mem);
+    return;
   }
 
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
+  // Sinon, on peut juste faire un 'memcpy' si la mémoire est accessible
+  // depuis le CPU
+
+  if (!_isHost(from_mem))
+    ARCANE_FATAL("Source buffer is not accessible from host and no copier provided (location={0})",
+                 from_mem);
+
+  if (!_isHost(to_mem))
+    ARCANE_FATAL("Destination buffer is not accessible from host and no copier provided (localtion={0})",
+                 to_mem);
+
+  memcpy(to.data(), from.data(), from.size());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane
 

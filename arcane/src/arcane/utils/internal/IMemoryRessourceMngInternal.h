@@ -26,6 +26,18 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+class ARCANE_UTILS_EXPORT IMemoryCopier
+{
+ public:
+
+  //! Copie les données de \a from vers \a to
+  virtual void copy(Span<const std::byte> from, eMemoryRessource from_mem,
+                    Span<std::byte> to, eMemoryRessource to_mem) = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Partie interne à Arcane de 'IMemoryRessourceMng'.
  */
@@ -35,9 +47,14 @@ class ARCANE_UTILS_EXPORT IMemoryRessourceMngInternal
 
   virtual ~IMemoryRessourceMngInternal() = default;
 
+  virtual void copy(Span<const std::byte> from, eMemoryRessource from_mem,
+                    Span<std::byte> to, eMemoryRessource to_mem) = 0;
+
  public:
 
   virtual void setAllocator(eMemoryRessource r, IMemoryAllocator* allocator) = 0;
+
+  virtual void setCopier(IMemoryCopier* copier) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

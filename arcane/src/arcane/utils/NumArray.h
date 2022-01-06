@@ -374,6 +374,9 @@ class ARCANE_UTILS_EXPORT NumArrayBaseCommon
  protected:
   static IMemoryAllocator* _getDefaultAllocator();
   static IMemoryAllocator* _getDefaultAllocator(eMemoryRessource r);
+  static void _checkHost(eMemoryRessource r);
+  static void _copy(Span<const std::byte> from, eMemoryRessource from_mem,
+                    Span<std::byte> to, eMemoryRessource to_mem);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -430,9 +433,9 @@ class NumArrayBase
   }
  protected:
   NumArrayBase() : m_data(_getDefaultAllocator()){}
-  NumArrayBase(eMemoryRessource r) : m_data(_getDefaultAllocator(r)){}
+  NumArrayBase(eMemoryRessource r) : m_data(_getDefaultAllocator(r)), m_memory_ressource(r){}
   explicit NumArrayBase(ArrayExtents<RankValue> extents)
-  : m_data(_getDefaultAllocator())
+  : m_data(_getDefaultAllocator()), m_memory_ressource(eMemoryRessource::UnifiedMemory)
   {
     resize(extents);
   }
@@ -463,7 +466,17 @@ class NumArrayBase
  public:
   Span<const DataType> to1DSpan() const { return m_span.to1DSpan(); }
   Span<DataType> to1DSpan() { return m_span.to1DSpan(); }
-  void copy(ConstSpanType rhs) { m_data.copy(rhs._internalTo2DSpan()); }
+  void copy(ConstSpanType rhs)
+  {
+    _checkHost(m_memory_ressource);
+    m_data.copy(rhs._internalTo2DSpan());
+  }
+  void copy(const NumArrayBase<DataType,RankValue>& rhs)
+  {
+    this->resize(rhs.extents());
+    _copy(asBytes(rhs.to1DSpan()),rhs.m_memory_ressource,
+          asWritableBytes(to1DSpan()),m_memory_ressource);
+  }
   const DataType& operator()(ArrayBoundsIndex<RankValue> idx) const
   {
     return m_span(idx);
@@ -477,8 +490,10 @@ class NumArrayBase
     m_data.swap(rhs.m_data);
     std::swap(m_span,rhs.m_span);
     std::swap(m_total_nb_element,rhs.m_total_nb_element);
+    std::swap(m_memory_ressource,rhs.m_memory_ressource);
   }
   Int64 capacity() const { return m_data.capacity(); }
+  eMemoryRessource memoryRessource() const { return m_memory_ressource; }
  public:
   //! \internal
   DataType* _internalData() { return m_span._internalData(); }
@@ -486,6 +501,7 @@ class NumArrayBase
   MDSpan<DataType,RankValue> m_span;
   UniqueArray2<DataType> m_data;
   Int64 m_total_nb_element = 0;
+  eMemoryRessource m_memory_ressource = eMemoryRessource::Unknown;
 };
 
 /*---------------------------------------------------------------------------*/
