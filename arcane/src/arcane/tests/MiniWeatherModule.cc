@@ -153,13 +153,6 @@ computeLoop()
 void MiniWeatherModule::
 exit()
 {
-  // Pour l'instant on ne peut pas tester la validité avec la mémoire du device
-  // car il faut implémenter les opérations de copie.
-  if (options()->useDeviceMemory()){
-    warning() <<  "Can not check validity of results";
-    return;
-  }
-
   constexpr int NB_VAR = 4;
   UniqueArray<Real> reduced_values(NB_VAR,0.0);
   options()->implementation()->exit(reduced_values);
