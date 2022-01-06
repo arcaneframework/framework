@@ -25,6 +25,33 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+namespace
+{
+  const char* _toName(eMemoryRessource r)
+  {
+    switch (r) {
+    case eMemoryRessource::Unknown:
+      return "Unknown";
+    case eMemoryRessource::Host:
+      return "Host";
+    case eMemoryRessource::Accelerator:
+      return "Accelerator";
+    case eMemoryRessource::UnifiedMemory:
+      return "UnifiedMemory";
+    }
+    return "Invalid";
+  }
+} // namespace
+
+extern "C++" ARCANE_UTILS_EXPORT std::ostream&
+operator<<(std::ostream& o, eMemoryRessource r)
+{
+  o << _toName(r);
+  return o;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 MemoryRessourceMng::
 MemoryRessourceMng()
@@ -35,55 +62,55 @@ MemoryRessourceMng()
   // accélérateur
   IMemoryAllocator* a = AlignedMemoryAllocator::Simd();
   setAllocator(eMemoryRessource::Host, a);
-}
+    }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
-int MemoryRessourceMng::
-_checkValidRessource(eMemoryRessource r)
-{
-  int x = (int)r;
-  if (x <= 0 || x >= NB_MEMORY_RESSOURCE)
-    ARCANE_FATAL("Invalid value '{0}'. Valid range is '1' to '{1}'", x, NB_MEMORY_RESSOURCE - 1);
-  return x;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-IMemoryAllocator* MemoryRessourceMng::
-getAllocator(eMemoryRessource r)
-{
-  int x = _checkValidRessource(r);
-  IMemoryAllocator* a = m_allocators[(int)r];
-
-  // Si pas d'allocateur spécifique, utilise platform::getAcceleratorHostMemoryAllocator()
-  // pour compatibilité avec l'existant
-  if (r == eMemoryRessource::UnifiedMemory && !a) {
-    a = platform::getAcceleratorHostMemoryAllocator();
-    if (!a)
-      a = m_allocators[(int)eMemoryRessource::Host];
+  int MemoryRessourceMng::
+  _checkValidRessource(eMemoryRessource r)
+  {
+    int x = (int)r;
+    if (x <= 0 || x >= NB_MEMORY_RESSOURCE)
+      ARCANE_FATAL("Invalid value '{0}'. Valid range is '1' to '{1}'", x, NB_MEMORY_RESSOURCE - 1);
+    return x;
   }
 
-  if (!a)
-    ARCANE_FATAL("Allocator for ressource '{0}' is not available", x);
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
-  return a;
-}
+  IMemoryAllocator* MemoryRessourceMng::
+  getAllocator(eMemoryRessource r)
+  {
+    int x = _checkValidRessource(r);
+    IMemoryAllocator* a = m_allocators[(int)r];
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+    // Si pas d'allocateur spécifique, utilise platform::getAcceleratorHostMemoryAllocator()
+    // pour compatibilité avec l'existant
+    if (r == eMemoryRessource::UnifiedMemory && !a) {
+      a = platform::getAcceleratorHostMemoryAllocator();
+      if (!a)
+        a = m_allocators[(int)eMemoryRessource::Host];
+    }
 
-void MemoryRessourceMng::
-setAllocator(eMemoryRessource r, IMemoryAllocator* allocator)
-{
-  int x = _checkValidRessource(r);
-  m_allocators[x] = allocator;
-}
+    if (!a)
+      ARCANE_FATAL("Allocator for ressource '{0}' is not available", x);
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+    return a;
+  }
+
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+
+  void MemoryRessourceMng::
+  setAllocator(eMemoryRessource r, IMemoryAllocator * allocator)
+  {
+    int x = _checkValidRessource(r);
+    m_allocators[x] = allocator;
+  }
+
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane
 
