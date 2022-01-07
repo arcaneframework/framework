@@ -30,9 +30,13 @@ namespace Arcane
 //! Liste des ressources mémoire disponibles
 enum class eMemoryRessource
 {
+  //! Valeur inconnue ou non initialisée
   Unknown = 0,
+  //! Alloue sur l'hôte.
   Host,
-  Accelerator,
+  //! Alloue sur le device
+  Device,
+  //! Alloue en utilisant la mémoire unifiée.
   UnifiedMemory
 };
 

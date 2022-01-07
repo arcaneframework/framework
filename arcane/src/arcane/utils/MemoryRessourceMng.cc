@@ -34,8 +34,8 @@ namespace
       return "Unknown";
     case eMemoryRessource::Host:
       return "Host";
-    case eMemoryRessource::Accelerator:
-      return "Accelerator";
+    case eMemoryRessource::Device:
+      return "Device";
     case eMemoryRessource::UnifiedMemory:
       return "UnifiedMemory";
     }

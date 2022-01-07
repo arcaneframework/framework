@@ -131,7 +131,7 @@ init()
   eMemoryRessource memory = eMemoryRessource::UnifiedMemory;
   if (options()->useDeviceMemory()){
     info() << "Using device memory";
-    memory = eMemoryRessource::Accelerator;
+    memory = eMemoryRessource::Device;
   }
   info() << "MemoryRessource: " << memory;
 
