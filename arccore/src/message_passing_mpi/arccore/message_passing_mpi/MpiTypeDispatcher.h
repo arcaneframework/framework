@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiTypeDispatcher.h                                         (C) 2000-2020 */
+/* MpiTypeDispatcher.h                                         (C) 2000-2022 */
 /*                                                                           */
 /* Gestion des messages pour un type de données.                             */
 /*---------------------------------------------------------------------------*/
@@ -26,16 +26,19 @@ namespace Arccore::MessagePassing::Mpi
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Type>
+template <typename Type>
 class MpiTypeDispatcher
 : public ITypeDispatcher<Type>
 {
  public:
-  MpiTypeDispatcher(IMessagePassingMng* parallel_mng,MpiAdapter* adapter,MpiDatatype* datatype);
+
+  MpiTypeDispatcher(IMessagePassingMng* parallel_mng, MpiAdapter* adapter, MpiDatatype* datatype);
   ~MpiTypeDispatcher();
+
  public:
+
   void finalize() override {}
-  void broadcast(Span<Type> send_buf,Int32 rank) override;
+  void broadcast(Span<Type> send_buf, Int32 rank) override;
   void allGather(Span<const Type> send_buf,Span<Type> recv_buf) override;
   void allGatherVariable(Span<const Type> send_buf,Array<Type>& recv_buf) override;
   void gather(Span<const Type> send_buf,Span<Type> recv_buf,Int32 rank) override;
@@ -51,16 +54,30 @@ class MpiTypeDispatcher
   Request receive(Span<Type> recv_buffer,const PointToPointMessageInfo& message) override;
   Type allReduce(eReduceType op,Type send_buf) override;
   void allReduce(eReduceType op,Span<Type> send_buf) override;
+  Request nonBlockingAllReduce(eReduceType op, Span<Type> send_buf) override;
+  Request nonBlockingAllGather(Span<const Type> send_buf, Span<Type> recv_buf) override;
+  Request nonBlockingBroadcast(Span<Type> send_buf, Int32 rank) override;
+  Request nonBlockingGather(Span<const Type> send_buf, Span<Type> recv_buf, Int32 rank) override;
+  Request nonBlockingAllToAll(Span<const Type> send_buf, Span<Type> recv_buf, Int32 count) override;
+  Request nonBlockingAllToAllVariable(Span<const Type> send_buf, ConstArrayView<Int32> send_count,
+                                      ConstArrayView<Int32> send_index, Span<Type> recv_buf,
+                                      ConstArrayView<Int32> recv_count, ConstArrayView<Int32> recv_index) override;
+
  public:
+
   MpiDatatype* datatype() const { return m_datatype; }
   IMessagePassingMng* messagePassingMng() const { return m_parallel_mng; }
   MpiAdapter* adapter() const { return m_adapter; }
+
  private:
+
   IMessagePassingMng* m_parallel_mng;
   MpiAdapter* m_adapter;
   MpiDatatype* m_datatype;
+
  private:
-  void _gatherVariable2(Span<const Type> send_buf,Array<Type>& recv_buf,Integer rank);
+
+  void _gatherVariable2(Span<const Type> send_buf, Array<Type>& recv_buf, Integer rank);
 };
 
 /*---------------------------------------------------------------------------*/

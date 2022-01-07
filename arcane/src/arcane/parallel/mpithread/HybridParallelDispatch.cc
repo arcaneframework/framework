@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiParallelDispatch.cc                                      (C) 2000-2020 */
+/* MpiParallelDispatch.cc                                      (C) 2000-2022 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant les threads et MPI.                */
 /*---------------------------------------------------------------------------*/
@@ -825,6 +825,80 @@ allReduce(eReduceType op,Span<Type> send_buf)
   }
 
   _collectiveBarrier();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request HybridParallelDispatch<Type>::
+nonBlockingAllReduce(eReduceType op,Span<Type> send_buf)
+{
+  ARCANE_UNUSED(op);
+  ARCANE_UNUSED(send_buf);
+  throw NotImplementedException(A_FUNCINFO);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request HybridParallelDispatch<Type>::
+nonBlockingAllGather(Span<const Type> send_buf, Span<Type> recv_buf)
+{
+  ARCANE_UNUSED(send_buf);
+  ARCANE_UNUSED(recv_buf);
+  throw NotImplementedException(A_FUNCINFO);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request HybridParallelDispatch<Type>::
+nonBlockingBroadcast(Span<Type> send_buf, Int32 rank)
+{
+  ARCANE_UNUSED(send_buf);
+  ARCANE_UNUSED(rank);
+  throw NotImplementedException(A_FUNCINFO);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request HybridParallelDispatch<Type>::
+nonBlockingGather(Span<const Type> send_buf, Span<Type> recv_buf, Int32 rank)
+{
+  ARCANE_UNUSED(send_buf);
+  ARCANE_UNUSED(recv_buf);
+  ARCANE_UNUSED(rank);
+  throw NotImplementedException(A_FUNCINFO);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request HybridParallelDispatch<Type>::
+nonBlockingAllToAll(Span<const Type> send_buf, Span<Type> recv_buf, Int32 count)
+{
+  ARCANE_UNUSED(send_buf);
+  ARCANE_UNUSED(recv_buf);
+  ARCANE_UNUSED(count);
+  throw NotImplementedException(A_FUNCINFO);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request HybridParallelDispatch<Type>::
+nonBlockingAllToAllVariable(Span<const Type> send_buf, ConstArrayView<Int32> send_count,
+                            ConstArrayView<Int32> send_index, Span<Type> recv_buf,
+                            ConstArrayView<Int32> recv_count, ConstArrayView<Int32> recv_index)
+{
+  ARCANE_UNUSED(send_buf);
+  ARCANE_UNUSED(recv_buf);
+  ARCANE_UNUSED(send_count);
+  ARCANE_UNUSED(recv_count);
+  ARCANE_UNUSED(send_index);
+  ARCANE_UNUSED(recv_index);
+  throw NotImplementedException(A_FUNCINFO);
 }
 
 /*---------------------------------------------------------------------------*/

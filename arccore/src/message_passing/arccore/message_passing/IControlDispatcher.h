@@ -45,6 +45,8 @@ class IControlDispatcher
 
   virtual void barrier() =0;
 
+  virtual Request nonBlockingBarrier() =0;
+
   virtual MessageId probe(const PointToPointMessageInfo& message) =0;
 
   //! Création d'une liste de requêtes associé à ce gestionnaire
