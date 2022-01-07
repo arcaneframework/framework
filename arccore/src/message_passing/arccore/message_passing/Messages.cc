@@ -130,6 +130,16 @@ mpBarrier(IMessagePassingMng* pm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Request
+mpNonBlockingBarrier(IMessagePassingMng* pm)
+{
+  auto d = pm->dispatchers()->controlDispatcher();
+  return d->nonBlockingBarrier();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Ref<ISerializeMessageList>
 mpCreateSerializeMessageListRef(IMessagePassingMng* pm)
 {

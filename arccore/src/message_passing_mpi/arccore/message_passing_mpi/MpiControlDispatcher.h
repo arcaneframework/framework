@@ -35,6 +35,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiControlDispatcher
                         bool is_non_blocking) override;
   IMessagePassingMng* commSplit(bool keep) override;
   void barrier() override;
+  Request nonBlockingBarrier() override;
   MessageId probe(const PointToPointMessageInfo& message) override;
   Ref<IRequestList> createRequestListRef() override
   {

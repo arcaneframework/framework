@@ -311,6 +311,85 @@ allReduce(eReduceType op,Span<Type> send_buf)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<class Type> Request MpiTypeDispatcher<Type>::
+nonBlockingAllReduce(eReduceType op,Span<Type> send_buf)
+{
+  MPI_Datatype type = m_datatype->datatype();
+  Int64 s = send_buf.size();
+  UniqueArray<Type> recv_buf(s);
+  MPI_Op operation = m_datatype->reduceOperator(op);
+  Request request;
+  {
+    MpiLock::Section mls(m_adapter->mpiLock());
+    request = m_adapter->nonBlockingAllReduce(send_buf.data(),recv_buf.data(),s,type,operation);
+  }
+  send_buf.copy(recv_buf);
+  return request;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request MpiTypeDispatcher<Type>::
+nonBlockingAllToAll(Span<const Type> send_buf,Span<Type> recv_buf,Int32 count)
+{
+  MPI_Datatype type = m_datatype->datatype();
+  return m_adapter->nonBlockingAllToAll(send_buf.data(),recv_buf.data(),count,type);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request MpiTypeDispatcher<Type>::
+nonBlockingAllToAllVariable(Span<const Type> send_buf,
+                            Int32ConstArrayView send_count,
+                            Int32ConstArrayView send_index,
+                            Span<Type> recv_buf,
+                            Int32ConstArrayView recv_count,
+                            Int32ConstArrayView recv_index
+                            )
+{
+  MPI_Datatype type = m_datatype->datatype();
+
+  return m_adapter->nonBlockingAllToAllVariable(send_buf.data(),send_count.data(),
+                                                send_index.data(),recv_buf.data(),
+                                                recv_count.data(),
+                                                recv_index.data(),type);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request MpiTypeDispatcher<Type>::
+nonBlockingBroadcast(Span<Type> send_buf,Int32 rank)
+{
+  MPI_Datatype type = m_datatype->datatype();
+  return m_adapter->nonBlockingBroadcast(send_buf.data(),send_buf.size(),rank,type);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request MpiTypeDispatcher<Type>::
+nonBlockingAllGather(Span<const Type> send_buf,Span<Type> recv_buf)
+{
+  MPI_Datatype type = m_datatype->datatype();
+  return m_adapter->nonBlockingAllGather(send_buf.data(),recv_buf.data(),send_buf.size(),type);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request MpiTypeDispatcher<Type>::
+nonBlockingGather(Span<const Type> send_buf,Span<Type> recv_buf,Int32 rank)
+{
+  MPI_Datatype type = m_datatype->datatype();
+  return m_adapter->nonBlockingGather(send_buf.data(),recv_buf.data(),send_buf.size(),rank,type);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
