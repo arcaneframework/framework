@@ -82,6 +82,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
                           ArrayView<bool> indexes, bool is_non_blocking) override;
     IMessagePassingMng* commSplit(bool keep) override;
     void barrier() override;
+    Request nonBlockingBarrier();
     MessageId probe(const PointToPointMessageInfo& message) override;
     Ref<Parallel::IRequestList> createRequestListRef() override;
     MP::IProfiler* profiler() const override { return nullptr; }
