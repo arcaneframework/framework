@@ -274,6 +274,13 @@ class SequentialParallelDispatchT
     ARCANE_UNUSED(send_buf);
     return Request();
   }
+  Request nonBlockingAllReduce(eReduceType op,Span<const Type> send_buf,Span<Type> recv_buf)
+  {
+    ARCANE_UNUSED(op);
+    ARCANE_UNUSED(send_buf);
+    ARCANE_UNUSED(recv_buf);
+    return Request();
+  }
   Request nonBlockingAllGather(Span<const Type> send_buf, Span<Type> recv_buf)
   {
     recv_buf.copy(send_buf);
