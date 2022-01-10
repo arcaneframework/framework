@@ -109,7 +109,7 @@ int main(int argc, char** argv)
 
   // Define a lambda function to compute node uids from the 2D (i,j) coordinates
   // (i,j) -> uid = node_uid(i,j)
-  auto node_uid = [&](int i, int j) { return j * Ny + i; };
+  auto node_uid = [&](int i, int j) { return j * Nx + i; };
 
   /*
      * DEFINITION of Unknowns Unique Ids and  Local Ids

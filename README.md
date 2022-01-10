@@ -82,3 +82,33 @@ git subtree split -P arccore -b arccore
 cd ../alien
 git subtree pull --prefix=framework/arccore --squash ../framework arccore
 ```
+
+## Documentation generation
+
+You need a python version 3 with sphinx and breathe modules
+
+You can easily create a conda environment as following
+
+```shell script
+cd $ALIEN_ROOT/tools/python
+conda env create -f alien-env.yml
+conda activate alien-env
+```
+
+Then the CMAKE OPTIONS has to be activated in the Alien configuration step 
+
+```shell script
+cmake -S `pwd`/alien \
+      -B `pwd`/build-alien \
+      -DALIEN_GENERATE_DOCUMENTATION=ON \
+       ....
+       
+make -C `pwd`/build-alien install
+make -C `pwd`/build-alien doc_alien
+```
+
+The documentation is generated in :
+
+```shell script
+firefox `pwd`/build-alien/alien_doc/index.html
+```

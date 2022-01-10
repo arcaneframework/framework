@@ -13,7 +13,7 @@ if (ALIEN_GENERATE_DOCUMENTATION)
 
     sphinx_add_docs(
             alien_doc
-            BREATHE_PROJECTS doxygen_api_docs_movesemantic doxygen_api_docs_core_data
+            BREATHE_PROJECTS doxygen_api_docs_movesemantic doxygen_api_docs_refsemantic doxygen_api_docs_core_data
             BUILDER html
             SOURCE_DIRECTORY sphinx
             OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/alien_doc"

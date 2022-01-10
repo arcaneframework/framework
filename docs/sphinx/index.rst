@@ -10,6 +10,8 @@ Welcome to Alien's documentation!
    tutorial
 
    developer/index
+   
+   sycl/index
 
 Indices and tables
 ==================

@@ -1,0 +1,7 @@
+name: alien-env
+channels:
+- conda-forge/label/cf202003
+- anaconda
+dependencies:
+- sphinx
+- breathe

@@ -14,6 +14,44 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+
+set(alien_refsemantic_public_header
+        alien/ref/AlienImportExport.h
+        alien/ref/AlienRefSemantic.h
+        alien/ref/AlienRefSemanticPrecomp.h
+        alien/ref/data/block/BlockMatrix.h
+        alien/ref/data/block/BlockVector.h
+        alien/ref/data/block/VBlockMatrix.h
+        alien/ref/data/block/VBlockVector.h
+        alien/ref/data/scalar/Matrix.h
+        alien/ref/data/scalar/RedistributedMatrix.h
+        alien/ref/data/scalar/RedistributedVector.h
+        alien/ref/data/scalar/Vector.h
+        alien/ref/functional/Ones.h
+        alien/ref/functional/Zeros.h
+        alien/ref/handlers/block/ProfiledBlockMatrixBuilder.h
+        alien/ref/handlers/profiler/MatrixProfiler.h
+        alien/ref/handlers/scalar/DirectMatrixBuilder.h
+        alien/ref/handlers/scalar/ProfiledMatrixBuilder.h
+        alien/ref/handlers/stream/StreamMatrixBuilder.h
+        alien/ref/handlers/stream/StreamMatrixBuilderInserter.h
+        alien/ref/handlers/stream/StreamMatrixBuilderInserterT.h
+        alien/ref/handlers/stream/StreamMatrixBuilderT.h
+        alien/ref/handlers/stream/StreamVBlockMatrixBuilder.h
+        alien/ref/handlers/stream/StreamVBlockMatrixBuilderInserter.h
+        alien/ref/handlers/stream/StreamVBlockMatrixBuilderInserterT.h
+        alien/ref/handlers/stream/StreamVBlockMatrixBuilderT.h
+        alien/ref/handlers/block/BlockVectorReader.h
+        alien/ref/handlers/block/BlockVectorWriter.h
+        alien/ref/handlers/block/VBlockVectorReader.h
+        alien/ref/handlers/block/VBlockVectorWriter.h
+        alien/ref/handlers/scalar/VectorReader.h
+        alien/ref/handlers/scalar/VectorWriter.h
+        alien/ref/import_export/SystemInfo.h
+        alien/ref/import_export/SystemReader.h
+        alien/ref/import_export/SystemWriter.h
+        alien/ref/import_export/HDF5Tools.h)
+    
 add_library(alien_semantic_ref
         alien/ref/AlienImportExport.h
         alien/ref/AlienRefSemantic.h
@@ -64,6 +102,15 @@ add_library(alien_semantic_ref
         alien/ref/import_export/SystemWriter.cc
         alien/ref/import_export/SystemWriter.h
         alien/ref/import_export/HDF5Tools.h)
+
+if (ALIEN_GENERATE_DOCUMENTATION)
+    set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    doxygen_add_docs(doxygen_api_docs_refsemantic
+            ${alien_refsemantic_public_header}
+            USE_STAMP_FILE
+            COMMENT "Generate API-documents for Alien."
+            )
+endif (ALIEN_GENERATE_DOCUMENTATION)
 
 if (ALIEN_USE_LIBXML2)
     find_package(LibXml2 REQUIRED)
