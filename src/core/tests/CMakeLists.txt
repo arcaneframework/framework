@@ -30,7 +30,7 @@ add_executable(core.gtest.mpi main.cpp
         TestCompositeSpace.cc
         TestUniverse.cc
         TestDistribution.cc
-        TestDoKMatrix.cc
+        TestDoK.cc
         TestRedistributor.cc
         )
 

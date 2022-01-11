@@ -18,8 +18,7 @@
 
 #pragma once
 
-#include "../../core/backend/BackEnd.h"
-#include "../../utils/Precomp.h"
+#include <alien/core/backend/BackEnd.h>
 
 /*---------------------------------------------------------------------------*/
 
@@ -30,16 +29,16 @@ namespace Alien
 
 class DoKLinearSolver;
 class DoKMatrix;
-class VectorDoK;
+class DoKVector;
 class Space;
 template <class Matrix, class Vector>
 class IInternalLinearAlgebra;
 template <class Matrix, class Vector>
 class IInternalLinearSolver;
 
-extern IInternalLinearAlgebra<DoKMatrix, VectorDoK>* DoKLinearAlgebraFactory();
+extern IInternalLinearAlgebra<DoKMatrix, DoKVector>* DoKLinearAlgebraFactory();
 
-extern IInternalLinearSolver<DoKMatrix, VectorDoK>* DoKLinearSolverFactory(
+extern IInternalLinearSolver<DoKMatrix, DoKVector>* DoKLinearSolverFactory(
 IMessagePassingMng* p_mng);
 
 /*---------------------------------------------------------------------------*/
@@ -54,7 +53,7 @@ template <>
 struct AlgebraTraits<BackEnd::tag::DoK>
 {
   typedef DoKMatrix matrix_type;
-  typedef VectorDoK vector_type;
+  typedef DoKVector vector_type;
   typedef IInternalLinearAlgebra<matrix_type, vector_type> algebra_type;
   typedef IInternalLinearSolver<matrix_type, vector_type> solver_type;
   static algebra_type* algebra_factory() { return DoKLinearAlgebraFactory(); }

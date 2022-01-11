@@ -23,12 +23,26 @@
 #include <alien/distribution/VectorDistribution.h>
 
 #include <alien/move/data/MatrixData.h>
+#include <alien/move/data/VectorData.h>
 
 #include <Environment.h>
 
-TEST(TestMatrixMarket, Functional)
+TEST(TestMatrixMarket, MatrixAlone)
 {
   auto mat = Alien::Move::readFromMatrixMarket(AlienTest::Environment::parallelMng(), "simple.mtx");
   ASSERT_EQ(mat.rowSpace().size(), 25);
   ASSERT_EQ(mat.colSpace().size(), 25);
+}
+
+TEST(TestMatrixMarket, VectorAlone)
+{
+  Alien::Space s(25);
+  Alien::VectorDistribution vd(s, AlienTest::Environment::parallelMng());
+  auto vect = Alien::Move::readFromMatrixMarket(vd, "simple_rhs.mtx");
+}
+
+TEST(TestMatrixMarket, MatrixVector)
+{
+  auto mat = Alien::Move::readFromMatrixMarket(AlienTest::Environment::parallelMng(), "simple.mtx");
+  auto vect = Alien::Move::readFromMatrixMarket(mat.distribution().rowDistribution(), "simple_rhs.mtx");
 }

@@ -18,8 +18,13 @@
 
 #include <gtest/gtest.h>
 
+#include <Environment.h>
+#include <iostream>
+#include <utility>
+
 #include <alien/distribution/MatrixDistribution.h>
 #include <alien/kernels/dok/DoKMatrixT.h>
+#include <alien/kernels/dok/DoKVector.h>
 
 // For DoKReverseIndexer test.
 #include <alien/kernels/dok/DoKReverseIndexer.h>
@@ -28,19 +33,12 @@
 #include <alien/kernels/dok/converters/from_simple_csr_matrix.h>
 #include <alien/kernels/dok/converters/to_simple_csr_matrix.h>
 #include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
+#include <alien/kernels/dok/converters/from_simple_csr_vector.h>
+#include <alien/kernels/dok/converters/to_simple_csr_vector.h>
+#include <alien/kernels/simple_csr/SimpleCSRVector.h>
 
 #include <alien/core/impl/MultiMatrixImpl.h>
 #include <alien/kernels/dok/DoKBackEnd.h>
-
-// CEA interface !
-#if 0
-#include <alien/Builder/Scalar/DirectMatrixBuilder.h>
-#include <alien/data/MatrixData.h>
-#endif // 0
-
-#include <Environment.h>
-#include <iostream>
-#include <utility>
 
 namespace
 {
@@ -184,47 +182,38 @@ TEST(TestDoKMatrix, ConvertToCSR)
   converter.convert(dok_mat.get(), csr_mat.get());
 }
 
-// CEA MatrixData and DirectMatrixBuilder are required for the next test.
-#if 0
-TEST(TestDoKMatrix, MultiImplConverter)
+TEST(TestDoKVector, Build)
 {
-  // Build a SimpleCSR matrix
-  Alien::MatrixDistribution mdist(4, 4, Environment::parallelMng());
-  Alien::Space row_space(4, "Space");
-  Alien::Space col_space(4, "Space");
-  Alien::MatrixData A(row_space, col_space, mdist);
-  ASSERT_EQ(A.rowSpace(), row_space);
-  ASSERT_EQ(A.colSpace(), col_space);
-  auto tag = Alien::DirectMatrixOptions::eResetValues;
-  Alien::DirectMatrixBuilder builder(std::move(A), tag);
-  builder.reserve(5);
-  builder.allocate();
+  auto space = std::make_shared<Space>(Space(10));
+  auto vd = std::make_shared<VectorDistribution>(VectorDistribution(*space, AlienTest::Environment::parallelMng()));
+  DoKVector v(new Alien::MultiVectorImpl(space, vd));
 
-  Integer first = mdist.rowOffset();
-  Integer last = first + mdist.localRowSize();
-
-  if ( first <= 0 && 0 < last)
-    builder(0, 0) = -1.;
-  if (first <= 1 && 1 < last)
-    builder(1, 1) = -2.;
-  if (first <= 2 && 2 < last) {
-    builder(2, 2) = -3.;
-    builder(2, 3) = 3.14;
+  for (int i = 0; i < space->size(); ++i) {
+    v.contribute(i, i + 1.0);
   }
-  if (first <= 3 && 3 < last) {
-    builder(3, 1) = 2.71;
-    builder(3, 3) = -4;
-  }
-  builder.finalize();
-
-  std::cerr << builder.stats() << std::endl;
-
-  A = builder.release();
-
-
-
-  Alien::MultiMatrixImpl* multiA = A.impl();
-  const Alien::DoKMatrix& dok_a = multiA->get<Alien::BackEnd::tag::DoK>();
-  dok_a.backend();
+  v.assemble();
 }
-#endif // 0
+
+TEST(TestDoKVector, ConvertToCSR)
+{
+  auto space = std::make_shared<Space>(Space(10));
+  auto vd = std::make_shared<VectorDistribution>(VectorDistribution(*space, AlienTest::Environment::parallelMng()));
+  Alien::MultiVectorImpl multi(space, vd);
+  DoKVector v(&multi);
+
+  if (!vd->parallelMng()->commRank()) {
+    for (int i = 0; i < space->size(); ++i) {
+      v.contribute(i, i + 1.0);
+    }
+  }
+  v.assemble();
+
+  typedef Alien::SimpleCSRVector<Real> SimpleCSRVect;
+  SimpleCSRVect csr_vect(&multi);
+  Alien::DoKToSimpleCSRVectorConverter converter;
+  converter.convert(&v, &csr_vect);
+
+  for (int i = 0; i < vd->localSize(); ++i) {
+    ASSERT_EQ(csr_vect[i], vd->offset() + i + 1.0);
+  }
+}

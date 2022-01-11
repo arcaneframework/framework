@@ -25,9 +25,12 @@
 
 #include <alien/data/Space.h>
 #include <alien/distribution/MatrixDistribution.h>
+#include <alien/distribution/VectorDistribution.h>
 
 #include <alien/move/data/MatrixData.h>
 #include <alien/move/handlers/scalar/DoKDirectMatrixBuilder.h>
+#include <alien/move/data/VectorData.h>
+#include "alien/kernels/dok/DoKVector.h"
 
 namespace Alien::Move
 {
@@ -198,6 +201,39 @@ readFromMatrixMarket(Arccore::MessagePassing::IMessagePassingMng* pm, const std:
     DoKDirectMatrixBuilder builder(createMatrixData(desc, pm));
     return builder.release();
   }
+}
+
+VectorData ALIEN_MOVESEMANTIC_EXPORT
+readFromMatrixMarket(const VectorDistribution& distribution, const std::string& filename)
+{
+  VectorData out(distribution);
+  DoKVector v(out.impl());
+
+  if (distribution.parallelMng()->commRank() == 0) { // Only rank 0 read the file
+    auto stream = std::ifstream(filename);
+    if (!stream) {
+      throw Arccore::FatalErrorException("readFromMatrixMarket", "Unable to read file");
+    }
+    std::string line;
+    Arccore::Int32 row = 0;
+    while (std::getline(stream, line)) {
+
+      if ('%' == line[0]) {
+        continue;
+      }
+
+      double value;
+      std::stringstream ss;
+      ss << line;
+      ss >> value;
+
+      v.contribute(row, value);
+      row++;
+    }
+  }
+  v.assemble();
+
+  return out;
 }
 
 } // namespace Alien::Move

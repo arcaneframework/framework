@@ -15,16 +15,19 @@
 # SPDX-License-Identifier: Apache-2.0
 
 add_library(alien_kernel_dok OBJECT
-        converters/to_simple_csr_matrix.cc
-        converters/to_simple_csr_matrix.h
         converters/from_simple_csr_matrix.cc
         converters/from_simple_csr_matrix.h
+        converters/from_simple_csr_vector.cc
+        converters/from_simple_csr_vector.h
+        converters/to_simple_csr_matrix.cc
+        converters/to_simple_csr_matrix.h
+        converters/to_simple_csr_vector.cc
+        converters/to_simple_csr_vector.h
         DoKBackEnd.h
         DoKDistributorComm.cc
         DoKDistributorComm.h
         DoKDistributor.h
         DoKDistributor.cc
-        DoKDistributorT.h
         DoKLocalMatrixIndexer.cc
         DoKLocalMatrixIndexer.h
         DoKLocalMatrixT.h
@@ -33,7 +36,9 @@ add_library(alien_kernel_dok OBJECT
         DoKReverseIndexer.cc
         DoKReverseIndexer.h
         IReverseIndexer.h
-        BaseDoKDirectMatrixBuilder.cpp BaseDoKDirectMatrixBuilder.h)
+        BaseDoKDirectMatrixBuilder.cpp
+        BaseDoKDirectMatrixBuilder.h
+        DoKVector.h DoKVector.cc)
 
 target_include_directories(alien_kernel_dok PRIVATE ../../..)
 target_include_directories(alien_kernel_dok PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../../..)

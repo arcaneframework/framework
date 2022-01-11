@@ -28,7 +28,6 @@
 namespace Alien
 {
 
-class MatrixDistribution;
 class RedistributorCommPlan;
 
 class ALIEN_EXPORT DoKDistributorComm
@@ -53,6 +52,8 @@ class ALIEN_EXPORT DoKDistributorComm
   DoKDistributorComm& operator=(DoKDistributorComm&& src) = delete;
 
   void computeCommPlan(IReverseIndexer* rev_index);
+
+  void computeCommPlan(Arccore::Span<Int32>);
 
   template <typename T>
   void exchange(ConstArrayView<T> snd, ArrayView<T> rcv)

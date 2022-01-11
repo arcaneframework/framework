@@ -28,7 +28,7 @@ namespace Alien
 {
 
 class DoKMatrix;
-class MultiMatrixImpl;
+class DoKVector;
 class RedistributorCommPlan;
 
 class ALIEN_EXPORT DoKDistributor
@@ -38,6 +38,8 @@ class ALIEN_EXPORT DoKDistributor
   virtual ~DoKDistributor() = default;
 
   void distribute(const DoKMatrix& src, DoKMatrix& dst);
+
+  void distribute(const DoKVector& src, DoKVector& dst);
 
   template <typename NNZValue>
   void distribute(DoKLocalMatrixT<NNZValue>& src, DoKLocalMatrixT<NNZValue>& dst)

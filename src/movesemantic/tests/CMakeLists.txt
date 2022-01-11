@@ -18,6 +18,7 @@ find_package(MPI REQUIRED)
 find_package(GTest REQUIRED)
 
 configure_file(simple.mtx simple.mtx COPYONLY)
+configure_file(simple_rhs.mtx simple_rhs.mtx COPYONLY)
 
 add_executable(move.gtest.mpi
         main.cpp

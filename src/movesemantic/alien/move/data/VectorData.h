@@ -191,6 +191,9 @@ namespace Move
     std::shared_ptr<MultiVectorImpl> m_impl;
   };
 
+  VectorData ALIEN_MOVESEMANTIC_EXPORT
+  readFromMatrixMarket(const VectorDistribution& distribution, const std::string& filename);
+
 } // namespace Move
 
 /*---------------------------------------------------------------------------*/
