@@ -199,7 +199,7 @@ arcaneRegisterAcceleratorRuntimecuda()
   Arcane::platform::setAcceleratorHostMemoryAllocator(getCudaMemoryAllocator());
   IMemoryRessourceMngInternal* mrm = platform::getDataMemoryRessourceMng()->_internal();
   mrm->setAllocator(eMemoryRessource::UnifiedMemory,getCudaUnifiedMemoryAllocator());
-  mrm->setAllocator(eMemoryRessource::Accelerator,getCudaDeviceMemoryAllocator());
+  mrm->setAllocator(eMemoryRessource::Device,getCudaDeviceMemoryAllocator());
   mrm->setCopier(&global_cuda_memory_copier);
   checkDevices();
 }
