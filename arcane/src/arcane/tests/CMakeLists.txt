@@ -438,6 +438,8 @@ ARCANE_ADD_TEST(hydrosimd5 testHydroSimd-5.arc -m 50)
 ARCANE_ADD_TEST(hydrosimd5_trace testHydroSimd-5.arc -m 50 -We,ARCANE_TRACE_ENUMERATOR,1)
 
 arcane_add_accelerator_test_sequential(hydro_accelerator5 testHydroAccelerator-5.arc -m 50)
+arcane_add_accelerator_test_parallel(hydro_accelerator5 testHydroAccelerator-5.arc 4 -m 50)
+arcane_add_accelerator_test_parallel_thread(hydro_accelerator5 testHydroAccelerator-5.arc 4 -m 50)
 arcane_add_test(hydro_accelerator5 testHydroAccelerator-5.arc -m 50)
 arcane_add_test_sequential_task(hydro_accelerator5 testHydroAccelerator-5.arc 4 -m 50)
 
