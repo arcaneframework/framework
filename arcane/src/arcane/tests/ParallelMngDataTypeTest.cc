@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngDataTypeTest.cc                                  (C) 2000-2020 */
+/* ParallelMngDataTypeTest.cc                                  (C) 2000-2022 */
 /*                                                                           */
 /* Test des opérations de base du parallèlisme.                              */
 /*---------------------------------------------------------------------------*/
@@ -35,6 +35,8 @@
 
 #include "arccore/message_passing/Messages.h"
 
+#include "arcane/datatype/DataTypeTraits.h"
+
 #include <cstdint>
 #include <thread>
 
@@ -43,6 +45,54 @@
 
 namespace ArcaneTest
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace {
+
+// Classe template permettant d'indique si 'DataType' a une implémentation dans
+// 'Arccore::MessagePassing::IMessagePassingMng'. Pour l'instant c'est le cas
+// uniquement pour les types de base.
+template<typename DataType>
+class HasMessagePassingMngImplementation
+{
+ public:
+  static constexpr bool hasImpl() { return true; }
+};
+
+template<>
+class HasMessagePassingMngImplementation<Arcane::Real2>
+{
+ public:
+  static constexpr bool hasImpl() { return false; }
+};
+template<>
+class HasMessagePassingMngImplementation<Arcane::Real3>
+{
+ public:
+  static constexpr bool hasImpl() { return false; }
+};
+template<>
+class HasMessagePassingMngImplementation<Arcane::Real2x2>
+{
+ public:
+  static constexpr bool hasImpl() { return false; }
+};
+template<>
+class HasMessagePassingMngImplementation<Arcane::Real3x3>
+{
+ public:
+  static constexpr bool hasImpl() { return false; }
+};
+template<>
+class HasMessagePassingMngImplementation<Arcane::HPReal>
+{
+ public:
+  static constexpr bool hasImpl() { return false; }
+};
+
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -329,12 +379,21 @@ class ParallelMngDataTypeTest
   void _testComputeMinMaxSum();
   void _testAllReduce();
   void _fillAllReduceArray(Integer nb_value,CommInfo& c,Parallel::eReduceType rt);
+  template<bool UseMessagePassingMng>
   void _testAllReduceArray(Parallel::eReduceType rt);
+  template<bool UseMessagePassingMng>
+  void _testAllReduceArray2();
   void _testAllReduceArray();
+  template<bool UseMessagePassingMng>
+  void _testAllGatherVariable2();
   void _testAllGatherVariable();
   void _fillAllGather(Integer nb_value,CommInfo& c);
   void _testAllGather();
+  template<bool UseMessagePassingMng>
+  void _testAllGather2();
   void _fillAllToAllVariable(Integer nb_value,AllToAllVariableCommInfo& ci);
+  template<bool UseMessagePassingMng>
+  void _testAllToAllVariable2();
   void _testAllToAllVariable();
   void _testSendRecv();
   void _testSendRecvNonBlocking();
@@ -527,18 +586,33 @@ template<typename DataType> void
 ParallelMngDataTypeTest<DataType>::
 _testAllReduceArray()
 {
-  info() << "Testing AllReduceArray (Sum) type=" << m_datatype_name;
-  _testAllReduceArray(Parallel::ReduceSum);
-  info() << "Testing AllReduceArray (Min) type=" << m_datatype_name;
-  _testAllReduceArray(Parallel::ReduceMin);
-  info() << "Testing AllReduceArray (Max) type=" << m_datatype_name;
-  _testAllReduceArray(Parallel::ReduceMax);
+  info() << "Testing AllReduceArray: use IParallelMng";
+  _testAllReduceArray2<false>();
+  if constexpr (HasMessagePassingMngImplementation<DataType>::hasImpl()){
+    info() << "Testing AllReduceArray: use IMessagePassingMng";
+    _testAllReduceArray2<true>();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template<typename DataType> template<bool UseMessagePassingMng> void
+ParallelMngDataTypeTest<DataType>::
+_testAllReduceArray2()
+{
+  info() << "Testing AllReduceArray (Sum) type=" << m_datatype_name;
+  _testAllReduceArray<UseMessagePassingMng>(Parallel::ReduceSum);
+  info() << "Testing AllReduceArray (Min) type=" << m_datatype_name;
+  _testAllReduceArray<UseMessagePassingMng>(Parallel::ReduceMin);
+  info() << "Testing AllReduceArray (Max) type=" << m_datatype_name;
+  _testAllReduceArray<UseMessagePassingMng>(Parallel::ReduceMax);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> template<bool UseMessagePassingMng> void
 ParallelMngDataTypeTest<DataType>::
 _testAllReduceArray(Parallel::eReduceType rt)
 {
@@ -548,6 +622,7 @@ _testAllReduceArray(Parallel::eReduceType rt)
   IntegerConstArrayView sizes(nb_size,_sizes);
 
   IParallelMng* pm = m_parallel_mng;
+  [[maybe_unused]] Arccore::MessagePassing::IMessagePassingMng* mpm = pm->messagePassingMng();
 
   ValueChecker vc(A_FUNCINFO);
 
@@ -562,7 +637,10 @@ _testAllReduceArray(Parallel::eReduceType rt)
     // Comme le tableau envoyé est aussi utilisé en réception, on le copie
     // sinon il n'aura plus les bonnes valeurs pour les tests non bloquants.
     UniqueArray<DataType> send_copy(c[i].send_values);
-    pm->reduce(rt,send_copy);
+    if constexpr (UseMessagePassingMng)
+      mpAllReduce(mpm,rt,send_copy.span());
+    else
+      pm->reduce(rt,send_copy);
     vc.areEqualArray(send_copy.constView(),c[i].ref_values.constView(),"AllReduceArray");
   }
 
@@ -574,7 +652,10 @@ _testAllReduceArray(Parallel::eReduceType rt)
       UniqueArray<Parallel::Request> requests;
       for( Integer i=0; i<nb_size; ++i ){
         info() << "Testing NonBlockingAllReduceArray type=" << m_datatype_name << " size=" << sizes[i];
-        requests.add(pnbc->allReduce(rt,c[i].send_values,c[i].recv_values));
+        if constexpr (UseMessagePassingMng)
+          requests.add(mpNonBlockingAllReduce(mpm,rt,c[i].send_values,c[i].recv_values));
+        else
+          requests.add(pnbc->allReduce(rt,c[i].send_values,c[i].recv_values));
       }
 
       pm->waitAllRequests(requests);
@@ -871,9 +952,25 @@ template<typename DataType> void
 ParallelMngDataTypeTest<DataType>::
 _testAllGatherVariable()
 {
+  info() << "Testing AllGatherVariable: use IParallelMng";
+  _testAllGatherVariable2<false>();
+  if constexpr (HasMessagePassingMngImplementation<DataType>::hasImpl()){
+    info() << "Testing AllGatherVariable: use IMessagePassingMng";
+    _testAllGatherVariable2<true>();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> template<bool UseMessagePassingMng> void
+ParallelMngDataTypeTest<DataType>::
+_testAllGatherVariable2()
+{
   IParallelMng* pm = m_parallel_mng;
-  Integer rank = pm->commRank();
-  Integer nb_rank = pm->commSize();
+  Int32 rank = pm->commRank();
+  Int32 nb_rank = pm->commSize();
+  [[maybe_unused]] Arccore::MessagePassing::IMessagePassingMng* mpm = pm->messagePassingMng();
 
   UniqueArray<DataType> send_values;
   UniqueArray<DataType> recv_values;
@@ -886,7 +983,10 @@ _testAllGatherVariable()
     send_values[i] = Generator::generateBiValue(rank,i);
   }
 
-  pm->allGatherVariable(send_values,recv_values);
+  if constexpr (UseMessagePassingMng)
+    mpAllGatherVariable(mpm,send_values,recv_values);
+  else
+    pm->allGatherVariable(send_values,recv_values);
 
   // Verifie tout est OK.
   Int32 index = 0;
@@ -944,6 +1044,21 @@ template<typename DataType> void
 ParallelMngDataTypeTest<DataType>::
 _testAllGather()
 {
+  info() << "Testing AllGather: use IParallelMng";
+  _testAllGather2<false>();
+  if constexpr (HasMessagePassingMngImplementation<DataType>::hasImpl()){
+    info() << "Testing AllGather: use IMessagePassingMng";
+    _testAllGather2<true>();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> template<bool UseMessagePassingMng> void
+ParallelMngDataTypeTest<DataType>::
+_testAllGather2()
+{
   const Integer nb_size = 3;
   Integer _sizes[nb_size] = { 125, 3053, 12950 };
   IntegerConstArrayView sizes(nb_size,_sizes);
@@ -954,13 +1069,16 @@ _testAllGather()
   }
 
   IParallelMng* pm = m_parallel_mng;
-
+  [[maybe_unused]] Arccore::MessagePassing::IMessagePassingMng* mpm = pm->messagePassingMng();
   ValueChecker vc(A_FUNCINFO);
 
   // Teste les collectives bloquantes
   for( Integer i=0; i<nb_size; ++i ){
     info() << "Testing Blocking AllGather with nb_value=" << c[i].send_values.size();
-    pm->allGather(c[i].send_values,c[i].recv_values);
+    if constexpr (UseMessagePassingMng)
+      mpAllGather(mpm,c[i].send_values,c[i].recv_values);
+    else
+      pm->allGather(c[i].send_values,c[i].recv_values);
     vc.areEqualArray(c[i].recv_values.constView(),c[i].ref_values.constView(),"AllGather");
   }
 
@@ -972,7 +1090,10 @@ _testAllGather()
     for( Integer i=0; i<nb_size; ++i ){
       info() << "Testing Non Blocking AllGather with nb_value=" << sizes[i];
       c[i].recv_values.fill(Generator::zero());
-      requests.add(pnbc->allGather(c[i].send_values,c[i].recv_values));
+      if constexpr (UseMessagePassingMng)
+        requests.add(mpNonBlockingAllGather(mpm,c[i].send_values,c[i].recv_values));
+      else
+        requests.add(pnbc->allGather(c[i].send_values,c[i].recv_values));
     }
 
     pm->waitAllRequests(requests);
@@ -1058,6 +1179,21 @@ template<typename DataType> void
 ParallelMngDataTypeTest<DataType>::
 _testAllToAllVariable()
 {
+  info() << "Testing AllToAllVariable: use IParallelMng";
+  _testAllToAllVariable2<false>();
+  if constexpr (HasMessagePassingMngImplementation<DataType>::hasImpl()){
+    info() << "Testing AllToAllVariable: use IMessagePassingMng";
+    _testAllToAllVariable2<true>();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> template<bool UseMessagePassingMng> void
+ParallelMngDataTypeTest<DataType>::
+_testAllToAllVariable2()
+{
   const Integer nb_size = 5;
   Integer _sizes[nb_size] = { 1, 37, 129, 489, 12950 };
   IntegerConstArrayView sizes(nb_size,_sizes);
@@ -1070,12 +1206,17 @@ _testAllToAllVariable()
   ValueChecker vc(A_FUNCINFO);
 
   IParallelMng* pm = m_parallel_mng;
+  [[maybe_unused]] Arccore::MessagePassing::IMessagePassingMng* mpm = pm->messagePassingMng();
 
   for( Integer i=0; i<nb_size; ++i ){
     info() << "Testing AllToAllVariable with nb_value=" << sizes[i];
     AllToAllVariableCommInfo& ci = c[i];
-    pm->allToAllVariable(ci.send_values,ci.send_count,ci.send_index,
+    if constexpr (UseMessagePassingMng)
+      mpAllToAllVariable(mpm,ci.send_values,ci.send_count,ci.send_index,
                          ci.recv_values,ci.recv_count,ci.recv_index);
+    else
+      pm->allToAllVariable(ci.send_values,ci.send_count,ci.send_index,
+                           ci.recv_values,ci.recv_count,ci.recv_index);
     vc.areEqualArray(ci.recv_values.constView(),ci.ref_values.constView(),"AllToAllVariable");
   }
 
@@ -1086,8 +1227,13 @@ _testAllToAllVariable()
       AllToAllVariableCommInfo& ci = c[i];
       info() << "Testing Non Blocking AllToAllVariable with nb_value=" << sizes[i];
       c[i].recv_values.fill(Generator::zero());
-      Request rq = pnbc->allToAllVariable(ci.send_values,ci.send_count,
-                                          ci.send_index,ci.recv_values,ci.recv_count,ci.recv_index);
+      Request rq;
+      if constexpr (UseMessagePassingMng)
+        rq = mpNonBlockingAllToAllVariable(mpm,ci.send_values,ci.send_count,
+                                           ci.send_index,ci.recv_values,ci.recv_count,ci.recv_index);
+      else
+        rq = pnbc->allToAllVariable(ci.send_values,ci.send_count,
+                                    ci.send_index,ci.recv_values,ci.recv_count,ci.recv_index);
       requests.add(rq);
     }
 

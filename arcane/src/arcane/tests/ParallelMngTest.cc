@@ -201,6 +201,7 @@ _testBarrier()
     info() << "Testing NonBlockingBarrier";
     for( Integer i=0; i<nb_test; ++i ){
       requests.add(pnbc->barrier());
+      requests.add(mpNonBlockingBarrier(mpm));
     }
 
     pm->waitAllRequests(requests);
