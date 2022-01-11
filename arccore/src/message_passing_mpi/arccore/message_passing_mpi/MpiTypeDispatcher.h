@@ -54,7 +54,7 @@ class MpiTypeDispatcher
   Request receive(Span<Type> recv_buffer,const PointToPointMessageInfo& message) override;
   Type allReduce(eReduceType op,Type send_buf) override;
   void allReduce(eReduceType op,Span<Type> send_buf) override;
-  Request nonBlockingAllReduce(eReduceType op, Span<Type> send_buf) override;
+  Request nonBlockingAllReduce(eReduceType op, Span<const Type> send_buf, Span<Type> recv_buf) override;
   Request nonBlockingAllGather(Span<const Type> send_buf, Span<Type> recv_buf) override;
   Request nonBlockingBroadcast(Span<Type> send_buf, Int32 rank) override;
   Request nonBlockingGather(Span<const Type> send_buf, Span<Type> recv_buf, Int32 rank) override;

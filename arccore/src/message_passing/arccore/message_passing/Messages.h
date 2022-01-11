@@ -67,15 +67,15 @@ namespace Arccore::MessagePassing
     type* x = nullptr; \
     return pm->dispatchers()->dispatcher(x)->allReduce(rt, v); \
   } \
-  inline void mpAllReduce(IMessagePassingMng* pm, eReduceType rt, Span<type> v) \
+  inline void mpAllReduce(IMessagePassingMng* pm, eReduceType rt, Span<type> buf) \
   { \
     type* x = nullptr; \
-    pm->dispatchers()->dispatcher(x)->allReduce(rt, v); \
+    pm->dispatchers()->dispatcher(x)->allReduce(rt, buf); \
   } \
-  inline Request mpNonBlockingAllReduce(IMessagePassingMng* pm, eReduceType rt, Span<type> v) \
+  inline Request mpNonBlockingAllReduce(IMessagePassingMng* pm, eReduceType rt, Span<const type> send_buf, Span<type> recv_buf) \
   { \
     type* x = nullptr; \
-    return pm->dispatchers()->dispatcher(x)->nonBlockingAllReduce(rt, v); \
+    return pm->dispatchers()->dispatcher(x)->nonBlockingAllReduce(rt, send_buf, recv_buf); \
   } \
   inline void mpBroadcast(IMessagePassingMng* pm, Span<type> send_buf, Int32 rank) \
   { \

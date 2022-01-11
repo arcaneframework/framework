@@ -156,7 +156,8 @@ class SharedMemoryParallelDispatch
   Request send(Span<const Type> send_buffer,const PointToPointMessageInfo& message) override;
   Request receive(Span<Type> recv_buffer,Int32 rank,bool is_blocked) override;
   Request receive(Span<Type> recv_buffer,const PointToPointMessageInfo& message) override;
-  Request nonBlockingAllReduce(eReduceType op,Span<Type> send_buf);
+  Request nonBlockingAllReduce(eReduceType op,Span<Type> send_buf); //!< A supprimer
+  Request nonBlockingAllReduce(eReduceType op,Span<const Type> send_buf,Span<Type> recv_buf);
   Request nonBlockingAllGather(Span<const Type> send_buf, Span<Type> recv_buf);
   Request nonBlockingBroadcast(Span<Type> send_buf, Int32 rank);
   Request nonBlockingGather(Span<const Type> send_buf, Span<Type> recv_buf, Int32 rank);

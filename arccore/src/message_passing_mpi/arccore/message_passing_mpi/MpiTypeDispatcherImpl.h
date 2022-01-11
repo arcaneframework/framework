@@ -312,18 +312,16 @@ allReduce(eReduceType op,Span<Type> send_buf)
 /*---------------------------------------------------------------------------*/
 
 template<class Type> Request MpiTypeDispatcher<Type>::
-nonBlockingAllReduce(eReduceType op,Span<Type> send_buf)
+nonBlockingAllReduce(eReduceType op,Span<const Type> send_buf,Span<Type> recv_buf)
 {
   MPI_Datatype type = m_datatype->datatype();
   Int64 s = send_buf.size();
-  UniqueArray<Type> recv_buf(s);
   MPI_Op operation = m_datatype->reduceOperator(op);
   Request request;
   {
     MpiLock::Section mls(m_adapter->mpiLock());
     request = m_adapter->nonBlockingAllReduce(send_buf.data(),recv_buf.data(),s,type,operation);
   }
-  send_buf.copy(recv_buf);
   return request;
 }
 
