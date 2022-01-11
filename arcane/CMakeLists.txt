@@ -417,9 +417,17 @@ endif()
 # il faudra la supprimer et n'utiliser que des cibles interfaces.
 set(ARCANE_LIBRARIES)
 
+# Liste des bibliothèques exportées par Arcane.
+# Cette liste permet de faire automatiquement dans le fichier de configuration
+# un Alias entre les noms sans namespace et avec namespace
+# (par exemple 'arcane_utils' et 'Arcane::arcane_utils')
+set(ARCANE_EXPORTED_LIBRARIES)
+set(ARCANE_EXPORTED_LIBRARIES ${ARCANE_EXPORTED_LIBRARIES} CACHE STRING "List of exported libraries" FORCE)
+
 # ----------------------------------------------------------------------------
 # Ajoute à ARCANE_LIBRARIES les cibles issues de 'Arccore' pour qu'elles soient
 # dans le pkglist.xml
+# TODO: regarder si cela est toujours utile
 set(ARCCORE_ALLOWED_TARGETS base collections trace concurrency messagepassing messagepassingmpi)
 foreach(pkg ${ARCCORE_ALLOWED_TARGETS})
   if(TARGET Arccore::arccore_${pkg})
@@ -1149,7 +1157,7 @@ configure_file(cmake/ArcanePathHints.cmake.in ${generated_config_dir}/ArcanePath
 configure_file(cmake/ArcanePathHints-install.cmake.in ${generated_config_dir}/install/ArcanePathHints.cmake @ONLY)
 install(FILES ${generated_config_dir}/install/ArcanePathHints.cmake DESTINATION ${ARCANE_CMAKE_CONFIG_DIR})
 
-install(EXPORT ArcaneTargets DESTINATION ${ARCANE_CMAKE_CONFIG_DIR})
+install(EXPORT ArcaneTargets DESTINATION ${ARCANE_CMAKE_CONFIG_DIR} NAMESPACE "Arcane::")
 export(EXPORT ArcaneTargets FILE ${ARCANE_CMAKE_CONFIG_DIR}/ArcaneTargets.cmake)
 
 set(ARCANE_INSTALL_INCLUDE_DIR include)
