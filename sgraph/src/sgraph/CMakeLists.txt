@@ -26,5 +26,6 @@ endif()
 
 include(GNUInstallDirs)
 set_target_properties(SGraph PROPERTIES PUBLIC_HEADER "DirectedAcyclicGraph.h;DirectedGraph.h;GraphBase.h")
-install(TARGETS SGraph EXPORT SgraphConfig PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include/sgraph)
-install(EXPORT SgraphConfig DESTINATION cmake)
+install(TARGETS SGraph EXPORT SGraphConfig PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include/sgraph)
+export (TARGETS SGraph FILE ${CMAKE_BINARY_DIR}/cmake/SGraphConfig.cmake)
+install(EXPORT SGraphConfig DESTINATION cmake)
