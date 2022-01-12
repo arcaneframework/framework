@@ -289,6 +289,10 @@ public:
     for (auto item : item_range) indexes.push_back(item);
     return PropertyConstView<DataType>{std::move(indexes),Neo::utils::ConstArrayView<DataType>{m_data.size(),m_data.data()}};}
 
+  auto begin() noexcept {return m_data.begin();}
+  auto begin() const noexcept {return m_data.begin();}
+  auto end() noexcept { return m_data.end(); }
+  auto end() const noexcept { return m_data.end(); }
 };
 
 template <typename DataType>

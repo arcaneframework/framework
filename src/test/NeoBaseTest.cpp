@@ -189,8 +189,13 @@ TEST(NeoTestProperty,test_property)
    for (auto i =0; i < all_values.size(); ++i){
      EXPECT_EQ(property_values[i],all_values[i]);
    }
-   // test operator[] (4 versions)
+   // test for range loop
    auto i = 0;
+   for (auto val : property) {
+     EXPECT_EQ(val,all_values[i++]);
+   }
+   // test operator[] (4 versions)
+   i = 0;
    for (auto item : item_range) {
      EXPECT_EQ(property[item],values[i++]);
    }
