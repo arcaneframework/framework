@@ -7,6 +7,8 @@ target_include_directories(Neo SYSTEM INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
         $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include/>)
 
+target_link_libraries(Neo SGraph)
+
 target_compile_definitions(Neo INTERFACE HAS_NEO)
 
 include(GNUInstallDirs)
