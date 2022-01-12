@@ -523,7 +523,45 @@ TEST(NeoTestPropertyView, test_property_view)
 TEST(NeoTestPropertyGraph,test_property_graph)
 {
   std::cout << "Test Property Graph" << std::endl;
-  // to be done when the graph impl will be available
+  Neo::MeshBase mesh {"test"};
+
+  // Add a family : property always belong to a family
+  auto cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell,"cells");
+
+  // Add a consuming/producing algo
+  mesh.addAlgorithm(Neo::InProperty{ cell_family ,"in_property"},Neo::OutProperty{ cell_family,"out_property" },[](){});
+  mesh.addAlgorithm(Neo::InProperty{cell_family,"in_property"}, Neo::InProperty{cell_family,"in_property2"},
+                    Neo::OutProperty{cell_family,"out_property"},[](){});
+  mesh.addAlgorithm(Neo::InProperty{cell_family,"in_property2"}, Neo::InProperty{cell_family,"in_property2"},
+                    Neo::OutProperty{cell_family,"out_property2"},[](){});
+
+  // add producing algos
+  mesh.addAlgorithm(Neo::OutProperty{ cell_family,"out_property2" },[](){});
+  mesh.addAlgorithm(Neo::OutProperty{cell_family,"out_property2"},
+                    Neo::OutProperty{cell_family,"out_property3"},[](){});
+
+  mesh.addAlgorithm(Neo::InProperty{ cell_family ,"in_property"},
+                    Neo::InProperty{ cell_family ,"in_property2"},
+                    Neo::OutProperty{ cell_family,"out_property2" },
+                    [](){});
+
+
+  // Check number of consuming algo
+  auto nb_algo_consuming_in_property = 3;
+  EXPECT_EQ(nb_algo_consuming_in_property,mesh.m_property_algorithms.find(
+  Neo::InProperty{ cell_family,"in_property" }.uniqueName())->second.second.size());
+
+  auto nb_algo_consuming_in_property2 = 4;
+  EXPECT_EQ(nb_algo_consuming_in_property2,mesh.m_property_algorithms.find(
+  Neo::InProperty{ cell_family,"in_property2" }.uniqueName())->second.second.size());
+
+  // check number of producing algos
+  auto nb_algo_producing_out_property = 2;
+  EXPECT_EQ(nb_algo_producing_out_property,mesh.m_property_algorithms.find(
+  Neo::OutProperty{ cell_family,"out_property" }.uniqueName())->second.first.size());
+  auto nb_algo_producing_out_property2 = 4;
+  EXPECT_EQ(nb_algo_producing_out_property2,mesh.m_property_algorithms.find(
+  Neo::OutProperty{ cell_family,"out_property2" }.uniqueName())->second.first.size());
 }
  
 TEST(NeoTestLidsProperty,test_lids_property)
