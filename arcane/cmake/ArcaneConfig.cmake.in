@@ -106,11 +106,22 @@ endfunction()
 # ----------------------------------------------------------------------------
 
 include(${CMAKE_CURRENT_LIST_DIR}/ArcaneTargets.cmake)
-set(_INTERNAL_ARCANE_LIBRARIES @ARCANE_EXPORTED_LIBRARIES@)
-foreach(_lib ${_INTERNAL_ARCANE_LIBRARIES})
+set(_INTERNAL_ARCANE_TARGETS @ARCANE_EXPORTED_TARGETS@)
+foreach(_lib ${_INTERNAL_ARCANE_TARGETS})
   add_library("${_lib}" ALIAS "Arcane::${_lib}")
 endforeach()
 add_library(arcane_full ALIAS "Arcane::arcane_full")
+add_library(arcane_export_compile_flags ALIAS "Arcane::arcane_export_compile_flags")
+add_library(arcane_build_compile_flags ALIAS "Arcane::arcane_build_compile_flags")
+
+set(_INTERNAL_ARCANE_PACKAGES @ARCANE_CMAKE_PACKAGE_LIST@)
+foreach(_lib ${_INTERNAL_ARCANE_PACKAGES})
+  set(_target_name "arcconpkg_${_lib}")
+  if (TARGET "Arcane::${_target_name}")
+    add_library(${_target_name} ALIAS "Arcane::${_target_name}")
+#    message(STATUS "ADD_ALIAS: ${_target_name} ALIAS Arcane::${_target_name}")
+  endif()
+endforeach()
 
 # ----------------------------------------------------------------------------
 

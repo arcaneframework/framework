@@ -417,12 +417,12 @@ endif()
 # il faudra la supprimer et n'utiliser que des cibles interfaces.
 set(ARCANE_LIBRARIES)
 
-# Liste des bibliothèques exportées par Arcane.
+# Liste des cibles exportées par Arcane.
 # Cette liste permet de faire automatiquement dans le fichier de configuration
 # un Alias entre les noms sans namespace et avec namespace
 # (par exemple 'arcane_utils' et 'Arcane::arcane_utils')
-set(ARCANE_EXPORTED_LIBRARIES)
-set(ARCANE_EXPORTED_LIBRARIES ${ARCANE_EXPORTED_LIBRARIES} CACHE STRING "List of exported libraries" FORCE)
+set(ARCANE_EXPORTED_TARGETS)
+set(ARCANE_EXPORTED_TARGETS "" CACHE STRING "List of exported targets" FORCE)
 
 # ----------------------------------------------------------------------------
 # Ajoute à ARCANE_LIBRARIES les cibles issues de 'Arccore' pour qu'elles soient
@@ -1031,8 +1031,10 @@ endfunction()
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-get_property(_CMAKE_PACKAGE_LIST GLOBAL PROPERTY PACKAGES_FOUND)
-message(STATUS "PackageList registered by CMake: ${_CMAKE_PACKAGE_LIST}")
+# Cette propriété est utilisée dans le fichier de configuration généré et il ne
+# faut pas la supprimer.
+get_property(ARCANE_CMAKE_PACKAGE_LIST GLOBAL PROPERTY PACKAGES_FOUND)
+message(STATUS "PackageList registered by CMake: ${ARCANE_CMAKE_PACKAGE_LIST}")
 list(APPEND ARCANE_PACKAGE_LIST ${_CMAKE_PACKAGE_LIST})
 message(STATUS "ArcanePackageList: ${ARCANE_PACKAGE_LIST}")
 
