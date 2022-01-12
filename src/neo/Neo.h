@@ -282,7 +282,7 @@ public:
   PropertyConstView<DataType> constView() const {
     std::vector<int> indexes(m_data.size()); std::iota(indexes.begin(),indexes.end(),0);
     return PropertyConstView<DataType>{std::move(indexes),Neo::utils::ConstArrayView<DataType>{m_data.size(),m_data.data()}};}
-    
+
   PropertyConstView<DataType> constView(ItemRange const& item_range) const {
     std::vector<int> indexes; indexes.reserve(item_range.size());
     for (auto item : item_range) indexes.push_back(item);
@@ -766,6 +766,10 @@ private:
 struct PropertyHolder{
   auto& operator() () {
     return m_family.getProperty(m_name);
+  }
+
+  std::string uniqueName() const noexcept {
+    return m_name + "_" + m_family.name();
   }
   Family& m_family;
   std::string m_name;
