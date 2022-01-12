@@ -18,6 +18,7 @@
 #include <variant>
 #include <vector>
 #include <stdexcept>
+#include <utility>
 
 #include "Utils.h"
 
@@ -963,6 +964,13 @@ class MeshBase {
   FamilyMap m_families;
   std::list<std::shared_ptr<IAlgorithm>> m_algos;
   int m_dimension = 3;
+  using AlgoPtr = std::shared_ptr<IAlgorithm>;
+  using ProducingAlgoArray = std::vector<AlgoPtr>;
+  using ConsumingAlgoArray = std::vector<AlgoPtr>;
+  using PropertyRef = std::reference_wrapper<const PropertyHolder>;
+  std::map<std::string,std::pair<ProducingAlgoArray,ConsumingAlgoArray>> m_property_algorithms;
+//  SGraph::DirectedAcyclicGraph<AlgoPtr,PropertyHolder> m_dag;
+  enum class AlgorithmExecutionOrder {FIFO, LIFO, DAG};
 
 public:
   Family& addFamily(ItemKind ik, std::string&& name) {
@@ -983,27 +991,38 @@ public:
   void addAlgorithm(InProperty&& in_property, OutProperty&& out_property, Algorithm algo){// problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
     //?? ajout dans le graphe. recuperer les prop...à partir nom et kind…
     // mock the graph : play the action in the given order...
-    m_algos.push_back(std::make_shared<AlgoHandler<decltype(algo)>>(std::move(in_property),std::move(out_property),std::forward<Algorithm>(algo)));
+    auto algo_hander = std::make_shared<AlgoHandler<decltype(algo)>>(std::move(in_property),std::move(out_property),std::forward<Algorithm>(algo));
+    m_algos.push_back(algo_hander);
+    _addProducingAlgo(algo_hander->m_out_property, algo_hander);
+    _addConsumingAlgo(algo_hander->m_in_property,algo_hander);
   }
+
   template <typename Algorithm>
   void addAlgorithm(OutProperty&& out_property, Algorithm algo) { // problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
-    m_algos.push_back(std::make_shared<NoDepsAlgoHandler<decltype(algo)>>(std::move(out_property),std::forward<Algorithm>(algo)));
+    auto algo_handler = std::make_shared<NoDepsAlgoHandler<decltype(algo)>>(std::move(out_property),std::forward<Algorithm>(algo));
+    m_algos.push_back(algo_handler);
+    _addProducingAlgo(algo_handler->m_out_property, algo_handler);
   }
 
   template <typename Algorithm>
   void addAlgorithm(InProperty&& in_property1, InProperty&& in_property2, OutProperty&& out_property, Algorithm algo){// problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
-    //?? ajout dans le graphe. recuperer les prop...à partir nom et kind…
-    // mock the graph : play the action in the given order...
-    m_algos.push_back(std::make_shared<DualInAlgoHandler<decltype(algo)>>(
-        std::move(in_property1),
-        std::move(in_property2),
-        std::move(out_property),
-        std::forward<Algorithm>(algo)));
+    auto algo_handler = std::make_shared<DualInAlgoHandler<decltype(algo)>>(
+    std::move(in_property1),
+    std::move(in_property2),
+    std::move(out_property),
+    std::forward<Algorithm>(algo));
+    m_algos.push_back(algo_handler);
+    _addProducingAlgo(algo_handler->m_out_property, algo_handler);
+    _addConsumingAlgo(algo_handler->m_in_property1, algo_handler);
+    _addConsumingAlgo(algo_handler->m_in_property2, algo_handler);
   }
 
   template <typename Algorithm>
   void addAlgorithm(OutProperty&& out_property1, OutProperty&& out_property2, Algorithm algo) {// problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
-    m_algos.push_back(std::make_unique<NoDepsDualOutAlgoHandler<decltype(algo)>>(std::move(out_property1),std::move(out_property2),std::forward<Algorithm>(algo)));
+    auto algo_handler = std::make_shared<NoDepsDualOutAlgoHandler<decltype(algo)>>(std::move(out_property1), std::move(out_property2), std::forward<Algorithm>(algo));
+    m_algos.push_back(algo_handler);
+    _addProducingAlgo(algo_handler->m_out_property1,algo_handler);
+    _addProducingAlgo(algo_handler->m_out_property2,algo_handler);
   }
 
   EndOfMeshUpdate applyAlgorithms() {
@@ -1014,6 +1033,18 @@ public:
   }
 
 
+
+  void _addProducingAlgo(OutProperty const& out_property, std::shared_ptr<IAlgorithm> algo){
+    // add algo as one of producing algo of out_property
+    auto& [producing_algo_array, consuming_algo_array] = m_property_algorithms[out_property.uniqueName()];
+    producing_algo_array.push_back(algo);
+  }
+
+  void _addConsumingAlgo(InProperty const& in_property, std::shared_ptr<IAlgorithm> algo){
+    // add algo as one of the consuming algos of out_property
+    auto& [producing_algo_array, consuming_algo_array] = m_property_algorithms[in_property.uniqueName()];
+    consuming_algo_array.push_back(algo);
+  }
 
 };
 
