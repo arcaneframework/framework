@@ -22,7 +22,7 @@ TEST(NeoGraphTest,OneFamilyOnePropertyTest){
   cell_family.addProperty<Neo::utils::Int32>("prop");
   mesh.addAlgorithm(Neo::InProperty{cell_family,cell_family.lidPropName()},
                     Neo::OutProperty{cell_family,"prop"},
-                    [](Neo::ItemLidsProperty const& cell_lid_prop, Neo::PropertyT<Neo::utils::Int32> prop){
+                    [](Neo::ItemLidsProperty const& cell_lid_prop, Neo::PropertyT<Neo::utils::Int32>& prop){
                         std::cout << "Fill property after cell creation "<< std::endl;
                         prop.init(cell_lid_prop.values(),42);
                     });
@@ -34,7 +34,7 @@ TEST(NeoGraphTest,OneFamilyOnePropertyTest){
   mesh.applyAlgorithms();
   auto& prop = cell_family.getConcreteProperty<Neo::PropertyT<Neo::utils::Int32>>("prop");
   EXPECT_EQ(prop.size(),mesh.nbItems(Neo::ItemKind::IK_Cell));
-  std::vector<int> ref_values(42, mesh.nbItems(Neo::ItemKind::IK_Cell));
+  std::vector<int> ref_values(mesh.nbItems(Neo::ItemKind::IK_Cell),42);
   auto values = prop.values();
   EXPECT_TRUE(std::equal(values.begin(),values.end(),ref_values.begin()));
 }
