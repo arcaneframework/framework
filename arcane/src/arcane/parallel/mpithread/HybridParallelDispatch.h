@@ -152,15 +152,14 @@ class HybridParallelDispatch
   Request send(Span<const Type> send_buffer,const PointToPointMessageInfo& message) override;
   Request receive(Span<Type> recv_buffer,Int32 rank,bool is_blocked) override;
   Request receive(Span<Type> recv_buffer,const PointToPointMessageInfo& message) override;
-  Request nonBlockingAllReduce(eReduceType op,Span<Type> send_buf); //!< A supprimer
-  Request nonBlockingAllReduce(eReduceType op,Span<const Type> send_buf,Span<Type> recv_buf);
-  Request nonBlockingAllGather(Span<const Type> send_buf, Span<Type> recv_buf);
-  Request nonBlockingBroadcast(Span<Type> send_buf, Int32 rank);
-  Request nonBlockingGather(Span<const Type> send_buf, Span<Type> recv_buf, Int32 rank);
-  Request nonBlockingAllToAll(Span<const Type> send_buf, Span<Type> recv_buf, Int32 count);
+  Request nonBlockingAllReduce(eReduceType op,Span<const Type> send_buf,Span<Type> recv_buf) override;
+  Request nonBlockingAllGather(Span<const Type> send_buf, Span<Type> recv_buf) override;
+  Request nonBlockingBroadcast(Span<Type> send_buf, Int32 rank) override;
+  Request nonBlockingGather(Span<const Type> send_buf, Span<Type> recv_buf, Int32 rank) override;
+  Request nonBlockingAllToAll(Span<const Type> send_buf, Span<Type> recv_buf, Int32 count) override;
   Request nonBlockingAllToAllVariable(Span<const Type> send_buf, ConstArrayView<Int32> send_count,
                                       ConstArrayView<Int32> send_index, Span<Type> recv_buf,
-                                      ConstArrayView<Int32> recv_count, ConstArrayView<Int32> recv_index);
+                                      ConstArrayView<Int32> recv_count, ConstArrayView<Int32> recv_index) override;
   //@}
 
   void broadcast(ArrayView<Type> send_buf,Integer sub_domain) override

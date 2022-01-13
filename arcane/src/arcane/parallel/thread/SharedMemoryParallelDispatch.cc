@@ -566,17 +566,6 @@ allReduce(eReduceType op,Span<Type> send_buf)
 /*---------------------------------------------------------------------------*/
 
 template<class Type> Request SharedMemoryParallelDispatch<Type>::
-nonBlockingAllReduce(eReduceType op,Span<Type> send_buf)
-{
-  ARCANE_UNUSED(op);
-  ARCANE_UNUSED(send_buf);
-  throw NotImplementedException(A_FUNCINFO);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<class Type> Request SharedMemoryParallelDispatch<Type>::
 nonBlockingAllReduce(eReduceType op,Span<const Type> send_buf,Span<Type> recv_buf)
 {
   ARCANE_UNUSED(op);
