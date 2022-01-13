@@ -22,7 +22,6 @@
 
 namespace Arcane
 {
-class IMemoryAllocator;
 class IMemoryRessourceMngInternal;
 
 /*---------------------------------------------------------------------------*/
