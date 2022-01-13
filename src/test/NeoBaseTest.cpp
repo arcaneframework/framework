@@ -698,6 +698,7 @@ void mesh_property_test(const Neo::MeshBase & mesh){
     std::cout << "= In family " << kind_name_pair.second << " =" << std::endl;
     for (const auto& [prop_name,property] : family->m_properties){
       std::cout << prop_name << std::endl;
+      std::cout << "prop_adress " << &property<< std::endl;
     }
   }
   std::cout << "== End Print Mesh " << mesh.m_name << " Properties =="<< std::endl;
@@ -714,7 +715,7 @@ node_family.addArrayProperty<Neo::utils::Int32>("node2cells");
 node_family.addProperty<Neo::utils::Int32>("internal_end_of_remove_tag"); // not a user-defined property // todo use byte ?
 
 // Test adds
-auto& property = node_family.getProperty("node_uids");
+EXPECT_NO_THROW(node_family.getProperty("node_uids"));
 
 // Adding cell family and properties
 auto& cell_family = mesh.getFamily(Neo::ItemKind::IK_Cell,"CellFamily");
@@ -760,20 +761,22 @@ mesh.addAlgorithm(
 mesh.addAlgorithm(
     Neo::InProperty{node_family,node_family.lidPropName()},
     Neo::OutProperty{node_family,"node_uids"},
-  [&node_uids,&added_nodes](Neo::ItemLidsProperty const& node_lids_property,
-                   Neo::PropertyT<Neo::utils::Int64>& node_uids_property){
-    std::cout << "Algorithm: register node uids" << std::endl;
-  if (node_uids_property.isInitializableFrom(added_nodes))  node_uids_property.init(added_nodes,std::move(node_uids)); // init can steal the input values
-  else node_uids_property.append(added_nodes, node_uids);
-  node_uids_property.debugPrint();
-    });// need to add a property check for existing uid
+  [&node_uids,&added_nodes]([[maybe_unused]]
+                            Neo::ItemLidsProperty const& node_lids_property,
+                            Neo::PropertyT<Neo::utils::Int64>& node_uids_property){
+      std::cout << "Algorithm: register node uids" << std::endl;
+      if (node_uids_property.isInitializableFrom(added_nodes))  node_uids_property.init(added_nodes,std::move(node_uids)); // init can steal the input values
+      else node_uids_property.append(added_nodes, node_uids);
+      node_uids_property.debugPrint();
+  });// need to add a property check for existing uid
 
 // register node coords
 mesh.addAlgorithm(
     Neo::InProperty{node_family,node_family.lidPropName()},
     Neo::OutProperty{node_family,"node_coords"},
-  [&node_coords,&added_nodes](Neo::ItemLidsProperty const& node_lids_property,
-                   Neo::PropertyT<Neo::utils::Real3> & node_coords_property){
+  [&node_coords,&added_nodes]([[maybe_unused]]
+                              Neo::ItemLidsProperty const& node_lids_property,
+                              Neo::PropertyT<Neo::utils::Real3> & node_coords_property){
     std::cout << "Algorithm: register node coords" << std::endl;
     if (node_coords_property.isInitializableFrom(added_nodes))  node_coords_property.init(added_nodes,std::move(node_coords)); // init can steal the input values
     else node_coords_property.append(added_nodes, node_coords);
@@ -797,12 +800,13 @@ mesh.addAlgorithm(
 mesh.addAlgorithm(
     Neo::InProperty{cell_family,cell_family.lidPropName()},
     Neo::OutProperty{cell_family,"cell_uids"},
-    [&cell_uids,&added_cells](Neo::ItemLidsProperty const& cell_lids_property,
-                   Neo::PropertyT<Neo::utils::Int64>& cell_uids_property){
-      std::cout << "Algorithm: register cell uids" << std::endl;
-      if (cell_uids_property.isInitializableFrom(added_cells))  cell_uids_property.init(added_cells,std::move(cell_uids)); // init can steal the input values
-      else cell_uids_property.append(added_cells, cell_uids);
-      cell_uids_property.debugPrint();
+    [&cell_uids,&added_cells](
+    [[maybe_unused]] Neo::ItemLidsProperty const& cell_lids_property,
+    Neo::PropertyT<Neo::utils::Int64>& cell_uids_property){
+        std::cout << "Algorithm: register cell uids" << std::endl;
+        if (cell_uids_property.isInitializableFrom(added_cells))  cell_uids_property.init(added_cells,std::move(cell_uids)); // init can steal the input values
+        else cell_uids_property.append(added_cells, cell_uids);
+        cell_uids_property.debugPrint();
     });
 
 // register connectivity
@@ -814,7 +818,7 @@ mesh.addAlgorithm(
     Neo::InProperty{cell_family,cell_family.lidPropName()},
     Neo::OutProperty{node_family,"node2cells"},
     [&connected_cell_uids, &nb_cell_per_node,& added_nodes]
-    (Neo::ItemLidsProperty const& node_lids_property,
+    ([[maybe_unused]] Neo::ItemLidsProperty const& node_lids_property,
                    Neo::ItemLidsProperty const& cell_lids_property,
                    Neo::ArrayProperty<Neo::utils::Int32> & node2cells){
       std::cout << "Algorithm: register node-cell connectivity" << std::endl;
@@ -838,7 +842,7 @@ mesh.addAlgorithm(Neo::InProperty{node_family,node_family.lidPropName()},
                   [&connected_node_uids, &nb_node_per_cell,& added_cells]
                           (
                       Neo::ItemLidsProperty const& node_lids_property,
-                      Neo::ItemLidsProperty const& cell_lids_property,
+                      [[maybe_unused]] Neo::ItemLidsProperty const& cell_lids_property,
                       Neo::ArrayProperty<Neo::utils::Int32> & cells2nodes){
                     std::cout << "Algorithm: register cell-node connectivity" << std::endl;
                     auto connected_node_lids = node_lids_property[connected_node_uids];
@@ -866,8 +870,9 @@ mesh.addAlgorithm(Neo::OutProperty{cell_family,cell_family.lidPropName()},
 mesh.addAlgorithm(
     Neo::InProperty{cell_family,cell_family.lidPropName()},
     Neo::OutProperty{cell_family,"cell_uids"},
-                  [&new_cell_uids,&new_cell_added](Neo::ItemLidsProperty const& cell_lids_property,
-                      Neo::PropertyT<Neo::utils::Int64>& cell_uids_property){
+                  [&new_cell_uids,&new_cell_added](
+                  [[maybe_unused]] Neo::ItemLidsProperty const& cell_lids_property,
+                  Neo::PropertyT<Neo::utils::Int64>& cell_uids_property){
                     std::cout << "Algorithm: register new cell uids" << std::endl;
                     // must append and not initialize
                     if (cell_uids_property.isInitializableFrom(new_cell_added))  cell_uids_property.init(new_cell_added,std::move(new_cell_uids)); // init can steal the input values
@@ -884,7 +889,7 @@ mesh.addAlgorithm(Neo::InProperty{node_family,node_family.lidPropName()},
                   [&new_cell_connected_node_uids, &nb_node_per_new_cell,& new_cell_added]
                           (
                       Neo::ItemLidsProperty const& node_lids_property,
-                      Neo::ItemLidsProperty const& cell_lids_property,
+                      [[maybe_unused]] Neo::ItemLidsProperty const& cell_lids_property,
                       Neo::ArrayProperty<Neo::utils::Int32> & cells2nodes){
                     std::cout << "Algorithm: register new cell-node connectivity" << std::endl;
                     auto connected_node_lids = node_lids_property[new_cell_connected_node_uids];
@@ -956,7 +961,7 @@ std::array<Neo::utils::Real3,3> node_coords = {r,r,r};// don't get why I can't w
 // creating mesh
 auto mesh = Neo::MeshBase{"my_neo_mesh"};
 auto& node_family = mesh.addFamily(Neo::ItemKind::IK_Node,"NodeFamily");
-auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell,"CellFamily");
+mesh.addFamily(Neo::ItemKind::IK_Cell,"CellFamily");
 
 
 prepare_mesh(mesh);
@@ -965,8 +970,8 @@ prepare_mesh(mesh);
 mesh.addAlgorithm(Neo::InProperty{node_family,node_family.lidPropName()},
                   Neo::OutProperty{node_family,"node_coords"},
   [&node_coords,&node_uids](
-                      Neo::ItemLidsProperty const& node_lids_property,
-                      Neo::PropertyT<Neo::utils::Real3> & node_coords_property){
+                      [[maybe_unused]] Neo::ItemLidsProperty const& node_lids_property,
+                      [[maybe_unused]] Neo::PropertyT<Neo::utils::Real3> & node_coords_property){
     std::cout << "Algorithm: register node coords" << std::endl;
     //auto& lids = node_lids_property[node_uids];//todo
     //node_coords_property.appendAt(lids, node_coords);// steal node_coords memory//todo
