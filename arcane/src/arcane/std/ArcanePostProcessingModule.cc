@@ -295,7 +295,9 @@ void ArcanePostProcessingModule::
 postProcessingExit()
 {
   Real current_time = subDomain()->commonVariables().globalTime();
-  bool save_at_exit = subDomain()->timeLoopMng()->finalTimeReached();
+  bool save_at_exit = false;
+  if (subDomain()->timeLoopMng()->finalTimeReached())
+    save_at_exit = options()->saveFinalTime();
   if (!save_at_exit)
     save_at_exit = options()->endExecutionOutput();
   if (save_at_exit){
