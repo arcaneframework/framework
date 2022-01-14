@@ -70,7 +70,7 @@ class TimeInterval
   ~TimeInterval()
   {
     double end_time = _getTime();
-    *m_cumulative_value = (end_time - m_begin_time);
+    *m_cumulative_value += (end_time - m_begin_time);
   }
  private:
   double* m_cumulative_value;
