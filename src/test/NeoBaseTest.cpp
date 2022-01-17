@@ -667,6 +667,8 @@ TEST(NeoTestFamily,test_family)
 {
   Neo::Family family(Neo::ItemKind::IK_Dof,"MyFamily");
   EXPECT_EQ(family.lidPropName(),family._lidProp().m_name);
+  EXPECT_TRUE(family.hasProperty(family.lidPropName()));
+  EXPECT_FALSE(family.hasProperty("toto"));
   std::vector<Neo::utils::Int64> uids{0,1,2};
   family._lidProp().append(uids); // internal
   EXPECT_EQ(3,family.nbElements());

@@ -682,16 +682,21 @@ public:
                 << std::endl;
   }
 
-  Property& getProperty(const std::string& name) {
+  Property& getProperty(std::string const& name) {
     auto found_property = m_properties.find(name);
     if (found_property == m_properties.end()) throw std::invalid_argument("Cannot find Property "+name);
     return found_property->second;
   }
 
-  Property const& getProperty(const std::string& name) const {
+  Property const& getProperty(std::string const& name) const {
     auto found_property = m_properties.find(name);
     if (found_property == m_properties.end()) throw std::invalid_argument("Cannot find Property "+name);
     return found_property->second;
+  }
+
+  bool hasProperty(std::string const& name) const noexcept {
+    if (m_properties.find(name) == m_properties.end()) return false;
+    else return true;
   }
 
   template <typename PropertyType>
@@ -780,6 +785,7 @@ struct PropertyHolder{
   std::string m_name;
 
 };
+
 struct InProperty : public PropertyHolder{};
 
 struct OutProperty : public PropertyHolder{};
