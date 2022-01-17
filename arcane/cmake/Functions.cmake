@@ -334,6 +334,9 @@ macro(arcane_register_library lib_name)
     target_link_libraries(arcane_full INTERFACE ${lib_name})
   endif()
   set(ARCANE_LIBRARIES ${lib_name} ${ARCANE_LIBRARIES} PARENT_SCOPE)
+  list(APPEND ARCANE_EXPORTED_TARGETS ${lib_name})
+  set(ARCANE_EXPORTED_TARGETS ${ARCANE_EXPORTED_TARGETS} CACHE STRING "List of exported targets" FORCE)
+  add_library(Arcane::${lib_name} ALIAS ${lib_name})
 endmacro()
 
 # ----------------------------------------------------------------------------
