@@ -22,6 +22,9 @@
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/RunCommandLoop.h"
 
+#include <thread>
+#include <chrono>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -54,38 +57,41 @@ class NumArrayUnitTest
 
   static constexpr double _getValue(Int64 i)
   {
-    return static_cast<double>(i*2);
+    return static_cast<double>(i * 2);
   }
-  static constexpr double _getValue(Int64 i,Int64 j)
+  static constexpr double _getValue(Int64 i, Int64 j)
   {
-    return static_cast<double>(i*2 + j*3);
+    return static_cast<double>(i * 2 + j * 3);
   }
-  static constexpr double _getValue(Int64 i,Int64 j,Int64 k)
+  static constexpr double _getValue(Int64 i, Int64 j, Int64 k)
   {
-    return static_cast<double>(i*2 + j*3 + k*4);
+    return static_cast<double>(i * 2 + j * 3 + k * 4);
   }
-  static constexpr double _getValue(Int64 i,Int64 j,Int64 k,Int64 l)
+  static constexpr double _getValue(Int64 i, Int64 j, Int64 k, Int64 l)
   {
-    return static_cast<double>(i*2 + j*3 + k*4 + l*8);
+    return static_cast<double>(i * 2 + j * 3 + k * 4 + l * 8);
   }
 
-  template<int Rank> double
-  _doSum(NumArray<double,Rank> values,ArrayBounds<Rank> bounds)
+  template <int Rank> double
+  _doSum(NumArray<double, Rank> values, ArrayBounds<Rank> bounds)
   {
     double total = 0.0;
     SimpleLoopRanges<Rank> lb(bounds);
-    arcaneSequentialFor(lb,[&](ArrayBoundsIndex<Rank> idx){ total += values(idx); });
+    arcaneSequentialFor(lb, [&](ArrayBoundsIndex<Rank> idx) { total += values(idx); });
     return total;
   }
+
  public:
+
   void _executeTest1();
   void _executeTest2();
+  void _executeTest3();
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_CASE_OPTIONS_NOAXL_FACTORY(NumArrayUnitTest,IUnitTest,NumArrayUnitTest);
+ARCANE_REGISTER_CASE_OPTIONS_NOAXL_FACTORY(NumArrayUnitTest, IUnitTest, NumArrayUnitTest);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -115,7 +121,7 @@ initializeTest()
 {
   IApplication* app = subDomain()->application();
   const auto& acc_info = app->acceleratorRuntimeInitialisationInfo();
-  initializeRunner(m_runner,traceMng(),acc_info);
+  initializeRunner(m_runner, traceMng(), acc_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -130,6 +136,8 @@ executeTest()
   // de RunQueue.
   _executeTest2();
   _executeTest2();
+
+  _executeTest3();
 }
 
 void NumArrayUnitTest::
@@ -153,63 +161,63 @@ _executeTest1()
   constexpr double expected_sum4 = 164736000.0;
 
   {
-    NumArray<double,1> t1(n1);
+    NumArray<double, 1> t1(n1);
 
-    auto out_t1 = ax::viewOut(command,t1);
+    auto out_t1 = ax::viewOut(command, t1);
 
-    command << RUNCOMMAND_LOOP1(iter,n1)
+    command << RUNCOMMAND_LOOP1(iter, n1)
     {
       auto [i] = iter();
       out_t1(i) = _getValue(i);
     };
-    double s1 = _doSum(t1,{n1});
+    double s1 = _doSum(t1, { n1 });
     info() << "SUM1 = " << s1;
-    vc.areEqual(s1,expected_sum1,"SUM1");
+    vc.areEqual(s1, expected_sum1, "SUM1");
   }
 
   {
-    NumArray<double,2> t1(n1,n2);
+    NumArray<double, 2> t1(n1, n2);
 
-    auto out_t1 = ax::viewOut(command,t1);
+    auto out_t1 = ax::viewOut(command, t1);
 
-    command << RUNCOMMAND_LOOP2(iter,n1,n2)
+    command << RUNCOMMAND_LOOP2(iter, n1, n2)
     {
       auto [i, j] = iter();
-      out_t1(i,j) = _getValue(i,j);
+      out_t1(i, j) = _getValue(i, j);
     };
-    double s2 = _doSum(t1,{n1,n2});
+    double s2 = _doSum(t1, { n1, n2 });
     info() << "SUM2 = " << s2;
-    vc.areEqual(s2,expected_sum2,"SUM2");
+    vc.areEqual(s2, expected_sum2, "SUM2");
   }
 
   {
-    NumArray<double,3> t1(n1,n2,n3);
+    NumArray<double, 3> t1(n1, n2, n3);
 
-    auto out_t1 = ax::viewOut(command,t1);
+    auto out_t1 = ax::viewOut(command, t1);
 
-    command << RUNCOMMAND_LOOP3(iter,n1,n2,n3)
+    command << RUNCOMMAND_LOOP3(iter, n1, n2, n3)
     {
       auto [i, j, k] = iter();
-      out_t1(i,j,k) = _getValue(i,j,k);
+      out_t1(i, j, k) = _getValue(i, j, k);
     };
-    double s3 = _doSum(t1,{n1,n2,n3});
+    double s3 = _doSum(t1, { n1, n2, n3 });
     info() << "SUM3 = " << s3;
-    vc.areEqual(s3,expected_sum3,"SUM3");
+    vc.areEqual(s3, expected_sum3, "SUM3");
   }
 
   {
-    NumArray<double,4> t1(n1,n2,n3,n4);
+    NumArray<double, 4> t1(n1, n2, n3, n4);
 
-    auto out_t1 = ax::viewOut(command,t1);
+    auto out_t1 = ax::viewOut(command, t1);
 
-    command << RUNCOMMAND_LOOP4(iter,n1,n2,n3,n4)
+    command << RUNCOMMAND_LOOP4(iter, n1, n2, n3, n4)
     {
       auto [i, j, k, l] = iter();
-      out_t1(i,j,k,l) = _getValue(i,j,k,l);
+      out_t1(i, j, k, l) = _getValue(i, j, k, l);
     };
-    double s4 = _doSum(t1,{n1,n2,n3,n4});
+    double s4 = _doSum(t1, { n1, n2, n3, n4 });
     info() << "SUM4 = " << s4;
-    vc.areEqual(s4,expected_sum4,"SUM4");
+    vc.areEqual(s4, expected_sum4, "SUM4");
   }
 }
 
@@ -238,7 +246,7 @@ _executeTest2()
   auto queue3 = makeQueue(m_runner);
   queue3.setAsync(true);
 
-  NumArray<double,4> t1(n1,n2,n3,n4);
+  NumArray<double, 4> t1(n1, n2, n3, n4);
 
   // NOTE: Normalement il ne devrait pas être autorisé d'accéder au
   // même tableau depuis plusieurs commandes sur des files différentes
@@ -248,46 +256,99 @@ _executeTest2()
   // chaque file gérant une partie du tableau.
   {
     auto command = makeCommand(queue1);
-    auto out_t1 = ax::viewOut(command,t1);
+    auto out_t1 = ax::viewOut(command, t1);
     Int64 s1 = 300;
-    auto b = makeLoopRanges(s1,n2,n3,n4);
-    command << RUNCOMMAND_LOOP(iter,b)
+    auto b = makeLoopRanges(s1, n2, n3, n4);
+    command << RUNCOMMAND_LOOP(iter, b)
     {
       auto [i, j, k, l] = iter();
-      out_t1(i,j,k,l) = _getValue(i,j,k,l);
+      out_t1(i, j, k, l) = _getValue(i, j, k, l);
     };
   }
   {
     auto command = makeCommand(queue2);
-    auto out_t1 = ax::viewOut(command,t1);
+    auto out_t1 = ax::viewOut(command, t1);
     Int64 base = 300;
     Int64 s1 = 400;
-    auto b = makeLoopRanges({base,s1},n2,n3,n4);
-    command << RUNCOMMAND_LOOP(iter,b)
+    auto b = makeLoopRanges({ base, s1 }, n2, n3, n4);
+    command << RUNCOMMAND_LOOP(iter, b)
     {
       auto [i, j, k, l] = iter();
-      out_t1(i,j,k,l) = _getValue(i,j,k,l);
+      out_t1(i, j, k, l) = _getValue(i, j, k, l);
     };
   }
   {
     auto command = makeCommand(queue3);
-    auto out_t1 = ax::viewOut(command,t1);
+    auto out_t1 = ax::viewOut(command, t1);
     Int64 base = 700;
     Int64 s1 = 300;
-    auto b = makeLoopRanges({base,s1},n2,n3,n4);
-    command << RUNCOMMAND_LOOP(iter,b)
+    auto b = makeLoopRanges({ base, s1 }, n2, n3, n4);
+    command << RUNCOMMAND_LOOP(iter, b)
     {
       auto [i, j, k, l] = iter();
-      out_t1(i,j,k,l) = _getValue(i,j,k,l);
+      out_t1(i, j, k, l) = _getValue(i, j, k, l);
     };
   }
   queue1.barrier();
   queue2.barrier();
   queue3.barrier();
 
-  double s4 = _doSum(t1,{n1,n2,n3,n4});
+  double s4 = _doSum(t1, { n1, n2, n3, n4 });
   info() << "SUM4_ASYNC = " << s4;
-  vc.areEqual(s4,expected_sum4,"SUM4_ASYNC");
+  vc.areEqual(s4, expected_sum4, "SUM4_ASYNC");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void NumArrayUnitTest::
+_executeTest3()
+{
+  info() << "Test RunQueue with multiple threads";
+
+  Integer nb_thread = 8;
+  Integer N = 10000000;
+
+  UniqueArray<NumArray<Int32, 1>> values(8);
+  for (Integer i = 0; i < nb_thread; ++i)
+    values[i].resize(N);
+
+  auto task_func = [&](Ref<RunQueue> q, int id) {
+    info() << "EXECUTE_THREAD_ID=" << id;
+    auto command1 = makeCommand(q.get());
+    auto v = viewOut(command1, values[id]);
+    command1 << RUNCOMMAND_LOOP1(iter, N)
+    {
+      auto [i] = iter();
+      v(iter) = (int)math::sqrt((double)i);
+    };
+    q->barrier();
+  };
+
+  UniqueArray<std::thread*> allthreads;
+
+  for (Integer i = 0; i < nb_thread; ++i) {
+    auto queue_ref = makeQueueRef(m_runner);
+    queue_ref->setAsync(true);
+    allthreads.add(new std::thread(task_func, queue_ref, i));
+  }
+  for (auto thr : allthreads) {
+    thr->join();
+    delete thr;
+  }
+
+  Int64 true_total = 0;
+  Int64 expected_true_total = 0;
+  for (Integer i = 0; i < nb_thread; ++i) {
+    for (Integer j = 0; j < N; ++j) {
+      true_total += values[i](j);
+      expected_true_total += (int)math::sqrt((double)j);
+    }
+  }
+  info() << "End TestCudaThread TOTAL=" << true_total
+         << " expected=" << expected_true_total;
+  if (true_total != expected_true_total)
+    ARCANE_FATAL("Bad value v={0} expected={1}", true_total, expected_true_total);
 }
 
 /*---------------------------------------------------------------------------*/
