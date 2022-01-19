@@ -53,6 +53,8 @@ class RunQueueBuildInfo;
  */
 enum class eExecutionPolicy
 {
+  //! Aucune politique d'exécution
+  None,
   //! Politique d'exécution séquentielle
   Sequential,
   //! Politique d'exécution multi-thread

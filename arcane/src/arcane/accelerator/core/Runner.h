@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Runner.h                                                    (C) 2000-2021 */
+/* Runner.h                                                    (C) 2000-2022 */
 /*                                                                           */
 /* Gestion de l'exécution sur accélérateur.                                  */
 /*---------------------------------------------------------------------------*/
@@ -29,26 +29,51 @@ class RunQueueImpl;
 /*!
  * \brief Gestionnaire d'exécution pour accélérateur.
  * \warning API en cours de définition.
+ *
+ * Une instance de cette classe représente un backend d'exécution. Il faut
+ * d'abord appelé initialize() avant de pouvoir utiliser les méthodes de
+ * l'instance.
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT Runner
 {
   friend class RunQueueImpl;
   class Impl;
+
  public:
+
   Runner();
   ~Runner();
   Runner(const Runner&) = delete;
   Runner& operator=(const Runner&) = delete;
+
  public:
+
+  //! Politique d'exécution associée
   eExecutionPolicy executionPolicy() const;
+
+  ARCCORE_DEPRECATED_2021("Use 'initialize()' instead")
   void setExecutionPolicy(eExecutionPolicy v);
+
+  //! Initialise l'instance. Cette méthode ne doit être appelée qu'une seule fois.
+  void initialize(eExecutionPolicy v);
+
+  //! Indique si l'instance a été initialisée
+  bool isInitialized() const;
+
  private:
+
   // TODO: a supprimer
   RunQueueImpl* _internalCreateOrGetRunQueueImpl(eExecutionPolicy exec_policy);
   RunQueueImpl* _internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi);
   void _internalFreeRunQueueImpl(RunQueueImpl*);
+
  private:
+
   Impl* m_p;
+
+ private:
+
+  void _checkIsInit() const;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -116,6 +116,7 @@ extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
 ostream& operator<<(ostream& o,eExecutionPolicy exec_policy)
 {
   switch(exec_policy){
+  case eExecutionPolicy::None: o << "None"; break;
   case eExecutionPolicy::Sequential: o << "Sequential"; break;
   case eExecutionPolicy::Thread: o << "Thread"; break;
   case eExecutionPolicy::CUDA: o << "CUDA"; break;

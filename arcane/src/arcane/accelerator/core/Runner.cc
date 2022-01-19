@@ -16,6 +16,7 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/NotImplementedException.h"
+#include "arcane/utils/ArgumentException.h"
 
 #include "arcane/accelerator/core/RunQueueImpl.h"
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
@@ -36,6 +37,8 @@ _getRuntime(eExecutionPolicy p)
 {
   IRunQueueRuntime* runtime = nullptr;
   switch(p){
+  case eExecutionPolicy::None:
+    ARCANE_FATAL("No runtime for eExecutionPolicy::None");
   case eExecutionPolicy::HIP:
     return impl::getHIPRunQueueRuntime();
   case eExecutionPolicy::CUDA:
@@ -114,7 +117,9 @@ class Runner::Impl
     return x->second;
   }
  public:
+  //TODO: mettre à None lorsqu'on aura supprimé Runner::setExecutionPolicy()
   eExecutionPolicy m_execution_policy = eExecutionPolicy::Sequential;
+  bool m_is_init = false;
  private:
   std::map<eExecutionPolicy,RunQueueImplStack*> m_run_queue_pool_map;
  private:
@@ -158,6 +163,8 @@ Runner::
 RunQueueImpl* Runner::
 _internalCreateOrGetRunQueueImpl(eExecutionPolicy exec_policy)
 {
+  _checkIsInit();
+
   auto pool = m_p->getPool(exec_policy);
 
   // TODO: rendre thread-safe
@@ -176,6 +183,7 @@ _internalCreateOrGetRunQueueImpl(eExecutionPolicy exec_policy)
 RunQueueImpl* Runner::
 _internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi)
 {
+  _checkIsInit();
   // Si on utilise les paramètres par défaut, on peut utilier une RunQueueImpl
   // issue du pool.
   eExecutionPolicy p = executionPolicy();
@@ -193,6 +201,7 @@ _internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi)
 void Runner::
 _internalFreeRunQueueImpl(RunQueueImpl* p)
 {
+  _checkIsInit();
   // TODO: rendre thread-safe
   if (p->_isInPool())
     m_p->getPool(p->executionPolicy())->push(p);
@@ -207,10 +216,47 @@ executionPolicy() const
   return m_p->m_execution_policy;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void Runner::
 setExecutionPolicy(eExecutionPolicy v)
 {
   m_p->m_execution_policy = v;
+  m_p->m_is_init = true;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool Runner::
+isInitialized() const
+{
+  return m_p->m_is_init;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Runner::
+initialize(eExecutionPolicy v)
+{
+  if (m_p->m_is_init)
+    ARCANE_FATAL("Runner is already initialized");
+  if (v==eExecutionPolicy::None)
+    ARCANE_THROW(ArgumentException,"executionPolicy should not be eExecutionPolicy::None");
+  m_p->m_execution_policy = v;
+  m_p->m_is_init = true;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Runner::
+_checkIsInit() const
+{
+  if (!m_p->m_is_init)
+    ARCANE_FATAL("Runner is not initialized. Call method initialize() before");
 }
 
 /*---------------------------------------------------------------------------*/

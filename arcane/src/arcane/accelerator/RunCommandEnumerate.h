@@ -62,7 +62,8 @@ _applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,Lambda func)
     return;
   typedef typename ItemType::LocalIdType LocalIdType;
   impl::RunCommandLaunchInfo launch_info(command);
-  switch(launch_info.executionPolicy()){
+  const eExecutionPolicy exec_policy = launch_info.executionPolicy();
+  switch(exec_policy){
   case eExecutionPolicy::CUDA:
 #if defined(ARCANE_COMPILING_CUDA)
     {
@@ -108,6 +109,9 @@ _applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,Lambda func)
                               impl::_doIndirectThreadLambda(sub_items,func);
                             });
     }
+    break;
+  default:
+    ARCANE_FATAL("Invalid execution policy '{0}'",exec_policy);
   }
   launch_info.endExecute();
 }
