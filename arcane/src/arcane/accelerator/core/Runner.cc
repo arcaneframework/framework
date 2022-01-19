@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Runner.cc                                                   (C) 2000-2021 */
+/* Runner.cc                                                   (C) 2000-2022 */
 /*                                                                           */
 /* Gestion d'une file d'exécution sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
@@ -15,8 +15,10 @@
 
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/NotImplementedException.h"
 
 #include "arcane/accelerator/core/RunQueueImpl.h"
+#include "arcane/accelerator/core/RunQueueBuildInfo.h"
 
 #include <stack>
 #include <map>
@@ -63,7 +65,7 @@ class Runner::Impl
     RunQueueImpl* top() { return m_stack.top(); }
     void push(RunQueueImpl* v) { m_stack.push(v); }
    public:
-    RunQueueImpl* createRunQueue()
+    RunQueueImpl* createRunQueue(const RunQueueBuildInfo& bi)
     {
       // Si pas de runtime, essaie de le récupérer. On le fait ici et aussi
       // lors de la création de l'instance car l'utilisateur a pu ajouter une
@@ -75,7 +77,9 @@ class Runner::Impl
         ARCANE_FATAL("Can not create RunQueue for execution policy '{0}' "
                      "because no RunQueueRuntime is available for this policy",m_exec_policy);
       Int32 x = ++m_nb_created;
-      return new RunQueueImpl(m_runner,x,m_runtime);
+      auto* q = new RunQueueImpl(m_runner,x,m_runtime,bi);
+      q->m_is_in_pool = false;
+      return q;
     }
    private:
     std::stack<RunQueueImpl*> m_stack;
@@ -163,7 +167,24 @@ _internalCreateOrGetRunQueueImpl(eExecutionPolicy exec_policy)
     return p;
   }
   
-  return pool->createRunQueue();
+  return pool->createRunQueue(RunQueueBuildInfo{});
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunQueueImpl* Runner::
+_internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi)
+{
+  // Si on utilise les paramètres par défaut, on peut utilier une RunQueueImpl
+  // issue du pool.
+  eExecutionPolicy p = executionPolicy();
+  if (bi.isDefault())
+    return _internalCreateOrGetRunQueueImpl(p);
+  IRunQueueRuntime* runtime = _getRuntime(p);
+  ARCANE_CHECK_POINTER(runtime);
+  auto* queue = new RunQueueImpl(this,0,runtime,bi);
+  return queue;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -173,7 +194,8 @@ void Runner::
 _internalFreeRunQueueImpl(RunQueueImpl* p)
 {
   // TODO: rendre thread-safe
-  m_p->getPool(p->executionPolicy())->push(p);
+  if (p->_isInPool())
+    m_p->getPool(p->executionPolicy())->push(p);
 }
 
 /*---------------------------------------------------------------------------*/

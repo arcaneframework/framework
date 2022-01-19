@@ -36,6 +36,15 @@ RunQueue(Runner& runner)
 /*---------------------------------------------------------------------------*/
 
 RunQueue::
+RunQueue(Runner& runner, const RunQueueBuildInfo& bi)
+: m_p(RunQueueImpl::create(&runner,bi))
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunQueue::
 RunQueue(Runner& runner,eExecutionPolicy exec_policy)
 : m_p(RunQueueImpl::create(&runner,exec_policy))
 {

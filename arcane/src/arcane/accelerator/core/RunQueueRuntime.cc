@@ -47,7 +47,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT SequentialRunQueueRuntime
   void notifyEndKernel() override {}
   void barrier() override {}
   eExecutionPolicy executionPolicy() const override { return eExecutionPolicy::Sequential; }
-  IRunQueueStream* createStream() override { return new HostRunQueueStream(this); }
+  IRunQueueStream* createStream(const RunQueueBuildInfo&) override { return new HostRunQueueStream(this); }
 };
 
 class ARCANE_ACCELERATOR_CORE_EXPORT ThreadRunQueueRuntime
@@ -60,7 +60,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT ThreadRunQueueRuntime
   void notifyEndKernel() override {}
   void barrier() override {}
   eExecutionPolicy executionPolicy() const override { return eExecutionPolicy::Thread; }
-  IRunQueueStream* createStream() override { return new HostRunQueueStream(this); }
+  IRunQueueStream* createStream(const RunQueueBuildInfo&) override { return new HostRunQueueStream(this); }
 };
 
 namespace
