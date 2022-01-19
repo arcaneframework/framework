@@ -19,6 +19,8 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/FatalErrorException.h"
 
+#include "arcane/accelerator/core/RunQueueBuildInfo.h"
+
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/IRunQueueRuntime.h"
 #include "arcane/accelerator/IRunQueueStream.h"
@@ -75,10 +77,15 @@ class HipRunQueueStream
 : public IRunQueueStream
 {
  public:
-  HipRunQueueStream(IRunQueueRuntime* runtime)
+  HipRunQueueStream(IRunQueueRuntime* runtime,const RunQueueBuildInfo& bi)
   : m_runtime(runtime)
   {
-    ARCANE_CHECK_HIP(hipStreamCreate(&m_hip_stream));
+    if (bi.isDefault())
+      ARCANE_CHECK_HIP(hipStreamCreate(&m_hip_stream));
+    else{
+      int priority = bi.priority();
+      ARCANE_CHECK_HIP(hipStreamCreateWithPriority(&m_hip_stream,hipStreamDefault,priority));
+    }
   }
   ~HipRunQueueStream() noexcept(false) override
   {
@@ -132,9 +139,9 @@ class HipRunQueueRuntime
   {
     return eExecutionPolicy::HIP;
   }
-  IRunQueueStream* createStream() override
+  IRunQueueStream* createStream(const RunQueueBuildInfo& bi) override
   {
-    return new HipRunQueueStream(this);
+    return new HipRunQueueStream(this,bi);
   }
  private:
   Int64 m_nb_kernel_launched = 0;

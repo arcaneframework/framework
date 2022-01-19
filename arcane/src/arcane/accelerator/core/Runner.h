@@ -43,7 +43,9 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
   eExecutionPolicy executionPolicy() const;
   void setExecutionPolicy(eExecutionPolicy v);
  private:
+  // TODO: a supprimer
   RunQueueImpl* _internalCreateOrGetRunQueueImpl(eExecutionPolicy exec_policy);
+  RunQueueImpl* _internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi);
   void _internalFreeRunQueueImpl(RunQueueImpl*);
  private:
   Impl* m_p;
@@ -70,6 +72,21 @@ makeQueue(Runner* runner)
   return RunQueue(*runner);
 }
 
+//! Créé une file temporaire associée à \a runner avec les propriétés \a bi.
+inline RunQueue
+makeQueue(Runner& runner,const RunQueueBuildInfo& bi)
+{
+  return RunQueue(runner,bi);
+}
+
+//! Créé une file temporaire associée à \a runner avec les propriétés \a bi.
+inline RunQueue
+makeQueue(Runner* runner,const RunQueueBuildInfo& bi)
+{
+  ARCANE_CHECK_POINTER(runner);
+  return RunQueue(*runner,bi);
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -94,6 +111,18 @@ inline Ref<RunQueue>
 makeQueueRef(Runner& runner)
 {
   return makeRef(new RunQueue(runner));
+}
+
+/*!
+ * \brief Créé une référence sur file avec la politique d'exécution par défaut de \a runner.
+ *
+ * Si la file est temporaire, il est préférable d'utiliser makeQueue() à la place
+ * pour éviter une allocation inutile.
+ */
+inline Ref<RunQueue>
+makeQueueRef(Runner& runner,const RunQueueBuildInfo& bi)
+{
+  return makeRef(new RunQueue(runner,bi));
 }
 
 /*---------------------------------------------------------------------------*/

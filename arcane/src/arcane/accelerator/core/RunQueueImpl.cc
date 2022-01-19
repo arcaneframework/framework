@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueueImpl.cc                                             (C) 2000-2021 */
+/* RunQueueImpl.cc                                             (C) 2000-2022 */
 /*                                                                           */
 /* Gestion d'une file d'exécution sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,7 @@
 #include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/IRunQueueRuntime.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
 
@@ -29,11 +30,11 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 
 RunQueueImpl::
-RunQueueImpl(Runner* runner,Int32 id,IRunQueueRuntime* runtime)
+RunQueueImpl(Runner* runner,Int32 id,IRunQueueRuntime* runtime,const RunQueueBuildInfo& bi)
 : m_runner(runner)
 , m_execution_policy(runtime->executionPolicy())
 , m_runtime(runtime)
-, m_queue_stream(runtime->createStream())
+, m_queue_stream(runtime->createStream(bi))
 , m_id(id)
 {
 }
@@ -61,6 +62,24 @@ void RunQueueImpl::
 release()
 {
   m_runner->_internalFreeRunQueueImpl(this);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunQueueImpl* RunQueueImpl::
+create(Runner* r)
+{
+  return r->_internalCreateOrGetRunQueueImpl(r->executionPolicy());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunQueueImpl* RunQueueImpl::
+create(Runner* r,const RunQueueBuildInfo& bi)
+{
+  return r->_internalCreateOrGetRunQueueImpl(bi);
 }
 
 /*---------------------------------------------------------------------------*/

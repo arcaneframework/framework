@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueue.h                                                  (C) 2000-2021 */
+/* RunQueue.h                                                  (C) 2000-2022 */
 /*                                                                           */
 /* Gestion d'une file d'exécution sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
@@ -33,23 +33,34 @@ class RunCommandImpl;
 class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 {
   friend class RunCommand;
+
  public:
-  RunQueue(Runner& runner);
-  RunQueue(Runner& runner,eExecutionPolicy policy);
+
+  explicit RunQueue(Runner& runner);
+  RunQueue(Runner& runner, const RunQueueBuildInfo& bi);
+  RunQueue(Runner& runner, eExecutionPolicy policy);
   ~RunQueue();
   RunQueue(const RunQueue&) = delete;
   RunQueue& operator=(const RunQueue&) = delete;
+
  public:
+
   eExecutionPolicy executionPolicy() const;
   void setAsync(bool v) { m_is_async = v; }
   bool isAsync() const { return m_is_async; }
   void barrier();
+
  public:
+
   IRunQueueRuntime* _internalRuntime() const;
   IRunQueueStream* _internalStream() const;
+
  private:
+
   RunCommandImpl* _getCommandImpl();
+
  private:
+
   RunQueueImpl* m_p;
   bool m_is_async = false;
 };

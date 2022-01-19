@@ -18,8 +18,11 @@
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
 #include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
+
+#include "arcane/accelerator/core/RunQueueBuildInfo.h"
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/IRunQueueRuntime.h"
@@ -71,7 +74,11 @@ void checkDevices()
       << " " << dp.maxThreadsDim[2] << "\n";
     o << " maxGridSize = "<< dp.maxGridSize[0] << " " << dp.maxGridSize[1]
       << " " << dp.maxGridSize[2] << "\n";
-  }
+    int least_val = 0;
+    int greatest_val = 0;
+    ARCANE_CHECK_CUDA(cudaDeviceGetStreamPriorityRange(&least_val,&greatest_val));
+    o << " leastPriority = "<< least_val << " greatestPriority = " << greatest_val << "\n";
+ }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -81,10 +88,15 @@ class CudaRunQueueStream
 : public IRunQueueStream
 {
  public:
-  CudaRunQueueStream(IRunQueueRuntime* runtime)
+  CudaRunQueueStream(IRunQueueRuntime* runtime,const RunQueueBuildInfo& bi)
   : m_runtime(runtime)
   {
-    ARCANE_CHECK_CUDA(cudaStreamCreate(&m_cuda_stream));
+    if (bi.isDefault())
+      ARCANE_CHECK_CUDA(cudaStreamCreate(&m_cuda_stream));
+    else{
+      int priority = bi.priority();
+      ARCANE_CHECK_CUDA(cudaStreamCreateWithPriority(&m_cuda_stream,cudaStreamDefault,priority));
+    }
   }
   ~CudaRunQueueStream() noexcept(false) override
   {
@@ -148,9 +160,9 @@ class CudaRunQueueRuntime
   {
     return eExecutionPolicy::CUDA;
   }
-  IRunQueueStream* createStream() override
+  IRunQueueStream* createStream(const RunQueueBuildInfo& bi) override
   {
-    return new CudaRunQueueStream(this);
+    return new CudaRunQueueStream(this,bi);
   }
  private:
   Int64 m_nb_kernel_launched = 0;

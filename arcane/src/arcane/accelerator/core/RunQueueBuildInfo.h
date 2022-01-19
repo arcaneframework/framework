@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IRunQueueRuntime.h                                          (C) 2000-2022 */
+/* RunQueueBuildInfo.h                                         (C) 2000-2022 */
 /*                                                                           */
-/* Interface du runtime associé à une RunQueue.                              */
+/* Informations pour créer une RunQueue.                                     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_IRUNQUEUERUNTIME_H
-#define ARCANE_ACCELERATOR_IRUNQUEUERUNTIME_H
+#ifndef ARCANE_ACCELERATOR_CORE_RUNQUEUEBUILDINFO_H
+#define ARCANE_ACCELERATOR_CORE_RUNQUEUEBUILDINFO_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -25,19 +25,36 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
- * \brief Interface du runtime associé à une RunQueue.
+ * \brief Informations pour créer une RunQueue.
  */
-class ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueRuntime
+class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueBuildInfo
 {
  public:
-  virtual ~IRunQueueRuntime() = default;
+
+  RunQueueBuildInfo() = default;
+  explicit RunQueueBuildInfo(int priority)
+  : m_priority(priority)
+  {}
+
  public:
-  virtual void notifyBeginKernel() =0;
-  virtual void notifyEndKernel() =0;
-  virtual void barrier() =0;
-  virtual eExecutionPolicy executionPolicy() const =0;
-  virtual IRunQueueStream* createStream(const RunQueueBuildInfo& bi) =0;
+
+  /*!
+  * \brief Positionne la priorité.
+  *
+  * Par défaut la propriété vaut 0 et cela indique qu'on créé une 'RunQueue'
+  * avec la priorité par défaut. Les valeurs strictement positives indiquent
+  * une priorité plus faible et les valeurs strictement négatives une priorité
+  * plus élevée.
+  */
+  void setPriority(int priority) { m_priority = priority; }
+  int priority() const { return m_priority; }
+
+  //! Indique si l'instance a uniquement les valeurs par défaut.
+  bool isDefault() const { return m_priority == 0; }
+
+ private:
+
+  int m_priority = 0;
 };
 
 /*---------------------------------------------------------------------------*/

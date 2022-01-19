@@ -37,11 +37,14 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
   friend class RunQueue;
   friend class RunCommandImpl;
  private:
-  RunQueueImpl(Runner* runner,Int32 id,IRunQueueRuntime* runtime);
+  RunQueueImpl(Runner* runner,Int32 id,IRunQueueRuntime* runtime,
+               const RunQueueBuildInfo& bi);
   ~RunQueueImpl();
   RunQueueImpl(const RunQueueImpl&) = delete;
   RunQueueImpl& operator=(const RunQueueImpl&) = delete;
  public:
+  static RunQueueImpl* create(Runner* r,const RunQueueBuildInfo& bi);
+  static RunQueueImpl* create(Runner* r);
   static RunQueueImpl* create(Runner* r,eExecutionPolicy exec_policy);
  public:
   eExecutionPolicy executionPolicy() const { return m_execution_policy; }
@@ -53,6 +56,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
   void _internalFreeRunCommandImpl(RunCommandImpl*);
   IRunQueueRuntime* _internalRuntime() const { return m_runtime; }
   IRunQueueStream* _internalStream() const { return m_queue_stream; }
+  bool _isInPool() const { return m_is_in_pool; }
  private:
   Runner* m_runner;
   eExecutionPolicy m_execution_policy;
@@ -60,6 +64,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
   IRunQueueStream* m_queue_stream;
   std::stack<RunCommandImpl*> m_run_command_pool;
   Int32 m_id = 0;
+  //! Indique si l'instance est dans un pool d'instance.
+  bool m_is_in_pool = false;
 };
 
 /*---------------------------------------------------------------------------*/
