@@ -35,6 +35,7 @@ set(ARCANE_ACCELERATOR_SOURCES
   accelerator/SimpleHydroAcceleratorService.cc
   accelerator/MiniWeatherArray.cc
   accelerator/NumArrayUnitTest.cc
+  accelerator/RunQueueUnitTest.cc
   accelerator/AcceleratorViewsUnitTest.cc
   accelerator/ArcaneTestStandaloneAcceleratorMng.cc
   )
@@ -481,6 +482,10 @@ endif()
 arcane_add_test_sequential(numarray1 testNumArray-1.arc)
 arcane_add_test_sequential_task(numarray1 testNumArray-1.arc 4)
 arcane_add_accelerator_test_sequential(numarray1 testNumArray-1.arc)
+
+arcane_add_test_sequential(runqueue1 testRunQueue-1.arc)
+arcane_add_test_sequential_task(runqueue1 testRunQueue-1.arc 4)
+arcane_add_accelerator_test_sequential(runqueue1 testRunQueue-1.arc)
 
 arcane_add_test_sequential(acceleratorviews1 testAcceleratorViews-1.arc)
 arcane_add_test_sequential_task(acceleratorviews1 testAcceleratorViews-1.arc 4)
