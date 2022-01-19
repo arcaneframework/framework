@@ -78,7 +78,7 @@ class Runner::Impl
                      "because no RunQueueRuntime is available for this policy",m_exec_policy);
       Int32 x = ++m_nb_created;
       auto* q = new RunQueueImpl(m_runner,x,m_runtime,bi);
-      q->m_is_in_pool = false;
+      q->m_is_in_pool = true;
       return q;
     }
    private:
