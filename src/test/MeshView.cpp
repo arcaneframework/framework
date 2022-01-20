@@ -169,7 +169,7 @@ struct ItemRangeView{ // todo revoir le nom
 
 template <typename T>
 struct VariableViewT {
-  T operator[](ItemView & item) {return T{};}
+  T operator[]([[maybe_unused]] ItemView & item) {return T{};}
 };
 
 struct VariableView {
