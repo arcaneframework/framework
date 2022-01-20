@@ -21,6 +21,7 @@
 #include <utility>
 
 #include "Utils.h"
+#include "sgraph/DirectedAcyclicGraph.h"
 
 /*-------------------------
  * sdc - (C)-2019 -
@@ -978,8 +979,11 @@ class MeshBase {
   using ProducingAlgoArray = std::vector<AlgoPtr>;
   using ConsumingAlgoArray = std::vector<AlgoPtr>;
   using PropertyRef = std::reference_wrapper<const PropertyHolder>;
-  std::map<std::string,std::pair<ProducingAlgoArray,ConsumingAlgoArray>> m_property_algorithms;
-//  SGraph::DirectedAcyclicGraph<AlgoPtr,PropertyHolder> m_dag;
+  static inline auto m_prop_holder_less_comparator = [] (PropertyHolder const& a, PropertyHolder const& b) {
+    return a.uniqueName() < b.uniqueName(); };
+  using PropertyHolderLessComparator = decltype(m_prop_holder_less_comparator);
+  std::map<PropertyHolder,std::pair<ProducingAlgoArray,ConsumingAlgoArray>,PropertyHolderLessComparator> m_property_algorithms {m_prop_holder_less_comparator};
+  SGraph::DirectedAcyclicGraph<AlgoPtr,PropertyHolder> m_dag;
   enum class AlgorithmExecutionOrder {FIFO, LIFO, DAG};
 
 public:
@@ -999,8 +1003,6 @@ public:
 
   template <typename Algorithm>
   void addAlgorithm(InProperty&& in_property, OutProperty&& out_property, Algorithm algo){// problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
-    //?? ajout dans le graphe. recuperer les prop...à partir nom et kind…
-    // mock the graph : play the action in the given order...
     auto algo_hander = std::make_shared<AlgoHandler<decltype(algo)>>(std::move(in_property),std::move(out_property),std::forward<Algorithm>(algo));
     m_algos.push_back(algo_hander);
     _addProducingAlgo(algo_hander->m_out_property, algo_hander);
@@ -1035,24 +1037,76 @@ public:
     _addProducingAlgo(algo_handler->m_out_property2,algo_handler);
   }
 
-  EndOfMeshUpdate applyAlgorithms() {
-    std::cout << "apply added algorithms" << std::endl;
-    std::for_each(m_algos.begin(),m_algos.end(),[](auto& algo){(*algo.get())();});
+  EndOfMeshUpdate applyAlgorithms(AlgorithmExecutionOrder execution_order = AlgorithmExecutionOrder::FIFO) {
+    std::cout << "-- apply added algorithms with execution order ";
+    switch (execution_order) {
+    case AlgorithmExecutionOrder::FIFO:
+      std::cout << "FIFO --" << std::endl;
+      std::for_each(m_algos.begin(),m_algos.end(),[](auto& algo){(*algo.get())();});
+      break;
+    case AlgorithmExecutionOrder::LIFO:
+      std::cout << "LIFO --" << std::endl;
+      std::for_each(m_algos.rbegin(), m_algos.rend(), [](auto& algo) { (*algo.get())(); });
+      break;
+    case AlgorithmExecutionOrder::DAG:
+      std::cout << "DAG --" << std::endl;
+      _build_graph();
+      auto sorted_graph = m_dag.topologicalSort();
+      std::for_each(sorted_graph.begin(), sorted_graph.end(),[](auto& algo) { (*algo.get())(); });
+      break;
+    }
     m_algos.clear();
+    m_property_algorithms.clear();
     return EndOfMeshUpdate{};
   }
 
+ private:
+
+  void _build_graph() {
+    // Mark algorithms that won't have their input properties
+    std::vector<AlgoPtr> to_remove_algos;
+    to_remove_algos.reserve(10);
+    for (auto&& [property, property_algos] : m_property_algorithms) {
+      auto& [producing_property_array, consuming_property_array] = property_algos;
+      if (producing_property_array.size() == 0 || !property.m_family.hasProperty(property.m_name)) { // this property will not be computed or does not exist
+        for (auto&& algo_to_remove : consuming_property_array){
+          to_remove_algos.push_back(algo_to_remove);
+        }
+        for (auto&& algo_to_remove : producing_property_array){// property does not exist
+          to_remove_algos.push_back(algo_to_remove);
+        }
+      }
+    }
+    auto compare_algo = [](auto const& algo1, auto const& algo2){return algo1.get() < algo2.get();};
+    std::sort(to_remove_algos.begin(), to_remove_algos.end(),compare_algo);
+
+    // Add edges between producing and consuming algos
+    auto is_removed_algo = [&to_remove_algos,compare_algo](AlgoPtr const& algo){
+      return std::binary_search(to_remove_algos.begin(), to_remove_algos.end(),algo, compare_algo);
+    };
+
+    for (auto& [property, property_algos] : m_property_algorithms){
+      if (!property.m_family.hasProperty(property.m_name)) continue;
+      auto& [producing_property_array, consuming_property_array] = property_algos;
+      for (auto& producing_algo : producing_property_array) {
+        for (auto& consuming_algo : consuming_property_array) {
+          if (!is_removed_algo(producing_algo) && !is_removed_algo(consuming_algo))
+            m_dag.addEdge(producing_algo, consuming_algo, property);
+        }
+      }
+    }
+  }
 
 
   void _addProducingAlgo(OutProperty const& out_property, std::shared_ptr<IAlgorithm> algo){
     // add algo as one of producing algo of out_property
-    auto& [producing_algo_array, consuming_algo_array] = m_property_algorithms[out_property.uniqueName()];
+    auto& [producing_algo_array, consuming_algo_array] = m_property_algorithms[out_property];
     producing_algo_array.push_back(algo);
   }
 
   void _addConsumingAlgo(InProperty const& in_property, std::shared_ptr<IAlgorithm> algo){
     // add algo as one of the consuming algos of out_property
-    auto& [producing_algo_array, consuming_algo_array] = m_property_algorithms[in_property.uniqueName()];
+    auto& [producing_algo_array, consuming_algo_array] = m_property_algorithms[in_property];
     consuming_algo_array.push_back(algo);
   }
 
