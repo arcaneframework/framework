@@ -97,12 +97,12 @@ class RealVariant
   
   Real& operator [](Integer index) 
   { 
-     ARCANE_ASSERT(index < nb_value, ("Index out of range"));
+     ARCANE_ASSERT(index < m_nb_value, ("Index out of range"));
      return m_value[index];
   }
   const Real& operator [](Integer index) const
   { 
-     ARCANE_ASSERT(index < nb_value, ("Index out of range"));
+     ARCANE_ASSERT(index < m_nb_value, ("Index out of range"));
      return m_value[index];
   }
 
@@ -128,7 +128,7 @@ class RealVariant
 
   void _setValue(const Real v, Integer index)
   {
-     ARCANE_ASSERT(index < nb_value, ("Index out of range"));
+     ARCANE_ASSERT(index < m_nb_value, ("Index out of range"));
      m_value[index] = v;
   }
 
