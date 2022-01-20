@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorRuntimeInitialisationInfo.cc                     (C) 2000-2021 */
+/* AcceleratorRuntimeInitialisationInfo.cc                     (C) 2000-2022 */
 /*                                                                           */
 /* Informations pour l'initialisation du runtime des accélérateurs.          */
 /*---------------------------------------------------------------------------*/
@@ -138,19 +138,19 @@ arcaneInitializeRunner(Accelerator::Runner& runner,ITraceMng* tm,
   tm->info() << "AcceleratorRuntime=" << accelerator_runtime;
   if (accelerator_runtime=="cuda"){
     tm->info() << "Using CUDA runtime";
-    runner.setExecutionPolicy(eExecutionPolicy::CUDA);
+    runner.initialize(eExecutionPolicy::CUDA);
   }
   else if (accelerator_runtime=="hip"){
     tm->info() << "Using HIP runtime";
-    runner.setExecutionPolicy(eExecutionPolicy::HIP);
+    runner.initialize(eExecutionPolicy::HIP);
   }
   else if (TaskFactory::isActive()){
     tm->info() << "Using Task runtime";
-    runner.setExecutionPolicy(eExecutionPolicy::Thread);
+    runner.initialize(eExecutionPolicy::Thread);
   }
   else{
     tm->info() << "Using Sequential runtime";
-    runner.setExecutionPolicy(eExecutionPolicy::Sequential);
+    runner.initialize(eExecutionPolicy::Sequential);
   }
 }
 

@@ -85,10 +85,10 @@ void checkDevices()
 /*---------------------------------------------------------------------------*/
 
 class CudaRunQueueStream
-: public IRunQueueStream
+: public impl::IRunQueueStream
 {
  public:
-  CudaRunQueueStream(IRunQueueRuntime* runtime,const RunQueueBuildInfo& bi)
+  CudaRunQueueStream(impl::IRunQueueRuntime* runtime,const RunQueueBuildInfo& bi)
   : m_runtime(runtime)
   {
     if (bi.isDefault())
@@ -127,7 +127,7 @@ class CudaRunQueueStream
   }
   void* _internalImpl() override { return &m_cuda_stream; }
  private:
-  IRunQueueRuntime* m_runtime;
+  impl::IRunQueueRuntime* m_runtime;
   cudaStream_t m_cuda_stream;
 };
 
@@ -135,7 +135,7 @@ class CudaRunQueueStream
 /*---------------------------------------------------------------------------*/
 
 class CudaRunQueueRuntime
-: public IRunQueueRuntime
+: public impl::IRunQueueRuntime
 {
  public:
   ~CudaRunQueueRuntime() override = default;
@@ -160,7 +160,7 @@ class CudaRunQueueRuntime
   {
     return eExecutionPolicy::CUDA;
   }
-  IRunQueueStream* createStream(const RunQueueBuildInfo& bi) override
+  impl::IRunQueueStream* createStream(const RunQueueBuildInfo& bi) override
   {
     return new CudaRunQueueStream(this,bi);
   }

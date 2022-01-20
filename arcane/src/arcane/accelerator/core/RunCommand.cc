@@ -34,14 +34,18 @@
  *
  * \brief Types et macros pour gérer les énumérations des entités sur les accélérateurs
  */
-namespace Arcane::Accelerator
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator::impl
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 class ReduceMemoryImpl
-: public impl::IReduceMemoryImpl
+: public IReduceMemoryImpl
 {
  public:
   ReduceMemoryImpl(RunCommandImpl* p)
@@ -202,6 +206,14 @@ release()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+} // End namespace Arcane::Accelerator::impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator
+{
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -283,17 +295,17 @@ RunCommand& operator<<(RunCommand& command,const TraceInfo& trace_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-RunCommandImpl* RunCommand::
-_internalCreateImpl(RunQueueImpl* queue)
+impl::RunCommandImpl* RunCommand::
+_internalCreateImpl(impl::RunQueueImpl* queue)
 {
-  return new RunCommandImpl(queue);
+  return new impl::RunCommandImpl(queue);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void RunCommand::
-_internalDestroyImpl(RunCommandImpl* p)
+_internalDestroyImpl(impl::RunCommandImpl* p)
 {
   delete p;
 }

@@ -41,7 +41,8 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
   if (vsize==0)
     return;
   impl::RunCommandLaunchInfo launch_info(command);
-  switch(launch_info.executionPolicy()){
+  const eExecutionPolicy exec_policy = launch_info.executionPolicy();
+  switch(exec_policy){
   case eExecutionPolicy::CUDA:
 #if defined(ARCANE_COMPILING_CUDA)
     {
@@ -76,6 +77,8 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
     launch_info.beginExecute();
     arcaneParallelFor(bounds,func);
     break;
+  default:
+    ARCANE_FATAL("Invalid execution policy '{0}'",exec_policy);
   }
   launch_info.endExecute();
 }

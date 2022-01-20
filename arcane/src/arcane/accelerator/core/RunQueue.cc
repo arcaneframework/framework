@@ -37,7 +37,7 @@ RunQueue(Runner& runner)
 
 RunQueue::
 RunQueue(Runner& runner, const RunQueueBuildInfo& bi)
-: m_p(RunQueueImpl::create(&runner,bi))
+: m_p(impl::RunQueueImpl::create(&runner,bi))
 {
 }
 
@@ -46,7 +46,7 @@ RunQueue(Runner& runner, const RunQueueBuildInfo& bi)
 
 RunQueue::
 RunQueue(Runner& runner,eExecutionPolicy exec_policy)
-: m_p(RunQueueImpl::create(&runner,exec_policy))
+: m_p(impl::RunQueueImpl::create(&runner,exec_policy))
 {
 }
 
@@ -86,7 +86,7 @@ executionPolicy() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IRunQueueRuntime* RunQueue::
+impl::IRunQueueRuntime* RunQueue::
 _internalRuntime() const
 {
   return m_p->_internalRuntime();
@@ -95,7 +95,7 @@ _internalRuntime() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IRunQueueStream* RunQueue::
+impl::IRunQueueStream* RunQueue::
 _internalStream() const
 {
   return m_p->_internalStream();
@@ -104,7 +104,7 @@ _internalStream() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-RunCommandImpl* RunQueue::
+impl::RunCommandImpl* RunQueue::
 _getCommandImpl()
 {
   return m_p->_internalCreateOrGetRunCommandImpl();
