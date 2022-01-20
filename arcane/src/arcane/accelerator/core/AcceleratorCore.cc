@@ -39,9 +39,9 @@ namespace Arcane::Accelerator
 namespace
 {
 bool global_is_using_cuda_runtime = false;
-IRunQueueRuntime* global_cuda_runqueue_runtime = nullptr;
+impl::IRunQueueRuntime* global_cuda_runqueue_runtime = nullptr;
 bool global_is_using_hip_runtime = false;
-IRunQueueRuntime* global_hip_runqueue_runtime = nullptr;
+impl::IRunQueueRuntime* global_hip_runqueue_runtime = nullptr;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -63,7 +63,7 @@ setUsingCUDARuntime(bool v)
 /*---------------------------------------------------------------------------*/
 
 //! Récupère l'implémentation CUDA de RunQueue
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueRuntime* impl::
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT impl::IRunQueueRuntime* impl::
 getCUDARunQueueRuntime()
 {
   return global_cuda_runqueue_runtime;
@@ -95,7 +95,7 @@ setUsingHIPRuntime(bool v)
 /*---------------------------------------------------------------------------*/
 
 //! Récupère l'implémentation HIP de RunQueue
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueRuntime* impl::
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT impl::IRunQueueRuntime* impl::
 getHIPRunQueueRuntime()
 {
   return global_hip_runqueue_runtime;
@@ -103,7 +103,7 @@ getHIPRunQueueRuntime()
 
 //! Positionne l'implémentation HIP de RunQueue.
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void impl::
-setHIPRunQueueRuntime(IRunQueueRuntime* v)
+setHIPRunQueueRuntime(impl::IRunQueueRuntime* v)
 {
   global_hip_runqueue_runtime = v;
 }

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommand.h                                                (C) 2000-2021 */
+/* RunCommand.h                                                (C) 2000-2022 */
 /*                                                                           */
 /* Gestion d'une commande sur accélérateur.                                  */
 /*---------------------------------------------------------------------------*/
@@ -21,8 +21,6 @@
 
 namespace Arcane::Accelerator
 {
-class RunCommandImpl;
-class RunQueueImpl;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -57,13 +55,13 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
 
   //! \internal
   RunQueue& _internalQueue() { return m_run_queue; }
-  static RunCommandImpl* _internalCreateImpl(RunQueueImpl* queue);
-  static void _internalDestroyImpl(RunCommandImpl* p);
+  static impl::RunCommandImpl* _internalCreateImpl(impl::RunQueueImpl* queue);
+  static void _internalDestroyImpl(impl::RunCommandImpl* p);
 
  private:
 
   RunQueue& m_run_queue;
-  RunCommandImpl* m_p;
+  impl::RunCommandImpl* m_p;
 };
 
 /*---------------------------------------------------------------------------*/

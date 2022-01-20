@@ -21,7 +21,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator
+namespace Arcane::Accelerator::impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -33,8 +33,8 @@ namespace Arcane::Accelerator
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
 {
-  friend class Runner;
-  friend class RunQueue;
+  friend class Arcane::Accelerator::Runner;
+  friend class Arcane::Accelerator::RunQueue;
   friend class RunCommandImpl;
  private:
   RunQueueImpl(Runner* runner,Int32 id,IRunQueueRuntime* runtime,

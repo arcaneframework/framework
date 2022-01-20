@@ -40,11 +40,17 @@ class IAcceleratorMng;
 class Runner;
 class RunQueue;
 class RunCommand;
+class AcceleratorRuntimeInitialisationInfo;
+class RunQueueBuildInfo;
+
+namespace impl
+{
 class IRunQueueRuntime;
 class IRunQueueStream;
 class RunCommandImpl;
-class AcceleratorRuntimeInitialisationInfo;
-class RunQueueBuildInfo;
+class IReduceMemoryImpl;
+class RunQueueImpl;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -80,7 +86,6 @@ std::ostream& operator<<(std::ostream& o,eExecutionPolicy exec_policy);
 
 namespace Arcane::Accelerator::impl
 {
-class IReduceMemoryImpl;
 
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl*
 internalGetOrCreateReduceMemoryImpl(RunCommand* command);

@@ -21,8 +21,6 @@
 
 namespace Arcane::Accelerator
 {
-class RunQueueImpl;
-class RunCommandImpl;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,22 +44,30 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
  public:
 
   eExecutionPolicy executionPolicy() const;
+  /*!
+   * \brief Positionne l'asynchronisme de l'instance.
+   *
+   * Si l'instance est asynchrone, il faut appeler explicitement barrier()
+   * pour attendre la fin de l'exécution des commandes.
+   */
   void setAsync(bool v) { m_is_async = v; }
+  //! Indique si la file d'exécution est asynchrone.
   bool isAsync() const { return m_is_async; }
+  //! Bloque tant que toutes les commandes associées à la file ne sont pas terminées.
   void barrier();
 
  public:
 
-  IRunQueueRuntime* _internalRuntime() const;
-  IRunQueueStream* _internalStream() const;
+  impl::IRunQueueRuntime* _internalRuntime() const;
+  impl::IRunQueueStream* _internalStream() const;
 
  private:
 
-  RunCommandImpl* _getCommandImpl();
+  impl::RunCommandImpl* _getCommandImpl();
 
  private:
 
-  RunQueueImpl* m_p;
+  impl::RunQueueImpl* m_p;
   bool m_is_async = false;
 };
 

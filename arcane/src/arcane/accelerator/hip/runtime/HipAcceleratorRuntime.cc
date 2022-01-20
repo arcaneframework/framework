@@ -74,10 +74,10 @@ void checkDevices()
 /*---------------------------------------------------------------------------*/
 
 class HipRunQueueStream
-: public IRunQueueStream
+: public impl::IRunQueueStream
 {
  public:
-  HipRunQueueStream(IRunQueueRuntime* runtime,const RunQueueBuildInfo& bi)
+  HipRunQueueStream(impl::IRunQueueRuntime* runtime,const RunQueueBuildInfo& bi)
   : m_runtime(runtime)
   {
     if (bi.isDefault())
@@ -106,7 +106,7 @@ class HipRunQueueStream
   }
   void* _internalImpl() override { return &m_hip_stream; }
  private:
-  IRunQueueRuntime* m_runtime;
+  impl::IRunQueueRuntime* m_runtime;
   hipStream_t m_hip_stream;
 };
 
@@ -114,7 +114,7 @@ class HipRunQueueStream
 /*---------------------------------------------------------------------------*/
 
 class HipRunQueueRuntime
-: public IRunQueueRuntime
+: public impl::IRunQueueRuntime
 {
  public:
   ~HipRunQueueRuntime() override = default;
@@ -139,7 +139,7 @@ class HipRunQueueRuntime
   {
     return eExecutionPolicy::HIP;
   }
-  IRunQueueStream* createStream(const RunQueueBuildInfo& bi) override
+  impl::IRunQueueStream* createStream(const RunQueueBuildInfo& bi) override
   {
     return new HipRunQueueStream(this,bi);
   }

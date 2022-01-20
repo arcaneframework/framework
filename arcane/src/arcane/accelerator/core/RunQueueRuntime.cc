@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueueRuntime.cc                                          (C) 2000-2021 */
+/* RunQueueRuntime.cc                                          (C) 2000-2022 */
 /*                                                                           */
 /* Implémentation d'un RunQueue pour une cible donnée.                       */
 /*---------------------------------------------------------------------------*/
@@ -17,7 +17,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator
+namespace Arcane::Accelerator::impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -73,16 +73,14 @@ ThreadRunQueueRuntime global_thread_runqueue_runtime;
 /*---------------------------------------------------------------------------*/
 
 //! Récupère l'implémentation séquentielle de RunQueue
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-IRunQueueRuntime* impl::
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueRuntime*
 getSequentialRunQueueRuntime()
 {
   return &global_sequential_runqueue_runtime;
 }
 
 //! Récupère l'implémentation séquentielle de RunQueue
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-IRunQueueRuntime* impl::
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueRuntime*
 getThreadRunQueueRuntime()
 {
   return &global_thread_runqueue_runtime;
@@ -91,7 +89,7 @@ getThreadRunQueueRuntime()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // End namespace Arcane::Accelerator::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

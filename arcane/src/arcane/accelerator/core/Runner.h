@@ -22,7 +22,6 @@
 
 namespace Arcane::Accelerator
 {
-class RunQueueImpl;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,7 +35,7 @@ class RunQueueImpl;
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT Runner
 {
-  friend class RunQueueImpl;
+  friend class impl::RunQueueImpl;
   class Impl;
 
  public:
@@ -63,9 +62,9 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
  private:
 
   // TODO: a supprimer
-  RunQueueImpl* _internalCreateOrGetRunQueueImpl(eExecutionPolicy exec_policy);
-  RunQueueImpl* _internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi);
-  void _internalFreeRunQueueImpl(RunQueueImpl*);
+  impl::RunQueueImpl* _internalCreateOrGetRunQueueImpl(eExecutionPolicy exec_policy);
+  impl::RunQueueImpl* _internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi);
+  void _internalFreeRunQueueImpl(impl::RunQueueImpl*);
 
  private:
 
