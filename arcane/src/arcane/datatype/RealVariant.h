@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/Array.h"
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/Real2.h"
 #include "arcane/utils/Real3.h"
@@ -47,6 +48,9 @@ class RealVariant
   RealVariant(ConstArrayView<Real> v)
   : RealVariant(v.data(), v.size())
   {}
+  RealVariant(UniqueArray<Real> v)
+  : RealVariant(v.data(), v.size())
+  {}
   RealVariant(Real r)
   : RealVariant(reinterpret_cast<Real*>(&r), 1)
   {}
@@ -64,6 +68,7 @@ class RealVariant
   {}
 
   RealVariant& operator=(const RealVariant& rhs) = default;
+
   RealVariant& operator=(Real r)
   {
     _setValue(reinterpret_cast<Real*>(&r), 1);
@@ -89,6 +94,18 @@ class RealVariant
     _setValue(reinterpret_cast<Real*>(&r), 9);
     return (*this);
   }
+  
+  Real& operator [](Integer index) 
+  { 
+     ARCANE_ASSERT(index < nb_value, ("Index out of range"));
+     return m_value[index];
+  }
+  const Real& operator [](Integer index) const
+  { 
+     ARCANE_ASSERT(index < nb_value, ("Index out of range"));
+     return m_value[index];
+  }
+
   Int32 size() const { return m_nb_value; }
   Real* data() { return m_value; }
   const Real* data() const { return m_value; }
@@ -108,6 +125,12 @@ class RealVariant
   Int32 m_nb_value = 0;
 
  private:
+
+  void _setValue(const Real v, Integer index)
+  {
+     ARCANE_ASSERT(index < nb_value, ("Index out of range"));
+     m_value[index] = v;
+  }
 
   void _setValue(const Real* v, Int32 nb_value)
   {
