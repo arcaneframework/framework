@@ -271,6 +271,8 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    datatype/DataTracer.h
    datatype/DataTypes.cc
    datatype/DataTypes.h
+   datatype/RealVariant.cc
+   datatype/RealVariant.h
    datatype/ScalarVariant.cc
    datatype/ScalarVariant.h
    datatype/SmallVariant.cc
