@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MessagePassingGlobal.h                                      (C) 2000-2020 */
+/* MessagePassingGlobal.h                                      (C) 2000-2022 */
 /*                                                                           */
-/* Définitions globales de la composante 'MessagePassing' de 'Arccore'.      */
+/* Définitions globales de la composante 'message_passing' de 'Arccore'.     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -25,8 +25,18 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-namespace Arccore::Messagepassing
+/*!
+ * \file MessagePassingGlobal.h
+ *
+ * \brief Déclarations générales de la composante 'message_passing'
+ */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Espace de nommage contenant les types et déclarations qui gèrent
+ * le mécanisme de parallélisme par échange de message.
+ */
+namespace Arccore::MessagePassing
 {
 
 /*---------------------------------------------------------------------------*/
