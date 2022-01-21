@@ -126,7 +126,11 @@ FULL_PATH_NAMES        = YES
 # If left blank the directory from which doxygen is run is used as the
 # path to strip.
 
-STRIP_FROM_PATH        = @Arcane_SOURCE_DIR@/src @ARCANE_CEA_SOURCE_PATH@/src
+STRIP_FROM_PATH        = @Arcane_SOURCE_DIR@/src @ARCANE_CEA_SOURCE_PATH@/src \
+                       @Arccore_ROOT@/src/base @Arccore_ROOT@/src/message_passing \
+                       @Arccore_ROOT@/src/collections @Arccore_ROOT@/src/concurrency \
+                       @Arccore_ROOT@/src/trace @Arccore_ROOT@/src/message_passing_mpi \
+                       @Arccore_ROOT@/src/serialize @Arccore_ROOT@ @Arcane_SOURCE_DIR@
 
 # The STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of
 # the path mentioned in the documentation of a class, which tells
@@ -135,7 +139,11 @@ STRIP_FROM_PATH        = @Arcane_SOURCE_DIR@/src @ARCANE_CEA_SOURCE_PATH@/src
 # definition is used. Otherwise one should specify the include paths that
 # are normally passed to the compiler using the -I flag.
 
-STRIP_FROM_INC_PATH    = @Arcane_SOURCE_DIR@/src @ARCANE_CEA_SOURCE_PATH@/src
+STRIP_FROM_INC_PATH    = @Arcane_SOURCE_DIR@/src @ARCANE_CEA_SOURCE_PATH@/src \
+                       @Arccore_ROOT@/src/base @Arccore_ROOT@/src/message_passing \
+                       @Arccore_ROOT@/src/collections @Arccore_ROOT@/src/concurrency \
+                       @Arccore_ROOT@/src/trace @Arccore_ROOT@/src/message_passing_mpi \
+                       @Arccore_ROOT@/src/serialize @Arccore_ROOT@ @Arcane_SOURCE_DIR@
 
 # If the SHORT_NAMES tag is set to YES, doxygen will generate much shorter
 # (but less readable) file names. This can be useful if your file system
@@ -1412,14 +1420,26 @@ INCLUDE_FILE_PATTERNS  =
 # undefined via #undef or recursively expanded use the := operator
 # instead of the = operator.
 
-PREDEFINED             = DOXYGEN_DOC=1 ARCANE_ALIGNAS_PACKED ARCANE_ALIGNAS ARCANE_BEGIN_NAMESPACE="namespace Arcane {" ARCANE_END_NAMESPACE="}" ARCANE_CORE_EXPORT="" ARCANE_UTILS_EXPORT="" ARCANE_IMPL_EXPORT="" ARCANE_GEOMETRY_EXPORT=""
+PREDEFINED             = DOXYGEN_DOC=1 ARCANE_ALIGNAS_PACKED ARCANE_ALIGNAS \
+                       ARCANE_BEGIN_NAMESPACE="namespace Arcane {" ARCANE_END_NAMESPACE="}" \
+                       ARCANE_CORE_EXPORT="" ARCANE_UTILS_EXPORT="" ARCANE_IMPL_EXPORT="" \
+                       ARCANE_GEOMETRY_EXPORT="" \
+                       ARCCORE_HOST_DEVICE="__host__ __device__"\
+                       ARCCORE_DEPRECATED_2019(a)="[[deprecated(a)]]" \
+                       ARCCORE_DEPRECATED_2020(a)="[[deprecated(a)]]" \
+                       ARCCORE_DEPRECATED_2021(a)="[[deprecated(a)]]"
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then
 # this tag can be used to specify a list of macro names that should be expanded.
 # The macro definition that is found in the sources will be used.
 # Use the PREDEFINED tag if you want to use a different macro definition that overrules the definition found in the source code.
 
-EXPAND_AS_DEFINED      = ARCANE_MATERIALS_EXPORT ARCANE_HAS_CXX11 GEOMETRIC_BEGIN_NAMESPACE GEOMETRIC_END_NAMESPACE GEOMETRIC_BEGIN_NAMESPACE GEOMETRIC_END_NAMESPACE MATERIALS_BEGIN_NAMESPACE MATERIALS_END_NAMESPACE
+EXPAND_AS_DEFINED      = ARCANE_MATERIALS_EXPORT ARCANE_HAS_CXX11 \
+                       GEOMETRIC_BEGIN_NAMESPACE GEOMETRIC_END_NAMESPACE \
+                       GEOMETRIC_BEGIN_NAMESPACE GEOMETRIC_END_NAMESPACE \
+                       MATERIALS_BEGIN_NAMESPACE MATERIALS_END_NAMESPACE \
+                       ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE ARCCORE_NORETURN \
+                       ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS ARCCORE_DEFINE_ARRAY_PODTYPE
 
 # If the SKIP_FUNCTION_MACROS tag is set to YES (the default) then
 # doxygen's preprocessor will remove all references to function-like macros
