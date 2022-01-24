@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RealVariant.cc                                              (C) 2000-2022 */
+/* RealArray2Variant.cc                                        (C) 2000-2022 */
 /*                                                                           */
-/* Variant pouvant contenir les types 'Real*'.                               */
+/* Variant pouvant contenir les types ConstArray2View, Real2x2 et Real3x3.   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/datatype/RealVariant.h"
+#include "arcane/datatype/RealArray2Variant.h"
 
 #include <iostream>
 
@@ -24,28 +24,28 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_CORE_EXPORT void _arcaneTestRealVariant()
+extern "C++" ARCANE_CORE_EXPORT void _arcaneTestRealArray2Variant()
 {
-  Real a = 1.0;
-  Real2 a2{ 2.0, 3.1 };
-  Real3 a3{ 4.0, 7.2, 3.6 };
-
+  Real data[4] = {2.4, 5.6,3.3, 4.4};
+  ConstArray2View<Real> a(data, 2, 2);
   Real2x2 a22{ Real2{ -1.0, -2.5 }, Real2{ -2.0, 3.7 } };
   Real3x3 a33{ Real3{ -2.1, 3.9, 1.5 }, Real3{ 9.2, 3.4, 2.1 }, Real3{ 7.1, 4.5, 3.2 } };
 
-  RealVariant ra(a);
-  RealVariant ra2(a2);
-  RealVariant ra3(a3);
-  RealVariant ra22(a22);
-  RealVariant ra33(a33);
+  const Integer nb_variants = 3;
+  RealArray2Variant variants[nb_variants] = { RealArray2Variant(a), RealArray2Variant(a22), RealArray2Variant(a33) };
 
-  Real xa(ra);
-  Real xa2(ra2);
-  Real xa3(ra3);
-  Real xa22(ra22);
-  Real xa33(ra33);
-
-  std::cout << "A=" << xa << " B=" << xa2 << " C=" << xa3 << " D=" << xa22 << " E=" << xa33 << "\n";
+  for (Integer v=0 ; v<nb_variants ; ++v)
+  {
+    std::cout << "A" << v << "=[ ";
+    for (Integer i=0 ; i<variants[v].dim1Size() ; ++i)
+    {
+      std::cout << "[ ";
+      for (Integer j=0 ; j<variants[v].dim2Size() ; ++i)
+        std::cout << variants[v][i][j] << " ";
+      std::cout << "]\n";
+    }
+    std::cout << "]\n";
+  }
 }
 
 /*---------------------------------------------------------------------------*/
