@@ -354,12 +354,15 @@ allGather(Span<const Type> send_buf,Span<Type> recv_buf)
 /*---------------------------------------------------------------------------*/
 
 template<class Type> void HybridParallelDispatch<Type>::
-gather(Span<const Type> send_buf,Span<Type> recv_buf,Int32 rank)
+gather(Span<const Type> send_buf,Span<Type> recv_buf,Int32 root_rank)
 {
-  ARCANE_UNUSED(send_buf);
-  ARCANE_UNUSED(recv_buf);
-  ARCANE_UNUSED(rank);
-  throw NotImplementedException(A_FUNCINFO);
+  UniqueArray<Type> tmp_buf;
+  if (m_global_rank==root_rank)
+    allGather(send_buf,recv_buf);
+  else{
+    tmp_buf.resize(send_buf.size() * m_global_nb_rank);
+    allGather(send_buf,tmp_buf);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
