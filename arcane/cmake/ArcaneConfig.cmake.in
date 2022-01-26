@@ -129,6 +129,10 @@ foreach(_lib ${_INTERNAL_ARCANE_PACKAGES})
   if (TARGET "Arcane::${_target_name}")
     arcane_internal_add_alias("${_target_name}")
   endif()
+  set(_target_name "arcanepkg_${_lib}")
+  if (TARGET "Arcane::${_target_name}")
+    arcane_internal_add_alias("${_target_name}")
+  endif()
 endforeach()
 
 # ----------------------------------------------------------------------------
