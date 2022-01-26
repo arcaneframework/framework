@@ -5,7 +5,56 @@
 
 Cette page contient les nouveautés de chaque version de %Arcane.
 
-Arcane Version 3.3.0 (...) {#arcanedoc_version330}
+Arcane Version 3.4.3 (...) {#arcanedoc_version340}
+======================================
+
+Nouveautés/Améliorations:
+
+- Dans l'API accélérateur, support Arcane::NumArray pour allouer
+  directement la mémoire sur l'accélérateur. Auparavant seule la
+  mémoir unifiée était disponible. L'énumération
+  'Arcane::eMemoryRessource' et le type 'Arcane::IMemoryRessourceMng'
+  permettent de gérer cela (#111, #113).
+- Amélioration mineures sur la documentation (#117) :
+  - ajout des chemins relatifs pour les fichiers d'en-tête.
+  - ajout des classes et type issus de %Arccore
+- Ajoute nouvelle méthode de calcul des uniqueId() des faces
+  dans le cas cartésien (#104).
+- Ajoute option dans le post-processeur %Arcane pour supprimer la
+  sortie de dépouillement en fin de calcul.
+
+Changements:
+
+- Ajoute namespace '%Arcane::' aux cibles `CMake` fournit par
+%Arcane. Par exemple, la cible 'arcane_core' devient
+'Arcane::arcane_core'. Les anciens noms restent valides (#120).
+
+Corrections:
+
+- Corrige opérateur 'operator=' pour la classe
+  'Arcane::CellDirectionMng' (#109)
+- Corrige conversion inutile `Int64` vers
+  `Int32` dans la construction des maillages cartésiens ce qui
+  empêchait de dépasser 2^31 mailles (#98)
+- Corrige mauvais calcul des temps passés dans les
+  synchronisations. Seul le temps de la dernière attente était utilisé
+  au lieu du cumul (commit cf2cade961)
+- Corrige nom prise en compte de l'option 'MessagePassingService' en
+  ligne de commande (commit 15670db4)
+
+Interne:
+
+- Nettoyage de l'API Accélérateur
+
+Passage version 2.0.8.1 de %Arccore:
+
+- Improve doxygen documentation for types et classes in `message_passing` component.
+- Add functions in `message_passing` component to handle non blocking collectives (#116, #118)
+- Add some '#defines'  to compile with [hipSYCL](https://github.com/illuhad/hipSYCL).
+- Update '_clang-format' file for version 13 of LLVM/Clang.
+
+
+Arcane Version 3.3.0 (16 décembre 2021) {#arcanedoc_version330}
 ======================================
 
 Nouveautés/Améliorations:
