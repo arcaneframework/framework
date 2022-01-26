@@ -30,7 +30,8 @@
 #include <alien/move/data/MatrixData.h>
 #include <alien/move/handlers/scalar/DoKDirectMatrixBuilder.h>
 #include <alien/move/data/VectorData.h>
-#include "alien/kernels/dok/DoKVector.h"
+#include <alien/kernels/dok/DoKVector.h>
+#include <alien/kernels/dok/DoKBackEnd.h>
 
 namespace Alien::Move
 {
@@ -58,13 +59,13 @@ namespace
       symmetric = (src[3] == 0);
     }
 
-    Arccore::UniqueArray<Arccore::Integer> to_array()
+    Arccore::UniqueArray<Arccore::Integer> to_array() const
     {
       Arccore::UniqueArray<Arccore::Integer> array(4);
       array[0] = n_rows;
       array[1] = n_cols;
       array[2] = n_nnz;
-      array[3] = (symmetric) ? 0 : 1;
+      array[3] = symmetric ? 0 : 1;
       return array;
     }
 
@@ -109,12 +110,10 @@ namespace
 
         if ("coordinate" != format) {
           return std::nullopt;
-          // throw Arccore::FatalErrorException("MatrixMarketReader", "format array not supported");
         }
 
         if ("real" != scalar) {
           return std::nullopt;
-          // throw Arccore::FatalErrorException("MatrixMarketReader", "pattern not supported, only scalar is available");
         }
 
         if ("general" == symmetry) {
@@ -151,8 +150,9 @@ namespace
         continue;
       }
 
-      int row, col;
-      double value;
+      int row = 0;
+      int col = 0;
+      double value = 0.0;
       std::stringstream ss;
       ss << line;
       ss >> row >> col >> value;
@@ -207,7 +207,7 @@ VectorData ALIEN_MOVESEMANTIC_EXPORT
 readFromMatrixMarket(const VectorDistribution& distribution, const std::string& filename)
 {
   VectorData out(distribution);
-  DoKVector v(out.impl());
+  auto& v = out.impl()->template get<BackEnd::tag::DoK>(true);
 
   if (distribution.parallelMng()->commRank() == 0) { // Only rank 0 read the file
     auto stream = std::ifstream(filename);
