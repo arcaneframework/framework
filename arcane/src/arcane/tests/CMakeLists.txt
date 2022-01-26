@@ -306,6 +306,12 @@ add_test_message_passing(broadcast_serializer)
 add_test_message_passing(all)
 add_test_message_passing(sub_all)
 
+add_test(serialize_message_list_v2_4proc
+  ${ARCANE_TEST_DRIVER} launch -n 4
+  -We,MESSAGE_PASSING_TEST,serialize_message_list
+  -We,ARCANE_SYNCHRONIZE_LIST_VERSION,2
+  -arcane_opt direct_test ParallelMngTest null)
+
 # ----------------------------------------------------------------------------
 
 ARCANE_ADD_TEST_PARALLEL(parallel testParallel-1.arc 4)
