@@ -193,6 +193,7 @@ class ARCANE_MPI_EXPORT MpiParallelMng
   IParallelNonBlockingCollective* m_non_blocking_collective;
   MpiSerializeDispatcher* m_mpi_serialize_dispatcher = nullptr;
   Ref<IParallelMngUtilsFactory> m_utils_factory;
+  bool m_use_serialize_list_v2 = false;
 
  private:
 

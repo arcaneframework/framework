@@ -312,6 +312,13 @@ build()
   m_non_blocking_collective->build();
   if (m_mpi_lock)
     m_trace->info() << "Using mpi with locks.";
+
+  // Pour l'instant (avril 2020) on laisse l'implémentation historique le
+  // temps de valider l'ancienne.
+  if (platform::getEnvironmentVariable("ARCANE_SYNCHRONIZE_LIST_VERSION")=="2"){
+    m_use_serialize_list_v2 = true;
+    m_trace->info() << "Using MPI SerializeList version 2";
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -570,10 +577,7 @@ _waitSomeRequests(ArrayView<Request> requests, bool is_non_blocking)
 ISerializeMessageList* MpiParallelMng::
 _createSerializeMessageList()
 {
-  // Pour l'instant (avril 2020) on laisse l'implémentation historique le
-  // temps de valider l'ancienne.
-  bool do_new = false;
-  if (do_new)
+  if (m_use_serialize_list_v2)
     return new MP::internal::SerializeMessageList(messagePassingMng());
   return new MpiSerializeMessageList(serializeDispatcher());
 }
