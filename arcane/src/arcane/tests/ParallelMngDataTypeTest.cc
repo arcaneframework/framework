@@ -385,12 +385,14 @@ class ParallelMngDataTypeTest
   void _testAllReduceArray2();
   void _testAllReduceArray();
   template<bool UseMessagePassingMng>
-  void _testAllGatherVariable2();
+  void _testAllGatherVariable3(Int32 root_rank);
   void _testAllGatherVariable();
+  void _testAllGatherVariable2(Int32 root_rank);
   void _fillAllGather(Integer nb_value,CommInfo& c);
   void _testAllGather();
+  void _testAllGather2(Int32 root_rank);
   template<bool UseMessagePassingMng>
-  void _testAllGather2();
+  void _testAllGather3(Int32 root_rank);
   void _fillAllToAllVariable(Integer nb_value,AllToAllVariableCommInfo& ci);
   template<bool UseMessagePassingMng>
   void _testAllToAllVariable2();
@@ -952,11 +954,27 @@ template<typename DataType> void
 ParallelMngDataTypeTest<DataType>::
 _testAllGatherVariable()
 {
-  info() << "Testing AllGatherVariable: use IParallelMng";
-  _testAllGatherVariable2<false>();
+  _testAllGatherVariable2(-1);
+  _testAllGatherVariable2(0);
+  Int32 nb_rank = m_parallel_mng->commSize();
+  if (nb_rank > 2)
+    _testAllGatherVariable2(2);
+  if (nb_rank > 6)
+    _testAllGatherVariable2(6);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void
+ParallelMngDataTypeTest<DataType>::
+_testAllGatherVariable2(Int32 root_rank)
+{
+  info() << "Testing AllGatherVariable: use IParallelMng root_rank=" << root_rank;
+  _testAllGatherVariable3<false>(root_rank);
   if constexpr (HasMessagePassingMngImplementation<DataType>::hasImpl()){
-    info() << "Testing AllGatherVariable: use IMessagePassingMng";
-    _testAllGatherVariable2<true>();
+    info() << "Testing AllGatherVariable: use IMessagePassingMng root_rank=" << root_rank;
+    _testAllGatherVariable3<true>(root_rank);
   }
 }
 
@@ -965,8 +983,9 @@ _testAllGatherVariable()
 
 template<typename DataType> template<bool UseMessagePassingMng> void
 ParallelMngDataTypeTest<DataType>::
-_testAllGatherVariable2()
+_testAllGatherVariable3(Int32 root_rank)
 {
+  // root_rank vaut (-1) si on utilise la version collective (allGather)
   IParallelMng* pm = m_parallel_mng;
   Int32 rank = pm->commRank();
   Int32 nb_rank = pm->commSize();
@@ -983,25 +1002,41 @@ _testAllGatherVariable2()
     send_values[i] = Generator::generateBiValue(rank,i);
   }
 
-  if constexpr (UseMessagePassingMng)
-    mpAllGatherVariable(mpm,send_values,recv_values);
-  else
-    pm->allGatherVariable(send_values,recv_values);
+  if (root_rank<0){
+    if constexpr (UseMessagePassingMng)
+      mpAllGatherVariable(mpm,send_values,recv_values);
+    else
+      pm->allGatherVariable(send_values,recv_values);
+  }
+  else{
+    if constexpr (UseMessagePassingMng)
+      mpGatherVariable(mpm,send_values,recv_values,root_rank);
+    else
+      pm->gatherVariable(send_values,recv_values,root_rank);
+  }
 
-  // Verifie tout est OK.
-  Int32 index = 0;
-  for( Integer z=0; z<nb_rank; ++z ){
-    Integer count = z + 1;
-    for( Integer i=0; i<count; ++i ){
-      DataType expected = Generator::generateBiValue(z,i);
-      DataType current = recv_values[i+index];
-      if (current!=expected)
-        ARCANE_FATAL("Bad compare value v={0} expected={1} orig_rank={2} index={3} my_rank={4}",
-                     current,expected,z,i,rank);
-      if (m_verbose)
-        info() << "RECV rank=" << rank << " V[" << i+index << "] = " << recv_values[i+index] << " = " << expected;
+  if (root_rank<0 || root_rank==rank){
+    // Verifie tout est OK si on est concerné
+    Int32 index = 0;
+    for( Integer z=0; z<nb_rank; ++z ){
+      Integer count = z + 1;
+      for( Integer i=0; i<count; ++i ){
+        DataType expected = Generator::generateBiValue(z,i);
+        DataType current = recv_values[i+index];
+        if (current!=expected)
+          ARCANE_FATAL("Bad compare value v={0} expected={1} orig_rank={2} index={3} my_rank={4}",
+                       current,expected,z,i,rank);
+        if (m_verbose)
+          info() << "RECV rank=" << rank << " V[" << i+index << "] = " << recv_values[i+index] << " = " << expected;
+      }
+      index += count;
     }
-    index += count;
+  }
+  else{
+    // Si je ne suis pas concerné par la collective, le tableau de réception
+    // doit être vide.
+    if (!recv_values.empty())
+      ARCANE_FATAL("Receive buffer is not empty");
   }
 }
 
@@ -1044,11 +1079,27 @@ template<typename DataType> void
 ParallelMngDataTypeTest<DataType>::
 _testAllGather()
 {
-  info() << "Testing AllGather: use IParallelMng";
-  _testAllGather2<false>();
+  _testAllGather2(-1);
+  _testAllGather2(0);
+  Int32 nb_rank = m_parallel_mng->commSize();
+  if (nb_rank > 2)
+    _testAllGather2(2);
+  if (nb_rank > 6)
+    _testAllGather2(6);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void
+ParallelMngDataTypeTest<DataType>::
+_testAllGather2(Int32 root_rank)
+{
+  info() << "Testing AllGather: use IParallelMng root_rank=" << root_rank;
+  _testAllGather3<false>(root_rank);
   if constexpr (HasMessagePassingMngImplementation<DataType>::hasImpl()){
-    info() << "Testing AllGather: use IMessagePassingMng";
-    _testAllGather2<true>();
+     info() << "Testing AllGather: use IMessagePassingMng root_rank=" << root_rank;
+    _testAllGather3<true>(root_rank);
   }
 }
 
@@ -1057,7 +1108,7 @@ _testAllGather()
 
 template<typename DataType> template<bool UseMessagePassingMng> void
 ParallelMngDataTypeTest<DataType>::
-_testAllGather2()
+_testAllGather3(Int32 root_rank)
 {
   const Integer nb_size = 3;
   Integer _sizes[nb_size] = { 125, 3053, 12950 };
@@ -1069,17 +1120,30 @@ _testAllGather2()
   }
 
   IParallelMng* pm = m_parallel_mng;
+  const Int32 rank = pm->commRank();
   [[maybe_unused]] Arccore::MessagePassing::IMessagePassingMng* mpm = pm->messagePassingMng();
   ValueChecker vc(A_FUNCINFO);
 
   // Teste les collectives bloquantes
   for( Integer i=0; i<nb_size; ++i ){
     info() << "Testing Blocking AllGather with nb_value=" << c[i].send_values.size();
-    if constexpr (UseMessagePassingMng)
-      mpAllGather(mpm,c[i].send_values,c[i].recv_values);
-    else
-      pm->allGather(c[i].send_values,c[i].recv_values);
-    vc.areEqualArray(c[i].recv_values.constView(),c[i].ref_values.constView(),"AllGather");
+    if (root_rank<0){
+      if constexpr (UseMessagePassingMng)
+        mpAllGather(mpm,c[i].send_values,c[i].recv_values);
+      else
+        pm->allGather(c[i].send_values,c[i].recv_values);
+    }
+    else{
+      ArrayView<DataType> recv_values = c[i].recv_values;
+      if (root_rank!=rank)
+        recv_values = ArrayView<DataType>{};
+      if constexpr (UseMessagePassingMng)
+        mpGather(mpm,c[i].send_values,recv_values,root_rank);
+      else
+        pm->gather(c[i].send_values,recv_values,root_rank);
+    }
+    if (root_rank<0 || root_rank==rank)
+      vc.areEqualArray(c[i].recv_values.constView(),c[i].ref_values.constView(),"AllGather");
   }
 
   // Teste les collectives non bloquantes
