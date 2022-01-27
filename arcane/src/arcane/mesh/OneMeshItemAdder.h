@@ -4,12 +4,13 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* OneMeshItemAdder.h                                          (C) 2000-2022 */
 /*                                                                           */
 /* Outil de création d'une maille                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_ONEITEMADDER_H
 #define ARCANE_MESH_ONEITEMADDER_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -28,12 +29,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -115,7 +112,10 @@ public:
   Int64 nextFaceUid() const { return m_next_face_uid; }
   Int64 nextEdgeUid() const { return m_next_edge_uid; }
 
-private:
+  //! Remise à zéro des structures pour pouvoir faire à nouveau une allocation
+  void resetAfterDeallocate();
+
+ private:
   
   template<typename CellInfo>
   ItemInternal* _addOneCell(const CellInfo& cell_info);
@@ -147,7 +147,7 @@ private:
   void _clearReverseConnectivity(ItemLocalId item, IIncrementalItemConnectivity* connectivity, IIncrementalItemConnectivity* reverse_connectivity);
   void _printRelations(ItemInternal* item);
 
-private:
+ private:
  
   DynamicMesh* m_mesh;
   DynamicMeshIncrementalBuilder* m_mesh_builder;
@@ -174,12 +174,7 @@ private:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

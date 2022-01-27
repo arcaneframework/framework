@@ -194,6 +194,7 @@ public:
   void _testCustomMeshTools();
   void _testAdditionnalConnectivity();
   void _testShrinkGroups();
+  void _testDeallocateMesh();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -280,6 +281,8 @@ executeTest()
   _testCustomMeshTools();
   _testAdditionnalConnectivity();
   _testShrinkGroups();
+  if (options()->testDeallocateMesh())
+    _testDeallocateMesh();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1238,6 +1241,26 @@ _testShrinkGroups()
   mesh_utils::printMeshGroupsMemoryUsage(mesh(),1);
   Int64 total = mesh_utils::printMeshGroupsMemoryUsage(mesh(),0);
   info() << "TotalMemoryForGroups=" << total;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUnitTest::
+_testDeallocateMesh()
+{
+  info() << A_FUNCINFO;
+  Integer nb_deallocate = 10;
+  IPrimaryMesh* pmesh = mesh()->toPrimaryMesh();
+  // TODO: Utiliser un service qui implémente IMeshBuilder au lieu de IMeshReader
+  ServiceBuilder<IMeshReader> sbu(subDomain());
+  String file_names[3] = { "tied_interface_1.vtk", "sphere_tied_1.vtk", "sphere_tied_2.vtk" };
+  for( Integer i=0; i<nb_deallocate; ++i ){
+    info() << "DEALLOCATE I=" << i;
+    pmesh->deallocate();
+    auto mesh_io(sbu.createReference("VtkLegacyMeshReader",SB_AllowNull));
+    mesh_io->readMeshFromFile(pmesh,XmlNode{},file_names[i%3],String(),true);
+  }
 }
 
 /*---------------------------------------------------------------------------*/

@@ -217,6 +217,7 @@ class ARCANE_MESH_EXPORT DynamicMesh
    
   void reloadMesh() override;
 
+  void deallocate() override;
   void allocateCells(Integer mesh_nb_cell,Int64ConstArrayView cells_info,bool one_alloc) override;
   void endAllocate() override;
 

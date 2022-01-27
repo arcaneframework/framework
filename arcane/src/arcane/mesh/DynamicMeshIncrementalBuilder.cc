@@ -5,17 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMeshIncrementalBuilder.cc                            (C) 2000-2021 */
+/* DynamicMeshIncrementalBuilder.cc                            (C) 2000-2022 */
 /*                                                                           */
 /* Construction d'un maillage de manière incrémentale.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include <set>
-#include <map>
-#include <algorithm>
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/Iterator.h"
 #include "arcane/utils/ArgumentException.h"
@@ -46,6 +40,10 @@
 
 #include "arcane/IItemFamilyModifier.h"
 
+#include <set>
+#include <map>
+#include <algorithm>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -66,16 +64,8 @@ DynamicMeshIncrementalBuilder(DynamicMesh* mesh)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
 , m_item_type_mng(mesh->itemTypeMng())
-, m_connectivity(0)
-, m_has_edge(false)
 , m_has_amr(mesh->isAmrActivated())
-, m_verbose(false)
 , m_one_mesh_item_adder(new OneMeshItemAdder(this))
-, m_ghost_layer_builder(0)
-, m_face_unique_id_builder(0)
-, m_edge_unique_id_builder(0)
-, m_face_uid_pool(0)
-, m_edge_uid_pool(0)
 {
 }
 
@@ -441,7 +431,9 @@ _fillCellNewInfoNew(Integer nb_cell,Int64ConstArrayView cells_infos,Int64Array& 
     Integer current_cell_nb_face = it->nbLocalFace();
     cell_infos2.add(current_cell_nb_face); // nb_connected_faces
     Int64ArrayView current_cell_faces = cell_to_face_connectivity_info.find(current_cell_uid)->second.view();
-    if (current_cell_nb_face != current_cell_faces.size()) fatal() << String::format("Incoherent number of faces for cell {0}. Expected {1} found {2}",current_cell_uid,current_cell_nb_face,current_cell_faces.size());
+    if (current_cell_nb_face != current_cell_faces.size())
+      ARCANE_FATAL("Incoherent number of faces for cell {0}. Expected {1} found {2}",
+                   current_cell_uid,current_cell_nb_face,current_cell_faces.size());
     cell_infos2.addRange(current_cell_faces); // face ids
     //-- Cell edge connectivity
     if (hasEdge())
@@ -454,9 +446,10 @@ _fillCellNewInfoNew(Integer nb_cell,Int64ConstArrayView cells_infos,Int64Array& 
           Int64 second_node = current_cell_node_uids[it->localEdge(edge_index).endNode()];
           if (first_node > second_node) std::swap(first_node,second_node);// edge may be oriented negatively in the cell
           auto edge_it = edge_uid_map.find(std::make_pair(first_node,second_node));
-          if (edge_it == edge_uid_map.end()) fatal() << String::format("Do not find edge with nodes {0}-{1} in edge uid map. Exiting",
-              current_cell_node_uids[it->localEdge(edge_index).beginNode()],
-              current_cell_node_uids[it->localEdge(edge_index).endNode()]);
+          if (edge_it == edge_uid_map.end())
+            ARCANE_FATAL("Do not find edge with nodes {0}-{1} in edge uid map. Exiting",
+                         current_cell_node_uids[it->localEdge(edge_index).beginNode()],
+                         current_cell_node_uids[it->localEdge(edge_index).endNode()]);
           cell_infos2.add(edge_it->second);
         }
       }
@@ -1316,9 +1309,10 @@ _fillFaceNewInfoNew(Integer nb_face,Int64ConstArrayView faces_infos,Int64Array& 
         Int64 second_node = work_face_sorted_nodes[it->localEdge(edge_index).endNode()];
         if (first_node > second_node) std::swap(first_node,second_node); // edge may be oriented negatively in the face
         auto edge_it = edge_uid_map.find(std::make_pair(first_node,second_node));
-        if (edge_it == edge_uid_map.end()) fatal() << String::format("Do not find edge with nodes {0}-{1} in edge uid map. Exiting",
-            work_face_sorted_nodes[it->localEdge(edge_index).beginNode()],
-            work_face_sorted_nodes[it->localEdge(edge_index).endNode()]);
+        if (edge_it == edge_uid_map.end())
+          ARCANE_FATAL("Do not find edge with nodes {0}-{1} in edge uid map. Exiting",
+                       work_face_sorted_nodes[it->localEdge(edge_index).beginNode()],
+                       work_face_sorted_nodes[it->localEdge(edge_index).endNode()]);
         face_infos2.add(edge_it->second); // connected edge uid
       }
     }
@@ -1773,11 +1767,22 @@ void DynamicMeshIncrementalBuilder::
 setConnectivity(const Integer connectivity)
 {
   if (connectivity == 0)
-    fatal() << "Undefined connectivity !";
+    ARCANE_FATAL("Undefined connectivity !");
   if (m_connectivity != 0)
-    fatal() << "Connectivity already set: cannot redefine it";
+    ARCANE_FATAL("Connectivity already set: cannot redefine it");
   m_connectivity = connectivity;
   m_has_edge = Connectivity::hasConnectivity(connectivity,Connectivity::CT_HasEdge);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMeshIncrementalBuilder::
+resetAfterDeallocate()
+{
+  m_face_uid_pool = 0;
+  m_edge_uid_pool = 0;
+  m_one_mesh_item_adder->resetAfterDeallocate();
 }
 
 /*---------------------------------------------------------------------------*/
