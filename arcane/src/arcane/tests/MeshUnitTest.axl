@@ -105,5 +105,16 @@ Nom d'un maillage à lire en plus du maillage par défaut.
    </description>
   </simple>
 
+  <simple
+   name = "test-deallocate-mesh"
+   type = "bool"
+   default = "false"
+  >
+   <name lang='fr'>test-desallocation-maillage</name>
+   <description>
+Teste la désallocation du maillage
+   </description>
+  </simple>
+
  </options>
 </service>
