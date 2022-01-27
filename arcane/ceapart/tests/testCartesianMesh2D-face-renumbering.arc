@@ -31,7 +31,7 @@
      <cartesian>
        <nsd>3 2</nsd>
        <origine>0.0 0.0</origine>
-       <face-numbering-method>4</face-numbering-method>
+       <face-numbering-version>4</face-numbering-version>
        <lx nx='2' prx='1.0'>2.0</lx>
        <lx nx='3' prx='4.0'>3.0</lx>
        <lx nx='3' prx='8.0'>3.0</lx>

@@ -144,7 +144,7 @@ readOptionsFromXml(XmlNode cartesian_node)
   m_nsdz = (m_mesh_dimension == 3) ? nsd[2] : 0;
 
   {
-    XmlNode version_node = cartesian_node.child("face-numbering-method");
+    XmlNode version_node = cartesian_node.child("face-numbering-version");
     if (!version_node.null()){
       Int32 v = version_node.valueAsInteger(true);
       if (v>=0)
