@@ -315,6 +315,7 @@ createEnvironment(const MeshEnvironmentBuildInfo& infos)
       mm->variableIndexer()->setWantedVariableName(mat_var_name);
     }
     me->addMaterial(mm);
+    mat_info->_addEnvironment(env_name);
   }
   // Si le milieu contient plusieurs matériaux, il faut lui allouer
   // des valeurs partielles. Sinon, ses valeurs partielles sont celles

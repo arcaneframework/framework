@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialMng.h                                           (C) 2000-2016 */
+/* MeshMaterialMng.h                                           (C) 2000-2022 */
 /*                                                                           */
 /* Implémentation de la modification des matériaux et milieux.               */
 /*---------------------------------------------------------------------------*/
@@ -31,22 +31,17 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane
+{
 class IVariableMng;
 class Properties;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane::Materials
+{
 class MeshMaterialModifierImpl;
 class MeshMaterialBackup;
 class AllEnvData;
@@ -69,7 +64,7 @@ class MeshMaterialMng
  public:
 
   MeshMaterialMng(const MeshHandle& mesh_handle,const String& name);
-  virtual ~MeshMaterialMng();
+  virtual ~MeshMaterialMng() override;
 
  public:
 
@@ -77,8 +72,8 @@ class MeshMaterialMng
 
  public:
 
-  virtual IMesh* mesh() override { return m_mesh_handle.mesh(); }
-  virtual ITraceMng* traceMng() override { return TraceAccessor::traceMng(); }
+  IMesh* mesh() override { return m_mesh_handle.mesh(); }
+  ITraceMng* traceMng() override { return TraceAccessor::traceMng(); }
 
  public:
 
@@ -271,11 +266,7 @@ class MeshMaterialMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

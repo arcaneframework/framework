@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialTesterModule.cc                                 (C) 2000-2019 */
+/* MeshMaterialTesterModule.cc                                 (C) 2000-2022 */
 /*                                                                           */
 /* Module de test du gestionnaire des matériaux.                             */
 /*---------------------------------------------------------------------------*/
@@ -53,6 +53,7 @@
 #include "arcane/materials/MeshMaterialIndirectModifier.h"
 #include "arcane/materials/MeshMaterialVariableSynchronizerList.h"
 #include "arcane/materials/ComponentSimd.h"
+#include "arcane/materials/MeshMaterialInfo.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/MeshMaterialTester_axl.h"
@@ -67,7 +68,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 using namespace Arcane;
 using namespace Arcane::Materials;
@@ -282,11 +284,12 @@ buildInit()
     mm->recreateFromDump();
   }
   else{
+    UniqueArray<MeshMaterialInfo*> materials_info;
     // Lit les infos des matériaux du JDD et les enregistre dans le gestionnaire
     for( Integer i=0,n=options()->material().size(); i<n; ++i ){
       String mat_name = options()->material[i].name;
       info() << "Found material name=" << mat_name;
-      mm->registerMaterialInfo(mat_name);
+      materials_info.add(mm->registerMaterialInfo(mat_name));
     }
 
     MeshBlockBuildInfo mbbi("BLOCK1",allCells());
@@ -343,6 +346,13 @@ buildInit()
     }
 
     mm->endCreate(subDomain()->isContinue());
+
+    info() << "List of materials:";
+    for( MeshMaterialInfo* m : materials_info ){
+      info() << "MAT=" << m->name();
+      for( String s : m->environmentsName() )
+        info() << " In ENV=" << s;
+    }
   }
 
   // Récupère deux matériaux de deux milieux différents pour test.
@@ -2585,7 +2595,7 @@ ARCANE_REGISTER_MODULE_MESHMATERIALTESTER(MeshMaterialTesterModule);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+} // End namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

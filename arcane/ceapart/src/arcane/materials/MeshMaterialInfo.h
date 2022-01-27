@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialInfo.h                                          (C) 2000-2012 */
+/* MeshMaterialInfo.h                                          (C) 2000-2022 */
 /*                                                                           */
 /* Informations d'un matériau d'un maillage.                                 */
 /*---------------------------------------------------------------------------*/
@@ -15,22 +15,14 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/String.h"
+#include "arcane/utils/Array.h"
 #include "arcane/materials/MaterialsGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MATERIALS_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class IMeshMaterialMng;
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,37 +36,43 @@ class IMeshMaterialMng;
  */
 class MeshMaterialInfo
 {
- public:
+  friend class MeshMaterialMng;
+
+ private:
 
   MeshMaterialInfo(IMeshMaterialMng* mng,const String& name);
-  virtual ~MeshMaterialInfo(){}
+  virtual ~MeshMaterialInfo() = default;
 
  public:
 
   //! Gestionnaire associé.
-  virtual IMeshMaterialMng* materialMng() { return m_material_mng; }
+  IMeshMaterialMng* materialMng() { return m_material_mng; }
   
   //! Nom du matériau.
-  virtual const String& name() const { return m_name; }
+  String name() const { return m_name; }
 
- public:
+  //! Nom des milieux dans lequel ce matériau est présent
+  ConstArrayView<String> environmentsName() const { return m_environments_name; }
 
-  void build();
+ protected:
+
+  void _addEnvironment(const String& env_name)
+  {
+    m_environments_name.add(env_name);
+  }
 
  private:
 
   IMeshMaterialMng* m_material_mng;
   String m_name;
+  //! Liste des milieux auquel le matériau appartient
+  UniqueArray<String> m_environments_name;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
