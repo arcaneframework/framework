@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MshMeshReader.cc                                            (C) 2000-2021 */
+/* MshMeshReader.cc                                            (C) 2000-2022 */
 /*                                                                           */
 /* Lecture/Ecriture d'un fichier au format MSH.				                       */
 /*---------------------------------------------------------------------------*/
@@ -65,9 +65,11 @@
  * TODO:
  * - lire les tags des noeuds(uniqueId())
  * - supporter les partitions
- * - supporter les groupes de maillage et noeuds (actuellement seulement les faces).
+ * - supporter les groupes de noeuds (actuellement seulement les faces et les mailles).
  * - pouvoir utiliser la bibliothèque 'gmsh' directement.
  * - supporter ce format avec le nouveau mécanisme des services de maillage.
+ * - améliorer la lecture parallèle en évitant que tous les sous-domaines
+ *   lisent le fichier (même si seul le sous-domaine 0 alloue les entités)
  */
 
 /*---------------------------------------------------------------------------*/
@@ -226,8 +228,8 @@ class MshMeshReader
   Integer _readElementsFromAsciiMshV2File(IosFile&, MeshInfo& mesh_info);
   Integer _readElementsFromAsciiMshV4File(IosFile&, MeshInfo& mesh_info);
   eReturnType _readMeshFromNewMshFile(IMesh*, IosFile&);
-  void _allocateCells(IMesh* mesh, MeshInfo& mesh_info);
-  void _allocateGroups(IMesh* mesh, MeshInfo& mesh_info);
+  void _allocateCells(IMesh* mesh, MeshInfo& mesh_info, bool is_read_items);
+  void _allocateGroups(IMesh* mesh, MeshInfo& mesh_info, bool is_read_items);
   void _addFaceGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name);
   void _addCellGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name);
   Integer _switchMshType(Integer, Integer&);
@@ -613,16 +615,13 @@ _readNodesFromBinaryMshFile(IosFile& ios_file, Array<Real3>& node_coords)
 /*---------------------------------------------------------------------------*/
 
 void MshMeshReader::
-_allocateCells(IMesh* mesh, MeshInfo& mesh_info)
+_allocateCells(IMesh* mesh, MeshInfo& mesh_info, bool is_read_items)
 {
   Integer nb_elements = mesh_info.cells_type.size();
   info() << "nb_of_elements=cells_type.size()=" << nb_elements;
   Integer nb_cell_node = mesh_info.cells_connectivity.size();
   info() << "nb_cell_node=cells_connectivity.size()=" << nb_cell_node;
 
-  IParallelMng* pm = mesh->parallelMng();
-  bool is_parallel = pm->isParallel();
-  Int32 sid = mesh->meshPartInfo().partRank();
   // Création des mailles
   info() << "Building cells, nb_cell=" << nb_elements << " nb_cell_node=" << nb_cell_node;
   // Infos pour la création des mailles
@@ -647,10 +646,10 @@ _allocateCells(IMesh* mesh, MeshInfo& mesh_info)
   IPrimaryMesh* pmesh = mesh->toPrimaryMesh();
   info() << "## Allocating ##";
 
-  if (is_parallel && sid != 0)
-    pmesh->allocateCells(0, UniqueArray<Int64>(0), false);
-  else
+  if (is_read_items)
     pmesh->allocateCells(nb_elements, cells_infos, false);
+  else
+    pmesh->allocateCells(0, UniqueArray<Int64>(0), false);
 
   info() << "## Ending ##";
   pmesh->endAllocate();
@@ -679,7 +678,7 @@ _allocateCells(IMesh* mesh, MeshInfo& mesh_info)
 /*---------------------------------------------------------------------------*/
 
 void MshMeshReader::
-_allocateGroups(IMesh* mesh, MeshInfo& mesh_info)
+_allocateGroups(IMesh* mesh, MeshInfo& mesh_info, bool is_read_items)
 {
   Int32 mesh_dim = mesh->dimension();
   Int32 face_dim = mesh_dim - 1;
@@ -715,10 +714,16 @@ _allocateGroups(IMesh* mesh, MeshInfo& mesh_info)
     info(4) << "[Groups] Block index=" << block_index << " dim=" << block_dim
             << " name='" << physical_name.name << "'";
     if (block_dim==mesh_dim){
-      _addCellGroup(mesh,block,physical_name.name);
+      if (is_read_items)
+        _addCellGroup(mesh,block,physical_name.name);
+      else
+        mesh->cellFamily()->findGroup(physical_name.name,true);
     }
     else if (block_dim==face_dim){
-      _addFaceGroup(mesh,block,physical_name.name);
+      if (is_read_items)
+        _addFaceGroup(mesh,block,physical_name.name);
+      else
+        mesh->faceFamily()->findGroup(physical_name.name,true);
     }
     else{
       info(4) << "[Groups] Skipping block index=" << block_index
@@ -1073,8 +1078,13 @@ _readMeshFromNewMshFile(IMesh* mesh, IosFile& ios_file)
   IPrimaryMesh* pmesh = mesh->toPrimaryMesh();
   pmesh->setDimension(mesh_dimension);
 
-  _allocateCells(mesh, mesh_info);
-  _allocateGroups(mesh, mesh_info);
+  IParallelMng* pm = mesh->parallelMng();
+  bool is_parallel = pm->isParallel();
+  Int32 rank = mesh->meshPartInfo().partRank();
+  // En parallèle, seul le rang 0 lit le maillage
+  bool is_read_items = !(is_parallel && rank != 0);
+  _allocateCells(mesh, mesh_info, is_read_items);
+  _allocateGroups(mesh, mesh_info, is_read_items);
   return RTOk;
 }
 
