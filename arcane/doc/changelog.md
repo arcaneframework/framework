@@ -10,18 +10,27 @@ Arcane Version 3.4.3 (...) {#arcanedoc_version340}
 
 Nouveautés/Améliorations:
 
-- Dans l'API accélérateur, support Arcane::NumArray pour allouer
+- Dans l'API accélérateur, support dans Arcane::NumArray pour allouer
   directement la mémoire sur l'accélérateur. Auparavant seule la
-  mémoir unifiée était disponible. L'énumération
-  'Arcane::eMemoryRessource' et le type 'Arcane::IMemoryRessourceMng'
+  mémoire unifiée était disponible. L'énumération
+  Arcane::eMemoryRessource et le type Arcane::IMemoryRessourceMng
   permettent de gérer cela (#111, #113).
 - Amélioration mineures sur la documentation (#117) :
   - ajout des chemins relatifs pour les fichiers d'en-tête.
   - ajout des classes et type issus de %Arccore
 - Ajoute nouvelle méthode de calcul des uniqueId() des faces
-  dans le cas cartésien (#104).
+  dans le cas cartésien. Cette nouvelle méthode permet une
+  numérotation cartésienne des faces qui est cohérente avec celles des
+  noeuds et des mailles. Pour l'utiliser, il faut spécifier l'option
+  `<face-numbering-version>4</face-numbering-version>` dans le jeu de
+  données dans la balise du générateur de maillage (#104).
 - Ajoute option dans le post-processeur %Arcane pour supprimer la
   sortie de dépouillement en fin de calcul.
+- Ajoute implémentation de Arcane::IParallelMng::gather() et
+  Arcane::IParallelMng::gatherVariable() pour le mode mémoire partagée et le
+  mode hybride
+- Ajoute dans Arcane::Materials::MeshMaterialInfo la liste des milieux
+  dans lequels le matériau est présent
 
 Changements:
 
