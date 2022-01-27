@@ -133,7 +133,10 @@ class DynamicMeshIncrementalBuilder
   //! Définit la connectivité active pour le maillage associé
   /*! Ceci conditionne les connectivités à la charge de cette famille */
   void setConnectivity(Integer c);
- 
+
+  //! Remise à zéro des structures pour pouvoir faire à nouveau une allocation
+  void resetAfterDeallocate();
+
  public:
 
   void printInfos();
@@ -257,22 +260,22 @@ class DynamicMeshIncrementalBuilder
   DynamicMesh* m_mesh; //!< Maillage associé
   ItemTypeMng* m_item_type_mng = nullptr;
   
-  Integer m_connectivity; //!< Info de connectivité du maillage courant
-  bool m_has_edge;        //!< Info sur la présence d'arête (accèlere l'accès à la connectivité générale)
+  Integer m_connectivity = 0; //!< Info de connectivité du maillage courant
+  bool m_has_edge = false; //!< Info sur la présence d'arête (accèlere l'accès à la connectivité générale)
   
   //! AMR
   bool m_has_amr;
 
-  bool m_verbose; //!< Vrai si affiche messages
+  bool m_verbose = false; //!< Vrai si affiche messages
 
   //! Outils de construction du maillage
-  OneMeshItemAdder* m_one_mesh_item_adder;   //!< Outil pour ajouter un élément au maillage
-  GhostLayerBuilder* m_ghost_layer_builder;  //!< Outil pour construire les éléments fantômes
-  FaceUniqueIdBuilder* m_face_unique_id_builder;
-  EdgeUniqueIdBuilder* m_edge_unique_id_builder;
+  OneMeshItemAdder* m_one_mesh_item_adder = nullptr;   //!< Outil pour ajouter un élément au maillage
+  GhostLayerBuilder* m_ghost_layer_builder = nullptr;  //!< Outil pour construire les éléments fantômes
+  FaceUniqueIdBuilder* m_face_unique_id_builder = nullptr;
+  EdgeUniqueIdBuilder* m_edge_unique_id_builder = nullptr;
 
-  Int64 m_face_uid_pool; //!< Numéro du uniqueId() utilisé pour générer les faces
-  Int64 m_edge_uid_pool; //!< Numéro du uniqueId() utilisé pour générer les edges
+  Int64 m_face_uid_pool = 0; //!< Numéro du uniqueId() utilisé pour générer les faces
+  Int64 m_edge_uid_pool = 0; //!< Numéro du uniqueId() utilisé pour générer les edges
 };
 
 /*---------------------------------------------------------------------------*/

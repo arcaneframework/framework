@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IPrimaryMesh.h                                              (C) 2000-2016 */
+/* IPrimaryMesh.h                                              (C) 2000-2022 */
 /*                                                                           */
 /* Interface de la géométrie d'un maillage.                                  */
 /*---------------------------------------------------------------------------*/
@@ -22,7 +22,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -65,7 +66,8 @@ class IPrimaryMesh
    */
   virtual void reloadMesh() =0;
 
-  //! Allocation d'un maillage.
+  //NOTE: Documentation complète de cette méthode dans Mesh.dox
+  //!Allocation d'un maillage.
   virtual void allocateCells(Integer nb_cell,Int64ConstArrayView cells_infos,bool one_alloc=true) =0;
 
   /*!
@@ -77,6 +79,23 @@ class IPrimaryMesh
    * Cette méthode est collective.
    */
   virtual void endAllocate() =0;
+
+  /*!
+   * \brief Désalloue le maillage.
+   *
+   * Cela supprime toutes les entités et tous les groupes d'entités.
+   * Le maillage devra ensuite être alloué à nouveau via l'appel à allocateCells().
+   * Cet appel supprime aussi la dimension du maillage qui devra
+   * être repositionné par setDimension(). Il est donc possible de changer la
+   * dimension du maillage par la suite.
+   *
+   * Cette méthode est collective.
+   *
+   * \warning Cette méthode est expérimentale et de nombreux effets de bords sont
+   * possibles. Notamment, l'implémentation actuelle ne supporte pas la désallocation
+   * lorsqu'il y a des variables partielles sur le maillage.
+   */
+  virtual void deallocate() =0;
 
  public:
 
@@ -120,7 +139,7 @@ class IPrimaryMesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

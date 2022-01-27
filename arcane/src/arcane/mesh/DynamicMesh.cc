@@ -648,6 +648,27 @@ initializeVariables(const XmlNode& init_node)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// NOTE: a priori cette méthode ne fonctionne s'il existe des variables
+// partielles car les groupes sur lesquelles elles reposent vont être détruit
+// (A vérifier)
+
+void DynamicMesh::
+deallocate()
+{
+  if (!m_is_allocated)
+    ARCANE_FATAL("mesh is not allocated");
+
+  clearItems();
+  destroyGroups();
+  m_mesh_builder->resetAfterDeallocate();
+
+  m_is_allocated = false;
+  m_mesh_dimension = (-1);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void DynamicMesh::
 allocateCells(Integer mesh_nb_cell,Int64ConstArrayView cells_infos,bool one_alloc)
 {
