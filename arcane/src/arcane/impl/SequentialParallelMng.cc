@@ -268,37 +268,31 @@ class SequentialParallelDispatchT
     ARCANE_UNUSED(op);
     ARCANE_UNUSED(send_buf);
   }
-  Request nonBlockingAllReduce(eReduceType op,Span<Type> send_buf)
-  {
-    ARCANE_UNUSED(op);
-    ARCANE_UNUSED(send_buf);
-    return Request();
-  }
-  Request nonBlockingAllReduce(eReduceType op,Span<const Type> send_buf,Span<Type> recv_buf)
+  Request nonBlockingAllReduce(eReduceType op,Span<const Type> send_buf,Span<Type> recv_buf) override
   {
     ARCANE_UNUSED(op);
     ARCANE_UNUSED(send_buf);
     ARCANE_UNUSED(recv_buf);
     return Request();
   }
-  Request nonBlockingAllGather(Span<const Type> send_buf, Span<Type> recv_buf)
+  Request nonBlockingAllGather(Span<const Type> send_buf, Span<Type> recv_buf) override
   {
     recv_buf.copy(send_buf);
     return Request();
   }
-  Request nonBlockingBroadcast(Span<Type> send_buf, Int32 rank)
+  Request nonBlockingBroadcast(Span<Type> send_buf, Int32 rank) override
   {
     ARCANE_UNUSED(send_buf);
     ARCANE_UNUSED(rank);
     return Request();
   }
-  Request nonBlockingGather(Span<const Type> send_buf, Span<Type> recv_buf, Int32 rank)
+  Request nonBlockingGather(Span<const Type> send_buf, Span<Type> recv_buf, Int32 rank) override
   {
     ARCANE_UNUSED(rank);
     recv_buf.copy(send_buf);
     return Request();
   }
-  Request nonBlockingAllToAll(Span<const Type> send_buf, Span<Type> recv_buf, Int32 count)
+  Request nonBlockingAllToAll(Span<const Type> send_buf, Span<Type> recv_buf, Int32 count) override
   {
     ARCANE_UNUSED(count);
     recv_buf.copy(send_buf);
@@ -306,7 +300,7 @@ class SequentialParallelDispatchT
   }
   Request nonBlockingAllToAllVariable(Span<const Type> send_buf, ConstArrayView<Int32> send_count,
                                       ConstArrayView<Int32> send_index, Span<Type> recv_buf,
-                                      ConstArrayView<Int32> recv_count, ConstArrayView<Int32> recv_index)
+                                      ConstArrayView<Int32> recv_count, ConstArrayView<Int32> recv_index) override
   {
     ARCANE_UNUSED(send_count);
     ARCANE_UNUSED(recv_count);
