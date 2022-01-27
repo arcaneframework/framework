@@ -518,9 +518,18 @@ _computeFacesUniqueIdsParallelV1()
     }
   }
 
-  for( Integer i=0, is=nb_local_face; i<is; ++i ){
-    if (faces_new_uid[i]==NULL_ITEM_UNIQUE_ID)
-      error() << "The face lid=" << i << " has not been re-indexed.";
+  // Vérifie que toutes les faces ont été réindéxées
+  {
+    Integer nb_error = 0;
+    for( Integer i=0, is=nb_local_face; i<is; ++i ){
+      if (faces_new_uid[i]==NULL_ITEM_UNIQUE_ID){
+        ++nb_error;
+        if (nb_error<10)
+          error() << "The face lid=" << i << " has not been re-indexed.";
+      }
+    }
+    if (nb_error!=0)
+      ARCANE_FATAL("Some ({0}) faces have not been reindexed",nb_error);
   }
 
   if (is_verbose){
