@@ -528,7 +528,7 @@ foreach(package ${ARCANE_OPTIONAL_PACKAGE_LIST})
   endif(_TMP_PKG STREQUAL "YES")
 endforeach()
 
-SET(ARCANE_PACKAGE_LIST ${ARCANE_PACKAGE_LIST} ${ARCANE_OPTIONAL_PACKAGE_LIST})
+set(ARCANE_PACKAGE_LIST ${ARCANE_PACKAGE_LIST} ${ARCANE_OPTIONAL_PACKAGE_LIST})
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -1035,7 +1035,7 @@ endfunction()
 # faut pas la supprimer.
 get_property(ARCANE_CMAKE_PACKAGE_LIST GLOBAL PROPERTY PACKAGES_FOUND)
 message(STATUS "PackageList registered by CMake: ${ARCANE_CMAKE_PACKAGE_LIST}")
-list(APPEND ARCANE_PACKAGE_LIST ${_CMAKE_PACKAGE_LIST})
+list(APPEND ARCANE_PACKAGE_LIST ${_CMAKE_PACKAGE_LIST} ${ARCANE_CMAKE_PACKAGE_LIST})
 message(STATUS "ArcanePackageList: ${ARCANE_PACKAGE_LIST}")
 
 # ----------------------------------------------------------------------------
