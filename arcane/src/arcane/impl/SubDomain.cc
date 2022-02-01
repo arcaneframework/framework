@@ -548,15 +548,22 @@ destroy()
   m_on_destroy_observable.notifyAllObservers();
   m_on_destroy_observable.detachAllObservers();
 
+  platform::callDotNETGarbageCollector();
+
+  // Normalement on devrait pouvoir supprimer ce test car il ne devrait plus
+  // rester de références sur des services ou module. Cela est le cas
+  // avec l'implémentation 'coreclr' mais pas avec 'mono'. Du coup on
+  // laisse pour l'instant ce test.
   if (m_application->hasGarbageCollector())
     return;
 
-  m_module_master = 0;
+  m_module_master = nullptr;
   
   m_module_mng->removeAllModules();
   m_service_mng = nullptr;
   m_time_history_mng = nullptr;
   m_mesh_mng->destroyMeshes();
+
   m_time_loop_mng = nullptr;
   m_case_mng = nullptr;
   m_entry_point_mng = nullptr;

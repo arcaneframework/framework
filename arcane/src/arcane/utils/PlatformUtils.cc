@@ -445,6 +445,28 @@ getLoadedSharedLibraryFullPath(const String& dll_name)
   return full_path;
 }
 
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace
+{
+void (*global_garbage_collector_delegate)() = nullptr;
+}
+
+extern "C" ARCANE_UTILS_EXPORT void
+_ArcaneSetCallGarbageCollectorDelegate(void(*f)())
+{
+  global_garbage_collector_delegate = f;
+}
+
+extern "C++" void platform::
+callDotNETGarbageCollector()
+{
+  if (global_garbage_collector_delegate)
+    (*global_garbage_collector_delegate)();
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

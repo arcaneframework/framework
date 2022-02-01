@@ -310,6 +310,26 @@ ARCANE_SWIG_OVERRIDE_GETCPTR(Arcane::ItemGroupT<Arcane::Cell>,Arcane)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+// Fonctions pour enregistrer un delegate qui permet d'appeler depuis le C++
+// les routines C# qui gèrent le GarbageCollector.
+%typemap(cscode) Arcane::ArcaneMain
+%{
+  internal delegate void _GarbageCollectorDelegate();
+  [DllImport("$dllimport")]
+  static internal extern IntPtr _ArcaneWrapperCoreSetCallGarbageCollectorDelegate(_GarbageCollectorDelegate d);
+%}
+%{
+  extern "C" ARCANE_UTILS_EXPORT void
+  _ArcaneSetCallGarbageCollectorDelegate(void (*func)());
+  extern "C" ARCANE_EXPORT void
+  _ArcaneWrapperCoreSetCallGarbageCollectorDelegate(void (*func)())
+  {
+    _ArcaneSetCallGarbageCollectorDelegate(func);
+  }
+%}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 %rename EntryPoint EntryPoint_INTERNAL;
 %rename ArcaneMain ArcaneMain_INTERNAL;

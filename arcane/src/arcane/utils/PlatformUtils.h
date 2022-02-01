@@ -225,6 +225,13 @@ setHasDotNETRuntime(bool v);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+//! Appelle le Garbage Collector de '.Net' s'il est disponible
+extern "C++" ARCANE_UTILS_EXPORT void
+callDotNETGarbageCollector();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Allocateur spécifique pour les accélérateurs.
  *
