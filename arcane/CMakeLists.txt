@@ -125,10 +125,31 @@ if(ARCANE_WANT_ARCCON_EXPORT_TARGET)
   endif()
 endif()
 
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Cherche 'Arccon'
+
 find_package(Arccon REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
 include(${ARCCON_CMAKE_COMMANDS})
 include(LoadBuildSystem)
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Cherche 'ArcDependencies'
+
+find_package(ArcDependencies REQUIRED)
+set(ARCANE_ArcDependencies_NEEDED_VERSION "1.2.0")
+message(STATUS "ArcDependencies_VERSION = ${ArcDependencies_VERSION}")
+if (ArcDependencies_VERSION VERSION_LESS ARCANE_ArcDependencies_NEEDED_VERSION)
+  message(FATAL_ERROR "ArcDependencies version '${ArcDependencies_VERSION}' is too old."
+    " Version ${ARCANE_ArcDependencies_NEEDED_VERSION} required."
+    " If you are compiling all the framework, you need to run the following command"
+    " to update 'dependencies' directory:"
+    "\n   cd ${CMAKE_CURRENT_SOURCE_DIR}"
+    "\n   git submodule update"
+    )
+endif()
 
 # ----------------------------------------------------------------------------
 # Positionne les répertoires standards d'installation
