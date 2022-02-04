@@ -220,7 +220,7 @@ update()
                     // Is a scalar property
                     if (IGeometryProperty::isScalar(property)) 
                       {
-#ifdef __GNUG__
+#ifndef NO_USER_WARNING
 #warning "failed when ItemGroupMap storage only on allItems group"
 #endif
                         RealVariable & var = *all_group_property.storages[property].realVar;

@@ -746,8 +746,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID STREQUAL Clang))
   endif()
 endif()
 
-# Sous windows, desactive les '#warning'
-if (WIN32)
+# Sous windows ou avec NVHPC, désactive les '#warning'
+if (WIN32 OR (CMAKE_CXX_COMPILER_ID STREQUAL NVHPC))
   target_compile_definitions(arcane_build_compile_flags INTERFACE NO_USER_WARNING)
 endif ()
 
