@@ -131,12 +131,15 @@ createMesh(const String& default_name)
   ARCANE_CHECK_POINTER(m_mesh_builder);
 
   m_mesh_builder->fillMeshBuildInfo(build_info);
+  // Le générateur peut forcer l'utilisation du partitionnement
+  if (build_info.isNeedPartitioning())
+    m_partitioner_name = options()->partitioner();
+
   // Positionne avec des valeurs par défaut les champs non remplit.
   if (build_info.factoryName().empty())
     build_info.addFactoryName("ArcaneDynamicMeshFactory");
   if (build_info.parallelMngRef().isNull())
     build_info.addParallelMng(makeRef(sd->parallelMng()));
-    
   IPrimaryMesh* pm = sd->meshMng()->meshFactoryMng()->createMesh(build_info);
   m_mesh = pm;
 }

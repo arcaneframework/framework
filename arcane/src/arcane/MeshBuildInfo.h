@@ -59,6 +59,13 @@ class ARCANE_CORE_EXPORT MeshBuildInfo
   MeshBuildInfo& addParallelMng(Ref<IParallelMng> pm);
   //! Positionne le groupe de mailles pour un sous-maillage
   MeshBuildInfo& addParentGroup(const ItemGroup& parent_group);
+ /*!
+  * \brief Indique si le générateur nécessite d'appeler un partitionneur.
+  *
+  * C'est le cas par exemple si le lecteur ne sait généré que des maillages
+  * séquentiels.
+  */
+  MeshBuildInfo& addNeedPartitioning(bool v);
 
   //! Nom du nouveau maillage
   const String& name() const { return m_name; }
@@ -68,6 +75,8 @@ class ARCANE_CORE_EXPORT MeshBuildInfo
   Ref<IParallelMng> parallelMngRef() const { return m_parallel_mng; }
   //! Groupe parent dans le cas d'un sous-maillage, null sinon.
   const ItemGroup& parentGroup() const { return m_parent_group; }
+  //! Indique si le lecteur/générateur nécessite un partitionnement
+  bool isNeedPartitioning() const { return m_is_need_partitioning; }
 
  private:
 
@@ -75,6 +84,7 @@ class ARCANE_CORE_EXPORT MeshBuildInfo
   String m_factory_name; 
   Ref<IParallelMng> m_parallel_mng;
   ItemGroup m_parent_group;
+  bool m_is_need_partitioning = false;
 
  private:
 };
