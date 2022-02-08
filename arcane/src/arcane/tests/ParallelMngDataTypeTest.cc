@@ -108,7 +108,10 @@ class ParallelMngDataTypeValueGenerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+// Pour les Int16, les cas tests utilisent au plus 12 coeurs.
+// Pour les reductions de type 'somme', on fait en sorte que chaque valeur
+// ne dépasse pas 32768 / 12 pour éviter de faire des débordements de valeur
+// dont le comportement n'est pas défini.
 template<>
 class ParallelMngDataTypeValueGenerator<Int16>
 {
@@ -116,15 +119,15 @@ class ParallelMngDataTypeValueGenerator<Int16>
   static Int16 zero() { return 0; }
   static Int16 generateTriValue(Int32 v1,Int32 v2,Int32 v3)
   {
-    return (Int16)(v1 + v2 + v3 + 1);
+    return static_cast<Int16>(v1 + v2 + v3 + 1) % 2563;
   }
   static Int16 generateBiValue(Int32 v1,Int32 v2)
   {
-    return (Int16)(v1 + v2 + 3);
+    return static_cast<Int16>(v1 + v2 + 3) % 2563;
   }
   static Int16 generateMonoValue(Int32 v)
   {
-    return (Int16)(4 + 2 * ((v-5)*(v-5)));
+    return static_cast<Int16>(4 + 2 * ((v-5)*(v-5))) % 2563;
   }
   static bool isMultiReal() { return false; }
 };
