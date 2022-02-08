@@ -16,6 +16,7 @@ set(ARCANE_SOURCES
   Hdf5VariableInfoBase.h
   Hdf5ReaderWriter.h
   Hdf5MpiReaderWriter.h
+  HoneyCombMeshGenerator.cc
   ArcaneCurveWriter.cc
   ArcaneLoadBalanceModule.cc
   DumpW.cc
@@ -104,4 +105,5 @@ set(AXL_FILES
   Cartesian2DMeshGenerator
   Cartesian3DMeshGenerator
   Sod3DMeshGenerator
-  )
+  HoneyComb2DMeshGenerator
+ )
