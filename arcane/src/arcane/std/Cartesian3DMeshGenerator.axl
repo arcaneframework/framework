@@ -38,6 +38,7 @@
     </simple>
 
     <complex type="PartInfoX" name="x" minOccurs="1" maxOccurs="unbounded" >
+      <userclass>User</userclass>
       <simple name="n" type="integer" >
         <description>Nombre de mailles</description>
         <userclass>User</userclass>
@@ -53,6 +54,7 @@
     </complex>
 
     <complex type="PartInfoY" name="y" minOccurs="1" maxOccurs="unbounded" >
+      <userclass>User</userclass>
       <simple name="n" type="integer" >
         <description>Nombre de mailles</description>
         <userclass>User</userclass>
@@ -68,6 +70,7 @@
     </complex>
 
     <complex type="PartInfoZ" name="z" minOccurs="1" maxOccurs="unbounded" >
+      <userclass>User</userclass>
       <simple name="n" type="integer" >
         <description>Nombre de mailles</description>
         <userclass>User</userclass>
