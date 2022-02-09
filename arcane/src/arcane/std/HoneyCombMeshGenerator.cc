@@ -17,6 +17,7 @@
 #include "arcane/IPrimaryMesh.h"
 #include "arcane/IItemFamily.h"
 #include "arcane/IParallelMng.h"
+#include "arcane/MeshBuildInfo.h"
 
 #include "arcane/std/HoneyComb2DMeshGenerator_axl.h"
 
@@ -291,8 +292,9 @@ class HoneyComb2DMeshGeneratorService
 
  public:
 
-  void fillMeshBuildInfo([[maybe_unused]] MeshBuildInfo& build_info) override
+  void fillMeshBuildInfo(MeshBuildInfo& build_info) override
   {
+    build_info.addNeedPartitioning(true);
   }
   void allocateMeshItems(IPrimaryMesh* pm) override
   {

@@ -387,6 +387,7 @@ if(TARGET arccon::MEDFile)
 endif()
 ARCANE_ADD_TEST(mesh_quadratic3d_vtk testMesh-quadratic3d-vtk.arc)
 arcane_add_test_sequential(mesh1_honeycomb2d testMesh-honeycomb2D-1.arc)
+arcane_add_test_parallel_thread(mesh1_honeycomb2d testMesh-honeycomb2D-1.arc 4)
 
 ##############
 # UNIT TESTS #
