@@ -228,7 +228,7 @@ _computeGhostPPVariable()
     {
       const Integer rank = ranks[i];
       FaceVectorView ghost_items(mesh()->faceFamily()->itemsInternal(), face_synchronizer->sharedItems(i));
-      ENUMERATE_NODE(iface, ghost_items)
+      ENUMERATE_FACE(iface, ghost_items)
         {
           m_face_ghostpp[iface][rank] = 2; // ou bien mettre un identifiant du propriétaire
         }

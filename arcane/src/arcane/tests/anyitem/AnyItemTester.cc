@@ -198,10 +198,10 @@ _test1()
   value = 0;
   {
     Arcane::Timer::Sentry t(&m_timer);
-    ENUMERATE_ITEM(iitem, allFaces()) {
+    ENUMERATE_FACE(iitem, allFaces()) {
       value += m_face_variable[iitem];
     }
-    ENUMERATE_ITEM(iitem, allCells()) {
+    ENUMERATE_CELL(iitem, allCells()) {
       value += m_cell_variable[iitem];
     }
   }

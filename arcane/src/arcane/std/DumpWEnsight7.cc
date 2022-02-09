@@ -1429,7 +1429,7 @@ beginWrite()
     if (mesh->parentMesh()) {
       SharedVariableNodeReal3 nodes_coords(mesh->sharedNodesCoordinates());
       coords_backup.resize(mesh->nodeFamily()->maxLocalId());
-      ENUMERATE_ITEM (i_item, all_nodes) {
+      ENUMERATE_NODE (i_item, all_nodes) {
         coords_backup[i_item.localId()] = nodes_coords[i_item];
       }
       coords_array = coords_backup.view();

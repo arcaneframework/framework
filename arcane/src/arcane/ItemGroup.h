@@ -422,7 +422,7 @@ class ItemGroupT
 
   ItemEnumeratorT<T> enumerator() const
   {
-    return ItemGroup::enumerator();
+    return ItemEnumeratorT<T>::fromItemEnumerator(ItemGroup::enumerator());
   }
   
  protected:
