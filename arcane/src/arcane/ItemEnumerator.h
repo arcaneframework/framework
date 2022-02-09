@@ -214,19 +214,19 @@ enumerator() const
 /*---------------------------------------------------------------------------*/
 
 #define A_ENUMERATE_ITEM(_EnumeratorClassName,iname,view)               \
-  for( A_TRACE_ITEM_ENUMERATOR(_EnumeratorClassName) iname(_EnumeratorClassName::fromItemEnumerator((view).enumerator()) A_TRACE_ENUMERATOR_WHERE); iname.hasNext(); ++iname )
+  for( A_TRACE_ITEM_ENUMERATOR(_EnumeratorClassName) iname(_EnumeratorClassName :: fromItemEnumerator((view).enumerator()) A_TRACE_ENUMERATOR_WHERE); iname.hasNext(); ++iname )
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! Enumérateur générique d'un groupe d'entité
-#define ENUMERATE_(type,name,group) A_ENUMERATE_ITEM(ItemEnumeratorT< type >,name,group)
+#define ENUMERATE_(type,name,group) A_ENUMERATE_ITEM(::Arcane::ItemEnumeratorT< type >,name,group)
 
 //! Enumérateur générique d'un groupe d'entité
-#define ENUMERATE_GENERIC(type,name,group) A_ENUMERATE_ITEM(ItemEnumeratorT< type >,name,group)
+#define ENUMERATE_GENERIC(type,name,group) A_ENUMERATE_ITEM(::Arcane::ItemEnumeratorT< type >,name,group)
 
 //! Enumérateur générique d'un groupe de noeuds
-#define ENUMERATE_ITEM(name,group) A_ENUMERATE_ITEM(ItemEnumerator,name,group)
+#define ENUMERATE_ITEM(name,group) A_ENUMERATE_ITEM(::Arcane::ItemEnumerator,name,group)
 
 #define ENUMERATE_ITEMWITHNODES(name,group) ENUMERATE_(::Arcane::ItemWithNodes,name,group)
 
