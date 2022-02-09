@@ -355,7 +355,7 @@ class DumpWEnsight7
     , m_ptr(wd.m_ptr)
     {}
 
-    virtual WriteBase* clone() { return new WriteDouble(*this); }
+    WriteBase* clone() override { return new WriteDouble(*this); }
 
    public:
 
@@ -375,7 +375,7 @@ class DumpWEnsight7
         m_dw.writeFileDouble(m_ofile, Convert::toDouble(Convert::toReal(m_ptr[index])));
     }
 
-    virtual void write(ConstArrayView<Item> items)
+    void write(ConstArrayView<Item> items) override
     {
       for (Item e : items.range()) {
         write(e.localId());
@@ -387,7 +387,8 @@ class DumpWEnsight7
    * \brief Functor pour écrire une variable de type <tt>Real</tt>
    */
   template <typename FromType>
-  class WriteArrayDouble : public WriteBase
+  class WriteArrayDouble
+  : public WriteBase
   {
    public:
 
@@ -403,7 +404,7 @@ class DumpWEnsight7
     , m_idim2(wd.m_idim2)
     {}
 
-    virtual WriteBase* clone() { return new WriteArrayDouble(*this); }
+    WriteBase* clone() override { return new WriteArrayDouble(*this); }
 
    public:
 
@@ -412,7 +413,7 @@ class DumpWEnsight7
 
    public:
 
-    inline void write(Integer index)
+    void write(Integer index)
     {
       if (m_idx.isUsed()) {
         int reindex = (*m_idx)[index];
@@ -424,7 +425,7 @@ class DumpWEnsight7
         m_dw.writeFileDouble(m_ofile, Convert::toDouble(Convert::toReal(m_ptr[index][m_idim2])));
     }
 
-    virtual void write(ConstArrayView<Item> items)
+    void write(ConstArrayView<Item> items) override
     {
       for (Item e : items.range()) {
         write(e.localId());
@@ -453,7 +454,7 @@ class DumpWEnsight7
     , m_ptr(wd.m_ptr)
     {}
 
-    virtual WriteBase* clone() { return new WriteReal3(*this); }
+    WriteBase* clone() override { return new WriteReal3(*this); }
 
    public:
 
@@ -461,7 +462,7 @@ class DumpWEnsight7
 
    public:
 
-    void begin()
+    void begin() override
     {
       _init();
       xostr.precision(5);
@@ -472,7 +473,7 @@ class DumpWEnsight7
       zostr.flags(ios::scientific);
     }
 
-    inline void write(Integer index)
+    void write(Integer index)
     {
       if (m_idx.isUsed()) {
         int reindex = (*m_idx)[index];
@@ -489,14 +490,14 @@ class DumpWEnsight7
       }
     }
 
-    virtual void write(ConstArrayView<Item> items)
+    void write(ConstArrayView<Item> items) override
     {
       for (Item i : items.range()) {
         write(i.localId());
       }
     }
 
-    void end()
+    void end() override
     {
       m_ofile << xostr.str();
       m_ofile << yostr.str();
@@ -536,7 +537,7 @@ class DumpWEnsight7
     , m_idim2(wd.m_idim2)
     {}
 
-    virtual WriteBase* clone() { return new WriteArrayReal3(*this); }
+    WriteBase* clone() override { return new WriteArrayReal3(*this); }
 
    public:
 
@@ -545,7 +546,7 @@ class DumpWEnsight7
 
    public:
 
-    void begin()
+    void begin() override
     {
       _init();
       xostr.precision(5);
@@ -571,14 +572,14 @@ class DumpWEnsight7
       }
     }
 
-    virtual void write(ConstArrayView<Item> items)
+    void write(ConstArrayView<Item> items) override
     {
       for (Item i : items.range()) {
         write(i.localId());
       }
     }
 
-    void end()
+    void end() override
     {
       m_ofile << xostr.str();
       m_ofile << yostr.str();
@@ -609,39 +610,37 @@ class DumpWEnsight7
 
  public:
 
-  virtual void writeVal(IVariable&, ConstArrayView<Byte>) {}
-  virtual void writeVal(IVariable& v, ConstArrayView<Real> a) { _writeRealValT<Real>(v, a); }
-  virtual void writeVal(IVariable&, ConstArrayView<Real2>) {}
-  virtual void writeVal(IVariable&, ConstArrayView<Real3>);
-  virtual void writeVal(IVariable& v, ConstArrayView<Int32> a) { _writeRealValT<Int32>(v, a); }
-  virtual void writeVal(IVariable& v, ConstArrayView<Int64> a) { _writeRealValT<Int64>(v, a); }
-  virtual void writeVal(IVariable&, ConstArrayView<Real2x2>) {}
-  virtual void writeVal(IVariable&, ConstArrayView<Real3x3>) {}
-  virtual void writeVal(IVariable&, ConstArrayView<String>) {}
+  void writeVal(IVariable&, ConstArrayView<Byte>) override {}
+  void writeVal(IVariable& v, ConstArrayView<Real> a) override { _writeRealValT<Real>(v, a); }
+  void writeVal(IVariable&, ConstArrayView<Real2>) override {}
+  void writeVal(IVariable&, ConstArrayView<Real3>) override;
+  void writeVal(IVariable& v, ConstArrayView<Int32> a) override { _writeRealValT<Int32>(v, a); }
+  void writeVal(IVariable& v, ConstArrayView<Int64> a) override { _writeRealValT<Int64>(v, a); }
+  void writeVal(IVariable&, ConstArrayView<Real2x2>) override {}
+  void writeVal(IVariable&, ConstArrayView<Real3x3>) override {}
+  void writeVal(IVariable&, ConstArrayView<String>) override {}
 
-  virtual void writeVal(IVariable&, ConstArray2View<Byte>) {}
-  virtual void writeVal(IVariable& v, ConstArray2View<Real> a) { _writeRealValT<Real>(v, a); }
-  virtual void writeVal(IVariable&, ConstArray2View<Real2>) {}
-  virtual void writeVal(IVariable&, ConstArray2View<Real3>);
-  virtual void writeVal(IVariable& v, ConstArray2View<Int32> a) { _writeRealValT<Int32>(v, a); }
-  virtual void writeVal(IVariable& v, ConstArray2View<Int64> a) { _writeRealValT<Int64>(v, a); }
-  virtual void writeVal(IVariable&, ConstArray2View<Real2x2>) {}
-  virtual void writeVal(IVariable&, ConstArray2View<Real3x3>) {}
-  virtual void writeVal(IVariable&, ConstArray2View<String>) {}
+  void writeVal(IVariable&, ConstArray2View<Byte>) override {}
+  void writeVal(IVariable& v, ConstArray2View<Real> a) override { _writeRealValT<Real>(v, a); }
+  void writeVal(IVariable&, ConstArray2View<Real2>) override {}
+  void writeVal(IVariable&, ConstArray2View<Real3>) override;
+  void writeVal(IVariable& v, ConstArray2View<Int32> a) override { _writeRealValT<Int32>(v, a); }
+  void writeVal(IVariable& v, ConstArray2View<Int64> a) override { _writeRealValT<Int64>(v, a); }
+  void writeVal(IVariable&, ConstArray2View<Real2x2>) override {}
+  void writeVal(IVariable&, ConstArray2View<Real3x3>) override {}
 
-  virtual void writeVal(IVariable&, ConstMultiArray2View<Byte>) {}
-  virtual void writeVal(IVariable& v, ConstMultiArray2View<Real> a) { _writeRealValT<Real>(v, a); }
-  virtual void writeVal(IVariable&, ConstMultiArray2View<Real2>) {}
-  virtual void writeVal(IVariable&, ConstMultiArray2View<Real3> a);
-  virtual void writeVal(IVariable& v, ConstMultiArray2View<Int32> a) { _writeRealValT<Int32>(v, a); }
-  virtual void writeVal(IVariable& v, ConstMultiArray2View<Int64> a) { _writeRealValT<Int64>(v, a); }
-  virtual void writeVal(IVariable&, ConstMultiArray2View<Real2x2>) {}
-  virtual void writeVal(IVariable&, ConstMultiArray2View<Real3x3>) {}
-  virtual void writeVal(IVariable&, ConstMultiArray2View<String>) {}
+  void writeVal(IVariable&, ConstMultiArray2View<Byte>) override {}
+  void writeVal(IVariable& v, ConstMultiArray2View<Real> a) override { _writeRealValT<Real>(v, a); }
+  void writeVal(IVariable&, ConstMultiArray2View<Real2>) override {}
+  void writeVal(IVariable&, ConstMultiArray2View<Real3> a) override;
+  void writeVal(IVariable& v, ConstMultiArray2View<Int32> a) override { _writeRealValT<Int32>(v, a); }
+  void writeVal(IVariable& v, ConstMultiArray2View<Int64> a) override { _writeRealValT<Int64>(v, a); }
+  void writeVal(IVariable&, ConstMultiArray2View<Real2x2>) override {}
+  void writeVal(IVariable&, ConstMultiArray2View<Real3x3>) override {}
 
-  virtual void beginWrite();
-  virtual void endWrite();
-  virtual void setMetaData(const String&){};
+  void beginWrite() override;
+  void endWrite() override;
+  void setMetaData(const String&) override{};
 
   bool isParallelOutput() const { return m_is_parallel_output; }
   bool isMasterProcessor() const { return m_is_master; }
@@ -756,7 +755,7 @@ DumpWEnsight7(IMesh* mesh, const String& filename, ConstArrayView<Real> times,
               VariableCollection variables, ItemGroupCollection groups,
               bool is_binary, bool is_parallel_output, Integer fileset_size,
               bool use_degenerated_hexa, bool force_first_geometry, bool save_uids)
-: TraceAccessor(mesh->subDomain()->traceMng())
+: TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
 , m_parallel_mng(mesh->parallelMng())
 , m_base_directory(filename)
@@ -1428,9 +1427,6 @@ beginWrite()
     UniqueArray<Real3> coords_backup;
     ConstArrayView<Real3> coords_array;
     if (mesh->parentMesh()) {
-#ifndef NO_USER_WARNING
-#warning "(HP) Using a buffer array does not seem mandatory but in that case the write interface should be modified."
-#endif /* NO_USER_WARNING */
       SharedVariableNodeReal3 nodes_coords(mesh->sharedNodesCoordinates());
       coords_backup.resize(mesh->nodeFamily()->maxLocalId());
       ENUMERATE_ITEM (i_item, all_nodes) {
@@ -2196,14 +2192,14 @@ class Ensight7PostProcessorService
   Ensight7PostProcessorService(const ServiceBuildInfo& sbi)
   : PostProcessorWriterBase(sbi)
   , m_mesh(sbi.mesh())
-  , m_writer(0)
+  , m_writer(nullptr)
   {
   }
 
-  virtual IDataWriter* dataWriter() { return m_writer; }
-  virtual void notifyBeginWrite();
-  virtual void notifyEndWrite();
-  virtual void close() {}
+  IDataWriter* dataWriter() override { return m_writer; }
+  void notifyBeginWrite() override;
+  void notifyEndWrite() override;
+  void close() override {}
 
  private:
 
@@ -2256,40 +2252,40 @@ class Ensight7PostProcessorServiceV2
   Ensight7PostProcessorServiceV2(const ServiceBuildInfo& sbi)
   : ArcaneEnsight7PostProcessorObject(sbi)
   , m_mesh(sbi.mesh())
-  , m_writer(0)
+  , m_writer(nullptr)
   {
   }
 
-  virtual void build()
+  void build() override
   {
     PostProcessorWriterBase::build();
   }
-  virtual IDataWriter* dataWriter() { return m_writer; }
-  virtual void notifyBeginWrite();
-  virtual void notifyEndWrite();
-  virtual void close() {}
+  IDataWriter* dataWriter() override { return m_writer; }
+  void notifyBeginWrite() override;
+  void notifyEndWrite() override;
+  void close() override {}
 
-  virtual void setBaseDirectoryName(const String& dirname)
+  void setBaseDirectoryName(const String& dirname) override
   {
     PostProcessorWriterBase::setBaseDirectoryName(dirname);
   }
-  virtual const String& baseDirectoryName()
+  const String& baseDirectoryName() override
   {
     return PostProcessorWriterBase::baseDirectoryName();
   }
-  virtual void setMesh(IMesh* mesh)
+  void setMesh(IMesh* mesh) override
   {
     m_mesh = mesh;
   }
-  virtual void setTimes(RealConstArrayView times)
+  void setTimes(RealConstArrayView times) override
   {
     PostProcessorWriterBase::setTimes(times);
   }
-  virtual void setVariables(VariableCollection variables)
+  void setVariables(VariableCollection variables) override
   {
     PostProcessorWriterBase::setVariables(variables);
   }
-  virtual void setGroups(ItemGroupCollection groups)
+  void setGroups(ItemGroupCollection groups) override
   {
     PostProcessorWriterBase::setGroups(groups);
   }
@@ -2325,7 +2321,7 @@ void Ensight7PostProcessorServiceV2::
 notifyEndWrite()
 {
   delete m_writer;
-  m_writer = 0;
+  m_writer = nullptr;
 }
 
 /*---------------------------------------------------------------------------*/
