@@ -670,7 +670,7 @@ compute(IItemFamily* ray_family,
   Real3UniqueArray local_positions(nb_local_ray);
   Real3UniqueArray local_directions(nb_local_ray);
 
-  ENUMERATE_ITEM(iitem,ray_family->allItems()){
+  ENUMERATE_PARTICLE(iitem,ray_family->allItems()){
     Integer index = iitem.index();
     //local_ids[index] = iitem.localId();
     //unique_ids[index] = (*iitem).uniqueId();
@@ -786,7 +786,7 @@ compute(IItemFamily* ray_family,
     Int32UniqueArray orig_faces(nb_local_ray);
     Int32UniqueArray user_values(nb_local_ray);
 
-    ENUMERATE_ITEM(iitem,ray_family->allItems()){
+    ENUMERATE_PARTICLE(iitem,ray_family->allItems()){
       Integer index = iitem.index();
       orig_faces[index] = rays_orig_face[iitem];
       user_values[index] = rays_user_value[iitem];
@@ -799,7 +799,7 @@ compute(IItemFamily* ray_family,
     compute(local_positions,local_directions,orig_faces,user_values,out_intersections,out_distances,out_faces);
 
     // Recopie en sortie les valeurs dans les variables correspondantes.
-    ENUMERATE_ITEM(iitem,ray_family->allItems()){
+    ENUMERATE_PARTICLE(iitem,ray_family->allItems()){
       Integer index = iitem.index();
       intersections[iitem] = out_intersections[index];
       distances[iitem] = out_distances[index];
@@ -814,7 +814,7 @@ compute(IItemFamily* ray_family,
     RealUniqueArray local_distances(nb_new_ray);
     local_directions.resize(nb_new_ray);
     local_positions.resize(nb_new_ray);
-    ENUMERATE_ITEM(iitem,ray_family->allItems()){
+    ENUMERATE_PARTICLE(iitem,ray_family->allItems()){
       Integer index = iitem.index();
       local_distances[index] = distances[iitem];
       local_directions[index] = rays_direction[iitem];

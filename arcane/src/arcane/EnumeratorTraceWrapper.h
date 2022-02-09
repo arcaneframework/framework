@@ -86,11 +86,11 @@ class EnumeratorTraceWrapper
 
 #if defined(ARCANE_TRACE_ENUMERATOR)
 #define A_TRACE_ITEM_ENUMERATOR(_EnumeratorClassName) \
-  ::Arcane::EnumeratorTraceWrapper< ::Arcane::_EnumeratorClassName, ::Arcane::IItemEnumeratorTracer >
+  ::Arcane::EnumeratorTraceWrapper< _EnumeratorClassName, ::Arcane::IItemEnumeratorTracer >
 #define A_TRACE_ENUMERATOR_WHERE   ,A_FUNCINFO
 #else
 #define A_TRACE_ITEM_ENUMERATOR(_EnumeratorClassName) \
-  ::Arcane::_EnumeratorClassName
+  _EnumeratorClassName
 #define A_TRACE_ENUMERATOR_WHERE
 #endif
 
