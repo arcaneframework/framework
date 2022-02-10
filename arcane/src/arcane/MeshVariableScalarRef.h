@@ -83,9 +83,6 @@ public:
   typedef PrivateVariableScalarT<DataTypeT> BaseClass;
   typedef typename BaseClass::PrivatePartType PrivatePartType;
   typedef typename BaseClass::DataTypeReturnReference DataTypeReturnReference;
-#ifdef ARCANE_PROXY
-  typedef typename BaseClass::ProxyType ProxyType;
-#endif
   
  public:
 
@@ -168,92 +165,48 @@ public:
   const DataTypeT& operator[](const Item& i) const
   {
     ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
-#ifdef ARCANE_PROXY
-    this->_getMemoryInfo(i.localId()).setRead();
-#endif
     return this->_value(i.localId());
   }
-#ifdef ARCANE_PROXY
-  ProxyType operator[](const Item& i)
-  {
-    ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
-    return this->_getProxy(i.localId());
-  }
-#else
   DataTypeReturnReference operator[](const Item& i)
   {
     ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
     return this->_value(i.localId());
   }
-#endif
 
   const DataTypeT& operator[](const ItemGroupRangeIteratorT<Item>& i) const
   {
     ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
-#ifdef ARCANE_PROXY
-    this->_getMemoryInfo(i.itemLocalId()).setRead();
-#endif
     return this->_value(i.itemLocalId());
   }
 
-#ifdef ARCANE_PROXY
-  ProxyType operator[](const ItemGroupRangeIterator& i)
-  {
-    ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
-    return this->_getProxy(i.itemLocalId());
-  }
-#else
   DataTypeReturnReference operator[](const ItemGroupRangeIterator& i)
   {
     ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
     return this->_value(i.itemLocalId());
   }
-#endif
 
   const DataTypeT& operator[](const ItemEnumerator& i) const
   {
     ARCANE_ASSERT((i->kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
-#ifdef ARCANE_PROXY
-    this->_getMemoryInfo(i.itemLocalId()).setRead();
-#endif
     return this->_value(i.itemLocalId());
   }
 
-#ifdef ARCANE_PROXY
-  ProxyType operator[](const ItemEnumerator& i)
-  {
-    ARCANE_ASSERT((i->kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
-    return this->_getProxy(i.itemLocalId());
-  }
-#else
   DataTypeReturnReference operator[](const ItemEnumerator& i)
   {
     ARCANE_ASSERT((i->kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
     return this->_value(i.itemLocalId());
   }
-#endif
 
   const DataTypeT& operator[](const ItemPairEnumerator& i) const
   {
     ARCANE_ASSERT(((*i).kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
-#ifdef ARCANE_PROXY
-    this->_getMemoryInfo(i.itemLocalId()).setRead();
-#endif
     return this->_value(i.itemLocalId());
   }
-#ifdef ARCANE_PROXY
-  ProxyType operator[](const ItemPairEnumerator& i)
-  {
-    ARCANE_ASSERT(((*i).kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
-    return this->_getProxy(i.itemLocalId());
-  }
-#else
   DataTypeReturnReference operator[](const ItemPairEnumerator& i)
   {
     ARCANE_ASSERT(((*i).kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
     return this->_value(i.itemLocalId());
   }
-#endif
 
  public:
 
@@ -313,13 +266,7 @@ protected:
   MeshVariableScalarRefT(){}
   ThatClass& _Internal() { return *this; }
 
-public:
-
-#ifdef ARCANE_PROXY
-  typedef typename DataTypeTraitsT<DataTypeT>::ProxyType ProxyType;
-#endif
-
-public:
+ public:
 
   void fill(const DataTypeT& value) { BaseClass::fill(value); }
   
@@ -333,90 +280,45 @@ public:
   ARCANE_CORE_EXPORT void setIsSynchronized();
   ARCANE_CORE_EXPORT void setIsSynchronized(const GroupType& group);
 
-public:
+ public:
 
   const DataTypeT& operator[](const ItemType& i) const
   {
-#ifdef ARCANE_PROXY
-    this->_getMemoryInfo(i.localId()).setRead();
-#endif
     return this->_value(i.localId());
   }
-#ifdef ARCANE_PROXY
-  ProxyType operator[](const ItemType& i)
-  {
-    return this->_getProxy(i.localId());
-  }
-#else
   DataTypeReturnReference operator[](const ItemType& i)
   {
     return this->_value(i.localId());
   }
-#endif
   DataTypeT& getReference(const ItemType& i)
   {
-#ifdef ARCANE_PROXY
-    this->_getMemoryInfo(i.localId()).setReadOrWrite();
-#endif
     return this->_value(i.localId());
   }
-
   const DataTypeT& operator[](const ItemGroupRangeIteratorT<ItemType>& i) const
   {
-#ifdef ARCANE_PROXY
-    this->_getMemoryInfo(i.itemLocalId()).setRead();
-#endif
     return this->_value(i.itemLocalId());
   }
-#ifdef ARCANE_PROXY
-  ProxyType operator[](const ItemGroupRangeIteratorT<ItemType>& i)
-  {
-    return this->_getProxy(i.itemLocalId());
-  }
-#else
   DataTypeReturnReference operator[](const ItemGroupRangeIteratorT<ItemType>& i)
   {
     return this->_value(i.itemLocalId());
   }
-#endif
-
   const DataTypeT& operator[](const ItemEnumeratorT<ItemType>& i) const
   {
-#ifdef ARCANE_PROXY
-    this->_getMemoryInfo(i.itemLocalId()).setRead();
-#endif
     return this->_value(i.itemLocalId());
   }
-#ifdef ARCANE_PROXY
-  ProxyType operator[](const ItemEnumeratorT<ItemType>& i)
-  {
-    return this->_getProxy(i.itemLocalId());
-  }
-#else
   DataTypeReturnReference operator[](const ItemEnumeratorT<ItemType>& i)
   {
     return this->_value(i.itemLocalId());
   }
-#endif
 
   const DataTypeT& operator[](const ItemPairEnumeratorSubT<ItemType>& i) const
   {
-#ifdef ARCANE_PROXY
-    this->_getMemoryInfo(i.itemLocalId()).setRead();
-#endif
     return this->_value(i.itemLocalId());
   }
-#ifdef ARCANE_PROXY
-  ProxyType operator[](const ItemPairEnumeratorSubT<ItemType>& i)
-  {
-    return this->_getProxy(i.itemLocalId());
-  }
-#else
   DataTypeReturnReference operator[](const ItemPairEnumeratorSubT<ItemType>& i)
   {
     return this->_value(i.itemLocalId());
   }
-#endif
 
   const DataTypeT& item(const ItemGroupRangeIteratorT<ItemType>& i) const
   {
@@ -463,41 +365,21 @@ public:
 
   const DataType& operator[](ItemIndexType i) const
   {
-#ifdef ARCANE_PROXY
-    this->_getMemoryInfo(i.localId()).setRead();
-#endif
     return this->_value(i.localId());
   }
-#ifdef ARCANE_PROXY
-  ProxyType operator[](ItemIndexType i)
-  {
-    return this->_getProxy(i.localId());
-  }
-#else
   DataTypeReturnReference operator[](ItemIndexType i)
   {
     return this->_value(i.localId());
   }
-#endif
 
   const DataType& operator[](ItemLocalIdType i) const
   {
-#ifdef ARCANE_PROXY
-    this->_getMemoryInfo(i.localId()).setRead();
-#endif
     return this->_value(i.localId());
   }
-#ifdef ARCANE_PROXY
-  ProxyType operator[](ItemLocalIdType i)
-  {
-    return this->_getProxy(i.localId());
-  }
-#else
   DataTypeReturnReference operator[](ItemLocalIdType i)
   {
     return this->_value(i.localId());
   }
-#endif
 
  public:
 

@@ -104,9 +104,7 @@ class VariablePrivate
   AutoDetachObservable m_read_observable; //!< Observable en lecture
   AutoDetachObservable m_on_size_changed_observable; //!< Observable en redimensionnement
   std::map<String,String> m_tags; //!< Liste des tags
-  bool m_want_access_info; //!< Vrai si on souhaite des infos sur les acces
   bool m_has_recursive_depend; //!< Vrai si les dépendances sont récursives
-  ScopedPtrT<IMemoryAccessTrace> m_memory_access_trace;
   bool m_want_shrink = false;
 
  public:
@@ -208,13 +206,8 @@ VariablePrivate(const VariableBuildInfo& v,const VariableInfo& vi)
 , m_first_reference(nullptr)
 , m_nb_reference(0)
 , m_modified_time(0)
-, m_want_access_info(false)
 , m_has_recursive_depend(true)
-, m_memory_access_trace(nullptr)
 {
-#ifdef ARCANE_PROXY
-  m_want_access_info = true;
-#endif
   _setHashId();
   m_infos.setDefaultItemGroupName();
 
@@ -390,9 +383,6 @@ Variable(const VariableBuildInfo& v,const VariableInfo& vi)
 : TraceAccessor(v.traceMng())
 , m_p(new VariablePrivate(v,vi))
 {
-#ifdef ARCANE_PROXY
-  m_p->m_memory_access_trace = new VariableMemoryAccessTrace(this,v.subDomain()->traceMng());
-#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1093,15 +1083,6 @@ _checkSetItemGroup()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool Variable::
-_wantAccessInfo()
-{
-  return m_p->m_want_access_info;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 IObservable* Variable::
 writeObservable()
 {
@@ -1308,7 +1289,7 @@ tagValue(const String& tagname)
 IMemoryAccessTrace* Variable::
 memoryAccessTrace() const
 {
-  return m_p->m_memory_access_trace.get();
+  return nullptr;
 }
 
 

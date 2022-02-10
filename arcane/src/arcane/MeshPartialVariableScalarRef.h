@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshPartialVariableScalarRef.h                              (C) 2000-2020 */
+/* MeshPartialVariableScalarRef.h                              (C) 2000-2022 */
 /*                                                                           */
 /* Classe gérant une variable partielle scalaire sur une entité du maillage. */
 /*---------------------------------------------------------------------------*/
@@ -51,9 +51,6 @@ class ItemPartialVariableScalarRefT
   typedef PrivateVariableScalarT<DataType> BaseClass;
   typedef typename BaseClass::PrivatePartType PrivatePartType;
   typedef typename BaseClass::DataTypeReturnReference DataTypeReturnReference;
-#ifdef ARCANE_PROXY
-  typedef typename BaseClass::ProxyType ProxyType;
-#endif
   
  public:
 
@@ -82,20 +79,8 @@ class ItemPartialVariableScalarRefT
     ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
     ARCANE_ASSERT((m_table.isUsed()),("GroupIndexTable expired"));
     const GroupIndexTable& table = *m_table;
-#ifdef ARCANE_PROXY
-    this->_getMemoryInfo(table[i.localId()]).setRead();
-#endif
     return this->_value(table[i.localId()]);
   }
-#ifdef ARCANE_PROXY
-  ProxyType operator[](const Item& i)
-  {
-    ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
-    ARCANE_ASSERT((m_table.isUsed()),("GroupIndexTable expired"));
-    const GroupIndexTable& table = *m_table;
-    return this->_getProxy(table[i.localId()]);
-  }
-#else
   DataTypeReturnReference operator[](const Item& i)
   {
     ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
@@ -103,52 +88,24 @@ class ItemPartialVariableScalarRefT
     const GroupIndexTable& table = *m_table;
     return this->_value(table[i.localId()]);
   }
-#endif
 
   const DataType& operator[](const ItemGroupRangeIterator& i) const
   {
     ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
-#ifdef ARCANE_PROXY
-    _getMemoryInfo(i.index()).setRead();
-#endif
     return this->_value(i.index());
   }
   const DataType& operator[](const ItemEnumerator& i) const
   {
     ARCANE_ASSERT((i->kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
     ARCANE_CHECK_ENUMERATOR(i,this->itemGroup());
-#ifdef ARCANE_PROXY
-    _getMemoryInfo(i.index()).setRead();
-#endif
     return this->_value(i.index());
   }
   const DataType& operator[](const ItemPairEnumerator& i) const
   {
     ARCANE_ASSERT(((*i).kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
-#ifdef ARCANE_PROXY
-    _getMemoryInfo(i.index()).setRead();
-#endif
     return this->_value(i.index());
   }
   
-#ifdef ARCANE_PROXY
-  ProxyType operator[](const ItemGroupRangeIterator& i)
-  {
-    ARCANE_ASSERT((i->kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
-    return this->_getProxy(i.index());
-  }
-  ProxyType operator[](const ItemEnumerator& i)
-  {
-    ARCANE_ASSERT((i->kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
-    ARCANE_CHECK_ENUMERATOR(i,this->itemGroup());
-    return this->_getProxy(i.index());
-  }
-  ProxyType operator[](const ItemPairEnumerator& i)
-  {
-    ARCANE_ASSERT((i->kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
-    return this->_getProxy(i.index());
-  }
-#else
   DataTypeReturnReference operator[](const ItemGroupRangeIterator& i)
   {
     ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
@@ -165,7 +122,6 @@ class ItemPartialVariableScalarRefT
     ARCANE_ASSERT(((*i).kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
     return this->_value(i.index());
   }
-#endif
 
  protected:
   
@@ -217,26 +173,14 @@ class MeshPartialVariableScalarRefT
   {
     ARCANE_ASSERT((this->m_table.isUsed()),("GroupIndexTable expired"));
     const GroupIndexTable& table = *this->m_table;
-#ifdef ARCANE_PROXY
-    this->_getMemoryInfo(table[i.localId()]).setRead();
-#endif
     return this->_value(table[i.localId()]);
   }
-#ifdef ARCANE_PROXY
-  ProxyType operator[](const ItemType& i)
-  {
-    ARCANE_ASSERT((this->m_table.isUsed()),("GroupIndexTable expired")); 
-    const GroupIndexTable& table = *this->m_table;
-    return this->_getProxy(table[i.localId()]);
-  }
-#else
   DataTypeReturnReference operator[](const ItemType& i)
   {
     ARCANE_ASSERT((this->m_table.isUsed()),("GroupIndexTable expired"));
     const GroupIndexTable& table = *this->m_table;
     return this->_value(table[i.localId()]);
   }
-#endif
 
   const DataType& operator[](const ItemGroupRangeIteratorT<ItemType>& i) const
   {

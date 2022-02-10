@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PrivateVariableScalar.h                                     (C) 2000-2020 */
+/* PrivateVariableScalar.h                                     (C) 2000-2022 */
 /*                                                                           */
 /* Classe gérant une variable sur une entité du maillage.                    */
 /*---------------------------------------------------------------------------*/
@@ -36,9 +36,6 @@ class PrivateVariableScalarT
   
   typedef DataType& DataTypeReturnReference;
   typedef VariableArrayT<DataType> PrivatePartType;
-#ifdef ARCANE_PROXY
-  typedef typename DataTypeTraitsT<DataType>::ProxyType ProxyType;
-#endif
   
  protected:
   
@@ -66,68 +63,24 @@ class PrivateVariableScalarT
  protected:
   
   void _internalInit() { MeshVariableRef::_internalInit(m_private_part); }
-
-#ifdef ARCANE_TRACE
-private:
   
-  typedef ArrayView<DataType> ArrayBase;
-  void _trace(Integer local_id) const 
-  {
-    if (m_has_trace){
-      IDataTracerT<DataType>* tracer = m_trace_infos[local_id];
-      if (tracer)
-        tracer->traceRead(ArrayBase::operator[](local_id));
-    }
-  }
-#endif
+ protected:
   
-protected:
-  
-  const DataType& _value(Integer local_id) const
-  {
-#ifdef ARCANE_TRACE
-    _trace(local_id);
-#endif
-    return m_view[local_id];
-  }
-  
-  DataTypeReturnReference _value(Integer local_id)
-  {
-#ifdef ARCANE_TRACE
-    _trace(local_id);
-#endif
-    return m_view[local_id];
-  }
-  
-#ifdef ARCANE_PROXY
-  ProxyType _getProxy(Integer local_id)
-  {
-    return ProxyType(_value(local_id),_getMemoryInfo(local_id));
-  }
-  MemoryAccessInfo _getMemoryInfo(Integer local_id) const
-  {
-    return MemoryAccessInfo(&m_access_infos[local_id],m_memory_trace,local_id);
-  }
-#endif
+  const DataType& _value(Integer local_id) const { return m_view[local_id]; }
+  DataTypeReturnReference _value(Integer local_id) { return m_view[local_id]; }
   
   const DataType& _putValue(Integer index,const DataType& v)
   {
     return (_value(index) = v);
   }
   
-protected:
+ protected:
 
   PrivatePartType* m_private_part;
     
   ArrayView<DataType> m_view;
   
   IMemoryAccessTrace* m_memory_trace;
-  
-#ifdef ARCANE_TRACE    
-  mutable ArrayView<Byte> m_access_infos;
-  
-  ConstArrayView< IDataTracerT<DataType>* > m_trace_infos;
-#endif
 };
 
 /*---------------------------------------------------------------------------*/

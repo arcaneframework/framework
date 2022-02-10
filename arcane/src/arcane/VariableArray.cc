@@ -545,12 +545,6 @@ compact(Int32ConstArrayView new_to_old_ids)
     for( Integer i=0; i<new_size; ++i )
 			RawCopy<T>::copy(current_value[i], old_value[ new_to_old_ids[i] ]); // current_value[i] = old_value[ new_to_old_ids[i] ];
   }
-  if (_wantAccessInfo()){
-    UniqueArray<Byte> a_old_value(m_access_infos);
-    m_access_infos.resize(new_size);
-    for( Integer i=0; i<new_size; ++i )
-      m_access_infos[i] = a_old_value[ new_to_old_ids[i] ];
-  }
   syncReferences();
 }
 
@@ -567,15 +561,8 @@ setIsSynchronized()
 /*---------------------------------------------------------------------------*/
 
 template<typename T> void VariableArrayT<T>::
-setIsSynchronized(const ItemGroup& group)
+setIsSynchronized([[maybe_unused]] const ItemGroup& group)
 {
-  if (!_wantAccessInfo())
-    return;
-  IMemoryAccessTrace* mt = memoryAccessTrace();
-  ENUMERATE_ITEM(iitem,group){
-    const Item& item = *iitem;
-    _getMemoryInfo(item.localId(),mt).setSync();
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -621,20 +608,6 @@ _internalResize(Integer new_size,Integer nb_additional_element)
     }
   }
 
-  if (_wantAccessInfo()){
-    IMemoryAccessTrace* mt = memoryAccessTrace();
-    Integer old_size = m_access_infos.size();
-    m_access_infos.resize(new_size);
-    for( Integer i=old_size; i<new_size; ++i )
-      _getMemoryInfo(i,mt).setCreate();
-    ItemGroup group = itemGroup();
-    if (!group.null()){
-      ENUMERATE_ITEM(iitem,group){
-        const Item& item = *iitem;
-        _getMemoryInfo(item.localId(),mt).setNeedSync(!item.isOwn());
-      }
-    }
-  }
   // Controle si toutes les modifs après le dispose n'ont pas altéré l'état de l'allocation
   // Dans le cas d'une variable non utilisée, la capacité max autorisée est
   // égale à celle d'un vecteur Simd de la plateforme.
@@ -682,11 +655,6 @@ template<typename DataType> void VariableArrayT<DataType>::
 fill(const DataType& value)
 {
   m_value->view().fill(value);
-  if (_wantAccessInfo()){
-    IMemoryAccessTrace* mt = memoryAccessTrace();
-    for( Integer i=0, is=m_access_infos.size(); i<is; ++i )
-      _getMemoryInfo(i,mt).setWriteAndSync();
-  }
 }
 
 /*---------------------------------------------------------------------------*/
