@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Variable.cc                                                 (C) 2000-2020 */
+/* Variable.cc                                                 (C) 2000-2022 */
 /*                                                                           */
 /* Classe gérant une variable.                                               */
 /*---------------------------------------------------------------------------*/
@@ -222,63 +222,6 @@ VariablePrivate(const VariableBuildInfo& v,const VariableInfo& vi)
       m_want_shrink = true;
   }
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class VariableMemoryAccessTrace
-: public IMemoryAccessTrace
-{
- public:
-  VariableMemoryAccessTrace(IVariable* variable,ITraceMng* trace)
-  : m_variable(variable), m_trace(trace), m_nb_read_error(0), m_nb_sync_error(0) {}
- public:
-  virtual void notify(eMemoryAccessMessage message,Integer local_id)
-    {
-      String str = "unknown";
-      switch(message){
-      case MAM_UnitializedMemoryRead:
-        str = "UnitializedMemoryRead";
-        if (m_nb_read_error<5)
-          _printMessage(str,local_id);
-        ++m_nb_read_error;
-        break;
-      case MAM_MayBeUnitializedMemoryRead:
-        str = "MayBeUnitializedMemoryRead";
-        if (m_nb_read_error<5)
-          _printMessage(str,local_id);
-        ++m_nb_read_error;
-        break;
-      case MAM_NotSyncRead:
-        str = "NotSyncRead";
-        if (m_nb_sync_error<5)
-          _printMessage(str,local_id);
-        ++m_nb_sync_error;
-        break;
-      }
-    }
- private:
-  String _getStack()
-    {
-      IStackTraceService* sts = platform::getStackTraceService();
-      if (sts){
-        return sts->stackTrace().toString();
-      }
-      return String("no trace");
-    }
-  void _printMessage(const String& str,Integer local_id)
-    {
-      m_trace->info() << " variable=" << m_variable->name()
-                      << " lid=" << local_id
-                      << " err=" << str
-                      << " stack=" << _getStack();
-    }
-private:
-  IVariable* m_variable;
-  ITraceMng* m_trace;
-  Integer m_nb_read_error;
-  Integer m_nb_sync_error;
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1282,16 +1225,6 @@ tagValue(const String& tagname)
     return String();
   return i->second;
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-IMemoryAccessTrace* Variable::
-memoryAccessTrace() const
-{
-  return nullptr;
-}
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

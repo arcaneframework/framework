@@ -267,6 +267,7 @@ class ARCANE_CORE_EXPORT IVariable
 
  public:
  
+  [[deprecated("Y2021: This method is a noop")]]
   virtual void setTraceInfo(Integer id,eTraceType tt)=0;
 
  public:
@@ -706,6 +707,7 @@ class ARCANE_CORE_EXPORT IVariable
 
  public:
 
+  [[deprecated("Y2021: This method is a noop")]]
   virtual IMemoryAccessTrace* memoryAccessTrace() const =0;
 
   /*!

@@ -192,7 +192,7 @@ class ARCANE_CORE_EXPORT Variable
 
  public:
   
-  virtual IMemoryAccessTrace* memoryAccessTrace() const override;
+  IMemoryAccessTrace* memoryAccessTrace() const override { return nullptr; }
 
  protected:
 

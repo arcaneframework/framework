@@ -220,17 +220,6 @@ class ArrayVariableDiff
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> 
-inline MemoryAccessInfo 
-VariableArrayT<T>::
-_getMemoryInfo(Integer local_id,IMemoryAccessTrace* trace)
-{
-  return MemoryAccessInfo(&m_access_infos[local_id],trace,local_id);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 template<typename T> VariableArrayT<T>::
 VariableArrayT(const VariableBuildInfo& vb,const VariableInfo& info)
 : Variable(vb,info)
@@ -251,8 +240,6 @@ VariableArrayT(const VariableBuildInfo& vb,const VariableInfo& info)
 template<typename T> VariableArrayT<T>::
 ~VariableArrayT()
 {
-  for( Integer i=0, s=m_trace_infos.size(); i<s; ++i )
-    delete m_trace_infos[i];
 }
 
 /*---------------------------------------------------------------------------*/
@@ -464,27 +451,6 @@ initialize(const ItemGroup& group,const String& value)
 /*---------------------------------------------------------------------------*/
 
 template<typename T> void VariableArrayT<T>::
-setTraceInfo(Integer id,eTraceType tt)
-{
-  Integer s = m_trace_infos.size();
-  Integer vs = valueView().size();
-  if (vs<(id+1))
-    vs = (id+1); // Au cas où le trace est fait avant que la variable ne soit dimensionnée
-  if (s<vs){
-    m_trace_infos.resize(vs);
-    for( Integer i=s; i<vs; ++i )
-      m_trace_infos[i] = 0;
-  }
-  delete m_trace_infos[id];
-  m_trace_infos[id] = new DataTracerT<T>(subDomain()->traceMng(),id,tt,name());
-  //cout << "** SET TRACE INFOS: " << m_trace_infos[id] << '\n';
-  _setProperty(IVariable::PHasTrace);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename T> void VariableArrayT<T>::
 copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination)
 {
   ARCANE_ASSERT(source.size()==destination.size(),
@@ -561,8 +527,9 @@ setIsSynchronized()
 /*---------------------------------------------------------------------------*/
 
 template<typename T> void VariableArrayT<T>::
-setIsSynchronized([[maybe_unused]] const ItemGroup& group)
+setIsSynchronized(const ItemGroup& group)
 {
+  ARCANE_UNUSED(group);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -678,7 +645,6 @@ swapValues(ThatClass& rhs)
   // TODO: regarder s'il faut que les deux variables aient le même nombre
   // d'éléments mais a priori cela ne semble pas indispensable.
   m_value->swapValues(rhs.m_value);
-  m_access_infos.swap(rhs.m_access_infos);
   // Il faut mettre à jour les références pour cette variable et \a rhs.
   syncReferences();
   rhs.syncReferences();

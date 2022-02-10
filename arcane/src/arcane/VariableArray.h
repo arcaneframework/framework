@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableArray.h                                             (C) 2000-2021 */
+/* VariableArray.h                                             (C) 2000-2022 */
 /*                                                                           */
 /* Variable tableau 1D.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -57,10 +57,6 @@ class VariableArrayT
                                    
  public:
 
-  void setTraceInfo(Integer id,eTraceType tt) override;
-
- public:
-
   Integer checkIfSame(IDataReader* reader,int max_print,bool compare_ghost) override;
   void synchronize() override;
   virtual void resizeWithReserve(Integer n,Integer nb_additional);
@@ -75,19 +71,18 @@ class VariableArrayT
   ArrayView<T> valueView() { return m_value->view(); }
   ARCANE_CORE_EXPORT void shrinkMemory() override;
   ARCANE_CORE_EXPORT Integer capacity();
-  ConstArrayView< IDataTracerT<T>* > traceInfos() const { return m_trace_infos; }
   void copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination) override;
   void copyItemsMeanValues(Int32ConstArrayView first_source,
                            Int32ConstArrayView second_source,
                            Int32ConstArrayView destination) override;
   void compact(Int32ConstArrayView old_to_new_ids) override;
   void print(std::ostream& o) const override;
-  virtual ArrayView<Byte> memoryAccessInfos() { return m_access_infos; }
-  virtual void fill(const T& v);
-  virtual void fill(const T& v,const ItemGroup& item_group);
   void setIsSynchronized() override;
   void setIsSynchronized(const ItemGroup& item_group) override;
   IData* data() override { return m_value; }
+
+  virtual void fill(const T& v);
+  virtual void fill(const T& v,const ItemGroup& item_group);
 
  public:
 
@@ -102,12 +97,6 @@ class VariableArrayT
  private:
 
   ValueDataType* m_value;
-  UniqueArray< IDataTracerT<T>* > m_trace_infos;
-  UniqueArray<Byte> m_access_infos;
-
- private:
-
-  inline MemoryAccessInfo _getMemoryInfo(Integer local_id,IMemoryAccessTrace* trace);
 };
 
 /*---------------------------------------------------------------------------*/
