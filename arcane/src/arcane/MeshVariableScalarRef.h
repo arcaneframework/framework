@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshVariableScalarRef.h                                     (C) 2000-2020 */
+/* MeshVariableScalarRef.h                                     (C) 2000-2022 */
 /*                                                                           */
 /* Classe gérant une variable scalaire sur une entité du maillage.           */
 /*---------------------------------------------------------------------------*/
@@ -52,9 +52,9 @@ public:
 template<>
 class ItemNumericOperation<Real>
 {
-public:
+ public:
   typedef ItemVariableScalarRefT<Real> VarType;
-public:
+ public:
   static ARCANE_CORE_EXPORT void add  (VarType& out,const VarType& v,const ItemGroup& group);
   static ARCANE_CORE_EXPORT void sub  (VarType& out,const VarType& v,const ItemGroup& group);
   static ARCANE_CORE_EXPORT void mult (VarType& out,const VarType& v,const ItemGroup& group);
@@ -72,7 +72,7 @@ template<typename DataTypeT>
 class ItemVariableScalarRefT
 : public PrivateVariableScalarT<DataTypeT>
 {
-public:
+ public:
   
   typedef DataTypeT DataType;
   typedef UniqueArray<DataTypeT> ValueType;
@@ -101,15 +101,15 @@ public:
   ARCANE_CORE_EXPORT void operator=(const ItemVariableScalarRefT<DataTypeT>& rhs);
 
 #ifdef ARCANE_DOTNET
-public:
+ public:
 #else
-protected:
+ protected:
 #endif
 
   //! Constructeur vide
   ItemVariableScalarRefT() {}
  
-public:
+ public:
 
   void add(const ItemVariableScalarRefT<DataTypeT>& v)
   {
@@ -160,51 +160,53 @@ public:
   ARCANE_CORE_EXPORT void fill(const DataTypeT& value);
   ARCANE_CORE_EXPORT void fill(const DataTypeT& value,const ItemGroup& group);
 
-public:
+ public:
 
   const DataTypeT& operator[](const Item& i) const
   {
-    ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
     return this->_value(i.localId());
   }
+
   DataTypeReturnReference operator[](const Item& i)
   {
-    ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
     return this->_value(i.localId());
   }
 
   const DataTypeT& operator[](const ItemGroupRangeIteratorT<Item>& i) const
   {
-    ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
     return this->_value(i.itemLocalId());
   }
 
   DataTypeReturnReference operator[](const ItemGroupRangeIterator& i)
   {
-    ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
     return this->_value(i.itemLocalId());
   }
 
   const DataTypeT& operator[](const ItemEnumerator& i) const
   {
-    ARCANE_ASSERT((i->kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND((*i));
     return this->_value(i.itemLocalId());
   }
 
   DataTypeReturnReference operator[](const ItemEnumerator& i)
   {
-    ARCANE_ASSERT((i->kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND((*i));
     return this->_value(i.itemLocalId());
   }
 
   const DataTypeT& operator[](const ItemPairEnumerator& i) const
   {
-    ARCANE_ASSERT(((*i).kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND((*i));
     return this->_value(i.itemLocalId());
   }
+
   DataTypeReturnReference operator[](const ItemPairEnumerator& i)
   {
-    ARCANE_ASSERT(((*i).kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND((*i));
     return this->_value(i.itemLocalId());
   }
 

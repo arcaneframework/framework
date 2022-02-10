@@ -76,14 +76,14 @@ class ItemPartialVariableScalarRefT
   
   const DataType& operator[](const Item& i) const
   {
-    ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
     ARCANE_ASSERT((m_table.isUsed()),("GroupIndexTable expired"));
     const GroupIndexTable& table = *m_table;
     return this->_value(table[i.localId()]);
   }
   DataTypeReturnReference operator[](const Item& i)
   {
-    ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
     ARCANE_ASSERT((m_table.isUsed()),("GroupIndexTable expired"));
     const GroupIndexTable& table = *m_table;
     return this->_value(table[i.localId()]);
@@ -91,35 +91,35 @@ class ItemPartialVariableScalarRefT
 
   const DataType& operator[](const ItemGroupRangeIterator& i) const
   {
-    ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
     return this->_value(i.index());
   }
   const DataType& operator[](const ItemEnumerator& i) const
   {
-    ARCANE_ASSERT((i->kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND((*i));
     ARCANE_CHECK_ENUMERATOR(i,this->itemGroup());
     return this->_value(i.index());
   }
   const DataType& operator[](const ItemPairEnumerator& i) const
   {
-    ARCANE_ASSERT(((*i).kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND((*i));
     return this->_value(i.index());
   }
   
   DataTypeReturnReference operator[](const ItemGroupRangeIterator& i)
   {
-    ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
     return this->_value(i.index());
   }
   DataTypeReturnReference operator[](const ItemEnumerator& i)
   {
-    ARCANE_ASSERT((i->kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND((*i));
     ARCANE_CHECK_ENUMERATOR(i,this->itemGroup());
     return this->_value(i.index());
   }
   DataTypeReturnReference operator[](const ItemPairEnumerator& i)
   {
-    ARCANE_ASSERT(((*i).kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND((*i));
     return this->_value(i.index());
   }
 

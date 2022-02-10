@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshVariableRef.h                                           (C) 2000-2009 */
+/* MeshVariableRef.h                                           (C) 2000-2022 */
 /*                                                                           */
 /* Classe gérant une variable sur une entité du maillage.                    */
 /*---------------------------------------------------------------------------*/
@@ -20,7 +20,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -29,26 +30,26 @@ ARCANE_BEGIN_NAMESPACE
  * \brief Classe de base d'une variable sur des entités du maillage.
  */
 class ARCANE_CORE_EXPORT MeshVariableRef
-  : public VariableRef
+: public VariableRef
 {
-public:
+ public:
 
   //! Construit une référence liée au module \a module
   MeshVariableRef(const VariableBuildInfo& vb);
   virtual ~MeshVariableRef() {}
 
-protected:
+ protected:
 
   MeshVariableRef(const MeshVariableRef& rhs);
   MeshVariableRef(IVariable* var);
   MeshVariableRef() {}
   void operator=(const MeshVariableRef& rhs);
 
-public:
+ public:
 
   void synchronize();
 
-protected:
+ protected:
 
   void _internalInit(IVariable*);
 };
@@ -56,7 +57,13 @@ protected:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+//! Macro pour vérifier qu'une entité à le même genre que le groupe
+#define ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i) \
+  ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
