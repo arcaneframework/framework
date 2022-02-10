@@ -64,8 +64,29 @@ TEST(DirectedGraphTest,UnitTest) {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+TEST(DirectedGraphTest, VertexTest){
+  SGraph::DirectedGraph<int, int> int_directed_graph{};
+  int_directed_graph.addVertex(1);
+  int_directed_graph.addVertex(2);
+  int_directed_graph.addVertex(2);
+  int_directed_graph.addVertex(3);
+  int_directed_graph.addVertex(4);
+  int_directed_graph.addVertex(5);
+  int_directed_graph.addVertex(5);
+  std::vector<int> graph_vertices;
+  for (auto vertex : int_directed_graph.vertices()) {
+    graph_vertices.push_back(vertex);
+  }
+  std::vector graph_vertices_ref{1,2,3,4,5};
+  EXPECT_EQ(graph_vertices.size(),graph_vertices_ref.size());
+  EXPECT_TRUE(std::equal(graph_vertices.begin(), graph_vertices.end(), graph_vertices_ref.begin()));
+}
 
-TEST (DirectedGraphTest,StringGraphTest) {
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+
+TEST (DirectedGraphTest,EdgeTest) {
 
 	SGraph::DirectedGraph<std::string,std::string> directed_graph{};
   directed_graph.addEdge("a", "b", "ab");
@@ -180,7 +201,8 @@ TEST (DirectedAcyclicGraphTest,UnitTest)
   dag.addEdge("e", "f", "ef");
   dag.addEdge("g", "h", "gh");
   dag.addEdge("f", "h", "fh");
-
+  dag.addVertex(std::string{"aa"});
+//  dag.addVertex("zz");
 
   std::vector<SGraphType::vertex_type> sorted_vertices_ref{"a","b","d","c","e","g","f","h"};
   std::vector<SGraphType::edge_type> spanning_tree_edges_ref {"ab","ad","ac","be","ce","eg","ef","gh","fh"};
