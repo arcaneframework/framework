@@ -5,7 +5,7 @@
 
 Cette page contient les nouveautés de chaque version de %Arcane.
 
-Arcane Version 3.4.3 (...) {#arcanedoc_version340}
+Arcane Version 3.4.5 (10 février 2022) {#arcanedoc_version340}
 ======================================
 
 Nouveautés/Améliorations:
@@ -31,12 +31,21 @@ Nouveautés/Améliorations:
   mode hybride
 - Ajoute dans Arcane::Materials::MeshMaterialInfo la liste des milieux
   dans lequels le matériau est présent
+- Support de la compilation avec le compilation NVIDIA HPC SDK.
+- Support (partiel) pour désallouer le maillage
+  (Arcane::IPrimaryMesh::deallocate()) ce qui permet de le
+  réallouer à nouveau par la suite.
+- Ajoute générateur de maillage 2D en nid d'abeille.
 
 Changements:
 
 - Ajoute namespace '%Arcane::' aux cibles `CMake` fournit par
 %Arcane. Par exemple, la cible 'arcane_core' devient
 'Arcane::arcane_core'. Les anciens noms restent valides (#120).
+- Rend obsolète la conversion de Arcane::ItemEnumerator vers
+  Arcane::ItemEnumeratorT. Cela permet d'éviter d'indexer par erreur
+  une variable du maillage avec un énumérateur du mauvais type (par
+  exemple indexer une variable aux mailles avec un énumérateur aux noeuds).
 
 Corrections:
 

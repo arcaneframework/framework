@@ -30,7 +30,7 @@ Un compilateur supportant le C++17:
 Les outils et bibliothèques suivants sont requis:
 
 - [CMake 3.18+](https://cmake.org) (3.21+ pour les plateformes Windows)
-- [.Net Core 3.0+](https://dotnet.microsoft.com/download)
+- [.Net Core 3.1+](https://dotnet.microsoft.com/download) (Version `.Net 6` recommandée)
 - [GLib](https://www.gtk.org/)
 - [LibXml2](http://www.xmlsoft.org/)
 
@@ -46,7 +46,7 @@ Les outils et bibliothèques suivants sont optionnels:
 
 ### Compilation
 
-La compilation d'Arcane nécessite d'avoir une version de [CMake](https://cmake.org) supérieure à `3.13`.
+La compilation d'Arcane nécessite d'avoir une version de [CMake](https://cmake.org) supérieure à `3.18`.
 La compilation se fait obligatoirement dans un
 répertoire distinct de celui des sources. On note `${SOURCE_DIR}` ce
 répertoire contenant les sources et `${BUILD_DIR}` le répertoire de compilation.
