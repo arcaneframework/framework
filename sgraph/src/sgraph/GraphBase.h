@@ -205,21 +205,50 @@ class GraphBase
 
   /*---------------------------------------------------------------------------*/
 
-  virtual void addEdge(VertexType&& source_vertex, VertexType&& target_vertex, EdgeType&& source_to_target_edge)
-  {
-    _addEdge(source_vertex, target_vertex, source_to_target_edge);
-  }
+  //! multiple edge (between same nodes in same order) are not allowed
+//  virtual void addEdge(const VertexType& source_vertex, const VertexType& target_vertex,
+//                       const EdgeType& source_to_target_edge)
+//  {
+//    _addEdge(source_vertex, target_vertex, source_to_target_edge);
+//  }
 
   /*---------------------------------------------------------------------------*/
 
-  template <class Vertex, class Edge>
-  void _addEdge(Vertex source_vertex, Vertex target_vertex, Edge source_to_target_edge)
+//  virtual void addEdge(VertexType&& source_vertex, VertexType&& target_vertex, EdgeType&& source_to_target_edge)
+//  {
+//    _addEdge(source_vertex, target_vertex, source_to_target_edge);
+//  }
+
+  /*---------------------------------------------------------------------------*/
+
+//  template <class Vertex, class Edge>
+  /*!
+   *
+   * @param source_vertex
+   * @param target_vertex
+   * @param source_to_target_edge
+   *
+   */
+ public:
+
+  // User overload instead of only pass by value since method is virtual.
+  // Would have done at least three move constructs if called from derived classes.
+  // Could be a problem if objects are not cheap to move
+  virtual void addEdge(const VertexType& source_vertex, const VertexType& target_vertex, const EdgeType& source_to_target_edge) {
+    _addEdge(source_vertex, target_vertex, source_to_target_edge);
+  }
+  virtual void addEdge(VertexType&& source_vertex, VertexType&& target_vertex, EdgeType&& source_to_target_edge){
+    _addEdge(std::move(source_vertex), std::move(target_vertex), std::move(source_to_target_edge));
+  }
+
+ private:
+  void _addEdge(VertexType source_vertex, VertexType target_vertex, EdgeType source_to_target_edge)
   {
     bool has_edge = (_getEdgeIndex(source_vertex, target_vertex).first != -1 &&
                      m_edge_to_vertex_map.find(source_to_target_edge) != m_edge_to_vertex_map.end());
     if (has_edge)
       throw std::runtime_error{ "Cannot insert existing edge." }; // TODO print edge and vertices values if possible (enable_if)
-    m_edges.push_back(source_to_target_edge);
+    m_edges.push_back(std::move(source_to_target_edge));
     EdgeType& inserted_edge = m_edges.back(); // Get a reference to the inserted objects (since objects are only stored in list, other structures handle references)
     VertexType& inserted_source_vertex = addVertex(std::move(source_vertex));
     VertexType& inserted_target_vertex = addVertex(std::move(target_vertex));
@@ -239,14 +268,16 @@ class GraphBase
     //    m_edge_to_vertex_map.emplace(std::cref(inserted_edge),std::make_pair(inserted_source_vertex,inserted_target_vertex)); // No Gcc 4,7,2
   }
 
+ public:
+
   /*---------------------------------------------------------------------------*/
 
   /*!
-         *
-         * @param source_vertex
-         * @param target_vertex
-         * @return pointer to edge stored in graph or nullptr if not found
-         */
+   *
+   * @param source_vertex
+   * @param target_vertex
+   * @return pointer to edge stored in graph or nullptr if not found
+   */
   EdgeType* getEdge(const VertexType& source_vertex, const VertexType& target_vertex)
   {
     return _getEdge(source_vertex, target_vertex);
@@ -255,11 +286,11 @@ class GraphBase
   /*---------------------------------------------------------------------------*/
 
   /*!
-         *
-         * @param source_vertex
-         * @param target_vertex
-         * @return pointer to edge stored in graph or nullptr if not found
-         */
+   *
+   * @param source_vertex
+   * @param target_vertex
+   * @return pointer to edge stored in graph or nullptr if not found
+   */
   const EdgeType* getEdge(const VertexType& source_vertex, const VertexType& target_vertex) const
   {
     return _getEdge(source_vertex, target_vertex);
@@ -377,29 +408,12 @@ class GraphBase
   AdjacencyListType m_adjacency_list_transposed = AdjacencyListType{ m_vertex_less_comparator }; //! target_vertex -> source_vertices
   EdgeToVertexMap m_edge_to_vertex_map = EdgeToVertexMap{ m_edge_less_comparator };
 
- private:
-  template <class Vertex>
-  VertexType& _addVertex(Vertex vertex) // to handle _add(VertexType&) et _add(VertexType&&)
-  {
-    // Look up if vertex does exist
-    auto found_vertex = std::find_if(m_vertices.begin(), m_vertices.end(), [&vertex](const VertexType& u) {
-      return (!(GraphBase::m_vertex_less_comparator(std::cref(u), std::cref(vertex))) &&
-              !(GraphBase::m_vertex_less_comparator(std::cref(vertex), std::cref(u))));
-    }); // Unary predicate used to avoid contraining VertexObject to be Equality Comparable objects
-    if (found_vertex == m_vertices.end()) // Vertex does not exist
-    {
-      m_vertices.push_back(vertex);
-      return m_vertices.back();
-    }
-    else
-      return *found_vertex;
-  }
 
   /*---------------------------------------------------------------------------*/
 
-  template <class Vertex>
-  // to handle Vertex&& et Vertex& = another way to do so ?
-  std::pair<int, EdgeTypeRefArray> _getEdgeIndex(Vertex source_vertex, Vertex target_vertex)
+//  template <class Vertex>
+  // to handle Vertex&& et Vertex& = another way to do so ? yes pass by value
+  std::pair<int, EdgeTypeRefArray> _getEdgeIndex(VertexType const& source_vertex, VertexType const& target_vertex)
   {
     auto found_source_vertex = m_adjacency_list.find(std::cref(source_vertex));
     if (found_source_vertex == m_adjacency_list.end())
@@ -411,9 +425,9 @@ class GraphBase
 
   /*---------------------------------------------------------------------------*/
 
-  template <class Vertex>
+//  template <class Vertex>
   // idem
-  int _getTargetVertexIndex(typename AdjacencyListType::iterator source_vertex_map_entry, Vertex target_vertex)
+  int _getTargetVertexIndex(typename AdjacencyListType::iterator source_vertex_map_entry, VertexType const& target_vertex)
   {
     if (source_vertex_map_entry == m_adjacency_list.end())
       return -1;
@@ -422,9 +436,9 @@ class GraphBase
 
   /*---------------------------------------------------------------------------*/
 
-  template <class Vertex>
+//  template <class Vertex>
   // idem...
-  int _getConnectedVertexIndex(typename AdjacencyListType::iterator vertex_map_entry, Vertex connected_vertex)
+  int _getConnectedVertexIndex(typename AdjacencyListType::iterator vertex_map_entry, VertexType const& connected_vertex)
   {
     VertexTypeRefArray& vertex_array = vertex_map_entry->second.first;
     std::vector<int> indexes(vertex_array.size());
