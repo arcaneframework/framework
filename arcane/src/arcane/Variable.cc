@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Variable.cc                                                 (C) 2000-2020 */
+/* Variable.cc                                                 (C) 2000-2022 */
 /*                                                                           */
 /* Classe gérant une variable.                                               */
 /*---------------------------------------------------------------------------*/
@@ -104,9 +104,7 @@ class VariablePrivate
   AutoDetachObservable m_read_observable; //!< Observable en lecture
   AutoDetachObservable m_on_size_changed_observable; //!< Observable en redimensionnement
   std::map<String,String> m_tags; //!< Liste des tags
-  bool m_want_access_info; //!< Vrai si on souhaite des infos sur les acces
   bool m_has_recursive_depend; //!< Vrai si les dépendances sont récursives
-  ScopedPtrT<IMemoryAccessTrace> m_memory_access_trace;
   bool m_want_shrink = false;
 
  public:
@@ -208,13 +206,8 @@ VariablePrivate(const VariableBuildInfo& v,const VariableInfo& vi)
 , m_first_reference(nullptr)
 , m_nb_reference(0)
 , m_modified_time(0)
-, m_want_access_info(false)
 , m_has_recursive_depend(true)
-, m_memory_access_trace(nullptr)
 {
-#ifdef ARCANE_PROXY
-  m_want_access_info = true;
-#endif
   _setHashId();
   m_infos.setDefaultItemGroupName();
 
@@ -229,63 +222,6 @@ VariablePrivate(const VariableBuildInfo& v,const VariableInfo& vi)
       m_want_shrink = true;
   }
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class VariableMemoryAccessTrace
-: public IMemoryAccessTrace
-{
- public:
-  VariableMemoryAccessTrace(IVariable* variable,ITraceMng* trace)
-  : m_variable(variable), m_trace(trace), m_nb_read_error(0), m_nb_sync_error(0) {}
- public:
-  virtual void notify(eMemoryAccessMessage message,Integer local_id)
-    {
-      String str = "unknown";
-      switch(message){
-      case MAM_UnitializedMemoryRead:
-        str = "UnitializedMemoryRead";
-        if (m_nb_read_error<5)
-          _printMessage(str,local_id);
-        ++m_nb_read_error;
-        break;
-      case MAM_MayBeUnitializedMemoryRead:
-        str = "MayBeUnitializedMemoryRead";
-        if (m_nb_read_error<5)
-          _printMessage(str,local_id);
-        ++m_nb_read_error;
-        break;
-      case MAM_NotSyncRead:
-        str = "NotSyncRead";
-        if (m_nb_sync_error<5)
-          _printMessage(str,local_id);
-        ++m_nb_sync_error;
-        break;
-      }
-    }
- private:
-  String _getStack()
-    {
-      IStackTraceService* sts = platform::getStackTraceService();
-      if (sts){
-        return sts->stackTrace().toString();
-      }
-      return String("no trace");
-    }
-  void _printMessage(const String& str,Integer local_id)
-    {
-      m_trace->info() << " variable=" << m_variable->name()
-                      << " lid=" << local_id
-                      << " err=" << str
-                      << " stack=" << _getStack();
-    }
-private:
-  IVariable* m_variable;
-  ITraceMng* m_trace;
-  Integer m_nb_read_error;
-  Integer m_nb_sync_error;
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -390,9 +326,6 @@ Variable(const VariableBuildInfo& v,const VariableInfo& vi)
 : TraceAccessor(v.traceMng())
 , m_p(new VariablePrivate(v,vi))
 {
-#ifdef ARCANE_PROXY
-  m_p->m_memory_access_trace = new VariableMemoryAccessTrace(this,v.subDomain()->traceMng());
-#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1093,15 +1026,6 @@ _checkSetItemGroup()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool Variable::
-_wantAccessInfo()
-{
-  return m_p->m_want_access_info;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 IObservable* Variable::
 writeObservable()
 {
@@ -1301,16 +1225,6 @@ tagValue(const String& tagname)
     return String();
   return i->second;
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-IMemoryAccessTrace* Variable::
-memoryAccessTrace() const
-{
-  return m_p->m_memory_access_trace.get();
-}
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
