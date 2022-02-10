@@ -34,7 +34,7 @@ find_library(TBB_LIBRARY_RELEASE NAMES tbb)
 message(STATUS "TBB DEBUG ${TBB_LIBRARY_DEBUG}")
 message(STATUS "TBB RELEASE ${TBB_LIBRARY_RELEASE}")
 
-find_path(TBB_INCLUDE_DIR tbb/tbb_thread.h)
+find_path(TBB_INCLUDE_DIR tbb/task.h)
 
 message(STATUS "TBB_INCLUDE_DIR = ${TBB_INCLUDE_DIR}")
 
