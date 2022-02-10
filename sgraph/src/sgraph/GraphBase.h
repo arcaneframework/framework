@@ -29,7 +29,7 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*! Template base class for Graph.
+/*! Template base class for Directed Graph.
  *  VertexType must implement a less comparison operator.
  *  To use print, VertexType must implement << operator
  *  Multiple Edges between the same Vertices are not allowed
@@ -180,11 +180,27 @@ class GraphBase
 
   /*---------------------------------------------------------------------------*/
 
-  //! multiple edge (between same nodes) are not allowed
-  virtual void addEdge(const VertexType& source_vertex, const VertexType& target_vertex,
-                       const EdgeType& source_to_target_edge)
+  /*!
+   *
+   * @tparam Vertex type
+   * @param vertex
+   * @return a reference to inserted vertex
+   */
+  template <class Vertex>
+  VertexType& addVertex(Vertex vertex) // to handle _add(VertexType&) and _add(VertexType&&)
   {
-    _addEdge(source_vertex, target_vertex, source_to_target_edge);
+    // Look up if vertex does exist
+    auto found_vertex = std::find_if(m_vertices.begin(), m_vertices.end(), [&vertex](const VertexType& u) {
+      return (!(GraphBase::m_vertex_less_comparator(std::cref(u), std::cref(vertex))) &&
+              !(GraphBase::m_vertex_less_comparator(std::cref(vertex), std::cref(u))));
+    }); // Unary predicate used to avoid contraining VertexObject to be Equality Comparable objects
+    if (found_vertex == m_vertices.end()) // Vertex does not exist
+    {
+      m_vertices.push_back(std::move(vertex));
+      return m_vertices.back();
+    }
+    else
+      return *found_vertex;
   }
 
   /*---------------------------------------------------------------------------*/
@@ -205,8 +221,8 @@ class GraphBase
       throw std::runtime_error{ "Cannot insert existing edge." }; // TODO print edge and vertices values if possible (enable_if)
     m_edges.push_back(source_to_target_edge);
     EdgeType& inserted_edge = m_edges.back(); // Get a reference to the inserted objects (since objects are only stored in list, other structures handle references)
-    VertexType& inserted_source_vertex = _addVertex(source_vertex);
-    VertexType& inserted_target_vertex = _addVertex(target_vertex);
+    VertexType& inserted_source_vertex = addVertex(std::move(source_vertex));
+    VertexType& inserted_target_vertex = addVertex(std::move(target_vertex));
     // Fill adjacency map [source_vertex] = pair<TargetVertexArray,EdgeArray>
     auto& adjacency_entry = m_adjacency_list[inserted_source_vertex];
     adjacency_entry.first.push_back(inserted_target_vertex);
