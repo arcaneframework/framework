@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumArrayUnitTest.cc                                         (C) 2000-2021 */
+/* NumArrayUnitTest.cc                                         (C) 2000-2022 */
 /*                                                                           */
 /* Service de test des 'NumArray'.                                           */
 /*---------------------------------------------------------------------------*/
@@ -81,7 +81,7 @@ class NumArrayUnitTest
 
  public:
 
-  void _executeTest1();
+  void _executeTest1(eMemoryRessource mem_kind);
   void _executeTest2();
 };
 
@@ -127,7 +127,16 @@ initializeTest()
 void NumArrayUnitTest::
 executeTest()
 {
-  _executeTest1();
+  if (ax::impl::isAcceleratorPolicy(m_runner.executionPolicy())) {
+    info() << "ExecuteTest1: using accelerator";
+    _executeTest1(eMemoryRessource::UnifiedMemory);
+    _executeTest1(eMemoryRessource::HostPinned);
+    _executeTest1(eMemoryRessource::Device);
+  }
+  else {
+    info() << "ExecuteTest1: using host";
+    _executeTest1(eMemoryRessource::Host);
+  }
 
   // Appelle deux fois _executeTest2() pour vérifier l'utilisation des pools
   // de RunQueue.
@@ -136,9 +145,11 @@ executeTest()
 }
 
 void NumArrayUnitTest::
-_executeTest1()
+_executeTest1(eMemoryRessource mem_kind)
 {
   ValueChecker vc(A_FUNCINFO);
+
+  info() << "Execute Test1 memory_ressource=" << mem_kind;
 
   auto queue = makeQueue(m_runner);
   auto command = makeCommand(queue);
@@ -156,61 +167,73 @@ _executeTest1()
   constexpr double expected_sum4 = 164736000.0;
 
   {
-    NumArray<double, 1> t1(n1);
+    NumArray<double, 1> t1(mem_kind);
+    t1.resize(n1);
 
-    auto out_t1 = ax::viewOut(command, t1);
+    auto out_t1 = viewOut(command, t1);
 
     command << RUNCOMMAND_LOOP1(iter, n1)
     {
       auto [i] = iter();
       out_t1(i) = _getValue(i);
     };
-    double s1 = _doSum(t1, { n1 });
+    NumArray<double, 1> host_t1(eMemoryRessource::Host);
+    host_t1.copy(t1);
+    double s1 = _doSum(host_t1, { n1 });
     info() << "SUM1 = " << s1;
     vc.areEqual(s1, expected_sum1, "SUM1");
   }
 
   {
-    NumArray<double, 2> t1(n1, n2);
+    NumArray<double, 2> t1(mem_kind);
+    t1.resize(n1, n2);
 
-    auto out_t1 = ax::viewOut(command, t1);
+    auto out_t1 = viewOut(command, t1);
 
     command << RUNCOMMAND_LOOP2(iter, n1, n2)
     {
       auto [i, j] = iter();
       out_t1(i, j) = _getValue(i, j);
     };
-    double s2 = _doSum(t1, { n1, n2 });
+    NumArray<double, 2> host_t1(eMemoryRessource::Host);
+    host_t1.copy(t1);
+    double s2 = _doSum(host_t1, { n1, n2 });
     info() << "SUM2 = " << s2;
     vc.areEqual(s2, expected_sum2, "SUM2");
   }
 
   {
-    NumArray<double, 3> t1(n1, n2, n3);
+    NumArray<double, 3> t1(mem_kind);
+    t1.resize(n1, n2, n3);
 
-    auto out_t1 = ax::viewOut(command, t1);
+    auto out_t1 = viewOut(command, t1);
 
     command << RUNCOMMAND_LOOP3(iter, n1, n2, n3)
     {
       auto [i, j, k] = iter();
       out_t1(i, j, k) = _getValue(i, j, k);
     };
-    double s3 = _doSum(t1, { n1, n2, n3 });
+    NumArray<double, 3> host_t1(eMemoryRessource::Host);
+    host_t1.copy(t1);
+    double s3 = _doSum(host_t1, { n1, n2, n3 });
     info() << "SUM3 = " << s3;
     vc.areEqual(s3, expected_sum3, "SUM3");
   }
 
   {
-    NumArray<double, 4> t1(n1, n2, n3, n4);
+    NumArray<double, 4> t1(mem_kind);
+    t1.resize(n1, n2, n3, n4);
 
-    auto out_t1 = ax::viewOut(command, t1);
+    auto out_t1 = viewOut(command, t1);
 
     command << RUNCOMMAND_LOOP4(iter, n1, n2, n3, n4)
     {
       auto [i, j, k, l] = iter();
       out_t1(i, j, k, l) = _getValue(i, j, k, l);
     };
-    double s4 = _doSum(t1, { n1, n2, n3, n4 });
+    NumArray<double, 4> host_t1(eMemoryRessource::Host);
+    host_t1.copy(t1);
+    double s4 = _doSum(host_t1, { n1, n2, n3, n4 });
     info() << "SUM4 = " << s4;
     vc.areEqual(s4, expected_sum4, "SUM4");
   }
@@ -251,7 +274,7 @@ _executeTest2()
   // chaque file gérant une partie du tableau.
   {
     auto command = makeCommand(queue1);
-    auto out_t1 = ax::viewOut(command, t1);
+    auto out_t1 = viewOut(command, t1);
     Int64 s1 = 300;
     auto b = makeLoopRanges(s1, n2, n3, n4);
     command << RUNCOMMAND_LOOP(iter, b)
@@ -262,7 +285,7 @@ _executeTest2()
   }
   {
     auto command = makeCommand(queue2);
-    auto out_t1 = ax::viewOut(command, t1);
+    auto out_t1 = viewOut(command, t1);
     Int64 base = 300;
     Int64 s1 = 400;
     auto b = makeLoopRanges({ base, s1 }, n2, n3, n4);
@@ -274,7 +297,7 @@ _executeTest2()
   }
   {
     auto command = makeCommand(queue3);
-    auto out_t1 = ax::viewOut(command, t1);
+    auto out_t1 = viewOut(command, t1);
     Int64 base = 700;
     Int64 s1 = 300;
     auto b = makeLoopRanges({ base, s1 }, n2, n3, n4);
