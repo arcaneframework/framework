@@ -34,6 +34,8 @@ enum class eMemoryRessource
   Unknown = 0,
   //! Alloue sur l'hôte.
   Host,
+  //! Alloue sur l'hôte.
+  HostPinned,
   //! Alloue sur le device
   Device,
   //! Alloue en utilisant la mémoire unifiée.
@@ -41,7 +43,7 @@ enum class eMemoryRessource
 };
 
 //! Nombre de valeurs valides pour eMemoryRessource
-static constexpr int NB_MEMORY_RESSOURCE = 4;
+static constexpr int NB_MEMORY_RESSOURCE = 5;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
