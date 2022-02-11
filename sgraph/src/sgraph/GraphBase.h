@@ -186,8 +186,7 @@ class GraphBase
    * @param vertex
    * @return a reference to inserted vertex
    */
-  template <class Vertex>
-  VertexType& addVertex(Vertex vertex) // to handle _add(VertexType&) and _add(VertexType&&)
+  VertexType& addVertex(VertexType vertex) // to handle _add(VertexType&) and _add(VertexType&&)
   {
     // Look up if vertex does exist
     auto found_vertex = std::find_if(m_vertices.begin(), m_vertices.end(), [&vertex](const VertexType& u) {
