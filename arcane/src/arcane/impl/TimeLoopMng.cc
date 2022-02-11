@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TimeLoopMng.cc                                              (C) 2000-2021 */
+/* TimeLoopMng.cc                                              (C) 2000-2022 */
 /*                                                                           */
 /* Gestionnaire de la boucle en temps.                                       */
 /*---------------------------------------------------------------------------*/
@@ -305,6 +305,7 @@ class TimeLoopMng
   bool m_verification_active;
   //! Si vrai, effectue vérifications à chaque point d'entrée, sinon uniquement en fin d'itération.
   bool m_verification_at_entry_point;
+  bool m_verification_only_at_exit = false;
 
   IBackwardMng * m_backward_mng; //!< Gestionnaire du retour-arrière;
   bool m_my_own_backward_mng;
@@ -453,7 +454,14 @@ build()
     String s = platform::getEnvironmentVariable("STDENV_VERIF_ENTRYPOINT");
     if (!s.null()){
       m_verification_at_entry_point = true;
-      info() << "Checking each entry point";
+      info() << "Do verification at each entry point";
+    }
+  }
+  {
+    String s = platform::getEnvironmentVariable("STDENV_VERIF_ONLY_AT_EXIT");
+    if (s=="1" || s=="true" || s=="TRUE"){
+      m_verification_only_at_exit = true;
+      info() << "Do verification only at exit";
     }
   }
 
@@ -649,7 +657,7 @@ _execOneEntryPoint(IEntryPoint * ic, Integer index, bool do_verif)
   ic->executeEntryPoint();
   m_observables[eTimeLoopEventType::EndEntryPoint]->notifyAllObservers();
   m_current_entry_point_ptr = 0;
-  if (m_verification_at_entry_point)
+  if (m_verification_at_entry_point && !m_verification_only_at_exit)
     _checkVerif(ic->name(),index,do_verif);
 }
 
@@ -952,7 +960,7 @@ doOneIteration()
         break;
       }
     }
-    if (!m_verification_at_entry_point)
+    if (!m_verification_at_entry_point && !m_verification_only_at_exit)
       _checkVerif("_EndLoop",0,true);
   }
   m_observables[eTimeLoopEventType::EndIteration]->notifyAllObservers();
@@ -1918,6 +1926,10 @@ doComputeLoop(Integer max_loop)
     // message précédent
     platform::sleep(40);
     throw;
+  }
+  if (m_verification_only_at_exit){
+    info() << "Doing verification at exit";
+    doVerification("AtExit");
   }
   if (ps)
     ps->printInfos(true);
