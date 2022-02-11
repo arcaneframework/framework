@@ -191,6 +191,7 @@ TEST (DirectedAcyclicGraphTest,UnitTest)
   // Same code base as DirectedGraphT, the topological sort is added
   using SGraphType = SGraph::DirectedAcyclicGraph<std::string,std::string>;
   SGraphType dag{};
+  dag.addVertex("aa");
   dag.addEdge("a", "h", "ah");
   dag.addEdge("e", "g", "eg");
   dag.addEdge("a", "b", "ab");
@@ -201,10 +202,9 @@ TEST (DirectedAcyclicGraphTest,UnitTest)
   dag.addEdge("e", "f", "ef");
   dag.addEdge("g", "h", "gh");
   dag.addEdge("f", "h", "fh");
-  dag.addVertex(std::string{"aa"});
-//  dag.addVertex("zz");
+  dag.addVertex("aaa");
 
-  std::vector<SGraphType::vertex_type> sorted_vertices_ref{"a","b","d","c","e","g","f","h"};
+  std::vector<SGraphType::vertex_type> sorted_vertices_ref{"aa","a","aaa","b","d","c","e","g","f","h"};
   std::vector<SGraphType::edge_type> spanning_tree_edges_ref {"ab","ad","ac","be","ce","eg","ef","gh","fh"};
 
   auto string_equality =  [](std::string const& a, std::string const& b){return a==b;};
@@ -245,10 +245,13 @@ TEST (DirectedAcyclicGraphTest,UnitTest)
 TEST(DirectedAcyclicGraphTest,UserClassTest){
 
   SGraph::DirectedAcyclicGraph<Algorithm,Property> algo_dag;
+  algo_dag.addVertex(Algorithm{ "algo0" });
   algo_dag.addEdge(Algorithm{ "algo3" }, Algorithm{ "algo4" }, Property{ "P3" });
   algo_dag.addEdge(Algorithm{ "algo1" }, Algorithm{ "algo2" }, Property{ "P1" });
   algo_dag.addEdge(Algorithm{ "algo2" }, Algorithm{ "algo4" }, Property{ "P2" });
   algo_dag.addEdge(Algorithm{ "algo1" }, Algorithm{ "algo3" }, Property{ "P1" });
+  algo_dag.addVertex(Algorithm{ "algo1-0" });
+
   for (Algorithm const& algo : algo_dag.topologicalSort()) {
     std::cout << "-- " << algo.name << std::endl;
   }
@@ -256,7 +259,7 @@ TEST(DirectedAcyclicGraphTest,UserClassTest){
   auto sorted_vertices = algo_dag.topologicalSort();
   auto algo_equality = [](Algorithm const& a, Algorithm const& b){return a.name == b.name;};
   auto prop_equality = [](Property const& a, Property const& b){return a.name == b.name;};
-  _checkDag(std::vector{Algorithm{"algo1"},Algorithm{"algo3"},Algorithm{"algo2"},Algorithm{"algo4"}},
+  _checkDag(std::vector{Algorithm{"algo0"},Algorithm{"algo1"},Algorithm{ "algo1-0" },Algorithm{"algo3"},Algorithm{"algo2"},Algorithm{"algo4"}},
             std::vector{Property{"P1"},Property{"P1"},Property{"P3"},Property{"P2"}},algo_dag,
             algo_equality,prop_equality);
 
