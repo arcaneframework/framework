@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CudaAccelerator.h                                           (C) 2000-2021 */
+/* CudaAccelerator.h                                           (C) 2000-2022 */
 /*                                                                           */
 /* Backend 'CUDA' pour les accélérateurs.                                    */
 /*---------------------------------------------------------------------------*/
@@ -59,6 +59,10 @@ getCudaDeviceMemoryAllocator();
 //! Allocateur spécifique utilisant le mémoire unifiée
 extern "C++" ARCANE_CUDA_EXPORT Arccore::IMemoryAllocator*
 getCudaUnifiedMemoryAllocator();
+
+//! Allocateur spécifique utilisant la mémoire punaisée
+extern "C++" ARCANE_CUDA_EXPORT Arccore::IMemoryAllocator*
+getCudaHostPinnedMemoryAllocator();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

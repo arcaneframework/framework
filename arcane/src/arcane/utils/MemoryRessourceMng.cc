@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryRessourceMng.cc                                       (C) 2000-2021 */
+/* MemoryRessourceMng.cc                                       (C) 2000-2022 */
 /*                                                                           */
 /* Gestion des ressources mémoire pour les CPU et accélérateurs.             */
 /*---------------------------------------------------------------------------*/
@@ -34,6 +34,8 @@ namespace
       return "Unknown";
     case eMemoryRessource::Host:
       return "Host";
+    case eMemoryRessource::HostPinned:
+      return "HostPinned";
     case eMemoryRessource::Device:
       return "Device";
     case eMemoryRessource::UnifiedMemory:
