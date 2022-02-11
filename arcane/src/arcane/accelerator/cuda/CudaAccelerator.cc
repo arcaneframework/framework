@@ -99,6 +99,24 @@ class UnifiedMemoryCudaMemoryAllocator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class HostPinnedCudaMemoryAllocator
+: public CudaMemoryAllocatorBase
+{
+ protected:
+
+  virtual cudaError_t _allocate(void** ptr, size_t new_size) override
+  {
+    return ::cudaMallocHost(ptr, new_size);
+  }
+  virtual cudaError_t _deallocate(void* ptr) override
+  {
+    return ::cudaFreeHost(ptr);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class DeviceCudaMemoryAllocator
 : public CudaMemoryAllocatorBase
 {
@@ -120,6 +138,7 @@ class DeviceCudaMemoryAllocator
 namespace
 {
   UnifiedMemoryCudaMemoryAllocator unified_memory_cuda_memory_allocator;
+  HostPinnedCudaMemoryAllocator host_pinned_cuda_memory_allocator;
   DeviceCudaMemoryAllocator device_cuda_memory_allocator;
 } // namespace
 
@@ -142,6 +161,12 @@ Arccore::IMemoryAllocator*
 getCudaUnifiedMemoryAllocator()
 {
   return &unified_memory_cuda_memory_allocator;
+}
+
+Arccore::IMemoryAllocator*
+getCudaHostPinnedMemoryAllocator()
+{
+  return &host_pinned_cuda_memory_allocator;
 }
 
 /*---------------------------------------------------------------------------*/
