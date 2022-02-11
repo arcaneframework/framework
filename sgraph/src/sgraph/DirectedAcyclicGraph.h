@@ -45,7 +45,7 @@ class DirectedAcyclicGraph
     struct ReverseOrderSet
     {
       T m_elements;
-      ReverseOrderSet(const T& elements) : m_elements(elements){}
+      ReverseOrderSet(T const& elements) : m_elements(elements){}
 
       virtual ~ReverseOrderSet() = default;
       using iterator = typename std::reverse_iterator<typename T::iterator>;
@@ -61,7 +61,7 @@ class DirectedAcyclicGraph
       int size() { return m_elements.size(); }
     };
 
-    SortedElementSet(const ContainerT& elements)
+    SortedElementSet(ContainerT const& elements)
     : m_elements(elements)
     {}
 
@@ -110,7 +110,7 @@ class DirectedAcyclicGraph
 
 /*---------------------------------------------------------------------------*/
 
-  void addEdge(const VertexType& source_vertex, const VertexType& target_vertex, const EdgeType& source_to_target_edge) override
+  void addEdge(VertexType const& source_vertex, VertexType const& target_vertex, EdgeType const& source_to_target_edge) override
   {
     Base::addEdge(source_vertex, target_vertex, source_to_target_edge);
     m_compute_vertex_levels = true;
@@ -120,7 +120,7 @@ class DirectedAcyclicGraph
 
   void addEdge(VertexType&& source_vertex, VertexType&& target_vertex, EdgeType&& source_to_target_edge) override
   {
-    Base::addEdge(source_vertex, target_vertex, source_to_target_edge);
+    Base::addEdge(std::move(source_vertex), std::move(target_vertex), std::move(source_to_target_edge));
     m_compute_vertex_levels = true;
   }
 
@@ -134,7 +134,7 @@ class DirectedAcyclicGraph
     for (auto& vertex : this->m_vertices) {
       sorted_vertices.push_back(std::ref(vertex));
     }
-    std::sort(sorted_vertices.begin(), sorted_vertices.end(), [&](const VertexType& a, const VertexType& b) { return m_vertex_level_map[a] < m_vertex_level_map[b]; });
+    std::sort(sorted_vertices.begin(), sorted_vertices.end(), [&](VertexType const& a, VertexType const& b) { return m_vertex_level_map[a] < m_vertex_level_map[b]; });
     return SortedVertexSet{std::move(sorted_vertices)};
   }
 
@@ -156,7 +156,7 @@ class DirectedAcyclicGraph
         continue; // edge must not be accounted for in spanning tree
       spaning_tree_edges.push_back(std::ref(edge));
     }
-    std::sort(spaning_tree_edges.begin(), spaning_tree_edges.end(), [&](const EdgeType& a, const EdgeType& b) { return m_edge_level_map[a] < m_edge_level_map[b]; });
+    std::sort(spaning_tree_edges.begin(), spaning_tree_edges.end(), [&](EdgeType const& a, EdgeType const& b) { return m_edge_level_map[a] < m_edge_level_map[b]; });
     return SortedEdgeSet{spaning_tree_edges};
   }
 
@@ -216,7 +216,7 @@ class DirectedAcyclicGraph
 
 /*---------------------------------------------------------------------------*/
 
-  void _computeVertexLevel(const VertexType& vertex, int level)
+  void _computeVertexLevel(VertexType const& vertex, int level)
   {
     // Check for cycles
     if (!m_colored_vertices.insert(std::cref(vertex)).second)
@@ -247,7 +247,7 @@ class DirectedAcyclicGraph
 
 /*---------------------------------------------------------------------------*/
 
-  int _computeEdgeLevel(const EdgeType& edge)
+  int _computeEdgeLevel(EdgeType const& edge)
   {
     auto edge_vertices_iterator = this->m_edge_to_vertex_map.find(edge);
     if (edge_vertices_iterator == this->m_edge_to_vertex_map.end())
@@ -263,7 +263,7 @@ class DirectedAcyclicGraph
 
 /*---------------------------------------------------------------------------*/
 
-  void _printGraphEntry(const typename Base::AdjacencyListType::value_type& vertex_entry) const
+  void _printGraphEntry(typename Base::AdjacencyListType::value_type const& vertex_entry) const
   {
     std::cout << "-- Vertex " << Base::m_vertex_stream_converter(vertex_entry.first.get()) << " points to " << std::endl;
     for (auto connected_vertex : vertex_entry.second.first) {

@@ -189,7 +189,7 @@ class GraphBase
   VertexType& addVertex(VertexType vertex) // to handle _add(VertexType&) and _add(VertexType&&)
   {
     // Look up if vertex does exist
-    auto found_vertex = std::find_if(m_vertices.begin(), m_vertices.end(), [&vertex](const VertexType& u) {
+    auto found_vertex = std::find_if(m_vertices.begin(), m_vertices.end(), [&vertex](VertexType const& u) {
       return (!(GraphBase::m_vertex_less_comparator(std::cref(u), std::cref(vertex))) &&
               !(GraphBase::m_vertex_less_comparator(std::cref(vertex), std::cref(u))));
     }); // Unary predicate used to avoid contraining VertexObject to be Equality Comparable objects
@@ -233,7 +233,7 @@ class GraphBase
   // User overload instead of only pass by value since method is virtual.
   // Would have done at least three move constructs if called from derived classes.
   // Could be a problem if objects are not cheap to move
-  virtual void addEdge(const VertexType& source_vertex, const VertexType& target_vertex, const EdgeType& source_to_target_edge) {
+  virtual void addEdge(VertexType const& source_vertex,VertexType const& target_vertex,EdgeType const& source_to_target_edge) {
     _addEdge(source_vertex, target_vertex, source_to_target_edge);
   }
   virtual void addEdge(VertexType&& source_vertex, VertexType&& target_vertex, EdgeType&& source_to_target_edge){
@@ -277,7 +277,7 @@ class GraphBase
    * @param target_vertex
    * @return pointer to edge stored in graph or nullptr if not found
    */
-  EdgeType* getEdge(const VertexType& source_vertex, const VertexType& target_vertex)
+  EdgeType* getEdge(VertexType const& source_vertex,VertexType const& target_vertex)
   {
     return _getEdge(source_vertex, target_vertex);
   }
@@ -290,14 +290,14 @@ class GraphBase
    * @param target_vertex
    * @return pointer to edge stored in graph or nullptr if not found
    */
-  const EdgeType* getEdge(const VertexType& source_vertex, const VertexType& target_vertex) const
+  const EdgeType* getEdge(VertexType const& source_vertex,VertexType const& target_vertex) const
   {
     return _getEdge(source_vertex, target_vertex);
   }
 
   /*---------------------------------------------------------------------------*/
 
-  EdgeType* _getEdge(const VertexType& source_vertex, const VertexType& target_vertex)
+  EdgeType* _getEdge(VertexType const& source_vertex,VertexType const& target_vertex)
   {
     int edge_index;
     EdgeTypeRefArray edge_array;
@@ -314,7 +314,7 @@ class GraphBase
   // future : implement  in_edges(vertex) and out_edges(vertex) with an iterator
   // same for  edges() and vertices()
 
-  VertexType* getSourceVertex(const EdgeType& edge)
+  VertexType* getSourceVertex(EdgeType const& edge)
   {
     auto edge_entry = m_edge_to_vertex_map.find(edge);
     if (edge_entry != m_edge_to_vertex_map.end())
@@ -325,7 +325,7 @@ class GraphBase
 
   /*---------------------------------------------------------------------------*/
 
-  const VertexType* getSourceVertex(const EdgeType& edge) const
+  const VertexType* getSourceVertex(EdgeType const& edge) const
   {
     auto edge_entry = m_edge_to_vertex_map.find(edge);
     if (edge_entry != m_edge_to_vertex_map.end())
@@ -336,7 +336,7 @@ class GraphBase
 
   /*---------------------------------------------------------------------------*/
 
-  VertexType* getTargetVertex(const EdgeType& edge)
+  VertexType* getTargetVertex(EdgeType const& edge)
   {
     auto edge_entry = m_edge_to_vertex_map.find(edge);
     if (edge_entry != m_edge_to_vertex_map.end())
@@ -347,7 +347,7 @@ class GraphBase
 
   /*---------------------------------------------------------------------------*/
 
-  const VertexType* getTargetVertex(const EdgeType& edge) const
+  const VertexType* getTargetVertex(EdgeType const& edge) const
   {
     auto edge_entry = m_edge_to_vertex_map.find(edge);
     if (edge_entry != m_edge_to_vertex_map.end())
@@ -366,7 +366,7 @@ class GraphBase
 
   /*---------------------------------------------------------------------------*/
 
-  ConnectedEdgeSet inEdges(const VertexType& vertex)
+  ConnectedEdgeSet inEdges(VertexType const& vertex)
   {
     auto found_vertex = m_adjacency_list_transposed.find(vertex);
     if (found_vertex == m_adjacency_list_transposed.end()) {
@@ -378,7 +378,7 @@ class GraphBase
 
   /*---------------------------------------------------------------------------*/
 
-  ConnectedEdgeSet outEdges(const VertexType& vertex)
+  ConnectedEdgeSet outEdges(VertexType const& vertex)
   {
     auto found_vertex = m_adjacency_list.find(vertex);
     if (found_vertex == m_adjacency_list.end()) {
@@ -443,7 +443,7 @@ class GraphBase
     std::vector<int> indexes(vertex_array.size());
     std::iota(indexes.begin(), indexes.end(), 0);
     auto connected_vertex_index = std::find_if(indexes.begin(), indexes.end(),
-                                               [&connected_vertex,vertex_array](const int index) {
+                                               [&connected_vertex,vertex_array](auto const index) {
                                                  return (!(GraphBase::m_vertex_less_comparator(std::cref(vertex_array[index]), std::cref(connected_vertex)))
                                                          &&
                                                          !(GraphBase::m_vertex_less_comparator(std::cref(connected_vertex), std::cref(vertex_array[index]))));
