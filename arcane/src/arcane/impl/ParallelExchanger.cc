@@ -269,12 +269,13 @@ _processExchangeCollective()
   ByteUniqueArray send_buf(total_send);
   ByteUniqueArray recv_buf(total_recv);
   bool is_verbose = (m_verbosity_level>=1);
-  if (is_verbose){
+  if (m_verbosity_level>=2){
     for( Integer i=0; i<nb_rank; ++i ){
-      info() << "INFOS: rank=" << i << " send_count=" << send_counts[i]
-             << " send_idx=" << send_indexes[i]
-             << " recv_count=" << recv_counts[i]
-             << " recv_idx=" << recv_indexes[i];
+      if (send_counts[i]!=0 || recv_counts[i]!=0)
+        info() << "INFOS: rank=" << i << " send_count=" << send_counts[i]
+               << " send_idx=" << send_indexes[i]
+               << " recv_count=" << recv_counts[i]
+               << " recv_idx=" << recv_indexes[i];
     }
   }
 
