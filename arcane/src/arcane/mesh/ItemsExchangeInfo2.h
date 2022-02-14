@@ -175,6 +175,7 @@ class ARCANE_MESH_EXPORT ItemsExchangeInfo2
   UniqueArray<IItemFamilySerializeStep*> m_serialize_steps;
 
   Int32 m_max_pending_message = 0;
+  bool m_use_collective_exchange = false;
 
  private:
 
