@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelExchanger.cc                                        (C) 2000-2021 */
+/* ParallelExchanger.cc                                        (C) 2000-2022 */
 /*                                                                           */
 /* Echange d'informations entre processeurs.                                 */
 /*---------------------------------------------------------------------------*/
@@ -14,6 +14,8 @@
 #include "arcane/impl/ParallelExchanger.h"
 
 #include "arcane/utils/NotSupportedException.h"
+#include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/MathUtils.h"
 #include "arcane/IParallelMng.h"
@@ -41,6 +43,9 @@ ParallelExchanger(IParallelMng* pm)
 , m_own_recv_message(0)
 , m_exchange_mode(EM_Independant)
 {
+  String use_collective_str = platform::getEnvironmentVariable("ARCANE_PARALLEL_EXCHANGER_USE_COLLECTIVE");
+  if (use_collective_str=="1" || use_collective_str=="TRUE")
+    m_exchange_mode = EM_Collective;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -239,22 +244,31 @@ _processExchangeCollective()
   }
 
   // Détermine le nombre total d'infos à envoyer et recevoir
-  //TODO: Vérifier débordement.
 
   //TODO: En cas débordement, il faudrait le faire en plusieurs morceaux
   // ou alors revenir aux échanges point à point.
   Int32 total_send = 0;
   Int32 total_recv = 0;
+  Int64 int64_total_send = 0;
+  Int64 int64_total_recv = 0;
   for( Integer i=0; i<nb_rank; ++i ){
     send_indexes[i] = total_send;
     recv_indexes[i] = total_recv;
     total_send += send_counts[i];
     total_recv += recv_counts[i];
+    int64_total_send += send_counts[i];
+    int64_total_recv += recv_counts[i];
   }
+
+  // Vérifie qu'on ne déborde pas.
+  if (int64_total_send!=total_send)
+    ARCANE_FATAL("Message to send is too big size={0} max=2^31",int64_total_send);
+  if (int64_total_recv!=total_recv)
+    ARCANE_FATAL("Message to receive is too big size={0} max=2^31",int64_total_recv);
 
   ByteUniqueArray send_buf(total_send);
   ByteUniqueArray recv_buf(total_recv);
-  bool is_verbose = false;
+  bool is_verbose = (m_verbosity_level>=1);
   if (is_verbose){
     for( Integer i=0; i<nb_rank; ++i ){
       info() << "INFOS: rank=" << i << " send_count=" << send_counts[i]
@@ -277,8 +291,8 @@ _processExchangeCollective()
     dest_buf.copy(val_buf);
   }
 
-  info() << "AllToAllVariable total_send=" << total_send
-         << " total_recv=" << total_recv;
+  info(4) << "AllToAllVariable total_send=" << total_send
+          << " total_recv=" << total_recv;
 
   {
     Timer::SimplePrinter sp(traceMng(),"ParallelExchanger: sending values with AllToAll");
