@@ -379,8 +379,8 @@ class ArrayExtents<4>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<>
-class ArrayExtentsWithOffset<1>
+template<typename LayoutType>
+class ArrayExtentsWithOffset<1,LayoutType>
 : private ArrayExtents<1>
 {
  public:
@@ -420,8 +420,8 @@ class ArrayExtentsWithOffset<1>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<>
-class ArrayExtentsWithOffset<2>
+template<typename LayoutType>
+class ArrayExtentsWithOffset<2,LayoutType>
 : private ArrayExtents<2>
 {
  public:
@@ -463,8 +463,8 @@ class ArrayExtentsWithOffset<2>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<>
-class ArrayExtentsWithOffset<3>
+template<typename LayoutType>
+class ArrayExtentsWithOffset<3,LayoutType>
 : private ArrayExtents<3>
 {
  public:
@@ -517,8 +517,8 @@ class ArrayExtentsWithOffset<3>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<>
-class ArrayExtentsWithOffset<4>
+template<typename LayoutType>
+class ArrayExtentsWithOffset<4,LayoutType>
 : private ArrayExtents<4>
 {
  public:

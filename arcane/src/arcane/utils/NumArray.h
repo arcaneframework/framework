@@ -100,7 +100,7 @@ namespace impl
  * initialisé (\ref arcanedoc_accelerator). C'est pourquoi il ne faut pas
  * utiliser de variables globales de cette classe ou d'une classe dérivée.
  */
-template<typename DataType,int RankValue>
+template<typename DataType,int RankValue,typename LayoutType>
 class NumArrayBase
 : public NumArrayBaseCommon
 {
@@ -149,7 +149,7 @@ class NumArrayBase
   void fill(const DataType& v) { m_data.fill(v); }
   Int32 nbDimension() const { return RankValue; }
   ArrayExtents<RankValue> extents() const { return m_span.extents(); }
-  ArrayExtentsWithOffset<RankValue> extentsWithOffset() const
+  ArrayExtentsWithOffset<RankValue,LayoutType> extentsWithOffset() const
   {
     return m_span.extentsWithOffset();
   }
@@ -208,9 +208,9 @@ class NumArrayBase
  *
  * \sa NumArrayBase
  */
-template<class DataType>
-class NumArray<DataType,1>
-: public NumArrayBase<DataType,1>
+template<class DataType,typename LayoutType>
+class NumArray<DataType,1,LayoutType>
+: public NumArrayBase<DataType,1,LayoutType>
 {
  public:
   using BaseClass = NumArrayBase<DataType,1>;
@@ -257,9 +257,9 @@ class NumArray<DataType,1>
  *
  * \sa NumArrayBase
  */
-template<class DataType>
-class NumArray<DataType,2>
-: public NumArrayBase<DataType,2>
+template<class DataType,typename LayoutType>
+class NumArray<DataType,2,LayoutType>
+: public NumArrayBase<DataType,2,LayoutType>
 {
  public:
   using BaseClass = NumArrayBase<DataType,2>;
@@ -307,9 +307,9 @@ class NumArray<DataType,2>
  *
  * \sa NumArrayBase
  */
-template<class DataType>
-class NumArray<DataType,3>
-: public NumArrayBase<DataType,3>
+template<class DataType,typename LayoutType>
+class NumArray<DataType,3,LayoutType>
+: public NumArrayBase<DataType,3,LayoutType>
 {
  public:
   using BaseClass = NumArrayBase<DataType,3>;
@@ -358,9 +358,9 @@ class NumArray<DataType,3>
  *
  * \sa NumArrayBase
  */
-template<class DataType>
-class NumArray<DataType,4>
-: public NumArrayBase<DataType,4>
+template<class DataType,typename LayoutType>
+class NumArray<DataType,4,LayoutType>
+: public NumArrayBase<DataType,4,LayoutType>
 {
  public:
   using BaseClass = NumArrayBase<DataType,4>;
