@@ -16,6 +16,8 @@
 
 #include "arcane/utils/ArrayView.h"
 
+#include "arccore/base/Span.h"
+
 #include <array>
 
 /*
