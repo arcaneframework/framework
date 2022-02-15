@@ -195,6 +195,17 @@ calcul.
 </tr>
 
 <tr>
+<td>MaxIteration</td>
+<td></td>
+<td>Int32</td>
+<td></td>
+<td>Nombre maximum d'itérations à effectuer pour l'exécution. Si le
+nombre d'itération spécifié par cette variable est atteint, le calcul
+s'arrête.
+</td>
+</tr>
+
+<tr>
 <td>OutputLevel</td>
 <td>ARCANE_OUTPUT_LEVEL</td>
 <td>Int32</td>
