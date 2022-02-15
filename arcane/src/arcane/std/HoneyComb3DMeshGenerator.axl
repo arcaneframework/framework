@@ -1,0 +1,42 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<service name="HoneyComb3DMeshGenerator" type="caseoption">
+  <userclass>User</userclass>
+  <description>
+    Générateur de maillage hexagonal 3D.
+  </description>
+
+  <interface name="Arcane::IMeshBuilder" />
+
+  <options>
+    <simple name="origin" type="real2" >
+      <description>Origine 2D du maillage. Les valeurs pour la hauteur
+      sont données par l'option 'heights'</description>
+      <userclass>User</userclass>
+    </simple>
+    <simple name="pitch-size" type="real" >
+      <description>
+        Valeur du pitch qui est la distance entre deux côtés opposés d'un hexagone.
+        Doit être strictement positif.
+      </description>
+      <userclass>User</userclass>
+    </simple>
+    <simple name="nb-layer" type="integer">
+      <description>
+        Nombre de couches d'hexagones. Si 1, il n'y a que l'hexagone central.
+        Doit être strictement positif.
+      </description>
+      <userclass>User</userclass>
+    </simple>
+    <simple name="heights" type="real[]">
+      <description>
+        Liste des hauteurs des mailles. Ce tableau doit avoir au moins
+        2 valeurs. Les valeurs doivent être croissantes. Le nombre de
+        couches de mailles en hauteur est égal au nombre d'éléments de
+        ce tableau moins 1.
+      </description>
+      <userclass>User</userclass>
+    </simple>
+
+  </options>
+
+</service>

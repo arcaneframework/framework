@@ -106,4 +106,5 @@ set(AXL_FILES
   Cartesian3DMeshGenerator
   Sod3DMeshGenerator
   HoneyComb2DMeshGenerator
+  HoneyComb3DMeshGenerator
  )
