@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumArray.h                                                  (C) 2000-2021 */
+/* NumArray.h                                                  (C) 2000-2022 */
 /*                                                                           */
 /* Tableaux multi-dimensionnel pour les types numériques.                    */
 /*---------------------------------------------------------------------------*/
@@ -16,9 +16,8 @@
 
 #include "arcane/utils/Array2.h"
 #include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/ArrayExtents.h"
-#include "arcane/utils/ArrayBounds.h"
 #include "arcane/utils/MemoryRessource.h"
+#include "arcane/utils/MDSpan.h"
 
 /*
  * ATTENTION:
@@ -35,340 +34,6 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Classe de base des vues multi-dimensionnelles.
- *
- * \warning API en cours de définition.
- *
- * Cette classe s'inspire la classe std::mdspan en cours de définition
- * (voir http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0009r12.html)
- *
- * Cette classe est utilisée pour gérer les vues sur les tableaux des types
- * numériques qui sont accessibles sur accélérateur. \a RankValue est le
- * rang du tableau (nombre de dimensions) et \a DataType le type de données
- * associé.
- *
- * En général cette classe n'est pas utilisée directement mais par l'intermédiaire
- * d'une de ses spécialisations suivant le rang comme MDSpan<DataType,1>,
- * MDSpan<DataType,2>, MDSpan<DataType,3> ou MDSpan<DataType,4>.
- */
-template<typename DataType,int RankValue>
-class MDSpanBase
-{
-  using UnqualifiedValueType = std::remove_cv_t<DataType>;
-  friend class NumArrayBase<UnqualifiedValueType,RankValue>;
-  // Pour que MDSpan<const T> ait accès à MDSpan<T>
-  friend class MDSpanBase<const UnqualifiedValueType,RankValue>;
- public:
-  MDSpanBase() = default;
-  ARCCORE_HOST_DEVICE MDSpanBase(DataType* ptr,ArrayExtentsWithOffset<RankValue> extents)
-  : m_ptr(ptr), m_extents(extents)
-  {
-  }
-  // Constructeur MDSpan<const T> à partir d'un MDSpan<T>
-  template<typename X,typename = std::enable_if_t<std::is_same_v<X,UnqualifiedValueType>>>
-  ARCCORE_HOST_DEVICE MDSpanBase(const MDSpanBase<X,RankValue>& rhs)
-  : m_ptr(rhs.m_ptr), m_extents(rhs.m_extents){}
- public:
-  ARCCORE_HOST_DEVICE DataType* _internalData() { return m_ptr; }
-  ARCCORE_HOST_DEVICE const DataType* _internalData() const { return m_ptr; }
- public:
-  ArrayExtents<RankValue> extents() const
-  {
-    return m_extents.extents();
-  }
-  ArrayExtentsWithOffset<RankValue> extentsWithOffset() const
-  {
-    return m_extents;
-  }
-  Int64 extent(int i) const { return m_extents(i); }
- public:
-  ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<RankValue> idx) const
-  {
-    return m_extents.offset(idx);
-  }
-  //! Valeur pour l'élément \a i
-  ARCCORE_HOST_DEVICE DataType& operator()(ArrayBoundsIndex<RankValue> idx) const
-  {
-    return m_ptr[offset(idx)];
-  }
-  //! Pointeur sur la valeur pour l'élément \a i
-  ARCCORE_HOST_DEVICE DataType* ptrAt(ArrayBoundsIndex<RankValue> idx) const
-  {
-    return m_ptr+offset(idx);
-  }
- public:
-  MDSpanBase<const DataType,RankValue> constSpan() const
-  { return MDSpanBase<const DataType,RankValue>(m_ptr,m_extents); }
-  Span<DataType> to1DSpan() { return { m_ptr, m_extents.totalNbElement() }; }
-  Span<const DataType> to1DSpan() const { return { m_ptr, m_extents.totalNbElement() }; }
- private:
-  // Utilisé uniquement par NumArrayBase pour la copie
-  Span2<const DataType> _internalTo2DSpan() const
-  {
-    Int64 dim1_size = m_extents(0);
-    Int64 dim2_size = 1;
-    for (int i=1; i<RankValue; ++i )
-      dim2_size *= m_extents(i);
-    return { m_ptr, dim1_size, dim2_size };
-  }
- protected:
-  DataType* m_ptr = nullptr;
-  ArrayExtentsWithOffset<RankValue> m_extents;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<class DataType,int RankValue>
-class MDSpan;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Vue multi-dimensionnelle à 1 dimension.
- */
-template<class DataType>
-class MDSpan<DataType,1>
-: public MDSpanBase<DataType,1>
-{
-  using UnqualifiedValueType = std::remove_cv_t<DataType>;
-  friend class NumArrayBase<UnqualifiedValueType,1>;
-  using BaseClass = MDSpanBase<DataType,1>;
-  using BaseClass::m_extents;
-  using BaseClass::m_ptr;
- public:
-  using BaseClass::offset;
-  using BaseClass::ptrAt;
-  using BaseClass::operator();
- public:
-  //! Construit un tableau vide
-  MDSpan() = default;
-  //! Construit un tableau
-  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,Int64 dim1_size)
-  {
-    m_extents.setSize(dim1_size);
-    m_ptr = ptr;
-  }
-  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<1> extents_and_offset)
-  : BaseClass(ptr,extents_and_offset) {}
-
- public:
-  //! Valeur de la première dimension
-  ARCCORE_HOST_DEVICE Int64 dim1Size() const { return m_extents(0); }
- public:
-  ARCCORE_HOST_DEVICE Int64 offset(Int64 i) const
-  {
-    return m_extents.offset(i);
-  }
-  //! Valeur pour l'élément \a i
-  ARCCORE_HOST_DEVICE DataType& operator()(Int64 i) const
-  {
-    return m_ptr[offset(i)];
-  }
-  //! Pointeur sur la valeur pour l'élément \a i
-  ARCCORE_HOST_DEVICE DataType* ptrAt(Int64 i) const
-  {
-    return m_ptr+offset(i);
-  }
- public:
-  MDSpan<const DataType,1> constSpan() const
-  { return MDSpan<const DataType,1>(m_ptr,m_extents); }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Vue multi-dimensionnelle à 2 dimensions.
- */
-template<class DataType>
-class MDSpan<DataType,2>
-: public MDSpanBase<DataType,2>
-{
-  using UnqualifiedValueType = std::remove_cv_t<DataType>;
-  friend class NumArrayBase<UnqualifiedValueType,2>;
-  using BaseClass = MDSpanBase<DataType,2>;
-  using BaseClass::m_extents;
-  using BaseClass::m_ptr;
- public:
-  using BaseClass::offset;
-  using BaseClass::ptrAt;
-  using BaseClass::operator();
- public:
-  //! Construit un tableau vide
-  MDSpan() : MDSpan(nullptr,0,0){}
-  //! Construit une vue
-  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,Int64 dim1_size,Int64 dim2_size)
-  {
-    m_extents.setSize(dim1_size,dim2_size);
-    m_ptr = ptr;
-  }
-  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<2> extents_and_offset)
-  : BaseClass(ptr,extents_and_offset) {}
-
- public:
-  //! Valeur de la première dimension
-  ARCCORE_HOST_DEVICE Int64 dim1Size() const { return m_extents(0); }
-  //! Valeur de la deuxième dimension
-  ARCCORE_HOST_DEVICE Int64 dim2Size() const { return m_extents(1); }
- public:
-  ARCCORE_HOST_DEVICE Int64 offset(Int64 i,Int64 j) const
-  {
-    return m_extents.offset(i,j);
-  }
-  //! Valeur pour l'élément \a i,j
-  ARCCORE_HOST_DEVICE DataType& operator()(Int64 i,Int64 j) const
-  {
-    return m_ptr[offset(i,j)];
-  }
-  //! Pointeur sur la valeur pour l'élément \a i,j
-  ARCCORE_HOST_DEVICE DataType* ptrAt(Int64 i,Int64 j) const
-  {
-    return m_ptr + offset(i,j);
-  }
- public:
-  MDSpan<const DataType,2> constSpan() const
-  { return MDSpan<const DataType,2>(m_ptr,m_extents); }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Vue multi-dimensionnelle à 3 dimensions.
- */
-template<class DataType>
-class MDSpan<DataType,3>
-: public MDSpanBase<DataType,3>
-{
-  using UnqualifiedValueType = std::remove_cv_t<DataType>;
-  friend class NumArrayBase<UnqualifiedValueType,3>;
-  using BaseClass = MDSpanBase<DataType,3>;
-  using BaseClass::m_extents;
-  using BaseClass::m_ptr;
-  using value_type = typename std::remove_cv<DataType>::type;
- public:
-  using BaseClass::offset;
-  using BaseClass::ptrAt;
-  using BaseClass::operator();
- public:
-  //! Construit un tableau vide
-  MDSpan() = default;
-  //! Construit une vue
-  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
-  {
-    _setSize(ptr,dim1_size,dim2_size,dim3_size);
-  }
-  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<3> extents_and_offset)
-  : BaseClass(ptr,extents_and_offset) {}
-  template<typename X,typename = std::enable_if_t<std::is_same_v<X,UnqualifiedValueType>>>
-  ARCCORE_HOST_DEVICE MDSpan(const MDSpan<X,3>& rhs) : BaseClass(rhs){}
- private:
-  void _setSize(DataType* ptr,Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
-  {
-    m_extents.setSize(dim1_size,dim2_size,dim3_size);
-    m_ptr = ptr;
-  }
- public:
-  //! Valeur de la première dimension
-  ARCCORE_HOST_DEVICE Int64 dim1Size() const { return m_extents(0); }
-  //! Valeur de la deuxième dimension
-  ARCCORE_HOST_DEVICE Int64 dim2Size() const { return m_extents(1); }
-  //! Valeur de la troisième dimension
-  ARCCORE_HOST_DEVICE Int64 dim3Size() const { return m_extents(2); }
- public:
-  ARCCORE_HOST_DEVICE Int64 offset(Int64 i,Int64 j,Int64 k) const
-  {
-    return m_extents.offset(i,j,k);
-  }
-  //! Valeur pour l'élément \a i,j,k
-  ARCCORE_HOST_DEVICE DataType& operator()(Int64 i,Int64 j,Int64 k) const
-  {
-    return m_ptr[offset(i,j,k)];
-  }
-  //! Pointeur sur la valeur pour l'élément \a i,j,k
-  ARCCORE_HOST_DEVICE DataType* ptrAt(Int64 i,Int64 j,Int64 k) const
-  {
-    return m_ptr+offset(i,j,k);
-  }
- public:
-  MDSpan<const DataType,3> constSpan() const
-  { return MDSpan<const DataType,3>(m_ptr,m_extents); }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Vue multi-dimensionnelle à 4 dimensions.
- */
-template<class DataType>
-class MDSpan<DataType,4>
-: public MDSpanBase<DataType,4>
-{
-  using UnqualifiedValueType = std::remove_cv_t<DataType>;
-  friend class NumArrayBase<UnqualifiedValueType,4>;
-  using BaseClass = MDSpanBase<DataType,4>;
-  using BaseClass::m_extents;
-  using BaseClass::m_ptr;
- public:
-  using BaseClass::offset;
-  using BaseClass::ptrAt;
-  using BaseClass::operator();
- public:
-  //! Construit un tableau vide
-  MDSpan() = default;
-  //! Construit une vue
-  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,Int64 dim1_size,Int64 dim2_size,
-                             Int64 dim3_size,Int64 dim4_size)
-  {
-    _setSize(ptr,dim1_size,dim2_size,dim3_size,dim4_size);
-  }
-  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<4> extents_and_offset)
-  : BaseClass(ptr,extents_and_offset) {}
- private:
-  void _setSize(DataType* ptr,Int64 dim1_size,Int64 dim2_size,Int64 dim3_size,Int64 dim4_size)
-  {
-    m_extents.setSize(dim1_size,dim2_size,dim3_size,dim4_size);
-    m_ptr = ptr;
-  }
-
- public:
-  //! Valeur de la première dimension
-  Int64 dim1Size() const { return m_extents(0); }
-  //! Valeur de la deuxième dimension
-  Int64 dim2Size() const { return m_extents(1); }
-  //! Valeur de la troisième dimension
-  Int64 dim3Size() const { return m_extents(2); }
-  //! Valeur de la quatrième dimension
-  Int64 dim4Size() const { return m_extents(3); }
- public:
-  ARCCORE_HOST_DEVICE Int64 offset(Int64 i,Int64 j,Int64 k,Int64 l) const
-  {
-    return m_extents.offset(i,j,k,l);
-  }
- public:
-  //! Valeur pour l'élément \a i,j,k,l
-  ARCCORE_HOST_DEVICE DataType& operator()(Int64 i,Int64 j,Int64 k,Int64 l) const
-  {
-    return m_ptr[offset(i,j,k,l)];
-  }
-  //! Pointeur sur la valeur pour l'élément \a i,j,k
-  ARCCORE_HOST_DEVICE DataType* ptrAt(Int64 i,Int64 j,Int64 k,Int64 l) const
-  {
-    return m_ptr + offset(i,j,k,l);
-  }
- public:
-  MDSpan<const DataType,4> constSpan() const
-  { return MDSpan<const DataType,4>(m_ptr,m_extents); }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 class ARCANE_UTILS_EXPORT NumArrayBaseCommon
 {
  protected:
@@ -378,6 +43,36 @@ class ARCANE_UTILS_EXPORT NumArrayBaseCommon
   static void _copy(Span<const std::byte> from, eMemoryRessource from_mem,
                     Span<std::byte> to, eMemoryRessource to_mem);
 };
+
+namespace impl
+{
+  // Wrapper de Arccore::Array pour la classe NumArray
+  template<typename DataType>
+  class NumArrayContainer
+  : private Arccore::Array<DataType>
+  {
+   private:
+    using BaseClass = Arccore::Array<DataType>;
+   public:
+    using BaseClass::capacity;
+    using BaseClass::fill;
+   public:
+    explicit NumArrayContainer(IMemoryAllocator* a)
+    {
+      this->_initFromAllocator(a,0);
+    }
+    NumArrayContainer(const NumArrayContainer<DataType>& rhs) : BaseClass()
+    {
+      this->_initFromSpan(rhs.to1DSpan());
+    }
+   public:
+    void resize(Int64 new_size) { BaseClass::_resize(new_size); }
+    Span<DataType> to1DSpan() { return BaseClass::span(); }
+    Span<const DataType> to1DSpan() const { return BaseClass::constSpan(); }
+    void swap(NumArrayContainer<DataType>& rhs) { BaseClass::_swap(rhs); }
+    void copy(Span<const DataType> rhs) { BaseClass::_copy(rhs.data()); }
+  };
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -397,6 +92,8 @@ class ARCANE_UTILS_EXPORT NumArrayBaseCommon
  * permet de retourner la valeur en lecture d'un élément. Pour modifier un élément,
  * il faut utiliser la méthode s().
  *
+ * \warning Le redimensionnement via resize() ne conserve pas les valeurs existantes
+ *
  * \warning Cette classe utilise par défaut un allocateur spécifique qui permet de
  * rendre accessible ces valeurs à la fois sur l'hôte (CPU) et l'accélérateur.
  * Néanmoins, il faut pour cela que le runtime associé à l'accélérateur ait été
@@ -406,18 +103,15 @@ class ARCANE_UTILS_EXPORT NumArrayBaseCommon
 template<typename DataType,int RankValue>
 class NumArrayBase
 : public NumArrayBaseCommon
-
 {
-  // On utilise pour l'instant un UniqueArray2 pour conserver les valeurs.
-  // La première dimension du UniqueArray2 correspond à extent(0) et la
-  // deuxième dimension au dimensions restantes. Par exemple pour un NumArray<Int32,3>
-  // ayant comme nombre d'éléments dans chaque dimension (5,9,3), cela
-  // correspond à un 'UniqueArray2' dont le nombre d'éléments est (5,9*3).
  public:
+
   using ConstSpanType = MDSpan<const DataType,RankValue>;
   using SpanType = MDSpan<DataType,RankValue>;
+  using ArrayWrapper = impl::NumArrayContainer<DataType>;
 
  public:
+
   //! Nombre total d'éléments du tableau
   Int64 totalNbElement() const { return m_total_nb_element; }
   //! Nombre d'éléments du rang \a i
@@ -433,7 +127,7 @@ class NumArrayBase
   }
  protected:
   NumArrayBase() : m_data(_getDefaultAllocator()){}
-  NumArrayBase(eMemoryRessource r) : m_data(_getDefaultAllocator(r)), m_memory_ressource(r){}
+  explicit NumArrayBase(eMemoryRessource r) : m_data(_getDefaultAllocator(r)), m_memory_ressource(r){}
   explicit NumArrayBase(ArrayExtents<RankValue> extents)
   : m_data(_getDefaultAllocator()), m_memory_ressource(eMemoryRessource::UnifiedMemory)
   {
@@ -448,7 +142,7 @@ class NumArrayBase
     for (int i=1; i<RankValue; ++i )
       dim2_size *= extent(i);
     m_total_nb_element = dim1_size * dim2_size;
-    m_data.resizeNoInit(dim1_size,dim2_size);
+    m_data.resize(m_total_nb_element);
     m_span.m_ptr = m_data.to1DSpan().data();
   }
  public:
@@ -469,7 +163,7 @@ class NumArrayBase
   void copy(ConstSpanType rhs)
   {
     _checkHost(m_memory_ressource);
-    m_data.copy(rhs._internalTo2DSpan());
+    m_data.copy(rhs.to1DSpan());
   }
   void copy(const NumArrayBase<DataType,RankValue>& rhs)
   {
@@ -499,7 +193,7 @@ class NumArrayBase
   DataType* _internalData() { return m_span._internalData(); }
  protected:
   MDSpan<DataType,RankValue> m_span;
-  UniqueArray2<DataType> m_data;
+  ArrayWrapper m_data;
   Int64 m_total_nb_element = 0;
   eMemoryRessource m_memory_ressource = eMemoryRessource::Unknown;
 };
