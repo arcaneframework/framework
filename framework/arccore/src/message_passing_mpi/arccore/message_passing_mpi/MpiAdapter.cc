@@ -1,23 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2020 IFPEN-CEA
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiAdapter.cc                                               (C) 2000-2020 */
+/* MpiAdapter.cc                                               (C) 2000-2021 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant MPI.                               */
 /*---------------------------------------------------------------------------*/
@@ -68,8 +56,10 @@ class MpiAdapter::RequestSet
   RequestSet(ITraceMng* tm) : TraceAccessor(tm)
   {
     m_trace_mng_ref = makeRef(tm);
-    if (arccoreIsCheck())
+    if (arccoreIsCheck()){
+      m_no_check_request = false;
       m_request_error_is_fatal = true;
+    }
     if (Platform::getEnvironmentVariable("ARCCORE_NOREPORT_ERROR_MPIREQUEST")=="TRUE")
       m_is_report_error_in_request = false;
     if (Platform::getEnvironmentVariable("ARCCORE_MPIREQUEST_STACKTRACE")=="TRUE")
@@ -80,24 +70,32 @@ class MpiAdapter::RequestSet
  public:
   void addRequest(MPI_Request request)
   {
+    if (m_no_check_request)
+      return;
     if (m_trace_mpirequest)
       info() << "MpiAdapter: AddRequest r=" << request;
     _addRequest(request,TraceInfo());
   }
   void addRequest(MPI_Request request,const TraceInfo& ti)
   {
+    if (m_no_check_request)
+      return;
     if (m_trace_mpirequest)
       info() << "MpiAdapter: AddRequest r=" << request;
     _addRequest(request,ti);
   }
   void removeRequest(MPI_Request request)
   {
+    if (m_no_check_request)
+      return;
     if (m_trace_mpirequest)
       info() << "MpiAdapter: RemoveRequest r=" << request;
     _removeRequest(request);
   }
   void removeRequest(Iterator request_iter)
   {
+    if (m_no_check_request)
+      return;
     if (request_iter==m_allocated_requests.end()){
       if (m_trace_mpirequest)
         info() << "MpiAdapter: RemoveRequestIter null iterator";
@@ -110,6 +108,9 @@ class MpiAdapter::RequestSet
   //! Vérifie que la requête est dans la liste
   Iterator findRequest(MPI_Request request)
   {
+    if (m_no_check_request)
+      return m_allocated_requests.end();
+
     if (_isEmptyRequest(request))
       return m_allocated_requests.end();
     auto ireq = m_allocated_requests.find(request);
@@ -206,6 +207,8 @@ class MpiAdapter::RequestSet
   bool m_request_error_is_fatal = false;
   bool m_is_report_error_in_request = true;
   bool m_trace_mpirequest = false;
+  //! Vrai si on vérifie pas les requêtes
+  bool m_no_check_request = true;
  private:
   std::map<MPI_Request,RequestInfo> m_allocated_requests;
   bool m_use_trace_full_stack = false;
@@ -361,6 +364,18 @@ bool MpiAdapter::
 isPrintRequestError() const
 {
   return m_request_set->m_is_report_error_in_request;
+}
+
+void MpiAdapter::
+setCheckRequest(bool v)
+{
+  m_request_set->m_no_check_request = !v;
+}
+
+bool MpiAdapter::
+isCheckRequest() const
+{
+  return !m_request_set->m_no_check_request;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -829,6 +844,24 @@ directSendRecv(const void* send_buffer,Int64 send_buffer_size,
 /*---------------------------------------------------------------------------*/
 
 Request MpiAdapter::
+sendNonBlockingNoStat(const void* send_buffer,Int64 send_buffer_size,
+                      Int32 dest_rank,MPI_Datatype data_type,int mpi_tag)
+{
+  void* v_send_buffer = const_cast<void*>(send_buffer);
+  MPI_Request mpi_request = MPI_REQUEST_NULL;
+  int sbuf_size = _checkSize(send_buffer_size);
+  int ret = 0;
+  m_mpi_prof->iSend(v_send_buffer, sbuf_size, data_type, dest_rank, mpi_tag, m_communicator, &mpi_request);
+  if (m_is_trace)
+    info() << " ISend ret=" << ret << " proc=" << dest_rank << " tag=" << mpi_tag << " request=" << mpi_request;
+  ARCCORE_ADD_REQUEST(mpi_request);
+  return buildRequest(ret,mpi_request);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Request MpiAdapter::
 directSend(const void* send_buffer,Int64 send_buffer_size,
            Int32 proc,Int64 elem_size,MPI_Datatype data_type,
            int mpi_tag,bool is_blocked
@@ -929,6 +962,21 @@ commSplit(bool keep)
     return StandaloneMpiMessagePassingMng::create(new_comm, true);
   }
   return nullptr;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Request MpiAdapter::
+receiveNonBlockingNoStat(void* recv_buffer,Int64 recv_buffer_size,
+                         Int32 source_rank,MPI_Datatype data_type,int mpi_tag)
+{
+  int rbuf_size = _checkSize(recv_buffer_size);
+  int ret = 0;
+  MPI_Request mpi_request = MPI_REQUEST_NULL;
+  m_mpi_prof->iRecv(recv_buffer, rbuf_size, data_type, source_rank, mpi_tag, m_communicator, &mpi_request);
+  ARCCORE_ADD_REQUEST(mpi_request);
+  return buildRequest(ret,mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/

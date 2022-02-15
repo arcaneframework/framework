@@ -5,49 +5,73 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FatalErrorException.h                                       (C) 2000-2018 */
+/* StandaloneTraceMessage.h                                    (C) 2000-2021 */
 /*                                                                           */
-/* Exception lorsqu'une erreur fatale est survenue.                          */
+/* Message de trace indépendant du 'ITraceMng'.                              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCCORE_BASE_FATALERROREXCEPTION_H
-#define ARCCORE_BASE_FATALERROREXCEPTION_H
+#ifndef ARCCORE_TRACE_STANDALONETRACEMESSAGE_H
+#define ARCCORE_TRACE_STANDALONETRACEMESSAGE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/base/Exception.h"
+#include "arccore/trace/TraceMessage.h"
+
+#include <sstream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arccore
 {
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \ingroup Core
- * \brief Exception lorsqu'une erreur fatale est survenue.
+ * \brief Gestion d'un message autonome.
  */
-class ARCCORE_BASE_EXPORT FatalErrorException
-: public Exception
+class ARCCORE_TRACE_EXPORT StandaloneTraceMessage
 {
  public:
-	
-  explicit FatalErrorException(const String& where);
-  explicit FatalErrorException(const TraceInfo& where);
-  FatalErrorException(const String& where,const String& message);
-  FatalErrorException(const TraceInfo& where,const String& message);
-  FatalErrorException(const FatalErrorException& rhs) ARCCORE_NOEXCEPT;
-  ~FatalErrorException() ARCCORE_NOEXCEPT {}
+  StandaloneTraceMessage() = default;
+  StandaloneTraceMessage(Trace::eMessageType,int level = TraceMessage::DEFAULT_LEVEL);
+  StandaloneTraceMessage(const TraceMessage& from);
+  StandaloneTraceMessage& operator=(const StandaloneTraceMessage& from);
 
  public:
-	
-  void explain(std::ostream& m) const override;
-
+  std::ostream& file() const { return m_stream; }
+  Trace::eMessageType type() const { return m_type; }
+  int level() const { return m_level; }
+  int color() const { return m_color; }
+ public:
+  std::string value() const { return m_stream.str(); }
  private:
+  //! Flot sur lequel le message est envoyé
+  mutable std::ostringstream m_stream;
+  //! Type de message
+  Trace::eMessageType m_type = Trace::Normal;
+  //! Niveau du message
+  int m_level = TraceMessage::DEFAULT_LEVEL;
+ public:
+  //! Couleur du message.
+  mutable int m_color = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+inline const StandaloneTraceMessage&
+operator<<(const StandaloneTraceMessage& o,const Trace::Color& c)
+{
+  o.m_color = c.m_color;
+  return o;
+}
+
+template<class T> inline const StandaloneTraceMessage&
+operator<<(const StandaloneTraceMessage& o,const T& v)
+{
+  o.file() << v;
+  return o;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -57,4 +81,5 @@ class ARCCORE_BASE_EXPORT FatalErrorException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif
+

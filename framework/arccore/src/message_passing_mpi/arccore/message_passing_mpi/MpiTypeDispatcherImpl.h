@@ -1,19 +1,7 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2020 IFPEN-CEA
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
@@ -318,6 +306,83 @@ allReduce(eReduceType op,Span<Type> send_buf)
     m_adapter->allReduce(send_buf.data(),recv_buf.data(),s,type,operation);
   }
   send_buf.copy(recv_buf);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request MpiTypeDispatcher<Type>::
+nonBlockingAllReduce(eReduceType op,Span<const Type> send_buf,Span<Type> recv_buf)
+{
+  MPI_Datatype type = m_datatype->datatype();
+  Int64 s = send_buf.size();
+  MPI_Op operation = m_datatype->reduceOperator(op);
+  Request request;
+  {
+    MpiLock::Section mls(m_adapter->mpiLock());
+    request = m_adapter->nonBlockingAllReduce(send_buf.data(),recv_buf.data(),s,type,operation);
+  }
+  return request;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request MpiTypeDispatcher<Type>::
+nonBlockingAllToAll(Span<const Type> send_buf,Span<Type> recv_buf,Int32 count)
+{
+  MPI_Datatype type = m_datatype->datatype();
+  return m_adapter->nonBlockingAllToAll(send_buf.data(),recv_buf.data(),count,type);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request MpiTypeDispatcher<Type>::
+nonBlockingAllToAllVariable(Span<const Type> send_buf,
+                            Int32ConstArrayView send_count,
+                            Int32ConstArrayView send_index,
+                            Span<Type> recv_buf,
+                            Int32ConstArrayView recv_count,
+                            Int32ConstArrayView recv_index
+                            )
+{
+  MPI_Datatype type = m_datatype->datatype();
+
+  return m_adapter->nonBlockingAllToAllVariable(send_buf.data(),send_count.data(),
+                                                send_index.data(),recv_buf.data(),
+                                                recv_count.data(),
+                                                recv_index.data(),type);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request MpiTypeDispatcher<Type>::
+nonBlockingBroadcast(Span<Type> send_buf,Int32 rank)
+{
+  MPI_Datatype type = m_datatype->datatype();
+  return m_adapter->nonBlockingBroadcast(send_buf.data(),send_buf.size(),rank,type);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request MpiTypeDispatcher<Type>::
+nonBlockingAllGather(Span<const Type> send_buf,Span<Type> recv_buf)
+{
+  MPI_Datatype type = m_datatype->datatype();
+  return m_adapter->nonBlockingAllGather(send_buf.data(),recv_buf.data(),send_buf.size(),type);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request MpiTypeDispatcher<Type>::
+nonBlockingGather(Span<const Type> send_buf,Span<Type> recv_buf,Int32 rank)
+{
+  MPI_Datatype type = m_datatype->datatype();
+  return m_adapter->nonBlockingGather(send_buf.data(),recv_buf.data(),send_buf.size(),rank,type);
 }
 
 /*---------------------------------------------------------------------------*/

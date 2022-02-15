@@ -7,12 +7,13 @@
 # LIBICONV_FOUND, If false, do not try to use LIBICONV.
 
 # Note: pour CMake, il faut faire un find_package(LibXml2)
-# mais les variables associées sont préfixées par LIBXML2
+# mais les variables associÃ©es sont prÃ©fixÃ©es par LIBXML2
 # au lieu de 'LibXml2'.
+include(${CMAKE_CURRENT_LIST_DIR}/../commands/commands.cmake)
 
 arccon_return_if_package_found(LibXml2)
 
-# Supprime temporairement CMAKE_MODULE_PATH pour éviter une récursion
+# Supprime temporairement CMAKE_MODULE_PATH pour Ã©viter une rÃ©cursion
 # infinie.
 
 set(_SAVED_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})

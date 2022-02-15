@@ -78,6 +78,11 @@ else()
   message(FATAL_ERROR "Invalid value '${ARCCORE_BUILD_TYPE}' for 'ARCCORE_BUILD_TYPE'. Valid values are 'Debug', 'Check' or 'Release'")
 endif()
 
+# S'assure que le mode debug contient le mode check
+if(ARCCORE_DEBUG)
+  set(ARCCORE_CHECK YES)
+endif(ARCCORE_DEBUG)
+
 set(ARCCORE_BUILD_MODE ${ARCCORE_BUILD_MODE} CACHE STRING "Arccore build type (debug,check,release)" FORCE)
 set(ARCCORE_DEBUG ${ARCCORE_DEBUG} CACHE BOOL "Is Arccore in debug mode ?" FORCE)
 set(ARCCORE_CHECK ${ARCCORE_CHECK} CACHE BOOL "Is Arccore in check mode ?" FORCE)
@@ -113,6 +118,20 @@ if (CMAKE_COMPILER_IS_GNUCXX)
     message(FATAL_ERROR "You version of GCC (${CMAKE_CXX_COMPILER_VERSION}) is too old. Version 7+ is required")
   endif()
 endif()
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Version du standard C++ qu'on souhaite utiliser.
+# Les valeurs valides sont 17 ou 20
+if (NOT DEFINED ARCCORE_CXX_STANDARD)
+  set(ARCCORE_CXX_STANDARD 17)
+endif()
+set (ARCCORE_CXX_STANDARD_LIST 17 20)
+if (NOT ${ARCCORE_CXX_STANDARD} IN_LIST ARCCORE_CXX_STANDARD_LIST)
+  message(FATAL_ERROR "Invalid value for '${ARCCORE_CXX_STANDARD}' for ARCCORE_CXX_STANDARD."
+    " Valid values are '${ARCCORE_CXX_STANDARD_LIST}'")
+endif()
+message(STATUS "Compiling with C++ standard: ${ARCCORE_CXX_STANDARD}")
 
 # ----------------------------------------------------------------------------
 # Définit une cible fictive 'arccore_build_compile_flags' et qui contient les

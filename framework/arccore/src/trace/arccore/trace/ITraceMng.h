@@ -1,23 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2020 IFPEN-CEA
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ITraceMng.h                                                 (C) 2000-2020 */
+/* ITraceMng.h                                                 (C) 2000-2021 */
 /*                                                                           */
 /* Gestionnaire des traces.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -30,6 +18,8 @@
 #include "arccore/base/BaseTypes.h"
 #include "arccore/trace/TraceMessage.h"
 #include "arccore/base/RefDeclarations.h"
+
+#include <sstream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -383,6 +373,30 @@ class ARCCORE_TRACE_EXPORT ITraceMng
    * un appel à setClassConfig().
    */
   virtual void visitClassConfigs(IFunctorWithArgumentT<std::pair<String,TraceClassConfig>>* functor) =0;
+
+
+ public:
+
+  /*!
+   * \brief Effectue un fatal() sur un message déjà fabriqué.
+   *
+   * Cette méthode permet d'écrire un code équivalent à:
+   *
+   * \code
+   * fatal() << "MyMessage";
+   * \endcode
+   *
+   * comme ceci:
+   *
+   * \code
+   * fatalMessage(StandaloneTraceMessage{} << "MyMessage");
+   * \endcode
+   *
+   * Cette deuxième solution permet de signaler au compilateur que
+   * la méthode ne retournera pas et ainsi d'éviter certains avertissements
+   * de compilation.
+   */
+  void fatalMessage [[noreturn]] (const StandaloneTraceMessage& o);
 };
 
 /*---------------------------------------------------------------------------*/
