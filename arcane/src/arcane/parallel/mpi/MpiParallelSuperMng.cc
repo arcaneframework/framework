@@ -185,7 +185,7 @@ initMPI(IApplication* app)
     int my_rank = 0;
     // Affiche un message mais seulement un seul processeur.
     MPI_Comm_rank(MPI_COMM_WORLD,&my_rank);
-    if (my_rank!=0)
+    if (my_rank==0)
       app->traceMng()->info() << "WARNING: MPI thread level provided!=wanted ("
                               << thread_provided << "!=" << thread_wanted << ")";
   } 
