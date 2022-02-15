@@ -85,6 +85,11 @@ template class ArrayStridesBase<2>;
 template class ArrayStridesBase<3>;
 template class ArrayStridesBase<4>;
 
+namespace impl
+{
+template class NumArrayContainer<Real>;
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

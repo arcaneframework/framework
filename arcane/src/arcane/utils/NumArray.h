@@ -44,6 +44,36 @@ class ARCANE_UTILS_EXPORT NumArrayBaseCommon
                     Span<std::byte> to, eMemoryRessource to_mem);
 };
 
+namespace impl
+{
+  // Wrapper de Arccore::Array pour la classe NumArray
+  template<typename DataType>
+  class NumArrayContainer
+  : private Arccore::Array<DataType>
+  {
+   private:
+    using BaseClass = Arccore::Array<DataType>;
+   public:
+    using BaseClass::capacity;
+    using BaseClass::fill;
+   public:
+    explicit NumArrayContainer(IMemoryAllocator* a)
+    {
+      this->_initFromAllocator(a,0);
+    }
+    NumArrayContainer(const NumArrayContainer<DataType>& rhs) : BaseClass()
+    {
+      this->_initFromSpan(rhs.to1DSpan());
+    }
+   public:
+    void resize(Int64 new_size) { BaseClass::_resize(new_size); }
+    Span<DataType> to1DSpan() { return BaseClass::span(); }
+    Span<const DataType> to1DSpan() const { return BaseClass::constSpan(); }
+    void swap(NumArrayContainer<DataType>& rhs) { BaseClass::_swap(rhs); }
+    void copy(Span<const DataType> rhs) { BaseClass::_copy(rhs.data()); }
+  };
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -62,6 +92,8 @@ class ARCANE_UTILS_EXPORT NumArrayBaseCommon
  * permet de retourner la valeur en lecture d'un élément. Pour modifier un élément,
  * il faut utiliser la méthode s().
  *
+ * \warning Le redimensionnement via resize() ne conserve pas les valeurs existantes
+ *
  * \warning Cette classe utilise par défaut un allocateur spécifique qui permet de
  * rendre accessible ces valeurs à la fois sur l'hôte (CPU) et l'accélérateur.
  * Néanmoins, il faut pour cela que le runtime associé à l'accélérateur ait été
@@ -71,18 +103,15 @@ class ARCANE_UTILS_EXPORT NumArrayBaseCommon
 template<typename DataType,int RankValue>
 class NumArrayBase
 : public NumArrayBaseCommon
-
 {
-  // On utilise pour l'instant un UniqueArray2 pour conserver les valeurs.
-  // La première dimension du UniqueArray2 correspond à extent(0) et la
-  // deuxième dimension au dimensions restantes. Par exemple pour un NumArray<Int32,3>
-  // ayant comme nombre d'éléments dans chaque dimension (5,9,3), cela
-  // correspond à un 'UniqueArray2' dont le nombre d'éléments est (5,9*3).
  public:
+
   using ConstSpanType = MDSpan<const DataType,RankValue>;
   using SpanType = MDSpan<DataType,RankValue>;
+  using ArrayWrapper = impl::NumArrayContainer<DataType>;
 
  public:
+
   //! Nombre total d'éléments du tableau
   Int64 totalNbElement() const { return m_total_nb_element; }
   //! Nombre d'éléments du rang \a i
@@ -98,7 +127,7 @@ class NumArrayBase
   }
  protected:
   NumArrayBase() : m_data(_getDefaultAllocator()){}
-  NumArrayBase(eMemoryRessource r) : m_data(_getDefaultAllocator(r)), m_memory_ressource(r){}
+  explicit NumArrayBase(eMemoryRessource r) : m_data(_getDefaultAllocator(r)), m_memory_ressource(r){}
   explicit NumArrayBase(ArrayExtents<RankValue> extents)
   : m_data(_getDefaultAllocator()), m_memory_ressource(eMemoryRessource::UnifiedMemory)
   {
@@ -113,7 +142,7 @@ class NumArrayBase
     for (int i=1; i<RankValue; ++i )
       dim2_size *= extent(i);
     m_total_nb_element = dim1_size * dim2_size;
-    m_data.resizeNoInit(dim1_size,dim2_size);
+    m_data.resize(m_total_nb_element);
     m_span.m_ptr = m_data.to1DSpan().data();
   }
  public:
@@ -134,7 +163,7 @@ class NumArrayBase
   void copy(ConstSpanType rhs)
   {
     _checkHost(m_memory_ressource);
-    m_data.copy(rhs._internalTo2DSpan());
+    m_data.copy(rhs.to1DSpan());
   }
   void copy(const NumArrayBase<DataType,RankValue>& rhs)
   {
@@ -164,7 +193,7 @@ class NumArrayBase
   DataType* _internalData() { return m_span._internalData(); }
  protected:
   MDSpan<DataType,RankValue> m_span;
-  UniqueArray2<DataType> m_data;
+  ArrayWrapper m_data;
   Int64 m_total_nb_element = 0;
   eMemoryRessource m_memory_ressource = eMemoryRessource::Unknown;
 };
