@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayExtents.h                                              (C) 2000-2021 */
+/* ArrayExtents.h                                              (C) 2000-2022 */
 /*                                                                           */
 /* Gestion du nombre d'éléments par dimension pour les tableaux N-dimensions.*/
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,7 @@
 
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/ArrayBoundsIndex.h"
+#include "arcane/utils/ArrayLayout.h"
 
 #include "arccore/base/Span.h"
 
@@ -329,6 +330,7 @@ class ArrayExtentsWithOffset<1,LayoutType>
   using BaseClass::asSpan;
   using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
+  using Layout = LayoutType;
  public:
   ArrayExtentsWithOffset() = default;
   ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<1> rhs)
@@ -370,6 +372,7 @@ class ArrayExtentsWithOffset<2,LayoutType>
   using BaseClass::asSpan;
   using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
+  using Layout = LayoutType;
  public:
   ArrayExtentsWithOffset() = default;
   ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<2> rhs)
@@ -383,7 +386,7 @@ class ArrayExtentsWithOffset<2,LayoutType>
   ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<2> idx) const
   {
     BaseClass::_checkIndex(idx);
-    return m_extents[1]*idx.id0() + idx.id1();
+    return LayoutType::offset(idx,m_extents[LayoutType::LastExtent]);
   }
   ARCCORE_HOST_DEVICE void setSize(Int64 dim1_size,Int64 dim2_size)
   {
@@ -410,6 +413,7 @@ class ArrayExtentsWithOffset<3,LayoutType>
   using BaseClass::asSpan;
   using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
+  using Layout = LayoutType;
  public:
   ArrayExtentsWithOffset() = default;
   ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<3> rhs)
@@ -424,7 +428,7 @@ class ArrayExtentsWithOffset<3,LayoutType>
   ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<3> idx) const
   {
     this->_checkIndex(idx);
-    return (m_dim23_size*idx.id0()) + m_extents[2]*idx.id1() + idx.id2();
+    return LayoutType::offset(idx,m_extents[LayoutType::LastExtent],m_dim23_size);
   }
   void setSize(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
   {
@@ -439,7 +443,7 @@ class ArrayExtentsWithOffset<3,LayoutType>
  protected:
   ARCCORE_HOST_DEVICE void _computeOffsets()
   {
-    m_dim23_size = m_extents[1] * m_extents[2];
+    m_dim23_size = LayoutType::computeOffsetIndexes(m_extents);
   }
  private:
   Int64 m_dim23_size = 0;
@@ -459,6 +463,7 @@ class ArrayExtentsWithOffset<4,LayoutType>
   using BaseClass::asSpan;
   using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
+  using Layout = LayoutType;
  public:
   ArrayExtentsWithOffset() = default;
   ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<4> rhs)

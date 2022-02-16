@@ -122,6 +122,7 @@ set(ARCANE_SOURCES
   ArrayBoundsIndex.h
   ArrayExtents.h
   ArrayBounds.h
+  ArrayLayout.h
   LoopRanges.h
   ArithmeticException.h
   Array.h
