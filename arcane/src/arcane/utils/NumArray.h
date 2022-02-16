@@ -165,7 +165,7 @@ class NumArrayBase
     _checkHost(m_memory_ressource);
     m_data.copy(rhs.to1DSpan());
   }
-  void copy(const NumArrayBase<DataType,RankValue>& rhs)
+  void copy(const NumArrayBase<DataType,RankValue,LayoutType>& rhs)
   {
     this->resize(rhs.extents());
     _copy(asBytes(rhs.to1DSpan()),rhs.m_memory_ressource,
