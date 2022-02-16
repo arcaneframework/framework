@@ -24,21 +24,25 @@ TEST(NumArray,Basic)
   array1.s(1) = 5.0;
   std::cout << " V=" << array1(1) << "\n";
   array1.resize(7);
+  ASSERT_EQ(array1.totalNbElement(),7);
 
   NumArray<Real,2> array2(2,3);
   array2.s(1,2) = 5.0;
   std::cout << " V=" << array2(1,2) << "\n";
   array2.resize(7,5);
+  ASSERT_EQ(array2.totalNbElement(),(7*5));
 
   NumArray<Real,3> array3(2,3,4);
   array3.s(1,2,3) = 5.0;
   std::cout << " V=" << array3(1,2,3) << "\n";
   array3.resize(12,4,6);
+  ASSERT_EQ(array3.totalNbElement(),(12*4*6));
 
   NumArray<Real,4> array4(2,3,4,5);
   array4.s(1,2,3,4) = 5.0;
   std::cout << " V=" << array4(1,2,3,4) << "\n";
   array4.resize(8,3,7,5);
+  ASSERT_EQ(array4.totalNbElement(),(8*3*7*5));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -166,14 +170,59 @@ TEST(NumArray3,Index)
   ASSERT_TRUE(k==2);
 }
 
+namespace
+{
+template<typename T>
+void _setNumArray3Values(T& a)
+{
+  for( Int32 i=0; i<a.dim1Size(); ++i ){
+    for( Int32 j=0; j<a.dim2Size(); ++j ){
+      for( Int32 k=0; k<a.dim3Size(); ++k ){
+        a.s(i,j,k) = (i*253) + (j*27) + k;
+      }
+    }
+  }
+}
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(NumArray3,Layout)
+{
+  std::cout << "TEST_NUMARRAY3 Layout\n";
+
+  {
+    NumArray<Real,3,RightLayout3> a(2,3,5);
+    ASSERT_EQ(a.totalNbElement(),(2*3*5));
+    _setNumArray3Values(a);
+    auto values = a.to1DSpan();
+    std::cout << "V=" << values << "\n";
+
+  }
+
+  {
+    NumArray<Real,3,LeftLayout3> a(2,3,5);
+    ASSERT_EQ(a.totalNbElement(),(2*3*5));
+    _setNumArray3Values(a);
+    auto values = a.to1DSpan();
+    std::cout << "V=" << values << "\n";
+  }
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-template class NumArray<float,4>;
-template class NumArray<float,3>;
-template class NumArray<float,2>;
+template class NumArray<float,4,RightLayout<4>>;
+template class NumArray<float,3,RightLayout<3>>;
+template class NumArray<float,2,RightLayout<2>>;
+
+template class NumArray<float,4,LeftLayout<4>>;
+template class NumArray<float,3,LeftLayout<3>>;
+template class NumArray<float,2,LeftLayout<2>>;
+
 template class NumArray<float,1>;
 }
 

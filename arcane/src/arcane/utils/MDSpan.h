@@ -55,9 +55,9 @@ template<typename DataType,int RankValue,typename LayoutType>
 class MDSpanBase
 {
   using UnqualifiedValueType = std::remove_cv_t<DataType>;
-  friend class NumArrayBase<UnqualifiedValueType,RankValue>;
+  friend class NumArrayBase<UnqualifiedValueType,RankValue,LayoutType>;
   // Pour que MDSpan<const T> ait accès à MDSpan<T>
-  friend class MDSpanBase<const UnqualifiedValueType,RankValue>;
+  friend class MDSpanBase<const UnqualifiedValueType,RankValue,LayoutType>;
  public:
   MDSpanBase() = default;
   ARCCORE_HOST_DEVICE MDSpanBase(DataType* ptr,ArrayExtentsWithOffset<RankValue,LayoutType> extents)
@@ -168,8 +168,8 @@ class MDSpan<DataType,1,LayoutType>
     return m_ptr+offset(i);
   }
  public:
-  MDSpan<const DataType,1> constSpan() const
-  { return MDSpan<const DataType,1>(m_ptr,m_extents); }
+  MDSpan<const DataType,1,LayoutType> constSpan() const
+  { return MDSpan<const DataType,1,LayoutType>(m_ptr,m_extents); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -223,8 +223,8 @@ class MDSpan<DataType,2,LayoutType>
     return m_ptr + offset(i,j);
   }
  public:
-  MDSpan<const DataType,2> constSpan() const
-  { return MDSpan<const DataType,2>(m_ptr,m_extents); }
+  MDSpan<const DataType,2,LayoutType> constSpan() const
+  { return MDSpan<const DataType,2,LayoutType>(m_ptr,m_extents); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -287,8 +287,8 @@ class MDSpan<DataType,3,LayoutType>
     return m_ptr+offset(i,j,k);
   }
  public:
-  MDSpan<const DataType,3> constSpan() const
-  { return MDSpan<const DataType,3>(m_ptr,m_extents); }
+  MDSpan<const DataType,3,LayoutType> constSpan() const
+  { return MDSpan<const DataType,3,LayoutType>(m_ptr,m_extents); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -353,8 +353,8 @@ class MDSpan<DataType,4,LayoutType>
     return m_ptr + offset(i,j,k,l);
   }
  public:
-  MDSpan<const DataType,4> constSpan() const
-  { return MDSpan<const DataType,4>(m_ptr,m_extents); }
+  MDSpan<const DataType,4,LayoutType> constSpan() const
+  { return MDSpan<const DataType,4,LayoutType>(m_ptr,m_extents); }
 };
 
 /*---------------------------------------------------------------------------*/

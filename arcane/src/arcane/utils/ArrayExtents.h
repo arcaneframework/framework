@@ -386,7 +386,7 @@ class ArrayExtentsWithOffset<2,LayoutType>
   ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<2> idx) const
   {
     BaseClass::_checkIndex(idx);
-    return LayoutType::offset(idx,m_extents[LayoutType::LastExtent]);
+    return Layout::offset(idx,m_extents[Layout::LastExtent]);
   }
   ARCCORE_HOST_DEVICE void setSize(Int64 dim1_size,Int64 dim2_size)
   {
@@ -428,7 +428,7 @@ class ArrayExtentsWithOffset<3,LayoutType>
   ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<3> idx) const
   {
     this->_checkIndex(idx);
-    return LayoutType::offset(idx,m_extents[LayoutType::LastExtent],m_dim23_size);
+    return Layout::offset(idx,m_extents[Layout::LastExtent],m_dim23_size);
   }
   void setSize(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
   {
@@ -443,7 +443,7 @@ class ArrayExtentsWithOffset<3,LayoutType>
  protected:
   ARCCORE_HOST_DEVICE void _computeOffsets()
   {
-    m_dim23_size = LayoutType::computeOffsetIndexes(m_extents);
+    m_dim23_size = Layout::computeOffsetIndexes(m_extents);
   }
  private:
   Int64 m_dim23_size = 0;

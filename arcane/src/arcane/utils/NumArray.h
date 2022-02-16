@@ -106,8 +106,8 @@ class NumArrayBase
 {
  public:
 
-  using ConstSpanType = MDSpan<const DataType,RankValue>;
-  using SpanType = MDSpan<DataType,RankValue>;
+  using ConstSpanType = MDSpan<const DataType,RankValue,LayoutType>;
+  using SpanType = MDSpan<DataType,RankValue,LayoutType>;
   using ArrayWrapper = impl::NumArrayContainer<DataType>;
 
  public:
@@ -192,7 +192,7 @@ class NumArrayBase
   //! \internal
   DataType* _internalData() { return m_span._internalData(); }
  protected:
-  MDSpan<DataType,RankValue> m_span;
+  SpanType m_span;
   ArrayWrapper m_data;
   Int64 m_total_nb_element = 0;
   eMemoryRessource m_memory_ressource = eMemoryRessource::Unknown;
@@ -213,11 +213,13 @@ class NumArray<DataType,1,LayoutType>
 : public NumArrayBase<DataType,1,LayoutType>
 {
  public:
-  using BaseClass = NumArrayBase<DataType,1>;
+  using BaseClass = NumArrayBase<DataType,1,LayoutType>;
   using BaseClass::extent;
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
+  using ConstSpanType = MDSpan<const DataType,1,LayoutType>;
+  using SpanType = MDSpan<DataType,1,LayoutType>;
  private:
   using BaseClass::m_span;
  public:
@@ -246,8 +248,8 @@ class NumArray<DataType,1,LayoutType>
     return m_span(i);
   }
  public:
-  operator MDSpan<DataType,1> () { return this->span(); }
-  operator MDSpan<const DataType,1> () const { return this->constSpan(); }
+  operator SpanType () { return this->span(); }
+  operator ConstSpanType () const { return this->constSpan(); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -262,7 +264,7 @@ class NumArray<DataType,2,LayoutType>
 : public NumArrayBase<DataType,2,LayoutType>
 {
  public:
-  using BaseClass = NumArrayBase<DataType,2>;
+  using BaseClass = NumArrayBase<DataType,2,LayoutType>;
   using BaseClass::extent;
   using BaseClass::resize;
   using BaseClass::operator();
@@ -312,7 +314,7 @@ class NumArray<DataType,3,LayoutType>
 : public NumArrayBase<DataType,3,LayoutType>
 {
  public:
-  using BaseClass = NumArrayBase<DataType,3>;
+  using BaseClass = NumArrayBase<DataType,3,LayoutType>;
   using BaseClass::extent;
   using BaseClass::resize;
   using BaseClass::operator();
@@ -363,7 +365,7 @@ class NumArray<DataType,4,LayoutType>
 : public NumArrayBase<DataType,4,LayoutType>
 {
  public:
-  using BaseClass = NumArrayBase<DataType,4>;
+  using BaseClass = NumArrayBase<DataType,4,LayoutType>;
   using BaseClass::extent;
   using BaseClass::resize;
   using BaseClass::operator();
