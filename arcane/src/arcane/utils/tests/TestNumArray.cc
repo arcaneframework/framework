@@ -173,6 +173,15 @@ TEST(NumArray3,Index)
 namespace
 {
 template<typename T>
+void _setNumArray2Values(T& a)
+{
+  for( Int32 i=0; i<a.dim1Size(); ++i ){
+    for( Int32 j=0; j<a.dim2Size(); ++j ){
+      a.s(i,j) = (i*253) + j;
+    }
+  }
+}
+template<typename T>
 void _setNumArray3Values(T& a)
 {
   for( Int32 i=0; i<a.dim1Size(); ++i ){
@@ -188,6 +197,34 @@ void _setNumArray3Values(T& a)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+TEST(NumArray2,Layout)
+{
+  std::cout << "TEST_NUMARRAY2 Layout\n";
+
+  {
+    NumArray<Real,2,RightLayout2> a(3,5);
+    ASSERT_EQ(a.totalNbElement(),(3*5));
+    _setNumArray2Values(a);
+    auto values = a.to1DSpan();
+    std::cout << "V=" << values << "\n";
+    UniqueArray<Real> ref_value = { 0, 1, 2, 3, 4, 253, 254, 255, 256, 257, 506, 507, 508, 509, 510 };
+    ASSERT_EQ(values.smallView(),ref_value.view());
+  }
+
+  {
+    NumArray<Real,2,LeftLayout2> a(3,5);
+    ASSERT_EQ(a.totalNbElement(),(3*5));
+    _setNumArray2Values(a);
+    auto values = a.to1DSpan();
+    std::cout << "V=" << values << "\n";
+    UniqueArray<Real> ref_value = { 0, 253, 506, 1, 254, 507, 2, 255, 508, 3, 256, 509, 4, 257, 510 };
+    ASSERT_EQ(values.smallView(),ref_value.view());
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 TEST(NumArray3,Layout)
 {
   std::cout << "TEST_NUMARRAY3 Layout\n";
@@ -198,7 +235,12 @@ TEST(NumArray3,Layout)
     _setNumArray3Values(a);
     auto values = a.to1DSpan();
     std::cout << "V=" << values << "\n";
-
+    UniqueArray<Real> ref_value =
+    {
+      0, 1, 2, 3, 4, 27, 28, 29, 30, 31, 54, 55, 56, 57, 58,
+      253, 254, 255, 256, 257, 280, 281, 282, 283, 284, 307, 308, 309, 310, 311
+    };
+    ASSERT_EQ(values.smallView(),ref_value.view());
   }
 
   {
@@ -207,6 +249,12 @@ TEST(NumArray3,Layout)
     _setNumArray3Values(a);
     auto values = a.to1DSpan();
     std::cout << "V=" << values << "\n";
+    UniqueArray<Real> ref_value =
+    {
+      0, 253, 27, 280, 54, 307, 1, 254, 28, 281, 55, 308, 2, 255, 29,
+      282, 56, 309, 3, 256, 30, 283, 57, 310, 4, 257, 31, 284, 58, 311
+    };
+    ASSERT_EQ(values.smallView(),ref_value.view());
   }
 }
 
