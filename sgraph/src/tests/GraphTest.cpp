@@ -73,11 +73,20 @@ TEST(DirectedGraphTest, VertexTest){
   int_directed_graph.addVertex(4);
   int_directed_graph.addVertex(5);
   int_directed_graph.addVertex(5);
+  // check vertices() method
   std::vector<int> graph_vertices;
   for (auto vertex : int_directed_graph.vertices()) {
     graph_vertices.push_back(vertex);
   }
   std::vector graph_vertices_ref{1,2,3,4,5};
+  EXPECT_EQ(graph_vertices.size(),graph_vertices_ref.size());
+  EXPECT_TRUE(std::equal(graph_vertices.begin(), graph_vertices.end(), graph_vertices_ref.begin()));
+  // check const version
+  auto const& const_graph = int_directed_graph;
+  graph_vertices.clear();
+  for (auto vertex : const_graph.vertices()) {
+    graph_vertices.push_back(vertex);
+  }
   EXPECT_EQ(graph_vertices.size(),graph_vertices_ref.size());
   EXPECT_TRUE(std::equal(graph_vertices.begin(), graph_vertices.end(), graph_vertices_ref.begin()));
 }
@@ -119,6 +128,7 @@ TEST (DirectedGraphTest,EdgeTest) {
 
 
     std::cout << "Edge (a,b) " << *directed_graph.getEdge("a","b") <<std::endl;
+    std::cout << "Edge (a,b) " << *directed_graph.getEdge("e","g") <<std::endl;
     std::cout << "Edge (a,d) " << *directed_graph.getEdge("a","d") <<std::endl;
     std::cout << "Edge (b,e) " << *directed_graph.getEdge("b","e") <<std::endl;
     std::cout << "Edge (c,e) " << *directed_graph.getEdge("c","e") <<std::endl;
@@ -129,7 +139,64 @@ TEST (DirectedGraphTest,EdgeTest) {
     //
     std::cout << "Edge eg contains nodes " << *directed_graph.getSourceVertex("eg") << " " << *directed_graph.getTargetVertex("eg") << std::endl;
     std::cout << "Edge ab contains nodes " << *directed_graph.getSourceVertex("ab") << " " << *directed_graph.getTargetVertex("ab") << std::endl;
-	}
+
+    // Check edge groups
+    std::vector<std::string> edges;
+    for (auto edge : directed_graph.edges()) {
+      edges.push_back(edge);
+    }
+    auto ref_edges = {"ab","eg","ad","be","ce","ac","ef","gh","fh"};
+    EXPECT_TRUE(std::equal(edges.begin(), edges.end(), ref_edges.begin()));
+
+    edges.clear();
+    for (auto edge : directed_graph.inEdges("h")) {
+      edges.push_back(edge);
+    }
+    ref_edges = {"gh","fh"};
+    EXPECT_TRUE(std::equal(edges.begin(), edges.end(), ref_edges.begin()));
+
+    edges.clear();
+    for (auto edge : directed_graph.outEdges("a")) {
+      edges.push_back(edge);
+    }
+    ref_edges = {"ab","ad","ac"};
+    EXPECT_TRUE(std::equal(edges.begin(), edges.end(), ref_edges.begin()));
+}
+  
+/*---------------------------------------------------------------------------*/
+
+TEST (DirectedGraphTest,EdgeTestConst) {
+  SGraph::DirectedGraph<std::string,std::string> directed_graph{};
+  directed_graph.addEdge("a", "b", "ab");
+  directed_graph.addEdge("e", "g", "eg");
+  auto const& const_graph = directed_graph;
+
+  EXPECT_EQ(*const_graph.getEdge("e","g"),"eg");
+  EXPECT_EQ(*const_graph.getEdge("a","b"),"ab");
+  EXPECT_EQ(*const_graph.getSourceVertex("eg"),"e");
+  EXPECT_EQ(*const_graph.getTargetVertex("eg"),"g");
+
+  std::vector<std::string> edges;
+  for (auto edge : const_graph.edges()) {
+    edges.push_back(edge);
+  }
+  auto ref_edges = {"ab","eg"};
+  EXPECT_TRUE(std::equal(edges.begin(), edges.end(), ref_edges.begin()));
+
+  edges.clear();
+  for (auto edge : const_graph.inEdges("b")) {
+    edges.push_back(edge);
+  }
+  ref_edges = {"ab"};
+  EXPECT_TRUE(std::equal(edges.begin(), edges.end(), ref_edges.begin()));
+
+  edges.clear();
+  for (auto edge : const_graph.outEdges("b")) {
+    edges.push_back(edge);
+  }
+  ref_edges = {"ab"};
+  EXPECT_TRUE(std::equal(edges.begin(), edges.end(), ref_edges.begin()));
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
