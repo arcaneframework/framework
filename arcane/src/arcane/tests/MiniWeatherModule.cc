@@ -136,7 +136,7 @@ init()
   info() << "MemoryRessource: " << memory;
 
   options()->implementation()->init(acceleratorMng(),options()->nbCellX(),
-                                    options()->nbCellZ(),options()->finalTime(),memory);
+                                    options()->nbCellZ(),options()->finalTime(),memory,options()->useLeftLayout());
 }
 
 void MiniWeatherModule::

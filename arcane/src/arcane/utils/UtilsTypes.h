@@ -182,10 +182,15 @@ class Observer;
 /*---------------------------------------------------------------------------*/
 
 enum class eMemoryRessource;
+template<int RankValue> class DefaultLayout;
 class IMemoryRessourceMng;
-template<typename DataType,int RankValue>
+template<typename DataType,int RankValue,typename LayoutType = DefaultLayout<RankValue> >
+class MDSpanBase;
+template<class DataType,int RankValue,typename LayoutType = DefaultLayout<RankValue> >
+class MDSpan;
+template<typename DataType,int RankValue,typename LayoutType = DefaultLayout<RankValue> >
 class NumArrayBase;
-template<class DataType,int RankValue>
+template<class DataType,int RankValue,typename LayoutType = DefaultLayout<RankValue> >
 class NumArray;
 template<int RankValue> class ArrayBounds;
 template<int RankValue> class ArrayBoundsIndexBase;
@@ -193,7 +198,7 @@ template<int RankValue> class ArrayBoundsIndex;
 template<int RankValue> class ArrayExtentsBase;
 template<int RankValue> class ArrayExtents;
 template<int RankValue> class ArrayStridesBase;
-template<int RankValue> class ArrayExtentsWithOffset;
+template<int RankValue,typename LayoutType> class ArrayExtentsWithOffset;
 class LoopRange;
 template<int RankValue> class SimpleLoopRanges;
 template<int RankValue> class ComplexLoopRanges;

@@ -34,9 +34,9 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,int N>
+template<typename DataType,int N,typename LayoutType>
 class NumArrayViewSetter;
-template<typename Accessor,int N>
+template<typename Accessor,int N,typename LayoutType>
 class NumArrayView;
 
 /*---------------------------------------------------------------------------*/
@@ -60,14 +60,14 @@ class NumArrayViewBase
 /*!
  * \brief Vue en lecture, écriture ou lecture/écriture sur un 'NumArray' 1D.
  */
-template<typename Accessor>
-class NumArrayView<Accessor,1>
+template<typename Accessor,typename LayoutType>
+class NumArrayView<Accessor,1,LayoutType>
 : public NumArrayViewBase
 {
  public:
 
   using DataType = typename Accessor::ValueType;
-  using SpanType = MDSpan<DataType,1>;
+  using SpanType = MDSpan<DataType,1,LayoutType>;
   using AccessorReturnType = typename Accessor::AccessorReturnType;
 
  public:
@@ -94,14 +94,14 @@ class NumArrayView<Accessor,1>
 /*!
  * \brief Vue en lecture, écriture ou lecture/écriture sur un 'NumArray' 2D.
  */
-template<typename Accessor>
-class NumArrayView<Accessor,2>
+template<typename Accessor,typename LayoutType>
+class NumArrayView<Accessor,2,LayoutType>
 : public NumArrayViewBase
 {
  public:
 
   using DataType = typename Accessor::ValueType;
-  using SpanType = MDSpan<DataType,2>;
+  using SpanType = MDSpan<DataType,2,LayoutType>;
   using AccessorReturnType = typename Accessor::AccessorReturnType;
 
  public:
@@ -126,16 +126,16 @@ class NumArrayView<Accessor,2>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vue en lecture, écriture ou lecture/écriture sur un 'NumArray' 2D.
+ * \brief Vue en lecture, écriture ou lecture/écriture sur un 'NumArray' 3D.
  */
-template<typename Accessor>
-class NumArrayView<Accessor,3>
+template<typename Accessor,typename LayoutType>
+class NumArrayView<Accessor,3,LayoutType>
 : public NumArrayViewBase
 {
  public:
 
   using DataType = typename Accessor::ValueType;
-  using SpanType = MDSpan<DataType,3>;
+  using SpanType = MDSpan<DataType,3,LayoutType>;
   using AccessorReturnType = typename Accessor::AccessorReturnType;
 
  public:
@@ -160,16 +160,16 @@ class NumArrayView<Accessor,3>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vue en lecture, écriture ou lecture/écriture sur un 'NumArray' 2D.
+ * \brief Vue en lecture, écriture ou lecture/écriture sur un 'NumArray' 4D.
  */
-template<typename Accessor>
-class NumArrayView<Accessor,4>
+template<typename Accessor,typename LayoutType>
+class NumArrayView<Accessor,4,LayoutType>
 : public NumArrayViewBase
 {
  public:
 
   using DataType = typename Accessor::ValueType;
-  using SpanType = MDSpan<DataType,4>;
+  using SpanType = MDSpan<DataType,4,LayoutType>;
   using AccessorReturnType = typename Accessor::AccessorReturnType;
 
  public:
@@ -196,11 +196,11 @@ class NumArrayView<Accessor,4>
 /*!
  * \brief Vue en écriture.
  */
-template<typename DataType,int N> auto
-viewOut(RunCommand& command,NumArray<DataType,N>& var)
+template<typename DataType,int N,typename LayoutType> auto
+viewOut(RunCommand& command,NumArray<DataType,N,LayoutType>& var)
 {
   using Accessor = DataViewSetter<DataType>;
-  return NumArrayView<Accessor,N>(command,var.span());
+  return NumArrayView<Accessor,N,LayoutType>(command,var.span());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -209,11 +209,11 @@ viewOut(RunCommand& command,NumArray<DataType,N>& var)
 /*!
  * \brief Vue en lecture/écriture.
  */
-template<typename DataType,int N> auto
-viewInOut(RunCommand& command,NumArray<DataType,N>& v)
+template<typename DataType,int N,typename LayoutType> auto
+viewInOut(RunCommand& command,NumArray<DataType,N,LayoutType>& v)
 {
   using Accessor = DataViewGetterSetter<DataType>;
-  return NumArrayView<Accessor,N>(command,v.span());
+  return NumArrayView<Accessor,N,LayoutType>(command,v.span());
 }
 
 /*----------------------------------------------1-----------------------------*/
@@ -221,11 +221,11 @@ viewInOut(RunCommand& command,NumArray<DataType,N>& v)
 /*!
  * \brief Vue en lecture.
  */
-template<typename DataType,int N> auto
-viewIn(RunCommand& command,const NumArray<DataType,N>& v)
+template<typename DataType,int N,typename LayoutType> auto
+viewIn(RunCommand& command,const NumArray<DataType,N,LayoutType>& v)
 {
   using Accessor = DataViewGetter<DataType>;
-  return NumArrayView<Accessor,N>(command,v.constSpan());
+  return NumArrayView<Accessor,N,LayoutType>(command,v.constSpan());
 }
 
 /*---------------------------------------------------------------------------*/

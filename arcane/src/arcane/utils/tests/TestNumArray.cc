@@ -24,21 +24,25 @@ TEST(NumArray,Basic)
   array1.s(1) = 5.0;
   std::cout << " V=" << array1(1) << "\n";
   array1.resize(7);
+  ASSERT_EQ(array1.totalNbElement(),7);
 
   NumArray<Real,2> array2(2,3);
   array2.s(1,2) = 5.0;
   std::cout << " V=" << array2(1,2) << "\n";
   array2.resize(7,5);
+  ASSERT_EQ(array2.totalNbElement(),(7*5));
 
   NumArray<Real,3> array3(2,3,4);
   array3.s(1,2,3) = 5.0;
   std::cout << " V=" << array3(1,2,3) << "\n";
   array3.resize(12,4,6);
+  ASSERT_EQ(array3.totalNbElement(),(12*4*6));
 
   NumArray<Real,4> array4(2,3,4,5);
   array4.s(1,2,3,4) = 5.0;
   std::cout << " V=" << array4(1,2,3,4) << "\n";
   array4.resize(8,3,7,5);
+  ASSERT_EQ(array4.totalNbElement(),(8*3*7*5));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -166,14 +170,107 @@ TEST(NumArray3,Index)
   ASSERT_TRUE(k==2);
 }
 
+namespace
+{
+template<typename T>
+void _setNumArray2Values(T& a)
+{
+  for( Int32 i=0; i<a.dim1Size(); ++i ){
+    for( Int32 j=0; j<a.dim2Size(); ++j ){
+      a.s(i,j) = (i*253) + j;
+    }
+  }
+}
+template<typename T>
+void _setNumArray3Values(T& a)
+{
+  for( Int32 i=0; i<a.dim1Size(); ++i ){
+    for( Int32 j=0; j<a.dim2Size(); ++j ){
+      for( Int32 k=0; k<a.dim3Size(); ++k ){
+        a.s(i,j,k) = (i*253) + (j*27) + k;
+      }
+    }
+  }
+}
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(NumArray2,Layout)
+{
+  std::cout << "TEST_NUMARRAY2 Layout\n";
+
+  {
+    NumArray<Real,2,RightLayout2> a(3,5);
+    ASSERT_EQ(a.totalNbElement(),(3*5));
+    _setNumArray2Values(a);
+    auto values = a.to1DSpan();
+    std::cout << "V=" << values << "\n";
+    UniqueArray<Real> ref_value = { 0, 1, 2, 3, 4, 253, 254, 255, 256, 257, 506, 507, 508, 509, 510 };
+    ASSERT_EQ(values.smallView(),ref_value.view());
+  }
+
+  {
+    NumArray<Real,2,LeftLayout2> a(3,5);
+    ASSERT_EQ(a.totalNbElement(),(3*5));
+    _setNumArray2Values(a);
+    auto values = a.to1DSpan();
+    std::cout << "V=" << values << "\n";
+    UniqueArray<Real> ref_value = { 0, 253, 506, 1, 254, 507, 2, 255, 508, 3, 256, 509, 4, 257, 510 };
+    ASSERT_EQ(values.smallView(),ref_value.view());
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(NumArray3,Layout)
+{
+  std::cout << "TEST_NUMARRAY3 Layout\n";
+
+  {
+    NumArray<Real,3,RightLayout3> a(2,3,5);
+    ASSERT_EQ(a.totalNbElement(),(2*3*5));
+    _setNumArray3Values(a);
+    auto values = a.to1DSpan();
+    std::cout << "V=" << values << "\n";
+    UniqueArray<Real> ref_value =
+    {
+      0, 1, 2, 3, 4, 27, 28, 29, 30, 31, 54, 55, 56, 57, 58,
+      253, 254, 255, 256, 257, 280, 281, 282, 283, 284, 307, 308, 309, 310, 311
+    };
+    ASSERT_EQ(values.smallView(),ref_value.view());
+  }
+
+  {
+    NumArray<Real,3,LeftLayout3> a(2,3,5);
+    ASSERT_EQ(a.totalNbElement(),(2*3*5));
+    _setNumArray3Values(a);
+    auto values = a.to1DSpan();
+    std::cout << "V=" << values << "\n";
+    UniqueArray<Real> ref_value =
+    {
+      0, 253, 27, 280, 54, 307, 1, 254, 28, 281, 55, 308, 2, 255, 29,
+      282, 56, 309, 3, 256, 30, 283, 57, 310, 4, 257, 31, 284, 58, 311
+    };
+    ASSERT_EQ(values.smallView(),ref_value.view());
+  }
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-template class NumArray<float,4>;
-template class NumArray<float,3>;
-template class NumArray<float,2>;
+template class NumArray<float,4,RightLayout<4>>;
+template class NumArray<float,3,RightLayout<3>>;
+template class NumArray<float,2,RightLayout<2>>;
+
+template class NumArray<float,4,LeftLayout<4>>;
+template class NumArray<float,3,LeftLayout<3>>;
+template class NumArray<float,2,LeftLayout<2>>;
+
 template class NumArray<float,1>;
 }
 

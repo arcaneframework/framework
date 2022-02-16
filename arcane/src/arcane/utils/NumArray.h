@@ -100,14 +100,14 @@ namespace impl
  * initialisé (\ref arcanedoc_accelerator). C'est pourquoi il ne faut pas
  * utiliser de variables globales de cette classe ou d'une classe dérivée.
  */
-template<typename DataType,int RankValue>
+template<typename DataType,int RankValue,typename LayoutType>
 class NumArrayBase
 : public NumArrayBaseCommon
 {
  public:
 
-  using ConstSpanType = MDSpan<const DataType,RankValue>;
-  using SpanType = MDSpan<DataType,RankValue>;
+  using ConstSpanType = MDSpan<const DataType,RankValue,LayoutType>;
+  using SpanType = MDSpan<DataType,RankValue,LayoutType>;
   using ArrayWrapper = impl::NumArrayContainer<DataType>;
 
  public:
@@ -149,7 +149,7 @@ class NumArrayBase
   void fill(const DataType& v) { m_data.fill(v); }
   Int32 nbDimension() const { return RankValue; }
   ArrayExtents<RankValue> extents() const { return m_span.extents(); }
-  ArrayExtentsWithOffset<RankValue> extentsWithOffset() const
+  ArrayExtentsWithOffset<RankValue,LayoutType> extentsWithOffset() const
   {
     return m_span.extentsWithOffset();
   }
@@ -165,7 +165,7 @@ class NumArrayBase
     _checkHost(m_memory_ressource);
     m_data.copy(rhs.to1DSpan());
   }
-  void copy(const NumArrayBase<DataType,RankValue>& rhs)
+  void copy(const NumArrayBase<DataType,RankValue,LayoutType>& rhs)
   {
     this->resize(rhs.extents());
     _copy(asBytes(rhs.to1DSpan()),rhs.m_memory_ressource,
@@ -192,7 +192,7 @@ class NumArrayBase
   //! \internal
   DataType* _internalData() { return m_span._internalData(); }
  protected:
-  MDSpan<DataType,RankValue> m_span;
+  SpanType m_span;
   ArrayWrapper m_data;
   Int64 m_total_nb_element = 0;
   eMemoryRessource m_memory_ressource = eMemoryRessource::Unknown;
@@ -208,16 +208,18 @@ class NumArrayBase
  *
  * \sa NumArrayBase
  */
-template<class DataType>
-class NumArray<DataType,1>
-: public NumArrayBase<DataType,1>
+template<class DataType,typename LayoutType>
+class NumArray<DataType,1,LayoutType>
+: public NumArrayBase<DataType,1,LayoutType>
 {
  public:
-  using BaseClass = NumArrayBase<DataType,1>;
+  using BaseClass = NumArrayBase<DataType,1,LayoutType>;
   using BaseClass::extent;
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
+  using ConstSpanType = MDSpan<const DataType,1,LayoutType>;
+  using SpanType = MDSpan<DataType,1,LayoutType>;
  private:
   using BaseClass::m_span;
  public:
@@ -246,8 +248,8 @@ class NumArray<DataType,1>
     return m_span(i);
   }
  public:
-  operator MDSpan<DataType,1> () { return this->span(); }
-  operator MDSpan<const DataType,1> () const { return this->constSpan(); }
+  operator SpanType () { return this->span(); }
+  operator ConstSpanType () const { return this->constSpan(); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -257,12 +259,12 @@ class NumArray<DataType,1>
  *
  * \sa NumArrayBase
  */
-template<class DataType>
-class NumArray<DataType,2>
-: public NumArrayBase<DataType,2>
+template<class DataType,typename LayoutType>
+class NumArray<DataType,2,LayoutType>
+: public NumArrayBase<DataType,2,LayoutType>
 {
  public:
-  using BaseClass = NumArrayBase<DataType,2>;
+  using BaseClass = NumArrayBase<DataType,2,LayoutType>;
   using BaseClass::extent;
   using BaseClass::resize;
   using BaseClass::operator();
@@ -307,12 +309,12 @@ class NumArray<DataType,2>
  *
  * \sa NumArrayBase
  */
-template<class DataType>
-class NumArray<DataType,3>
-: public NumArrayBase<DataType,3>
+template<class DataType,typename LayoutType>
+class NumArray<DataType,3,LayoutType>
+: public NumArrayBase<DataType,3,LayoutType>
 {
  public:
-  using BaseClass = NumArrayBase<DataType,3>;
+  using BaseClass = NumArrayBase<DataType,3,LayoutType>;
   using BaseClass::extent;
   using BaseClass::resize;
   using BaseClass::operator();
@@ -358,12 +360,12 @@ class NumArray<DataType,3>
  *
  * \sa NumArrayBase
  */
-template<class DataType>
-class NumArray<DataType,4>
-: public NumArrayBase<DataType,4>
+template<class DataType,typename LayoutType>
+class NumArray<DataType,4,LayoutType>
+: public NumArrayBase<DataType,4,LayoutType>
 {
  public:
-  using BaseClass = NumArrayBase<DataType,4>;
+  using BaseClass = NumArrayBase<DataType,4,LayoutType>;
   using BaseClass::extent;
   using BaseClass::resize;
   using BaseClass::operator();

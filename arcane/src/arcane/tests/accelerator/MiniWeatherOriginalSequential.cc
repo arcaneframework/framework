@@ -703,7 +703,7 @@ class MiniWeatherOriginalSequentialService
   explicit MiniWeatherOriginalSequentialService(const ServiceBuildInfo& sbi)
   : BasicService(sbi){}
  public:
-  void init(IAcceleratorMng*,Int32 nb_x,Int32 nb_z,Real final_time,eMemoryRessource) override
+  void init(IAcceleratorMng*,Int32 nb_x,Int32 nb_z,Real final_time,eMemoryRessource,bool) override
   {
     init_entry_point(traceMng(),nb_x,nb_z,final_time);
   }
