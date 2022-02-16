@@ -70,8 +70,8 @@ class NumArrayUnitTest
     return static_cast<double>(i * 2 + j * 3 + k * 4 + l * 8);
   }
 
-  template <int Rank> double
-  _doSum(NumArray<double, Rank> values, ArrayBounds<Rank> bounds)
+  template <int Rank,typename LayoutType> double
+  _doSum(NumArray<double, Rank, LayoutType> values, ArrayBounds<Rank> bounds)
   {
     double total = 0.0;
     SimpleLoopRanges<Rank> lb(bounds);
@@ -203,7 +203,7 @@ _executeTest1(eMemoryRessource mem_kind)
   }
 
   {
-    NumArray<double, 3> t1(mem_kind);
+    NumArray<double, 3, LeftLayout3> t1(mem_kind);
     t1.resize(n1, n2, n3);
 
     auto out_t1 = viewOut(command, t1);
@@ -213,7 +213,25 @@ _executeTest1(eMemoryRessource mem_kind)
       auto [i, j, k] = iter();
       out_t1(i, j, k) = _getValue(i, j, k);
     };
-    NumArray<double, 3> host_t1(eMemoryRessource::Host);
+    NumArray<double, 3, LeftLayout3> host_t1(eMemoryRessource::Host);
+    host_t1.copy(t1);
+    double s3 = _doSum<3>(host_t1, { n1, n2, n3 });
+    info() << "SUM3 = " << s3;
+    vc.areEqual(s3, expected_sum3, "SUM3");
+  }
+
+  {
+    NumArray<double, 3, RightLayout3> t1(mem_kind);
+    t1.resize(n1, n2, n3);
+
+    auto out_t1 = viewOut(command, t1);
+
+    command << RUNCOMMAND_LOOP3(iter, n1, n2, n3)
+    {
+      auto [i, j, k] = iter();
+      out_t1(i, j, k) = _getValue(i, j, k);
+    };
+    NumArray<double, 3, RightLayout3> host_t1(eMemoryRessource::Host);
     host_t1.copy(t1);
     double s3 = _doSum<3>(host_t1, { n1, n2, n3 });
     info() << "SUM3 = " << s3;
