@@ -179,7 +179,7 @@ _executeTest1(eMemoryRessource mem_kind)
     };
     NumArray<double, 1> host_t1(eMemoryRessource::Host);
     host_t1.copy(t1);
-    double s1 = _doSum(host_t1, { n1 });
+    double s1 = _doSum<1>(host_t1, { n1 });
     info() << "SUM1 = " << s1;
     vc.areEqual(s1, expected_sum1, "SUM1");
   }
@@ -197,7 +197,7 @@ _executeTest1(eMemoryRessource mem_kind)
     };
     NumArray<double, 2> host_t1(eMemoryRessource::Host);
     host_t1.copy(t1);
-    double s2 = _doSum(host_t1, { n1, n2 });
+    double s2 = _doSum<2>(host_t1, { n1, n2 });
     info() << "SUM2 = " << s2;
     vc.areEqual(s2, expected_sum2, "SUM2");
   }
@@ -215,7 +215,7 @@ _executeTest1(eMemoryRessource mem_kind)
     };
     NumArray<double, 3> host_t1(eMemoryRessource::Host);
     host_t1.copy(t1);
-    double s3 = _doSum(host_t1, { n1, n2, n3 });
+    double s3 = _doSum<3>(host_t1, { n1, n2, n3 });
     info() << "SUM3 = " << s3;
     vc.areEqual(s3, expected_sum3, "SUM3");
   }
@@ -233,7 +233,7 @@ _executeTest1(eMemoryRessource mem_kind)
     };
     NumArray<double, 4> host_t1(eMemoryRessource::Host);
     host_t1.copy(t1);
-    double s4 = _doSum(host_t1, { n1, n2, n3, n4 });
+    double s4 = _doSum<4>(host_t1, { n1, n2, n3, n4 });
     info() << "SUM4 = " << s4;
     vc.areEqual(s4, expected_sum4, "SUM4");
   }
@@ -311,7 +311,7 @@ _executeTest2()
   queue2.barrier();
   queue3.barrier();
 
-  double s4 = _doSum(t1, { n1, n2, n3, n4 });
+  double s4 = _doSum<4>(t1, { n1, n2, n3, n4 });
   info() << "SUM4_ASYNC = " << s4;
   vc.areEqual(s4, expected_sum4, "SUM4_ASYNC");
 }
