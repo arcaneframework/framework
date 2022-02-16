@@ -34,7 +34,8 @@ class IMiniWeatherService
 
  public:
 
-  virtual void init(IAcceleratorMng* am,Int32 nb_x,Int32 nb_z,Real final_time,eMemoryRessource r) = 0;
+  virtual void init(IAcceleratorMng* am,Int32 nb_x,Int32 nb_z,Real final_time,
+                    eMemoryRessource r,bool use_left_layout) = 0;
   virtual bool loop() = 0;
   /*!
    * \brief Point d'entrée de fin d'exécution.

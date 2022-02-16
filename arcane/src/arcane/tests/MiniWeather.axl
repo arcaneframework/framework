@@ -35,6 +35,11 @@
         Indique si on utilise la mémoire du device au lieu de la mémoire unifiée
       </description>
     </simple>
+    <simple name = "use-left-layout" type = "bool" default="false" >
+      <description>
+        Indique si on utilise la disposition 'LeftLayout' pour les tableaux.
+      </description>
+    </simple>
     <service-instance type="ArcaneTest::MiniWeather::IMiniWeatherService" name="implementation" />
   </options>
 </module>
