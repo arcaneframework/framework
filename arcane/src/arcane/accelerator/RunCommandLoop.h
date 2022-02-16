@@ -167,7 +167,7 @@ void operator<<(ArrayBoundRunCommand<N,LoopBoundType<N>>&& nr,const Lambda& f)
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP(iter_name, bounds)                              \
-  A_FUNCINFO << bounds << [=] ARCCORE_HOST_DEVICE (decltype(bounds) :: IndexType iter_name )
+  A_FUNCINFO << bounds << [=] ARCCORE_HOST_DEVICE (typename decltype(bounds) :: IndexType iter_name )
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOPN(iter_name, N, ...)                           \
