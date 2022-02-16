@@ -1089,6 +1089,8 @@ public:
       if (!property.m_family.hasProperty(property.m_name)) continue;
       auto& [producing_property_array, consuming_property_array] = property_algos;
       for (auto& producing_algo : producing_property_array) {
+        // Add each producing algo in graph: it may have no consuming algo
+        m_dag.addVertex(producing_algo);
         for (auto& consuming_algo : consuming_property_array) {
           if (!is_removed_algo(producing_algo) && !is_removed_algo(consuming_algo))
             m_dag.addEdge(producing_algo, consuming_algo, property);
