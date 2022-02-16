@@ -156,8 +156,11 @@ class GraphBase
   using EdgeToVertexMap = std::map<EdgeTypeConstRef, VertexPair, EdgeLessComparator>;
 
   using VertexSet = IterableEnsembleT<VertexList>;
+  using ConstVertexSet = IterableEnsembleT<VertexList const> const;
   using EdgeSet = IterableEnsembleT<EdgeList>;
+  using ConstEdgeSet = IterableEnsembleT<EdgeList const> const;
   using ConnectedEdgeSet = IterableEnsembleT<EdgeTypeRefArray>;
+  using ConstConnectedEdgeSet = IterableEnsembleT<EdgeTypeRefArray const> const;
 
  public:
   using VertexRef = VertexType;
@@ -204,35 +207,18 @@ class GraphBase
 
   /*---------------------------------------------------------------------------*/
 
-  //! multiple edge (between same nodes in same order) are not allowed
-//  virtual void addEdge(const VertexType& source_vertex, const VertexType& target_vertex,
-//                       const EdgeType& source_to_target_edge)
-//  {
-//    _addEdge(source_vertex, target_vertex, source_to_target_edge);
-//  }
-
-  /*---------------------------------------------------------------------------*/
-
-//  virtual void addEdge(VertexType&& source_vertex, VertexType&& target_vertex, EdgeType&& source_to_target_edge)
-//  {
-//    _addEdge(source_vertex, target_vertex, source_to_target_edge);
-//  }
-
-  /*---------------------------------------------------------------------------*/
-
-//  template <class Vertex, class Edge>
   /*!
    *
    * @param source_vertex
    * @param target_vertex
    * @param source_to_target_edge
-   *
+   * Multiple edge (between same nodes in same order) are not allowed
    */
- public:
-
-  // User overload instead of only pass by value since method is virtual.
-  // Would have done at least three move constructs if called from derived classes.
-  // Could be a problem if objects are not cheap to move
+  /*
+   * User overload instead of only pass by value since method is virtual.
+   * Would have done at least three move constructs if called from derived classes.
+   * Could be a problem if objects are not cheap to move
+   */
   virtual void addEdge(VertexType const& source_vertex,VertexType const& target_vertex,EdgeType const& source_to_target_edge) {
     _addEdge(source_vertex, target_vertex, source_to_target_edge);
   }
@@ -297,7 +283,7 @@ class GraphBase
 
   /*---------------------------------------------------------------------------*/
 
-  EdgeType* _getEdge(VertexType const& source_vertex,VertexType const& target_vertex)
+  EdgeType* _getEdge(VertexType const& source_vertex,VertexType const& target_vertex) const
   {
     int edge_index;
     EdgeTypeRefArray edge_array;
@@ -359,33 +345,46 @@ class GraphBase
   /*---------------------------------------------------------------------------*/
 
   VertexSet vertices() { return VertexSet(m_vertices); }
+  ConstVertexSet vertices() const { return ConstVertexSet(m_vertices); }
 
   /*---------------------------------------------------------------------------*/
 
   EdgeSet edges() { return EdgeSet(m_edges); }
+  ConstEdgeSet edges() const { return ConstEdgeSet(m_edges); }
 
   /*---------------------------------------------------------------------------*/
 
-  ConnectedEdgeSet inEdges(VertexType const& vertex)
-  {
+  /*!
+   *
+   * @param vertex
+   * @return set of edges having \a vertex as their head vertex
+   */
+  ConnectedEdgeSet inEdges(VertexType const& vertex) {
     auto found_vertex = m_adjacency_list_transposed.find(vertex);
-    if (found_vertex == m_adjacency_list_transposed.end()) {
-      return ConnectedEdgeSet();
-    }
-    else
-      return ConnectedEdgeSet(found_vertex->second.second); // map <vertex, pair <VertexArray, EdgeArray> >
+    if (found_vertex == m_adjacency_list_transposed.end()) return ConnectedEdgeSet{};
+    else return ConnectedEdgeSet {found_vertex->second.second}; // map <vertex, pair <VertexArray, EdgeArray>
   }
-
+  ConstConnectedEdgeSet inEdges(VertexType const& vertex) const {
+    auto found_vertex = m_adjacency_list_transposed.find(vertex);
+    if (found_vertex == m_adjacency_list_transposed.end()) return ConstConnectedEdgeSet{};
+    else return ConstConnectedEdgeSet {found_vertex->second.second}; // map <vertex, pair <VertexArray, EdgeArray>
+  }
   /*---------------------------------------------------------------------------*/
 
-  ConnectedEdgeSet outEdges(VertexType const& vertex)
-  {
+  /*!
+   *
+   * @param vertex
+   * @return set of edges having \a vertex has tail vertex
+   */
+  ConnectedEdgeSet outEdges(VertexType const& vertex) {
     auto found_vertex = m_adjacency_list.find(vertex);
-    if (found_vertex == m_adjacency_list.end()) {
-      return ConnectedEdgeSet();
-    }
-    else
-      return ConnectedEdgeSet(found_vertex->second.second); // map <vertex, pair <VertexArray, EdgeArray> >
+    if (found_vertex == m_adjacency_list.end()) return ConnectedEdgeSet{};
+    else return ConnectedEdgeSet{found_vertex->second.second}; // map <vertex, pair <VertexArray, EdgeArray> >
+  }
+  ConstConnectedEdgeSet outEdges(VertexType const& vertex) const {
+    auto found_vertex = m_adjacency_list.find(vertex);
+    if (found_vertex == m_adjacency_list.end()) return ConstConnectedEdgeSet{};
+    else return ConstConnectedEdgeSet{found_vertex->second.second}; // map <vertex, pair <VertexArray, EdgeArray> >
   }
 
   /*---------------------------------------------------------------------------*/
@@ -410,9 +409,7 @@ class GraphBase
 
   /*---------------------------------------------------------------------------*/
 
-//  template <class Vertex>
-  // to handle Vertex&& et Vertex& = another way to do so ? yes pass by value
-  std::pair<int, EdgeTypeRefArray> _getEdgeIndex(VertexType const& source_vertex, VertexType const& target_vertex)
+  std::pair<int, EdgeTypeRefArray> _getEdgeIndex(VertexType const& source_vertex, VertexType const& target_vertex) const
   {
     auto found_source_vertex = m_adjacency_list.find(std::cref(source_vertex));
     if (found_source_vertex == m_adjacency_list.end())
@@ -424,9 +421,7 @@ class GraphBase
 
   /*---------------------------------------------------------------------------*/
 
-//  template <class Vertex>
-  // idem
-  int _getTargetVertexIndex(typename AdjacencyListType::iterator source_vertex_map_entry, VertexType const& target_vertex)
+  int _getTargetVertexIndex(typename AdjacencyListType::const_iterator source_vertex_map_entry, VertexType const& target_vertex) const
   {
     if (source_vertex_map_entry == m_adjacency_list.end())
       return -1;
@@ -435,11 +430,9 @@ class GraphBase
 
   /*---------------------------------------------------------------------------*/
 
-//  template <class Vertex>
-  // idem...
-  int _getConnectedVertexIndex(typename AdjacencyListType::iterator vertex_map_entry, VertexType const& connected_vertex)
+  int _getConnectedVertexIndex(typename AdjacencyListType::const_iterator vertex_map_entry, VertexType const& connected_vertex) const
   {
-    VertexTypeRefArray& vertex_array = vertex_map_entry->second.first;
+    VertexTypeRefArray const& vertex_array = vertex_map_entry->second.first;
     std::vector<int> indexes(vertex_array.size());
     std::iota(indexes.begin(), indexes.end(), 0);
     auto connected_vertex_index = std::find_if(indexes.begin(), indexes.end(),
