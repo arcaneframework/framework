@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorViewsUnitTest.cc                                 (C) 2000-2021 */
+/* AcceleratorViewsUnitTest.cc                                 (C) 2000-2022 */
 /*                                                                           */
 /* Service de test des vues pour les accelerateurs.                          */
 /*---------------------------------------------------------------------------*/
@@ -16,9 +16,12 @@
 #include "arcane/BasicUnitTest.h"
 #include "arcane/ServiceFactory.h"
 
-#include "arcane/accelerator/Runner.h"
+#include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/Memory.h"
+
 #include "arcane/accelerator/RunCommandLoop.h"
 #include "arcane/accelerator/VariableViews.h"
+#include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/RunCommandEnumerate.h"
 
 /*---------------------------------------------------------------------------*/
@@ -69,6 +72,7 @@ class AcceleratorViewsUnitTest
   void _executeTestReal2x2();
   void _executeTestReal3x3();
   void _executeTest2Real3x3();
+  void _executeTestMemoryCopy();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -157,6 +161,7 @@ executeTest()
   _executeTestReal2x2();
   _executeTestReal3x3();
   _executeTest2Real3x3();
+  _executeTestMemoryCopy();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -477,6 +482,63 @@ _executeTest2Real3x3()
       vc.areEqual(ryz,m_cell1_real3x3[vi].y.z,"Real3x3CheckYZ");
       vc.areEqual(rzz,m_cell1_real3x3[vi].z.z,"Real3x3CheckZZ");
     }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AcceleratorViewsUnitTest::
+_executeTestMemoryCopy()
+{
+  info() << "Execute Test MemoryCopy";
+  eMemoryRessource source_mem = eMemoryRessource::Host;
+  eMemoryRessource dest_mem = eMemoryRessource::Host;
+  if (ax::impl::isAcceleratorPolicy(m_runner.executionPolicy()))
+    dest_mem = eMemoryRessource::Device;
+
+  const int nb_value = 100000;
+  NumArray<Int32,1> a(nb_value,source_mem);
+  NumArray<Int32,1> b(nb_value,source_mem);
+  NumArray<Int32,1> c(nb_value,source_mem);
+
+  // Initialise les tableaux
+  for( int i=0; i<nb_value; ++i ){
+    a.s(i) = i + 3;
+    b.s(i) = i + 5;
+  }
+
+  NumArray<Int32,1> d_a(nb_value,dest_mem);
+  NumArray<Int32,1> d_b(nb_value,dest_mem);
+  NumArray<Int32,1> d_c(nb_value,dest_mem);
+
+  // Copie explicitement les données dans le device
+  // Test la construction en donnant les tailles explicitement.
+  auto queue = makeQueue(m_runner);
+  queue.copyMemory(ax::MemoryCopyArgs(d_a.bytes().data(),a.bytes().data(),nb_value*sizeof(Int32)).addAsync());
+  queue.copyMemory(ax::MemoryCopyArgs(d_b.bytes().data(),b.bytes().data(),nb_value*sizeof(Int32)).addAsync());
+
+  {
+    auto command = makeCommand(queue);
+    auto in_a = viewIn(command, d_a);
+    auto in_b = viewIn(command, d_b);
+    auto out_c = viewOut(command, d_c);
+
+    command << RUNCOMMAND_LOOP1(iter, nb_value)
+    {
+      out_c(iter) = in_a(iter) + in_b(iter);
+    };
+
+  }
+  // Recopie du device vers l'hôte
+  queue.copyMemory(ax::MemoryCopyArgs(c.bytes(),d_c.bytes()));
+
+  // Vérifie que tout est OK.
+  // Initialise les tableaux
+  for( int i=0; i<nb_value; ++i ){
+    Int32 expected_value = (i+3) + (i+5);
+    if (c(i)!=expected_value)
+      ARCANE_FATAL("Bad value index={0} value={1} expected={2}",i,c(i),expected_value);
   }
 }
 
