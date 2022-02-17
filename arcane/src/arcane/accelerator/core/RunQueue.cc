@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueue.cc                                                 (C) 2000-2021 */
+/* RunQueue.cc                                                 (C) 2000-2022 */
 /*                                                                           */
 /* Gestion d'une file d'exécution sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,8 @@
 #include "arcane/accelerator/core/RunQueueImpl.h"
 #include "arcane/accelerator/core/IRunQueueRuntime.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
+
+#include "arcane/accelerator/core/Memory.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -108,6 +110,15 @@ impl::RunCommandImpl* RunQueue::
 _getCommandImpl()
 {
   return m_p->_internalCreateOrGetRunCommandImpl();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunQueue::
+copyMemory(const MemoryCopyArgs& args)
+{
+  return _internalStream()->copyMemory(args);
 }
 
 /*---------------------------------------------------------------------------*/

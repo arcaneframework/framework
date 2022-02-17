@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorCoreGlobal.h                                     (C) 2000-2021 */
+/* AcceleratorCoreGlobal.h                                     (C) 2000-2022 */
 /*                                                                           */
 /* Déclarations générales pour le support des accélérateurs.                 */
 /*---------------------------------------------------------------------------*/
@@ -42,6 +42,7 @@ class RunQueue;
 class RunCommand;
 class AcceleratorRuntimeInitialisationInfo;
 class RunQueueBuildInfo;
+class MemoryCopyArgs;
 
 namespace impl
 {

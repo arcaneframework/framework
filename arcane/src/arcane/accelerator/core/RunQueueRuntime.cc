@@ -13,6 +13,11 @@
 
 #include "arcane/accelerator/core/IRunQueueRuntime.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
+#include "arcane/accelerator/core/Memory.h"
+
+#include "arcane/utils/NotImplementedException.h"
+
+#include <cstring>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,6 +37,10 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueStream
   void notifyBeginKernel(RunCommand&) override { return m_runtime->notifyBeginKernel(); }
   void notifyEndKernel(RunCommand&) override { return m_runtime->notifyEndKernel(); }
   void barrier() override { return m_runtime->barrier(); }
+  void copyMemory(const MemoryCopyArgs& args) override
+  {
+    std::memcpy(args.destination().data(),args.source().data(),args.source().size());
+  }
   void* _internalImpl() override { return nullptr; }
  private:
   IRunQueueRuntime* m_runtime;

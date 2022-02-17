@@ -57,9 +57,9 @@ template<>
 class ReduceIdentity<int>
 {
  public:
-  ARCCORE_HOST_DEVICE static constexpr double sumValue() { return 0; }
-  ARCCORE_HOST_DEVICE static constexpr double minValue() { return INT_MAX; }
-  ARCCORE_HOST_DEVICE static constexpr double maxValue() { return -INT_MAX; }
+  ARCCORE_HOST_DEVICE static constexpr int sumValue() { return 0; }
+  ARCCORE_HOST_DEVICE static constexpr int minValue() { return INT_MAX; }
+  ARCCORE_HOST_DEVICE static constexpr int maxValue() { return -INT_MAX; }
 };
 
 /*---------------------------------------------------------------------------*/
