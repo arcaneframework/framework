@@ -1,5 +1,12 @@
 ﻿set(ARCANE_HAS_SWIG FALSE)
 
+
+# Pour générer automatiquement le nom de bibliothèque compatible avec
+# la plateforme cible
+if (POLICY CMP0122)
+  cmake_policy(SET CMP0122 NEW)
+endif ()
+
 # ----------------------------------------------------------------------------
 
 # Pour Swig, il faut vérifier la taille du type C 'long' pour que le wrapping soit
