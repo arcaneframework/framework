@@ -31,18 +31,18 @@ class LoopRange
 {
  public:
   //! Créé un interval entre *[lower_bound,lower_bound+size[*
-  LoopRange(Int64 lower_bound,Int64 size)
+  LoopRange(Int32 lower_bound,Int32 size)
   : m_lower_bound(lower_bound), m_size(size){}
   //! Créé un interval entre *[0,size[*
-  LoopRange(Int64 size)
+  LoopRange(Int32 size)
   : m_lower_bound(0), m_size(size){}
  public:
-  constexpr Int64 lowerBound() const { return m_lower_bound; }
-  constexpr Int64 size() const { return m_size; }
-  constexpr Int64 upperBound() const { return m_lower_bound+m_size; }
+  constexpr Int32 lowerBound() const { return m_lower_bound; }
+  constexpr Int32 size() const { return m_size; }
+  constexpr Int32 upperBound() const { return m_lower_bound+m_size; }
  private:
-  Int64 m_lower_bound;
-  Int64 m_size;
+  Int32 m_lower_bound;
+  Int32 m_size;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -61,11 +61,11 @@ class SimpleLoopRanges
  public:
   SimpleLoopRanges(ArrayBounds<N> b) : m_bounds(b){}
  public:
-  constexpr Int64 lowerBound(int) const { return 0; }
-  constexpr Int64 upperBound(int i) const { return m_bounds.extent(i); }
-  constexpr Int64 extent(int i) const { return m_bounds.extent(i); }
+  constexpr Int32 lowerBound(int) const { return 0; }
+  constexpr Int32 upperBound(int i) const { return m_bounds.extent(i); }
+  constexpr Int32 extent(int i) const { return m_bounds.extent(i); }
   constexpr Int64 nbElement() const { return m_bounds.nbElement(); }
-  constexpr ArrayBoundsIndex<N> getIndices(Int64 i) const { return m_bounds.getIndices(i); }
+  constexpr ArrayBoundsIndex<N> getIndices(Int32 i) const { return m_bounds.getIndices(i); }
  private:
   ArrayBounds<N> m_bounds;
 };
@@ -90,11 +90,11 @@ class ComplexLoopRanges
   ComplexLoopRanges(const SimpleLoopRanges<N>& bounds)
   : m_extents(bounds.m_bounds){}
  public:
-  constexpr Int64 lowerBound(int i) const { return m_lower_bounds[i]; }
-  constexpr Int64 upperBound(int i) const { return m_lower_bounds[i]+m_extents.extent(i); }
-  constexpr Int64 extent(int i) const { return m_extents.extent(i); }
+  constexpr Int32 lowerBound(int i) const { return m_lower_bounds[i]; }
+  constexpr Int32 upperBound(int i) const { return m_lower_bounds[i]+m_extents.extent(i); }
+  constexpr Int32 extent(int i) const { return m_extents.extent(i); }
   constexpr Int64 nbElement() const { return m_extents.nbElement(); }
-  constexpr ArrayBoundsIndex<N> getIndices(Int64 i) const
+  constexpr ArrayBoundsIndex<N> getIndices(Int32 i) const
   {
     auto x = m_extents.getIndices(i);
     x.add(m_lower_bounds);
@@ -109,7 +109,7 @@ class ComplexLoopRanges
 /*---------------------------------------------------------------------------*/
 //! Créé un intervalle d'itération [0,n1[
 inline SimpleLoopRanges<1>
-makeLoopRanges(Int64 n1)
+makeLoopRanges(Int32 n1)
 {
   ArrayBounds<1> bounds(n1);
   return bounds;
@@ -117,7 +117,7 @@ makeLoopRanges(Int64 n1)
 
 //! Créé un intervalle d'itération [0,n1[,[0,n2[
 inline SimpleLoopRanges<2>
-makeLoopRanges(Int64 n1,Int64 n2)
+makeLoopRanges(Int32 n1,Int32 n2)
 {
   ArrayBounds<2> bounds(n1,n2);
   return bounds;
@@ -125,7 +125,7 @@ makeLoopRanges(Int64 n1,Int64 n2)
 
 //! Créé un intervalle d'itération [0,n1[,[0,n2[,[0,n3[
 inline SimpleLoopRanges<3>
-makeLoopRanges(Int64 n1,Int64 n2,Int64 n3)
+makeLoopRanges(Int32 n1,Int32 n2,Int32 n3)
 {
   ArrayBounds<3> bounds(n1,n2,n3);
   return bounds;
@@ -133,7 +133,7 @@ makeLoopRanges(Int64 n1,Int64 n2,Int64 n3)
 
 //! Créé un intervalle d'itération [0,n1[,[0,n2[,[0,n3[,[0,n4[
 inline SimpleLoopRanges<4>
-makeLoopRanges(Int64 n1,Int64 n2,Int64 n3,Int64 n4)
+makeLoopRanges(Int32 n1,Int32 n2,Int32 n3,Int32 n4)
 {
   ArrayBounds<4> bounds(n1,n2,n3,n4);
   return bounds;
@@ -181,7 +181,7 @@ makeLoopRanges(LoopRange n1,LoopRange n2,LoopRange n3,LoopRange n4)
 template<template<int T> class LoopBoundType,typename Lambda> inline void
 arcaneSequentialFor(LoopBoundType<1> bounds,const Lambda& func)
 {
-  for( Int64 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
+  for( Int32 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
     func(ArrayBoundsIndex<1>(i0));
 }
 
@@ -189,8 +189,8 @@ arcaneSequentialFor(LoopBoundType<1> bounds,const Lambda& func)
 template<template<int T> class LoopBoundType,typename Lambda> inline void
 arcaneSequentialFor(LoopBoundType<2> bounds,const Lambda& func)
 {
-  for( Int64 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
-    for( Int64 i1 = bounds.lowerBound(1); i1 < bounds.upperBound(1); ++i1 )
+  for( Int32 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
+    for( Int32 i1 = bounds.lowerBound(1); i1 < bounds.upperBound(1); ++i1 )
       func(ArrayBoundsIndex<2>(i0,i1));
 }
 
@@ -198,9 +198,9 @@ arcaneSequentialFor(LoopBoundType<2> bounds,const Lambda& func)
 template<template<int T> class LoopBoundType,typename Lambda> inline void
 arcaneSequentialFor(LoopBoundType<3> bounds,const Lambda& func)
 {
-  for( Int64 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
-    for( Int64 i1 = bounds.lowerBound(1); i1 < bounds.upperBound(1); ++i1 )
-      for( Int64 i2 = bounds.lowerBound(2); i2 < bounds.upperBound(2); ++i2 )
+  for( Int32 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
+    for( Int32 i1 = bounds.lowerBound(1); i1 < bounds.upperBound(1); ++i1 )
+      for( Int32 i2 = bounds.lowerBound(2); i2 < bounds.upperBound(2); ++i2 )
         func(ArrayBoundsIndex<3>(i0,i1,i2));
 }
 
@@ -208,10 +208,10 @@ arcaneSequentialFor(LoopBoundType<3> bounds,const Lambda& func)
 template<template<int> class LoopBoundType,typename Lambda> inline void
 arcaneSequentialFor(LoopBoundType<4> bounds,const Lambda& func)
 {
-  for( Int64 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
-    for( Int64 i1 = bounds.lowerBound(1); i1 < bounds.upperBound(1); ++i1 )
-      for( Int64 i2 = bounds.lowerBound(2); i2 < bounds.upperBound(2); ++i2 )
-        for( Int64 i3 = bounds.lowerBound(3); i3 < bounds.upperBound(3); ++i3 )
+  for( Int32 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
+    for( Int32 i1 = bounds.lowerBound(1); i1 < bounds.upperBound(1); ++i1 )
+      for( Int32 i2 = bounds.lowerBound(2); i2 < bounds.upperBound(2); ++i2 )
+        for( Int32 i3 = bounds.lowerBound(3); i3 < bounds.upperBound(3); ++i3 )
           func(ArrayBoundsIndex<4>(i0,i1,i2,i3));
 }
 

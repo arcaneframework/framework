@@ -43,7 +43,7 @@ class ArrayLayout2
   static ARCCORE_HOST_DEVICE constexpr Int64
   offset(ArrayBoundsIndex<2> idx,Int64 extent1)
   {
-    return (extent1 * idx[I]) + idx[J];
+    return (extent1 * idx[I]) + Int64(idx[J]);
   }
 
   static std::array<Int32,2> layoutInfo() { return { I, J }; }
@@ -62,11 +62,11 @@ class ArrayLayout3
   static ARCCORE_HOST_DEVICE constexpr Int64
   offset(ArrayBoundsIndex<3> idx,Int64 extent1,Int64 extent2)
   {
-    return (extent2 * idx[I]) + (extent1*idx[J]) + idx[K];
+    return (extent2 * idx[I]) + (extent1*idx[J]) + idx.asInt64(K);
   }
 
   static ARCCORE_HOST_DEVICE constexpr Int64
-  computeOffsetIndexes(std::array<Int64,3> extents)
+  computeOffsetIndexes(std::array<Int32,3> extents)
   {
     return extents[J] * extents[K];
   }

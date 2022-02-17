@@ -75,7 +75,7 @@ class NumArrayView<Accessor,1,LayoutType>
   NumArrayView(RunCommand& command,SpanType v)
   : NumArrayViewBase(command), m_values(v){}
 
-  ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int64 i) const
+  ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int32 i) const
   {
     return Accessor::build(m_values.ptrAt(i));
   }
@@ -109,7 +109,7 @@ class NumArrayView<Accessor,2,LayoutType>
   NumArrayView(RunCommand& command,SpanType v)
   : NumArrayViewBase(command), m_values(v){}
 
-  ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int64 i,Int64 j) const
+  ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int32 i,Int32 j) const
   {
     return Accessor::build(m_values.ptrAt(i,j));
   }
@@ -143,7 +143,7 @@ class NumArrayView<Accessor,3,LayoutType>
   NumArrayView(RunCommand& command,SpanType v)
   : NumArrayViewBase(command), m_values(v){}
 
-  ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int64 i,Int64 j,Int64 k) const
+  ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int32 i,Int32 j,Int32 k) const
   {
     return Accessor::build(m_values.ptrAt(i,j,k));
   }
@@ -177,7 +177,7 @@ class NumArrayView<Accessor,4,LayoutType>
   NumArrayView(RunCommand& command,SpanType v)
   : NumArrayViewBase(command), m_values(v){}
 
-  ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int64 i,Int64 j,Int64 k,Int64 l) const
+  ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int32 i,Int32 j,Int32 k,Int32 l) const
   {
     return Accessor::build(m_values.ptrAt(i,j,k,l));
   }

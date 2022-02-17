@@ -37,16 +37,21 @@ template<int RankValue>
 class ArrayBoundsIndexBase
 {
  public:
-  ARCCORE_HOST_DEVICE std::array<Int64,RankValue> operator()() const { return m_indexes; }
+  ARCCORE_HOST_DEVICE std::array<Int32,RankValue> operator()() const { return m_indexes; }
  protected:
   ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndexBase()
   {
     for( int i=0; i<RankValue; ++i )
       m_indexes[i] = 0;
   }
-  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndexBase(std::array<Int64,RankValue> _id) : m_indexes(_id){}
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndexBase(std::array<Int32,RankValue> _id) : m_indexes(_id){}
  public:
-  ARCCORE_HOST_DEVICE constexpr Int64 operator[](int i) const
+  ARCCORE_HOST_DEVICE constexpr Int32 operator[](int i) const
+  {
+    ARCCORE_CHECK_AT(i,RankValue);
+    return m_indexes[i];
+  }
+  ARCCORE_HOST_DEVICE constexpr Int64 asInt64(int i) const
   {
     ARCCORE_CHECK_AT(i,RankValue);
     return m_indexes[i];
@@ -57,7 +62,7 @@ class ArrayBoundsIndexBase
       m_indexes[i] += rhs[i];
   }
  protected:
-  std::array<Int64,RankValue> m_indexes;
+  std::array<Int32,RankValue> m_indexes;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -69,14 +74,15 @@ class ArrayBoundsIndex<1>
 {
  public:
   ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex() : ArrayBoundsIndexBase<1>(){}
-  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(Int64 _id0) : ArrayBoundsIndexBase<1>()
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(Int32 _id0) : ArrayBoundsIndexBase<1>()
   {
     m_indexes[0] = _id0;
   }
-  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(std::array<Int64,1> _id)
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(std::array<Int32,1> _id)
   : ArrayBoundsIndexBase<1>(_id) {}
  public:
-  ARCCORE_HOST_DEVICE constexpr Int64 id0() const { return m_indexes[0]; }
+  ARCCORE_HOST_DEVICE constexpr Int32 id0() const { return m_indexes[0]; }
+  ARCCORE_HOST_DEVICE constexpr Int64 largeId0() const { return m_indexes[0]; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -88,17 +94,19 @@ class ArrayBoundsIndex<2>
 {
  public:
   ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex() : ArrayBoundsIndexBase<2>(){}
-  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(Int64 _id0,Int64 _id1)
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(Int32 _id0,Int32 _id1)
   : ArrayBoundsIndexBase<2>()
   {
     m_indexes[0] = _id0;
     m_indexes[1] = _id1;
   }
-  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(std::array<Int64,2> _id)
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(std::array<Int32,2> _id)
   : ArrayBoundsIndexBase<2>(_id) {}
  public:
-  ARCCORE_HOST_DEVICE constexpr Int64 id0() const { return m_indexes[0]; }
-  ARCCORE_HOST_DEVICE constexpr Int64 id1() const { return m_indexes[1]; }
+  ARCCORE_HOST_DEVICE constexpr Int32 id0() const { return m_indexes[0]; }
+  ARCCORE_HOST_DEVICE constexpr Int32 id1() const { return m_indexes[1]; }
+  ARCCORE_HOST_DEVICE constexpr Int64 largeId0() const { return m_indexes[0]; }
+  ARCCORE_HOST_DEVICE constexpr Int64 largeId1() const { return m_indexes[1]; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -110,19 +118,22 @@ class ArrayBoundsIndex<3>
 {
  public:
   ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex() : ArrayBoundsIndexBase<3>(){}
-  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(Int64 _id0,Int64 _id1,Int64 _id2)
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(Int32 _id0,Int32 _id1,Int32 _id2)
   : ArrayBoundsIndexBase<3>()
   {
     m_indexes[0] = _id0;
     m_indexes[1] = _id1;
     m_indexes[2] = _id2;
   }
-  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(std::array<Int64,3> _id)
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(std::array<Int32,3> _id)
   : ArrayBoundsIndexBase<3>(_id) {}
  public:
-  ARCCORE_HOST_DEVICE constexpr Int64 id0() const { return m_indexes[0]; }
-  ARCCORE_HOST_DEVICE constexpr Int64 id1() const { return m_indexes[1]; }
-  ARCCORE_HOST_DEVICE constexpr Int64 id2() const { return m_indexes[2]; }
+  ARCCORE_HOST_DEVICE constexpr Int32 id0() const { return m_indexes[0]; }
+  ARCCORE_HOST_DEVICE constexpr Int32 id1() const { return m_indexes[1]; }
+  ARCCORE_HOST_DEVICE constexpr Int32 id2() const { return m_indexes[2]; }
+  ARCCORE_HOST_DEVICE constexpr Int64 largeId0() const { return m_indexes[0]; }
+  ARCCORE_HOST_DEVICE constexpr Int64 largeId1() const { return m_indexes[1]; }
+  ARCCORE_HOST_DEVICE constexpr Int64 largeId2() const { return m_indexes[2]; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -134,7 +145,7 @@ class ArrayBoundsIndex<4>
 {
  public:
   ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex() : ArrayBoundsIndexBase<4>(){}
-  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(Int64 _id0,Int64 _id1,Int64 _id2,Int64 _id3)
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(Int32 _id0,Int32 _id1,Int32 _id2,Int32 _id3)
   : ArrayBoundsIndexBase<4>()
   {
     m_indexes[0] = _id0;
@@ -142,13 +153,17 @@ class ArrayBoundsIndex<4>
     m_indexes[2] = _id2;
     m_indexes[3] = _id3;
   }
-  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(std::array<Int64,4> _id)
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(std::array<Int32,4> _id)
   : ArrayBoundsIndexBase<4>(_id) {}
  public:
-  ARCCORE_HOST_DEVICE constexpr Int64 id0() const { return m_indexes[0]; }
-  ARCCORE_HOST_DEVICE constexpr Int64 id1() const { return m_indexes[1]; }
-  ARCCORE_HOST_DEVICE constexpr Int64 id2() const { return m_indexes[2]; }
-  ARCCORE_HOST_DEVICE constexpr Int64 id3() const { return m_indexes[3]; }
+  ARCCORE_HOST_DEVICE constexpr Int32 id0() const { return m_indexes[0]; }
+  ARCCORE_HOST_DEVICE constexpr Int32 id1() const { return m_indexes[1]; }
+  ARCCORE_HOST_DEVICE constexpr Int32 id2() const { return m_indexes[2]; }
+  ARCCORE_HOST_DEVICE constexpr Int32 id3() const { return m_indexes[3]; }
+  ARCCORE_HOST_DEVICE constexpr Int64 largeId0() const { return m_indexes[0]; }
+  ARCCORE_HOST_DEVICE constexpr Int64 largeId1() const { return m_indexes[1]; }
+  ARCCORE_HOST_DEVICE constexpr Int64 largeId2() const { return m_indexes[2]; }
+  ARCCORE_HOST_DEVICE constexpr Int64 largeId3() const { return m_indexes[3]; }
 };
 
 /*---------------------------------------------------------------------------*/

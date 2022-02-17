@@ -43,10 +43,10 @@ class ArrayStridesBase<0>
  public:
   ArrayStridesBase() = default;
   //! Valeur du pas de la \a i-ème dimension.
-  ARCCORE_HOST_DEVICE SmallSpan<const Int64> asSpan() const { return {}; }
+  ARCCORE_HOST_DEVICE SmallSpan<const Int32> asSpan() const { return {}; }
   //! Value totale du pas
   ARCCORE_HOST_DEVICE Int64 totalStride() const { return 1; }
-  ARCCORE_HOST_DEVICE static ArrayStridesBase<0> fromSpan([[maybe_unused]] Span<const Int64> strides)
+  ARCCORE_HOST_DEVICE static ArrayStridesBase<0> fromSpan([[maybe_unused]] Span<const Int32> strides)
   {
     // TODO: vérifier la taille de \a strides
     return {};
@@ -73,9 +73,9 @@ class ArrayStridesBase
       m_strides[i] = 0;
   }
   //! Valeur du pas de la \a i-ème dimension.
-  ARCCORE_HOST_DEVICE Int64 stride(int i) const { return m_strides[i]; }
-  ARCCORE_HOST_DEVICE Int64 operator()(int i) const { return m_strides[i]; }
-  ARCCORE_HOST_DEVICE SmallSpan<const Int64> asSpan() const { return { m_strides, RankValue }; }
+  ARCCORE_HOST_DEVICE Int32 stride(int i) const { return m_strides[i]; }
+  ARCCORE_HOST_DEVICE Int32 operator()(int i) const { return m_strides[i]; }
+  ARCCORE_HOST_DEVICE SmallSpan<const Int32> asSpan() const { return { m_strides, RankValue }; }
   //! Valeur totale du pas
   ARCCORE_HOST_DEVICE Int64 totalStride() const
   {
@@ -93,7 +93,7 @@ class ArrayStridesBase
    * \brief Construit une instance à partir des valeurs données dans \a stride.
    * \pre stride.size() == RankValue.
    */
-  ARCCORE_HOST_DEVICE static ArrayStridesBase<RankValue> fromSpan(Span<const Int64> strides)
+  ARCCORE_HOST_DEVICE static ArrayStridesBase<RankValue> fromSpan(Span<const Int32> strides)
   {
     ArrayStridesBase<RankValue> v;
     // TODO: vérifier la taille
@@ -102,7 +102,7 @@ class ArrayStridesBase
     return v;
   }
  protected:
-  Int64 m_strides[RankValue];
+  Int32 m_strides[RankValue];
 };
 
 /*---------------------------------------------------------------------------*/
@@ -119,10 +119,10 @@ class ArrayExtentsBase<0>
  public:
   ArrayExtentsBase() = default;
   //! Nombre d'élément de la \a i-ème dimension.
-  ARCCORE_HOST_DEVICE SmallSpan<const Int64> asSpan() const { return {}; }
+  ARCCORE_HOST_DEVICE SmallSpan<const Int32> asSpan() const { return {}; }
   //! Nombre total d'eléments
-  ARCCORE_HOST_DEVICE Int64 totalNbElement() const { return 1; }
-  ARCCORE_HOST_DEVICE static ArrayExtentsBase<0> fromSpan([[maybe_unused]] Span<const Int64> extents)
+  ARCCORE_HOST_DEVICE Int32 totalNbElement() const { return 1; }
+  ARCCORE_HOST_DEVICE static ArrayExtentsBase<0> fromSpan([[maybe_unused]] Span<const Int32> extents)
   {
     // TODO: vérifier la taille de \a extents
     return {};
@@ -144,12 +144,12 @@ class ArrayExtentsBase
       m_extents[i] = 0;
   }
   //! Nombre d'élément de la \a i-ème dimension.
-  ARCCORE_HOST_DEVICE Int64 extent(int i) const { return m_extents[i]; }
+  ARCCORE_HOST_DEVICE Int32 extent(int i) const { return m_extents[i]; }
   //! Positionne à \a v le nombre d'éléments de la i-ème dimension
-  ARCCORE_HOST_DEVICE void setExtent(int i,Int64 v) { m_extents[i] = v; }
-  ARCCORE_HOST_DEVICE Int64 operator()(int i) const { return m_extents[i]; }
-  ARCCORE_HOST_DEVICE SmallSpan<const Int64> asSpan() const { return { m_extents.data(), RankValue }; }
-  ARCCORE_HOST_DEVICE std::array<Int64,RankValue> asStdArray() const { return m_extents; }
+  ARCCORE_HOST_DEVICE void setExtent(int i,Int32 v) { m_extents[i] = v; }
+  ARCCORE_HOST_DEVICE Int32 operator()(int i) const { return m_extents[i]; }
+  ARCCORE_HOST_DEVICE SmallSpan<const Int32> asSpan() const { return { m_extents.data(), RankValue }; }
+  ARCCORE_HOST_DEVICE std::array<Int32,RankValue> asStdArray() const { return m_extents; }
   //! Nombre total d'eléments
   ARCCORE_HOST_DEVICE constexpr Int64 totalNbElement() const
   {
@@ -167,7 +167,7 @@ class ArrayExtentsBase
    * \brief Construit une instance à partir des valeurs données dans \a extents.
    * \pre extents.size() == RankValue.
    */
-  ARCCORE_HOST_DEVICE static ArrayExtentsBase<RankValue> fromSpan(Span<const Int64> extents)
+  ARCCORE_HOST_DEVICE static ArrayExtentsBase<RankValue> fromSpan(Span<const Int32> extents)
   {
     ArrayExtentsBase<RankValue> v;
     // TODO: vérifier la taille
@@ -176,7 +176,7 @@ class ArrayExtentsBase
     return v;
   }
  protected:
-  std::array<Int64,RankValue> m_extents;
+  std::array<Int32,RankValue> m_extents;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -194,11 +194,11 @@ class ArrayExtents<1>
 
   ArrayExtents() = default;
   ArrayExtents(BaseClass rhs) : BaseClass(rhs){}
-  ARCCORE_HOST_DEVICE explicit ArrayExtents(Int64 dim1_size)
+  ARCCORE_HOST_DEVICE explicit ArrayExtents(Int32 dim1_size)
   {
     setSize(dim1_size);
   }
-  ARCCORE_HOST_DEVICE void setSize(Int64 dim1_size)
+  ARCCORE_HOST_DEVICE void setSize(Int32 dim1_size)
   {
     m_extents[0] = dim1_size;
   }
@@ -226,11 +226,11 @@ class ArrayExtents<2>
 
   ArrayExtents() = default;
   ArrayExtents(BaseClass rhs) : BaseClass(rhs){}
-  ARCCORE_HOST_DEVICE ArrayExtents(Int64 dim1_size,Int64 dim2_size)
+  ARCCORE_HOST_DEVICE ArrayExtents(Int32 dim1_size,Int32 dim2_size)
   {
     setSize(dim1_size,dim2_size);
   }
-  ARCCORE_HOST_DEVICE void setSize(Int64 dim1_size,Int64 dim2_size)
+  ARCCORE_HOST_DEVICE void setSize(Int32 dim1_size,Int32 dim2_size)
   {
     m_extents[0] = dim1_size;
     m_extents[1] = dim2_size;
@@ -260,11 +260,11 @@ class ArrayExtents<3>
 
   ArrayExtents() = default;
   ArrayExtents(BaseClass rhs) : BaseClass(rhs){}
-  ARCCORE_HOST_DEVICE ArrayExtents(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
+  ARCCORE_HOST_DEVICE ArrayExtents(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size)
   {
     setSize(dim1_size,dim2_size,dim3_size);
   }
-  ARCCORE_HOST_DEVICE void setSize(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
+  ARCCORE_HOST_DEVICE void setSize(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size)
   {
     m_extents[0] = dim1_size;
     m_extents[1] = dim2_size;
@@ -293,11 +293,11 @@ class ArrayExtents<4>
  public:
   ArrayExtents() = default;
   ArrayExtents(BaseClass rhs) : BaseClass(rhs){}
-  ARCCORE_HOST_DEVICE ArrayExtents(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size,Int64 dim4_size)
+  ARCCORE_HOST_DEVICE ArrayExtents(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size,Int32 dim4_size)
   {
     setSize(dim1_size,dim2_size,dim3_size,dim4_size);
   }
-  ARCCORE_HOST_DEVICE void setSize(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size,Int64 dim4_size)
+  ARCCORE_HOST_DEVICE void setSize(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size,Int32 dim4_size)
   {
     m_extents[0] = dim1_size;
     m_extents[1] = dim2_size;
@@ -337,7 +337,7 @@ class ArrayExtentsWithOffset<1,LayoutType>
   : BaseClass(rhs)
   {
   }
-  ARCCORE_HOST_DEVICE Int64 offset(Int64 i) const
+  ARCCORE_HOST_DEVICE Int64 offset(Int32 i) const
   {
     BaseClass::_checkIndex(i);
     return i;
@@ -347,7 +347,7 @@ class ArrayExtentsWithOffset<1,LayoutType>
     BaseClass::_checkIndex(idx.id0());
     return idx.id0();
   }
-  ARCCORE_HOST_DEVICE void setSize(Int64 dim1_size)
+  ARCCORE_HOST_DEVICE void setSize(Int32 dim1_size)
   {
     BaseClass::setSize(dim1_size);
   }
@@ -379,7 +379,7 @@ class ArrayExtentsWithOffset<2,LayoutType>
   : BaseClass(rhs)
   {
   }
-  ARCCORE_HOST_DEVICE Int64 offset(Int64 i,Int64 j) const
+  ARCCORE_HOST_DEVICE Int64 offset(Int32 i,Int32 j) const
   {
     return offset({i,j});
   }
@@ -388,7 +388,7 @@ class ArrayExtentsWithOffset<2,LayoutType>
     BaseClass::_checkIndex(idx);
     return Layout::offset(idx,m_extents[Layout::LastExtent]);
   }
-  ARCCORE_HOST_DEVICE void setSize(Int64 dim1_size,Int64 dim2_size)
+  ARCCORE_HOST_DEVICE void setSize(Int32 dim1_size,Int32 dim2_size)
   {
     BaseClass::setSize(dim1_size,dim2_size);
   }
@@ -421,7 +421,7 @@ class ArrayExtentsWithOffset<3,LayoutType>
   {
     _computeOffsets();
   }
-  ARCCORE_HOST_DEVICE Int64 offset(Int64 i,Int64 j,Int64 k) const
+  ARCCORE_HOST_DEVICE Int64 offset(Int32 i,Int32 j,Int32 k) const
   {
     return offset({i,j,k});
   }
@@ -430,7 +430,7 @@ class ArrayExtentsWithOffset<3,LayoutType>
     this->_checkIndex(idx);
     return Layout::offset(idx,m_extents[Layout::LastExtent],m_dim23_size);
   }
-  void setSize(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
+  void setSize(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size)
   {
     BaseClass::setSize(dim1_size,dim2_size,dim3_size);
     _computeOffsets();
@@ -471,16 +471,16 @@ class ArrayExtentsWithOffset<4,LayoutType>
   {
     _computeOffsets();
   }
-  ARCCORE_HOST_DEVICE Int64 offset(Int64 i,Int64 j,Int64 k,Int64 l) const
+  ARCCORE_HOST_DEVICE Int64 offset(Int32 i,Int32 j,Int32 k,Int32 l) const
   {
     return offset({i,j,k,l});
   }
   ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<4> idx) const
   {
     this->_checkIndex(idx);
-    return (m_dim234_size*idx.id0()) + m_dim34_size*idx.id1() + m_extents[3]*idx.id2() + idx.id3();
+    return (m_dim234_size*idx.largeId0()) + m_dim34_size*idx.largeId1() + m_extents[3]*idx.largeId2() + idx.largeId3();
   }
-  void setSize(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size,Int64 dim4_size)
+  void setSize(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size,Int32 dim4_size)
   {
     BaseClass::setSize(dim1_size,dim2_size,dim3_size,dim4_size);
     _computeOffsets();
@@ -493,8 +493,8 @@ class ArrayExtentsWithOffset<4,LayoutType>
  protected:
   ARCCORE_HOST_DEVICE void _computeOffsets()
   {
-    m_dim34_size = m_extents[2] * m_extents[3];
-    m_dim234_size = m_dim34_size * m_extents[1];
+    m_dim34_size = Int64(m_extents[2]) * Int64(m_extents[3]);
+    m_dim234_size = Int64(m_dim34_size) * Int64(m_extents[1]);
   }
  private:
   Int64 m_dim34_size = 0; //!< dim3 * dim4

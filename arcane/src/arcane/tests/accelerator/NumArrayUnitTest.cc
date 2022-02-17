@@ -293,7 +293,7 @@ _executeTest2()
   {
     auto command = makeCommand(queue1);
     auto out_t1 = viewOut(command, t1);
-    Int64 s1 = 300;
+    Int32 s1 = 300;
     auto b = makeLoopRanges(s1, n2, n3, n4);
     command << RUNCOMMAND_LOOP(iter, b)
     {
@@ -304,8 +304,8 @@ _executeTest2()
   {
     auto command = makeCommand(queue2);
     auto out_t1 = viewOut(command, t1);
-    Int64 base = 300;
-    Int64 s1 = 400;
+    Int32 base = 300;
+    Int32 s1 = 400;
     auto b = makeLoopRanges({ base, s1 }, n2, n3, n4);
     command << RUNCOMMAND_LOOP(iter, b)
     {
@@ -316,8 +316,8 @@ _executeTest2()
   {
     auto command = makeCommand(queue3);
     auto out_t1 = viewOut(command, t1);
-    Int64 base = 700;
-    Int64 s1 = 300;
+    Int32 base = 700;
+    Int32 s1 = 300;
     auto b = makeLoopRanges({ base, s1 }, n2, n3, n4);
     command << RUNCOMMAND_LOOP(iter, b)
     {

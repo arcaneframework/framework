@@ -87,9 +87,9 @@ TEST(NumArray3,Misc)
   // Attention, v.extents() change si 'v' est redimensionné
   auto v_extents = v.extentsWithOffset();
   {
-    for( Int64 x=0, xn=v.dim1Size(); x<xn; ++x ){
-      for( Int64 y=0, yn=v.dim2Size(); y<yn; ++y ){
-        for( Int64 z=0, zn=v.dim3Size(); z<zn; ++z ){
+    for( Int32 x=0, xn=v.dim1Size(); x<xn; ++x ){
+      for( Int32 y=0, yn=v.dim2Size(); y<yn; ++y ){
+        for( Int32 z=0, zn=v.dim3Size(); z<zn; ++z ){
           ArrayBoundsIndex<3> idx{x,y,z};
           Int64 offset = v_extents.offset(idx);
           v.s(x,y,z) = offset;

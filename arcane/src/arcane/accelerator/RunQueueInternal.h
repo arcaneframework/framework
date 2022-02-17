@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueueInternal.h                                          (C) 2000-2021 */
+/* RunQueueInternal.h                                          (C) 2000-2022 */
 /*                                                                           */
 /* Implémentation de la gestion d'une file d'exécution sur accélérateur.     */
 /*---------------------------------------------------------------------------*/
@@ -57,14 +57,14 @@ ARCCORE_HOST_DEVICE auto privatize(const T& item) -> Privatizer<T>
 #if defined(ARCANE_COMPILING_CUDA) || defined(__HIP__)
 
 template<typename ItemType,typename Lambda> __global__
-void doIndirectCUDALambda(Span<const Int32> ids,Lambda func)
+void doIndirectCUDALambda(SmallSpan<const Int32> ids,Lambda func)
 {
   typedef typename ItemType::LocalIdType LocalIdType;
 
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
-  int i = blockDim.x * blockIdx.x + threadIdx.x;
+  Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
   if (i<ids.size()){
     LocalIdType lid(ids[i]);
     //if (i<10)
@@ -74,12 +74,12 @@ void doIndirectCUDALambda(Span<const Int32> ids,Lambda func)
 }
 
 template<typename ItemType,typename Lambda> __global__
-void doDirectCUDALambda(Int64 vsize,Lambda func)
+void doDirectCUDALambda(Int32 vsize,Lambda func)
 {
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
-  int i = blockDim.x * blockIdx.x + threadIdx.x;
+  Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
   if (i<vsize){
     //if (i<10)
     //printf("CUDA %d lid=%d\n",i,lid.localId());
@@ -93,7 +93,7 @@ void doDirectCUDALambdaArrayBounds(LoopBoundType bounds,Lambda func)
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
-  int i = blockDim.x * blockIdx.x + threadIdx.x;
+  Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
   if (i<bounds.nbElement()){
     body(bounds.getIndices(i));
   }
