@@ -410,3 +410,6 @@ DerivedData/
 ## Gcc Patch
 /*.gcno
 
+# CMake profile
+CMakeUserPresets.json
+

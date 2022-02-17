@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 **News:**
 
 - MatrixMarket file importer in \[move\] API
+- \[ginkgo\]: new wrapper for the Ginkgo library
 
 **Fixed bugs:**
 

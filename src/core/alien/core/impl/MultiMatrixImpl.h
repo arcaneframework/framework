@@ -53,14 +53,14 @@ namespace Alien
  * \brief Multi matrices representation container
  *
  * This class allows to store and access several implementations of the same matrix.
- * It also stores all shared information between those implementation such as
- * distribution, or block information. It provided two accessors, one to access the matrix
- * in read-only, that do not increase the timestamp and one in read-write mode, that can
+ * It also stores all shared information between those implementations such as
+ * distribution, or block information. It provides two accessors, one to access the matrix
+ * in read-only mode, that does not increase the timestamp and one in read-write mode, that can
  * increase the timestamp. The former implementation might therefore become the up to date
  * matrix.
  *
  * While requesting a matrix in a specific format, if the up to date matrix is not in that
- * specific format, the up to date matrix will be converted, provided a converter exists.
+ * specific format, the up-to-date matrix will be converted, provided a converter exists.
  */
 class ALIEN_EXPORT MultiMatrixImpl : public TimestampMng
 , public UserFeatureMng
