@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandEnumerate.h                                       (C) 2000-2021 */
+/* RunCommandEnumerate.h                                       (C) 2000-2022 */
 /*                                                                           */
 /* Macros pour exécuter une boucle sur une liste d'entités.                  */
 /*---------------------------------------------------------------------------*/
@@ -68,7 +68,7 @@ _applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,Lambda func)
 #if defined(ARCANE_COMPILING_CUDA)
     {
       launch_info.beginExecute();
-      Span<const Int32> local_ids = items.localIds();
+      SmallSpan<const Int32> local_ids = items.localIds();
       auto [b,t] = launch_info.computeThreadBlockInfo(vsize);
       cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
       // TODO: utiliser cudaLaunchKernel() à la place.

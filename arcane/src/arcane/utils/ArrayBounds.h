@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayBounds.h                                               (C) 2000-2021 */
+/* ArrayBounds.h                                               (C) 2000-2022 */
 /*                                                                           */
 /* Gestion des itérations sur les tableaux N-dimensions                      */
 /*---------------------------------------------------------------------------*/
@@ -53,7 +53,7 @@ class ArrayBoundsBase
   constexpr ArrayBoundsBase() : m_nb_element(0) {}
  public:
   ARCCORE_HOST_DEVICE constexpr Int64 nbElement() const { return m_nb_element; }
-  ARCCORE_HOST_DEVICE constexpr std::array<Int64,RankValue> asStdArray() const { return ArrayExtents<RankValue>::asStdArray(); }
+  ARCCORE_HOST_DEVICE constexpr std::array<Int32,RankValue> asStdArray() const { return ArrayExtents<RankValue>::asStdArray(); }
  protected:
   constexpr void _computeNbElement()
   {
@@ -73,13 +73,13 @@ class ArrayBounds<1>
   using ArrayBoundsBase<1>::m_extents;
   // Note: le constructeur ne doit pas être explicite pour permettre la conversion
   // à partir d'un entier.
-  constexpr ArrayBounds(Int64 dim1)
+  constexpr ArrayBounds(Int32 dim1)
   : ArrayBoundsBase<1>()
   {
     m_extents[0] = dim1;
     _computeNbElement();
   }
-  ARCCORE_HOST_DEVICE constexpr IndexType getIndices(Int64 i) const
+  ARCCORE_HOST_DEVICE constexpr IndexType getIndices(Int32 i) const
   {
     return { i };
   }
@@ -92,17 +92,17 @@ class ArrayBounds<2>
  public:
   using IndexType = ArrayBoundsIndex<2>;
   using ArrayBoundsBase<2>::m_extents;
-  constexpr ArrayBounds(Int64 dim1,Int64 dim2)
+  constexpr ArrayBounds(Int32 dim1,Int32 dim2)
   : ArrayBoundsBase<2>()
   {
     m_extents[0] = dim1;
     m_extents[1] = dim2;
     _computeNbElement();
   }
-  ARCCORE_HOST_DEVICE constexpr IndexType getIndices(Int64 i) const
+  ARCCORE_HOST_DEVICE constexpr IndexType getIndices(Int32 i) const
   {
-    Int64 i1 = impl::fastmod(i,m_extents[1]);
-    Int64 i0 = i / m_extents[1];
+    Int32 i1 = impl::fastmod(i,m_extents[1]);
+    Int32 i0 = i / m_extents[1];
     return { i0, i1 };
   }
 };
@@ -114,7 +114,7 @@ class ArrayBounds<3>
  public:
   using IndexType = ArrayBoundsIndex<3>;
   using ArrayBoundsBase<3>::m_extents;
-  constexpr ArrayBounds(Int64 dim1,Int64 dim2,Int64 dim3)
+  constexpr ArrayBounds(Int32 dim1,Int32 dim2,Int32 dim3)
   : ArrayBoundsBase<3>()
   {
     m_extents[0] = dim1;
@@ -122,13 +122,13 @@ class ArrayBounds<3>
     m_extents[2] = dim3;
     _computeNbElement();
   }
-  ARCCORE_HOST_DEVICE constexpr IndexType getIndices(Int64 i) const
+  ARCCORE_HOST_DEVICE constexpr IndexType getIndices(Int32 i) const
   {
-    Int64 i2 = impl::fastmod(i,m_extents[2]);
-    Int64 fac = m_extents[2];
-    Int64 i1 = impl::fastmod(i / fac,m_extents[1]);
+    Int32 i2 = impl::fastmod(i,m_extents[2]);
+    Int32 fac = m_extents[2];
+    Int32 i1 = impl::fastmod(i / fac,m_extents[1]);
     fac *= m_extents[1];
-    Int64 i0 = i / fac;
+    Int32 i0 = i / fac;
     return { i0, i1, i2 };
   }
 };
@@ -140,7 +140,7 @@ class ArrayBounds<4>
  public:
   using IndexType = ArrayBoundsIndex<4>;
   using ArrayBoundsBase<4>::m_extents;
-  constexpr ArrayBounds(Int64 dim1,Int64 dim2,Int64 dim3,Int64 dim4)
+  constexpr ArrayBounds(Int32 dim1,Int32 dim2,Int32 dim3,Int32 dim4)
   : ArrayBoundsBase<4>()
   {
     m_extents[0] = dim1;
@@ -149,16 +149,16 @@ class ArrayBounds<4>
     m_extents[3] = dim4;
     _computeNbElement();
   }
-  ARCCORE_HOST_DEVICE constexpr IndexType getIndices(Int64 i) const
+  ARCCORE_HOST_DEVICE constexpr IndexType getIndices(Int32 i) const
   {
     // Compute base indices
-    Int64 i3 = impl::fastmod(i,m_extents[3]);
-    Int64 fac = m_extents[3];
-    Int64 i2 = impl::fastmod(i/fac,m_extents[2]);
+    Int32 i3 = impl::fastmod(i,m_extents[3]);
+    Int32 fac = m_extents[3];
+    Int32 i2 = impl::fastmod(i/fac,m_extents[2]);
     fac *= m_extents[2];
-    Int64 i1 = impl::fastmod(i/fac,m_extents[1]);
+    Int32 i1 = impl::fastmod(i/fac,m_extents[1]);
     fac *= m_extents[1];
-    Int64 i0 = i /fac;
+    Int32 i0 = i /fac;
     return { i0, i1, i2, i3 };
   }
 };

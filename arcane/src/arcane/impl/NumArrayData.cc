@@ -174,7 +174,7 @@ class NumArrayDataT
 
   INumArrayDataT<DataType,RankValue>* _cloneTrue() const { return new ThatClass(*this); }
   INumArrayDataT<DataType,RankValue>* _cloneTrueEmpty() const { return new ThatClass(m_trace); }
-  void _resizeDim1(Int64 dim1_size);
+  void _resizeDim1(Int32 dim1_size);
   Int64 _getDim2Size() const;
   Span2<DataType> _valueAsSpan2();
   Span2<const DataType> _valueAsConstSpan2();
@@ -247,7 +247,7 @@ storageTypeInfo() const
 /*---------------------------------------------------------------------------*/
 
 template<typename DataType,int RankValue> void NumArrayDataT<DataType,RankValue>::
-_resizeDim1(Int64 dim1_size)
+_resizeDim1(Int32 dim1_size)
 {
   // Récupère les dimensions du 'NumArray' et ne modifie que la première
   auto extents = m_value.extents();
@@ -334,8 +334,10 @@ createSerializedDataRef(bool use_basic_type) const
   Int64 full_size = nb_base_element * type_size;
   const Byte* bt = reinterpret_cast<const Byte*>(m_value.to1DSpan().data());
   Span<const Byte> base_values(bt,full_size);
-  UniqueArray<Int64> dimensions(m_value.extents().asSpan());
-    
+  auto extents = m_value.extents().asSpan();
+  UniqueArray<Int64> dimensions(extents.size());
+  for ( Int32 i=0; i<extents.size(); ++i )
+    dimensions[i] = extents[i];
   auto sd = arcaneCreateSerializedDataRef(data_type,base_values.size(),RankValue,nb_element,
                                           nb_base_element,false,dimensions);
   sd->setConstBytes(base_values);
@@ -360,7 +362,12 @@ allocateBufferForSerializedData(ISerializedData* sdata)
   if (is_multi_size)
     ARCANE_FATAL("Can not allocate multi-size array");
 
-  ArrayExtents<RankValue> extents = ArrayExtents<RankValue>::fromSpan(sdata->extents());
+  // Converti en Int32
+  Int64ConstArrayView sdata_extents = sdata->extents();
+  std::array<Int32,RankValue> numarray_extents;
+  for( Int32 i=0; i<RankValue; ++i )
+    numarray_extents[i] = CheckedConvert::toInt32(sdata_extents[i]);
+  ArrayExtents<RankValue> extents = ArrayExtents<RankValue>::fromSpan(numarray_extents);
   m_value.resize(extents);
 
   Byte* byte_data = reinterpret_cast<Byte*>(m_value.to1DSpan().data());
@@ -397,7 +404,7 @@ serialize(ISerializer* sbuf,IDataOperation* operation)
     // - le nombre d'éléments de ids.
     sbuf->reserveSpan(DT_Int64,2);
     // Réserve la mémoire pour le nombre d'éléments de chaque dimension (soit RankValue)
-    sbuf->reserveSpan(DT_Int64,RankValue);
+    sbuf->reserveSpan(DT_Int32,RankValue);
     // Réserve la mémoire pour les valeurs
     sbuf->reserveSpan(m_value.to1DSpan());
   }
@@ -412,14 +419,14 @@ serialize(ISerializer* sbuf,IDataOperation* operation)
   }
   else if (mode==ISerializer::ModeGet){
     Int64 n[2] = { 0, 0 };
-    sbuf->getSpan(Span<Int64>(n,4));
+    sbuf->getSpan(Span<Int64>(n,2));
     Int64 total = n[1];
     if (n[0]!=SERIALIZE2_MAGIC_NUMBER)
       ARCANE_FATAL("Bad magic number");
-    Int64 extents_buf[RankValue];
-    Span<Int64> extents_span(extents_buf,RankValue);
+    Int32 extents_buf[RankValue];
+    Span<Int32> extents_span(extents_buf,RankValue);
     sbuf->getSpan(extents_span);
-    Int64 count = extents_span[0];
+    Int32 count = extents_span[0];
     switch(sbuf->readMode()){
     case ISerializer::ReadReplace:
       {
@@ -434,7 +441,7 @@ serialize(ISerializer* sbuf,IDataOperation* operation)
       break;
     case ISerializer::ReadAdd:
       {
-        Int64 current_size = m_value.extent(0);
+        Int32 current_size = m_value.extent(0);
         // TODO: vérifier que dim2_size a la même valeur qu'en entrée.
         // Int64 dim2_size = _getDim2Size();
         Int64 current_total = m_value.totalNbElement();
@@ -474,7 +481,7 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation)
     // - 
     sbuf->reserveSpan(DT_Int64,3);
     // Réserve la mémoire pour le nombre d'éléments de chaque dimension (soit RankValue)
-    sbuf->reserveSpan(DT_Int64,RankValue);
+    sbuf->reserveSpan(DT_Int32,RankValue);
     // Réserve la mémoire pour les valeurs
     auto sub_extent = m_value.extents().removeFirstExtent();
     sbuf->reserveSpan(data_type,sub_extent.totalNbElement() * ids.size());
@@ -535,8 +542,8 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation)
         if (n[1]!=SERIALIZE2_MAGIC_NUMBER)
           ARCANE_FATAL("Bad magic number");
 
-        Int64 extents_buf[RankValue];
-        Span<Int64> extents_span(extents_buf,RankValue);
+        Int32 extents_buf[RankValue];
+        Span<Int32> extents_span(extents_buf,RankValue);
         sbuf->getSpan(extents_span);
 
         // TODO: utiliser extent pour vérifier que le tableau recu à le

@@ -117,7 +117,7 @@ class NumArrayBase
   //! Nombre total d'éléments du tableau
   Int64 totalNbElement() const { return m_total_nb_element; }
   //! Nombre d'éléments du rang \a i
-  Int64 extent(int i) const { return m_span.extent(i); }
+  Int32 extent(int i) const { return m_span.extent(i); }
   /*!
    * \brief Modifie la taille du tableau.
    * \warning Les valeurs actuelles ne sont pas conservées lors de cette opération
@@ -145,8 +145,8 @@ class NumArrayBase
  private:
   void _resize()
   {
-    Int64 dim1_size = extent(0);
-    Int64 dim2_size = 1;
+    Int32 dim1_size = extent(0);
+    Int32 dim2_size = 1;
     // TODO: vérifier débordement.
     for (int i=1; i<RankValue; ++i )
       dim2_size *= extent(i);
@@ -238,26 +238,26 @@ class NumArray<DataType,1,LayoutType>
   NumArray() : NumArray(0){}
   explicit NumArray(eMemoryRessource r) : BaseClass(r){}
   //! Construit un tableau
-  explicit NumArray(Int64 dim1_size)
+  explicit NumArray(Int32 dim1_size)
   : BaseClass(ArrayExtents<1>(dim1_size)){}
-  NumArray(Int64 dim1_size,eMemoryRessource r)
+  NumArray(Int32 dim1_size,eMemoryRessource r)
   : BaseClass(ArrayExtents<1>{dim1_size},r){}
  public:
-  void resize(Int64 dim1_size)
+  void resize(Int32 dim1_size)
   {
     this->resize(ArrayExtents<1>(dim1_size));
   }
  public:
   //! Valeur de la première dimension
-  Int64 dim1Size() const { return this->extent(0); }
+  Int32 dim1Size() const { return this->extent(0); }
  public:
   //! Valeur pour l'élément \a i
-  DataType operator()(Int64 i) const
+  DataType operator()(Int32 i) const
   {
     return m_span(i);
   }
   //! Positionne la valeur pour l'élément \a i
-  DataType& s(Int64 i)
+  DataType& s(Int32 i)
   {
     return m_span(i);
   }
@@ -290,29 +290,29 @@ class NumArray<DataType,2,LayoutType>
   NumArray() = default;
   explicit NumArray(eMemoryRessource r) : BaseClass(r){}
   //! Construit une vue
-  NumArray(Int64 dim1_size,Int64 dim2_size)
+  NumArray(Int32 dim1_size,Int32 dim2_size)
   : BaseClass(ArrayExtents<2>{dim1_size,dim2_size}){}
-  NumArray(Int64 dim1_size,Int64 dim2_size,eMemoryRessource r)
+  NumArray(Int32 dim1_size,Int32 dim2_size,eMemoryRessource r)
   : BaseClass(ArrayExtents<2>{dim1_size,dim2_size},r){}
  public:
-  void resize(Int64 dim1_size,Int64 dim2_size)
+  void resize(Int32 dim1_size,Int32 dim2_size)
   {
     this->resize(ArrayExtents<2>(dim1_size,dim2_size));
   }
 
  public:
   //! Valeur de la première dimension
-  Int64 dim1Size() const { return extent(0); }
+  Int32 dim1Size() const { return extent(0); }
   //! Valeur de la deuxième dimension
-  Int64 dim2Size() const { return extent(1); }
+  Int32 dim2Size() const { return extent(1); }
  public:
   //! Valeur pour l'élément \a i,j
-  DataType operator()(Int64 i,Int64 j) const
+  DataType operator()(Int32 i,Int32 j) const
   {
     return m_span(i,j);
   }
   //! Positionne la valeur pour l'élément \a i,j
-  DataType& s(Int64 i,Int64 j)
+  DataType& s(Int32 i,Int32 j)
   {
     return m_span(i,j);
   }
@@ -341,30 +341,30 @@ class NumArray<DataType,3,LayoutType>
   //! Construit un tableau vide
   NumArray() = default;
   explicit NumArray(eMemoryRessource r) : BaseClass(r){}
-  NumArray(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
+  NumArray(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size)
   : BaseClass(ArrayExtents<3>(dim1_size,dim2_size,dim3_size)){}
-  NumArray(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size,eMemoryRessource r)
+  NumArray(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size,eMemoryRessource r)
   : BaseClass(ArrayExtents<3>{dim1_size,dim2_size,dim3_size},r){}
  public:
-  void resize(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
+  void resize(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size)
   {
     this->resize(ArrayExtents<3>(dim1_size,dim2_size,dim3_size));
   }
  public:
   //! Valeur de la première dimension
-  Int64 dim1Size() const { return extent(0); }
+  Int32 dim1Size() const { return extent(0); }
   //! Valeur de la deuxième dimension
-  Int64 dim2Size() const { return extent(1); }
+  Int32 dim2Size() const { return extent(1); }
   //! Valeur de la troisième dimension
-  Int64 dim3Size() const { return extent(2); }
+  Int32 dim3Size() const { return extent(2); }
  public:
   //! Valeur pour l'élément \a i,j,k
-  DataType operator()(Int64 i,Int64 j,Int64 k) const
+  DataType operator()(Int32 i,Int32 j,Int32 k) const
   {
     return m_span(i,j,k);
   }
   //! Positionne la valeur pour l'élément \a i,j,k
-  DataType& s(Int64 i,Int64 j,Int64 k)
+  DataType& s(Int32 i,Int32 j,Int32 k)
   {
     return m_span(i,j,k);
   }
@@ -393,35 +393,35 @@ class NumArray<DataType,4,LayoutType>
   //! Construit un tableau vide
   NumArray() = default;
   explicit NumArray(eMemoryRessource r) : BaseClass(r){}
-  NumArray(Int64 dim1_size,Int64 dim2_size,
-           Int64 dim3_size,Int64 dim4_size)
+  NumArray(Int32 dim1_size,Int32 dim2_size,
+           Int32 dim3_size,Int32 dim4_size)
   : BaseClass(ArrayExtents<4>(dim1_size,dim2_size,dim3_size,dim4_size)){}
-  NumArray(Int64 dim1_size,Int64 dim2_size,
-           Int64 dim3_size,Int64 dim4_size,eMemoryRessource r)
+  NumArray(Int32 dim1_size,Int32 dim2_size,
+           Int32 dim3_size,Int32 dim4_size,eMemoryRessource r)
   : BaseClass(ArrayExtents<4>{dim1_size,dim2_size,dim3_size,dim4_size},r){}
  public:
-  void resize(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size,Int64 dim4_size)
+  void resize(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size,Int32 dim4_size)
   {
     this->resize(ArrayExtents<4>(dim1_size,dim2_size,dim3_size,dim4_size));
   }
 
  public:
   //! Valeur de la première dimension
-  Int64 dim1Size() const { return extent(0); }
+  Int32 dim1Size() const { return extent(0); }
   //! Valeur de la deuxième dimension
-  Int64 dim2Size() const { return extent(1); }
+  Int32 dim2Size() const { return extent(1); }
   //! Valeur de la troisième dimension
-  Int64 dim3Size() const { return extent(2); }
+  Int32 dim3Size() const { return extent(2); }
   //! Valeur de la quatrième dimension
-  Int64 dim4Size() const { return extent(3); }
+  Int32 dim4Size() const { return extent(3); }
  public:
   //! Valeur pour l'élément \a i,j,k,l
-  DataType operator()(Int64 i,Int64 j,Int64 k,Int64 l) const
+  DataType operator()(Int32 i,Int32 j,Int32 k,Int32 l) const
   {
     return m_span(i,j,k,l);
   }
   //! Positionne la valeur pour l'élément \a i,j,k,l
-  DataType& s(Int64 i,Int64 j,Int64 k,Integer l)
+  DataType& s(Int32 i,Int32 j,Int32 k,Int32 l)
   {
     return m_span(i,j,k,l);
   }

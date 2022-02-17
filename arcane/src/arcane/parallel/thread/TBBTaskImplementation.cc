@@ -94,13 +94,13 @@ inline int _currentTaskTreadIndex()
   return tbb::this_task_arena::current_thread_index();
 }
 
-inline tbb::blocked_rangeNd<Int64,1>
+inline tbb::blocked_rangeNd<Int32,1>
 _toTBBRange(const ComplexLoopRanges<1>& r)
 {
   return {{r.lowerBound(0), r.upperBound(0)}};
 }
 
-inline tbb::blocked_rangeNd<Int64,2>
+inline tbb::blocked_rangeNd<Int32,2>
 _toTBBRange(const ComplexLoopRanges<2>& r)
 {
   return {{r.lowerBound(0), r.upperBound(0)},
@@ -108,7 +108,7 @@ _toTBBRange(const ComplexLoopRanges<2>& r)
 
 }
 
-inline tbb::blocked_rangeNd<Int64,3>
+inline tbb::blocked_rangeNd<Int32,3>
 _toTBBRange(const ComplexLoopRanges<3>& r)
 {
   return {{r.lowerBound(0), r.upperBound(0)},
@@ -116,7 +116,7 @@ _toTBBRange(const ComplexLoopRanges<3>& r)
           {r.lowerBound(2), r.upperBound(2)}};
 }
 
-inline tbb::blocked_rangeNd<Int64,4>
+inline tbb::blocked_rangeNd<Int32,4>
 _toTBBRange(const ComplexLoopRanges<4>& r)
 {
   return {{r.lowerBound(0), r.upperBound(0)},
@@ -128,29 +128,29 @@ _toTBBRange(const ComplexLoopRanges<4>& r)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline tbb::blocked_rangeNd<Int64,1>
-_toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int64,1>& r,std::size_t grain_size)
+inline tbb::blocked_rangeNd<Int32,1>
+_toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int32,1>& r,std::size_t grain_size)
 {
   return {{r.dim(0).begin(), r.dim(0).end(), grain_size}};
 }
 
-inline tbb::blocked_rangeNd<Int64,2>
-_toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int64,2>& r,std::size_t grain_size)
+inline tbb::blocked_rangeNd<Int32,2>
+_toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int32,2>& r,std::size_t grain_size)
 {
   return {{r.dim(0).begin(), r.dim(0).end(), grain_size},
           {r.dim(1).begin(), r.dim(1).end()}};
 }
 
-inline tbb::blocked_rangeNd<Int64,3>
-_toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int64,3>& r,std::size_t grain_size)
+inline tbb::blocked_rangeNd<Int32,3>
+_toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int32,3>& r,std::size_t grain_size)
 {
   return {{r.dim(0).begin(), r.dim(0).end(), grain_size},
           {r.dim(1).begin(), r.dim(0).end()},
           {r.dim(2).begin(), r.dim(0).end()}};
 }
 
-inline tbb::blocked_rangeNd<Int64,4>
-_toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int64,4>& r,std::size_t grain_size)
+inline tbb::blocked_rangeNd<Int32,4>
+_toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int32,4>& r,std::size_t grain_size)
 {
   return {{r.dim(0).begin(), r.dim(0).end(), grain_size},
           {r.dim(1).begin(), r.dim(1).end()},
@@ -162,7 +162,7 @@ _toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int64,4>& r,std::size_t grain_si
 /*---------------------------------------------------------------------------*/
 
 inline ComplexLoopRanges<1>
-_fromTBBRange(const tbb::blocked_rangeNd<Int64,1> & r)
+_fromTBBRange(const tbb::blocked_rangeNd<Int32,1> & r)
 {
   ArrayBounds<1> lower_bounds(r.dim(0).begin());
   ArrayBounds<1> sizes(r.dim(0).size());
@@ -170,7 +170,7 @@ _fromTBBRange(const tbb::blocked_rangeNd<Int64,1> & r)
 }
 
 inline ComplexLoopRanges<2>
-_fromTBBRange(const tbb::blocked_rangeNd<Int64,2>& r)
+_fromTBBRange(const tbb::blocked_rangeNd<Int32,2>& r)
 {
   ArrayBounds<2> lower_bounds(r.dim(0).begin(),r.dim(1).begin());
   ArrayBounds<2> sizes(r.dim(0).size(),r.dim(1).size());
@@ -178,7 +178,7 @@ _fromTBBRange(const tbb::blocked_rangeNd<Int64,2>& r)
 }
 
 inline ComplexLoopRanges<3>
-_fromTBBRange(const tbb::blocked_rangeNd<Int64,3> & r)
+_fromTBBRange(const tbb::blocked_rangeNd<Int32,3> & r)
 {
   ArrayBounds<3> lower_bounds(r.dim(0).begin(),r.dim(1).begin(),r.dim(2).begin());
   ArrayBounds<3> sizes(r.dim(0).size(),r.dim(1).size(),r.dim(2).size());
@@ -186,7 +186,7 @@ _fromTBBRange(const tbb::blocked_rangeNd<Int64,3> & r)
 }
 
 inline ComplexLoopRanges<4>
-_fromTBBRange(const tbb::blocked_rangeNd<Int64,4>& r)
+_fromTBBRange(const tbb::blocked_rangeNd<Int32,4>& r)
 {
   ArrayBounds<4> lower_bounds(r.dim(0).begin(),r.dim(1).begin(),r.dim(2).begin(),r.dim(3).begin());
   ArrayBounds<4> sizes(r.dim(0).size(),r.dim(1).size(),r.dim(2).size(),r.dim(3).size());
@@ -685,7 +685,7 @@ class TBBMDParallelFor
   : m_functor(f), m_nb_allowed_thread(nb_allowed_thread){}
  public:
 
-  void operator()(tbb::blocked_rangeNd<Int64,RankValue>& range) const
+  void operator()(tbb::blocked_rangeNd<Int32,RankValue>& range) const
   {
 #ifdef ARCANE_CHECK
     if (TaskFactory::verboseLevel()>=3){
@@ -917,7 +917,7 @@ class TBBTaskImplementation::MDParallelForExecute
   }
  private:
   TBBTaskImplementation* m_impl;
-  tbb::blocked_rangeNd<Int64,RankValue> m_tbb_range;
+  tbb::blocked_rangeNd<Int32,RankValue> m_tbb_range;
   IMDRangeFunctor<RankValue>* m_functor;
   ParallelLoopOptions m_options;
 };
