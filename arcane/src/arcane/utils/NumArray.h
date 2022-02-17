@@ -69,6 +69,8 @@ namespace impl
     void resize(Int64 new_size) { BaseClass::_resize(new_size); }
     Span<DataType> to1DSpan() { return BaseClass::span(); }
     Span<const DataType> to1DSpan() const { return BaseClass::constSpan(); }
+    Span<std::byte> bytes() { return asWritableBytes(BaseClass::span()); }
+    Span<const std::byte> bytes() const { return asBytes(BaseClass::constSpan()); }
     void swap(NumArrayContainer<DataType>& rhs) { BaseClass::_swap(rhs); }
     void copy(Span<const DataType> rhs) { BaseClass::_copy(rhs.data()); }
   };
@@ -126,6 +128,7 @@ class NumArrayBase
     _resize();
   }
  protected:
+
   NumArrayBase() : m_data(_getDefaultAllocator()){}
   explicit NumArrayBase(eMemoryRessource r) : m_data(_getDefaultAllocator(r)), m_memory_ressource(r){}
   explicit NumArrayBase(ArrayExtents<RankValue> extents)
@@ -133,6 +136,12 @@ class NumArrayBase
   {
     resize(extents);
   }
+  NumArrayBase(ArrayExtents<RankValue> extents,eMemoryRessource r)
+  : m_data(_getDefaultAllocator(r)), m_memory_ressource(r)
+  {
+    resize(extents);
+  }
+
  private:
   void _resize()
   {
@@ -188,6 +197,8 @@ class NumArrayBase
   }
   Int64 capacity() const { return m_data.capacity(); }
   eMemoryRessource memoryRessource() const { return m_memory_ressource; }
+  Span<std::byte> bytes() { return asWritableBytes(to1DSpan()); }
+  Span<const std::byte> bytes() const { return asBytes(to1DSpan()); }
  public:
   //! \internal
   DataType* _internalData() { return m_span._internalData(); }
@@ -227,7 +238,10 @@ class NumArray<DataType,1,LayoutType>
   NumArray() : NumArray(0){}
   explicit NumArray(eMemoryRessource r) : BaseClass(r){}
   //! Construit un tableau
-  NumArray(Int64 dim1_size) : BaseClass(ArrayExtents<1>(dim1_size)){}
+  explicit NumArray(Int64 dim1_size)
+  : BaseClass(ArrayExtents<1>(dim1_size)){}
+  NumArray(Int64 dim1_size,eMemoryRessource r)
+  : BaseClass(ArrayExtents<1>{dim1_size},r){}
  public:
   void resize(Int64 dim1_size)
   {
@@ -277,7 +291,9 @@ class NumArray<DataType,2,LayoutType>
   explicit NumArray(eMemoryRessource r) : BaseClass(r){}
   //! Construit une vue
   NumArray(Int64 dim1_size,Int64 dim2_size)
-  : BaseClass(ArrayExtents<2>(dim1_size,dim2_size)){}
+  : BaseClass(ArrayExtents<2>{dim1_size,dim2_size}){}
+  NumArray(Int64 dim1_size,Int64 dim2_size,eMemoryRessource r)
+  : BaseClass(ArrayExtents<2>{dim1_size,dim2_size},r){}
  public:
   void resize(Int64 dim1_size,Int64 dim2_size)
   {
@@ -325,9 +341,10 @@ class NumArray<DataType,3,LayoutType>
   //! Construit un tableau vide
   NumArray() = default;
   explicit NumArray(eMemoryRessource r) : BaseClass(r){}
-  //! Construit une vue
   NumArray(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
   : BaseClass(ArrayExtents<3>(dim1_size,dim2_size,dim3_size)){}
+  NumArray(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size,eMemoryRessource r)
+  : BaseClass(ArrayExtents<3>{dim1_size,dim2_size,dim3_size},r){}
  public:
   void resize(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size)
   {
@@ -376,10 +393,12 @@ class NumArray<DataType,4,LayoutType>
   //! Construit un tableau vide
   NumArray() = default;
   explicit NumArray(eMemoryRessource r) : BaseClass(r){}
-  //! Construit une vue
   NumArray(Int64 dim1_size,Int64 dim2_size,
            Int64 dim3_size,Int64 dim4_size)
   : BaseClass(ArrayExtents<4>(dim1_size,dim2_size,dim3_size,dim4_size)){}
+  NumArray(Int64 dim1_size,Int64 dim2_size,
+           Int64 dim3_size,Int64 dim4_size,eMemoryRessource r)
+  : BaseClass(ArrayExtents<4>{dim1_size,dim2_size,dim3_size,dim4_size},r){}
  public:
   void resize(Int64 dim1_size,Int64 dim2_size,Int64 dim3_size,Int64 dim4_size)
   {
