@@ -216,12 +216,47 @@ readFromMatrixMarket(const VectorDistribution& distribution, const std::string& 
     }
     std::string line;
     Arccore::Int32 row = 0;
-    while (std::getline(stream, line)) {
 
+    while (std::getline(stream, line)) {
       if ('%' == line[0]) {
+        if ('%' == line[1]) {
+          std::string _; // junk
+          std::string format; // (coordinate, array)
+          std::string scalar; // (pattern, real, complex, integer)
+
+          // get matrix kind
+          std::stringstream ss;
+          ss << line;
+          ss >> _; // skip '%%MatrixMarket
+          ss >> _; // skip matrix
+          ss >> format;
+          ss >> scalar;
+          ss >> _;
+
+          tolower(format);
+          tolower(scalar);
+
+          if ("array" != format || "real" != scalar) {
+            throw Arccore::FatalErrorException("mtx vector must be in 'array' and 'real' formats.");
+          }
+        }
         continue;
       }
-
+      int rows = 0;
+      int vectors = 0;
+      std::stringstream ss;
+      ss << line;
+      ss >> rows;
+      ss >> vectors;
+      if (vectors != 1) {
+        throw Arccore::FatalErrorException("mtx vector reader does not support multiple vectors.");
+      }
+      if (distribution.globalSize() != rows) {
+        throw Arccore::FatalErrorException("mtx vector is not of correct size");
+      }
+      break;
+    }
+    while (std::getline(stream, line)) {
       double value;
       std::stringstream ss;
       ss << line;

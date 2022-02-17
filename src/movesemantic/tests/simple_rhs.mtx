@@ -1,7 +1,8 @@
-% Matrix Market simple RHS
+%%MatrixMarket matrix array real general
 %
 % Simple 25x25 grid.
 %
+25 1
 1.0
 2.0
 3.0
