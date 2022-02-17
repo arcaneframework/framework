@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HipAcceleratorRuntime.cc                                    (C) 2000-2021 */
+/* HipAcceleratorRuntime.cc                                    (C) 2000-2022 */
 /*                                                                           */
 /* Runtime pour 'HIP'.                                                       */
 /*---------------------------------------------------------------------------*/
@@ -16,10 +16,10 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/TraceInfo.h"
-#include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
+#include "arcane/accelerator/core/Memory.h"
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/IRunQueueRuntime.h"
@@ -103,6 +103,14 @@ class HipRunQueueStream
   void barrier() override
   {
     ARCANE_CHECK_HIP(hipStreamSynchronize(m_hip_stream));
+  }
+  void copyMemory(const MemoryCopyArgs& args) override
+  {
+    auto r = hipMemcpyAsync(args.destination().data(),args.source().data(),
+                            args.source().length(),hipMemcpyDefault,m_hip_stream);
+    ARCANE_CHECK_HIP(r);
+    if (!args.isAsync())
+      barrier();
   }
   void* _internalImpl() override { return &m_hip_stream; }
  private:

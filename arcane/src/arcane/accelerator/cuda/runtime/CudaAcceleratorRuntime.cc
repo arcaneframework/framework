@@ -23,6 +23,7 @@
 #include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
+#include "arcane/accelerator/core/Memory.h"
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/IRunQueueRuntime.h"
@@ -124,6 +125,14 @@ class CudaRunQueueStream
   void barrier() override
   {
     ARCANE_CHECK_CUDA(cudaStreamSynchronize(m_cuda_stream));
+  }
+  void copyMemory(const MemoryCopyArgs& args) override
+  {
+    auto r =cudaMemcpyAsync(args.destination().data(),args.source().data(),
+                            args.source().length(),cudaMemcpyDefault,m_cuda_stream);
+    ARCANE_CHECK_CUDA(r);
+    if (!args.isAsync())
+      barrier();
   }
   void* _internalImpl() override { return &m_cuda_stream; }
  private:

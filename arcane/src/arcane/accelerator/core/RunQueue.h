@@ -56,6 +56,9 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   //! Bloque tant que toutes les commandes associées à la file ne sont pas terminées.
   void barrier();
 
+  //! Copie des informations entre deux zones mémoires
+  void copyMemory(const MemoryCopyArgs& args);
+
  public:
 
   impl::IRunQueueRuntime* _internalRuntime() const;
