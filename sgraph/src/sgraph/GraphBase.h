@@ -226,6 +226,17 @@ class GraphBase
     _addEdge(std::move(source_vertex), std::move(target_vertex), std::move(source_to_target_edge));
   }
 
+  /*!
+   * @brief remove all vertices and edges
+   */
+  void clear() {
+    m_vertices.clear();
+    m_edges.clear();
+    m_adjacency_list.clear();
+    m_adjacency_list_transposed.clear();
+    m_edge_to_vertex_map.clear();
+  }
+
  private:
   void _addEdge(VertexType source_vertex, VertexType target_vertex, EdgeType source_to_target_edge) {
     bool has_edge = (_getEdgeIndex(source_vertex, target_vertex).first != -1 &&

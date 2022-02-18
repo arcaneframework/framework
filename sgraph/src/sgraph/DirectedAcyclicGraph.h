@@ -178,8 +178,8 @@ class DirectedAcyclicGraph
 
   /*---------------------------------------------------------------------------*/
 
-  /*! Cycle detection is done with a lazy pattern triggered when topologicalSort() or print() are called.
-   *  If a cycle is detected, these methods fail (throw runtime exception)
+  /*! Cycle detection is done with a lazy pattern triggered when topologicalSort() is called.
+   *  If a cycle is detected, these topologicalSort fails (throw runtime exception)
    */
   bool hasCycle() {
     bool has_cycle = false;
