@@ -152,9 +152,17 @@ _initializeCommunicationsMessages()
 void ParallelExchanger::
 processExchange()
 {
+  if (m_verbosity_level>=1)
+    info() << "ParallelExchanger " << m_name << " ProcessExchange (begin)"
+           << " date=" << platform::getCurrentDateTime();
+
   ParallelExchangerOptions options;
   options.setExchangeMode(static_cast<ParallelExchangerOptions::eExchangeMode>(m_exchange_mode));
   processExchange(options);
+
+  if (m_verbosity_level>=1)
+    info() << "ParallelExchanger " << m_name << " ProcessExchange (end)"
+           << " date=" << platform::getCurrentDateTime();
 }
 
 /*---------------------------------------------------------------------------*/

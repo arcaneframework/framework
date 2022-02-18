@@ -14,6 +14,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/IParallelMng.h"
 #include "arcane/Timer.h"
@@ -42,6 +43,20 @@ MeshExchanger(DynamicMesh* mesh,ITimeStats* stats)
 , m_time_stats(stats)
 , m_phase(ePhase::Init)
 {
+  // Temporairement utilise une variable d'environnement pour spécifier le
+  // nombre maximum de messages en vol ou si on souhaite utiliser les collectives
+  String max_pending_str = platform::getEnvironmentVariable("ARCANE_MESH_EXCHANGE_MAX_PENDING_MESSAGE");
+  if (!max_pending_str.null()){
+    Int32 max_pending = 0;
+    if (!builtInGetValue(max_pending,max_pending_str))
+      m_exchanger_option.setMaxPendingMessage(max_pending);
+  }
+
+  String use_collective_str = platform::getEnvironmentVariable("ARCANE_MESH_EXCHANGE_USE_COLLECTIVE");
+  if (use_collective_str=="1" || use_collective_str=="TRUE")
+    m_exchanger_option.setExchangeMode(ParallelExchangerOptions::EM_Collective);
+
+  m_exchanger_option.setVerbosityLevel(1);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -90,9 +105,7 @@ build()
     // Création de chaque échangeur associé à une famille.
     std::map<IItemFamily*,IItemFamilyExchanger*> family_exchanger_map;
     for( IItemFamily* family : sorted_families ){
-      IItemFamilyExchanger* exchanger = family->policyMng()->createExchanger();
-      m_family_exchangers.add(exchanger);
-      m_family_exchanger_map.insert(std::make_pair(family,exchanger));
+      _addItemFamilyExchanger(family);
     }
   }
   else
@@ -140,11 +153,8 @@ build()
 
       // Création de chaque échangeur associé à une famille.
       std::map<IItemFamily*,IItemFamilyExchanger*> family_exchanger_map;
-      for( IItemFamily* family : sorted_families )
-      {
-        IItemFamilyExchanger* exchanger = family->policyMng()->createExchanger();
-        m_family_exchangers.add(exchanger);
-        m_family_exchanger_map.insert(std::make_pair(family,exchanger));
+      for( IItemFamily* family : sorted_families ){
+        _addItemFamilyExchanger(family);
       }
     }
   }
@@ -177,6 +187,7 @@ _addItemFamilyExchanger(IItemFamily* family)
   IItemFamilyExchanger* exchanger = family->policyMng()->createExchanger();
   m_family_exchangers.add(exchanger);
   m_family_exchanger_map.insert(std::make_pair(family,exchanger));
+  exchanger->setParallelExchangerOption(m_exchanger_option);
 }
 
 /*---------------------------------------------------------------------------*/

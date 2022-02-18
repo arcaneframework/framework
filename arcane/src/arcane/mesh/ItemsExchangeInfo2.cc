@@ -76,20 +76,7 @@ ItemsExchangeInfo2(IItemFamily* item_family)
   m_family_serializer = item_family->policyMng()->createSerializer();
 
   // Positionne infos pour l'affichage listing
-  m_exchanger->setVerbosityLevel(1);
   m_exchanger->setName(item_family->name());
-
-  // Temporairement utilise une variable d'environnement pour spécifier le
-  // nombre maximum de messages en vol ou si on souhaite utiliser les collectives
-  String max_pending_str = platform::getEnvironmentVariable("ARCANE_MESH_EXCHANGE_MAX_PENDING_MESSAGE");
-  if (!max_pending_str.null()){
-    Int32 max_pending = 0;
-    if (!builtInGetValue(max_pending,max_pending_str))
-      m_max_pending_message = max_pending;
-  }
-  String use_collective_str = platform::getEnvironmentVariable("ARCANE_MESH_EXCHANGE_USE_COLLECTIVE");
-  if (use_collective_str=="1" || use_collective_str=="TRUE")
-    m_use_collective_exchange = true;
 
   // Celui ci doit toujours être le premier de la phase de sérialisation des variables.
   addSerializeStep(new ItemFamilyVariableSerializer(item_family));
@@ -525,18 +512,7 @@ removeSentItems()
 void ItemsExchangeInfo2::
 processExchange()
 {
-  info() << "ProcessExchange (begin) for family=" << m_item_family->fullName()
-         << " date=" << platform::getCurrentDateTime();
-
-  ParallelExchangerOptions options;
-  if (m_max_pending_message>0)
-    options.setMaxPendingMessage(m_max_pending_message);
-  if (m_use_collective_exchange)
-    options.setExchangeMode(ParallelExchangerOptions::EM_Collective);
-  m_exchanger->processExchange(options);
-
-  info() << "ProcessExchange (end) for family=" << m_item_family->fullName()
-         << " date=" << platform::getCurrentDateTime();
+  m_exchanger->processExchange(m_exchanger_option);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -598,6 +574,16 @@ _applyDeserializePhase(IItemFamilySerializeStep::ePhase phase)
       step->notifyAction(IItemFamilySerializeStep::NotifyActionArgs(action,nb_receive));
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemsExchangeInfo2::
+setParallelExchangerOption(const ParallelExchangerOptions& option)
+{
+  m_exchanger_option = option;
+  m_exchanger->setVerbosityLevel(option.verbosityLevel());
 }
 
 /*---------------------------------------------------------------------------*/

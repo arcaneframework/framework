@@ -5,18 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshExchanger.h                                             (C) 2000-2018 */
+/* MeshExchanger.h                                             (C) 2000-2022 */
 /*                                                                           */
 /* Gestion d'un échange de maillage entre sous-domaines.                     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MESHEXCHANGER_H
-#define ARCANE_MESHEXCHANGER_H
+#ifndef ARCANE_MESH_MESHEXCHANGER_H
+#define ARCANE_MESH_MESHEXCHANGER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/List.h"
 #include "arcane/IMeshExchanger.h"
+#include "arcane/ParallelExchangerOptions.h"
 #include "arcane/mesh/MeshGlobal.h"
 
 #include <map>
@@ -24,9 +25,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 class ITimeStats;
-ARCANE_MESH_BEGIN_NAMESPACE
+}
+
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -76,6 +81,7 @@ class ARCANE_MESH_EXPORT MeshExchanger
   ItemFamilyExchangerMap m_family_exchanger_map;
   ITimeStats* m_time_stats;
   ePhase m_phase;
+  ParallelExchangerOptions m_exchanger_option;
 
   void _checkPhase(ePhase wanted_phase);
   void _buildWithItemFamilyNetwork();
@@ -85,8 +91,7 @@ class ARCANE_MESH_EXPORT MeshExchanger
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
