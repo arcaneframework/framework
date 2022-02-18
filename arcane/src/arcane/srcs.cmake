@@ -215,6 +215,7 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    MeshUtils.h
    MeshVariableRef.cc
    MeshVariableRef.h
+   ParallelExchangerOptions.h
    PrivateVariableScalarTpl.cc
    PrivateVariableArrayTpl.cc
    MeshVariableTpl.cc

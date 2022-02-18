@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IParallelExchanger.h                                        (C) 2000-2021 */
+/* IParallelExchanger.h                                        (C) 2000-2022 */
 /*                                                                           */
 /* Echange d'informations entre processeurs.                                 */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,7 @@
 
 #include "arcane/ArcaneTypes.h"
 #include "arcane/Parallel.h"
+#include "arcane/ParallelExchangerOptions.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,48 +29,6 @@ namespace Arcane
 
 class IParallelMng;
 class IItemFamily;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Options pour IParallelMng::processExchange().
- */
-class ARCANE_CORE_EXPORT ParallelExchangerOptions
-{
- public:
-  /*!
-   * \brief Mode d'échange.
-   */
-  enum eExchangeMode
-  {
-    //! Utilise les échanges point à point (send/recv)
-    EM_Independant,
-    //! Utilise les opération collectives (allToAll)
-    EM_Collective,
-    //! Choisi automatiquement entre point à point ou collective.
-    EM_Auto
-  };
-
- public:
-
-  //! Positionne le mode d'échange.
-  void setExchangeMode(eExchangeMode mode) { m_exchange_mode = mode; }
-  //! Mode d'échange spécifié
-  eExchangeMode exchangeMode() const { return m_exchange_mode; };
-
-  //! Positionne le nombre maximal de messages en vol.
-  void setMaxPendingMessage(Int32 v) { m_max_pending_message = v; }
-  //! Nombre maximal de messages en vol
-  Int32 maxPendingMessage() const { return m_max_pending_message; };
-
- private:
-
-  //! Mode d'échange.
-  eExchangeMode m_exchange_mode = EM_Independant;
-
-  //! Nombre maximal de messages en vol
-  Int32 m_max_pending_message = 0;
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
