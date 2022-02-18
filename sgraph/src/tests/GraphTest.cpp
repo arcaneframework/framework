@@ -76,6 +76,9 @@ TEST(DirectedGraphTest, UnitTest) {
   EXPECT_EQ(edge2->name, algo2.name);
   auto null_edge = directed_graph.getEdge(Property{ "a" }, Property{ "b" });
   EXPECT_EQ(null_edge, nullptr);
+  directed_graph.clear();
+  EXPECT_EQ(directed_graph.edges().size(),0);
+  EXPECT_EQ(directed_graph.vertices().size(),0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -106,6 +109,8 @@ TEST(DirectedGraphTest, VertexTest) {
   }
   EXPECT_EQ(graph_vertices.size(), graph_vertices_ref.size());
   EXPECT_TRUE(std::equal(graph_vertices.begin(), graph_vertices.end(), graph_vertices_ref.begin()));
+  int_directed_graph.clear();
+  EXPECT_EQ(int_directed_graph.vertices().size(),0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -175,6 +180,11 @@ TEST(DirectedGraphTest, EdgeTest) {
   }
   ref_edges = { "ab", "ad", "ac" };
   EXPECT_TRUE(std::equal(edges.begin(), edges.end(), ref_edges.begin()));
+
+  directed_graph.clear();
+  EXPECT_EQ(directed_graph.edges().size(),0);
+  EXPECT_EQ(directed_graph.inEdges("h").size(),0);
+  EXPECT_EQ(directed_graph.outEdges("a").size(),0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -309,6 +319,11 @@ TEST(DirectedAcyclicGraphTest, UnitTest) {
   EXPECT_THROW(dag.topologicalSort(),std::runtime_error);
 
   // The graph is now corrupted...
+
+  dag.clear();
+  EXPECT_EQ(dag.topologicalSort().size(),0);
+  EXPECT_EQ(dag.spanningTree().size(),0);
+
 }
 
 /*---------------------------------------------------------------------------*/
