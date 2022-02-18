@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemsExchangeInfo2.h                                        (C) 2000-2021 */
+/* ItemsExchangeInfo2.h                                        (C) 2000-2022 */
 /*                                                                           */
 /* Informations pour échanger des entités et leur caractéristiques.          */
 /*---------------------------------------------------------------------------*/
@@ -20,6 +20,7 @@
 #include "arcane/VariableCollection.h"
 #include "arcane/IItemFamilyExchanger.h"
 #include "arcane/IItemFamilySerializeStep.h"
+#include "arcane/IParallelExchanger.h"
 
 #include "arcane/mesh/MeshGlobal.h"
 
@@ -141,6 +142,8 @@ class ARCANE_MESH_EXPORT ItemsExchangeInfo2
 
   IItemFamily* itemFamily() override { return m_item_family; }
 
+  void setParallelExchangerOption(const ParallelExchangerOptions& options) override;
+
  public:
 
   void addSerializeStep(IItemFamilySerializeStep* step);
@@ -174,8 +177,7 @@ class ARCANE_MESH_EXPORT ItemsExchangeInfo2
 
   UniqueArray<IItemFamilySerializeStep*> m_serialize_steps;
 
-  Int32 m_max_pending_message = 0;
-  bool m_use_collective_exchange = false;
+  ParallelExchangerOptions m_exchanger_option;
 
  private:
 
