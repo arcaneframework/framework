@@ -20,7 +20,7 @@
 #include "arcane/VariableCollection.h"
 #include "arcane/IItemFamilyExchanger.h"
 #include "arcane/IItemFamilySerializeStep.h"
-#include "arcane/IParallelExchanger.h"
+#include "arcane/ParallelExchangerOptions.h"
 
 #include "arcane/mesh/MeshGlobal.h"
 

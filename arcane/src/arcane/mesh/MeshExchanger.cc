@@ -55,6 +55,8 @@ MeshExchanger(DynamicMesh* mesh,ITimeStats* stats)
   String use_collective_str = platform::getEnvironmentVariable("ARCANE_MESH_EXCHANGE_USE_COLLECTIVE");
   if (use_collective_str=="1" || use_collective_str=="TRUE")
     m_exchanger_option.setExchangeMode(ParallelExchangerOptions::EM_Collective);
+
+  m_exchanger_option.setVerbosityLevel(1);
 }
 
 /*---------------------------------------------------------------------------*/

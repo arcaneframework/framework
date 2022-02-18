@@ -17,7 +17,7 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/List.h"
 #include "arcane/IMeshExchanger.h"
-#include "arcane/IParallelExchanger.h"
+#include "arcane/ParallelExchangerOptions.h"
 #include "arcane/mesh/MeshGlobal.h"
 
 #include <map>

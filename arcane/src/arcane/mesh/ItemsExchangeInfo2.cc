@@ -76,7 +76,6 @@ ItemsExchangeInfo2(IItemFamily* item_family)
   m_family_serializer = item_family->policyMng()->createSerializer();
 
   // Positionne infos pour l'affichage listing
-  m_exchanger->setVerbosityLevel(1);
   m_exchanger->setName(item_family->name());
 
   // Celui ci doit toujours être le premier de la phase de sérialisation des variables.
@@ -513,13 +512,7 @@ removeSentItems()
 void ItemsExchangeInfo2::
 processExchange()
 {
-  info() << "ProcessExchange (begin) for family=" << m_item_family->fullName()
-         << " date=" << platform::getCurrentDateTime();
-
   m_exchanger->processExchange(m_exchanger_option);
-
-  info() << "ProcessExchange (end) for family=" << m_item_family->fullName()
-         << " date=" << platform::getCurrentDateTime();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -590,6 +583,7 @@ void ItemsExchangeInfo2::
 setParallelExchangerOption(const ParallelExchangerOptions& option)
 {
   m_exchanger_option = option;
+  m_exchanger->setVerbosityLevel(option.verbosityLevel());
 }
 
 /*---------------------------------------------------------------------------*/
