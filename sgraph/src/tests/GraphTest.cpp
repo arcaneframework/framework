@@ -305,8 +305,8 @@ TEST(DirectedAcyclicGraphTest, UnitTest) {
   dag.addEdge("g", "a", "ga");
   dag.addEdge("b", "g", "bg");
 
-  if (!dag.hasCycle())
-    throw std::runtime_error{ "Error, cycles are not detected in DAG." };
+  EXPECT_TRUE(dag.hasCycle());
+  EXPECT_THROW(dag.topologicalSort(),std::runtime_error);
 
   // The graph is now corrupted...
 }
