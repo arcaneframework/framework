@@ -57,7 +57,3 @@ install(TARGETS alien_kernel_simplecsr EXPORT ${ALIEN_EXPORT_TARGET})
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/algebra/CBLAS.h
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/alien/kernels/simple_csr/algebra)
 
-IF (ALIEN_CBLAS_HEADER)
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/algebra/${ALIEN_CBLAS_NAME}
-          DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/alien/kernels/simple_csr/algebra)
-ENDIF()
