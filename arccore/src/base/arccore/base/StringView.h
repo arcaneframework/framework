@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StringView.h                                                (C) 2000-2019 */
+/* StringView.h                                                (C) 2000-2022 */
 /*                                                                           */
 /* Vue sur une chaîne de caractères UTF-8.                                   */
 /*---------------------------------------------------------------------------*/
@@ -53,32 +53,34 @@ class ARCCORE_BASE_EXPORT StringView
  public:
 
   //! Crée une vue sur une chaîne vide
-  StringView() {}
+  constexpr StringView() ARCCORE_NOEXCEPT {}
   //! Créé une vue à partir de \a str codé en UTF-8. \a str peut être nul.
-  StringView(const char* str) : StringView(str ? std::string_view(str) : std::string_view()){}
+  StringView(const char* str) ARCCORE_NOEXCEPT
+  : StringView(str ? std::string_view(str) : std::string_view()){}
   //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
-  StringView(std::string_view str)
+  StringView(std::string_view str) ARCCORE_NOEXCEPT
   : m_v(reinterpret_cast<const Byte*>(str.data()),str.size()){}
   //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
-  StringView(Span<const Byte> str) : m_v(str){}
+  constexpr StringView(Span<const Byte> str) ARCCORE_NOEXCEPT
+  : m_v(str){}
   //! Opérateur de recopie
-  StringView(const StringView& str) = default;
+  constexpr StringView(const StringView& str) = default;
   //! Copie la vue \a str dans cette instance.
-  StringView& operator=(const StringView& str) = default;
+  constexpr StringView& operator=(const StringView& str) = default;
   //! Créé une vue à partir de \a str codé en UTF-8
-  const StringView& operator=(const char* str)
+  StringView& operator=(const char* str) ARCCORE_NOEXCEPT
   {
     operator=(str ? std::string_view(str) : std::string_view());
     return (*this);
   }
   //! Créé une vue à partir de \a str codé en UTF-8
-  const StringView& operator=(std::string_view str)
+  StringView& operator=(std::string_view str) ARCCORE_NOEXCEPT
   {
     m_v = Span<const Byte>(reinterpret_cast<const Byte*>(str.data()),str.size());
     return (*this);
   }
   //! Créé une vue à partir de \a str codé en UTF-8
-  const StringView& operator=(Span<const Byte> str)
+  constexpr StringView& operator=(Span<const Byte> str) ARCCORE_NOEXCEPT
   {
     m_v = str;
     return (*this);
@@ -98,23 +100,23 @@ class ARCCORE_BASE_EXPORT StringView
    * \warning L'instance reste propriétaire de la valeur retournée et cette valeur
    * est invalidée par toute modification de cette instance.
    */
-  Span<const Byte> bytes() const { return m_v; }
+  constexpr Span<const Byte> bytes() const ARCCORE_NOEXCEPT { return m_v; }
 
   //! Longueur en octet de la chaîne de caractères.
-  Int64 length() const { return m_v.size(); }
+  constexpr Int64 length() const ARCCORE_NOEXCEPT { return m_v.size(); }
 
   //! Longueur en octet de la chaîne de caractères.
-  Int64 size() const { return m_v.size(); }
+  constexpr Int64 size() const ARCCORE_NOEXCEPT { return m_v.size(); }
 
   //! Vrai si la chaîne est nulle ou vide.
-  bool empty() const { return size()==0; }
+  constexpr bool empty() const ARCCORE_NOEXCEPT { return size()==0; }
 
  public:
 
   /*!
    * \brief Retourne une vue de la STL de la vue actuelle.
    */
-  std::string_view toStdStringView() const
+  std::string_view toStdStringView() const ARCCORE_NOEXCEPT
   {
     return std::string_view(reinterpret_cast<const char*>(m_v.data()),m_v.size());
   }
