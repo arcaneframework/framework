@@ -62,6 +62,13 @@ jobs:
             ls -lart /tmp/cmake-3.21.3-linux-x86_64
             cd /tmp/cmake-3.21.3-linux-x86_64/ && sudo rsync -au . /usr/local
             ls -lart /usr/local/bin
+            echo "Generate NuGet.config"
+            mkdir -p /home/circleci/.nuget/NuGet
+            cd /home/circleci/.nuget/NuGet && dotnet new nugetconfig
+            ls -lart /home/circleci/.nuget/NuGet
+            cd /home/circleci/.nuget/NuGet && mv nuget.config NuGet.config
+            echo "Print NuGet.config"
+            cat /home/circleci/.nuget/NuGet/NuGet.config
 
       - run:
           name: "Print tools versions"
