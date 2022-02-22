@@ -28,5 +28,14 @@ target_link_libraries(bench_ginkgo PUBLIC
         Alien::alien_ginkgo
         Alien::alien_semantic_move)
 
-configure_file(../../hypre/examples/msc00726.mtx msc00726.mtx COPYONLY)
-configure_file(../../hypre/examples/mesh1em6.mtx mesh1em6.mtx COPYONLY)
+configure_file(../../../src/movesemantic/tests/simple.mtx matrix.mtx COPYONLY)
+configure_file(../../../src/movesemantic/tests/simple_rhs.mtx rhs.mtx COPYONLY)
+
+#-----------------------------------------------------------
+# Tests
+#-----------------------------------------------------------
+
+add_test(
+        NAME ginkgo.bench
+        COMMAND bench_ginkgo GMRES Jacobi matrix.mtx rhs.mtx
+)
