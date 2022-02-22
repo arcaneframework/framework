@@ -98,11 +98,11 @@ class HostPinnedHipMemoryAllocator
 {
  protected:
 
-  virtual hipError_t _allocate(void** ptr, size_t new_size) override
+  hipError_t _allocate(void** ptr, size_t new_size) override
   {
     return ::hipHostMalloc(ptr, new_size);
   }
-  virtual hipError_t _deallocate(void* ptr) override
+  hipError_t _deallocate(void* ptr) override
   {
     return ::hipHostFree(ptr);
   }
@@ -116,11 +116,11 @@ class DeviceHipMemoryAllocator
 {
  protected:
 
-  virtual hipError_t _allocate(void** ptr, size_t new_size) override
+  hipError_t _allocate(void** ptr, size_t new_size) override
   {
     return ::hipMalloc(ptr, new_size);
   }
-  virtual hipError_t _deallocate(void* ptr) override
+  hipError_t _deallocate(void* ptr) override
   {
     return ::hipFree(ptr);
   }

@@ -38,10 +38,7 @@ void arcaneCheckCudaErrors(const TraceInfo& ti,cudaError_t e)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Allocateur spécifique pour 'Cuda'.
- *
- * Cet allocateur utilise 'cudaMallocManaged' au lieu de 'malloc'
- * pour les allocations.
+ * \brief Classe de base d'un allocateur spécifique pour 'Cuda'.
  */
 class CudaMemoryAllocatorBase
 : public Arccore::AlignedMemoryAllocator
@@ -86,11 +83,11 @@ class UnifiedMemoryCudaMemoryAllocator
 {
  protected:
 
-  virtual cudaError_t _allocate(void** ptr, size_t new_size) override
+  cudaError_t _allocate(void** ptr, size_t new_size) override
   {
     return ::cudaMallocManaged(ptr, new_size, cudaMemAttachGlobal);
   }
-  virtual cudaError_t _deallocate(void* ptr) override
+  cudaError_t _deallocate(void* ptr) override
   {
     return ::cudaFree(ptr);
   }
@@ -104,11 +101,11 @@ class HostPinnedCudaMemoryAllocator
 {
  protected:
 
-  virtual cudaError_t _allocate(void** ptr, size_t new_size) override
+  cudaError_t _allocate(void** ptr, size_t new_size) override
   {
     return ::cudaMallocHost(ptr, new_size);
   }
-  virtual cudaError_t _deallocate(void* ptr) override
+  cudaError_t _deallocate(void* ptr) override
   {
     return ::cudaFreeHost(ptr);
   }
@@ -122,11 +119,11 @@ class DeviceCudaMemoryAllocator
 {
  protected:
 
-  virtual cudaError_t _allocate(void** ptr, size_t new_size) override
+  cudaError_t _allocate(void** ptr, size_t new_size) override
   {
     return ::cudaMalloc(ptr, new_size);
   }
-  virtual cudaError_t _deallocate(void* ptr) override
+  cudaError_t _deallocate(void* ptr) override
   {
     return ::cudaFree(ptr);
   }
