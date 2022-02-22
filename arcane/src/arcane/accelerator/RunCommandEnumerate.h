@@ -82,7 +82,7 @@ _applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,Lambda func)
 #if defined(__HIP__)
     {
       launch_info.beginExecute();
-      Span<const Int32> local_ids = items.localIds();
+      SmallSpan<const Int32> local_ids = items.localIds();
       auto [b,t] = launch_info.computeThreadBlockInfo(vsize);
       hipStream_t* s = reinterpret_cast<hipStream_t*>(launch_info._internalStreamImpl());
       auto& loop_func = impl::doIndirectCUDALambda<ItemType,Lambda>;
