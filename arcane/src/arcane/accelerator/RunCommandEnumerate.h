@@ -91,7 +91,7 @@ _applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,Lambda func)
 #else
     ARCANE_FATAL("Requesting HIP kernel execution but the kernel is not compiled with HIP compiler");
 #endif
-
+    break;
   case eExecutionPolicy::Sequential:
     {
       launch_info.beginExecute();
