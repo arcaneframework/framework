@@ -738,7 +738,42 @@ void prepare_mesh(Neo::MeshBase& mesh) {
 
 //----------------------------------------------------------------------------/
 
-TEST(NeoTestBaseMeshCreation, base_mesh_creation_test) {
+TEST(NeoTestBaseMesh, base_mesh_unit_test){
+  Neo::MeshBase mesh{ "test" };
+  auto& family1 = mesh.addFamily(Neo::ItemKind::IK_Cell, "family1");
+  auto& family2 = mesh.addFamily(Neo::ItemKind::IK_Cell, "family2");
+  auto& family3 = mesh.addFamily(Neo::ItemKind::IK_Node, "family3");
+  auto& family4 = mesh.addFamily(Neo::ItemKind::IK_Edge, "family4");
+  auto& family5 = mesh.addFamily(Neo::ItemKind::IK_Dof, "family5");
+  bool is_called = false;
+  family1.addProperty<int>("prop1");
+  family2.addProperty<int>("prop2");
+  mesh.addAlgorithm(Neo::InProperty{family1,"prop1"},Neo::OutProperty{family2,"prop2"},
+                    [&is_called](Neo::PropertyT<int> const& prop1,
+                                 Neo::PropertyT<int>& prop2){
+                      is_called = true;
+                    });
+  // copy mesh
+  auto mesh2 = mesh;
+  // call algorithm on mesh 2
+  mesh2.applyAlgorithms();
+  EXPECT_TRUE(is_called);
+  // now mesh 2 does not contain any algorithm
+  is_called = false;
+  mesh2.applyAlgorithms();
+  EXPECT_FALSE(is_called);
+  // call and keep algorithm on mesh1: algo will not be removed from mesh
+  mesh.applyAndKeepAlgorithms();
+  EXPECT_TRUE(is_called);
+  // algo is still there and can be applied again
+  is_called = false;
+  mesh.applyAlgorithms();
+  EXPECT_TRUE(is_called);
+}
+
+//----------------------------------------------------------------------------/
+
+TEST(NeoTestBaseMesh, base_mesh_creation_test) {
 
   std::cout << "*------------------------------------*" << std::endl;
   std::cout << "* Test framework Neo thoughts " << std::endl;
