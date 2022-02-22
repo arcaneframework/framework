@@ -17,6 +17,8 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Memory.h"
@@ -159,11 +161,28 @@ class HipRunQueueRuntime
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class HipMemoryCopier
+: public IMemoryCopier
+{
+  void copy(Span<const std::byte> from, [[maybe_unused]] eMemoryRessource from_mem,
+            Span<std::byte> to, [[maybe_unused]] eMemoryRessource to_mem) override
+  {
+    // 'hipMemcpyDefault' sait automatiquement ce qu'il faut faire en tenant
+    // uniquement compte de la valeur des pointeurs. Il faudrait voir si
+    // utiliser \a from_mem et \a to_mem peut améliorer les performances.
+    ARCANE_CHECK_HIP(hipMemcpy(to.data(), from.data(), from.size(), hipMemcpyDefault));
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane::Accelerator::Hip
 
 namespace 
 {
 Arcane::Accelerator::Hip::HipRunQueueRuntime global_hip_runtime;
+Arcane::Accelerator::Hip::HipMemoryCopier global_hip_memory_copier;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -174,10 +193,16 @@ Arcane::Accelerator::Hip::HipRunQueueRuntime global_hip_runtime;
 extern "C" ARCANE_EXPORT void
 arcaneRegisterAcceleratorRuntimehip()
 {
+  using namespace Arcane;
   using namespace Arcane::Accelerator::Hip;
   Arcane::Accelerator::impl::setUsingHIPRuntime(true);
   Arcane::Accelerator::impl::setHIPRunQueueRuntime(&global_hip_runtime);
   Arcane::platform::setAcceleratorHostMemoryAllocator(getHipMemoryAllocator());
+  IMemoryRessourceMngInternal* mrm = platform::getDataMemoryRessourceMng()->_internal();
+  mrm->setAllocator(eMemoryRessource::UnifiedMemory,getHipUnifiedMemoryAllocator());
+  mrm->setAllocator(eMemoryRessource::HostPinned,getHipHostPinnedMemoryAllocator());
+  mrm->setAllocator(eMemoryRessource::Device,getHipDeviceMemoryAllocator());
+  mrm->setCopier(&global_hip_memory_copier);
   checkDevices();
 }
 
