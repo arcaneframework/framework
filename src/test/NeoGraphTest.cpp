@@ -61,7 +61,7 @@ TEST(NeoGraphTest,BaseTest)
 
 //----------------------------------------------------------------------------/
 
-TEST(NeoGraphTest,OneAlgoTest)
+TEST(NeoGraphTest,OneProducingAlgoTest)
 {
   Neo::MeshBase mesh{ "test_mesh" };
   mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family");
@@ -73,20 +73,68 @@ TEST(NeoGraphTest,OneAlgoTest)
     std::cout << "Algo 1" << std::endl;
     is_called = true;
   });
+  mesh.applyAlgorithms(Neo::MeshBase::AlgorithmExecutionOrder::DAG);
   EXPECT_FALSE(is_called);
 
   // Now add property: algo must be called
   cell_family.addProperty<Neo::utils::Int32>("prop1");
-
   mesh.addAlgorithm(Neo::OutProperty{cell_family,"prop1"},[&is_called](Neo::PropertyT<Neo::utils::Int32> & p1) {
     std::cout << "Algo 1" << std::endl;
     is_called = true;
   });
+
   mesh.applyAlgorithms(Neo::MeshBase::AlgorithmExecutionOrder::DAG);
   EXPECT_TRUE(is_called);
-  // must handle self edge ? graph must handle addvertex...?
 }
 
+//----------------------------------------------------------------------------/
+
+TEST(NeoGraphTest,OneConsumingProducingAlgoTest){
+  Neo::MeshBase mesh{ "test_mesh" };
+  mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family");
+  Neo::Family& cell_family = mesh.getFamily(Neo::ItemKind::IK_Cell, "cell_family");
+  bool is_called = false;
+  mesh.addAlgorithm(Neo::InProperty{cell_family,"prop1",Neo::PropertyStatus::ExistingProperty},
+                    Neo::OutProperty{cell_family,"prop2"},[&is_called]([[maybe_unused]]Neo::PropertyT<Neo::utils::Int32> const& p1,
+                                                                       [[maybe_unused]]Neo::PropertyT<Neo::utils::Int32> & p2) {
+    std::cout << "Algo 1" << std::endl;
+    is_called = true;
+  });
+
+  // First try without adding property: algo not called
+  auto mesh_no_prop = mesh;
+  mesh_no_prop.applyAlgorithms(Neo::MeshBase::AlgorithmExecutionOrder::DAG);
+  EXPECT_FALSE(is_called);
+
+  // Second try adding only produced property: algo still not called
+  auto mesh_prop2 = mesh;
+  mesh_prop2.getFamily(Neo::ItemKind::IK_Cell, "cell_family").addProperty<Neo::utils::Int32>("prop2");
+  mesh_prop2.applyAlgorithms(Neo::MeshBase::AlgorithmExecutionOrder::DAG);
+  EXPECT_FALSE(is_called);
+
+  // Third try  adding only produced property: algo still not called
+  auto mesh_prop1 = mesh;
+  mesh_prop1.getFamily(Neo::ItemKind::IK_Cell, "cell_family").addProperty<Neo::utils::Int32>("prop1");
+  mesh_prop1.applyAlgorithms(Neo::MeshBase::AlgorithmExecutionOrder::DAG);
+  EXPECT_FALSE(is_called);
+
+  // Last try adding both properties: algo called
+  mesh.getFamily(Neo::ItemKind::IK_Cell, "cell_family").addProperty<Neo::utils::Int32>("prop1");
+  mesh.getFamily(Neo::ItemKind::IK_Cell, "cell_family").addProperty<Neo::utils::Int32>("prop2");
+  mesh.applyAlgorithms(Neo::MeshBase::AlgorithmExecutionOrder::DAG);
+  EXPECT_TRUE(is_called);
+  // Rk: if prop1 had been a ComputedProperty, the algo would not have been called, since no producing algo
+  // see bellow
+  is_called = false;
+  mesh.addAlgorithm(Neo::InProperty{cell_family,"prop1",Neo::PropertyStatus::ComputedProperty}, // ComputedProperty is the default
+                    Neo::OutProperty{cell_family,"prop2"},[&is_called]([[maybe_unused]]Neo::PropertyT<Neo::utils::Int32> const& p1,
+                                                                       [[maybe_unused]]Neo::PropertyT<Neo::utils::Int32> & p2) {
+      is_called = true;
+  });
+  mesh.applyAlgorithms(Neo::MeshBase::AlgorithmExecutionOrder::DAG);
+  EXPECT_FALSE(is_called); // algo not called, since no one produces prop1, a ComputedProperty
+
+}
 //----------------------------------------------------------------------------/
 
 void _addAlgorithmsWithCycle(Neo::MeshBase& mesh, Neo::Family& item_family){
@@ -220,7 +268,7 @@ TEST(NeoGraphTest,OneFamilyOnePropertyTest){
                     Neo::OutProperty{cell_family,"prop"},
                     []([[maybe_unused]]Neo::PropertyT<Neo::utils::Int32> const& previous_prop, Neo::PropertyT<Neo::utils::Int32>& prop){
     std::cout << "Modify property after fill "<< std::endl;
-    // previous prop added to create a dependance
+    // previous prop added to create a dependence
     for (auto& val : prop) {
       val += 1;
     }
@@ -237,3 +285,6 @@ TEST(NeoGraphTest,OneFamilyOnePropertyTest){
   auto values = prop.values();
   EXPECT_TRUE(std::equal(values.begin(),values.end(),ref_values.begin()));
 }
+
+//----------------------------------------------------------------------------/
+//----------------------------------------------------------------------------/
