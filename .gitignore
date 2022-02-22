@@ -96,6 +96,10 @@ flycheck_*.el
 
 # CMake
 cmake-build-*/
+build/
+
+# Spack
+spack-*
 
 # Mongo Explorer plugin
 .idea/**/mongoSettings.xml
