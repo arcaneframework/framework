@@ -49,6 +49,9 @@ void checkDevices()
     hipDeviceProp_t dp;
     ARCANE_CHECK_HIP(hipGetDeviceProperties(&dp, i));
 
+    int has_managed_memory = 0;
+    ARCANE_CHECK_HIP(hipDeviceGetAttribute(&has_managed_memory, hipDeviceAttributeManagedMemory, i));
+
     o << "\nDevice " << i << " name=" << dp.name << "\n";
     o << " computeCapability = " << dp.major << "." << dp.minor << "\n";
     o << " totalGlobalMem = " << dp.totalGlobalMem << "\n";
@@ -69,6 +72,7 @@ void checkDevices()
       << " " << dp.maxThreadsDim[2] << "\n";
     o << " maxGridSize = "<< dp.maxGridSize[0] << " " << dp.maxGridSize[1]
       << " " << dp.maxGridSize[2] << "\n";
+    o << " hasManagedMemory = " << has_managed_memory << "\n";
   }
 }
 
