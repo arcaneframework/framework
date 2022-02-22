@@ -633,10 +633,13 @@ init()
   const auto k_beg = this->k_beg();
 
   // Allocate the model data
+  Int32 size0 = NUM_VARS * (nz + 2 * hs) * (nx + 2 * hs);
+  info() << "Allocate memory for NumArray nx=" << nx << " nz=" << nz << " hs=" << hs << " size0=" << size0;
   nstate.resize(NUM_VARS,(nz + 2 * hs),(nx + 2 * hs));
   nstate_tmp.resize(NUM_VARS,(nz + 2 * hs),(nx + 2 * hs));
   nflux.resize(NUM_VARS,nz+1,nx+1); 
   ntend.resize(NUM_VARS,nz,nx);
+
   hy_dens_cell.resize(nz + 2 * hs);
   hy_dens_theta_cell.resize(nz + 2 * hs);
   hy_dens_int.resize(nz + 1);
