@@ -752,7 +752,31 @@ private :
 };
 
 class FamilyMap {
-public:
+ private:
+  std::map<std::pair<ItemKind,std::string>, std::unique_ptr<Family>> m_families;
+  void _copyMap(FamilyMap const& family_map){
+    for (auto const& family_info : family_map.m_families) {
+      auto const& [item_kind, name] = family_info.first;
+      push_back(item_kind, name);
+    }
+  }
+
+ public:
+  FamilyMap() = default;
+  FamilyMap(FamilyMap const& family_map) {
+    _copyMap(family_map);
+  }
+  FamilyMap(FamilyMap && family_map) {
+    m_families = std::move(family_map.m_families);
+  }
+  FamilyMap& operator=(FamilyMap const& family_map){
+    _copyMap(family_map);
+    return *this;
+  }
+  FamilyMap& operator=(FamilyMap && family_map){
+    m_families = std::move(family_map.m_families);
+    return *this;
+  }
   Family& operator()(ItemKind const & ik,std::string const& name) const noexcept (ndebug)
   {
     auto found_family = m_families.find(std::make_pair(ik,name));
@@ -768,9 +792,6 @@ public:
   auto begin() const noexcept {return m_families.begin();}
   auto end() noexcept { return m_families.end();}
   auto end() const noexcept {return m_families.end();}
-
-private:
-  std::map<std::pair<ItemKind,std::string>, std::unique_ptr<Family>> m_families;
 
 };
 
