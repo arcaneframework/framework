@@ -1058,7 +1058,27 @@ public:
     _addProducingAlgo(algo_handler->m_out_property2,algo_handler);
   }
 
+  /*!
+   * @brief Apply added algorithms
+   * @param execution_order
+   * @return object EndOfMeshUpdate to unlock FutureItemRange
+   * Added algorithms are removed at the end of the method
+   */
   EndOfMeshUpdate applyAlgorithms(AlgorithmExecutionOrder execution_order = AlgorithmExecutionOrder::FIFO) {
+    return _applyAlgorithms(execution_order, false);
+  }
+
+  /*!
+   * @brief Apply added algorithms
+   * @param execution_order
+   * @return object EndOfMeshUpdate to unlock FutureItemRange
+   * Added algorithms are kept at the end of the method. If the method is called twice, tha algorithms are played again.
+   */
+  EndOfMeshUpdate applyAndKeepAlgorithms(AlgorithmExecutionOrder execution_order = AlgorithmExecutionOrder::FIFO){
+    return _applyAlgorithms(execution_order,true);
+  }
+
+  EndOfMeshUpdate _applyAlgorithms(AlgorithmExecutionOrder execution_order, bool do_keep_algorithms) {
     std::cout << "-- apply added algorithms with execution order ";
     switch (execution_order) {
     case AlgorithmExecutionOrder::FIFO:
@@ -1076,9 +1096,12 @@ public:
       std::for_each(sorted_graph.begin(), sorted_graph.end(),[](auto& algo) { (*algo.get())(); });
       break;
     }
-    m_algos.clear();
-    m_property_algorithms.clear();
-    return EndOfMeshUpdate{};
+    if (!do_keep_algorithms) {
+      m_algos.clear();
+      m_property_algorithms.clear();
+      m_dag.clear();
+      return EndOfMeshUpdate{};
+    }
   }
 
  private:
