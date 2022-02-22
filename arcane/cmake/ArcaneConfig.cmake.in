@@ -50,6 +50,7 @@ set(ARCANE_HAS_CUDA "@ARCANE_WANT_CUDA@" CACHE BOOL "Is Arcane compiled with CUD
 set(ARCANE_HAS_HIP "@ARCANE_WANT_HIP@" CACHE BOOL "Is Arcane compiled with HIP support?" FORCE)
 set(ARCANE_CUDA_COMPILER_HINT "@CMAKE_CUDA_COMPILER@")
 set(ARCANE_HIP_COMPILER_HINT "@CMAKE_HIP_COMPILER@")
+set(ARCANE_HIP_DIR_HINT "@Hip_DIR@")
 set(ARCANE_DEFAULT_HIP_ARCHITECTURES "@CMAKE_HIP_ARCHITECTURES@" CACHE STRING "Default GPU architectures?" FORCE)
 
 macro(arcane_internal_enable_cuda)
@@ -93,7 +94,22 @@ macro(arcane_internal_enable_hip)
       set(CMAKE_HIP_ARCHITECTURES ${ARCANE_DEFAULT_HIP_ARCHITECTURES} CACHE STRING "Default architectures" FORCE)
     endif()
 
-    find_package(Hip REQUIRED)
+    # Il faut ajouter dans CMAKE_MODULE_PATH le chemin ou se trouve ROCM.
+    # On suppose que Hip_ROOT a été positionné lors du configure de Arcane et qu'il
+    # est dans ${ROCM_ROOT}/hip/lib/cmake/hip.
+    set(_SAVED_CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH})
+    if (ARCANE_HIP_DIR_HINT)
+      # NOTE: Cette commande 'cmake_path' n'existe qu'à partir de CMake 3.20
+      cmake_path(GET ARCANE_HIP_DIR_HINT PARENT_PATH _path_result1)
+      cmake_path(GET _path_result1 PARENT_PATH _path_result2)
+      cmake_path(GET _path_result2 PARENT_PATH _path_result)
+      if (_path_result)
+        list(APPEND CMAKE_PREFIX_PATH "${_path_result}")
+      endif()
+      message(STATUS "Computed CMAKE_PREFIX_PATH for Hip : ${CMAKE_PREFIX_PATH}")
+    endif()
+    find_package(Hip REQUIRED "${ARCANE_HIP_DIR_HINT}")
+    set(CMAKE_PREFIX_PATH ${_SAVED_CMAKE_PREFIX_PATH})
   else()
     message(FATAL_ERROR "Can not enable HIP because Arcane is not compiled with HIP support")
   endif()
