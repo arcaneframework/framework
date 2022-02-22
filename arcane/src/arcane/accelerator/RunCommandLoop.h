@@ -69,6 +69,7 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
 #else
     ARCANE_FATAL("Requesting HIP kernel execution but the kernel is not compiled with HIP compiler");
 #endif
+    break;
   case eExecutionPolicy::Sequential:
     launch_info.beginExecute();
     arcaneSequentialFor(bounds,func);

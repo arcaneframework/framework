@@ -17,6 +17,8 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Memory.h"
@@ -47,6 +49,9 @@ void checkDevices()
     hipDeviceProp_t dp;
     ARCANE_CHECK_HIP(hipGetDeviceProperties(&dp, i));
 
+    int has_managed_memory = 0;
+    ARCANE_CHECK_HIP(hipDeviceGetAttribute(&has_managed_memory, hipDeviceAttributeManagedMemory, i));
+
     o << "\nDevice " << i << " name=" << dp.name << "\n";
     o << " computeCapability = " << dp.major << "." << dp.minor << "\n";
     o << " totalGlobalMem = " << dp.totalGlobalMem << "\n";
@@ -67,6 +72,7 @@ void checkDevices()
       << " " << dp.maxThreadsDim[2] << "\n";
     o << " maxGridSize = "<< dp.maxGridSize[0] << " " << dp.maxGridSize[1]
       << " " << dp.maxGridSize[2] << "\n";
+    o << " hasManagedMemory = " << has_managed_memory << "\n";
   }
 }
 
@@ -159,11 +165,28 @@ class HipRunQueueRuntime
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class HipMemoryCopier
+: public IMemoryCopier
+{
+  void copy(Span<const std::byte> from, [[maybe_unused]] eMemoryRessource from_mem,
+            Span<std::byte> to, [[maybe_unused]] eMemoryRessource to_mem) override
+  {
+    // 'hipMemcpyDefault' sait automatiquement ce qu'il faut faire en tenant
+    // uniquement compte de la valeur des pointeurs. Il faudrait voir si
+    // utiliser \a from_mem et \a to_mem peut améliorer les performances.
+    ARCANE_CHECK_HIP(hipMemcpy(to.data(), from.data(), from.size(), hipMemcpyDefault));
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane::Accelerator::Hip
 
 namespace 
 {
 Arcane::Accelerator::Hip::HipRunQueueRuntime global_hip_runtime;
+Arcane::Accelerator::Hip::HipMemoryCopier global_hip_memory_copier;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -174,10 +197,16 @@ Arcane::Accelerator::Hip::HipRunQueueRuntime global_hip_runtime;
 extern "C" ARCANE_EXPORT void
 arcaneRegisterAcceleratorRuntimehip()
 {
+  using namespace Arcane;
   using namespace Arcane::Accelerator::Hip;
   Arcane::Accelerator::impl::setUsingHIPRuntime(true);
   Arcane::Accelerator::impl::setHIPRunQueueRuntime(&global_hip_runtime);
   Arcane::platform::setAcceleratorHostMemoryAllocator(getHipMemoryAllocator());
+  IMemoryRessourceMngInternal* mrm = platform::getDataMemoryRessourceMng()->_internal();
+  mrm->setAllocator(eMemoryRessource::UnifiedMemory,getHipUnifiedMemoryAllocator());
+  mrm->setAllocator(eMemoryRessource::HostPinned,getHipHostPinnedMemoryAllocator());
+  mrm->setAllocator(eMemoryRessource::Device,getHipDeviceMemoryAllocator());
+  mrm->setCopier(&global_hip_memory_copier);
   checkDevices();
 }
 

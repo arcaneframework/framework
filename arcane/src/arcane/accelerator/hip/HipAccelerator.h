@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CudaAccelerator.h                                           (C) 2000-2021 */
+/* CudaAccelerator.h                                           (C) 2000-2022 */
 /*                                                                           */
 /* Backend 'HIP' pour les accélérateurs.                                     */
 /*---------------------------------------------------------------------------*/
@@ -51,6 +51,15 @@ arcaneCheckHipErrors(const TraceInfo& ti,hipError_t e);
 
 extern "C++" ARCANE_HIP_EXPORT Arccore::IMemoryAllocator*
 getHipMemoryAllocator();
+
+extern "C++" ARCANE_HIP_EXPORT Arccore::IMemoryAllocator*
+getHipDeviceMemoryAllocator();
+
+extern "C++" ARCANE_HIP_EXPORT Arccore::IMemoryAllocator*
+getHipUnifiedMemoryAllocator();
+
+extern "C++" ARCANE_HIP_EXPORT Arccore::IMemoryAllocator*
+getHipHostPinnedMemoryAllocator();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

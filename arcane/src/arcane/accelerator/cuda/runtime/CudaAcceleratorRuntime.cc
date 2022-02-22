@@ -187,10 +187,10 @@ class CudaMemoryCopier
   void copy(Span<const std::byte> from, [[maybe_unused]] eMemoryRessource from_mem,
             Span<std::byte> to, [[maybe_unused]] eMemoryRessource to_mem) override
   {
-    // 'cudaMemcpyDefault' CUDA sait automatiquement ce qu'il faut faire en tenant
+    // 'cudaMemcpyDefault' sait automatiquement ce qu'il faut faire en tenant
     // uniquement compte de la valeur des pointeurs. Il faudrait voir si
     // utiliser \a from_mem et \a to_mem peut améliorer les performances.
-    cudaMemcpy(to.data(), from.data(), from.size(), cudaMemcpyDefault);
+    ARCANE_CHECK_CUDA(cudaMemcpy(to.data(), from.data(), from.size(), cudaMemcpyDefault));
   }
 };
 

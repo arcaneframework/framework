@@ -811,12 +811,14 @@ if(DEFINED ARCANE_ACCELERATOR_MODE)
   if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC" )
     set (ARCANE_WANT_CUDA TRUE)
   elseif (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
+    set (ARCANE_WANT_HIP TRUE)
     # TODO: vérifier qu'on utilise bien 'hipcc'
   else()
     message(FATAL_ERROR "Unsupported ARCANE_ACCELERATOR_MODE '${ARCANE_ACCELERATOR_MODE}'."
       "Valid values are 'CUDANVCC' or 'ROCMHIP'")
   endif()
   set (ARCANE_ACCELERATOR_MODE ${ARCANE_ACCELERATOR_MODE} CACHE STRING "Accelerator Mode" FORCE)
+  set (ARCANE_HAS_ACCELERATOR TRUE)
 endif()
 
 # ----------------------------------------------------------------------------

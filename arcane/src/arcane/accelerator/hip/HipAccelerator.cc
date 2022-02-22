@@ -38,22 +38,19 @@ void arcaneCheckHipErrors(const TraceInfo& ti,hipError_t e)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Allocateur spécifique pour 'Hip'.
- *
- * Cet allocateur utilise 'hipMallocManaged' au lieu de 'malloc'
- * pour les allocations.
+ * \brief Classe de base d'un allocateur spécifique pour 'Hip'.
  */
-class HipMemoryAllocator
+class HipMemoryAllocatorBase
 : public Arccore::AlignedMemoryAllocator
 {
  public:
-  HipMemoryAllocator() : AlignedMemoryAllocator(128){}
+  HipMemoryAllocatorBase() : AlignedMemoryAllocator(128){}
 
   bool hasRealloc() const override { return false; }
   void* allocate(size_t new_size) override
   {
     void* out = nullptr;
-    ARCANE_CHECK_HIP(::hipMallocManaged(&out,new_size,hipMemAttachGlobal));
+    ARCANE_CHECK_HIP(_allocate(&out,new_size));
     Int64 a = reinterpret_cast<Int64>(out);
     if ((a % 128)!=0)
       ARCANE_FATAL("Bad alignment for HIP allocator: offset={0}",(a % 128));
@@ -66,14 +63,78 @@ class HipMemoryAllocator
   }
   void deallocate(void* ptr) override
   {
-    ARCANE_CHECK_HIP(::hipFree(ptr));
+    ARCANE_CHECK_HIP(_deallocate(ptr));
+  }
+
+ protected:
+
+  virtual hipError_t _allocate(void** ptr, size_t new_size) = 0;
+  virtual hipError_t _deallocate(void* ptr) = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class UnifiedMemoryHipMemoryAllocator
+: public HipMemoryAllocatorBase
+{
+ protected:
+
+  hipError_t _allocate(void** ptr, size_t new_size) override
+  {
+    return ::hipMallocManaged(ptr, new_size, hipMemAttachGlobal);
+  }
+  hipError_t _deallocate(void* ptr) override
+  {
+    return ::hipFree(ptr);
   }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-HipMemoryAllocator default_hip_memory_allocator;
+class HostPinnedHipMemoryAllocator
+: public HipMemoryAllocatorBase
+{
+ protected:
+
+  hipError_t _allocate(void** ptr, size_t new_size) override
+  {
+    return ::hipHostMalloc(ptr, new_size);
+  }
+  hipError_t _deallocate(void* ptr) override
+  {
+    return ::hipHostFree(ptr);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class DeviceHipMemoryAllocator
+: public HipMemoryAllocatorBase
+{
+ protected:
+
+  hipError_t _allocate(void** ptr, size_t new_size) override
+  {
+    return ::hipMalloc(ptr, new_size);
+  }
+  hipError_t _deallocate(void* ptr) override
+  {
+    return ::hipFree(ptr);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace
+{
+  UnifiedMemoryHipMemoryAllocator unified_memory_hip_memory_allocator;
+  HostPinnedHipMemoryAllocator host_pinned_hip_memory_allocator;
+  DeviceHipMemoryAllocator device_hip_memory_allocator;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -81,7 +142,25 @@ HipMemoryAllocator default_hip_memory_allocator;
 Arccore::IMemoryAllocator*
 getHipMemoryAllocator()
 {
-  return &default_hip_memory_allocator;
+  return &unified_memory_hip_memory_allocator;
+}
+
+Arccore::IMemoryAllocator*
+getHipDeviceMemoryAllocator()
+{
+  return &device_hip_memory_allocator;
+}
+
+Arccore::IMemoryAllocator*
+getHipUnifiedMemoryAllocator()
+{
+  return &unified_memory_hip_memory_allocator;
+}
+
+Arccore::IMemoryAllocator*
+getHipHostPinnedMemoryAllocator()
+{
+  return &host_pinned_hip_memory_allocator;
 }
 
 /*---------------------------------------------------------------------------*/
