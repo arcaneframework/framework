@@ -134,21 +134,20 @@ class SimpleHydroAcceleratorService
 
  public:
 
-  void hydroBuild();
-  void hydroStartInit();
-  void hydroInit();
-  void hydroContinueInit() {}
-  void hydroExit();
+  void hydroBuild() override;
+  void hydroStartInit() override;
+  void hydroInit() override;
+  void hydroExit() override;
 
-  void computeForces();
-  void computeVelocity();
-  void computeViscosityWork();
-  void applyBoundaryCondition();
-  void moveNodes();
-  void computeGeometricValues();
-  void updateDensity();
-  void applyEquationOfState();
-  void computeDeltaT();
+  void computeForces() override;
+  void computeVelocity() override;
+  void computeViscosityWork() override;
+  void applyBoundaryCondition() override;
+  void moveNodes() override;
+  void computeGeometricValues() override;
+  void updateDensity() override;
+  void applyEquationOfState() override;
+  void computeDeltaT() override;
 
   void setModule(SimpleHydro::SimpleHydroModuleBase* module) override
   {
@@ -160,7 +159,7 @@ class SimpleHydroAcceleratorService
   void computeGeometricValues2();
 
   void cellScalarPseudoViscosity();
-  ARCCORE_HOST_DEVICE inline void computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs);
+  ARCCORE_HOST_DEVICE static inline void computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs);
 
  private:
   VariableCellInt64 m_cell_unique_id; //!< Unique ID associé à la maille
@@ -799,7 +798,7 @@ computeDeltaT()
  *
  * La méthode utilisée est celle du découpage en quatre triangles.
  */
-inline void SimpleHydroAcceleratorService::
+ARCCORE_HOST_DEVICE inline void SimpleHydroAcceleratorService::
 computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs)
 {
   const Real3 c0 = face_coord[0];
