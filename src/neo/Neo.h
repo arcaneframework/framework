@@ -795,7 +795,12 @@ class FamilyMap {
 
 };
 
+enum class PropertyStatus {ExistingProperty,ComputedProperty};
 struct PropertyHolder{
+  Family& m_family;
+  std::string m_name;
+  PropertyStatus m_status = PropertyStatus::ComputedProperty;
+
   auto& operator() () {
     return m_family.getProperty(m_name);
   }
@@ -803,9 +808,6 @@ struct PropertyHolder{
   std::string uniqueName() const noexcept {
     return m_name + "_" + m_family.name();
   }
-  Family& m_family;
-  std::string m_name;
-
 };
 
 struct InProperty : public PropertyHolder{};
@@ -1112,7 +1114,8 @@ public:
     to_remove_algos.reserve(10);
     for (auto&& [property, property_algos] : m_property_algorithms) {
       auto& [producing_property_array, consuming_property_array] = property_algos;
-      if (producing_property_array.size() == 0 || !property.m_family.hasProperty(property.m_name)) { // this property will not be computed or does not exist
+      if ( (producing_property_array.size() == 0 && property.m_status == PropertyStatus::ComputedProperty) // no producing algo for a computed property
+          || !property.m_family.hasProperty(property.m_name)) { // property does not exist
         for (auto&& algo_to_remove : consuming_property_array){
           to_remove_algos.push_back(algo_to_remove);
         }
