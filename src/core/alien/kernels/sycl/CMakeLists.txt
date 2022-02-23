@@ -46,18 +46,13 @@ add_sycl_to_target(TARGET alien_kernel_sycl
                            data/SYCLBEllPackMatrix.cc
                            algebra/SYCLInternalLinearAlgebra.cc)
 
-target_include_directories(alien_kernel_sycl PRIVATE ../../..)
-target_include_directories(alien_kernel_sycl PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../../..)
-target_include_directories(alien_kernel_sycl PRIVATE ${PROJECT_BINARY_DIR})
-
-
 target_link_libraries(alien_kernel_sycl PUBLIC
                       Arccore::arccore_trace
                       Arccore::arccore_collections
                       Arccore::arccore_base
                       Arccore::arccore_message_passing_mpi)
 
-target_link_libraries(alien_kernel_sycl PUBLIC alien_utils)
+target_link_libraries(alien_kernel_sycl PUBLIC alien_utils alien_headers)
 
 install(TARGETS alien_kernel_sycl EXPORT ${ALIEN_EXPORT_TARGET})
 

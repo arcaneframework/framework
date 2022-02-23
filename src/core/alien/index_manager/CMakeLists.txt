@@ -30,16 +30,12 @@ add_library(alien_index_manager OBJECT
         functional/BasicIndexManager.cc
         )
 
-target_include_directories(alien_index_manager PRIVATE ../..)
-target_include_directories(alien_index_manager PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../..)
-target_include_directories(alien_index_manager PRIVATE ${PROJECT_BINARY_DIR})
-
 target_link_libraries(alien_index_manager PUBLIC
         Arccore::arccore_trace
         Arccore::arccore_collections
         Arccore::arccore_base
         Arccore::arccore_message_passing_mpi)
 
-target_link_libraries(alien_index_manager PUBLIC alien_utils)
+target_link_libraries(alien_index_manager PUBLIC alien_utils alien_headers)
 
 install(TARGETS alien_index_manager EXPORT ${ALIEN_EXPORT_TARGET})

@@ -37,10 +37,6 @@ add_library(alien_kernel_simplecsr OBJECT
 
 add_subdirectory(algebra)
 
-target_include_directories(alien_kernel_simplecsr PRIVATE ../../..)
-target_include_directories(alien_kernel_simplecsr PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../../..)
-target_include_directories(alien_kernel_simplecsr PRIVATE ${PROJECT_BINARY_DIR})
-
 find_package(BLAS REQUIRED)
 target_link_libraries(alien_kernel_simplecsr PUBLIC ${BLAS_LIBRARIES})
 
@@ -50,7 +46,7 @@ target_link_libraries(alien_kernel_simplecsr PUBLIC
         Arccore::arccore_base
         Arccore::arccore_message_passing_mpi)
 
-target_link_libraries(alien_kernel_simplecsr PUBLIC alien_utils)
+target_link_libraries(alien_kernel_simplecsr PUBLIC alien_utils alien_headers)
 
 install(TARGETS alien_kernel_simplecsr EXPORT ${ALIEN_EXPORT_TARGET})
 

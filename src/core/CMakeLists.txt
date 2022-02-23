@@ -170,11 +170,7 @@ generate_export_header(alien_core
         EXPORT_MACRO_NAME ALIEN_EXPORT
         EXPORT_FILE_NAME alien/AlienExport.h)
 
-target_include_directories(alien_core PUBLIC
-        $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+target_link_libraries(alien_core PUBLIC alien_headers)
 
 install(DIRECTORY alien
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
@@ -182,6 +178,11 @@ install(DIRECTORY alien
         )
 
 install(TARGETS alien_core EXPORT ${ALIEN_EXPORT_TARGET}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        )
+
+install(TARGETS alien_headers EXPORT ${ALIEN_EXPORT_TARGET}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )

@@ -49,9 +49,7 @@ if (ALIEN_GENERATE_DOCUMENTATION)
             )
 endif (ALIEN_GENERATE_DOCUMENTATION)
 
-target_include_directories(alien_data PRIVATE ../..)
-target_include_directories(alien_data PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../..)
-target_include_directories(alien_data PRIVATE ${PROJECT_BINARY_DIR})
+target_link_libraries(alien_data PRIVATE alien_headers)
 
 target_link_libraries(alien_data PUBLIC
         Arccore::arccore_trace

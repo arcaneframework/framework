@@ -41,6 +41,13 @@ install(
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/alien
 )
 
+add_library(alien_headers INTERFACE)
+target_include_directories(alien_headers INTERFACE
+        $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/core>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/core>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 

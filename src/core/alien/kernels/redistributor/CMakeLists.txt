@@ -35,16 +35,12 @@ add_library(alien_kernel_redistributor OBJECT
         Utils.h
         )
 
-target_include_directories(alien_kernel_redistributor PRIVATE ../../..)
-target_include_directories(alien_kernel_redistributor PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../../..)
-target_include_directories(alien_kernel_redistributor PRIVATE ${PROJECT_BINARY_DIR})
-
 target_link_libraries(alien_kernel_redistributor PUBLIC
         Arccore::arccore_trace
         Arccore::arccore_collections
         Arccore::arccore_base
         Arccore::arccore_message_passing_mpi)
 
-target_link_libraries(alien_kernel_redistributor PUBLIC alien_utils)
+target_link_libraries(alien_kernel_redistributor PUBLIC alien_utils alien_headers)
 
 install(TARGETS alien_kernel_redistributor EXPORT ${ALIEN_EXPORT_TARGET})

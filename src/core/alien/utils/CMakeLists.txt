@@ -37,14 +37,12 @@ add_library(alien_utils OBJECT
         VMap.h
         SafeConstArrayView.h)
 
-target_include_directories(alien_utils PRIVATE ../..)
-target_include_directories(alien_utils PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../..)
-target_include_directories(alien_utils PRIVATE ${PROJECT_BINARY_DIR})
-
 target_link_libraries(alien_utils PUBLIC
         Arccore::arccore_trace
         Arccore::arccore_collections
         Arccore::arccore_base
         Arccore::arccore_message_passing_mpi)
+
+target_link_libraries(alien_utils PUBLIC alien_headers)
 
 install(TARGETS alien_utils EXPORT ${ALIEN_EXPORT_TARGET})

@@ -40,17 +40,13 @@ add_library(alien_kernel_dok OBJECT
         BaseDoKDirectMatrixBuilder.h
         DoKVector.h DoKVector.cc)
 
-target_include_directories(alien_kernel_dok PRIVATE ../../..)
-target_include_directories(alien_kernel_dok PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../../..)
-target_include_directories(alien_kernel_dok PRIVATE ${PROJECT_BINARY_DIR})
-
 target_link_libraries(alien_kernel_dok PUBLIC
         Arccore::arccore_trace
         Arccore::arccore_collections
         Arccore::arccore_base
         Arccore::arccore_message_passing_mpi)
 
-target_link_libraries(alien_kernel_dok PUBLIC alien_utils)
+target_link_libraries(alien_kernel_dok PUBLIC alien_utils alien_headers)
 target_compile_features(alien_kernel_dok PUBLIC cxx_std_17)  # for std::optional
 
 install(TARGETS alien_kernel_dok EXPORT ${ALIEN_EXPORT_TARGET})
