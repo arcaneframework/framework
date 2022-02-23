@@ -30,6 +30,10 @@
 
 #include <iostream>
 
+#ifdef ARCANE_HAS_ROCTX
+#include <roctx.h>
+#endif
+
 using namespace Arccore;
 
 namespace Arcane::Accelerator::Hip
@@ -100,10 +104,20 @@ class HipRunQueueStream
  public:
   void notifyBeginKernel([[maybe_unused]] RunCommand& c) override
   {
+#ifdef ARCANE_HAS_ROCTX
+    auto kname = c.kernelName();
+    if (kname.empty())
+      roctxRangePush(c.traceInfo().name());
+    else
+      roctxRangePush(kname.localstr());
+#endif
     return m_runtime->notifyBeginKernel();
   }
   void notifyEndKernel(RunCommand&) override
   {
+#ifdef ARCANE_HAS_ROCTX
+    roctxRangePop();
+#endif
     return m_runtime->notifyEndKernel();
   }
   void barrier() override
