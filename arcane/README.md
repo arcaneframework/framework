@@ -46,8 +46,7 @@ Les outils et bibliothèques suivants sont optionnels:
 
 ### Compilation
 
-La compilation d'Arcane nécessite d'avoir une version de [CMake](https://cmake.org) supérieure à `3.18`.
-La compilation se fait obligatoirement dans un
+La compilation d'Arcane se fait obligatoirement dans un
 répertoire distinct de celui des sources. On note `${SOURCE_DIR}` ce
 répertoire contenant les sources et `${BUILD_DIR}` le répertoire de compilation.
 
@@ -81,13 +80,59 @@ forme de liste. Par exemple, si on souhaite avoir uniquement `HDF5` et
 cmake -DARCANE_NO_DEFAULT_PACKAGE=TRUE -DARCANE_REQUIRED_PACKAGE_LIST="LibUnwind;HDF5"
 ~~~
 
-Si on souhaite compiler le support CUDA, il faut spécifier ajouter la
-variable `ARCANE_WANT_CUDA` et spécifier le chemin vers le compilateur
-`nvcc` via la variable CMake `CMAKE_CUDA_COMPILER` ou la variable
-d'environnement `CUDACXX`:
+### Support des accélérateurs
+
+La variable CMake `ARCANE_ACCELERATOR_MODE` permet de spécifier le
+type d'accélerateur qu'on souhaite utiliser. Il y a actuellement deux
+valeurs supportées:
+
+- `CUDANVCC` pour les GPU NVIDIA
+- `ROCMHIP` pour les GPU AMD
+
+##### Compilation CUDA
+
+Si on souhaite compiler le support CUDA, il faut ajouter l'argument
+`-DARCANE_ACCELERATOR_MODE=CUDANVCC` à la configuration et spécifier
+le chemin vers le compilateur `nvcc` via la variable CMake
+`CMAKE_CUDA_COMPILER` ou la variable d'environnement `CUDACXX`:
 
 ~~~{.sh}
-cmake -DARCANE_WANT_CUDA=TRUE -DCMAKE_CUDA_COMPILER=/usr/local/cuda-11/bin/nvcc
+cmake -DARCANE_ACCELERATOR_MODE=CUDANVCC -DCMAKE_CUDA_COMPILER=/usr/local/cuda-11/bin/nvcc ...
+~~~
+
+Il est aussi possible d'utiliser directement le compilateur du [HPC
+SDK](https://developer.nvidia.com/hpc-sdk) de NVidia:
+
+~~~{.sh}
+export CXX=`which nvc++`
+export CC=`which nvc`
+cmake -DARCANE_ACCELERATOR_MODE=CUDANVCC ...
+~~~
+
+Il est possible de spécifier une architecture cible (Capability
+Compute) via la variable `CMAKE_CUDA_ARCHITECTURES`, par exemple
+`-DCMAKE_CUDA_ARCHITECTURES=80`.
+
+##### Compilation AMD ROCM/HIP
+
+La version 3.21 de CMake est nécessaire pour compiler pour les GPU
+AMD.
+
+Pour compiler pour les GPU AMD (comme par exemple les GPU MI100 ou
+MI250) il faut avoir auparavant installer la bibliothèque [ROCM](https://docs.amd.com/). Lors
+de la configuration de Arcane, il faut spécifier
+`-DARCANE_ACCELERATOR_MODE=ROCMHIP`.
+
+Par exemple, si ROCM est installé dans `/opt/rocm` et qu'on souhaite
+compiler pour les cartes MI250 (architecture gfx90x):
+
+~~~{.sh}
+export ROCM_ROOT=/opt/rocm-5.0.0-9257
+export CC=/opt/rocm/llvm/bin/clang
+export CXX=/opt/rocm/llvm/bin/clang++
+export CMAKE_HIP_COMPILER=/opt/rocm/hip/bin/hipcc
+
+cmake -DCMAKE_PREFIX_PATH="/opt/rocm;/opt/rocm/hip" -DARCANE_ACCELERATOR_MODE=ROCMHIP -DCMAKE_HIP_ARCHITECTURES=gfx90a ...
 ~~~
 
 ### Génération de la documentation
