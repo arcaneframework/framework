@@ -86,19 +86,26 @@ namespace
 
     MatrixDescription out;
 
+    auto try_header = true;
+
     while (std::getline(fstream, line)) {
+      std::stringstream ss;
+      ss << line;
 
-      if ('%' == line[0] && '%' == line[1]) {
-
+      if (try_header) {
+        std::string matrix;
         std::string _; // junk
         std::string format; // (coordinate, array)
         std::string scalar; // (pattern, real, complex, integer)
         std::string symmetry; // (general, symmetric, skew-symmetric, hermitian)
 
         // get matrix kind
-        std::stringstream ss;
-        ss << line;
-        ss >> _; // skip '%%MatrixMarket
+        ss >> matrix; // skip '%%MatrixMarket
+
+        if ("%%MatrixMarket" != matrix) {
+          continue;
+        }
+
         ss >> _; // skip matrix
         ss >> format;
         ss >> scalar;
@@ -122,6 +129,7 @@ namespace
         else {
           out.symmetric = true;
         }
+        try_header = false;
       }
       else if ('%' == line[0]) {
         // skip comment
@@ -129,9 +137,6 @@ namespace
       }
       else {
         //first line is matrix size, then done with banner
-        std::stringstream ss;
-        ss << line;
-
         ss >> out.n_rows;
         ss >> out.n_cols;
         ss >> out.n_nnz;
@@ -217,35 +222,41 @@ readFromMatrixMarket(const VectorDistribution& distribution, const std::string& 
     std::string line;
     Arccore::Int32 row = 0;
 
+    auto try_header = true;
     while (std::getline(stream, line)) {
-      if ('%' == line[0]) {
-        if ('%' == line[1]) {
-          std::string _; // junk
-          std::string format; // (coordinate, array)
-          std::string scalar; // (pattern, real, complex, integer)
-
-          // get matrix kind
-          std::stringstream ss;
-          ss << line;
-          ss >> _; // skip '%%MatrixMarket
-          ss >> _; // skip matrix
-          ss >> format;
-          ss >> scalar;
-          ss >> _;
-
-          tolower(format);
-          tolower(scalar);
-
-          if ("array" != format || "real" != scalar) {
-            throw Arccore::FatalErrorException("mtx vector must be in 'array' and 'real' formats.");
-          }
-        }
-        continue;
-      }
-      int rows = 0;
-      int vectors = 0;
+      // get matrix kind
       std::stringstream ss;
       ss << line;
+
+      if (try_header) {
+        std::string matrix;
+        std::string _; // junk
+        std::string format; // (coordinate, array)
+        std::string scalar; // (pattern, real, complex, integer)
+
+        ss >> matrix; // skip '%%MatrixMarket
+
+        if ("%%MatrixMarket" != matrix)
+          continue;
+
+        ss >> _; // skip matrix
+        ss >> format;
+        ss >> scalar;
+        ss >> _;
+
+        tolower(format);
+        tolower(scalar);
+
+        if ("array" != format || "real" != scalar) {
+          throw Arccore::FatalErrorException("mtx vector must be in 'array' and 'real' formats.");
+        }
+        try_header = false;
+      }
+      if ('%' == line[0])
+        continue;
+
+      int rows = 0;
+      int vectors = 0;
       ss >> rows;
       ss >> vectors;
       if (vectors != 1) {
