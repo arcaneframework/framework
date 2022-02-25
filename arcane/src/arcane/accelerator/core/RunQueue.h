@@ -59,6 +59,11 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   //! Copie des informations entre deux zones mémoires
   void copyMemory(const MemoryCopyArgs& args);
 
+  //! Enregistre l'état de l'instance dans \a event.
+  void recordEvent(RunQueueEvent& event);
+  //! Bloque l'exécution sur l'instance tant que les jobs enregistrés dans \a event ne sont pas terminés
+  void waitEvent(RunQueueEvent& event);
+
  public:
 
   impl::IRunQueueRuntime* _internalRuntime() const;

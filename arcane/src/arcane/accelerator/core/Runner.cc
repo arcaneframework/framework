@@ -20,6 +20,7 @@
 
 #include "arcane/accelerator/core/RunQueueImpl.h"
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
+#include "arcane/accelerator/core/IRunQueueRuntime.h"
 
 #include <stack>
 #include <map>
@@ -233,6 +234,17 @@ bool Runner::
 isInitialized() const
 {
   return m_p->m_is_init;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+impl::IRunQueueEventImpl*
+Runner::_createEvent()
+{
+  _checkIsInit();
+  impl::IRunQueueRuntime* r = _getRuntime(executionPolicy());
+  return r->createEventImpl();
 }
 
 /*---------------------------------------------------------------------------*/

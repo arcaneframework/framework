@@ -13,6 +13,7 @@
 
 #include "arcane/accelerator/core/IRunQueueRuntime.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
+#include "arcane/accelerator/core/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/Memory.h"
 
 #include "arcane/utils/NotImplementedException.h"
@@ -46,6 +47,23 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueStream
   IRunQueueRuntime* m_runtime;
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueEvent
+: public IRunQueueEventImpl
+{
+ public:
+  HostRunQueueEvent(){}
+ public:
+  void recordQueue(IRunQueueStream*) override {}
+  void wait() {}
+  void waitForEvent(IRunQueueStream*) override {}
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class ARCANE_ACCELERATOR_CORE_EXPORT SequentialRunQueueRuntime
 : public IRunQueueRuntime
 {
@@ -57,7 +75,11 @@ class ARCANE_ACCELERATOR_CORE_EXPORT SequentialRunQueueRuntime
   void barrier() override {}
   eExecutionPolicy executionPolicy() const override { return eExecutionPolicy::Sequential; }
   IRunQueueStream* createStream(const RunQueueBuildInfo&) override { return new HostRunQueueStream(this); }
+  IRunQueueEventImpl* createEventImpl() override { return new HostRunQueueEvent(); }
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 class ARCANE_ACCELERATOR_CORE_EXPORT ThreadRunQueueRuntime
 : public IRunQueueRuntime
@@ -70,6 +92,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT ThreadRunQueueRuntime
   void barrier() override {}
   eExecutionPolicy executionPolicy() const override { return eExecutionPolicy::Thread; }
   IRunQueueStream* createStream(const RunQueueBuildInfo&) override { return new HostRunQueueStream(this); }
+  IRunQueueEventImpl* createEventImpl() override { return new HostRunQueueEvent(); }
 };
 
 namespace

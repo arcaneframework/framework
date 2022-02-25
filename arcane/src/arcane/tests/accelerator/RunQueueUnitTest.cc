@@ -18,7 +18,9 @@
 #include "arcane/ServiceFactory.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
-#include "arcane/accelerator/Runner.h"
+#include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/RunQueueEvent.h"
+
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/RunCommandLoop.h"
 
@@ -58,6 +60,8 @@ class RunQueueUnitTest
  public:
 
   void _executeTest1(bool use_priority);
+  void _executeTest2();
+  void _executeTest3();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -104,6 +108,8 @@ executeTest()
 {
   _executeTest1(false);
   _executeTest1(true);
+  _executeTest2();
+  _executeTest3();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -160,6 +166,99 @@ _executeTest1(bool use_priority)
          << " expected=" << expected_true_total;
   if (true_total != expected_true_total)
     ARCANE_FATAL("Bad value v={0} expected={1}", true_total, expected_true_total);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// Test la synchronisation entre deux RunQueue par un évènement.
+void RunQueueUnitTest::
+_executeTest2()
+{
+  info() << "Test2: use events";
+  ValueChecker vc(A_FUNCINFO);
+
+  auto event{ makeEvent(m_runner) };
+  auto queue1{ makeQueue(m_runner) };
+  queue1.setAsync(true);
+  auto queue2{ makeQueue(m_runner) };
+  queue2.setAsync(true);
+
+  Integer nb_value = 100000;
+  NumArray<Int32, 1> values(nb_value);
+  {
+    auto command1 = makeCommand(queue1);
+    auto v = viewOut(command1, values);
+    command1 << RUNCOMMAND_LOOP1 (iter, nb_value)
+    {
+      auto [i] = iter();
+      v(iter) = i + 3;
+    };
+    queue1.recordEvent(event);
+  }
+  {
+    queue2.waitEvent(event);
+    auto command2 = makeCommand(queue2);
+    auto v = viewInOut(command2, values);
+    command2 << RUNCOMMAND_LOOP1 (iter, nb_value)
+    {
+      v(iter) = v(iter) * 2;
+    };
+  }
+  queue1.barrier();
+  queue2.barrier();
+
+  // Vérifie les valeurs
+  for (Integer i = 0; i < nb_value; ++i) {
+    Int32 v = values(i);
+    Int32 expected_v = (i + 3) * 2;
+    vc.areEqual(v, expected_v, "Bad value");
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// Test la synchronisation de avec un évènement.
+void RunQueueUnitTest::
+_executeTest3()
+{
+  info() << "Test3: use events with wait()";
+  ValueChecker vc(A_FUNCINFO);
+
+  auto event{ makeEvent(m_runner) };
+  auto queue1{ makeQueue(m_runner) };
+  queue1.setAsync(true);
+  auto queue2{ makeQueue(m_runner) };
+  queue2.setAsync(true);
+
+  Integer nb_value = 100000;
+  NumArray<Int32, 1> values(nb_value);
+  {
+    auto command1 = makeCommand(queue1);
+    auto v = viewOut(command1, values);
+    command1 << RUNCOMMAND_LOOP1 (iter, nb_value)
+    {
+      auto [i] = iter();
+      v(iter) = i + 3;
+    };
+    queue1.recordEvent(event);
+  }
+  {
+    auto command2 = makeCommand(queue2);
+    auto v = viewInOut(command2, values);
+    command2 << RUNCOMMAND_LOOP1 (iter, nb_value)
+    {
+      v(iter) = v(iter) * 2;
+    };
+    queue2.recordEvent(event);
+  }
+  event.wait();
+
+  // Vérifie les valeurs
+  for (Integer i = 0; i < nb_value; ++i) {
+    Int32 v = values(i);
+    Int32 expected_v = (i + 3) * 2;
+    vc.areEqual(v, expected_v, "Bad value");
+  }
 }
 
 /*---------------------------------------------------------------------------*/

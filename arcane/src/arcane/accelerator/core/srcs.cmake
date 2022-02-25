@@ -6,6 +6,7 @@ set( ARCANE_SOURCES
   IAcceleratorMng.h
   AcceleratorMng.cc
   IReduceMemoryImpl.h
+  IRunQueueEventImpl.h
   IRunQueueRuntime.h
   IRunQueueStream.h
   Memory.h
@@ -16,6 +17,8 @@ set( ARCANE_SOURCES
   RunQueue.h
   RunQueue.cc
   RunQueueBuildInfo.h
+  RunQueueEvent.h
+  RunQueueEvent.cc
   RunQueueImpl.h
   RunQueueImpl.cc
   RunQueueRuntime.cc
