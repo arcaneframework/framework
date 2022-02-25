@@ -5,41 +5,49 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IRunQueueRuntime.h                                          (C) 2000-2022 */
+/* RunQueueEvent.cc                                            (C) 2000-2022 */
 /*                                                                           */
-/* Interface du runtime associé à une RunQueue.                              */
-/*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_IRUNQUEUERUNTIME_H
-#define ARCANE_ACCELERATOR_IRUNQUEUERUNTIME_H
+/* Evènement sur une file d'exécution.                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
+#include "arcane/accelerator/core/RunQueueEvent.h"
+
+#include "arcane/accelerator/core/IRunQueueEventImpl.h"
+#include "arcane/accelerator/core/Runner.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Interface du runtime associé à une RunQueue.
- */
-class ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueRuntime
+
+RunQueueEvent::
+RunQueueEvent(Runner& runner)
 {
- public:
-  virtual ~IRunQueueRuntime() = default;
- public:
-  virtual void notifyBeginKernel() =0;
-  virtual void notifyEndKernel() =0;
-  virtual void barrier() =0;
-  virtual eExecutionPolicy executionPolicy() const =0;
-  virtual IRunQueueStream* createStream(const RunQueueBuildInfo& bi) =0;
-  virtual impl::IRunQueueEventImpl* createEventImpl() =0;
-};
+  m_p = runner._createEvent();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunQueueEvent::
+~RunQueueEvent()
+{
+  delete m_p;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunQueueEvent::
+wait()
+{
+  m_p->wait();
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -48,5 +56,3 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueRuntime
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#endif  

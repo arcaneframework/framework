@@ -25,10 +25,11 @@
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Memory.h"
 
-#include "arcane/accelerator/AcceleratorGlobal.h"
-#include "arcane/accelerator/IRunQueueRuntime.h"
-#include "arcane/accelerator/IRunQueueStream.h"
-#include "arcane/accelerator/RunCommand.h"
+//#include "arcane/accelerator/AcceleratorGlobal.h"
+#include "arcane/accelerator/core/IRunQueueRuntime.h"
+#include "arcane/accelerator/core/IRunQueueStream.h"
+#include "arcane/accelerator/core/RunCommand.h"
+#include "arcane/accelerator/core/IRunQueueEventImpl.h"
 
 #include <iostream>
 
@@ -135,9 +136,54 @@ class CudaRunQueueStream
       barrier();
   }
   void* _internalImpl() override { return &m_cuda_stream; }
+
+ public:
+
+  cudaStream_t trueStream() const { return m_cuda_stream; }
+
  private:
+
   impl::IRunQueueRuntime* m_runtime;
   cudaStream_t m_cuda_stream;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class CudaRunQueueEvent
+: public impl::IRunQueueEventImpl
+{
+ public:
+  CudaRunQueueEvent()
+  {
+    ARCANE_CHECK_CUDA(cudaEventCreateWithFlags(&m_cuda_event, cudaEventDisableTiming));
+  }
+  ~CudaRunQueueEvent() noexcept(false) override
+  {
+    ARCANE_CHECK_CUDA(cudaEventDestroy(m_cuda_event));
+  }
+ public:
+  // Enregistre l'événement au sein d'une RunQueue
+  void recordQueue(impl::IRunQueueStream* stream) override
+  {
+    auto* rq = static_cast<CudaRunQueueStream*>(stream);
+    ARCANE_CHECK_CUDA(cudaEventRecord(m_cuda_event, rq->trueStream()));
+  }
+
+  void wait() override
+  {
+    ARCANE_CHECK_CUDA(cudaEventSynchronize(m_cuda_event));
+  }
+
+  void waitForEvent(impl::IRunQueueStream* stream) override
+  {
+    auto* rq = static_cast<CudaRunQueueStream*>(stream);
+    ARCANE_CHECK_CUDA(cudaStreamWaitEvent(rq->trueStream(), m_cuda_event, cudaEventWaitDefault));
+  }
+
+ private:
+
+  cudaEvent_t m_cuda_event;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -172,6 +218,10 @@ class CudaRunQueueRuntime
   impl::IRunQueueStream* createStream(const RunQueueBuildInfo& bi) override
   {
     return new CudaRunQueueStream(this,bi);
+  }
+  impl::IRunQueueEventImpl* createEventImpl() override
+  {
+    return new CudaRunQueueEvent();
   }
  private:
   Int64 m_nb_kernel_launched = 0;

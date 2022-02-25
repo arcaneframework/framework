@@ -22,11 +22,10 @@
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Memory.h"
-
-#include "arcane/accelerator/AcceleratorGlobal.h"
-#include "arcane/accelerator/IRunQueueRuntime.h"
-#include "arcane/accelerator/IRunQueueStream.h"
-#include "arcane/accelerator/RunCommand.h"
+#include "arcane/accelerator/core/IRunQueueRuntime.h"
+#include "arcane/accelerator/core/IRunQueueStream.h"
+#include "arcane/accelerator/core/IRunQueueEventImpl.h"
+#include "arcane/accelerator/core/RunCommand.h"
 
 #include <iostream>
 
@@ -133,9 +132,55 @@ class HipRunQueueStream
       barrier();
   }
   void* _internalImpl() override { return &m_hip_stream; }
+
+ public:
+
+  hipStream_t trueStream() const { return m_hip_stream; }
+
  private:
   impl::IRunQueueRuntime* m_runtime;
   hipStream_t m_hip_stream;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class HipRunQueueEvent
+: public impl::IRunQueueEventImpl
+{
+ public:
+  HipRunQueueEvent()
+  {
+    ARCANE_CHECK_HIP(hipEventCreateWithFlags(&m_hip_event, hipEventDisableTiming));
+  }
+  ~HipRunQueueEvent() noexcept(false) override
+  {
+    ARCANE_CHECK_HIP(hipEventDestroy(m_hip_event));
+  }
+
+ public:
+
+  // Enregistre l'événement au sein d'une RunQueue
+  void recordQueue(impl::IRunQueueStream* stream) override
+  {
+    auto* rq = static_cast<HipRunQueueStream*>(stream);
+    ARCANE_CHECK_HIP(hipEventRecord(m_hip_event,rq->trueStream()));
+  }
+
+  void wait() override
+  {
+    ARCANE_CHECK_HIP(hipEventSynchronize(m_hip_event));
+  }
+
+  void waitForEvent(impl::IRunQueueStream* stream) override
+  {
+    auto* rq = static_cast<HipRunQueueStream*>(stream);
+    ARCANE_CHECK_HIP(hipStreamWaitEvent(rq->trueStream(), m_hip_event, 0));
+  }
+
+ private:
+
+  hipEvent_t m_hip_event;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -170,6 +215,10 @@ class HipRunQueueRuntime
   impl::IRunQueueStream* createStream(const RunQueueBuildInfo& bi) override
   {
     return new HipRunQueueStream(this,bi);
+  }
+  impl::IRunQueueEventImpl* createEventImpl() override
+  {
+    return new HipRunQueueEvent();
   }
  private:
   Int64 m_nb_kernel_launched = 0;

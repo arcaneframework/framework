@@ -36,6 +36,7 @@ namespace Arcane::Accelerator
 class ARCANE_ACCELERATOR_CORE_EXPORT Runner
 {
   friend class impl::RunQueueImpl;
+  friend class RunQueueEvent;
   class Impl;
 
  public:
@@ -65,6 +66,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
   impl::RunQueueImpl* _internalCreateOrGetRunQueueImpl(eExecutionPolicy exec_policy);
   impl::RunQueueImpl* _internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi);
   void _internalFreeRunQueueImpl(impl::RunQueueImpl*);
+  impl::IRunQueueEventImpl* _createEvent();
 
  private:
 

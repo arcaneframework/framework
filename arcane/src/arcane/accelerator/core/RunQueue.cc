@@ -16,7 +16,8 @@
 #include "arcane/accelerator/core/RunQueueImpl.h"
 #include "arcane/accelerator/core/IRunQueueRuntime.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
-
+#include "arcane/accelerator/core/RunQueueEvent.h"
+#include "arcane/accelerator/core/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/Memory.h"
 
 /*---------------------------------------------------------------------------*/
@@ -119,6 +120,26 @@ void RunQueue::
 copyMemory(const MemoryCopyArgs& args)
 {
   return _internalStream()->copyMemory(args);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunQueue::
+waitEvent(RunQueueEvent& event)
+{
+  auto* p = event._internalEventImpl();
+  return p->waitForEvent(_internalStream());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunQueue::
+recordEvent(RunQueueEvent& event)
+{
+  auto* p = event._internalEventImpl();
+  return p->recordQueue(_internalStream());
 }
 
 /*---------------------------------------------------------------------------*/

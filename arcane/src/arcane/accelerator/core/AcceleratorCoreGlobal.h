@@ -40,6 +40,7 @@ class IAcceleratorMng;
 class Runner;
 class RunQueue;
 class RunCommand;
+class RunQueueEvent;
 class AcceleratorRuntimeInitialisationInfo;
 class RunQueueBuildInfo;
 class MemoryCopyArgs;
@@ -51,6 +52,7 @@ class IRunQueueStream;
 class RunCommandImpl;
 class IReduceMemoryImpl;
 class RunQueueImpl;
+class IRunQueueEventImpl;
 }
 
 /*---------------------------------------------------------------------------*/
