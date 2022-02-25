@@ -15,5 +15,16 @@
 #
 #  SPDX-License-Identifier: Apache-2.0
 #
+ENV_FILE=/tmp/toto
 
-. /spack/share/spack/setup-env.sh && spack env activate alien
+[[ $# -ge 1 ]] && ENV_FILE="$1"
+
+if [ ! -f "${ENV_FILE}" ]; then
+  . /spack/share/spack/setup-env.sh
+  spack env activate -V alien
+  spack build-env --dump "${ENV_FILE}" alien
+  # Remove functions from environment.
+  awk '/function BASH_FUNC_(.*?)%%/,/export -f (.\S*?)/ { next } {print}' "${ENV_FILE}" > /tmp/foo && mv /tmp/foo "${ENV_FILE}"
+fi
+. "${ENV_FILE}"
+

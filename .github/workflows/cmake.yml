@@ -14,6 +14,9 @@ env:
   CCACHE_MAXSIZE: 400M
   BUILD_DIR: /tmp/build
   INSTALL_DIR: /tmp/install
+  SPACK_USER_CONFIG_PATH: /tmp/fake-home
+  SPACK_USER_CACHE_PATH: /tmp/fake-home
+  SPACK_ENV_FILE: /tmp/spack-env
 
 jobs:
   build:
@@ -35,6 +38,7 @@ jobs:
             build_type: "RelWithDebInfo",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja",
             alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON",
+            isspack: false
           }
           - {
             name: "ubuntu20.04 debug",
@@ -43,6 +47,7 @@ jobs:
             build_type: "Debug",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja -DENABLE_SANITIZER_ADDRESS:BOOL=ON -DENABLE_SANITIZER_UNDEFINED_BEHAVIOR:BOOL=ON",
             alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON",
+            isspack: false
           }
           - {
             name: "ubuntu20.04 debug memory",
@@ -51,6 +56,7 @@ jobs:
             build_type: "Debug",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja -DENABLE_SANITIZER_MEMORY:BOOL=ON",
             alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON",
+            isspack: false
           }
           - {
             name: "ubuntu20.04 debug minimal",
@@ -59,6 +65,7 @@ jobs:
             build_type: "Debug",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja",
             alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=OFF -DALIENDEV_EMBEDDED:BOOL=ON -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON",
+            isspack: false
           }
           - {
             name: "centos7 gimkl 2018b release",
@@ -67,6 +74,7 @@ jobs:
             build_type: "RelWithDebInfo",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_FLAGS='-L${EBROOTLIBXML2} -lxml2'",
             alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON -DVerbose=ON -DBoost_NO_BOOST_CMAKE=ON -DBUILD_SHARED_LIBS=ON -DALIEN_USE_HDF5=ON",
+            isspack: false
           }
           - {
             name: "rocky8 gimkl 2018b release",
@@ -75,14 +83,16 @@ jobs:
             build_type: "RelWithDebInfo",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_FLAGS='-L${EBROOTLIBXML2} -lxml2'",
             alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON -DVerbose=ON -DBoost_NO_BOOST_CMAKE=ON -DBUILD_SHARED_LIBS=ON -DALIEN_USE_HDF5=ON",
+            isspack: false
           }
           - {
             name: "rhel8 spack release",
-            container: "ghcr.io/arcaneframework/spack-rhel8:latest",
-            precommand: ". /spack/share/spack/setup-env.sh && spack env activate /recipes/envs/alien",
+            container: "ghcr.io/arcaneframework/arcane-spack-rhel8:main",
+            precommand: "source .devcontainer/use_spack.sh /tmp/spack-env",
             build_type: "RelWithDebInfo",
-            build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON",
+            build_options: "",
+            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIENDEV_EMBEDDED:BOOL=OFF",
+            isspack: true
           }
     steps:
       # Checkout v2 does not include files listed in .gitattributes
@@ -105,7 +115,15 @@ jobs:
           restore-keys: |
             alien-ccache-${{matrix.config.name}}
 
+      # setting up spack build env
+      - name: Setup spack build env
+        shell: bash
+        if: matrix.config.isspack
+        run: |
+          bash .devcontainer/use_spack.sh ${{env.SPACK_ENV_FILE}}
+
       - name: Configure CMake
+        shell: bash
         # Configure CMake in a 'build' subdirectory. `C MAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
         run: |
@@ -113,7 +131,11 @@ jobs:
           cmake -B ${{env.BUILD_DIR}} -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DALIEN_PLUGIN_HYPRE:BOOL=ON -DALIEN_PLUGIN_PETSC:BOOL=ON ${{matrix.config.alien_options}} -DCMAKE_INSTALL_PREFIX=${{env.INSTALL_DIR}} ${{matrix.config.build_options}}
 
       - uses: ammaraskar/gcc-problem-matcher@master
+        # Disabled for `act`
+        if: ${{ !env.ACT }}
+
       - name: Build
+        shell: bash
         # Build your program with the given configuration
         run: |
           ${{matrix.config.precommand}}
@@ -123,6 +145,7 @@ jobs:
       #        run: ccache -s
 
       - name: Test
+        shell: bash
         # Execute tests defined by the CMake configuration.
         # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
         # OMPI_ALLOW_RUN_AS_ROOT are set in script to allow `act` to work (env section was not working)
@@ -130,17 +153,20 @@ jobs:
         run: |
           ${{matrix.config.precommand}}
           cd ${{env.BUILD_DIR}}
-          export OMPI_ALLOW_RUN_AS_ROOT=1
-          export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
-          export ASAN_OPTIONS=detect_leaks=0
           ctest -V -C ${{matrix.config.build_type}}
+        env:
+          OMPI_ALLOW_RUN_AS_ROOT: 1
+          OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
+          ASAN_OPTIONS: detect_leaks=0
 
       - name: Install
+        shell: bash
         run: |
           ${{matrix.config.precommand}}
           cd ${{env.BUILD_DIR}} && cmake --install ${{env.BUILD_DIR}}
 
       - name: Install Arccon
+        shell: bash
         run: |
           ${{matrix.config.precommand}}
           cmake -B ${{env.BUILD_DIR}}/arccon -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DCMAKE_INSTALL_PREFIX=${{env.INSTALL_DIR}} framework/arccon/
@@ -148,6 +174,7 @@ jobs:
           cd ${{env.BUILD_DIR}} && cmake --install ${{env.BUILD_DIR}}/arccon
 
       - name: TestInstallHypre
+        shell: bash
         run: |
           ${{matrix.config.precommand}}
           cmake -B ${{env.BUILD_DIR}}/hypre -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DCMAKE_PREFIX_PATH=${{env.INSTALL_DIR}} ${{env.INSTALL_DIR}}/share/doc/Alien/examples/hypre
