@@ -134,7 +134,22 @@ TEST(NeoGraphTest,OneConsumingProducingAlgoTest){
   mesh.applyAlgorithms(Neo::MeshBase::AlgorithmExecutionOrder::DAG);
   EXPECT_FALSE(is_called); // algo not called, since no one produces prop1, a ComputedProperty
 
+  // Detect cycle in graph : Produce and consume same property
+  mesh.addAlgorithm(Neo::InProperty{cell_family,"prop1",Neo::PropertyStatus::ExistingProperty},
+                    Neo::OutProperty{cell_family,"prop1"},[]([[maybe_unused]]Neo::PropertyT<Neo::utils::Int32> const& p1,
+                                                             [[maybe_unused]]Neo::PropertyT<Neo::utils::Int32> & p1_bis) {});
+  EXPECT_THROW(mesh.applyAlgorithms(Neo::MeshBase::AlgorithmExecutionOrder::DAG),std::runtime_error);
+  // Check that dag is cleared even when throws
+  EXPECT_NO_THROW(mesh.applyAlgorithms(Neo::MeshBase::AlgorithmExecutionOrder::DAG));
+  // Cycle does throw even if algo is not triggered: eg if Prop 1 does not exist
+  mesh_no_prop.addAlgorithm(Neo::InProperty{cell_family,"prop1",Neo::PropertyStatus::ExistingProperty},
+                            Neo::OutProperty{cell_family,"prop1"},[]([[maybe_unused]]Neo::PropertyT<Neo::utils::Int32> const& p1,
+                                                                     [[maybe_unused]]Neo::PropertyT<Neo::utils::Int32> & p1_bis) {});
+  EXPECT_THROW(mesh_no_prop.applyAndKeepAlgorithms(Neo::MeshBase::AlgorithmExecutionOrder::DAG),std::runtime_error);
+  // if algorithms are kept must still throw
+  EXPECT_THROW(mesh_no_prop.applyAlgorithms(Neo::MeshBase::AlgorithmExecutionOrder::DAG),std::runtime_error);
 }
+
 //----------------------------------------------------------------------------/
 
 void _addAlgorithmsWithCycle(Neo::MeshBase& mesh, Neo::Family& item_family){
