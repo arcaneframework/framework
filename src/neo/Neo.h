@@ -1061,6 +1061,15 @@ public:
   }
 
   /*!
+   * @brief Remove all added algorithms
+   */
+  void removeAlgorithms() {
+    m_algos.clear();
+    m_property_algorithms.clear();
+    m_dag.clear();
+  }
+
+  /*!
    * @brief Apply added algorithms
    * @param execution_order
    * @return object EndOfMeshUpdate to unlock FutureItemRange
@@ -1094,16 +1103,18 @@ public:
     case AlgorithmExecutionOrder::DAG:
       std::cout << "DAG --" << std::endl;
       _build_graph();
-      auto sorted_graph = m_dag.topologicalSort();
-      std::for_each(sorted_graph.begin(), sorted_graph.end(),[](auto& algo) { (*algo.get())(); });
+      try {
+        auto sorted_graph = m_dag.topologicalSort();
+        std::for_each(sorted_graph.begin(), sorted_graph.end(),[](auto& algo) { (*algo.get())(); });
+      }
+      catch (std::runtime_error& error) {
+        if (!do_keep_algorithms) removeAlgorithms();
+        throw error;
+      }
       break;
     }
-    if (!do_keep_algorithms) {
-      m_algos.clear();
-      m_property_algorithms.clear();
-      m_dag.clear();
-      return EndOfMeshUpdate{};
-    }
+    if (!do_keep_algorithms) removeAlgorithms();
+    return EndOfMeshUpdate{};
   }
 
  private:
