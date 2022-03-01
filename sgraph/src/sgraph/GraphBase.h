@@ -229,7 +229,7 @@ class GraphBase
   /*!
    * @brief remove all vertices and edges
    */
-  void clear() {
+  virtual void clear() {
     m_vertices.clear();
     m_edges.clear();
     m_adjacency_list.clear();

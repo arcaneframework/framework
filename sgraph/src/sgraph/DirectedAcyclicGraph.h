@@ -162,9 +162,6 @@ class DirectedAcyclicGraph
       _printGraphEntry(vertex_entry);
     }
 
-    //std::ostringstream oss;
-    //std::cout << oss.str() << std::endl;
-
     // Print levels if have been computed.
     if (!m_compute_vertex_levels) {
       for (auto vertex_level_set_entry : m_vertex_level_map) {
@@ -190,6 +187,19 @@ class DirectedAcyclicGraph
       has_cycle = true;
     }
     return has_cycle;
+  }
+
+  /*---------------------------------------------------------------------------*/
+
+  /*!
+   * @brief remove all vertices and edges
+   */
+  void clear() override {
+    m_colored_vertices.clear();
+    m_vertex_level_map.clear();
+    m_edge_level_map.clear();
+    m_compute_vertex_levels = true;
+    GraphBase<VertexType,EdgeType>::clear();
   }
 
   /*---------------------------------------------------------------------------*/
