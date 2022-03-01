@@ -2,12 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## 1.1.3
 
 **News:**
 
 - MatrixMarket file importer in \[move\] API
 - \[ginkgo\]: new wrapper for the Ginkgo library
+- \[SYCL\]: experimental kernel
 
 **Fixed bugs:**
 
