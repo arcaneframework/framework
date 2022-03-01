@@ -604,7 +604,7 @@ operator!=(Span<const T> rhs, Span<const T> lhs)
 template<typename T> inline bool
 operator==(Span<T> rhs, Span<T> lhs)
 {
-  return operator==(rhs.constView(),lhs.constView());
+  return impl::areEqual(rhs,lhs);
 }
 
 template<typename T> inline bool
