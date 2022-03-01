@@ -350,29 +350,23 @@ computeDirections()
   if (next_face_x!=(-1)){
     m_local_face_direction[MD_DirX] = next_face_x;
     _computeMeshDirection(*m_all_items_direction_info.get(),MD_DirX,cells_center,faces_center,all_cells,all_nodes);
-    CellDirectionMng& cdm = m_all_items_direction_info->cellDirection(MD_DirX);
-    cdm.m_global_nb_cell = cmgi->globalNbCells()[MD_DirX];
-    cdm.m_own_nb_cell = cmgi->ownNbCells()[MD_DirX];
-    cdm.m_sub_domain_offset = cmgi->subDomainOffsets()[MD_DirX];
-    cdm.m_own_cell_offset = cmgi->ownCellOffsets()[MD_DirX];
   }
   if (next_face_y!=(-1)){
     m_local_face_direction[MD_DirY] = next_face_y;
     _computeMeshDirection(*m_all_items_direction_info.get(),MD_DirY,cells_center,faces_center,all_cells,all_nodes);
-    CellDirectionMng& cdm = m_all_items_direction_info->cellDirection(MD_DirY);
-    cdm.m_global_nb_cell = cmgi->globalNbCells()[MD_DirY];
-    cdm.m_own_nb_cell = cmgi->ownNbCells()[MD_DirY];
-    cdm.m_sub_domain_offset = cmgi->subDomainOffsets()[MD_DirY];
-    cdm.m_own_cell_offset = cmgi->ownCellOffsets()[MD_DirY];
   }
   if (next_face_z!=(-1)){
     m_local_face_direction[MD_DirZ] = next_face_z;
     _computeMeshDirection(*m_all_items_direction_info.get(),MD_DirZ,cells_center,faces_center,all_cells,all_nodes);
-    CellDirectionMng& cdm = m_all_items_direction_info->cellDirection(MD_DirZ);
-    cdm.m_global_nb_cell = cmgi->globalNbCells()[MD_DirZ];
-    cdm.m_own_nb_cell = cmgi->ownNbCells()[MD_DirZ];
-    cdm.m_sub_domain_offset = cmgi->subDomainOffsets()[MD_DirZ];
-    cdm.m_own_cell_offset = cmgi->ownCellOffsets()[MD_DirZ];
+  }
+
+  // Positionne les informations par direction
+  for( Integer idir=0, nb_dir=mesh()->dimension(); idir<nb_dir; ++idir ){
+    CellDirectionMng& cdm = m_all_items_direction_info->cellDirection(idir);
+    cdm.m_global_nb_cell = cmgi->globalNbCells()[idir];
+    cdm.m_own_nb_cell = cmgi->ownNbCells()[idir];
+    cdm.m_sub_domain_offset = cmgi->subDomainOffsets()[idir];
+    cdm.m_own_cell_offset = cmgi->ownCellOffsets()[idir];
   }
 
   info() << "Compute cartesian connectivity";
