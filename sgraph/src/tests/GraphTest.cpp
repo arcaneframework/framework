@@ -321,8 +321,13 @@ TEST(DirectedAcyclicGraphTest, UnitTest) {
   // The graph is now corrupted...
 
   dag.clear();
+  EXPECT_NO_THROW(dag.topologicalSort());
   EXPECT_EQ(dag.topologicalSort().size(),0);
   EXPECT_EQ(dag.spanningTree().size(),0);
+  // Check clear is full. Add a regular edge. sort must not throw
+  dag.addEdge("b","a","ba");
+  EXPECT_NO_THROW(dag.topologicalSort());
+  EXPECT_FALSE(dag.hasCycle());
 
 }
 
