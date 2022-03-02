@@ -297,6 +297,8 @@ TEST(NeoTestArrayProperty, test_array_property) {
   // add elements: 5 items with one value
   Neo::ItemRange item_range{ Neo::ItemLocalIds{ {}, 0, 5 } };
   std::vector<Neo::utils::Int32> values{ 0, 1, 2, 3, 4 };
+  // Check cannot Try to init before resize
+  if constexpr (_debug) EXPECT_DEATH(array_property.init(item_range, values), ".*call resize before init.*");
   array_property.resize({ 1, 1, 1, 1, 1 });
   array_property.init(item_range, values);
   array_property.debugPrint();
