@@ -54,6 +54,9 @@ class SimpleGridMeshPartitioner
    * Il faut conserver les uniqueId() lors de la contruction et les transformer
    * en localId() uniquement dans computeExtraCellsToSend() car durant
    * le partitionnement les localId() peuvent changer.
+   *
+   * \note Pour l'instant on ne peut pas détruire les instances de cette classe
+   * car on ne peut pas supprimer les références enregistrées dans IMeshModifier.
    */
   class GhostCellsBuilder
   : public IExtraGhostCellsBuilder
@@ -83,6 +86,12 @@ class SimpleGridMeshPartitioner
       if (x == m_ghost_cell_local_ids.end())
         return {};
       return x->second;
+    }
+
+    void cleanup()
+    {
+      m_ghost_cell_uids.clear();
+      m_ghost_cell_local_ids.clear();
     }
 
     std::map<Int32, UniqueArray<ItemUniqueId>> m_ghost_cell_uids;
@@ -372,14 +381,8 @@ _computeSpecificGhostLayer()
   if (!m_grid_info.get())
     ARCANE_FATAL("partitionMesh() has to be called before this method.");
 
-  if (m_ghost_cells_builder)
-    ARCANE_FATAL("Missing call to SimpleGridMeshPartitioner::cleanup() after last partitioning");
-
   IPrimaryMesh* mesh = this->mesh()->toPrimaryMesh();
   VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
-
-  m_ghost_cells_builder = new GhostCellsBuilder(mesh);
-  mesh->modifier()->addExtraGhostCellsBuilder(m_ghost_cells_builder);
 
   const Int32 nb_direction = m_grid_info->m_nb_direction;
 
@@ -457,16 +460,23 @@ applyMeshPartitioning(IMesh* mesh)
   if (mesh != this->mesh())
     ARCANE_FATAL("mesh argument should be the same mesh that the one used to create this instance");
 
+  if (m_ghost_cells_builder)
+    ARCANE_FATAL("Only one call to this method is allower per instance.");
+
   mesh->modifier()->setDynamic(true);
   mesh->utilities()->partitionAndExchangeMeshWithReplication(this, true);
+
+  // TODO: pour l'instant on ne peut pas détruite cette instance car elle
+  // reste référencée dans \a mesh
+
+  m_ghost_cells_builder = new GhostCellsBuilder(mesh);
+  mesh->modifier()->addExtraGhostCellsBuilder(m_ghost_cells_builder);
 
   // Recalcule spécifiquement les mailles fantômes pour recouvrir les partitions
   _computeSpecificGhostLayer();
   mesh->modifier()->updateGhostLayers();
 
-  // TODO: supprimer les allocations spéciques
-
-  // TODO: regarder comment supprimer le IExtraGhostCellsBuilder
+  m_ghost_cells_builder->cleanup();
 }
 
 /*---------------------------------------------------------------------------*/
