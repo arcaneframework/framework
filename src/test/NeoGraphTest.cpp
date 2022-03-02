@@ -293,22 +293,27 @@ TEST(NeoGraphTest,TwoAlgoMultipleAddTest) {
                       std::cout << "Algo 2 "<< std::endl;
                     });
   // Produce P1 Consume P2
-  mesh.addAlgorithm(Neo::InProperty{ cell_family,"prop1"},
-                    Neo::OutProperty{ cell_family,"prop2"},
-                    []([[maybe_unused]] Neo::PropertyT<Neo::utils::Int32>const& p1,
-                       [[maybe_unused]] Neo::PropertyT<Neo::utils::Int32>& p2){
-                      std::cout << "Algo 1 "<< std::endl;
-                    });
-  // Must throw since cycle in graph
-//  EXPECT_THROW(mesh.applyAlgorithms(Neo::MeshBase::AlgorithmExecutionOrder::DAG),std::runtime_error);
-  mesh.applyAlgorithms(Neo::MeshBase::AlgorithmExecutionOrder::DAG);
   mesh.addAlgorithm(Neo::InProperty{ cell_family,"prop2"},
                     Neo::OutProperty{ cell_family,"prop1"},
                     []([[maybe_unused]] Neo::PropertyT<Neo::utils::Int32>const& p1,
                        [[maybe_unused]] Neo::PropertyT<Neo::utils::Int32>& p2){
                       std::cout << "Algo 1 "<< std::endl;
                     });
-  mesh.applyAlgorithms(Neo::MeshBase::AlgorithmExecutionOrder::DAG);
+  // Must throw since cycle in graph
+  EXPECT_THROW(mesh.applyAlgorithms(Neo::MeshBase::AlgorithmExecutionOrder::DAG),std::runtime_error);
+  // Algos are cleared, does not throw anymore
+  EXPECT_NO_THROW(mesh.applyAlgorithms(Neo::MeshBase::AlgorithmExecutionOrder::DAG));
+  // Add new algo with no cycle. Check everything is well cleaned
+  bool is_called = true;
+  mesh.addAlgorithm(Neo::InProperty{ cell_family,"prop2",Neo::PropertyStatus::ExistingProperty},
+                    Neo::OutProperty{ cell_family,"prop1"},
+                    [&is_called]([[maybe_unused]] Neo::PropertyT<Neo::utils::Int32>const& p1,
+                       [[maybe_unused]] Neo::PropertyT<Neo::utils::Int32>& p2){
+                      std::cout << "Algo 1 "<< std::endl;
+                      is_called = true;
+                    });
+  EXPECT_NO_THROW(mesh.applyAlgorithms(Neo::MeshBase::AlgorithmExecutionOrder::DAG));
+  EXPECT_TRUE(is_called);
 }
 
 //----------------------------------------------------------------------------/
