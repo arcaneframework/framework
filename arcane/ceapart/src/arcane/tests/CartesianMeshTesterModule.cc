@@ -619,8 +619,7 @@ _testGridPartitioning()
   partitioner->setBoundingBox(min_box,max_box);
 
   // Applique le partitionnement
-  new_mesh->modifier()->setDynamic(true);
-  new_mesh->utilities()->partitionAndExchangeMeshWithReplication(partitioner,true);
+  partitioner->applyMeshPartitioning(new_mesh);
   //![SampleGridMeshPartitioner]
 
   // Maintenant, écrit le fichier du maillage non structuré et de notre partie
