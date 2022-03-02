@@ -69,7 +69,7 @@ TEST(NeoGraphTest,OneProducingAlgoTest)
   bool is_called = false;
 
   // First try without adding property: algo not called
-  mesh.addAlgorithm(Neo::OutProperty{cell_family,"prop1"},[&is_called](Neo::PropertyT<Neo::utils::Int32> & p1) {
+  mesh.addAlgorithm(Neo::OutProperty{cell_family,"prop1"},[&is_called]([[maybe_unused]]Neo::PropertyT<Neo::utils::Int32> & p1) {
     std::cout << "Algo 1" << std::endl;
     is_called = true;
   });
@@ -78,7 +78,7 @@ TEST(NeoGraphTest,OneProducingAlgoTest)
 
   // Now add property: algo must be called
   cell_family.addProperty<Neo::utils::Int32>("prop1");
-  mesh.addAlgorithm(Neo::OutProperty{cell_family,"prop1"},[&is_called](Neo::PropertyT<Neo::utils::Int32> & p1) {
+  mesh.addAlgorithm(Neo::OutProperty{cell_family,"prop1"},[&is_called]([[maybe_unused]]Neo::PropertyT<Neo::utils::Int32> & p1) {
     std::cout << "Algo 1" << std::endl;
     is_called = true;
   });
