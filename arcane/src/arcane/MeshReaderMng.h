@@ -70,6 +70,8 @@ class ARCANE_CORE_EXPORT MeshReaderMng
   /*!
    * \brief Si vrai, indique qu'on utilise le système d'unité éventuellement présent
    * dans le format de fichier (\a true par défaut).
+   *
+   * Cette méthode doit être appelée avant l'appel à readMesh() pour être prise en compte.
    */
   void setUseMeshUnit(bool v);
   //! Indique si on utilise le système d'unité présent dans le fichier

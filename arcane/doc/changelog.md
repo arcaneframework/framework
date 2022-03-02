@@ -5,6 +5,57 @@
 
 Cette page contient les nouveautés de chaque version de %Arcane.
 
+Arcane Version 3.5.3 (?? mars 2022) {#arcanedoc_version350}
+======================================
+
+Nouveautés/Améliorations:
+
+- Ajoute possibilité d'utiliser des messages collectifs
+  (MPI_AllToAllv) au lieu de messages point à point lors de l´échange
+  des entités suite à un équilibrage de charge. Ce mécanisme est
+  temporairement accessible en spécifiant la variable d'environnement
+  `ARCANE_MESH_EXCHANGE_USE_COLLECTIVE` (#138,#154).
+- Dans la comparaison bit à bit, ajoute possibilité de ne faire la
+  comparaison qu'à la fin de l'exécution au lieu de le faire à chaque
+  pas de temps. Cela se fait en spécifiant la variable d'environnement
+  STDENV_VERIF_ONLY_AT_EXIT.
+- Ajoute générateur de maillages en nid d'abeille en 3D (#149).
+- Ajoute support pour spécifier la disposition des éléments (layout)
+  dans la classe Arcane::NumArray. Il existe actuellement deux
+  dispositions implémentées: LeftLayout et RightLayout (#151)
+- Ajoute méthode Arcane::Accelerator::RunQueue::copyMemory() pour faire des
+  copies mémoire asynchrones (#152).
+- Améliore le support ROCM/HIP. Le support des GPU AMD est maintenant
+  fonctionnellement équivalent à celui des GPU NVIDIA via Cuda (#158, #159).
+- Ajoute support pour la mémoire punaisée (Host Pinned Memory) pour
+  CUDA et ROCM (#147).
+- Ajoute classe 'Arcane::Accelerator::RunQueueEvent' pour supporter
+  les évènements sur les 'Arcane::Accelerator::RunQueue' et permettre
+  ainsi de synchroniser entre elle des files différentes (#161).
+
+Changements:
+
+- Supprime les macros plus utilisées ARCANE_PROXY et ARCANE_TRACE (#145)
+
+Corrections:
+
+- Corrige mauvaise détection de la version OneTBB 2021.5 suite à la
+  suppression du fichier 'tbb_thread.h' (#146)
+- Corrige certaines informations cartésiennes manquantes lorsqu'il n'y
+  a qu'une seule couche de maille en Y ou Z (#162).
+- Corrige implémentation manquante de 'Arccore::Span<T>::operator=='
+  lorsque le type `T` n'est pas constant (#163).
+- Supprime quelques messages listings trop nombreux.
+
+Interne:
+
+- Utilise au lieu de Arccore::UniqueArray2 une implémentation
+  spécifique pour le conteneur de Arcane::NumArray (#150).
+- Utilise des `Int32` au lieu de `Int64` pour indexer les éléments
+  dans Arcane::NumArray (#153)
+- Ajoute `constexpr` et `noexcept` à certaines classes de Arccore
+  (#156).
+
 Arcane Version 3.4.5 (10 février 2022) {#arcanedoc_version340}
 ======================================
 
