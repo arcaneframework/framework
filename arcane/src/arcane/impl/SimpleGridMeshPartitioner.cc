@@ -13,6 +13,7 @@
 
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/ScopedPtr.h"
 
 #include "arcane/IGridMeshPartitioner.h"
 #include "arcane/BasicService.h"
@@ -20,11 +21,15 @@
 #include "arcane/ServiceFactory.h"
 #include "arcane/IParallelMng.h"
 #include "arcane/ItemPrinter.h"
+#include "arcane/IExtraGhostCellsBuilder.h"
 
 #include "arcane/IMeshPartitionConstraintMng.h"
 #include "arcane/IMeshUtilities.h"
+#include "arcane/IMeshModifier.h"
+#include "arcane/IItemFamily.h"
 
 #include <array>
+#include <map>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,6 +46,61 @@ class SimpleGridMeshPartitioner
 : public BasicService
 , public IGridMeshPartitioner
 {
+ public:
+
+  /*!
+   * \brief Informations sur les mailles fantômes supplémentaires.
+   *
+   * Il faut conserver les uniqueId() lors de la contruction et les transformer
+   * en localId() uniquement dans computeExtraCellsToSend() car durant
+   * le partitionnement les localId() peuvent changer.
+   */
+  class GhostCellsBuilder
+  : public IExtraGhostCellsBuilder
+  {
+   public:
+
+    GhostCellsBuilder(IMesh* mesh)
+    : m_mesh(mesh)
+    {}
+
+   public:
+
+    void computeExtraCellsToSend() override
+    {
+      for (auto v : m_ghost_cell_uids) {
+        Int32 rank = v.first;
+        Int32 nb_ghost = v.second.size();
+        UniqueArray<Int32>& local_ids = m_ghost_cell_local_ids[rank];
+        local_ids.resize(nb_ghost);
+        m_mesh->cellFamily()->itemsUniqueIdToLocalId(local_ids, v.second);
+      }
+    }
+
+    IntegerConstArrayView extraCellsToSend(Int32 rank) const override
+    {
+      auto x = m_ghost_cell_local_ids.find(rank);
+      if (x == m_ghost_cell_local_ids.end())
+        return {};
+      return x->second;
+    }
+
+    std::map<Int32, UniqueArray<ItemUniqueId>> m_ghost_cell_uids;
+    std::map<Int32, UniqueArray<Int32>> m_ghost_cell_local_ids;
+    IMesh* m_mesh;
+  };
+
+  class GridInfo
+  {
+   public:
+
+    std::array<Int32, 3> m_nb_part_by_direction;
+    UniqueArray<UniqueArray<Real>> m_grid_coord;
+    Int32 m_nb_direction = 0;
+    Int32 m_offset_y = 0;
+    Int32 m_offset_z = 0;
+  };
+
  public:
 
   explicit SimpleGridMeshPartitioner(const ServiceBuildInfo& sbi);
@@ -60,6 +120,7 @@ class SimpleGridMeshPartitioner
     m_max_box = max_val;
     m_is_bounding_box_set = true;
   }
+
   void setPartIndex(Int32 i, Int32 j, Int32 k) override
   {
     m_ijk_part[0] = i;
@@ -67,6 +128,8 @@ class SimpleGridMeshPartitioner
     m_ijk_part[2] = k;
     m_is_ijk_set = true;
   }
+
+  void applyMeshPartitioning(IMesh* mesh) override;
 
  private:
 
@@ -76,8 +139,15 @@ class SimpleGridMeshPartitioner
   bool m_is_bounding_box_set = false;
   bool m_is_ijk_set = false;
   bool m_is_verbose = false;
+  GhostCellsBuilder* m_ghost_cells_builder = nullptr;
+  ScopedPtrT<GridInfo> m_grid_info;
+
+ private:
 
   Int32 _findPart(RealConstArrayView coords, Real center);
+  void _addGhostCell(Int32 rank, Cell cell);
+  void _buildGridInfo();
+  void _computeSpecificGhostLayer();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -127,17 +197,29 @@ _findPart(RealConstArrayView coords, Real position)
 /*---------------------------------------------------------------------------*/
 
 void SimpleGridMeshPartitioner::
-partitionMesh([[maybe_unused]] bool initial_partition)
+_addGhostCell(Int32 rank, Cell cell)
 {
+  m_ghost_cells_builder->m_ghost_cell_uids[rank].add(cell.uniqueId());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SimpleGridMeshPartitioner::
+_buildGridInfo()
+{
+  m_grid_info = new GridInfo();
+
   if (!m_is_bounding_box_set)
     ARCANE_FATAL("Bounding box is not set. call method setBoundingBox() before");
   if (!m_is_ijk_set)
     ARCANE_FATAL("Part index is not set. call method setPartIndex() before");
+
   IPrimaryMesh* mesh = this->mesh()->toPrimaryMesh();
   const Int32 dimension = mesh->dimension();
 
   IParallelMng* pm = mesh->parallelMng();
-  Int32 nb_rank = pm->commSize();
+  //Int32 nb_rank = pm->commSize();
 
   // Calcule le nombre de parties par direction
   std::array<Int32, 3> nb_part_by_direction_buf = { 0, 0, 0 };
@@ -146,7 +228,9 @@ partitionMesh([[maybe_unused]] bool initial_partition)
     if (m_ijk_part[i] >= 0)
       nb_part_by_direction[i] = m_ijk_part[i] + 1;
 
-  Int32 nb_direction = 0;
+  auto& nb_direction = m_grid_info->m_nb_direction;
+
+  nb_direction = 0;
   if (nb_part_by_direction[2] > 0)
     nb_direction = 3;
   else if (nb_part_by_direction[1] > 0)
@@ -162,7 +246,10 @@ partitionMesh([[maybe_unused]] bool initial_partition)
 
   // Calcul les coordonnées de la grille par direction
   const Real min_value = -FloatInfo<Real>::maxValue();
-  UniqueArray<UniqueArray<Real>> grid_coord(nb_direction);
+  auto& grid_coord = m_grid_info->m_grid_coord;
+
+  grid_coord.resize(nb_direction);
+  grid_coord.resize(nb_direction);
   for (Integer i = 0; i < nb_direction; ++i)
     grid_coord[i].resize(nb_part_by_direction[i], min_value);
 
@@ -187,11 +274,30 @@ partitionMesh([[maybe_unused]] bool initial_partition)
         ARCANE_FATAL("Grid coord '{0}' is not sorted: {1} > {2}", i, coords[z], coords[z + 1]);
   }
 
+  m_grid_info->m_offset_y = (nb_direction >= 2) ? nb_part_by_direction[0] : 0;
+  m_grid_info->m_offset_z = (nb_direction == 3) ? (nb_part_by_direction[0] * nb_part_by_direction[1]) : 0;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SimpleGridMeshPartitioner::
+partitionMesh([[maybe_unused]] bool initial_partition)
+{
+  if (m_grid_info.get())
+    ARCANE_FATAL("partitionMesh() has already been called. Only one call par SimpleGridMeshPartitioner instance is allowed");
+
+  _buildGridInfo();
+
+  IPrimaryMesh* mesh = this->mesh()->toPrimaryMesh();
   VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
   VariableItemInt32& cells_new_owner = mesh->itemsNewOwner(IK_Cell);
+  IParallelMng* pm = mesh->parallelMng();
+  Int32 nb_rank = pm->commSize();
 
-  const Int32 offset_y = (nb_direction >= 2) ? nb_part_by_direction[0] : 0;
-  const Int32 offset_z = (nb_direction == 3) ? (nb_part_by_direction[0] * nb_part_by_direction[1]) : 0;
+  const Int32 offset_y = m_grid_info->m_offset_y;
+  const Int32 offset_z = m_grid_info->m_offset_z;
+  const Int32 nb_direction = m_grid_info->m_nb_direction;
 
   // Parcours pour chaque maille chaque direction et regarder dans indice dans
   // la grille elle se trouve. En déduit le nouveau rang.
@@ -205,7 +311,7 @@ partitionMesh([[maybe_unused]] bool initial_partition)
     cell_center /= static_cast<Real>(nb_node);
 
     for (Integer idir = 0; idir < nb_direction; ++idir) {
-      ConstArrayView<Real> coords(grid_coord[idir].view());
+      ConstArrayView<Real> coords(m_grid_info->m_grid_coord[idir].view());
       Real cc = cell_center[idir];
 
       if (m_is_verbose)
@@ -214,24 +320,60 @@ partitionMesh([[maybe_unused]] bool initial_partition)
       cell_part[idir] = _findPart(coords, cc);
     }
 
-    Int32 new_owner = cell_part[0] + cell_part[1] * offset_y + cell_part[2] * offset_z;
+    const Int32 new_owner = cell_part[0] + cell_part[1] * offset_y + cell_part[2] * offset_z;
     if (m_is_verbose)
       info() << "CELL=" << ItemPrinter(cell) << " coord=" << cell_center << " new_owner=" << new_owner
              << " dir=" << cell_part[0] << " " << cell_part[1] << " " << cell_part[2];
     if (new_owner < 0 || new_owner >= nb_rank)
       ARCANE_FATAL("Bad value for new owner cell={0} new_owner={1} (max={2})", ItemPrinter(cell), new_owner, nb_rank);
     cells_new_owner[icell] = new_owner;
+  }
+
+  cells_new_owner.synchronize();
+  if (mesh->partitionConstraintMng()) {
+    // Deal with Tied Cells
+    mesh->partitionConstraintMng()->computeAndApplyConstraints();
+  }
+  mesh->utilities()->changeOwnersFromCells();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SimpleGridMeshPartitioner::
+_computeSpecificGhostLayer()
+{
+  if (!m_grid_info.get())
+    ARCANE_FATAL("partitionMesh() has to be called before this method.");
+
+  if (m_ghost_cells_builder)
+    ARCANE_FATAL("Missing call to SimpleGridMeshPartitioner::cleanup() after last partitioning");
+
+  IPrimaryMesh* mesh = this->mesh()->toPrimaryMesh();
+  VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
+  IParallelMng* pm = mesh->parallelMng();
+  Int32 my_rank = pm->commRank();
+
+  m_ghost_cells_builder = new GhostCellsBuilder(mesh);
+  mesh->modifier()->addExtraGhostCellsBuilder(m_ghost_cells_builder);
+
+  const Int32 offset_y = m_grid_info->m_offset_y;
+  const Int32 offset_z = m_grid_info->m_offset_z;
+  const Int32 nb_direction = m_grid_info->m_nb_direction;
+
+  ENUMERATE_ (Cell, icell, mesh->allCells().own()) {
+    Cell cell = *icell;
 
     std::array<Int32, 3> min_part = { -1, -1, -1 };
     std::array<Int32, 3> max_part = { -1, -1, -1 };
-    std::array<Int32, 3> nb_node_part = { 0, 0, 0 };
+    std::array<Int32, 3> nb_node_part = { 1, 1, 1 };
 
     for (Node node : cell.nodes()) {
       std::array<Int32, 3> node_part = { -1, -1, -1 };
       Real3 node_position = nodes_coord[node];
 
       for (Integer idir = 0; idir < nb_direction; ++idir) {
-        ConstArrayView<Real> coords(grid_coord[idir].view());
+        ConstArrayView<Real> coords(m_grid_info->m_grid_coord[idir].view());
         Real cc = node_position[idir];
 
         if (m_is_verbose)
@@ -272,16 +414,52 @@ partitionMesh([[maybe_unused]] bool initial_partition)
              << " nb_part=" << ArrayView<Int32>(nb_node_part)
              << " total=" << total_nb_part;
 
-    if (total_nb_part > 1)
+    // Si le nombre de parties est strictement supérieur à 1, il faut envoyer cette maille
+    // en tant que maille fantômes aux sous-domaines qui possèdent ces parties.
+    if (total_nb_part > 1) {
       info() << "NEED_GHOST!";
+      for (Integer k0 = 0, maxk0 = nb_node_part[0]; k0 < maxk0; ++k0)
+        for (Integer k1 = 0, maxk1 = nb_node_part[1]; k1 < maxk1; ++k1)
+          for (Integer k2 = 0, maxk2 = nb_node_part[2]; k2 < maxk2; ++k2) {
+            Int32 p0 = min_part[0] + k0;
+            Int32 p1 = min_part[1] + k1;
+            Int32 p2 = min_part[2] + k2;
+            Int32 owner = p0 + (p1 * offset_y) + (p2 * offset_z);
+            info() << "NEED_GHOST P= " << p0 << "," << p1 << "," << p2 << " owner=" << owner;
+            if (owner != my_rank)
+              _addGhostCell(owner, cell);
+          }
+    }
   }
 
-  cells_new_owner.synchronize();
-  if (mesh->partitionConstraintMng()) {
-    // Deal with Tied Cells
-    mesh->partitionConstraintMng()->computeAndApplyConstraints();
+  if (m_is_verbose) {
+    info() << "GHOST_CELLS_TO_SEND";
+    for (auto v : m_ghost_cells_builder->m_ghost_cell_uids) {
+      info() << "RANK=" << v.first << " ids=" << v.second;
+    }
   }
-  mesh->utilities()->changeOwnersFromCells();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SimpleGridMeshPartitioner::
+applyMeshPartitioning(IMesh* mesh)
+{
+  //TODO A terme supprimer l'utilisation du maillage issu de l'instance.
+  if (mesh != this->mesh())
+    ARCANE_FATAL("mesh argument should be the same mesh that the one used to create this instance");
+
+  mesh->modifier()->setDynamic(true);
+  mesh->utilities()->partitionAndExchangeMeshWithReplication(this, true);
+
+  // Recalcule spécifiquement les mailles fantômes pour recouvrir les partitions
+  _computeSpecificGhostLayer();
+  mesh->modifier()->updateGhostLayers();
+
+  // TODO: supprimer les allocations spéciques
+
+  // TODO: regarder comment supprimer le IExtraGhostCellsBuilder
 }
 
 /*---------------------------------------------------------------------------*/
