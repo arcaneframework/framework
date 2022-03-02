@@ -611,16 +611,18 @@ _testGridPartitioning()
   Arcane::Real3 min_box(max_value,max_value,max_value);
   Arcane::Real3 max_box(min_value,min_value,min_value);
   VariableNodeReal3& nodes_coord = current_mesh->nodesCoordinates();
-  ENUMERATE_(Node,inode,current_mesh->allNodes().own()){
-    Real3 coord = nodes_coord[inode];
-    min_box = math::min(min_box,coord);
-    max_box = math::min(max_box,coord);
+  ENUMERATE_(Cell,icell,current_mesh->ownCells()){
+    Cell cell{*icell};
+    for( Node node : cell.nodes() ){
+      Real3 coord = nodes_coord[node];
+      min_box = math::min(min_box,coord);
+      max_box = math::max(max_box,coord);
+    }
   }
   partitioner->setBoundingBox(min_box,max_box);
 
   // Applique le partitionnement
-  new_mesh->modifier()->setDynamic(true);
-  new_mesh->utilities()->partitionAndExchangeMeshWithReplication(partitioner,true);
+  partitioner->applyMeshPartitioning(new_mesh);
   //![SampleGridMeshPartitioner]
 
   // Maintenant, écrit le fichier du maillage non structuré et de notre partie

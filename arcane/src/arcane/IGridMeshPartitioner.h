@@ -44,11 +44,17 @@ namespace Arcane
  * | 0,0 | 1,0   |2,0| 3,0 |
  * ------------------------
  *
+ * Les instances de cette classe sont à usage unique et ne doivent être utilisées
+ * que pour un seul partitionnement. L'utilisateur doit appeler setBoundingBox()
+ * et setPartIndex() et ensuite effectuer le partitionnement par l'appel à
+ * applyMeshPartitioning().
  */
 class ARCANE_CORE_EXPORT IGridMeshPartitioner
+// TODO: supprimer l'héritage de cette interface
 : public IMeshPartitionerBase
 {
  public:
+
   /*!
    * \brief Positionne la bounding box de notre sous-domaine.
    *
@@ -56,6 +62,7 @@ class ARCANE_CORE_EXPORT IGridMeshPartitioner
    * entre les bounding box des sous-domaines.
    */
   virtual void setBoundingBox(Real3 min_val, Real3 max_val) = 0;
+
   /*!
    * \brief Indice (i,j,k) de la partie.
    *
@@ -63,6 +70,20 @@ class ARCANE_CORE_EXPORT IGridMeshPartitioner
    * (-1). En 1D, la valeur de \a j vaut \a (-1)
    */
   virtual void setPartIndex(Int32 i, Int32 j, Int32 k) = 0;
+
+  /*!
+   * \brief Applique le repartitionnement sur le maillage \a mesh.
+   *
+   * Les méthodes setPartIndex() et setBoundingBox() doivent avoir été
+   * appelées auparavant. Cette méthode ne peut être appelée qu'une seule
+   * fois par instance.
+   *
+   * Le partitionement utilise un algorithme spécique de
+   * calcul des mailles fantômes pour garantir que chaque maille de \a mesh
+   * qui intersecte la partie spécifiée dans setBoundingBox() sera dans
+   * ce sous-domaine, éventuellement en tant que maille fantôme.
+   */
+  virtual void applyMeshPartitioning(IMesh* mesh) =0;
 };
 
 /*---------------------------------------------------------------------------*/
