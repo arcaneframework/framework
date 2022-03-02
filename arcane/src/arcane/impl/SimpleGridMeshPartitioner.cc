@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleGridMeshPartitioner.cc                                (C) 2000-2021 */
+/* SimpleGridMeshPartitioner.cc                                (C) 2000-2022 */
 /*                                                                           */
 /* Partitionneur de maillage sur une grille.                                 */
 /*---------------------------------------------------------------------------*/
@@ -96,6 +96,7 @@ partitionMesh([[maybe_unused]] bool initial_partition)
   if (!m_is_ijk_set)
     ARCANE_FATAL("Part index is not set. call method setPartIndex() before");
   IPrimaryMesh* mesh = this->mesh()->toPrimaryMesh();
+  const Int32 dimension = mesh->dimension();
 
   IParallelMng* pm = mesh->parallelMng();
   Int32 nb_rank = pm->commSize();
@@ -112,8 +113,11 @@ partitionMesh([[maybe_unused]] bool initial_partition)
     nb_direction = 3;
   else if (nb_part_by_direction[1] > 0)
     nb_direction = 2;
-  else if (nb_part_by_direction[0] > 0)
-    ARCANE_FATAL("No part");
+  else
+    ARCANE_THROW(NotImplementedException,"SimpleGridMeshPartitioner for 1D mesh");
+
+  if (nb_direction!=dimension)
+    ARCANE_FATAL("Invalid number of direction: mesh_dimension={0} nb_direction={1}",dimension,nb_direction);
 
   pm->reduce(Parallel::ReduceMax, nb_part_by_direction);
   info() << "NB_DIRECTION=" << nb_direction << " NB_PART=" << nb_part_by_direction;
@@ -134,7 +138,7 @@ partitionMesh([[maybe_unused]] bool initial_partition)
     info() << "GRID_COORD dir=" << i << " V=" << grid_coord[i];
   }
 
-  // Vérifie que chaque direction de la grille est triée.
+  // Vérifie que chaque direction de la grille est croissante
   for (Integer i = 0; i < nb_direction; ++i) {
     ConstArrayView<Real> coords(grid_coord[0].view());
     Int32 nb_value = coords.size();
