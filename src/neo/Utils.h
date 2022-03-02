@@ -19,8 +19,10 @@
 
 #ifdef NDEBUG
   static constexpr bool ndebug = true;
+  static constexpr bool _debug  = false;
 #else
   static constexpr bool ndebug = false;
+  static constexpr bool _debug  = true;
 #endif
 
 namespace Neo {

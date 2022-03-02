@@ -292,7 +292,8 @@ TEST(NeoTestProperty, test_property) {
 
 TEST(NeoTestArrayProperty, test_array_property) {
   auto array_property = Neo::ArrayProperty<Neo::utils::Int32>{ "test_array_property" };
-  EXPECT_DEATH(array_property[Neo::utils::NULL_ITEM_LID], ".*item local id must be >0.*");
+  // check assert (debug only)
+  if constexpr (_debug) EXPECT_DEATH(array_property[Neo::utils::NULL_ITEM_LID], ".*item local id must be >0.*");
   // add elements: 5 items with one value
   Neo::ItemRange item_range{ Neo::ItemLocalIds{ {}, 0, 5 } };
   std::vector<Neo::utils::Int32> values{ 0, 1, 2, 3, 4 };
