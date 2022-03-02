@@ -313,6 +313,7 @@ public:
   bool isInitializableFrom(const ItemRange& item_range){return item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty() ;}
   void init(const ItemRange& item_range, std::vector<DataType> values){
     assert(isInitializableFrom(item_range));
+    assert(("call resize before init",!item_range.isEmpty() && m_size !=0));
     m_data = std::move(values);
   }
   void append(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_values_per_item){
