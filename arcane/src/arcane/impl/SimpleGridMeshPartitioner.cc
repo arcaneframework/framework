@@ -42,15 +42,18 @@ class SimpleGridMeshPartitioner
 , public IGridMeshPartitioner
 {
  public:
+
   explicit SimpleGridMeshPartitioner(const ServiceBuildInfo& sbi);
 
  public:
+
   void build() override {}
   IPrimaryMesh* primaryMesh() override { return mesh()->toPrimaryMesh(); }
   void partitionMesh(bool initial_partition) override;
   void notifyEndPartition() override {}
 
  public:
+
   void setBoundingBox(Real3 min_val, Real3 max_val) override
   {
     m_min_box = min_val;
@@ -66,12 +69,15 @@ class SimpleGridMeshPartitioner
   }
 
  private:
+
   Real3 m_min_box;
   Real3 m_max_box;
   std::array<Int32, 3> m_ijk_part;
   bool m_is_bounding_box_set = false;
   bool m_is_ijk_set = false;
   bool m_is_verbose = false;
+
+  Int32 _findPart(RealConstArrayView coords, Real center);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -83,6 +89,38 @@ SimpleGridMeshPartitioner(const ServiceBuildInfo& sbi)
 {
   if (platform::getEnvironmentVariable("ARCANE_DEBUG_SIMPLE_GRID_MESH_PARTITIONER") == "1")
     m_is_verbose = true;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Retourne l'indice dans \a coords de la valeur immédiatement inférieure
+ * à \a position.
+ *
+ * Le tableau \a coords doit être trié par ordre croissant.
+ * // TODO: utiliser une dichotomie.
+ */
+Int32 SimpleGridMeshPartitioner::
+_findPart(RealConstArrayView coords, Real position)
+{
+  const Int32 nb_value = coords.size();
+  if (position < coords[0])
+    return 0;
+
+  Int32 part_id = -1;
+  for (Int32 z = 0; z < nb_value; ++z) {
+    if (m_is_verbose)
+      info() << " z=" << z << " coord=" << coords[z] << " part=" << part_id;
+    if (position > coords[z])
+      part_id = z;
+    else
+      break;
+  }
+
+  if (part_id == (-1))
+    part_id = (nb_value - 1);
+
+  return part_id;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -114,10 +152,10 @@ partitionMesh([[maybe_unused]] bool initial_partition)
   else if (nb_part_by_direction[1] > 0)
     nb_direction = 2;
   else
-    ARCANE_THROW(NotImplementedException,"SimpleGridMeshPartitioner for 1D mesh");
+    ARCANE_THROW(NotImplementedException, "SimpleGridMeshPartitioner for 1D mesh");
 
-  if (nb_direction!=dimension)
-    ARCANE_FATAL("Invalid number of direction: mesh_dimension={0} nb_direction={1}",dimension,nb_direction);
+  if (nb_direction != dimension)
+    ARCANE_FATAL("Invalid number of direction: mesh_dimension={0} nb_direction={1}", dimension, nb_direction);
 
   pm->reduce(Parallel::ReduceMax, nb_part_by_direction);
   info() << "NB_DIRECTION=" << nb_direction << " NB_PART=" << nb_part_by_direction;
@@ -165,26 +203,17 @@ partitionMesh([[maybe_unused]] bool initial_partition)
     for (Integer inode = 0; inode < nb_node; ++inode)
       cell_center += nodes_coord[cell.node(inode)];
     cell_center /= static_cast<Real>(nb_node);
+
     for (Integer idir = 0; idir < nb_direction; ++idir) {
       ConstArrayView<Real> coords(grid_coord[idir].view());
-      Int32 nb_value = coords.size();
-      // TODO: utiliser une dichotomie
       Real cc = cell_center[idir];
-      if (cc < coords[0]) {
-        cell_part[idir] = 0;
-      }
-      for (Int32 z = 0; z < nb_value; ++z) {
-        if (m_is_verbose)
-          info() << " Cell uid=" << cell.uniqueId() << " idir=" << idir << " z=" << z
-                 << " cc=" << cc << " coord=" << coords[z] << " part=" << cell_part[idir];
-        if (cc > coords[z])
-          cell_part[idir] = z;
-        else
-          break;
-      }
-      if (cell_part[idir] == (-1))
-        cell_part[idir] = (nb_value - 1);
+
+      if (m_is_verbose)
+        info() << " Cell uid=" << cell.uniqueId() << " idir=" << idir << " cc=" << cc;
+
+      cell_part[idir] = _findPart(coords, cc);
     }
+
     Int32 new_owner = cell_part[0] + cell_part[1] * offset_y + cell_part[2] * offset_z;
     if (m_is_verbose)
       info() << "CELL=" << ItemPrinter(cell) << " coord=" << cell_center << " new_owner=" << new_owner
@@ -192,6 +221,59 @@ partitionMesh([[maybe_unused]] bool initial_partition)
     if (new_owner < 0 || new_owner >= nb_rank)
       ARCANE_FATAL("Bad value for new owner cell={0} new_owner={1} (max={2})", ItemPrinter(cell), new_owner, nb_rank);
     cells_new_owner[icell] = new_owner;
+
+    std::array<Int32, 3> min_part = { -1, -1, -1 };
+    std::array<Int32, 3> max_part = { -1, -1, -1 };
+    std::array<Int32, 3> nb_node_part = { 0, 0, 0 };
+
+    for (Node node : cell.nodes()) {
+      std::array<Int32, 3> node_part = { -1, -1, -1 };
+      Real3 node_position = nodes_coord[node];
+
+      for (Integer idir = 0; idir < nb_direction; ++idir) {
+        ConstArrayView<Real> coords(grid_coord[idir].view());
+        Real cc = node_position[idir];
+
+        if (m_is_verbose)
+          info() << " Node uid=" << node.uniqueId() << " idir=" << idir << " cc=" << cc;
+        Int32 part_id = _findPart(coords, cc);
+        if (m_is_verbose)
+          info() << " Node uid=" << node.uniqueId() << " idir=" << idir << " part=" << node_part[idir];
+
+        // Initialise le min/max si pas encore fait
+        if (min_part[idir] == (-1))
+          min_part[idir] = part_id;
+        if (max_part[idir] == (-1))
+          max_part[idir] = part_id;
+
+        // Met à jour le min/max si pas encore fait
+        if (min_part[idir] > part_id)
+          min_part[idir] = part_id;
+        if (max_part[idir] < part_id)
+          max_part[idir] = part_id;
+
+        node_part[idir] = part_id;
+      }
+
+      if (m_is_verbose)
+        info() << " ** Node part uid=" << node.uniqueId() << " part=" << ArrayView<Int32>(node_part);
+    }
+
+    Int32 total_nb_part = 1;
+    for (Integer idir = 0; idir < nb_direction; ++idir) {
+      Int32 nb_part = 1 + (max_part[idir] - min_part[idir]);
+      nb_node_part[idir] = nb_part;
+      total_nb_part *= nb_part;
+    }
+
+    if (m_is_verbose)
+      info() << " Cell uid=" << cell.uniqueId() << " min_part=" << ArrayView<Int32>(min_part)
+             << " max_part=" << ArrayView<Int32>(max_part)
+             << " nb_part=" << ArrayView<Int32>(nb_node_part)
+             << " total=" << total_nb_part;
+
+    if (total_nb_part > 1)
+      info() << "NEED_GHOST!";
   }
 
   cells_new_owner.synchronize();
