@@ -60,7 +60,7 @@ class SimpleGridMeshPartitioner
   {
    public:
 
-    GhostCellsBuilder(IMesh* mesh)
+    explicit GhostCellsBuilder(IMesh* mesh)
     : m_mesh(mesh)
     {}
 
@@ -94,7 +94,6 @@ class SimpleGridMeshPartitioner
   {
    public:
 
-    std::array<Int32, 3> m_nb_part_by_direction;
     UniqueArray<UniqueArray<Real>> m_grid_coord;
     Int32 m_nb_direction = 0;
     Int32 m_offset_y = 0;
@@ -148,6 +147,7 @@ class SimpleGridMeshPartitioner
   void _addGhostCell(Int32 rank, Cell cell);
   void _buildGridInfo();
   void _computeSpecificGhostLayer();
+  void _addCellToIntersectedParts(Cell cell, std::array<Int32, 3> min_part, std::array<Int32, 3> nb_part);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -339,6 +339,32 @@ partitionMesh([[maybe_unused]] bool initial_partition)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * Parcours toutes les parties qui intersectent la maille \a cell et envoie
+ * cette maille en tant que fantôme.
+ */
+void SimpleGridMeshPartitioner::
+_addCellToIntersectedParts(Cell cell, std::array<Int32, 3> min_part, std::array<Int32, 3> nb_part)
+{
+  const Int32 offset_y = m_grid_info->m_offset_y;
+  const Int32 offset_z = m_grid_info->m_offset_z;
+  const Int32 cell_owner = cell.owner();
+
+  for (Integer k0 = 0, maxk0 = nb_part[0]; k0 < maxk0; ++k0)
+    for (Integer k1 = 0, maxk1 = nb_part[1]; k1 < maxk1; ++k1)
+      for (Integer k2 = 0, maxk2 = nb_part[2]; k2 < maxk2; ++k2) {
+        Int32 p0 = min_part[0] + k0;
+        Int32 p1 = min_part[1] + k1;
+        Int32 p2 = min_part[2] + k2;
+        Int32 owner = p0 + (p1 * offset_y) + (p2 * offset_z);
+        // On ne s'envoie pas à soi-même.
+        if (owner != cell_owner)
+          _addGhostCell(owner, cell);
+      }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void SimpleGridMeshPartitioner::
 _computeSpecificGhostLayer()
@@ -351,14 +377,10 @@ _computeSpecificGhostLayer()
 
   IPrimaryMesh* mesh = this->mesh()->toPrimaryMesh();
   VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
-  IParallelMng* pm = mesh->parallelMng();
-  Int32 my_rank = pm->commRank();
 
   m_ghost_cells_builder = new GhostCellsBuilder(mesh);
   mesh->modifier()->addExtraGhostCellsBuilder(m_ghost_cells_builder);
 
-  const Int32 offset_y = m_grid_info->m_offset_y;
-  const Int32 offset_z = m_grid_info->m_offset_z;
   const Int32 nb_direction = m_grid_info->m_nb_direction;
 
   ENUMERATE_ (Cell, icell, mesh->allCells().own()) {
@@ -414,22 +436,7 @@ _computeSpecificGhostLayer()
              << " nb_part=" << ArrayView<Int32>(nb_node_part)
              << " total=" << total_nb_part;
 
-    // Si le nombre de parties est strictement supérieur à 1, il faut envoyer cette maille
-    // en tant que maille fantômes aux sous-domaines qui possèdent ces parties.
-    if (total_nb_part > 1) {
-      info() << "NEED_GHOST!";
-      for (Integer k0 = 0, maxk0 = nb_node_part[0]; k0 < maxk0; ++k0)
-        for (Integer k1 = 0, maxk1 = nb_node_part[1]; k1 < maxk1; ++k1)
-          for (Integer k2 = 0, maxk2 = nb_node_part[2]; k2 < maxk2; ++k2) {
-            Int32 p0 = min_part[0] + k0;
-            Int32 p1 = min_part[1] + k1;
-            Int32 p2 = min_part[2] + k2;
-            Int32 owner = p0 + (p1 * offset_y) + (p2 * offset_z);
-            info() << "NEED_GHOST P= " << p0 << "," << p1 << "," << p2 << " owner=" << owner;
-            if (owner != my_rank)
-              _addGhostCell(owner, cell);
-          }
-    }
+    _addCellToIntersectedParts(cell, min_part, nb_node_part);
   }
 
   if (m_is_verbose) {
