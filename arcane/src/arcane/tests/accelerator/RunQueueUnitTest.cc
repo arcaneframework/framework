@@ -242,6 +242,7 @@ _executeTest3()
     };
     queue1.recordEvent(event);
   }
+  event.wait();
   {
     auto command2 = makeCommand(queue2);
     auto v = viewInOut(command2, values);

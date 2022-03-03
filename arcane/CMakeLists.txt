@@ -807,6 +807,9 @@ add_subdirectory(src/arcane/driver)
 # ----------------------------------------------------------------------------
 # Gestion du support des accélérateurs.
 # Les deux modes supportés sont 'CUDANVCC' et 'ROCMHIP'
+
+# Pour des raisons de compatibilité avec les configurations 2021, on
+# regarde d'abord si ARCANE_WANT_CUDA est défini
 if (ARCANE_WANT_CUDA AND NOT DEFINED ARCANE_ACCELERATOR_MODE)
   set (ARCANE_ACCELERATOR_MODE "CUDANVCC")
 endif()
@@ -832,7 +835,8 @@ if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP")
   cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
   enable_language(HIP)
   add_subdirectory(src/arcane/accelerator/hip)
-elseif(ARCANE_WANT_CUDA)
+endif()
+if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC")
   enable_language(CUDA)
   # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
   if (NOT CMAKE_CUDA_ARCHITECTURES)
@@ -846,7 +850,8 @@ add_subdirectory(src/arcane/accelerator)
 
 if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
   add_subdirectory(src/arcane/accelerator/hip/runtime)
-elseif (ARCANE_WANT_CUDA)
+endif()
+if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC")
   add_subdirectory(src/arcane/accelerator/cuda/runtime)
 endif()
 
@@ -1006,6 +1011,7 @@ function(ARCANE_GEN_CORE_CONFIG_FILE filename)
   ARCANE_WRITE_ONE_CONFIG(ARCCORE_CHECK ARCANE_CHECK)
   ARCANE_WRITE_ONE_CONFIG(ARCCORE_DEBUG ARCANE_DEBUG)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_CUDA ARCANE_HAS_CUDA)
+  ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_HIP ARCANE_HAS_HIP)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_USE_CXX11 ARCANE_HAS_CXX11)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_USE_CXX14 ARCANE_HAS_CXX14)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_64BIT ARCANE_64BIT)

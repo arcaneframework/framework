@@ -24,7 +24,7 @@
 
 #include "arcane/Concurrency.h"
 
-#if defined(__HIP__)
+#if defined(ARCANE_COMPILING_HIP)
 #include <hip/hip_runtime.h>
 #endif
 
@@ -54,10 +54,10 @@ ARCCORE_HOST_DEVICE auto privatize(const T& item) -> Privatizer<T>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#if defined(ARCANE_COMPILING_CUDA) || defined(__HIP__)
+#if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
 
 template<typename ItemType,typename Lambda> __global__
-void doIndirectCUDALambda(SmallSpan<const Int32> ids,Lambda func)
+void doIndirectGPULambda(SmallSpan<const Int32> ids,Lambda func)
 {
   typedef typename ItemType::LocalIdType LocalIdType;
 
@@ -74,7 +74,7 @@ void doIndirectCUDALambda(SmallSpan<const Int32> ids,Lambda func)
 }
 
 template<typename ItemType,typename Lambda> __global__
-void doDirectCUDALambda(Int32 vsize,Lambda func)
+void doDirectGPULambda(Int32 vsize,Lambda func)
 {
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
@@ -88,7 +88,7 @@ void doDirectCUDALambda(Int32 vsize,Lambda func)
 }
 
 template<typename LoopBoundType,typename Lambda> __global__
-void doDirectCUDALambdaArrayBounds(LoopBoundType bounds,Lambda func)
+void doDirectGPULambdaArrayBounds(LoopBoundType bounds,Lambda func)
 {
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
