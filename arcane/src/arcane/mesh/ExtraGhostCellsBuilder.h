@@ -19,6 +19,8 @@
 
 #include "arcane/mesh/MeshGlobal.h"
 
+#include <set>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -50,11 +52,13 @@ class ExtraGhostCellsBuilder
 
   void computeExtraGhostCells();
   void addExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder);
+  void removeExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder);
+  bool hasBuilder() const;
 
  private:
 
   DynamicMesh* m_mesh;
-  UniqueArray<IExtraGhostCellsBuilder*> m_builders;
+  std::set<IExtraGhostCellsBuilder*> m_builders;
 };
 
 /*---------------------------------------------------------------------------*/

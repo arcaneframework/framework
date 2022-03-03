@@ -603,8 +603,6 @@ public:
   
   void _notifyEndUpdateForFamilies();
   ItemFamily* _createNewFamily(eItemKind kind, const String & name);
-  void _checkCreateExtraGhostCellsBuilder();
-  void _checkCreateExtraGhostParticlesBuilder();
 
   void _saveProperties();
   void _loadProperties();

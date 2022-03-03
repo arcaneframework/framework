@@ -17,7 +17,6 @@
 #include "arcane/utils/ScopedPtr.h"
 
 #include "arcane/IExtraGhostParticlesBuilder.h"
-#include "arcane/ISubDomain.h"
 #include "arcane/IParallelExchanger.h"
 #include "arcane/IParallelMng.h"
 #include "arcane/ISerializeMessage.h"
@@ -48,7 +47,30 @@ ExtraGhostParticlesBuilder(DynamicMesh* mesh)
 void ExtraGhostParticlesBuilder::
 addExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder)
 {
-  m_builders.add(builder);
+  if (m_builders.find(builder)!=m_builders.end())
+    ARCANE_FATAL("Instance {0} is already registered",builder);
+  m_builders.insert(builder);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ExtraGhostParticlesBuilder::
+removeExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder)
+{
+  auto x = m_builders.find(builder);
+  if (x==m_builders.end())
+    ARCANE_FATAL("Instance {0} is not registered",builder);
+  m_builders.erase(x);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool ExtraGhostParticlesBuilder::
+hasBuilder() const
+{
+  return !m_builders.empty();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -57,16 +79,16 @@ addExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder)
 void ExtraGhostParticlesBuilder::
 computeExtraGhostParticles()
 {
-  const Integer nb_builder = m_builders.size();
+  const size_t nb_builder = m_builders.size();
   
   if (nb_builder == 0)
     return;
   
   info() << "Compute extra ghost particles";
   
-  for(Integer i=0; i<nb_builder; ++i) {
+  for( IExtraGhostParticlesBuilder* v : m_builders ){
     // Calcul de mailles extraordinaires à envoyer
-    m_builders[i]->computeExtraParticlesToSend();
+    v->computeExtraParticlesToSend();
   }
   
   for( IItemFamilyCollection::Enumerator i(m_mesh->itemFamilies()); ++i; ) {
@@ -86,7 +108,6 @@ computeExtraGhostParticles()
 void ExtraGhostParticlesBuilder::
 _computeForFamily(ParticleFamily* particle_family)
 {
-  const Integer nb_builder = m_builders.size();
   IParallelMng* pm = particle_family->itemFamily()->parallelMng();
   const Int32 nsd = pm->commRank();
 
@@ -98,8 +119,8 @@ _computeForFamily(ParticleFamily* particle_family)
   // Initialisation de l'échangeur de données
   for(Integer isd=0;isd<nsd;++isd){
     std::set<Integer>& particle_set = to_sends[isd];
-    for(Integer i=0; i<nb_builder; ++i){
-      Int32ConstArrayView extra_particles = m_builders[i]->extraParticlesToSend(particle_family->name(),isd);
+    for( IExtraGhostParticlesBuilder* builder : m_builders ){
+      Int32ConstArrayView extra_particles = builder->extraParticlesToSend(particle_family->name(),isd);
       // On trie les lids à envoyer pour éviter les doublons
       for(Integer j=0, size=extra_particles.size(); j<size; ++j)
         particle_set.insert(extra_particles[j]);

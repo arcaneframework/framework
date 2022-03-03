@@ -15,7 +15,6 @@
 #include "arcane/utils/CheckedConvert.h"
 
 #include "arcane/IExtraGhostCellsBuilder.h"
-#include "arcane/ISubDomain.h"
 #include "arcane/IParallelExchanger.h"
 #include "arcane/IParallelMng.h"
 #include "arcane/ISerializeMessage.h"
@@ -23,8 +22,6 @@
 
 #include "arcane/mesh/ExtraGhostCellsBuilder.h"
 #include "arcane/mesh/DynamicMesh.h"
-
-#include <set>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -48,7 +45,30 @@ ExtraGhostCellsBuilder(DynamicMesh* mesh)
 void ExtraGhostCellsBuilder::
 addExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder)
 {
-  m_builders.add(builder);
+  if (m_builders.find(builder)!=m_builders.end())
+    ARCANE_FATAL("Instance {0} is already registered",builder);
+  m_builders.insert(builder);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ExtraGhostCellsBuilder::
+removeExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder)
+{
+  auto x = m_builders.find(builder);
+  if (x==m_builders.end())
+    ARCANE_FATAL("Instance {0} is not registered",builder);
+  m_builders.erase(x);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool ExtraGhostCellsBuilder::
+hasBuilder() const
+{
+  return !m_builders.empty();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -57,23 +77,21 @@ addExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder)
 void ExtraGhostCellsBuilder::
 computeExtraGhostCells()
 {
-  const Integer nb_builder = m_builders.size();
-  
-  if (nb_builder == 0)
+  if (m_builders.empty())
     return;
   
   info() << "Compute extra ghost cells";
   
-  for(Integer i=0; i<nb_builder; ++i) {
+  for( IExtraGhostCellsBuilder* v : m_builders ){
     // Calcul de mailles extraordinaires à envoyer
-    m_builders[i]->computeExtraCellsToSend();
+    v->computeExtraCellsToSend();
   }
   
   IParallelMng* pm = m_mesh->parallelMng();
   
   auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
   
-  const Integer nsd = pm->commSize();
+  const Int32 nsd = pm->commSize();
   
   // Construction des items à envoyer
   UniqueArray<std::set<Integer> > to_sends(nsd);
@@ -81,8 +99,8 @@ computeExtraGhostCells()
   // Initialisation de l'échangeur de données
   for(Integer isd=0;isd<nsd;++isd) {
     std::set<Integer>& cell_set = to_sends[isd];
-    for(Integer i=0; i<nb_builder; ++i) {
-      Int32ConstArrayView extra_cells = m_builders[i]->extraCellsToSend(isd);
+    for( IExtraGhostCellsBuilder* builder : m_builders ){
+      Int32ConstArrayView extra_cells = builder->extraCellsToSend(isd);
       // On trie les lids à envoyer pour éviter les doublons
       for(Integer j=0, size=extra_cells.size(); j<size; ++j)
         cell_set.insert(extra_cells[j]);

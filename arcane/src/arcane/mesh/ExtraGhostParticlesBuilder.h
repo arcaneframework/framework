@@ -19,6 +19,8 @@
 
 #include "arcane/mesh/MeshGlobal.h"
 
+#include <set>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -55,11 +57,13 @@ class ExtraGhostParticlesBuilder
 
   void computeExtraGhostParticles();
   void addExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder);
-  
+  void removeExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder);
+  bool hasBuilder() const;
+
  private:
   
   DynamicMesh* m_mesh;
-  UniqueArray<IExtraGhostParticlesBuilder*> m_builders;
+  std::set<IExtraGhostParticlesBuilder*> m_builders;
 
  private:
 
