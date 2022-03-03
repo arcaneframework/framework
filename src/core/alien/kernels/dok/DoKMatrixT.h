@@ -60,6 +60,7 @@ class DoKMatrix : public IMatrixImpl
   bool setNNZ(Int32 row, Int32 col, const ValueType& value)
   {
     m_data.set(row, col, value);
+    m_need_update = true;
     return true;
   }
 
@@ -70,6 +71,7 @@ class DoKMatrix : public IMatrixImpl
   //! \return
   ValueType addNNZ(Int32 row, Int32 col, const ValueType& value)
   {
+    m_need_update = true;
     return m_data.add(row, col, value);
   }
 
@@ -87,6 +89,10 @@ class DoKMatrix : public IMatrixImpl
  private:
   void _distribute()
   {
+    m_need_update = Arccore::MessagePassing::mpAllReduce(distribution().parallelMng(), Arccore::MessagePassing::ReduceSum, m_need_update);
+    if (!m_need_update) {
+      return;
+    }
     Redistributor redist(
     distribution().globalRowSize(), distribution().parallelMng(), true);
     DoKDistributor dist(redist.commPlan());
@@ -95,11 +101,13 @@ class DoKMatrix : public IMatrixImpl
     dist.distribute(m_data, new_data);
     m_data = new_data;
     m_data.compact();
+    m_need_update = false;
   }
 
  private:
   // TODO remove mutable !
   mutable DoKLocalMatrixT<ValueType> m_data;
+  bool m_need_update = true;
 };
 
 } // namespace Alien

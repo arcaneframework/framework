@@ -55,12 +55,12 @@ DoKLocalMatrixIndexer::Offset
 DoKLocalMatrixIndexer::create(
 Integer i, Integer j, DoKLocalMatrixIndexer::Offset& tentative_offset)
 {
-  auto o = find(i, j);
-  auto offset = o.value_or(tentative_offset);
-  if (!o.has_value()) {
-    associate(i, j, tentative_offset++);
+  auto to_insert = std::make_pair<Key, Offset>(Key(i, j), tentative_offset++);
+  auto [index, is_inserted] = m_data.insert(to_insert);
+  if (!is_inserted) {
+    tentative_offset--;
   }
-  return offset;
+  return index->second;
 }
 
 ILocalMatrixIndexer*

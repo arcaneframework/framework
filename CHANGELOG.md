@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 **News:**
 
 - \[move\]: add a `clone()` method to `MatrixData` and `VectorData`
+- \[core\]: dramatic improvement of `DoK` performance
 
 ## 1.1.3
 
