@@ -710,6 +710,10 @@ message(STATUS "ARCANE_EXTERNAL_LIBRARY_DIRS is ${ARCANE_EXTERNAL_LIBRARY_DIRS}"
 
 # ----------------------------------------------------------------------------
 
+# TODO: ajouter en INTERFACE 'ARCANE_NO_USING_FOR_STREAM' mi-2022 lorsque toutes
+# les branches de développement de Arcane auront été fusionnées
+# target_compile_definitions(arcane_build_compile_flags INTERFACE ARCANE_NO_USING_FOR_STREAM)
+
 if (UNIX)
   # Sur certaines plateformes (ex: centos7), il faut ajouter ces options
   # pour la compilation.

@@ -8,7 +8,7 @@ arcane_add_library(arcane_utils
 
 arcane_add_arccon_packages(arcane_utils PRIVATE ${PKGS})
 
-target_compile_definitions(arcane_utils PRIVATE ARCANE_COMPONENT_arcane_utils ARCANE_NO_USING_FOR_STREAM)
+target_compile_definitions(arcane_utils PRIVATE ARCANE_COMPONENT_arcane_utils)
 
 target_include_directories(arcane_utils PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>)
 target_include_directories(arcane_utils PUBLIC $<BUILD_INTERFACE:${ARCANE_SRC_PATH}> $<INSTALL_INTERFACE:include>)
