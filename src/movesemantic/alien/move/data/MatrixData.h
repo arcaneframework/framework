@@ -57,7 +57,6 @@ namespace Move
    public:
     typedef Real ValueType;
 
-   public:
     /*! @defgroup constructor Matrix Constructor
          * @{
          */
@@ -123,14 +122,14 @@ namespace Move
     /*! Destructor
          * All internal data structures will be deleted.
          */
-    virtual ~MatrixData() {}
+    virtual ~MatrixData() = default;
 
     /*! Move assignment
          * \brief Move from Matrix
          *
          * @param matrix Matrix to move from.
          */
-    void operator=(MatrixData&& matrix);
+    MatrixData& operator=(MatrixData&& matrix);
 
     /*! Initialize a Matrix with a Space.
          *
@@ -139,13 +138,13 @@ namespace Move
          */
     void init(const Space& space, const MatrixDistribution& dist);
 
-   private:
+    /*! Only support move semantic */
     MatrixData(const MatrixData&) = delete;
-
+    /*! Only support move semantic */
     void operator=(const MatrixData&) = delete;
 
-   public:
-   public:
+    MatrixData clone() const;
+
     /*! @defgroup block Block related API
          * @{ */
 
@@ -231,7 +230,6 @@ namespace Move
     bool isComposite() const;
     /* }@ */
 
-   public:
     /*! @defgroup impl Internal data structure access.
          *
          * Access multi-representation object.
@@ -242,6 +240,8 @@ namespace Move
     const MultiMatrixImpl* impl() const;
     /*! } @ */
 
+    friend MatrixData createMatrixData(std::shared_ptr<MultiMatrixImpl> multi);
+
    private:
     std::shared_ptr<MultiMatrixImpl> m_impl;
   };
@@ -249,6 +249,7 @@ namespace Move
   MatrixData ALIEN_MOVESEMANTIC_EXPORT
   readFromMatrixMarket(Arccore::MessagePassing::IMessagePassingMng* pm, const std::string& filename);
 
+  MatrixData createMatrixData(std::shared_ptr<MultiMatrixImpl> multi);
 } // namespace Move
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

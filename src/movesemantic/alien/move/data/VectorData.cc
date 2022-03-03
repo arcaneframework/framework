@@ -65,13 +65,10 @@ VectorData::VectorData(VectorData&& vector)
 
 /*---------------------------------------------------------------------------*/
 
-VectorData::~VectorData() {}
-
-/*---------------------------------------------------------------------------*/
-
-void VectorData::operator=(VectorData&& vector)
+VectorData& VectorData::operator=(VectorData&& vector)
 {
   m_impl = std::move(vector.m_impl);
+  return *this;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -206,6 +203,22 @@ VectorData::impl() const
   return m_impl.get();
 }
 
+/*---------------------------------------------------------------------------*/
+
+VectorData
+VectorData::clone() const
+{
+  VectorData out;
+  out.m_impl.reset(m_impl->clone());
+  return out;
+}
+
+VectorData createVectorData(std::shared_ptr<MultiVectorImpl> multi)
+{
+  VectorData out;
+  out.m_impl = multi;
+  return out;
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

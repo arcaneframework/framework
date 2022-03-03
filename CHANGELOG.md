@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+**News:**
+
+- \[move\]: add a `clone()` method to `MatrixData` and `VectorData`
+
 ## 1.1.3
 
 **News:**

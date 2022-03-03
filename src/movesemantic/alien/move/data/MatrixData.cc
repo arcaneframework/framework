@@ -85,9 +85,10 @@ MatrixData::MatrixData(MatrixData&& matrix)
 
 /*---------------------------------------------------------------------------*/
 
-void MatrixData::operator=(MatrixData&& matrix)
+MatrixData& MatrixData::operator=(MatrixData&& matrix)
 {
   m_impl = std::move(matrix.m_impl);
+  return *this;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -120,18 +121,6 @@ void MatrixData::setBlockInfos(const Integer block_size)
 {
   m_impl->setBlockInfos(block_size);
 }
-
-/*---------------------------------------------------------------------------*/
-
-/*
-  void
-  MatrixData::
-  setBlockInfos(const IBlockBuilder& builder)
-  {
-  std::unique_ptr<Block> block(new Block(m_impl->distribution(),
-  builder.blockSizes()));
-  m_impl->setBlockInfos(std::move(block));
-  }*/
 
 /*---------------------------------------------------------------------------*/
 
@@ -225,10 +214,7 @@ MatrixData::impl()
   if (!m_impl) {
     m_impl.reset(new MultiMatrixImpl());
   }
-  /* JMG ????
-     else if (!m_impl.unique()) { // Need to clone due to other references.
-     m_impl.reset(m_impl->clone());
-     } */
+
   return m_impl.get();
 }
 
@@ -238,6 +224,23 @@ const MultiMatrixImpl*
 MatrixData::impl() const
 {
   return m_impl.get();
+}
+
+/*---------------------------------------------------------------------------*/
+
+MatrixData
+MatrixData::clone() const
+{
+  MatrixData out;
+  out.m_impl.reset(m_impl->clone());
+  return out;
+}
+
+MatrixData createMatrixData(std::shared_ptr<MultiMatrixImpl> multi)
+{
+  MatrixData out;
+  out.m_impl = multi;
+  return out;
 }
 
 /*---------------------------------------------------------------------------*/

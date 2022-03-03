@@ -55,9 +55,21 @@ TEST(TestVector, AnonymousConstructor)
 TEST(TestVector, RValueConstructor)
 {
   const Alien::VectorDistribution d(10, AlienTest::Environment::parallelMng());
-  const Alien::Move::VectorData v = Alien::Move::VectorData(d);
+  const auto v = Alien::Move::VectorData(d);
   ASSERT_TRUE(Alien::Space(10) == v.space());
   ASSERT_EQ(10, v.space().size());
+}
+
+// Tests cloning vector
+TEST(TestVector, Clone)
+{
+  const Alien::VectorDistribution d(10, AlienTest::Environment::parallelMng());
+  auto v = Alien::Move::VectorData(d);
+  auto v2 = v.clone();
+  ASSERT_EQ(10, v2.space().size());
+  // Moving out v
+  auto v3 = std::move(v);
+  ASSERT_EQ(10, v2.space().size());
 }
 
 // Tests replacement

@@ -109,8 +109,7 @@ class SimpleCSRVector : public IVectorImpl
   SimpleCSRVector& operator=(E const& expr);
 
   void init(const VectorDistribution& dist,
-            const bool need_allocate,
-            Integer ghost_size = 0)
+            const bool need_allocate) override
   {
     alien_debug([&] { cout() << "Initializing SimpleCSRVector " << this; });
     if (this->m_multi_impl) {
@@ -126,7 +125,7 @@ class SimpleCSRVector : public IVectorImpl
       m_local_size = m_own_distribution.localSize();
     }
     if (need_allocate) {
-      m_values.resize(m_local_size + ghost_size);
+      m_values.resize(m_local_size);
       m_values.fill(ValueT());
     }
   }
@@ -175,7 +174,7 @@ class SimpleCSRVector : public IVectorImpl
   SimpleCSRVector<ValueT>* cloneTo(const MultiVectorImpl* impl) const
   {
     SimpleCSRVector<ValueT>* vector = new SimpleCSRVector<ValueT>(impl);
-    vector->init(this->distribution(), false);
+    vector->init(this->distribution(), true);
     ConstArrayView<ValueType> thisValues = this->fullValues();
     vector->resize(thisValues.size());
     for (Integer i = 0; i < thisValues.size(); ++i)

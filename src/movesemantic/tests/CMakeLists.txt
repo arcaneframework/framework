@@ -22,6 +22,8 @@ configure_file(simple_rhs.mtx simple_rhs.mtx COPYONLY)
 
 add_executable(move.gtest.mpi
         main.cpp
+        TestMatrix.cc
+        TestVector.cc
         TestIndexManager.cc
         TestDoKMatrix.cc
         TestDoKDirectMatrixBuilder.cc
@@ -29,7 +31,6 @@ add_executable(move.gtest.mpi
         )
 
 add_executable(move.gtest.seq main.cpp
-        TestVector.cc
         TestVectorBuilder.cc
         TestMatrixDirectBuilder.cc
         )

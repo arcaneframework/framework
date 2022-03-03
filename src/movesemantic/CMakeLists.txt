@@ -29,7 +29,7 @@ set(alien_semantic_public_header
         alien/move/data/MatrixData.h
         alien/move/data/VectorData.h
         alien/move/handlers/scalar/DoKDirectMatrixBuilder.h
-        )
+        alien/move/data/Redistribution.h)
 
 add_library(alien_semantic_move
         ${alien_semantic_public_header}
@@ -37,6 +37,7 @@ add_library(alien_semantic_move
         alien/move/data/MatrixData.cc
         alien/move/data/VectorData.cc
         alien/move/impl/MatrixMarketReader.cc
+        alien/move/data/Redistribution.cpp
         )
 
 if (ALIEN_GENERATE_DOCUMENTATION)
