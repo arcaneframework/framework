@@ -96,12 +96,18 @@ class ParticleFamilyTester
       m_family->mesh()->modifier()->addExtraGhostParticlesBuilder(this);
   }
  public:
-  IntegerConstArrayView extraParticlesToSend(const String& family_name,Int32 sid) const override
+  void unregisterBuilder()
+  {
+    if (m_family->toParticleFamily()->getEnableGhostItems())
+      m_family->mesh()->modifier()->removeExtraGhostParticlesBuilder(this);
+  }
+ public:
+  Int32ConstArrayView extraParticlesToSend(const String& family_name,Int32 sid) const override
   {
     if (family_name==m_family->name() && m_family->toParticleFamily()->getEnableGhostItems())
       return m_extra_ghost_particles_to_send[sid];
     else
-      return IntegerConstArrayView() ;
+      return Int32ConstArrayView() ;
   }
 
   void computeExtraParticlesToSend() override
@@ -261,6 +267,7 @@ class ParallelTesterModule
   void testLoop();
   void testInit();
   void testBuild();
+  void testExit();
 
   IItemFamilySerializeStep* createStep(IItemFamily* family) override
   {
@@ -366,6 +373,9 @@ ParallelTesterModule(const ModuleBuildInfo& mb)
                 IEntryPoint::WStartInit);
   addEntryPoint(this,"TP_testLoop",
                 &ParallelTesterModule::testLoop);
+  addEntryPoint(this,"TP_testExit",
+                &ParallelTesterModule::testExit,
+                IEntryPoint::WExit);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -393,6 +403,11 @@ staticInitialize(ISubDomain* sd)
       time_loop->setEntryPoints(String(ITimeLoop::WComputeLoop),clist);
     }
     {
+      List<TimeLoopEntryPointInfo> clist;
+      clist.add(TimeLoopEntryPointInfo("TestParallel.TP_testExit"));
+      time_loop->setEntryPoints(String(ITimeLoop::WExit),clist);
+    }
+    {
       StringList clist;
       clist.add("TestParallel");
       time_loop->setRequiredModulesName(clist);
@@ -407,7 +422,7 @@ staticInitialize(ISubDomain* sd)
 ParallelTesterModule::
 ~ParallelTesterModule()
 {
-  for( ParticleFamilyTester* p : m_particle_family_testers.range() )
+  for( ParticleFamilyTester* p : m_particle_family_testers )
     delete p;
 }
 
@@ -592,6 +607,16 @@ testLoop()
     info() << "Set mesh partitioner";
     subDomain()->timeLoopMng()->registerActionMeshPartition(m_mesh_partitioner);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParallelTesterModule::
+testExit()
+{
+  for( ParticleFamilyTester* p : m_particle_family_testers )
+    p->unregisterBuilder();
 }
 
 /*---------------------------------------------------------------------------*/
