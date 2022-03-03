@@ -80,18 +80,12 @@ class SimpleGridMeshPartitioner
       }
     }
 
-    IntegerConstArrayView extraCellsToSend(Int32 rank) const override
+    Int32ConstArrayView extraCellsToSend(Int32 rank) const override
     {
       auto x = m_ghost_cell_local_ids.find(rank);
       if (x == m_ghost_cell_local_ids.end())
         return {};
       return x->second;
-    }
-
-    void cleanup()
-    {
-      m_ghost_cell_uids.clear();
-      m_ghost_cell_local_ids.clear();
     }
 
     std::map<Int32, UniqueArray<ItemUniqueId>> m_ghost_cell_uids;
@@ -466,17 +460,17 @@ applyMeshPartitioning(IMesh* mesh)
   mesh->modifier()->setDynamic(true);
   mesh->utilities()->partitionAndExchangeMeshWithReplication(this, true);
 
-  // TODO: pour l'instant on ne peut pas détruite cette instance car elle
-  // reste référencée dans \a mesh
-
-  m_ghost_cells_builder = new GhostCellsBuilder(mesh);
+  ScopedPtrT<GhostCellsBuilder> scoped_builder{ new GhostCellsBuilder(mesh) };
+  m_ghost_cells_builder = scoped_builder.get();
   mesh->modifier()->addExtraGhostCellsBuilder(m_ghost_cells_builder);
 
   // Recalcule spécifiquement les mailles fantômes pour recouvrir les partitions
   _computeSpecificGhostLayer();
   mesh->modifier()->updateGhostLayers();
 
-  m_ghost_cells_builder->cleanup();
+  mesh->modifier()->removeExtraGhostCellsBuilder(m_ghost_cells_builder);
+
+  m_ghost_cells_builder = nullptr;
 }
 
 /*---------------------------------------------------------------------------*/
