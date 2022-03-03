@@ -613,7 +613,7 @@ _synchronizeV5()
 
 template<typename DataType> void
 ItemMaterialVariableScalar<DataType>::
-dumpValues(ostream& ostr,AllEnvCellVectorView view)
+dumpValues(std::ostream& ostr,AllEnvCellVectorView view)
 {
   ostr << "Dumping values for material variable name=" << this->name() << '\n';
   ENUMERATE_ALLENVCELL(iallenvcell,view){
@@ -635,7 +635,7 @@ dumpValues(ostream& ostr,AllEnvCellVectorView view)
 
 template<typename DataType> void
 ItemMaterialVariableScalar<DataType>::
-dumpValues(ostream& ostr)
+dumpValues(std::ostream& ostr)
 {
   ostr << "Dumping values for material variable name=" << this->name() << '\n';
   IItemFamily* family = m_global_variable->itemFamily();

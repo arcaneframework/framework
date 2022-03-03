@@ -394,7 +394,7 @@ _processPatches()
       String filename = String::format("Patch{0}-{1}-{2}.svg",i,comm_rank,comm_size);
       Directory directory = subDomain()->exportDirectory();
       String full_filename = directory.file(filename);
-      ofstream ofile(full_filename.localstr());
+      std::ofstream ofile(full_filename.localstr());
       SimpleSVGMeshExporter exporter(ofile);
       exporter.write(patch_own_cell);
     }

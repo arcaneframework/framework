@@ -336,7 +336,7 @@ private:
 
   void _gatherAllNodesInfo();
 
-  void _printFaces(ostream& o, FaceInfoMap& face_map);
+  void _printFaces(std::ostream& o, FaceInfoMap& face_map);
 
   void _addFaceToList(Face face, FaceInfoMap& face_map);
 

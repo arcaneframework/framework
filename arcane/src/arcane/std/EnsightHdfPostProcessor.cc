@@ -398,7 +398,7 @@ void EnsightHdfDataWriter::
 endWrite()
 {
   info() << "ENSIGHT HDF END WRITE";
-  ofstream ofile("a_hdf5");
+  std::ofstream ofile("a_hdf5");
   ofile << "SPECIAL HDF5 CASEFILE\n";
   ofile.width(10);
   Integer nb_time = m_times.size();

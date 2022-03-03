@@ -163,12 +163,12 @@ DumpWUCD(ISubDomain* sd,IMesh* mesh,const String& filename,RealConstArrayView ti
   for( Integer i=0; i<nb_cell_var; ++i ){
     m_cell_streams[i] = makeRef(new OStringStream());
     m_cell_streams[i]->stream().precision(MAX_FLOAT_DIGIT);
-    m_cell_streams[i]->stream().flags(ios::scientific);
+    m_cell_streams[i]->stream().flags(std::ios::scientific);
   }
   for( Integer i=0; i<nb_node_var; ++i ){
     m_node_streams[i] = makeRef(new OStringStream());
     m_node_streams[i]->stream().precision(MAX_FLOAT_DIGIT);
-    m_node_streams[i]->stream().flags(ios::scientific);
+    m_node_streams[i]->stream().flags(std::ios::scientific);
   }
 
   debug() << "DumpWUCD::DumpWUCD - " 
@@ -291,7 +291,7 @@ endWrite()
   ostr() << m_times.size()-1;
   ostr() << ".inp\0";
   String buf = m_base_directory.file(ostr.str());
-  ofstream ucd_file(buf.localstr());
+  std::ofstream ucd_file(buf.localstr());
 
   // Ajout de l'entete du fichier
   // Comptage du nombre de donnees aux noeuds et aux mailles et de leurs 
@@ -312,10 +312,10 @@ endWrite()
   cdata_size_stream().precision(MAX_FLOAT_DIGIT);
   cdata_name_stream().precision(MAX_FLOAT_DIGIT);
 
-  ndata_size_stream().flags(ios::scientific);
-  ndata_name_stream().flags(ios::scientific);
-  cdata_size_stream().flags(ios::scientific);
-  cdata_name_stream().flags(ios::scientific);
+  ndata_size_stream().flags(std::ios::scientific);
+  ndata_name_stream().flags(std::ios::scientific);
+  cdata_size_stream().flags(std::ios::scientific);
+  cdata_name_stream().flags(std::ios::scientific);
 
   for(VariableList::Enumerator i(m_save_variables); ++i; ){
     IVariable* var = *i;
@@ -464,7 +464,7 @@ endWrite()
   code_ostr() << m_times.size()-1;
   code_ostr() << '\0';
   buf = m_base_directory.file(code_ostr.str());
-  ofstream code_file(buf.localstr());
+  std::ofstream code_file(buf.localstr());
   code_file << m_sub_domain->commonVariables().globalIteration() << '\n'
                  << m_times[m_times.size()-1] << '\n'
                  << "3" << '\n' << "1" << '\n'

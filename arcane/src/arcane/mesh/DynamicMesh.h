@@ -544,7 +544,7 @@ public:
 
  private:
 
-  void _printMesh(ostream& ostr);
+  void _printMesh(std::ostream& ostr);
   void _allocateCells(Integer mesh_nb_cell,
                       Int64ConstArrayView cells_info,
                       Int32ArrayView cells = Int32ArrayView(),

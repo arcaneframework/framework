@@ -636,7 +636,7 @@ setPreAllocatedSize(Integer prealloc_size)
 /*---------------------------------------------------------------------------*/
 
 void IncrementalItemConnectivity::
-dumpStats(ostream& out) const
+dumpStats(std::ostream& out) const
 {
   size_t allocated_size = m_p->m_connectivity_list_array.capacity()
   + m_p->m_connectivity_index_array.capacity()
@@ -921,7 +921,7 @@ notifyReadFromDump()
 /*---------------------------------------------------------------------------*/
 
 void OneItemIncrementalItemConnectivity::
-dumpStats(ostream& out) const
+dumpStats(std::ostream& out) const
 {
   size_t allocated_size = m_p->m_connectivity_list_array.capacity()
   + m_p->m_connectivity_index_array.capacity()

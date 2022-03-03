@@ -580,7 +580,7 @@ _computeFacesUniqueIdsParallelV1()
     info() << ostr.str();
     String file_name("faces_uid.");
     file_name = file_name + my_rank;    
-    ofstream ofile(file_name.localstr());
+    std::ofstream ofile(file_name.localstr());
     ofile << ostr.str();
   }
 }

@@ -746,7 +746,7 @@ removeVariable(IMeshMaterialVariable* var)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialMng::
-dumpInfos(ostream& o)
+dumpInfos(std::ostream& o)
 {
   Integer nb_mat = m_materials.size();
   Integer nb_env = m_environments.size();
@@ -789,7 +789,7 @@ dumpInfos(ostream& o)
 /*---------------------------------------------------------------------------*/
 // TODO: fusionner dumpInfos2() et dumpInfo().
 void MeshMaterialMng::
-dumpInfos2(ostream& o)
+dumpInfos2(std::ostream& o)
 {
   Integer nb_mat = m_materials.size();
   Integer nb_env = m_environments.size();
@@ -871,7 +871,7 @@ checkMaterialsInCells(Integer max_print)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialMng::
-dumpCellInfos(Cell cell,ostream& o)
+dumpCellInfos(Cell cell,std::ostream& o)
 {
   CellToAllEnvCellConverter all_env_cell_converter(this);
   AllEnvCell all_env_cell = all_env_cell_converter[cell];

@@ -276,12 +276,12 @@ class DumpWEnsight7
  public:
 
   //void writeFileString(ostream& o,ConstCString str);
-  void writeFileString(ostream& o, const String& str);
-  void writeFileInt(ostream& o, int value);
-  void writeFileDouble(ostream& o, double value);
+  void writeFileString(std::ostream& o, const String& str);
+  void writeFileInt(std::ostream& o, int value);
+  void writeFileDouble(std::ostream& o, double value);
   Integer writeDoubleSize() const;
   Integer writeIntSize() const;
-  void writeFileArray(ostream& o, IntegerConstArrayView value);
+  void writeFileArray(std::ostream& o, IntegerConstArrayView value);
   bool isBinary() const { return m_is_binary; }
 
  public:
@@ -322,13 +322,13 @@ class DumpWEnsight7
     virtual void init()
     {
       m_ofile.precision(5);
-      m_ofile.flags(ios::scientific);
+      m_ofile.flags(std::ios::scientific);
     }
-    virtual void putValue(ostream& ofile)
+    virtual void putValue(std::ostream& ofile)
     {
       ofile << m_ofile.str();
     }
-    ostream& stream() { return m_ofile; }
+    std::ostream& stream() { return m_ofile; }
 
    protected:
 
@@ -466,11 +466,11 @@ class DumpWEnsight7
     {
       _init();
       xostr.precision(5);
-      xostr.flags(ios::scientific);
+      xostr.flags(std::ios::scientific);
       yostr.precision(5);
-      yostr.flags(ios::scientific);
+      yostr.flags(std::ios::scientific);
       zostr.precision(5);
-      zostr.flags(ios::scientific);
+      zostr.flags(std::ios::scientific);
     }
 
     void write(Integer index)
@@ -550,11 +550,11 @@ class DumpWEnsight7
     {
       _init();
       xostr.precision(5);
-      xostr.flags(ios::scientific);
+      xostr.flags(std::ios::scientific);
       yostr.precision(5);
-      yostr.flags(ios::scientific);
+      yostr.flags(std::ios::scientific);
       zostr.precision(5);
-      zostr.flags(ios::scientific);
+      zostr.flags(std::ios::scientific);
     }
 
     inline void write(Integer index)
@@ -659,8 +659,8 @@ class DumpWEnsight7
   IParallelMng* m_parallel_mng; //!< Gestionnaire du parallélisme
   Directory m_base_directory; //!< Nom du répertoire de stockage
   Directory m_part_directory; //!< Répertoire de stockage de l'itération courante
-  ofstream m_case_file; //!< Fichier décrivant le cas
-  ostringstream m_case_file_variables; //! description des variables sauvées
+  std::ofstream m_case_file; //!< Fichier décrivant le cas
+  std::ostringstream m_case_file_variables; //! description des variables sauvées
   RealUniqueArray m_times; //!< Liste des instants de temps
   VariableList m_save_variables; //!< Liste des variables a exporter
   ItemGroupList m_save_groups; //!< Liste des groupes a exporter
@@ -695,15 +695,15 @@ class DumpWEnsight7
   void _createCaseFile();
   void _buildFileName(const String& varname, String& filename);
   void _buildPartDirectory();
-  void _writeWildcardFilename(ostream& ofile, const String& filename, char joker = '*');
+  void _writeWildcardFilename(std::ostream& ofile, const String& filename, char joker = '*');
   int _fileOuttype() const;
-  void _writeFileHeader(ostream& o, bool write_c_binary);
+  void _writeFileHeader(std::ostream& o, bool write_c_binary);
   bool _isNewBlocFile() const;
 
   void _computeGroupParts(ItemGroupList list_group, Integer& partid);
-  void _saveGroup(ostream& ofile, const GroupPartInfo& ensight_grp,
+  void _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
                   ConstArrayView<Integer> nodes_index, WriteBase& wf);
-  void _saveVariableOnGroup(ostream& ofile, const GroupPartInfo& ensight_grp,
+  void _saveVariableOnGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
                             WriteBase& from_func);
   bool _isSameKindOfGroup(const ItemGroup& group, eItemKind item_kind);
 
@@ -888,7 +888,7 @@ _computeGroupParts(ItemGroupList list_group, Integer& partid)
  \param wf écrivain
 */
 void DumpWEnsight7::
-_saveGroup(ostream& ofile, const GroupPartInfo& ensight_grp,
+_saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
            ConstArrayView<Integer> nodes_index, WriteBase& wf)
 {
   ItemGroup igrp = ensight_grp.group();
@@ -1054,7 +1054,7 @@ _saveGroup(ostream& ofile, const GroupPartInfo& ensight_grp,
  \param from_func    fonctor
 */
 void DumpWEnsight7::
-_saveVariableOnGroup(ostream& ofile, const GroupPartInfo& ensight_grp,
+_saveVariableOnGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
                      WriteBase& from_func)
 {
   ItemGroup igrp = ensight_grp.group();
@@ -1101,7 +1101,7 @@ _saveVariableOnGroup(ostream& ofile, const GroupPartInfo& ensight_grp,
 /*---------------------------------------------------------------------------*/
 
 void DumpWEnsight7::
-writeFileInt(ostream& o, int value)
+writeFileInt(std::ostream& o, int value)
 {
   if (m_is_binary) {
     o.write((const char*)&value, sizeof(int));
@@ -1128,7 +1128,7 @@ writeIntSize() const
 /*---------------------------------------------------------------------------*/
 
 void DumpWEnsight7::
-writeFileDouble(ostream& o, double value)
+writeFileDouble(std::ostream& o, double value)
 {
   if (m_is_binary) {
     float fvalue = (float)(value);
@@ -1137,7 +1137,7 @@ writeFileDouble(ostream& o, double value)
   else {
     o.width(12);
     o.precision(5);
-    o.flags(ios::scientific);
+    o.flags(std::ios::scientific);
     o << value;
     o << '\n';
   }
@@ -1157,7 +1157,7 @@ writeDoubleSize() const
 /*---------------------------------------------------------------------------*/
 
 void DumpWEnsight7::
-writeFileArray(ostream& o, IntegerConstArrayView value)
+writeFileArray(std::ostream& o, IntegerConstArrayView value)
 {
   if (m_is_binary) {
     o.write((const char*)value.data(), sizeof(Integer) * value.size());
@@ -1175,7 +1175,7 @@ writeFileArray(ostream& o, IntegerConstArrayView value)
 /*---------------------------------------------------------------------------*/
 
 void DumpWEnsight7::
-writeFileString(ostream& o, const String& str)
+writeFileString(std::ostream& o, const String& str)
 {
   if (m_is_binary) {
     char buf[g_line_length];
@@ -1194,13 +1194,13 @@ writeFileString(ostream& o, const String& str)
 /*---------------------------------------------------------------------------*/
 
 void DumpWEnsight7::
-_writeFileHeader(ostream& o, bool write_c_binary)
+_writeFileHeader(std::ostream& o, bool write_c_binary)
 {
   if (m_is_master) {
     if (_isNewBlocFile() && m_is_binary && write_c_binary)
       writeFileString(o, "C Binary");
     if (m_fileset_size != 0) {
-      ostringstream ostr;
+      std::ostringstream ostr;
       ostr << "BEGIN TIME STEP "
            << "# " << m_times.size();
       writeFileString(o, ostr.str().c_str());
@@ -1230,7 +1230,7 @@ class DumpWEnsight7OutFile
   , m_filestream(0)
   {
     if (m_is_master) {
-      m_filestream = new ofstream(filename.localstr(), (std::ios_base::openmode)outtype);
+      m_filestream = new std::ofstream(filename.localstr(), (std::ios_base::openmode)outtype);
       m_stream = &m_strstream;
       if (!(*m_filestream))
         m_dw.warning() << "Unable to open file " << filename;
@@ -1321,7 +1321,7 @@ class DumpWEnsight7OutFile
 
  public:
 
-  ostream& operator()() { return *m_stream; }
+  std::ostream& operator()() { return *m_stream; }
 
  private:
 
@@ -1329,9 +1329,9 @@ class DumpWEnsight7OutFile
   String m_filename;
   bool m_is_master;
   bool m_is_parallel_output;
-  ostream* m_stream;
+  std::ostream* m_stream;
   std::ostringstream m_strstream;
-  ofstream* m_filestream;
+  std::ofstream* m_filestream;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -1722,7 +1722,7 @@ _buildPartDirectory()
 /*---------------------------------------------------------------------------*/
 
 void DumpWEnsight7::
-_writeWildcardFilename(ostream& ofile, const String& filename, char joker)
+_writeWildcardFilename(std::ostream& ofile, const String& filename, char joker)
 {
   if (m_fileset_size == 0) {
     ofile << ' ' << filename << '/' << filename;
@@ -1770,7 +1770,7 @@ _isNewBlocFile() const
 int DumpWEnsight7::
 _fileOuttype() const
 {
-  return ((isBinary()) ? ios::binary : 0) | ((_isNewBlocFile()) ? ios::trunc : ios::app);
+  return ((isBinary()) ? std::ios::binary : 0) | ((_isNewBlocFile()) ? std::ios::trunc : std::ios::app);
 }
 
 /*---------------------------------------------------------------------------*/

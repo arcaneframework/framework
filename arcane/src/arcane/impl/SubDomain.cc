@@ -239,7 +239,7 @@ class SubDomain
   Int32 nbSubDomain() const override { return m_parallel_mng->commSize(); }
   void setIsContinue() override { m_is_continue = true; }
   bool isContinue() const override { return m_is_continue; }
-  void dumpInfo(ostream&) override;
+  void dumpInfo(std::ostream&) override;
   void doInitModules() override;
   void doExitModules() override;
   IMesh* defaultMesh() override { return m_default_mesh_handle.mesh(); }
@@ -585,7 +585,7 @@ destroy()
 /*---------------------------------------------------------------------------*/
 
 void SubDomain::
-dumpInfo(ostream& o)
+dumpInfo(std::ostream& o)
 {
   m_module_mng->dumpList(o);
 }

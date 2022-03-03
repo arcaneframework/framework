@@ -69,7 +69,7 @@ class GhostLayerBuilder
   
   void _addOneGhostLayerV2();
   void _exchangeData(IParallelExchanger* exchanger,BoundaryInfosMap& boundary_infos_to_send);
-  void _printItem(ItemInternal* ii,ostream& o);
+  void _printItem(ItemInternal* ii,std::ostream& o);
   void _exchangeCells(HashTableMapT<Int32,SharedArray<Int32>>& cells_to_send,bool with_flags);
 };
 

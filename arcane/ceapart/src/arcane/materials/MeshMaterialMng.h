@@ -126,8 +126,8 @@ class MeshMaterialMng
   IMeshMaterialVariable* findVariable(const String& name) override;
   IMeshMaterialVariable* checkVariable(IVariable* global_var) override;
 
-  void dumpInfos(ostream& o) override;
-  void dumpCellInfos(Cell cell,ostream& o) override;
+  void dumpInfos(std::ostream& o) override;
+  void dumpCellInfos(Cell cell,std::ostream& o) override;
 
   void checkValid() override;
 
@@ -194,7 +194,7 @@ class MeshMaterialMng
   void syncVariablesReferences();
 
   void incrementTimestamp() { ++m_timestamp; }
-  void dumpInfos2(ostream& o);
+  void dumpInfos2(std::ostream& o);
 
   const MeshHandle& meshHandle() const { return m_mesh_handle; }
 

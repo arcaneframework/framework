@@ -401,7 +401,7 @@ writeDefaultCheckpoint(ICheckpointWriter* writer)
   if (m_sub_domain->allReplicaParallelMng()->isMasterIO()){
     Directory export_directory(m_sub_domain->exportDirectory());
     String info_file(export_directory.file("checkpoint_info.xml"));
-    ofstream ofile(info_file.localstr());
+    std::ofstream ofile(info_file.localstr());
     ofile.write((const char*)bytes_infos.unguardedBasePointer(),bytes_infos.size());
     if (!ofile.good())
       ARCANE_THROW(IOException,"Can not write file '{0}'",info_file);

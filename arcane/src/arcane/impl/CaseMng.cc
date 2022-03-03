@@ -330,7 +330,7 @@ _checkTranslateDocument()
     CaseDocumentLangTranslator translator(traceMng());
     String convert_string = translator.translate(this,tr_lang);
     {
-      ofstream ofile("convert_info.txt");
+      std::ofstream ofile("convert_info.txt");
       convert_string.writeBytes(ofile);
     }
   }

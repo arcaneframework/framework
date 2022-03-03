@@ -324,7 +324,7 @@ class ParallelTesterModule
   void _testLoadBalance();
   void _testGhostItemsReduceOperation();
   void _testTransferValues();
-  void _writeAccumulateInfos(ostream& ofile,eItemKind ik,const String& msg);
+  void _writeAccumulateInfos(std::ostream& ofile,eItemKind ik,const String& msg);
   void _doInit();
   void _checkEnd();
   void _testBitonicSort();
@@ -920,7 +920,7 @@ _testMultiSynchronize()
 /*---------------------------------------------------------------------------*/
 
 void ParallelTesterModule::
-_writeAccumulateInfos(ostream& ofile,eItemKind ik,const String& msg)
+_writeAccumulateInfos(std::ostream& ofile,eItemKind ik,const String& msg)
 {
   ARCANE_UNUSED(ik);
   //IMesh* mesh = subDomain()->defaultMesh();
@@ -1001,7 +1001,7 @@ _testAccumulate()
   }
   
   if (need_write && !output_file_name.empty()){
-    ofstream ofile(output_file_name.localstr());
+    std::ofstream ofile(output_file_name.localstr());
     _writeAccumulateInfos(ofile,ik,"Send");
   }
 
@@ -1013,7 +1013,7 @@ _testAccumulate()
   //pm->accumulate(ik,m_accumulate_ids,variables);
   cell_family->reduceFromGhostItems(m_accumulate_real.variable(),Parallel::ReduceSum);
   if (need_write && !output_file_name.empty()){
-    ofstream ofile(output_file_name.localstr(),ios::app);
+    std::ofstream ofile(output_file_name.localstr(),std::ios::app);
     _writeAccumulateInfos(ofile,ik,"Recv");
   }
 }
@@ -1391,7 +1391,7 @@ _testBitonicSort()
     ConstArrayView<Real> true_array = true_data->view();
     {
       String fname(String("dump-")+pm->commRank());
-      ofstream ofile(fname.localstr());
+      std::ofstream ofile(fname.localstr());
       for( Integer z=0, zs=nb_item_as_integer; z<zs; ++z )
         ofile << " VALUE Z=" << z << " v=" << true_array[z] << " key=" << keys[z] << '\n';
     }

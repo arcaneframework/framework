@@ -374,8 +374,8 @@ class ItemMaterialVariableScalar
 
   ARCANE_MATERIALS_EXPORT void synchronize() override;
   ARCANE_MATERIALS_EXPORT void synchronize(MeshMaterialVariableSynchronizerList& sync_list) override;
-  ARCANE_MATERIALS_EXPORT void dumpValues(ostream& ostr) override;
-  ARCANE_MATERIALS_EXPORT void dumpValues(ostream& ostr,AllEnvCellVectorView view) override;
+  ARCANE_MATERIALS_EXPORT void dumpValues(std::ostream& ostr) override;
+  ARCANE_MATERIALS_EXPORT void dumpValues(std::ostream& ostr,AllEnvCellVectorView view) override;
   ARCANE_MATERIALS_EXPORT void serialize(ISerializer* sbuffer,Int32ConstArrayView ids) override;
 
  public:
@@ -514,8 +514,8 @@ class ItemMaterialVariableArray
 
   ARCANE_MATERIALS_EXPORT void synchronize() override;
   ARCANE_MATERIALS_EXPORT void synchronize(MeshMaterialVariableSynchronizerList& sync_list) override;
-  ARCANE_MATERIALS_EXPORT void dumpValues(ostream& ostr) override;
-  ARCANE_MATERIALS_EXPORT void dumpValues(ostream& ostr,AllEnvCellVectorView view) override;
+  ARCANE_MATERIALS_EXPORT void dumpValues(std::ostream& ostr) override;
+  ARCANE_MATERIALS_EXPORT void dumpValues(std::ostream& ostr,AllEnvCellVectorView view) override;
   ARCANE_MATERIALS_EXPORT void serialize(ISerializer* sbuffer,Int32ConstArrayView ids) override;
   ARCANE_MATERIALS_EXPORT Int32 dataTypeSize() const override;
 

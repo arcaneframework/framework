@@ -48,7 +48,7 @@ class ArcaneCurveWriter
     Impl(IApplication* app,ITraceMng* tm,const String& path);
    public:
     String m_file_name;
-    ofstream m_stream;
+    std::ofstream m_stream;
     ScopedPtrT<IXmlDocumentHolder> m_curves_doc;
     XmlNode m_root_element;
   };
@@ -100,7 +100,7 @@ Impl(IApplication* app,ITraceMng* tm,const String& path)
 {
   String full_path = path + "/" + m_file_name + ".acv";
   info() << "Begin write curves full_path=" << full_path;
-  m_stream.open(full_path.localstr(),ios::trunc);
+  m_stream.open(full_path.localstr(),std::ios::trunc);
   if (!m_stream)
     warning() << "Can not open file '" << full_path << "' for writing curves";
   m_curves_doc = app->ressourceMng()->createXmlDocument();

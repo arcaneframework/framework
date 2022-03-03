@@ -279,7 +279,7 @@ _writeEpilog()
     jsw.endArray();
   }
 
-  ostream& stream = m_p->m_writer.stream();
+  std::ostream& stream = m_p->m_writer.stream();
 
   // Conserve la position dans le fichier des méta-données
   // ainsi que leur taille.
@@ -487,7 +487,7 @@ void KeyValueTextReader::
 _readDirect(Int64 offset,Span<std::byte> bytes)
 {
   m_p->m_reader.setFileOffset(offset);
-  ifstream& s = m_p->m_reader.stream();
+  std::ifstream& s = m_p->m_reader.stream();
   s.read((char*)bytes.data(),bytes.size());
   if (s.fail())
     ARCANE_FATAL("Can not read file part offset={0} length={1}",offset,bytes.length());

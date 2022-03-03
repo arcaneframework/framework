@@ -884,7 +884,7 @@ dumpHistory(bool is_verbose)
   Integer master_io_rank = parallel_mng->masterIORank() ;
 
   if (m_is_master_io) {
-    ofstream ofile(out_dir.file("time_history.xml").localstr());
+    std::ofstream ofile(out_dir.file("time_history.xml").localstr());
     ofile << "<?xml version='1.0' ?>\n";
     ofile << "<curves>\n";
     for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){

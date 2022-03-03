@@ -343,7 +343,7 @@ UnitTestCartesianMeshPatchService::setUpForClass()
     for( Integer i=0; i<nb_patch; ++i ){
       ICartesianMeshPatch* patch = m_cartesian_mesh->patch(i);
       String filename = export_dir.file(String::format("Patch{0}.svg",i));
-      ofstream ofile(filename.localstr());
+      std::ofstream ofile(filename.localstr());
       SimpleSVGMeshExporter writer(ofile);
       writer.write(patch->cells());
     }

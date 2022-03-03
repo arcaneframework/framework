@@ -1601,8 +1601,8 @@ _dumpTimeInfos(JSONWriter& json_writer)
   else if (timer_type==Timer::TimerReal)
     info() << " Use the clock time (elapsed) for the statistics";
 
-  ostringstream o;
-  std::ios_base::fmtflags f = o.flags(ios::right);
+  std::ostringstream o;
+  std::ios_base::fmtflags f = o.flags(std::ios::right);
   Integer nb_cell = 0;
   IMesh * mesh = subDomain()->defaultMesh();
   if (mesh)
@@ -1901,7 +1901,7 @@ doComputeLoop(Integer max_loop)
         Integer iteration = subDomain()->commonVariables().globalIteration();
         mem_info->setIteration(iteration);
 
-        ostringstream ostr;
+        std::ostringstream ostr;
         if (iteration>0)
           mem_info->printAllocatedMemory(ostr,iteration-1);
         if (iteration>1)

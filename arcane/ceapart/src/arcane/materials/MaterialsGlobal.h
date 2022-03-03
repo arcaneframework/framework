@@ -153,8 +153,8 @@ enum class eOperation
 };
 
 //! Opérateur de sortie sur un flot
-extern "C++" ostream&
-operator<< (ostream& ostr,eOperation operation);
+extern "C++" std::ostream&
+operator<< (std::ostream& ostr,eOperation operation);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

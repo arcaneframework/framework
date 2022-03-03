@@ -124,7 +124,7 @@ ItemMaterialVariableArray(const MaterialVariableBuildInfo& v,PrivatePartType* gl
 
 template<typename DataType> void
 ItemMaterialVariableArray<DataType>::
-dumpValues(ostream& ostr)
+dumpValues(std::ostream& ostr)
 {
   ARCANE_UNUSED(ostr);
   throw NotImplementedException(A_FUNCINFO);
@@ -135,7 +135,7 @@ dumpValues(ostream& ostr)
 
 template<typename DataType> void
 ItemMaterialVariableArray<DataType>::
-dumpValues(ostream& ostr,AllEnvCellVectorView view)
+dumpValues(std::ostream& ostr,AllEnvCellVectorView view)
 {
   ARCANE_UNUSED(ostr);
   ARCANE_UNUSED(view);

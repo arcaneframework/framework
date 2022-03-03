@@ -117,7 +117,7 @@ class ItemSharedInfoList::ItemNumElements
       return m_cell_allocated<b.m_cell_allocated;
     }
  public:
-  void print(ostream& o) const
+  void print(std::ostream& o) const
     {
       o << " Type=" << m_type
         << " Edge=" << m_nb_edge
@@ -143,7 +143,7 @@ bool ItemSharedInfoList::ItemNumElements::m_debug = false;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ostream& operator<<(ostream& o,const ItemSharedInfoList::ItemNumElements& v)
+std::ostream& operator<<(std::ostream& o,const ItemSharedInfoList::ItemNumElements& v)
 {
   v.print(o);
   return o;

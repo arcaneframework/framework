@@ -82,7 +82,7 @@ class GhostLayerBuilder2
 
  private:
   
-  void _printItem(ItemInternal* ii,ostream& o);
+  void _printItem(ItemInternal* ii,std::ostream& o);
   void _markBoundaryItems();
   void _sendAndReceiveCells(SubDomainItemMap& cells_to_send);
   void _sortBoundaryNodeList(Array<BoundaryNodeInfo>& boundary_node_list);
@@ -117,7 +117,7 @@ GhostLayerBuilder2::
 /*---------------------------------------------------------------------------*/
 
 void GhostLayerBuilder2::
-_printItem(ItemInternal* ii,ostream& o)
+_printItem(ItemInternal* ii,std::ostream& o)
 {
   o << ItemPrinter(ii);
 }

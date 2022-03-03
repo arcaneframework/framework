@@ -128,7 +128,7 @@ writeXmlFile(IXmlDocumentHolder* doc, const String& filename, const bool to_inde
 {
   if (!doc)
     return true;
-  ofstream ofile(filename.localstr());
+  std::ofstream ofile(filename.localstr());
 
   // Check if stream is OK
   if (!ofile.good())

@@ -47,7 +47,7 @@ class ModuleMng
 
   void addModule(Ref<IModule>) override;
   void removeModule(Ref<IModule>) override;
-  void dumpList(ostream&) override;
+  void dumpList(std::ostream&) override;
   ModuleCollection modules() const override { return m_modules; }
   void removeAllModules() override;
   bool isModuleActive(const String& name) override;
@@ -129,7 +129,7 @@ removeModule(Ref<IModule> module)
 /*---------------------------------------------------------------------------*/
 
 void ModuleMng::
-dumpList(ostream& o)
+dumpList(std::ostream& o)
 {
   o << "** ModuleMng::dump_list: " << m_modules.count();
   o << '\n';

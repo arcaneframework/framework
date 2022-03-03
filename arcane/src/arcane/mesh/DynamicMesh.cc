@@ -1228,7 +1228,7 @@ _writeMesh(const String& base_name)
 /*---------------------------------------------------------------------------*/
 
 void DynamicMesh::
-_printMesh(ostream& ostr)
+_printMesh(std::ostream& ostr)
 {
   ostr << "----------- Mesh\n";
   ostr << " Nodes: " << nbNode() << '\n';
@@ -2745,9 +2745,9 @@ void DynamicMesh::
 _writeCells(const String& filename)
 {
   CellGroup cells(m_cell_family->allItems());
-  ofstream ofile(filename.localstr());
+  std::ofstream ofile(filename.localstr());
   ENUMERATE_CELL(icell,cells){
-    const Cell& cell = *icell;
+    Cell cell = *icell;
     ofile << "CELL: uid=" << cell.uniqueId() << " isown="
           << cell.isOwn() << " owner=" << cell.owner() << '\n';
   }

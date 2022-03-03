@@ -430,7 +430,7 @@ class TBBTaskImplementation
     return m_default_loop_options;
   }
 
-  void printInfos(ostream& o) const final;
+  void printInfos(std::ostream& o) const final;
 
  public:
 
@@ -650,7 +650,7 @@ class TBBParallelFor
   {
 #ifdef ARCANE_CHECK
     if (TaskFactory::verboseLevel()>=3){
-      ostringstream o;
+      std::ostringstream o;
       o << "TBB: INDEX=" << TaskFactory::currentTaskThreadIndex()
         << " id=" << std::this_thread::get_id()
         << " MAX_ALLOWED=" << m_nb_allowed_thread
@@ -689,7 +689,7 @@ class TBBMDParallelFor
   {
 #ifdef ARCANE_CHECK
     if (TaskFactory::verboseLevel()>=3){
-      ostringstream o;
+      std::ostringstream o;
       o << "TBB: INDEX=" << TaskFactory::currentTaskThreadIndex()
         << " id=" << std::this_thread::get_id()
         << " MAX_ALLOWED=" << m_nb_allowed_thread
@@ -805,7 +805,7 @@ class TBBDeterministicParallelFor
     iter_begin += m_begin_index;
 #ifdef ARCANE_CHECK
     if (TaskFactory::verboseLevel()>=3){
-      ostringstream o;
+      std::ostringstream o;
       o << "TBB: DoBlock: BLOCK task_id=" << task_id << " block_id=" << block_id
         << " iter_begin=" << iter_begin << " iter_size=" << iter_size << '\n';
       std::cout << o.str();
@@ -969,7 +969,7 @@ nbAllowedThread() const
 /*---------------------------------------------------------------------------*/
 
 void TBBTaskImplementation::
-printInfos(ostream& o) const
+printInfos(std::ostream& o) const
 {
 #ifdef ARCANE_USE_ONETBB
   o << "OneTBBTaskImplementation"

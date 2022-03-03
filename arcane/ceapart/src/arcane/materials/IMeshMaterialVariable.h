@@ -150,12 +150,12 @@ class IMeshMaterialVariable
   /*!
    * \brief Affiche les valeurs de la variable sur le flot \a ostr.
    */
-  virtual void dumpValues(ostream& ostr) =0;
+  virtual void dumpValues(std::ostream& ostr) =0;
 
   /*!
    * \brief Affiche les valeurs de la variable pour la vue \a view sur le flot \a ostr.
    */
-  virtual void dumpValues(ostream& ostr,AllEnvCellVectorView view) =0;
+  virtual void dumpValues(std::ostream& ostr,AllEnvCellVectorView view) =0;
 
   /*!
    * \brief Remplit les valeurs partielles avec la valeur de la maille globale associée.

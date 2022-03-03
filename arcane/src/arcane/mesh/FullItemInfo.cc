@@ -59,7 +59,7 @@ FullCellInfo(Int64ConstArrayView cells_infos,Integer cell_index,
 /*---------------------------------------------------------------------------*/
 
 void FullCellInfo::
-print(ostream& o) const
+print(std::ostream& o) const
 {
   o << "Cell uid=" << uniqueId()
     << " nb_node=" << nbNode()
