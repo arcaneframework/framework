@@ -42,12 +42,20 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 #if defined(ARCANE_HAS_CUDA) && defined(__CUDACC__)
 /*!
  * \brief Macro pour indiquer qu'on compile %Arcane avec le support
  * de CUDA et qu'on utilise le compilateur CUDA.
  */
 #define ARCANE_COMPILING_CUDA
+#endif
+#if defined(ARCANE_HAS_HIP) && defined(__HIP__)
+/*!
+ * \brief Macro pour indiquer qu'on compile %Arcane avec le support
+ * de HIP et qu'on utilise le compilateur HIP.
+ */
+#define ARCANE_COMPILING_HIP
 #endif
 
 /*---------------------------------------------------------------------------*/
