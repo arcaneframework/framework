@@ -85,7 +85,8 @@ class ARCANE_MATERIALS_EXPORT MatVarIndex
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MATERIALS_EXPORT ostream& operator<<(ostream& o,const MatVarIndex& mvi);
+ARCANE_MATERIALS_EXPORT std::ostream&
+operator<<(std::ostream& o,const MatVarIndex& mvi);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -140,8 +141,8 @@ class PureMatVarIndex
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MATERIALS_EXPORT ostream&
-operator<<(ostream& o,const ComponentItemLocalId& mvi);
+ARCANE_MATERIALS_EXPORT std::ostream&
+operator<<(std::ostream& o,const ComponentItemLocalId& mvi);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -58,7 +58,7 @@ class TextWriter
   void setDataCompressor(Ref<IDataCompressor> ds);
   Ref<IDataCompressor> dataCompressor() const;
   Int64 fileOffset();
-  ostream& stream();
+  std::ostream& stream();
  private:
   Impl* m_p;
  private:

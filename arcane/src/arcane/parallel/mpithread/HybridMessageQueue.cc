@@ -518,7 +518,7 @@ probe(const MP::PointToPointMessageInfo& message)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ostream& operator<<(ostream& o,const FullRankInfo& fri)
+std::ostream& operator<<(std::ostream& o,const FullRankInfo& fri)
 {
   return o << "(local=" << fri.m_local_rank << ",global="
            << fri.m_global_rank << ",mpi=" << fri.m_mpi_rank << ")";

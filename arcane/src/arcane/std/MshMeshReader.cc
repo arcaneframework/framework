@@ -1102,7 +1102,7 @@ _readMeshFromMshFile(IMesh* mesh, const XmlNode& mesh_node,
   ARCANE_UNUSED(mesh_node);
 
   info() << "Trying to read 'msh' file '" << filename << "'";
-  ifstream ifile(filename.localstr());
+  std::ifstream ifile(filename.localstr());
   if (!ifile) {
     error() << "Unable to read file '" << filename << "'";
     return RTError;

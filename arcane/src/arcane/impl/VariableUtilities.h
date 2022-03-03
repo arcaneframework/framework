@@ -47,8 +47,8 @@ class VariableUtilities
  public:
 
   virtual IVariableMng* variableMng() const { return m_variable_mng; }
-  virtual void dumpDependencies(IVariable* var,ostream& ostr,bool is_recursive);
-  virtual void dumpAllVariableDependencies(ostream& ostr,bool is_recursive);
+  virtual void dumpDependencies(IVariable* var,std::ostream& ostr,bool is_recursive);
+  virtual void dumpAllVariableDependencies(std::ostream& ostr,bool is_recursive);
   virtual VariableCollection filterCommonVariables(IParallelMng* pm,
                                                    const VariableCollection input_variables,
                                                    bool dump_not_common);
@@ -57,8 +57,8 @@ class VariableUtilities
 
   IVariableMng* m_variable_mng;
 
-  void _dumpDependencies(IVariable* var,ostream& ostr,bool is_recursive);
-  void _dumpDependencies(VariableDependInfo& vdi,ostream& ostr,bool is_recursive,
+  void _dumpDependencies(IVariable* var,std::ostream& ostr,bool is_recursive);
+  void _dumpDependencies(VariableDependInfo& vdi,std::ostream& ostr,bool is_recursive,
                          std::set<IVariable*>& done_vars,Integer indent_level);
 };
 

@@ -61,7 +61,7 @@ LimaCutInfosReader(IParallelMng* parallel_mng)
 static Integer
 _readList(Int64ArrayView& int_list,const char* buf)
 {
-  istringstream istr(buf);
+  std::istringstream istr(buf);
   Integer index = 0;
   while (!istr.eof()){
     Int64 v = 0;

@@ -127,7 +127,7 @@ lookForString(const String& str)
 {
   const char* bfr = getNextLine();
   //	ITraceMng::info() << "[IosFile::getString] Looking for " << str;
-  istringstream iline(bfr);
+  std::istringstream iline(bfr);
   std::string got;
   iline >> got;
   //	info() << "[IosFile::getString] got=" << got;

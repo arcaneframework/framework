@@ -151,7 +151,7 @@ class TimeStats::Action
   void merge(AllActionsInfo& save_info,Integer* index);
   void dumpJSON(JSONWriter& writer,eTimeType tt);
   void computeCumulativeTimes();
-  void dumpCurrentStats(ostream& ostr,int level,Real unit);
+  void dumpCurrentStats(std::ostream& ostr,int level,Real unit);
  private:
   Action* m_parent; //!< Action parente
   String m_name; //!< Nom de l'action
@@ -210,7 +210,7 @@ class TimeStats::ActionSeries
     m_main_action.merge(all_actions_info,&index);
     m_main_action.computeCumulativeTimes();
   }
-  void dumpStats(ostream& ostr,bool is_verbose,Real nb,const String& name,
+  void dumpStats(std::ostream& ostr,bool is_verbose,Real nb,const String& name,
                  bool use_elapsed_time,const String& message);
  public:
 
@@ -218,9 +218,9 @@ class TimeStats::ActionSeries
   Int64 m_nb_iteration_loop = 0;
 
  private:
-  void _dumpStats(ostream& ostr,Action& action,eTimeType tt,int level,int max_level,Real nb);
-  void _dumpAllPhases(ostream& ostr,Action& action,eTimeType tt,int tc,Real nb);
-  void _dumpCurrentStats(ostream& ostr,Action& action,int level,Real unit);
+  void _dumpStats(std::ostream& ostr,Action& action,eTimeType tt,int level,int max_level,Real nb);
+  void _dumpAllPhases(std::ostream& ostr,Action& action,eTimeType tt,int tc,Real nb);
+  void _dumpCurrentStats(std::ostream& ostr,Action& action,int level,Real unit);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -305,7 +305,7 @@ endGatherStats()
     sb += m_name;
     sb += ".xml";
     String s(sb);
-    ofstream ofile(s.localstr());
+    std::ofstream ofile(s.localstr());
     ofile << m_full_stats_str.str();
   }
 }
@@ -441,7 +441,7 @@ findSubActionRecursive(const String& action_name) const
 /*---------------------------------------------------------------------------*/
 
 void TimeStats::ActionSeries::
-dumpStats(ostream& ostr,bool is_verbose,Real nb,const String& name,
+dumpStats(std::ostream& ostr,bool is_verbose,Real nb,const String& name,
           bool use_elapsed_time,const String& message)
 {
   Int64 nb_iteration_loop = this->nbIterationLoop();
@@ -457,7 +457,7 @@ dumpStats(ostream& ostr,bool is_verbose,Real nb,const String& name,
   else if (tt==TT_Virtual)
     ostr << " (CPU time)";
   ostr << ":\n";
-  std::ios_base::fmtflags f = ostr.flags(ios::right);
+  std::ios_base::fmtflags f = ostr.flags(std::ios::right);
 
   ostr << Trace::Width(50) << "        Action       "
        << Trace::Width(11) << "  Time  "
@@ -487,7 +487,7 @@ dumpStats(ostream& ostr,bool is_verbose,Real nb,const String& name,
 /*---------------------------------------------------------------------------*/
 
 void TimeStats::
-dumpStats(ostream& ostr,bool is_verbose,Real nb,const String& name,
+dumpStats(std::ostream& ostr,bool is_verbose,Real nb,const String& name,
           bool use_elapsed_time)
 {
   _computeCumulativeTimes();
@@ -525,7 +525,7 @@ dumpCurrentStats(const String& action_name)
 namespace
 {
 void
-_writeValue(ostream& ostr,Real value,Real unit)
+_writeValue(std::ostream& ostr,Real value,Real unit)
 {
   ostr.width(12);
   Real v2 = value * unit;
@@ -540,7 +540,7 @@ _writeValue(ostream& ostr,Real value,Real unit)
 /*---------------------------------------------------------------------------*/
 
 void
-_printIndentedName(ostream& ostr,const String& name,int level)
+_printIndentedName(std::ostream& ostr,const String& name,int level)
 {
   StringBuilder indent_str;
   StringBuilder after_str;
@@ -559,7 +559,7 @@ _printIndentedName(ostream& ostr,const String& name,int level)
 /*---------------------------------------------------------------------------*/
 
 void
-_printPercentage(ostream& ostr,Real value,Real cumulative_value)
+_printPercentage(std::ostream& ostr,Real value,Real cumulative_value)
 {
   Real percent = 1.0;
   // Normalement il faut juste vérifier que cumulative_value n'est pas nul
@@ -583,7 +583,7 @@ _printPercentage(ostream& ostr,Real value,Real cumulative_value)
 /*---------------------------------------------------------------------------*/
 
 void TimeStats::Action::
-dumpCurrentStats(ostream& ostr,int level,Real unit)
+dumpCurrentStats(std::ostream& ostr,int level,Real unit)
 {
   Action& action = *this;
   _printIndentedName(ostr,action.name(),level);
@@ -612,7 +612,7 @@ _computeCumulativeTimes()
 /*---------------------------------------------------------------------------*/
 
 void TimeStats::ActionSeries::
-_dumpStats(ostream& ostr,Action& action,eTimeType tt,int level,int max_level,Real nb)
+_dumpStats(std::ostream& ostr,Action& action,eTimeType tt,int level,int max_level,Real nb)
 {
   PhaseValue& pv = action.m_phases[TP_Computation];
 
@@ -634,7 +634,7 @@ _dumpStats(ostream& ostr,Action& action,eTimeType tt,int level,int max_level,Rea
 /*---------------------------------------------------------------------------*/
 
 void TimeStats::
-_dumpCumulativeTime(ostream& ostr,Action& action,eTimePhase tp,eTimeType tt)
+_dumpCumulativeTime(std::ostream& ostr,Action& action,eTimePhase tp,eTimeType tt)
 {
   Real current_time = action.m_phases[tp].m_time[tt][TC_Local];
   Real cumulative_time = action.m_phases[tp].m_time[tt][TC_Cumulative];
@@ -659,7 +659,7 @@ _dumpCumulativeTime(ostream& ostr,Action& action,eTimePhase tp,eTimeType tt)
 /*---------------------------------------------------------------------------*/
 
 void TimeStats::ActionSeries::
-_dumpAllPhases(ostream& ostr,Action& action,eTimeType tt,int tc,Real nb)
+_dumpAllPhases(std::ostream& ostr,Action& action,eTimeType tt,int tc,Real nb)
 {
   Real all_phase_time = action.m_total_time.m_time[tt][tc];
 

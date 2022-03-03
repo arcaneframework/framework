@@ -37,7 +37,7 @@ class TextWriter::Impl
 {
  public:
   String m_filename;
-  ofstream m_ostream;
+  std::ofstream m_ostream;
   Ref<IDataCompressor> m_data_compressor;
 };
 
@@ -76,7 +76,7 @@ void TextWriter::
 open(const String& filename)
 {
   m_p->m_filename = filename;
-  ios::openmode mode = ios::out | ios::binary;
+  std::ios::openmode mode = std::ios::out | std::ios::binary;
   m_p->m_ostream.open(filename.localstr(),mode);
   if (!m_p->m_ostream)
     ARCANE_THROW(ReaderWriterException,"Can not open file '{0}' for writing", filename);
@@ -164,7 +164,7 @@ _writeComments(const String& comment)
 void TextWriter::
 _binaryWrite(const void* bytes,Int64 len)
 {
-  ostream& o = m_p->m_ostream;
+  std::ostream& o = m_p->m_ostream;
   //cout << "** BINARY WRITE len=" << len << " deflater=" << m_data_compressor << '\n';
   IDataCompressor* d = m_p->m_data_compressor.get();
   if (d && len > d->minCompressSize()) {
@@ -182,7 +182,7 @@ _binaryWrite(const void* bytes,Int64 len)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ostream& TextWriter::
+std::ostream& TextWriter::
 stream()
 {
   return m_p->m_ostream;

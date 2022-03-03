@@ -123,16 +123,16 @@ private:
 
 class VoronoiFile
 {
-public:
+ public:
   static const int BUFSIZE = 10000;
-public:
-  VoronoiFile(istream* stream) : m_stream(stream) {}
+ public:
+  VoronoiFile(std::istream* stream) : m_stream(stream) {}
   const char* getNextLine();
   Real getReal();
   Integer getInteger();
   bool isEnd(){ (*m_stream) >> ws; return m_stream->eof(); }
-private:
-  istream* m_stream;
+ private:
+  std::istream* m_stream;
   char m_buf[BUFSIZE];
 };
 
@@ -255,7 +255,7 @@ _readMesh(IPrimaryMesh* mesh,const String& file_name,const String& dir_name,
 {
   ARCANE_UNUSED(dir_name);
 
-  ifstream ifile(file_name.localstr());
+  std::ifstream ifile(file_name.localstr());
   if (!ifile){
     error() << "Unable to read file '" << file_name << "'";
     return true;
@@ -288,7 +288,7 @@ _readNodesHybridGrid(IMesh* mesh,VoronoiFile& voronoi_file,Array<Real3>& node_co
 
   const char* func_name = "VoronoiMeshIOService::_readNodesHybridGrid()";
   const char* buf = voronoi_file.getNextLine();
-  istringstream iline(buf);
+  std::istringstream iline(buf);
   std::string points_str;
   std::string data_type_str;
   Integer nb_node = 0;
@@ -332,7 +332,7 @@ _readCellsHybridGrid(IMesh* mesh,VoronoiFile& voronoi_file,
 
   const char* func_name = "VoronoiMeshIOService::_readCellsHybridGrid()";
   const char* buf = voronoi_file.getNextLine();
-  istringstream iline(buf);
+  std::istringstream iline(buf);
   std::string cells_str;
   Integer nb_cell = 0;
   Integer nb_cell_node = 0;

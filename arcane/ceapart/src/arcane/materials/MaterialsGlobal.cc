@@ -21,15 +21,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! Opérateur de sortie sur un flot
-extern "C++" ostream&
-operator<< (ostream& o,eOperation operation)
+extern "C++" std::ostream&
+operator<< (std::ostream& o,eOperation operation)
 {
   switch(operation){
   case eOperation::Add:
@@ -48,8 +48,7 @@ operator<< (ostream& o,eOperation operation)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

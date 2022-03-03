@@ -228,8 +228,8 @@ _getGDBStack()
   if (file_length==0)
     return String();
 
-  ifstream ifile;
-  ifile.open(filename,ios::binary);
+  std::ifstream ifile;
+  ifile.open(filename,std::ios::binary);
   ByteUniqueArray bytes(arcaneCheckArraySize(file_length));
   ifile.read((char*)bytes.data(),file_length);
   return String(bytes);

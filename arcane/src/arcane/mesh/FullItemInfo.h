@@ -91,7 +91,7 @@ class FullCellInfo
   Integer whichChildAmI () const { return CheckedConvert::toInteger(m_infos[m_first_hParent_cell + 2]); }
   Int32 flags() const { return CheckedConvert::toInt32(m_with_flags?m_infos[m_first_hParent_cell + 3]:0) ; }
 
-  friend inline ostream& operator<<(ostream& o,const FullCellInfo& i)
+  friend inline std::ostream& operator<<(std::ostream& o,const FullCellInfo& i)
   {
     i.print(o);
     return o;
@@ -99,7 +99,7 @@ class FullCellInfo
 
  public:
   
-  void print(ostream& o) const;
+  void print(std::ostream& o) const;
 
  public:
 

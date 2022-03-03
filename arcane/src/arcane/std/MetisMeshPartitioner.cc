@@ -391,7 +391,7 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
 
   const bool do_print_weight = false;
   if (do_print_weight){
-    ofstream dumpy;
+    std::ofstream dumpy;
     StringBuilder fname;
     Integer iteration = mesh->subDomain()->commonVariables().globalIteration();
     fname = "weigth-";

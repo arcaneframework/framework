@@ -53,15 +53,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 // TODO: supprimer l'inclusion de <iosfwd> et les using.
-// Pour l'instant ne les supprime que si on compile arcane_utils.
-#ifndef ARCANE_NO_USING_FOR_STREAM
-#  if defined(ARCANE_COMPONENT_arcane_utils)
-#    define ARCANE_NO_USING_FOR_STREAM
-#  endif
-#  if defined(ARCANE_COMPONENT_arcane_core)
-#    define ARCANE_NO_USING_FOR_STREAM
-#  endif
-#endif
+// Pour l'instant (2022), on supprime ces inclusions uniquement pour Arcane.
 
 #ifndef ARCANE_NO_USING_FOR_STREAM
 #include <iosfwd>

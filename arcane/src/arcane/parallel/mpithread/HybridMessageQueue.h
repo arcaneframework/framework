@@ -51,7 +51,7 @@ class FullRankInfo
     fri.m_mpi_rank.setValue(r / local_nb_rank);
     return fri;
   }
-  friend ostream& operator<<(ostream& o,const FullRankInfo& fri);
+  friend std::ostream& operator<<(std::ostream& o,const FullRankInfo& fri);
 
  public:
 

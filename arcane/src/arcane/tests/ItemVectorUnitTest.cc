@@ -66,7 +66,7 @@ class ItemPrinter2
 
  public:
 
-  void print(ostream& o) const;
+  void print(std::ostream& o) const;
 
   ItemPrinter2& assign(Item item)
   {
@@ -96,9 +96,9 @@ class ItemPrinter2
 
  private:
 
-  void _print(ostream& o,ItemVectorPrinter& ivp,ItemVectorView view,const String& name) const;
+  void _print(std::ostream& o,ItemVectorPrinter& ivp,ItemVectorView view,const String& name) const;
 
-  void _printIndent(ostream& o) const
+  void _printIndent(std::ostream& o) const
   {
     for( Integer z=0; z<m_indent_level*4; ++z ){
       o << ' ';
@@ -120,8 +120,8 @@ class ItemPrinter2
 
 };
 
-inline ostream&
-operator<<(ostream& o,const ItemPrinter2& ip)
+inline std::ostream&
+operator<<(std::ostream& o,const ItemPrinter2& ip)
 {
   ip.print(o);
   return o;
@@ -136,7 +136,7 @@ class ItemVectorPrinter
   ItemVectorPrinter() : m_indent_level(0) {}
   ItemVectorPrinter(ItemVectorView iv) : m_item_vector(iv),m_indent_level(0){}
  public:
-  void print(ostream& o) const
+  void print(std::ostream& o) const
   {
     Integer n = m_item_vector.size();
     o << "(";
@@ -184,7 +184,7 @@ class ItemVectorPrinter
   }
 
  private:
-  void _printIndent(ostream& o) const
+  void _printIndent(std::ostream& o) const
   {
     for( Integer z=0; z<m_indent_level*4; ++z ){
       o << ' ';
@@ -200,8 +200,8 @@ class ItemVectorPrinter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline ostream&
-operator<<(ostream& o,const ItemVectorPrinter& ip)
+inline std::ostream&
+operator<<(std::ostream& o,const ItemVectorPrinter& ip)
 {
   ip.print(o);
   return o;
@@ -211,7 +211,7 @@ operator<<(ostream& o,const ItemVectorPrinter& ip)
 /*---------------------------------------------------------------------------*/
 
 void ItemPrinter2::
-print(ostream& o) const
+print(std::ostream& o) const
 {
   if (!m_item || m_item->localId()==NULL_ITEM_LOCAL_ID){
     o << "(null_item)";
@@ -258,7 +258,7 @@ print(ostream& o) const
 }
 
 void ItemPrinter2::
-_print(ostream& o,ItemVectorPrinter& ivp,ItemVectorView view,const String& name) const
+_print(std::ostream& o,ItemVectorPrinter& ivp,ItemVectorView view,const String& name) const
 {
   if (view.size()>0){
     _printIndent(o);

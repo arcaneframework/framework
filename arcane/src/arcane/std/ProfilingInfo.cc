@@ -873,7 +873,7 @@ printInfos(bool dump_file)
       sfile_name += process_id;
       sfile_name += ".xml";
       String file_name = sfile_name;
-      ofstream ofile(file_name.localstr());
+      std::ofstream ofile(file_name.localstr());
       ofile << "<?xml version='1.0'?>\n";
       ofile << "<addresses>\n";
       ProfInfos::AddrMap::const_iterator begin = global_infos->m_addr_map.begin();
@@ -949,7 +949,7 @@ printInfos(bool dump_file)
     std::sort(std::begin(sorted_stacks),std::end(sorted_stacks));
 
     String file_name = String("profiling.callstack") + platform::getProcessId();
-    ofstream ofile;
+    std::ofstream ofile;
     ofile.open(file_name.localstr());
 
     for( auto x : sorted_stacks.range() ){

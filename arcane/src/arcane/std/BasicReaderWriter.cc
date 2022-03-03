@@ -1060,7 +1060,7 @@ setMetaData(const String& meta_data)
   else{
     Int32 my_rank = m_parallel_mng->commRank();
     String filename = _getMetaDataFileName(my_rank);
-    ofstream ofile(filename.localstr());
+    std::ofstream ofile(filename.localstr());
     meta_data.writeBytes(ofile);
   }
 }
@@ -1108,14 +1108,14 @@ endWrite()
       StringBuilder filename = m_path;
       filename += "/arcane_acr_db.json";
       String fn = filename.toString();
-      ofstream ofile(fn.localstr());
+      std::ofstream ofile(fn.localstr());
       ofile << jsw.getBuffer();
     }
     else{
       StringBuilder filename = m_path;
       filename += "/infos.txt";
       String fn = filename.toString();
-      ofstream ofile(fn.localstr());
+      std::ofstream ofile(fn.localstr());
       ofile << nb_part << '\n';
     }
   }
@@ -1253,7 +1253,7 @@ initialize()
     if (pm->isMasterIO()){
       Integer nb_part = 0;
       String filename = String::concat(m_path,"/infos.txt");
-      ifstream ifile(filename.localstr());
+      std::ifstream ifile(filename.localstr());
       ifile >> nb_part;
       info(4) << "** NB PART=" << nb_part;
       m_nb_written_part = nb_part;

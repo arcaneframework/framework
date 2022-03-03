@@ -548,7 +548,7 @@ callFunctorWithCatchedException(IFunctor* functor,IArcaneMain* exec_main,
         *clean_abort = true;
         ret_val = 5;
         if (is_master && is_print){
-          ofstream ofile("fatal");
+          std::ofstream ofile("fatal");
           ofile << ret_val << '\n';
           ofile.flush();
           trace->error() << "ParallelFatalErrorException caught in ArcaneMain::callFunctor: " << ex << '\n';
@@ -581,7 +581,7 @@ callFunctorWithCatchedException(IFunctor* functor,IArcaneMain* exec_main,
         *clean_abort = true;
         ret_val = 5;
         if (is_master && is_print){
-          ofstream ofile("fatal");
+          std::ofstream ofile("fatal");
           ofile << ret_val << '\n';
           ofile.flush();
           trace->error() << "ParallelFatalErrorException caught in ArcaneMain::callFunctor: " << ex << '\n';
@@ -1275,7 +1275,7 @@ setErrorCode(int errcode)
     // dans ce cas n'importe quel PE peut le faire.
     if (ArcaneMain::m_is_master_io || errcode==4){
       String errname = "fatal_" + String::fromNumber(errcode);
-      ofstream ofile(errname.localstr());
+      std::ofstream ofile(errname.localstr());
       ofile.close();
     }
   }

@@ -193,7 +193,7 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivity
   Integer preAllocatedSize() const override final { return m_pre_allocated_size; }
   void setPreAllocatedSize(Integer value) override final;
 
-  void dumpStats(ostream& out) const override;
+  void dumpStats(std::ostream& out) const override;
 
   void compactConnectivityList();
 
@@ -254,7 +254,7 @@ class ARCANE_MESH_EXPORT OneItemIncrementalItemConnectivity
 
  public:
 
-  void dumpStats(ostream& out) const override;
+  void dumpStats(std::ostream& out) const override;
 
   void compactConnectivityList();
 

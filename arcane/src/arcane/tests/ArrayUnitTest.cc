@@ -98,8 +98,8 @@ class Wrapper
 
 template<typename DataType> Integer Wrapper<DataType>::nb_new = 0;
 
-template<class T> inline ostream&
-operator<<(ostream& o,const Wrapper<T>& v)
+template<class T> inline std::ostream&
+operator<<(std::ostream& o,const Wrapper<T>& v)
 {
   o << v.value();
   return o;

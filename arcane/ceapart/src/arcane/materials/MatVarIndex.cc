@@ -30,7 +30,8 @@ MATERIALS_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ostream& operator<<(ostream& o,const MatVarIndex& mvi)
+std::ostream&
+operator<<(std::ostream& o,const MatVarIndex& mvi)
 {
   o << mvi.arrayIndex() << ":" << mvi.valueIndex();
   return o;
@@ -39,7 +40,8 @@ ostream& operator<<(ostream& o,const MatVarIndex& mvi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ostream& operator<<(ostream& o,const ComponentItemLocalId& mvi)
+std::ostream&
+operator<<(std::ostream& o,const ComponentItemLocalId& mvi)
 {
   o << mvi.localId();
   return o;

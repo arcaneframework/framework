@@ -40,7 +40,7 @@ class TextReader::Impl
   : m_filename(filename) {}
  public:
   String m_filename;
-  ifstream m_istream;
+  std::ifstream m_istream;
   Integer m_current_line = 0;
   Int64 m_file_length = 0;
   Ref<IDataCompressor> m_data_compressor;
@@ -53,7 +53,7 @@ TextReader::
 TextReader(const String& filename)
 : m_p(new Impl(filename))
 {
-  ios::openmode mode = ios::in | ios::binary;
+  std::ios::openmode mode = std::ios::in | std::ios::binary;
   m_p->m_istream.open(filename.localstr(),mode);
   if (!m_p->m_istream)
     ARCANE_THROW(ReaderWriterException, "Can not read file '{0}' for reading", filename);
@@ -111,7 +111,7 @@ readIntegers(Span<Integer> values)
 void TextReader::
 _checkStream(const char* type, Int64 nb_read_value)
 {
-  istream& s = m_p->m_istream;
+  std::istream& s = m_p->m_istream;
   if (!s)
     ARCANE_THROW(IOException, "Can not read '{0}' (nb_val={1} bad?={2} "
                  "fail?={3} eof?={4} pos={5}) file='{6}'",
@@ -183,7 +183,7 @@ read(Span<Real> values)
 void TextReader::
 _binaryRead(void* values, Int64 len)
 {
-  istream& s = m_p->m_istream;
+  std::istream& s = m_p->m_istream;
   IDataCompressor* d = m_p->m_data_compressor.get();
   if (d && len > d->minCompressSize()) {
     UniqueArray<std::byte> compressed_values;
@@ -265,7 +265,7 @@ fileName() const
 void TextReader::
 setFileOffset(Int64 v)
 {
-  m_p->m_istream.seekg(v,ios::beg);
+  m_p->m_istream.seekg(v,std::ios::beg);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -289,7 +289,7 @@ dataCompressor() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ifstream& TextReader::
+std::ifstream& TextReader::
 stream()
 {
   return m_p->m_istream;

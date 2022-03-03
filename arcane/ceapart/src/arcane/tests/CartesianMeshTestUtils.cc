@@ -821,7 +821,7 @@ _saveSVG()
   ICartesianMesh* cm = m_cartesian_mesh;
   IMesh* mesh = cm->mesh();
   info() << "Saving mesh to SVG format";
-  ofstream ofile("toto.svg");
+  std::ofstream ofile("toto.svg");
   SimpleSVGMeshExporter writer(ofile);
   writer.write(mesh->allCells());
 }

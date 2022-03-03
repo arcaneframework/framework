@@ -115,7 +115,7 @@ addGhostLayers(bool is_allocate)
 /*---------------------------------------------------------------------------*/
 
 void GhostLayerBuilder::
-_printItem(ItemInternal* ii,ostream& o)
+_printItem(ItemInternal* ii,std::ostream& o)
 {
   o << ItemPrinter(ii);
 }

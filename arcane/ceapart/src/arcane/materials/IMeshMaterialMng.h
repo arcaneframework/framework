@@ -370,10 +370,10 @@ class ARCANE_MATERIALS_EXPORT IMeshMaterialMng
   virtual IMeshMaterialVariable* checkVariable(IVariable* global_var) =0;
 
   //! Ecrit les infos des matériaux et milieux sur le flot \a o
-  virtual void dumpInfos(ostream& o) =0;
+  virtual void dumpInfos(std::ostream& o) =0;
 
   //! Ecrit les infos de la maille \a cell sur le flot \a o
-  virtual void dumpCellInfos(Cell cell,ostream& o) =0;
+  virtual void dumpCellInfos(Cell cell,std::ostream& o) =0;
 
   //! Vérifie la validité des structures internes
   virtual void checkValid() =0;

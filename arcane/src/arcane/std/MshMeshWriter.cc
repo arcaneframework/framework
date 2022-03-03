@@ -169,7 +169,7 @@ bool MshMeshWriter::
 writeMeshToFile(IMesh* mesh,const String& file_name)
 {
   String mshFileName(file_name+".msh");
-	ofstream ofile(mshFileName.localstr());
+  std::ofstream ofile(mshFileName.localstr());
 	if (!ofile)
 		throw IOException("VtkMeshIOService::writeMeshToFile(): Unable to open file");
 

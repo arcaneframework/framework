@@ -59,7 +59,7 @@ class TextReader
   void setFileOffset(Int64 v);
   void setDataCompressor(Ref<IDataCompressor> ds);
   Ref<IDataCompressor> dataCompressor() const;
-  ifstream& stream();
+  std::ifstream& stream();
   Int64 fileLength() const;
  private:
   Impl* m_p;

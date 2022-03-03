@@ -150,7 +150,7 @@ _testJSON_2()
   StringView buf = serializer.getBuffer();
   info() << "BUF=" << buf;
   {
-    ofstream ofile("test1.json");
+    std::ofstream ofile("test1.json");
     ofile << buf;
   }
   
