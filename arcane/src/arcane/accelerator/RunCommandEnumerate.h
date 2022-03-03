@@ -72,20 +72,20 @@ _applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,Lambda func)
       auto [b,t] = launch_info.computeThreadBlockInfo(vsize);
       cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
       // TODO: utiliser cudaLaunchKernel() à la place.
-      impl::doIndirectCUDALambda<ItemType,Lambda> <<<b,t,0,*s>>>(local_ids,std::forward<Lambda>(func));
+      impl::doIndirectGPULambda<ItemType,Lambda> <<<b,t,0,*s>>>(local_ids,std::forward<Lambda>(func));
     }
 #else
     ARCANE_FATAL("Requesting CUDA kernel execution but the kernel is not compiled with CUDA compiler");
 #endif
     break;
   case eExecutionPolicy::HIP:
-#if defined(__HIP__)
+#if defined(ARCANE_COMPILING_HIP)
     {
       launch_info.beginExecute();
       SmallSpan<const Int32> local_ids = items.localIds();
       auto [b,t] = launch_info.computeThreadBlockInfo(vsize);
       hipStream_t* s = reinterpret_cast<hipStream_t*>(launch_info._internalStreamImpl());
-      auto& loop_func = impl::doIndirectCUDALambda<ItemType,Lambda>;
+      auto& loop_func = impl::doIndirectGPULambda<ItemType,Lambda>;
       hipLaunchKernelGGL(loop_func,b,t,0,*s, local_ids,std::forward<Lambda>(func));
     }
 #else
