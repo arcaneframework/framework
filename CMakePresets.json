@@ -6,7 +6,7 @@
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/minimal",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "RelWithDebInfos",
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "ALIEN_DEFAULT_OPTIONS": "OFF",
                 "ALIENDEV_EMBEDDED": "ON"
@@ -20,6 +20,7 @@
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/full",
             "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "ALIEN_DEFAULT_OPTIONS": "ON",
                 "ALIENDEV_EMBEDDED": "ON",
