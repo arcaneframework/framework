@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ExtraGhostParticlesBuilder.h                                (C) 2011-2020 */
+/* ExtraGhostParticlesBuilder.h                                (C) 2000-2022 */
 /*                                                                           */
 /* Construction des mailles fantômes supplémentaires.                        */
 /*---------------------------------------------------------------------------*/
@@ -18,6 +18,8 @@
 #include "arcane/utils/Array.h"
 
 #include "arcane/mesh/MeshGlobal.h"
+
+#include <set>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -53,22 +55,17 @@ class ExtraGhostParticlesBuilder
   
  public:
 
-  void addExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder)
-  {
-    m_builders.add(builder);
-  }
-  
-  ArrayView<IExtraGhostParticlesBuilder*> extraGhostParticlesBuilders()
-  {
-    return m_builders;
-  }
-  
   void computeExtraGhostParticles();
-  
+  void addExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder);
+  void removeExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder);
+  bool hasBuilder() const;
+
  private:
   
   DynamicMesh* m_mesh;
-  UniqueArray<IExtraGhostParticlesBuilder*> m_builders;
+  std::set<IExtraGhostParticlesBuilder*> m_builders;
+
+ private:
 
   void _computeForFamily(ParticleFamily* particle_family);
 };

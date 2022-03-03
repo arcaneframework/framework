@@ -203,14 +203,9 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh, bo
   m_properties->setBool("display-stats",true);
   m_properties->setInt32("mesh-version",1);
 
-#ifndef NO_USER_WARNING
-#warning "(HP) Placement ?"
-#endif /* NO_USER_WARNING */
   m_item_internal_list.mesh = this;
 
   info() << "Is AMR Activated? = " << m_is_amr_activated;
-//  if(m_is_amr_activated)
-//    m_mesh_refinement = new MeshRefinement(this);
 
   _printConnectivityPolicy();
 
@@ -254,6 +249,8 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh, bo
     }
   }
 
+  m_extra_ghost_cells_builder = new ExtraGhostCellsBuilder(this);
+  m_extra_ghost_particles_builder = new ExtraGhostParticlesBuilder(this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -262,6 +259,13 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh, bo
 DynamicMesh::
 ~DynamicMesh()
 {
+  // Il serait peut-être préférable de lancer une exception mais dans un
+  // destructeur ce n'est pas forcément conseillé
+  if (m_extra_ghost_cells_builder->hasBuilder())
+    info() << "WARNING: pending ExtraGhostCellsBuilder reference";
+  if (m_extra_ghost_particles_builder->hasBuilder())
+    info() << "WARNING: pending ExtraGhostParticlesBuilder reference";
+
   delete m_mesh_compact_mng;
   delete m_mesh_exchange_mng;
   delete m_extra_ghost_cells_builder;
@@ -1806,7 +1810,7 @@ _exchangeItemsNew()
   // dans MeshExchange.
   // endUpdate() doit être appelé dans tous les cas pour s'assurer
   // que les variables et les groupes sont bien dimensionnées.
-  if (m_extra_ghost_cells_builder || m_extra_ghost_particles_builder)
+  if (m_extra_ghost_cells_builder->hasBuilder() || m_extra_ghost_particles_builder->hasBuilder())
     this->endUpdate(true,false);
   else
     this->endUpdate();
@@ -1816,30 +1820,18 @@ _exchangeItemsNew()
 /*---------------------------------------------------------------------------*/
 
 void DynamicMesh::
-_checkCreateExtraGhostCellsBuilder()
-{
-  if (!m_extra_ghost_cells_builder)
-    m_extra_ghost_cells_builder = new ExtraGhostCellsBuilder(this);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void DynamicMesh::
-_checkCreateExtraGhostParticlesBuilder()
-{
-  if (!m_extra_ghost_particles_builder)
-    m_extra_ghost_particles_builder = new ExtraGhostParticlesBuilder(this);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void DynamicMesh::
 addExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder)
 {
-  _checkCreateExtraGhostCellsBuilder();
   m_extra_ghost_cells_builder->addExtraGhostCellsBuilder(builder);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
+removeExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder)
+{
+  m_extra_ghost_cells_builder->removeExtraGhostCellsBuilder(builder);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1848,8 +1840,16 @@ addExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder)
 void DynamicMesh::
 addExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder)
 {
-  _checkCreateExtraGhostParticlesBuilder();
   m_extra_ghost_particles_builder->addExtraGhostParticlesBuilder(builder);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
+removeExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder)
+{
+  m_extra_ghost_particles_builder->removeExtraGhostParticlesBuilder(builder);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1858,7 +1858,6 @@ addExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder)
 void DynamicMesh::
 _computeExtraGhostCells()
 {
-  _checkCreateExtraGhostCellsBuilder();
   m_extra_ghost_cells_builder->computeExtraGhostCells();
 }
 
@@ -1868,7 +1867,6 @@ _computeExtraGhostCells()
 void DynamicMesh::
 _computeExtraGhostParticles()
 {
-  _checkCreateExtraGhostParticlesBuilder();
   m_extra_ghost_particles_builder->computeExtraGhostParticles();
 }
 
