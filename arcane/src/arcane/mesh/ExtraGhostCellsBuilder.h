@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ExtraGhostCellsBuilder.h                                    (C) 2011-2011 */
+/* ExtraGhostCellsBuilder.h                                    (C) 2000-2022 */
 /*                                                                           */
 /* Construction des mailles fantômes supplémentaires.                        */
 /*---------------------------------------------------------------------------*/
@@ -22,21 +22,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane
+{
 class IExtraGhostCellsBuilder;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane::mesh
+{
 class DynamicMesh;
 
 /*---------------------------------------------------------------------------*/
@@ -45,42 +40,27 @@ class DynamicMesh;
  * \brief Construction des mailles fantômes supplémentaires.
  */
 class ExtraGhostCellsBuilder
-  : public TraceAccessor
+: public TraceAccessor
 {
-public:
+ public:
 
-  ExtraGhostCellsBuilder(DynamicMesh* mesh);
-  
-  ~ExtraGhostCellsBuilder() {}
+  explicit ExtraGhostCellsBuilder(DynamicMesh* mesh);
 
-public:
+ public:
 
-  void addExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder) {
-    m_builders.add(builder);
-  }
-  
-  ArrayView<IExtraGhostCellsBuilder*> extraGhostCellsBuilders() {
-    return m_builders;
-  }
-  
   void computeExtraGhostCells();
-  
-private:
-  
-  DynamicMesh* m_mesh;
+  void addExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder);
 
-  UniqueArray<IExtraGhostCellsBuilder*> m_builders;  
+ private:
+
+  DynamicMesh* m_mesh;
+  UniqueArray<IExtraGhostCellsBuilder*> m_builders;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

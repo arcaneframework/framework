@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ExtraGhostCellsBuilder.cc                                   (C) 2011-2021 */
+/* ExtraGhostCellsBuilder.cc                                   (C) 2000-2022 */
 /*                                                                           */
 /* Construction des mailles fantômes supplémentaires.                        */
 /*---------------------------------------------------------------------------*/
@@ -46,11 +46,21 @@ ExtraGhostCellsBuilder(DynamicMesh* mesh)
 /*---------------------------------------------------------------------------*/
 
 void ExtraGhostCellsBuilder::
+addExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder)
+{
+  m_builders.add(builder);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ExtraGhostCellsBuilder::
 computeExtraGhostCells()
 {
   const Integer nb_builder = m_builders.size();
   
-  if(nb_builder == 0) return;
+  if (nb_builder == 0)
+    return;
   
   info() << "Compute extra ghost cells";
   
@@ -59,11 +69,11 @@ computeExtraGhostCells()
     m_builders[i]->computeExtraCellsToSend();
   }
   
-  IParallelMng* pm = m_mesh->subDomain()->parallelMng();
+  IParallelMng* pm = m_mesh->parallelMng();
   
   auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
   
-  const Integer nsd = m_mesh->subDomain()->nbSubDomain();
+  const Integer nsd = pm->commSize();
   
   // Construction des items à envoyer
   UniqueArray<std::set<Integer> > to_sends(nsd);
@@ -83,12 +93,12 @@ computeExtraGhostCells()
   exchanger->initializeCommunicationsMessages();
   
   // Envoi des mailles
-  for(Integer i=0, ns=exchanger->nbSender(); i<ns; ++i) {
+  for (Integer i=0, ns=exchanger->nbSender(); i<ns; ++i) {
     ISerializeMessage* sm = exchanger->messageToSend(i);
     const Int32 rank = sm->destination().value();
     ISerializer* s = sm->serializer();
     const std::set<Integer>& cell_set = to_sends[rank];
-    Int32UniqueArray items_to_send(CheckedConvert::toInteger(cell_set.size()));
+    Int32UniqueArray items_to_send(cell_set.size());
     std::copy(std::begin(cell_set),std::end(cell_set),std::begin(items_to_send));
     m_mesh->serializeCells(s, items_to_send);
   }

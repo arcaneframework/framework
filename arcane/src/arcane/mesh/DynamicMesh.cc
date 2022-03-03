@@ -1846,10 +1846,28 @@ addExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder)
 /*---------------------------------------------------------------------------*/
 
 void DynamicMesh::
+removeExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder)
+{
+  ARCANE_THROW(NotSupportedException,"");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
 addExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder)
 {
   _checkCreateExtraGhostParticlesBuilder();
   m_extra_ghost_particles_builder->addExtraGhostParticlesBuilder(builder);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
+removeExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder)
+{
+  ARCANE_THROW(NotSupportedException,"");
 }
 
 /*---------------------------------------------------------------------------*/

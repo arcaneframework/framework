@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ExtraGhostParticlesBuilder.cc                               (C) 2011-2020 */
+/* ExtraGhostParticlesBuilder.cc                               (C) 2000-2022 */
 /*                                                                           */
 /* Construction des mailles fantômes supplémentaires.                        */
 /*---------------------------------------------------------------------------*/
@@ -39,7 +39,17 @@ ExtraGhostParticlesBuilder::
 ExtraGhostParticlesBuilder(DynamicMesh* mesh)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
-{}
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ExtraGhostParticlesBuilder::
+addExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder)
+{
+  m_builders.add(builder);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -63,8 +73,8 @@ computeExtraGhostParticles()
     IItemFamily* family = *i;
     if (family->itemKind()!=IK_Particle)
       continue;
-    ParticleFamily* particle_family = dynamic_cast<ParticleFamily*>(family) ;
-    if(particle_family && particle_family->getEnableGhostItems()==true){
+    ParticleFamily* particle_family = ARCANE_CHECK_POINTER(dynamic_cast<ParticleFamily*>(family));
+    if (particle_family && particle_family->getEnableGhostItems()==true){
       _computeForFamily(particle_family);
     }
   }
@@ -106,7 +116,7 @@ _computeForFamily(ParticleFamily* particle_family)
     const Int32 rank = comm->destination().value();
     //ISerializer* s = comm->serializer();
     const std::set<Integer>& particle_set = to_sends[rank];
-    Int32UniqueArray dest_items_local_id(arcaneCheckArraySize(particle_set.size()));
+    Int32UniqueArray dest_items_local_id(particle_set.size());
     std::copy(std::begin(particle_set), std::end(particle_set), std::begin(dest_items_local_id));
     //particle_family->serializeParticles(s, items_to_send);
 

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMesh.h                                               (C) 2000-2020 */
+/* DynamicMesh.h                                               (C) 2000-2022 */
 /*                                                                           */
 /* Classe de gestion d'un maillage évolutif.                                 */
 /*---------------------------------------------------------------------------*/
@@ -191,18 +191,10 @@ class ARCANE_MESH_EXPORT DynamicMesh
   //! Fusionne les maillages de \a meshes avec le maillage actuel.
   void mergeMeshes(ConstArrayView<IMesh*> meshes) override;
 
-  /*!
-   * \brief ajout du algorithme d'ajout de mailles fantômes "extraordinaires"
-   *
-   * Cette opération est collective.
-   */
   void addExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder) override;
-  /*!
-   * \brief ajout du algorithme d'ajout de particules fantômes "extraordinaires"
-   *
-   * Cette opération est collective.
-   */
+  void removeExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder) override;
   void addExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder) override;
+  void removeExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder) override;
   
   void serializeCells(ISerializer* buffer,Int32ConstArrayView cells_local_id) override;
   Int32 meshRank() { return m_mesh_part_info.partRank(); }
