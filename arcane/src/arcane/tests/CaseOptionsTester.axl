@@ -441,6 +441,7 @@
    interface = "IComplex1Interface"
   >
    <description>Complex1</description>
+
    <simple
     name = "simple-real-2"
     type = "real"
@@ -448,12 +449,23 @@
    >
     <description>SimpleReal-2</description>
    </simple>
+
+   <simple
+    name = "simple-real-2-multi"
+    type = "real"
+     minOccurs = "1"
+     maxOccurs = "unbounded"
+   >
+    <description>SimpleReal-2-Multi</description>
+   </simple>
+
    <simple
     name = "simple-integer-2"
     type = "integer"
    >
     <description>SimpleInteger-2</description>
    </simple>
+
    <simple
     name = "simple-real3-2"
     type = "real3"

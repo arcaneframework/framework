@@ -119,6 +119,8 @@
 
   <complex1>
    <simple-real-2>3</simple-real-2>
+   <simple-real-2-multi>5.2</simple-real-2-multi>
+   <simple-real-2-multi>2.3</simple-real-2-multi>
    <simple-real3-2 fonction="test-time-real3">3.0 2.0 4.0</simple-real3-2>
    <simple-integer-2>4</simple-integer-2>
    <simple-enum-2>enum1</simple-enum-2>

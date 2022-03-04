@@ -44,8 +44,26 @@
 
 #include "arcane/tests/TypesCaseOptionsTester.h"
 
-class IComplex1Interface { public: virtual ~IComplex1Interface(){} };
-class IComplex1SubInterface {public: virtual ~IComplex1SubInterface(){}};
+class IComplex1SubInterface
+{
+ public:
+  virtual ~IComplex1SubInterface() = default;
+};
+
+class IComplex1Interface
+{
+ public: virtual ~IComplex1Interface() = default;
+
+ public:
+  virtual Arcane::ConstArrayView<Arcane::Real> getSimpleReal2Multi() = 0;
+  virtual Arcane::Real getSimpleReal2() = 0;
+  virtual Arcane::Integer getSimpleInteger2() =0;
+  virtual Arcane::Real3 getSimpleReal32() =0;
+  virtual ArcaneTest::TestRealInt getExtendedRealInt2() =0;
+  virtual ArcaneTest::TypesCaseOptionsTester::eSimpleEnum getSimpleEnum2() =0;
+  virtual IComplex1SubInterface* getComplex1Sub() =0;
+  virtual IComplex1SubInterface* getComplex1Subref() =0;
+};
 class IComplex2Interface {public: virtual ~IComplex2Interface(){}};
 class IComplex3Interface {public: virtual ~IComplex3Interface(){}};
 class IComplex4Interface {public: virtual ~IComplex4Interface(){}};
@@ -428,6 +446,7 @@ init()
   info() << " Complex1/SimpleReal-2    = " << options()->complex1.simpleReal2;
   info() << " Complex1/SimpleReal3-2   = " << options()->complex1.simpleReal32;
   info() << " Complex1/SimpleInteger-2 = " << options()->complex1.simpleInteger2;
+  info() << " Complex1/SimpleReal2-Multi = " << options()->complex1.getSimpleReal2Multi();
   info() << " Complex2[2]/Complex3[1]  = " << options()->complex2[1].complex3[0].element().xpathFullName();
   info() << " Complex2[2]/Complex3[2]  = " << options()->complex2[1].complex3[1].element().xpathFullName();
   info() << " Complex4/simple-real     = " << options()->complex4.simpleReal();
@@ -457,6 +476,10 @@ init()
     }
   }
   ValueChecker vc(A_FUNCINFO);
+  {
+    UniqueArray<Real> v0 = { 5.2, 2.3 };
+    vc.areEqual(options()->complex1.getSimpleReal2Multi(),v0.constView(),"SimpleReal2Multi");
+  }
   if (options()->testId()==4){
     vc.areEqual(options()->simpleRealWithDefault(),3.0,"setDefaultValue() for real");
     vc.areEqual(options()->simpleIntegerWithDefault(),99,"setDefaultValue() for integer");
