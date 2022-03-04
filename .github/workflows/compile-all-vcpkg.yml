@@ -82,6 +82,11 @@ jobs:
           cmake -DNUGET_PASSWORD="${{ secrets.GITHUB_TOKEN }}" -P '${{ env.BUILD_COMMANDS_ROOT }}/Setup.cmake'
           mkdir -p ${{ env.CCACHE_DIR }}
       
+      - name: Setup .Net
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
+
       - name: Get cache for 'ccache' tool
         uses: actions/cache@v2
         with:
