@@ -162,7 +162,7 @@ set(ARCANE_CMAKE_CONFIG_DIR ${config_install_dir})
 
 # ----------------------------------------------------------------------------
 
-set(ARCANE_AXLSTAR_NEEDED_VERSION "2.0.1")
+set(ARCANE_AXLSTAR_NEEDED_VERSION "2.0.2")
 find_package(Axlstar REQUIRED)
 message(STATUS "Axlstar_DIR = ${Axlstar_DIR}")
 message(STATUS "Axlstar_VERSION = ${Axlstar_VERSION}")
