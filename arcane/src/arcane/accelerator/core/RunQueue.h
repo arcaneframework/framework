@@ -61,8 +61,12 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
   //! Enregistre l'état de l'instance dans \a event.
   void recordEvent(RunQueueEvent& event);
+  //! Enregistre l'état de l'instance dans \a event.
+  void recordEvent(Ref<RunQueueEvent>& event);
   //! Bloque l'exécution sur l'instance tant que les jobs enregistrés dans \a event ne sont pas terminés
   void waitEvent(RunQueueEvent& event);
+  //! Bloque l'exécution sur l'instance tant que les jobs enregistrés dans \a event ne sont pas terminés
+  void waitEvent(Ref<RunQueueEvent>& event);
 
  public:
 

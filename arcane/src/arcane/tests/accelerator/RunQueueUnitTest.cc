@@ -224,7 +224,9 @@ _executeTest3()
   info() << "Test3: use events with wait()";
   ValueChecker vc(A_FUNCINFO);
 
-  auto event{ makeEvent(m_runner) };
+  UniqueArray<Ref<ax::RunQueueEvent>> event_array;
+  event_array.add(makeEventRef(m_runner));
+
   auto queue1{ makeQueue(m_runner) };
   queue1.setAsync(true);
   auto queue2{ makeQueue(m_runner) };
@@ -240,9 +242,9 @@ _executeTest3()
       auto [i] = iter();
       v(iter) = i + 3;
     };
-    queue1.recordEvent(event);
+    queue1.recordEvent(event_array[0]);
   }
-  event.wait();
+  event_array[0]->wait();
   {
     auto command2 = makeCommand(queue2);
     auto v = viewInOut(command2, values);
@@ -250,9 +252,9 @@ _executeTest3()
     {
       v(iter) = v(iter) * 2;
     };
-    queue2.recordEvent(event);
+    queue2.recordEvent(event_array[0]);
   }
-  event.wait();
+  event_array[0]->wait();
 
   // Vérifie les valeurs
   for (Integer i = 0; i < nb_value; ++i) {

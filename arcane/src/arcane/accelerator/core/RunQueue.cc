@@ -136,10 +136,28 @@ waitEvent(RunQueueEvent& event)
 /*---------------------------------------------------------------------------*/
 
 void RunQueue::
+waitEvent(Ref<RunQueueEvent>& event)
+{
+  waitEvent(*event.get());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunQueue::
 recordEvent(RunQueueEvent& event)
 {
   auto* p = event._internalEventImpl();
   return p->recordQueue(_internalStream());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunQueue::
+recordEvent(Ref<RunQueueEvent>& event)
+{
+  recordEvent(*event.get());
 }
 
 /*---------------------------------------------------------------------------*/

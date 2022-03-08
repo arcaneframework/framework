@@ -14,6 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/Ref.h"
+
 #include "arcane/accelerator/core/RunCommand.h"
 
 /*---------------------------------------------------------------------------*/
@@ -34,6 +36,7 @@ namespace Arcane::Accelerator
 class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueEvent
 {
   friend RunQueueEvent makeEvent(Runner& runner);
+  friend Ref<RunQueueEvent> makeEventRef(Runner& runner);
   friend class RunQueue;
 
  private:
@@ -72,6 +75,17 @@ inline RunQueueEvent
 makeEvent(Runner& runner)
 {
   return RunQueueEvent(runner);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Créé un évènement associé à \a runner.
+ */
+inline Ref<RunQueueEvent>
+makeEventRef(Runner& runner)
+{
+  return makeRef(new RunQueueEvent(runner));
 }
 
 /*---------------------------------------------------------------------------*/
