@@ -179,7 +179,8 @@ _findPart(RealConstArrayView coords, Real position)
   const Int32 nb_value = coords.size();
   if (position < coords[0])
     return 0;
-
+  if (math::isNearlyEqual(position,coords[0]))
+    return 0;
   Int32 part_id = -1;
   for (Int32 z = 0; z < nb_value; ++z) {
     if (m_is_verbose)
@@ -387,37 +388,38 @@ _computeSpecificGhostLayer()
     std::array<Int32, 3> max_part = { -1, -1, -1 };
     std::array<Int32, 3> nb_node_part = { 1, 1, 1 };
 
+    // Détermine la bounding box de la maille
+    Real max_value = FloatInfo<Real>::maxValue();
+    Real min_value = -max_value;
+    Real3 min_box(max_value,max_value,max_value);
+    Real3 max_box(min_value,min_value,min_value);
     for (Node node : cell.nodes()) {
-      std::array<Int32, 3> node_part = { -1, -1, -1 };
-      Real3 node_position = nodes_coord[node];
+      Real3 pos = nodes_coord[node];
+      min_box = math::min(min_box,pos);
+      max_box = math::max(max_box,pos);
+    }
 
-      for (Integer idir = 0; idir < nb_direction; ++idir) {
-        ConstArrayView<Real> coords(m_grid_info->m_grid_coord[idir].view());
-        Real cc = node_position[idir];
+    for (Integer idir = 0; idir < nb_direction; ++idir) {
+      ConstArrayView<Real> coords(m_grid_info->m_grid_coord[idir].view());
+      Integer nb_coord = coords.size();
 
-        if (m_is_verbose)
-          info() << " Node uid=" << node.uniqueId() << " idir=" << idir << " cc=" << cc;
-        Int32 part_id = _findPart(coords, cc);
-        if (m_is_verbose)
-          info() << " Node uid=" << node.uniqueId() << " idir=" << idir << " part=" << node_part[idir];
-
-        // Initialise le min/max si pas encore fait
-        if (min_part[idir] == (-1))
-          min_part[idir] = part_id;
-        if (max_part[idir] == (-1))
-          max_part[idir] = part_id;
-
-        // Met à jour le min/max si pas encore fait
-        if (min_part[idir] > part_id)
-          min_part[idir] = part_id;
-        if (max_part[idir] < part_id)
-          max_part[idir] = part_id;
-
-        node_part[idir] = part_id;
-      }
+      const Real min_pos = min_box[idir];
+      const Real max_pos = max_box[idir];
+      Int32 min_part_id = _findPart(coords,min_pos);
+      Int32 max_part_id = _findPart(coords,max_pos);
 
       if (m_is_verbose)
-        info() << " ** Node part uid=" << node.uniqueId() << " part=" << ArrayView<Int32>(node_part);
+        info() << " Cell uid=" << cell.uniqueId() << " idir=" << idir
+               << " min_pos=" << min_pos << " max_pos=" << max_pos
+               << " min_part=" << min_part_id << " max_part_id=" << max_part_id;
+
+      // Si on est au bord d'une partie, prend aussi la partie d'avant ou d'après.
+      // Cela permet d'éviter de rater une appartenance si les coordonnées de la grille
+      // et du maillage à partitionner sont les mêmes
+      if (min_part_id>0 && math::isNearlyEqual(min_pos,coords[min_part_id]))
+        --min_part_id;
+      if (max_part_id<(nb_coord-1) && math::isNearlyEqual(max_pos,coords[max_part_id]))
+        ++max_part_id;
     }
 
     Int32 total_nb_part = 1;
