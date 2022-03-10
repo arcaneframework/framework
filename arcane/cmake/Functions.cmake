@@ -216,10 +216,14 @@ function(arcane_add_library target)
   #message(STATUS "TARGET=${target} FILES=${_FILES}")
   add_library(${target} ${_FILES})
   target_compile_definitions(${target} PRIVATE ARCANE_COMPONENT_${target})
+  # A terme, supprimer l'ajout de '${CMAKE_INSTALL_PREFIX}/lib' car '$ORIGIN'
+  # doit suffire mais il faut être sur qu'il est disponible sur toutes
+  # les plateformes UNIX.
+  # La propriété BUILD_RPATH_USE_ORIGIN devrait pouvoir faire la même chose
   set_target_properties(${target}
     PROPERTIES
     INSTALL_RPATH_USE_LINK_PATH 1
-    INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib
+    INSTALL_RPATH "$ORIGIN;${CMAKE_INSTALL_PREFIX}/lib"
     )
   arcane_target_set_standard_path(${target})
   if (ARGS_AXL_FILES)

@@ -202,6 +202,11 @@ macro(arcane_wrapper_add_swig_target)
     set_target_properties(${_TARGET_NAME} PROPERTIES PREFIX "lib")
   endif()
 
+  set_target_properties(${_TARGET_NAME}
+    PROPERTIES
+    INSTALL_RPATH_USE_LINK_PATH 1
+    INSTALL_RPATH "$ORIGIN"
+    )
   arcane_target_set_standard_path(${_TARGET_NAME})
 
   # Récupère la liste des fichiers générés par Swig. On s'en sert pour faire une
