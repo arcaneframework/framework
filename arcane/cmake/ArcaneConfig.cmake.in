@@ -39,6 +39,10 @@ endif()
 set(ARCANE_AXL2CC "${AXLSTAR_AXL2CC}")
 
 # ----------------------------------------------------------------------------
+# Support pour '.Net'.
+set(ARCANE_CORECLR_VERSION "@ARCANE_CORECLR_VERSION@" CACHE STRING ".Net coreclr version" FORCE)
+
+# ----------------------------------------------------------------------------
 # Support pour les accélérateurs.
 #
 # La variable 'ARCANE_HAS_ACCELERATOR' est définie si Arcane a été compilée avec
