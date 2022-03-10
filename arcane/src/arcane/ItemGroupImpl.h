@@ -350,20 +350,25 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
   //! Retourne le temps du groupe. Ce temps est incrémenté après chaque modification.
   Int64 timestamp() const;
 
-  //! Attache un observer
-  /*! \param ref référence de l'émetteur de l'observer
-   *  \param obs Observer
+  /*!
+   * \brief Attache un observer.
+   *
+   * \param ref référence de l'émetteur de l'observer
+   * \param obs Observer
    */
   void attachObserver(const void * ref, IItemGroupObserver * obs);
 
-  //! Détache un observer
-  /*! \param ref référence de l'émetteur de l'observer
+  /*!
+   * \brief Détache un observer.
+   *
+   * \param ref référence de l'émetteur de l'observer
    */
   void detachObserver(const void * ref);
 
-  //! Indique si le contenu de ce groupe est observé
-  /*! Ceci a pour effet d'embrayer des mécanismes
-   *  de modification incrémentaux.
+  /*!
+   * \brief Indique si le contenu de ce groupe est observé.
+   *
+   * Ceci a pour effet d'embrayer des mécanismes de modification incrémentaux.
    * 
    *  Un groupe peut n'être observé que pour sa structure 
    *  par des objets recalculés non incrémentalement.
@@ -376,7 +381,13 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
   //! Indique si le groupe est calculé
   bool hasComputeFunctor() const;
 
-  //! Détruit le groupe. Après cet appel, le groupe devient un groupe nul.
+  /*!
+   * \brief Détruit le groupe. Après cet appel, le groupe devient un groupe nul.
+   *
+   * \warning Cette méthode ne doit être appelé qu'avec une extrème précaution
+   * même dans le code bas niveau de Arcane. S'il reste des références sur ce groupe
+   * le comportement est indéfini.
+   */
   void destroy();
 
   //! Table des local ids vers une position pour toutes les entités du groupe

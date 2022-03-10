@@ -742,16 +742,17 @@ createGroup(const String& name,const ItemGroup& parent,bool do_override)
 void ItemFamily::
 destroyGroups()
 {
+  _invalidateComputedGroups();
   ItemGroupList current_groups(m_item_groups.clone());
   m_item_groups.clear();
   for( ItemGroupList::Enumerator i(current_groups); ++i; ){
     ItemGroup group(*i);
-    if (group.isAllItems()){
+    if (group.isAllItems())
       m_item_groups.add(group);
-    }
     else
       group.internal()->destroy();
   }
+  allItems().internal()->destroy();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1866,9 +1867,7 @@ findVariable(const String& var_name,bool throw_exception)
   vname += var_name;
   IVariable* var = vm->findVariableFullyQualified(vname.toString());
   if (!var && throw_exception){
-    throw FatalErrorException(A_FUNCINFO,
-                              String::format("No variable named '{0}' in family '{1}'",
-                                             var_name,name()));
+    ARCANE_FATAL("No variable named '{0}' in family '{1}'",var_name,name());
   }
   return var;
 }
