@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupImpl.cc                                            (C) 2000-2021 */
+/* ItemGroupImpl.cc                                            (C) 2000-2022 */
 /*                                                                           */
 /* Implémentation d'un groupe d'entités de maillage.                         */
 /*---------------------------------------------------------------------------*/
@@ -142,6 +142,17 @@ class ItemGroupImplPrivate
     m_is_contigous = false;
   }
 
+  void setNeedRecompute()
+  {
+    // NOTE: normalement il ne faudrait mettre cette valeur à 'true' que pour
+    // les groupes recalculés (qui ont un parent ou pour lequel 'm_compute_functor' n'est
+    // pas nul). Cependant, cette méthode est aussi appelé sur le groupe de toutes les entités
+    // et peut-être d'autres groupes.
+    // Changer ce comportement risque d'impacter pas mal de code donc il faudrait bien vérifier
+    // que tout est OK avant de faire cette modification.
+    m_need_recompute = true;
+  }
+
  public:
 
   IMesh* m_mesh; //!< Gestionnare de groupe associé
@@ -195,12 +206,14 @@ class ItemGroupImplPrivate
   // Anciennement dans DynamicMeshKindInfo
   Int32UniqueArray m_items_index_in_all_group; //! localids -> index (UNIQUEMENT ALLITEMS)
   
-  std::map<const void *, IItemGroupObserver *> m_observers; //!< Observers du groupe
+  std::map<const void*,IItemGroupObserver*> m_observers; //!< Observers du groupe
   bool m_observer_need_info = false; //!< Synthése de besoin de observers en informations de transition
   void notifyExtendObservers(const Int32ConstArrayView * info);
   void notifyReduceObservers(const Int32ConstArrayView * info);
   void notifyCompactObservers(const Int32ConstArrayView * info);
   void notifyInvalidateObservers();
+
+  void resetSubGroups();
 
  private:
   UniqueArray<Int32> m_local_buffer = UniqueArray<Int32>(platform::getDefaultDataAllocator());
@@ -292,6 +305,36 @@ _init()
     m_items_local_id = &m_variable_items_local_id->_internalTrueData()->_internalDeprecatedValue();
     updateTimestamp();
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemGroupImplPrivate::
+resetSubGroups()
+{
+  if (!m_is_all_items)
+    ARCANE_FATAL("Call to _resetSubGroups() is only valid for group of AllItems");
+
+  m_own_group = nullptr;
+  m_ghost_group = nullptr;
+  m_interface_group = nullptr;
+  m_node_group = nullptr;
+  m_edge_group = nullptr;
+  m_face_group = nullptr;
+  m_cell_group = nullptr;
+  m_inner_face_group = nullptr;
+  m_outer_face_group = nullptr;
+  m_active_cell_group = nullptr;
+  m_own_active_cell_group = nullptr;
+  m_active_face_group = nullptr;
+  m_own_active_face_group = nullptr;
+  m_inner_active_face_group = nullptr;
+  m_outer_active_face_group = nullptr;
+  m_level_cell_group.clear();
+  m_own_level_cell_group.clear();
+  m_children_by_type.clear();
+  m_sub_groups.clear();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1041,7 +1084,7 @@ invalidate(bool force_recompute)
 #endif
 
   m_p->updateTimestamp();
-  m_p->m_need_recompute = true;
+  m_p->setNeedRecompute();
   if (force_recompute)
     checkNeedUpdate();
   m_p->notifyInvalidateObservers();
@@ -1762,8 +1805,8 @@ attachObserver(const void * ref, IItemGroupObserver * obs)
 void ItemGroupImpl::
 detachObserver(const void * ref)
 {
-  std::map<const void *, IItemGroupObserver *>::iterator finder = m_p->m_observers.find(ref);
-  std::map<const void *, IItemGroupObserver *>::iterator end = m_p->m_observers.end();
+  auto finder = m_p->m_observers.find(ref);
+  auto end = m_p->m_observers.end();
 
   if (finder == end)
     return;
@@ -1773,7 +1816,7 @@ detachObserver(const void * ref)
   m_p->m_observers.erase(finder);
   // Mise à jour du flag de demande d'info
   bool new_observer_need_info = false;
-  std::map<const void *, IItemGroupObserver *>::iterator i = m_p->m_observers.begin();
+  auto i = m_p->m_observers.begin();
   for( ; i != end ; ++i ) {
     IItemGroupObserver * obs = i->second;
     new_observer_need_info |= obs->needInfo();
@@ -1910,7 +1953,7 @@ _executeCompact(const Int32ConstArrayView* info)
 void ItemGroupImpl::
 _executeInvalidate()
 {
-  m_p->m_need_recompute = true;
+  m_p->setNeedRecompute();
   m_p->notifyInvalidateObservers();
 }
 
@@ -1949,7 +1992,7 @@ _forceInvalidate(const bool self_invalidate)
   // (HP) TODO: Mettre un observer forceInvalidate pour prévenir tout le monde ?
   // avec forceInvalidate on doit invalider mais ne rien calculer
   if (self_invalidate) {
-    m_p->m_need_recompute = true;
+    m_p->setNeedRecompute();
     m_p->m_need_invalidate_on_recompute = true;
   }
 
@@ -1964,8 +2007,24 @@ _forceInvalidate(const bool self_invalidate)
 void ItemGroupImpl::
 destroy()
 {
-  delete m_p;
-  m_p = new ItemGroupImplPrivate();
+  // Détache les observateurs. Cela modifie \a m_observers donc il faut
+  // en faire une copie
+  {
+    std::vector<const void*> ptrs;
+    for( auto i : m_p->m_observers )
+      ptrs.push_back(i.first);
+    for( const void* i : ptrs )
+      detachObserver(i);
+  }
+
+  // Le groupe de toutes les entités est spécial. Il ne faut jamais le détruire
+  // vraiement.
+  if (m_p->m_is_all_items)
+    m_p->resetSubGroups();
+  else{
+    delete m_p;
+    m_p = new ItemGroupImplPrivate();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
