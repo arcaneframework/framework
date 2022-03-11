@@ -469,6 +469,21 @@ public:
     m_size = 0;
   }
 
+  /*!
+   * @brief returns a 1D contiguous view of the property
+   * @return a 1D view of the property, the values of the array for each item are contiguous
+   */
+  utils::ArrayView<DataType> view() noexcept {
+    return utils::ArrayView<DataType>{ m_data.size(), m_data.data() };
+  }
+  /*!
+   * @brief returns a const 1D contiguous view of the property
+   * @return a const 1D view of the property, the values of the array for each item are contiguous
+   */
+  utils::ConstArrayView<DataType> constView() const noexcept {
+    return utils::ConstArrayView<DataType>{ m_data.size(), m_data.data() };
+  }
+
 private:
 
   void _updateIndexes(){
