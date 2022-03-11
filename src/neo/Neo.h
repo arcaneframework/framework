@@ -288,6 +288,10 @@ public:
 
   std::size_t size() const {return m_data.size();}
 
+  void clear() {
+    m_data.clear();
+  }
+
   PropertyView<DataType> view() {
     std::vector<int> indexes(m_data.size()); std::iota(indexes.begin(),indexes.end(),0);
     return PropertyView<DataType>{std::move(indexes),Neo::utils::ArrayView<DataType>{m_data.size(),m_data.data()}};}
@@ -456,6 +460,13 @@ public:
    */
    int size() const {
     return m_size;
+  }
+
+  void clear() {
+    m_data.clear();
+    m_offsets.clear();
+    m_indexes.clear();
+    m_size = 0;
   }
 
 private:
