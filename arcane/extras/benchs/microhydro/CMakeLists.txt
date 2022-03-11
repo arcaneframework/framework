@@ -3,13 +3,15 @@ project(MicroHydro LANGUAGES CXX)
 
 find_package(Arcane REQUIRED)
 
-add_executable(MicroHydro MicroHydroModule.cc main.cc MicroHydro_axl.h)
+add_executable(MicroHydro MicroHydroModule.cc main.cc MicroHydro_axl.h AdditionalVariablesModule.cc AdditionalVariables_axl.h)
 
 arcane_generate_axl(MicroHydro)
+arcane_generate_axl(AdditionalVariables)
 arcane_add_arcane_libraries_to_target(MicroHydro)
 target_include_directories(MicroHydro PUBLIC . ${CMAKE_CURRENT_BINARY_DIR})
 configure_file(MicroHydro.config ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 configure_file(MicroHydro.arc ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+configure_file(MicroHydro.load-balance.arc ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
 # Partie spécifique accélérateur
 arcane_accelerator_enable()
