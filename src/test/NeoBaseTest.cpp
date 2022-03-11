@@ -181,8 +181,12 @@ TEST(NeoTestProperty, test_property) {
   std::vector<Neo::utils::Int32> values{ 1, 2, 3 };
   Neo::ItemRange item_range{ Neo::ItemLocalIds{ {}, 0, 3 } };
   EXPECT_TRUE(property.isInitializableFrom(item_range));
-  property.init(item_range, values);
+  property.init(item_range, { 1,2,3 });
+  // Cannot init twice : test assertion
+  if constexpr (_debug) {EXPECT_DEATH(property.init(item_range, values),".*Property must be empty.*");}
   EXPECT_EQ(values.size(), property.size());
+  auto prop_values = property.values();
+  EXPECT_TRUE(std::equal(prop_values.begin(),prop_values.end(),values.begin()));
   std::vector<Neo::utils::Int32> new_values{ 4, 5, 6 };
   Neo::ItemRange new_item_range{ Neo::ItemLocalIds{ {}, 3, 3 } };
   property.append(new_item_range, new_values);
@@ -286,6 +290,18 @@ TEST(NeoTestProperty, test_property) {
   property4.debugPrint();
   extracted_values = property4[{ 1, 3, 5, 7, 8, 9 }];
   EXPECT_TRUE(std::equal(values.begin(), values.end(), extracted_values.begin()));
+  // Clear properties
+  property.clear();
+  EXPECT_EQ(property.size(),0);
+  EXPECT_EQ(property.values().size(),0);
+  // Possible to call init again after a clear
+  item_range = { Neo::ItemLocalIds{ {}, 0, 3 } };
+  values = {1,2,3};
+  property.init(item_range, { 1,2,3 });
+  EXPECT_EQ(values.size(), property.size());
+  values = {1,2,3};
+  prop_values = property.values();
+  EXPECT_TRUE(std::equal(prop_values.begin(),prop_values.end(),values.begin()));
 }
 
 //----------------------------------------------------------------------------/
@@ -490,6 +506,14 @@ TEST(NeoTestArrayProperty, test_array_property) {
     }
   }
   EXPECT_TRUE(std::equal(values.begin(), values.end(), values_check.begin()));
+
+  // Check clear method
+  array_property.clear();
+  EXPECT_EQ(array_property.size(),0);
+  // Since property cleared, an init can be called after a resize
+  array_property.resize({ 1, 1, 1, 1, 1 });
+  array_property.init(item_range, values);
+  EXPECT_EQ(array_property.size(),5);
 }
 
 //----------------------------------------------------------------------------/
