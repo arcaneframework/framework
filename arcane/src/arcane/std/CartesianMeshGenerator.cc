@@ -891,6 +891,7 @@ generateMesh()
   }
 
   mesh->setDimension(m_mesh_dimension);
+  info() << "FaceNumberingVersion = " << m_build_info.m_face_numbering_version;
   if (m_build_info.m_face_numbering_version>=0)
     mesh->meshUniqueIdMng()->setFaceBuilderVersion(m_build_info.m_face_numbering_version);
 
