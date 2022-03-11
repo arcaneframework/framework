@@ -82,7 +82,7 @@ namespace utils {
    * \brief 2-Dimensional view of a contiguous data chunk
    * The second dimension varies first {(i,j),(i,j+1),(i+1,j),(i+1,j+1)}...
    * \fn operator[i] returns a view of size \refitem Array2View.m_dim2_size
-   * @tparam T
+   * @tparam T view data type
    */
   template <typename T>
   struct Array2View {
@@ -109,7 +109,7 @@ namespace utils {
 
   /*!
    * 2-Dimensional const view. cf. \refitem Array2View
-   * @tparam T
+   * @tparam T view data type
    */
   template <typename T>
   struct ConstArray2View {

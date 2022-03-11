@@ -207,6 +207,11 @@ class PropertyT : public PropertyBase  {
 public:
   std::vector<DataType> m_data;
 
+  /*!
+   * @brief Fill a property (empty or not) with a scalar value, over an item_range.
+   * @param item_range: range containing the items that will be set to the \a value
+   * @param value
+   */
   void init(const ItemRange& item_range, const DataType& value){
     if (isInitializableFrom(item_range))
       init(item_range, std::vector<DataType>(item_range.size(), value));
@@ -216,13 +221,24 @@ public:
 
   bool isInitializableFrom(const ItemRange& item_range) const {return item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty() ;}
 
-  // The difference between init and append is done to handle values copy or move
+  /*!
+   * @brief Fill an \b empty property with an array of values indexed by a range. May copy or move the values.
+   * @param item_range: contiguous 0-starting range
+   * @param values: give a rvalue (temporary or moved array) to be efficient (they won't be copied).
+   * This method tries to avoid copy via move construct. Work only if a rvalue is passed for \a values argument. Property must be empty.
+   */
   void init(const ItemRange& item_range, std::vector<DataType> values){
     // data must be empty
-    assert(item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty()); // todo comprehensive test (message for user)
+    assert(("Property must be empty and item range contiguous to call init",isInitializableFrom(item_range)));
     m_data = std::move(values);
   }
 
+  /*!
+   * @brief Fill a property (empty or not) with an array of values. Always copy values.
+   * @param item_range
+   * @param values
+   * @param default_value: used if \a item_range is a subrange of the property support
+   */
   void append(const ItemRange& item_range, const std::vector<DataType>& values, DataType default_value=DataType{}) {
     if (item_range.size()==0) return;
     assert(("item_range and values sizes differ",item_range.size() == values.size()));
@@ -306,16 +322,35 @@ public:
   int m_size;
 
 public:
+
+ /*!
+  * @brief Resize an array property before a call to \a init. Resize must not be done before a call to \a append method.
+  * @param sizes: an array the number of items of the property support and storing the number of values for each item.
+  */
   void resize(std::vector<int> sizes){ // only 2 moves if a rvalue is passed. One copy + one move if lvalue
     m_offsets = std::move(sizes);
     _updateIndexes();
   }
   bool isInitializableFrom(const ItemRange& item_range){return item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty() ;}
+
+  /*!
+   * @brief Initialize an \b empty array property. Must call resize first.
+   * @param item_range must be a contiguous, 0-starting item range
+   * @param values: to be efficient a rvalue should be passed (temporary or moved array).
+   * This method tries to avoid copy via move construct. Work only if a rvalue is passed for \a values argument. Property must be empty.
+   */
   void init(const ItemRange& item_range, std::vector<DataType> values){
-    assert(isInitializableFrom(item_range));
+    assert(("Property must be empty and item range contiguous to call init",isInitializableFrom(item_range)));
     assert(("call resize before init",!item_range.isEmpty() && m_size !=0));
     m_data = std::move(values);
   }
+
+  /*!
+   * @brief Fill an array property (empty or not) with an array of values. Always copy values.
+   * @param item_range
+   * @param values
+   * @param nb_values_per_item
+   */
   void append(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_values_per_item){
     if (item_range.size()==0) return;
     // todo: see how to handle new element add or remove impact on property (size/values)
@@ -416,6 +451,9 @@ public:
     Neo::utils::printContainer(m_indexes, "Indexes");
   }
 
+  /*!
+   * @return number of items of property support
+   */
    int size() const {
     return m_size;
   }
