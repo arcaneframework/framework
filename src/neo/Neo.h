@@ -181,9 +181,84 @@ class PropertyView
 public:
   std::vector<int> const m_indexes;
   Neo::utils::ArrayView<DataType> m_data_view;
+
   DataType& operator[] (int index) {
     assert(("Error, exceeds property view size",index < m_indexes.size()));
     return m_data_view[m_indexes[index]];}
+
+  struct PropertyViewIterator {
+    using iterator_category = std::input_iterator_tag;
+    using value_type = DataType;
+    using difference_type = int;
+    using pointer = DataType*;
+    using reference = DataType&;
+    typename std::vector<int>::const_iterator m_indexes_interator;
+    DataType* m_data_iterator;
+
+    DataType& operator*()  const noexcept {return *m_data_iterator;}
+    DataType* operator->() const noexcept {return m_data_iterator;}
+
+    PropertyViewIterator& operator++() noexcept {
+      _increment_iterator();
+      return *this;
+    }
+    PropertyViewIterator operator++(int) noexcept {
+      _increment_iterator();
+      return *this;
+    }
+    PropertyViewIterator& operator--() noexcept {
+      _decrement_iterator();
+      return *this;
+    }
+    PropertyViewIterator operator--(int) noexcept {
+      _decrement_iterator();
+      return *this;
+    }
+    PropertyViewIterator& operator+=(difference_type n) noexcept{
+      _increment_iterator(n);
+      return *this;
+    }
+    PropertyViewIterator operator+(difference_type n) noexcept {
+      _increment_iterator(n);
+      return *this;
+    }
+    PropertyViewIterator& operator-=(difference_type n) noexcept{
+      _decrement_iterator(n);
+      return *this;
+    }
+    PropertyViewIterator operator-(difference_type n) noexcept {
+      _decrement_iterator(n);
+      return *this;
+    }
+
+    bool operator==(PropertyViewIterator const& prop_view_iterator) const noexcept{
+      return (m_indexes_interator == prop_view_iterator.m_indexes_interator
+              &&  m_data_iterator == prop_view_iterator.m_data_iterator);
+    }
+    bool operator!=(PropertyViewIterator const& prop_view_iterator) const noexcept{
+      return !(*this==prop_view_iterator);
+    }
+
+   private:
+    void _increment_iterator(){
+      auto last_index = *m_indexes_interator;
+      m_indexes_interator++;
+      m_data_iterator += *m_indexes_interator - last_index;
+    }
+    void _increment_iterator(difference_type n){
+      for (auto i = 0; i < n ; ++i) {_increment_iterator();}
+    }
+    void _decrement_iterator(){
+      auto last_index = *m_indexes_interator;
+      m_indexes_interator--;
+      m_data_iterator -= last_index-*m_indexes_interator;
+    }
+    void _decrement_iterator(difference_type n){
+      for (auto i = 0; i < n; ++i) {_decrement_iterator();}
+    }
+  };
+  PropertyViewIterator begin() { return {m_indexes.begin()++,m_data_view.begin()+m_indexes[0]};}
+  PropertyViewIterator end()   { return {m_indexes.end(),m_data_view.end()};}
 };
 
 template <typename DataType>
