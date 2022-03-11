@@ -776,9 +776,12 @@ TEST(NeoTestBaseMesh, base_mesh_unit_test){
   bool is_called = false;
   family1.addProperty<int>("prop1");
   family2.addProperty<int>("prop2");
+  family3.addProperty<int>("prop3");
+  family4.addProperty<int>("prop4");
+  family5.addProperty<int>("prop5");
   mesh.addAlgorithm(Neo::InProperty{family1,"prop1"},Neo::OutProperty{family2,"prop2"},
-                    [&is_called](Neo::PropertyT<int> const& prop1,
-                                 Neo::PropertyT<int>& prop2){
+                    [&is_called]([[maybe_unused]]Neo::PropertyT<int> const& prop1,
+                                 [[maybe_unused]]Neo::PropertyT<int>& prop2){
                       is_called = true;
                     });
   // copy mesh
