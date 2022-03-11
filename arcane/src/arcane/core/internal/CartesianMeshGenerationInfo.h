@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshGenerationInfo.h                               (C) 2000-2021 */
+/* CartesianMeshGenerationInfo.h                               (C) 2000-2022 */
 /*                                                                           */
 /* Informations sur la génération des maillages cartésiens.                  */
 /*---------------------------------------------------------------------------*/
@@ -16,7 +16,7 @@
 
 #include "arcane/utils/ArrayView.h"
 
-#include "arcane/core/internal/ICartesianMeshGenerationInfo.h"
+#include "arcane/ICartesianMeshGenerationInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

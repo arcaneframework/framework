@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianFaceUniqueIdBuilder.cc                             (C) 2000-2021 */
+/* CartesianFaceUniqueIdBuilder.cc                             (C) 2000-2022 */
 /*                                                                           */
 /* Construction des indentifiants uniques des faces en cartésien.            */
 /*---------------------------------------------------------------------------*/
@@ -13,8 +13,7 @@
 
 #include "arcane/mesh/DynamicMesh.h"
 
-#include "arcane/core/internal/ICartesianMeshGenerationInfo.h"
-
+#include "arcane/ICartesianMeshGenerationInfo.h"
 #include "arcane/IParallelMng.h"
 
 #include <array>

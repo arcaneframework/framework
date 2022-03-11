@@ -57,8 +57,8 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    Concurrency.h
    Connectivity.cc
    Connectivity.h
+   ICartesianMeshGenerationInfo.h
    core/internal/IDataInternal.h
-   core/internal/ICartesianMeshGenerationInfo.h
    core/internal/CartesianMeshGenerationInfo.h
    core/internal/CartesianMeshGenerationInfo.cc
    Data.cc

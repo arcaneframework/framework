@@ -43,12 +43,12 @@
 #include "arcane/MeshPartInfo.h"
 #include "arcane/IMeshBuilder.h"
 #include "arcane/IMeshUniqueIdMng.h"
+#include "arcane/ICartesianMeshGenerationInfo.h"
 
 #include "arcane/std/Cartesian2DMeshGenerator_axl.h"
 #include "arcane/std/Cartesian3DMeshGenerator_axl.h"
 
 #include "arcane/std/internal/SodStandardGroupsBuilder.h"
-#include "arcane/core/internal/ICartesianMeshGenerationInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

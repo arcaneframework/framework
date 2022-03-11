@@ -21,8 +21,7 @@
 #include "arcane/VariableTypes.h"
 #include "arcane/IMesh.h"
 #include "arcane/IItemFamily.h"
-
-#include "arcane/core/internal/ICartesianMeshGenerationInfo.h"
+#include "arcane/ICartesianMeshGenerationInfo.h"
 
 #include <array>
 
