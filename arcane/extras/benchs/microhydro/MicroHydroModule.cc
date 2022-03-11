@@ -116,6 +116,7 @@ class MicroHydroModule
   void hydroStartInit() override;
   void hydroInit() override;
   void hydroExit() override;
+  void hydroOnMeshChanged() override;
   void doOneIteration() override;
 
  public:
@@ -284,6 +285,23 @@ hydroStartInit()
     }
   }
   info() << "END_START_INIT";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
+ * \brief Point d'entrée appelé après un équilibrage de charge.
+ *
+ * Il faut reconstruire les informations de connectivités propres à notre module.
+ */
+void MicroHydroModule::
+hydroOnMeshChanged()
+{
+  info() << "Hydro: OnMeshChanged";
+
+  m_connectivity_view.setMesh(this->mesh());
+  _computeNodeIndexInCells();
 }
 
 /*---------------------------------------------------------------------------*/
