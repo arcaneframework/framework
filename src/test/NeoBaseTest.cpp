@@ -571,6 +571,51 @@ TEST(NeoTestPropertyView, test_property_const_view) {
 
 //----------------------------------------------------------------------------/
 
+TEST(NeoTestPropertyView, test_property_iterator){
+  std::vector data{1,2,3,4,5,6,7};
+  std::vector indexes{0,3,6};
+  Neo::PropertyView<int>::PropertyViewIterator property_view_iterator{indexes.begin(),data.data()};
+  // right operator
+  for (auto index : indexes) {
+    EXPECT_EQ(*property_view_iterator, data[index]);
+    property_view_iterator++;
+  }
+  --property_view_iterator;
+  for (auto rindex_iterator = indexes.rbegin(); rindex_iterator != indexes.rend();++rindex_iterator){
+    EXPECT_EQ(*property_view_iterator,data[*rindex_iterator]);
+    std::cout << *property_view_iterator << " " ;
+    property_view_iterator--;
+  }
+  ++property_view_iterator;
+  // left operator
+  for (auto index : indexes) {
+    EXPECT_EQ(*property_view_iterator, data[index]);
+    ++property_view_iterator;
+  }
+  property_view_iterator--;
+  for (auto rindex_iterator = indexes.rbegin(); rindex_iterator != indexes.rend();++rindex_iterator){
+    EXPECT_EQ(*property_view_iterator,data[*rindex_iterator]);
+    --property_view_iterator;
+  }
+  ++property_view_iterator;
+  EXPECT_EQ(*(property_view_iterator+2),data[indexes[2]]);
+  EXPECT_EQ(*(property_view_iterator-2),data[indexes[0]]);
+  EXPECT_EQ(*(property_view_iterator+=2),data[indexes[2]]);
+  EXPECT_EQ(*(property_view_iterator-=2),data[indexes[0]]);
+
+  auto property_view_iterator2 {property_view_iterator};
+  EXPECT_TRUE(property_view_iterator == property_view_iterator2);
+  EXPECT_FALSE(property_view_iterator!=property_view_iterator2);
+
+  // check operator->
+  std::vector<std::string> data_string {"hello","world", "!"};
+  indexes = {0,1};
+  Neo::PropertyView<std::string>::PropertyViewIterator property_view_iterator3{indexes.begin(),data_string.data()};
+  EXPECT_EQ(property_view_iterator3->size(),data_string[0].size());
+}
+
+//----------------------------------------------------------------------------/
+
 TEST(NeoTestPropertyGraph, test_property_graph_info) {
   std::cout << "Test Property Graph" << std::endl;
   Neo::MeshBase mesh{ "test" };
