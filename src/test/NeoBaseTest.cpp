@@ -41,8 +41,8 @@ TEST(NeoUtils, test_array_view) {
   std::vector<int> dim2_const_view_vector_copy{ dim2_const_view.copy() };
   EXPECT_TRUE(std::equal(dim2_vec.begin(), dim2_vec.end(), dim2_const_view_vector_copy.begin()));
   // Try out of bound error
-  EXPECT_DEATH(view[4], ".*i<m_size.*");
-  EXPECT_DEATH(dim2_view[0][4], ".*i<m_size.*");
+  if constexpr (_debug) {EXPECT_DEATH(view[4], ".*i<m_size.*");}
+  if constexpr (_debug) {EXPECT_DEATH(dim2_view[0][4], ".*i<m_size.*");}
 }
 
 void _testItemLocalIds(Neo::utils::Int32 const& first_lid,
@@ -226,10 +226,10 @@ TEST(NeoTestProperty, test_property) {
   std::cout << "extracted_values_ref " << extracted_values_ref << std::endl;
   EXPECT_TRUE(std::equal(extracted_values.begin(), extracted_values.end(), extracted_values_ref.begin()));
   // todo check throw if lids out of bound
-  ASSERT_DEATH(property[1000], ".*Input item lid.*");
-  ASSERT_DEATH(const_property[1000], ".*Input item lid.*");
+  if constexpr (_debug) {EXPECT_DEATH(property[1000], ".*Input item lid.*");}
+  if constexpr (_debug) {EXPECT_DEATH(const_property[1000], ".*Input item lid.*");}
   extracted_lids = { 100, 1000, 1000000 };
-  ASSERT_DEATH(property[extracted_lids], ".*Max input item lid.*");
+  if constexpr (_debug) {EXPECT_DEATH(property[extracted_lids], ".*Max input item lid.*");}
   // Check append with holes, contiguous range
   item_range = { Neo::ItemLocalIds{ {}, 8, 2 } };
   values = { 8, 9 };
@@ -293,12 +293,12 @@ TEST(NeoTestProperty, test_property) {
 TEST(NeoTestArrayProperty, test_array_property) {
   auto array_property = Neo::ArrayProperty<Neo::utils::Int32>{ "test_array_property" };
   // check assert (debug only)
-  if constexpr (_debug) EXPECT_DEATH(array_property[Neo::utils::NULL_ITEM_LID], ".*item local id must be >0.*");
+  if constexpr (_debug) {EXPECT_DEATH(array_property[Neo::utils::NULL_ITEM_LID], ".*item local id must be >0.*");}
   // add elements: 5 items with one value
   Neo::ItemRange item_range{ Neo::ItemLocalIds{ {}, 0, 5 } };
   std::vector<Neo::utils::Int32> values{ 0, 1, 2, 3, 4 };
   // Check cannot Try to init before resize
-  if constexpr (_debug) EXPECT_DEATH(array_property.init(item_range, values), ".*call resize before init.*");
+  if constexpr (_debug) {EXPECT_DEATH(array_property.init(item_range, values), ".*call resize before init.*");}
   array_property.resize({ 1, 1, 1, 1, 1 });
   array_property.init(item_range, values);
   array_property.debugPrint();
@@ -516,8 +516,9 @@ TEST(NeoTestPropertyView, test_property_view) {
   partial_property_view[2] = new_val;
   EXPECT_EQ(property[local_ids[2]], new_val);
   // Check out of bound
-  EXPECT_DEATH(property_view[7], ".*Error, exceeds property view size.*");
-  EXPECT_DEATH(partial_property_view[3], ".*Error, exceeds property view size.*");
+  if constexpr (_debug) {EXPECT_DEATH(property_view[7], ".*Error, exceeds property view size.*");}
+  if constexpr (_debug) {EXPECT_DEATH(partial_property_view[3], ".*Error, exceeds property view size.*");}
+
 }
 
 //----------------------------------------------------------------------------/
@@ -536,8 +537,8 @@ TEST(NeoTestPropertyView, test_property_const_view) {
   for (auto i = 0; i < partial_item_range.size(); ++i) {
     std::cout << "prop values at index " << i << " " << partial_property_const_view[i] << std::endl;
   }
-  EXPECT_DEATH(property_const_view[7], ".*Error, exceeds property view size.*");
-  EXPECT_DEATH(partial_property_const_view[3], ".*Error, exceeds property view size.*");
+  if constexpr (_debug) {EXPECT_DEATH(property_const_view[7], ".*Error, exceeds property view size.*");}
+  if constexpr (_debug) {EXPECT_DEATH(partial_property_const_view[3], ".*Error, exceeds property view size.*");}
 }
 
 //----------------------------------------------------------------------------/
