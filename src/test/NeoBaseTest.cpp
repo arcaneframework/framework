@@ -321,6 +321,10 @@ TEST(NeoTestArrayProperty, test_array_property) {
   EXPECT_EQ(values.size(), array_property.size());
   std::vector<int> indexes{ 0, 1, 2, 3, 4 }; // to check indexes
   EXPECT_TRUE(std::equal(indexes.begin(), indexes.end(), array_property.m_indexes.begin()));
+  auto property_1D_view = array_property.view();
+  auto const property_1D_const_view = array_property.constView();
+  EXPECT_TRUE(std::equal(property_1D_view.begin(),property_1D_view.end(),values.begin()));
+  EXPECT_TRUE(std::equal(property_1D_const_view.begin(),property_1D_const_view.end(),values.begin()));
   // Add 3 items
   std::vector<int> nb_element_per_item{ 0, 3, 1 };
   item_range = { Neo::ItemLocalIds{ { 5, 6, 7 } } };
