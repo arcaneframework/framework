@@ -22,7 +22,7 @@
         <origin>1.0 2.0 3.0</origin>
         <generate-sod-groups>true</generate-sod-groups>
         <x><n>200</n><length>1.0</length></x>
-        <y><n>40</n><length>0.3</length></y>
+        <y><n>20</n><length>0.3</length></y>
         <z><n>30</n><length>0.3</length></z>
       </generator>
 
@@ -49,7 +49,8 @@
   </arcane-load-balance>
 
   <additional-variables>
-    <nb-additional-cell-variable>500</nb-additional-cell-variable>
+    <nb-additional-cell-variable>200</nb-additional-cell-variable>
+    <cell-array-variable-size>50</cell-array-variable-size>
   </additional-variables>
 
   <!-- Configuration du module hydrodynamique -->

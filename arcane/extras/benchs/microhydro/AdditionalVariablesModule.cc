@@ -48,6 +48,7 @@ class AdditionalVariablesModule
  private:
 
   UniqueArray<VariableCellReal*> m_cell_variables;
+  VariableCellArrayReal m_cell_2d_variable;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -56,6 +57,7 @@ class AdditionalVariablesModule
 AdditionalVariablesModule::
 AdditionalVariablesModule(const ModuleBuildInfo& sbi)
 : ArcaneAdditionalVariablesObject(sbi)
+, m_cell_2d_variable(VariableBuildInfo(sbi.meshHandle(),"Cell3DVariable"))
 {
 }
 
@@ -82,6 +84,14 @@ doInit()
     ENUMERATE_CELL (icell, allCells()) {
       Real v = static_cast<Real>((i + 1) * 5 + (icell.itemLocalId() * 2));
       current_var[icell] = v;
+    }
+  }
+
+  {
+    Integer nb_value = options()->cellArrayVariableSize();
+    if (nb_value > 0) {
+      m_cell_2d_variable.resize(nb_value);
+      m_cell_2d_variable.fill(2.0);
     }
   }
 }

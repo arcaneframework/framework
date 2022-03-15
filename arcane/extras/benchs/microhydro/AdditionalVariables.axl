@@ -22,6 +22,17 @@
       </description>
     </simple>
 
+    <simple
+      name = "cell-array-variable-size"
+      type = "integer"
+      default = "0"
+      >
+      <userclass>User</userclass>
+      <description>
+        Nombre d'éléments pour les variables tableaux aux mailles
+      </description>
+    </simple>
+
   </options>
   
 </module>
