@@ -141,4 +141,5 @@ set( ARCANE_SOURCES
 set(AXL_FILES
   ArcaneCaseMeshMasterService
   ArcaneCaseMeshService
+  MeshPartitionerTesterService
 )

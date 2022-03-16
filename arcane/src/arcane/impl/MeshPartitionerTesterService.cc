@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshPartitionerTester.cc                                    (C) 2000-2021 */
+/* MeshPartitionerTesterService.cc                             (C) 2000-2022 */
 /*                                                                           */
 /* Testeur de partitionneur de maillage.                                     */
 /*---------------------------------------------------------------------------*/
@@ -27,8 +27,8 @@
 #include "arcane/IMeshPartitioner.h"
 #include "arcane/BasicService.h"
 
-
 #include "arcane/IMeshPartitionConstraintMng.h"
+#include "arcane/impl/MeshPartitionerTesterService_axl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -50,7 +50,7 @@ namespace Arcane
  * en temps de calcul. 
  */
 class MeshPartitionerTester
-: public BasicService
+: public ArcaneMeshPartitionerTesterServiceObject
 , public IMeshPartitioner
 {
  public:
@@ -118,7 +118,7 @@ class MeshPartitionerTester
 
 MeshPartitionerTester::
 MeshPartitionerTester(const ServiceBuildInfo& sbi)
-: BasicService(sbi)
+: ArcaneMeshPartitionerTesterServiceObject(sbi)
 , m_imbalance(0.0)
 , m_max_imbalance(0.0)
 , m_max_computation_time(0.0)
@@ -134,7 +134,11 @@ partitionMesh(bool initial_partition)
 {
   IPrimaryMesh* mesh = this->mesh()->toPrimaryMesh();
 
-  info() << "Test repartitionnement maillage\n";
+  Int32 sub_rank_divider = 0;
+  if (options()){
+    sub_rank_divider = options()->subRankDivider();
+  }
+  info() << "Using MeshPartitionerTester sub_rank_divider=" << sub_rank_divider;
 
   ISubDomain* sd = subDomain();
   IParallelMng* pm = sd->parallelMng();
@@ -186,15 +190,17 @@ partitionMesh(bool initial_partition)
         if (cell_index<(max_cell_index+(sid*10))){
           // Force la premiere maille à rester dans ce sous-domaine
           // pour être sur qu'il en reste au moins une.
-          if (cell_index!=0)
-            new_owner = (new_owner*2 + current_iteration + cell_index/10 + 17) % nb_rank;
+          if (cell_index!=0){
+            Int32 xx = (new_owner*2 + current_iteration + cell_index/10 + 17) % nb_rank;
+            if (sub_rank_divider>8){
+              xx = xx / sub_rank_divider;
+              xx = (xx*sub_rank_divider + new_owner) % nb_rank;
+            }
+            new_owner = xx;
+          }
           ++cell_index;
         }
         cells_new_owner[cell] = new_owner;
-        if (cell.owner()!=new_owner){
-          debug(Trace::High) << "Proc " << sid << " change maille: cell=" << ItemPrinter(cell)
-                             << " newowner=" << new_owner;
-        }
       }
     }
   }
