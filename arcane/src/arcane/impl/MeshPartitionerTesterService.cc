@@ -192,7 +192,7 @@ partitionMesh(bool initial_partition)
           // pour être sur qu'il en reste au moins une.
           if (cell_index!=0){
             Int32 xx = (new_owner*2 + current_iteration + cell_index/10 + 17) % nb_rank;
-            if (sub_rank_divider>8){
+            if (sub_rank_divider>0){
               xx = xx / sub_rank_divider;
               xx = (xx*sub_rank_divider + new_owner) % nb_rank;
             }
