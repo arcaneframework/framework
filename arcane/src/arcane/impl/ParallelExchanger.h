@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelExchanger.h                                         (C) 2000-2021 */
+/* ParallelExchanger.h                                         (C) 2000-2022 */
 /*                                                                           */
 /* Echange d'informations entre processeurs.                                 */
 /*---------------------------------------------------------------------------*/
@@ -14,11 +14,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IParallelExchanger.h"
-
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/String.h"
+
+#include "arcane/IParallelExchanger.h"
+#include "arcane/Timer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -93,13 +94,13 @@ class ARCANE_IMPL_EXPORT ParallelExchanger
   UniqueArray<SerializeMessage*> m_send_serialize_infos;
 
   //! Message envoyé à soi-même.
-  SerializeMessage* m_own_send_message;
+  SerializeMessage* m_own_send_message = nullptr;
 
   //! Message reçu par soi-même.
-  SerializeMessage* m_own_recv_message;
+  SerializeMessage* m_own_recv_message = nullptr;
 
   //! Mode d'échange.
-  eExchangeMode m_exchange_mode;
+  eExchangeMode m_exchange_mode = EM_Independant;
 
   //! Niveau de verbosité
   Int32 m_verbosity_level = 0;
@@ -107,11 +108,14 @@ class ARCANE_IMPL_EXPORT ParallelExchanger
   //! Nom de l'instance utilisé pour l'affichage
   String m_name;
 
+  Timer m_timer;
+
  private:
 
   void _initializeCommunicationsMessages();
   void _processExchangeCollective();
   void _processExchangeWithControl(Int32 max_pending_message);
+  void _processExchange(const ParallelExchangerOptions& options);
 };
 
 /*---------------------------------------------------------------------------*/
