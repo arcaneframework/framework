@@ -17,6 +17,7 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/String.h"
+#include "arcane/utils/Ref.h"
 
 #include "arcane/IParallelExchanger.h"
 #include "arcane/Timer.h"
@@ -37,15 +38,23 @@ class SerializeMessage;
 /*!
  * \internal
  * \brief Echange d'informations entre processeurs.
+ * \sa IParallelExchanger
 */
 class ARCANE_IMPL_EXPORT ParallelExchanger
 : public TraceAccessor
 , public IParallelExchanger
 {
+  friend ARCANE_IMPL_EXPORT Ref<IParallelExchanger> createParallelExchangerImpl(Ref<IParallelMng> pm);
+
  public:
 
+  [[deprecated("Y2022: Use Arcane::createParallelExchangerImpl() instead")]]
   ParallelExchanger(IParallelMng* pm);
   ~ParallelExchanger() override;
+
+ private:
+
+  ParallelExchanger(Ref<IParallelMng> pm);
 
  public:
 
@@ -56,7 +65,7 @@ class ARCANE_IMPL_EXPORT ParallelExchanger
 
  public:
 
-  IParallelMng* parallelMng() const override { return m_parallel_mng; }
+  IParallelMng* parallelMng() const override;
   Integer nbSender() const override { return m_send_ranks.size(); }
   Int32ConstArrayView senderRanks() const override { return m_send_ranks; }
   void addSender(Int32 rank) override { m_send_ranks.add(rank); }
@@ -76,7 +85,7 @@ class ARCANE_IMPL_EXPORT ParallelExchanger
 
  private:
   
-  IParallelMng* m_parallel_mng;
+  Ref<IParallelMng> m_parallel_mng;
 
   //! Liste des sous-domaines à envoyer
   Int32UniqueArray m_send_ranks;
@@ -108,6 +117,7 @@ class ARCANE_IMPL_EXPORT ParallelExchanger
   //! Nom de l'instance utilisé pour l'affichage
   String m_name;
 
+  //! Timer pour mesurer le temps passé dans les échanges
   Timer m_timer;
 
  private:
@@ -121,10 +131,15 @@ class ARCANE_IMPL_EXPORT ParallelExchanger
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+extern "C++" ARCANE_IMPL_EXPORT Ref<IParallelExchanger>
+createParallelExchangerImpl(Ref<IParallelMng> pm);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #endif  
-

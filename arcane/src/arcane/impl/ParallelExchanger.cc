@@ -37,6 +37,15 @@ namespace Arcane
 
 ParallelExchanger::
 ParallelExchanger(IParallelMng* pm)
+: ParallelExchanger(makeRef(pm))
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ParallelExchanger::
+ParallelExchanger(Ref<IParallelMng> pm)
 : TraceAccessor(pm->traceMng())
 , m_parallel_mng(pm)
 , m_timer(pm->timerMng(),"ParallelExchangerTimer",Timer::TimerReal)
@@ -57,6 +66,15 @@ ParallelExchanger::
   m_comms_buf.clear();
   delete m_own_send_message;
   delete m_own_recv_message;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IParallelMng* ParallelExchanger::
+parallelMng() const
+{
+  return m_parallel_mng.get();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -237,7 +255,7 @@ _processExchangeCollective()
 {
   info() << "Using collective exchange in ParallelExchanger";
 
-  IParallelMng* pm = m_parallel_mng;
+  IParallelMng* pm = m_parallel_mng.get();
   Int32 nb_rank = pm->commSize();
 
   Int32UniqueArray send_counts(nb_rank,0);
@@ -460,6 +478,15 @@ _processExchangeWithControl(Int32 max_pending_message)
       nb_done = max_pending_message;
     nb_to_add = nb_done;
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IParallelExchanger>
+createParallelExchangerImpl(Ref<IParallelMng> pm)
+{
+  return makeRef<IParallelExchanger>(new ParallelExchanger(pm));
 }
 
 /*---------------------------------------------------------------------------*/

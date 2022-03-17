@@ -59,7 +59,7 @@ createTransferValuesOperation(IParallelMng* pm)
 Ref<IParallelExchanger> ParallelMngUtilsFactoryBase::
 createExchanger(IParallelMng* pm)
 {
-  return makeRef<IParallelExchanger>(new ParallelExchanger(pm));
+  return createParallelExchangerImpl(makeRef(pm));
 }
 
 /*---------------------------------------------------------------------------*/
