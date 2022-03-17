@@ -609,7 +609,7 @@ jobs:
       - arcane-install
       - alien-install
       - alienlegacy-install
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     timeout-minutes: 180
     container:
       image: ghcr.io/arcaneframework/centos-gimkl-2018b-alienlegacy:7-latest
