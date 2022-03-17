@@ -37,11 +37,18 @@ namespace Arcane
 
 ParallelExchanger::
 ParallelExchanger(IParallelMng* pm)
+: ParallelExchanger(makeRef(pm))
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ParallelExchanger::
+ParallelExchanger(Ref<IParallelMng> pm)
 : TraceAccessor(pm->traceMng())
 , m_parallel_mng(pm)
-, m_own_send_message(0)
-, m_own_recv_message(0)
-, m_exchange_mode(EM_Independant)
+, m_timer(pm->timerMng(),"ParallelExchangerTimer",Timer::TimerReal)
 {
   String use_collective_str = platform::getEnvironmentVariable("ARCANE_PARALLEL_EXCHANGER_USE_COLLECTIVE");
   if (use_collective_str=="1" || use_collective_str=="TRUE")
@@ -64,16 +71,23 @@ ParallelExchanger::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+IParallelMng* ParallelExchanger::
+parallelMng() const
+{
+  return m_parallel_mng.get();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 bool ParallelExchanger::
 initializeCommunicationsMessages()
 {
-  Integer nb_send_rank = m_send_ranks.size();
-  IntegerUniqueArray gather_input_send_ranks(nb_send_rank+1);
+  Int32 nb_send_rank = m_send_ranks.size();
+  UniqueArray<Int32> gather_input_send_ranks(nb_send_rank+1);
   gather_input_send_ranks[0] = nb_send_rank;
   std::copy(std::begin(m_send_ranks),std::end(m_send_ranks),
             std::begin(gather_input_send_ranks)+1);
-
-  debug() << "Number of subdomain to communicate with: " << nb_send_rank;
 
   IntegerUniqueArray gather_output_send_ranks;
   Integer nb_rank = m_parallel_mng->commSize();
@@ -152,17 +166,9 @@ _initializeCommunicationsMessages()
 void ParallelExchanger::
 processExchange()
 {
-  if (m_verbosity_level>=1)
-    info() << "ParallelExchanger " << m_name << " ProcessExchange (begin)"
-           << " date=" << platform::getCurrentDateTime();
-
   ParallelExchangerOptions options;
   options.setExchangeMode(static_cast<ParallelExchangerOptions::eExchangeMode>(m_exchange_mode));
   processExchange(options);
-
-  if (m_verbosity_level>=1)
-    info() << "ParallelExchanger " << m_name << " ProcessExchange (end)"
-           << " date=" << platform::getCurrentDateTime();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -170,6 +176,26 @@ processExchange()
 
 void ParallelExchanger::
 processExchange(const ParallelExchangerOptions& options)
+{
+  if (m_verbosity_level>=1)
+    info() << "ParallelExchanger " << m_name << ": ProcessExchange (begin)"
+           << " date=" << platform::getCurrentDateTime();
+
+  {
+    Timer::Sentry sentry(&m_timer);
+    _processExchange(options);
+  }
+
+  if (m_verbosity_level>=1)
+    info() << "ParallelExchanger " << m_name << ": ProcessExchange (end)"
+           << " total_time=" << m_timer.lastActivationTime();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParallelExchanger::
+_processExchange(const ParallelExchangerOptions& options)
 {
   if (m_verbosity_level>=1){
     Int64 total_size = 0;
@@ -179,7 +205,7 @@ processExchange(const ParallelExchangerOptions& options)
       if (m_verbosity_level>=2)
         info() << "Send rank=" << comm->destination() << " size=" << message_size;
     }
-    info() << "ParallelExchanger " << m_name << " : process exchange"
+    info() << "ParallelExchanger " << m_name << ": ProcessExchange"
            << " total_size=" << total_size << " nb_message=" << m_comms_buf.size();
   }
 
@@ -229,7 +255,7 @@ _processExchangeCollective()
 {
   info() << "Using collective exchange in ParallelExchanger";
 
-  IParallelMng* pm = m_parallel_mng;
+  IParallelMng* pm = m_parallel_mng.get();
   Int32 nb_rank = pm->commSize();
 
   Int32UniqueArray send_counts(nb_rank,0);
@@ -253,7 +279,7 @@ _processExchangeCollective()
 
   // Détermine le nombre total d'infos à envoyer et recevoir
 
-  //TODO: En cas débordement, il faudrait le faire en plusieurs morceaux
+  // TODO: En cas débordement, il faudrait le faire en plusieurs morceaux
   // ou alors revenir aux échanges point à point.
   Int32 total_send = 0;
   Int32 total_recv = 0;
@@ -300,8 +326,9 @@ _processExchangeCollective()
     dest_buf.copy(val_buf);
   }
 
-  info(4) << "AllToAllVariable total_send=" << total_send
-          << " total_recv=" << total_recv;
+  if (is_verbose)
+    info() << "AllToAllVariable total_send=" << total_send
+           << " total_recv=" << total_recv;
 
   {
     Timer::SimplePrinter sp(traceMng(),"ParallelExchanger: sending values with AllToAll");
@@ -451,6 +478,15 @@ _processExchangeWithControl(Int32 max_pending_message)
       nb_done = max_pending_message;
     nb_to_add = nb_done;
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IParallelExchanger>
+createParallelExchangerImpl(Ref<IParallelMng> pm)
+{
+  return makeRef<IParallelExchanger>(new ParallelExchanger(pm));
 }
 
 /*---------------------------------------------------------------------------*/
