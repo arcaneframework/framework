@@ -1,0 +1,47 @@
+# CI to compile in all components (Arccon/Arccore/Axlstar/Arcane) together using 'vcpkg'
+name: compile-all-vcpkg
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  job:
+    name: ${{ matrix.os }}-ci-direct
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-20.04
+            triplet: x64-linux
+            vcpkg_os: ubuntu-20.04
+            cmake_specific_args : '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
+          - os: 'windows-2019'
+            triplet: x64-windows
+            vcpkg_os: windows-2019
+            cmake_specific_args : '-DCMAKE_CXX_COMPILER_LAUNCHER="ccache"'
+
+    env:
+      CCACHE_BASEDIR: ${{github.workspace}}
+      CCACHE_DIR: '${{ github.workspace }}/ccache'
+      CCACHE_COMPRESS: true
+      CCACHE_COMPRESSLEVEL: 6
+      CCACHE_MAXSIZE: 5G
+      # Indicates the CMake build directory where project files and binaries are being produced.
+      CMAKE_BUILD_DIR: ${{ github.workspace }}/builddir/
+      # Indicates the location of the vcpkg as a Git submodule of the project repository.
+      FRAMEWORKCI_ROOT_PATH: '${{ github.workspace }}/../../build_base'
+      VCPKG_ROOT: '${{ github.workspace }}/../../build_base/framework-ci/vcpkg'
+      VCPKG_BUILD_DIR: '${{ github.workspace }}/../../build_base/framework-ci/vcpkg'
+      BUILD_COMMANDS_ROOT: '${{ github.workspace }}/../../build_base/framework-ci/_build'
+      VCPKG_INSTALL_HASH_PACKAGE_NAME: '1.0.12-${{ matrix.vcpkg_os }}-${{ matrix.triplet }}'
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+      FRAMEWORKCI_BRANCH: main
+
+    steps:
+      - name: Checkout actions
+        uses: actions/checkout@v2
+        with:
+          submodules: true
