@@ -94,7 +94,7 @@ class DoKMatrix : public IMatrixImpl
       return;
     }
     Redistributor redist(
-    distribution().globalRowSize(), distribution().parallelMng(), true);
+    distribution().globalRowSize(), distribution().parallelMng(), distribution().parallelMng());
     DoKDistributor dist(redist.commPlan());
     DoKLocalMatrixT<ValueType> new_data;
     // distribute does not work if src == tgt.

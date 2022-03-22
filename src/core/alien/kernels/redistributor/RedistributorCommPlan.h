@@ -26,7 +26,7 @@
 namespace Alien
 {
 
-class RedistributorCommPlan
+class ALIEN_EXPORT RedistributorCommPlan
 {
  public:
   RedistributorCommPlan(
@@ -43,7 +43,6 @@ class RedistributorCommPlan
  private:
   void _buildTgtDist();
 
- private:
   IMessagePassingMng* m_super_pm;
   IMessagePassingMng* m_tgt_pm;
   std::unique_ptr<VectorDistribution>

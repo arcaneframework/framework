@@ -65,8 +65,10 @@ TEST(TestRedistributorRef, Redistributor)
   }
   builder.finalize();
 
+  auto small_comm = Arccore::MessagePassing::mpSplit(AlienTest::Environment::parallelMng(), (AlienTest::Environment::parallelMng()->commRank() % 2) == 0);
+
   Alien::Redistributor redist(mdist.globalRowSize(), AlienTest::Environment::parallelMng(),
-                              (AlienTest::Environment::parallelMng()->commRank() % 2) == 0);
+                              small_comm);
 
   Alien::RedistributedMatrix Aa(A, redist);
 

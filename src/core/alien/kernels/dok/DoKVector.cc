@@ -24,7 +24,7 @@ namespace Alien
 void DoKVector::_distribute()
 {
   Redistributor redist(
-  distribution().globalSize(), distribution().parallelMng(), true);
+  distribution().globalSize(), distribution().parallelMng(), distribution().parallelMng());
   DoKDistributor dist(redist.commPlan());
   dist.distribute(*this, *this);
 }

@@ -41,9 +41,8 @@ class MultiVectorImpl;
 class ALIEN_EXPORT Redistributor
 {
  public:
-  // TODO : pass a distribution
-  Redistributor(int globalSize, IMessagePassingMng* super, bool keep = true);
-  virtual ~Redistributor();
+  Redistributor(int globalSize, IMessagePassingMng* super, IMessagePassingMng* target);
+  virtual ~Redistributor() = default;
 
   /**
    * @brief Convert a Matrix from its communicator to the target communicator.
