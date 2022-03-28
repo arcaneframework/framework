@@ -39,7 +39,9 @@ enum class ItemKind {
   IK_None, IK_Node, IK_Edge, IK_Face, IK_Cell, IK_Dof
 };
 
-namespace utils {
+//----------------------------------------------------------------------------/
+
+namespace utils { // not defined in Utils.h since needs Neo::ItemKind
 
 inline std::string itemKindName(ItemKind item_kind){
   switch (item_kind) {
@@ -63,7 +65,9 @@ inline std::string itemKindName(ItemKind item_kind){
     break;
   }
 }
-}
+} // namespace utils
+
+//----------------------------------------------------------------------------/
 
 struct ItemLocalId {};
 struct ItemUniqueId {};
@@ -71,6 +75,8 @@ struct ItemUniqueId {};
 // todo: check if used ??
 using DataType = std::variant<utils::Int32, utils::Int64, utils::Real3>;// ajouter des types dans la def de famille si necessaire
 using DataIndex = std::variant<int,ItemUniqueId>;
+
+//----------------------------------------------------------------------------/
 
 struct ItemLocalIds {
   std::vector<utils::Int32 > m_non_contiguous_lids = {};
@@ -114,6 +120,8 @@ struct ItemLocalIds {
   }
 };
 
+//----------------------------------------------------------------------------/
+
 struct ItemIterator {
   using iterator_category = std::input_iterator_tag;
   using value_type = int;
@@ -141,7 +149,11 @@ struct ItemRange {
   utils::Int32 maxLocalId() const noexcept { return m_item_lids.maxLocalId();}
 
 };
-}// end namespace Neo
+//----------------------------------------------------------------------------/
+
+}// namespace Neo
+
+//----------------------------------------------------------------------------/
 
 inline
 std::ostream &operator<<(std::ostream &os, const Neo::ItemRange &item_range){
@@ -159,8 +171,10 @@ std::ostream &operator<<(std::ostream &os, const Neo::ItemRange &item_range){
   return os;
 }
 
+//----------------------------------------------------------------------------/
+
 namespace Neo{
-namespace utils {
+namespace utils { // not defined in Utils.h since needs Neo::ItemRange
 inline
 Int32 maxItem(ItemRange const &item_range) {
   if (item_range.isEmpty())
@@ -174,7 +188,9 @@ Int32 minItem(ItemRange const &item_range) {
     return utils::NULL_ITEM_LID;
   return *std::min_element(item_range.begin(), item_range.end());
 }
-}
+} // namespace utils
+
+//----------------------------------------------------------------------------/
 
 template <typename DataType>
 class PropertyView
@@ -263,6 +279,8 @@ public:
   PropertyViewIterator end()   { return {m_indexes.end(),m_data_view.end()};}
 };
 
+//----------------------------------------------------------------------------/
+
 template <typename DataType>
 class PropertyConstView
 {
@@ -277,6 +295,8 @@ public:
   auto begin() const { return m_data_view.begin(); };
   auto end()   const { return m_data_view.end(); };
 };
+
+//----------------------------------------------------------------------------/
 
 class PropertyBase{
 public:
@@ -396,6 +416,8 @@ public:
   auto end() noexcept { return m_data.end(); }
   auto end() const noexcept { return m_data.end(); }
 };
+
+//----------------------------------------------------------------------------/
 
 template <typename DataType>
 class ArrayProperty : public PropertyBase {
@@ -588,6 +610,8 @@ private:
   }
 };
 
+//----------------------------------------------------------------------------/
+
 // special case of local ids property
 class ItemLidsProperty : public PropertyBase {
 public:
@@ -735,6 +759,8 @@ private:
 
 };
 
+//----------------------------------------------------------------------------/
+
 using Property = std::variant<
     PropertyT<utils::Int32>,
     //PropertyT<int>, // int and Int32 are same types
@@ -744,7 +770,9 @@ using Property = std::variant<
     //ArrayProperty<int>, // int and Int32 are same types
     ArrayProperty<utils::Int32>>;
 
-namespace tye {
+//----------------------------------------------------------------------------/
+
+namespace tye {// type engine : tool to visit variant
 template <typename... T> struct VisitorOverload : public T... {
   using T::operator()...;
 };
@@ -794,8 +822,9 @@ void apply(Func& func, Variant& arg1, Variant& arg2, Variant& arg3) {
 // template deduction guides
 template <typename...T> VisitorOverload(T...) -> VisitorOverload<T...>;
 
-}// todo move in TypeEngine (proposal change namespace to tye..)
+}// namespace tye todo move in TypeEngine
 
+//----------------------------------------------------------------------------/
 
 class Family {
 public:
@@ -897,6 +926,8 @@ private :
   }
 };
 
+//----------------------------------------------------------------------------/
+
 class FamilyMap {
  private:
   std::map<std::pair<ItemKind,std::string>, std::unique_ptr<Family>> m_families;
@@ -941,6 +972,8 @@ class FamilyMap {
 
 };
 
+//----------------------------------------------------------------------------/
+
 enum class PropertyStatus {ExistingProperty,ComputedProperty};
 struct PropertyHolder{
   Family& m_family;
@@ -960,10 +993,11 @@ struct InProperty : public PropertyHolder{};
 
 struct OutProperty : public PropertyHolder{};
 
+//----------------------------------------------------------------------------/
+
 struct IAlgorithm {
   virtual void operator() () = 0;
 };
-
 
 template <typename Algorithm>
 struct AlgoHandler : public IAlgorithm {
@@ -1021,6 +1055,8 @@ struct NoDepsDualOutAlgoHandler : public IAlgorithm {
   }
 };
 
+//----------------------------------------------------------------------------/
+
 class MeshBase;
 
 class EndOfMeshUpdate {
@@ -1028,6 +1064,8 @@ class EndOfMeshUpdate {
 private:
   EndOfMeshUpdate() = default;
 };
+
+//----------------------------------------------------------------------------/
 
 struct FutureItemRange {
 
@@ -1054,8 +1092,9 @@ struct FutureItemRange {
   virtual ItemRange& __internal__() {
     return new_items;
   }
-
 };
+
+//----------------------------------------------------------------------------/
 
 struct FilteredFutureItemRange : public FutureItemRange {
 
@@ -1098,6 +1137,8 @@ struct FilteredFutureItemRange : public FutureItemRange {
   }
 };
 
+//----------------------------------------------------------------------------/
+
 inline Neo::FutureItemRange make_future_range(){
   return FutureItemRange{};
 }
@@ -1106,6 +1147,8 @@ inline Neo::FilteredFutureItemRange make_future_range(FutureItemRange& future_it
                                                std::vector<int> filter) {
   return FilteredFutureItemRange{future_item_range,std::move(filter)};
 }
+
+//----------------------------------------------------------------------------/
 
 /*!
  * Create a FilteredFutureItemRange filtering an FutureItemRange. The filter is here computed.
@@ -1137,6 +1180,9 @@ inline Neo::FilteredFutureItemRange make_future_range(FutureItemRange& future_it
   return FilteredFutureItemRange{future_item_range,std::move(filter)};
 
 }
+
+//----------------------------------------------------------------------------/
+//----------------------------------------------------------------------------/
 
 class MeshBase {
  public:
@@ -1318,7 +1364,10 @@ public:
 
 };
 
-} // end namespace Neo
+//----------------------------------------------------------------------------/
+//----------------------------------------------------------------------------/
+
+}// namespace Neo
 
 
 #endif // SRC_NEO_H
