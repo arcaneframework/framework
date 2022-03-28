@@ -1,17 +1,20 @@
-//
-// Created by dechaiss on 1/22/20.
-//
-
-/*-------------------------
- * Neo library
- * Evolutive mesh test
- * sdc (C)-2020
- *
- *-------------------------
- */
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* NeoEvolutiveMeshTest.cpp                        (C) 2000-2022             */
+/*                                                                           */
+/* First very basic mesh evolution test                                      */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #include "neo/Neo.h"
 #include "gtest/gtest.h"
+
+//----------------------------------------------------------------------------/
 
 auto& addCellFamily(Neo::MeshBase & mesh,std::string family_name){
   auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell,std::move(family_name));
@@ -30,6 +33,8 @@ auto& addFaceFamily(Neo::MeshBase & mesh,std::string family_name){
   face_family.addProperty<Neo::utils::Int64>(family_name+"_uids");
   return face_family;
 }
+
+//----------------------------------------------------------------------------/
 
 // todo create another signature where uids are moved, or make clear that they potentially are...
 void addItems(Neo::MeshBase & mesh, Neo::Family& family, std::vector<Neo::utils::Int64>& uids, Neo::FutureItemRange & added_item_range)
@@ -58,6 +63,8 @@ void addItems(Neo::MeshBase & mesh, Neo::Family& family, std::vector<Neo::utils:
         item_uids_property.debugPrint();
       });// need to add a property check for existing uid
 }
+
+//----------------------------------------------------------------------------/
 
 // todo same interface with nb_connected_item_per_item as an array
 void addConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
@@ -113,6 +120,8 @@ void addConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
 //      });
 }
 
+//----------------------------------------------------------------------------/
+
 void addConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
                      Neo::FutureItemRange &source_items,
                      Neo::Family& target_family,
@@ -123,6 +132,7 @@ void addConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
                   nb_connected_item_per_item, connected_item_uids);
 }
 
+//----------------------------------------------------------------------------/
 
 // todo : define 2 signatures to indicate eventual memory stealing...?
 void setNodeCoords(Neo::MeshBase & mesh, Neo::Family& node_family, Neo::FutureItemRange & added_node_range, std::vector<Neo::utils::Real3>& node_coords){
@@ -140,6 +150,8 @@ void setNodeCoords(Neo::MeshBase & mesh, Neo::Family& node_family, Neo::FutureIt
       });
 }
 
+//----------------------------------------------------------------------------/
+
 void moveNodes(Neo::MeshBase & mesh, Neo::Family& node_family, std::vector<Neo::utils::Int64>const& node_uids, std::vector<Neo::utils::Real3>& node_coords){
   mesh.addAlgorithm(
       Neo::InProperty{node_family,node_family.lidPropName()},
@@ -153,6 +165,8 @@ void moveNodes(Neo::MeshBase & mesh, Neo::Family& node_family, std::vector<Neo::
         node_coords_property.debugPrint();
       });
 }
+
+//----------------------------------------------------------------------------/
 
 void removeItems(Neo::MeshBase & mesh, Neo::Family& family, std::vector<Neo::utils::Int64> const& removed_item_uids){
   const std::string removed_item_property_name{"removed_"+family.m_name+"_items"};
@@ -189,9 +203,13 @@ void removeItems(Neo::MeshBase & mesh, Neo::Family& family, std::vector<Neo::uti
       });
 }
 
+//----------------------------------------------------------------------------/
+
 static const std::string cell_family_name {"CellFamily"};
 static const std::string face_family_name {"FaceFamily"};
 static const std::string node_family_name {"NodeFamily"};
+
+//----------------------------------------------------------------------------/
 
 void addCells(Neo::MeshBase &mesh){
   auto& cell_family = addCellFamily(mesh,cell_family_name);
@@ -234,11 +252,15 @@ void addCells(Neo::MeshBase &mesh){
   std::cout << "Added faces range after applyAlgorithms: " << new_faces;
 }
 
+//----------------------------------------------------------------------------/
+
 TEST(EvolutiveMeshTest,AddCells)
 {
   auto mesh = Neo::MeshBase{"evolutive_neo_mesh"};
   addCells(mesh);
 }
+
+//----------------------------------------------------------------------------/
 
 TEST(EvolutiveMeshTest,MoveNodes)
 {
@@ -251,6 +273,8 @@ TEST(EvolutiveMeshTest,MoveNodes)
   moveNodes(mesh, mesh.getFamily(Neo::ItemKind::IK_Node, node_family_name),node_uids, node_coords);
   mesh.applyAlgorithms();
 }
+
+//----------------------------------------------------------------------------/
 
 TEST(EvolutiveMeshTest,RemoveCells)
 {
