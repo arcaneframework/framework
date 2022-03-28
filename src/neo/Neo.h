@@ -269,9 +269,13 @@ class PropertyConstView
 public:
   std::vector<int> const m_indexes;
   Neo::utils::ConstArrayView<DataType> m_data_view;
+
   DataType const& operator[] (int index) const{
     assert(("Error, exceeds property view size",index < m_indexes.size()));
     return m_data_view[m_indexes[index]];}
+
+  auto begin() const { return m_data_view.begin(); };
+  auto end()   const { return m_data_view.end(); };
 };
 
 class PropertyBase{
