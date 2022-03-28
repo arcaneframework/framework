@@ -234,8 +234,7 @@ public:
     }
 
     bool operator==(PropertyViewIterator const& prop_view_iterator) const noexcept{
-      return (m_indexes_interator == prop_view_iterator.m_indexes_interator
-              &&  m_data_iterator == prop_view_iterator.m_data_iterator);
+      return (m_indexes_interator == prop_view_iterator.m_indexes_interator);
     }
     bool operator!=(PropertyViewIterator const& prop_view_iterator) const noexcept{
       return !(*this==prop_view_iterator);
