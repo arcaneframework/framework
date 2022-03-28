@@ -57,6 +57,10 @@ jobs:
     strategy:
       fail-fast: false
     steps:
+      - name: Check permissions
+        shell: bash
+        run: id && ls -lnd /__w && ls -lnR /__w
+        continue-on-error: true
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -93,6 +97,10 @@ jobs:
     strategy:
       fail-fast: false
     steps:
+      - name: Check permissions
+        shell: bash
+        run: id && ls -lnd /__w && ls -lnR /__w
+        continue-on-error: true
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -155,6 +163,10 @@ jobs:
     strategy:
       fail-fast: false
     steps:
+      - name: Check permissions
+        shell: bash
+        run: id && ls -lnd /__w && ls -lnR /__w
+        continue-on-error: true
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -199,6 +211,10 @@ jobs:
     strategy:
       fail-fast: false
     steps:
+      - name: Check permissions
+        shell: bash
+        run: id && ls -lnd /__w && ls -lnR /__w
+        continue-on-error: true
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -252,6 +268,10 @@ jobs:
     strategy:
       fail-fast: false
     steps:
+      - name: Check permissions
+        shell: bash
+        run: id && ls -lnd /__w && ls -lnR /__w
+        continue-on-error: true
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -298,7 +318,7 @@ jobs:
           restore-keys: ${{ env.CC_KEY_PREFIX }}-arcane-${{ env.CM_BUILD_TYPE }}-
       - name: Configure
         shell: bash
-        run: cmake -S ${{ env.ARCANE_SOURCE_DIR }}/arcane -B ${{ env.ARCANE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCANE_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArccore_DIR=${{ env.ARCCORE_INSTALL_DIR }}/lib/cmake/Arccore -DAxlstar_DIR=${{ env.AXLSTAR_INSTALL_DIR }}/share/cmake/Axlstar -DArcDependencies_DIR=${{ env.DEPENDENCIES_INSTALL_DIR }}/share/cmake/ArcDependencies -DBUILD_SHARED_LIBS=ON -DARCANE_DEFAULT_PARTITIONER=Metis -DARCANE_WANT_TOTALVIEW=ON -DARCANE_WANT_LIBXML2=ON -DARCANE_WANT_LEGACY_CONNECTIVITY=OFF -DARCANE_WANT_CHECK=OFF -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF ${{ env.CM_CCACHE_OPTS }}
+        run: cmake -S ${{ env.ARCANE_SOURCE_DIR }}/arcane -B ${{ env.ARCANE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCANE_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArccore_DIR=${{ env.ARCCORE_INSTALL_DIR }}/lib/cmake/Arccore -DAxlstar_DIR=${{ env.AXLSTAR_INSTALL_DIR }}/share/cmake/Axlstar -DArcDependencies_DIR=${{ env.DEPENDENCIES_INSTALL_DIR }}/share/cmake/ArcDependencies -DBUILD_SHARED_LIBS=ON -DARCANE_DEFAULT_PARTITIONER=Metis -DARCANE_WANT_TOTALVIEW=ON -DARCANE_WANT_LIBXML2=ON -DARCANE_WANT_LEGACY_CONNECTIVITY=OFF -DARCANE_WANT_CHECK=OFF -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON ${{ env.CM_CCACHE_OPTS }}
       - name: Build
         shell: bash
         run: cmake --build ${{ env.ARCANE_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
@@ -336,6 +356,10 @@ jobs:
     strategy:
       fail-fast: false
     steps:
+      - name: Check permissions
+        shell: bash
+        run: id && ls -lnd /__w && ls -lnR /__w
+        continue-on-error: true
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -409,6 +433,10 @@ jobs:
     strategy:
       fail-fast: false
     steps:
+      - name: Check permissions
+        shell: bash
+        run: id && ls -lnd /__w && ls -lnR /__w
+        continue-on-error: true
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -489,6 +517,10 @@ jobs:
     strategy:
       fail-fast: false
     steps:
+      - name: Check permissions
+        shell: bash
+        run: id && ls -lnd /__w && ls -lnR /__w
+        continue-on-error: true
       - name: Download arccore build artifact
         uses: actions/download-artifact@v2
         with:
@@ -521,6 +553,10 @@ jobs:
     strategy:
       fail-fast: false
     steps:
+      - name: Check permissions
+        shell: bash
+        run: id && ls -lnd /__w && ls -lnR /__w
+        continue-on-error: true
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -571,6 +607,10 @@ jobs:
     strategy:
       fail-fast: false
     steps:
+      - name: Check permissions
+        shell: bash
+        run: id && ls -lnd /__w && ls -lnR /__w
+        continue-on-error: true
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -609,13 +649,17 @@ jobs:
       - arcane-install
       - alien-install
       - alienlegacy-install
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     timeout-minutes: 180
     container:
       image: ghcr.io/arcaneframework/rockylinux-gimkl-2018b-alienlegacy:8-latest
     strategy:
       fail-fast: false
     steps:
+      - name: Check permissions
+        shell: bash
+        run: id && ls -lnd /__w && ls -lnR /__w
+        continue-on-error: true
       - name: Checkout
         uses: actions/checkout@v2
         with:
