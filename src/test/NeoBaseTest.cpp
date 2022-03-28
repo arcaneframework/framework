@@ -1,14 +1,21 @@
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* NeoBaseTest.cpp                                 (C) 2000-2022             */
+/*                                                                           */
+/* Base tests for Neo kernel                                                 */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+
 #include <vector>
 
 #include "gtest/gtest.h"
 #include "neo/Neo.h"
-
-/*-------------------------
- * Neo library first test
- * sdc (C)-2019
- *
- *-------------------------
- */
 
 TEST(NeoUtils, test_array_view) {
   std::vector<int> vec{ 0, 1, 2 };

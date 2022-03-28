@@ -1,16 +1,18 @@
-//
-// Created by dechaiss on 5/15/20.
-//
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* Utils.h                                         (C) 2000-2022             */
+/*                                                                           */
+/* Test dag plug in Neo MeshBase                                             */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #ifndef NEO_UTILS_H
 #define NEO_UTILS_H
-
-/*-------------------------
- * sdc - (C) 2020
- * NEtwork Oriented kernel
- * Utils
- *--------------------------
- */
 
 #include <iostream>
 #include <vector>
