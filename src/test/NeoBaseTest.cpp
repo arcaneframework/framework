@@ -584,16 +584,37 @@ TEST(NeoTestPropertyView, test_property_const_view) {
   Neo::ItemRange item_range{ Neo::ItemLocalIds{ {}, 0, 6 } };
   property.init(item_range, values);
   auto property_const_view = property.constView();
+  EXPECT_EQ(property_const_view.size(),item_range.size());
   auto partial_item_range = Neo::ItemRange{ Neo::ItemLocalIds{ { 1, 3, 5 } } };
+  std::vector<Neo::utils::Int32> partial_values{2,10,1000};
   auto partial_property_const_view = property.constView(partial_item_range);
+  EXPECT_EQ(partial_property_const_view.size(),partial_item_range.size());
   for (auto i = 0; i < item_range.size(); ++i) {
     std::cout << "prop values at index " << i << " " << property_const_view[i] << std::endl;
+    EXPECT_EQ(property_const_view[i],values[i]);
   }
   for (auto i = 0; i < partial_item_range.size(); ++i) {
     std::cout << "prop values at index " << i << " " << partial_property_const_view[i] << std::endl;
+    EXPECT_EQ(partial_property_const_view[i],partial_values[i]);
   }
   if constexpr (_debug) {EXPECT_DEATH(property_const_view[7], ".*Error, exceeds property view size.*");}
   if constexpr (_debug) {EXPECT_DEATH(partial_property_const_view[3], ".*Error, exceeds property view size.*");}
+  // test const iterator
+  EXPECT_TRUE(property_const_view.end() == property_const_view.end());
+  auto beg = property_const_view.begin();
+  for (auto i = 0; i < property_const_view.size(); ++i) {
+    ++beg;
+  }
+  EXPECT_EQ(beg,property_const_view.end());
+  for (auto value_iter = property_const_view.begin() ; value_iter != property_const_view.end() ; ++value_iter) {
+    std::cout << " view value "<< *value_iter << " " << std::endl;
+  }
+  auto index = 0;
+  for (auto value : property_const_view) {
+    EXPECT_EQ(value,property_const_view[index++]);
+  }
+  EXPECT_TRUE(std::equal(property_const_view.begin(),property_const_view.end(),values.begin()));
+  EXPECT_TRUE(std::equal(partial_property_const_view.begin(),partial_property_const_view.end(),partial_values.begin()));
 }
 
 //----------------------------------------------------------------------------/
