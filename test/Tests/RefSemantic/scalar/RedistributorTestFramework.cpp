@@ -123,8 +123,10 @@ main(int argc, char** argv)
         keep_proc = true;
     }
 
+    auto small_comm = Arccore::MessagePassing::mpSplit(Environment::parallelMng(), keep_proc);
+
     Alien::Redistributor redist(
-        A.distribution().globalRowSize(), Environment::parallelMng(), keep_proc);
+        A.distribution().globalRowSize(), Environment::parallelMng(), small_comm);
 
     Alien::RedistributedMatrix Aa(A, redist);
     Alien::RedistributedVector bb(b, redist);

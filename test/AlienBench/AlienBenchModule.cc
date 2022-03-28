@@ -733,8 +733,10 @@ AlienBenchModule::test()
       keep_proc = true;
 
     rbuild_timer.start();
+    auto small_comm = Arccore::MessagePassing::mpSplit(m_parallel_mng->messagePassingMng(), keep_proc);
     Alien::Redistributor redist(matrixA.distribution().globalRowSize(),
-        m_parallel_mng->messagePassingMng(), keep_proc);
+                                m_parallel_mng->messagePassingMng(),
+                                small_comm );
 
     Alien::RedistributedMatrix Aa(matrixA, redist);
     Alien::RedistributedVector bb(vectorB, redist);
