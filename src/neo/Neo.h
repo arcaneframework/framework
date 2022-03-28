@@ -186,7 +186,7 @@ public:
     assert(("Error, exceeds property view size",index < m_indexes.size()));
     return m_data_view[m_indexes[index]];}
 
-  int size() {return m_indexes.size();}
+  int size() const noexcept {return m_indexes.size();}
 
   struct PropertyViewIterator {
     using iterator_category = std::input_iterator_tag;
