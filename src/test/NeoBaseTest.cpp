@@ -528,9 +528,11 @@ TEST(NeoTestPropertyView, test_property_view) {
   Neo::ItemRange item_range{ Neo::ItemLocalIds{ {}, 0, 6 } };
   property.init(item_range, values);
   auto property_view = property.view();
+  EXPECT_EQ(property_view.size(),item_range.size());
   std::vector<Neo::utils::Int32> local_ids{ 1, 3, 5 };
   auto partial_item_range = Neo::ItemRange{ Neo::ItemLocalIds{ local_ids } };
   auto partial_property_view = property.view(partial_item_range);
+  EXPECT_EQ(partial_property_view.size(),partial_item_range.size());
   for (auto i = 0; i < item_range.size(); ++i) {
     std::cout << "prop values at index " << i << " " << property_view[i] << std::endl;
   }
