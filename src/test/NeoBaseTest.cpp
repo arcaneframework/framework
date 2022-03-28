@@ -530,15 +530,33 @@ TEST(NeoTestPropertyView, test_property_view) {
   auto property_view = property.view();
   EXPECT_EQ(property_view.size(),item_range.size());
   std::vector<Neo::utils::Int32> local_ids{ 1, 3, 5 };
+  std::vector<Neo::utils::Int32> partial_values{2,10,1000};
   auto partial_item_range = Neo::ItemRange{ Neo::ItemLocalIds{ local_ids } };
   auto partial_property_view = property.view(partial_item_range);
   EXPECT_EQ(partial_property_view.size(),partial_item_range.size());
   for (auto i = 0; i < item_range.size(); ++i) {
     std::cout << "prop values at index " << i << " " << property_view[i] << std::endl;
+    EXPECT_EQ(property_view[i],values[i]);
   }
+  EXPECT_TRUE(property_view.end() == property_view.end());
+  auto beg = property_view.begin();
+  for (auto i = 0; i < property_view.size(); ++i) {
+    ++beg;
+  }
+  EXPECT_EQ(beg,property_view.end());
+  for (auto value_iter = property_view.begin() ; value_iter != property_view.end() ; ++value_iter) {
+    std::cout << " view value "<< *value_iter << " " << std::endl;
+  }
+  auto index = 0;
+  for (auto value : property_view) {
+    EXPECT_EQ(value,property_view[index++]);
+  }
+  EXPECT_TRUE(std::equal(property_view.begin(),property_view.end(),values.begin()));
   for (auto i = 0; i < partial_item_range.size(); ++i) {
     std::cout << "prop values at index " << i << " " << partial_property_view[i] << std::endl;
+    EXPECT_EQ(partial_property_view[i],partial_values[i]);
   }
+  EXPECT_TRUE(std::equal(partial_property_view.begin(),partial_property_view.end(),partial_values.begin()));
   // Change values
   auto new_val = 50;
   property_view[2] = new_val;
