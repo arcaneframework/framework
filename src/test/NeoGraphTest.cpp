@@ -407,41 +407,84 @@ TEST(NeoGraphTest,MultipleAlgoTest)
   EXPECT_TRUE(is_called_5); is_called_5 = false;
 }
 
+//----------------------------------------------------------------------------/
 
-TEST(NeoGraphTest,OneFamilyOnePropertyTest){
+TEST(NeoGraphTest,ItemAndConnectivityTest){
 
-  // Aucun sens !! gros cycle !!
   Neo::MeshBase mesh{"test_mesh"};
-  mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family");
-  Neo::Family& cell_family = mesh.getFamily(Neo::ItemKind::IK_Cell, "cell_family");
-  // Fill a property on the created cells, must be done after cell creation !
-  cell_family.addProperty<Neo::utils::Int32>("prop");
-  mesh.addAlgorithm(Neo::InProperty{cell_family,cell_family.lidPropName()},
-                    Neo::OutProperty{cell_family,"prop"},
-                    [](Neo::ItemLidsProperty const& cell_lid_prop, Neo::PropertyT<Neo::utils::Int32>& prop){
-                        std::cout << "Fill property after cell creation "<< std::endl;
-                        prop.init(cell_lid_prop.values(),42);
-                    });
-  mesh.addAlgorithm(Neo::InProperty{cell_family,"prop"},
-                    Neo::OutProperty{cell_family,"prop"},
-                    []([[maybe_unused]]Neo::PropertyT<Neo::utils::Int32> const& previous_prop, Neo::PropertyT<Neo::utils::Int32>& prop){
-    std::cout << "Modify property after fill "<< std::endl;
-    // previous prop added to create a dependence
-    for (auto& val : prop) {
-      val += 1;
-    }
-  });
+  // Create a cell and its nodes
+  auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family");
+  auto& node_family = mesh.addFamily(Neo::ItemKind::IK_Node, "node_family");
+  // Add cell uid
   mesh.addAlgorithm(Neo::OutProperty{cell_family,cell_family.lidPropName()},
                     [](Neo::ItemLidsProperty & cell_lid_prop){
-                        std::cout << "Create Cells "<< std::endl;
-                        cell_lid_prop.append({0,1,2});
+                        std::cout << "-- Add cells --"<< std::endl;
+                        cell_lid_prop.append({42});
                     });
-  mesh.applyAlgorithms(Neo::MeshBase::AlgorithmExecutionOrder::DAG);
-  auto& prop = cell_family.getConcreteProperty<Neo::PropertyT<Neo::utils::Int32>>("prop");
-  EXPECT_EQ(prop.size(),mesh.nbItems(Neo::ItemKind::IK_Cell));
-  std::vector<int> ref_values(mesh.nbItems(Neo::ItemKind::IK_Cell),43);
-  auto values = prop.values();
-  EXPECT_TRUE(std::equal(values.begin(),values.end(),ref_values.begin()));
+  // Connect cell with its nodes
+  mesh.addAlgorithm(Neo::InProperty{cell_family,cell_family.lidPropName()},
+                    Neo::InProperty{node_family,node_family.lidPropName()},
+                    Neo::OutProperty{cell_family,"cell_to_nodes"},
+                    [](Neo::ItemLidsProperty const& cell_lids,
+                       Neo::ItemLidsProperty const& node_lids,
+                       Neo::ArrayProperty<Neo::utils::Int32>& cell_to_nodes){
+                        std::cout << "-- Add cell to nodes connectivity -- " << std::endl;
+                        // only one cell, connected to all node lids
+                        cell_to_nodes.resize({ 8 });
+                        cell_to_nodes.init(cell_lids.values(), node_lids.values().localIds());
+                        cell_to_nodes.debugPrint();
+                    });
+  // Add nodes
+  mesh.addAlgorithm(Neo::OutProperty{node_family,node_family.lidPropName()},
+                    [](Neo::ItemLidsProperty & node_lids){
+                        std::cout << "-- Add nodes --"<< std::endl;
+                        node_lids.append({0,1,2,3,4,5,6,7});
+                    });
+  // Connect nodes with owning cell
+  mesh.addAlgorithm(Neo::InProperty{cell_family,cell_family.lidPropName()},
+                    Neo::InProperty{node_family,node_family.lidPropName()},
+                    Neo::OutProperty{node_family,"node_to_cell"},
+                    [](Neo::ItemLidsProperty const& cell_lids,
+                       Neo::ItemLidsProperty const& node_lids,
+                       Neo::PropertyT<Neo::utils::Int32>& node_to_cell){
+                      std::cout << "-- Add node to cell connectivity -- " << std::endl;
+                      // All nodes connected to the same cell
+                      node_to_cell.init(node_lids.values(), cell_lids.values().localIds().back());
+                      node_to_cell.debugPrint();
+                    });
+  // Try to call without creating properties for connectivities
+  // Only node and cell creation occurs
+  mesh.applyAndKeepAlgorithms(Neo::MeshBase::AlgorithmExecutionOrder::DAG);
+  EXPECT_EQ(mesh.nbItems(Neo::ItemKind::IK_Cell),1);
+  EXPECT_EQ(mesh.nbItems(Neo::ItemKind::IK_Node),8);
+  // Add cell_to_nodes property
+  cell_family.addArrayProperty<Neo::utils::Int32>("cell_to_nodes");
+  mesh.applyAndKeepAlgorithms(Neo::MeshBase::AlgorithmExecutionOrder::DAG);
+  // Check items are note added twice
+  EXPECT_EQ(mesh.nbItems(Neo::ItemKind::IK_Cell),1);
+  EXPECT_EQ(mesh.nbItems(Neo::ItemKind::IK_Node),8);
+  // Clear property cell_to_nodes to be able to call again its filling algorithm
+  cell_family.getConcreteProperty<Neo::ArrayProperty<Neo::utils::Int32>>("cell_to_nodes").clear();
+  // Add node_to_cell property
+  node_family.addProperty<Neo::utils::Int32>("node_to_cell");
+  mesh.applyAndKeepAlgorithms(Neo::MeshBase::AlgorithmExecutionOrder::DAG);
+  // Check items are note added twice
+  EXPECT_EQ(mesh.nbItems(Neo::ItemKind::IK_Cell),1);
+  EXPECT_EQ(mesh.nbItems(Neo::ItemKind::IK_Node),8);
+  // Check ids
+  std::vector node_ids{0,1,2,3,4,5,6,7};
+  std::vector cell_ids{42};
+  auto created_node_ids = node_family._lidProp().values();
+  EXPECT_TRUE(std::equal(created_node_ids.begin(),created_node_ids.end(),node_ids.begin()));
+  EXPECT_EQ(cell_family._lidProp()._getLidFromUid(42),0);
+  // Check connectivities
+  auto& cell_to_nodes = cell_family.getConcreteProperty<Neo::ArrayProperty<Neo::utils::Int32>>("cell_to_nodes");
+  auto cell_to_nodes_view = cell_to_nodes.constView();
+  EXPECT_TRUE(std::equal(cell_to_nodes_view.begin(),cell_to_nodes_view.end(),node_ids.begin()));
+  auto& node_to_cell = node_family.getConcreteProperty <Neo::PropertyT<Neo::utils::Int32>>("node_to_cell");
+  auto node_to_cell_view = node_to_cell.constView();
+  std::vector cell_id{0,0,0,0,0,0,0,0};
+  EXPECT_TRUE(std::equal(node_to_cell_view.begin(),node_to_cell_view.end(),cell_id.begin()));
 }
 
 //----------------------------------------------------------------------------/
