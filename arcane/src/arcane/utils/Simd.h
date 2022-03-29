@@ -17,6 +17,8 @@
 #include "arcane/utils/SimdCommon.h"
 #include "arcane/utils/Real3.h"
 #include "arcane/utils/Real2.h"
+#include "arcane/utils/Real3x3.h"
+#include "arcane/utils/Real2x2.h"
 #include "arcane/utils/ArrayView.h"
 
 /*---------------------------------------------------------------------------*/
@@ -229,6 +231,94 @@ class ARCANE_UTILS_EXPORT SimdReal2
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneSimd
+ * \brief Représente un Real3x3 vectoriel.
+ */
+class ARCANE_UTILS_EXPORT SimdReal3x3
+{
+ public:
+  typedef SimdReal::Int32IndexType Int32IndexType;
+ public:
+  SimdReal3 x;
+  SimdReal3 y;
+  SimdReal3 z;
+  SimdReal3x3() {}
+  SimdReal3x3(SimdReal3 _x,SimdReal3 _y,SimdReal3 _z) : x(_x), y(_y), z(_z){}
+  SimdReal3x3(const Real3x3* base,const Int32IndexType& idx)
+  {
+    for( Integer i=0, n=SimdReal::BLOCK_SIZE; i<n; ++i ){
+      Real3x3 v = base[idx[i]];
+      this->set(i,v);
+    }
+  }
+  const Real3x3 operator[](Integer i) const { return Real3x3(x[i],y[i],z[i]); }
+
+  void set(Real3x3* base,const Int32IndexType& idx) const
+  {
+    for( Integer i=0, n=SimdReal::BLOCK_SIZE; i<n; ++i ){
+      base[idx[i]] = this->get(i);
+    }
+  }
+
+  // TODO: renommer cette méthode
+  void set(Integer i,Real3x3 r)
+  {
+    x.set(i,r.x);
+    y.set(i,r.y);
+    z.set(i,r.z);
+  }
+  Real3x3 get(Integer i) const
+  {
+    return Real3x3(x[i],y[i],z[i]);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \ingroup ArcaneSimd
+ * \brief Représente un Real2x2 vectoriel.
+ */
+class ARCANE_UTILS_EXPORT SimdReal2x2
+{
+ public:
+  typedef SimdReal::Int32IndexType Int32IndexType;
+ public:
+  SimdReal2 x;
+  SimdReal2 y;
+  SimdReal2x2() {}
+  SimdReal2x2(SimdReal2 _x,SimdReal2 _y) : x(_x), y(_y){}
+  SimdReal2x2(const Real2x2* base,const Int32IndexType& idx)
+  {
+    for( Integer i=0, n=SimdReal::BLOCK_SIZE; i<n; ++i ){
+      Real2x2 v = base[idx[i]];
+      this->set(i,v);
+    }
+  }
+  const Real2x2 operator[](Integer i) const { return Real2x2(x[i],y[i]); }
+
+  void set(Real2x2* base,const Int32IndexType& idx) const
+  {
+    for( Integer i=0, n=SimdReal::BLOCK_SIZE; i<n; ++i ){
+      base[idx[i]] = this->get(i);
+    }
+  }
+
+  // TODO: renommer cette méthode
+  void set(Integer i,Real2x2 r)
+  {
+    x.set(i,r.x);
+    y.set(i,r.y);
+  }
+  Real2x2 get(Integer i) const
+  {
+    return Real2x2(x[i],y[i]);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \ingroup ArcaneSimd
  * \brief Charactéristiques des types vectoriels.
  *
  * Instantiation par défaut pour les types n'ayant pas de type vectoriel
@@ -253,7 +343,14 @@ template<>
 class SimdTypeTraits<Real2>
 {
  public:
-  typedef SimdReal SimdType;
+  typedef SimdReal2 SimdType;
+};
+
+template<>
+class SimdTypeTraits<Real2x2>
+{
+ public:
+  typedef SimdReal2x2 SimdType;
 };
 
 template<>
@@ -261,6 +358,13 @@ class SimdTypeTraits<Real3>
 {
  public:
   typedef SimdReal3 SimdType;
+};
+
+template<>
+class SimdTypeTraits<Real3x3>
+{
+ public:
+  typedef SimdReal3x3 SimdType;
 };
 
 /*---------------------------------------------------------------------------*/
