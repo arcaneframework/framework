@@ -1,0 +1,66 @@
+name: Tests images Docker
+
+on:
+  # A executer que lorsque l'on demande.
+  workflow_dispatch:
+
+jobs:
+  tests_ubuntu-2004_gcc-11:
+    name: Tests image ubuntu-2004_gcc-11
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/arcaneframework/ubuntu-2004_gcc-11:latest
+    steps:
+
+      # TODO : Mettre regex pour >= au lieu de ==.
+      - name: Test CMake version == 3.21.X
+        shell: bash
+        run: cmake --version | grep -q "3.21.*"
+
+      - name: Test GCC version == 11.X
+        shell: bash
+        run: gcc --version | grep -q "11.*"
+
+      - name: Test G++ version == 11.X
+        shell: bash
+        run: g++ --version | grep -q "11.*"
+
+  tests_ubuntu-2004_clang-13:
+    name: Tests image ubuntu-2004_clang-13
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/arcaneframework/ubuntu-2004_clang-13:latest
+    steps:
+
+      # TODO : Mettre regex pour >= au lieu de ==.
+      - name: Test CMake version == 3.21.X
+        shell: bash
+        run: cmake --version | grep -q "3.21.*"
+
+      - name: Test CLang version == 13.X
+        shell: bash
+        run: clang --version | grep -q "13.*"
+
+  tests_ubuntu-2004_cuda-116_gcc-11:
+    name: Tests image ubuntu-2004_cuda-116_gcc-11
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/arcaneframework/ubuntu-2004_cuda-116_gcc-11:latest
+    steps:
+
+      # TODO : Mettre regex pour >= au lieu de ==.
+      - name: Test CMake version == 3.21.X
+        shell: bash
+        run: cmake --version | grep -q "3.21.*"
+
+      - name: Test GCC version == 11.X
+        shell: bash
+        run: gcc --version | grep -q "11.*"
+
+      - name: Test G++ version == 11.X
+        shell: bash
+        run: g++ --version | grep -q "11.*"
+
+      - name: Test NVCC version == 11.6
+        shell: bash
+        run: nvcc --version
