@@ -53,7 +53,7 @@ class ARCCORE_BASE_EXPORT StringView
  public:
 
   //! Crée une vue sur une chaîne vide
-  constexpr StringView() ARCCORE_NOEXCEPT {}
+  StringView() = default;
   //! Créé une vue à partir de \a str codé en UTF-8. \a str peut être nul.
   StringView(const char* str) ARCCORE_NOEXCEPT
   : StringView(str ? std::string_view(str) : std::string_view()){}
