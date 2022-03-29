@@ -64,7 +64,7 @@ class SimdUnitTest
   template<typename SimdType> void
   _initSimdRealArrayN(Array<SimdReal>& real_a,Integer wanted_size,Integer value_offset);
   template<typename SimdType> void _testSimdRealN();
-  template<typename SimdType,typename Operator> void
+  template<typename RealType,typename SimdType,typename Operator1,typename Operator2> void
   _doOperation(ArrayView<SimdType> a,ArrayView<SimdType> b,ArrayView<SimdType> c);
 };
 
@@ -149,7 +149,7 @@ ARCANE_REGISTER_CASE_OPTIONS_NOAXL_FACTORY(SimdUnitTest,IUnitTest,SimdUnitTest);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class BinaryOperator,typename SimdRealType>
+template<typename BinaryOperator,typename SimdRealType>
 class SimdBinaryOperatorTester
 {
   static void _checkDirect(const SimdRealType& simd_result,ConstArrayView<Real> ref_a,
@@ -191,7 +191,7 @@ class SimdBinaryOperatorTester
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class UnaryOperator,typename SimdRealType>
+template<typename UnaryOperator,typename SimdRealType>
 class SimdUnaryOperatorTester
 {
   static void _checkDirect(const SimdRealType& simd_result,
@@ -423,7 +423,7 @@ template<typename RealType> void SimdUnitTest::
 _initSimdRealArrayN(Array<SimdReal>& real_a,Integer wanted_size,Integer value_offset)
 {
   //using SimdType = SimdTypeTraits<RealType>;
-  using DataTypeTraits = class DataTypeTraitsT<RealType>;
+  using DataTypeTraits = DataTypeTraitsT<RealType>;
   const Integer nb_basic = DataTypeTraits::nbBasicType();
 
   real_a.resize(wanted_size*nb_basic);
@@ -483,12 +483,21 @@ _initSimdRealNValue(ArrayView<SimdReal3x3> simd_a,ConstArrayView<SimdReal> real_
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename SimdType,typename Operator> void SimdUnitTest::
+template<typename RealType,typename SimdType,typename Operator1,typename Operator2>
+void SimdUnitTest::
 _doOperation(ArrayView<SimdType> a,ArrayView<SimdType> b,ArrayView<SimdType> c)
 {
+  ValueChecker vc(A_FUNCINFO);
+
   Integer size = a.size();
-  for( Integer i=0; i<size; ++i )
-    c[i] = Operator::apply(a[i],b[i]);
+  for( Integer i=0; i<size; ++i ){
+    c[i] = Operator1::apply(a[i],b[i]);
+
+    for( Integer j=0; j<SimdReal::BLOCK_SIZE; ++j ){
+      RealType real_c = Operator2::apply(a[i][j],b[i][j]);
+      vc.areEqual(c[i][j],real_c,"DoOperation");
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -498,7 +507,7 @@ template<typename RealType> void SimdUnitTest::
 _testSimdRealN()
 {
   using SimdType = typename SimdTypeTraits<RealType>::SimdType;
-  using DataTypeTraits = class DataTypeTraitsT<RealType>;
+  using DataTypeTraits = DataTypeTraitsT<RealType>;
   const Integer nb_basic = DataTypeTraits::nbBasicType();
 
   info() << "TEST SimdRealN name=" << DataTypeTraits::name() << " nb_basic=" << nb_basic;
@@ -516,10 +525,10 @@ _testSimdRealN()
   _initSimdRealNValue(simd_a,real_a);
   _initSimdRealNValue(simd_b,real_b);
 
-  _doOperation<SimdType,SimdTestBinarySub<SimdType>>(simd_a,simd_b,simd_c);
-  _doOperation<SimdType,SimdTestBinaryAdd<SimdType>>(simd_a,simd_b,simd_c);
-  _doOperation<SimdType,SimdTestBinaryMin<SimdType>>(simd_a,simd_b,simd_c);
-  _doOperation<SimdType,SimdTestBinaryMax<SimdType>>(simd_a,simd_b,simd_c);
+  _doOperation<RealType,SimdType,SimdTestBinarySub<SimdType>,SimdTestBinaryRealNSub<RealType>>(simd_a,simd_b,simd_c);
+  _doOperation<RealType,SimdType,SimdTestBinaryAdd<SimdType>,SimdTestBinaryRealNAdd<RealType>>(simd_a,simd_b,simd_c);
+  _doOperation<RealType,SimdType,SimdTestBinaryMin<SimdType>,SimdTestBinaryRealNMin<RealType>>(simd_a,simd_b,simd_c);
+  _doOperation<RealType,SimdType,SimdTestBinaryMax<SimdType>,SimdTestBinaryRealNMax<RealType>>(simd_a,simd_b,simd_c);
 }
 
 /*---------------------------------------------------------------------------*/
