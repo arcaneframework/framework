@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimdUnitTest.cc                                             (C) 2000-2016 */
+/* SimdUnitTest.cc                                             (C) 2000-2022 */
 /*                                                                           */
 /* Service de test des classes gérant la vectorisation.                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/ArgumentException.h"
@@ -20,15 +18,17 @@
 #include "arcane/BasicUnitTest.h"
 #include "arcane/FactoryService.h"
 
-#include "arcane/utils/Simd.h"
-#include "arcane/utils/SimdOperation.h"
+#include "arcane/SimdMathUtils.h"
+
+#include "arcane/datatype/DataTypeTraits.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,8 +49,8 @@ class SimdUnitTest
 {
  public:
 
-  SimdUnitTest(const ServiceBuildInfo& cb);
-  ~SimdUnitTest();
+  explicit SimdUnitTest(const ServiceBuildInfo& cb);
+  ~SimdUnitTest() override;
 
  public:
 
@@ -60,6 +60,12 @@ class SimdUnitTest
  private:
 
   void _testSimdArray();
+  void _initRealArray(ArrayView<SimdReal> real_array,Integer value_offset);
+  template<typename SimdType> void
+  _initSimdRealArrayN(Array<SimdReal>& real_a,Integer wanted_size,Integer value_offset);
+  template<typename SimdType> void _testSimdRealN();
+  template<typename SimdType,typename Operator> void
+  _doOperation(ArrayView<SimdType> a,ArrayView<SimdType> b,ArrayView<SimdType> c);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -384,15 +390,136 @@ _testSimdArray()
   info() << "size=" << wanted_size << " padding_size=" << padding_size
          << " simd_size=" << simd_size
          << " nb_iteration=" << nb_iteration;
-  SimdReal* xa = (SimdReal*)a.unguardedBasePointer();
-  SimdReal* xb = (SimdReal*)b.unguardedBasePointer();
-  SimdReal* xc = (SimdReal*)c.unguardedBasePointer();
-  SimdReal* xd = (SimdReal*)d.unguardedBasePointer();
+  SimdReal* xa = reinterpret_cast<SimdReal*>(a.data());
+  SimdReal* xb = reinterpret_cast<SimdReal*>(b.data());
+  SimdReal* xc = reinterpret_cast<SimdReal*>(c.data());
+  SimdReal* xd = reinterpret_cast<SimdReal*>(d.data());
   for( Integer i=0; i<nb_iteration; ++i ){
     xd[i] = xb[i] + xc[i] * xa[i];
   }
   ValueChecker vc(A_FUNCINFO);
   vc.areEqualArray(d,expected_result,"SimdLoop");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SimdUnitTest::
+_initRealArray(ArrayView<SimdReal> real_array,Integer value_offset)
+{
+  Integer simd_size = SimdReal::BLOCK_SIZE;
+  for( Integer i=0, n=real_array.size(); i<n; ++i ){
+    SimdReal r;
+    for( Integer j=0; j<simd_size; ++j )
+      r[j] = (i+1)*(simd_size*3) + j+2 + value_offset;
+    real_array[i] = r;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename RealType> void SimdUnitTest::
+_initSimdRealArrayN(Array<SimdReal>& real_a,Integer wanted_size,Integer value_offset)
+{
+  //using SimdType = SimdTypeTraits<RealType>;
+  using DataTypeTraits = class DataTypeTraitsT<RealType>;
+  const Integer nb_basic = DataTypeTraits::nbBasicType();
+
+  real_a.resize(wanted_size*nb_basic);
+  _initRealArray(real_a,value_offset);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void
+_initSimdRealNValue(ArrayView<SimdReal2> simd_a,ConstArrayView<SimdReal> real_a)
+{
+  Integer index = 0;
+  for( Integer i=0, n=simd_a.size(); i<n; ++i ){
+    SimdReal2 s(real_a[index],real_a[index+1]);
+    simd_a[i] = s;
+    index += 2;
+  }
+}
+
+void
+_initSimdRealNValue(ArrayView<SimdReal3> simd_a,ConstArrayView<SimdReal> real_a)
+{
+  Integer index = 0;
+  for( Integer i=0, n=simd_a.size(); i<n; ++i ){
+    SimdReal3 s(real_a[index],real_a[index+1],real_a[index+2]);
+    simd_a[i] = s;
+    index += 3;
+  }
+}
+
+void
+_initSimdRealNValue(ArrayView<SimdReal2x2> simd_a,ConstArrayView<SimdReal> real_a)
+{
+  Integer index = 0;
+  for( Integer i=0, n=simd_a.size(); i<n; ++i ){
+    SimdReal2 s1(real_a[index+0],real_a[index+1]);
+    SimdReal2 s2(real_a[index+2],real_a[index+3]);
+    simd_a[i] = SimdReal2x2(s1,s2);
+    index += 4;
+  }
+}
+
+void
+_initSimdRealNValue(ArrayView<SimdReal3x3> simd_a,ConstArrayView<SimdReal> real_a)
+{
+  Integer index = 0;
+  for( Integer i=0, n=simd_a.size(); i<n; ++i ){
+    SimdReal3 s1(real_a[index+0],real_a[index+1],real_a[index+2]);
+    SimdReal3 s2(real_a[index+3],real_a[index+4],real_a[index+5]);
+    SimdReal3 s3(real_a[index+6],real_a[index+7],real_a[index+8]);
+    simd_a[i] = SimdReal3x3(s1,s2,s3);
+    index += 9;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename SimdType,typename Operator> void SimdUnitTest::
+_doOperation(ArrayView<SimdType> a,ArrayView<SimdType> b,ArrayView<SimdType> c)
+{
+  Integer size = a.size();
+  for( Integer i=0; i<size; ++i )
+    c[i] = Operator::apply(a[i],b[i]);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename RealType> void SimdUnitTest::
+_testSimdRealN()
+{
+  using SimdType = typename SimdTypeTraits<RealType>::SimdType;
+  using DataTypeTraits = class DataTypeTraitsT<RealType>;
+  const Integer nb_basic = DataTypeTraits::nbBasicType();
+
+  info() << "TEST SimdRealN name=" << DataTypeTraits::name() << " nb_basic=" << nb_basic;
+
+  const Integer wanted_size = 97;
+  UniqueArray<SimdReal> real_a(AlignedMemoryAllocator::Simd());
+  _initSimdRealArrayN<RealType>(real_a,wanted_size,3);
+  UniqueArray<SimdReal> real_b(AlignedMemoryAllocator::Simd());
+  _initSimdRealArrayN<RealType>(real_b,wanted_size,7);
+
+  UniqueArray<SimdType> simd_a(AlignedMemoryAllocator::Simd(),wanted_size);
+  UniqueArray<SimdType> simd_b(AlignedMemoryAllocator::Simd(),wanted_size);
+  UniqueArray<SimdType> simd_c(AlignedMemoryAllocator::Simd(),wanted_size);
+
+  _initSimdRealNValue(simd_a,real_a);
+  _initSimdRealNValue(simd_b,real_b);
+
+  _doOperation<SimdType,SimdTestBinarySub<SimdType>>(simd_a,simd_b,simd_c);
+  _doOperation<SimdType,SimdTestBinaryAdd<SimdType>>(simd_a,simd_b,simd_c);
+  _doOperation<SimdType,SimdTestBinaryMin<SimdType>>(simd_a,simd_b,simd_c);
+  _doOperation<SimdType,SimdTestBinaryMax<SimdType>>(simd_a,simd_b,simd_c);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -413,12 +540,16 @@ executeTest()
   SimdTester<SSESimdInfo>::test(*this);
 #endif
   _testSimdArray();
+  _testSimdRealN<Real2>();
+  _testSimdRealN<Real3>();
+  _testSimdRealN<Real2x2>();
+  _testSimdRealN<Real3x3>();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+} // End namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
