@@ -1,4 +1,4 @@
-﻿<#@ template language="C#" #>
+﻿<#@ template language="C#" linePragmas="false" #>
 <#@ assembly name="System.Core" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
@@ -30,6 +30,16 @@ class SimdTestBinary<#=op_name#>
   }
 
   static <#=simd_name#> apply(Real a,<#=simd_name#> b)
+  {
+    return (<#=CppHelper.GenTest(op)#>);
+  }
+};
+
+template<typename RealNType>
+class SimdTestBinaryRealN<#=op_name#>
+{
+ public:
+  static RealNType apply(RealNType a,RealNType b)
   {
     return (<#=CppHelper.GenTest(op)#>);
   }
