@@ -1229,7 +1229,7 @@ public:
   void addAlgorithm(InProperty&& in_property, OutProperty&& out_property, Algorithm algo){// problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
     auto algo_hander = std::make_shared<AlgoHandler<decltype(algo)>>(std::move(in_property),std::move(out_property),std::forward<Algorithm>(algo));
     m_algos.push_back(algo_hander);
-    _addProducingAlgo(algo_hander->m_out_property, algo_hander);
+    _addProducingAlgo(algo_hander->m_out_property,algo_hander);
     _addConsumingAlgo(algo_hander->m_in_property,algo_hander);
   }
 
@@ -1276,7 +1276,7 @@ public:
    * @return object EndOfMeshUpdate to unlock FutureItemRange
    * Added algorithms are removed at the end of the method
    */
-  EndOfMeshUpdate applyAlgorithms(AlgorithmExecutionOrder execution_order = AlgorithmExecutionOrder::FIFO) {
+  EndOfMeshUpdate applyAlgorithms(AlgorithmExecutionOrder execution_order = AlgorithmExecutionOrder::DAG) {
     return _applyAlgorithms(execution_order, false);
   }
 
@@ -1286,7 +1286,7 @@ public:
    * @return object EndOfMeshUpdate to unlock FutureItemRange
    * Added algorithms are kept at the end of the method. If the method is called twice, tha algorithms are played again.
    */
-  EndOfMeshUpdate applyAndKeepAlgorithms(AlgorithmExecutionOrder execution_order = AlgorithmExecutionOrder::FIFO){
+  EndOfMeshUpdate applyAndKeepAlgorithms(AlgorithmExecutionOrder execution_order = AlgorithmExecutionOrder::DAG){
     return _applyAlgorithms(execution_order,true);
   }
 

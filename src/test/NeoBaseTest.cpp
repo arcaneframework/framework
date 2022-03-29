@@ -876,7 +876,7 @@ TEST(NeoTestBaseMesh, base_mesh_unit_test){
   family3.addProperty<int>("prop3");
   family4.addProperty<int>("prop4");
   family5.addProperty<int>("prop5");
-  mesh.addAlgorithm(Neo::InProperty{family1,"prop1"},Neo::OutProperty{family2,"prop2"},
+  mesh.addAlgorithm(Neo::InProperty{family1,"prop1", Neo::PropertyStatus::ExistingProperty},Neo::OutProperty{family2,"prop2"},
                     [&is_called]([[maybe_unused]]Neo::PropertyT<int> const& prop1,
                                  [[maybe_unused]]Neo::PropertyT<int>& prop2){
                       is_called = true;
