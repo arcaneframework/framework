@@ -1,4 +1,4 @@
-name: Build ubuntu-2004_clang-13 Docker Image
+name: Image ubuntu-2004_clang-13 Docker
 
 on:
   # A executer que lorsque l'on demande.

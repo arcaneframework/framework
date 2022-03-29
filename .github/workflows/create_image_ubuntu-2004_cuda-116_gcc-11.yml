@@ -1,4 +1,4 @@
-name: Build ubuntu-2004_cuda-116_gcc-11 Docker Image
+name: Image ubuntu-2004_cuda-116_gcc-11 Docker
 
 on:
   # A executer que lorsque l'on demande.
