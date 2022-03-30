@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* String.h                                                    (C) 2000-2019 */
+/* String.h                                                    (C) 2000-2022 */
 /*                                                                           */
 /* Chaîne de caractère unicode.                                              */
 /*---------------------------------------------------------------------------*/
@@ -76,7 +76,7 @@ class ARCCORE_BASE_EXPORT String
  public:
 
   //! Crée une chaîne nulle
-  String() : m_p(nullptr), m_const_ptr(nullptr) {}
+  String() : m_p(nullptr), m_const_ptr(nullptr), m_const_ptr_size(0) {}
   /*!
    * \brief Créé une chaîne à partir de \a str dans l'encodage UTF-8
    *

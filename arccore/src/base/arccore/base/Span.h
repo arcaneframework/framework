@@ -105,7 +105,7 @@ class SpanImpl
 
   //! Opérateur de recopie
   template<std::size_t N,typename X,typename = is_same_const_type<X> >
-  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(std::array<X,N>& from) noexcept
+  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(std::array<X,N>& from)
   {
     m_ptr = from.data();
     m_size = ArraySizeChecker<SizeType>::check(from.size());
@@ -423,7 +423,8 @@ class Span
   template<std::size_t N,typename X,typename = is_same_const_type<X> >
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(std::array<X,N>& from) noexcept
   {
-    BaseClass::operator=(from);
+    this->_setPtr(from.data());
+    this->_setSize(from.size());
     return (*this);
   }
 
@@ -527,7 +528,7 @@ class SmallSpan
 
   //! Opérateur de recopie
   template<std::size_t N,typename X,typename = is_same_const_type<X> >
-  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(std::array<X,N>& from) noexcept
+  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(std::array<X,N>& from)
   {
     BaseClass::operator=(from);
     return (*this);

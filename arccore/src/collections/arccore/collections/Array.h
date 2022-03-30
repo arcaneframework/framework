@@ -97,7 +97,7 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
 
   MemoryPointer _allocate(Int64 nb,Int64 sizeof_true_type);
   MemoryPointer _reallocate(Int64 nb,Int64 sizeof_true_type,MemoryPointer current);
-  void _deallocate(MemoryPointer current);
+  void _deallocate(MemoryPointer current) ARCCORE_NOEXCEPT;
  private:
   void _checkAllocator() const;
 };

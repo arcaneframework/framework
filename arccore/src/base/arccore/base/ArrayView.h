@@ -145,14 +145,14 @@ class ArrayView
 
   //! Construit une vue sur une zone mémoire commencant par \a ptr et contenant \a asize éléments.
   template<std::size_t N>
-  constexpr ArrayView(std::array<T,N>& v) noexcept
+  constexpr ArrayView(std::array<T,N>& v)
   : m_size(arccoreCheckArraySize(v.size())), m_ptr(v.data()) {}
 
   //! Opérateur de recopie
   ArrayView<T>& operator=(const ArrayView<T>& from) = default;
 
   template<std::size_t N>
-  constexpr ArrayView<T>& operator=(std::array<T,N>& from) noexcept
+  constexpr ArrayView<T>& operator=(std::array<T,N>& from)
   {
     m_size = arccoreCheckArraySize(from.size());
     m_ptr = from.data();
@@ -526,7 +526,7 @@ class ConstArrayView
 
   //! Création depuis un std::array
   template<std::size_t N,typename X,typename = std::enable_if_t<std::is_same_v<X,const_value_type>> >
-  constexpr ConstArrayView(const std::array<X,N>& v) noexcept
+  constexpr ConstArrayView(const std::array<X,N>& v)
   : m_size(arccoreCheckArraySize(v.size())), m_ptr(v.data()) {}
 
   /*!
@@ -548,7 +548,7 @@ class ConstArrayView
 
   //! Opérateur de recopie
   template<std::size_t N,typename X,typename = std::enable_if_t<std::is_same_v<X,const_value_type>> >
-  constexpr ConstArrayView<T>& operator=(const std::array<X,N>& from) noexcept
+  constexpr ConstArrayView<T>& operator=(const std::array<X,N>& from)
   {
     m_size = arccoreCheckArraySize(from.size());
     m_ptr = from.data();

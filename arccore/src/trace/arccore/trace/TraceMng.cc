@@ -1112,14 +1112,10 @@ _writeDirect(const TraceMessage* msg,Span<const Byte> buf_array,
     {
       String s1(orig_message);
       FatalErrorException ex("TraceMng::endTrace()",s1);
-      if (id==Trace::Fatal)
-        throw ex;
-      if (id==Trace::ParallelFatal){
+      if (id==Trace::ParallelFatal)
         ex.setCollective(true);
-        throw ex;
-      }
+      throw ex;
     }
-    break;
   case Trace::Debug:
     _writeListing(buf_array,print_level,color,true);
     break;
