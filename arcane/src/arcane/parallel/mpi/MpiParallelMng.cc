@@ -42,6 +42,7 @@
 #include "arcane/parallel/mpi/MpiSerializeMessage.h"
 #include "arcane/parallel/mpi/MpiParallelNonBlockingCollective.h"
 #include "arcane/parallel/mpi/MpiVariableSynchronizeDispatcher.h"
+#include "arcane/parallel/mpi/MpiDirectSendrecvVariableSynchronizeDispatcher.h"
 #include "arcane/parallel/mpi/MpiLegacyVariableSynchronizeDispatcher.h"
 #include "arcane/parallel/mpi/MpiDatatype.h"
 
@@ -111,9 +112,12 @@ class MpiParallelMngUtilsFactory
 {
  public:
   MpiParallelMngUtilsFactory()
+    : m_synchronizer_version(1)
   {
     if (platform::getEnvironmentVariable("ARCANE_SYNCHRONIZE_VERSION")=="2")
-      m_use_legacy_synchronizer = false;
+      m_synchronizer_version = 2;
+    if (platform::getEnvironmentVariable("ARCANE_SYNCHRONIZE_VERSION")=="3")
+      m_synchronizer_version = 3;
   }
  public:
   Ref<IVariableSynchronizer> createSynchronizer(IParallelMng* pm,IItemFamily* family) override
@@ -121,15 +125,22 @@ class MpiParallelMngUtilsFactory
     MpiParallelMng* mpi_pm = ARCANE_CHECK_POINTER(dynamic_cast<MpiParallelMng*>(pm));
     typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
     VariableSynchronizerDispatcher* vd = nullptr;
-    if (m_use_legacy_synchronizer){
-      MpiLegacyVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,nullptr);
-      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiLegacyVariableSynchronizeDispatcher>(bi));
-    }
-    else{
+
+    if (m_synchronizer_version == 2){
       pm->traceMng()->info() << "Using MpiSynchronizer V2";
       MpiVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,nullptr);
       vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiVariableSynchronizeDispatcher>(bi));
     }
+    else if (m_synchronizer_version == 3){
+      pm->traceMng()->info() << "Using MpiSynchronizer V3";
+      MpiDirectSendrecvVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,nullptr);
+      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiDirectSendrecvVariableSynchronizeDispatcher>(bi));
+    }
+    else{
+      MpiLegacyVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,nullptr);
+      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiLegacyVariableSynchronizeDispatcher>(bi));
+    }
+
     return makeRef<IVariableSynchronizer>(new VariableSynchronizer(pm,family->allItems(),vd));
   }
 
@@ -139,19 +150,25 @@ class MpiParallelMngUtilsFactory
     typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
     SharedPtrT<GroupIndexTable> table = group.localIdToIndex();
     VariableSynchronizerDispatcher* vd = nullptr;
-    if (m_use_legacy_synchronizer){
-      MpiLegacyVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table.get());
-      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiLegacyVariableSynchronizeDispatcher>(bi));
-    }
-    else{
+
+    if (m_synchronizer_version == 2){
       pm->traceMng()->info() << "Using MpiSynchronizer V2";
       MpiVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table.get());
       vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiVariableSynchronizeDispatcher>(bi));
     }
+    else if (m_synchronizer_version == 3 ){
+      pm->traceMng()->info() << "Using MpiSynchronizer V3";
+      MpiDirectSendrecvVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table.get());
+      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiDirectSendrecvVariableSynchronizeDispatcher>(bi));
+    }
+    else{
+      MpiLegacyVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table.get());
+      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiLegacyVariableSynchronizeDispatcher>(bi));
+    }
     return makeRef<IVariableSynchronizer>(new VariableSynchronizer(pm,group,vd));
   }
  private:
-  bool m_use_legacy_synchronizer = true;
+  Integer m_synchronizer_version = 1;
 };
 
 /*---------------------------------------------------------------------------*/
