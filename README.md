@@ -12,9 +12,16 @@ For more information regarding authorship of content, please consult the listed 
 
 ## Introduction
 
-Arcane est une platforme de développement pour les codes de calcul parallèles non structurés 2D ou 3D.
+Arcane est une plateforme de développement pour les codes de calcul parallèles non structurés 2D ou 3D.
 
-La documentation en ligne est accessible depuis internet via lien suivant: [Documentation](https://arcaneframework.github.io/arcane/html/index.html)
+### Documentation
+
+La documentation en ligne est accessible depuis internet :
+- La documentation utilisateur se trouve ici : [Documentation utilisateur](https://arcaneframework.github.io/arcane/userdoc/html/index.html)
+- La documentation développeur se trouve ici : [Documentation développeur](https://arcaneframework.github.io/arcane/devdoc/html/index.html)
+- Le dépôt GitHub où est générée et stockée la documentation : [Dépôt GitHub](https://github.com/arcaneframework/arcaneframework.github.io)
+
+### Changelog
 
 Les dernières modifications sont dans le fichier suivant: [Changelog](arcane/doc/changelog.md)
 
