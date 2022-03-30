@@ -117,6 +117,49 @@ mixteMul(const SimdReal3& u,const SimdReal3& v,const SimdReal3& w)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+inline SimdReal3x3
+prodTens(SimdReal3 u,SimdReal3 v)
+{
+  return SimdReal3x3(u.x*v,u.y*v,u.z*v);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \ingroup GroupMathUtils
+ * \brief Produit matrice matrice entre deux tenseurs.
+ */
+inline SimdReal3x3
+matrixProduct(SimdReal3x3 t,SimdReal3x3 v)
+{
+  return SimdReal3x3(SimdReal3(t.x.x*v.x.x+t.x.y*v.y.x+t.x.z*v.z.x,
+                               t.x.x*v.x.y+t.x.y*v.y.y+t.x.z*v.z.y,
+                               t.x.x*v.x.z+t.x.y*v.y.z+t.x.z*v.z.z),
+                     SimdReal3(t.y.x*v.x.x+t.y.y*v.y.x+t.y.z*v.z.x,
+                               t.y.x*v.x.y+t.y.y*v.y.y+t.y.z*v.z.y,
+                               t.y.x*v.x.z+t.y.y*v.y.z+t.y.z*v.z.z),
+                     SimdReal3(t.z.x*v.x.x+t.z.y*v.y.x+t.z.z*v.z.x,
+                               t.z.x*v.x.y+t.z.y*v.y.y+t.z.z*v.z.y,
+                               t.z.x*v.x.z+t.z.y*v.y.z+t.z.z*v.z.z));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \ingroup GroupMathUtils
+ * \brief Transpose la matrice.
+ */
+inline SimdReal3x3
+matrixTranspose(SimdReal3x3 t)
+{
+  return SimdReal3x3(SimdReal3(t.x.x, t.y.x, t.z.x),
+                     SimdReal3(t.x.y, t.y.y, t.z.y),
+                     SimdReal3(t.x.z, t.y.z, t.z.z));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Retourne le minimum de deux SimdReal2
  * \ingroup GroupMathUtils
