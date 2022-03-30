@@ -37,6 +37,12 @@ executors:
     resource_class: arm.medium
     working_directory: ~/workspace
 
+  large-executor-empty:
+    docker:
+      - image: cimg/base:stable
+    working_directory: ~/workspace
+    resource_class: large # 4 CPU / 8Go RAM
+
 # Les variables d'environnement.
 parameters:
   ARCANE_BUILD_DIR:
@@ -132,6 +138,14 @@ parameters:
   CC_KEY_PREFIX:
     type: string
     default: "circleci"
+
+  CC_KEY_PREFIX_ARM:
+    type: string
+    default: "circleci_arm"
+
+  CC_KEY_PREFIX_AIO:
+    type: string
+    default: "circleci_aio"
 
   CC_DIR:
     type: string
@@ -304,9 +318,7 @@ jobs:
 
       - run:
           name: Configure
-          command: cmake -S << pipeline.parameters.ARCANE_SOURCE_DIR >> -B << pipeline.parameters.ARCANE_BUILD_DIR >> -DCMAKE_BUILD_TYPE=<< pipeline.parameters.CM_BUILD_TYPE >> -DCMAKE_INSTALL_PREFIX=<< pipeline.parameters.ARCANE_INSTALL_DIR >> -DArccon_DIR=<< pipeline.parameters.ARCCON_INSTALL_DIR >>/share/cmake/Arccon -DArccore_DIR=<< pipeline.parameters.ARCCORE_INSTALL_DIR >>/lib/cmake/Arccore -DAxlstar_DIR=<< pipeline.parameters.AXLSTAR_INSTALL_DIR >>/share/cmake/Axlstar -DArcDependencies_DIR=<< pipeline.parameters.DEPENDENCIES_INSTALL_DIR >>/share/cmake/ArcDependencies -DBUILD_SHARED_LIBS=ON -DARCANE_DEFAULT_PARTITIONER=Metis -DARCANE_WANT_TOTALVIEW=ON -DARCANE_WANT_LIBXML2=ON -DARCANE_WANT_LEGACY_CONNECTIVITY=OFF -DARCANE_WANT_CHECK=OFF -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON << pipeline.parameters.CM_CCACHE_OPTS >> << pipeline.parameters.CM_COMPILER >>
-          # TODO [CUDA] : command à remplacer pour compiler avec NVCC :
-          #command: cmake -S << pipeline.parameters.ARCANE_SOURCE_DIR >> -B << pipeline.parameters.ARCANE_BUILD_DIR >> -DCMAKE_BUILD_TYPE=<< pipeline.parameters.CM_BUILD_TYPE >> -DCMAKE_INSTALL_PREFIX=<< pipeline.parameters.ARCANE_INSTALL_DIR >> -DArccon_DIR=<< pipeline.parameters.ARCCON_INSTALL_DIR >>/share/cmake/Arccon -DArccore_DIR=<< pipeline.parameters.ARCCORE_INSTALL_DIR >>/lib/cmake/Arccore -DAxlstar_DIR=<< pipeline.parameters.AXLSTAR_INSTALL_DIR >>/share/cmake/Axlstar -DArcDependencies_DIR=<< pipeline.parameters.DEPENDENCIES_INSTALL_DIR >>/share/cmake/ArcDependencies -DBUILD_SHARED_LIBS=ON -DARCANE_DEFAULT_PARTITIONER=Metis -DARCANE_WANT_TOTALVIEW=ON -DARCANE_WANT_LIBXML2=ON -DARCANE_WANT_LEGACY_CONNECTIVITY=OFF -DARCANE_WANT_CHECK=OFF -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON << pipeline.parameters.CM_CCACHE_OPTS >> << pipeline.parameters.CM_COMPILER_NVCC >> << pipeline.parameters.CM_COMPILER >>
+          command: cmake -S << pipeline.parameters.ARCANE_SOURCE_DIR >> -B << pipeline.parameters.ARCANE_BUILD_DIR >> -DCMAKE_BUILD_TYPE=<< pipeline.parameters.CM_BUILD_TYPE >> -DCMAKE_INSTALL_PREFIX=<< pipeline.parameters.ARCANE_INSTALL_DIR >> -DArccon_DIR=<< pipeline.parameters.ARCCON_INSTALL_DIR >>/share/cmake/Arccon -DArccore_DIR=<< pipeline.parameters.ARCCORE_INSTALL_DIR >>/lib/cmake/Arccore -DAxlstar_DIR=<< pipeline.parameters.AXLSTAR_INSTALL_DIR >>/share/cmake/Axlstar -DArcDependencies_DIR=<< pipeline.parameters.DEPENDENCIES_INSTALL_DIR >>/share/cmake/ArcDependencies -DBUILD_SHARED_LIBS=ON -DARCANE_DEFAULT_PARTITIONER=Metis -DARCANE_WANT_TOTALVIEW=ON -DARCANE_WANT_LIBXML2=ON -DARCANE_WANT_LEGACY_CONNECTIVITY=OFF -DARCANE_WANT_CHECK=OFF -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON << pipeline.parameters.CM_CCACHE_OPTS >> << pipeline.parameters.CM_COMPILER_NVCC >> << pipeline.parameters.CM_COMPILER >>
 
       - run:
           name: Build
@@ -361,7 +373,8 @@ jobs:
 
       - run:
           name: Test
-          command: ctest --test-dir << pipeline.parameters.ARCANE_BUILD_DIR >> << pipeline.parameters.CT_OPTS >> -E '^.*_4mpithread$'
+          command: ctest --test-dir << pipeline.parameters.ARCANE_BUILD_DIR >> << pipeline.parameters.CT_OPTS >> -E '^.*(4mpithread|cuda|accelerator).*$'
+          # CUDA : Pour l'instant, on exclut les tests avec cuda et/ou accelerator dans leur nom.
 
       - store_artifacts:
           path: << pipeline.parameters.ARCANE_BUILD_DIR >>/Testing
@@ -418,8 +431,7 @@ jobs:
 
       - restore_cache:
           keys: 
-            - circleci_arm-arcane-<< pipeline.parameters.CM_BUILD_TYPE >>-
-            #- << pipeline.parameters.CC_KEY_PREFIX >>-arcane-<< pipeline.parameters.CM_BUILD_TYPE >>-
+            - << pipeline.parameters.CC_KEY_PREFIX_ARM >>-arcane-<< pipeline.parameters.CM_BUILD_TYPE >>-
 
       - run:
           name: Create ccache directory and ccache environment variables
@@ -445,7 +457,7 @@ jobs:
           command: cmake --install << pipeline.parameters.ARCANE_BUILD_DIR >>
 
       - save_cache:
-          key: circleci_arm-arcane-<< pipeline.parameters.CM_BUILD_TYPE >>-{{ .BuildNum }}
+          key: << pipeline.parameters.CC_KEY_PREFIX_ARM >>-arcane-<< pipeline.parameters.CM_BUILD_TYPE >>-{{ .BuildNum }}
           paths:
             - ~/workspace/ccache
 
@@ -459,6 +471,96 @@ jobs:
           name: Test
           command: ctest --test-dir << pipeline.parameters.ARCANE_BUILD_DIR >> << pipeline.parameters.CT_OPTS >> -E '^.*_4mpithread$'
 
+  aio-build-and-test:
+    executor: large-executor-empty
+    steps:
+      - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule update --init
+
+      - restore_cache:
+          keys: 
+            - << pipeline.parameters.CC_KEY_PREFIX_AIO >>-arcane-<< pipeline.parameters.CM_BUILD_TYPE >>-
+
+      - run:
+          name: Create ccache directory and ccache environment variables
+          command: |
+            echo 'export CCACHE_COMPRESS=true' >> $BASH_ENV
+            echo 'export CCACHE_COMPRESSLEVEL=6' >> $BASH_ENV
+            echo 'export CCACHE_DIR=<< pipeline.parameters.CC_DIR >>' >> $BASH_ENV
+            echo 'export CCACHE_MAXSIZE=500M' >> $BASH_ENV
+            mkdir -p << pipeline.parameters.CC_DIR >>
+
+
+      - run:
+          name: "Install packages"
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y apt-utils iputils-ping g++ python3 git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev libparmetis-dev wget libgtest-dev libtbb-dev rsync swig4.0 libhypre-dev petsc-dev ninja-build ccache
+            wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+            sudo dpkg -i packages-microsoft-prod.deb
+            sudo apt-get update
+            sudo apt-get install -y apt-transport-https dotnet-sdk-6.0
+            wget https://github.com/Kitware/CMake/releases/download/v3.21.3/cmake-3.21.3-Linux-x86_64.tar.gz
+            cp cmake-3.21.3-Linux-x86_64.tar.gz /tmp
+            cd /tmp && tar xf cmake-3.21.3-Linux-x86_64.tar.gz
+            echo "Listing of /tmp"
+            ls -lart /tmp
+            echo "Listing of /tmp/cmake-3.21.3-linux-x86_64"
+            ls -lart /tmp/cmake-3.21.3-linux-x86_64
+            cd /tmp/cmake-3.21.3-linux-x86_64/ && sudo rsync -au . /usr/local
+            ls -lart /usr/local/bin
+            echo "Generate NuGet.config"
+            mkdir -p /home/circleci/.nuget/NuGet
+            cd /home/circleci/.nuget/NuGet && dotnet new nugetconfig
+            ls -lart /home/circleci/.nuget/NuGet
+            cd /home/circleci/.nuget/NuGet && mv nuget.config NuGet.config
+            echo "Print NuGet.config"
+            cat /home/circleci/.nuget/NuGet/NuGet.config
+            echo 'CMake version:'
+            cmake --version
+            echo 'ccache version:'
+            ccache --version
+            ccache -z
+
+      - run:
+          name: Configure 'framework'
+          command: |
+            cmake -S "_common/build_all" -B build -DCMAKE_CXX_FLAGS_RELEASE="-O2" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DCMAKE_BUILD_TYPE=<< pipeline.parameters.CM_BUILD_TYPE >> -DBUILD_SHARED_LIBS=TRUE -DARCANE_DEFAULT_PARTITIONER=Metis -DARCCON_REGISTER_PACKAGE_VERSION=2 << pipeline.parameters.CM_CCACHE_OPTS >> -GNinja
+
+      - run:
+          name: Build 'framework'
+          command: |
+            cmake --build build
+
+      - run:
+          name: Get 'ccache' status
+          command: |
+            ccache -s
+
+      - save_cache:
+          key: << pipeline.parameters.CC_KEY_PREFIX_AIO >>-arcane-<< pipeline.parameters.CM_BUILD_TYPE >>-{{ .BuildNum }}
+          paths:
+            - ~/workspace/ccache
+
+      # On ne lance pas les tests qui utilisent 'mpithread' car ils ont besoin de 12 coeurs
+      # sur les machines à 4 coeurs cela pose problème.
+      - run:
+          name: Test 'framework'
+          command: |
+            mkdir test_results
+            echo BEFORE_PWD = `pwd`
+            cd build && ctest --output-junit ../test_results/results.xml --output-on-failure -E mpithread
+            echo AFTER_PWD = `pwd`
+            ls -al ../test_results
+
+      - store_test_results:
+          path: test_results
+
+      - store_artifacts:
+          path: test_results
 
 # Invoke jobs via workflows
 workflows:
@@ -504,7 +606,7 @@ workflows:
             - axlstar-install
             - arcane-install
 
-  # TODO : Voir si ce n'est pas mieux de faire AIO pour cuda (vu que les machines GPU ne supporte pas les images Docker).
+  # TODO : Voir si ce n'est pas mieux de faire AIO pour cuda (vu que les machines GPU ne supportent pas les images Docker).
   # build_and_test_cuda-116_gcc-11:
   #   jobs:
   #     - cuda-build-and-test
@@ -519,3 +621,14 @@ workflows:
                 - main
     jobs:
       - arm-build-and-test
+
+  build-and-test-aio:
+    triggers: #use the triggers key to indicate a scheduled build
+      - schedule:
+          cron: "23 1 * * *" # Tous les jours à 01:23 (du matin).
+          filters:
+            branches:
+              only:
+                - main
+    jobs:
+      - aio-build-and-test
