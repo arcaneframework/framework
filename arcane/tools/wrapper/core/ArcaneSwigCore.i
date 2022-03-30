@@ -68,6 +68,7 @@ namespace Arcane
 #define ARCANE_DEPRECATED
 #define ARCANE_DATATYPE_EXPORT
 #define ARCANE_IMPL_EXPORT
+#define ARCANE_ACCELERATOR_CORE_EXPORT
 
 %ignore operator();
 %ignore operator[];
@@ -221,6 +222,9 @@ namespace Arcane
 %rename("_asArray", regextarget=1, fullname=1) "Arcane::ItemVariable.*::asArray";
 %rename("_finalize", fullname=1) "Arcane::IArcaneMain::finalize";
 %rename("_finalize", fullname=1) "Arcane::ArcaneMain::finalize";
+
+// Renomme cette méthode car il y a une classe de même nom
+%rename("_acceleratorRuntimeInitialisationInfo", fullname=1) "Arcane::ArcaneMain::acceleratorRuntimeInitialisationInfo";
 
 // Supprime le wrapping des méthodes qui sont obsolètes dans Arcane
 %rename("$ignore", fullname=1, regextarget=1) "Arcane::ServiceBuilder<.*>::createInstance";
@@ -437,6 +441,7 @@ class IEntryPoint
 %include arcane/IMainFactory.h
 %include arcane/ApplicationBuildInfo.h
 %include arcane/DotNetRuntimeInitialisationInfo.h
+%include arcane/accelerator/core/AcceleratorRuntimeInitialisationInfo.h
 
 namespace Arcane
 {

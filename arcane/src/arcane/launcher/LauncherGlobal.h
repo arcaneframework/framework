@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* LauncherGlobal.h                                            (C) 2000-2019 */
+/* LauncherGlobal.h                                            (C) 2000-2022 */
 /*                                                                           */
 /* Déclarations générales de la composante 'Launcher' de Arcane.             */
 /*---------------------------------------------------------------------------*/
@@ -31,6 +31,8 @@
 namespace Arcane
 {
 class ArcaneLauncher;
+class DirectSubDomainExecutionContext;
+class DirectExecutionContext;
 }
 
 /*---------------------------------------------------------------------------*/

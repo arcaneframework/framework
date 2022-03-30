@@ -6,7 +6,7 @@ set(ARCANE_SWIG_LAUNCHER_FILES
   ArcaneSwigLauncher.i
 )
 
-arcane_wrapper_add_swig_target(NAME launcher SOURCE ArcaneSwigLauncher.i NAMESPACE_NAME Arcane.Launcher
+arcane_wrapper_add_swig_target(NAME launcher SOURCE ArcaneSwigLauncher.i NAMESPACE_NAME Arcane
   DLL_NAME Arcane.Launcher
   SWIG_TARGET_DEPENDS core)
 target_link_libraries(arcane_dotnet_wrapper_launcher PUBLIC arcane_launcher arcane_std)
