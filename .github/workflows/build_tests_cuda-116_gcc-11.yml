@@ -3,6 +3,8 @@ name: Build/Tests CUDA-11.6 GCC-11
 on:
   push:
     branches: [ main, dev/cea ]
+  pull_request:
+    branches: [ main, dev/cea ]
   # A executer que lorsque l'on demande.
   workflow_dispatch:
 
