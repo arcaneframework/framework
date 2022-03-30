@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimdOperation.h                                             (C) 2000-2017 */
+/* SimdOperation.h                                             (C) 2000-2022 */
 /*                                                                           */
 /* Operations sur les types Simd.                                            */
 /*---------------------------------------------------------------------------*/
@@ -19,10 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -150,7 +148,115 @@ operator/(const SimdReal2& a,Real b)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+inline SimdReal3x3
+operator+(const SimdReal3x3& a,const SimdReal3x3& b)
+{
+  return SimdReal3x3(a.x + b.x,a.y + b.y,a.z + b.z);
+}
+
+inline SimdReal3x3
+operator-(const SimdReal3x3& a)
+{
+  return SimdReal3x3(-a.x,-a.y,-a.z);
+}
+
+inline SimdReal3x3
+operator-(const SimdReal3x3& a,const SimdReal3x3& b)
+{
+  return SimdReal3x3(a.x - b.x,a.y - b.y,a.z - b.z);
+}
+
+inline SimdReal3x3
+operator*(const SimdReal3x3& a,Real b)
+{
+  return SimdReal3x3(a.x * b,a.y * b,a.z * b);
+}
+
+inline SimdReal3x3
+operator*(const SimdReal3x3& a,const SimdReal& b)
+{
+  return SimdReal3x3(a.x * b,a.y * b,a.z * b);
+}
+
+inline SimdReal3x3
+operator*(Real b,const SimdReal3x3& a)
+{
+  return SimdReal3x3(b * a.x,b * a.y,b * a.z);
+}
+
+inline SimdReal3x3
+operator*(const SimdReal& b,const SimdReal3x3& a)
+{
+  return SimdReal3x3(b * a.x,b * a.y,b * a.z);
+}
+
+inline SimdReal3x3
+operator*(const SimdReal3x3& a,const SimdReal3x3& b)
+{
+  return SimdReal3x3(a.x * b.x,a.y * b.y,a.z * b.z);
+}
+
+inline SimdReal3x3
+operator/(const SimdReal3x3& a,const SimdReal& b)
+{
+  return SimdReal3x3(a.x / b,a.y / b,a.z / b);
+}
+
+inline SimdReal3x3
+operator/(const SimdReal3x3& a,Real b)
+{
+  return SimdReal3x3(a.x / b,a.y / b,a.z / b);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline SimdReal2x2
+operator+(const SimdReal2x2& a,const SimdReal2x2& b)
+{
+  return SimdReal2x2(a.x + b.x,a.y + b.y);
+}
+
+inline SimdReal2x2
+operator-(const SimdReal2x2& a,const SimdReal2x2& b)
+{
+  return SimdReal2x2(a.x - b.x,a.y - b.y);
+}
+
+inline SimdReal2x2
+operator*(const SimdReal2x2& a,Real b)
+{
+  return SimdReal2x2(a.x * b,a.y * b);
+}
+
+inline SimdReal2x2
+operator*(Real b,const SimdReal2x2& a)
+{
+  return SimdReal2x2(b * a.x,b * a.y);
+}
+
+inline SimdReal2x2
+operator*(const SimdReal2x2& a,const SimdReal2x2& b)
+{
+  return SimdReal2x2(a.x * b.x,a.y * b.y);
+}
+
+inline SimdReal2x2
+operator/(const SimdReal2x2& a,const SimdReal& b)
+{
+  return SimdReal2x2(a.x / b,a.y / b);
+}
+
+inline SimdReal2x2
+operator/(const SimdReal2x2& a,Real b)
+{
+  return SimdReal2x2(a.x / b,a.y / b);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

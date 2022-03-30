@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimdMathUtils.h                                             (C) 2000-2017 */
+/* SimdMathUtils.h                                             (C) 2000-2022 */
 /*                                                                           */
 /* Fonctions mathématiques diverses pour les classes SIMD.                   */
 /*---------------------------------------------------------------------------*/
@@ -19,13 +19,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace math
+namespace Arcane::math
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Produit vectoriel de \a u par \a v dans \f$R^3\f$.
  */
@@ -115,12 +114,133 @@ mixteMul(const SimdReal3& u,const SimdReal3& v,const SimdReal3& w)
   return dot(u,cross(v,w));
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline SimdReal3x3
+prodTens(SimdReal3 u,SimdReal3 v)
+{
+  return SimdReal3x3(u.x*v,u.y*v,u.z*v);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \ingroup GroupMathUtils
+ * \brief Produit matrice matrice entre deux tenseurs.
+ */
+inline SimdReal3x3
+matrixProduct(SimdReal3x3 t,SimdReal3x3 v)
+{
+  return SimdReal3x3(SimdReal3(t.x.x*v.x.x+t.x.y*v.y.x+t.x.z*v.z.x,
+                               t.x.x*v.x.y+t.x.y*v.y.y+t.x.z*v.z.y,
+                               t.x.x*v.x.z+t.x.y*v.y.z+t.x.z*v.z.z),
+                     SimdReal3(t.y.x*v.x.x+t.y.y*v.y.x+t.y.z*v.z.x,
+                               t.y.x*v.x.y+t.y.y*v.y.y+t.y.z*v.z.y,
+                               t.y.x*v.x.z+t.y.y*v.y.z+t.y.z*v.z.z),
+                     SimdReal3(t.z.x*v.x.x+t.z.y*v.y.x+t.z.z*v.z.x,
+                               t.z.x*v.x.y+t.z.y*v.y.y+t.z.z*v.z.y,
+                               t.z.x*v.x.z+t.z.y*v.y.z+t.z.z*v.z.z));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \ingroup GroupMathUtils
+ * \brief Transpose la matrice.
+ */
+inline SimdReal3x3
+matrixTranspose(SimdReal3x3 t)
+{
+  return SimdReal3x3(SimdReal3(t.x.x, t.y.x, t.z.x),
+                     SimdReal3(t.x.y, t.y.y, t.z.y),
+                     SimdReal3(t.x.z, t.y.z, t.z.z));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+/*!
+ * \brief Retourne le minimum de deux SimdReal2
+ * \ingroup GroupMathUtils
+ */
+ARCCORE_HOST_DEVICE inline SimdReal2
+min(SimdReal2 a,SimdReal2 b)
+{
+  return SimdReal2( math::min(a.x,b.x), math::min(a.y,b.y) );
+}
+/*!
+ * \brief Retourne le minimum de deux SimdReal3
+ * \ingroup GroupMathUtils
+ */
+ARCCORE_HOST_DEVICE inline SimdReal3
+min(SimdReal3 a,SimdReal3 b)
+{
+  return SimdReal3( math::min(a.x,b.x), math::min(a.y,b.y), math::min(a.z,b.z) );
+}
+/*!
+ * \brief Retourne le minimum de deux SimdReal2x2
+ * \ingroup GroupMathUtils
+ */
+inline SimdReal2x2
+min(SimdReal2x2 a,SimdReal2x2 b)
+{
+  return SimdReal2x2( math::min(a.x,b.x), math::min(a.y,b.y) );
+}
+/*!
+ * \brief Retourne le minimum de deux SimdReal3x3
+ * \ingroup GroupMathUtils
+ */
+inline SimdReal3x3
+min(SimdReal3x3 a,SimdReal3x3 b)
+{
+  return SimdReal3x3( math::min(a.x,b.x), math::min(a.y,b.y), math::min(a.z,b.z) );
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
+ * \brief Retourne le maximum de deux SimdReal2
+ * \ingroup GroupMathUtils
+ */
+ARCCORE_HOST_DEVICE inline SimdReal2
+max(SimdReal2 a,SimdReal2 b)
+{
+  return SimdReal2( math::max(a.x,b.x), math::max(a.y,b.y) );
+}
+/*!
+ * \brief Retourne le maximum de deux SimdReal3
+ * \ingroup GroupMathUtils
+ */
+ARCCORE_HOST_DEVICE inline SimdReal3
+max(SimdReal3 a,SimdReal3 b)
+{
+  return SimdReal3( math::max(a.x,b.x), math::max(a.y,b.y), math::max(a.z,b.z) );
+}
+/*!
+ * \brief Retourne le maximum de deux SimdReal2x2
+ * \ingroup GroupMathUtils
+ */
+inline SimdReal2x2
+max(SimdReal2x2 a,SimdReal2x2 b)
+{
+  return SimdReal2x2( math::max(a.x,b.x), math::max(a.y,b.y) );
+}
+/*!
+ * \brief Retourne le maximum de deux SimdReal3x3
+ * \ingroup GroupMathUtils
+ */
+inline SimdReal3x3
+max(SimdReal3x3 a,SimdReal3x3 b)
+{
+  return SimdReal3x3( math::max(a.x,b.x), math::max(a.y,b.y), math::max(a.z,b.z) );
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane::math
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
