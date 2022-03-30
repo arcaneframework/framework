@@ -86,7 +86,7 @@ StringBuilder(const char* str)
 : m_p(0)
 , m_const_ptr(0)
 {
-  bool do_alloc = true;
+  const bool do_alloc = true;
   if (do_alloc){
     m_p = new StringImpl(str);
     m_p->addReference();
