@@ -179,8 +179,10 @@ exit()
       double sv = reduced_values[ll];
       Real diff = math::abs((rv-sv)/rv);
       info() << "var=" << ll << " SUM=" << sv << " diff=" << diff;
-      if (!math::isNearlyEqualWithEpsilon(sv,rv,1e-13)){
-        ARCANE_FATAL("Bad value ref={0} v={1} var={2}",rv, sv, ll, diff);
+      // Il faut utiliser un epsilon assez élevé car les différences peuvent
+      // être importantes entre X64, ARM ou les GPU.
+      if (!math::isNearlyEqualWithEpsilon(sv,rv,1e-12)){
+        ARCANE_FATAL("Bad value ref={0} v={1} var={2} diff={3}",rv, sv, ll, diff);
       }
     }
   }
