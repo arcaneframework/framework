@@ -165,6 +165,11 @@ class DataViewSetter
   {
     m_ptr->z.z = value;
   }
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasSubscriptOperator()> >
+  ARCCORE_HOST_DEVICE DataViewSetter<typename DataTypeTraitsT<X>::SubscriptType> operator[](Int32 index)
+  {
+    return DataViewSetter<typename DataTypeTraitsT<X>::SubscriptType>(& m_ptr->operator[](index) );
+  }
 
  private:
   DataType* m_ptr;
@@ -209,6 +214,12 @@ class DataViewGetterSetter
   static ARCCORE_HOST_DEVICE AccessorReturnType build(DataType* ptr)
   {
     return AccessorReturnType(ptr);
+  }
+
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasSubscriptOperator()> >
+  ARCCORE_HOST_DEVICE DataViewGetterSetter<typename DataTypeTraitsT<X>::SubscriptType> operator[](Int32 index)
+  {
+    return DataViewGetterSetter<typename DataTypeTraitsT<X>::SubscriptType>(& m_ptr->operator[](index) );
   }
 };
 
