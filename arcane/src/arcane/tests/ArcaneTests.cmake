@@ -252,7 +252,9 @@ function(arcane_add_csharp_test_direct)
     arcane_add_test_direct(NAME ${ARGS_TEST_NAME}_coreclr
       COMMAND ${ARGS_LAUNCH_COMMAND} -Z --dotnet-runtime=coreclr ${_ALL_ARGS}
       WORKING_DIRECTORY ${ARGS_WORKING_DIRECTORY})
+  endif()
 
+  if (TARGET arcane_dotnet_coreclr)
     # Test avec coreclr embedded
     arcane_add_test_direct(NAME ${ARGS_TEST_NAME}_coreclr_embedded
       COMMAND ${ARGS_LAUNCH_COMMAND} -We,ARCANE_USE_DOTNET_WRAPPER,1 --dotnet-runtime=coreclr ${_ALL_ARGS}
