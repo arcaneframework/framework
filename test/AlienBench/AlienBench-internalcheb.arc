@@ -18,10 +18,10 @@
   <mesh>
     <meshgenerator>
       <cartesian>
-        <origine></origine>
+        <origine>0. 0. 0.</origine>
         <nsd>1 1 1</nsd>
-        <lx nx="10">1.</lx>
-        <ly ny="10">1.</ly>
+        <lx nx="100">1.</lx>
+        <ly ny="100">1.</ly>
         <lz nz="10">1.</lz>
       </cartesian>
     </meshgenerator>
@@ -39,17 +39,39 @@
       <sigma>1000000.</sigma>
       <epsilon>0.01</epsilon>
 
-      <linear-solver name="TrilinosSolverOMP">
+      <alien-core-solver>
+        <backend>SimpleCSR</backend>
+        <solver>BCGS</solver>
+        <preconditioner>ChebyshevPoly</preconditioner>
+        <poly-order>1</poly-order>
+        <poly-factor>30.</poly-factor>
+        <poly-factor-max-iter>10</poly-factor-max-iter>
+        <max-iter>1000</max-iter>
+        <tol>1e-8</tol>
+        <output-level>3</output-level>
+        <asynch>0</asynch>
+      </alien-core-solver>
+      <!--linear-solver name="TrilinosSolver">
+        <solver>BiCGStab</solver>
+        <max-iteration-num>5</max-iteration-num>
+        <stop-criteria-value>1e-8</stop-criteria-value>
+        <preconditioner>Chebyshev</preconditioner>
+        <nb-threads>1</nb-threads>
+        <output>1</output>
+      </linear-solver-->
+      <linear-solver name="HTSSolver">
         <solver>BiCGStab</solver>
         <max-iteration-num>1000</max-iteration-num>
         <stop-criteria-value>1e-8</stop-criteria-value>
         <preconditioner>Chebyshev</preconditioner>
-        <!--chebyshev>
-          <degree>3</degree>
-        </chebyshev-->
-        <nb-threads>4</nb-threads>
-        <output>1</output>
+        <poly-degree>1</poly-degree>
+        <poly-factor>30.</poly-factor>
+        <poly-factor-max-iter>10</poly-factor-max-iter>
+        <output>3</output>
+        <nb-part>1</nb-part>
+        <nb-subpart>1</nb-subpart>
       </linear-solver>
+
 
     
   </alien-bench>

@@ -854,7 +854,7 @@ namespace ArcaneTools {
     Arccore::MessagePassing::mpAllGather(m_parallel_mng,myLocalSize, allLocalSizes);
 
     // Table de ré-indexation (EntryIndex->Integer)
-    UniqueArray<Integer> entry_reindex(m_local_entry_count + m_global_entry_count);
+    UniqueArray<Integer> entry_reindex(m_local_entry_count + m_local_removed_entry_count);
     entry_reindex.fill(-1); // valeur de type Erreur par défaut
 
     // Calcul de la taille des indices par entrée
@@ -875,7 +875,7 @@ namespace ArcaneTools {
       const Integer item_owner = entryIndex.m_owner;
       if (item_owner == m_local_owner) { // Numérotation locale !
         const Integer newIndex = currentEntryIndex++;
-        entry_reindex[i->m_index + m_global_entry_count] =
+        entry_reindex[i->m_index] =
             newIndex; // Table de translation
         i->m_index = newIndex;
       }
@@ -888,7 +888,7 @@ namespace ArcaneTools {
       UniqueArray<Int64>& ids = recvRequest.m_ids;
       for (Integer j = 0; j < ids.size(); ++j) {
         sbuf->putInteger(
-            entry_reindex[ids[j] + m_global_entry_count]); // Via la table de réindexation
+            entry_reindex[ids[j]]); // Via la table de réindexation
       }
     }
 
@@ -964,7 +964,7 @@ namespace ArcaneTools {
         --request.m_count;
         auto sbuf = request.m_comm->serializer();
         const Integer newIndex = sbuf->getInteger();
-        entry_reindex[i->m_index + m_global_entry_count] = newIndex;
+        //entry_reindex[i->m_index + m_global_entry_count] = newIndex;
         i->m_index = newIndex;
       }
     }
@@ -991,11 +991,6 @@ namespace ArcaneTools {
      * (Entry,Item) locaux d'abord.
      */
 
-    // Table de ré-indexation (EntryIndex->Integer)
-    UniqueArray<Integer> entry_reindex(
-        m_local_entry_count + m_local_removed_entry_count);
-    entry_reindex.fill(-1); // valeur de type Erreur par défaut
-
     // Calcul de la taille des indices par entrée
     reserveEntries(entry_index);
 
@@ -1011,7 +1006,6 @@ namespace ArcaneTools {
           ("Item cannot be non-local for sequential mode"));
       // Numérotation locale only !
       const Integer newIndex = currentEntryIndex++;
-      entry_reindex[i->m_index + m_global_entry_count] = newIndex; // Table de translation
       i->m_index = newIndex;
     }
 

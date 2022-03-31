@@ -29,6 +29,7 @@
 
 
     <alien-bench>
+      <redistribution>false</redistribution>
       <!-- big diagonal-coefficient keep diagonal dominant matrix -->
       <homogeneous>true</homogeneous>
       <diagonal-coefficient>0.</diagonal-coefficient>
@@ -38,17 +39,16 @@
       <sigma>1000000.</sigma>
       <epsilon>0.01</epsilon>
 
-      <linear-solver name="HTSSolver">
+      <linear-solver name="TrilinosSolver">
         <solver>BiCGStab</solver>
         <max-iteration-num>1000</max-iteration-num>
         <stop-criteria-value>1e-8</stop-criteria-value>
         <preconditioner>Chebyshev</preconditioner>
-        <poly-degree>1</poly-degree>
-        <poly-factor>30.</poly-factor>
-        <poly-factor-max-iter>10</poly-factor-max-iter>
-        <output>3</output>
-        <nb-part>1</nb-part>
-        <nb-subpart>1</nb-subpart>
+        <!--chebyshev>
+          <degree>3</degree>
+        </chebyshev-->
+        <nb-threads>1</nb-threads>
+        <output>2</output>
       </linear-solver>
 
     

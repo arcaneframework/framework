@@ -33,10 +33,30 @@ addSources(alien_ifpen_solvers
 addSources(alien_ifpen_solvers
     eigen_solver/arcane/HTSEigenSolver.cc
     )
-linkLibraries(alien_ifpen_solvers htssolver harts tbb spectra)
+linkLibraries(alien_ifpen_solvers htssolver harts)
+
+if(TARGET spectra)
+  linkLibraries(alien_ifpen_solvers spectra)
+endif()
+
+if(TARGET eigen3)
+  linkLibraries(alien_ifpen_solvers eigen3)
+endif()
 
 if(TARGET arpack)
   linkLibraries(alien_ifpen_solvers arpack)
+endif()
+
+if(TARGET metis)
+  linkLibraries(alien_ifpen_solvers metis)
+endif()
+
+if(TARGET hdf5)
+  linkLibraries(alien_ifpen_solvers hdf5)
+endif()
+
+if(TARGET tbb)
+  linkLibraries(alien_ifpen_solvers tbb)
 endif()
 
 if(TARGET cuda)

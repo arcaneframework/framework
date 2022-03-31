@@ -549,7 +549,12 @@ template <typename TagT> class SolverInternal
           node_type>
           prec_type;
       RCP<op_type> opMat(rcpFromRef(A));
-      RCP<prec_type> prec = MueLu::CreateTpetraPreconditioner(opMat, *plist,A_coordinates);
+      //RCP<prec_type> prec = MueLu::CreateTpetraPreconditioner(opMat, *plist,A_coordinates);
+      Teuchos::ParameterList& userList = plist->sublist("user data");
+      if (Teuchos::nonnull(A_coordinates)) {
+        userList.set<RCP<Tpetra::MultiVector<typename Teuchos::ScalarTraits<scalar_type>::coordinateType,local_ordinal_type,global_ordinal_type,node_type> > >("Coordinates", A_coordinates);
+      }
+      RCP<prec_type> prec = MueLu::CreateTpetraPreconditioner(opMat, *plist);
       return prec;
     } else {
       typedef Ifpack2::Preconditioner<scalar_type, local_ordinal_type,

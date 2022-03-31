@@ -123,17 +123,20 @@ class MatrixInternal
  public:
   typedef ValueT scalar_type;
   typedef typename TrilinosInternal::Node<TagT>::type node_type;
-  typedef Tpetra::Map<int, int, node_type> map_type;
-  typedef Tpetra::CrsGraph<int, int, node_type> graph_type;
-  typedef typename graph_type::local_ordinal_type local_ordinal_type;
-  typedef typename graph_type::global_ordinal_type global_ordinal_type;
+  typedef Tpetra::Map<int, int, node_type>            map_type;
+  typedef Tpetra::CrsGraph<int, int, node_type>       graph_type;
+  typedef typename graph_type::local_ordinal_type     local_ordinal_type;
+  typedef typename graph_type::global_ordinal_type    global_ordinal_type;
 
-  typedef Tpetra::CrsMatrix<scalar_type, local_ordinal_type, global_ordinal_type,
-      node_type>
-      matrix_type;
+  typedef Tpetra::CrsMatrix<scalar_type,
+                            local_ordinal_type,
+                            global_ordinal_type,
+                            node_type>                 matrix_type;
 
-  typedef Tpetra::Vector<scalar_type, local_ordinal_type, global_ordinal_type, node_type>
-      vector_type;
+  typedef Tpetra::Vector<scalar_type,
+                         local_ordinal_type,
+                         global_ordinal_type,
+                         node_type>                    vector_type;
   
   typedef Teuchos::ScalarTraits<scalar_type>                 STS;
   typedef typename STS::magnitudeType                        magnitude_type;
@@ -160,7 +163,8 @@ class MatrixInternal
     m_comm = rcp(new MpiComm<int>(comm));
     m_map = rcp(new map_type(gsize, indices, 0, m_comm));
 
-    m_internal.reset(new matrix_type(this->m_map, 0, Tpetra::ProfileType(1)));
+    //m_internal.reset(new matrix_type(this->m_map, 0, Tpetra::ProfileType(1)));
+    //m_internal.reset(new matrix_type(this->m_map, 10));
   }
 
   bool initMatrix(int local_offset, int nrows, int const* kcol, int const* cols,
@@ -180,7 +184,8 @@ class MatrixInternal
   Teuchos::RCP<const map_type>           m_map;
   Teuchos::RCP<coord_vector_type>        m_coordinates;
 
-  std::unique_ptr<matrix_type> m_internal;
+  std::unique_ptr<graph_type>            m_graph ;
+  std::unique_ptr<matrix_type>           m_internal;
 };
 
 /*---------------------------------------------------------------------------*/

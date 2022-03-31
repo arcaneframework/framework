@@ -386,7 +386,7 @@ AlienBenchModule::test()
                           int    polynom_order           = opt->polyOrder() ;
                           int    polynom_factor_max_iter = opt->polyFactorMaxIter() ;
 
-                          typedef Alien::ChebyshevPreconditioner<AlgebraType> PrecondType ;
+                          typedef Alien::ChebyshevPreconditioner<AlgebraType,true> PrecondType ;
                           PrecondType      precond{alg,true_A,polynom_factor,polynom_order,polynom_factor_max_iter,traceMng()} ;
                           precond.setOutputLevel(output_level) ;
                           precond.init() ;
@@ -443,7 +443,7 @@ AlienBenchModule::test()
                       int    polynom_order           = opt->polyOrder() ;
                       int    polynom_factor_max_iter = opt->polyFactorMaxIter() ;
 
-                      typedef Alien::ChebyshevPreconditioner<AlgebraType> PrecondType ;
+                      typedef Alien::ChebyshevPreconditioner<AlgebraType,true> PrecondType ;
                       PrecondType      precond{alg,true_A,polynom_factor,polynom_order,polynom_factor_max_iter,traceMng()} ;
                       precond.setOutputLevel(output_level) ;
                       precond.init() ;
@@ -557,18 +557,6 @@ AlienBenchModule::test()
         fatal() << "SYCL BackEnd not available";
         break ;
     }
-
-
-    StopCriteriaType stop_criteria{alg,true_b,tol,max_iteration,output_level>0?traceMng():nullptr} ;
-
-    SolverType solver{alg,traceMng()};
-    solver.setOutputLevel(output_level);
-
-    typedef Alien::DiagPreconditioner<AlgebraType> PrecondType ;
-    PrecondType      precond{alg,true_A} ;
-    precond.init() ;
-    solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
-
   }
   else
   {
@@ -697,7 +685,7 @@ AlienBenchModule::test()
       }
       Alien::SolverStatus status = solver->getStatus();
       if (status.succeeded) {
-        info()<<"RESULUTION SUCCEED";
+        info()<<"RESOLUTION SUCCEED";
         Alien::VectorReader reader(vectorX);
         ENUMERATE_CELL (icell, areaU.own()) {
           const Integer iIndex = allUIndex[icell->localId()];

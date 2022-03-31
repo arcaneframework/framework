@@ -99,7 +99,8 @@ TrilinosInternal::initialize(Arccore::MessagePassing::IMessagePassingMng* parall
     m_execution_space = execution_space;
 
   if (m_execution_space.compare("Serial") == 0) {
-    Kokkos::Serial::initialize();
+    //Kokkos::Serial::initialize();
+    Kokkos::initialize() ;
   }
 #ifdef KOKKOS_ENABLE_OPENMP
   if (m_execution_space.compare("OpenMP") == 0) {
