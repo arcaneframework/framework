@@ -424,7 +424,7 @@ serialize(ISerializer* sbuf,IDataOperation* operation)
     if (n[0]!=SERIALIZE2_MAGIC_NUMBER)
       ARCANE_FATAL("Bad magic number");
     Int32 extents_buf[RankValue];
-    Span<Int32> extents_span(extents_buf,RankValue);
+    SmallSpan<Int32> extents_span(extents_buf,RankValue);
     sbuf->getSpan(extents_span);
     Int32 count = extents_span[0];
     switch(sbuf->readMode()){

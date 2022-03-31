@@ -143,6 +143,17 @@ class ArrayExtentsBase
     for( int i=0; i<RankValue; ++i )
       m_extents[i] = 0;
   }
+ protected:
+  explicit ARCCORE_HOST_DEVICE ArrayExtentsBase(SmallSpan<const Int32> extents)
+  {
+    Integer n = extents.size();
+    Integer vn = math::min(n,RankValue);
+    for( int i=0; i<vn; ++i )
+      m_extents[i] = extents[i];
+    for( int i=vn; i<RankValue; ++i )
+      m_extents[i] = 0;
+  }
+ public:
   //! Nombre d'élément de la \a i-ème dimension.
   ARCCORE_HOST_DEVICE Int32 extent(int i) const { return m_extents[i]; }
   //! Positionne à \a v le nombre d'éléments de la i-ème dimension
@@ -165,15 +176,10 @@ class ArrayExtentsBase
   }
   /*!
    * \brief Construit une instance à partir des valeurs données dans \a extents.
-   * \pre extents.size() == RankValue.
    */
-  ARCCORE_HOST_DEVICE static ArrayExtentsBase<RankValue> fromSpan(Span<const Int32> extents)
+  ARCCORE_HOST_DEVICE static ArrayExtentsBase<RankValue> fromSpan(SmallSpan<const Int32> extents)
   {
-    ArrayExtentsBase<RankValue> v;
-    // TODO: vérifier la taille
-    for( int i=0; i<RankValue; ++i )
-      v.m_extents[i] = extents[i];
-    return v;
+    return ArrayExtentsBase<RankValue>(extents);
   }
  protected:
   std::array<Int32,RankValue> m_extents;
