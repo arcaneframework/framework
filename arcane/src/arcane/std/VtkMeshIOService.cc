@@ -174,6 +174,7 @@ class VtkMeshIOService
                                   Array<Int64>& cells_connectivity);
   void _readFacesMesh(IMesh* mesh,const String& file_name,
                       const String& dir_name,bool use_internal_partition);
+  bool _readMetadata(IMesh* mesh, VtkFile& vtk_file);
 
  private:
 
@@ -192,7 +193,9 @@ class VtkFile
  public:
   static const int BUFSIZE = 10000;
  public:
-  VtkFile(std::istream* stream) : m_stream(stream) {}
+  VtkFile(std::istream* stream) : m_stream(stream), m_isInit(false), eof(false) {}
+  const char* getCurrentLine();
+  bool isEmptyNextLine();
   const char* getNextLine();
   Real getReal();
   Integer getInteger();
@@ -201,12 +204,105 @@ class VtkFile
                    const String& expected_value1,
                    const String& expected_value2);
   static bool isEqualString(const String& current_value,const String& expected_value);
+  void reReadSameLine(){m_currentLine = true;}
 
   bool isEnd(){ (*m_stream) >> ws; return m_stream->eof(); }
+  bool isEof(){ return eof; }
  private:
+  bool m_isInit;
+  bool m_currentLine;
   std::istream* m_stream;
   char m_buf[BUFSIZE];
+  bool eof;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+const char* VtkFile::
+getCurrentLine()
+{
+  if(!m_isInit) getNextLine();
+  return m_buf;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool VtkFile::
+isEmptyNextLine()
+{
+  m_isInit = true;
+  m_currentLine = false;
+  if(eof)
+  {
+    throw IOException("VtkFile::isEmptyNextLine()", "Unexpected EndOfFile");
+  }
+
+  if (m_stream->good())
+  {
+    // Le getline s'arrete (par défaut) au char '\n' et ne l'inclus pas dans le buf mais le remplace par '\0'.   
+    m_stream->getline(m_buf, sizeof(m_buf)-1);
+
+    if (m_stream->eof())
+    {
+      eof = true;
+      return true;
+    }
+
+    // printf("Prems : %d %c\n", m_buf[0], m_buf[0]);
+    // printf("Deuxi : %d %c\n", m_buf[1], m_buf[1]);
+    // printf("Trois : %d %c\n", m_buf[2], m_buf[2]);
+    if (m_buf[0]=='\r' || m_buf[0]=='\0')
+    {
+      //printf("IIIIICCCCCCIIIIII\n");
+      getNextLine();
+      m_currentLine = true;
+      return true;
+    }
+    else
+    {
+      //printf("222222222222222\n");
+      bool is_comment = true;
+
+      // Regarde si un caractère de commentaire est présent
+      for( int i=0; i<BUFSIZE && m_buf[i]!='\0'; ++i )
+      {
+      //printf("6666666666666\n");
+
+        if (!isspace(m_buf[i]))
+        {
+          is_comment = (m_buf[i]=='#');
+          break;
+        }
+      }
+      if (!is_comment)
+      {
+      //printf("3333333333333\n");
+      
+        // Supprime le '\n' ou '\r' final
+        for( int i=0; i<BUFSIZE && m_buf[i]!='\0'; ++i )
+        {
+          //cout << " V=" << m_buf[i] << " I=" << (int)m_buf[i] << "\n";
+          if (m_buf[i]=='\n' || m_buf[i]=='\r')
+          {
+            m_buf[i] = '\0';
+            break;
+          }
+        }
+      }
+      else
+      {
+      //printf("444444444444444\n");
+        getNextLine();
+      }
+    }
+      //printf("55555555555555\n");
+    m_currentLine = true;
+    return false;
+  }
+  throw IOException("VtkFile::isEmptyNextLine()","Not Good");
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -214,26 +310,52 @@ class VtkFile
 const char* VtkFile::
 getNextLine()
 {
-  while (m_stream->good()){
-    m_stream->getline(m_buf,sizeof(m_buf)-1);
+  m_isInit = true;
+  if(m_currentLine)
+  {
+    m_currentLine = false;
+    return getCurrentLine();
+  }
+
+  if(eof)
+  {
+    throw IOException("VtkFile::isEmptyNextLine()", "Unexpected EndOfFile");
+  }
+
+  while (m_stream->good())
+  {
+    // Le getline s'arrete (par défaut) au char '\n' et ne l'inclus pas dans le buf mais le remplace par '\0'.   
+    m_stream->getline(m_buf, sizeof(m_buf)-1);
+
     if (m_stream->eof())
-      break;
+    {
+      eof = true;
+      m_buf[0] = '\0';
+      return m_buf;
+    }
+
     bool is_comment = true;
-    if (m_buf[0]=='\n' || m_buf[0]=='\r')
+
+    if (m_buf[0]=='\0' || m_buf[0]=='\r')
       continue;
+
     // Regarde si un caractère de commentaire est présent
-    for( int i=0; i<BUFSIZE && m_buf[i]!='\0'; ++i ){
-      if (!isspace(m_buf[i])){
+    for( int i=0; i<BUFSIZE && m_buf[i]!='\0'; ++i )
+    {
+      if (!isspace(m_buf[i]))
+      {
         is_comment = (m_buf[i]=='#');
         break;
       }
     }
-    if (!is_comment){
-      
+    if (!is_comment)
+    {
       // Supprime le '\n' ou '\r' final
-      for( int i=0; i<BUFSIZE && m_buf[i]!='\0'; ++i ){
+      for( int i=0; i<BUFSIZE && m_buf[i]!='\0'; ++i )
+      {
         //cout << " V=" << m_buf[i] << " I=" << (int)m_buf[i] << "\n";
-        if (m_buf[i]=='\n' || m_buf[i]=='\r'){
+        if (m_buf[i]=='\n' || m_buf[i]=='\r')
+        {
           m_buf[i] = '\0';
           break;
         }
@@ -241,7 +363,7 @@ getNextLine()
       return m_buf;
     }
   }
-  throw IOException("VtkFile::getNexLine()","Unexpected EndOfFile");
+  throw IOException("VtkFile::getNextLine()","Not good");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -252,8 +374,10 @@ getReal()
 {
   Real v = 0.;
   (*m_stream) >> ws >> v;
+
   if (m_stream->good())
     return v;
+
   throw IOException("VtkFile::getReal()","Bad Real");
 }
 
@@ -265,8 +389,10 @@ getInteger()
 {
   Integer v = 0;
   (*m_stream) >> ws >> v;
+
   if (m_stream->good())
     return v;
+
   throw IOException("VtkFile::getInteger()","Bad Integer");
 }
 
@@ -330,56 +456,85 @@ VtkMeshIOService::
 /*---------------------------------------------------------------------------*/
 
 bool VtkMeshIOService::
-readMesh(IPrimaryMesh* mesh,const String& file_name,const String& dir_name,bool use_internal_partition)
+readMesh(IPrimaryMesh* mesh, const String& file_name, const String& dir_name, bool use_internal_partition)
 {
   std::ifstream ifile(file_name.localstr());
-  if (!ifile){
+
+  if (!ifile)
+  {
     error() << "Unable to read file '" << file_name << "'";
     return true;
   }
+
   VtkFile vtk_file(&ifile);
   const char* buf = 0;
+
   // Lecture de la description
-  buf = vtk_file.getNextLine();
+  // Lecture title.
+  String title = vtk_file.getNextLine();
+
+  info() << "Titre du fichier VTK : " << title;
+
+  // Lecture format.
   String format = vtk_file.getNextLine();
-  if (! VtkFile::isEqualString(format,"ASCII")){
+
+  if (! VtkFile::isEqualString(format,"ASCII"))
+  {
     error() << "Support exists only for 'ASCII' format (format='" << format << "')";
     return true;
   }
+  
   eMeshType mesh_type = VTK_MT_Unknown;
+
   // Lecture du type de maillage
   // TODO: en parallèle, avec use_internal_partition vrai, seul le processeur 0
   // lit les données. Dans ce cas, inutile que les autres ouvre le fichier.
   {
     buf = vtk_file.getNextLine();
+
     std::istringstream mesh_type_line(buf);
     std::string dataset_str;
     std::string mesh_type_str;
+
     mesh_type_line >> ws >> dataset_str >> ws >> mesh_type_str;
+
     vtk_file.checkString(dataset_str,"DATASET");
-    if (VtkFile::isEqualString(mesh_type_str,"STRUCTURED_GRID")){
+
+    if (VtkFile::isEqualString(mesh_type_str,"STRUCTURED_GRID"))
+    {
       mesh_type = VTK_MT_StructuredGrid;
     }
-    if (VtkFile::isEqualString(mesh_type_str,"UNSTRUCTURED_GRID")){
+
+    if (VtkFile::isEqualString(mesh_type_str,"UNSTRUCTURED_GRID"))
+    {
       mesh_type = VTK_MT_UnstructuredGrid;
     }
-    if (mesh_type==VTK_MT_Unknown){
+
+    if (mesh_type==VTK_MT_Unknown)
+    {
       error() << "Support exists only for 'STRUCTURED_GRID' and 'UNSTRUCTURED_GRID' formats (format=" << mesh_type_str << "')";
       return true;
     }
   }
+  info() << "Lecture en-tête OK";
   bool ret = true;
-  switch(mesh_type){
+  switch(mesh_type)
+  {
   case VTK_MT_StructuredGrid:
-    ret = _readStructuredGrid(mesh,vtk_file,use_internal_partition);
+    ret = _readStructuredGrid(mesh, vtk_file, use_internal_partition);
     break;
+
   case VTK_MT_UnstructuredGrid:
-    ret = _readUnstructuredGrid(mesh,vtk_file,use_internal_partition);
-    if (!ret){
+    ret = _readUnstructuredGrid(mesh, vtk_file, use_internal_partition);
+    info() << "Lecture _readUnstructuredGrid OK";
+    if (!ret)
+    {
       // Tente de lire le fichier des faces s'il existe
-      _readFacesMesh(mesh,file_name+"faces.vtk",dir_name,use_internal_partition);
+      _readFacesMesh(mesh, file_name+"faces.vtk", dir_name, use_internal_partition);
+      info() << "Lecture _readFacesMesh OK";
     }
     break;
+
   case VTK_MT_Unknown:
     break;
   }
@@ -633,11 +788,12 @@ _readStructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_parti
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Lecture des noeuds et de leur coordonnées.
  */
 void VtkMeshIOService::
-_readNodesUnstructuredGrid(IMesh* mesh,VtkFile& vtk_file,Array<Real3>& node_coords)
+_readNodesUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file, Array<Real3>& node_coords)
 {
   ARCANE_UNUSED(mesh);
 
@@ -647,26 +803,32 @@ _readNodesUnstructuredGrid(IMesh* mesh,VtkFile& vtk_file,Array<Real3>& node_coor
   std::string points_str;
   std::string data_type_str;
   Integer nb_node = 0;
+
   iline >> ws >> points_str >> ws >> nb_node >> ws >> data_type_str;
+
   if (!iline)
     throw IOException(func_name,"Syntax error while reading number of nodes");
-  vtk_file.checkString(points_str,"POINTS");
-  vtk_file.checkString(data_type_str,"float","double");
+
+  vtk_file.checkString(points_str, "POINTS");
+  vtk_file.checkString(data_type_str, "float", "double");
+
   if (nb_node<0)
-    throw IOException(A_FUNCINFO,String::format("Invalid number of nodes: n={0}",nb_node));
+    throw IOException(A_FUNCINFO, String::format("Invalid number of nodes: n={0}", nb_node));
 
   info() << " Info: " << nb_node;
 
   // Lecture les coordonnées
   node_coords.resize(nb_node);
   {
-    for( Integer i=0; i<nb_node; ++i ){
+    for( Integer i=0; i<nb_node; ++i )
+    {
       Real nx = vtk_file.getReal();
       Real ny = vtk_file.getReal();
       Real nz = vtk_file.getReal();
       node_coords[i] = Real3(nx,ny,nz);
     }
   }
+  _readMetadata(mesh, vtk_file);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -677,7 +839,7 @@ _readNodesUnstructuredGrid(IMesh* mesh,VtkFile& vtk_file,Array<Real3>& node_coor
  * En retour, remplit \a cells_nb_node, \a cells_type et \a cells_connectivity.
  */
 void VtkMeshIOService::
-_readCellsUnstructuredGrid(IMesh* mesh,VtkFile& vtk_file,
+_readCellsUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file,
                            Array<Integer>& cells_nb_node,
                            Array<Integer>& cells_type,
                            Array<Int64>& cells_connectivity)
@@ -686,15 +848,21 @@ _readCellsUnstructuredGrid(IMesh* mesh,VtkFile& vtk_file,
 
   const char* func_name = "VtkMeshIOService::_readCellsUnstructuredGrid()";
   const char* buf = vtk_file.getNextLine();
+
   std::istringstream iline(buf);
   std::string cells_str;
   Integer nb_cell = 0;
   Integer nb_cell_node = 0;
+
   iline >> ws >> cells_str >> ws >> nb_cell >> ws >> nb_cell_node;
+
   if (!iline)
     throw IOException(func_name,"Syntax error while reading cells");
+
   vtk_file.checkString(cells_str,"CELLS");
-  if (nb_cell<0 || nb_cell_node<0){
+
+  if (nb_cell<0 || nb_cell_node<0)
+  {
     throw IOException(A_FUNCINFO,
                       String::format("Invalid dimensions: nb_cell={0} nb_cell_node={1}",
                                      nb_cell,nb_cell_node));
@@ -703,18 +871,24 @@ _readCellsUnstructuredGrid(IMesh* mesh,VtkFile& vtk_file,
   cells_nb_node.resize(nb_cell);
   cells_type.resize(nb_cell);
   cells_connectivity.resize(nb_cell_node);
+  info() << "Passe ICI " << nb_cell << " " << nb_cell_node;
+
   {
     Integer connectivity_index = 0;
-    for( Integer i=0; i<nb_cell; ++i ){
+    for( Integer i=0; i<nb_cell; ++i )
+    {
       Integer n = vtk_file.getInteger();
       cells_nb_node[i] = n;
-      for( Integer j=0; j<n; ++j ){
+      for( Integer j=0; j<n; ++j )
+      {
         Integer id = vtk_file.getInteger();
         cells_connectivity[connectivity_index] = id;
         ++connectivity_index;
       }
     }
   }
+
+  _readMetadata(mesh, vtk_file);
 
   // Lecture du type des mailles
   {
@@ -723,52 +897,175 @@ _readCellsUnstructuredGrid(IMesh* mesh,VtkFile& vtk_file,
     std::string cell_types_str;
     Integer nb_cell_type;
     iline >> ws >> cell_types_str >> ws >> nb_cell_type;
-    if (!iline){
+
+    if (!iline)
+    {
       throw IOException(func_name,"Syntax error while reading cell types");
     }
+
     vtk_file.checkString(cell_types_str,"CELL_TYPES");
-    if (nb_cell_type!=nb_cell){
+    if (nb_cell_type!=nb_cell)
+    {
       throw IOException(A_FUNCINFO,
                         String::format("Inconsistency in number of CELL_TYPES: v={0} nb_cell={1}",
                                        nb_cell_type,nb_cell));
     }
   }
-  for( Integer i=0; i<nb_cell; ++i ){
+
+  for( Integer i=0; i<nb_cell; ++i )
+  {
     Integer vtk_ct = vtk_file.getInteger();
     Integer it = IT_NullType;
+
     // Le type est défini dans vtkCellType.h
-    switch(vtk_ct){
-    case VTK_EMPTY_CELL: it = IT_NullType; break;
-    case VTK_VERTEX: it = IT_Vertex; break;
-    case VTK_LINE: it = IT_Line2; break;
-    case VTK_QUADRATIC_EDGE: it = IT_Line3; break;
-    case VTK_TRIANGLE: it = IT_Triangle3; break;
-    case VTK_QUAD: it = IT_Quad4; break;
-    case VTK_QUADRATIC_QUAD: it = IT_Quad8; break;
-    case VTK_POLYGON: // VTK_POLYGON (a tester...)
-      if (cells_nb_node[i]==5)
-        it = IT_Pentagon5;
-      if (cells_nb_node[i]==6)
-        it = IT_Hexagon6;
-      break;
-    case VTK_TETRA: it = IT_Tetraedron4; break;
-    case VTK_QUADRATIC_TETRA: it = IT_Tetraedron10; break;
-    case VTK_PYRAMID: it = IT_Pyramid5; break;
-    case VTK_WEDGE: it = IT_Pentaedron6; break;
-    case VTK_HEXAHEDRON: it = IT_Hexaedron8; break;
-    case VTK_QUADRATIC_HEXAHEDRON: it = IT_Hexaedron20; break;
-    case VTK_PENTAGONAL_PRISM: it = IT_Heptaedron10; break;
-    case VTK_HEXAGONAL_PRISM: it = IT_Octaedron12; break;
-      // NOTE GG: les types suivants ne sont pas bon pour VTK.
-      //case 27: it = IT_Enneedron14; break; //
-      //case 28: it = IT_Decaedron16; break; // VTK_HEXAGONAL_PRISM
-      //case 29: it = IT_Heptagon7; break; // VTK_HEPTAGON
-      //case 30: it = IT_Octogon8; break; // VTK_OCTAGON
-    default:
-      ARCANE_THROW(IOException,"Unsupported VtkCellType '{0}'",vtk_ct);
+    switch(vtk_ct)
+    {
+      case VTK_EMPTY_CELL:
+        it = IT_NullType; 
+        break;
+      case VTK_VERTEX: it = IT_Vertex; break;
+      case VTK_LINE: it = IT_Line2; break;
+      case VTK_QUADRATIC_EDGE: it = IT_Line3; break;
+      case VTK_TRIANGLE: it = IT_Triangle3; break;
+      case VTK_QUAD: it = IT_Quad4; break;
+      case VTK_QUADRATIC_QUAD: it = IT_Quad8; break;
+      case VTK_POLYGON: // VTK_POLYGON (a tester...)
+        if (cells_nb_node[i]==5)
+        {
+          it = IT_Pentagon5;
+        }
+        if (cells_nb_node[i]==6)
+          it = IT_Hexagon6;
+        break;
+      case VTK_TETRA: it = IT_Tetraedron4; break;
+      case VTK_QUADRATIC_TETRA: it = IT_Tetraedron10; break;
+      case VTK_PYRAMID: it = IT_Pyramid5; break;
+      case VTK_WEDGE: it = IT_Pentaedron6; break;
+      case VTK_HEXAHEDRON: it = IT_Hexaedron8; break;
+      case VTK_QUADRATIC_HEXAHEDRON: it = IT_Hexaedron20; break;
+      case VTK_PENTAGONAL_PRISM: it = IT_Heptaedron10; break;
+      case VTK_HEXAGONAL_PRISM: it = IT_Octaedron12; break;
+        // NOTE GG: les types suivants ne sont pas bon pour VTK.
+        //case 27: it = IT_Enneedron14; break; //
+        //case 28: it = IT_Decaedron16; break; // VTK_HEXAGONAL_PRISM
+        //case 29: it = IT_Heptagon7; break; // VTK_HEPTAGON
+        //case 30: it = IT_Octogon8; break; // VTK_OCTAGON
+      default:
+        ARCANE_THROW(IOException,"Unsupported VtkCellType '{0}'",vtk_ct);
     }
     cells_type[i] = it;
   }
+  _readMetadata(mesh, vtk_file);
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
+ * \brief Lecture des metadata.
+ */
+bool VtkMeshIOService::
+_readMetadata(IMesh* mesh, VtkFile& vtk_file)
+{
+  ARCANE_UNUSED(mesh);
+
+  std::string trash;
+  Real trash_real;
+
+  const char* func_name = "VtkMeshIOService::_readMetadata()";
+  info() << "METADATA D";
+  if(vtk_file.isEof()) return false;
+  String meta = vtk_file.getNextLine();
+  info() << "METADATA F";
+
+  // METADATA ?
+  if(!vtk_file.isEqualString(meta, "METADATA"))
+  {
+    info() << "METADATA DD";
+    vtk_file.reReadSameLine();
+    info() << "METADATA FF";
+    return false;
+  }
+
+  info() << "METADATA DDD";
+  while(!vtk_file.isEmptyNextLine() && !vtk_file.isEof())
+  {
+  info() << "METADATA 111";
+  }
+  info() << "METADATA FFF";
+  return false;
+  
+  // const char* buf = vtk_file.getNextLine(); 
+
+  
+  // // INFORMATION ou COMPONENT_NAMES
+  // std::istringstream iline(buf);
+
+  // String name_str;
+  // String data_type_str;
+  // Integer nb_info = 0;
+  // Integer size_vector = 0;
+
+  // iline >> ws >> name_str;
+
+  // if(vtk_file.isEqualString(name_str, "INFORMATION"))
+  // {
+  //   iline >> ws >> nb_info;
+  //   for( Integer i = 0; i < nb_info; i++)
+  //   {
+  //     buf = vtk_file.getNextLine();
+  //     std::istringstream iline(buf);
+
+  //     // NAME [key name] LOCATION [key location (e.g. class name)]
+  //     iline >> ws >> trash >> ws >> data_type_str >> ws >> trash >> ws >> name_str;
+
+  //     buf = vtk_file.getNextLine();
+  //     std::istringstream iline(buf);
+
+  //     if(vtk_file.isEqualString(data_type_str, "StringVector"))
+  //     {
+  //       iline >> ws >> trash >> ws >> size_vector;
+  //       for(Integer j = 0; j < size_vector; j++)
+  //       {
+  //         trash = vtk_file.getNextLine();
+  //       }
+  //     }
+
+  //     // else if(vtk_file.isEqualString(data_type_str, "Double") 
+  //     // || vtk_file.isEqualString(data_type_str, "IdType")
+  //     // || vtk_file.isEqualString(data_type_str, "Integer")
+  //     // || vtk_file.isEqualString(data_type_str, "UnsignedLong")
+  //     // || vtk_file.isEqualString(data_type_str, "String"))
+  //     // {
+  //     //   iline >> ws >> trash >> ws >> trash_real;
+  //     // }
+
+  //     // else if(vtk_file.isEqualString(data_type_str, "DoubleVector")
+  //     //      || vtk_file.isEqualString(data_type_str, "IntegerVector")
+  //     //      || vtk_file.isEqualString(data_type_str, "StringVector"))
+  //     // {
+  //     //   iline >> ws >> trash >> ws >> size_vector;
+  //     //   for(Integer j = 0; j < size_vector; j++)
+  //     //   {
+  //     //     iline >> ws >> trash_real;
+  //     //   }
+  //     // }
+  //   }
+  // }
+
+  // else if(vtk_file.isEqualString(name_str, "COMPONENT_NAMES"))
+  // {
+  //   while(!vtk_file.isEmptyNextLine())
+  //   {
+  //     trash = vtk_file.getCurrentLine();
+  //   }      
+  // }
+
+  // else
+  // {
+  //   throw IOException(func_name,"Syntax error after METADATA tag");
+  // }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -786,26 +1083,34 @@ _readUnstructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_par
   UniqueArray<Real3> node_coords;
   UniqueArray<Int64> cells_infos;
   UniqueArray<Int32> cells_local_id;
+
   // Si on utilise le partitionneur interne, seul le sous-domaine lit le maillage
   bool need_read = true;
+
   if (use_internal_partition)
     need_read = (sid==0);
 
   bool has_3d_cell = false;
 
-  if (need_read){
-    _readNodesUnstructuredGrid(mesh,vtk_file,node_coords);
+  if (need_read)
+  {
+    // Lecture première partie du fichier (après header).
+    _readNodesUnstructuredGrid(mesh, vtk_file, node_coords);
+    info() << "Lecture _readNodesUnstructuredGrid OK";
     nb_node = node_coords.size();
+
 
     // Lecture des infos des mailles
     // Lecture de la connectivité
     UniqueArray<Integer> cells_nb_node;
     UniqueArray<Int64> cells_connectivity;
     UniqueArray<Integer> cells_type;
-    _readCellsUnstructuredGrid(mesh,vtk_file,cells_nb_node,cells_type,cells_connectivity);
+    _readCellsUnstructuredGrid(mesh, vtk_file, cells_nb_node, cells_type, cells_connectivity);
+    info() << "Lecture _readCellsUnstructuredGrid OK";
     nb_cell = cells_nb_node.size();
     nb_cell_node = cells_connectivity.size();
     cells_local_id.resize(nb_cell);
+
 
     // Création des mailles
     // Infos pour la création des mailles
@@ -813,6 +1118,7 @@ _readUnstructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_par
     //             1 pour son type,
     //             1 pour chaque noeud
     cells_infos.resize(nb_cell*2 + nb_cell_node);
+
     {
       Integer cells_infos_index = 0;
       Integer connectivity_index = 0;
@@ -828,7 +1134,8 @@ _readUnstructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_par
         cells_infos[cells_infos_index] = cell_unique_id;
         ++cells_infos_index;
 
-        for( Integer z=0; z<current_cell_nb_node; ++z ){
+        for( Integer z=0; z<current_cell_nb_node; ++z )
+        {
           cells_infos[cells_infos_index+z] = cells_connectivity[connectivity_index+z];
         }
         cells_infos_index += current_cell_nb_node;
@@ -838,10 +1145,12 @@ _readUnstructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_par
 
     // Regarde si on a au moins une maille 3D. Dans ce cas,
     // le maillage est 3D, sinon il est 2D
-    for( Integer i=0; i<nb_cell; ++i ){
+    for( Integer i=0; i<nb_cell; ++i )
+    {
       Integer ct = cells_type[i];
       if (ct==IT_Tetraedron4 || ct==IT_Pyramid5 || ct==IT_Pentaedron6 ||
-          ct==IT_Hexaedron8 || ct==IT_Heptaedron10 || ct==IT_Octaedron12){
+          ct==IT_Hexaedron8 || ct==IT_Heptaedron10 || ct==IT_Octaedron12)
+      {
         has_3d_cell = true;
         break;
       }
@@ -854,7 +1163,7 @@ _readUnstructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_par
   // TODO: supporter les maillages 1D
   {
     Integer wanted_dimension = (has_3d_cell) ? 3 : 2;
-    wanted_dimension = mesh->parallelMng()->reduce(Parallel::ReduceMax,wanted_dimension);
+    wanted_dimension = mesh->parallelMng()->reduce(Parallel::ReduceMax, wanted_dimension);
     mesh->setDimension(wanted_dimension);
   }
 
@@ -871,7 +1180,9 @@ _readUnstructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_par
   }
 
   // Maintenant, regarde s'il existe des données associées aux fichier
-  bool r = _readData(mesh,vtk_file,use_internal_partition,IK_Cell,cells_local_id,nb_node);
+  info() << "Début Lecture _readData OK";
+  bool r = _readData(mesh, vtk_file, use_internal_partition, IK_Cell, cells_local_id, nb_node);
+  info() << "Lecture _readData OK";
   if (r)
     return r;
 
@@ -882,25 +1193,32 @@ _readUnstructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_par
 /*---------------------------------------------------------------------------*/
 
 void VtkMeshIOService::
-_readFacesMesh(IMesh* mesh,const String& file_name,const String& dir_name,
+_readFacesMesh(IMesh* mesh, const String& file_name, const String& dir_name,
                bool use_internal_partition)
 {
   ARCANE_UNUSED(dir_name);
 
   std::ifstream ifile(file_name.localstr());
-  if (!ifile){
+  if (!ifile)
+  {
     info() << "No face descriptor file found '" << file_name << "'";
     return;
   }
+
   VtkFile vtk_file(&ifile);
   const char* buf = 0;
+
   // Lecture de la description
-  buf = vtk_file.getNextLine();
+  String title = vtk_file.getNextLine();
+  info() << "Titre du fichier VTK : " << title;
   String format = vtk_file.getNextLine();
-  if (! VtkFile::isEqualString(format,"ASCII")){
+
+  if (! VtkFile::isEqualString(format,"ASCII"))
+  {
     error() << "Support exists only for 'ASCII' format (format='" << format << "')";
     return;
   }
+
   eMeshType mesh_type = VTK_MT_Unknown;
   // Lecture du type de maillage
   // TODO: en parallèle, avec use_internal_partition vrai, seul le processeur 0
@@ -912,14 +1230,19 @@ _readFacesMesh(IMesh* mesh,const String& file_name,const String& dir_name,
     std::string mesh_type_str;
     mesh_type_line >> ws >> dataset_str >> ws >> mesh_type_str;
     vtk_file.checkString(dataset_str,"DATASET");
-    if (VtkFile::isEqualString(mesh_type_str,"UNSTRUCTURED_GRID")){
+
+    if (VtkFile::isEqualString(mesh_type_str,"UNSTRUCTURED_GRID"))
+    {
       mesh_type = VTK_MT_UnstructuredGrid;
     }
-    if (mesh_type==VTK_MT_Unknown){
+
+    if (mesh_type==VTK_MT_Unknown)
+    {
       error() << "Face descriptor file type must be 'UNSTRUCTURED_GRID' (format=" << mesh_type_str << "')";
       return;
     }
   }
+
   {
     IParallelMng* pm = mesh->parallelMng();
     Integer nb_face = 0;
@@ -932,12 +1255,13 @@ _readFacesMesh(IMesh* mesh,const String& file_name,const String& dir_name,
     if (use_internal_partition)
       need_read = (sid==0);
 
-    if (need_read){
+    if (need_read)
+    {
       {
         // Lit des noeuds, mais ne conserve pas leur coordonnées car cela n'est
         // pas nécessaire.
         UniqueArray<Real3> node_coords;
-        _readNodesUnstructuredGrid(mesh,vtk_file,node_coords);
+        _readNodesUnstructuredGrid(mesh, vtk_file, node_coords);
         //nb_node = node_coords.size();
       }
 
@@ -946,7 +1270,7 @@ _readFacesMesh(IMesh* mesh,const String& file_name,const String& dir_name,
       UniqueArray<Integer> faces_nb_node;
       UniqueArray<Int64> faces_connectivity;
       UniqueArray<Integer> faces_type;
-      _readCellsUnstructuredGrid(mesh,vtk_file,faces_nb_node,faces_type,faces_connectivity);
+      _readCellsUnstructuredGrid(mesh, vtk_file, faces_nb_node, faces_type, faces_connectivity);
       nb_face = faces_nb_node.size();
       //nb_face_node = faces_connectivity.size();
       
@@ -960,7 +1284,7 @@ _readFacesMesh(IMesh* mesh,const String& file_name,const String& dir_name,
     
 
     // Maintenant, regarde s'il existe des données associées aux fichiers
-    _readData(mesh,vtk_file,use_internal_partition,IK_Face,faces_local_id,0);
+    _readData(mesh, vtk_file, use_internal_partition, IK_Face, faces_local_id, 0);
   }
 }
 
@@ -968,8 +1292,8 @@ _readFacesMesh(IMesh* mesh,const String& file_name,const String& dir_name,
 /*---------------------------------------------------------------------------*/
 
 bool VtkMeshIOService::
-_readData(IMesh* mesh,VtkFile& vtk_file,bool use_internal_partition,
-          eItemKind cell_kind,Int32ConstArrayView local_ids,Integer nb_node)
+_readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
+          eItemKind cell_kind, Int32ConstArrayView local_ids, Integer nb_node)
 {
   // Seul le sous-domain maitre lit les valeurs. Par contre, les autres
   // sous-domaines doivent connaitre la liste des variables et groupes créées.
@@ -979,86 +1303,207 @@ _readData(IMesh* mesh,VtkFile& vtk_file,bool use_internal_partition,
   OStringStream created_infos_str;
   created_infos_str() << "<?xml version='1.0' ?>\n";
   created_infos_str() << "<infos>";
+
   IParallelMng* pm = mesh->parallelMng();
   Int32 sid = pm->commRank();
+
   Integer nb_cell_kind = mesh->nbItem(cell_kind);
   const char* buf = 0;
-  if (sid==0){
+
+  if (sid==0)
+  {
     bool reading_node = false;
     bool reading_cell = false;
-    while ( !vtk_file.isEnd() && ((buf = vtk_file.getNextLine()) != 0)) {
+    while (((buf = vtk_file.getNextLine()) != 0) && !vtk_file.isEof())
+    {
       debug() << "Read line";
       std::istringstream iline(buf);
       std::string data_str;
       iline >> data_str;
-      if (VtkFile::isEqualString(data_str,"CELL_DATA")){
+      if (VtkFile::isEqualString(data_str, "CELL_DATA"))
+      {
         Integer nb_item =0;
         iline >> ws >> nb_item;
         reading_node = false;
         reading_cell = true;
+        if(nb_item != nb_cell_kind)
+          error() << "Size expecting = " << nb_cell_kind << " found = " << nb_item;
       }
-      else if (VtkFile::isEqualString(data_str,"POINT_DATA")){
+
+      else if (VtkFile::isEqualString(data_str, "POINT_DATA"))
+      {
         Integer nb_item =0;
         iline >> ws >> nb_item;
         reading_node = true;
         reading_cell = false;
+        if(nb_item != nb_node)
+          error() << "Size expecting = " << nb_node << " found = " << nb_item;
       }
-      else{
-        if (reading_node || reading_cell){
-          std::string type_str;
-          std::string s_name_str;
-          //String name_str;
-          bool is_group = false;
-          int nb_component = 0;
-          iline >> ws >> s_name_str >> ws >> type_str >> ws >> nb_component;
-          debug() << "** ** ** READNAME: name=" << s_name_str << " type=" << type_str;
+
+      else if (VtkFile::isEqualString(data_str, "FIELD"))
+      {
+        std::string name_str;
+        int nb_fields;
+
+        iline >> ws >> name_str >> ws >> nb_fields;
+
+        Integer nb_item =0;
+        std::string type_str;
+        std::string s_name_str;
+        int nb_component = 1;
+        bool is_group = false;
+
+        for(Integer i = 0; i < nb_fields; i++)
+        {
+          buf = vtk_file.getNextLine();
+          std::istringstream iline(buf);
+          iline >> ws >> s_name_str >> ws >> nb_component >> ws >> nb_item >> ws >> type_str;
+
+          if(nb_item != nb_cell_kind && reading_cell && !reading_node)
+              error() << "Size expecting = " << nb_cell_kind << " found = " << nb_item;
+
+          if(nb_item != nb_node && !reading_cell && reading_node)
+              error() << "Size expecting = " << nb_node << " found = " << nb_item;
+
           String name_str = s_name_str;
           String cstr = name_str.substring(0,6);
-          if (cstr=="GROUP_"){
+
+          if (cstr=="GROUP_")
+          {
             is_group = true;
             String new_name = name_str.substring(6);
             debug() << "** ** ** GROUP ! name=" << new_name;
             name_str = new_name;
           }
-          if (!VtkFile::isEqualString(data_str,"SCALARS")){
-            error() << "Expecting 'SCALARS' data type, found=" << data_str;
-            return true;
-          }
-          if (is_group){
-            if (!VtkFile::isEqualString(type_str,"int")){
+
+          if (is_group)
+          {
+            if (!VtkFile::isEqualString(type_str,"int"))
+            {
               error() << "Group type must be 'int', found=" << type_str;
               return true;
             }
-            // Pour lire LOOKUP_TABLE
-            buf = vtk_file.getNextLine();
-            if (reading_node){
+
+            if (reading_node)
+            {
               created_infos_str() << "<node-group name='" << name_str << "'/>";
-              _readNodeGroup(mesh,vtk_file,name_str,nb_node);
+              _readNodeGroup(mesh, vtk_file, name_str, nb_node);
             }
-            if (reading_cell){
+
+            if (reading_cell)
+            {
               created_infos_str() << "<cell-group name='" << name_str << "'/>";
-              _readItemGroup(mesh,vtk_file,name_str,nb_cell_kind,cell_kind,local_ids);
+              _readItemGroup(mesh, vtk_file, name_str, nb_cell_kind, cell_kind, local_ids);
             }
           }
-          else{
-            if (!VtkFile::isEqualString(type_str,"float") &&  !VtkFile::isEqualString(type_str,"double")) {
+
+          // TODO : Voir un exemple si possible.
+          else
+          {
+            if (!VtkFile::isEqualString(type_str,"float") &&  !VtkFile::isEqualString(type_str,"double"))
+            {
               error() << "Expecting 'float' or 'double' data type, found=" << type_str;
               return true;
             }
-            // Pour lire LOOKUP_TABLE
-            /*buf = */ vtk_file.getNextLine();
-            if (reading_node){
+
+            if (reading_node)
+            {
               fatal() << "Unable to read POINT_DATA: feature not implemented";
             }
-            if (reading_cell){
+            if (reading_cell)
+            {
               created_infos_str() << "<cell-variable name='" << name_str << "'/>";
+
               if (cell_kind!=IK_Cell)
                 throw IOException("Unable to read face variables: feature not supported");
+
+              _readCellVariable(mesh,vtk_file,name_str,nb_cell_kind);
+            }
+          }
+
+        }
+      }
+
+      else
+      {
+        if (reading_node || reading_cell)
+        {
+          std::string type_str;
+          std::string s_name_str;
+          //String name_str;
+          bool is_group = false;
+          int nb_component = 1;
+
+          iline >> ws >> s_name_str >> ws >> type_str >> ws >> nb_component;
+          debug() << "** ** ** READNAME: name=" << s_name_str << " type=" << type_str;
+
+          String name_str = s_name_str;
+          String cstr = name_str.substring(0,6);
+
+          if (cstr=="GROUP_")
+          {
+            is_group = true;
+            String new_name = name_str.substring(6);
+            info() << "** ** ** GROUP ! name=" << new_name;
+            name_str = new_name;
+          }
+
+          if (!VtkFile::isEqualString(data_str,"SCALARS"))
+          {
+            error() << "Expecting 'SCALARS' data type, found=" << data_str;
+            return true;
+          }
+
+          if (is_group)
+          {
+            if (!VtkFile::isEqualString(type_str,"int"))
+            {
+              error() << "Group type must be 'int', found=" << type_str;
+              return true;
+            }
+
+            // Pour lire LOOKUP_TABLE
+            buf = vtk_file.getNextLine();
+
+            if (reading_node)
+            {
+              created_infos_str() << "<node-group name='" << name_str << "'/>";
+              _readNodeGroup(mesh, vtk_file, name_str, nb_node);
+            }
+
+            if (reading_cell)
+            {
+              created_infos_str() << "<cell-group name='" << name_str << "'/>";
+              _readItemGroup(mesh, vtk_file, name_str, nb_cell_kind, cell_kind, local_ids);
+            }
+          }
+          else
+          {
+            if (!VtkFile::isEqualString(type_str,"float") &&  !VtkFile::isEqualString(type_str,"double"))
+            {
+              error() << "Expecting 'float' or 'double' data type, found=" << type_str;
+              return true;
+            }
+
+            // Pour lire LOOKUP_TABLE
+            /*buf = */ vtk_file.getNextLine();
+            if (reading_node)
+            {
+              fatal() << "Unable to read POINT_DATA: feature not implemented";
+            }
+            if (reading_cell)
+            {
+              created_infos_str() << "<cell-variable name='" << name_str << "'/>";
+
+              if (cell_kind!=IK_Cell)
+                throw IOException("Unable to read face variables: feature not supported");
+
               _readCellVariable(mesh,vtk_file,name_str,nb_cell_kind);
             }
           }
         }
-        else{
+        else
+        {
           error() << "Expecting value CELL_DATA or POINT_DATA, found='" << data_str << "'";
           return true;
         }
@@ -1066,46 +1511,57 @@ _readData(IMesh* mesh,VtkFile& vtk_file,bool use_internal_partition,
     }
   }
   created_infos_str() << "</infos>";
-  if (use_internal_partition){
+  if (use_internal_partition)
+  {
     ByteUniqueArray bytes;
-    if (sid==0){
+    if (sid==0)
+    {
       String str = created_infos_str.str();
       ByteConstArrayView bv = str.utf8();
       Integer len = bv.size();
       bytes.resize(len+1);
       bytes.copy(bv);
     }
+
     pm->broadcastMemoryBuffer(bytes,0);
-    if (sid!=0){
+
+    if (sid!=0)
+    {
       String str = String::fromUtf8(bytes);
       info() << "FOUND STR=" << bytes.size() << " " << str;
       ScopedPtrT<IXmlDocumentHolder> doc(IXmlDocumentHolder::loadFromBuffer(bytes,"InternalBuffer",traceMng()));
       XmlNode doc_node = doc->documentNode();
+
       // Lecture des variables
       {
         XmlNodeList vars = doc_node.documentElement().children("cell-variable");
-        for( XmlNode xnode : vars.range() ){
+        for( XmlNode xnode : vars.range() )
+        {
           String name = xnode.attrValue("name");
           info() << "Building variable: " << name;
           VariableCellReal * var = new VariableCellReal(VariableBuildInfo(mesh,name));
           m_variables.add(var);
         }
       }
+
       // Lecture des groupes de mailles
       {
         XmlNodeList vars = doc_node.documentElement().children("cell-group");
         IItemFamily* cell_family = mesh->itemFamily(cell_kind);
-        for( XmlNode xnode : vars.range() ){
+        for( XmlNode xnode : vars.range() )
+        {
           String name = xnode.attrValue("name");
           info() << "Building group: " << name;
           cell_family->createGroup(name);
         }
       }
+
       // Lecture des groupes de noeuds
       {
         XmlNodeList vars = doc_node.documentElement().children("node-group");
         IItemFamily* node_family = mesh->nodeFamily();
-        for( XmlNode xnode : vars.range() ){
+        for( XmlNode xnode : vars.range() )
+        {
           String name = xnode.attrValue("name");
           info() << "Create node group: " << name;
           node_family->createGroup(name);
@@ -1144,20 +1600,22 @@ _readCellVariable(IMesh* mesh,VtkFile& vtk_file,const String& var_name,Integer n
     values[i] = v;
   }
   info() << "Variable build finished: " << vtk_file.isEnd();
+  _readMetadata(mesh, vtk_file);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void VtkMeshIOService::
-_readItemGroup(IMesh* mesh,VtkFile& vtk_file,const String& name,Integer nb_item,
-               eItemKind ik,Int32ConstArrayView local_ids)
+_readItemGroup(IMesh* mesh, VtkFile& vtk_file, const String& name, Integer nb_item,
+               eItemKind ik, Int32ConstArrayView local_ids)
 {
   IItemFamily* item_family = mesh->itemFamily(ik);
   info() << "Reading group info for group: " << name;
   
   Int32UniqueArray ids;
-  for( Integer i=0; i<nb_item; ++i ){
+  for( Integer i=0; i<nb_item; ++i )
+  {
     Integer v = vtk_file.getInteger();
     if (v!=0)
       ids.add(local_ids[i]);
@@ -1165,26 +1623,31 @@ _readItemGroup(IMesh* mesh,VtkFile& vtk_file,const String& name,Integer nb_item,
   info() << "Building group: " << name << " nb_element=" << ids.size();
 
   item_family->createGroup(name,ids);
+
+  _readMetadata(mesh, vtk_file);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void VtkMeshIOService::
-_readNodeGroup(IMesh* mesh,VtkFile& vtk_file,const String& name,Integer nb_item)
+_readNodeGroup(IMesh* mesh, VtkFile& vtk_file, const String& name, Integer nb_item)
 {
   IItemFamily* item_family = mesh->itemFamily(IK_Node);
   info() << "Lecture infos groupes de noeuds pour le groupe: " << name;
   
   Int32UniqueArray ids;
-  for( Integer i=0; i<nb_item; ++i ){
+  for( Integer i=0; i<nb_item; ++i )
+  {
     Integer v = vtk_file.getInteger();
     if (v!=0)
       ids.add(i);
   }
   info() << "Création groupe: " << name << " nb_element=" << ids.size();
 
-  item_family->createGroup(name,ids);
+  item_family->createGroup(name, ids);
+
+  _readMetadata(mesh, vtk_file);
 }
 
 /*---------------------------------------------------------------------------*/
