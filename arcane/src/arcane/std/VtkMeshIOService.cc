@@ -192,33 +192,42 @@ class VtkFile
 {
  public:
   static const int BUFSIZE = 10000;
+
  public:
   VtkFile(std::istream* stream) : m_stream(stream), m_isInit(false), eof(false) {}
+
   const char* getCurrentLine();
   bool isEmptyNextLine();
   const char* getNextLine();
+
   Real getReal();
   Integer getInteger();
+
   void checkString(const String& current_value,const String& expected_value);
   void checkString(const String& current_value,
                    const String& expected_value1,
                    const String& expected_value2);
+
   static bool isEqualString(const String& current_value,const String& expected_value);
+
   void reReadSameLine(){m_currentLine = true;}
 
-  bool isEnd(){ (*m_stream) >> ws; return m_stream->eof(); }
   bool isEof(){ return eof; }
+
  private:
   bool m_isInit;
   bool m_currentLine;
+  bool eof;
   std::istream* m_stream;
   char m_buf[BUFSIZE];
-  bool eof;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*!
+ * \brief Permet de retourner la ligne présente dans le buffer.
+ */
 const char* VtkFile::
 getCurrentLine()
 {
@@ -229,11 +238,24 @@ getCurrentLine()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*!
+ * \brief Permet de voir si la prochaine ligne est vide.
+ *        A la fin de cette méthode, le buffer contiendra la prochaine ligne
+ *        non vide. Le booléen m_currentLine permettera de demander à getNextLine
+ *        de renvoyer cette ligne qui n'a pas été lue.
+ */
 bool VtkFile::
 isEmptyNextLine()
 {
   m_isInit = true;
+
+  // On veut que getNextLine lise une nouvelle ligne.
+  // (on met à false dans le cas où cette méthode serai
+  // appelée plusieurs fois à la suite).
   m_currentLine = false;
+
+  // Si l'on est arrivé à la fin du fichier lors du précédent appel de cette méthode ou
+  // de getNextLine, on envoie une erreur.
   if(eof)
   {
     throw IOException("VtkFile::isEmptyNextLine()", "Unexpected EndOfFile");
@@ -241,63 +263,68 @@ isEmptyNextLine()
 
   if (m_stream->good())
   {
-    // Le getline s'arrete (par défaut) au char '\n' et ne l'inclus pas dans le buf mais le remplace par '\0'.   
+    // Le getline s'arrete (par défaut) au char '\n' et ne l'inclus pas dans le buf 
+    // mais le remplace par '\0'.   
     m_stream->getline(m_buf, sizeof(m_buf)-1);
 
+    // Si on arrive au bout du fichier, on return true (pour dire oui, il y a une ligne vide,
+    // à l'appelant de gérer ça).
     if (m_stream->eof())
     {
       eof = true;
       return true;
     }
 
-    // printf("Prems : %d %c\n", m_buf[0], m_buf[0]);
-    // printf("Deuxi : %d %c\n", m_buf[1], m_buf[1]);
-    // printf("Trois : %d %c\n", m_buf[2], m_buf[2]);
+    // Sous Windows, une ligne vide commence par \r.
+    // getline remplace \n par \0, que ce soit sous Windows ou Linux.
     if (m_buf[0]=='\r' || m_buf[0]=='\0')
     {
-      //printf("IIIIICCCCCCIIIIII\n");
       getNextLine();
+
+      // On demande à ce que le prochain appel à getNextLine renvoie la ligne
+      // qui vient tout juste d'être bufferisée.
       m_currentLine = true;
       return true;
     }
     else
     {
-      //printf("222222222222222\n");
       bool is_comment = true;
 
-      // Regarde si un caractère de commentaire est présent
+      // On retire le commentaire, s'il y en a un, en remplaçant '#' par '\0'.
       for( int i=0; i<BUFSIZE && m_buf[i]!='\0'; ++i )
       {
-      //printf("6666666666666\n");
-
-        if (!isspace(m_buf[i]))
+        if (!isspace(m_buf[i]) && m_buf[i] != '#' && is_comment)
         {
-          is_comment = (m_buf[i]=='#');
+          is_comment = false;
+        }
+        if (m_buf[i] == '#')
+        {
+          m_buf[i] = '\0';
           break;
         }
       }
+
+      // Si ce n'est pas un commentaire, on supprime juste le '\r' final (si windows).
       if (!is_comment)
       {
-      //printf("3333333333333\n");
-      
-        // Supprime le '\n' ou '\r' final
+        // Supprime le '\r' final
         for( int i=0; i<BUFSIZE && m_buf[i]!='\0'; ++i )
         {
-          //cout << " V=" << m_buf[i] << " I=" << (int)m_buf[i] << "\n";
-          if (m_buf[i]=='\n' || m_buf[i]=='\r')
+          if (m_buf[i]=='\r')
           {
             m_buf[i] = '\0';
             break;
           }
         }
       }
+
+      // Si c'était un commentaire, on recherche la prochaine ligne "valide" 
+      // en appelant getNextLine.
       else
       {
-      //printf("444444444444444\n");
         getNextLine();
       }
     }
-      //printf("55555555555555\n");
     m_currentLine = true;
     return false;
   }
@@ -311,12 +338,16 @@ const char* VtkFile::
 getNextLine()
 {
   m_isInit = true;
+
+  // On return le buffer actuel, si celui-ci n'a pas été utilisé.
   if(m_currentLine)
   {
     m_currentLine = false;
     return getCurrentLine();
   }
 
+  // Si l'on est arrivé à la fin du fichier lors du précédent appel de cette méthode ou
+  // de isEmptyNextLine, on envoie une erreur.
   if(eof)
   {
     throw IOException("VtkFile::isEmptyNextLine()", "Unexpected EndOfFile");
@@ -327,6 +358,8 @@ getNextLine()
     // Le getline s'arrete (par défaut) au char '\n' et ne l'inclus pas dans le buf mais le remplace par '\0'.   
     m_stream->getline(m_buf, sizeof(m_buf)-1);
 
+    // Si on arrive au bout du fichier, on return le buffer avec \0 au début (c'est à l'appelant d'appeler
+    // isEof() pour savoir si le fichier est fini ou non).
     if (m_stream->eof())
     {
       eof = true;
@@ -336,25 +369,32 @@ getNextLine()
 
     bool is_comment = true;
 
+    // Sous Windows, une ligne vide commence par \r.
+    // getline remplace \n par \0, que ce soit sous Windows ou Linux.
     if (m_buf[0]=='\0' || m_buf[0]=='\r')
       continue;
 
-    // Regarde si un caractère de commentaire est présent
+    // On retire le commentaire, s'il y en a un, en remplaçant '#' par '\0'.
     for( int i=0; i<BUFSIZE && m_buf[i]!='\0'; ++i )
     {
-      if (!isspace(m_buf[i]))
+      if (!isspace(m_buf[i]) && m_buf[i] != '#' && is_comment)
       {
-        is_comment = (m_buf[i]=='#');
+        is_comment = false;
+      }
+      if (m_buf[i] == '#')
+      {
+        m_buf[i] = '\0';
         break;
       }
     }
+
+    // Si ce n'est pas un commentaire, on supprime juste le '\r' final (si windows).
     if (!is_comment)
     {
-      // Supprime le '\n' ou '\r' final
+      // Supprime le '\r' final
       for( int i=0; i<BUFSIZE && m_buf[i]!='\0'; ++i )
       {
-        //cout << " V=" << m_buf[i] << " I=" << (int)m_buf[i] << "\n";
-        if (m_buf[i]=='\n' || m_buf[i]=='\r')
+        if (m_buf[i]=='\r')
         {
           m_buf[i] = '\0';
           break;
@@ -488,7 +528,7 @@ readMesh(IPrimaryMesh* mesh, const String& file_name, const String& dir_name, bo
 
   // Lecture du type de maillage
   // TODO: en parallèle, avec use_internal_partition vrai, seul le processeur 0
-  // lit les données. Dans ce cas, inutile que les autres ouvre le fichier.
+  // lit les données. Dans ce cas, inutile que les autres ouvrent le fichier.
   {
     buf = vtk_file.getNextLine();
 
@@ -1604,8 +1644,8 @@ _readCellVariable(IMesh* mesh,VtkFile& vtk_file,const String& var_name,Integer n
     Real v = vtk_file.getReal();
     values[i] = v;
   }
-  info() << "Variable build finished: " << vtk_file.isEnd();
   _readMetadata(mesh, vtk_file);
+  info() << "Variable build finished: " << vtk_file.isEof();
 }
 
 /*---------------------------------------------------------------------------*/
