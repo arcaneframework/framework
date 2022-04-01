@@ -333,6 +333,9 @@ class DataTypeTraitsT<Real2>
   //! Type de donnée de base de ce type de donnée
   typedef Real BasicType;
 
+  //! Type de retour de operator[] pour ce type
+  using SubscriptType = Real;
+
   //! Nombre d'éléments du type de base
   static constexpr int nbBasicType() { return 2; }
 
@@ -356,6 +359,7 @@ class DataTypeTraitsT<Real2>
 
  public:
 
+  static constexpr bool HasSubscriptOperator() { return true; }
   static constexpr bool HasComponentX() { return true; }
   static constexpr bool HasComponentY() { return true; }
 
@@ -379,6 +383,9 @@ class DataTypeTraitsT<Real3>
   //! Type de donnée de base de ce type de donnée
   typedef Real BasicType;
 
+  //! Type de retour de operator[] pour ce type
+  using SubscriptType = Real;
+
   //! Nombre d'éléments du type de base
   static constexpr int nbBasicType() { return 3; }
 
@@ -400,6 +407,7 @@ class DataTypeTraitsT<Real3>
   //! Valeur par défaut.
   static ARCANE_CORE_EXPORT Type defaultValue();
 
+  static constexpr bool HasSubscriptOperator() { return true; }
   static constexpr bool HasComponentX() { return true; }
   static constexpr bool HasComponentY() { return true; }
   static constexpr bool HasComponentZ() { return true; }
@@ -424,6 +432,9 @@ class DataTypeTraitsT<Real2x2>
   //! Type de donnée de base de ce type de donnée
   typedef Real BasicType;
 
+  //! Type de retour de operator[] pour ce type
+  using SubscriptType = Real2;
+
   //! Nombre d'éléments du type de base
   static constexpr int nbBasicType() { return 4; }
 
@@ -444,6 +455,8 @@ class DataTypeTraitsT<Real2x2>
 
   //! Valeur par défaut.
   static ARCANE_CORE_EXPORT Type defaultValue();
+
+  static constexpr bool HasSubscriptOperator() { return true; }
 
   static constexpr bool HasComponentXX() { return true; }
   static constexpr bool HasComponentYX() { return true; }
@@ -473,6 +486,9 @@ class DataTypeTraitsT<Real3x3>
   //! Type de donnée de base de ce type de donnée
   typedef Real BasicType;
 
+  //! Type de retour de operator[] pour ce type
+  using SubscriptType = Real3;
+
   //! Nombre d'éléments du type de base
   static constexpr int nbBasicType() { return 9; }
 
@@ -493,6 +509,8 @@ class DataTypeTraitsT<Real3x3>
 
   //! Valeur par défaut.
   static ARCANE_CORE_EXPORT Type defaultValue();
+
+  static constexpr bool HasSubscriptOperator() { return true; }
 
   static constexpr bool HasComponentXX() { return true; }
   static constexpr bool HasComponentYX() { return true; }
