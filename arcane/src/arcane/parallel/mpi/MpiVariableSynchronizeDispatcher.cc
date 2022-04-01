@@ -23,6 +23,7 @@
 #include "arcane/parallel/mpi/MpiAdapter.h"
 #include "arcane/parallel/mpi/MpiDatatypeList.h"
 #include "arcane/parallel/mpi/MpiDatatype.h"
+#include "arcane/parallel/mpi/MpiTimeInterval.h"
 #include "arcane/parallel/IStat.h"
 
 #include "arcane/datatype/DataTypeTraits.h"
@@ -51,33 +52,6 @@
 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-namespace
-{
-inline double
-_getTime()
-{
-  return MPI_Wtime();
-}
-class TimeInterval
-{
- public:
-  TimeInterval(double* cumulative_value)
-  : m_cumulative_value(cumulative_value)
-  {
-    m_begin_time = _getTime();
-  }
-  ~TimeInterval()
-  {
-    double end_time = _getTime();
-    *m_cumulative_value += (end_time - m_begin_time);
-  }
- private:
-  double* m_cumulative_value;
-  double m_begin_time = 0.0;
-};
-
-}
 
 namespace Arcane
 {
@@ -108,7 +82,7 @@ compute(ItemGroupSynchronizeInfo* sync_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename SimpleType> void
+template <typename SimpleType> void
 MpiVariableSynchronizeDispatcher<SimpleType>::
 _beginSynchronize(SyncBuffer& sync_buffer)
 {
@@ -122,49 +96,51 @@ _beginSynchronize(SyncBuffer& sync_buffer)
 
   MP::Mpi::MpiAdapter* mpi_adapter = pm->adapter();
 
-  double begin_prepare_time = _getTime();
+  double prepare_time = 0.0;
 
-  constexpr int serialize_tag = 523;
-  const MPI_Datatype mpi_dt = dtlist->datatype(SimpleType())->datatype();
+  {
+    MpiTimeInterval tit(&prepare_time);
+    constexpr int serialize_tag = 523;
+    const MPI_Datatype mpi_dt = dtlist->datatype(SimpleType())->datatype();
 
-  // Envoie les messages de réception en mode non bloquant
-  m_original_recv_requests_done.resize(nb_message);
-  m_original_recv_requests.resize(nb_message);
+    // Envoie les messages de réception en mode non bloquant
+    m_original_recv_requests_done.resize(nb_message);
+    m_original_recv_requests.resize(nb_message);
 
-  // Poste les messages de réception
-  for( Integer i=0; i<nb_message; ++i ){
-    const VariableSyncInfo& vsi = sync_list[i];
-    ArrayView<SimpleType> buf = sync_buffer.ghostBuffer(i);
-    if (!buf.empty()){
-      auto req = mpi_adapter->receiveNonBlockingNoStat(buf.data(),buf.size(),
-                                                       vsi.targetRank(),mpi_dt,serialize_tag);
-      m_original_recv_requests[i] = req;
-      m_original_recv_requests_done[i] = false;
+    // Poste les messages de réception
+    for (Integer i = 0; i < nb_message; ++i) {
+      const VariableSyncInfo& vsi = sync_list[i];
+      ArrayView<SimpleType> buf = sync_buffer.ghostBuffer(i);
+      if (!buf.empty()) {
+        auto req = mpi_adapter->receiveNonBlockingNoStat(buf.data(), buf.size(),
+                                                         vsi.targetRank(), mpi_dt, serialize_tag);
+        m_original_recv_requests[i] = req;
+        m_original_recv_requests_done[i] = false;
+      }
+      else {
+        // Il n'est pas nécessaire d'envoyer un message vide.
+        // Considère le message comme terminé
+        m_original_recv_requests[i] = Parallel::Request{};
+        m_original_recv_requests_done[i] = true;
+      }
     }
-    else{
-      // Il n'est pas nécessaire d'envoyer un message vide.
-      // Considère le message comme terminé
-      m_original_recv_requests[i] = Parallel::Request{};
-      m_original_recv_requests_done[i] = true;
+
+    // Recopie les buffers d'envoi dans \a var_values
+    for (Integer i = 0; i < nb_message; ++i)
+      sync_buffer.copySend(i);
+
+    // Poste les messages d'envoi en mode non bloquant.
+    for (Integer i = 0; i < nb_message; ++i) {
+      ArrayView<SimpleType> buf = sync_buffer.shareBuffer(i);
+      const VariableSyncInfo& vsi = sync_list[i];
+      if (!buf.empty()) {
+        auto request = mpi_adapter->sendNonBlockingNoStat(buf.data(), buf.size(),
+                                                          vsi.targetRank(), mpi_dt, serialize_tag);
+        m_send_request_list->add(request);
+      }
     }
   }
-
-  // Recopie les buffers d'envoi dans \a var_values
-  for( Integer i=0; i<nb_message; ++i )
-    sync_buffer.copySend(i);
-
-  // Poste les messages d'envoi en mode non bloquant.
-  for( Integer i=0; i<nb_message; ++i ){
-    ArrayView<SimpleType> buf = sync_buffer.shareBuffer(i);
-    const VariableSyncInfo& vsi = sync_list[i];
-    if (!buf.empty()){
-      auto request = mpi_adapter->sendNonBlockingNoStat(buf.data(),buf.size(),
-                                                        vsi.targetRank(),mpi_dt,serialize_tag);
-      m_send_request_list->add(request);
-    }
-  }
-  double prepare_time = _getTime() - begin_prepare_time;
-  pm->stat()->add("SyncPrepare",prepare_time,1);
+  pm->stat()->add("SyncPrepare", prepare_time, 1);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -198,7 +174,7 @@ _endSynchronize(SyncBuffer& sync_buffer)
       break;
 
     {
-      TimeInterval tit(&wait_time);
+      MpiTimeInterval tit(&wait_time);
       m_receive_request_list->wait(Parallel::WaitSome);
     }
 
@@ -213,7 +189,7 @@ _endSynchronize(SyncBuffer& sync_buffer)
 
       // Recopie les valeurs recues
       {
-        TimeInterval tit(&copy_time);
+        MpiTimeInterval tit(&copy_time);
         sync_buffer.copyReceive(orig_index);
       }
     }
@@ -223,7 +199,7 @@ _endSynchronize(SyncBuffer& sync_buffer)
   // Il faut le faire pour pouvoir libérer les requêtes même si le message
   // est arrivé.
   {
-    TimeInterval tit(&wait_time);
+    MpiTimeInterval tit(&wait_time);
     m_send_request_list->wait(Parallel::WaitAll);
   }
 
