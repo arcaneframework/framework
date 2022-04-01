@@ -40,4 +40,5 @@ set( ARCANE_SOURCES
   MpiAdapter.h
   MpiDatatype.h
   MpiLock.h
+  MpiTimeInterval.h
   )

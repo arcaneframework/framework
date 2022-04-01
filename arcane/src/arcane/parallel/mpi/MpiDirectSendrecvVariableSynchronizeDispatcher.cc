@@ -23,6 +23,7 @@
 #include "arcane/parallel/mpi/MpiAdapter.h"
 #include "arcane/parallel/mpi/MpiDatatypeList.h"
 #include "arcane/parallel/mpi/MpiDatatype.h"
+#include "arcane/parallel/mpi/MpiTimeInterval.h"
 #include "arcane/parallel/IStat.h"
 
 #include "arcane/datatype/DataTypeTraits.h"
@@ -32,32 +33,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace
-{
-inline double
-_getTime()
-{
-  return MPI_Wtime();
-}
-class TimeInterval
-{
- public:
-  TimeInterval(double* cumulative_value)
-  : m_cumulative_value(cumulative_value)
-  {
-    m_begin_time = _getTime();
-  }
-  ~TimeInterval()
-  {
-    double end_time = _getTime();
-    *m_cumulative_value += (end_time - m_begin_time);
-  }
- private:
-  double* m_cumulative_value;
-  double m_begin_time = 0.0;
-};
-
-}
 
 namespace Arcane
 {
@@ -105,13 +80,13 @@ _beginSynchronize(SyncBuffer& sync_buffer)
   double sync_wait_time = 0.0;
 
   {
-    TimeInterval tit(&sync_copy_send_time);
+    MpiTimeInterval tit(&sync_copy_send_time);
     for( Integer i=0; i<nb_message; ++i )
       sync_buffer.copySend(i);
   }
 
   {
-    TimeInterval tit(&sync_wait_time);
+    MpiTimeInterval tit(&sync_wait_time);
     for( Integer i=0; i<nb_message; ++i ){
       const VariableSyncInfo& vsi = sync_list[i];
       ArrayView<SimpleType> rbuf = sync_buffer.ghostBuffer(i);
@@ -134,7 +109,7 @@ _beginSynchronize(SyncBuffer& sync_buffer)
   }
 
   {
-    TimeInterval tit(&sync_copy_recv_time);
+    MpiTimeInterval tit(&sync_copy_recv_time);
     for( Integer i=0; i<nb_message; ++i )
       sync_buffer.copyReceive(i);
   }
