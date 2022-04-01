@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicTranscoder.cc                                          (C) 2000-2018 */
+/* BasicTranscoder.cc                                          (C) 2000-2022 */
 /*                                                                           */
 /* Conversions utf8/utf16/iso-8859-1.                                        */
 /*---------------------------------------------------------------------------*/
@@ -74,12 +74,8 @@ ucs4_to_utf8(Int32 wc,CoreArray<Byte>& utf8)
     count = 4;
   else if (wc < 0x4000000)
     count = 5;
-  else if (wc <= 0x7fffffff)
+  else
     count = 6;
-  else{
-    utf8.add('?');
-    return;
-  }
   switch (count) { /* note: code falls through cases! */
   case 6: r[5] = 0x80 | (wc & 0x3f); wc = wc >> 6; wc |= 0x4000000; [[fallthrough]];
   case 5: r[4] = 0x80 | (wc & 0x3f); wc = wc >> 6; wc |= 0x200000; [[fallthrough]];
