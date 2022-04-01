@@ -5,14 +5,45 @@ set_target_properties(Neo PROPERTIES PUBLIC_HEADER "Utils.h;Neo.h;Mesh.h")
 
 target_include_directories(Neo SYSTEM INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-        $<INSTALL_INTERFACE:include>)
+        $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include/>)
+
+target_link_libraries(Neo SGraph)
 
 target_compile_definitions(Neo INTERFACE HAS_NEO)
 
-if(WIN32)
-    target_compile_options(Neo PRIVATE -Wall)
+include(GNUInstallDirs)
+
+set(_libpath ${CMAKE_BINARY_DIR}/lib)
+if (WIN32)
+    set_target_properties(Neo
+            PROPERTIES
+            LIBRARY_OUTPUT_DIRECTORY_DEBUG ${_libpath}
+            RUNTIME_OUTPUT_DIRECTORY_DEBUG ${_libpath}
+            LIBRARY_OUTPUT_DIRECTORY_RELEASE ${_libpath}
+            RUNTIME_OUTPUT_DIRECTORY_RELEASE ${_libpath}
+            LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${_libpath}
+            RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${_libpath}
+            )
 else()
+    set_target_properties(Neo
+            PROPERTIES
+            LIBRARY_OUTPUT_DIRECTORY ${_libpath}
+            RUNTIME_OUTPUT_DIRECTORY ${_libpath}
+            )
+endif()
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    # using Clang
+    target_compile_options(Neo PRIVATE -EHsc) # need to activate exception on clang-cl from Visual...?
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # using GCC
     target_compile_options(Neo PRIVATE -Wall -Wextra -Wpedantic -pedantic -Wconversion -pedantic-errors)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
+    # using Intel C++ (not tested)
+    target_compile_options(Neo PRIVATE)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    # using Visual Studio C++
+    target_compile_options(Neo PRIVATE -Wall)
 endif()
 
 include(GNUInstallDirs)

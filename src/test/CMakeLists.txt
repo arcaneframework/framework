@@ -1,4 +1,4 @@
-add_executable(Neo.tests NeoBaseTest.cpp NeoEvolutiveMeshTest.cpp NeoPolyhedralMeshTest.cpp MeshView.cpp NeoMeshAPITest.cpp)
+add_executable(Neo.tests NeoBaseTest.cpp NeoEvolutiveMeshTest.cpp NeoPolyhedralMeshTest.cpp MeshView.cpp NeoMeshAPITest.cpp NeoGraphTest.cpp)
 
 target_include_directories(Neo.tests PUBLIC ../.)
 
@@ -33,6 +33,11 @@ else()
             PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY ${_exepath}
             )
+endif()
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    # using Clang
+    target_compile_options(Neo.tests PRIVATE -EHsc) # need to activate exception on clang-cl from Visual...?
 endif()
 
 gtest_discover_tests(Neo.tests)

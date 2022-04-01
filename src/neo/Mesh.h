@@ -1,16 +1,18 @@
-//
-// Created by dechaiss on 5/6/20.
-//
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* Mesh.h                                          (C) 2000-2021             */
+/*                                                                           */
+/* Asynchronous Mesh structure based on Neo kernel                           */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #ifndef NEO_MESH_H
 #define NEO_MESH_H
-
-/*-------------------------
- * sdc - (C) 2020
- * NEtwork Oriented kernel
- * POC Mesh API
- *--------------------------
- */
 
 #include <memory>
 #include <string>

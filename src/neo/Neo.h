@@ -1,6 +1,16 @@
-//
-// Created by dechaiss on 1/22/20.
-//
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* Neo.h                                           (C) 2000-2022             */
+/*                                                                           */
+/* Data structure and tools for asynchronous mesh graph kernel               */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 
 #ifndef SRC_NEO_H
 #define SRC_NEO_H
@@ -18,17 +28,10 @@
 #include <variant>
 #include <vector>
 #include <stdexcept>
+#include <utility>
 
 #include "Utils.h"
-
-/*-------------------------
- * sdc - (C)-2019 -
- * NEtwork Oriented kernel
- * POC version 0.0
- * true version could be derived
- * from ItemFamilyNetwork
- *--------------------------
- */
+#include "sgraph/DirectedAcyclicGraph.h"
 
 namespace Neo {
 
@@ -36,7 +39,9 @@ enum class ItemKind {
   IK_None, IK_Node, IK_Edge, IK_Face, IK_Cell, IK_Dof
 };
 
-namespace utils {
+//----------------------------------------------------------------------------/
+
+namespace utils { // not defined in Utils.h since needs Neo::ItemKind
 
 inline std::string itemKindName(ItemKind item_kind){
   switch (item_kind) {
@@ -60,7 +65,9 @@ inline std::string itemKindName(ItemKind item_kind){
     break;
   }
 }
-}
+} // namespace utils
+
+//----------------------------------------------------------------------------/
 
 struct ItemLocalId {};
 struct ItemUniqueId {};
@@ -68,6 +75,8 @@ struct ItemUniqueId {};
 // todo: check if used ??
 using DataType = std::variant<utils::Int32, utils::Int64, utils::Real3>;// ajouter des types dans la def de famille si necessaire
 using DataIndex = std::variant<int,ItemUniqueId>;
+
+//----------------------------------------------------------------------------/
 
 struct ItemLocalIds {
   std::vector<utils::Int32 > m_non_contiguous_lids = {};
@@ -111,6 +120,8 @@ struct ItemLocalIds {
   }
 };
 
+//----------------------------------------------------------------------------/
+
 struct ItemIterator {
   using iterator_category = std::input_iterator_tag;
   using value_type = int;
@@ -138,7 +149,11 @@ struct ItemRange {
   utils::Int32 maxLocalId() const noexcept { return m_item_lids.maxLocalId();}
 
 };
-}// end namespace Neo
+//----------------------------------------------------------------------------/
+
+}// namespace Neo
+
+//----------------------------------------------------------------------------/
 
 inline
 std::ostream &operator<<(std::ostream &os, const Neo::ItemRange &item_range){
@@ -156,8 +171,10 @@ std::ostream &operator<<(std::ostream &os, const Neo::ItemRange &item_range){
   return os;
 }
 
+//----------------------------------------------------------------------------/
+
 namespace Neo{
-namespace utils {
+namespace utils { // not defined in Utils.h since needs Neo::ItemRange
 inline
 Int32 maxItem(ItemRange const &item_range) {
   if (item_range.isEmpty())
@@ -171,29 +188,124 @@ Int32 minItem(ItemRange const &item_range) {
     return utils::NULL_ITEM_LID;
   return *std::min_element(item_range.begin(), item_range.end());
 }
-}
+} // namespace utils
 
-template <typename DataType>
+//----------------------------------------------------------------------------/
+
+template <typename ValueType>
+struct PropertyViewIterator {
+ public:
+  using iterator_category = std::input_iterator_tag;
+  using value_type = ValueType;
+  using difference_type = int;
+  using pointer = ValueType*;
+  using reference = ValueType&;
+  using PropertyViewIteratorType = PropertyViewIterator<ValueType>;
+  typename std::vector<int>::const_iterator m_indexes_interator;
+  ValueType* m_data_iterator;
+
+  ValueType& operator*()  const noexcept {return *m_data_iterator;}
+  ValueType* operator->() const noexcept {return  m_data_iterator;}
+
+  bool operator==(PropertyViewIteratorType const& prop_view_iterator) const noexcept{
+    return (m_indexes_interator == prop_view_iterator.m_indexes_interator);
+  }
+  bool operator!=(PropertyViewIteratorType const& prop_view_iterator) const noexcept{
+    return !(*this==prop_view_iterator);
+  }
+  
+  PropertyViewIteratorType& operator++() noexcept {
+    _increment_iterator();
+    return *this;
+  }
+  PropertyViewIteratorType operator++(int) noexcept {
+    _increment_iterator();
+    return *this;
+  }
+  PropertyViewIteratorType& operator--() noexcept {
+    _decrement_iterator();
+    return *this;
+  }
+  PropertyViewIteratorType operator--(int) noexcept {
+    _decrement_iterator();
+    return *this;
+  }
+  PropertyViewIteratorType& operator+=(difference_type n) noexcept{
+    _increment_iterator(n);
+    return *this;
+  }
+  PropertyViewIteratorType operator+(difference_type n) noexcept {
+    _increment_iterator(n);
+    return *this;
+  }
+  PropertyViewIteratorType& operator-=(difference_type n) noexcept{
+    _decrement_iterator(n);
+    return *this;
+  }
+  PropertyViewIteratorType operator-(difference_type n) noexcept {
+    _decrement_iterator(n);
+    return *this;
+  }
+
+ protected:
+  void _increment_iterator(){
+    auto last_index = *m_indexes_interator;
+    m_indexes_interator++;
+    m_data_iterator += *m_indexes_interator - last_index;
+  }
+  void _increment_iterator(difference_type n){
+    for (auto i = 0; i < n ; ++i) {_increment_iterator();}
+  }
+  void _decrement_iterator(){
+    auto last_index = *m_indexes_interator;
+    m_indexes_interator--;
+    m_data_iterator -= last_index-*m_indexes_interator;
+  }
+  void _decrement_iterator(difference_type n){
+    for (auto i = 0; i < n; ++i) {_decrement_iterator();}
+  }
+};
+
+
+//----------------------------------------------------------------------------/
+
+template <typename ValueType>
 class PropertyView
 {
 public:
   std::vector<int> const m_indexes;
-  Neo::utils::ArrayView<DataType> m_data_view;
-  DataType& operator[] (int index) {
+  Neo::utils::ArrayView<ValueType> m_data_view;
+
+  ValueType& operator[] (int index) {
     assert(("Error, exceeds property view size",index < m_indexes.size()));
     return m_data_view[m_indexes[index]];}
+
+  int size() const noexcept {return m_indexes.size();}
+
+  PropertyViewIterator<ValueType> begin() { return {m_indexes.begin()++,m_data_view.begin()+m_indexes[0]};}
+  PropertyViewIterator<ValueType> end()   { return {m_indexes.end(),m_data_view.end()};}
 };
 
-template <typename DataType>
+//----------------------------------------------------------------------------/
+
+template <typename ValueType>
 class PropertyConstView
 {
 public:
   std::vector<int> const m_indexes;
-  Neo::utils::ConstArrayView<DataType> m_data_view;
-  DataType const& operator[] (int index) const{
+  Neo::utils::ConstArrayView<ValueType> m_data_view;
+
+  int size() const noexcept {return m_indexes.size();}
+
+  ValueType const& operator[] (int index) const{
     assert(("Error, exceeds property view size",index < m_indexes.size()));
     return m_data_view[m_indexes[index]];}
+
+  PropertyViewIterator<ValueType const> begin() { return {m_indexes.begin()++,m_data_view.begin()+m_indexes[0]};}
+  PropertyViewIterator<ValueType const> end()   { return {m_indexes.end(),m_data_view.end()};}
 };
+
+//----------------------------------------------------------------------------/
 
 class PropertyBase{
 public:
@@ -205,6 +317,11 @@ class PropertyT : public PropertyBase  {
 public:
   std::vector<DataType> m_data;
 
+  /*!
+   * @brief Fill a property (empty or not) with a scalar value, over an item_range.
+   * @param item_range: range containing the items that will be set to the \a value
+   * @param value
+   */
   void init(const ItemRange& item_range, const DataType& value){
     if (isInitializableFrom(item_range))
       init(item_range, std::vector<DataType>(item_range.size(), value));
@@ -214,13 +331,24 @@ public:
 
   bool isInitializableFrom(const ItemRange& item_range) const {return item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty() ;}
 
-  // The difference between init and append is done to handle values copy or move
+  /*!
+   * @brief Fill an \b empty property with an array of values indexed by a range. May copy or move the values.
+   * @param item_range: contiguous 0-starting range
+   * @param values: give a rvalue (temporary or moved array) to be efficient (they won't be copied).
+   * This method tries to avoid copy via move construct. Work only if a rvalue is passed for \a values argument. Property must be empty.
+   */
   void init(const ItemRange& item_range, std::vector<DataType> values){
     // data must be empty
-    assert(item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty()); // todo comprehensive test (message for user)
+    assert(("Property must be empty and item range contiguous to call init",isInitializableFrom(item_range)));
     m_data = std::move(values);
   }
 
+  /*!
+   * @brief Fill a property (empty or not) with an array of values. Always copy values.
+   * @param item_range
+   * @param values
+   * @param default_value: used if \a item_range is a subrange of the property support
+   */
   void append(const ItemRange& item_range, const std::vector<DataType>& values, DataType default_value=DataType{}) {
     if (item_range.size()==0) return;
     assert(("item_range and values sizes differ",item_range.size() == values.size()));
@@ -270,6 +398,10 @@ public:
 
   std::size_t size() const {return m_data.size();}
 
+  void clear() {
+    m_data.clear();
+  }
+
   PropertyView<DataType> view() {
     std::vector<int> indexes(m_data.size()); std::iota(indexes.begin(),indexes.end(),0);
     return PropertyView<DataType>{std::move(indexes),Neo::utils::ArrayView<DataType>{m_data.size(),m_data.data()}};}
@@ -282,13 +414,19 @@ public:
   PropertyConstView<DataType> constView() const {
     std::vector<int> indexes(m_data.size()); std::iota(indexes.begin(),indexes.end(),0);
     return PropertyConstView<DataType>{std::move(indexes),Neo::utils::ConstArrayView<DataType>{m_data.size(),m_data.data()}};}
-    
+
   PropertyConstView<DataType> constView(ItemRange const& item_range) const {
     std::vector<int> indexes; indexes.reserve(item_range.size());
     for (auto item : item_range) indexes.push_back(item);
     return PropertyConstView<DataType>{std::move(indexes),Neo::utils::ConstArrayView<DataType>{m_data.size(),m_data.data()}};}
 
+  auto begin() noexcept {return m_data.begin();}
+  auto begin() const noexcept {return m_data.begin();}
+  auto end() noexcept { return m_data.end(); }
+  auto end() const noexcept { return m_data.end(); }
 };
+
+//----------------------------------------------------------------------------/
 
 template <typename DataType>
 class ArrayProperty : public PropertyBase {
@@ -300,15 +438,35 @@ public:
   int m_size;
 
 public:
+
+ /*!
+  * @brief Resize an array property before a call to \a init. Resize must not be done before a call to \a append method.
+  * @param sizes: an array the number of items of the property support and storing the number of values for each item.
+  */
   void resize(std::vector<int> sizes){ // only 2 moves if a rvalue is passed. One copy + one move if lvalue
     m_offsets = std::move(sizes);
     _updateIndexes();
   }
   bool isInitializableFrom(const ItemRange& item_range){return item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty() ;}
+
+  /*!
+   * @brief Initialize an \b empty array property. Must call resize first.
+   * @param item_range must be a contiguous, 0-starting item range
+   * @param values: to be efficient a rvalue should be passed (temporary or moved array).
+   * This method tries to avoid copy via move construct. Work only if a rvalue is passed for \a values argument. Property must be empty.
+   */
   void init(const ItemRange& item_range, std::vector<DataType> values){
-    assert(isInitializableFrom(item_range));
+    assert(("Property must be empty and item range contiguous to call init",isInitializableFrom(item_range)));
+    assert(("call resize before init",!item_range.isEmpty() && m_size !=0));
     m_data = std::move(values);
   }
+
+  /*!
+   * @brief Fill an array property (empty or not) with an array of values. Always copy values.
+   * @param item_range
+   * @param values
+   * @param nb_values_per_item
+   */
   void append(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_values_per_item){
     if (item_range.size()==0) return;
     // todo: see how to handle new element add or remove impact on property (size/values)
@@ -409,8 +567,33 @@ public:
     Neo::utils::printContainer(m_indexes, "Indexes");
   }
 
+  /*!
+   * @return number of items of property support
+   */
    int size() const {
     return m_size;
+  }
+
+  void clear() {
+    m_data.clear();
+    m_offsets.clear();
+    m_indexes.clear();
+    m_size = 0;
+  }
+
+  /*!
+   * @brief returns a 1D contiguous view of the property
+   * @return a 1D view of the property, the values of the array for each item are contiguous
+   */
+  utils::ArrayView<DataType> view() noexcept {
+    return utils::ArrayView<DataType>{ m_data.size(), m_data.data() };
+  }
+  /*!
+   * @brief returns a const 1D contiguous view of the property
+   * @return a const 1D view of the property, the values of the array for each item are contiguous
+   */
+  utils::ConstArrayView<DataType> constView() const noexcept {
+    return utils::ConstArrayView<DataType>{ m_data.size(), m_data.data() };
   }
 
 private:
@@ -435,6 +618,8 @@ private:
     return std::accumulate(new_offsets.begin(), new_offsets.end(), 0);
   }
 };
+
+//----------------------------------------------------------------------------/
 
 // special case of local ids property
 class ItemLidsProperty : public PropertyBase {
@@ -583,6 +768,8 @@ private:
 
 };
 
+//----------------------------------------------------------------------------/
+
 using Property = std::variant<
     PropertyT<utils::Int32>,
     //PropertyT<int>, // int and Int32 are same types
@@ -592,7 +779,9 @@ using Property = std::variant<
     //ArrayProperty<int>, // int and Int32 are same types
     ArrayProperty<utils::Int32>>;
 
-namespace tye {
+//----------------------------------------------------------------------------/
+
+namespace tye {// type engine : tool to visit variant
 template <typename... T> struct VisitorOverload : public T... {
   using T::operator()...;
 };
@@ -642,8 +831,9 @@ void apply(Func& func, Variant& arg1, Variant& arg2, Variant& arg3) {
 // template deduction guides
 template <typename...T> VisitorOverload(T...) -> VisitorOverload<T...>;
 
-}// todo move in TypeEngine (proposal change namespace to tye..)
+}// namespace tye todo move in TypeEngine
 
+//----------------------------------------------------------------------------/
 
 class Family {
 public:
@@ -677,16 +867,21 @@ public:
                 << std::endl;
   }
 
-  Property& getProperty(const std::string& name) {
+  Property& getProperty(std::string const& name) {
     auto found_property = m_properties.find(name);
     if (found_property == m_properties.end()) throw std::invalid_argument("Cannot find Property "+name);
     return found_property->second;
   }
 
-  Property const& getProperty(const std::string& name) const {
+  Property const& getProperty(std::string const& name) const {
     auto found_property = m_properties.find(name);
     if (found_property == m_properties.end()) throw std::invalid_argument("Cannot find Property "+name);
     return found_property->second;
+  }
+
+  bool hasProperty(std::string const& name) const noexcept {
+    if (m_properties.find(name) == m_properties.end()) return false;
+    else return true;
   }
 
   template <typename PropertyType>
@@ -740,8 +935,34 @@ private :
   }
 };
 
+//----------------------------------------------------------------------------/
+
 class FamilyMap {
-public:
+ private:
+  std::map<std::pair<ItemKind,std::string>, std::unique_ptr<Family>> m_families;
+  void _copyMap(FamilyMap const& family_map){
+    for (auto const& family_info : family_map.m_families) {
+      auto const& [item_kind, name] = family_info.first;
+      push_back(item_kind, name);
+    }
+  }
+
+ public:
+  FamilyMap() = default;
+  FamilyMap(FamilyMap const& family_map) {
+    _copyMap(family_map);
+  }
+  FamilyMap(FamilyMap && family_map) {
+    m_families = std::move(family_map.m_families);
+  }
+  FamilyMap& operator=(FamilyMap const& family_map){
+    _copyMap(family_map);
+    return *this;
+  }
+  FamilyMap& operator=(FamilyMap && family_map){
+    m_families = std::move(family_map.m_families);
+    return *this;
+  }
   Family& operator()(ItemKind const & ik,std::string const& name) const noexcept (ndebug)
   {
     auto found_family = m_families.find(std::make_pair(ik,name));
@@ -758,36 +979,34 @@ public:
   auto end() noexcept { return m_families.end();}
   auto end() const noexcept {return m_families.end();}
 
-private:
-  std::map<std::pair<ItemKind,std::string>, std::unique_ptr<Family>> m_families;
-
 };
 
-struct InProperty{
+//----------------------------------------------------------------------------/
+
+enum class PropertyStatus {ExistingProperty,ComputedProperty};
+struct PropertyHolder{
+  Family& m_family;
+  std::string m_name;
+  PropertyStatus m_status = PropertyStatus::ComputedProperty;
 
   auto& operator() () {
     return m_family.getProperty(m_name);
   }
-  Family& m_family;
-  std::string m_name;
 
+  std::string uniqueName() const noexcept {
+    return m_name + "_" + m_family.name();
+  }
 };
 
-//  template <typename DataType, typename DataIndex=int> // sans doute inutile, on devrait se poser la question du type (et meme on n'en a pas besoin) dans lalgo. on auranautomatiquement le bon type
-struct OutProperty{
+struct InProperty : public PropertyHolder{};
 
-  auto& operator() () {
-    return m_family.getProperty(m_name);
-  }
-  Family& m_family;
-  std::string m_name;
+struct OutProperty : public PropertyHolder{};
 
-}; // faut-il 2 types ?
+//----------------------------------------------------------------------------/
 
 struct IAlgorithm {
   virtual void operator() () = 0;
 };
-
 
 template <typename Algorithm>
 struct AlgoHandler : public IAlgorithm {
@@ -845,6 +1064,8 @@ struct NoDepsDualOutAlgoHandler : public IAlgorithm {
   }
 };
 
+//----------------------------------------------------------------------------/
+
 class MeshBase;
 
 class EndOfMeshUpdate {
@@ -852,6 +1073,8 @@ class EndOfMeshUpdate {
 private:
   EndOfMeshUpdate() = default;
 };
+
+//----------------------------------------------------------------------------/
 
 struct FutureItemRange {
 
@@ -878,8 +1101,9 @@ struct FutureItemRange {
   virtual ItemRange& __internal__() {
     return new_items;
   }
-
 };
+
+//----------------------------------------------------------------------------/
 
 struct FilteredFutureItemRange : public FutureItemRange {
 
@@ -922,6 +1146,8 @@ struct FilteredFutureItemRange : public FutureItemRange {
   }
 };
 
+//----------------------------------------------------------------------------/
+
 inline Neo::FutureItemRange make_future_range(){
   return FutureItemRange{};
 }
@@ -930,6 +1156,8 @@ inline Neo::FilteredFutureItemRange make_future_range(FutureItemRange& future_it
                                                std::vector<int> filter) {
   return FilteredFutureItemRange{future_item_range,std::move(filter)};
 }
+
+//----------------------------------------------------------------------------/
 
 /*!
  * Create a FilteredFutureItemRange filtering an FutureItemRange. The filter is here computed.
@@ -962,7 +1190,26 @@ inline Neo::FilteredFutureItemRange make_future_range(FutureItemRange& future_it
 
 }
 
+//----------------------------------------------------------------------------/
+//----------------------------------------------------------------------------/
+
 class MeshBase {
+ public:
+  std::string m_name;
+  FamilyMap m_families;
+  std::list<std::shared_ptr<IAlgorithm>> m_algos;
+  int m_dimension = 3;
+  using AlgoPtr = std::shared_ptr<IAlgorithm>;
+  using ProducingAlgoArray = std::vector<AlgoPtr>;
+  using ConsumingAlgoArray = std::vector<AlgoPtr>;
+  using PropertyRef = std::reference_wrapper<const PropertyHolder>;
+  static inline auto m_prop_holder_less_comparator = [] (PropertyHolder const& a, PropertyHolder const& b) {
+    return a.uniqueName() < b.uniqueName(); };
+  using PropertyHolderLessComparator = decltype(m_prop_holder_less_comparator);
+  std::map<PropertyHolder,std::pair<ProducingAlgoArray,ConsumingAlgoArray>,PropertyHolderLessComparator> m_property_algorithms {m_prop_holder_less_comparator};
+  SGraph::DirectedAcyclicGraph<AlgoPtr,PropertyHolder> m_dag;
+  enum class AlgorithmExecutionOrder {FIFO, LIFO, DAG};
+
 public:
   Family& addFamily(ItemKind ik, std::string&& name) {
     std::cout << "Add Family " << name << " in mesh " << m_name << std::endl;
@@ -980,46 +1227,156 @@ public:
 
   template <typename Algorithm>
   void addAlgorithm(InProperty&& in_property, OutProperty&& out_property, Algorithm algo){// problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
-    //?? ajout dans le graphe. recuperer les prop...à partir nom et kind…
-    // mock the graph : play the action in the given order...
-    m_algos.push_back(std::make_unique<AlgoHandler<decltype(algo)>>(std::move(in_property),std::move(out_property),std::forward<Algorithm>(algo)));
+    auto algo_hander = std::make_shared<AlgoHandler<decltype(algo)>>(std::move(in_property),std::move(out_property),std::forward<Algorithm>(algo));
+    m_algos.push_back(algo_hander);
+    _addProducingAlgo(algo_hander->m_out_property,algo_hander);
+    _addConsumingAlgo(algo_hander->m_in_property,algo_hander);
   }
+
   template <typename Algorithm>
   void addAlgorithm(OutProperty&& out_property, Algorithm algo) { // problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
-    m_algos.push_back(std::make_unique<NoDepsAlgoHandler<decltype(algo)>>(std::move(out_property),std::forward<Algorithm>(algo)));
+    auto algo_handler = std::make_shared<NoDepsAlgoHandler<decltype(algo)>>(std::move(out_property),std::forward<Algorithm>(algo));
+    m_algos.push_back(algo_handler);
+    _addProducingAlgo(algo_handler->m_out_property, algo_handler);
   }
 
   template <typename Algorithm>
   void addAlgorithm(InProperty&& in_property1, InProperty&& in_property2, OutProperty&& out_property, Algorithm algo){// problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
-    //?? ajout dans le graphe. recuperer les prop...à partir nom et kind…
-    // mock the graph : play the action in the given order...
-    m_algos.push_back(std::make_unique<DualInAlgoHandler<decltype(algo)>>(
-        std::move(in_property1),
-        std::move(in_property2),
-        std::move(out_property),
-        std::forward<Algorithm>(algo)));
+    auto algo_handler = std::make_shared<DualInAlgoHandler<decltype(algo)>>(
+    std::move(in_property1),
+    std::move(in_property2),
+    std::move(out_property),
+    std::forward<Algorithm>(algo));
+    m_algos.push_back(algo_handler);
+    _addProducingAlgo(algo_handler->m_out_property, algo_handler);
+    _addConsumingAlgo(algo_handler->m_in_property1, algo_handler);
+    _addConsumingAlgo(algo_handler->m_in_property2, algo_handler);
   }
 
   template <typename Algorithm>
   void addAlgorithm(OutProperty&& out_property1, OutProperty&& out_property2, Algorithm algo) {// problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
-    m_algos.push_back(std::make_unique<NoDepsDualOutAlgoHandler<decltype(algo)>>(std::move(out_property1),std::move(out_property2),std::forward<Algorithm>(algo)));
+    auto algo_handler = std::make_shared<NoDepsDualOutAlgoHandler<decltype(algo)>>(std::move(out_property1), std::move(out_property2), std::forward<Algorithm>(algo));
+    m_algos.push_back(algo_handler);
+    _addProducingAlgo(algo_handler->m_out_property1,algo_handler);
+    _addProducingAlgo(algo_handler->m_out_property2,algo_handler);
   }
 
-  EndOfMeshUpdate applyAlgorithms() {
-    std::cout << "apply added algorithms" << std::endl;
-    std::for_each(m_algos.begin(),m_algos.end(),[](auto& algo){(*algo.get())();});
+  /*!
+   * @brief Remove all added algorithms
+   */
+  void removeAlgorithms() {
     m_algos.clear();
+    m_property_algorithms.clear();
+    m_dag.clear();
+  }
+
+  /*!
+   * @brief Apply added algorithms
+   * @param execution_order
+   * @return object EndOfMeshUpdate to unlock FutureItemRange
+   * Added algorithms are removed at the end of the method
+   */
+  EndOfMeshUpdate applyAlgorithms(AlgorithmExecutionOrder execution_order = AlgorithmExecutionOrder::DAG) {
+    return _applyAlgorithms(execution_order, false);
+  }
+
+  /*!
+   * @brief Apply added algorithms
+   * @param execution_order
+   * @return object EndOfMeshUpdate to unlock FutureItemRange
+   * Added algorithms are kept at the end of the method. If the method is called twice, tha algorithms are played again.
+   */
+  EndOfMeshUpdate applyAndKeepAlgorithms(AlgorithmExecutionOrder execution_order = AlgorithmExecutionOrder::DAG){
+    return _applyAlgorithms(execution_order,true);
+  }
+
+  EndOfMeshUpdate _applyAlgorithms(AlgorithmExecutionOrder execution_order, bool do_keep_algorithms) {
+    std::cout << "-- apply added algorithms with execution order ";
+    switch (execution_order) {
+    case AlgorithmExecutionOrder::FIFO:
+      std::cout << "FIFO --" << std::endl;
+      std::for_each(m_algos.begin(),m_algos.end(),[](auto& algo){(*algo.get())();});
+      break;
+    case AlgorithmExecutionOrder::LIFO:
+      std::cout << "LIFO --" << std::endl;
+      std::for_each(m_algos.rbegin(), m_algos.rend(), [](auto& algo) { (*algo.get())(); });
+      break;
+    case AlgorithmExecutionOrder::DAG:
+      std::cout << "DAG --" << std::endl;
+      _build_graph();
+      try {
+        auto sorted_graph = m_dag.topologicalSort();
+        std::for_each(sorted_graph.begin(), sorted_graph.end(),[](auto& algo) { (*algo.get())(); });
+      }
+      catch (std::runtime_error& error) {
+        if (!do_keep_algorithms) removeAlgorithms();
+        throw error;
+      }
+      break;
+    }
+    if (!do_keep_algorithms) removeAlgorithms();
     return EndOfMeshUpdate{};
   }
 
+ private:
 
-  std::string m_name;
-  FamilyMap m_families;
-  std::list<std::unique_ptr<IAlgorithm>> m_algos;
-  int m_dimension = 3;
+  void _build_graph() {
+    // Mark algorithms that won't have their input properties
+    std::vector<AlgoPtr> to_remove_algos;
+    to_remove_algos.reserve(10);
+    for (auto&& [property, property_algos] : m_property_algorithms) {
+      auto& [producing_property_array, consuming_property_array] = property_algos;
+      if ( (producing_property_array.size() == 0 && property.m_status == PropertyStatus::ComputedProperty) // no producing algo for a computed property
+          || !property.m_family.hasProperty(property.m_name)) { // property does not exist
+        for (auto&& algo_to_remove : consuming_property_array){
+          to_remove_algos.push_back(algo_to_remove);
+        }
+        for (auto&& algo_to_remove : producing_property_array){// property does not exist
+          to_remove_algos.push_back(algo_to_remove);
+        }
+      }
+    }
+    auto compare_algo = [](auto const& algo1, auto const& algo2){return algo1.get() < algo2.get();};
+    std::sort(to_remove_algos.begin(), to_remove_algos.end(),compare_algo);
+
+    // Add edges between producing and consuming algos
+    auto is_removed_algo = [&to_remove_algos,compare_algo](AlgoPtr const& algo){
+      return std::binary_search(to_remove_algos.begin(), to_remove_algos.end(),algo, compare_algo);
+    };
+
+    for (auto& [property, property_algos] : m_property_algorithms){
+      if (!property.m_family.hasProperty(property.m_name)) continue;
+      auto& [producing_property_array, consuming_property_array] = property_algos;
+      for (auto& producing_algo : producing_property_array) {
+        // Add each producing algo in graph: it may have no consuming algo
+        if (!is_removed_algo(producing_algo)) m_dag.addVertex(producing_algo);
+        for (auto& consuming_algo : consuming_property_array) {
+          if (!is_removed_algo(producing_algo) && !is_removed_algo(consuming_algo))
+            m_dag.addEdge(producing_algo, consuming_algo, property);
+        }
+      }
+    }
+  }
+
+
+  void _addProducingAlgo(OutProperty const& out_property, std::shared_ptr<IAlgorithm> algo){
+    // add algo as one of producing algo of out_property
+    auto& [producing_algo_array, consuming_algo_array] = m_property_algorithms[out_property];
+    producing_algo_array.push_back(algo);
+  }
+
+  void _addConsumingAlgo(InProperty const& in_property, std::shared_ptr<IAlgorithm> algo){
+    // add algo as one of the consuming algos of out_property
+    auto& [producing_algo_array, consuming_algo_array] = m_property_algorithms[in_property];
+    consuming_algo_array.push_back(algo);
+  }
+
 };
 
-} // end namespace Neo
+//----------------------------------------------------------------------------/
+//----------------------------------------------------------------------------/
+
+}// namespace Neo
 
 
 #endif // SRC_NEO_H

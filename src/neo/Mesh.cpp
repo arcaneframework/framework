@@ -1,6 +1,15 @@
-//
-// Created by dechaiss on 5/6/20.
-//
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* Mesh.cpp                                        (C) 2000-2021             */
+/*                                                                           */
+/* Asynchronous Mesh structure based on Neo kernel                           */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #include <stdexcept>
 

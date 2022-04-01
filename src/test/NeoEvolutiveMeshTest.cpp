@@ -1,17 +1,20 @@
-//
-// Created by dechaiss on 1/22/20.
-//
-
-/*-------------------------
- * Neo library
- * Evolutive mesh test
- * sdc (C)-2020
- *
- *-------------------------
- */
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* NeoEvolutiveMeshTest.cpp                        (C) 2000-2022             */
+/*                                                                           */
+/* First very basic mesh evolution test                                      */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #include "neo/Neo.h"
 #include "gtest/gtest.h"
+
+//----------------------------------------------------------------------------/
 
 auto& addCellFamily(Neo::MeshBase & mesh,std::string family_name){
   auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell,std::move(family_name));
@@ -30,6 +33,8 @@ auto& addFaceFamily(Neo::MeshBase & mesh,std::string family_name){
   face_family.addProperty<Neo::utils::Int64>(family_name+"_uids");
   return face_family;
 }
+
+//----------------------------------------------------------------------------/
 
 // todo create another signature where uids are moved, or make clear that they potentially are...
 void addItems(Neo::MeshBase & mesh, Neo::Family& family, std::vector<Neo::utils::Int64>& uids, Neo::FutureItemRange & added_item_range)
@@ -59,59 +64,63 @@ void addItems(Neo::MeshBase & mesh, Neo::Family& family, std::vector<Neo::utils:
       });// need to add a property check for existing uid
 }
 
+//----------------------------------------------------------------------------/
+
 // todo same interface with nb_connected_item_per_item as an array
 void addConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
                      Neo::ItemRange &source_items,
                      Neo::Family& target_family,
                      int nb_connected_item_per_item,
-                     std::vector<Neo::utils::Int64>& connected_item_uids)
-{
+                     std::vector<Neo::utils::Int64>& connected_item_uids) {
   // add connectivity property if doesn't exist
   std::string connectivity_name = source_family.m_name + "to" + target_family.m_name + "_connectivity";
   source_family.addArrayProperty<Neo::utils::Int32>(connectivity_name);
   mesh.addAlgorithm(
-      Neo::InProperty{source_family,source_family.lidPropName()},
-      Neo::InProperty{target_family,target_family.lidPropName()},
-      Neo::OutProperty{source_family,source_family.m_name + "to" + target_family.m_name + "_connectivity"},
-      [&connected_item_uids, &nb_connected_item_per_item,& source_items, &source_family, &target_family]
-          (Neo::ItemLidsProperty const& source_family_lids_property,
-           Neo::ItemLidsProperty const& target_family_lids_property,
-           Neo::ArrayProperty<Neo::utils::Int32> & source2target){
-        std::cout << "Algorithm: register connectivity between " <<
-          source_family.m_name << "  and  " << target_family.m_name << std::endl;
-        auto connected_item_lids = target_family_lids_property[connected_item_uids];
-        std::vector<int> nb_connected_item_per_item_array(source_items.size(),nb_connected_item_per_item);
-        if (source2target.isInitializableFrom(source_items)) {
-          source2target.resize(std::move(nb_connected_item_per_item_array));
-          source2target.init(source_items,std::move(connected_item_lids));
-        }
-        else {
-          source2target.append(source_items,connected_item_lids, nb_connected_item_per_item_array);
-        }
-        source2target.debugPrint();
-      });
-
-  // handle target item removal in connectivity : todo plug graph in Neo otherwise this won't work
-//  std::string removed_item_property_name = "removed_items"+source_family.m_name;
-//  source_family.addProperty<Neo::utils::Int32>(removed_item_property_name);
-//  mesh.addAlgorithm(
-//      Neo::InProperty{source_family,removed_item_property_name},
-//      Neo::OutProperty{source_family,connectivity_name},
-//      [&source_family,&target_family](
-//          Neo::PropertyT<Neo::utils::Int32> const& source_family_removed_items,
-//          Neo::ArrayProperty<Neo::utils::Int32> &connectivity){
-//        std::cout << "Algorithm update connectivity after remove " << connectivity.m_name << std::endl;
-//        for (auto item : source_family.all()) {
-//          auto connected_items = connectivity[item];
-//          for (auto& connected_item : connected_items){
-//            if (connected_item != Neo::utils::NULL_ITEM_LID && source_family_removed_items[connected_item] == 1) {
-//              std::cout << "modify connected item : "<< connected_item << target_family.m_name << std::endl;
-//              connected_item = Neo::utils::NULL_ITEM_LID;
-//            }
-//          }
-//        }
-//      });
+  Neo::InProperty{ source_family, source_family.lidPropName(), Neo::PropertyStatus::ExistingProperty },
+  Neo::InProperty{ target_family, target_family.lidPropName(), Neo::PropertyStatus::ExistingProperty },
+  Neo::OutProperty{ source_family, connectivity_name },
+  [&connected_item_uids, nb_connected_item_per_item, &source_items, &source_family, &target_family](Neo::ItemLidsProperty const& source_family_lids_property,
+                                                                                                    Neo::ItemLidsProperty const& target_family_lids_property,
+                                                                                                    Neo::ArrayProperty<Neo::utils::Int32>& source2target) {
+    std::cout << "Algorithm: register connectivity between " << source_family.m_name << "  and  " << target_family.m_name << std::endl;
+    auto connected_item_lids = target_family_lids_property[connected_item_uids];
+    std::vector<int> nb_connected_item_per_item_array(source_items.size(), nb_connected_item_per_item);
+    if (source2target.isInitializableFrom(source_items)) {
+      source2target.resize(std::move(nb_connected_item_per_item_array));
+      source2target.init(source_items, std::move(connected_item_lids));
+    }
+    else {
+      source2target.append(source_items, connected_item_lids, nb_connected_item_per_item_array);
+    }
+    source2target.debugPrint();
+  });
 }
+
+void updateConnectivity(Neo::MeshBase& mesh, Neo::Family & source_family,Neo::Family &target_family){
+  // handle target item removal in connectivity
+  const std::string removed_item_property_name{"removed_"+target_family.m_name+"_items"};
+  source_family.addProperty<Neo::utils::Int32>(removed_item_property_name);
+  std::string connectivity_name = source_family.m_name + "to" + target_family.m_name + "_connectivity";
+  mesh.addAlgorithm(
+      Neo::InProperty{target_family,removed_item_property_name},
+      Neo::OutProperty{source_family,connectivity_name},
+      [&source_family,&target_family](
+          Neo::PropertyT<Neo::utils::Int32> const& target_family_removed_items,
+          Neo::ArrayProperty<Neo::utils::Int32> &connectivity){
+        std::cout << "Algorithm update connectivity after remove " << connectivity.m_name << std::endl;
+        for (auto item : source_family.all()) {
+          auto connected_items = connectivity[item];
+          for (auto& connected_item : connected_items){
+            if (connected_item != Neo::utils::NULL_ITEM_LID && target_family_removed_items[connected_item] == 1) {
+              std::cout << "modify connected item : "<< connected_item << " in family " << target_family.m_name << std::endl;
+              connected_item = Neo::utils::NULL_ITEM_LID;
+            }
+          }
+        }
+      });
+}
+
+//----------------------------------------------------------------------------/
 
 void addConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
                      Neo::FutureItemRange &source_items,
@@ -123,6 +132,7 @@ void addConnectivity(Neo::MeshBase &mesh, Neo::Family &source_family,
                   nb_connected_item_per_item, connected_item_uids);
 }
 
+//----------------------------------------------------------------------------/
 
 // todo : define 2 signatures to indicate eventual memory stealing...?
 void setNodeCoords(Neo::MeshBase & mesh, Neo::Family& node_family, Neo::FutureItemRange & added_node_range, std::vector<Neo::utils::Real3>& node_coords){
@@ -140,6 +150,8 @@ void setNodeCoords(Neo::MeshBase & mesh, Neo::Family& node_family, Neo::FutureIt
       });
 }
 
+//----------------------------------------------------------------------------/
+
 void moveNodes(Neo::MeshBase & mesh, Neo::Family& node_family, std::vector<Neo::utils::Int64>const& node_uids, std::vector<Neo::utils::Real3>& node_coords){
   mesh.addAlgorithm(
       Neo::InProperty{node_family,node_family.lidPropName()},
@@ -154,10 +166,12 @@ void moveNodes(Neo::MeshBase & mesh, Neo::Family& node_family, std::vector<Neo::
       });
 }
 
+//----------------------------------------------------------------------------/
+
 void removeItems(Neo::MeshBase & mesh, Neo::Family& family, std::vector<Neo::utils::Int64> const& removed_item_uids){
   const std::string removed_item_property_name{"removed_"+family.m_name+"_items"};
   // Add an algo to clear removed_items property at the beginning of a mesh update
-  // This algo will be executed before remove : todo plug graph in Neo otherwise this won't work
+  // This algo will be executed before remove
   const std::string ok_to_start_remove_property_name = "ok_to_start_remove_property";
   family.addProperty<Neo::utils::Int32>(ok_to_start_remove_property_name);
   family.addProperty<Neo::utils::Int32>(removed_item_property_name);
@@ -189,9 +203,13 @@ void removeItems(Neo::MeshBase & mesh, Neo::Family& family, std::vector<Neo::uti
       });
 }
 
+//----------------------------------------------------------------------------/
+
 static const std::string cell_family_name {"CellFamily"};
 static const std::string face_family_name {"FaceFamily"};
 static const std::string node_family_name {"NodeFamily"};
+
+//----------------------------------------------------------------------------/
 
 void addCells(Neo::MeshBase &mesh){
   auto& cell_family = addCellFamily(mesh,cell_family_name);
@@ -234,11 +252,15 @@ void addCells(Neo::MeshBase &mesh){
   std::cout << "Added faces range after applyAlgorithms: " << new_faces;
 }
 
+//----------------------------------------------------------------------------/
+
 TEST(EvolutiveMeshTest,AddCells)
 {
   auto mesh = Neo::MeshBase{"evolutive_neo_mesh"};
   addCells(mesh);
 }
+
+//----------------------------------------------------------------------------/
 
 TEST(EvolutiveMeshTest,MoveNodes)
 {
@@ -252,6 +274,8 @@ TEST(EvolutiveMeshTest,MoveNodes)
   mesh.applyAlgorithms();
 }
 
+//----------------------------------------------------------------------------/
+
 TEST(EvolutiveMeshTest,RemoveCells)
 {
   std::cout << "Remove cells test " << std::endl;
@@ -262,9 +286,17 @@ TEST(EvolutiveMeshTest,RemoveCells)
   auto &cell_family = mesh.getFamily(Neo::ItemKind::IK_Cell, cell_family_name);
   auto &node_family = mesh.getFamily(Neo::ItemKind::IK_Node, node_family_name);
   addConnectivity(mesh,node_family,node_family.all(),cell_family,1, node_to_cell);
+  mesh.applyAlgorithms();
   // Remove cell 0, 1 and 2
   std::vector<Neo::utils::Int64> removed_cells{0,1,2};
-  removeItems(mesh,mesh.getFamily(Neo::ItemKind::IK_Cell, cell_family_name),removed_cells);
-//  mesh.applyAlgorithms(); // todo plug graph to activate this test.
-
+  removeItems(mesh,cell_family,removed_cells);
+  updateConnectivity(mesh,node_family,cell_family);
+  mesh.applyAlgorithms();
+  auto node2cells_con_name = node_family_name + "to" + cell_family_name + "_connectivity";
+  auto node2cells = node_family.getConcreteProperty<Neo::ArrayProperty<Neo::utils::Int32>>(node2cells_con_name);
+  // compute a reference connectivity : replace removed cells by null lid
+  std::fill(node_to_cell.begin(), node_to_cell.end(), Neo::utils::NULL_ITEM_LID);
+  node_to_cell[5] = 3;
+  node_to_cell[11] = 3;
+  EXPECT_TRUE(std::equal(node2cells.view().begin(),node2cells.view().end(),node_to_cell.begin()));
 }

@@ -1,16 +1,18 @@
-//
-// Created by dechaiss on 5/15/20.
-//
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* Utils.h                                         (C) 2000-2022             */
+/*                                                                           */
+/* Test dag plug in Neo MeshBase                                             */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #ifndef NEO_UTILS_H
 #define NEO_UTILS_H
-
-/*-------------------------
- * sdc - (C) 2020
- * NEtwork Oriented kernel
- * Utils
- *--------------------------
- */
 
 #include <iostream>
 #include <vector>
@@ -19,8 +21,10 @@
 
 #ifdef NDEBUG
   static constexpr bool ndebug = true;
+  static constexpr bool _debug  = false;
 #else
   static constexpr bool ndebug = false;
+  static constexpr bool _debug  = true;
 #endif
 
 namespace Neo {
@@ -80,7 +84,7 @@ namespace utils {
    * \brief 2-Dimensional view of a contiguous data chunk
    * The second dimension varies first {(i,j),(i,j+1),(i+1,j),(i+1,j+1)}...
    * \fn operator[i] returns a view of size \refitem Array2View.m_dim2_size
-   * @tparam T
+   * @tparam T view data type
    */
   template <typename T>
   struct Array2View {
@@ -107,7 +111,7 @@ namespace utils {
 
   /*!
    * 2-Dimensional const view. cf. \refitem Array2View
-   * @tparam T
+   * @tparam T view data type
    */
   template <typename T>
   struct ConstArray2View {
