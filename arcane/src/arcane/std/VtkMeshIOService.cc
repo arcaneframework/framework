@@ -200,8 +200,8 @@ class VtkFile
   bool isEmptyNextLine();
   const char* getNextLine();
 
-  Real getReal();
-  Integer getInteger();
+  // Real getReal();
+  // Integer getInteger();
 
   void checkString(const String& current_value,const String& expected_value);
   void checkString(const String& current_value,
@@ -213,6 +213,13 @@ class VtkFile
   void reReadSameLine(){m_currentLine = true;}
 
   bool isEof(){ return eof; }
+
+  bool isBinaryFile;
+  template<class T>
+  void getBinary(T& type);
+  float getFloat();
+  double getDouble();
+  int getInt();
 
  private:
   bool m_isInit;
@@ -406,34 +413,113 @@ getNextLine()
   throw IOException("VtkFile::getNextLine()","Not good");
 }
 
+// /*---------------------------------------------------------------------------*/
+// /*---------------------------------------------------------------------------*/
+
+// Real VtkFile::
+// getReal()
+// {
+//   Real v = 0.;
+//   (*m_stream) >> ws >> v;
+
+//   if (m_stream->good())
+//     return v;
+
+//   throw IOException("VtkFile::getReal()","Bad Real");
+// }
+
+// /*---------------------------------------------------------------------------*/
+// /*---------------------------------------------------------------------------*/
+
+// Integer VtkFile::
+// getInteger()
+// {
+//   Integer v = 0;
+//   (*m_stream) >> ws >> v;
+
+//   if (m_stream->good())
+//     return v;
+
+//   throw IOException("VtkFile::getInteger()","Bad Integer");
+// }
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Real VtkFile::
-getReal()
+float VtkFile::
+getFloat()
 {
-  Real v = 0.;
+  float v = 0.;
+  if(isBinaryFile)
+  {
+    getBinary( v );
+    return v;
+  }
   (*m_stream) >> ws >> v;
 
   if (m_stream->good())
     return v;
 
-  throw IOException("VtkFile::getReal()","Bad Real");
+  throw IOException("VtkFile::getFloat()","Bad float");
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer VtkFile::
-getInteger()
+double VtkFile::
+getDouble()
 {
-  Integer v = 0;
+  double v = 0.;
+  if(isBinaryFile)
+  {
+    getBinary( v );
+    return v;
+  }
   (*m_stream) >> ws >> v;
 
   if (m_stream->good())
     return v;
 
-  throw IOException("VtkFile::getInteger()","Bad Integer");
+  throw IOException("VtkFile::getDouble()","Bad double");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+int VtkFile::
+getInt()
+{
+  int v = 0;
+  if(isBinaryFile)
+  {
+    getBinary( v );
+    return v;
+  }
+  (*m_stream) >> ws >> v;
+
+  if (m_stream->good())
+    return v;
+
+  throw IOException("VtkFile::getInt()","Bad int");
+}
+
+template<class T>
+void VtkFile::
+getBinary(T& fin)
+{
+  size_t sizeofT = sizeof(T);
+  unsigned char* bigEndian = (unsigned char*) malloc(sizeofT);
+  unsigned char* littleEndian = (unsigned char*) malloc(sizeofT);
+  m_stream->read((char*)bigEndian, sizeofT);
+
+  for(int i = 0; i < sizeofT; i++)
+  {
+    littleEndian[sizeofT-1-i] = bigEndian[i];
+  }
+  T* test2 = new(littleEndian) T;
+  //printf("Lecture test : %f\n", *test2);
+  fin = *test2;
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -498,7 +584,7 @@ VtkMeshIOService::
 bool VtkMeshIOService::
 readMesh(IPrimaryMesh* mesh, const String& file_name, const String& dir_name, bool use_internal_partition)
 {
-  std::ifstream ifile(file_name.localstr());
+  std::ifstream ifile(file_name.localstr(), std::ifstream::binary);
 
   if (!ifile)
   {
@@ -520,8 +606,9 @@ readMesh(IPrimaryMesh* mesh, const String& file_name, const String& dir_name, bo
 
   if (! VtkFile::isEqualString(format,"ASCII"))
   {
-    error() << "Support exists only for 'ASCII' format (format='" << format << "')";
-    return true;
+    //error() << "Support exists only for 'ASCII' format (format='" << format << "')";
+    //return true;
+    vtk_file.isBinaryFile = true;
   }
   
   eMeshType mesh_type = VTK_MT_Unknown;
@@ -742,9 +829,9 @@ _readStructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_parti
       for( Integer z=0; z<nb_node_z; ++z ){
         for( Integer y=0; y<nb_node_y; ++y ){
           for( Integer x=0; x<nb_node_x; ++x ){
-            Real nx = vtk_file.getReal();
-            Real ny = vtk_file.getReal();
-            Real nz = vtk_file.getReal();
+            Real nx = vtk_file.getDouble();
+            Real ny = vtk_file.getDouble();
+            Real nz = vtk_file.getDouble();
             Integer node_unique_id = x + y*nb_node_x + z*nb_node_xy;
             coords[node_unique_id] = Real3(nx,ny,nz);
           }
@@ -862,11 +949,12 @@ _readNodesUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file, Array<Real3>& node_co
   // Lecture les coordonnées
   node_coords.resize(nb_node);
   {
+    //nb_node = 10; // TODO VAR DEBUG !!!
     for( Integer i=0; i<nb_node; ++i )
     {
-      Real nx = vtk_file.getReal();
-      Real ny = vtk_file.getReal();
-      Real nz = vtk_file.getReal();
+      Real nx = vtk_file.getDouble();
+      Real ny = vtk_file.getDouble();
+      Real nz = vtk_file.getDouble();
       node_coords[i] = Real3(nx,ny,nz);
     }
   }
@@ -919,11 +1007,11 @@ _readCellsUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file,
     Integer connectivity_index = 0;
     for( Integer i=0; i<nb_cell; ++i )
     {
-      Integer n = vtk_file.getInteger();
+      Integer n = vtk_file.getInt();
       cells_nb_node[i] = n;
       for( Integer j=0; j<n; ++j )
       {
-        Integer id = vtk_file.getInteger();
+        Integer id = vtk_file.getInt();
         cells_connectivity[connectivity_index] = id;
         ++connectivity_index;
       }
@@ -956,7 +1044,7 @@ _readCellsUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file,
 
   for( Integer i=0; i<nb_cell; ++i )
   {
-    Integer vtk_ct = vtk_file.getInteger();
+    Integer vtk_ct = vtk_file.getInt();
     Integer it = IT_NullType;
 
     // Le type est défini dans vtkCellType.h
@@ -1641,7 +1729,7 @@ _readCellVariable(IMesh* mesh,VtkFile& vtk_file,const String& var_name,Integer n
   m_variables.add(var);
   RealArrayView values(var->asArray());
   for( Integer i=0; i<nb_cell; ++i ){
-    Real v = vtk_file.getReal();
+    Real v = vtk_file.getDouble();
     values[i] = v;
   }
   _readMetadata(mesh, vtk_file);
@@ -1661,7 +1749,7 @@ _readItemGroup(IMesh* mesh, VtkFile& vtk_file, const String& name, Integer nb_it
   Int32UniqueArray ids;
   for( Integer i=0; i<nb_item; ++i )
   {
-    Integer v = vtk_file.getInteger();
+    Integer v = vtk_file.getInt();
     if (v!=0)
       ids.add(local_ids[i]);
   }
@@ -1684,7 +1772,7 @@ _readNodeGroup(IMesh* mesh, VtkFile& vtk_file, const String& name, Integer nb_it
   Int32UniqueArray ids;
   for( Integer i=0; i<nb_item; ++i )
   {
-    Integer v = vtk_file.getInteger();
+    Integer v = vtk_file.getInt();
     if (v!=0)
       ids.add(i);
   }
