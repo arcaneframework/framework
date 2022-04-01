@@ -778,6 +778,8 @@ _readStructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_parti
 
   }
 
+  _readMetadata(mesh, vtk_file);
+
   // Maintenant, regarde s'il existe des données associées aux fichier
   bool r = _readData(mesh,vtk_file,use_internal_partition,IK_Cell,cells_local_id,nb_node);
   if (r)
@@ -1299,6 +1301,9 @@ _readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
   // sous-domaines doivent connaitre la liste des variables et groupes créées.
   // Si une donnée porte le nom 'GROUP_*', on considère qu'il s'agit d'un
   // groupe
+
+  // Pas de data.
+  if(vtk_file.isEof()) return false;
 
   OStringStream created_infos_str;
   created_infos_str() << "<?xml version='1.0' ?>\n";
