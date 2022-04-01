@@ -623,12 +623,5 @@ workflows:
       - arm-build-and-test
 
   build-and-test-aio:
-    triggers: #use the triggers key to indicate a scheduled build
-      - schedule:
-          cron: "23 1 * * *" # Tous les jours à 01:23 (du matin).
-          filters:
-            branches:
-              only:
-                - main
     jobs:
       - aio-build-and-test
