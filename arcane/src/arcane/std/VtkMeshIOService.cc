@@ -200,9 +200,6 @@ class VtkFile
   bool isEmptyNextLine();
   const char* getNextLine();
 
-  // Real getReal();
-  // Integer getInteger();
-
   void checkString(const String& current_value,const String& expected_value);
   void checkString(const String& current_value,
                    const String& expected_value1,
@@ -413,36 +410,6 @@ getNextLine()
   throw IOException("VtkFile::getNextLine()","Not good");
 }
 
-// /*---------------------------------------------------------------------------*/
-// /*---------------------------------------------------------------------------*/
-
-// Real VtkFile::
-// getReal()
-// {
-//   Real v = 0.;
-//   (*m_stream) >> ws >> v;
-
-//   if (m_stream->good())
-//     return v;
-
-//   throw IOException("VtkFile::getReal()","Bad Real");
-// }
-
-// /*---------------------------------------------------------------------------*/
-// /*---------------------------------------------------------------------------*/
-
-// Integer VtkFile::
-// getInteger()
-// {
-//   Integer v = 0;
-//   (*m_stream) >> ws >> v;
-
-//   if (m_stream->good())
-//     return v;
-
-//   throw IOException("VtkFile::getInteger()","Bad Integer");
-// }
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -452,7 +419,7 @@ getFloat()
   float v = 0.;
   if(isBinaryFile)
   {
-    getBinary( v );
+    getBinary(v);
     return v;
   }
   (*m_stream) >> ws >> v;
@@ -472,7 +439,7 @@ getDouble()
   double v = 0.;
   if(isBinaryFile)
   {
-    getBinary( v );
+    getBinary(v);
     return v;
   }
   (*m_stream) >> ws >> v;
@@ -492,7 +459,7 @@ getInt()
   int v = 0;
   if(isBinaryFile)
   {
-    getBinary( v );
+    getBinary(v);
     return v;
   }
   (*m_stream) >> ws >> v;
@@ -503,22 +470,28 @@ getInt()
   throw IOException("VtkFile::getInt()","Bad int");
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template<class T>
 void VtkFile::
-getBinary(T& fin)
+getBinary(T& value)
 {
   size_t sizeofT = sizeof(T);
+
+  // Le fichier VTK est en big endian et les CPU actuels sont en little endian.
   unsigned char* bigEndian = (unsigned char*) malloc(sizeofT);
   unsigned char* littleEndian = (unsigned char*) malloc(sizeofT);
+
   m_stream->read((char*)bigEndian, sizeofT);
 
   for(int i = 0; i < sizeofT; i++)
   {
     littleEndian[sizeofT-1-i] = bigEndian[i];
   }
-  T* test2 = new(littleEndian) T;
-  //printf("Lecture test : %f\n", *test2);
-  fin = *test2;
+
+  T* conv = new(littleEndian) T;
+  value = *conv;
 
 }
 
@@ -701,11 +674,11 @@ _readStructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_parti
   info() << " Infos: " << nb_node_x << " " << nb_node_y << " " << nb_node_z;
   Integer nb_node = nb_node_x * nb_node_y * nb_node_z;
   // Lecture du nombre de points: POINTS nb float
+  std::string float_str;
   {
     buf = vtk_file.getNextLine();
     std::istringstream iline(buf);
     std::string points_str;
-    std::string float_str;
     Integer nb_node_read = 0;
     iline >> ws >> points_str >> ws >> nb_node_read
           >> ws >> float_str;
@@ -714,7 +687,7 @@ _readStructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_parti
       return true;
     }
     vtk_file.checkString(points_str,"POINTS");
-    vtk_file.checkString(float_str,"float");
+    //vtk_file.checkString(float_str,"float");
     if (nb_node_read!=nb_node){
       error() << "Number of invalid nodes: expected=" << nb_node << " found=" << nb_node_read;
       return true;
@@ -826,19 +799,66 @@ _readStructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_parti
     // Positionne les coordonnées
     {
       UniqueArray<Real3> coords(nb_node);
-      for( Integer z=0; z<nb_node_z; ++z ){
-        for( Integer y=0; y<nb_node_y; ++y ){
-          for( Integer x=0; x<nb_node_x; ++x ){
-            Real nx = vtk_file.getDouble();
-            Real ny = vtk_file.getDouble();
-            Real nz = vtk_file.getDouble();
-            Integer node_unique_id = x + y*nb_node_x + z*nb_node_xy;
-            coords[node_unique_id] = Real3(nx,ny,nz);
+
+      if(vtk_file.isEqualString(float_str, "int"))
+      {
+        for( Integer z=0; z<nb_node_z; ++z )
+        {
+          for( Integer y=0; y<nb_node_y; ++y )
+          {
+            for( Integer x=0; x<nb_node_x; ++x )
+            {
+              Real nx = vtk_file.getInt();
+              Real ny = vtk_file.getInt();
+              Real nz = vtk_file.getInt();
+              Integer node_unique_id = x + y*nb_node_x + z*nb_node_xy;
+              coords[node_unique_id] = Real3(nx,ny,nz);
+            }
           }
         }
       }
+      else if(vtk_file.isEqualString(float_str, "float"))
+      {
+        for( Integer z=0; z<nb_node_z; ++z )
+        {
+          for( Integer y=0; y<nb_node_y; ++y )
+          {
+            for( Integer x=0; x<nb_node_x; ++x )
+            {
+              Real nx = vtk_file.getFloat();
+              Real ny = vtk_file.getFloat();
+              Real nz = vtk_file.getFloat();
+              Integer node_unique_id = x + y*nb_node_x + z*nb_node_xy;
+              coords[node_unique_id] = Real3(nx,ny,nz);
+            }
+          }
+        }
+      }
+      else if(vtk_file.isEqualString(float_str, "double"))
+      {
+        for( Integer z=0; z<nb_node_z; ++z )
+        {
+          for( Integer y=0; y<nb_node_y; ++y )
+          {
+            for( Integer x=0; x<nb_node_x; ++x )
+            {
+              Real nx = vtk_file.getDouble();
+              Real ny = vtk_file.getDouble();
+              Real nz = vtk_file.getDouble();
+              Integer node_unique_id = x + y*nb_node_x + z*nb_node_xy;
+              coords[node_unique_id] = Real3(nx,ny,nz);
+            }
+          }
+        }
+      }
+      else
+      {
+        throw IOException("_readStructuredGrid", "Invalid type name");
+      }
+
       VariableNodeReal3& nodes_coord_var(mesh->nodesCoordinates());
-      ENUMERATE_NODE(inode,mesh->allNodes()){
+      ENUMERATE_NODE(inode,mesh->allNodes())
+      {
         Node node = *inode;
         nodes_coord_var[inode] = coords[node.uniqueId().asInt32()];
       }
@@ -939,7 +959,7 @@ _readNodesUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file, Array<Real3>& node_co
     throw IOException(func_name,"Syntax error while reading number of nodes");
 
   vtk_file.checkString(points_str, "POINTS");
-  vtk_file.checkString(data_type_str, "float", "double");
+  // vtk_file.checkString(data_type_str, "float", "double");
 
   if (nb_node<0)
     throw IOException(A_FUNCINFO, String::format("Invalid number of nodes: n={0}", nb_node));
@@ -949,14 +969,41 @@ _readNodesUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file, Array<Real3>& node_co
   // Lecture les coordonnées
   node_coords.resize(nb_node);
   {
-    //nb_node = 10; // TODO VAR DEBUG !!!
-    for( Integer i=0; i<nb_node; ++i )
+    if(vtk_file.isEqualString(data_type_str, "int"))
     {
-      Real nx = vtk_file.getDouble();
-      Real ny = vtk_file.getDouble();
-      Real nz = vtk_file.getDouble();
-      node_coords[i] = Real3(nx,ny,nz);
+      for( Integer i=0; i<nb_node; ++i )
+      {
+        Real nx = vtk_file.getInt();
+        Real ny = vtk_file.getInt();
+        Real nz = vtk_file.getInt();
+        node_coords[i] = Real3(nx,ny,nz);
+      }
     }
+    else if(vtk_file.isEqualString(data_type_str, "float"))
+    {
+      for( Integer i=0; i<nb_node; ++i )
+      {
+        Real nx = vtk_file.getFloat();
+        Real ny = vtk_file.getFloat();
+        Real nz = vtk_file.getFloat();
+        node_coords[i] = Real3(nx,ny,nz);
+      }
+    }
+    else if(vtk_file.isEqualString(data_type_str, "double"))
+    {
+      for( Integer i=0; i<nb_node; ++i )
+      {
+        Real nx = vtk_file.getDouble();
+        Real ny = vtk_file.getDouble();
+        Real nz = vtk_file.getDouble();
+        node_coords[i] = Real3(nx,ny,nz);
+      }
+    }
+    else
+    {
+      throw IOException(func_name,"Invalid type name");
+    }
+    
   }
   _readMetadata(mesh, vtk_file);
 }
@@ -1001,7 +1048,6 @@ _readCellsUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file,
   cells_nb_node.resize(nb_cell);
   cells_type.resize(nb_cell);
   cells_connectivity.resize(nb_cell_node);
-  info() << "Passe ICI " << nb_cell << " " << nb_cell_node;
 
   {
     Integer connectivity_index = 0;
@@ -1328,7 +1374,7 @@ _readFacesMesh(IMesh* mesh, const String& file_name, const String& dir_name,
 {
   ARCANE_UNUSED(dir_name);
 
-  std::ifstream ifile(file_name.localstr());
+  std::ifstream ifile(file_name.localstr(), std::ifstream::binary);
   if (!ifile)
   {
     info() << "No face descriptor file found '" << file_name << "'";
@@ -1345,8 +1391,9 @@ _readFacesMesh(IMesh* mesh, const String& file_name, const String& dir_name,
 
   if (! VtkFile::isEqualString(format,"ASCII"))
   {
-    error() << "Support exists only for 'ASCII' format (format='" << format << "')";
-    return;
+    //error() << "Support exists only for 'ASCII' format (format='" << format << "')";
+    //return;
+    vtk_file.isBinaryFile = true;
   }
 
   eMeshType mesh_type = VTK_MT_Unknown;
