@@ -89,12 +89,13 @@ const int VTK_QUADRATIC_HEXAHEDRON =  25;
  * le lecteur et l'écrivain n'ont été que partiellement testés.
  *
  * L'en-tête du fichier vtk doit être:
- * # vtk DataFile Version 2.0
+ * # vtk DataFile Version X.X
+ * Où X.X est la version du fichier VTK (support des fichiers VTK <= 4.2).
  *
  * Il est possible de spécifier un ensemble de variables dans le fichier.
  * Dans ce cas, leurs valeurs sont lues en même temps que le maillage
  * et servent à initialiser les variables. Actuellement, seules les valeurs
- * aux mailles sont supportées
+ * aux mailles sont supportées.
  *
  * Comme Vtk ne supporte pas la notion de groupe, il est possible
  * de spécifier un groupe comme étant une variable (CELL_DATA).
@@ -627,6 +628,7 @@ readMesh(IPrimaryMesh* mesh, const String& file_name, const String& dir_name, bo
     }
   }
   debug() << "Lecture en-tête OK";
+
   bool ret = true;
   switch(mesh_type)
   {
@@ -1272,7 +1274,7 @@ _readMetadata(IMesh* mesh, VtkFile& vtk_file)
 /*---------------------------------------------------------------------------*/
 
 bool VtkMeshIOService::
-_readUnstructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_partition)
+_readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_partition)
 {
   // const char* func_name = "VtkMeshIOService::_readUnstructuredGrid()";
   //IParallelMng* pm = subDomain()->parallelMng();
@@ -1369,7 +1371,7 @@ _readUnstructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_par
     mesh->setDimension(wanted_dimension);
   }
 
-  mesh->allocateCells(nb_cell,cells_infos,false);
+  mesh->allocateCells(nb_cell, cells_infos, false);
   mesh->endAllocate();
 
   // Positionne les coordonnées
@@ -1621,7 +1623,7 @@ _readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
               if (cell_kind!=IK_Cell)
                 throw IOException("Unable to read face variables: feature not supported");
 
-              _readCellVariable(mesh,vtk_file,name_str,nb_cell_kind);
+              _readCellVariable(mesh, vtk_file, name_str, nb_cell_kind);
             }
           }
 
